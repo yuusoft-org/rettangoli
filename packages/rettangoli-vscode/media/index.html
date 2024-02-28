@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline' ${cspSource} https://unpkg.com; script-src 'self' 'unsafe-inline' ${cspSource} https://unpkg.com;">  <title>GrapesJS Preset Webpage</title>
+  <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/grapesjs"></script>
+  <script src="https://unpkg.com/prettier@3.2.4/standalone.js"></script>
+  <script src="https://unpkg.com/prettier@3.2.4/plugins/html.js"></script>
+  <link rel="stylesheet" href="${rettangoliEditorStylesUri}"></link>
+  <script src="${rettangoliUiWcScriptUri}"></script>
+</head>
+<body>
+  <div class="panel__top">
+    <div class="panel__basic-actions"></div>
+    <div class="panel__switcher"></div>
+  </div>
+  <div class="editor-row">
+    <div class="panel__left">
+      <div class="layers-container"></div>
+    </div>
+    <div class="editor-canvas">
+      <div id="gjs" style="height:0px; overflow:hidden">
+      </div>
+    </div>
+    <div class="panel__right">
+      <div class="styles-container"></div>
+      <div class="traits-container"></div>
+      <div class="blocks-container"></div>
+    </div>
+  </div>
+  <script>
+    window.initialContent = `${content}`;
+  </script>
+  </script>
+  <script src="${rettangoliEditorScriptUri}"></script>
+</body>
+</html>
