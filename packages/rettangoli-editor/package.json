@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "esbuild": "^0.20.0",
+    "esbuild-plugin-http": "^0.2.0"
+  },
+  "scripts": {
+    "build": "node esbuild.js"
+  }
+}
