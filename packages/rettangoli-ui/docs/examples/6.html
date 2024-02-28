@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Example 1</title>
+    <link href="/docs/examples/theme.css" rel="stylesheet" />
+    <script src="/dist/rettangoli-ui.min.js"></script>
+    <script type="module">
+      import { render, html } from "https://unpkg.com/uhtml";
+
+      function handleFormSubmit(data) {
+        console.log("formData", data);
+      }
+
+      const formSchema = {
+        title: "Registration",
+        subtitle: "Register your account to access the service",
+        fields: [
+          {
+            name: "fname",
+            type: "text",
+            label: "Full Name",
+            value: "",
+            options: {
+              placeholder: 'e.g. John Doe'
+            }
+          },
+          {
+            name: "uname",
+            type: "text",
+            label: "Username",
+          },
+          {
+            name: "description",
+            type: "textarea",
+            label: "Description",
+            subLabel: "What do you want to use the service for?",
+            options: {
+              rows: 6,
+              placeholder: 'Description'
+            }
+          }
+        ],
+        submit: {
+          label: "Submit",
+        },
+      };
+
+      render(
+        document.body,
+        html`
+          <rtgl-view
+            d="v"
+            bgc="su"
+            ah="s"
+            av="s"
+            flex="1"
+            p="l"
+          >
+            <rtgl-form
+              width="300px"
+              .formSchema=${formSchema}
+              .onClickSubmit=${handleFormSubmit}
+            ></rtgl-form>
+          </rtgl-view>
+        `
+      );
+    </script>
+  </head>
+
+  <body>
+   
+  </body>
+</html>

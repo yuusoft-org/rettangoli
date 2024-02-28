@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta cahrset="utf-8">
+    <title>Example 1</title>
+    <link href="/docs/examples/theme.css" rel="stylesheet">
+    <script src="/dist/rettangoli-ui.min.js"></script>
+</head>
+
+<body>
+    <rtgl-view d="h" bgc="su" flex="1">
+        <rtgl-view d="v" bgc="su" flex="1" p="l">
+            <rtgl-text s="tl" c="on-su"> Direction Vertical</rtgl-text>
+
+            <rtgl-view d="v">
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view mt="s" wh="48" bgc="isu"></rtgl-view>
+            </rtgl-view>
+
+            <rtgl-text s="tl" c="on-su">Direction Horizontal</rtgl-text>
+            <rtgl-view d="h">
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view ml="s" wh="48" bgc="isu"></rtgl-view>
+            </rtgl-view>
+
+            <rtgl-text s="tl" c="on-su"> Background Color</rtgl-text>
+            <rtgl-view>
+                <rtgl-view wh="48" bgc="isu">
+                    <rtgl-text c="i-on-su">
+                        is
+                    </rtgl-text>
+                </rtgl-view>
+                <rtgl-view wh="48" bgc="p">
+                    <rtgl-text c="i-on-su">
+                        p
+                    </rtgl-text>
+                </rtgl-view>
+                <rtgl-view wh="48" bgc="pc">
+                    <rtgl-text c="i-on-su">
+                        pc
+                    </rtgl-text>
+                </rtgl-view>
+                <rtgl-view wh="48" bgc="e">
+                    <rtgl-text c="i-on-su">
+                        e
+                    </rtgl-text>
+                </rtgl-view>
+                <rtgl-view wh="48" bgc="ec">
+                    <rtgl-text c="i-on-su">
+                        ec
+                    </rtgl-text>
+                </rtgl-view>
+            </rtgl-view>
+
+            <rtgl-text s="tl" c="on-su"> Flex </rtgl-text>
+
+            <rtgl-view d="h" g="s">
+                <rtgl-view flex="1" h="48" bgc="isu"></rtgl-view>
+                <rtgl-view flex="2" h="48" bgc="isu"></rtgl-view>
+                <rtgl-view flex="3" h="48" bgc="isu"></rtgl-view>
+            </rtgl-view>
+            <rtgl-text s="tl" c="on-su"> Direction Vertical Horizontal Align Center </rtgl-text>
+
+            <rtgl-view d="v" ah="c">
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view mt="s" wh="48" bgc="isu"></rtgl-view>
+            </rtgl-view>
+
+            <rtgl-text s="tl" c="on-su"> Direction Vertical Horizontal Align End </rtgl-text>
+
+            <rtgl-view d="v" ah="e">
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view mt="s" wh="48" bgc="isu"></rtgl-view>
+            </rtgl-view>
+
+            <rtgl-text s="tl" c="on-su"> Direction Horizontal Horizontal Align Center </rtgl-text>
+
+            <rtgl-view d="h" ah="c">
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view ml="s" wh="48" bgc="isu"></rtgl-view>
+            </rtgl-view>
+
+            <rtgl-text s="tl" c="on-su"> Direction Horizontal Horizontal Align End </rtgl-text>
+            <rtgl-view d="h" ah="e">
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view ml="s" wh="48" bgc="isu"></rtgl-view>
+            </rtgl-view>
+
+            <rtgl-text s="tl" c="on-su"> Gap </rtgl-text>
+
+            <rtgl-view d="h" g="s" w="100" fw="w">
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+            </rtgl-view>
+
+            <rtgl-text s="tl" c="on-su"> Gap Vertical and Horizontal</rtgl-text>
+            <rtgl-view d="h" gv="s" gh="l" w="120" fw="w">
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+            </rtgl-view>
+
+            <rtgl-text s="tl" c="on-su"> Fixed w and h</rtgl-text>
+            <rtgl-view d="h" gv="s" gh="l" w="120" h="120" bgc="ec" fw="w">
+            </rtgl-view>
+
+            <rtgl-text s="tl" c="on-su"> Hidden</rtgl-text>
+            <rtgl-view d="h" gv="s" gh="l" w="120" h="120" bgc="ec" fw="w">
+                <rtgl-view hidden wh="48" bgc="isu"></rtgl-view>
+            </rtgl-view>
+
+        </rtgl-view>
+        <rtgl-view d="h" bgc="su" flex="1"> </rtgl-view>
+    </rtgl-view>
+</body>
+
+</html>

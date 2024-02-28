@@ -1,0 +1,36 @@
+{
+  "name": "rettangoli-ui",
+  "version": "0.0.1",
+  "description": "A UI component library for building web interfaces.",
+  "main": "dist/rettangoli-ui.min.js",
+  "module": "src/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuusoft-org/rettangoli"
+  },
+  "author": {
+    "name": "Luciano Wu",
+    "email": "han4wluc@yuusoft.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "node esbuild.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0",
+    "esbuild-plugin-http": "^0.2.0"
+  },
+  "keywords": [
+    "ui",
+    "library",
+    "web",
+    "components"
+  ],
+  "bugs": {
+    "url": "https://github.com/yuusoft-org/rettangoli/issues"
+  },
+  "homepage": "https://github.com/yuusoft-org/rettangoli#readme"
+}
