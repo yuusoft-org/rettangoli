@@ -2,7 +2,7 @@ import { render, html } from "https://unpkg.com/uhtml";
 import { css } from '../common.js'
 import marginStyles from "../styles/marginStyles.js";
 import flexChildStyles from "../styles/flexChildStyles.js";
-
+import cursorStyles from "../styles/cursorStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
@@ -20,6 +20,7 @@ img {
 }
 ${marginStyles}
 ${flexChildStyles}
+${cursorStyles}
 `)
 
 function endsWithDigit(inputValue) {
