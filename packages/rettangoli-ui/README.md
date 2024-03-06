@@ -55,6 +55,7 @@ The `rtgl-view` component offers a variety of attributes for extensive customiza
 | `br`      | [Border Radius](#border-radius)       | `xs`, `s`, `m`, `l`, `xl`                                             |
 | `bw`      | [Border Width](#border-width)         | `xs`, `s`, `m`, `l`, `xl`                                             |
 | `bc`      | [Border Color](#border-color)         | `p`, `pc`, `s`, `sc`, `e`, `ec`, `su`, `sucl`, `suc`, `such`          |
+| `h-cur`   | [Hover Cursor](#hover-cursor)         | `p` |
 
 ### Dimensions
 
@@ -370,8 +371,24 @@ TODO
 
 TODO
 
+### Hover Cursor
 
 
+#### Attributes
+
+| Attribute | Meaning          | Description                    |
+| --------- | ---------------- | ------------------------------ |
+| `h-cur`      | Hover Cursor | Hover Cursor |
+
+#### Values
+
+| Value   | Meaning               |
+| ------- | --------------------- |
+| `p`   | Pointer |
+
+#### Examples
+
+TODO
 
 ## rtgl-button
 
@@ -429,6 +446,8 @@ The `rtgl-text` provides text in standard sizes and colors
 | `mr`      | [Margin Right](#margin)               | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `mb`      | [Margin Bottom](#margin)              | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `ml`      | [Margin Left](#margin)                | `xs`, `s`, `m`, `l`, `xl`                                                        |
+| `h-cur`   | [Hover Cursor](#hover-cursor)         | `p` |
+
 
 ### Size
 
@@ -504,6 +523,7 @@ Displays images
 | `mr`      | [Margin Right](#margin)               | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `mb`      | [Margin Bottom](#margin)              | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `ml`      | [Margin Left](#margin)                | `xs`, `s`, `m`, `l`, `xl`                                                        |
+| `h-cur`   | [Hover Cursor](#hover-cursor)         | `p` |
 
 
 
@@ -558,7 +578,7 @@ TODO
 | `mr`      | [Margin Right](#margin)               | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `mb`      | [Margin Bottom](#margin)              | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `ml`      | [Margin Left](#margin)                | `xs`, `s`, `m`, `l`, `xl`                                                        |
-
+| `h-cur`   | [Hover Cursor](#hover-cursor)         | `p` |
 
 ### SVG
 
