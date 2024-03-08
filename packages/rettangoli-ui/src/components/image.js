@@ -51,7 +51,7 @@ class RettangoliImage extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['src', 'wh', 'w', 'h', 'of'];
+    return ['key', 'src', 'wh', 'w', 'h', 'of'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
