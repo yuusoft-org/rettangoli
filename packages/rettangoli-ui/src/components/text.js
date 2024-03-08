@@ -117,6 +117,14 @@ class RettangoliText extends HTMLElement {
     render(shadow, this.render);
   }
 
+  static get observedAttributes() {
+    return ['key'];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    render(this.shadow, this.render);
+  }
+
   render() {
     return html`
       <slot></slot>

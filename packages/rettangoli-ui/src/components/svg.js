@@ -80,7 +80,7 @@ class RettangoliSvg extends HTMLElement {
   static _icons = {};
 
   static get observedAttributes() {
-    return ['src', 'w', 'h', 'of', 'wh'];
+    return ['key', 'svg', 'w', 'h', 'of', 'wh'];
   }
 
   static get icons() {

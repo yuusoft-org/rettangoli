@@ -55,7 +55,7 @@ class RettangoliView extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['wh', 'w', 'h', 'hidden'];
+    return ['key', 'wh', 'w', 'h', 'hidden'];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {

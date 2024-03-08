@@ -49,6 +49,14 @@ class RettangoliForm extends HTMLElement {
     });
   }
 
+  static get observedAttributes() {
+    return ['key'];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    render(this.shadow, this.render);
+  }
+
   _handleRawSubmit = () => {
     const formData = new FormData(this._formRef.current);
     const data = {};
