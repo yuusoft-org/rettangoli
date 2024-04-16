@@ -3,6 +3,7 @@ import { css } from '../common.js'
 import marginStyles from "../styles/marginStyles.js";
 import flexChildStyles from "../styles/flexChildStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
+import borderRadiusStyles from "../styles/borderRadiusStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
@@ -21,6 +22,7 @@ img {
 ${marginStyles}
 ${flexChildStyles}
 ${cursorStyles}
+${borderRadiusStyles}
 `)
 
 function endsWithDigit(inputValue) {
