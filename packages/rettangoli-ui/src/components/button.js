@@ -142,6 +142,13 @@ class RettangoliButton extends HTMLElement {
     return ['key'];
   }
 
+  connectedCallback() {
+    if (!this.hasAttribute('as')) {
+      this.setAttribute('as', 's'); 
+    }
+  }
+
+
   attributeChangedCallback(name, oldValue, newValue) {
     render(this.shadow, this.render);
   }

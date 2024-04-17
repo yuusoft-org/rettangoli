@@ -72,7 +72,7 @@ class RettangoliForm extends HTMLElement {
         ? html`<rtgl-text s="tl" c="on-su">${this.formSchema.title}</rtgl-text>`
         : null}
       ${this.formSchema.subtitle
-        ? html`<rtgl-text s="bm" color="on-su"
+        ? html`<rtgl-text s="bm" c="on-su"
             >${this.formSchema.subtitle}</rtgl-text
           >`
         : null}
@@ -82,12 +82,14 @@ class RettangoliForm extends HTMLElement {
   _renderFields = () => {
     return this.formSchema.fields.map((field) => {
       let inputField = null;
+      const style = `width: ${this.getAttribute("width")}px;`;
       if (field.type === "text") {
         inputField = html`<input
           type="${field.type}"
           name="${field.name}"
           value="${field.value}"
           placeholder="${field.options?.placeholder}"
+          style=${style}
         />`;
       } else if (field.type === "textarea") {
         inputField = html`<textarea
@@ -95,6 +97,8 @@ class RettangoliForm extends HTMLElement {
           value="${field.value}"
           rows="${field.options?.rows}"
           placeholder="${field.options?.placeholder}"
+          style=${style}
+
         ></textarea>`;
       }
 
@@ -123,7 +127,7 @@ class RettangoliForm extends HTMLElement {
         >
           <rtgl-view d="v" g="m">
             ${this._renderFields()}
-            <rtgl-button t="p" onclick=${this._handleRawSubmit}>
+            <rtgl-button as="e" t="p" onclick=${this._handleRawSubmit}>
               ${this.formSchema.submit.label}
             </rtgl-button>
           </rtgl-view>

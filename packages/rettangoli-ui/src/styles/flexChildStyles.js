@@ -40,10 +40,19 @@ export default css`
 :host([flex="12"]) {
   flex: 12;
 }
-
 :host([as="sch"]) {
     align-self: stretch;
 }
+:host([as="s"]) {
+    align-self: start;
+}
+:host([as="c"]) {
+    align-self: center;
+}
+:host([as="e"]) {
+    align-self: end;
+}
+
 
 /* 
 :host([sha="s"]) {
