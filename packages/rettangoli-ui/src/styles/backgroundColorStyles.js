@@ -35,4 +35,37 @@ export default css`
   :host([bgc="isu"]) {
     background-color: var(--color-inverse-surface);
   }
+  :host([h-bgc="p"]:hover) {
+    background-color: var(--color-primary);
+  }
+  :host([h-bgc="pc"]:hover) {
+    background-color: var(--color-primary-container);
+  }
+  :host([h-bgc="s"]:hover) {
+    background-color: var(--color-secondary);
+  }
+  :host([h-bgc="sc"]:hover) {
+    background-color: var(--color-secondary-container);
+  }
+  :host([h-bgc="e"]:hover) {
+    background-color: var(--color-error);
+  }
+  :host([h-bgc="ec"]:hover) {
+    background-color: var(--color-error-container);
+  }
+  :host([h-bgc="su"]:hover) {
+    background-color: var(--color-surface);
+  }
+  :host([h-bgc="sucl"]:hover) {
+    background-color: var(--color-surface-container-low);
+  }
+  :host([h-bgc="suc"]:hover) {
+    background-color: var(--color-surface-container);
+  }
+  :host([h-bgc="such"]:hover) {
+    background-color: var(--color-surface-container-high);
+  }
+  :host([h-bgc="isu"]:hover) {
+    background-color: var(--color-inverse-surface);
+  }
 `
