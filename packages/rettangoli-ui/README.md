@@ -52,7 +52,7 @@ The `rtgl-view` component offers a variety of attributes for extensive customiza
 | `pb`      | [Padding Bottom](#padding)            | `xs`, `s`, `m`, `l`, `xl`                                             |
 | `pl`      | [Padding Left](#padding)              | `xs`, `s`, `m`, `l`, `xl`                                             |
 | `bgc`     | [Background Color](#background-color) | `p`, `pc`, `s`, `sc`, `e`, `ec`, `su `, `sucl`, `suc`, `such`         |
-| `br`      | [Border Radius](#border-radius)       | `xs`, `s`, `m`, `l`, `xl`                                             |
+| `br`      | [Border Radius](#border-radius)       | `xs`, `s`, `m`, `l`, `xl`, `f`                                        |
 | `bw`      | [Border Width](#border-width)         | `xs`, `s`, `m`, `l`, `xl`                                             |
 | `bc`      | [Border Color](#border-color)         | `p`, `pc`, `s`, `sc`, `e`, `ec`, `su`, `sucl`, `suc`, `such`          |
 | `h-cur`   | [Hover Cursor](#hover-cursor)         | `p` |
@@ -317,6 +317,7 @@ TODO
 | `m`  | Medium      |
 | `l`  | Large       |
 | `xl` | Extra large |
+| `f`  | Full |
 
 #### Examples
 
@@ -524,7 +525,7 @@ Displays images
 | `mb`      | [Margin Bottom](#margin)              | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `ml`      | [Margin Left](#margin)                | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `h-cur`   | [Hover Cursor](#hover-cursor)         | `p` |
-
+| `br`      | [Border Radius](#border-radius)       | `xs`, `s`, `m`, `l`, `xl`, `f`                                        |
 
 
 ### Source
