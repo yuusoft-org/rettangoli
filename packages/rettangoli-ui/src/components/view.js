@@ -7,6 +7,7 @@ import flexDirectionStyles from "../styles/flexDirectionStyles.js";
 import backgroundColorStyles from "../styles/backgroundColorStyles.js";
 import flexChildStyles from "../styles/flexChildStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
+import borderRadiusStyles from "../styles/borderRadiusStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
@@ -27,6 +28,7 @@ ${backgroundColorStyles}
 ${paddingStyles}
 ${marginStyles}
 ${cursorStyles}
+${borderRadiusStyles}
 `);
 
 function endsWithDigit(inputValue) {
