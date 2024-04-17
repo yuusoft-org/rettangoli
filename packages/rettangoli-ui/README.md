@@ -53,6 +53,7 @@ The `rtgl-view` component offers a variety of attributes for extensive customiza
 | `pb`      | [Padding Bottom](#padding)            | `xs`, `s`, `m`, `l`, `xl`                                             |
 | `pl`      | [Padding Left](#padding)              | `xs`, `s`, `m`, `l`, `xl`                                             |
 | `bgc`     | [Background Color](#background-color) | `p`, `pc`, `s`, `sc`, `e`, `ec`, `su `, `sucl`, `suc`, `such`         |
+| `h-bgc`   | [Hover Background Color](#background-color) | `p`, `pc`, `s`, `sc`, `e`, `ec`, `su `, `sucl`, `suc`, `such`   |
 | `br`      | [Border Radius](#border-radius)       | `xs`, `s`, `m`, `l`, `xl`, `f`                                        |
 | `bw`      | [Border Width](#border-width)         | `xs`, `s`, `m`, `l`, `xl`                                             |
 | `bc`      | [Border Color](#border-color)         | `p`, `pc`, `s`, `sc`, `e`, `ec`, `su`, `sucl`, `suc`, `such`          |
@@ -289,6 +290,7 @@ Only available for Align Self
 | Attribute | Meaning          | Description                    |
 | --------- | ---------------- | ------------------------------ |
 | `bgc`     | Background Color | Background Color |
+| `h-bgc`   | Hover Background Color | Background Color |
 
 
 #### Values
