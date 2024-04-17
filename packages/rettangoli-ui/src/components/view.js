@@ -62,12 +62,6 @@ class RettangoliView extends HTMLElement {
     if (!this.hasAttribute('d')) {
       this.setAttribute('d', 'h'); 
     }
-    // if (!this.hasAttribute('ah')) {
-    //   this.setAttribute('ah', 's');
-    // }
-    // if (!this.hasAttribute('av')) {
-    //   this.setAttribute('av', 's');
-    // }
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -84,12 +78,6 @@ class RettangoliView extends HTMLElement {
     if (!this.hasAttribute('d')) {
       this.setAttribute('d', 'h'); 
     }
-    // if (!this.hasAttribute('ah')) {
-    //   this.setAttribute('ah', 's');
-    // }
-    // if (!this.hasAttribute('av')) {
-    //   this.setAttribute('av', 's');
-    // }
 
     render(this.shadow, this.render);
   }
