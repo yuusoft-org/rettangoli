@@ -11,21 +11,27 @@
 <body>
     <rtgl-view d="h" bgc="su" flex="1">
         <rtgl-view d="v" bgc="su" flex="1" p="l">
+            <rtgl-text s="tl" c="on-su"> Direction Default</rtgl-text>
+
+            <rtgl-view g="m">
+                <rtgl-view h-cur="p" wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
+            </rtgl-view>
             <rtgl-text s="tl" c="on-su"> Direction Vertical</rtgl-text>
 
-            <rtgl-view d="v">
+            <rtgl-view d="v" g="m">
                 <rtgl-view h-cur="p" wh="48" bgc="isu"></rtgl-view>
-                <rtgl-view mt="s" wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
             </rtgl-view>
 
             <rtgl-text s="tl" c="on-su">Direction Horizontal</rtgl-text>
-            <rtgl-view d="h">
+            <rtgl-view g="m" d="h">
                 <rtgl-view wh="48" bgc="isu"></rtgl-view>
-                <rtgl-view ml="s" wh="48" bgc="isu"></rtgl-view>
+                <rtgl-view wh="48" bgc="isu"></rtgl-view>
             </rtgl-view>
 
             <rtgl-text s="tl" c="on-su"> Background Color</rtgl-text>
-            <rtgl-view>
+            <rtgl-view d="h" g="m">
                 <rtgl-view wh="48" bgc="isu">
                     <rtgl-text c="i-on-su">
                         is
@@ -114,7 +120,7 @@
             </rtgl-view>
 
             <rtgl-text s="tl" c="on-su"> Border Radius </rtgl-text>
-            <rtgl-view d="h" g="m">
+            <rtgl-view d="h" g="m" fw="w">
                 <rtgl-view w="120" h="120" bgc="isu" br="xs">
                 </rtgl-view>
                 <rtgl-view w="120" h="120" bgc="isu" br="s">

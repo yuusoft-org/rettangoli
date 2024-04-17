@@ -60,6 +60,12 @@ class RettangoliView extends HTMLElement {
     return ['key', 'wh', 'w', 'h', 'hidden'];
   }
 
+  connectedCallback() {
+    if (!this.hasAttribute('d')) {
+      this.setAttribute('d', 'h'); 
+    }
+  }
+
   attributeChangedCallback(name, oldValue, newValue) {
     const wh = this.getAttribute('wh');
     const width = dimensionWithUnit(wh === null ? this.getAttribute('w') : wh);
@@ -67,9 +73,13 @@ class RettangoliView extends HTMLElement {
     const widthCss = width ? `width: ${width}; min-width: ${width}; max-width: ${width};` : '';
     const heightCss = height? `height: ${height}; min-height: ${height}; max-height: ${height};` : '';
     const displayNone = this.hasAttribute('hidden') ? `display: none;` : ''
-
+    
     let customStyle = `${widthCss} ${heightCss} ${displayNone}`
     this.style = customStyle;
+
+    if (!this.hasAttribute('d')) {
+      this.setAttribute('d', 'h'); 
+    }
 
     render(this.shadow, this.render);
   }

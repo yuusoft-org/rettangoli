@@ -32,6 +32,7 @@ The `rtgl-view` component offers a variety of attributes for extensive customiza
 | `d`       | [Direction](#direction)               | `h`, `v`                                                              |
 | `ah`      | [Align Horizontal](#alignment)        | `s`, `c`, `e`                                                         |
 | `av`      | [Align Vertical](#alignment)          | `s`, `c`, `e`                                                         |
+| `as`      | [Align Self](#alignment)              | `sch`, `s`, `c`, `e`                                                  |
 | `f`       | [Flex](#flex)                         | `1`, `0`                                                              |
 | `fw`      | [Flex Wrap](#flex-wrap)               | `w`                                                                   |
 | `g`       | [Flex Gap](#flex-gap)                 | `xs`, `s`, `m`, `l`, `xl`                                             |
@@ -112,6 +113,7 @@ Can also use other units
 | --------- | ---------------- | ------------------------------ |
 | `ah`     | Align Horizontal  | Horizontally align child items |
 | `av`     | Align Vertical    | Vertically align child items   |
+| `as`     | Align Self        | How to align self   |
 
 #### Values
 
@@ -121,6 +123,14 @@ Can also use other units
 | `s` | start     |         |
 | `c` | center    |         |
 | `e` | end       |         |
+
+
+Only available for Align Self
+
+| Value | Meaning | Default |
+| ----- | ------- | ------- |
+| `sch`  | Stretch |        |
+
 
 #### Examples
 
@@ -399,6 +409,7 @@ The `rtgl-button` provides basic styling for buttons
 | --------- | ------------------------------------  | ----------------------------------------------------------------------- |
 | `t`       | [Type](#type)                         | `p`, `pl`, `ps`, `s`, `sl`, `ss`, `e`, `el`                             |
 | `f`       | [Flex](#flex)                         | `1`, `0`                                                              |
+| `as`      | [Align Self](#alignment)              | `sch`, `s`, `c`, `e`                                                  |
 | `m`       | [Margin](#margin)                     | `xs`, `s`, `m`, `l`, `xl`                                             |
 | `mh`      | [Margin Horizontal](#margin)          | `xs`, `s`, `m`, `l`, `xl`                                             |
 | `mv`      | [Margin Vertical](#margin)            | `xs`, `s`, `m`, `l`, `xl`                                             |
@@ -440,6 +451,7 @@ The `rtgl-text` provides text in standard sizes and colors
 | `s`       | [Size](#size)                         | `dm`, `hm`, `tl`, `tm`, `ts`, `bl`, `bm`, `bs`, `ll`, `lm`                       |
 | `c`       | [Color](#color)                       | `on-p`, `on-pc`, `on-s` , `on-sc`, `on-su`, `on-suv`, `i-on-s`, `on-e`, `on-ec`  |
 | `f`       | [Flex](#flex)                         | `1`, `0`                                                                         |
+| `as`      | [Align Self](#alignment)              | `sch`, `s`, `c`, `e`                                                  |
 | `m`       | [Margin](#margin)                     | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `mh`      | [Margin Horizontal](#margin)          | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `mv`      | [Margin Vertical](#margin)            | `xs`, `s`, `m`, `l`, `xl`                                                        |
@@ -517,6 +529,7 @@ Displays images
 | `src`     | [Source](#source)                     | custom                                             |
 | `of`      | [Object Fit](#object-fit)             | `cov`, `con`                                       |
 | `f`       | [Flex](#flex)                         | `1`, `0`                                                                         |
+| `as`      | [Align Self](#alignment)              | `sch`, `s`, `c`, `e`                                                  |
 | `m`       | [Margin](#margin)                     | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `mh`      | [Margin Horizontal](#margin)          | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `mv`      | [Margin Vertical](#margin)            | `xs`, `s`, `m`, `l`, `xl`                                                        |
@@ -573,6 +586,7 @@ TODO
 | `svg`     | [SVG](#svg)                           | custom                                             |
 | `f`       | [Flex](#flex)                         | `1`, `0`                                                                         |
 | `m`       | [Margin](#margin)                     | `xs`, `s`, `m`, `l`, `xl`                                                        |
+| `as`      | [Align Self](#alignment)              | `sch`, `s`, `c`, `e`                                                  |
 | `mh`      | [Margin Horizontal](#margin)          | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `mv`      | [Margin Vertical](#margin)            | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `mt`      | [Margin Top](#margin)                 | `xs`, `s`, `m`, `l`, `xl`                                                        |
