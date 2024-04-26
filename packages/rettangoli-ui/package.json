@@ -1,6 +1,6 @@
 {
   "name": "rettangoli-ui",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A UI component library for building web interfaces.",
   "main": "dist/rettangoli-ui.min.js",
   "files": [
