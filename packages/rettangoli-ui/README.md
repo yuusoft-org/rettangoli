@@ -462,6 +462,9 @@ The `rtgl-text` provides text in standard sizes and colors
 | `mb`      | [Margin Bottom](#margin)              | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `ml`      | [Margin Left](#margin)                | `xs`, `s`, `m`, `l`, `xl`                                                        |
 | `h-cur`   | [Hover Cursor](#hover-cursor)         | `p` |
+| `href`    | `href`        | same as html <a> |
+| `target`  | `target`      | same as html <a> |
+
 
 
 ### Size

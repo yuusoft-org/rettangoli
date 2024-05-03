@@ -6,32 +6,79 @@ import cursorStyles from "../styles/cursorStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
+
+
+
 :host([c="on-p"]) slot {
   color: var(--color-on-primary);
 }
+:host([c="on-p"]) a {
+  text-decoration: underline;
+  text-decoration-color: var(--color-on-primary);
+}
+
 :host([c="on-pc"]) slot {
   color: var(--color-on-primary-container);
 }
+:host([c="on-pc"]) a {
+  text-decoration: underline;
+  text-decoration-color: var(--color-on-primary-container);
+}
+
 :host([c="on-s"]) slot {
   color: var(--color-on-secondary);
 }
+:host([c="on-s"]) a {
+  text-decoration: underline;
+  text-decoration-color: var(--color-on-secondary);
+}
+
 :host([c="on-sc"]) slot {
   color: var(--color-on-secondary-container);
 }
+:host([c="on-sc"]) a {
+  text-decoration: underline;
+  text-decoration-color: var(--color-on-secondary-container);
+}
+
 :host([c="on-su"]) slot {
   color: var(--color-on-surface);
 }
+:host([c="on-su"]) a {
+  text-decoration: underline;
+  text-decoration-color: var(--color-on-surface);
+}
+
 :host([c="on-suv"]) slot {
   color: var(--color-on-surface-variant);
 }
+:host([c="on-suv"]) a {
+  text-decoration: underline;
+  text-decoration-color: var(--color-on-surface-variant);
+}
+
 :host([c="i-on-su"]) slot {
   color: var(--color-inverse-on-surface);
 }
+:host([c="i-on-su"]) a {
+  text-decoration: underline;
+  text-decoration-color: var(--color-inverse-on-surface);
+}
+
 :host([c="on-e"]) slot {
   color: var(--color-on-error);
 }
+:host([c="on-e"]) a {
+  text-decoration: underline;
+  text-decoration-color: var(--color-on-error);
+}
+
 :host([c="on-ec"]) slot {
   color: var(--color-on-error-container);
+}
+:host([c="on-ec"]) a {
+  text-decoration: underline;
+  text-decoration-color: var(--color-on-error-container);
 }
 
 :host([s="dm"]) slot {
@@ -104,6 +151,8 @@ styleSheet.replaceSync(css`
   letter-spacing: var(--typography-label-m-letter-spacing);
 }
 
+
+
 ${marginStyles}
 ${flexChildStyles}
 ${cursorStyles}
@@ -112,20 +161,33 @@ ${cursorStyles}
 class RettangoliText extends HTMLElement {
   constructor() {
     super();
-    const shadow = this.attachShadow({ mode: "closed" });
-    shadow.adoptedStyleSheets = [styleSheet];
-    render(shadow, this.render);
+    this.shadow = this.attachShadow({ mode: "closed" });
+    this.shadow.adoptedStyleSheets = [styleSheet];
   }
 
   static get observedAttributes() {
     return ['key'];
   }
 
+  connectedCallback() {
+    render(this.shadow, this.render);
+  }
+
+
   attributeChangedCallback(name, oldValue, newValue) {
     render(this.shadow, this.render);
   }
 
-  render() {
+  render = () => {
+    const href = this.getAttribute('href');
+
+    if (href) {
+      return html`
+        <a href=${this.getAttribute('href')} target=${this.getAttribute('target')}>
+          <slot></slot>
+        </a>
+      `;
+    }
     return html`
       <slot></slot>
     `;

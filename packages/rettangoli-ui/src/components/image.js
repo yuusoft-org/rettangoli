@@ -47,13 +47,14 @@ class RettangoliImage extends HTMLElement {
     super();
     this.shadow = this.attachShadow({ mode: "closed" });
     this.shadow.adoptedStyleSheets = [styleSheet];
-    setTimeout(() => {
-      render(this.shadow, this.render);
-    })
   }
 
   static get observedAttributes() {
     return ['key', 'src', 'wh', 'w', 'h', 'of'];
+  }
+
+  connectedCallback() {
+    render(this.shadow, this.render);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {

@@ -72,9 +72,6 @@ class RettangoliSvg extends HTMLElement {
     super();
     this.shadow = this.attachShadow({ mode: "closed" });
     this.shadow.adoptedStyleSheets = [styleSheet];
-    setTimeout(() => {
-        this.render();
-    })
   }
 
   static _icons = {};
@@ -89,6 +86,10 @@ class RettangoliSvg extends HTMLElement {
 
   static addIcon(iconName, icon) {
     RettangoliSvg._icons[iconName] = icon;
+  }
+
+  connectedCallback() {
+    this.render();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
