@@ -7,12 +7,11 @@ import cursorStyles from "../styles/cursorStyles.js";
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
 
-
-
 :host([c="on-p"]) slot {
   color: var(--color-on-primary);
 }
-:host([c="on-p"]) a {
+:host([c="on-p"]) ::slotted(a) {
+  color: var(--color-on-primary);
   text-decoration: underline;
   text-decoration-color: var(--color-on-primary);
 }
@@ -20,7 +19,8 @@ styleSheet.replaceSync(css`
 :host([c="on-pc"]) slot {
   color: var(--color-on-primary-container);
 }
-:host([c="on-pc"]) a {
+:host([c="on-pc"]) ::slotted(a) {
+  color: var(--color-on-primary-container);
   text-decoration: underline;
   text-decoration-color: var(--color-on-primary-container);
 }
@@ -28,7 +28,8 @@ styleSheet.replaceSync(css`
 :host([c="on-s"]) slot {
   color: var(--color-on-secondary);
 }
-:host([c="on-s"]) a {
+:host([c="on-s"]) ::slotted(a) {
+  color: var(--color-on-secondary);
   text-decoration: underline;
   text-decoration-color: var(--color-on-secondary);
 }
@@ -36,7 +37,8 @@ styleSheet.replaceSync(css`
 :host([c="on-sc"]) slot {
   color: var(--color-on-secondary-container);
 }
-:host([c="on-sc"]) a {
+:host([c="on-sc"]) ::slotted(a) {
+  color: var(--color-on-secondary-container);
   text-decoration: underline;
   text-decoration-color: var(--color-on-secondary-container);
 }
@@ -44,7 +46,8 @@ styleSheet.replaceSync(css`
 :host([c="on-su"]) slot {
   color: var(--color-on-surface);
 }
-:host([c="on-su"]) a {
+:host([c="on-su"]) ::slotted(a) {
+  color: var(--color-on-surface);
   text-decoration: underline;
   text-decoration-color: var(--color-on-surface);
 }
@@ -52,7 +55,8 @@ styleSheet.replaceSync(css`
 :host([c="on-suv"]) slot {
   color: var(--color-on-surface-variant);
 }
-:host([c="on-suv"]) a {
+:host([c="on-suv"]) ::slotted(a) {
+  color: var(--color-on-surface-variant);
   text-decoration: underline;
   text-decoration-color: var(--color-on-surface-variant);
 }
@@ -60,7 +64,8 @@ styleSheet.replaceSync(css`
 :host([c="i-on-su"]) slot {
   color: var(--color-inverse-on-surface);
 }
-:host([c="i-on-su"]) a {
+:host([c="i-on-su"]) ::slotted(a) {
+  color: var(--color-inverse-on-surface);
   text-decoration: underline;
   text-decoration-color: var(--color-inverse-on-surface);
 }
@@ -68,7 +73,8 @@ styleSheet.replaceSync(css`
 :host([c="on-e"]) slot {
   color: var(--color-on-error);
 }
-:host([c="on-e"]) a {
+:host([c="on-e"]) ::slotted(a) {
+  color: var(--color-on-error);
   text-decoration: underline;
   text-decoration-color: var(--color-on-error);
 }
@@ -76,7 +82,8 @@ styleSheet.replaceSync(css`
 :host([c="on-ec"]) slot {
   color: var(--color-on-error-container);
 }
-:host([c="on-ec"]) a {
+:host([c="on-ec"]) ::slotted(a) {
+  color: var(--color-on-error-container);
   text-decoration: underline;
   text-decoration-color: var(--color-on-error-container);
 }
@@ -150,9 +157,6 @@ styleSheet.replaceSync(css`
   line-height: var(--typography-label-m-line-height);
   letter-spacing: var(--typography-label-m-letter-spacing);
 }
-
-
-
 ${marginStyles}
 ${flexChildStyles}
 ${cursorStyles}
@@ -173,21 +177,11 @@ class RettangoliText extends HTMLElement {
     render(this.shadow, this.render);
   }
 
-
   attributeChangedCallback(name, oldValue, newValue) {
     render(this.shadow, this.render);
   }
 
   render = () => {
-    const href = this.getAttribute('href');
-
-    if (href) {
-      return html`
-        <a href=${this.getAttribute('href')} target=${this.getAttribute('target')}>
-          <slot></slot>
-        </a>
-      `;
-    }
     return html`
       <slot></slot>
     `;
