@@ -91,9 +91,32 @@ button:hover {
   border-color: var(--color-error-active);
 }
 
+:host([t="ns"]) button,
+:host([t="n"]) button,
+:host([t="nl"]) button {
+  color: var(--color-on-surface);
+  border-color: var(--color-surface-container);
+  background-color: var(--color-surface-container);
+}
+
+:host([t="ns"]) button:hover,
+:host([t="n"]) button:hover,
+:host([t="nl"]) button:hover {
+  background-color: var(--color-surface-container-high);
+  border-color: var(--color-surface-container-high);
+}
+
+:host([t="ns"]) button:active,
+:host([t="n"]) button:active,
+:host([t="nl"]) button:active {
+  background-color: var(--color-surface-container-high);
+  border-color: var(--color-surface-container-high);
+}
+
 :host([t="ps"]) button,
 :host([t="ss"]) button,
-:host([t="es"]) button {
+:host([t="es"]) button,
+:host([t="ns"]) button {
   padding-top: 4px;
   padding-bottom: 4px;
   padding-left: 6px;
@@ -104,7 +127,8 @@ button:hover {
 
 :host([t="p"]) button,
 :host([t="s"]) button,
-:host([t="e"]) button {
+:host([t="e"]) button,
+:host([t="n"]) button {
   padding-top: 3px;
   padding-bottom: 3px;
   padding-left: 12px;
@@ -115,7 +139,8 @@ button:hover {
 
 :host([t="pl"]) button,
 :host([t="sl"]) button,
-:host([t="el"]) button {
+:host([t="el"]) button,
+:host([t="nl"]) button {
   padding-top: 5px;
   padding-bottom: 5px;
   padding-left: 16px;

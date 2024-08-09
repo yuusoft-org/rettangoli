@@ -409,7 +409,7 @@ The `rtgl-button` provides basic styling for buttons
 
 | Attribute | Meaning                               | Values                                                                  |
 | --------- | ------------------------------------  | ----------------------------------------------------------------------- |
-| `t`       | [Type](#type)                         | `p`, `pl`, `ps`, `s`, `sl`, `ss`, `e`, `el`                             |
+| `t`       | [Type](#type)                         | `p`, `pl`, `ps`, `s`, `sl`, `ss`, `e`, `el`, `n`, `nl`, `ns`            |
 | `f`       | [Flex](#flex)                         | `1`, `0`                                                              |
 | `as`      | [Align Self](#alignment)              | `sch`, `s`, `c`, `e`                                                  |
 | `m`       | [Margin](#margin)                     | `xs`, `s`, `m`, `l`, `xl`                                             |
@@ -442,6 +442,9 @@ The `rtgl-button` provides basic styling for buttons
 | `e`    | Error                  |
 | `el`   | Error Large            |
 | `es`   | Error Small            |
+| `e`    | Neutral                |
+| `el`   | Neutral Large          |
+| `es`   | Neutral Small          |
 
 
 ## rtgl-text
