@@ -2,46 +2,49 @@
 import { css } from '../common.js'
 
 export default css`
-  :host([d="h"]) slot {
+  :host([d="h"]) {
     flex-direction: row;
   }
-  :host([d="v"]) slot {
+  :host(:not([d])) {
     flex-direction: column;
   }
-  :host([d="h"][ah="s"]) slot {
+  :host([d="h"]:not([ah])) {
     justify-content: flex-start;
   }
-  :host([d="h"][ah="c"]) slot {
+  :host([d="h"][ah="c"]) {
     justify-content: center;
   }
-  :host([d="h"][ah="e"]) slot {
+  :host([d="h"][ah="e"]) {
     justify-content: flex-end;
   }
-  :host([d="h"][av="s"]) slot {
+  :host([d="h"]:not([av])) {
     align-items: flex-start;
   }
-  :host([d="h"][av="c"]) slot {
+  :host([d="h"][av="c"]) {
     align-items: center;
+    align-content: center;
   }
-  :host([d="h"][av="e"]) slot {
+  :host([d="h"][av="e"]) {
     align-items: flex-end;
+    align-content: flex-end;
   }
-  :host([d="v"][ah="s"]) slot {
+  :host(:not([d]):not([ah])) {
     align-items: flex-start;
   }
-  :host([d="v"][ah="c"]) slot {
+  :host(:not([d])[ah="c"]) {
     align-items: center;
   }
-  :host([d="v"][ah="e"]) slot {
+  :host(:not([d])[ah="e"]) {
     align-items: flex-end;
   }
-  :host([d="v"][av="s"]) slot {
+  :host(:not([d]):not([av])) {
     justify-content: flex-start;
   }
-  :host([d="v"][av="c"]) slot {
+  :host(:not([d])[av="c"]) {
     justify-content: center;
   }
-  :host([d="v"][av="e"]) slot {
+  :host(:not([d])[av="e"]) {
     justify-content: flex-end;
   }
+
 `

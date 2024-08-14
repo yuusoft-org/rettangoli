@@ -35,6 +35,12 @@ export default css`
   :host([bgc="isu"]) {
     background-color: var(--color-inverse-surface);
   }
+  :host([bgc="o"]) {
+    background-color: var(--color-outline);
+  }
+  :host([bgc="ov"]) {
+    background-color: var(--color-outline-variant);
+  }
   :host([h-bgc="p"]:hover) {
     background-color: var(--color-primary);
   }
@@ -68,4 +74,11 @@ export default css`
   :host([h-bgc="isu"]:hover) {
     background-color: var(--color-inverse-surface);
   }
+  :host([h-bgc="o"]:hover) {
+    background-color: var(--color-outline);
+  }
+  :host([h-bgc="ov"]:hover) {
+    background-color: var(--color-outline-variant);
+  }
+
 `

@@ -2,49 +2,49 @@
 import { css } from '../common.js'
 
 export default css`
-:host([g="xs"]) slot {
+:host([g="xs"]) {
   gap: var(--spacing-xs);
 }
-:host([g="s"]) slot {
+:host([g="s"]) {
   gap: var(--spacing-s);
 }
-:host([g="m"]) slot {
+:host([g="m"]) {
   gap: var(--spacing-m);
 }
-:host([g="l"]) slot {
+:host([g="l"]) {
   gap: var(--spacing-l);
 }
-:host([g="xl"]) slot {
+:host([g="xl"]) {
   gap: var(--spacing-xl);
 }
-:host([gv="xs"]) slot {
+:host([gv="xs"]) {
   row-gap: var(--spacing-xs);
 }
-:host([gv="s"]) slot {
+:host([gv="s"]) {
   row-gap: var(--spacing-s);
 }
-:host([gv="m"]) slot {
+:host([gv="m"]) {
   row-gap: var(--spacing-m);
 }
-:host([gv="l"]) slot {
+:host([gv="l"]) {
   row-gap: var(--spacing-l);
 }
-:host([gv="xl"]) slot {
+:host([gv="xl"]) {
   row-gap: var(--spacing-xl);
 }
-:host([gh="xs"]) slot {
+:host([gh="xs"]) {
   column-gap: var(--spacing-xs);
 }
-:host([gh="s"]) slot {
+:host([gh="s"]) {
   column-gap: var(--spacing-s);
 }
-:host([gh="m"]) slot {
+:host([gh="m"]) {
   column-gap: var(--spacing-m);
 }
-:host([gh="l"]) slot {
+:host([gh="l"]) {
   column-gap: var(--spacing-l);
 }
-:host([gh="xl"]) slot {
+:host([gh="xl"]) {
   column-gap: var(--spacing-xl);
 }
 `;
