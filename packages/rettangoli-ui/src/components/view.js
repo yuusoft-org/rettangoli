@@ -10,6 +10,7 @@ import borderRadiusStyles from "../styles/borderRadiusStyles.js";
 import borderStyles from "../styles/borderStyles.js";
 import positionStyles from "../styles/positionStyles.js";
 import shadowStyle from "../styles/shadowStyle.js";
+import scrollStyle from "../styles/scrollStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
@@ -21,10 +22,12 @@ styleSheet.replaceSync(css`
   border-style: solid;
   border-width: 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 slot {
   display: contents;
 }
+${scrollStyle}
 ${shadowStyle}
 ${positionStyles}
 ${borderStyles}
