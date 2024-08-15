@@ -85,6 +85,16 @@ class RettangoliView extends HTMLElement {
     const wh = this.getAttribute('wh');
     const width = dimensionWithUnit(wh === null ? this.getAttribute('w') : wh);
     const height = dimensionWithUnit(wh === null ? this.getAttribute('h') : wh);
+    const opacity = this.getAttribute('o');
+    const zIndex = this.getAttribute('z');
+
+    if (zIndex !== null) {
+      this.style.zIndex = zIndex;
+    }
+
+    if (opacity !== null) {
+      this.style.opacity = opacity;
+    }
 
     if (width === 'f') {
       this.style.width = '100%';
