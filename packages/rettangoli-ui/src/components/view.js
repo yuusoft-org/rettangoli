@@ -5,10 +5,11 @@ import paddingStyles from '../styles/paddingStyles.js'
 import marginStyles from "../styles/marginStyles.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
 import backgroundColorStyles from "../styles/backgroundColorStyles.js";
-import flexChildStyles from "../styles/flexChildStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import borderRadiusStyles from "../styles/borderRadiusStyles.js";
 import borderStyles from "../styles/borderStyles.js";
+import positionStyles from "../styles/positionStyles.js";
+import shadowStyle from "../styles/shadowStyle.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
@@ -21,12 +22,12 @@ styleSheet.replaceSync(css`
   border-width: 0;
   box-sizing: border-box;
 }
-
 slot {
   display: contents;
 }
+${shadowStyle}
+${positionStyles}
 ${borderStyles}
-${flexChildStyles}
 ${flexDirectionStyles}
 ${flexGapStyles}
 ${backgroundColorStyles}
@@ -37,6 +38,9 @@ ${borderRadiusStyles}
 `);
 
 function endsWithDigit(inputValue) {
+  if (inputValue === null) {
+    return false
+  }
   if (inputValue.includes('/')) {
     return false;
   }
@@ -81,11 +85,6 @@ class RettangoliView extends HTMLElement {
     const wh = this.getAttribute('wh');
     const width = dimensionWithUnit(wh === null ? this.getAttribute('w') : wh);
     const height = dimensionWithUnit(wh === null ? this.getAttribute('h') : wh);
-    // const widthCss = width ? `width: ${width}; min-width: ${width}; max-width: ${width};` : '';
-    // const heightCss = height? `height: ${height}; min-height: ${height}; max-height: ${height};` : '';
-    // const displayNone = this.hasAttribute('hidden') ? `display: none;` : ''
-
-    // let customStyle = `${widthCss} ${heightCss} ${displayNone}`
 
     if (width === 'f') {
       this.style.width = '100%';
