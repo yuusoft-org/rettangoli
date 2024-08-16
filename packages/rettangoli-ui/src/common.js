@@ -92,5 +92,12 @@ const dimensionWithUnit = (dimension) => {
   return dimension;
 };
 
+const spacing = {
+  xs: "--spacing-xs",
+  s: "--spacing-s",
+  m: "--spacing-m",
+  l: "--spacing-l",
+  xl: "--spacing-xl",
+};
 
-export { css, generateCSS, dimensionWithUnit };
+export { css, generateCSS, dimensionWithUnit, spacing };

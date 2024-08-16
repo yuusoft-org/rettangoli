@@ -1,42 +1,37 @@
 import { render, html } from "https://unpkg.com/uhtml";
-import { css } from '../common.js'
-import flexChildStyles from "../styles/flexChildStyles.js";
+import { css, dimensionWithUnit } from '../common.js'
 import cursorStyles from "../styles/cursorStyles.js";
+import marginStyles from "../styles/marginStyles.js";
+import viewStyles from "../styles/viewStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
 :host {
-  display: flex;
+  border-style: solid;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-width: 0;
 }
-:host([of="contain"]) img {
+slot {
+  display: contents;
+}
+:host([of="con"]) img {
   object-fit: contain;
 }
-:host([of="cover"]) img {
+:host([of="cov"]) img {
   object-fit: cover;
 }
-img {
-  flex: 1;
+:host([of="none"]) img {
+  object-fit: none;
 }
-${flexChildStyles}
+img {
+  height: 100%;
+  width: 100%;
+}
+${viewStyles}
+${marginStyles}
 ${cursorStyles}
 `)
-
-function endsWithDigit(inputValue) {
-  // Convert the input value to a string if it's not already one.
-  const inputStr = String(inputValue);
-  // Check if the last character of the string is a digit.
-  return /[0-9]$/.test(inputStr);
-}
-
-const dimensionWithUnit = (dimension) => {
-  if (dimension === undefined) {
-    return;
-  }
-  if (endsWithDigit(dimension)) {
-    return `${dimension}px`;
-  }
-  return dimension;
-}
 
 class RettangoliImage extends HTMLElement {
   constructor() {
@@ -45,8 +40,10 @@ class RettangoliImage extends HTMLElement {
     this.shadow.adoptedStyleSheets = [styleSheet];
   }
 
+  _image = {}
+
   static get observedAttributes() {
-    return ['key', 'src', 'wh', 'w', 'h', 'of'];
+    return ["key", "src", "wh", "w", "h", "hidden", "height", "width"];
   }
 
   connectedCallback() {
@@ -54,15 +51,35 @@ class RettangoliImage extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    const wh = this.getAttribute('wh');
-    const width = dimensionWithUnit(wh === null ? this.getAttribute('w') : wh);
-    const height = dimensionWithUnit(wh === null ? this.getAttribute('h') : wh);
-    const widthCss = width ? `width: ${width}; min-width: ${width}; max-width: ${width};` : '';
-    const heightCss = height? `height: ${height}; min-height: ${height}; max-height: ${height};` : '';
-    const displayNone = this.hasAttribute('hidden') ? `display: none;` : ''
+    const wh = this.getAttribute("wh");
+    const width = dimensionWithUnit(wh === null ? this.getAttribute("w") : wh);
+    const height = dimensionWithUnit(wh === null ? this.getAttribute("h") : wh);
+    const opacity = this.getAttribute("o");
+    const zIndex = this.getAttribute("z");
 
-    let customStyle = `${widthCss} ${heightCss} ${displayNone}`
-    this.style = customStyle;
+    if (zIndex !== null) {
+      this._image.current.style.zIndex = zIndex;
+    }
+
+    if (opacity !== null) {
+      this._image.current.style.opacity = opacity;
+    }
+
+    if (width === "f") {
+      this.style.width = "100%";
+    } else if (width !== undefined) {
+      this.style.width = width;
+      this.style.minWidth = width;
+      this.style.maxWidth = width;
+    }
+
+    if (height === "f") {
+      this.style.height = "100%";
+    } else if (height !== undefined) {
+      this.style.height = height;
+      this.style.minHeight = height;
+      this.style.maxHeight = height;
+    }
 
     render(this.shadow, this.render);
   }
@@ -70,9 +87,10 @@ class RettangoliImage extends HTMLElement {
   render = () => {
     return html`
       <img
+        ref=${this._image}
         src="${this.getAttribute('src')}"
-        width="${this.getAttribute('w')}"
-        height="${this.getAttribute('h')}"
+        width="${this.getAttribute('width')}"
+        height="${this.getAttribute('height')}"
       >
     `;
   }

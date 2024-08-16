@@ -1,15 +1,17 @@
 import { render, html } from "https://unpkg.com/uhtml";
 import { css, dimensionWithUnit } from "../common.js";
-import flexChildStyles from "../styles/flexChildStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import textStyles from "../styles/textStyles.js";
+import marginStyles from "../styles/marginStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
+:host {
+  display: block;
+}
 slot {
   display: contents;
 }
-${textStyles}
 :host ::slotted(a) {
   text-decoration: var(--anchor-text-decoration);
   color: var(--anchor-color);
@@ -18,7 +20,8 @@ ${textStyles}
   text-decoration: var(--anchor-text-decoration-hover);
   color: var(--anchor-color-hover);
 }
-${flexChildStyles}
+${textStyles}
+${marginStyles}
 ${cursorStyles}
 `);
 

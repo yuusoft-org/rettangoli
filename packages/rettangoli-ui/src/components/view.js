@@ -4,6 +4,7 @@ import flexDirectionStyles from "../styles/flexDirectionStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import scrollStyle from "../styles/scrollStyles.js";
 import stylesGenerator from "../styles/viewStyles.js";
+import marginStyles from "../styles/marginStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
@@ -22,8 +23,9 @@ styleSheet.replaceSync(css`
   }
   ${scrollStyle}
   ${flexDirectionStyles}
-${cursorStyles}
-${stylesGenerator}
+  ${marginStyles}
+  ${cursorStyles}
+  ${stylesGenerator}
 `);
 
 class RettangoliView extends HTMLElement {
