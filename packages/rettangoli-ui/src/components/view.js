@@ -1,5 +1,5 @@
 import { render, html } from "https://unpkg.com/uhtml";
-import { css } from "../common.js";
+import { css, dimensionWithUnit } from "../common.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import scrollStyle from "../styles/scrollStyles.js";
@@ -25,38 +25,6 @@ styleSheet.replaceSync(css`
 ${cursorStyles}
 ${stylesGenerator}
 `);
-
-function endsWithDigit(inputValue) {
-  if (inputValue === null) {
-    return false;
-  }
-  if (inputValue.includes("/")) {
-    return false;
-  }
-  // Convert the input value to a string if it's not already one.
-  const inputStr = String(inputValue);
-  // Check if the last character of the string is a digit.
-  return /[0-9]$/.test(inputStr);
-}
-
-const endsWithPercentage = (inputStr) => {
-  return /%$/.test(inputStr);
-};
-
-const dimensionWithUnit = (dimension) => {
-  if (dimension === undefined) {
-    return;
-  }
-
-  if (endsWithPercentage(dimension)) {
-    return dimension;
-  }
-
-  if (endsWithDigit(dimension)) {
-    return `${dimension}px`;
-  }
-  return dimension;
-};
 
 class RettangoliView extends HTMLElement {
   constructor() {

@@ -1,7 +1,6 @@
 import { generateCSS } from "../common.js";
 
 const styleMap = {
-  bgc: "background-color",
   pos: "position",
   shadow: "box-shadow",
   pt: "padding-top",
@@ -32,19 +31,56 @@ const styleMap = {
 
 const styles = {
   bgc: {
-    p: "--color-primary",
-    pc: "--color-primary-container",
-    s: "--color-secondary",
-    sc: "--color-secondary-container",
-    e: "--color-error",
-    ec: "--color-error-container",
-    su: "--color-surface",
-    sucl: "--color-surface-container-low",
-    suc: "--color-surface-container",
-    such: "--color-surface-container-high",
-    isu: "--color-inverse-surface",
-    o: "--color-outline",
-    ov: "--color-outline-variant",
+    p:  `
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+    `,
+    pc: `
+    background-color: var(--color-primary-container);
+    color: var(--color-on-primary-container);
+    `,
+    s: `
+    background-color: var(--color-secondary);
+    color: var(--color-on-secondary);
+    `,
+    sc: `
+    background-color: var(--color-secondary-container);
+    color: var(--color-on-secondary-container);
+    `,
+    e: `
+    background-color: var(--color-error);
+    color: var(--color-on-error);
+    `,
+    ec: `
+    background-color: var(--color-error-container);
+    color: var(--color-on-error-container);
+    `,
+    su: `
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    `,
+    sucl: `
+    background-color: var(--color-surface-container-low);
+    color: var(--color-on-surface);
+    `,
+    suc: `
+    background-color: var(--color-surface-container);
+    color: var(--color-on-surface);
+    `,
+    such: `
+    background-color: var(--color-surface-container-high);
+    color: var(--color-on-surface);
+    `,
+    isu: `
+    background-color: var(--color-inverse-surface);
+    color: var(--color-inverse-on-surface);
+    `,
+    o: `
+    background-color: var(--color-outline);
+    `,
+    ov: `
+    background-color: var(--color-outline-variant);
+    `,
   },
   pos: {
     rel: "relative",

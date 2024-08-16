@@ -59,4 +59,38 @@ const generateCSS = (styleMap, styles) => {
   return css;
 };
 
-export { css, generateCSS };
+
+function endsWithDigit(inputValue) {
+  if (inputValue === null) {
+    return false;
+  }
+  if (inputValue.includes("/")) {
+    return false;
+  }
+  // Convert the input value to a string if it's not already one.
+  const inputStr = String(inputValue);
+  // Check if the last character of the string is a digit.
+  return /[0-9]$/.test(inputStr);
+}
+
+const endsWithPercentage = (inputStr) => {
+  return /%$/.test(inputStr);
+};
+
+const dimensionWithUnit = (dimension) => {
+  if (dimension === undefined) {
+    return;
+  }
+
+  if (endsWithPercentage(dimension)) {
+    return dimension;
+  }
+
+  if (endsWithDigit(dimension)) {
+    return `${dimension}px`;
+  }
+  return dimension;
+};
+
+
+export { css, generateCSS, dimensionWithUnit };

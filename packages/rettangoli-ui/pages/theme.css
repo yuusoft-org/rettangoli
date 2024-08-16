@@ -60,6 +60,11 @@ body {
   --color-inverse-on-surface: #fff;
   --color-inverse-primary: #000;
 
+  --anchor-color: var(--color-primary);
+  --anchor-text-decoration: underline;
+  --anchor-color-hover: inherit;
+  --anchor-text-decoration-hover: underline;
+
   --shadow-s: 0px 2px 6px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
   --shadow-m: 0px 5px 12px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
   --shadow-l: 0px 10px 24px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
