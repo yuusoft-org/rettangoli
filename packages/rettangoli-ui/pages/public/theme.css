@@ -87,6 +87,18 @@ body {
   --border-radius-l: 16px;
   --border-radius-xl: 32px;
 
+  --button-height-s: 24px;
+  --button-height-m: 32px;
+  --button-height-l: 40px;
+
+  --button-border-radius-s: 2px;
+  --button-border-radius-m: 4px;
+  --button-border-radius-l: 4px;
+
+  --button-padding-horizontal-s: 8px;
+  --button-padding-horizontal-m: 16px;
+  --button-padding-horizontal-l: 16px;
+
   --font-size-xs: 12px;
   --font-size-s: 14px;
   --font-size-m: 16px;

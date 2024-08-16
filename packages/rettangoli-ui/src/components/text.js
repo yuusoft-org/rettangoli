@@ -2,6 +2,7 @@ import { render, html } from "https://unpkg.com/uhtml";
 import { css, dimensionWithUnit } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import textStyles from "../styles/textStyles.js";
+import textColorStyles from "../styles/textColorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 
 const styleSheet = new CSSStyleSheet();
@@ -21,6 +22,7 @@ slot {
   color: var(--anchor-color-hover);
 }
 ${textStyles}
+${textColorStyles}
 ${marginStyles}
 ${cursorStyles}
 `);
