@@ -1,5 +1,5 @@
 import { render, html } from "https://unpkg.com/uhtml";
-import { css } from '../common.js'
+import { css } from "../common.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import scrollStyle from "../styles/scrollStyles.js";
@@ -7,30 +7,30 @@ import stylesGenerator from "../styles/viewStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
-:host {
-  display: flex;
-  align-self: flex-start;
-  align-content: flex-start;
-  flex-wrap: wrap;
-  border-style: solid;
-  border-width: 0;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-slot {
-  display: contents;
-}
-${scrollStyle}
-${flexDirectionStyles}
+  :host {
+    display: flex;
+    align-self: flex-start;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    border-style: solid;
+    border-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  slot {
+    display: contents;
+  }
+  ${scrollStyle}
+  ${flexDirectionStyles}
 ${cursorStyles}
 ${stylesGenerator}
 `);
 
 function endsWithDigit(inputValue) {
   if (inputValue === null) {
-    return false
+    return false;
   }
-  if (inputValue.includes('/')) {
+  if (inputValue.includes("/")) {
     return false;
   }
   // Convert the input value to a string if it's not already one.
@@ -39,9 +39,9 @@ function endsWithDigit(inputValue) {
   return /[0-9]$/.test(inputStr);
 }
 
-const  endsWithPercentage = (inputStr) => {
+const endsWithPercentage = (inputStr) => {
   return /%$/.test(inputStr);
-}
+};
 
 const dimensionWithUnit = (dimension) => {
   if (dimension === undefined) {
@@ -56,7 +56,7 @@ const dimensionWithUnit = (dimension) => {
     return `${dimension}px`;
   }
   return dimension;
-}
+};
 
 class RettangoliView extends HTMLElement {
   constructor() {
@@ -67,15 +67,15 @@ class RettangoliView extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['key', 'wh', 'w', 'h', 'hidden'];
+    return ["key", "wh", "w", "h", "hidden"];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    const wh = this.getAttribute('wh');
-    const width = dimensionWithUnit(wh === null ? this.getAttribute('w') : wh);
-    const height = dimensionWithUnit(wh === null ? this.getAttribute('h') : wh);
-    const opacity = this.getAttribute('o');
-    const zIndex = this.getAttribute('z');
+    const wh = this.getAttribute("wh");
+    const width = dimensionWithUnit(wh === null ? this.getAttribute("w") : wh);
+    const height = dimensionWithUnit(wh === null ? this.getAttribute("h") : wh);
+    const opacity = this.getAttribute("o");
+    const zIndex = this.getAttribute("z");
 
     if (zIndex !== null) {
       this.style.zIndex = zIndex;
@@ -85,33 +85,31 @@ class RettangoliView extends HTMLElement {
       this.style.opacity = opacity;
     }
 
-    if (width === 'f') {
-      this.style.width = '100%';
+    if (width === "f") {
+      this.style.width = "100%";
     } else if (width !== undefined) {
       this.style.width = width;
       this.style.minWidth = width;
       this.style.maxWidth = width;
     }
 
-    if (height === 'f') {
-      this.style.height = '100%';
+    if (height === "f") {
+      this.style.height = "100%";
     } else if (height !== undefined) {
       this.style.height = height;
       this.style.minHeight = height;
       this.style.maxHeight = height;
     }
 
-    if (this.hasAttribute('hidden')) {
-      this.style.display = 'none';
+    if (this.hasAttribute("hidden")) {
+      this.style.display = "none";
     }
 
     render(this.shadow, this.render);
   }
 
   render = () => {
-    return html`
-      <slot></slot>
-    `;
+    return html` <slot></slot> `;
   };
 }
 

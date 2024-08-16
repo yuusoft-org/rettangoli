@@ -7,38 +7,55 @@ function css(strings, ...values) {
   return str;
 }
 
+const mediaQueries = {
+  none: undefined,
+  s: "@media only screen and (max-width: 640px)",
+};
+
 const generateCSS = (styleMap, styles) => {
   let css = "";
 
-  for (const [attr, values] of Object.entries(styles)) {
-    for (const [value, rule] of Object.entries(values)) {
-      const cssProperty = styleMap[attr];
-      const cssRule = rule.startsWith('--') ? `var(${rule})` : rule;
+  for (const [size, mediaQuery] of Object.entries(mediaQueries)) {
+    if (size !== "none") {
+      css += `${mediaQuery} {`;
+    }
+    for (const [attr, values] of Object.entries(styles)) {
+      for (const [value, rule] of Object.entries(values)) {
+        const cssProperty = styleMap[attr];
+        const cssRule = rule.startsWith("--") ? `var(${rule})` : rule;
 
-      if (cssProperty) {
-        // Attribute is mapped in styleMap
-        css += `
-          :host([${attr}="${value}"]) {
-            ${cssProperty}: ${cssRule};
-          }
-          :host([h-${attr}="${value}"]:hover) {
-            ${cssProperty}: ${cssRule};
-          }
-        `;
-      } else {
-        // Attribute is not mapped, handle directly
-        css += `
-          :host([${attr}="${value}"]) {
-            ${rule}
-          }
-          :host([h-${attr}="${value}"]:hover) {
-            ${rule}
-          }
-        `;
+        const attributeWithBreakpoint =
+          size === "none" ? attr : `${size}-${attr}`;
+        const hoverAttributeWithBreakpoint =
+          size === "none" ? `h-${attr}` : `${size}-h-${attr}`;
+
+        if (cssProperty) {
+          // Attribute is mapped in styleMap
+          css += `
+            :host([${attributeWithBreakpoint}="${value}"]) {
+              ${cssProperty}: ${cssRule};
+            }
+            :host([${hoverAttributeWithBreakpoint}="${value}"]:hover) {
+              ${cssProperty}: ${cssRule};
+            }
+          `;
+        } else {
+          // Attribute is not mapped, handle directly
+          css += `
+            :host([${attributeWithBreakpoint}="${value}"]) {
+              ${rule}
+            }
+            :host([${hoverAttributeWithBreakpoint}="${value}"]:hover) {
+              ${rule}
+            }
+          `;
+        }
       }
     }
+    if (size !== "none") {
+      css += `}`;
+    }
   }
-
   return css;
 };
 

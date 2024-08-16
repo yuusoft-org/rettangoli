@@ -1,7 +1,6 @@
 import { render, html } from "https://unpkg.com/uhtml";
 
 import { css } from "../common.js";
-import marginStyles from "../styles/marginStyles.js";
 import flexChildStyles from "../styles/flexChildStyles.js";
 
 const styleSheet = new CSSStyleSheet();
@@ -150,7 +149,6 @@ styleSheet.replaceSync(css`
     font-size: 16px;
   }
 
-  ${marginStyles}
   ${flexChildStyles}
 `);
 

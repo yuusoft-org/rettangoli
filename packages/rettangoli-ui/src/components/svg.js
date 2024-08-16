@@ -1,5 +1,4 @@
 import { css } from '../common.js'
-import marginStyles from "../styles/marginStyles.js";
 import flexChildStyles from "../styles/flexChildStyles.js";
 import paddingSvgStyles from "../styles/paddingSvgStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
@@ -45,7 +44,6 @@ styleSheet.replaceSync(css`
 }
 
 ${paddingSvgStyles}
-${marginStyles}
 ${flexChildStyles}
 ${cursorStyles}
 `)

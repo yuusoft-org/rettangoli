@@ -2,7 +2,6 @@ import { render, html } from "https://unpkg.com/uhtml";
 import { css } from "../common.js";
 import flexChildStyles from "../styles/flexChildStyles.js";
 import backgroundColorStyles from "../styles/backgroundColorStyles.js";
-import marginStyles from "../styles/marginStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
@@ -35,7 +34,6 @@ styleSheet.replaceSync(css`
   }
   ${flexChildStyles}
   ${backgroundColorStyles}
-${marginStyles}
 `);
 
 class RettangoliForm extends HTMLElement {
