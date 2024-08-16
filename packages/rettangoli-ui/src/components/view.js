@@ -1,16 +1,9 @@
 import { render, html } from "https://unpkg.com/uhtml";
 import { css } from '../common.js'
-import flexGapStyles from '../styles/flexGapStyles.js'
-import paddingStyles from '../styles/paddingStyles.js'
-import marginStyles from "../styles/marginStyles.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
-import backgroundColorStyles from "../styles/backgroundColorStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
-import borderRadiusStyles from "../styles/borderRadiusStyles.js";
-import borderStyles from "../styles/borderStyles.js";
-import positionStyles from "../styles/positionStyles.js";
-import shadowStyle from "../styles/shadowStyle.js";
 import scrollStyle from "../styles/scrollStyles.js";
+import stylesGenerator from "../styles/viewStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
@@ -28,16 +21,9 @@ slot {
   display: contents;
 }
 ${scrollStyle}
-${shadowStyle}
-${positionStyles}
-${borderStyles}
 ${flexDirectionStyles}
-${flexGapStyles}
-${backgroundColorStyles}
-${paddingStyles}
-${marginStyles}
 ${cursorStyles}
-${borderRadiusStyles}
+${stylesGenerator}
 `);
 
 function endsWithDigit(inputValue) {

@@ -1,8 +1,7 @@
-
-import { css } from '../common.js';
+import { css } from "../common.js";
 
 export default css`
-:host([bgc="p"]) {
+  :host([bgc="p"]) {
     background-color: var(--color-primary);
   }
   :host([bgc="pc"]) {
@@ -80,5 +79,4 @@ export default css`
   :host([h-bgc="ov"]:hover) {
     background-color: var(--color-outline-variant);
   }
-
-`
+`;

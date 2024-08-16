@@ -1,8 +1,8 @@
 
-const esbuild = require("esbuild");
-const httpPlugin = require("esbuild-plugin-http");
+import esbuild from "esbuild";
+import httpPlugin from "esbuild-plugin-http";
 
-module.exports = function (eleventyConfig) {
+export default function (eleventyConfig) {
   eleventyConfig.addWatchTarget("src/**/*.js");
   eleventyConfig.addPassthroughCopy('pages/**/*.css');
   eleventyConfig.addPassthroughCopy('pages/**/*.svg');

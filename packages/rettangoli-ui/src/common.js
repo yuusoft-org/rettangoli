@@ -7,4 +7,39 @@ function css(strings, ...values) {
   return str;
 }
 
-export { css };
+const generateCSS = (styleMap, styles) => {
+  let css = "";
+
+  for (const [attr, values] of Object.entries(styles)) {
+    for (const [value, rule] of Object.entries(values)) {
+      const cssProperty = styleMap[attr];
+      const cssRule = rule.startsWith('--') ? `var(${rule})` : rule;
+
+      if (cssProperty) {
+        // Attribute is mapped in styleMap
+        css += `
+          :host([${attr}="${value}"]) {
+            ${cssProperty}: ${cssRule};
+          }
+          :host([h-${attr}="${value}"]:hover) {
+            ${cssProperty}: ${cssRule};
+          }
+        `;
+      } else {
+        // Attribute is not mapped, handle directly
+        css += `
+          :host([${attr}="${value}"]) {
+            ${rule}
+          }
+          :host([h-${attr}="${value}"]:hover) {
+            ${rule}
+          }
+        `;
+      }
+    }
+  }
+
+  return css;
+};
+
+export { css, generateCSS };
