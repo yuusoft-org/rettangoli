@@ -1,7 +1,7 @@
-
-import { css } from '../common.js'
+import { css } from "../common.js";
 
 export default css`
+
   :host([d="h"]) {
     flex-direction: row;
   }
@@ -13,6 +13,7 @@ export default css`
   }
   :host([d="h"][ah="c"]) {
     justify-content: center;
+    /* align-content: center; */
   }
   :host([d="h"][ah="e"]) {
     justify-content: flex-end;
@@ -33,6 +34,7 @@ export default css`
   }
   :host(:not([d])[ah="c"]) {
     align-items: center;
+    align-content: center;
   }
   :host(:not([d])[ah="e"]) {
     align-items: flex-end;
@@ -46,5 +48,19 @@ export default css`
   :host(:not([d])[av="e"]) {
     justify-content: flex-end;
   }
-
-`
+  @media screen and (max-width: 640px) {
+    :host([s-d="v"]) {
+      flex-direction: column;
+    }
+    :host([s-d="h"]) {
+      flex-direction: row;
+    }
+    :host([s-d="h"][s-av="c"]) {
+      align-items: center;
+      align-content: center;
+    }
+    :host([s-d="v"][s-av="c"]) {
+      justify-content: center;
+    }
+  }
+`;

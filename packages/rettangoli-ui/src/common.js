@@ -8,51 +8,57 @@ function css(strings, ...values) {
 }
 
 const mediaQueries = {
-  none: undefined,
+  default: undefined,
   s: "@media only screen and (max-width: 640px)",
 };
 
-const generateCSS = (styleMap, styles) => {
+const generateCSS = (styleMap, styles, descendants = {}) => {
   let css = "";
 
   for (const [size, mediaQuery] of Object.entries(mediaQueries)) {
-    if (size !== "none") {
+    if (size !== "default") {
       css += `${mediaQuery} {`;
     }
     for (const [attr, values] of Object.entries(styles)) {
+      const dscendant = descendants[attr] ? ` ${descendants[attr]} ` : ' ';
       for (const [value, rule] of Object.entries(values)) {
-        const cssProperty = styleMap[attr];
+        const cssProperties = styleMap[attr];
         const cssRule = rule.startsWith("--") ? `var(${rule})` : rule;
 
         const attributeWithBreakpoint =
-          size === "none" ? attr : `${size}-${attr}`;
+          size === "default" ? attr : `${size}-${attr}`;
         const hoverAttributeWithBreakpoint =
-          size === "none" ? `h-${attr}` : `${size}-h-${attr}`;
+          size === "default" ? `h-${attr}` : `${size}-h-${attr}`;
 
-        if (cssProperty) {
-          // Attribute is mapped in styleMap
+        if (cssProperties) {
+          // Handle multiple properties if mapped in styleMap
+          const properties = cssProperties.split(" ");
+          let propertyRules = properties
+            .map((property) => `${property}: ${cssRule};`)
+            .join(" ");
+
           css += `
-            :host([${attributeWithBreakpoint}="${value}"]) {
-              ${cssProperty}: ${cssRule};
+            :host([${attributeWithBreakpoint}="${value}"])${dscendant}{
+              ${propertyRules}
             }
-            :host([${hoverAttributeWithBreakpoint}="${value}"]:hover) {
-              ${cssProperty}: ${cssRule};
+            :host([${hoverAttributeWithBreakpoint}="${value}"]:hover)${dscendant}{
+              ${propertyRules}
             }
           `;
         } else {
           // Attribute is not mapped, handle directly
           css += `
-            :host([${attributeWithBreakpoint}="${value}"]) {
+            :host([${attributeWithBreakpoint}="${value}"])${dscendant}{
               ${rule}
             }
-            :host([${hoverAttributeWithBreakpoint}="${value}"]:hover) {
+            :host([${hoverAttributeWithBreakpoint}="${value}"]:hover)${dscendant}{
               ${rule}
             }
           `;
         }
       }
     }
-    if (size !== "none") {
+    if (size !== "default") {
       css += `}`;
     }
   }
@@ -100,4 +106,29 @@ const spacing = {
   xl: "--spacing-xl",
 };
 
-export { css, generateCSS, dimensionWithUnit, spacing };
+
+function convertObjectToCssString(styleObject) {
+  let result = ''
+  for (const [size, mediaQuery] of Object.entries(mediaQueries)) {
+    if (size !== "default") {
+      result += `${mediaQuery} {\n`;
+    }
+    let cssString = '';
+    for (const [key, value] of Object.entries(styleObject[size])) {
+      if (value !== undefined && value !== null) { 
+        cssString += `${key}: ${value};\n`;
+      }
+    }
+    result += `:host {
+    ${cssString.trim()}
+    }\n`;
+
+    if (size !== "default") {
+      result += `}\n`;
+    }
+  }
+  return result;
+}
+
+
+export { css, generateCSS, dimensionWithUnit, spacing, convertObjectToCssString, mediaQueries };

@@ -2,6 +2,7 @@ import { render, html } from "https://unpkg.com/uhtml";
 
 import { css, dimensionWithUnit } from "../common.js";
 import flexChildStyles from "../styles/flexChildStyles.js";
+import buttonMarginStyles from "../styles/buttonMarginStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
@@ -146,7 +147,7 @@ styleSheet.replaceSync(css`
     line-height: var(--typography-label-l-line-height);
     letter-spacing: var(--typography-label-l-letter-spacing);
   }
-
+  ${buttonMarginStyles}
   ${flexChildStyles}
 `);
 

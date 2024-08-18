@@ -1,5 +1,5 @@
 import { render, html } from "https://unpkg.com/uhtml";
-import { css, dimensionWithUnit } from '../common.js'
+import { convertObjectToCssString, css, dimensionWithUnit } from '../common.js'
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 import viewStyles from "../styles/viewStyles.js";
@@ -40,10 +40,13 @@ class RettangoliImage extends HTMLElement {
     this.shadow.adoptedStyleSheets = [styleSheet];
   }
 
-  _image = {}
+  _styles = {
+    default: {},
+    s: {},
+  }
 
   static get observedAttributes() {
-    return ["key", "src", "wh", "w", "h", "hidden", "height", "width"];
+    return ["key", "src", "wh", "w", "h", "hidden", "height", "width", 's-wh', 's-w', 's-h'];
   }
 
   connectedCallback() {
@@ -51,43 +54,53 @@ class RettangoliImage extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    const wh = this.getAttribute("wh");
-    const width = dimensionWithUnit(wh === null ? this.getAttribute("w") : wh);
-    const height = dimensionWithUnit(wh === null ? this.getAttribute("h") : wh);
-    const opacity = this.getAttribute("o");
-    const zIndex = this.getAttribute("z");
 
-    if (zIndex !== null) {
-      this._image.current.style.zIndex = zIndex;
-    }
+    ['default', 's'].forEach((size) => {
+      const addSizePrefix = (tag) => {
+        return `${size === "default" ? '' : `${size}-`}${tag}`;
+      }
 
-    if (opacity !== null) {
-      this._image.current.style.opacity = opacity;
-    }
+      const wh = this.getAttribute(addSizePrefix("wh"));
+      const width = dimensionWithUnit(wh === null ? this.getAttribute(addSizePrefix("w")) : wh);
+      const height = dimensionWithUnit(wh === null ? this.getAttribute(addSizePrefix("h")) : wh);
+      const opacity = this.getAttribute(addSizePrefix("o"));
+      const zIndex = this.getAttribute(addSizePrefix("z"));
 
-    if (width === "f") {
-      this.style.width = "100%";
-    } else if (width !== undefined) {
-      this.style.width = width;
-      this.style.minWidth = width;
-      this.style.maxWidth = width;
-    }
+      if (zIndex !== null) {
+        this._styles[size].zIndex = zIndex;
+      }
 
-    if (height === "f") {
-      this.style.height = "100%";
-    } else if (height !== undefined) {
-      this.style.height = height;
-      this.style.minHeight = height;
-      this.style.maxHeight = height;
-    }
+      if (opacity !== null) {
+        this._styles[size].opacity = opacity;
+      }
+
+      if (width === "f") {
+        this._styles[size].width = "100%";
+      } else if (width !== undefined) {
+        this._styles[size].width = width;
+        this._styles[size].minWidth = width;
+        this._styles[size].maxWidth = width;
+      }
+
+      if (height === "f") {
+        this._styles[size].height = "100%";
+      } else if (height !== undefined) {
+        this._styles[size].height = height;
+        this._styles[size].minHeight = height;
+        this._styles[size].maxHeight = height;
+      }
+    });
+
 
     render(this.shadow, this.render);
   }
 
   render = () => {
     return html`
+      <style>
+      ${ convertObjectToCssString(this._styles) }
+      </style>
       <img
-        ref=${this._image}
         src="${this.getAttribute('src')}"
         width="${this.getAttribute('width')}"
         height="${this.getAttribute('height')}"

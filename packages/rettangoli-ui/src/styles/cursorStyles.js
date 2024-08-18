@@ -1,7 +1,17 @@
-import { css } from '../common.js'
+import { generateCSS } from '../common.js'
 
-export default css`
-:host([h-cur="p"]:hover){
-    cursor: pointer;
-}
-`;
+const styleMap = {
+    "cur": "cursor",
+};
+
+const styles = {
+    "cur": {
+        "p": "pointer",
+        "m": "move",
+        "grab": "grab",
+        "grabbing": "grabbing",
+    },
+};
+
+
+export default generateCSS(styleMap, styles);

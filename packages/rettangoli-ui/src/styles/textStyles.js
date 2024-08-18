@@ -1,9 +1,15 @@
 import { generateCSS } from "../common.js";
 
 const styleMap = {
+  at: 'text-align'
 };
 
 const styles = {
+  at: {
+    c: 'center',
+    e: 'right',
+    j: 'justify'
+  },
   s: {
     dm: `
         font-size: var(--typography-display-m-font-size);

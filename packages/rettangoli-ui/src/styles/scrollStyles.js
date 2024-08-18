@@ -10,8 +10,13 @@ export default css`
     overflow-y: scroll;
     flex-wrap: nowrap;
 }
-/* :host([sh][sv]) {
+:host([sh][sv]) {
     overflow: scroll;
     flex-wrap: nowrap;
-} */
+}
+:host([overflow="hidden"]) {
+    overflow: hidden;
+    flex-wrap: nowrap;
+}
+
 `

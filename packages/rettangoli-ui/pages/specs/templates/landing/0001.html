@@ -1,0 +1,93 @@
+---
+layout: default-layout.html
+tags: [test]
+---
+
+<script>
+  window.rtglIcons = {
+    text: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 12H20M4 8H20M4 16H12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    home: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.121,9.069,15.536,1.483a5.008,5.008,0,0,0-7.072,0L.879,9.069A2.978,2.978,0,0,0,0,11.19v9.817a3,3,0,0,0,3,3H21a3,3,0,0,0,3-3V11.19A2.978,2.978,0,0,0,23.121,9.069ZM15,22.007H9V18.073a3,3,0,0,1,6,0Zm7-1a1,1,0,0,1-1,1H17V18.073a5,5,0,0,0-10,0v3.934H3a1,1,0,0,1-1-1V11.19a1.008,1.008,0,0,1,.293-.707L9.878,2.9a3.008,3.008,0,0,1,4.244,0l7.585,7.586A1.008,1.008,0,0,1,22,11.19Z"/></svg>`,
+    threeDots: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M18 12H18.01M12 12H12.01M6 12H6.01M13 12C13 12.5523 12.5523 13 12 13C11.4477 13 11 12.5523 11 12C11 11.4477 11.4477 11 12 11C12.5523 11 13 11.4477 13 12ZM19 12C19 12.5523 18.5523 13 18 13C17.4477 13 17 12.5523 17 12C17 11.4477 17.4477 11 18 11C18.5523 11 19 11.4477 19 12ZM7 12C7 12.5523 6.55228 13 6 13C5.44772 13 5 12.5523 5 12C5 11.4477 5.44772 11 6 11C6.55228 11 7 11.4477 7 12Z"/></svg>`,
+  }
+</script>
+
+<rtgl-view w="100vw">
+  <rtgl-view
+    bgc="su"
+    pos="fix"
+    cor="top"
+    h="48"
+    bwb="xs"
+    bc="o"
+    av="c"
+    d="h"
+    ph="l"
+  >
+    <rtgl-image src="/public/sample1.jpg" h="32"></rtgl-image>
+    <rtgl-view flex="1"></rtgl-view>
+    <rtgl-button t="p">Button</rtgl-button>
+  </rtgl-view>
+
+  <rtgl-view w="f" ah="c" av="c" h="100vh" g="l">
+    <rtgl-text s="dm" at="c" mh="xl">Hero message long long</rtgl-text>
+    <rtgl-view w="400" s-w="300" style="align-self: unset;">
+        <rtgl-text s="bl" c="on-su-v" at="c"
+          >Lorem ipsum dolor sit, amet consectetur adipisicing elit Amet vel
+          voluptate doloremque saepe iusto</rtgl-text
+        >
+    </rtgl-view>
+    <rtgl-button t="pl" mt="l">Start Now</rtgl-button>
+  </rtgl-view>
+
+  <rtgl-view w="f" ah="c" av="c" h="100vh">
+    <rtgl-view>
+      <rtgl-text s="tl">Feature 1</rtgl-text>
+      <rtgl-image src="/public/sample1.jpg" s-w="calc(100vw - 32px)" s-h="calc((100vw - 32px) * 3 / 4)" s-h="200" w="600" h="450" width="400" height="300"></rtgl-image>
+    </rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view w="f" ah="c" av="c" h="100vh">
+    <rtgl-view>
+      <rtgl-text s="tl">Feature 1</rtgl-text>
+      <rtgl-image src="/public/sample1.jpg" s-w="calc(100vw - 32px)" s-h="calc((100vw - 32px) * 3 / 4)" s-h="200" w="600" h="450" width="400" height="300"></rtgl-image>
+    </rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view w="f" ah="c" av="c" h="100vh">
+    <rtgl-view>
+      <rtgl-text s="tl">Feature 1</rtgl-text>
+      <rtgl-image src="/public/sample1.jpg" s-w="calc(100vw - 32px)" s-h="calc((100vw - 32px) * 3 / 4)" s-h="200" w="600" h="450" width="400" height="300"></rtgl-image>
+    </rtgl-view>
+  </rtgl-view>
+
+  <style>
+    a {
+      --anchor-text-decoration: none;
+    }
+  </style>
+  <rtgl-view d="h" ph="l" pv="xl" ah="c" stretch gv="xl" bwt="xs" bc="o">
+    <rtgl-view flex="3" g="m" s-w="100vw" stretch>
+      <rtgl-image src="/public/sample1.jpg" h="32"></rtgl-image>
+      <rtgl-view flex="1"></rtgl-view>
+      <rtgl-view d="h" g="l" style="align-self: unset;">
+          <rtgl-svg h-cur="p" svg="text" wh="20"></rtgl-svg>
+          <rtgl-svg h-cur="p" svg="home" wh="20"></rtgl-svg>
+          <rtgl-svg h-cur="p" svg="threeDots" wh="20"></rtgl-svg>
+      </rtgl-view>
+    </rtgl-view>
+    <rtgl-view flex="2" g="m">
+      <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
+      <rtgl-text s="ll"><a href="/">Terms Conditions</a></rtgl-text>
+      <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
+      <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
+      <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
+    </rtgl-view>
+    <rtgl-view flex="2" g="m">
+      <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
+      <rtgl-text s="ll"><a href="/">Terms Conditions</a></rtgl-text>
+      <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
+      <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
+      <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
