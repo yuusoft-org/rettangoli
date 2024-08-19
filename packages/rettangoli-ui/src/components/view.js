@@ -14,7 +14,7 @@ styleSheet.replaceSync(css`
   }
   :host {
     display: flex;
-    align-self: flex-start;
+    align-self: auto;
     align-content: flex-start;
     flex-wrap: wrap;
     border-style: solid;
