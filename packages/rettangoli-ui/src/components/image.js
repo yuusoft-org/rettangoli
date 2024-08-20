@@ -1,46 +1,37 @@
 import { render, html } from "https://unpkg.com/uhtml";
-import { css } from '../common.js'
-import marginStyles from "../styles/marginStyles.js";
-import flexChildStyles from "../styles/flexChildStyles.js";
+import { convertObjectToCssString, css, dimensionWithUnit } from '../common.js'
 import cursorStyles from "../styles/cursorStyles.js";
-import borderRadiusStyles from "../styles/borderRadiusStyles.js";
+import marginStyles from "../styles/marginStyles.js";
+import viewStyles from "../styles/viewStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
 :host {
-  display: flex;
+  border-style: solid;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-width: 0;
 }
-:host([of="contain"]) img {
+slot {
+  display: contents;
+}
+:host([of="con"]) img {
   object-fit: contain;
 }
-:host([of="cover"]) img {
+:host([of="cov"]) img {
   object-fit: cover;
 }
+:host([of="none"]) img {
+  object-fit: none;
+}
 img {
-  flex: 1;
+  height: 100%;
+  width: 100%;
 }
+${viewStyles}
 ${marginStyles}
-${flexChildStyles}
 ${cursorStyles}
-${borderRadiusStyles}
 `)
-
-function endsWithDigit(inputValue) {
-  // Convert the input value to a string if it's not already one.
-  const inputStr = String(inputValue);
-  // Check if the last character of the string is a digit.
-  return /[0-9]$/.test(inputStr);
-}
-
-const dimensionWithUnit = (dimension) => {
-  if (dimension === undefined) {
-    return;
-  }
-  if (endsWithDigit(dimension)) {
-    return `${dimension}px`;
-  }
-  return dimension;
-}
 
 class RettangoliImage extends HTMLElement {
   constructor() {
@@ -49,8 +40,13 @@ class RettangoliImage extends HTMLElement {
     this.shadow.adoptedStyleSheets = [styleSheet];
   }
 
+  _styles = {
+    default: {},
+    s: {},
+  }
+
   static get observedAttributes() {
-    return ['key', 'src', 'wh', 'w', 'h', 'of'];
+    return ["key", "src", "wh", "w", "h", "hidden", "height", "width", 's-wh', 's-w', 's-h'];
   }
 
   connectedCallback() {
@@ -58,25 +54,56 @@ class RettangoliImage extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    const wh = this.getAttribute('wh');
-    const width = dimensionWithUnit(wh === null ? this.getAttribute('w') : wh);
-    const height = dimensionWithUnit(wh === null ? this.getAttribute('h') : wh);
-    const widthCss = width ? `width: ${width}; min-width: ${width}; max-width: ${width};` : '';
-    const heightCss = height? `height: ${height}; min-height: ${height}; max-height: ${height};` : '';
-    const displayNone = this.hasAttribute('hidden') ? `display: none;` : ''
 
-    let customStyle = `${widthCss} ${heightCss} ${displayNone}`
-    this.style = customStyle;
+    ['default', 's'].forEach((size) => {
+      const addSizePrefix = (tag) => {
+        return `${size === "default" ? '' : `${size}-`}${tag}`;
+      }
+
+      const wh = this.getAttribute(addSizePrefix("wh"));
+      const width = dimensionWithUnit(wh === null ? this.getAttribute(addSizePrefix("w")) : wh);
+      const height = dimensionWithUnit(wh === null ? this.getAttribute(addSizePrefix("h")) : wh);
+      const opacity = this.getAttribute(addSizePrefix("o"));
+      const zIndex = this.getAttribute(addSizePrefix("z"));
+
+      if (zIndex !== null) {
+        this._styles[size].zIndex = zIndex;
+      }
+
+      if (opacity !== null) {
+        this._styles[size].opacity = opacity;
+      }
+
+      if (width === "f") {
+        this._styles[size].width = "100%";
+      } else if (width !== undefined) {
+        this._styles[size].width = width;
+        this._styles[size].minWidth = width;
+        this._styles[size].maxWidth = width;
+      }
+
+      if (height === "f") {
+        this._styles[size].height = "100%";
+      } else if (height !== undefined) {
+        this._styles[size].height = height;
+        this._styles[size].minHeight = height;
+        this._styles[size].maxHeight = height;
+      }
+    });
+
 
     render(this.shadow, this.render);
   }
 
   render = () => {
     return html`
+      <style>
+      ${ convertObjectToCssString(this._styles) }
+      </style>
       <img
         src="${this.getAttribute('src')}"
-        width="${this.getAttribute('w')}"
-        height="${this.getAttribute('h')}"
+        width="${this.getAttribute('width')}"
+        height="${this.getAttribute('height')}"
       >
     `;
   }

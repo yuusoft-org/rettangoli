@@ -1,24 +1,25 @@
 import { render, html } from "https://unpkg.com/uhtml";
 
-import { css } from "../common.js";
-import marginStyles from "../styles/marginStyles.js";
+import { css, dimensionWithUnit } from "../common.js";
 import flexChildStyles from "../styles/flexChildStyles.js";
+import buttonMarginStyles from "../styles/buttonMarginStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
   :host {
-    display: flex;
+    display: contents;
   }
-
   slot {
-    display: flex;
-    flex: 1;
-    justify-content: center;
+    display: contents;
   }
 
   button {
-    flex: 1;
     border-style: solid;
+    padding: 0px;
+    font-size: var(--typography-body-s-font-size);
+    font-weight: var(--typography-body-s-font-weight);
+    line-height: var(--typography-body-s-line-height);
+    letter-spacing: var(--typography-body-s-letter-spacing);
   }
 
   button:hover {
@@ -117,40 +118,36 @@ styleSheet.replaceSync(css`
   :host([t="ss"]) button,
   :host([t="es"]) button,
   :host([t="ns"]) button {
-    padding-top: 4px;
-    padding-bottom: 4px;
-    padding-left: 6px;
-    padding-right: 6px;
-    border-width: 2px;
-    border-radius: 1px;
+    height: var(--button-height-s);
+    padding-left: var(--button-padding-horizontal-s);
+    padding-right: var(--button-padding-horizontal-s);
+    border-radius: var(--button-border-radius-s);
   }
 
   :host([t="p"]) button,
   :host([t="s"]) button,
   :host([t="e"]) button,
   :host([t="n"]) button {
-    padding-top: 3px;
-    padding-bottom: 3px;
-    padding-left: 12px;
-    padding-right: 12px;
-    border-width: 4px;
-    border-radius: 2px;
+    height: var(--button-height-m);
+    padding-left: var(--button-padding-horizontal-m);
+    padding-right: var(--button-padding-horizontal-m);
+    border-radius: var(--button-border-radius-m);
   }
 
   :host([t="pl"]) button,
   :host([t="sl"]) button,
   :host([t="el"]) button,
   :host([t="nl"]) button {
-    padding-top: 5px;
-    padding-bottom: 5px;
-    padding-left: 16px;
-    padding-right: 16px;
-    border-width: 6px;
-    border-radius: 3px;
-    font-size: 16px;
+    height: var(--button-height-l);
+    padding-left: var(--button-padding-horizontal-l);
+    padding-right: var(--button-padding-horizontal-l);
+    border-radius: var(--button-border-radius-l);
+    font-size: var(--typography-label-l-font-size);
+    font-weight: var(--typography-label-l-font-weight);
+    line-height: var(--typography-label-l-line-height);
+    letter-spacing: var(--typography-label-l-letter-spacing);
   }
-
-  ${marginStyles}
+  ${buttonMarginStyles}
   ${flexChildStyles}
 `);
 
@@ -164,17 +161,36 @@ class RettangoliButton extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "href", "target"];
+    return ["key", "href", "target", 'w', 't'];
   }
 
-  connectedCallback() {
-    if (!this.hasAttribute("as")) {
-      this.setAttribute("as", "s");
+  _buttonRef = {};
+
+  _assingRef = (ref) => {
+    this._buttonRef.current = ref;
+    const width = dimensionWithUnit(this.getAttribute("w"));
+    if (width === "f") {
+      this._buttonRef.current.style.width = "100%";
+    } else if (width !== undefined && width !== null) {
+      this._buttonRef.current.style.width = width;
     }
-    render(this.shadow, this.render);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
+    if (!this._buttonRef.current) {
+      return;
+    }
+
+    const width = dimensionWithUnit(this.getAttribute("w"));
+
+    if (width === "f") {
+      this._buttonRef.current.style.width = "100%";
+    } else if (width !== undefined && width !== null) {
+      this._buttonRef.current.style.width = width;
+      this._buttonRef.current.style.minWidth = width;
+      this._buttonRef.current.style.maxWidth = width;
+    }
+
     render(this.shadow, this.render);
   }
 
@@ -192,7 +208,7 @@ class RettangoliButton extends HTMLElement {
       `;
     }
     return html`
-      <button>
+      <button ref=${this._assingRef}>
         <slot></slot>
       </button>
     `;

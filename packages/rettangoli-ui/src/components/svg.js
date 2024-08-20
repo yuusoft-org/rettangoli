@@ -1,71 +1,16 @@
-import { css } from '../common.js'
-import marginStyles from "../styles/marginStyles.js";
+import { css, dimensionWithUnit } from '../common.js'
 import flexChildStyles from "../styles/flexChildStyles.js";
 import paddingSvgStyles from "../styles/paddingSvgStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
+import textColorStyles from "../styles/textColorStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
-
-:host([f="p"]) path {
-  fill: var(--color-primary);
-}
-:host([f="s"]) path {
-  fill: var(--color-secondary);
-}
-:host([f="e"]) path {
-  fill: var(--color-error);
-}
-:host([f="on-p"]) path {
-  fill: var(--color-on-primary);
-}
-:host([f="on-pc"]) path {
-  fill: var(--color-on-primary-container);
-}
-:host([f="on-s"]) path {
-  fill: var(--color-on-secondary);
-}
-:host([f="on-sc"]) path {
-  fill: var(--color-on-secondary-container);
-}
-:host([f="on-su"]) path {
-  fill: var(--color-on-surface);
-}
-:host([f="on-suv"]) path {
-  fill: var(--color-on-surface-variant);
-}
-:host([f="i-on-su"]) path {
-  fill: var(--color-inverse-on-surface);
-}
-:host([f="on-e"]) path {
-  fill: var(--color-on-error);
-}
-:host([f="on-ec"]) path {
-  fill: var(--color-on-error-container);
-}
-
+${textColorStyles}
 ${paddingSvgStyles}
-${marginStyles}
 ${flexChildStyles}
 ${cursorStyles}
 `)
-
-function endsWithDigit(inputValue) {
-  // Convert the input value to a string if it's not already one.
-  const inputStr = String(inputValue);
-  // Check if the last character of the string is a digit.
-  return /[0-9]$/.test(inputStr);
-}
-
-const dimensionWithUnit = (dimension) => {
-  if (dimension === undefined) {
-    return;
-  }
-  if (endsWithDigit(dimension)) {
-    return `${dimension}px`;
-  }
-  return dimension;
-}
 
 class RettangoliSvg extends HTMLElement {
   constructor() {
@@ -77,7 +22,7 @@ class RettangoliSvg extends HTMLElement {
   static _icons = {};
 
   static get observedAttributes() {
-    return ['key', 'svg', 'w', 'h', 'of', 'wh'];
+    return ['key', 'svg', 'w', 'h', 'wh'];
   }
 
   static get icons() {
@@ -96,12 +41,13 @@ class RettangoliSvg extends HTMLElement {
     const wh = this.getAttribute('wh');
     const width = dimensionWithUnit(wh === null ? this.getAttribute('w') : wh);
     const height = dimensionWithUnit(wh === null ? this.getAttribute('h') : wh);
-    const widthCss = width ? `width: ${width}; min-width: ${width}; max-width: ${width};` : '';
-    const heightCss = height? `height: ${height}; min-height: ${height}; max-height: ${height};` : '';
-    const displayNone = this.hasAttribute('hidden') ? `display: none;` : ''
 
-    let customStyle = `${widthCss} ${heightCss} ${displayNone}`
-    this.style = customStyle;
+    if (width) {
+      this.style.width = width;
+    }
+    if (height) {
+      this.style.height = height;
+    }
 
     this.render();
   }

@@ -1,0 +1,10 @@
+---
+layout: default-layout.html
+---
+
+<rtgl-view bgc="sucl" g="l" p="l" wh="f">
+    {% for item in collections.test %}
+        <rtgl-text s="bm" c="on-su"><a href="{{ item.url }}">{{ item.url }}</a></rtgl-text>
+    {% endfor %}
+</rtgl-view>
+

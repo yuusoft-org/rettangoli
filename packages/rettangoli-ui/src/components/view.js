@@ -1,52 +1,38 @@
 import { render, html } from "https://unpkg.com/uhtml";
-import { css } from '../common.js'
-import flexGapStyles from '../styles/flexGapStyles.js'
-import paddingStyles from '../styles/paddingStyles.js'
-import marginStyles from "../styles/marginStyles.js";
+import { css, dimensionWithUnit, convertObjectToCssString, mediaQueries } from "../common.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
-import backgroundColorStyles from "../styles/backgroundColorStyles.js";
-import flexChildStyles from "../styles/flexChildStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
-import borderRadiusStyles from "../styles/borderRadiusStyles.js";
+import scrollStyle from "../styles/scrollStyles.js";
+import stylesGenerator from "../styles/viewStyles.js";
+import marginStyles from "../styles/marginStyles.js";
+import flexChildStyles from "../styles/flexChildStyles.js";
 
 const styleSheet = new CSSStyleSheet();
 styleSheet.replaceSync(css`
-:host {
-  display: flex;
-}
-slot {
-  display: flex;
-  flex: 1;
-}
-:host([fw="w"]) slot {
-  flex-wrap: wrap;
-}
-${flexChildStyles}
-${flexDirectionStyles}
-${flexGapStyles}
-${backgroundColorStyles}
-${paddingStyles}
-${marginStyles}
-${cursorStyles}
-${borderRadiusStyles}
+  slot {
+    display: contents;
+  }
+  :host {
+    display: flex;
+    align-self: auto;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    border-style: solid;
+    border-width: 0;
+    box-sizing: border-box;
+  }
+  :host([stretch]) {
+    align-self: stretch;
+  }
+  ${flexChildStyles}
+  ${scrollStyle}
+  ${flexDirectionStyles}
+  ${marginStyles}
+  ${cursorStyles}
+  ${stylesGenerator}
 `);
 
-function endsWithDigit(inputValue) {
-  // Convert the input value to a string if it's not already one.
-  const inputStr = String(inputValue);
-  // Check if the last character of the string is a digit.
-  return /[0-9]$/.test(inputStr);
-}
 
-const dimensionWithUnit = (dimension) => {
-  if (dimension === undefined) {
-    return;
-  }
-  if (endsWithDigit(dimension)) {
-    return `${dimension}px`;
-  }
-  return dimension;
-}
 
 class RettangoliView extends HTMLElement {
   constructor() {
@@ -57,37 +43,67 @@ class RettangoliView extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['key', 'wh', 'w', 'h', 'hidden'];
+    return ["key", "wh", "w", "h", "hidden", 's-w', 's-h', 's-d'];
   }
 
-  connectedCallback() {
-    if (!this.hasAttribute('d')) {
-      this.setAttribute('d', 'h'); 
-    }
+  _styles = {
+    default: {},
+    s: {},
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    const wh = this.getAttribute('wh');
-    const width = dimensionWithUnit(wh === null ? this.getAttribute('w') : wh);
-    const height = dimensionWithUnit(wh === null ? this.getAttribute('h') : wh);
-    const widthCss = width ? `width: ${width}; min-width: ${width}; max-width: ${width};` : '';
-    const heightCss = height? `height: ${height}; min-height: ${height}; max-height: ${height};` : '';
-    const displayNone = this.hasAttribute('hidden') ? `display: none;` : ''
-    
-    let customStyle = `${widthCss} ${heightCss} ${displayNone}`
-    this.style = customStyle;
 
-    if (!this.hasAttribute('d')) {
-      this.setAttribute('d', 'h'); 
-    }
+    ['default', 's'].forEach((size) => {
+      const addSizePrefix = (tag) => {
+        return `${size === "default" ? '' : `${size}-`}${tag}`;
+      }
+
+      const wh = this.getAttribute(addSizePrefix("wh"));
+      const width = dimensionWithUnit(wh === null ? this.getAttribute(addSizePrefix("w")) : wh);
+      const height = dimensionWithUnit(wh === null ? this.getAttribute(addSizePrefix("h")) : wh);
+      const opacity = this.getAttribute(addSizePrefix("o"));
+      const zIndex = this.getAttribute(addSizePrefix("z"));
+
+      if (zIndex !== null) {
+        this._styles[size]['z-index'] = zIndex;
+      }
+
+      if (opacity !== null) {
+        this._styles[size].opacity = opacity;
+      }
+
+      if (width === "f") {
+        this._styles[size].width = "100%";
+      } else if (width !== undefined) {
+        this._styles[size].width = width;
+        this._styles[size]['min-width'] = width;
+        this._styles[size]['max-width'] = width;
+      }
+
+      if (height === "f") {
+        this._styles[size].height = "100%";
+      } else if (height !== undefined) {
+        this._styles[size].height = height;
+        this._styles[size]['min-height'] = height;
+        this._styles[size]['max-height'] = height;
+      }
+
+      if (this.hasAttribute("hidden")) {
+        this._styles[size].display = "none";
+      }
+
+    });
+
 
     render(this.shadow, this.render);
   }
 
   render = () => {
     return html`
-      <slot></slot>
-    `;
+      <style>
+      ${ convertObjectToCssString(this._styles) }
+      </style>
+      <slot></slot> `;
   };
 }
 
