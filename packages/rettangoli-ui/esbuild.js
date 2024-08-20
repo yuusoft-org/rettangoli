@@ -1,5 +1,6 @@
-const esbuild = require("esbuild");
-const httpPlugin = require("esbuild-plugin-http");
+
+import esbuild from "esbuild";
+import httpPlugin from "esbuild-plugin-http";
 
 esbuild
   .build({
