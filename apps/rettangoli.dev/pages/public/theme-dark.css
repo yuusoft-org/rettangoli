@@ -1,0 +1,144 @@
+
+html {
+  margin: 0;
+  background-color: var(--color-surface);
+}
+body {
+  margin: 0;
+  font-family: Roboto, -apple-system, "Helvetica Neue", sans-serif;
+  display: flex;
+}
+
+/* Hide scrollbar for Chrome, Safari */
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+:root {
+
+  --color-primary:  rgb(239, 239, 239);
+  --color-primary-hover: color-mix(in srgb, var(--color-primary) 85%, white 15%);
+  --color-primary-active: color-mix(in srgb, var(--color-primary) 80%, white 20%);
+
+  --color-on-primary: rgb(15, 15, 15);
+  --color-primary-container: rgb(200, 200, 200);
+  --color-on-primary-container: rgb(48, 48, 48);
+
+  --color-secondary: #CCC2DC;
+  --color-secondary-hover: color-mix(in srgb, var(--color-secondary) 85%, white 15%);
+  --color-secondary-active: color-mix(in srgb, var(--color-secondary) 80%, white 20%);
+
+  --color-on-secondary: #332D41;
+  --color-secondary-container: #4A4458;
+  --color-on-secondary-container: #E8DEF8;
+  --color-error: #F2B8B5;
+  --color-error-hover: color-mix(in srgb, var(--color-error) 85%, white 15%);
+  --color-error-active: color-mix(in srgb, var(--color-error) 80%, white 20%);
+
+  --color-on-error: #601410;
+  --color-error-container: #8C1D18;
+  --color-on-error-container: #F9DEDC;
+
+  --color-surface: rgb(29, 29, 29);
+  --color-surface-container-low: rgb(38, 38, 38);
+  --color-surface-container: rgb(52, 52, 52);
+  --color-surface-container-high: rgb(64, 64, 64);
+  --color-on-surface: rgb(242, 242, 242);
+  --color-on-surface-variant: rgb(212, 212, 212);
+  --color-outline: #938F99;
+  --color-outline-variant: #49454F;
+  --color-inverse-surface: #E6E0E9;
+  --color-inverse-on-surface: #322F35;
+  --color-inverse-primary: #6750A4;
+
+  --spacing-xs: 2px;
+  --spacing-s: 4px;
+  --spacing-m: 8px;
+  --spacing-l: 16px;
+  --spacing-xl: 32px;
+
+  --font-size-xs: 12px;
+  --font-size-s: 14px;
+  --font-size-m: 16px;
+  --font-size-l: 22px;
+  --font-size-xl: 28px;
+  --font-size-xxl: 36px;
+
+  --border-width-xs: 1px;
+  --border-width-s: 2px;
+  --border-width-m: 3px;
+  --border-width-l: 4px;
+  --border-width-xl: 6px;
+
+  --border-radius-xs: 2px;
+  --border-radius-s: 4px;
+  --border-radius-m: 8px;
+  --border-radius-l: 16px;
+  --border-radius-xl: 32px;
+
+  --button-height-s: 24px;
+  --button-height-m: 32px;
+  --button-height-l: 40px;
+
+  --button-border-radius-s: 2px;
+  --button-border-radius-m: 4px;
+  --button-border-radius-l: 4px;
+
+  --button-padding-horizontal-s: 8px;
+  --button-padding-horizontal-m: 16px;
+  --button-padding-horizontal-l: 16px;
+
+  --typography-display-m-font-size: var(--font-size-xxl);
+  --typography-display-m-font-weight: 400;
+  --typography-display-m-line-height: 52px;
+  --typography-display-m-letter-spacing: normal;
+
+  --typography-headline-m-font-size: var(--font-size-xl);
+  --typography-headline-m-font-weight: 400;
+  --typography-headline-m-line-height: 36px;
+  --typography-headline-m-letter-spacing: normal;
+
+  --typography-title-l-font-size: var(--font-size-l);
+  --typography-title-l-font-weight: 400;
+  --typography-title-l-line-height: 30px;
+  --typography-title-l-letter-spacing: normal;
+
+  --typography-title-m-font-size: var(--font-size-m);
+  --typography-title-m-font-weight: 500;
+  --typography-title-m-line-height: 24px;
+  --typography-title-m-letter-spacing: 0.15px;
+
+  --typography-title-s-font-size: var(--font-size-s);
+  --typography-title-s-font-weight: 500;
+  --typography-title-s-line-height: 18px;
+  --typography-title-s-letter-spacing: 0.1px;
+
+  --typography-body-l-font-size: var(--font-size-m);
+  --typography-body-l-font-weight: 400;
+  --typography-body-l-line-height: 24px;
+  --typography-body-l-letter-spacing: 0.5px;
+
+  --typography-body-m-font-size: var(--font-size-s);
+  --typography-body-m-font-weight: 400;
+  --typography-body-m-line-height: 20px;
+  --typography-body-m-letter-spacing: 0.25px;
+
+  --typography-body-s-font-size: var(--font-size-xs);
+  --typography-body-s-font-weight: 400;
+  --typography-body-s-line-height: 16px;
+  --typography-body-s-letter-spacing: 0.4px;
+
+  --typography-label-l-font-size: var(--font-size-s);
+  --typography-label-l-font-weight: 500;
+  --typography-label-l-line-height: 20px;
+  --typography-label-l-letter-spacing: 0.1px;
+
+  --typography-label-m-font-size: var(--font-size-xs);
+  --typography-label-m-font-weight: 500;
+  --typography-label-m-line-height: 16px;
+  --typography-label-m-letter-spacing: 0.5px;
+}
