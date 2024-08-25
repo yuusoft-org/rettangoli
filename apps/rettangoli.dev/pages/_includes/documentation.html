@@ -47,6 +47,14 @@ title: Docs
 
         }
 
+        hr {
+            border: 0;
+            width: 100%;
+            height: 1px;
+            background-color: var(--color-outline);
+            margin: var(--spacing-xl) 0px;
+        }
+
         pre {
             white-space: break-spaces;
             color: var(--color-on-surface);
@@ -57,6 +65,7 @@ title: Docs
             border-radius: var(--spacing-s);
             box-sizing: border-box;
             width: 100%;
+            margin-bottom: var(--spacing-l);
         }
 
         ul {
@@ -132,8 +141,13 @@ title: Docs
             </rtgl-view>
 
             {%- for doc in docs -%}
-            <rtgl-view h="32" av="c" ph="l" stretch>
-                <rtgl-text s="ts" c="on-suv">{{ doc.title}}</rtgl-text>
+            <rtgl-view h="32" av="c" stretch>
+                {%- assign matchedDoc = collections.documentation | where: "fileSlug", doc.item | first -%}
+                {%- if matchedDoc -%}
+                <rtgl-view w="f" h="32" av="c" h-bgc="such" h-cur="p" pl="m" onclick="loadData('{{matchedDoc.url}}')">
+                    <rtgl-text s="ts" c="on-suv">{{ matchedDoc.data.title}}</rtgl-text>
+                </rtgl-view>
+                {%- endif -%}
             </rtgl-view>
             <rtgl-view w="f">
                 {%- for item in doc.items -%}

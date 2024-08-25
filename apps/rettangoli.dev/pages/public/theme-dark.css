@@ -18,6 +18,8 @@ body::-webkit-scrollbar {
   display: none;
 }
 
+
+
 :root {
 
   --color-primary:  rgb(239, 239, 239);
@@ -141,4 +143,8 @@ body::-webkit-scrollbar {
   --typography-label-m-font-weight: 500;
   --typography-label-m-line-height: 16px;
   --typography-label-m-letter-spacing: 0.5px;
+}
+
+::selection {
+  background-color: var(--color-surface-container); /* Change this to your desired color */
 }

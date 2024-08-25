@@ -58,7 +58,7 @@ md.renderer.rules.fence = function(tokens, idx, options, env, self) {
   const content = token.content;
   const language = token.info.trim() ? `language-${token.info.trim()}` : '';
 
-  return `<pre><code class="${language}">${md.utils.escapeHtml(content)}</code></pre>\n${content}`;
+  return `<pre><code class="${language}">${md.utils.escapeHtml(content)}</code></pre>\n${content}\n<div style="height: 32px; width: 100%;"></div>\n`;
 };
 
 

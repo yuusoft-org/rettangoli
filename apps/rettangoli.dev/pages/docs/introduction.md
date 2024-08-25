@@ -17,9 +17,6 @@ Expect it to be ready by end of
 </rtgl-view>
 ```
 
-------
-------
-------
 
 ### Dimensions wh
 ```html
@@ -29,9 +26,6 @@ Expect it to be ready by end of
 </rtgl-view>
 ```
 
-------
-------
-------
 
 ### Dimensions wh
 ```html
