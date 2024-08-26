@@ -69,14 +69,13 @@
   </rtgl-view>
 
   <rtgl-view w="f" ah="c" av="c" h="100vh" g="l">
-    <rtgl-text s="dm" mh="xl">Hero message long long</rtgl-text>
+    <rtgl-text s="dm" mh="xl"> {{ landing.hero.title }} </rtgl-text>
     <rtgl-view w="400" s-w="300">
         <rtgl-text s="bl" c="on-su-v" at="c"
-          >Lorem ipsum dolor sit, amet consectetur adipisicing elit Amet vel
-          voluptate doloremque saepe iusto</rtgl-text
+          >{{ landing.hero.subtitle }} </rtgl-text
         >
     </rtgl-view>
-    <a href="/docs/getting-started"><rtgl-button t="pl" mt="l">Read docs</rtgl-button></a>
+    <a href="/docs/introduction"><rtgl-button t="pl" mt="l">Read docs</rtgl-button></a>
   </rtgl-view>
 
   <rtgl-view w="f" ah="c" av="c" h="100vh">

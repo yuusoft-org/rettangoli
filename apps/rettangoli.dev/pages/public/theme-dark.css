@@ -18,8 +18,6 @@ body::-webkit-scrollbar {
   display: none;
 }
 
-
-
 :root {
 
   --color-primary:  rgb(239, 239, 239);
@@ -63,12 +61,6 @@ body::-webkit-scrollbar {
   --spacing-l: 16px;
   --spacing-xl: 32px;
 
-  --font-size-xs: 12px;
-  --font-size-s: 14px;
-  --font-size-m: 16px;
-  --font-size-l: 22px;
-  --font-size-xl: 28px;
-  --font-size-xxl: 36px;
 
   --border-width-xs: 1px;
   --border-width-s: 2px;
@@ -93,6 +85,13 @@ body::-webkit-scrollbar {
   --button-padding-horizontal-s: 8px;
   --button-padding-horizontal-m: 16px;
   --button-padding-horizontal-l: 16px;
+
+  --font-size-xs: 12px;
+  --font-size-s: 14px;
+  --font-size-m: 16px;
+  --font-size-l: 22px;
+  --font-size-xl: 28px;
+  --font-size-xxl: 36px;
 
   --typography-display-m-font-size: var(--font-size-xxl);
   --typography-display-m-font-weight: 400;
@@ -143,6 +142,7 @@ body::-webkit-scrollbar {
   --typography-label-m-font-weight: 500;
   --typography-label-m-line-height: 16px;
   --typography-label-m-letter-spacing: 0.5px;
+
 }
 
 ::selection {

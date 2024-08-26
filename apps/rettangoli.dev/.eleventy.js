@@ -39,9 +39,12 @@ md.renderer.rules.link_open = function(tokens, idx, options, env, self) {
   const aIndex = tokens[idx].attrIndex('href');
   const targetIndex = tokens[idx].attrIndex('target');
 
-  // Add a class if it does not exist
   if (targetIndex < 0) {
-    tokens[idx].attrPush(['target', '_blank']); // add new attribute
+    const href = tokens[idx].attrs[aIndex][1];
+    // open new page only on external links
+    if (href.startsWith('http')) {
+      tokens[idx].attrPush(['target', '_blank']); // add new attribute
+    }
   }
 
   return self.renderToken(tokens, idx, options);
@@ -58,7 +61,10 @@ md.renderer.rules.fence = function(tokens, idx, options, env, self) {
   const content = token.content;
   const language = token.info.trim() ? `language-${token.info.trim()}` : '';
 
-  return `<pre><code class="${language}">${md.utils.escapeHtml(content)}</code></pre>\n${content}\n<div style="height: 32px; width: 100%;"></div>\n`;
+  if (language === 'language-html') {
+    return `<pre><code class="${language}">${md.utils.escapeHtml(content)}</code></pre>\n${content}\n<div style="height: 32px; width: 100%;"></div>\n`;
+  }
+  return defaultFenceRender(tokens, idx, options, env, self);
 };
 
 

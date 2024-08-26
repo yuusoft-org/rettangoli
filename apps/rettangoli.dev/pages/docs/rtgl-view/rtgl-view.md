@@ -6,7 +6,7 @@ tags: [documentation]
 
 ## Overview
 
-`<rtgl-view>` is the basic building block for all layout. Equivalent to `<div>` in html, and `<View>` in react-native.
+`<rtgl-view>` is the basic building block for all layout
 
 Example
 ```html
@@ -21,7 +21,7 @@ Below are all the available attributes
 * Direction: `d`
 * Alignment: `ah`, `av`
 * Flex: `flex`
-* Flex Gap: `g`, `gh`, `gv`
-
+* Gap: `g`, `gh`, `gv`
+* Border: `bw`, `bwt`, `bwr`, `bwb`, `bwl`
 
 

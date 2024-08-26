@@ -1,6 +1,7 @@
 - item: introduction
   items:
     - getting-started
+    - css-variables
 - item: concepts
   items:
     - colors
