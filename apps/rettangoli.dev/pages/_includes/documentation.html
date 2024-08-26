@@ -1,13 +1,13 @@
 ---
 title: Docs
 ---
+
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="/public/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="/public/favicon.png" />
     <title>{{ title }}</title>
     <meta property="og:title" content="{{ title }}" />
     <meta property="og:description" content="{{ description }}" />
@@ -18,163 +18,174 @@ title: Docs
     <script src="https://cdn.jsdelivr.net/npm/rettangoli-ui@0.0.8-rc1/dist/rettangoli-ui.min.js"></script>
     <link href="/public/theme-dark.css" rel="stylesheet" />
     {%- for url in prerender -%}
-    <link rel="prefetch" href="{{ url }}">
+    <link rel="prefetch" href="{{ url }}" />
     {%- endfor -%}
     <script>
-        window.rtglIcons = {}
+      window.rtglIcons = {};
     </script>
     <style>
-        html {
-            height: 100%;
-            margin: 0;
-            -ms-overflow-style: none;
-            /* IE and Edge */
-            scrollbar-width: none;
-            /* Firefox */
-            overflow: hidden;
-            /* Disable scrolling */
-            background-color: var(--color-surface);
-            ;
-        }
+      html {
+        height: 100%;
+        margin: 0;
+        -ms-overflow-style: none;
+        /* IE and Edge */
+        scrollbar-width: none;
+        /* Firefox */
+        overflow: hidden;
+        /* Disable scrolling */
+        background-color: var(--color-surface);
+      }
 
-        body {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-            height: 100%;
-            margin: 0;
-            font-family: Roboto, -apple-system, "Helvetica Neue", sans-serif;
-            display: flex;
+      body {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+        height: 100%;
+        margin: 0;
+        font-family: Roboto, -apple-system, "Helvetica Neue", sans-serif;
+        display: flex;
+      }
 
-        }
+      hr {
+        border: 0;
+        width: 100%;
+        height: 1px;
+        background-color: var(--color-outline);
+        margin: var(--spacing-xl) 0px;
+      }
 
-        hr {
-            border: 0;
-            width: 100%;
-            height: 1px;
-            background-color: var(--color-outline);
-            margin: var(--spacing-xl) 0px;
-        }
+      pre {
+        white-space: break-spaces;
+        color: var(--color-on-surface);
+        margin-bottom: var(--spacing-xl);
+        margin-top: 0px;
+        background-color: var(--color-surface-container-high);
+        padding: var(--spacing-l);
+        border-radius: var(--spacing-s);
+        box-sizing: border-box;
+        width: 100%;
+        margin-bottom: var(--spacing-l);
+      }
 
-        pre {
-            white-space: break-spaces;
-            color: var(--color-on-surface);
-            margin-bottom: var(--spacing-xl);
-            margin-top: 0px;
-            background-color: var(--color-surface-container-high);
-            padding: var(--spacing-l);
-            border-radius: var(--spacing-s);
-            box-sizing: border-box;
-            width: 100%;
-            margin-bottom: var(--spacing-l);
-        }
+      ul {
+        margin-top: 0px;
+        color: var(--color-on-surface);
+        margin-bottom: var(--spacing-s);
+        padding-left: var(--spacing-l);
+      }
 
-        ul {
-            margin-top: 0px;
-            color: var(--color-on-surface);
-            margin-bottom: var(--spacing-s);
-            padding-left: var(--spacing-l);
-        }
+      blockquote {
+        margin: 0px;
+        margin-bottom: var(--spacing-xl);
+        padding: var(--spacing-l);
+        background-color: var(--color-surface-container-high);
+        border-left: 4px solid var(--color-on-surface);
+        color: var(--color-on-surface);
+      }
 
-        blockquote {
-            margin: 0px;
-            margin-bottom: var(--spacing-xl);
-            padding: var(--spacing-l);
-            background-color: var(--color-surface-container-high);
-            border-left: 4px solid var(--color-on-surface);
-            color: var(--color-on-surface);
-        }
+      rtgl-text > code {
+        padding: 3px 6px;
+        border-radius: 6px;
+        color: var(--color-on-surface);
+        font-size: 80%;
+      }
 
-        rtgl-text>code {
-            padding: 3px 6px;
-            border-radius: 6px;
-            color: var(--color-on-surface);
-            font-size: 80%;
-        }
+      #sidebar {
+        border-right-width: 1px;
+        border-right-color: var(--color-surface-container);
+        border-right-style: solid;
+      }
 
-        #sidebar {
-            border-right-width: 1px;
-            border-right-color: var(--color-surface-container);
-            border-right-style: solid;
-        }
+      .scroll {
+        overflow-y: scroll;
+      }
 
-        .scroll {
-            overflow-y: scroll;
-        }
-
-        #content-container {
-            max-width: 640px;
-            width: 640px;
-        }
+      #content-container {
+        max-width: 640px;
+        width: 640px;
+      }
     </style>
 
     <script>
-        /**
-         * Fetch content from article page and replace the content
-         */
-        const loadData = async (url) => {
-            const res = await fetch(url)
-            let text = await res.text();
-            // prevent regex to catch this occurrence
-            const start = '<!-- start' + '-content -->';
-            const end = '<!-- end' + '-content -->';
-            const pattern = new RegExp(`${start}([\\s\\S]*?)${end}`);
-            const match = text.match(pattern);
-            if (match) {
-                const content = match[1];
-                document.querySelector('#content-container').innerHTML = content;
-                window.history.pushState({}, "", url);
-            }
+      /**
+       * Fetch content from article page and replace the content
+       */
+      const loadData = async (url) => {
+        const res = await fetch(url);
+        let text = await res.text();
+        // prevent regex to catch this occurrence
+        const start = "<!-- start" + "-content -->";
+        const end = "<!-- end" + "-content -->";
+        const pattern = new RegExp(`${start}([\\s\\S]*?)${end}`);
+        const match = text.match(pattern);
+        if (match) {
+          const content = match[1];
+          document.querySelector("#content-container").innerHTML = content;
+          window.history.pushState({}, "", url);
         }
+      };
     </script>
-</head>
+  </head>
 
-<body>
+  <body>
     <rtgl-view d="h" w="f" h="f" bgc="su">
-        <rtgl-view flex="1" w="260" h="f" id="sidebar">
-            <rtgl-view h="48" av="c" ph="l">
-                <rtgl-view d="h" av="c" g="m">
-                    <a href="/">
+      <rtgl-view flex="1" w="260" h="f" id="sidebar">
+        <rtgl-view h="48" av="c" ph="l">
+          <rtgl-view d="h" av="c" g="m">
+            <!-- <a href="/">
                         <rtgl-image h-cur="p" src="/public/logo1.png" h="16"></rtgl-image>
-                    </a>
-                    <rtgl-text s="tm">Docs</rtgl-text>
-                </rtgl-view>
-            </rtgl-view>
+                    </a> -->
+            <rtgl-text s="tm"><a href="/">Rettangoli UI</a> Docs</rtgl-text>
+          </rtgl-view>
+        </rtgl-view>
 
-            {%- for doc in docs -%}
-            <rtgl-view h="32" av="c" stretch>
-                {%- assign matchedDoc = collections.documentation | where: "fileSlug", doc.item | first -%}
-                {%- if matchedDoc -%}
-                <rtgl-view w="f" h="32" av="c" h-bgc="such" h-cur="p" pl="m" onclick="loadData('{{matchedDoc.url}}')">
-                    <rtgl-text s="ts" c="on-suv">{{ matchedDoc.data.title}}</rtgl-text>
-                </rtgl-view>
-                {%- endif -%}
-            </rtgl-view>
-            <rtgl-view w="f">
-                {%- for item in doc.items -%}
-                {%- assign matchedDoc = collections.documentation | where: "fileSlug", item | first -%}
-                {%- if matchedDoc -%}
-                <rtgl-view w="f" h="32" av="c" h-bgc="such" h-cur="p" pl="xl" onclick="loadData('{{matchedDoc.url}}')">
-                    <rtgl-text s="ll" c="on-su">
-                        {{ matchedDoc.data.title }}
-                    </rtgl-text>
-                </rtgl-view>
-                {%- endif -%}
-                {%- endfor -%}
-            </rtgl-view>
-            {%- endfor -%}
+        {%- for doc in docs -%}
+        <rtgl-view h="32" av="c" stretch>
+          {%- assign matchedDoc = collections.documentation | where: "fileSlug",
+          doc.item | first -%} {%- if matchedDoc -%}
+          <rtgl-view
+            w="f"
+            h="32"
+            av="c"
+            h-bgc="such"
+            h-cur="p"
+            pl="l"
+            onclick="loadData('{{matchedDoc.url}}')"
+          >
+            <rtgl-text s="ts" c="on-suv">{{ matchedDoc.data.title}}</rtgl-text>
+          </rtgl-view>
+          {%- endif -%}
         </rtgl-view>
-        <rtgl-view flex="1" p="xl" sv h="100vh">
-            <rtgl-view id="content-container">
-                <!-- start-content -->
-                <rtgl-text s="dm" c="on-su">{{ title }}</rtgl-text>
-                {{ content }}
-                <rtgl-view h="33vh"></rtgl-view>
-                <!-- end-content -->
-            </rtgl-view>
+        <rtgl-view w="f">
+          {%- for item in doc.items -%} {%- assign matchedDoc =
+          collections.documentation | where: "fileSlug", item | first -%} {%- if
+          matchedDoc -%}
+          <rtgl-view
+            w="f"
+            h="32"
+            av="c"
+            h-bgc="such"
+            h-cur="p"
+            pl="xl"
+            onclick="loadData('{{matchedDoc.url}}')"
+          >
+            <rtgl-text s="ll" c="on-su">
+              {{ matchedDoc.data.title }}
+            </rtgl-text>
+          </rtgl-view>
+          {%- endif -%} {%- endfor -%}
         </rtgl-view>
-        <rtgl-view w="240"></rtgl-view>
+        {%- endfor -%}
+      </rtgl-view>
+      <rtgl-view flex="1" p="xl" sv h="100vh">
+        <rtgl-view id="content-container">
+          <!-- start-content -->
+          <rtgl-text s="dm" c="on-su">{{ title }}</rtgl-text>
+          {{ content }}
+          <rtgl-view h="33vh"></rtgl-view>
+          <!-- end-content -->
+        </rtgl-view>
+      </rtgl-view>
+      <rtgl-view w="240"></rtgl-view>
     </rtgl-view>
-
-</body>
-
+  </body>
 </html>

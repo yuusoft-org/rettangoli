@@ -48,86 +48,32 @@
     </script>
 </head>
 
-
 <body>
-  
-<rtgl-view w="100vw" bgc="su">
-  <rtgl-view
-    bgc="su"
-    pos="fix"
-    cor="top"
-    h="48"
-    bwb="xs"
-    bc="o"
-    av="c"
-    d="h"
-    ph="l"
-  >
-    <rtgl-image src="/public/sample1.jpg" h="32"></rtgl-image>
-    <rtgl-view flex="1"></rtgl-view>
-    <rtgl-button t="p">Button</rtgl-button>
-  </rtgl-view>
-
-  <rtgl-view w="f" ah="c" av="c" h="100vh" g="l">
-    <rtgl-text s="dm" mh="xl"> {{ landing.hero.title }} </rtgl-text>
-    <rtgl-view w="400" s-w="300">
-        <rtgl-text s="bl" c="on-su-v" at="c"
-          >{{ landing.hero.subtitle }} </rtgl-text
-        >
+  <rtgl-view w="100vw" bgc="su">
+    <rtgl-view
+      bgc="su"
+      pos="fix"
+      cor="top"
+      h="48"
+      bwb="xs"
+      bc="o"
+      av="c"
+      d="h"
+      ph="l"
+    >
+      <rtgl-text s="tm">{{ landing.hero.title }}<rtgl-text>
+      <rtgl-view flex="1"></rtgl-view>
     </rtgl-view>
-    <a href="/docs/introduction"><rtgl-button t="pl" mt="l">Read docs</rtgl-button></a>
-  </rtgl-view>
 
-  <rtgl-view w="f" ah="c" av="c" h="100vh">
-    <rtgl-view>
-      <rtgl-text s="tl">Feature 1</rtgl-text>
-      <rtgl-image src="/public/sample1.jpg" s-w="calc(100vw - 32px)" s-h="calc((100vw - 32px) * 3 / 4)" s-h="200" w="600" h="450" width="400" height="300"></rtgl-image>
-    </rtgl-view>
-  </rtgl-view>
-
-  <rtgl-view w="f" ah="c" av="c" h="100vh">
-    <rtgl-view>
-      <rtgl-text s="tl">Feature 1</rtgl-text>
-      <rtgl-image src="/public/sample1.jpg" s-w="calc(100vw - 32px)" s-h="calc((100vw - 32px) * 3 / 4)" s-h="200" w="600" h="450" width="400" height="300"></rtgl-image>
-    </rtgl-view>
-  </rtgl-view>
-
-  <rtgl-view w="f" ah="c" av="c" h="100vh">
-    <rtgl-view>
-      <rtgl-text s="tl">Feature 1</rtgl-text>
-      <rtgl-image src="/public/sample1.jpg" s-w="calc(100vw - 32px)" s-h="calc((100vw - 32px) * 3 / 4)" s-h="200" w="600" h="450" width="400" height="300"></rtgl-image>
-    </rtgl-view>
-  </rtgl-view>
-
-  <style>
-    a {
-      --anchor-text-decoration: none;
-    }
-  </style>
-    <rtgl-view d="h" ph="l" pv="xl" ah="c" stretch gv="xl" bwt="xs" bc="o">
-      <rtgl-view flex="3" g="m" s-w="100vw" stretch>
-        <rtgl-image src="/public/sample1.jpg" h="32"></rtgl-image>
-        <rtgl-view flex="1"></rtgl-view>
-        <rtgl-view d="h" g="l">
-            <rtgl-svg h-cur="p" svg="text" wh="20"></rtgl-svg>
-            <rtgl-svg h-cur="p" svg="home" wh="20"></rtgl-svg>
-            <rtgl-svg h-cur="p" svg="threeDots" wh="20"></rtgl-svg>
-        </rtgl-view>
+    <rtgl-view w="f" ah="c" av="c" h="100vh" g="l">
+      <rtgl-text s="dm" mh="xl"> {{ landing.hero.title }} </rtgl-text>
+      <rtgl-view s-w="300">
+          <rtgl-text s="bl" c="on-su-v" at="c"
+            >{{ landing.hero.subtitle }} </rtgl-text
+          >
       </rtgl-view>
-      <rtgl-view flex="2" g="m">
-        <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
-        <rtgl-text s="ll"><a href="/">Terms Conditions</a></rtgl-text>
-        <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
-        <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
-        <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
-      </rtgl-view>
-      <rtgl-view flex="2" g="m">
-        <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
-        <rtgl-text s="ll"><a href="/">Terms Conditions</a></rtgl-text>
-        <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
-        <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
-        <rtgl-text s="ll"><a href="/">About</a></rtgl-text>
-      </rtgl-view>
+      <a href="/docs/introduction"><rtgl-button t="pl" mt="l">Read docs</rtgl-button></a>
     </rtgl-view>
+
   </rtgl-view>
 </body>
