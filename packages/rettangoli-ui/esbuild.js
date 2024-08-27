@@ -22,7 +22,7 @@ esbuild
     bundle: true,
     plugins: [httpPlugin],
     minify: true,
-    sourcemap: true,
+    sourcemap: false,
     format: "iife",
     globalName: "rettangoli",
     outfile: `dist/rettangoli-${mode}.min.js`,
