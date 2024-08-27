@@ -1,0 +1,12 @@
+{
+    "type": "module",
+    "scripts": {
+        "dev": "npx @11ty/eleventy@canary --serve --port 3000",
+        "build": "rm -rf _site && npx @11ty/eleventy@canary"
+    },
+    "devDependencies": {
+        "js-yaml": "~4.1.0",
+        "luxon": "~3.5.0",
+        "markdown-it": "~14.1.0"
+    }
+}
