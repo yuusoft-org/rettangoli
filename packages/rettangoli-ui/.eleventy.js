@@ -14,8 +14,7 @@ export default function (eleventyConfig) {
   eleventyConfig.on("afterBuild", () => {
     return esbuild.build({
       plugins: [httpPlugin],
-      entryPoints: ["./src/index.js"],
-      // plugins: [npm2jsdelivrPlugin],
+      entryPoints: ["./src/entry-ui.js"],
       bundle: true,
       // splitting: true,  // Enable code splitting
       minify: true,
