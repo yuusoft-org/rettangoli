@@ -5,7 +5,6 @@ tags: [documentation]
 ---
 
 > Your layout is basically made out of rectangular shapes
-> @han4wluc
 
 rettangoli is a layout and UI library that you can learn within one day and use for the rest of your life
 

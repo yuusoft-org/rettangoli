@@ -1,7 +1,8 @@
 {
     "type": "module",
     "scripts": {
-        "dev": "npx @11ty/eleventy@canary --serve --port 3000"
+        "dev": "npx @11ty/eleventy@canary --serve --port 3000",
+        "build": "rm -rf _site && npx @11ty/eleventy@canary"
     },
     "devDependencies": {
         "js-yaml": "~4.1.0",

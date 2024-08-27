@@ -1,6 +1,6 @@
 - item: introduction
   items:
-    - getting-started
+    # - getting-started
     - css-variables
 - item: concepts
   items:
