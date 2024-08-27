@@ -2,7 +2,7 @@
   "name": "rettangoli-ui",
   "version": "0.0.8-rc1",
   "description": "A UI component library for building web interfaces.",
-  "main": "dist/rettangoli-ui.min.js",
+  "main": "entry-esm.js",
   "type": "module",
   "files": [
     "dist"
@@ -23,7 +23,9 @@
   "devDependencies": {
     "esbuild": "^0.20.0",
     "esbuild-plugin-http": "^0.2.0",
-    "playwright": "^1.46.0"
+    "playwright": "^1.46.0",
+    "pixelmatch": "^6.0.0",
+    "pngjs": "^7.0.0"
   },
   "keywords": [
     "ui",
@@ -34,9 +36,5 @@
   "bugs": {
     "url": "https://github.com/yuusoft-org/rettangoli/issues"
   },
-  "homepage": "https://github.com/yuusoft-org/rettangoli#readme",
-  "dependencies": {
-    "pixelmatch": "^6.0.0",
-    "pngjs": "^7.0.0"
-  }
+  "homepage": "https://github.com/yuusoft-org/rettangoli#readme"
 }
