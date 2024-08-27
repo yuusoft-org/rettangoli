@@ -38,6 +38,7 @@ export default css`
   }
   :host(:not([d])[ah="e"]) {
     align-items: flex-end;
+    align-content: flex-end;
   }
   :host(:not([d]):not([av])) {
     justify-content: flex-start;
