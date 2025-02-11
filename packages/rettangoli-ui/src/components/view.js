@@ -12,6 +12,9 @@ styleSheet.replaceSync(css`
   slot {
     display: contents;
   }
+  :host([hidden]) {
+    display: none;
+  }
   :host {
     display: flex;
     align-self: auto;
