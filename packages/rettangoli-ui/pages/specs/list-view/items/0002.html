@@ -27,7 +27,7 @@ tags: [test]
     label: 'ccc'
   }]
 
-  const itemsMapping = (item, i) => {
+  const itemsRenderer = (item, i) => {
     return html`
       <rtgl-text>Item: ${item.label}</rtgl-text>
     `
@@ -35,14 +35,14 @@ tags: [test]
 
   const container = document.querySelector('#container');
   render(container, html`
-      <rtgl-list-view key="1" g="m" .items=${items} .itemsMapping=${itemsMapping}>
+      <rtgl-list-view key="1" g="m" .items=${items} .itemsRenderer=${itemsRenderer}>
         <rtgl-text slot="top">Top Top</rtgl-text>
         <rtgl-text slot="bottom">Bottom Bottom</rtgl-text>
       </rtgl-list-view>
     `)
   setTimeout(() => {
     render(container, html`
-        <rtgl-list-view key="2" g="m" .items=${items.concat(items)} .itemsMapping=${itemsMapping}>
+        <rtgl-list-view key="2" g="m" .items=${items.concat(items)} .itemsRenderer=${itemsRenderer}>
           <rtgl-text slot="top">Top Top</rtgl-text>
           <rtgl-text slot="bottom">Bottom Bottom</rtgl-text>
       </rtgl-list-view>
