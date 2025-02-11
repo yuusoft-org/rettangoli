@@ -78,16 +78,16 @@ class RettangoliImage extends HTMLElement {
         this._styles[size].width = "100%";
       } else if (width !== undefined) {
         this._styles[size].width = width;
-        this._styles[size].minWidth = width;
-        this._styles[size].maxWidth = width;
+        this._styles[size]['min-width'] = width;
+        this._styles[size]['max-width'] = width;
       }
 
       if (height === "f") {
         this._styles[size].height = "100%";
       } else if (height !== undefined) {
         this._styles[size].height = height;
-        this._styles[size].minHeight = height;
-        this._styles[size].maxHeight = height;
+        this._styles[size]['min-height'] = height;
+        this._styles[size]['max-height'] = height;
       }
     });
 
