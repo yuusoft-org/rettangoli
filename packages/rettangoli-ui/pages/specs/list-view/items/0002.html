@@ -1,0 +1,51 @@
+---
+layout: default-layout-esm.html
+tags: [test]
+---
+
+<rtgl-view id="container" g="m" p="l" wh="f" fw="w">
+</rtgl-view>
+
+<script type="module">
+  import { render, html } from "https://unpkg.com/uhtml";
+  import { RettangoliView, RettangoliText, RettangoliListView } from "/scripts/entry-esm.js";
+  customElements.define("rtgl-view", RettangoliView);
+  customElements.define("rtgl-text", RettangoliText);
+  customElements.define("rtgl-list-view", RettangoliListView);
+
+  const items = [{
+    id: '1',
+    type: 'item',
+    label: 'aaaa'
+  }, {
+    id: '2',
+    type: 'folder',
+    label: 'bbbb'
+  }, {
+    id: '3',
+    type: 'item',
+    label: 'ccc'
+  }]
+
+  const itemsMapping = (item, i) => {
+    return html`
+      <rtgl-text>Item: ${item.label}</rtgl-text>
+    `
+  }
+
+  const container = document.querySelector('#container');
+  render(container, html`
+      <rtgl-list-view key="1" g="m" .items=${items} .itemsMapping=${itemsMapping}>
+        <rtgl-text slot="top">Top Top</rtgl-text>
+        <rtgl-text slot="bottom">Bottom Bottom</rtgl-text>
+      </rtgl-list-view>
+    `)
+  setTimeout(() => {
+    render(container, html`
+        <rtgl-list-view key="2" g="m" .items=${items.concat(items)} .itemsMapping=${itemsMapping}>
+          <rtgl-text slot="top">Top Top</rtgl-text>
+          <rtgl-text slot="bottom">Bottom Bottom</rtgl-text>
+      </rtgl-list-view>
+    `)
+  }, 1000)
+</script>

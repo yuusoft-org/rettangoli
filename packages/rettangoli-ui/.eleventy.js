@@ -14,15 +14,29 @@ export default function (eleventyConfig) {
   eleventyConfig.on("afterBuild", () => {
     return esbuild.build({
       plugins: [httpPlugin],
-      entryPoints: ["./src/entry-ui.js"],
+      entryPoints: ["./src/entry-iife-ui.js"],
       bundle: true,
       // splitting: true,  // Enable code splitting
-      minify: true,
+      minify: false,
       // sourcemap: true,
       // outfile: "_site/scripts/main.js",
       outdir: "_site/scripts",
       // format: "esm",
       format: "iife",
+    });
+  });
+  eleventyConfig.on("afterBuild", () => {
+    return esbuild.build({
+      // plugins: [httpPlugin],
+      entryPoints: ["./src/entry-esm.js"],
+      bundle: true,
+      // splitting: true,  // Enable code splitting
+      minify: false,
+      // sourcemap: true,
+      // outfile: "_site/scripts/main.js",
+      outdir: "_site/scripts",
+      // format: "esm",
+      format: "esm",
     });
   });
 
