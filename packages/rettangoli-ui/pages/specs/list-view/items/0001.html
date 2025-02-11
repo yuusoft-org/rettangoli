@@ -1,0 +1,56 @@
+---
+layout: default-layout.html
+tags: [test]
+---
+
+<rtgl-view id="container" g="m" p="l" wh="f" fw="w">
+</rtgl-view>
+
+<script type="module">
+  import { render, html } from "https://unpkg.com/uhtml";
+  const items = [{
+    id: '1',
+    type: 'item',
+    label: 'aaaa'
+  }, {
+    id: '2',
+    type: 'folder',
+    label: 'bbbb'
+  }, {
+    id: '3',
+    type: 'item',
+    label: 'ccc'
+  }]
+
+  const itemsMapping = {
+    key: 'type',
+    maps: {
+      'item': (item, i) => {
+        return html`
+          <rtgl-text>Item: ${item.label}</rtgl-text>
+        `
+      },
+      'folder': (item, i) => {
+        return html`
+          <rtgl-text>Folder: ${item.label}</rtgl-text>
+        `
+      }
+    },
+  }
+
+  const container = document.querySelector('#container');
+  render(container, html`
+      <rtgl-list-view key="1" g="m" .items=${items} .itemsMapping=${itemsMapping}>
+        <rtgl-text slot="above">Above Above</rtgl-text>
+        <rtgl-text slot="below">Below Below</rtgl-text>
+      </rtgl-list-view>
+    `)
+  setTimeout(() => {
+    render(container, html`
+        <rtgl-list-view key="2" g="m" .items=${items.concat(items)} .itemsMapping=${itemsMapping}>
+          <rtgl-text slot="above">Above Above</rtgl-text>
+        <rtgl-text slot="below">Below Below</rtgl-text>
+      </rtgl-list-view>
+    `)
+  }, 1000)
+</script>
