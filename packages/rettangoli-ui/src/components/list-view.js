@@ -113,9 +113,9 @@ class RettangoliListView extends HTMLElement {
       <slot name="top"></slot>
       ${this.items?.map((item, i) => {
         const renderFunction =
-          typeof this.itemsMapping === "function"
-            ? this.itemsMapping
-            : this.itemsMapping.maps[item[this.itemsMapping.key]];
+          typeof this.itemsRenderer === "function"
+            ? this.itemsRenderer
+            : this.itemsRenderer.maps[item[this.itemsRenderer.key]];
         return renderFunction(item, i);
       })}
       <slot name="bottom"></slot>
