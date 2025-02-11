@@ -1,9 +1,5 @@
 import { render, html } from "https://unpkg.com/uhtml";
-import {
-  css,
-  dimensionWithUnit,
-  convertObjectToCssString,
-} from "../common.js";
+import { css, dimensionWithUnit, convertObjectToCssString } from "../common.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import scrollStyle from "../styles/scrollStyles.js";
@@ -104,9 +100,9 @@ class RettangoliListView extends HTMLElement {
       }
     });
 
-    setTimeout(() => {    
+    setTimeout(() => {
       render(this.shadow, this.render);
-    }, 0)
+    }, 0);
   }
 
   render = () => {
@@ -114,13 +110,15 @@ class RettangoliListView extends HTMLElement {
       <style>
         ${convertObjectToCssString(this._styles)}
       </style>
-      <slot name="above"></slot>
+      <slot name="top"></slot>
       ${this.items?.map((item, i) => {
         const renderFunction =
-          this.itemsMapping.maps[item[this.itemsMapping.key]];
+          typeof this.itemsMapping === "function"
+            ? this.itemsMapping
+            : this.itemsMapping.maps[item[this.itemsMapping.key]];
         return renderFunction(item, i);
       })}
-      <slot name="below"></slot>
+      <slot name="bottom"></slot>
     `;
   };
 }

@@ -27,20 +27,10 @@ tags: [test]
     label: 'ccc'
   }]
 
-  const itemsMapping = {
-    key: 'type',
-    maps: {
-      'item': (item, i) => {
-        return html`
-          <rtgl-text>Item: ${item.label}</rtgl-text>
-        `
-      },
-      'folder': (item, i) => {
-        return html`
-          <rtgl-text>Folder: ${item.label}</rtgl-text>
-        `
-      }
-    },
+  const itemsMapping = (item, i) => {
+    return html`
+      <rtgl-text>Item: ${item.label}</rtgl-text>
+    `
   }
 
   const container = document.querySelector('#container');
