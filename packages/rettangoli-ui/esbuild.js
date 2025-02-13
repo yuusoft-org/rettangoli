@@ -6,7 +6,7 @@ import httpPlugin from "esbuild-plugin-http";
   esbuild
     .build({
       bundle: true,
-    plugins: [httpPlugin],
+    plugins: mode === 'esm' ? [] : [httpPlugin],
     minify: true,
     sourcemap: false,
     format: mode === 'esm' ? "esm" : "iife",
