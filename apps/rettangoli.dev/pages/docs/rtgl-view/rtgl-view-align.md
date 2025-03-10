@@ -4,25 +4,49 @@ title: Align
 tags: [documentation]
 ---
 
-## Overview
+Alignment attributes control how child elements are positioned within a `<rtgl-view>` container, allowing for precise control over both horizontal and vertical positioning.
 
-Available attributes:
+## Table of Contents
 
-* Align Vertical: `av`
-* Align Horizontal: `ah`
+- [Basic Usage](#basic-usage)
+- [Alignment Attributes](#alignment-attributes)
+- [Examples](#examples)
+- [Usage Notes](#usage-notes)
 
-### Align Vertical: `av`
+## Basic Usage
 
-By default, elements will be aligned to the top.
+Alignment attributes determine how children are positioned within their parent container.
 
-### Align Horizontal: `av`
+| Attribute | Values | Description |
+|-----------|--------|-------------|
+| `ah` | `s` (default), `c`, `e` | Horizontal alignment: start, center, end |
+| `av` | `s` (default), `c`, `e` | Vertical alignment: start, center, end |
 
-By default, elements will be aligned to the left.
+## Alignment Attributes
 
+### Horizontal Alignment: `ah`
 
-### Example
+The `ah` attribute controls the horizontal positioning of child elements within a container.
 
-There are 9 combination of alignment in total. Below is an example of all of them
+| Value | Description |
+|-------|-------------|
+| `s` | Start (left) alignment (default) |
+| `c` | Center alignment |
+| `e` | End (right) alignment |
+
+### Vertical Alignment: `av`
+
+The `av` attribute controls the vertical positioning of child elements within a container.
+
+| Value | Description |
+|-------|-------------|
+| `s` | Start (top) alignment (default) |
+| `c` | Center alignment |
+| `e` | End (bottom) alignment |
+
+## Examples
+
+### Horizontal Alignment Examples
 
 ```html
 <rtgl-view w="f" bgc="isu" p="m" g="m" d="h">
@@ -38,6 +62,13 @@ There are 9 combination of alignment in total. Below is an example of all of the
 </rtgl-view>
 ```
 
+**Explanation:**
+- First box: Default left alignment (`ah="s"` is implicit)
+- Second box: Center horizontal alignment (`ah="c"`)
+- Third box: Right alignment (`ah="e"`)
+
+### Vertical Alignment Examples
+
 ```html
 <rtgl-view w="f" bgc="isu" p="m" g="m" d="h">
   <rtgl-view wh="100" bgc="suc" p="m" av="c">
@@ -51,6 +82,13 @@ There are 9 combination of alignment in total. Below is an example of all of the
   </rtgl-view>
 </rtgl-view>
 ```
+
+**Explanation:**
+- First box: Center vertical alignment (`av="c"`) with default left alignment
+- Second box: Center vertical and horizontal alignment (`av="c" ah="c"`)
+- Third box: Center vertical with right horizontal alignment (`av="c" ah="e"`)
+
+### Bottom Alignment Examples
 
 ```html
 <rtgl-view w="f" bgc="isu" p="m" g="m" d="h">
@@ -66,3 +104,17 @@ There are 9 combination of alignment in total. Below is an example of all of the
 </rtgl-view>
 ```
 
+**Explanation:**
+- First box: Bottom vertical alignment (`av="e"`) with default left alignment
+- Second box: Bottom vertical with center horizontal alignment (`av="e" ah="c"`)
+- Third box: Bottom vertical with right horizontal alignment (`av="e" ah="e"`)
+
+## Usage Notes
+
+- **Default Alignment**: When no alignment is specified, elements align to the top-left (start positions)
+- **Alignment Shorthand**: 
+  - `s` = start (left/top)
+  - `c` = center
+  - `e` = end (right/bottom)
+- **Combining with Direction**: Alignment behavior works with both vertical (`d` not set) and horizontal (`d="h"`) layouts
+- **Parent Container**: Alignment only works when the parent container has available space (is larger than the child elements)
