@@ -11,7 +11,6 @@ Margin attributes control the outer spacing around a `<rtgl-view>` element, crea
 - [Basic Usage](#basic-usage)
 - [Margin Attributes](#margin-attributes)
 - [Examples](#examples)
-- [Usage Notes](#usage-notes)
 
 ## Basic Usage
 
@@ -109,24 +108,3 @@ These attributes add margin to specific sides of an element.
   6. `mb="m"`: Medium margin on bottom only
   7. `ml="m"`: Medium margin on left only
 - Each element is contained in a parent with a background color to make the margin visible
-
-## Usage Notes
-
-- **Margin Sizes**:
-  - `xs`: Extra small margin
-  - `s`: Small margin
-  - `m`: Medium margin (most commonly used)
-  - `l`: Large margin
-  - `xl`: Extra large margin
-- **Margin vs. Padding**: 
-  - Margin creates space outside the element
-  - Padding creates space inside the element
-- **Margin Collapse**: Unlike CSS, margins in rtgl-view do not collapse
-- **Combining Attributes**: You can combine different margin attributes, but more specific ones will override general ones
-- **Layout Impact**: Margins affect the layout flow and spacing between elements
-
----
-
-**Next:** [rtgl-view Padding](/docs/rtgl-view/rtgl-view-padding/)
-**Previous:** [rtgl-view Gap](/docs/rtgl-view/rtgl-view-gap/)
-

@@ -25,6 +25,7 @@ Border attributes control the width and color of element borders.
 | `bwb` | `xs`, `s`, `m`, `l`, `xl` | Bottom border width |
 | `bwl` | `xs`, `s`, `m`, `l`, `xl` | Left border width |
 | `bc` | Color code (e.g., `p`, `s`, `o`) | Border color |
+| `br` | `xs`, `s`, `m`, `l`, `xl`, `f` | Sets the border radius for all corners |
 
 ## Border Attributes
 
@@ -76,14 +77,33 @@ The `bc` attribute sets the color of all borders on an element.
 - All borders use the orange color (`bc="o"`)
 - Each element has the same size (`wh="48"`) and background color
 
+
+### Various Border Radius Values
+
+```html
+<rtgl-view w="f" bgc="isu" p="m" d="h" g="m">
+  <rtgl-view wh="48" bgc="suc" br="xs"></rtgl-view>
+  <rtgl-view wh="48" bgc="suc" br="s"></rtgl-view>
+  <rtgl-view wh="48" bgc="suc" br="m"></rtgl-view>
+  <rtgl-view wh="48" bgc="suc" br="l"></rtgl-view>
+  <rtgl-view wh="48" bgc="suc" br="xl"></rtgl-view>
+  <rtgl-view wh="48" bgc="suc" br="f"></rtgl-view>
+</rtgl-view>
+```
+
+**Explanation:**
+- This example shows the progression of border radius sizes:
+  - `br="xs"`: Extra small border radius
+  - `br="s"`: Small border radius
+  - `br="m"`: Medium border radius
+  - `br="l"`: Large border radius
+  - `br="xl"`: Extra large border radius
+  - `br="f"`: Full radius (creates a circle for square elements)
+- All elements have the same size (`wh="48"`) and background color
+
+
 ## Usage Notes
 
-- **Border Sizes**:
-  - `xs`: Extra small border
-  - `s`: Small border
-  - `m`: Medium border
-  - `l`: Large border
-  - `xl`: Extra large border
 - **Border Colors**: The `bc` attribute accepts color codes that match your theme
 - **Combining Borders**: You can apply different border widths to different sides
 - **Box Model**: Borders add to the total size of the element

@@ -124,9 +124,3 @@ These attributes add padding to specific sides of an element.
 - **Box Model**: Padding increases the total size of the element
 - **Combining Attributes**: You can combine different padding attributes, but more specific ones will override general ones
 - **Background Color**: Padding area includes the element's background color
-
----
-
-**Next:** [rtgl-view Border](/docs/rtgl-view/rtgl-view-border/)
-**Previous:** [rtgl-view Margin](/docs/rtgl-view/rtgl-view-margin/)
-

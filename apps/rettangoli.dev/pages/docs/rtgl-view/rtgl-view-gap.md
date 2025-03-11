@@ -100,15 +100,8 @@ The `gv` attribute adds vertical spacing between child elements.
 
 ## Usage Notes
 
-- **Gap Sizes**:
-  - `xs`: Extra small gap
-  - `s`: Small gap
-  - `m`: Medium gap (most commonly used)
-  - `l`: Large gap
-  - `xl`: Extra large gap
 - **Direction Matters**: Gap behavior depends on the container's direction
   - In horizontal layouts (`d="h"`), elements are spaced side by side
   - In vertical layouts (default), elements are spaced one below another
 - **Combining Gaps**: You can use `gh` and `gv` together to set different spacing in each direction
-- **Overriding**: The `g` attribute sets both directions, but can be overridden by `gh` or `gv`
 - **No Outer Margins**: Gap only affects space between elements, not around the container

@@ -84,4 +84,3 @@ The `flex` attribute controls how an element grows to fill available space. High
 - **Combining with Fixed Dimensions**: You can mix flex elements with fixed-size elements
 - **Multiple Flex Elements**: When multiple elements have flex values, space is distributed proportionally
 - **Responsive Layouts**: Flex is essential for creating layouts that adapt to different screen sizes
-- **Flex Value of 0**: Setting `flex="0"` prevents an element from growing

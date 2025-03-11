@@ -78,8 +78,8 @@ The `bgc` attribute sets the background color of an element using predefined col
   - `sucl`: Surface color (lighter variant)
   - `suc`: Surface container color
   - `such`: Surface container color (higher contrast)
-  - `o`: Orange color (utility)
-  - `ov`: Orange variant color (utility)
+  - `o`: Outline color (utility)
+  - `ov`: Outline variant color (utility)
 
 ## Usage Notes
 

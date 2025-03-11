@@ -61,14 +61,8 @@ The `d` attribute controls the flow direction of child elements within a contain
 ## Usage Notes
 
 - **Default Behavior**: When no direction is specified, elements stack vertically
-- **Vertical Direction**: There is no explicit `d="v"` value - simply omit the `d` attribute for vertical layout
+- **Vertical Direction**: There is no explicit `d="v"` value. Simply omit the `d` attribute for vertical layout
 - **Combining with Other Attributes**: Direction works well with:
   - Gap attributes (`g`, `gh`, `gv`) for spacing between items
   - Alignment attributes (`ah`, `av`) for positioning items
   - Flex attributes for controlling how items grow and shrink
-
----
-
-**Next:** [rtgl-view Alignment](/docs/rtgl-view/alignment/)
-**Previous:** [rtgl-view Dimensions](/docs/rtgl-view/rtgl-view-dimensions/)
-

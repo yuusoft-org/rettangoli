@@ -88,6 +88,5 @@ The `sh` attribute enables horizontal scrolling when content exceeds the contain
 
 - **Fixed Dimensions**: Scrolling only works when the container has fixed dimensions
 - **Combining Scrolling**: You can use both `sv` and `sh` together to enable scrolling in both directions
-- **Overflow Behavior**: These attributes are shorthand for CSS `overflow` properties
 - **Mobile Considerations**: On touch devices, scrollable areas support touch scrolling gestures
 - **Nested Scrolling**: Be careful with nested scrollable areas as they can create confusing UX
