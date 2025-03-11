@@ -1,9 +1,7 @@
 - item: introduction
   items:
-    # - getting-started
+    - getting-started
     - css-variables
-- item: concepts
-  items:
     - colors
 - item: rtgl-view
   items:
@@ -20,3 +18,12 @@
     - rtgl-view-padding
     - rtgl-view-position
     - rtgl-view-scroll
+- item: rtgl-text
+  items:
+    - rtgl-text-size
+    - rtgl-text-alignment
+    - rtgl-text-color
+    - rtgl-text-width
+    - rtgl-text-ellipsis
+    - rtgl-text-margin
+    - rtgl-text-cursor
