@@ -4,17 +4,34 @@ title: Direction
 tags: [documentation]
 ---
 
-## Overview
+The direction attribute controls how child elements are arranged within a `<rtgl-view>` container, allowing for both vertical and horizontal layouts.
 
-Available attributes:
+## Table of Contents
 
-* Direction: `d`
+- [Basic Usage](#basic-usage)
+- [Direction Attribute](#direction-attribute)
+- [Examples](#examples)
+- [Usage Notes](#usage-notes)
+
+## Basic Usage
+
+The direction attribute determines whether child elements are stacked vertically (default) or arranged horizontally.
+
+| Attribute | Value | Description |
+|-----------|-------|-------------|
+| `d` | `h` | Arranges children horizontally in a row |
+| `d` | (not set) | Arranges children vertically in a column (default) |
+
+## Direction Attribute
 
 ### Direction: `d`
 
-By default, layout is vertical. Add `d="h"` to make it horizontal. `h` is the only value that `d` Supports
+The `d` attribute controls the flow direction of child elements within a container.
 
-Vertical
+## Examples
+
+### Vertical Layout (Default)
+
 ```html
 <rtgl-view w="f" bgc="isu" p="m" g="m">
   <rtgl-view wh="24" bgc="suc"></rtgl-view>
@@ -22,7 +39,13 @@ Vertical
 </rtgl-view>
 ```
 
-Horizontal
+**Explanation:**
+- Child elements are stacked vertically (one below the other)
+- This is the default behavior when `d` attribute is not specified
+- The gap (`g="m"`) creates vertical spacing between elements
+
+### Horizontal Layout
+
 ```html
 <rtgl-view w="f" bgc="isu" p="m" g="m" d="h">
   <rtgl-view wh="24" bgc="suc"></rtgl-view>
@@ -30,7 +53,16 @@ Horizontal
 </rtgl-view>
 ```
 
-## Note
+**Explanation:**
+- Child elements are arranged horizontally (side by side)
+- The `d="h"` attribute creates a row layout
+- The gap (`g="m"`) creates horizontal spacing between elements
 
-`d="v"` is not supported. For vertical do not set `d` attribute
+## Usage Notes
 
+- **Default Behavior**: When no direction is specified, elements stack vertically
+- **Vertical Direction**: There is no explicit `d="v"` value. Simply omit the `d` attribute for vertical layout
+- **Combining with Other Attributes**: Direction works well with:
+  - Gap attributes (`g`, `gh`, `gv`) for spacing between items
+  - Alignment attributes (`ah`, `av`) for positioning items
+  - Flex attributes for controlling how items grow and shrink
