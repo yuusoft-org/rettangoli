@@ -6,75 +6,95 @@ tags: [documentation]
 
 ## Overview
 
-Minimal to get started
+Rettangoli is layout and UI library available in browser environments where web components are supported. It provides a flexible layout system and UI components for building modern web interfaces.
 
+There are two primary ways to use Rettangoli:
+
+* As an Immediately Invoked Function Expression (IIFE)
+* As an ESM module
+
+## IIFE Installation
+
+With the IIFE approach, you have two options:
+
+* **rettangoli-layout**: Provides only the basic components
+* **rettangoli-ui**: Provides a complete UI library with additional components
+
+### Component Availability
+
+| Component | rettangoli-layout | rettangoli-ui |
+|-----------|-------------------|---------------|
+| `rtgl-view` | Yes | Yes | 
+| `rtgl-text` | Yes | Yes |
+| `rtgl-image` | Yes | Yes |
+| `rtgl-svg` | Yes | Yes |
+| `rtgl-button` | Yes | Yes |
+| `rtgl-list-view` | No | Yes |
+
+### Using rettangoli-layout
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/rettangoli-ui@0.0.9/dist/rettangoli-iife-layout.min.js"></script>
 ```
-<script src="https://cdn.jsdelivr.net/npm/rettangoli-ui@0.0.8-rc1/dist/rettangoli-ui.min.js"></script>
-<link href="/public/theme-dark.css" rel="stylesheet" />
+
+### Using rettangoli-ui
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/rettangoli-ui@0.0.9/dist/rettangoli-iife-ui.min.js"></script>
 ```
 
-We provide 3 ways to use rettangoli
+### CSS Installation
 
-### rettangoli-layout
-Contains `rtgl-view`, `rtgl-image`, `rtgl-text`, `rtgl-svg` and `rtgl-button`.
-You can use this if your webpage is about presentation and does not have any interactive or asking input from users.
+In addition to the JavaScript file, you need to add the CSS for styling:
 
-```
-<script src="https://cdn.jsdelivr.net/npm/rettangoli-layout@0.0.8-rc1/dist/rettangoli-layout.min.js"></script>
+```html
+<link href="https://cdn.jsdelivr.net/npm/rettangoli-ui@0.0.9/dist/themes/theme-dark.css" rel="stylesheet" />
 ```
 
-### rettangoli-ui
-Contains everything from `rettangoli-layout` and all elements required for user input, and also some floating elements. it is more heavy.
+For more information on available themes and customization options, see our [CSS Variables](/docs/introduction/css-variables) guide.
 
+## ESM Installation
+
+The ESM approach provides more customization options.
+
+### Install via npm
+
+First, install the package:
+
+```bash
+npm install rettangoli-ui
 ```
-<script src="https://cdn.jsdelivr.net/npm/rettangoli-ui@0.0.8-rc1/dist/rettangoli-ui.min.js"></script>
-```
 
-### Custom
-
-`npm i rettangoli-ui`
+Rettangoli uses [uhtml](https://github.com/WebReflection/uhtml) as its HTML rendering library. You'll need to pass instances of `render` and `html` when registering components:
 
 ```js
+import { render, html } from 'uhtml';
 import { RettangoliView, RettangoliText } from 'rettangoli-ui'; 
-customElements.register(RettangoliView.wcName, RettangoliView)
+
+// Register the web components
+customElements.define("rtgl-view", RettangoliView({ render, html }));
+customElements.define("rtgl-text", RettangoliText({ render, html }));
+// Continue registering all the web components that you need
 ```
 
-Then run 
+This approach offers several advantages:
 
-`esbuild ...`
+* You can customize the names of the web components
+* You can use your own instance of `render` and `html`
+* You can register only the components you actually need
 
-And you will be able to use the min file
+### CSS Installation for ESM
 
-```
-<script src="path/toyourjsfile.js"></script>
-```
+You'll still need to import a CSS file in your HTML:
 
-Note during esbuild, it will download uhtml which is a dependency for rettangoli
-
-### CSS Theme file
-
-You will need a theme file to define the CSS variables for the libray to work correctly.
-
-Dark mode
-```
-<link href="/public/theme-dark.css" rel="stylesheet" />
+```html
+<link href="/path/to/theme-dark.css" rel="stylesheet" />
 ```
 
-Light mode
-```
-<link href="/public/theme-light.css" rel="stylesheet" />
-```
+## Examples
 
-Please edit the CSS file to match you own design needs.
+Check out our complete examples to see Rettangoli in action:
 
-
-### Full Example
-
-```
-
-
-<script src="https://cdn.jsdelivr.net/npm/rettangoli-ui@0.0.8-rc1/dist/rettangoli-ui.min.js"></script>
-<link href="/public/theme-dark.css" rel="stylesheet" />
-
-```
-
+* IIFE Example: TODO
+* ESM Example: TODO
+* Component Showcase: TODO
