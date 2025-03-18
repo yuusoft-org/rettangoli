@@ -53,11 +53,14 @@ export default ({ render, html }) => {
 
     _styles = {
       default: {},
-      s: {},
+      sm: {},
+      md: {},
+      lg: {},
+      xl: {},
     };
 
     attributeChangedCallback(name, oldValue, newValue) {
-      ["default", "s"].forEach((size) => {
+      ["default", "sm", "md", "lg", "xl"].forEach((size) => {
         const addSizePrefix = (tag) => {
           return `${size === "default" ? "" : `${size}-`}${tag}`;
         };
