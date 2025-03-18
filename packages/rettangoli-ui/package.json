@@ -1,6 +1,6 @@
 {
   "name": "rettangoli-ui",
-  "version": "0.0.10-rc1",
+  "version": "0.0.10-rc2",
   "description": "A UI component library for building web interfaces.",
   "main": "entry-esm.js",
   "type": "module",
