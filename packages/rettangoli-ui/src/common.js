@@ -9,10 +9,10 @@ function css(strings, ...values) {
 
 const mediaQueries = {
   default: undefined,
+  xl: "@media only screen and (max-width: 1280px)",
+  lg: "@media only screen and (max-width: 1024px)",
+  md: "@media only screen and (max-width: 768px)",
   sm: "@media only screen and (max-width: 640px)",
-  md: "@media only screen and (min-width: 641px) and (max-width: 768px)",
-  lg: "@media only screen and (min-width: 769px) and (max-width: 1024px)",
-  xl: "@media only screen and (min-width: 1025px) and (max-width: 1280px)",
 };
 
 const generateCSS = (styleMap, styles, descendants = {}) => {
