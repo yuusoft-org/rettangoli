@@ -16,9 +16,6 @@ export default ({ render, html }) => {
     slot {
       display: contents;
     }
-    :host([hidden]) {
-      display: none;
-    }
     :host {
       display: flex;
       align-self: auto;
@@ -99,8 +96,12 @@ export default ({ render, html }) => {
           this._styles[size]["max-height"] = height;
         }
 
-        if (this.hasAttribute("hidden")) {
-          this._styles[size].display = "none";
+        if (this.hasAttribute(addSizePrefix("hidden"))) {
+          this._styles[size].display = "none !important";
+        }
+
+        if (this.hasAttribute(addSizePrefix("visible"))) {
+          this._styles[size].display = "flex !important";
         }
       });
 
