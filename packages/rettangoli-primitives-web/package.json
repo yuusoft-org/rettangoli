@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "liquidjs": "^10.21.0",
+    "pixelmatch": "^7.1.0",
+    "playwright": "^1.52.0"
+  }
+}
