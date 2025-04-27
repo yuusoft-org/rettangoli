@@ -1,9 +1,5 @@
 import { generateCSS } from "../common.js";
 
-const styleMap = {
-  c: "color",
-};
-
 const styles = {
   c: {
     "on-p": "--color-on-primary",
@@ -18,4 +14,4 @@ const styles = {
   },
 };
 
-export default generateCSS(styleMap, styles);
+export default generateCSS(styles);

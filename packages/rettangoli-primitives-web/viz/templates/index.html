@@ -5,16 +5,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/public/theme.css">
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      if (location.hash) {
+        const el = document.getElementById(location.hash.substring(1));
+        if (el) {
+          el.scrollIntoView({ behavior: 'auto' });
+        }
+      }
+    });
+  </script>
   <script src="/public/rettangoli.js"></script>
+
   <style>
     code {
       white-space: pre-wrap;
       display: block;
-      padding: 10px;
       overflow: auto;
       max-height: 400px;
       background-color: var(--color-surface-container-low);
-      width: 100%;
       word-break: break-all;
     }
     iframe {
@@ -34,10 +43,12 @@
     </rtgl-view>
     <rtgl-view h="100vh" w="f" flex="1" bgc="su" p="l" g="l" style="flex-wrap: nowrap;" sv>
       {% for file in files %}
-      <rtgl-view w="f">
-        <rtgl-text s="tl">{{ file.frontMatter.title | default: file.path }}</rtgl-text>
+      <rtgl-view id="{{ file.frontMatter.title | slug }}" w="f">
+        <a style="display: contents; text-decoration: none; color: inherit;" href="#{{ file.frontMatter.title | slug }}">
+          <rtgl-text s="tl">{{ file.frontMatter.title | default: file.path }}</rtgl-text>
+        </a>
         <rtgl-view w="f" d="h" g="l">
-          <rtgl-view flex="1">
+          <rtgl-view flex="1" bgc="suc" p="l">
             <code>{{ file.content | escape }}</code>
           </rtgl-view>
           <rtgl-view flex="1">

@@ -1,9 +1,5 @@
 import { generateCSS } from '../common.js'
 
-const styleMap = {
-    "cur": "cursor",
-};
-
 const styles = {
     "cur": {
         "p": "pointer",
@@ -13,5 +9,4 @@ const styles = {
     },
 };
 
-
-export default generateCSS(styleMap, styles);
+export default generateCSS(styles);

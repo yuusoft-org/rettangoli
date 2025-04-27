@@ -1,6 +1,8 @@
 {
   "type": "module",
   "dependencies": {
+    "esbuild": "^0.25.3",
+    "esbuild-plugin-http": "^0.2.0",
     "js-yaml": "^4.1.0",
     "liquidjs": "^10.21.0",
     "pixelmatch": "^7.1.0",

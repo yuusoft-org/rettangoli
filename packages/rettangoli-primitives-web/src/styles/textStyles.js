@@ -1,9 +1,5 @@
 import { generateCSS } from "../common.js";
 
-const styleMap = {
-  at: 'text-align'
-};
-
 const styles = {
   at: {
     c: 'center',
@@ -74,4 +70,4 @@ const styles = {
   },
 };
 
-export default generateCSS(styleMap, styles);
+export default generateCSS(styles);

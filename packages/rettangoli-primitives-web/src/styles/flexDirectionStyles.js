@@ -5,7 +5,7 @@ export default css`
   :host([d="h"]) {
     flex-direction: row;
   }
-  :host(:not([d])) {
+  :host([d="v"]) {
     flex-direction: column;
   }
   :host([d="h"]:not([ah])) {
@@ -13,7 +13,6 @@ export default css`
   }
   :host([d="h"][ah="c"]) {
     justify-content: center;
-    /* align-content: center; */
   }
   :host([d="h"][ah="e"]) {
     justify-content: flex-end;
@@ -29,26 +28,34 @@ export default css`
     align-items: flex-end;
     align-content: flex-end;
   }
-  :host(:not([d]):not([ah])) {
+  
+  /* Default/vertical direction - horizontal alignment */
+  :host(:not([d]):not([ah])),
+  :host([d="v"]:not([ah])) {
     align-items: flex-start;
   }
-  :host(:not([d])[ah="c"]) {
+  :host(:not([d])[ah="c"]),
+  :host([d="v"][ah="c"]) {
     align-items: center;
-    align-content: center;
   }
-  :host(:not([d])[ah="e"]) {
+  :host(:not([d])[ah="e"]),
+  :host([d="v"][ah="e"]) {
     align-items: flex-end;
-    align-content: flex-end;
   }
-  :host(:not([d]):not([av])) {
+  
+  :host(:not([d]):not([av])),
+  :host([d="v"]:not([av])) {
     justify-content: flex-start;
   }
-  :host(:not([d])[av="c"]) {
+  :host(:not([d])[av="c"]),
+  :host([d="v"][av="c"]) {
     justify-content: center;
   }
-  :host(:not([d])[av="e"]) {
+  :host(:not([d])[av="e"]),
+  :host([d="v"][av="e"]) {
     justify-content: flex-end;
   }
+  
   @media screen and (max-width: 640px) {
     :host([s-d="v"]) {
       flex-direction: column;

@@ -1,14 +1,21 @@
 ---
-layout: default-layout.html
-tags: [test]
+title: "View - Direction"
+specs:
+  - without `d`, direction should be vertical
+  - with `d="v"`, direction should be vertical
+  - with `d="h"`, direction should be horizontal
 ---
-<rtgl-view d="h" g="l" p="l" wh="f" fw="w">
-    <rtgl-view bgc="sucl" wh="200" g="m" p="m">
-        <rtgl-view bgc="suc" wh="50"></rtgl-view>
-        <rtgl-view bgc="suc" wh="50"></rtgl-view>
+<rtgl-view d="h" g="l" p="l" wh="f">
+    <rtgl-view bgc="sucl" wh="100" g="m" p="m">
+        <rtgl-view bgc="su" wh="20"></rtgl-view>
+        <rtgl-view bgc="su" wh="20"></rtgl-view>
     </rtgl-view>
-    <rtgl-view d="h" bgc="sucl" wh="200" g="m" p="m">
-        <rtgl-view bgc="suc" wh="50"></rtgl-view>
-        <rtgl-view bgc="suc" wh="50"></rtgl-view>
+    <rtgl-view d="v" bgc="sucl" wh="100" g="m" p="m">
+        <rtgl-view bgc="su" wh="20"></rtgl-view>
+        <rtgl-view bgc="su" wh="20"></rtgl-view>
+    </rtgl-view>
+    <rtgl-view d="h" bgc="sucl" wh="100" g="m" p="m">
+        <rtgl-view bgc="su" wh="20"></rtgl-view>
+        <rtgl-view bgc="su" wh="20"></rtgl-view>
     </rtgl-view>
 </rtgl-view>

@@ -8,28 +8,6 @@ const borderWidth = {
   xl: "--border-width-xl",
 }
 
-const styleMap = {
-  pos: "position",
-  shadow: "box-shadow",
-  pt: "padding-top",
-  pr: "padding-right",
-  pb: "padding-bottom",
-  pl: "padding-left",
-  p: "padding",
-  ph: "padding-left padding-right",
-  pv: "padding-top padding-bottom",
-  g: "gap",
-  gv: "row-gap",
-  gh: "column-gap",
-  bw: "border-width",
-  bwt: "border-top-width",
-  bwr: "border-right-width",
-  bwb: "border-bottom-width",
-  bwl: "border-left-width",
-  bc: "border-color",
-  br: "border-radius",
-};
-
 const styles = {
   bgc: {
     p:  `
@@ -160,8 +138,8 @@ const styles = {
     m: "--border-radius-m",
     l: "--border-radius-l",
     xl: "--border-radius-xl",
-    f: "50%",
+    f: "--border-radius-f",
   },
 };
 
-export default generateCSS(styleMap, styles)
+export default generateCSS(styles)

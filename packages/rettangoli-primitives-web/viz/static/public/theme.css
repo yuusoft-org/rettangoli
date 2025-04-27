@@ -96,6 +96,23 @@ body {
   --font-size-xl: 28px;
   --font-size-xxl: 45px;
 
+  --border-radius-xs: 1px;
+  --border-radius-s: 2px;
+  --border-radius-m: 4px;
+  --border-radius-l: 8px;
+  --border-radius-xl: 16px;
+  --border-radius-f: 50%;
+
+  --border-width-xs: 1px;
+  --border-width-s: 2px;
+  --border-width-m: 4px;
+  --border-width-l: 8px;
+  --border-width-xl: 16px;
+
+  --shadow-s: 0px 2px 6px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
+  --shadow-m: 0px 5px 12px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
+  --shadow-l: 0px 10px 24px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
+
   --typography-display-m-font-size: var(--font-size-xxl);
   --typography-display-m-font-weight: 400;
   --typography-display-m-line-height: 52px;

@@ -1,0 +1,18 @@
+---
+title: View - Full height and width
+specs:
+  - w="f" should fill the width
+  - h="f" should fill the height
+  - wf="f" should fill the width and height
+---
+<rtgl-view bgc="sucl" g="l" p="l" w="100" h="100">
+    <rtgl-view bgc="su" w="20" h="f"></rtgl-view>
+</rtgl-view>
+
+<rtgl-view bgc="sucl" g="l" p="l" w="100" h="100">
+    <rtgl-view bgc="su" w="f" h="20"></rtgl-view>
+</rtgl-view>
+
+<rtgl-view bgc="sucl" g="l" p="l" w="100" h="100">
+    <rtgl-view bgc="su" wh="f"></rtgl-view>
+</rtgl-view>

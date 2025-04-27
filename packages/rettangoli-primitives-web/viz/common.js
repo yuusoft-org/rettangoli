@@ -11,6 +11,14 @@ import { load as loadYaml } from "js-yaml";
 import { Liquid } from "liquidjs";
 import { chromium } from "playwright";
 
+const engine = new Liquid();
+
+// Add custom filter to convert string to lowercase and replace spaces with hyphens
+engine.registerFilter('slug', (value) => {
+  if (typeof value !== 'string') return '';
+  return value.toLowerCase().replace(/\s+/g, '-');
+});
+
 /**
  * Get all files from a directory recursively
  */
@@ -68,7 +76,6 @@ function ensureDirectoryExists(dirPath) {
 function generateHtml(specsDir, templatePath, outputDir) {
   try {
     // Initialize LiquidJS engine
-    const engine = new Liquid();
 
     // Read template
     const templateContent = readFileSync(templatePath, "utf8");
@@ -287,9 +294,6 @@ function generateOverview(
   outputPath
 ) {
   try {
-    // Initialize LiquidJS engine
-    const engine = new Liquid();
-
     // Read template
     const templateContent = readFileSync(templatePath, "utf8");
 

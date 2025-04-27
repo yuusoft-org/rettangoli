@@ -14,6 +14,12 @@ const outputPath = "./viz/_site/report.html";
 // Initialize Liquid engine
 const engine = new Liquid();
 
+// Add custom filter to convert string to lowercase and replace spaces with hyphens
+engine.registerFilter('slug', (value) => {
+  if (typeof value !== 'string') return '';
+  return value.toLowerCase().replace(/\s+/g, '-');
+});
+
 // Recursively get all files in a directory
 function getAllFiles(dir, fileList = []) {
   const files = fs.readdirSync(dir);

@@ -2,6 +2,8 @@ import {
   css,
   dimensionWithUnit,
   convertObjectToCssString,
+  styleMapKeys,
+  permutateBreakpoints
 } from "../common.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
@@ -18,16 +20,18 @@ export default ({ render, html }) => {
     }
     :host {
       display: flex;
+      flex-direction: column;
       align-self: auto;
       align-content: flex-start;
-      /* flex-wrap: wrap; */
       border-style: solid;
       border-width: 0;
       box-sizing: border-box;
     }
-    /* :host([stretch]) {
-      align-self: stretch;
-    } */
+
+    :host([fw="w"]) {
+      flex-wrap: wrap;
+    }
+
     ${flexChildStyles}
     ${scrollStyle}
   ${flexDirectionStyles}
@@ -45,7 +49,7 @@ export default ({ render, html }) => {
     }
 
     static get observedAttributes() {
-      return ["key", "wh", "w", "h", "hidden", "s-w", "s-h", "s-d"];
+      return permutateBreakpoints([...styleMapKeys, "wh", "w", "h", "hidden", "sh", "sv"]);
     }
 
     _styles = {
