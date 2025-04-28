@@ -36,7 +36,7 @@ const styleMap = {
   br: "border-radius",
   pos: "position",
   shadow: "box-shadow",
-  at: "text-align",
+  ta: "text-align",
   c: "color",
   cur: "cursor",
 };

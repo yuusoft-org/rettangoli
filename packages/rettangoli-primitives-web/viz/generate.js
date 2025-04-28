@@ -15,17 +15,38 @@ async function main() {
   await cp("./viz/static", "./viz/_site", { recursive: true });
 
   // Generate HTML files
-  const generatedFiles = generateHtml(
+  const generatedFiles = await generateHtml(
     "./specs",
     "./viz/templates/default.html",
     "./viz/_site/artifacts"
   );
 
+  const configData = {
+    title: 'Rettangoli Test Suite',
+    sections: [{
+      title: 'View',
+      files: 'specs/view'
+    }, {
+      title: 'Text',
+      files: 'specs/text'
+    }, {
+      title: 'Button',
+      files: 'specs/button'
+    }, {
+      title: 'Image',
+      files: 'specs/image'
+    }, {
+      title: 'Svg',
+      files: 'specs/svg'
+    }]
+  }
+
   // Generate overview page with all files
   generateOverview(
     generatedFiles,
     "./viz/templates/index.html",
-    "./viz/_site/index.html"
+    "./viz/_site/index.html",
+    configData
   );
 
   // Start web server

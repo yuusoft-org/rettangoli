@@ -22,7 +22,8 @@ body {
   font-family: Roboto, -apple-system, "Helvetica Neue", sans-serif;
   display: flex;
   flex-direction: column;
-  background-color: #eee;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 :root {
@@ -162,4 +163,92 @@ body {
   --typography-label-m-font-weight: 500;
   --typography-label-m-line-height: 16px;
   --typography-label-m-letter-spacing: 0.5px;
+
+
+  --h1-font-size: 3rem;
+  --h1-font-weight: 800;
+  --h1-line-height: 1;
+  --h1-letter-spacing: -.025em;
+
+  --h2-font-size: 1.875rem;
+  --h2-font-weight: 600;
+  --h2-line-height: 2.25rem;
+  --h2-letter-spacing: -.025em;
+
+  --h3-font-size: 1.5rem;
+  --h3-font-weight: 600;
+  --h3-line-height: 2rem;
+  --h3-letter-spacing: -.025em;
+
+  --h4-font-size: 1.25rem;
+  --h4-font-weight: 600;
+  --h4-line-height: 1.75rem;
+  --h4-letter-spacing: -.025em;
+
+  --lg-font-size: 1.125rem;
+  --lg-font-weight: 400;
+  --lg-line-height: 1.75rem;
+  --lg-letter-spacing: normal;
+
+  --md-font-size: 1rem;
+  --md-font-weight: normal;
+  --md-line-height: 1.5rem;
+  --md-letter-spacing: normal;
+
+  --sm-font-size: .875rem;
+  --sm-font-weight: 400;
+  --sm-line-height: 1;
+  --sm-letter-spacing: normal;
+
+  --xs-font-size: .75rem;
+  --xs-font-weight: normal;
+  --xs-line-height: 1;
+  --xs-letter-spacing: normal;
+
+
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.145 0 0);
+
+  /* surface color */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+
+  /* item hovered color */
+  /* can also be used with opacity 0.5 for hover */
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+
+  /* item selected color */
+  --accent: oklch(0.95 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+
+  /* border/outline */
+  --border: oklch(0.922 0 0);
+
+  /* background of text inputs */
+  --input: oklch(0.922 0 0);
+
+  /* ring of text inputs */
+  --ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.305 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.371 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
 }

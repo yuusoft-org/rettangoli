@@ -10,14 +10,44 @@ import { join, dirname, resolve, extname } from "path";
 import { load as loadYaml } from "js-yaml";
 import { Liquid } from "liquidjs";
 import { chromium } from "playwright";
+import { codeToHtml } from 'shiki'
 
+// const html = await codeToHtml(code, {
+//   lang: 'javascript',
+//   theme: 'vitesse-dark'
+// })
+
+
+// import html from '@shikijs/langs/html'
+// import githubDark from '@shikijs/themes/github-dark'
+// import { createHighlighterCoreSync } from 'shiki/core'
+// import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
+
+// Create the highlighter synchronously
+// const shiki = createHighlighterCoreSync({
+//   themes: [githubDark],
+//   langs: [html],
+//   engine: createJavaScriptRegexEngine()
+// })
+
+// Initialize LiquidJS with output escaping disabled
 const engine = new Liquid();
+
 
 // Add custom filter to convert string to lowercase and replace spaces with hyphens
 engine.registerFilter('slug', (value) => {
   if (typeof value !== 'string') return '';
   return value.toLowerCase().replace(/\s+/g, '-');
 });
+
+// // Add custom filter for syntax highlighting with shiki
+// engine.registerFilter('shiki', (value) => {
+//   const highlighted = shiki.codeToHtml(value, { lang: 'html', theme: 'github-dark' });
+//   console.log({
+//     highlighted
+// })
+//   return highlighted
+// });
 
 /**
  * Get all files from a directory recursively
@@ -54,8 +84,12 @@ function extractFrontMatter(content) {
   const frontMatter = match[1].trim();
   const contentWithoutFrontMatter = content.slice(match[0].length).trim();
 
+  // console.log('contentWithoutFrontMatter', contentWithoutFrontMatter)
+  // shiki.codeToHtml(contentWithoutFrontMatter, { lang: 'html', theme: 'github-dark' })
+
   return {
     content: contentWithoutFrontMatter,
+    // contentShiki: shiki.codeToHtml(contentWithoutFrontMatter, { lang: 'html', theme: 'github-dark' }),
     frontMatter: frontMatter,
   };
 }
@@ -73,7 +107,7 @@ function ensureDirectoryExists(dirPath) {
 /**
  * Main function to generate HTML files from specs
  */
-function generateHtml(specsDir, templatePath, outputDir) {
+async function generateHtml(specsDir, templatePath, outputDir) {
   try {
     // Initialize LiquidJS engine
 
@@ -87,9 +121,11 @@ function generateHtml(specsDir, templatePath, outputDir) {
     const allFiles = getAllFiles(specsDir);
 
     // Process each file
-    const processedFiles = allFiles.map((filePath) => {
+    const processedFiles = [];
+    for (const filePath of allFiles) {
       const fileContent = readFileSync(filePath, "utf8");
       const { content, frontMatter } = extractFrontMatter(fileContent);
+      const contentShiki = await codeToHtml(content, { lang: 'html', theme: 'slack-dark' })
 
       // Parse YAML frontmatter
       let frontMatterObj = null;
@@ -119,14 +155,15 @@ function generateHtml(specsDir, templatePath, outputDir) {
       writeFileSync(outputPath, renderedContent, "utf8");
       console.log(`Generated: ${outputPath}`);
 
-      return {
+      processedFiles.push({
         path: filePath,
         content,
+        contentShiki,
         frontMatter: frontMatterObj,
         fullContent: fileContent,
         renderedContent,
-      };
-    });
+      });
+    }
 
     console.log(`Successfully generated ${processedFiles.length} files`);
     return processedFiles;
@@ -276,22 +313,13 @@ async function takeScreenshots(
 }
 
 /**
- * Ensure directory exists
- */
-function ensureDirectoryExists(dirPath) {
-  const absolutePath = resolve(dirPath);
-  if (!existsSync(absolutePath)) {
-    mkdirSync(absolutePath, { recursive: true });
-  }
-}
-
-/**
  * Generate overview HTML from template and data
  */
 function generateOverview(
   data,
   templatePath,
-  outputPath
+  outputPath,
+  configData
 ) {
   try {
     // Read template
@@ -300,22 +328,30 @@ function generateOverview(
     // Ensure output directory exists
     ensureDirectoryExists(dirname(outputPath));
 
-    // Render template with data
-    let renderedContent = "";
-    try {
-      renderedContent = engine.parseAndRenderSync(templateContent, {
-        files: data,
-      });
-    } catch (error) {
-      console.error(`Error rendering overview template:`, error);
-      renderedContent = `<html><body><h1>Error rendering overview template</h1><p>${error.message}</p></body></html>`;
-    }
+    console.log({
+      data,
+      configData
+    })
 
-    // Save file
-    writeFileSync(outputPath, renderedContent, "utf8");
-    console.log(`Generated overview: ${outputPath}`);
+    configData.sections.forEach(section => {
+      // Render template with data
+      let renderedContent = "";
+      try {
+        renderedContent = engine.parseAndRenderSync(templateContent, {
+          ...configData,
+          files: data.filter(file => file.path.startsWith(section.files)),
+          currentSection: section
+        });
+      } catch (error) {
+        console.error(`Error rendering overview template:`, error);
+        renderedContent = `<html><body><h1>Error rendering overview template</h1><p>${error.message}</p></body></html>`;
+      }
 
-    return outputPath;
+      // Save file
+      writeFileSync(outputPath.replace('index.html', `${section.title.toLowerCase()}.html`), renderedContent, "utf8");
+      console.log(`Generated overview: ${outputPath}`);
+    })
+
   } catch (error) {
     console.error("Error generating overview HTML:", error);
     throw error;

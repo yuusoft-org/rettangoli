@@ -26,6 +26,7 @@ export default ({ render, html }) => {
       border-style: solid;
       border-width: 0;
       box-sizing: border-box;
+      border-color: var(--border);
     }
 
     :host([fw="w"]) {

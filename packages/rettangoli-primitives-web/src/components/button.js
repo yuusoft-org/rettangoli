@@ -13,19 +13,100 @@ export default ({ render, html }) => {
     }
 
     button {
+      border-width: 0px;
       border-style: solid;
+      border-color: var(--border);
       padding: 0px;
-      font-size: var(--typography-body-s-font-size);
-      font-weight: var(--typography-body-s-font-weight);
-      line-height: var(--typography-body-s-line-height);
-      letter-spacing: var(--typography-body-s-letter-spacing);
+      height: 32px;
+      padding-left: 16px;
+      padding-right: 16px;
+      border-radius: 4px;
+
+      font-size: var(--sm-font-size);
+      font-weight: var(--sm-font-weight);
+      line-height: var(--sm-line-height);
+      letter-spacing: var(--sm-letter-spacing);
+
+      background-color: var(--primary);
+      color: var(--primary-foreground);
     }
 
     button:hover {
       cursor: pointer;
+      background-color: color-mix(
+        in srgb,
+        var(--primary) 85%,
+        white 15%
+      );
     }
 
-    :host([t="ps"]) button,
+    button:active {
+      cursor: pointer;
+      background-color: color-mix(
+        in srgb,
+        var(--primary) 80%,
+        white 20%
+      );
+    }
+
+    :host([v="pr"]) button:hover {
+      background-color: color-mix(
+          in srgb,
+          var(--primary) 85%,
+          white 15%
+        );
+    }
+
+    :host([v="pr"]) button:active {
+      background-color: color-mix(
+          in srgb,
+          var(--primary) 80%,
+          white 20%
+        );
+    }
+
+    :host([v="se"]) button:hover {
+      background-color: color-mix(
+          in srgb,
+          var(--secondary) 85%,
+          white 15%
+        );
+    }
+
+    :host([v="se"]) button:active {
+      background-color: color-mix(
+          in srgb,
+          var(--secondary) 80%,
+          white 20%
+        );
+    }
+
+    :host([v="de"]) button:hover {
+      background-color: color-mix(
+          in srgb,
+          var(--destructive) 85%,
+          white 15%
+        );
+    }
+
+    :host([v="de"]) button:active {
+      background-color: color-mix(
+          in srgb,
+          var(--destructive) 80%,
+          white 20%
+        );
+    }
+
+    :host([v="ol"]) button:hover {
+      background-color: var(--accent);
+    }
+
+    :host([v="gh"]) button:hover {
+      background-color: var(--accent);
+    }
+
+
+    /* :host([t="ps"]) button,
     :host([t="p"]) button,
     :host([t="pl"]) button {
       color: var(--color-on-primary);
@@ -145,7 +226,7 @@ export default ({ render, html }) => {
       font-weight: var(--typography-label-l-font-weight);
       line-height: var(--typography-label-l-line-height);
       letter-spacing: var(--typography-label-l-letter-spacing);
-    }
+    } */
     ${buttonMarginStyles}
     ${flexChildStyles}
   `);

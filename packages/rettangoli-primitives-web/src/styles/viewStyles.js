@@ -10,55 +10,26 @@ const borderWidth = {
 
 const styles = {
   bgc: {
-    p:  `
-    background-color: var(--color-primary);
-    color: var(--color-on-primary);
+    pr: `
+    background-color: var(--primary);
     `,
-    pc: `
-    background-color: var(--color-primary-container);
-    color: var(--color-on-primary-container);
+    se: `
+    background-color: var(--secondary);
     `,
-    s: `
-    background-color: var(--color-secondary);
-    color: var(--color-on-secondary);
+    de: `
+    background-color: var(--destructive);
     `,
-    sc: `
-    background-color: var(--color-secondary-container);
-    color: var(--color-on-secondary-container);
+    bg: `
+    background-color: var(--background);
     `,
-    e: `
-    background-color: var(--color-error);
-    color: var(--color-on-error);
+    mu: `
+    background-color: var(--muted);
     `,
-    ec: `
-    background-color: var(--color-error-container);
-    color: var(--color-on-error-container);
+    ac: `
+    background-color: var(--accent);
     `,
-    su: `
-    background-color: var(--color-surface);
-    color: var(--color-on-surface);
-    `,
-    sucl: `
-    background-color: var(--color-surface-container-low);
-    color: var(--color-on-surface);
-    `,
-    suc: `
-    background-color: var(--color-surface-container);
-    color: var(--color-on-surface);
-    `,
-    such: `
-    background-color: var(--color-surface-container-high);
-    color: var(--color-on-surface);
-    `,
-    isu: `
-    background-color: var(--color-inverse-surface);
-    color: var(--color-inverse-on-surface);
-    `,
-    o: `
-    background-color: var(--color-outline);
-    `,
-    ov: `
-    background-color: var(--color-outline-variant);
+    bo: `
+    background-color: var(--border);
     `,
   },
   pos: {
