@@ -38,6 +38,12 @@ async function main() {
     }, {
       title: 'Svg',
       files: 'specs/svg'
+    }, {
+      title: 'Sidebar',
+      files: 'specs/sidebar'
+    }, {
+      title: 'Page-Outline',
+      files: 'specs/page-outline'
     }]
   }
 

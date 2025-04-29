@@ -12,42 +12,14 @@ import { Liquid } from "liquidjs";
 import { chromium } from "playwright";
 import { codeToHtml } from 'shiki'
 
-// const html = await codeToHtml(code, {
-//   lang: 'javascript',
-//   theme: 'vitesse-dark'
-// })
-
-
-// import html from '@shikijs/langs/html'
-// import githubDark from '@shikijs/themes/github-dark'
-// import { createHighlighterCoreSync } from 'shiki/core'
-// import { createJavaScriptRegexEngine } from 'shiki/engine/javascript'
-
-// Create the highlighter synchronously
-// const shiki = createHighlighterCoreSync({
-//   themes: [githubDark],
-//   langs: [html],
-//   engine: createJavaScriptRegexEngine()
-// })
-
 // Initialize LiquidJS with output escaping disabled
 const engine = new Liquid();
-
 
 // Add custom filter to convert string to lowercase and replace spaces with hyphens
 engine.registerFilter('slug', (value) => {
   if (typeof value !== 'string') return '';
   return value.toLowerCase().replace(/\s+/g, '-');
 });
-
-// // Add custom filter for syntax highlighting with shiki
-// engine.registerFilter('shiki', (value) => {
-//   const highlighted = shiki.codeToHtml(value, { lang: 'html', theme: 'github-dark' });
-//   console.log({
-//     highlighted
-// })
-//   return highlighted
-// });
 
 /**
  * Get all files from a directory recursively
@@ -328,11 +300,6 @@ function generateOverview(
     // Ensure output directory exists
     ensureDirectoryExists(dirname(outputPath));
 
-    console.log({
-      data,
-      configData
-    })
-
     configData.sections.forEach(section => {
       // Render template with data
       let renderedContent = "";
@@ -340,7 +307,13 @@ function generateOverview(
         renderedContent = engine.parseAndRenderSync(templateContent, {
           ...configData,
           files: data.filter(file => file.path.startsWith(section.files)),
-          currentSection: section
+          currentSection: section,
+          sidebarItems: encodeURIComponent(JSON.stringify(configData.sections.map((item) => {
+            return {
+              ...item,
+              slug: `/${item.title.toLowerCase().replace(/\s+/g, '-')}`
+            }
+          })))
         });
       } catch (error) {
         console.error(`Error rendering overview template:`, error);

@@ -42,35 +42,34 @@
       box-sizing: border-box;
     }
   </style>
+
+  <script>
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const pageOutline = document.getElementById('page-outline');
+      const contentContainer = document.getElementById('content');
+      pageOutline.startListening(contentContainer)
+    })
+
+  </script>
 </head>
 
 <body class="dark">
   <rtgl-view d="h" w="100vw" h="100vh">
-    <rtgl-view h="f" w="272" bwr="xs">
-      <rtgl-view p="s">
-        <rtgl-text s="h4" c="primary">Rettangoli test suite</rtgl-text>
-      </rtgl-view>
-      <rtgl-view w="f">
-        {% for section in sections %}
-        <a style="display: contents; text-decoration: none; color: inherit;" href="/{{ section.title | slug }}">
-          <rtgl-view h="36" av="c" ph="m" w="f" h-bgc="mu"
-            bgc="{% if currentSection.title == section.title %}mu{% else %}bg{% endif %}" cur="p">
-            <rtgl-text s="sm">{{ section.title }}</rtgl-text>
-          </rtgl-view>
-        </a>
-        {% endfor %}
-      </rtgl-view>
-    </rtgl-view>
-    <rtgl-view h="100vh" w="f" flex="1" p="l" g="l" style="flex-wrap: nowrap;" sv ah="c">
+
+    <rtgl-sidebar items="{{ sidebarItems }}">
+    </rtgl-sidebar>
+
+    <rtgl-view id="content" h="100vh" w="f" flex="1" p="l" g="l" style="flex-wrap: nowrap;" sv ah="c">
       <rtgl-view w="800" g="xl">
         <rtgl-text s="h2">{{ currentSection.title }} </rtgl-text>
         {% for file in files %}
-        <rtgl-view id="{{ file.frontMatter.title | slug }}" w="f">
+        <rtgl-view  w="f">
           <a style="display: contents; text-decoration: none; color: inherit;"
             href="#{{ file.frontMatter.title | slug }}">
-            <rtgl-text s="h3">{{ file.frontMatter.title | default: file.path }}</rtgl-text>
+            <rtgl-text id="{{ file.frontMatter.title | slug }}" s="h3">{{ file.frontMatter.title | default: file.path }}</rtgl-text>
           </a>
-          <rtgl-view w="f" g="l" mt="s">
+          <rtgl-view w="f" mt="s">
             <rtgl-view w="f">
               {{ file.contentShiki }}
             </rtgl-view>
@@ -80,18 +79,10 @@
           </rtgl-view>
         </rtgl-view>
         {% endfor %}
+        <rtgl-view h="33vh"></rtgl-view>
       </rtgl-view>
     </rtgl-view>
-    <rtgl-view h="f" w="272">
-      <rtgl-view w="f" g="s" mt="xl">
-        {% for file in files %}
-        <a style="display: contents; text-decoration: none; color: inherit;"
-          href="#{{ file.frontMatter.title | slug }}">
-          <rtgl-text s="sm">{{ file.frontMatter.title }}</rtgl-text>
-        </a>
-        {% endfor %}
-      </rtgl-view>
-    </rtgl-view>
+    <rtgl-page-outline id="page-outline"></rtgl-page-outline>
   </rtgl-view>
 </body>
 

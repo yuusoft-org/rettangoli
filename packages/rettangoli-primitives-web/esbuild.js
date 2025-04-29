@@ -11,7 +11,7 @@ import httpPlugin from "esbuild-plugin-http";
       format: mode === "esm" ? "esm" : "iife",
       globalName: "rettangoli",
       outfile: `./viz/static/public/rettangoli.js`,
-      entryPoints: [`entry-${mode}.js`],
+      entryPoints: [`src/entry-${mode}.js`],
     })
     .catch(() => process.exit(1));
 });
