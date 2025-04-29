@@ -9,6 +9,10 @@ export default ({ render, html }) => {
   styleSheet.replaceSync(css`
     :host {
       display: block;
+      font-size: var(--md-font-size);
+      font-weight: var(--md-font-weight);
+      line-height: var(--md-line-height);
+      letter-spacing: var(--md-letter-spacing);
     }
     slot {
       display: contents;

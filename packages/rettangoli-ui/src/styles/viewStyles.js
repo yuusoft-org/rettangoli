@@ -8,79 +8,28 @@ const borderWidth = {
   xl: "--border-width-xl",
 }
 
-const styleMap = {
-  pos: "position",
-  shadow: "box-shadow",
-  pt: "padding-top",
-  pr: "padding-right",
-  pb: "padding-bottom",
-  pl: "padding-left",
-  p: "padding",
-  ph: "padding-left padding-right",
-  pv: "padding-top padding-bottom",
-  g: "gap",
-  gv: "row-gap",
-  gh: "column-gap",
-  bw: "border-width",
-  bwt: "border-top-width",
-  bwr: "border-right-width",
-  bwb: "border-bottom-width",
-  bwl: "border-left-width",
-  bc: "border-color",
-  br: "border-radius",
-};
-
 const styles = {
   bgc: {
-    p:  `
-    background-color: var(--color-primary);
-    color: var(--color-on-primary);
+    pr: `
+    background-color: var(--primary);
     `,
-    pc: `
-    background-color: var(--color-primary-container);
-    color: var(--color-on-primary-container);
+    se: `
+    background-color: var(--secondary);
     `,
-    s: `
-    background-color: var(--color-secondary);
-    color: var(--color-on-secondary);
+    de: `
+    background-color: var(--destructive);
     `,
-    sc: `
-    background-color: var(--color-secondary-container);
-    color: var(--color-on-secondary-container);
+    bg: `
+    background-color: var(--background);
     `,
-    e: `
-    background-color: var(--color-error);
-    color: var(--color-on-error);
+    mu: `
+    background-color: var(--muted);
     `,
-    ec: `
-    background-color: var(--color-error-container);
-    color: var(--color-on-error-container);
+    ac: `
+    background-color: var(--accent);
     `,
-    su: `
-    background-color: var(--color-surface);
-    color: var(--color-on-surface);
-    `,
-    sucl: `
-    background-color: var(--color-surface-container-low);
-    color: var(--color-on-surface);
-    `,
-    suc: `
-    background-color: var(--color-surface-container);
-    color: var(--color-on-surface);
-    `,
-    such: `
-    background-color: var(--color-surface-container-high);
-    color: var(--color-on-surface);
-    `,
-    isu: `
-    background-color: var(--color-inverse-surface);
-    color: var(--color-inverse-on-surface);
-    `,
-    o: `
-    background-color: var(--color-outline);
-    `,
-    ov: `
-    background-color: var(--color-outline-variant);
+    bo: `
+    background-color: var(--border);
     `,
   },
   pos: {
@@ -160,8 +109,8 @@ const styles = {
     m: "--border-radius-m",
     l: "--border-radius-l",
     xl: "--border-radius-xl",
-    f: "50%",
+    f: "--border-radius-f",
   },
 };
 
-export default generateCSS(styleMap, styles)
+export default generateCSS(styles)
