@@ -1,0 +1,18 @@
+---
+title: Basic
+---
+<rtgl-view g="l" p="l" wh="f" fw="w">
+  <rtgl-select id="select" />
+</rtgl-view>
+
+<script>
+  const select = document.getElementById('select')
+
+  select.options = [
+    { value: 1, label: 'Option 1' },
+    { value: 2, label: 'Option 2' },
+    { value: 3, label: 'Option 3' },
+  ]
+
+  select.reRender();
+</script>

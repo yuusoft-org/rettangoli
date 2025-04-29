@@ -1,0 +1,11 @@
+---
+title: Dimensions width and height using viewport
+specs:
+  - w="10vw" should set the width to 10 in viewport width
+  - h="10vh" should set the height to 10 in viewport height
+  - wh="10vw" should set the width to 10 and height to 10 in viewport width
+---
+<rtgl-view bgc="mu" g="l" p="l">
+    <rtgl-view bgc="ac" w="10vw" h="10vh"></rtgl-view>
+    <rtgl-view bgc="ac" wh="10vw"></rtgl-view>
+</rtgl-view>

@@ -1,0 +1,25 @@
+---
+title: "Sidebar - Basic"
+---
+<rtgl-view g="l" h="100vh" w="f" fw="w">
+  <rtgl-sidebar id="sidebar"></rtgl-sidebar>
+</rtgl-view>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  sidebar.items = [
+    {
+      title: "Home",
+      slug: "/home"
+    },
+    {
+      title: "About",
+      slug: "/about"
+    },
+    {
+      title: "Contact",
+      slug: "/contact"
+    },
+  ]
+  sidebar.connectedCallback();
+</script>

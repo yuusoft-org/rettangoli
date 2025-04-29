@@ -7,6 +7,50 @@ function css(strings, ...values) {
   return str;
 }
 
+const breakpoints = ["xs", "sm", "md", "lg", "xl"];
+
+const styleMap = {
+  mt: "margin-top",
+  mr: "margin-right",
+  mb: "margin-bottom",
+  ml: "margin-left",
+  m: "margin",
+  mh: "margin-left margin-right",
+  mv: "margin-top margin-bottom",
+  pt: "padding-top",
+  pr: "padding-right",
+  pb: "padding-bottom",
+  pl: "padding-left",
+  p: "padding",
+  ph: "padding-left padding-right",
+  pv: "padding-top padding-bottom",
+  g: "gap",
+  gv: "row-gap",
+  gh: "column-gap",
+  bw: "border-width",
+  bwt: "border-top-width",
+  bwr: "border-right-width",
+  bwb: "border-bottom-width",
+  bwl: "border-left-width",
+  bc: "border-color",
+  br: "border-radius",
+  pos: "position",
+  shadow: "box-shadow",
+  ta: "text-align",
+  c: "color",
+  cur: "cursor",
+};
+
+export const styleMapKeys = Object.keys(styleMap);
+
+export const permutateBreakpoints = (keys) => {
+  return keys.concat(
+    breakpoints.flatMap((breakpoint) =>
+      keys.map((key) => `${breakpoint}-${key}`)
+    )
+  );
+};
+
 const mediaQueries = {
   default: undefined,
   xl: "@media only screen and (max-width: 1280px)",
@@ -15,7 +59,7 @@ const mediaQueries = {
   sm: "@media only screen and (max-width: 640px)",
 };
 
-const generateCSS = (styleMap, styles, descendants = {}) => {
+const generateCSS = (styles, descendants = {}) => {
   let css = "";
 
   for (const [size, mediaQuery] of Object.entries(mediaQueries)) {
@@ -23,7 +67,7 @@ const generateCSS = (styleMap, styles, descendants = {}) => {
       css += `${mediaQuery} {`;
     }
     for (const [attr, values] of Object.entries(styles)) {
-      const dscendant = descendants[attr] ? ` ${descendants[attr]} ` : ' ';
+      const dscendant = descendants[attr] ? ` ${descendants[attr]} ` : " ";
       for (const [value, rule] of Object.entries(values)) {
         const cssProperties = styleMap[attr];
         const cssRule = rule.startsWith("--") ? `var(${rule})` : rule;
@@ -68,7 +112,6 @@ const generateCSS = (styleMap, styles, descendants = {}) => {
   return css;
 };
 
-
 function endsWithDigit(inputValue) {
   if (inputValue === null) {
     return false;
@@ -98,6 +141,11 @@ const dimensionWithUnit = (dimension) => {
   if (endsWithDigit(dimension)) {
     return `${dimension}px`;
   }
+
+  if (Object.keys(spacing).includes(dimension)) {
+    return `var(${spacing[dimension]})`;
+  }
+
   return dimension;
 };
 
@@ -109,16 +157,15 @@ const spacing = {
   xl: "--spacing-xl",
 };
 
-
 function convertObjectToCssString(styleObject) {
-  let result = ''
+  let result = "";
   for (const [size, mediaQuery] of Object.entries(mediaQueries)) {
     if (size !== "default") {
       result += `${mediaQuery} {\n`;
     }
-    let cssString = '';
+    let cssString = "";
     for (const [key, value] of Object.entries(styleObject[size])) {
-      if (value !== undefined && value !== null) { 
+      if (value !== undefined && value !== null) {
         cssString += `${key}: ${value};\n`;
       }
     }
@@ -133,5 +180,11 @@ function convertObjectToCssString(styleObject) {
   return result;
 }
 
-
-export { css, generateCSS, dimensionWithUnit, spacing, convertObjectToCssString, mediaQueries };
+export {
+  css,
+  generateCSS,
+  dimensionWithUnit,
+  spacing,
+  convertObjectToCssString,
+  mediaQueries,
+};

@@ -7,6 +7,9 @@ import textColorStyles from "../styles/textColorStyles.js";
 export default ({ render, html }) => {
   const styleSheet = new CSSStyleSheet();
   styleSheet.replaceSync(css`
+    :host {
+      color: var(--foreground);
+    }
     ${textColorStyles}
     ${paddingSvgStyles}
 ${flexChildStyles}
@@ -39,6 +42,7 @@ ${cursorStyles}
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
+      // TODO copy same logic from view
       const wh = this.getAttribute("wh");
       const width = dimensionWithUnit(
         wh === null ? this.getAttribute("w") : wh

@@ -1,0 +1,43 @@
+---
+title: "Page Outline - Basic"
+---
+<rtgl-view d="h" g="l" h="100vh" w="f" fw="w">
+  <rtgl-view id="content" flex="1" g="xl" h="100vh" sv>
+    <rtgl-view>
+      <rtgl-text id="title-1" s="h1">Title 1</rtgl-text>
+    </rtgl-view>
+    <rtgl-view>
+      <rtgl-text id="title-2" s="h1">Title 2</rtgl-text>
+    </rtgl-view>
+    <rtgl-view>
+      <rtgl-text id="title-3" s="h1">Title 3</rtgl-text>
+    </rtgl-view>
+    <rtgl-view>
+      <rtgl-text id="title-4" s="h1">Title 4</rtgl-text>
+    </rtgl-view>
+    <rtgl-view>
+      <rtgl-text id="title-5" s="h1">Title 5</rtgl-text>
+    </rtgl-view>
+    <rtgl-view>
+      <rtgl-text id="title-6" s="h1">Title 6</rtgl-text>
+    </rtgl-view>
+    <rtgl-view>
+      <rtgl-text id="title-7" s="h1">Title 7</rtgl-text>
+    </rtgl-view>
+    <rtgl-view>
+      <rtgl-text id="title-8" s="h1">Title 8</rtgl-text>
+    </rtgl-view>
+    <rtgl-view>
+      <rtgl-text id="title-9" s="h1">Title 9</rtgl-text>
+    </rtgl-view>
+    
+  </rtgl-view>
+  <rtgl-page-outline id="page-outline"></rtgl-page-outline>
+</rtgl-view>
+
+<script>
+  const pageOutline = document.getElementById('page-outline');
+  const content = document.getElementById('content');
+  pageOutline.connectedCallback();
+  pageOutline.startListening(content);
+</script>

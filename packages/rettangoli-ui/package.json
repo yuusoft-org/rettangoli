@@ -1,6 +1,6 @@
 {
   "name": "rettangoli-ui",
-  "version": "0.0.10",
+  "version": "0.1.0",
   "description": "A UI component library for building web interfaces.",
   "main": "dist/rettangoli-esm.min.js",
   "type": "module",
@@ -12,12 +12,11 @@
     "url": "git+https://github.com/yuusoft-org/rettangoli.git"
   },
   "author": {
-    "name": "Luciano Wu",
+    "name": "Luciano Hanyon Wu",
     "email": "han4wluc@yuusoft.com"
   },
   "license": "MIT",
   "scripts": {
-    "dev": "npx @11ty/eleventy@3.0.0-beta.1 --serve --port 3000",
     "build": "node esbuild.js"
   },
   "devDependencies": {
@@ -36,5 +35,12 @@
   "bugs": {
     "url": "https://github.com/yuusoft-org/rettangoli/issues"
   },
-  "homepage": "https://github.com/yuusoft-org/rettangoli#readme"
+  "homepage": "https://github.com/yuusoft-org/rettangoli#readme",
+  "dependencies": {
+    "@floating-ui/dom": "^1.6.13",
+    "commander": "^13.1.0",
+    "js-yaml": "^4.1.0",
+    "liquidjs": "^10.21.0",
+    "shiki": "^3.3.0"
+  }
 }

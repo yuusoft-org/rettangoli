@@ -1,0 +1,18 @@
+---
+title: Basic
+---
+<rtgl-view g="l" p="l" wh="f" fw="w">
+  <rtgl-button id="button">Open Popover</rtgl-button>
+  <rtgl-popover id="popover">
+    <rtgl-text>Popover Content</rtgl-text>
+  </rtgl-popover>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const popover = document.getElementById('popover');
+
+  button.addEventListener('click', () => {
+    popover.open(button.shadow.querySelector("button"));
+  });
+</script>
