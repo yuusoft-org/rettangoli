@@ -22,42 +22,58 @@ async function main() {
   );
 
   const configData = {
-    title: 'Rettangoli Test Suite',
-    sections: [{
-      title: 'View',
-      files: 'specs/view'
-    }, {
-      title: 'Text',
-      files: 'specs/text'
-    }, {
-      title: 'Button',
-      files: 'specs/button'
-    }, {
-      title: 'Image',
-      files: 'specs/image'
-    }, {
-      title: 'Svg',
-      files: 'specs/svg'
-    }, {
-      title: 'Input',
-      files: 'specs/input'
-    }, {
-      title: 'Textarea',
-      files: 'specs/textarea'
-    }, {
-      title: 'Select',
-      files: 'specs/select'
-    }, {
-      title: 'Popover',
-      files: 'specs/popover'
-    }, {
-      title: 'Sidebar',
-      files: 'specs/sidebar'
-    }, {
-      title: 'Page-Outline',
-      files: 'specs/page-outline'
-    }]
-  }
+    title: "Rettangoli Test Suitxxxe",
+    sections: [
+      {
+        title: "View",
+        files: "specs/view",
+      },
+      {
+        title: "Text",
+        files: "specs/text",
+      },
+      {
+        title: "Button",
+        files: "specs/button",
+      },
+      {
+        title: "Image",
+        files: "specs/image",
+      },
+      {
+        title: "Svg",
+        files: "specs/svg",
+      },
+      {
+        title: "Input",
+        files: "specs/input",
+      },
+      {
+        title: "Textarea",
+        files: "specs/textarea",
+      },
+      {
+        title: "Select",
+        files: "specs/select",
+      },
+      {
+        title: "Popover",
+        files: "specs/popover",
+      },
+      {
+        title: "Sidebar",
+        files: "specs/sidebar",
+      },
+      {
+        title: "Page-Outline",
+        files: "specs/page-outline",
+      },
+      {
+        title: "Navbar",
+        files: "specs/navbar",
+      },
+    ],
+  };
 
   // Generate overview page with all files
   generateOverview(
