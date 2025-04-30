@@ -11,6 +11,7 @@ import { load as loadYaml } from "js-yaml";
 import { Liquid } from "liquidjs";
 import { chromium } from "playwright";
 import { codeToHtml } from 'shiki'
+import path from "path";
 
 // Initialize LiquidJS with output escaping disabled
 const engine = new Liquid();
@@ -306,7 +307,11 @@ function generateOverview(
       try {
         renderedContent = engine.parseAndRenderSync(templateContent, {
           ...configData,
-          files: data.filter(file => file.path.startsWith(section.files)),
+          files: data.filter(file => {
+            const filePath = path.normalize(file.path);
+            const sectionPath = path.normalize(section.files);
+            return filePath.startsWith(sectionPath);
+          }),
           currentSection: section,
           sidebarItems: encodeURIComponent(JSON.stringify(configData.sections.map((item) => {
             return {
