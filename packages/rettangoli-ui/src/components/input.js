@@ -45,14 +45,21 @@ ${cursorStyles}
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-      
+
 
       render(this.shadow, this.render);
     }
 
     render = () => {
+      const typeList = ["text", "email", "password", "number", "url", "tel"];
+      const typeAttr = this.getAttribute("type") || "text";
+      if (!typeList.includes(typeAttr)) {
+        console.warn(`Invalid type "${typeAttr}" for input element. Defaulting to "text".`);
+      }
+      const type = typeList.includes(typeAttr) ? typeAttr : "text";
+      const isDisabled = this.hasAttribute('disabled') && !(this.getAttribute('disabled') === 'false' || this.getAttribute('disabled') === '0');
       return html`
-        <input type="text" />
+        <input placeholder="${this.getAttribute("placeholder")}" type="${type}" disabled="${isDisabled}" />
       `;
     };
   }
