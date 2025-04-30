@@ -13,7 +13,7 @@ export default ({ render, html }) => {
     }
 
     button {
-      display:flex;
+      display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: center;
@@ -167,44 +167,21 @@ export default ({ render, html }) => {
 
     renderIcon = () => {
       const icon = this.getAttribute("icon");
-      let color = undefined;
-      switch (this.getAttribute("v")) {
-        case "pr":
-          color = "pr-fg";
-          break;
-        case "se":
-          color = "ac-fg";
-          break;
-        case "de":
-          color = "pr-fg";
-          break;
-        case "ol":
-          color = "ac-fg";
-          break;
-        case "gh":
-          color = "ac-fg";
-          break;
-        case "lk":
-          color = "ac-fg";
-          break;
-        default:
-          color = "pr-fg";
-      }
-      let size = undefined;
-      switch (this.getAttribute("s")) {
-        case "sm":
-          size = "14";
-          break;
-        case "md":
-          size = "18";
-          break;
-        case "lg":
-          size = "22";
-          break;
-        default:
-          size = "18";
-      }
-      console.log(icon);
+      const colorMap = {
+        pr: 'pr-fg',
+        se: 'ac-fg',
+        de: 'pr-fg',
+        ol: 'ac-fg',
+        gh: 'ac-fg',
+        lk: 'ac-fg'
+      };
+      const sizeMap = {
+        sm: 14,
+        md: 18,
+        lg: 22
+      };
+      const color = colorMap[this.getAttribute("v")] || 'pr-fg';
+      const size = sizeMap[this.getAttribute("t")] || 18;
       if (!icon) return html``;
       return html`
         <rtgl-svg svg="${icon}" c="${color}" wh="${size}"></rtgl-svg>
@@ -213,13 +190,13 @@ export default ({ render, html }) => {
 
     render = () => {
       const isDisabled = this.hasAttribute('disabled');
-      if (!isDisabled && this.getAttribute("href")) {
+      if (this.getAttribute("href")) {
         return html`
           <a
             href=${this.getAttribute("href")}
             target=${this.getAttribute("target")}
           >
-            <button>
+            <button disabled="${isDisabled}>
               ${this.renderIcon()}
               <slot></slot>
             </button>
