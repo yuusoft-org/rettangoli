@@ -11,6 +11,7 @@ import RettangoliSelect from './components/select.js';
 import RettangoliPopover from './components/popover.js';
 import RettangoliSidebar from './components/sidebar.js';
 import RettangoliPageOutline from './components/page-outline.js';
+import RettangoliNavbar from './components/navbar.js';
 
 customElements.define("rtgl-button", RettangoliButton({ render, html }));
 customElements.define("rtgl-view", RettangoliView({ render, html }));
@@ -23,3 +24,4 @@ customElements.define("rtgl-select", RettangoliSelect({ render, html }));
 customElements.define("rtgl-popover", RettangoliPopover({ render, html }));
 customElements.define("rtgl-sidebar", RettangoliSidebar({ render, html }));
 customElements.define("rtgl-page-outline", RettangoliPageOutline({ render, html }));
+customElements.define("rtgl-navbar", RettangoliNavbar({ render, html }));

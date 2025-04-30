@@ -1,0 +1,24 @@
+---
+title: "Navbar - Basic"
+---
+<rtgl-view g="l" h="100vh" w="f" fw="w">
+  <rtgl-navbar id="navbar">
+    <rtgl-view slot="right">
+      <rtgl-button>
+        Log In
+      </rtgl-button>
+    </rtgl-view>
+  </rtgl-navbar>
+</rtgl-view>
+
+<script>
+  const navbar = document.getElementById('navbar');
+
+  navbar.title = {
+    label: "Navbar",
+    logoSrc: "/public/sample1.jpg",
+    href: "/",
+  }
+ 
+  navbar.connectedCallback();
+</script>
