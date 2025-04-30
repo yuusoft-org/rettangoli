@@ -13,6 +13,11 @@ export default ({ render, html }) => {
     }
 
     button {
+      display:flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-s);
       border-width: 0px;
       border-style: solid;
       border-color: var(--border);
@@ -38,6 +43,10 @@ export default ({ render, html }) => {
         var(--primary) 85%,
         white 15%
       );
+    }
+
+    button:disabled {
+      cursor: not-allowed;
     }
 
     button:active {
@@ -123,7 +132,7 @@ export default ({ render, html }) => {
     }
 
     static get observedAttributes() {
-      return ["key", "href", "target", "w", "t"];
+      return ["key", "href", "target", "w", "t", "icon", "disabled"];
     }
 
     _buttonRef = {};
@@ -156,19 +165,62 @@ export default ({ render, html }) => {
       render(this.shadow, this.render);
     }
 
-    render = () => {
-      const isDisabled = this.hasAttribute('disabled') && !(this.getAttribute('disabled') === 'false' || this.getAttribute('disabled') === '0');
-      if (!isDisabled && this.getAttribute("href")) {
-        const iconSlot = !this.hasAttribute("icon") ? '' : 
-        `<rtgl-svg svg="${this.getAttribute("icon")}" wh="24"></rtgl-svg>`;
+    renderIcon = () => {
+      const icon = this.getAttribute("icon");
+      let color = undefined;
+      switch (this.getAttribute("v")) {
+        case "pr":
+          color = "pr-fg";
+          break;
+        case "se":
+          color = "ac-fg";
+          break;
+        case "de":
+          color = "pr-fg";
+          break;
+        case "ol":
+          color = "ac-fg";
+          break;
+        case "gh":
+          color = "ac-fg";
+          break;
+        case "lk":
+          color = "ac-fg";
+          break;
+        default:
+          color = "pr-fg";
+      }
+      let size = undefined;
+      switch (this.getAttribute("s")) {
+        case "sm":
+          size = "14";
+          break;
+        case "md":
+          size = "18";
+          break;
+        case "lg":
+          size = "22";
+          break;
+        default:
+          size = "18";
+      }
+      console.log(icon);
+      if (!icon) return html``;
+      return html`
+        <rtgl-svg svg="${icon}" c="${color}" wh="${size}"></rtgl-svg>
+      `;
+    }
 
+    render = () => {
+      const isDisabled = this.hasAttribute('disabled');
+      if (!isDisabled && this.getAttribute("href")) {
         return html`
           <a
             href=${this.getAttribute("href")}
             target=${this.getAttribute("target")}
           >
             <button>
-              ${iconSlot}
+              ${this.renderIcon()}
               <slot></slot>
             </button>
           </a>
@@ -176,6 +228,7 @@ export default ({ render, html }) => {
       }
       return html`
         <button ref=${this._assingRef} disabled="${isDisabled}">
+          ${this.renderIcon()}
           <slot></slot>
         </button>
       `;
