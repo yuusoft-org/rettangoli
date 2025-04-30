@@ -105,6 +105,10 @@ export default ({ render, html }) => {
       background-color: var(--accent);
     }
 
+    :host([v="lk"]) button:hover {
+      text-decoration: underline;
+    }
+
     ${buttonMarginStyles}
     ${flexChildStyles}
   `);
@@ -153,7 +157,8 @@ export default ({ render, html }) => {
     }
 
     render = () => {
-      if (this.getAttribute("href")) {
+      const isDisabled = this.hasAttribute('disabled') && !(this.getAttribute('disabled') === 'false' || this.getAttribute('disabled') === '0');
+      if (!isDisabled && this.getAttribute("href")) {
         return html`
           <a
             href=${this.getAttribute("href")}
@@ -166,7 +171,7 @@ export default ({ render, html }) => {
         `;
       }
       return html`
-        <button ref=${this._assingRef}>
+        <button ref=${this._assingRef} disabled="${isDisabled}">
           <slot></slot>
         </button>
       `;

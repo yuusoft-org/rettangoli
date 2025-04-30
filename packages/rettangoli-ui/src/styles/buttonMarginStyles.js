@@ -62,6 +62,10 @@ const styles = {
       background-color: transparent;
       color: var(--foreground);
     `,
+    lk: `
+      background-color: transparent;
+      color: var(--foreground);
+    `,
   },
 };
 

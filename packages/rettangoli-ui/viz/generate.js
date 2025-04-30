@@ -88,12 +88,12 @@ async function main() {
 
   try {
     // Take screenshots with specified concurrency
-    await takeScreenshots(
-      generatedFiles,
-      "http://localhost:3001",
-      "./viz/_site/artifacts/screenshots",
-      24
-    );
+    // await takeScreenshots(
+    //   generatedFiles,
+    //   "http://localhost:3001",
+    //   "./viz/_site/artifacts/screenshots",
+    //   24
+    // );
   } finally {
     // Stop server
     server.stop();
