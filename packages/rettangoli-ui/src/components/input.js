@@ -54,12 +54,7 @@ ${cursorStyles}
     }
 
     render = () => {
-      const typeList = ["text", "email", "password", "number", "url", "tel"];
-      const typeAttr = this.getAttribute("type") || "text";
-      if (!typeList.includes(typeAttr)) {
-        console.warn(`Invalid type "${typeAttr}" for input element. Defaulting to "text".`);
-      }
-      const type = typeList.includes(typeAttr) ? typeAttr : "text";
+      const type = this.getAttribute("type") || "text";
       const isDisabled = this.hasAttribute('disabled');
       return html`
         <input placeholder="${this.getAttribute("placeholder")}" type="${type}" disabled="${isDisabled}" />
