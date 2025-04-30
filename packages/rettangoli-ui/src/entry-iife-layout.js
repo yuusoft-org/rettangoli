@@ -1,4 +1,3 @@
-// import { render, html } from "https://cdn.jsdelivr.net/npm/uhtml@4.7.0/keyed.min.js";
 import { render, html } from "http://localhost:3000/public/keyed.min.js";
 
 import RettangoliButton from './components/button.js'

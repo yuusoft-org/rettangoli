@@ -7,7 +7,7 @@ tags: [test]
 </rtgl-view>
 
 <script type="module">
-  import { render, html } from "https://cdn.jsdelivr.net/npm/uhtml@4.7.0/keyed.min.js";
+  import { render, html } from "http://localhost:3000/public/keyed.min.js";
   import { RettangoliView, RettangoliText, RettangoliListView } from "/scripts/entry-esm.js";
   customElements.define("rtgl-view", RettangoliView({ render, html }));
   customElements.define("rtgl-text", RettangoliText({ render, html }));
