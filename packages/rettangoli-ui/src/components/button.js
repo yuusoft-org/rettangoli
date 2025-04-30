@@ -13,6 +13,11 @@ export default ({ render, html }) => {
     }
 
     button {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-s);
       border-width: 0px;
       border-style: solid;
       border-color: var(--border);
@@ -38,6 +43,10 @@ export default ({ render, html }) => {
         var(--primary) 85%,
         white 15%
       );
+    }
+
+    button:disabled {
+      cursor: not-allowed;
     }
 
     button:active {
@@ -105,6 +114,10 @@ export default ({ render, html }) => {
       background-color: var(--accent);
     }
 
+    :host([v="lk"]) button:hover {
+      text-decoration: underline;
+    }
+
     ${buttonMarginStyles}
     ${flexChildStyles}
   `);
@@ -119,7 +132,7 @@ export default ({ render, html }) => {
     }
 
     static get observedAttributes() {
-      return ["key", "href", "target", "w", "t"];
+      return ["key", "href", "target", "w", "t", "icon", "disabled"];
     }
 
     _buttonRef = {};
@@ -152,21 +165,47 @@ export default ({ render, html }) => {
       render(this.shadow, this.render);
     }
 
+    renderIcon = () => {
+      const icon = this.getAttribute("icon");
+      const colorMap = {
+        pr: 'pr-fg',
+        se: 'ac-fg',
+        de: 'pr-fg',
+        ol: 'ac-fg',
+        gh: 'ac-fg',
+        lk: 'ac-fg'
+      };
+      const sizeMap = {
+        sm: 14,
+        md: 18,
+        lg: 22
+      };
+      const color = colorMap[this.getAttribute("v")] || 'pr-fg';
+      const size = sizeMap[this.getAttribute("t")] || 18;
+      if (!icon) return html``;
+      return html`
+        <rtgl-svg svg="${icon}" c="${color}" wh="${size}"></rtgl-svg>
+      `;
+    }
+
     render = () => {
+      const isDisabled = this.hasAttribute('disabled');
       if (this.getAttribute("href")) {
         return html`
           <a
             href=${this.getAttribute("href")}
             target=${this.getAttribute("target")}
           >
-            <button>
+            <button disabled="${isDisabled}>
+              ${this.renderIcon()}
               <slot></slot>
             </button>
           </a>
         `;
       }
       return html`
-        <button ref=${this._assingRef}>
+        <button ref=${this._assingRef} disabled="${isDisabled}">
+          ${this.renderIcon()}
           <slot></slot>
         </button>
       `;

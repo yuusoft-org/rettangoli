@@ -25,6 +25,9 @@ export default ({ render, html }) => {
     input:focus {
       border-color: var(--foreground);
     }
+    input:disabled {
+      cursor: not-allowed;
+    }
 ${marginStyles}
 ${cursorStyles}
   `);
@@ -45,14 +48,16 @@ ${cursorStyles}
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-      
+
 
       render(this.shadow, this.render);
     }
 
     render = () => {
+      const type = this.getAttribute("type") || "text";
+      const isDisabled = this.hasAttribute('disabled');
       return html`
-        <input type="text" />
+        <input placeholder="${this.getAttribute("placeholder")}" type="${type}" disabled="${isDisabled}" />
       `;
     };
   }
