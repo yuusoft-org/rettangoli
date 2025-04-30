@@ -159,12 +159,16 @@ export default ({ render, html }) => {
     render = () => {
       const isDisabled = this.hasAttribute('disabled') && !(this.getAttribute('disabled') === 'false' || this.getAttribute('disabled') === '0');
       if (!isDisabled && this.getAttribute("href")) {
+        const iconSlot = !this.hasAttribute("icon") ? '' : 
+        `<rtgl-svg svg="${this.getAttribute("icon")}" wh="24"></rtgl-svg>`;
+
         return html`
           <a
             href=${this.getAttribute("href")}
             target=${this.getAttribute("target")}
           >
             <button>
+              ${iconSlot}
               <slot></slot>
             </button>
           </a>

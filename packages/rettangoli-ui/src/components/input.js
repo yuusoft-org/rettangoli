@@ -25,6 +25,9 @@ export default ({ render, html }) => {
     input:focus {
       border-color: var(--foreground);
     }
+    input:disabled {
+      cursor: not-allowed;
+    }
 ${marginStyles}
 ${cursorStyles}
   `);
@@ -57,7 +60,7 @@ ${cursorStyles}
         console.warn(`Invalid type "${typeAttr}" for input element. Defaulting to "text".`);
       }
       const type = typeList.includes(typeAttr) ? typeAttr : "text";
-      const isDisabled = this.hasAttribute('disabled') && !(this.getAttribute('disabled') === 'false' || this.getAttribute('disabled') === '0');
+      const isDisabled = this.hasAttribute('disabled');
       return html`
         <input placeholder="${this.getAttribute("placeholder")}" type="${type}" disabled="${isDisabled}" />
       `;
