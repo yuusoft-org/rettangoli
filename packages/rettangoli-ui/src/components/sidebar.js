@@ -1,17 +1,49 @@
 import { createWebComponentBaseElement } from "../common/BaseElement";
 
+function flattenItems(items) {
+  let result = [];
+
+  for (const item of items) {
+    // Add the parent item if it's not just a group label
+    result.push({
+      title: item.title,
+      slug: item.slug,
+      type: item.type,
+    });
+
+    // Add child items if they exist
+    if (item.items && Array.isArray(item.items)) {
+      for (const subItem of item.items) {
+        result.push({
+          title: subItem.title,
+          slug: subItem.slug,
+          type: subItem.type,
+        });
+      }
+    }
+  }
+
+  return result;
+}
+
 export default ({ render, html }) => {
-  return class RettangoliSidebar extends createWebComponentBaseElement({ render }) {
+  return class RettangoliSidebar extends createWebComponentBaseElement({
+    render,
+  }) {
     items = [];
 
     getItems = () => {
+      let items;
       const attributeItems = this.getAttribute("items");
       if (attributeItems) {
         const decodedItems = JSON.parse(decodeURIComponent(attributeItems));
-        return decodedItems;
+        items = decodedItems;
+      } else {
+        items = this.items;
       }
-      return this.items;
-    }
+
+      return flattenItems(items);
+    };
 
     static get observedAttributes() {
       return ["items"];
@@ -23,15 +55,23 @@ export default ({ render, html }) => {
           <rtgl-view p="l">
             <rtgl-text s="h4" c="primary">Rettangoli test suite</rtgl-text>
           </rtgl-view>
-          <rtgl-view w="f" p="l" g="xs">
-            ${this.getItems().map(
-              (item) => html`
+          <rtgl-view w="f" ph="l" pb="l" g="xs">
+            ${this.getItems().map((item) => {
+              if (item.type === "groupLabel") {
+                return html`
+                  <rtgl-view mt="l" h="32" av="c" ph="m">
+                    <rtgl-text s="xs" c="mu-fg">${item.title}</rtgl-text>
+                  </rtgl-view>
+                `;
+              }
+
+              return html`
                 <a
                   style="display: contents; text-decoration: none; color: inherit;"
                   href=${item.slug}
                 >
                   <rtgl-view
-                    h="36"
+                    h="32"
                     av="c"
                     ph="m"
                     w="f"
@@ -43,8 +83,8 @@ export default ({ render, html }) => {
                     <rtgl-text s="sm">${item.title}</rtgl-text>
                   </rtgl-view>
                 </a>
-              `
-            )}
+              `;
+            })}
           </rtgl-view>
         </rtgl-view>
       `;
