@@ -60,11 +60,6 @@ ${cursorStyles}
       return this._inputRef.current.value;
     }
 
-    // onChange = (event) => {
-    //   console.log('onChange 111111')
-    //   console.log(event);
-    // };
-
     _onChange = (event) => {
       if (this.onChange) {
         this.onChange(event.target.value)
