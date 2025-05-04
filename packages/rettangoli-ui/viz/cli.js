@@ -13,8 +13,9 @@ program
 program
   .command('generate')
   .description('Generate visualizations')
-  .action(() => {
-    generate();
+  .option('--skip-screenshots', 'Skip screenshot generation')
+  .action((options) => {
+    generate(options);
   });
 
 program

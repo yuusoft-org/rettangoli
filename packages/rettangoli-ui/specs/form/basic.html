@@ -1,0 +1,57 @@
+---
+title: "Basic"
+---
+<rtgl-view g="l" h="100vh" w="300" fw="w">
+  <rtgl-form id="form"></rtgl-form>
+</rtgl-view>
+
+<script>
+  const form = document.getElementById('form');
+
+  form.form = {
+    title: 'Form Title',
+    description: 'Form Description',
+    fields: [{
+      type: 'groupLabel',
+      content: 'Group Label'
+    }, {
+      type: 'input',
+      label: 'Age',
+      name: 'age',
+      description: 'Enter your age',
+      required: true,
+      validations: [{
+        rule: /^\d+$/,
+        message: 'Must be a number'
+      }],
+      options: {
+        type: 'text',
+        placeholder: '...'
+      }
+    }, {
+      type: 'input',
+      label: 'Hobby',
+      name: 'hobby',
+      description: 'Enter your hobby',
+      required: true,
+      options: {
+        type: 'text',
+        placeholder: '...'
+      }
+    }],
+    actions: [{
+      id: 'submit',
+      variant: 'primary',
+      content: 'Submit',
+      icon: 'arrow-left',
+      iconRight: 'arrow-right',
+      fill: true
+    }],
+  }
+
+  form.onSubmit = (data) => {
+    console.log('onSubmit', data);
+  }
+
+  form.reRender();
+</script>

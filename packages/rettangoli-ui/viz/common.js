@@ -325,9 +325,10 @@ function generateOverview(
         renderedContent = `<html><body><h1>Error rendering overview template</h1><p>${error.message}</p></body></html>`;
       }
 
+      const finalOutputPath = outputPath.replace('index.html', `${section.title.toLowerCase()}.html`);
       // Save file
-      writeFileSync(outputPath.replace('index.html', `${section.title.toLowerCase()}.html`), renderedContent, "utf8");
-      console.log(`Generated overview: ${outputPath}`);
+      writeFileSync(finalOutputPath, renderedContent, "utf8");
+      console.log(`Generated overview: ${finalOutputPath}`);
     })
 
   } catch (error) {

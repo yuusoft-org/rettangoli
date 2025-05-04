@@ -44,24 +44,24 @@
   </style>
 
   <script>
-
     window.addEventListener('DOMContentLoaded', () => {
       const pageOutline = document.getElementById('page-outline');
       const contentContainer = document.getElementById('content');
       pageOutline.startListening(contentContainer)
     })
-
   </script>
 </head>
 
 <body class="dark">
   <rtgl-view d="h" w="100vw" h="100vh">
 
-    <rtgl-sidebar items="{{ sidebarItems }}">
-    </rtgl-sidebar>
+    <rtgl-view sm-hidden>
+      <rtgl-sidebar items="{{ sidebarItems }}">
+      </rtgl-sidebar>
+    </rtgl-view>
 
     <rtgl-view id="content" h="100vh" w="f" flex="1" p="l" g="l" style="flex-wrap: nowrap;" sv ah="c">
-      <rtgl-view w="800" g="xl">
+      <rtgl-view w="f" g="xl">
         <rtgl-text s="h2">{{ currentSection.title }} </rtgl-text>
         {% for file in files %}
         <rtgl-view  w="f">
@@ -82,7 +82,9 @@
         <rtgl-view h="33vh"></rtgl-view>
       </rtgl-view>
     </rtgl-view>
-    <rtgl-page-outline id="page-outline"></rtgl-page-outline>
+    <rtgl-view lg-hidden>
+      <rtgl-page-outline id="page-outline"></rtgl-page-outline>
+    </rtgl-view>
   </rtgl-view>
 </body>
 

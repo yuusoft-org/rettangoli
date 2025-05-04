@@ -9,6 +9,7 @@ export default ({ render, html }) => {
       display: contents;
     }
     textarea {
+      font-family: inherit;
       background-color: var(--background);
       font-size: var(--sm-font-size);
       font-weight: var(--sm-font-weight);
@@ -16,6 +17,8 @@ export default ({ render, html }) => {
       letter-spacing: var(--sm-letter-spacing);
       border: 1px solid var(--ring);
       border-radius: var(--border-radius-l);
+      padding-top: var(--spacing-m);
+      padding-bottom: var(--spacing-m);
       padding-left: var(--spacing-m);
       padding-right: var(--spacing-m);
       color: var(--foreground);
@@ -51,7 +54,12 @@ ${cursorStyles}
 
     render = () => {
       return html`
-        <textarea type="text" />
+        <textarea
+          cols=${this.getAttribute("cols")}
+          rows=${this.getAttribute("rows")}
+          placeholder=${this.getAttribute("placeholder")}
+          type="text">
+        </textarea>
       `;
     };
   }
