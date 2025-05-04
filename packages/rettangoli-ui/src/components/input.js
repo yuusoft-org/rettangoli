@@ -33,6 +33,9 @@ ${cursorStyles}
   `);
 
   class RettangoliInput extends HTMLElement {
+
+    _inputRef = {};
+
     constructor() {
       super();
       this.shadow = this.attachShadow({ mode: "closed" });
@@ -52,12 +55,22 @@ ${cursorStyles}
 
       render(this.shadow, this.render);
     }
+    get value() {
+      console.log('gettin gvalue', this._inputRef.current)
+      return this._inputRef.current.value;
+    }
+
+    _onChange = (event) => {
+      if (this.onChange) {
+        this.onChange(event.target.value)
+      }
+    };
 
     render = () => {
       const type = this.getAttribute("type") || "text";
       const isDisabled = this.hasAttribute('disabled');
       return html`
-        <input placeholder="${this.getAttribute("placeholder")}" type="${type}" disabled="${isDisabled}" />
+        <input ref=${this._inputRef} @keydown=${this._onChange} placeholder="${this.getAttribute("placeholder")}" type="${type}" disabled="${isDisabled}" />
       `;
     };
   }
