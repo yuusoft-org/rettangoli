@@ -1,8 +1,9 @@
 ---
-layout: documentation.html
-title: Colors
-tags: [documentation]
+layout: core/documentation
+title: Docs
+tags: documentation
 ---
+
 
 ## Overview
 

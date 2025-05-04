@@ -1,8 +1,9 @@
 ---
-layout: documentation.html
-title: CSS Variables
-tags: [documentation]
+layout: core/documentation
+title: Docs
+tags: documentation
 ---
+
 
 ## Overview
 

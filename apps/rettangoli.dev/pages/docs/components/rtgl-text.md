@@ -1,8 +1,9 @@
 ---
-layout: documentation.html
-title: rtgl-text 
-tags: [documentation]
+layout: core/documentation
+title: Docs
+tags: documentation
 ---
+
 
 `<rtgl-text>` is a text component that provides typography styling with Material Design principles.
 

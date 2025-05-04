@@ -1,8 +1,9 @@
 ---
-layout: documentation.html
-title: rtgl-image 
-tags: [documentation]
+layout: core/documentation
+title: Docs
+tags: documentation
 ---
+
 
 `<rtgl-image>` is a versatile image component in the Rettangoli framework that provides a flexible way to display and style images with powerful positioning and sizing capabilities through simple, intuitive attributes.
 

@@ -1,7 +1,7 @@
 ---
-layout: documentation.html
-title: rtgl-svg 
-tags: [documentation]
+layout: core/documentation
+title: Docs
+tags: documentation
 ---
 
 `<rtgl-svg>` is a versatile SVG component in the Rettangoli framework that provides a simple way to display and style SVG icons with powerful sizing and coloring capabilities through intuitive attributes.

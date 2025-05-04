@@ -57,12 +57,8 @@ function extractFrontMatter(content) {
   const frontMatter = match[1].trim();
   const contentWithoutFrontMatter = content.slice(match[0].length).trim();
 
-  // console.log('contentWithoutFrontMatter', contentWithoutFrontMatter)
-  // shiki.codeToHtml(contentWithoutFrontMatter, { lang: 'html', theme: 'github-dark' })
-
   return {
     content: contentWithoutFrontMatter,
-    // contentShiki: shiki.codeToHtml(contentWithoutFrontMatter, { lang: 'html', theme: 'github-dark' }),
     frontMatter: frontMatter,
   };
 }

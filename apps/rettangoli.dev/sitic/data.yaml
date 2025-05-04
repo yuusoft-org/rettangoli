@@ -1,0 +1,47 @@
+
+title: 'Rettangoli UI'
+
+og:
+  title: Rettangoli UI
+  description: Rettangoli UI is a UI library for building modern web applications
+  siteName: Rettangoli UI
+  type: website
+  image: /public/sample1.jpg
+
+header:
+  logo:
+    src: /public/sample1.jpg
+    alt: Rettangoli UI
+    width: 110
+    height: 20
+
+footer:
+  logo: {}
+  social: []
+  columns: []
+docs:
+  items:
+    - title: "Introduction"
+      type: groupLabel
+      items:
+        - title: "Introduction"
+          slug: "/docs/introduction/introduction"
+        - title: "Getting Started"
+          slug: "/docs/introduction/getting-started"
+        - title: "Colors"
+          slug: "/docs/introduction/colors"
+        - title: "CSS Variables"
+          slug: "/docs/introduction/css-variables"
+    - title: "Components"
+      type: groupLabel
+      items:
+        - title: "View"
+          slug: "/docs/components/rtgl-view"
+        - title: "Text"
+          slug: "/docs/components/rtgl-text"
+        - title: "Image"
+          slug: "/docs/components/rtgl-image"
+        - title: "SVG"
+          slug: "/docs/components/rtgl-svg"
+        - title: "Button"
+          slug: "/docs/components/rtgl-button"
