@@ -5,6 +5,21 @@ html {
   scrollbar-width: none; /* Firefox */
 }
 
+:root {
+  --width-stretch: 100%;
+}
+/* Override in supported browsers */
+@supports (width: -webkit-fill-available) {
+  :root {
+    --width-stretch: -webkit-fill-available;
+  }
+}
+@supports (width: -moz-available) {
+  :root {
+    --width-stretch: -moz-available;
+  }
+}
+
 /* Hide scrollbar for Chrome, Safari */
 html::-webkit-scrollbar {
   display: none;

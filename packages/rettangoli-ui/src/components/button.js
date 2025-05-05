@@ -155,7 +155,7 @@ export default ({ render, html }) => {
       const width = dimensionWithUnit(this.getAttribute("w"));
 
       if (width === "f") {
-        this._buttonRef.current.style.width = "100%";
+        this._buttonRef.current.style.width = "var(--width-stretch)";
       } else if (width !== undefined && width !== null) {
         this._buttonRef.current.style.width = width;
         this._buttonRef.current.style.minWidth = width;
@@ -195,8 +195,9 @@ export default ({ render, html }) => {
           <a
             href=${this.getAttribute("href")}
             target=${this.getAttribute("target")}
+            style="text-decoration: none; display: contents; color: inherit;"
           >
-            <button disabled="${isDisabled}>
+            <button disabled="${isDisabled}">
               ${this.renderIcon()}
               <slot></slot>
             </button>

@@ -57,7 +57,7 @@ ${cursorStyles}
       }
 
       if (width === "f") {
-        this.style.width = "100%";
+        this.style.width = "var(--width-stretch)";
       } else if (width !== undefined) {
         this.style.width = width;
       }

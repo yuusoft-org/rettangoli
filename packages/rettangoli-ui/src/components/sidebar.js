@@ -32,6 +32,28 @@ export default ({ render, html }) => {
   }) {
     items = [];
 
+    title = {
+      label: undefined,
+      labelHref: undefined,
+      href: undefined,
+      image: {
+        src: undefined,
+        alt: undefined,
+        width: undefined,
+        height: undefined,
+        href: undefined,
+      },
+    };
+
+    onMount = () => {
+      const titleAttribute = this.getAttribute("title");
+      if (titleAttribute) {
+        console.log('titleAttribute', titleAttribute)
+        this.title = JSON.parse(decodeURIComponent(titleAttribute));
+        this.reRender();
+      }
+    }
+
     getItems = () => {
       let items;
       const attributeItems = this.getAttribute("items");
@@ -53,13 +75,30 @@ export default ({ render, html }) => {
       return html`
         <rtgl-view h="f" w="272" bwr="xs">
           <rtgl-view p="l">
-            <rtgl-text s="h4" c="primary">Rettangoli test suite</rtgl-text>
+            <a
+              style="text-decoration: none; display: contents; color: inherit;"
+              href=${this.title.href}
+            >
+              <rtgl-view d="h" av="c" g="l">
+                ${this.title?.image?.src
+                  ? html`<rtgl-image
+                      w=${this.title?.image?.width}
+                      h=${this.title?.image?.height}
+                      src=${this.title?.image?.src}
+                      alt=${this.title?.image?.alt || "Navbar"}
+                    />`
+                  : ""}
+                ${this.title?.label ? html`<rtgl-text s="lg">${this.title?.label}</rtgl-text>` : ""}
+              </rtgl-view>
+            </a>
           </rtgl-view>
           <rtgl-view w="f" ph="l" pb="l" g="xs">
-            ${this.getItems().map((item) => {
+            ${this.getItems().map((item, index) => {
+              const isFirst = index === 0;
               if (item.type === "groupLabel") {
+                const marginTop = isFirst ? undefined : "m";
                 return html`
-                  <rtgl-view mt="l" h="32" av="c" ph="m">
+                  <rtgl-view mt=${marginTop} h="32" av="c" ph="m">
                     <rtgl-text s="xs" c="mu-fg">${item.title}</rtgl-text>
                   </rtgl-view>
                 `;
