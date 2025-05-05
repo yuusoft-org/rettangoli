@@ -1,8 +1,9 @@
 ---
-layout: documentation.html
+layout: core/documentation
 title: Introduction
-tags: [documentation]
+tags: documentation
 ---
+
 
 > The layout is basically made out of rectangles
 
