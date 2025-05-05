@@ -18,7 +18,6 @@ An intuitive container component for building layouts serving as the building bl
 | Margin           | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `s`, `m`, `l`, `xl`                | -       | Margin outside the container                                   |
 | Gap              | `g`, `gh`, `gv`                         | `xs`, `s`, `m`, `l`, `xl`                | -       | Space between children                                         |
 | Border Width     | `bw`, `bwt`, `bwr`, `bwb`, `bwl`        | `xs`, `s`, `m`, `l`, `xl`                | -       | Border width for all sides or specific sides                   |
-| Border Color     | `bc`                                    | color code                               | -       | Border color                                                   |
 | Border Radius    | `br`                                    | `xs`, `s`, `m`, `l`, `xl`, `f`           | -       | Border radius for corners                                      |
 | Background Color | `bgc`                                   | color code                               | -       | Background color                                               |
 | Position         | `pos`                                   | `abs`, `rel`, `fix`                      | -       | Positioning method                                             |
@@ -26,29 +25,24 @@ An intuitive container component for building layouts serving as the building bl
 | Z-index          | `z`                                     | number                                   | -       | Stacking order for overlapping elements                        |
 | Horizontal Align | `ah`                                    | `s`, `c`, `e`                            | `s`     | Horizontal alignment: start, center, end                       |
 | Vertical Align   | `av`                                    | `s`, `c`, `e`                            | `s`     | Vertical alignment: start, center, end                         |
-| Shadow           | `shadow`                                | `s`, `m`, `l`                            | -       | Shadow depth                                                   |
 | Hidden           | `hidden`                                | boolean                                  | -       | When present, hides the element                                |
 | Scroll           | `sv`, `sh`                              | boolean                                  | -       | Enables vertical or horizontal scrolling                       |
-| Responsive       | `sm-`, `md-`, `lg-`, `xl-` (prefix)     | -                                        | -       | Responsive modifiers for any attribute at specific breakpoints |
 
 ## Direction
 
 Vertical
 
 ```html codePreview
-<rtgl-view bgc="mu" p="m" g="m">
+<rtgl-view bgc="ac" p="m" g="m">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
 </rtgl-view>
 ```
 
-<br></br>
-<br></br>
-
 Horizontal
 
 ```html codePreview
-<rtgl-view d="h" bgc="mu" p="m" g="m">
+<rtgl-view d="h" bgc="ac" p="m" g="m">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
 </rtgl-view>
@@ -56,11 +50,29 @@ Horizontal
 
 ## Dimensions
 
+### Pixels
+
 ```html codePreview
-<rtgl-view d="h" g="m" p="l">
-  <rtgl-view bgc="mu" wh="80"></rtgl-view>
-  <rtgl-view bgc="mu" w="120" h="80"></rtgl-view>
-  <rtgl-view bgc="mu" w="f" h="80"></rtgl-view>
+<rtgl-view d="h" g="m" p="l" w="f">
+  <rtgl-view bgc="ac" wh="80"></rtgl-view>
+  <rtgl-view bgc="ac" w="120" h="80"></rtgl-view>
+</rtgl-view>
+```
+
+### Spacing
+
+```html codePreview
+<rtgl-view d="h" g="m" p="l" w="f">
+  <rtgl-view bgc="ac" wh="xl"></rtgl-view>
+  <rtgl-view bgc="ac" w="l" h="xl"></rtgl-view>
+</rtgl-view>
+```
+
+### Full
+
+```html codePreview
+<rtgl-view d="h" g="m" p="l" w="f">
+  <rtgl-view bgc="ac" w="f" h="80"></rtgl-view>
 </rtgl-view>
 ```
 
@@ -68,25 +80,49 @@ Horizontal
 
 ```html codePreview
 <rtgl-view d="h" g="m" p="l">
-  <rtgl-view bgc="mu" wh="80"></rtgl-view>
-  <rtgl-view bgc="mu" wh="80" p="m"></rtgl-view>
-  <rtgl-view bgc="mu" wh="80" pt="m" pr="l" pb="xl" pl="s"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" p="m">
+    <rtgl-view bgc="mu" wh="f"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view bgc="ac" wh="80" pt="m" pr="l" pb="xl" pl="s">
+    <rtgl-view bgc="mu" wh="f"></rtgl-view>
+  </rtgl-view>
 </rtgl-view>
 ```
 
-## Border
+## Margin
 
 ```html codePreview
 <rtgl-view d="h" g="m" p="l">
-  <rtgl-view bgc="mu" wh="80" bw="m"></rtgl-view>
-  <rtgl-view bgc="mu" wh="80" bwt="m"></rtgl-view>
-  <rtgl-view bgc="mu" wh="80" bwr="m"></rtgl-view>
-  <rtgl-view bgc="mu" wh="80" bwb="m"></rtgl-view>
-  <rtgl-view bgc="mu" wh="80" bwl="m"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80">
+    <rtgl-view bgc="mu" wh="f" m="m"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view bgc="ac" wh="80">
+    <rtgl-view bgc="mu" wh="f" mt="m" mr="l" mb="xl" ml="s"></rtgl-view>
+  </rtgl-view>
 </rtgl-view>
 ```
 
-## Alignment
+## Border Width
+
+```html codePreview
+<rtgl-view d="h" g="m" p="l">
+  <rtgl-view bgc="ac" wh="80" bw="m"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" bwt="m"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" bwr="m"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" bwb="m"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" bwl="m"></rtgl-view>
+</rtgl-view>
+```
+
+## Border Radius
+
+```html codePreview
+<rtgl-view d="h" g="m" p="l">
+  <rtgl-view bgc="ac" wh="80" br="l"></rtgl-view>
+</rtgl-view>
+```
+
+## Align Horizontal
 
 ```html codePreview
 <rtgl-view d="h" g="m" p="l">
@@ -101,6 +137,8 @@ Horizontal
   </rtgl-view>
 </rtgl-view>
 ```
+
+## Align Vertical
 
 ```html codePreview
 <rtgl-view d="h" g="m" p="l">
@@ -118,7 +156,7 @@ Horizontal
 
 ```html codePreview
 <rtgl-view d="h" g="m" p="l">
-  <rtgl-view bgc="mu" wh="80" ah="c" av="c">
+  <rtgl-view bgc="ac" wh="80" ah="c" av="c">
     <rtgl-view bgc="ac" wh="24"></rtgl-view>
   </rtgl-view>
 </rtgl-view>
@@ -142,47 +180,31 @@ Horizontal
 </rtgl-view>
 ```
 
-## Shadow
-
-```html codePreview
-<rtgl-view d="h" g="xl" p="xl">
-  <rtgl-view bgc="mu" wh="50" shadow="s"></rtgl-view>
-  <rtgl-view bgc="mu" wh="50" shadow="m"></rtgl-view>
-  <rtgl-view bgc="mu" wh="50" shadow="l"></rtgl-view>
-</rtgl-view>
-```
-
-## Responsive
-
-```html codePreview
-<rtgl-view p="l">
-  <rtgl-view
-    bgc="mu"
-    sm-w="100"
-    md-w="200"
-    lg-w="300"
-    xl-w="400"
-    h="100"
-  ></rtgl-view>
-</rtgl-view>
-```
-
-## Hidden and Visible
+## Hidden
 
 ```html codePreview
 <rtgl-view p="l" g="m">
   <rtgl-view d="h" g="m">
-    <rtgl-view bgc="mu" wh="80"></rtgl-view>
-    <rtgl-view bgc="mu" wh="80" hidden></rtgl-view>
-  </rtgl-view>
-  <rtgl-view d="h" g="m">
-    <rtgl-view bgc="s" wh="80" sm-visible hidden></rtgl-view>
-    <rtgl-view bgc="sc" wh="80" lg-visible hidden></rtgl-view>
+    <rtgl-view bgc="ac" wh="80"></rtgl-view>
+    <rtgl-view bgc="ac" wh="80" hidden></rtgl-view>
   </rtgl-view>
 </rtgl-view>
 ```
 
-## Scroll
+## Visible
+
+Use this with hover or responsive modifiers
+
+```html codePreview
+<rtgl-view p="l" g="m">
+  <rtgl-view d="h" g="m">
+    <rtgl-view bgc="ac" wh="80"></rtgl-view>
+    <rtgl-view bgc="ac" wh="80" visible></rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+```
+
+## Scroll Vertical
 
 ```html codePreview
 <rtgl-view p="l">
@@ -194,6 +216,8 @@ Horizontal
   </rtgl-view>
 </rtgl-view>
 ```
+
+## Scroll Horizontal
 
 ```html codePreview
 <rtgl-view p="l">

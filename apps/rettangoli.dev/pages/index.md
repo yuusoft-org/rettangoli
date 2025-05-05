@@ -9,9 +9,13 @@ title: Sitic Index
 - component: core/spacer
   data:
     height: 100
-- component: core/hero1
+- component: core/hero2
   data:
     hero:
-      title: Rettangoli UI
-      message: Learn within one day and use until the end of the web
+      title: Rettangoli
+      subtitles:
+        - A collection of development libraries to build great products
+      cta:
+        text: Read the docs
+        href: /docs/introduction/introduction
 ```

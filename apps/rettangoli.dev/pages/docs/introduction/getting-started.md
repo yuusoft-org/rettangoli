@@ -1,6 +1,6 @@
 ---
 layout: core/documentation
-title: Docs
+title: Getting Started
 tags: documentation
 ---
 
@@ -23,25 +23,15 @@ With the IIFE approach, you have two options:
 
 ### Component Availability
 
-| Component | rettangoli-layout | rettangoli-ui |
-|-----------|-------------------|---------------|
-| `rtgl-view` | Yes | Yes | 
-| `rtgl-text` | Yes | Yes |
-| `rtgl-image` | Yes | Yes |
-| `rtgl-svg` | Yes | Yes |
-| `rtgl-button` | Yes | Yes |
-| `rtgl-list-view` | No | Yes |
+TODO
 
 ### Using rettangoli-layout
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rettangoli-ui@0.0.9/dist/rettangoli-iife-layout.min.js"></script>
-```
 
 ### Using rettangoli-ui
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rettangoli-ui@0.0.9/dist/rettangoli-iife-ui.min.js"></script>
 ```
 
 ### CSS Installation
@@ -49,7 +39,6 @@ With the IIFE approach, you have two options:
 In addition to the JavaScript file, you need to add the CSS for styling:
 
 ```html
-<link href="https://cdn.jsdelivr.net/npm/rettangoli-ui@0.0.9/dist/themes/theme-dark.css" rel="stylesheet" />
 ```
 
 For more information on available themes and customization options, see our [CSS Variables](/docs/introduction/css-variables) guide.

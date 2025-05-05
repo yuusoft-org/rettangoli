@@ -1,25 +1,22 @@
 
-title: 'Rettangoli UI'
+title: 'Rettangoli'
 
 og:
-  title: Rettangoli UI
+  title: Rettangoli
   description: Rettangoli UI is a UI library for building modern web applications
   siteName: Rettangoli UI
   type: website
   image: /public/sample1.jpg
 
-header:
-  logo:
-    src: /public/sample1.jpg
-    alt: Rettangoli UI
-    width: 110
-    height: 20
+navbar:
+  title:
+    label: Rettangoli
+  right: '<a href="https://github.com/yuusoft-org/rettangoli" style="text-decoration: none; display: contents; color: inherit;" ><rtgl-svg wh="32" svg="github"></rtgl-svg></a>'
 
-footer:
-  logo: {}
-  social: []
-  columns: []
 docs:
+  title:
+    label: Rettangoli UI Docs
+    href: /
   items:
     - title: "Introduction"
       type: groupLabel

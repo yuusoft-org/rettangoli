@@ -1,6 +1,6 @@
 ---
 layout: core/documentation
-title: Docs
+title: Introduction
 tags: documentation
 ---
 

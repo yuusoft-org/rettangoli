@@ -14,6 +14,43 @@ body::-webkit-scrollbar {
   display: none;
 }
 
+:root {
+  --width-stretch: 100%;
+}
+/* Override in supported browsers */
+@supports (width: -webkit-fill-available) {
+  :root {
+    --width-stretch: -webkit-fill-available;
+  }
+}
+@supports (width: -moz-available) {
+  :root {
+    --width-stretch: -moz-available;
+  }
+}
+
+/* Blockquote styles */
+blockquote {
+  margin: var(--spacing-m) 0;
+  padding: var(--spacing-m) var(--spacing-l);
+  border-left: 4px solid var(--primary);
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  font-style: italic;
+}
+
+blockquote p {
+  margin: 0;
+}
+
+blockquote cite {
+  display: block;
+  margin-top: var(--spacing-s);
+  font-size: 0.9em;
+  font-style: normal;
+  opacity: 0.8;
+}
+
 body {
   -ms-overflow-style: none;
   scrollbar-width: none;

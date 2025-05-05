@@ -1,118 +1,98 @@
 ---
 layout: core/documentation
-title: Docs
+title: Image
 tags: documentation
 ---
 
+A versatile image component for displaying images with various sizing and styling options.
 
-`<rtgl-image>` is a versatile image component in the Rettangoli framework that provides a flexible way to display and style images with powerful positioning and sizing capabilities through simple, intuitive attributes.
+## Attributes
 
-## Table of Contents
-
-- [Basic Usage](#basic-usage)
-- [Examples](#examples)
-- [Available Attributes](#available-attributes)
+| Name | Attribute | Type | Default | Description |
+|------|-----------|------|---------|-------------|
+| Source | `src` | string | - | URL or path to the image file |
+| Width | `w`, `width` | number | - | Width in pixels |
+| Height | `h`, `height` | number | - | Height in pixels |
+| Width & Height | `wh` | number | - | Sets both width and height to same value |
+| Object Fit | `of` | `cov`, `con`, `none` | - | How the image should be resized: cover, contain, or none |
+| Border Width | `bw` | `xs`, `s`, `m`, `l`, `xl` | - | Width of the border around the image |
+| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `s`, `m`, `l`, `xl` | - | Margin around the image |
 
 ## Basic Usage
 
-The `<rtgl-image>` element works as an image container that can be styled and positioned using concise attribute shortcuts.
-
-### Simple Image
-
-```html
-<rtgl-image src="/path/to/image.jpg"></rtgl-image>
-```
-
-### Image with Fixed Dimensions
-
-```html
-<rtgl-image src="/path/to/image.jpg" w="200"></rtgl-image>
-```
-
-**Explanation:**
-- `src="/path/to/image.jpg"`: Sets the image source
-- `w="200"`: Sets the width to 200 pixels
-
-## Examples
-
-### Responsive Images
-
-```html
-<rtgl-view d="h" g="l">
-  <rtgl-image w="f" src="/path/to/image.jpg"></rtgl-image>
+```html codePreview
+<rtgl-view p="m">
+  <rtgl-image src="/public/sample1.jpg"></rtgl-image>
 </rtgl-view>
 ```
 
-### Images with Border
+## Dimensions
 
-```html
-<rtgl-view d="h" g="l">
-  <rtgl-image w="200" src="/path/to/image.jpg"></rtgl-image>
-  <rtgl-image w="200" src="/path/to/image.jpg" bw="m" bc="p"></rtgl-image>
+### Width & Height
+
+```html codePreview
+<rtgl-view d="h" g="m" p="m">
+  <rtgl-image w="100" src="/public/sample1.jpg"></rtgl-image>
+  <rtgl-image w="200" h="150" src="/public/sample1.jpg"></rtgl-image>
+  <rtgl-image wh="120" src="/public/sample1.jpg"></rtgl-image>
 </rtgl-view>
 ```
 
-### Object Fit Options
+### HTML Attributes
 
-```html
-<rtgl-view d="h" g="l">
-  <rtgl-image wh="60" src="/path/to/image.jpg"></rtgl-image>
-  <rtgl-image of="cov" wh="60" src="/path/to/image.jpg"></rtgl-image>
-  <rtgl-image of="con" wh="60" src="/path/to/image.jpg"></rtgl-image>
-  <rtgl-image of="none" wh="60" src="/path/to/image.jpg"></rtgl-image>
+```html codePreview
+<rtgl-view d="h" g="m" p="m">
+  <rtgl-image width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
 </rtgl-view>
 ```
 
-## Available Attributes
+## Object Fit
 
-### [Dimensions](/docs/rtgl-image/rtgl-image-dimensions)
-| Attribute | Description |
-|-----------|-------------|
-| `w` | Width |
-| `h` | Height |
-| `wh` | Width and Height (combined) |
-| `width` | Native HTML width attribute |
-| `height` | Native HTML height attribute |
+```html codePreview
+<rtgl-view d="h" g="m" p="m">
+  <rtgl-view bgc="suc" p="xs">
+    <rtgl-image w="100" h="100" src="/public/sample1.jpg"></rtgl-image>
+    <rtgl-text>Default</rtgl-text>
+  </rtgl-view>
+  
+  <rtgl-view bgc="suc" p="xs">
+    <rtgl-image of="cov" w="100" h="100" src="/public/sample1.jpg"></rtgl-image>
+    <rtgl-text>Cover</rtgl-text>
+  </rtgl-view>
+  
+  <rtgl-view bgc="suc" p="xs">
+    <rtgl-image of="con" w="100" h="100" src="/public/sample1.jpg"></rtgl-image>
+    <rtgl-text>Contain</rtgl-text>
+  </rtgl-view>
+  
+  <rtgl-view bgc="suc" p="xs">
+    <rtgl-image of="none" w="100" h="100" src="/public/sample1.jpg"></rtgl-image>
+    <rtgl-text>None</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+```
 
-### [Object Fit](/docs/rtgl-image/rtgl-image-object-fit)
-| Attribute | Description |
-|-----------|-------------|
-| `of` | Object fit property (con = contain, cov = cover, none = none) |
+## Border
 
-### [Border](/docs/rtgl-image/rtgl-image-border)
-| Attribute | Description |
-|-----------|-------------|
-| `bw` | Border width (all sides) |
-| `bwt` | Border width top |
-| `bwr` | Border width right |
-| `bwb` | Border width bottom |
-| `bwl` | Border width left |
-| `bc` | Border color (all sides) |
-| `br` | Border radius (all corners) |
+```html codePreview
+<rtgl-view d="h" g="m" p="m">
+  <rtgl-image w="200" src="/public/sample1.jpg"></rtgl-image>
+  <rtgl-image w="200" src="/public/sample1.jpg" bw="m"></rtgl-image>
+</rtgl-view>
+```
 
-### [Background Color](/docs/rtgl-image/rtgl-image-bgc)
-| Attribute | Description |
-|-----------|-------------|
-| `bgc` | Background color |
+## Different Aspect Ratios
 
-### [Margin](/docs/rtgl-image/rtgl-image-margin)
-| Attribute | Description |
-|-----------|-------------|
-| `m` | Margin (all sides) |
-| `mt` | Margin top |
-| `mr` | Margin right |
-| `mb` | Margin bottom |
-| `ml` | Margin left |
-| `mh` | Margin horizontal (left and right) |
-| `mv` | Margin vertical (top and bottom) |
-
-### [Opacity and Z-Index](/docs/rtgl-image/rtgl-image-opacity)
-| Attribute | Description |
-|-----------|-------------|
-| `o` | Opacity |
-| `z` | Z-index |
-
-### [Cursor](/docs/rtgl-image/rtgl-image-cursor)
-| Attribute | Description |
-|-----------|-------------|
-| `cur` | Cursor style when hovering over the image | 
+```html codePreview
+<rtgl-view d="h" g="m" p="m">
+  <rtgl-view bgc="suc" p="xs">
+    <rtgl-image of="cov" w="50" h="100" src="/public/sample1.jpg"></rtgl-image>
+    <rtgl-text>Portrait</rtgl-text>
+  </rtgl-view>
+  
+  <rtgl-view bgc="suc" p="xs">
+    <rtgl-image of="cov" w="100" h="50" src="/public/sample1.jpg"></rtgl-image>
+    <rtgl-text>Landscape</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+```
