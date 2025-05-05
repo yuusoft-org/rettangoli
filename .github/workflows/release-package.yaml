@@ -1,8 +1,9 @@
 name: Publish package rettangoli-ui to npm
-
 on:
   release:
     types: [published]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
