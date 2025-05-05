@@ -1,5 +1,5 @@
 ---
-title: "Sidebar - Basic"
+title: "Item groups"
 ---
 <rtgl-view g="l" h="100vh" w="f" fw="w">
   <rtgl-sidebar id="sidebar"></rtgl-sidebar>
@@ -7,6 +7,18 @@ title: "Sidebar - Basic"
 
 <script>
   const sidebar = document.getElementById('sidebar');
+
+  sidebar.title = {
+    label: "Navbar",
+    href: "/",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Navbar",
+    },
+  }
+
   sidebar.items = [
     {
       title: "Group 1",
