@@ -1,10 +1,10 @@
 import { render, html } from "./lib/uhtml.js";
 
-import RettangoliButton from './components/button.js'
-import RettangoliView from './components/view.js';
-import RettangoliText from './components/text.js';
-import RettangoliImage from './components/image.js';
-import RettangoliSvg from './components/svg.js';
+import RettangoliButton from './primitives/button.js'
+import RettangoliView from './primitives/view.js';
+import RettangoliText from './primitives/text.js';
+import RettangoliImage from './primitives/image.js';
+import RettangoliSvg from './primitives/svg.js';
 
 customElements.define("rtgl-button", RettangoliButton({ render, html }));
 customElements.define("rtgl-view", RettangoliView({ render, html }));
