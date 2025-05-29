@@ -15,9 +15,9 @@ export default ({ render, html }) => {
       line-height: var(--sm-line-height);
       letter-spacing: var(--sm-letter-spacing);
       border: 1px solid var(--ring);
-      border-radius: var(--border-radius-l);
-      padding-left: var(--spacing-m);
-      padding-right: var(--spacing-m);
+      border-radius: var(--border-radius-lg);
+      padding-left: var(--spacing-md);
+      padding-right: var(--spacing-md);
       height: 32px;
       color: var(--foreground);
       outline: none;

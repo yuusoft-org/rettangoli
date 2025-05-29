@@ -15,13 +15,13 @@ A versatile image component for displaying images with various sizing and stylin
 | Height | `h`, `height` | number | - | Height in pixels |
 | Width & Height | `wh` | number | - | Sets both width and height to same value |
 | Object Fit | `of` | `cov`, `con`, `none` | - | How the image should be resized: cover, contain, or none |
-| Border Width | `bw` | `xs`, `s`, `m`, `l`, `xl` | - | Width of the border around the image |
-| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `s`, `m`, `l`, `xl` | - | Margin around the image |
+| Border Width | `bw` | `xs`, `sm`, `md`, `lg`, `xl` | - | Width of the border around the image |
+| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - | Margin around the image |
 
 ## Basic Usage
 
 ```html codePreview
-<rtgl-view p="m">
+<rtgl-view p="md">
   <rtgl-image src="/public/sample1.jpg"></rtgl-image>
 </rtgl-view>
 ```
@@ -31,7 +31,7 @@ A versatile image component for displaying images with various sizing and stylin
 ### Width & Height
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="m">
+<rtgl-view d="h" g="md" p="md">
   <rtgl-image w="100" src="/public/sample1.jpg"></rtgl-image>
   <rtgl-image w="200" h="150" src="/public/sample1.jpg"></rtgl-image>
   <rtgl-image wh="120" src="/public/sample1.jpg"></rtgl-image>
@@ -41,7 +41,7 @@ A versatile image component for displaying images with various sizing and stylin
 ### HTML Attributes
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="m">
+<rtgl-view d="h" g="md" p="md">
   <rtgl-image width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
 </rtgl-view>
 ```
@@ -49,7 +49,7 @@ A versatile image component for displaying images with various sizing and stylin
 ## Object Fit
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="m">
+<rtgl-view d="h" g="md" p="md">
   <rtgl-view bgc="suc" p="xs">
     <rtgl-image w="100" h="100" src="/public/sample1.jpg"></rtgl-image>
     <rtgl-text>Default</rtgl-text>
@@ -75,16 +75,16 @@ A versatile image component for displaying images with various sizing and stylin
 ## Border
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="m">
+<rtgl-view d="h" g="md" p="md">
   <rtgl-image w="200" src="/public/sample1.jpg"></rtgl-image>
-  <rtgl-image w="200" src="/public/sample1.jpg" bw="m"></rtgl-image>
+  <rtgl-image w="200" src="/public/sample1.jpg" bw="md"></rtgl-image>
 </rtgl-view>
 ```
 
 ## Different Aspect Ratios
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="m">
+<rtgl-view d="h" g="md" p="md">
   <rtgl-view bgc="suc" p="xs">
     <rtgl-image of="cov" w="50" h="100" src="/public/sample1.jpg"></rtgl-image>
     <rtgl-text>Portrait</rtgl-text>

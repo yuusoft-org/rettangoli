@@ -31,8 +31,8 @@ body::-webkit-scrollbar {
 
 /* Blockquote styles */
 blockquote {
-  margin: var(--spacing-m) 0;
-  padding: var(--spacing-m) var(--spacing-l);
+  margin: var(--spacing-md) 0;
+  padding: var(--spacing-md) var(--spacing-lg);
   border-left: 4px solid var(--primary);
   background-color: var(--muted);
   color: var(--muted-foreground);
@@ -45,7 +45,7 @@ blockquote p {
 
 blockquote cite {
   display: block;
-  margin-top: var(--spacing-s);
+  margin-top: var(--spacing-sm);
   font-size: 0.9em;
   font-style: normal;
   opacity: 0.8;
@@ -66,12 +66,12 @@ body {
 table {
   border-collapse: collapse;
   width: 100%;
-  margin-bottom: var(--spacing-l);
+  margin-bottom: var(--spacing-lg);
   background-color: var(--background);
 }
 
 th, td {
-  padding: var(--spacing-m);
+  padding: var(--spacing-md);
   text-align: left;
   border: 1px solid var(--border);
 }
@@ -90,7 +90,7 @@ tr:nth-child(even) {
 pre {
   margin: 0;
   white-space: pre; /* or pre-wrap/pre-line if you want line wrapping */
-  padding: var(--spacing-l);
+  padding: var(--spacing-lg);
   flex: 1;
 }
 
@@ -98,8 +98,8 @@ code:not(pre code) {
   font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
   font-size: 0.9em;
   background-color: var(--muted);
-  padding: var(--spacing-xs) var(--spacing-m);
-  border-radius: var(--border-radius-s);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
   display: inline-block;
 }
 
@@ -114,27 +114,27 @@ code:not(pre code) {
 
 :root {
   --spacing-xs: 2px;
-  --spacing-s: 4px;
-  --spacing-m: 8px;
-  --spacing-l: 16px;
+  --spacing-sm: 4px;
+  --spacing-md: 8px;
+  --spacing-lg: 16px;
   --spacing-xl: 32px;
 
   --border-radius-xs: 1px;
-  --border-radius-s: 2px;
-  --border-radius-m: 4px;
-  --border-radius-l: 8px;
+  --border-radius-sm: 2px;
+  --border-radius-md: 4px;
+  --border-radius-lg: 8px;
   --border-radius-xl: 16px;
   --border-radius-f: 50%;
 
   --border-width-xs: 1px;
-  --border-width-s: 2px;
-  --border-width-m: 4px;
-  --border-width-l: 8px;
+  --border-width-sm: 2px;
+  --border-width-md: 4px;
+  --border-width-lg: 8px;
   --border-width-xl: 16px;
 
-  --shadow-s: 0px 2px 6px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
-  --shadow-m: 0px 5px 12px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
-  --shadow-l: 0px 10px 24px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
+  --shadow-sm: 0px 2px 6px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
+  --shadow-md: 0px 5px 12px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
+  --shadow-lg: 0px 10px 24px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
 
   --h1-font-size: 3rem;
   --h1-font-weight: 800;

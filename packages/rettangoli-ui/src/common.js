@@ -151,9 +151,9 @@ const dimensionWithUnit = (dimension) => {
 
 const spacing = {
   xs: "--spacing-xs",
-  s: "--spacing-s",
-  m: "--spacing-m",
-  l: "--spacing-l",
+  sm: "--spacing-sm",
+  md: "--spacing-md",
+  lg: "--spacing-lg",
   xl: "--spacing-xl",
 };
 

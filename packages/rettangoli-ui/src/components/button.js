@@ -17,7 +17,7 @@ export default ({ render, html }) => {
       flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: var(--spacing-s);
+      gap: var(--spacing-sm);
       border-width: 0px;
       border-style: solid;
       border-color: var(--border);

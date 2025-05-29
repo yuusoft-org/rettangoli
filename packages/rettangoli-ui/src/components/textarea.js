@@ -16,11 +16,11 @@ export default ({ render, html }) => {
       line-height: var(--sm-line-height);
       letter-spacing: var(--sm-letter-spacing);
       border: 1px solid var(--ring);
-      border-radius: var(--border-radius-l);
-      padding-top: var(--spacing-m);
-      padding-bottom: var(--spacing-m);
-      padding-left: var(--spacing-m);
-      padding-right: var(--spacing-m);
+      border-radius: var(--border-radius-lg);
+      padding-top: var(--spacing-md);
+      padding-bottom: var(--spacing-md);
+      padding-left: var(--spacing-md);
+      padding-right: var(--spacing-md);
       color: var(--foreground);
       outline: none;
     }

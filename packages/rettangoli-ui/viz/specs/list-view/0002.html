@@ -3,7 +3,7 @@ layout: default-layout-esm.html
 tags: [test]
 ---
 
-<rtgl-view id="container" g="m" p="l" wh="f" fw="w">
+<rtgl-view id="container" g="md" p="lg" wh="f" fw="w">
 </rtgl-view>
 
 <script type="module">
@@ -35,14 +35,14 @@ tags: [test]
 
   const container = document.querySelector('#container');
   render(container, html`
-      <rtgl-list-view key="1" g="m" .items=${items} .itemsRenderer=${itemsRenderer}>
+      <rtgl-list-view key="1" g="md" .items=${items} .itemsRenderer=${itemsRenderer}>
         <rtgl-text slot="top">Top Top</rtgl-text>
         <rtgl-text slot="bottom">Bottom Bottom</rtgl-text>
       </rtgl-list-view>
     `)
   setTimeout(() => {
     render(container, html`
-        <rtgl-list-view key="2" g="m" .items=${items.concat(items)} .itemsRenderer=${itemsRenderer}>
+        <rtgl-list-view key="2" g="md" .items=${items.concat(items)} .itemsRenderer=${itemsRenderer}>
           <rtgl-text slot="top">Top Top</rtgl-text>
           <rtgl-text slot="bottom">Bottom Bottom</rtgl-text>
       </rtgl-list-view>

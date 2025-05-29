@@ -91,13 +91,13 @@ For environments that can't use js, can add additional support for option 2.
 
 ```html
     <rtgl-view h="f" w="272" bwr="xs">
-      <rtgl-view p="l">
+      <rtgl-view p="lg">
         <rtgl-text s="h4" c="primary">Rettangoli test suite</rtgl-text>
       </rtgl-view>
-      <rtgl-view w="f" p="l" g="xs">
+      <rtgl-view w="f" p="lg" g="xs">
         {% for section in sections %}
         <a style="display: contents; text-decoration: none; color: inherit;" href="/{{ section.title | slug }}">
-          <rtgl-view h="36" av="c" ph="m" w="f" h-bgc="mu" br="l"
+          <rtgl-view h="36" av="c" ph="md" w="f" h-bgc="mu" br="lg"
             bgc="{% if currentSection.title == section.title %}mu{% else %}bg{% endif %}" cur="p">
             <rtgl-text s="sm">{{ section.title }}</rtgl-text>
           </rtgl-view>
