@@ -1,12 +1,12 @@
 import { render, html } from "./lib/uhtml.js";
 
-import RettangoliButton from './components/button.js'
-import RettangoliView from './components/view.js';
-import RettangoliText from './components/text.js';
-import RettangoliImage from './components/image.js';
-import RettangoliSvg from './components/svg.js';
-import RettangoliInput from './components/input.js';
-import RettangoliTextArea from './components/textarea.js';
+import RettangoliButton from './primitives/button.js'
+import RettangoliView from './primitives/view.js';
+import RettangoliText from './primitives/text.js';
+import RettangoliImage from './primitives/image.js';
+import RettangoliSvg from './primitives/svg.js';
+import RettangoliInput from './primitives/input.js';
+import RettangoliTextArea from './primitives/textarea.js';
 import RettangoliSelect from './components/select.js';
 import RettangoliPopover from './components/popover.js';
 import RettangoliSidebar from './components/sidebar.js';
