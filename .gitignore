@@ -1,6 +1,13 @@
 .DS_Store
 /packages/rettangoli-ui/dist
 /packages/rettangoli-ui/node_modules
+/packages/rettangoli-fe/dist
+/packages/rettangoli-fe/node_modules
+/packages/rettangoli-fe/.temp
+/packages/rettangoli-fe/viz/static/main.js
+/packages/rettangoli-fe/viz/static/main.js.map
+
+
 CLAUDE.md
 .temp
 

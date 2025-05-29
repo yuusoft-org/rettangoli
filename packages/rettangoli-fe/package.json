@@ -1,0 +1,22 @@
+{
+  "name": "rettangoli-fe",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./cli": "./src/cli/index.js"
+  },
+  "devDependencies": {
+    "js-yaml": "^4.1.0",
+    "esbuild": "^0.25.4"
+  },
+  "dependencies": {
+    "immer": "^10.1.1",
+    "json-e": "^4.8.0",
+    "rxjs": "^7.8.2",
+    "snabbdom": "^3.6.2"
+  },
+  "scripts": {
+    "dev": "node watch.js --watch"
+  }
+}
