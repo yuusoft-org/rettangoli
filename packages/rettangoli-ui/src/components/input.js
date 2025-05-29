@@ -56,7 +56,6 @@ ${cursorStyles}
       render(this.shadow, this.render);
     }
     get value() {
-      console.log('gettin gvalue', this._inputRef.current)
       return this._inputRef.current.value;
     }
 

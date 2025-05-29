@@ -20,8 +20,9 @@ An intuitive container component for building layouts serving as the building bl
 | Border Width     | `bw`, `bwt`, `bwr`, `bwb`, `bwl`        | `xs`, `s`, `m`, `l`, `xl`                | -       | Border width for all sides or specific sides                   |
 | Border Radius    | `br`                                    | `xs`, `s`, `m`, `l`, `xl`, `f`           | -       | Border radius for corners                                      |
 | Background Color | `bgc`                                   | color code                               | -       | Background color                                               |
+| Opacity          | `op`                                    | number (0-1)                             | 1       | Element transparency level                                     |
 | Position         | `pos`                                   | `abs`, `rel`, `fix`                      | -       | Positioning method                                             |
-| Corner           | `cor`                                   | `top`, `right`, `bottom`, `left`, `full` | -       | Corner to position in when using absolute positioning          |
+| Coordinates | `cor`                                   | `top`, `right`, `bottom`, `left`, `full` | -       | Corner to position in when using absolute positioning          |
 | Z-index          | `z`                                     | number                                   | -       | Stacking order for overlapping elements                        |
 | Horizontal Align | `ah`                                    | `s`, `c`, `e`                            | `s`     | Horizontal alignment: start, center, end                       |
 | Vertical Align   | `av`                                    | `s`, `c`, `e`                            | `s`     | Vertical alignment: start, center, end                         |
@@ -119,6 +120,16 @@ Horizontal
 ```html codePreview
 <rtgl-view d="h" g="m" p="l">
   <rtgl-view bgc="ac" wh="80" br="l"></rtgl-view>
+</rtgl-view>
+```
+
+## Opacity
+
+```html codePreview
+<rtgl-view d="h" g="l" p="l" wh="f">
+  <rtgl-view bgc="mu" wh="100" op="0.1"></rtgl-view>
+  <rtgl-view bgc="mu" wh="100" op="0.5"></rtgl-view>
+  <rtgl-view bgc="mu" wh="100" op="1"></rtgl-view>
 </rtgl-view>
 ```
 
