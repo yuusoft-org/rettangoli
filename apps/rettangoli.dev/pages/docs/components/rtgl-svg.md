@@ -15,12 +15,12 @@ A component for displaying SVG icons with customizable dimensions and colors.
 | Height | `h` | number | - | Height in pixels |
 | Width & Height | `wh` | number | - | Sets both width and height to same value |
 | Color | `c` | `fg`, `mu-fg`, `ac-fg`, `pr-fg`, `se-fg`, etc. | `fg` | SVG color using system tokens |
-| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `s`, `m`, `l`, `xl` | - | Margin around the SVG |
+| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - | Margin around the SVG |
 
 ## Icons
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="m">
+<rtgl-view d="h" g="md" p="md">
   <rtgl-svg svg="text" wh="24"></rtgl-svg>
   <rtgl-svg svg="threeDots" wh="24"></rtgl-svg>
 </rtgl-view>
@@ -29,7 +29,7 @@ A component for displaying SVG icons with customizable dimensions and colors.
 ## Color
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="m">
+<rtgl-view d="h" g="md" p="md">
   <rtgl-svg svg="text" wh="24" c="fg"></rtgl-svg>
   <rtgl-svg svg="text" wh="24" c="mu-fg"></rtgl-svg>
   <rtgl-svg svg="text" wh="24" c="ac-fg"></rtgl-svg>
@@ -43,7 +43,7 @@ A component for displaying SVG icons with customizable dimensions and colors.
 ### Using wh (Width and Height)
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="m">
+<rtgl-view d="h" g="md" p="md">
   <rtgl-svg svg="text" wh="16"></rtgl-svg>
   <rtgl-svg svg="text" wh="24"></rtgl-svg>
   <rtgl-svg svg="text" wh="32"></rtgl-svg>
@@ -54,7 +54,7 @@ A component for displaying SVG icons with customizable dimensions and colors.
 ### Using w and h separately
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="m">
+<rtgl-view d="h" g="md" p="md">
   <rtgl-svg svg="text" w="24" h="24"></rtgl-svg>
   <rtgl-svg svg="text" w="12" h="24"></rtgl-svg>
   <rtgl-svg svg="text" w="24" h="12"></rtgl-svg>

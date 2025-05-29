@@ -74,7 +74,7 @@ export default ({ render, html }) => {
     render = () => {
       return html`
         <rtgl-view h="f" w="272">
-          <rtgl-view w="f" g="s" mt="xl">
+          <rtgl-view w="f" g="sm" mt="xl">
             ${this.items.map(
               (item) => { 
                 const color = `${this._selectedSlug}` === item.slug ? "fg" : "mu-fg"

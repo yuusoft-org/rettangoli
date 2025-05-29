@@ -5,14 +5,14 @@ export default css`
 :host([pt="xs"]) svg {
   padding-top: var(--spacing-xs);
 }
-:host([pt="s"]) svg {
-  padding-top: var(--spacing-s);
+:host([pt="sm"]) svg {
+  padding-top: var(--spacing-sm);
 }
-:host([pt="m"]) svg {
-  padding-top: var(--spacing-m);
+:host([pt="md"]) svg {
+  padding-top: var(--spacing-md);
 }
-:host([pt="l"]) svg {
-  padding-top: var(--spacing-l);
+:host([pt="lg"]) svg {
+  padding-top: var(--spacing-lg);
 }
 :host([pt="xl"]) svg {
   padding-top: var(--spacing-xl);
@@ -20,14 +20,14 @@ export default css`
 :host([pr="xs"]) svg {
   padding-right: var(--spacing-xs);
 }
-:host([pr="s"]) svg {
-  padding-right: var(--spacing-s);
+:host([pr="sm"]) svg {
+  padding-right: var(--spacing-sm);
 }
-:host([pr="m"]) svg {
-  padding-right: var(--spacing-m);
+:host([pr="md"]) svg {
+  padding-right: var(--spacing-md);
 }
-:host([pr="l"]) svg {
-  padding-right: var(--spacing-l);
+:host([pr="lg"]) svg {
+  padding-right: var(--spacing-lg);
 }
 :host([pr="xl"]) svg {
   padding-right: var(--spacing-xl);
@@ -35,14 +35,14 @@ export default css`
 :host([pb="xs"]) svg {
   padding-bottom: var(--spacing-xs);
 }
-:host([pb="s"]) svg {
-  padding-bottom: var(--spacing-s);
+:host([pb="sm"]) svg {
+  padding-bottom: var(--spacing-sm);
 }
-:host([pb="m"]) svg {
-  padding-bottom: var(--spacing-m);
+:host([pb="md"]) svg {
+  padding-bottom: var(--spacing-md);
 }
-:host([pb="l"]) svg {
-  padding-bottom: var(--spacing-l);
+:host([pb="lg"]) svg {
+  padding-bottom: var(--spacing-lg);
 }
 :host([pb="xl"]) svg {
   padding-bottom: var(--spacing-xl);
@@ -50,14 +50,14 @@ export default css`
 :host([pl="xs"]) svg {
   padding-left: var(--spacing-xs);
 }
-:host([pl="s"]) svg {
-  padding-left: var(--spacing-s);
+:host([pl="sm"]) svg {
+  padding-left: var(--spacing-sm);
 }
-:host([pl="m"]) svg {
-  padding-left: var(--spacing-m);
+:host([pl="md"]) svg {
+  padding-left: var(--spacing-md);
 }
-:host([pl="l"]) svg {
-  padding-left: var(--spacing-l);
+:host([pl="lg"]) svg {
+  padding-left: var(--spacing-lg);
 }
 :host([pl="xl"]) svg {
   padding-left: var(--spacing-xl);
@@ -65,14 +65,14 @@ export default css`
 :host([p="xs"]) svg {
   padding: var(--spacing-xs);
 }
-:host([p="s"]) svg {
-  padding: var(--spacing-s);
+:host([p="sm"]) svg {
+  padding: var(--spacing-sm);
 }
-:host([p="m"]) svg {
-  padding: var(--spacing-m);
+:host([p="md"]) svg {
+  padding: var(--spacing-md);
 }
-:host([p="l"]) svg {
-  padding: var(--spacing-l);
+:host([p="lg"]) svg {
+  padding: var(--spacing-lg);
 }
 :host([p="xl"]) svg {
   padding: var(--spacing-xl);
@@ -81,17 +81,17 @@ export default css`
   padding-left: var(--spacing-xs);
   padding-right: var(--spacing-xs);
 }
-:host([ph="s"]) svg {
-  padding-left: var(--spacing-s);
-  padding-right: var(--spacing-s);
+:host([ph="sm"]) svg {
+  padding-left: var(--spacing-sm);
+  padding-right: var(--spacing-sm);
 }
-:host([ph="m"]) svg {
-  padding-left: var(--spacing-m);
-  padding-right: var(--spacing-m);
+:host([ph="md"]) svg {
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
 }
-:host([ph="l"]) svg {
-  padding-left: var(--spacing-l);
-  padding-right: var(--spacing-l);
+:host([ph="lg"]) svg {
+  padding-left: var(--spacing-lg);
+  padding-right: var(--spacing-lg);
 }
 :host([ph="xl"]) svg {
   padding-left: var(--spacing-xl);
@@ -101,17 +101,17 @@ export default css`
   padding-top: var(--spacing-xs);
   padding-bottom: var(--spacing-xs);
 }
-:host([pv="s"]) svg {
-  padding-top: var(--spacing-s);
-  padding-bottom: var(--spacing-s);
+:host([pv="sm"]) svg {
+  padding-top: var(--spacing-sm);
+  padding-bottom: var(--spacing-sm);
 }
-:host([pv="m"]) svg {
-  padding-top: var(--spacing-m);
-  padding-bottom: var(--spacing-m);
+:host([pv="md"]) svg {
+  padding-top: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
 }
-:host([pv="l"]) svg {
-  padding-top: var(--spacing-l);
-  padding-bottom: var(--spacing-l);
+:host([pv="lg"]) svg {
+  padding-top: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
 }
 :host([pv="xl"]) svg {
   padding-top: var(--spacing-xl);

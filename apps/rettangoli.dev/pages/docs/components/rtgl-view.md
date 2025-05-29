@@ -14,18 +14,18 @@ An intuitive container component for building layouts serving as the building bl
 | Width            | `w`                                     | number, `f`                              | -       | Width in pixels, or `f` for full width                         |
 | Height           | `h`                                     | number, `f`                              | -       | Height in pixels, or `f` for full height                       |
 | Width & Height   | `wh`                                    | number, `f`                              | -       | Sets both width and height to same value                       |
-| Padding          | `p`, `pt`, `pr`, `pb`, `pl`, `pv`, `ph` | `xs`, `s`, `m`, `l`, `xl`                | -       | Padding around the content                                     |
-| Margin           | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `s`, `m`, `l`, `xl`                | -       | Margin outside the container                                   |
-| Gap              | `g`, `gh`, `gv`                         | `xs`, `s`, `m`, `l`, `xl`                | -       | Space between children                                         |
-| Border Width     | `bw`, `bwt`, `bwr`, `bwb`, `bwl`        | `xs`, `s`, `m`, `l`, `xl`                | -       | Border width for all sides or specific sides                   |
-| Border Radius    | `br`                                    | `xs`, `s`, `m`, `l`, `xl`, `f`           | -       | Border radius for corners                                      |
+| Padding          | `p`, `pt`, `pr`, `pb`, `pl`, `pv`, `ph` | `xs`, `sm`, `md`, `lg`, `xl`             | -       | Padding around the content                                     |
+| Margin           | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl`             | -       | Margin outside the container                                   |
+| Gap              | `g`, `gh`, `gv`                         | `xs`, `sm`, `md`, `lg`, `xl`             | -       | Space between children                                         |
+| Border Width     | `bw`, `bwt`, `bwr`, `bwb`, `bwl`        | `xs`, `sm`, `md`, `lg`, `xl`             | -       | Border width for all sides or specific sides                   |
+| Border Radius    | `br`                                    | `xs`, `sm`, `md`, `lg`, `xl`, `f`        | -       | Border radius for corners                                      |
 | Background Color | `bgc`                                   | color code                               | -       | Background color                                               |
 | Opacity          | `op`                                    | number (0-1)                             | 1       | Element transparency level                                     |
 | Position         | `pos`                                   | `abs`, `rel`, `fix`                      | -       | Positioning method                                             |
 | Coordinates | `cor`                                   | `top`, `right`, `bottom`, `left`, `full` | -       | Corner to position in when using absolute positioning          |
 | Z-index          | `z`                                     | number                                   | -       | Stacking order for overlapping elements                        |
-| Horizontal Align | `ah`                                    | `s`, `c`, `e`                            | `s`     | Horizontal alignment: start, center, end                       |
-| Vertical Align   | `av`                                    | `s`, `c`, `e`                            | `s`     | Vertical alignment: start, center, end                         |
+| Horizontal Align | `ah`                                    | `sm`, `c`, `e`                           | `sm`    | Horizontal alignment: start, center, end                       |
+| Vertical Align   | `av`                                    | `sm`, `c`, `e`                           | `sm`    | Vertical alignment: start, center, end                         |
 | Hidden           | `hidden`                                | boolean                                  | -       | When present, hides the element                                |
 | Scroll           | `sv`, `sh`                              | boolean                                  | -       | Enables vertical or horizontal scrolling                       |
 
@@ -34,7 +34,7 @@ An intuitive container component for building layouts serving as the building bl
 Vertical
 
 ```html codePreview
-<rtgl-view bgc="ac" p="m" g="m">
+<rtgl-view bgc="ac" p="md" g="md">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
 </rtgl-view>
@@ -43,7 +43,7 @@ Vertical
 Horizontal
 
 ```html codePreview
-<rtgl-view d="h" bgc="ac" p="m" g="m">
+<rtgl-view d="h" bgc="ac" p="md" g="md">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
 </rtgl-view>
@@ -54,7 +54,7 @@ Horizontal
 ### Pixels
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="l" w="f">
+<rtgl-view d="h" g="md" p="lg" w="f">
   <rtgl-view bgc="ac" wh="80"></rtgl-view>
   <rtgl-view bgc="ac" w="120" h="80"></rtgl-view>
 </rtgl-view>
@@ -63,16 +63,16 @@ Horizontal
 ### Spacing
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="l" w="f">
+<rtgl-view d="h" g="md" p="lg" w="f">
   <rtgl-view bgc="ac" wh="xl"></rtgl-view>
-  <rtgl-view bgc="ac" w="l" h="xl"></rtgl-view>
+  <rtgl-view bgc="ac" w="lg" h="xl"></rtgl-view>
 </rtgl-view>
 ```
 
 ### Full
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="l" w="f">
+<rtgl-view d="h" g="md" p="lg" w="f">
   <rtgl-view bgc="ac" w="f" h="80"></rtgl-view>
 </rtgl-view>
 ```
@@ -80,11 +80,11 @@ Horizontal
 ## Padding
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="l">
-  <rtgl-view bgc="ac" wh="80" p="m">
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-view bgc="ac" wh="80" p="md">
     <rtgl-view bgc="mu" wh="f"></rtgl-view>
   </rtgl-view>
-  <rtgl-view bgc="ac" wh="80" pt="m" pr="l" pb="xl" pl="s">
+  <rtgl-view bgc="ac" wh="80" pt="md" pr="lg" pb="xl" pl="sm">
     <rtgl-view bgc="mu" wh="f"></rtgl-view>
   </rtgl-view>
 </rtgl-view>
@@ -93,12 +93,12 @@ Horizontal
 ## Margin
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="l">
+<rtgl-view d="h" g="md" p="lg">
   <rtgl-view bgc="ac" wh="80">
-    <rtgl-view bgc="mu" wh="f" m="m"></rtgl-view>
+    <rtgl-view bgc="mu" wh="f" m="md"></rtgl-view>
   </rtgl-view>
   <rtgl-view bgc="ac" wh="80">
-    <rtgl-view bgc="mu" wh="f" mt="m" mr="l" mb="xl" ml="s"></rtgl-view>
+    <rtgl-view bgc="mu" wh="f" mt="md" mr="lg" mb="xl" ml="sm"></rtgl-view>
   </rtgl-view>
 </rtgl-view>
 ```
@@ -106,27 +106,27 @@ Horizontal
 ## Border Width
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="l">
-  <rtgl-view bgc="ac" wh="80" bw="m"></rtgl-view>
-  <rtgl-view bgc="ac" wh="80" bwt="m"></rtgl-view>
-  <rtgl-view bgc="ac" wh="80" bwr="m"></rtgl-view>
-  <rtgl-view bgc="ac" wh="80" bwb="m"></rtgl-view>
-  <rtgl-view bgc="ac" wh="80" bwl="m"></rtgl-view>
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-view bgc="ac" wh="80" bw="md"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" bwt="md"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" bwr="md"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" bwb="md"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" bwl="md"></rtgl-view>
 </rtgl-view>
 ```
 
 ## Border Radius
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="l">
-  <rtgl-view bgc="ac" wh="80" br="l"></rtgl-view>
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-view bgc="ac" wh="80" br="lg"></rtgl-view>
 </rtgl-view>
 ```
 
 ## Opacity
 
 ```html codePreview
-<rtgl-view d="h" g="l" p="l" wh="f">
+<rtgl-view d="h" g="lg" p="lg" wh="f">
   <rtgl-view bgc="mu" wh="100" op="0.1"></rtgl-view>
   <rtgl-view bgc="mu" wh="100" op="0.5"></rtgl-view>
   <rtgl-view bgc="mu" wh="100" op="1"></rtgl-view>
@@ -136,7 +136,7 @@ Horizontal
 ## Align Horizontal
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="l">
+<rtgl-view d="h" g="md" p="lg">
   <rtgl-view bgc="mu" wh="80">
     <rtgl-view bgc="ac" wh="24"></rtgl-view>
   </rtgl-view>
@@ -152,7 +152,7 @@ Horizontal
 ## Align Vertical
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="l">
+<rtgl-view d="h" g="md" p="lg">
   <rtgl-view bgc="mu" wh="80">
     <rtgl-view bgc="ac" wh="24"></rtgl-view>
   </rtgl-view>
@@ -166,7 +166,7 @@ Horizontal
 ```
 
 ```html codePreview
-<rtgl-view d="h" g="m" p="l">
+<rtgl-view d="h" g="md" p="lg">
   <rtgl-view bgc="ac" wh="80" ah="c" av="c">
     <rtgl-view bgc="ac" wh="24"></rtgl-view>
   </rtgl-view>
@@ -176,7 +176,7 @@ Horizontal
 ## Position
 
 ```html codePreview
-<rtgl-view p="l" g="m">
+<rtgl-view p="lg" g="md">
   <rtgl-view bgc="mu" wh="80" pos="rel">
     <rtgl-view bgc="ac" wh="24" pos="abs" cor="top"></rtgl-view>
     <rtgl-view bgc="ac" wh="24" pos="abs" cor="bottom"></rtgl-view>
@@ -194,8 +194,8 @@ Horizontal
 ## Hidden
 
 ```html codePreview
-<rtgl-view p="l" g="m">
-  <rtgl-view d="h" g="m">
+<rtgl-view p="lg" g="md">
+  <rtgl-view d="h" g="md">
     <rtgl-view bgc="ac" wh="80"></rtgl-view>
     <rtgl-view bgc="ac" wh="80" hidden></rtgl-view>
   </rtgl-view>
@@ -207,8 +207,8 @@ Horizontal
 Use this with hover or responsive modifiers
 
 ```html codePreview
-<rtgl-view p="l" g="m">
-  <rtgl-view d="h" g="m">
+<rtgl-view p="lg" g="md">
+  <rtgl-view d="h" g="md">
     <rtgl-view bgc="ac" wh="80"></rtgl-view>
     <rtgl-view bgc="ac" wh="80" visible></rtgl-view>
   </rtgl-view>
@@ -218,8 +218,8 @@ Use this with hover or responsive modifiers
 ## Scroll Vertical
 
 ```html codePreview
-<rtgl-view p="l">
-  <rtgl-view bgc="mu" w="200" h="100" sv g="s">
+<rtgl-view p="lg">
+  <rtgl-view bgc="mu" w="200" h="100" sv g="sm">
     <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
     <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
     <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
@@ -231,8 +231,8 @@ Use this with hover or responsive modifiers
 ## Scroll Horizontal
 
 ```html codePreview
-<rtgl-view p="l">
-  <rtgl-view bgc="mu" w="200" h="100" sh d="h" g="s">
+<rtgl-view p="lg">
+  <rtgl-view bgc="mu" w="200" h="100" sh d="h" g="sm">
     <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
     <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
     <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>

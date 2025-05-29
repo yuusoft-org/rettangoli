@@ -74,12 +74,12 @@ export default ({ render, html }) => {
     render = () => {
       return html`
         <rtgl-view h="f" w="272" bwr="xs">
-          <rtgl-view p="l">
+          <rtgl-view p="lg">
             <a
               style="text-decoration: none; display: contents; color: inherit;"
               href=${this.title.href}
             >
-              <rtgl-view d="h" av="c" g="l">
+              <rtgl-view d="h" av="c" g="lg">
                 ${this.title?.image?.src
                   ? html`<rtgl-image
                       w=${this.title?.image?.width}
@@ -92,13 +92,13 @@ export default ({ render, html }) => {
               </rtgl-view>
             </a>
           </rtgl-view>
-          <rtgl-view w="f" ph="l" pb="l" g="xs">
+          <rtgl-view w="f" ph="lg" pb="lg" g="xs">
             ${this.getItems().map((item, index) => {
               const isFirst = index === 0;
               if (item.type === "groupLabel") {
-                const marginTop = isFirst ? undefined : "m";
+                const marginTop = isFirst ? undefined : "md";
                 return html`
-                  <rtgl-view mt=${marginTop} h="32" av="c" ph="m">
+                  <rtgl-view mt=${marginTop} h="32" av="c" ph="md">
                     <rtgl-text s="xs" c="mu-fg">${item.title}</rtgl-text>
                   </rtgl-view>
                 `;
@@ -112,10 +112,10 @@ export default ({ render, html }) => {
                   <rtgl-view
                     h="32"
                     av="c"
-                    ph="m"
+                    ph="md"
                     w="f"
                     h-bgc="mu"
-                    br="l"
+                    br="lg"
                     bgc="${item.active ? "mu" : "bg"}"
                     cur="p"
                   >

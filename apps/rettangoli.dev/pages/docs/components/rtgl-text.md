@@ -12,15 +12,15 @@ A versatile text component for displaying textual content with various styling o
 |------|-----------|------|---------|-------------|
 | Size | `s` | `xs`, `sm`, `md`, `lg`, `h4`, `h3`, `h2`, `h1` | `md` | Text size from extra small to heading levels |
 | Color | `c` | `fg`, `mu-fg`, `ac-fg`, etc. | - | Text color using system tokens |
-| Text Align | `ta` | `s`, `c`, `j`, `e` | `s` | Text alignment: start, center, justify, end |
+| Text Align | `ta` | `sm`, `c`, `j`, `e` | `sm` | Text alignment: start, center, justify, end |
 | Ellipsis | `ellipsis` | boolean | - | When present, truncates text with ellipsis if it overflows |
 | Width | `w` | number | - | Width in pixels |
-| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `s`, `m`, `l`, `xl` | - | Margin around the text |
+| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - | Margin around the text |
 
 ## Size
 
 ```html codePreview
-<rtgl-view g="m" p="m">
+<rtgl-view g="md" p="md">
   <rtgl-text s="xs">Extra Small Text</rtgl-text>
   <rtgl-text s="sm">Small Text</rtgl-text>
   <rtgl-text s="md">Medium Text</rtgl-text>
@@ -35,7 +35,7 @@ A versatile text component for displaying textual content with various styling o
 ## Color
 
 ```html codePreview
-<rtgl-view g="m" p="m">
+<rtgl-view g="md" p="md">
   <rtgl-text c="fg">Default Foreground Color</rtgl-text>
   <rtgl-text c="mu-fg">Muted Foreground Color</rtgl-text>
   <rtgl-text c="ac-fg">Accent Foreground Color</rtgl-text>
@@ -45,17 +45,17 @@ A versatile text component for displaying textual content with various styling o
 ## Text Alignment
 
 ```html codePreview
-<rtgl-view g="m" p="m">
-  <rtgl-view bgc="suc" p="m" w="300">
-    <rtgl-text ta="s">Start aligned text. This is the default alignment for text content.</rtgl-text>
+<rtgl-view g="md" p="md">
+  <rtgl-view bgc="suc" p="md" w="300">
+    <rtgl-text ta="sm">Start aligned text. This is the default alignment for text content.</rtgl-text>
   </rtgl-view>
-  <rtgl-view bgc="suc" p="m" w="300">
+  <rtgl-view bgc="suc" p="md" w="300">
     <rtgl-text ta="c">Center aligned text. This centers the text within its container.</rtgl-text>
   </rtgl-view>
-  <rtgl-view bgc="suc" p="m" w="300">
+  <rtgl-view bgc="suc" p="md" w="300">
     <rtgl-text ta="j">Justified text. This spreads the text to fill the width of the container evenly.</rtgl-text>
   </rtgl-view>
-  <rtgl-view bgc="suc" p="m" w="300">
+  <rtgl-view bgc="suc" p="md" w="300">
     <rtgl-text ta="e">End aligned text. This aligns the text to the end of its container.</rtgl-text>
   </rtgl-view>
 </rtgl-view>
@@ -64,8 +64,8 @@ A versatile text component for displaying textual content with various styling o
 ## Ellipsis
 
 ```html codePreview
-<rtgl-view g="m" p="m">
-  <rtgl-view bgc="su" p="m" g="m">
+<rtgl-view g="md" p="md">
+  <rtgl-view bgc="su" p="md" g="md">
     <rtgl-text w="140">Text without ellipsis that might overflow its container</rtgl-text>
     <rtgl-text ellipsis w="140">Text with ellipsis that will be truncated with ellipsis when it overflows</rtgl-text>
   </rtgl-view>
@@ -75,7 +75,7 @@ A versatile text component for displaying textual content with various styling o
 ## Text Styling
 
 ```html codePreview
-<rtgl-view g="m" p="m">
+<rtgl-view g="md" p="md">
   <rtgl-text>Plain text with <b>Bold</b> text</rtgl-text>
   <rtgl-text>Plain text with <i>Italic</i> text</rtgl-text>
   <rtgl-text>Plain text with <u>Underlined</u> text</rtgl-text>
@@ -91,7 +91,7 @@ A versatile text component for displaying textual content with various styling o
 ## Links
 
 ```html codePreview
-<rtgl-view g="m" p="m">
+<rtgl-view g="md" p="md">
   <rtgl-text>Text with an <a href="/">embedded link</a> inside it</rtgl-text>
   <rtgl-text><a href="/">Standalone link</a></rtgl-text>
 </rtgl-view>

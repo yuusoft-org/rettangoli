@@ -74,11 +74,11 @@ export default ({ render, html }) => {
 
     render = () => {
       return html`
-        <rtgl-view p="m" w="f">
+        <rtgl-view p="md" w="f">
           <form style="display: contents;">
             <rtgl-text s="h2">${this.form.title}</rtgl-text>
             <rtgl-text c="mu-fg">${this.form.description}</rtgl-text>
-            <rtgl-view g="l">
+            <rtgl-view g="lg">
               ${this.form.fields.map((field) => {
                 if (field.type === "groupLabel") {
                   return html`<rtgl-text s="h4">${field.content}</rtgl-text> `;
@@ -96,7 +96,7 @@ export default ({ render, html }) => {
                 const error = this.fieldStates?.[field?.name]?.error;
                 const labelColor = error ? "de" : "fg";
                 return html`
-                  <rtgl-view g="m">
+                  <rtgl-view g="md">
                     <rtgl-text s="sm" c=${labelColor}>${field.label}</rtgl-text>
                     ${fieldContent}
                     <rtgl-text s="sm" c="mu-fg">${field.description}</rtgl-text>
@@ -107,7 +107,7 @@ export default ({ render, html }) => {
                 `;
               })}
             </rtgl-view>
-            <rtgl-view g="m" mt="l" w="f">
+            <rtgl-view g="md" mt="lg" w="f">
               ${this.form.actions.map((action) => {
                 return html`<rtgl-button
                   w=${action.fill ? "f" : ""}

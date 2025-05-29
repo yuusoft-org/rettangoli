@@ -76,7 +76,7 @@ export default ({ render, html }) => {
           <rtgl-view
             ref=${(el) => (this._floatingElement = el)}
             bw="xs"
-            p="l"
+            p="lg"
             class="popover-content"
             onclick=${(e) => e.stopPropagation()}
           >

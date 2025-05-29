@@ -13,7 +13,7 @@ A versatile button component
 | Size | `s` | `sm`, `md`, `lg` | `md` | Button size: small, medium, or large |
 | Disabled | `disabled` | boolean | - | When present, makes the button non-interactive |
 | Width | `w` | `f`, number | - | Button width: `f` for full width or a specific pixel value |
-| Margin | `m`, `ml`, `mr`, `mt`, `mb`, `mv`, `mh` | `xs`, `s`, `m`, `l`, `xl` | - | Sets margin around the button using predefined spacing values |
+| Margin | `m`, `ml`, `mr`, `mt`, `mb`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - | Sets margin around the button using predefined spacing values |
 | Href | `href` | string | - | When provided, the button acts as a link to the specified URL |
 
 ## Variant
@@ -29,7 +29,7 @@ A versatile button component
 
 
 ```html codePreview
-<rtgl-view d="h" g="m">
+<rtgl-view d="h" g="md">
   <rtgl-button v="pr">Primary</rtgl-button>
   <rtgl-button v="se">Secondary</rtgl-button>
   <rtgl-button v="de">Destructive</rtgl-button>
@@ -42,7 +42,7 @@ A versatile button component
 ### Size
 
 ```html codePreview
-<rtgl-view d="h" g="m">
+<rtgl-view d="h" g="md">
   <rtgl-button s="sm">Small</rtgl-button>
   <rtgl-button s="md">Medium</rtgl-button>
   <rtgl-button s="lg">Large</rtgl-button>
@@ -58,7 +58,7 @@ A versatile button component
 ### Width
 
 ```html codePreview
-<rtgl-view g="m" w="300">
+<rtgl-view g="md" w="300">
   <rtgl-button w="f">Full Width</rtgl-button>
   <rtgl-button w="100">100px</rtgl-button>
 </rtgl-view>
@@ -67,9 +67,9 @@ A versatile button component
 ### Margin
 
 ```html codePreview
-<rtgl-view g="m" w="300">
-  <rtgl-button ml="m">Medium Margin</rtgl-button>
-  <rtgl-button ml="l">Large Margin</rtgl-button>
+<rtgl-view g="md" w="300">
+  <rtgl-button ml="md">Medium Margin</rtgl-button>
+  <rtgl-button ml="lg">Large Margin</rtgl-button>
   <rtgl-button ml="xl">Extra Large Margin</rtgl-button>
 </rtgl-view>
 ```

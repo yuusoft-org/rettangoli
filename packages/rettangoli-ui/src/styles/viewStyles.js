@@ -2,9 +2,9 @@ import { generateCSS, spacing } from "../common.js";
 
 const borderWidth = {
   xs: "--border-width-xs",
-  s: "--border-width-s",
-  m: "--border-width-m",
-  l: "--border-width-l",
+  sm: "--border-width-sm",
+  md: "--border-width-md",
+  lg: "--border-width-lg",
   xl: "--border-width-xl",
 }
 
@@ -72,9 +72,9 @@ const styles = {
         `,
   },
   shadow: {
-    s: "--shadow-s",
-    m: "--shadow-m",
-    l: "--shadow-l",
+    sm: "--shadow-sm",
+    md: "--shadow-md",
+    lg: "--shadow-lg",
   },
   pt: spacing,
   pr: spacing,
@@ -108,9 +108,9 @@ const styles = {
   },
   br: {
     xs: "--border-radius-xs",
-    s: "--border-radius-s",
-    m: "--border-radius-m",
-    l: "--border-radius-l",
+    sm: "--border-radius-sm",
+    md: "--border-radius-md",
+    lg: "--border-radius-lg",
     xl: "--border-radius-xl",
     f: "--border-radius-f",
   },

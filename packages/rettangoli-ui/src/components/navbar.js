@@ -36,7 +36,6 @@ export default ({ render, html }) => {
     onMount = () => {
       const titleAttribute = this.getAttribute("title");
       if (titleAttribute) {
-        console.log('titleAttribute', titleAttribute)
         this.title = JSON.parse(decodeURIComponent(titleAttribute));
         this.reRender();
       }
@@ -49,7 +48,7 @@ export default ({ render, html }) => {
             style="text-decoration: none; display: contents; color: inherit;"
             href=${this.title.href}
           >
-            <rtgl-view d="h" av="c" g="l">
+            <rtgl-view d="h" av="c" g="lg">
               ${this.title?.image?.src
                 ? html`<rtgl-image
                     w=${this.title?.image?.width}
