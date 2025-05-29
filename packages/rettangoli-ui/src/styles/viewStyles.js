@@ -19,6 +19,9 @@ const styles = {
     de: `
     background-color: var(--destructive);
     `,
+    fg: `
+    background-color: var(--foreground);
+    `,
     bg: `
     background-color: var(--background);
     `,
