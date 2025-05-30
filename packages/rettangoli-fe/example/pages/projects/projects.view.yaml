@@ -59,6 +59,7 @@ template:
         - rtgl-text#title s=h2: "${title}"
         - rtgl-view flex=1:
         - rtgl-button#createButton: ${createButtonText}
+      - slot name=below-title:
       - rtgl-view w=f g=m:
         - $map: { $eval: projects }
           each(v,k):

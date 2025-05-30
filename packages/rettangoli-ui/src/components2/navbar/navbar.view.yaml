@@ -1,0 +1,77 @@
+elementName: rtgl-navbar
+
+viewDataSchema:
+  type: object
+  properties:
+    containerAttrString:
+      type: string
+    start:
+      type: object
+      properties:
+        label:
+          type: string
+        href:
+          type: string
+        image:
+          type: object
+          properties:
+            src:
+              type: string
+        hasImage:
+          type: boolean
+        hasHref:
+          type: boolean
+
+propsSchema:
+  type: object
+  properties:
+    start:
+      type: object
+      properties:
+        label:
+          type: string
+        href:
+          type: string
+        image:
+          type: object
+          properties:
+            src:
+              type: string
+
+refs:
+  start:
+    eventListeners:
+      click:
+        handler: handleClickStart
+
+events:
+  clickStart:
+    type: object
+    properties:
+      path:
+        type: string
+
+anchors:
+  - &image
+    - rtgl-text s=lg: "${start.label}"
+    - $switch:
+        '"image" in start':
+          - rtgl-image w=${start.image.width} h=${start.image.height} src=${start.image.src} alt=${start.image.alt}:
+
+template:
+  - rtgl-view bgc=bg d=h h=48 av=c w=f ${containerAttrString}:
+    - $switch:
+        '"href" in start':
+          - a href=${start.href}:
+            - rtgl-view d=h av=c g=lg g=md:
+              - *image
+        '"path" in start':
+          - rtgl-view#start d=h av=c g=lg g=md cur=p:
+            - *image
+        $default:
+          - rtgl-view d=h av=c g=lg g=md:
+            - *image
+
+    - rtgl-view flex=1:
+    - rtgl-view d=h av=c g=lg:
+      - slot name=right:

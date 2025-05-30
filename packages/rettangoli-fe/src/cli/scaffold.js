@@ -15,6 +15,8 @@ const scaffoldPage = (options) => {
     return;
   }
 
+  fs.mkdirSync(targetDir, { recursive: true });
+
   const files = fs.readdirSync(templateDir);
   files.forEach(file => {
     const sourcePath = path.join(templateDir, file);

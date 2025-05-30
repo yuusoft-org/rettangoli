@@ -8,6 +8,7 @@ html {
 :root {
   --width-stretch: 100%;
 }
+
 /* Override in supported browsers */
 @supports (width: -webkit-fill-available) {
   :root {
