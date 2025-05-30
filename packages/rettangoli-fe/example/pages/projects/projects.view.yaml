@@ -45,11 +45,18 @@ events:
         id:
           type: string
 
+styles:
+  '#title':
+    font-size: 24px
+  '@media (min-width: 768px)':
+    '#title':
+      font-size: 32px
+
 template:
-  - rtgl-view h=100vh w=100vw ah=c:
+  - rtgl-view#container h=100vh w=100vw ah=c:
     - rtgl-view sm-w=f w=400:
       - rtgl-view d=h w=f av=c mb=l mt=xl:
-        - rtgl-text s=h2: "${title}"
+        - rtgl-text#title s=h2: "${title}"
         - rtgl-view flex=1:
         - rtgl-button#createButton: ${createButtonText}
       - rtgl-view w=f g=m:

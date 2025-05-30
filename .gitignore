@@ -6,7 +6,9 @@
 /packages/rettangoli-fe/.temp
 /packages/rettangoli-fe/viz/static/main.js
 /packages/rettangoli-fe/viz/static/main.js.map
+/packages/rettangoli-fe/viz/static/main.css
 
+/node_modules
 
 CLAUDE.md
 .temp
