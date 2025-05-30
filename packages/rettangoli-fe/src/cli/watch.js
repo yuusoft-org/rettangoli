@@ -1,8 +1,9 @@
-import { watch } from "node:fs";
+import { readFileSync, watch } from "node:fs";
 import path from "node:path";
 
+import { load as loadYaml } from "js-yaml";
 import { createServer } from 'vite'
-import { processViewFile, bundleFile } from './build.js';
+import { writeViewFile, bundleFile } from './build.js';
 
 const setupWatcher = (directory) => {
   watch(
@@ -13,7 +14,8 @@ const setupWatcher = (directory) => {
       if (filename) {
         try {
           if (filename.endsWith('.view.yaml')) {
-            await processViewFile(path.join(directory, filename));
+            const view = loadYaml(readFileSync(path.join(directory, filename), "utf8"));
+            await writeViewFile(view, directory, filename);
           }
           await bundleFile({});
         } catch (error) {

@@ -31,7 +31,7 @@ const flattenArrays = (items) => {
   }, []);
 };
 
-export const parseView = ({ h, template, viewData, refs, handlers }) => {
+export const parseView = ({ h, template, viewData, refs, handlers, styles }) => {
   try {
     const result = jsone(template, viewData);
     // Flatten the array carefully to maintain structure

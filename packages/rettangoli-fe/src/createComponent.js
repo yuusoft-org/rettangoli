@@ -38,7 +38,7 @@ function createPropsProxy(source, allowedKeys) {
     {},
     {
       get(_, prop) {
-        if (allowed.has(prop)) {
+        if (typeof prop === 'string' && allowed.has(prop)) {
           return source[prop];
         }
         return undefined;
@@ -53,13 +53,13 @@ function createPropsProxy(source, allowedKeys) {
         throw new Error("Cannot delete properties from read-only proxy");
       },
       has(_, prop) {
-        return allowed.has(prop);
+        return typeof prop === 'string' && allowed.has(prop);
       },
       ownKeys() {
         return [...allowed];
       },
       getOwnPropertyDescriptor(_, prop) {
-        if (allowed.has(prop)) {
+        if (typeof prop === 'string' && allowed.has(prop)) {
           return {
             configurable: true,
             enumerable: true,
@@ -82,9 +82,10 @@ class BaseComponent extends HTMLElement {
     // Create a div that will be used to render the component because snabbdom needs a DOM node to patch
     this.renderTarget = document.createElement("div");
     this.renderTarget.style.cssText = "display: contents;";
-
     this.transformedHandlers = {};
   }
+
+  static styleSheet;
 
   /**
    * @type {Function}
@@ -270,7 +271,7 @@ const bindStore = (store, props) => {
 };
 
 const createComponent = ({ handlers, view, store, patch, h }, deps) => {
-  const { propsSchema, template, refs } = view;
+  const { propsSchema, template, refs, styles } = view;
 
   if (!patch) {
     throw new Error("Patch is not defined");
@@ -294,7 +295,7 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
       /**
        * TODO currently if user forgot to define propsSchema for a prop
        * there will be no warning. would be better to shos some warnng
-       */
+      */
       this.store = bindStore(store, this.props);
       this.template = template;
       this.handlers = handlers;
