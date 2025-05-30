@@ -31,26 +31,21 @@ const flattenArrays = (items) => {
   }, []);
 };
 
-export const parseView = ({ h, template, viewData, refs, handlers, styles }) => {
-  try {
-    const result = jsone(template, viewData);
-    // Flatten the array carefully to maintain structure
-    const flattenedResult = flattenArrays(result);
+export const parseView = ({ h, template, viewData, refs, handlers }) => {
+  const result = jsone(template, viewData);
+  // Flatten the array carefully to maintain structure
+  const flattenedResult = flattenArrays(result);
 
-    const childNodes = createVirtualDom({
-      h,
-      items: flattenedResult,
-      refs,
-      handlers,
-      viewData,
-    });
+  const childNodes = createVirtualDom({
+    h,
+    items: flattenedResult,
+    refs,
+    handlers,
+    viewData,
+  });
 
-    const vdom = h("div", { style: { display: "contents" } }, childNodes);
-    return vdom;
-  } catch (error) {
-    console.error("Error in parseView:", error);
-    return h("div", {}, ["Error rendering view"]);
-  }
+  const vdom = h("div", { style: { display: "contents" } }, childNodes);
+  return vdom;
 };
 
 /**
@@ -111,7 +106,7 @@ export const createVirtualDom = ({
         if (entries.length > 1) {
           console.warn(
             "Item has multiple keys, processing only the first:",
-            keyString
+            keyString,
           );
         }
 
@@ -230,7 +225,7 @@ export const createVirtualDom = ({
                 // Keep this warning for invalid regex patterns
                 console.warn(
                   `[Parser] Invalid regex pattern created from refKey '${refKey}': ${pattern}`,
-                  e
+                  e,
                 );
               }
             } else {
@@ -262,10 +257,10 @@ export const createVirtualDom = ({
                   } else if (eventConfig.handler) {
                     // Keep this warning for missing handlers
                     console.warn(
-                      `[Parser] Handler '${eventConfig.handler}' for refKey '${bestMatchRefKey}' (matching elementId '${elementIdForRefs}') is referenced but not found in available handlers.`
+                      `[Parser] Handler '${eventConfig.handler}' for refKey '${bestMatchRefKey}' (matching elementId '${elementIdForRefs}') is referenced but not found in available handlers.`,
                     );
                   }
-                }
+                },
               );
             }
           }
@@ -299,6 +294,11 @@ export const createVirtualDom = ({
           // Ensure classObj is defined earlier
           snabbdomData.class = classObj;
         }
+        console.log("AAAAAAAAAAAAAA eventHandlers", {
+          eventHandlers,
+          handlers,
+          refs,
+        });
         if (Object.keys(eventHandlers).length > 0) {
           snabbdomData.on = eventHandlers;
         }

@@ -40,6 +40,7 @@
     "commander": "^13.1.0",
     "js-yaml": "^4.1.0",
     "liquidjs": "^10.21.0",
-    "shiki": "^3.3.0"
+    "rettangoli-fe": "workspace:*",
+    "snabbdom": "^3.6.2"
   }
 }
