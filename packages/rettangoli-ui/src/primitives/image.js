@@ -8,6 +8,7 @@ import {
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 import viewStyles from "../styles/viewStyles.js";
+import anchorStyles from "../styles/anchorStyles.js";
 
 // Internal implementation without uhtml
 class RettangoliImageElement extends HTMLElement {
@@ -39,6 +40,19 @@ class RettangoliImageElement extends HTMLElement {
           height: 100%;
           width: 100%;
         }
+        
+        ${anchorStyles}
+        
+        a {
+          display: block;
+          height: 100%;
+          width: 100%;
+        }
+        
+        :host([href]) {
+          cursor: pointer;
+        }
+        
         ${viewStyles}
         ${marginStyles}
         ${cursorStyles}
@@ -55,13 +69,14 @@ class RettangoliImageElement extends HTMLElement {
     // Create initial DOM structure
     this._styleElement = document.createElement('style');
     this._imgElement = document.createElement('img');
+    this._linkElement = null;
     
     this.shadow.appendChild(this._styleElement);
-    this.shadow.appendChild(this._imgElement);
+    this._updateDOM();
   }
 
   static get observedAttributes() {
-    return permutateBreakpoints([...styleMapKeys, "key", "src", "wh", "w", "h", "hidden", "height", "width"]);
+    return permutateBreakpoints([...styleMapKeys, "key", "src", "href", "target", "wh", "w", "h", "hidden", "height", "width"]);
   }
 
   _styles = {
@@ -74,7 +89,54 @@ class RettangoliImageElement extends HTMLElement {
 
   _lastStyleString = "";
 
+  _updateDOM() {
+    const href = this.getAttribute("href");
+    const target = this.getAttribute("target");
+
+    if (href) {
+      if (!this._linkElement) {
+        // Create link wrapper
+        this._linkElement = document.createElement("a");
+      }
+      
+      // Update link attributes
+      this._linkElement.href = href;
+      if (target) {
+        this._linkElement.target = target;
+      } else {
+        this._linkElement.removeAttribute("target");
+      }
+      
+      // Wrap image in link
+      this._linkElement.appendChild(this._imgElement);
+      
+      // Ensure link is in shadow DOM
+      if (this._linkElement.parentNode !== this.shadow) {
+        this.shadow.appendChild(this._linkElement);
+      }
+    } else if (this._linkElement) {
+      // Remove link wrapper
+      if (this._imgElement.parentNode === this._linkElement) {
+        this.shadow.appendChild(this._imgElement);
+      }
+      if (this._linkElement.parentNode === this.shadow) {
+        this.shadow.removeChild(this._linkElement);
+      }
+      this._linkElement = null;
+    } else {
+      // Ensure image is in shadow DOM
+      if (this._imgElement.parentNode !== this.shadow) {
+        this.shadow.appendChild(this._imgElement);
+      }
+    }
+  }
+
   attributeChangedCallback(name, oldValue, newValue) {
+    // Handle href and target changes
+    if (name === "href" || name === "target") {
+      this._updateDOM();
+      return;
+    }
     // Reset styles for fresh calculation
     this._styles = {
       default: {},
