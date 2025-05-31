@@ -1,0 +1,41 @@
+---
+title: "With Attrs"
+---
+
+<rtgl-view id="container" g="lg" h="100vh" w="f" fw="w">
+</rtgl-view>
+<script>
+  const header = encodeURIComponent(JSON.stringify({
+    label: "Sidebar",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Sidebar",
+    },
+  }))
+  const items = encodeURIComponent(JSON.stringify([
+    {
+      id: "home",
+      title: "Home",
+    },
+    {
+      id: "about",
+      title: "About",
+    },
+    {
+      id: "contact",
+      title: "Contact",
+    },
+  ]))
+  const view = document.querySelector('#container');
+  view.insertAdjacentHTML('beforeend', `<rtgl-sidebar id="sidebar" header="${header}" items="${items}"></rtgl-sidebar>`);
+
+  const sidebar = document.getElementById('sidebar');
+  sidebar.addEventListener('headerClick', (e) => {
+    console.log('header click', e.detail);
+  });
+  sidebar.addEventListener('itemClick', (e) => {
+    console.log('item click', e.detail);
+  });
+</script>

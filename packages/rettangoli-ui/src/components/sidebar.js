@@ -48,7 +48,6 @@ export default ({ render, html }) => {
     onMount = () => {
       const titleAttribute = this.getAttribute("title");
       if (titleAttribute) {
-        console.log('titleAttribute', titleAttribute)
         this.title = JSON.parse(decodeURIComponent(titleAttribute));
         this.reRender();
       }

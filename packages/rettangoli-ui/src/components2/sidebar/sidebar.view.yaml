@@ -1,0 +1,144 @@
+elementName: rtgl-sidebar
+
+viewDataSchema:
+  type: object
+  properties:
+    containerAttrString:
+      type: string
+    header:
+      type: object
+      properties:
+        label:
+          type: string
+        href:
+          type: string
+        image:
+          type: object
+          properties:
+            src:
+              type: string
+            width:
+              type: number
+            height:
+              type: number
+            alt:
+              type: string
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          title:
+            type: string
+          slug:
+            type: string
+          type:
+            type: string
+          active:
+            type: boolean
+
+propsSchema:
+  type: object
+  properties:
+    header:
+      type: object
+      properties:
+        label:
+          type: string
+        href:
+          type: string
+        image:
+          type: object
+          properties:
+            src:
+              type: string
+            width:
+              type: number
+            height:
+              type: number
+            alt:
+              type: string
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          title:
+            type: string
+          slug:
+            type: string
+          type:
+            type: string
+          items:
+            type: array
+
+refs:
+  header-image:
+    eventListeners:
+      click:
+        handler: handleHeaderClick
+  header-label:
+    eventListeners:
+      click:
+        handler: handleHeaderClick
+  header:
+    eventListeners:
+      click:
+        handler: handleHeaderClick
+  item-*:
+    eventListeners:
+      click:
+        handler: handleItemClick
+
+events:
+  headerClick:
+    type: object
+    properties:
+      path:
+        type: string
+
+anchors:
+  - &headerContent
+    - $switch:
+        '"image" in header && "src" in header.image':
+          - $switch:
+              '"href" in header.image':
+                - a href=${header.image.href}:
+                  - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
+              '"path" in header.image':
+                - rtgl-view#header-image cur=p:
+                  - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
+              $default:
+                - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
+    - $switch:
+        '"label" in header':
+          - $switch:
+              '"labelHref" in header':
+                - rtgl-text href=${header.labelHref} s=lg: "${header.label}"
+              '"labelPath" in header':
+                - rtgl-view#header-label cur=p:
+                  - rtgl-text s=lg: "${header.label}"
+              $default:
+                - rtgl-text s=lg: "${header.label}"
+
+template:
+  - rtgl-view h=f w=272 bwr=xs ${containerAttrString}:
+    - rtgl-view p=lg:
+      - $switch:
+          '"href" in header && header.href':
+            - rtgl-view href=${header.href} d=h av=c g=lg:
+              - *headerContent
+          $default:
+            - rtgl-view#header d=h av=c g=lg cur=p:
+              - *headerContent
+
+    - rtgl-view w=f ph=lg pb=lg g=xs:
+      - $map: { $eval: items }
+        each(v,i):
+          - $switch:
+              'v.type == "groupLabel"':
+                - rtgl-view mt=md h=32 av=c ph=md:
+                  - rtgl-text s=xs c=mu-fg: "${v.title}"
+              $default:
+                - rtgl-view#item-${v.id} ${v.hrefAttr} h=32 av=c ph=md w=f h-bgc=mu br=lg bgc=bg cur=p:
+                  - rtgl-text s=sm: "${v.title}"
