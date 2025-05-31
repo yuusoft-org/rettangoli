@@ -294,11 +294,6 @@ export const createVirtualDom = ({
           // Ensure classObj is defined earlier
           snabbdomData.class = classObj;
         }
-        console.log("AAAAAAAAAAAAAA eventHandlers", {
-          eventHandlers,
-          handlers,
-          refs,
-        });
         if (Object.keys(eventHandlers).length > 0) {
           snabbdomData.on = eventHandlers;
         }
