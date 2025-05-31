@@ -1,5 +1,5 @@
 ---
-title: "Basic"
+title: "With path whole header"
 ---
 <rtgl-view g="lg" h="100vh" w="f" fw="w">
   <rtgl-sidebar id="sidebar"></rtgl-sidebar>
@@ -9,6 +9,7 @@ title: "Basic"
   const sidebar = document.getElementById('sidebar');
   sidebar.header = {
     label: "Sidebar",
+    path: "#1",
     image: {
       src: "/public/sample1.jpg",
       width: 32,
@@ -18,17 +19,26 @@ title: "Basic"
   }
   sidebar.items = [
     {
-      id: "home",
+      id: 'home',
       title: "Home",
+      path: "/home"
     },
     {
-      id: "about",
+      id: 'about',
       title: "About",
+      path: "/about"
     },
     {
-      id: "contact",
+      id: 'contact',
       title: "Contact",
+      path: "/contact"
     },
   ]
+  sidebar.addEventListener('headerClick', (e) => {
+    console.log('header click', e.detail);
+  });
+  sidebar.addEventListener('itemClick', (e) => {
+    console.log('item click', e.detail);
+  });
   sidebar.render();
 </script>

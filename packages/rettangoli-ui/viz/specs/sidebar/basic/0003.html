@@ -1,5 +1,5 @@
 ---
-title: "Basic"
+title: "With href whole header"
 ---
 <rtgl-view g="lg" h="100vh" w="f" fw="w">
   <rtgl-sidebar id="sidebar"></rtgl-sidebar>
@@ -9,6 +9,7 @@ title: "Basic"
   const sidebar = document.getElementById('sidebar');
   sidebar.header = {
     label: "Sidebar",
+    href: "#1",
     image: {
       src: "/public/sample1.jpg",
       width: 32,
@@ -18,16 +19,16 @@ title: "Basic"
   }
   sidebar.items = [
     {
-      id: "home",
       title: "Home",
+      href: "#2"
     },
     {
-      id: "about",
       title: "About",
+      href: "#3"
     },
     {
-      id: "contact",
       title: "Contact",
+      href: "#4"
     },
   ]
   sidebar.render();

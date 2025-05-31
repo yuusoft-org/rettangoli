@@ -3,7 +3,7 @@ import {
   dimensionWithUnit,
   convertObjectToCssString,
   styleMapKeys,
-  permutateBreakpoints
+  permutateBreakpoints,
 } from "../common.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
@@ -44,6 +44,30 @@ class RettangoliViewElement extends HTMLElement {
         ${marginStyles}
         ${cursorStyles}
         ${stylesGenerator}
+
+        a, a:link, a:visited, a:hover, a:active {
+          color: inherit;
+          text-decoration: none;
+          background: none;
+          border: none;
+          padding: 0;
+          margin: 0;
+          font: inherit;
+        }
+
+        :host([href]) {
+          cursor: pointer;
+          position: relative;
+        }
+
+        :host([href]) a {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 1;
+        }
       `);
     }
   }
@@ -53,17 +77,30 @@ class RettangoliViewElement extends HTMLElement {
     RettangoliViewElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "closed" });
     this.shadow.adoptedStyleSheets = [RettangoliViewElement.styleSheet];
-    
+
     // Create initial DOM structure
-    this._styleElement = document.createElement('style');
-    this._slotElement = document.createElement('slot');
-    
+    this._styleElement = document.createElement("style");
+    this._slotElement = document.createElement("slot");
+    this._linkElement = null;
+
     this.shadow.appendChild(this._styleElement);
-    this.shadow.appendChild(this._slotElement);
+    this._updateDOM();
   }
 
   static get observedAttributes() {
-    return permutateBreakpoints([...styleMapKeys, "wh", "w", "h", "hidden", "sh", "sv"]);
+    return [
+      "href",
+      "target",
+      ...permutateBreakpoints([
+        ...styleMapKeys,
+        "wh",
+        "w",
+        "h",
+        "hidden",
+        "sh",
+        "sv",
+      ]),
+    ];
   }
 
   _styles = {
@@ -76,7 +113,42 @@ class RettangoliViewElement extends HTMLElement {
 
   _lastStyleString = "";
 
+  _updateDOM() {
+    const href = this.getAttribute("href");
+    const target = this.getAttribute("target");
+
+    // Ensure slot is always in the shadow DOM
+    if (this._slotElement.parentNode !== this.shadow) {
+      this.shadow.appendChild(this._slotElement);
+    }
+
+    if (href) {
+      if (!this._linkElement) {
+        // Create link overlay only if it doesn't exist
+        this._linkElement = document.createElement("a");
+        this.shadow.appendChild(this._linkElement);
+      }
+
+      // Update link attributes
+      this._linkElement.href = href;
+      if (target) {
+        this._linkElement.target = target;
+      } else {
+        this._linkElement.removeAttribute("target");
+      }
+    } else if (this._linkElement) {
+      // Remove link overlay
+      this.shadow.removeChild(this._linkElement);
+      this._linkElement = null;
+    }
+  }
+
   attributeChangedCallback(name, oldValue, newValue) {
+    // Handle href and target changes
+    if (name === "href" || name === "target") {
+      this._updateDOM();
+      return;
+    }
     // Reset styles for fresh calculation
     this._styles = {
       default: {},
@@ -93,10 +165,10 @@ class RettangoliViewElement extends HTMLElement {
 
       const wh = this.getAttribute(addSizePrefix("wh"));
       const width = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("w")) : wh
+        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
       );
       const height = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("h")) : wh
+        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
       );
       const opacity = this.getAttribute(addSizePrefix("op"));
       const zIndex = this.getAttribute(addSizePrefix("z"));
@@ -110,7 +182,7 @@ class RettangoliViewElement extends HTMLElement {
       }
 
       if (width === "f") {
-        this._styles[size].width = 'var(--width-stretch)';
+        this._styles[size].width = "var(--width-stretch)";
       } else if (width !== undefined) {
         this._styles[size].width = width;
         this._styles[size]["min-width"] = width;

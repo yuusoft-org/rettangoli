@@ -23,7 +23,7 @@ customElements.define("rtgl-input", RettangoliInput({}));
 customElements.define("rtgl-textarea", RettangoliTextArea({}));
 customElements.define("rtgl-select", RettangoliSelect({ render, html }));
 customElements.define("rtgl-popover", RettangoliPopover({ render, html }));
-customElements.define("rtgl-sidebar", RettangoliSidebar({ render, html }));
+// customElements.define("rtgl-sidebar", RettangoliSidebar({ render, html }));
 customElements.define("rtgl-page-outline", RettangoliPageOutline({ render, html }));
 // customElements.define("rtgl-navbar", RettangoliNavbar({ render, html }));
 customElements.define("rtgl-form", RettangoliForm({ render, html }));
