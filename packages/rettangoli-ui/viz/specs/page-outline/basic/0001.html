@@ -30,14 +30,6 @@ title: "Page Outline - Basic"
     <rtgl-view>
       <rtgl-text id="title-9" s="h1">Title 9</rtgl-text>
     </rtgl-view>
-    
   </rtgl-view>
-  <rtgl-page-outline id="page-outline"></rtgl-page-outline>
+  <rtgl-page-outline id="page-outline" target-id="content"></rtgl-page-outline>
 </rtgl-view>
-
-<script>
-  const pageOutline = document.getElementById('page-outline');
-  const content = document.getElementById('content');
-  pageOutline.connectedCallback();
-  pageOutline.startListening(content);
-</script>

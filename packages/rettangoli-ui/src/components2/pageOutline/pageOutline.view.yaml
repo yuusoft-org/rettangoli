@@ -1,0 +1,35 @@
+elementName: rtgl-page-outline
+
+viewDataSchema:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          slug:
+            type: string
+          title:
+            type: string
+    selectedSlug:
+      type: string
+      nullable: true
+
+propsSchema:
+  type: object
+  properties: {}
+
+refs: {}
+
+events:
+  onItemClick:
+    type: object
+
+template:
+  - rtgl-view h=f w=272:
+    - rtgl-view w=f g=sm mt=xl:
+      - $map: { $eval: items }
+        each(v,i):
+          - rtgl-view pv=xs av=c href=${v.href}:
+            - rtgl-text s=sm c=${v.c} h-c=fg: ${v.title}
