@@ -1,6 +1,7 @@
 import { css, dimensionWithUnit } from "../common.js";
 import flexChildStyles from "../styles/flexChildStyles.js";
 import buttonMarginStyles from "../styles/buttonMarginStyles.js";
+import anchorStyles from "../styles/anchorStyles.js";
 
 // Internal implementation without uhtml
 class RettangoliButtonElement extends HTMLElement {
@@ -123,10 +124,10 @@ class RettangoliButtonElement extends HTMLElement {
           text-decoration: underline;
         }
 
+        ${anchorStyles}
+        
         a {
-          text-decoration: none;
           display: contents;
-          color: inherit;
         }
 
         ${buttonMarginStyles}

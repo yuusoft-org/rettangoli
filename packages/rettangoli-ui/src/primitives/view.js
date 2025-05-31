@@ -11,6 +11,7 @@ import scrollStyle from "../styles/scrollStyles.js";
 import stylesGenerator from "../styles/viewStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 import flexChildStyles from "../styles/flexChildStyles.js";
+import anchorStyles from "../styles/anchorStyles.js";
 
 // Internal implementation without uhtml
 class RettangoliViewElement extends HTMLElement {
@@ -44,16 +45,7 @@ class RettangoliViewElement extends HTMLElement {
         ${marginStyles}
         ${cursorStyles}
         ${stylesGenerator}
-
-        a, a:link, a:visited, a:hover, a:active {
-          color: inherit;
-          text-decoration: none;
-          background: none;
-          border: none;
-          padding: 0;
-          margin: 0;
-          font: inherit;
-        }
+        ${anchorStyles}
 
         :host([href]) {
           cursor: pointer;
