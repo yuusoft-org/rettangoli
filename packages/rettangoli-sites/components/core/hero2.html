@@ -1,0 +1,31 @@
+{%- if hero.video -%}
+<rtgl-view h="8vh"></rtgl-view>
+{%- else -%}
+<rtgl-view h="20vh"></rtgl-view>
+{%- endif -%}
+<rtgl-view w="f" pv="xl" av="c" ah="c" ph="xl">
+  <rtgl-text s="h1" ta="c" mb="lg"> {{ hero.title }} </rtgl-text>
+  {%- for subtitle in hero.subtitles -%}
+  <rtgl-text s="lg" ta="c"> {{ subtitle }} </rtgl-text>
+  {%- endfor -%}
+  {%- if hero.cta -%}
+  <rtgl-button mt="xl" t="p" href="{{ hero.cta.href }}" {% if hero.cta.openNewTab %}target="_blank" rel="noreferrer"{% endif %}> {{
+    hero.cta.text
+    }} </rtgl-button>
+  {%- endif -%}
+</rtgl-view>
+
+{%- if hero.video-%}
+<rtgl-view w="f" ah="c" mt="xl">
+
+  <rtgl-view lg-h="calc((100vw - 32px) / 1.777)" lg-w="calc(100vw - 32px)" h="calc(66.66vw / 1.777)" w="66.66vw" 
+    bw="xs" br="xs" shadow="sm">
+    <video playsinline loop controls width="100%" aria-label="{{ hero.video.title | default: 'Video content' }}">
+      <source src="{{ hero.video.url }}" type="video/mp4">
+    </video>
+  </rtgl-view>
+</rtgl-view>
+{%- else -%}
+<rtgl-view h="20vh">
+</rtgl-view>
+{%- endif -%}

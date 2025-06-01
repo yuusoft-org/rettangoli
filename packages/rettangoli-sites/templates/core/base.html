@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% include "core/htmlHeader.html" %}
+</head>
+
+{% assign base_template_size_attrs = "w=\"768\"" %}
+{% unless layoutConfiguration.size == "small" %}
+  {% assign base_template_size_attrs = "w=\"1024\" lg-w=\"768\"" %}
+{% endunless %}
+
+<body class="dark">
+  <rtgl-view h="48"></rtgl-view>
+  <rtgl-view w="f" ah="c">
+    <rtgl-view 
+      md-w="100vw"
+      {{ base_template_size_attrs }}
+      ph="lg" 
+      pb="lg">
+      {{ content }}
+    </rtgl-view>
+    {% include "core/footer.html" %}
+  </rtgl-view>
+  {% include "core/navbar.html" %}
+</body>
+
+</html>

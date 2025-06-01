@@ -1,0 +1,34 @@
+{% if footer %}
+<rtgl-view d="h" h="30vh"></rtgl-view>
+<rtgl-view h="1" w="f"></rtgl-view>
+<rtgl-view g="lg" d="h" p="lg" md-w="100vw" lg-w="768" w="1024" pv="xl">
+  <rtgl-view g="xl" flex="1" ah="sm">
+    <a href="/" aria-label="Home" style="display: contents; text-decoration: none; color: inherit;"><rtgl-image h="{{ footer.logo.height }}"
+        w="{{ footer.logo.width }}" src="{{ footer.logo.src }}" alt="{{ footer.logo.alt | default: 'Company logo' }}">
+      </rtgl-image></a>
+    <rtgl-view d="h" g="l" av="c">
+      {%- for social in footer.social -%}
+      <a href="{{ social.href }}" target="_blank" rel="noreferrer" aria-label="Visit our {{ social.name }} page"
+        style="display: contents; text-decoration: none; color: inherit;">
+        <rtgl-svg h-cur="p" f="on-su" svg="{{ social.svg }}" wh="20">
+        </rtgl-svg>
+      </a>
+      {%- endfor -%}
+    </rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view d="h" flex="2">
+    {%- for feature in footer.columns -%}
+    <rtgl-view d="h" flex="1" ah="c">
+      <rtgl-view g="lg">
+        {%- for link in feature.links -%}
+        <rtgl-text s="bm" c="on-suv"> <a href="{{ link.href }}" {% if link.newTab %}target="_blank" rel="noreferrer" {%
+            endif %}> <u> {{ link.text }} </u></a> </rtgl-text>
+        {%- endfor -%}
+      </rtgl-view>
+    </rtgl-view>
+    {%- endfor -%}
+  </rtgl-view>
+
+</rtgl-view>
+{% endif %}

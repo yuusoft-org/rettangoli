@@ -9,36 +9,36 @@ og:
   image: /public/sample1.jpg
 
 navbar:
-  title:
+  start:
     label: Rettangoli
   right: '<a href="https://github.com/yuusoft-org/rettangoli" style="text-decoration: none; display: contents; color: inherit;" ><rtgl-svg wh="32" svg="github"></rtgl-svg></a>'
 
 docs:
-  title:
-    label: Rettangoli UI Docs
+  header:
+    label: Rettangoli Docs
     href: /
   items:
     - title: "Introduction"
       type: groupLabel
       items:
         - title: "Introduction"
-          slug: "/docs/introduction/introduction"
+          href: "/docs/introduction/introduction"
         - title: "Getting Started"
-          slug: "/docs/introduction/getting-started"
+          href: "/docs/introduction/getting-started"
         - title: "Colors"
-          slug: "/docs/introduction/colors"
+          href: "/docs/introduction/colors"
         - title: "CSS Variables"
-          slug: "/docs/introduction/css-variables"
+          href: "/docs/introduction/css-variables"
     - title: "Components"
       type: groupLabel
       items:
         - title: "View"
-          slug: "/docs/components/rtgl-view"
+          href: "/docs/components/rtgl-view"
         - title: "Text"
-          slug: "/docs/components/rtgl-text"
+          href: "/docs/components/rtgl-text"
         - title: "Image"
-          slug: "/docs/components/rtgl-image"
+          href: "/docs/components/rtgl-image"
         - title: "SVG"
-          slug: "/docs/components/rtgl-svg"
+          href: "/docs/components/rtgl-svg"
         - title: "Button"
-          slug: "/docs/components/rtgl-button"
+          href: "/docs/components/rtgl-button"

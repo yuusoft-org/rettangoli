@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% include "core/htmlHeader.html" %}
+  {% include "core/htmlHeaderTable.html" %}
+</head>
+
+<body class="dark">
+  <rtgl-view w="f" ah="c" h="f">
+    <rtgl-view d="h" w="f" h="f">
+      <rtgl-sidebar title="{{ docs.title | json-escaped }}" items="{{ admin.items | json-escaped }}"></rtgl-sidebar>
+      <rtgl-view h="100vh" w="f" sv id="content-container" ph="l">
+          {{ content }}
+          <rtgl-view h="50vh"></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+  </rtgl-view>
+</body>
+
+</html>
