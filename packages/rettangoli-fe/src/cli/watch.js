@@ -3,7 +3,8 @@ import path from "node:path";
 
 import { load as loadYaml } from "js-yaml";
 import { createServer } from 'vite'
-import { writeViewFile, bundleFile } from './build.js';
+import { writeViewFile, extractCategoryAndComponent } from './build.js';
+import buildRettangoliFrontend from './build.js';
 
 const setupWatcher = (directory) => {
   watch(
@@ -15,9 +16,10 @@ const setupWatcher = (directory) => {
         try {
           if (filename.endsWith('.view.yaml')) {
             const view = loadYaml(readFileSync(path.join(directory, filename), "utf8"));
-            await writeViewFile(view, directory, filename);
+            const { category, component } = extractCategoryAndComponent(filename);
+            await writeViewFile(view, category, component);
           }
-          await bundleFile({});
+          await buildRettangoliFrontend({ dirs: [directory] });
         } catch (error) {
           console.error(`Error processing ${filename}:`, error);
           // Keep the watcher running
@@ -28,12 +30,12 @@ const setupWatcher = (directory) => {
 };
 
 async function startViteServer(options) {
-  const { port = 3001 } = options;
+  const { port = 3001, root = './viz/static' } = options;
   try {
     const server = await createServer({
       // any valid user config options, plus `mode` and `configFile`
       // configFile: false,
-      // root: __dirname,
+      root,
       server: {
         port,
       },

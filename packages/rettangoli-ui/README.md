@@ -9,6 +9,8 @@ The following:
 * rtgl-image
 * rtgl-svg
 * rtgl-button
+* rtgl-input
+* rtgl-textarea
 
 All UI components should be able to be built from the above primitives
 
@@ -17,44 +19,31 @@ All UI components should be able to be built from the above primitives
 
 ### Install dependencies
 
-```
+
+
+```bash
 bun install
 ```
 
+
+
+
 ### Generate test screens
 
-Generate all test screens
+Bundles the code to be used for `rettangoli-vt`
 
+```bash
+bun run build:dev
 ```
-bun run esbuild
-bun run ./viz/cli.js generate
+
+Uses `rettangoli-vt` to generates test screens 
+
+```bash
+bun run ../rettangoli-cli/cli.js vt generate --skip-screenshots
+```
+
+You can then access the generates screens
+
+```bash
 bunx serve ./viz/_site
 ```
-
-Visit your browser at http://localhost:3000/view
-
-It should show you all the test cases for View compoenent, and can navigate to other components on the left sidebar
-
-### Report
-
-Make sure the run `generate` first
-```
-bun run ./viz/cli.js report
-```
-
-Visit your browser at http://localhost:3000/report (make sure you're still serving the `./viz/_site` folder)
-
-This will compare any changes between current version and the `gold` version screenshots
-
-### Accept
-
-```
-bun run ./viz/cli.js accept
-```
-
-Updates the `gold` version screenshots with the current version.
-
-Run this after you have made sure that the report is what you expect
-
-
-

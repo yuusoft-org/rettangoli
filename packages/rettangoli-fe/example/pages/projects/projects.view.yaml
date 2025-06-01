@@ -16,7 +16,7 @@ viewDataSchema:
         properties:
           id:
             type: string
-          name:
+          title:
             type: string
             default: Project 1
           description:
@@ -55,12 +55,12 @@ styles:
 template:
   - rtgl-view#container h=100vh w=100vw ah=c:
     - rtgl-view sm-w=f w=400:
-      - rtgl-view d=h w=f av=c mb=l mt=xl:
+      - rtgl-view d=h w=f av=c mb=lg mt=xl:
         - rtgl-text#title s=h2: "${title}"
         - rtgl-view flex=1:
         - rtgl-button#createButton: ${createButtonText}
       - slot name=below-title:
-      - rtgl-view w=f g=m:
+      - rtgl-view w=f g=md:
         - $map: { $eval: projects }
           each(v,k):
-            - custom-project .name=title .description=title:
+            - custom-project name=${v.title} description=${v.description}:

@@ -92,6 +92,8 @@ pre {
   white-space: pre; /* or pre-wrap/pre-line if you want line wrapping */
   padding: var(--spacing-lg);
   flex: 1;
+  /* TODO fix sometimes there needs to be margin-bottom */
+  /* margin-bottom: var(--spacing-g); */
 }
 
 code:not(pre code) {

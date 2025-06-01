@@ -17,6 +17,7 @@
   },
   "license": "MIT",
   "scripts": {
+    "build:dev": "bun run ../rettangoli-cli/cli.js fe build -d ./src -o ./viz/static/public/main.js && bun run esbuild-dev.js",
     "build": "bun run ../rettangoli-cli/cli.js fe build -d ./src -o ./viz/static/public/main.js && bun run esbuild.js"
   },
   "devDependencies": {

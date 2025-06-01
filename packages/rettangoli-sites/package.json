@@ -6,6 +6,11 @@
     "name": "Luciano Hanyon Wu",
     "email": "han4wluc@yuusoft.com"
   },
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./cli": "./src/cli/index.js"
+  },
   "files": [
     "src",
     "components",
