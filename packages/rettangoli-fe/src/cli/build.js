@@ -15,7 +15,7 @@ function capitalize(word) {
   return word ? word[0].toUpperCase() + word.slice(1) : word;
 }
 
-function extractCategoryAndComponent(filePath) {
+export const extractCategoryAndComponent = (filePath) => {
   const parts = filePath.split("/");
   const component = parts[parts.length - 1].split(".")[0];
   const category = parts[parts.length - 3];

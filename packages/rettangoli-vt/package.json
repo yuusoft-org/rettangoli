@@ -1,0 +1,21 @@
+{
+  "name": "rettangoli-vt",
+  "version": "0.0.1",
+  "description": "Rettangoli Visual Testing",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./cli": "./src/cli/index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "js-yaml": "^4.1.0",
+    "liquidjs": "^10.21.0",
+    "pixelmatch": "^7.1.0",
+    "playwright": "^1.52.0",
+    "shiki": "^3.3.0"
+  }
+}

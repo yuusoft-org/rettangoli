@@ -10,19 +10,23 @@ viewDataSchema:
       type: string
       default: ""
 
-propsSchema:
+attrsSchema:
   type: object
   properties:
-    name:
+    title:
       type: string
       default: ""
     description:
       type: string
       default: ""
 
+propsSchema:
+  type: object
+  properties: {}
+
 refs: {}
 
 template:
-  - rtgl-view h=64 w=f bw=xs p=m cur=p:
+  - rtgl-view h=64 w=f bw=xs p=md cur=p:
     - rtgl-text s=lg: "${name}"
     - rtgl-text s=sm: "${description}"

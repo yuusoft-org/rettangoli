@@ -17,7 +17,7 @@ import {
   createFileFormatHandlers,
   loadItems,
   copyDirRecursive,
-} from "./common.js";
+} from "../common.js";
 import { rm } from "fs/promises";
 
 /**
@@ -43,7 +43,7 @@ export const copyPagesToSite = async (options) => {
   const inputYaml = await safeReadFile(dataPath);
 
   const templates = await loadItems({
-    path: join(__dirname, "../templates"),
+    path: join(__dirname, "./templates"),
     name: "templates",
     isYaml: false,
     keepExtension: true,
@@ -67,7 +67,7 @@ export const copyPagesToSite = async (options) => {
   });
 
   const components = await loadItems({
-    path: join(__dirname, "../components"),
+    path: join(__dirname, "./components"),
     name: "components",
     isYaml: false,
   });

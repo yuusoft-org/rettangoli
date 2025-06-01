@@ -1,6 +1,32 @@
 
 # Rettangoli Frontend
 
+## Development
+
+Bundle the code under `example` folder using `rettangoli-fe`
+
+```bash
+bun run ../rettangoli-cli/cli.js fe build
+```
+
+Visit the example project that shows the components in action
+
+```bash
+bunx serve ./viz/static
+```
+
+Instead of running `fe build` each time, we can also watch for file changes and bundle the code automatically.
+
+```bash
+bun run ../rettangoli-cli/cli.js fe watch
+```
+
+
+Note: rettangoli-vt is not setup for this project yet. We just use static files under `viz/static` folder.
+
+
+## Introduction
+
 A frontend framework with just 3 type of files to scale from a single page to a full fledged complex application.
 
 Implemented using:
@@ -9,29 +35,132 @@ Browser native:
 * web components for components
 
 Runtime:
-* snabbdom for virtual dom
-* immer for data immutability for state management
-* json-e for templating using json
-* rxjs for reactive programming
+* [snabbdom](https://github.com/snabbdom/snabbdom) for virtual dom
+* [immer](https://github.com/immerjs/immer) for data immutability for state management
+* [json-e](https://github.com/json-e/json-e) for templating using json
+* [rxjs](https://github.com/ReactiveX/rxjs) for reactive programming
 
 Build & Development:
-* esbuild for bundling
-* vitest of development
+* [esbuild](https://esbuild.github.io/) for bundling
+* [vite](https://vite.dev/) for development
 
-## View
+## View Layer
 
-* Write html using yaml
-* Write json-e for tempalting. mainly for conditinoals $switch and $map
-* Define data schema incudling viewData, props
-* Define custom event dispatch
-* Define event listerners that need handlers
-* Define a elementName
+The view layer is unique in that it uses yaml.
 
-We are using rettangoli-ui for the html here, but it does not have to. It works with any html
+* The yaml will be converted into json at build time. The json will then be consumed by snabbdom to be transformed into html through a virtual dom.
+
+### Yaml to write html
+
+Standard html can be totally written in yaml. 
+
+All child element are arrays. Except for things like actual content of text
+
+Use `#` and `.` selectors to represent `id` and `class`.
+
+`div#myid.class1.class2 custorm-attribute=abcd`
+
+will become
+
+`<div id="myid" class="class1 class2" custom-attribute="abcd"></div>`
+
+
+### Templating using json-e
+
+`json-e` templating language allows us to write conditions and loops in our yaml. For example:
+
+
+Loop
 
 ```yaml
-elementName: my-projects
+template:
+  - rtgl-view w=f g=m:
+    - $map: { $eval: projects }
+      each(v,k):
+        - rtgl-view#project-${v.id} h=64 w=f bw=xs p=m cur=p:
+          - rtgl-text s=lg: "${v.name}"
+          - rtgl-text s=sm: "${v.description}"
+```
 
+Conditional. We usually use `$switch` more as it tends to be more flexible than `$if`.
+
+```yaml
+template:
+  - rtgl-view d=h w=f h=f:
+    - $switch:
+        'showSidebar':
+          - sidebar-component: []
+    - rtgl-view w=f h=f:
+      - $switch:
+          'currentRoute== "/projects"':
+            - projects-component: []
+          'currentRoute== "/profile"':
+```
+
+`json-e` has many more features but we want to keep it simple and in most cases loops and conditionals are enough.
+
+The actual data used in the template is passed in as `viewData` from the state store which we will cover later.
+
+### Define a elementName
+
+```yaml
+elementName: custom-projects
+```
+
+This will be the web component name that will be used for the component.
+
+The component can later be used as `<custom-projects></custom-projects>`.
+
+### Styles
+
+Styles can also be completely written in yaml.
+
+```yaml
+styles:
+  '#title':
+    font-size: 24px
+  '@media (min-width: 768px)':
+    '#title':
+      font-size: 32px
+```
+
+TODO better support nesting and issue with some global selectors.
+
+### Event listeners
+
+```yaml
+refs:
+  createButton:
+    eventListeners:
+      click:
+        handler: handleCreateButtonClick
+  project-*:
+    eventListeners:
+      click:
+        handler: handleProjectsClick
+
+template:
+  - rtgl-button#createButton: Create Project
+  - rtgl-view w=f g=m:
+    - $map: { $eval: projects }
+      each(v,k):
+        - rtgl-view#project-${v.id} h=64 w=f bw=xs p=m cur=p:
+          - rtgl-text s=lg: "${v.name}"
+          - rtgl-text s=sm: "${v.description}"
+```
+
+The above example, will attach event listenrs to `#createButton` and all `#project-*` (wild card support) elements. And bind them to the handlers `handleCreateButtonClick` and `handleProjectsClick`.
+
+### Defining data schema
+
+Component have a few types of data that can be defined using a JSON schema:
+
+* `viewDataSchema` - The data that will used for the template.
+* `propsSchema` - The data that will be passed to the component via javascript, those can be objects.
+* `attrsSchema` - The data that will be passed to the component via html attributes, this is raw strings.
+
+
+```yaml
 viewDataSchema:
   type: object
   properties:
@@ -54,54 +183,18 @@ viewDataSchema:
           description:
             type: string
             default: Project 1 description
-
 propsSchema:
   type: object
   properties: {}
-
-refs:
-  createButton:
-    eventListeners:
-      click:
-        handler: handleCreateButtonClick
-  project-*:
-    eventListeners:
-      click:
-        handler: handleProjectsClick
-
-events:
-  projectSelected:
-    detail:
-      type: object
-      properties:
-        id:
-          type: string
-
-template:
-  - rtgl-view h=100vh w=100vw ah=c:
-    - rtgl-view sm-w=f w=400:
-      - rtgl-view d=h w=f av=c mb=l mt=xl:
-        - rtgl-text s=h2: "${title}"
-        - rtgl-view flex=1:
-        - rtgl-button#createButton: ${createButtonText}
-      - rtgl-view w=f g=m:
-        - $map: { $eval: projects }
-          each(v,k):
-            - rtgl-view#project-${v.id} h=64 w=f bw=xs p=m cur=p:
-              - rtgl-text s=lg: "${v.name}"
-              - rtgl-text s=sm: "${v.description}"
-
 ```
-
-By making values always array. it can write any html
 
 
 ## State Store
 
-* Define initial state
-* `toViewData` will take state, props and return the viewData to be used by the view template
-* Implement selectors that are read only to read data from the state
-* Implement actions to mutate the state (it uses immer)
+* Define `initial state`
+* `toViewData` will take current `state`, `props` and `attrs` and return the `viewData` to be used by the view template
+* Any exported function that starts with `select`  will beceme selectors and are used by handlers to access state data
+* `actions` are all other exported functions that are used to mutate the state.
 
 ```js
 export const INITIAL_STATE = Object.freeze({
@@ -129,22 +222,30 @@ export const selectProjects = (state, props, payload) => {
   return state.projects;
 }
 
-export  const setProjects = (state, payload) => {
+export const setProjects = (state, payload) => {
 
 }
 ```
 
+Note that this is just a dump store, it is not reactive. Components will need to call `deps.render()` from handlers to re-render the component.
+
 ## Handlers
 
-* Define handlers for events
-* Use `deps` is used for dependency injection. There are few that are injected by default:
-  * `deps.render()` will re-render the component. There is no reactive state, so you need to call this manually.
-  * `deps.store` is the store instance
-  * `deps.handlers` to call other handlers without calling external functions
-* `handleOnMount` is a special handler that is called when the component is mounted. It returns a promise that resolves when the component is mounted.
+`handleOnMount` is a special handler that is called when the component is mounted. It returns a promise that resolves when the component is mounted.
+
+All other exported functions will automatically become handlers and can be used in the view layers's `eventListeners`
+
+A special object called `deps` is injected into all handlers. It has the following properties:
+
+* `deps.render()` will re-render the component. We call this function each time we have chaged state and want to re-render the component.
+* `deps.store` is the store instance. Use selectors to select state and actions to mutate state.
+* `deps.transformedHandlers` can be used to call other handlers.
+* `deps.attrs` is the html attributes that are passed to the component.
+* `deps.props` is the javascript properties that are passed to the component.
+
 
 ```js
-export const handleOnMount = () => {
+export const handleOnMount = (deps) => {
   () => {
     // unsubscribe
   }
@@ -152,6 +253,11 @@ export const handleOnMount = () => {
 
 export const handleCreateButtonClick = async (e, deps) => {
   const { store, deps, render } = deps;
+  const formIsVisible = store.selectFormIsVisible();
+
+  if (!formIsVisible) {
+    store.setFormIsVisible(true);
+  }
   deps.render();
 }
 
@@ -162,9 +268,21 @@ export const handleProjectsClick = (e, deps) => {
 ```
 
 
+
+* `deps.dispatchEvent` can be used to dispatch custom dom events.
+
+```js
+export const handleProjectsClick = (e, deps) => {
+  deps.dispatchEvent('project-clicked', {
+    projectId: '1',
+  });
+}
+```
+
+
 ### Adding additional dependencies
 
-This is a simple yet powerful way to do dependency injection. Those are all global singleton dependencies.
+This is a simple yet powerful way to do dependency injection. Those are all global singleton dependencies. Technically anything can be injected and be made accessible to all components.
 
 ```js
 const componentDependencies = {
@@ -187,14 +305,12 @@ This framework is written with testability in mind.
 
 ## View
 
-Visual testing with viz
+Visual testing `rettangoli-vt`
 
 
 ## State Store
 
 Those are all pure functions and it is straighforward to test them. Actions can be turned into pure functions using immer produce.
-
-We recommend testing using rettangoli-test-lib
 
 Example
 
@@ -205,12 +321,4 @@ Example
 ## Handlers
 
 Test them as normal functions.
-They are not always pure per se due to calling of dependencies. You can mock dependencies using rettangoli-test-lib
-
-## Cli Usage
-
-rettangoli fe watch
-
-
-rettangoli fe build
-
+They are not always pure per se due to calling of dependencies. 

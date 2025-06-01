@@ -1,0 +1,3 @@
+
+# Rettangoli Visual Testing
+

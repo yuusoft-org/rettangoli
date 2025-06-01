@@ -5,12 +5,12 @@ export const INITIAL_STATE = Object.freeze({
   projects: [
     {
       id: "1",
-      name: "Project 1",
+      title: "Project 1",
       description: "Project 1 description",
     },
     {
       id: '2',
-      name: 'Project 2',
+      title: 'Project 2',
       description: 'Project 2 description'
     }
   ],
