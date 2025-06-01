@@ -248,11 +248,6 @@ class BaseComponent extends HTMLElement {
   deps;
 
   /**
-   * @type {Object}
-   */
-  attrs;
-
-  /**
    * @type {string}
    */
   cssText;
@@ -441,6 +436,7 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
 
     constructor() {
       super();
+      const attrsProxy = createAttrsProxy(this);
       this.propsSchema = propsSchema;
       this.props = propsSchema
         ? createPropsProxy(this, Object.keys(propsSchema.properties))
@@ -451,7 +447,7 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
        */
       this.elementName = elementName;
       this.styles = styles;
-      this.store = bindStore(store, this.props, createAttrsProxy(this));
+      this.store = bindStore(store, this.props, attrsProxy);
       this.template = template;
       this.handlers = handlers;
       this.refs = refs;
@@ -461,6 +457,8 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
         store: this.store,
         render: this.render,
         handlers,
+        attrs: attrsProxy,
+        props: this.props,
       };
       this.h = h;
       this.cssText = yamlToCss(elementName, styles);

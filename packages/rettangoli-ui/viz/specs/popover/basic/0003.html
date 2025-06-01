@@ -1,0 +1,25 @@
+---
+title: Props
+description: Open and close popover with props
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-button id="button">Open Popover</rtgl-button>
+  <rtgl-popover id="popover" placement="bottom-start">
+    <rtgl-text>Popover Content</rtgl-text>
+  </rtgl-popover>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const popover = document.getElementById('popover');
+
+  button.addEventListener('click', () => {
+    popover.isOpen = true;
+    popover.render();
+  });
+
+  popover.addEventListener('closePopover', () => {
+    popover.isOpen = false;
+    popover.render();
+  });
+</script>

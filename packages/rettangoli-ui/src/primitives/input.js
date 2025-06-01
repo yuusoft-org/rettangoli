@@ -1,4 +1,10 @@
-import { css, dimensionWithUnit } from "../common.js";
+import { 
+  css, 
+  dimensionWithUnit,
+  convertObjectToCssString,
+  styleMapKeys,
+  permutateBreakpoints,
+} from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 
@@ -45,8 +51,21 @@ class RettangoliInputElement extends HTMLElement {
     this.shadow = this.attachShadow({ mode: "closed" });
     this.shadow.adoptedStyleSheets = [RettangoliInputElement.styleSheet];
     
+    // Initialize style tracking properties
+    this._styles = {
+      default: {},
+      sm: {},
+      md: {},
+      lg: {},
+      xl: {},
+    };
+    this._lastStyleString = "";
+    
     // Create initial DOM structure
     this._inputElement = document.createElement('input');
+    this._styleElement = document.createElement('style');
+    
+    this.shadow.appendChild(this._styleElement);
     this.shadow.appendChild(this._inputElement);
 
     // Bind event handler
@@ -54,7 +73,22 @@ class RettangoliInputElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "w", "ellipsis", "type", "placeholder", "disabled"];
+    return [
+      "key", 
+      "type", 
+      "placeholder", 
+      "disabled",
+      ...permutateBreakpoints([
+        ...styleMapKeys,
+        "wh",
+        "w",
+        "h",
+        "hidden",
+        "visible",
+        "op",
+        "z",
+      ])
+    ];
   }
 
   get value() {
@@ -62,13 +96,83 @@ class RettangoliInputElement extends HTMLElement {
   }
 
   _onChange = (event) => {
-    if (this.onChange) {
-      this.onChange(event.target.value);
-    }
+    this.dispatchEvent(new CustomEvent('input-keydown', {
+      detail: {
+        value: this._inputElement.value,
+      },
+    }));
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
-    this._updateInputAttributes();
+    // Handle input-specific attributes first
+    if (["type", "placeholder", "disabled"].includes(name)) {
+      this._updateInputAttributes();
+      return;
+    }
+
+    // Reset styles for fresh calculation
+    this._styles = {
+      default: {},
+      sm: {},
+      md: {},
+      lg: {},
+      xl: {},
+    };
+
+    ["default", "sm", "md", "lg", "xl"].forEach((size) => {
+      const addSizePrefix = (tag) => {
+        return `${size === "default" ? "" : `${size}-`}${tag}`;
+      };
+
+      const wh = this.getAttribute(addSizePrefix("wh"));
+      const width = dimensionWithUnit(
+        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
+      );
+      const height = dimensionWithUnit(
+        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
+      );
+      const opacity = this.getAttribute(addSizePrefix("op"));
+      const zIndex = this.getAttribute(addSizePrefix("z"));
+
+      if (zIndex !== null) {
+        this._styles[size]["z-index"] = zIndex;
+      }
+
+      if (opacity !== null) {
+        this._styles[size].opacity = opacity;
+      }
+
+      if (width === "f") {
+        this._styles[size].width = "var(--width-stretch)";
+      } else if (width !== undefined) {
+        this._styles[size].width = width;
+        this._styles[size]["min-width"] = width;
+        this._styles[size]["max-width"] = width;
+      }
+
+      if (height === "f") {
+        this._styles[size].height = "100%";
+      } else if (height !== undefined) {
+        this._styles[size].height = height;
+        this._styles[size]["min-height"] = height;
+        this._styles[size]["max-height"] = height;
+      }
+
+      if (this.hasAttribute(addSizePrefix("hidden"))) {
+        this._styles[size].display = "none !important";
+      }
+
+      if (this.hasAttribute(addSizePrefix("visible"))) {
+        this._styles[size].display = "block !important";
+      }
+    });
+
+    // Update styles only if changed - targeting input element
+    const newStyleString = convertObjectToCssString(this._styles, 'input');
+    if (newStyleString !== this._lastStyleString) {
+      this._styleElement.textContent = newStyleString;
+      this._lastStyleString = newStyleString;
+    }
   }
 
   _updateInputAttributes() {

@@ -30,6 +30,18 @@ class RettangoliTextElement extends HTMLElement {
           text-decoration: var(--anchor-text-decoration-hover);
           color: var(--anchor-color-hover);
         }
+        :host([href]) {
+          cursor: pointer;
+          position: relative;
+        }
+        :host([href]) a {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 1;
+        }
         ${textStyles}
         ${textColorStyles}
         ${marginStyles}
@@ -46,19 +58,25 @@ class RettangoliTextElement extends HTMLElement {
     
     // Create initial DOM structure
     this._slotElement = document.createElement('slot');
-    this.shadow.appendChild(this._slotElement);
+    this._linkElement = null;
+    this._updateDOM();
   }
 
   static get observedAttributes() {
-    return ["key", "w", "ellipsis"];
+    return ["key", "w", "ellipsis", "href", "target"];
   }
 
   connectedCallback() {
     this._updateStyling();
+    this._updateDOM();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    this._updateStyling();
+    if (name === "href" || name === "target") {
+      this._updateDOM();
+    } else {
+      this._updateStyling();
+    }
   }
 
   _updateStyling() {
@@ -81,6 +99,36 @@ class RettangoliTextElement extends HTMLElement {
       this.style.width = width;
     } else {
       this.style.width = "";
+    }
+  }
+
+  _updateDOM() {
+    const href = this.getAttribute("href");
+    const target = this.getAttribute("target");
+
+    // Ensure slot is always in the shadow DOM
+    if (this._slotElement.parentNode !== this.shadow) {
+      this.shadow.appendChild(this._slotElement);
+    }
+
+    if (href) {
+      if (!this._linkElement) {
+        // Create link overlay only if it doesn't exist
+        this._linkElement = document.createElement("a");
+        this.shadow.appendChild(this._linkElement);
+      }
+
+      // Update link attributes
+      this._linkElement.href = href;
+      if (target) {
+        this._linkElement.target = target;
+      } else {
+        this._linkElement.removeAttribute("target");
+      }
+    } else if (this._linkElement) {
+      // Remove link overlay
+      this.shadow.removeChild(this._linkElement);
+      this._linkElement = null;
     }
   }
 }
