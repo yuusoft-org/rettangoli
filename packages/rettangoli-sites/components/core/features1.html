@@ -1,0 +1,24 @@
+<rtgl-view d="h" h="64"></rtgl-view>
+<rtgl-view pv="xl" mv="xl" mh="l" g="xl" ah="c">
+  <rtgl-text s="h2" at="c"> {{ feature.title }} </rtgl-text>
+  <rtgl-view d="h" w="f" g="xl" av="c" mt="l">
+    <rtgl-view flex="2" mb="m" g="m" style="min-width: 320px;">
+      <rtgl-text s="bl" mt="l"> {{ feature.description }} </rtgl-text>
+      <ul>
+        <rtgl-view >
+          {%- for item in feature.items -%}
+          <li>
+            <rtgl-view>
+              <rtgl-text mt="l"><b> {{ item.label }}:</b> {{ item.description }} </rtgl-text>
+            </rtgl-view>
+          </li>
+          {%- endfor -%}
+        </rtgl-view>
+      </ul>
+    </rtgl-view>
+    <rtgl-view flex="3" style="min-width: 320px; overflow: hidden;" bw="xs" br="s">
+      <rtgl-image src="{{ feature.picture }}" w="f" alt="{{ feature.imageAlt | default: feature.title }}"></rtgl-image>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+<rtgl-view d="h" h="64"></rtgl-view>

@@ -1,0 +1,19 @@
+<rtgl-text><a href="{{ back.href }}" aria-label="{{ back.text }}">{{ back.text }}</a></rtgl-text>
+<rtgl-text s="h2" mt="l">{{ title }}</rtgl-text>
+<rtgl-view mt="l">
+  {{ subtitle }}
+</rtgl-view>
+<rtgl-view g="l" mt="xl">
+  {%- for item in items -%}
+
+  <rtgl-view w="f" d="h" av="c">
+    {% if item.date %}
+    <rtgl-view d="h" w="120">
+      <rtgl-text>{{ item.date | postDate }}</rtgl-text>
+    </rtgl-view>
+    {% endif %}
+    <rtgl-text s="lg"><a href="{{ item.url }}">{{ item.title }}</a></rtgl-text>
+  </rtgl-view>
+
+  {%- endfor -%}
+</rtgl-view>

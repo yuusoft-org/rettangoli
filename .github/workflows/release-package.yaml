@@ -8,9 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory:  ./packages/rettangoli-ui
     steps:
       - uses: actions/checkout@v4
 
@@ -19,12 +16,13 @@ jobs:
         with:
           bun-version: 1.2.2
 
-      # Install dependencies
+      # Install dependencies from root
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
       - name: Build
         run: bun run build
+        working-directory: ./packages/rettangoli-ui
 
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v3
@@ -35,5 +33,6 @@ jobs:
       # Publish to npm
       - name: Publish to npm
         run: npm publish
+        working-directory: ./packages/rettangoli-ui
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}

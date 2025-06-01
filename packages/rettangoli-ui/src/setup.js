@@ -1,11 +1,10 @@
 import { createWebPatch } from 'rettangoli-fe';
 import { h } from 'snabbdom/build/h';
 
-const componentDependencies = {
-}
+const componentDependencies = {}
 
 const deps = {
-  components2: componentDependencies,
+  components: componentDependencies,
 }
 
 const patch = createWebPatch();

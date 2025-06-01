@@ -13,3 +13,6 @@ customElements.define("rtgl-image", RettangoliImage({}));
 customElements.define("rtgl-svg", RettangoliSvg({}));
 customElements.define("rtgl-input", RettangoliInput({}));
 customElements.define("rtgl-textarea", RettangoliTextArea({}));
+
+// built from rettangoli cli fe
+import '../.temp/dynamicImport.js'

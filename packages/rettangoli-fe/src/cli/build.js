@@ -73,7 +73,7 @@ function getAllFiles(dirPaths, arrayOfFiles = []) {
 }
 
 const buildRettangoliFrontend = async (options) => {
-  console.log("runnig build with options", options);
+  console.log("running build with options", options);
 
   const { dirs = ["./example"], outfile = "./viz/static/main.js" } = options;
 

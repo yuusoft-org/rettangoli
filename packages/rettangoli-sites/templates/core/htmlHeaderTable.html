@@ -1,0 +1,113 @@
+<script type="module" defer>
+import { html, render } from 'https://cdn.jsdelivr.net/npm/uhtml@4.7.0/+esm'
+const RettangoliTable = ({ render, html, baseClass }) => {
+  const MyClass = baseClass || HTMLElement;
+  return class RettangoliTable extends MyClass {
+    columns = [];
+    rows = [];
+
+    constructor() {
+      super();
+      this.shadow = this.attachShadow({ mode: "closed" });
+    }
+
+    connectedCallback() {
+      render(this.shadow, this.render);
+    }
+
+    static get observedAttributes() {
+      return ["key", "wh", "w", "h", "hidden", "s-w", "s-h", "s-d"];
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      setTimeout(() => {
+        render(this.shadow, this.render);
+      }, 0);
+    }
+
+    render = () => {
+      const columnsAttribute = this.getAttribute('columns')
+      const rowsAttribute = this.getAttribute('rows')
+      const columns = this.columns || columnsAttribute ? JSON.parse(decodeURIComponent(columnsAttribute)) : [];
+      const rows = this.rows || rowsAttribute ? JSON.parse(decodeURIComponent(rowsAttribute)) : [];
+
+      if (columns.length === 0) {
+        return html`
+          <rtgl-view h="f" w="f" bgc="su">
+            <rtgl-text s="ll">No data</rtgl-text>
+          </rtgl-view>
+        `;
+      }
+
+      return html`
+        <rtgl-view sh h="calc(100vh - 48px)" w="calc(100vw - 200px - 32px)">
+          <rtgl-view
+            bgc="bg"
+            d="h"
+            style="flex-wrap: nowrap; position: sticky; top: 0; z-index: 2;"
+          >
+            ${columns.map((column, index) => {
+              const isFirst = index === 0;
+              const style = isFirst
+                ? "overflow-wrap: anywhere; position: sticky; left: 0; z-index: 3;"
+                : "overflow-wrap: anywhere; ";
+              return html`
+                <rtgl-view
+                  ph="m"
+                  pv="s"
+                  h="f"
+                  bgc="bg"
+                  w=${column.width}
+                  style=${style}
+                  bwl=${isFirst ? "xs" : ""}
+                  bwr="xs"
+                  bwb="xs"
+                  bwt="xs"
+                >
+                  <rtgl-text s="ll">${column.label}</rtgl-text>
+                </rtgl-view>
+              `;
+            })}
+          </rtgl-view>
+
+          <rtgl-view bgc="ov">
+            ${rows.map(
+              (row) => html`
+                <rtgl-view d="h" style="flex-wrap: nowrap;">
+                  ${columns.map((column, index) => {
+                    const isFirst = index === 0;
+                    const style = isFirst
+                      ? "overflow-wrap: anywhere; position: sticky; left: 0; z-index: 1;"
+                      : "overflow-wrap: anywhere; ";
+                    return html`
+                      <rtgl-view
+                        ph="m"
+                        pv="s"
+                        h="f"
+                        bgc="bg"
+                        w=${column.width}
+                        bwr="xs"
+                        bwl=${isFirst ? "xs" : ""}
+                        bwb="xs"
+                        style=${style}
+                      >
+                        <rtgl-text s="bs">${row[column.key]}</rtgl-text>
+                      </rtgl-view>
+                    `;
+                  })}
+                </rtgl-view>
+              `
+            )}
+          </rtgl-view>
+        </rtgl-view>
+      `;
+    };
+  };
+};
+
+customElements.define('rtgl-table', RettangoliTable({
+  render,
+  html
+}))
+
+</script>

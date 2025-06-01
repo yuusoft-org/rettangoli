@@ -1,6 +1,6 @@
 {
   "name": "rettangoli-ui",
-  "version": "0.1.0-rc1",
+  "version": "0.1.0-rc2",
   "description": "A UI component library for building web interfaces.",
   "main": "dist/rettangoli-esm.min.js",
   "type": "module",
@@ -17,7 +17,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "node esbuild.js"
+    "build": "bun run ../rettangoli-cli/cli.js fe build -d ./src -o ./viz/static/public/main.js && bun run esbuild.js"
   },
   "devDependencies": {
     "esbuild": "^0.20.0",

@@ -11,8 +11,11 @@ export const toViewData = ({ state, props, attrs }) => {
     attrs,
     entries: Object.entries(attrs)
   })
+
+  const attrsStart = attrs.start ? JSON.parse(decodeURIComponent(attrs.start)) : props.start;
+
   const containerAttrString = stringifyAttrs(attrs);
-  const start = props.start || {
+  const start = attrsStart || {
     label: '',
     // href: undefined,
     // path: undefined,

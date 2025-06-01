@@ -24,8 +24,8 @@ An intuitive container component for building layouts serving as the building bl
 | Position         | `pos`                                   | `abs`, `rel`, `fix`                      | -       | Positioning method                                             |
 | Coordinates | `cor`                                   | `top`, `right`, `bottom`, `left`, `full` | -       | Corner to position in when using absolute positioning          |
 | Z-index          | `z`                                     | number                                   | -       | Stacking order for overlapping elements                        |
-| Horizontal Align | `ah`                                    | `sm`, `c`, `e`                           | `sm`    | Horizontal alignment: start, center, end                       |
-| Vertical Align   | `av`                                    | `sm`, `c`, `e`                           | `sm`    | Vertical alignment: start, center, end                         |
+| Horizontal Align | `ah`                                    | `s`, `c`, `e`                           | `s`    | Horizontal alignment: start, center, end                       |
+| Vertical Align   | `av`                                    | `s`, `c`, `e`                           | `s`    | Vertical alignment: start, center, end                         |
 | Hidden           | `hidden`                                | boolean                                  | -       | When present, hides the element                                |
 | Scroll           | `sv`, `sh`                              | boolean                                  | -       | Enables vertical or horizontal scrolling                       |
 

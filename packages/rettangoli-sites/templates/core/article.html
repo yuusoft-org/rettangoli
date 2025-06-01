@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% include "core/htmlHeader.html" %}
+</head>
+
+<body class="dark">
+  <rtgl-view id="top" bgc="su" w="f" ah="c">
+    <rtgl-view md-w="100vw" w="768" p="lg">
+      <rtgl-view h="72"></rtgl-view>
+      <rtgl-text><a href="{{ layoutConfiguration.back.href | default: "/" }}">{{ layoutConfiguration.back.label | default: "Back" }}
+        </a></rtgl-text>
+      <rtgl-text s="h1" mt="lg"><a href="#" style="display: contents;">{{ title }}</a></rtgl-text>
+      {% if date %}
+      <rtgl-text mt="sm">{{ date | postDate }}</rtgl-text>
+      {% endif %}
+      <rtgl-view mt="lg" id="content-container" w="f">
+        {{ content }}
+        <rtgl-view h="128"></rtgl-view>
+        <rtgl-view w="f" ah="c">
+          <rtgl-text s="lg"><a href="#top">Back to top</a></rtgl-text>
+        </rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+
+    <rtgl-view pos="fix" cor="right" style="top: 32px" sv w="256" h="100vh" p="xl" g="lg" xl-hidden>
+      <rtgl-page-outline id="page-outline"></rtgl-page-outline>
+    </rtgl-view>
+    {% include "core/footer.html" %}
+    {% include "core/navbar.html" %}
+  </rtgl-view>
+</body>
+
+</html>
