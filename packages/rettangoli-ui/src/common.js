@@ -157,7 +157,7 @@ const spacing = {
   xl: "--spacing-xl",
 };
 
-function convertObjectToCssString(styleObject) {
+function convertObjectToCssString(styleObject, selector = ':host') {
   let result = "";
   for (const [size, mediaQuery] of Object.entries(mediaQueries)) {
     if (size !== "default") {
@@ -169,7 +169,7 @@ function convertObjectToCssString(styleObject) {
         cssString += `${key}: ${value};\n`;
       }
     }
-    result += `:host {
+    result += `${selector} {
     ${cssString.trim()}
     }\n`;
 

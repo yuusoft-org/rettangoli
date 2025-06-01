@@ -1,0 +1,39 @@
+elementName: rtgl-select
+
+viewDataSchema:
+  type: object
+
+propsSchema:
+  type: object
+  properties:
+    options:
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          lalbel:
+            type: string
+          value:
+            type: any
+
+refs:
+  select-button:
+    eventListeners:
+      click:
+        handler: handleButtonClick
+  popover: {}
+
+
+events: {}
+
+template:
+  - rtgl-button#select-button v=ol: Placeholder
+  - rtgl-popover#popover:
+    - rtgl-view wh=300 g=xs slot=content:
+      - $map: { $eval: options }
+        each(v,i):
+          - rtgl-view w=f h-bgc=mu ph=lg pv=md cur=p br=md:
+            - rtgl-text: ${v.label}

@@ -1,57 +1,68 @@
 ---
 title: "Basic"
 ---
-<rtgl-view g="lg" h="100vh" w="300" fw="w">
-  <rtgl-form id="form"></rtgl-form>
+<rtgl-view g="lg" h="100vh" w="100vw" fw="w">
+  <rtgl-form id="form" w="300"></rtgl-form>
 </rtgl-view>
 
 <script>
   const form = document.getElementById('form');
 
+  form.defaultValues = {
+    email: 'hello@example.com',
+    password: '',
+  }
+
   form.form = {
     title: 'Form Title',
     description: 'Form Description',
     fields: [{
-      type: 'groupLabel',
-      content: 'Group Label'
+      id: 'email',
+      fieldName: 'email',
+      inputType: 'inputText',
+      label: 'Email',
+      description: 'Enter your email',
+      required: true,
+      validations: [{
+        rule: /^\w+@\w+\.\w+$/,
+        message: 'Must be a valid email'
+      }],
     }, {
-      type: 'input',
+      id: 'password',
+      fieldName: 'password',
+      inputType: 'inputText',
+      label: 'Password',
+      description: 'Enter your password',
+      required: true,
+      validations: [{
+        rule: /^\w+$/,
+        message: 'Must be a valid password'
+      }],
+    }, {
+      id: 'age',
+      fieldName: 'age',
+      inputType: 'inputText',
       label: 'Age',
-      name: 'age',
       description: 'Enter your age',
       required: true,
       validations: [{
         rule: /^\d+$/,
-        message: 'Must be a number'
+        message: 'Must be a valid age'
       }],
-      options: {
-        type: 'text',
-        placeholder: '...'
-      }
-    }, {
-      type: 'input',
-      label: 'Hobby',
-      name: 'hobby',
-      description: 'Enter your hobby',
-      required: true,
-      options: {
-        type: 'text',
-        placeholder: '...'
-      }
     }],
-    actions: [{
-      id: 'submit',
-      variant: 'primary',
-      content: 'Submit',
-      icon: 'arrow-left',
-      iconRight: 'arrow-right',
-      fill: true
-    }],
+    actions: {
+      layout: '', // vertical, fill, right, left
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        content: 'Submit',
+      }],
+    }
   }
 
-  form.onSubmit = (data) => {
-    console.log('onSubmit', data);
-  }
+  form.render();
+  form.addEventListener('action-click', (e) => {
+    console.log('action-click', e.detail);
+  });
 
-  form.reRender();
 </script>

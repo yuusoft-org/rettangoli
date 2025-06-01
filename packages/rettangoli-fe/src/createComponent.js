@@ -458,6 +458,7 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
         render: this.render,
         handlers,
         attrs: attrsProxy,
+        props: this.props,
       };
       this.h = h;
       this.cssText = yamlToCss(elementName, styles);

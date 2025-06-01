@@ -21,6 +21,8 @@ propsSchema:
     placement:
       type: string
       default: bottom
+    isOpen:
+      type: boolean
 
 refs:
   popoverOverlay:
@@ -46,7 +48,7 @@ styles:
       opacity: 1
       transform: scale(1)
 
-  .popoverContainer:
+  '#popoverContainer':
     animation: popover-in 150ms cubic-bezier(0.16, 1, 0.3, 1)
     transform-origin: top
 

@@ -7,6 +7,15 @@ export const INITIAL_STATE = Object.freeze({
 });
 
 export const toViewData = ({ state, props }) => {
+  if (props.isOpen !== undefined) {
+    return {
+      isOpen: props.isOpen,
+      position: {
+        x: 0,
+        y: 0
+      }
+    }
+  }
   return {
     isOpen: state.isOpen,
     position: state.position,

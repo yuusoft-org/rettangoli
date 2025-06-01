@@ -33,11 +33,6 @@ export default ({ render, html }) => {
     }
 
     _onChange = (name, value) => {
-      console.log("onChange", {
-        name,
-        value,
-      });
-
       this.values[name] = value;
 
       const validations = this.form?.fields?.find(
