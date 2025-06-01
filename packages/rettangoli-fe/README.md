@@ -273,9 +273,9 @@ export const handleProjectsClick = (e, deps) => {
 
 ```js
 export const handleProjectsClick = (e, deps) => {
-  deps.dispatchEvent('project-clicked', {
+  deps.dispatchEvent(new CustomEvent('project-clicked', {
     projectId: '1',
-  });
+  }));
 }
 ```
 
