@@ -6,7 +6,7 @@ import {
   mkdirSync,
   existsSync,
 } from "node:fs";
-import { join } from "node:path";
+import { join, parse, dirname, sep } from "node:path";
 
 import esbuild from "esbuild";
 import { load as loadYaml } from "js-yaml";
@@ -16,10 +16,14 @@ function capitalize(word) {
 }
 
 export const extractCategoryAndComponent = (filePath) => {
-  const parts = filePath.split("/");
-  const component = parts[parts.length - 1].split(".")[0];
-  const category = parts[parts.length - 3];
-  const fileType = parts[parts.length - 1].split(".")[1];
+  const pathInfo = parse(filePath);
+  const component = pathInfo.name;
+  const fileType = pathInfo.ext.slice(1); // Remove the leading dot
+  
+  // Get directory parts using cross-platform path separator
+  const dirParts = dirname(filePath).split(sep);
+  const category = dirParts[dirParts.length - 2]; // Get the parent directory
+  
   return { category, component, fileType };
 }
 
