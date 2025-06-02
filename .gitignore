@@ -12,6 +12,7 @@
 
 /node_modules
 
+.claude/
 CLAUDE.md
 .temp
 

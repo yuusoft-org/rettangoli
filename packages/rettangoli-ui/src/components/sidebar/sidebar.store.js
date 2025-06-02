@@ -16,6 +16,7 @@ function flattenItems(items) {
       title: item.title,
       href: item.href,
       type: item.type || 'item',
+      icon: item.icon,
       hrefAttr: item.href ? `href=${item.href}` : '',
     });
 
@@ -27,6 +28,7 @@ function flattenItems(items) {
           title: subItem.title,
           href: subItem.href,
           type: subItem.type || 'item',
+          icon: subItem.icon,
           hrefAttr: subItem.href ? `href=${subItem.href}` : '',
         });
       }

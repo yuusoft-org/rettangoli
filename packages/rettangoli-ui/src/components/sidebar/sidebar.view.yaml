@@ -36,6 +36,8 @@ viewDataSchema:
             type: string
           active:
             type: boolean
+          icon:
+            type: string
 
 propsSchema:
   type: object
@@ -141,4 +143,10 @@ template:
                   - rtgl-text s=xs c=mu-fg: "${v.title}"
               $default:
                 - rtgl-view#item-${v.id} ${v.hrefAttr} h=32 av=c ph=md w=f h-bgc=mu br=lg bgc=bg cur=p:
-                  - rtgl-text s=sm: "${v.title}"
+                  - $switch:
+                      'v.icon':
+                        - rtgl-view d=h ah=c g=sm:
+                          - rtgl-svg wh=16 svg=${v.icon} c=fg:
+                          - rtgl-text s=sm: "${v.title}"
+                      $default:
+                        - rtgl-text s=sm: "${v.title}"
