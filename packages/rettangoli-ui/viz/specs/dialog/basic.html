@@ -1,0 +1,27 @@
+---
+title: "Basic"
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-button id="button">Open Dialog</rtgl-button>
+  <rtgl-dialog id="dialog">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Dialog Content</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const dialog = document.getElementById('dialog');
+
+  button.addEventListener('click', () => {
+    dialog.isOpen = true;
+    dialog.render();
+  });
+
+  dialog.addEventListener('close-dialogue', () => {
+    dialog.isOpen = false;
+    dialog.render();
+  });
+</script>

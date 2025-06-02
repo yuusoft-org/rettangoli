@@ -30,16 +30,7 @@ refs:
       click:
         handler: handleClickOverlay
 
-# events:
-#   closePopover: 
-#     el: .popover-overlay
-#     on: click
-#   stopPropagation:
-#     el: .popover-content
-#     on: click
-
 styles:
-  # TODO make the animation work 
   '@keyframes popover-in':
     from:
       opacity: 0

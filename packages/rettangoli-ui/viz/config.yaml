@@ -26,3 +26,5 @@ sections:
     files: "viz/specs/navbar"
   - title: "Form"
     files: "viz/specs/form"
+  - title: "Dialog"
+    files: "viz/specs/dialog"

@@ -33,7 +33,8 @@ const yamlToCss = (elementName, styleObject) => {
   if (!styleObject || typeof styleObject !== "object") {
     return "";
   }
-  let css = '';
+
+  let css = ``;
   const convertPropertiesToCss = (properties) => {
     return Object.entries(properties)
       .map(([property, value]) => `  ${property}: ${value};`)
@@ -72,6 +73,7 @@ const yamlToCss = (elementName, styleObject) => {
       css += (css ? "\n\n" : "") + selectorCss;
     }
   });
+
   return css;
 };
 
