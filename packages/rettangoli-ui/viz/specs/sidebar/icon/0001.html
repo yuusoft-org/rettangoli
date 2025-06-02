@@ -1,0 +1,55 @@
+---
+title: "Sidebar with Icons"
+---
+<rtgl-view g="lg" h="100vh" w="f" fw="w">
+  <rtgl-sidebar id="sidebar"></rtgl-sidebar>
+</rtgl-view>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  sidebar.header = {
+    label: "Navigation",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Navigation",
+    },
+  }
+  sidebar.items = [
+    {
+      id: "home",
+      title: "Home",
+      icon: "home"
+    },
+    {
+      id: "music",
+      title: "Music Library",
+      icon: "music"
+    },
+    {
+      id: "playlists",
+      title: "Playlists",
+      icon: "play"
+    },
+    {
+      type: "groupLabel",
+      title: "Settings"
+    },
+    {
+      id: "preferences",
+      title: "Preferences",
+      icon: "text"
+    },
+    {
+      id: "more",
+      title: "More Options",
+      icon: "threeDots"
+    },
+    {
+      id: "about",
+      title: "About (no icon)"
+    }
+  ]
+  sidebar.render();
+</script>
