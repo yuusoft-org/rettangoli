@@ -119,7 +119,7 @@ const buildRettangoliFrontend = async (options) => {
     if (["handlers", "store"].includes(fileType)) {
       output += `import * as ${component}${capitalize(
         fileType,
-      )} from '../${filePath}';\n`;
+      )} from '../${filePath.replace("\\", "/")}';\n`;
 
       replaceMap[count] = `${component}${capitalize(fileType)}`;
       imports[category][component][fileType] = count;
