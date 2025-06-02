@@ -99,7 +99,7 @@ template:
   - rtgl-view#root w=100vw d=v ah=c av=c bgc=#f5f5f5:
       - rtgl-view#app w=550 h=100vh ah=c bgc=white:
         - rtgl-view#header ah=c ph=lg pv=xl bwb=1 bgc=white:
-          - rtgl-text s=h1 ta=c c=pr-fg mb=0: "${title}"
+          - rtgl-text s=h1 ta=c c=fg mb=0: "${title}"
           - rtgl-view d=h :
             - rtgl-svg#toggle-all mr=sm svg=tick c=fg wh=64:
             - input#todo-input ph=xl fs=24px fw=200 w=f border=none outline=none placeholder="${placeholderText}":
