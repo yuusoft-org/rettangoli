@@ -5,8 +5,8 @@ export const INITIAL_STATE = {
   filter: 'all', // 'all', 'active', 'completed'
   todos: [
     {
-      id: "1",
-      title: "Todo 1",
+      id: '1',
+      title: 'Todo 1',
       completed: false,
     },
     {
@@ -17,14 +17,13 @@ export const INITIAL_STATE = {
   ],
 };
 
-// In todos.store.js
-export const toViewData = ({ state, props }) => {
+// Compute derived data for the viewexport const toViewData = ({ state }) => {
   const activeCount = state.todos.filter(todo => !todo.completed).length;
   const completedCount = state.todos.filter(todo => todo.completed).length;
   const filteredTodos = state.todos.filter(todo => {
     if (state.filter === 'active') return !todo.completed;
     if (state.filter === 'completed') return todo.completed;
-    return true; // 'all'
+    return true;
   });
 
   return {
@@ -37,32 +36,30 @@ export const toViewData = ({ state, props }) => {
     showClearCompleted: completedCount > 0,
     isAllFilter: state.filter === 'all',
     isActiveFilter: state.filter === 'active',
-    isCompletedFilter: state.filter === 'completed'
+    isCompletedFilter: state.filter === 'completed',
   };
-}
+};
 
-// Action: Add new todo
+// Add a new todo
 export const addTodo = (state, title) => {
   if (!title.trim()) return state;
-  
   const newTodo = {
     id: Date.now().toString(),
     title: title.trim(),
     completed: false,
   };
-
   return {
     ...state,
-    todos: [...state.todos, newTodo]
+    todos: [...state.todos, newTodo],
   };
-}
+};
 
-// Action: Toggle todo completion
+// Toggle completion for a todo by id
 export const toggleTodo = (state, id) => ({
   ...state,
-  todos: state.todos.map(todo => 
+  todos: state.todos.map(todo =>
     todo.id === id ? { ...todo, completed: !todo.completed } : todo
-  )
+  ),
 });
 
 // Action: Toggle all todos

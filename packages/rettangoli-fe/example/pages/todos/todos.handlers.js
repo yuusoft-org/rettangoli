@@ -1,41 +1,42 @@
-// todos.handlers.js
+// Handle adding a new todo on Enter key
 export const handleNewTodoKeyDown = (e, deps) => {
   if (e.key === 'Enter') {
-    const input = e.target;
-    const title = input.value.trim();
+    const title = e.target.value.trim();
     if (title) {
       deps.store.addTodo(title);
-      input.value = '';
+      e.target.value = '';
       deps.render();
     }
   }
 };
 
-export const handleToggleAllClick = (e, deps) => {
+// Handle toggling all todos
+export const handleToggleAllClick = (_, deps) => {
   deps.store.toggleAll();
   deps.render();
 };
 
+// Handle toggling a single todo
 export const handleTodoClick = (e, deps) => {
-  const todoId = e.currentTarget.id.replace('todo-', '');
-  deps.store.toggleTodo(todoId);
+  deps.store.toggleTodo(e.currentTarget.id.replace('todo-', ''));
   deps.render();
 };
 
+// Handle deleting a todo
 export const handleDeleteClick = (e, deps) => {
   e.stopPropagation();
-  const todoId = e.currentTarget.id.replace('delete-', '');
-  deps.store.deleteTodo(todoId);
+  deps.store.deleteTodo(e.currentTarget.id.replace('delete-', ''));
   deps.render();
 };
 
-export const handleClearCompletedClick = (e, deps) => {
+// Handle clearing all completed todos
+export const handleClearCompletedClick = (_, deps) => {
   deps.store.clearCompleted();
   deps.render();
 };
 
+// Handle changing the filter
 export const handleFilterClick = (e, deps) => {
-  const filter = e.currentTarget.id.replace('filter-', '');
-  deps.store.setFilter(filter);
+  deps.store.setFilter(e.currentTarget.id.replace('filter-', ''));
   deps.render();
 };
