@@ -17,13 +17,14 @@ function capitalize(word) {
 
 export const extractCategoryAndComponent = (filePath) => {
   const pathInfo = parse(filePath);
-  const component = pathInfo.name;
-  const fileType = pathInfo.ext.slice(1); // Remove the leading dot
+  const component = pathInfo.name.split(".")[0];
   
   // Get directory parts using cross-platform path separator
   const dirParts = dirname(filePath).split(sep);
+  const fileType = pathInfo.name.split(".")[1];;
   const category = dirParts[dirParts.length - 2]; // Get the parent directory
   
+  console.log({ category, component, fileType });
   return { category, component, fileType };
 }
 
