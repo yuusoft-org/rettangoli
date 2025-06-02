@@ -1,0 +1,140 @@
+elementName: custom-todos
+
+viewDataSchema:
+  type: object
+  properties:
+    title: { type: string }
+    placeholderText: { type: string }
+    todos: { type: array }
+    filteredTodos: { type: array }
+    activeCount: { type: number }
+    completedCount: { type: number }
+    allCompleted: { type: boolean }
+    filter: { type: string }
+
+refs:
+  todo-input:
+    eventListeners:
+      keydown:
+        handler: handleNewTodoKeyDown
+  toggle-all:
+    eventListeners:
+      click:
+        handler: handleToggleAllClick
+  clear-completed:
+    eventListeners:
+      click:
+        handler: handleClearCompletedClick
+  completed-todo-svg:
+    eventListeners:
+      click:
+        handler: handleTodoClick
+  todo-*:
+    eventListeners:
+      click:
+        handler: handleTodoClick
+  delete-*:
+    eventListeners:
+      click:
+        handler: handleDeleteClick
+  filter-*:
+    eventListeners:
+      click:
+        handler: handleFilterClick
+
+styles:
+  '#root':
+    background-color: grey 
+
+  '#app':
+    background-color: black
+    display: flex
+    flex-direction: column
+    margin: auto
+    border-radius: 12px
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08)
+
+  '#header':
+    position: sticky
+    top: 0
+    z-index: 10
+
+  '#todo-input':
+    padding: 16px
+    font-size: 24px
+    border: 1px solid #ededed
+    outline: none
+    border-radius: 6px
+  '#todo-list':
+    margin: 0
+    padding: 0
+
+  '#todo':
+    border-bottom: 1px solid #ededed
+
+  '#footer':
+    display: flex
+    justify-content: space-between
+    padding: 16px
+    font-size: 16px
+
+  'rtgl-button[v=pr]':
+    border: 1px solid #b83f45
+    color: #b83f45
+    background: #fff
+    border-radius: 6px
+
+  'rtgl-button[v=lk]':
+    border: none
+    color: #777
+    background: none
+
+  '#clear-completed':
+    border: none
+    background: none
+    color: #777
+    cursor: pointer
+    
+template:
+  - rtgl-view#root w=100vw d=v ah=c av=c bgc=#f5f5f5:
+      - rtgl-view#app w=550 h=100vh ah=c bgc=white:
+        - rtgl-view#header ah=c ph=lg pv=xl bwb=1 bgc=white:
+          - rtgl-text s=h1 ta=c c=fg mb=0: "${title}"
+          - rtgl-view d=h :
+            - rtgl-svg#toggle-all mr=sm svg=tick c=fg wh=64:
+            - input#todo-input ph=xl fs=24px fw=200 w=f border=none outline=none placeholder="${placeholderText}":
+
+        - rtgl-view#main ah=c:
+          - rtgl-view#todo-list:
+              - $map: { $eval: filteredTodos }
+                each(todo):
+                  - rtgl-view#todo w=400 g=xl d=h av=c  pv=md ph=lg bwb=xs:
+                    - rtgl-view flex=1 d=h:
+                      - $if: todo.completed
+                        then:
+                          - rtgl-svg#todo-${todo.id} svg=tick c=fg wh=16:
+                          - rtgl-text c=su-fg ml=md: 
+                            - del: "${todo.title}"
+                        else:
+                          - rtgl-view#todo-${todo.id} bgc=fg w=16 h=16:
+                          - rtgl-text c=er-fg ml=md: "${todo.title}"
+                    - rtgl-svg#delete-${todo.id} svg=cross c=fg wh=16:
+
+        - rtgl-view#footer d=h jc=space-between p=md c=mu-fg :
+          - rtgl-text: "${activeCount} ${itemText} left"
+          - $if: isAllFilter
+            then:
+              - rtgl-button#filter-all v=pr: "All"
+            else:
+              - rtgl-button#filter-all v=lk: "All"
+          - $if: isActiveFilter
+            then:
+              - rtgl-button#filter-active v=pr: "Active"
+            else:
+              - rtgl-button#filter-active v=lk: "Active"
+          - $if: isCompletedFilter
+            then:
+              - rtgl-button#filter-completed v=pr: "Completed"
+            else:
+              - rtgl-button#filter-completed v=lk: "Completed"
+          - rtgl-button#clear-completed v=lk: "Clear completed (${completedCount})"
