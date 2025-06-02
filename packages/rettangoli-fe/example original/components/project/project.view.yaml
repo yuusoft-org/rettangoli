@@ -1,0 +1,32 @@
+elementName: custom-project
+
+viewDataSchema:
+  type: object
+  properties:
+    name:
+      type: string
+      default: ""
+    description:
+      type: string
+      default: ""
+
+attrsSchema:
+  type: object
+  properties:
+    title:
+      type: string
+      default: ""
+    description:
+      type: string
+      default: ""
+
+propsSchema:
+  type: object
+  properties: {}
+
+refs: {}
+
+template:
+  - rtgl-view h=64 w=f bw=xs p=md cur=p:
+    - rtgl-text s=lg: "${name}"
+    - rtgl-text s=sm: "${description}"
