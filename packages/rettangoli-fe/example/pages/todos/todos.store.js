@@ -1,4 +1,3 @@
-// todos.store.js
 export const INITIAL_STATE = {
   title: "todos",
   placeholderText: "What needs to be done?",
@@ -17,7 +16,7 @@ export const INITIAL_STATE = {
   ],
 };
 
-// Compute derived data for the viewexport const toViewData = ({ state }) => {
+export const toViewData = ({ state }) => {
   const activeCount = state.todos.filter(todo => !todo.completed).length;
   const completedCount = state.todos.filter(todo => todo.completed).length;
   const filteredTodos = state.todos.filter(todo => {
@@ -42,52 +41,43 @@ export const INITIAL_STATE = {
 
 // Add a new todo
 export const addTodo = (state, title) => {
-  if (!title.trim()) return state;
+  if (!title.trim()) return;
   const newTodo = {
     id: Date.now().toString(),
     title: title.trim(),
     completed: false,
   };
-  return {
-    ...state,
-    todos: [...state.todos, newTodo],
-  };
+  state.todos.push(newTodo);
 };
 
 // Toggle completion for a todo by id
-export const toggleTodo = (state, id) => ({
-  ...state,
-  todos: state.todos.map(todo =>
-    todo.id === id ? { ...todo, completed: !todo.completed } : todo
-  ),
-});
+export const toggleTodo = (state, id) => {
+  state.todos.forEach(todo => {
+    if (todo.id === id) {
+      todo.completed = !todo.completed;
+    }
+  });
+};
 
 // Action: Toggle all todos
 export const toggleAll = (state) => {
   const allCompleted = state.todos.every(todo => todo.completed);
-  return {
-    ...state,
-    todos: state.todos.map(todo => ({
-      ...todo,
-      completed: !allCompleted
-    }))
-  };
-}
+  state.todos.forEach(todo => {
+    todo.completed = !allCompleted;
+  });
+};
 
 // Action: Delete todo
-export const deleteTodo = (state, id) => ({
-  ...state,
-  todos: state.todos.filter(todo => todo.id !== id)
-});
+export const deleteTodo = (state, id) => {
+  state.todos = state.todos.filter(todo => todo.id !== id);
+};
 
 // Action: Clear completed todos
-export const clearCompleted = (state) => ({
-  ...state,
-  todos: state.todos.filter(todo => !todo.completed)
-});
+export const clearCompleted = (state) => {
+  state.todos = state.todos.filter(todo => !todo.completed);
+};
 
 // Action: Set filter
-export const setFilter = (state, filter) => ({
-  ...state,
-  filter
-});
+export const setFilter = (state, filter) => {
+  state.filter = filter;
+};

@@ -99,16 +99,16 @@ template:
   - rtgl-view#root w=100vw d=v ah=c av=c bgc=#f5f5f5:
       - rtgl-view#app w=550 h=100vh ah=c bgc=white:
         - rtgl-view#header ah=c ph=lg pv=xl bwb=1 bgc=white:
-          - rtgl-text s=h1 ta=c c=rgba(175,47,47,0.15) mb=0: "${title}"
-          - rtgl-view d=h ai=c:
+          - rtgl-text s=h1 ta=c c=pr-fg mb=0: "${title}"
+          - rtgl-view d=h :
             - rtgl-svg#toggle-all mr=sm svg=tick c=fg wh=64:
-            - input#todo-input ph=xl fs=24px fw=200 w=100% border=none outline=none placeholder="${placeholderText}":
+            - input#todo-input ph=xl fs=24px fw=200 w=f border=none outline=none placeholder="${placeholderText}":
 
         - rtgl-view#main ah=c:
           - rtgl-view#todo-list:
               - $map: { $eval: filteredTodos }
                 each(todo):
-                  - rtgl-view#todo w=400 g=xl d=h av=c ai=c pv=md ph=lg bwb=xs:
+                  - rtgl-view#todo w=400 g=xl d=h av=c  pv=md ph=lg bwb=xs:
                     - rtgl-view flex=1 d=h:
                       - $if: todo.completed
                         then:
@@ -120,7 +120,7 @@ template:
                           - rtgl-text c=er-fg ml=md: "${todo.title}"
                     - rtgl-svg#delete-${todo.id} svg=cross c=fg wh=16:
 
-        - rtgl-view#footer d=h jc=space-between p=md c=#777 fs=14px:
+        - rtgl-view#footer d=h jc=space-between p=md c=mu-fg :
           - rtgl-text: "${activeCount} ${itemText} left"
           - $if: isAllFilter
             then:
