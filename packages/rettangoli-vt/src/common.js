@@ -346,7 +346,8 @@ async function takeScreenshots(
 function generateOverview(data, templatePath, outputPath, configData) {
   try {
     // Read template
-    const templateContent = readFileSync(templatePath, "utf8");
+    // const templateContent = readFileSync(templatePath, "utf8");
+    const templateContent = readFileSync(decodeURIComponent(templatePath), "utf8");
 
     // Ensure output directory exists
     ensureDirectoryExists(dirname(outputPath));
