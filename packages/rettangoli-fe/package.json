@@ -14,7 +14,6 @@
   "dependencies": {
     "immer": "^10.1.1",
     "jempl": "^0.0.5",
-    "json-e": "^4.8.0",
     "rxjs": "^7.8.2",
     "snabbdom": "^3.6.2"
   },

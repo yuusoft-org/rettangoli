@@ -19,7 +19,6 @@
       "dependencies": {
         "immer": "^10.1.1",
         "jempl": "^0.0.5",
-        "json-e": "^4.8.0",
         "rxjs": "^7.8.2",
         "snabbdom": "^3.6.2",
       },
@@ -272,10 +271,6 @@
     "jempl": ["jempl@0.0.5", "", {}, "sha512-7sbJ0KKC9rrnuqRQgEpgdpxErQB3HmqGoVdgZonJ9/QeZ5DLOltFOz3jXzJVziV/0vz4RW8WAez8Fa16ur3GGw=="],
 
     "js-yaml": ["js-yaml@4.1.0", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA=="],
-
-    "json-e": ["json-e@4.8.0", "", { "dependencies": { "json-stable-stringify-without-jsonify": "^1.0.1" } }, "sha512-YOxEEr9dd9/y5PbXsKx/MCFyAR+UL5zbRBObbuHnjxvC3rY8EIfQMc64iULb97G4NcV5vadIzFdEHAYh0Cqljg=="],
-
-    "json-stable-stringify-without-jsonify": ["json-stable-stringify-without-jsonify@1.0.1", "", {}, "sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw=="],
 
     "linkify-it": ["linkify-it@5.0.0", "", { "dependencies": { "uc.micro": "^2.0.0" } }, "sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ=="],
 
