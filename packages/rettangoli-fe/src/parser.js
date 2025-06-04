@@ -1,4 +1,4 @@
-import jsone from "json-e";
+import { render as jemplRender } from 'jempl';
 
 const lodashGet = (obj, path) => {
   return path.split(".").reduce((acc, part) => acc && acc[part], obj);
@@ -32,7 +32,15 @@ const flattenArrays = (items) => {
 };
 
 export const parseView = ({ h, template, viewData, refs, handlers }) => {
-  const result = jsone(template, viewData);
+  // const startTime = performance.now();
+  const result = jemplRender({
+    ast: template,
+    data: viewData,
+  });
+  // const endTime = performance.now();
+  // const executionTime = endTime - startTime;
+  // console.log(`jemplRender execution time: ${executionTime.toFixed(2)}ms`);
+  
   // Flatten the array carefully to maintain structure
   const flattenedResult = flattenArrays(result);
 

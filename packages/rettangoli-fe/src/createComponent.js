@@ -350,6 +350,8 @@ class BaseComponent extends HTMLElement {
         handlers: this.transformedHandlers,
       });
 
+      // const parseTime = performance.now() - parseStart;
+      // console.log(`parseView took ${parseTime.toFixed(2)}ms`);
       // parse through vDom and recursively find all elements with id
       const ids = {};
       const findIds = (vDom) => {
@@ -362,10 +364,6 @@ class BaseComponent extends HTMLElement {
       };
       findIds(vDom);
       this.refIds = ids;
-
-      // const parseTime = performance.now() - parseStart;
-      // console.log(`parseView took ${parseTime.toFixed(2)}ms`);
-      // console.log("vDom", vDom);
 
       // const patchStart = performance.now();
       if (!this._oldVNode) {

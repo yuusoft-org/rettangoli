@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "immer": "^10.1.1",
-    "json-e": "^4.8.0",
+    "jempl": "^0.0.5",
     "rxjs": "^7.8.2",
     "snabbdom": "^3.6.2"
   },
