@@ -10,6 +10,7 @@ import { join } from "node:path";
 
 import esbuild from "esbuild";
 import { load as loadYaml } from "js-yaml";
+import { parse } from 'jempl';
 
 function capitalize(word) {
   return word ? word[0].toUpperCase() + word.slice(1) : word;
@@ -121,6 +122,7 @@ const buildRettangoliFrontend = async (options) => {
       count++;
     } else if (["view"].includes(fileType)) {
       const view = loadYaml(readFileSync(filePath, "utf8"));
+      view.template = parse(view.template);
       writeViewFile(view, category, component);
       output += `import ${component}${capitalize(
         fileType,
