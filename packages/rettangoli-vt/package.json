@@ -2,6 +2,7 @@
   "name": "rettangoli-vt",
   "version": "0.0.1",
   "description": "Rettangoli Visual Testing",
+  "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
