@@ -1,0 +1,44 @@
+---
+title: "Shrunk modes with mixed items (with/without icons)"
+---
+<rtgl-view d="h" g="lg" h="100vh" w="f" fw="w">
+  <rtgl-sidebar id="sidebar1" mode="shrunk"></rtgl-sidebar>
+  <rtgl-sidebar id="sidebar2" mode="shrunk-lg"></rtgl-sidebar>
+</rtgl-view>
+
+<script>
+  const items = [
+    { id: "home", title: "Home", icon: "home" },
+    { id: "about", title: "About" }, // No icon - will show "A"
+    { id: "profile", title: "Profile" }, // No icon - will show "P"
+    { id: "music", title: "Music", icon: "music" },
+    { id: "contact", title: "Contact" }, // No icon - will show "C"
+    { id: "settings", title: "Settings", icon: "gear" },
+  ];
+
+  const sidebar1 = document.getElementById('sidebar1');
+  sidebar1.header = {
+    label: "Shrunk",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Logo",
+    },
+  };
+  sidebar1.items = items;
+  sidebar1.render();
+
+  const sidebar2 = document.getElementById('sidebar2');
+  sidebar2.header = {
+    label: "Shrunk LG",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Logo",
+    },
+  };
+  sidebar2.items = items;
+  sidebar2.render();
+</script>

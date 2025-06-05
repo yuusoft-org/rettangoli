@@ -1,0 +1,26 @@
+---
+title: "Shrunk-lg mode with large icons"
+---
+<rtgl-view g="lg" h="100vh" w="f" fw="w">
+  <rtgl-sidebar id="sidebar" mode="shrunk-lg"></rtgl-sidebar>
+</rtgl-view>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  sidebar.header = {
+    label: "Navigation",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Logo",
+    },
+  };
+  sidebar.items = [
+    { id: "home", title: "Home", icon: "home" },
+    { id: "search", title: "Search", icon: "search" },
+    { id: "music", title: "Music", icon: "music" },
+    { id: "settings", title: "Settings", icon: "gear" },
+  ];
+  sidebar.render();
+</script>

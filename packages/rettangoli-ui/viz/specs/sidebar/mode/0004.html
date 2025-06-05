@@ -1,0 +1,51 @@
+---
+title: "Toggle between all three modes (full, shrunk, shrunk-lg)"
+---
+<rtgl-view g="lg" h="100vh" w="f" fw="w">
+  <rtgl-sidebar id="sidebar"></rtgl-sidebar>
+  <rtgl-view d="h" g="md" p="md">
+    <rtgl-button id="fullBtn" variant="secondary">Full Mode</rtgl-button>
+    <rtgl-button id="shrunkBtn" variant="secondary">Shrunk Mode</rtgl-button>
+    <rtgl-button id="shrunkLgBtn" variant="secondary">Shrunk LG Mode</rtgl-button>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  sidebar.header = {
+    label: "Navigation",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Logo",
+    },
+  };
+  sidebar.items = [
+    { id: "home", title: "Home", icon: "home" },
+    { id: "about", title: "About" }, // No icon
+    { id: "search", title: "Search", icon: "search" },
+    { type: "groupLabel", title: "Media" },
+    { id: "music", title: "Music", icon: "music" },
+    { id: "photos", title: "Photos" }, // No icon
+    { type: "groupLabel", title: "Settings" },
+    { id: "settings", title: "Settings", icon: "gear" },
+    { id: "privacy", title: "Privacy" }, // No icon
+  ];
+  sidebar.render();
+
+  document.getElementById('fullBtn').addEventListener('click', () => {
+    sidebar.removeAttribute('mode');
+    sidebar.render();
+  });
+
+  document.getElementById('shrunkBtn').addEventListener('click', () => {
+    sidebar.setAttribute('mode', 'shrunk');
+    sidebar.render();
+  });
+
+  document.getElementById('shrunkLgBtn').addEventListener('click', () => {
+    sidebar.setAttribute('mode', 'shrunk-lg');
+    sidebar.render();
+  });
+</script>
