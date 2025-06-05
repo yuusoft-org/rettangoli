@@ -101,52 +101,44 @@ events:
 
 anchors:
   - &headerContent
-    - $switch:
-        '"image" in header && "src" in header.image':
-          - $switch:
-              '"href" in header.image':
-                - a href=${header.image.href}:
-                  - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
-              '"path" in header.image':
-                - rtgl-view#header-image cur=p:
-                  - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
-              $default:
-                - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
-    - $switch:
-        '"label" in header':
-          - $switch:
-              '"labelHref" in header':
-                - rtgl-text href=${header.labelHref} s=lg: "${header.label}"
-              '"labelPath" in header':
-                - rtgl-view#header-label cur=p:
-                  - rtgl-text s=lg: "${header.label}"
-              $default:
-                - rtgl-text s=lg: "${header.label}"
+    - $if header.image && header.image.src:
+      - $if header.image.href:
+          - a href=${header.image.href}:
+            - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
+        $elif header.image.path:
+          - rtgl-view#header-image cur=p:
+            - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
+        $else:
+          - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
+    - $if header.label:
+      - $if header.labelHref:
+          - rtgl-text href=${header.labelHref} s=lg: "${header.label}"
+        $elif header.labelPath:
+          - rtgl-view#header-label cur=p:
+            - rtgl-text s=lg: "${header.label}"
+        $else:
+          - rtgl-text s=lg: "${header.label}"
 
 template:
   - rtgl-view h=f w=272 bwr=xs ${containerAttrString}:
     - rtgl-view p=lg:
-      - $switch:
-          '"href" in header && header.href':
-            - rtgl-view href=${header.href} d=h av=c g=lg:
-              - *headerContent
-          $default:
+      - $if header.href:
+          - rtgl-view href=${header.href} d=h av=c g=lg:
+            - *headerContent
+        $else:
             - rtgl-view#header d=h av=c g=lg cur=p:
               - *headerContent
 
     - rtgl-view w=f ph=lg pb=lg g=xs:
-      - $map: { $eval: items }
-        each(v,i):
-          - $switch:
-              'v.type == "groupLabel"':
-                - rtgl-view mt=md h=32 av=c ph=md:
-                  - rtgl-text s=xs c=mu-fg: "${v.title}"
-              $default:
-                - rtgl-view#item-${v.id} ${v.hrefAttr} h=32 av=c ph=md w=f h-bgc=mu br=lg bgc=bg cur=p:
-                  - $switch:
-                      'v.icon':
-                        - rtgl-view d=h ah=c g=sm:
-                          - rtgl-svg wh=16 svg=${v.icon} c=fg:
-                          - rtgl-text s=sm: "${v.title}"
-                      $default:
-                        - rtgl-text s=sm: "${v.title}"
+      - $for item, i in items:
+        - $if item.type == "groupLabel":
+            - rtgl-view mt=md h=32 av=c ph=md:
+              - rtgl-text s=xs c=mu-fg: "${item.title}"
+          $else:
+            - rtgl-view#item-${item.id} ${item.hrefAttr} h=32 av=c ph=md w=f h-bgc=mu br=lg bgc=bg cur=p:
+              - $if item.icon:
+                  - rtgl-view d=h ah=c g=sm:
+                    - rtgl-svg wh=16 svg=${item.icon} c=fg:
+                    - rtgl-text s=sm: "${item.title}"
+                $else:
+                  - rtgl-text s=sm: "${item.title}"

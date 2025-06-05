@@ -35,16 +35,13 @@ template:
       - rtgl-text s=lg: ${title}
       - rtgl-text c=mu-fg: ${description}
     - rtgl-view g=sm w=f:
-      - $map: { $eval: fields }
-        each(v,i):
-          - rtgl-view g=sm w=f:
-            - rtgl-text: ${v.label}
-            - rtgl-text s=sm c=mu-fg: ${v.description}
-            - $switch:
-                v.inputType == "inputText":
-                  rtgl-input#input-${v.id} w=f: 
+      - $for field, i in fields:
+        - rtgl-view g=sm w=f:
+            - rtgl-text: ${field.label}
+            - rtgl-text s=sm c=mu-fg: ${field.description}
+            - $if field.inputType == "inputText":
+                - rtgl-input#input-${field.id} w=f: 
     - rtgl-view g=sm w=f:
-      - $map: { $eval: actions.buttons}
-        each(v,i):
-          - rtgl-view d=h ah=e g=sm w=f:
-            - rtgl-button#action-${v.id}: ${v.content}
+      - $for button, i in actions.buttons:
+        - rtgl-view d=h ah=e g=sm w=f:
+          - rtgl-button#action-${button.id}: ${button.content}
