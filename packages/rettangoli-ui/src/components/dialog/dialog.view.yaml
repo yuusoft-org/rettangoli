@@ -34,8 +34,7 @@ styles:
     transform-origin: top
 
 template:
-  - $if: isOpen
-    then:
-      - rtgl-view#dialog-overlay pos=fix cor=full ah=c av=c:
-        - rtgl-view#dialog-container pos=fix bw=xs p=lg bgc=bg w=600 br=sm:
-          - slot name=content:
+  - $if isOpen:
+    - rtgl-view#dialog-overlay pos=fix cor=full ah=c av=c:
+      - rtgl-view#dialog-container pos=fix bw=xs p=lg bgc=bg w=600 br=sm:
+        - slot name=content:

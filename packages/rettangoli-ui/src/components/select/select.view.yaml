@@ -33,7 +33,6 @@ template:
   - rtgl-button#select-button v=ol: Placeholder
   - rtgl-popover#popover:
     - rtgl-view wh=300 g=xs slot=content:
-      - $map: { $eval: options }
-        each(v,i):
-          - rtgl-view w=f h-bgc=mu ph=lg pv=md cur=p br=md:
-            - rtgl-text: ${v.label}
+      - $for option, i in options:
+        - rtgl-view w=f h-bgc=mu ph=lg pv=md cur=p br=md:
+          - rtgl-text: ${option.label}

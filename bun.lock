@@ -18,7 +18,7 @@
       "name": "rettangoli-fe",
       "dependencies": {
         "immer": "^10.1.1",
-        "jempl": "^0.0.5",
+        "jempl": "^0.0.6",
         "rxjs": "^7.8.2",
         "snabbdom": "^3.6.2",
       },
@@ -268,7 +268,7 @@
 
     "immer": ["immer@10.1.1", "", {}, "sha512-s2MPrmjovJcoMaHtx6K11Ra7oD05NT97w1IC5zpMkT6Atjr7H8LjaDd81iIxUYpMKSRRNMJE703M1Fhr/TctHw=="],
 
-    "jempl": ["jempl@0.0.5", "", {}, "sha512-7sbJ0KKC9rrnuqRQgEpgdpxErQB3HmqGoVdgZonJ9/QeZ5DLOltFOz3jXzJVziV/0vz4RW8WAez8Fa16ur3GGw=="],
+    "jempl": ["jempl@0.0.6", "", {}, "sha512-av65p7TGe5cD1YE2fGbqaIvma0V/OCRsl2dVFZ2SZFmD43D5CTWBgFByJbZ/be9q2rFKrcNke20/ty/bgCrMBA=="],
 
     "js-yaml": ["js-yaml@4.1.0", "", { "dependencies": { "argparse": "^2.0.1" }, "bin": { "js-yaml": "bin/js-yaml.js" } }, "sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA=="],
 

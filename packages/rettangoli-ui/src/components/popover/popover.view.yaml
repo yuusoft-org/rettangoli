@@ -44,8 +44,7 @@ styles:
     transform-origin: top
 
 template:
-  - $if: isOpen
-    then:
-      - rtgl-view#popoverOverlay pos=fix cor=full:
-      - 'rtgl-view#popoverContainer pos=fix style="left: ${position.x}px; top: ${position.y}px;" id=floatingElement bw=xs p=md bgc=bg':
-        - slot name=content:
+  - $if isOpen:
+    - rtgl-view#popoverOverlay pos=fix cor=full:
+    - 'rtgl-view#popoverContainer pos=fix style="left: ${position.x}px; top: ${position.y}px;" id=floatingElement bw=xs p=md bgc=bg':
+      - slot name=content:
