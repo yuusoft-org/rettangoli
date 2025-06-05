@@ -43,6 +43,7 @@ export const toViewData = ({ state, props, attrs }) => {
   const attrsItems = attrs.items ? JSON.parse(decodeURIComponent(attrs.items)) : props.items;
 
   const containerAttrString = stringifyAttrs(attrs);
+  const mode = attrs.mode || 'full';
   const header = attrsHeader || {
     label: '',
     path: '',
@@ -56,10 +57,50 @@ export const toViewData = ({ state, props, attrs }) => {
 
   const items = attrsItems ? flattenItems(attrsItems) : [];
 
+  // Computed values based on mode
+  const sidebarWidth = mode === 'full' ? 272 : 64;
+  const headerAlign = mode === 'full' ? 'fs' : 'c';
+  const itemAlign = mode === 'full' ? 'fs' : 'c';
+  const headerPadding = mode === 'full' ? 'lg' : 'sm';
+  const itemPadding = mode === 'full' ? 'md' : 'sm';
+  const itemHeight = mode === 'shrunk-lg' ? 48 : 40;
+  const iconSize = mode === 'shrunk-lg' ? 28 : 20;
+  const firstLetterSize = mode === 'shrunk-lg' ? 'md' : 'sm';
+  const showLabels = mode === 'full';
+  const showGroupLabels = mode === 'full';
+  
+  // For items with icons in full mode, we need left alignment within the container
+  // but the container itself should use flex-start alignment
+  const itemContentAlign = mode === 'full' ? 'fs' : 'c';
+  
+  // Item container alignment - only set for shrunk modes, leave default for full mode
+  const itemAlignAttr = mode === 'full' ? '' : `ah=${itemAlign}`;
+  
+  // Item width - for shrunk modes, make it square to constrain the highlight
+  const itemWidth = mode === 'full' ? 'f' : itemHeight;
+  
+  // Header width - should match item width for alignment
+  const headerWidth = itemWidth;
+
   return {
     containerAttrString,
+    mode,
     header,
-    items
+    items,
+    sidebarWidth,
+    headerAlign,
+    itemAlign,
+    headerPadding,
+    itemPadding,
+    itemHeight,
+    iconSize,
+    firstLetterSize,
+    showLabels,
+    showGroupLabels,
+    itemContentAlign,
+    itemAlignAttr,
+    itemWidth,
+    headerWidth
   };
 }
 

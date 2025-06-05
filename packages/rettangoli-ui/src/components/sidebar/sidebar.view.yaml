@@ -5,6 +5,38 @@ viewDataSchema:
   properties:
     containerAttrString:
       type: string
+    mode:
+      type: string
+      enum: ['full', 'shrunk', 'shrunk-lg']
+      default: 'full'
+    sidebarWidth:
+      type: number
+    headerAlign:
+      type: string
+    itemAlign:
+      type: string
+    headerPadding:
+      type: string
+    itemPadding:
+      type: string
+    itemHeight:
+      type: number
+    iconSize:
+      type: number
+    firstLetterSize:
+      type: string
+    showLabels:
+      type: boolean
+    showGroupLabels:
+      type: boolean
+    itemContentAlign:
+      type: string
+    itemAlignAttr:
+      type: string
+    itemWidth:
+      type: string
+    headerWidth:
+      type: string
     header:
       type: object
       properties:
@@ -110,7 +142,7 @@ anchors:
             - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
         $else:
           - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
-    - $if header.label:
+    - $if header.label && showLabels:
       - $if header.labelHref:
           - rtgl-text href=${header.labelHref} s=lg: "${header.label}"
         $elif header.labelPath:
@@ -120,25 +152,35 @@ anchors:
           - rtgl-text s=lg: "${header.label}"
 
 template:
-  - rtgl-view h=f w=272 bwr=xs ${containerAttrString}:
-    - rtgl-view p=lg:
+  - rtgl-view h=f w=${sidebarWidth} bwr=xs ${containerAttrString}:
+    - rtgl-view ph=${headerPadding} pv=lg:
       - $if header.href:
-          - rtgl-view href=${header.href} d=h av=c g=lg:
+          - rtgl-view href=${header.href} d=h av=c ah=${headerAlign} g=lg w=${headerWidth}:
             - *headerContent
         $else:
-            - rtgl-view#header d=h av=c g=lg cur=p:
+            - rtgl-view#header d=h av=c ah=${headerAlign} g=lg w=${headerWidth} cur=p:
               - *headerContent
 
-    - rtgl-view w=f ph=lg pb=lg g=xs:
+    - rtgl-view w=f ph=${headerPadding} pb=lg g=xs:
       - $for item, i in items:
         - $if item.type == "groupLabel":
-            - rtgl-view mt=md h=32 av=c ph=md:
-              - rtgl-text s=xs c=mu-fg: "${item.title}"
+            - $if showGroupLabels:
+                - rtgl-view mt=md h=32 av=c ph=md:
+                  - rtgl-text s=xs c=mu-fg: "${item.title}"
+              $else:
+                - rtgl-view mt=md h=1 bgc=mu-bg:
           $else:
-            - rtgl-view#item-${item.id} ${item.hrefAttr} h=32 av=c ph=md w=f h-bgc=mu br=lg bgc=bg cur=p:
+            - rtgl-view#item-${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=mu br=lg bgc=bg cur=p title="${item.title}":
               - $if item.icon:
-                  - rtgl-view d=h ah=c g=sm:
-                    - rtgl-svg wh=16 svg=${item.icon} c=fg:
-                    - rtgl-text s=sm: "${item.title}"
+                  - $if showLabels:
+                      - rtgl-view d=h ah=${itemContentAlign} g=sm:
+                        - rtgl-svg wh=16 svg=${item.icon} c=fg:
+                        - rtgl-text s=sm: "${item.title}"
+                    $else:
+                      - rtgl-svg wh=${iconSize} svg=${item.icon} c=fg:
                 $else:
-                  - rtgl-text s=sm: "${item.title}"
+                  - $if showLabels:
+                      - rtgl-text s=sm: "${item.title}"
+                    $else:
+                      - rtgl-view wh=${iconSize} br=f bgc=mu av=c ah=c:
+                        - rtgl-text s=${firstLetterSize} c=fg: "${item.title.charAt(0).toUpperCase()}"
