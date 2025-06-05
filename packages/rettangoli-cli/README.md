@@ -1,22 +1,17 @@
+# rtgl - Rettangoli CLI
 
-# Rettangoli CLI
+The official command-line interface for the Rettangoli framework - a modern UI toolkit for building web applications with custom HTML elements, visual testing, and static site generation.
 
-The code for the CLI lives in each individual pacakage under package-name/src/cli
+## Installation
 
-All cli's are put together in this package.
-
-Run the CLI to see all commands
-
-```bash
-bun run cli.js
-```
-
-Currently packages that have CLI are:
+Use with `bunx` or `npx`:
 
 ```bash
-bun run cli.js fe
-bun run cli.js vt
-bun run cli.js sites
+bunx rtgl --help
 ```
 
-TODO: Publish CLI to npm
+## Features
+
+- **Frontend Framework (`fe`)** - Build web components with YAML views, state management, and event handlers
+- **Visual Testing (`vt`)** - Generate, compare, and manage UI component screenshots
+- **Static Sites (`sites`)** - Build documentation, blogs, and landing pages with Markdown and YAML

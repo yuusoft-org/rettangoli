@@ -1,6 +1,49 @@
 {
-  "name": "rettangoli-cli",
+  "name": "rtgl",
   "version": "0.0.1",
+  "description": "CLI tool for Rettangoli - A frontend framework and development toolkit",
+  "type": "module",
+  "bin": {
+    "rtgl": "./cli.js"
+  },
+  "files": [
+    "cli.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "echo \"No test specified\""
+  },
+  "keywords": [
+    "rettangoli",
+    "cli",
+    "ui",
+    "framework",
+    "web-components",
+    "frontend",
+    "development",
+    "build-tool",
+    "scaffold",
+    "visual-testing",
+    "static-site-generator"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuusoft-org/rettangoli.git",
+    "directory": "packages/rettangoli-cli"
+  },
+  "bugs": {
+    "url": "https://github.com/yuusoft-org/rettangoli/issues"
+  },
+  "homepage": "https://rettangoli.dev/",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "dependencies": {
     "commander": "^14.0.0",
     "rettangoli-fe": "workspace:*",

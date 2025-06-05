@@ -1,12 +1,13 @@
-name: Publish package rettangoli-ui to npm
+name: Publish rettangoli-ui to npm
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'ui-v*'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  build:
+  publish-ui:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +21,7 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build
+      - name: Build UI Package
         run: bun run build
         working-directory: ./packages/rettangoli-ui
 
@@ -31,7 +32,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       # Publish to npm
-      - name: Publish to npm
+      - name: Publish rettangoli-ui to npm
         run: npm publish
         working-directory: ./packages/rettangoli-ui
         env:

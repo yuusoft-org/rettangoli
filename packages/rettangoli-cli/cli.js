@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { build, scaffold, watch } from "rettangoli-fe/cli";
 import { generate, report, accept } from "rettangoli-vt/cli";
 import { copyPagesToSite } from "rettangoli-sites/cli";
@@ -6,9 +8,9 @@ import { Command } from "commander";
 const program = new Command();
 
 program
-  .name("rettangoli")
-  .description("CLI tool for rettangoli development")
-  .version("1.0.0");
+  .name("rtgl")
+  .description("CLI tool for Rettangoli development")
+  .version("0.0.1");
 
 // Add examples to main program
 program.addHelpText(
