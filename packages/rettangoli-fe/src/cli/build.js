@@ -1,30 +1,18 @@
 import {
-  readdirSync,
-  statSync,
   readFileSync,
   writeFileSync,
   mkdirSync,
   existsSync,
 } from "node:fs";
-import { join } from "node:path";
 
 import esbuild from "esbuild";
 import { load as loadYaml } from "js-yaml";
 import { parse } from 'jempl';
+import { getAllFiles, extractCategoryAndComponent } from "../common.js";
 
 function capitalize(word) {
   return word ? word[0].toUpperCase() + word.slice(1) : word;
 }
-
-export const extractCategoryAndComponent = (filePath) => {
-  const parts = filePath.split("/");
-  const component = parts[parts.length - 1].split(".")[0];
-  const category = parts[parts.length - 3];
-  const fileType = parts[parts.length - 1].split(".")[1];
-  return { category, component, fileType };
-}
-
-
 
 // Function to process view files - loads YAML and creates temporary JS file
 export const writeViewFile = (view, category, component) => {
@@ -55,23 +43,6 @@ export const bundleFile = async (options) => {
   });
 };
 
-// Function to recursively get all files in a directory
-function getAllFiles(dirPaths, arrayOfFiles = []) {
-  dirPaths.forEach((dirPath) => {
-    const files = readdirSync(dirPath);
-
-    files.forEach((file) => {
-      const fullPath = join(dirPath, file);
-      if (statSync(fullPath).isDirectory()) {
-        arrayOfFiles = getAllFiles([fullPath], arrayOfFiles);
-      } else {
-        arrayOfFiles.push(fullPath);
-      }
-    });
-  });
-
-  return arrayOfFiles;
-}
 
 const buildRettangoliFrontend = async (options) => {
   console.log("running build with options", options);
