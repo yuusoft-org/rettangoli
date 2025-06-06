@@ -1,0 +1,4 @@
+title: "Rettangoli Test Suite"
+sections:
+  - title: "Pages"
+    files: "viz/specs/pages"

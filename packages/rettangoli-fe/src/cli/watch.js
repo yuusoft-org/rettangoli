@@ -3,7 +3,8 @@ import path from "node:path";
 
 import { load as loadYaml } from "js-yaml";
 import { createServer } from 'vite'
-import { writeViewFile, extractCategoryAndComponent } from './build.js';
+import { writeViewFile } from './build.js';
+import { extractCategoryAndComponent } from '../common.js';
 import buildRettangoliFrontend from './build.js';
 
 const setupWatcher = (directory) => {

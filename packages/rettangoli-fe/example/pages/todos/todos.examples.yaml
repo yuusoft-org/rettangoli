@@ -1,0 +1,31 @@
+config: {}
+---
+name: 'basic'
+viewData:
+  title: "How are you?"
+  placeholderText: Placeholder
+  filteredTodos:
+    - title: "Todo 1"
+      completed: false
+    - title: "Todo 2"
+      completed: true
+    - title: "Todo 3"
+      completed: false
+  activeCount: 2
+  completedCount: 1
+  allCompleted: false
+  filter: "all"
+---
+name: 'basic 2'
+viewData:
+  title: "Hello"
+  placeholderText: Placeholder
+  filteredTodos:
+    - title: "Todo 1"
+      completed: false
+    - title: "Todo 2"
+      completed: true
+  activeCount: 1
+  completedCount: 1
+  allCompleted: true
+  filter: "completed"
