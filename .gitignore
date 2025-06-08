@@ -1,4 +1,4 @@
-.DS_Store
+.DS_Stor
 /packages/rettangoli-ui/dist
 /packages/rettangoli-ui/node_modules
 /packages/rettangoli-ui/viz/static/public/main.js.map
@@ -10,9 +10,10 @@
 /packages/rettangoli-fe/viz/static/main.js.map
 /packages/rettangoli-fe/viz/static/main.css
 
+/examples/example1/dist
+
 /node_modules
 
 .claude/
 CLAUDE.md
 .temp
-

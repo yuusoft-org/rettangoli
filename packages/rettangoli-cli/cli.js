@@ -4,6 +4,27 @@ import { build, scaffold, watch } from "rettangoli-fe/cli";
 import { generate, report, accept } from "rettangoli-vt/cli";
 import { copyPagesToSite } from "rettangoli-sites/cli";
 import { Command } from "commander";
+import { readFileSync, existsSync } from "fs";
+import { resolve } from "path";
+import yaml from "js-yaml";
+
+// Function to read config file
+function readConfig() {
+  const configPath = resolve(process.cwd(), "rettangoli.config.yaml");
+  
+  if (!existsSync(configPath)) {
+    return null;
+  }
+  
+  try {
+    const configContent = readFileSync(configPath, "utf8");
+    return yaml.load(configContent);
+  } catch (error) {
+    console.error("Error reading config file:", error.message);
+    return null;
+  }
+}
+
 
 const program = new Command();
 
@@ -20,7 +41,7 @@ program.addHelpText(
 Examples:
   $ rettangoli fe build
   $ rettangoli fe scaffold -c components -n Button
-  $ rettangoli fe watch -d ./src -d ./components -p 3001
+  $ rettangoli fe watch -p 3001
 `,
 );
 
@@ -29,19 +50,43 @@ const feCommand = program.command("fe").description("Frontend framework");
 feCommand
   .command("build")
   .description("Build UI components")
-  .option("-d, --dirs <dirs...>", "The directories to build", ["./example"])
-  .option("-o, --outfile <path>", "The output file", "./viz/static/main.js")
+  .option("-o, --outfile <path>", "The output file")
   .addHelpText(
     "after",
     `
 
 Examples:
   $ rettangoli fe build
-  $ rettangoli fe build --base ./my-project --outfile ./dist/bundle.js
-  $ rettangoli fe build -b ./src -o ./public/js/main.js
+  $ rettangoli fe build --outfile ./dist/bundle.js
+  $ rettangoli fe build -o ./public/js/main.js
 `,
   )
   .action((options) => {
+    const config = readConfig();
+    
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+    
+    if (!config.fe?.dirs?.length) {
+      throw new Error("fe.dirs not found or empty in config");
+    }
+    
+    // Validate that directories exist
+    const missingDirs = config.fe.dirs.filter(dir => !existsSync(resolve(process.cwd(), dir)));
+    if (missingDirs.length > 0) {
+      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
+    }
+    
+    // Pass dirs, setup, and outfile from config
+    options.dirs = config.fe.dirs;
+    options.setup = config.fe.setup || 'setup.js';
+    
+    // Use config outfile if not specified via CLI option
+    if (!options.outfile && config.fe.outfile) {
+      options.outfile = config.fe.outfile;
+    }
+    
     build(options);
   });
 
@@ -73,7 +118,6 @@ Examples:
 feCommand
   .command("watch")
   .description("Watch for changes")
-  .option("-d, --dirs <dirs...>", "The directories to watch", ["./example"])
   .option("-p, --port <port>", "The port to use", parseInt, 3001)
   .addHelpText(
     "after",
@@ -82,11 +126,29 @@ feCommand
 Examples:
   $ rettangoli fe watch
   $ rettangoli fe watch --port 8080
-  $ rettangoli fe watch --dirs ./src ./components ./pages
-  $ rettangoli fe watch -d ./src -d ./lib -p 4000
+  $ rettangoli fe watch -p 4000
 `,
   )
   .action((options) => {
+    const config = readConfig();
+    
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+    
+    if (!config.fe?.dirs?.length) {
+      throw new Error("fe.dirs not found or empty in config");
+    }
+    
+    // Validate that directories exist
+    const missingDirs = config.fe.dirs.filter(dir => !existsSync(resolve(process.cwd(), dir)));
+    if (missingDirs.length > 0) {
+      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
+    }
+    
+    // Pass dirs and setup from config
+    options.dirs = config.fe.dirs;
+    options.setup = config.fe.setup || 'setup.js';
     watch(options);
   });
 

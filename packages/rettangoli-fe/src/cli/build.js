@@ -76,7 +76,7 @@ function getAllFiles(dirPaths, arrayOfFiles = []) {
 const buildRettangoliFrontend = async (options) => {
   console.log("running build with options", options);
 
-  const { dirs = ["./example"], outfile = "./viz/static/main.js" } = options;
+  const { dirs = ["./example"], outfile = "./viz/static/main.js", setup = "setup.js" } = options;
 
   const allFiles = getAllFiles(dirs).filter((filePath) => {
     return (
@@ -136,7 +136,7 @@ const buildRettangoliFrontend = async (options) => {
 
   output += `
 import { createComponent } from 'rettangoli-fe';
-import { deps, patch, h } from '../${dirs}/setup.js';
+import { deps, patch, h } from '../${setup}';
 const imports = ${JSON.stringify(imports, null, 2)};
 
 Object.keys(imports).forEach(category => {

@@ -6,12 +6,13 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "0.0.1",
+      "version": "0.0.2",
       "bin": {
-        "rtgl": "./cli.js"
+        "rtgl": "./cli.js",
       },
       "dependencies": {
         "commander": "^14.0.0",
+        "js-yaml": "^4.1.0",
         "rettangoli-fe": "workspace:*",
         "rettangoli-sites": "workspace:*",
         "rettangoli-vt": "workspace:*",
@@ -35,7 +36,7 @@
       "name": "rettangoli-sites",
       "version": "0.1.0-rc2",
       "bin": {
-        "sitic": "src/cli.js"
+        "sitic": "src/cli.js",
       },
       "dependencies": {
         "commander": "^13.1.0",
