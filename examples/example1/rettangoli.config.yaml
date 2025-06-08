@@ -12,5 +12,14 @@ fe:
 #   templateFolder: '..'
 
 # all visual testing configuration
-# vt:
-#    path: 'vt
+vt:
+  path: 'vt'
+  name: "Example1 Visual Tests"
+  description: "Visual testing for example1 project"
+  sections:
+    - title: "Pages"
+      files: "pages"
+      description: "Page components"
+    - title: "Components"  
+      files: "components"
+      description: "UI components"

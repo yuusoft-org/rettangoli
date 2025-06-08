@@ -17,7 +17,9 @@ const convertToHtmlExtension = (filePath) => {
   if (filePath.endsWith(".html")) {
     return filePath;
   }
-  return filePath + ".html";
+  // Remove existing extension and add .html
+  const baseName = filePath.replace(/\.[^/.]+$/, "");
+  return baseName + ".html";
 };
 
 // Initialize LiquidJS with output escaping disabled
@@ -46,6 +48,11 @@ engine.registerFilter("slug", (value) => {
  * Get all files from a directory recursively
  */
 function getAllFiles(dirPath, arrayOfFiles = []) {
+  if (!existsSync(dirPath)) {
+    console.log(`Directory ${dirPath} does not exist, skipping...`);
+    return arrayOfFiles;
+  }
+
   const files = readdirSync(dirPath);
 
   files.forEach((file) => {
@@ -142,14 +149,17 @@ async function generateHtml(specsDir, templatePath, outputDir) {
         renderedContent = `<html><body><h1>Error rendering template</h1><p>${error.message}</p><pre>${content}</pre></body></html>`;
       }
 
+      // Get relative path from specs directory
+      const relativePath = path.relative(specsDir, filePath);
+      
       // Save file
-      const outputPath = join(outputDir, convertToHtmlExtension(filePath));
+      const outputPath = join(outputDir, convertToHtmlExtension(relativePath));
       ensureDirectoryExists(dirname(outputPath));
       writeFileSync(outputPath, renderedContent, "utf8");
       console.log(`Generated: ${outputPath}`);
 
       processedFiles.push({
-        path: filePath,
+        path: relativePath,
         content,
         contentShiki,
         frontMatter: frontMatterObj,
@@ -270,15 +280,16 @@ async function takeScreenshots(
         try {
           // Construct URL from file path
           const fileUrl = convertToHtmlExtension(
-            `${serverUrl}/artifacts/${file.path}`
+            `${serverUrl}/${file.path.replace(/\\/g, '/')}`
           );
           console.log(`Taking screenshot of ${fileUrl}`);
 
           // Navigate to the page
           await page.goto(fileUrl, { waitUntil: "networkidle" });
 
-          // Create screenshot output path
-          const screenshotPath = join(screenshotsDir, `${file.path}.png`);
+          // Create screenshot output path (remove extension and add .png)
+          const baseName = file.path.replace(/\.[^/.]+$/, "");
+          const screenshotPath = join(screenshotsDir, `${baseName}.png`);
           ensureDirectoryExists(dirname(screenshotPath));
 
           if (waitTime > 0) {
@@ -300,9 +311,10 @@ async function takeScreenshots(
                 });
                 break;
               case "ss":
+                const baseName = file.path.replace(/\.[^/.]+$/, "");
                 const additonalScreenshotPath = join(
                   screenshotsDir,
-                  `${file.path}-${args[0]}.png`
+                  `${baseName}-${args[0]}.png`
                 );
                 console.log(`Taking additional screenshot at ${additonalScreenshotPath}`);
                 await page.screenshot({

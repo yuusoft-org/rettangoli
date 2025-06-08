@@ -161,8 +161,16 @@ vtCommand
   .description("Generate visualizations")
   .option("--skip-screenshots", "Skip screenshot generation")
   .option("--screenshot-wait-time <time>", "Wait time between screenshots", "0")
-  .option("--viz-path <path>", "Path to the viz directory", "./viz")
   .action((options) => {
+    const config = readConfig();
+    
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+    
+    // Use vt.path from config, default to 'vt'
+    options.vizPath = config.vt?.path || 'vt';
+    
     generate(options);
   });
 
@@ -170,14 +178,28 @@ vtCommand
   .command("report")
   .description("Create reports")
   .action(() => {
-    report();
+    const config = readConfig();
+    
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+    
+    const vizPath = config.vt?.path || 'vt';
+    report({ vizPath });
   });
 
 vtCommand
   .command("accept")
   .description("Accept changes")
   .action(() => {
-    accept();
+    const config = readConfig();
+    
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+    
+    const vizPath = config.vt?.path || 'vt';
+    accept({ vizPath });
   });
 
 const sitesCommand = program.command("sites").description("Rettangoli Sites");

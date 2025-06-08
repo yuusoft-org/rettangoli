@@ -96,92 +96,88 @@ async function generateReport({ results, templatePath, outputPath }) {
 async function main(options = {}) {
   const { vizPath = "./viz" } = options;
 
-  const artifactsScreenshotsDir = `${vizPath}/_site/artifacts/screenshots`;
-  const goldScreenshotsDir = `${vizPath}/gold/screenshots`;
-  const staticGoldScreenshotsDir = `${vizPath}/_site/gold/screenshots`;
-  const templatePath = `${libraryTemplatesPath}/report.html`;
-  const outputPath = `${vizPath}/_site/report.html`;
+  const candidateDir = path.join(vizPath, "candidate");
+  const referenceDir = path.join(vizPath, "reference");
+  const templatePath = path.join(libraryTemplatesPath, "report.html");
+  const siteOutputPath = path.join(".rettangoli", "vt", "_site");
+  const outputPath = path.join(siteOutputPath, "report.html");
 
-
-  if (!fs.existsSync(goldScreenshotsDir)) {
-    console.log("Gold screenshots directory does not exist, creating it...");
-    fs.mkdirSync(goldScreenshotsDir, { recursive: true });
+  if (!fs.existsSync(referenceDir)) {
+    console.log("Reference directory does not exist, creating it...");
+    fs.mkdirSync(referenceDir, { recursive: true });
   }
 
   try {
     // Get all files recursively
-    const artifactsFiles = getAllFiles(artifactsScreenshotsDir);
-    const goldFiles = getAllFiles(goldScreenshotsDir);
+    const candidateFiles = getAllFiles(candidateDir);
+    const referenceFiles = getAllFiles(referenceDir);
 
-    console.log("Artifacts Screenshots:", artifactsFiles.length);
-    console.log("Gold Screenshots:", goldFiles.length);
+    console.log("Candidate Screenshots:", candidateFiles.length);
+    console.log("Reference Screenshots:", referenceFiles.length);
 
     const results = [];
 
     // Get relative paths for comparison
-    const artifactsRelativePaths = artifactsFiles.map((file) =>
-      path.relative(artifactsScreenshotsDir, file)
+    const candidateRelativePaths = candidateFiles.map((file) =>
+      path.relative(candidateDir, file)
     );
-    const goldRelativePaths = goldFiles.map((file) =>
-      path.relative(goldScreenshotsDir, file)
+    const referenceRelativePaths = referenceFiles.map((file) =>
+      path.relative(referenceDir, file)
     );
 
     // Get all unique paths from both directories
     const allPaths = [
-      ...new Set([...artifactsRelativePaths, ...goldRelativePaths]),
+      ...new Set([...candidateRelativePaths, ...referenceRelativePaths]),
     ];
 
     for (const relativePath of allPaths) {
-      const artifactPath = path.join(artifactsScreenshotsDir, relativePath);
-      const goldPath = path.join(goldScreenshotsDir, relativePath);
+      const candidatePath = path.join(candidateDir, relativePath);
+      const referencePath = path.join(referenceDir, relativePath);
 
-      const artifactExists = fs.existsSync(artifactPath);
-      const goldExists = fs.existsSync(goldPath);
+      const candidateExists = fs.existsSync(candidatePath);
+      const referenceExists = fs.existsSync(referencePath);
 
       // Skip if neither file exists (shouldn't happen, but just in case)
-      if (!artifactExists && !goldExists) continue;
+      if (!candidateExists && !referenceExists) continue;
 
       let similarity = 0;
       let error = false;
 
       // Compare images if both exist
-      if (artifactExists && goldExists) {
-        const comparison = await compareImages(artifactPath, goldPath);
+      if (candidateExists && referenceExists) {
+        const comparison = await compareImages(candidatePath, referencePath);
         similarity = comparison.similarity;
         error = comparison.error;
       }
 
       if (!error) {
         results.push({
-          artifactPath: artifactExists ? artifactPath : null,
-          goldPath: goldExists ? goldPath : null,
+          candidatePath: candidateExists ? candidatePath : null,
+          referencePath: referenceExists ? referencePath : null,
           path: relativePath,
-          similarity: artifactExists && goldExists ? similarity : 0,
-          onlyInArtifacts: artifactExists && !goldExists,
-          onlyInGold: !artifactExists && goldExists,
+          similarity: candidateExists && referenceExists ? similarity : 0,
+          onlyInCandidate: candidateExists && !referenceExists,
+          onlyInReference: !candidateExists && referenceExists,
         });
       }
     }
 
-    console.log("Comparison Results:");
-    console.log(results);
-
     const mismatchingItems = results
       .filter(
         (result) =>
-          result.similarity < 1 || result.onlyInArtifacts || result.onlyInGold
+          result.similarity < 1 || result.onlyInCandidate || result.onlyInReference
       )
       .map((result) => {
         return {
-          artifactPath: result.artifactPath
-            ? result.artifactPath.replace(`${vizPath.replace('./', '')}/_site/`, "")
+          candidatePath: result.candidatePath
+            ? path.relative(".", result.candidatePath)
             : null,
-          goldPath: result.goldPath
-            ? result.goldPath.replace(`${vizPath.replace('./', '')}/`, "")
+          referencePath: result.referencePath
+            ? path.relative(".", result.referencePath)
             : null,
           similarity: result.similarity,
-          onlyInArtifacts: result.onlyInArtifacts,
-          onlyInGold: result.onlyInGold,
+          onlyInCandidate: result.onlyInCandidate,
+          onlyInReference: result.onlyInReference,
         };
       });
     console.log("Mismatching Items:");
@@ -192,10 +188,6 @@ async function main(options = {}) {
       templatePath,
       outputPath,
     });
-
-    // Copy artifacts to gold
-    console.log("Copying artifacts to gold...");
-    await cp(goldScreenshotsDir, staticGoldScreenshotsDir, { recursive: true });
   } catch (error) {
     console.error("Error reading directories:", error);
   }

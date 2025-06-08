@@ -1,4 +1,5 @@
 import { cp, rm } from "node:fs/promises";
+import { join } from "node:path";
 import {
   generateHtml,
   startWebServer,
@@ -21,37 +22,44 @@ async function main(options) {
     port = 3001
   } = options;
 
-  const outputPath = `${vizPath}/_site`;
-  const staticPath = `${vizPath}/static`;
-  const templatesPath = `${vizPath}/templates`;
-  const specsPath = `${vizPath}/specs`;
-  const configPath = `${vizPath}/config.yaml`;
-  const configData = await readYaml(configPath);
+  const candidatePath = join(vizPath, "candidate");
+  const specsPath = join(vizPath, "specs");
+  const mainConfigPath = "rettangoli.config.yaml";
+  
+  // Read VT config from main rettangoli.config.yaml
+  let configData = {};
+  try {
+    const mainConfig = await readYaml(mainConfigPath);
+    configData = mainConfig.vt || {};
+  } catch (error) {
+    console.log("Main config file not found, using defaults");
+  }
 
-  await rm(outputPath, { recursive: true, force: true });
+  // Clear candidate directory
+  await rm(candidatePath, { recursive: true, force: true });
   await new Promise((resolve) => setTimeout(resolve, 100));
-  await cp(staticPath, outputPath, { recursive: true });
 
   // Generate HTML files
   const generatedFiles = await generateHtml(
     specsPath,
-    `${templatesPath}/default.html`,
-    `${outputPath}/artifacts`
+    join(libraryTemplatesPath, "default.html"),
+    candidatePath
   );
 
   // Generate overview page with all files
+  const siteOutputPath = join(".rettangoli", "vt", "_site");
   generateOverview(
     generatedFiles,
-    `${libraryTemplatesPath}/index.html`,
-    `${outputPath}/index.html`,
+    join(libraryTemplatesPath, "index.html"),
+    join(siteOutputPath, "index.html"),
     configData
   );
 
   if (!skipScreenshots) {
     // Start web server
     const server = startWebServer(
-      `${outputPath}/artifacts`,
-      outputPath,
+      candidatePath,
+      vizPath,
       port
     );
     try {
@@ -59,7 +67,7 @@ async function main(options) {
       await takeScreenshots(
         generatedFiles,
         `http://localhost:${port}`,
-        `${outputPath}/artifacts/screenshots`,
+        candidatePath,
         24,
         screenshotWaitTime
       );
