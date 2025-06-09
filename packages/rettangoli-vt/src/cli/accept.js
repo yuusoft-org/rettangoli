@@ -38,7 +38,8 @@ async function acceptReference(options = {}) {
   } = options;
 
   const referenceDir = join(vizPath, "reference");
-  const candidateDir = join(vizPath, "candidate");
+  const siteOutputPath = join(".rettangoli", "vt", "_site");
+  const candidateDir = join(siteOutputPath, "candidate");
 
   console.log('Accepting candidate as new reference...');
 

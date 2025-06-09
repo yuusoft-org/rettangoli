@@ -3,7 +3,7 @@
 fe:
    dirs: ['fe/components', 'fe/pages'] # directories that contain components
    setup: 'fe/setup.js' # path to setup.js file
-   outfile: 'dist/main.js' # output this is separate from rettangoli file
+   outfile: 'vt/static/public/main.js' # output this is separate from rettangoli file
   #  watchPort: 3001
 
 # all sites configuration
@@ -18,8 +18,8 @@ vt:
   description: "Visual testing for example1 project"
   sections:
     - title: "Pages"
-      files: "pages"
+      files: "fe/pages"
       description: "Page components"
     - title: "Components"  
-      files: "components"
+      files: "fe/components"
       description: "UI components"

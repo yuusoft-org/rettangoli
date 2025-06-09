@@ -1,5 +1,6 @@
 import { cp, rm } from "node:fs/promises";
 import { join } from "node:path";
+import { existsSync } from "node:fs";
 import {
   generateHtml,
   startWebServer,
@@ -9,6 +10,7 @@ import {
 } from "../common.js";
 
 const libraryTemplatesPath = new URL('./templates', import.meta.url).pathname;
+const libraryStaticPath = new URL('./static', import.meta.url).pathname;
 
 
 /**
@@ -22,9 +24,10 @@ async function main(options) {
     port = 3001
   } = options;
 
-  const candidatePath = join(vizPath, "candidate");
   const specsPath = join(vizPath, "specs");
   const mainConfigPath = "rettangoli.config.yaml";
+  const siteOutputPath = join(".rettangoli", "vt", "_site");
+  const candidatePath = join(siteOutputPath, "candidate");
   
   // Read VT config from main rettangoli.config.yaml
   let configData = {};
@@ -39,6 +42,15 @@ async function main(options) {
   await rm(candidatePath, { recursive: true, force: true });
   await new Promise((resolve) => setTimeout(resolve, 100));
 
+  // Copy static files from library to site directory
+  await cp(libraryStaticPath, siteOutputPath, { recursive: true });
+  
+  // Copy user's static files if they exist
+  const userStaticPath = join(vizPath, "static");
+  if (existsSync(userStaticPath)) {
+    await cp(userStaticPath, siteOutputPath, { recursive: true });
+  }
+
   // Generate HTML files
   const generatedFiles = await generateHtml(
     specsPath,
@@ -47,7 +59,6 @@ async function main(options) {
   );
 
   // Generate overview page with all files
-  const siteOutputPath = join(".rettangoli", "vt", "_site");
   generateOverview(
     generatedFiles,
     join(libraryTemplatesPath, "index.html"),
@@ -56,9 +67,9 @@ async function main(options) {
   );
 
   if (!skipScreenshots) {
-    // Start web server
+    // Start web server from site output path to serve both /public and /candidate
     const server = startWebServer(
-      candidatePath,
+      siteOutputPath,
       vizPath,
       port
     );

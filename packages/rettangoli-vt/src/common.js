@@ -278,9 +278,9 @@ async function takeScreenshots(
         const page = await context.newPage();
 
         try {
-          // Construct URL from file path
+          // Construct URL from file path (add /candidate prefix since server serves from parent)
           const fileUrl = convertToHtmlExtension(
-            `${serverUrl}/${file.path.replace(/\\/g, '/')}`
+            `${serverUrl}/candidate/${file.path.replace(/\\/g, '/')}`
           );
           console.log(`Taking screenshot of ${fileUrl}`);
 
@@ -372,7 +372,9 @@ function generateOverview(data, templatePath, outputPath, configData) {
           files: data.filter((file) => {
             const filePath = path.normalize(file.path);
             const sectionPath = path.normalize(section.files);
-            return filePath.startsWith(sectionPath);
+            // Check if file is in the exact folder (not just starts with)
+            const fileDir = path.dirname(filePath);
+            return fileDir === sectionPath;
           }),
           currentSection: section,
           sidebarItems: encodeURIComponent(

@@ -96,10 +96,10 @@ async function generateReport({ results, templatePath, outputPath }) {
 async function main(options = {}) {
   const { vizPath = "./viz" } = options;
 
-  const candidateDir = path.join(vizPath, "candidate");
+  const siteOutputPath = path.join(".rettangoli", "vt", "_site");
+  const candidateDir = path.join(siteOutputPath, "candidate");
   const referenceDir = path.join(vizPath, "reference");
   const templatePath = path.join(libraryTemplatesPath, "report.html");
-  const siteOutputPath = path.join(".rettangoli", "vt", "_site");
   const outputPath = path.join(siteOutputPath, "report.html");
 
   if (!fs.existsSync(referenceDir)) {
@@ -108,9 +108,9 @@ async function main(options = {}) {
   }
 
   try {
-    // Get all files recursively
-    const candidateFiles = getAllFiles(candidateDir);
-    const referenceFiles = getAllFiles(referenceDir);
+    // Get all PNG files recursively (only compare screenshots, not HTML)
+    const candidateFiles = getAllFiles(candidateDir).filter(file => file.endsWith('.png'));
+    const referenceFiles = getAllFiles(referenceDir).filter(file => file.endsWith('.png'));
 
     console.log("Candidate Screenshots:", candidateFiles.length);
     console.log("Reference Screenshots:", referenceFiles.length);
