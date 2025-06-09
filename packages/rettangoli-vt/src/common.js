@@ -11,6 +11,7 @@ import { load as loadYaml } from "js-yaml";
 import { Liquid } from "liquidjs";
 import { chromium } from "playwright";
 import { codeToHtml } from "shiki";
+import sharp from "sharp";
 import path from "path";
 
 const convertToHtmlExtension = (filePath) => {
@@ -287,17 +288,31 @@ async function takeScreenshots(
           // Navigate to the page
           await page.goto(fileUrl, { waitUntil: "networkidle" });
 
-          // Create screenshot output path (remove extension and add .png)
+          // Create screenshot output path (remove extension and add .webp)
           const baseName = file.path.replace(/\.[^/.]+$/, "");
-          const screenshotPath = join(screenshotsDir, `${baseName}.png`);
+          const tempPngPath = join(screenshotsDir, `${baseName}.png`);
+          const screenshotPath = join(screenshotsDir, `${baseName}.webp`);
           ensureDirectoryExists(dirname(screenshotPath));
 
           if (waitTime > 0) {
             await new Promise((resolve) => setTimeout(resolve, waitTime));
           }
 
-          // Take screenshot
-          await page.screenshot({ path: `${screenshotPath}`, fullPage: true });
+          // Take screenshot as PNG first (Playwright doesn't support WebP)
+          await page.screenshot({ 
+            path: tempPngPath, 
+            fullPage: true
+          });
+
+          // Convert PNG to WebP using Sharp
+          await sharp(tempPngPath)
+            .webp({ quality: 85 })
+            .toFile(screenshotPath);
+
+          // Remove temporary PNG file
+          if (existsSync(tempPngPath)) {
+            await import('fs').then(fs => fs.promises.unlink(tempPngPath));
+          }
 
           // example instructions:
           for (const instruction of file.frontMatter?.instructions || []) {
@@ -312,15 +327,32 @@ async function takeScreenshots(
                 break;
               case "ss":
                 const baseName = file.path.replace(/\.[^/.]+$/, "");
-                const additonalScreenshotPath = join(
+                const tempAdditionalPngPath = join(
                   screenshotsDir,
                   `${baseName}-${args[0]}.png`
                 );
+                const additonalScreenshotPath = join(
+                  screenshotsDir,
+                  `${baseName}-${args[0]}.webp`
+                );
                 console.log(`Taking additional screenshot at ${additonalScreenshotPath}`);
+                
+                // Take screenshot as PNG first
                 await page.screenshot({
-                  path: `${additonalScreenshotPath}`,
-                  fullPage: true,
+                  path: tempAdditionalPngPath,
+                  fullPage: true
                 });
+
+                // Convert PNG to WebP using Sharp
+                await sharp(tempAdditionalPngPath)
+                  .webp({ quality: 85 })
+                  .toFile(additonalScreenshotPath);
+
+                // Remove temporary PNG file
+                if (existsSync(tempAdditionalPngPath)) {
+                  await import('fs').then(fs => fs.promises.unlink(tempAdditionalPngPath));
+                }
+
                 console.log(
                   `Additional screenshot taken at ${additonalScreenshotPath}`
                 );
