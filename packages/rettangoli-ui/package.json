@@ -5,8 +5,13 @@
   "main": "dist/rettangoli-esm.min.js",
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "module": "./src/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yuusoft-org/rettangoli.git"
@@ -17,8 +22,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "build:dev": "bun run ../rettangoli-cli/cli.js fe build -d ./src -o ./viz/static/public/main.js && bun run esbuild-dev.js",
-    "build": "bun run ../rettangoli-cli/cli.js fe build -d ./src -o ./viz/static/public/main.js && bun run esbuild.js"
+    "build:dev": "bun run ../rettangoli-cli/cli.js fe build && bun run esbuild-dev.js",
+    "build": "bun run ../rettangoli-cli/cli.js fe build && bun run esbuild.js"
   },
   "devDependencies": {
     "esbuild": "^0.20.0",
