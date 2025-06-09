@@ -145,8 +145,6 @@ const examples = (options = {}) => {
       }
     });
 
-  // console.log(JSON.stringify(output, null, 2));
-
   for (const { category, component, index, html, name } of output) {
     const fileName = path.join(outputDir, category, component, `${name}.html`);
     mkdirSync(dirname(fileName), { recursive: true });
