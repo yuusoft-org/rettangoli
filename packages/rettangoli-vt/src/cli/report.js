@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import pixelmatch from "pixelmatch";
-import { PNG } from "pngjs";
+import looksSame from "looks-same";
+import sharp from "sharp";
 import { Liquid } from "liquidjs";
 import { cp } from "node:fs/promises";
 
@@ -33,45 +33,30 @@ function getAllFiles(dir, fileList = []) {
 }
 
 async function compareImages(artifactPath, goldPath) {
-  return new Promise((resolve) => {
-    const img1 = fs
-      .createReadStream(artifactPath)
-      .on("error", () => resolve({ similarity: 0, error: true }))
-      .pipe(new PNG())
-      .on("parsed", doneReading);
+  try {
+    const {equal, diffBounds, diffClusters} = await looksSame(artifactPath, goldPath, {
+      strict: true,
+      ignoreAntialiasing: true,
+      ignoreCaret: true,
+      shouldCluster: true,
+      clustersSize: 10
+    });
 
-    const img2 = fs
-      .createReadStream(goldPath)
-      .on("error", () => resolve({ similarity: 0, error: true }))
-      .pipe(new PNG())
-      .on("parsed", doneReading);
-
-    let filesRead = 0;
-
-    function doneReading() {
-      if (++filesRead < 2) return;
-
-      try {
-        // Create a diff PNG
-        const diffPng = new PNG({ width: img1.width, height: img1.height });
-
-        const diff = pixelmatch(
-          img1.data,
-          img2.data,
-          diffPng.data,
-          img1.width,
-          img1.height,
-          { threshold: 0.1 }
-        );
-        const totalPixels = img1.width * img1.height;
-        const similarity = 1 - diff / totalPixels;
-        resolve({ similarity, error: false });
-      } catch (error) {
-        console.error("Error comparing images:", error);
-        resolve({ similarity: 0, error: true });
-      }
-    }
-  });
+    return {
+      equal,
+      error: false,
+      diffBounds,
+      diffClusters
+    };
+  } catch (error) {
+    console.error("Error comparing images:", error);
+    return { 
+      equal: false,
+      error: true,
+      diffBounds: null,
+      diffClusters: null
+    };
+  }
 }
 
 async function generateReport({ results, templatePath, outputPath }) {
@@ -98,19 +83,26 @@ async function main(options = {}) {
 
   const siteOutputPath = path.join(".rettangoli", "vt", "_site");
   const candidateDir = path.join(siteOutputPath, "candidate");
-  const referenceDir = path.join(vizPath, "reference");
+  const originalReferenceDir = path.join(vizPath, "reference");
+  const siteReferenceDir = path.join(siteOutputPath, "reference");
   const templatePath = path.join(libraryTemplatesPath, "report.html");
   const outputPath = path.join(siteOutputPath, "report.html");
 
-  if (!fs.existsSync(referenceDir)) {
+  if (!fs.existsSync(originalReferenceDir)) {
     console.log("Reference directory does not exist, creating it...");
-    fs.mkdirSync(referenceDir, { recursive: true });
+    fs.mkdirSync(originalReferenceDir, { recursive: true });
+  }
+
+  // Copy reference directory to _site for web access
+  if (fs.existsSync(originalReferenceDir)) {
+    console.log("Copying reference directory to _site...");
+    await cp(originalReferenceDir, siteReferenceDir, { recursive: true });
   }
 
   try {
-    // Get all PNG files recursively (only compare screenshots, not HTML)
-    const candidateFiles = getAllFiles(candidateDir).filter(file => file.endsWith('.png'));
-    const referenceFiles = getAllFiles(referenceDir).filter(file => file.endsWith('.png'));
+    // Get all WebP files recursively (only compare screenshots, not HTML)
+    const candidateFiles = getAllFiles(candidateDir).filter(file => file.endsWith('.webp'));
+    const referenceFiles = getAllFiles(originalReferenceDir).filter(file => file.endsWith('.webp'));
 
     console.log("Candidate Screenshots:", candidateFiles.length);
     console.log("Reference Screenshots:", referenceFiles.length);
@@ -122,7 +114,7 @@ async function main(options = {}) {
       path.relative(candidateDir, file)
     );
     const referenceRelativePaths = referenceFiles.map((file) =>
-      path.relative(referenceDir, file)
+      path.relative(originalReferenceDir, file)
     );
 
     // Get all unique paths from both directories
@@ -132,7 +124,8 @@ async function main(options = {}) {
 
     for (const relativePath of allPaths) {
       const candidatePath = path.join(candidateDir, relativePath);
-      const referencePath = path.join(referenceDir, relativePath);
+      const referencePath = path.join(originalReferenceDir, relativePath);
+      const siteReferencePath = path.join(siteReferenceDir, relativePath);
 
       const candidateExists = fs.existsSync(candidatePath);
       const referenceExists = fs.existsSync(referencePath);
@@ -140,22 +133,30 @@ async function main(options = {}) {
       // Skip if neither file exists (shouldn't happen, but just in case)
       if (!candidateExists && !referenceExists) continue;
 
-      let similarity = 0;
+      let equal = true;
       let error = false;
+      let diffBounds = null;
+      let diffClusters = null;
 
       // Compare images if both exist
       if (candidateExists && referenceExists) {
         const comparison = await compareImages(candidatePath, referencePath);
-        similarity = comparison.similarity;
+        equal = comparison.equal;
         error = comparison.error;
+        diffBounds = comparison.diffBounds;
+        diffClusters = comparison.diffClusters;
+      } else {
+        equal = false; // If one file is missing, they're not equal
       }
 
       if (!error) {
         results.push({
           candidatePath: candidateExists ? candidatePath : null,
-          referencePath: referenceExists ? referencePath : null,
+          referencePath: referenceExists ? siteReferencePath : null, // Use site reference path for HTML report
           path: relativePath,
-          similarity: candidateExists && referenceExists ? similarity : 0,
+          equal: candidateExists && referenceExists ? equal : false,
+          diffBounds,
+          diffClusters,
           onlyInCandidate: candidateExists && !referenceExists,
           onlyInReference: !candidateExists && referenceExists,
         });
@@ -165,23 +166,40 @@ async function main(options = {}) {
     const mismatchingItems = results
       .filter(
         (result) =>
-          result.similarity < 1 || result.onlyInCandidate || result.onlyInReference
+          !result.equal || result.onlyInCandidate || result.onlyInReference
       )
       .map((result) => {
         return {
           candidatePath: result.candidatePath
-            ? path.relative(".", result.candidatePath)
+            ? path.relative(siteOutputPath, result.candidatePath)
             : null,
           referencePath: result.referencePath
-            ? path.relative(".", result.referencePath)
+            ? path.relative(siteOutputPath, result.referencePath)
             : null,
-          similarity: result.similarity,
+          equal: result.equal,
+          diffBounds: result.diffBounds,
+          diffClusters: result.diffClusters,
           onlyInCandidate: result.onlyInCandidate,
           onlyInReference: result.onlyInReference,
         };
       });
-    console.log("Mismatching Items:");
-    console.log(mismatchingItems);
+    console.log("Mismatching Items (JSON):");
+    mismatchingItems.forEach(item => {
+      const logData = {
+        candidatePath: item.candidatePath,
+        referencePath: item.referencePath,
+        equal: item.equal,
+        diffBounds: item.diffBounds,
+        diffClusters: item.diffClusters
+      };
+      console.log(JSON.stringify(logData, null, 2));
+    });
+    
+    // Summary at the end
+    console.log(`\nSummary:`);
+    console.log(`Total images: ${results.length}`);
+    console.log(`Mismatched images: ${mismatchingItems.length}`);
+    
     // Generate HTML report
     await generateReport({
       results: mismatchingItems,

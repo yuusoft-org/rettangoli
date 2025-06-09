@@ -3,9 +3,9 @@ import { rm, cp, mkdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 
 /**
- * Recursively copy only PNG files from source to destination
+ * Recursively copy only WebP files from source to destination
  */
-async function copyPngFiles(sourceDir, destDir) {
+async function copyWebpFiles(sourceDir, destDir) {
   if (!existsSync(sourceDir)) {
     return;
   }
@@ -18,9 +18,9 @@ async function copyPngFiles(sourceDir, destDir) {
 
     if (statSync(sourcePath).isDirectory()) {
       // Recursively copy subdirectories
-      await copyPngFiles(sourcePath, destPath);
-    } else if (item.endsWith('.png')) {
-      // Copy PNG files only
+      await copyWebpFiles(sourcePath, destPath);
+    } else if (item.endsWith('.webp')) {
+      // Copy WebP files only
       await mkdir(dirname(destPath), { recursive: true });
       await cp(sourcePath, destPath);
       console.log(`Copied: ${sourcePath} -> ${destPath}`);
@@ -61,9 +61,9 @@ async function acceptReference(options = {}) {
       setTimeout(resolve, 100);
     })
     
-    // Copy only PNG files from candidate to reference
-    console.log('Copying PNG files from candidate to reference...');
-    await copyPngFiles(candidateDir, referenceDir);
+    // Copy only WebP files from candidate to reference
+    console.log('Copying WebP files from candidate to reference...');
+    await copyWebpFiles(candidateDir, referenceDir);
 
     console.log('Done! New reference accepted.');
   } catch (error) {

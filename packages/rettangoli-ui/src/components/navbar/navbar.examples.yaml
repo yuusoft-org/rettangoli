@@ -1,0 +1,86 @@
+config: {}
+
+---
+name: 'basic_with_href'
+viewData:
+  start:
+    label: "My App"
+    href: "/"
+
+---
+name: 'with_path_navigation'
+viewData:
+  start:
+    label: "Dashboard"
+    path: "/dashboard"
+
+---
+name: 'with_logo_image'
+viewData:
+  start:
+    label: "Company Name"
+    image:
+      src: "/logo.png"
+      width: 32
+      height: 32
+      alt: "Company Logo"
+
+---
+name: 'with_logo_and_href'
+viewData:
+  start:
+    label: "Rettangoli"
+    href: "/"
+    image:
+      src: "/assets/logo.svg"
+      width: 40
+      height: 40
+      alt: "Rettangoli Logo"
+
+---
+name: 'with_logo_and_path'
+viewData:
+  start:
+    label: "Project Hub"
+    path: "/projects"
+    image:
+      src: "/icons/hub.png"
+      width: 28
+      height: 28
+      alt: "Hub Icon"
+
+---
+name: 'text_only_no_navigation'
+viewData:
+  start:
+    label: "Static Header"
+
+---
+name: 'long_label_with_image'
+viewData:
+  start:
+    label: "Enterprise Resource Planning System"
+    image:
+      src: "/brand/enterprise-logo.jpg"
+      width: 36
+      height: 36
+      alt: "Enterprise Logo"
+
+---
+name: 'minimal_brand'
+viewData:
+  start:
+    label: "Brand"
+    href: "/home"
+
+---
+name: 'app_with_square_logo'
+viewData:
+  start:
+    label: "TaskFlow"
+    path: "/tasks"
+    image:
+      src: "/logos/taskflow-square.png"
+      width: 30
+      height: 30
+      alt: "TaskFlow Square Logo"

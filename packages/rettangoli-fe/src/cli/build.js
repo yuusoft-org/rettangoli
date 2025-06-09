@@ -8,7 +8,8 @@ import {
 import esbuild from "esbuild";
 import { load as loadYaml } from "js-yaml";
 import { parse } from 'jempl';
-import { extractCategoryAndComponent, getAllFiles } from '../common.js';
+import { extractCategoryAndComponent } from '../common.js';
+import { getAllFiles } from '../commonBuild.js';
 
 function capitalize(word) {
   return word ? word[0].toUpperCase() + word.slice(1) : word;

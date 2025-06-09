@@ -1,0 +1,73 @@
+# TODO a way to configure dev and prod
+# all rtgl fe configuration
+fe:
+   dirs: ['src/components'] # directories that contain components
+   setup: 'src/setup.js' # path to setup.js file
+   outfile: 'vt/static/public/main.js' # output this is separate from rettangoli file
+  #  watchPort: 3001
+
+# all sites configuration
+# sites:
+#   path: 'sites'
+#   templateFolder: '..'
+
+# all visual testing configuration
+vt:
+  path: 'vt'
+  name: "Rettangoli UI Visual Tests"
+  description: "Visual testing for Rettangoli UI components"
+  sections:
+    - title: "Primitives"
+      type: "groupLabel"
+      items:
+        - title: "Button"
+          files: "primitives/button"
+          description: "Button component tests"
+        - title: "Image"
+          files: "primitives/image"
+          description: "Image component tests"
+        - title: "Input"
+          files: "primitives/input"
+          description: "Input component tests"
+        - title: "SVG"
+          files: "primitives/svg"
+          description: "SVG component tests"
+        - title: "Text"
+          files: "primitives/text"
+          description: "Text component tests"
+        - title: "Textarea"
+          files: "primitives/textarea"
+          description: "Textarea component tests"
+        - title: "View"
+          files: "primitives/view"
+          description: "View component tests"
+    - title: "Components"
+      type: "groupLabel"
+      items:
+        - title: "Select"
+          files: "components/select"
+          description: "Select component tests"
+        - title: "Dialog"
+          files: "components/dialog"
+          description: "Dialog component tests"
+        - title: "Form"
+          files: "components/form"
+          description: "Form component tests"
+        - title: "Navbar"
+          files: "components/navbar"
+          description: "Navbar component tests"
+        - title: "Page Outline"
+          files: "components/page-outline"
+          description: "Page outline component tests"
+        - title: "Popover"
+          files: "components/popover"
+          description: "Popover component tests"
+        - title: "Sidebar"
+          files: "components/sidebar"
+          description: "Sidebar component tests"
+    - title: "Examples"
+      type: "groupLabel"
+      items:
+        - title: "Navbar Examples"
+          files: "examples/components/navbar"
+          description: "Navbar example tests"

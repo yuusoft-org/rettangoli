@@ -158,7 +158,7 @@ feCommand.command("examples")
   .action((options) => {
     const config = readConfig();
     options.dirs = config.fe.dirs;
-    options.outputDir = config.fe?.examples?.outputDir || './vt/specs';
+    options.outputDir = config.fe?.examples?.outputDir || './vt/specs/examples';
     examples(options);
   });
 

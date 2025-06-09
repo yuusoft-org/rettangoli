@@ -22,8 +22,9 @@
   },
   "devDependencies": {
     "esbuild": "^0.20.0",
-    "playwright": "^1.46.0",
+    "looks-same": "^9.0.1",
     "pixelmatch": "^6.0.0",
+    "playwright": "^1.46.0",
     "pngjs": "^7.0.0"
   },
   "keywords": [

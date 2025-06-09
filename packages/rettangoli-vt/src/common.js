@@ -11,6 +11,7 @@ import { load as loadYaml } from "js-yaml";
 import { Liquid } from "liquidjs";
 import { chromium } from "playwright";
 import { codeToHtml } from "shiki";
+import sharp from "sharp";
 import path from "path";
 
 const convertToHtmlExtension = (filePath) => {
@@ -287,17 +288,31 @@ async function takeScreenshots(
           // Navigate to the page
           await page.goto(fileUrl, { waitUntil: "networkidle" });
 
-          // Create screenshot output path (remove extension and add .png)
+          // Create screenshot output path (remove extension and add .webp)
           const baseName = file.path.replace(/\.[^/.]+$/, "");
-          const screenshotPath = join(screenshotsDir, `${baseName}.png`);
+          const tempPngPath = join(screenshotsDir, `${baseName}.png`);
+          const screenshotPath = join(screenshotsDir, `${baseName}.webp`);
           ensureDirectoryExists(dirname(screenshotPath));
 
           if (waitTime > 0) {
             await new Promise((resolve) => setTimeout(resolve, waitTime));
           }
 
-          // Take screenshot
-          await page.screenshot({ path: `${screenshotPath}`, fullPage: true });
+          // Take screenshot as PNG first (Playwright doesn't support WebP)
+          await page.screenshot({ 
+            path: tempPngPath, 
+            fullPage: true
+          });
+
+          // Convert PNG to WebP using Sharp
+          await sharp(tempPngPath)
+            .webp({ quality: 85 })
+            .toFile(screenshotPath);
+
+          // Remove temporary PNG file
+          if (existsSync(tempPngPath)) {
+            await import('fs').then(fs => fs.promises.unlink(tempPngPath));
+          }
 
           // example instructions:
           for (const instruction of file.frontMatter?.instructions || []) {
@@ -312,15 +327,32 @@ async function takeScreenshots(
                 break;
               case "ss":
                 const baseName = file.path.replace(/\.[^/.]+$/, "");
-                const additonalScreenshotPath = join(
+                const tempAdditionalPngPath = join(
                   screenshotsDir,
                   `${baseName}-${args[0]}.png`
                 );
+                const additonalScreenshotPath = join(
+                  screenshotsDir,
+                  `${baseName}-${args[0]}.webp`
+                );
                 console.log(`Taking additional screenshot at ${additonalScreenshotPath}`);
+                
+                // Take screenshot as PNG first
                 await page.screenshot({
-                  path: `${additonalScreenshotPath}`,
-                  fullPage: true,
+                  path: tempAdditionalPngPath,
+                  fullPage: true
                 });
+
+                // Convert PNG to WebP using Sharp
+                await sharp(tempAdditionalPngPath)
+                  .webp({ quality: 85 })
+                  .toFile(additonalScreenshotPath);
+
+                // Remove temporary PNG file
+                if (existsSync(tempAdditionalPngPath)) {
+                  await import('fs').then(fs => fs.promises.unlink(tempAdditionalPngPath));
+                }
+
                 console.log(
                   `Additional screenshot taken at ${additonalScreenshotPath}`
                 );
@@ -363,7 +395,44 @@ function generateOverview(data, templatePath, outputPath, configData) {
     // Ensure output directory exists
     ensureDirectoryExists(dirname(outputPath));
 
+    // Process sections to extract all items (flat or grouped)
+    const allSections = [];
     configData.sections.forEach((section) => {
+      if (section.type === "groupLabel" && section.items) {
+        // It's a group, add all items from the group
+        section.items.forEach((item) => {
+          allSections.push(item);
+        });
+      } else if (section.files) {
+        // It's a flat section
+        allSections.push(section);
+      }
+    });
+
+    // Transform sections for sidebar (maintaining group structure)
+    const sidebarItems = configData.sections.map((section) => {
+      if (section.type === "groupLabel") {
+        return {
+          title: section.title,
+          type: "groupLabel",
+          items: section.items.map((item) => ({
+            id: item.title.toLowerCase().replace(/\s+/g, "-"),
+            title: item.title,
+            href: `/${item.title.toLowerCase().replace(/\s+/g, "-")}.html`,
+          })),
+        };
+      } else {
+        // Flat item (backwards compatibility)
+        return {
+          id: section.title.toLowerCase().replace(/\s+/g, "-"),
+          title: section.title,
+          href: `/${section.title.toLowerCase().replace(/\s+/g, "-")}.html`,
+        };
+      }
+    });
+
+    // Generate pages for each section
+    allSections.forEach((section) => {
       // Render template with data
       let renderedContent = "";
       try {
@@ -372,21 +441,12 @@ function generateOverview(data, templatePath, outputPath, configData) {
           files: data.filter((file) => {
             const filePath = path.normalize(file.path);
             const sectionPath = path.normalize(section.files);
-            // Check if file is in the exact folder (not just starts with)
+            // Check if file is in the folder or any subfolder
             const fileDir = path.dirname(filePath);
-            return fileDir === sectionPath;
+            return fileDir === sectionPath || fileDir.startsWith(sectionPath + path.sep);
           }),
           currentSection: section,
-          sidebarItems: encodeURIComponent(
-            JSON.stringify(
-              configData.sections.map((item) => {
-                return {
-                  ...item,
-                  href: `/${item.title.toLowerCase().replace(/\s+/g, "-")}`,
-                };
-              })
-            )
-          ),
+          sidebarItems: encodeURIComponent(JSON.stringify(sidebarItems)),
         });
       } catch (error) {
         console.error(`Error rendering overview template:`, error);
@@ -395,7 +455,7 @@ function generateOverview(data, templatePath, outputPath, configData) {
 
       const finalOutputPath = outputPath.replace(
         "index.html",
-        `${section.title.toLowerCase()}.html`
+        `${section.title.toLowerCase().replace(/\s+/g, "-")}.html`
       );
       // Save file
       writeFileSync(finalOutputPath, renderedContent, "utf8");
