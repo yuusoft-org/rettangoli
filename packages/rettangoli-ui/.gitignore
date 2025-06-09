@@ -1,3 +1,6 @@
 node_modules
-viz/static/public/rettangoli.js
-viz/_site
+vt/static/public/rettangoli.js
+vt/static/public/rettangoli.js.map
+vt/static/public/main.js
+vt/static/public/main.js.map
+.rettangoli

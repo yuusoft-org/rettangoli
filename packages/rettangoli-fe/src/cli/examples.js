@@ -5,9 +5,9 @@ import { render, parse } from "jempl";
 
 import {
   extractCategoryAndComponent,
-  getAllFiles,
   flattenArrays,
 } from "../common.js";
+import { getAllFiles } from "../commonBuild.js";
 import path, { dirname } from "node:path";
 
 const yamlToHtml = (renderedView) => {

@@ -363,7 +363,44 @@ function generateOverview(data, templatePath, outputPath, configData) {
     // Ensure output directory exists
     ensureDirectoryExists(dirname(outputPath));
 
+    // Process sections to extract all items (flat or grouped)
+    const allSections = [];
     configData.sections.forEach((section) => {
+      if (section.type === "groupLabel" && section.items) {
+        // It's a group, add all items from the group
+        section.items.forEach((item) => {
+          allSections.push(item);
+        });
+      } else if (section.files) {
+        // It's a flat section
+        allSections.push(section);
+      }
+    });
+
+    // Transform sections for sidebar (maintaining group structure)
+    const sidebarItems = configData.sections.map((section) => {
+      if (section.type === "groupLabel") {
+        return {
+          title: section.title,
+          type: "groupLabel",
+          items: section.items.map((item) => ({
+            id: item.title.toLowerCase().replace(/\s+/g, "-"),
+            title: item.title,
+            href: `/${item.title.toLowerCase().replace(/\s+/g, "-")}.html`,
+          })),
+        };
+      } else {
+        // Flat item (backwards compatibility)
+        return {
+          id: section.title.toLowerCase().replace(/\s+/g, "-"),
+          title: section.title,
+          href: `/${section.title.toLowerCase().replace(/\s+/g, "-")}.html`,
+        };
+      }
+    });
+
+    // Generate pages for each section
+    allSections.forEach((section) => {
       // Render template with data
       let renderedContent = "";
       try {
@@ -372,21 +409,12 @@ function generateOverview(data, templatePath, outputPath, configData) {
           files: data.filter((file) => {
             const filePath = path.normalize(file.path);
             const sectionPath = path.normalize(section.files);
-            // Check if file is in the exact folder (not just starts with)
+            // Check if file is in the folder or any subfolder
             const fileDir = path.dirname(filePath);
-            return fileDir === sectionPath;
+            return fileDir === sectionPath || fileDir.startsWith(sectionPath + path.sep);
           }),
           currentSection: section,
-          sidebarItems: encodeURIComponent(
-            JSON.stringify(
-              configData.sections.map((item) => {
-                return {
-                  ...item,
-                  href: `/${item.title.toLowerCase().replace(/\s+/g, "-")}`,
-                };
-              })
-            )
-          ),
+          sidebarItems: encodeURIComponent(JSON.stringify(sidebarItems)),
         });
       } catch (error) {
         console.error(`Error rendering overview template:`, error);
@@ -395,7 +423,7 @@ function generateOverview(data, templatePath, outputPath, configData) {
 
       const finalOutputPath = outputPath.replace(
         "index.html",
-        `${section.title.toLowerCase()}.html`
+        `${section.title.toLowerCase().replace(/\s+/g, "-")}.html`
       );
       // Save file
       writeFileSync(finalOutputPath, renderedContent, "utf8");

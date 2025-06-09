@@ -63,10 +63,10 @@ template:
         - a href=${start.href}:
           - rtgl-view d=h av=c g=lg g=md:
             - *image
-      elif start.path:
+      $elif start.path:
         - rtgl-view#start d=h av=c g=lg g=md cur=p:
           - *image
-      else:
+      $else:
         - rtgl-view d=h av=c g=lg g=md:
           - *image
     - rtgl-view flex=1:
