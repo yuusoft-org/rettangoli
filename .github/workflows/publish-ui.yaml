@@ -1,4 +1,4 @@
-name: Publish rettangoli-ui to npm
+name: Publish package to npm
 on:
   push:
     tags:
@@ -32,7 +32,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       # Publish to npm
-      - name: Publish rettangoli-ui to npm
+      - name: Publish to npm
         run: npm publish
         working-directory: ./packages/rettangoli-ui
         env:
