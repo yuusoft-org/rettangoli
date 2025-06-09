@@ -1,7 +1,21 @@
 {
   "name": "rettangoli-fe",
+  "version": "0.0.1",
+  "description": "Frontend framework for building reactive web components",
   "type": "module",
   "main": "./src/index.js",
+  "keywords": ["frontend", "reactive", "components", "web", "framework"],
+  "files": [
+    "src/*.js",
+    "src/!(cli)",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuusoft-org/rettangoli.git"
+  },
+  "license": "MIT",
   "exports": {
     ".": "./src/index.js",
     "./cli": "./src/cli/index.js"
