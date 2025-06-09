@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { build, scaffold, watch } from "rettangoli-fe/cli";
+import { build, scaffold, watch, examples } from "rettangoli-fe/cli";
 import { generate, report, accept } from "rettangoli-vt/cli";
 import { copyPagesToSite } from "rettangoli-sites/cli";
 import { Command } from "commander";
@@ -151,6 +151,18 @@ Examples:
     options.setup = config.fe.setup || 'setup.js';
     watch(options);
   });
+
+
+feCommand.command("examples")
+  .description("Generate examples")
+  .action((options) => {
+    const config = readConfig();
+    options.dirs = config.fe.dirs;
+    options.outputDir = config.fe?.examples?.outputDir || './vt/specs';
+    examples(options);
+  });
+
+
 
 const vtCommand = program
   .command("vt")

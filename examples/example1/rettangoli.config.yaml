@@ -17,9 +17,6 @@ vt:
   name: "Example1 Visual Tests"
   description: "Visual testing for example1 project"
   sections:
-    - title: "Pages"
-      files: "fe/pages"
-      description: "Page components"
-    - title: "Components"  
-      files: "fe/components"
-      description: "UI components"
+    - title: "Todos"
+      files: "pages/todos"
+      description: "Todos Page"
