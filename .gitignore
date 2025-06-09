@@ -1,4 +1,4 @@
-.DS_Stor
+.DS_Store
 /packages/rettangoli-ui/dist
 /packages/rettangoli-ui/node_modules
 /packages/rettangoli-ui/viz/static/public/main.js.map
