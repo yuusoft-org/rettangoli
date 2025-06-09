@@ -5,17 +5,10 @@ html {
   scrollbar-width: none; /* Firefox */
 }
 
-
-[contenteditable] {
-  outline: none;
-  border: none;
-  box-shadow: none;
-}
-
-
 :root {
   --width-stretch: 100%;
 }
+
 /* Override in supported browsers */
 @supports (width: -webkit-fill-available) {
   :root {
@@ -53,7 +46,7 @@ body {
   --spacing-xs: 2px;
   --spacing-sm: 4px;
   --spacing-md: 8px;
-  --spacing-l: 16px;
+  --spacing-lg: 16px;
   --spacing-xl: 32px;
 
   --border-radius-xs: 1px;
@@ -64,9 +57,9 @@ body {
   --border-radius-f: 50%;
 
   --border-width-xs: 1px;
-  --border-width-s: 2px;
-  --border-width-m: 4px;
-  --border-width-l: 8px;
+  --border-width-sm: 2px;
+  --border-width-md: 4px;
+  --border-width-lg: 8px;
   --border-width-xl: 16px;
 
   --shadow-sm: 0px 2px 6px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);

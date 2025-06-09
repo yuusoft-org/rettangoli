@@ -1,4 +1,6 @@
 import { Subject } from "rxjs";
+import { readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 
 /**
  * A custom subject that can be used to dispatch actions and subscribe to them
@@ -165,4 +167,56 @@ export function createHttpClient(config) {
 }
 
 
-export const createDefaultPatch = () => {
+export const extractCategoryAndComponent = (filePath) => {
+  const parts = filePath.split("/");
+  const component = parts[parts.length - 1].split(".")[0];
+  const category = parts[parts.length - 2];
+  const fileType = parts[parts.length - 1].split(".")[1];
+  return { category, component, fileType };
+}
+
+// Function to recursively get all files in a directory
+export function getAllFiles(dirPaths, arrayOfFiles = []) {
+  dirPaths.forEach((dirPath) => {
+    const files = readdirSync(dirPath);
+
+    files.forEach((file) => {
+      const fullPath = join(dirPath, file);
+      if (statSync(fullPath).isDirectory()) {
+        arrayOfFiles = getAllFiles([fullPath], arrayOfFiles);
+      } else {
+        arrayOfFiles.push(fullPath);
+      }
+    });
+  });
+
+  return arrayOfFiles;
+}
+
+
+// Helper function to flatten arrays while preserving object structure
+export const flattenArrays = (items) => {
+  if (!Array.isArray(items)) {
+    return items;
+  }
+
+  return items.reduce((acc, item) => {
+    if (Array.isArray(item)) {
+      // Recursively flatten nested arrays
+      acc.push(...flattenArrays(item));
+    } else {
+      // If it's an object with nested arrays, process those too
+      if (item && typeof item === "object") {
+        const entries = Object.entries(item);
+        if (entries.length > 0) {
+          const [key, value] = entries[0];
+          if (Array.isArray(value)) {
+            item = { [key]: flattenArrays(value) };
+          }
+        }
+      }
+      acc.push(item);
+    }
+    return acc;
+  }, []);
+};

@@ -1,47 +1,75 @@
-import { existsSync } from 'node:fs';
-import { rm, cp } from 'node:fs/promises';
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import { rm, cp, mkdir } from 'node:fs/promises';
+import { join, dirname } from 'node:path';
 
 /**
- * Accepts artifacts as the new gold standard by removing the existing gold
- * directory and copying the artifacts directory to gold.
+ * Recursively copy only PNG files from source to destination
  */
-async function acceptGold(options = {}) {
+async function copyPngFiles(sourceDir, destDir) {
+  if (!existsSync(sourceDir)) {
+    return;
+  }
+
+  const items = readdirSync(sourceDir);
+
+  for (const item of items) {
+    const sourcePath = join(sourceDir, item);
+    const destPath = join(destDir, item);
+
+    if (statSync(sourcePath).isDirectory()) {
+      // Recursively copy subdirectories
+      await copyPngFiles(sourcePath, destPath);
+    } else if (item.endsWith('.png')) {
+      // Copy PNG files only
+      await mkdir(dirname(destPath), { recursive: true });
+      await cp(sourcePath, destPath);
+      console.log(`Copied: ${sourcePath} -> ${destPath}`);
+    }
+  }
+}
+
+/**
+ * Accepts candidate screenshots as the new reference by removing the existing reference
+ * directory and copying the candidate directory to reference.
+ */
+async function acceptReference(options = {}) {
   const {
     vizPath = "./viz",
   } = options;
 
-  const goldDir = `${vizPath}/gold/screenshots`;
-  const artifactsDir = `${vizPath}/_site/artifacts/screenshots`;
+  const referenceDir = join(vizPath, "reference");
+  const siteOutputPath = join(".rettangoli", "vt", "_site");
+  const candidateDir = join(siteOutputPath, "candidate");
 
-  console.log('Accepting artifacts as new gold standard...');
+  console.log('Accepting candidate as new reference...');
 
-  // Check if artifacts directory exists
-  if (!existsSync(artifactsDir)) {
-    console.error('Error: Artifacts directory does not exist!');
+  // Check if candidate directory exists
+  if (!existsSync(candidateDir)) {
+    console.error('Error: Candidate directory does not exist!');
     process.exit(1);
   }
 
   try {
-    // Remove gold directory if it exists
-    if (existsSync(goldDir)) {
-      console.log('Removing existing gold directory...');
-      await rm(goldDir, { recursive: true, force: true });
+    // Remove reference directory if it exists
+    if (existsSync(referenceDir)) {
+      console.log('Removing existing reference directory...');
+      await rm(referenceDir, { recursive: true, force: true });
     }
 
     // Wait for 100ms to ensure the directory is removed
     await new Promise((resolve) => {
       setTimeout(resolve, 100);
     })
-    // // Create gold directory if it doesn't exist
-    // Copy artifacts to gold
-    console.log('Copying artifacts to gold...');
-    await cp(artifactsDir, goldDir, { recursive: true });
+    
+    // Copy only PNG files from candidate to reference
+    console.log('Copying PNG files from candidate to reference...');
+    await copyPngFiles(candidateDir, referenceDir);
 
-    console.log('Done! New gold standard accepted.');
+    console.log('Done! New reference accepted.');
   } catch (error) {
     console.error('Error:', error.message);
     process.exit(1);
   }
 }
 
-export default acceptGold;
+export default acceptReference;

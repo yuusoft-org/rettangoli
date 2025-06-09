@@ -1,4 +1,6 @@
 import { cp, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { existsSync } from "node:fs";
 import {
   generateHtml,
   startWebServer,
@@ -8,6 +10,7 @@ import {
 } from "../common.js";
 
 const libraryTemplatesPath = new URL('./templates', import.meta.url).pathname;
+const libraryStaticPath = new URL('./static', import.meta.url).pathname;
 
 
 /**
@@ -21,37 +24,53 @@ async function main(options) {
     port = 3001
   } = options;
 
-  const outputPath = `${vizPath}/_site`;
-  const staticPath = `${vizPath}/static`;
-  const templatesPath = `${vizPath}/templates`;
-  const specsPath = `${vizPath}/specs`;
-  const configPath = `${vizPath}/config.yaml`;
-  const configData = await readYaml(configPath);
+  const specsPath = join(vizPath, "specs");
+  const mainConfigPath = "rettangoli.config.yaml";
+  const siteOutputPath = join(".rettangoli", "vt", "_site");
+  const candidatePath = join(siteOutputPath, "candidate");
+  
+  // Read VT config from main rettangoli.config.yaml
+  let configData = {};
+  try {
+    const mainConfig = await readYaml(mainConfigPath);
+    configData = mainConfig.vt || {};
+  } catch (error) {
+    console.log("Main config file not found, using defaults");
+  }
 
-  await rm(outputPath, { recursive: true, force: true });
+  // Clear candidate directory
+  await rm(candidatePath, { recursive: true, force: true });
   await new Promise((resolve) => setTimeout(resolve, 100));
-  await cp(staticPath, outputPath, { recursive: true });
+
+  // Copy static files from library to site directory
+  await cp(libraryStaticPath, siteOutputPath, { recursive: true });
+  
+  // Copy user's static files if they exist
+  const userStaticPath = join(vizPath, "static");
+  if (existsSync(userStaticPath)) {
+    await cp(userStaticPath, siteOutputPath, { recursive: true });
+  }
 
   // Generate HTML files
   const generatedFiles = await generateHtml(
     specsPath,
-    `${templatesPath}/default.html`,
-    `${outputPath}/artifacts`
+    join(libraryTemplatesPath, "default.html"),
+    candidatePath
   );
 
   // Generate overview page with all files
   generateOverview(
     generatedFiles,
-    `${libraryTemplatesPath}/index.html`,
-    `${outputPath}/index.html`,
+    join(libraryTemplatesPath, "index.html"),
+    join(siteOutputPath, "index.html"),
     configData
   );
 
   if (!skipScreenshots) {
-    // Start web server
+    // Start web server from site output path to serve both /public and /candidate
     const server = startWebServer(
-      `${outputPath}/artifacts`,
-      outputPath,
+      siteOutputPath,
+      vizPath,
       port
     );
     try {
@@ -59,7 +78,7 @@ async function main(options) {
       await takeScreenshots(
         generatedFiles,
         `http://localhost:${port}`,
-        `${outputPath}/artifacts/screenshots`,
+        candidatePath,
         24,
         screenshotWaitTime
       );

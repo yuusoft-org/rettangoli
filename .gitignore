@@ -10,9 +10,10 @@
 /packages/rettangoli-fe/viz/static/main.js.map
 /packages/rettangoli-fe/viz/static/main.css
 
+/examples/example1/dist
+
 /node_modules
 
 .claude/
 CLAUDE.md
 .temp
-
