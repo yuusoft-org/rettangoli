@@ -36,13 +36,6 @@ window.rtglIcons = {
                       fill="none"
                       stroke-dasharray="50 10"
                       stroke-linecap="round">
-                  <animateTransform
-                      attributeName="transform"
-                      type="rotate"
-                      from="0 12 12"
-                      to="360 12 12"
-                      dur="1s"
-                      repeatCount="indefinite"/>
               </circle>
           </svg>`
 }
