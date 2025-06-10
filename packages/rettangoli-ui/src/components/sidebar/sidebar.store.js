@@ -6,30 +6,42 @@ const stringifyAttrs = (attrs) => {
   return Object.entries(attrs).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
 }
 
-function flattenItems(items) {
+function flattenItems(items, selectedItemId = null) {
   let result = [];
 
   for (const item of items) {
+    const itemId = item.id || item.href || item.path;
+    const isSelected = selectedItemId === itemId;
+    
     // Add the parent item if it's not just a group label
     result.push({
-      id: item.id || item.href || item.path,
+      id: itemId,
       title: item.title,
       href: item.href,
       type: item.type || 'item',
       icon: item.icon,
       hrefAttr: item.href ? `href=${item.href}` : '',
+      isSelected,
+      itemBgc: isSelected ? 'ac' : 'bg',
+      itemHoverBgc: isSelected ? 'ac' : 'mu',
     });
 
     // Add child items if they exist
     if (item.items && Array.isArray(item.items)) {
       for (const subItem of item.items) {
+        const subItemId = subItem.id || subItem.href || subItem.path;
+        const isSubSelected = selectedItemId === subItemId;
+        
         result.push({
-          id: subItem.id || subItem.href || subItem.path,
+          id: subItemId,
           title: subItem.title,
           href: subItem.href,
           type: subItem.type || 'item',
           icon: subItem.icon,
           hrefAttr: subItem.href ? `href=${subItem.href}` : '',
+          isSelected: isSubSelected,
+          itemBgc: isSubSelected ? 'ac' : 'bg',
+          itemHoverBgc: isSubSelected ? 'ac' : 'mu',
         });
       }
     }
@@ -41,6 +53,7 @@ function flattenItems(items) {
 export const toViewData = ({ state, props, attrs }) => {
   const attrsHeader = attrs.header ? JSON.parse(decodeURIComponent(attrs.header)) : props.header;
   const attrsItems = attrs.items ? JSON.parse(decodeURIComponent(attrs.items)) : props.items;
+  const selectedItemId = attrs.selectedItemId || props.selectedItemId;
 
   const containerAttrString = stringifyAttrs(attrs);
   const mode = attrs.mode || 'full';
@@ -55,7 +68,7 @@ export const toViewData = ({ state, props, attrs }) => {
     },
   };
 
-  const items = attrsItems ? flattenItems(attrsItems) : [];
+  const items = attrsItems ? flattenItems(attrsItems, selectedItemId) : [];
 
   // Computed values based on mode
   const sidebarWidth = mode === 'full' ? 272 : 64;
@@ -100,7 +113,8 @@ export const toViewData = ({ state, props, attrs }) => {
     itemContentAlign,
     itemAlignAttr,
     itemWidth,
-    headerWidth
+    headerWidth,
+    selectedItemId
   };
 }
 

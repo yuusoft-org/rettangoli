@@ -17,6 +17,7 @@ title: "Shrunk modes with mixed items (with/without icons)"
   ];
 
   const sidebar1 = document.getElementById('sidebar1');
+  sidebar1.selectedItemId = "music";
   sidebar1.header = {
     label: "Shrunk",
     image: {
@@ -30,6 +31,7 @@ title: "Shrunk modes with mixed items (with/without icons)"
   sidebar1.render();
 
   const sidebar2 = document.getElementById('sidebar2');
+  sidebar2.selectedItemId = "profile";
   sidebar2.header = {
     label: "Shrunk LG",
     image: {
