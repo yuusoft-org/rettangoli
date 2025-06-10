@@ -23,7 +23,7 @@ class RettangoliButtonElement extends HTMLElement {
           flex-direction: row;
           align-items: center;
           justify-content: center;
-          gap: var(--spacing-sm);
+          gap: var(--spacing-lg);
           border-width: 0px;
           border-style: solid;
           border-color: var(--border);
@@ -174,7 +174,7 @@ class RettangoliButtonElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "href", "target", "w", "t", "icon", "disabled", "v", "s", "sq"];
+    return ["key", "href", "target", "w", "t", "icon", "disabled", "v", "s", "sq", "ip"];
   }
 
   connectedCallback() {
@@ -269,8 +269,15 @@ class RettangoliButtonElement extends HTMLElement {
       this._iconElement.setAttribute('c', color);
       this._iconElement.setAttribute('wh', size.toString());
       
-      // Insert icon before slot
-      this._buttonElement.insertBefore(this._iconElement, this._slotElement);
+      // Insert icon based on position (default is right, 's' means start/left)
+      const iconPosition = this.getAttribute("ip");
+      if (iconPosition === 's') {
+        // Insert icon before slot (left position)
+        this._buttonElement.insertBefore(this._iconElement, this._slotElement);
+      } else {
+        // Insert icon after slot (right position - default)
+        this._buttonElement.appendChild(this._iconElement);
+      }
     }
   }
 
