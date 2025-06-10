@@ -7,6 +7,11 @@ title: Basic
 
 <script>
   const select = document.getElementById('select')
+
+  select.addEventListener('option-selected', (e) => {
+    console.log(e.detail);
+  });
+
   select.options = [
     { value: 1, label: 'Option 1' },
     { value: 2, label: 'Option 2' },

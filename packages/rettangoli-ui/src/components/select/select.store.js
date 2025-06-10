@@ -1,5 +1,9 @@
 export const INITIAL_STATE = Object.freeze({
   isOpen: false,
+  position: {
+    x: 0,
+    y: 0,
+  },
   selectedValue: null,
   selectedLabel: null,
 });
@@ -29,6 +33,7 @@ export const toViewData = ({ state, props }) => {
   
   return {
     isOpen: state.isOpen,
+    position: state.position,
     options: optionsWithSelection,
     selectedValue: currentValue,
     selectedLabel: displayLabel,
@@ -40,8 +45,14 @@ export const selectState = ({ state }) => {
   return state;
 }
 
-export const setOpen = (state, isOpen) => {
-  state.isOpen = isOpen;
+export const openOptionsPopover = (state, payload) => {
+  const { position } = payload;
+  state.position = position;
+  state.isOpen = true;
+}
+
+export const closeOptionsPopover = (state) => {
+  state.isOpen = false;
 }
 
 export const selectOption = (state, option) => {

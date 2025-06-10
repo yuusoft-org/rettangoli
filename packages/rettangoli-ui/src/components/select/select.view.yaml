@@ -29,16 +29,22 @@ refs:
     eventListeners:
       click:
         handler: handleButtonClick
-  popover: {}
-
+  popover:
+    eventListeners:
+      click-overlay:
+        handler: handleClickOptionsPopoverOverlay
+  option-*:
+    eventListeners:
+      click:
+        handler: handleOptionClick
 
 events: {}
 
 template:
   - rtgl-button#select-button v=ol:
     - ${selectedLabel}
-  - rtgl-popover#popover:
-    - rtgl-view wh=300 g=xs slot=content bgc=background border br=md shadow=md:
+  - rtgl-popover#popover .isOpen=isOpen .position=position:
+    - rtgl-view wh=300 g=xs slot=content bgc=background br=md:
       - $for option, i in options:
-        - rtgl-view w=f h-bgc=mu ph=lg pv=md cur=p br=md onClick=handleOptionClick(option) bgc=${option.bgc}:
+        - rtgl-view#option-${i} w=f h-bgc=ac ph=lg pv=md cur=p br=md bgc=${option.bgc}:
           - rtgl-text: ${option.label}

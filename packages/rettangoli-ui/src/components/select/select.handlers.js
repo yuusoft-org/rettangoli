@@ -2,7 +2,6 @@
 export const handleOnMount = (deps) => {
   const { store, props, render } = deps;
   
-  // Initialize selected value from props if provided
   if (props.selectedValue !== null && props.selectedValue !== undefined && props.options) {
     const selectedOption = props.options.find(opt => opt.value === props.selectedValue);
     if (selectedOption) {
@@ -17,20 +16,28 @@ export const handleOnMount = (deps) => {
 
 export const handleButtonClick = (e, deps) => {
   const { store, render, getRefIds } = deps;
-  const refIds = getRefIds();
-  // const buttonRect = e.currentTarget.getBoundingClientRect();
-  
-  refIds.popover.elm.transformedHandlers.open({
+  store.openOptionsPopover({
     position: {
+      y: e.clientY,
       x: e.clientX,
-      y: e.clientY
     }
-  });
+  })
+  render();
 }
 
-export const handleOptionClick = (option, deps) => {
-  const { render, element } = deps;
-  element.dispatchEvent(new CustomEvent('option-selected', {
+export const handleClickOptionsPopoverOverlay = (e, deps) => {
+  const { store, render } = deps;
+  store.closeOptionsPopover();
+  render();
+}
+
+export const handleOptionClick = (e, deps) => {
+  const { render, dispatchEvent, props } = deps;
+  const id = e.currentTarget.id.replace('option-', '');
+
+  const option = props.options[id];
+
+  dispatchEvent(new CustomEvent('option-selected', {
     detail: { value: option.value, label: option.label },
     bubbles: true
   }));

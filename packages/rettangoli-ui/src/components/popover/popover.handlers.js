@@ -1,17 +1,5 @@
+
 export const handleClickOverlay = (e, deps) => {
-  const { props, dispatchEvent, store, render } = deps;
-  if (props.isOpen !== undefined) {
-    dispatchEvent(new CustomEvent('closePopover'));
-    return;
-  }
-  store.setClose();
-  render();
+  const { dispatchEvent } = deps;
+  dispatchEvent(new CustomEvent('click-overlay'));
 }
-
-export const open = (payload, deps) => {
-  const { position } = payload;
-  const { store, render } = deps;
-  store.setOpen(position);
-  render();
-}
-
