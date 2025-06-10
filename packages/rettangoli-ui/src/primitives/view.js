@@ -83,6 +83,7 @@ class RettangoliViewElement extends HTMLElement {
     return [
       "href",
       "target",
+      "op",
       ...permutateBreakpoints([
         ...styleMapKeys,
         "wh",
@@ -141,6 +142,7 @@ class RettangoliViewElement extends HTMLElement {
       this._updateDOM();
       return;
     }
+    
     // Reset styles for fresh calculation
     this._styles = {
       default: {},

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Visual Test</title>
+  <link rel="stylesheet" href="/public/theme.css">
+  <script type="module" src="/iife-ui.js"></script>
+</head>
+<body>
+  <rtgl-view g="lg" p="lg" wh="f" fw="w">
+    <rtgl-select id="select" />
+  </rtgl-view>
+
+  <script>
+    const select = document.getElementById('select')
+    select.selectedValue = "2"
+    select.options = [
+      { value: "1", label: 'Option 1' },
+      { value: "2", label: 'Option 2' },
+      { value: "3", label: 'Option 3' },
+    ]
+    select.render();
+  </script>
+</body>
+</html>

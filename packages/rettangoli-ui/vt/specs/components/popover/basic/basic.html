@@ -1,5 +1,6 @@
 ---
 title: Basic
+description: Open and close popover with props
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="w">
   <rtgl-button id="button">Open Popover</rtgl-button>
@@ -13,12 +14,16 @@ title: Basic
   const popover = document.getElementById('popover');
 
   button.addEventListener('click', (e) => {
-    // TODO improve this interface
-    popover.transformedHandlers.open({
-      position: {
-        x: e.clientX,
-        y: e.clientY
-      }
-    });
+    popover.position = {
+      x: e.clientX,
+      y: e.clientY
+    };
+    popover.isOpen = true;
+    popover.render();
+  });
+
+  popover.addEventListener('click-overlay', () => {
+    popover.isOpen = false;
+    popover.render();
   });
 </script>

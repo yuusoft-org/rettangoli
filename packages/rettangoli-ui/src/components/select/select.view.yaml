@@ -7,32 +7,44 @@ propsSchema:
   type: object
   properties:
     options:
-    items:
       type: array
       items:
         type: object
         properties:
           id:
             type: string
-          lalbel:
+          label:
             type: string
           value:
             type: any
+    selectedValue:
+      type: any
+    placeholder:
+      type: string
+    onChange:
+      type: function
 
 refs:
   select-button:
     eventListeners:
       click:
         handler: handleButtonClick
-  popover: {}
-
+  popover:
+    eventListeners:
+      click-overlay:
+        handler: handleClickOptionsPopoverOverlay
+  option-*:
+    eventListeners:
+      click:
+        handler: handleOptionClick
 
 events: {}
 
 template:
-  - rtgl-button#select-button v=ol: Placeholder
-  - rtgl-popover#popover:
-    - rtgl-view wh=300 g=xs slot=content:
+  - rtgl-button#select-button v=ol:
+    - ${selectedLabel}
+  - rtgl-popover#popover .isOpen=isOpen .position=position:
+    - rtgl-view wh=300 g=xs slot=content bgc=background br=md:
       - $for option, i in options:
-        - rtgl-view w=f h-bgc=mu ph=lg pv=md cur=p br=md:
+        - rtgl-view#option-${i} w=f h-bgc=ac ph=lg pv=md cur=p br=md bgc=${option.bgc}:
           - rtgl-text: ${option.label}

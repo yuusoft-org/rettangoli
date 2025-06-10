@@ -23,6 +23,13 @@ propsSchema:
       default: bottom
     isOpen:
       type: boolean
+    position:
+      type: object
+      properties:
+        x:
+          type: number
+        y:
+          type: number
 
 refs:
   popoverOverlay:
@@ -46,5 +53,5 @@ styles:
 template:
   - $if isOpen:
     - rtgl-view#popoverOverlay pos=fix cor=full:
-    - 'rtgl-view#popoverContainer pos=fix style="left: ${position.x}px; top: ${position.y}px;" id=floatingElement bw=xs p=md bgc=bg':
+    - 'rtgl-view#popoverContainer pos=fix style="left: ${position.x}px; top: ${position.y}px;" id=floatingElement bw=xs p=md bgc=mu':
       - slot name=content:
