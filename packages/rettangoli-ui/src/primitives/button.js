@@ -124,6 +124,28 @@ class RettangoliButtonElement extends HTMLElement {
           text-decoration: underline;
         }
 
+        /* Square button styles */
+        :host([sq]) button {
+          width: 32px;
+          height: 32px;
+          padding: 0;
+          gap: 0;
+        }
+
+        :host([sq][s="sm"]) button {
+          width: 24px;
+          height: 24px;
+          padding: 0;
+          gap: 0;
+        }
+
+        :host([sq][s="lg"]) button {
+          width: 40px;
+          height: 40px;
+          padding: 0;
+          gap: 0;
+        }
+
         ${anchorStyles}
         
         a {
@@ -152,7 +174,7 @@ class RettangoliButtonElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "href", "target", "w", "t", "icon", "disabled", "v", "s"];
+    return ["key", "href", "target", "w", "t", "icon", "disabled", "v", "s", "sq"];
   }
 
   connectedCallback() {
@@ -170,8 +192,10 @@ class RettangoliButtonElement extends HTMLElement {
     // Update icon
     this._updateIcon();
     
-    // Update width styling
-    this._updateWidth();
+    // Update width styling (skip for square buttons)
+    if (!this.hasAttribute('sq')) {
+      this._updateWidth();
+    }
     
     // Update disabled state
     const isDisabled = this.hasAttribute('disabled');
@@ -226,7 +250,19 @@ class RettangoliButtonElement extends HTMLElement {
         lg: 22
       };
       const color = colorMap[this.getAttribute("v")] || 'pr-fg';
-      const size = sizeMap[this.getAttribute("t")] || 18;
+      
+      // For square buttons, use button size (s attribute), otherwise use icon size (t attribute)
+      let size = 18; // default
+      if (this.hasAttribute('sq')) {
+        const buttonSizeMap = {
+          sm: 14,
+          lg: 22
+        };
+        const buttonSize = this.getAttribute("s");
+        size = buttonSizeMap[buttonSize] || 18;
+      } else {
+        size = sizeMap[this.getAttribute("t")] || 18;
+      }
       
       this._iconElement = document.createElement('rtgl-svg');
       this._iconElement.setAttribute('svg', icon);

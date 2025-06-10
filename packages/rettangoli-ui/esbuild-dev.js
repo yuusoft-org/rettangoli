@@ -8,7 +8,7 @@ for (const mode of ["iife-ui"]) {
       sourcemap: false,
       format: mode === "esm" ? "esm" : "iife",
       globalName: "rettangoli",
-      outfile: `./viz/static/public/rettangoli.js`,
+      outfile: `./vt/static/public/main.js`,
       entryPoints: [`src/entry-${mode}.js`],
     });
     console.log(`${mode} build successful`);
