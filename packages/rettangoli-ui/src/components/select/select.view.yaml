@@ -7,17 +7,22 @@ propsSchema:
   type: object
   properties:
     options:
-    items:
       type: array
       items:
         type: object
         properties:
           id:
             type: string
-          lalbel:
+          label:
             type: string
           value:
             type: any
+    selectedValue:
+      type: any
+    placeholder:
+      type: string
+    onChange:
+      type: function
 
 refs:
   select-button:
@@ -30,9 +35,10 @@ refs:
 events: {}
 
 template:
-  - rtgl-button#select-button v=ol: Placeholder
+  - rtgl-button#select-button v=ol:
+    - ${selectedLabel}
   - rtgl-popover#popover:
-    - rtgl-view wh=300 g=xs slot=content:
+    - rtgl-view wh=300 g=xs slot=content bgc=background border br=md shadow=md:
       - $for option, i in options:
-        - rtgl-view w=f h-bgc=mu ph=lg pv=md cur=p br=md:
+        - rtgl-view w=f h-bgc=mu ph=lg pv=md cur=p br=md onClick=handleOptionClick(option) bgc=${option.bgc}:
           - rtgl-text: ${option.label}
