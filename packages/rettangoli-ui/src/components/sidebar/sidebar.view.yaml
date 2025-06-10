@@ -37,6 +37,8 @@ viewDataSchema:
       type: string
     headerWidth:
       type: string
+    selectedItemId:
+      type: string
     header:
       type: object
       properties:
@@ -74,6 +76,8 @@ viewDataSchema:
 propsSchema:
   type: object
   properties:
+    selectedItemId:
+      type: string
     header:
       type: object
       properties:
@@ -170,7 +174,7 @@ template:
               $else:
                 - rtgl-view mt=md h=1 bgc=mu-bg:
           $else:
-            - rtgl-view#item-${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=mu br=lg bgc=bg cur=p title="${item.title}":
+            - rtgl-view#item-${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=p title="${item.title}":
               - $if item.icon:
                   - $if showLabels:
                       - rtgl-view d=h ah=${itemContentAlign} g=sm:
