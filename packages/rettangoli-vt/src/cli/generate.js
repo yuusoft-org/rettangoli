@@ -51,17 +51,27 @@ async function main(options) {
     await cp(userStaticPath, siteOutputPath, { recursive: true });
   }
 
+  // Check for local templates first, fallback to library templates
+  const localTemplatesPath = join(vizPath, "templates");
+  const defaultTemplatePath = existsSync(join(localTemplatesPath, "default.html"))
+    ? join(localTemplatesPath, "default.html")
+    : join(libraryTemplatesPath, "default.html");
+  
+  const indexTemplatePath = existsSync(join(localTemplatesPath, "index.html"))
+    ? join(localTemplatesPath, "index.html")
+    : join(libraryTemplatesPath, "index.html");
+
   // Generate HTML files
   const generatedFiles = await generateHtml(
     specsPath,
-    join(libraryTemplatesPath, "default.html"),
+    defaultTemplatePath,
     candidatePath
   );
 
   // Generate overview page with all files
   generateOverview(
     generatedFiles,
-    join(libraryTemplatesPath, "index.html"),
+    indexTemplatePath,
     join(siteOutputPath, "index.html"),
     configData
   );
