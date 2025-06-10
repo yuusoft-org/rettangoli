@@ -1,0 +1,55 @@
+---
+title: "Basic"
+---
+<rtgl-view g="lg" h="100vh" w="100vw" fw="w">
+  <rtgl-button id="button">Open Dropdown Menu</rtgl-button>
+
+  <rtgl-dropdown-menu id="dropdown-menu"></rtgl-dropdown-menu>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const dropdownMenu = document.getElementById('dropdown-menu');
+
+  dropdownMenu.addEventListener('click-overlay', (e) => {
+    dropdownMenu.isOpen = false;
+    dropdownMenu.render();
+  });
+
+  button.addEventListener('click', (e) => {
+
+    dropdownMenu.items = [
+      {
+        label: 'Item 1',
+        type: 'label',
+      },
+      {
+        label: 'Item 2',
+        type: 'item',
+      },
+      {
+        label: 'Item 3',
+        type: 'item',
+      },
+      {
+        type: 'separator',
+      },
+      {
+        label: 'Item 4',
+        type: 'item',
+      },
+      {
+        label: 'Item 5',
+        type: 'item',
+      },
+    ]
+    dropdownMenu.isOpen = true;
+    dropdownMenu.position = {
+      x: e.clientX,
+      y: e.clientY,
+    }
+    dropdownMenu.render();
+  });
+
+
+</script>
