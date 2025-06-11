@@ -16,6 +16,10 @@ title: "Basic"
     dropdownMenu.render();
   });
 
+  dropdownMenu.addEventListener('click-item', (e) => {
+    console.log(e.detail);
+  });
+
   button.addEventListener('click', (e) => {
 
     dropdownMenu.items = [

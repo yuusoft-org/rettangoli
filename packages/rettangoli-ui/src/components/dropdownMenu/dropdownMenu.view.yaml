@@ -34,8 +34,10 @@ refs:
     eventListeners:
       click-overlay:
         handler: handleClickPopoverOverlay
-
-events: {}
+  option-*:
+    eventListeners:
+      click:
+        handler: handleClickMenuItem
 
 template:
   - rtgl-popover#popover .isOpen=isOpen .position=position:
