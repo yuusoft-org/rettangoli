@@ -1,0 +1,25 @@
+<rtgl-view p="24">
+  <rtgl-text s="lg" mb="md">Simple Name & Email Table</rtgl-text>
+  <rtgl-table id="simple-table" w="60%"></rtgl-table>
+</rtgl-view>
+
+<script type="module">
+  const table = document.getElementById('simple-table');
+  table.data = {
+    columns: [
+      { key: 'name', label: 'Full Name' },
+      { key: 'email', label: 'Email Address' }
+    ],
+    rows: [
+      { name: 'John Doe', email: 'john@company.com' },
+      { name: 'Jane Smith', email: 'jane@startup.io' },
+      { name: 'Bob Johnson', email: 'bob@enterprise.org' },
+      { name: 'Alice Williams', email: 'alice@tech.co' },
+      { name: 'Charlie Brown', email: 'charlie@design.studio' },
+      { name: 'Diana Prince', email: 'diana@agency.com' },
+      { name: 'Edward Norton', email: 'edward@consulting.biz' },
+      { name: 'Fiona Green', email: 'fiona@marketing.pro' }
+    ]
+  };
+  table.render();
+</script>

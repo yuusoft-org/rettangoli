@@ -1,0 +1,18 @@
+<rtgl-view p="24">
+  <rtgl-text s="lg" mb="md">Empty Table</rtgl-text>
+  <rtgl-table id="empty-table" w="80%"></rtgl-table>
+</rtgl-view>
+
+<script type="module">
+  const table = document.getElementById('empty-table');
+  table.data = {
+    columns: [
+      { key: 'id', label: 'Order ID' },
+      { key: 'customer', label: 'Customer' },
+      { key: 'amount', label: 'Amount' },
+      { key: 'status', label: 'Status' }
+    ],
+    rows: []
+  };
+  table.render();
+</script>
