@@ -1,0 +1,29 @@
+<rtgl-view p="24">
+  <rtgl-text s="lg" mb="md">Product Inventory Table</rtgl-text>
+  <rtgl-table id="products-table" w="100%"></rtgl-table>
+</rtgl-view>
+
+<script type="module">
+  const table = document.getElementById('products-table');
+  table.data = {
+    columns: [
+      { key: 'sku', label: 'SKU' },
+      { key: 'name', label: 'Product Name' },
+      { key: 'category', label: 'Category' },
+      { key: 'price', label: 'Price' },
+      { key: 'stock', label: 'Stock' },
+      { key: 'supplier', label: 'Supplier' },
+      { key: 'lastUpdated', label: 'Last Updated' }
+    ],
+    rows: [
+      { sku: 'LAPTOP001', name: 'MacBook Pro 16"', category: 'Electronics', price: '$2,499', stock: '12', supplier: 'Apple Inc.', lastUpdated: '2024-01-15' },
+      { sku: 'PHONE002', name: 'iPhone 15 Pro', category: 'Electronics', price: '$999', stock: '25', supplier: 'Apple Inc.', lastUpdated: '2024-01-14' },
+      { sku: 'DESK003', name: 'Standing Desk Pro', category: 'Furniture', price: '$899', stock: '8', supplier: 'ErgoDesk Co.', lastUpdated: '2024-01-13' },
+      { sku: 'CHAIR004', name: 'Ergonomic Office Chair', category: 'Furniture', price: '$599', stock: '15', supplier: 'ComfortSeating', lastUpdated: '2024-01-12' },
+      { sku: 'MONITOR005', name: '4K Display 27"', category: 'Electronics', price: '$449', stock: '20', supplier: 'DisplayTech', lastUpdated: '2024-01-11' },
+      { sku: 'KEYBOARD006', name: 'Mechanical Keyboard', category: 'Accessories', price: '$149', stock: '30', supplier: 'KeyCraft', lastUpdated: '2024-01-10' },
+      { sku: 'MOUSE007', name: 'Wireless Gaming Mouse', category: 'Accessories', price: '$79', stock: '45', supplier: 'GamerGear', lastUpdated: '2024-01-09' }
+    ]
+  };
+  table.render();
+</script>

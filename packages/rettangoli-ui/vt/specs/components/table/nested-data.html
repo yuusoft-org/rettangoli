@@ -1,0 +1,51 @@
+<rtgl-view p="24">
+  <rtgl-text s="lg" mb="md">Employee Directory (Nested Data)</rtgl-text>
+  <rtgl-table id="employees-table" w="100%"></rtgl-table>
+</rtgl-view>
+
+<script type="module">
+  const table = document.getElementById('employees-table');
+  table.data = {
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'profile.name', label: 'Name' },
+      { key: 'profile.title', label: 'Job Title' },
+      { key: 'contact.email', label: 'Email' },
+      { key: 'contact.phone', label: 'Phone' },
+      { key: 'department.name', label: 'Department' }
+    ],
+    rows: [
+      { 
+        id: 'EMP001',
+        profile: { name: 'Sarah Connor', title: 'Software Engineer' },
+        contact: { email: 'sarah@company.com', phone: '+1-555-0101' },
+        department: { name: 'Engineering' }
+      },
+      { 
+        id: 'EMP002',
+        profile: { name: 'John Matrix', title: 'Product Manager' },
+        contact: { email: 'john@company.com', phone: '+1-555-0102' },
+        department: { name: 'Product' }
+      },
+      { 
+        id: 'EMP003',
+        profile: { name: 'Ellen Ripley', title: 'UX Designer' },
+        contact: { email: 'ellen@company.com', phone: '+1-555-0103' },
+        department: { name: 'Design' }
+      },
+      { 
+        id: 'EMP004',
+        profile: { name: 'Martin Riggs', title: 'DevOps Engineer' },
+        contact: { email: 'martin@company.com', phone: '+1-555-0104' },
+        department: { name: 'Engineering' }
+      },
+      { 
+        id: 'EMP005',
+        profile: { name: 'Dana Scully', title: 'Data Analyst' },
+        contact: { email: 'dana@company.com', phone: '+1-555-0105' },
+        department: { name: 'Analytics' }
+      }
+    ]
+  };
+  table.render();
+</script>

@@ -1,0 +1,26 @@
+<rtgl-view p="24">
+  <rtgl-text s="lg" mb="md">Task List</rtgl-text>
+  <rtgl-table id="tasks-table" w="50%"></rtgl-table>
+</rtgl-view>
+
+<script type="module">
+  const table = document.getElementById('tasks-table');
+  table.data = {
+    columns: [
+      { key: 'task', label: 'Today\'s Tasks' }
+    ],
+    rows: [
+      { task: 'Review pull requests' },
+      { task: 'Update documentation' },
+      { task: 'Team standup meeting' },
+      { task: 'Deploy to production' },
+      { task: 'Code review session' },
+      { task: 'Plan sprint retrospective' },
+      { task: 'Fix critical bug #1234' },
+      { task: 'Customer feedback analysis' },
+      { task: 'Update project timeline' },
+      { task: 'Security audit review' }
+    ]
+  };
+  table.render();
+</script>

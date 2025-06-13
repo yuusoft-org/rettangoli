@@ -1,0 +1,25 @@
+<rtgl-view p="24">
+  <rtgl-text s="lg" mb="md">Status Dashboard</rtgl-text>
+  <rtgl-table id="status-table" w="40%"></rtgl-table>
+</rtgl-view>
+
+<script type="module">
+  const table = document.getElementById('status-table');
+  table.data = {
+    columns: [
+      { key: 'service', label: 'Service' },
+      { key: 'status', label: 'Status' }
+    ],
+    rows: [
+      { service: 'API Gateway', status: '✅ Online' },
+      { service: 'Database', status: '✅ Online' },
+      { service: 'Cache Server', status: '⚠️ Warning' },
+      { service: 'File Storage', status: '✅ Online' },
+      { service: 'Email Service', status: '❌ Offline' },
+      { service: 'CDN', status: '✅ Online' },
+      { service: 'Monitoring', status: '✅ Online' },
+      { service: 'Backup System', status: '⚠️ Warning' }
+    ]
+  };
+  table.render();
+</script>

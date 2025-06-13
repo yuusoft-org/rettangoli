@@ -68,6 +68,9 @@ vt:
         - title: "Dropdown Menu"
           files: "components/dropdownMenu"
           description: "Dropdown Menu component tests"
+        - title: "Table"
+          files: "components/table"
+          description: "Table component tests"
     - title: "Examples"
       type: "groupLabel"
       items:
