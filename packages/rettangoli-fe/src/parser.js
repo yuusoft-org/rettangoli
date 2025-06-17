@@ -3,7 +3,60 @@ import { render as jemplRender } from 'jempl';
 import { flattenArrays } from './common.js';
 
 const lodashGet = (obj, path) => {
-  return path.split(".").reduce((acc, part) => acc && acc[part], obj);
+  if (!path) return obj;
+  
+  // Parse path to handle both dot notation and bracket notation
+  const parts = [];
+  let current = '';
+  let inBrackets = false;
+  let quoteChar = null;
+  
+  for (let i = 0; i < path.length; i++) {
+    const char = path[i];
+    
+    if (!inBrackets && char === '.') {
+      if (current) {
+        parts.push(current);
+        current = '';
+      }
+    } else if (!inBrackets && char === '[') {
+      if (current) {
+        parts.push(current);
+        current = '';
+      }
+      inBrackets = true;
+    } else if (inBrackets && char === ']') {
+      if (current) {
+        // Remove quotes if present and add the key
+        if ((current.startsWith('"') && current.endsWith('"')) || 
+            (current.startsWith("'") && current.endsWith("'"))) {
+          parts.push(current.slice(1, -1));
+                 } else {
+           // Numeric index or unquoted string
+           const numValue = Number(current);
+           parts.push(isNaN(numValue) ? current : numValue);
+         }
+        current = '';
+      }
+      inBrackets = false;
+      quoteChar = null;
+    } else if (inBrackets && (char === '"' || char === "'")) {
+      if (!quoteChar) {
+        quoteChar = char;
+      } else if (char === quoteChar) {
+        quoteChar = null;
+      }
+      current += char;
+    } else {
+      current += char;
+    }
+  }
+  
+  if (current) {
+    parts.push(current);
+  }
+  
+  return parts.reduce((acc, part) => acc && acc[part], obj);
 };
 
 export const parseView = ({ h, template, viewData, refs, handlers }) => {
@@ -126,6 +179,7 @@ export const createVirtualDom = ({
             }
           }
         }
+        console.log('props', props)
 
         // 2. Handle ID from selector string (e.g., tag#id)
         // If an 'id' was already parsed from attrsString (e.g. id=value), it takes precedence.
