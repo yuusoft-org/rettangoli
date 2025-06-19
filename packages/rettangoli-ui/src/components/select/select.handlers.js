@@ -32,13 +32,28 @@ export const handleClickOptionsPopoverOverlay = (e, deps) => {
 }
 
 export const handleOptionClick = (e, deps) => {
-  const { render, dispatchEvent, props } = deps;
+  const { render, dispatchEvent, props, store } = deps;
   const id = e.currentTarget.id.replace('option-', '');
 
   const option = props.options[id];
 
+  // Update internal state
+  store.updateSelectOption(option);
+
+  // Call onChange if provided
+  if (props.onChange && typeof props.onChange === 'function') {
+    props.onChange(option.value);
+  }
+
+  // Dispatch custom event for backward compatibility
   dispatchEvent(new CustomEvent('option-selected', {
     detail: { value: option.value, label: option.label },
+    bubbles: true
+  }));
+
+  // Also dispatch select-change event to match form's event listener pattern
+  dispatchEvent(new CustomEvent('select-change', {
+    detail: { selectedValue: option.value },
     bubbles: true
   }));
   

@@ -1,0 +1,95 @@
+---
+title: "With Select"
+---
+<rtgl-view g="lg" h="100vh" w="100vw" fw="w">
+  <rtgl-form id="form" w="300"></rtgl-form>
+</rtgl-view>
+
+<script>
+  const form = document.getElementById('form');
+
+  form.defaultValues = {
+    email: 'hello@example.com',
+    password: '',
+    country: 'us',
+    role: '',
+  }
+
+  form.form = {
+    title: 'User Registration',
+    description: 'Please fill out the form below',
+    fields: [{
+      id: 'email',
+      fieldName: 'email',
+      inputType: 'inputText',
+      label: 'Email',
+      description: 'Enter your email address',
+      placeholder: 'user@example.com',
+      required: true,
+      validations: [{
+        rule: /^\w+@\w+\.\w+$/,
+        message: 'Must be a valid email'
+      }],
+    }, {
+      id: 'password',
+      fieldName: 'password',
+      inputType: 'inputText',
+      label: 'Password',
+      description: 'Choose a strong password',
+      placeholder: 'Enter password',
+      required: true,
+      validations: [{
+        rule: /^\w+$/,
+        message: 'Must be a valid password'
+      }],
+    }, {
+      id: 'country',
+      fieldName: 'country',
+      inputType: 'select',
+      label: 'Country',
+      description: 'Select your country',
+      placeholder: 'Choose a country',
+      required: true,
+      options: [
+        { id: 'us', label: 'United States', value: 'us' },
+        { id: 'ca', label: 'Canada', value: 'ca' },
+        { id: 'uk', label: 'United Kingdom', value: 'uk' },
+        { id: 'au', label: 'Australia', value: 'au' },
+        { id: 'de', label: 'Germany', value: 'de' },
+        { id: 'fr', label: 'France', value: 'fr' },
+        { id: 'jp', label: 'Japan', value: 'jp' },
+      ],
+    }, {
+      id: 'role',
+      fieldName: 'role',
+      inputType: 'select',
+      label: 'Role',
+      description: 'Select your role',
+      placeholder: 'Select role',
+      required: true,
+      options: [
+        { id: 'admin', label: 'Administrator', value: 'admin' },
+        { id: 'editor', label: 'Editor', value: 'editor' },
+        { id: 'viewer', label: 'Viewer', value: 'viewer' },
+      ],
+    }],
+    actions: {
+      layout: '',
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        content: 'Submit',
+      }, {
+        id: 'cancel',
+        variant: 'se',
+        content: 'Cancel',
+      }],
+    }
+  }
+
+  form.render();
+  form.addEventListener('action-click', (e) => {
+    console.log('action-click', e.detail);
+  });
+
+</script>

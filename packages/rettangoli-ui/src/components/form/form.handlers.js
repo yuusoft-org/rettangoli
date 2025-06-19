@@ -28,3 +28,36 @@ export const handleInputChange = (e, deps) => {
     });
   }
 };
+
+export const handleSelectChange = (e, deps) => {
+  const { store } = deps;
+  const id = e.currentTarget.id.replace("select-", "");
+  if (id && e.detail.selectedValue !== undefined) {
+    store.setFormFieldValue({
+      fieldName: id,
+      value: e.detail.selectedValue,
+    });
+  }
+};
+
+export const handleColorPickerChange = (e, deps) => {
+  const { store } = deps;
+  const id = e.currentTarget.id.replace("colorpicker-", "");
+  if (id && e.detail.value !== undefined) {
+    store.setFormFieldValue({
+      fieldName: id,
+      value: e.detail.value,
+    });
+  }
+};
+
+export const handleSliderChange = (e, deps) => {
+  const { store } = deps;
+  const id = e.currentTarget.id.replace("slider-", "");
+  if (id && e.detail.value !== undefined) {
+    store.setFormFieldValue({
+      fieldName: id,
+      value: e.detail.value,
+    });
+  }
+};

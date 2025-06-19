@@ -9,43 +9,63 @@ import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 
 // Internal implementation without uhtml
-class RettangoliInputElement extends HTMLElement {
+class RettangoliSliderElement extends HTMLElement {
   static styleSheet = null;
 
   static initializeStyleSheet() {
-    if (!RettangoliInputElement.styleSheet) {
-      RettangoliInputElement.styleSheet = new CSSStyleSheet();
-      RettangoliInputElement.styleSheet.replaceSync(css`
+    if (!RettangoliSliderElement.styleSheet) {
+      RettangoliSliderElement.styleSheet = new CSSStyleSheet();
+      RettangoliSliderElement.styleSheet.replaceSync(css`
         :host {
           display: contents;
         }
-        input {
-          background-color: var(--background);
-          font-size: var(--sm-font-size);
-          font-weight: var(--sm-font-weight);
-          line-height: var(--sm-line-height);
-          letter-spacing: var(--sm-letter-spacing);
-          border: 1px solid var(--ring);
-          border-radius: var(--border-radius-lg);
-          padding-left: var(--spacing-md);
-          padding-right: var(--spacing-md);
-          height: 32px;
-          color: var(--foreground);
+        input[type="range"] {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 200px;
+          height: 8px;
+          background: var(--muted);
+          border-radius: var(--border-radius-full);
           outline: none;
+          cursor: pointer;
         }
-        :host([s="sm"]) input {
-          font-size: var(--xs-font-size);
-          font-weight: var(--xs-font-weight);
-          line-height: var(--xs-line-height);
-          letter-spacing: var(--xs-letter-spacing);
-          padding-left: var(--spacing-sm);
-          padding-right: var(--spacing-sm);
-          height: 24px;
+        input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          background: var(--foreground);
+          border-radius: 50%;
+          cursor: pointer;
+          transition: all 0.2s ease;
         }
-        input:focus {
-          border-color: var(--foreground);
+        input[type="range"]::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          background: var(--foreground);
+          border-radius: 50%;
+          cursor: pointer;
+          border: none;
+          transition: all 0.2s ease;
         }
-        input:disabled {
+        input[type="range"]:hover::-webkit-slider-thumb {
+          transform: scale(1.1);
+        }
+        input[type="range"]:hover::-moz-range-thumb {
+          transform: scale(1.1);
+        }
+        input[type="range"]:focus {
+          outline: 2px solid var(--ring);
+          outline-offset: 2px;
+        }
+        input[type="range"]:disabled {
+          cursor: not-allowed;
+          opacity: 0.5;
+        }
+        input[type="range"]:disabled::-webkit-slider-thumb {
+          cursor: not-allowed;
+        }
+        input[type="range"]:disabled::-moz-range-thumb {
           cursor: not-allowed;
         }
         ${marginStyles}
@@ -56,9 +76,9 @@ class RettangoliInputElement extends HTMLElement {
 
   constructor() {
     super();
-    RettangoliInputElement.initializeStyleSheet();
+    RettangoliSliderElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "closed" });
-    this.shadow.adoptedStyleSheets = [RettangoliInputElement.styleSheet];
+    this.shadow.adoptedStyleSheets = [RettangoliSliderElement.styleSheet];
     
     // Initialize style tracking properties
     this._styles = {
@@ -72,22 +92,25 @@ class RettangoliInputElement extends HTMLElement {
     
     // Create initial DOM structure
     this._inputElement = document.createElement('input');
+    this._inputElement.type = 'range';
     this._styleElement = document.createElement('style');
     
     this.shadow.appendChild(this._styleElement);
     this.shadow.appendChild(this._inputElement);
 
-    // Bind event handler
-    this._inputElement.addEventListener('keydown', this._onChange);
+    // Bind event handlers
+    this._inputElement.addEventListener('input', this._onInput);
+    this._inputElement.addEventListener('change', this._onChange);
   }
 
   static get observedAttributes() {
     return [
       "key", 
-      "type", 
-      "placeholder", 
+      "value",
+      "min",
+      "max",
+      "step",
       "disabled",
-      "s",
       ...permutateBreakpoints([
         ...styleMapKeys,
         "wh",
@@ -105,8 +128,20 @@ class RettangoliInputElement extends HTMLElement {
     return this._inputElement.value;
   }
 
+  set value(newValue) {
+    this._inputElement.value = newValue;
+  }
+
+  _onInput = (event) => {
+    this.dispatchEvent(new CustomEvent('slider-input', {
+      detail: {
+        value: this._inputElement.value,
+      },
+    }));
+  };
+
   _onChange = (event) => {
-    this.dispatchEvent(new CustomEvent('input-keydown', {
+    this.dispatchEvent(new CustomEvent('slider-change', {
       detail: {
         value: this._inputElement.value,
       },
@@ -115,7 +150,7 @@ class RettangoliInputElement extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     // Handle input-specific attributes first
-    if (["type", "placeholder", "disabled", "s"].includes(name)) {
+    if (["value", "min", "max", "step", "disabled"].includes(name)) {
       this._updateInputAttributes();
       return;
     }
@@ -178,7 +213,7 @@ class RettangoliInputElement extends HTMLElement {
     });
 
     // Update styles only if changed - targeting input element
-    const newStyleString = convertObjectToCssString(this._styles, 'input');
+    const newStyleString = convertObjectToCssString(this._styles, 'input[type="range"]');
     if (newStyleString !== this._lastStyleString) {
       this._styleElement.textContent = newStyleString;
       this._lastStyleString = newStyleString;
@@ -186,16 +221,32 @@ class RettangoliInputElement extends HTMLElement {
   }
 
   _updateInputAttributes() {
-    const type = this.getAttribute("type") || "text";
-    const placeholder = this.getAttribute("placeholder");
+    const value = this.getAttribute("value");
+    const min = this.getAttribute("min");
+    const max = this.getAttribute("max");
+    const step = this.getAttribute("step");
     const isDisabled = this.hasAttribute('disabled');
 
-    this._inputElement.setAttribute("type", type);
-    
-    if (placeholder !== null) {
-      this._inputElement.setAttribute("placeholder", placeholder);
+    if (value !== null) {
+      this._inputElement.value = value;
+    }
+
+    if (min !== null) {
+      this._inputElement.min = min;
     } else {
-      this._inputElement.removeAttribute("placeholder");
+      this._inputElement.min = "0";
+    }
+
+    if (max !== null) {
+      this._inputElement.max = max;
+    } else {
+      this._inputElement.max = "100";
+    }
+
+    if (step !== null) {
+      this._inputElement.step = step;
+    } else {
+      this._inputElement.step = "1";
     }
     
     if (isDisabled) {
@@ -214,5 +265,5 @@ class RettangoliInputElement extends HTMLElement {
 export default ({ render, html }) => {
   // Note: render and html parameters are accepted but not used
   // This maintains backward compatibility with existing code
-  return RettangoliInputElement;
+  return RettangoliSliderElement;
 };

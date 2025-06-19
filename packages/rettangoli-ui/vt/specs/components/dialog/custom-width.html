@@ -1,0 +1,31 @@
+---
+title: "Custom Width"
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-button id="button">Open Dialog</rtgl-button>
+  <rtgl-dialog id="dialog" w="400">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Custom Width Dialog</rtgl-text>
+      <rtgl-text c="mu">This dialog has a custom width of 400px instead of the default 600px.</rtgl-text>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const dialog = document.getElementById('dialog');
+
+  // Open dialog for visual testing
+  dialog.isOpen = true;
+  dialog.render();
+
+  button.addEventListener('click', () => {
+    dialog.isOpen = true;
+    dialog.render();
+  });
+
+  dialog.addEventListener('close-dialogue', () => {
+    dialog.isOpen = false;
+    dialog.render();
+  });
+</script>

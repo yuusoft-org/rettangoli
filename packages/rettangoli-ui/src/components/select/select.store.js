@@ -55,7 +55,7 @@ export const closeOptionsPopover = (state) => {
   state.isOpen = false;
 }
 
-export const selectOption = (state, option) => {
+export const updateSelectOption = (state, option) => {
   state.selectedValue = option.value;
   state.selectedLabel = option.label;
   state.isOpen = false;
