@@ -95,6 +95,8 @@ export const toViewData = ({ state, props, attrs }) => {
   // Header width - should match item width for alignment
   const headerWidth = itemWidth;
 
+  const ah = mode === 'shrunk-lg' || mode === 'shrunk-md' ? 'c' : '';
+
   return {
     containerAttrString,
     mode,
@@ -114,7 +116,8 @@ export const toViewData = ({ state, props, attrs }) => {
     itemAlignAttr,
     itemWidth,
     headerWidth,
-    selectedItemId
+    selectedItemId,
+    ah,
   };
 }
 
