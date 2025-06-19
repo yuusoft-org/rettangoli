@@ -1,0 +1,48 @@
+---
+title: "With Color Picker"
+---
+<rtgl-view g="lg" h="100vh" w="100vw" fw="w">
+  <rtgl-form id="form" w="300"></rtgl-form>
+</rtgl-view>
+
+<script>
+  const form = document.getElementById('form');
+
+  form.defaultValues = {
+    favoriteColor: '#ff5733',
+    backgroundColor: '#3498db',
+  }
+
+  form.form = {
+    title: 'Color Preferences',
+    description: 'Select your favorite colors',
+    fields: [{
+      id: 'favoriteColor',
+      fieldName: 'favoriteColor',
+      inputType: 'colorPicker',
+      label: 'Favorite Color',
+      description: 'Pick your favorite color',
+      value: '#ff5733'
+    }, {
+      id: 'backgroundColor',
+      fieldName: 'backgroundColor',
+      inputType: 'colorPicker',
+      label: 'Background Color',
+      description: 'Choose a background color',
+      value: '#3498db'
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        content: 'Save Colors',
+      }],
+    }
+  }
+
+  form.render();
+  form.addEventListener('action-click', (e) => {
+    console.log('action-click', e.detail);
+  });
+
+</script>

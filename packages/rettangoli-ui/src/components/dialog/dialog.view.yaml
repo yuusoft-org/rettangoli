@@ -8,6 +8,8 @@ propsSchema:
   properties:
     isOpen:
       type: boolean
+    w:
+      type: string
 
 refs:
   dialog-overlay:
@@ -35,7 +37,8 @@ styles:
 
 template:
   - $if isOpen:
-    - rtgl-view pos=fix cor=full ah=c av=c:
+    - rtgl-view pos=fix cor=full ah=c:
       - 'rtgl-view#dialog-overlay pos=fix cor=full ah=c av=c bgc=bg op=0.5':
-      - rtgl-view#dialog-container pos=fix bw=xs p=lg bgc=bg w=600 br=sm:
+      - rtgl-view h=10vh:
+      - rtgl-view#dialog-container z=100 bw=xs p=lg bgc=bg w=${w} br=sm:
         - slot name=content:

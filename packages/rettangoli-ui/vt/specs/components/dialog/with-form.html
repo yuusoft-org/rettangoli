@@ -1,0 +1,98 @@
+---
+title: "Dialog with Form"
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-button id="button">Open Form Dialog</rtgl-button>
+  <rtgl-dialog id="dialog" w="500">
+    <rtgl-form id="form" slot="content"></rtgl-form>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const dialog = document.getElementById('dialog');
+  const form = document.getElementById('form');
+
+  // Configure the form
+  form.defaultValues = {
+    name: '',
+    email: '',
+    favoriteColor: '#3498db',
+    experience: 3
+  };
+
+  form.form = {
+    title: 'User Registration',
+    description: 'Please fill out your information',
+    fields: [{
+      id: 'name',
+      fieldName: 'name',
+      inputType: 'inputText',
+      label: 'Full Name',
+      description: 'Enter your full name',
+      placeholder: 'John Doe'
+    }, {
+      id: 'email',
+      fieldName: 'email',
+      inputType: 'inputText',
+      label: 'Email Address',
+      description: 'Enter your email address',
+      placeholder: 'john@example.com'
+    }, {
+      id: 'favoriteColor',
+      fieldName: 'favoriteColor',
+      inputType: 'colorPicker',
+      label: 'Favorite Color',
+      description: 'Pick your favorite color',
+      value: '#3498db'
+    }, {
+      id: 'experience',
+      fieldName: 'experience',
+      inputType: 'slider',
+      label: 'Years of Experience',
+      description: 'How many years of experience do you have?',
+      min: 0,
+      max: 20,
+      step: 1,
+      value: 3
+    }],
+    actions: {
+      buttons: [{
+        id: 'cancel',
+        content: 'Cancel',
+      }, {
+        id: 'submit',
+        variant: 'pr',
+        content: 'Register',
+      }],
+    }
+  };
+
+  // Open dialog for visual testing
+  dialog.isOpen = true;
+  form.render();
+  dialog.render();
+
+  // Handle form actions
+  form.addEventListener('action-click', (e) => {
+    console.log('Form action:', e.detail);
+    if (e.detail.actionId === 'cancel') {
+      dialog.isOpen = false;
+      dialog.render();
+    } else if (e.detail.actionId === 'submit') {
+      console.log('Form submitted with values:', e.detail.formValues);
+      dialog.isOpen = false;
+      dialog.render();
+    }
+  });
+
+  button.addEventListener('click', () => {
+    dialog.isOpen = true;
+    dialog.render();
+  });
+
+  dialog.addEventListener('close-dialogue', () => {
+    dialog.isOpen = false;
+    dialog.render();
+  });
+</script>

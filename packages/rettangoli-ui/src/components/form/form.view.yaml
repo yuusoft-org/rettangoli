@@ -8,7 +8,6 @@ propsSchema:
   properties:
     defaultValues:
       type: object
-      properties: {}
     form:
       type: object
       properties:
@@ -16,6 +15,115 @@ propsSchema:
           type: string
         description:
           type: string
+        fields:
+          type: array
+          items:
+            anyOf:
+              - type: object
+                properties:
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  inputType:
+                    const: inputText
+                  placeholder:
+                    type: string
+                required:
+                  - id
+                  - label
+                  - inputType
+                additionalProperties: false
+              - type: object
+                properties:
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  inputType:
+                    const: select
+                  placeholder:
+                    type: string
+                  options:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        label:
+                          type: string
+                        value:
+                          type: any
+                      required:
+                        - id
+                        - label
+                        - value
+                required:
+                  - id
+                  - label
+                  - inputType
+                  - options
+                additionalProperties: false
+              - type: object
+                properties:
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  inputType:
+                    const: colorPicker
+                  value:
+                    type: string
+                required:
+                  - id
+                  - label
+                  - inputType
+                additionalProperties: false
+              - type: object
+                properties:
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  inputType:
+                    const: slider
+                  min:
+                    type: number
+                  max:
+                    type: number
+                  step:
+                    type: number
+                  value:
+                    type: number
+                required:
+                  - id
+                  - label
+                  - inputType
+                additionalProperties: false
+        actions:
+          type: object
+          properties:
+            buttons:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  content:
+                    type: string
+                required:
+                  - id
+                  - content
 
 refs:
   action-*:
@@ -26,6 +134,18 @@ refs:
     eventListeners:
       input-keydown:
         handler: handleInputChange
+  select-*:
+    eventListeners:
+      select-change:
+        handler: handleSelectChange
+  colorpicker-*:
+    eventListeners:
+      colorpicker-change:
+        handler: handleColorPickerChange
+  slider-*:
+    eventListeners:
+      slider-change:
+        handler: handleSliderChange
 
 events: {}
 
@@ -34,13 +154,20 @@ template:
     - rtgl-view g=sm w=f:
       - rtgl-text s=lg: ${title}
       - rtgl-text c=mu-fg: ${description}
-    - rtgl-view g=sm w=f:
+    - rtgl-view g=lg w=f:
       - $for field, i in fields:
-        - rtgl-view g=sm w=f:
-            - rtgl-text: ${field.label}
-            - rtgl-text s=sm c=mu-fg: ${field.description}
+        - rtgl-view g=md w=f:
+            - rtgl-view g=sm:
+              - rtgl-text: ${field.label}
+              - rtgl-text s=sm c=mu-fg: ${field.description}
             - $if field.inputType == "inputText":
-                - rtgl-input#input-${field.id} w=f: 
+                - rtgl-input#input-${field.id} w=f placeholder=${field.placeholder}:
+            - $if field.inputType == "select":
+                - rtgl-select#select-${field.id} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=formValues[field.id]:
+            - $if field.inputType == "colorPicker":
+                - rtgl-color-picker#colorpicker-${field.id} value=${field.value}:
+            - $if field.inputType == "slider":
+                - rtgl-slider#slider-${field.id} min=${field.min} max=${field.max} step=${field.step} value=${field.value}: 
     - rtgl-view g=sm w=f:
       - $for button, i in actions.buttons:
         - rtgl-view d=h ah=e g=sm w=f:

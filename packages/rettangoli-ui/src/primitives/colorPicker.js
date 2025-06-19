@@ -9,44 +9,32 @@ import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 
 // Internal implementation without uhtml
-class RettangoliInputElement extends HTMLElement {
+class RettangoliColorPickerElement extends HTMLElement {
   static styleSheet = null;
 
   static initializeStyleSheet() {
-    if (!RettangoliInputElement.styleSheet) {
-      RettangoliInputElement.styleSheet = new CSSStyleSheet();
-      RettangoliInputElement.styleSheet.replaceSync(css`
+    if (!RettangoliColorPickerElement.styleSheet) {
+      RettangoliColorPickerElement.styleSheet = new CSSStyleSheet();
+      RettangoliColorPickerElement.styleSheet.replaceSync(css`
         :host {
           display: contents;
         }
-        input {
+        input[type="color"] {
           background-color: var(--background);
-          font-size: var(--sm-font-size);
-          font-weight: var(--sm-font-weight);
-          line-height: var(--sm-line-height);
-          letter-spacing: var(--sm-letter-spacing);
           border: 1px solid var(--ring);
           border-radius: var(--border-radius-lg);
-          padding-left: var(--spacing-md);
-          padding-right: var(--spacing-md);
+          padding: 2px;
           height: 32px;
-          color: var(--foreground);
+          width: 32px;
+          cursor: pointer;
           outline: none;
         }
-        :host([s="sm"]) input {
-          font-size: var(--xs-font-size);
-          font-weight: var(--xs-font-weight);
-          line-height: var(--xs-line-height);
-          letter-spacing: var(--xs-letter-spacing);
-          padding-left: var(--spacing-sm);
-          padding-right: var(--spacing-sm);
-          height: 24px;
-        }
-        input:focus {
+        input[type="color"]:focus {
           border-color: var(--foreground);
         }
-        input:disabled {
+        input[type="color"]:disabled {
           cursor: not-allowed;
+          opacity: 0.5;
         }
         ${marginStyles}
         ${cursorStyles}
@@ -56,9 +44,9 @@ class RettangoliInputElement extends HTMLElement {
 
   constructor() {
     super();
-    RettangoliInputElement.initializeStyleSheet();
+    RettangoliColorPickerElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "closed" });
-    this.shadow.adoptedStyleSheets = [RettangoliInputElement.styleSheet];
+    this.shadow.adoptedStyleSheets = [RettangoliColorPickerElement.styleSheet];
     
     // Initialize style tracking properties
     this._styles = {
@@ -72,22 +60,22 @@ class RettangoliInputElement extends HTMLElement {
     
     // Create initial DOM structure
     this._inputElement = document.createElement('input');
+    this._inputElement.type = 'color';
     this._styleElement = document.createElement('style');
     
     this.shadow.appendChild(this._styleElement);
     this.shadow.appendChild(this._inputElement);
 
-    // Bind event handler
-    this._inputElement.addEventListener('keydown', this._onChange);
+    // Bind event handlers
+    this._inputElement.addEventListener('change', this._onChange);
+    this._inputElement.addEventListener('input', this._onInput);
   }
 
   static get observedAttributes() {
     return [
       "key", 
-      "type", 
-      "placeholder", 
+      "value", 
       "disabled",
-      "s",
       ...permutateBreakpoints([
         ...styleMapKeys,
         "wh",
@@ -105,8 +93,20 @@ class RettangoliInputElement extends HTMLElement {
     return this._inputElement.value;
   }
 
+  set value(newValue) {
+    this._inputElement.value = newValue;
+  }
+
   _onChange = (event) => {
-    this.dispatchEvent(new CustomEvent('input-keydown', {
+    this.dispatchEvent(new CustomEvent('colorpicker-change', {
+      detail: {
+        value: this._inputElement.value,
+      },
+    }));
+  };
+
+  _onInput = (event) => {
+    this.dispatchEvent(new CustomEvent('colorpicker-input', {
       detail: {
         value: this._inputElement.value,
       },
@@ -115,7 +115,7 @@ class RettangoliInputElement extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     // Handle input-specific attributes first
-    if (["type", "placeholder", "disabled", "s"].includes(name)) {
+    if (["value", "disabled"].includes(name)) {
       this._updateInputAttributes();
       return;
     }
@@ -178,7 +178,7 @@ class RettangoliInputElement extends HTMLElement {
     });
 
     // Update styles only if changed - targeting input element
-    const newStyleString = convertObjectToCssString(this._styles, 'input');
+    const newStyleString = convertObjectToCssString(this._styles, 'input[type="color"]');
     if (newStyleString !== this._lastStyleString) {
       this._styleElement.textContent = newStyleString;
       this._lastStyleString = newStyleString;
@@ -186,16 +186,11 @@ class RettangoliInputElement extends HTMLElement {
   }
 
   _updateInputAttributes() {
-    const type = this.getAttribute("type") || "text";
-    const placeholder = this.getAttribute("placeholder");
+    const value = this.getAttribute("value");
     const isDisabled = this.hasAttribute('disabled');
 
-    this._inputElement.setAttribute("type", type);
-    
-    if (placeholder !== null) {
-      this._inputElement.setAttribute("placeholder", placeholder);
-    } else {
-      this._inputElement.removeAttribute("placeholder");
+    if (value !== null) {
+      this._inputElement.value = value;
     }
     
     if (isDisabled) {
@@ -214,5 +209,5 @@ class RettangoliInputElement extends HTMLElement {
 export default ({ render, html }) => {
   // Note: render and html parameters are accepted but not used
   // This maintains backward compatibility with existing code
-  return RettangoliInputElement;
+  return RettangoliColorPickerElement;
 };

@@ -156,7 +156,7 @@ anchors:
           - rtgl-text s=lg: "${header.label}"
 
 template:
-  - rtgl-view h=f w=${sidebarWidth} bwr=xs ${containerAttrString}:
+  - rtgl-view h=f w=${sidebarWidth} bwr=xs ah=${ah} ${containerAttrString}:
     - rtgl-view ph=${headerPadding} pv=lg:
       - $if header.href:
           - rtgl-view href=${header.href} d=h av=c ah=${headerAlign} g=lg w=${headerWidth}:
@@ -165,7 +165,7 @@ template:
             - rtgl-view#header d=h av=c ah=${headerAlign} g=lg w=${headerWidth} cur=p:
               - *headerContent
 
-    - rtgl-view w=f ph=${headerPadding} pb=lg g=xs:
+    - rtgl-view w=f ph=${headerPadding} pb=lg g=xs ah=${ah}:
       - $for item, i in items:
         - $if item.type == "groupLabel":
             - $if showGroupLabels:
