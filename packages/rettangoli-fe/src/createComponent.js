@@ -254,6 +254,10 @@ class BaseComponent extends HTMLElement {
    */
   cssText;
 
+  static get observedAttributes() {
+    return ["key"];
+  }
+
   get viewData() {
     // TODO decide whether to pass globalStore state
     const data = this.store.toViewData();
@@ -326,6 +330,12 @@ class BaseComponent extends HTMLElement {
     }
     if (this.unsubscribeAll) {
       this.unsubscribeAll();
+    }
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue && this.render) {
+      this.render();
     }
   }
 
@@ -433,6 +443,10 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
   }
 
   class MyComponent extends BaseComponent {
+
+    static get observedAttributes() {
+      return ["key"];
+    }
 
     constructor() {
       super();
