@@ -342,12 +342,18 @@ export const createVirtualDom = ({
               update: (oldVnode, vnode) => {
                 const oldProps = oldVnode.data?.props || {};
                 const newProps = vnode.data?.props || {};
+                const oldAttrs = oldVnode.data?.attrs || {};
+                const newAttrs = vnode.data?.attrs || {};
 
                 // Check if props have changed
                 const propsChanged =
                   JSON.stringify(oldProps) !== JSON.stringify(newProps);
 
-                if (propsChanged) {
+                // Check if attrs have changed
+                const attrsChanged =
+                  JSON.stringify(oldAttrs) !== JSON.stringify(newAttrs);
+
+                if (propsChanged || attrsChanged) {
                   // Set isDirty attribute and trigger re-render
                   const element = vnode.elm;
                   if (
