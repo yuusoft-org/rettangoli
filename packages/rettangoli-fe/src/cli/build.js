@@ -30,7 +30,7 @@ export const writeViewFile = (view, category, component) => {
 };
 
 export const bundleFile = async (options) => {
-  const { outfile = "./viz/static/main.js" } = options;
+  const { outfile = "./vt/static/main.js" } = options;
   await esbuild.build({
     entryPoints: ["./.temp/dynamicImport.js"],
     bundle: true,
@@ -47,7 +47,7 @@ export const bundleFile = async (options) => {
 const buildRettangoliFrontend = async (options) => {
   console.log("running build with options", options);
 
-  const { dirs = ["./example"], outfile = "./viz/static/main.js", setup = "setup.js" } = options;
+  const { dirs = ["./example"], outfile = "./vt/static/main.js", setup = "setup.js" } = options;
 
   const allFiles = getAllFiles(dirs).filter((filePath) => {
     return (
@@ -106,7 +106,7 @@ const buildRettangoliFrontend = async (options) => {
   }
 
   output += `
-import { createComponent } from 'rettangoli-fe';
+import { createComponent } from '@rettangoli/fe';
 import { deps, patch, h } from '../${setup}';
 const imports = ${JSON.stringify(imports, null, 2)};
 

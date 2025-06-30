@@ -11,7 +11,7 @@
         "rtgl": "./cli.js",
       },
       "dependencies": {
-        "@rettangoli/fe": "0.0.5",
+        "@rettangoli/fe": "0.0.6",
         "@rettangoli/sites": "0.1.0",
         "@rettangoli/vt": "0.0.1",
         "commander": "^14.0.0",
@@ -20,7 +20,7 @@
     },
     "packages/rettangoli-fe": {
       "name": "@rettangoli/fe",
-      "version": "0.0.5",
+      "version": "0.0.6",
       "dependencies": {
         "esbuild": "^0.25.5",
         "immer": "^10.1.1",

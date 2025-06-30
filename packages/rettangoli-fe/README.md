@@ -3,7 +3,7 @@
 
 ## Development
 
-Bundle the code under `example` folder using `rettangoli-fe`
+Bundle the code under `example` folder using `@rettangoli/fe`
 
 ```bash
 bun run ../rettangoli-cli/cli.js fe build
