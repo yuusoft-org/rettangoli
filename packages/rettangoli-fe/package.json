@@ -1,13 +1,12 @@
 {
   "name": "@rettangoli/fe",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Frontend framework for building reactive web components",
   "type": "module",
   "main": "./src/index.js",
   "keywords": ["frontend", "reactive", "components", "web", "framework"],
   "files": [
-    "src/*.js",
-    "src/!(cli)",
+    "src",
     "README.md",
     "LICENSE"
   ],
@@ -20,16 +19,15 @@
     ".": "./src/index.js",
     "./cli": "./src/cli/index.js"
   },
-  "devDependencies": {
-    "js-yaml": "^4.1.0",
-    "esbuild": "^0.25.4",
-    "vite": "^6.3.5"
-  },
+  "devDependencies": {},
   "dependencies": {
+    "esbuild": "^0.25.5",
     "immer": "^10.1.1",
     "jempl": "^0.0.6",
+    "js-yaml": "^4.1.0",
     "rxjs": "^7.8.2",
-    "snabbdom": "^3.6.2"
+    "snabbdom": "^3.6.2",
+    "vite": "^6.3.5"
   },
   "scripts": {
     "dev": "node watch.js --watch"
