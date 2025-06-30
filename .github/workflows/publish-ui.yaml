@@ -1,4 +1,4 @@
-name: Publish package to npm
+name: Publish package @rettangoli/ui to npm
 on:
   push:
     tags:
@@ -33,7 +33,7 @@ jobs:
 
       # Publish to npm
       - name: Publish to npm
-        run: npm publish
+        run: bun publish
         working-directory: ./packages/rettangoli-ui
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
