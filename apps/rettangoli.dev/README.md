@@ -3,7 +3,7 @@
 
 Website and user facing documentation for Rettangoli.
 
-This website is built with rettangoli-sites
+This website is built with @rettangoli/sites
 
 ## Development
 

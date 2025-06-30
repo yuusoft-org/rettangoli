@@ -1,13 +1,13 @@
-name: Publish package rtgl to npm
+name: Publish package @rettangoli/vt to npm
 on:
   push:
     tags:
-      - 'cli-v*'
+      - 'vt-v*'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  publish-cli:
+  publish-vt:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,6 +30,6 @@ jobs:
       # Publish to npm
       - name: Publish to npm
         run: bun publish
-        working-directory: ./packages/rettangoli-cli
+        working-directory: ./packages/rettangoli-vt
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}

@@ -1,6 +1,6 @@
 {
     "scripts": {},
     "dependencies": {
-        "rettangoli-sites": "workspace:*"
+        "@rettangoli/sites": "workspace:*"
     }
 }

@@ -19,7 +19,7 @@ There are two primary ways to use Rettangoli:
 With the IIFE approach, you have two options:
 
 * **rettangoli-layout**: Provides only the basic components
-* **rettangoli-ui**: Provides a complete UI library with additional components
+* **@rettangoli/ui**: Provides a complete UI library with additional components
 
 ### Component Availability
 
@@ -29,7 +29,7 @@ TODO
 
 ```html
 
-### Using rettangoli-ui
+### Using @rettangoli/ui
 
 ```html
 ```
@@ -52,14 +52,14 @@ The ESM approach provides more customization options.
 First, install the package:
 
 ```bash
-npm install rettangoli-ui
+npm install @rettangoli/ui
 ```
 
 Rettangoli uses [uhtml](https://github.com/WebReflection/uhtml) as its HTML rendering library. You'll need to pass instances of `render` and `html` when registering components:
 
 ```js
 import { render, html } from 'uhtml';
-import { RettangoliView, RettangoliText } from 'rettangoli-ui'; 
+import { RettangoliView, RettangoliText } from '@rettangoli/ui'; 
 
 // Register the web components
 customElements.define("rtgl-view", RettangoliView({ render, html }));
