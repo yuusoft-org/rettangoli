@@ -1,13 +1,12 @@
 {
   "name": "@rettangoli/fe",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Frontend framework for building reactive web components",
   "type": "module",
   "main": "./src/index.js",
   "keywords": ["frontend", "reactive", "components", "web", "framework"],
   "files": [
-    "src/*.js",
-    "src/!(cli)",
+    "src",
     "README.md",
     "LICENSE"
   ],

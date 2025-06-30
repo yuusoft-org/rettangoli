@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { build, scaffold, watch, examples } from "rettangoli-fe/cli";
+import { build, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { generate, report, accept } from "@rettangoli/vt/cli";
 import { copyPagesToSite } from "@rettangoli/sites/cli";
 import { Command } from "commander";
