@@ -22,8 +22,11 @@
   },
   "license": "MIT",
   "scripts": {
-    "build:dev": "bun run ../rettangoli-cli/cli.js fe build && bun run esbuild-dev.js",
-    "build": "bun run ../rettangoli-cli/cli.js fe build && bun run esbuild.js"
+    "build:dev": "rtgl fe build && bun run esbuild-dev.js",
+    "build": "rtgl fe build && bun run esbuild.js",
+    "vt:generate": "rtgl vt generate --skip-screenshots",
+    "vt:report": "bun run build:dev && rtgl vt generate && rtgl vt report",
+    "serve": "bunx serve .rettangoli/vt/_site"
   },
   "devDependencies": {
     "esbuild": "^0.20.0",

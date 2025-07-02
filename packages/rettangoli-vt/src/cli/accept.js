@@ -34,7 +34,7 @@ async function copyWebpFiles(sourceDir, destDir) {
  */
 async function acceptReference(options = {}) {
   const {
-    vizPath = "./viz",
+    vizPath = "./vt",
   } = options;
 
   const referenceDir = join(vizPath, "reference");

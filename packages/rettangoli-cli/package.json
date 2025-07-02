@@ -49,6 +49,6 @@
     "js-yaml": "^4.1.0",
     "@rettangoli/fe": "0.0.6",
     "@rettangoli/sites": "0.1.0",
-    "@rettangoli/vt": "0.0.1"
+    "@rettangoli/vt": "0.0.2-rc1"
   }
 }
