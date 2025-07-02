@@ -92,6 +92,7 @@ class RettangoliViewElement extends HTMLElement {
         "hidden",
         "sh",
         "sv",
+        "z"
       ]),
     ];
   }
