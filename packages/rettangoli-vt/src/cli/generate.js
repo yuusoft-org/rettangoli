@@ -94,7 +94,7 @@ async function main(options) {
       );
     } finally {
       // Stop server
-      server.stop();
+      server.close();
       console.log("Server stopped");
     }
   }

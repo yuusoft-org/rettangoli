@@ -5,8 +5,10 @@ import {
   writeFileSync,
   mkdirSync,
   existsSync,
+  unlinkSync,
 } from "fs";
 import { join, dirname, resolve, extname } from "path";
+import http from "http";
 import { load as loadYaml } from "js-yaml";
 import { Liquid } from "liquidjs";
 import { chromium } from "playwright";
@@ -181,49 +183,47 @@ async function generateHtml(specsDir, templatePath, outputDir) {
  * Start a web server to serve static files
  */
 function startWebServer(artifactsDir, staticDir, port) {
-  const server = Bun.serve({
-    port: port,
-    fetch(req) {
-      const url = new URL(req.url);
-      let path = url.pathname;
+  const server = http.createServer((req, res) => {
+    const url = new URL(req.url, `http://localhost:${port}`);
+    let path = url.pathname;
 
-      // Default to index.html for root path
-      if (path === "/") {
-        path = "/index.html";
-      }
+    // Default to index.html for root path
+    if (path === "/") {
+      path = "/index.html";
+    }
 
-      // Remove leading slash for file path
-      const filePath = path.startsWith("/") ? path.slice(1) : path;
+    // Remove leading slash for file path
+    const filePath = path.startsWith("/") ? path.slice(1) : path;
 
-      // Try to serve from artifacts directory first
-      const artifactsPath = join(artifactsDir, filePath);
-      if (existsSync(artifactsPath) && statSync(artifactsPath).isFile()) {
-        const fileContent = readFileSync(artifactsPath);
-        const contentType = getContentType(artifactsPath);
-        return new Response(fileContent, {
-          headers: { "Content-Type": contentType },
-        });
-      }
+    // Try to serve from artifacts directory first
+    const artifactsPath = join(artifactsDir, filePath);
+    if (existsSync(artifactsPath) && statSync(artifactsPath).isFile()) {
+      const fileContent = readFileSync(artifactsPath);
+      const contentType = getContentType(artifactsPath);
+      res.writeHead(200, { "Content-Type": contentType });
+      res.end(fileContent);
+      return;
+    }
 
-      // Then try to serve from static directory
-      const staticPath = join(staticDir, filePath);
-      if (existsSync(staticPath) && statSync(staticPath).isFile()) {
-        const fileContent = readFileSync(staticPath);
-        const contentType = getContentType(staticPath);
-        return new Response(fileContent, {
-          headers: { "Content-Type": contentType },
-        });
-      }
+    // Then try to serve from static directory
+    const staticPath = join(staticDir, filePath);
+    if (existsSync(staticPath) && statSync(staticPath).isFile()) {
+      const fileContent = readFileSync(staticPath);
+      const contentType = getContentType(staticPath);
+      res.writeHead(200, { "Content-Type": contentType });
+      res.end(fileContent);
+      return;
+    }
 
-      // If not found in either directory, return 404
-      return new Response("Not Found", {
-        status: 404,
-        headers: { "Content-Type": "text/plain" },
-      });
-    },
+    // If not found in either directory, return 404
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("Not Found");
   });
 
-  console.log(`Server started at http://localhost:${port}`);
+  server.listen(port, () => {
+    console.log(`Server started at http://localhost:${port}`);
+  });
+  
   return server;
 }
 
@@ -311,7 +311,7 @@ async function takeScreenshots(
 
           // Remove temporary PNG file
           if (existsSync(tempPngPath)) {
-            await import('fs').then(fs => fs.promises.unlink(tempPngPath));
+            unlinkSync(tempPngPath);
           }
 
           // example instructions:
@@ -350,7 +350,7 @@ async function takeScreenshots(
 
                 // Remove temporary PNG file
                 if (existsSync(tempAdditionalPngPath)) {
-                  await import('fs').then(fs => fs.promises.unlink(tempAdditionalPngPath));
+                  unlinkSync(tempAdditionalPngPath);
                 }
 
                 console.log(
