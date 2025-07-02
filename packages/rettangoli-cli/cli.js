@@ -8,14 +8,18 @@ import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
 import yaml from "js-yaml";
 
+const packageJson = JSON.parse(
+  readFileSync(new URL("./package.json", import.meta.url)),
+);
+
 // Function to read config file
 function readConfig() {
   const configPath = resolve(process.cwd(), "rettangoli.config.yaml");
-  
+
   if (!existsSync(configPath)) {
     return null;
   }
-  
+
   try {
     const configContent = readFileSync(configPath, "utf8");
     return yaml.load(configContent);
@@ -25,13 +29,12 @@ function readConfig() {
   }
 }
 
-
 const program = new Command();
 
 program
   .name("rtgl")
   .description("CLI tool for Rettangoli development")
-  .version("0.0.1");
+  .version(packageJson.version);
 
 // Add examples to main program
 program.addHelpText(
@@ -63,30 +66,32 @@ Examples:
   )
   .action((options) => {
     const config = readConfig();
-    
+
     if (!config) {
       throw new Error("rettangoli.config.yaml not found");
     }
-    
+
     if (!config.fe?.dirs?.length) {
       throw new Error("fe.dirs not found or empty in config");
     }
-    
+
     // Validate that directories exist
-    const missingDirs = config.fe.dirs.filter(dir => !existsSync(resolve(process.cwd(), dir)));
+    const missingDirs = config.fe.dirs.filter(
+      (dir) => !existsSync(resolve(process.cwd(), dir)),
+    );
     if (missingDirs.length > 0) {
       throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
     }
-    
+
     // Pass dirs, setup, and outfile from config
     options.dirs = config.fe.dirs;
-    options.setup = config.fe.setup || 'setup.js';
-    
+    options.setup = config.fe.setup || "setup.js";
+
     // Use config outfile if not specified via CLI option
     if (!options.outfile && config.fe.outfile) {
       options.outfile = config.fe.outfile;
     }
-    
+
     build(options);
   });
 
@@ -131,38 +136,38 @@ Examples:
   )
   .action((options) => {
     const config = readConfig();
-    
+
     if (!config) {
       throw new Error("rettangoli.config.yaml not found");
     }
-    
+
     if (!config.fe?.dirs?.length) {
       throw new Error("fe.dirs not found or empty in config");
     }
-    
+
     // Validate that directories exist
-    const missingDirs = config.fe.dirs.filter(dir => !existsSync(resolve(process.cwd(), dir)));
+    const missingDirs = config.fe.dirs.filter(
+      (dir) => !existsSync(resolve(process.cwd(), dir)),
+    );
     if (missingDirs.length > 0) {
       throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
     }
-    
+
     // Pass dirs and setup from config
     options.dirs = config.fe.dirs;
-    options.setup = config.fe.setup || 'setup.js';
+    options.setup = config.fe.setup || "setup.js";
     watch(options);
   });
 
-
-feCommand.command("examples")
+feCommand
+  .command("examples")
   .description("Generate examples")
   .action((options) => {
     const config = readConfig();
     options.dirs = config.fe.dirs;
-    options.outputDir = config.fe?.examples?.outputDir || './vt/specs/examples';
+    options.outputDir = config.fe?.examples?.outputDir || "./vt/specs/examples";
     examples(options);
   });
-
-
 
 const vtCommand = program
   .command("vt")
@@ -175,14 +180,14 @@ vtCommand
   .option("--screenshot-wait-time <time>", "Wait time between screenshots", "0")
   .action((options) => {
     const config = readConfig();
-    
+
     if (!config) {
       throw new Error("rettangoli.config.yaml not found");
     }
-    
+
     // Use vt.path from config, default to 'vt'
-    options.vizPath = config.vt?.path || 'vt';
-    
+    options.vizPath = config.vt?.path || "vt";
+
     generate(options);
   });
 
@@ -191,12 +196,12 @@ vtCommand
   .description("Create reports")
   .action(() => {
     const config = readConfig();
-    
+
     if (!config) {
       throw new Error("rettangoli.config.yaml not found");
     }
-    
-    const vizPath = config.vt?.path || 'vt';
+
+    const vizPath = config.vt?.path || "vt";
     report({ vizPath });
   });
 
@@ -205,12 +210,12 @@ vtCommand
   .description("Accept changes")
   .action(() => {
     const config = readConfig();
-    
+
     if (!config) {
       throw new Error("rettangoli.config.yaml not found");
     }
-    
-    const vizPath = config.vt?.path || 'vt';
+
+    const vizPath = config.vt?.path || "vt";
     accept({ vizPath });
   });
 
