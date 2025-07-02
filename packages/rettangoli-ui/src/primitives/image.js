@@ -3,7 +3,7 @@ import {
   dimensionWithUnit,
   convertObjectToCssString,
   styleMapKeys,
-  permutateBreakpoints
+  permutateBreakpoints,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
@@ -40,19 +40,19 @@ class RettangoliImageElement extends HTMLElement {
           height: 100%;
           width: 100%;
         }
-        
+
         ${anchorStyles}
-        
+
         a {
           display: block;
           height: 100%;
           width: 100%;
         }
-        
+
         :host([href]) {
           cursor: pointer;
         }
-        
+
         ${viewStyles}
         ${marginStyles}
         ${cursorStyles}
@@ -65,18 +65,31 @@ class RettangoliImageElement extends HTMLElement {
     RettangoliImageElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "closed" });
     this.shadow.adoptedStyleSheets = [RettangoliImageElement.styleSheet];
-    
+
     // Create initial DOM structure
-    this._styleElement = document.createElement('style');
-    this._imgElement = document.createElement('img');
+    this._styleElement = document.createElement("style");
+    this._imgElement = document.createElement("img");
     this._linkElement = null;
-    
+
     this.shadow.appendChild(this._styleElement);
     this._updateDOM();
   }
 
   static get observedAttributes() {
-    return permutateBreakpoints([...styleMapKeys, "key", "src", "href", "target", "wh", "w", "h", "hidden", "height", "width"]);
+    return permutateBreakpoints([
+      ...styleMapKeys,
+      "key",
+      "src",
+      "href",
+      "target",
+      "wh",
+      "w",
+      "h",
+      "hidden",
+      "height",
+      "width",
+      "z",
+    ]);
   }
 
   _styles = {
@@ -98,7 +111,7 @@ class RettangoliImageElement extends HTMLElement {
         // Create link wrapper
         this._linkElement = document.createElement("a");
       }
-      
+
       // Update link attributes
       this._linkElement.href = href;
       if (target) {
@@ -106,10 +119,10 @@ class RettangoliImageElement extends HTMLElement {
       } else {
         this._linkElement.removeAttribute("target");
       }
-      
+
       // Wrap image in link
       this._linkElement.appendChild(this._imgElement);
-      
+
       // Ensure link is in shadow DOM
       if (this._linkElement.parentNode !== this.shadow) {
         this.shadow.appendChild(this._linkElement);
@@ -153,10 +166,10 @@ class RettangoliImageElement extends HTMLElement {
 
       const wh = this.getAttribute(addSizePrefix("wh"));
       const width = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("w")) : wh
+        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
       );
       const height = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("h")) : wh
+        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
       );
       const opacity = this.getAttribute(addSizePrefix("o"));
       const zIndex = this.getAttribute(addSizePrefix("z"));
