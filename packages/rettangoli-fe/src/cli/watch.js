@@ -32,7 +32,11 @@ const setupWatcher = (directory, options) => {
 };
 
 async function startViteServer(options) {
-  const { port = 3001, root = './viz/static' } = options;
+  const { port = 3001, outfile = "./vt/static/main.js" } = options;
+
+  // Extract the directory from outfile path
+  const outDir = path.dirname(outfile);
+  const root = outDir;
   try {
     const server = await createServer({
       // any valid user config options, plus `mode` and `configFile`
