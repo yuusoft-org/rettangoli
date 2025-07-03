@@ -79,11 +79,11 @@ async function generateReport({ results, templatePath, outputPath }) {
 }
 
 async function main(options = {}) {
-  const { vizPath = "./viz" } = options;
+  const { vtPath = "./vt" } = options;
 
   const siteOutputPath = path.join(".rettangoli", "vt", "_site");
   const candidateDir = path.join(siteOutputPath, "candidate");
-  const originalReferenceDir = path.join(vizPath, "reference");
+  const originalReferenceDir = path.join(vtPath, "reference");
   const siteReferenceDir = path.join(siteOutputPath, "reference");
   const templatePath = path.join(libraryTemplatesPath, "report.html");
   const outputPath = path.join(siteOutputPath, "report.html");
