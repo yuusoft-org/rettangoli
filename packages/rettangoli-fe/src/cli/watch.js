@@ -36,7 +36,9 @@ async function startViteServer(options) {
 
   // Extract the directory from outfile path
   const outDir = path.dirname(outfile);
-  const root = outDir;
+  // Go up one level from the JS file directory to serve the site root
+  const root = path.dirname(outDir);
+  console.log('watch root dir:', root)
   try {
     const server = await createServer({
       // any valid user config options, plus `mode` and `configFile`
@@ -69,7 +71,7 @@ const startWatching = async (options) => {
     setupWatcher(dir, options);
   });
 
-  startViteServer({ port });
+  startViteServer({ port, outfile: options.outfile });
 }
 
 export default startWatching;
