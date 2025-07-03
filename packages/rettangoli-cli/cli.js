@@ -153,9 +153,15 @@ Examples:
       throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
     }
 
-    // Pass dirs and setup from config
+    // Pass dirs, setup, and outfile from config
     options.dirs = config.fe.dirs;
     options.setup = config.fe.setup || "setup.js";
+
+    // Use config outfile if not specified via CLI option
+    if (!options.outfile && config.fe.outfile) {
+      options.outfile = config.fe.outfile;
+    }
+
     watch(options);
   });
 

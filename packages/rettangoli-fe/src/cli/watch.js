@@ -8,7 +8,7 @@ import buildRettangoliFrontend from './build.js';
 import { extractCategoryAndComponent } from '../common.js';
 
 
-const setupWatcher = (directory) => {
+const setupWatcher = (directory, options) => {
   watch(
     directory,
     { recursive: true },
@@ -21,7 +21,7 @@ const setupWatcher = (directory) => {
             const { category, component } = extractCategoryAndComponent(filename);
             await writeViewFile(view, category, component);
           }
-          await buildRettangoliFrontend({ dirs: [directory] });
+          await buildRettangoliFrontend(options);
         } catch (error) {
           console.error(`Error processing ${filename}:`, error);
           // Keep the watcher running
@@ -53,11 +53,16 @@ async function startViteServer(options) {
 }
 
 
-const startWatching = (options) => {
+const startWatching = async (options) => {
   const { dirs = ['src'], port = 3001 } = options;
 
+  // Do initial build with all directories
+  console.log('Starting initial build...');
+  await buildRettangoliFrontend(options);
+  console.log('Initial build complete');
+
   dirs.forEach(dir => {
-    setupWatcher(dir);
+    setupWatcher(dir, options);
   });
 
   startViteServer({ port });
