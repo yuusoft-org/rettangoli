@@ -19,12 +19,12 @@ const libraryStaticPath = new URL('./static', import.meta.url).pathname;
 async function main(options) {
   const {
     skipScreenshots = false,
-    vizPath = "./vt",
+    vtPath = "./vt",
     screenshotWaitTime = 0,
     port = 3001
   } = options;
 
-  const specsPath = join(vizPath, "specs");
+  const specsPath = join(vtPath, "specs");
   const mainConfigPath = "rettangoli.config.yaml";
   const siteOutputPath = join(".rettangoli", "vt", "_site");
   const candidatePath = join(siteOutputPath, "candidate");
