@@ -186,7 +186,7 @@ vtCommand
     }
 
     // Use vt.path from config, default to 'vt'
-    options.vizPath = config.vt?.path || "vt";
+    options.vtPath = config.vt?.path || "vt";
 
     generate(options);
   });
@@ -201,8 +201,8 @@ vtCommand
       throw new Error("rettangoli.config.yaml not found");
     }
 
-    const vizPath = config.vt?.path || "vt";
-    report({ vizPath });
+    const vtPath = config.vt?.path || "vt";
+    report({ vtPath });
   });
 
 vtCommand
@@ -215,8 +215,8 @@ vtCommand
       throw new Error("rettangoli.config.yaml not found");
     }
 
-    const vizPath = config.vt?.path || "vt";
-    accept({ vizPath });
+    const vtPath = config.vt?.path || "vt";
+    accept({ vtPath });
   });
 
 const sitesCommand = program.command("sites").description("Rettangoli Sites");

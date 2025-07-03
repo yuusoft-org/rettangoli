@@ -1,164 +1,267 @@
-
 # Rettangoli Frontend
+
+A modern frontend framework that uses YAML for view definitions, web components for composition, and Immer for state management. Build reactive applications with minimal complexity using just 3 types of files.
+
+## Features
+
+- **🗂️ Three-File Architecture** - `.view.yaml`, `.store.js`, `.handlers.js` files scale from single page to complex applications
+- **📝 YAML Views** - Declarative UI definitions that compile to virtual DOM
+- **🧩 Web Components** - Standards-based component architecture
+- **🔄 Reactive State** - Immer-powered immutable state management
+- **⚡ Fast Development** - Hot reload with Vite integration
+- **🎯 Template System** - Jempl templating for dynamic content
+- **🧪 Testing Ready** - Pure functions and dependency injection for easy testing
+
+## Quick Start
+
+**Production usage** (when rtgl is installed globally):
+```bash
+rtgl fe build     # Build components
+rtgl fe watch     # Start dev server
+rtgl fe scaffold  # Create new component
+```
+
+## Architecture
+
+### Technology Stack
+
+**Runtime:**
+- [Snabbdom](https://github.com/snabbdom/snabbdom) - Virtual DOM
+- [Immer](https://github.com/immerjs/immer) - Immutable state management
+- [Jempl](https://github.com/yuusoft-org/jempl) - Template engine
+- [RxJS](https://github.com/ReactiveX/rxjs) - Reactive programming
+
+**Build & Development:**
+- [ESBuild](https://esbuild.github.io/) - Fast bundling
+- [Vite](https://vite.dev/) - Development server with hot reload
+
+**Browser Native:**
+- Web Components - Component encapsulation
 
 ## Development
 
-Bundle the code under `example` folder using `@rettangoli/fe`
+### Prerequisites
 
+- Node.js 18+ or Bun
+- A `rettangoli.config.yaml` file in your project root
+
+### Setup
+
+1. **Install dependencies**:
 ```bash
-bun run ../rettangoli-cli/cli.js fe build
+bun install
 ```
 
-Visit the example project that shows the components in action
-
+2. **Create project structure**:
 ```bash
-bunx serve ./viz/static
+# Scaffold a new component
+node ../rettangoli-cli/cli.js fe scaffold --category components --name MyButton
 ```
 
-Instead of running `fe build` each time, we can also watch for file changes and bundle the code automatically.
-
+3. **Start development**:
 ```bash
-bun run ../rettangoli-cli/cli.js fe watch
+# Build once
+node ../rettangoli-cli/cli.js fe build
+
+# Watch for changes (recommended)
+node ../rettangoli-cli/cli.js fe watch
+```
+
+### Project Structure
+
+```
+src/
+├── cli/
+│   ├── build.js       # Build component bundles
+│   ├── watch.js       # Development server with hot reload
+│   ├── scaffold.js    # Component scaffolding
+│   ├── examples.js    # Generate examples for testing
+│   └── blank/         # Component templates
+├── createComponent.js # Component factory
+├── createWebPatch.js  # Virtual DOM patching
+├── parser.js          # YAML to JSON converter
+├── common.js          # Shared utilities
+└── index.js           # Main exports
+```
+
+# Usage
+
+## Component Structure
+
+Each component consists of three files:
+
+```
+component-name/
+├── component-name.handlers.js   # Event handlers
+├── component-name.store.js      # State management
+└── component-name.view.yaml     # UI structure and styling
 ```
 
 
-Note: rettangoli-vt is not setup for this project yet. We just use static files under `viz/static` folder.
+## View Layer (.view.yaml)
 
+Views are written in YAML and compiled to virtual DOM at build time.
 
-## Introduction
-
-A frontend framework with just 3 type of files to scale from a single page to a full fledged complex application.
-
-Implemented using:
-
-Browser native:
-* web components for components
-
-Runtime:
-* [snabbdom](https://github.com/snabbdom/snabbdom) for virtual dom
-* [immer](https://github.com/immerjs/immer) for data immutability for state management
-* [json-e](https://github.com/json-e/json-e) for templating using json
-* [rxjs](https://github.com/ReactiveX/rxjs) for reactive programming
-
-Build & Development:
-* [esbuild](https://esbuild.github.io/) for bundling
-* [vite](https://vite.dev/) for development
-
-## View Layer
-
-The view layer is unique in that it uses yaml.
-
-* The yaml will be converted into json at build time. The json will then be consumed by snabbdom to be transformed into html through a virtual dom.
-
-### Yaml to write html
-
-Standard html can be totally written in yaml. 
-
-All child element are arrays. Except for things like actual content of text
-
-Use `#` and `.` selectors to represent `id` and `class`.
-
-`div#myid.class1.class2 custorm-attribute=abcd`
-
-will become
-
-`<div id="myid" class="class1 class2" custom-attribute="abcd"></div>`
-
-
-### Templating using json-e
-
-`json-e` templating language allows us to write conditions and loops in our yaml. For example:
-
-
-Loop
+### Basic HTML Structure
 
 ```yaml
 template:
-  - rtgl-view w=f g=m:
-    - $map: { $eval: projects }
-      each(v,k):
-        - rtgl-view#project-${v.id} h=64 w=f bw=xs p=m cur=p:
-          - rtgl-text s=lg: "${v.name}"
-          - rtgl-text s=sm: "${v.description}"
+  - div#myid.class1.class2 custom-attribute=abcd:
+    - rtgl-text: "Hello World"
+    - rtgl-button: "Click Me"
 ```
 
-Conditional. We usually use `$switch` more as it tends to be more flexible than `$if`.
+Compiles to:
+```html
+<div id="myid" class="class1 class2" custom-attribute="abcd">
+  <rtgl-text>Hello World</rtgl-text>
+  <rtgl-button>Click Me</rtgl-button>
+</div>
+```
+
+### Component Definition
+
+```yaml
+elementName: my-custom-component
+
+template:
+  - rtgl-view:
+    - rtgl-text: "My Component"
+```
+
+### Attributes vs Props
+
+When passing data to components, there's an important distinction:
 
 ```yaml
 template:
-  - rtgl-view d=h w=f h=f:
-    - $switch:
-        'showSidebar':
-          - sidebar-component: []
-    - rtgl-view w=f h=f:
-      - $switch:
-          'currentRoute== "/projects"':
-            - projects-component: []
-          'currentRoute== "/profile"':
+  - custom-component title=Hello .items=items
 ```
 
-`json-e` has many more features but we want to keep it simple and in most cases loops and conditionals are enough.
+- **Attributes** (`title=Hello`): Always string values, passed as HTML attributes
+- **Props** (`.items=items`): JavaScript values from viewData, passed as component properties
 
-The actual data used in the template is passed in as `viewData` from the state store which we will cover later.
+Attributes become HTML attributes, while props are JavaScript objects/arrays/functions passed directly to the component.
 
-### Define a elementName
+### Variable Expressions
+
+Views do not support complex variable expressions like `${myValue || 4}`. All values must be pre-computed in the `toViewData` store function:
+
+❌ **Don't do this:**
+```yaml
+template:
+  - rtgl-text: "${user.name || 'Guest'}"
+  - rtgl-view class="${isActive ? 'active' : 'inactive'}"
+```
+
+✅ **Do this instead:**
+```js
+// In your .store.js file
+export const toViewData = ({ state, props, attrs }) => {
+  return {
+    ...state,
+    displayName: state.user.name || 'Guest',
+    statusClass: state.isActive ? 'active' : 'inactive'
+  };
+};
+```
 
 ```yaml
-elementName: custom-projects
+template:
+  - rtgl-text: "${displayName}"
+  - rtgl-view class="${statusClass}"
 ```
 
-This will be the web component name that will be used for the component.
 
-The component can later be used as `<custom-projects></custom-projects>`.
 
-### Styles
-
-Styles can also be completely written in yaml.
+### Styling
 
 ```yaml
 styles:
   '#title':
     font-size: 24px
+    color: blue
   '@media (min-width: 768px)':
     '#title':
       font-size: 32px
 ```
 
-TODO better support nesting and issue with some global selectors.
-
-### Event listeners
+### Event Handling
 
 ```yaml
 refs:
-  createButton:
+  submitButton:
     eventListeners:
       click:
-        handler: handleCreateButtonClick
-  project-*:
-    eventListeners:
-      click:
-        handler: handleProjectsClick
+        handler: handleSubmit
 
 template:
-  - rtgl-button#createButton: Create Project
-  - rtgl-view w=f g=m:
-    - $map: { $eval: projects }
-      each(v,k):
-        - rtgl-view#project-${v.id} h=64 w=f bw=xs p=m cur=p:
-          - rtgl-text s=lg: "${v.name}"
-          - rtgl-text s=sm: "${v.description}"
+  - rtgl-button#submitButton: "Submit"
 ```
 
-The above example, will attach event listenrs to `#createButton` and all `#project-*` (wild card support) elements. And bind them to the handlers `handleCreateButtonClick` and `handleProjectsClick`.
+### Templating with Jempl
 
-### Defining data schema
+**Loops:**
+```yaml
+template:
+  - rtgl-view:
+      projects:
+        $for project, index in projects:
+          - rtgl-view#project-${project.id}:
+            - rtgl-text: "${project.name}"
+            - rtgl-text: "${project.description}"
+            - rtgl-text: "Item ${index}"
+```
 
-Component have a few types of data that can be defined using a JSON schema:
 
-* `viewDataSchema` - The data that will used for the template.
-* `propsSchema` - The data that will be passed to the component via javascript, those can be objects.
-* `attrsSchema` - The data that will be passed to the component via html attributes, this is raw strings.
+#### Props caveats
 
+❌ This will not work. Prop references can only be taken from viewDate, not from loop variables
+
+```yaml
+
+template:
+  - rtgl-view:
+    - $for project, index in projects:
+      - rtgl-view#project-${project.id}:
+        - custom-component .item=project: 
+```
+
+✅ This is the workaround
+
+```yaml
+template:
+  - rtgl-view:
+    - $for project, index in projects:
+      - rtgl-view#project-${project.id}:
+        - custom-component .item=projects[${index}]: 
+```
+
+**Conditionals:**
+```yaml
+template:
+  - rtgl-view:
+      $if isLoggedIn:
+        - user-dashboard: []
+      $else:
+        - login-form: []
+
+# Multiple conditions with logical operators
+template:
+  - rtgl-view:
+      $if user.age >= 18 && user.verified:
+        - admin-panel: []
+      $elif user.age >= 13:
+        - teen-dashboard: []
+      $else:
+        - kid-dashboard: []
+```
+
+For more advanced templating features, see the [Jempl documentation](https://github.com/yuusoft-org/jempl).
+
+### Data Schemas
+
+Define component interfaces with JSON Schema:
 
 ```yaml
 viewDataSchema:
@@ -166,159 +269,176 @@ viewDataSchema:
   properties:
     title:
       type: string
-      default: Projects
-    createButtonText:
-      type: string
-      default: Create Project
-    projects:
+      default: "My Component"
+    items:
       type: array
       items:
         type: object
-        properties:
-          id:
-            type: string
-          name:
-            type: string
-            default: Project 1
-          description:
-            type: string
-            default: Project 1 description
+
 propsSchema:
   type: object
-  properties: {}
+  properties:
+    onSelect:
+      type: function
+
+attrsSchema:
+  type: object
+  properties:
+    variant:
+      type: string
+      enum: [primary, secondary]
 ```
 
+## State Management (.store.js)
 
-## State Store
-
-* Define `initial state`
-* `toViewData` will take current `state`, `props` and `attrs` and return the `viewData` to be used by the view template
-* Any exported function that starts with `select`  will beceme selectors and are used by handlers to access state data
-* `actions` are all other exported functions that are used to mutate the state.
+### Initial State
 
 ```js
 export const INITIAL_STATE = Object.freeze({
-  title: "Projects",
-  createButtonText: "Create Project",
-  projects: [
-    {
-      id: "1",
-      name: "Project 1",
-      description: "Project 1 description",
-    },
-    {
-      id: '2',
-      name: 'Project 2',
-      description: 'Project 2 description'
-    }
-  ],
+  title: "My App",
+  items: [],
+  loading: false
 });
-
-export const toViewData = ({ state, props }, payload) => {
-  return state;
-}
-
-export const selectProjects = (state, props, payload) => {
-  return state.projects;
-}
-
-export const setProjects = (state, payload) => {
-
-}
 ```
 
-Note that this is just a dump store, it is not reactive. Components will need to call `deps.render()` from handlers to re-render the component.
-
-## Handlers
-
-`handleOnMount` is a special handler that is called when the component is mounted. It returns a promise that resolves when the component is mounted.
-
-All other exported functions will automatically become handlers and can be used in the view layers's `eventListeners`
-
-A special object called `deps` is injected into all handlers. It has the following properties:
-
-* `deps.render()` will re-render the component. We call this function each time we have chaged state and want to re-render the component.
-* `deps.store` is the store instance. Use selectors to select state and actions to mutate state.
-* `deps.transformedHandlers` can be used to call other handlers.
-* `deps.attrs` is the html attributes that are passed to the component.
-* `deps.props` is the javascript properties that are passed to the component.
-
+### View Data Transformation
 
 ```js
+export const toViewData = ({ state, props, attrs }) => {
+  return {
+    ...state,
+    itemCount: state.items.length,
+    hasItems: state.items.length > 0
+  };
+};
+```
+
+### Selectors
+
+```js
+export const selectItems = (state) => state.items;
+export const selectIsLoading = (state) => state.loading;
+```
+
+### Actions
+
+```js
+export const setLoading = (state, isLoading) => {
+  state.loading = isLoading; // Immer makes this immutable
+};
+
+export const addItem = (state, item) => {
+  state.items.push(item);
+};
+
+export const removeItem = (state, itemId) => {
+  const index = state.items.findIndex(item => item.id === itemId);
+  if (index !== -1) {
+    state.items.splice(index, 1);
+  }
+};
+```
+
+## Event Handlers (.handlers.js)
+
+### Special Handlers
+
+```js
+// Called when component mounts
 export const handleOnMount = (deps) => {
-  () => {
-    // unsubscribe
-  }
-}
+  const { store, render } = deps;
+  
+  // Load initial data
+  store.setLoading(true);
+  loadData().then(data => {
+    store.setItems(data);
+    store.setLoading(false);
+    render();
+  });
 
-export const handleCreateButtonClick = async (e, deps) => {
-  const { store, deps, render } = deps;
-  const formIsVisible = store.selectFormIsVisible();
-
-  if (!formIsVisible) {
-    store.setFormIsVisible(true);
-  }
-  deps.render();
-}
-
-export const handleProjectsClick = (e, deps) => {
-  const id = e.target.id
-  console.log('handleProjectsClick', id);
-}
+  // Return cleanup function
+  return () => {
+    // Cleanup code here
+  };
+};
 ```
 
-
-
-* `deps.dispatchEvent` can be used to dispatch custom dom events.
+### Event Handlers
 
 ```js
-export const handleProjectsClick = (e, deps) => {
-  deps.dispatchEvent(new CustomEvent('project-clicked', {
-    projectId: '1',
+export const handleSubmit = async (event, deps) => {
+  const { store, render, attrs, props } = deps;
+  
+  event.preventDefault();
+  
+  const formData = new FormData(event.target);
+  const newItem = Object.fromEntries(formData);
+  
+  store.addItem(newItem);
+  render();
+  
+  // Dispatch custom event
+  deps.dispatchEvent(new CustomEvent('item-added', {
+    detail: { item: newItem }
   }));
-}
+};
+
+export const handleItemClick = (event, deps) => {
+  const itemId = event.target.id.replace('item-', '');
+  console.log('Item clicked:', itemId);
+};
 ```
 
-
-### Adding additional dependencies
-
-This is a simple yet powerful way to do dependency injection. Those are all global singleton dependencies. Technically anything can be injected and be made accessible to all components.
+### Dependency Injection
 
 ```js
+// In your setup.js file
 const componentDependencies = {
-}
-
-const pageDependencies = {
-}
+  apiClient: new ApiClient(),
+  router: new Router()
+};
 
 export const deps = {
   components: componentDependencies,
-  pages: pageDependencies,
-}
+  pages: {}
+};
 ```
 
+Access in handlers:
+```js
+export const handleLoadData = async (event, deps) => {
+  const { apiClient } = deps.components;
+  const data = await apiClient.fetchItems();
+  // ... handle data
+};
+```
+
+## Configuration
+
+Create a `rettangoli.config.yaml` file in your project root:
+
+```yaml
+fe:
+  dirs:
+    - "./src/components"
+    - "./src/pages"
+  setup: "setup.js"
+  outfile: "./dist/bundle.js"
+  examples:
+    outputDir: "./vt/specs/examples"
+```
 
 ## Testing
 
-This framework is written with testability in mind.
+### View Components
 
+Use visual testing with `rtgl vt`:
 
-## View
-
-Visual testing `rettangoli-vt`
-
-
-## State Store
-
-Those are all pure functions and it is straighforward to test them. Actions can be turned into pure functions using immer produce.
-
-Example
-
-```yaml
-...
+```bash
+rtgl vt generate
+rtgl vt report
 ```
 
-## Handlers
+## Examples
 
-Test them as normal functions.
-They are not always pure per se due to calling of dependencies. 
+For a complete working example, see the todos app in `examples/example1/`.

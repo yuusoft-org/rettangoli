@@ -34,10 +34,10 @@ async function copyWebpFiles(sourceDir, destDir) {
  */
 async function acceptReference(options = {}) {
   const {
-    vizPath = "./vt",
+    vtPath = "./vt",
   } = options;
 
-  const referenceDir = join(vizPath, "reference");
+  const referenceDir = join(vtPath, "reference");
   const siteOutputPath = join(".rettangoli", "vt", "_site");
   const candidateDir = join(siteOutputPath, "candidate");
 
