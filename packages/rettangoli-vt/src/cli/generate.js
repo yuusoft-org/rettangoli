@@ -46,13 +46,13 @@ async function main(options) {
   await cp(libraryStaticPath, siteOutputPath, { recursive: true });
   
   // Copy user's static files if they exist
-  const userStaticPath = join(vizPath, "static");
+  const userStaticPath = join(vtPath, "static");
   if (existsSync(userStaticPath)) {
     await cp(userStaticPath, siteOutputPath, { recursive: true });
   }
 
   // Check for local templates first, fallback to library templates
-  const localTemplatesPath = join(vizPath, "templates");
+  const localTemplatesPath = join(vtPath, "templates");
   const defaultTemplatePath = existsSync(join(localTemplatesPath, "default.html"))
     ? join(localTemplatesPath, "default.html")
     : join(libraryTemplatesPath, "default.html");
@@ -80,7 +80,7 @@ async function main(options) {
     // Start web server from site output path to serve both /public and /candidate
     const server = startWebServer(
       siteOutputPath,
-      vizPath,
+      vtPath,
       port
     );
     try {
