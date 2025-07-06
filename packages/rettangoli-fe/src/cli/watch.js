@@ -46,6 +46,8 @@ async function startViteServer(options) {
       root,
       server: {
         port,
+        host: '0.0.0.0',
+        allowedHosts: true
       },
     });
     await server.listen();
