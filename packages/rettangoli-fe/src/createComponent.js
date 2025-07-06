@@ -353,7 +353,15 @@ class BaseComponent extends HTMLElement {
     }
 
     try {
-      // const parseStart = performance.now();
+      const deps = {
+        ...this.deps,
+        refIds: this.refIds,
+        getRefIds: () => this.refIds,
+        dispatchEvent: this.dispatchEvent.bind(this),
+        store: this.store,
+        render: this.render.bind(this),
+      };
+
       const vDom = parseView({
         h: this.h,
         template: this.template,
@@ -361,9 +369,6 @@ class BaseComponent extends HTMLElement {
         refs: this.refs,
         handlers: this.transformedHandlers,
       });
-
-      // const parseTime = performance.now() - parseStart;
-      // console.log(`parseView took ${parseTime.toFixed(2)}ms`);
       // parse through vDom and recursively find all elements with id
       const ids = {};
       const findIds = (vDom) => {
@@ -377,15 +382,11 @@ class BaseComponent extends HTMLElement {
       findIds(vDom);
       this.refIds = ids;
 
-      // const patchStart = performance.now();
       if (!this._oldVNode) {
         this._oldVNode = this.patch(this.renderTarget, vDom);
       } else {
         this._oldVNode = this.patch(this._oldVNode, vDom);
       }
-
-      // const patchTime = performance.now() - patchStart;
-      // console.log(`patch took ${patchTime.toFixed(2)}ms`);
     } catch (error) {
       console.error("Error during patching:", error);
     }

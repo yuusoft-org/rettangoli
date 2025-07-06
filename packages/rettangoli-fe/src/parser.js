@@ -4,16 +4,16 @@ import { flattenArrays } from './common.js';
 
 const lodashGet = (obj, path) => {
   if (!path) return obj;
-  
+
   // Parse path to handle both dot notation and bracket notation
   const parts = [];
   let current = '';
   let inBrackets = false;
   let quoteChar = null;
-  
+
   for (let i = 0; i < path.length; i++) {
     const char = path[i];
-    
+
     if (!inBrackets && char === '.') {
       if (current) {
         parts.push(current);
@@ -28,14 +28,14 @@ const lodashGet = (obj, path) => {
     } else if (inBrackets && char === ']') {
       if (current) {
         // Remove quotes if present and add the key
-        if ((current.startsWith('"') && current.endsWith('"')) || 
-            (current.startsWith("'") && current.endsWith("'"))) {
+        if ((current.startsWith('"') && current.endsWith('"')) ||
+          (current.startsWith("'") && current.endsWith("'"))) {
           parts.push(current.slice(1, -1));
-                 } else {
-           // Numeric index or unquoted string
-           const numValue = Number(current);
-           parts.push(isNaN(numValue) ? current : numValue);
-         }
+        } else {
+          // Numeric index or unquoted string
+          const numValue = Number(current);
+          parts.push(isNaN(numValue) ? current : numValue);
+        }
         current = '';
       }
       inBrackets = false;
@@ -51,24 +51,20 @@ const lodashGet = (obj, path) => {
       current += char;
     }
   }
-  
+
   if (current) {
     parts.push(current);
   }
-  
+
   return parts.reduce((acc, part) => acc && acc[part], obj);
 };
 
 export const parseView = ({ h, template, viewData, refs, handlers }) => {
-  // const startTime = performance.now();
   const result = jemplRender({
     ast: template,
     data: viewData,
   });
-  // const endTime = performance.now();
-  // const executionTime = endTime - startTime;
-  // console.log(`jemplRender execution time: ${executionTime.toFixed(2)}ms`);
-  
+
   // Flatten the array carefully to maintain structure
   const flattenedResult = flattenArrays(result);
 
@@ -98,7 +94,7 @@ export const createVirtualDom = ({
   items,
   refs = {},
   handlers = {},
-  viewData = {},
+  viewData = {}
 }) => {
   if (!Array.isArray(items)) {
     console.error("Input to createVirtualDom must be an array.");
@@ -335,42 +331,60 @@ export const createVirtualDom = ({
         }
         if (Object.keys(props).length > 0) {
           snabbdomData.props = props;
+        }
 
-          // For web components, add a hook to detect prop changes and set isDirty
-          if (isWebComponent) {
-            snabbdomData.hook = {
-              update: (oldVnode, vnode) => {
-                const oldProps = oldVnode.data?.props || {};
-                const newProps = vnode.data?.props || {};
-                const oldAttrs = oldVnode.data?.attrs || {};
-                const newAttrs = vnode.data?.attrs || {};
+        // For web components, add a hook to detect prop and attr changes
+        if (isWebComponent) {
+          snabbdomData.hook = {
+            update: (oldVnode, vnode) => {
+              const oldProps = oldVnode.data?.props || {};
+              const newProps = vnode.data?.props || {};
+              const oldAttrs = oldVnode.data?.attrs || {};
+              const newAttrs = vnode.data?.attrs || {};
 
-                // Check if props have changed
-                const propsChanged =
-                  JSON.stringify(oldProps) !== JSON.stringify(newProps);
+              // Check if props have changed
+              const propsChanged =
+                JSON.stringify(oldProps) !== JSON.stringify(newProps);
 
-                // Check if attrs have changed
-                const attrsChanged =
-                  JSON.stringify(oldAttrs) !== JSON.stringify(newAttrs);
+              // Check if attrs have changed
+              const attrsChanged =
+                JSON.stringify(oldAttrs) !== JSON.stringify(newAttrs);
 
-                if (propsChanged || attrsChanged) {
-                  // Set isDirty attribute and trigger re-render
-                  const element = vnode.elm;
-                  if (
-                    element &&
-                    element.render &&
-                    typeof element.render === "function"
-                  ) {
-                    element.setAttribute("isDirty", "true");
-                    requestAnimationFrame(() => {
-                      element.render();
-                      element.removeAttribute("isDirty");
-                    });
-                  }
+              if (propsChanged || attrsChanged) {
+                // Set isDirty attribute and trigger re-render
+                const element = vnode.elm;
+                if (
+                  element &&
+                  element.render &&
+                  typeof element.render === "function"
+                ) {
+                  element.setAttribute("isDirty", "true");
+                  requestAnimationFrame(() => {
+                    element.render();
+                    element.removeAttribute("isDirty");
+                    // Call the specific component's handleOnUpdate instead of the parent's onUpdate
+                    if (element.handlers && element.handlers.handleOnUpdate) {
+                      const deps = {
+                        ...(element.deps || {}),
+                        store: element.store,
+                        render: element.render.bind(element),
+                        handlers: element.handlers,
+                        dispatchEvent: element.dispatchEvent.bind(element),
+                        refIds: element.refIds || {},
+                        getRefIds: () => element.refIds || {},
+                      };
+                      element.handlers.handleOnUpdate({
+                        oldProps,
+                        newProps,
+                        oldAttrs,
+                        newAttrs,
+                      }, deps);
+                    }
+                  });
                 }
-              },
-            };
-          }
+              }
+            },
+          };
         }
 
         try {
