@@ -38,8 +38,8 @@ class RettangoliInputElement extends HTMLElement {
           font-weight: var(--xs-font-weight);
           line-height: var(--xs-line-height);
           letter-spacing: var(--xs-letter-spacing);
-          padding-left: var(--spacing-sm);
-          padding-right: var(--spacing-sm);
+          padding-left: var(--spacing-md);
+          padding-right: var(--spacing-md);
           height: 24px;
         }
         input:focus {
