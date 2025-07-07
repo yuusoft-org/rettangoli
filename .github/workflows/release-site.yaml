@@ -40,7 +40,7 @@ jobs:
 
       - name: Build
         working-directory: ./apps/rettangoli.dev
-        run: bun run ../../packages/rettangoli-cli/cli.js sites build
+        run: bun run build
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4

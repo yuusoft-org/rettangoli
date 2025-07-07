@@ -1,5 +1,9 @@
 {
-    "scripts": {},
+    "scripts": {
+        "build": "rtgl sites build",
+        "dev": "rtgl sites build && bunx serve _site",
+        "serve": "bunx serve _site"
+    },
     "dependencies": {
         "@rettangoli/sites": "workspace:*"
     }
