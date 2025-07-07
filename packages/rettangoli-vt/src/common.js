@@ -47,6 +47,12 @@ engine.registerFilter("slug", (value) => {
   return value.toLowerCase().replace(/\s+/g, "-");
 });
 
+// Add custom filter to remove file extension
+engine.registerFilter("remove_ext", (value) => {
+  if (typeof value !== "string") return "";
+  return value.replace(/\.[^/.]+$/, "");
+});
+
 /**
  * Get all files from a directory recursively
  */
