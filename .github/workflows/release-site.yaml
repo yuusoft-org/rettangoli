@@ -38,6 +38,10 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      # Install rtgl CLI globally
+      - name: Install rtgl CLI
+        run: npm i -g rtgl
+
       - name: Build
         working-directory: ./apps/rettangoli.dev
         run: bun run build
