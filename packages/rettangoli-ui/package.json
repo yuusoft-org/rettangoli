@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/ui",
-  "version": "0.1.1",
+  "version": "0.1.2-rc1",
   "description": "A UI component library for building web interfaces.",
   "main": "dist/rettangoli-esm.min.js",
   "type": "module",
@@ -24,7 +24,7 @@
   "scripts": {
     "build:dev": "rtgl fe build && bun run esbuild-dev.js",
     "build": "rtgl fe build && bun run esbuild.js",
-    "vt:generate": "rtgl vt generate --skip-screenshots",
+    "vt:generate": "rtgl fe build && bun run esbuild-dev.js && rtgl vt generate --skip-screenshots",
     "vt:report": "bun run build:dev && rtgl vt generate && rtgl vt report",
     "vt:accept": "rtgl vt accept",
     "serve": "bunx serve .rettangoli/vt/_site"

@@ -132,7 +132,7 @@ refs:
         handler: handleActionClick
   input-*:
     eventListeners:
-      input-keydown:
+      input-change:
         handler: handleInputChange
   select-*:
     eventListeners:

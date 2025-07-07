@@ -38,8 +38,8 @@ class RettangoliInputElement extends HTMLElement {
           font-weight: var(--xs-font-weight);
           line-height: var(--xs-line-height);
           letter-spacing: var(--xs-letter-spacing);
-          padding-left: var(--spacing-sm);
-          padding-right: var(--spacing-sm);
+          padding-left: var(--spacing-md);
+          padding-right: var(--spacing-md);
           height: 24px;
         }
         input:focus {
@@ -78,7 +78,7 @@ class RettangoliInputElement extends HTMLElement {
     this.shadow.appendChild(this._inputElement);
 
     // Bind event handler
-    this._inputElement.addEventListener('keydown', this._onChange);
+    this._inputElement.addEventListener('input', this._onChange);
   }
 
   static get observedAttributes() {
@@ -106,7 +106,7 @@ class RettangoliInputElement extends HTMLElement {
   }
 
   _onChange = (event) => {
-    this.dispatchEvent(new CustomEvent('input-keydown', {
+    this.dispatchEvent(new CustomEvent('input-change', {
       detail: {
         value: this._inputElement.value,
       },
