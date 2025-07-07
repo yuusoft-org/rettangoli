@@ -83,7 +83,7 @@
               <iframe
                 loading="lazy"
                 width="100%"
-                src="/candidate/{{ file.path }}"
+                src="/candidate/{{ file.path | remove_ext }}.html"
                 frameborder="0"
                 style="
                       width: 1080px;
