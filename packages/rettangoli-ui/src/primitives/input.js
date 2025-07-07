@@ -78,7 +78,7 @@ class RettangoliInputElement extends HTMLElement {
     this.shadow.appendChild(this._inputElement);
 
     // Bind event handler
-    this._inputElement.addEventListener('keydown', this._onChange);
+    this._inputElement.addEventListener('input', this._onChange);
   }
 
   static get observedAttributes() {
@@ -106,7 +106,7 @@ class RettangoliInputElement extends HTMLElement {
   }
 
   _onChange = (event) => {
-    this.dispatchEvent(new CustomEvent('input-keydown', {
+    this.dispatchEvent(new CustomEvent('input-change', {
       detail: {
         value: this._inputElement.value,
       },
