@@ -133,7 +133,7 @@ const examples = (options = {}) => {
       for (const [index, example] of examples.entries()) {
         const { name, viewData } = example;
         const ast = parse(template);
-        const renderedView = flattenArrays(render({ ast, data: viewData }));
+        const renderedView = flattenArrays(render(ast, viewData, {}));
         const html = yamlToHtml(renderedView);
         output.push({
           category,

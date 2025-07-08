@@ -60,10 +60,7 @@ const lodashGet = (obj, path) => {
 };
 
 export const parseView = ({ h, template, viewData, refs, handlers }) => {
-  const result = jemplRender({
-    ast: template,
-    data: viewData,
-  });
+  const result = jemplRender(template, viewData, {});
 
   // Flatten the array carefully to maintain structure
   const flattenedResult = flattenArrays(result);

@@ -6,7 +6,7 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "0.0.8",
+      "version": "0.0.11-rc7",
       "bin": {
         "rtgl": "./cli.js",
       },
@@ -20,11 +20,11 @@
     },
     "packages/rettangoli-fe": {
       "name": "@rettangoli/fe",
-      "version": "0.0.6",
+      "version": "0.0.7-rc4",
       "dependencies": {
         "esbuild": "^0.25.5",
         "immer": "^10.1.1",
-        "jempl": "^0.0.6",
+        "jempl": "0.1.0-rc1",
         "js-yaml": "^4.1.0",
         "rxjs": "^7.8.2",
         "snabbdom": "^3.6.2",
@@ -33,7 +33,7 @@
     },
     "packages/rettangoli-sites": {
       "name": "@rettangoli/sites",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "bin": {
         "sitic": "src/cli.js",
       },
@@ -53,7 +53,7 @@
     },
     "packages/rettangoli-ui": {
       "name": "@rettangoli/ui",
-      "version": "0.1.0",
+      "version": "0.1.2-rc1",
       "dependencies": {
         "@floating-ui/dom": "^1.6.13",
         "@rettangoli/fe": "workspace:*",
@@ -72,7 +72,7 @@
     },
     "packages/rettangoli-vt": {
       "name": "@rettangoli/vt",
-      "version": "0.0.1",
+      "version": "0.0.2-rc3",
       "dependencies": {
         "commander": "^13.1.0",
         "js-yaml": "^4.1.0",
@@ -379,7 +379,7 @@
 
     "is-arrayish": ["is-arrayish@0.3.2", "", {}, "sha512-eVRqCvVlZbuw3GrM63ovNSNAeA1K16kaR/LRY/92w0zxQ5/1YzwblUX652i4Xs9RwAGjW9d9y6X88t8OaAJfWQ=="],
 
-    "jempl": ["jempl@0.0.6", "", {}, "sha512-av65p7TGe5cD1YE2fGbqaIvma0V/OCRsl2dVFZ2SZFmD43D5CTWBgFByJbZ/be9q2rFKrcNke20/ty/bgCrMBA=="],
+    "jempl": ["jempl@0.1.0-rc1", "", {}, "sha512-zVw+LqTaWleUBXp2UkZKPX5eNd7teAspFlbedQMLNcWjny0bm5W55vtIi4RzLef5V2y3bcfy2ZuMUQb+Okhxyw=="],
 
     "js-graph-algorithms": ["js-graph-algorithms@1.0.18", "", { "bin": { "js-graphs": "./src/jsgraphs.js" } }, "sha512-Gu1wtWzXBzGeye/j9BuyplGHscwqKRZodp/0M1vyBc19RJpblSwKGu099KwwaTx9cRIV+Qupk8xUMfEiGfFqSA=="],
 
