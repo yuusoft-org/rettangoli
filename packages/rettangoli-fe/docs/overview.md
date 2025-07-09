@@ -2,6 +2,16 @@
 
 Build reactive web applications with YAML views, JavaScript logic, and web components. Each component uses exactly three files.
 
+## Philosophy
+
+**UI = f(state)** - The core principle that your user interface should be a pure function of your application state. This formula means the view is predictably derived from state, making applications easier to reason about, test, and debug.
+
+This principle is shared by modern frameworks like React, Vue, and state management libraries like Redux and MobX. Rettangoli is particularly inspired by Elm's Model-View-Update architecture, which emphasizes pure functions and predictable state flow.
+
+We wanted to work with something as pure as Elm but in JavaScript, with all sorts of conveniences to make writing code easier. This is what this framework delivers through its three-file architecture, mapping Elm's concepts to JavaScript: Elm's **Model** becomes our **store**, Elm's **View** becomes our **view**, and Elm's **Update** becomes our **handlers**.
+
+**Manual Rendering Philosophy**: We realized that reactive state management is not needed. Manually calling `render()` turns out to be the simplest, yet best solution. It gives you the most control, is convenient, and avoids dealing with any magic or complexity of reactivity systems.
+
 ## Quick Start
 
 ```bash
