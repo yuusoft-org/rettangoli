@@ -283,7 +283,8 @@ template:
 refs:
   submitButton:
     eventListeners:
-      click: { handler: handleSubmit }
+      click:
+        handler: handleSubmit
 
 template:
   - rtgl-view d=v g=md p=md:
@@ -295,12 +296,11 @@ template:
 
 ### Modals
 ```yaml
-```
-```yaml
 refs:
   closeModal:
     eventListeners:
-      click: { handler: handleCloseModal }
+      click:
+        handler: handleCloseModal
 
 template:
   - rtgl-dialog .isOpen=showModal w="500px":
@@ -310,6 +310,5 @@ template:
         - rtgl-text: "${modalContent}"
         - rtgl-button#closeModal v=ol:
           - rtgl-text: "Close"
-```
 ```
 

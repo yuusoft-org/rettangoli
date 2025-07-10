@@ -40,8 +40,17 @@ template:
 
 **Store (.store.js)** - State management with pure functions:
 ```js
-export const INITIAL_STATE = { text: "", completed: false };
+export const INITIAL_STATE = Object.freeze({
+  text: "",
+  completed: false,
+});
 
+export const toViewData = ({ state, props, attrs }) => ({
+  text: state.text,
+  completed: state.completed
+});
+
+// Action - modifies state (uses Immer for immutability)
 export const toggleCompleted = (state) => {
   state.completed = !state.completed;
 };
@@ -58,7 +67,7 @@ export const handleToggle = (event, deps) => {
 
 ## Next Steps
 
-- **[View System](./view.md)** - Complete YAML syntax
-- **[Store Management](./store.md)** - State patterns
-- **[Event Handlers](./handlers.md)** - Event handling
+- **[View](./view.md)** - Complete YAML syntax
+- **[Store](./store.md)** - State patterns
+- **[Handlers](./handlers.md)** - Event handling
 

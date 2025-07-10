@@ -387,29 +387,6 @@ using RxJS observables.
 
 TODO
 
-## Common Patterns
-
-### Loading States
-```js
-export const handleLoadData = async (event, deps) => {
-  const { store, render, apiService } = deps;
-  
-  store.setLoading(true);
-  store.clearError();
-  render();
-  
-  try {
-    const data = await apiService.fetchData();
-    store.setData(data);
-  } catch (error) {
-    store.setError(error.message);
-  } finally {
-    store.setLoading(false);
-    render();
-  }
-};
-```
-
 ## Best Practices
 
 ### 1. Keep Handlers Simple
