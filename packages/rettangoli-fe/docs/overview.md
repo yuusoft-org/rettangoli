@@ -146,6 +146,5 @@ export const handleDelete = (event, deps) => {
 - **[View System](./view.md)** - Complete YAML syntax
 - **[Store Management](./store.md)** - State patterns
 - **[Event Handlers](./handlers.md)** - Event handling
-- **[Under the Hood](./underhood.md)** - Technical details
 
 **Start building**: Create a counter, add forms and lists, compose larger components.
