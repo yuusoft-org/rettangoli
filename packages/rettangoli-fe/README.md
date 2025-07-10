@@ -2,8 +2,6 @@
 
 A modern frontend framework that uses YAML for view definitions, web components for composition, and Immer for state management. Build reactive applications with minimal complexity using just 3 types of files.
 
-📚 **[Get Started with the Developer Quickstart](./docs/overview.md)**
-
 ## Features
 
 - **🗂️ Three-File Architecture** - `.view.yaml`, `.store.js`, `.handlers.js` files scale from single page to complex applications
@@ -16,11 +14,9 @@ A modern frontend framework that uses YAML for view definitions, web components 
 
 ## Quick Start
 
-**Production usage** (when rtgl is installed globally):
 ```bash
 rtgl fe build     # Build components
 rtgl fe watch     # Start dev server
-rtgl fe scaffold  # Create new component
 ```
 
 ## Documentation
