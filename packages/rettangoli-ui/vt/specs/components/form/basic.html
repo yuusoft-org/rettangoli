@@ -64,5 +64,9 @@ title: "Basic"
   form.addEventListener('action-click', (e) => {
     console.log('action-click', e.detail);
   });
+  
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
 
 </script>
