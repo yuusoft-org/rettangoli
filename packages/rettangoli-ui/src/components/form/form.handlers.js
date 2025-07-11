@@ -3,6 +3,18 @@ export const handleOnMount = (deps) => {
   store.setDefaultValues(props.defaultValues);
 };
 
+const dispatchFormChange = (fieldName, fieldValue, formValues, dispatchEvent) => {
+  dispatchEvent(
+    new CustomEvent("form-change", {
+      detail: {
+        fieldName,
+        fieldValue,
+        formValues,
+      },
+    }),
+  );
+};
+
 export const handleActionClick = (e, deps) => {
   const { store, dispatchEvent } = deps;
   const id = e.currentTarget.id.replace("action-", "");
@@ -17,7 +29,7 @@ export const handleActionClick = (e, deps) => {
 };
 
 export const handleInputChange = (e, deps) => {
-  const { store } = deps;
+  const { store, dispatchEvent } = deps;
   const id = e.currentTarget.id.replace("input-", "");
   // TODO fix double event
   if (id && e.detail.value !== undefined) {
@@ -26,38 +38,42 @@ export const handleInputChange = (e, deps) => {
       fieldName: id,
       value: e.detail.value,
     });
+    dispatchFormChange(id, e.detail.value, store.selectFormValues(), dispatchEvent);
   }
 };
 
 export const handleSelectChange = (e, deps) => {
-  const { store } = deps;
+  const { store, dispatchEvent } = deps;
   const id = e.currentTarget.id.replace("select-", "");
   if (id && e.detail.selectedValue !== undefined) {
     store.setFormFieldValue({
       fieldName: id,
       value: e.detail.selectedValue,
     });
+    dispatchFormChange(id, e.detail.selectedValue, store.selectFormValues(), dispatchEvent);
   }
 };
 
 export const handleColorPickerChange = (e, deps) => {
-  const { store } = deps;
+  const { store, dispatchEvent } = deps;
   const id = e.currentTarget.id.replace("colorpicker-", "");
   if (id && e.detail.value !== undefined) {
     store.setFormFieldValue({
       fieldName: id,
       value: e.detail.value,
     });
+    dispatchFormChange(id, e.detail.value, store.selectFormValues(), dispatchEvent);
   }
 };
 
 export const handleSliderChange = (e, deps) => {
-  const { store } = deps;
+  const { store, dispatchEvent } = deps;
   const id = e.currentTarget.id.replace("slider-", "");
   if (id && e.detail.value !== undefined) {
     store.setFormFieldValue({
       fieldName: id,
       value: e.detail.value,
     });
+    dispatchFormChange(id, e.detail.value, store.selectFormValues(), dispatchEvent);
   }
 };
