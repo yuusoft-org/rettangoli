@@ -100,6 +100,7 @@ const styles = {
     mu: "--muted",
     ac: "--accent",
     bo: "--border",
+    tr: "transparent",
   },
   br: {
     xs: "--border-radius-xs",

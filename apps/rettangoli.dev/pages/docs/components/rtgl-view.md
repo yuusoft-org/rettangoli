@@ -18,6 +18,7 @@ An intuitive container component for building layouts serving as the building bl
 | Margin           | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl`             | -       | Margin outside the container                                   |
 | Gap              | `g`, `gh`, `gv`                         | `xs`, `sm`, `md`, `lg`, `xl`             | -       | Space between children                                         |
 | Border Width     | `bw`, `bwt`, `bwr`, `bwb`, `bwl`        | `xs`, `sm`, `md`, `lg`, `xl`             | -       | Border width for all sides or specific sides                   |
+| Border Color     | `bc`                                    | `pr`, `se`, `de`, `fg`, `bg`, `mu`, `ac`, `bo`, `tr` | -       | Border color                                                   |
 | Border Radius    | `br`                                    | `xs`, `sm`, `md`, `lg`, `xl`, `f`        | -       | Border radius for corners                                      |
 | Background Color | `bgc`                                   | color code                               | -       | Background color                                               |
 | Opacity          | `op`                                    | number (0-1)                             | 1       | Element transparency level                                     |
@@ -112,6 +113,17 @@ Horizontal
   <rtgl-view bgc="ac" wh="80" bwr="md"></rtgl-view>
   <rtgl-view bgc="ac" wh="80" bwb="md"></rtgl-view>
   <rtgl-view bgc="ac" wh="80" bwl="md"></rtgl-view>
+</rtgl-view>
+```
+
+## Border Color
+
+```html codePreview
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-view bgc="ac" wh="80" bw="md" bc="pr"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" bw="md" bc="se"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" bw="md" bc="de"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80" bw="md" bc="tr"></rtgl-view>
 </rtgl-view>
 ```
 
