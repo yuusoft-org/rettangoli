@@ -298,6 +298,23 @@ class BaseComponent extends HTMLElement {
       this.appendChild(this.renderTarget);
     }
     this.style.display = "contents";
+    
+    // Create props proxy now that element is connected and properties are available
+    this.props = this.propsSchema
+      ? createPropsProxy(this, Object.keys(this.propsSchema.properties))
+      : {};
+    
+    // Initialize store and deps with the properly initialized props
+    this.store = bindStore(store, this.props, this.attrsProxy);
+    this.deps = {
+      ...this.baseDeps,
+      store: this.store,
+      render: this.render,
+      handlers: this.handlers,
+      attrs: this.attrsProxy,
+      props: this.props,
+    };
+    
     const deps = {
       ...this.deps,
       refIds: this.refIds,
@@ -455,30 +472,23 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
       super();
       const attrsProxy = createAttrsProxy(this);
       this.propsSchema = propsSchema;
-      this.props = propsSchema
-        ? createPropsProxy(this, Object.keys(propsSchema.properties))
-        : {};
+      // Don't create props proxy yet - will be created in connectedCallback
+      this.props = {};
       /**
        * TODO currently if user forgot to define propsSchema for a prop
        * there will be no warning. would be better to shos some warnng
        */
       this.elementName = elementName;
       this.styles = styles;
-      this.store = bindStore(store, this.props, attrsProxy);
+      this.attrsProxy = attrsProxy;
       this.template = template;
       this.handlers = handlers;
       this.refs = refs;
       this.patch = patch;
-      this.deps = {
-        ...deps,
-        store: this.store,
-        render: this.render,
-        handlers,
-        attrs: attrsProxy,
-        props: this.props,
-      };
+      this.baseDeps = deps;
       this.h = h;
       this.cssText = yamlToCss(elementName, styles);
+      // Store and deps will be initialized in connectedCallback
     }
   }
   return MyComponent;
