@@ -299,12 +299,14 @@ class BaseComponent extends HTMLElement {
     }
     this.style.display = "contents";
     
-    // Create props proxy now that element is connected and properties are available
+    this._isConnected = true;
+    
+    // Create props proxy
     this.props = this.propsSchema
       ? createPropsProxy(this, Object.keys(this.propsSchema.properties))
       : {};
     
-    // Initialize store and deps with the properly initialized props
+    // Initialize store and deps
     this.store = bindStore(this.storeDefinition, this.props, this.attrsProxy);
     this.deps = {
       ...this.baseDeps,
@@ -334,11 +336,25 @@ class BaseComponent extends HTMLElement {
       this.unsubscribeAll = subscribeAll(this.handlers.subscriptions(deps));
     }
 
-    if (this.handlers?.handleOnMount) {
-      this._unmountCallback = this.handlers?.handleOnMount(deps);
+    // If no propsSchema, call handleOnMount immediately
+    if (!this.propsSchema?.properties && this.handlers?.handleOnMount) {
+      this._callHandleOnMount();
     }
 
     this.render();
+  }
+  
+  _callHandleOnMount() {
+    if (!this._handleOnMountCalled && this.handlers?.handleOnMount) {
+      this._handleOnMountCalled = true;
+      const deps = {
+        ...this.deps,
+        refIds: this.refIds,
+        getRefIds: () => this.refIds,
+        dispatchEvent: this.dispatchEvent.bind(this),
+      };
+      this._unmountCallback = this.handlers.handleOnMount(deps);
+    }
   }
 
   disconnectedCallback() {
@@ -472,8 +488,10 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
       super();
       const attrsProxy = createAttrsProxy(this);
       this.propsSchema = propsSchema;
-      // Don't create props proxy yet - will be created in connectedCallback
       this.props = {};
+      this._propValues = {};
+      this._handleOnMountCalled = false;
+      this._isConnected = false;
       /**
        * TODO currently if user forgot to define propsSchema for a prop
        * there will be no warning. would be better to shos some warnng
@@ -489,7 +507,26 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
       this.h = h;
       this.cssText = yamlToCss(elementName, styles);
       this.storeDefinition = store;
-      // Store and deps will be initialized in connectedCallback
+      
+      // Create property setters for all props in propsSchema
+      if (this.propsSchema?.properties) {
+        Object.keys(this.propsSchema.properties).forEach(propName => {
+          Object.defineProperty(this, propName, {
+            get() {
+              return this._propValues[propName];
+            },
+            set(value) {
+              this._propValues[propName] = value;
+              // Call handleOnMount when first property is set and component is connected
+              if (!this._handleOnMountCalled && this._isConnected) {
+                this._callHandleOnMount();
+              }
+            },
+            configurable: true,
+            enumerable: true
+          });
+        });
+      }
     }
   }
   return MyComponent;
