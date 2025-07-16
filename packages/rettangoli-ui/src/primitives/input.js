@@ -1,5 +1,5 @@
-import { 
-  css, 
+import {
+  css,
   dimensionWithUnit,
   convertObjectToCssString,
   styleMapKeys,
@@ -59,7 +59,7 @@ class RettangoliInputElement extends HTMLElement {
     RettangoliInputElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "closed" });
     this.shadow.adoptedStyleSheets = [RettangoliInputElement.styleSheet];
-    
+
     // Initialize style tracking properties
     this._styles = {
       default: {},
@@ -69,11 +69,11 @@ class RettangoliInputElement extends HTMLElement {
       xl: {},
     };
     this._lastStyleString = "";
-    
+
     // Create initial DOM structure
     this._inputElement = document.createElement('input');
     this._styleElement = document.createElement('style');
-    
+
     this.shadow.appendChild(this._styleElement);
     this.shadow.appendChild(this._inputElement);
 
@@ -83,10 +83,11 @@ class RettangoliInputElement extends HTMLElement {
 
   static get observedAttributes() {
     return [
-      "key", 
-      "type", 
-      "placeholder", 
+      "key",
+      "type",
+      "placeholder",
       "disabled",
+      "value",
       "s",
       ...permutateBreakpoints([
         ...styleMapKeys,
@@ -105,6 +106,10 @@ class RettangoliInputElement extends HTMLElement {
     return this._inputElement.value;
   }
 
+  set value(newValue) {
+    this._inputElement.value = newValue;
+  }
+
   _onChange = (event) => {
     this.dispatchEvent(new CustomEvent('input-change', {
       detail: {
@@ -115,7 +120,7 @@ class RettangoliInputElement extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     // Handle input-specific attributes first
-    if (["type", "placeholder", "disabled", "s"].includes(name)) {
+    if (["type", "placeholder", "disabled", "value", "s"].includes(name)) {
       this._updateInputAttributes();
       return;
     }
@@ -188,16 +193,21 @@ class RettangoliInputElement extends HTMLElement {
   _updateInputAttributes() {
     const type = this.getAttribute("type") || "text";
     const placeholder = this.getAttribute("placeholder");
+    const value = this.getAttribute("value");
     const isDisabled = this.hasAttribute('disabled');
 
     this._inputElement.setAttribute("type", type);
-    
+
     if (placeholder !== null) {
       this._inputElement.setAttribute("placeholder", placeholder);
     } else {
       this._inputElement.removeAttribute("placeholder");
     }
-    
+
+    if (value !== null) {
+      this._inputElement.value = value;
+    }
+
     if (isDisabled) {
       this._inputElement.setAttribute("disabled", "");
     } else {

@@ -1,26 +1,21 @@
 ---
 title: "With Select"
 ---
-<rtgl-view g="lg" h="100vh" w="100vw" fw="w">
-  <rtgl-form id="form" w="300"></rtgl-form>
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
 </rtgl-view>
 
 <script>
-  const form = document.getElementById('form');
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
 
-  form.defaultValues = {
-    email: 'hello@example.com',
-    password: '',
-    country: 'us',
-    role: '',
-  }
+  form.defaultValues = {}
 
   form.form = {
     title: 'User Registration',
     description: 'Please fill out the form below',
     fields: [{
-      id: 'email',
-      fieldName: 'email',
+      name: 'email',
       inputType: 'inputText',
       label: 'Email',
       description: 'Enter your email address',
@@ -31,8 +26,7 @@ title: "With Select"
         message: 'Must be a valid email'
       }],
     }, {
-      id: 'password',
-      fieldName: 'password',
+      name: 'password',
       inputType: 'inputText',
       label: 'Password',
       description: 'Choose a strong password',
@@ -43,8 +37,7 @@ title: "With Select"
         message: 'Must be a valid password'
       }],
     }, {
-      id: 'country',
-      fieldName: 'country',
+      name: 'country',
       inputType: 'select',
       label: 'Country',
       description: 'Select your country',
@@ -60,8 +53,7 @@ title: "With Select"
         { id: 'jp', label: 'Japan', value: 'jp' },
       ],
     }, {
-      id: 'role',
-      fieldName: 'role',
+      name: 'role',
       inputType: 'select',
       label: 'Role',
       description: 'Select your role',
@@ -87,9 +79,13 @@ title: "With Select"
     }
   }
 
-  form.render();
   form.addEventListener('action-click', (e) => {
     console.log('action-click', e.detail);
   });
 
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
 </script>

@@ -10,15 +10,20 @@ const stringifyAttrs = (attrs) => {
 
 export const toViewData = ({ state, props, attrs }) => {
   const containerAttrString = stringifyAttrs(attrs);
+  const fields = structuredClone(props.form.fields || []);
+  const defaultValues = props.defaultValues || {};
+  fields.forEach((field) => {
+    field.defaultValue = defaultValues[field.name]
+  })
+
   return {
     containerAttrString,
     title: props.form?.title || '',
     description: props?.form?.description || '',
-    fields: props?.form?.fields || [],
+    fields: fields,
     actions: props?.form?.actions || {
       buttons: []
     },
-    // TODO fix default values
     formValues: state.formValues,
   };
 }
@@ -31,15 +36,10 @@ export const selectFormValues = ({ state }) => {
   return state.formValues;
 }
 
-export const setState = (state) => {
-  // do doSomething
-}
-
-export const setDefaultValues = (state, defaultValues) => {
+export const setFormValues = (state, defaultValues) => {
   state.formValues = defaultValues || {};
 }
 
-export const setFormFieldValue = (state, { fieldName, value }) => {
-  state.formValues[fieldName] = value;
+export const setFormFieldValue = (state, { name, value }) => {
+  state.formValues[name] = value;
 }
-

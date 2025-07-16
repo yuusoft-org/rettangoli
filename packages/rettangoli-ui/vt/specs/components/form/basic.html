@@ -1,24 +1,21 @@
 ---
 title: "Basic"
 ---
-<rtgl-view g="lg" h="100vh" w="100vw" fw="w">
-  <rtgl-form id="form" w="300"></rtgl-form>
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
 </rtgl-view>
 
 <script>
-  const form = document.getElementById('form');
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
 
-  form.defaultValues = {
-    email: 'hello@example.com',
-    password: '',
-  }
+  form.defaultValues = {}
 
   form.form = {
     title: 'Form Title',
     description: 'Form Description',
     fields: [{
-      id: 'email',
-      fieldName: 'email',
+      name: 'email',
       inputType: 'inputText',
       label: 'Email',
       description: 'Enter your email',
@@ -28,8 +25,7 @@ title: "Basic"
         message: 'Must be a valid email'
       }],
     }, {
-      id: 'password',
-      fieldName: 'password',
+      name: 'password',
       inputType: 'inputText',
       label: 'Password',
       description: 'Enter your password',
@@ -39,8 +35,7 @@ title: "Basic"
         message: 'Must be a valid password'
       }],
     }, {
-      id: 'age',
-      fieldName: 'age',
+      name: 'age',
       inputType: 'inputText',
       label: 'Age',
       description: 'Enter your age',
@@ -60,13 +55,13 @@ title: "Basic"
     }
   }
 
-  form.render();
   form.addEventListener('action-click', (e) => {
     console.log('action-click', e.detail);
   });
-  
+
   form.addEventListener('form-change', (e) => {
     console.log('form-change', e.detail);
   });
 
+  document.getElementById('container').appendChild(form);
 </script>

@@ -1,52 +1,43 @@
 ---
 title: "With Slider"
 ---
-<rtgl-view g="lg" h="100vh" w="100vw" fw="w">
-  <rtgl-form id="form" w="300"></rtgl-form>
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
 </rtgl-view>
 
 <script>
-  const form = document.getElementById('form');
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
 
-  form.defaultValues = {
-    volume: 75,
-    brightness: 50,
-    temperature: 22.5,
-  }
+  form.defaultValues = {}
 
   form.form = {
     title: 'Settings',
     description: 'Adjust your preferences',
     fields: [{
-      id: 'volume',
-      fieldName: 'volume',
+      name: 'volume',
       inputType: 'slider',
       label: 'Volume',
       description: 'Adjust the volume level',
       min: 0,
       max: 100,
       step: 1,
-      value: 75
     }, {
-      id: 'brightness',
-      fieldName: 'brightness',
+      name: 'brightness',
       inputType: 'slider',
       label: 'Brightness',
       description: 'Set screen brightness',
       min: 10,
       max: 100,
       step: 5,
-      value: 50
     }, {
-      id: 'temperature',
-      fieldName: 'temperature',
+      name: 'temperature',
       inputType: 'slider',
       label: 'Temperature',
       description: 'Room temperature in Celsius',
       min: 16,
       max: 30,
       step: 0.5,
-      value: 22.5
     }],
     actions: {
       buttons: [{
@@ -57,9 +48,13 @@ title: "With Slider"
     }
   }
 
-  form.render();
   form.addEventListener('action-click', (e) => {
     console.log('action-click', e.detail);
   });
 
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
 </script>
