@@ -305,7 +305,7 @@ class BaseComponent extends HTMLElement {
       : {};
     
     // Initialize store and deps with the properly initialized props
-    this.store = bindStore(store, this.props, this.attrsProxy);
+    this.store = bindStore(this.storeDefinition, this.props, this.attrsProxy);
     this.deps = {
       ...this.baseDeps,
       store: this.store,
@@ -488,6 +488,7 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
       this.baseDeps = deps;
       this.h = h;
       this.cssText = yamlToCss(elementName, styles);
+      this.storeDefinition = store;
       // Store and deps will be initialized in connectedCallback
     }
   }
