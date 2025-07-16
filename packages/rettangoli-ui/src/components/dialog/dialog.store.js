@@ -1,11 +1,11 @@
 export const INITIAL_STATE = Object.freeze({
-  //
+
 });
 
-export const toViewData = ({ state, props }) => {
+export const toViewData = ({ props, attrs }) => {
   return {
     isOpen: props.isOpen,
-    w: props.w || 600,
+    w: attrs.w || 600,
     position: {
       x: 0,
       y: 0

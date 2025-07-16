@@ -3,13 +3,17 @@ elementName: rtgl-dialog
 viewDataSchema:
   type: object
 
+attrsSchema:
+  type: object
+  properties:
+    w:
+      type: string
+
 propsSchema:
   type: object
   properties:
     isOpen:
       type: boolean
-    w:
-      type: string
 
 refs:
   dialog-overlay:
