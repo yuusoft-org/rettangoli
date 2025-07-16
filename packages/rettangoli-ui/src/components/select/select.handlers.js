@@ -5,10 +5,7 @@ export const handleOnMount = (deps) => {
   if (props.selectedValue !== null && props.selectedValue !== undefined && props.options) {
     const selectedOption = props.options.find(opt => opt.value === props.selectedValue);
     if (selectedOption) {
-      store.update((state) => {
-        state.selectedValue = selectedOption.value;
-        state.selectedLabel = selectedOption.label;
-      });
+      store.updateSelectOption(selectedOption);
       render();
     }
   }

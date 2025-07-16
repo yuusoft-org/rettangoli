@@ -21,7 +21,7 @@ propsSchema:
             anyOf:
               - type: object
                 properties:
-                  id:
+                  name:
                     type: string
                   label:
                     type: string
@@ -32,13 +32,13 @@ propsSchema:
                   placeholder:
                     type: string
                 required:
-                  - id
+                  - name
                   - label
                   - inputType
                 additionalProperties: false
               - type: object
                 properties:
-                  id:
+                  name:
                     type: string
                   label:
                     type: string
@@ -64,14 +64,14 @@ propsSchema:
                         - label
                         - value
                 required:
-                  - id
+                  - name
                   - label
                   - inputType
                   - options
                 additionalProperties: false
               - type: object
                 properties:
-                  id:
+                  name:
                     type: string
                   label:
                     type: string
@@ -82,13 +82,13 @@ propsSchema:
                   value:
                     type: string
                 required:
-                  - id
+                  - name
                   - label
                   - inputType
                 additionalProperties: false
               - type: object
                 properties:
-                  id:
+                  name:
                     type: string
                   label:
                     type: string
@@ -105,7 +105,7 @@ propsSchema:
                   value:
                     type: number
                 required:
-                  - id
+                  - name
                   - label
                   - inputType
                 additionalProperties: false
@@ -162,14 +162,14 @@ template:
               - rtgl-text: ${field.label}
               - rtgl-text s=sm c=mu-fg: ${field.description}
             - $if field.inputType == "inputText":
-                - rtgl-input#input-${field.id} w=f placeholder=${field.placeholder}:
+                - rtgl-input#input-${field.name} w=f placeholder=${field.placeholder} value=${field.defaultValue}:
             - $if field.inputType == "select":
-                - rtgl-select#select-${field.id} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=formValues[field.id]:
+                - rtgl-select#select-${field.name} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue:
             - $if field.inputType == "colorPicker":
-                - rtgl-color-picker#colorpicker-${field.id} value=${field.value}:
+                - rtgl-color-picker#colorpicker-${field.name} value=${field.defaultValue}:
             - $if field.inputType == "slider":
-                - rtgl-slider#slider-${field.id} min=${field.min} max=${field.max} step=${field.step} value=${field.value}: 
+                - rtgl-slider#slider-${field.name} w=f min=${field.min} max=${field.max} step=${field.step} value=${field.defaultValue}:
     - rtgl-view g=sm w=f:
-      - $for button, i in actions.buttons:
-        - rtgl-view d=h ah=e g=sm w=f:
+      - rtgl-view d=h ah=e g=sm w=f:
+        - $for button, i in actions.buttons:
           - rtgl-button#action-${button.id}: ${button.content}

@@ -1,5 +1,5 @@
-import { 
-  css, 
+import {
+  css,
   dimensionWithUnit,
   convertObjectToCssString,
   styleMapKeys,
@@ -22,7 +22,6 @@ class RettangoliSliderElement extends HTMLElement {
         input[type="range"] {
           -webkit-appearance: none;
           appearance: none;
-          width: 200px;
           height: 8px;
           background: var(--muted);
           border-radius: var(--border-radius-full);
@@ -79,7 +78,7 @@ class RettangoliSliderElement extends HTMLElement {
     RettangoliSliderElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "closed" });
     this.shadow.adoptedStyleSheets = [RettangoliSliderElement.styleSheet];
-    
+
     // Initialize style tracking properties
     this._styles = {
       default: {},
@@ -89,12 +88,12 @@ class RettangoliSliderElement extends HTMLElement {
       xl: {},
     };
     this._lastStyleString = "";
-    
+
     // Create initial DOM structure
     this._inputElement = document.createElement('input');
     this._inputElement.type = 'range';
     this._styleElement = document.createElement('style');
-    
+
     this.shadow.appendChild(this._styleElement);
     this.shadow.appendChild(this._inputElement);
 
@@ -105,7 +104,7 @@ class RettangoliSliderElement extends HTMLElement {
 
   static get observedAttributes() {
     return [
-      "key", 
+      "key",
       "value",
       "min",
       "max",
@@ -248,7 +247,7 @@ class RettangoliSliderElement extends HTMLElement {
     } else {
       this._inputElement.step = "1";
     }
-    
+
     if (isDisabled) {
       this._inputElement.setAttribute("disabled", "");
     } else {
