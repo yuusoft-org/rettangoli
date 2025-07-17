@@ -64,7 +64,7 @@ For async operations like API calls, use the `subscriptions` pattern:
 import { of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-const doSomeStuff = (deps) => {
+const doSomeStuff = async (deps) => {
   // Set loading state
   store.setLoading(true);
   render();
