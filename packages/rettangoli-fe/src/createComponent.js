@@ -4,7 +4,7 @@ import { parseView } from "./parser.js";
 /**
  * covert this format of json into raw css strings
  * notice if propoperty starts with \@, it will need to nest it
- * 
+ *
     ':host':
       display: contents
     'button':
@@ -26,8 +26,8 @@ import { parseView } from "./parser.js";
     '@media (min-width: 768px)':
       'button':
         height: 40px
- * @param {*} styleObject 
- * @returns 
+ * @param {*} styleObject
+ * @returns
  */
 const yamlToCss = (elementName, styleObject) => {
   if (!styleObject || typeof styleObject !== "object") {
@@ -313,15 +313,24 @@ class BaseComponent extends HTMLElement {
       };
     });
 
-    if (this.handlers?.subscriptions) {
-      this.unsubscribeAll = subscribeAll(this.handlers.subscriptions(deps));
-    }
+    if (this.handlers?.handleBeforeMount) {
+      this._unmountCallback = this.handlers?.handleBeforeMount(deps);
 
-    if (this.handlers?.handleOnMount) {
-      this._unmountCallback = this.handlers?.handleOnMount(deps);
+      // Validate that handleBeforeMount doesn't return a Promise
+      if (this._unmountCallback && typeof this._unmountCallback.then === 'function') {
+        throw new Error('handleBeforeMount must be synchronous and cannot return a Promise.');
+      }
     }
 
     this.render();
+
+    if (this.handlers?.handleAfterMount) {
+      this.handlers?.handleAfterMount(deps);
+    }
+
+    if (this.handlers?.subscriptions) {
+      this.unsubscribeAll = subscribeAll(this.handlers.subscriptions(deps));
+    }
   }
 
   disconnectedCallback() {

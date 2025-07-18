@@ -113,7 +113,7 @@ export const createVirtualDom = ({
 
         const entries = Object.entries(item);
         if (entries.length === 0) {
-          console.warn("Skipping empty object item:", item);
+          // skipping empty object item
           return null;
         }
 

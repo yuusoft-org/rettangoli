@@ -7,7 +7,7 @@ Event handling and lifecycle management with dependency injection. Handlers rece
 While state and view are pure functions, handlers can be messier as they handle side effects. This is the layer where "real world" interactions happen, including:
 
 - **Lifecycle management** - Component mounting, unmounting, and property changes
-- **Side effects** - API calls, DOM manipulation, timers, and external integrations  
+- **Side effects** - API calls, DOM manipulation, timers, and external integrations
 - **State updates** - Calling store actions to modify application state
 - **Manual rendering** - We don't use reactive state management. State updates require manually calling `render()` to reflect changes in the UI
 
@@ -17,7 +17,7 @@ While state and view are pure functions, handlers can be messier as they handle 
 export const handlerName = (event, deps) => {
   // Access dependencies
   const { store, render, props, attrs, dispatchEvent } = deps;
-  
+
   // Handle the event
   store.updateState();
   render();
@@ -39,29 +39,81 @@ export const handlerName = (event, deps) => {
 
 ### Component Lifecycle
 
-This is called during component mount. This is called before component first render.
+#### handleBeforeMount
+
+This is called during component mount, before the component's first render.
+
+**Important: `handleBeforeMount` must be synchronous and cannot return a Promise.** For async operations, use the `handleAfterMount`
+
+`handleBeforeMount` can return a cleanup function that will be called during component unmount.
 
 ```js
-export const handleOnMount = async(deps) => {
-  const { store, render, apiService } = deps;
-  
-  // Load initial data
-  store.setLoading(true);
-  render();
-  
-  const data = await apiService.fetchData()
-  store.setData(data);
-  store.setLoading(false);
+export const handleBeforeMount = (deps) => {
+  const { store, render } = deps;
 
-
-  // This render call could also be skipped as render will be called automatically
-  // after handleOnMount completes
-  render();
-
-  // this will be called when the component is unmounted
+  // Only synchronous setup here
+  store.setInitialState();
+  // Return cleanup function immediately (synchronous)
   return () => {
     // Cleanup logic if needed
   };
+};
+```
+
+#### handleAfterMount
+
+This is called after the component's first render is complete.
+
+**Note: `handleAfterMount` can be async.** This handler does not return a cleanup function.
+
+```js
+export const handleAfterMount = async (deps) => {
+  const { store, render } = deps;
+
+  // Can perform async operations here
+  try {
+    const data = await fetchInitialData();
+    store.setData(data);
+    render();
+  } catch (error) {
+    store.setError(error.message);
+    render();
+  }
+};
+```
+
+#### Async Operations (recommended pattern)
+For async operations like API calls, use the `subscriptions` pattern:
+
+```js
+import { of } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
+const doSomeStuff = async (deps) => {
+  // Set loading state
+  store.setLoading(true);
+  render();
+
+  try {
+    const data = await apiService.fetchData();
+    store.setData(data);
+    store.setLoading(false);
+    render();
+  } catch (error) {
+    store.setError(error.message);
+    store.setLoading(false);
+    render();
+  }
+}
+
+export const subscriptions = (deps) => {
+  const { store, render, apiService } = deps;
+  return [
+    // Trigger immediately on mount for async operations
+    of(null).pipe(
+      tap(() => doSomeStuff(deps))
+    )
+  ];
 };
 ```
 
@@ -93,7 +145,7 @@ export const handleSubmit = (event, deps) => {
 export const handleInputChange = (event, deps) => {
   const { store, render } = deps;
   const { name, value } = event.target;
-  
+
   store.setFieldValue(name, value);
   render();
 };
@@ -103,7 +155,7 @@ export const handleInputChange = (event, deps) => {
 ```js
 export const handleToggle = (event, deps) => {
   const { store, render } = deps;
-  
+
   store.toggleCompleted();
   render();
 };
@@ -112,13 +164,13 @@ export const handleToggle = (event, deps) => {
 ```js
 export const handleKeyDown = (event, deps) => {
   const { store, render } = deps;
-  
+
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault();
     store.submitForm();
     render();
   }
-  
+
   if (event.key === 'Escape') {
     store.cancelEdit();
     render();
@@ -134,10 +186,10 @@ Handlers can be asyncronous
 ```js
 export const handleRefresh = async (event, deps) => {
   const { store, render, apiService } = deps;
-  
+
   store.setLoading(true);
   render();
-  
+
   try {
     const data = await apiService.fetchLatest();
     store.setData(data);
@@ -160,7 +212,7 @@ For custom events name. We recommend using the `kebab-case` format.
 // Child component
 export const handleItemClick = (event, deps) => {
   const { dispatchEvent, props } = deps;
-  
+
   dispatchEvent(new CustomEvent('item-selected', {
     detail: { item: props.item },
     bubbles: true
@@ -188,24 +240,24 @@ const dataProcessor = {
       acc.categories[item.category] = (acc.categories[item.category] || 0) + 1;
       return acc;
     }, { totalValue: 0, averageScore: 0, categories: {} });
-    
+
     metrics.averageScore /= data.length;
     return metrics;
   }
 };
 
 const componentDependencies = {
-  dataProcessor: 
+  dataProcessor:
   }
 };
 
 // In handlers.js
 export const handleCalculateMetrics = (event, deps) => {
   const { store, render, dataProcessor } = deps;
-  
+
   const rawData = store.getRawData();
   const metrics = dataProcessor.calculateMetrics(rawData);
-  
+
   store.setMetrics(metrics);
   render();
 };
@@ -222,11 +274,11 @@ import { debounce } from 'lodash';
 
 export const handleDateFormat = (event, deps) => {
   const { store, render } = deps;
-  
+
   // Direct use of standard utilities
   const formattedDate = format(new Date(), 'yyyy-MM-dd');
   const calculation = Math.round(store.getValue() * 1.2);
-  
+
   store.setFormattedDate(formattedDate);
   store.setCalculation(calculation);
   render();
@@ -253,11 +305,11 @@ const componentDependencies = {
 // In handlers.js - Custom services through deps
 export const handleUserSubmit = (event, deps) => {
   const { store, render, userService, paymentProcessor } = deps;
-  
+
   // Custom business logic through dependencies
   const validationResult = userService.validateUser(userData);
   const paymentResult = paymentProcessor.processPayment(amount, method);
-  
+
   store.setResults(validationResult, paymentResult);
   render();
 };
@@ -295,13 +347,13 @@ const componentDependencies = {
 };
 
 // In handlers.js
-export const handleOnMount = (deps) => {
+export const handleBeforeMount = (deps) => {
   const { store, render, localStorage } = deps;
-  
+
   // Load saved preferences on mount
   const savedTheme = localStorage.getItem('user-theme', 'light');
   const savedSettings = localStorage.getItem('user-settings', {});
-  
+
   store.setTheme(savedTheme);
   store.setSettings(savedSettings);
   render();
@@ -309,13 +361,13 @@ export const handleOnMount = (deps) => {
 
 export const handleThemeToggle = (event, deps) => {
   const { store, render, localStorage } = deps;
-  
+
   const currentTheme = store.getTheme();
   const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-  
+
   store.setTheme(newTheme);
   localStorage.setItem('user-theme', newTheme);
-  
+
   render();
 };
 ```
@@ -344,9 +396,9 @@ const componentDependencies = {
 };
 
 // In handlers.js
-export const handleOnMount = (deps) => {
+export const handleBeforeMount = (deps) => {
   const { store, render, subject } = deps;
-  
+
   // Subscribe to actions from other components
   const unsubscribe = subject.subscribe((action, payload) => {
     if (action === 'user-logged-in') {
@@ -358,7 +410,7 @@ export const handleOnMount = (deps) => {
       render();
     }
   });
-  
+
   // Return cleanup function
   return () => {
     unsubscribe();
@@ -367,14 +419,14 @@ export const handleOnMount = (deps) => {
 
 export const handleUserAction = (event, deps) => {
   const { store, render, subject } = deps;
-  
+
   // Dispatch action to notify other components
   subject.dispatch('user-action-performed', {
     action: 'item-selected',
     itemId: event.target.dataset.itemId,
     timestamp: Date.now()
   });
-  
+
   store.recordAction(event.target.dataset.itemId);
   render();
 };
@@ -394,13 +446,13 @@ TODO
 // ✅ Simple, focused handler
 export const handleSubmit = (event, deps) => {
   const { store, render } = deps;
-  
+
   event.preventDefault();
   const data = getFormData(event.target);
-  
+
   store.setSubmitting(true);
   render();
-  
+
   submitForm(data, deps);
 };
 
@@ -428,13 +480,13 @@ export const handleSubmit = (event, deps) => { /* */ };
 ```js
 const handleAsyncAction = async (actionFn, deps) => {
   const { store, render } = deps;
-  
+
   try {
     store.setLoading(true);
     render();
-    
+
     await actionFn();
-    
+
     store.setSuccess(true);
   } catch (error) {
     store.setError(error.message);
@@ -462,17 +514,17 @@ too much inside the handler makes a complex handler.
 // ✅ Separate validation logic
 export const handleFormSubmit = (event, deps) => {
   const { store, render } = deps;
-  
+
   event.preventDefault();
   const data = getFormData(event.target);
-  
+
   const errors = validateFormData(data);
   if (errors.length > 0) {
     store.setFormErrors(errors);
     render();
     return;
   }
-  
+
   submitForm(data, deps);
 };
 
@@ -488,4 +540,3 @@ function validateFormData(data) {
   return errors;
 }
 ```
-
