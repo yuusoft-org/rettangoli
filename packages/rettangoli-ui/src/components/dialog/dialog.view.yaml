@@ -41,7 +41,7 @@ styles:
 
 template:
   - $if isOpen:
-    - rtgl-view pos=fix cor=full ah=c:
+    - 'rtgl-view z=9999 pos=fix cor=full ah=c sv=true style="scrollbar-width: none;"':
       - 'rtgl-view#dialog-overlay pos=fix cor=full ah=c av=c bgc=bg op=0.5':
       - rtgl-view h=10vh:
       - rtgl-view#dialog-container z=100 bw=xs p=lg bgc=bg w=${w} br=sm:
