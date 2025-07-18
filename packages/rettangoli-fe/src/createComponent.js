@@ -313,16 +313,20 @@ class BaseComponent extends HTMLElement {
       };
     });
 
-    if (this.handlers?.handleOnMount) {
-      this._unmountCallback = this.handlers?.handleOnMount(deps);
+    if (this.handlers?.handleBeforeMount) {
+      this._unmountCallback = this.handlers?.handleBeforeMount(deps);
 
-      // Validate that handleOnMount doesn't return a Promise
+      // Validate that handleBeforeMount doesn't return a Promise
       if (this._unmountCallback && typeof this._unmountCallback.then === 'function') {
-        throw new Error('handleOnMount must be synchronous and cannot return a Promise.');
+        throw new Error('handleBeforeMount must be synchronous and cannot return a Promise.');
       }
     }
 
     this.render();
+
+    if (this.handlers?.handleAfterMount) {
+      this.handlers?.handleAfterMount(deps);
+    }
 
     if (this.handlers?.subscriptions) {
       this.unsubscribeAll = subscribeAll(this.handlers.subscriptions(deps));
