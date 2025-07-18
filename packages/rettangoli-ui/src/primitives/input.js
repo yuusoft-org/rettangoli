@@ -120,7 +120,7 @@ class RettangoliInputElement extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     // Handle input-specific attributes first
-    if (["type", "placeholder", "disabled", "value", "s"].includes(name)) {
+    if (["type", "placeholder", "disabled", "value", "step", "s"].includes(name)) {
       this._updateInputAttributes();
       return;
     }
@@ -194,6 +194,7 @@ class RettangoliInputElement extends HTMLElement {
     const type = this.getAttribute("type") || "text";
     const placeholder = this.getAttribute("placeholder");
     const value = this.getAttribute("value");
+    const step = this.getAttribute("step");
     const isDisabled = this.hasAttribute('disabled');
 
     this._inputElement.setAttribute("type", type);
@@ -206,6 +207,12 @@ class RettangoliInputElement extends HTMLElement {
 
     if (value !== null) {
       this._inputElement.value = value;
+    }
+
+    if (step !== null) {
+      this._inputElement.setAttribute("step", step);
+    } else {
+      this._inputElement.removeAttribute("step");
     }
 
     if (isDisabled) {
