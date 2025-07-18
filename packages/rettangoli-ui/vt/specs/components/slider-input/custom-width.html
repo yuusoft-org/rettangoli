@@ -1,0 +1,14 @@
+---
+title: "Custom Width"
+---
+<rtgl-view g="lg" fw="w" p="lg">
+  <rtgl-slider-input id="slider-input" w="400"></rtgl-slider-input>
+</rtgl-view>
+
+<script>
+  const sliderInput = document.getElementById('slider-input');
+
+  sliderInput.addEventListener('slider-input-value-change', (e) => {
+    console.log('slider-input-value-change', e.detail);
+  });
+</script>

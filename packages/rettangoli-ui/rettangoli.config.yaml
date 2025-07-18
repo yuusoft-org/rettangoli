@@ -77,6 +77,9 @@ vt:
         - title: "Table"
           files: "components/table"
           description: "Table component tests"
+        - title: "Slider Input"
+          files: "components/slider-input"
+          description: "Slider Input component tests"
     - title: "Examples"
       type: "groupLabel"
       items:
