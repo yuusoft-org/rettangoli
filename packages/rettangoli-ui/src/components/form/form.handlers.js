@@ -76,3 +76,15 @@ export const handleSliderChange = (e, deps) => {
     dispatchFormChange(name, e.detail.value, store.selectFormValues(), dispatchEvent);
   }
 };
+
+export const handleSliderInputChange = (e, deps) => {
+  const { store, dispatchEvent } = deps;
+  const name = e.currentTarget.id.replace("slider-input-", "");
+  if (name && e.detail.value !== undefined) {
+    store.setFormFieldValue({
+      name: name,
+      value: e.detail.value,
+    });
+    dispatchFormChange(name, e.detail.value, store.selectFormValues(), dispatchEvent);
+  }
+};

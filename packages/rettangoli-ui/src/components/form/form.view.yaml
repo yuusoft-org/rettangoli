@@ -109,6 +109,31 @@ propsSchema:
                   - label
                   - inputType
                 additionalProperties: false
+              - type: object
+                properties:
+                  name:
+                    type: string
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  inputType:
+                    const: slider-input
+                  min:
+                    type: number
+                  max:
+                    type: number
+                  step:
+                    type: number
+                  value:
+                    type: number
+                  w:
+                    type: string
+                required:
+                  - name
+                  - label
+                  - inputType
+                additionalProperties: false
         actions:
           type: object
           properties:
@@ -146,6 +171,10 @@ refs:
     eventListeners:
       slider-change:
         handler: handleSliderChange
+  slider-input-*:
+    eventListeners:
+      slider-input-value-change:
+        handler: handleSliderInputChange
 
 events:
   form-change: {}
@@ -169,6 +198,8 @@ template:
                 - rtgl-color-picker#colorpicker-${field.name} value=${field.defaultValue}:
             - $if field.inputType == "slider":
                 - rtgl-slider#slider-${field.name} w=f min=${field.min} max=${field.max} step=${field.step} value=${field.defaultValue}:
+            - $if field.inputType == "slider-input":
+                - rtgl-slider-input#slider-input-${field.name} w=${field.w || 'f'} min=${field.min} max=${field.max} step=${field.step} defaultValue=${field.defaultValue}:
     - rtgl-view g=sm w=f:
       - rtgl-view d=h ah=e g=sm w=f:
         - $for button, i in actions.buttons:
