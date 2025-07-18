@@ -11,7 +11,7 @@ attrsSchema:
       default: '0'
     w:
       type: string
-      default: '600'
+      default: ''
     min:
       type: string
       default: '0'

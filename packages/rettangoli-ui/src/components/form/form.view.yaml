@@ -127,8 +127,6 @@ propsSchema:
                     type: number
                   value:
                     type: number
-                  w:
-                    type: string
                 required:
                   - name
                   - label
@@ -199,7 +197,7 @@ template:
             - $if field.inputType == "slider":
                 - rtgl-slider#slider-${field.name} w=f min=${field.min} max=${field.max} step=${field.step} value=${field.defaultValue}:
             - $if field.inputType == "slider-input":
-                - rtgl-slider-input#slider-input-${field.name} w=${field.w || 'f'} min=${field.min} max=${field.max} step=${field.step} defaultValue=${field.defaultValue}:
+                - rtgl-slider-input#slider-input-${field.name} w=f min=${field.min} max=${field.max} step=${field.step} defaultValue=${field.defaultValue}:
     - rtgl-view g=sm w=f:
       - rtgl-view d=h ah=e g=sm w=f:
         - $for button, i in actions.buttons:

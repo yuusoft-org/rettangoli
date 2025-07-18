@@ -5,7 +5,7 @@ export const INITIAL_STATE = Object.freeze({
 export const toViewData = ({ state, attrs }) => {
   return {
     value: state.value,
-    w: attrs.w || 600,
+    w: attrs.w || '',
     min: attrs.min || 0,
     max: attrs.max || 100,
     step: attrs.step || 1
