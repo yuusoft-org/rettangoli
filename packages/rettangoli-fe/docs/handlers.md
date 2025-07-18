@@ -39,13 +39,16 @@ export const handlerName = (event, deps) => {
 
 ### Component Lifecycle
 
-This is called during component mount. This is called before component first render.
+#### handleBeforeMount
 
-**Important: `handleOnMount` must be synchronous and cannot return a Promise.** For async operations, use the `subscriptions` pattern with RxJS observables.
+This is called during component mount, before the component's first render.
 
-#### Synchronous Mount (for setup only)
+**Important: `handleBeforeMount` must be synchronous and cannot return a Promise.** For async operations, use the `handleAfterMount`
+
+`handleBeforeMount` can return a cleanup function that will be called during component unmount.
+
 ```js
-export const handleOnMount = (deps) => {
+export const handleBeforeMount = (deps) => {
   const { store, render } = deps;
 
   // Only synchronous setup here
@@ -54,6 +57,28 @@ export const handleOnMount = (deps) => {
   return () => {
     // Cleanup logic if needed
   };
+};
+```
+
+#### handleAfterMount
+
+This is called after the component's first render is complete.
+
+**Note: `handleAfterMount` can be async.** This handler does not return a cleanup function.
+
+```js
+export const handleAfterMount = async (deps) => {
+  const { store, render } = deps;
+
+  // Can perform async operations here
+  try {
+    const data = await fetchInitialData();
+    store.setData(data);
+    render();
+  } catch (error) {
+    store.setError(error.message);
+    render();
+  }
 };
 ```
 
@@ -322,7 +347,7 @@ const componentDependencies = {
 };
 
 // In handlers.js
-export const handleOnMount = (deps) => {
+export const handleBeforeMount = (deps) => {
   const { store, render, localStorage } = deps;
 
   // Load saved preferences on mount
@@ -371,7 +396,7 @@ const componentDependencies = {
 };
 
 // In handlers.js
-export const handleOnMount = (deps) => {
+export const handleBeforeMount = (deps) => {
   const { store, render, subject } = deps;
 
   // Subscribe to actions from other components
