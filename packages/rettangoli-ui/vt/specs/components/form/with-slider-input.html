@@ -1,0 +1,147 @@
+---
+title: "With Slider Input"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    volume: 75,
+    brightness: 80,
+    temperature: 22.5
+  }
+
+  form.form = {
+    title: 'Audio & Display Settings',
+    description: 'Configure your audio and display preferences using slider inputs',
+    fields: [{
+      name: 'volume',
+      inputType: 'slider-input',
+      label: 'Volume Level',
+      description: 'Control the system volume (0-100)',
+      min: 0,
+      max: 100,
+      step: 1,
+      w: '300'
+    }, {
+      name: 'brightness',
+      inputType: 'slider-input',
+      label: 'Screen Brightness',
+      description: 'Adjust screen brightness (10-100)',
+      min: 10,
+      max: 100,
+      step: 5,
+      w: '350'
+    }, {
+      name: 'temperature',
+      inputType: 'slider-input',
+      label: 'Color Temperature',
+      description: 'Set color temperature in Kelvin (2500-6500)',
+      min: 2500,
+      max: 6500,
+      step: 100,
+      w: '400'
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        content: 'Apply Settings',
+      }],
+    }
+  }
+
+  form.addEventListener('action-click', (e) => {
+    console.log('action-click', e.detail);
+    if (e.detail.actionId === 'reset') {
+      // Reset to new default values
+      const newDefaults = {
+        volume: 50,
+        brightness: 70,
+        temperature: 4000
+      };
+      
+      // Recreate the form with new default values
+      form.remove();
+      
+      const newForm = document.createElement('rtgl-form');
+      newForm.id = 'form';
+      newForm.setAttribute('w', '400');
+      newForm.defaultValues = newDefaults;
+      newForm.form = {
+        title: 'Audio & Display Settings',
+        description: 'Configure your audio and display preferences using slider inputs',
+        fields: [{
+          name: 'volume',
+          inputType: 'slider-input',
+          label: 'Volume Level',
+          description: 'Control the system volume (0-100)',
+          min: 0,
+          max: 100,
+          step: 1,
+          w: '300'
+        }, {
+          name: 'brightness',
+          inputType: 'slider-input',
+          label: 'Screen Brightness',
+          description: 'Adjust screen brightness (10-100)',
+          min: 10,
+          max: 100,
+          step: 5,
+          w: '350'
+        }, {
+          name: 'temperature',
+          inputType: 'slider-input',
+          label: 'Color Temperature',
+          description: 'Set color temperature in Kelvin (2500-6500)',
+          min: 2500,
+          max: 6500,
+          step: 100,
+          w: '400'
+        }],
+        actions: {
+          buttons: [{
+            id: 'submit',
+            variant: 'pr',
+            content: 'Apply Settings',
+          }],
+        }
+      };
+      
+      // Add event listeners to the new form
+      newForm.addEventListener('action-click', arguments.callee);
+      newForm.addEventListener('form-change', (e) => {
+        console.log('form-change', e.detail);
+        const statusDiv = document.getElementById('status');
+        if (statusDiv) {
+          statusDiv.textContent = `${e.detail.name}: ${e.detail.fieldValue}`;
+        }
+      });
+      
+      // Insert the new form
+      const container = document.getElementById('container');
+      container.insertBefore(newForm, container.lastElementChild);
+      
+      // Update status
+      const statusDiv = document.getElementById('status');
+      if (statusDiv) {
+        statusDiv.textContent = 'Reset to default values (50, 70, 4000)';
+      }
+    }
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+    // Show real-time updates
+    const statusDiv = document.getElementById('status');
+    if (statusDiv) {
+      statusDiv.textContent = `${e.detail.name}: ${e.detail.fieldValue}`;
+    }
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

@@ -1,0 +1,41 @@
+elementName: rtgl-slider-input
+
+viewDataSchema:
+  type: object
+
+attrsSchema:
+  type: object
+  properties:
+    defaultValue:
+      type: string
+      default: '0'
+    w:
+      type: string
+      default: ''
+    min:
+      type: string
+      default: '0'
+    max:
+      type: string
+      default: '100'
+    step:
+      type: string
+      default: '1'
+
+refs:
+  input:
+    eventListeners:
+      input-change:
+        handler: handleValueChange
+  slider:
+    eventListeners:
+      slider-change:
+        handler: handleValueChange
+
+events:
+  form-change: {}
+
+template:
+  - rtgl-view d=h av=c g=md w=${w}:
+    - rtgl-slider#slider w=80% type=range min=${min} max=${max} step=${step} value=${value}:
+    - rtgl-input#input w=20% type=number min=${min} max=${max} step=${step} value=${value}:
