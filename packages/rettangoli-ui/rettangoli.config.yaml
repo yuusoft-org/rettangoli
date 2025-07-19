@@ -1,5 +1,12 @@
 # TODO a way to configure dev and prod
 # all rtgl fe configuration
+#
+
+ui:
+  svg:
+    dir: src/svg
+    outfile: src/svg/rtgl-icons.js
+
 fe:
    dirs: ['src/components'] # directories that contain components
    setup: 'src/setup.js' # path to setup.js file
