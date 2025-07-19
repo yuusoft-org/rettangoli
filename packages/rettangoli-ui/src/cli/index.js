@@ -1,0 +1,1 @@
+export { default as buildSvg } from './buildSvg.js';

@@ -3,6 +3,7 @@
 import { build, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { generate, report, accept } from "@rettangoli/vt/cli";
 import { copyPagesToSite } from "@rettangoli/sites/cli";
+import { buildSvg } from "@rettangoli/ui/cli";
 import { Command } from "commander";
 import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
@@ -241,6 +242,43 @@ sitesCommand
       outputPath: options.output,
     });
     console.log("Build completed successfully!");
+  });
+
+const uiCommand = program.command("ui").description("UI component tools");
+
+uiCommand
+  .command("build-svg")
+  .description("Build SVG icons from directory")
+  .option("-d, --dir <dir>", "Directory containing SVG files")
+  .option("-o, --outfile <path>", "Output file path")
+  .addHelpText(
+    "after",
+    `
+
+Examples:
+  $ rettangoli ui build-svg
+  $ rettangoli ui build-svg --dir ./icons --outfile ./dist/icons.js
+  $ rettangoli ui build-svg -d ./assets/svg -o ./public/js/icons.js
+`,
+  )
+  .action((options) => {
+    const config = readConfig();
+
+    // Use config values if options not provided
+    if (!options.dir && config?.ui?.svg?.dir) {
+      options.dir = config.ui.svg.dir;
+    }
+    if (!options.outfile && config?.ui?.svg?.outfile) {
+      options.outfile = config.ui.svg.outfile;
+    }
+
+    // Check if required options are available (either from CLI or config)
+    if (!options.dir || !options.outfile) {
+      console.error("Error: Both dir and outfile are required. Provide them via CLI options or in rettangoli.config.yaml under ui.svg");
+      process.exit(1);
+    }
+
+    buildSvg(options);
   });
 
 program.parse();
