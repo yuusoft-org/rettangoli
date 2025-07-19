@@ -95,9 +95,11 @@ class RettangoliColorPickerElement extends HTMLElement {
 
   set value(newValue) {
     this._inputElement.value = newValue;
+    this.setAttribute('value', newValue);
   }
 
   _onChange = (event) => {
+    this.setAttribute('value', this._inputElement.value);
     this.dispatchEvent(new CustomEvent('colorpicker-change', {
       detail: {
         value: this._inputElement.value,
