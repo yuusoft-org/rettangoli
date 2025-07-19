@@ -24,12 +24,17 @@ function getAllSvgFiles(dir) {
 }
 
 function removeFrontmatter(content) {
-  if (content.startsWith('---')) {
-    const endIndex = content.indexOf('---', 3);
-    if (endIndex !== -1) {
-      return content.slice(endIndex + 3).trim();
+  // Look for a line containing only '---'
+  const lines = content.split('\n');
+  
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() === '---') {
+      // Found the separator, return everything after it
+      return lines.slice(i + 1).join('\n').trim();
     }
   }
+  
+  // No frontmatter separator found, return original content
   return content;
 }
 
