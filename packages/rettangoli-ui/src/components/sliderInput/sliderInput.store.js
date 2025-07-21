@@ -6,7 +6,6 @@ export const toViewData = ({ state, attrs }) => {
   return {
     value: state.value,
     w: attrs.w || '',
-    inputWidth: attrs.inputWidth || '72',
     min: attrs.min || 0,
     max: attrs.max || 100,
     step: attrs.step || 1
