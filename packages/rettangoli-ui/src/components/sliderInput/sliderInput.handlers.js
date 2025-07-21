@@ -1,4 +1,4 @@
-export const handleOnMount = (deps) => {
+export const handleBeforeMount = (deps) => {
   const { store, attrs } = deps;
   store.setValue(attrs.defaultValue || 0);
 } 

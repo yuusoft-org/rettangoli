@@ -57,7 +57,7 @@ const startListening = (contentContainer, deps) => {
   }
 };
 
-export const handleOnMount = (deps) => {
+export const handleBeforeMount = (deps) => {
   const { attrs } = deps;
   requestAnimationFrame(() => {
     const targetElement = document.getElementById(attrs['target-id'])

@@ -1,5 +1,5 @@
 
-export const handleOnMount = (deps) => {
+export const handleBeforeMount = (deps) => {
   const { store, props, render } = deps;
   
   if (props.selectedValue !== null && props.selectedValue !== undefined && props.options) {
