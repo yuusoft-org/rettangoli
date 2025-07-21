@@ -12,6 +12,9 @@ attrsSchema:
     w:
       type: string
       default: ''
+    inputWidth:
+      type: string
+      default: '72'
     min:
       type: string
       default: '0'
@@ -37,5 +40,6 @@ events:
 
 template:
   - rtgl-view d=h av=c g=md w=${w}:
-    - rtgl-slider#slider w=80% type=range min=${min} max=${max} step=${step} value=${value}:
-    - rtgl-input#input w=20% type=number min=${min} max=${max} step=${step} value=${value}:
+    - rtgl-slider#slider w=f type=range min=${min} max=${max} step=${step} value=${value}:
+    - rtgl-view w=${inputWidth}:
+      - rtgl-input#input w=f type=number min=${min} max=${max} step=${step} value=${value}:
