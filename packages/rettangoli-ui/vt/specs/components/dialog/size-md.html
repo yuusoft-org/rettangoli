@@ -3,7 +3,7 @@ title: "Size Medium"
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="w">
   <rtgl-button id="button">Open Dialog s=md</rtgl-button>
-  <rtgl-dialog id="dialog" s="md" open>
+  <rtgl-dialog id="dialog" s="md">
     <rtgl-view slot="content" g="md">
       <rtgl-text s="lg">Medium Dialog</rtgl-text>
       <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
@@ -14,7 +14,13 @@ title: "Size Medium"
 <script>
   const button = document.getElementById('button');
   const dialog = document.getElementById('dialog');
+  
   button.addEventListener('click', () => {
-    dialog.showModal();
+    dialog.setAttribute('open', '');
+  });
+  
+  // Listen for dialog close events (overlay click or ESC key)
+  dialog.addEventListener('close', () => {
+    dialog.removeAttribute('open');
   });
 </script>

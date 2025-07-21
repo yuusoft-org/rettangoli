@@ -3,7 +3,7 @@ title: "Dialog with Form"
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="w">
   <rtgl-button id="button">Open Form Dialog</rtgl-button>
-  <rtgl-dialog id="dialog" open>
+  <rtgl-dialog id="dialog">
   </rtgl-dialog>
 </rtgl-view>
 
@@ -72,19 +72,22 @@ const dialogue = document.getElementById('dialog');
   form.addEventListener('action-click', (e) => {
     console.log('Form action:', e.detail);
     if (e.detail.actionId === 'cancel') {
-      dialog.isOpen = false;
-      dialog.render();
+      dialog.removeAttribute('open');
     } else if (e.detail.actionId === 'submit') {
       console.log('Form submitted with values:', e.detail.formValues);
-      dialog.isOpen = false;
-      dialog.render();
+      dialog.removeAttribute('open');
     }
   });
 
   form.render();
 
   button.addEventListener('click', () => {
-    dialog.showModal()
+    dialog.setAttribute('open', '');
+  });
+  
+  // Listen for dialog close events (overlay click or ESC key)
+  dialog.addEventListener('close', () => {
+    dialog.removeAttribute('open');
   });
 
   dialogue.appendChild(form);

@@ -13,7 +13,14 @@ title: "Open"
 
 <script>
   const button = document.getElementById('button');
+  const dialog = document.getElementById('dialog');
+  
   button.addEventListener('click', () => {
-    dialog.showModal();
+    dialog.setAttribute('open', '');
+  });
+  
+  // Listen for dialog close events (overlay click or ESC key)
+  dialog.addEventListener('close', () => {
+    dialog.removeAttribute('open');
   });
 </script>

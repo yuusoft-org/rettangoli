@@ -93,16 +93,21 @@ class RettangoliDialogElement extends HTMLElement {
     // Store reference for content slot
     this._slotElement = null;
 
-    // Handle click outside to close
+    // Handle click outside - emit custom event
     this._dialogElement.addEventListener('click', (e) => {
       if (e.target === this._dialogElement) {
-        this.close();
+        this.dispatchEvent(new CustomEvent('close', { 
+          detail: {} 
+        }));
       }
     });
 
-    // Handle ESC key
+    // Handle ESC key - prevent native close and emit custom event
     this._dialogElement.addEventListener('cancel', (e) => {
-      this.dispatchEvent(new CustomEvent('close'));
+      e.preventDefault();
+      this.dispatchEvent(new CustomEvent('close', { 
+        detail: {} 
+      }));
     });
   }
 
@@ -114,17 +119,16 @@ class RettangoliDialogElement extends HTMLElement {
     this._updateDialog();
     // Check initial open attribute
     if (this.hasAttribute('open')) {
-      this.showModal();
+      this._showModal();
     }
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'open') {
-      // Only respond to external attribute changes, not our own
       if (newValue !== null && !this._dialogElement.open) {
-        this.showModal();
+        this._showModal();
       } else if (newValue === null && this._dialogElement.open) {
-        this.close();
+        this._hideModal();
       }
     } else if (name === 'w') {
       this._updateWidth();
@@ -146,8 +150,8 @@ class RettangoliDialogElement extends HTMLElement {
     }
   }
 
-  // Public methods
-  showModal() {
+  // Internal methods
+  _showModal() {
     if (!this._dialogElement.open) {
       // Create and append slot for content only if it doesn't exist
       if (!this._slotElement) {
@@ -163,7 +167,7 @@ class RettangoliDialogElement extends HTMLElement {
     }
   }
 
-  close() {
+  _hideModal() {
     if (this._dialogElement.open) {
       this._dialogElement.close();
 
@@ -173,7 +177,7 @@ class RettangoliDialogElement extends HTMLElement {
         this._slotElement = null;
       }
 
-      this.dispatchEvent(new CustomEvent('close'));
+      // Don't emit any event when programmatically closed via attribute
     }
   }
 
