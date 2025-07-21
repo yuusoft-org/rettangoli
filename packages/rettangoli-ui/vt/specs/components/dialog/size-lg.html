@@ -1,0 +1,20 @@
+---
+title: "Size Large"
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-button id="button">Open Dialog s=lg</rtgl-button>
+  <rtgl-dialog id="dialog" s="lg" open>
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Large Dialog</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const dialog = document.getElementById('dialog');
+  button.addEventListener('click', () => {
+    dialog.showModal();
+  });
+</script>
