@@ -2,30 +2,58 @@
 title: "Custom Width"
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="w">
-  <rtgl-button id="button">Open Dialog</rtgl-button>
-  <rtgl-dialog id="dialog" w="400">
+  <rtgl-button id="button-no-s">Open Dialog no s</rtgl-button>
+  <rtgl-button id="button-sm">Open Dialog s=sm</rtgl-button>
+  <rtgl-button id="button-md">Open Dialog s=md</rtgl-button>
+  <rtgl-button id="button-lg">Open Dialog s=lg</rtgl-button>
+  <rtgl-dialog id="dialog-no-s">
     <rtgl-view slot="content" g="md">
       <rtgl-text s="lg">Custom Width Dialog</rtgl-text>
-      <rtgl-text c="mu">This dialog has a custom width of 400px instead of the default 600px.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+    </rtgl-view>
+  </rtgl-dialog>
+  <rtgl-dialog id="dialog-sm" s="sm">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Custom Width Dialog</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+    </rtgl-view>
+  </rtgl-dialog>
+  <rtgl-dialog id="dialog-md" s="md">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Custom Width Dialog</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+    </rtgl-view>
+  </rtgl-dialog>
+  <rtgl-dialog id="dialog-lg" s="lg">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Custom Width Dialog</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
     </rtgl-view>
   </rtgl-dialog>
 </rtgl-view>
 
 <script>
-  const button = document.getElementById('button');
-  const dialog = document.getElementById('dialog');
-
-  // Open dialog for visual testing
-  dialog.isOpen = true;
-  dialog.render();
-
-  button.addEventListener('click', () => {
-    dialog.isOpen = true;
-    dialog.render();
+  const buttonNoS = document.getElementById('button-no-s');
+  buttonNoS.addEventListener('click', () => {
+    const dialog = document.getElementById('dialog-no-s');
+    dialog.showModal();
   });
 
-  dialog.addEventListener('close-dialogue', () => {
-    dialog.isOpen = false;
-    dialog.render();
+  const buttonSm = document.getElementById('button-sm');
+  buttonSm.addEventListener('click', () => {
+    const dialog = document.getElementById('dialog-sm');
+    dialog.showModal();
+  });
+
+  const buttonMd = document.getElementById('button-md');
+  buttonMd.addEventListener('click', () => {
+    const dialog = document.getElementById('dialog-md');
+    dialog.showModal();
+  });
+
+  const buttonLg = document.getElementById('button-lg');
+  buttonLg.addEventListener('click', () => {
+    const dialog = document.getElementById('dialog-lg');
+    dialog.showModal();
   });
 </script>

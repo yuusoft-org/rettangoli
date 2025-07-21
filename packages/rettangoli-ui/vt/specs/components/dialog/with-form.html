@@ -3,17 +3,18 @@ title: "Dialog with Form"
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="w">
   <rtgl-button id="button">Open Form Dialog</rtgl-button>
-  <rtgl-dialog id="dialog" w="500">
-    <rtgl-form id="form" slot="content"></rtgl-form>
+  <rtgl-dialog id="dialog">
   </rtgl-dialog>
 </rtgl-view>
 
 <script>
-  const button = document.getElementById('button');
-  const dialog = document.getElementById('dialog');
-  const form = document.getElementById('form');
 
-  // Configure the form
+const dialogue = document.getElementById('dialog');
+  const form = document.createElement('rtgl-form');
+
+  form.setAttribute('id', 'form');
+  form.setAttribute('slot', 'content');
+
   form.defaultValues = {
     name: '',
     email: '',
@@ -68,12 +69,6 @@ title: "Dialog with Form"
     }
   };
 
-  // Open dialog for visual testing
-  dialog.isOpen = true;
-  form.render();
-  dialog.render();
-
-  // Handle form actions
   form.addEventListener('action-click', (e) => {
     console.log('Form action:', e.detail);
     if (e.detail.actionId === 'cancel') {
@@ -86,13 +81,11 @@ title: "Dialog with Form"
     }
   });
 
+  form.render();
+
   button.addEventListener('click', () => {
-    dialog.isOpen = true;
-    dialog.render();
+    dialog.showModal()
   });
 
-  dialog.addEventListener('close-dialogue', () => {
-    dialog.isOpen = false;
-    dialog.render();
-  });
+  dialogue.appendChild(form);
 </script>
