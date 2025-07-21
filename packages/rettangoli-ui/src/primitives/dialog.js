@@ -22,6 +22,7 @@ class RettangoliDialogElement extends HTMLElement {
           height: 100vh;
           max-width: 100vw;
           scrollbar-width: none;
+          outline: none;
         }
 
         dialog::backdrop {
