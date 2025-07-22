@@ -1,13 +1,12 @@
 ---
-title: "Basic"
+title: "Size Medium"
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="w">
-  <rtgl-button id="button">Open Dialog</rtgl-button>
-  <rtgl-dialog id="dialog">
+  <rtgl-button id="button">Open Dialog s=md</rtgl-button>
+  <rtgl-dialog id="dialog" s="md">
     <rtgl-view slot="content" g="md">
-      <rtgl-text s="lg">Dialog Content</rtgl-text>
+      <rtgl-text s="lg">Medium Dialog</rtgl-text>
       <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
-      <rtgl-button id="close-button" variant="secondary">Close Dialog</rtgl-button>
     </rtgl-view>
   </rtgl-dialog>
 </rtgl-view>
@@ -15,14 +14,9 @@ title: "Basic"
 <script>
   const button = document.getElementById('button');
   const dialog = document.getElementById('dialog');
-  const closeButton = document.getElementById('close-button');
   
   button.addEventListener('click', () => {
     dialog.setAttribute('open', '');
-  });
-  
-  closeButton.addEventListener('click', () => {
-    dialog.removeAttribute('open');
   });
   
   // Listen for dialog close events (overlay click or ESC key)

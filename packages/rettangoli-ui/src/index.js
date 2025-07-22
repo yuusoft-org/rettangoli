@@ -5,6 +5,7 @@ import RettangoliImage from './primitives/image.js';
 import RettangoliSvg from './primitives/svg.js';
 import RettangoliInput from './primitives/input.js';
 import RettangoliTextArea from './primitives/textarea.js';
+import RettangoliDialog from './primitives/dialog.js';
 
 export {
     RettangoliButton,
@@ -14,4 +15,5 @@ export {
     RettangoliSvg,
     RettangoliInput,
     RettangoliTextArea,
+    RettangoliDialog,
 }

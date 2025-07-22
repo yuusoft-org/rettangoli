@@ -1,0 +1,74 @@
+---
+title: "Scroll"
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-button id="button">Open Dialog</rtgl-button>
+  <rtgl-dialog id="dialog">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Dialog Content</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const dialog = document.getElementById('dialog');
+  
+  button.addEventListener('click', () => {
+    dialog.setAttribute('open', '');
+  });
+  
+  // Listen for dialog close events (overlay click or ESC key)
+  dialog.addEventListener('close', () => {
+    dialog.removeAttribute('open');
+  });
+</script>
