@@ -63,19 +63,57 @@ template:
   # Props: JavaScript values from viewData, passed as component properties
   - another-component#anotherComponent .items=todoItems .onSelect=handleSelect:
   
-  # Mixed: Both attributes and props on same element
-  - user-card#userCard name=John .user=currentUser
+  # Conditional boolean attributes: only added to DOM when condition is truthy
+  - input#myInput ?disabled=isFormDisabled ?required=fieldIsRequired:
+  
+  # Mixed: Attributes, props, and conditional attributes on same element
+  - user-card#userCard name=John .user=currentUser ?hidden=shouldHide
 ```
 
-**Key Difference:**
-- **Attributes** (no dot): Set as HTML attributes (`title="Hello"`) - visible in HTML
-- **Props** (with dot): Set as JavaScript properties on the element - NOT visible in HTML, only accessible via JavaScript
+**Key Differences:**
+- **Attributes** (no prefix): Set as HTML attributes (`title="Hello"`) - visible in HTML
+- **Props** (`.` prefix): Set as JavaScript properties on the element - NOT visible in HTML, only accessible via JavaScript  
+- **Conditional Boolean Attributes** (`?` prefix): Only added to DOM when the value is truthy, always as boolean attributes without values
 
 **Example:**
 ```js
 const userCard = document.getElementById('userCard');
 console.log(userCard.user); // Returns the currentUser object
 console.log(userCard.getAttribute('name')); // Returns "John"
+console.log(userCard.hasAttribute('hidden')); // true if shouldHide was truthy
+```
+
+### Conditional Boolean Attributes
+
+Use the `?` prefix to conditionally add boolean attributes based on viewData values:
+
+```yaml
+template:
+  # These will only appear in DOM if the condition is truthy
+  - input#email ?disabled=${isSubmitting} ?required=true:
+  - dialog#modal ?open=${showModal}:
+  - button#submit ?aria-pressed=${isPressed}:
+```
+
+**How it works:**
+- `?disabled=true` → `<input disabled>` (attribute present)  
+- `?disabled=false` → `<input>` (attribute absent)
+- `?disabled=${isFormDisabled}` → depends on the `isFormDisabled` value from viewData
+
+**Common use cases:**
+```yaml
+template:
+  # Form controls
+  - input ?disabled=${isLoading} ?required=${fieldIsRequired}:
+  
+  # Modal/dialog states  
+  - dialog ?open=${showDialog}:
+  
+  # Interactive elements
+  - button ?aria-pressed=${isToggled} ?disabled=${!canSubmit}:
+  
+  # Custom boolean attributes
+  - my-component ?loading=${isFetching} ?error=${hasError}:
 ```
 
 ## Templating with Jempl

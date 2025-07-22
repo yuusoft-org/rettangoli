@@ -43,7 +43,7 @@ refs:
         handler: handleClickMenuItem
 
 template:
-  - rtgl-popover#popover open=${open} x=${x} y=${y} placement=${placement}:
+  - rtgl-popover#popover ?open=${open} x=${x} y=${y} placement=${placement}:
     - rtgl-view wh=300 g=xs slot=content bgc=background br=md:
       - $for item, i in items:
         - $if item.type == 'label':
