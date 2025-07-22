@@ -1,0 +1,30 @@
+---
+title: "Open Popover"
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-button id="reopen-btn">Reopen Popover</rtgl-button>
+  
+  <rtgl-popover id="popover" open x="100" y="100">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Open Popover</rtgl-text>
+      <rtgl-text c="mu">This popover is open by default.</rtgl-text>
+    </rtgl-view>
+  </rtgl-popover>
+</rtgl-view>
+
+<script>
+  const popover = document.getElementById('popover');
+  const reopenBtn = document.getElementById('reopen-btn');
+  
+  // Handle close event to close popover
+  popover.addEventListener('close', () => {
+    popover.removeAttribute('open');
+  });
+  
+  // Handle button click to reopen popover
+  reopenBtn.addEventListener('click', (e) => {
+    popover.setAttribute('open', '');
+    popover.setAttribute('x', e.clientX);
+    popover.setAttribute('y', e.clientY);
+  });
+</script>

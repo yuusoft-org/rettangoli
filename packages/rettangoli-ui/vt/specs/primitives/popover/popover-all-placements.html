@@ -1,0 +1,77 @@
+---
+title: "All Popover Placements"
+description: "Click buttons to see different placement options"
+---
+<rtgl-view w="100vw" h="100vh" ah="c" av="c">
+  <rtgl-view g="lg">
+    <!-- Row 1 -->
+    <rtgl-view d="h" g="md">
+      <rtgl-button id="btn-top-start" w="120">top-start</rtgl-button>
+      <rtgl-button id="btn-top" w="120">top</rtgl-button>
+      <rtgl-button id="btn-top-end" w="120">top-end</rtgl-button>
+    </rtgl-view>
+
+    <!-- Row 2 -->
+    <rtgl-view d="h" g="md">
+      <rtgl-button id="btn-right-start" w="120">right-start</rtgl-button>
+      <rtgl-button id="btn-right" w="120">right</rtgl-button>
+      <rtgl-button id="btn-right-end" w="120">right-end</rtgl-button>
+    </rtgl-view>
+
+    <!-- Row 3 -->
+    <rtgl-view d="h" g="md">
+      <rtgl-button id="btn-bottom-start" w="120">bottom-start</rtgl-button>
+      <rtgl-button id="btn-bottom" w="120">bottom</rtgl-button>
+      <rtgl-button id="btn-bottom-end" w="120">bottom-end</rtgl-button>
+    </rtgl-view>
+
+    <!-- Row 4 -->
+    <rtgl-view d="h" g="md">
+      <rtgl-button id="btn-left-start" w="120">left-start</rtgl-button>
+      <rtgl-button id="btn-left" w="120">left</rtgl-button>
+      <rtgl-button id="btn-left-end" w="120">left-end</rtgl-button>
+    </rtgl-view>
+  </rtgl-view>
+
+  <!-- Single popover that will change placement -->
+  <rtgl-popover id="popover" placement="bottom-start">
+    <rtgl-view slot="content"><rtgl-text id="popover-text">bottom-start</rtgl-text></rtgl-view>
+  </rtgl-popover>
+</rtgl-view>
+
+<script>
+  // Get the single popover and text element
+  const popover = document.getElementById('popover');
+  const popoverText = document.getElementById('popover-text');
+  
+  const placements = [
+    'top', 'top-start', 'top-end',
+    'right', 'right-start', 'right-end',
+    'bottom', 'bottom-start', 'bottom-end',
+    'left', 'left-start', 'left-end'
+  ];
+
+  placements.forEach(placement => {
+    const button = document.getElementById(`btn-${placement}`);
+
+    // Button click handler
+    button.addEventListener('click', (e) => {
+      // Close popover first to reset position
+      popover.removeAttribute('open');
+      
+      // Update placement and text
+      popover.setAttribute('placement', placement);
+      popoverText.textContent = placement;
+      
+      // Show popover at click position
+      popover.setAttribute('open', '');
+      popover.setAttribute('x', e.clientX);
+      popover.setAttribute('y', e.clientY);
+    });
+  });
+
+  // Close handler
+  popover.addEventListener('close', () => {
+    popover.removeAttribute('open');
+  });
+</script>

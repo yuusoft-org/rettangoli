@@ -92,6 +92,7 @@ class RettangoliDialogElement extends HTMLElement {
 
     // Store reference for content slot
     this._slotElement = null;
+    this._isConnected = false;
 
     // Handle click outside - emit custom event
     this._dialogElement.addEventListener('click', (e) => {
@@ -100,6 +101,14 @@ class RettangoliDialogElement extends HTMLElement {
           detail: {} 
         }));
       }
+    });
+
+    // Handle right-click on overlay to close dialog
+    this._dialogElement.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      this.dispatchEvent(new CustomEvent('close', { 
+        detail: {} 
+      }));
     });
 
     // Handle ESC key - prevent native close and emit custom event
@@ -117,6 +126,7 @@ class RettangoliDialogElement extends HTMLElement {
 
   connectedCallback() {
     this._updateDialog();
+    this._isConnected = true;
     // Check initial open attribute
     if (this.hasAttribute('open')) {
       this._showModal();
@@ -125,7 +135,7 @@ class RettangoliDialogElement extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'open') {
-      if (newValue !== null && !this._dialogElement.open) {
+      if (newValue !== null && !this._dialogElement.open && this._isConnected) {
         this._showModal();
       } else if (newValue === null && this._dialogElement.open) {
         this._hideModal();

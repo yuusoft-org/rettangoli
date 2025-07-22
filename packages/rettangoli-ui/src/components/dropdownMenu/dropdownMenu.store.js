@@ -2,24 +2,12 @@
 export const INITIAL_STATE = Object.freeze({
 });
 
-export const toViewData = ({ state, props }) => {
+export const toViewData = ({ props, attrs }) => {
   return {
     items: props.items || [],
-    isOpen: props.isOpen || false,
-    position: props.position || {
-      x: 0,
-      y: 0,
-    },
+    open: attrs.open !== null ? true : undefined,
+    x: attrs.x,
+    y: attrs.y,
+    placement: attrs.placement
   };
 }
-
-export const selectState = ({ state }) => {
-  return state;
-}
-
-export const setState = (state) => {
-  // do doSomething
-}
-
-
-

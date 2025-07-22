@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/fe",
-  "version": "0.0.7-rc6",
+  "version": "0.0.7-rc7",
   "description": "Frontend framework for building reactive web components",
   "type": "module",
   "main": "./src/index.js",

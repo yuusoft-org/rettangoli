@@ -344,9 +344,23 @@ class BaseComponent extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue !== newValue && this.render) {
-      requestAnimationFrame(() => {
-        this.render();
-      });
+      // Call handleOnUpdate if it exists
+      if (this.handlers?.handleOnUpdate) {
+        const changes = { [name]: { oldValue, newValue } };
+        const deps = {
+          ...this.deps,
+          refIds: this.refIds,
+          getRefIds: () => this.refIds,
+          dispatchEvent: this.dispatchEvent.bind(this),
+          store: this.store,
+          render: this.render.bind(this),
+        };
+        this.handlers.handleOnUpdate(changes, deps);
+      } else {
+        requestAnimationFrame(() => {
+          this.render();
+        });
+      }
     }
   }
 
@@ -440,7 +454,7 @@ const bindStore = (store, props, attrs) => {
 };
 
 const createComponent = ({ handlers, view, store, patch, h }, deps) => {
-  const { elementName, propsSchema, template, refs, styles } = view;
+  const { elementName, propsSchema, attrsSchema, template, refs, styles } = view;
 
   if (!patch) {
     throw new Error("Patch is not defined");
@@ -457,7 +471,9 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
   class MyComponent extends BaseComponent {
 
     static get observedAttributes() {
-      return ["key"];
+      const baseAttrs = ["key"];
+      const attrKeys = attrsSchema?.properties ? Object.keys(attrsSchema.properties) : [];
+      return [...baseAttrs, ...attrKeys];
     }
 
     constructor() {
