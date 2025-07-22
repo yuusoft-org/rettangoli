@@ -105,10 +105,12 @@ class RettangoliDialogElement extends HTMLElement {
 
     // Handle right-click on overlay to close dialog
     this._dialogElement.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      this.dispatchEvent(new CustomEvent('close', {
-        detail: {}
-      }));
+      if (e.target === this._dialogElement) {
+        e.preventDefault();
+        this.dispatchEvent(new CustomEvent('close', {
+          detail: {}
+        }));
+      }
     });
 
     // Handle ESC key - prevent native close and emit custom event
