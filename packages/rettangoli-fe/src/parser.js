@@ -161,7 +161,7 @@ export const createVirtualDom = ({
         const props = {};
         if (attrsString) {
           // First, handle attributes with values
-          const attrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|(\S+))/g;
+          const attrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]+))/g;
           let match;
           const processedAttrs = new Set();
           
@@ -197,9 +197,22 @@ export const createVirtualDom = ({
           }
           
           // Then, handle boolean attributes without values
+          // Remove all processed attribute-value pairs from the string first
+          let remainingAttrsString = attrsString;
+          const processedMatches = [];
+          let tempMatch;
+          const tempAttrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]+))/g;
+          while ((tempMatch = tempAttrRegex.exec(attrsString)) !== null) {
+            processedMatches.push(tempMatch[0]);
+          }
+          // Remove all matched attribute=value pairs
+          processedMatches.forEach(match => {
+            remainingAttrsString = remainingAttrsString.replace(match, ' ');
+          });
+          
           const booleanAttrRegex = /\b(\S+?)(?=\s|$)/g;
           let boolMatch;
-          while ((boolMatch = booleanAttrRegex.exec(attrsString)) !== null) {
+          while ((boolMatch = booleanAttrRegex.exec(remainingAttrsString)) !== null) {
             const attrName = boolMatch[1];
             // Skip if already processed or starts with . (prop) or contains =
             if (!processedAttrs.has(attrName) && !attrName.startsWith(".") && !attrName.includes("=")) {
