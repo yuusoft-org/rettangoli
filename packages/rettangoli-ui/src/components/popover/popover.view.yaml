@@ -1,4 +1,4 @@
-elementName: rtgl-popover
+elementName: rtgl-popover-2
 
 viewDataSchema:
   type: object

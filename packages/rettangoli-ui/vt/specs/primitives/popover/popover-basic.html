@@ -1,0 +1,38 @@
+---
+title: "Basic Popover"
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-button id="button">Open Popover</rtgl-button>
+  <rtgl-popover id="popover">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Popover Content</rtgl-text>
+      <rtgl-text c="mu">This is a basic popover example.</rtgl-text>
+      <rtgl-button id="close-button" variant="secondary">Close</rtgl-button>
+    </rtgl-view>
+  </rtgl-popover>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const popover = document.getElementById('popover');
+  const closeButton = document.getElementById('close-button');
+  
+  button.addEventListener('click', (e) => {
+    popover.setAttribute('open', '');
+    popover.setAttribute('x', e.clientX);
+    popover.setAttribute('y', e.clientY);
+  });
+  
+  closeButton.addEventListener('click', () => {
+    popover.removeAttribute('open');
+    popover.removeAttribute('x');
+    popover.removeAttribute('y');
+  });
+  
+  // Listen for popover close events (click outside or ESC key)
+  popover.addEventListener('close', () => {
+    popover.removeAttribute('open');
+    popover.removeAttribute('x');
+    popover.removeAttribute('y');
+  });
+</script>

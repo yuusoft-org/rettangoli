@@ -1,0 +1,119 @@
+---
+title: "All Popover Placements"
+description: "Click buttons to see different placement options"
+---
+<rtgl-view w="100vw" h="100vh" ah="c" av="c">
+  <rtgl-view g="lg">
+    <!-- Row 1 -->
+    <rtgl-view d="h" g="md">
+      <rtgl-button id="btn-top-start" w="120">top-start</rtgl-button>
+      <rtgl-button id="btn-top" w="120">top</rtgl-button>
+      <rtgl-button id="btn-top-end" w="120">top-end</rtgl-button>
+    </rtgl-view>
+
+    <!-- Row 2 -->
+    <rtgl-view d="h" g="md">
+      <rtgl-button id="btn-right-start" w="120">right-start</rtgl-button>
+      <rtgl-button id="btn-right" w="120">right</rtgl-button>
+      <rtgl-button id="btn-right-end" w="120">right-end</rtgl-button>
+    </rtgl-view>
+
+    <!-- Row 3 -->
+    <rtgl-view d="h" g="md">
+      <rtgl-button id="btn-bottom-start" w="120">bottom-start</rtgl-button>
+      <rtgl-button id="btn-bottom" w="120">bottom</rtgl-button>
+      <rtgl-button id="btn-bottom-end" w="120">bottom-end</rtgl-button>
+    </rtgl-view>
+
+    <!-- Row 4 -->
+    <rtgl-view d="h" g="md">
+      <rtgl-button id="btn-left-start" w="120">left-start</rtgl-button>
+      <rtgl-button id="btn-left" w="120">left</rtgl-button>
+      <rtgl-button id="btn-left-end" w="120">left-end</rtgl-button>
+    </rtgl-view>
+  </rtgl-view>
+
+  <!-- Popovers for each placement -->
+  <rtgl-popover id="popover-top" placement="top">
+    <rtgl-view slot="content"><rtgl-text>top</rtgl-text></rtgl-view>
+  </rtgl-popover>
+
+  <rtgl-popover id="popover-top-start" placement="top-start">
+    <rtgl-view slot="content"><rtgl-text>top-start</rtgl-text></rtgl-view>
+  </rtgl-popover>
+
+  <rtgl-popover id="popover-top-end" placement="top-end">
+    <rtgl-view slot="content"><rtgl-text>top-end</rtgl-text></rtgl-view>
+  </rtgl-popover>
+
+  <rtgl-popover id="popover-right" placement="right">
+    <rtgl-view slot="content"><rtgl-text>right</rtgl-text></rtgl-view>
+  </rtgl-popover>
+
+  <rtgl-popover id="popover-right-start" placement="right-start">
+    <rtgl-view slot="content"><rtgl-text>right-start</rtgl-text></rtgl-view>
+  </rtgl-popover>
+
+  <rtgl-popover id="popover-right-end" placement="right-end">
+    <rtgl-view slot="content"><rtgl-text>right-end</rtgl-text></rtgl-view>
+  </rtgl-popover>
+
+  <rtgl-popover id="popover-bottom" placement="bottom">
+    <rtgl-view slot="content"><rtgl-text>bottom</rtgl-text></rtgl-view>
+  </rtgl-popover>
+
+  <rtgl-popover id="popover-bottom-start" placement="bottom-start">
+    <rtgl-view slot="content"><rtgl-text>bottom-start</rtgl-text></rtgl-view>
+  </rtgl-popover>
+
+  <rtgl-popover id="popover-bottom-end" placement="bottom-end">
+    <rtgl-view slot="content"><rtgl-text>bottom-end</rtgl-text></rtgl-view>
+  </rtgl-popover>
+
+  <rtgl-popover id="popover-left" placement="left">
+    <rtgl-view slot="content"><rtgl-text>left</rtgl-text></rtgl-view>
+  </rtgl-popover>
+
+  <rtgl-popover id="popover-left-start" placement="left-start">
+    <rtgl-view slot="content"><rtgl-text>left-start</rtgl-text></rtgl-view>
+  </rtgl-popover>
+
+  <rtgl-popover id="popover-left-end" placement="left-end">
+    <rtgl-view slot="content"><rtgl-text>left-end</rtgl-text></rtgl-view>
+  </rtgl-popover>
+</rtgl-view>
+
+<script>
+  // Get all buttons and set up click handlers
+  const placements = [
+    'top', 'top-start', 'top-end',
+    'right', 'right-start', 'right-end',
+    'bottom', 'bottom-start', 'bottom-end',
+    'left', 'left-start', 'left-end'
+  ];
+
+  placements.forEach(placement => {
+    const button = document.getElementById(`btn-${placement}`);
+    const popover = document.getElementById(`popover-${placement}`);
+
+    // Button click handler
+    button.addEventListener('click', (e) => {
+      // Hide all other popovers
+      placements.forEach(p => {
+        if (p !== placement) {
+          document.getElementById(`popover-${p}`).removeAttribute('open');
+        }
+      });
+
+      // Show this popover at click position
+      popover.setAttribute('open', '');
+      popover.setAttribute('x', e.clientX);
+      popover.setAttribute('y', e.clientY);
+    });
+
+    // Close handler
+    popover.addEventListener('close', () => {
+      popover.removeAttribute('open');
+    });
+  });
+</script>
