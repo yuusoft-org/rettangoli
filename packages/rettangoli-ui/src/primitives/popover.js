@@ -67,6 +67,14 @@ class RettangoliPopoverElement extends HTMLElement {
       }));
     });
 
+    // Handle right-click on overlay to close popover
+    this._popoverOverlay.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      this.dispatchEvent(new CustomEvent('close', { 
+        detail: {} 
+      }));
+    });
+
     // Create popover container
     this._popoverContainer = document.createElement('div');
     this._popoverContainer.className = 'popover-container';

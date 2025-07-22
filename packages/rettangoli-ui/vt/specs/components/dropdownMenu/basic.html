@@ -11,9 +11,10 @@ title: "Basic"
   const button = document.getElementById('button');
   const dropdownMenu = document.getElementById('dropdown-menu');
 
-  dropdownMenu.addEventListener('click-overlay', (e) => {
-    dropdownMenu.isOpen = false;
-    dropdownMenu.render();
+  dropdownMenu.addEventListener('close', (e) => {
+    dropdownMenu.removeAttribute('open');
+    dropdownMenu.removeAttribute('x');
+    dropdownMenu.removeAttribute('y');
   });
 
   dropdownMenu.addEventListener('click-item', (e) => {
@@ -21,7 +22,6 @@ title: "Basic"
   });
 
   button.addEventListener('click', (e) => {
-
     dropdownMenu.items = [
       {
         label: 'Item 1',
@@ -46,13 +46,11 @@ title: "Basic"
         label: 'Item 5',
         type: 'item',
       },
-    ]
-    dropdownMenu.isOpen = true;
-    dropdownMenu.position = {
-      x: e.clientX,
-      y: e.clientY,
-    }
-    dropdownMenu.render();
+    ];
+    
+    dropdownMenu.setAttribute('open', '');
+    dropdownMenu.setAttribute('x', e.clientX);
+    dropdownMenu.setAttribute('y', e.clientY);
   });
 
 

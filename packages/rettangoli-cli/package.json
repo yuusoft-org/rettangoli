@@ -47,7 +47,7 @@
   "dependencies": {
     "commander": "^14.0.0",
     "js-yaml": "^4.1.0",
-    "@rettangoli/fe": "workspace:0.0.7-rc6",
+    "@rettangoli/fe": "workspace:0.0.7-rc7",
     "@rettangoli/sites": "workspace:0.1.1",
     "@rettangoli/vt": "workspace:0.0.2-rc3",
     "@rettangoli/ui": "workspace:0.1.2-rc10"

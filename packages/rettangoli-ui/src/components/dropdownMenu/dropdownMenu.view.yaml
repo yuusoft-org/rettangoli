@@ -19,28 +19,31 @@ propsSchema:
               - label
               - item
               - separator
-    isOpen:
-      type: boolean
-    position:
-      type: object
-      properties:
-        x:
-          type: number
-        y:
-          type: number
+
+attrsSchema:
+  type: object
+  properties:
+    open:
+      type: string
+    x:
+      type: string
+    y:
+      type: string
+    placement:
+      type: string
 
 refs:
   popover:
     eventListeners:
-      click-overlay:
-        handler: handleClickPopoverOverlay
+      close:
+        handler: handleClosePopover
   option-*:
     eventListeners:
       click:
         handler: handleClickMenuItem
 
 template:
-  - rtgl-popover#popover .isOpen=isOpen .position=position:
+  - rtgl-popover#popover open=${open} x=${x} y=${y} placement=${placement}:
     - rtgl-view wh=300 g=xs slot=content bgc=background br=md:
       - $for item, i in items:
         - $if item.type == 'label':
@@ -51,4 +54,3 @@ template:
               - rtgl-text: ${item.label}
           $elif item.type == 'separator':
             - rtgl-view w=f h=1 ph=lg mv=md bgc=bo:
-            
