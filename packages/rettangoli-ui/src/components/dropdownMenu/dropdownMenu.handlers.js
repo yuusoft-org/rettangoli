@@ -16,10 +16,3 @@ export const handleClickMenuItem = (e, deps) => {
     }
   }));
 }
-
-export const handleOnUpdate = (changes, deps) => {
-  const { render, attrs } = deps;
-
-  console.log('attrs.open', attrs.open)
-  render();
-}

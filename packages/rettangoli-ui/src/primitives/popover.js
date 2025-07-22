@@ -34,6 +34,11 @@ class RettangoliPopoverElement extends HTMLElement {
 
         :host([open]) .popover-container {
           display: block;
+          visibility: hidden;
+        }
+
+        :host([open][positioned]) .popover-container {
+          visibility: visible;
         }
 
         slot[name="content"] {
@@ -137,6 +142,9 @@ class RettangoliPopoverElement extends HTMLElement {
     if (this._isOpen) {
       this._isOpen = false;
 
+      // Remove positioned attribute to reset for next show
+      this.removeAttribute('positioned');
+
       // Remove slot to unmount content
       if (this._slotElement) {
         this._popoverContainer.removeChild(this._slotElement);
@@ -160,6 +168,9 @@ class RettangoliPopoverElement extends HTMLElement {
       
       this._popoverContainer.style.left = `${left}px`;
       this._popoverContainer.style.top = `${top}px`;
+      
+      // Mark as positioned to make it visible
+      this.setAttribute('positioned', '');
     });
   }
 

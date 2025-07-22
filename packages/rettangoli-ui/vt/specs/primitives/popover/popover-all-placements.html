@@ -33,58 +33,17 @@ description: "Click buttons to see different placement options"
     </rtgl-view>
   </rtgl-view>
 
-  <!-- Popovers for each placement -->
-  <rtgl-popover id="popover-top" placement="top">
-    <rtgl-view slot="content"><rtgl-text>top</rtgl-text></rtgl-view>
-  </rtgl-popover>
-
-  <rtgl-popover id="popover-top-start" placement="top-start">
-    <rtgl-view slot="content"><rtgl-text>top-start</rtgl-text></rtgl-view>
-  </rtgl-popover>
-
-  <rtgl-popover id="popover-top-end" placement="top-end">
-    <rtgl-view slot="content"><rtgl-text>top-end</rtgl-text></rtgl-view>
-  </rtgl-popover>
-
-  <rtgl-popover id="popover-right" placement="right">
-    <rtgl-view slot="content"><rtgl-text>right</rtgl-text></rtgl-view>
-  </rtgl-popover>
-
-  <rtgl-popover id="popover-right-start" placement="right-start">
-    <rtgl-view slot="content"><rtgl-text>right-start</rtgl-text></rtgl-view>
-  </rtgl-popover>
-
-  <rtgl-popover id="popover-right-end" placement="right-end">
-    <rtgl-view slot="content"><rtgl-text>right-end</rtgl-text></rtgl-view>
-  </rtgl-popover>
-
-  <rtgl-popover id="popover-bottom" placement="bottom">
-    <rtgl-view slot="content"><rtgl-text>bottom</rtgl-text></rtgl-view>
-  </rtgl-popover>
-
-  <rtgl-popover id="popover-bottom-start" placement="bottom-start">
-    <rtgl-view slot="content"><rtgl-text>bottom-start</rtgl-text></rtgl-view>
-  </rtgl-popover>
-
-  <rtgl-popover id="popover-bottom-end" placement="bottom-end">
-    <rtgl-view slot="content"><rtgl-text>bottom-end</rtgl-text></rtgl-view>
-  </rtgl-popover>
-
-  <rtgl-popover id="popover-left" placement="left">
-    <rtgl-view slot="content"><rtgl-text>left</rtgl-text></rtgl-view>
-  </rtgl-popover>
-
-  <rtgl-popover id="popover-left-start" placement="left-start">
-    <rtgl-view slot="content"><rtgl-text>left-start</rtgl-text></rtgl-view>
-  </rtgl-popover>
-
-  <rtgl-popover id="popover-left-end" placement="left-end">
-    <rtgl-view slot="content"><rtgl-text>left-end</rtgl-text></rtgl-view>
+  <!-- Single popover that will change placement -->
+  <rtgl-popover id="popover" placement="bottom-start">
+    <rtgl-view slot="content"><rtgl-text id="popover-text">bottom-start</rtgl-text></rtgl-view>
   </rtgl-popover>
 </rtgl-view>
 
 <script>
-  // Get all buttons and set up click handlers
+  // Get the single popover and text element
+  const popover = document.getElementById('popover');
+  const popoverText = document.getElementById('popover-text');
+  
   const placements = [
     'top', 'top-start', 'top-end',
     'right', 'right-start', 'right-end',
@@ -94,26 +53,25 @@ description: "Click buttons to see different placement options"
 
   placements.forEach(placement => {
     const button = document.getElementById(`btn-${placement}`);
-    const popover = document.getElementById(`popover-${placement}`);
 
     // Button click handler
     button.addEventListener('click', (e) => {
-      // Hide all other popovers
-      placements.forEach(p => {
-        if (p !== placement) {
-          document.getElementById(`popover-${p}`).removeAttribute('open');
-        }
-      });
-
-      // Show this popover at click position
+      // Close popover first to reset position
+      popover.removeAttribute('open');
+      
+      // Update placement and text
+      popover.setAttribute('placement', placement);
+      popoverText.textContent = placement;
+      
+      // Show popover at click position
       popover.setAttribute('open', '');
       popover.setAttribute('x', e.clientX);
       popover.setAttribute('y', e.clientY);
     });
+  });
 
-    // Close handler
-    popover.addEventListener('close', () => {
-      popover.removeAttribute('open');
-    });
+  // Close handler
+  popover.addEventListener('close', () => {
+    popover.removeAttribute('open');
   });
 </script>
