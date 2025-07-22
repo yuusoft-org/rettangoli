@@ -43,7 +43,7 @@ class RettangoliPopoverElement extends HTMLElement {
 
         slot[name="content"] {
           display: block;
-          background-color: var(--background);
+          background-color: var(--muted);
           border: 1px solid var(--border);
           border-radius: var(--border-radius-md);
           padding: var(--spacing-md);
@@ -67,16 +67,16 @@ class RettangoliPopoverElement extends HTMLElement {
 
     // Handle overlay clicks to close popover
     this._popoverOverlay.addEventListener('click', () => {
-      this.dispatchEvent(new CustomEvent('close', { 
-        detail: {} 
+      this.dispatchEvent(new CustomEvent('close', {
+        detail: {}
       }));
     });
 
     // Handle right-click on overlay to close popover
     this._popoverOverlay.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      this.dispatchEvent(new CustomEvent('close', { 
-        detail: {} 
+      this.dispatchEvent(new CustomEvent('close', {
+        detail: {}
       }));
     });
 
@@ -142,9 +142,6 @@ class RettangoliPopoverElement extends HTMLElement {
     if (this._isOpen) {
       this._isOpen = false;
 
-      // Remove positioned attribute to reset for next show
-      this.removeAttribute('positioned');
-
       // Remove slot to unmount content
       if (this._slotElement) {
         this._popoverContainer.removeChild(this._slotElement);
@@ -165,10 +162,10 @@ class RettangoliPopoverElement extends HTMLElement {
     requestAnimationFrame(() => {
       const rect = this._popoverContainer.getBoundingClientRect();
       const { left, top } = this._calculatePosition(x, y, rect.width, rect.height, placement);
-      
+
       this._popoverContainer.style.left = `${left}px`;
       this._popoverContainer.style.top = `${top}px`;
-      
+
       // Mark as positioned to make it visible
       this.setAttribute('positioned', '');
     });
@@ -252,8 +249,8 @@ class RettangoliPopoverElement extends HTMLElement {
 
   _handleEscKey(e) {
     if (e.key === 'Escape') {
-      this.dispatchEvent(new CustomEvent('close', { 
-        detail: {} 
+      this.dispatchEvent(new CustomEvent('close', {
+        detail: {}
       }));
     }
   }

@@ -79,16 +79,19 @@ const dialogue = document.getElementById('dialog');
     }
   });
 
-  form.render();
-
   button.addEventListener('click', () => {
+    // First open the dialog to create the slot
     dialog.setAttribute('open', '');
+    
+    // Then append and render the form
+    if (!form.parentNode) {
+      dialogue.appendChild(form);
+      form.render();
+    }
   });
   
   // Listen for dialog close events (overlay click or ESC key)
   dialog.addEventListener('close', () => {
     dialog.removeAttribute('open');
   });
-
-  dialogue.appendChild(form);
 </script>
