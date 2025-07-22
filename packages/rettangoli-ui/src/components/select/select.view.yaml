@@ -43,7 +43,7 @@ events: {}
 template:
   - rtgl-button#select-button v=ol:
     - ${selectedLabel}
-  - rtgl-popover#popover .isOpen=isOpen .position=position:
+  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y}:
     - rtgl-view wh=300 g=xs slot=content bgc=background br=md sv=true:
       - $for option, i in options:
         - rtgl-view#option-${i} w=f h-bgc=ac ph=lg pv=md cur=p br=md bgc=${option.bgc}:
