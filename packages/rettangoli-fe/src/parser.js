@@ -160,15 +160,50 @@ export const createVirtualDom = ({
         const attrs = {}; // Ensure attrs is always an object
         const props = {};
         if (attrsString) {
+          // First, handle attributes with values
           const attrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|(\S+))/g;
           let match;
+          const processedAttrs = new Set();
+          
           while ((match = attrRegex.exec(attrsString)) !== null) {
+            processedAttrs.add(match[1]);
             if (match[1].startsWith(".")) {
               const propName = match[1].substring(1);
               const valuePathName = match[4];
               props[propName] = lodashGet(viewData, valuePathName);
+            } else if (match[1].startsWith("?")) {
+              // Handle conditional boolean attributes
+              const attrName = match[1].substring(1);
+              const attrValue = match[2] || match[3] || match[4];
+              
+              // Convert string values to boolean
+              let evalValue;
+              if (attrValue === "true") {
+                evalValue = true;
+              } else if (attrValue === "false") {
+                evalValue = false;
+              } else {
+                // Try to get from viewData if it's not a literal boolean
+                evalValue = lodashGet(viewData, attrValue);
+              }
+              
+              // Only add attribute if value is truthy
+              if (evalValue) {
+                attrs[attrName] = "";
+              }
             } else {
               attrs[match[1]] = match[2] || match[3] || match[4];
+            }
+          }
+          
+          // Then, handle boolean attributes without values
+          const booleanAttrRegex = /\b(\S+?)(?=\s|$)/g;
+          let boolMatch;
+          while ((boolMatch = booleanAttrRegex.exec(attrsString)) !== null) {
+            const attrName = boolMatch[1];
+            // Skip if already processed or starts with . (prop) or contains =
+            if (!processedAttrs.has(attrName) && !attrName.startsWith(".") && !attrName.includes("=")) {
+              attrs[attrName] = "";
             }
           }
         }

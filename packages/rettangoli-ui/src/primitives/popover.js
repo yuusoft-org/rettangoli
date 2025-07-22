@@ -157,17 +157,23 @@ class RettangoliPopoverElement extends HTMLElement {
     const y = parseFloat(this.getAttribute('y') || '0');
     const placement = this.getAttribute('placement') || 'bottom-start';
 
+    // Remove positioned attribute to hide during repositioning
+    this.removeAttribute('positioned');
+
     // Calculate position based on placement
     // We'll position after the popover is rendered to get its dimensions
     requestAnimationFrame(() => {
       const rect = this._popoverContainer.getBoundingClientRect();
       const { left, top } = this._calculatePosition(x, y, rect.width, rect.height, placement);
 
+      // Set position first
       this._popoverContainer.style.left = `${left}px`;
       this._popoverContainer.style.top = `${top}px`;
 
-      // Mark as positioned to make it visible
-      this.setAttribute('positioned', '');
+      // Then make visible in next frame to prevent flicker
+      requestAnimationFrame(() => {
+        this.setAttribute('positioned', '');
+      });
     });
   }
 

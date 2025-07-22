@@ -174,7 +174,7 @@ template:
               $else:
                 - rtgl-view mt=md h=1 bgc=mu-bg:
           $else:
-            - rtgl-view#item-${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=p title="${item.title}":
+            - rtgl-view#item-${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=p:
               - $if item.icon:
                   - $if showLabels:
                       - rtgl-view d=h ah=${itemContentAlign} g=sm:

@@ -104,7 +104,9 @@ function createAttrsProxy(source) {
     {
       get(_, prop) {
         if (typeof prop === "string") {
-          return source.getAttribute(prop);
+          const value = source.getAttribute(prop);
+          // Return true for boolean attributes (empty string values)
+          return value === "" ? true : value;
         }
         return undefined;
       },
