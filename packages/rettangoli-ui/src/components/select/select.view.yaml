@@ -31,7 +31,7 @@ refs:
         handler: handleButtonClick
   popover:
     eventListeners:
-      click-overlay:
+      close:
         handler: handleClickOptionsPopoverOverlay
   option-*:
     eventListeners:
