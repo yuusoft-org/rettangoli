@@ -6,7 +6,7 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "0.0.11-rc9",
+      "version": "0.0.11-rc11",
       "bin": {
         "rtgl": "./cli.js",
       },
@@ -21,11 +21,11 @@
     },
     "packages/rettangoli-fe": {
       "name": "@rettangoli/fe",
-      "version": "0.0.7-rc9",
+      "version": "0.0.7-rc11",
       "dependencies": {
         "esbuild": "^0.25.5",
         "immer": "^10.1.1",
-        "jempl": "0.1.2-rc2",
+        "jempl": "0.1.2-rc3",
         "js-yaml": "^4.1.0",
         "rxjs": "^7.8.2",
         "snabbdom": "^3.6.2",
@@ -380,7 +380,7 @@
 
     "is-arrayish": ["is-arrayish@0.3.2", "", {}, "sha512-eVRqCvVlZbuw3GrM63ovNSNAeA1K16kaR/LRY/92w0zxQ5/1YzwblUX652i4Xs9RwAGjW9d9y6X88t8OaAJfWQ=="],
 
-    "jempl": ["jempl@0.1.2-rc2", "", {}, "sha512-3iNGIcBvjEWQvvmaBnRggSWVpw7bQbveJUCQJG+FW+RWI4Ow9Q/+BpXHh3duD9Eo53MdW3dbz+GqKmig0//dtQ=="],
+    "jempl": ["jempl@0.1.2-rc3", "", {}, "sha512-xEjkDzbdfjrKSZvdRt0OrQC0T9NQuJio7aK5I4IyKLX2OdoTMgt9X8E3DILwN6p0mb8GeX+61Cp89S5j5B/mKQ=="],
 
     "js-graph-algorithms": ["js-graph-algorithms@1.0.18", "", { "bin": { "js-graphs": "./src/jsgraphs.js" } }, "sha512-Gu1wtWzXBzGeye/j9BuyplGHscwqKRZodp/0M1vyBc19RJpblSwKGu099KwwaTx9cRIV+Qupk8xUMfEiGfFqSA=="],
 
