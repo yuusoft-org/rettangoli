@@ -6,7 +6,7 @@ const stringifyAttrs = (attrs) => {
   return Object.entries(attrs).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
 }
 
-export const toViewData = ({ state, props, attrs }) => {
+export const toViewData = ({ props, attrs }) => {
   const containerAttrString = stringifyAttrs(attrs);
 
   const items = props.items || [];

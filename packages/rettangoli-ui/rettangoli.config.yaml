@@ -90,6 +90,9 @@ vt:
         - title: "Breadcrumb"
           files: "components/breadcrumb"
           description: "Breadcrumb component tests"
+        - title: "Tabs"
+          files: "components/tabs"
+          description: "Tabs component tests"
     - title: "Examples"
       type: "groupLabel"
       items:
