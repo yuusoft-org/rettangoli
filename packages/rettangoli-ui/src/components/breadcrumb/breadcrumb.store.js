@@ -8,7 +8,7 @@ const stringifyAttrs = (attrs) => {
 
 export const toViewData = ({ state, props, attrs }) => {
   const containerAttrString = stringifyAttrs(attrs);
-  
+
   const items = props.items || [];
   const separator = props.separator || 'breadcrumb-arrow';
 
@@ -26,8 +26,4 @@ export const toViewData = ({ state, props, attrs }) => {
     items: itemsWithSeparators,
     separator
   };
-}
-
-export const setState = (state) => {
-  // do something
 }
