@@ -1,0 +1,19 @@
+---
+title: "Breadcrumb - Custom Separator"
+---
+<rtgl-view g="lg" h="100vh" w="f" fw="w">
+  <rtgl-breadcrumb id="breadcrumb">
+  </rtgl-breadcrumb>
+</rtgl-view>
+
+<script>
+  const breadcrumb = document.getElementById('breadcrumb');
+  breadcrumb.items = [
+    { label: "Home", id: "breadcrumb-home" },
+    { label: "Category", id: "breadcrumb-category" },
+    { label: "Subcategory", id: "breadcrumb-subcategory" },
+    { label: "Current Page" }
+  ];
+  breadcrumb.separator = "chevron-right";
+  breadcrumb.render();
+</script>

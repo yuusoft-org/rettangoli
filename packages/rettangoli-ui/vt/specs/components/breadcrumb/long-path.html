@@ -1,0 +1,20 @@
+---
+title: "Breadcrumb - Long Path"
+---
+<rtgl-view g="lg" h="100vh" w="f" fw="w">
+  <rtgl-breadcrumb id="breadcrumb">
+  </rtgl-breadcrumb>
+</rtgl-view>
+
+<script>
+  const breadcrumb = document.getElementById('breadcrumb');
+  breadcrumb.items = [
+    { label: "Dashboard", id: "breadcrumb-dashboard" },
+    { label: "Projects", id: "breadcrumb-projects" },
+    { label: "Web Development", id: "breadcrumb-web-dev" },
+    { label: "React Components", id: "breadcrumb-react" },
+    { label: "UI Library", id: "breadcrumb-ui-lib" },
+    { label: "Breadcrumb Component" }
+  ];
+  breadcrumb.render();
+</script>
