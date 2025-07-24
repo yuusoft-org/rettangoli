@@ -1,0 +1,19 @@
+---
+title: "Tabs - Single Tab"
+---
+<rtgl-view g="lg" h="100vh" w="f" fw="w">
+  <rtgl-tabs id="tabs" selected-tab="tab1">
+  </rtgl-tabs>
+</rtgl-view>
+
+<script>
+  const tabs = document.getElementById('tabs');
+  tabs.items = [
+    { label: "Only Tab", id: "tab1" }
+  ];
+  tabs.addEventListener('item-click', (event) => {
+    tabs.setAttribute('selected-tab', event.detail.id);
+  });
+
+  tabs.render();
+</script>
