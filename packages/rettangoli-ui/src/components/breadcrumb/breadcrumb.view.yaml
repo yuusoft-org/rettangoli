@@ -1,0 +1,64 @@
+elementName: rtgl-breadcrumb
+
+viewDataSchema:
+  type: object
+  properties:
+    containerAttrString:
+      type: string
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          label:
+            type: string
+          id:
+            type: string
+    separator:
+      type: string
+
+propsSchema:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          label:
+            type: string
+          id:
+            type: string
+    separator:
+      type: string
+      default: "breadcrumb-arrow"
+
+refs:
+  item-*:
+    eventListeners:
+      click:
+        handler: handleClickItem
+events:
+  item-click:
+    type: object
+    properties:
+      item:
+        type: object
+        properties:
+          label:
+            type: string
+          id:
+            type: string
+      index:
+        type: number
+
+template:
+  - rtgl-view d=h av=c g=md p=sm ${containerAttrString}:
+    - $for item in items:
+        - $if item.isSeparator:
+            - rtgl-svg wh=16 svg=${separator} c=mu-fg:
+          $elif item.id:
+            - rtgl-view#item-${item.id} data-id=${item.id} cur=p:
+              - rtgl-text s=sm c=mu-fg: "${item.label}"
+          $else:
+            - rtgl-text s=sm c=mu-fg: "${item.label}"

@@ -87,6 +87,9 @@ vt:
         - title: "Slider Input"
           files: "components/slider-input"
           description: "Slider Input component tests"
+        - title: "Breadcrumb"
+          files: "components/breadcrumb"
+          description: "Breadcrumb component tests"
     - title: "Examples"
       type: "groupLabel"
       items:
