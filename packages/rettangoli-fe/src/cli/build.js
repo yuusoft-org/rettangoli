@@ -18,7 +18,7 @@ function capitalize(word) {
 // Function to process view files - loads YAML and creates temporary JS file
 export const writeViewFile = (view, category, component) => {
   // const { category, component } = extractCategoryAndComponent(filePath);
-  
+
   const dir = `./.temp/${category}`;
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
@@ -93,7 +93,12 @@ const buildRettangoliFrontend = async (options) => {
       count++;
     } else if (["view"].includes(fileType)) {
       const view = loadYaml(readFileSync(filePath, "utf8"));
-      view.template = parse(view.template);
+      try {
+        view.template = parse(view.template);
+      } catch (error) {
+        console.error(`Error parsing template in file: ${filePath}`);
+        throw error;
+      }
       writeViewFile(view, category, component);
       output += `import ${component}${capitalize(
         fileType,
