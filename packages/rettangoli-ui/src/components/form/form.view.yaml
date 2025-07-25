@@ -229,8 +229,8 @@ template:
             - $if field.inputType == "image" && field.imageSrc:
                 - rtgl-image#image-${field.name} src=${field.imageSrc} w=${field.width} h=${field.height} cur=p:
             - $if field.inputType == "image" && !field.imageSrc:
-                - rtgl-view#image-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p:
-                    - rtgl-text c=mu-fg: ${field.placeholderText}
+                - rtgl-view#image-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
+                    - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
     - rtgl-view g=sm w=f:
       - rtgl-view d=h ah=e g=sm w=f:
         - $for button, i in actions.buttons:
