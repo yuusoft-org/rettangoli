@@ -85,16 +85,6 @@ title: "With Image"
       form.fieldResources = newFieldResources;
 
       form.render();
-      // Manually call handleOnUpdate
-      // if (form.transformedHandlers && form.transformedHandlers.handleOnUpdate) {
-      //   form.transformedHandlers.handleOnUpdate(
-      //     {
-      //       oldProps: { fieldResources: oldFieldResources },
-      //       newProps: { fieldResources: newFieldResources }
-      //     },
-      //     form.deps
-      //   );
-      // }
 
       console.log('Updated fieldResources with new images:', newSrc);
     }
