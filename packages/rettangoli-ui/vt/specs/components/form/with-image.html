@@ -1,0 +1,112 @@
+---
+title: "With Image"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    username: 'john_doe',
+    email: 'john@example.com'
+  }
+
+  form.fieldResources = {
+    profilePicture: {
+      src: '/public/sample1.jpg'
+    },
+    coverImage: {
+      src: '/public/sample1.jpg'
+    }
+  }
+
+  form.form = {
+    title: 'User Profile',
+    description: 'Update your profile information',
+    fields: [{
+      name: 'profilePicture',
+      inputType: 'image',
+      label: 'Profile Picture',
+      description: 'Click to change your profile picture',
+      width: 200,
+      height: 200
+    }, {
+      name: 'coverImage',
+      inputType: 'image',
+      label: 'Cover Image',
+      description: 'Click to update your cover image',
+      width: 300,
+      height: 150
+    }, {
+      name: 'placeholderImage',
+      inputType: 'image',
+      label: 'Placeholder Image',
+      description: 'This shows placeholder when no image is available',
+      width: 150,
+      height: 150,
+      placeholder: 'Click to upload'
+    }],
+    actions: {
+      buttons: [{
+        id: 'save',
+        variant: 'pr',
+        content: 'Save Profile',
+      }, {
+        id: 'cancel',
+        variant: 'se',
+        content: 'Cancel',
+      }],
+    }
+  }
+
+  form.addEventListener('action-click', (e) => {
+    console.log('action-click', e.detail);
+    
+    // Update displayData when save is clicked
+    if (e.detail.actionId === 'save') {
+      const oldFieldResources = form.fieldResources;
+      
+      // Toggle between sample1 and sample2
+      const currentSrc = oldFieldResources.profilePicture.src;
+      const newSrc = currentSrc.includes('sample2') ? '/public/sample1.jpg' : '/public/sample2.jpg';
+      
+      const newFieldResources = {
+        profilePicture: {
+          src: newSrc
+        },
+        coverImage: {
+          src: newSrc
+        }
+      };
+      
+      form.fieldResources = newFieldResources;
+      
+      // Manually call handleOnUpdate
+      if (form.transformedHandlers && form.transformedHandlers.handleOnUpdate) {
+        form.transformedHandlers.handleOnUpdate(
+          { 
+            oldProps: { fieldResources: oldFieldResources },
+            newProps: { fieldResources: newFieldResources }
+          },
+          form.deps
+        );
+      }
+      
+      console.log('Updated fieldResources with new images:', newSrc);
+    }
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  form.addEventListener('extra-event', (e) => {
+    console.log('extra-event (image clicked)', e.detail);
+    alert(`Image clicked: ${e.detail.name}`);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

@@ -3,6 +3,24 @@ export const handleBeforeMount = (deps) => {
   store.setFormValues(props.defaultValues);
 };
 
+export const handleOnUpdate = (changes, deps) => {
+  const { oldProps, newProps } = changes;
+  const { render } = deps;
+  
+  console.log('handleOnUpdate called', {
+    oldFieldResources: oldProps.fieldResources,
+    newFieldResources: newProps.fieldResources,
+    hasChanged: oldProps.fieldResources !== newProps.fieldResources
+  });
+  
+  // Check if fieldResources has changed
+  if (oldProps.fieldResources !== newProps.fieldResources) {
+    console.log('fieldResources changed, triggering re-render');
+    // Trigger re-render to update image sources
+    render();
+  }
+};
+
 const dispatchFormChange = (name, fieldValue, formValues, dispatchEvent) => {
   dispatchEvent(
     new CustomEvent("form-change", {
@@ -87,4 +105,16 @@ export const handleSliderInputChange = (e, deps) => {
     });
     dispatchFormChange(name, e.detail.value, store.selectFormValues(), dispatchEvent);
   }
+};
+
+export const handleImageClick = (e, deps) => {
+  const { dispatchEvent } = deps;
+  const name = e.currentTarget.id.replace("image-", "");
+  dispatchEvent(
+    new CustomEvent("extra-event", {
+      detail: {
+        name: name
+      },
+    }),
+  );
 };
