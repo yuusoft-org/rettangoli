@@ -88,3 +88,15 @@ export const handleSliderInputChange = (e, deps) => {
     dispatchFormChange(name, e.detail.value, store.selectFormValues(), dispatchEvent);
   }
 };
+
+export const handleImageClick = (e, deps) => {
+  const { dispatchEvent } = deps;
+  const name = e.currentTarget.id.replace("image-", "");
+  dispatchEvent(
+    new CustomEvent("extra-event", {
+      detail: {
+        name: name
+      },
+    }),
+  );
+};

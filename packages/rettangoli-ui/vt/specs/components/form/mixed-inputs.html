@@ -11,10 +11,19 @@ title: "Mixed Inputs"
 
   form.defaultValues = {}
 
+  form.fieldResources = {}
+
   form.form = {
     title: 'User Profile',
     description: 'Complete your profile information',
     fields: [{
+      name: 'avatar',
+      inputType: 'image',
+      label: 'Avatar',
+      description: 'Your profile picture',
+      width: 80,
+      height: 80
+    }, {
       name: 'name',
       inputType: 'inputText',
       label: 'Full Name',

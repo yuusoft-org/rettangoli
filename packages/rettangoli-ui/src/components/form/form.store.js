@@ -12,8 +12,17 @@ export const toViewData = ({ state, props, attrs }) => {
   const containerAttrString = stringifyAttrs(attrs);
   const fields = structuredClone(props.form.fields || []);
   const defaultValues = props.defaultValues || {};
+  const fieldResources = props.fieldResources || {};
+  
   fields.forEach((field) => {
-    field.defaultValue = defaultValues[field.name]
+    field.defaultValue = defaultValues[field.name];
+    if (field.inputType === 'image') {
+      const src = fieldResources[field.name]?.src;
+      // Only set imageSrc if src exists and is not empty
+      field.imageSrc = src && src.trim() ? src : null;
+      // Set placeholder text
+      field.placeholderText = field.placeholder || 'No Image';
+    }
   })
 
   return {
@@ -25,6 +34,7 @@ export const toViewData = ({ state, props, attrs }) => {
       buttons: []
     },
     formValues: state.formValues,
+    fieldResources: fieldResources,
   };
 }
 
