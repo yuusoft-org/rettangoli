@@ -1,7 +1,6 @@
 export const handleBeforeMount = (deps) => {
   const { store, props } = deps;
 
-  // Initialize the current value from props
   if (props.value !== undefined || props.defaultValue !== undefined) {
     store.setValue(props.value || props.defaultValue || '');
   }
@@ -10,11 +9,9 @@ export const handleBeforeMount = (deps) => {
 export const handleTextClick = (e, deps) => {
   const { store, render, getRefIds, attrs } = deps;
 
-  console.log('aaaaaaaaaaaaaaaa')
-    const value = store.selectValue();
+  const value = store.selectValue();
   store.setTempValue(value)
 
-  console.log('bbbbbbbbbbbbbbbbb')
   store.openPopover({
     position: {
       x: e.currentTarget.getBoundingClientRect().left,
@@ -23,10 +20,9 @@ export const handleTextClick = (e, deps) => {
   });
 
   const { input } = getRefIds();
-    input.elm.value = value;
+  input.elm.value = value;
   render();
 
-  console.log('ccccccccccccc')
   if (attrs['auto-focus']) {
     setTimeout(() => {
       input.elm.focus();
