@@ -41,6 +41,19 @@ export const handleInputChange = (e, deps) => {
   }
 };
 
+export const handlePopoverInputChange = (e, deps) => {
+  const { store, dispatchEvent } = deps;
+  const name = e.currentTarget.id.replace("popover-input-", "");
+  // TODO fix double event
+  if (name && e.detail.value !== undefined) {
+    store.setFormFieldValue({
+      name: name,
+      value: e.detail.value,
+    });
+    dispatchFormChange(name, e.detail.value, store.selectFormValues(), dispatchEvent);
+  }
+};
+
 export const handleSelectChange = (e, deps) => {
   const { store, dispatchEvent } = deps;
   const name = e.currentTarget.id.replace("select-", "");

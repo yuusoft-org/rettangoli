@@ -200,6 +200,10 @@ refs:
     eventListeners:
       click:
         handler: handleImageClick
+  popover-input-*:
+    eventListeners:
+      input-change:
+        handler: handlePopoverInputChange
 
 events:
   form-change: {}
@@ -218,6 +222,8 @@ template:
               - rtgl-text s=sm c=mu-fg: ${field.description}
             - $if field.inputType == "inputText":
                 - rtgl-input#input-${field.name} w=f placeholder=${field.placeholder} value=${field.defaultValue}:
+            - $if field.inputType == "popover-input":
+                - rtgl-popover-input#popover-input-${field.name} label="${field.label}" .defaultValue=fields[${i}].defaultValue:
             - $if field.inputType == "select":
                 - rtgl-select#select-${field.name} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue:
             - $if field.inputType == "colorPicker":

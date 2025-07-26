@@ -13,7 +13,7 @@ export const toViewData = ({ state, props, attrs }) => {
   const fields = structuredClone(props.form.fields || []);
   const defaultValues = props.defaultValues || {};
   const fieldResources = props.fieldResources || {};
-  
+
   fields.forEach((field) => {
     field.defaultValue = defaultValues[field.name];
     if (field.inputType === 'image') {
