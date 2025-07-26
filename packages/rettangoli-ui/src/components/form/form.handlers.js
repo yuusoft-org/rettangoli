@@ -3,6 +3,18 @@ export const handleBeforeMount = (deps) => {
   store.setFormValues(props.defaultValues);
 };
 
+export const handleOnUpdate = (changes, deps) => {
+  const { oldAttrs, newAttrs } = changes
+  const { store, props, render } = deps;
+
+  if (oldAttrs.key === newAttrs.key) {
+    return;
+  }
+
+  store.setFormValues(props.defaultValues);
+  render();
+};
+
 const dispatchFormChange = (name, fieldValue, formValues, dispatchEvent) => {
   dispatchEvent(
     new CustomEvent("form-change", {
@@ -31,6 +43,19 @@ export const handleActionClick = (e, deps) => {
 export const handleInputChange = (e, deps) => {
   const { store, dispatchEvent } = deps;
   const name = e.currentTarget.id.replace("input-", "");
+  // TODO fix double event
+  if (name && e.detail.value !== undefined) {
+    store.setFormFieldValue({
+      name: name,
+      value: e.detail.value,
+    });
+    dispatchFormChange(name, e.detail.value, store.selectFormValues(), dispatchEvent);
+  }
+};
+
+export const handlePopoverInputChange = (e, deps) => {
+  const { store, dispatchEvent } = deps;
+  const name = e.currentTarget.id.replace("popover-input-", "");
   // TODO fix double event
   if (name && e.detail.value !== undefined) {
     store.setFormFieldValue({

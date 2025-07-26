@@ -1,0 +1,25 @@
+---
+title: Basic PopoverInput
+---
+<rtgl-view id="container" g="lg" p="lg" wh="f" fw="w">
+</rtgl-view>
+
+<script>
+  const popoverInput = document.createElement('rtgl-popover-input');
+
+  popoverInput.setAttribute('label', 'Label')
+
+  popoverInput.addEventListener('input-change', (e) => {
+    console.log('Value changed:', e.detail);
+  });
+
+  popoverInput.addEventListener('temp-input-change', (e) => {
+    console.log('Temporary value changed:', e.detail);
+  });
+
+  popoverInput.value = 'Click me to edit';
+  popoverInput.placeholder = 'Enter text';
+
+  const container = document.getElementById('container');
+  container.appendChild(popoverInput);
+</script>

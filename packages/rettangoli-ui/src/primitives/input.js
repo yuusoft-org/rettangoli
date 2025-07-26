@@ -110,6 +110,10 @@ class RettangoliInputElement extends HTMLElement {
     this._inputElement.value = newValue;
   }
 
+  focus() {
+    this._inputElement.focus();
+  }
+
   _onChange = (event) => {
     this.dispatchEvent(new CustomEvent('input-change', {
       detail: {
