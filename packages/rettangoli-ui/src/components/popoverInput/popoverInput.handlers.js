@@ -6,6 +6,17 @@ export const handleBeforeMount = (deps) => {
   }
 }
 
+export const handleOnUpdate = (changes, deps) => {
+  const { oldProps, newProps} = changes
+  const { store, props, render } = deps;
+
+  if (oldProps.defaultValue !== newProps.defaultValue) {
+    store.setValue(props.defaultValue || '');
+  }
+
+  render();
+}
+
 export const handleTextClick = (e, deps) => {
   const { store, render, getRefIds, attrs } = deps;
 

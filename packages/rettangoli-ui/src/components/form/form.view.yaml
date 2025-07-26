@@ -220,6 +220,8 @@ template:
             - rtgl-view g=sm:
               - rtgl-text: ${field.label}
               - rtgl-text s=sm c=mu-fg: ${field.description}
+            - $if field.inputType == "read-only-text":
+                - rtgl-text s=sm: ${field.defaultValue}
             - $if field.inputType == "inputText":
                 - rtgl-input#input-${field.name} w=f placeholder=${field.placeholder} value=${field.defaultValue}:
             - $if field.inputType == "popover-input":

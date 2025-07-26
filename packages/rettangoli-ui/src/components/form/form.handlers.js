@@ -3,6 +3,18 @@ export const handleBeforeMount = (deps) => {
   store.setFormValues(props.defaultValues);
 };
 
+export const handleOnUpdate = (changes, deps) => {
+  const { oldAttrs, newAttrs } = changes
+  const { store, props, render } = deps;
+
+  if (oldAttrs.key === newAttrs.key) {
+    return;
+  }
+
+  store.setFormValues(props.defaultValues);
+  render();
+};
+
 const dispatchFormChange = (name, fieldValue, formValues, dispatchEvent) => {
   dispatchEvent(
     new CustomEvent("form-change", {
