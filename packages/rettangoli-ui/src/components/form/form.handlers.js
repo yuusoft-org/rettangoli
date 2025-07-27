@@ -7,7 +7,7 @@ export const handleOnUpdate = (changes, deps) => {
   const { oldAttrs, newAttrs } = changes
   const { store, props, render } = deps;
 
-  if (oldAttrs.key === newAttrs.key) {
+  if (oldAttrs?.key === newAttrs?.key) {
     return;
   }
 
