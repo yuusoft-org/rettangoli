@@ -18,14 +18,9 @@ propsSchema:
     waveformData:
       type: object
       description: File ID of the waveform data in object storage
-    width:
-      type: number
-      default: 600
-      description: Width of the waveform visualization
-    height:
-      type: number
-      default: 400
-      description: Height of the waveform visualization
+    isLoading:
+      type: boolean
+      description: Whether the waveform data is currently being loaded
 
 refs:
   canvas:

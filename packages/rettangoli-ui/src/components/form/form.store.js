@@ -23,6 +23,13 @@ export const toViewData = ({ state, props, attrs }) => {
       // Set placeholder text
       field.placeholderText = field.placeholder || 'No Image';
     }
+    if (field.inputType === 'waveform') {
+      const waveformData = fieldResources[field.name]?.waveformData;
+      // Only set waveformData if it exists
+      field.waveformData = waveformData || null;
+      // Set placeholder text
+      field.placeholderText = field.placeholder || 'No Waveform';
+    }
   })
 
   return {

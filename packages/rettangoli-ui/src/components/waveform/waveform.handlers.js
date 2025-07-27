@@ -3,7 +3,6 @@ export const handleAfterMount = async (deps) => {
   const { waveformData } = props;
 
   store.setWaveformData(waveformData);
-  store.setLoading(false);
   render();
 
   const canvas = getRefIds().canvas?.elm;
@@ -16,7 +15,6 @@ export const handleOnUpdate = async (changes, deps) => {
   const { store, render, getRefIds, props } = deps;
   const { waveformData } = props;
   store.setWaveformData(waveformData);
-  store.setLoading(false);
   render();
 
   const canvas = getRefIds().canvas?.elm;

@@ -125,3 +125,15 @@ export const handleImageClick = (e, deps) => {
     }),
   );
 };
+
+export const handleWaveformClick = (e, deps) => {
+  const { dispatchEvent } = deps;
+  const name = e.currentTarget.id.replace("waveform-", "");
+  dispatchEvent(
+    new CustomEvent("extra-event", {
+      detail: {
+        name: name
+      },
+    }),
+  );
+};
