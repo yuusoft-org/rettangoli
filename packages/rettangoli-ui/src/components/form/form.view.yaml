@@ -153,6 +153,27 @@ propsSchema:
                   - label
                   - inputType
                 additionalProperties: false
+              - type: object
+                properties:
+                  name:
+                    type: string
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  inputType:
+                    const: waveform
+                  width:
+                    type: number
+                  height:
+                    type: number
+                  placeholder:
+                    type: string
+                required:
+                  - name
+                  - label
+                  - inputType
+                additionalProperties: false
         actions:
           type: object
           properties:
@@ -200,6 +221,14 @@ refs:
     eventListeners:
       click:
         handler: handleImageClick
+  waveform-*:
+    eventListeners:
+      click:
+        handler: handleWaveformClick
+  popover-input-*:
+    eventListeners:
+      input-change:
+        handler: handlePopoverInputChange
 
 events:
   form-change: {}
@@ -216,8 +245,12 @@ template:
             - rtgl-view g=sm:
               - rtgl-text: ${field.label}
               - rtgl-text s=sm c=mu-fg: ${field.description}
+            - $if field.inputType == "read-only-text":
+                - rtgl-text s=sm: ${field.defaultValue}
             - $if field.inputType == "inputText":
                 - rtgl-input#input-${field.name} w=f placeholder=${field.placeholder} value=${field.defaultValue}:
+            - $if field.inputType == "popover-input":
+                - rtgl-popover-input#popover-input-${field.name} label="${field.label}" .defaultValue=fields[${i}].defaultValue:
             - $if field.inputType == "select":
                 - rtgl-select#select-${field.name} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue:
             - $if field.inputType == "colorPicker":
@@ -230,6 +263,11 @@ template:
                 - rtgl-image#image-${field.name} src=${field.imageSrc} w=${field.width} h=${field.height} cur=p:
             - $if field.inputType == "image" && !field.imageSrc:
                 - rtgl-view#image-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
+                    - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
+            - $if field.inputType == "waveform" && field.waveformData:
+                - rtgl-waveform#waveform-${field.name} .waveformData=fields[${i}].waveformData w=${field.width} h=${field.height}:
+            - $if field.inputType == "waveform" && !field.waveformData:
+                - rtgl-view#waveform-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
                     - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
     - rtgl-view g=sm w=f:
       - rtgl-view d=h ah=e g=sm w=f:

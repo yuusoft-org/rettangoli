@@ -1,0 +1,121 @@
+---
+title: "With Waveform"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    audioName: 'sample_audio.mp3',
+    volume: 75
+  }
+
+  // Sample waveform data
+  const generateWaveformData = () => {
+    const data = [];
+    for (let i = 0; i < 100; i++) {
+      data.push(Math.random() * 0.8 + 0.2);
+    }
+    return { data };
+  };
+
+  form.fieldResources = {
+    audioWaveform: {
+      waveformData: generateWaveformData()
+    },
+    voiceWaveform: {
+      waveformData: generateWaveformData()
+    }
+  }
+
+  form.form = {
+    title: 'Audio Settings',
+    description: 'Configure your audio waveform visualization',
+    fields: [{
+      name: 'audioWaveform',
+      inputType: 'waveform',
+      label: 'Audio Waveform',
+      description: 'Click to change the audio file',
+      width: 300,
+      height: 120
+    }, {
+      name: 'voiceWaveform',
+      inputType: 'waveform',
+      label: 'Voice Recording',
+      description: 'Click to record or upload voice',
+      width: 250,
+      height: 100
+    }, {
+      name: 'placeholderWaveform',
+      inputType: 'waveform',
+      label: 'Empty Waveform',
+      description: 'This shows placeholder when no waveform is available',
+      width: 300,
+      height: 120,
+      placeholder: 'Click to load audio'
+    }, {
+      name: 'audioName',
+      inputType: 'inputText',
+      label: 'Audio File Name',
+      placeholder: 'Enter audio file name'
+    }, {
+      name: 'volume',
+      inputType: 'slider',
+      label: 'Volume',
+      min: 0,
+      max: 100,
+      step: 1
+    }],
+    actions: {
+      buttons: [{
+        id: 'save',
+        variant: 'pr',
+        content: 'Save Settings',
+      }, {
+        id: 'cancel',
+        variant: 'se',
+        content: 'Cancel',
+      }],
+    }
+  }
+
+  form.addEventListener('action-click', (e) => {
+    console.log('action-click', e.detail);
+
+    // Update waveform data when save is clicked
+    if (e.detail.actionId === 'save') {
+      const oldFieldResources = form.fieldResources;
+
+      // Generate new waveform data
+      const newFieldResources = {
+        audioWaveform: {
+          waveformData: generateWaveformData()
+        },
+        voiceWaveform: {
+          waveformData: generateWaveformData()
+        }
+      };
+
+      form.fieldResources = newFieldResources;
+
+      form.render();
+
+      console.log('Updated fieldResources with new waveform data');
+    }
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  form.addEventListener('extra-event', (e) => {
+    console.log('extra-event (waveform clicked)', e.detail);
+    alert(`Waveform clicked: ${e.detail.name}`);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

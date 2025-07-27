@@ -93,6 +93,12 @@ vt:
         - title: "Tabs"
           files: "components/tabs"
           description: "Tabs component tests"
+        - title: "Popover Input"
+          files: "components/popover-input"
+          description: "Popover Input component tests"
+        - title: "Waveform"
+          files: "components/waveform"
+          description: "Waveform component tests"
     - title: "Examples"
       type: "groupLabel"
       items:

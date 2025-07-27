@@ -13,7 +13,7 @@ export const toViewData = ({ state, props, attrs }) => {
   const fields = structuredClone(props.form.fields || []);
   const defaultValues = props.defaultValues || {};
   const fieldResources = props.fieldResources || {};
-  
+
   fields.forEach((field) => {
     field.defaultValue = defaultValues[field.name];
     if (field.inputType === 'image') {
@@ -22,6 +22,13 @@ export const toViewData = ({ state, props, attrs }) => {
       field.imageSrc = src && src.trim() ? src : null;
       // Set placeholder text
       field.placeholderText = field.placeholder || 'No Image';
+    }
+    if (field.inputType === 'waveform') {
+      const waveformData = fieldResources[field.name]?.waveformData;
+      // Only set waveformData if it exists
+      field.waveformData = waveformData || null;
+      // Set placeholder text
+      field.placeholderText = field.placeholder || 'No Waveform';
     }
   })
 
