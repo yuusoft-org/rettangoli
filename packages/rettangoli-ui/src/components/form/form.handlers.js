@@ -115,6 +115,9 @@ export const handleSliderInputChange = (e, deps) => {
 };
 
 export const handleImageClick = (e, deps) => {
+  if (e.type === "contextmenu") {
+    e.preventDefault();
+  }
   const { dispatchEvent } = deps;
   const name = e.currentTarget.id.replace("image-", "");
   dispatchEvent(
@@ -124,28 +127,15 @@ export const handleImageClick = (e, deps) => {
         x: e.clientX,
         y: e.clientY,
         trigger: e.type
-      },
-    }),
-  );
-};
-
-export const handleImageContextMenu = (e, deps) => {
-  e.preventDefault();
-  const { dispatchEvent } = deps;
-  const name = e.currentTarget.id.replace("image-", "");
-  dispatchEvent(
-    new CustomEvent("extra-event", {
-      detail: {
-        name: name,
-        x: e.clientX,
-        y: e.clientY,
-        trigger: "contextmenu"
       },
     }),
   );
 };
 
 export const handleWaveformClick = (e, deps) => {
+  if (e.type === "contextmenu") {
+    e.preventDefault();
+  }
   const { dispatchEvent } = deps;
   const name = e.currentTarget.id.replace("waveform-", "");
   dispatchEvent(
@@ -155,22 +145,6 @@ export const handleWaveformClick = (e, deps) => {
         x: e.clientX,
         y: e.clientY,
         trigger: e.type
-      },
-    }),
-  );
-};
-
-export const handleWaveformContextMenu = (e, deps) => {
-  e.preventDefault();
-  const { dispatchEvent } = deps;
-  const name = e.currentTarget.id.replace("waveform-", "");
-  dispatchEvent(
-    new CustomEvent("extra-event", {
-      detail: {
-        name: name,
-        x: e.clientX,
-        y: e.clientY,
-        trigger: "contextmenu"
       },
     }),
   );

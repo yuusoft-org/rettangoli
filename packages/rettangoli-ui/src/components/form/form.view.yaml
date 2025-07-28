@@ -222,13 +222,13 @@ refs:
       click:
         handler: handleImageClick
       contextmenu:
-        handler: handleImageContextMenu
+        handler: handleImageClick
   waveform-*:
     eventListeners:
       click:
         handler: handleWaveformClick
       contextmenu:
-        handler: handleWaveformContextMenu
+        handler: handleWaveformClick
   popover-input-*:
     eventListeners:
       input-change:
