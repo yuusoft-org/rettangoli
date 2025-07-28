@@ -20,17 +20,13 @@ title: "With Waveform"
     for (let i = 0; i < 100; i++) {
       data.push(Math.random() * 0.8 + 0.2);
     }
-    return { data };
+    return {
+      data,
+      duration: 10.0,
+      sampleRate: 44100,
+      channels: 2
+    };
   };
-
-  form.fieldResources = {
-    audioWaveform: {
-      waveformData: generateWaveformData()
-    },
-    voiceWaveform: {
-      waveformData: generateWaveformData()
-    }
-  }
 
   form.form = {
     title: 'Audio Settings',
@@ -41,14 +37,16 @@ title: "With Waveform"
       label: 'Audio Waveform',
       description: 'Click to change the audio file',
       width: 300,
-      height: 120
+      height: 120,
+      waveformData: generateWaveformData()
     }, {
       name: 'voiceWaveform',
       inputType: 'waveform',
       label: 'Voice Recording',
       description: 'Click to record or upload voice',
       width: 250,
-      height: 100
+      height: 100,
+      waveformData: generateWaveformData()
     }, {
       name: 'placeholderWaveform',
       inputType: 'waveform',
@@ -88,23 +86,20 @@ title: "With Waveform"
 
     // Update waveform data when save is clicked
     if (e.detail.actionId === 'save') {
-      const oldFieldResources = form.fieldResources;
+      // Update waveform data directly on fields
+      const audioField = form.form.fields.find(f => f.name === 'audioWaveform');
+      const voiceField = form.form.fields.find(f => f.name === 'voiceWaveform');
 
-      // Generate new waveform data
-      const newFieldResources = {
-        audioWaveform: {
-          waveformData: generateWaveformData()
-        },
-        voiceWaveform: {
-          waveformData: generateWaveformData()
-        }
-      };
-
-      form.fieldResources = newFieldResources;
+      if (audioField) {
+        audioField.waveformData = generateWaveformData();
+      }
+      if (voiceField) {
+        voiceField.waveformData = generateWaveformData();
+      }
 
       form.render();
 
-      console.log('Updated fieldResources with new waveform data');
+      console.log('Updated fields with new waveform data');
     }
   });
 

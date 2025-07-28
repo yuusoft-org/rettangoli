@@ -169,6 +169,10 @@ propsSchema:
                     type: number
                   placeholder:
                     type: string
+                  defaultValue:
+                    type: object
+                  waveformData:
+                    type: object
                 required:
                   - name
                   - label
@@ -189,8 +193,6 @@ propsSchema:
                 required:
                   - id
                   - content
-    fieldResources:
-      type: object
 
 refs:
   action-*:
@@ -272,7 +274,7 @@ template:
                 - rtgl-waveform#waveform-${field.name} .waveformData=fields[${i}].waveformData w=${field.width} h=${field.height} cur=p:
             - $if field.inputType == "waveform" && !field.waveformData:
                 - rtgl-view#waveform-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
-                    - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
+                    - rtgl-text c=mu-fg ta=c: ${field.placeholder}
     - rtgl-view g=sm w=f:
       - rtgl-view d=h ah=e g=sm w=f:
         - $for button, i in actions.buttons:

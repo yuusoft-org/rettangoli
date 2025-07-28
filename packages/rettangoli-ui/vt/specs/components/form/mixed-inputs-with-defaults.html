@@ -20,12 +20,6 @@ title: "Mixed Inputs With Defaults"
     isActive: true
   }
 
-  form.fieldResources = {
-    avatar: {
-      src: '/public/sample1.jpg'
-    }
-  }
-
   form.form = {
     title: 'User Profile',
     description: 'Complete your profile information with default values',
@@ -35,7 +29,8 @@ title: "Mixed Inputs With Defaults"
       label: 'Avatar',
       description: 'Your profile picture',
       width: 80,
-      height: 80
+      height: 80,
+      src: '/public/sample1.jpg'
     }, {
       name: 'name',
       inputType: 'inputText',
