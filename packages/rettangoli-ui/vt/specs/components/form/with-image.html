@@ -96,7 +96,7 @@ title: "With Image"
 
   form.addEventListener('extra-event', (e) => {
     console.log('extra-event (image clicked)', e.detail);
-    alert(`Image clicked: ${e.detail.name}`);
+    alert(`Image ${e.detail.trigger}: ${e.detail.name} at (${e.detail.x}, ${e.detail.y})`);
   });
 
   document.getElementById('container').appendChild(form);

@@ -221,10 +221,14 @@ refs:
     eventListeners:
       click:
         handler: handleImageClick
+      contextmenu:
+        handler: handleImageContextMenu
   waveform-*:
     eventListeners:
       click:
         handler: handleWaveformClick
+      contextmenu:
+        handler: handleWaveformContextMenu
   popover-input-*:
     eventListeners:
       input-change:
@@ -265,7 +269,7 @@ template:
                 - rtgl-view#image-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
                     - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
             - $if field.inputType == "waveform" && field.waveformData:
-                - rtgl-waveform#waveform-${field.name} .waveformData=fields[${i}].waveformData w=${field.width} h=${field.height}:
+                - rtgl-waveform#waveform-${field.name} .waveformData=fields[${i}].waveformData w=${field.width} h=${field.height} cur=p:
             - $if field.inputType == "waveform" && !field.waveformData:
                 - rtgl-view#waveform-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
                     - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
