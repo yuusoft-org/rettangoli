@@ -11,6 +11,9 @@ attrsSchema:
       type: string
       description: Height of the waveform visualizer
       default: '150'
+    cur:
+      type: string
+      description: cursor
 
 propsSchema:
   type: object
@@ -27,7 +30,7 @@ refs:
     selector: canvas
 
 template:
-  - rtgl-view w=f h=f pos=rel w=${w} h=${h}:
+  - rtgl-view w=f h=f pos=rel w=${w} h=${h} cur=${cur}:
     - $if isLoading:
         - rtgl-view w=f h=f av=c ah=c:
           - rtgl-text c=mu-fg: ...

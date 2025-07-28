@@ -11,6 +11,7 @@ export const toViewData = ({ state, attrs, props }) => {
     isLoading: props.isLoading,
     w: attrs.w || "250",
     h: attrs.h || "150",
+    cur: attrs.cur,
     waveformData: props.waveformData,
   };
 };

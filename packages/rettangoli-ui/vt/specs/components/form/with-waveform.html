@@ -114,7 +114,7 @@ title: "With Waveform"
 
   form.addEventListener('extra-event', (e) => {
     console.log('extra-event (waveform clicked)', e.detail);
-    alert(`Waveform clicked: ${e.detail.name}`);
+    alert(`Waveform ${e.detail.trigger}: ${e.detail.name} at (${e.detail.x}, ${e.detail.y})`);
   });
 
   document.getElementById('container').appendChild(form);
