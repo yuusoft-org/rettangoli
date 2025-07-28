@@ -14,6 +14,12 @@ export const handleAfterMount = async (deps) => {
 export const handleOnUpdate = async (changes, deps) => {
   const { store, render, getRefIds, props } = deps;
   const { waveformData } = props;
+
+  if (!waveformData) {
+    console.log('waveform handleOnUpdate: no waveformData provided');
+    return;
+  }
+
   store.setWaveformData(waveformData);
   render();
 

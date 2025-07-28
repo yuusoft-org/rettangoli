@@ -14,15 +14,6 @@ title: "With Image"
     email: 'john@example.com'
   }
 
-  form.fieldResources = {
-    profilePicture: {
-      src: '/public/sample1.jpg'
-    },
-    coverImage: {
-      src: '/public/sample1.jpg'
-    }
-  }
-
   form.form = {
     title: 'User Profile',
     description: 'Update your profile information',
@@ -32,14 +23,16 @@ title: "With Image"
       label: 'Profile Picture',
       description: 'Click to change your profile picture',
       width: 120,
-      height: 120
+      height: 120,
+      src: '/public/sample1.jpg'
     }, {
       name: 'coverImage',
       inputType: 'image',
       label: 'Cover Image',
       description: 'Click to update your cover image',
       width: 150,
-      height: 90
+      height: 90,
+      src: '/public/sample1.jpg'
     }, {
       name: 'placeholderImage',
       inputType: 'image',
@@ -65,28 +58,27 @@ title: "With Image"
   form.addEventListener('action-click', (e) => {
     console.log('action-click', e.detail);
 
-    // Update displayData when save is clicked
+    // Update image data when save is clicked
     if (e.detail.actionId === 'save') {
-      const oldFieldResources = form.fieldResources;
-
-      // Toggle between sample1 and sample2
-      const currentSrc = oldFieldResources.profilePicture.src;
-      const newSrc = currentSrc.includes('sample2') ? '/public/sample1.jpg' : '/public/sample2.jpg';
-
-      const newFieldResources = {
-        profilePicture: {
-          src: newSrc
-        },
-        coverImage: {
-          src: newSrc
-        }
-      };
-
-      form.fieldResources = newFieldResources;
+      // Find the image fields and toggle between sample1 and sample2
+      const profileField = form.form.fields.find(f => f.name === 'profilePicture');
+      const coverField = form.form.fields.find(f => f.name === 'coverImage');
+      
+      if (profileField) {
+        const currentSrc = profileField.src;
+        const newSrc = currentSrc.includes('sample2') ? '/public/sample1.jpg' : '/public/sample2.jpg';
+        profileField.src = newSrc;
+      }
+      
+      if (coverField) {
+        const currentSrc = coverField.src;
+        const newSrc = currentSrc.includes('sample2') ? '/public/sample1.jpg' : '/public/sample2.jpg';
+        coverField.src = newSrc;
+      }
 
       form.render();
 
-      console.log('Updated fieldResources with new images:', newSrc);
+      console.log('Updated fields with new images');
     }
   });
 

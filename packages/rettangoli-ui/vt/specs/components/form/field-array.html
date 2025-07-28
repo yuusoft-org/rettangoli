@@ -1,0 +1,59 @@
+---
+title: "Field Array"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    'items[0]': 'Initial Item 1',
+    'items[1]': 'Initial Item 2'
+  }
+
+  form.form = {
+    title: 'Array Field Form',
+    description: 'Using lodash-style array notation for fields',
+    fields: [{
+      name: 'items[0]',
+      inputType: 'inputText',
+      label: 'Item 1',
+      placeholder: 'Enter item name'
+    }, {
+      name: 'items[1]',
+      inputType: 'inputText',
+      label: 'Item 2',
+      placeholder: 'Enter item name'
+    }, {
+      name: 'items[2]',
+      inputType: 'inputText',
+      label: 'Item 3',
+      placeholder: 'Enter item name'
+    }, {
+      name: 'items[3]',
+      inputType: 'inputText',
+      label: 'Item 4',
+      placeholder: 'Enter item name'
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        content: 'Submit Form',
+      }],
+    }
+  }
+
+  form.addEventListener('action-click', (e) => {
+    console.log('action-click', e.detail);
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>
