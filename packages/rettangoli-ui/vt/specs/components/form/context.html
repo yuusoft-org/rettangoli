@@ -1,0 +1,59 @@
+---
+title: "Context"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
+
+  form.defaultValues = {}
+
+  form.context = {
+    title: 'My title from context'
+  }
+
+  form.form = {
+    title: '${title}',
+    description: 'Form Description',
+    fields: [{
+      name: 'contentType',
+      inputType: 'select',
+      label: 'Text content',
+      options: [
+        { label: 'Dialogue Content', value: 'dialogue.content' },
+        { label: 'Character Name', value: 'character.name' },
+        { label: 'Custom Content', value: 'custom' }
+      ],
+      required: true,
+    }, {
+      '$if contentType == "custom"': {
+        name: 'content',
+        inputType: 'inputText',
+        label: 'Text Content',
+        required: true,
+      }
+    }],
+    actions: {
+      layout: '', // vertical, fill, right, left
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        content: 'Submit',
+      }],
+    }
+  }
+
+  form.addEventListener('action-click', (e) => {
+    console.log('action-click', e.detail);
+  });
+
+  form.addEventListener('form-change', (e) => {
+    form.context = { title: 'My title from context', ...e.detail.formValues};
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

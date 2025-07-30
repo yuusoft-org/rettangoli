@@ -4,7 +4,7 @@ export const handleBeforeMount = (deps) => {
 };
 
 export const handleOnUpdate = (changes, deps) => {
-  const { oldAttrs, newAttrs } = changes
+  const { oldAttrs, newAttrs } = changes;
   const { store, props, render } = deps;
 
   if (oldAttrs?.key === newAttrs?.key) {
@@ -41,15 +41,21 @@ export const handleActionClick = (e, deps) => {
 };
 
 export const handleInputChange = (e, deps) => {
-  const { store, dispatchEvent } = deps;
+  const { store, dispatchEvent, props } = deps;
   const name = e.currentTarget.id.replace("input-", "");
   // TODO fix double event
   if (name && e.detail.value !== undefined) {
     store.setFormFieldValue({
       name: name,
       value: e.detail.value,
+      props,
     });
-    dispatchFormChange(name, e.detail.value, store.selectFormValues(), dispatchEvent);
+    dispatchFormChange(
+      name,
+      e.detail.value,
+      store.selectFormValues(),
+      dispatchEvent,
+    );
   }
 };
 
@@ -61,56 +67,87 @@ export const handlePopoverInputChange = (e, deps) => {
     store.setFormFieldValue({
       name: name,
       value: e.detail.value,
+      props,
     });
-    dispatchFormChange(name, e.detail.value, store.selectFormValues(), dispatchEvent);
+    dispatchFormChange(
+      name,
+      e.detail.value,
+      store.selectFormValues(),
+      dispatchEvent,
+    );
   }
 };
 
 export const handleSelectChange = (e, deps) => {
-  const { store, dispatchEvent } = deps;
+  const { store, dispatchEvent, render, props } = deps;
   const name = e.currentTarget.id.replace("select-", "");
   if (name && e.detail.selectedValue !== undefined) {
     store.setFormFieldValue({
       name: name,
       value: e.detail.selectedValue,
+      props,
     });
-    dispatchFormChange(name, e.detail.selectedValue, store.selectFormValues(), dispatchEvent);
+    dispatchFormChange(
+      name,
+      e.detail.selectedValue,
+      store.selectFormValues(),
+      dispatchEvent,
+    );
+    render();
   }
 };
 
 export const handleColorPickerChange = (e, deps) => {
-  const { store, dispatchEvent } = deps;
+  const { store, dispatchEvent, props } = deps;
   const name = e.currentTarget.id.replace("colorpicker-", "");
   if (name && e.detail.value !== undefined) {
     store.setFormFieldValue({
       name: name,
       value: e.detail.value,
+      props,
     });
-    dispatchFormChange(name, e.detail.value, store.selectFormValues(), dispatchEvent);
+    dispatchFormChange(
+      name,
+      e.detail.value,
+      store.selectFormValues(),
+      dispatchEvent,
+    );
   }
 };
 
 export const handleSliderChange = (e, deps) => {
-  const { store, dispatchEvent } = deps;
+  const { store, dispatchEvent, props } = deps;
   const name = e.currentTarget.id.replace("slider-", "");
   if (name && e.detail.value !== undefined) {
     store.setFormFieldValue({
       name: name,
       value: e.detail.value,
+      props,
     });
-    dispatchFormChange(name, e.detail.value, store.selectFormValues(), dispatchEvent);
+    dispatchFormChange(
+      name,
+      e.detail.value,
+      store.selectFormValues(),
+      dispatchEvent,
+    );
   }
 };
 
 export const handleSliderInputChange = (e, deps) => {
-  const { store, dispatchEvent } = deps;
+  const { store, dispatchEvent, props } = deps;
   const name = e.currentTarget.id.replace("slider-input-", "");
   if (name && e.detail.value !== undefined) {
     store.setFormFieldValue({
       name: name,
       value: e.detail.value,
+      props,
     });
-    dispatchFormChange(name, e.detail.value, store.selectFormValues(), dispatchEvent);
+    dispatchFormChange(
+      name,
+      e.detail.value,
+      store.selectFormValues(),
+      dispatchEvent,
+    );
   }
 };
 
@@ -126,7 +163,7 @@ export const handleImageClick = (e, deps) => {
         name: name,
         x: e.clientX,
         y: e.clientY,
-        trigger: e.type
+        trigger: e.type,
       },
     }),
   );
@@ -144,7 +181,7 @@ export const handleWaveformClick = (e, deps) => {
         name: name,
         x: e.clientX,
         y: e.clientY,
-        trigger: e.type
+        trigger: e.type,
       },
     }),
   );
