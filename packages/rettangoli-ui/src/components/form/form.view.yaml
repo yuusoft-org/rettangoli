@@ -277,6 +277,8 @@ template:
                   - $if field.inputType == "waveform" && !field.waveformData:
                       - rtgl-view#waveform-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
                           - rtgl-text c=mu-fg ta=c: ${field.placeholder}
+                  - $if field.inputType == "slot":
+                      - 'slot#slot-${field.slotName} name=${field.slot} style="display: contents;"':
       - rtgl-view g=sm w=f:
           - rtgl-view d=h ah=e g=sm w=f:
               - $for button, i in actions.buttons:
