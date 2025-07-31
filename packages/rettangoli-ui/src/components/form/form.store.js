@@ -13,6 +13,9 @@ export const INITIAL_STATE = Object.freeze({
 
 // Lodash-like utility functions for nested property access
 const get = (obj, path, defaultValue = undefined) => {
+  if (!path) {
+      return;
+  }
   const keys = path.split(/[\[\].]/).filter((key) => key !== "");
   let current = obj;
 
@@ -22,7 +25,6 @@ const get = (obj, path, defaultValue = undefined) => {
     }
     current = current[key];
   }
-
   return current;
 };
 

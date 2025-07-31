@@ -14,11 +14,18 @@ title: "With Waveform"
     volume: 75
   }
 
-  // Sample waveform data
-  const generateWaveformData = () => {
+  // Sample waveform data (deterministic)
+  const generateWaveformData = (seed = 12345) => {
+    // Simple linear congruential generator for reproducible "random" values
+    let currentSeed = seed;
+    const random = () => {
+      currentSeed = (currentSeed * 1664525 + 1013904223) % Math.pow(2, 32);
+      return currentSeed / Math.pow(2, 32);
+    };
+
     const data = [];
     for (let i = 0; i < 100; i++) {
-      data.push(Math.random() * 0.8 + 0.2);
+      data.push(random() * 0.8 + 0.2);
     }
     return {
       data,
@@ -38,7 +45,7 @@ title: "With Waveform"
       description: 'Click to change the audio file',
       width: 300,
       height: 120,
-      waveformData: generateWaveformData()
+      waveformData: generateWaveformData(12345)
     }, {
       name: 'voiceWaveform',
       inputType: 'waveform',
@@ -46,7 +53,7 @@ title: "With Waveform"
       description: 'Click to record or upload voice',
       width: 250,
       height: 100,
-      waveformData: generateWaveformData()
+      waveformData: generateWaveformData(67890)
     }, {
       name: 'placeholderWaveform',
       inputType: 'waveform',
@@ -91,10 +98,10 @@ title: "With Waveform"
       const voiceField = form.form.fields.find(f => f.name === 'voiceWaveform');
 
       if (audioField) {
-        audioField.waveformData = generateWaveformData();
+        audioField.waveformData = generateWaveformData(12345);
       }
       if (voiceField) {
-        voiceField.waveformData = generateWaveformData();
+        voiceField.waveformData = generateWaveformData(67890);
       }
 
       form.render();
