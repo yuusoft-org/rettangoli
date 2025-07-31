@@ -60,7 +60,7 @@ export const handleInputChange = (e, deps) => {
 };
 
 export const handlePopoverInputChange = (e, deps) => {
-  const { store, dispatchEvent } = deps;
+  const { store, dispatchEvent, props } = deps;
   const name = e.currentTarget.id.replace("popover-input-", "");
   // TODO fix double event
   if (name && e.detail.value !== undefined) {
