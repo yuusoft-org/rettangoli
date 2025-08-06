@@ -35,7 +35,7 @@ export const bundleFile = async (options) => {
     entryPoints: ["./.temp/dynamicImport.js"],
     bundle: true,
     minify: !development,
-    sourcemap: !development,
+    sourcemap: !!development,
     outfile: outfile,
     format: "esm",
     loader: {
