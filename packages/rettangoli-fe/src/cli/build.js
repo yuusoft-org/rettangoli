@@ -30,12 +30,12 @@ export const writeViewFile = (view, category, component) => {
 };
 
 export const bundleFile = async (options) => {
-  const { outfile = "./vt/static/main.js" } = options;
+  const { outfile = "./vt/static/main.js", development = false } = options;
   await esbuild.build({
     entryPoints: ["./.temp/dynamicImport.js"],
     bundle: true,
-    minify: false,
-    sourcemap: true,
+    minify: !development,
+    sourcemap: !!development,
     outfile: outfile,
     format: "esm",
     loader: {
@@ -47,7 +47,7 @@ export const bundleFile = async (options) => {
 const buildRettangoliFrontend = async (options) => {
   console.log("running build with options", options);
 
-  const { dirs = ["./example"], outfile = "./vt/static/main.js", setup = "setup.js" } = options;
+  const { dirs = ["./example"], outfile = "./vt/static/main.js", setup = "setup.js", development = false } = options;
 
   const allFiles = getAllFiles(dirs).filter((filePath) => {
     return (
@@ -130,7 +130,7 @@ Object.keys(imports).forEach(category => {
 
   writeFileSync("./.temp/dynamicImport.js", output);
 
-  await bundleFile({ outfile });
+  await bundleFile({ outfile, development });
 
   console.log(`Build complete. Output file: ${outfile}`);
 };
