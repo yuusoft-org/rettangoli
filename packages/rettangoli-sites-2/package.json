@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "jempl": "^0.2.0-rc1",
+    "js-yaml": "^4.1.0",
+    "yahtml": "^0.0.1"
+  }
+}

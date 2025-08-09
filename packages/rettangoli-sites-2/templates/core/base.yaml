@@ -1,0 +1,8 @@
+- html lang=en:
+    - body.dark:
+        - rtgl-view h=48:
+        - rtgl-text: Title ${title}
+        - rtgl-view w=f ah=c:
+            - rtgl-view md-w=100vw "$if lg-w=768" ph=lg pb=lg:
+                - "${content}"
+        - rtgl-text: "Score: ${data.score}"

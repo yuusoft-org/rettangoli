@@ -1,0 +1,7 @@
+---
+title: Contact
+template: core/base
+---
+- rtgl-view:
+    - rtgl-text: Contact Page
+    - $partial: header
