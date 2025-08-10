@@ -1,6 +1,6 @@
 {
-  "name": "@rettangoli/sites",
-  "version": "0.1.1",
+  "name": "@rettangoli/sites-2",
+  "version": "0.2.0-rc1",
   "description": "Generate static sites using Markdown and YAML. Straightforward, zero-complexity. Complete toolkit for landing pages, blogs, documentation, admin dashboards, and more.git remote add origin git@github.com:yuusoft-org/sitic.git",
   "author": {
     "name": "Luciano Hanyon Wu",
@@ -17,22 +17,19 @@
     "templates"
   ],
   "dependencies": {
-    "commander": "^13.1.0",
-    "html-minifier-terser": "^7.2.0",
+    "jempl": "^0.2.0-rc1",
     "js-yaml": "^4.1.0",
-    "liquidjs": "^10.21.0",
-    "luxon": "^3.6.1",
     "markdown-it": "^14.1.0",
-    "markdown-it-async": "^2.2.0",
-    "shiki": "^3.3.0"
+    "yahtml": "^0.0.2-rc1"
   },
   "devDependencies": {
-    "@types/bun": "^1.2.8"
+    "memfs": "^4.36.0",
+    "puty": "^0.0.4"
+  },
+  "scripts": {
+    "test": "vitest run --reporter=verbose"
   },
   "type": "module",
-  "bin": {
-    "sitic": "src/cli.js"
-  },
   "license": "MIT",
   "keywords": [
     "static",

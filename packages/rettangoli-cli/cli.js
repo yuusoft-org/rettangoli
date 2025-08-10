@@ -2,7 +2,7 @@
 
 import { build, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { generate, report, accept } from "@rettangoli/vt/cli";
-import { copyPagesToSite } from "@rettangoli/sites/cli";
+import { buildSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
 import { Command } from "commander";
 import { readFileSync, existsSync } from "fs";
@@ -231,15 +231,13 @@ const sitesCommand = program.command("sites").description("Rettangoli Sites");
 sitesCommand
   .command("build")
   .description("Build the site")
-  .option("-r, --resources <path>", "Path to resources directory", "./sitic")
-  .option("-p, --pages <path>", "Path to pages directory", "./pages")
-  .option("-o, --output <path>", "Path to destination directory", "./_site")
+  .option("-r, --rootDir <path>", "Path to root directory", "./")
+  .option("-o, --outputPath <path>", "Path to destination directory", "./_site")
   .action(async (options) => {
     console.log("Building site with options:", options);
-    await copyPagesToSite({
-      resourcesPath: options.resources,
-      pagesPath: options.pages,
-      outputPath: options.output,
+    buildSite({
+      rootDir: options.rootDir,
+      outputPath: options.outputPath,
     });
     console.log("Build completed successfully!");
   });
