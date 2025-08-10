@@ -1,0 +1,3 @@
+- h1: "Dynamic Index Page"
+- p: "This page overwrites the static index.html"
+- p: "Generated from pages/index.yaml"

@@ -1,0 +1,5 @@
+- h1: "Static Files Test"
+- p: "This page tests static file copying"
+- link:
+    href: "/public/theme.css"
+    rel: "stylesheet"

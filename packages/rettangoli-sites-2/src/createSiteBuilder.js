@@ -203,9 +203,59 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender }) {
       }
     }
 
-    // Process all pages
+    // Function to copy static files recursively
+    function copyStaticFiles() {
+      const staticDir = path.join(rootDir, 'static');
+      const outputDir = path.join(rootDir, '_site');
+      
+      if (!fs.existsSync(staticDir)) {
+        return;
+      }
+      
+      // Ensure output directory exists
+      if (!fs.existsSync(outputDir)) {
+        fs.mkdirSync(outputDir, { recursive: true });
+      }
+      
+      function copyRecursive(src, dest) {
+        const stats = fs.statSync(src);
+        
+        if (stats.isDirectory()) {
+          // Create directory if it doesn't exist
+          if (!fs.existsSync(dest)) {
+            fs.mkdirSync(dest, { recursive: true });
+          }
+          
+          // Copy all items in directory
+          const items = fs.readdirSync(src);
+          items.forEach(item => {
+            copyRecursive(path.join(src, item), path.join(dest, item));
+          });
+        } else if (stats.isFile()) {
+          // Copy file
+          fs.copyFileSync(src, dest);
+          console.log(`  -> Copied ${src} to ${dest}`);
+        }
+      }
+      
+      console.log('Copying static files...');
+      const items = fs.readdirSync(staticDir);
+      items.forEach(item => {
+        const srcPath = path.join(staticDir, item);
+        const destPath = path.join(outputDir, item);
+        copyRecursive(srcPath, destPath);
+      });
+    }
+
+    // Start build process
     console.log('Starting build process...');
+    
+    // Copy static files first (they can be overwritten by pages)
+    copyStaticFiles();
+    
+    // Process all pages (can overwrite static files)
     processAllPages('');
+    
     console.log('Build complete!');
   };
 }

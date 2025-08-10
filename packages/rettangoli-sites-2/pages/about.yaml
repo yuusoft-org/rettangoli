@@ -1,7 +1,0 @@
----
-title: About
-template: core/base
----
-- rtgl-view:
-    - rtgl-text: Hello how are you?
-    - $partial: header

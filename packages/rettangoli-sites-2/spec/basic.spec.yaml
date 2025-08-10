@@ -54,3 +54,13 @@ case: fixture010 - Multiple pages
 in:
   - fixtures/fixture010
 out: true
+---
+case: fixture011 - Static file copying
+in:
+  - fixtures/fixture011
+out: true
+---
+case: fixture012 - Page overwrites static file
+in:
+  - fixtures/fixture012
+out: true
