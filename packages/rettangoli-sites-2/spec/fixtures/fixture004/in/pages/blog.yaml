@@ -1,0 +1,7 @@
+---
+title: Blog
+template: core/base
+---
+- article:
+    - h1: Latest Posts
+    - p: Welcome to our blog

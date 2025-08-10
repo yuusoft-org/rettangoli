@@ -2,6 +2,14 @@
   "dependencies": {
     "jempl": "^0.2.0-rc1",
     "js-yaml": "^4.1.0",
-    "yahtml": "^0.0.1"
+    "markdown-it": "^14.1.0",
+    "yahtml": "^0.0.2-rc1"
+  },
+  "devDependencies": {
+    "memfs": "^4.36.0",
+    "puty": "^0.0.4"
+  },
+  "scripts": {
+    "test": "vitest run --reporter=verbose"
   }
 }

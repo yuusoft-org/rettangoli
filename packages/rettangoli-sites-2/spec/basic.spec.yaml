@@ -1,0 +1,56 @@
+file: "./testHelper.js"
+group: basic
+---
+### Array Index
+suite: basic
+exportName: default
+---
+case: fixture001 - Simple page
+in:
+  - fixtures/fixture001
+out: true
+---
+case: fixture002 - Page with template
+in:
+  - fixtures/fixture002
+out: true
+---
+case: fixture003 - Complex partials
+in:
+  - fixtures/fixture003
+out: true
+---
+case: fixture004 - Nested templates
+in:
+  - fixtures/fixture004
+out: true
+---
+case: fixture005 - Data injection
+in:
+  - fixtures/fixture005
+out: true
+---
+case: fixture006 - Markdown processing
+in:
+  - fixtures/fixture006
+out: true
+---
+case: fixture007 - Nested directories
+in:
+  - fixtures/fixture007
+out: true
+---
+case: fixture008 - Conditional rendering
+in:
+  - fixtures/fixture008
+out: true
+---
+case: fixture009 - Complex attributes
+in:
+  - fixtures/fixture009
+out: true
+---
+case: fixture010 - Multiple pages
+in:
+  - fixtures/fixture010
+out: true

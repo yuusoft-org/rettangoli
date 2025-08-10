@@ -1,0 +1,7 @@
+- html:
+    - head:
+        - title: "${ title } - ${ site.name }"
+    - body:
+        - "${ content }"
+        - footer:
+            - p: "© ${ site.year } ${ site.name }"

@@ -1,0 +1,12 @@
+---
+title: Our Team
+template: base
+---
+- section:
+    - h1: "Meet ${site.name} Team"
+    - p: "${site.tagline}"
+    - div.team-grid:
+        $for member in team.members:
+          - div.member-card:
+              - h3: "${member.name}"
+              - span: "${member.role}"

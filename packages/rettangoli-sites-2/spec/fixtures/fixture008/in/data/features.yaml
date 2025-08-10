@@ -1,0 +1,5 @@
+enabled:
+  - comments
+  - search
+disabled:
+  - analytics

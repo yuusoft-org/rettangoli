@@ -1,0 +1,8 @@
+- html:
+    - head:
+        - title: "${title} | My Site"
+        - 'meta charset="utf-8"': []
+    - body:
+        - div.theme-dark:
+            - main:
+                - "${content}"
