@@ -66,7 +66,10 @@ const startWatching = async (options) => {
 
   // Do initial build with all directories
   console.log('Starting initial build...');
-  await buildRettangoliFrontend(options);
+  await buildRettangoliFrontend({
+    development: true,
+    ...options
+  });
   console.log('Initial build complete');
 
   dirs.forEach(dir => {
