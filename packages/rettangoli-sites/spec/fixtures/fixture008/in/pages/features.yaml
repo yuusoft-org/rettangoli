@@ -1,0 +1,13 @@
+---
+title: Features
+showBeta: true
+---
+- section:
+    - h1: Available Features
+    - $if showBeta:
+        - span.badge: BETA
+    - ul:
+        - $for item in features.enabled:
+            - li.enabled: "✓ ${item}"
+        - $for item in features.disabled:
+            - li.disabled: "✗ ${item}"

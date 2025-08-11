@@ -1,0 +1,13 @@
+- html:
+    - head:
+        - title: "${title}"
+    - body:
+        - article:
+            - header:
+                - h1: "${title}"
+                - div.meta:
+                    - span: "By ${author}"
+                    - span: " | "
+                    - span: "${date}"
+            - div.content:
+                - "${content}"

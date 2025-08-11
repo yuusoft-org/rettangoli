@@ -1,0 +1,7 @@
+- div.grid:
+    - div.card:
+        - h3: Product Alpha
+        - span.price: $99
+    - div.card:
+        - h3: Product Beta
+        - span.price: $149

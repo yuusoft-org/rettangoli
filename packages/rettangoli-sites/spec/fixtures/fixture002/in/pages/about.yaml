@@ -1,0 +1,7 @@
+---
+title: About Us
+template: base
+---
+- rtgl-view:
+    - rtgl-text: Page Content
+    - $partial: header

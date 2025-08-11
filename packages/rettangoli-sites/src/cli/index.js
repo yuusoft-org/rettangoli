@@ -1,5 +1,5 @@
-import { copyPagesToSite } from './build.js';
+import { buildSite } from './build.js';
 
 export {
-  copyPagesToSite,
+  buildSite,
 }

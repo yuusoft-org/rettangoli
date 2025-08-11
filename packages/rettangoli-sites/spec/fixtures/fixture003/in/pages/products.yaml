@@ -1,0 +1,10 @@
+---
+title: Our Products
+template: base
+---
+- div:
+    - $partial: header
+    - section:
+        - h1: Featured Products
+        - $partial: product-list
+    - $partial: footer
