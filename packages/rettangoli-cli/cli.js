@@ -55,6 +55,7 @@ feCommand
   .command("build")
   .description("Build UI components")
   .option("-o, --outfile <path>", "The output file")
+  .option("-d, --development", "Development mode (no minification, no source maps)")
   .addHelpText(
     "after",
     `
@@ -63,6 +64,8 @@ Examples:
   $ rettangoli fe build
   $ rettangoli fe build --outfile ./dist/bundle.js
   $ rettangoli fe build -o ./public/js/main.js
+  $ rettangoli fe build --development
+  $ rettangoli fe build -d -o ./dist/dev.js
 `,
   )
   .action((options) => {

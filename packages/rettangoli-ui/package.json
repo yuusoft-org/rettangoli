@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/ui",
-  "version": "0.1.2-rc22",
+  "version": "0.1.2-rc23",
   "description": "A UI component library for building web interfaces.",
   "main": "dist/rettangoli-esm.min.js",
   "type": "module",
@@ -51,7 +51,7 @@
     "@floating-ui/dom": "^1.6.13",
     "@rettangoli/fe": "workspace:*",
     "commander": "^13.1.0",
-    "jempl": "^0.1.2",
+    "jempl": "0.1.4-rc1",
     "js-yaml": "^4.1.0",
     "liquidjs": "^10.21.0",
     "snabbdom": "^3.6.2"
