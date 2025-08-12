@@ -1,0 +1,115 @@
+---
+title: "Update Key"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+  <rtgl-button id="update-button">Update</rtgl-button>
+</rtgl-view>
+
+<script>
+
+
+  const updateButton = document.getElementById('update-button');
+  updateButton.addEventListener('click', () => {
+    console.log('Update button clicked');
+    const form = document.getElementById('form');
+    form.defaultValues = {
+      email: 'updated@email.com',
+      age: '25',
+      category: 'option2',
+      color: '#FF0000',
+      volume: 75,
+      brightness: 60
+    }
+    form.setAttribute('key', `${Math.random()}`);
+  });
+
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    email: 'hello@example.com',
+    age: '12',
+    category: 'option1',
+    color: '#0000FF',
+    volume: 50,
+    brightness: 30
+  }
+
+  form.form = {
+    title: 'Form with All Input Types',
+    description: 'Testing key update for all input components',
+    fields: [{
+      name: 'email',
+      inputType: 'inputText',
+      label: 'Email (Input)',
+      description: 'Text input field',
+      placeholder: 'Enter email',
+      required: true,
+      validations: [{
+        rule: /^\w+@\w+\.\w+$/,
+        message: 'Must be a valid email'
+      }],
+    }, {
+      name: 'age',
+      inputType: 'inputText',
+      label: 'Age (Input)',
+      description: 'Number input field',
+      required: true,
+      validations: [{
+        rule: /^\d+$/,
+        message: 'Must be a valid age'
+      }],
+    }, {
+      name: 'category',
+      inputType: 'select',
+      label: 'Category (Select)',
+      description: 'Dropdown selection',
+      placeholder: 'Choose category',
+      options: [
+        { id: '1', label: 'Option 1', value: 'option1' },
+        { id: '2', label: 'Option 2', value: 'option2' },
+        { id: '3', label: 'Option 3', value: 'option3' }
+      ]
+    }, {
+      name: 'color',
+      inputType: 'colorPicker',
+      label: 'Color (Color Picker)',
+      description: 'Color selection'
+    }, {
+      name: 'volume',
+      inputType: 'slider',
+      label: 'Volume (Slider)',
+      description: 'Slider control',
+      min: 0,
+      max: 100,
+      step: 5
+    }, {
+      name: 'brightness',
+      inputType: 'slider-input',
+      label: 'Brightness (Slider Input)',
+      description: 'Slider with input field',
+      min: 0,
+      max: 100,
+      step: 1
+    }],
+    actions: {
+      layout: '', // vertical, fill, right, left
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        content: 'Submit',
+      }],
+    }
+  }
+
+  form.addEventListener('action-click', (e) => {
+    console.log('action-click', e.detail);
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

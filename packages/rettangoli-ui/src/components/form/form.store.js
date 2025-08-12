@@ -14,7 +14,7 @@ export const INITIAL_STATE = Object.freeze({
 // Lodash-like utility functions for nested property access
 const get = (obj, path, defaultValue = undefined) => {
   if (!path) {
-      return;
+    return;
   }
   const keys = path.split(/[\[\].]/).filter((key) => key !== "");
   let current = obj;
@@ -84,7 +84,8 @@ export const toViewData = ({ state, props, attrs }) => {
   const form = selectForm({ state, props });
   const fields = structuredClone(form.fields || []);
   fields.forEach((field) => {
-    field.defaultValue = get(defaultValues, field.name);
+    // Use formValues from state if available, otherwise fall back to defaultValues from props
+    field.defaultValue = get(state.formValues, field.name) ?? get(defaultValues, field.name);
 
     if (field.inputType === "image") {
       const src = field.src;
@@ -103,6 +104,7 @@ export const toViewData = ({ state, props, attrs }) => {
   });
 
   return {
+    key: attrs?.key,
     containerAttrString,
     title: form?.title || "",
     description: form?.description || "",

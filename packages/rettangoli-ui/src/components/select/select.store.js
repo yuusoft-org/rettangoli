@@ -61,5 +61,10 @@ export const updateSelectOption = (state, option) => {
   state.isOpen = false;
 }
 
+export const resetSelection = (state) => {
+  state.selectedValue = undefined;
+  state.selectedLabel = undefined;
+}
+
 
 

@@ -348,7 +348,10 @@ class BaseComponent extends HTMLElement {
     if (oldValue !== newValue && this.render) {
       // Call handleOnUpdate if it exists
       if (this.handlers?.handleOnUpdate) {
-        const changes = { [name]: { oldValue, newValue } };
+        const changes = {
+          oldAttrs: { [name]: oldValue },
+          newAttrs: { [name]: newValue }
+        };
         const deps = {
           ...this.deps,
           refIds: this.refIds,

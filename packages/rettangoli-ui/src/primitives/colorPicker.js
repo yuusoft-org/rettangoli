@@ -114,6 +114,15 @@ class RettangoliColorPickerElement extends HTMLElement {
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
+    // Handle key attribute change - reset value
+    if (name === "key" && oldValue !== newValue) {
+      requestAnimationFrame(() => {
+        const value = this.getAttribute("value");
+        this._inputElement.value = value ?? "#000000";
+      });
+      return;
+    }
+
     // Handle input-specific attributes first
     if (["value", "disabled"].includes(name)) {
       this._updateInputAttributes();
