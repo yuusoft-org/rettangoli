@@ -48,10 +48,21 @@ class RettangoliTextAreaElement extends HTMLElement {
     this._textareaElement = document.createElement('textarea');
     this._textareaElement.setAttribute('type', 'text');
     this.shadow.appendChild(this._textareaElement);
+
+    // Bind event handler
+    this._textareaElement.addEventListener('input', this._onChange);
   }
 
+  _onChange = (event) => {
+    this.dispatchEvent(new CustomEvent('textarea-change', {
+      detail: {
+        value: this._textareaElement.value,
+      },
+    }));
+  };
+
   static get observedAttributes() {
-    return ["key", "w", "ellipsis", "cols", "rows", "placeholder"];
+    return ["key", "w", "ellipsis", "cols", "rows", "placeholder", "value"];
   }
 
   get value() {
@@ -67,6 +78,14 @@ class RettangoliTextAreaElement extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
+    // Handle key attribute change - reset value
+    if (name === "key" && oldValue !== newValue) {
+      requestAnimationFrame(() => {
+        const value = this.getAttribute("value");
+        this._textareaElement.value = value ?? "";
+      });
+      return;
+    }
     this._updateTextareaAttributes();
   }
 
@@ -74,6 +93,7 @@ class RettangoliTextAreaElement extends HTMLElement {
     const cols = this.getAttribute("cols");
     const rows = this.getAttribute("rows");
     const placeholder = this.getAttribute("placeholder");
+    const value = this.getAttribute("value");
 
     if (cols !== null) {
       this._textareaElement.setAttribute("cols", cols);
@@ -91,6 +111,10 @@ class RettangoliTextAreaElement extends HTMLElement {
       this._textareaElement.setAttribute("placeholder", placeholder);
     } else {
       this._textareaElement.removeAttribute("placeholder");
+    }
+
+    if (value !== null) {
+      this._textareaElement.value = value;
     }
   }
 }

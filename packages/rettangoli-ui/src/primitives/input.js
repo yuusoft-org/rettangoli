@@ -123,6 +123,15 @@ class RettangoliInputElement extends HTMLElement {
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
+    // Handle key attribute change - reset value
+    if (name === "key" && oldValue !== newValue) {
+      requestAnimationFrame((() => {
+        const value = this.getAttribute("value");
+        this._inputElement.value = value ?? "";
+      }))
+      return;
+    }
+
     // Handle input-specific attributes first
     if (["type", "placeholder", "disabled", "value", "step", "s"].includes(name)) {
       this._updateInputAttributes();

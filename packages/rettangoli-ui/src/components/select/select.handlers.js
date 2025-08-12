@@ -11,6 +11,29 @@ export const handleBeforeMount = (deps) => {
   }
 }
 
+export const handleOnUpdate = (changes, deps) => {
+  const { oldAttrs, newAttrs, oldProps, newProps } = changes;
+  const { store, props, render } = deps;
+  
+  // Check if key changed
+  if (oldAttrs?.key !== newAttrs?.key && newAttrs?.key) {
+    // Clear current state using store action
+    store.resetSelection();
+    
+    // Re-apply the prop value if available
+    const selectedValue = newProps?.selectedValue || props?.selectedValue;
+    const options = newProps?.options || props?.options;
+    
+    if (selectedValue !== null && selectedValue !== undefined && options) {
+      const selectedOption = options.find(opt => opt.value === selectedValue);
+      if (selectedOption) {
+        store.updateSelectOption(selectedOption);
+      }
+    }
+    render();
+  }
+}
+
 export const handleButtonClick = (e, deps) => {
   const { store, render, getRefIds } = deps;
   store.openOptionsPopover({

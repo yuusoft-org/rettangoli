@@ -256,17 +256,17 @@ template:
                   - $if field.inputType == "read-only-text":
                       - rtgl-text s=sm: ${field.defaultValue}
                   - $if field.inputType == "inputText":
-                      - rtgl-input#input-${field.name} w=f placeholder=${field.placeholder} value=${field.defaultValue}:
+                      - rtgl-input#input-${field.name} key=${key} w=f placeholder=${field.placeholder} value=${field.defaultValue}:
                   - $if field.inputType == "popover-input":
                       - rtgl-popover-input#popover-input-${field.name} label="${field.label}" .defaultValue=fields[${i}].defaultValue:
                   - $if field.inputType == "select":
-                      - rtgl-select#select-${field.name} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue:
+                      - rtgl-select#select-${field.name} key=${key} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue:
                   - $if field.inputType == "colorPicker":
-                      - rtgl-color-picker#colorpicker-${field.name} value=${field.defaultValue}:
+                      - rtgl-color-picker#colorpicker-${field.name} key=${key} value=${field.defaultValue}:
                   - $if field.inputType == "slider":
-                      - rtgl-slider#slider-${field.name} w=f min=${field.min} max=${field.max} step=${field.step} value=${field.defaultValue}:
+                      - rtgl-slider#slider-${field.name} key=${key} w=f min=${field.min} max=${field.max} step=${field.step} value=${field.defaultValue}:
                   - $if field.inputType == "slider-input":
-                      - rtgl-slider-input#slider-input-${field.name} w=f min=${field.min} max=${field.max} step=${field.step} defaultValue=${field.defaultValue}:
+                      - rtgl-slider-input#slider-input-${field.name} key=${key} w=f min=${field.min} max=${field.max} step=${field.step} defaultValue=${field.defaultValue}:
                   - $if field.inputType == "image" && field.imageSrc:
                       - rtgl-image#image-${field.name} src=${field.imageSrc} w=${field.width} h=${field.height} cur=p:
                   - $if field.inputType == "image" && !field.imageSrc:

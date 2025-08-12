@@ -148,6 +148,16 @@ class RettangoliSliderElement extends HTMLElement {
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
+    // Handle key attribute change - reset value
+    if (name === "key" && oldValue !== newValue) {
+      requestAnimationFrame(() => {
+        const value = this.getAttribute("value");
+        const min = this.getAttribute("min") || "0";
+        this._inputElement.value = value ?? min;
+      });
+      return;
+    }
+
     // Handle input-specific attributes first
     if (["value", "min", "max", "step", "disabled"].includes(name)) {
       this._updateInputAttributes();
