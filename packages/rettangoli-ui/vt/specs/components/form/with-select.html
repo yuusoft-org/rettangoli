@@ -44,13 +44,13 @@ title: "With Select"
       placeholder: 'Choose a country',
       required: true,
       options: [
-        { id: 'us', label: 'United States', value: 'us' },
-        { id: 'ca', label: 'Canada', value: 'ca' },
-        { id: 'uk', label: 'United Kingdom', value: 'uk' },
-        { id: 'au', label: 'Australia', value: 'au' },
-        { id: 'de', label: 'Germany', value: 'de' },
-        { id: 'fr', label: 'France', value: 'fr' },
-        { id: 'jp', label: 'Japan', value: 'jp' },
+        { label: 'United States', value: 'us' },
+        { label: 'Canada', value: 'ca' },
+        { label: 'United Kingdom', value: 'uk' },
+        { label: 'Australia', value: 'au' },
+        { label: 'Germany', value: 'de' },
+        { label: 'France', value: 'fr' },
+        { label: 'Japan', value: 'jp' },
       ],
     }, {
       name: 'role',
@@ -60,10 +60,26 @@ title: "With Select"
       placeholder: 'Select role',
       required: true,
       options: [
-        { id: 'admin', label: 'Administrator', value: 'admin' },
-        { id: 'editor', label: 'Editor', value: 'editor' },
-        { id: 'viewer', label: 'Viewer', value: 'viewer' },
-      ],
+        { label: 'Administrator', value: 'admin' },
+        { label: 'Editor', value: 'editor' },
+        { label: 'Viewer', value: 'viewer' },
+      ]
+    }, {
+      name: 'anchor',
+      inputType: 'select',
+      label: 'Anchor',
+      description: 'This is an anchor field',
+      placeholder: 'Click here',
+      required: false,
+      options: [{
+        label: 'Top Left', value: { x: 0, y: 0 },
+      }, {
+        label: 'Top Right', value: { x: 1, y: 0 },
+      }, {
+        label: 'Bottom Left', value: { x: 0, y: 1 },
+      }, {
+        label: 'Bottom Right', value: { x: 1, y: 1 },
+      }],
     }],
     actions: {
       layout: '',
