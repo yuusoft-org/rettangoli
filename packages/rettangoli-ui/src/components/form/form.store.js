@@ -1,5 +1,22 @@
 import { parseAndRender } from "jempl";
 
+const encode = (input) => {
+  function escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    };
+    return text.replace(/[&<>"']/g, char => map[char]);
+  }
+  if (input === undefined || input === null) {
+    return ""
+  }
+  return `"${escapeHtml(String(input))}"`;
+}
+
 function pick(obj, keys) {
   return keys.reduce((acc, key) => {
     if (key in obj) acc[key] = obj[key];
@@ -77,6 +94,7 @@ export const selectForm = ({ state, props }) => {
   return form;
 };
 
+
 export const toViewData = ({ state, props, attrs }) => {
   const containerAttrString = stringifyAttrs(attrs);
   const defaultValues = props.defaultValues || {};
@@ -85,7 +103,16 @@ export const toViewData = ({ state, props, attrs }) => {
   const fields = structuredClone(form.fields || []);
   fields.forEach((field) => {
     // Use formValues from state if available, otherwise fall back to defaultValues from props
-    field.defaultValue = get(state.formValues, field.name) ?? get(defaultValues, field.name);
+    const defaultValue = get(state.formValues, field.name) ?? get(defaultValues, field.name)
+    if (["popover-input", "select", "read-only-text"].includes(field.inputType)) {
+      field.defaultValue = defaultValue
+    } else {
+      field.defaultValue = encode(defaultValue);
+    }
+
+    if (["inputText"].includes(field.inputType)) {
+      field.placeholder = encode(field.placeholder)
+    }
 
     if (field.inputType === "image") {
       const src = field.src;
