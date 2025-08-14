@@ -1,9 +1,10 @@
+import { deepEqual } from '../../common.js';
 
 export const handleBeforeMount = (deps) => {
   const { store, props, render } = deps;
   
   if (props.selectedValue !== null && props.selectedValue !== undefined && props.options) {
-    const selectedOption = props.options.find(opt => opt.value === props.selectedValue);
+    const selectedOption = props.options.find(opt => deepEqual(opt.value, props.selectedValue));
     if (selectedOption) {
       store.updateSelectOption(selectedOption);
       render();
@@ -25,7 +26,7 @@ export const handleOnUpdate = (changes, deps) => {
     const options = newProps?.options || props?.options;
     
     if (selectedValue !== null && selectedValue !== undefined && options) {
-      const selectedOption = options.find(opt => opt.value === selectedValue);
+      const selectedOption = options.find(opt => deepEqual(opt.value, selectedValue));
       if (selectedOption) {
         store.updateSelectOption(selectedOption);
       }

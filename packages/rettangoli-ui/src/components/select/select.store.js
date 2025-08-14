@@ -1,3 +1,5 @@
+import { deepEqual } from '../../common.js';
+
 export const INITIAL_STATE = Object.freeze({
   isOpen: false,
   position: {
@@ -5,31 +7,30 @@ export const INITIAL_STATE = Object.freeze({
     y: 0,
   },
   selectedValue: null,
-  selectedLabel: null,
 });
 
 export const toViewData = ({ state, props }) => {
-  // Calculate display label
-  let displayLabel = props.placeholder || 'Select an option';
-  
   // Use state's selected value if available, otherwise use props.selectedValue
   const currentValue = state.selectedValue !== null ? state.selectedValue : props.selectedValue;
   
+  // Calculate display label from value
+  let displayLabel = props.placeholder || 'Select an option';
   if (currentValue !== null && currentValue !== undefined && props.options) {
-    const selectedOption = props.options.find(opt => opt.value === currentValue);
+    const selectedOption = props.options.find(opt => deepEqual(opt.value, currentValue));
     if (selectedOption) {
       displayLabel = selectedOption.label;
     }
-  } else if (state.selectedLabel) {
-    displayLabel = state.selectedLabel;
   }
   
   // Map options to include isSelected flag and computed background color
-  const optionsWithSelection = (props.options || []).map(option => ({
-    ...option,
-    isSelected: option.value === currentValue,
-    bgc: option.value === currentValue ? 'mu' : ''
-  }));
+  const optionsWithSelection = (props.options || []).map(option => {
+    const isSelected = deepEqual(option.value, currentValue);
+    return {
+      ...option,
+      isSelected,
+      bgc: isSelected ? 'mu' : ''
+    };
+  });
   
   return {
     isOpen: state.isOpen,
@@ -57,13 +58,11 @@ export const closeOptionsPopover = (state) => {
 
 export const updateSelectOption = (state, option) => {
   state.selectedValue = option.value;
-  state.selectedLabel = option.label;
   state.isOpen = false;
 }
 
 export const resetSelection = (state) => {
   state.selectedValue = undefined;
-  state.selectedLabel = undefined;
 }
 
 
