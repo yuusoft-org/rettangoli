@@ -50,19 +50,18 @@ propsSchema:
                     const: select
                   placeholder:
                     type: string
+                  noClear:
+                    type: boolean
                   options:
                     type: array
                     items:
                       type: object
                       properties:
-                        id:
-                          type: string
                         label:
                           type: string
                         value:
                           type: any
                       required:
-                        - id
                         - label
                         - value
                 required:
@@ -260,7 +259,7 @@ template:
                   - $if field.inputType == "popover-input":
                       - rtgl-popover-input#popover-input-${field.name} label="${field.label}" .defaultValue=fields[${i}].defaultValue:
                   - $if field.inputType == "select":
-                      - rtgl-select#select-${field.name} key=${key} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue:
+                      - rtgl-select#select-${field.name} key=${key} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue ?no-clear=fields[${i}].noClear:
                   - $if field.inputType == "colorPicker":
                       - rtgl-color-picker#colorpicker-${field.name} key=${key} value=${field.defaultValue}:
                   - $if field.inputType == "slider":

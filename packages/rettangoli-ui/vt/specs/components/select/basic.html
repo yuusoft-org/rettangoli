@@ -2,11 +2,16 @@
 title: Basic
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="w">
-  <rtgl-select id="select" />
+  <rtgl-select id="select"></rtgl-select>
+  <rtgl-select id="select2" w="300"></rtgl-select>
+  <rtgl-select id="select3" w="f"></rtgl-select>
 </rtgl-view>
 
 <script>
+
   const select = document.getElementById('select')
+  const select2 = document.getElementById('select2')
+  const select3 = document.getElementById('select3')
 
   select.addEventListener('option-selected', (e) => {
     console.log(e.detail);
@@ -17,6 +22,26 @@ title: Basic
     { value: 2, label: 'Option 2' },
     { value: 3, label: 'Option 3' },
   ]
-  select.render();
+
+  select2.addEventListener('option-selected', (e) => {
+    console.log(e.detail);
+  });
+
+  select2.options = [
+    { value: 1, label: 'Option 1' },
+    { value: 2, label: 'Option 2' },
+    { value: 3, label: 'Option 3' },
+  ]
+
+  select3.addEventListener('option-selected', (e) => {
+    console.log(e.detail);
+  });
+
+  select3.options = [
+    { value: 1, label: 'Option 1' },
+    { value: 2, label: 'Option 2' },
+    { value: 3, label: 'Option 3' },
+  ]
+
 
 </script>

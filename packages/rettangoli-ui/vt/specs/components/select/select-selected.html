@@ -3,7 +3,8 @@ title: Select Value
 ---
 
 <rtgl-view g="lg" p="lg" wh="f" fw="w">
-  <rtgl-select id="select" />
+  <rtgl-select id="select"></rtgl-select>
+  <rtgl-select id="select-no-clear" no-clear></rtgl-select>
 </rtgl-view>
 
 <script>
@@ -15,4 +16,13 @@ title: Select Value
     { value: "3", label: 'Option 3' },
   ]
   select.render();
+  
+  const selectNoClear = document.getElementById('select-no-clear')
+  selectNoClear.selectedValue = "2"
+  selectNoClear.options = [
+    { value: "1", label: 'Option 1' },
+    { value: "2", label: 'Option 2' },
+    { value: "3", label: 'Option 3' },
+  ]
+  selectNoClear.render();
 </script>

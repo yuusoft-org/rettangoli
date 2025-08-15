@@ -1,5 +1,28 @@
 import { deepEqual } from '../../common.js';
 
+// Attributes that should not be passed through to the container
+// These are either handled internally or have special meaning
+const blacklistedAttrs = [
+  "id", 
+  "class", 
+  "style", 
+  "slot",
+  // Select-specific props that are handled separately
+  "placeholder",
+  "selectedValue", 
+  "selected-value",
+  "onChange",
+  "on-change",
+  "options"
+];
+
+const stringifyAttrs = (attrs) => {
+  return Object.entries(attrs || {})
+    .filter(([key]) => !blacklistedAttrs.includes(key))
+    .map(([key, value]) => `${key}=${value}`)
+    .join(" ");
+};
+
 export const INITIAL_STATE = Object.freeze({
   isOpen: false,
   position: {
@@ -7,38 +30,49 @@ export const INITIAL_STATE = Object.freeze({
     y: 0,
   },
   selectedValue: null,
+  hoveredOptionId: null,
 });
 
-export const toViewData = ({ state, props }) => {
+export const toViewData = ({ state, props, attrs }) => {
+  // Generate container attribute string
+  const containerAttrString = stringifyAttrs(attrs);
+  
   // Use state's selected value if available, otherwise use props.selectedValue
   const currentValue = state.selectedValue !== null ? state.selectedValue : props.selectedValue;
-  
+
   // Calculate display label from value
   let displayLabel = props.placeholder || 'Select an option';
+  let isPlaceholderLabel = true;
   if (currentValue !== null && currentValue !== undefined && props.options) {
     const selectedOption = props.options.find(opt => deepEqual(opt.value, currentValue));
     if (selectedOption) {
       displayLabel = selectedOption.label;
+      isPlaceholderLabel = false;
     }
   }
-  
+
   // Map options to include isSelected flag and computed background color
-  const optionsWithSelection = (props.options || []).map(option => {
+  const optionsWithSelection = (props.options || []).map((option, index) => {
     const isSelected = deepEqual(option.value, currentValue);
+    const isHovered = state.hoveredOptionId === index;
     return {
       ...option,
       isSelected,
-      bgc: isSelected ? 'mu' : ''
+      bgc: isHovered ? 'ac' : (isSelected ? 'mu' : '')
     };
   });
-  
+
   return {
+    containerAttrString,
     isOpen: state.isOpen,
     position: state.position,
     options: optionsWithSelection,
     selectedValue: currentValue,
     selectedLabel: displayLabel,
-    placeholder: props.placeholder || 'Select an option'
+    selectedLabelColor: isPlaceholderLabel ? "mu-fg" : "fg",
+    placeholder: props.placeholder || 'Select an option',
+    hasValue: currentValue !== null && currentValue !== undefined,
+    showClear: !attrs['no-clear'] && !props['no-clear'] && (currentValue !== null && currentValue !== undefined)
   };
 }
 
@@ -46,10 +80,18 @@ export const selectState = ({ state }) => {
   return state;
 }
 
+export const selectSelectedValue = ({ state }) => {
+  return state.selectedValue;
+}
+
 export const openOptionsPopover = (state, payload) => {
-  const { position } = payload;
+  const { position, selectedIndex } = payload;
   state.position = position;
   state.isOpen = true;
+  // Set hoveredOptionId to the selected option's index if available
+  if (selectedIndex !== undefined && selectedIndex !== null) {
+    state.hoveredOptionId = selectedIndex;
+  }
 }
 
 export const closeOptionsPopover = (state) => {
@@ -62,6 +104,18 @@ export const updateSelectOption = (state, option) => {
 }
 
 export const resetSelection = (state) => {
+  state.selectedValue = undefined;
+}
+
+export const setHoveredOption = (state, optionId) => {
+  state.hoveredOptionId = optionId;
+}
+
+export const clearHoveredOption = (state) => {
+  state.hoveredOptionId = null;
+}
+
+export const clearSelectedValue = (state) => {
   state.selectedValue = undefined;
 }
 

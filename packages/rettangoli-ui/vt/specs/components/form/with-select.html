@@ -9,7 +9,9 @@ title: "With Select"
   form.id = 'form';
   form.setAttribute('w', '300');
 
-  form.defaultValues = {}
+  form.defaultValues = {
+    role: 'viewer'
+  }
 
   form.form = {
     title: 'User Registration',
@@ -59,6 +61,7 @@ title: "With Select"
       description: 'Select your role',
       placeholder: 'Select role',
       required: true,
+      noClear: true,
       options: [
         { label: 'Administrator', value: 'admin' },
         { label: 'Editor', value: 'editor' },
