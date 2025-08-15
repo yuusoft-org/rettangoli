@@ -71,7 +71,8 @@ export const toViewData = ({ state, props, attrs }) => {
     selectedLabel: displayLabel,
     selectedLabelColor: isPlaceholderLabel ? "mu-fg" : "fg",
     placeholder: props.placeholder || 'Select an option',
-    hasValue: currentValue !== null && currentValue !== undefined
+    hasValue: currentValue !== null && currentValue !== undefined,
+    showClear: !attrs['no-clear'] && !props['no-clear'] && (currentValue !== null && currentValue !== undefined)
   };
 }
 

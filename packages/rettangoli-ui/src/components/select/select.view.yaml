@@ -11,8 +11,6 @@ propsSchema:
       items:
         type: object
         properties:
-          id:
-            type: string
           label:
             type: string
           value:
@@ -23,6 +21,8 @@ propsSchema:
       type: string
     onChange:
       type: function
+    no-clear:
+      type: boolean
 
 refs:
   select-button:
@@ -53,7 +53,7 @@ template:
       - rtgl-view d=h av=c w=f:
           - rtgl-text c=${selectedLabelColor}: ${selectedLabel}
           - rtgl-view mh=md flex=1:
-          - $if hasValue:
+          - $if showClear:
               - rtgl-svg#clear-button mr=md svg=x wh=16 c=mu-fg cur=p:
           - rtgl-svg svg=chevronDown wh=16 c=mu-fg:
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} placement=right-start:
