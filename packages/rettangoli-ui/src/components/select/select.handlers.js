@@ -39,13 +39,10 @@ export const handleButtonClick = (e, deps) => {
   const { store, render, getRefIds, props } = deps;
 
   const button = getRefIds()['select-button'].elm;
-  console.log('button', button)
 
   // Get first child's bounding rectangle (since button has display: contents)
   const firstChild = button.firstElementChild;
   const rect = firstChild ? firstChild.getBoundingClientRect() : button.getBoundingClientRect();
-
-  console.log('rect', rect)
 
   // Find the index of the currently selected option
   const storeSelectedValue = store.selectSelectedValue();
