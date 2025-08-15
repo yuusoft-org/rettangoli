@@ -29,6 +29,10 @@ refs:
     eventListeners:
       click:
         handler: handleButtonClick
+  clear-button:
+    eventListeners:
+      click:
+        handler: handleClearClick
   popover:
     eventListeners:
       close:
@@ -37,14 +41,23 @@ refs:
     eventListeners:
       click:
         handler: handleOptionClick
+      mouseenter:
+        handler: handleOptionMouseEnter
+      mouseleave:
+        handler: handleOptionMouseLeave
 
 events: {}
 
 template:
-  - rtgl-button#select-button v=ol:
-    - ${selectedLabel}
-  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y}:
-    - rtgl-view wh=300 g=xs slot=content bgc=background br=md sv=true:
-      - $for option, i in options:
-        - rtgl-view#option-${i} w=f h-bgc=ac ph=lg pv=md cur=p br=md bgc=${option.bgc}:
-          - rtgl-text: ${option.label}
+  - rtgl-button#select-button v=ol ${containerAttrString}:
+      - rtgl-view d=h av=c w=f:
+          - rtgl-text c=${selectedLabelColor}: ${selectedLabel}
+          - rtgl-view mh=md flex=1:
+          - $if hasValue:
+              - rtgl-svg#clear-button mr=md svg=x wh=16 c=mu-fg cur=p:
+          - rtgl-svg svg=chevronDown wh=16 c=mu-fg:
+  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} placement=right-start:
+      - rtgl-view wh=300 g=xs slot=content bgc=background br=md sv=true:
+          - $for option, i in options:
+              - rtgl-view#option-${i} w=f ph=lg pv=md cur=p br=md bgc=${option.bgc}:
+                  - rtgl-text: ${option.label}
