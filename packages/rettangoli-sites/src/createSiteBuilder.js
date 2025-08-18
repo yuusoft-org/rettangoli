@@ -242,7 +242,9 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender }) {
         const result = templateToUse
           ? parseAndRender(templateToUse, templateData, { partials })
           : processedPageContent;
-        htmlString = convertToHtml(result);
+        // Ensure result is an array for convertToHtml
+        const resultArray = Array.isArray(result) ? result : [result];
+        htmlString = convertToHtml(resultArray);
       }
 
       // Create output directory if it doesn't exist

@@ -1,30 +1,15 @@
-tag: html
-children:
-  - tag: body
-    children:
-      - tag: h1
-        children: ${heading}
-      - tag: h2
-        children: Post Collection
-      - tag: ul
-        children:
-          $for: post in collections.post
-          $body:
-            tag: li
-            children:
-              - tag: a
-                attrs:
-                  href: ${post.url}
-                children: ${post.data.title}
-      - tag: h2
-        children: Featured Collection
-      - tag: ul
-        children:
-          $for: item in collections.featured
-          $body:
-            tag: li
-            children:
-              - tag: a
-                attrs:
-                  href: ${item.url}
-                children: ${item.data.title}
+- html:
+    - body:
+        - h1: ${heading}
+        - h2: Post Collection
+        - ul:
+            - $for post in collections.post:
+                li:
+                  - 'a href="${post.url}"':
+                      - ${post.data.title}
+        - h2: Featured Collection  
+        - ul:
+            - $for item in collections.featured:
+                li:
+                  - 'a href="${item.url}"':
+                      - ${item.data.title}
