@@ -70,6 +70,93 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender }) {
 
     readTemplatesRecursively(templatesDir);
 
+    // Function to extract frontmatter from a page file
+    function extractFrontmatter(pagePath) {
+      const pageFileContent = fs.readFileSync(pagePath, 'utf8');
+      const lines = pageFileContent.split('\n');
+      let frontmatterStart = -1;
+      let frontmatterEnd = -1;
+      let frontmatterCount = 0;
+
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].trim() === '---') {
+          frontmatterCount++;
+          if (frontmatterCount === 1) {
+            frontmatterStart = i + 1;
+          } else if (frontmatterCount === 2) {
+            frontmatterEnd = i;
+            break;
+          }
+        }
+      }
+
+      let frontmatter = {};
+      if (frontmatterStart > 0 && frontmatterEnd > frontmatterStart) {
+        const frontmatterContent = lines.slice(frontmatterStart, frontmatterEnd).join('\n');
+        frontmatter = yaml.load(frontmatterContent, { schema: yaml.JSON_SCHEMA }) || {};
+      }
+
+      return frontmatter;
+    }
+
+    // Function to scan all pages and build collections
+    function buildCollections() {
+      const collections = {};
+      const pagesDir = path.join(rootDir, 'pages');
+
+      function scanPages(dir, basePath = '') {
+        const fullDir = path.join(pagesDir, basePath);
+        if (!fs.existsSync(fullDir)) return;
+
+        const items = fs.readdirSync(fullDir, { withFileTypes: true });
+
+        for (const item of items) {
+          const itemPath = path.join(fullDir, item.name);
+          const relativePath = basePath ? path.join(basePath, item.name) : item.name;
+
+          if (item.isDirectory()) {
+            // Recursively scan subdirectories
+            scanPages(dir, relativePath);
+          } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.md'))) {
+            // Extract frontmatter
+            const frontmatter = extractFrontmatter(itemPath);
+            
+            // Calculate URL
+            const outputFileName = item.name.replace(/\.(yaml|md)$/, '.html');
+            const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
+            const url = '/' + outputRelativePath.replace(/\\/g, '/');
+
+            // Process tags
+            if (frontmatter.tags) {
+              // Normalize tags to array
+              const tags = Array.isArray(frontmatter.tags) ? frontmatter.tags : [frontmatter.tags];
+              
+              // Add to collections
+              tags.forEach(tag => {
+                if (typeof tag === 'string' && tag.trim()) {
+                  const trimmedTag = tag.trim();
+                  if (!collections[trimmedTag]) {
+                    collections[trimmedTag] = [];
+                  }
+                  collections[trimmedTag].push({
+                    data: frontmatter,
+                    url: url
+                  });
+                }
+              });
+            }
+          }
+        }
+      }
+
+      scanPages('');
+      return collections;
+    }
+
+    // Build collections in first pass
+    console.log('Building collections...');
+    const collections = buildCollections();
+
     // Function to process a single page file
     function processPage(pagePath, outputRelativePath, isMarkdown = false) {
       console.log(`Processing ${pagePath}...`);
@@ -106,8 +193,8 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender }) {
       const contentStart = frontmatterEnd + 1;
       const rawContent = lines.slice(contentStart).join('\n').trim();
 
-      // Merge global data with frontmatter for the page context
-      const pageData = { ...globalData, ...frontmatter };
+      // Merge global data with frontmatter and collections for the page context
+      const pageData = { ...globalData, ...frontmatter, collections };
 
       let processedPageContent;
 
@@ -140,7 +227,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender }) {
         if (templateToUse) {
           // For markdown with template, use a placeholder and replace after
           const placeholder = '___MARKDOWN_CONTENT_PLACEHOLDER___';
-          const templateData = { ...pageData, content: placeholder };
+          const templateData = { ...pageData, content: placeholder, collections };
           const templateResult = parseAndRender(templateToUse, templateData, { partials });
           htmlString = convertToHtml(templateResult);
           // Replace the placeholder with actual HTML content
@@ -151,7 +238,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender }) {
         }
       } else {
         // YAML content
-        const templateData = { ...pageData, content: processedPageContent };
+        const templateData = { ...pageData, content: processedPageContent, collections };
         const result = templateToUse
           ? parseAndRender(templateToUse, templateData, { partials })
           : processedPageContent;

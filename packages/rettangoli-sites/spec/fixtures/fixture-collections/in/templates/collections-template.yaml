@@ -1,0 +1,30 @@
+tag: html
+children:
+  - tag: body
+    children:
+      - tag: h1
+        children: ${heading}
+      - tag: h2
+        children: Post Collection
+      - tag: ul
+        children:
+          $for: post in collections.post
+          $body:
+            tag: li
+            children:
+              - tag: a
+                attrs:
+                  href: ${post.url}
+                children: ${post.data.title}
+      - tag: h2
+        children: Featured Collection
+      - tag: ul
+        children:
+          $for: item in collections.featured
+          $body:
+            tag: li
+            children:
+              - tag: a
+                attrs:
+                  href: ${item.url}
+                children: ${item.data.title}
