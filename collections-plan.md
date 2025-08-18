@@ -32,14 +32,14 @@ Implement Eleventy-like collections functionality in `packages/rettangoli-sites`
 2. **Collection Item Structure**
    Each item in a collection must include:
    - `data`: All frontmatter data
-   - `page.url`: The generated URL path of the page
+   - `url`: The generated URL path of the page
 
 3. **Template Access**
    Collections available in templates for iteration:
    ```yaml
    $for post in collections.post:
      ${post.data.title}
-     ${post.page.url}
+     ${post.url}
    ```
 
 ## Implementation Architecture
@@ -58,9 +58,7 @@ collections = {
   post: [
     {
       data: { /* all frontmatter */ },
-      page: {
-        url: '/blog/post-1.html'
-      }
+      url: '/blog/post-1.html'
     }
   ],
   featured: [ /* items tagged 'featured' */ ]
@@ -155,7 +153,7 @@ collections = {
 ## Success Criteria
 
 1. Templates can iterate over collections using `$for` syntax
-2. Each collection item has `data` and `page.url` properties
+2. Each collection item has `data` and `url` properties
 3. Both single tags and tag arrays work correctly
 4. No significant performance degradation for typical sites
 5. Clear error messages for invalid tag formats
