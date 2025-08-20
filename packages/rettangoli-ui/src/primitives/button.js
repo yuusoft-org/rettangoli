@@ -296,6 +296,16 @@ class RettangoliButtonElement extends HTMLElement {
       this._buttonElement.style.maxWidth = "";
     }
   }
+  
+  // Public method to get the actual button's bounding rect
+  // This is needed because the host element has display: contents
+  getBoundingClientRect() {
+    if (this._buttonElement) {
+      return this._buttonElement.getBoundingClientRect();
+    }
+    // Fallback to host element
+    return super.getBoundingClientRect();
+  }
 }
 
 // Export factory function to maintain API compatibility

@@ -28,13 +28,18 @@ class RettangoliPopoverElement extends HTMLElement {
           outline: none;
         }
 
-        :host([open]) .popover-overlay {
+        :host([open]:not([no-overlay])) .popover-overlay {
           display: block;
         }
 
         :host([open]) .popover-container {
           display: block;
           visibility: hidden;
+        }
+        
+        /* For no-overlay mode, make the container non-interactive */
+        :host([no-overlay]) .popover-container {
+          pointer-events: none;
         }
 
         :host([open][positioned]) .popover-container {
@@ -96,7 +101,7 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["open", "x", "y", "placement"];
+    return ["open", "x", "y", "placement", "no-overlay"];
   }
 
   connectedCallback() {

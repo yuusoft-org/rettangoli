@@ -1,0 +1,47 @@
+---
+title: "Basic"
+---
+<rtgl-view h="100vh" w="100vw" ah="c" av="c" g="xl">
+  <rtgl-button id="button">Show Tooltip</rtgl-button>
+  <rtgl-tooltip id="tooltip" content="This is a basic tooltip" placement="top"></rtgl-tooltip>
+
+  <rtgl-button id="button-2">Show Tooltip</rtgl-button>
+  <rtgl-tooltip id="tooltip-2" content="This is a basic tooltip with a very very very long long long long content of multiple multiple multiple lines" placement="top"></rtgl-tooltip>
+
+</rtgl-view>
+
+<script>
+    const button = document.getElementById('button');
+    const tooltip = document.getElementById('tooltip');
+
+    button.addEventListener('click', (e) => {
+      if (tooltip.hasAttribute('open')) {
+        tooltip.removeAttribute('open');
+      } else {
+        // Use the button's public getBoundingClientRect method
+        const rect = button.getBoundingClientRect();
+        tooltip.setAttribute('open', '');
+        tooltip.setAttribute('x', rect.left + rect.width / 2);
+        tooltip.setAttribute('y', rect.top - 2);  // Small offset to prevent overlap
+      }
+    });
+
+
+    const button2 = document.getElementById('button-2');
+    const tooltip2 = document.getElementById('tooltip-2');
+
+    button2.addEventListener('click', (e) => {
+      if (tooltip2.hasAttribute('open')) {
+        tooltip2.removeAttribute('open');
+      } else {
+        // Use the button's public getBoundingClientRect method
+        const rect = button2.getBoundingClientRect();
+        tooltip2.setAttribute('open', '');
+        tooltip2.setAttribute('x', rect.left + rect.width / 2);
+        tooltip2.setAttribute('y', rect.top - 2);  // Small offset to prevent overlap
+      }
+    });
+
+
+
+</script>
