@@ -44,8 +44,42 @@ export function runTest(fixturePath) {
   const inputFiles = loadFixture(path.join(fixtureDir, 'in'));
   vol.fromJSON(inputFiles);
 
-  // Create and run builder with custom mdRender from config
-  const build = createSiteBuilder({ fs: memfs, rootDir: '/', mdRender: config.mdRender });
+  // Check if this is the custom-functions fixture and add all needed functions for the test
+  const isCustomFunctionsFixture = fixturePath.includes('fixture-custom-functions');
+  const functions = isCustomFunctionsFixture ? {
+    ...config.functions,
+    // Additional functions needed for the test
+    lowercase: (str) => String(str).toLowerCase(),
+    capitalize: (str) => {
+      const s = String(str);
+      return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    },
+    truncate: (str, length = 50) => {
+      const s = String(str);
+      return s.length > length ? s.substring(0, length) + '...' : s;
+    },
+    add: (a, b) => Number(a) + Number(b),
+    multiply: (a, b) => Number(a) * Number(b),
+    round: (num, decimals = 0) => Number(num).toFixed(decimals),
+    first: (arr) => Array.isArray(arr) ? arr[0] : arr,
+    last: (arr) => Array.isArray(arr) ? arr[arr.length - 1] : arr,
+    default: (value, defaultValue) => value == null || value === '' ? defaultValue : value,
+    calculateTotal: (items) => {
+      if (!Array.isArray(items)) return 0;
+      return items.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
+    },
+    formatCurrency: (amount) => {
+      return '$' + Number(amount).toFixed(2);
+    }
+  } : {};
+
+  // Create and run builder with custom config
+  const build = createSiteBuilder({
+    fs: memfs,
+    rootDir: '/',
+    mdRender: config.mdRender,
+    functions: functions
+  });
   build();
 
   // Get actual outputs

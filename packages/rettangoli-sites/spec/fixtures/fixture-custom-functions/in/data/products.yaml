@@ -1,0 +1,21 @@
+items:
+  - name: "Widget A"
+    price: 10.50
+    quantity: 2
+    description: "This is a very long description of Widget A that should be truncated in some views"
+  - name: "Widget B"
+    price: 25.00
+    quantity: 1
+    description: "Short description"
+  - name: "Widget C"
+    price: 15.75
+    quantity: 3
+    description: "Another lengthy description for Widget C that goes on and on and should definitely be truncated"
+
+categories:
+  - electronics
+  - home
+  - office
+
+orderDate: "2024-03-15T10:30:00Z"
+customerName: "john doe"
