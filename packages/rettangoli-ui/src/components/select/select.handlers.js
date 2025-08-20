@@ -141,21 +141,12 @@ export const handleClearClick = (e, deps) => {
 
 export const handleAddOptionClick = (e, deps) => {
   const { store, render, dispatchEvent } = deps;
-
-  // Clear the selected value
-  store.clearSelectedValue();
   
   // Close the popover
   store.closeOptionsPopover();
 
   // Dispatch custom event for add option (no detail)
   dispatchEvent(new CustomEvent('add-option-selected', {
-    bubbles: true
-  }));
-
-  // Also dispatch select-change event with undefined value
-  dispatchEvent(new CustomEvent('select-change', {
-    detail: { selectedValue: undefined },
     bubbles: true
   }));
 
