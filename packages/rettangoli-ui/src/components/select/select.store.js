@@ -31,6 +31,7 @@ export const INITIAL_STATE = Object.freeze({
   },
   selectedValue: null,
   hoveredOptionId: null,
+  hoveredAddOption: false,
 });
 
 export const toViewData = ({ state, props, attrs }) => {
@@ -72,7 +73,10 @@ export const toViewData = ({ state, props, attrs }) => {
     selectedLabelColor: isPlaceholderLabel ? "mu-fg" : "fg",
     placeholder: props.placeholder || 'Select an option',
     hasValue: currentValue !== null && currentValue !== undefined,
-    showClear: !attrs['no-clear'] && !props['no-clear'] && (currentValue !== null && currentValue !== undefined)
+    showClear: !attrs['no-clear'] && !props['no-clear'] && (currentValue !== null && currentValue !== undefined),
+    showAddOption: !!props.addOption,
+    addOptionLabel: props.addOption?.label ? `+ ${props.addOption.label}` : '+ Add',
+    addOptionBgc: state.hoveredAddOption ? 'ac' : ''
   };
 }
 
@@ -117,6 +121,10 @@ export const clearHoveredOption = (state) => {
 
 export const clearSelectedValue = (state) => {
   state.selectedValue = undefined;
+}
+
+export const setHoveredAddOption = (state, isHovered) => {
+  state.hoveredAddOption = isHovered;
 }
 
 

@@ -138,3 +138,29 @@ export const handleClearClick = (e, deps) => {
 
   render();
 }
+
+export const handleAddOptionClick = (e, deps) => {
+  const { store, render, dispatchEvent } = deps;
+  
+  // Close the popover
+  store.closeOptionsPopover();
+
+  // Dispatch custom event for add option (no detail)
+  dispatchEvent(new CustomEvent('add-option-selected', {
+    bubbles: true
+  }));
+
+  render();
+}
+
+export const handleAddOptionMouseEnter = (e, deps) => {
+  const { store, render } = deps;
+  store.setHoveredAddOption(true);
+  render();
+}
+
+export const handleAddOptionMouseLeave = (e, deps) => {
+  const { store, render } = deps;
+  store.setHoveredAddOption(false);
+  render();
+}
