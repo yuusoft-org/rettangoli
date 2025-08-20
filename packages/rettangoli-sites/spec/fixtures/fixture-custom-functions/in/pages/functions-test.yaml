@@ -1,0 +1,45 @@
+---
+template: base
+title: Function Examples
+---
+- div class="string-functions":
+    - h2: String Functions
+    - p: "Uppercase: ${uppercase('hello world')}"
+    - p: "Lowercase: ${lowercase('HELLO WORLD')}"
+    - p: "Capitalize: ${capitalize('hello world')}"
+    - p: "Capitalize customer: ${capitalize(products.customerName)}"
+    - p: "Truncate: ${truncate('This is a very long text that should be truncated', 20)}"
+    - p: "Truncate description: ${truncate(products.items[0].description, 30)}"
+
+- div class="math-functions":
+    - h2: Math Functions
+    - p: "Addition: 5 + 3 = ${add(5, 3)}"
+    - p: "Multiplication: 4 × 7 = ${multiply(4, 7)}"
+    - p: "Round to 2 decimals: ${round(3.14159, 2)}"
+    - p: "Product price × quantity: ${multiply(products.items[0].price, products.items[0].quantity)}"
+
+- div class="date-functions":
+    - h2: Date Functions
+    - p: "Order Date (short): ${formatDate(products.orderDate, 'short')}"
+    - p: "Order Date (long): ${formatDate(products.orderDate, 'long')}"
+
+- div class="array-functions":
+    - h2: Array Functions
+    - p: "Categories: ${join(products.categories, ' | ')}"
+    - p: "First category: ${first(products.categories)}"
+    - p: "Last category: ${last(products.categories)}"
+    - p: "First product: ${first(products.items).name}"
+
+- div class="business-logic":
+    - h2: Business Logic Functions
+    - p: "Order Total: ${formatCurrency(calculateTotal(products.items))}"
+    - p: "Individual prices:"
+    - ul:
+        - li: "Widget A: $21.00"
+        - li: "Widget B: $25.00"
+        - li: "Widget C: $47.25"
+
+- div class="utility-functions":
+    - h2: Utility Functions
+    - p: "Default value test: ${default('', 'No value provided')}"
+    - p: "Default with value: ${default('Has value', 'No value')}"

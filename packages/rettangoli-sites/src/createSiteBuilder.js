@@ -5,7 +5,7 @@ import yaml from 'js-yaml';
 
 import MarkdownIt from 'markdown-it';
 
-export function createSiteBuilder({ fs, rootDir = '.', mdRender }) {
+export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {} }) {
   return function build() {
     // Use provided mdRender or default to standard markdown-it
     const md = mdRender || MarkdownIt();
@@ -207,7 +207,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender }) {
         // Convert YAML content to JSON
         const pageContent = yaml.load(rawContent, { schema: yaml.JSON_SCHEMA });
         // Process the page content to resolve any $partial references with page data
-        processedPageContent = parseAndRender(pageContent, pageData, { partials });
+        processedPageContent = parseAndRender(pageContent, pageData, { partials, functions });
       }
 
       // Find the template specified in frontmatter
@@ -228,7 +228,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender }) {
           // For markdown with template, use a placeholder and replace after
           const placeholder = '___MARKDOWN_CONTENT_PLACEHOLDER___';
           const templateData = { ...pageData, content: placeholder, collections };
-          const templateResult = parseAndRender(templateToUse, templateData, { partials });
+          const templateResult = parseAndRender(templateToUse, templateData, { partials, functions });
           htmlString = convertToHtml(templateResult);
           // Replace the placeholder with actual HTML content
           htmlString = htmlString.replace(placeholder, processedPageContent.__html);
@@ -240,7 +240,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender }) {
         // YAML content
         const templateData = { ...pageData, content: processedPageContent, collections };
         const result = templateToUse
-          ? parseAndRender(templateToUse, templateData, { partials })
+          ? parseAndRender(templateToUse, templateData, { partials, functions })
           : processedPageContent;
         // Ensure result is an array for convertToHtml
         const resultArray = Array.isArray(result) ? result : [result];
