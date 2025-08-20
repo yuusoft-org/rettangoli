@@ -200,3 +200,28 @@ export const handleSelectAddOption = (e, deps) => {
     }),
   );
 };
+
+export const handleTooltipMouseEnter = (e, deps) => {
+  const { store, render, props } = deps;
+  const fieldName = e.currentTarget.id.replace('tooltip-icon-', '');
+  
+  // Find the field with matching name to get tooltip content
+  const form = props.form;
+  const field = form.fields.find(f => f.name === fieldName);
+  
+  if (field && field.tooltip) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    store.showTooltip({
+      x: rect.left + rect.width / 2,
+      y: rect.top - 8,
+      content: field.tooltip.content
+    });
+    render();
+  }
+};
+
+export const handleTooltipMouseLeave = (e, deps) => {
+  const { store, render } = deps;
+  store.hideTooltip();
+  render();
+};

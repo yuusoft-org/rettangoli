@@ -26,6 +26,12 @@ function pick(obj, keys) {
 
 export const INITIAL_STATE = Object.freeze({
   formValues: {},
+  tooltipState: {
+    open: false,
+    x: 0,
+    y: 0,
+    content: ''
+  },
 });
 
 // Lodash-like utility functions for nested property access
@@ -140,6 +146,7 @@ export const toViewData = ({ state, props, attrs }) => {
       buttons: [],
     },
     formValues: state.formValues,
+    tooltipState: state.tooltipState,
   };
 };
 
@@ -173,4 +180,20 @@ export const setFormFieldValue = (state, { name, value, props }) => {
     form.fields.map((field) => field.name),
   );
   state.formValues = formValues;
+};
+
+export const showTooltip = (state, { x, y, content }) => {
+  state.tooltipState = {
+    open: true,
+    x: x,
+    y: y,
+    content: content
+  };
+};
+
+export const hideTooltip = (state) => {
+  state.tooltipState = {
+    ...state.tooltipState,
+    open: false
+  };
 };
