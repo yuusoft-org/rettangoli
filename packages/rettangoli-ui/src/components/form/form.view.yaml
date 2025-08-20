@@ -52,6 +52,10 @@ propsSchema:
                     type: string
                   noClear:
                     type: boolean
+                  showAddOption:
+                    type: boolean
+                  addOptionLabel:
+                    type: string
                   options:
                     type: array
                     items:
@@ -208,6 +212,8 @@ refs:
     eventListeners:
       select-change:
         handler: handleSelectChange
+      add-option-selected:
+        handler: handleAddOptionSelected
   colorpicker-*:
     eventListeners:
       colorpicker-change:
@@ -259,7 +265,7 @@ template:
                   - $if field.inputType == "popover-input":
                       - rtgl-popover-input#popover-input-${field.name} label="${field.label}" .defaultValue=fields[${i}].defaultValue:
                   - $if field.inputType == "select":
-                      - rtgl-select#select-${field.name} key=${key} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue ?no-clear=fields[${i}].noClear:
+                      - rtgl-select#select-${field.name} key=${key} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue ?no-clear=fields[${i}].noClear .showAddOption=fields[${i}].showAddOption .addOptionLabel=fields[${i}].addOptionLabel:
                   - $if field.inputType == "colorPicker":
                       - rtgl-color-picker#colorpicker-${field.name} key=${key} value=${field.defaultValue}:
                   - $if field.inputType == "slider":

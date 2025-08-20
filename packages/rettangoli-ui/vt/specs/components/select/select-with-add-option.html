@@ -1,0 +1,58 @@
+---
+title: Select with Add Option
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-select id="select-with-add" />
+  <rtgl-select id="select-custom-label" />
+</rtgl-view>
+
+<script>
+  // Select with default "Add..." option
+  const selectWithAdd = document.getElementById('select-with-add');
+  selectWithAdd.placeholder = 'Select or add an option';
+  selectWithAdd.options = [
+    { value: "1", label: 'Option 1' },
+    { value: "2", label: 'Option 2' },
+    { value: "3", label: 'Option 3' },
+  ];
+  selectWithAdd.showAddOption = true;
+  selectWithAdd.render();
+
+  // Select with custom add label
+  const selectCustomLabel = document.getElementById('select-custom-label');
+  selectCustomLabel.placeholder = 'Choose a fruit';
+  selectCustomLabel.options = [
+    { value: "apple", label: 'Apple' },
+    { value: "banana", label: 'Banana' },
+    { value: "orange", label: 'Orange' },
+  ];
+  selectCustomLabel.showAddOption = true;
+  selectCustomLabel.addOptionLabel = 'Add new fruit...';
+  selectCustomLabel.render();
+
+  // Listen for events
+  selectWithAdd.addEventListener('option-selected', (e) => {
+    console.log('option-selected', e.detail);
+  });
+
+  selectWithAdd.addEventListener('add-option-selected', (e) => {
+    console.log('add-option-selected triggered');
+  });
+
+  selectWithAdd.addEventListener('select-change', (e) => {
+    console.log('select-change', e.detail);
+  });
+
+  selectCustomLabel.addEventListener('add-option-selected', (e) => {
+    console.log('custom select add-option-selected triggered');
+  });
+
+  // Optional callback functions
+  selectWithAdd.onAddOption = () => {
+    console.log('onAddOption callback triggered');
+  };
+
+  selectCustomLabel.onAddOption = () => {
+    console.log('custom onAddOption callback triggered');
+  };
+</script>

@@ -186,3 +186,16 @@ export const handleWaveformClick = (e, deps) => {
     }),
   );
 };
+
+export const handleAddOptionSelected = (e, deps) => {
+  const { dispatchEvent } = deps;
+  const name = e.currentTarget.id.replace("select-", "");
+  dispatchEvent(
+    new CustomEvent("add-option-selected", {
+      detail: {
+        fieldName: name,
+      },
+      bubbles: true,
+    }),
+  );
+};

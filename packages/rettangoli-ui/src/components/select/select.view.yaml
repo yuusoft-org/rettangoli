@@ -23,6 +23,10 @@ propsSchema:
       type: function
     no-clear:
       type: boolean
+    showAddOption:
+      type: boolean
+    addOptionLabel:
+      type: string
 
 refs:
   select-button:
@@ -45,6 +49,14 @@ refs:
         handler: handleOptionMouseEnter
       mouseleave:
         handler: handleOptionMouseLeave
+  option-add:
+    eventListeners:
+      click:
+        handler: handleAddOptionClick
+      mouseenter:
+        handler: handleAddOptionMouseEnter
+      mouseleave:
+        handler: handleAddOptionMouseLeave
 
 events: {}
 
@@ -61,3 +73,7 @@ template:
           - $for option, i in options:
               - rtgl-view#option-${i} w=f ph=lg pv=md cur=p br=md bgc=${option.bgc}:
                   - rtgl-text: ${option.label}
+          - $if showAddOption:
+              - rtgl-view w=f bw=xs bc=mu-bg bt=sm:
+              - rtgl-view#option-add w=f ph=lg pv=md cur=p br=md bgc=${addOptionBgc}:
+                  - rtgl-text c=ac: ${addOptionLabel}

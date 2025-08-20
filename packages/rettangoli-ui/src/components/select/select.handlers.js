@@ -138,3 +138,38 @@ export const handleClearClick = (e, deps) => {
 
   render();
 }
+
+export const handleAddOptionClick = (e, deps) => {
+  const { store, render, dispatchEvent, props } = deps;
+
+  // Clear the selected value
+  store.clearSelectedValue();
+  
+  // Close the popover
+  store.closeOptionsPopover();
+
+  // Dispatch custom event for add option
+  dispatchEvent(new CustomEvent('add-option-selected', {
+    bubbles: true
+  }));
+
+  // Also dispatch select-change event with undefined value
+  dispatchEvent(new CustomEvent('select-change', {
+    detail: { selectedValue: undefined },
+    bubbles: true
+  }));
+
+  render();
+}
+
+export const handleAddOptionMouseEnter = (e, deps) => {
+  const { store, render } = deps;
+  store.setHoveredAddOption(true);
+  render();
+}
+
+export const handleAddOptionMouseLeave = (e, deps) => {
+  const { store, render } = deps;
+  store.setHoveredAddOption(false);
+  render();
+}
