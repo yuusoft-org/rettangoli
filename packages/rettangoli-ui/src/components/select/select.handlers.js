@@ -140,7 +140,7 @@ export const handleClearClick = (e, deps) => {
 }
 
 export const handleAddOptionClick = (e, deps) => {
-  const { store, render, dispatchEvent, props } = deps;
+  const { store, render, dispatchEvent } = deps;
 
   // Clear the selected value
   store.clearSelectedValue();
@@ -148,7 +148,7 @@ export const handleAddOptionClick = (e, deps) => {
   // Close the popover
   store.closeOptionsPopover();
 
-  // Dispatch custom event for add option
+  // Dispatch custom event for add option (no detail)
   dispatchEvent(new CustomEvent('add-option-selected', {
     bubbles: true
   }));

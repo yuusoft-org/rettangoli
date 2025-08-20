@@ -15,7 +15,7 @@ title: Select with Add Option
     { value: "2", label: 'Option 2' },
     { value: "3", label: 'Option 3' },
   ];
-  selectWithAdd.showAddOption = true;
+  selectWithAdd.addOption = {};  // Use default label
   selectWithAdd.render();
 
   // Select with custom add label
@@ -26,8 +26,7 @@ title: Select with Add Option
     { value: "banana", label: 'Banana' },
     { value: "orange", label: 'Orange' },
   ];
-  selectCustomLabel.showAddOption = true;
-  selectCustomLabel.addOptionLabel = 'Add new fruit...';
+  selectCustomLabel.addOption = { label: 'Add new fruit' };
   selectCustomLabel.render();
 
   // Listen for events
@@ -46,13 +45,4 @@ title: Select with Add Option
   selectCustomLabel.addEventListener('add-option-selected', (e) => {
     console.log('custom select add-option-selected triggered');
   });
-
-  // Optional callback functions
-  selectWithAdd.onAddOption = () => {
-    console.log('onAddOption callback triggered');
-  };
-
-  selectCustomLabel.onAddOption = () => {
-    console.log('custom onAddOption callback triggered');
-  };
 </script>

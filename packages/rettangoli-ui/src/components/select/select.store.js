@@ -74,8 +74,8 @@ export const toViewData = ({ state, props, attrs }) => {
     placeholder: props.placeholder || 'Select an option',
     hasValue: currentValue !== null && currentValue !== undefined,
     showClear: !attrs['no-clear'] && !props['no-clear'] && (currentValue !== null && currentValue !== undefined),
-    showAddOption: props.showAddOption || false,
-    addOptionLabel: props.addOptionLabel || '+ Add',
+    showAddOption: !!props.addOption,
+    addOptionLabel: props.addOption?.label ? `+ ${props.addOption.label}` : '+ Add',
     addOptionBgc: state.hoveredAddOption ? 'ac' : ''
   };
 }

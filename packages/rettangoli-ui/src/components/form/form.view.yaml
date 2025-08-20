@@ -52,10 +52,11 @@ propsSchema:
                     type: string
                   noClear:
                     type: boolean
-                  showAddOption:
-                    type: boolean
-                  addOptionLabel:
-                    type: string
+                  addOption:
+                    type: object
+                    properties:
+                      label:
+                        type: string
                   options:
                     type: array
                     items:
@@ -213,7 +214,7 @@ refs:
       select-change:
         handler: handleSelectChange
       add-option-selected:
-        handler: handleAddOptionSelected
+        handler: handleSelectAddOption
   colorpicker-*:
     eventListeners:
       colorpicker-change:
@@ -246,6 +247,7 @@ refs:
 events:
   form-change: {}
   extra-event: {}
+  action-click: {}
 
 template:
   - rtgl-view w=f p=md g=lg ${containerAttrString}:
@@ -265,7 +267,7 @@ template:
                   - $if field.inputType == "popover-input":
                       - rtgl-popover-input#popover-input-${field.name} label="${field.label}" .defaultValue=fields[${i}].defaultValue:
                   - $if field.inputType == "select":
-                      - rtgl-select#select-${field.name} key=${key} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue ?no-clear=fields[${i}].noClear .showAddOption=fields[${i}].showAddOption .addOptionLabel=fields[${i}].addOptionLabel:
+                      - rtgl-select#select-${field.name} key=${key} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue ?no-clear=fields[${i}].noClear .addOption=fields[${i}].addOption:
                   - $if field.inputType == "colorPicker":
                       - rtgl-color-picker#colorpicker-${field.name} key=${key} value=${field.defaultValue}:
                   - $if field.inputType == "slider":

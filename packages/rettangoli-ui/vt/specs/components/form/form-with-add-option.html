@@ -32,8 +32,7 @@ title: Form with Select Add Option
           { value: 'food', label: 'Food & Beverages' },
           { value: 'books', label: 'Books' }
         ],
-        showAddOption: true,
-        addOptionLabel: '+ Add new category',
+        addOption: { label: 'Add new category' },
         defaultValue: null
       },
       {
@@ -48,7 +47,6 @@ title: Form with Select Add Option
           { value: 'large', label: 'Large' },
           { value: 'xl', label: 'Extra Large' }
         ],
-        showAddOption: false,
         noClear: true,
         defaultValue: 'medium'
       },
@@ -64,8 +62,7 @@ title: Form with Select Add Option
           { value: 'new', label: 'New Arrival' },
           { value: 'bestseller', label: 'Best Seller' }
         ],
-        showAddOption: true,
-        addOptionLabel: '+ Create custom tag',
+        addOption: { label: 'Create custom tag' },
         defaultValue: null
       }
     ],
@@ -84,11 +81,10 @@ title: Form with Select Add Option
     console.log('form-change', e.detail);
   });
 
-  form.addEventListener('add-option-selected', (e) => {
-    console.log('add-option-selected for field:', e.detail.fieldName);
-  });
-
   form.addEventListener('action-click', (e) => {
     console.log('action-click', e.detail);
+    if (e.detail.actionId === 'select-options-add') {
+      console.log('Add option selected for field:', e.detail.name);
+    }
   });
 </script>

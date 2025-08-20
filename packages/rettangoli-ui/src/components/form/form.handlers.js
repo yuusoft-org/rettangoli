@@ -187,15 +187,16 @@ export const handleWaveformClick = (e, deps) => {
   );
 };
 
-export const handleAddOptionSelected = (e, deps) => {
-  const { dispatchEvent } = deps;
+export const handleSelectAddOption = (e, deps) => {
+  const { store, dispatchEvent } = deps;
   const name = e.currentTarget.id.replace("select-", "");
   dispatchEvent(
-    new CustomEvent("add-option-selected", {
+    new CustomEvent("action-click", {
       detail: {
-        fieldName: name,
+        actionId: 'select-options-add',
+        name: name,
+        formValues: store.selectFormValues(),
       },
-      bubbles: true,
     }),
   );
 };

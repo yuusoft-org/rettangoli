@@ -23,10 +23,11 @@ propsSchema:
       type: function
     no-clear:
       type: boolean
-    showAddOption:
-      type: boolean
-    addOptionLabel:
-      type: string
+    addOption:
+      type: object
+      properties:
+        label:
+          type: string
 
 refs:
   select-button:
