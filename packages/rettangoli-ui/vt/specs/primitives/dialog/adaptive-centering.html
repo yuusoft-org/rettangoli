@@ -1,0 +1,82 @@
+---
+title: "Adaptive Centering"
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-view g="md">
+    <rtgl-button id="button-short">Open Dialog (Short Content)</rtgl-button>
+    <rtgl-button id="button-long">Open Dialog (Long Content)</rtgl-button>
+  </rtgl-view>
+  
+  <!-- Short content dialog -->
+  <rtgl-dialog id="dialog-short">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Short Content Dialog</rtgl-text>
+      <rtgl-text c="mu">This dialog has short content and should be vertically centered.</rtgl-text>
+      <rtgl-button id="close-button-short" variant="secondary">Close Dialog</rtgl-button>
+    </rtgl-view>
+  </rtgl-dialog>
+  
+  <!-- Long content dialog -->
+  <rtgl-dialog id="dialog-long">
+    <rtgl-view slot="content" g="md" style="max-width: 600px;">
+      <rtgl-text s="lg">Long Content Dialog</rtgl-text>
+      <rtgl-text c="mu">This dialog has long content and should start near the top with a 40px margin.</rtgl-text>
+      <rtgl-text>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</rtgl-text>
+      <rtgl-text>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</rtgl-text>
+      <rtgl-text>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</rtgl-text>
+      <rtgl-text>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</rtgl-text>
+      <rtgl-text>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</rtgl-text>
+      <rtgl-text>Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</rtgl-text>
+      <rtgl-text>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</rtgl-text>
+      <rtgl-text>Sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</rtgl-text>
+      <rtgl-text>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.</rtgl-text>
+      <rtgl-text>Sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</rtgl-text>
+      <rtgl-text>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam.</rtgl-text>
+      <rtgl-text>Nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit.</rtgl-text>
+      <rtgl-text>Qui in ea voluptate velit esse quam nihil molestiae consequatur.</rtgl-text>
+      <rtgl-text>Vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</rtgl-text>
+      <rtgl-text>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium.</rtgl-text>
+      <rtgl-text>Voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati.</rtgl-text>
+      <rtgl-text>Cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi.</rtgl-text>
+      <rtgl-text>Id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.</rtgl-text>
+      <rtgl-text>Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus.</rtgl-text>
+      <rtgl-button id="close-button-long" variant="secondary">Close Dialog</rtgl-button>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  // Short content dialog
+  const buttonShort = document.getElementById('button-short');
+  const dialogShort = document.getElementById('dialog-short');
+  const closeButtonShort = document.getElementById('close-button-short');
+  
+  buttonShort.addEventListener('click', () => {
+    dialogShort.setAttribute('open', '');
+  });
+  
+  closeButtonShort.addEventListener('click', () => {
+    dialogShort.removeAttribute('open');
+  });
+  
+  dialogShort.addEventListener('close', () => {
+    dialogShort.removeAttribute('open');
+  });
+  
+  // Long content dialog
+  const buttonLong = document.getElementById('button-long');
+  const dialogLong = document.getElementById('dialog-long');
+  const closeButtonLong = document.getElementById('close-button-long');
+  
+  buttonLong.addEventListener('click', () => {
+    dialogLong.setAttribute('open', '');
+  });
+  
+  closeButtonLong.addEventListener('click', () => {
+    dialogLong.removeAttribute('open');
+  });
+  
+  dialogLong.addEventListener('close', () => {
+    dialogLong.removeAttribute('open');
+  });
+</script>
