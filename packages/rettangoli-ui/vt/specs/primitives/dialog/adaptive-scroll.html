@@ -1,0 +1,86 @@
+---
+title: "Adaptive Scroll Test"
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-view g="md">
+    <rtgl-text s="lg">Dialog Adaptive Centering Tests</rtgl-text>
+    <rtgl-button id="button-very-long">Open Very Long Content (Should scroll)</rtgl-button>
+  </rtgl-view>
+  
+  <!-- Very long content dialog to test scrolling -->
+  <rtgl-dialog id="dialog-very-long">
+    <rtgl-view slot="content" g="md" style="max-width: 600px;">
+      <rtgl-text s="xl">Very Long Content - Scrolling Test</rtgl-text>
+      <rtgl-text c="mu">This dialog should start at the top (40px margin) and be scrollable.</rtgl-text>
+      
+      <rtgl-text s="lg">Section 1</rtgl-text>
+      <rtgl-text>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</rtgl-text>
+      <rtgl-text>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</rtgl-text>
+      
+      <rtgl-text s="lg">Section 2</rtgl-text>
+      <rtgl-text>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</rtgl-text>
+      <rtgl-text>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum.</rtgl-text>
+      
+      <rtgl-text s="lg">Section 3</rtgl-text>
+      <rtgl-text>Excepteur sint occaecat cupidatat non proident.</rtgl-text>
+      <rtgl-text>Sunt in culpa qui officia deserunt mollit anim id est laborum.</rtgl-text>
+      
+      <rtgl-text s="lg">Section 4</rtgl-text>
+      <rtgl-text>Sed ut perspiciatis unde omnis iste natus error sit voluptatem.</rtgl-text>
+      <rtgl-text>Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis.</rtgl-text>
+      
+      <rtgl-text s="lg">Section 5</rtgl-text>
+      <rtgl-text>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</rtgl-text>
+      <rtgl-text>Sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</rtgl-text>
+      
+      <rtgl-text s="lg">Section 6</rtgl-text>
+      <rtgl-text>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.</rtgl-text>
+      <rtgl-text>Consectetur, adipisci velit, sed quia non numquam eius modi tempora.</rtgl-text>
+      
+      <rtgl-text s="lg">Section 7</rtgl-text>
+      <rtgl-text>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis.</rtgl-text>
+      <rtgl-text>Suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur?</rtgl-text>
+      
+      <rtgl-text s="lg">Section 8</rtgl-text>
+      <rtgl-text>Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse.</rtgl-text>
+      <rtgl-text>Quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat.</rtgl-text>
+      
+      <rtgl-text s="lg">Section 9</rtgl-text>
+      <rtgl-text>At vero eos et accusamus et iusto odio dignissimos ducimus.</rtgl-text>
+      <rtgl-text>Qui blanditiis praesentium voluptatum deleniti atque corrupti.</rtgl-text>
+      
+      <rtgl-text s="lg">Section 10</rtgl-text>
+      <rtgl-text>Et harum quidem rerum facilis est et expedita distinctio.</rtgl-text>
+      <rtgl-text>Nam libero tempore, cum soluta nobis est eligendi optio cumque.</rtgl-text>
+      
+      <rtgl-text s="lg">Section 11</rtgl-text>
+      <rtgl-text>Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus.</rtgl-text>
+      <rtgl-text>Saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.</rtgl-text>
+      
+      <rtgl-text s="lg">Section 12</rtgl-text>
+      <rtgl-text>Itaque earum rerum hic tenetur a sapiente delectus.</rtgl-text>
+      <rtgl-text>Ut aut reiciendis voluptatibus maiores alias consequatur.</rtgl-text>
+      
+      <rtgl-button id="close-button-very-long" variant="secondary">Close Dialog</rtgl-button>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  // Very long content dialog
+  const buttonVeryLong = document.getElementById('button-very-long');
+  const dialogVeryLong = document.getElementById('dialog-very-long');
+  const closeButtonVeryLong = document.getElementById('close-button-very-long');
+  
+  buttonVeryLong.addEventListener('click', () => {
+    dialogVeryLong.setAttribute('open', '');
+  });
+  
+  closeButtonVeryLong.addEventListener('click', () => {
+    dialogVeryLong.removeAttribute('open');
+  });
+  
+  dialogVeryLong.addEventListener('close', () => {
+    dialogVeryLong.removeAttribute('open');
+  });
+</script>
