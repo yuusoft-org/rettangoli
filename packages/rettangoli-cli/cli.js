@@ -55,6 +55,7 @@ feCommand
   .command("build")
   .description("Build UI components")
   .option("-o, --outfile <path>", "The output file")
+  .option("-s, --setup-path <path>", "Custom setup file path")
   .option("-d, --development", "Development mode (no minification, no source maps)")
   .addHelpText(
     "after",
@@ -66,6 +67,8 @@ Examples:
   $ rettangoli fe build -o ./public/js/main.js
   $ rettangoli fe build --development
   $ rettangoli fe build -d -o ./dist/dev.js
+  $ rettangoli fe build -s src/setup.tauri.js
+  $ rettangoli fe build --setup-path src/setup.web.js
 `,
   )
   .action((options) => {
@@ -89,7 +92,8 @@ Examples:
 
     // Pass dirs, setup, and outfile from config
     options.dirs = config.fe.dirs;
-    options.setup = config.fe.setup || "setup.js";
+    // Use setup-path if provided, otherwise use config setup
+    options.setup = options.setupPath || config.fe.setup || "setup.js";
 
     // Use config outfile if not specified via CLI option
     if (!options.outfile && config.fe.outfile) {
@@ -128,6 +132,7 @@ feCommand
   .command("watch")
   .description("Watch for changes")
   .option("-p, --port <port>", "The port to use", parseInt, 3001)
+  .option("-s, --setup-path <path>", "Custom setup file path")
   .addHelpText(
     "after",
     `
@@ -136,6 +141,8 @@ Examples:
   $ rettangoli fe watch
   $ rettangoli fe watch --port 8080
   $ rettangoli fe watch -p 4000
+  $ rettangoli fe watch -s src/setup.tauri.js
+  $ rettangoli fe watch --setup-path src/setup.web.js
 `,
   )
   .action((options) => {
@@ -159,7 +166,8 @@ Examples:
 
     // Pass dirs, setup, and outfile from config
     options.dirs = config.fe.dirs;
-    options.setup = config.fe.setup || "setup.js";
+    // Use setup-path if provided, otherwise use config setup
+    options.setup = options.setupPath || config.fe.setup || "setup.js";
 
     // Use config outfile if not specified via CLI option
     if (!options.outfile && config.fe.outfile) {
