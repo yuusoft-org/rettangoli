@@ -1,0 +1,22 @@
+---
+title: Object value
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-select id="select" />
+</rtgl-view>
+
+<script>
+  const select = document.getElementById('select')
+
+  select.addEventListener('option-selected', (e) => {
+    console.log(e.detail);
+  });
+
+  select.options = [
+    { value: { x: 0, y: 0,} , label: 'Top Left' },
+    { value: { x: 0.5, y: 0.5}, label: 'Center Center' },
+    { value: { x: 1, y: 1}, label: 'Bottom Right' },
+  ]
+  select.render();
+
+</script>

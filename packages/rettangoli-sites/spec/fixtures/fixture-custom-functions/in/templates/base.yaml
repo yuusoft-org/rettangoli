@@ -1,0 +1,6 @@
+- html:
+    - head:
+        - title: "${default(title, 'Custom Functions Test')}"
+    - body:
+        - h1: "${uppercase(title)}"
+        - div class="content": "${content}"

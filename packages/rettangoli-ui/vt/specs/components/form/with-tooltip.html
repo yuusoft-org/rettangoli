@@ -1,0 +1,118 @@
+---
+title: "With Tooltips"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    volume: 50,
+    brightness: 128
+  }
+
+  form.form = {
+    title: 'Form with Tooltips',
+    description: 'Hover over the info icons to see tooltips',
+    fields: [{
+      name: 'username',
+      inputType: 'inputText',
+      label: 'Username',
+      description: 'Enter your username',
+      placeholder: 'Enter username',
+      tooltip: {
+        content: 'Your unique identifier for login'
+      }
+    }, {
+      name: 'role',
+      inputType: 'select',
+      label: 'Role',
+      description: 'Select your role',
+      placeholder: 'Choose a role',
+      options: [
+        { label: 'Administrator', value: 'admin' },
+        { label: 'Editor', value: 'editor' },
+        { label: 'Viewer', value: 'viewer' }
+      ],
+      tooltip: {
+        content: 'Select your access level in the system'
+      }
+    }, {
+      name: 'theme',
+      inputType: 'colorPicker',
+      label: 'Theme Color',
+      description: 'Choose theme color',
+      tooltip: {
+        content: 'Choose your preferred theme color'
+      }
+    }, {
+      name: 'volume',
+      inputType: 'slider',
+      label: 'Volume',
+      description: 'Adjust volume',
+      min: 0,
+      max: 100,
+      step: 1,
+      tooltip: {
+        content: 'Adjust the volume level (0-100)'
+      }
+    }, {
+      name: 'brightness',
+      inputType: 'slider-input',
+      label: 'Brightness',
+      description: 'Set brightness',
+      min: 0,
+      max: 255,
+      step: 1,
+      tooltip: {
+        content: 'Set display brightness level'
+      }
+    }, {
+      name: 'profile_picture',
+      inputType: 'image',
+      label: 'Profile Picture',
+      description: 'Upload profile picture',
+      width: 100,
+      height: 100,
+      placeholder: 'Click to upload',
+      tooltip: {
+        content: 'Upload your profile picture (JPG/PNG)'
+      }
+    }, {
+      name: 'audio_signature',
+      inputType: 'waveform',
+      label: 'Audio Signature',
+      description: 'Audio waveform',
+      width: 200,
+      height: 60,
+      placeholder: 'No waveform',
+      tooltip: {
+        content: 'Your audio signature waveform'
+      }
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        content: 'Submit',
+      }, {
+        id: 'cancel',
+        variant: 'se',
+        content: 'Cancel',
+      }],
+    }
+  }
+
+  form.addEventListener('action-click', (e) => {
+    console.log('action-click', e.detail);
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

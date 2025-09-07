@@ -35,12 +35,13 @@ class RettangoliDialogElement extends HTMLElement {
           padding: var(--spacing-lg);
           border: 1px solid var(--border);
           border-radius: var(--border-radius-md);
-          margin-top: 20vh;
-          margin-bottom: 20vh;
           margin-left: var(--spacing-lg);
           margin-right: var(--spacing-lg);
           width: fit-content;
           max-width: calc(100vw - 2 * var(--spacing-lg));
+          /* Default margins will be set dynamically via JavaScript for adaptive centering */
+          margin-top: 40px;
+          margin-bottom: 40px;
         }
 
         /* Size attribute styles */
@@ -176,6 +177,9 @@ class RettangoliDialogElement extends HTMLElement {
 
       // Reset scroll position
       this._dialogElement.scrollTop = 0;
+
+      // Apply adaptive centering
+      this._applyAdaptiveCentering();
     }
   }
 
@@ -185,12 +189,54 @@ class RettangoliDialogElement extends HTMLElement {
 
       // Remove slot to unmount content
       if (this._slotElement) {
+        // Reset any inline styles applied for adaptive centering
+        this._slotElement.style.marginTop = '';
+        this._slotElement.style.marginBottom = '';
+        
         this._dialogElement.removeChild(this._slotElement);
         this._slotElement = null;
       }
 
+      // Reset dialog height
+      this._dialogElement.style.height = '';
+
       // Don't emit any event when programmatically closed via attribute
     }
+  }
+
+  _applyAdaptiveCentering() {
+    if (!this._slotElement) {
+      return;
+    }
+
+    // Use requestAnimationFrame to ensure DOM has updated
+    requestAnimationFrame(() => {
+      if (!this._slotElement) return;
+      
+      // Get the actual height of the content
+      const contentHeight = this._slotElement.offsetHeight;
+      const viewportHeight = window.innerHeight;
+      
+      // Calculate centered position with minimum margins for scrollability
+      const minMargin = 40; // Minimum margin in pixels to ensure scrollability
+      
+      if (contentHeight >= viewportHeight - (2 * minMargin)) {
+        // Content is too tall, use minimum margins to allow scrolling
+        // Start near the top with small margin so content isn't pushed too far down
+        this._slotElement.style.marginTop = `${minMargin}px`;
+        this._slotElement.style.marginBottom = `${minMargin}px`;
+        // Keep dialog at full height for scrolling
+        this._dialogElement.style.height = '100vh';
+      } else {
+        // Content fits, center it vertically
+        const totalMargin = viewportHeight - contentHeight;
+        const margin = Math.floor(totalMargin / 2);
+        this._slotElement.style.marginTop = `${margin}px`;
+        this._slotElement.style.marginBottom = `${margin}px`;
+        // Set dialog height to auto to prevent unnecessary scrollbar
+        this._dialogElement.style.height = 'auto';
+      }
+    });
   }
 
 

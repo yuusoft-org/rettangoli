@@ -1,0 +1,40 @@
+---
+title: "Interactive"
+---
+<rtgl-view h="100vh" w="100vw" ah="c" av="c">
+  <rtgl-button id="button">Hover for Tooltip</rtgl-button>
+
+  <rtgl-tooltip id="tooltip" content="This is a tooltip!" placement="top"></rtgl-tooltip>
+</rtgl-view>
+
+<script>
+  setTimeout(() => {
+    const button = document.getElementById('button');
+    const tooltip = document.getElementById('tooltip');
+    
+    if (!button) {
+      console.error('Button element not found');
+      return;
+    }
+    
+    console.log('Button element:', button);
+    console.log('Initial button rect:', button.getBoundingClientRect());
+
+    button.addEventListener('mouseenter', (e) => {
+      console.log('mouseenter event fired');
+      // Use the button's public getBoundingClientRect method
+      const rect = button.getBoundingClientRect();
+      console.log('button rect:', rect);
+      tooltip.setAttribute('open', '');
+      tooltip.setAttribute('x', rect.left + rect.width / 2);
+      tooltip.setAttribute('y', rect.top - 2);  // Small offset to prevent overlap
+      console.log('tooltip opened at:', rect.left + rect.width / 2, rect.top - 2);
+    });
+
+    button.addEventListener('mouseleave', (e) => {
+      console.log('mouseleave event fired');
+      tooltip.removeAttribute('open');
+      console.log('tooltip closed');
+    });
+  }, 100);
+</script>

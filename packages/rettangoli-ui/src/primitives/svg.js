@@ -1,6 +1,7 @@
 import { css, dimensionWithUnit } from "../common.js";
 import flexChildStyles from "../styles/flexChildStyles.js";
 import paddingSvgStyles from "../styles/paddingSvgStyles.js";
+import marginStyles from "../styles/marginStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import textColorStyles from "../styles/textColorStyles.js";
 
@@ -18,6 +19,7 @@ class RettangoliSvgElement extends HTMLElement {
         }
         ${textColorStyles}
         ${paddingSvgStyles}
+        ${marginStyles}
         ${flexChildStyles}
         ${cursorStyles}
       `);

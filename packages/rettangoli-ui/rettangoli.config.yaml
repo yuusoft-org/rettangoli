@@ -99,6 +99,9 @@ vt:
         - title: "Waveform"
           files: "components/waveform"
           description: "Waveform component tests"
+        - title: "Tooltip"
+          files: "components/tooltip"
+          description: "Tooltip component tests"
     - title: "Examples"
       type: "groupLabel"
       items:

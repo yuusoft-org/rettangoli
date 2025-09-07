@@ -1,0 +1,85 @@
+---
+title: "Placements Interactive"
+---
+<rtgl-view g="lg" h="100vh" w="100vw" ah="c" av="c">
+  <rtgl-view dir="col" g="xl">
+    <!-- Top placements -->
+    <rtgl-view g="lg" ah="c">
+      <rtgl-button id="btn-top-start" w="120">Top Start</rtgl-button>
+      <rtgl-button id="btn-top" w="120">Top</rtgl-button>
+      <rtgl-button id="btn-top-end" w="120">Top End</rtgl-button>
+    </rtgl-view>
+
+    <!-- Middle row with left and right -->
+    <rtgl-view g="lg" av="c">
+      <rtgl-view dir="col" g="md">
+        <rtgl-button id="btn-left-start" w="120">Left Start</rtgl-button>
+        <rtgl-button id="btn-left" w="120">Left</rtgl-button>
+        <rtgl-button id="btn-left-end" w="120">Left End</rtgl-button>
+      </rtgl-view>
+
+      <rtgl-view w="200" h="150"></rtgl-view>
+
+      <rtgl-view dir="col" g="md">
+        <rtgl-button id="btn-right-start" w="120">Right Start</rtgl-button>
+        <rtgl-button id="btn-right" w="120">Right</rtgl-button>
+        <rtgl-button id="btn-right-end" w="120">Right End</rtgl-button>
+      </rtgl-view>
+    </rtgl-view>
+
+    <!-- Bottom placements -->
+    <rtgl-view g="lg" ah="c">
+      <rtgl-button id="btn-bottom-start" w="120">Bottom Start</rtgl-button>
+      <rtgl-button id="btn-bottom" w="120">Bottom</rtgl-button>
+      <rtgl-button id="btn-bottom-end" w="120">Bottom End</rtgl-button>
+    </rtgl-view>
+  </rtgl-view>
+
+  <rtgl-tooltip id="tooltip"></rtgl-tooltip>
+</rtgl-view>
+
+<script>
+  setTimeout(() => {
+    const tooltip = document.getElementById('tooltip');
+    const placements = [
+      'top-start', 'top', 'top-end',
+      'left-start', 'left', 'left-end',
+      'right-start', 'right', 'right-end',
+      'bottom-start', 'bottom', 'bottom-end'
+    ];
+
+    placements.forEach(placement => {
+    const btnId = `btn-${placement}`;
+    const button = document.getElementById(btnId);
+    if (!button) return;
+
+    button.addEventListener('mouseenter', (e) => {
+      // Use the button's public getBoundingClientRect method
+      const rect = button.getBoundingClientRect();
+      let x = rect.left + rect.width / 2;
+      let y = rect.top + rect.height / 2;
+      
+      // Adjust position based on placement to prevent overlap
+      if (placement.startsWith('top')) {
+        y = rect.top;
+      } else if (placement.startsWith('bottom')) {
+        y = rect.bottom;
+      } else if (placement.startsWith('left')) {
+        x = rect.left;
+      } else if (placement.startsWith('right')) {
+        x = rect.right;
+      }
+      
+      tooltip.setAttribute('content', `Placement: ${placement}`);
+      tooltip.setAttribute('placement', placement);
+      tooltip.setAttribute('open', '');
+      tooltip.setAttribute('x', x);
+      tooltip.setAttribute('y', y);
+    });
+
+    button.addEventListener('mouseleave', () => {
+      tooltip.removeAttribute('open');
+    });
+  });
+  }, 100);
+</script>

@@ -17,7 +17,11 @@ title: "Mixed Inputs With Defaults"
     salary: 8000,
     role: 'designer',
     volume: 75,
-    isActive: true
+    isActive: true,
+    anchor: {
+      x: 1,
+      y: 1,
+    }
   }
 
   form.form = {
@@ -76,9 +80,9 @@ title: "Mixed Inputs With Defaults"
       description: 'Select your role',
       placeholder: 'Choose a role',
       options: [
-        { id: 'dev', label: 'Developer', value: 'developer' },
-        { id: 'des', label: 'Designer', value: 'designer' },
-        { id: 'mgr', label: 'Manager', value: 'manager' }
+        { label: 'Developer', value: 'developer' },
+        { label: 'Designer', value: 'designer' },
+        { label: 'Manager', value: 'manager' }
       ]
     }, {
       name: 'volume',
@@ -89,6 +93,22 @@ title: "Mixed Inputs With Defaults"
       max: 100,
       step: 1,
       value: 75
+    }, {
+      name: 'anchor',
+      inputType: 'select',
+      label: 'Anchor',
+      description: 'This is an anchor field',
+      placeholder: 'Click here',
+      required: false,
+      options: [{
+        label: 'Top Left', value: { x: 0, y: 0 },
+      }, {
+        label: 'Top Right', value: { x: 1, y: 0 },
+      }, {
+        label: 'Bottom Left', value: { x: 0, y: 1 },
+      }, {
+        label: 'Bottom Right', value: { x: 1, y: 1 },
+      }],
     }],
     actions: {
       buttons: [{

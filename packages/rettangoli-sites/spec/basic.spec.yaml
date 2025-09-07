@@ -64,3 +64,13 @@ case: fixture012 - Page overwrites static file
 in:
   - fixtures/fixture012
 out: true
+---
+case: fixture-collections - Collections from tags
+in:
+  - fixtures/fixture-collections
+out: true
+---
+case: fixture-custom-functions - Custom functions support
+in:
+  - fixtures/fixture-custom-functions
+out: true
