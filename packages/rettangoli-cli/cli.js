@@ -2,7 +2,7 @@
 
 import { build, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { generate, report, accept } from "@rettangoli/vt/cli";
-import { buildSite, watchSite } from "@rettangoli/sites/cli";
+import { buildSite, watchSite, screenshotCommand } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
 import { Command } from "commander";
 import { readFileSync, existsSync } from "fs";
@@ -258,9 +258,24 @@ sitesCommand
   .description("Watch and rebuild site on changes")
   .option("-p, --port <port>", "The port to use", parseInt, 3001)
   .option("-r, --rootDir <path>", "Path to root directory", ".")
+  .option("-s, --screenshots", "Enable automatic screenshot capture on page changes", false)
   .action(async (options) => {
     console.log("Starting watch mode with options:", options);
     watchSite({
+      port: options.port,
+      rootDir: options.rootDir,
+      screenshots: options.screenshots,
+    });
+  });
+
+sitesCommand
+  .command("screenshot")
+  .description("Capture screenshots of all pages")
+  .option("-p, --port <port>", "The port to use for temp server", parseInt, 3001)
+  .option("-r, --rootDir <path>", "Path to root directory", ".")
+  .action(async (options) => {
+    console.log("Capturing screenshots with options:", options);
+    await screenshotCommand({
       port: options.port,
       rootDir: options.rootDir,
     });

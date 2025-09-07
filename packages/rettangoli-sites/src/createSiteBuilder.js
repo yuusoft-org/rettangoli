@@ -5,7 +5,7 @@ import yaml from 'js-yaml';
 
 import MarkdownIt from 'markdown-it';
 
-export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {} }) {
+export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {}, quiet = false }) {
   return function build() {
     // Use provided mdRender or default to standard markdown-it
     const md = mdRender || MarkdownIt();
@@ -159,7 +159,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {} 
 
     // Function to process a single page file
     function processPage(pagePath, outputRelativePath, isMarkdown = false) {
-      console.log(`Processing ${pagePath}...`);
+      if (!quiet) console.log(`Processing ${pagePath}...`);
 
       // Read page content
       const pageFileContent = fs.readFileSync(pagePath, 'utf8');
@@ -256,7 +256,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {} 
 
       // Write HTML to output file
       fs.writeFileSync(outputPath, htmlString);
-      console.log(`  -> Written to ${outputPath}`);
+      if (!quiet) console.log(`  -> Written to ${outputPath}`);
     }
 
     // Process all YAML and Markdown files in pages directory recursively
@@ -323,11 +323,11 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {} 
         } else if (stats.isFile()) {
           // Copy file
           fs.copyFileSync(src, dest);
-          console.log(`  -> Copied ${src} to ${dest}`);
+          if (!quiet) console.log(`  -> Copied ${src} to ${dest}`);
         }
       }
       
-      console.log('Copying static files...');
+      if (!quiet) console.log('Copying static files...');
       const items = fs.readdirSync(staticDir);
       items.forEach(item => {
         const srcPath = path.join(staticDir, item);
@@ -337,7 +337,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {} 
     }
 
     // Start build process
-    console.log('Starting build process...');
+    if (!quiet) console.log('Starting build process...');
     
     // Copy static files first (they can be overwritten by pages)
     copyStaticFiles();
@@ -345,6 +345,6 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {} 
     // Process all pages (can overwrite static files)
     processAllPages('');
     
-    console.log('Build complete!');
+    if (!quiet) console.log('Build complete!');
   };
 }
