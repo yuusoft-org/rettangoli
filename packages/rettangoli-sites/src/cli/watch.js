@@ -75,16 +75,16 @@ class DevServer {
     // Create WebSocket server
     this.wss = new WebSocketServer({ server: this.httpServer });
     console.log('WebSocket server created');
-    
+
     this.wss.on('connection', (ws) => {
       console.log('✅ Client connected. Total clients:', this.clients.size + 1);
       this.clients.add(ws);
-      
+
       ws.on('close', () => {
         console.log('❌ Client disconnected. Remaining clients:', this.clients.size - 1);
         this.clients.delete(ws);
       });
-      
+
       ws.on('error', (err) => {
         console.error('❌ WebSocket error:', err);
         this.clients.delete(ws);
@@ -104,21 +104,21 @@ class DevServer {
     const urlParts = req.url.split('?');
     let urlPath = urlParts[0];
     const queryString = urlParts[1] || '';
-    
+
     // Check if this is a screenshot request
     const isScreenshotRequest = queryString.includes('screenshot=true');
-    
+
     // Default to index.html for root
     if (urlPath === '/') {
       urlPath = '/index.html';
     }
-    
+
     // Handle trailing slash - remove it for processing
     const hasTrailingSlash = urlPath.endsWith('/') && urlPath !== '/';
     if (hasTrailingSlash) {
       urlPath = urlPath.slice(0, -1);
     }
-    
+
     // Handle paths without extensions
     if (!path.extname(urlPath)) {
       // First try as .html file
@@ -133,16 +133,16 @@ class DevServer {
         }
       }
     }
-    
+
     const filePath = path.join(this.siteDir, urlPath);
-    
+
     // Check if file exists
     if (!existsSync(filePath)) {
       res.writeHead(404);
       res.end('404 Not Found');
       return;
     }
-    
+
     // Check if it's a directory
     const stats = fs.statSync(filePath);
     if (stats.isDirectory()) {
@@ -156,18 +156,18 @@ class DevServer {
         return;
       }
     }
-    
+
     // Serve the file
     this.serveFile(filePath, res, isScreenshotRequest);
   }
-  
+
   serveFile(filePath, res, skipWebSocket = false) {
     const ext = path.extname(filePath);
     const contentType = this.getContentType(ext);
-    
+
     try {
       let content = fs.readFileSync(filePath);
-      
+
       // Inject client script into HTML files (unless it's a screenshot request)
       if (ext === '.html' && !skipWebSocket) {
         content = content.toString();
@@ -180,7 +180,7 @@ class DevServer {
           content = content + CLIENT_SCRIPT;
         }
       }
-      
+
       res.writeHead(200, { 'Content-Type': contentType });
       res.end(content);
     } catch (err) {
@@ -207,12 +207,12 @@ class DevServer {
 
   reloadAll() {
     console.log('📤 Sending reload message to', this.clients.size, 'clients');
-    
+
     // Send a simple reload command to all clients
     const message = JSON.stringify({
       type: 'reload-current'
     });
-    
+
     let sentCount = 0;
     this.clients.forEach(client => {
       if (client.readyState === 1) { // WebSocket.OPEN
@@ -220,7 +220,7 @@ class DevServer {
         sentCount++;
       }
     });
-    
+
     console.log('✅ Reload message sent to', sentCount, 'clients');
   }
 
@@ -234,29 +234,60 @@ class DevServer {
 const setupWatcher = (directory, options, server, screenshotCapture) => {
   let debounceTimer = null;
   let pendingFiles = new Set();
-  
+
   const processChanges = async () => {
     const files = [...pendingFiles];
     pendingFiles.clear();
-    
+
     console.log('Rebuilding site...');
     try {
-      await buildSite({ ...options, quiet: true });
+      // Reload config on each rebuild to pick up changes
+      let currentOptions = { ...options };
+
+      // Only reload config if we don't have a custom mdRender
+      if (!options.mdRender) {
+        try {
+          const configPath = path.join(options.rootDir, 'sites.config.js');
+          const absolutePath = path.resolve(configPath);
+
+          if (existsSync(absolutePath)) {
+            // Clear the module from cache to force reload
+            const configUrl = pathToFileURL(absolutePath).href;
+            delete require.cache[absolutePath];
+
+            const configModule = await import(`${configUrl}?t=${Date.now()}`);
+            const config = configModule.default || {};
+
+            currentOptions = {
+              ...options,
+              mdRender: config.mdRender,
+              functions: config.functions || {}
+            };
+          }
+        } catch (e) {
+          if (e.code !== 'ENOENT') {
+            console.error('Error reloading config:', e);
+            throw e;
+          }
+        }
+      }
+
+      await buildSite({ ...currentOptions, quiet: true });
       console.log('Rebuild complete');
-      
+
       // Just reload all clients - they'll reload their current page
       console.log('🔄 Reloading all connected clients');
       server.reloadAll();
-      
+
       // If screenshots are enabled and pages were changed, capture screenshots
-      const pageFiles = files.filter(file => 
+      const pageFiles = files.filter(file =>
         (file.includes('pages/') || file.startsWith('pages/')) &&
         (file.endsWith('.md') || file.endsWith('.yaml') || file.endsWith('.yml'))
       );
       if (screenshotCapture && pageFiles.length > 0) {
         // Wait a bit for the server to be ready with new content
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
         console.log('📸 Capturing screenshots for changed pages...');
         // Capture screenshots for changed pages
         for (const file of pageFiles) {
@@ -265,12 +296,12 @@ const setupWatcher = (directory, options, server, screenshotCapture) => {
           await screenshotCapture.capturePageScreenshot(file);
         }
       }
-      
+
     } catch (error) {
       console.error('Error during rebuild:', error);
     }
   };
-  
+
   watch(
     directory,
     { recursive: true },
@@ -280,35 +311,35 @@ const setupWatcher = (directory, options, server, screenshotCapture) => {
         if (filename.endsWith('~') || filename.startsWith('.') || filename.includes('/.')) {
           return;
         }
-        
+
         // Skip _site directory if it somehow gets included
         if (filename.includes('_site/')) {
           return;
         }
-        
+
         // For static directory, only rebuild for content files, not binary files
         const isStaticDir = directory.endsWith('/static') || directory.includes('/static/');
         if (isStaticDir) {
           const ext = path.extname(filename).toLowerCase();
           const binaryExts = ['.png', '.jpg', '.jpeg', '.gif', '.ico', '.pdf', '.zip', '.woff', '.woff2', '.ttf', '.eot'];
-          
+
           if (binaryExts.includes(ext)) {
             // For binary files in static, just copy them without full rebuild
             console.log(`📁 Static file changed: ${directory}/${filename} (skipping rebuild)`);
             return;
           }
         }
-        
+
         console.log(`Detected ${event} in ${filename}`);
-        
+
         // Add to pending files for rebuild
         const fullPath = path.join(directory, filename);
         pendingFiles.add(fullPath);
-        
+
         if (debounceTimer) {
           clearTimeout(debounceTimer);
         }
-        
+
         debounceTimer = setTimeout(processChanges, 10);
       }
     },
@@ -317,7 +348,7 @@ const setupWatcher = (directory, options, server, screenshotCapture) => {
 
 // Main watch function
 const watchSite = async (options = {}) => {
-  const { 
+  const {
     port = 3001,
     rootDir = process.cwd(),
     screenshots = false
@@ -353,7 +384,7 @@ const watchSite = async (options = {}) => {
 
   // Do initial build with config
   console.log('Starting initial build...');
-  await buildSite({ 
+  await buildSite({
     rootDir,
     mdRender: config.mdRender,
     functions: config.functions || {}
@@ -374,12 +405,12 @@ const watchSite = async (options = {}) => {
 
   // Watch all relevant directories
   const dirsToWatch = ['data', 'templates', 'partials', 'pages'];
-  
+
   dirsToWatch.forEach(dir => {
     const dirPath = path.join(rootDir, dir);
     if (existsSync(dirPath)) {
       console.log(`👁️  Watching: ${dir}/`);
-      setupWatcher(dirPath, { 
+      setupWatcher(dirPath, {
         rootDir,
         mdRender: config.mdRender,
         functions: config.functions || {}
@@ -396,7 +427,7 @@ const watchSite = async (options = {}) => {
     server.close();
     process.exit();
   });
-  
+
   process.on('SIGTERM', async () => {
     if (screenshotCapture) {
       await screenshotCapture.close();
