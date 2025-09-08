@@ -89,10 +89,17 @@ class RettangoliViewElement extends HTMLElement {
         "wh",
         "w",
         "h",
-        "hidden",
+        "hide",
+        "show",
         "sh",
         "sv",
-        "z"
+        "z",
+        "d",
+        "ah",
+        "av",
+        "flex",
+        "fw",
+        "overflow"
       ]),
     ];
   }
@@ -136,14 +143,13 @@ class RettangoliViewElement extends HTMLElement {
       this._linkElement = null;
     }
   }
+  
+  connectedCallback() {
+    // Force update styles when connected to ensure responsive attributes are processed
+    this.updateStyles();
+  }
 
-  attributeChangedCallback(name, oldValue, newValue) {
-    // Handle href and target changes
-    if (name === "href" || name === "target") {
-      this._updateDOM();
-      return;
-    }
-    
+  updateStyles() {
     // Reset styles for fresh calculation
     this._styles = {
       default: {},
@@ -157,6 +163,7 @@ class RettangoliViewElement extends HTMLElement {
       const addSizePrefix = (tag) => {
         return `${size === "default" ? "" : `${size}-`}${tag}`;
       };
+
 
       const wh = this.getAttribute(addSizePrefix("wh"));
       const width = dimensionWithUnit(
@@ -192,12 +199,110 @@ class RettangoliViewElement extends HTMLElement {
         this._styles[size]["max-height"] = height;
       }
 
-      if (this.hasAttribute(addSizePrefix("hidden"))) {
-        this._styles[size].display = "none !important";
+      if (this.hasAttribute(addSizePrefix("hide"))) {
+        this._styles[size].display = "none";
       }
 
-      if (this.hasAttribute(addSizePrefix("visible"))) {
-        this._styles[size].display = "flex !important";
+      if (this.hasAttribute(addSizePrefix("show"))) {
+        this._styles[size].display = "flex";
+      }
+
+      // Handle flex direction and alignment
+      const direction = this.getAttribute(addSizePrefix("d"));
+      const alignHorizontal = this.getAttribute(addSizePrefix("ah"));
+      const alignVertical = this.getAttribute(addSizePrefix("av"));
+
+
+      if (direction === "h") {
+        this._styles[size]["flex-direction"] = "row";
+      } else if (direction === "v") {
+        this._styles[size]["flex-direction"] = "column";
+      } else if (size === "default" && !direction) {
+        // Check if any responsive direction attributes exist
+        const hasResponsiveDirection = ["sm", "md", "lg", "xl"].some(
+          breakpoint => this.hasAttribute(`${breakpoint}-d`)
+        );
+        if (hasResponsiveDirection) {
+          // Explicitly set column for default to ensure responsive overrides work
+          this._styles[size]["flex-direction"] = "column";
+        }
+      }
+
+      // Handle alignment based on direction
+      const isHorizontal = direction === "h";
+      const isVerticalOrDefault = direction === "v" || !direction;
+
+      // For horizontal direction: ah controls justify-content, av controls align-items
+      if (isHorizontal) {
+        if (alignHorizontal === "c") {
+          this._styles[size]["justify-content"] = "center";
+        } else if (alignHorizontal === "e") {
+          this._styles[size]["justify-content"] = "flex-end";
+        } else if (alignHorizontal === "s") {
+          this._styles[size]["justify-content"] = "flex-start";
+        }
+
+        if (alignVertical === "c") {
+          this._styles[size]["align-items"] = "center";
+          this._styles[size]["align-content"] = "center";
+        } else if (alignVertical === "e") {
+          this._styles[size]["align-items"] = "flex-end";
+          this._styles[size]["align-content"] = "flex-end";
+        } else if (alignVertical === "s") {
+          this._styles[size]["align-items"] = "flex-start";
+        }
+      }
+
+      // For vertical/default direction: ah controls align-items, av controls justify-content
+      if (isVerticalOrDefault && (alignHorizontal !== null || alignVertical !== null)) {
+        if (alignHorizontal === "c") {
+          this._styles[size]["align-items"] = "center";
+        } else if (alignHorizontal === "e") {
+          this._styles[size]["align-items"] = "flex-end";
+        } else if (alignHorizontal === "s") {
+          this._styles[size]["align-items"] = "flex-start";
+        }
+
+        if (alignVertical === "c") {
+          this._styles[size]["justify-content"] = "center";
+        } else if (alignVertical === "e") {
+          this._styles[size]["justify-content"] = "flex-end";
+        } else if (alignVertical === "s") {
+          this._styles[size]["justify-content"] = "flex-start";
+        }
+      }
+
+      // Handle flex property
+      const flex = this.getAttribute(addSizePrefix("flex"));
+      if (flex !== null) {
+        this._styles[size]["flex"] = flex;
+      }
+
+      // Handle flex-wrap
+      const flexWrap = this.getAttribute(addSizePrefix("fw"));
+      if (flexWrap === "w") {
+        this._styles[size]["flex-wrap"] = "wrap";
+      }
+
+      // Handle scroll properties
+      const scrollHorizontal = this.hasAttribute(addSizePrefix("sh"));
+      const scrollVertical = this.hasAttribute(addSizePrefix("sv"));
+      const overflow = this.getAttribute(addSizePrefix("overflow"));
+
+      if (scrollHorizontal && scrollVertical) {
+        this._styles[size]["overflow"] = "scroll";
+        this._styles[size]["flex-wrap"] = "nowrap";
+      } else if (scrollHorizontal) {
+        this._styles[size]["overflow-x"] = "scroll";
+        this._styles[size]["flex-wrap"] = "nowrap";
+      } else if (scrollVertical) {
+        this._styles[size]["overflow-y"] = "scroll";
+        this._styles[size]["flex-wrap"] = "nowrap";
+      }
+
+      if (overflow === "hidden") {
+        this._styles[size]["overflow"] = "hidden";
+        this._styles[size]["flex-wrap"] = "nowrap";
       }
     });
 
@@ -206,6 +311,20 @@ class RettangoliViewElement extends HTMLElement {
     if (newStyleString !== this._lastStyleString) {
       this._styleElement.textContent = newStyleString;
       this._lastStyleString = newStyleString;
+    }
+    
+  }
+  
+  attributeChangedCallback(name, oldValue, newValue) {
+    // Handle href and target changes
+    if (name === "href" || name === "target") {
+      this._updateDOM();
+      return;
+    }
+    
+    // Update styles for all other attributes
+    if (oldValue !== newValue) {
+      this.updateStyles();
     }
   }
 }

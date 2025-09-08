@@ -159,14 +159,23 @@ const spacing = {
 
 function convertObjectToCssString(styleObject, selector = ':host') {
   let result = "";
-  for (const [size, mediaQuery] of Object.entries(mediaQueries)) {
+  // Process in correct order for max-width media queries: default first, then largest to smallest
+  const orderedSizes = ["default", "xl", "lg", "md", "sm"];
+  
+  for (const size of orderedSizes) {
+    const mediaQuery = mediaQueries[size];
+    if (!styleObject[size] || Object.keys(styleObject[size]).length === 0) {
+      continue;
+    }
+    
     if (size !== "default") {
       result += `${mediaQuery} {\n`;
     }
     let cssString = "";
     for (const [key, value] of Object.entries(styleObject[size])) {
       if (value !== undefined && value !== null) {
-        cssString += `${key}: ${value};\n`;
+        // Add !important to override imported styles
+        cssString += `${key}: ${value} !important;\n`;
       }
     }
     result += `${selector} {

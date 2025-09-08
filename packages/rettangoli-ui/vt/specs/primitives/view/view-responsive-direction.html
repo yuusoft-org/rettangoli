@@ -1,0 +1,28 @@
+---
+title: Responsive Direction Tests
+---
+<!-- Test 1: Basic horizontal to vertical -->
+<rtgl-view m="md">
+    <rtgl-text s="sm">Default vertical, Horizontal on Small (< 640px)</rtgl-text>
+    <rtgl-view sm-d="h" g="md" p="md" bgc="mu">
+        <rtgl-view bgc="pr" w="100" h="100" > </rtgl-view>
+        <rtgl-view bgc="se" w="100" h="100" > </rtgl-view>
+        <rtgl-view bgc="ac" w="100" h="100" > </rtgl-view>
+    </rtgl-view>
+
+    <rtgl-view h="24"></rtgl-view>
+
+    <rtgl-view sm-d="v" d="h" g="md" p="md" bgc="mu">
+        <rtgl-view bgc="pr" w="100" h="100" > </rtgl-view>
+        <rtgl-view bgc="se" w="100" h="100" > </rtgl-view>
+        <rtgl-view bgc="ac" w="100" h="100" > </rtgl-view>
+    </rtgl-view>
+
+    <rtgl-view h="24"></rtgl-view>
+
+    <rtgl-view sm-d="h" md-d="v" lg-d="h" g="md" p="md" bgc="mu">
+        <rtgl-view bgc="pr" w="100" h="100" > </rtgl-view>
+        <rtgl-view bgc="se" w="100" h="100" > </rtgl-view>
+        <rtgl-view bgc="ac" w="100" h="100" > </rtgl-view>
+    </rtgl-view>
+</rtgl-view>
