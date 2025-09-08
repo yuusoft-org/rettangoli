@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { buildSite } from './build.js';
 import ScreenshotCapture from './screenshot.js';
+import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 
 // Client script to inject into HTML pages
 const CLIENT_SCRIPT = `
@@ -241,36 +242,14 @@ const setupWatcher = (directory, options, server, screenshotCapture) => {
 
     console.log('Rebuilding site...');
     try {
-      // Reload config on each rebuild to pick up changes
-      let currentOptions = { ...options };
-
-      // Only reload config if we don't have a custom mdRender
-      if (!options.mdRender) {
-        try {
-          const configPath = path.join(options.rootDir, 'sites.config.js');
-          const absolutePath = path.resolve(configPath);
-
-          if (existsSync(absolutePath)) {
-            // Clear the module from cache to force reload
-            const configUrl = pathToFileURL(absolutePath).href;
-            delete require.cache[absolutePath];
-
-            const configModule = await import(`${configUrl}?t=${Date.now()}`);
-            const config = configModule.default || {};
-
-            currentOptions = {
-              ...options,
-              mdRender: config.mdRender,
-              functions: config.functions || {}
-            };
-          }
-        } catch (e) {
-          if (e.code !== 'ENOENT') {
-            console.error('Error reloading config:', e);
-            throw e;
-          }
-        }
-      }
+      // Always reload config on rebuild to pick up function changes
+      const config = await loadSiteConfig(options.rootDir, true, true);
+      
+      const currentOptions = {
+        ...options,
+        mdRender: config.mdRender || options.mdRender,
+        functions: config.functions || options.functions || {}
+      };
 
       await buildSite({ ...currentOptions, quiet: true });
       console.log('Rebuild complete');
@@ -354,20 +333,12 @@ const watchSite = async (options = {}) => {
     screenshots = false
   } = options;
 
-  // Try to load config file if it exists
-  let config = {};
-  try {
-    console.log(`📁 Current working directory: ${process.cwd()}`);
-    console.log(`📁 rootDir parameter: ${rootDir}`);
-    const configPath = path.join(rootDir, 'sites.config.js');
-    const absolutePath = path.resolve(configPath);
-    console.log(`🔍 Looking for config at: ${configPath}`);
-    console.log(`🔍 Absolute path: ${absolutePath}`);
-    console.log(`🔍 File exists: ${existsSync(absolutePath)}`);
-    const configUrl = pathToFileURL(absolutePath).href;
-    console.log(`🔍 Import URL: ${configUrl}`);
-    const configModule = await import(configUrl);
-    config = configModule.default || {};
+  // Load config file
+  console.log(`📁 Current working directory: ${process.cwd()}`);
+  console.log(`📁 rootDir parameter: ${rootDir}`);
+  const config = await loadSiteConfig(rootDir, false);
+  
+  if (Object.keys(config).length > 0) {
     console.log('✅ Loaded sites.config.js');
     if (config.mdRender) {
       console.log('✅ Custom mdRender function found');
@@ -377,9 +348,8 @@ const watchSite = async (options = {}) => {
     if (config.functions) {
       console.log(`✅ Found ${Object.keys(config.functions).length} custom function(s)`);
     }
-  } catch (e) {
-    console.log(`ℹ️  No sites.config.js found at ${path.join(rootDir, 'sites.config.js')}, using defaults`);
-    console.log(`   Error: ${e.message}`);
+  } else {
+    console.log('ℹ️  No sites.config.js found, using defaults');
   }
 
   // Do initial build with config
