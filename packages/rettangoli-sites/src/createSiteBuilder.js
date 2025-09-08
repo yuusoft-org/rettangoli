@@ -120,7 +120,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {},
           } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.md'))) {
             // Extract frontmatter
             const frontmatter = extractFrontmatter(itemPath);
-            
+
             // Calculate URL
             const outputFileName = item.name.replace(/\.(yaml|md)$/, '.html');
             const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
@@ -130,7 +130,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {},
             if (frontmatter.tags) {
               // Normalize tags to array
               const tags = Array.isArray(frontmatter.tags) ? frontmatter.tags : [frontmatter.tags];
-              
+
               // Add to collections
               tags.forEach(tag => {
                 if (typeof tag === 'string' && tag.trim()) {
@@ -296,25 +296,25 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {},
     function copyStaticFiles() {
       const staticDir = path.join(rootDir, 'static');
       const outputDir = path.join(rootDir, '_site');
-      
+
       if (!fs.existsSync(staticDir)) {
         return;
       }
-      
+
       // Ensure output directory exists
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
       }
-      
+
       function copyRecursive(src, dest) {
         const stats = fs.statSync(src);
-        
+
         if (stats.isDirectory()) {
           // Create directory if it doesn't exist
           if (!fs.existsSync(dest)) {
             fs.mkdirSync(dest, { recursive: true });
           }
-          
+
           // Copy all items in directory
           const items = fs.readdirSync(src);
           items.forEach(item => {
@@ -326,7 +326,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {},
           if (!quiet) console.log(`  -> Copied ${src} to ${dest}`);
         }
       }
-      
+
       if (!quiet) console.log('Copying static files...');
       const items = fs.readdirSync(staticDir);
       items.forEach(item => {
@@ -338,13 +338,13 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {},
 
     // Start build process
     if (!quiet) console.log('Starting build process...');
-    
+
     // Copy static files first (they can be overwritten by pages)
     copyStaticFiles();
-    
+
     // Process all pages (can overwrite static files)
     processAllPages('');
-    
+
     if (!quiet) console.log('Build complete!');
   };
 }

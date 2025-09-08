@@ -1,6 +1,6 @@
 import fs from 'fs';
-import path from 'path';
 import { createSiteBuilder } from '../createSiteBuilder.js';
+import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 
 /**
  * Build the static site
@@ -10,27 +10,21 @@ import { createSiteBuilder } from '../createSiteBuilder.js';
  * @param {boolean} options.quiet - Suppress build output logs
  */
 export const buildSite = async (options = {}) => {
-  const { rootDir = process.cwd(), mdRender, quiet = false } = options;
-  
-  // Try to load config file if it exists
+  const { rootDir = process.cwd(), mdRender, functions, quiet = false } = options;
+
+  // Load config file if needed
   let config = {};
-  if (!mdRender) {
-    try {
-      const configPath = path.join(rootDir, 'sites.config.js');
-      const configModule = await import(configPath);
-      config = configModule.default || {};
-    } catch (e) {
-      // Config file is optional, continue without it
-    }
+  if (!mdRender || !functions) {
+    config = await loadSiteConfig(rootDir);
   }
 
-  const build = createSiteBuilder({ 
-    fs, 
+  const build = createSiteBuilder({
+    fs,
     rootDir,
     mdRender: mdRender || config.mdRender,
-    functions: config.functions || {},
+    functions: functions || config.functions || {},
     quiet
   });
-  
+
   build();
 };
