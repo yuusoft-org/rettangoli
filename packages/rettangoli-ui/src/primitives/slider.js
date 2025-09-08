@@ -115,8 +115,8 @@ class RettangoliSliderElement extends HTMLElement {
         "wh",
         "w",
         "h",
-        "hidden",
-        "visible",
+        "hide",
+        "show",
         "op",
         "z",
       ])
@@ -212,11 +212,11 @@ class RettangoliSliderElement extends HTMLElement {
         this._styles[size]["max-height"] = height;
       }
 
-      if (this.hasAttribute(addSizePrefix("hidden"))) {
+      if (this.hasAttribute(addSizePrefix("hide"))) {
         this._styles[size].display = "none !important";
       }
 
-      if (this.hasAttribute(addSizePrefix("visible"))) {
+      if (this.hasAttribute(addSizePrefix("show"))) {
         this._styles[size].display = "block !important";
       }
     });
