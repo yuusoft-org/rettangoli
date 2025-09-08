@@ -4,32 +4,63 @@ title: "Page Outline - Basic"
 <rtgl-view d="h" g="lg" h="100vh" w="f" fw="w">
   <rtgl-view id="content" flex="1" g="xl" h="100vh" sv>
     <rtgl-view>
-      <rtgl-text id="title-1" s="h1">Title 1</rtgl-text>
+      <h1 id="section-1">Introduction</h1>
+      <rtgl-text>This demonstrates the page outline component with nested heading levels.</rtgl-text>
     </rtgl-view>
     <rtgl-view>
-      <rtgl-text id="title-2" s="h1">Title 2</rtgl-text>
+      <h2 id="section-1-1">Overview</h2>
+      <rtgl-text>The component now supports h1-h4 tags and rtgl-text elements.</rtgl-text>
     </rtgl-view>
     <rtgl-view>
-      <rtgl-text id="title-3" s="h1">Title 3</rtgl-text>
+      <h3 id="section-1-1-1">Features</h3>
+      <rtgl-text>It automatically detects heading levels and applies appropriate indentation.</rtgl-text>
     </rtgl-view>
     <rtgl-view>
-      <rtgl-text id="title-4" s="h1">Title 4</rtgl-text>
+      <h4 id="section-1-1-1-1">Nested Structure</h4>
+      <rtgl-text>Deeply nested content is properly indented.</rtgl-text>
     </rtgl-view>
     <rtgl-view>
-      <rtgl-text id="title-5" s="h1">Title 5</rtgl-text>
+      <h2 id="section-1-2">Configuration</h2>
+      <rtgl-text>You can customize the scroll container and offset.</rtgl-text>
     </rtgl-view>
     <rtgl-view>
-      <rtgl-text id="title-6" s="h1">Title 6</rtgl-text>
+      <h1 id="section-2">Getting Started</h1>
+      <rtgl-text>Main section with more content.</rtgl-text>
     </rtgl-view>
     <rtgl-view>
-      <rtgl-text id="title-7" s="h1">Title 7</rtgl-text>
+      <h2 id="section-2-1">Installation</h2>
+      <rtgl-text>How to install the component.</rtgl-text>
     </rtgl-view>
     <rtgl-view>
-      <rtgl-text id="title-8" s="h1">Title 8</rtgl-text>
+      <h3 id="section-2-1-1">Requirements</h3>
+      <rtgl-text>System requirements for the component.</rtgl-text>
     </rtgl-view>
     <rtgl-view>
-      <rtgl-text id="title-9" s="h1">Title 9</rtgl-text>
+      <h3 id="section-2-1-2">Setup</h3>
+      <rtgl-text>Setup instructions.</rtgl-text>
     </rtgl-view>
+    <rtgl-view>
+      <h2 id="section-2-2">Usage</h2>
+      <rtgl-text>How to use the component.</rtgl-text>
+    </rtgl-view>
+    <rtgl-view>
+      <h3 id="section-2-2-1">This is a very long title that will definitely wrap to multiple lines when displayed in the page outline component sidebar navigation</h3>
+      <rtgl-text>Testing how the outline handles long titles that need to wrap.</rtgl-text>
+    </rtgl-view>
+    <rtgl-view>
+      <h1 id="section-3">Advanced Topics</h1>
+      <rtgl-text>Advanced usage and customization.</rtgl-text>
+    </rtgl-view>
+    <rtgl-view>
+      <rtgl-text id="legacy-title" s="h2" data-level="2">Legacy rtgl-text Title</rtgl-text>
+      <rtgl-text>This shows backward compatibility with rtgl-text elements.</rtgl-text>
+    </rtgl-view>
+    <rtgl-view h=80vw></rtgl-view>
   </rtgl-view>
-  <rtgl-page-outline id="page-outline" target-id="content"></rtgl-page-outline>
+  <rtgl-page-outline 
+    id="page-outline" 
+    target-id="content"
+    scroll-container-id="content"
+    offset-top="80">
+  </rtgl-page-outline>
 </rtgl-view>

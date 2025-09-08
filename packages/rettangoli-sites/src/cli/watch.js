@@ -1,6 +1,7 @@
 import fs, { watch, existsSync } from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { buildSite } from './build.js';
 import ScreenshotCapture from './screenshot.js';
@@ -318,13 +319,45 @@ const setupWatcher = (directory, options, server, screenshotCapture) => {
 const watchSite = async (options = {}) => {
   const { 
     port = 3001,
-    rootDir = '.',
+    rootDir = process.cwd(),
     screenshots = false
   } = options;
 
-  // Do initial build
+  // Try to load config file if it exists
+  let config = {};
+  try {
+    console.log(`📁 Current working directory: ${process.cwd()}`);
+    console.log(`📁 rootDir parameter: ${rootDir}`);
+    const configPath = path.join(rootDir, 'sites.config.js');
+    const absolutePath = path.resolve(configPath);
+    console.log(`🔍 Looking for config at: ${configPath}`);
+    console.log(`🔍 Absolute path: ${absolutePath}`);
+    console.log(`🔍 File exists: ${existsSync(absolutePath)}`);
+    const configUrl = pathToFileURL(absolutePath).href;
+    console.log(`🔍 Import URL: ${configUrl}`);
+    const configModule = await import(configUrl);
+    config = configModule.default || {};
+    console.log('✅ Loaded sites.config.js');
+    if (config.mdRender) {
+      console.log('✅ Custom mdRender function found');
+    } else {
+      console.log('ℹ️  No custom mdRender function in config');
+    }
+    if (config.functions) {
+      console.log(`✅ Found ${Object.keys(config.functions).length} custom function(s)`);
+    }
+  } catch (e) {
+    console.log(`ℹ️  No sites.config.js found at ${path.join(rootDir, 'sites.config.js')}, using defaults`);
+    console.log(`   Error: ${e.message}`);
+  }
+
+  // Do initial build with config
   console.log('Starting initial build...');
-  await buildSite({ rootDir });
+  await buildSite({ 
+    rootDir,
+    mdRender: config.mdRender,
+    functions: config.functions || {}
+  });
   console.log('Initial build complete');
 
   // Start custom dev server
@@ -346,7 +379,11 @@ const watchSite = async (options = {}) => {
     const dirPath = path.join(rootDir, dir);
     if (existsSync(dirPath)) {
       console.log(`👁️  Watching: ${dir}/`);
-      setupWatcher(dirPath, { rootDir }, server, screenshotCapture);
+      setupWatcher(dirPath, { 
+        rootDir,
+        mdRender: config.mdRender,
+        functions: config.functions || {}
+      }, server, screenshotCapture);
     }
   });
 

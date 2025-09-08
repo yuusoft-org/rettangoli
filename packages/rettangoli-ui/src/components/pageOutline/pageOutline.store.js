@@ -5,11 +5,56 @@ export const INITIAL_STATE = Object.freeze({
 });
 
 export const toViewData = ({ state }) => {
+  // Find all parent IDs for the current active item
+  const getActiveParentIds = (items, currentId) => {
+    const activeParentIds = new Set();
+    const currentIndex = items.findIndex(item => item.id === currentId);
+    
+    if (currentIndex === -1) return activeParentIds;
+    
+    const currentLevel = items[currentIndex].level;
+    
+    // Look backwards for all parents (items with lower level)
+    for (let i = currentIndex - 1; i >= 0; i--) {
+      if (items[i].level < currentLevel) {
+        // This is a parent - mark all ancestors
+        let ancestorLevel = items[i].level;
+        activeParentIds.add(items[i].id);
+        
+        // Continue looking for grandparents
+        for (let j = i - 1; j >= 0; j--) {
+          if (items[j].level < ancestorLevel) {
+            activeParentIds.add(items[j].id);
+            ancestorLevel = items[j].level;
+          }
+        }
+        break; // Found the immediate parent chain
+      }
+    }
+    
+    return activeParentIds;
+  };
+  
+  const activeParentIds = getActiveParentIds(state.items, state.currentId);
+  
   return {
     items: state.items.map((item) => {
+      const mlValues = {
+        1: '0',
+        2: '12px',
+        3: '24px',
+        4: '32px'
+      };
+
+      const isDirectlyActive = item.id === state.currentId;
+      const isParentActive = activeParentIds.has(item.id);
+      const active = isDirectlyActive || isParentActive;
+      
       return {
         ...item,
-        c: item.id === state.currentId ? 'fg' : 'mu-fg'
+        c: active ? 'fg' : 'mu-fg',
+        ml: mlValues[item.level] || '',
+        bc: active ? "fg" : "mu-fg"
       }
     }),
     currentId: state.currentId
