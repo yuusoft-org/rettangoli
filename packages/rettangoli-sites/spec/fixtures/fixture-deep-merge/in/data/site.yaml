@@ -1,0 +1,9 @@
+name: My Site
+meta:
+  description: Default site description
+  keywords: default, keywords
+  author: Default Author
+config:
+  theme: light
+  language: en
+  showFooter: true

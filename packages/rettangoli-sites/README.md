@@ -172,6 +172,36 @@ title: Blog
               - ${post.data.title}
 ```
 
+### Page Variables
+
+Every page has access to a `page.url` variable that contains the page's URL path. All frontmatter variables (like `title`) are available directly:
+
+**pages/about.yaml**
+```yaml
+---
+title: About Us
+---
+- paragraph: Current page URL is ${page.url}
+```
+
+**templates/base.yaml**
+```yaml
+- tag: head
+  children:
+    - tag: title
+      children: ${title}
+    - tag: link
+      rel: canonical
+      href: ${page.url}
+```
+
+The `page.url` variable contains the page's URL path without the `.html` extension, with trailing slashes:
+- `/index.html` → `page.url` = `/`
+- `/about.html` → `page.url` = `/about/`
+- `/docs/guide.html` → `page.url` = `/docs/guide/`
+
+This variable is available in both pages and templates, making it useful for navigation, breadcrumbs, and canonical URLs.
+
 ### Static Files
 
 Everything in the `static/` directory is copied directly to the output:

@@ -1,0 +1,10 @@
+---
+title: Test Page
+template: test
+meta:
+  description: Custom page description
+  custom: Custom meta field
+config:
+  showHeader: true
+---
+- p: This page tests deep merging of data

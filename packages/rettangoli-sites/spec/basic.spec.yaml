@@ -74,3 +74,18 @@ case: fixture-custom-functions - Custom functions support
 in:
   - fixtures/fixture-custom-functions
 out: true
+---
+case: fixture-page-url - Page URL variable
+in:
+  - fixtures/fixture-page-url
+out: true
+---
+case: fixture-markdown-frontmatter - Markdown frontmatter access
+in:
+  - fixtures/fixture-markdown-frontmatter
+out: true
+---
+case: fixture-deep-merge - Deep merge of global and page data
+in:
+  - fixtures/fixture-deep-merge
+out: true

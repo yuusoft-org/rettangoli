@@ -5,6 +5,31 @@ import yaml from 'js-yaml';
 
 import MarkdownIt from 'markdown-it';
 
+// Deep merge utility function
+function deepMerge(target, source) {
+  const output = { ...target };
+  
+  if (isObject(target) && isObject(source)) {
+    Object.keys(source).forEach(key => {
+      if (isObject(source[key])) {
+        if (!(key in target)) {
+          Object.assign(output, { [key]: source[key] });
+        } else {
+          output[key] = deepMerge(target[key], source[key]);
+        }
+      } else {
+        Object.assign(output, { [key]: source[key] });
+      }
+    });
+  }
+  
+  return output;
+}
+
+function isObject(item) {
+  return item && typeof item === 'object' && !Array.isArray(item);
+}
+
 export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {}, quiet = false }) {
   return function build() {
     // Use provided mdRender or default to standard markdown-it
@@ -124,7 +149,14 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {},
             // Calculate URL
             const outputFileName = item.name.replace(/\.(yaml|md)$/, '.html');
             const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
-            const url = '/' + outputRelativePath.replace(/\\/g, '/');
+            let url = '/' + outputRelativePath.replace(/\\/g, '/').replace(/\.html$/, '');
+            // Special case: /index becomes /
+            if (url === '/index') {
+              url = '/';
+            } else {
+              // Add trailing slash for all non-root URLs
+              url = url + '/';
+            }
 
             // Process tags
             if (frontmatter.tags) {
@@ -193,8 +225,20 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {},
       const contentStart = frontmatterEnd + 1;
       const rawContent = lines.slice(contentStart).join('\n').trim();
 
-      // Merge global data with frontmatter and collections for the page context
-      const pageData = { ...globalData, ...frontmatter, collections };
+      // Calculate URL for current page
+      let url = '/' + outputRelativePath.replace(/\\/g, '/').replace(/\.html$/, '');
+      // Special case: /index becomes /
+      if (url === '/index') {
+        url = '/';
+      } else {
+        // Add trailing slash for all non-root URLs
+        url = url + '/';
+      }
+
+      // Deep merge global data with frontmatter and collections for the page context
+      const pageData = deepMerge(globalData, frontmatter);
+      pageData.collections = collections;
+      pageData.page = { url };
 
       let processedPageContent;
 

@@ -1,0 +1,17 @@
+- html:
+    - head:
+        - title: "${title}"
+        - 'meta name="description" content="${description}"': []
+        - 'meta name="author" content="${author}"': []
+    - body:
+        - h1: "${title}"
+        - div.frontmatter-test:
+            - p: "Title: ${title}"
+            - p: "Description: ${description}"
+            - p: "Author: ${author}"
+            - p: "Custom Field: ${custom_field}"
+            - p: "Nested Field 1: ${nested.field1}"
+            - p: "Nested Field 2: ${nested.field2}"
+            - p: "Page URL: ${page.url}"
+        - div.content:
+            - "${content}"

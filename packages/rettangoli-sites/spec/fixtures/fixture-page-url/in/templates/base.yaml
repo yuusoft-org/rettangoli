@@ -1,0 +1,8 @@
+- html:
+    - head:
+        - title: "${title}"
+        - 'link rel="canonical" href="${page.url}"': []
+    - body:
+        - h1: "${title}"
+        - div.url-info: "Current URL is ${page.url}"
+        - main: "${content}"

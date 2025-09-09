@@ -1,0 +1,5 @@
+---
+title: User Guide
+template: base
+---
+- p: "This nested page URL is ${page.url}"
