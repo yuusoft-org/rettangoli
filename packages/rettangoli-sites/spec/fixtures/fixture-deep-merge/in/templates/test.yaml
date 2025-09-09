@@ -1,0 +1,16 @@
+- html:
+    - body:
+        - h1: "${title}"
+        - div.data-test:
+            - p: "Site name: ${site.name}"
+            - h3: "Testing deep merge of site.meta:"
+            - p: "Global - site meta description: ${site.meta.description}"
+            - p: "Global - site meta keywords: ${site.meta.keywords}"
+            - p: "Global - site meta author: ${site.meta.author}"
+            - p: "Page - meta custom: ${meta.custom}"
+            - h3: "Testing deep merge of site.config:"
+            - p: "Global - site config theme: ${site.config.theme}"
+            - p: "Global - site config language: ${site.config.language}"
+            - p: "Global - site config showFooter: ${site.config.showFooter}"
+            - p: "Page - config showHeader: ${config.showHeader}"
+        - div.content: "${content}"
