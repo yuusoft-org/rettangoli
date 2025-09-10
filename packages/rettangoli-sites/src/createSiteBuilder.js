@@ -4,6 +4,7 @@ import path from 'path';
 import yaml from 'js-yaml';
 
 import MarkdownIt from 'markdown-it';
+import rtglMarkdown from './rtglMarkdown.js';
 
 // Deep merge utility function
 function deepMerge(target, source) {
@@ -32,8 +33,8 @@ function isObject(item) {
 
 export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {}, quiet = false }) {
   return function build() {
-    // Use provided mdRender or default to standard markdown-it
-    const md = mdRender || MarkdownIt();
+    // Use provided mdRender or default to rtglMarkdown
+    const md = mdRender || rtglMarkdown(MarkdownIt);
 
     // Read all partials and create a JSON object
     const partialsDir = path.join(rootDir, 'partials');

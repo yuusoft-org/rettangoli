@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 // Watch mode for development
 import { watchSite } from './src/cli/index.js';
 

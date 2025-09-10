@@ -21,7 +21,7 @@ export const buildSite = async (options = {}) => {
   const build = createSiteBuilder({
     fs,
     rootDir,
-    mdRender: mdRender || config.mdRender,
+    mdRender: mdRender || config.md,
     functions: functions || config.functions || {},
     quiet
   });

@@ -6,7 +6,7 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "0.0.11-rc19",
+      "version": "0.0.11-rc21",
       "bin": {
         "rtgl": "./cli.js",
       },
@@ -34,7 +34,7 @@
     },
     "packages/rettangoli-sites": {
       "name": "@rettangoli/sites",
-      "version": "0.2.0-rc4",
+      "version": "0.2.0-rc6",
       "dependencies": {
         "jempl": "^0.3.1-rc1",
         "js-yaml": "^4.1.0",
