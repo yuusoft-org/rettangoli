@@ -18,15 +18,12 @@ class ScreenshotCapture {
     this.browser = await chromium.launch({ 
       headless: true
     });
-    this.context = await this.browser.newContext({
-      viewport: { width: 1366, height: 768 },  // Most common laptop viewport
-      deviceScaleFactor: 0.75  // Reduce pixel density for smaller PNG files
-    });
+    // Don't create a context here - we'll create multiple contexts for parallel processing
     this.isInitialized = true;
     console.log('✅ Browser initialized for screenshots');
   }
 
-  async capturePageScreenshot(pagePath) {
+  async capturePageScreenshot(pagePath, context = null) {
     if (!this.isInitialized) {
       await this.init();
     }
@@ -76,7 +73,16 @@ class ScreenshotCapture {
 
       console.log(`📸 Capturing screenshot: ${url} -> ${fullScreenshotPath}`);
       
-      const page = await this.context.newPage();
+      // Create a context if not provided
+      const shouldCloseContext = !context;
+      if (!context) {
+        context = await this.browser.newContext({
+          viewport: { width: 1366, height: 768 },  // Most common laptop viewport
+          deviceScaleFactor: 0.75  // Reduce pixel density for smaller PNG files
+        });
+      }
+      
+      const page = await context.newPage();
       
       try {
         // Navigate to the page
@@ -100,6 +106,10 @@ class ScreenshotCapture {
         console.error(`❌ Failed to capture ${url}:`, error.message);
       } finally {
         await page.close();
+        // Close context if we created it
+        if (shouldCloseContext) {
+          await context.close();
+        }
       }
     } catch (error) {
       console.error('❌ Screenshot error:', error);
@@ -112,7 +122,10 @@ class ScreenshotCapture {
       return;
     }
 
-    const captureRecursive = async (dir, basePath = '') => {
+    // First, collect all page paths
+    const pagePaths = [];
+    
+    const collectPaths = (dir, basePath = '') => {
       const entries = fs.readdirSync(dir, { withFileTypes: true });
       
       for (const entry of entries) {
@@ -121,16 +134,55 @@ class ScreenshotCapture {
         
         if (entry.isDirectory()) {
           // Recurse into subdirectories
-          await captureRecursive(fullPath, relativePath);
+          collectPaths(fullPath, relativePath);
         } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.yaml') || entry.name.endsWith('.yml'))) {
-          // Capture screenshot for this page
+          // Add page path to the list
           const pagePath = path.join('pages', relativePath);
-          await this.capturePageScreenshot(pagePath);
+          pagePaths.push(pagePath);
         }
       }
     };
 
-    await captureRecursive(pagesDir);
+    collectPaths(pagesDir);
+    
+    console.log(`📸 Found ${pagePaths.length} pages to capture`);
+    
+    // Process pages in parallel with concurrency limit of 12
+    const concurrency = 12;
+    const results = [];
+    
+    // Create contexts for parallel processing
+    const contexts = await Promise.all(
+      Array(Math.min(concurrency, pagePaths.length))
+        .fill(null)
+        .map(() => this.browser.newContext({
+          viewport: { width: 1366, height: 768 },  // Most common laptop viewport
+          deviceScaleFactor: 0.75  // Reduce pixel density for smaller PNG files
+        }))
+    );
+    
+    try {
+      for (let i = 0; i < pagePaths.length; i += concurrency) {
+        const batch = pagePaths.slice(i, i + concurrency);
+        console.log(`📸 Processing batch ${Math.floor(i / concurrency) + 1}/${Math.ceil(pagePaths.length / concurrency)} (${batch.length} pages)`);
+        
+        const batchPromises = batch.map((pagePath, index) => 
+          this.capturePageScreenshot(pagePath, contexts[index]).catch(error => {
+            console.error(`Failed to capture ${pagePath}:`, error);
+            return null;
+          })
+        );
+        
+        const batchResults = await Promise.all(batchPromises);
+        results.push(...batchResults);
+      }
+    } finally {
+      // Clean up contexts
+      await Promise.all(contexts.map(ctx => ctx.close()));
+    }
+    
+    console.log(`✅ Completed capturing ${pagePaths.length} screenshots`);
+    return results;
   }
 
   async close() {
