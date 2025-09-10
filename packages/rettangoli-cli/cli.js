@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { build, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { generate, report, accept } from "@rettangoli/vt/cli";
 import { buildSite, watchSite, screenshotCommand } from "@rettangoli/sites/cli";
@@ -250,7 +252,7 @@ sitesCommand
       outputPath: options.outputPath,
     });
     console.log("Build completed successfully!");
-    
+
     // If screenshots option is enabled, run screenshot command
     if (options.screenshots) {
       console.log("Capturing screenshots...");
