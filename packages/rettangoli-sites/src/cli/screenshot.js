@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import path from 'node:path';
 import fs from 'node:fs';
+import sharp from 'sharp';
 
 class ScreenshotCapture {
   constructor(port = 3001, outputDir = '_screenshots') {
@@ -50,20 +51,21 @@ class ScreenshotCapture {
       const url = `http://localhost:${this.port}${urlPath}?screenshot=true`;
       
       // Determine screenshot path
-      // / -> index.png
-      // /about -> about.png
-      // /store/ -> store/index.png
-      // /store/products -> store/products.png
+      // / -> index.webp
+      // /about -> about.webp
+      // /store/ -> store/index.webp
+      // /store/products -> store/products.webp
       let screenshotPath;
       if (urlPath === '/') {
-        screenshotPath = 'index.png';
+        screenshotPath = 'index.webp';
       } else if (urlPath.endsWith('/')) {
-        screenshotPath = urlPath.slice(1, -1) + '/index.png';
+        screenshotPath = urlPath.slice(1, -1) + '/index.webp';
       } else {
-        screenshotPath = urlPath.slice(1) + '.png';
+        screenshotPath = urlPath.slice(1) + '.webp';
       }
       
       const fullScreenshotPath = path.join(this.outputDir, screenshotPath);
+      const tempPngPath = fullScreenshotPath.replace('.webp', '.png');
       
       // Ensure directory exists
       const screenshotDir = path.dirname(fullScreenshotPath);
@@ -94,16 +96,30 @@ class ScreenshotCapture {
         // // Wait a bit for content to load
         // await page.waitForTimeout(2000);
         
-        // Take screenshot with PNG optimization
+        // Take screenshot as PNG first (Playwright doesn't support WebP)
         await page.screenshot({ 
-          path: fullScreenshotPath,
+          path: tempPngPath,
           fullPage: true,
           type: 'png'
         });
         
+        // Convert PNG to WebP using Sharp
+        await sharp(tempPngPath)
+          .webp({ quality: 85 })
+          .toFile(fullScreenshotPath);
+        
+        // Remove temporary PNG file
+        if (fs.existsSync(tempPngPath)) {
+          fs.unlinkSync(tempPngPath);
+        }
+        
         console.log(`✅ Screenshot saved: ${fullScreenshotPath}`);
       } catch (error) {
         console.error(`❌ Failed to capture ${url}:`, error.message);
+        // Clean up temp PNG file if it exists
+        if (fs.existsSync(tempPngPath)) {
+          fs.unlinkSync(tempPngPath);
+        }
       } finally {
         await page.close();
         // Close context if we created it
