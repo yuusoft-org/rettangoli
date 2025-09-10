@@ -1,5 +1,6 @@
 import path from 'path';
 import { pathToFileURL } from 'url';
+import MarkdownIt from 'markdown-it';
 
 /**
  * Load the sites.config.js file from a given directory
@@ -19,7 +20,16 @@ export async function loadSiteConfig(rootDir, throwOnError = true, bustCache = f
     }
     
     const configModule = await import(importUrl);
-    return configModule.default || {};
+    const configExport = configModule.default;
+    
+    // Check if the export is a function
+    if (typeof configExport === 'function') {
+      // Call the function with markdownit constructor
+      return configExport({ markdownit: MarkdownIt }) || {};
+    }
+    
+    // Otherwise return as is (for backward compatibility)
+    return configExport || {};
   } catch (e) {
     // Only ignore file not found errors
     if (e.code === 'ENOENT') {

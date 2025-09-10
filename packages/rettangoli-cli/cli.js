@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import { build, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { generate, report, accept } from "@rettangoli/vt/cli";
 import { buildSite, watchSite, screenshotCommand } from "@rettangoli/sites/cli";
@@ -244,13 +242,22 @@ sitesCommand
   .description("Build the site")
   .option("-r, --rootDir <path>", "Path to root directory", "./")
   .option("-o, --outputPath <path>", "Path to destination directory", "./_site")
+  .option("-s, --screenshots", "Capture screenshots after build", false)
   .action(async (options) => {
     console.log("Building site with options:", options);
-    buildSite({
+    await buildSite({
       rootDir: options.rootDir,
       outputPath: options.outputPath,
     });
     console.log("Build completed successfully!");
+    
+    // If screenshots option is enabled, run screenshot command
+    if (options.screenshots) {
+      console.log("Capturing screenshots...");
+      await screenshotCommand({
+        rootDir: options.rootDir,
+      });
+    }
   });
 
 sitesCommand

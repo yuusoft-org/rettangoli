@@ -4,7 +4,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { buildSite } from './build.js';
-import ScreenshotCapture from './screenshot.js';
+import { createScreenshotCapture } from '../screenshot.js';
 import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 
 // Client script to inject into HTML pages
@@ -247,7 +247,7 @@ const setupWatcher = (directory, options, server, screenshotCapture) => {
       
       const currentOptions = {
         ...options,
-        mdRender: config.mdRender || options.mdRender,
+        md: config.md || options.md,
         functions: config.functions || options.functions || {}
       };
 
@@ -340,10 +340,10 @@ const watchSite = async (options = {}) => {
   
   if (Object.keys(config).length > 0) {
     console.log('✅ Loaded sites.config.js');
-    if (config.mdRender) {
-      console.log('✅ Custom mdRender function found');
+    if (config.md) {
+      console.log('✅ Custom md function found');
     } else {
-      console.log('ℹ️  No custom mdRender function in config');
+      console.log('ℹ️  No custom md function in config');
     }
     if (config.functions) {
       console.log(`✅ Found ${Object.keys(config.functions).length} custom function(s)`);
@@ -356,7 +356,7 @@ const watchSite = async (options = {}) => {
   console.log('Starting initial build...');
   await buildSite({
     rootDir,
-    mdRender: config.mdRender,
+    md: config.md,
     functions: config.functions || {}
   });
   console.log('Initial build complete');
@@ -369,8 +369,7 @@ const watchSite = async (options = {}) => {
   let screenshotCapture = null;
   if (screenshots) {
     console.log('\n📸 Screenshot capture enabled');
-    screenshotCapture = new ScreenshotCapture(port);
-    await screenshotCapture.init();
+    screenshotCapture = await createScreenshotCapture(port);
   }
 
   // Watch all relevant directories
@@ -382,7 +381,7 @@ const watchSite = async (options = {}) => {
       console.log(`👁️  Watching: ${dir}/`);
       setupWatcher(dirPath, {
         rootDir,
-        mdRender: config.mdRender,
+        md: config.md,
         functions: config.functions || {}
       }, server, screenshotCapture);
     }
