@@ -105,7 +105,7 @@ class ScreenshotCapture {
         
         // Convert PNG to WebP using Sharp
         await sharp(tempPngPath)
-          .webp({ quality: 85 })
+          .webp({ quality: 100 })
           .toFile(fullScreenshotPath);
         
         // Remove temporary PNG file
