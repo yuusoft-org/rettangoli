@@ -247,7 +247,7 @@ const setupWatcher = (directory, options, server, screenshotCapture) => {
       
       const currentOptions = {
         ...options,
-        mdRender: config.md || options.mdRender,
+        md: config.md || options.md,
         functions: config.functions || options.functions || {}
       };
 
@@ -356,7 +356,7 @@ const watchSite = async (options = {}) => {
   console.log('Starting initial build...');
   await buildSite({
     rootDir,
-    mdRender: config.md,
+    md: config.md,
     functions: config.functions || {}
   });
   console.log('Initial build complete');
@@ -382,7 +382,7 @@ const watchSite = async (options = {}) => {
       console.log(`👁️  Watching: ${dir}/`);
       setupWatcher(dirPath, {
         rootDir,
-        mdRender: config.md,
+        md: config.md,
         functions: config.functions || {}
       }, server, screenshotCapture);
     }

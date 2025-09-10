@@ -31,10 +31,10 @@ function isObject(item) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
 
-export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {}, quiet = false }) {
+export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet = false }) {
   return function build() {
-    // Use provided mdRender or default to rtglMarkdown
-    const md = mdRender || rtglMarkdown(MarkdownIt);
+    // Use provided md or default to rtglMarkdown
+    const mdInstance = md || rtglMarkdown(MarkdownIt);
 
     // Read all partials and create a JSON object
     const partialsDir = path.join(rootDir, 'partials');
@@ -245,7 +245,7 @@ export function createSiteBuilder({ fs, rootDir = '.', mdRender, functions = {},
 
       if (isMarkdown) {
         // Process markdown content with MarkdownIt
-        const htmlContent = md.render(rawContent);
+        const htmlContent = mdInstance.render(rawContent);
         // For markdown, store as raw HTML that will be inserted directly
         processedPageContent = { __html: htmlContent };
       } else {

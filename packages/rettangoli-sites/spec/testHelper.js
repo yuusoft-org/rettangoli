@@ -4,7 +4,8 @@ import { createSiteBuilder } from '../src/createSiteBuilder.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import config from '../sites.config.js';
+import MarkdownIt from 'markdown-it';
+import configFunction from '../sites.config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -44,6 +45,9 @@ export function runTest(fixturePath) {
   const inputFiles = loadFixture(path.join(fixtureDir, 'in'));
   vol.fromJSON(inputFiles);
 
+  // Get config by calling the function
+  const config = configFunction({ markdownit: MarkdownIt });
+  
   // Check if this is the custom-functions fixture and add all needed functions for the test
   const isCustomFunctionsFixture = fixturePath.includes('fixture-custom-functions');
   const functions = isCustomFunctionsFixture ? {
@@ -77,7 +81,7 @@ export function runTest(fixturePath) {
   const build = createSiteBuilder({
     fs: memfs,
     rootDir: '/',
-    mdRender: config.mdRender,
+    md: config.md,
     functions: functions
   });
   build();
