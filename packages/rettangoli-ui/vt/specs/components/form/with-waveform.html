@@ -23,12 +23,12 @@ title: "With Waveform"
       return currentSeed / Math.pow(2, 32);
     };
 
-    const data = [];
+    const amplitudes = [];
     for (let i = 0; i < 100; i++) {
-      data.push(random() * 0.8 + 0.2);
+      amplitudes.push(random() * 0.8 + 0.2);
     }
     return {
-      data,
+      amplitudes,
       duration: 10.0,
       sampleRate: 44100,
       channels: 2

@@ -51,11 +51,11 @@ async function renderWaveform(waveformData, canvas) {
   ctx.fillStyle = "#1a1a1a";
   ctx.fillRect(0, 0, width, height);
 
-  if (!waveformData || !waveformData.data) {
+  if (!waveformData || !waveformData.amplitudes) {
     return;
   }
 
-  const data = waveformData.data;
+  const amplitudes = waveformData.amplitudes;
   const centerY = height / 2;
 
   // Create gradient for waveform
@@ -65,11 +65,11 @@ async function renderWaveform(waveformData, canvas) {
   gradient.addColorStop(1, "#404040");
 
   // Draw waveform bars
-  const barWidth = Math.max(1, width / data.length);
+  const barWidth = Math.max(1, width / amplitudes.length);
   const barSpacing = 0.2; // 20% spacing between bars
 
-  for (let i = 0; i < data.length; i++) {
-    const amplitude = data[i];
+  for (let i = 0; i < amplitudes.length; i++) {
+    const amplitude = amplitudes[i];
     const barHeight = amplitude * (height * 0.85);
     const x = i * barWidth;
     const y = centerY - barHeight / 2;
