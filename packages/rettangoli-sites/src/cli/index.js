@@ -1,6 +1,6 @@
 import { buildSite } from './build.js';
 import watchSite from './watch.js';
-import screenshotCommand from './screenshot-command.js';
+import screenshotCommand from '../screenshotRunner.js';
 
 export {
   buildSite,

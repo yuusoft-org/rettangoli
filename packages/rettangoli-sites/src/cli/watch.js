@@ -4,7 +4,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { buildSite } from './build.js';
-import { createScreenshotCapture } from './screenshot.js';
+import { createScreenshotCapture } from '../screenshot.js';
 import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 
 // Client script to inject into HTML pages

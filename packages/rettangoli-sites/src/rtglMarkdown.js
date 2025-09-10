@@ -14,7 +14,7 @@ export default function configureMarkdown(markdownit) {
   const md = markdownit({
     html: true,
     linkify: true,
-    typographer: true
+    typographer: false
   })
 
   // Override heading renderer to add IDs and wrap with anchor links

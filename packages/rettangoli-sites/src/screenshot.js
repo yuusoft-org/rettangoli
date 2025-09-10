@@ -2,6 +2,7 @@ import { chromium } from 'playwright';
 import path from 'node:path';
 import fs from 'node:fs';
 import sharp from 'sharp';
+import { minimatch } from 'minimatch';
 
 // Module state for browser instance
 let browser = null;
@@ -141,13 +142,28 @@ export async function capturePageScreenshot(pagePath, options = {}) {
 export async function captureAllPages(pagesDir, options = {}) {
   const {
     port = 3001,
-    outputDir = '_screenshots'
+    outputDir = '_screenshots',
+    ignorePatterns = []
   } = options;
   
   if (!fs.existsSync(pagesDir)) {
     console.log('Pages directory does not exist:', pagesDir);
     return;
   }
+
+  // Helper function to check if a path should be ignored
+  const shouldIgnore = (relativePath) => {
+    // Remove 'pages/' prefix for matching
+    const pathToMatch = relativePath.replace(/^pages\//, '');
+    
+    return ignorePatterns.some(pattern => {
+      // Handle exact matches and glob patterns
+      return minimatch(pathToMatch, pattern, { 
+        matchBase: true,  // Allow patterns to match basename
+        dot: true         // Allow patterns to match files starting with dot
+      });
+    });
+  };
 
     // First, collect all page paths
     const pagePaths = [];
@@ -160,11 +176,21 @@ export async function captureAllPages(pagesDir, options = {}) {
         const relativePath = path.join(basePath, entry.name);
         
         if (entry.isDirectory()) {
+          // Check if directory should be ignored
+          const dirPath = path.join('pages', relativePath);
+          if (shouldIgnore(dirPath)) {
+            console.log(`⏭️  Ignoring directory: ${relativePath}`);
+            continue;
+          }
           // Recurse into subdirectories
           collectPaths(fullPath, relativePath);
         } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.yaml') || entry.name.endsWith('.yml'))) {
           // Add page path to the list
           const pagePath = path.join('pages', relativePath);
+          if (shouldIgnore(pagePath)) {
+            console.log(`⏭️  Ignoring file: ${relativePath}`);
+            continue;
+          }
           pagePaths.push(pagePath);
         }
       }
@@ -218,7 +244,7 @@ export async function createScreenshotCapture(port = 3001, outputDir = '_screens
   
   return {
     capturePageScreenshot: (pagePath) => capturePageScreenshot(pagePath, { port, outputDir }),
-    captureAllPages: (pagesDir) => captureAllPages(pagesDir, { port, outputDir }),
+    captureAllPages: (pagesDir, options = {}) => captureAllPages(pagesDir, { port, outputDir, ...options }),
     close: closeBrowser
   };
 }

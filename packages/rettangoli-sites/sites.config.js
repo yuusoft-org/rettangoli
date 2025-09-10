@@ -5,6 +5,20 @@ export default function({ markdownit }) {
   return {
     md: rtglMarkdown(markdownit),
 
+    // Screenshot configuration
+    screenshots: {
+      // Files and folders to ignore when taking screenshots
+      // Supports glob patterns and exact paths
+      ignore: [
+        // Example patterns:
+        // 'admin/**',      // Ignore all files in admin folder
+        // '**/_*',         // Ignore files starting with underscore
+        // '**/test/**',    // Ignore test folders anywhere
+        // 'private.md',    // Ignore specific file
+        // '*.draft.md',    // Ignore all draft files
+      ]
+    },
+
     // Example custom functions that can be used in jempl templates
     functions: {
       // Convert string to uppercase
