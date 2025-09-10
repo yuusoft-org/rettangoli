@@ -3,7 +3,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { existsSync } from 'node:fs';
 import { buildSite } from './build.js';
-import ScreenshotCapture from './screenshot.js';
+import { createScreenshotCapture } from './screenshot.js';
 
 class TempDevServer {
   constructor(port = 3001) {
@@ -146,8 +146,7 @@ const screenshotCommand = async (options = {}) => {
   await server.start();
 
   // Initialize screenshot capture
-  const screenshotCapture = new ScreenshotCapture(port);
-  await screenshotCapture.init();
+  const screenshotCapture = await createScreenshotCapture(port);
 
   try {
     // Capture screenshots for all pages

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { buildSite } from './build.js';
-import ScreenshotCapture from './screenshot.js';
+import { createScreenshotCapture } from './screenshot.js';
 import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 
 // Client script to inject into HTML pages
@@ -369,8 +369,7 @@ const watchSite = async (options = {}) => {
   let screenshotCapture = null;
   if (screenshots) {
     console.log('\n📸 Screenshot capture enabled');
-    screenshotCapture = new ScreenshotCapture(port);
-    await screenshotCapture.init();
+    screenshotCapture = await createScreenshotCapture(port);
   }
 
   // Watch all relevant directories
