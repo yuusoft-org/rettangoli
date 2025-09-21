@@ -64,16 +64,19 @@ async function startViteServer(options) {
 const startWatching = async (options) => {
   const { dirs = ['src'], port = 3001 } = options;
 
-  // Do initial build with all directories
-  console.log('Starting initial build...');
-  await buildRettangoliFrontend({
+  // Set development mode for all builds in watch mode
+  const watchOptions = {
     development: true,
     ...options
-  });
+  };
+
+  // Do initial build with all directories
+  console.log('Starting initial build...');
+  await buildRettangoliFrontend(watchOptions);
   console.log('Initial build complete');
 
   dirs.forEach(dir => {
-    setupWatcher(dir, options);
+    setupWatcher(dir, watchOptions);
   });
 
   startViteServer({ port, outfile: options.outfile });
