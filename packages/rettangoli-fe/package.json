@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/fe",
-  "version": "0.0.7-rc15",
+  "version": "0.0.7-rc16",
   "description": "Frontend framework for building reactive web components",
   "type": "module",
   "main": "./src/index.js",
@@ -29,7 +29,7 @@
   "dependencies": {
     "esbuild": "^0.25.5",
     "immer": "^10.1.1",
-    "jempl": "0.1.2-rc3",
+    "jempl": "0.3.2-rc2",
     "js-yaml": "^4.1.0",
     "rxjs": "^7.8.2",
     "snabbdom": "^3.6.2",
