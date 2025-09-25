@@ -1,0 +1,22 @@
+---
+title: "Notification - Basic"
+---
+<rtgl-view g="lg" h="100vh" w="f" fw="w">
+  <rtgl-button id="button">Show notification</rtgl-button>
+  <rtgl-notification id="notification">
+  </rtgl-notification>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+
+  const notification = document.getElementById('notification');
+
+  button.addEventListener('click', () => {
+    notification.transformedHandlers.showConfirm({
+      message: 'This is a basic notification message.',
+    });
+  });
+
+</script>
+

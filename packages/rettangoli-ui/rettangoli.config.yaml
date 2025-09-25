@@ -8,9 +8,9 @@ ui:
     outfile: src/svg/rtgl-icons.js
 
 fe:
-   dirs: ['src/components'] # directories that contain components
-   setup: 'src/setup.js' # path to setup.js file
-   outfile: 'vt/static/public/main.js' # output this is separate from rettangoli file
+  dirs: ["src/components"] # directories that contain components
+  setup: "src/setup.js" # path to setup.js file
+  outfile: "vt/static/public/main.js" # output this is separate from rettangoli file
   #  watchPort: 3001
 
 # all sites configuration
@@ -20,7 +20,7 @@ fe:
 
 # all visual testing configuration
 vt:
-  path: 'vt'
+  path: "vt"
   name: "Rettangoli UI Visual Tests"
   description: "Visual testing for Rettangoli UI components"
   sections:
@@ -102,6 +102,9 @@ vt:
         - title: "Tooltip"
           files: "components/tooltip"
           description: "Tooltip component tests"
+        - title: "Notification"
+          files: "components/notification"
+          description: "Notification component tests"
     - title: "Examples"
       type: "groupLabel"
       items:
