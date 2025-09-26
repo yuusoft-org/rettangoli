@@ -7,6 +7,7 @@ import RettangoliInput from './primitives/input.js';
 import RettangoliTextArea from './primitives/textarea.js';
 import RettangoliDialog from './primitives/dialog.js';
 import RettangoliPopover from './primitives/popover.js';
+import createGlobalUI from './deps/createGlobalUI.js';
 
 export {
     RettangoliButton,
@@ -18,4 +19,5 @@ export {
     RettangoliTextArea,
     RettangoliDialog,
     RettangoliPopover,
+    createGlobalUI,
 }
