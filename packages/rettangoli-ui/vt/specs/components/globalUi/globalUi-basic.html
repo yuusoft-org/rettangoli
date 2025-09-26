@@ -20,31 +20,24 @@ title: "Global UI - Basic"
 </rtgl-view>
 
 <script>
-  // Minimal Promise wrapper for the globalUI component
+  // Get globalUI from the component element
   const globalUIElement = document.querySelector('rtgl-global-ui');
   
-  // Simple async wrapper that polls the returned state object
-  const waitForClose = (stateObj) => {
-    return new Promise((resolve) => {
-      const check = () => {
-        if (!stateObj.isOpen()) {
-          resolve(stateObj.getResult());
-        } else {
-          requestAnimationFrame(check);
-        }
-      };
-      requestAnimationFrame(check);
-    });
-  };
-
+  // Application layer creates its own async wrapper
   const globalUI = {
     showAlert: async (options) => {
       const state = globalUIElement.transformedHandlers.showAlert(options);
-      return waitForClose(state);
+      while (state.isOpen()) {
+        await new Promise(r => setTimeout(r, 50));
+      }
+      return state.getResult();
     },
     showConfirm: async (options) => {
       const state = globalUIElement.transformedHandlers.showConfirm(options);
-      return waitForClose(state);
+      while (state.isOpen()) {
+        await new Promise(r => setTimeout(r, 50));
+      }
+      return state.getResult();
     }
   };
 
