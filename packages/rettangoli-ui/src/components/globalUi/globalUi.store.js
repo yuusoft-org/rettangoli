@@ -8,7 +8,7 @@ export const INITIAL_STATE = Object.freeze({
     cancelText: "Cancel",
     mode: "alert", // alert | confirm
   },
-  result: undefined, // Store the dialog result
+  result: undefined, // undefined | boolean - stores true for confirm, undefined for alert/cancel
 });
 
 export const setAlertConfig = (state, options) => {

@@ -1,5 +1,3 @@
-// Pure handlers - no side effects
-
 export const handleDialogClose = (_, deps) => {
   const { store, render } = deps;
   
