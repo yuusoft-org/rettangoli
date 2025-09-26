@@ -1,6 +1,9 @@
 ---
 title: "Global UI - Basic"
 ---
+<!-- Global UI element must be present before main.js loads -->
+<rtgl-global-ui></rtgl-global-ui>
+
 <rtgl-view g="lg" h="100vh" w="f" fw="w">
   <rtgl-view d="h" g="lg">
     <rtgl-button id="alert-btn">Show Alert</rtgl-button>
@@ -17,20 +20,12 @@ title: "Global UI - Basic"
 </rtgl-view>
 
 <script>
-  // Create a local globalUI helper
-  const createGlobalUI = () => {
-    let element = document.querySelector('rtgl-global-ui');
-    if (!element) {
-      element = document.createElement('rtgl-global-ui');
-      document.body.appendChild(element);
-    }
-    return {
-      showAlert: (options) => element.transformedHandlers.showAlert(options),
-      showConfirm: (options) => element.transformedHandlers.showConfirm(options)
-    };
+  // Get globalUI from the component element
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+  const globalUI = {
+    showAlert: (options) => globalUIElement.transformedHandlers.showAlert(options),
+    showConfirm: (options) => globalUIElement.transformedHandlers.showConfirm(options)
   };
-  
-  const globalUI = createGlobalUI();
 
   const resultEl = document.getElementById('result');
 

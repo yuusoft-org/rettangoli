@@ -1,6 +1,9 @@
 ---
 title: "Global UI - Promise-based API"
 ---
+<!-- Global UI element must be present before main.js loads -->
+<rtgl-global-ui></rtgl-global-ui>
+
 <rtgl-view g="lg" h="100vh" w="f" fw="w">
   <rtgl-view d="h" g="lg">
     <rtgl-button id="sequential-btn">Sequential Dialogs</rtgl-button>
@@ -13,20 +16,12 @@ title: "Global UI - Promise-based API"
 </rtgl-view>
 
 <script>
-  // Create a local globalUI helper
-  const createGlobalUI = () => {
-    let element = document.querySelector('rtgl-global-ui');
-    if (!element) {
-      element = document.createElement('rtgl-global-ui');
-      document.body.appendChild(element);
-    }
-    return {
-      showAlert: (options) => element.transformedHandlers.showAlert(options),
-      showConfirm: (options) => element.transformedHandlers.showConfirm(options)
-    };
+  // Get globalUI from the component element
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+  const globalUI = {
+    showAlert: (options) => globalUIElement.transformedHandlers.showAlert(options),
+    showConfirm: (options) => globalUIElement.transformedHandlers.showConfirm(options)
   };
-  
-  const globalUI = createGlobalUI();
 
   const log = document.getElementById('log');
   const addLog = (message) => {
@@ -36,51 +31,59 @@ title: "Global UI - Promise-based API"
   document.getElementById('sequential-btn').addEventListener('click', async () => {
     log.textContent = 'Log output:';
     
-    await globalUI.showAlert({
-      status: 'info',
-      message: 'This is the first dialog'
-    });
-    addLog('First dialog closed');
-    
-    const confirmed = await globalUI.showConfirm({
-      message: 'Do you want to see another dialog?'
-    });
-    addLog(`User choice: ${confirmed}`);
-    
-    if (confirmed) {
+    try {
       await globalUI.showAlert({
-        status: 'success',
-        message: 'Great! Here is the final dialog'
+        status: 'info',
+        message: 'This is the first dialog'
       });
-      addLog('Final dialog shown');
-    } else {
-      addLog('Skipped final dialog');
+      addLog('First dialog closed');
+      
+      const confirmed = await globalUI.showConfirm({
+        message: 'Do you want to see another dialog?'
+      });
+      addLog(`User choice: ${confirmed}`);
+      
+      if (confirmed) {
+        await globalUI.showAlert({
+          status: 'success',
+          message: 'Great! Here is the final dialog'
+        });
+        addLog('Final dialog shown');
+      } else {
+        addLog('Skipped final dialog');
+      }
+    } catch (error) {
+      addLog(`Error: ${error.message}`);
     }
   });
 
   document.getElementById('conditional-btn').addEventListener('click', async () => {
     log.textContent = 'Log output:';
     
-    const deleteConfirmed = await globalUI.showConfirm({
-      status: 'warning',
-      title: 'Delete Item',
-      message: 'Are you sure you want to delete this item? This action cannot be undone.',
-      confirmText: 'Delete',
-      cancelText: 'Keep'
-    });
-    
-    if (deleteConfirmed) {
-      addLog('Deleting item...');
-      // Simulate deletion
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      await globalUI.showAlert({
-        status: 'success',
-        message: 'Item deleted successfully!'
+    try {
+      const deleteConfirmed = await globalUI.showConfirm({
+        status: 'warning',
+        title: 'Delete Item',
+        message: 'Are you sure you want to delete this item? This action cannot be undone.',
+        confirmText: 'Delete',
+        cancelText: 'Keep'
       });
-      addLog('Item deleted');
-    } else {
-      addLog('Deletion cancelled');
+      
+      if (deleteConfirmed) {
+        addLog('Deleting item...');
+        // Simulate deletion
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        await globalUI.showAlert({
+          status: 'success',
+          message: 'Item deleted successfully!'
+        });
+        addLog('Item deleted');
+      } else {
+        addLog('Deletion cancelled');
+      }
+    } catch (error) {
+      addLog(`Error: ${error.message}`);
     }
   });
 </script>

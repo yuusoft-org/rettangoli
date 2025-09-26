@@ -1,75 +1,52 @@
 export const handleDialogClose = (_, deps) => {
-  const { store, render } = deps;
-  const resolve = store.selectPromiseResolve();
-  const dialogMode = store.selectDialogMode();
-  const queue = store.selectQueue();
-  const next = queue && queue.length > 0 ? queue[0] : null;
+  const { store, render, dispatchEvent } = deps;
+  const config = store.selectConfig();
   
   store.closeDialog();
   
-  if (resolve) {
-    resolve(dialogMode === "confirm" ? false : undefined);
-  }
-  
-  // Process next in queue
-  if (next) {
-    store.shiftQueue();
-    if (next.type === 'alert') {
-      store.setAlertConfig({ options: next.options, resolve: next.resolve });
-    } else if (next.type === 'confirm') {
-      store.setConfirmConfig({ options: next.options, resolve: next.resolve });
-    }
+  // Dispatch event with result
+  if (dispatchEvent) {
+    dispatchEvent(new CustomEvent('globalui-closed', {
+      detail: { 
+        result: config.mode === "confirm" ? false : undefined 
+      },
+      bubbles: true
+    }));
   }
   
   render();
 };
 
 export const handleConfirm = (_, deps) => {
-  const { store, render } = deps;
-  const resolve = store.selectPromiseResolve();
-  const dialogMode = store.selectDialogMode();
-  const queue = store.selectQueue();
-  const next = queue && queue.length > 0 ? queue[0] : null;
+  const { store, render, dispatchEvent } = deps;
+  const config = store.selectConfig();
   
-  store.closeWithConfirm();
+  store.closeDialog();
   
-  if (resolve) {
-    resolve(dialogMode === "confirm" ? true : undefined);
-  }
-  
-  // Process next in queue
-  if (next) {
-    store.shiftQueue();
-    if (next.type === 'alert') {
-      store.setAlertConfig({ options: next.options, resolve: next.resolve });
-    } else if (next.type === 'confirm') {
-      store.setConfirmConfig({ options: next.options, resolve: next.resolve });
-    }
+  // Dispatch event with result
+  if (dispatchEvent) {
+    dispatchEvent(new CustomEvent('globalui-closed', {
+      detail: { 
+        result: config.mode === "confirm" ? true : undefined 
+      },
+      bubbles: true
+    }));
   }
   
   render();
 };
 
 export const handleCancel = (_, deps) => {
-  const { store, render } = deps;
-  const resolve = store.selectPromiseResolve();
-  const queue = store.selectQueue();
-  const next = queue && queue.length > 0 ? queue[0] : null;
+  const { store, render, dispatchEvent } = deps;
   
-  store.closeWithCancel();
+  store.closeDialog();
   
-  if (resolve) {
-    resolve(false);
-  }
-  
-  // Process next in queue
-  if (next) {
-    store.shiftQueue();
-    if (next.type === 'alert') {
-      store.setAlertConfig({ options: next.options, resolve: next.resolve });
-    } else if (next.type === 'confirm') {
-      store.setConfirmConfig({ options: next.options, resolve: next.resolve });
-    }
+  // Dispatch event with result
+  if (dispatchEvent) {
+    dispatchEvent(new CustomEvent('globalui-closed', {
+      detail: { result: false },
+      bubbles: true
+    }));
   }
   
   render();
@@ -78,29 +55,41 @@ export const handleCancel = (_, deps) => {
 export const showAlert = async (options, deps) => {
   const { store, render } = deps;
   
+  // If dialog is already open, reject
+  if (store.selectIsOpen()) {
+    throw new Error("A dialog is already open");
+  }
+  
+  store.setAlertConfig(options);
+  render();
+  
+  // Return promise that resolves when dialog closes
   return new Promise((resolve) => {
-    // If dialog is already open, queue this request
-    if (store.selectPromiseResolve() !== null) {
-      // Store both the options and resolver in queue
-      store.addToQueue({ type: 'alert', options, resolve });
-    } else {
-      store.setAlertConfig({ options, resolve });
-      render();
-    }
+    const handler = (event) => {
+      document.removeEventListener('globalui-closed', handler);
+      resolve(event.detail.result);
+    };
+    document.addEventListener('globalui-closed', handler);
   });
 };
 
 export const showConfirm = async (options, deps) => {
   const { store, render } = deps;
   
+  // If dialog is already open, reject
+  if (store.selectIsOpen()) {
+    throw new Error("A dialog is already open");
+  }
+  
+  store.setConfirmConfig(options);
+  render();
+  
+  // Return promise that resolves when dialog closes
   return new Promise((resolve) => {
-    // If dialog is already open, queue this request
-    if (store.selectPromiseResolve() !== null) {
-      // Store both the options and resolver in queue
-      store.addToQueue({ type: 'confirm', options, resolve });
-    } else {
-      store.setConfirmConfig({ options, resolve });
-      render();
-    }
+    const handler = (event) => {
+      document.removeEventListener('globalui-closed', handler);
+      resolve(event.detail.result);
+    };
+    document.addEventListener('globalui-closed', handler);
   });
 };
