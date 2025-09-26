@@ -8,7 +8,6 @@ export const INITIAL_STATE = Object.freeze({
     cancelText: "Cancel",
     mode: "alert", // alert | confirm
   },
-  result: undefined, // undefined | boolean - stores true for confirm, undefined for alert/cancel
 });
 
 export const setAlertConfig = (state, options) => {
@@ -47,13 +46,8 @@ export const closeDialog = (state) => {
   state.isOpen = false;
 };
 
-export const setResult = (state, result) => {
-  state.result = result;
-};
-
 export const selectConfig = ({ state }) => state.config;
 export const selectIsOpen = ({ state }) => state.isOpen;
-export const selectResult = ({ state }) => state.result;
 
 export const toViewData = ({ state }) => {
   return {

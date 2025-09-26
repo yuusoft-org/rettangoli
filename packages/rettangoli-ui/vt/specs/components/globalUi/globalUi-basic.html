@@ -26,18 +26,10 @@ title: "Global UI - Basic"
   // Application layer creates its own async wrapper
   const globalUI = {
     showAlert: async (options) => {
-      const state = globalUIElement.transformedHandlers.showAlert(options);
-      while (state.isOpen()) {
-        await new Promise(r => setTimeout(r, 50));
-      }
-      return state.getResult();
+      globalUIElement.transformedHandlers.showAlert(options);
     },
     showConfirm: async (options) => {
-      const state = globalUIElement.transformedHandlers.showConfirm(options);
-      while (state.isOpen()) {
-        await new Promise(r => setTimeout(r, 50));
-      }
-      return state.getResult();
+      return globalUIElement.transformedHandlers.showConfirm(options);
     }
   };
 

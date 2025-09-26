@@ -6,19 +6,19 @@ export const handleDialogClose = (_, deps) => {
 };
 
 export const handleConfirm = (_, deps) => {
-  const { store, render } = deps;
+  const { store, render, globalUI } = deps;
   
-  store.setResult(true);
   store.closeDialog();
   render();
+  globalUI.emit('event', true);
 };
 
 export const handleCancel = (_, deps) => {
-  const { store, render } = deps;
-  
-  store.setResult(false);
+  const { store, render, globalUI } = deps;
+
   store.closeDialog();
   render();
+  globalUI.emit('event', false);
 };
 
 export const showAlert = (options, deps) => {
@@ -29,30 +29,23 @@ export const showAlert = (options, deps) => {
   }
   
   store.setAlertConfig(options);
-  store.setResult(undefined);
   render();
-  
-  // Return store reference for application to poll if needed
-  return { 
-    isOpen: () => store.selectIsOpen(),
-    getResult: () => store.selectResult()
-  };
 };
 
-export const showConfirm = (options, deps) => {
-  const { store, render } = deps;
+export const showConfirm = async (options, deps) => {
+  const { store, render, globalUI } = deps;
   
   if (store.selectIsOpen()) {
     throw new Error("A dialog is already open");
   }
   
   store.setConfirmConfig(options);
-  store.setResult(undefined);
   render();
-  
-  // Return store reference for application to poll if needed
-  return {
-    isOpen: () => store.selectIsOpen(),
-    getResult: () => store.selectResult()
-  };
+
+  return new Promise((resolve) => {
+    globalUI.once('event', (result) => {
+      // result contains info of whehter is confirm of cancel
+      resolve(result)
+    });
+  });
 };

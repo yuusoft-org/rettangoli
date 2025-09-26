@@ -19,23 +19,13 @@ title: "Global UI - Promise-based API"
   // Get globalUI from the component element
   const globalUIElement = document.querySelector('rtgl-global-ui');
   
-  // Application decides how to handle async - using async/await with polling
+  // Application layer creates its own async wrapper
   const globalUI = {
     showAlert: async (options) => {
-      const state = globalUIElement.transformedHandlers.showAlert(options);
-      // Application chooses to poll - this is the app's decision, not the component's
-      while (state.isOpen()) {
-        await new Promise(r => setTimeout(r, 50));
-      }
-      return state.getResult();
+      globalUIElement.transformedHandlers.showAlert(options);
     },
     showConfirm: async (options) => {
-      const state = globalUIElement.transformedHandlers.showConfirm(options);
-      // Application chooses to poll - this is the app's decision, not the component's
-      while (state.isOpen()) {
-        await new Promise(r => setTimeout(r, 50));
-      }
-      return state.getResult();
+      return globalUIElement.transformedHandlers.showConfirm(options);
     }
   };
 
