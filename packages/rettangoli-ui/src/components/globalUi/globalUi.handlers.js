@@ -1,95 +1,60 @@
+// Pure handlers - no side effects
+
 export const handleDialogClose = (_, deps) => {
-  const { store, render, dispatchEvent } = deps;
-  const config = store.selectConfig();
+  const { store, render } = deps;
   
   store.closeDialog();
-  
-  // Dispatch event with result
-  if (dispatchEvent) {
-    dispatchEvent(new CustomEvent('globalui-closed', {
-      detail: { 
-        result: config.mode === "confirm" ? false : undefined 
-      },
-      bubbles: true
-    }));
-  }
-  
   render();
 };
 
 export const handleConfirm = (_, deps) => {
-  const { store, render, dispatchEvent } = deps;
-  const config = store.selectConfig();
+  const { store, render } = deps;
   
+  store.setResult(true);
   store.closeDialog();
-  
-  // Dispatch event with result
-  if (dispatchEvent) {
-    dispatchEvent(new CustomEvent('globalui-closed', {
-      detail: { 
-        result: config.mode === "confirm" ? true : undefined 
-      },
-      bubbles: true
-    }));
-  }
-  
   render();
 };
 
 export const handleCancel = (_, deps) => {
-  const { store, render, dispatchEvent } = deps;
+  const { store, render } = deps;
   
+  store.setResult(false);
   store.closeDialog();
-  
-  // Dispatch event with result
-  if (dispatchEvent) {
-    dispatchEvent(new CustomEvent('globalui-closed', {
-      detail: { result: false },
-      bubbles: true
-    }));
-  }
-  
   render();
 };
 
-export const showAlert = async (options, deps) => {
+export const showAlert = (options, deps) => {
   const { store, render } = deps;
   
-  // If dialog is already open, reject
   if (store.selectIsOpen()) {
     throw new Error("A dialog is already open");
   }
   
   store.setAlertConfig(options);
+  store.setResult(undefined);
   render();
   
-  // Return promise that resolves when dialog closes
-  return new Promise((resolve) => {
-    const handler = (event) => {
-      document.removeEventListener('globalui-closed', handler);
-      resolve(event.detail.result);
-    };
-    document.addEventListener('globalui-closed', handler);
-  });
+  // Return store reference for application to poll if needed
+  return { 
+    isOpen: () => store.selectIsOpen(),
+    getResult: () => store.selectResult()
+  };
 };
 
-export const showConfirm = async (options, deps) => {
+export const showConfirm = (options, deps) => {
   const { store, render } = deps;
   
-  // If dialog is already open, reject
   if (store.selectIsOpen()) {
     throw new Error("A dialog is already open");
   }
   
   store.setConfirmConfig(options);
+  store.setResult(undefined);
   render();
   
-  // Return promise that resolves when dialog closes
-  return new Promise((resolve) => {
-    const handler = (event) => {
-      document.removeEventListener('globalui-closed', handler);
-      resolve(event.detail.result);
-    };
-    document.addEventListener('globalui-closed', handler);
-  });
+  // Return store reference for application to poll if needed
+  return {
+    isOpen: () => store.selectIsOpen(),
+    getResult: () => store.selectResult()
+  };
 };
