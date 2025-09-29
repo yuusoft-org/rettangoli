@@ -1,0 +1,83 @@
+---
+title: "Global UI - Basic"
+---
+<!-- Global UI element must be present before main.js loads -->
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="lg" h="100vh" w="f" fw="w">
+  <rtgl-view d="h" g="lg">
+    <rtgl-button id="alert-btn">Show Alert</rtgl-button>
+    <rtgl-button id="confirm-btn">Show Confirm</rtgl-button>
+  </rtgl-view>
+  
+  <rtgl-view d="h" g="lg" mt="lg">
+    <rtgl-button id="info-btn">Show Info</rtgl-button>
+    <rtgl-button id="warning-btn">Show Warning</rtgl-button>
+    <rtgl-button id="error-btn">Show Error</rtgl-button>
+  </rtgl-view>
+
+  <rtgl-text id="result" mt="lg">Result will appear here</rtgl-text>
+</rtgl-view>
+
+<script>
+  // Get globalUI from the component element
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+  
+  // Application layer creates its own async wrapper
+  const globalUI = {
+    showAlert: async (options) => {
+      globalUIElement.transformedHandlers.showAlert(options);
+    },
+    showConfirm: async (options) => {
+      return globalUIElement.transformedHandlers.showConfirm(options);
+    }
+  };
+
+  const resultEl = document.getElementById('result');
+
+  document.getElementById('alert-btn').addEventListener('click', async () => {
+    await globalUI.showAlert({
+      title: 'Alert Title',
+      message: 'This is an alert message.',
+      confirmText: 'OK'
+    });
+    resultEl.textContent = 'Alert closed';
+  });
+
+  document.getElementById('confirm-btn').addEventListener('click', async () => {
+    const result = await globalUI.showConfirm({
+      title: 'Confirm Action',
+      message: 'Are you sure you want to proceed with this action?',
+      confirmText: 'Yes',
+      cancelText: 'Cancel'
+    });
+    resultEl.textContent = `Confirm result: ${result}`;
+  });
+
+  document.getElementById('info-btn').addEventListener('click', async () => {
+    await globalUI.showAlert({
+      status: 'info',
+      title: 'Information',
+      message: 'This is an informational message with an info icon.'
+    });
+    resultEl.textContent = 'Info alert closed';
+  });
+
+  document.getElementById('warning-btn').addEventListener('click', async () => {
+    await globalUI.showAlert({
+      status: 'warning',
+      title: 'Warning',
+      message: 'This is a warning message. Please be careful!'
+    });
+    resultEl.textContent = 'Warning alert closed';
+  });
+
+  document.getElementById('error-btn').addEventListener('click', async () => {
+    await globalUI.showAlert({
+      status: 'error',
+      title: 'Error',
+      message: 'An error has occurred. Please try again.'
+    });
+    resultEl.textContent = 'Error alert closed';
+  });
+</script>

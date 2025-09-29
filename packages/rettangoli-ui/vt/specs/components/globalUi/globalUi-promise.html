@@ -1,0 +1,95 @@
+---
+title: "Global UI - Promise-based API"
+---
+<!-- Global UI element must be present before main.js loads -->
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="lg" h="100vh" w="f" fw="w">
+  <rtgl-view d="h" g="lg">
+    <rtgl-button id="sequential-btn">Sequential Dialogs</rtgl-button>
+    <rtgl-button id="conditional-btn">Conditional Flow</rtgl-button>
+  </rtgl-view>
+  
+  <rtgl-view mt="lg" p="lg" bgc="mu" br="md">
+    <rtgl-text id="log">Log output:</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  // Get globalUI from the component element
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+  
+  // Application layer creates its own async wrapper
+  const globalUI = {
+    showAlert: async (options) => {
+      globalUIElement.transformedHandlers.showAlert(options);
+    },
+    showConfirm: async (options) => {
+      return globalUIElement.transformedHandlers.showConfirm(options);
+    }
+  };
+
+  const log = document.getElementById('log');
+  const addLog = (message) => {
+    log.textContent += '\n' + message;
+  };
+
+  document.getElementById('sequential-btn').addEventListener('click', async () => {
+    log.textContent = 'Log output:';
+    
+    try {
+      await globalUI.showAlert({
+        status: 'info',
+        message: 'This is the first dialog'
+      });
+      addLog('First dialog closed');
+      
+      const confirmed = await globalUI.showConfirm({
+        message: 'Do you want to see another dialog?'
+      });
+      addLog(`User choice: ${confirmed}`);
+      
+      if (confirmed) {
+        await globalUI.showAlert({
+          status: 'success',
+          message: 'Great! Here is the final dialog'
+        });
+        addLog('Final dialog shown');
+      } else {
+        addLog('Skipped final dialog');
+      }
+    } catch (error) {
+      addLog(`Error: ${error.message}`);
+    }
+  });
+
+  document.getElementById('conditional-btn').addEventListener('click', async () => {
+    log.textContent = 'Log output:';
+    
+    try {
+      const deleteConfirmed = await globalUI.showConfirm({
+        status: 'warning',
+        title: 'Delete Item',
+        message: 'Are you sure you want to delete this item? This action cannot be undone.',
+        confirmText: 'Delete',
+        cancelText: 'Keep'
+      });
+      
+      if (deleteConfirmed) {
+        addLog('Deleting item...');
+        // Simulate deletion
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        await globalUI.showAlert({
+          status: 'success',
+          message: 'Item deleted successfully!'
+        });
+        addLog('Item deleted');
+      } else {
+        addLog('Deletion cancelled');
+      }
+    } catch (error) {
+      addLog(`Error: ${error.message}`);
+    }
+  });
+</script>
