@@ -38,22 +38,12 @@ refs:
 template:
   - rtgl-dialog#dialog ?open=${isOpen} s=sm:
       - rtgl-view slot=content g=lg p=lg:
-          - rtgl-view d=h ah=c g=md:
-              - $if config.status == 'error':
-                  - rtgl-icon name=x-circle c=error s=lg:
-                $elif config.status == 'warning':
-                  - rtgl-icon name=alert-triangle c=warning s=lg:
-                $elif config.status == 'info':
-                  - rtgl-icon name=info c=primary s=lg:
-                $elif config.status:
-                  - rtgl-icon name=check-circle c=success s=lg:
-              - $if config.title:
-                  - rtgl-text fs=lg fw=600: ${config.title}
-
-          - rtgl-view p=md:
-              - rtgl-text: ${config.message}
-
-          - rtgl-view d=h jc=fe g=md mt=lg:
-              - $if config.mode == 'confirm':
-                  - rtgl-button#cancel-button variant=se: ${config.cancelText}
-              - rtgl-button#confirm-button variant=pr: ${config.confirmText}
+        - rtgl-view d=h h=24 ah=c av=c g=md:
+          - rtgl-svg svg=info wh=24:
+          - rtgl-text fs=lg fw=600: ${config.title}
+        - rtgl-view:
+          - rtgl-text: ${config.message}
+        - rtgl-view d=h jc=fe g=md mt=lg w=f ah=e:
+          - $if config.mode == 'confirm':
+            - rtgl-button#cancel-button v=se: ${config.cancelText}
+          - rtgl-button#confirm-button v=pr: ${config.confirmText}
