@@ -40,12 +40,11 @@ template:
       - rtgl-view slot=content g=lg p=lg:
         - rtgl-view d=h g=md:
           - rtgl-view d=h ah=c av=c g=md:
-            - rtgl-svg svg=info wh=22:
           - rtgl-view g=md:
             - rtgl-view h=24 av=c:
-              - rtgl-text fs=lg fw=600: ${config.title}
+              - rtgl-text fw=600: ${config.title}
             - rtgl-text: ${config.message}
-        - rtgl-view d=h jc=fe g=md mt=lg w=f ah=e:
+        - rtgl-view d=h g=md mt=lg w=f ah=e:
           - $if config.mode == 'confirm':
             - rtgl-button#cancel-button v=se: ${config.cancelText}
           - rtgl-button#confirm-button v=pr: ${config.confirmText}
