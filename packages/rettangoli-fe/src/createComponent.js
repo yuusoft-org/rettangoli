@@ -309,17 +309,18 @@ class BaseComponent extends HTMLElement {
       dispatchEvent: this.dispatchEvent.bind(this),
     };
 
-
     this.transformedHandlers = {
-      handleCallStoreAction: (event, payload) => {
+      handleCallStoreAction: (payload) => {
         const { render, store } = deps;
+        const { _event, _action } = payload;
         const context = parseAndRender(payload, {
-          event: {
-            target: event.target,
-            detail: event.detail
-          }
+          event: _event
         })
-        store[payload.action](context);
+        console.log('context', context)
+        if (!store[_action]) {
+          throw new Error(`store action store.${store._action} is not defined`)
+        }
+        store[_action](context);
         render();
       }
     };

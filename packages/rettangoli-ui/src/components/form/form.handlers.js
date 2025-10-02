@@ -3,8 +3,8 @@ export const handleBeforeMount = (deps) => {
   store.setFormValues(props.defaultValues);
 };
 
-export const handleOnUpdate = (changes, deps) => {
-  const { oldAttrs, newAttrs } = changes;
+export const handleOnUpdate = (deps, payload) => {
+  const { oldAttrs, newAttrs } = payload;
   const { store, props, render } = deps;
 
   if (oldAttrs?.key === newAttrs?.key) {
@@ -27,8 +27,9 @@ const dispatchFormChange = (name, fieldValue, formValues, dispatchEvent) => {
   );
 };
 
-export const handleActionClick = (deps, event) => {
+export const handleActionClick = (deps, payload) => {
   const { store, dispatchEvent } = deps;
+  const event = payload._event;
   const id = event.currentTarget.id.replace("action-", "");
   dispatchEvent(
     new CustomEvent("action-click", {
@@ -40,8 +41,9 @@ export const handleActionClick = (deps, event) => {
   );
 };
 
-export const handleInputChange = (deps, event) => {
+export const handleInputChange = (deps, payload) => {
   const { store, dispatchEvent, props } = deps;
+  const event = payload._event;
   const name = event.currentTarget.id.replace("input-", "");
   // TODO fix double event
   if (name && event.detail.value !== undefined) {
@@ -59,8 +61,9 @@ export const handleInputChange = (deps, event) => {
   }
 };
 
-export const handlePopoverInputChange = (deps, event) => {
+export const handlePopoverInputChange = (deps, payload) => {
   const { store, dispatchEvent, props } = deps;
+  const event = payload._event;
   const name = event.currentTarget.id.replace("popover-input-", "");
   // TODO fix double event
   if (name && event.detail.value !== undefined) {
@@ -78,8 +81,9 @@ export const handlePopoverInputChange = (deps, event) => {
   }
 };
 
-export const handleSelectChange = (deps, event) => {
+export const handleSelectChange = (deps, payload) => {
   const { store, dispatchEvent, render, props } = deps;
+  const event = payload._event;
   const name = event.currentTarget.id.replace("select-", "");
   if (name && event.detail.selectedValue !== undefined) {
     store.setFormFieldValue({
@@ -97,8 +101,9 @@ export const handleSelectChange = (deps, event) => {
   }
 };
 
-export const handleColorPickerChange = (deps, event) => {
+export const handleColorPickerChange = (deps, payload) => {
   const { store, dispatchEvent, props } = deps;
+  const event = payload._event;
   const name = event.currentTarget.id.replace("colorpicker-", "");
   if (name && event.detail.value !== undefined) {
     store.setFormFieldValue({
@@ -115,8 +120,9 @@ export const handleColorPickerChange = (deps, event) => {
   }
 };
 
-export const handleSliderChange = (deps, event) => {
+export const handleSliderChange = (deps, payload) => {
   const { store, dispatchEvent, props } = deps;
+  const event = payload._event;
   const name = event.currentTarget.id.replace("slider-", "");
   if (name && event.detail.value !== undefined) {
     store.setFormFieldValue({
@@ -133,8 +139,9 @@ export const handleSliderChange = (deps, event) => {
   }
 };
 
-export const handleSliderInputChange = (deps, event) => {
+export const handleSliderInputChange = (deps, payload) => {
   const { store, dispatchEvent, props } = deps;
+  const event = payload._event;
   const name = event.currentTarget.id.replace("slider-input-", "");
   if (name && event.detail.value !== undefined) {
     store.setFormFieldValue({
@@ -151,7 +158,8 @@ export const handleSliderInputChange = (deps, event) => {
   }
 };
 
-export const handleImageClick = (deps, event) => {
+export const handleImageClick = (deps, payload) => {
+  const event = payload._event;
   if (event.type === "contextmenu") {
     event.preventDefault();
   }
@@ -169,7 +177,8 @@ export const handleImageClick = (deps, event) => {
   );
 };
 
-export const handleWaveformClick = (deps, event) => {
+export const handleWaveformClick = (deps, payload) => {
+  const event = payload._event;
   if (event.type === "contextmenu") {
     event.preventDefault();
   }
@@ -187,8 +196,9 @@ export const handleWaveformClick = (deps, event) => {
   );
 };
 
-export const handleSelectAddOption = (deps, event) => {
+export const handleSelectAddOption = (deps, payload) => {
   const { store, dispatchEvent } = deps;
+  const event = payload._event;
   const name = event.currentTarget.id.replace("select-", "");
   dispatchEvent(
     new CustomEvent("action-click", {
@@ -201,8 +211,9 @@ export const handleSelectAddOption = (deps, event) => {
   );
 };
 
-export const handleTooltipMouseEnter = (deps, event) => {
+export const handleTooltipMouseEnter = (deps, payload) => {
   const { store, render, props } = deps;
+  const event = payload._event;
   const fieldName = event.currentTarget.id.replace('tooltip-icon-', '');
 
   // Find the field with matching name to get tooltip content
@@ -220,7 +231,7 @@ export const handleTooltipMouseEnter = (deps, event) => {
   }
 };
 
-export const handleTooltipMouseLeave = (deps, event) => {
+export const handleTooltipMouseLeave = (deps, payload) => {
   const { store, render } = deps;
   store.hideTooltip();
   render();

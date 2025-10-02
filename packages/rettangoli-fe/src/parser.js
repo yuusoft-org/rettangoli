@@ -332,13 +332,22 @@ export const createVirtualDom = ({
                   }
 
                   if (eventConfig.action) {
-                    handlers.handleCallStoreAction(event, eventConfig.payload)
+                    eventHandlers[eventType] = (event) => {
+                      handlers.handleCallStoreAction({
+                        ...eventConfig.payload,
+                        _event: event,
+                        _action: eventConfig.action,
+                      })
+                    }
                     return;
                   }
 
                   if (eventConfig.handler && handlers[eventConfig.handler]) {
                     eventHandlers[eventType] = (event) => {
-                      handlers[eventConfig.handler](event, eventConfig.payload);
+                      handlers[eventConfig.handler]({
+                        ...eventConfig.payload,
+                        _event: event,
+                      });
                     };
                   } else if (eventConfig.handler) {
                     // Keep this warning for missing handlers

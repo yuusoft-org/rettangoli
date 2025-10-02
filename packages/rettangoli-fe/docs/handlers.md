@@ -14,9 +14,12 @@ While state and view are pure functions, handlers can be messier as they handle 
 ## Handler Function Structure
 
 ```js
-export const handlerName = (deps, event) => {
+export const handlerName = (deps, payload) => {
   // Access dependencies
   const { store, render, props, attrs, dispatchEvent } = deps;
+
+  // Access the original event via payload._event
+  const { _event } = payload;
 
   // Handle the event
   store.updateState();
@@ -48,7 +51,7 @@ This is called during component mount, before the component's first render.
 `handleBeforeMount` can return a cleanup function that will be called during component unmount.
 
 ```js
-export const handleBeforeMount = (deps, event) => {
+export const handleBeforeMount = (deps, payload) => {
   const { store, render } = deps;
 
   // Only synchronous setup here
@@ -67,7 +70,7 @@ This is called after the component's first render is complete.
 **Note: `handleAfterMount` can be async.** This handler does not return a cleanup function.
 
 ```js
-export const handleAfterMount = async (deps, event) => {
+export const handleAfterMount = async (deps, payload) => {
   const { store, render } = deps;
 
   // Can perform async operations here
@@ -89,7 +92,7 @@ For async operations like API calls, use the `subscriptions` pattern:
 import { of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-const doSomeStuff = async (deps, event) => {
+const doSomeStuff = async (deps, payload) => {
   // Set loading state
   store.setLoading(true);
   render();
@@ -106,7 +109,7 @@ const doSomeStuff = async (deps, event) => {
   }
 }
 
-export const subscriptions = (deps, event) => {
+export const subscriptions = (deps, payload) => {
   const { store, render, apiService } = deps;
   return [
     // Trigger immediately on mount for async operations
@@ -122,8 +125,9 @@ export const subscriptions = (deps, event) => {
 This is called when any attrs or props have changes.
 
 ```js
-export const handleOnUpdate = (deps, event, { oldProps, newProps, oldAttrs, newAttrs }) => {
+export const handleOnUpdate = (deps, payload) => {
   const { store, render } = deps;
+  const { _event, oldProps, newProps, oldAttrs, newAttrs } = payload;
   // Handle property changes
 };
 ```
@@ -132,18 +136,20 @@ export const handleOnUpdate = (deps, event, { oldProps, newProps, oldAttrs, newA
 
 These are defined in the view YAML under `refs` with `eventListeners`. Handlers are functions that respond to user interactions or system events.
 
-The first argument `events` is just the original [DOM event](https://developer.mozilla.org/en-US/docs/Web/API/Event) object.
+The original DOM event is accessible via `payload._event`.
 
 ### Form Events
 ```js
-export const handleSubmit = (deps, event) => {
+export const handleSubmit = (deps, payload) => {
   const { store, render } = deps;
+  const { _event } = payload;
   // ...
 };
 
-export const handleInputChange = (deps, event) => {
+export const handleInputChange = (deps, payload) => {
   const { store, render } = deps;
-  const { name, value } = event.target;
+  const { _event } = payload;
+  const { name, value } = _event.target;
 
   store.setFieldValue(name, value);
   render();
@@ -152,7 +158,7 @@ export const handleInputChange = (deps, event) => {
 
 ### Click Events
 ```js
-export const handleToggle = (deps, event) => {
+export const handleToggle = (deps, payload) => {
   const { store, render } = deps;
 
   store.toggleCompleted();
@@ -161,16 +167,17 @@ export const handleToggle = (deps, event) => {
 
 ### Keyboard Events
 ```js
-export const handleKeyDown = (deps, event) => {
+export const handleKeyDown = (deps, payload) => {
   const { store, render } = deps;
+  const { _event } = payload;
 
-  if (event.key === 'Enter' && !event.shiftKey) {
-    event.preventDefault();
+  if (_event.key === 'Enter' && !_event.shiftKey) {
+    _event.preventDefault();
     store.submitForm();
     render();
   }
 
-  if (event.key === 'Escape') {
+  if (_event.key === 'Escape') {
     store.cancelEdit();
     render();
   }
@@ -183,7 +190,7 @@ Handlers can be asyncronous
 
 ### API Calls
 ```js
-export const handleRefresh = async (deps, event) => {
+export const handleRefresh = async (deps, payload) => {
   const { store, render, apiService } = deps;
 
   store.setLoading(true);
@@ -209,7 +216,7 @@ For custom events name. We recommend using the `kebab-case` format.
 ### Parent-Child Communication
 ```js
 // Child component
-export const handleItemClick = (deps, event) => {
+export const handleItemClick = (deps, payload) => {
   const { dispatchEvent, props } = deps;
 
   dispatchEvent(new CustomEvent('item-selected', {
@@ -250,7 +257,7 @@ const componentDependencies = {
 };
 
 // In handlers.js
-export const handleCalculateMetrics = (deps, event) => {
+export const handleCalculateMetrics = (deps, payload) => {
   const { store, render, dataProcessor } = deps;
 
   const rawData = store.getRawData();
@@ -270,7 +277,7 @@ For standard library functions (like Math, Date, JSON, RxJS operators) or well-k
 import { format } from 'date-fns';
 import { debounce } from 'lodash';
 
-export const handleDateFormat = (deps, event) => {
+export const handleDateFormat = (deps, payload) => {
   const { store, render } = deps;
 
   // Direct use of standard utilities
@@ -301,7 +308,7 @@ const componentDependencies = {
 };
 
 // In handlers.js - Custom services through deps
-export const handleUserSubmit = (deps, event) => {
+export const handleUserSubmit = (deps, payload) => {
   const { store, render, userService, paymentProcessor } = deps;
 
   // Custom business logic through dependencies
@@ -345,7 +352,7 @@ const componentDependencies = {
 };
 
 // In handlers.js
-export const handleBeforeMount = (deps, event) => {
+export const handleBeforeMount = (deps, payload) => {
   const { store, render, localStorage } = deps;
 
   // Load saved preferences on mount
@@ -357,7 +364,7 @@ export const handleBeforeMount = (deps, event) => {
   render();
 };
 
-export const handleThemeToggle = (deps, event) => {
+export const handleThemeToggle = (deps, payload) => {
   const { store, render, localStorage } = deps;
 
   const currentTheme = store.getTheme();
@@ -394,7 +401,7 @@ const componentDependencies = {
 };
 
 // In handlers.js
-export const handleBeforeMount = (deps, event) => {
+export const handleBeforeMount = (deps, payload) => {
   const { store, render, subject } = deps;
 
   // Subscribe to actions from other components
@@ -415,17 +422,18 @@ export const handleBeforeMount = (deps, event) => {
   };
 };
 
-export const handleUserAction = (deps, event) => {
+export const handleUserAction = (deps, payload) => {
   const { store, render, subject } = deps;
+  const { _event } = payload;
 
   // Dispatch action to notify other components
   subject.dispatch('user-action-performed', {
     action: 'item-selected',
-    itemId: event.target.dataset.itemId,
+    itemId: _event.target.dataset.itemId,
     timestamp: Date.now()
   });
 
-  store.recordAction(event.target.dataset.itemId);
+  store.recordAction(_event.target.dataset.itemId);
   render();
 };
 ```
@@ -442,11 +450,12 @@ TODO
 ### 1. Keep Handlers Simple
 ```js
 // ✅ Simple, focused handler
-export const handleSubmit = (deps, event) => {
+export const handleSubmit = (deps, payload) => {
   const { store, render } = deps;
+  const { _event } = payload;
 
-  event.preventDefault();
-  const data = getFormData(event.target);
+  _event.preventDefault();
+  const data = getFormData(_event.target);
 
   store.setSubmitting(true);
   render();
@@ -457,7 +466,7 @@ export const handleSubmit = (deps, event) => {
 // ❌ Complex handler doing too much
 // If you do have complex logic, try to put it into a dependency
 
-export const handleSubmitComplex = (deps, event) => {
+export const handleSubmitComplex = (deps, payload) => {
   // 50 lines of validation, API calls, error handling...
 };
 ```
@@ -465,18 +474,18 @@ export const handleSubmitComplex = (deps, event) => {
 ### 2. Use Descriptive Names
 ```js
 // ✅ Clear intent
-export const handleUserLogin = (deps, event) => { /* */ };
-export const handlePasswordReset = (deps, event) => { /* */ };
-export const handleItemDelete = (deps, event) => { /* */ };
+export const handleUserLogin = (deps, payload) => { /* */ };
+export const handlePasswordReset = (deps, payload) => { /* */ };
+export const handleItemDelete = (deps, payload) => { /* */ };
 
 // ❌ Generic names
-export const handleClick = (deps, event) => { /* */ };
-export const handleSubmit = (deps, event) => { /* */ };
+export const handleClick = (deps, payload) => { /* */ };
+export const handleSubmit = (deps, payload) => { /* */ };
 ```
 
 ### 3. Consistent Error Handling
 ```js
-const handleAsyncAction = async (actionFn, deps, event) => {
+const handleAsyncAction = async (actionFn, deps, payload) => {
   const { store, render } = deps;
 
   try {
@@ -495,9 +504,10 @@ const handleAsyncAction = async (actionFn, deps, event) => {
 };
 
 // Use the helper
-export const handleSave = (deps, event) => {
-  const data = getFormData(event.target);
-  handleAsyncAction(() => saveData(data), deps);
+export const handleSave = (deps, payload) => {
+  const { _event } = payload;
+  const data = getFormData(_event.target);
+  handleAsyncAction(() => saveData(data), deps, payload);
 };
 ```
 
@@ -510,11 +520,12 @@ too much inside the handler makes a complex handler.
 
 ```js
 // ✅ Separate validation logic
-export const handleFormSubmit = (deps, event) => {
+export const handleFormSubmit = (deps, payload) => {
   const { store, render } = deps;
+  const { _event } = payload;
 
-  event.preventDefault();
-  const data = getFormData(event.target);
+  _event.preventDefault();
+  const data = getFormData(_event.target);
 
   const errors = validateFormData(data);
   if (errors.length > 0) {

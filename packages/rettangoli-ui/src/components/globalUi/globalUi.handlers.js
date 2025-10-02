@@ -1,19 +1,19 @@
-export const handleDialogClose = (_, deps) => {
+export const handleDialogClose = (deps, payload) => {
   const { store, render } = deps;
-  
+
   store.closeDialog();
   render();
 };
 
-export const handleConfirm = (_, deps) => {
+export const handleConfirm = (deps, payload) => {
   const { store, render, globalUI } = deps;
-  
+
   store.closeDialog();
   render();
   globalUI.emit('event', true);
 };
 
-export const handleCancel = (_, deps) => {
+export const handleCancel = (deps, payload) => {
   const { store, render, globalUI } = deps;
 
   store.closeDialog();
@@ -21,24 +21,26 @@ export const handleCancel = (_, deps) => {
   globalUI.emit('event', false);
 };
 
-export const showAlert = (options, deps) => {
+export const showAlert = (deps, payload) => {
   const { store, render } = deps;
-  
+  const options = payload;
+
   if (store.selectIsOpen()) {
     throw new Error("A dialog is already open");
   }
-  
+
   store.setAlertConfig(options);
   render();
 };
 
-export const showConfirm = async (options, deps) => {
+export const showConfirm = async (deps, payload) => {
   const { store, render, globalUI } = deps;
-  
+  const options = payload;
+
   if (store.selectIsOpen()) {
     throw new Error("A dialog is already open");
   }
-  
+
   store.setConfirmConfig(options);
   render();
 

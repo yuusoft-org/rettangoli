@@ -1,5 +1,6 @@
-export const handleHeaderClick = (deps, event) => {
+export const handleHeaderClick = (deps, payload) => {
   const { store, dispatchEvent } = deps;
+  const event = payload._event;
 
   let path;
 
@@ -22,8 +23,9 @@ export const handleHeaderClick = (deps, event) => {
   }));
 }
 
-export const handleItemClick = (deps, event) => {
+export const handleItemClick = (deps, payload) => {
   const { store, dispatchEvent } = deps;
+  const event = payload._event;
   const id = event.currentTarget.id.replace('item-', '');
   const item = store.selectItem(id);
   dispatchEvent(new CustomEvent('itemClick', {

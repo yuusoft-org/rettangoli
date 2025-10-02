@@ -7,6 +7,10 @@ import { writeViewFile } from './build.js';
 import buildRettangoliFrontend from './build.js';
 import { extractCategoryAndComponent } from '../common.js';
 
+// Debounce mechanism to prevent excessive rebuilds
+let rebuildTimeout = null;
+const DEBOUNCE_DELAY = 200; // 200ms delay
+
 
 const setupWatcher = (directory, options) => {
   watch(
@@ -21,7 +25,17 @@ const setupWatcher = (directory, options) => {
             const { category, component } = extractCategoryAndComponent(filename);
             await writeViewFile(view, category, component);
           }
-          await buildRettangoliFrontend(options);
+
+          // Debounce the rebuild
+          if (rebuildTimeout) {
+            clearTimeout(rebuildTimeout);
+          }
+
+          rebuildTimeout = setTimeout(async () => {
+            console.log('Triggering rebuild...');
+            await buildRettangoliFrontend(options);
+          }, DEBOUNCE_DELAY);
+
         } catch (error) {
           console.error(`Error processing ${filename}:`, error);
           // Keep the watcher running
