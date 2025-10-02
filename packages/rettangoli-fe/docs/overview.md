@@ -58,7 +58,7 @@ export const toggleCompleted = (state) => {
 
 **Handlers (.handlers.js)** - Event handling:
 ```js
-export const handleToggle = (deps, event, payload) => {
+export const handleToggle = (deps, event) => {
   const { store, render } = deps;
   store.toggleCompleted();
   render();

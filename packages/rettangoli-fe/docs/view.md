@@ -254,7 +254,7 @@ template:
 
 **Handler**:
 - Calls a function from `handlers.js`
-- Receives `(deps, event, payload)` parameters
+- Receives `(deps, event)` parameters
 - Can perform complex logic, side effects, API calls
 
 **Action**:

@@ -14,7 +14,7 @@ While state and view are pure functions, handlers can be messier as they handle 
 ## Handler Function Structure
 
 ```js
-export const handlerName = (deps, event, payload) => {
+export const handlerName = (deps, event) => {
   // Access dependencies
   const { store, render, props, attrs, dispatchEvent } = deps;
 
@@ -48,7 +48,7 @@ This is called during component mount, before the component's first render.
 `handleBeforeMount` can return a cleanup function that will be called during component unmount.
 
 ```js
-export const handleBeforeMount = (deps, event, payload) => {
+export const handleBeforeMount = (deps, event) => {
   const { store, render } = deps;
 
   // Only synchronous setup here
@@ -67,7 +67,7 @@ This is called after the component's first render is complete.
 **Note: `handleAfterMount` can be async.** This handler does not return a cleanup function.
 
 ```js
-export const handleAfterMount = async (deps, event, payload) => {
+export const handleAfterMount = async (deps, event) => {
   const { store, render } = deps;
 
   // Can perform async operations here
@@ -89,7 +89,7 @@ For async operations like API calls, use the `subscriptions` pattern:
 import { of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-const doSomeStuff = async (deps, event, payload) => {
+const doSomeStuff = async (deps, event) => {
   // Set loading state
   store.setLoading(true);
   render();
@@ -106,7 +106,7 @@ const doSomeStuff = async (deps, event, payload) => {
   }
 }
 
-export const subscriptions = (deps, event, payload) => {
+export const subscriptions = (deps, event) => {
   const { store, render, apiService } = deps;
   return [
     // Trigger immediately on mount for async operations
@@ -122,8 +122,7 @@ export const subscriptions = (deps, event, payload) => {
 This is called when any attrs or props have changes.
 
 ```js
-export const handleOnUpdate = (deps, event, payload) => {
-  const { oldProps, newProps, oldAttrs, newAttrs } = payload;
+export const handleOnUpdate = (deps, event, { oldProps, newProps, oldAttrs, newAttrs }) => {
   const { store, render } = deps;
   // Handle property changes
 };
@@ -137,12 +136,12 @@ The first argument `events` is just the original [DOM event](https://developer.m
 
 ### Form Events
 ```js
-export const handleSubmit = (deps, event, payload) => {
+export const handleSubmit = (deps, event) => {
   const { store, render } = deps;
   // ...
 };
 
-export const handleInputChange = (deps, event, payload) => {
+export const handleInputChange = (deps, event) => {
   const { store, render } = deps;
   const { name, value } = event.target;
 
@@ -153,7 +152,7 @@ export const handleInputChange = (deps, event, payload) => {
 
 ### Click Events
 ```js
-export const handleToggle = (deps, event, payload) => {
+export const handleToggle = (deps, event) => {
   const { store, render } = deps;
 
   store.toggleCompleted();
@@ -162,7 +161,7 @@ export const handleToggle = (deps, event, payload) => {
 
 ### Keyboard Events
 ```js
-export const handleKeyDown = (deps, event, payload) => {
+export const handleKeyDown = (deps, event) => {
   const { store, render } = deps;
 
   if (event.key === 'Enter' && !event.shiftKey) {
@@ -184,7 +183,7 @@ Handlers can be asyncronous
 
 ### API Calls
 ```js
-export const handleRefresh = async (deps, event, payload) => {
+export const handleRefresh = async (deps, event) => {
   const { store, render, apiService } = deps;
 
   store.setLoading(true);
@@ -210,7 +209,7 @@ For custom events name. We recommend using the `kebab-case` format.
 ### Parent-Child Communication
 ```js
 // Child component
-export const handleItemClick = (deps, event, payload) => {
+export const handleItemClick = (deps, event) => {
   const { dispatchEvent, props } = deps;
 
   dispatchEvent(new CustomEvent('item-selected', {
@@ -251,7 +250,7 @@ const componentDependencies = {
 };
 
 // In handlers.js
-export const handleCalculateMetrics = (deps, event, payload) => {
+export const handleCalculateMetrics = (deps, event) => {
   const { store, render, dataProcessor } = deps;
 
   const rawData = store.getRawData();
@@ -271,7 +270,7 @@ For standard library functions (like Math, Date, JSON, RxJS operators) or well-k
 import { format } from 'date-fns';
 import { debounce } from 'lodash';
 
-export const handleDateFormat = (deps, event, payload) => {
+export const handleDateFormat = (deps, event) => {
   const { store, render } = deps;
 
   // Direct use of standard utilities
@@ -302,7 +301,7 @@ const componentDependencies = {
 };
 
 // In handlers.js - Custom services through deps
-export const handleUserSubmit = (deps, event, payload) => {
+export const handleUserSubmit = (deps, event) => {
   const { store, render, userService, paymentProcessor } = deps;
 
   // Custom business logic through dependencies
@@ -346,7 +345,7 @@ const componentDependencies = {
 };
 
 // In handlers.js
-export const handleBeforeMount = (deps, event, payload) => {
+export const handleBeforeMount = (deps, event) => {
   const { store, render, localStorage } = deps;
 
   // Load saved preferences on mount
@@ -358,7 +357,7 @@ export const handleBeforeMount = (deps, event, payload) => {
   render();
 };
 
-export const handleThemeToggle = (deps, event, payload) => {
+export const handleThemeToggle = (deps, event) => {
   const { store, render, localStorage } = deps;
 
   const currentTheme = store.getTheme();
@@ -395,7 +394,7 @@ const componentDependencies = {
 };
 
 // In handlers.js
-export const handleBeforeMount = (deps, event, payload) => {
+export const handleBeforeMount = (deps, event) => {
   const { store, render, subject } = deps;
 
   // Subscribe to actions from other components
@@ -416,7 +415,7 @@ export const handleBeforeMount = (deps, event, payload) => {
   };
 };
 
-export const handleUserAction = (deps, event, payload) => {
+export const handleUserAction = (deps, event) => {
   const { store, render, subject } = deps;
 
   // Dispatch action to notify other components
@@ -443,7 +442,7 @@ TODO
 ### 1. Keep Handlers Simple
 ```js
 // ✅ Simple, focused handler
-export const handleSubmit = (deps, event, payload) => {
+export const handleSubmit = (deps, event) => {
   const { store, render } = deps;
 
   event.preventDefault();
@@ -458,7 +457,7 @@ export const handleSubmit = (deps, event, payload) => {
 // ❌ Complex handler doing too much
 // If you do have complex logic, try to put it into a dependency
 
-export const handleSubmitComplex = (deps, event, payload) => {
+export const handleSubmitComplex = (deps, event) => {
   // 50 lines of validation, API calls, error handling...
 };
 ```
@@ -466,18 +465,18 @@ export const handleSubmitComplex = (deps, event, payload) => {
 ### 2. Use Descriptive Names
 ```js
 // ✅ Clear intent
-export const handleUserLogin = (deps, event, payload) => { /* */ };
-export const handlePasswordReset = (deps, event, payload) => { /* */ };
-export const handleItemDelete = (deps, event, payload) => { /* */ };
+export const handleUserLogin = (deps, event) => { /* */ };
+export const handlePasswordReset = (deps, event) => { /* */ };
+export const handleItemDelete = (deps, event) => { /* */ };
 
 // ❌ Generic names
-export const handleClick = (deps, event, payload) => { /* */ };
-export const handleSubmit = (deps, event, payload) => { /* */ };
+export const handleClick = (deps, event) => { /* */ };
+export const handleSubmit = (deps, event) => { /* */ };
 ```
 
 ### 3. Consistent Error Handling
 ```js
-const handleAsyncAction = async (actionFn, deps, event, payload) => {
+const handleAsyncAction = async (actionFn, deps, event) => {
   const { store, render } = deps;
 
   try {
@@ -496,7 +495,7 @@ const handleAsyncAction = async (actionFn, deps, event, payload) => {
 };
 
 // Use the helper
-export const handleSave = (deps, event, payload) => {
+export const handleSave = (deps, event) => {
   const data = getFormData(event.target);
   handleAsyncAction(() => saveData(data), deps);
 };
@@ -511,7 +510,7 @@ too much inside the handler makes a complex handler.
 
 ```js
 // ✅ Separate validation logic
-export const handleFormSubmit = (deps, event, payload) => {
+export const handleFormSubmit = (deps, event) => {
   const { store, render } = deps;
 
   event.preventDefault();
