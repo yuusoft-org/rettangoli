@@ -40,12 +40,12 @@ template:
 
 **Store (.store.js)** - State management with pure functions:
 ```js
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => ({
   text: "",
   completed: false,
 });
 
-export const toViewData = ({ state, props, attrs }) => ({
+export const selectViewData = ({ state, props, attrs }) => ({
   text: state.text,
   completed: state.completed
 });
@@ -58,7 +58,7 @@ export const toggleCompleted = (state) => {
 
 **Handlers (.handlers.js)** - Event handling:
 ```js
-export const handleToggle = (event, deps) => {
+export const handleToggle = (deps, event, payload) => {
   const { store, render } = deps;
   store.toggleCompleted();
   render();

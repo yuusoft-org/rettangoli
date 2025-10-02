@@ -1,5 +1,6 @@
 import { produce } from "immer";
 import { parseView } from "./parser.js";
+import { parseAndRender } from "jempl";
 
 /**
  * covert this format of json into raw css strings
@@ -261,8 +262,10 @@ class BaseComponent extends HTMLElement {
   }
 
   get viewData() {
-    // TODO decide whether to pass globalStore state
-    const data = this.store.toViewData();
+    let data = {};
+    if (this.store.selectViewData) {
+      data = this.store.selectViewData();
+    }
     return data;
   }
 
@@ -295,7 +298,6 @@ class BaseComponent extends HTMLElement {
     this.renderTarget = document.createElement("div");
     this.renderTarget.style.cssText = "display: contents;";
     this.shadow.appendChild(this.renderTarget);
-    this.transformedHandlers = {};
     if (!this.renderTarget.parentNode) {
       this.appendChild(this.renderTarget);
     }
@@ -307,10 +309,24 @@ class BaseComponent extends HTMLElement {
       dispatchEvent: this.dispatchEvent.bind(this),
     };
 
+
+    this.transformedHandlers = {
+      handleCallStoreAction: (event, payload) => {
+        const { render, store } = deps;
+        const context = parseAndRender(payload, {
+          event: {
+            target: event.target,
+            detail: event.detail
+          }
+        })
+        store[payload.action](context);
+        render();
+      }
+    };
     // TODO don't include onmount, subscriptions, etc in transformedHandlers
     Object.keys(this.handlers || {}).forEach((key) => {
-      this.transformedHandlers[key] = (payload) => {
-        const result = this.handlers[key](payload, deps);
+      this.transformedHandlers[key] = (event, payload) => {
+        const result = this.handlers[key](deps, event, payload);
         return result;
       };
     });
@@ -424,17 +440,16 @@ class BaseComponent extends HTMLElement {
 /**
  * Binds store functions with actual framework data flow
  * Makes state changes immutable with immer
- * Passes props to selectors and toViewData
+ * Passes props to selectors
  * @param {*} store
  * @param {*} props
  * @returns
  */
 const bindStore = (store, props, attrs) => {
-  const { INITIAL_STATE, toViewData, ...selectorsAndActions } = store;
+  const { createInitialState, ...selectorsAndActions } = store;
   const selectors = {};
   const actions = {};
-  let currentState = structuredClone(INITIAL_STATE);
-
+  const currentState = createInitialState();
   Object.entries(selectorsAndActions).forEach(([key, fn]) => {
     if (key.startsWith("select")) {
       selectors[key] = (...args) => {
@@ -451,7 +466,6 @@ const bindStore = (store, props, attrs) => {
   });
 
   return {
-    toViewData: () => toViewData({ state: currentState, props, attrs }),
     getState: () => currentState,
     ...actions,
     ...selectors,
