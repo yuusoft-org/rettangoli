@@ -1,4 +1,4 @@
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => Object.freeze({
   isOpen: false,
   config: {
     status: undefined, // undefined | info | warning | error
@@ -49,7 +49,7 @@ export const closeDialog = (state) => {
 export const selectConfig = ({ state }) => state.config;
 export const selectIsOpen = ({ state }) => state.isOpen;
 
-export const toViewData = ({ state }) => {
+export const selectViewData = ({ state }) => {
   return {
     isOpen: state.isOpen,
     config: state.config,

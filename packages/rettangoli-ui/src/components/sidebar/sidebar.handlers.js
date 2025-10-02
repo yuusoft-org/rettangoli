@@ -1,15 +1,15 @@
-export const handleHeaderClick = (e, deps) => {
+export const handleHeaderClick = (deps, event) => {
   const { store, dispatchEvent } = deps;
 
   let path;
 
   const header = store.selectHeader();
 
-  if (e.currentTarget.id === 'header-label') {
+  if (event.currentTarget.id === 'header-label') {
     path = header.labelPath;
-  } else if (e.currentTarget.id === 'header-image') {
+  } else if (event.currentTarget.id === 'header-image') {
     path = header.image.path;
-  } else if (e.currentTarget.id === 'header') {
+  } else if (event.currentTarget.id === 'header') {
     path = header.path;
   }
 
@@ -22,9 +22,9 @@ export const handleHeaderClick = (e, deps) => {
   }));
 }
 
-export const handleItemClick = (e, deps) => {
+export const handleItemClick = (deps, event) => {
   const { store, dispatchEvent } = deps;
-  const id = e.currentTarget.id.replace('item-', '');
+  const id = event.currentTarget.id.replace('item-', '');
   const item = store.selectItem(id);
   dispatchEvent(new CustomEvent('itemClick', {
     detail: {

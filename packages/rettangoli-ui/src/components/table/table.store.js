@@ -1,4 +1,4 @@
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => Object.freeze({
   sortColumn: null,
   sortDirection: null,
 });
@@ -23,10 +23,10 @@ const getNestedValue = (obj, path) => {
   return result;
 }
 
-export const toViewData = ({ state, props, attrs }) => {
+export const selectViewData = ({ state, props, attrs }) => {
   const containerAttrString = stringifyAttrs(attrs);
   const data = props.data || { columns: [], rows: [] };
-  
+
   // Transform rows to create cells array for easier template access
   const transformedRows = data.rows.map((row, rowIndex) => {
     const cells = data.columns.map(column => {
@@ -36,7 +36,7 @@ export const toViewData = ({ state, props, attrs }) => {
         value: value !== null && value !== undefined ? String(value) : ''
       };
     });
-    
+
     return {
       index: rowIndex,
       cells: cells

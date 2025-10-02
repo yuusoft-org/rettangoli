@@ -24,7 +24,7 @@ function pick(obj, keys) {
   }, {});
 }
 
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => Object.freeze({
   formValues: {},
   tooltipState: {
     open: false,
@@ -101,7 +101,7 @@ export const selectForm = ({ state, props }) => {
 };
 
 
-export const toViewData = ({ state, props, attrs }) => {
+export const selectViewData = ({ state, props, attrs }) => {
   const containerAttrString = stringifyAttrs(attrs);
   const defaultValues = props.defaultValues || {};
 

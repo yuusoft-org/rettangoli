@@ -17,7 +17,7 @@ export const handleOnUpdate = (changes, deps) => {
   render();
 }
 
-export const handleTextClick = (e, deps) => {
+export const handleTextClick = (deps, event) => {
   const { store, render, getRefIds, attrs } = deps;
 
   const value = store.selectValue();
@@ -25,8 +25,8 @@ export const handleTextClick = (e, deps) => {
 
   store.openPopover({
     position: {
-      x: e.currentTarget.getBoundingClientRect().left,
-      y: e.currentTarget.getBoundingClientRect().bottom,
+      x: event.currentTarget.getBoundingClientRect().left,
+      y: event.currentTarget.getBoundingClientRect().bottom,
     }
   });
 
@@ -41,15 +41,15 @@ export const handleTextClick = (e, deps) => {
   }
 }
 
-export const handlePopoverClose = (e, deps) => {
+export const handlePopoverClose = (deps, event) => {
   const { store, render } = deps;
   store.closePopover();
   render();
 }
 
-export const handleInputChange = (e, deps) => {
+export const handleInputChange = (deps, event) => {
   const { store, render, dispatchEvent } = deps;
-  const value = e.detail.value;
+  const value = event.detail.value;
 
   store.setTempValue(value);
 
@@ -61,7 +61,7 @@ export const handleInputChange = (e, deps) => {
   render();
 }
 
-export const handleSubmitClick = (e, deps) => {
+export const handleSubmitClick = (deps, event) => {
   const { store, render, dispatchEvent, getRefIds } = deps;
   const { input } = getRefIds()
   const value = input.elm.value;
@@ -77,10 +77,10 @@ export const handleSubmitClick = (e, deps) => {
   render();
 }
 
-export const handleInputKeydown = (e, deps) => {
+export const handleInputKeydown = (deps, event) => {
   const { store, render, dispatchEvent, getRefIds } = deps;
 
-  if (e.key === 'Enter') {
+  if (event.key === 'Enter') {
     const { input } = getRefIds()
     const value = input.elm.value;
 
@@ -92,7 +92,7 @@ export const handleInputKeydown = (e, deps) => {
     }));
 
     render();
-  } else if (e.key === 'Escape') {
+  } else if (event.key === 'Escape') {
     store.closePopover();
     render();
   }

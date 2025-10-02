@@ -449,7 +449,10 @@ const bindStore = (store, props, attrs) => {
   const { createInitialState, ...selectorsAndActions } = store;
   const selectors = {};
   const actions = {};
-  const currentState = createInitialState();
+  let currentState = {};
+  if (createInitialState) {
+    currentState = createInitialState();
+  }
   Object.entries(selectorsAndActions).forEach(([key, fn]) => {
     if (key.startsWith("select")) {
       selectors[key] = (...args) => {

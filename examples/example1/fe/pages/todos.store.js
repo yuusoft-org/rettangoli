@@ -1,4 +1,4 @@
-export const INITIAL_STATE = {
+export const createInitialState = () => ({
   title: "todos",
   placeholderText: "What needs to be done?",
   filter: 'all', // 'all', 'active', 'completed'
@@ -14,9 +14,9 @@ export const INITIAL_STATE = {
       completed: true,
     }
   ],
-};
+});
 
-export const toViewData = ({ state }) => {
+export const selectViewData = ({ state }) => {
   const activeCount = state.todos.filter(todo => !todo.completed).length;
   const completedCount = state.todos.filter(todo => todo.completed).length;
   const filteredTodos = state.todos.filter(todo => {
