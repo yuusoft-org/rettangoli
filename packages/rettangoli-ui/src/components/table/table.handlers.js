@@ -2,8 +2,9 @@ export const handleBeforeMount = (deps) => {
   // No special initialization needed for basic table
 };
 
-export const handleRowClick = (deps, event) => {
+export const handleRowClick = (deps, payload) => {
   const { dispatchEvent, props } = deps;
+  const event = payload._event;
   const rowIndex = parseInt(event.currentTarget.id.replace("row-", ""));
   const rowData = props.data?.rows?.[rowIndex];
 
@@ -19,8 +20,9 @@ export const handleRowClick = (deps, event) => {
   }
 };
 
-export const handleHeaderClick = (deps, event) => {
+export const handleHeaderClick = (deps, payload) => {
   const { store, render, dispatchEvent } = deps;
+  const event = payload._event;
   const columnKey = event.currentTarget.id.replace("header-", "");
   const currentSort = store.selectSortInfo();
 

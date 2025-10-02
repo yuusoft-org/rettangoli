@@ -6,8 +6,8 @@ export const handleBeforeMount = (deps) => {
   }
 }
 
-export const handleOnUpdate = (changes, deps) => {
-  const { oldProps, newProps} = changes
+export const handleOnUpdate = (deps, payload) => {
+  const { oldProps, newProps} = payload
   const { store, props, render } = deps;
 
   if (oldProps.defaultValue !== newProps.defaultValue) {
@@ -17,8 +17,9 @@ export const handleOnUpdate = (changes, deps) => {
   render();
 }
 
-export const handleTextClick = (deps, event) => {
+export const handleTextClick = (deps, payload) => {
   const { store, render, getRefIds, attrs } = deps;
+  const event = payload._event;
 
   const value = store.selectValue();
   store.setTempValue(value)
@@ -41,14 +42,15 @@ export const handleTextClick = (deps, event) => {
   }
 }
 
-export const handlePopoverClose = (deps, event) => {
+export const handlePopoverClose = (deps, payload) => {
   const { store, render } = deps;
   store.closePopover();
   render();
 }
 
-export const handleInputChange = (deps, event) => {
+export const handleInputChange = (deps, payload) => {
   const { store, render, dispatchEvent } = deps;
+  const event = payload._event;
   const value = event.detail.value;
 
   store.setTempValue(value);
@@ -61,8 +63,9 @@ export const handleInputChange = (deps, event) => {
   render();
 }
 
-export const handleSubmitClick = (deps, event) => {
+export const handleSubmitClick = (deps, payload) => {
   const { store, render, dispatchEvent, getRefIds } = deps;
+  const event = payload._event;
   const { input } = getRefIds()
   const value = input.elm.value;
 
@@ -77,8 +80,9 @@ export const handleSubmitClick = (deps, event) => {
   render();
 }
 
-export const handleInputKeydown = (deps, event) => {
+export const handleInputKeydown = (deps, payload) => {
   const { store, render, dispatchEvent, getRefIds } = deps;
+  const event = payload._event;
 
   if (event.key === 'Enter') {
     const { input } = getRefIds()

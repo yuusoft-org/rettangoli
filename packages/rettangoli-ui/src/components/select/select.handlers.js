@@ -12,8 +12,8 @@ export const handleBeforeMount = (deps) => {
   }
 }
 
-export const handleOnUpdate = (changes, deps) => {
-  const { oldAttrs, newAttrs, oldProps, newProps } = changes;
+export const handleOnUpdate = (deps, payload) => {
+  const { oldAttrs, newAttrs, oldProps, newProps } = payload;
   const { store, props, render } = deps;
 
   // Check if key changed
@@ -35,8 +35,9 @@ export const handleOnUpdate = (changes, deps) => {
   }
 }
 
-export const handleButtonClick = (deps, event) => {
+export const handleButtonClick = (deps, payload) => {
   const { store, render, getRefIds, props } = deps;
+  const event = payload._event;
 
   const button = getRefIds()['select-button'].elm;
 
@@ -63,14 +64,15 @@ export const handleButtonClick = (deps, event) => {
   render();
 }
 
-export const handleClickOptionsPopoverOverlay = (deps, event) => {
+export const handleClickOptionsPopoverOverlay = (deps, payload) => {
   const { store, render } = deps;
   store.closeOptionsPopover();
   render();
 }
 
-export const handleOptionClick = (deps, event) => {
+export const handleOptionClick = (deps, payload) => {
   const { render, dispatchEvent, props, store } = deps;
+  const event = payload._event;
   const id = event.currentTarget.id.replace('option-', '');
 
   const option = props.options[id];
@@ -98,21 +100,23 @@ export const handleOptionClick = (deps, event) => {
   render();
 }
 
-export const handleOptionMouseEnter = (deps, event) => {
+export const handleOptionMouseEnter = (deps, payload) => {
   const { store, render } = deps;
+  const event = payload._event;
   const id = parseInt(event.currentTarget.id.replace('option-', ''));
   store.setHoveredOption(id);
   render();
 }
 
-export const handleOptionMouseLeave = (deps, event) => {
+export const handleOptionMouseLeave = (deps, payload) => {
   const { store, render } = deps;
   store.clearHoveredOption();
   render();
 }
 
-export const handleClearClick = (deps, event) => {
+export const handleClearClick = (deps, payload) => {
   const { store, render, dispatchEvent, props } = deps;
+  const event = payload._event;
 
   event.stopPropagation();
 
@@ -139,7 +143,7 @@ export const handleClearClick = (deps, event) => {
   render();
 }
 
-export const handleAddOptionClick = (deps, event) => {
+export const handleAddOptionClick = (deps, payload) => {
   const { store, render, dispatchEvent } = deps;
 
   // Close the popover
@@ -153,13 +157,13 @@ export const handleAddOptionClick = (deps, event) => {
   render();
 }
 
-export const handleAddOptionMouseEnter = (deps, event) => {
+export const handleAddOptionMouseEnter = (deps, payload) => {
   const { store, render } = deps;
   store.setHoveredAddOption(true);
   render();
 }
 
-export const handleAddOptionMouseLeave = (deps, event) => {
+export const handleAddOptionMouseLeave = (deps, payload) => {
   const { store, render } = deps;
   store.setHoveredAddOption(false);
   render();

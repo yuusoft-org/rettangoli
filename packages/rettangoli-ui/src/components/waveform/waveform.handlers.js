@@ -11,7 +11,7 @@ export const handleAfterMount = async (deps) => {
   }
 };
 
-export const handleOnUpdate = async (changes, deps) => {
+export const handleOnUpdate = async (deps, payload) => {
   const { store, render, getRefIds, props } = deps;
   const { waveformData } = props;
 
