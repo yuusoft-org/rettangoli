@@ -1,4 +1,4 @@
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => Object.freeze({
   isOpen: false,
   position: {
     x: 0,
@@ -8,7 +8,7 @@ export const INITIAL_STATE = Object.freeze({
   tempValue: '',
 });
 
-export const toViewData = ({ attrs, state, props }) => {
+export const selectViewData = ({ attrs, state, props }) => {
   // Use state's current value if it has been modified, otherwise use props
   const value = state.value || '-';
 

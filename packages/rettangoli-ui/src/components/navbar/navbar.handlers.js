@@ -1,5 +1,5 @@
 
-export const handleClickStart = (e, deps) => {
+export const handleClickStart = (deps, event) => {
   const { dispatchEvent, store } = deps;
   console.log('handle click start', store.selectPath());
   dispatchEvent(new CustomEvent('clickStart', {

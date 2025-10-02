@@ -23,7 +23,7 @@ const stringifyAttrs = (attrs) => {
     .join(" ");
 };
 
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => Object.freeze({
   isOpen: false,
   position: {
     x: 0,
@@ -34,10 +34,10 @@ export const INITIAL_STATE = Object.freeze({
   hoveredAddOption: false,
 });
 
-export const toViewData = ({ state, props, attrs }) => {
+export const selectViewData = ({ state, props, attrs }) => {
   // Generate container attribute string
   const containerAttrString = stringifyAttrs(attrs);
-  
+
   // Use state's selected value if available, otherwise use props.selectedValue
   const currentValue = state.selectedValue !== null ? state.selectedValue : props.selectedValue;
 

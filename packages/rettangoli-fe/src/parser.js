@@ -164,7 +164,7 @@ export const createVirtualDom = ({
           const attrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]+))/g;
           let match;
           const processedAttrs = new Set();
-          
+
           while ((match = attrRegex.exec(attrsString)) !== null) {
             processedAttrs.add(match[1]);
             if (match[1].startsWith(".")) {
@@ -175,7 +175,7 @@ export const createVirtualDom = ({
               // Handle conditional boolean attributes
               const attrName = match[1].substring(1);
               const attrValue = match[2] || match[3] || match[4];
-              
+
               // Convert string values to boolean
               let evalValue;
               if (attrValue === "true") {
@@ -186,7 +186,7 @@ export const createVirtualDom = ({
                 // Try to get from viewData if it's not a literal boolean
                 evalValue = lodashGet(viewData, attrValue);
               }
-              
+
               // Only add attribute if value is truthy
               if (evalValue) {
                 attrs[attrName] = "";
@@ -195,7 +195,7 @@ export const createVirtualDom = ({
               attrs[match[1]] = match[2] || match[3] || match[4];
             }
           }
-          
+
           // Then, handle boolean attributes without values
           // Remove all processed attribute-value pairs from the string first
           let remainingAttrsString = attrsString;
@@ -209,7 +209,7 @@ export const createVirtualDom = ({
           processedMatches.forEach(match => {
             remainingAttrsString = remainingAttrsString.replace(match, ' ');
           });
-          
+
           const booleanAttrRegex = /\b(\S+?)(?=\s|$)/g;
           let boolMatch;
           while ((boolMatch = booleanAttrRegex.exec(remainingAttrsString)) !== null) {
@@ -327,9 +327,18 @@ export const createVirtualDom = ({
               const eventListeners = refs[bestMatchRefKey].eventListeners;
               Object.entries(eventListeners).forEach(
                 ([eventType, eventConfig]) => {
+                  if (eventConfig.handler && eventConfig.action) {
+                    throw new Error('Each listener can have hanlder or action but not both')
+                  }
+
+                  if (eventConfig.action) {
+                    handlers.handleCallStoreAction(event, eventConfig.payload)
+                    return;
+                  }
+
                   if (eventConfig.handler && handlers[eventConfig.handler]) {
                     eventHandlers[eventType] = (event) => {
-                      handlers[eventConfig.handler](event);
+                      handlers[eventConfig.handler](event, eventConfig.payload);
                     };
                   } else if (eventConfig.handler) {
                     // Keep this warning for missing handlers

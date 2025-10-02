@@ -35,7 +35,7 @@ export const handleOnUpdate = (changes, deps) => {
   }
 }
 
-export const handleButtonClick = (e, deps) => {
+export const handleButtonClick = (deps, event) => {
   const { store, render, getRefIds, props } = deps;
 
   const button = getRefIds()['select-button'].elm;
@@ -63,15 +63,15 @@ export const handleButtonClick = (e, deps) => {
   render();
 }
 
-export const handleClickOptionsPopoverOverlay = (e, deps) => {
+export const handleClickOptionsPopoverOverlay = (deps, event) => {
   const { store, render } = deps;
   store.closeOptionsPopover();
   render();
 }
 
-export const handleOptionClick = (e, deps) => {
+export const handleOptionClick = (deps, event) => {
   const { render, dispatchEvent, props, store } = deps;
-  const id = e.currentTarget.id.replace('option-', '');
+  const id = event.currentTarget.id.replace('option-', '');
 
   const option = props.options[id];
 
@@ -98,23 +98,23 @@ export const handleOptionClick = (e, deps) => {
   render();
 }
 
-export const handleOptionMouseEnter = (e, deps) => {
+export const handleOptionMouseEnter = (deps, event) => {
   const { store, render } = deps;
-  const id = parseInt(e.currentTarget.id.replace('option-', ''));
+  const id = parseInt(event.currentTarget.id.replace('option-', ''));
   store.setHoveredOption(id);
   render();
 }
 
-export const handleOptionMouseLeave = (e, deps) => {
+export const handleOptionMouseLeave = (deps, event) => {
   const { store, render } = deps;
   store.clearHoveredOption();
   render();
 }
 
-export const handleClearClick = (e, deps) => {
+export const handleClearClick = (deps, event) => {
   const { store, render, dispatchEvent, props } = deps;
 
-  e.stopPropagation();
+  event.stopPropagation();
 
   // Clear the internal state
   store.clearSelectedValue();
@@ -139,9 +139,9 @@ export const handleClearClick = (e, deps) => {
   render();
 }
 
-export const handleAddOptionClick = (e, deps) => {
+export const handleAddOptionClick = (deps, event) => {
   const { store, render, dispatchEvent } = deps;
-  
+
   // Close the popover
   store.closeOptionsPopover();
 
@@ -153,13 +153,13 @@ export const handleAddOptionClick = (e, deps) => {
   render();
 }
 
-export const handleAddOptionMouseEnter = (e, deps) => {
+export const handleAddOptionMouseEnter = (deps, event) => {
   const { store, render } = deps;
   store.setHoveredAddOption(true);
   render();
 }
 
-export const handleAddOptionMouseLeave = (e, deps) => {
+export const handleAddOptionMouseLeave = (deps, event) => {
   const { store, render } = deps;
   store.setHoveredAddOption(false);
   render();

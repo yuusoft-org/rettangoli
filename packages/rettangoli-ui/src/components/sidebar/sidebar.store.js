@@ -1,4 +1,4 @@
-export const INITIAL_STATE = Object.freeze({});
+export const createInitialState = () => Object.freeze({});
 
 const blacklistedAttrs = ['id', 'class', 'style', 'slot'];
 
@@ -50,7 +50,7 @@ function flattenItems(items, selectedItemId = null) {
   return result;
 }
 
-export const toViewData = ({ state, props, attrs }) => {
+export const selectViewData = ({ state, props, attrs }) => {
   const attrsHeader = attrs.header ? JSON.parse(decodeURIComponent(attrs.header)) : props.header;
   const attrsItems = attrs.items ? JSON.parse(decodeURIComponent(attrs.items)) : props.items;
   const selectedItemId = attrs.selectedItemId || props.selectedItemId;
@@ -81,17 +81,17 @@ export const toViewData = ({ state, props, attrs }) => {
   const firstLetterSize = mode === 'shrunk-lg' ? 'md' : 'sm';
   const showLabels = mode === 'full';
   const showGroupLabels = mode === 'full';
-  
+
   // For items with icons in full mode, we need left alignment within the container
   // but the container itself should use flex-start alignment
   const itemContentAlign = mode === 'full' ? 'fs' : 'c';
-  
+
   // Item container alignment - only set for shrunk modes, leave default for full mode
   const itemAlignAttr = mode === 'full' ? '' : `ah=${itemAlign}`;
-  
+
   // Item width - for shrunk modes, make it square to constrain the highlight
   const itemWidth = mode === 'full' ? 'f' : itemHeight;
-  
+
   // Header width - should match item width for alignment
   const headerWidth = itemWidth;
 

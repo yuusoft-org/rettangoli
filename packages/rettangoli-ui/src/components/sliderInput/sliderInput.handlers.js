@@ -20,15 +20,15 @@ export const handleOnUpdate = (changes, deps) => {
   }
 }
 
-export const handleValueChange = (e, deps) => {
+export const handleValueChange = (deps, event) => {
   const { store, render, dispatchEvent } = deps;
-  const newValue = Number(e.detail.value);
+  const newValue = Number(event.detail.value);
 
   store.setValue(newValue);
-  
+
   // Re-render to sync slider and input
   render();
-  
+
   // Dispatch event for external listeners
   dispatchEvent(
     new CustomEvent("slider-input-value-change", {

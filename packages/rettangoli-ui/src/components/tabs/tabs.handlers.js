@@ -1,7 +1,7 @@
-export const handleClickItem = (e, deps) => {
+export const handleClickItem = (deps, event) => {
   const { dispatchEvent } = deps;
-  const id = e.currentTarget.dataset.id;
-  
+  const id = event.currentTarget.dataset.id;
+
   dispatchEvent(new CustomEvent('item-click', {
     detail: {
       id

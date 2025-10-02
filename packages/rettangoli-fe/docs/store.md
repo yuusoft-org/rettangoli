@@ -4,18 +4,18 @@ State management using Immer for immutable updates. Defines initial state, actio
 
 ## Philosophy
 
-**Pure Functions**: All store functions are essentially pure - they have no side effects and are easily unit testable. Actions transform state predictably, selectors compute derived data, and `toViewData` formats for display. Side effects (API calls, DOM manipulation, etc.) are handled in handlers, keeping the store layer clean and testable.
+**Pure Functions**: All store functions are essentially pure - they have no side effects and are easily unit testable. Actions transform state predictably, selectors compute derived data, and `selectViewData` formats for display. Side effects (API calls, DOM manipulation, etc.) are handled in handlers, keeping the store layer clean and testable.
 
 ## File Structure
 
 ```js
 // Initial component state
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => ({
   // state properties
 });
 
 // Transform state into view-ready data
-export const toViewData = ({ state, props, attrs }) => {
+export const selectViewData = ({ state, props, attrs }) => {
   // return view data object
 };
 
@@ -32,23 +32,23 @@ export const setLoading = (state, isLoading) => {
 
 ### Basic Structure
 ```js
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => ({
   // Primitives
   title: "My Component",
   count: 0,
   isLoading: false,
-  
+
   // Collections
   items: [],
   tags: ['default'],
-  
+
   // Objects
   user: {
     name: "",
     preferences: { theme: "light" }
   }
-  
-  // Don't store derived data - compute in toViewData
+
+  // Don't store derived data - compute in selectViewData
   // itemCount: 0  ❌ Use items.length instead
 });
 ```
@@ -59,25 +59,25 @@ export const INITIAL_STATE = Object.freeze({
 
 ```js
 // Simple components - flat structure
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => ({
   text: "",
   completed: false,
   priority: "medium"
 });
 
 // Complex components - group related state
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => ({
   // UI state that changes together
-  ui: { 
-    isEditing: false, 
+  ui: {
+    isEditing: false,
     selectedTab: "overview",
-    showModal: false 
+    showModal: false
   },
-  
+
   // Data and filtering state
-  data: { 
-    items: [], 
-    filters: { status: "all", category: null } 
+  data: {
+    items: [],
+    filters: { status: "all", category: null }
   },
 });
 ```
@@ -163,27 +163,27 @@ export const selectFilteredItems = ({ state, props, attrs }) => {
 
 Transform state into view-ready data:
 
-**Note**: It's perfectly fine to call selector functions inside `toViewData`, even though it makes the function not strictly "pure". This is an accepted pattern for code organization and reusability and in practice does not cause issues to unit testing.
+**Note**: It's perfectly fine to call selector functions inside `selectViewData`, even though it makes the function not strictly "pure". This is an accepted pattern for code organization and reusability and in practice does not cause issues to unit testing.
 
 ```js
-export const toViewData = ({ state, props, attrs }) => {
+export const selectViewData = ({ state, props, attrs }) => {
   return {
     // Pass through simple values
     title: state.title,
     isLoading: state.isLoading,
-    
+
     // Compute derived values
     itemCount: state.items.length,
     hasItems: state.items.length > 0,
-    
+
     // Format for display
     displayTitle: state.title || 'Untitled',
     formattedDate: new Date(state.createdAt).toLocaleDateString(),
-    
+
     // Use selectors
     completedItems: selectCompletedItems({ state, props, attrs }),
     filteredItems: selectFilteredItems({ state, props, attrs }),
-    
+
     // Combine multiple sources
     userName: state.user.name || props.defaultName || 'Guest',
     theme: attrs.theme || state.user.preferences.theme
@@ -195,7 +195,7 @@ export const toViewData = ({ state, props, attrs }) => {
 
 ### Loading States
 ```js
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => ({
   data: [],
   isLoading: false,
   error: null
@@ -212,7 +212,7 @@ export const setData = (state, data) => {
   state.error = null;
 };
 
-export const toViewData = ({ state }) => ({
+export const selectViewData = ({ state }) => ({
   items: state.data,
   isLoading: state.isLoading,
   hasError: !!state.error,
@@ -222,7 +222,7 @@ export const toViewData = ({ state }) => ({
 
 ### Form State
 ```js
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => ({
   form: {
     values: { name: '', email: '' },
     errors: {},
@@ -239,7 +239,7 @@ export const setFieldError = (state, field, error) => {
   state.form.errors[field] = error;
 };
 
-export const toViewData = ({ state }) => {
+export const selectViewData = ({ state }) => {
   const { form } = state;
   return {
     formValues: form.values,
@@ -252,7 +252,7 @@ export const toViewData = ({ state }) => {
 
 ### Pagination
 ```js
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => ({
   items: [],
   pagination: {
     currentPage: 1,
@@ -271,7 +271,7 @@ export const setPaginatedData = (state, { items, totalItems }) => {
   state.pagination.totalPages = Math.ceil(totalItems / state.pagination.pageSize);
 };
 
-export const toViewData = ({ state }) => {
+export const selectViewData = ({ state }) => {
   const { pagination } = state;
   return {
     items: state.items,
@@ -288,18 +288,18 @@ export const toViewData = ({ state }) => {
 ### 1. Keep State Minimal
 ```js
 // ❌ Don't store derived data
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => ({
   items: [],
   itemCount: 0,        // Derived from items.length
   hasItems: false      // Derived from items.length > 0
 });
 
-// ✅ Compute in toViewData
-export const INITIAL_STATE = Object.freeze({
+// ✅ Compute in selectViewData
+export const createInitialState = () => ({
   items: []
 });
 
-export const toViewData = ({ state }) => ({
+export const selectViewData = ({ state }) => ({
   items: state.items,
   itemCount: state.items.length,
   hasItems: state.items.length > 0

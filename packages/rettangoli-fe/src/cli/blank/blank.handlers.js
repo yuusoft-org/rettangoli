@@ -1,8 +1,8 @@
 
-export const handleOnMount = (deps) => {
+export const handleOnMount = (deps, event) => {
   //
 }
 
-export const handlerSomeEvent = (e, deps) => {
+export const handlerSomeEvent = (deps, event) => {
   //
 }

@@ -1,8 +1,8 @@
 
-export const INITIAL_STATE = Object.freeze({
+export const createInitialState = () => Object.freeze({
 });
 
-export const toViewData = ({ props, attrs }) => {
+export const selectViewData = ({ props, attrs }) => {
   return {
     items: props.items || [],
     open: !!attrs.open,

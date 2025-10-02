@@ -136,17 +136,17 @@ template:
   - h1: "${title || 'default title'}"
   - div: "${isActive ? 'Active' : 'Inactive'}"
 
-# ✅ WORKS - Pre-compute in toViewData
+# ✅ WORKS - Pre-compute in selectViewData
 template:
   - h1: "${displayTitle}"
   - div: "${statusText}"
 ```
 
-Any transformations or complex logic should be handled in the `toViewData` function in your store.
+Any transformations or complex logic should be handled in the `selectViewData` function in your store.
 
 ```js
 // In store.js
-export const toViewData = ({ state }) => ({
+export const selectViewData = ({ state }) => ({
   displayTitle: state.title || 'default title',
   displayName: state.user.name || 'Guest',
   statusText: state.isActive ? 'Active' : 'Inactive'
@@ -216,25 +216,62 @@ styles:
 
 ## Event Handling
 
+Event listeners support `handler` or `action` (but not both), with optional payloads.
+
+### Event Listener Syntax
+
 ```yaml
 refs:
   submitButton:
     eventListeners:
       click:
-        handler: handleSubmit
+        handler: handleSubmit  # Calls handler function
+        payload:  # Optional data passed to handler/action
+          key: "value"
+          userId: 123
 
   nameInput:
     eventListeners:
       input:
         handler: handleNameChange
-      keydown:
-        handler: handleKeyDown
+        payload:
+          fieldName: "name"
+
+  toggleButton:
+    eventListeners:
+      click:
+        action: toggleItem  # Calls store action directly
+        payload:
+          itemId: ${item.id}
 
 template:
   - form:
     - input#nameInput type=text:
     - button#submitButton: "Submit"
 ```
+
+### Handler vs Action
+
+**Handler**:
+- Calls a function from `handlers.js`
+- Receives `(deps, event)` parameters
+- Can perform complex logic, side effects, API calls
+
+**Action**:
+- Calls a store action directly
+- Automatically calls `render()` after action
+- Simpler for basic state updates
+- Payload is parsed with Jempl for dynamic values
+
+### Payload Support
+
+Both handlers and actions support optional payloads. Payload supports Jempl templating for dynamic values.
+
+### Validation Rules
+
+- Each listener can have **either** `handler` OR `action`, but not both
+- Framework will throw an error if both are specified
+- `payload` is optional for both handler and action
 
 ### Event Options
 
@@ -246,16 +283,20 @@ refs:
     eventListeners:
       click:    # Standard HTML DOM event (click, submit, input, etc.)
         handler: handleSubmit  # Function name from handlers.js
+        payload:
+          formType: "login"
       keydown:  # Any HTML event is supported
-        handler: handleKeyDown
+        action: handleKeyDown  # Direct store action
 
 template:
   - rtgl-button#submitButton: "Submit"  # id matches refs key
 ```
 
-**Current Limitations**: 
-- Only `handler` is supported - no event options like `preventDefault` or `passive`
-- All event handlers must be defined in the component's `handlers.js` file
+**Current Limitations**:
+- Event listeners support `handler` OR `action` plus optional `payload`
+- No event options like `preventDefault` or `passive`
+- All event handlers must be defined in the component's `handlers.js` file (for handler type)
+- Store actions must be defined in the component's `store.js` file (for action type)
 
 ## Data Schemas
 
