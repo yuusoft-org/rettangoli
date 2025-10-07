@@ -225,3 +225,12 @@ code:not(pre code) {
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
 }
+
+.link{
+  text-decoration: none;
+  color: inherit;
+}
+
+.svg-icon{
+  display: block;
+}

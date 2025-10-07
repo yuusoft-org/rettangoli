@@ -1,0 +1,29 @@
+
+header:
+  label: Rettangoli Docs
+  href: /
+items:
+  - title: "Introduction"
+    type: groupLabel
+    items:
+      - title: "Introduction"
+        href: "/docs/introduction/introduction"
+      - title: "Getting Started"
+        href: "/docs/introduction/getting-started"
+      - title: "Colors"
+        href: "/docs/introduction/colors"
+      - title: "CSS Variables"
+        href: "/docs/introduction/css-variables"
+  - title: "Components"
+    type: groupLabel
+    items:
+      - title: "View"
+        href: "/docs/components/rtgl-view"
+      - title: "Text"
+        href: "/docs/components/rtgl-text"
+      - title: "Image"
+        href: "/docs/components/rtgl-image"
+      - title: "SVG"
+        href: "/docs/components/rtgl-svg"
+      - title: "Button"
+        href: "/docs/components/rtgl-button"

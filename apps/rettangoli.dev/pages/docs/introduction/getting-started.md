@@ -1,5 +1,5 @@
 ---
-layout: core/documentation
+template: documentation
 title: Getting Started
 tags: documentation
 ---

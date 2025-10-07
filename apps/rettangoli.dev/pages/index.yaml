@@ -1,0 +1,9 @@
+---
+template: base
+title: RouteVN
+---
+- rtgl-view:
+    - $partial: hero1
+      title: ${site.hero.title}
+      subtitle: ${site.hero.subtitle}
+      cta: ${site.hero.cta}
