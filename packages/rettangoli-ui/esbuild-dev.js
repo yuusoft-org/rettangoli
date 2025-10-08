@@ -4,8 +4,8 @@ for (const mode of ["iife-ui"]) {
   try {
     await esbuild.build({
       bundle: true,
-      minify: true,
-      sourcemap: false,
+      minify: false,
+      sourcemap: true,
       format: mode === "esm" ? "esm" : "iife",
       globalName: "rettangoli",
       outfile: `./vt/static/public/main.js`,

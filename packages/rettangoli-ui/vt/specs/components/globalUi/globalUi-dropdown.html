@@ -1,0 +1,125 @@
+---
+title: "Global UI - Dropdown"
+---
+<!-- Global UI element must be present before main.js loads -->
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="lg" h="100vh" w="f" fw="w">
+  <rtgl-view d="h" g="lg">
+    <rtgl-button id="dropdown-btn">Show Dropdown</rtgl-button>
+    <rtgl-button id="dropdown-custom-btn">Show Custom Position</rtgl-button>
+  </rtgl-view>
+
+  <rtgl-view d="h" g="lg" mt="lg">
+    <rtgl-button id="dropdown-mixed-btn">Show Mixed Items</rtgl-button>
+    <rtgl-button id="dropdown-large-btn">Show Large Dropdown</rtgl-button>
+  </rtgl-view>
+
+  <rtgl-text id="result" mt="lg">Result will appear here</rtgl-text>
+</rtgl-view>
+
+<script>
+  // Get globalUI from the component element
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+
+  // Application layer creates its own async wrapper
+  const globalUI = {
+    showAlert: async (options) => {
+      globalUIElement.transformedHandlers.showAlert(options);
+    },
+    showConfirm: async (options) => {
+      return globalUIElement.transformedHandlers.showConfirm(options);
+    },
+    showDropdown: async (options) => {
+      return globalUIElement.transformedHandlers.showDropdown(options);
+    }
+  };
+
+  const resultEl = document.getElementById('result');
+
+  document.getElementById('dropdown-btn').addEventListener('click', async (e) => {
+    const rect = e.target.getBoundingClientRect();
+    const result = await globalUI.showDropdown({
+      items: [
+        { type: 'item', label: 'Copy' },
+        { type: 'item', label: 'Paste' },
+        { type: 'separator' },
+        { type: 'item', label: 'Delete' },
+        { type: 'item', label: 'Rename' }
+      ],
+      x: rect.left + rect.width / 2,
+      y: rect.bottom + 5,
+      placement: 'bottom-start'
+    });
+    resultEl.textContent = `Dropdown result: ${JSON.stringify(result)}`;
+  });
+
+  document.getElementById('dropdown-custom-btn').addEventListener('click', async (e) => {
+    const rect = e.target.getBoundingClientRect();
+    const result = await globalUI.showDropdown({
+      items: [
+        { type: 'label', label: 'Actions' },
+        { type: 'item', label: 'Save' },
+        { type: 'item', label: 'Save As...' },
+        { type: 'separator' },
+        { type: 'item', label: 'Export' },
+        { type: 'item', label: 'Import' }
+      ],
+      x: rect.right - 200,
+      y: rect.bottom + 10,
+      placement: 'bottom-end'
+    });
+    resultEl.textContent = `Custom dropdown result: ${JSON.stringify(result)}`;
+  });
+
+  document.getElementById('dropdown-mixed-btn').addEventListener('click', async (e) => {
+    const rect = e.target.getBoundingClientRect();
+    const result = await globalUI.showDropdown({
+      items: [
+        { type: 'label', label: 'File Operations' },
+        { type: 'item', label: 'New File' },
+        { type: 'item', label: 'Open File' },
+        { type: 'separator' },
+        { type: 'label', label: 'Recent Files' },
+        { type: 'item', label: 'document1.txt' },
+        { type: 'item', label: 'presentation.pptx' },
+        { type: 'separator' },
+        { type: 'item', label: 'Exit' }
+      ],
+      x: rect.left + rect.width / 2,
+      y: rect.bottom + 5,
+      placement: 'bottom'
+    });
+    resultEl.textContent = `Mixed dropdown result: ${JSON.stringify(result)}`;
+  });
+
+  document.getElementById('dropdown-large-btn').addEventListener('click', async (e) => {
+    const rect = e.target.getBoundingClientRect();
+    const items = [
+      { type: 'label', label: 'Menu Items' }
+    ];
+
+    // Add many items to test scrolling
+    for (let i = 1; i <= 20; i++) {
+      items.push({ type: 'item', label: `Item ${i}` });
+      if (i % 5 === 0) {
+        items.push({ type: 'separator' });
+      }
+    }
+
+    const result = await globalUI.showDropdown({
+      items: items,
+      x: rect.left + rect.width / 2,
+      y: rect.bottom + 5,
+      placement: 'bottom'
+    });
+    resultEl.textContent = `Large dropdown result: ${JSON.stringify(result)}`;
+  });
+
+  // Test click outside to close
+  document.addEventListener('click', async (e) => {
+    if (!e.target.closest('button')) {
+      resultEl.textContent = 'Click outside detected - dropdown should close';
+    }
+  });
+</script>

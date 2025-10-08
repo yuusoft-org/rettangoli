@@ -32,6 +32,13 @@ const createGlobalUI = (globalUIElement) => {
         throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
       }
       return globalUIElement.transformedHandlers.showConfirm(options);
+    },
+    showDropdown: async (options) => {
+      if(!globalUIElement)
+      {
+        throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
+      }
+      return globalUIElement.transformedHandlers.showDropdown(options);
     }
   };
 }

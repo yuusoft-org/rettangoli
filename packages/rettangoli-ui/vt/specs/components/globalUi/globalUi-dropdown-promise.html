@@ -1,0 +1,211 @@
+---
+title: "Global UI - Dropdown Promise Handling"
+---
+<!-- Global UI element must be present before main.js loads -->
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="lg" h="100vh" w="f" fw="w" p="lg">
+  <rtgl-view d="h" g="md" mb="lg">
+    <rtgl-button id="test-item-click">Test Item Click</rtgl-button>
+    <rtgl-button id="test-close-without-selection">Test Close Without Selection</rtgl-button>
+  </rtgl-view>
+
+  <rtgl-view d="h" g="md" mb="lg">
+    <rtgl-button id="test-error-handling">Test Error Handling</rtgl-button>
+    <rtgl-button id="test-conflict">Test Dialog Conflict</rtgl-button>
+  </rtgl-view>
+
+  <rtgl-view g="lg" mb="lg">
+    <rtgl-text id="result" fw="600">Results:</rtgl-text>
+    <rtgl-view id="result-list" mt="md"></rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view g="lg">
+    <rtgl-text s="sm" c="mu-fg">Click each button to test different promise scenarios</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  // Get globalUI from the component element
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+
+  // Application layer creates its own async wrapper
+  const globalUI = {
+    showAlert: async (options) => {
+      globalUIElement.transformedHandlers.showAlert(options);
+    },
+    showConfirm: async (options) => {
+      return globalUIElement.transformedHandlers.showConfirm(options);
+    },
+    showDropdown: async (options) => {
+      return globalUIElement.transformedHandlers.showDropdown(options);
+    }
+  };
+
+  const resultList = document.getElementById('result-list');
+
+  function addResult(message) {
+    const resultItem = document.createElement('rtgl-view');
+    resultItem.setAttribute('d', 'h');
+    resultItem.setAttribute('mb', 'sm');
+    resultItem.innerHTML = `
+      <rtgl-text s="sm">• ${message}</rtgl-text>
+    `;
+    resultList.appendChild(resultItem);
+  }
+
+  function clearResults() {
+    resultList.innerHTML = '';
+  }
+
+  document.getElementById('test-item-click').addEventListener('click', async (e) => {
+    clearResults();
+    addResult('Testing item click promise resolution...');
+
+    const rect = e.target.getBoundingClientRect();
+
+    try {
+      const result = await globalUI.showDropdown({
+        items: [
+          { type: 'item', label: 'Option 1' },
+          { type: 'item', label: 'Option 2' },
+          { type: 'item', label: 'Option 3' }
+        ],
+        x: rect.left + rect.width / 2,
+        y: rect.bottom + 5,
+        placement: 'bottom'
+      });
+
+      if (result) {
+        addResult(`✅ Success: Selected item ${result.index + 1}: ${result.item.label}`);
+      } else {
+        addResult('ℹ️ Info: Dropdown closed without selection');
+      }
+    } catch (error) {
+      addResult(`❌ Error: ${error.message}`);
+    }
+  });
+
+  document.getElementById('test-close-without-selection').addEventListener('click', async (e) => {
+    clearResults();
+    addResult('Testing close without selection...');
+
+    const rect = e.target.getBoundingClientRect();
+
+    try {
+      const result = await globalUI.showDropdown({
+        items: [
+          { type: 'item', label: 'Do not select me' },
+          { type: 'item', label: 'Also not this' }
+        ],
+        x: rect.left + rect.width / 2,
+        y: rect.bottom + 5,
+        placement: 'bottom'
+      });
+
+      addResult('ℹ️ Info: This should not appear if clicked outside');
+    } catch (error) {
+      addResult(`❌ Error: ${error.message}`);
+    }
+  });
+
+  document.getElementById('test-error-handling').addEventListener('click', async (e) => {
+    clearResults();
+    addResult('Testing error handling...');
+
+    try {
+      const result = await globalUI.showDropdown({
+        // Missing items array - should throw error
+        x: 100,
+        y: 100
+      });
+      addResult('❌ This should not appear');
+    } catch (error) {
+      addResult(`✅ Expected error caught: ${error.message}`);
+    }
+
+    try {
+      const result = await globalUI.showDropdown({
+        items: 'not an array', // Invalid items type
+        x: 100,
+        y: 100
+      });
+      addResult('❌ This should not appear');
+    } catch (error) {
+      addResult(`✅ Expected error caught: ${error.message}`);
+    }
+  });
+
+  document.getElementById('test-conflict').addEventListener('click', async (e) => {
+    clearResults();
+    addResult('Testing dialog conflict...');
+
+    const rect = e.target.getBoundingClientRect();
+
+    try {
+      // Open a dropdown first
+      const dropdownPromise = globalUI.showDropdown({
+        items: [
+          { type: 'item', label: 'First item' },
+          { type: 'item', label: 'Second item' }
+        ],
+        x: rect.left + rect.width / 2,
+        y: rect.bottom + 5,
+        placement: 'bottom'
+      });
+
+      // Immediately try to open another dialog - should fail
+      setTimeout(async () => {
+        try {
+          await globalUI.showDropdown({
+            items: [{ type: 'item', label: 'Conflict item' }],
+            x: 200,
+            y: 200
+          });
+          addResult('❌ This should not appear - conflict not detected');
+        } catch (error) {
+          addResult(`✅ Expected conflict error: ${error.message}`);
+        }
+      }, 100);
+
+      const result = await dropdownPromise;
+      addResult(`First dropdown result: ${result ? result.item.label : 'null'}`);
+    } catch (error) {
+      addResult(`❌ Unexpected error: ${error.message}`);
+    }
+  });
+
+  // Test with confirm dialog
+  document.addEventListener('keydown', async (e) => {
+    if (e.key === 'c' && e.ctrlKey) {
+      clearResults();
+      addResult('Testing dropdown vs confirm dialog conflict...');
+
+      try {
+        // Open dropdown
+        const dropdownPromise = globalUI.showDropdown({
+          items: [{ type: 'item', label: 'Dropdown item' }],
+          x: 100,
+          y: 100
+        });
+
+        // Try to open confirm dialog
+        setTimeout(async () => {
+          try {
+            await globalUI.showConfirm({
+              message: 'This should fail due to conflict'
+            });
+            addResult('❌ Confirm should not open during dropdown');
+          } catch (error) {
+            addResult(`✅ Confirm conflict detected: ${error.message}`);
+          }
+        }, 100);
+
+        const result = await dropdownPromise;
+        addResult(`Dropdown completed: ${result ? result.item.label : 'null'}`);
+      } catch (error) {
+        addResult(`❌ Error in conflict test: ${error.message}`);
+      }
+    }
+  });
+</script>
