@@ -1,10 +1,9 @@
-import MarkdownItAsync from 'markdown-it-async'
+import { createMarkdownItAsync } from "./markdownItAsync.js";
 import { codeToHtml } from "shiki";
 
 export const configureMarkdown = () => {
-  const md = MarkdownItAsync({
+  const md = createMarkdownItAsync({
     async highlight(code, lang, attrs) {
-      console.log(attrs)
       if (attrs.includes("codePreview")) {
         const formattedCode = await codeToHtml(code, {
           lang,
