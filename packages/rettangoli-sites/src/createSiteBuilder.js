@@ -32,7 +32,7 @@ function isObject(item) {
 }
 
 export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet = false }) {
-  return function build() {
+  return async function build() {
     // Use provided md or default to rtglMarkdown
     const mdInstance = md || rtglMarkdown(MarkdownIt);
 
@@ -191,7 +191,7 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
     const collections = buildCollections();
 
     // Function to process a single page file
-    function processPage(pagePath, outputRelativePath, isMarkdown = false) {
+    async function processPage(pagePath, outputRelativePath, isMarkdown = false) {
       if (!quiet) console.log(`Processing ${pagePath}...`);
 
       // Read page content
@@ -245,7 +245,13 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
 
       if (isMarkdown) {
         // Process markdown content with MarkdownIt
-        const htmlContent = mdInstance.render(rawContent);
+        //If markdownit async then use the async render method
+        let htmlContent;
+        if(mdInstance.renderAsync){
+          htmlContent = await mdInstance.renderAsync(rawContent);
+        } else {
+          htmlContent = mdInstance.render(rawContent);
+        }
         // For markdown, store as raw HTML that will be inserted directly
         processedPageContent = { __html: htmlContent };
       } else {
@@ -305,7 +311,7 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
     }
 
     // Process all YAML and Markdown files in pages directory recursively
-    function processAllPages(dir, basePath = '') {
+    async function processAllPages(dir, basePath = '') {
       const pagesDir = path.join(rootDir, 'pages');
       const fullDir = path.join(pagesDir, basePath);
 
@@ -319,18 +325,18 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
 
         if (item.isDirectory()) {
           // Recursively process subdirectories
-          processAllPages(dir, relativePath);
+          await processAllPages(dir, relativePath);
         } else if (item.isFile()) {
           if (item.name.endsWith('.yaml')) {
             // Process YAML file
             const outputFileName = item.name.replace('.yaml', '.html');
             const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
-            processPage(itemPath, outputRelativePath, false);
+            await processPage(itemPath, outputRelativePath, false);
           } else if (item.name.endsWith('.md')) {
             // Process Markdown file
             const outputFileName = item.name.replace('.md', '.html');
             const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
-            processPage(itemPath, outputRelativePath, true);
+            await processPage(itemPath, outputRelativePath, true);
           }
           // Ignore other file types
         }
@@ -388,7 +394,7 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
     copyStaticFiles();
 
     // Process all pages (can overwrite static files)
-    processAllPages('');
+    await processAllPages('');
 
     if (!quiet) console.log('Build complete!');
   };

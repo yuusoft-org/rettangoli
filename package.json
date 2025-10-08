@@ -2,5 +2,8 @@
   "name": "rettangoli",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "markdown-it-async": "^2.2.0"
+  }
 }
