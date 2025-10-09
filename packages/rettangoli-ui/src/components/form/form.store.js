@@ -103,7 +103,7 @@ export const selectForm = ({ state, props }) => {
 
 export const selectViewData = ({ state, props, attrs }) => {
   const containerAttrString = stringifyAttrs(attrs);
-  const defaultValues = props.defaultValues || {};
+  const defaultValues = state.formValues;
 
   const form = selectForm({ state, props });
   const fields = structuredClone(form.fields || []);
