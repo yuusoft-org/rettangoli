@@ -68,6 +68,7 @@ export const setDropdownConfig = (state, options) => {
 
 export const closeDialog = (state) => {
   state.isOpen = false;
+  state.uiType = "dialog"; // Reset to default type
 };
 
 export const selectConfig = ({ state }) => state.config;
@@ -80,7 +81,12 @@ export const selectViewData = ({ state }) => {
     isOpen: state.isOpen,
     uiType: state.uiType,
     config: state.config,
-    dropdownConfig: state.dropdownConfig,
+    dropdownConfig: {
+      items: state.dropdownConfig?.items || [],
+      x: state.dropdownConfig?.x || 0,
+      y: state.dropdownConfig?.y || 0,
+      placement: state.dropdownConfig?.placement || 'bottom-start',
+    },
     isDialogOpen: state.isOpen && state.uiType === 'dialog',
     isDropdownOpen: state.isOpen && state.uiType === 'dropdown',
   };

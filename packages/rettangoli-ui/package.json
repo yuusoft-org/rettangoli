@@ -26,7 +26,7 @@
     "build:dev": "rtgl fe build -d && bun run esbuild-dev.js",
     "build": "rtgl fe build && bun run esbuild.js",
     "vt:generate": "rtgl fe build -d && bun run esbuild-dev.js && rtgl vt generate --skip-screenshots",
-    "vt:report": "bun run build:dev && rtgl vt generate && rtgl vt report",
+    "vt:report": "bun run build:dev && rtgl vt generate --screenshot-wait-time 500 && rtgl vt report",
     "vt:accept": "rtgl vt accept",
     "serve": "bunx serve .rettangoli/vt/_site"
   },

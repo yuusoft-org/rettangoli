@@ -24,40 +24,45 @@ export const handleCancel = (deps, payload) => {
 export const handleDropdownClose = (deps, payload) => {
   const { store, render, globalUI } = deps;
 
-  // Only process close if the dropdown is currently open
-  const uiType = store.selectUiType();
-  const isOpen = store.selectIsOpen();
-
-  if (uiType === 'dropdown' && isOpen) {
-    store.closeDialog();
-    render();
-    globalUI.emit('event', null);
-  }
+  // Always process close events - the framework will handle if it's already closed
+  store.closeDialog();
+  render();
+  globalUI.emit('event', null);
 };
 
 export const handleDropdownItemClick = (deps, payload) => {
   const { store, render, globalUI } = deps;
   const event = payload._event;
-  const index = parseInt(event.currentTarget.id.replace('dropdown-option-', ''));
-  const item = store.selectDropdownConfig().items[index];
+  const { index, item } = event.detail;
 
-  // Only process click if the dropdown is currently open
-  const uiType = store.selectUiType();
-  const isOpen = store.selectIsOpen();
-
-  if (uiType === 'dropdown' && isOpen) {
-    store.closeDialog();
-    render();
-    globalUI.emit('event', { index, item });
-  }
+  // Always process click events - the framework will handle if it's already closed
+  store.closeDialog();
+  render();
+  globalUI.emit('event', { index, item });
 };
 
+/**
+ * Shows an alert dialog with the specified options.
+ * Closes any existing dialog or dropdown before showing the alert.
+ *
+ * @param {Object} deps - Dependencies object
+ * @param {Object} deps.store - The globalUI store instance
+ * @param {Function} deps.render - Function to trigger re-rendering
+ * @param {Object} payload - Alert configuration options
+ * @param {string} payload.message - The alert message (required)
+ * @param {string} [payload.title] - Optional alert title
+ * @param {('info'|'warning'|'error')} [payload.status] - Optional status type
+ * @param {string} [payload.confirmText] - Text for the confirm button (default: "OK")
+ * @returns {void}
+ */
 export const showAlert = (deps, payload) => {
   const { store, render } = deps;
   const options = payload;
 
+  // Close any existing dialog/dropdown first
   if (store.selectIsOpen()) {
-    throw new Error("A dialog is already open");
+    store.closeDialog();
+    render();
   }
 
   store.setAlertConfig(options);
@@ -68,8 +73,10 @@ export const showConfirm = async (deps, payload) => {
   const { store, render, globalUI } = deps;
   const options = payload;
 
+  // Close any existing dialog/dropdown first
   if (store.selectIsOpen()) {
-    throw new Error("A dialog is already open");
+    store.closeDialog();
+    render();
   }
 
   store.setConfirmConfig(options);
@@ -83,12 +90,31 @@ export const showConfirm = async (deps, payload) => {
   });
 };
 
+/**
+ * Shows a dropdown menu at the specified position with the given items.
+ * Closes any existing dialog or dropdown before showing the dropdown.
+ *
+ * @param {Object} deps - Dependencies object
+ * @param {Object} deps.store - The globalUI store instance
+ * @param {Function} deps.render - Function to trigger re-rendering
+ * @param {Object} deps.globalUI - The globalUI event emitter
+ * @param {Object} payload - Dropdown configuration options
+ * @param {Array<Object>} payload.items - Array of dropdown items (required)
+ * @param {number} payload.x - X coordinate position (required)
+ * @param {number} payload.y - Y coordinate position (required)
+ * @param {string} [payload.placement] - Dropdown placement (default: "bottom-start")
+ * @returns {Promise<Object|null>} Promise that resolves with clicked item info or null if closed without selection
+ * @returns {Object} [result.index] - Index of the clicked item
+ * @returns {Object} [result.item] - The clicked item object
+ */
 export const showDropdown = async (deps, payload) => {
   const { store, render, globalUI } = deps;
   const options = payload;
 
+  // Close any existing dialog/dropdown first
   if (store.selectIsOpen()) {
-    throw new Error("A dialog is already open");
+    store.closeDialog();
+    render();
   }
 
   store.setDropdownConfig(options);
