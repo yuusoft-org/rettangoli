@@ -37,8 +37,8 @@ title: "Global UI - Dropdown Promise Handling"
     showConfirm: async (options) => {
       return globalUIElement.transformedHandlers.showConfirm(options);
     },
-    showDropdown: async (options) => {
-      return globalUIElement.transformedHandlers.showDropdown(options);
+    showDropdownMenu: async (options) => {
+      return globalUIElement.transformedHandlers.showDropdownMenu(options);
     }
   };
 
@@ -65,7 +65,7 @@ title: "Global UI - Dropdown Promise Handling"
     const rect = e.target.getBoundingClientRect();
 
     try {
-      const result = await globalUI.showDropdown({
+      const result = await globalUI.showDropdownMenu({
         items: [
           { type: 'item', label: 'Option 1' },
           { type: 'item', label: 'Option 2' },
@@ -93,7 +93,7 @@ title: "Global UI - Dropdown Promise Handling"
     const rect = e.target.getBoundingClientRect();
 
     try {
-      const result = await globalUI.showDropdown({
+      const result = await globalUI.showDropdownMenu({
         items: [
           { type: 'item', label: 'Do not select me' },
           { type: 'item', label: 'Also not this' }
@@ -114,7 +114,7 @@ title: "Global UI - Dropdown Promise Handling"
     addResult('Testing error handling...');
 
     try {
-      const result = await globalUI.showDropdown({
+      const result = await globalUI.showDropdownMenu({
         // Missing items array - should throw error
         x: 100,
         y: 100
@@ -125,7 +125,7 @@ title: "Global UI - Dropdown Promise Handling"
     }
 
     try {
-      const result = await globalUI.showDropdown({
+      const result = await globalUI.showDropdownMenu({
         items: 'not an array', // Invalid items type
         x: 100,
         y: 100
@@ -144,7 +144,7 @@ title: "Global UI - Dropdown Promise Handling"
 
     try {
       // Open a dropdown first
-      const dropdownPromise = globalUI.showDropdown({
+      const dropdownPromise = globalUI.showDropdownMenu({
         items: [
           { type: 'item', label: 'First item' },
           { type: 'item', label: 'Second item' }
@@ -157,7 +157,7 @@ title: "Global UI - Dropdown Promise Handling"
       // Immediately try to open another dialog - should fail
       setTimeout(async () => {
         try {
-          await globalUI.showDropdown({
+          await globalUI.showDropdownMenu({
             items: [{ type: 'item', label: 'Conflict item' }],
             x: 200,
             y: 200
@@ -183,7 +183,7 @@ title: "Global UI - Dropdown Promise Handling"
 
       try {
         // Open dropdown
-        const dropdownPromise = globalUI.showDropdown({
+        const dropdownPromise = globalUI.showDropdownMenu({
           items: [{ type: 'item', label: 'Dropdown item' }],
           x: 100,
           y: 100

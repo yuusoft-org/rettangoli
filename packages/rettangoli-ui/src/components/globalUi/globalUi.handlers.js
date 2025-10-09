@@ -59,7 +59,7 @@ export const showAlert = (deps, payload) => {
   const { store, render } = deps;
   const options = payload;
 
-  // Close any existing dialog/dropdown first
+  // Close any existing dialog/dropdown menu first
   if (store.selectIsOpen()) {
     store.closeDialog();
     render();
@@ -73,7 +73,7 @@ export const showConfirm = async (deps, payload) => {
   const { store, render, globalUI } = deps;
   const options = payload;
 
-  // Close any existing dialog/dropdown first
+  // Close any existing dialog/dropdown menu first
   if (store.selectIsOpen()) {
     store.closeDialog();
     render();
@@ -92,26 +92,26 @@ export const showConfirm = async (deps, payload) => {
 
 /**
  * Shows a dropdown menu at the specified position with the given items.
- * Closes any existing dialog or dropdown before showing the dropdown.
+ * Closes any existing dialog or dropdown menu before showing the dropdown menu.
  *
  * @param {Object} deps - Dependencies object
  * @param {Object} deps.store - The globalUI store instance
  * @param {Function} deps.render - Function to trigger re-rendering
  * @param {Object} deps.globalUI - The globalUI event emitter
- * @param {Object} payload - Dropdown configuration options
- * @param {Array<Object>} payload.items - Array of dropdown items (required)
+ * @param {Object} payload - Dropdown menu configuration options
+ * @param {Array<Object>} payload.items - Array of dropdown menu items (required)
  * @param {number} payload.x - X coordinate position (required)
  * @param {number} payload.y - Y coordinate position (required)
- * @param {string} [payload.placement] - Dropdown placement (default: "bottom-start")
+ * @param {string} [payload.placement] - Dropdown menu placement (default: "bottom-start")
  * @returns {Promise<Object|null>} Promise that resolves with clicked item info or null if closed without selection
  * @returns {Object} [result.index] - Index of the clicked item
  * @returns {Object} [result.item] - The clicked item object
  */
-export const showDropdown = async (deps, payload) => {
+export const showDropdownMenu = async (deps, payload) => {
   const { store, render, globalUI } = deps;
   const options = payload;
 
-  // Close any existing dialog/dropdown first
+  // Close any existing dialog/dropdown menu first
   if (store.selectIsOpen()) {
     store.closeDialog();
     render();

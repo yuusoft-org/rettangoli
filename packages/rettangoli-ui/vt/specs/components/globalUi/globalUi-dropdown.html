@@ -30,8 +30,8 @@ title: "Global UI - Dropdown"
     showConfirm: async (options) => {
       return globalUIElement.transformedHandlers.showConfirm(options);
     },
-    showDropdown: async (options) => {
-      return globalUIElement.transformedHandlers.showDropdown(options);
+    showDropdownMenu: async (options) => {
+      return globalUIElement.transformedHandlers.showDropdownMenu(options);
     }
   };
 
@@ -39,7 +39,7 @@ title: "Global UI - Dropdown"
 
   document.getElementById('dropdown-btn').addEventListener('click', async (e) => {
     const rect = e.target.getBoundingClientRect();
-    const result = await globalUI.showDropdown({
+    const result = await globalUI.showDropdownMenu({
       items: [
         { type: 'item', label: 'Copy' },
         { type: 'item', label: 'Paste' },
@@ -56,7 +56,7 @@ title: "Global UI - Dropdown"
 
   document.getElementById('dropdown-custom-btn').addEventListener('click', async (e) => {
     const rect = e.target.getBoundingClientRect();
-    const result = await globalUI.showDropdown({
+    const result = await globalUI.showDropdownMenu({
       items: [
         { type: 'label', label: 'Actions' },
         { type: 'item', label: 'Save' },
@@ -74,7 +74,7 @@ title: "Global UI - Dropdown"
 
   document.getElementById('dropdown-mixed-btn').addEventListener('click', async (e) => {
     const rect = e.target.getBoundingClientRect();
-    const result = await globalUI.showDropdown({
+    const result = await globalUI.showDropdownMenu({
       items: [
         { type: 'label', label: 'File Operations' },
         { type: 'item', label: 'New File' },
@@ -107,7 +107,7 @@ title: "Global UI - Dropdown"
       }
     }
 
-    const result = await globalUI.showDropdown({
+    const result = await globalUI.showDropdownMenu({
       items: items,
       x: rect.left + rect.width / 2,
       y: rect.bottom + 5,

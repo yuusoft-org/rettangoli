@@ -8,7 +8,7 @@
  * @returns {Function} returns.emit - Emit an event to registered listeners
  * @returns {Function} returns.showAlert - Show an alert dialog
  * @returns {Function} returns.showConfirm - Show a confirmation dialog
- * @returns {Function} returns.showDropdown - Show a dropdown menu
+ * @returns {Function} returns.showDropdownMenu - Show a dropdown menu
  */
 const createGlobalUI = (globalUIElement) => {
   let listeners = {};
@@ -93,22 +93,22 @@ const createGlobalUI = (globalUIElement) => {
      * Shows a dropdown menu at the specified position with the given items.
      * The dropdown can contain various item types including labels, items, and separators.
      *
-     * @param {Object} options - Dropdown configuration options
-     * @param {Array<Object>} options.items - Array of dropdown items (required)
+     * @param {Object} options - Dropdown menu configuration options
+     * @param {Array<Object>} options.items - Array of dropdown menu items (required)
      * @param {number} options.x - X coordinate position (required)
      * @param {number} options.y - Y coordinate position (required)
-     * @param {string} [options.placement] - Dropdown placement (default: "bottom-start")
+     * @param {string} [options.placement] - Dropdown menu placement (default: "bottom-start")
      * @returns {Promise<Object|null>} Promise that resolves with clicked item info or null if closed without selection
      * @returns {Object} [result.index] - Index of the clicked item
      * @returns {Object} [result.item] - The clicked item object
      * @throws {Error} If globalUIElement is not initialized
      */
-    showDropdown: async (options) => {
+    showDropdownMenu: async (options) => {
       if(!globalUIElement)
       {
         throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
       }
-      return globalUIElement.transformedHandlers.showDropdown(options);
+      return globalUIElement.transformedHandlers.showDropdownMenu(options);
     }
   };
 }
