@@ -44,13 +44,13 @@ refs:
 
 template:
   - rtgl-popover#popover ?open=${open} x=${x} y=${y} placement=${placement}:
-    - rtgl-view wh=300 g=xs slot=content bgc=background br=md:
-      - $for item, i in items:
-        - $if item.type == 'label':
-            - rtgl-view w=f ph=lg pv=md:
-              - rtgl-text s=sm c=mu-fg: ${item.label}
-          $elif item.type == 'item':
-            - rtgl-view#option-${i} w=f h-bgc=ac ph=lg pv=md cur=p br=md bgc=mu:
-              - rtgl-text: ${item.label}
-          $elif item.type == 'separator':
-            - rtgl-view w=f h=1 ph=lg mv=md bgc=bo:
+      - rtgl-view wh=300 sv g=xs slot=content bgc=background br=md:
+          - $for item, i in items:
+              - $if item.type == 'label':
+                  - rtgl-view w=f ph=lg pv=md:
+                      - rtgl-text s=sm c=mu-fg: ${item.label}
+                $elif item.type == 'item':
+                  - rtgl-view#option-${i} w=f h-bgc=ac ph=lg pv=md cur=p br=md bgc=mu:
+                      - rtgl-text: ${item.label}
+                $elif item.type == 'separator':
+                  - rtgl-view w=f h=1 ph=lg mv=md bgc=bo:

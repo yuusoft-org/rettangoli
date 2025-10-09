@@ -5,6 +5,8 @@ viewDataSchema:
   properties:
     isOpen:
       type: boolean
+    uiType:
+      type: string
     config:
       type: object
       properties:
@@ -20,6 +22,17 @@ viewDataSchema:
           type: string
         mode:
           type: string
+    dropdownConfig:
+      type: object
+      properties:
+        items:
+          type: array
+        x:
+          type: number
+        y:
+          type: number
+        placement:
+          type: string
 
 refs:
   dialog:
@@ -34,17 +47,24 @@ refs:
     eventListeners:
       click:
         handler: handleCancel
+  dropdown-menu:
+    eventListeners:
+      close:
+        handler: handleDropdownClose
+      click-item:
+        handler: handleDropdownItemClick
 
 template:
-  - rtgl-dialog#dialog ?open=${isOpen} s=sm:
+  - rtgl-dialog#dialog ?open=${isDialogOpen} s=sm:
       - rtgl-view slot=content g=lg p=lg:
-        - rtgl-view d=h g=md:
-          - rtgl-view d=h ah=c av=c g=md:
-          - rtgl-view g=md:
-            - rtgl-view h=24 av=c:
-              - rtgl-text fw=600: ${config.title}
-            - rtgl-text: ${config.message}
-        - rtgl-view d=h g=md mt=lg w=f ah=e:
-          - $if config.mode == 'confirm':
-            - rtgl-button#cancel-button v=se: ${config.cancelText}
-          - rtgl-button#confirm-button v=pr: ${config.confirmText}
+          - rtgl-view d=h g=md:
+              - rtgl-view d=h ah=c av=c g=md:
+              - rtgl-view g=md:
+                  - rtgl-view h=24 av=c:
+                      - rtgl-text fw=600: ${config.title}
+                  - rtgl-text: ${config.message}
+          - rtgl-view d=h g=md mt=lg w=f ah=e:
+              - $if config.mode == 'confirm':
+                  - rtgl-button#cancel-button v=se: ${config.cancelText}
+              - rtgl-button#confirm-button v=pr: ${config.confirmText}
+  - rtgl-dropdown-menu#dropdown-menu ?open=${isDropdownOpen} x=${dropdownConfig.x} y=${dropdownConfig.y} placement=${dropdownConfig.placement} .items=dropdownConfig.items key=dropdown-${isDropdownOpen}:
