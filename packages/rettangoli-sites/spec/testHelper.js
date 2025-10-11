@@ -34,7 +34,7 @@ function loadFixture(fixturePath) {
 }
 
 // Main test runner function
-export function runTest(fixturePath) {
+export async function runTest(fixturePath) {
   const fixtureDir = path.join(__dirname, fixturePath);
 
   // Create in-memory file system
@@ -84,7 +84,7 @@ export function runTest(fixturePath) {
     md: config.md,
     functions: functions
   });
-  build();
+  await build();
 
   // Get actual outputs
   const outputs = {};
@@ -139,9 +139,10 @@ function loadExpectedOutputs(fixturePath) {
 }
 
 export default (fixture) => {
-  const result = runTest(fixture)
   const expected = loadExpectedOutputs(fixture);
-  expect(result).toEqual(expected);
+  runTest(fixture).then((result) => {
+    expect(result).toEqual(expected);
+  });
   return true;
 };
 

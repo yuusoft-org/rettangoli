@@ -21,10 +21,10 @@ export const buildSite = async (options = {}) => {
   const build = createSiteBuilder({
     fs,
     rootDir,
-    md: md || config.md,
+    md: md || config.mdRender,
     functions: functions || config.functions || {},
     quiet
   });
 
-  build();
+  await build();
 };

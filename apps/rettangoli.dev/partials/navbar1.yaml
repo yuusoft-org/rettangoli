@@ -1,0 +1,7 @@
+- rtgl-view bwb=xs w=f ah=c pos=fix bgc=bg:
+    - rtgl-view md-w="100vw" lg-w="768" w="1024" d=h av=c h=64 ph=lg:
+        - rtgl-text: ${title}
+        - rtgl-view flex=1:
+        - rtgl-view d=h av=c:
+            - 'a href="https://github.com/yuusoft-org/rettangoli" target="_blank" style="text-decoration:none;display:contents;color:inherit;"':
+                - rtgl-svg.svg-icon wh="32" svg="github":

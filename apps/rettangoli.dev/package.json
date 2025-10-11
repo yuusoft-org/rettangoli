@@ -1,10 +1,12 @@
 {
+    "type": "module",
     "scripts": {
         "build": "rtgl sites build",
         "dev": "rtgl sites build && bunx serve _site",
         "serve": "bunx serve _site"
     },
     "dependencies": {
-        "@rettangoli/sites": "workspace:*"
+        "markdown-it": "^14.1.0",
+        "shiki": "^3.13.0"
     }
 }

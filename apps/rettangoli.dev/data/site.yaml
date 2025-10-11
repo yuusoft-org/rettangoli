@@ -1,0 +1,11 @@
+navbar:
+  title: Rettangoli
+  cta:
+    gitUrl: "https://github.com/yuusoft-org/rettangoli"
+
+hero:
+  title: "Rettangoli"
+  subtitle: "A collection of development libraries to build great products"
+  cta:
+    href: "/docs/introduction/introduction/"
+    label: "Read the docs"

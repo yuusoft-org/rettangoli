@@ -1,5 +1,5 @@
 ---
-layout: core/documentation
+template: documentation
 title: SVG
 tags: documentation
 ---

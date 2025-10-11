@@ -1,0 +1,11 @@
+- rtgl-view h=250:
+- rtgl-view ah="c" av="c" w="f" ph=lg:
+    - $if title:
+        - rtgl-text s=h1 ta=c: "${title}"
+        - rtgl-view h=24:
+    - $if subtitle:
+        - rtgl-text s=lg ta=c: "${subtitle}"
+    - $if cta:
+        - rtgl-view h=32:
+        - a.link href="${cta.href}":
+          - rtgl-button: "${cta.label}"
