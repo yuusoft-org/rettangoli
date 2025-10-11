@@ -7,25 +7,25 @@ tags: documentation
 A versatile button component
 
 ## Attributes
-| Name | Attribute | Type | Default | Description |
-|-----------|------|---------|---------|-------------|
-| Variant | `v` | `pr`, `se`, `de`, `ol`, `gh`, `lk` | `pr` | Button variant: primary, secondary, destructive, outline, ghost, or link |
-| Size | `s` | `sm`, `md`, `lg` | `md` | Button size: small, medium, or large |
-| Disabled | `disabled` | boolean | - | When present, makes the button non-interactive |
-| Width | `w` | `f`, number | - | Button width: `f` for full width or a specific pixel value |
-| Margin | `m`, `ml`, `mr`, `mt`, `mb`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - | Sets margin around the button using predefined spacing values |
-| Href | `href` | string | - | When provided, the button acts as a link to the specified URL |
+| Name | Attribute | Type | Default |
+|-----------|------|---------|---------|
+| Variant | `v` | `pr`, `se`, `de`, `ol`, `gh`, `lk` | `pr` |
+| Size | `s` | `sm`, `md`, `lg` | `md` |
+| Disabled | `disabled` | boolean | - |
+| Width | `w` | `f`, number | - |
+| Margin | `m`, `ml`, `mr`, `mt`, `mb`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
+| Href | `href` | string | - |
 
 ## Variant
 
-| Name | Value | Description |
-|-----------|------|-------------|
-| Primary | `pr` | The main action button with high emphasis, used for the most important actions |
-| Secondary | `se` | Alternative action button with medium emphasis, used for secondary actions |
-| Destructive | `de` | Indicates a destructive or negative action such as delete or remove |
-| Outline | `ol` | A subtle button with a border and transparent background, for less prominent actions |
-| Ghost | `gh` | The most subtle button style with no background or border, for low-emphasis actions |
-| Link | `lk` | Appears and behaves like a text link while maintaining button accessibility |
+Control the visual style and emphasis of buttons to match their importance and context.
+
+- **Primary (`pr`)**: The main action button with high emphasis, used for the most important actions
+- **Secondary (`se`)**: Alternative action button with medium emphasis, used for secondary actions
+- **Destructive (`de`)**: Indicates a destructive or negative action such as delete or remove
+- **Outline (`ol`)**: A subtle button with a border and transparent background, for less prominent actions
+- **Ghost (`gh`)**: The most subtle button style with no background or border, for low-emphasis actions
+- **Link (`lk`)**: Appears and behaves like a text link while maintaining button accessibility
 
 
 ```html codePreview
@@ -39,7 +39,9 @@ A versatile button component
 </rtgl-view>
 ```
 
-### Size
+## Size
+
+Control the button size using predefined values for consistent spacing and touch targets.
 
 ```html codePreview
 <rtgl-view d="h" g="md">
@@ -49,13 +51,17 @@ A versatile button component
 </rtgl-view>
 ```
 
-### Disabled
+## Disabled
+
+Disable buttons to prevent user interaction when actions are not available or appropriate.
 
 ```html codePreview
 <rtgl-button disabled>Disabled</rtgl-button>
 ```
 
-### Width
+## Width
+
+Control button width using `f` for full width or specific pixel values for custom sizing.
 
 ```html codePreview
 <rtgl-view g="md" w="300">
@@ -64,7 +70,9 @@ A versatile button component
 </rtgl-view>
 ```
 
-### Margin
+## Margin
+
+Add spacing around buttons using predefined margin values for consistent layout spacing.
 
 ```html codePreview
 <rtgl-view g="md" w="300">
@@ -74,7 +82,9 @@ A versatile button component
 </rtgl-view>
 ```
 
-### Href
+## Href
+
+Convert buttons into links by providing an href attribute while maintaining button styling and accessibility.
 
 ```html codePreview
 <rtgl-button href="/">Link</rtgl-button>

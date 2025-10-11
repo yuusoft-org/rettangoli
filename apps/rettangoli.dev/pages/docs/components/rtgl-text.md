@@ -8,16 +8,18 @@ A versatile text component for displaying textual content with various styling o
 
 ## Attributes
 
-| Name | Attribute | Type | Default | Description |
-|------|-----------|------|---------|-------------|
-| Size | `s` | `xs`, `sm`, `md`, `lg`, `h4`, `h3`, `h2`, `h1` | `md` | Text size from extra small to heading levels |
-| Color | `c` | `fg`, `mu-fg`, `ac-fg`, etc. | - | Text color using system tokens |
-| Text Align | `ta` | `sm`, `c`, `j`, `e` | `sm` | Text alignment: start, center, justify, end |
-| Ellipsis | `ellipsis` | boolean | - | When present, truncates text with ellipsis if it overflows |
-| Width | `w` | number | - | Width in pixels |
-| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - | Margin around the text |
+| Name | Attribute | Type | Default |
+|------|-----------|------|---------|
+| Size | `s` | `xs`, `sm`, `md`, `lg`, `h4`, `h3`, `h2`, `h1` | `md` |
+| Color | `c` | `fg`, `mu-fg`, `ac-fg`, etc. | - |
+| Text Align | `ta` | `sm`, `c`, `j`, `e` | `sm` |
+| Ellipsis | `ellipsis` | boolean | - |
+| Width | `w` | number | - |
+| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 
 ## Size
+
+Control text size using predefined values from extra small to heading sizes for consistent typography hierarchy.
 
 ```html codePreview
 <rtgl-view g="md" p="md">
@@ -34,6 +36,8 @@ A versatile text component for displaying textual content with various styling o
 
 ## Color
 
+Apply predefined color tokens to text for consistent theming and visual hierarchy.
+
 ```html codePreview
 <rtgl-view g="md" p="md">
   <rtgl-text c="fg">Default Foreground Color</rtgl-text>
@@ -43,6 +47,8 @@ A versatile text component for displaying textual content with various styling o
 ```
 
 ## Text Alignment
+
+Control text alignment within containers. Use `sm` for start, `c` for center, `j` for justify, or `e` for end alignment.
 
 ```html codePreview
 <rtgl-view g="md" p="md">
@@ -63,6 +69,8 @@ A versatile text component for displaying textual content with various styling o
 
 ## Ellipsis
 
+Automatically truncate text with ellipsis (...) when it overflows its container width.
+
 ```html codePreview
 <rtgl-view g="md" p="md">
   <rtgl-view bgc="su" p="md" g="md">
@@ -73,6 +81,8 @@ A versatile text component for displaying textual content with various styling o
 ```
 
 ## Text Styling
+
+Apply inline HTML styling to text for emphasis and semantic meaning using standard HTML elements.
 
 ```html codePreview
 <rtgl-view g="md" p="md">
@@ -89,6 +99,8 @@ A versatile text component for displaying textual content with various styling o
 ```
 
 ## Links
+
+Create clickable links within text or as standalone elements using standard HTML anchor tags.
 
 ```html codePreview
 <rtgl-view g="md" p="md">

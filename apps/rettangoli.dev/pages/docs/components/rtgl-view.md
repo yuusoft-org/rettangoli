@@ -8,29 +8,29 @@ An intuitive container component for building layouts serving as the building bl
 
 ## Attributes
 
-| Name             | Attribute                               | Type                                     | Default | Description                                                    |
-| ---------------- | --------------------------------------- | ---------------------------------------- | ------- | -------------------------------------------------------------- |
-| Direction        | `d`                                     | `h`, `v`                                 | `v`     | Layout direction: `h` for horizontal, `v` for vertical         |
-| Width            | `w`                                     | number, `f`                              | -       | Width in pixels, or `f` for full width                         |
-| Height           | `h`                                     | number, `f`                              | -       | Height in pixels, or `f` for full height                       |
-| Width & Height   | `wh`                                    | number, `f`                              | -       | Sets both width and height to same value                       |
-| Padding          | `p`, `pt`, `pr`, `pb`, `pl`, `pv`, `ph` | `xs`, `sm`, `md`, `lg`, `xl`             | -       | Padding around the content                                     |
-| Margin           | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl`             | -       | Margin outside the container                                   |
-| Gap              | `g`, `gh`, `gv`                         | `xs`, `sm`, `md`, `lg`, `xl`             | -       | Space between children                                         |
-| Border Width     | `bw`, `bwt`, `bwr`, `bwb`, `bwl`        | `xs`, `sm`, `md`, `lg`, `xl`             | -       | Border width for all sides or specific sides                   |
-| Border Color     | `bc`                                    | `pr`, `se`, `de`, `fg`, `bg`, `mu`, `ac`, `bo`, `tr` | -       | Border color                                                   |
-| Border Radius    | `br`                                    | `xs`, `sm`, `md`, `lg`, `xl`, `f`        | -       | Border radius for corners                                      |
-| Background Color | `bgc`                                   | color code                               | -       | Background color                                               |
-| Opacity          | `op`                                    | number (0-1)                             | 1       | Element transparency level                                     |
-| Position         | `pos`                                   | `abs`, `rel`, `fix`                      | -       | Positioning method                                             |
-| Coordinates | `cor`                                   | `top`, `right`, `bottom`, `left`, `full` | -       | Corner to position in when using absolute positioning          |
-| Z-index          | `z`                                     | number                                   | -       | Stacking order for overlapping elements                        |
-| Horizontal Align | `ah`                                    | `s`, `c`, `e`                           | `s`    | Horizontal alignment: start, center, end                       |
-| Vertical Align   | `av`                                    | `s`, `c`, `e`                           | `s`    | Vertical alignment: start, center, end                         |
-| Hidden           | `hidden`                                | boolean                                  | -       | When present, hides the element                                |
-| Scroll           | `sv`, `sh`                              | boolean                                  | -       | Enables vertical or horizontal scrolling                       |
+| Name             | Attribute                               | Type                                     | Default |
+| ---------------- | --------------------------------------- | ---------------------------------------- | ------- |
+| [Direction](#direction)        | `d`                                     | `h`, `v`                                 | `v`     |
+| [Dimensions](#dimensions)            | `w`, `h`, `wh`                          | number, `f`                              | -       |
+| [Align Horizontal](#align-horizontal) | `ah`                                    | `s`, `c`, `e`                           | `s`    |
+| [Align Vertical](#align-vertical)   | `av`                                    | `s`, `c`, `e`                           | `s`    |
+| Scroll           | `sv`, `sh`                              | boolean                                  | -       |
+| [Padding](#padding)          | `p`, `pt`, `pr`, `pb`, `pl`, `pv`, `ph` | `xs`, `sm`, `md`, `lg`, `xl`             | -       |
+| [Margin](#margin)           | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl`             | -       |
+| Gap              | `g`, `gh`, `gv`                         | `xs`, `sm`, `md`, `lg`, `xl`             | -       |
+| [Border Width](#border-width)     | `bw`, `bwt`, `bwr`, `bwb`, `bwl`        | `xs`, `sm`, `md`, `lg`, `xl`             | -       |
+| [Border Color](#border-color)     | `bc`                                    | `pr`, `se`, `de`, `fg`, `bg`, `mu`, `ac`, `bo`, `tr` | -       |
+| [Border Radius](#border-radius)    | `br`                                    | `xs`, `sm`, `md`, `lg`, `xl`, `f`        | -       |
+| Background Color | `bgc`                                   | color code                               | -       |
+| [Opacity](#opacity)          | `op`                                    | number (0-1)                             | 1       |
+| [Position](#position)         | `pos`                                   | `abs`, `rel`, `fix`                      | -       |
+| Coordinates | `cor`                                   | `top`, `right`, `bottom`, `left`, `full` | -       |
+| Z-index          | `z`                                     | number                                   | -       |
+| Hide/Show        | `hide`, `show`                           | boolean                                  | -       |
 
 ## Direction
+
+Controls the layout direction of the container. Set to `h` for horizontal or `v` for vertical (default).
 
 Vertical
 
@@ -51,6 +51,8 @@ Horizontal
 ```
 
 ## Dimensions
+
+Controls the width and height of the container. Use specific pixel values or `f` for full available width/height.
 
 ### Pixels
 
@@ -80,6 +82,8 @@ Horizontal
 
 ## Padding
 
+Controls the internal spacing around the content. Use predefined sizes from `xs` to `xl` for consistent spacing.
+
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
   <rtgl-view bgc="ac" wh="80" p="md">
@@ -92,6 +96,8 @@ Horizontal
 ```
 
 ## Margin
+
+Controls the external spacing outside the container. Use predefined sizes from `xs` to `xl` for consistent spacing.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
@@ -106,6 +112,8 @@ Horizontal
 
 ## Border Width
 
+Controls the thickness of the container border. Use predefined sizes from `xs` to `xl` for consistent border widths.
+
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
   <rtgl-view bgc="ac" wh="80" bw="md"></rtgl-view>
@@ -118,6 +126,8 @@ Horizontal
 
 ## Border Color
 
+Controls the color of the container border using predefined color tokens for consistent theming.
+
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
   <rtgl-view bgc="ac" wh="80" bw="md" bc="pr"></rtgl-view>
@@ -129,6 +139,8 @@ Horizontal
 
 ## Border Radius
 
+Controls the roundness of container corners. Use predefined sizes from `xs` to `xl` or `f` for fully rounded.
+
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
   <rtgl-view bgc="ac" wh="80" br="lg"></rtgl-view>
@@ -136,6 +148,8 @@ Horizontal
 ```
 
 ## Opacity
+
+Controls the transparency level of the container. Use values from 0 (transparent) to 1 (opaque).
 
 ```html codePreview
 <rtgl-view d="h" g="lg" p="lg" wh="f">
@@ -146,6 +160,8 @@ Horizontal
 ```
 
 ## Align Horizontal
+
+Controls horizontal alignment of child elements. Use `s` for start, `c` for center, or `e` for end.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
@@ -162,6 +178,8 @@ Horizontal
 ```
 
 ## Align Vertical
+
+Controls vertical alignment of child elements. Use `s` for start, `c` for center, or `e` for end.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
@@ -185,49 +203,11 @@ Horizontal
 </rtgl-view>
 ```
 
-## Position
+## Scroll
 
-```html codePreview
-<rtgl-view p="lg" g="md">
-  <rtgl-view bgc="mu" wh="80" pos="rel">
-    <rtgl-view bgc="ac" wh="24" pos="abs" cor="top"></rtgl-view>
-    <rtgl-view bgc="ac" wh="24" pos="abs" cor="bottom"></rtgl-view>
-  </rtgl-view>
-  <rtgl-view bgc="mu" wh="80" pos="rel">
-    <rtgl-view bgc="ac" wh="24" pos="abs" cor="left"></rtgl-view>
-    <rtgl-view bgc="ac" wh="24" pos="abs" cor="right"></rtgl-view>
-  </rtgl-view>
-  <rtgl-view bgc="mu" wh="80" pos="rel">
-    <rtgl-view bgc="ac" wh="24" pos="abs" cor="full"></rtgl-view>
-  </rtgl-view>
-</rtgl-view>
-```
+Enables scrolling for content that exceeds the container bounds. Use `sv` for vertical scrolling or `sh` for horizontal scrolling.
 
-## Hidden
-
-```html codePreview
-<rtgl-view p="lg" g="md">
-  <rtgl-view d="h" g="md">
-    <rtgl-view bgc="ac" wh="80"></rtgl-view>
-    <rtgl-view bgc="ac" wh="80" hidden></rtgl-view>
-  </rtgl-view>
-</rtgl-view>
-```
-
-## Visible
-
-Use this with hover or responsive modifiers
-
-```html codePreview
-<rtgl-view p="lg" g="md">
-  <rtgl-view d="h" g="md">
-    <rtgl-view bgc="ac" wh="80"></rtgl-view>
-    <rtgl-view bgc="ac" wh="80" visible></rtgl-view>
-  </rtgl-view>
-</rtgl-view>
-```
-
-## Scroll Vertical
+### Scroll Vertical
 
 ```html codePreview
 <rtgl-view p="lg">
@@ -249,6 +229,39 @@ Use this with hover or responsive modifiers
     <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
     <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
     <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+```
+
+## Position
+
+Controls the positioning method for the container. Use `abs` for absolute, `rel` for relative, or `fix` for fixed positioning.
+
+```html codePreview
+<rtgl-view p="lg" g="md">
+  <rtgl-view bgc="mu" wh="80" pos="rel">
+    <rtgl-view bgc="ac" wh="24" pos="abs" cor="top"></rtgl-view>
+    <rtgl-view bgc="ac" wh="24" pos="abs" cor="bottom"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view bgc="mu" wh="80" pos="rel">
+    <rtgl-view bgc="ac" wh="24" pos="abs" cor="left"></rtgl-view>
+    <rtgl-view bgc="ac" wh="24" pos="abs" cor="right"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view bgc="mu" wh="80" pos="rel">
+    <rtgl-view bgc="ac" wh="24" pos="abs" cor="full"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+```
+
+## Hide/Show
+
+Controls the visibility of the container. Use `hide` to set `display: none` or `show` to set `display: flex`.
+
+```html codePreview
+<rtgl-view p="lg" g="md">
+  <rtgl-view d="h" g="md">
+    <rtgl-view bgc="ac" wh="80"></rtgl-view>
+    <rtgl-view bgc="ac" wh="80" hide></rtgl-view>
   </rtgl-view>
 </rtgl-view>
 ```
