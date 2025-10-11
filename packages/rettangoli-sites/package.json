@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/sites",
-  "version": "0.2.0-rc7",
+  "version": "0.2.1",
   "description": "Generate static sites using Markdown and YAML. Straightforward, zero-complexity. Complete toolkit for landing pages, blogs, documentation, admin dashboards, and more.git remote add origin git@github.com:yuusoft-org/sitic.git",
   "author": {
     "name": "Luciano Hanyon Wu",
@@ -28,7 +28,8 @@
   },
   "devDependencies": {
     "memfs": "^4.36.0",
-    "puty": "^0.0.4"
+    "puty": "^0.0.4",
+    "vitest": "^3.2.4"
   },
   "scripts": {
     "test": "vitest run --reporter=verbose"

@@ -3,5 +3,5 @@
         - rtgl-text: ${title}
         - rtgl-view flex=1:
         - rtgl-view d=h av=c:
-            - a.link href="https://github.com/yuusoft-org/rettangoli" target="_blank":
+            - 'a href="https://github.com/yuusoft-org/rettangoli" target="_blank" style="text-decoration:none;display:contents;color:inherit;"':
                 - rtgl-svg.svg-icon wh="32" svg="github":
