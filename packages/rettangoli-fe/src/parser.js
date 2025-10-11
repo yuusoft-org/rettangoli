@@ -428,7 +428,7 @@ export const createVirtualDom = ({
                     // Call the specific component's handleOnUpdate instead of the parent's onUpdate
                     if (element.handlers && element.handlers.handleOnUpdate) {
                       const deps = {
-                        ...(element.deps || {}),
+                        ...(element.deps),
                         store: element.store,
                         render: element.render.bind(element),
                         handlers: element.handlers,
@@ -436,12 +436,12 @@ export const createVirtualDom = ({
                         refIds: element.refIds || {},
                         getRefIds: () => element.refIds || {},
                       };
-                      element.handlers.handleOnUpdate({
+                      element.handlers.handleOnUpdate(deps, {
                         oldProps,
                         newProps,
                         oldAttrs,
                         newAttrs,
-                      }, deps);
+                      });
                     }
                   });
                 }
