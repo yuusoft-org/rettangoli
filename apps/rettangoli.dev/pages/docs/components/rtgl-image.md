@@ -8,17 +8,19 @@ A versatile image component for displaying images with various sizing and stylin
 
 ## Attributes
 
-| Name | Attribute | Type | Default | Description |
-|------|-----------|------|---------|-------------|
-| Source | `src` | string | - | URL or path to the image file |
-| Width | `w`, `width` | number | - | Width in pixels |
-| Height | `h`, `height` | number | - | Height in pixels |
-| Width & Height | `wh` | number | - | Sets both width and height to same value |
-| Object Fit | `of` | `cov`, `con`, `none` | - | How the image should be resized: cover, contain, or none |
-| Border Width | `bw` | `xs`, `sm`, `md`, `lg`, `xl` | - | Width of the border around the image |
-| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - | Margin around the image |
+| Name | Attribute | Type | Default |
+|------|-----------|------|---------|
+| Source | `src` | string | - |
+| Width | `w`, `width` | number | - |
+| Height | `h`, `height` | number | - |
+| Width & Height | `wh` | number | - |
+| Object Fit | `of` | `cov`, `con`, `none` | - |
+| Border Width | `bw` | `xs`, `sm`, `md`, `lg`, `xl` | - |
+| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 
 ## Basic Usage
+
+Display images by providing a source URL. The image will be displayed with its natural dimensions.
 
 ```html codePreview
 <rtgl-view p="md">
@@ -27,6 +29,8 @@ A versatile image component for displaying images with various sizing and stylin
 ```
 
 ## Dimensions
+
+Control image dimensions using pixel values for precise sizing or `wh` for square dimensions.
 
 ### Width & Height
 
@@ -40,6 +44,8 @@ A versatile image component for displaying images with various sizing and stylin
 
 ### HTML Attributes
 
+You can also use standard HTML attributes `width` and `height` for compatibility with existing markup.
+
 ```html codePreview
 <rtgl-view d="h" g="md" p="md">
   <rtgl-image width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
@@ -47,6 +53,8 @@ A versatile image component for displaying images with various sizing and stylin
 ```
 
 ## Object Fit
+
+Control how images are resized to fit their containers. Use `cov` for cover, `con` for contain, or `none` for original size.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="md">
@@ -74,6 +82,8 @@ A versatile image component for displaying images with various sizing and stylin
 
 ## Border
 
+Add borders around images using predefined thickness values for consistent styling.
+
 ```html codePreview
 <rtgl-view d="h" g="md" p="md">
   <rtgl-image w="200" src="/public/sample1.jpg"></rtgl-image>
@@ -82,6 +92,8 @@ A versatile image component for displaying images with various sizing and stylin
 ```
 
 ## Different Aspect Ratios
+
+Create images with various aspect ratios by setting different width and height values.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="md">

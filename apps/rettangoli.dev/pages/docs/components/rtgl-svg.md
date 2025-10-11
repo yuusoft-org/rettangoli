@@ -27,16 +27,18 @@ Also note SVG's `currentColor` will be used and replaced by the `c` attribute co
 
 ## Attributes
 
-| Name | Attribute | Type | Default | Description |
-|------|-----------|------|---------|-------------|
-| SVG | `svg` | string | - | The name of the SVG icon to display |
-| Width | `w` | number | - | Width in pixels |
-| Height | `h` | number | - | Height in pixels |
-| Width & Height | `wh` | number | - | Sets both width and height to same value |
-| Color | `c` | `fg`, `mu-fg`, `ac-fg`, `pr-fg`, `se-fg`, etc. | `fg` | SVG color using system tokens |
-| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - | Margin around the SVG |
+| Name | Attribute | Type | Default |
+|------|-----------|------|---------|
+| SVG | `svg` | string | - |
+| Width | `w` | number | - |
+| Height | `h` | number | - |
+| Width & Height | `wh` | number | - |
+| Color | `c` | `fg`, `mu-fg`, `ac-fg`, `pr-fg`, `se-fg`, etc. | `fg` |
+| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 
 ## Icons
+
+Display predefined SVG icons that have been registered in the `window.rtglIcons` object.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="md">
@@ -46,6 +48,8 @@ Also note SVG's `currentColor` will be used and replaced by the `c` attribute co
 ```
 
 ## Color
+
+Customize the SVG color using predefined color tokens. The SVG's `currentColor` will be replaced with the specified color.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="md">
@@ -58,6 +62,8 @@ Also note SVG's `currentColor` will be used and replaced by the `c` attribute co
 ```
 
 ## Dimensions
+
+Control the size of SVG icons using pixel values for precise control over the display.
 
 ### Using wh (Width and Height)
 
