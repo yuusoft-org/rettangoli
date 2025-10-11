@@ -1,0 +1,21 @@
+- html lang="en":
+    - head:
+        - $partial: seo1
+          page: ${page}
+          seo: ${seo}
+        - link rel="stylesheet" href="/public/theme.css":
+        - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.2-rc32/dist/rettangoli-iife-ui.min.js":
+        - script src="/public/rtgl-icons.js":
+
+    - body.dark:
+      - rtgl-view:
+        - rtgl-view pos="abs" cor="top" ah="c" bgc="bg":
+            - $partial: navbar1
+              title: ${site.navbar.title}
+              cta: ${site.navbar.cta}
+        - rtgl-view w=f:
+            - rtgl-view h="48":
+            - rtgl-view w="f" ah="c":
+                - rtgl-view w=f ph="lg" pb="lg" ah=c:
+                    - "${content}"

@@ -92,6 +92,11 @@ pre {
   white-space: pre; /* or pre-wrap/pre-line if you want line wrapping */
   padding: var(--spacing-lg);
   flex: 1;
+  /*For html segments without codepreview, so they can extend to see the full code*/
+  min-height: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  box-sizing: border-box;
   /* TODO fix sometimes there needs to be margin-bottom */
   /* margin-bottom: var(--spacing-g); */
 }
