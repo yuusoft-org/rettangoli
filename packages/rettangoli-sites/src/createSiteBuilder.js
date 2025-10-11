@@ -148,15 +148,18 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
             const frontmatter = extractFrontmatter(itemPath);
 
             // Calculate URL
-            const outputFileName = item.name.replace(/\.(yaml|md)$/, '.html');
-            const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
-            let url = '/' + outputRelativePath.replace(/\\/g, '/').replace(/\.html$/, '');
-            // Special case: /index becomes /
-            if (url === '/index') {
-              url = '/';
+            const baseFileName = item.name.replace(/\.(yaml|md)$/, '');
+            let url;
+
+            // Special case: index files remain at root, others become directories
+            if (baseFileName === 'index') {
+              url = basePath ? '/' + basePath.replace(/\\/g, '/') : '/';
+              if (url !== '/') {
+                url = url + '/';
+              }
             } else {
-              // Add trailing slash for all non-root URLs
-              url = url + '/';
+              const pagePath = basePath ? path.join(basePath, baseFileName) : baseFileName;
+              url = '/' + pagePath.replace(/\\/g, '/') + '/';
             }
 
             // Process tags
@@ -227,13 +230,19 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
       const rawContent = lines.slice(contentStart).join('\n').trim();
 
       // Calculate URL for current page
-      let url = '/' + outputRelativePath.replace(/\\/g, '/').replace(/\.html$/, '');
-      // Special case: /index becomes /
-      if (url === '/index') {
-        url = '/';
+      let url;
+      const fileName = path.basename(outputRelativePath, '.html');
+      const basePath = path.dirname(outputRelativePath);
+
+      // Special case: index files remain at root, others become directories
+      if (fileName === 'index') {
+        url = basePath && basePath !== '.' ? '/' + basePath.replace(/\\/g, '/') : '/';
+        if (url !== '/') {
+          url = url + '/';
+        }
       } else {
-        // Add trailing slash for all non-root URLs
-        url = url + '/';
+        const pagePath = basePath && basePath !== '.' ? path.join(basePath, fileName) : fileName;
+        url = '/' + pagePath.replace(/\\/g, '/') + '/';
       }
 
       // Deep merge global data with frontmatter and collections for the page context
@@ -298,9 +307,36 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
         htmlString = convertToHtml(resultArray);
       }
 
-      // Create output directory if it doesn't exist
-      const outputPath = path.join(rootDir, '_site', outputRelativePath);
-      const outputDir = path.dirname(outputPath);
+      // Create output directory and file path for new index.html structure
+      const pageFileName = path.basename(outputRelativePath, '.html');
+      const dirPath = path.dirname(outputRelativePath);
+
+      let outputPath, outputDir;
+
+      // Special case: index files remain as index.html, others become directory/index.html
+      if (pageFileName === 'index') {
+        if (dirPath && dirPath !== '.') {
+          // Nested index file: pages/blog/index.yaml -> _site/blog/index.html
+          outputPath = path.join(rootDir, '_site', dirPath, 'index.html');
+          outputDir = path.join(rootDir, '_site', dirPath);
+        } else {
+          // Root index file: pages/index.yaml -> _site/index.html
+          outputPath = path.join(rootDir, '_site', 'index.html');
+          outputDir = path.join(rootDir, '_site');
+        }
+      } else {
+        // Regular file: pages/test.yaml -> _site/test/index.html
+        if (dirPath && dirPath !== '.') {
+          // Nested regular file: pages/blog/post.yaml -> _site/blog/post/index.html
+          outputPath = path.join(rootDir, '_site', dirPath, pageFileName, 'index.html');
+          outputDir = path.join(rootDir, '_site', dirPath, pageFileName);
+        } else {
+          // Root level regular file: pages/test.yaml -> _site/test/index.html
+          outputPath = path.join(rootDir, '_site', pageFileName, 'index.html');
+          outputDir = path.join(rootDir, '_site', pageFileName);
+        }
+      }
+
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
       }
