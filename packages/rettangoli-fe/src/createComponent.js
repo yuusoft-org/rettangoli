@@ -257,6 +257,11 @@ class BaseComponent extends HTMLElement {
    */
   cssText;
 
+  /**
+   * Cleanup tracking
+   */
+  _pendingAnimationFrame = null;
+
   static get observedAttributes() {
     return ["key"];
   }
@@ -353,11 +358,46 @@ class BaseComponent extends HTMLElement {
   }
 
   disconnectedCallback() {
-    if (this._unmountCallback) {
-      this._unmountCallback();
-    }
-    if (this.unsubscribeAll) {
-      this.unsubscribeAll();
+    try {
+      // Clear any pending animation frames
+      if (this._pendingAnimationFrame) {
+        cancelAnimationFrame(this._pendingAnimationFrame);
+        this._pendingAnimationFrame = null;
+      }
+
+      // Call unmount callback
+      if (this._unmountCallback) {
+        try {
+          this._unmountCallback();
+          this._unmountCallback = null;
+        } catch (error) {
+          console.error('Error during unmount callback:', error);
+        }
+      }
+
+      // Unsubscribe from all subscriptions
+      if (this.unsubscribeAll) {
+        try {
+          this.unsubscribeAll();
+          this.unsubscribeAll = null;
+        } catch (error) {
+          console.error('Error during unsubscribing:', error);
+        }
+      }
+
+      // Clear the old VNode to prevent patching on unmounted components
+      this._oldVNode = null;
+
+      // Clear render target and refs
+      this.renderTarget = null;
+      this.refIds = {};
+      this.refs = {};
+
+      // Clear transformed handlers
+      this.transformedHandlers = {};
+
+    } catch (error) {
+      console.error('Error during disconnectedCallback:', error);
     }
   }
 
@@ -381,7 +421,12 @@ class BaseComponent extends HTMLElement {
         };
         this.handlers.handleOnUpdate(deps, changes);
       } else {
-        requestAnimationFrame(() => {
+        // Cancel any pending animation frame to prevent multiple renders
+        if (this._pendingAnimationFrame) {
+          cancelAnimationFrame(this._pendingAnimationFrame);
+        }
+        this._pendingAnimationFrame = requestAnimationFrame(() => {
+          this._pendingAnimationFrame = null;
           this.render();
         });
       }
@@ -389,6 +434,12 @@ class BaseComponent extends HTMLElement {
   }
 
   render = () => {
+    // Validate that component is still connected and has valid render target
+    if (!this.isConnected || !this.renderTarget || !this.renderTarget.parentNode) {
+      console.warn("Component is not connected or render target is invalid, skipping render");
+      return;
+    }
+
     if (!this.patch) {
       console.error("Patch function is not defined!");
       return;
@@ -409,13 +460,26 @@ class BaseComponent extends HTMLElement {
         render: this.render.bind(this),
       };
 
-      const vDom = parseView({
-        h: this.h,
-        template: this.template,
-        viewData: this.viewData,
-        refs: this.refs,
-        handlers: this.transformedHandlers,
-      });
+      let vDom;
+      try {
+        vDom = parseView({
+          h: this.h,
+          template: this.template,
+          viewData: this.viewData,
+          refs: this.refs,
+          handlers: this.transformedHandlers,
+        });
+      } catch (parseError) {
+        console.error("Error parsing view template:", parseError);
+        return;
+      }
+
+      // Validate VDOM structure
+      if (!vDom || typeof vDom !== 'object') {
+        console.error("Invalid VDOM structure generated");
+        return;
+      }
+
       // parse through vDom and recursively find all elements with id
       const ids = {};
       const findIds = (vDom) => {
@@ -429,13 +493,26 @@ class BaseComponent extends HTMLElement {
       findIds(vDom);
       this.refIds = ids;
 
-      if (!this._oldVNode) {
-        this._oldVNode = this.patch(this.renderTarget, vDom);
-      } else {
-        this._oldVNode = this.patch(this._oldVNode, vDom);
+      // Double-check render target is still valid before patching
+      if (!this.renderTarget || !this.renderTarget.parentNode) {
+        console.warn("Render target became invalid during render, skipping patch");
+        return;
+      }
+
+      try {
+        if (!this._oldVNode) {
+          this._oldVNode = this.patch(this.renderTarget, vDom);
+        } else {
+          this._oldVNode = this.patch(this._oldVNode, vDom);
+        }
+      } catch (patchError) {
+        console.error("Error during patching:", patchError);
+        // Reset the patch state on failure to prevent cascading errors
+        this._oldVNode = null;
+        this.refIds = {};
       }
     } catch (error) {
-      console.error("Error during patching:", error);
+      console.error("Unexpected error during render:", error);
     }
   };
 }
