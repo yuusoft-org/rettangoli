@@ -167,8 +167,8 @@ export const getFormFieldValue = ({ state }, name) => {
   return get(state.formValues, name);
 };
 
-export const setFormValues = (state, defaultValues) => {
-  state.formValues = defaultValues || {};
+export const setFormValues = (state, formValues) => {
+  state.formValues = formValues || {};
 };
 
 export const setFormFieldValue = (state, { name, value, props }) => {

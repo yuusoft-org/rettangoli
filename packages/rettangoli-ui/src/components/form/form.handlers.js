@@ -4,14 +4,14 @@ export const handleBeforeMount = (deps) => {
 };
 
 export const handleOnUpdate = (deps, payload) => {
-  const { oldAttrs, newAttrs } = payload;
-  const { store, props, render } = deps;
+  const { oldAttrs, newAttrs, newProps } = payload;
+  const { store, render } = deps;
 
   if (oldAttrs?.key === newAttrs?.key) {
     return;
   }
 
-  store.setFormValues(props.defaultValues);
+  store.setFormValues(newProps.defaultValues);
   render();
 };
 
