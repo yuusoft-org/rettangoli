@@ -9,15 +9,14 @@
         - script src="/public/rtgl-icons.js":
 
     - body.dark:
-        - rtgl-view bgc="bg" w="f" ah="c" h="f":
-            - rtgl-view d="h" w="f" h="f":
-                - rtgl-view  h="100vh":
-                    - rtgl-sidebar selectedItemId=${sidebarId} header="${escapeJson(docs.header)}" items="${escapeJson(docs.items)}":
-                - rtgl-view flex="1" ah="c" h="100vh":
-                    - rtgl-view pv="lg" md-w="100vw" w="720" ph="xl" sv id="content-container":
-                        - rtgl-text s="h1" mb="md": ${title}
-                        - "${content}"
-                        - rtgl-view h="50vh":
-                - rtgl-view sv w="256" h="100vh" p="xl" g="lg":
-                    - rtgl-page-outline id="page-outline" target-id="content-container" scroll-container-id="content-container" offset-top="80":
-
+        - rtgl-view bgc="bg" w="f" d=h:
+            - 'rtgl-view md-hide pos=fix h=100vh bgc=bg style="left: 0"':
+                - rtgl-sidebar selectedItemId=${sidebarId} header="${escapeJson(docs.header)}" items="${escapeJson(docs.items)}":
+            - rtgl-view md-hide xl-show hide w=272:
+            - rtgl-view flex="1" ah=c w=f:
+                - rtgl-view pv="lg" lg-w="100vw" w="720" ph="xl" sv id="content-container":
+                    - rtgl-text s="h1" mb="md": ${title}
+                    - "${content}"
+                    - rtgl-view h=200:
+            - 'rtgl-view xl-hide style="position: fixed; right: 0"':
+                - rtgl-page-outline id="page-outline" target-id="content-container" scroll-container-id="window" offset-top="80":

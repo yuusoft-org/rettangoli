@@ -33,19 +33,19 @@ An intuitive container component for building layouts serving as the building bl
 
 Controls the layout direction of the container. Set to `h` for horizontal or `v` for vertical (default).
 
-Vertical
+### Vertical
 
 ```html codePreview
-<rtgl-view bgc="ac" p="md" g="md">
+<rtgl-view p="md" g="md">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
 </rtgl-view>
 ```
 
-Horizontal
+### Horizontal
 
 ```html codePreview
-<rtgl-view d="h" bgc="ac" p="md" g="md">
+<rtgl-view d="h" p="md" g="md">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
 </rtgl-view>
@@ -78,6 +78,80 @@ Controls the width and height of the container. Use specific pixel values or `f`
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg" w="f">
   <rtgl-view bgc="ac" w="f" h="80"></rtgl-view>
+</rtgl-view>
+```
+
+## Align Horizontal
+
+Controls horizontal alignment of child elements. Use `s` for start, `c` for center, or `e` for end.
+
+```html codePreview
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-view bgc="mu" wh="80">
+    <rtgl-view bgc="ac" wh="24"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view bgc="mu" wh="80" ah="c">
+    <rtgl-view bgc="ac" wh="24"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view bgc="mu" wh="80" ah="e">
+    <rtgl-view bgc="ac" wh="24"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+```
+
+## Align Vertical
+
+Controls vertical alignment of child elements. Use `s` for start, `c` for center, or `e` for end.
+
+```html codePreview
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-view bgc="mu" wh="80">
+    <rtgl-view bgc="ac" wh="24"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view bgc="mu" wh="80" av="c">
+    <rtgl-view bgc="ac" wh="24"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view bgc="mu" wh="80" av="e">
+    <rtgl-view bgc="ac" wh="24"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+```
+
+```html codePreview
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-view bgc="ac" wh="80" ah="c" av="c">
+    <rtgl-view bgc="ac" wh="24"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+```
+
+## Scroll
+
+Enables scrolling for content that exceeds the container bounds. Use `sv` for vertical scrolling or `sh` for horizontal scrolling.
+
+### Scroll Vertical
+
+```html codePreview
+<rtgl-view p="lg">
+  <rtgl-view bgc="mu" w="200" h="100" sv g="sm">
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+```
+
+### Scroll Horizontal
+
+```html codePreview
+<rtgl-view p="lg">
+  <rtgl-view bgc="mu" w="200" h="100" sh d="h" g="sm">
+    <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
+  </rtgl-view>
 </rtgl-view>
 ```
 
@@ -222,80 +296,6 @@ Controls the transparency level of the container. Use values from 0 (transparent
   <rtgl-view bgc="mu" wh="100" op="0.1"></rtgl-view>
   <rtgl-view bgc="mu" wh="100" op="0.5"></rtgl-view>
   <rtgl-view bgc="mu" wh="100" op="1"></rtgl-view>
-</rtgl-view>
-```
-
-## Align Horizontal
-
-Controls horizontal alignment of child elements. Use `s` for start, `c` for center, or `e` for end.
-
-```html codePreview
-<rtgl-view d="h" g="md" p="lg">
-  <rtgl-view bgc="mu" wh="80">
-    <rtgl-view bgc="ac" wh="24"></rtgl-view>
-  </rtgl-view>
-  <rtgl-view bgc="mu" wh="80" ah="c">
-    <rtgl-view bgc="ac" wh="24"></rtgl-view>
-  </rtgl-view>
-  <rtgl-view bgc="mu" wh="80" ah="e">
-    <rtgl-view bgc="ac" wh="24"></rtgl-view>
-  </rtgl-view>
-</rtgl-view>
-```
-
-## Align Vertical
-
-Controls vertical alignment of child elements. Use `s` for start, `c` for center, or `e` for end.
-
-```html codePreview
-<rtgl-view d="h" g="md" p="lg">
-  <rtgl-view bgc="mu" wh="80">
-    <rtgl-view bgc="ac" wh="24"></rtgl-view>
-  </rtgl-view>
-  <rtgl-view bgc="mu" wh="80" av="c">
-    <rtgl-view bgc="ac" wh="24"></rtgl-view>
-  </rtgl-view>
-  <rtgl-view bgc="mu" wh="80" av="e">
-    <rtgl-view bgc="ac" wh="24"></rtgl-view>
-  </rtgl-view>
-</rtgl-view>
-```
-
-```html codePreview
-<rtgl-view d="h" g="md" p="lg">
-  <rtgl-view bgc="ac" wh="80" ah="c" av="c">
-    <rtgl-view bgc="ac" wh="24"></rtgl-view>
-  </rtgl-view>
-</rtgl-view>
-```
-
-## Scroll
-
-Enables scrolling for content that exceeds the container bounds. Use `sv` for vertical scrolling or `sh` for horizontal scrolling.
-
-### Scroll Vertical
-
-```html codePreview
-<rtgl-view p="lg">
-  <rtgl-view bgc="mu" w="200" h="100" sv g="sm">
-    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
-    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
-    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
-    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
-  </rtgl-view>
-</rtgl-view>
-```
-
-## Scroll Horizontal
-
-```html codePreview
-<rtgl-view p="lg">
-  <rtgl-view bgc="mu" w="200" h="100" sh d="h" g="sm">
-    <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
-    <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
-    <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
-    <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
-  </rtgl-view>
 </rtgl-view>
 ```
 

@@ -1,8 +1,10 @@
 html {
-  height: 100%;
+  height: auto;
+  min-height: 100%;
   margin: 0;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
+  overflow-y: auto;
 }
 
 /* Hide scrollbar for Chrome, Safari */
@@ -37,6 +39,7 @@ blockquote {
   background-color: var(--muted);
   color: var(--muted-foreground);
   font-style: italic;
+  width: var(--width-stretch);
 }
 
 blockquote p {
@@ -54,13 +57,27 @@ blockquote cite {
 body {
   -ms-overflow-style: none;
   scrollbar-width: none;
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   font-family: Roboto, -apple-system, "Helvetica Neue", sans-serif;
-  display: flex;
-  flex-direction: column;
   background-color: var(--background);
   color: var(--foreground);
+}
+
+/* Make sidebar sticky */
+rtgl-sidebar {
+  position: sticky !important;
+  top: 0 !important;
+  height: 100vh !important;
+  overflow-y: auto !important;
+}
+
+/* Make page outline sticky */
+rtgl-page-outline {
+  position: sticky !important;
+  top: 0 !important;
+  height: 100vh !important;
+  overflow-y: auto !important;
 }
 /* Table styles */
 table {
