@@ -94,7 +94,8 @@ pre {
   flex: 1;
   /*For html segments without codepreview, so they can extend to see the full code*/
   min-height: fit-content;
-  max-width: 100%;
+  max-width: var(--width-stretch);
+  width: 100%;
   overflow-x: auto;
   box-sizing: border-box;
   /* TODO fix sometimes there needs to be margin-bottom */
@@ -108,6 +109,10 @@ code:not(pre code) {
   padding: var(--spacing-xs) var(--spacing-md);
   border-radius: var(--border-radius-sm);
   display: inline-block;
+}
+
+a {
+  color: inherit;
 }
 
 /* Responsive tables */

@@ -2,6 +2,7 @@
 template: documentation
 title: Image
 tags: documentation
+sidebarId: rtgl-image
 ---
 
 A versatile image component for displaying images with various sizing and styling options.

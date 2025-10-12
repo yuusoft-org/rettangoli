@@ -5,18 +5,19 @@
           seo: ${seo}
         - link rel="stylesheet" href="/public/theme.css":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
-        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.2-rc32/dist/rettangoli-iife-ui.min.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.8/dist/rettangoli-iife-ui.min.js":
         - script src="/public/rtgl-icons.js":
 
     - body.dark:
         - rtgl-view bgc="bg" w="f" ah="c" h="f":
             - rtgl-view d="h" w="f" h="f":
                 - rtgl-view  h="100vh":
-                    - rtgl-sidebar header="${escapeJson(docs.header)}" items="${escapeJson(docs.items)}":
+                    - rtgl-sidebar selectedItemId=${sidebarId} header="${escapeJson(docs.header)}" items="${escapeJson(docs.items)}":
                 - rtgl-view flex="1" ah="c" h="100vh":
                     - rtgl-view pv="lg" md-w="100vw" w="720" ph="xl" sv id="content-container":
                         - rtgl-text s="h1" mb="md": ${title}
                         - "${content}"
                         - rtgl-view h="50vh":
-                - rtgl-view sv w="256" h="100vh" p="xl" g="lg" xl-hidden:
-                    - rtgl-page-outline id="page-outline" target-id="content-container":
+                - rtgl-view sv w="256" h="100vh" p="xl" g="lg":
+                    - rtgl-page-outline id="page-outline" target-id="content-container" scroll-container-id="content-container" offset-top="80":
+

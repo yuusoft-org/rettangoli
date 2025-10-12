@@ -2,6 +2,7 @@
 template: documentation
 title: CSS Variables
 tags: documentation
+sidebarId: css-variables
 ---
 
 
