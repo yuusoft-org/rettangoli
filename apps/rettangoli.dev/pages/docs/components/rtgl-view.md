@@ -22,7 +22,7 @@ An intuitive container component for building layouts serving as the building bl
 | [Border Width](#border-width)     | `bw`, `bwt`, `bwr`, `bwb`, `bwl`        | `xs`, `sm`, `md`, `lg`, `xl`             | -       |
 | [Border Color](#border-color)     | `bc`                                    | `pr`, `se`, `de`, `fg`, `bg`, `mu`, `ac`, `bo`, `tr` | -       |
 | [Border Radius](#border-radius)    | `br`                                    | `xs`, `sm`, `md`, `lg`, `xl`, `f`        | -       |
-| [Background Color](#background-color) | `bgc`                                   | color code                               | -       |
+| [Background Color](#background-color) | `bgc`                                   | `pr`, `se`, `de`, `fg`, `bg`, `mu`, `ac`, `bo` | `bg`       |
 | [Opacity](#opacity)          | `op`                                    | number (0-1)                             | 1       |
 | [Position](#position)         | `pos`                                   | `abs`, `rel`, `fix`                      | -       |
 | [Coordinates](#coordinates) | `cor`                                   | `top`, `right`, `bottom`, `left`, `full` | -       |
@@ -265,13 +265,13 @@ Controls the roundness of container corners. Use predefined sizes from `xs` to `
 
 ## Background Color
 
-Controls the background color of the container using color codes or predefined color tokens.
+Controls the background color of the container using predefined color tokens.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
-  <rtgl-view bgc="#3b82f6" wh="80"></rtgl-view>
-  <rtgl-view bgc="#ef4444" wh="80"></rtgl-view>
-  <rtgl-view bgc="#10b981" wh="80"></rtgl-view>
+  <rtgl-view bgc="fg" wh="80"></rtgl-view>
+  <rtgl-view bgc="mu" wh="80"></rtgl-view>
+  <rtgl-view bgc="ac" wh="80"></rtgl-view>
 </rtgl-view>
 ```
 
