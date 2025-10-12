@@ -2,6 +2,7 @@
 template: documentation
 title: SVG
 tags: documentation
+sidebarId: rtgl-svg
 ---
 
 A component for displaying SVG icons with customizable dimensions and colors.

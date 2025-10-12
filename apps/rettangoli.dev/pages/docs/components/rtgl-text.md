@@ -2,6 +2,7 @@
 template: documentation
 title: Text
 tags: documentation
+sidebarId: rtgl-text
 ---
 
 A versatile text component for displaying textual content with various styling options.

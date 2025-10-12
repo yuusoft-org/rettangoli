@@ -7,5 +7,4 @@
         - rtgl-text s=lg ta=c: "${subtitle}"
     - $if cta:
         - rtgl-view h=32:
-        - a.link href="${cta.href}":
-          - rtgl-button: "${cta.label}"
+        - rtgl-button href="${cta.href}": "${cta.label}"

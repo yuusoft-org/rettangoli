@@ -12,7 +12,7 @@ function flattenItems(items, selectedItemId = null) {
   for (const item of items) {
     const itemId = item.id || item.href || item.path;
     const isSelected = selectedItemId === itemId;
-    
+
     // Add the parent item if it's not just a group label
     result.push({
       id: itemId,
@@ -31,7 +31,7 @@ function flattenItems(items, selectedItemId = null) {
       for (const subItem of item.items) {
         const subItemId = subItem.id || subItem.href || subItem.path;
         const isSubSelected = selectedItemId === subItemId;
-        
+
         result.push({
           id: subItemId,
           title: subItem.title,

@@ -2,6 +2,7 @@
 template: documentation
 title: Button
 tags: documentation
+sidebarId: rtgl-button
 ---
 
 A versatile button component
