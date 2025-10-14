@@ -11,35 +11,40 @@ class RettangoliPopoverElement extends HTMLElement {
           display: contents;
         }
 
-        .popover-overlay {
+        dialog {
+          padding: 0;
+          border: none;
+          background: transparent;
+          margin: 0;
+          overflow: visible;
+          color: inherit;
+          scrollbar-width: none;
+          outline: none;
           position: fixed;
           top: 0;
           left: 0;
           width: 100vw;
           height: 100vh;
-          z-index: 999;
-          display: none;
+          /* Prevent dialog from being focused */
+          pointer-events: none;
+        }
+
+        dialog::backdrop {
+          background-color: transparent;
+          /* Allow backdrop to receive clicks */
+          pointer-events: auto;
         }
 
         .popover-container {
           position: fixed;
           z-index: 1000;
-          display: none;
           outline: none;
-        }
-
-        :host([open]:not([no-overlay])) .popover-overlay {
-          display: block;
+          pointer-events: auto;
         }
 
         :host([open]) .popover-container {
           display: block;
           visibility: hidden;
-        }
-        
-        /* For no-overlay mode, make the container non-interactive */
-        :host([no-overlay]) .popover-container {
-          pointer-events: none;
         }
 
         :host([open][positioned]) .popover-container {
@@ -65,20 +70,41 @@ class RettangoliPopoverElement extends HTMLElement {
     this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.adoptedStyleSheets = [RettangoliPopoverElement.styleSheet];
 
-    // Create overlay
-    this._popoverOverlay = document.createElement('div');
-    this._popoverOverlay.className = 'popover-overlay';
-    this.shadow.appendChild(this._popoverOverlay);
+    // Create dialog element
+    this._dialogElement = document.createElement('dialog');
+    this.shadow.appendChild(this._dialogElement);
 
-    // Handle overlay clicks to close popover
-    this._popoverOverlay.addEventListener('click', () => {
-      this.dispatchEvent(new CustomEvent('close', {
-        detail: {}
-      }));
+    // Handle dialog backdrop clicks to close popover
+    this._dialogElement.addEventListener('click', (e) => {
+      // Close on backdrop clicks (when clicking outside the popover content)
+      const path = e.composedPath();
+      const clickedOnBackdrop = path[0] === this._dialogElement ||
+                              (path[0].nodeName === 'DIALOG' && path[0] === this._dialogElement);
+
+      if (clickedOnBackdrop) {
+        this.dispatchEvent(new CustomEvent('close', {
+          detail: {}
+        }));
+      }
     });
 
-    // Handle right-click on overlay to close popover
-    this._popoverOverlay.addEventListener('contextmenu', (e) => {
+    // Handle right-click on backdrop to close popover
+    this._dialogElement.addEventListener('contextmenu', (e) => {
+      // Close on backdrop right-clicks
+      const path = e.composedPath();
+      const clickedOnBackdrop = path[0] === this._dialogElement ||
+                              (path[0].nodeName === 'DIALOG' && path[0] === this._dialogElement);
+
+      if (clickedOnBackdrop) {
+        e.preventDefault();
+        this.dispatchEvent(new CustomEvent('close', {
+          detail: {}
+        }));
+      }
+    });
+
+    // Handle ESC key - prevent native close and emit custom event
+    this._dialogElement.addEventListener('cancel', (e) => {
       e.preventDefault();
       this.dispatchEvent(new CustomEvent('close', {
         detail: {}
@@ -88,20 +114,17 @@ class RettangoliPopoverElement extends HTMLElement {
     // Create popover container
     this._popoverContainer = document.createElement('div');
     this._popoverContainer.className = 'popover-container';
-    this.shadow.appendChild(this._popoverContainer);
+    this._dialogElement.appendChild(this._popoverContainer);
 
     // Store reference for content slot
     this._slotElement = null;
 
     // Track if we're open
     this._isOpen = false;
-
-    // Bind event handlers
-    this._handleEscKey = this._handleEscKey.bind(this);
   }
 
   static get observedAttributes() {
-    return ["open", "x", "y", "placement", "no-overlay"];
+    return ["open", "x", "y", "placement"];
   }
 
   connectedCallback() {
@@ -112,14 +135,19 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   disconnectedCallback() {
-    // Clean up event listeners
-    this._removeGlobalListeners();
+    // Clean up dialog if it's open
+    if (this._isOpen && this._dialogElement.open) {
+      this._dialogElement.close();
+    }
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'open') {
       if (newValue !== null && !this._isOpen) {
-        this._show();
+        // Only show if element is connected to DOM
+        if (this.isConnected) {
+          this._show();
+        }
       } else if (newValue === null && this._isOpen) {
         this._hide();
       }
@@ -138,8 +166,20 @@ class RettangoliPopoverElement extends HTMLElement {
       }
 
       this._isOpen = true;
-      this._updatePosition();
-      this._addGlobalListeners();
+
+      // Show the dialog using setTimeout to ensure it's in the DOM
+      if (!this._dialogElement.open) {
+        setTimeout(() => {
+          if (this._dialogElement && !this._dialogElement.open) {
+            this._dialogElement.showModal();
+          }
+        }, 0);
+      }
+
+      // Update position after dialog is shown
+      requestAnimationFrame(() => {
+        this._updatePosition();
+      });
     }
   }
 
@@ -147,13 +187,16 @@ class RettangoliPopoverElement extends HTMLElement {
     if (this._isOpen) {
       this._isOpen = false;
 
+      // Close the dialog
+      if (this._dialogElement.open) {
+        this._dialogElement.close();
+      }
+
       // Remove slot to unmount content
       if (this._slotElement) {
         this._popoverContainer.removeChild(this._slotElement);
         this._slotElement = null;
       }
-
-      this._removeGlobalListeners();
     }
   }
 
@@ -246,26 +289,7 @@ class RettangoliPopoverElement extends HTMLElement {
     return { left, top };
   }
 
-  _addGlobalListeners() {
-    // Use setTimeout to avoid immediate triggering
-    setTimeout(() => {
-      document.addEventListener('keydown', this._handleEscKey);
-    }, 0);
-  }
-
-  _removeGlobalListeners() {
-    document.removeEventListener('keydown', this._handleEscKey);
-  }
-
-
-  _handleEscKey(e) {
-    if (e.key === 'Escape') {
-      this.dispatchEvent(new CustomEvent('close', {
-        detail: {}
-      }));
-    }
-  }
-
+  
   // Expose popover container for advanced usage
   get popover() {
     return this._popoverContainer;
