@@ -38,6 +38,7 @@ export const handleOnUpdate = (deps, payload) => {
 export const handleButtonClick = (deps, payload) => {
   const { store, render, getRefIds, props } = deps;
   const event = payload._event;
+  event.stopPropagation();
 
   const button = getRefIds()['select-button'].elm;
 
@@ -73,6 +74,7 @@ export const handleClickOptionsPopoverOverlay = (deps, payload) => {
 export const handleOptionClick = (deps, payload) => {
   const { render, dispatchEvent, props, store } = deps;
   const event = payload._event;
+  event.stopPropagation();
   const id = event.currentTarget.id.replace('option-', '');
 
   const option = props.options[id];
@@ -145,7 +147,8 @@ export const handleClearClick = (deps, payload) => {
 
 export const handleAddOptionClick = (deps, payload) => {
   const { store, render, dispatchEvent } = deps;
-
+  const { _event: event } = payload;
+  event.stopPropagation();
   // Close the popover
   store.closeOptionsPopover();
 
