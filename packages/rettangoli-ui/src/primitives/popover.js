@@ -76,10 +76,11 @@ class RettangoliPopoverElement extends HTMLElement {
 
     // Handle dialog backdrop clicks to close popover
     this._dialogElement.addEventListener('click', (e) => {
+      e.stopPropagation();
       // Close on backdrop clicks (when clicking outside the popover content)
       const path = e.composedPath();
       const clickedOnBackdrop = path[0] === this._dialogElement ||
-                              (path[0].nodeName === 'DIALOG' && path[0] === this._dialogElement);
+        (path[0].nodeName === 'DIALOG' && path[0] === this._dialogElement);
 
       if (clickedOnBackdrop) {
         this.dispatchEvent(new CustomEvent('close', {
@@ -93,7 +94,7 @@ class RettangoliPopoverElement extends HTMLElement {
       // Close on backdrop right-clicks
       const path = e.composedPath();
       const clickedOnBackdrop = path[0] === this._dialogElement ||
-                              (path[0].nodeName === 'DIALOG' && path[0] === this._dialogElement);
+        (path[0].nodeName === 'DIALOG' && path[0] === this._dialogElement);
 
       if (clickedOnBackdrop) {
         e.preventDefault();
@@ -289,7 +290,7 @@ class RettangoliPopoverElement extends HTMLElement {
     return { left, top };
   }
 
-  
+
   // Expose popover container for advanced usage
   get popover() {
     return this._popoverContainer;
