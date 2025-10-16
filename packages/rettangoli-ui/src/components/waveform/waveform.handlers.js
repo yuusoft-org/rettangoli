@@ -70,7 +70,7 @@ async function renderWaveform(waveformData, canvas) {
 
   for (let i = 0; i < amplitudes.length; i++) {
     const amplitude = amplitudes[i];
-    const barHeight = amplitude * (height * 0.85);
+    const barHeight = amplitude / 255 * (height * 0.85);
     const x = i * barWidth;
     const y = centerY - barHeight / 2;
 
