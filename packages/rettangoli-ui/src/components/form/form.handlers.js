@@ -85,7 +85,7 @@ export const handleSelectChange = (deps, payload) => {
   const { store, dispatchEvent, render, props } = deps;
   const event = payload._event;
   const name = event.currentTarget.id.replace("select-", "");
-  if (name && event.detail.selectedValue !== undefined) {
+  if (name) {
     store.setFormFieldValue({
       name: name,
       value: event.detail.selectedValue,
