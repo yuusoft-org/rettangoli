@@ -140,12 +140,10 @@ export const showDropdownMenu = async (deps, payload) => {
  * @returns {void}
  */
 export const closeAll = (deps) => {
-  // Close global UI dialogs/dropdowns if dependencies are provided
-  if (deps && deps.store && deps.render) {
-    if (deps.store.selectIsOpen()) {
-      deps.store.closeDialog();
-      deps.render();
-    }
+  const { store, render } = deps;
+  if (store.selectIsOpen()) {
+    store.closeDialog();
+    render();
   }
 
   // Close all popover components (tooltips, selects, dropdown menus, etc.)
