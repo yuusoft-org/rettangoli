@@ -129,20 +129,34 @@ export const showDropdownMenu = async (deps, payload) => {
 };
 
 /**
- * Closes all currently open dialogs and dropdown menus.
- * This function checks if any dialog/dropdown is open and closes it if needed.
+ * General-purpose function to close all currently open UI components.
+ * This is a more generalized version that closes all floating UI elements.
+ * This function will:
+ * 1. Close any open global UI dialogs/dropdowns managed by the store
+ * 2. Close all popover components (tooltips, selects, dropdown menus, etc.)
+ * 3. Close any dialog elements that might be open
  *
- * @param {Object} deps - Dependencies object
- * @param {Object} deps.store - The globalUI store instance
- * @param {Function} deps.render - Function to trigger re-rendering
+ * @param {Object} deps - Dependencies object (optional, only used for GlobalUI store)
  * @returns {void}
  */
-export const closeAllDialogs = (deps) => {
-  const { store, render } = deps;
-
-  // Check if any dialog or dropdown is currently open
-  if (store.selectIsOpen()) {
-    store.closeDialog();
-    render();
+export const closeAll = (deps) => {
+  // Close global UI dialogs/dropdowns if dependencies are provided
+  if (deps && deps.store && deps.render) {
+    if (deps.store.selectIsOpen()) {
+      deps.store.closeDialog();
+      deps.render();
+    }
   }
+
+  // Close all popover components (tooltips, selects, dropdown menus, etc.)
+  const popovers = document.querySelectorAll('rtgl-popover[open]');
+  popovers.forEach(popover => {
+    popover.removeAttribute('open');
+  });
+
+  // Close all dialog components
+  const dialogs = document.querySelectorAll('rtgl-dialog[open]');
+  dialogs.forEach(dialog => {
+    dialog.removeAttribute('open');
+  });
 };

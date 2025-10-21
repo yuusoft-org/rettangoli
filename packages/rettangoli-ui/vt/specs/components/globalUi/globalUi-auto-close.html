@@ -26,8 +26,8 @@ title: "Global UI - Auto-close Loading Test"
     showConfirm: async (options) => {
       return globalUIElement.transformedHandlers.showConfirm(options);
     },
-    closeAllDialogs: async () => {
-      globalUIElement.transformedHandlers.closeAllDialogs();
+    closeAll: async () => {
+      globalUIElement.transformedHandlers.closeAll();
     }
   };
 
@@ -54,7 +54,7 @@ title: "Global UI - Auto-close Loading Test"
 
       // Wait for 3 seconds, then close all dialogs
       setTimeout(async () => {
-        await globalUI.closeAllDialogs();
+        await globalUI.closeAll();
         addLog('Loading alert auto-closed after 3 seconds');
       }, 3000);
 

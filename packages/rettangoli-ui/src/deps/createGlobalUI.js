@@ -1,6 +1,6 @@
 /**
  * Creates a GlobalUI manager instance for controlling global UI components.
- * Provides methods for showing alerts, confirm dialogs, dropdown menus, and closing all dialogs.
+ * Provides methods for showing alerts, confirm dialogs, dropdown menus, and closing all UI components.
  *
  * @param {HTMLElement} globalUIElement - The globalUI component element
  * @returns {Object} GlobalUI manager instance
@@ -9,7 +9,7 @@
  * @returns {Function} returns.showAlert - Show an alert dialog
  * @returns {Function} returns.showConfirm - Show a confirmation dialog
  * @returns {Function} returns.showDropdownMenu - Show a dropdown menu
- * @returns {Function} returns.closeAllDialogs - Close all currently open dialogs and dropdown menus
+ * @returns {Function} returns.closeAll - General-purpose function to close all currently open UI components
  */
 const createGlobalUI = (globalUIElement) => {
   let listeners = {};
@@ -113,19 +113,19 @@ const createGlobalUI = (globalUIElement) => {
     },
 
     /**
-     * Closes all currently open dialogs and dropdown menus.
-     * This function checks if any dialog or dropdown menu is open and closes them if needed.
-     * Useful for programmatically closing any open UI components.
+     * General-purpose function to close all currently open UI components.
+     * This includes dialogs, popovers, tooltips, selects, dropdown menus, and any other floating UI elements.
+     * Useful for programmatically cleaning up the entire UI surface.
      *
-     * @returns {Promise<void>} Promise that resolves when all dialogs are closed
+     * @returns {Promise<void>} Promise that resolves when all UI components are closed
      * @throws {Error} If globalUIElement is not initialized
      */
-    closeAllDialogs: async () => {
+    closeAll: async () => {
       if(!globalUIElement)
       {
         throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
       }
-      return globalUIElement.transformedHandlers.closeAllDialogs();
+      return globalUIElement.transformedHandlers.closeAll();
     }
   };
 }
