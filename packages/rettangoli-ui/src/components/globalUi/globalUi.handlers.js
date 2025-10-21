@@ -127,3 +127,22 @@ export const showDropdownMenu = async (deps, payload) => {
     });
   });
 };
+
+/**
+ * Closes all currently open dialogs and dropdown menus.
+ * This function checks if any dialog/dropdown is open and closes it if needed.
+ *
+ * @param {Object} deps - Dependencies object
+ * @param {Object} deps.store - The globalUI store instance
+ * @param {Function} deps.render - Function to trigger re-rendering
+ * @returns {void}
+ */
+export const closeAllDialogs = (deps) => {
+  const { store, render } = deps;
+
+  // Check if any dialog or dropdown is currently open
+  if (store.selectIsOpen()) {
+    store.closeDialog();
+    render();
+  }
+};
