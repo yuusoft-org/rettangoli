@@ -145,16 +145,4 @@ export const closeAll = (deps) => {
     store.closeDialog();
     render();
   }
-
-  // Close all popover components (tooltips, selects, dropdown menus, etc.)
-  const popovers = document.querySelectorAll('rtgl-popover[open]');
-  popovers.forEach(popover => {
-    popover.removeAttribute('open');
-  });
-
-  // Close all dialog components
-  const dialogs = document.querySelectorAll('rtgl-dialog[open]');
-  dialogs.forEach(dialog => {
-    dialog.removeAttribute('open');
-  });
 };
