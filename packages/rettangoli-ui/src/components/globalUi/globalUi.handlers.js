@@ -1,14 +1,14 @@
 export const handleDialogClose = (deps, payload) => {
   const { store, render } = deps;
 
-  store.closeDialog();
+  store.closeAll();
   render();
 };
 
 export const handleConfirm = (deps, payload) => {
   const { store, render, globalUI } = deps;
 
-  store.closeDialog();
+  store.closeAll();
   render();
   globalUI.emit('event', true);
 };
@@ -16,7 +16,7 @@ export const handleConfirm = (deps, payload) => {
 export const handleCancel = (deps, payload) => {
   const { store, render, globalUI } = deps;
 
-  store.closeDialog();
+  store.closeAll();
   render();
   globalUI.emit('event', false);
 };
@@ -25,7 +25,7 @@ export const handleDropdownClose = (deps, payload) => {
   const { store, render, globalUI } = deps;
 
   // Always process close events - the framework will handle if it's already closed
-  store.closeDialog();
+  store.closeAll();
   render();
   globalUI.emit('event', null);
 };
@@ -36,7 +36,7 @@ export const handleDropdownItemClick = (deps, payload) => {
   const { index, item } = event.detail;
 
   // Always process click events - the framework will handle if it's already closed
-  store.closeDialog();
+  store.closeAll();
   render();
   globalUI.emit('event', { index, item });
 };
@@ -61,7 +61,7 @@ export const showAlert = (deps, payload) => {
 
   // Close any existing dialog/dropdown menu first
   if (store.selectIsOpen()) {
-    store.closeDialog();
+    store.closeAll();
     render();
   }
 
@@ -75,7 +75,7 @@ export const showConfirm = async (deps, payload) => {
 
   // Close any existing dialog/dropdown menu first
   if (store.selectIsOpen()) {
-    store.closeDialog();
+    store.closeAll();
     render();
   }
 
@@ -113,7 +113,7 @@ export const showDropdownMenu = async (deps, payload) => {
 
   // Close any existing dialog/dropdown menu first
   if (store.selectIsOpen()) {
-    store.closeDialog();
+    store.closeAll();
     render();
   }
 
@@ -126,4 +126,26 @@ export const showDropdownMenu = async (deps, payload) => {
       resolve(result)
     });
   });
+};
+
+/**
+ * Triggers a global event to close all UI components.
+ * This function will:
+ * 1. Close any open global UI dialogs/dropdowns managed by the store
+ * 2. Emit a global 'closeAll' event that other components can listen to
+ *
+ * @param {Object} deps - Dependencies object
+ * @param {Object} deps.store - The globalUI store instance
+ * @param {Function} deps.render - Function to trigger re-rendering
+ * @param {Object} deps.globalUI - The globalUI event emitter
+ * @returns {void}
+ */
+export const closeAll = (deps) => {
+  const { store, render } = deps;
+
+  // Close global UI dialogs/dropdowns
+  if (store.selectIsOpen()) {
+    store.closeAll();
+    render();
+  }
 };

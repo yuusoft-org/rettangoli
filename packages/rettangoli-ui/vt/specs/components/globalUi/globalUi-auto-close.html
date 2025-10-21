@@ -1,0 +1,67 @@
+---
+title: "Global UI - Auto-close Loading Test"
+---
+<!-- Global UI element must be present before main.js loads -->
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="lg" h="100vh" w="f" fw="w">
+  <rtgl-view d="h" g="lg">
+    <rtgl-button id="auto-close-btn">Test Auto-close Loading</rtgl-button>
+    <rtgl-button id="auto-close-btn2">Test Auto-close2 Loading</rtgl-button>
+  </rtgl-view>
+  
+  <rtgl-view mt="lg" p="lg" bgc="mu" br="md">
+    <rtgl-text id="log">Log output:</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  // Get globalUI from the component element
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+  
+  // Application layer creates its own async wrapper
+  const globalUI = {
+    showAlert: async (options) => {
+      globalUIElement.transformedHandlers.showAlert(options);
+    },
+    showConfirm: async (options) => {
+      return globalUIElement.transformedHandlers.showConfirm(options);
+    },
+    closeAll: async () => {
+      globalUIElement.transformedHandlers.closeAll();
+    }
+  };
+
+  const log = document.getElementById('log');
+  const addLog = (message) => {
+    log.textContent += '\n' + message;
+  };
+
+  
+  document.getElementById('auto-close-btn').addEventListener('click', async () => {
+    log.textContent = 'Log output:';
+
+    try {
+      addLog('Showing loading alert...');
+
+      // Show a loading alert
+      await globalUI.showAlert({
+        status: 'info',
+        title: 'Processing',
+        message: 'Please wait while we process your request...'
+      });
+
+      addLog('Loading alert shown, will auto-close in 3 seconds');
+
+      // Wait for 3 seconds, then close all dialogs
+      setTimeout(async () => {
+        await globalUI.closeAll();
+        addLog('Loading alert auto-closed after 3 seconds');
+      }, 3000);
+
+    } catch (error) {
+      addLog(`Error: ${error.message}`);
+    }
+  });
+
+</script>

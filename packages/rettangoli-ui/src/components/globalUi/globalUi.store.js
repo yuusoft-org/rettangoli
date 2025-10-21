@@ -66,7 +66,7 @@ export const setDropdownConfig = (state, options) => {
   state.isOpen = true;
 };
 
-export const closeDialog = (state) => {
+export const closeAll = (state) => {
   state.isOpen = false;
   state.uiType = "dialog"; // Reset to default type
 };
