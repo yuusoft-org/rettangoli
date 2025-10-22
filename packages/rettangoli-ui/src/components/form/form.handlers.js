@@ -1,10 +1,6 @@
 
 const updateAttributes = ({ form, defaultValues = {}, refs }) => {
   const { fields = [] } = form;
-  console.log('fields', fields);
-  console.log('refs', refs)
-
-
   fields.forEach((field) => {
     const ref = refs[`field-${field.name}`]?.elm;
 
@@ -20,7 +16,6 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
     }
     if (field.inputType === 'inputText' && field.placeholder) {
       const currentPlaceholder = ref.getAttribute('placeholder')
-      console.log('currentPlaceholder', currentPlaceholder);
       if (currentPlaceholder !== field.placeholder) {
         ref.setAttribute('placeholder', field.placeholder)
       }
