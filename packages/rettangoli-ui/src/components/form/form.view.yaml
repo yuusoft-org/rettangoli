@@ -294,10 +294,6 @@ refs:
         handler: handleWaveformClick
       contextmenu:
         handler: handleWaveformClick
-  popover-input-*:
-    eventListeners:
-      input-change:
-        handler: handlePopoverInputChange
 
 events:
   form-change: {}

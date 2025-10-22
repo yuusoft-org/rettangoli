@@ -63,8 +63,6 @@ export const selectViewData = ({ state, props, attrs }) => {
     };
   });
 
-  console.log('attrs.placeholder', attrs.placeholder)
-
   return {
     containerAttrString,
     isOpen: state.isOpen,

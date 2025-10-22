@@ -6,7 +6,7 @@ title: Basic PopoverInput
 </rtgl-view>
 
 <script>
-  const popoverInput = document.createElement('rtgl-popover-input');
+  const popoverInput = document.getElementById('popover-input');
   popoverInput.addEventListener('input-change', (e) => {
     console.log('Value changed:', e.detail);
   });

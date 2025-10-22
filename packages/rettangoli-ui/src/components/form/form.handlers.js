@@ -10,14 +10,20 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
 
     if (['inputText', 'colorPicker', 'slider', 'slider-input', 'popover-input'].includes(field.inputType)) {
       const defaultValue = defaultValues[field.name];
-      if (defaultValue !== undefined) {
+      if (defaultValue === undefined || defaultValue === null) {
+        ref.removeAttribute('value')
+      } else {
         ref.setAttribute('value', defaultValue)
       }
     }
     if (field.inputType === 'inputText' && field.placeholder) {
       const currentPlaceholder = ref.getAttribute('placeholder')
       if (currentPlaceholder !== field.placeholder) {
-        ref.setAttribute('placeholder', field.placeholder)
+        if (field.placeholder === undefined || field.placeholder === null) {
+          ref.removeAttribute('placeholder');
+        } else {
+          ref.setAttribute('placeholder', field.placeholder);
+        }
       }
     }
     if (field.inputType === 'select' && field.placeholder) {
@@ -64,9 +70,10 @@ export const handleOnUpdate = (deps, payload) => {
   if (oldAttrs?.key !== newAttrs?.key) {
     const refs = getRefIds();
     updateAttributes({ form, defaultValues, refs });
+    store.setFormValues(defaultValues);
+    render();
     return;
   }
-  store.setFormValues(defaultValues);
   render();
 };
 
@@ -99,28 +106,7 @@ export const handleActionClick = (deps, payload) => {
 export const handleInputChange = (deps, payload) => {
   const { store, dispatchEvent, props } = deps;
   const event = payload._event;
-  const name = event.currentTarget.id.replace("input-", "");
-  // TODO fix double event
-  if (name && event.detail.value !== undefined) {
-    store.setFormFieldValue({
-      name: name,
-      value: event.detail.value,
-      props,
-    });
-    dispatchFormChange(
-      name,
-      event.detail.value,
-      store.selectFormValues(),
-      dispatchEvent,
-    );
-  }
-};
-
-export const handlePopoverInputChange = (deps, payload) => {
-  const { store, dispatchEvent, props } = deps;
-  const event = payload._event;
-  const name = event.currentTarget.id.replace("popover-input-", "");
-  // TODO fix double event
+  let name = event.currentTarget.id.replace("field-", "");
   if (name && event.detail.value !== undefined) {
     store.setFormFieldValue({
       name: name,
@@ -139,7 +125,7 @@ export const handlePopoverInputChange = (deps, payload) => {
 export const handleSelectChange = (deps, payload) => {
   const { store, dispatchEvent, render, props } = deps;
   const event = payload._event;
-  const name = event.currentTarget.id.replace("select-", "");
+  const name = event.currentTarget.id.replace("field-", "");
   if (name) {
     store.setFormFieldValue({
       name: name,
@@ -159,7 +145,7 @@ export const handleSelectChange = (deps, payload) => {
 export const handleColorPickerChange = (deps, payload) => {
   const { store, dispatchEvent, props } = deps;
   const event = payload._event;
-  const name = event.currentTarget.id.replace("colorpicker-", "");
+  const name = event.currentTarget.id.replace("field-", "");
   if (name && event.detail.value !== undefined) {
     store.setFormFieldValue({
       name: name,
@@ -178,7 +164,7 @@ export const handleColorPickerChange = (deps, payload) => {
 export const handleSliderChange = (deps, payload) => {
   const { store, dispatchEvent, props } = deps;
   const event = payload._event;
-  const name = event.currentTarget.id.replace("slider-", "");
+  const name = event.currentTarget.id.replace("field-", "");
   if (name && event.detail.value !== undefined) {
     store.setFormFieldValue({
       name: name,
@@ -197,7 +183,7 @@ export const handleSliderChange = (deps, payload) => {
 export const handleSliderInputChange = (deps, payload) => {
   const { store, dispatchEvent, props } = deps;
   const event = payload._event;
-  const name = event.currentTarget.id.replace("slider-input-", "");
+  const name = event.currentTarget.id.replace("field-", "");
   if (name && event.detail.value !== undefined) {
     store.setFormFieldValue({
       name: name,
@@ -254,7 +240,7 @@ export const handleWaveformClick = (deps, payload) => {
 export const handleSelectAddOption = (deps, payload) => {
   const { store, dispatchEvent } = deps;
   const event = payload._event;
-  const name = event.currentTarget.id.replace("select-", "");
+  const name = event.currentTarget.id.replace("field-", "");
   dispatchEvent(
     new CustomEvent("action-click", {
       detail: {
@@ -286,7 +272,7 @@ export const handleTooltipMouseEnter = (deps, payload) => {
   }
 };
 
-export const handleTooltipMouseLeave = (deps, payload) => {
+export const handleTooltipMouseLeave = (deps) => {
   const { store, render } = deps;
   store.hideTooltip();
   render();
