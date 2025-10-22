@@ -123,14 +123,6 @@ class RettangoliInputElement extends HTMLElement {
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
-    // Handle key attribute change - reset value
-    // if (name === "key" && oldValue !== newValue) {
-    //   requestAnimationFrame((() => {
-    //     const value = this.getAttribute("value");
-    //     this._inputElement.value = value ?? "";
-    //   }))
-    //   return;
-    // }
     if (name === 'value') {
       requestAnimationFrame((() => {
         const value = this.getAttribute("value");
@@ -229,16 +221,6 @@ class RettangoliInputElement extends HTMLElement {
 
     this._inputElement.setAttribute("type", type);
 
-    // if (placeholder !== null) {
-    //   this._inputElement.setAttribute("placeholder", placeholder);
-    // } else {
-    //   this._inputElement.removeAttribute("placeholder");
-    // }
-
-    // if (value !== null) {
-    //   this._inputElement.value = value;
-    // }
-    //
     if (step !== null) {
       this._inputElement.setAttribute("step", step);
     } else {

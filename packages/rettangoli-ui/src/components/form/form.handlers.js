@@ -6,19 +6,11 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
 
 
   fields.forEach((field) => {
-
-
-    console.log('yyyyyyyyyyyy', `field-${field.name}`)
-    console.log('xxxxxxxxxx', refs[`field-${field.name}`])
     const ref = refs[`field-${field.name}`]?.elm;
-
-    console.log('aaaaaaaaaaaa', field, ref)
 
     if (!ref) {
       return;
     }
-
-    console.log('bbbbbb')
 
     if (['inputText', 'colorPicker', 'slider', 'slider-input', 'popover-input'].includes(field.inputType)) {
       const defaultValue = defaultValues[field.name];
@@ -26,13 +18,6 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
         ref.setAttribute('value', defaultValue)
       }
     }
-    // if (['slider-input'].includes(field.inputType)) {
-    //   const defaultValue = defaultValues[field.name];
-    //   if (defaultValue !== ref.getAttribute('value')) {
-    //     ref.setAttribute('key', defaultValue);
-    //     ref.setAttribute('defaultValue', defaultValue);
-    //   }
-    // }
     if (field.inputType === 'inputText' && field.placeholder) {
       const currentPlaceholder = ref.getAttribute('placeholder')
       console.log('currentPlaceholder', currentPlaceholder);
@@ -73,7 +58,6 @@ export const handleAfterMount = (deps) => {
   const { props, getRefIds, render } = deps;
   const { form = {}, defaultValues } = props;
   const refs = getRefIds();
-  console.log('888888888888888')
   updateAttributes({ form, defaultValues, refs });
   render();
 };
@@ -84,7 +68,6 @@ export const handleOnUpdate = (deps, payload) => {
   const { form = {}, defaultValues } = newProps;
   if (oldAttrs?.key !== newAttrs?.key) {
     const refs = getRefIds();
-    console.log('999999999999999999999')
     updateAttributes({ form, defaultValues, refs });
     return;
   }

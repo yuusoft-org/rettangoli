@@ -95,19 +95,15 @@ export const selectForm = ({ props }) => {
 
   if (context) {
     const result = parseAndRender(form, context);
-    // console.log('AAAAAAA!!!!!!!!!!', result)
     return result
   }
 
-  // console.log('BBBBBBBBB!!!!!!!!!!!!', form)
   return form;
 };
 
 
 export const selectViewData = ({ state, props, attrs }) => {
   const containerAttrString = stringifyAttrs(attrs);
-
-  // console.log('state.formValues 5555555555555', state.formValues)
 
   const form = selectForm({ state, props });
   const fields = structuredClone(form.fields || []);
@@ -117,10 +113,6 @@ export const selectViewData = ({ state, props, attrs }) => {
     if (["read-only-text"].includes(field.inputType)) {
       field.defaultValue = defaultValue
     }
-    // if (["inputText"].includes(field.inputType)) {
-    //   // field.placeholder = encode(field.placeholder)
-    // }
-
     if (field.inputType === "image") {
       const src = field.src;
       // Only set imageSrc if src exists and is not empty
@@ -136,8 +128,6 @@ export const selectViewData = ({ state, props, attrs }) => {
       field.placeholderText = field.placeholder || "No Waveform";
     }
   });
-
-  // console.log('CCCCCCCCCCCCC fields', fields)
 
   return {
     key: attrs?.key,
