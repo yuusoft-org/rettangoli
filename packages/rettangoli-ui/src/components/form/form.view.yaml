@@ -268,26 +268,18 @@ refs:
         handler: handleTooltipMouseEnter
       mouseleave:
         handler: handleTooltipMouseLeave
-  input-*:
+  field-*:
     eventListeners:
       input-change:
         handler: handleInputChange
-  select-*:
-    eventListeners:
       select-change:
         handler: handleSelectChange
       add-option-selected:
         handler: handleSelectAddOption
-  colorpicker-*:
-    eventListeners:
       colorpicker-change:
         handler: handleColorPickerChange
-  slider-*:
-    eventListeners:
       slider-change:
         handler: handleSliderChange
-  slider-input-*:
-    eventListeners:
       slider-input-value-change:
         handler: handleSliderInputChange
   image-*:
@@ -329,29 +321,29 @@ template:
                   - $if field.inputType == "read-only-text":
                       - rtgl-text s=sm: ${field.defaultValue}
                   - $if field.inputType == "inputText":
-                      - rtgl-input#input-${field.name} key=${key} w=f placeholder=${field.placeholder} value=${field.defaultValue}:
+                      - rtgl-input#field-${field.name} w=f:
                   - $if field.inputType == "popover-input":
-                      - rtgl-popover-input#popover-input-${field.name} label="${field.label}" .defaultValue=fields[${i}].defaultValue:
+                      - rtgl-popover-input#field-${field.name} label="${field.label}":
                   - $if field.inputType == "select":
-                      - rtgl-select#select-${field.name} key=${key} w=f .options=fields[${i}].options .placeholder=fields[${i}].placeholder .selectedValue=fields[${i}].defaultValue ?no-clear=fields[${i}].noClear .addOption=fields[${i}].addOption:
+                      - rtgl-select#field-${field.name} key=${key} w=f .options=fields[${i}].options ?no-clear=fields[${i}].noClear .addOption=fields[${i}].addOption:
                   - $if field.inputType == "colorPicker":
-                      - rtgl-color-picker#colorpicker-${field.name} key=${key} value=${field.defaultValue}:
+                      - rtgl-color-picker#field-${field.name} key=${key}:
                   - $if field.inputType == "slider":
-                      - rtgl-slider#slider-${field.name} key=${key} w=f min=${field.min} max=${field.max} step=${field.step} value=${field.defaultValue}:
+                      - rtgl-slider#field-${field.name} key=${key} w=f min=${field.min} max=${field.max} step=${field.step}:
                   - $if field.inputType == "slider-input":
-                      - rtgl-slider-input#slider-input-${field.name} key=${key} w=f min=${field.min} max=${field.max} step=${field.step} defaultValue=${field.defaultValue}:
+                      - rtgl-slider-input#field-${field.name} w=f min=${field.min} max=${field.max} step=${field.step}:
                   - $if field.inputType == "image" && field.imageSrc:
                       - rtgl-image#image-${field.name} src=${field.imageSrc} w=${field.width} h=${field.height} cur=p:
                   - $if field.inputType == "image" && !field.imageSrc:
-                      - rtgl-view#image-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
+                      - rtgl-view#field-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
                           - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
                   - $if field.inputType == "waveform" && field.waveformData:
-                      - rtgl-waveform#waveform-${field.name} .waveformData=fields[${i}].waveformData w=${field.width} h=${field.height} cur=p:
+                      - rtgl-waveform#field-${field.name} .waveformData=fields[${i}].waveformData w=${field.width} h=${field.height} cur=p:
                   - $if field.inputType == "waveform" && !field.waveformData:
-                      - rtgl-view#waveform-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
+                      - rtgl-view#field-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
                           - rtgl-text c=mu-fg ta=c: ${field.placeholder}
                   - $if field.inputType == "slot":
-                      - 'slot#slot-${field.slotName} name=${field.slot} style="display: contents;"':
+                      - 'slot#field-${field.slotName} name=${field.slot} style="display: contents;"':
       - rtgl-view g=sm w=f:
           - rtgl-view d=h ah=e g=sm w=f:
               - $for button, i in actions.buttons:

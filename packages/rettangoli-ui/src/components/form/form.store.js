@@ -11,7 +11,7 @@ const encode = (input) => {
     };
     return text.replace(/[&<>"']/g, char => map[char]);
   }
-  if (input === undefined || input === null) {
+  if (input === undefined || input === null || input === "") {
     return ""
   }
   return `"${escapeHtml(String(input))}"`;
@@ -89,36 +89,37 @@ const stringifyAttrs = (attrs) => {
     .join(" ");
 };
 
-export const selectForm = ({ state, props }) => {
-  const { form } = props;
+export const selectForm = ({ props }) => {
+  const { form = {} } = props;
   const { context } = props;
 
   if (context) {
-    return parseAndRender(form, context);
+    const result = parseAndRender(form, context);
+    // console.log('AAAAAAA!!!!!!!!!!', result)
+    return result
   }
 
+  // console.log('BBBBBBBBB!!!!!!!!!!!!', form)
   return form;
 };
 
 
 export const selectViewData = ({ state, props, attrs }) => {
   const containerAttrString = stringifyAttrs(attrs);
-  const defaultValues = state.formValues;
+
+  // console.log('state.formValues 5555555555555', state.formValues)
 
   const form = selectForm({ state, props });
   const fields = structuredClone(form.fields || []);
   fields.forEach((field) => {
     // Use formValues from state if available, otherwise fall back to defaultValues from props
-    const defaultValue = get(state.formValues, field.name) ?? get(defaultValues, field.name)
-    if (["popover-input", "select", "read-only-text"].includes(field.inputType)) {
+    const defaultValue = get(state.formValues, field.name)
+    if (["read-only-text"].includes(field.inputType)) {
       field.defaultValue = defaultValue
-    } else {
-      field.defaultValue = encode(defaultValue);
     }
-
-    if (["inputText"].includes(field.inputType)) {
-      field.placeholder = encode(field.placeholder)
-    }
+    // if (["inputText"].includes(field.inputType)) {
+    //   // field.placeholder = encode(field.placeholder)
+    // }
 
     if (field.inputType === "image") {
       const src = field.src;
@@ -135,6 +136,8 @@ export const selectViewData = ({ state, props, attrs }) => {
       field.placeholderText = field.placeholder || "No Waveform";
     }
   });
+
+  // console.log('CCCCCCCCCCCCC fields', fields)
 
   return {
     key: attrs?.key,

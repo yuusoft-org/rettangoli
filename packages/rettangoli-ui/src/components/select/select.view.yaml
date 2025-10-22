@@ -3,6 +3,12 @@ elementName: rtgl-select
 viewDataSchema:
   type: object
 
+attrsSchema:
+  type: object
+  properties:
+    placeholder:
+      type: string
+
 propsSchema:
   type: object
   properties:
@@ -17,8 +23,6 @@ propsSchema:
             type: any
     selectedValue:
       type: any
-    placeholder:
-      type: string
     onChange:
       type: function
     no-clear:

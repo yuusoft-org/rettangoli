@@ -6,21 +6,21 @@ viewDataSchema:
 attrsSchema:
   type: object
   properties:
-    defaultValue:
+    value:
       type: string
-      default: '0'
+      default: "0"
     w:
       type: string
-      default: ''
+      default: ""
     min:
       type: string
-      default: '0'
+      default: "0"
     max:
       type: string
-      default: '100'
+      default: "100"
     step:
       type: string
-      default: '1'
+      default: "1"
 
 refs:
   input:
@@ -37,6 +37,7 @@ events:
 
 template:
   - rtgl-view d=h av=c g=md w=${w}:
-    - rtgl-slider#slider key=${key} w=f type=range min=${min} max=${max} step=${step} value=${value}:
-    - rtgl-view w=84:
-      - rtgl-input#input key=${key} w=f type=number min=${min} max=${max} step=${step} value=${value}:
+      - rtgl-slider#slider key=${key} w=f type=range min=${min} max=${max} step=${step} value=${value}:
+      - rtgl-view w=84:
+          - rtgl-input#input key=${key} w=f type=number min=${min} max=${max} step=${step} value=${value}:
+

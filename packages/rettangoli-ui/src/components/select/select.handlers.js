@@ -6,7 +6,9 @@ export const handleBeforeMount = (deps) => {
   if (props.selectedValue !== null && props.selectedValue !== undefined && props.options) {
     const selectedOption = props.options.find(opt => deepEqual(opt.value, props.selectedValue));
     if (selectedOption) {
-      store.updateSelectOption(selectedOption);
+      store.updateSelectedValue({
+        value: selectedOption?.value
+      });
       render();
     }
   }
@@ -28,9 +30,14 @@ export const handleOnUpdate = (deps, payload) => {
     if (selectedValue !== null && selectedValue !== undefined && options) {
       const selectedOption = options.find(opt => deepEqual(opt.value, selectedValue));
       if (selectedOption) {
-        store.updateSelectOption(selectedOption);
+        store.updateSelectedValue({
+          value: selectedOption.value
+        });
       }
     }
+    render();
+  } else if (oldProps.selectedValue !== newProps.selectedValue) {
+    store.updateSelectedValue(newProps.selectedValue);
     render();
   }
 }
@@ -65,7 +72,7 @@ export const handleButtonClick = (deps, payload) => {
   render();
 }
 
-export const handleClickOptionsPopoverOverlay = (deps, payload) => {
+export const handleClickOptionsPopoverOverlay = (deps) => {
   const { store, render } = deps;
   store.closeOptionsPopover();
   render();
@@ -80,7 +87,7 @@ export const handleOptionClick = (deps, payload) => {
   const option = props.options[id];
 
   // Update internal state
-  store.updateSelectOption(option);
+  store.updateSelectedValue({ value: option?.value });
 
   // Call onChange if provided
   if (props.onChange && typeof props.onChange === 'function') {
