@@ -64,9 +64,8 @@ export const handleInputChange = (deps, payload) => {
   render();
 }
 
-export const handleSubmitClick = (deps, payload) => {
+export const handleSubmitClick = (deps) => {
   const { store, render, dispatchEvent, getRefIds } = deps;
-  const event = payload._event;
   const { input } = getRefIds()
   const value = input.elm.value;
 

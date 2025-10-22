@@ -131,18 +131,18 @@ class RettangoliSliderElement extends HTMLElement {
     this._inputElement.value = newValue;
   }
 
-  _onInput = (event) => {
+  _onInput = () => {
     this.dispatchEvent(new CustomEvent('slider-input', {
       detail: {
-        value: this._inputElement.value,
+        value: Number(this._inputElement.value),
       },
     }));
   };
 
-  _onChange = (event) => {
+  _onChange = () => {
     this.dispatchEvent(new CustomEvent('slider-change', {
       detail: {
-        value: this._inputElement.value,
+        value: Number(this._inputElement.value),
       },
     }));
   };
@@ -238,6 +238,8 @@ class RettangoliSliderElement extends HTMLElement {
 
     if (value !== null) {
       this._inputElement.value = value;
+    } else {
+      this._inputElement.value = min ?? 0;
     }
 
     if (min !== null) {
