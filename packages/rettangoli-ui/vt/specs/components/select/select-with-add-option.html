@@ -9,7 +9,7 @@ title: Select with Add Option
 <script>
   // Select with default "Add..." option
   const selectWithAdd = document.getElementById('select-with-add');
-  selectWithAdd.placeholder = 'Select or add an option';
+  selectWithAdd.setAttribute('placeholder', 'Select or add an option');
   selectWithAdd.options = [
     { value: "1", label: 'Option 1' },
     { value: "2", label: 'Option 2' },
@@ -20,7 +20,7 @@ title: Select with Add Option
 
   // Select with custom add label
   const selectCustomLabel = document.getElementById('select-custom-label');
-  selectCustomLabel.placeholder = 'Choose a fruit';
+  selectCustomLabel.setAttribute('placeholder', 'Choose a fruit');
   selectCustomLabel.options = [
     { value: "apple", label: 'Apple' },
     { value: "banana", label: 'Banana' },

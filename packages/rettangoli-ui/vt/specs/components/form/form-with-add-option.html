@@ -1,12 +1,13 @@
 ---
 title: Form with Select Add Option
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
-  <rtgl-form id="form-with-add" w="400" />
+<rtgl-view id="container" g="lg" p="lg" wh="f" fw="w">
 </rtgl-view>
 
 <script>
-  const form = document.getElementById('form-with-add');
+  const form = document.createElement('rtgl-form');
+  form.setAttribute('id', 'form-with-add')
+  form.setAttribute('w', '400')
   
   form.form = {
     title: 'Product Configuration',
@@ -18,7 +19,6 @@ title: Form with Select Add Option
         description: 'Enter the product name',
         inputType: 'inputText',
         placeholder: 'e.g., Widget Pro',
-        defaultValue: ''
       },
       {
         name: 'category',
@@ -33,7 +33,6 @@ title: Form with Select Add Option
           { value: 'books', label: 'Books' }
         ],
         addOption: { label: 'Add new category' },
-        defaultValue: null
       },
       {
         name: 'size',
@@ -48,7 +47,6 @@ title: Form with Select Add Option
           { value: 'xl', label: 'Extra Large' }
         ],
         noClear: true,
-        defaultValue: 'medium'
       },
       {
         name: 'tags',
@@ -63,7 +61,6 @@ title: Form with Select Add Option
           { value: 'bestseller', label: 'Best Seller' }
         ],
         addOption: { label: 'Create custom tag' },
-        defaultValue: null
       }
     ],
     actions: {
@@ -74,7 +71,8 @@ title: Form with Select Add Option
     }
   };
 
-  form.render();
+  // form.setAttribute('key', 'newkey');
+  // form.render();
 
   // Listen for form events
   form.addEventListener('form-change', (e) => {
@@ -87,4 +85,7 @@ title: Form with Select Add Option
       console.log('Add option selected for field:', e.detail.name);
     }
   });
+
+  const container = document.getElementById('container')
+  container.appendChild(form);
 </script>

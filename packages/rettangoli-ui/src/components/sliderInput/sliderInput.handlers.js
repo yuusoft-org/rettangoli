@@ -1,21 +1,15 @@
 export const handleBeforeMount = (deps) => {
   const { store, attrs } = deps;
-  store.setValue(attrs.defaultValue || 0);
+  store.setValue(attrs.value ?? 0);
 }
 
 export const handleOnUpdate = (deps, payload) => {
   const { oldAttrs, newAttrs } = payload;
-  const { store, render, attrs } = deps;
+  const { store, render } = deps;
 
-  // Reset when key changes
-  if (oldAttrs?.key !== newAttrs?.key && newAttrs?.key) {
-    const defaultValue = newAttrs?.defaultValue || attrs?.defaultValue || 0;
-    store.setValue(defaultValue);
-    render();
-  } else if (oldAttrs?.defaultValue !== newAttrs?.defaultValue) {
-    // Also reset when defaultValue changes
-    const defaultValue = newAttrs?.defaultValue || 0;
-    store.setValue(defaultValue);
+  if (oldAttrs?.value !== newAttrs?.value) {
+    const value = newAttrs?.value ?? 0;
+    store.setValue(value);
     render();
   }
 }

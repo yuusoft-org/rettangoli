@@ -3,13 +3,13 @@ import { deepEqual } from '../../common.js';
 // Attributes that should not be passed through to the container
 // These are either handled internally or have special meaning
 const blacklistedAttrs = [
-  "id", 
-  "class", 
-  "style", 
+  "id",
+  "class",
+  "style",
   "slot",
   // Select-specific props that are handled separately
   "placeholder",
-  "selectedValue", 
+  "selectedValue",
   "selected-value",
   "onChange",
   "on-change",
@@ -42,7 +42,7 @@ export const selectViewData = ({ state, props, attrs }) => {
   const currentValue = state.selectedValue !== null ? state.selectedValue : props.selectedValue;
 
   // Calculate display label from value
-  let displayLabel = props.placeholder || 'Select an option';
+  let displayLabel = attrs.placeholder || 'Select an option';
   let isPlaceholderLabel = true;
   if (currentValue !== null && currentValue !== undefined && props.options) {
     const selectedOption = props.options.find(opt => deepEqual(opt.value, currentValue));
@@ -63,6 +63,8 @@ export const selectViewData = ({ state, props, attrs }) => {
     };
   });
 
+  console.log('attrs.placeholder', attrs.placeholder)
+
   return {
     containerAttrString,
     isOpen: state.isOpen,
@@ -71,7 +73,6 @@ export const selectViewData = ({ state, props, attrs }) => {
     selectedValue: currentValue,
     selectedLabel: displayLabel,
     selectedLabelColor: isPlaceholderLabel ? "mu-fg" : "fg",
-    placeholder: props.placeholder || 'Select an option',
     hasValue: currentValue !== null && currentValue !== undefined,
     showClear: !attrs['no-clear'] && !props['no-clear'] && (currentValue !== null && currentValue !== undefined),
     showAddOption: !!props.addOption,
@@ -102,8 +103,8 @@ export const closeOptionsPopover = (state) => {
   state.isOpen = false;
 }
 
-export const updateSelectOption = (state, option) => {
-  state.selectedValue = option.value;
+export const updateSelectedValue = (state, payload) => {
+  state.selectedValue = payload.value;
   state.isOpen = false;
 }
 

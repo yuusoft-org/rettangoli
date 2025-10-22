@@ -1,17 +1,18 @@
 export const handleBeforeMount = (deps) => {
-  const { store, props } = deps;
+  const { store, attrs } = deps;
 
-  if (props.value !== undefined || props.defaultValue !== undefined) {
-    store.setValue(props.value || props.defaultValue || '');
+  if (attrs.value !== undefined) {
+    store.setValue(attrs.value || '');
   }
 }
 
 export const handleOnUpdate = (deps, payload) => {
-  const { oldProps, newProps} = payload
-  const { store, props, render } = deps;
+  const { oldAttrs, newAttrs } = payload;
+  const { store, render } = deps;
 
-  if (oldProps.defaultValue !== newProps.defaultValue) {
-    store.setValue(props.defaultValue || '');
+  if (oldAttrs?.value !== newAttrs?.value) {
+    const value = newAttrs?.value ?? '';
+    store.setValue(value);
   }
 
   render();

@@ -123,17 +123,26 @@ class RettangoliInputElement extends HTMLElement {
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
-    // Handle key attribute change - reset value
-    if (name === "key" && oldValue !== newValue) {
+    if (name === 'value') {
       requestAnimationFrame((() => {
         const value = this.getAttribute("value");
         this._inputElement.value = value ?? "";
       }))
-      return;
+    }
+
+    if (name === 'placeholder') {
+      requestAnimationFrame((() => {
+        const placeholder = this.getAttribute("placeholder");
+        if (placeholder === undefined || placeholder === 'null') {
+          this._inputElement.removeAttribute('placeholder');
+        } else {
+          this._inputElement.setAttribute('placeholder', placeholder ?? "");
+        }
+      }))
     }
 
     // Handle input-specific attributes first
-    if (["type", "placeholder", "disabled", "value", "step", "s"].includes(name)) {
+    if (["type", "disabled", "step", "s"].includes(name)) {
       this._updateInputAttributes();
       return;
     }
@@ -205,22 +214,12 @@ class RettangoliInputElement extends HTMLElement {
 
   _updateInputAttributes() {
     const type = this.getAttribute("type") || "text";
-    const placeholder = this.getAttribute("placeholder");
-    const value = this.getAttribute("value");
+    // const placeholder = this.getAttribute("placeholder");
+    // const value = this.getAttribute("value");
     const step = this.getAttribute("step");
     const isDisabled = this.hasAttribute('disabled');
 
     this._inputElement.setAttribute("type", type);
-
-    if (placeholder !== null) {
-      this._inputElement.setAttribute("placeholder", placeholder);
-    } else {
-      this._inputElement.removeAttribute("placeholder");
-    }
-
-    if (value !== null) {
-      this._inputElement.value = value;
-    }
 
     if (step !== null) {
       this._inputElement.setAttribute("step", step);

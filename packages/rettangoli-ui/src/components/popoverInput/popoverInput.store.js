@@ -8,16 +8,15 @@ export const createInitialState = () => Object.freeze({
   tempValue: '',
 });
 
-export const selectViewData = ({ attrs, state, props }) => {
-  // Use state's current value if it has been modified, otherwise use props
+export const selectViewData = ({ attrs, state }) => {
   const value = state.value || '-';
 
   return {
     isOpen: state.isOpen,
     position: state.position,
-    value: value ?? '-',
+    value: value,
     tempValue: state.tempValue,
-    placeholder: props.placeholder ?? '',
+    placeholder: attrs.placeholder ?? '',
     label: attrs.label,
   };
 }
@@ -30,7 +29,6 @@ export const openPopover = (state, payload) => {
   const { position } = payload;
   state.position = position;
   state.isOpen = true;
-  // Reset the current value to match the display value when opening
   state.hasUnsavedChanges = false;
 }
 

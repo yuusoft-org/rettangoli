@@ -1,17 +1,72 @@
+
+const updateAttributes = ({ form, defaultValues = {}, refs }) => {
+  const { fields = [] } = form;
+  fields.forEach((field) => {
+    const ref = refs[`field-${field.name}`]?.elm;
+
+    if (!ref) {
+      return;
+    }
+
+    if (['inputText', 'colorPicker', 'slider', 'slider-input', 'popover-input'].includes(field.inputType)) {
+      const defaultValue = defaultValues[field.name];
+      if (defaultValue !== undefined) {
+        ref.setAttribute('value', defaultValue)
+      }
+    }
+    if (field.inputType === 'inputText' && field.placeholder) {
+      const currentPlaceholder = ref.getAttribute('placeholder')
+      if (currentPlaceholder !== field.placeholder) {
+        ref.setAttribute('placeholder', field.placeholder)
+      }
+    }
+    if (field.inputType === 'select' && field.placeholder) {
+      if (ref.placeholder !== field.placeholder) {
+        ref.placeholder = field.placeholder;
+      }
+    }
+    if (field.inputType === 'select') {
+      if (field.placeholder !== ref.getAttribute('placeholder')) {
+        if (field.placeholder !== undefined) {
+          ref.setAttribute('placeholder', field.placeholder)
+        } else {
+          ref.removeAttribute('placeholder');
+        }
+        ref.render();
+      }
+
+      const defaultValue = defaultValues[field.name]
+      if (defaultValue !== ref.selectedValue) {
+        ref.selectedValue = defaultValue;
+        ref.render();
+      }
+    }
+  })
+}
+
 export const handleBeforeMount = (deps) => {
   const { store, props } = deps;
   store.setFormValues(props.defaultValues);
 };
 
+export const handleAfterMount = (deps) => {
+  const { props, getRefIds, render } = deps;
+  const { form = {}, defaultValues } = props;
+  const refs = getRefIds();
+  updateAttributes({ form, defaultValues, refs });
+  render();
+};
+
 export const handleOnUpdate = (deps, payload) => {
   const { oldAttrs, newAttrs, newProps } = payload;
-  const { store, render } = deps;
-
-  if (oldAttrs?.key === newAttrs?.key) {
+  const { store, render, getRefIds } = deps;
+  const { form = {}, defaultValues } = newProps;
+  if (oldAttrs?.key !== newAttrs?.key) {
+    const refs = getRefIds();
+    updateAttributes({ form, defaultValues, refs });
     return;
   }
-
-  store.setFormValues(newProps.defaultValues);
+  store.setFormValues(defaultValues);
   render();
 };
 
