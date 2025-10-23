@@ -172,7 +172,11 @@ class RettangoliPopoverElement extends HTMLElement {
       if (!this._dialogElement.open) {
         setTimeout(() => {
           if (this._dialogElement && !this._dialogElement.open) {
-            this._dialogElement.showModal();
+            if (this.hasAttribute('no-overlay')) {
+              this._dialogElement.show();
+            } else {
+              this._dialogElement.showModal();
+            }
           }
         }, 0);
       }
