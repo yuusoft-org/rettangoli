@@ -18,6 +18,7 @@ const styles = {
     font-weight: var(--xs-font-weight);
     line-height: var(--xs-line-height);
     letter-spacing: var(--xs-letter-spacing);
+    gap: var(--spacing-sm);
     `,
     md: `
     height: 32px;
@@ -28,6 +29,7 @@ const styles = {
     font-weight: var(--sm-font-weight);
     line-height: var(--sm-line-height);
     letter-spacing: var(--sm-letter-spacing);
+    gap: var(--spacing-md);
     `,
     lg: `
     height: 40px;
@@ -38,6 +40,7 @@ const styles = {
     font-weight: var(--md-font-weight);
     line-height: var(--md-line-height);
     letter-spacing: var(--md-letter-spacing);
+    gap: var(--spacing-lg);
     `,
   },
   v: {

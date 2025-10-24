@@ -23,7 +23,7 @@ class RettangoliButtonElement extends HTMLElement {
           flex-direction: row;
           align-items: center;
           justify-content: center;
-          gap: var(--spacing-lg);
+          gap: var(--spacing-md);
           border-width: 0px;
           border-style: solid;
           border-color: var(--border);
@@ -154,23 +154,6 @@ class RettangoliButtonElement extends HTMLElement {
 
         ${buttonMarginStyles}
         ${flexChildStyles}
-
-        /* Gap styles */
-        :host([g="xs"]) button {
-          gap: var(--spacing-xs);
-        }
-        :host([g="sm"]) button {
-          gap: var(--spacing-sm);
-        }
-        :host([g="md"]) button {
-          gap: var(--spacing-md);
-        }
-        :host([g="lg"]) button {
-          gap: var(--spacing-lg);
-        }
-        :host([g="xl"]) button {
-          gap: var(--spacing-xl);
-        }
       `);
     }
   }
@@ -191,7 +174,7 @@ class RettangoliButtonElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "href", "target", "w", "t", "icon", "disabled", "v", "s", "sq", "ip", "g"];
+    return ["key", "href", "target", "w", "t", "icon", "disabled", "v", "s", "sq", "ip"];
   }
 
   connectedCallback() {
