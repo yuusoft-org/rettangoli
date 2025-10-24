@@ -40,7 +40,7 @@ const styles = {
     font-weight: var(--md-font-weight);
     line-height: var(--md-line-height);
     letter-spacing: var(--md-letter-spacing);
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
     `,
   },
   v: {

@@ -174,7 +174,7 @@ class RettangoliButtonElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "href", "target", "w", "t", "icon", "disabled", "v", "s", "sq", "ip"];
+    return ["key", "href", "target", "w", "icon", "disabled", "v", "s", "sq", "ip"];
   }
 
   connectedCallback() {
@@ -244,7 +244,7 @@ class RettangoliButtonElement extends HTMLElement {
         gh: 'ac-fg',
         lk: 'ac-fg'
       };
-      const sizeMap = {
+      const iconSizeMap = {
         sm: 14,
         md: 18,
         lg: 22
@@ -261,7 +261,7 @@ class RettangoliButtonElement extends HTMLElement {
         const buttonSize = this.getAttribute("s");
         size = buttonSizeMap[buttonSize] || 18;
       } else {
-        size = sizeMap[this.getAttribute("t")] || 18;
+        size = iconSizeMap[this.getAttribute("s")] || 18;
       }
       
       this._iconElement = document.createElement('rtgl-svg');
