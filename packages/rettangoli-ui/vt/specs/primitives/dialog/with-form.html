@@ -7,13 +7,10 @@ title: "Dialog with Form"
   </rtgl-dialog>
 </rtgl-view>
 
-<rtgl-global-ui></rtgl-global-ui>
-
 <script>
 
 const dialog = document.getElementById('dialog');
   const form = document.createElement('rtgl-form');
-  let isDirty = false;
 
   form.setAttribute('id', 'form');
   form.setAttribute('slot', 'content');
@@ -75,27 +72,11 @@ const dialog = document.getElementById('dialog');
   form.addEventListener('action-click', (e) => {
     console.log('Form action:', e.detail);
     if (e.detail.actionId === 'cancel') {
-      // Check if dirty and show confirmation
-      if (isDirty) {
-        showCloseConfirmation();
-      } else {
-        dialog.removeAttribute('open');
-      }
+      dialog.removeAttribute('open');
     } else if (e.detail.actionId === 'submit') {
       console.log('Form submitted with values:', e.detail.formValues);
-      // Mark as clean before closing since we're "saving"
-      isDirty = false;
       dialog.removeAttribute('open');
     }
-  });
-
-  // Handle form changes
-  form.addEventListener('input', () => {
-    isDirty = true;
-  });
-
-  form.addEventListener('change', () => {
-    isDirty = true;
   });
 
   button.addEventListener('click', () => {
@@ -107,38 +88,10 @@ const dialog = document.getElementById('dialog');
       dialog.appendChild(form);
       form.render();
     }
-
-    // Reset dirty state when opening
-    isDirty = false;
   });
 
   // Listen for dialog close events (overlay click or ESC key)
   dialog.addEventListener('close', () => {
-    if (isDirty) {
-      showCloseConfirmation();
-    } else {
-      dialog.removeAttribute('open');
-    }
+    dialog.removeAttribute('open');
   });
-
-  async function showCloseConfirmation() {
-    const globalUI = document.querySelector('rtgl-global-ui');
-    if (!globalUI) {
-      dialog.removeAttribute('open');
-      return;
-    }
-
-    const confirmed = await globalUI.transformedHandlers.showConfirm({
-      message: 'You have unsaved changes. Are you sure you want to close?',
-      title: 'Confirm Close',
-      status: 'warning',
-      confirmText: 'Close',
-      cancelText: 'Cancel'
-    });
-
-    if (confirmed) {
-      isDirty = false;
-      dialog.removeAttribute('open');
-    }
-  }
 </script>
