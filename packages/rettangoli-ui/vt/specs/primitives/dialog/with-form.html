@@ -3,9 +3,11 @@ title: "Dialog with Form"
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="w">
   <rtgl-button id="button">Open Form Dialog</rtgl-button>
-  <rtgl-dialog id="dialog">
+  <rtgl-dialog id="dialog" confirm-on-close>
   </rtgl-dialog>
 </rtgl-view>
+
+<rtgl-global-ui></rtgl-global-ui>
 
 <script>
 
@@ -72,9 +74,12 @@ const dialogue = document.getElementById('dialog');
   form.addEventListener('action-click', (e) => {
     console.log('Form action:', e.detail);
     if (e.detail.actionId === 'cancel') {
-      dialog.removeAttribute('open');
+      // Let dialog handle the close attempt (will show confirmation if dirty)
+      dialog.dispatchEvent(new CustomEvent('close', { detail: {} }));
     } else if (e.detail.actionId === 'submit') {
       console.log('Form submitted with values:', e.detail.formValues);
+      // Mark as clean before closing since we're "saving"
+      dialog.markClean();
       dialog.removeAttribute('open');
     }
   });
