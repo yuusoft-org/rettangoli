@@ -9,7 +9,7 @@ title: "Dialog with Form"
 
 <script>
 
-const dialogue = document.getElementById('dialog');
+const dialog = document.getElementById('dialog');
   const form = document.createElement('rtgl-form');
 
   form.setAttribute('id', 'form');
@@ -82,14 +82,14 @@ const dialogue = document.getElementById('dialog');
   button.addEventListener('click', () => {
     // First open the dialog to create the slot
     dialog.setAttribute('open', '');
-    
+
     // Then append and render the form
     if (!form.parentNode) {
-      dialogue.appendChild(form);
+      dialog.appendChild(form);
       form.render();
     }
   });
-  
+
   // Listen for dialog close events (overlay click or ESC key)
   dialog.addEventListener('close', () => {
     dialog.removeAttribute('open');

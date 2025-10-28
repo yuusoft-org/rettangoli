@@ -95,32 +95,44 @@ class RettangoliDialogElement extends HTMLElement {
     this._slotElement = null;
     this._isConnected = false;
 
+    // Track if mouse down occurred inside dialog content
+    this._mouseDownInContent = false;
+
+    // Track mouse down events to determine click origin
+    this._dialogElement.addEventListener('mousedown', (e) => {
+      this._mouseDownInContent = e.target !== this._dialogElement;
+    });
+
     // Handle click outside - emit custom event
     this._dialogElement.addEventListener('click', (e) => {
-      if (e.target === this._dialogElement) {
-        this.dispatchEvent(new CustomEvent('close', {
-          detail: {}
-        }));
+      if (e.target === this._dialogElement && !this._mouseDownInContent) {
+        this._attemptClose();
       }
+      // Reset the flag after click is processed
+      this._mouseDownInContent = false;
     });
 
     // Handle right-click on overlay to close dialog
     this._dialogElement.addEventListener('contextmenu', (e) => {
-      if (e.target === this._dialogElement) {
+      if (e.target === this._dialogElement && !this._mouseDownInContent) {
         e.preventDefault();
-        this.dispatchEvent(new CustomEvent('close', {
-          detail: {}
-        }));
+        this._attemptClose();
       }
+      // Reset the flag after contextmenu is processed
+      this._mouseDownInContent = false;
     });
 
     // Handle ESC key - prevent native close and emit custom event
     this._dialogElement.addEventListener('cancel', (e) => {
       e.preventDefault();
-      this.dispatchEvent(new CustomEvent('close', {
-        detail: {}
-      }));
+      this._attemptClose();
     });
+  }
+
+  _attemptClose() {
+    this.dispatchEvent(new CustomEvent('close', {
+      detail: {}
+    }));
   }
 
   static get observedAttributes() {
