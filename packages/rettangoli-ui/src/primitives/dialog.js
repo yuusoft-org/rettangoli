@@ -130,50 +130,9 @@ class RettangoliDialogElement extends HTMLElement {
   }
 
   _attemptClose() {
-    if (this.hasAttribute('confirm-on-close') && this._isDirty) {
-      this._showConfirmDialog();
-    } else {
-      this.dispatchEvent(new CustomEvent('close', {
-        detail: {}
-      }));
-    }
-  }
-
-  async _showConfirmDialog() {
-    const globalUI = document.querySelector('rtgl-global-ui');
-
-    if (!globalUI) {
-      this.dispatchEvent(new CustomEvent('close', {
-        detail: {}
-      }));
-      return;
-    }
-
-    const confirmed = await globalUI.transformedHandlers.showConfirm({
-      message: 'You have unsaved changes. Are you sure you want to close?',
-      title: 'Confirm Close',
-      confirmText: 'Close',
-      cancelText: 'Cancel'
-    });
-
-    if (confirmed) {
-      this._isDirty = false;
-      this.dispatchEvent(new CustomEvent('close', {
-        detail: {}
-      }));
-    }
-  }
-
-  _startDirtyTracking() {
-    if (!this._slotElement) return;
-
-    this._slotElement.addEventListener('input', () => {
-      this._isDirty = true;
-    });
-
-    this._slotElement.addEventListener('change', () => {
-      this._isDirty = true;
-    });
+    this.dispatchEvent(new CustomEvent('close', {
+      detail: {}
+    }));
   }
 
   static get observedAttributes() {
@@ -233,10 +192,6 @@ class RettangoliDialogElement extends HTMLElement {
 
       // Apply adaptive centering
       this._applyAdaptiveCentering();
-
-      // Start dirty data tracking
-      this._isDirty = false;
-      this._startDirtyTracking();
     }
   }
 
@@ -300,16 +255,6 @@ class RettangoliDialogElement extends HTMLElement {
   // Expose dialog element for advanced usage
   get dialog() {
     return this._dialogElement;
-  }
-
-  // Check if dialog has unsaved changes
-  get isDirty() {
-    return this._isDirty;
-  }
-
-  // Mark dialog as clean (no unsaved changes)
-  markClean() {
-    this._isDirty = false;
   }
 }
 

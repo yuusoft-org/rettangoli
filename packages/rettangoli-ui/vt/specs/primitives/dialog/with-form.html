@@ -3,7 +3,7 @@ title: "Dialog with Form"
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="w">
   <rtgl-button id="button">Open Form Dialog</rtgl-button>
-  <rtgl-dialog id="dialog" confirm-on-close>
+  <rtgl-dialog id="dialog">
   </rtgl-dialog>
 </rtgl-view>
 
@@ -11,8 +11,9 @@ title: "Dialog with Form"
 
 <script>
 
-const dialogue = document.getElementById('dialog');
+const dialog = document.getElementById('dialog');
   const form = document.createElement('rtgl-form');
+  let isDirty = false;
 
   form.setAttribute('id', 'form');
   form.setAttribute('slot', 'content');
@@ -74,29 +75,70 @@ const dialogue = document.getElementById('dialog');
   form.addEventListener('action-click', (e) => {
     console.log('Form action:', e.detail);
     if (e.detail.actionId === 'cancel') {
-      // Let dialog handle the close attempt (will show confirmation if dirty)
-      dialog.dispatchEvent(new CustomEvent('close', { detail: {} }));
+      // Check if dirty and show confirmation
+      if (isDirty) {
+        showCloseConfirmation();
+      } else {
+        dialog.removeAttribute('open');
+      }
     } else if (e.detail.actionId === 'submit') {
       console.log('Form submitted with values:', e.detail.formValues);
       // Mark as clean before closing since we're "saving"
-      dialog.markClean();
+      isDirty = false;
       dialog.removeAttribute('open');
     }
+  });
+
+  // Handle form changes
+  form.addEventListener('input', () => {
+    isDirty = true;
+  });
+
+  form.addEventListener('change', () => {
+    isDirty = true;
   });
 
   button.addEventListener('click', () => {
     // First open the dialog to create the slot
     dialog.setAttribute('open', '');
-    
+
     // Then append and render the form
     if (!form.parentNode) {
-      dialogue.appendChild(form);
+      dialog.appendChild(form);
       form.render();
     }
+
+    // Reset dirty state when opening
+    isDirty = false;
   });
-  
+
   // Listen for dialog close events (overlay click or ESC key)
   dialog.addEventListener('close', () => {
-    dialog.removeAttribute('open');
+    if (isDirty) {
+      showCloseConfirmation();
+    } else {
+      dialog.removeAttribute('open');
+    }
   });
+
+  async function showCloseConfirmation() {
+    const globalUI = document.querySelector('rtgl-global-ui');
+    if (!globalUI) {
+      dialog.removeAttribute('open');
+      return;
+    }
+
+    const confirmed = await globalUI.transformedHandlers.showConfirm({
+      message: 'You have unsaved changes. Are you sure you want to close?',
+      title: 'Confirm Close',
+      status: 'warning',
+      confirmText: 'Close',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
+      isDirty = false;
+      dialog.removeAttribute('open');
+    }
+  }
 </script>
