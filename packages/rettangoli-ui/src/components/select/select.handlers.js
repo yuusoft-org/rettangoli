@@ -16,7 +16,7 @@ export const handleBeforeMount = (deps) => {
 
 export const handleOnUpdate = (deps, payload) => {
   const { oldAttrs, newAttrs, oldProps, newProps } = payload;
-  const { store, props, render } = deps;
+  const { store, render } = deps;
 
   // Check if key changed
   if (oldAttrs?.key !== newAttrs?.key && newAttrs?.key) {
@@ -24,8 +24,8 @@ export const handleOnUpdate = (deps, payload) => {
     store.resetSelection();
 
     // Re-apply the prop value if available
-    const selectedValue = newProps?.selectedValue || props?.selectedValue;
-    const options = newProps?.options || props?.options || [];
+    const selectedValue = newProps?.selectedValue;
+    const options = newProps?.options || [];
 
     if (selectedValue !== null && selectedValue !== undefined && options) {
       const selectedOption = options.find(opt => deepEqual(opt.value, selectedValue));
