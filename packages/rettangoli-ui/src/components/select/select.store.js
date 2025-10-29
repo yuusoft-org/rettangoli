@@ -44,16 +44,16 @@ export const selectViewData = ({ state, props, attrs }) => {
   // Calculate display label from value
   let displayLabel = attrs.placeholder || 'Select an option';
   let isPlaceholderLabel = true;
-  if (currentValue !== null && currentValue !== undefined && props.options) {
-    const selectedOption = props.options.find(opt => deepEqual(opt.value, currentValue));
-    if (selectedOption) {
-      displayLabel = selectedOption.label;
-      isPlaceholderLabel = false;
-    }
+
+  const options = props.options || [];
+  const selectedOption = options.find(opt => deepEqual(opt.value, currentValue));
+  if (selectedOption) {
+    displayLabel = selectedOption.label;
+    isPlaceholderLabel = false;
   }
 
   // Map options to include isSelected flag and computed background color
-  const optionsWithSelection = (props.options || []).map((option, index) => {
+  const optionsWithSelection = options.map((option, index) => {
     const isSelected = deepEqual(option.value, currentValue);
     const isHovered = state.hoveredOptionId === index;
     return {
