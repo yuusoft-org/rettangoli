@@ -50,6 +50,6 @@
     "@rettangoli/fe": "workspace:0.0.10",
     "@rettangoli/sites": "workspace:0.2.2",
     "@rettangoli/vt": "workspace:0.0.2-rc3",
-    "@rettangoli/ui": "workspace:0.1.19"
+    "@rettangoli/ui": "workspace:0.1.20"
   }
 }

@@ -25,7 +25,7 @@ export const handleOnUpdate = (deps, payload) => {
 
     // Re-apply the prop value if available
     const selectedValue = newProps?.selectedValue || props?.selectedValue;
-    const options = newProps?.options || props?.options;
+    const options = newProps?.options || props?.options || [];
 
     if (selectedValue !== null && selectedValue !== undefined && options) {
       const selectedOption = options.find(opt => deepEqual(opt.value, selectedValue));
@@ -37,7 +37,7 @@ export const handleOnUpdate = (deps, payload) => {
     }
     render();
   } else if (oldProps.selectedValue !== newProps.selectedValue) {
-    store.updateSelectedValue(newProps.selectedValue);
+    store.updateSelectedValue({ value: newProps.selectedValue });
     render();
   }
 }
