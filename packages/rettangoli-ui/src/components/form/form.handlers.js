@@ -8,7 +8,7 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
       return;
     }
 
-    if (['inputText', 'colorPicker', 'slider', 'slider-input', 'popover-input'].includes(field.inputType)) {
+    if (['input-textarea', 'inputText', 'input-text', 'input-number', 'colorPicker', 'slider', 'slider-input', 'popover-input'].includes(field.inputType)) {
       const defaultValue = defaultValues[field.name];
       if (defaultValue === undefined || defaultValue === null) {
         ref.removeAttribute('value')
@@ -16,7 +16,7 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
         ref.setAttribute('value', defaultValue)
       }
     }
-    if (field.inputType === 'inputText' && field.placeholder) {
+    if (['inputText', 'input-text', 'input-textarea'].includes(field.inputType) && field.placeholder) {
       const currentPlaceholder = ref.getAttribute('placeholder')
       if (currentPlaceholder !== field.placeholder) {
         if (field.placeholder === undefined || field.placeholder === null) {
@@ -108,14 +108,15 @@ export const handleInputChange = (deps, payload) => {
   const event = payload._event;
   let name = event.currentTarget.id.replace("field-", "");
   if (name && event.detail.value !== undefined) {
+    const value = event.detail.value
     store.setFormFieldValue({
       name: name,
-      value: event.detail.value,
+      value,
       props,
     });
     dispatchFormChange(
       name,
-      event.detail.value,
+      value,
       store.selectFormValues(),
       dispatchEvent,
     );

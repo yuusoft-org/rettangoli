@@ -13,6 +13,8 @@ title: "Mixed Inputs With Defaults"
     name: 'John Doe',
     email: 'john@example.com',
     favoriteColor: '#2ecc71',
+    age: 25,
+    bio: 'Passionate developer with a love for creating beautiful user interfaces and solving complex problems.',
     experience: 5,
     salary: 8000,
     role: 'designer',
@@ -52,6 +54,19 @@ title: "Mixed Inputs With Defaults"
       inputType: 'colorPicker',
       label: 'Favorite Color',
       description: 'Pick your favorite color',
+    }, {
+      name: 'age',
+      inputType: 'input-number',
+      label: 'Age',
+      description: 'Enter your age',
+      min: 0,
+      max: 150,
+    }, {
+      name: 'bio',
+      inputType: 'input-textarea',
+      label: 'Bio',
+      description: 'Tell us about yourself',
+      placeholder: 'Enter your bio here...',
     }, {
       name: 'experience',
       inputType: 'slider',
