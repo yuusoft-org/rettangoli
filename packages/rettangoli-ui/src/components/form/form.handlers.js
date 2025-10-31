@@ -31,15 +31,6 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
         ref.placeholder = field.placeholder;
       }
     }
-    if (field.inputType === 'select') {
-      if (field.placeholder !== ref.getAttribute('placeholder')) {
-        if (field.placeholder !== undefined) {
-          ref.setAttribute('placeholder', field.placeholder)
-        } else {
-          ref.removeAttribute('placeholder');
-        }
-      }
-    }
   })
 }
 

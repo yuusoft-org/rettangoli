@@ -330,7 +330,7 @@ template:
                   - $if field.inputType == "popover-input":
                       - rtgl-popover-input#field-${field.name} label="${field.label}":
                   - $if field.inputType == "select":
-                      - rtgl-select#field-${field.name} key=${key} w=f .options=fields[${i}].options ?no-clear=fields[${i}].noClear .addOption=fields[${i}].addOption .selectedValue=#{field.selectedValue}:
+                      - rtgl-select#field-${field.name} key=${key} w=f .options=fields[${i}].options ?no-clear=fields[${i}].noClear .addOption=fields[${i}].addOption .selectedValue=#{field.selectedValue} placeholder=${field.placeholder}:
                   - $if field.inputType == "colorPicker":
                       - rtgl-color-picker#field-${field.name} key=${key}:
                   - $if field.inputType == "slider":
