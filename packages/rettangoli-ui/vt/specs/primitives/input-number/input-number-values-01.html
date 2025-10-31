@@ -1,0 +1,43 @@
+---
+title: Default Values
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Default value (42):</rtgl-text>
+    <rtgl-input-number id="default-42-input" value="42"></rtgl-input-number>
+  </rtgl-view>
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Default value (-5):</rtgl-text>
+    <rtgl-input-number id="default-neg5-input" value="-5" min="-10"></rtgl-input-number>
+  </rtgl-view>
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Default value (3.14):</rtgl-text>
+    <rtgl-input-number id="default-pi-input" value="3.14" step="0.01"></rtgl-input-number>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const default42Input = document.getElementById('default-42-input');
+    const defaultNeg5Input = document.getElementById('default-neg5-input');
+    const defaultPiInput = document.getElementById('default-pi-input');
+
+    if (default42Input) {
+      default42Input.addEventListener('input-change', (e) => {
+        console.log('Default 42 input value changed:', { value: e.detail.value });
+      });
+    }
+
+    if (defaultNeg5Input) {
+      defaultNeg5Input.addEventListener('input-change', (e) => {
+        console.log('Default -5 input value changed:', { value: e.detail.value });
+      });
+    }
+
+    if (defaultPiInput) {
+      defaultPiInput.addEventListener('input-change', (e) => {
+        console.log('Default 3.14 input value changed:', { value: e.detail.value });
+      });
+    }
+  });
+</script>

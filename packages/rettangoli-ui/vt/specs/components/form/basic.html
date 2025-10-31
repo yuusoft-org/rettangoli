@@ -20,30 +20,26 @@ title: "Basic"
       label: 'Email',
       description: 'Enter your email',
       required: true,
-      validations: [{
-        rule: /^\w+@\w+\.\w+$/,
-        message: 'Must be a valid email'
-      }],
     }, {
       name: 'password',
       inputType: 'inputText',
       label: 'Password',
       description: 'Enter your password',
       required: true,
-      validations: [{
-        rule: /^\w+$/,
-        message: 'Must be a valid password'
-      }],
     }, {
       name: 'age',
-      inputType: 'inputText',
+      inputType: 'input-number',
       label: 'Age',
       description: 'Enter your age',
       required: true,
-      validations: [{
-        rule: /^\d+$/,
-        message: 'Must be a valid age'
-      }],
+    }, {
+      name: 'comments',
+      inputType: 'input-textarea',
+      label: 'Comments',
+      description: 'Any additional comments?',
+      placeholder: 'Enter your comments here...',
+      required: false,
+      rows: 12,
     }],
     actions: {
       layout: '', // vertical, fill, right, left

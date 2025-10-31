@@ -1,0 +1,32 @@
+---
+title: Input Number Sizes
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Regular (default):</rtgl-text>
+    <rtgl-input-number id="regular-input" placeholder="Enter number"></rtgl-input-number>
+  </rtgl-view>
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Small (s="sm"):</rtgl-text>
+    <rtgl-input-number id="small-input" s="sm" placeholder="Small number"></rtgl-input-number>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const regularInput = document.getElementById('regular-input');
+    const smallInput = document.getElementById('small-input');
+
+    if (regularInput) {
+      regularInput.addEventListener('input-change', (e) => {
+        console.log('Regular input value changed:', { value: e.detail.value });
+      });
+    }
+
+    if (smallInput) {
+      smallInput.addEventListener('input-change', (e) => {
+        console.log('Small input value changed:', { value: e.detail.value });
+      });
+    }
+  });
+</script>

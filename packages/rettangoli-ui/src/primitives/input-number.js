@@ -9,18 +9,17 @@ import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 
 // Internal implementation without uhtml
-class RettangoliTextAreaElement extends HTMLElement {
+class RettangoliInputNumberElement extends HTMLElement {
   static styleSheet = null;
 
   static initializeStyleSheet() {
-    if (!RettangoliTextAreaElement.styleSheet) {
-      RettangoliTextAreaElement.styleSheet = new CSSStyleSheet();
-      RettangoliTextAreaElement.styleSheet.replaceSync(css`
+    if (!RettangoliInputNumberElement.styleSheet) {
+      RettangoliInputNumberElement.styleSheet = new CSSStyleSheet();
+      RettangoliInputNumberElement.styleSheet.replaceSync(css`
         :host {
           display: contents;
         }
-        textarea {
-          font-family: inherit;
+        input {
           background-color: var(--background);
           font-size: var(--sm-font-size);
           font-weight: var(--sm-font-weight);
@@ -28,15 +27,26 @@ class RettangoliTextAreaElement extends HTMLElement {
           letter-spacing: var(--sm-letter-spacing);
           border: 1px solid var(--ring);
           border-radius: var(--border-radius-lg);
-          padding-top: var(--spacing-md);
-          padding-bottom: var(--spacing-md);
           padding-left: var(--spacing-md);
           padding-right: var(--spacing-md);
+          height: 32px;
           color: var(--foreground);
           outline: none;
         }
-        textarea:focus {
+        :host([s="sm"]) input {
+          font-size: var(--xs-font-size);
+          font-weight: var(--xs-font-weight);
+          line-height: var(--xs-line-height);
+          letter-spacing: var(--xs-letter-spacing);
+          padding-left: var(--spacing-md);
+          padding-right: var(--spacing-md);
+          height: 24px;
+        }
+        input:focus {
           border-color: var(--foreground);
+        }
+        input:disabled {
+          cursor: not-allowed;
         }
         ${marginStyles}
         ${cursorStyles}
@@ -46,9 +56,9 @@ class RettangoliTextAreaElement extends HTMLElement {
 
   constructor() {
     super();
-    RettangoliTextAreaElement.initializeStyleSheet();
+    RettangoliInputNumberElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "closed" });
-    this.shadow.adoptedStyleSheets = [RettangoliTextAreaElement.styleSheet];
+    this.shadow.adoptedStyleSheets = [RettangoliInputNumberElement.styleSheet];
 
     // Initialize style tracking properties
     this._styles = {
@@ -61,24 +71,15 @@ class RettangoliTextAreaElement extends HTMLElement {
     this._lastStyleString = "";
 
     // Create initial DOM structure
-    this._textareaElement = document.createElement('textarea');
-    this._textareaElement.setAttribute('type', 'text');
+    this._inputElement = document.createElement('input');
     this._styleElement = document.createElement('style');
 
     this.shadow.appendChild(this._styleElement);
-    this.shadow.appendChild(this._textareaElement);
+    this.shadow.appendChild(this._inputElement);
 
     // Bind event handler
-    this._textareaElement.addEventListener('input', this._onChange);
+    this._inputElement.addEventListener('input', this._onChange);
   }
-
-  _onChange = (event) => {
-    this.dispatchEvent(new CustomEvent('textarea-change', {
-      detail: {
-        value: this._textareaElement.value,
-      },
-    }));
-  };
 
   static get observedAttributes() {
     return [
@@ -87,9 +88,10 @@ class RettangoliTextAreaElement extends HTMLElement {
       "placeholder",
       "disabled",
       "value",
-      "cols",
-      "rows",
-      "ellipsis",
+      "step",
+      "min",
+      "max",
+      "s",
       ...permutateBreakpoints([
         ...styleMapKeys,
         "wh",
@@ -104,22 +106,56 @@ class RettangoliTextAreaElement extends HTMLElement {
   }
 
   get value() {
-    return this._textareaElement.value;
+    return this._inputElement.value;
   }
 
-  set value(val) {
-    this._textareaElement.value = val;
+  set value(newValue) {
+    this._inputElement.value = newValue;
   }
 
-  connectedCallback() {
-    this._updateTextareaAttributes();
+  focus() {
+    this._inputElement.focus();
   }
+
+  _onChange = (event) => {
+    const inputValue = this._inputElement.value;
+    let numericValue = parseFloat(inputValue);
+
+    // Only process if the value is a valid number (not NaN)
+    if (!isNaN(numericValue)) {
+      // Enforce minimum value if set
+      const minAttr = this.getAttribute("min");
+      if (minAttr !== null) {
+        const minValue = parseFloat(minAttr);
+        if (!isNaN(minValue) && numericValue < minValue) {
+          numericValue = minValue;
+          this._inputElement.value = minValue.toString();
+        }
+      }
+
+      // Enforce maximum value if set
+      const maxAttr = this.getAttribute("max");
+      if (maxAttr !== null) {
+        const maxValue = parseFloat(maxAttr);
+        if (!isNaN(maxValue) && numericValue > maxValue) {
+          numericValue = maxValue;
+          this._inputElement.value = maxValue.toString();
+        }
+      }
+
+      this.dispatchEvent(new CustomEvent('input-change', {
+        detail: {
+          value: numericValue,
+        },
+      }));
+    }
+  };
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'value') {
       requestAnimationFrame((() => {
         const value = this.getAttribute("value");
-        this._textareaElement.value = value ?? "";
+        this._inputElement.value = value ?? "";
       }))
     }
 
@@ -127,16 +163,16 @@ class RettangoliTextAreaElement extends HTMLElement {
       requestAnimationFrame((() => {
         const placeholder = this.getAttribute("placeholder");
         if (placeholder === undefined || placeholder === 'null') {
-          this._textareaElement.removeAttribute('placeholder');
+          this._inputElement.removeAttribute('placeholder');
         } else {
-          this._textareaElement.setAttribute('placeholder', placeholder ?? "");
+          this._inputElement.setAttribute('placeholder', placeholder ?? "");
         }
       }))
     }
 
-    // Handle textarea-specific attributes first
-    if (["cols", "rows", "disabled"].includes(name)) {
-      this._updateTextareaAttributes();
+    // Handle input-specific attributes first
+    if (["type", "disabled", "step", "min", "max", "s"].includes(name)) {
+      this._updateInputAttributes();
       return;
     }
 
@@ -197,36 +233,50 @@ class RettangoliTextAreaElement extends HTMLElement {
       }
     });
 
-    // Update styles only if changed - targeting textarea element
-    const newStyleString = convertObjectToCssString(this._styles, 'textarea');
+    // Update styles only if changed - targeting input element
+    const newStyleString = convertObjectToCssString(this._styles, 'input');
     if (newStyleString !== this._lastStyleString) {
       this._styleElement.textContent = newStyleString;
       this._lastStyleString = newStyleString;
     }
   }
 
-  _updateTextareaAttributes() {
-    const cols = this.getAttribute("cols");
-    const rows = this.getAttribute("rows");
+  _updateInputAttributes() {
+    const type = this.getAttribute("type") || "number";
+    const step = this.getAttribute("step");
+    const min = this.getAttribute("min");
+    const max = this.getAttribute("max");
     const isDisabled = this.hasAttribute('disabled');
 
-    if (cols !== null) {
-      this._textareaElement.setAttribute("cols", cols);
+    this._inputElement.setAttribute("type", type);
+
+    if (step !== null) {
+      this._inputElement.setAttribute("step", step);
     } else {
-      this._textareaElement.removeAttribute("cols");
+      this._inputElement.removeAttribute("step");
     }
 
-    if (rows !== null) {
-      this._textareaElement.setAttribute("rows", rows);
+    if (min !== null) {
+      this._inputElement.setAttribute("min", min);
     } else {
-      this._textareaElement.removeAttribute("rows");
+      this._inputElement.removeAttribute("min");
+    }
+
+    if (max !== null) {
+      this._inputElement.setAttribute("max", max);
+    } else {
+      this._inputElement.removeAttribute("max");
     }
 
     if (isDisabled) {
-      this._textareaElement.setAttribute("disabled", "");
+      this._inputElement.setAttribute("disabled", "");
     } else {
-      this._textareaElement.removeAttribute("disabled");
+      this._inputElement.removeAttribute("disabled");
     }
+  }
+
+  connectedCallback() {
+    this._updateInputAttributes();
   }
 }
 
@@ -234,5 +284,5 @@ class RettangoliTextAreaElement extends HTMLElement {
 export default ({ render, html }) => {
   // Note: render and html parameters are accepted but not used
   // This maintains backward compatibility with existing code
-  return RettangoliTextAreaElement;
+  return RettangoliInputNumberElement;
 };

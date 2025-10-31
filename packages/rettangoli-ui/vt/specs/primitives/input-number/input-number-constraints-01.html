@@ -1,0 +1,54 @@
+---
+title: Number Constraints
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Min value (0):</rtgl-text>
+    <rtgl-input-number id="min-zero-input" min="0" placeholder="Positive numbers only"></rtgl-input-number>
+  </rtgl-view>
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Min value (-10):</rtgl-text>
+    <rtgl-input-number id="min-neg10-input" min="-10" placeholder="Min -10"></rtgl-input-number>
+  </rtgl-view>
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Max value (100):</rtgl-text>
+    <rtgl-input-number id="max-100-input" max="100" placeholder="Max 100"></rtgl-input-number>
+  </rtgl-view>
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Step (0.1):</rtgl-text>
+    <rtgl-input-number id="step-01-input" step="0.1" placeholder="Step 0.1"></rtgl-input-number>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const minZeroInput = document.getElementById('min-zero-input');
+    const minNeg10Input = document.getElementById('min-neg10-input');
+    const max100Input = document.getElementById('max-100-input');
+    const step01Input = document.getElementById('step-01-input');
+
+    if (minZeroInput) {
+      minZeroInput.addEventListener('input-change', (e) => {
+        console.log('Min=0 input value changed:', { value: e.detail.value });
+      });
+    }
+
+    if (minNeg10Input) {
+      minNeg10Input.addEventListener('input-change', (e) => {
+        console.log('Min=-10 input value changed:', { value: e.detail.value });
+      });
+    }
+
+    if (max100Input) {
+      max100Input.addEventListener('input-change', (e) => {
+        console.log('Max=100 input value changed:', { value: e.detail.value });
+      });
+    }
+
+    if (step01Input) {
+      step01Input.addEventListener('input-change', (e) => {
+        console.log('Step=0.1 input value changed:', { value: e.detail.value });
+      });
+    }
+  });
+</script>

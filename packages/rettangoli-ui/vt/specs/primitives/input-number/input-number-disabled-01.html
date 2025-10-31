@@ -1,0 +1,28 @@
+---
+title: Disabled
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-text>Disabled number input:</rtgl-text>
+  <rtgl-input-number id="disabled-input" disabled placeholder="Disabled number"></rtgl-input-number>
+  <rtgl-text>Regular number input:</rtgl-text>
+  <rtgl-input-number id="regular-disabled-input" placeholder="Regular number"></rtgl-input-number>
+</rtgl-view>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const disabledInput = document.getElementById('disabled-input');
+    const regularDisabledInput = document.getElementById('regular-disabled-input');
+
+    if (disabledInput) {
+      disabledInput.addEventListener('input-change', (e) => {
+        console.log('Disabled input value changed (should not fire):', { value: e.detail.value });
+      });
+    }
+
+    if (regularDisabledInput) {
+      regularDisabledInput.addEventListener('input-change', (e) => {
+        console.log('Regular input value changed:', { value: e.detail.value });
+      });
+    }
+  });
+</script>
