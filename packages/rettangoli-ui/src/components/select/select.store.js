@@ -42,7 +42,7 @@ export const selectViewData = ({ state, props, attrs }) => {
   const currentValue = state.selectedValue !== null ? state.selectedValue : props.selectedValue;
 
   // Calculate display label from value
-  let displayLabel = attrs.placeholder || 'Select an option';
+  let displayLabel = props.placeholder || attrs.placeholder || 'Select an option';
   let isPlaceholderLabel = true;
 
   const options = props.options || [];

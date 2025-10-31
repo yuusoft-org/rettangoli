@@ -12,6 +12,8 @@ attrsSchema:
 propsSchema:
   type: object
   properties:
+    placeholder:
+      type: string
     options:
       type: array
       items:
