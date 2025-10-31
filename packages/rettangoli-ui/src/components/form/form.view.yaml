@@ -310,12 +310,15 @@ template:
       - rtgl-view g=lg w=f:
           - $for field, i in fields:
               - rtgl-view g=md w=f:
-                  - rtgl-view g=sm:
-                      - rtgl-view d=h g=md av=c:
-                          - rtgl-text: ${field.label}
-                          - $if field.tooltip:
-                              - rtgl-svg#tooltip-icon-${field.name} svg="info" wh=16 c=mu-fg cur=help ml=xs:
-                      - rtgl-text s=sm c=mu-fg: ${field.description}
+                  - $if field.label || field.description:
+                      - rtgl-view g=sm:
+                          - rtgl-view d=h g=md av=c:
+                              - $if field.label:
+                                  - rtgl-text: ${field.label}
+                              - $if field.label && field.tooltip:
+                                  - rtgl-svg#tooltip-icon-${field.name} svg="info" wh=16 c=mu-fg cur=help ml=xs:
+                          - $if field.description:
+                              - rtgl-text s=sm c=mu-fg: ${field.description}
                   - $if field.inputType == "read-only-text":
                       - rtgl-text s=sm: ${field.defaultValue}
                   - $if field.inputType == "inputText" || field.inputType == 'input-text':
@@ -327,7 +330,7 @@ template:
                   - $if field.inputType == "popover-input":
                       - rtgl-popover-input#field-${field.name} label="${field.label}":
                   - $if field.inputType == "select":
-                      - rtgl-select#field-${field.name} key=${key} w=f .options=fields[${i}].options ?no-clear=fields[${i}].noClear .addOption=fields[${i}].addOption:
+                      - rtgl-select#field-${field.name} key=${key} w=f .options=fields[${i}].options ?no-clear=fields[${i}].noClear .addOption=fields[${i}].addOption .selectedValue=#{field.selectedValue}:
                   - $if field.inputType == "colorPicker":
                       - rtgl-color-picker#field-${field.name} key=${key}:
                   - $if field.inputType == "slider":

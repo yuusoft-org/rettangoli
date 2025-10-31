@@ -38,13 +38,6 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
         } else {
           ref.removeAttribute('placeholder');
         }
-        ref.render();
-      }
-
-      const defaultValue = defaultValues[field.name]
-      if (defaultValue !== ref.selectedValue) {
-        ref.selectedValue = defaultValue;
-        ref.render();
       }
     }
   })
