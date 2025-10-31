@@ -1,0 +1,39 @@
+---
+title: "Empty title and description"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
+
+  form.defaultValues = {}
+
+  form.form = {
+    fields: [{
+      name: 'email',
+      inputType: 'inputText',
+      required: true,
+    }],
+    actions: {
+      layout: '', // vertical, fill, right, left
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        content: 'Submit',
+      }],
+    }
+  }
+
+  form.addEventListener('action-click', (e) => {
+    console.log('action-click', e.detail);
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>
