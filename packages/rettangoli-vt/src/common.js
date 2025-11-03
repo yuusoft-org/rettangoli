@@ -110,20 +110,85 @@ function ensureDirectoryExists(dirPath) {
 }
 
 /**
+ * Determine which template to use for a given file based on config and frontmatter
+ */
+function resolveTemplateForFile(relativePath, frontMatterObj, templateConfig) {
+  const { defaultTemplate, sections, vtPath } = templateConfig;
+
+  // Priority 1: Frontmatter template override
+  if (frontMatterObj?.template) {
+    const frontmatterTemplatePath = join(vtPath, "templates", frontMatterObj.template);
+    if (existsSync(frontmatterTemplatePath)) {
+      return frontmatterTemplatePath;
+    }
+    console.warn(`Template "${frontMatterObj.template}" specified in frontmatter not found, using default`);
+  }
+
+  // Priority 2 & 3: Check config sections for template
+  const normalizedPath = path.normalize(relativePath);
+  const fileDir = path.dirname(normalizedPath);
+
+  for (const section of sections) {
+    if (section.type === "groupLabel" && section.items) {
+      // Check items in group
+      for (const item of section.items) {
+        if (item.files) {
+          const itemPath = path.normalize(item.files);
+          if (fileDir === itemPath || fileDir.startsWith(itemPath + path.sep)) {
+            // Priority 2: Item-level template
+            if (item.template) {
+              const itemTemplatePath = join(vtPath, "templates", item.template);
+              if (existsSync(itemTemplatePath)) {
+                return itemTemplatePath;
+              }
+            }
+            // Priority 3: Section-level template
+            if (section.template) {
+              const sectionTemplatePath = join(vtPath, "templates", section.template);
+              if (existsSync(sectionTemplatePath)) {
+                return sectionTemplatePath;
+              }
+            }
+          }
+        }
+      }
+    } else if (section.files) {
+      // Flat section (backwards compatibility)
+      const sectionPath = path.normalize(section.files);
+      if (fileDir === sectionPath || fileDir.startsWith(sectionPath + path.sep)) {
+        if (section.template) {
+          const sectionTemplatePath = join(vtPath, "templates", section.template);
+          if (existsSync(sectionTemplatePath)) {
+            return sectionTemplatePath;
+          }
+        }
+      }
+    }
+  }
+
+  // Priority 4: Default template
+  return defaultTemplate;
+}
+
+/**
  * Main function to generate HTML files from specs
  */
-async function generateHtml(specsDir, templatePath, outputDir) {
+async function generateHtml(specsDir, templatePath, outputDir, templateConfig = null) {
   try {
     // Initialize LiquidJS engine
 
-    // Read template
-    const templateContent = readFileSync(templatePath, "utf8");
+    // Read default template
+    const defaultTemplateContent = readFileSync(templatePath, "utf8");
 
     // Ensure output directory exists
     ensureDirectoryExists(outputDir);
 
     // Get all files from specs directory
     const allFiles = getAllFiles(specsDir);
+
+    // Cache for loaded templates to avoid re-reading
+    const templateCache = new Map();
+    templateCache.set(templatePath, defaultTemplateContent);
 
     // Process each file
     const processedFiles = [];
@@ -146,10 +211,32 @@ async function generateHtml(specsDir, templatePath, outputDir) {
         }
       }
 
+      // Get relative path from specs directory
+      const relativePath = path.relative(specsDir, filePath);
+
+      // Determine which template to use
+      let templateToUse = defaultTemplateContent;
+      if (templateConfig) {
+        const resolvedTemplatePath = resolveTemplateForFile(relativePath, frontMatterObj, templateConfig);
+
+        // Load template from cache or file
+        if (templateCache.has(resolvedTemplatePath)) {
+          templateToUse = templateCache.get(resolvedTemplatePath);
+        } else {
+          try {
+            templateToUse = readFileSync(resolvedTemplatePath, "utf8");
+            templateCache.set(resolvedTemplatePath, templateToUse);
+          } catch (error) {
+            console.error(`Error reading template ${resolvedTemplatePath}:`, error.message);
+            templateToUse = defaultTemplateContent;
+          }
+        }
+      }
+
       // Render template
       let renderedContent = "";
       try {
-        renderedContent = engine.parseAndRenderSync(templateContent, {
+        renderedContent = engine.parseAndRenderSync(templateToUse, {
           content: content,
           frontMatter: frontMatterObj || {},
         });
@@ -158,9 +245,6 @@ async function generateHtml(specsDir, templatePath, outputDir) {
         renderedContent = `<html><body><h1>Error rendering template</h1><p>${error.message}</p><pre>${content}</pre></body></html>`;
       }
 
-      // Get relative path from specs directory
-      const relativePath = path.relative(specsDir, filePath);
-      
       // Save file
       const outputPath = join(outputDir, convertToHtmlExtension(relativePath));
       ensureDirectoryExists(dirname(outputPath));

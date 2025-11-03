@@ -53,19 +53,50 @@ async function main(options) {
 
   // Check for local templates first, fallback to library templates
   const localTemplatesPath = join(vtPath, "templates");
-  const defaultTemplatePath = existsSync(join(localTemplatesPath, "default.html"))
-    ? join(localTemplatesPath, "default.html")
-    : join(libraryTemplatesPath, "default.html");
-  
-  const indexTemplatePath = existsSync(join(localTemplatesPath, "index.html"))
-    ? join(localTemplatesPath, "index.html")
-    : join(libraryTemplatesPath, "index.html");
+
+  // Resolve default template path with priority:
+  // 1. Config-specified template path
+  // 2. Local vt/templates/default.html
+  // 3. Library default template
+  let defaultTemplatePath;
+  if (configData.templates?.default) {
+    const configTemplatePath = join(vtPath, "templates", configData.templates.default);
+    defaultTemplatePath = existsSync(configTemplatePath)
+      ? configTemplatePath
+      : join(libraryTemplatesPath, "default.html");
+  } else {
+    defaultTemplatePath = existsSync(join(localTemplatesPath, "default.html"))
+      ? join(localTemplatesPath, "default.html")
+      : join(libraryTemplatesPath, "default.html");
+  }
+
+  // Resolve index template path
+  let indexTemplatePath;
+  if (configData.templates?.index) {
+    const configIndexPath = join(vtPath, "templates", configData.templates.index);
+    indexTemplatePath = existsSync(configIndexPath)
+      ? configIndexPath
+      : join(libraryTemplatesPath, "index.html");
+  } else {
+    indexTemplatePath = existsSync(join(localTemplatesPath, "index.html"))
+      ? join(localTemplatesPath, "index.html")
+      : join(libraryTemplatesPath, "index.html");
+  }
+
+  // Build template configuration for per-file/section templates
+  const templateConfig = {
+    defaultTemplate: defaultTemplatePath,
+    templatesPath: localTemplatesPath,
+    sections: configData.sections || [],
+    vtPath: vtPath,
+  };
 
   // Generate HTML files
   const generatedFiles = await generateHtml(
     specsPath,
     defaultTemplatePath,
-    candidatePath
+    candidatePath,
+    templateConfig
   );
 
   // Generate overview page with all files
