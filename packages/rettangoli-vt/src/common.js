@@ -108,24 +108,16 @@ function ensureDirectoryExists(dirPath) {
     mkdirSync(absolutePath, { recursive: true });
   }
 }
-
 /**
  * Main function to generate HTML files from specs
  */
-async function generateHtml(specsDir, templatePath, outputDir) {
+async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
   try {
-    // Initialize LiquidJS engine
-
-    // Read template
-    const templateContent = readFileSync(templatePath, "utf8");
-
-    // Ensure output directory exists
+    const defaultTemplateContent = readFileSync(templatePath, "utf8");
     ensureDirectoryExists(outputDir);
 
-    // Get all files from specs directory
     const allFiles = getAllFiles(specsDir);
 
-    // Process each file
     const processedFiles = [];
     for (const filePath of allFiles) {
       const fileContent = readFileSync(filePath, "utf8");
@@ -136,31 +128,25 @@ async function generateHtml(specsDir, templatePath, outputDir) {
         theme: "slack-dark",
       });
 
-      // Parse YAML frontmatter
       let frontMatterObj = null;
       if (frontMatter) {
-        try {
-          frontMatterObj = loadYaml(frontMatter);
-        } catch (e) {
-          console.error(`Error parsing frontmatter in ${filePath}:`, e.message);
-        }
+        frontMatterObj = loadYaml(frontMatter);
       }
+
+      const relativePath = path.relative(specsDir, filePath);
+
+      let templateToUse = defaultTemplateContent;
+      const resolvedTemplatePath = frontMatterObj.template ? 
+        join(templateConfig.vtPath, "templates", frontMatterObj.template) :
+        templateConfig.defaultTemplate;
+      templateToUse = readFileSync(resolvedTemplatePath, "utf8"); 
 
       // Render template
-      let renderedContent = "";
-      try {
-        renderedContent = engine.parseAndRenderSync(templateContent, {
-          content: content,
-          frontMatter: frontMatterObj || {},
-        });
-      } catch (error) {
-        console.error(`Error rendering template for ${filePath}:`, error);
-        renderedContent = `<html><body><h1>Error rendering template</h1><p>${error.message}</p><pre>${content}</pre></body></html>`;
-      }
+      const renderedContent = engine.parseAndRenderSync(templateToUse, {
+        content: content,
+        frontMatter: frontMatterObj || {},
+      });
 
-      // Get relative path from specs directory
-      const relativePath = path.relative(specsDir, filePath);
-      
       // Save file
       const outputPath = join(outputDir, convertToHtmlExtension(relativePath));
       ensureDirectoryExists(dirname(outputPath));
@@ -180,8 +166,7 @@ async function generateHtml(specsDir, templatePath, outputDir) {
     console.log(`Successfully generated ${processedFiles.length} files`);
     return processedFiles;
   } catch (error) {
-    console.error("Error generating HTML:", error);
-    throw error;
+    throw new Error("Error generating HTML:", error);
   }
 }
 

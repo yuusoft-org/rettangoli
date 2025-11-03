@@ -53,19 +53,28 @@ async function main(options) {
 
   // Check for local templates first, fallback to library templates
   const localTemplatesPath = join(vtPath, "templates");
+
   const defaultTemplatePath = existsSync(join(localTemplatesPath, "default.html"))
-    ? join(localTemplatesPath, "default.html")
-    : join(libraryTemplatesPath, "default.html");
-  
+      ? join(localTemplatesPath, "default.html")
+      : join(libraryTemplatesPath, "default.html");
+
+  // Resolve index template path
   const indexTemplatePath = existsSync(join(localTemplatesPath, "index.html"))
-    ? join(localTemplatesPath, "index.html")
-    : join(libraryTemplatesPath, "index.html");
+      ? join(localTemplatesPath, "index.html")
+      : join(libraryTemplatesPath, "index.html");
+
+  // Build template configuration for per-file/section templates
+  const templateConfig = {
+    defaultTemplate: defaultTemplatePath,
+    vtPath: vtPath,
+  };
 
   // Generate HTML files
   const generatedFiles = await generateHtml(
     specsPath,
     defaultTemplatePath,
-    candidatePath
+    candidatePath,
+    templateConfig
   );
 
   // Generate overview page with all files
