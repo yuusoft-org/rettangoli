@@ -54,10 +54,6 @@ async function main(options) {
   // Check for local templates first, fallback to library templates
   const localTemplatesPath = join(vtPath, "templates");
 
-  // Resolve default template path with priority:
-  // 1. Config-specified template path
-  // 2. Local vt/templates/default.html
-  // 3. Library default template
   let defaultTemplatePath;
   if (configData.templates?.default) {
     const configTemplatePath = join(vtPath, "templates", configData.templates.default);

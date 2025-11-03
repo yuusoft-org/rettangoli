@@ -115,7 +115,6 @@ function ensureDirectoryExists(dirPath) {
 function resolveTemplateForFile(relativePath, frontMatterObj, templateConfig) {
   const { defaultTemplate, sections, vtPath } = templateConfig;
 
-  // Priority 1: Frontmatter template override
   if (frontMatterObj?.template) {
     const frontmatterTemplatePath = join(vtPath, "templates", frontMatterObj.template);
     if (existsSync(frontmatterTemplatePath)) {
@@ -124,7 +123,6 @@ function resolveTemplateForFile(relativePath, frontMatterObj, templateConfig) {
     console.warn(`Template "${frontMatterObj.template}" specified in frontmatter not found, using default`);
   }
 
-  // Priority 2 & 3: Check config sections for template
   const normalizedPath = path.normalize(relativePath);
   const fileDir = path.dirname(normalizedPath);
 
@@ -135,14 +133,12 @@ function resolveTemplateForFile(relativePath, frontMatterObj, templateConfig) {
         if (item.files) {
           const itemPath = path.normalize(item.files);
           if (fileDir === itemPath || fileDir.startsWith(itemPath + path.sep)) {
-            // Priority 2: Item-level template
             if (item.template) {
               const itemTemplatePath = join(vtPath, "templates", item.template);
               if (existsSync(itemTemplatePath)) {
                 return itemTemplatePath;
               }
             }
-            // Priority 3: Section-level template
             if (section.template) {
               const sectionTemplatePath = join(vtPath, "templates", section.template);
               if (existsSync(sectionTemplatePath)) {
@@ -166,7 +162,6 @@ function resolveTemplateForFile(relativePath, frontMatterObj, templateConfig) {
     }
   }
 
-  // Priority 4: Default template
   return defaultTemplate;
 }
 
@@ -175,22 +170,14 @@ function resolveTemplateForFile(relativePath, frontMatterObj, templateConfig) {
  */
 async function generateHtml(specsDir, templatePath, outputDir, templateConfig = null) {
   try {
-    // Initialize LiquidJS engine
-
-    // Read default template
     const defaultTemplateContent = readFileSync(templatePath, "utf8");
-
-    // Ensure output directory exists
     ensureDirectoryExists(outputDir);
 
-    // Get all files from specs directory
     const allFiles = getAllFiles(specsDir);
 
-    // Cache for loaded templates to avoid re-reading
     const templateCache = new Map();
     templateCache.set(templatePath, defaultTemplateContent);
 
-    // Process each file
     const processedFiles = [];
     for (const filePath of allFiles) {
       const fileContent = readFileSync(filePath, "utf8");
@@ -201,7 +188,6 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig = 
         theme: "slack-dark",
       });
 
-      // Parse YAML frontmatter
       let frontMatterObj = null;
       if (frontMatter) {
         try {
@@ -211,15 +197,12 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig = 
         }
       }
 
-      // Get relative path from specs directory
       const relativePath = path.relative(specsDir, filePath);
 
-      // Determine which template to use
       let templateToUse = defaultTemplateContent;
       if (templateConfig) {
         const resolvedTemplatePath = resolveTemplateForFile(relativePath, frontMatterObj, templateConfig);
 
-        // Load template from cache or file
         if (templateCache.has(resolvedTemplatePath)) {
           templateToUse = templateCache.get(resolvedTemplatePath);
         } else {
