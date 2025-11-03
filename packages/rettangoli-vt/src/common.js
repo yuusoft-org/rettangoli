@@ -120,7 +120,7 @@ function resolveTemplateForFile(relativePath, frontMatterObj, templateConfig) {
     if (existsSync(frontmatterTemplatePath)) {
       return frontmatterTemplatePath;
     }
-    console.warn(`Template "${frontMatterObj.template}" specified in frontmatter not found, using default`);
+    throw new Error(`Template "${frontMatterObj.template}" specified in frontmatter not found`);
   }
 
   const normalizedPath = path.normalize(relativePath);
@@ -175,9 +175,6 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig = 
 
     const allFiles = getAllFiles(specsDir);
 
-    const templateCache = new Map();
-    templateCache.set(templatePath, defaultTemplateContent);
-
     const processedFiles = [];
     for (const filePath of allFiles) {
       const fileContent = readFileSync(filePath, "utf8");
@@ -202,17 +199,10 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig = 
       let templateToUse = defaultTemplateContent;
       if (templateConfig) {
         const resolvedTemplatePath = resolveTemplateForFile(relativePath, frontMatterObj, templateConfig);
-
-        if (templateCache.has(resolvedTemplatePath)) {
-          templateToUse = templateCache.get(resolvedTemplatePath);
-        } else {
-          try {
-            templateToUse = readFileSync(resolvedTemplatePath, "utf8");
-            templateCache.set(resolvedTemplatePath, templateToUse);
-          } catch (error) {
-            console.error(`Error reading template ${resolvedTemplatePath}:`, error.message);
-            templateToUse = defaultTemplateContent;
-          }
+        try {
+          templateToUse = readFileSync(resolvedTemplatePath, "utf8"); 
+        } catch (error) {
+          throw new Error(`Error reading template ${resolvedTemplatePath}:`, error.message);
         }
       }
 
@@ -247,8 +237,7 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig = 
     console.log(`Successfully generated ${processedFiles.length} files`);
     return processedFiles;
   } catch (error) {
-    console.error("Error generating HTML:", error);
-    throw error;
+    throw new Error("Error generating HTML:", error);
   }
 }
 
