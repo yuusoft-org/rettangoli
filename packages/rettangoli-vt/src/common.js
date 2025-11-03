@@ -111,7 +111,7 @@ function ensureDirectoryExists(dirPath) {
 /**
  * Main function to generate HTML files from specs
  */
-async function generateHtml(specsDir, templatePath, outputDir, templateConfig = null) {
+async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
   try {
     const defaultTemplateContent = readFileSync(templatePath, "utf8");
     ensureDirectoryExists(outputDir);
