@@ -112,8 +112,8 @@ function ensureDirectoryExists(dirPath) {
 /**
  * Determine which template to use for a given file based on config and frontmatter
  */
-function resolveTemplateForFile(relativePath, frontMatterObj, templateConfig) {
-  const { defaultTemplate, sections, vtPath } = templateConfig;
+function resolveTemplateForFile(frontMatterObj, templateConfig) {
+  const { defaultTemplate, vtPath } = templateConfig;
 
   if (frontMatterObj?.template) {
     const frontmatterTemplatePath = join(vtPath, "templates", frontMatterObj.template);
@@ -121,45 +121,6 @@ function resolveTemplateForFile(relativePath, frontMatterObj, templateConfig) {
       return frontmatterTemplatePath;
     }
     throw new Error(`Template "${frontMatterObj.template}" specified in frontmatter not found`);
-  }
-
-  const normalizedPath = path.normalize(relativePath);
-  const fileDir = path.dirname(normalizedPath);
-
-  for (const section of sections) {
-    if (section.type === "groupLabel" && section.items) {
-      // Check items in group
-      for (const item of section.items) {
-        if (item.files) {
-          const itemPath = path.normalize(item.files);
-          if (fileDir === itemPath || fileDir.startsWith(itemPath + path.sep)) {
-            if (item.template) {
-              const itemTemplatePath = join(vtPath, "templates", item.template);
-              if (existsSync(itemTemplatePath)) {
-                return itemTemplatePath;
-              }
-            }
-            if (section.template) {
-              const sectionTemplatePath = join(vtPath, "templates", section.template);
-              if (existsSync(sectionTemplatePath)) {
-                return sectionTemplatePath;
-              }
-            }
-          }
-        }
-      }
-    } else if (section.files) {
-      // Flat section (backwards compatibility)
-      const sectionPath = path.normalize(section.files);
-      if (fileDir === sectionPath || fileDir.startsWith(sectionPath + path.sep)) {
-        if (section.template) {
-          const sectionTemplatePath = join(vtPath, "templates", section.template);
-          if (existsSync(sectionTemplatePath)) {
-            return sectionTemplatePath;
-          }
-        }
-      }
-    }
   }
 
   return defaultTemplate;
@@ -198,7 +159,7 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig = 
 
       let templateToUse = defaultTemplateContent;
       if (templateConfig) {
-        const resolvedTemplatePath = resolveTemplateForFile(relativePath, frontMatterObj, templateConfig);
+        const resolvedTemplatePath = resolveTemplateForFile(frontMatterObj, templateConfig);
         try {
           templateToUse = readFileSync(resolvedTemplatePath, "utf8"); 
         } catch (error) {
