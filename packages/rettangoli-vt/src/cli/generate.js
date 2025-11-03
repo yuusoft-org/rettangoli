@@ -54,12 +54,12 @@ async function main(options) {
   // Check for local templates first, fallback to library templates
   const localTemplatesPath = join(vtPath, "templates");
 
-  let defaultTemplatePath = existsSync(join(localTemplatesPath, "default.html"))
+  const defaultTemplatePath = existsSync(join(localTemplatesPath, "default.html"))
       ? join(localTemplatesPath, "default.html")
       : join(libraryTemplatesPath, "default.html");
 
   // Resolve index template path
-  let indexTemplatePath = existsSync(join(localTemplatesPath, "index.html"))
+  const indexTemplatePath = existsSync(join(localTemplatesPath, "index.html"))
       ? join(localTemplatesPath, "index.html")
       : join(libraryTemplatesPath, "index.html");
 

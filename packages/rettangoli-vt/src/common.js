@@ -108,24 +108,6 @@ function ensureDirectoryExists(dirPath) {
     mkdirSync(absolutePath, { recursive: true });
   }
 }
-
-/**
- * Determine which template to use for a given file based on config and frontmatter
- */
-function resolveTemplateForFile(frontMatterObj, templateConfig) {
-  const { defaultTemplate, vtPath } = templateConfig;
-
-  if (frontMatterObj?.template) {
-    const frontmatterTemplatePath = join(vtPath, "templates", frontMatterObj.template);
-    if (existsSync(frontmatterTemplatePath)) {
-      return frontmatterTemplatePath;
-    }
-    throw new Error(`Template "${frontMatterObj.template}" specified in frontmatter not found`);
-  }
-
-  return defaultTemplate;
-}
-
 /**
  * Main function to generate HTML files from specs
  */
@@ -148,36 +130,22 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig = 
 
       let frontMatterObj = null;
       if (frontMatter) {
-        try {
-          frontMatterObj = loadYaml(frontMatter);
-        } catch (e) {
-          console.error(`Error parsing frontmatter in ${filePath}:`, e.message);
-        }
+        frontMatterObj = loadYaml(frontMatter);
       }
 
       const relativePath = path.relative(specsDir, filePath);
 
       let templateToUse = defaultTemplateContent;
-      if (templateConfig) {
-        const resolvedTemplatePath = resolveTemplateForFile(frontMatterObj, templateConfig);
-        try {
-          templateToUse = readFileSync(resolvedTemplatePath, "utf8"); 
-        } catch (error) {
-          throw new Error(`Error reading template ${resolvedTemplatePath}:`, error.message);
-        }
-      }
+      const resolvedTemplatePath = frontMatterObj.template ? 
+        join(templateConfig.vtPath, "templates", frontMatterObj.template) :
+        templateConfig.defaultTemplate;
+      templateToUse = readFileSync(resolvedTemplatePath, "utf8"); 
 
       // Render template
-      let renderedContent = "";
-      try {
-        renderedContent = engine.parseAndRenderSync(templateToUse, {
-          content: content,
-          frontMatter: frontMatterObj || {},
-        });
-      } catch (error) {
-        console.error(`Error rendering template for ${filePath}:`, error);
-        renderedContent = `<html><body><h1>Error rendering template</h1><p>${error.message}</p><pre>${content}</pre></body></html>`;
-      }
+      const renderedContent = engine.parseAndRenderSync(templateToUse, {
+        content: content,
+        frontMatter: frontMatterObj || {},
+      });
 
       // Save file
       const outputPath = join(outputDir, convertToHtmlExtension(relativePath));
