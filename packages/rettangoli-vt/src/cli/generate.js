@@ -66,8 +66,6 @@ async function main(options) {
   // Build template configuration for per-file/section templates
   const templateConfig = {
     defaultTemplate: defaultTemplatePath,
-    templatesPath: localTemplatesPath,
-    sections: configData.sections || [],
     vtPath: vtPath,
   };
 
