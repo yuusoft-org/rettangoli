@@ -113,6 +113,12 @@ export const selectViewData = ({ state, props, attrs }) => {
     if (["read-only-text"].includes(field.inputType)) {
       field.defaultValue = defaultValue
     }
+    if (["select"].includes(field.inputType)) {
+      const defaultValues = props?.defaultValues;
+      if (defaultValues && defaultValues[field.name] !== undefined) {
+        field.selectedValue = defaultValues[field.name];
+      }
+    }
     if (field.inputType === "image") {
       const src = field.src;
       // Only set imageSrc if src exists and is not empty
