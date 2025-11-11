@@ -41,7 +41,6 @@ export const bundleFile = async (options) => {
     loader: {
       ".wasm": "binary",
     },
-    platform: "browser",
   });
 };
 
