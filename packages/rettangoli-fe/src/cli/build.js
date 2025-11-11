@@ -10,6 +10,7 @@ import { load as loadYaml } from "js-yaml";
 import { parse } from 'jempl';
 import { extractCategoryAndComponent } from '../common.js';
 import { getAllFiles } from '../commonBuild.js';
+import path from "node:path";
 
 function capitalize(word) {
   return word ? word[0].toUpperCase() + word.slice(1) : word;
@@ -18,12 +19,12 @@ function capitalize(word) {
 // Function to process view files - loads YAML and creates temporary JS file
 export const writeViewFile = (view, category, component) => {
   // const { category, component } = extractCategoryAndComponent(filePath);
-  const dir = `.temp/${category}`;
+  const dir = path.join(".temp", category);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
   writeFileSync(
-    `${dir}/${component}.view.js`,
+    path.join(dir, `${component}.view.js`),
     `export default ${JSON.stringify(view)};`,
   );
 };
@@ -83,12 +84,18 @@ const buildRettangoliFrontend = async (options) => {
       categories.push(category);
     }
 
-    const normalizedPath = filePath.replace(/\\/g, "/");
+    const relativePath = path.relative(
+      path.resolve(".temp"),
+      path.resolve(filePath)
+    );
+
+    const normalizedPath = relativePath.split(path.sep).join("/");
 
     if (["handlers", "store"].includes(fileType)) {
+      const importPath = path.join(".", normalizedPath).split(path.sep).join("/");
       output += `import * as ${component}${capitalize(
         fileType,
-      )} from '../${normalizedPath}';\n`;
+      )} from '${importPath}';\n`;
 
       replaceMap[count] = `${component}${capitalize(fileType)}`;
       imports[category][component][fileType] = count;
