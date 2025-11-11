@@ -41,6 +41,7 @@ export const bundleFile = async (options) => {
     loader: {
       ".wasm": "binary",
     },
+    platform: "browser",
   });
 };
 
@@ -91,10 +92,9 @@ const buildRettangoliFrontend = async (options) => {
     const normalizedPath = relativePath.split(path.sep).join("/");
 
     if (["handlers", "store"].includes(fileType)) {
-      const importPath = path.join(".", normalizedPath).split(path.sep).join("/");
       output += `import * as ${component}${capitalize(
         fileType,
-      )} from '${importPath}';\n`;
+      )} from '../${normalizedPath}';\n`;
 
       replaceMap[count] = `${component}${capitalize(fileType)}`;
       imports[category][component][fileType] = count;
