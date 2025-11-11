@@ -7,9 +7,9 @@ ui:
     outfile: "vt/static/public/rtgl-icons.js"
 
 fe:
-  dirs: ["fe/components", "fe/pages"] # directories that contain components
+  dirs: ["fe/pages"] # directories that contain components
   setup: "fe/setup.js" # path to setup.js file
-  outfile: "vt/static/public/main.js" # output this is separate from rettangoli file
+  outfile: "static/public/main.js" # output this is separate from rettangoli file
   #  watchPort: 3001
 
 # all sites configuration
