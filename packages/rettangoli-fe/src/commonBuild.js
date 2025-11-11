@@ -20,3 +20,12 @@ export function getAllFiles(dirPaths, arrayOfFiles = []) {
 
   return arrayOfFiles;
 }
+
+export const extractCategoryAndComponent = (filePath) => {
+  const normalized = filePath.replace(/\\/g, "/");
+  const parts = normalized.split("/");
+  const component = parts[parts.length - 1].split(".")[0];
+  const category = parts[parts.length - 3];
+  const fileType = parts[parts.length - 1].split(".")[1];
+  return { category, component, fileType };
+}

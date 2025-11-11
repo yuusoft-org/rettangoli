@@ -4,9 +4,9 @@ import { load as loadYaml, loadAll } from "js-yaml";
 import { render, parse } from "jempl";
 
 import {
-  extractCategoryAndComponent,
   flattenArrays,
 } from "../common.js";
+import { extractCategoryAndComponent } from "../commonBuild.js";
 import { getAllFiles } from "../commonBuild.js";
 import path, { dirname } from "node:path";
 
