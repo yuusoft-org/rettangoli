@@ -18,8 +18,7 @@ function capitalize(word) {
 // Function to process view files - loads YAML and creates temporary JS file
 export const writeViewFile = (view, category, component) => {
   // const { category, component } = extractCategoryAndComponent(filePath);
-
-  const dir = `./.temp/${category}`;
+  const dir = `.temp/${category}`;
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
@@ -41,6 +40,7 @@ export const bundleFile = async (options) => {
     loader: {
       ".wasm": "binary",
     },
+    platform: "browser",
   });
 };
 
@@ -83,10 +83,12 @@ const buildRettangoliFrontend = async (options) => {
       categories.push(category);
     }
 
+    const normalizedPath = filePath.replace(/\\/g, "/");
+
     if (["handlers", "store"].includes(fileType)) {
       output += `import * as ${component}${capitalize(
         fileType,
-      )} from '../${filePath}';\n`;
+      )} from '../${normalizedPath}';\n`;
 
       replaceMap[count] = `${component}${capitalize(fileType)}`;
       imports[category][component][fileType] = count;
