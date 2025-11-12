@@ -5,7 +5,7 @@ import { load as loadYaml } from "js-yaml";
 import { createServer } from 'vite'
 import { writeViewFile } from './build.js';
 import buildRettangoliFrontend from './build.js';
-import { extractCategoryAndComponent } from '../common.js';
+import { extractCategoryAndComponent } from '../commonBuild.js';
 
 // Debounce mechanism to prevent excessive rebuilds
 let rebuildTimeout = null;

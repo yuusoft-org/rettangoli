@@ -8,8 +8,9 @@ import {
 import esbuild from "esbuild";
 import { load as loadYaml } from "js-yaml";
 import { parse } from 'jempl';
-import { extractCategoryAndComponent } from '../common.js';
+import { extractCategoryAndComponent } from '../commonBuild.js';
 import { getAllFiles } from '../commonBuild.js';
+import path from "node:path";
 
 function capitalize(word) {
   return word ? word[0].toUpperCase() + word.slice(1) : word;
@@ -18,13 +19,12 @@ function capitalize(word) {
 // Function to process view files - loads YAML and creates temporary JS file
 export const writeViewFile = (view, category, component) => {
   // const { category, component } = extractCategoryAndComponent(filePath);
-
-  const dir = `./.temp/${category}`;
+  const dir = path.join(".temp", category);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
   writeFileSync(
-    `${dir}/${component}.view.js`,
+    path.join(dir, `${component}.view.js`),
     `export default ${JSON.stringify(view)};`,
   );
 };
@@ -41,6 +41,7 @@ export const bundleFile = async (options) => {
     loader: {
       ".wasm": "binary",
     },
+    platform: "browser",
   });
 };
 
@@ -83,10 +84,11 @@ const buildRettangoliFrontend = async (options) => {
       categories.push(category);
     }
 
+
     if (["handlers", "store"].includes(fileType)) {
       output += `import * as ${component}${capitalize(
         fileType,
-      )} from '../${filePath}';\n`;
+      )} from '../${filePath.replaceAll(path.sep, "/")}';\n`;
 
       replaceMap[count] = `${component}${capitalize(fileType)}`;
       imports[category][component][fileType] = count;
