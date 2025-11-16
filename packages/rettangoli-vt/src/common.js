@@ -294,11 +294,11 @@ async function takeScreenshots(
           }
           const baseName = file.path.replace(/\.[^/.]+$/, "");
 
-          if (!file.frontMatter?.instructions || file.frontMatter.instructions.length === 0) {
-              const screenshotPath = await takeAndSaveScreenshot(page, baseName);
-              console.log(`Screenshot saved: ${screenshotPath}`);
-          } else {
-              for (const instruction of file.frontMatter.instructions) {
+          const screenshotPath = await takeAndSaveScreenshot(page, baseName);
+          console.log(`Screenshot saved: ${screenshotPath}`);
+          let counter = 1;
+
+          for (const instruction of file.frontMatter?.instructions || []) {
                 const [command, ...args] = instruction.split(" ");
                 switch (command) {
                   case "mv":
@@ -317,12 +317,12 @@ async function takeScreenshots(
                     await page.waitForTimeout(Number(args[0]));
                     break;
                   case "screenshot":
+                     const screenshotPath = await takeAndSaveScreenshot(page, `${baseName}-${counter}`);
+                     console.log(`Screenshot saved: ${screenshotPath}`);
+                     counter++;
                     break; 
                 }
               }
-              const finalScreenshotPath = await takeAndSaveScreenshot(page, baseName);
-              console.log(`Final screenshot after instructions saved: ${finalScreenshotPath}`);
-          }
 
           completed++;
           console.log(`Finished processing ${file.path} (${completed}/${total})`);
