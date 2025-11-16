@@ -16,12 +16,14 @@ import { codeToHtml } from "shiki";
 import sharp from "sharp";
 import path from "path";
 
+const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
+
 const convertToHtmlExtension = (filePath) => {
   if (filePath.endsWith(".html")) {
     return filePath;
   }
   // Remove existing extension and add .html
-  const baseName = filePath.replace(/\.[^/.]+$/, "");
+  const baseName = removeExtension(filePath);
   return baseName + ".html";
 };
 
@@ -50,7 +52,7 @@ engine.registerFilter("slug", (value) => {
 // Add custom filter to remove file extension
 engine.registerFilter("remove_ext", (value) => {
   if (typeof value !== "string") return "";
-  return value.replace(/\.[^/.]+$/, "");
+  return removeExtension(value);
 });
 
 /**
@@ -136,10 +138,10 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
       const relativePath = path.relative(specsDir, filePath);
 
       let templateToUse = defaultTemplateContent;
-      const resolvedTemplatePath = frontMatterObj.template ? 
+      const resolvedTemplatePath = frontMatterObj?.template ?
         join(templateConfig.vtPath, "templates", frontMatterObj.template) :
         templateConfig.defaultTemplate;
-      templateToUse = readFileSync(resolvedTemplatePath, "utf8"); 
+      templateToUse = readFileSync(resolvedTemplatePath, "utf8");
 
       // Render template
       const renderedContent = engine.parseAndRenderSync(templateToUse, {
@@ -214,7 +216,7 @@ function startWebServer(artifactsDir, staticDir, port) {
   server.listen(port, () => {
     console.log(`Server started at http://localhost:${port}`);
   });
-  
+
   return server;
 }
 
@@ -255,9 +257,23 @@ async function takeScreenshots(
   console.log("Launching browser to take screenshots...");
   const browser = await chromium.launch();
 
+  const takeAndSaveScreenshot = async (page, basePath, suffix = '') => {
+    const finalPath = suffix ? `${basePath}-${suffix}` : basePath;
+    const tempPngPath = join(screenshotsDir, `${finalPath}.png`);
+    const screenshotPath = join(screenshotsDir, `${finalPath}.webp`);
+    ensureDirectoryExists(dirname(screenshotPath));
+
+    await page.screenshot({ path: tempPngPath, fullPage: true, animations: "disabled" });
+    await sharp(tempPngPath).webp({ quality: 85 }).toFile(screenshotPath);
+
+    if (existsSync(tempPngPath)) {
+      unlinkSync(tempPngPath);
+    }
+    return screenshotPath;
+  };
+
   try {
-    // Process files in parallel with limited concurrency
-    const files = [...generatedFiles]; // Create a copy to work with
+    const files = [...generatedFiles];
     const total = files.length;
     let completed = 0;
 
@@ -268,95 +284,52 @@ async function takeScreenshots(
         // Create a new context and page for each file (for parallelism)
         const context = await browser.newContext();
         const page = await context.newPage();
+        let screenshotIndex = 0;
 
         try {
           // Construct URL from file path (add /candidate prefix since server serves from parent)
           const fileUrl = convertToHtmlExtension(
             `${serverUrl}/candidate/${file.path.replace(/\\/g, '/')}`
           );
-          console.log(`Taking screenshot of ${fileUrl}`);
-
-          // Navigate to the page
+          console.log(`Navigating to ${fileUrl}`);
           await page.goto(fileUrl, { waitUntil: "networkidle" });
-
-          // Create screenshot output path (remove extension and add .webp)
-          const baseName = file.path.replace(/\.[^/.]+$/, "");
-          const tempPngPath = join(screenshotsDir, `${baseName}.png`);
-          const screenshotPath = join(screenshotsDir, `${baseName}.webp`);
-          ensureDirectoryExists(dirname(screenshotPath));
-
           if (waitTime > 0) {
-            await new Promise((resolve) => setTimeout(resolve, waitTime));
+            await page.waitForTimeout(waitTime);
           }
+          const baseName = removeExtension(file.path);
 
-          // Take screenshot as PNG first (Playwright doesn't support WebP)
-          await page.screenshot({ 
-            path: tempPngPath, 
-            fullPage: true
-          });
+          const initialScreenshotPath = await takeAndSaveScreenshot(page, baseName);
+          console.log(`Initial screenshot saved: ${initialScreenshotPath}`);
 
-          // Convert PNG to WebP using Sharp
-          await sharp(tempPngPath)
-            .webp({ quality: 85 })
-            .toFile(screenshotPath);
-
-          // Remove temporary PNG file
-          if (existsSync(tempPngPath)) {
-            unlinkSync(tempPngPath);
-          }
-
-          // example instructions:
-          for (const instruction of file.frontMatter?.instructions || []) {
-            const [command, ...args] = instruction.split(" ");
+          for (const step of file.frontMatter?.steps || []) {
+            const [command, ...args] = step.split(" ");
             switch (command) {
-              case "lc":
-                const x = Number(args[0]);
-                const y = Number(args[1]);
-                await page.mouse.click(x, y, {
-                  button: "left",
-                });
+              case "move":
+                await page.mouse.move(Number(args[0]), Number(args[1]));
                 break;
-              case "ss":
-                const baseName = file.path.replace(/\.[^/.]+$/, "");
-                const tempAdditionalPngPath = join(
-                  screenshotsDir,
-                  `${baseName}-${args[0]}.png`
-                );
-                const additonalScreenshotPath = join(
-                  screenshotsDir,
-                  `${baseName}-${args[0]}.webp`
-                );
-                console.log(`Taking additional screenshot at ${additonalScreenshotPath}`);
-                
-                // Take screenshot as PNG first
-                await page.screenshot({
-                  path: tempAdditionalPngPath,
-                  fullPage: true
-                });
-
-                // Convert PNG to WebP using Sharp
-                await sharp(tempAdditionalPngPath)
-                  .webp({ quality: 85 })
-                  .toFile(additonalScreenshotPath);
-
-                // Remove temporary PNG file
-                if (existsSync(tempAdditionalPngPath)) {
-                  unlinkSync(tempAdditionalPngPath);
-                }
-
-                console.log(
-                  `Additional screenshot taken at ${additonalScreenshotPath}`
-                );
+              case "click":
+                await page.mouse.click(Number(args[0]), Number(args[1]), { button: "left" });
+                break;
+              case "rclick":
+                await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right" });
+                break;
+              case "keypress":
+                await page.keyboard.press(args[0]);
+                break;
+              case "wait":
+                await page.waitForTimeout(Number(args[0]));
+                break;
+              case "screenshot":
+                screenshotIndex++;
+                const screenshotPath = await takeAndSaveScreenshot(page, `${baseName}-${screenshotIndex}`);
+                console.log(`Screenshot saved: ${screenshotPath}`);
                 break;
             }
           }
-
           completed++;
-          console.log(
-            `Screenshot saved: ${screenshotPath} (${completed}/${total})`
-          );
+          console.log(`Finished processing ${file.path} (${completed}/${total})`);
         } catch (error) {
-          console.error(`Error taking screenshot for ${file.path}:`, error);
+          console.error(`Error processing instructions for ${file.path}:`, error);
         } finally {
           // Close the context when done
           await context.close();
