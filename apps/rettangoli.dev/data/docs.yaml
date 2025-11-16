@@ -32,3 +32,15 @@ items:
       - id: rtgl-button
         title: "Button"
         href: "/docs/components/rtgl-button"
+      - id: rtgl-color-picker
+        title: "Color Picker"
+        href: "/docs/components/rtgl-color-picker"
+      - id: rtgl-dialog
+        title: "Dialog"
+        href: "/docs/components/rtgl-dialog"
+      - id: rtgl-input
+        title: "Input"
+        href: "/docs/components/rtgl-input"
+      # - id: rtgl-input-number
+      #   title: "Input Number"
+      #   href: "/docs/components/rtgl-input-number"

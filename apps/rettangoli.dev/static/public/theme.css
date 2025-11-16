@@ -7,13 +7,19 @@ html {
   overflow-y: auto;
 }
 
-/* Hide scrollbar for Chrome, Safari */
-html::-webkit-scrollbar {
-  display: none;
+/* Hide scrollbar for Chrome, Safari - more specific and comprehensive */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  /* display: none !important; */
+  width: 4px !important;
+  background: transparent !important;
 }
 
-body::-webkit-scrollbar {
-  display: none;
+/* Also target other common scrollbar selectors */
+::-webkit-scrollbar {
+  /* display: none !important; */
+  width: 4px !important;
+  background: transparent !important;
 }
 
 :root {
