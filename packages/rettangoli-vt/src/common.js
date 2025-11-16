@@ -301,8 +301,8 @@ async function takeScreenshots(
           const initialScreenshotPath = await takeAndSaveScreenshot(page, baseName);
           console.log(`Initial screenshot saved: ${initialScreenshotPath}`);
 
-          for (const instruction of file.frontMatter?.instructions || []) {
-            const [command, ...args] = instruction.split(" ");
+          for (const step of file.frontMatter?.steps || []) {
+            const [command, ...args] = step.split(" ");
             switch (command) {
               case "move":
                 await page.mouse.move(Number(args[0]), Number(args[1]));
