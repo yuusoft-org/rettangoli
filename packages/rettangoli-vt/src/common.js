@@ -16,12 +16,14 @@ import { codeToHtml } from "shiki";
 import sharp from "sharp";
 import path from "path";
 
+const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
+
 const convertToHtmlExtension = (filePath) => {
   if (filePath.endsWith(".html")) {
     return filePath;
   }
   // Remove existing extension and add .html
-  const baseName = filePath.replace(/\.[^/.]+$/, "");
+  const baseName = removeExtension(filePath);
   return baseName + ".html";
 };
 
@@ -50,7 +52,7 @@ engine.registerFilter("slug", (value) => {
 // Add custom filter to remove file extension
 engine.registerFilter("remove_ext", (value) => {
   if (typeof value !== "string") return "";
-  return value.replace(/\.[^/.]+$/, "");
+  return removeExtension(value);
 });
 
 /**
@@ -255,9 +257,10 @@ async function takeScreenshots(
   console.log("Launching browser to take screenshots...");
   const browser = await chromium.launch();
 
-  const takeAndSaveScreenshot = async (page, basePath) => {
-    const tempPngPath = join(screenshotsDir, `${basePath}.png`);
-    const screenshotPath = join(screenshotsDir, `${basePath}.webp`);
+  const takeAndSaveScreenshot = async (page, basePath, suffix = '') => {
+    const finalPath = suffix ? `${basePath}-${suffix}` : basePath;
+    const tempPngPath = join(screenshotsDir, `${finalPath}.png`);
+    const screenshotPath = join(screenshotsDir, `${finalPath}.webp`);
     ensureDirectoryExists(dirname(screenshotPath));
 
     await page.screenshot({ path: tempPngPath, fullPage: true, animations: "disabled" });
@@ -281,6 +284,7 @@ async function takeScreenshots(
         // Create a new context and page for each file (for parallelism)
         const context = await browser.newContext();
         const page = await context.newPage();
+        let screenshotIndex = 0;
 
         try {
           // Construct URL from file path (add /candidate prefix since server serves from parent)
@@ -292,38 +296,36 @@ async function takeScreenshots(
           if (waitTime > 0) {
             await page.waitForTimeout(waitTime);
           }
-          const baseName = file.path.replace(/\.[^/.]+$/, "");
+          const baseName = removeExtension(file.path);
 
-          const screenshotPath = await takeAndSaveScreenshot(page, baseName);
-          console.log(`Screenshot saved: ${screenshotPath}`);
-          let counter = 1;
+          const initialScreenshotPath = await takeAndSaveScreenshot(page, baseName);
+          console.log(`Initial screenshot saved: ${initialScreenshotPath}`);
 
           for (const instruction of file.frontMatter?.instructions || []) {
-                const [command, ...args] = instruction.split(" ");
-                switch (command) {
-                  case "mv":
-                    await page.mouse.move(Number(args[0]), Number(args[1]));
-                    break;
-                  case "click":
-                    await page.mouse.click(Number(args[0]), Number(args[1]), { button: "left" });
-                    break;
-                  case "rclick":
-                    await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right" });
-                    break;
-                  case "key":
-                    await page.keyboard.press(args[0]);
-                    break;
-                  case "wait":
-                    await page.waitForTimeout(Number(args[0]));
-                    break;
-                  case "screenshot":
-                     const screenshotPath = await takeAndSaveScreenshot(page, `${baseName}-${counter}`);
-                     console.log(`Screenshot saved: ${screenshotPath}`);
-                     counter++;
-                    break; 
-                }
-              }
-
+            const [command, ...args] = instruction.split(" ");
+            switch (command) {
+              case "move":
+                await page.mouse.move(Number(args[0]), Number(args[1]));
+                break;
+              case "click":
+                await page.mouse.click(Number(args[0]), Number(args[1]), { button: "left" });
+                break;
+              case "rclick":
+                await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right" });
+                break;
+              case "keypress":
+                await page.keyboard.press(args[0]);
+                break;
+              case "wait":
+                await page.waitForTimeout(Number(args[0]));
+                break;
+              case "screenshot":
+                screenshotIndex++;
+                const screenshotPath = await takeAndSaveScreenshot(page, `${baseName}-${screenshotIndex}`);
+                console.log(`Screenshot saved: ${screenshotPath}`);
+                break;
+            }
+          }
           completed++;
           console.log(`Finished processing ${file.path} (${completed}/${total})`);
         } catch (error) {
