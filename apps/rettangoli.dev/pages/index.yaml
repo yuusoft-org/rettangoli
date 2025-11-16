@@ -1,6 +1,6 @@
 ---
 template: base
-title: RouteVN
+title: Rettangoli
 ---
 - rtgl-view:
     - $partial: hero1

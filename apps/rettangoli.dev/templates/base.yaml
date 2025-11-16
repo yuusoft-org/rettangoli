@@ -3,9 +3,10 @@
         - $partial: seo1
           page: ${page}
           seo: ${seo}
+          title: ${title}
         - link rel="stylesheet" href="/public/theme.css":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
-        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.8/dist/rettangoli-iife-ui.min.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.22/dist/rettangoli-iife-ui.min.js":
         - script src="/public/rtgl-icons.js":
 
     - body.dark:
@@ -19,4 +20,3 @@
                 - rtgl-view w="f" ah="c":
                     - rtgl-view w=f ph="lg" pb="lg" ah=c:
                         - "${content}"
-
