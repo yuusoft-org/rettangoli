@@ -296,6 +296,7 @@ async function takeScreenshots(
           if (waitTime > 0) {
             await page.waitForTimeout(waitTime);
           }
+          await page.evaluate(() => new Promise(requestAnimationFrame));
           const baseName = removeExtension(file.path);
 
           const initialScreenshotPath = await takeAndSaveScreenshot(page, baseName);
