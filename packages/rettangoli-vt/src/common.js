@@ -263,7 +263,7 @@ async function takeScreenshots(
     const screenshotPath = join(screenshotsDir, `${finalPath}.webp`);
     ensureDirectoryExists(dirname(screenshotPath));
 
-    await page.screenshot({ path: tempPngPath, fullPage: true, animations: "disabled" });
+    await page.screenshot({ path: tempPngPath, fullPage: true});
     await sharp(tempPngPath).webp({ quality: 85 }).toFile(screenshotPath);
 
     if (existsSync(tempPngPath)) {
