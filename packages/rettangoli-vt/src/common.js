@@ -296,11 +296,6 @@ async function takeScreenshots(
           if (waitTime > 0) {
             await page.waitForTimeout(waitTime);
           }
-          // Wait one frame so the dialog's rAF-based layout correction runs before we screenshot
-          // The dialog adjusts margins and height inside requestAnimationFrame, so we must
-          // pause until that frame completes to avoid capturing incorrect layout state
-          // though this is still a wip as it still generates inconsistent frames
-          await page.evaluate(() => new Promise(requestAnimationFrame));
           const baseName = removeExtension(file.path);
 
           const initialScreenshotPath = await takeAndSaveScreenshot(page, baseName);
