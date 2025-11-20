@@ -32,6 +32,34 @@ function getAllFiles(dir, fileList = []) {
   return fileList;
 }
 
+function extractParts(p) {
+  const dir = path.dirname(p);
+  const filename = path.basename(p, '.webp');
+  const lastHyphenIndex = filename.lastIndexOf('-');
+
+  if (lastHyphenIndex > -1) {
+    const suffix = filename.substring(lastHyphenIndex + 1);
+    const number = parseInt(suffix);
+
+    if (!isNaN(number) && String(number) === suffix) {
+      const name = path.join(dir, filename.substring(0, lastHyphenIndex));
+      return { name, number };
+    }
+  }
+  // -1 is for the first file (as it will result in the first index when sorting)
+  return { name: path.join(dir, filename), number: -1 };
+}
+
+function sortPaths(a, b) {
+  const partsA = extractParts(a);
+  const partsB = extractParts(b);
+
+  if (partsA.name < partsB.name) return -1;
+  if (partsA.name > partsB.name) return 1;
+
+  return partsA.number - partsB.number;
+}
+
 async function compareImages(artifactPath, goldPath) {
   try {
     const {equal, diffBounds, diffClusters} = await looksSame(artifactPath, goldPath, {
@@ -123,35 +151,7 @@ async function main(options = {}) {
     ];
 
     // sor the reports 
-    allPaths.sort((a, b) => {
-      const extractParts = (p) => {
-        const dir = path.dirname(p);
-        const filename = path.basename(p, '.webp');
-        const lastHyphenIndex = filename.lastIndexOf('-');
-        
-        if (lastHyphenIndex > -1) {
-          const suffix = filename.substring(lastHyphenIndex + 1);
-          const number = parseInt(suffix);
-          
-          if (!isNaN(number) && String(number) === suffix) {
-            const name = path.join(dir, filename.substring(0, lastHyphenIndex));
-            return { name, number };
-          }
-        }
-        
-        const name = path.join(dir, filename);
-        return { name: name, number: -1 }; 
-      };
-
-      // -1 is for the first file (as it will result in the first index when sorting)
-      const partsA = extractParts(a);
-      const partsB = extractParts(b);
-
-      if (partsA.name < partsB.name) return -1;
-      if (partsA.name > partsB.name) return 1;
-
-      return partsA.number - partsB.number;
-    });
+    allPaths.sort(sortPaths);
 
     for (const relativePath of allPaths) {
       const candidatePath = path.join(candidateDir, relativePath);
