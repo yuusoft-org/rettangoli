@@ -150,7 +150,6 @@ async function main(options = {}) {
       ...new Set([...candidateRelativePaths, ...referenceRelativePaths]),
     ];
 
-    // sor the reports 
     allPaths.sort(sortPaths);
 
     for (const relativePath of allPaths) {
