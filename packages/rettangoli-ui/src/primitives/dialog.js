@@ -75,7 +75,7 @@ class RettangoliDialogElement extends HTMLElement {
         }
 
         dialog[open] slot[name="content"] {
-          ${window.VT_TEST_MODE ? "animation: none;" : "animation: dialog-in 150ms cubic-bezier(0.16, 1, 0.3, 1);"}
+          animation: dialog-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
         }
       `);
     }
