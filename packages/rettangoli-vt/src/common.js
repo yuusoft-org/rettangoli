@@ -332,7 +332,7 @@ async function takeScreenshots(
                   payload[key] = value;
                 });
                 await page.evaluate(({eventName,payload}) => {
-                  window.dispatchEvent(new CustomEvent(eventName, payload));
+                  window.dispatchEvent(new CustomEvent(eventName, { detail: payload }));
                 },{eventName,payload});  
                 break;
             }
