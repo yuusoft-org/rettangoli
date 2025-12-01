@@ -324,6 +324,16 @@ async function takeScreenshots(
                 const screenshotPath = await takeAndSaveScreenshot(page, `${baseName}-${screenshotIndex}`);
                 console.log(`Screenshot saved: ${screenshotPath}`);
                 break;
+              case "customEvent":
+                const [eventName, ...params] = args;
+                const payload = {};
+                params.forEach(param => {
+                  const [key, value] = param.split('=');
+                  payload[key] = value;
+                });
+
+                window.dispatchEvent(new CustomEvent(eventName, { detail: data }));
+                break;
             }
           }
           completed++;
