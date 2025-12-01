@@ -1,22 +1,15 @@
 ---
-title: Document Collapsible and VisuallyHidden primitives
+title: Finalize documentation tasks
 status: todo
 priority: low
 ---
 
 # Description
 
-Add documentation for Collapsible and VisuallyHidden primitives in apps/rettangoli.dev/pages/docs/primitives/
+This task is a placeholder for any remaining documentation work or updates.
 
-Resources:
-- Source: packages/rettangoli-ui/src/primitives/collapsible/ and packages/rettangoli-ui/src/primitives/visually-hidden/
-- Visual tests: packages/rettangoli-ui/vt/specs/collapsible.spec.tsx and packages/rettangoli-ui/vt/specs/visually-hidden.spec.tsx
-- Reference examples: apps/rettangoli.dev/pages/docs/components/rtgl-button.md and apps/rettangoli.dev/pages/docs/components/rtgl-view.md
-
-Steps:
-1. Review the source code to understand props and variants
-2. Check visual tests for usage examples
-3. Create rtgl-collapsible.md and rtgl-visually-hidden.md in apps/rettangoli.dev/pages/docs/primitives/
-4. Follow the existing pattern: frontmatter with template/title/tags/sidebarId, attributes table, sections with code examples
-5. Use markdown (.md) format, not MDX
-6. Test that the documentation renders correctly
+Note: The main undocumented components have been distributed across TASK-001 through TASK-009. This task can be used for:
+- Review and quality assurance of created documentation
+- Adding missing examples or edge cases
+- Updating existing documentation based on feedback
+- Any additional components discovered later
