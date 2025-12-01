@@ -6,7 +6,10 @@ import RettangoliSvg from './primitives/svg.js';
 import RettangoliInput from './primitives/input.js';
 import RettangoliInputNumber from './primitives/input-number.js';
 import RettangoliTextArea from './primitives/textarea.js';
+import RettangoliColorPicker from './primitives/colorPicker.js';
+import RettangoliSlider from './primitives/slider.js';
 import RettangoliDialog from './primitives/dialog.js';
+import RettangoliPopover from './primitives/popover.js';
 
 
 customElements.define("rtgl-button", RettangoliButton({}));
@@ -17,4 +20,7 @@ customElements.define("rtgl-svg", RettangoliSvg({}));
 customElements.define("rtgl-input", RettangoliInput({}));
 customElements.define("rtgl-input-number", RettangoliInputNumber({}));
 customElements.define("rtgl-textarea", RettangoliTextArea({}));
+customElements.define("rtgl-color-picker", RettangoliColorPicker({}));
+customElements.define("rtgl-slider", RettangoliSlider({}));
 customElements.define("rtgl-dialog", RettangoliDialog({}));
+customElements.define("rtgl-popover", RettangoliPopover({}));
