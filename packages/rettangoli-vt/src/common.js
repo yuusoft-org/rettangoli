@@ -331,8 +331,9 @@ async function takeScreenshots(
                   const [key, value] = param.split('=');
                   payload[key] = value;
                 });
-
-                window.dispatchEvent(new CustomEvent(eventName, { detail: data }));
+                await page.evaluate(({eventName,payload}) => {
+                  window.dispatchEvent(new CustomEvent(eventName, payload));
+                },{eventName,payload});  
                 break;
             }
           }

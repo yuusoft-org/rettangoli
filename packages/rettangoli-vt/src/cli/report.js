@@ -236,6 +236,7 @@ async function main(options = {}) {
       templatePath,
       outputPath,
     });
+    if(mismatchingItems.length > 0) process.exit(1);
   } catch (error) {
     console.error("Error reading directories:", error);
   }
