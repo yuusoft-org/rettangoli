@@ -60,21 +60,68 @@ const lodashGet = (obj, path) => {
 };
 
 export const parseView = ({ h, template, viewData, refs, handlers }) => {
-  const result = jemplRender(template, viewData, {});
+  try {
+    // Validate inputs
+    if (!h) {
+      throw new Error("h function is required for parseView");
+    }
+    if (!template) {
+      throw new Error("template is required for parseView");
+    }
 
-  // Flatten the array carefully to maintain structure
-  const flattenedResult = flattenArrays(result);
+    let result;
+    try {
+      result = jemplRender(template, viewData || {}, {});
+    } catch (jemplError) {
+      console.error("Error rendering template with jempl:", jemplError);
+      throw new Error(`Template rendering failed: ${jemplError.message}`);
+    }
 
-  const childNodes = createVirtualDom({
-    h,
-    items: flattenedResult,
-    refs,
-    handlers,
-    viewData,
-  });
+    // Validate result
+    if (result === null || result === undefined) {
+      console.warn("jemplRender returned null/undefined, using empty array");
+      result = [];
+    }
 
-  const vdom = h("div", { style: { display: "contents" } }, childNodes);
-  return vdom;
+    // Flatten the array carefully to maintain structure
+    let flattenedResult;
+    try {
+      flattenedResult = flattenArrays(result);
+    } catch (flattenError) {
+      console.error("Error flattening template result:", flattenError);
+      flattenedResult = [];
+    }
+
+    const childNodes = createVirtualDom({
+      h,
+      items: flattenedResult,
+      refs: refs || {},
+      handlers: handlers || {},
+      viewData: viewData || {},
+    });
+
+    // Validate virtual DOM result
+    if (!Array.isArray(childNodes)) {
+      console.warn("createVirtualDom did not return an array, using empty array");
+      return h("div", { style: { display: "contents" } }, []);
+    }
+
+    const vdom = h("div", { style: { display: "contents" } }, childNodes);
+
+    // Final validation of the VDOM
+    if (!vdom || typeof vdom !== 'object') {
+      throw new Error("Generated VDOM is invalid");
+    }
+
+    return vdom;
+  } catch (error) {
+    console.error("Error in parseView:", error);
+    // Return a fallback VDOM to prevent complete rendering failure
+    return h("div", {
+      style: { display: "contents" },
+      "data-error": "Template parsing failed"
+    }, ["Template Error"]);
+  }
 };
 
 /**
@@ -93,23 +140,39 @@ export const createVirtualDom = ({
   handlers = {},
   viewData = {}
 }) => {
-  if (!Array.isArray(items)) {
-    console.error("Input to createVirtualDom must be an array.");
-    return [h("div", {}, [])];
+  try {
+    if (!h) {
+      console.error("h function is required for createVirtualDom");
+      return [];
+    }
+
+    if (!Array.isArray(items)) {
+      console.error("Input to createVirtualDom must be an array, got:", typeof items, items);
+      return [h("div", { "data-error": "Invalid input" }, ["Error"])];
+    }
+  } catch (error) {
+    console.error("Error in createVirtualDom setup:", error);
+    return [];
   }
 
   function processItems(currentItems, parentPath = "") {
-    return currentItems
-      .map((item, index) => {
-        // Handle text nodes
-        if (typeof item === "string" || typeof item === "number") {
-          return String(item);
-        }
+    try {
+      return currentItems
+        .map((item, index) => {
+          try {
+            // Handle text nodes
+            if (typeof item === "string" || typeof item === "number") {
+              return String(item);
+            }
 
-        if (typeof item !== "object" || item === null) {
-          console.warn("Skipping invalid item in DOM structure:", item);
-          return null;
-        }
+            if (typeof item !== "object" || item === null) {
+              console.warn("Skipping invalid item in DOM structure:", item, "at path:", parentPath);
+              return null;
+            }
+          } catch (itemError) {
+            console.error("Error processing item at index", index, "path:", parentPath, itemError);
+            return h("div", { "data-error": "Item processing failed" }, ["Error"]);
+          }
 
         const entries = Object.entries(item);
         if (entries.length === 0) {
@@ -466,11 +529,23 @@ export const createVirtualDom = ({
             childrenOrText,
           });
           // Fallback to a simple div
-          return h("div", {}, ["Error creating element"]);
+          return h("div", { "data-error": "Node creation failed" }, ["Error"]);
         }
       })
       .filter(Boolean);
+    } catch (processError) {
+      console.error("Error in processItems:", processError);
+      return [h("div", { "data-error": "Processing failed" }, ["Error"])];
+    }
   }
 
-  return processItems(items);
-};
+  try {
+    return processItems(items);
+  } catch (error) {
+    console.error("Error calling processItems:", error);
+    return [h("div", { "data-error": "Virtual DOM creation failed" }, ["Error"])];
+  }
+} catch (error) {
+  console.error("Error in createVirtualDom:", error);
+  return [h("div", { "data-error": "Virtual DOM failed" }, ["Error"])];
+}
