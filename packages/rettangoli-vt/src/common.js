@@ -308,10 +308,16 @@ async function takeScreenshots(
                 await page.mouse.move(Number(args[0]), Number(args[1]));
                 break;
               case "click":
-                await page.mouse.click(Number(args[0]), Number(args[1]), { button: "left", delay: args[2] ? Number(args[2]): 1000 });
+                await page.mouse.click(Number(args[0]), Number(args[1]), { button: "left" });
                 break;
               case "rclick":
-                await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right", delay: args[2] ? Number(args[2]): 1000 });
+                await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right" });
+                break;
+              case "holdLeftDown":
+                await page.mouse.down();
+                break;
+              case "releaseLeftUp":
+                await page.mouse.up();
                 break;
               case "keypress":
                 await page.keyboard.press(args[0]);
