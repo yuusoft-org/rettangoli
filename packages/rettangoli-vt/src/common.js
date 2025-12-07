@@ -316,7 +316,7 @@ async function takeScreenshots(
               case "mousedown":
                 await page.mouse.down();
                 break;
-              case "mouseUp":
+              case "mouseup":
                 await page.mouse.up();
                 break;
               case "keypress":
