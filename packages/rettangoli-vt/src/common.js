@@ -313,6 +313,12 @@ async function takeScreenshots(
               case "rclick":
                 await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right" });
                 break;
+              case "mouseDown":
+                await page.mouse.down();
+                break;
+              case "mouseUp":
+                await page.mouse.up();
+                break;
               case "keypress":
                 await page.keyboard.press(args[0]);
                 break;

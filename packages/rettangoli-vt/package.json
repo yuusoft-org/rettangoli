@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/vt",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Rettangoli Visual Testing",
   "type": "module",
   "main": "./src/index.js",
