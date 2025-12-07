@@ -8,6 +8,8 @@ import RettangoliInputNumber from './primitives/input-number.js';
 import RettangoliTextArea from './primitives/textarea.js';
 import RettangoliDialog from './primitives/dialog.js';
 import RettangoliPopover from './primitives/popover.js';
+import RettangoliColorPicker from './primitives/colorPicker.js';
+import RettangoliSlider from './primitives/slider.js';
 import createGlobalUI from './deps/createGlobalUI.js';
 
 export {
@@ -21,5 +23,7 @@ export {
     RettangoliTextArea,
     RettangoliDialog,
     RettangoliPopover,
+    RettangoliColorPicker,
+    RettangoliSlider,
     createGlobalUI,
 }

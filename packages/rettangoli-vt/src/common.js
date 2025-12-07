@@ -331,6 +331,12 @@ async function takeScreenshots(
                 console.log(`Screenshot saved: ${screenshotPath}`);
                 break;
               case "customEvent":
+                //Use to dispatch custom event for the test evironment to listen to
+                //customEvent <eventName> <...parameters>
+                //To listen to the event use 
+                //window.addEventListener(<eventName>,(event)=>{
+                //  console.log("The params that you pass through: ",event.detail)  
+                //})
                 const [eventName, ...params] = args;
                 const payload = {};
                 params.forEach(param => {
