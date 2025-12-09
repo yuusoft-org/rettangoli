@@ -31,7 +31,7 @@ function isObject(item) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
 
-export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet = false }) {
+export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet = false, isScreenshotMode = false }) {
   return async function build() {
     // Use provided md or default to rtglMarkdown
     const mdInstance = md || rtglMarkdown(MarkdownIt);
@@ -249,6 +249,7 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
       const pageData = deepMerge(globalData, frontmatter);
       pageData.collections = collections;
       pageData.page = { url };
+      pageData.build = { isScreenshotMode };
 
       let processedPageContent;
 

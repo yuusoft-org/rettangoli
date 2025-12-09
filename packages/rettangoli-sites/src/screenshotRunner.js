@@ -141,9 +141,9 @@ const screenshotCommand = async (options = {}) => {
     console.log('📋 Ignore patterns:', ignorePatterns);
   }
 
-  // Build the site first
+  // Build the site first (with screenshot mode enabled)
   console.log('Building site...');
-  await buildSite({ rootDir });
+  await buildSite({ rootDir, isScreenshotMode: true });
   console.log('Build complete');
 
   // Start temporary server
