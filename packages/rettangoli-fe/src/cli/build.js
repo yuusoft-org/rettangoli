@@ -17,9 +17,8 @@ function capitalize(word) {
 }
 
 // Function to process view files - loads YAML and creates temporary JS file
-export const writeViewFile = (view, category, component) => {
-  // const { category, component } = extractCategoryAndComponent(filePath);
-  const dir = path.join(".temp", category);
+export const writeViewFile = (view, category, component, tempDir) => {
+  const dir = path.join(tempDir, category);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
@@ -30,9 +29,9 @@ export const writeViewFile = (view, category, component) => {
 };
 
 export const bundleFile = async (options) => {
-  const { outfile = "./vt/static/main.js", development = false } = options;
+  const { outfile, tempDir, development = false } = options;
   await esbuild.build({
-    entryPoints: ["./.temp/dynamicImport.js"],
+    entryPoints: [path.join(tempDir, "dynamicImport.js")],
     bundle: true,
     minify: !development,
     sourcemap: !!development,
@@ -48,9 +47,26 @@ export const bundleFile = async (options) => {
 const buildRettangoliFrontend = async (options) => {
   console.log("running build with options", options);
 
-  const { dirs = ["./example"], outfile = "./vt/static/main.js", setup = "setup.js", development = false } = options;
+  const {
+    cwd = process.cwd(),
+    dirs = ["./example"],
+    outfile = "./vt/static/main.js",
+    setup = "setup.js",
+    development = false
+  } = options;
 
-  const allFiles = getAllFiles(dirs).filter((filePath) => {
+  // Resolve all paths relative to cwd
+  const resolvedDirs = dirs.map(dir => path.resolve(cwd, dir));
+  const resolvedSetup = path.resolve(cwd, setup);
+  const resolvedOutfile = path.resolve(cwd, outfile);
+  const tempDir = path.resolve(cwd, ".temp");
+
+  // Ensure temp directory exists
+  if (!existsSync(tempDir)) {
+    mkdirSync(tempDir, { recursive: true });
+  }
+
+  const allFiles = getAllFiles(resolvedDirs).filter((filePath) => {
     return (
       filePath.endsWith(".store.js") ||
       filePath.endsWith(".handlers.js") ||
@@ -86,9 +102,10 @@ const buildRettangoliFrontend = async (options) => {
 
 
     if (["handlers", "store"].includes(fileType)) {
+      const relativePath = path.relative(tempDir, filePath).replaceAll(path.sep, "/");
       output += `import * as ${component}${capitalize(
         fileType,
-      )} from '../${filePath.replaceAll(path.sep, "/")}';\n`;
+      )} from '${relativePath}';\n`;
 
       replaceMap[count] = `${component}${capitalize(fileType)}`;
       imports[category][component][fileType] = count;
@@ -101,7 +118,7 @@ const buildRettangoliFrontend = async (options) => {
         console.error(`Error parsing template in file: ${filePath}`);
         throw error;
       }
-      writeViewFile(view, category, component);
+      writeViewFile(view, category, component, tempDir);
       output += `import ${component}${capitalize(
         fileType,
       )} from './${category}/${component}.view.js';\n`;
@@ -112,9 +129,10 @@ const buildRettangoliFrontend = async (options) => {
     }
   }
 
+  const relativeSetup = path.relative(tempDir, resolvedSetup).replaceAll(path.sep, "/");
   output += `
 import { createComponent } from '@rettangoli/fe';
-import { deps, patch, h } from '../${setup}';
+import { deps, patch, h } from '${relativeSetup}';
 const imports = ${JSON.stringify(imports, null, 2)};
 
 Object.keys(imports).forEach(category => {
@@ -130,11 +148,11 @@ Object.keys(imports).forEach(category => {
     output = output.replace(key, replaceMap[key]);
   });
 
-  writeFileSync("./.temp/dynamicImport.js", output);
+  writeFileSync(path.join(tempDir, "dynamicImport.js"), output);
 
-  await bundleFile({ outfile, development });
+  await bundleFile({ outfile: resolvedOutfile, tempDir, development });
 
-  console.log(`Build complete. Output file: ${outfile}`);
+  console.log(`Build complete. Output file: ${resolvedOutfile}`);
 };
 
 export default buildRettangoliFrontend;
