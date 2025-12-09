@@ -89,3 +89,8 @@ case: fixture-deep-merge - Deep merge of global and page data
 in:
   - fixtures/fixture-deep-merge
 out: true
+---
+case: fixture-raw-html - Raw HTML output from functions
+in:
+  - fixtures/fixture-raw-html
+out: true

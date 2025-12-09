@@ -48,9 +48,15 @@ export async function runTest(fixturePath) {
   // Get config by calling the function
   const config = configFunction({ markdownit: MarkdownIt });
   
-  // Check if this is the custom-functions fixture and add all needed functions for the test
+  // Check if this is a fixture that needs custom functions
   const isCustomFunctionsFixture = fixturePath.includes('fixture-custom-functions');
-  const functions = isCustomFunctionsFixture ? {
+  const isRawHtmlFixture = fixturePath.includes('fixture-raw-html');
+  const functions = isRawHtmlFixture ? {
+    // Raw HTML functions for testing __html support
+    rawHtml: (content) => ({ __html: content }),
+    renderMarkdown: (text) => ({ __html: `<strong>${text}</strong>` }),
+    normalString: (content) => `<em>${content}</em>`
+  } : isCustomFunctionsFixture ? {
     ...config.functions,
     // Additional functions needed for the test
     lowercase: (str) => String(str).toLowerCase(),

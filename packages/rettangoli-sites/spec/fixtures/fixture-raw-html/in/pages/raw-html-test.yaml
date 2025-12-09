@@ -1,0 +1,14 @@
+- html:
+    - head:
+        - title: Raw HTML Test
+    - body:
+        - h1: Raw HTML Function Test
+        - div class="raw-html-test":
+            - p: "Raw HTML:"
+            - div: "${rawHtml('<b>Bold</b> and <i>italic</i>')}"
+        - div class="markdown-test":
+            - p: "Rendered markdown:"
+            - div: "${renderMarkdown('Important text')}"
+        - div class="escaped-test":
+            - p: "Normal string (should be escaped):"
+            - div: "${normalString('test')}"

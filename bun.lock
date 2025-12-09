@@ -44,7 +44,7 @@
         "playwright": "^1.55.0",
         "sharp": "^0.34.3",
         "ws": "^8.18.0",
-        "yahtml": "^0.0.2-rc1",
+        "yahtml": "^0.0.3",
       },
       "devDependencies": {
         "memfs": "^4.36.0",
@@ -617,7 +617,7 @@
 
     "ws": ["ws@8.18.3", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg=="],
 
-    "yahtml": ["yahtml@0.0.2-rc1", "", {}, "sha512-ZPiWcCV7AupBUAK+vNXfajwQyDR+/Agj3eNjhMgTqWReGlrVbGYLsM/0zFYm0mmqQHQwgMDfmAjR9RANrbLt2w=="],
+    "yahtml": ["yahtml@0.0.3", "", {}, "sha512-hyxJ5yWK+Fpvsbrg0VAhRtEZvArcjTDvoQJKu4ck4HtsR5hN6aTkTTEGHJyKVBhLjh+ZCcV++eNLBkJTPs8AKw=="],
 
     "zwitch": ["zwitch@2.0.4", "", {}, "sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A=="],
 
