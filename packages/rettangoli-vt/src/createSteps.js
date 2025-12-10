@@ -36,53 +36,40 @@ async function wait(page, args) {
 
 export function createSteps(page, context) {
   let screenshotIndex = 0;
-  let selectedElement = null;
 
-  async function screenshot(page) {
+  async function screenshot() {
     screenshotIndex++;
     const screenshotPath = await context.takeAndSaveScreenshot(page, `${context.baseName}-${screenshotIndex}`);
     console.log(`Screenshot saved: ${screenshotPath}`);
   }
 
-  async function select(page, args) {
-    const testId = args[0];
-    if (testId) {
-      selectedElement = page.getByTestId(testId);
-    } else {
-      console.warn('`select` command called without a test ID.');
-    }
-  }
-
-  async function write(page, args) {
+  async function write(page, args, context, selectedElement) {
     if (selectedElement) {
       const textToWrite = args.join(' ');
       await selectedElement.fill(textToWrite);
-      selectedElement = null;
     } else {
-      console.warn('`write` command called without a selected element. Use `select` first.');
+      console.warn('`write` command called without a `select` block.');
     }
   }
 
-  async function click(page, args) {
+  async function click(page, args, context, selectedElement) {
     if (selectedElement) {
       await selectedElement.click();
     } else if (args.length >= 2) {
       await page.mouse.click(Number(args[0]), Number(args[1]), { button: "left" });
     } else {
-      console.warn('`click` command called without a selected element or coordinates.');
+      console.warn('`click` command needs a `select` block or coordinates.');
     }
-    selectedElement = null;
   }
 
-  async function rclick(page, args) {
+  async function rclick(page, args, context, selectedElement) {
     if (selectedElement) {
       await selectedElement.click({ button: 'right' });
     } else if (args.length >= 2) {
       await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right" });
     } else {
-      console.warn('`rclick` command called without a selected element or coordinates.');
+      console.warn('`rclick` command needs a `select` block or coordinates.');
     }
-    selectedElement = null;
   }
 
   const stepHandlers = {
@@ -95,20 +82,38 @@ export function createSteps(page, context) {
     move,
     rclick,
     screenshot,
-    select,
     wait,
     write,
   };
 
+  async function executeSingleStep(stepString, selectedElement) {
+    const [command, ...args] = stepString.split(" ");
+    const stepFn = stepHandlers[command];
+    if (stepFn) {
+      await stepFn(page, args, context, selectedElement);
+    } else {
+      console.warn(`Unknown step command: "${command}"`);
+    }
+  }
+
   return {
-    async executeStep(stepString) {
-      const [command, ...args] = stepString.split(" ");
-      
-      const stepFn = stepHandlers[command];
-      if (stepFn) {
-        await stepFn(page, args, context);
-      } else {
-        console.warn(`Unknown step command: "${command}"`);
+    async executeStep(step) {
+      if (typeof step === 'string') {
+        await executeSingleStep(step, null);
+      } else if (typeof step === 'object' && step !== null) {
+        const blockCommandString = Object.keys(step)[0];
+        const nestedStepStrings = step[blockCommandString];
+        const [command, ...args] = blockCommandString.split(" ");
+
+        if (command === 'select') {
+          const testId = args[0];
+          const selectedElement = page.getByTestId(testId);
+          for (const nestedStep of nestedStepStrings) {
+            await executeSingleStep(nestedStep, selectedElement);
+          }
+        } else {
+          console.warn(`Unsupported block command: "${command}". Only "select" is supported.`);
+        }
       }
     }
   };
