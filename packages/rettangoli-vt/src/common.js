@@ -15,6 +15,7 @@ import { chromium } from "playwright";
 import { codeToHtml } from "shiki";
 import sharp from "sharp";
 import path from "path";
+import { createSteps } from "./createSteps.js";
 
 const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
 
@@ -301,56 +302,15 @@ async function takeScreenshots(
           const initialScreenshotPath = await takeAndSaveScreenshot(page, baseName);
           console.log(`Initial screenshot saved: ${initialScreenshotPath}`);
 
+          const stepContext = {
+            baseName,
+            screenshotIndex: 0,
+            takeAndSaveScreenshot,
+          };
+          const stepsExecutor = createSteps(page, stepContext);
+
           for (const step of file.frontMatter?.steps || []) {
-            const [command, ...args] = step.split(" ");
-            switch (command) {
-              case "move":
-                await page.mouse.move(Number(args[0]), Number(args[1]));
-                break;
-              case "click":
-                await page.mouse.click(Number(args[0]), Number(args[1]), { button: "left" });
-                break;
-              case "rclick":
-                await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right" });
-                break;
-              case "goto":
-                await page.goto(args[0], { waitUntil: "networkidle" });
-                break;
-              case "mouseDown":
-                await page.mouse.down();
-                break;
-              case "mouseUp":
-                await page.mouse.up();
-                break;
-              case "keypress":
-                await page.keyboard.press(args[0]);
-                break;
-              case "wait":
-                await page.waitForTimeout(Number(args[0]));
-                break;
-              case "screenshot":
-                screenshotIndex++;
-                const screenshotPath = await takeAndSaveScreenshot(page, `${baseName}-${screenshotIndex}`);
-                console.log(`Screenshot saved: ${screenshotPath}`);
-                break;
-              case "customEvent":
-                //Use to dispatch custom event for the test evironment to listen to
-                //customEvent <eventName> <...parameters>
-                //To listen to the event use 
-                //window.addEventListener(<eventName>,(event)=>{
-                //  console.log("The params that you pass through: ",event.detail)  
-                //})
-                const [eventName, ...params] = args;
-                const payload = {};
-                params.forEach(param => {
-                  const [key, value] = param.split('=');
-                  payload[key] = value;
-                });
-                await page.evaluate(({eventName,payload}) => {
-                  window.dispatchEvent(new CustomEvent(eventName, { detail: payload }));
-                },{eventName,payload});  
-                break;
-            }
+            await stepsExecutor.executeStep(step);
           }
           completed++;
           console.log(`Finished processing ${file.path} (${completed}/${total})`);
