@@ -31,7 +31,7 @@ function isObject(item) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
 
-export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet = false }) {
+export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet = false, isScreenshotMode = false }) {
   return async function build() {
     // Use provided md or default to rtglMarkdown
     const mdInstance = md || rtglMarkdown(MarkdownIt);
@@ -96,8 +96,8 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
 
     readTemplatesRecursively(templatesDir);
 
-    // Function to extract frontmatter from a page file
-    function extractFrontmatter(pagePath) {
+    // Function to extract frontmatter and content from a page file
+    function extractFrontmatterAndContent(pagePath) {
       const pageFileContent = fs.readFileSync(pagePath, 'utf8');
       const lines = pageFileContent.split('\n');
       let frontmatterStart = -1;
@@ -122,7 +122,11 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
         frontmatter = yaml.load(frontmatterContent, { schema: yaml.JSON_SCHEMA }) || {};
       }
 
-      return frontmatter;
+      // Extract content after frontmatter
+      const contentStart = frontmatterEnd + 1;
+      const content = lines.slice(contentStart).join('\n').trim();
+
+      return { frontmatter, content };
     }
 
     // Function to scan all pages and build collections
@@ -144,8 +148,8 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
             // Recursively scan subdirectories
             scanPages(dir, relativePath);
           } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.md'))) {
-            // Extract frontmatter
-            const frontmatter = extractFrontmatter(itemPath);
+            // Extract frontmatter and content
+            const { frontmatter, content } = extractFrontmatterAndContent(itemPath);
 
             // Calculate URL
             const baseFileName = item.name.replace(/\.(yaml|md)$/, '');
@@ -176,7 +180,8 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
                   }
                   collections[trimmedTag].push({
                     data: frontmatter,
-                    url: url
+                    url: url,
+                    content: content
                   });
                 }
               });
@@ -249,6 +254,7 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
       const pageData = deepMerge(globalData, frontmatter);
       pageData.collections = collections;
       pageData.page = { url };
+      pageData.build = { isScreenshotMode };
 
       let processedPageContent;
 
