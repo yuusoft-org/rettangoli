@@ -304,7 +304,6 @@ async function takeScreenshots(
 
           const stepContext = {
             baseName,
-            screenshotIndex: 0,
             takeAndSaveScreenshot,
           };
           const stepsExecutor = createSteps(page, stepContext);
