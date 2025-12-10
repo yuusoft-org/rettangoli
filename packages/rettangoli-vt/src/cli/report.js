@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import looksSame from "looks-same";
+import crypto from "crypto";
 import sharp from "sharp";
 import { Liquid } from "liquidjs";
 import { cp } from "node:fs/promises";
@@ -60,25 +60,38 @@ function sortPaths(a, b) {
   return partsA.number - partsB.number;
 }
 
+async function calculateImageHash(imagePath) {
+  try {
+    const imageBuffer = fs.readFileSync(imagePath);
+    const hash = crypto.createHash('md5').update(imageBuffer).digest('hex');
+    return hash;
+  } catch (error) {
+    console.error(`Error calculating hash for ${imagePath}:`, error);
+    return null;
+  }
+}
+
 async function compareImages(artifactPath, goldPath) {
   try {
-    const {equal, diffBounds, diffClusters} = await looksSame(artifactPath, goldPath, {
-      strict: true,
-      ignoreAntialiasing: true,
-      ignoreCaret: true,
-      shouldCluster: true,
-      clustersSize: 10
-    });
+    const artifactHash = await calculateImageHash(artifactPath);
+    const goldHash = await calculateImageHash(goldPath);
+
+    if (artifactHash === null || goldHash === null) {
+      return {
+        equal: false,
+        error: true,
+      };
+    }
+
+    const equal = artifactHash === goldHash;
 
     return {
       equal,
       error: false,
-      diffBounds,
-      diffClusters
     };
   } catch (error) {
     console.error("Error comparing images:", error);
-    return { 
+    return {
       equal: false,
       error: true,
       diffBounds: null,
@@ -165,16 +178,12 @@ async function main(options = {}) {
 
       let equal = true;
       let error = false;
-      let diffBounds = null;
-      let diffClusters = null;
 
       // Compare images if both exist
       if (candidateExists && referenceExists) {
         const comparison = await compareImages(candidatePath, referencePath);
         equal = comparison.equal;
         error = comparison.error;
-        diffBounds = comparison.diffBounds;
-        diffClusters = comparison.diffClusters;
       } else {
         equal = false; // If one file is missing, they're not equal
       }
@@ -185,8 +194,6 @@ async function main(options = {}) {
           referencePath: referenceExists ? siteReferencePath : null, // Use site reference path for HTML report
           path: relativePath,
           equal: candidateExists && referenceExists ? equal : false,
-          diffBounds,
-          diffClusters,
           onlyInCandidate: candidateExists && !referenceExists,
           onlyInReference: !candidateExists && referenceExists,
         });
@@ -207,8 +214,6 @@ async function main(options = {}) {
             ? path.relative(siteOutputPath, result.referencePath)
             : null,
           equal: result.equal,
-          diffBounds: result.diffBounds,
-          diffClusters: result.diffClusters,
           onlyInCandidate: result.onlyInCandidate,
           onlyInReference: result.onlyInReference,
         };
@@ -219,8 +224,6 @@ async function main(options = {}) {
         candidatePath: item.candidatePath,
         referencePath: item.referencePath,
         equal: item.equal,
-        diffBounds: item.diffBounds,
-        diffClusters: item.diffClusters
       };
       console.log(JSON.stringify(logData, null, 2));
     });
