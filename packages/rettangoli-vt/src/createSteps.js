@@ -1,7 +1,3 @@
-async function click(page, args) {
-  await page.mouse.click(Number(args[0]), Number(args[1]), { button: "left" });
-}
-
 async function customEvent(page, args) {
   const [eventName, ...params] = args;
   const payload = {};
@@ -34,21 +30,59 @@ async function move(page, args) {
   await page.mouse.move(Number(args[0]), Number(args[1]));
 }
 
-async function rclick(page, args) {
-  await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right" });
-}
-
 async function wait(page, args) {
   await page.waitForTimeout(Number(args[0]));
 }
 
 export function createSteps(page, context) {
   let screenshotIndex = 0;
+  let selectedElement = null;
 
   async function screenshot(page) {
     screenshotIndex++;
     const screenshotPath = await context.takeAndSaveScreenshot(page, `${context.baseName}-${screenshotIndex}`);
     console.log(`Screenshot saved: ${screenshotPath}`);
+  }
+
+  async function select(page, args) {
+    const testId = args[0];
+    if (testId) {
+      selectedElement = page.getByTestId(testId);
+    } else {
+      console.warn('`select` command called without a test ID.');
+    }
+  }
+
+  async function write(page, args) {
+    if (selectedElement) {
+      const textToWrite = args.join(' ');
+      await selectedElement.fill(textToWrite);
+      selectedElement = null;
+    } else {
+      console.warn('`write` command called without a selected element. Use `select` first.');
+    }
+  }
+
+  async function click(page, args) {
+    if (selectedElement) {
+      await selectedElement.click();
+    } else if (args.length >= 2) {
+      await page.mouse.click(Number(args[0]), Number(args[1]), { button: "left" });
+    } else {
+      console.warn('`click` command called without a selected element or coordinates.');
+    }
+    selectedElement = null;
+  }
+
+  async function rclick(page, args) {
+    if (selectedElement) {
+      await selectedElement.click({ button: 'right' });
+    } else if (args.length >= 2) {
+      await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right" });
+    } else {
+      console.warn('`rclick` command called without a selected element or coordinates.');
+    }
+    selectedElement = null;
   }
 
   const stepHandlers = {
@@ -61,7 +95,9 @@ export function createSteps(page, context) {
     move,
     rclick,
     screenshot,
+    select,
     wait,
+    write,
   };
 
   return {
