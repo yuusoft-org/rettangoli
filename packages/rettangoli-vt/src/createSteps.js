@@ -1,3 +1,13 @@
+async function click(page, args, context, selectedElement) {
+  if (selectedElement) {
+    await selectedElement.click();
+  } else if (args.length >= 2) {
+    await page.mouse.click(Number(args[0]), Number(args[1]), { button: "left" });
+  } else {
+    console.warn('`click` command needs a `select` block or coordinates.');
+  }
+}
+
 async function customEvent(page, args) {
   const [eventName, ...params] = args;
   const payload = {};
@@ -30,8 +40,27 @@ async function move(page, args) {
   await page.mouse.move(Number(args[0]), Number(args[1]));
 }
 
+async function rclick(page, args, context, selectedElement) {
+  if (selectedElement) {
+    await selectedElement.click({ button: 'right' });
+  } else if (args.length >= 2) {
+    await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right" });
+  } else {
+    console.warn('`rclick` command needs a `select` block or coordinates.');
+  }
+}
+
 async function wait(page, args) {
   await page.waitForTimeout(Number(args[0]));
+}
+
+async function write(page, args, context, selectedElement) {
+  if (selectedElement) {
+    const textToWrite = args.join(' ');
+    await selectedElement.fill(textToWrite);
+  } else {
+    console.warn('`write` command called without a `select` block.');
+  }
 }
 
 export function createSteps(page, context) {
@@ -43,36 +72,7 @@ export function createSteps(page, context) {
     console.log(`Screenshot saved: ${screenshotPath}`);
   }
 
-  async function write(page, args, context, selectedElement) {
-    if (selectedElement) {
-      const textToWrite = args.join(' ');
-      await selectedElement.fill(textToWrite);
-    } else {
-      console.warn('`write` command called without a `select` block.');
-    }
-  }
-
-  async function click(page, args, context, selectedElement) {
-    if (selectedElement) {
-      await selectedElement.click();
-    } else if (args.length >= 2) {
-      await page.mouse.click(Number(args[0]), Number(args[1]), { button: "left" });
-    } else {
-      console.warn('`click` command needs a `select` block or coordinates.');
-    }
-  }
-
-  async function rclick(page, args, context, selectedElement) {
-    if (selectedElement) {
-      await selectedElement.click({ button: 'right' });
-    } else if (args.length >= 2) {
-      await page.mouse.click(Number(args[0]), Number(args[1]), { button: "right" });
-    } else {
-      console.warn('`rclick` command needs a `select` block or coordinates.');
-    }
-  }
-
-  const stepHandlers = {
+  const actionHandlers = {
     click,
     customEvent,
     goto,
@@ -86,11 +86,23 @@ export function createSteps(page, context) {
     write,
   };
 
+  const blockHandlers = {
+    async select(args) {
+      const testId = args[0];
+      const innerSelector = args.slice(1).join(' ');
+      let el = page.getByTestId(testId);
+      if (innerSelector) {
+        el = el.locator(innerSelector);
+      }
+      return el;
+    }
+  };
+
   async function executeSingleStep(stepString, selectedElement) {
     const [command, ...args] = stepString.split(" ");
-    const stepFn = stepHandlers[command];
-    if (stepFn) {
-      await stepFn(page, args, context, selectedElement);
+    const actionFn = actionHandlers[command];
+    if (actionFn) {
+      await actionFn(page, args, context, selectedElement);
     } else {
       console.warn(`Unknown step command: "${command}"`);
     }
@@ -105,9 +117,9 @@ export function createSteps(page, context) {
         const nestedStepStrings = step[blockCommandString];
         const [command, ...args] = blockCommandString.split(" ");
 
-        if (command === 'select') {
-          const testId = args[0];
-          const selectedElement = page.getByTestId(testId);
+        const blockFn = blockHandlers[command];
+        if (blockFn) {
+          const selectedElement = await blockFn(args);
           for (const nestedStep of nestedStepStrings) {
             await executeSingleStep(nestedStep, selectedElement);
           }
