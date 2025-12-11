@@ -63,6 +63,23 @@ async function write(page, args, context, selectedElement) {
   }
 }
 
+async function select(page, args) {
+  const testId = args[0];
+  const hostElementLocator = page.getByTestId(testId);
+  
+  const interactiveElementLocator = hostElementLocator.locator(
+    'input, textarea, button, select, a'
+  ).first();
+  
+  const count = await interactiveElementLocator.count();
+  
+  if (count > 0) {
+    return interactiveElementLocator;
+  }
+  
+  return hostElementLocator;
+}
+
 export function createSteps(page, context) {
   let screenshotIndex = 0;
 
@@ -82,20 +99,9 @@ export function createSteps(page, context) {
     move,
     rclick,
     screenshot,
+    select,
     wait,
     write,
-  };
-
-  const blockHandlers = {
-    async select(args) {
-      const testId = args[0];
-      const innerSelector = args.slice(1).join(' ');
-      let el = page.getByTestId(testId);
-      if (innerSelector) {
-        el = el.locator(innerSelector);
-      }
-      return el;
-    }
   };
 
   async function executeSingleStep(stepString, selectedElement) {
@@ -117,14 +123,14 @@ export function createSteps(page, context) {
         const nestedStepStrings = step[blockCommandString];
         const [command, ...args] = blockCommandString.split(" ");
 
-        const blockFn = blockHandlers[command];
+        const blockFn = actionHandlers[command];
         if (blockFn) {
-          const selectedElement = await blockFn(args);
+          const selectedElement = await blockFn(page, args, context, null);
           for (const nestedStep of nestedStepStrings) {
             await executeSingleStep(nestedStep, selectedElement);
           }
         } else {
-          console.warn(`Unsupported block command: "${command}". Only "select" is supported.`);
+          console.warn(`Unsupported block command: "${command}".`);
         }
       }
     }
