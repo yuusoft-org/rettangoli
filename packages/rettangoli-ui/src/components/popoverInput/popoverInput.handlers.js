@@ -36,7 +36,7 @@ export const handleTextClick = (deps, payload) => {
   input.elm.value = value;
   render();
 
-  if (attrs['auto-focus']) {
+  if (!attrs['disable-auto-focus']) {
     setTimeout(() => {
       input.elm.focus();
     }, 50)
