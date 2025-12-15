@@ -70,7 +70,7 @@ events: {}
 template:
   - rtgl-button#select-button v=ol ${containerAttrString}:
       - rtgl-view d=h av=c w=f:
-          - rtgl-text c=${selectedLabelColor}: ${selectedLabel}
+          - rtgl-text c=${selectedLabelColor} ellipsis: ${selectedLabel}
           - rtgl-view mh=md flex=1:
           - $if showClear:
               - rtgl-svg#clear-button mr=md svg=x wh=16 c=mu-fg cur=p:

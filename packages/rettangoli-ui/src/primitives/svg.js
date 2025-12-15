@@ -66,6 +66,7 @@ class RettangoliSvgElement extends HTMLElement {
 
     if (width) {
       this.style.width = width;
+      this.style.flexShrink = "0";
     }
     if (height) {
       this.style.height = height;

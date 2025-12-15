@@ -1,0 +1,55 @@
+---
+title: Select Overflow Ellipsis
+---
+
+<style>
+  .container {
+    border: 2px solid #ff6b6b;
+  }
+</style>
+
+<rtgl-view g="lg" p="lg" wh="f" fw="w">
+  <rtgl-text s="h3">Select with constrained width - should show ellipsis</rtgl-text>
+  <rtgl-view class="container" w="200" p="md" mb="lg">
+    <rtgl-text s="xs" c="red" mb="md">Container width: 200px (red border)</rtgl-text>
+    <rtgl-select id="select-narrow" w="f"></rtgl-select>
+  </rtgl-view>
+
+  <rtgl-text s="h3">Select with medium width</rtgl-text>
+  <rtgl-view class="container" w="300" p="md" mb="lg">
+    <rtgl-text s="xs" c="red" mb="md">Container width: 300px (red border)</rtgl-text>
+    <rtgl-select id="select-medium" w="f"></rtgl-select>
+  </rtgl-view>
+
+  <rtgl-text s="h3">Select with larger width</rtgl-text>
+  <rtgl-view class="container" w="500" p="md" mb="lg">
+    <rtgl-text s="xs" c="red" mb="md">Container width: 500px (red border)</rtgl-text>
+    <rtgl-select id="select-large" w="f"></rtgl-select>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const longOptions = [
+    { value: "1", label: 'This is a very long option label that should trigger text overflow' },
+    { value: "2", label: 'Another extremely long option text that exceeds container width' },
+    { value: "3", label: 'Short option' },
+  ]
+
+  // Narrow select
+  const selectNarrow = document.getElementById('select-narrow')
+  selectNarrow.selectedValue = "1"
+  selectNarrow.options = longOptions
+  selectNarrow.render();
+
+  // Medium select
+  const selectMedium = document.getElementById('select-medium')
+  selectMedium.selectedValue = "2"
+  selectMedium.options = longOptions
+  selectMedium.render();
+
+  // Large select
+  const selectLarge = document.getElementById('select-large')
+  selectLarge.selectedValue = "1"
+  selectLarge.options = longOptions
+  selectLarge.render();
+</script>
