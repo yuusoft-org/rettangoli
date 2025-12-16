@@ -1,0 +1,82 @@
+---
+title: In popover
+---
+<rtgl-view g="lg" h="100vh" w="100vw" fw="w" p="lg">
+  <rtgl-text s="lg" fw="b">Layout Properties</rtgl-text>
+
+  <!-- Text Content Section -->
+  <rtgl-view g="md">
+    <rtgl-text s="sm">Text Content</rtgl-text>
+    <rtgl-view id="field-text" data-name="text" d="h" pv="sm" ph="md" bgc="mu" br="md" av="c" g="md" cur="p" bw="xs" bc="bg" h-bc="ac" h="32" w="f">
+      <rtgl-text id="value-text" s="xs">Click to edit text</rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
+
+  <!-- Popover Form -->
+  <rtgl-popover id="popover-form" placement="bottom">
+  </rtgl-popover>
+</rtgl-view>
+
+<script>
+  const popoverForm = document.getElementById('popover-form');
+
+  // Store current value
+  let textValue = 'Click to edit text';
+  let popoverKey = 0;
+
+  // Form configuration - simple input only
+  const formConfig = {
+    fields: [
+      {
+        name: 'value',
+        description: 'Text Value',
+        inputType: 'input-text'
+      }
+    ],
+    actions: {
+      buttons: [
+        {
+          id: 'submit',
+          variant: 'pr',
+          content: 'Submit'
+        }
+      ]
+    }
+  };
+
+  // Handle field click
+  const fieldText = document.getElementById('field-text');
+  fieldText.addEventListener('click', (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+
+    // Create new form element
+    const form = document.createElement('rtgl-form');
+    form.setAttribute('slot', 'content');
+
+    // Set form properties
+    form.defaultValues = { value: textValue };
+    form.form = formConfig;
+
+    // Clear and add form to popover
+    popoverForm.innerHTML = '';
+    popoverForm.appendChild(form);
+
+    // Set popover position and open
+    popoverForm.setAttribute('x', rect.left);
+    popoverForm.setAttribute('y', rect.bottom);
+    popoverForm.setAttribute('open', '');
+
+    // Handle form submit
+    form.addEventListener('action-click', (e) => {
+      const formValues = e.detail.formValues;
+      textValue = formValues.value;
+      document.getElementById('value-text').textContent = formValues.value;
+      popoverForm.removeAttribute('open');
+    });
+  });
+
+  // Handle popover close
+  popoverForm.addEventListener('close', () => {
+    popoverForm.removeAttribute('open');
+  });
+</script>
