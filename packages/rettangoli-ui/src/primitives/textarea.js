@@ -115,6 +115,19 @@ class RettangoliTextAreaElement extends HTMLElement {
     this._updateTextareaAttributes();
   }
 
+  // Public methods to proxy focus and select to internal textarea
+  focus() {
+    if (this._textareaElement) {
+      this._textareaElement.focus();
+    }
+  }
+
+  select() {
+    if (this._textareaElement) {
+      this._textareaElement.select();
+    }
+  }
+
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'value') {
       requestAnimationFrame((() => {

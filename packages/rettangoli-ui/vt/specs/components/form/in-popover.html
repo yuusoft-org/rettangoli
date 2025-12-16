@@ -52,6 +52,7 @@ title: In popover
     // Create new form element
     const form = document.createElement('rtgl-form');
     form.setAttribute('slot', 'content');
+    form.setAttribute('autofocus', '');
 
     // Set form properties
     form.defaultValues = { value: textValue };
@@ -69,6 +70,7 @@ title: In popover
     // Handle form submit
     form.addEventListener('action-click', (e) => {
       const formValues = e.detail.formValues;
+      console.log('[Form submitted]', formValues);
       textValue = formValues.value;
       document.getElementById('value-text').textContent = formValues.value;
       popoverForm.removeAttribute('open');

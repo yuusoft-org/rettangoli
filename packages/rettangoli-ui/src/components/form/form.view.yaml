@@ -258,6 +258,10 @@ propsSchema:
                   - content
 
 refs:
+  form-container:
+    eventListeners:
+      keydown:
+        handler: handleKeyDown
   action-*:
     eventListeners:
       click:
@@ -271,6 +275,8 @@ refs:
   field-*:
     eventListeners:
       input-change:
+        handler: handleInputChange
+      textarea-change:
         handler: handleInputChange
       select-change:
         handler: handleSelectChange
@@ -301,7 +307,7 @@ events:
   action-click: {}
 
 template:
-  - rtgl-view w=f p=md g=lg ${containerAttrString}:
+  - rtgl-view#form-container w=f p=md g=lg ${containerAttrString}:
       - rtgl-view g=sm w=f:
           - $if title:
               - rtgl-text s=lg: ${title}
