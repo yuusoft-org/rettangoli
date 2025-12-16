@@ -16,6 +16,7 @@ class RettangoliSvgElement extends HTMLElement {
       RettangoliSvgElement.styleSheet.replaceSync(css`
         :host {
           color: var(--foreground);
+          flex-shrink: 0;
         }
         ${textColorStyles}
         ${paddingSvgStyles}
