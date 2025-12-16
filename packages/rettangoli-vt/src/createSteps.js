@@ -36,6 +36,14 @@ async function mouseUp(page) {
   await page.mouse.up();
 }
 
+async function rMouseDown(page){
+  await page.mouse.down({ button: 'right' });
+}
+
+async function rMouseUp(page){
+  await page.mouse.up({ button: 'right' });
+}
+
 async function move(page, args) {
   await page.mouse.move(Number(args[0]), Number(args[1]));
 }
@@ -98,6 +106,8 @@ export function createSteps(page, context) {
     mouseUp,
     move,
     rclick,
+    rMouseDown,
+    rMouseUp,
     screenshot,
     select,
     wait,
