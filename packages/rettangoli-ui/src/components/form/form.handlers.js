@@ -1,4 +1,3 @@
-
 const updateAttributes = ({ form, defaultValues = {}, refs }) => {
   const { fields = [] } = form;
   fields.forEach((field) => {
@@ -29,17 +28,43 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
   })
 }
 
+const autoFocusFirstInput = (refs) => {
+  // Find first focusable field
+  for (const fieldKey in refs) {
+    if (fieldKey.startsWith('field-')) {
+      const fieldRef = refs[fieldKey];
+      if (fieldRef && fieldRef.elm) {
+        const element = fieldRef.elm;
+
+        if (element.focus) {
+          // Currently only available for input-text and input-textarea
+          element.focus();
+          return;
+        }
+      }
+    }
+  }
+};
+
+
 export const handleBeforeMount = (deps) => {
   const { store, props } = deps;
   store.setFormValues(props.defaultValues);
 };
 
 export const handleAfterMount = (deps) => {
-  const { props, getRefIds, render } = deps;
+  const { props, getRefIds, render, attrs } = deps;
   const { form = {}, defaultValues } = props;
   const refs = getRefIds();
   updateAttributes({ form, defaultValues, refs });
   render();
+
+  // Auto-focus first input field if autofocus attribute is set
+  if (attrs?.autofocus) {
+    setTimeout(() => {
+      autoFocusFirstInput(refs);
+    }, 50);
+  }
 };
 
 export const handleOnUpdate = (deps, payload) => {
@@ -256,4 +281,39 @@ export const handleTooltipMouseLeave = (deps) => {
   const { store, render } = deps;
   store.hideTooltip();
   render();
+};
+
+export const handleKeyDown = (deps, payload) => {
+  const { store, dispatchEvent, props } = deps;
+  const event = payload._event;
+
+  // Handle Enter key to submit form
+  if (event.key === 'Enter' && !event.shiftKey) {
+    const target = event.target;
+    // Don't submit if we're in a textarea (native or custom component)
+    if (target.tagName === 'TEXTAREA' || target.tagName === 'RTGL-TEXTAREA') {
+      return;
+    }
+
+    event.preventDefault();
+
+    // Dispatch action-click event for the first button
+    const form = props.form || {};
+    const actions = form.actions || {};
+    const buttons = actions.buttons || [];
+
+    if (buttons.length > 0) {
+      const firstButtonId = buttons[0].id;
+      const formValues = store.selectFormValues();
+
+      dispatchEvent(
+        new CustomEvent("action-click", {
+          detail: {
+            actionId: firstButtonId,
+            formValues: formValues,
+          },
+        }),
+      );
+    }
+  }
 };
