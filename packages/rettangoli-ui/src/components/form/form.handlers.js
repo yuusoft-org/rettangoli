@@ -1,4 +1,3 @@
-
 const updateAttributes = ({ form, defaultValues = {}, refs }) => {
   const { fields = [] } = form;
   fields.forEach((field) => {
@@ -29,6 +28,25 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
   })
 }
 
+const autoFocusFirstInput = (refs) => {
+  // Find first focusable field
+  for (const fieldKey in refs) {
+    if (fieldKey.startsWith('field-')) {
+      const fieldRef = refs[fieldKey];
+      if (fieldRef && fieldRef.elm) {
+        const element = fieldRef.elm;
+
+        if (element.focus) {
+          // Currently only available for input-text and input-textarea
+          element.focus();
+          return;
+        }
+      }
+    }
+  }
+};
+
+
 export const handleBeforeMount = (deps) => {
   const { store, props } = deps;
   store.setFormValues(props.defaultValues);
@@ -42,27 +60,10 @@ export const handleAfterMount = (deps) => {
   render();
 
   // Auto-focus first input field if autofocus attribute is set
-  if (attrs && attrs.autofocus !== undefined) {
+  if (attrs?.autofocus !== undefined) {
     setTimeout(() => {
       autoFocusFirstInput(refs);
     }, 50);
-  }
-};
-
-const autoFocusFirstInput = (refs) => {
-  // Find first focusable field
-  for (const fieldKey in refs) {
-    if (fieldKey.startsWith('field-')) {
-      const fieldRef = refs[fieldKey];
-      if (fieldRef && fieldRef.elm) {
-        const element = fieldRef.elm;
-
-        if (element.focus) {
-          element.focus();
-          return;
-        }
-      }
-    }
   }
 };
 
