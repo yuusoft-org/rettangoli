@@ -60,7 +60,7 @@ export const handleAfterMount = (deps) => {
   render();
 
   // Auto-focus first input field if autofocus attribute is set
-  if (attrs?.autofocus !== undefined) {
+  if (attrs?.autofocus) {
     setTimeout(() => {
       autoFocusFirstInput(refs);
     }, 50);
