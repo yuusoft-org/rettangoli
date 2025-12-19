@@ -63,7 +63,7 @@ class RettangoliImageElement extends HTMLElement {
   constructor() {
     super();
     RettangoliImageElement.initializeStyleSheet();
-    this.shadow = this.attachShadow({ mode: "closed" });
+    this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.adoptedStyleSheets = [RettangoliImageElement.styleSheet];
 
     // Create initial DOM structure

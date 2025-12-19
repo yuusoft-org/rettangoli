@@ -45,7 +45,7 @@ class RettangoliColorPickerElement extends HTMLElement {
   constructor() {
     super();
     RettangoliColorPickerElement.initializeStyleSheet();
-    this.shadow = this.attachShadow({ mode: "closed" });
+    this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.adoptedStyleSheets = [RettangoliColorPickerElement.styleSheet];
     
     // Initialize style tracking properties

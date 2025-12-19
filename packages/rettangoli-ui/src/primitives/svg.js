@@ -29,7 +29,7 @@ class RettangoliSvgElement extends HTMLElement {
   constructor() {
     super();
     RettangoliSvgElement.initializeStyleSheet();
-    this.shadow = this.attachShadow({ mode: "closed" });
+    this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.adoptedStyleSheets = [RettangoliSvgElement.styleSheet];
   }
 

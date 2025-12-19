@@ -57,7 +57,7 @@ class RettangoliInputElement extends HTMLElement {
   constructor() {
     super();
     RettangoliInputElement.initializeStyleSheet();
-    this.shadow = this.attachShadow({ mode: "closed" });
+    this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.adoptedStyleSheets = [RettangoliInputElement.styleSheet];
 
     // Initialize style tracking properties
