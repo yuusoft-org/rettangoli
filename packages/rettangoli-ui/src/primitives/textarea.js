@@ -47,7 +47,7 @@ class RettangoliTextAreaElement extends HTMLElement {
   constructor() {
     super();
     RettangoliTextAreaElement.initializeStyleSheet();
-    this.shadow = this.attachShadow({ mode: "closed" });
+    this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.adoptedStyleSheets = [RettangoliTextAreaElement.styleSheet];
 
     // Initialize style tracking properties
