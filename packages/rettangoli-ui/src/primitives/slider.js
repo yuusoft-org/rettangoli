@@ -76,7 +76,7 @@ class RettangoliSliderElement extends HTMLElement {
   constructor() {
     super();
     RettangoliSliderElement.initializeStyleSheet();
-    this.shadow = this.attachShadow({ mode: "closed" });
+    this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.adoptedStyleSheets = [RettangoliSliderElement.styleSheet];
 
     // Initialize style tracking properties

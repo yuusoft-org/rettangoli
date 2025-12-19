@@ -53,7 +53,7 @@ class RettangoliTextElement extends HTMLElement {
   constructor() {
     super();
     RettangoliTextElement.initializeStyleSheet();
-    this.shadow = this.attachShadow({ mode: "closed" });
+    this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.adoptedStyleSheets = [RettangoliTextElement.styleSheet];
     
     // Create initial DOM structure

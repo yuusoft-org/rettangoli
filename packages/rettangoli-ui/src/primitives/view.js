@@ -67,7 +67,7 @@ class RettangoliViewElement extends HTMLElement {
   constructor() {
     super();
     RettangoliViewElement.initializeStyleSheet();
-    this.shadow = this.attachShadow({ mode: "closed" });
+    this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.adoptedStyleSheets = [RettangoliViewElement.styleSheet];
 
     // Create initial DOM structure
