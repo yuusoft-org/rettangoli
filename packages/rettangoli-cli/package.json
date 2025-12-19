@@ -49,7 +49,7 @@
     "js-yaml": "^4.1.0",
     "@rettangoli/fe": "workspace:0.0.14",
     "@rettangoli/sites": "workspace:0.2.6",
-    "@rettangoli/vt": "workspace:0.0.8",
-    "@rettangoli/ui": "workspace:0.1.25"
+    "@rettangoli/vt": "workspace:0.0.9",
+    "@rettangoli/ui": "workspace:0.1.26"
   }
 }
