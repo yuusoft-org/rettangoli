@@ -236,6 +236,7 @@ function getContentType(filePath) {
     ".jpeg": "image/jpeg",
     ".gif": "image/gif",
     ".svg": "image/svg+xml",
+    ".mp4": "video/mp4",
   };
 
   return contentTypes[ext] || "application/octet-stream";
