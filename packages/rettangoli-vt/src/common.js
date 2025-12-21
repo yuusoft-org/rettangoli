@@ -255,9 +255,25 @@ async function takeScreenshots(
   // Ensure screenshots directory exists
   ensureDirectoryExists(screenshotsDir);
 
-  // Launch browser
+  // Launch browser with video support flags
   console.log("Launching browser to take screenshots...");
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu',
+      '--autoplay-policy=no-user-gesture-required',
+      '--disable-features=TranslateUI',
+      '--disable-ipc-flooding-protection',
+      '--enable-features=VaapiVideoDecoder',
+      '--disable-web-security',
+      '--allow-running-insecure-content'
+    ]
+  });
 
   const takeAndSaveScreenshot = async (page, basePath, suffix = '') => {
     const finalPath = suffix ? `${basePath}-${suffix}` : basePath;
@@ -295,6 +311,72 @@ async function takeScreenshots(
           );
           console.log(`Navigating to ${fileUrl}`);
           await page.goto(fileUrl, { waitUntil: "networkidle" });
+
+          // Wait for videos to be ready if present (PIXI videos)
+          await page.waitForFunction(() => {
+            // Check for canvas (PIXI renders to canvas)
+            const canvas = document.querySelector('canvas');
+            if (!canvas) {
+              console.log('No canvas found');
+              return true;
+            }
+
+            // Look for window.app which should be the PIXI app
+            if (!window.app || !window.app.stage) {
+              console.log('No window.app or window.app.stage found');
+              return true;
+            }
+
+            // Check if any video textures exist and are loaded
+            let hasVideoTextures = false;
+            let allVideosReady = true;
+            let videoInfo = [];
+
+            function traverseStage(stage) {
+              stage.children.forEach(child => {
+                if (child.texture && child.texture.source && child.texture.source.resource) {
+                  const resource = child.texture.source.resource;
+                  if (resource.tagName === 'VIDEO') {
+                    hasVideoTextures = true;
+                    const info = {
+                      readyState: resource.readyState,
+                      videoWidth: resource.videoWidth,
+                      videoHeight: resource.videoHeight,
+                      paused: resource.paused,
+                      currentTime: resource.currentTime,
+                      muted: resource.muted
+                    };
+                    videoInfo.push(info);
+
+                    if (resource.readyState < 2 || resource.videoWidth === 0 || resource.videoHeight === 0) {
+                      allVideosReady = false;
+                    }
+                  }
+                }
+                if (child.children) {
+                  traverseStage(child);
+                }
+              });
+            }
+
+            traverseStage(window.app.stage);
+
+            if (hasVideoTextures) {
+              console.log('Found video textures:', videoInfo);
+            }
+
+            // If no video textures found, proceed
+            if (!hasVideoTextures) return true;
+
+            // Wait for all videos to be ready
+            return allVideosReady;
+          }, { timeout: 15000 }).catch(() => {
+            console.log('PIXI videos not ready after timeout, proceeding anyway');
+          });
+
+          // Additional wait to ensure video frames are rendered to canvas
+          await page.waitForTimeout(1000);
+
           if (waitTime > 0) {
             await page.waitForTimeout(waitTime);
           }
