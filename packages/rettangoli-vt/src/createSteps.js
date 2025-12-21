@@ -48,6 +48,10 @@ async function move(page, args) {
   await page.mouse.move(Number(args[0]), Number(args[1]));
 }
 
+async function scroll(page, args){
+  await page.mouse.wheel(Number(args[0]), Number(args[1]));
+}
+
 async function rclick(page, args, context, selectedElement) {
   if (selectedElement) {
     await selectedElement.click({ button: 'right' });
@@ -106,6 +110,7 @@ export function createSteps(page, context) {
     mouseUp,
     move,
     rclick,
+    scroll,
     rMouseDown,
     rMouseUp,
     screenshot,
