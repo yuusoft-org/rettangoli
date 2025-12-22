@@ -83,9 +83,8 @@ function getAllFiles(dirPath, arrayOfFiles = []) {
  * Extract frontmatter from content
  */
 function extractFrontMatter(content) {
-  const frontMatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
+  const frontMatterRegex = /^---\s*\n([\s\S]*?)\n---\s*(\r?\n|$)/;
   const match = content.match(frontMatterRegex);
-
   if (!match) {
     return {
       content: content,
