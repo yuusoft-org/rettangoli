@@ -248,7 +248,8 @@ async function takeScreenshots(
   serverUrl,
   screenshotsDir,
   concurrency = 8,
-  waitTime = 0
+  waitTime = 0,
+  isSpaMode = false,
 ) {
   // Ensure screenshots directory exists
   ensureDirectoryExists(screenshotsDir);
@@ -257,13 +258,13 @@ async function takeScreenshots(
   console.log("Launching browser to take screenshots...");
   const browser = await chromium.launch();
 
-  const takeAndSaveScreenshot = async (page, basePath, suffix = '') => {
+  const takeAndSaveScreenshot = async (page, basePath, suffix = "") => {
     const finalPath = suffix ? `${basePath}-${suffix}` : basePath;
     const tempPngPath = join(screenshotsDir, `${finalPath}.png`);
     const screenshotPath = join(screenshotsDir, `${finalPath}.webp`);
     ensureDirectoryExists(dirname(screenshotPath));
 
-    await page.screenshot({ path: tempPngPath, fullPage: true});
+    await page.screenshot({ path: tempPngPath, fullPage: true });
     await sharp(tempPngPath).webp({ quality: 85 }).toFile(screenshotPath);
 
     if (existsSync(tempPngPath)) {
@@ -287,10 +288,21 @@ async function takeScreenshots(
         let screenshotIndex = 0;
 
         try {
-          // Construct URL from file path (add /candidate prefix since server serves from parent)
-          const fileUrl = convertToHtmlExtension(
-            `${serverUrl}/candidate/${file.path.replace(/\\/g, '/')}`
-          );
+          let fileUrl;
+          if (isSpaMode) {
+            const baseUrl = new URL(serverUrl);
+            const specUrl = file.frontMatter?.url;
+            if (specUrl) {
+              fileUrl = new URL(specUrl, baseUrl).href;
+            } else {
+              fileUrl = serverUrl;
+            }
+          } else {
+            fileUrl = convertToHtmlExtension(
+              `${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`,
+            );
+          }
+
           console.log(`Navigating to ${fileUrl}`);
           await page.goto(fileUrl, { waitUntil: "networkidle" });
           if (waitTime > 0) {
@@ -299,7 +311,7 @@ async function takeScreenshots(
           const baseName = removeExtension(file.path);
 
           const initialScreenshotPath = await takeAndSaveScreenshot(page, baseName);
-          console.log(`Initial screenshot saved: ${initialScreenshotPath}`);
+          console.log(`Screenshot saved: ${initialScreenshotPath}`);
 
           const stepContext = {
             baseName,
