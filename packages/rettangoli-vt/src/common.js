@@ -249,7 +249,7 @@ async function takeScreenshots(
   screenshotsDir,
   concurrency = 8,
   waitTime = 0,
-  isSpaMode = false,
+  hasUrl = false,
 ) {
   // Ensure screenshots directory exists
   ensureDirectoryExists(screenshotsDir);
@@ -289,7 +289,7 @@ async function takeScreenshots(
 
         try {
           let fileUrl;
-          if (isSpaMode) {
+          if (hasUrl) {
             const baseUrl = new URL(serverUrl);
             const specUrl = file.frontMatter?.url;
             if (specUrl) {
