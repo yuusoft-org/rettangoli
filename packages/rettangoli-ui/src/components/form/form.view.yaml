@@ -33,6 +33,8 @@ propsSchema:
                     const: inputText
                   placeholder:
                     type: string
+                  testId:
+                    type: string
                   tooltip:
                     type: object
                     properties:
@@ -74,6 +76,8 @@ propsSchema:
                       required:
                         - label
                         - value
+                  testId:
+                    type: string
                   tooltip:
                     type: object
                     properties:
@@ -96,6 +100,8 @@ propsSchema:
                   inputType:
                     const: colorPicker
                   value:
+                    type: string
+                  testId:
                     type: string
                   tooltip:
                     type: object
@@ -125,6 +131,8 @@ propsSchema:
                     type: number
                   value:
                     type: number
+                  testId:
+                    type: string
                   tooltip:
                     type: object
                     properties:
@@ -153,6 +161,8 @@ propsSchema:
                     type: number
                   value:
                     type: number
+                  testId:
+                    type: string
                   tooltip:
                     type: object
                     properties:
@@ -178,6 +188,8 @@ propsSchema:
                   height:
                     type: number
                   placeholder:
+                    type: string
+                  testId:
                     type: string
                   tooltip:
                     type: object
@@ -209,6 +221,8 @@ propsSchema:
                     type: object
                   waveformData:
                     type: object
+                  testId:
+                    type: string
                   tooltip:
                     type: object
                     properties:
@@ -230,6 +244,8 @@ propsSchema:
                   inputType:
                     const: popover-input
                   placeholder:
+                    type: string
+                  testId:
                     type: string
                   tooltip:
                     type: object
@@ -328,30 +344,30 @@ template:
                   - $if field.inputType == "read-only-text":
                       - rtgl-text s=sm: ${field.defaultValue}
                   - $if field.inputType == "inputText" || field.inputType == 'input-text':
-                      - rtgl-input#field-${field.name} w=f min=${field.min} max=${field.max} step=${field.step}:
+                      - rtgl-input#field-${field.name} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}:
                   - $if field.inputType == "input-number":
-                      - rtgl-input-number#field-${field.name} w=f:
+                      - rtgl-input-number#field-${field.name} w=f data-testid=${field.testId}:
                   - $if field.inputType == "input-textarea":
-                      - rtgl-textarea#field-${field.name} w=f rows=${field.rows} w=f:
+                      - rtgl-textarea#field-${field.name} w=f rows=${field.rows} w=f data-testid=${field.testId}:
                   - $if field.inputType == "popover-input":
-                      - rtgl-popover-input#field-${field.name} label="${field.label}":
+                      - rtgl-popover-input#field-${field.name} label="${field.label}" data-testid=${field.testId}:
                   - $if field.inputType == "select":
-                      - rtgl-select#field-${field.name} key=${key} w=f .options=fields[${i}].options ?no-clear=fields[${i}].noClear .addOption=fields[${i}].addOption .selectedValue=#{field.selectedValue} .placeholder=#{field.placeholder}:
+                      - rtgl-select#field-${field.name} key=${key} w=f .options=fields[${i}].options ?no-clear=fields[${i}].noClear .addOption=fields[${i}].addOption .selectedValue=#{field.selectedValue} .placeholder=#{field.placeholder} data-testid=${field.testId}:
                   - $if field.inputType == "colorPicker":
-                      - rtgl-color-picker#field-${field.name} key=${key}:
+                      - rtgl-color-picker#field-${field.name} key=${key} data-testid=${field.testId}:
                   - $if field.inputType == "slider":
-                      - rtgl-slider#field-${field.name} key=${key} w=f min=${field.min} max=${field.max} step=${field.step}:
+                      - rtgl-slider#field-${field.name} key=${key} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}:
                   - $if field.inputType == "slider-input":
-                      - rtgl-slider-input#field-${field.name} w=f min=${field.min} max=${field.max} step=${field.step}:
+                      - rtgl-slider-input#field-${field.name} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}:
                   - $if field.inputType == "image" && field.imageSrc:
-                      - rtgl-image#image-${field.name} src=${field.imageSrc} w=${field.width} h=${field.height} cur=p:
+                      - rtgl-image#image-${field.name} src=${field.imageSrc} w=${field.width} h=${field.height} cur=p data-testid=${field.testId}:
                   - $if field.inputType == "image" && !field.imageSrc:
-                      - rtgl-view#field-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
+                      - rtgl-view#field-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md data-testid=${field.testId}:
                           - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
                   - $if field.inputType == "waveform" && field.waveformData:
-                      - rtgl-waveform#field-${field.name} .waveformData=fields[${i}].waveformData w=${field.width} h=${field.height} cur=p:
+                      - rtgl-waveform#field-${field.name} .waveformData=fields[${i}].waveformData w=${field.width} h=${field.height} cur=p data-testid=${field.testId}:
                   - $if field.inputType == "waveform" && !field.waveformData:
-                      - rtgl-view#field-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md:
+                      - rtgl-view#field-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md data-testid=${field.testId}:
                           - rtgl-text c=mu-fg ta=c: ${field.placeholder}
                   - $if field.inputType == "slot":
                       - 'slot#field-${field.slotName} name=${field.slot} style="display: contents;"':
