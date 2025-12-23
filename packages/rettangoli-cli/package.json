@@ -1,6 +1,6 @@
 {
   "name": "rtgl",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "description": "CLI tool for Rettangoli - A frontend framework and development toolkit",
   "type": "module",
   "bin": {
