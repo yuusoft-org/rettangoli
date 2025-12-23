@@ -291,8 +291,7 @@ async function takeScreenshots(
           const constructedUrl = convertToHtmlExtension(
             `${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`,
           );
-          // Priority: frontMatter URL > config URL > constructed file URL
-          const url = frontMatterUrl ?? configUrl ?? constructedUrl;
+          const url = configUrl ?? frontMatterUrl ?? constructedUrl;
           const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
 
           console.log(`Navigating to ${fileUrl}`);
