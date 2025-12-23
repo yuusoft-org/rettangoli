@@ -179,7 +179,6 @@ function startWebServer(artifactsDir, staticDir, port) {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, `http://localhost:${port}`);
     let path = url.pathname;
-
     // Default to index.html for root path
     if (path === "/") {
       path = "/index.html";
@@ -248,7 +247,8 @@ async function takeScreenshots(
   serverUrl,
   screenshotsDir,
   concurrency = 8,
-  waitTime = 0
+  waitTime = 0,
+  configUrl = undefined,
 ) {
   // Ensure screenshots directory exists
   ensureDirectoryExists(screenshotsDir);
@@ -257,13 +257,13 @@ async function takeScreenshots(
   console.log("Launching browser to take screenshots...");
   const browser = await chromium.launch();
 
-  const takeAndSaveScreenshot = async (page, basePath, suffix = '') => {
+  const takeAndSaveScreenshot = async (page, basePath, suffix = "") => {
     const finalPath = suffix ? `${basePath}-${suffix}` : basePath;
     const tempPngPath = join(screenshotsDir, `${finalPath}.png`);
     const screenshotPath = join(screenshotsDir, `${finalPath}.webp`);
     ensureDirectoryExists(dirname(screenshotPath));
 
-    await page.screenshot({ path: tempPngPath, fullPage: true});
+    await page.screenshot({ path: tempPngPath, fullPage: true });
     await sharp(tempPngPath).webp({ quality: 85 }).toFile(screenshotPath);
 
     if (existsSync(tempPngPath)) {
@@ -287,10 +287,13 @@ async function takeScreenshots(
         let screenshotIndex = 0;
 
         try {
-          // Construct URL from file path (add /candidate prefix since server serves from parent)
-          const fileUrl = convertToHtmlExtension(
-            `${serverUrl}/candidate/${file.path.replace(/\\/g, '/')}`
+          const frontMatterUrl = file.frontMatter?.url;
+          const constructedUrl = convertToHtmlExtension(
+            `${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`,
           );
+          const url = frontMatterUrl ?? configUrl ?? constructedUrl;
+          const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
+
           console.log(`Navigating to ${fileUrl}`);
           await page.goto(fileUrl, { waitUntil: "networkidle" });
           if (waitTime > 0) {
@@ -299,7 +302,7 @@ async function takeScreenshots(
           const baseName = removeExtension(file.path);
 
           const initialScreenshotPath = await takeAndSaveScreenshot(page, baseName);
-          console.log(`Initial screenshot saved: ${initialScreenshotPath}`);
+          console.log(`Screenshot saved: ${initialScreenshotPath}`);
 
           const stepContext = {
             baseName,
