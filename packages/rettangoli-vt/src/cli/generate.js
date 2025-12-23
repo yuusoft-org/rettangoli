@@ -80,7 +80,6 @@ async function main(options) {
         candidatePath,
         24,
         screenshotWaitTime,
-        true,
       );
     }
   } else {

@@ -249,7 +249,6 @@ async function takeScreenshots(
   screenshotsDir,
   concurrency = 8,
   waitTime = 0,
-  hasUrl = false,
 ) {
   // Ensure screenshots directory exists
   ensureDirectoryExists(screenshotsDir);
@@ -288,20 +287,14 @@ async function takeScreenshots(
         let screenshotIndex = 0;
 
         try {
-          let fileUrl;
-          if (hasUrl) {
-            const baseUrl = new URL(serverUrl);
-            const specUrl = file.frontMatter?.url;
-            if (specUrl) {
-              fileUrl = new URL(specUrl, baseUrl).href;
-            } else {
-              fileUrl = serverUrl;
-            }
-          } else {
-            fileUrl = convertToHtmlExtension(
-              `${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`,
-            );
-          }
+          const frontMatterUrl = file.frontMatter?.url;
+          const constructedUrl = convertToHtmlExtension(
+            `${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`,
+          );
+          // Priority: frontMatter URL > constructed file URL
+          const fileUrl = frontMatterUrl
+            ? new URL(frontMatterUrl, serverUrl).href
+            : constructedUrl;
 
           console.log(`Navigating to ${fileUrl}`);
           await page.goto(fileUrl, { waitUntil: "networkidle" });
