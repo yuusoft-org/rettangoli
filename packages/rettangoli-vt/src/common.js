@@ -179,7 +179,6 @@ function startWebServer(artifactsDir, staticDir, port) {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, `http://localhost:${port}`);
     let path = url.pathname;
-
     // Default to index.html for root path
     if (path === "/") {
       path = "/index.html";
@@ -249,6 +248,7 @@ async function takeScreenshots(
   screenshotsDir,
   concurrency = 8,
   waitTime = 0,
+  configUrl = undefined,
 ) {
   // Ensure screenshots directory exists
   ensureDirectoryExists(screenshotsDir);
@@ -291,10 +291,9 @@ async function takeScreenshots(
           const constructedUrl = convertToHtmlExtension(
             `${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`,
           );
-          // Priority: frontMatter URL > constructed file URL
-          const fileUrl = frontMatterUrl
-            ? new URL(frontMatterUrl, serverUrl).href
-            : constructedUrl;
+          // Priority: frontMatter URL > config URL > constructed file URL
+          const url = frontMatterUrl ?? configUrl ?? constructedUrl;
+          const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
 
           console.log(`Navigating to ${fileUrl}`);
           await page.goto(fileUrl, { waitUntil: "networkidle" });
