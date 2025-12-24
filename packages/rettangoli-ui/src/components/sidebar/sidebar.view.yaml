@@ -85,6 +85,8 @@ propsSchema:
           type: string
         href:
           type: string
+        testId:
+          type: string
         image:
           type: object
           properties:
@@ -109,6 +111,8 @@ propsSchema:
             type: string
           items:
             type: array
+          testId:
+            type: string
 
 refs:
   header-image:
@@ -162,7 +166,7 @@ template:
           - rtgl-view href=${header.href} d=h av=c ah=${headerAlign} g=lg w=${headerWidth}:
             - *headerContent
         $else:
-            - rtgl-view#header d=h av=c ah=${headerAlign} g=lg w=${headerWidth} cur=p:
+            - rtgl-view#header d=h av=c ah=${headerAlign} g=lg w=${headerWidth} cur=p data-testid=${header.testId}:
               - *headerContent
 
     - rtgl-view w=f ph=${headerPadding} pb=lg g=xs ah=${ah}:
@@ -174,7 +178,7 @@ template:
               $else:
                 - rtgl-view mt=md h=1 bgc=mu-bg:
           $else:
-            - rtgl-view#item-${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=p:
+            - rtgl-view#item-${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=p data-testid=${item.testId}:
               - $if item.icon:
                   - $if showLabels:
                       - rtgl-view d=h ah=${itemContentAlign} g=sm:
