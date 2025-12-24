@@ -23,6 +23,8 @@ propsSchema:
             type: string
           value:
             type: any
+          testId:
+            type: string
     selectedValue:
       type: any
     onChange:
@@ -68,19 +70,19 @@ refs:
 events: {}
 
 template:
-  - rtgl-button#select-button v=ol ${containerAttrString}:
+  - rtgl-button#select-button v=ol ${containerAttrString} data-testid="select-button":
       - rtgl-view d=h av=c w=f:
           - rtgl-text c=${selectedLabelColor} ellipsis: ${selectedLabel}
           - rtgl-view mh=md flex=1:
           - $if showClear:
-              - rtgl-svg#clear-button mr=md svg=x wh=16 c=mu-fg cur=p:
+              - rtgl-svg#clear-button mr=md svg=x wh=16 c=mu-fg cur=p data-testid="select-clear-button":
           - rtgl-svg svg=chevronDown wh=16 c=mu-fg:
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} placement=right-start:
       - rtgl-view wh=300 g=xs slot=content bgc=background br=md sv=true:
           - $for option, i in options:
-              - rtgl-view#option-${i} w=f ph=lg pv=md cur=p br=md bgc=${option.bgc}:
+              - rtgl-view#option-${i} w=f ph=lg pv=md cur=p br=md bgc=${option.bgc} data-testid=${option.testId}:
                   - rtgl-text: ${option.label}
           - $if showAddOption:
               - rtgl-view w=f bw=xs bc=mu-bg bt=sm:
-              - rtgl-view#option-add w=f ph=lg pv=md cur=p br=md bgc=${addOptionBgc}:
+              - rtgl-view#option-add w=f ph=lg pv=md cur=p br=md bgc=${addOptionBgc} data-testid="select-add-option":
                   - rtgl-text c=ac: ${addOptionLabel}
