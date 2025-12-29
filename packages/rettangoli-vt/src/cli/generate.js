@@ -7,8 +7,6 @@ import {
   takeScreenshots,
   generateOverview,
   readYaml,
-  getSkippedFilePaths,
-  isPathSkipped,
 } from "../common.js";
 
 const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
@@ -86,13 +84,9 @@ async function main(options) {
 
   // Take screenshots (only for non-skipped files)
   if (!skipScreenshots) {
-    // Get skipped file paths from config
-    const skippedPaths = getSkippedFilePaths(configData);
-
-    // Filter out skipped files for screenshots only
-    // Check both config-level skip (by folder) and frontmatter-level skip (per file)
+    // Filter out files with skipScreenshot: true in frontmatter
     const filesToScreenshot = generatedFiles.filter(
-      (file) => !isPathSkipped(file.path, skippedPaths) && !file.frontMatter?.skipScreenshot
+      (file) => !file.frontMatter?.skipScreenshot
     );
 
     const skippedCount = generatedFiles.length - filesToScreenshot.length;

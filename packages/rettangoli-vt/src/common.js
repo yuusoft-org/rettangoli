@@ -19,55 +19,6 @@ import { createSteps } from "./createSteps.js";
 
 const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
 
-/**
- * Get list of file paths that should be skipped for screenshots based on config
- * Returns an array of normalized paths from sections/items marked with skipScreenshot: true
- */
-function getSkippedFilePaths(configData) {
-  const skippedPaths = [];
-
-  if (!configData?.sections) {
-    return skippedPaths;
-  }
-
-  configData.sections.forEach((section) => {
-    if (section.type === "groupLabel" && section.items) {
-      // If entire group is skipped, add all item paths
-      if (section.skipScreenshot) {
-        section.items.forEach((item) => {
-          if (item.files) {
-            skippedPaths.push(path.normalize(item.files));
-          }
-        });
-      } else {
-        // Otherwise, only add individually skipped items
-        section.items.forEach((item) => {
-          if (item.skipScreenshot && item.files) {
-            skippedPaths.push(path.normalize(item.files));
-          }
-        });
-      }
-    } else if (section.skipScreenshot && section.files) {
-      // Flat section that is skipped
-      skippedPaths.push(path.normalize(section.files));
-    }
-  });
-
-  return skippedPaths;
-}
-
-/**
- * Check if a file path should be skipped based on the skipped paths list
- */
-function isPathSkipped(filePath, skippedPaths) {
-  const normalizedFilePath = path.normalize(filePath);
-  const fileDir = path.dirname(normalizedFilePath);
-
-  return skippedPaths.some((skippedPath) => {
-    return fileDir === skippedPath || fileDir.startsWith(skippedPath + path.sep);
-  });
-}
-
 const convertToHtmlExtension = (filePath) => {
   if (filePath.endsWith(".html")) {
     return filePath;
@@ -476,6 +427,4 @@ export {
   takeScreenshots,
   generateOverview,
   readYaml,
-  getSkippedFilePaths,
-  isPathSkipped,
 };
