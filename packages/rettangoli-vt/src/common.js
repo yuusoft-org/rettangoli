@@ -298,10 +298,11 @@ async function takeScreenshots(
               Object.assign(window, vars);
             }, envVars);
           }
-          // Construct URL from file path (add /candidate prefix since server serves from parent)
-          const fileUrl = convertToHtmlExtension(
-            `${serverUrl}/candidate/${file.path.replace(/\\/g, '/')}`
-          );
+
+          const frontMatterUrl = file.frontMatter?.url;
+          const constructedUrl = convertToHtmlExtension(`${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`);
+          const url = frontMatterUrl ?? configUrl ?? constructedUrl;
+          const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
 
           console.log(`Navigating to ${fileUrl}`);
           await page.goto(fileUrl, { waitUntil: "networkidle" });
@@ -424,20 +425,6 @@ function generateOverview(data, templatePath, outputPath, configData) {
   } catch (error) {
     console.error("Error generating overview HTML:", error);
     throw error;
-  }
-}
-
-function injectAllEnvVariables(envFolderPath){
-  const envFile = join(envFolderPath, '.env');
-  if (existsSync(envFile)) {
-    const envContent = readFileSync(envFile, 'utf8');
-    const lines = envContent.split('\n');
-    lines.forEach((line) => {
-      const [key, value] = line.split('=');
-      if (key && value) {
-        window[key.trim()] = value.trim();
-      }
-    })
   }
 }
 
