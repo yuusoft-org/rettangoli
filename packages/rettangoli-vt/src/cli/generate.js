@@ -7,6 +7,8 @@ import {
   takeScreenshots,
   generateOverview,
   readYaml,
+  getSkippedFilePaths,
+  isPathSkipped,
 } from "../common.js";
 
 const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
@@ -74,7 +76,7 @@ async function main(options) {
     templateConfig,
   );
 
-  // Generate overview page
+  // Generate overview page (includes all files, skipped or not)
   generateOverview(
     generatedFiles,
     indexTemplatePath,
@@ -82,12 +84,25 @@ async function main(options) {
     configData,
   );
 
-  // Take screenshots
+  // Take screenshots (only for non-skipped files)
   if (!skipScreenshots) {
+    // Get skipped file paths from config
+    const skippedPaths = getSkippedFilePaths(configData);
+
+    // Filter out skipped files for screenshots only
+    const filesToScreenshot = generatedFiles.filter(
+      (file) => !isPathSkipped(file.path, skippedPaths)
+    );
+
+    if (skippedPaths.length > 0) {
+      const skippedCount = generatedFiles.length - filesToScreenshot.length;
+      console.log(`Skipping screenshots for ${skippedCount} files from skipped sections: ${skippedPaths.join(", ")}`);
+    }
+
     const server = configUrl ? null : startWebServer(siteOutputPath, vtPath, port);
     try {
       await takeScreenshots(
-        generatedFiles,
+        filesToScreenshot,
         `http://localhost:${port}`,
         candidatePath,
         24,

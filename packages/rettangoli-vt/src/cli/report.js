@@ -4,6 +4,7 @@ import crypto from "crypto";
 import sharp from "sharp";
 import { Liquid } from "liquidjs";
 import { cp } from "node:fs/promises";
+import { readYaml, getSkippedFilePaths, isPathSkipped } from "../common.js";
 
 const libraryTemplatesPath = new URL('./templates', import.meta.url).pathname;
 
@@ -128,6 +129,21 @@ async function main(options = {}) {
   const siteReferenceDir = path.join(siteOutputPath, "reference");
   const templatePath = path.join(libraryTemplatesPath, "report.html");
   const outputPath = path.join(siteOutputPath, "report.html");
+  const mainConfigPath = "rettangoli.config.yaml";
+
+  // Read VT config from main rettangoli.config.yaml
+  let configData = {};
+  let skippedPaths = [];
+  try {
+    const mainConfig = await readYaml(mainConfigPath);
+    configData = mainConfig.vt || {};
+    skippedPaths = getSkippedFilePaths(configData);
+    if (skippedPaths.length > 0) {
+      console.log(`Skipping paths from report: ${skippedPaths.join(", ")}`);
+    }
+  } catch (error) {
+    console.log("Main config file not found, using defaults");
+  }
 
   if (!fs.existsSync(originalReferenceDir)) {
     console.log("Reference directory does not exist, creating it...");
@@ -142,8 +158,30 @@ async function main(options = {}) {
 
   try {
     // Get all WebP files recursively (only compare screenshots, not HTML)
-    const candidateFiles = getAllFiles(candidateDir).filter(file => file.endsWith('.webp'));
-    const referenceFiles = getAllFiles(originalReferenceDir).filter(file => file.endsWith('.webp'));
+    let candidateFiles = getAllFiles(candidateDir).filter(file => file.endsWith('.webp'));
+    let referenceFiles = getAllFiles(originalReferenceDir).filter(file => file.endsWith('.webp'));
+
+    // Filter out skipped paths
+    if (skippedPaths.length > 0) {
+      const beforeCandidateCount = candidateFiles.length;
+      const beforeReferenceCount = referenceFiles.length;
+
+      candidateFiles = candidateFiles.filter(file => {
+        const relativePath = path.relative(candidateDir, file);
+        return !isPathSkipped(relativePath, skippedPaths);
+      });
+
+      referenceFiles = referenceFiles.filter(file => {
+        const relativePath = path.relative(originalReferenceDir, file);
+        return !isPathSkipped(relativePath, skippedPaths);
+      });
+
+      const skippedCandidates = beforeCandidateCount - candidateFiles.length;
+      const skippedReferences = beforeReferenceCount - referenceFiles.length;
+      if (skippedCandidates > 0 || skippedReferences > 0) {
+        console.log(`Skipped ${skippedCandidates} candidate and ${skippedReferences} reference screenshots from report`);
+      }
+    }
 
     console.log("Candidate Screenshots:", candidateFiles.length);
     console.log("Reference Screenshots:", referenceFiles.length);
