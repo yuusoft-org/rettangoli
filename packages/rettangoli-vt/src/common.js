@@ -259,16 +259,16 @@ async function takeScreenshots(
 
   const takeAndSaveScreenshot = async (page, basePath, suffix = "") => {
     const finalPath = suffix ? `${basePath}-${suffix}` : basePath;
-    const tempPngPath = join(screenshotsDir, `${finalPath}.png`);
     const screenshotPath = join(screenshotsDir, `${finalPath}.webp`);
     ensureDirectoryExists(dirname(screenshotPath));
 
-    await page.screenshot({ path: tempPngPath, fullPage: true });
-    await sharp(tempPngPath).webp({ quality: 85 }).toFile(screenshotPath);
+    const t1 = Date.now();
+    const buffer = await page.screenshot({ fullPage: true });
+    const t2 = Date.now();
+    await sharp(buffer).webp({ quality: 85 }).toFile(screenshotPath);
+    const t3 = Date.now();
+    console.log(`  [timing] screenshot: ${t2 - t1}ms, webp convert: ${t3 - t2}ms`);
 
-    if (existsSync(tempPngPath)) {
-      unlinkSync(tempPngPath);
-    }
     return screenshotPath;
   };
 
@@ -296,7 +296,10 @@ async function takeScreenshots(
           const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
 
           console.log(`Navigating to ${fileUrl}`);
+          const navStart = Date.now();
           await page.goto(fileUrl, { waitUntil: "networkidle", timeout: 15000 });
+          const navEnd = Date.now();
+          console.log(`  [timing] navigation: ${navEnd - navStart}ms`);
           if (waitTime > 0) {
             await page.waitForTimeout(waitTime);
           }
