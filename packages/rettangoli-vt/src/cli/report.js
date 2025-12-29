@@ -226,19 +226,19 @@ async function main(options = {}) {
       };
       console.log(JSON.stringify(logData, null, 2));
     });
-    
+
     // Summary at the end
     console.log(`\nSummary:`);
     console.log(`Total images: ${results.length}`);
     console.log(`Mismatched images: ${mismatchingItems.length}`);
-    
+
     // Generate HTML report
     await generateReport({
       results: mismatchingItems,
       templatePath,
       outputPath,
     });
-    if(mismatchingItems.length > 0){ 
+    if(mismatchingItems.length > 0){
       console.error("Error: there are more than 0 mismatching item.")
       process.exit(1);
     }
