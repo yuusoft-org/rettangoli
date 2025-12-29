@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import sharp from "sharp";
 import { Liquid } from "liquidjs";
 import { cp } from "node:fs/promises";
 
@@ -120,7 +119,7 @@ async function generateReport({ results, templatePath, outputPath }) {
 }
 
 async function main(options = {}) {
-  const { vtPath = "./vt" } = options;
+  const { vtPath = "./vt", skipFiles = [] } = options;
 
   const siteOutputPath = path.join(".rettangoli", "vt", "_site");
   const candidateDir = path.join(siteOutputPath, "candidate");
@@ -165,7 +164,19 @@ async function main(options = {}) {
 
     allPaths.sort(sortPaths);
 
+    const normalizedSkipFiles = skipFiles.map(f => f.replace(/\\/g, '/'));
     for (const relativePath of allPaths) {
+      const normalizedPath = relativePath.replace(/\\/g, '/');
+      if (normalizedSkipFiles.some(skipPattern => {
+        const regex = new RegExp('^' + skipPattern.replace(/\*/g, '.*') + '$');
+        return regex.test(normalizedPath);
+      })) {
+        console.log(`Skipping file: ${relativePath}`);
+        results.push({
+          equal: true,
+        })
+        continue;
+      }
       const candidatePath = path.join(candidateDir, relativePath);
       const referencePath = path.join(originalReferenceDir, relativePath);
       const siteReferencePath = path.join(siteReferenceDir, relativePath);
@@ -219,14 +230,14 @@ async function main(options = {}) {
         };
       });
     console.log("Mismatching Items (JSON):");
-    mismatchingItems.forEach(item => {
-      const logData = {
-        candidatePath: item.candidatePath,
-        referencePath: item.referencePath,
-        equal: item.equal,
-      };
-      console.log(JSON.stringify(logData, null, 2));
-    });
+    // mismatchingItems.forEach(item => {
+    //   const logData = {
+    //     candidatePath: item.candidatePath,
+    //     referencePath: item.referencePath,
+    //     equal: item.equal,
+    //   };
+    //   console.log(JSON.stringify(logData, null, 2));
+    // });
     
     // Summary at the end
     console.log(`\nSummary:`);

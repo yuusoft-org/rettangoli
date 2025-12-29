@@ -212,7 +212,8 @@ vtCommand
 vtCommand
   .command("report")
   .description("Create reports")
-  .action(() => {
+  .option("--skip-files <files...>", "Files to skip (supports wildcards)")
+  .action((options) => {
     const config = readConfig();
 
     if (!config) {
@@ -220,7 +221,8 @@ vtCommand
     }
 
     const vtPath = config.vt?.path || "vt";
-    report({ vtPath });
+    const skipFiles = options.skipFiles || [];
+    report({ vtPath, skipFiles });
   });
 
 vtCommand
