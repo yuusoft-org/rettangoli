@@ -285,9 +285,27 @@ async function takeScreenshots(
         // Create a new context and page for each file (for parallelism)
         const context = await browser.newContext();
         const page = await context.newPage();
-        let screenshotIndex = 0;
 
         try {
+          const envFilePath = join(serverUrl, 'public', '.env');
+          if (existsSync(envFilePath)) {
+            const envContent = readFileSync(envFilePath, 'utf8');
+            const envVars = {};
+
+            envContent.split('\n').forEach((line) => {
+              const trimmedLine = line.trim();
+              const [key, value] = trimmedLine.split('=');
+              if (key.trim().startsWith('RTGL_VT_')) {
+                envVars[key.trim()] = value;
+              }
+            });
+
+            if (Object.keys(envVars).length > 0) {
+              await page.addInitScript((vars) => {
+                Object.assign(window, vars);
+              }, envVars);
+            }
+          }
           // Construct URL from file path (add /candidate prefix since server serves from parent)
           const fileUrl = convertToHtmlExtension(
             `${serverUrl}/candidate/${file.path.replace(/\\/g, '/')}`
@@ -413,6 +431,20 @@ function generateOverview(data, templatePath, outputPath, configData) {
   } catch (error) {
     console.error("Error generating overview HTML:", error);
     throw error;
+  }
+}
+
+function injectAllEnvVariables(envFolderPath){
+  const envFile = join(envFolderPath, '.env');
+  if (existsSync(envFile)) {
+    const envContent = readFileSync(envFile, 'utf8');
+    const lines = envContent.split('\n');
+    lines.forEach((line) => {
+      const [key, value] = line.split('=');
+      if (key && value) {
+        window[key.trim()] = value.trim();
+      }
+    })
   }
 }
 
