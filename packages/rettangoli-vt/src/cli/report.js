@@ -168,7 +168,8 @@ async function main(options = {}) {
     for (const relativePath of allPaths) {
       const normalizedPath = relativePath.replace(/\\/g, '/');
       if (normalizedSkipFiles.some(skipPattern => {
-        const regex = new RegExp('^' + skipPattern.replace(/\*/g, '.*') + '$');
+        const pattern = skipPattern.replace(/\*/g, '.*');
+        const regex = new RegExp(pattern + '(\\.webp)?$');
         return regex.test(normalizedPath);
       })) {
         console.log(`Skipping file: ${relativePath}`);
