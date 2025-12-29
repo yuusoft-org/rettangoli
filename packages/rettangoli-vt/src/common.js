@@ -272,6 +272,9 @@ async function takeScreenshots(
     return screenshotPath;
   };
 
+  // Create a single browser context for all pages (more efficient than multiple contexts)
+  const context = await browser.newContext();
+
   try {
     const files = [...generatedFiles];
     const total = files.length;
@@ -281,10 +284,8 @@ async function takeScreenshots(
     while (files.length > 0) {
       const batch = files.splice(0, concurrency);
       const batchPromises = batch.map(async (file) => {
-        // Create a new context and page for each file (for parallelism)
-        const context = await browser.newContext();
+        // Create a new page within the shared context (lightweight)
         const page = await context.newPage();
-        let screenshotIndex = 0;
 
         try {
           const frontMatterUrl = file.frontMatter?.url;
@@ -295,7 +296,7 @@ async function takeScreenshots(
           const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
 
           console.log(`Navigating to ${fileUrl}`);
-          await page.goto(fileUrl, { waitUntil: "networkidle" });
+          await page.goto(fileUrl, { waitUntil: "load" });
           if (waitTime > 0) {
             await page.waitForTimeout(waitTime);
           }
@@ -318,8 +319,8 @@ async function takeScreenshots(
         } catch (error) {
           console.error(`Error processing instructions for ${file.path}:`, error);
         } finally {
-          // Close the context when done
-          await context.close();
+          // Close just the page, not the context
+          await page.close();
         }
       });
 
@@ -329,7 +330,8 @@ async function takeScreenshots(
   } catch (error) {
     console.error("Error taking screenshots:", error);
   } finally {
-    // Close browser
+    // Close context and browser
+    await context.close();
     await browser.close();
     console.log("Browser closed");
   }

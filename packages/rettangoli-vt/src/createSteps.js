@@ -21,7 +21,7 @@ async function customEvent(page, args) {
 }
 
 async function goto(page, args) {
-  await page.goto(args[0], { waitUntil: "networkidle" });
+  await page.goto(args[0], { waitUntil: "load" });
 }
 
 async function keypress(page, args) {
