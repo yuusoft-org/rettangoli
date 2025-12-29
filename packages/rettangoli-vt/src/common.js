@@ -287,24 +287,17 @@ async function takeScreenshots(
         const page = await context.newPage();
 
         try {
-          const envFilePath = join(serverUrl, 'public', '.env');
-          if (existsSync(envFilePath)) {
-            const envContent = readFileSync(envFilePath, 'utf8');
-            const envVars = {};
-
-            envContent.split('\n').forEach((line) => {
-              const trimmedLine = line.trim();
-              const [key, value] = trimmedLine.split('=');
-              if (key.trim().startsWith('RTGL_VT_')) {
-                envVars[key.trim()] = value;
-              }
-            });
-
-            if (Object.keys(envVars).length > 0) {
-              await page.addInitScript((vars) => {
-                Object.assign(window, vars);
-              }, envVars);
+          const envVars = {};
+          for (const [key, value] of Object.entries(process.env)) {
+            if (key.startsWith('RTGL_VT_')) {
+              envVars[key] = value;
             }
+          }
+
+          if (Object.keys(envVars).length > 0) {
+            await page.addInitScript((vars) => {
+              Object.assign(window, vars);
+            }, envVars);
           }
           // Construct URL from file path (add /candidate prefix since server serves from parent)
           const fileUrl = convertToHtmlExtension(
