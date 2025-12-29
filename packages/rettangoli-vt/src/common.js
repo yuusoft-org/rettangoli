@@ -302,8 +302,6 @@ async function takeScreenshots(
           const fileUrl = convertToHtmlExtension(
             `${serverUrl}/candidate/${file.path.replace(/\\/g, '/')}`
           );
-          const url = frontMatterUrl ?? configUrl ?? constructedUrl;
-          const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
 
           console.log(`Navigating to ${fileUrl}`);
           await page.goto(fileUrl, { waitUntil: "networkidle" });
