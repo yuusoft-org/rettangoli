@@ -90,13 +90,14 @@ async function main(options) {
     const skippedPaths = getSkippedFilePaths(configData);
 
     // Filter out skipped files for screenshots only
+    // Check both config-level skip (by folder) and frontmatter-level skip (per file)
     const filesToScreenshot = generatedFiles.filter(
-      (file) => !isPathSkipped(file.path, skippedPaths)
+      (file) => !isPathSkipped(file.path, skippedPaths) && !file.frontMatter?.skipScreenshot
     );
 
-    if (skippedPaths.length > 0) {
-      const skippedCount = generatedFiles.length - filesToScreenshot.length;
-      console.log(`Skipping screenshots for ${skippedCount} files from skipped sections: ${skippedPaths.join(", ")}`);
+    const skippedCount = generatedFiles.length - filesToScreenshot.length;
+    if (skippedCount > 0) {
+      console.log(`Skipping screenshots for ${skippedCount} files`);
     }
 
     const server = configUrl ? null : startWebServer(siteOutputPath, vtPath, port);
