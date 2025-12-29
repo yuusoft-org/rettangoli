@@ -20,8 +20,8 @@ import { createSteps } from "./createSteps.js";
 const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
 
 /**
- * Get list of file paths that should be skipped based on config
- * Returns an array of normalized paths from sections/items marked with skip: true
+ * Get list of file paths that should be skipped for screenshots based on config
+ * Returns an array of normalized paths from sections/items marked with skipScreenshot: true
  */
 function getSkippedFilePaths(configData) {
   const skippedPaths = [];
@@ -33,7 +33,7 @@ function getSkippedFilePaths(configData) {
   configData.sections.forEach((section) => {
     if (section.type === "groupLabel" && section.items) {
       // If entire group is skipped, add all item paths
-      if (section.skip) {
+      if (section.skipScreenshot) {
         section.items.forEach((item) => {
           if (item.files) {
             skippedPaths.push(path.normalize(item.files));
@@ -42,12 +42,12 @@ function getSkippedFilePaths(configData) {
       } else {
         // Otherwise, only add individually skipped items
         section.items.forEach((item) => {
-          if (item.skip && item.files) {
+          if (item.skipScreenshot && item.files) {
             skippedPaths.push(path.normalize(item.files));
           }
         });
       }
-    } else if (section.skip && section.files) {
+    } else if (section.skipScreenshot && section.files) {
       // Flat section that is skipped
       skippedPaths.push(path.normalize(section.files));
     }
