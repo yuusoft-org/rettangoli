@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/ui",
-  "version": "0.1.26",
+  "version": "0.1.28",
   "description": "A UI component library for building web interfaces.",
   "main": "dist/rettangoli-esm.min.js",
   "type": "module",
