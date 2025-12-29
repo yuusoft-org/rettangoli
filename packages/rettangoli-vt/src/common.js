@@ -296,7 +296,7 @@ async function takeScreenshots(
           const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
 
           console.log(`Navigating to ${fileUrl}`);
-          await page.goto(fileUrl, { waitUntil: "load" });
+          await page.goto(fileUrl, { waitUntil: "networkidle", timeout: 15000 });
           if (waitTime > 0) {
             await page.waitForTimeout(waitTime);
           }
