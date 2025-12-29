@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import sharp from "sharp";
 import { Liquid } from "liquidjs";
 import { cp } from "node:fs/promises";
 
