@@ -22,6 +22,10 @@ async function customEvent(page, args) {
 
 async function goto(page, args) {
   await page.goto(args[0], { waitUntil: "networkidle", timeout: 15000 });
+  // Disable CSS animations for deterministic screenshots
+  await page.addStyleTag({
+    content: '*, *::before, *::after { animation: none !important; transition: none !important; }'
+  });
 }
 
 async function keypress(page, args) {

@@ -256,8 +256,17 @@ async function takeScreenshots(
 
   // Launch browser
   console.log("Launching browser to take screenshots...");
+  const launchArgs = [
+    '--disable-lcd-text',
+    '--disable-font-subpixel-positioning',
+    '--force-color-profile=srgb',
+    '--disable-skia-runtime-opts',
+  ];
+  if (!useCanvas) {
+    launchArgs.push('--disable-gpu', '--disable-accelerated-2d-canvas');
+  }
   const browser = await chromium.launch({
-    args: ['--disable-lcd-text']
+    args: launchArgs
   });
   console.log('Browser version:', browser.version());
   const majorVersion = parseInt(browser.version().split('.')[0], 10);
@@ -295,7 +304,12 @@ async function takeScreenshots(
   };
 
   // Create a single browser context for all pages (more efficient than multiple contexts)
-  const context = await browser.newContext();
+  const context = await browser.newContext({
+    viewport: { width: 1280, height: 720 },
+    deviceScaleFactor: 1,
+    colorScheme: 'light',
+    reducedMotion: 'reduce',
+  });
 
   try {
     const files = [...generatedFiles];
@@ -333,6 +347,12 @@ async function takeScreenshots(
           await page.goto(fileUrl, { waitUntil: "networkidle", timeout: 15000 });
           const navEnd = Date.now();
           console.log(`  [timing] navigation: ${navEnd - navStart}ms`);
+
+          // Disable CSS animations for deterministic screenshots
+          await page.addStyleTag({
+            content: '*, *::before, *::after { animation: none !important; transition: none !important; }'
+          });
+
           if (waitTime > 0) {
             await page.waitForTimeout(waitTime);
           }
