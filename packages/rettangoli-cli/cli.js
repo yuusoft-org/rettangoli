@@ -195,7 +195,9 @@ vtCommand
   .command("generate")
   .description("Generate visualizations")
   .option("--skip-screenshots", "Skip screenshot generation")
-  .option("--screenshot-wait-time <time>", "Wait time between screenshots",parseInt, 0)
+  .option("--screenshot-wait-time <time>", "Wait time between screenshots", parseInt, 0)
+  .option("--concurrency <number>", "Number of concurrent screenshots", parseInt, 12)
+  .option("--canvas", "Take screenshots from canvas element instead of full page")
   .action((options) => {
     const config = readConfig();
 

@@ -20,6 +20,8 @@ async function main(options) {
     skipScreenshots = false,
     vtPath = "./vt",
     screenshotWaitTime = 0,
+    concurrency = 12,
+    canvas = false,
     port = 3001,
   } = options;
 
@@ -84,15 +86,22 @@ async function main(options) {
 
   // Take screenshots
   if (!skipScreenshots) {
+    console.log("Screenshot options:");
+    console.log(`  concurrency: ${concurrency}`);
+    console.log(`  waitTime: ${screenshotWaitTime}ms`);
+    console.log(`  mode: ${canvas ? "canvas" : "fullPage"}`);
+    if (configUrl) console.log(`  url: ${configUrl}`);
+
     const server = configUrl ? null : startWebServer(siteOutputPath, vtPath, port);
     try {
       await takeScreenshots(
         generatedFiles,
         `http://localhost:${port}`,
         candidatePath,
-        24,
+        concurrency,
         screenshotWaitTime,
         configUrl,
+        canvas,
       );
     } finally {
       if (server) {

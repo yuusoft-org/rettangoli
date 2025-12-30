@@ -246,9 +246,10 @@ async function takeScreenshots(
   generatedFiles,
   serverUrl,
   screenshotsDir,
-  concurrency = 8,
+  concurrency = 12,
   waitTime = 0,
   configUrl = undefined,
+  useCanvas = false,
 ) {
   // Ensure screenshots directory exists
   ensureDirectoryExists(screenshotsDir);
@@ -263,7 +264,13 @@ async function takeScreenshots(
     ensureDirectoryExists(dirname(screenshotPath));
 
     const t1 = Date.now();
-    const buffer = await page.screenshot({ fullPage: true });
+    let buffer;
+    if (useCanvas) {
+      const canvas = page.locator('canvas');
+      buffer = await canvas.screenshot();
+    } else {
+      buffer = await page.screenshot({ fullPage: true });
+    }
     const t2 = Date.now();
     await sharp(buffer).webp({ quality: 85 }).toFile(screenshotPath);
     const t3 = Date.now();
