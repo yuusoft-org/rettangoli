@@ -31,3 +31,13 @@ jobs:
       - name: Run Visual Tests Report
         run: bun run vt:report
         working-directory: ./packages/rettangoli-ui
+
+      - name: Upload VT Images as Artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: vt-images-${{ github.run_number }}
+          path: |
+            packages/rettangoli-ui/.rettangoli/vt/_site/reference/
+            packages/rettangoli-ui/.rettangoli/vt/_site/candidate/
+          retention-days: 30
