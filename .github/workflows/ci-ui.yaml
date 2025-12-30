@@ -34,7 +34,7 @@ jobs:
             -v "$GITHUB_WORKSPACE":/app \
             -w /app/packages/rettangoli-ui \
             han4wluc/playwright-bun:v1.57.0-noble \
-            sh -c 'bunx rtgl vt generate --screenshot-wait-time 500 && bunx rtgl vt report'
+            sh -c 'bunx rtgl vt generate --screenshot-wait-time 1000 && bunx rtgl vt report'
 
       - name: Fix permissions for artifacts
         if: failure()
