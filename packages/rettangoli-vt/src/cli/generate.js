@@ -17,6 +17,7 @@ const libraryStaticPath = new URL("./static", import.meta.url).pathname;
  */
 async function main(options) {
   const {
+  const {
     skipScreenshots = false,
     vtPath = "./vt",
     screenshotWaitTime = 0,
