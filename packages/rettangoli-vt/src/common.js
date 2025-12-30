@@ -261,6 +261,7 @@ async function takeScreenshots(
     '--disable-font-subpixel-positioning',
     '--force-color-profile=srgb',
     '--disable-skia-runtime-opts',
+    '--font-render-hinting=none',
   ];
   if (!useCanvas) {
     launchArgs.push('--disable-gpu', '--disable-accelerated-2d-canvas');
