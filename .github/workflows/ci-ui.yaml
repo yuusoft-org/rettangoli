@@ -1,0 +1,33 @@
+name: CI UI
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/rettangoli-ui/**'
+      - 'packages/rettangoli-vt/**'
+  pull_request:
+    paths:
+      - 'packages/rettangoli-ui/**'
+      - 'packages/rettangoli-vt/**'
+
+jobs:
+  visual-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.2.2
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: bunx playwright@1.46.0 install --with-deps chromium
+        working-directory: ./packages/rettangoli-ui
+
+      - name: Run Visual Tests Report
+        run: bun run vt:report
+        working-directory: ./packages/rettangoli-ui
