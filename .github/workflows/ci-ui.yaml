@@ -24,10 +24,6 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Install Playwright Browsers
-        run: bunx playwright@1.57.0 install --with-deps chromium
-        working-directory: ./packages/rettangoli-ui
-
       - name: Run Visual Tests Report
         run: bun run vt:report
         working-directory: ./packages/rettangoli-ui
