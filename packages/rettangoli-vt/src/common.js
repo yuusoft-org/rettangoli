@@ -256,7 +256,22 @@ async function takeScreenshots(
 
   // Launch browser
   console.log("Launching browser to take screenshots...");
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({
+    args: ['--disable-lcd-text']
+  });
+  console.log('Browser version:', browser.version());
+  const majorVersion = parseInt(browser.version().split('.')[0], 10);
+  if (majorVersion !== 143) {
+    throw new Error(`Expected browser major version 143, got ${majorVersion}`);
+  }
+
+  // Assert Roboto font is available
+  const fontCheckPage = await browser.newPage();
+  const hasRoboto = await fontCheckPage.evaluate(() => document.fonts.check('16px Roboto'));
+  await fontCheckPage.close();
+  if (!hasRoboto) {
+    throw new Error('Roboto font is not available');
+  }
 
   const takeAndSaveScreenshot = async (page, basePath, suffix = "") => {
     const finalPath = suffix ? `${basePath}-${suffix}` : basePath;
