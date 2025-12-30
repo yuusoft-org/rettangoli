@@ -4,12 +4,12 @@ on:
     branches:
       - main
     paths:
-      - 'packages/rettangoli-ui/**'
-      - 'packages/rettangoli-vt/**'
+      - "packages/rettangoli-ui/**"
+      - "packages/rettangoli-vt/**"
   pull_request:
     paths:
-      - 'packages/rettangoli-ui/**'
-      - 'packages/rettangoli-vt/**'
+      - "packages/rettangoli-ui/**"
+      - "packages/rettangoli-vt/**"
 
 jobs:
   visual-tests:
@@ -34,6 +34,5 @@ jobs:
         with:
           name: vt-images-${{ github.run_number }}
           path: |
-            packages/rettangoli-ui/.rettangoli/vt/_site/reference/
-            packages/rettangoli-ui/.rettangoli/vt/_site/candidate/
+            packages/rettangoli-ui/.rettangoli/
           retention-days: 30
