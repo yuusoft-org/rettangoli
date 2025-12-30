@@ -295,10 +295,21 @@ async function takeScreenshots(
         const page = await context.newPage();
 
         try {
+          const envVars = {};
+          for (const [key, value] of Object.entries(process.env)) {
+            if (key.startsWith('RTGL_VT_')) {
+              envVars[key] = value;
+            }
+          }
+
+          if (Object.keys(envVars).length > 0) {
+            await page.addInitScript((vars) => {
+              Object.assign(window, vars);
+            }, envVars);
+          }
+
           const frontMatterUrl = file.frontMatter?.url;
-          const constructedUrl = convertToHtmlExtension(
-            `${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`,
-          );
+          const constructedUrl = convertToHtmlExtension(`${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`);
           const url = frontMatterUrl ?? configUrl ?? constructedUrl;
           const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
 

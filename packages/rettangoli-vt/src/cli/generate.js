@@ -76,7 +76,7 @@ async function main(options) {
     templateConfig,
   );
 
-  // Generate overview page
+  // Generate overview page (includes all files, skipped or not)
   generateOverview(
     generatedFiles,
     indexTemplatePath,
@@ -84,7 +84,7 @@ async function main(options) {
     configData,
   );
 
-  // Take screenshots
+  // Take screenshots (only for non-skipped files)
   if (!skipScreenshots) {
     console.log("Screenshot options:");
     console.log(`  concurrency: ${concurrency}`);
@@ -92,10 +92,20 @@ async function main(options) {
     console.log(`  mode: ${canvas ? "canvas" : "fullPage"}`);
     if (configUrl) console.log(`  url: ${configUrl}`);
 
+    // Filter out files with skipScreenshot: true in frontmatter
+    const filesToScreenshot = generatedFiles.filter(
+      (file) => !file.frontMatter?.skipScreenshot
+    );
+
+    const skippedCount = generatedFiles.length - filesToScreenshot.length;
+    if (skippedCount > 0) {
+      console.log(`Skipping screenshots for ${skippedCount} files`);
+    }
+
     const server = configUrl ? null : startWebServer(siteOutputPath, vtPath, port);
     try {
       await takeScreenshots(
-        generatedFiles,
+        filesToScreenshot,
         `http://localhost:${port}`,
         candidatePath,
         concurrency,
