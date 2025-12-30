@@ -26,7 +26,7 @@
     "build:dev": "rtgl fe build -d && bun run esbuild-dev.js",
     "build": "rtgl fe build && bun run esbuild.js",
     "vt:generate": "rtgl fe build -d && bun run esbuild-dev.js && rtgl vt generate --skip-screenshots",
-    "vt:report": "bun run build:dev && docker run --rm -v \"$(cd ../.. && pwd)\":/app -w /app/packages/rettangoli-ui han4wluc/playwright-bun:v1.57.0-noble sh -c 'echo pwd: $(pwd) && ls /app && ls -la && bunx rtgl vt generate --screenshot-wait-time 500 && bunx rtgl vt report && ls -la .rettangoli'",
+    "vt:report": "bun run build:dev && docker run --rm -v \"$(cd ../.. && pwd)\":/app -w /app/packages/rettangoli-ui han4wluc/playwright-bun:v1.57.0-noble sh -c 'bunx rtgl vt generate --screenshot-wait-time 500 && bunx rtgl vt report'",
     "vt:accept": "rtgl vt accept",
     "serve": "bunx serve .rettangoli/vt/_site"
   },
