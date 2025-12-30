@@ -38,13 +38,17 @@ jobs:
 
       - name: Fix permissions for artifacts
         if: failure()
-        run: sudo chown -R $USER:$USER packages/rettangoli-ui/.rettangoli/
+        run: |
+          sudo chown -R $USER:$USER packages/rettangoli-ui/.rettangoli/
+          echo "=== Directory structure ==="
+          find packages/rettangoli-ui/.rettangoli -type f | head -20
+          echo "=== Directory listing ==="
+          ls -laR packages/rettangoli-ui/.rettangoli/ | head -50
 
       - name: Upload VT Images as Artifacts
         uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: vt-images-${{ github.run_number }}
-          path: |
-            packages/rettangoli-ui/.rettangoli/
+          path: packages/rettangoli-ui/.rettangoli/**/*
           retention-days: 30
