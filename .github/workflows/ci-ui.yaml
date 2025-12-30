@@ -24,9 +24,21 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Run Visual Tests Report
-        run: bun run vt:report
+      - name: Build Dev
+        run: bun run build:dev
         working-directory: ./packages/rettangoli-ui
+
+      - name: Run Visual Tests in Docker
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE":/app \
+            -w /app/packages/rettangoli-ui \
+            han4wluc/playwright-bun:v1.57.0-noble \
+            sh -c 'bunx rtgl vt generate --screenshot-wait-time 500 && bunx rtgl vt report'
+
+      - name: Debug - List .rettangoli contents
+        if: failure()
+        run: ls -la packages/rettangoli-ui/.rettangoli/ || echo "Directory not found"
 
       - name: Upload VT Images as Artifacts
         uses: actions/upload-artifact@v4
