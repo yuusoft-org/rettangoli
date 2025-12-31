@@ -216,7 +216,8 @@ vtCommand
   .command("report")
   .description("Create reports")
   .option("--compare-method <method>", "Comparison method: pixelmatch or md5", "pixelmatch")
-  .option("--threshold <number>", "Threshold for pixelmatch (0-1)", parseFloat, 0.1)
+  .option("--color-threshold <number>", "Color threshold for pixelmatch (0-1)", parseFloat, 0.1)
+  .option("--diff-threshold <number>", "Max diff pixels percentage to pass (0-100)", parseFloat, 0.3)
   .action((options) => {
     const config = readConfig();
 
@@ -228,7 +229,8 @@ vtCommand
     report({
       vtPath,
       compareMethod: options.compareMethod,
-      threshold: options.threshold,
+      colorThreshold: options.colorThreshold,
+      diffThreshold: options.diffThreshold,
     });
   });
 

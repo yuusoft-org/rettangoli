@@ -306,6 +306,18 @@ async function takeScreenshots(
 
           console.log(`Navigating to ${fileUrl}`);
           await page.goto(fileUrl, { waitUntil: "networkidle" });
+
+          // Normalize font rendering for consistent screenshots
+          await page.addStyleTag({
+            content: `
+              * {
+                -webkit-font-smoothing: antialiased !important;
+                -moz-osx-font-smoothing: grayscale !important;
+                text-rendering: geometricPrecision !important;
+              }
+            `
+          });
+
           if (waitTime > 0) {
             await page.waitForTimeout(waitTime);
           }

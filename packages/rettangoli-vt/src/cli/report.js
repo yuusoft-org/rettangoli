@@ -90,7 +90,7 @@ async function compareImagesMd5(artifactPath, goldPath) {
 }
 
 async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options = {}) {
-  const { threshold = 0.1 } = options;
+  const { colorThreshold = 0.1, diffThreshold = 0.3 } = options;
 
   try {
     // Load images and convert to raw RGBA using sharp
@@ -102,14 +102,15 @@ async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options
     const { width, height } = artifactData.info;
     const goldWidth = goldData.info.width;
     const goldHeight = goldData.info.height;
+    const totalPixels = width * height;
 
     // If dimensions don't match, images are different
     if (width !== goldWidth || height !== goldHeight) {
-      return { equal: false, error: false, diffPixels: -1 };
+      return { equal: false, error: false, diffPixels: -1, totalPixels, similarity: 0 };
     }
 
     // Create diff image buffer
-    const diffBuffer = Buffer.alloc(width * height * 4);
+    const diffBuffer = Buffer.alloc(totalPixels * 4);
 
     const diffPixels = pixelmatch(
       artifactData.data,
@@ -117,10 +118,12 @@ async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options
       diffBuffer,
       width,
       height,
-      { threshold }
+      { threshold: colorThreshold }
     );
 
-    const equal = diffPixels === 0;
+    const diffPercent = (diffPixels / totalPixels) * 100;
+    const similarity = (100 - diffPercent).toFixed(2);
+    const equal = diffPercent < diffThreshold;
 
     // Save diff image if not equal
     if (!equal && diffPath) {
@@ -130,7 +133,7 @@ async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options
       fs.writeFileSync(diffPath, PNG.sync.write(diffPng));
     }
 
-    return { equal, error: false, diffPixels };
+    return { equal, error: false, diffPixels, totalPixels, similarity };
   } catch (error) {
     console.error("Error comparing images with pixelmatch:", error);
     return { equal: false, error: true };
@@ -167,7 +170,8 @@ async function main(options = {}) {
   const {
     vtPath = "./vt",
     compareMethod = 'pixelmatch',
-    threshold = 0.1,
+    colorThreshold = 0.1,
+    diffThreshold = 0.3,
   } = options;
 
   const siteOutputPath = path.join(".rettangoli", "vt", "_site");
@@ -180,7 +184,7 @@ async function main(options = {}) {
 
   console.log(`Comparison method: ${compareMethod}`);
   if (compareMethod === 'pixelmatch') {
-    console.log(`  threshold: ${threshold}`);
+    console.log(`  color threshold: ${colorThreshold}, diff threshold: ${diffThreshold}%`);
   }
 
   if (!fs.existsSync(originalReferenceDir)) {
@@ -238,6 +242,8 @@ async function main(options = {}) {
 
       let equal = true;
       let error = false;
+      let similarity = null;
+      let diffPixels = null;
 
       // Compare images if both exist
       if (candidateExists && referenceExists) {
@@ -252,10 +258,12 @@ async function main(options = {}) {
           referencePath,
           compareMethod,
           diffPath,
-          { threshold }
+          { colorThreshold, diffThreshold }
         );
         equal = comparison.equal;
         error = comparison.error;
+        similarity = comparison.similarity;
+        diffPixels = comparison.diffPixels;
       } else {
         equal = false; // If one file is missing, they're not equal
       }
@@ -266,6 +274,8 @@ async function main(options = {}) {
           referencePath: referenceExists ? siteReferencePath : null, // Use site reference path for HTML report
           path: relativePath,
           equal: candidateExists && referenceExists ? equal : false,
+          similarity,
+          diffPixels,
           onlyInCandidate: candidateExists && !referenceExists,
           onlyInReference: !candidateExists && referenceExists,
         });
@@ -286,6 +296,8 @@ async function main(options = {}) {
             ? path.relative(siteOutputPath, result.referencePath)
             : null,
           equal: result.equal,
+          similarity: result.similarity,
+          diffPixels: result.diffPixels,
           onlyInCandidate: result.onlyInCandidate,
           onlyInReference: result.onlyInReference,
         };
@@ -296,6 +308,8 @@ async function main(options = {}) {
         candidatePath: item.candidatePath,
         referencePath: item.referencePath,
         equal: item.equal,
+        similarity: item.similarity ? `${item.similarity}%` : null,
+        diffPixels: item.diffPixels,
       };
       console.log(JSON.stringify(logData, null, 2));
     });

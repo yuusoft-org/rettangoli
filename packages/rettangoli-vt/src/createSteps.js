@@ -22,6 +22,16 @@ async function customEvent(page, args) {
 
 async function goto(page, args) {
   await page.goto(args[0], { waitUntil: "networkidle" });
+  // Normalize font rendering for consistent screenshots
+  await page.addStyleTag({
+    content: `
+      * {
+        -webkit-font-smoothing: antialiased !important;
+        -moz-osx-font-smoothing: grayscale !important;
+        text-rendering: geometricPrecision !important;
+      }
+    `
+  });
 }
 
 async function keypress(page, args) {
