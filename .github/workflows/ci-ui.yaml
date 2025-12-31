@@ -17,6 +17,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.5
@@ -39,8 +43,16 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: bunx playwright@1.57.0 install-deps chromium
 
-      - name: Run Visual Tests
-        run: MALLOC_ARENA_MAX=2 BUN_JSC_forceRAMSize=4294967296 bun run vt:report
+      - name: Build
+        run: bun run build:dev
+        working-directory: ./packages/rettangoli-ui
+
+      - name: Generate Screenshots
+        run: bun run ../rettangoli-cli/cli.js vt generate
+        working-directory: ./packages/rettangoli-ui
+
+      - name: Run Report
+        run: node ../rettangoli-cli/cli.js vt report
         working-directory: ./packages/rettangoli-ui
 
       - name: Upload VT Images as Artifacts
