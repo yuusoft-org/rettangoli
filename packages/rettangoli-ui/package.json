@@ -26,7 +26,7 @@
     "build:dev": "rtgl fe build -d && bun run esbuild-dev.js",
     "build": "rtgl fe build && bun run esbuild.js",
     "vt:generate": "bun run build:dev && rtgl vt generate",
-    "vt:docker": "bun run build:dev && docker run --rm --user $(id -u):$(id -g) -v \"$(cd ../.. && pwd)\":/app -w /app/packages/rettangoli-ui han4wluc/playwright-bun:v1.57.0-noble bun run ../rettangoli-cli/cli.js vt generate",
+    "vt:docker": "bun run build:dev && docker run --rm -v \"$PWD:/app\" -w /app han4wluc/rtgl:playwright-v1.57.0-rtgl-v0.0.36 rtgl vt generate",
     "vt:report": "bun run vt:docker && rtgl vt report",
     "vt:accept": "rtgl vt accept",
     "serve": "bunx serve .rettangoli/vt/_site"
