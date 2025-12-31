@@ -39,16 +39,8 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: bunx playwright@1.57.0 install-deps chromium
 
-      - name: Build
-        run: bun run build:dev
-        working-directory: ./packages/rettangoli-ui
-
-      - name: Generate Screenshots
-        run: bun run ../rettangoli-cli/cli.js vt generate
-        working-directory: ./packages/rettangoli-ui
-
-      - name: Run Report
-        run: bun run ../rettangoli-cli/cli.js vt report
+      - name: Run Visual Tests
+        run: bun run vt:report
         working-directory: ./packages/rettangoli-ui
 
       - name: Upload VT Images as Artifacts

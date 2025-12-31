@@ -215,9 +215,8 @@ vtCommand
 vtCommand
   .command("report")
   .description("Create reports")
-  .option("--compare-method <method>", "Comparison method: looks-same or md5", "looks-same")
-  .option("--tolerance <number>", "Color tolerance for looks-same (0-100)", parseInt, 5)
-  .option("--antialiasing-tolerance <number>", "Antialiasing tolerance for looks-same", parseInt, 4)
+  .option("--compare-method <method>", "Comparison method: pixelmatch or md5", "pixelmatch")
+  .option("--threshold <number>", "Threshold for pixelmatch (0-1)", parseFloat, 0.1)
   .action((options) => {
     const config = readConfig();
 
@@ -229,8 +228,7 @@ vtCommand
     report({
       vtPath,
       compareMethod: options.compareMethod,
-      tolerance: options.tolerance,
-      antialiasingTolerance: options.antialiasingTolerance,
+      threshold: options.threshold,
     });
   });
 

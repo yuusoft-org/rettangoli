@@ -3,7 +3,9 @@ import path from "path";
 import crypto from "crypto";
 import { Liquid } from "liquidjs";
 import { cp } from "node:fs/promises";
-import looksSame from "looks-same";
+import pixelmatch from "pixelmatch";
+import { PNG } from "pngjs";
+import sharp from "sharp";
 
 const libraryTemplatesPath = new URL('./templates', import.meta.url).pathname;
 
@@ -87,41 +89,59 @@ async function compareImagesMd5(artifactPath, goldPath) {
   }
 }
 
-async function compareImagesLooksSame(artifactPath, goldPath, diffPath, options = {}) {
-  const {
-    tolerance = 5,
-    antialiasingTolerance = 4,
-    ignoreCaret = true,
-  } = options;
+async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options = {}) {
+  const { threshold = 0.1 } = options;
 
   try {
-    const { equal } = await looksSame(artifactPath, goldPath, {
-      tolerance,
-      antialiasingTolerance,
-      ignoreCaret,
-    });
+    // Load images and convert to raw RGBA using sharp
+    const [artifactData, goldData] = await Promise.all([
+      sharp(artifactPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
+      sharp(goldPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
+    ]);
 
-    if (!equal && diffPath) {
-      await looksSame.createDiff({
-        reference: goldPath,
-        current: artifactPath,
-        diff: diffPath,
-        highlightColor: '#ff00ff',
-      });
+    const { width, height } = artifactData.info;
+    const goldWidth = goldData.info.width;
+    const goldHeight = goldData.info.height;
+
+    // If dimensions don't match, images are different
+    if (width !== goldWidth || height !== goldHeight) {
+      return { equal: false, error: false, diffPixels: -1 };
     }
 
-    return { equal, error: false };
+    // Create diff image buffer
+    const diffBuffer = Buffer.alloc(width * height * 4);
+
+    const diffPixels = pixelmatch(
+      artifactData.data,
+      goldData.data,
+      diffBuffer,
+      width,
+      height,
+      { threshold }
+    );
+
+    const equal = diffPixels === 0;
+
+    // Save diff image if not equal
+    if (!equal && diffPath) {
+      const diffPng = new PNG({ width, height });
+      diffPng.data = diffBuffer;
+      fs.mkdirSync(path.dirname(diffPath), { recursive: true });
+      fs.writeFileSync(diffPath, PNG.sync.write(diffPng));
+    }
+
+    return { equal, error: false, diffPixels };
   } catch (error) {
-    console.error("Error comparing images with looks-same:", error);
+    console.error("Error comparing images with pixelmatch:", error);
     return { equal: false, error: true };
   }
 }
 
-async function compareImages(artifactPath, goldPath, method = 'looks-same', diffPath = null, options = {}) {
+async function compareImages(artifactPath, goldPath, method = 'pixelmatch', diffPath = null, options = {}) {
   if (method === 'md5') {
     return compareImagesMd5(artifactPath, goldPath);
   }
-  return compareImagesLooksSame(artifactPath, goldPath, diffPath, options);
+  return compareImagesPixelmatch(artifactPath, goldPath, diffPath, options);
 }
 
 async function generateReport({ results, templatePath, outputPath }) {
@@ -146,9 +166,8 @@ async function generateReport({ results, templatePath, outputPath }) {
 async function main(options = {}) {
   const {
     vtPath = "./vt",
-    compareMethod = 'looks-same',
-    tolerance = 5,
-    antialiasingTolerance = 4,
+    compareMethod = 'pixelmatch',
+    threshold = 0.1,
   } = options;
 
   const siteOutputPath = path.join(".rettangoli", "vt", "_site");
@@ -160,8 +179,8 @@ async function main(options = {}) {
   const outputPath = path.join(siteOutputPath, "report.html");
 
   console.log(`Comparison method: ${compareMethod}`);
-  if (compareMethod === 'looks-same') {
-    console.log(`  tolerance: ${tolerance}, antialiasingTolerance: ${antialiasingTolerance}`);
+  if (compareMethod === 'pixelmatch') {
+    console.log(`  threshold: ${threshold}`);
   }
 
   if (!fs.existsSync(originalReferenceDir)) {
@@ -169,8 +188,8 @@ async function main(options = {}) {
     fs.mkdirSync(originalReferenceDir, { recursive: true });
   }
 
-  // Create diff directory for looks-same diffs
-  if (compareMethod === 'looks-same' && !fs.existsSync(diffDir)) {
+  // Create diff directory for diffs
+  if (compareMethod === 'pixelmatch' && !fs.existsSync(diffDir)) {
     fs.mkdirSync(diffDir, { recursive: true });
   }
 
@@ -233,7 +252,7 @@ async function main(options = {}) {
           referencePath,
           compareMethod,
           diffPath,
-          { tolerance, antialiasingTolerance }
+          { threshold }
         );
         equal = comparison.equal;
         error = comparison.error;
