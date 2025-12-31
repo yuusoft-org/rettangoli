@@ -40,7 +40,7 @@ jobs:
         run: bunx playwright@1.57.0 install-deps chromium
 
       - name: Run Visual Tests
-        run: MALLOC_ARENA_MAX=2 bun run vt:report
+        run: MALLOC_ARENA_MAX=2 BUN_JSC_forceRAMSize=4294967296 bun run vt:report
         working-directory: ./packages/rettangoli-ui
 
       - name: Upload VT Images as Artifacts
