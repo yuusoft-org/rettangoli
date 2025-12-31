@@ -24,21 +24,12 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build Dev
-        run: bun run build:dev
+      - name: Install Playwright Browsers
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run Visual Tests
+        run: bun run vt:report
         working-directory: ./packages/rettangoli-ui
-
-      - name: Run Visual Tests in Docker
-        run: |
-          docker run --rm \
-            -v "$GITHUB_WORKSPACE":/app \
-            -w /app/packages/rettangoli-ui \
-            han4wluc/playwright-bun:v1.57.0-noble \
-            sh -c 'bunx rtgl vt generate --screenshot-wait-time 1000 && bunx rtgl vt report'
-
-      - name: Fix permissions for artifacts
-        if: failure()
-        run: sudo chown -R $USER:$USER packages/rettangoli-ui/.rettangoli/
 
       - name: Upload VT Images as Artifacts
         uses: actions/upload-artifact@v4
