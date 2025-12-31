@@ -20,8 +20,6 @@ async function main(options) {
     skipScreenshots = false,
     vtPath = "./vt",
     screenshotWaitTime = 0,
-    concurrency = 12,
-    canvas = false,
     port = 3001,
   } = options;
 
@@ -86,12 +84,6 @@ async function main(options) {
 
   // Take screenshots (only for non-skipped files)
   if (!skipScreenshots) {
-    console.log("Screenshot options:");
-    console.log(`  concurrency: ${concurrency}`);
-    console.log(`  waitTime: ${screenshotWaitTime}ms`);
-    console.log(`  mode: ${canvas ? "canvas" : "fullPage"}`);
-    if (configUrl) console.log(`  url: ${configUrl}`);
-
     // Filter out files with skipScreenshot: true in frontmatter
     const filesToScreenshot = generatedFiles.filter(
       (file) => !file.frontMatter?.skipScreenshot
@@ -108,10 +100,9 @@ async function main(options) {
         filesToScreenshot,
         `http://localhost:${port}`,
         candidatePath,
-        concurrency,
+        24,
         screenshotWaitTime,
         configUrl,
-        canvas,
       );
     } finally {
       if (server) {

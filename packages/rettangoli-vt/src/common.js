@@ -246,71 +246,31 @@ async function takeScreenshots(
   generatedFiles,
   serverUrl,
   screenshotsDir,
-  concurrency = 12,
+  concurrency = 8,
   waitTime = 0,
   configUrl = undefined,
-  useCanvas = false,
 ) {
   // Ensure screenshots directory exists
   ensureDirectoryExists(screenshotsDir);
 
   // Launch browser
   console.log("Launching browser to take screenshots...");
-  const launchArgs = [
-    '--disable-lcd-text',
-    '--disable-font-subpixel-positioning',
-    '--force-color-profile=srgb',
-    '--disable-skia-runtime-opts',
-    '--font-render-hinting=none',
-  ];
-  if (!useCanvas) {
-    launchArgs.push('--disable-gpu', '--disable-accelerated-2d-canvas');
-  }
-  const browser = await chromium.launch({
-    args: launchArgs
-  });
-  console.log('Browser version:', browser.version());
-  const majorVersion = parseInt(browser.version().split('.')[0], 10);
-  if (majorVersion !== 143) {
-    throw new Error(`Expected browser major version 143, got ${majorVersion}`);
-  }
-
-  // Assert Roboto font is available
-  const fontCheckPage = await browser.newPage();
-  const hasRoboto = await fontCheckPage.evaluate(() => document.fonts.check('16px Roboto'));
-  await fontCheckPage.close();
-  if (!hasRoboto) {
-    throw new Error('Roboto font is not available');
-  }
+  const browser = await chromium.launch();
 
   const takeAndSaveScreenshot = async (page, basePath, suffix = "") => {
     const finalPath = suffix ? `${basePath}-${suffix}` : basePath;
+    const tempPngPath = join(screenshotsDir, `${finalPath}.png`);
     const screenshotPath = join(screenshotsDir, `${finalPath}.webp`);
     ensureDirectoryExists(dirname(screenshotPath));
 
-    const t1 = Date.now();
-    let buffer;
-    if (useCanvas) {
-      const canvas = page.locator('canvas');
-      buffer = await canvas.screenshot();
-    } else {
-      buffer = await page.screenshot({ fullPage: true });
-    }
-    const t2 = Date.now();
-    await sharp(buffer).webp({ quality: 85 }).toFile(screenshotPath);
-    const t3 = Date.now();
-    console.log(`  [timing] screenshot: ${t2 - t1}ms, webp convert: ${t3 - t2}ms`);
+    await page.screenshot({ path: tempPngPath, fullPage: true });
+    await sharp(tempPngPath).webp({ quality: 85 }).toFile(screenshotPath);
 
+    if (existsSync(tempPngPath)) {
+      unlinkSync(tempPngPath);
+    }
     return screenshotPath;
   };
-
-  // Create a single browser context for all pages (more efficient than multiple contexts)
-  const context = await browser.newContext({
-    viewport: { width: 1280, height: 720 },
-    deviceScaleFactor: 1,
-    colorScheme: 'light',
-    reducedMotion: 'reduce',
-  });
 
   try {
     const files = [...generatedFiles];
@@ -321,7 +281,8 @@ async function takeScreenshots(
     while (files.length > 0) {
       const batch = files.splice(0, concurrency);
       const batchPromises = batch.map(async (file) => {
-        // Create a new page within the shared context (lightweight)
+        // Create a new context and page for each file (for parallelism)
+        const context = await browser.newContext();
         const page = await context.newPage();
 
         try {
@@ -344,16 +305,7 @@ async function takeScreenshots(
           const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
 
           console.log(`Navigating to ${fileUrl}`);
-          const navStart = Date.now();
-          await page.goto(fileUrl, { waitUntil: "networkidle", timeout: 15000 });
-          const navEnd = Date.now();
-          console.log(`  [timing] navigation: ${navEnd - navStart}ms`);
-
-          // Disable CSS animations for deterministic screenshots
-          await page.addStyleTag({
-            content: '*, *::before, *::after { animation: none !important; transition: none !important; }'
-          });
-
+          await page.goto(fileUrl, { waitUntil: "networkidle" });
           if (waitTime > 0) {
             await page.waitForTimeout(waitTime);
           }
@@ -376,8 +328,8 @@ async function takeScreenshots(
         } catch (error) {
           console.error(`Error processing instructions for ${file.path}:`, error);
         } finally {
-          // Close just the page, not the context
-          await page.close();
+          // Close the context when done
+          await context.close();
         }
       });
 
@@ -387,8 +339,7 @@ async function takeScreenshots(
   } catch (error) {
     console.error("Error taking screenshots:", error);
   } finally {
-    // Close context and browser
-    await context.close();
+    // Close browser
     await browser.close();
     console.log("Browser closed");
   }
