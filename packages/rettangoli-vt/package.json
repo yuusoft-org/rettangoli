@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/vt",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Rettangoli Visual Testing",
   "type": "module",
   "main": "./src/index.js",
@@ -15,8 +15,9 @@
     "commander": "^13.1.0",
     "js-yaml": "^4.1.0",
     "liquidjs": "^10.21.0",
-    "playwright": "^1.52.0",
-    "sharp": "^0.33.0",
+    "pixelmatch": "^7.1.0",
+    "playwright": "1.57.0",
+    "sharp": "^0.34.5",
     "shiki": "^3.3.0"
   }
 }

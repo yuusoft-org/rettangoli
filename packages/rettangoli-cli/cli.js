@@ -195,8 +195,11 @@ vtCommand
   .command("generate")
   .description("Generate visualizations")
   .option("--skip-screenshots", "Skip screenshot generation")
-  .option("--screenshot-wait-time <time>", "Wait time between screenshots",parseInt, 0)
+  .option("--screenshot-wait-time <time>", "Wait time between screenshots", parseInt, 0)
+  .option("--concurrency <number>", "Number of concurrent screenshots", parseInt, 12)
+  .option("--canvas", "Take screenshots from canvas element instead of full page")
   .action((options) => {
+    console.log(`rtgl v${packageJson.version}`);
     const config = readConfig();
 
     if (!config) {
@@ -212,7 +215,10 @@ vtCommand
 vtCommand
   .command("report")
   .description("Create reports")
-  .action(() => {
+  .option("--compare-method <method>", "Comparison method: pixelmatch or md5", "pixelmatch")
+  .option("--color-threshold <number>", "Color threshold for pixelmatch (0-1)", parseFloat, 0.1)
+  .option("--diff-threshold <number>", "Max diff pixels percentage to pass (0-100)", parseFloat, 0.3)
+  .action((options) => {
     const config = readConfig();
 
     if (!config) {
@@ -220,7 +226,12 @@ vtCommand
     }
 
     const vtPath = config.vt?.path || "vt";
-    report({ vtPath });
+    report({
+      vtPath,
+      compareMethod: options.compareMethod,
+      colorThreshold: options.colorThreshold,
+      diffThreshold: options.diffThreshold,
+    });
   });
 
 vtCommand

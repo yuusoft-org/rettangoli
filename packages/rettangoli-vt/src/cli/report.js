@@ -3,6 +3,8 @@ import path from "path";
 import crypto from "crypto";
 import { Liquid } from "liquidjs";
 import { cp } from "node:fs/promises";
+import pixelmatch from "pixelmatch";
+import sharp from "sharp";
 
 const libraryTemplatesPath = new URL('./templates', import.meta.url).pathname;
 
@@ -70,33 +72,78 @@ async function calculateImageHash(imagePath) {
   }
 }
 
-async function compareImages(artifactPath, goldPath) {
+async function compareImagesMd5(artifactPath, goldPath) {
   try {
     const artifactHash = await calculateImageHash(artifactPath);
     const goldHash = await calculateImageHash(goldPath);
 
     if (artifactHash === null || goldHash === null) {
-      return {
-        equal: false,
-        error: true,
-      };
+      return { equal: false, error: true };
     }
 
-    const equal = artifactHash === goldHash;
-
-    return {
-      equal,
-      error: false,
-    };
+    return { equal: artifactHash === goldHash, error: false };
   } catch (error) {
     console.error("Error comparing images:", error);
-    return {
-      equal: false,
-      error: true,
-      diffBounds: null,
-      diffClusters: null
-    };
+    return { equal: false, error: true };
   }
+}
+
+async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options = {}) {
+  const { colorThreshold = 0.1, diffThreshold = 0.3 } = options;
+
+  try {
+    // Load images and convert to raw RGBA using sharp
+    const [artifactData, goldData] = await Promise.all([
+      sharp(artifactPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
+      sharp(goldPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
+    ]);
+
+    const { width, height } = artifactData.info;
+    const goldWidth = goldData.info.width;
+    const goldHeight = goldData.info.height;
+    const totalPixels = width * height;
+
+    // If dimensions don't match, images are different
+    if (width !== goldWidth || height !== goldHeight) {
+      return { equal: false, error: false, diffPixels: -1, totalPixels, similarity: 0 };
+    }
+
+    // Create diff image buffer
+    const diffBuffer = Buffer.alloc(totalPixels * 4);
+
+    const diffPixels = pixelmatch(
+      artifactData.data,
+      goldData.data,
+      diffBuffer,
+      width,
+      height,
+      { threshold: colorThreshold }
+    );
+
+    const diffPercent = (diffPixels / totalPixels) * 100;
+    const similarity = (100 - diffPercent).toFixed(2);
+    const equal = diffPercent < diffThreshold;
+
+    // Save diff image if not equal
+    if (!equal && diffPath) {
+      fs.mkdirSync(path.dirname(diffPath), { recursive: true });
+      await sharp(diffBuffer, { raw: { width, height, channels: 4 } })
+        .png()
+        .toFile(diffPath);
+    }
+
+    return { equal, error: false, diffPixels, totalPixels, similarity };
+  } catch (error) {
+    console.error("Error comparing images with pixelmatch:", error);
+    return { equal: false, error: true };
+  }
+}
+
+async function compareImages(artifactPath, goldPath, method = 'pixelmatch', diffPath = null, options = {}) {
+  if (method === 'md5') {
+    return compareImagesMd5(artifactPath, goldPath);
+  }
+  return compareImagesPixelmatch(artifactPath, goldPath, diffPath, options);
 }
 
 async function generateReport({ results, templatePath, outputPath }) {
@@ -119,18 +166,34 @@ async function generateReport({ results, templatePath, outputPath }) {
 }
 
 async function main(options = {}) {
-  const { vtPath = "./vt" } = options;
+  const {
+    vtPath = "./vt",
+    compareMethod = 'pixelmatch',
+    colorThreshold = 0.1,
+    diffThreshold = 0.3,
+  } = options;
 
   const siteOutputPath = path.join(".rettangoli", "vt", "_site");
   const candidateDir = path.join(siteOutputPath, "candidate");
+  const diffDir = path.join(siteOutputPath, "diff");
   const originalReferenceDir = path.join(vtPath, "reference");
   const siteReferenceDir = path.join(siteOutputPath, "reference");
   const templatePath = path.join(libraryTemplatesPath, "report.html");
   const outputPath = path.join(siteOutputPath, "report.html");
 
+  console.log(`Comparison method: ${compareMethod}`);
+  if (compareMethod === 'pixelmatch') {
+    console.log(`  color threshold: ${colorThreshold}, diff threshold: ${diffThreshold}%`);
+  }
+
   if (!fs.existsSync(originalReferenceDir)) {
     console.log("Reference directory does not exist, creating it...");
     fs.mkdirSync(originalReferenceDir, { recursive: true });
+  }
+
+  // Create diff directory for diffs
+  if (compareMethod === 'pixelmatch' && !fs.existsSync(diffDir)) {
+    fs.mkdirSync(diffDir, { recursive: true });
   }
 
   // Copy reference directory to _site for web access
@@ -168,6 +231,7 @@ async function main(options = {}) {
       const candidatePath = path.join(candidateDir, relativePath);
       const referencePath = path.join(originalReferenceDir, relativePath);
       const siteReferencePath = path.join(siteReferenceDir, relativePath);
+      const diffPath = path.join(diffDir, relativePath.replace('.webp', '-diff.png'));
 
       const candidateExists = fs.existsSync(candidatePath);
       const referenceExists = fs.existsSync(referencePath);
@@ -177,12 +241,28 @@ async function main(options = {}) {
 
       let equal = true;
       let error = false;
+      let similarity = null;
+      let diffPixels = null;
 
       // Compare images if both exist
       if (candidateExists && referenceExists) {
-        const comparison = await compareImages(candidatePath, referencePath);
+        // Ensure diff directory exists
+        const diffDirPath = path.dirname(diffPath);
+        if (!fs.existsSync(diffDirPath)) {
+          fs.mkdirSync(diffDirPath, { recursive: true });
+        }
+
+        const comparison = await compareImages(
+          candidatePath,
+          referencePath,
+          compareMethod,
+          diffPath,
+          { colorThreshold, diffThreshold }
+        );
         equal = comparison.equal;
         error = comparison.error;
+        similarity = comparison.similarity;
+        diffPixels = comparison.diffPixels;
       } else {
         equal = false; // If one file is missing, they're not equal
       }
@@ -193,6 +273,8 @@ async function main(options = {}) {
           referencePath: referenceExists ? siteReferencePath : null, // Use site reference path for HTML report
           path: relativePath,
           equal: candidateExists && referenceExists ? equal : false,
+          similarity,
+          diffPixels,
           onlyInCandidate: candidateExists && !referenceExists,
           onlyInReference: !candidateExists && referenceExists,
         });
@@ -213,6 +295,8 @@ async function main(options = {}) {
             ? path.relative(siteOutputPath, result.referencePath)
             : null,
           equal: result.equal,
+          similarity: result.similarity,
+          diffPixels: result.diffPixels,
           onlyInCandidate: result.onlyInCandidate,
           onlyInReference: result.onlyInReference,
         };
@@ -223,6 +307,8 @@ async function main(options = {}) {
         candidatePath: item.candidatePath,
         referencePath: item.referencePath,
         equal: item.equal,
+        similarity: item.similarity ? `${item.similarity}%` : null,
+        diffPixels: item.diffPixels,
       };
       console.log(JSON.stringify(logData, null, 2));
     });

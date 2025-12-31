@@ -1,3 +1,31 @@
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/public/fonts/Roboto-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/public/fonts/Roboto-Medium.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/public/fonts/Roboto-Medium.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/public/fonts/Roboto-Bold.ttf') format('truetype');
+}
+
 html {
   height: 100%;
   margin: 0;
@@ -36,6 +64,8 @@ body {
   height: 100%;
   margin: 0;
   font-family: Roboto, -apple-system, "Helvetica Neue", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
   display: flex;
   flex-direction: column;
   background-color: var(--background);
@@ -92,7 +122,7 @@ body {
   --lg-letter-spacing: normal;
 
   --md-font-size: 1rem;
-  --md-font-weight: normal;
+  --md-font-weight: 400;
   --md-line-height: 1.5rem;
   --md-letter-spacing: normal;
 
@@ -102,7 +132,7 @@ body {
   --sm-letter-spacing: normal;
 
   --xs-font-size: .75rem;
-  --xs-font-weight: normal;
+  --xs-font-weight: 400;
   --xs-line-height: 1;
   --xs-letter-spacing: normal;
 

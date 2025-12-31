@@ -1,0 +1,38 @@
+name: CI UI
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/rettangoli-ui/**"
+      - "packages/rettangoli-vt/**"
+  pull_request:
+    paths:
+      - "packages/rettangoli-ui/**"
+      - "packages/rettangoli-vt/**"
+
+jobs:
+  visual-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.5
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Visual Tests (Docker)
+        run: bun run vt:report
+        working-directory: ./packages/rettangoli-ui
+
+      - name: Upload VT Images as Artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: vt-images-${{ github.run_number }}
+          path: packages/rettangoli-ui/.rettangoli/
+          include-hidden-files: true
+          retention-days: 30
