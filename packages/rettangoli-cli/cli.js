@@ -215,7 +215,10 @@ vtCommand
 vtCommand
   .command("report")
   .description("Create reports")
-  .action(() => {
+  .option("--compare-method <method>", "Comparison method: looks-same or md5", "looks-same")
+  .option("--tolerance <number>", "Color tolerance for looks-same (0-100)", parseInt, 5)
+  .option("--antialiasing-tolerance <number>", "Antialiasing tolerance for looks-same", parseInt, 4)
+  .action((options) => {
     const config = readConfig();
 
     if (!config) {
@@ -223,7 +226,12 @@ vtCommand
     }
 
     const vtPath = config.vt?.path || "vt";
-    report({ vtPath });
+    report({
+      vtPath,
+      compareMethod: options.compareMethod,
+      tolerance: options.tolerance,
+      antialiasingTolerance: options.antialiasingTolerance,
+    });
   });
 
 vtCommand

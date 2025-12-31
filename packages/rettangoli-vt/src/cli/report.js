@@ -3,6 +3,7 @@ import path from "path";
 import crypto from "crypto";
 import { Liquid } from "liquidjs";
 import { cp } from "node:fs/promises";
+import looksSame from "looks-same";
 
 const libraryTemplatesPath = new URL('./templates', import.meta.url).pathname;
 
@@ -70,33 +71,57 @@ async function calculateImageHash(imagePath) {
   }
 }
 
-async function compareImages(artifactPath, goldPath) {
+async function compareImagesMd5(artifactPath, goldPath) {
   try {
     const artifactHash = await calculateImageHash(artifactPath);
     const goldHash = await calculateImageHash(goldPath);
 
     if (artifactHash === null || goldHash === null) {
-      return {
-        equal: false,
-        error: true,
-      };
+      return { equal: false, error: true };
     }
 
-    const equal = artifactHash === goldHash;
-
-    return {
-      equal,
-      error: false,
-    };
+    return { equal: artifactHash === goldHash, error: false };
   } catch (error) {
     console.error("Error comparing images:", error);
-    return {
-      equal: false,
-      error: true,
-      diffBounds: null,
-      diffClusters: null
-    };
+    return { equal: false, error: true };
   }
+}
+
+async function compareImagesLooksSame(artifactPath, goldPath, diffPath, options = {}) {
+  const {
+    tolerance = 5,
+    antialiasingTolerance = 4,
+    ignoreCaret = true,
+  } = options;
+
+  try {
+    const { equal } = await looksSame(artifactPath, goldPath, {
+      tolerance,
+      antialiasingTolerance,
+      ignoreCaret,
+    });
+
+    if (!equal && diffPath) {
+      await looksSame.createDiff({
+        reference: goldPath,
+        current: artifactPath,
+        diff: diffPath,
+        highlightColor: '#ff00ff',
+      });
+    }
+
+    return { equal, error: false };
+  } catch (error) {
+    console.error("Error comparing images with looks-same:", error);
+    return { equal: false, error: true };
+  }
+}
+
+async function compareImages(artifactPath, goldPath, method = 'looks-same', diffPath = null, options = {}) {
+  if (method === 'md5') {
+    return compareImagesMd5(artifactPath, goldPath);
+  }
+  return compareImagesLooksSame(artifactPath, goldPath, diffPath, options);
 }
 
 async function generateReport({ results, templatePath, outputPath }) {
@@ -119,18 +144,34 @@ async function generateReport({ results, templatePath, outputPath }) {
 }
 
 async function main(options = {}) {
-  const { vtPath = "./vt" } = options;
+  const {
+    vtPath = "./vt",
+    compareMethod = 'looks-same',
+    tolerance = 5,
+    antialiasingTolerance = 4,
+  } = options;
 
   const siteOutputPath = path.join(".rettangoli", "vt", "_site");
   const candidateDir = path.join(siteOutputPath, "candidate");
+  const diffDir = path.join(siteOutputPath, "diff");
   const originalReferenceDir = path.join(vtPath, "reference");
   const siteReferenceDir = path.join(siteOutputPath, "reference");
   const templatePath = path.join(libraryTemplatesPath, "report.html");
   const outputPath = path.join(siteOutputPath, "report.html");
 
+  console.log(`Comparison method: ${compareMethod}`);
+  if (compareMethod === 'looks-same') {
+    console.log(`  tolerance: ${tolerance}, antialiasingTolerance: ${antialiasingTolerance}`);
+  }
+
   if (!fs.existsSync(originalReferenceDir)) {
     console.log("Reference directory does not exist, creating it...");
     fs.mkdirSync(originalReferenceDir, { recursive: true });
+  }
+
+  // Create diff directory for looks-same diffs
+  if (compareMethod === 'looks-same' && !fs.existsSync(diffDir)) {
+    fs.mkdirSync(diffDir, { recursive: true });
   }
 
   // Copy reference directory to _site for web access
@@ -168,6 +209,7 @@ async function main(options = {}) {
       const candidatePath = path.join(candidateDir, relativePath);
       const referencePath = path.join(originalReferenceDir, relativePath);
       const siteReferencePath = path.join(siteReferenceDir, relativePath);
+      const diffPath = path.join(diffDir, relativePath.replace('.webp', '-diff.png'));
 
       const candidateExists = fs.existsSync(candidatePath);
       const referenceExists = fs.existsSync(referencePath);
@@ -180,7 +222,19 @@ async function main(options = {}) {
 
       // Compare images if both exist
       if (candidateExists && referenceExists) {
-        const comparison = await compareImages(candidatePath, referencePath);
+        // Ensure diff directory exists
+        const diffDirPath = path.dirname(diffPath);
+        if (!fs.existsSync(diffDirPath)) {
+          fs.mkdirSync(diffDirPath, { recursive: true });
+        }
+
+        const comparison = await compareImages(
+          candidatePath,
+          referencePath,
+          compareMethod,
+          diffPath,
+          { tolerance, antialiasingTolerance }
+        );
         equal = comparison.equal;
         error = comparison.error;
       } else {

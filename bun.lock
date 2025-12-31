@@ -79,6 +79,7 @@
         "commander": "^13.1.0",
         "js-yaml": "^4.1.0",
         "liquidjs": "^10.21.0",
+        "looks-same": "^9.0.1",
         "playwright": "1.57.0",
         "sharp": "^0.33.0",
         "shiki": "^3.3.0",
