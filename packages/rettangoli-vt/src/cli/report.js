@@ -4,7 +4,6 @@ import crypto from "crypto";
 import { Liquid } from "liquidjs";
 import { cp } from "node:fs/promises";
 import pixelmatch from "pixelmatch";
-import { PNG } from "pngjs";
 import sharp from "sharp";
 
 const libraryTemplatesPath = new URL('./templates', import.meta.url).pathname;
@@ -127,10 +126,10 @@ async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options
 
     // Save diff image if not equal
     if (!equal && diffPath) {
-      const diffPng = new PNG({ width, height });
-      diffPng.data = diffBuffer;
       fs.mkdirSync(path.dirname(diffPath), { recursive: true });
-      fs.writeFileSync(diffPath, PNG.sync.write(diffPng));
+      await sharp(diffBuffer, { raw: { width, height, channels: 4 } })
+        .png()
+        .toFile(diffPath);
     }
 
     return { equal, error: false, diffPixels, totalPixels, similarity };
