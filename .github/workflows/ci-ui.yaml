@@ -24,8 +24,20 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      - name: Cache Playwright Browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-1.57.0-${{ runner.os }}
+
       - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: bunx playwright@1.57.0 install --with-deps chromium
+
+      - name: Install Playwright Deps (if cached)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: bunx playwright@1.57.0 install-deps chromium
 
       - name: Run Visual Tests
         run: bun run vt:report
