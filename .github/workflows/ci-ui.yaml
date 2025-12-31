@@ -4,12 +4,12 @@ on:
     branches:
       - main
     paths:
-      - 'packages/rettangoli-ui/**'
-      - 'packages/rettangoli-vt/**'
+      - "packages/rettangoli-ui/**"
+      - "packages/rettangoli-vt/**"
   pull_request:
     paths:
-      - 'packages/rettangoli-ui/**'
-      - 'packages/rettangoli-vt/**'
+      - "packages/rettangoli-ui/**"
+      - "packages/rettangoli-vt/**"
 
 jobs:
   visual-tests:
@@ -24,7 +24,10 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Run Visual Tests Report
+      - name: Install Playwright Browsers
+        run: bunx playwright@1.57.0 install --with-deps chromium
+
+      - name: Run Visual Tests
         run: bun run vt:report
         working-directory: ./packages/rettangoli-ui
 
@@ -33,7 +36,6 @@ jobs:
         if: failure()
         with:
           name: vt-images-${{ github.run_number }}
-          path: |
-            packages/rettangoli-ui/.rettangoli/vt/_site/reference/
-            packages/rettangoli-ui/.rettangoli/vt/_site/candidate/
+          path: packages/rettangoli-ui/.rettangoli/
+          include-hidden-files: true
           retention-days: 30

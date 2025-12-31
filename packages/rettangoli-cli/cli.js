@@ -199,6 +199,7 @@ vtCommand
   .option("--concurrency <number>", "Number of concurrent screenshots", parseInt, 12)
   .option("--canvas", "Take screenshots from canvas element instead of full page")
   .action((options) => {
+    console.log(`rtgl v${packageJson.version}`);
     const config = readConfig();
 
     if (!config) {
