@@ -277,6 +277,14 @@ async function takeScreenshots(
     const total = files.length;
     let completed = 0;
 
+    // Extract RTGL_VT_* environment variables once
+    const envVars = {};
+    for (const [key, value] of Object.entries(process.env)) {
+      if (key.startsWith('RTGL_VT_')) {
+        envVars[key] = value;
+      }
+    }
+
     // Process files in batches based on concurrency
     while (files.length > 0) {
       const batch = files.splice(0, concurrency);
@@ -286,13 +294,6 @@ async function takeScreenshots(
         const page = await context.newPage();
 
         try {
-          const envVars = {};
-          for (const [key, value] of Object.entries(process.env)) {
-            if (key.startsWith('RTGL_VT_')) {
-              envVars[key] = value;
-            }
-          }
-
           if (Object.keys(envVars).length > 0) {
             await page.addInitScript((vars) => {
               Object.assign(window, vars);

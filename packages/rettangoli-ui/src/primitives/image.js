@@ -40,6 +40,13 @@ class RettangoliImageElement extends HTMLElement {
           height: 100%;
           width: 100%;
         }
+        :host([w]:not([h]):not([wh])) img,
+        :host([sm-w]:not([sm-h]):not([sm-wh])) img,
+        :host([md-w]:not([md-h]):not([md-wh])) img,
+        :host([lg-w]:not([lg-h]):not([lg-wh])) img,
+        :host([xl-w]:not([xl-h]):not([xl-wh])) img {
+          height: auto;
+        }
 
         ${anchorStyles}
 
