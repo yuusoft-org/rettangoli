@@ -38,7 +38,6 @@ rtgl fe watch     # Start dev server
 
 **Build & Development:**
 - [ESBuild](https://esbuild.github.io/) - Fast bundling
-- [Vite](https://vite.dev/) - Development server with hot reload
 
 **Browser Native:**
 - Web Components - Component encapsulation
