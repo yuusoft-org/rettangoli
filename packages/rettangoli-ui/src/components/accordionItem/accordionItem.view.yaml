@@ -1,0 +1,54 @@
+elementName: rtgl-accordion-item
+
+viewDataSchema:
+  type: object
+  properties:
+    title:
+      type: string
+    content:
+      type: string
+    openClass:
+      type: string
+    chevronIcon:
+      type: string
+    containerAttrString:
+      type: string
+
+attrsSchema:
+  type: object
+  properties:
+    title:
+      type: string
+    content:
+      type: string
+    w:
+      type: string
+
+refs:
+  header:
+    eventListeners:
+      click:
+        handler: handleClickHeader
+
+styles:
+  .content-wrapper:
+    display: grid
+    grid-template-rows: 0fr
+    transition: grid-template-rows 0.2s ease-out
+
+  .content-wrapper.open:
+    grid-template-rows: 1fr
+
+  .content-inner:
+    overflow: hidden
+
+template:
+  - rtgl-view d=v ${containerAttrString}:
+    - rtgl-view#header d=h av=c w=f pv=md cur=p:
+      - rtgl-text: ${title}
+      - rtgl-view flex=1:
+      - rtgl-svg svg=${chevronIcon} wh=16 c=mu-fg:
+    - div class="${openClass}":
+      - div class=content-inner:
+        - rtgl-view pb=md:
+          - rtgl-text: ${content}

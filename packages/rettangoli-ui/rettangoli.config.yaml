@@ -108,6 +108,9 @@ vt:
         - title: "Global UI"
           files: "components/globalUi"
           description: "Global UI component tests"
+        - title: "Accordion Item"
+          files: "components/accordion-item"
+          description: "Accordion Item component tests"
     - title: "Examples"
       type: "groupLabel"
       items:
