@@ -51,4 +51,5 @@ template:
     - div class="${openClass}":
       - div class=content-inner:
         - rtgl-view pb=md:
-          - rtgl-text: ${content}
+          - rtgl-text c=ac-fg: ${content}
+          - slot name=content:
