@@ -44,12 +44,12 @@ styles:
 
 template:
   - rtgl-view d=v ${containerAttrString}:
-    - rtgl-view#header d=h av=c w=f pv=md cur=p:
-      - rtgl-text: ${title}
-      - rtgl-view flex=1:
-      - rtgl-svg svg=${chevronIcon} wh=16 c=mu-fg:
-    - div class="${openClass}":
-      - div class=content-inner:
-        - rtgl-view pb=md:
-          - rtgl-text c=ac-fg: ${content}
-          - slot name=content:
+      - rtgl-view#header d=h av=c w=f pv=md cur=p:
+          - rtgl-text: ${title}
+          - rtgl-view flex=1:
+          - rtgl-svg svg=${chevronIcon} wh=16 c=mu-fg:
+      - div class="${openClass}":
+          - div class=content-inner:
+              - rtgl-view pb=md:
+                  - rtgl-text c=mu-fg: ${content}
+                  - slot name=content:
