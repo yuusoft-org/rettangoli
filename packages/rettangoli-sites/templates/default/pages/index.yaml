@@ -1,0 +1,17 @@
+---
+template: base
+title: My Site
+---
+- section.hero:
+    - h1: Welcome to My Site
+    - p: Built with Rettangoli Sites
+    - 'a href="/about/"':
+        - button: Learn More
+
+- section.features:
+    - h2: Features
+    - div.grid:
+        - $for feature in site.features:
+            - div.card:
+                - h3: ${feature.title}
+                - p: ${feature.description}

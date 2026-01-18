@@ -1,0 +1,6 @@
+- header:
+    - nav:
+        - 'a.logo href="/"': ${site.name}
+        - div.nav-links:
+            - $for link in site.nav:
+                - 'a href="${link.href}"': ${link.text}
