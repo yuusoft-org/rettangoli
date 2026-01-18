@@ -3,9 +3,16 @@
         - meta charset="utf-8":
         - meta name="viewport" content="width=device-width,initial-scale=1":
         - title: ${title} - ${site.name}
-        - link rel="stylesheet" href="/css/style.css":
-    - body:
-        - $partial: header
-        - main:
-            - "${content}"
-        - $partial: footer
+        - link rel="stylesheet" href="/css/theme.css":
+        - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.31/dist/rettangoli-iife-ui.min.js":
+    - body.dark:
+        - rtgl-view w="f":
+            - rtgl-view h="64":
+            - rtgl-view w="f" ah="c":
+                - rtgl-view w="f" ph="lg" pb="lg" ah="c" md-w="100vw" lg-w="768" w="1024":
+                    - "${content}"
+                - rtgl-view h="30vh":
+                - $partial: footer
+            - rtgl-view pos="abs" cor="top" ah="c" bgc="bg":
+                - $partial: header

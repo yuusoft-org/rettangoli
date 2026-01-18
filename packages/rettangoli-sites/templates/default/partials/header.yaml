@@ -1,6 +1,9 @@
-- header:
-    - nav:
-        - 'a.logo href="/"': ${site.name}
-        - div.nav-links:
+- rtgl-view bwb="xs" w="f" ah="c" pos="fix" bgc="bg":
+    - rtgl-view md-w="100vw" lg-w="768" w="1024" d="h" av="c" h="64" ph="lg":
+        - 'a href="/" style="text-decoration: none"':
+            - rtgl-text s="lg" fw="bold": ${site.name}
+        - rtgl-view flex="1":
+        - rtgl-view d="h" g="lg" av="c":
             - $for link in site.nav:
-                - 'a href="${link.href}"': ${link.text}
+                - 'a href="${link.href}" style="text-decoration: none"':
+                    - rtgl-text c="mu-fg" h-c="fg" h-cur="p": ${link.text}

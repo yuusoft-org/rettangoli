@@ -1,2 +1,9 @@
-- footer:
-    - p: © 2024 ${site.name}
+- rtgl-view h="1" w="f" bgc="bo":
+- rtgl-view md-w="100vw" lg-w="768" w="1024" ph="lg" pv="xl":
+    - rtgl-view d="h" w="f" av="c":
+        - rtgl-text s="sm" c="mu-fg": © 2024 ${site.name}
+        - rtgl-view flex="1":
+        - rtgl-view d="h" g="lg":
+            - $for link in site.footer.links:
+                - 'a href="${link.href}" style="text-decoration: none"':
+                    - rtgl-text s="sm" c="mu-fg" h-c="fg" h-cur="p": ${link.text}

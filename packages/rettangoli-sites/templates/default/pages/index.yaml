@@ -2,16 +2,20 @@
 template: base
 title: My Site
 ---
-- section.hero:
-    - h1: Welcome to My Site
-    - p: Built with Rettangoli Sites
-    - 'a href="/about/"':
-        - button: Learn More
+- rtgl-view ah="c" pv="xl":
+    - rtgl-text s="h1" ta="c": Welcome to My Site
+    - rtgl-view h="lg":
+    - rtgl-text s="lg" c="mu-fg" ta="c": Built with Rettangoli Sites
+    - rtgl-view h="xl":
+    - 'a href="/about/" style="text-decoration: none"':
+        - rtgl-button: Learn More
 
-- section.features:
-    - h2: Features
-    - div.grid:
+- rtgl-view h="100":
+
+- rtgl-view w="f":
+    - rtgl-text s="h2" mb="lg": Features
+    - rtgl-view d="h" g="lg" w="f" md-d="v":
         - $for feature in site.landing.features:
-            - div.card:
-                - h3: ${feature.title}
-                - p: ${feature.description}
+            - rtgl-view flex="1" p="lg" bgc="su" br="lg":
+                - rtgl-text s="h4" mb="sm": ${feature.title}
+                - rtgl-text c="mu-fg": ${feature.description}
