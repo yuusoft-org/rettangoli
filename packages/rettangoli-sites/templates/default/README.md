@@ -1,6 +1,6 @@
 # My Site
 
-A static site built with [Rettangoli Sites](https://github.com/yuusoft-org/rettangoli).
+A static site built with [Rettangoli Sites](https://github.com/yuusoft-org/rettangoli) using the [rtgl UI](https://github.com/yuusoft-org/rettangoli/tree/main/packages/rettangoli-ui) framework.
 
 ## Getting Started
 
@@ -41,8 +41,8 @@ Pages can be **YAML** or **Markdown** files in `pages/`.
 template: base
 title: Home
 ---
-- h1: Welcome
-- p: Hello world
+- rtgl-text s="h1": Welcome
+- rtgl-text: Hello world
 ```
 
 **Markdown page:**
@@ -70,28 +70,81 @@ Content in **markdown**.
 - `pages/about.md` → `/about/`
 - `pages/blog/post.md` → `/blog/post/`
 
+## rtgl UI Components
+
+```yaml
+# Layout with rtgl-view
+- rtgl-view d="h" g="lg" av="c":    # horizontal, gap, align vertical center
+    - rtgl-view flex="1":            # flex grow
+    - rtgl-view w="200" h="100":     # fixed width/height
+
+# Text with rtgl-text
+- rtgl-text s="h1": Heading 1
+- rtgl-text s="lg" c="mu-fg": Large muted text
+- rtgl-text fw="bold" ta="c": Bold centered
+
+# Buttons
+- rtgl-button: Click me
+- rtgl-button v="se": Secondary
+
+# Links with hover states
+- 'a href="/about" style="text-decoration: none"':
+    - rtgl-text h-c="pr" h-cur="p": Hover link
+```
+
+### Common Attributes
+
+| Attr | Description | Values |
+|------|-------------|--------|
+| `w` | Width | `f` (full), number, `100vw` |
+| `h` | Height | number, `100vh` |
+| `d` | Direction | `h` (horizontal), `v` (vertical) |
+| `g` | Gap | `xs`, `sm`, `md`, `lg`, `xl` |
+| `p` | Padding | `xs`, `sm`, `md`, `lg`, `xl` |
+| `m` | Margin | `xs`, `sm`, `md`, `lg`, `xl` |
+| `av` | Align vertical | `s` (start), `c` (center), `e` (end) |
+| `ah` | Align horizontal | `s`, `c`, `e` |
+| `bgc` | Background color | `bg`, `su`, `mu`, `pr` |
+| `c` | Text color | `fg`, `mu-fg`, `pr` |
+| `s` | Text size | `h1`, `h2`, `h3`, `h4`, `lg`, `md`, `sm` |
+| `br` | Border radius | `xs`, `sm`, `md`, `lg`, `xl` |
+| `flex` | Flex grow | `1`, `2`, etc. |
+
+### Responsive Prefixes
+
+```yaml
+- rtgl-view md-w="100vw" lg-w="768" w="1024":
+```
+
+| Prefix | Breakpoint |
+|--------|------------|
+| `md-` | Mobile (< 768px) |
+| `lg-` | Tablet (< 1024px) |
+| (none) | Desktop |
+
+### Hover States
+
+Prefix with `h-` for hover:
+```yaml
+- rtgl-text h-c="pr" h-cur="p": Hover to highlight
+- rtgl-view h-bgc="suv": Hover background
+```
+
 ## Syntax
 
 ```yaml
-# Elements with class/id
-- div.container#main:
-    - h1: Title
-
-# Attributes (use quotes)
-- 'a href="/about"': About Us
-- 'img src="/logo.png" alt="Logo"':
-
 # Variables
-- h1: ${title}
-- p: ${site.name}
+- rtgl-text: ${title}
+- rtgl-text: ${site.name}
 
 # Conditionals
 - $if showBanner:
-    - div.banner: Hello!
+    - rtgl-view bgc="pr" p="lg":
+        - rtgl-text: Hello!
 
 # Loops
 - $for item in items:
-    - li: ${item.name}
+    - rtgl-text: ${item.name}
 
 # Partials
 - $partial: header
@@ -119,8 +172,12 @@ date: '2024-01-15'
 
 ```yaml
 # List posts
-- $for post in collections.blog:
-    - a href="${post.url}": ${post.data.title}
+- rtgl-view g="md":
+    - $for post in collections.blog:
+        - 'a href="${post.url}" style="text-decoration: none"':
+            - rtgl-view p="lg" bgc="su" br="lg" h-bgc="suv" h-cur="p":
+                - rtgl-text s="lg": ${post.data.title}
+                - rtgl-text s="sm" c="mu-fg": ${post.data.date}
 ```
 
 Collection item properties:
@@ -151,5 +208,5 @@ Use in templates:
 
 Everything in `static/` is copied to `_site/`:
 
-- `static/css/style.css` → `_site/css/style.css`
+- `static/css/theme.css` → `_site/css/theme.css`
 - `static/images/logo.png` → `_site/images/logo.png`
