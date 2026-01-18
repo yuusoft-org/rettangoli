@@ -1,0 +1,25 @@
+name: My Site
+
+nav:
+  - text: Home
+    href: /
+  - text: Blog
+    href: /blog/
+  - text: About
+    href: /about/
+
+footer:
+  links:
+    - text: Privacy
+      href: /privacy/
+    - text: Terms
+      href: /terms/
+
+landing:
+  features:
+    - title: Simple
+      description: Write content in YAML and Markdown
+    - title: Fast
+      description: Static site generation for optimal performance
+    - title: Flexible
+      description: Templates, partials, and collections

@@ -1,0 +1,21 @@
+---
+template: base
+title: My Site
+---
+- rtgl-view ah="c" pv="xl":
+    - rtgl-text s="h1" ta="c": Welcome to My Site
+    - rtgl-view h="lg":
+    - rtgl-text s="lg" c="mu-fg" ta="c": Built with Rettangoli Sites
+    - rtgl-view h="xl":
+    - 'a href="/about/" style="text-decoration: none"':
+        - rtgl-button: Learn More
+
+- rtgl-view h="100":
+
+- rtgl-view w="f":
+    - rtgl-text s="h2" mb="lg": Features
+    - rtgl-view d="h" g="lg" w="f" md-d="v":
+        - $for feature in site.landing.features:
+            - rtgl-view flex="1" p="lg" bgc="su" br="lg":
+                - rtgl-text s="h4" mb="sm": ${feature.title}
+                - rtgl-text c="mu-fg": ${feature.description}

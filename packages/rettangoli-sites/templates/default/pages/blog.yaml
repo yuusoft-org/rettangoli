@@ -1,0 +1,14 @@
+---
+template: base
+title: Blog
+---
+- rtgl-text s="h1" mb="xl": Blog
+
+- rtgl-view g="md" w="f":
+    - $for post in collections.blog:
+        - 'a href="${post.url}" style="text-decoration: none"':
+            - rtgl-view w="f" p="lg" bgc="su" br="lg" h-bgc="suv" h-cur="p":
+                - rtgl-view d="h" av="c" w="f":
+                    - rtgl-text s="lg": ${post.data.title}
+                    - rtgl-view flex="1":
+                    - rtgl-text s="sm" c="mu-fg": ${post.data.date}

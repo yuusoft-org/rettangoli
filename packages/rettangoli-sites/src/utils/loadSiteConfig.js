@@ -32,7 +32,7 @@ export async function loadSiteConfig(rootDir, throwOnError = true, bustCache = f
     return configExport || {};
   } catch (e) {
     // Only ignore file not found errors
-    if (e.code === 'ENOENT') {
+    if (e.code === 'ENOENT' || e.code === 'ERR_MODULE_NOT_FOUND') {
       // Config file is optional, return empty config
       return {};
     } else if (throwOnError) {

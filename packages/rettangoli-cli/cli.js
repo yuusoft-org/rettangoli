@@ -2,7 +2,7 @@
 
 import { build, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { generate, report, accept } from "@rettangoli/vt/cli";
-import { buildSite, watchSite, screenshotCommand } from "@rettangoli/sites/cli";
+import { buildSite, watchSite, screenshotCommand, initSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
 import { Command } from "commander";
 import { readFileSync, existsSync } from "fs";
@@ -249,6 +249,17 @@ vtCommand
   });
 
 const sitesCommand = program.command("sites").description("Rettangoli Sites");
+
+sitesCommand
+  .command("init <project-name>")
+  .description("Initialize a new site from template")
+  .option("-t, --template <name>", "Template to use", "default")
+  .action((projectName, options) => {
+    initSite({
+      projectName,
+      template: options.template,
+    });
+  });
 
 sitesCommand
   .command("build")
