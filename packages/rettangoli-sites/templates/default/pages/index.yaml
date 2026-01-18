@@ -11,7 +11,7 @@ title: My Site
 - section.features:
     - h2: Features
     - div.grid:
-        - $for feature in site.features:
+        - $for feature in site.landing.features:
             - div.card:
                 - h3: ${feature.title}
                 - p: ${feature.description}

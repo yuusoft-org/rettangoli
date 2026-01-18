@@ -8,10 +8,11 @@ nav:
   - text: About
     href: /about/
 
-features:
-  - title: Simple
-    description: Write content in YAML and Markdown
-  - title: Fast
-    description: Static site generation for optimal performance
-  - title: Flexible
-    description: Templates, partials, and collections
+landing:
+  features:
+    - title: Simple
+      description: Write content in YAML and Markdown
+    - title: Fast
+      description: Static site generation for optimal performance
+    - title: Flexible
+      description: Templates, partials, and collections
