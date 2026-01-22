@@ -21,6 +21,8 @@ async function main(options) {
     vtPath = "./vt",
     screenshotWaitTime = 0,
     port = 3001,
+    waitEvent,
+    concurrency = 12,
   } = options;
 
   const specsPath = join(vtPath, "specs");
@@ -100,9 +102,10 @@ async function main(options) {
         filesToScreenshot,
         `http://localhost:${port}`,
         candidatePath,
-        24,
+        concurrency,
         screenshotWaitTime,
         configUrl,
+        waitEvent,
       );
     } finally {
       if (server) {

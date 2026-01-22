@@ -247,8 +247,9 @@ async function takeScreenshots(
   serverUrl,
   screenshotsDir,
   concurrency = 8,
-  waitTime = 0,
+  waitTime = 10,
   configUrl = undefined,
+  waitEvent = undefined,
 ) {
   // Ensure screenshots directory exists
   ensureDirectoryExists(screenshotsDir);
@@ -263,11 +264,26 @@ async function takeScreenshots(
     const screenshotPath = join(screenshotsDir, `${finalPath}.webp`);
     ensureDirectoryExists(dirname(screenshotPath));
 
-    await page.screenshot({ path: tempPngPath, fullPage: true });
-    await sharp(tempPngPath).webp({ quality: 85 }).toFile(screenshotPath);
+    // Check if custom screenshot function is available
+    const hasCustomScreenshot = await page.evaluate(() => typeof window.takeVtScreenshotBase64 === 'function');
 
-    if (existsSync(tempPngPath)) {
-      unlinkSync(tempPngPath);
+    if (hasCustomScreenshot) {
+      // Use custom screenshot function (useful for canvas-based apps)
+      let base64Data = await page.evaluate(() => window.takeVtScreenshotBase64());
+      // Strip data URL prefix if present (e.g., "data:image/png;base64,")
+      if (base64Data.includes(',')) {
+        base64Data = base64Data.split(',')[1];
+      }
+      const pngBuffer = Buffer.from(base64Data, 'base64');
+      await sharp(pngBuffer).webp({ quality: 85 }).toFile(screenshotPath);
+    } else {
+      // Use Playwright's built-in screenshot
+      await page.screenshot({ path: tempPngPath, fullPage: true });
+      await sharp(tempPngPath).webp({ quality: 85 }).toFile(screenshotPath);
+
+      if (existsSync(tempPngPath)) {
+        unlinkSync(tempPngPath);
+      }
     }
     return screenshotPath;
   };
@@ -299,13 +315,32 @@ async function takeScreenshots(
             }, envVars);
           }
 
+          // If using custom wait event, set up listener before navigation
+          if (waitEvent) {
+            await page.addInitScript((eventName) => {
+              window.__vtReadyFired = false;
+              window.addEventListener(eventName, () => {
+                window.__vtReadyFired = true;
+              }, { once: true });
+            }, waitEvent);
+          }
+
           const frontMatterUrl = file.frontMatter?.url;
           const constructedUrl = convertToHtmlExtension(`${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`);
           const url = frontMatterUrl ?? configUrl ?? constructedUrl;
           const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
 
           console.log(`Navigating to ${fileUrl}`);
-          await page.goto(fileUrl, { waitUntil: "networkidle" });
+
+          if (waitEvent) {
+            // Navigate and wait for custom event
+            await page.goto(fileUrl, { waitUntil: "load" });
+            console.log(`Waiting for custom event: ${waitEvent}`);
+            await page.waitForFunction(() => window.__vtReadyFired === true, { timeout: 30000 });
+          } else {
+            // Default: wait for network idle
+            await page.goto(fileUrl, { waitUntil: "networkidle" });
+          }
 
           // Normalize font rendering for consistent screenshots
           await page.addStyleTag({
