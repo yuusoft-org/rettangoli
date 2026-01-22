@@ -180,6 +180,7 @@ async function main(options = {}) {
   const siteReferenceDir = path.join(siteOutputPath, "reference");
   const templatePath = path.join(libraryTemplatesPath, "report.html");
   const outputPath = path.join(siteOutputPath, "report.html");
+  const jsonReportPath = path.join(".rettangoli", "vt", "report.json");
 
   console.log(`Comparison method: ${compareMethod}`);
   if (compareMethod === 'pixelmatch') {
@@ -324,6 +325,25 @@ async function main(options = {}) {
       templatePath,
       outputPath,
     });
+
+    // Write JSON report
+    const jsonReport = {
+      timestamp: new Date().toISOString(),
+      total: results.length,
+      mismatched: mismatchingItems.length,
+      items: mismatchingItems.map(item => ({
+        path: item.candidatePath || item.referencePath,
+        candidatePath: item.candidatePath,
+        referencePath: item.referencePath,
+        equal: item.equal,
+        similarity: item.similarity,
+        onlyInCandidate: item.onlyInCandidate,
+        onlyInReference: item.onlyInReference,
+      })),
+    };
+    fs.writeFileSync(jsonReportPath, JSON.stringify(jsonReport, null, 2));
+    console.log(`JSON report written to ${jsonReportPath}`);
+
     if(mismatchingItems.length > 0){
       console.error("Error: there are more than 0 mismatching item.")
       process.exit(1);

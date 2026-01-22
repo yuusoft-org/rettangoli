@@ -247,8 +247,9 @@ async function takeScreenshots(
   serverUrl,
   screenshotsDir,
   concurrency = 8,
-  waitTime = 0,
+  waitTime = 10,
   configUrl = undefined,
+  waitEvent = undefined,
 ) {
   // Ensure screenshots directory exists
   ensureDirectoryExists(screenshotsDir);
@@ -263,90 +264,155 @@ async function takeScreenshots(
     const screenshotPath = join(screenshotsDir, `${finalPath}.webp`);
     ensureDirectoryExists(dirname(screenshotPath));
 
-    await page.screenshot({ path: tempPngPath, fullPage: true });
-    await sharp(tempPngPath).webp({ quality: 85 }).toFile(screenshotPath);
+    // Check if custom screenshot function is available
+    const hasCustomScreenshot = await page.evaluate(() => typeof window.takeVtScreenshotBase64 === 'function');
 
-    if (existsSync(tempPngPath)) {
-      unlinkSync(tempPngPath);
+    if (hasCustomScreenshot) {
+      // Use custom screenshot function (useful for canvas-based apps)
+      let base64Data = await page.evaluate(() => window.takeVtScreenshotBase64());
+      // Strip data URL prefix if present (e.g., "data:image/png;base64,")
+      if (base64Data.includes(',')) {
+        base64Data = base64Data.split(',')[1];
+      }
+      const pngBuffer = Buffer.from(base64Data, 'base64');
+      await sharp(pngBuffer).webp({ quality: 85 }).toFile(screenshotPath);
+    } else {
+      // Use Playwright's built-in screenshot
+      await page.screenshot({ path: tempPngPath, fullPage: true });
+      await sharp(tempPngPath).webp({ quality: 85 }).toFile(screenshotPath);
+
+      if (existsSync(tempPngPath)) {
+        unlinkSync(tempPngPath);
+      }
     }
     return screenshotPath;
   };
 
-  try {
-    const files = [...generatedFiles];
-    const total = files.length;
-    let completed = 0;
+  const processFile = async (file, browser, serverUrl, screenshotsDir, waitTime, configUrl, waitEvent, takeAndSaveScreenshot) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
 
-    // Process files in batches based on concurrency
-    while (files.length > 0) {
-      const batch = files.splice(0, concurrency);
-      const batchPromises = batch.map(async (file) => {
-        // Create a new context and page for each file (for parallelism)
-        const context = await browser.newContext();
-        const page = await context.newPage();
-
-        try {
-          const envVars = {};
-          for (const [key, value] of Object.entries(process.env)) {
-            if (key.startsWith('RTGL_VT_')) {
-              envVars[key] = value;
-            }
-          }
-
-          if (Object.keys(envVars).length > 0) {
-            await page.addInitScript((vars) => {
-              Object.assign(window, vars);
-            }, envVars);
-          }
-
-          const frontMatterUrl = file.frontMatter?.url;
-          const constructedUrl = convertToHtmlExtension(`${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`);
-          const url = frontMatterUrl ?? configUrl ?? constructedUrl;
-          const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
-
-          console.log(`Navigating to ${fileUrl}`);
-          await page.goto(fileUrl, { waitUntil: "networkidle" });
-
-          // Normalize font rendering for consistent screenshots
-          await page.addStyleTag({
-            content: `
-              * {
-                -webkit-font-smoothing: antialiased !important;
-                -moz-osx-font-smoothing: grayscale !important;
-                text-rendering: geometricPrecision !important;
-              }
-            `
-          });
-
-          if (waitTime > 0) {
-            await page.waitForTimeout(waitTime);
-          }
-          const baseName = removeExtension(file.path);
-
-          const initialScreenshotPath = await takeAndSaveScreenshot(page, baseName);
-          console.log(`Screenshot saved: ${initialScreenshotPath}`);
-
-          const stepContext = {
-            baseName,
-            takeAndSaveScreenshot,
-          };
-          const stepsExecutor = createSteps(page, stepContext);
-
-          for (const step of file.frontMatter?.steps || []) {
-            await stepsExecutor.executeStep(step);
-          }
-          completed++;
-          console.log(`Finished processing ${file.path} (${completed}/${total})`);
-        } catch (error) {
-          console.error(`Error processing instructions for ${file.path}:`, error);
-        } finally {
-          // Close the context when done
-          await context.close();
+    try {
+      const envVars = {};
+      for (const [key, value] of Object.entries(process.env)) {
+        if (key.startsWith('RTGL_VT_')) {
+          envVars[key] = value;
         }
+      }
+
+      if (Object.keys(envVars).length > 0) {
+        await page.addInitScript((vars) => {
+          Object.assign(window, vars);
+        }, envVars);
+      }
+
+      // If using custom wait event, set up listener before navigation
+      if (waitEvent) {
+        await page.addInitScript((eventName) => {
+          window.__vtReadyFired = false;
+          window.addEventListener(eventName, () => {
+            window.__vtReadyFired = true;
+          }, { once: true });
+        }, waitEvent);
+      }
+
+      const frontMatterUrl = file.frontMatter?.url;
+      const constructedUrl = convertToHtmlExtension(`${serverUrl}/candidate/${file.path.replace(/\\/g, "/")}`);
+      const url = frontMatterUrl ?? configUrl ?? constructedUrl;
+      const fileUrl = url.startsWith("http") ? url : new URL(url, serverUrl).href;
+
+      console.log(`Navigating to ${fileUrl}`);
+
+      if (waitEvent) {
+        // Navigate and wait for custom event
+        await page.goto(fileUrl, { waitUntil: "load" });
+        console.log(`Waiting for custom event: ${waitEvent}`);
+        await page.waitForFunction(() => window.__vtReadyFired === true, { timeout: 30000 });
+      } else {
+        // Default: wait for network idle
+        await page.goto(fileUrl, { waitUntil: "networkidle" });
+      }
+
+      // Normalize font rendering for consistent screenshots
+      await page.addStyleTag({
+        content: `
+          * {
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            text-rendering: geometricPrecision !important;
+          }
+        `
       });
 
-      // Wait for current batch to complete before processing next batch
-      await Promise.all(batchPromises);
+      if (waitTime > 0) {
+        await page.waitForTimeout(waitTime);
+      }
+      const baseName = removeExtension(file.path);
+
+      const initialScreenshotPath = await takeAndSaveScreenshot(page, baseName);
+      console.log(`Screenshot saved: ${initialScreenshotPath}`);
+
+      const stepContext = {
+        baseName,
+        takeAndSaveScreenshot,
+      };
+      const stepsExecutor = createSteps(page, stepContext);
+
+      for (const step of file.frontMatter?.steps || []) {
+        await stepsExecutor.executeStep(step);
+      }
+      return { success: true, file };
+    } finally {
+      await context.close();
+    }
+  };
+
+  try {
+    const total = generatedFiles.length;
+    let completed = 0;
+    let filesToProcess = [...generatedFiles];
+    const maxRetries = 3;
+
+    for (let attempt = 1; attempt <= maxRetries && filesToProcess.length > 0; attempt++) {
+      if (attempt > 1) {
+        console.log(`\nRetry attempt ${attempt}/${maxRetries} for ${filesToProcess.length} failed files...`);
+      }
+
+      const failedFiles = [];
+
+      // Process files in batches based on concurrency
+      while (filesToProcess.length > 0) {
+        const batch = filesToProcess.splice(0, concurrency);
+        const batchPromises = batch.map((file) =>
+          processFile(file, browser, serverUrl, screenshotsDir, waitTime, configUrl, waitEvent, takeAndSaveScreenshot)
+            .then(() => {
+              completed++;
+              console.log(`Finished processing ${file.path} (${completed}/${total})`);
+              return { success: true, file };
+            })
+            .catch((error) => {
+              console.error(`Error processing ${file.path}:`, error.message);
+              return { success: false, file };
+            })
+        );
+
+        const results = await Promise.allSettled(batchPromises);
+        for (const result of results) {
+          if (result.status === 'fulfilled' && !result.value.success) {
+            failedFiles.push(result.value.file);
+          } else if (result.status === 'rejected') {
+            // This shouldn't happen since we catch errors above, but just in case
+            console.error('Unexpected rejection:', result.reason);
+          }
+        }
+      }
+
+      filesToProcess = failedFiles;
+    }
+
+    if (filesToProcess.length > 0) {
+      console.error(`\nFailed to process ${filesToProcess.length} files after ${maxRetries} attempts:`);
+      filesToProcess.forEach((file) => console.error(`  - ${file.path}`));
     }
   } catch (error) {
     console.error("Error taking screenshots:", error);
