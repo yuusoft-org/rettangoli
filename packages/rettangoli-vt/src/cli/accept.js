@@ -1,36 +1,10 @@
-import { existsSync, readdirSync, statSync } from 'node:fs';
-import { rm, cp, mkdir } from 'node:fs/promises';
+import { existsSync, readFileSync } from 'node:fs';
+import { cp, mkdir, rm } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 
 /**
- * Recursively copy only WebP files from source to destination
- */
-async function copyWebpFiles(sourceDir, destDir) {
-  if (!existsSync(sourceDir)) {
-    return;
-  }
-
-  const items = readdirSync(sourceDir);
-
-  for (const item of items) {
-    const sourcePath = join(sourceDir, item);
-    const destPath = join(destDir, item);
-
-    if (statSync(sourcePath).isDirectory()) {
-      // Recursively copy subdirectories
-      await copyWebpFiles(sourcePath, destPath);
-    } else if (item.endsWith('.webp')) {
-      // Copy WebP files only
-      await mkdir(dirname(destPath), { recursive: true });
-      await cp(sourcePath, destPath);
-      console.log(`Copied: ${sourcePath} -> ${destPath}`);
-    }
-  }
-}
-
-/**
- * Accepts candidate screenshots as the new reference by removing the existing reference
- * directory and copying the candidate directory to reference.
+ * Accepts candidate screenshots as the new reference by copying only files
+ * that have diffs according to report.json.
  */
 async function acceptReference(options = {}) {
   const {
@@ -40,32 +14,48 @@ async function acceptReference(options = {}) {
   const referenceDir = join(vtPath, "reference");
   const siteOutputPath = join(".rettangoli", "vt", "_site");
   const candidateDir = join(siteOutputPath, "candidate");
+  const jsonReportPath = join(".rettangoli", "vt", "report.json");
 
-  console.log('Accepting candidate as new reference...');
-
-  // Check if candidate directory exists
-  if (!existsSync(candidateDir)) {
-    console.error('Error: Candidate directory does not exist!');
+  // Check if report.json exists
+  if (!existsSync(jsonReportPath)) {
+    console.error('Error: report.json not found. Run "rtgl vt report" first.');
     process.exit(1);
   }
 
+  // Read report.json
+  const report = JSON.parse(readFileSync(jsonReportPath, 'utf8'));
+
+  if (report.items.length === 0) {
+    console.log('No differences found in report. Nothing to accept.');
+    return;
+  }
+
+  console.log(`Accepting ${report.items.length} changed files as new reference...`);
+
   try {
-    // Remove reference directory if it exists
-    if (existsSync(referenceDir)) {
-      console.log('Removing existing reference directory...');
-      await rm(referenceDir, { recursive: true, force: true });
+    for (const item of report.items) {
+      // Skip items that only exist in reference (they should be deleted)
+      if (item.onlyInReference) {
+        const refPath = join(referenceDir, item.referencePath.replace('reference/', ''));
+        if (existsSync(refPath)) {
+          await rm(refPath);
+          console.log(`Removed: ${refPath}`);
+        }
+        continue;
+      }
+
+      // Copy candidate to reference
+      const candidatePath = join(siteOutputPath, item.candidatePath);
+      const refPath = join(referenceDir, item.candidatePath.replace('candidate/', ''));
+
+      if (existsSync(candidatePath)) {
+        await mkdir(dirname(refPath), { recursive: true });
+        await cp(candidatePath, refPath);
+        console.log(`Copied: ${candidatePath} -> ${refPath}`);
+      }
     }
 
-    // Wait for 100ms to ensure the directory is removed
-    await new Promise((resolve) => {
-      setTimeout(resolve, 100);
-    })
-    
-    // Copy only WebP files from candidate to reference
-    console.log('Copying WebP files from candidate to reference...');
-    await copyWebpFiles(candidateDir, referenceDir);
-
-    console.log('Done! New reference accepted.');
+    console.log('Done! Changes accepted.');
   } catch (error) {
     console.error('Error:', error.message);
     process.exit(1);
