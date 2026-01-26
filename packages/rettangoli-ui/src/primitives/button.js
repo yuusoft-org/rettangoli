@@ -50,7 +50,7 @@ class RettangoliButtonElement extends HTMLElement {
           );
         }
 
-        button:disabled {
+        :host([dis]) button {
           cursor: not-allowed;
         }
 
@@ -166,13 +166,14 @@ class RettangoliButtonElement extends HTMLElement {
     this._containerElement = null;
     this._buttonElement = document.createElement('button');
     this._slotElement = document.createElement('slot');
-    this._iconElement = null;
+    this._prefixIcon = null;
+    this._suffixIcon = null;
     
     this._buttonElement.appendChild(this._slotElement);
   }
 
   static get observedAttributes() {
-    return ["key", "href", "target", "w", "icon", "disabled", "v", "s", "sq", "ip"];
+    return ["key", "href", "target", "w", "pre", "suf", "dis", "v", "s", "sq"];
   }
 
   connectedCallback() {
@@ -196,7 +197,7 @@ class RettangoliButtonElement extends HTMLElement {
     }
     
     // Update disabled state
-    const isDisabled = this.hasAttribute('disabled');
+    const isDisabled = this.hasAttribute('dis');
     if (isDisabled) {
       this._buttonElement.setAttribute('disabled', '');
     } else {
@@ -226,56 +227,64 @@ class RettangoliButtonElement extends HTMLElement {
   }
 
   _updateIcon() {
-    // Remove existing icon if any
-    if (this._iconElement) {
-      this._iconElement.remove();
-      this._iconElement = null;
+    // Remove existing icons if any
+    if (this._prefixIcon) {
+      this._prefixIcon.remove();
+      this._prefixIcon = null;
     }
-    
-    const icon = this.getAttribute("icon");
-    if (icon) {
-      const colorMap = {
-        pr: 'pr-fg',
-        se: 'ac-fg',
-        de: 'pr-fg',
-        ol: 'ac-fg',
-        gh: 'ac-fg',
-        lk: 'ac-fg'
-      };
-      const iconSizeMap = {
+    if (this._suffixIcon) {
+      this._suffixIcon.remove();
+      this._suffixIcon = null;
+    }
+
+    const colorMap = {
+      pr: 'pr-fg',
+      se: 'ac-fg',
+      de: 'pr-fg',
+      ol: 'ac-fg',
+      gh: 'ac-fg',
+      lk: 'ac-fg'
+    };
+    const iconSizeMap = {
+      sm: 14,
+      md: 18,
+      lg: 22
+    };
+    const color = colorMap[this.getAttribute("v")] || 'pr-fg';
+
+    // For square buttons, use button size (s attribute), otherwise use icon size
+    let size = 18; // default
+    if (this.hasAttribute('sq')) {
+      const buttonSizeMap = {
         sm: 14,
-        md: 18,
         lg: 22
       };
-      const color = colorMap[this.getAttribute("v")] || 'pr-fg';
-      
-      // For square buttons, use button size (s attribute), otherwise use icon size (t attribute)
-      let size = 18; // default
-      if (this.hasAttribute('sq')) {
-        const buttonSizeMap = {
-          sm: 14,
-          lg: 22
-        };
-        const buttonSize = this.getAttribute("s");
-        size = buttonSizeMap[buttonSize] || 18;
-      } else {
-        size = iconSizeMap[this.getAttribute("s")] || 18;
-      }
-      
-      this._iconElement = document.createElement('rtgl-svg');
-      this._iconElement.setAttribute('svg', icon);
-      this._iconElement.setAttribute('c', color);
-      this._iconElement.setAttribute('wh', size.toString());
-      
-      // Insert icon based on position (default is right, 's' means start/left)
-      const iconPosition = this.getAttribute("ip");
-      if (iconPosition === 's') {
-        // Insert icon before slot (left position)
-        this._buttonElement.insertBefore(this._iconElement, this._slotElement);
-      } else {
-        // Insert icon after slot (right position - default)
-        this._buttonElement.appendChild(this._iconElement);
-      }
+      const buttonSize = this.getAttribute("s");
+      size = buttonSizeMap[buttonSize] || 18;
+    } else {
+      size = iconSizeMap[this.getAttribute("s")] || 18;
+    }
+
+    // Create prefix icon (before text)
+    const prefixIcon = this.getAttribute("pre");
+    if (prefixIcon) {
+      this._prefixIcon = document.createElement('rtgl-svg');
+      this._prefixIcon.setAttribute('svg', prefixIcon);
+      this._prefixIcon.setAttribute('c', color);
+      this._prefixIcon.setAttribute('wh', size.toString());
+      // Insert before slot (left position)
+      this._buttonElement.insertBefore(this._prefixIcon, this._slotElement);
+    }
+
+    // Create suffix icon (after text)
+    const suffixIcon = this.getAttribute("suf");
+    if (suffixIcon) {
+      this._suffixIcon = document.createElement('rtgl-svg');
+      this._suffixIcon.setAttribute('svg', suffixIcon);
+      this._suffixIcon.setAttribute('c', color);
+      this._suffixIcon.setAttribute('wh', size.toString());
+      // Insert after slot (right position)
+      this._buttonElement.appendChild(this._suffixIcon);
     }
   }
 
