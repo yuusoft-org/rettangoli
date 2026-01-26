@@ -59,7 +59,7 @@ const mediaQueries = {
   sm: "@media only screen and (max-width: 640px)",
 };
 
-const generateCSS = (styles, descendants = {}) => {
+const generateCSS = (styles, descendants = {}, targetSelector = null) => {
   let css = "";
 
   for (const [size, mediaQuery] of Object.entries(mediaQueries)) {
@@ -77,6 +77,16 @@ const generateCSS = (styles, descendants = {}) => {
         const hoverAttributeWithBreakpoint =
           size === "default" ? `h-${attr}` : `${size}-h-${attr}`;
 
+        // Build selector: either :host([...]) or :host([...]) targetSelector
+        const buildSelector = (attrStr) => {
+          const base = `:host([${attrStr}="${value}"])`;
+          if (targetSelector) {
+            // Generate: :host([...]) target1, :host([...]) target2
+            return targetSelector.split(',').map(t => `${base} ${t.trim()}`).join(', ');
+          }
+          return base + dscendant;
+        };
+
         if (cssProperties) {
           // Handle multiple properties if mapped in styleMap
           const properties = cssProperties.split(" ");
@@ -85,20 +95,20 @@ const generateCSS = (styles, descendants = {}) => {
             .join(" ");
 
           css += `
-            :host([${attributeWithBreakpoint}="${value}"])${dscendant}{
+            ${buildSelector(attributeWithBreakpoint)}{
               ${propertyRules}
             }
-            :host([${hoverAttributeWithBreakpoint}="${value}"]:hover)${dscendant}{
+            ${buildSelector(hoverAttributeWithBreakpoint)}:hover{
               ${propertyRules}
             }
           `;
         } else {
           // Attribute is not mapped, handle directly
           css += `
-            :host([${attributeWithBreakpoint}="${value}"])${dscendant}{
+            ${buildSelector(attributeWithBreakpoint)}{
               ${rule}
             }
-            :host([${hoverAttributeWithBreakpoint}="${value}"]:hover)${dscendant}{
+            ${buildSelector(hoverAttributeWithBreakpoint)}:hover{
               ${rule}
             }
           `;

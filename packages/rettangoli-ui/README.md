@@ -47,7 +47,7 @@ In rettangoli UI you do it like this:
 ✅ what we do
 
 ```html
-<rtgl-select items="[{"value": "options-1", "label": "Option 1"}]">
+<rtgl-select items="uriEncoded([{"value": "options-1", "label": "Option 1"}])">
 </rtgl-select>
 ```
 
@@ -67,7 +67,7 @@ Why? This is more optimized for SPAs, where you can control the data in javascri
 For SSR, can use the template tag to actually insert the final rendered content
 
 ```html
-<rtgl-select items="[{"value": "options-1", "label": "Option 1"}]">
+<rtgl-select items="uriEncoded([{"value": "options-1", "label": "Option 1"}])">
   <template>
     <rtgl-view><rtgl-text>Option 1</rtgl-text></rtgl-view>
     ...
@@ -81,6 +81,9 @@ Each element will first check props and then attributes if prop value was not fo
 
 - will conver to JSON if is json. json values for attributes is always expected to be URIEncoded
 - for boolean values, will automatically conver true to true and everything else to false
+- **Attribute names are typically 1-4 characters** for brevity (e.g., `w`, `h`, `bgc`, `m`, `p`, `d`)
+
+
 
 ## Required SVGs
 

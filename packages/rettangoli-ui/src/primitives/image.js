@@ -6,9 +6,9 @@ import {
   permutateBreakpoints,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
-import marginStyles from "../styles/marginStyles.js";
-import viewStyles from "../styles/viewStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
+import viewStylesForTarget from "../styles/viewStylesForTarget.js";
+import marginStylesForTarget from "../styles/marginStylesForTarget.js";
 
 // Internal implementation without uhtml
 class RettangoliImageElement extends HTMLElement {
@@ -19,13 +19,13 @@ class RettangoliImageElement extends HTMLElement {
       RettangoliImageElement.styleSheet = new CSSStyleSheet();
       RettangoliImageElement.styleSheet.replaceSync(css`
         :host {
+          display: contents;
+        }
+        img, a {
           border-style: solid;
           box-sizing: border-box;
           overflow: hidden;
           border-width: 0;
-        }
-        slot {
-          display: contents;
         }
         :host([of="con"]) img {
           object-fit: contain;
@@ -35,10 +35,6 @@ class RettangoliImageElement extends HTMLElement {
         }
         :host([of="none"]) img {
           object-fit: none;
-        }
-        img {
-          height: 100%;
-          width: 100%;
         }
         :host([w]:not([h]):not([wh])) img,
         :host([sm-w]:not([sm-h]):not([sm-wh])) img,
@@ -56,12 +52,8 @@ class RettangoliImageElement extends HTMLElement {
           width: 100%;
         }
 
-        :host([href]) {
-          cursor: pointer;
-        }
-
-        ${viewStyles}
-        ${marginStyles}
+        ${viewStylesForTarget('img, a')}
+        ${marginStylesForTarget('img, a')}
         ${cursorStyles}
       `);
     }
@@ -94,8 +86,6 @@ class RettangoliImageElement extends HTMLElement {
       "h",
       "hide",
       "show",
-      "height",
-      "width",
       "z",
       "of",
     ]);
@@ -165,8 +155,8 @@ class RettangoliImageElement extends HTMLElement {
       return;
     }
 
-    // Handle src, width, height attributes
-    if (name === "src" || name === "width" || name === "height") {
+    // Handle src attribute
+    if (name === "src") {
       this._updateImageAttributes();
       return;
     }
@@ -242,7 +232,7 @@ class RettangoliImageElement extends HTMLElement {
     });
 
     // Update styles only if changed
-    const newStyleString = convertObjectToCssString(this._styles);
+    const newStyleString = convertObjectToCssString(this._styles, 'img, a');
     if (newStyleString !== this._lastStyleString) {
       this._styleElement.textContent = newStyleString;
       this._lastStyleString = newStyleString;
@@ -251,17 +241,9 @@ class RettangoliImageElement extends HTMLElement {
 
   _updateImageAttributes() {
     const src = this.getAttribute("src");
-    const width = this.getAttribute("width");
-    const height = this.getAttribute("height");
 
     if (src !== null) {
       this._imgElement.setAttribute("src", src);
-    }
-    if (width !== null) {
-      this._imgElement.setAttribute("width", width);
-    }
-    if (height !== null) {
-      this._imgElement.setAttribute("height", height);
     }
   }
 }
