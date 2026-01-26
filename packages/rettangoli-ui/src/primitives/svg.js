@@ -1,5 +1,4 @@
 import { css, dimensionWithUnit } from "../common.js";
-import flexChildStyles from "../styles/flexChildStyles.js";
 import paddingSvgStyles from "../styles/paddingSvgStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
@@ -21,7 +20,6 @@ class RettangoliSvgElement extends HTMLElement {
         ${textColorStyles}
         ${paddingSvgStyles}
         ${marginStyles}
-        ${flexChildStyles}
         ${cursorStyles}
       `);
     }
@@ -58,19 +56,18 @@ class RettangoliSvgElement extends HTMLElement {
 
   _updateSizing() {
     const wh = this.getAttribute("wh");
-    const width = dimensionWithUnit(
-      wh === null ? this.getAttribute("w") : wh
-    );
-    const height = dimensionWithUnit(
-      wh === null ? this.getAttribute("h") : wh
-    );
+    const width = dimensionWithUnit(wh === null ? this.getAttribute("w") : wh);
+    const height = dimensionWithUnit(wh === null ? this.getAttribute("h") : wh);
 
     if (width) {
       this.style.width = width;
     }
+
     if (height) {
       this.style.height = height;
     }
+
+    _render();
   }
 
   _render() {

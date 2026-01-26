@@ -129,9 +129,18 @@ const endsWithPercentage = (inputStr) => {
   return /%$/.test(inputStr);
 };
 
+const endsWithFlexGrowUnit = (inputStr) => {
+  // Matches integers 1-12 followed by "fg"
+  return /^([1-9]|1[0-2])fg$/.test(inputStr);
+};
+
 const dimensionWithUnit = (dimension) => {
   if (dimension === undefined) {
     return;
+  }
+
+  if (endsWithFlexGrowUnit(dimension)) {
+    return dimension;
   }
 
   if (endsWithPercentage(dimension)) {

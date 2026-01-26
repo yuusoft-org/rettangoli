@@ -1,5 +1,5 @@
-import { 
-  css, 
+import {
+  css,
   dimensionWithUnit,
   convertObjectToCssString,
   styleMapKeys,

@@ -10,7 +10,6 @@ import cursorStyles from "../styles/cursorStyles.js";
 import scrollStyle from "../styles/scrollStyles.js";
 import stylesGenerator from "../styles/viewStyles.js";
 import marginStyles from "../styles/marginStyles.js";
-import flexChildStyles from "../styles/flexChildStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
 
 // Internal implementation without uhtml
@@ -39,7 +38,7 @@ class RettangoliViewElement extends HTMLElement {
           flex-wrap: wrap;
         }
 
-        ${flexChildStyles}
+
         ${scrollStyle}
         ${flexDirectionStyles}
         ${marginStyles}
@@ -97,7 +96,6 @@ class RettangoliViewElement extends HTMLElement {
         "d",
         "ah",
         "av",
-        "flex",
         "fw",
         "overflow"
       ]),
@@ -185,6 +183,10 @@ class RettangoliViewElement extends HTMLElement {
 
       if (width === "f") {
         this._styles[size].width = "var(--width-stretch)";
+      } else if (width && width.endsWith("fg")) {
+        const flexGrow = width.slice(0, -2);
+        this._styles[size]["flex-grow"] = flexGrow;
+        this._styles[size]["flex-basis"] = "0%";
       } else if (width !== undefined) {
         this._styles[size].width = width;
         this._styles[size]["min-width"] = width;
@@ -193,6 +195,10 @@ class RettangoliViewElement extends HTMLElement {
 
       if (height === "f") {
         this._styles[size].height = "100%";
+      } else if (height && height.endsWith("fg")) {
+        const flexGrow = height.slice(0, -2);
+        this._styles[size]["flex-grow"] = flexGrow;
+        this._styles[size]["flex-basis"] = "0%";
       } else if (height !== undefined) {
         this._styles[size].height = height;
         this._styles[size]["min-height"] = height;

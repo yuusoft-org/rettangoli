@@ -186,19 +186,15 @@ class RettangoliTextAreaElement extends HTMLElement {
       }
 
       if (width === "f") {
-        this._styles[size].width = "var(--width-stretch)";
+        this.style.width = "var(--width-stretch)";
       } else if (width !== undefined) {
-        this._styles[size].width = width;
-        this._styles[size]["min-width"] = width;
-        this._styles[size]["max-width"] = width;
+        this.style.width = width;
       }
 
       if (height === "f") {
-        this._styles[size].height = "100%";
+        this.style.height = "100%";
       } else if (height !== undefined) {
-        this._styles[size].height = height;
-        this._styles[size]["min-height"] = height;
-        this._styles[size]["max-height"] = height;
+        this.style.height = height;
       }
 
       if (this.hasAttribute(addSizePrefix("hide"))) {

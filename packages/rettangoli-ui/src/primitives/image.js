@@ -97,6 +97,7 @@ class RettangoliImageElement extends HTMLElement {
       "height",
       "width",
       "z",
+      "of",
     ]);
   }
 
@@ -152,12 +153,31 @@ class RettangoliImageElement extends HTMLElement {
     }
   }
 
+  connectedCallback() {
+    this._updateImageAttributes();
+    this.updateStyles();
+  }
+
   attributeChangedCallback(name, oldValue, newValue) {
     // Handle href and target changes
     if (name === "href" || name === "target") {
       this._updateDOM();
       return;
     }
+
+    // Handle src, width, height attributes
+    if (name === "src" || name === "width" || name === "height") {
+      this._updateImageAttributes();
+      return;
+    }
+
+    // Update styles for all other attributes
+    if (oldValue !== newValue) {
+      this.updateStyles();
+    }
+  }
+
+  updateStyles() {
     // Reset styles for fresh calculation
     this._styles = {
       default: {},
@@ -190,17 +210,23 @@ class RettangoliImageElement extends HTMLElement {
         this._styles[size].opacity = opacity;
       }
 
+      // Handle fill width
       if (width === "f") {
         this._styles[size].width = "var(--width-stretch)";
-      } else if (width !== undefined) {
+      }
+      // Handle normal width
+      else if (width !== undefined) {
         this._styles[size].width = width;
         this._styles[size]["min-width"] = width;
         this._styles[size]["max-width"] = width;
       }
 
+      // Handle fill height
       if (height === "f") {
         this._styles[size].height = "100%";
-      } else if (height !== undefined) {
+      }
+      // Handle normal height
+      else if (height !== undefined) {
         this._styles[size].height = height;
         this._styles[size]["min-height"] = height;
         this._styles[size]["max-height"] = height;
@@ -221,9 +247,6 @@ class RettangoliImageElement extends HTMLElement {
       this._styleElement.textContent = newStyleString;
       this._lastStyleString = newStyleString;
     }
-
-    // Update img attributes
-    this._updateImageAttributes();
   }
 
   _updateImageAttributes() {
@@ -240,10 +263,6 @@ class RettangoliImageElement extends HTMLElement {
     if (height !== null) {
       this._imgElement.setAttribute("height", height);
     }
-  }
-
-  connectedCallback() {
-    this._updateImageAttributes();
   }
 }
 

@@ -1,6 +1,96 @@
 
 # Rettangoli
 
+Rettangoli UI is a framework based on webcomponents.
+
+Example:
+
+```html
+<rtgl-button>Hello</rtgl-button>
+```
+
+## Use attribute based rather than class based
+
+❌ Normally you would do like this:
+
+```html
+<rtgl-view class="sm pr"></rtgl-view>
+```
+
+
+✅ what we do
+
+We shortcut almost everything.
+
+```html
+<rtgl-view s="sm" v="pr"></rtgl-view>
+```
+
+
+## Optimized for SPA
+
+❌ Normally you would do like this:
+
+```html
+<rtgl-select>
+  <rtgl-option value="option-1">Option 1</rtgl-option>
+  <rtgl-option value="option-2">Option 2</rtgl-option>
+  <rtgl-option value="option-3">Option 3</rtgl-option>
+  <rtgl-option value="option-4">Option 4</rtgl-option>
+  <rtgl-option value="option-5">Option 5</rtgl-option>
+  <rtgl-option value="option-6">Option 6</rtgl-option>
+</rtgl-select>
+```
+
+In rettangoli UI you do it like this:
+
+✅ what we do
+
+```html
+<rtgl-select items="[{"value": "options-1", "label": "Option 1"}]">
+</rtgl-select>
+```
+
+OR equivalent
+
+```html
+<script>
+  const select = document.createElement('rtgl-select')
+  select.items = [{"value": "options-1", "label": "Option 1"}]
+  document.append(select)
+</script>
+
+```
+
+Why? This is more optimized for SPAs, where you can control the data in javascript rather than html, much easier to do.
+
+For SSR, can use the template tag to actually insert the final rendered content
+
+```html
+<rtgl-select items="[{"value": "options-1", "label": "Option 1"}]">
+  <template>
+    <rtgl-view><rtgl-text>Option 1</rtgl-text></rtgl-view>
+    ...
+  </template>
+</rtgl-select>
+```
+
+## Props vs Attributes
+
+Each element will first check props and then attributes if prop value was not found. Attribute will:
+
+- will conver to JSON if is json. json values for attributes is always expected to be URIEncoded
+- for boolean values, will automatically conver true to true and everything else to false
+
+## Required SVGs
+
+need to import a js file to set svgs
+
+
+## Accessibility
+
+We have not looked at this yet, will plan to do this later on
+
 ## Development
 
 ### Folder Structure

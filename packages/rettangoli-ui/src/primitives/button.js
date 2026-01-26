@@ -1,5 +1,4 @@
 import { css, dimensionWithUnit } from "../common.js";
-import flexChildStyles from "../styles/flexChildStyles.js";
 import buttonMarginStyles from "../styles/buttonMarginStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
 
@@ -153,7 +152,6 @@ class RettangoliButtonElement extends HTMLElement {
         }
 
         ${buttonMarginStyles}
-        ${flexChildStyles}
       `);
     }
   }

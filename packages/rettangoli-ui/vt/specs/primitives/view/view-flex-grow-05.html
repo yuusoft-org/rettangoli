@@ -1,0 +1,15 @@
+---
+title: Cross-axis sizing with flex-grow
+specs:
+  - w="1fg" controls main axis, h sets cross-axis
+  - h="1fg" works in vertical containers
+---
+
+<rtgl-view bgc="mu" g="lg" p="lg" w="f" h="600">
+  <rtgl-view d="h" w="f">
+    <rtgl-view bgc="ac" w="1fg" h="100">Width flex, Height fixed</rtgl-view>
+  </rtgl-view>
+  <rtgl-view d="v" h="f">
+    <rtgl-view bgc="ac" w="100" h="1fg">Width fixed, Height flex</rtgl-view>
+  </rtgl-view>
+</rtgl-view>

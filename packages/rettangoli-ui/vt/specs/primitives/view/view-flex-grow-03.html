@@ -1,0 +1,11 @@
+---
+title: Mixed fixed and flex-grow
+specs:
+  - Fixed width + flex-grow fills remaining
+  - Gaps work correctly with flex-grow
+---
+
+<rtgl-view d="h" bgc="mu" g="lg" p="lg" wh="f">
+  <rtgl-view bgc="ac" w="100" h="100">Fixed</rtgl-view>
+  <rtgl-view bgc="ac" w="1fg" h="100">Flexible</rtgl-view>
+</rtgl-view>
