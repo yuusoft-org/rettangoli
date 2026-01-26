@@ -12,7 +12,7 @@ An intuitive container component for building layouts serving as the building bl
 | Name             | Attribute                               | Type                                     | Default |
 | ---------------- | --------------------------------------- | ---------------------------------------- | ------- |
 | [Direction](#direction)        | `d`                                     | `h`, `v`                                 | `v`     |
-| [Dimensions](#dimensions)            | `w`, `h`, `wh`                          | number, `f`                              | -       |
+| [Dimensions](#dimensions)            | `w`, `h`, `wh`                          | number, `f`, `1fg`-`12fg`                              | -       |
 | [Align Horizontal](#align-horizontal) | `ah`                                    | `s`, `c`, `e`                           | `s`    |
 | [Align Vertical](#align-vertical)   | `av`                                    | `s`, `c`, `e`                           | `s`    |
 | [Scroll](#scroll)           | `sv`, `sh`                              | boolean                                  | -       |
@@ -53,7 +53,7 @@ Controls the layout direction of the container. Set to `h` for horizontal or `v`
 
 ## Dimensions
 
-Controls the width and height of the container. Use specific pixel values or `f` for full available width/height.
+Controls the width and height of the container. Use specific pixel values, `f` for full available width/height, or flex-grow values (`1fg`-`12fg`) for proportional sizing.
 
 ### Pixels
 
@@ -78,6 +78,57 @@ Controls the width and height of the container. Use specific pixel values or `f`
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg" w="f">
   <rtgl-view bgc="ac" w="f" h="80"></rtgl-view>
+</rtgl-view>
+```
+
+### Flex Grow
+
+Use flex-grow values to make elements fill remaining space proportionally. Values range from `1fg` to `12fg`.
+
+#### Equal Flex Grow
+
+Multiple elements with the same flex-grow value share space equally.
+
+```html codePreview
+<rtgl-view d="h" bgc="mu" g="lg" p="lg" w="f">
+  <rtgl-view bgc="ac" w="1fg" h="100">1/3</rtgl-view>
+  <rtgl-view bgc="ac" w="1fg" h="100">1/3</rtgl-view>
+  <rtgl-view bgc="ac" w="1fg" h="100">1/3</rtgl-view>
+</rtgl-view>
+```
+
+#### Proportional Flex Grow
+
+Different flex-grow values take space proportionally.
+
+```html codePreview
+<rtgl-view d="h" bgc="mu" g="lg" p="lg" w="f">
+  <rtgl-view bgc="ac" w="1fg" h="100">1/6</rtgl-view>
+  <rtgl-view bgc="ac" w="2fg" h="100">2/6</rtgl-view>
+  <rtgl-view bgc="ac" w="3fg" h="100">3/6</rtgl-view>
+</rtgl-view>
+```
+
+#### Mixed Fixed and Flex Grow
+
+Combine fixed widths with flex-grow to fill remaining space.
+
+```html codePreview
+<rtgl-view d="h" bgc="mu" g="lg" p="lg" w="f">
+  <rtgl-view bgc="ac" w="100" h="100">Fixed</rtgl-view>
+  <rtgl-view bgc="ac" w="1fg" h="100">Flexible</rtgl-view>
+</rtgl-view>
+```
+
+#### Vertical Flex Grow
+
+Flex-grow works in vertical containers using `h="1fg"`.
+
+```html codePreview
+<rtgl-view d="v" bgc="mu" g="lg" p="lg" h="400">
+  <rtgl-view bgc="ac" w="f" h="1fg">1/3</rtgl-view>
+  <rtgl-view bgc="ac" w="f" h="1fg">1/3</rtgl-view>
+  <rtgl-view bgc="ac" w="f" h="1fg">1/3</rtgl-view>
 </rtgl-view>
 ```
 

@@ -7,40 +7,43 @@ items:
     items:
       - id: introduction
         title: "Introduction"
-        href: "/docs/introduction/introduction"
+        href: "/ui/docs/introduction/introduction"
       - id: getting-started
         title: "Getting Started"
-        href: "/docs/introduction/getting-started"
+        href: "/ui/docs/introduction/getting-started"
       - id: css-variables
         title: "CSS Variables"
-        href: "/docs/introduction/css-variables"
+        href: "/ui/docs/introduction/css-variables"
+      - id: responsiveness
+        title: "Responsiveness"
+        href: "/ui/docs/introduction/responsiveness"
   - title: "Components"
     type: groupLabel
     items:
       - id: rtgl-view
         title: "View"
-        href: "/docs/components/rtgl-view"
+        href: "/ui/docs/components/rtgl-view"
       - id: rtgl-text
         title: "Text"
-        href: "/docs/components/rtgl-text"
+        href: "/ui/docs/components/rtgl-text"
       - id: rtgl-image
         title: "Image"
-        href: "/docs/components/rtgl-image"
+        href: "/ui/docs/components/rtgl-image"
       - id: rtgl-svg
         title: "SVG"
-        href: "/docs/components/rtgl-svg"
+        href: "/ui/docs/components/rtgl-svg"
       - id: rtgl-button
         title: "Button"
-        href: "/docs/components/rtgl-button"
+        href: "/ui/docs/components/rtgl-button"
       - id: rtgl-color-picker
         title: "Color Picker"
-        href: "/docs/components/rtgl-color-picker"
+        href: "/ui/docs/components/rtgl-color-picker"
       - id: rtgl-dialog
         title: "Dialog"
-        href: "/docs/components/rtgl-dialog"
+        href: "/ui/docs/components/rtgl-dialog"
       - id: rtgl-input
         title: "Input"
-        href: "/docs/components/rtgl-input"
+        href: "/ui/docs/components/rtgl-input"
       # - id: rtgl-input-number
       #   title: "Input Number"
-      #   href: "/docs/components/rtgl-input-number"
+      #   href: "/ui/docs/components/rtgl-input-number"
