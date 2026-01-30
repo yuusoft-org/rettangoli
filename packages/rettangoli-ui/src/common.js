@@ -7,7 +7,7 @@ function css(strings, ...values) {
   return str;
 }
 
-const breakpoints = ["xs", "sm", "md", "lg", "xl"];
+const breakpoints = ["sm", "md", "lg", "xl"];
 
 const styleMap = {
   mt: "margin-top",

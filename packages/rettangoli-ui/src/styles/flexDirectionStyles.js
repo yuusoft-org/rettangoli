@@ -57,17 +57,17 @@ export default css`
   }
   
   @media screen and (max-width: 640px) {
-    :host([s-d="v"]) {
+    :host([sm-d="v"]) {
       flex-direction: column;
     }
-    :host([s-d="h"]) {
+    :host([sm-d="h"]) {
       flex-direction: row;
     }
-    :host([s-d="h"][s-av="c"]) {
+    :host([sm-d="h"][sm-av="c"]) {
       align-items: center;
       align-content: center;
     }
-    :host([s-d="v"][s-av="c"]) {
+    :host([sm-d="v"][sm-av="c"]) {
       justify-content: center;
     }
   }

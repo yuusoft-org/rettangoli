@@ -203,6 +203,7 @@ class RettangoliButtonElement extends HTMLElement {
     } else {
       this._buttonElement.removeAttribute('disabled');
     }
+
     
     // Handle href (link) vs button
     const href = this.getAttribute("href");

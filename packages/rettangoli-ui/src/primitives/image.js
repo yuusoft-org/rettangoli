@@ -86,6 +86,7 @@ class RettangoliImageElement extends HTMLElement {
       "h",
       "hide",
       "show",
+      "op",
       "z",
       "of",
     ]);
@@ -189,7 +190,7 @@ class RettangoliImageElement extends HTMLElement {
       const height = dimensionWithUnit(
         wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
       );
-      const opacity = this.getAttribute(addSizePrefix("o"));
+      const opacity = this.getAttribute(addSizePrefix("op"));
       const zIndex = this.getAttribute(addSizePrefix("z"));
 
       if (zIndex !== null) {

@@ -67,7 +67,7 @@ class RettangoliSvgElement extends HTMLElement {
       this.style.height = height;
     }
 
-    _render();
+    this._render();
   }
 
   _render() {

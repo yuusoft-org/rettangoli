@@ -85,7 +85,7 @@ class RettangoliTextAreaElement extends HTMLElement {
       "key",
       "type",
       "placeholder",
-      "disabled",
+      "dis",
       "value",
       "cols",
       "rows",
@@ -148,7 +148,7 @@ class RettangoliTextAreaElement extends HTMLElement {
     }
 
     // Handle textarea-specific attributes first
-    if (["cols", "rows", "disabled"].includes(name)) {
+    if (["cols", "rows", "dis"].includes(name)) {
       this._updateTextareaAttributes();
       return;
     }
@@ -186,15 +186,19 @@ class RettangoliTextAreaElement extends HTMLElement {
       }
 
       if (width === "f") {
-        this.style.width = "var(--width-stretch)";
+        this._styles[size].width = "var(--width-stretch)";
       } else if (width !== undefined) {
-        this.style.width = width;
+        this._styles[size].width = width;
+        this._styles[size]["min-width"] = width;
+        this._styles[size]["max-width"] = width;
       }
 
       if (height === "f") {
-        this.style.height = "100%";
+        this._styles[size].height = "100%";
       } else if (height !== undefined) {
-        this.style.height = height;
+        this._styles[size].height = height;
+        this._styles[size]["min-height"] = height;
+        this._styles[size]["max-height"] = height;
       }
 
       if (this.hasAttribute(addSizePrefix("hide"))) {
@@ -217,7 +221,7 @@ class RettangoliTextAreaElement extends HTMLElement {
   _updateTextareaAttributes() {
     const cols = this.getAttribute("cols");
     const rows = this.getAttribute("rows");
-    const isDisabled = this.hasAttribute('disabled');
+    const isDisabled = this.hasAttribute('dis');
 
     if (cols !== null) {
       this._textareaElement.setAttribute("cols", cols);

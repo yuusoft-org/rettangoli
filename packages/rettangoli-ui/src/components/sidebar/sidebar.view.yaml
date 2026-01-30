@@ -176,7 +176,7 @@ template:
                 - rtgl-view mt=md h=32 av=c ph=md:
                   - rtgl-text s=xs c=mu-fg: "${item.title}"
               $else:
-                - rtgl-view mt=md h=1 bgc=mu-bg:
+                - rtgl-view mt=md h=1 bgc=mu:
           $else:
             - rtgl-view#item-${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=p data-testid=${item.testId}:
               - $if item.icon:

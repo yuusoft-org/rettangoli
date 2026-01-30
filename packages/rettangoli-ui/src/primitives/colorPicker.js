@@ -75,7 +75,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     return [
       "key", 
       "value", 
-      "disabled",
+      "dis",
       ...permutateBreakpoints([
         ...styleMapKeys,
         "wh",
@@ -124,7 +124,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     }
 
     // Handle input-specific attributes first
-    if (["value", "disabled"].includes(name)) {
+    if (["value", "dis"].includes(name)) {
       this._updateInputAttributes();
       return;
     }
@@ -196,7 +196,7 @@ class RettangoliColorPickerElement extends HTMLElement {
 
   _updateInputAttributes() {
     const value = this.getAttribute("value");
-    const isDisabled = this.hasAttribute('disabled');
+    const isDisabled = this.hasAttribute('dis');
 
     if (value !== null) {
       this._inputElement.value = value;

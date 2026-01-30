@@ -86,7 +86,7 @@ class RettangoliInputElement extends HTMLElement {
       "key",
       "type",
       "placeholder",
-      "disabled",
+      "dis",
       "value",
       "s",
       ...permutateBreakpoints([
@@ -142,7 +142,7 @@ class RettangoliInputElement extends HTMLElement {
     }
 
     // Handle input-specific attributes first
-    if (["type", "disabled", "step", "s"].includes(name)) {
+    if (["type", "dis", "step", "s"].includes(name)) {
       this._updateInputAttributes();
       return;
     }
@@ -217,7 +217,7 @@ class RettangoliInputElement extends HTMLElement {
     // const placeholder = this.getAttribute("placeholder");
     // const value = this.getAttribute("value");
     const step = this.getAttribute("step");
-    const isDisabled = this.hasAttribute('disabled');
+    const isDisabled = this.hasAttribute('dis');
 
     this._inputElement.setAttribute("type", type);
 
