@@ -31,6 +31,8 @@ refs:
     eventListeners:
       slider-change:
         handler: handleValueChange
+      slider-input:
+        handler: handleValueChange
 
 events:
   form-change: {}
@@ -40,4 +42,3 @@ template:
       - rtgl-slider#slider key=${key} w=f type=range min=${min} max=${max} step=${step} value=${value}:
       - rtgl-view w=84:
           - rtgl-input#input key=${key} w=f type=number min=${min} max=${max} step=${step} value=${value}:
-

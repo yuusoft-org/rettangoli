@@ -29,7 +29,7 @@ propsSchema:
       type: any
     onChange:
       type: function
-    no-clear:
+    noClear:
       type: boolean
     addOption:
       type: object

@@ -30,7 +30,7 @@ propsSchema:
                   description:
                     type: string
                   inputType:
-                    const: inputText
+                    const: input-text
                   placeholder:
                     type: string
                   testId:
@@ -98,7 +98,7 @@ propsSchema:
                   description:
                     type: string
                   inputType:
-                    const: colorPicker
+                    const: color-picker
                   value:
                     type: string
                   testId:
@@ -324,6 +324,12 @@ events:
   extra-event: {}
   action-click: {}
 
+attrsSchema:
+  type: object
+  properties:
+    autofocus:
+      type: boolean
+
 template:
   - rtgl-view#form-container w=f p=md g=lg ${containerAttrString}:
       - rtgl-view g=sm w=f:
@@ -345,7 +351,7 @@ template:
                               - rtgl-text s=sm c=mu-fg: ${field.description}
                   - $if field.inputType == "read-only-text":
                       - rtgl-text s=sm: ${field.defaultValue}
-                  - $if field.inputType == "inputText" || field.inputType == 'input-text':
+                  - $if field.inputType == "input-text":
                       - rtgl-input#field-${field.name} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}:
                   - $if field.inputType == "input-number":
                       - rtgl-input-number#field-${field.name} w=f data-testid=${field.testId}:
@@ -355,7 +361,7 @@ template:
                       - rtgl-popover-input#field-${field.name} label="${field.label}" data-testid=${field.testId}:
                   - $if field.inputType == "select":
                       - rtgl-select#field-${field.name} key=${key} w=f .options=fields[${i}].options ?no-clear=fields[${i}].noClear .addOption=fields[${i}].addOption .selectedValue=#{field.selectedValue} .placeholder=#{field.placeholder} data-testid=${field.testId}:
-                  - $if field.inputType == "colorPicker":
+                  - $if field.inputType == "color-picker":
                       - rtgl-color-picker#field-${field.name} key=${key} data-testid=${field.testId}:
                   - $if field.inputType == "slider":
                       - rtgl-slider#field-${field.name} key=${key} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}:

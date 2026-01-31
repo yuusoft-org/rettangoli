@@ -133,11 +133,16 @@ refs:
         handler: handleItemClick
 
 events:
-  headerClick:
+  header-click:
     type: object
     properties:
       path:
         type: string
+  item-click:
+    type: object
+    properties:
+      item:
+        type: object
 
 anchors:
   - &headerContent

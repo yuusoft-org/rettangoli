@@ -86,7 +86,7 @@ class RettangoliInputNumberElement extends HTMLElement {
       "key",
       "type",
       "placeholder",
-      "dis",
+      "disabled",
       "value",
       "step",
       "min",
@@ -171,7 +171,7 @@ class RettangoliInputNumberElement extends HTMLElement {
     }
 
     // Handle input-specific attributes first
-    if (["type", "dis", "step", "min", "max", "s"].includes(name)) {
+    if (["type", "disabled", "step", "min", "max", "s"].includes(name)) {
       this._updateInputAttributes();
       return;
     }
@@ -246,7 +246,7 @@ class RettangoliInputNumberElement extends HTMLElement {
     const step = this.getAttribute("step");
     const min = this.getAttribute("min");
     const max = this.getAttribute("max");
-    const isDisabled = this.hasAttribute('dis');
+    const isDisabled = this.hasAttribute('disabled');
 
     this._inputElement.setAttribute("type", type);
 

@@ -50,7 +50,7 @@ class RettangoliButtonElement extends HTMLElement {
           );
         }
 
-        :host([dis]) button {
+        :host([disabled]) button {
           cursor: not-allowed;
         }
 
@@ -173,7 +173,7 @@ class RettangoliButtonElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "href", "target", "w", "pre", "suf", "dis", "v", "s", "sq"];
+    return ["key", "href", "target", "w", "pre", "suf", "disabled", "v", "s", "sq"];
   }
 
   connectedCallback() {
@@ -197,7 +197,7 @@ class RettangoliButtonElement extends HTMLElement {
     }
     
     // Update disabled state
-    const isDisabled = this.hasAttribute('dis');
+    const isDisabled = this.hasAttribute('disabled');
     if (isDisabled) {
       this._buttonElement.setAttribute('disabled', '');
     } else {

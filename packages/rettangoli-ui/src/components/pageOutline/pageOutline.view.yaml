@@ -20,6 +20,16 @@ propsSchema:
   type: object
   properties: {}
 
+attrsSchema:
+  type: object
+  properties:
+    target-id:
+      type: string
+    scroll-container-id:
+      type: string
+    offset-top:
+      type: string
+
 refs: {}
 
 events:
@@ -33,4 +43,3 @@ template:
               - rtgl-view d=h bwl=xs bc="${item.bc}" pv=sm av=c href=${item.href} pl=md:
                   - rtgl-view w=${item.ml}:
                   - rtgl-text s=sm c=${item.c} h-c=fg: ${item.title}
-

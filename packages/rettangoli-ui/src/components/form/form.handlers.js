@@ -7,7 +7,7 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
       return;
     }
 
-    if (['input-textarea', 'inputText', 'input-text', 'input-number', 'colorPicker', 'slider', 'slider-input', 'popover-input'].includes(field.inputType)) {
+    if (['input-textarea', 'input-text', 'input-number', 'color-picker', 'slider', 'slider-input', 'popover-input'].includes(field.inputType)) {
       const defaultValue = defaultValues[field.name];
       if (defaultValue === undefined || defaultValue === null) {
         ref.removeAttribute('value')
@@ -15,7 +15,7 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
         ref.setAttribute('value', defaultValue)
       }
     }
-    if (['inputText', 'input-text', 'input-textarea'].includes(field.inputType) && field.placeholder) {
+    if (['input-text', 'input-textarea'].includes(field.inputType) && field.placeholder) {
       const currentPlaceholder = ref.getAttribute('placeholder')
       if (currentPlaceholder !== field.placeholder) {
         if (field.placeholder === undefined || field.placeholder === null) {

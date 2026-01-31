@@ -14,7 +14,7 @@ export const handleHeaderClick = (deps, payload) => {
     path = header.path;
   }
 
-  dispatchEvent(new CustomEvent('headerClick', {
+  dispatchEvent(new CustomEvent('header-click', {
     detail: {
       path
     },
@@ -28,7 +28,7 @@ export const handleItemClick = (deps, payload) => {
   const event = payload._event;
   const id = event.currentTarget.id.replace('item-', '');
   const item = store.selectItem(id);
-  dispatchEvent(new CustomEvent('itemClick', {
+  dispatchEvent(new CustomEvent('item-click', {
     detail: {
       item,
     },

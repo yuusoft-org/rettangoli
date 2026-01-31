@@ -45,7 +45,7 @@ refs:
         handler: handleClickStart
 
 events:
-  clickStart:
+  start-click:
     type: object
     properties:
       path:

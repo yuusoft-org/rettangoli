@@ -85,7 +85,7 @@ class RettangoliTextAreaElement extends HTMLElement {
       "key",
       "type",
       "placeholder",
-      "dis",
+      "disabled",
       "value",
       "cols",
       "rows",
@@ -148,7 +148,7 @@ class RettangoliTextAreaElement extends HTMLElement {
     }
 
     // Handle textarea-specific attributes first
-    if (["cols", "rows", "dis"].includes(name)) {
+    if (["cols", "rows", "disabled"].includes(name)) {
       this._updateTextareaAttributes();
       return;
     }
@@ -221,7 +221,7 @@ class RettangoliTextAreaElement extends HTMLElement {
   _updateTextareaAttributes() {
     const cols = this.getAttribute("cols");
     const rows = this.getAttribute("rows");
-    const isDisabled = this.hasAttribute('dis');
+    const isDisabled = this.hasAttribute('disabled');
 
     if (cols !== null) {
       this._textareaElement.setAttribute("cols", cols);

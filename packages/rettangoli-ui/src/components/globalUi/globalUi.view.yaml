@@ -51,7 +51,7 @@ refs:
     eventListeners:
       close:
         handler: handleDropdownClose
-      click-item:
+      item-click:
         handler: handleDropdownItemClick
 
 template:

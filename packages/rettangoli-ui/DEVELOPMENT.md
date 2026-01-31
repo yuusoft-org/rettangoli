@@ -31,7 +31,7 @@ These rules are mandatory to prevent drift across components:
 - **Attribute names should be 4 characters or less** (exceptions must be rare and explicitly documented).
 - **Short token values** should use existing style maps (e.g. `bgc=bg`, `c=fg`, `bc=bo`).
 - **Event names should be kebab-case** and consistent across similar components.
-- **Disabled state uses `dis`**, not `disabled`.
+- **Long attribute exceptions** are allowed for standard HTML/UX semantics (see whitelist below).
 
 If you need a new attribute or token, update the relevant style map in `src/styles/` and document it here.
 
@@ -71,6 +71,81 @@ popoverInput.placeholder = "Name";
 
 Responsive attribute prefixes are: `sm-`, `md-`, `lg-`, `xl-`.
 Keep naming consistent between JS (observed attributes) and CSS (media queries).
+
+## Long Attribute Whitelist (exceptions to <= 4 chars)
+
+These are allowed because they map to standard HTML semantics or widely understood UX terms.
+
+- `disabled`
+- `value`
+- `placeholder`
+- `autofocus`
+- `ellipsis`
+- `target`
+- `placement`
+- `target-id`
+- `scroll-container-id`
+- `offset-top`
+- `title`
+- `content`
+- `overflow`
+
+## Form Input Types (rtgl-form)
+
+Canonical `inputType` values are **kebab-case only**:
+
+- `input-text`
+- `input-number`
+- `input-textarea`
+- `select`
+- `color-picker`
+- `slider`
+- `slider-input`
+- `image`
+- `waveform`
+- `popover-input`
+- `read-only-text`
+- `slot`
+
+## Events: Naming and Payloads
+
+### Naming rules
+- **kebab-case only** (e.g. `item-click`, `form-change`).
+- **Use action suffixes** consistently: `*-click`, `*-change`, `*-input`, `open`, `close`.
+- Avoid camelCase event names and avoid swapping word order (`click-item` vs `item-click`).
+
+### Payload rules (best practices)
+- Always use `CustomEvent` with a **`detail` object** (never primitives).
+- For value changes, **always include `detail.value`**.
+- For list/selection events, include **`detail.item`** and **`detail.index`** when available.
+- For form events, include **`detail.name`** and **`detail.formValues`**.
+- Events should **bubble by default**; use `composed: true` when crossing shadow boundaries is required.
+
+### Recommended payload shapes
+Value change:
+```js
+detail: { value }
+```
+
+Selection / list item:
+```js
+detail: { value, label, index, item }
+```
+
+Form change:
+```js
+detail: { name, fieldValue, formValues }
+```
+
+Action click:
+```js
+detail: { actionId, formValues }
+```
+
+Close:
+```js
+detail: {}
+```
 
 ## Custom Elements (public surface)
 
@@ -140,7 +215,7 @@ You must include a theme stylesheet for variables (colors, spacing, typography).
 1. Define interface in `*.view.yaml` (attrsSchema + propsSchema + events).
 2. Implement behavior in `*.handlers.js` and `*.store.js`.
 3. Ensure attributes follow the consistency rules.
-4. Emit events with consistent naming and payloads.
+4. Emit events with consistent naming and payloads (see Events section).
 5. Add or update visual tests in `vt/` if UI changes.
 
 ## Checklist (before PR)

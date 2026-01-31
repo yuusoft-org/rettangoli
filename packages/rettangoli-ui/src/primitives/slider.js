@@ -109,7 +109,7 @@ class RettangoliSliderElement extends HTMLElement {
       "min",
       "max",
       "step",
-      "dis",
+      "disabled",
       ...permutateBreakpoints([
         ...styleMapKeys,
         "wh",
@@ -159,7 +159,7 @@ class RettangoliSliderElement extends HTMLElement {
     }
 
     // Handle input-specific attributes first
-    if (["value", "min", "max", "step", "dis"].includes(name)) {
+    if (["value", "min", "max", "step", "disabled"].includes(name)) {
       this._updateInputAttributes();
       return;
     }
@@ -234,7 +234,7 @@ class RettangoliSliderElement extends HTMLElement {
     const min = this.getAttribute("min");
     const max = this.getAttribute("max");
     const step = this.getAttribute("step");
-    const isDisabled = this.hasAttribute('dis');
+    const isDisabled = this.hasAttribute('disabled');
 
     if (value !== null) {
       this._inputElement.value = value;
