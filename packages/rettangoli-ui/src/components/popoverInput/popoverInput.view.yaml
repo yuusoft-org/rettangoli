@@ -22,7 +22,7 @@ refs:
         handler: handlePopoverClose
   input:
     eventListeners:
-      input-change:
+      value-input:
         handler: handleInputChange
       keydown:
         handler: handleInputKeydown
@@ -32,7 +32,8 @@ refs:
         handler: handleSubmitClick
 
 events:
-  input-change: {}
+  value-input: {}
+  value-change: {}
 
 template:
   - rtgl-view#text-display w=f cur=p:

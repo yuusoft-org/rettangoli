@@ -111,7 +111,7 @@ export const handleInputChange = (deps, payload) => {
   const { store, dispatchEvent, props } = deps;
   const event = payload._event;
   let name = event.currentTarget.id.replace("field-", "");
-  if (name && event.detail.value !== undefined) {
+  if (name && event.detail && Object.prototype.hasOwnProperty.call(event.detail, "value")) {
     const value = event.detail.value
     store.setFormFieldValue({
       name: name,
@@ -127,82 +127,6 @@ export const handleInputChange = (deps, payload) => {
   }
 };
 
-export const handleSelectChange = (deps, payload) => {
-  const { store, dispatchEvent, render, props } = deps;
-  const event = payload._event;
-  const name = event.currentTarget.id.replace("field-", "");
-  if (name) {
-    store.setFormFieldValue({
-      name: name,
-      value: event.detail.selectedValue,
-      props,
-    });
-    dispatchFormChange(
-      name,
-      event.detail.selectedValue,
-      store.selectFormValues(),
-      dispatchEvent,
-    );
-    render();
-  }
-};
-
-export const handleColorPickerChange = (deps, payload) => {
-  const { store, dispatchEvent, props } = deps;
-  const event = payload._event;
-  const name = event.currentTarget.id.replace("field-", "");
-  if (name && event.detail.value !== undefined) {
-    store.setFormFieldValue({
-      name: name,
-      value: event.detail.value,
-      props,
-    });
-    dispatchFormChange(
-      name,
-      event.detail.value,
-      store.selectFormValues(),
-      dispatchEvent,
-    );
-  }
-};
-
-export const handleSliderChange = (deps, payload) => {
-  const { store, dispatchEvent, props } = deps;
-  const event = payload._event;
-  const name = event.currentTarget.id.replace("field-", "");
-  if (name && event.detail.value !== undefined) {
-    store.setFormFieldValue({
-      name: name,
-      value: event.detail.value,
-      props,
-    });
-    dispatchFormChange(
-      name,
-      event.detail.value,
-      store.selectFormValues(),
-      dispatchEvent,
-    );
-  }
-};
-
-export const handleSliderInputChange = (deps, payload) => {
-  const { store, dispatchEvent, props } = deps;
-  const event = payload._event;
-  const name = event.currentTarget.id.replace("field-", "");
-  if (name && event.detail.value !== undefined) {
-    store.setFormFieldValue({
-      name: name,
-      value: event.detail.value,
-      props,
-    });
-    dispatchFormChange(
-      name,
-      event.detail.value,
-      store.selectFormValues(),
-      dispatchEvent,
-    );
-  }
-};
 
 export const handleImageClick = (deps, payload) => {
   const event = payload._event;

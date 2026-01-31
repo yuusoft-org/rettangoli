@@ -97,19 +97,21 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._inputElement.value = newValue;
   }
 
-  _onChange = (event) => {
-    this.dispatchEvent(new CustomEvent('colorpicker-change', {
+  _onChange = () => {
+    this.dispatchEvent(new CustomEvent('value-change', {
       detail: {
         value: this._inputElement.value,
       },
+      bubbles: true,
     }));
   };
 
-  _onInput = (event) => {
-    this.dispatchEvent(new CustomEvent('colorpicker-input', {
+  _onInput = () => {
+    this.dispatchEvent(new CustomEvent('value-input', {
       detail: {
         value: this._inputElement.value,
       },
+      bubbles: true,
     }));
   };
 

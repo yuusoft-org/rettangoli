@@ -56,9 +56,9 @@ export const handleInputChange = (deps, payload) => {
 
   store.setTempValue(value);
 
-  dispatchEvent(new CustomEvent('temp-input-change', {
+  dispatchEvent(new CustomEvent('value-input', {
     detail: { value },
-    bubbles: true
+    bubbles: true,
   }));
 
   render();
@@ -72,9 +72,9 @@ export const handleSubmitClick = (deps) => {
   store.setValue(value)
   store.closePopover();
 
-  dispatchEvent(new CustomEvent('input-change', {
+  dispatchEvent(new CustomEvent('value-change', {
     detail: { value },
-    bubbles: true
+    bubbles: true,
   }));
 
   render();
@@ -90,9 +90,9 @@ export const handleInputKeydown = (deps, payload) => {
 
     store.closePopover();
     // Dispatch custom event
-    dispatchEvent(new CustomEvent('input-change', {
+    dispatchEvent(new CustomEvent('value-change', {
       detail: { value },
-      bubbles: true
+      bubbles: true,
     }));
 
     render();

@@ -77,8 +77,9 @@ class RettangoliInputElement extends HTMLElement {
     this.shadow.appendChild(this._styleElement);
     this.shadow.appendChild(this._inputElement);
 
-    // Bind event handler
-    this._inputElement.addEventListener('input', this._onChange);
+    // Bind event handlers
+    this._inputElement.addEventListener('input', this._onInput);
+    this._inputElement.addEventListener('change', this._onChange);
   }
 
   static get observedAttributes() {
@@ -114,11 +115,21 @@ class RettangoliInputElement extends HTMLElement {
     this._inputElement.focus();
   }
 
-  _onChange = (event) => {
-    this.dispatchEvent(new CustomEvent('input-change', {
+  _onInput = () => {
+    this.dispatchEvent(new CustomEvent('value-input', {
       detail: {
         value: this._inputElement.value,
       },
+      bubbles: true,
+    }));
+  };
+
+  _onChange = () => {
+    this.dispatchEvent(new CustomEvent('value-change', {
+      detail: {
+        value: this._inputElement.value,
+      },
+      bubbles: true,
     }));
   };
 

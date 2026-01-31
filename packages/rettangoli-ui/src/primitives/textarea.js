@@ -68,15 +68,26 @@ class RettangoliTextAreaElement extends HTMLElement {
     this.shadow.appendChild(this._styleElement);
     this.shadow.appendChild(this._textareaElement);
 
-    // Bind event handler
-    this._textareaElement.addEventListener('input', this._onChange);
+    // Bind event handlers
+    this._textareaElement.addEventListener('input', this._onInput);
+    this._textareaElement.addEventListener('change', this._onChange);
   }
 
-  _onChange = (event) => {
-    this.dispatchEvent(new CustomEvent('textarea-change', {
+  _onInput = () => {
+    this.dispatchEvent(new CustomEvent('value-input', {
       detail: {
         value: this._textareaElement.value,
       },
+      bubbles: true,
+    }));
+  };
+
+  _onChange = () => {
+    this.dispatchEvent(new CustomEvent('value-change', {
+      detail: {
+        value: this._textareaElement.value,
+      },
+      bubbles: true,
     }));
   };
 

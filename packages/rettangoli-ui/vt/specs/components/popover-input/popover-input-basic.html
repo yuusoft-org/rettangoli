@@ -7,11 +7,11 @@ title: Basic PopoverInput
 
 <script>
   const popoverInput = document.getElementById('popover-input');
-  popoverInput.addEventListener('input-change', (e) => {
+  popoverInput.addEventListener('value-change', (e) => {
     console.log('Value changed:', e.detail);
   });
 
-  popoverInput.addEventListener('temp-input-change', (e) => {
+  popoverInput.addEventListener('value-input', (e) => {
     console.log('Temporary value changed:', e.detail);
   });
 </script>

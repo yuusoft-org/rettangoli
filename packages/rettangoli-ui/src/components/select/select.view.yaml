@@ -67,7 +67,9 @@ refs:
       mouseleave:
         handler: handleAddOptionMouseLeave
 
-events: {}
+events:
+  value-change: {}
+  add-option-click: {}
 
 template:
   - rtgl-button#select-button v=ol ${containerAttrString} data-testid="select-button":

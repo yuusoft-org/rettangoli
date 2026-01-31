@@ -25,17 +25,20 @@ attrsSchema:
 refs:
   input:
     eventListeners:
-      input-change:
+      value-input:
+        handler: handleValueInput
+      value-change:
         handler: handleValueChange
   slider:
     eventListeners:
-      slider-change:
+      value-change:
         handler: handleValueChange
-      slider-input:
-        handler: handleValueChange
+      value-input:
+        handler: handleValueInput
 
 events:
-  form-change: {}
+  value-input: {}
+  value-change: {}
 
 template:
   - rtgl-view d=h av=c g=md w=${w}:

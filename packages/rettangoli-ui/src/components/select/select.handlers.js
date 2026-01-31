@@ -83,6 +83,7 @@ export const handleOptionClick = (deps, payload) => {
   const event = payload._event;
   event.stopPropagation();
   const id = event.currentTarget.id.replace('option-', '');
+  const index = Number(id);
 
   const option = props.options[id];
 
@@ -94,15 +95,13 @@ export const handleOptionClick = (deps, payload) => {
     props.onChange(option.value);
   }
 
-  // Dispatch custom event for backward compatibility
-  dispatchEvent(new CustomEvent('option-selected', {
-    detail: { value: option.value, label: option.label },
-    bubbles: true
-  }));
-
-  // Also dispatch select-change event to match form's event listener pattern
-  dispatchEvent(new CustomEvent('select-change', {
-    detail: { selectedValue: option.value },
+  dispatchEvent(new CustomEvent('value-change', {
+    detail: {
+      value: option.value,
+      label: option.label,
+      index,
+      item: option,
+    },
     bubbles: true
   }));
 
@@ -137,15 +136,13 @@ export const handleClearClick = (deps, payload) => {
     props.onChange(undefined);
   }
 
-  // Dispatch custom event for backward compatibility
-  dispatchEvent(new CustomEvent('option-selected', {
-    detail: { value: undefined, label: undefined },
-    bubbles: true
-  }));
-
-  // Also dispatch select-change event to match form's event listener pattern
-  dispatchEvent(new CustomEvent('select-change', {
-    detail: { selectedValue: undefined },
+  dispatchEvent(new CustomEvent('value-change', {
+    detail: {
+      value: undefined,
+      label: undefined,
+      index: null,
+      item: undefined,
+    },
     bubbles: true
   }));
 
@@ -159,9 +156,8 @@ export const handleAddOptionClick = (deps, payload) => {
   // Close the popover
   store.closeOptionsPopover();
 
-  // Dispatch custom event for add option (no detail)
-  dispatchEvent(new CustomEvent('add-option-selected', {
-    bubbles: true
+  dispatchEvent(new CustomEvent('add-option-click', {
+    bubbles: true,
   }));
 
   render();

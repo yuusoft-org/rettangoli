@@ -292,20 +292,12 @@ refs:
         handler: handleTooltipMouseLeave
   field-*:
     eventListeners:
-      input-change:
+      value-input:
         handler: handleInputChange
-      textarea-change:
+      value-change:
         handler: handleInputChange
-      select-change:
-        handler: handleSelectChange
-      add-option-selected:
+      add-option-click:
         handler: handleSelectAddOption
-      colorpicker-change:
-        handler: handleColorPickerChange
-      slider-change:
-        handler: handleSliderChange
-      slider-input-value-change:
-        handler: handleSliderInputChange
   image-*:
     eventListeners:
       click:

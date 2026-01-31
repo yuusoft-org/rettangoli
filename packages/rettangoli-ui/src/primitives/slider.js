@@ -132,18 +132,20 @@ class RettangoliSliderElement extends HTMLElement {
   }
 
   _onInput = () => {
-    this.dispatchEvent(new CustomEvent('slider-input', {
+    this.dispatchEvent(new CustomEvent('value-input', {
       detail: {
         value: Number(this._inputElement.value),
       },
+      bubbles: true,
     }));
   };
 
   _onChange = () => {
-    this.dispatchEvent(new CustomEvent('slider-change', {
+    this.dispatchEvent(new CustomEvent('value-change', {
       detail: {
         value: Number(this._inputElement.value),
       },
+      bubbles: true,
     }));
   };
 

@@ -18,13 +18,13 @@ title: Input Number Sizes
     const smallInput = document.getElementById('small-input');
 
     if (regularInput) {
-      regularInput.addEventListener('input-change', (e) => {
+      regularInput.addEventListener('value-input', (e) => {
         console.log('Regular input value changed:', { value: e.detail.value });
       });
     }
 
     if (smallInput) {
-      smallInput.addEventListener('input-change', (e) => {
+      smallInput.addEventListener('value-input', (e) => {
         console.log('Small input value changed:', { value: e.detail.value });
       });
     }

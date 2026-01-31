@@ -10,7 +10,7 @@ title: Basic
   document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('basic-input');
     if (input) {
-      input.addEventListener('input-change', (e) => {
+      input.addEventListener('value-input', (e) => {
         console.log('Basic input value changed:', { value: e.detail.value });
       });
     }

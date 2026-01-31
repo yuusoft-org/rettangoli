@@ -14,13 +14,13 @@ title: Disabled
     const regularDisabledInput = document.getElementById('regular-disabled-input');
 
     if (disabledInput) {
-      disabledInput.addEventListener('input-change', (e) => {
+      disabledInput.addEventListener('value-input', (e) => {
         console.log('Disabled input value changed (should not fire):', { value: e.detail.value });
       });
     }
 
     if (regularDisabledInput) {
-      regularDisabledInput.addEventListener('input-change', (e) => {
+      regularDisabledInput.addEventListener('value-input', (e) => {
         console.log('Regular input value changed:', { value: e.detail.value });
       });
     }

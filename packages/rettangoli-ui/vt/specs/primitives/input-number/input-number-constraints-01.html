@@ -28,25 +28,25 @@ title: Number Constraints
     const step01Input = document.getElementById('step-01-input');
 
     if (minZeroInput) {
-      minZeroInput.addEventListener('input-change', (e) => {
+      minZeroInput.addEventListener('value-input', (e) => {
         console.log('Min=0 input value changed:', { value: e.detail.value });
       });
     }
 
     if (minNeg10Input) {
-      minNeg10Input.addEventListener('input-change', (e) => {
+      minNeg10Input.addEventListener('value-input', (e) => {
         console.log('Min=-10 input value changed:', { value: e.detail.value });
       });
     }
 
     if (max100Input) {
-      max100Input.addEventListener('input-change', (e) => {
+      max100Input.addEventListener('value-input', (e) => {
         console.log('Max=100 input value changed:', { value: e.detail.value });
       });
     }
 
     if (step01Input) {
-      step01Input.addEventListener('input-change', (e) => {
+      step01Input.addEventListener('value-input', (e) => {
         console.log('Step=0.1 input value changed:', { value: e.detail.value });
       });
     }

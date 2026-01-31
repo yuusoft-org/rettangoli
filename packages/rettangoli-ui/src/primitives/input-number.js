@@ -77,8 +77,9 @@ class RettangoliInputNumberElement extends HTMLElement {
     this.shadow.appendChild(this._styleElement);
     this.shadow.appendChild(this._inputElement);
 
-    // Bind event handler
-    this._inputElement.addEventListener('input', this._onChange);
+    // Bind event handlers
+    this._inputElement.addEventListener('input', this._onInput);
+    this._inputElement.addEventListener('change', this._onChange);
   }
 
   static get observedAttributes() {
@@ -117,7 +118,7 @@ class RettangoliInputNumberElement extends HTMLElement {
     this._inputElement.focus();
   }
 
-  _onChange = (event) => {
+  _emitValueEvent = (eventName) => {
     const inputValue = this._inputElement.value;
     let numericValue = parseFloat(inputValue);
 
@@ -143,12 +144,21 @@ class RettangoliInputNumberElement extends HTMLElement {
         }
       }
 
-      this.dispatchEvent(new CustomEvent('input-change', {
+      this.dispatchEvent(new CustomEvent(eventName, {
         detail: {
           value: numericValue,
         },
+        bubbles: true,
       }));
     }
+  };
+
+  _onInput = () => {
+    this._emitValueEvent('value-input');
+  };
+
+  _onChange = () => {
+    this._emitValueEvent('value-change');
   };
 
   attributeChangedCallback(name, oldValue, newValue) {

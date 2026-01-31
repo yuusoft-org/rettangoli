@@ -23,19 +23,19 @@ title: Default Values
     const defaultPiInput = document.getElementById('default-pi-input');
 
     if (default42Input) {
-      default42Input.addEventListener('input-change', (e) => {
+      default42Input.addEventListener('value-input', (e) => {
         console.log('Default 42 input value changed:', { value: e.detail.value });
       });
     }
 
     if (defaultNeg5Input) {
-      defaultNeg5Input.addEventListener('input-change', (e) => {
+      defaultNeg5Input.addEventListener('value-input', (e) => {
         console.log('Default -5 input value changed:', { value: e.detail.value });
       });
     }
 
     if (defaultPiInput) {
-      defaultPiInput.addEventListener('input-change', (e) => {
+      defaultPiInput.addEventListener('value-input', (e) => {
         console.log('Default 3.14 input value changed:', { value: e.detail.value });
       });
     }

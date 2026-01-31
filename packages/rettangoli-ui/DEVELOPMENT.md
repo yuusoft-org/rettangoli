@@ -112,6 +112,7 @@ Canonical `inputType` values are **kebab-case only**:
 ### Naming rules
 - **kebab-case only** (e.g. `item-click`, `form-change`).
 - **Use action suffixes** consistently: `*-click`, `*-change`, `*-input`, `open`, `close`.
+- **Value inputs emit `value-input` (live) and `value-change` (commit)**.
 - Avoid camelCase event names and avoid swapping word order (`click-item` vs `item-click`).
 
 ### Payload rules (best practices)
