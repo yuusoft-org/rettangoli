@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { validateComponentDirs } from './contracts.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
@@ -35,6 +36,11 @@ const scaffoldPage = (options) => {
       // Write to new file
       fs.writeFileSync(targetPath, content);
     }
+  });
+
+  validateComponentDirs({
+    dirs: [path.resolve(targetDir)],
+    errorPrefix: "[Scaffold]",
   });
 
   console.log(`Successfully scaffolded ${targetDir} from template`);

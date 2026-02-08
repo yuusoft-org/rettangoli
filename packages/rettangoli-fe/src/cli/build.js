@@ -11,10 +11,9 @@ import { parse } from 'jempl';
 import { extractCategoryAndComponent } from '../commonBuild.js';
 import { getAllFiles } from '../commonBuild.js';
 import {
-  buildComponentContractIndex,
-  validateComponentContractIndex,
-  formatContractErrors,
-} from "../core/contracts/componentFiles.js";
+  isSupportedComponentFile,
+  validateComponentEntries,
+} from "./contracts.js";
 import path from "node:path";
 
 function capitalize(word) {
@@ -75,16 +74,7 @@ const buildRettangoliFrontend = async (options) => {
     mkdirSync(tempDir, { recursive: true });
   }
 
-  const allFiles = getAllFiles(resolvedDirs).filter((filePath) => {
-    return (
-      filePath.endsWith(".store.js") ||
-      filePath.endsWith(".handlers.js") ||
-      filePath.endsWith(".methods.js") ||
-      filePath.endsWith(".constants.yaml") ||
-      filePath.endsWith(".schema.yaml") ||
-      filePath.endsWith(".view.yaml")
-    );
-  });
+  const allFiles = getAllFiles(resolvedDirs).filter((filePath) => isSupportedComponentFile(filePath));
 
   let output = "";
 
@@ -161,13 +151,10 @@ const buildRettangoliFrontend = async (options) => {
     componentContractEntries.push(componentContractEntry);
   }
 
-  const componentContractIndex = buildComponentContractIndex(componentContractEntries);
-  const componentContractErrors = validateComponentContractIndex(componentContractIndex);
-  if (componentContractErrors.length > 0) {
-    throw new Error(
-      `[Build] Component contract validation failed:\n${formatContractErrors(componentContractErrors).join("\n")}`,
-    );
-  }
+  validateComponentEntries({
+    entries: componentContractEntries,
+    errorPrefix: "[Build]",
+  });
 
   const relativeSetup = path.relative(tempDir, resolvedSetup).replaceAll(path.sep, "/");
   output += `

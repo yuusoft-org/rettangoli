@@ -22,10 +22,9 @@ Store files MUST keep this order:
 
 ## 3. Context Contract (`ctx`)
 
-All store functions receive context as first argument:
-- `state`
-- `props`
-- `constants`
+Context by export type:
+- `createInitialState(ctx)`: `ctx` includes `props`, `constants`
+- selectors/actions/selectViewData: `ctx` includes `state`, `props`, `constants`
 
 `props` already includes the unified input model:
 - attribute-form fallback is available

@@ -1,59 +1,51 @@
-import { readFileSync } from "node:fs";
-import { load as loadYaml } from "js-yaml";
 import path from "node:path";
-import { extractCategoryAndComponent, getAllFiles } from "../commonBuild.js";
 import {
-  buildComponentContractIndex,
-  formatContractErrors,
-  validateComponentContractIndex,
-} from "../core/contracts/componentFiles.js";
+  analyzeComponentDirs,
+  formatContractFailureReport,
+} from "./contracts.js";
 
 const checkRettangoliFrontend = (options = {}) => {
   const {
     cwd = process.cwd(),
     dirs = ["./example"],
+    format = "text",
   } = options;
+  const outputFormat = format === "json" ? "json" : "text";
 
   const resolvedDirs = dirs.map((dir) => path.resolve(cwd, dir));
-  const allFiles = getAllFiles(resolvedDirs).filter((filePath) => {
-    return (
-      filePath.endsWith(".store.js")
-      || filePath.endsWith(".handlers.js")
-      || filePath.endsWith(".methods.js")
-      || filePath.endsWith(".constants.yaml")
-      || filePath.endsWith(".schema.yaml")
-      || filePath.endsWith(".view.yaml")
-    );
-  });
+  const { errors, summary, index } = analyzeComponentDirs({ dirs: resolvedDirs });
 
-  const componentContractEntries = allFiles.map((filePath) => {
-    const { category, component, fileType } = extractCategoryAndComponent(filePath);
-    const entry = {
-      category,
-      component,
-      fileType,
-      filePath,
-    };
-
-    if (["view", "schema"].includes(fileType)) {
-      entry.yamlObject = loadYaml(readFileSync(filePath, "utf8")) ?? {};
+  if (errors.length > 0) {
+    if (outputFormat === "json") {
+      console.log(JSON.stringify({
+        ok: false,
+        prefix: "[Check]",
+        summary,
+        errors,
+      }, null, 2));
+    } else {
+      console.error(formatContractFailureReport({
+        errorPrefix: "[Check]",
+        errors,
+      }));
     }
-
-    return entry;
-  });
-
-  const componentContractIndex = buildComponentContractIndex(componentContractEntries);
-  const componentContractErrors = validateComponentContractIndex(componentContractIndex);
-
-  if (componentContractErrors.length > 0) {
-    throw new Error(
-      `[Check] Component contract validation failed:\n${formatContractErrors(componentContractErrors).join("\n")}`,
-    );
+    process.exitCode = 1;
+    return;
   }
 
-  const componentCount = Object.values(componentContractIndex).reduce((count, categoryComponents) => {
+  const componentCount = Object.values(index).reduce((count, categoryComponents) => {
     return count + Object.keys(categoryComponents).length;
   }, 0);
+
+  if (outputFormat === "json") {
+    console.log(JSON.stringify({
+      ok: true,
+      prefix: "[Check]",
+      componentCount,
+      summary,
+    }, null, 2));
+    return;
+  }
 
   console.log(`[Check] Component contracts passed for ${componentCount} component(s).`);
 };

@@ -9,8 +9,16 @@ This document defines the normative view language contract.
 - `refs`
 - `styles`
 
-`elementName`, `propsSchema`, `events`, and `methods` in `.view.yaml` are ignored.
-Define those in `.schema.yaml`.
+`.view.yaml` MUST NOT declare API metadata keys:
+- `elementName`
+- `viewDataSchema`
+- `propsSchema`
+- `events`
+- `methods`
+- `attrsSchema`
+
+Define API metadata in `.schema.yaml`.
+`rtgl fe check` and `rtgl fe build` reject forbidden keys.
 
 Business logic belongs in `.handlers.js`.
 State logic belongs in `.store.js`.
@@ -244,6 +252,15 @@ template:
 ```
 
 Invalid because both forms target the same normalized prop key (`value`).
+
+Forbidden API key in `.view.yaml`:
+
+```yaml
+elementName: todo-item
+template: []
+```
+
+Invalid because `elementName` must live in `.schema.yaml`.
 
 Listener with both `handler` and `action`:
 

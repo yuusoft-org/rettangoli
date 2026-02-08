@@ -62,7 +62,11 @@ Normative keywords follow RFC 2119 intent:
 
 Run `rtgl fe check` to enforce:
 - required `.schema.yaml` per component
-- forbidden API keys are not present in `.view.yaml`
+- forbidden API keys are not present in `.view.yaml` (`elementName`, `viewDataSchema`, `propsSchema`, `events`, `methods`, `attrsSchema`)
+
+Output modes:
+- `rtgl fe check` (default `text`): grouped summary by rule and component, plus detailed lines
+- `rtgl fe check --format json`: machine-readable JSON report for CI tools
 
 ## Conflict Resolution
 

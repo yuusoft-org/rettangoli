@@ -1,4 +1,4 @@
-import { parseAndRender as jemplParseAndRender, render as jemplRender } from 'jempl';
+import { parseAndRender as jemplParseAndRender, render as jemplRender } from "jempl";
 
 import { flattenArrays } from './common.js';
 import { parseNodeBindings } from './core/view/bindings.js';
@@ -12,7 +12,14 @@ import {
   getEventRateLimitState,
 } from "./core/runtime/events.js";
 
-export const parseView = ({ h, template, viewData, refs, handlers }) => {
+export const parseView = ({
+  h,
+  template,
+  viewData,
+  refs,
+  handlers,
+  createComponentUpdateHook,
+}) => {
   const result = jemplRender(template, viewData, {});
 
   // Flatten the array carefully to maintain structure
@@ -24,6 +31,7 @@ export const parseView = ({ h, template, viewData, refs, handlers }) => {
     refs,
     handlers,
     viewData,
+    createComponentUpdateHook,
   });
 
   const vdom = h("div", { style: { display: "contents" } }, childNodes);
@@ -44,7 +52,8 @@ export const createVirtualDom = ({
   items,
   refs = {},
   handlers = {},
-  viewData = {}
+  viewData = {},
+  createComponentUpdateHook,
 }) => {
   if (!Array.isArray(items)) {
     console.error("Input to createVirtualDom must be an array.");
@@ -264,49 +273,15 @@ export const createVirtualDom = ({
           snabbdomData.props = props;
         }
 
-        // For web components, add a hook to detect prop and attr changes
-        if (isWebComponent) {
-          snabbdomData.hook = {
-            update: (oldVnode, vnode) => {
-              const oldProps = oldVnode.data?.props || {};
-              const newProps = vnode.data?.props || {};
-
-              // Check if props have changed
-              const propsChanged =
-                JSON.stringify(oldProps) !== JSON.stringify(newProps);
-
-              if (propsChanged) {
-                // Set isDirty attribute and trigger re-render
-                const element = vnode.elm;
-                if (
-                  element &&
-                  element.render &&
-                  typeof element.render === "function"
-                ) {
-                  element.setAttribute("isDirty", "true");
-                  requestAnimationFrame(() => {
-                    element.render();
-                    element.removeAttribute("isDirty");
-                    // Call the specific component's handleOnUpdate instead of the parent's onUpdate
-                    if (element.handlers && element.handlers.handleOnUpdate) {
-                      const deps = {
-                        ...(element.deps),
-                        store: element.store,
-                        render: element.render.bind(element),
-                        handlers: element.handlers,
-                        dispatchEvent: element.dispatchEvent.bind(element),
-                        refs: element.refIds || {},
-                      };
-                      element.handlers.handleOnUpdate(deps, {
-                        oldProps,
-                        newProps,
-                      });
-                    }
-                  });
-                }
-              }
-            },
-          };
+        // Hook behavior is injected so parser core stays environment-agnostic.
+        if (isWebComponent && typeof createComponentUpdateHook === "function") {
+          const componentHook = createComponentUpdateHook({
+            selector,
+            tagName,
+          });
+          if (componentHook) {
+            snabbdomData.hook = componentHook;
+          }
         }
 
         try {
