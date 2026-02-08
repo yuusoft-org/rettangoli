@@ -16,6 +16,7 @@ Use `.schema.yaml` to define:
 - Public callable API (`methods`)
 
 This keeps `.view.yaml` focused on rendering and DOM bindings.
+Static runtime constants are defined in optional `.constants.yaml`, not in `.schema.yaml`.
 
 ## File Structure
 
@@ -140,4 +141,5 @@ export const reset = (payload = {}) => {
 ## Notes
 
 - `attrsSchema` is intentionally ignored for now.
+- `.constants.yaml` is the contract file for component static constants.
 - Treat this document as the contract format for upcoming implementation work.

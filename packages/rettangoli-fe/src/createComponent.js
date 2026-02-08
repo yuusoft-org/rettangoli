@@ -99,6 +99,21 @@ const subscribeAll = (observables) => {
 };
 
 
+const isObjectPayload = (value) => {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+};
+
+const deepFreeze = (value) => {
+  if (!isObjectPayload(value) || Object.isFrozen(value)) {
+    return value;
+  }
+
+  Object.values(value).forEach((nestedValue) => {
+    deepFreeze(nestedValue);
+  });
+  return Object.freeze(value);
+};
+
 function createAttrsProxy(source) {
   return new Proxy(
     {},
@@ -236,6 +251,16 @@ class BaseComponent extends HTMLElement {
    * @type {Object}
    */
   handlers;
+
+  /**
+   * @type {Object}
+   */
+  methods;
+
+  /**
+   * @type {Object}
+   */
+  constants;
 
   /**
    * @type {Object}
@@ -479,6 +504,45 @@ class BaseComponent extends HTMLElement {
   };
 }
 
+const bindMethods = (element, methods) => {
+  if (!methods || typeof methods !== "object") {
+    return;
+  }
+
+  Object.entries(methods).forEach(([methodName, methodFn]) => {
+    if (methodName === "default") {
+      throw new Error(
+        "[Methods] Invalid method name 'default'. Use named exports in .methods.js; default export is not supported.",
+      );
+    }
+
+    if (typeof methodFn !== "function") {
+      return;
+    }
+
+    if (methodName in element) {
+      throw new Error(
+        `[Methods] Cannot define method '${methodName}' because it already exists on the component instance.`,
+      );
+    }
+
+    Object.defineProperty(element, methodName, {
+      configurable: true,
+      enumerable: false,
+      writable: false,
+      value: (payload = {}) => {
+        const normalizedPayload = payload === undefined ? {} : payload;
+        if (!isObjectPayload(normalizedPayload)) {
+          throw new Error(
+            `[Methods] Method '${methodName}' expects payload to be an object.`,
+          );
+        }
+        return methodFn.call(element, normalizedPayload);
+      },
+    });
+  });
+};
+
 /**
  * Binds store functions with actual framework data flow
  * Makes state changes immutable with immer
@@ -487,23 +551,29 @@ class BaseComponent extends HTMLElement {
  * @param {*} props
  * @returns
  */
-const bindStore = (store, props, attrs) => {
+const bindStore = (store, props, attrs, constants) => {
   const { createInitialState, ...selectorsAndActions } = store;
   const selectors = {};
   const actions = {};
   let currentState = {};
   if (createInitialState) {
-    currentState = createInitialState();
+    currentState = createInitialState({ props, attrs, constants });
   }
   Object.entries(selectorsAndActions).forEach(([key, fn]) => {
     if (key.startsWith("select")) {
       selectors[key] = (...args) => {
-        return fn({ state: currentState, props, attrs }, ...args);
+        return fn({ state: currentState, props, attrs, constants }, ...args);
       };
     } else {
-      actions[key] = (payload) => {
+      actions[key] = (payload = {}) => {
+        const normalizedPayload = payload === undefined ? {} : payload;
+        if (!isObjectPayload(normalizedPayload)) {
+          throw new Error(
+            `[Store] Action '${key}' expects payload to be an object.`,
+          );
+        }
         currentState = produce(currentState, (draft) => {
-          return fn(draft, payload);
+          return fn({ state: draft, props, attrs, constants }, normalizedPayload);
         });
         return currentState;
       };
@@ -517,7 +587,7 @@ const bindStore = (store, props, attrs) => {
   };
 };
 
-const createComponent = ({ handlers, view, store, patch, h }, deps) => {
+const createComponent = ({ handlers, methods, constants, view, store, patch, h }, deps) => {
   const { elementName, propsSchema, attrsSchema, template, refs, styles } = view;
 
   if (!patch) {
@@ -543,6 +613,12 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
     constructor() {
       super();
       const attrsProxy = createAttrsProxy(this);
+      const setupConstants = isObjectPayload(deps?.constants) ? deps.constants : {};
+      const fileConstants = isObjectPayload(constants) ? constants : {};
+      this.constants = deepFreeze({
+        ...setupConstants,
+        ...fileConstants,
+      });
       this.propsSchema = propsSchema;
       this.props = propsSchema
         ? createPropsProxy(this, Object.keys(propsSchema.properties))
@@ -550,12 +626,13 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
       /**
        * TODO currently if user forgot to define propsSchema for a prop
        * there will be no warning. would be better to shos some warnng
-       */
+      */
       this.elementName = elementName;
       this.styles = styles;
-      this.store = bindStore(store, this.props, attrsProxy);
+      this.store = bindStore(store, this.props, attrsProxy, this.constants);
       this.template = template;
       this.handlers = handlers;
+      this.methods = methods;
       this.refs = refs;
       this.patch = patch;
       this.deps = {
@@ -565,7 +642,9 @@ const createComponent = ({ handlers, view, store, patch, h }, deps) => {
         handlers,
         attrs: attrsProxy,
         props: this.props,
+        constants: this.constants,
       };
+      bindMethods(this, this.methods);
       this.h = h;
       this.cssText = yamlToCss(elementName, styles);
     }

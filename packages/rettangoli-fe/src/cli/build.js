@@ -16,16 +16,20 @@ function capitalize(word) {
   return word ? word[0].toUpperCase() + word.slice(1) : word;
 }
 
-// Function to process view files - loads YAML and creates temporary JS file
-export const writeViewFile = (view, category, component, tempDir) => {
+const writeYamlModuleFile = (yamlObject, category, component, fileType, tempDir = path.resolve(process.cwd(), ".temp")) => {
   const dir = path.join(tempDir, category);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
   writeFileSync(
-    path.join(dir, `${component}.view.js`),
-    `export default ${JSON.stringify(view)};`,
+    path.join(dir, `${component}.${fileType}.js`),
+    `export default ${JSON.stringify(yamlObject)};`,
   );
+};
+
+// Function to process view files - loads YAML and creates temporary JS file
+export const writeViewFile = (view, category, component, tempDir = path.resolve(process.cwd(), ".temp")) => {
+  writeYamlModuleFile(view, category, component, "view", tempDir);
 };
 
 export const bundleFile = async (options) => {
@@ -70,6 +74,8 @@ const buildRettangoliFrontend = async (options) => {
     return (
       filePath.endsWith(".store.js") ||
       filePath.endsWith(".handlers.js") ||
+      filePath.endsWith(".methods.js") ||
+      filePath.endsWith(".constants.yaml") ||
       filePath.endsWith(".view.yaml")
     );
   });
@@ -101,7 +107,7 @@ const buildRettangoliFrontend = async (options) => {
     }
 
 
-    if (["handlers", "store"].includes(fileType)) {
+    if (["handlers", "store", "methods"].includes(fileType)) {
       const relativePath = path.relative(tempDir, filePath).replaceAll(path.sep, "/");
       output += `import * as ${component}${capitalize(
         fileType,
@@ -110,18 +116,27 @@ const buildRettangoliFrontend = async (options) => {
       replaceMap[count] = `${component}${capitalize(fileType)}`;
       imports[category][component][fileType] = count;
       count++;
-    } else if (["view"].includes(fileType)) {
-      const view = loadYaml(readFileSync(filePath, "utf8"));
-      try {
-        view.template = parse(view.template);
-      } catch (error) {
-        console.error(`Error parsing template in file: ${filePath}`);
-        throw error;
+    } else if (["view", "constants"].includes(fileType)) {
+      const yamlObject = loadYaml(readFileSync(filePath, "utf8")) ?? {};
+      if (fileType === "view") {
+        try {
+          yamlObject.template = parse(yamlObject.template);
+        } catch (error) {
+          console.error(`Error parsing template in file: ${filePath}`);
+          throw error;
+        }
       }
-      writeViewFile(view, category, component, tempDir);
+      if (
+        fileType === "constants" &&
+        (yamlObject === null || typeof yamlObject !== "object" || Array.isArray(yamlObject))
+      ) {
+        throw new Error(`[Build] ${filePath} must contain a YAML object at the root.`);
+      }
+
+      writeYamlModuleFile(yamlObject, category, component, fileType, tempDir);
       output += `import ${component}${capitalize(
         fileType,
-      )} from './${category}/${component}.view.js';\n`;
+      )} from './${category}/${component}.${fileType}.js';\n`;
       replaceMap[count] = `${component}${capitalize(fileType)}`;
 
       imports[category][component][fileType] = count;

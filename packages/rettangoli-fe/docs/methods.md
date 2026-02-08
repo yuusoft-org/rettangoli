@@ -32,6 +32,7 @@ Method signature:
 - No `deps` argument in public method signatures
 - `payload` should be an object
 - Methods run with `this` bound to the component element instance
+- Use named exports only; `default` export is not supported
 
 Invocation from element:
 
@@ -56,6 +57,7 @@ export function reset(payload = {}) {
 
 Declare public methods in `.schema.yaml` under `methods`.
 Method names in `.schema.yaml` should match exported names in `.methods.js`.
+If a method needs static values, read them from `this.constants`.
 
 ```yaml
 methods:

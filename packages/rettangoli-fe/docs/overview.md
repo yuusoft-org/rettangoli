@@ -8,7 +8,7 @@ Rettangoli FE is a complete frontend framework for building web applications wit
 - **Pure functions** - Write simple functions following UI = f(state)
 - **Component-based** - Every component has four core files, with optional advanced files when needed
 
-**Architecture:** Each component has `.view.yaml` (UI), `.store.js` (state), `.handlers.js` (events/lifecycle), and `.schema.yaml` (API/metadata contract), with optional `.methods.js` for public imperative methods.
+**Architecture:** Each component has `.view.yaml` (UI), `.store.js` (state), `.handlers.js` (events/lifecycle), and `.schema.yaml` (API/metadata contract), with optional `.methods.js` (public imperative methods) and `.constants.yaml` (static constants).
 
 ## File Boundaries
 
@@ -19,6 +19,7 @@ Rettangoli FE is a complete frontend framework for building web applications wit
 | `handlers.js` | Lifecycle hooks, side effects, imperative event handling |
 | `store.js` | State initialization, selectors, actions |
 | `.methods.js` (optional) | Public component methods callable from the element instance |
+| `.constants.yaml` (optional) | Static constants available as `deps.constants` and `ctx.constants` |
 
 ## Quick Start
 
@@ -36,7 +37,8 @@ todoItem/
 ├── todoItem.store.js       # State management
 ├── todoItem.handlers.js    # Event handling
 ├── todoItem.schema.yaml    # Component contract and metadata
-└── todoItem.methods.js     # Optional public methods
+├── todoItem.methods.js     # Optional public methods
+└── todoItem.constants.yaml # Optional static constants
 ```
 
 ## Core + Optional Files
@@ -52,18 +54,20 @@ template:
 
 **Store (.store.js)** - State management with pure functions:
 ```js
-export const createInitialState = () => ({
+export const createInitialState = ({ constants }) => ({
   text: "",
+  maxItems: constants?.limits?.maxItems || 50,
   completed: false,
 });
 
-export const selectViewData = ({ state, props, attrs }) => ({
+export const selectViewData = ({ state, props, attrs, constants }) => ({
   text: state.text,
-  completed: state.completed
+  completed: state.completed,
+  submitLabel: constants?.labels?.submit || "Submit",
 });
 
 // Action - modifies state (uses Immer for immutability)
-export const toggleCompleted = (state, _payload = {}) => {
+export const toggleCompleted = ({ state }, _payload = {}) => {
   state.completed = !state.completed;
 };
 ```
@@ -83,6 +87,14 @@ export function focusInput(payload = {}) {
   const { selector = '#checkbox' } = payload;
   this.querySelector(selector)?.focus();
 }
+```
+
+**Constants (.constants.yaml, optional)** - Static values injected into handlers/store:
+```yaml
+labels:
+  submit: "Submit"
+limits:
+  maxItems: 50
 ```
 
 **Schema (.schema.yaml)** - component contract and metadata:
@@ -118,3 +130,4 @@ methods:
 - **[Store](./store.md)** - State patterns
 - **[Handlers](./handlers.md)** - Event handling
 - **[Methods](./methods.md)** - Optional public component methods
+- **[Constants](./constants.md)** - Optional static constants

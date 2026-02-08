@@ -32,11 +32,20 @@ Only `selectViewData` output is exposed to `.view.yaml`.
 
 If the view needs a value, compute/map it inside `selectViewData` and return it there.
 
+## Context Contract (`ctx`)
+
+All store functions receive a first argument context object:
+
+- `state` (available in selectors, `selectViewData`, and actions)
+- `props`
+- `attrs`
+- `constants` (from optional `.constants.yaml`)
+
 ## Minimal File Shape
 
 ```js
-export const createInitialState = () => ({
-  title: '',
+export const createInitialState = ({ constants }) => ({
+  title: constants?.labels?.defaultTitle || '',
   items: [],
   isLoading: false,
 });
@@ -46,19 +55,20 @@ export const selectItems = ({ state }) => state.items;
 export const selectIsLoading = ({ state }) => state.isLoading;
 
 // View projection
-export const selectViewData = ({ state }) => ({
+export const selectViewData = ({ state, constants }) => ({
   title: state.title,
   items: state.items,
   itemCount: state.items.length,
   isLoading: state.isLoading,
+  submitLabel: constants?.labels?.submit || 'Submit',
 });
 
 // Actions
-export const setTitle = (state, { title }) => {
+export const setTitle = ({ state }, { title }) => {
   state.title = title;
 };
 
-export const toggleLoading = (state, _payload = {}) => {
+export const toggleLoading = ({ state }, _payload = {}) => {
   state.isLoading = !state.isLoading;
 };
 ```
@@ -68,10 +78,11 @@ export const toggleLoading = (state, _payload = {}) => {
 Keep state minimal and serializable.
 
 ```js
-export const createInitialState = () => ({
+export const createInitialState = ({ constants }) => ({
   form: {
     values: { email: '' },
     isSubmitting: false,
+    maxItems: constants?.limits?.maxItems || 50,
   },
 });
 ```
@@ -80,8 +91,9 @@ export const createInitialState = () => ({
 
 Selector contract:
 
-- First argument: `{ state, props, attrs }`
-- Additional arguments: optional and flexible (primitive or object)
+- Signature: `(ctx, ...args)`
+- First argument is always context object
+- Additional arguments are optional and flexible (primitive or object)
 
 Normal selectors are for JavaScript usage (store composition, handlers, tests). They are not directly visible in `.view.yaml`.
 
@@ -101,13 +113,14 @@ export const selectItemsByFilters = ({ state }, { category, completed }) =>
 
 `selectViewData` returns plain data for `.view.yaml`.
 
+- Signature: `(ctx)`
 - No side effects
 - No DOM access
 - Keep formatting and derived values here
 
 ```js
-export const selectViewData = ({ state, props }) => ({
-  title: state.title || props.defaultTitle || 'Untitled',
+export const selectViewData = ({ state, props, constants }) => ({
+  title: state.title || props.defaultTitle || constants?.labels?.fallbackTitle || 'Untitled',
   items: state.items,
   hasItems: state.items.length > 0,
 });
@@ -117,7 +130,8 @@ export const selectViewData = ({ state, props }) => ({
 
 Action contract:
 
-- Signature: `(state, payload)`
+- Signature: `(ctx, payload = {})`
+- First argument is always context object
 - `payload` must be an object (not a primitive)
 
 Invocation behavior:
@@ -130,25 +144,25 @@ Invocation behavior:
 
 ```js
 // ❌ Not supported (primitive payload)
-export const setTitle = (state, title) => {
+export const setTitle = ({ state }, title) => {
   state.title = title;
 };
 
 // ✅ Supported (object payload)
-export const setTitle = (state, { title }) => {
+export const setTitle = ({ state }, { title }) => {
   state.title = title;
 };
 
 // ✅ Supported when no fields are required
-export const toggleCompleted = (state, _payload = {}) => {
+export const toggleCompleted = ({ state }, _payload = {}) => {
   state.completed = !state.completed;
 };
 
-export const setEmail = (state, { email }) => {
+export const setEmail = ({ state }, { email }) => {
   state.form.values.email = email;
 };
 
-export const setSubmitting = (state, { isSubmitting }) => {
+export const setSubmitting = ({ state }, { isSubmitting }) => {
   state.form.isSubmitting = isSubmitting;
 };
 ```

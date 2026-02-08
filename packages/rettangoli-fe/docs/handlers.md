@@ -17,7 +17,7 @@ While state and view are pure functions, handlers can be messier as they handle 
 ```js
 export const handlerName = (deps, payload) => {
   // Access dependencies
-  const { store, render, props, attrs, dispatchEvent } = deps;
+  const { store, render, props, attrs, constants, dispatchEvent } = deps;
 
   // Access the original event via payload._event
   const { _event } = payload;
@@ -30,10 +30,11 @@ export const handlerName = (deps, payload) => {
 
 ## Available Dependencies
 
-- **`store`**: State actions (mutations) - state is automatically passed as first argument
+- **`store`**: State actions (mutations) - store context object is automatically passed as first argument
 - **`render`**: Trigger component re-render
 - **`props`**: Component properties
 - **`attrs`**: HTML attributes
+- **`constants`**: Static constants from optional `.constants.yaml`
 - **`dispatchEvent`**: Emit custom DOM events
 - **`refs`**: Map of `camelCase ref key -> DOM element`
 - **Custom dependencies**: From `setup.js` (services, event buses, or an `element` reference you provide explicitly)
@@ -41,6 +42,8 @@ export const handlerName = (deps, payload) => {
 ```js
 export const handleFocus = (deps) => {
   const submitButton = deps.refs['submitButton'];
+  const shouldAutoFocus = deps.constants?.features?.autoFocusSubmit !== false;
+  if (!shouldAutoFocus) return;
   submitButton.focus();
   submitButton.callSomeFunction?.();
 };
