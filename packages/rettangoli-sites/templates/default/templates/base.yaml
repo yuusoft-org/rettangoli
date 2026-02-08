@@ -14,5 +14,5 @@
                     - "${content}"
                 - rtgl-view h="30vh":
                 - $partial: footer
-            - rtgl-view pos="abs" cor="top" ah="c" bgc="bg":
+            - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
                 - $partial: header

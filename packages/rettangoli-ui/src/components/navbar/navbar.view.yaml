@@ -69,6 +69,6 @@ template:
       $else:
         - rtgl-view d=h av=c g=lg g=md:
           - *image
-    - rtgl-view flex=1:
+    - rtgl-view w=1fg:
     - rtgl-view d=h av=c g=lg:
       - slot name=right:

@@ -46,7 +46,7 @@ template:
   - rtgl-view d=v ${containerAttrString}:
       - rtgl-view#header d=h av=c w=f pv=md cur=p:
           - rtgl-text: ${title}
-          - rtgl-view flex=1:
+          - rtgl-view w=1fg:
           - rtgl-svg svg=${chevronIcon} wh=16 c=mu-fg:
       - div class="${openClass}":
           - div class=content-inner:

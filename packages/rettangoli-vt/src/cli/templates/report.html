@@ -30,7 +30,7 @@
       <rtgl-view p="sm">
       </rtgl-view>
     </rtgl-view>
-    <rtgl-view h="100vh" w="f" flex="1" bgc="su" p="lg" g="lg" style="flex-wrap: nowrap;" sv>
+    <rtgl-view h="100vh" w="1fg" bgc="su" p="lg" g="lg" style="flex-wrap: nowrap;" sv>
       <rtgl-view>
         <rtgl-text s="tl">Rettangoli Components</rtgl-text>
         <rtgl-text s="sm">{{ files.length }} components failed</rtgl-text>
@@ -38,11 +38,11 @@
       {% for file in files %}
       <rtgl-view w="f">
         <rtgl-view w="f" d="h" g="lg">
-          <rtgl-view flex="1">
+          <rtgl-view w="1fg">
             <rtgl-text>{{ file.referencePath }}</rtgl-text>
             <img width="100%" src="/{{ file.referencePath }}">
           </rtgl-view>
-          <rtgl-view flex="1">
+          <rtgl-view w="1fg">
             <rtgl-text>{{ file.candidatePath }}</rtgl-text>
             <img width="100%" src="/{{ file.candidatePath }}">
           </rtgl-view>

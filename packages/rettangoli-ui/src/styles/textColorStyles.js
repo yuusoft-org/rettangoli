@@ -2,12 +2,12 @@ import { generateCSS } from "../common.js";
 
 const styles = {
   c: {
-    "fg": "--foreground",
-    "de": "--destructive",
-    "pr-fg": "--primary-foreground",
-    "se-fg": "--secondary-foreground",
-    "mu-fg": "--muted-foreground",
-    "ac-fg": "--accent-foreground",
+    "fg": "color: var(--foreground);",
+    "de": "color: var(--destructive);",
+    "pr-fg": "color: var(--primary-foreground);",
+    "se-fg": "color: var(--secondary-foreground);",
+    "mu-fg": "color: var(--muted-foreground);",
+    "ac-fg": "color: var(--accent-foreground);",
   },
 };
 

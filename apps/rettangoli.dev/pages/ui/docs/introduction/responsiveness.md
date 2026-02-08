@@ -5,23 +5,36 @@ tags: documentation
 sidebarId: responsiveness
 ---
 
-Rettangoli UI provides a simple and intuitive way to create responsive layouts using breakpoint prefixes on any attribute.
+Rettangoli UI provides a simple way to create responsive layouts using breakpoint prefixes on supported attributes.
 
 ## Breakpoints
 
-The framework uses five breakpoints following a mobile-first approach:
+Rettangoli UI uses **max-width** breakpoints with a **desktop-first base style**.
 
-| Breakpoint | Max Width | Description |
-| ---------- | --------- | ----------- |
-| `xs` | - | Extra small (not typically used as prefix) |
-| `sm` | 640px | Small devices (landscape phones) |
-| `md` | 768px | Medium devices (tablets) |
-| `lg` | 1024px | Large devices (desktops) |
-| `xl` | 1280px | Extra large devices (large desktops) |
+| Prefix | Applies When Viewport Is | Typical Devices |
+| ------ | ------------------------ | --------------- |
+| `xl-` | `<= 1280px` | Smaller desktop / large tablet landscape |
+| `lg-` | `<= 1024px` | Tablet landscape / small laptop |
+| `md-` | `<= 768px` | Tablet portrait |
+| `sm-` | `<= 640px` | Phones |
+
+There is no `xs-` breakpoint prefix in Rettangoli UI.
+
+## Breakpoint Resolution
+
+Breakpoint resolution is deterministic and follows this cascade order:
+
+1. Base (unprefixed) attributes
+2. `xl-` overrides base at `<= 1280px`
+3. `lg-` overrides `xl-`/base at `<= 1024px`
+4. `md-` overrides `lg-`/`xl-`/base at `<= 768px`
+5. `sm-` overrides everything above at `<= 640px`
+
+If the same attribute is set at multiple breakpoints, the smallest matching breakpoint wins.
 
 ## Usage
 
-To make any attribute responsive, prefix it with a breakpoint name and a hyphen (`-`). The default styles apply to larger screens, and breakpoint styles apply as the screen gets smaller.
+To make an attribute responsive, prefix it with a breakpoint and a hyphen (`-`). Base styles apply to large screens, and prefixed styles override them as the screen gets smaller.
 
 ### Syntax
 
@@ -62,14 +75,14 @@ You can apply different styles at multiple breakpoints by stacking breakpoint at
 ```
 
 Breakpoint behavior:
-- Extra large (> 1280px): Horizontal
-- Large (1024px - 1280px): Vertical
-- Medium (768px - 1024px): Vertical
-- Small (< 768px): Horizontal
+- Extra large (> 1280px): Vertical (component default)
+- Large (769px - 1280px): Horizontal
+- Medium (641px - 768px): Vertical
+- Small (<= 640px): Horizontal
 
 ## Responsive Attributes
 
-You can make **ANY** attribute responsive by adding a breakpoint prefix. This includes:
+You can make component-supported attributes responsive by adding a breakpoint prefix. Common examples:
 - Layout attributes: `d`, `w`, `h`, `ah`, `av`
 - Spacing attributes: `p`, `m`, `g`
 - Style attributes: `bgc`, `bc`, `bw`, `br`, `op`
@@ -124,15 +137,15 @@ Here are some common examples:
 
 ## Best Practices
 
-1. **Mobile-First Approach**: Always define default styles for larger screens first, then add breakpoint prefixes for smaller screens.
+1. **Desktop-First Base**: Define unprefixed styles for larger screens, then override them with `xl-`, `lg-`, `md-`, and `sm-`.
 
-2. **Cascade Order**: Breakpoints cascade from largest to smallest. Each breakpoint overrides the previous one.
+2. **Know the Override Rule**: If multiple breakpoints match, the smallest matching prefix wins (`sm` > `md` > `lg` > `xl` > base).
 
 3. **Consistent Spacing**: Use responsive spacing to create appropriate white space for different screen sizes.
 
 4. **Flexible Layouts**: Combine responsive direction with flex-grow values for truly adaptive layouts.
 
-5. **Responsive Visibility**: Use `show` and `hide` with breakpoint prefixes to control element visibility across screen sizes. Remember to pair `sm-show` with `hide` to ensure elements are hidden by default.
+5. **Responsive Visibility**: Use `show` and `hide` with breakpoint prefixes to control visibility. Pair `hide` with `sm-show` (or similar) for “only at this breakpoint” behavior.
 
 ```html codePreview
 <rtgl-view m="md">

@@ -16,9 +16,9 @@
                     - rtgl-view h="xl":
                     - 'a href="/blog/" style="text-decoration: none"':
                         - rtgl-text c="pr" h-cur="p": ← Back to Blog
-                - 'rtgl-view lg-hide flex="1" style="position: sticky; top: 64px;"':
+                - 'rtgl-view lg-hide w="1fg" style="position: sticky; top: 64px;"':
                     - rtgl-page-outline id="page-outline" target-id="content-container":
             - rtgl-view h="30vh":
             - $partial: footer
-        - rtgl-view pos="abs" cor="top" ah="c" bgc="bg":
+        - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
             - $partial: header

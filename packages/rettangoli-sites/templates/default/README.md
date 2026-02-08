@@ -75,7 +75,7 @@ Content in **markdown**.
 ```yaml
 # Layout with rtgl-view
 - rtgl-view d="h" g="lg" av="c":    # horizontal, gap, align vertical center
-    - rtgl-view flex="1":            # flex grow
+    - rtgl-view w="1fg":            # flex grow
     - rtgl-view w="200" h="100":     # fixed width/height
 
 # Text with rtgl-text

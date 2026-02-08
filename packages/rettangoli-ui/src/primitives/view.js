@@ -34,7 +34,7 @@ class RettangoliViewElement extends HTMLElement {
           border-color: var(--border);
         }
 
-        :host([fw="w"]) {
+        :host([fw="wrap"]) {
           flex-wrap: wrap;
         }
 
@@ -82,9 +82,9 @@ class RettangoliViewElement extends HTMLElement {
     return [
       "href",
       "target",
-      "op",
       ...permutateBreakpoints([
         ...styleMapKeys,
+        "op",
         "wh",
         "w",
         "h",
@@ -278,15 +278,9 @@ class RettangoliViewElement extends HTMLElement {
         }
       }
 
-      // Handle flex property
-      const flex = this.getAttribute(addSizePrefix("flex"));
-      if (flex !== null) {
-        this._styles[size]["flex"] = flex;
-      }
-
       // Handle flex-wrap
       const flexWrap = this.getAttribute(addSizePrefix("fw"));
-      if (flexWrap === "w") {
+      if (flexWrap === "wrap") {
         this._styles[size]["flex-wrap"] = "wrap";
       }
 

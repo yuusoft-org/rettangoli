@@ -11,7 +11,7 @@
 
     - body.dark:
         - rtgl-view:
-            - rtgl-view pos="abs" cor="top" ah="c" bgc="bg":
+            - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
                 - $partial: navbar1
                   title: ${site.navbar.title}
                   cta: ${site.navbar.cta}
