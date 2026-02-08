@@ -1,0 +1,45 @@
+file: "../src/core/schema/validateSchemaContract.js"
+group: rettangoli-fe-schema-contract
+---
+suite: schema-contract
+exportName: validateSchemaContract
+---
+case: accepts minimal valid schema
+in:
+  - schema:
+      componentName: todo-item
+out: true
+---
+case: requires componentName
+in:
+  - schema:
+      description: missing name
+throws: RTGL-SCHEMA-001
+---
+case: rejects attrsSchema field
+in:
+  - schema:
+      componentName: todo-item
+      attrsSchema:
+        type: object
+throws: RTGL-SCHEMA-002
+---
+case: validates declared methods against exported method names
+in:
+  - schema:
+      componentName: todo-item
+      methods:
+        - name: focusInput
+    methodExports:
+      - focusInput
+out: true
+---
+case: rejects methods missing in methods exports
+in:
+  - schema:
+      componentName: todo-item
+      methods:
+        - name: focusInput
+    methodExports:
+      - reset
+throws: RTGL-SCHEMA-003

@@ -1,0 +1,181 @@
+file: "./viewCoreHelper.js"
+group: rettangoli-fe-view-contract
+---
+suite: bindings-contract
+exportName: runBindingsContract
+---
+case: maps attribute-form kebab-case keys to camelCase props for web components
+in:
+  - attrsString: max-items=10 label=Save
+out:
+  attrs:
+    max-items: "10"
+    label: Save
+  props:
+    maxItems: "10"
+    label: Save
+---
+case: resolves property-form path values from viewData
+in:
+  - attrsString: :value=user.name
+    viewData:
+      user:
+        name: Alice
+out:
+  attrs: {}
+  props:
+    value: Alice
+---
+case: maps boolean attribute-form to both attrs and props for web components
+in:
+  - attrsString: ?disabled=isLoading
+    viewData:
+      isLoading: true
+out:
+  attrs:
+    disabled: ""
+  props:
+    disabled: true
+---
+case: rejects duplicate prop source on one component node
+in:
+  - attrsString: value=abc :value=stateValue
+throws: Duplicate prop binding 'value'
+---
+suite: refs-contract
+exportName: runRefsContract
+---
+case: rejects invalid kebab-case ref key
+in:
+  - refs:
+      submit-button:
+        eventListeners:
+          click:
+            handler: handleSubmit
+throws: Invalid ref key 'submit-button'
+---
+case: rejects kebab-case element id for refs matching
+in:
+  - refs:
+      submitButton:
+        eventListeners:
+          click:
+            handler: handleSubmit
+    elementIdForRefs: submit-button
+throws: Invalid element id 'submit-button'
+---
+case: exact ref key has precedence over wildcard
+in:
+  - refs:
+      todo*:
+        eventListeners: {}
+      todoItem*:
+        eventListeners: {}
+      todoItem:
+        eventListeners: {}
+    elementIdForRefs: todoItem
+out:
+  refKey: todoItem
+  targetType: id
+  matchedValue: todoItem
+  prefix: todoItem
+  isWildcard: false
+---
+case: longest wildcard prefix wins
+in:
+  - refs:
+      todo*:
+        eventListeners: {}
+      todoItem*:
+        eventListeners: {}
+    elementIdForRefs: todoItem42
+out:
+  refKey: todoItem*
+  targetType: id
+  matchedValue: todoItem42
+  prefix: todoItem
+  isWildcard: true
+---
+case: supports explicit id refs with hash prefix
+in:
+  - refs:
+      "#submitButton":
+        eventListeners: {}
+    elementIdForRefs: submitButton
+out:
+  refKey: "#submitButton"
+  targetType: id
+  matchedValue: submitButton
+  prefix: submitButton
+  isWildcard: false
+---
+case: supports class refs with dot prefix
+in:
+  - refs:
+      ".label":
+        eventListeners: {}
+    classNames:
+      - label
+      - muted
+out:
+  refKey: ".label"
+  targetType: class
+  matchedValue: label
+  prefix: label
+  isWildcard: false
+---
+case: supports wildcard class refs with dot prefix
+in:
+  - refs:
+      ".todo*":
+        eventListeners: {}
+    classNames:
+      - todoItem
+      - muted
+out:
+  refKey: ".todo*"
+  targetType: class
+  matchedValue: todoItem
+  prefix: todo
+  isWildcard: true
+---
+suite: event-contract
+exportName: runEventContract
+---
+case: validates debounce option for listener
+in:
+  - eventConfig:
+      handler: handleSubmit
+      debounce: 100
+out:
+  hasDebounce: true
+  hasThrottle: false
+---
+case: rejects listener that defines both handler and action
+in:
+  - eventConfig:
+      handler: handleSubmit
+      action: submitAction
+throws: handler or action but not both
+---
+case: rejects listener with both debounce and throttle
+in:
+  - eventConfig:
+      handler: handleSubmit
+      debounce: 100
+      throttle: 100
+throws: cannot define both 'debounce' and 'throttle'
+---
+case: rejects non-boolean targetOnly value
+in:
+  - eventConfig:
+      handler: handleSubmit
+      targetOnly: "yes"
+throws: Invalid 'targetOnly'
+---
+case: rejects negative debounce value
+in:
+  - eventConfig:
+      handler: handleSubmit
+      debounce: -1
+throws: Invalid 'debounce'

@@ -38,9 +38,13 @@ Normative keywords follow RFC 2119 intent:
 
 ### Refs Model
 
-- `deps.refs` is a map of `refId -> DOM element` (direct element, not wrapper object).
-- Element ref IDs `MUST` be camelCase.
-- Kebab-case element IDs are invalid for refs matching.
+- `deps.refs` is a map of `refKeyOrId -> DOM element` (direct element, not wrapper object).
+- Refs key grammar:
+- unprefixed key (`submitButton`) => ID target (default)
+- `#submitButton` => explicit ID target
+- `.label` => class target
+- ID refs matching requires camelCase element IDs.
+- Kebab-case element IDs are invalid for ID refs matching.
 - `refs.window` and `refs.document` are reserved global listener targets.
 
 ## Spec Index

@@ -1,0 +1,30 @@
+file: "./runtimeContractHelper.js"
+group: rettangoli-fe-handlers-contract
+---
+suite: handlers-contract
+exportName: runHandlersCase
+---
+case: handleBeforeMount rejects promise return value
+in:
+  - scenario: before_mount_rejects_promise
+throws: handleBeforeMount must be synchronous
+---
+case: handleBeforeMount cleanup runs on disconnect
+in:
+  - scenario: before_mount_cleanup_runs
+out:
+  cleaned: true
+---
+case: handleAfterMount allows async handlers
+in:
+  - scenario: after_mount_allows_async
+out:
+  called: true
+---
+case: handleOnUpdate payload uses camelCase changedProp
+in:
+  - scenario: on_update_payload_uses_camel_case_changed_prop
+out:
+  changedProp: maxItems
+  oldValue: "1"
+  newValue: "2"

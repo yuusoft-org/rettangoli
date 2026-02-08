@@ -116,15 +116,20 @@ template:
 ## 6. Refs and Event Listeners
 
 `refs` supports:
-- element ID targets (exact or wildcard)
+- element targets by ID or class (exact or wildcard)
 - global targets: `window`, `document`
 
 Element ref key forms:
-- exact: `submitButton`
-- wildcard: `todo*`
+- ID default: `submitButton`
+- explicit ID: `#submitButton`
+- ID wildcard: `todo*`, `#todo*`
+- class exact: `.label`
+- class wildcard: `.todo*`
 
-Element IDs used by refs matching MUST be camelCase.
-Kebab-case IDs are invalid for refs matching.
+ID refs rules:
+- IDs used by refs matching MUST be camelCase
+- kebab-case IDs are invalid for refs matching
+- unprefixed refs keys are treated as ID refs
 
 Listener entry shape:
 
@@ -149,7 +154,8 @@ Rules:
 - `debounce` and `throttle` are mutually exclusive
 - `debounce`/`throttle` must be non-negative numbers
 - modifier flags must be booleans
-- wildcard matching applies to element IDs only
+- wildcard matching applies to ID refs and class refs
+- match precedence is: ID over class, exact over wildcard, then longest prefix
 - `window` and `document` are reserved refs keys
 
 ### Event Modifier Semantics
@@ -174,11 +180,17 @@ Conceptual invocation:
 
 ## 7. Refs Runtime Surface
 
-`deps.refs` maps each matched ref ID directly to the DOM element:
+`deps.refs` maps matched refs directly to DOM elements:
 
 ```js
 const submitButton = deps.refs.submitButton;
 submitButton.focus();
+```
+
+Class refs use their configured ref key when no ID exists:
+
+```js
+const labelNode = deps.refs[".label"];
 ```
 
 `deps.refs.submitButton.elm` is not supported.
@@ -188,8 +200,8 @@ submitButton.focus();
 Implementations MUST reject invalid view contracts.
 Suggested stable error codes:
 
-- `RTGL-VIEW-001`: invalid ref key format (not camelCase or invalid wildcard)
-- `RTGL-VIEW-002`: invalid element ID format for refs matching
+- `RTGL-VIEW-001`: invalid ref key format (invalid ID/class ref syntax or wildcard)
+- `RTGL-VIEW-002`: invalid element ID format for ID refs matching
 - `RTGL-VIEW-003`: duplicate prop binding (`name=` and `:name=` same normalized key)
 - `RTGL-VIEW-004`: listener defines both `handler` and `action`
 - `RTGL-VIEW-005`: listener defines neither `handler` nor `action`

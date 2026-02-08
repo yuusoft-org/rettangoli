@@ -39,7 +39,7 @@ Rules:
 - custom dependencies from setup
 
 `deps.refs` contract:
-- map of `refId -> DOM element`
+- map of `refKeyOrId -> DOM element`
 - values are direct elements, not wrapper objects
 
 Example:

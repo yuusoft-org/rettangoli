@@ -1,82 +1,23 @@
-import { produce } from "immer";
 import { parseView } from "./parser.js";
 import { parseAndRender } from "jempl";
-
-/**
- * covert this format of json into raw css strings
- * notice if propoperty starts with \@, it will need to nest it
- *
-    ':host':
-      display: contents
-    'button':
-      background-color: var(--background)
-      font-size: var(--sm-font-size)
-      font-weight: var(--sm-font-weight)
-      line-height: var(--sm-line-height)
-      letter-spacing: var(--sm-letter-spacing)
-      border: 1px solid var(--ring)
-      border-radius: var(--border-radius-lg)
-      padding-left: var(--spacing-md)
-      padding-right: var(--spacing-md)
-      height: 32px
-      color: var(--foreground)
-      outline: none
-      cursor: pointer
-    'button:focus':
-      border-color: var(--foreground)
-    '@media (min-width: 768px)':
-      'button':
-        height: 40px
- * @param {*} styleObject
- * @returns
- */
-const yamlToCss = (elementName, styleObject) => {
-  if (!styleObject || typeof styleObject !== "object") {
-    return "";
-  }
-
-  let css = ``;
-  const convertPropertiesToCss = (properties) => {
-    return Object.entries(properties)
-      .map(([property, value]) => `  ${property}: ${value};`)
-      .join("\n");
-  };
-
-  const processSelector = (selector, rules) => {
-    if (typeof rules !== "object" || rules === null) {
-      return "";
-    }
-
-    // Check if this is an @ rule (like @media, @keyframes, etc.)
-    if (selector.startsWith("@")) {
-      const nestedCss = Object.entries(rules)
-        .map(([nestedSelector, nestedRules]) => {
-          const nestedProperties = convertPropertiesToCss(nestedRules);
-          return `  ${nestedSelector} {\n${nestedProperties
-            .split("\n")
-            .map((line) => (line ? `  ${line}` : ""))
-            .join("\n")}\n  }`;
-        })
-        .join("\n");
-
-      return `${selector} {\n${nestedCss}\n}`;
-    } else {
-      // Regular selector
-      const properties = convertPropertiesToCss(rules);
-      return `${selector} {\n${properties}\n}`;
-    }
-  };
-
-  // Process all top-level selectors
-  Object.entries(styleObject).forEach(([selector, rules]) => {
-    const selectorCss = processSelector(selector, rules);
-    if (selectorCss) {
-      css += (css ? "\n\n" : "") + selectorCss;
-    }
-  });
-
-  return css;
-};
+import { bindMethods } from "./core/runtime/methods.js";
+import { bindStore } from "./core/runtime/store.js";
+import { resolveConstants } from "./core/runtime/constants.js";
+import { yamlToCss } from "./core/style/yamlToCss.js";
+import {
+  buildOnUpdateChanges,
+  createRuntimeDeps,
+  createTransformedHandlers,
+  runAfterMount,
+  runBeforeMount,
+} from "./core/runtime/lifecycle.js";
+import { collectRefElements } from "./core/runtime/refs.js";
+import {
+  createPropsProxy,
+  normalizeAttributeValue,
+  toCamelCase,
+  toKebabCase,
+} from "./core/runtime/props.js";
 
 /**
  * Subscribes to all observables and returns a function that will unsubscribe
@@ -97,115 +38,6 @@ const subscribeAll = (observables) => {
     }
   };
 };
-
-
-const isObjectPayload = (value) => {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-};
-
-const deepFreeze = (value) => {
-  if (!isObjectPayload(value) || Object.isFrozen(value)) {
-    return value;
-  }
-
-  Object.values(value).forEach((nestedValue) => {
-    deepFreeze(nestedValue);
-  });
-  return Object.freeze(value);
-};
-
-const toKebabCase = (value) => {
-  return value.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-};
-
-const toCamelCase = (value) => {
-  return value.replace(/-([a-z0-9])/g, (_, chr) => chr.toUpperCase());
-};
-
-const normalizeAttributeValue = (value) => {
-  if (value === null || value === undefined) {
-    return undefined;
-  }
-  // HTML boolean attributes are represented as empty strings when present.
-  return value === "" ? true : value;
-};
-
-const readPropFallbackFromAttributes = (source, propName) => {
-  const directAttrValue = source.getAttribute(propName);
-  if (directAttrValue !== null) {
-    return normalizeAttributeValue(directAttrValue);
-  }
-  const kebabPropName = toKebabCase(propName);
-  if (kebabPropName !== propName) {
-    const kebabAttrValue = source.getAttribute(kebabPropName);
-    if (kebabAttrValue !== null) {
-      return normalizeAttributeValue(kebabAttrValue);
-    }
-  }
-  return undefined;
-};
-
-/**
- * Creates a read-only proxy object that only allows access to specified properties from the source object
- * Props are directly attached to the web-component element for example this.title
- * We don't want to expose the whole web compoenent but only want to expose the props
- * createPropsProxy(this, ['title']) will expose only the title
- * @param {Object} source - The source object to create a proxy from
- * @param {string[]} allowedKeys - Array of property names that are allowed to be accessed
- * @returns {Proxy} A read-only proxy object that only allows access to the specified properties
- * @throws {Error} When attempting to modify the proxy object
- */
-function createPropsProxy(source, allowedKeys) {
-  // return source;
-  const allowed = new Set(allowedKeys);
-  return new Proxy(
-    {},
-    {
-      get(_, prop) {
-        if (typeof prop === "string" && allowed.has(prop)) {
-          const propValue = source[prop];
-          if (propValue !== undefined) {
-            return propValue;
-          }
-          return readPropFallbackFromAttributes(source, prop);
-        }
-        return undefined;
-      },
-      set() {
-        throw new Error("Cannot assign to read-only proxy");
-      },
-      defineProperty() {
-        throw new Error("Cannot define properties on read-only proxy");
-      },
-      deleteProperty() {
-        throw new Error("Cannot delete properties from read-only proxy");
-      },
-      has(_, prop) {
-        return typeof prop === "string" && allowed.has(prop);
-      },
-      ownKeys() {
-        return [...allowed];
-      },
-      getOwnPropertyDescriptor(_, prop) {
-        if (typeof prop === "string" && allowed.has(prop)) {
-          return {
-            configurable: true,
-            enumerable: true,
-            get: () => {
-              const propValue = source[prop];
-              if (propValue !== undefined) {
-                return propValue;
-              }
-              return readPropFallbackFromAttributes(source, prop);
-            },
-          };
-        }
-        return undefined;
-      },
-    },
-  );
-}
-
 /**
  * Base class for web components
  * Connects web compnent with the rettangoli framework
@@ -328,48 +160,31 @@ class BaseComponent extends HTMLElement {
       this.appendChild(this.renderTarget);
     }
     this.style.display = "contents";
-    const deps = {
-      ...this.deps,
+    const deps = createRuntimeDeps({
+      baseDeps: this.deps,
       refs: this.refIds,
       dispatchEvent: this.dispatchEvent.bind(this),
-    };
-
-    this.transformedHandlers = {
-      handleCallStoreAction: (payload) => {
-        const { render, store } = deps;
-        const { _event, _action } = payload;
-        const context = parseAndRender(payload, {
-          _event,
-        });
-        if (!store[_action]) {
-          throw new Error(`[Store] Action 'store.${_action}' is not defined.`);
-        }
-        store[_action](context);
-        render();
-      },
-    };
-    // TODO don't include onmount, subscriptions, etc in transformedHandlers
-    Object.keys(this.handlers || {}).forEach((key) => {
-      this.transformedHandlers[key] = (payload) => {
-        const result = this.handlers[key](deps, payload);
-        return result;
-      };
+      store: this.store,
+      render: this.render.bind(this),
     });
 
-    if (this.handlers?.handleBeforeMount) {
-      this._unmountCallback = this.handlers?.handleBeforeMount(deps);
+    this.transformedHandlers = createTransformedHandlers({
+      handlers: this.handlers,
+      deps,
+      parseAndRenderFn: parseAndRender,
+    });
 
-      // Validate that handleBeforeMount doesn't return a Promise
-      if (this._unmountCallback && typeof this._unmountCallback.then === 'function') {
-        throw new Error('handleBeforeMount must be synchronous and cannot return a Promise.');
-      }
-    }
+    this._unmountCallback = runBeforeMount({
+      handlers: this.handlers,
+      deps,
+    });
 
     this.render();
 
-    if (this.handlers?.handleAfterMount) {
-      this.handlers?.handleAfterMount(deps);
-    }
+    runAfterMount({
+      handlers: this.handlers,
+      deps,
+    });
 
     if (this.handlers?.subscriptions) {
       this.unsubscribeAll = subscribeAll(this.handlers.subscriptions(deps));
@@ -399,41 +214,22 @@ class BaseComponent extends HTMLElement {
     if (oldValue !== newValue && this.render) {
       // Call handleOnUpdate if it exists
       if (this.handlers?.handleOnUpdate) {
-        const deps = {
-          ...this.deps,
+        const deps = createRuntimeDeps({
+          baseDeps: this.deps,
           refs: this.refIds,
           dispatchEvent: this.dispatchEvent.bind(this),
           store: this.store,
           render: this.render.bind(this),
-        };
-        const changedProp = toCamelCase(name);
-        const newProps = {};
-        this._propsSchemaKeys.forEach((propKey) => {
-          const propValue = deps.props[propKey];
-          if (propValue !== undefined) {
-            newProps[propKey] = propValue;
-          }
         });
-        const oldProps = {
-          ...newProps,
-        };
-        const normalizedOldValue = normalizeAttributeValue(oldValue);
-        const normalizedNewValue = normalizeAttributeValue(newValue);
-        if (normalizedOldValue === undefined) {
-          delete oldProps[changedProp];
-        } else {
-          oldProps[changedProp] = normalizedOldValue;
-        }
-        if (normalizedNewValue === undefined) {
-          delete newProps[changedProp];
-        } else {
-          newProps[changedProp] = normalizedNewValue;
-        }
-        const changes = {
-          changedProp,
-          oldProps,
-          newProps,
-        };
+        const changes = buildOnUpdateChanges({
+          attributeName: name,
+          oldValue,
+          newValue,
+          deps,
+          propsSchemaKeys: this._propsSchemaKeys,
+          toCamelCase,
+          normalizeAttributeValue,
+        });
         this.handlers.handleOnUpdate(deps, changes);
       } else {
         requestAnimationFrame(() => {
@@ -478,38 +274,10 @@ class BaseComponent extends HTMLElement {
       }
 
       // Collect refs as direct DOM elements keyed by id.
-      const ids = {};
-      const refKeys = Object.keys(this.refs || {});
-      const refMatchers = refKeys.map((refKey) => ({
-        isWildcard: refKey.endsWith("*"),
-        prefix: refKey.endsWith("*") ? refKey.slice(0, -1) : refKey,
-      }));
-
-      const matchesConfiguredRef = (id) => {
-        if (!id || refMatchers.length === 0) {
-          return false;
-        }
-        return refMatchers.some((refMatcher) => {
-          if (refMatcher.isWildcard) {
-            return id.startsWith(refMatcher.prefix);
-          }
-          return id === refMatcher.prefix;
-        });
-      };
-
-      const findRefElements = (vNode) => {
-        if (!vNode || typeof vNode !== "object") {
-          return;
-        }
-        const id = vNode?.data?.attrs?.id;
-        if (id && vNode.elm && matchesConfiguredRef(id)) {
-          ids[id] = vNode.elm;
-        }
-        if (Array.isArray(vNode.children)) {
-          vNode.children.forEach(findRefElements);
-        }
-      };
-      findRefElements(this._oldVNode);
+      const ids = collectRefElements({
+        rootVNode: this._oldVNode,
+        refs: this.refs,
+      });
       Object.keys(this.refIds).forEach((key) => {
         delete this.refIds[key];
       });
@@ -519,89 +287,6 @@ class BaseComponent extends HTMLElement {
     }
   };
 }
-
-const bindMethods = (element, methods) => {
-  if (!methods || typeof methods !== "object") {
-    return;
-  }
-
-  Object.entries(methods).forEach(([methodName, methodFn]) => {
-    if (methodName === "default") {
-      throw new Error(
-        "[Methods] Invalid method name 'default'. Use named exports in .methods.js; default export is not supported.",
-      );
-    }
-
-    if (typeof methodFn !== "function") {
-      return;
-    }
-
-    if (methodName in element) {
-      throw new Error(
-        `[Methods] Cannot define method '${methodName}' because it already exists on the component instance.`,
-      );
-    }
-
-    Object.defineProperty(element, methodName, {
-      configurable: true,
-      enumerable: false,
-      writable: false,
-      value: (payload = {}) => {
-        const normalizedPayload = payload === undefined ? {} : payload;
-        if (!isObjectPayload(normalizedPayload)) {
-          throw new Error(
-            `[Methods] Method '${methodName}' expects payload to be an object.`,
-          );
-        }
-        return methodFn.call(element, normalizedPayload);
-      },
-    });
-  });
-};
-
-/**
- * Binds store functions with actual framework data flow
- * Makes state changes immutable with immer
- * Passes props to selectors
- * @param {*} store
- * @param {*} props
- * @returns
- */
-const bindStore = (store, props, constants) => {
-  const { createInitialState, ...selectorsAndActions } = store;
-  const selectors = {};
-  const actions = {};
-  let currentState = {};
-  if (createInitialState) {
-    currentState = createInitialState({ props, constants });
-  }
-  Object.entries(selectorsAndActions).forEach(([key, fn]) => {
-    if (key.startsWith("select")) {
-      selectors[key] = (...args) => {
-        return fn({ state: currentState, props, constants }, ...args);
-      };
-    } else {
-      actions[key] = (payload = {}) => {
-        const normalizedPayload = payload === undefined ? {} : payload;
-        if (!isObjectPayload(normalizedPayload)) {
-          throw new Error(
-            `[Store] Action '${key}' expects payload to be an object.`,
-          );
-        }
-        currentState = produce(currentState, (draft) => {
-          return fn({ state: draft, props, constants }, normalizedPayload);
-        });
-        return currentState;
-      };
-    }
-  });
-
-  return {
-    getState: () => currentState,
-    ...actions,
-    ...selectors,
-  };
-};
 
 const createComponent = ({ handlers, methods, constants, view, store, patch, h }, deps) => {
   const { elementName, propsSchema, template, refs, styles } = view;
@@ -634,11 +319,9 @@ const createComponent = ({ handlers, methods, constants, view, store, patch, h }
 
     constructor() {
       super();
-      const setupConstants = isObjectPayload(deps?.constants) ? deps.constants : {};
-      const fileConstants = isObjectPayload(constants) ? constants : {};
-      this.constants = deepFreeze({
-        ...setupConstants,
-        ...fileConstants,
+      this.constants = resolveConstants({
+        setupConstants: deps?.constants,
+        fileConstants: constants,
       });
       this.propsSchema = propsSchema;
       this.props = propsSchema

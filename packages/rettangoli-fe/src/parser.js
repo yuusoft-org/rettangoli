@@ -1,92 +1,13 @@
 import { render as jemplRender } from 'jempl';
 
 import { flattenArrays } from './common.js';
-
-const lodashGet = (obj, path) => {
-  if (!path) return obj;
-
-  // Parse path to handle both dot notation and bracket notation
-  const parts = [];
-  let current = '';
-  let inBrackets = false;
-  let quoteChar = null;
-
-  for (let i = 0; i < path.length; i++) {
-    const char = path[i];
-
-    if (!inBrackets && char === '.') {
-      if (current) {
-        parts.push(current);
-        current = '';
-      }
-    } else if (!inBrackets && char === '[') {
-      if (current) {
-        parts.push(current);
-        current = '';
-      }
-      inBrackets = true;
-    } else if (inBrackets && char === ']') {
-      if (current) {
-        // Remove quotes if present and add the key
-        if ((current.startsWith('"') && current.endsWith('"')) ||
-          (current.startsWith("'") && current.endsWith("'"))) {
-          parts.push(current.slice(1, -1));
-        } else {
-          // Numeric index or unquoted string
-          const numValue = Number(current);
-          parts.push(isNaN(numValue) ? current : numValue);
-        }
-        current = '';
-      }
-      inBrackets = false;
-      quoteChar = null;
-    } else if (inBrackets && (char === '"' || char === "'")) {
-      if (!quoteChar) {
-        quoteChar = char;
-      } else if (char === quoteChar) {
-        quoteChar = null;
-      }
-      current += char;
-    } else {
-      current += char;
-    }
-  }
-
-  if (current) {
-    parts.push(current);
-  }
-
-  return parts.reduce((acc, part) => acc && acc[part], obj);
-};
-
-const REF_KEY_REGEX = /^[a-z][a-zA-Z0-9]*\*?$/;
-const REF_ID_REGEX = /^[a-z][a-zA-Z0-9]*$/;
-const LEGACY_PROP_PREFIX = ".";
-const PROP_PREFIX = ":";
-
-const toCamelCase = (value) => {
-  return value.replace(/-([a-z0-9])/g, (_, chr) => chr.toUpperCase());
-};
-
-const createRefMatchers = (refs) => {
-  return Object.entries(refs || {}).map(([refKey, refConfig]) => {
-    if (!REF_KEY_REGEX.test(refKey)) {
-      throw new Error(
-        `[Parser] Invalid ref key '${refKey}'. Ref keys must be camelCase and may optionally end with '*' for wildcard matching.`,
-      );
-    }
-
-    const isWildcard = refKey.endsWith("*");
-    const prefix = isWildcard ? refKey.slice(0, -1) : refKey;
-
-    return {
-      refKey,
-      refConfig,
-      isWildcard,
-      prefix,
-    };
-  });
-};
+import { parseNodeBindings } from './core/view/bindings.js';
+import {
+  createRefMatchers,
+  resolveBestRefMatcher,
+  validateElementIdForRefs,
+  validateEventConfig,
+} from './core/view/refs.js';
 
 const getEventRateLimitState = (handlers) => {
   if (!handlers.__eventRateLimitState) {
@@ -97,33 +18,6 @@ const getEventRateLimitState = (handlers) => {
     });
   }
   return handlers.__eventRateLimitState;
-};
-
-const assertBooleanEventOption = ({ optionName, optionValue, eventType, refKey }) => {
-  if (optionValue === undefined) {
-    return;
-  }
-  if (typeof optionValue !== "boolean") {
-    throw new Error(
-      `[Parser] Invalid '${optionName}' for event '${eventType}' on ref '${refKey}'. Expected boolean.`,
-    );
-  }
-};
-
-const assertNumberEventOption = ({ optionName, optionValue, eventType, refKey }) => {
-  if (optionValue === undefined) {
-    return;
-  }
-  if (
-    typeof optionValue !== "number"
-    || Number.isNaN(optionValue)
-    || !Number.isFinite(optionValue)
-    || optionValue < 0
-  ) {
-    throw new Error(
-      `[Parser] Invalid '${optionName}' for event '${eventType}' on ref '${refKey}'. Expected non-negative number.`,
-    );
-  }
 };
 
 export const parseView = ({ h, template, viewData, refs, handlers }) => {
@@ -166,6 +60,7 @@ export const createVirtualDom = ({
   }
 
   const refMatchers = createRefMatchers(refs);
+  const hasIdRefMatchers = refMatchers.some((refMatcher) => refMatcher.targetType === "id");
 
   function processItems(currentItems, parentPath = "") {
     return currentItems
@@ -225,109 +120,13 @@ export const createVirtualDom = ({
         const tagName = selector.split(/[.#]/)[0];
         const isWebComponent = tagName.includes("-");
 
-        // 1. Parse attributes from attrsString
-        const attrs = {}; // Ensure attrs is always an object
-        const props = {};
-        const setComponentProp = (rawPropName, propValue, sourceLabel) => {
-          const normalizedPropName = toCamelCase(rawPropName);
-          if (!normalizedPropName) {
-            throw new Error(`[Parser] Invalid ${sourceLabel} prop name on '${tagName}'.`);
-          }
-          if (Object.prototype.hasOwnProperty.call(props, normalizedPropName)) {
-            throw new Error(
-              `[Parser] Duplicate prop binding '${normalizedPropName}' on '${tagName}'. Use only one of 'name=value' or ':name=value'.`,
-            );
-          }
-          props[normalizedPropName] = propValue;
-        };
-        if (attrsString) {
-          // First, handle attributes with values
-          const attrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]+))/g;
-          let match;
-          const processedAttrs = new Set();
-
-          while ((match = attrRegex.exec(attrsString)) !== null) {
-            const rawBindingName = match[1];
-            const rawValue = match[2] || match[3] || match[4];
-            processedAttrs.add(rawBindingName);
-            if (
-              rawBindingName.startsWith(PROP_PREFIX)
-              || rawBindingName.startsWith(LEGACY_PROP_PREFIX)
-            ) {
-              const propName = rawBindingName.substring(1);
-              let propValue = rawValue;
-              // Keep supporting path-form prop assignments for backwards compatibility.
-              if (match[4] !== undefined) {
-                const valuePathName = match[4];
-                const resolvedPathValue = lodashGet(viewData, valuePathName);
-                if (resolvedPathValue !== undefined) {
-                  propValue = resolvedPathValue;
-                }
-              }
-              setComponentProp(propName, propValue, "property-form");
-            } else if (rawBindingName.startsWith("?")) {
-              // Handle conditional boolean attributes
-              const attrName = rawBindingName.substring(1);
-              const attrValue = rawValue;
-
-              // Convert string values to boolean
-              let evalValue;
-              if (attrValue === "true") {
-                evalValue = true;
-              } else if (attrValue === "false") {
-                evalValue = false;
-              } else {
-                // Try to get from viewData if it's not a literal boolean
-                evalValue = lodashGet(viewData, attrValue);
-              }
-
-              // Only add attribute if value is truthy
-              if (evalValue) {
-                attrs[attrName] = "";
-              }
-              if (isWebComponent && attrName !== "id") {
-                setComponentProp(attrName, !!evalValue, "boolean attribute-form");
-              }
-            } else {
-              attrs[rawBindingName] = rawValue;
-              if (isWebComponent && rawBindingName !== "id") {
-                setComponentProp(rawBindingName, rawValue, "attribute-form");
-              }
-            }
-          }
-
-          // Then, handle boolean attributes without values
-          // Remove all processed attribute-value pairs from the string first
-          let remainingAttrsString = attrsString;
-          const processedMatches = [];
-          let tempMatch;
-          const tempAttrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]+))/g;
-          while ((tempMatch = tempAttrRegex.exec(attrsString)) !== null) {
-            processedMatches.push(tempMatch[0]);
-          }
-          // Remove all matched attribute=value pairs
-          processedMatches.forEach(match => {
-            remainingAttrsString = remainingAttrsString.replace(match, ' ');
-          });
-
-          const booleanAttrRegex = /\b(\S+?)(?=\s|$)/g;
-          let boolMatch;
-          while ((boolMatch = booleanAttrRegex.exec(remainingAttrsString)) !== null) {
-            const attrName = boolMatch[1];
-            // Skip if already processed or starts with . (prop) or contains =
-            if (
-              !processedAttrs.has(attrName)
-              && !attrName.startsWith(LEGACY_PROP_PREFIX)
-              && !attrName.startsWith(PROP_PREFIX)
-              && !attrName.includes("=")
-            ) {
-              attrs[attrName] = "";
-              if (isWebComponent && attrName !== "id") {
-                setComponentProp(attrName, true, "boolean attribute-form");
-              }
-            }
-          }
-        }
+        // 1. Parse selector bindings into attrs/props.
+        const { attrs, props } = parseNodeBindings({
+          attrsString,
+          viewData,
+          tagName,
+          isWebComponent,
+        });
 
         // 2. Handle ID from selector string (e.g., tag#id)
         // If an 'id' was already parsed from attrsString (e.g. id=value), it takes precedence.
@@ -351,18 +150,21 @@ export const createVirtualDom = ({
           elementIdForRefs = tagName;
         }
 
+        const selectorClassMatches = selector.match(/\.([^.#]+)/g) || [];
+        const selectorClassNames = selectorClassMatches.map((classMatch) => classMatch.substring(1));
+        const attributeClassNames = typeof attrs.class === "string"
+          ? attrs.class.split(/\s+/).filter(Boolean)
+          : [];
+        const classNamesForRefs = [...new Set([...selectorClassNames, ...attributeClassNames])];
+
         // Extract classes and ID from selector (if not a web component)
         const classObj = Object.create(null); // Using Object.create(null) to avoid prototype issues
         let elementId = null;
 
         if (!isWebComponent) {
-          const classMatches = selector.match(/\.([^.#]+)/g);
-          if (classMatches) {
-            classMatches.forEach((classMatch) => {
-              const className = classMatch.substring(1);
-              classObj[className] = true;
-            });
-          }
+          selectorClassNames.forEach((className) => {
+            classObj[className] = true;
+          });
 
           const idMatch = selector.match(/#([^.#\s]+)/);
           if (idMatch) {
@@ -391,96 +193,30 @@ export const createVirtualDom = ({
         // Apply event listeners
         const eventHandlers = Object.create(null);
 
-        if (elementIdForRefs && refMatchers.length > 0) {
-          if (!REF_ID_REGEX.test(elementIdForRefs)) {
-            throw new Error(
-              `[Parser] Invalid element id '${elementIdForRefs}' for refs. Use camelCase ids only. Kebab-case ids are not supported.`,
-            );
+        if (refMatchers.length > 0) {
+          if (hasIdRefMatchers && elementIdForRefs) {
+            validateElementIdForRefs(elementIdForRefs);
           }
-
-          const matchingRefMatchers = refMatchers.filter((refMatcher) => {
-            if (refMatcher.isWildcard) {
-              return elementIdForRefs.startsWith(refMatcher.prefix);
-            }
-            return elementIdForRefs === refMatcher.prefix;
+          const bestMatchRef = resolveBestRefMatcher({
+            elementIdForRefs,
+            classNames: classNamesForRefs,
+            refMatchers,
           });
 
-          if (matchingRefMatchers.length > 0) {
-            matchingRefMatchers.sort((a, b) => {
-              if (!a.isWildcard && b.isWildcard) return -1;
-              if (a.isWildcard && !b.isWildcard) return 1;
-              return b.prefix.length - a.prefix.length;
-            });
-
-            const bestMatchRef = matchingRefMatchers[0];
+          if (bestMatchRef) {
             const bestMatchRefKey = bestMatchRef.refKey;
+            const matchIdentity = bestMatchRef.matchedValue || elementIdForRefs || bestMatchRefKey;
 
             if (bestMatchRef.refConfig && bestMatchRef.refConfig.eventListeners) {
               const eventListeners = bestMatchRef.refConfig.eventListeners;
               const eventRateLimitState = getEventRateLimitState(handlers);
               Object.entries(eventListeners).forEach(
                 ([eventType, eventConfig]) => {
-                  if (typeof eventConfig !== "object" || eventConfig === null) {
-                    throw new Error(
-                      `[Parser] Invalid event config for event '${eventType}' on ref '${bestMatchRefKey}'.`,
-                    );
-                  }
-
-                  const hasDebounce = Object.prototype.hasOwnProperty.call(eventConfig, "debounce");
-                  const hasThrottle = Object.prototype.hasOwnProperty.call(eventConfig, "throttle");
-
-                  assertBooleanEventOption({
-                    optionName: "preventDefault",
-                    optionValue: eventConfig.preventDefault,
+                  const { hasDebounce, hasThrottle } = validateEventConfig({
                     eventType,
+                    eventConfig,
                     refKey: bestMatchRefKey,
                   });
-                  assertBooleanEventOption({
-                    optionName: "stopPropagation",
-                    optionValue: eventConfig.stopPropagation,
-                    eventType,
-                    refKey: bestMatchRefKey,
-                  });
-                  assertBooleanEventOption({
-                    optionName: "stopImmediatePropagation",
-                    optionValue: eventConfig.stopImmediatePropagation,
-                    eventType,
-                    refKey: bestMatchRefKey,
-                  });
-                  assertBooleanEventOption({
-                    optionName: "targetOnly",
-                    optionValue: eventConfig.targetOnly,
-                    eventType,
-                    refKey: bestMatchRefKey,
-                  });
-                  assertBooleanEventOption({
-                    optionName: "once",
-                    optionValue: eventConfig.once,
-                    eventType,
-                    refKey: bestMatchRefKey,
-                  });
-                  assertNumberEventOption({
-                    optionName: "debounce",
-                    optionValue: eventConfig.debounce,
-                    eventType,
-                    refKey: bestMatchRefKey,
-                  });
-                  assertNumberEventOption({
-                    optionName: "throttle",
-                    optionValue: eventConfig.throttle,
-                    eventType,
-                    refKey: bestMatchRefKey,
-                  });
-
-                  if (hasDebounce && hasThrottle) {
-                    throw new Error(
-                      `[Parser] Event '${eventType}' on ref '${bestMatchRefKey}' cannot define both 'debounce' and 'throttle'.`,
-                    );
-                  }
-
-                  if (eventConfig.handler && eventConfig.action) {
-                    throw new Error("Each listener can have handler or action but not both")
-                  }
 
                   let callback = null;
                   if (eventConfig.action) {
@@ -501,7 +237,7 @@ export const createVirtualDom = ({
                   } else if (eventConfig.handler) {
                     // Keep this warning for missing handlers
                     console.warn(
-                      `[Parser] Handler '${eventConfig.handler}' for refKey '${bestMatchRefKey}' (matching elementId '${elementIdForRefs}') is referenced but not found in available handlers.`,
+                      `[Parser] Handler '${eventConfig.handler}' for refKey '${bestMatchRefKey}' (matching '${matchIdentity}') is referenced but not found in available handlers.`,
                     );
                   }
 
@@ -509,7 +245,7 @@ export const createVirtualDom = ({
                     return;
                   }
 
-                  const stateKey = `${bestMatchRefKey}:${elementIdForRefs}:${eventType}`;
+                  const stateKey = `${bestMatchRefKey}:${matchIdentity}:${eventType}`;
                   eventHandlers[eventType] = (event) => {
                     const state = eventRateLimitState.get(stateKey) || {};
                     const currentTarget = event.currentTarget || null;
@@ -560,10 +296,10 @@ export const createVirtualDom = ({
 
                     if (hasThrottle) {
                       if (!Object.prototype.hasOwnProperty.call(state, "lastThrottleAt")) {
-                        state.lastThrottleAt = 0;
+                        state.lastThrottleAt = undefined;
                       }
                       const now = Date.now();
-                      if (!state.lastThrottleAt || now - state.lastThrottleAt >= eventConfig.throttle) {
+                      if (state.lastThrottleAt === undefined || now - state.lastThrottleAt >= eventConfig.throttle) {
                         state.lastThrottleAt = now;
                         eventRateLimitState.set(stateKey, state);
                         callback(event);
@@ -573,6 +309,7 @@ export const createVirtualDom = ({
                       return;
                     }
 
+                    eventRateLimitState.set(stateKey, state);
                     callback(event);
                   }
                 },
