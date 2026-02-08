@@ -222,16 +222,16 @@ const labelNode = deps.refs[".label"];
 ## 8. Validation Errors
 
 Implementations MUST reject invalid view contracts.
-Suggested stable error codes:
+Suggested stable error strings:
 
-- `RTGL-VIEW-001`: invalid ref key format (invalid ID/class ref syntax or wildcard)
-- `RTGL-VIEW-002`: invalid element ID format for ID refs matching
-- `RTGL-VIEW-003`: duplicate prop binding (`name=` and `:name=` same normalized key)
-- `RTGL-VIEW-004`: listener defines both `handler` and `action`
-- `RTGL-VIEW-005`: listener defines neither `handler` nor `action`
-- `RTGL-VIEW-006`: `debounce` and `throttle` used together
-- `RTGL-VIEW-007`: non-boolean modifier flag
-- `RTGL-VIEW-008`: invalid numeric rate-limit value
+- `Invalid ref key`
+- `Invalid element id`
+- `Duplicate prop binding`
+- `Each listener can have handler or action but not both`
+- `Each listener must define either handler or action`
+- `cannot define both 'debounce' and 'throttle'`
+- `Expected boolean`
+- `Expected non-negative number`
 
 ## 9. Invalid Examples
 

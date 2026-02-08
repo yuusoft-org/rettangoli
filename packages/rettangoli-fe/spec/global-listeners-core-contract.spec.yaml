@@ -33,3 +33,12 @@ in:
 out:
   called: 1
   firstEventType: resize
+---
+case: cleanup clears pending debounce timers for global listeners
+in:
+  - scenario: cleanup_clears_pending_debounce_timer
+out:
+  calledBeforeCleanup: 0
+  calledAfterCleanup: 0
+  clearCalls: 1
+  hasPendingTimer: false

@@ -169,6 +169,15 @@ describe("parser event modifiers", () => {
     });
   });
 
+  it("throws clear error when action listener dispatcher is missing", () => {
+    expect(() => buildClickListener({
+      eventConfig: {
+        action: "setEmail",
+      },
+      handlers: {},
+    })).toThrow("requires handlers.handleCallStoreAction");
+  });
+
   it("supports class-prefixed refs for event listeners", () => {
     const handler = vi.fn();
     const click = buildClickListener({

@@ -6,24 +6,20 @@ let globalWindowTarget;
 let globalDocumentTarget;
 
 const createEventTarget = () => {
-  const listeners = new Map();
-  return {
-    addEventListener(eventType, listener) {
-      if (!listeners.has(eventType)) {
-        listeners.set(eventType, new Set());
-      }
-      listeners.get(eventType).add(listener);
-    },
-    removeEventListener(eventType, listener) {
-      listeners.get(eventType)?.delete(listener);
-      if (listeners.get(eventType)?.size === 0) {
-        listeners.delete(eventType);
-      }
-    },
-    listenerCount(eventType) {
-      return listeners.get(eventType)?.size || 0;
-    },
+  const target = new EventTarget();
+  const counts = new Map();
+  const originalAdd = target.addEventListener.bind(target);
+  const originalRemove = target.removeEventListener.bind(target);
+  target.addEventListener = (eventType, listener, options) => {
+    counts.set(eventType, (counts.get(eventType) || 0) + 1);
+    return originalAdd(eventType, listener, options);
   };
+  target.removeEventListener = (eventType, listener, options) => {
+    counts.set(eventType, Math.max(0, (counts.get(eventType) || 0) - 1));
+    return originalRemove(eventType, listener, options);
+  };
+  target.listenerCount = (eventType) => counts.get(eventType) || 0;
+  return target;
 };
 
 const createFakeNode = (tagName = "div") => {
@@ -104,10 +100,8 @@ const installHTMLElementStubs = () => {
     replaceSync() {}
   };
   globalWindowTarget = createEventTarget();
-  globalDocumentTarget = {
-    ...createEventTarget(),
-    createElement: (tagName) => createFakeNode(tagName),
-  };
+  globalDocumentTarget = createEventTarget();
+  globalDocumentTarget.createElement = (tagName) => createFakeNode(tagName);
   globalThis.window = globalWindowTarget;
   globalThis.document = globalDocumentTarget;
 
@@ -248,10 +242,21 @@ describe("createComponent runtime contracts", () => {
   });
 
   it("attaches global refs listeners once per mount and cleans up on unmount", () => {
+    let resizeCalls = 0;
+    let visibilityCalls = 0;
     const TestComponent = createComponent(
       {
         handlers: {
-          handleResize: () => {},
+          handleResize: (_deps, payload = {}) => {
+            if (payload._event?.type === "resize") {
+              resizeCalls += 1;
+            }
+          },
+          handleVisibilityChange: (_deps, payload = {}) => {
+            if (payload._event?.type === "visibilitychange") {
+              visibilityCalls += 1;
+            }
+          },
         },
         methods: {},
         constants: {},
@@ -267,6 +272,13 @@ describe("createComponent runtime contracts", () => {
               eventListeners: {
                 resize: {
                   handler: "handleResize",
+                },
+              },
+            },
+            document: {
+              eventListeners: {
+                visibilitychange: {
+                  handler: "handleVisibilityChange",
                 },
               },
             },
@@ -287,12 +299,20 @@ describe("createComponent runtime contracts", () => {
 
     instance.connectedCallback();
     expect(globalWindowTarget.listenerCount("resize")).toBe(1);
+    expect(globalDocumentTarget.listenerCount("visibilitychange")).toBe(1);
+
+    globalWindowTarget.dispatchEvent(new Event("resize"));
+    globalDocumentTarget.dispatchEvent(new Event("visibilitychange"));
+    expect(resizeCalls).toBe(1);
+    expect(visibilityCalls).toBe(1);
 
     instance.render();
     instance.render();
     expect(globalWindowTarget.listenerCount("resize")).toBe(1);
+    expect(globalDocumentTarget.listenerCount("visibilitychange")).toBe(1);
 
     instance.disconnectedCallback();
     expect(globalWindowTarget.listenerCount("resize")).toBe(0);
+    expect(globalDocumentTarget.listenerCount("visibilitychange")).toBe(0);
   });
 });

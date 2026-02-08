@@ -172,5 +172,64 @@ export const runGlobalListenersCoreCase = ({ scenario }) => {
     };
   }
 
+  if (scenario === "cleanup_clears_pending_debounce_timer") {
+    const windowTarget = createMockTarget();
+    let called = 0;
+    let nextTimerId = 1;
+    let activeTimerId = null;
+    let clearCalls = 0;
+
+    const cleanup = attachGlobalRefListeners({
+      refs: {
+        window: {
+          eventListeners: {
+            resize: {
+              handler: "handleResize",
+              debounce: 120,
+            },
+          },
+        },
+      },
+      handlers: {
+        handleResize: () => {
+          called += 1;
+        },
+      },
+      targets: {
+        window: windowTarget,
+        document: createMockTarget(),
+      },
+      timing: {
+        nowFn: () => 0,
+        setTimeoutFn: (callback) => {
+          const timerId = nextTimerId;
+          nextTimerId += 1;
+          activeTimerId = timerId;
+          // Do not invoke callback; cleanup should clear this pending timer.
+          void callback;
+          return timerId;
+        },
+        clearTimeoutFn: (timerId) => {
+          clearCalls += 1;
+          if (activeTimerId === timerId) {
+            activeTimerId = null;
+          }
+        },
+      },
+      warnFn: () => {},
+    });
+
+    windowTarget.emit("resize");
+    const calledBeforeCleanup = called;
+    cleanup();
+
+    return {
+      calledBeforeCleanup,
+      calledAfterCleanup: called,
+      clearCalls,
+      hasPendingTimer: activeTimerId !== null,
+    };
+  }
+
   throw new Error(`Unknown global listeners core scenario '${scenario}'.`);
 };
