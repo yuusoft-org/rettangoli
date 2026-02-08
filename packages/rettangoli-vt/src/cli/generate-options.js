@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { validateFiniteNumber } from "../validation.js";
+import { normalizeSelectors } from "../selector-filter.js";
 
 export function resolveGenerateOptions(options = {}, configData = {}) {
   const {
@@ -9,12 +10,20 @@ export function resolveGenerateOptions(options = {}, configData = {}) {
     concurrency: cliConcurrency,
     timeout: cliTimeout,
     waitEvent: cliWaitEvent,
+    folder: cliFolder,
+    group: cliGroup,
+    item: cliItem,
     headless: cliHeadless,
     url: cliUrl,
   } = options;
 
   const waitEvent = cliWaitEvent ?? configData.waitEvent;
   const timeout = cliTimeout ?? configData.timeout ?? 30000;
+  const selectors = normalizeSelectors({
+    folder: cliFolder,
+    group: cliGroup,
+    item: cliItem,
+  });
 
   const resolvedOptions = {
     vtPath: cliVtPath ?? configData.path ?? "./vt",
@@ -23,6 +32,7 @@ export function resolveGenerateOptions(options = {}, configData = {}) {
     waitEvent,
     headless: cliHeadless ?? true,
     configUrl: cliUrl ?? configData.url,
+    selectors,
 
     // Internal capture defaults (not user-configurable).
     screenshotWaitTime: 0,

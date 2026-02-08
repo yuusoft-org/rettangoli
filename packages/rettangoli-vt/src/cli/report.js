@@ -13,6 +13,10 @@ import {
   buildJsonReport,
 } from "../report/report-model.js";
 import { renderHtmlReport } from "../report/report-render.js";
+import {
+  filterRelativeScreenshotPathsBySelectors,
+  hasSelectors,
+} from "../selector-filter.js";
 
 const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
 
@@ -122,6 +126,7 @@ async function main(options = {}) {
     compareMethod,
     colorThreshold,
     diffThreshold,
+    selectors,
   } = resolveReportOptions(options, configData);
 
   const siteOutputPath = path.join(".rettangoli", "vt", "_site");
@@ -174,8 +179,17 @@ async function main(options = {}) {
     );
 
     const allPaths = buildAllRelativePaths(candidateRelativePaths, referenceRelativePaths);
+    const scopedPaths = filterRelativeScreenshotPathsBySelectors(
+      allPaths,
+      selectors,
+      configData.sections,
+    );
+    if (hasSelectors(selectors)) {
+      const excludedCount = allPaths.length - scopedPaths.length;
+      console.log(`Selector scope: ${scopedPaths.length} image(s) selected, ${excludedCount} excluded.`);
+    }
 
-    for (const relativePath of allPaths) {
+    for (const relativePath of scopedPaths) {
       const candidatePath = path.join(candidateDir, relativePath);
       const referencePath = path.join(originalReferenceDir, relativePath);
       const siteReferencePath = path.join(siteReferenceDir, relativePath);

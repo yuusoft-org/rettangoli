@@ -10,6 +10,10 @@ import {
 } from "../common.js";
 import { validateVtConfig } from "../validation.js";
 import { resolveGenerateOptions } from "./generate-options.js";
+import {
+  filterGeneratedFilesBySelectors,
+  hasSelectors,
+} from "../selector-filter.js";
 
 const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
 const libraryStaticPath = new URL("./static", import.meta.url).pathname;
@@ -124,6 +128,16 @@ async function main(options = {}) {
     templateConfig,
   );
 
+  const scopedFiles = filterGeneratedFilesBySelectors(
+    generatedFiles,
+    resolvedOptions.selectors,
+    configData.sections,
+  );
+  if (hasSelectors(resolvedOptions.selectors)) {
+    const excludedCount = generatedFiles.length - scopedFiles.length;
+    console.log(`Selector scope: ${scopedFiles.length} file(s) selected, ${excludedCount} excluded.`);
+  }
+
   // Generate overview page (includes all files, skipped or not)
   generateOverview(
     generatedFiles,
@@ -135,11 +149,11 @@ async function main(options = {}) {
   // Take screenshots (only for non-skipped files)
   if (!skipScreenshots) {
     // Filter out files with skipScreenshot: true in frontmatter
-    const filesToScreenshot = generatedFiles.filter(
+    const filesToScreenshot = scopedFiles.filter(
       (file) => !file.frontMatter?.skipScreenshot
     );
 
-    const skippedCount = generatedFiles.length - filesToScreenshot.length;
+    const skippedCount = scopedFiles.length - filesToScreenshot.length;
     if (skippedCount > 0) {
       console.log(`Skipping screenshots for ${skippedCount} files`);
     }

@@ -16,6 +16,10 @@ out:
   compareMethod: pixelmatch
   colorThreshold: 0.2
   diffThreshold: 5
+  selectors:
+    folders: []
+    groups: []
+    items: []
 ---
 case: cli values override config values
 in:
@@ -32,6 +36,10 @@ out:
   compareMethod: md5
   colorThreshold: 0.01
   diffThreshold: 0.1
+  selectors:
+    folders: []
+    groups: []
+    items: []
 ---
 case: rejects invalid compare method
 in:
@@ -50,3 +58,31 @@ in:
   - diffThreshold: -1
   - {}
 throws: diffThreshold
+---
+case: normalizes selector inputs
+in:
+  - folder:
+      - ./components/forms/
+      - components/forms
+    group:
+      - Components_Basic
+      - components_basic
+    item:
+      - pages/home.yaml
+      - ./pages/home
+  - path: ./vt-config
+    compareMethod: pixelmatch
+    colorThreshold: 0.2
+    diffThreshold: 5
+out:
+  vtPath: ./vt-config
+  compareMethod: pixelmatch
+  colorThreshold: 0.2
+  diffThreshold: 5
+  selectors:
+    folders:
+      - components/forms
+    groups:
+      - components_basic
+    items:
+      - pages/home

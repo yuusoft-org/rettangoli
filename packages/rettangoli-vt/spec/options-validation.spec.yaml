@@ -21,6 +21,10 @@ out:
   waitEvent: vt:ready
   headless: true
   configUrl: https://example.com/root
+  selectors:
+    folders: []
+    groups: []
+    items: []
   screenshotWaitTime: 0
   waitStrategy: event
   workerCount: 3
@@ -56,6 +60,10 @@ out:
   waitEvent: cli:ready
   headless: false
   configUrl: http://localhost:9000/render
+  selectors:
+    folders: []
+    groups: []
+    items: []
   screenshotWaitTime: 0
   waitStrategy: event
   workerCount: 6
@@ -84,3 +92,46 @@ in:
   - waitEvent: ""
   - {}
 throws: waitEvent
+---
+case: normalizes selector inputs
+in:
+  - folder:
+      - ./components/forms/
+      - components/forms
+    group:
+      - Components_Basic
+      - components_basic
+    item:
+      - pages/home.html
+      - ./pages/home
+  - path: ./vt
+    skipScreenshots: false
+    port: 3001
+    concurrency: 2
+    timeout: 31000
+    waitEvent: vt:ready
+    url: https://example.com
+out:
+  vtPath: ./vt
+  skipScreenshots: false
+  port: 3001
+  waitEvent: vt:ready
+  headless: true
+  configUrl: https://example.com
+  selectors:
+    folders:
+      - components/forms
+    groups:
+      - components_basic
+    items:
+      - pages/home
+  screenshotWaitTime: 0
+  waitStrategy: event
+  workerCount: 2
+  isolationMode: fast
+  navigationTimeout: 31000
+  readyTimeout: 31000
+  screenshotTimeout: 31000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json

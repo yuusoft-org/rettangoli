@@ -29,6 +29,10 @@ function readConfig() {
   }
 }
 
+function collectValues(value, previous = []) {
+  return [...previous, value];
+}
+
 const program = new Command();
 
 program
@@ -105,12 +109,14 @@ Examples:
 feCommand
   .command("check")
   .description("Validate frontend component file contracts")
+  .option("--format <format>", "Output format: text or json", "text")
   .addHelpText(
     "after",
     `
 
 Examples:
   $ rettangoli fe check
+  $ rettangoli fe check --format json
 `,
   )
   .action((options) => {
@@ -230,6 +236,9 @@ vtCommand
   .option("--concurrency <number>", "Number of parallel capture workers", parseInt)
   .option("--timeout <ms>", "Global capture timeout in ms", parseInt)
   .option("--wait-event <name>", "Custom event name to mark page ready (uses event wait strategy)")
+  .option("--folder <path>", "Run only specs under folder prefix (repeatable)", collectValues, [])
+  .option("--group <section-key>", "Run only one section key from vt.sections (repeatable)", collectValues, [])
+  .option("--item <spec-path>", "Run only one spec path relative to vt/specs (repeatable)", collectValues, [])
   .option("--headed", "Run Playwright in headed mode")
   .action(async (options) => {
     console.log(`rtgl v${packageJson.version}`);
@@ -254,6 +263,9 @@ vtCommand
   .option("--compare-method <method>", "Comparison method: pixelmatch or md5")
   .option("--color-threshold <number>", "Color threshold for pixelmatch (0-1)", parseFloat)
   .option("--diff-threshold <number>", "Max diff pixels percentage to pass (0-100)", parseFloat)
+  .option("--folder <path>", "Compare only screenshots under folder prefix (repeatable)", collectValues, [])
+  .option("--group <section-key>", "Compare only one section key from vt.sections (repeatable)", collectValues, [])
+  .option("--item <spec-path>", "Compare only one spec path relative to vt/specs (repeatable)", collectValues, [])
   .action(async (options) => {
     const config = readConfig();
 
@@ -267,6 +279,9 @@ vtCommand
       compareMethod: options.compareMethod,
       colorThreshold: options.colorThreshold,
       diffThreshold: options.diffThreshold,
+      folder: options.folder,
+      group: options.group,
+      item: options.item,
     });
   });
 

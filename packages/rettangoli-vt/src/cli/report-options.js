@@ -1,4 +1,5 @@
 import { validateFiniteNumber } from "../validation.js";
+import { normalizeSelectors } from "../selector-filter.js";
 
 const COMPARE_METHODS = ["pixelmatch", "md5"];
 
@@ -8,13 +9,23 @@ export function resolveReportOptions(options = {}, configData = {}) {
     compareMethod: cliCompareMethod,
     colorThreshold: cliColorThreshold,
     diffThreshold: cliDiffThreshold,
+    folder: cliFolder,
+    group: cliGroup,
+    item: cliItem,
   } = options;
+
+  const selectors = normalizeSelectors({
+    folder: cliFolder,
+    group: cliGroup,
+    item: cliItem,
+  });
 
   const resolvedOptions = {
     vtPath: cliVtPath ?? configData.path ?? "./vt",
     compareMethod: cliCompareMethod ?? configData.compareMethod ?? "pixelmatch",
     colorThreshold: cliColorThreshold ?? configData.colorThreshold ?? 0.1,
     diffThreshold: cliDiffThreshold ?? configData.diffThreshold ?? 0.3,
+    selectors,
   };
 
   if (typeof resolvedOptions.vtPath !== "string" || resolvedOptions.vtPath.trim().length === 0) {
