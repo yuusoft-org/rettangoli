@@ -158,8 +158,8 @@ const createTestComponentClass = ({
       handlers,
       methods,
       constants,
-      view: {
-        elementName: "x-test-component",
+      schema: {
+        componentName: "x-test-component",
         propsSchema: {
           type: "object",
           properties: {
@@ -168,6 +168,8 @@ const createTestComponentClass = ({
             ...propsSchema,
           },
         },
+      },
+      view: {
         template,
         refs: {},
         styles: {},

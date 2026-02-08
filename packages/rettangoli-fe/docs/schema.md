@@ -5,6 +5,7 @@ This document defines the normative component API metadata contract.
 ## 1. Scope
 
 `.schema.yaml` is the source of truth for public API documentation.
+`.schema.yaml` is required for each component.
 
 Supported fields:
 - `componentName` (required)
@@ -71,7 +72,7 @@ methods:
 
 - optional schema for public component props
 - SHOULD be JSON-Schema-compatible shape
-- when present, runtime MAY use it as the component props contract source
+- runtime uses this as the component props contract source
 
 ### `events`
 

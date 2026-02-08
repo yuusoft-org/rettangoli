@@ -10,6 +10,11 @@ import { load as loadYaml } from "js-yaml";
 import { parse } from 'jempl';
 import { extractCategoryAndComponent } from '../commonBuild.js';
 import { getAllFiles } from '../commonBuild.js';
+import {
+  buildComponentContractIndex,
+  validateComponentContractIndex,
+  formatContractErrors,
+} from "../core/contracts/componentFiles.js";
 import path from "node:path";
 
 function capitalize(word) {
@@ -85,6 +90,7 @@ const buildRettangoliFrontend = async (options) => {
 
   const categories = [];
   const imports = {};
+  const componentContractEntries = [];
 
   // unique identifier needed for replacing
   let count = 10000000000;
@@ -108,6 +114,13 @@ const buildRettangoliFrontend = async (options) => {
     }
 
 
+    const componentContractEntry = {
+      category,
+      component,
+      fileType,
+      filePath,
+    };
+
     if (["handlers", "store", "methods"].includes(fileType)) {
       const relativePath = path.relative(tempDir, filePath).replaceAll(path.sep, "/");
       output += `import * as ${component}${capitalize(
@@ -119,6 +132,7 @@ const buildRettangoliFrontend = async (options) => {
       count++;
     } else if (["view", "constants", "schema"].includes(fileType)) {
       const yamlObject = loadYaml(readFileSync(filePath, "utf8")) ?? {};
+      componentContractEntry.yamlObject = yamlObject;
       if (fileType === "view") {
         try {
           yamlObject.template = parse(yamlObject.template);
@@ -143,6 +157,16 @@ const buildRettangoliFrontend = async (options) => {
       imports[category][component][fileType] = count;
       count++;
     }
+
+    componentContractEntries.push(componentContractEntry);
+  }
+
+  const componentContractIndex = buildComponentContractIndex(componentContractEntries);
+  const componentContractErrors = validateComponentContractIndex(componentContractIndex);
+  if (componentContractErrors.length > 0) {
+    throw new Error(
+      `[Build] Component contract validation failed:\n${formatContractErrors(componentContractErrors).join("\n")}`,
+    );
   }
 
   const relativeSetup = path.relative(tempDir, resolvedSetup).replaceAll(path.sep, "/");
@@ -155,9 +179,9 @@ Object.keys(imports).forEach(category => {
   Object.keys(imports[category]).forEach(component => {
     const componentConfig = imports[category][component];
     const webComponent = createComponent({ ...componentConfig, patch, h }, deps[category])
-    const elementName = componentConfig.view?.elementName || componentConfig.schema?.componentName;
+    const elementName = componentConfig.schema?.componentName;
     if (!elementName) {
-      throw new Error(\`[Build] Missing elementName for \${category}/\${component}. Define view.elementName or schema.componentName.\`);
+      throw new Error(\`[Build] Missing schema.componentName for \${category}/\${component}. Define it in .schema.yaml.\`);
     }
     customElements.define(elementName, webComponent);
   })

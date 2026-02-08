@@ -1,12 +1,4 @@
-elementName: custom-blank
-
-propsSchema:
-  type: object
-  properties: {}
-
 refs: {}
-
-events: {}
 
 template:
   - rtgl-view w=f h=f p=md:

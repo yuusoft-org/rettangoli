@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { build, scaffold, watch, examples } from "@rettangoli/fe/cli";
+import { build, check, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { generate, report, accept } from "@rettangoli/vt/cli";
 import { buildSite, watchSite, screenshotCommand, initSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
@@ -100,6 +100,39 @@ Examples:
     }
 
     build(options);
+  });
+
+feCommand
+  .command("check")
+  .description("Validate frontend component file contracts")
+  .addHelpText(
+    "after",
+    `
+
+Examples:
+  $ rettangoli fe check
+`,
+  )
+  .action((options) => {
+    const config = readConfig();
+
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+
+    if (!config.fe?.dirs?.length) {
+      throw new Error("fe.dirs not found or empty in config");
+    }
+
+    const missingDirs = config.fe.dirs.filter(
+      (dir) => !existsSync(resolve(process.cwd(), dir)),
+    );
+    if (missingDirs.length > 0) {
+      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
+    }
+
+    options.dirs = config.fe.dirs;
+    check(options);
   });
 
 feCommand

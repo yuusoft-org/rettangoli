@@ -23,6 +23,7 @@
   },
   "license": "MIT",
   "scripts": {
+    "check:contracts": "rtgl fe check",
     "build:dev": "rtgl fe build -d && bun run esbuild-dev.js",
     "build": "rtgl fe build && bun run esbuild.js",
     "vt:generate": "bun run build:dev && rtgl vt generate --skip-screenshots",

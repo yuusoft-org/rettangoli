@@ -121,8 +121,8 @@ const createComponentClass = ({ methods = {}, store = {}, propsSchema = {} } = {
       handlers: {},
       methods,
       constants: {},
-      view: {
-        elementName: "x-test-component",
+      schema: {
+        componentName: "x-test-component",
         propsSchema: {
           type: "object",
           properties: {
@@ -131,6 +131,8 @@ const createComponentClass = ({ methods = {}, store = {}, propsSchema = {} } = {
             ...propsSchema,
           },
         },
+      },
+      view: {
         template: [{ div: "" }],
         refs: {},
         styles: {},
@@ -241,6 +243,21 @@ describe("createComponent runtime contracts", () => {
     expect(instance.props.maxItems).toBe("7");
   });
 
+  it("normalizes attribute-form props and still prefers direct property values", () => {
+    const TestComponent = createComponentClass({
+      propsSchema: {
+        submitLabel: {},
+      },
+    });
+    const instance = new TestComponent();
+
+    instance.setAttribute("submit-label", "Submit");
+    expect(instance.props.submitLabel).toBe("Submit");
+
+    instance.submitLabel = "Save";
+    expect(instance.props.submitLabel).toBe("Save");
+  });
+
   it("uses schema propsSchema when view propsSchema is absent", () => {
     const TestComponent = createComponent(
       {
@@ -275,6 +292,72 @@ describe("createComponent runtime contracts", () => {
     const instance = new TestComponent();
     instance.setAttribute("max-items", "7");
     expect(instance.props.maxItems).toBe("7");
+  });
+
+  it("ignores view propsSchema when schema propsSchema is provided", () => {
+    const TestComponent = createComponent(
+      {
+        handlers: {},
+        methods: {},
+        constants: {},
+        schema: {
+          componentName: "x-schema-wins",
+          propsSchema: {
+            type: "object",
+            properties: {
+              maxItems: {},
+            },
+          },
+        },
+        view: {
+          elementName: "x-view-ignored",
+          propsSchema: {
+            type: "object",
+            properties: {
+              title: {},
+            },
+          },
+          template: [{ div: "" }],
+          refs: {},
+          styles: {},
+        },
+        store: {
+          createInitialState: () => ({}),
+          selectViewData: () => ({}),
+        },
+        patch: (_oldValue, newValue) => newValue,
+        h: (tag, data = {}, children = []) => ({ tag, data, children }),
+      },
+      {},
+    );
+
+    const instance = new TestComponent();
+    instance.setAttribute("max-items", "7");
+    instance.setAttribute("title", "hello");
+    expect(instance.props.maxItems).toBe("7");
+    expect(instance.props.title).toBeUndefined();
+  });
+
+  it("requires schema", () => {
+    expect(() => createComponent(
+      {
+        handlers: {},
+        methods: {},
+        constants: {},
+        view: {
+          template: [],
+          refs: {},
+          styles: {},
+        },
+        store: {
+          createInitialState: () => ({}),
+          selectViewData: () => ({}),
+        },
+        patch: (_oldValue, newValue) => newValue,
+        h: (tag, data = {}, children = []) => ({ tag, data, children }),
+      },
+      {},
+    )).toThrow("schema is required");
   });
 
   it("validates schema methods against methods exports", () => {
@@ -329,12 +412,14 @@ describe("createComponent runtime contracts", () => {
         },
         methods: {},
         constants: {},
-        view: {
-          elementName: "x-global-listener-test",
+        schema: {
+          componentName: "x-global-listener-test",
           propsSchema: {
             type: "object",
             properties: {},
           },
+        },
+        view: {
           template: [],
           refs: {
             window: {

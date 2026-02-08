@@ -9,6 +9,9 @@ This document defines the normative view language contract.
 - `refs`
 - `styles`
 
+`elementName`, `propsSchema`, `events`, and `methods` in `.view.yaml` are ignored.
+Define those in `.schema.yaml`.
+
 Business logic belongs in `.handlers.js`.
 State logic belongs in `.store.js`.
 

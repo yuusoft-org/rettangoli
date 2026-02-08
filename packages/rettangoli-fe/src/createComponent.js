@@ -279,16 +279,18 @@ const createComponent = ({ handlers, methods, constants, schema, view, store, pa
     throw new Error("view is not defined");
   }
 
-  const resolvedSchema = schema && typeof schema === "object" ? schema : null;
-  const { elementName: viewElementName, propsSchema: viewPropsSchema, template, refs, styles } = view;
-  if (resolvedSchema) {
-    validateSchemaContract({
-      schema: resolvedSchema,
-      methodExports: Object.keys(methods || {}),
-    });
+  if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
+    throw new Error("schema is required. Define component metadata in .schema.yaml.");
   }
-  const elementName = viewElementName || resolvedSchema?.componentName;
-  const propsSchema = resolvedSchema?.propsSchema || viewPropsSchema;
+
+  const resolvedSchema = schema;
+  const { template, refs, styles } = view;
+  validateSchemaContract({
+    schema: resolvedSchema,
+    methodExports: Object.keys(methods || {}),
+  });
+  const elementName = resolvedSchema.componentName;
+  const propsSchema = resolvedSchema.propsSchema;
   const propsSchemaKeys = propsSchema?.properties
     ? [...new Set(Object.keys(propsSchema.properties).map((propKey) => toCamelCase(propKey)))]
     : [];
@@ -299,10 +301,6 @@ const createComponent = ({ handlers, methods, constants, schema, view, store, pa
 
   if (!h) {
     throw new Error("h is not defined");
-  }
-
-  if (!elementName) {
-    throw new Error("elementName is not defined. Provide view.elementName or schema.componentName.");
   }
 
   class MyComponent extends BaseComponent {

@@ -13,7 +13,7 @@ Normative keywords follow RFC 2119 intent:
 | File | Responsibility |
 | --- | --- |
 | `.view.yaml` | UI tree (`template`), `refs`, `styles` |
-| `.schema.yaml` | Public component API and docs metadata (`componentName`, `description`, `examples`, `propsSchema`, `events`, `methods`) |
+| `.schema.yaml` (required) | Public component API and docs metadata (`componentName`, `description`, `examples`, `propsSchema`, `events`, `methods`) |
 | `.store.js` | `createInitialState`, selectors, `selectViewData`, actions |
 | `.handlers.js` | Lifecycle hooks, side effects, imperative event handling |
 | `.methods.js` (optional) | Public element methods (named exports only) |
@@ -28,6 +28,8 @@ Normative keywords follow RFC 2119 intent:
 - Attribute-form kebab-case names are normalized to camelCase (`max-items` -> `maxItems`).
 - A component node `MUST NOT` define both forms for the same normalized prop key.
 - Runtime read precedence is property value first, then attribute fallback.
+- `propsSchema` source of truth is `.schema.yaml`.
+- `propsSchema` declared in `.view.yaml` is ignored.
 
 ### Payload Model
 
@@ -55,6 +57,12 @@ Normative keywords follow RFC 2119 intent:
 - `schema.md`: component API metadata contract
 - `methods.md`: optional public imperative method contract
 - `constants.md`: optional constants contract
+
+## Contract Check
+
+Run `rtgl fe check` to enforce:
+- required `.schema.yaml` per component
+- forbidden API keys are not present in `.view.yaml`
 
 ## Conflict Resolution
 
