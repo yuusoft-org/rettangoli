@@ -5,99 +5,158 @@ tags: documentation
 sidebarId: rtgl-input
 ---
 
-A versatile input component for collecting user text input with various types and validation options.
+A text-entry primitive for form fields, filters, and inline editing.
+
+Input family contract: [Input Interface](../introduction/input-interface.md).
+
+## Quickstart
+
+Use this as the default text field pattern:
+
+```html codePreview
+<rtgl-view d="v" g="sm" p="lg" w="320">
+  <rtgl-text c="mu-fg">Password</rtgl-text>
+  <rtgl-input
+    type="password"
+    placeholder="Enter password"
+  ></rtgl-input>
+</rtgl-view>
+```
+
+## Core Decisions
+
+### Choose Input Intent
+
+| Intent | Recommended |
+| --- | --- |
+| Standard text input | omit `type` |
+| Password masking | `type="password"` |
+
+### Choose State
+
+| Intent | Recommended |
+| --- | --- |
+| Editable | default |
+| Fully unavailable | `disabled` |
+
+### Responsive Syntax (At a Glance)
+
+Breakpoint prefixes are supported for layout/style attrs like `w`, `h`, `m`, `hide`, `show`, and `op`.
+For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
+
+```html codePreview
+<rtgl-view d="v" g="sm" p="lg" w="f">
+  <rtgl-input w="320" sm-w="f" placeholder="Responsive input"></rtgl-input>
+</rtgl-view>
+```
 
 ## Attributes
 
 | Name | Attribute | Type | Default |
-|------|-----------|------|---------|
-| Type | `type` | `text`, `email`, `password`, `number`, `tel`, `url` | `text` |
-| Size | `s` | `sm`, `md` | `md` |
+| --- | --- | --- | --- |
+| Type | `type` | `password` | text behavior |
+| Value | `value` | string | - |
 | Placeholder | `placeholder` | string | - |
 | Disabled | `disabled` | boolean | - |
-| Value | `value` | string | - |
+| Size | `s` | `sm`, `md` | `md` |
+| Dimensions | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, `f`, CSS length/value | - |
+| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
+| Cursor | `cur` | cursor token (`pointer`, `text`, etc.) | - |
+| Visibility | `hide`, `show` | boolean | - |
+| Opacity | `op` | number (`0`-`1`) | `1` |
+| Z-index | `z` | number | - |
 
-## Basic Usage
+## Events
 
-Create a basic text input field for user input collection.
+| Event | Detail | Description |
+| --- | --- | --- |
+| `value-input` | `{ value: string }` | Fires on each native input update |
+| `value-change` | `{ value: string }` | Fires on committed change |
+
+## Type
+
+`rtgl-input` supports one type override: `password`.
+
+### Behavior & precedence
+
+- Omit `type` for normal text input behavior.
+- Use `type="password"` for masked entry.
+- Any non-`password` type value resolves to text behavior.
 
 ```html codePreview
-<rtgl-input></rtgl-input>
-```
-
-## Input Types
-
-Choose from various input types to match the data you're collecting and provide appropriate keyboard layouts on mobile devices.
-
-```html codePreview
-<rtgl-view g="md" w="300">
-  <rtgl-text c="mu-fg">Text Input:</rtgl-text>
-  <rtgl-input type="text" placeholder="Enter text"></rtgl-input>
-
-  <rtgl-text c="mu-fg">Email Input:</rtgl-text>
-  <rtgl-input type="email" placeholder="email@example.com"></rtgl-input>
-
-  <rtgl-text c="mu-fg">Password Input:</rtgl-text>
-  <rtgl-input type="password" placeholder="Enter password"></rtgl-input>
-
-  <rtgl-text c="mu-fg">Number Input:</rtgl-text>
-  <rtgl-input type="number" placeholder="Enter number"></rtgl-input>
-
-  <rtgl-text c="mu-fg">Phone Input:</rtgl-text>
-  <rtgl-input type="tel" placeholder="Enter phone number"></rtgl-input>
-
-  <rtgl-text c="mu-fg">URL Input:</rtgl-text>
-  <rtgl-input type="url" placeholder="https://example.com"></rtgl-input>
+<rtgl-view g="md" w="320" p="lg">
+  <rtgl-input placeholder="Text"></rtgl-input>
+  <rtgl-input type="password" placeholder="Password"></rtgl-input>
 </rtgl-view>
 ```
 
-## Size
+## Value & Placeholder
 
-Control the input size using predefined values for different layout needs.
+Control initial field content with `value` and guidance text with `placeholder`.
 
-```html codePreview
-<rtgl-view g="md" w="300">
-  <rtgl-text c="mu-fg">Regular (default):</rtgl-text>
-  <rtgl-input placeholder="Regular input"></rtgl-input>
+### Behavior & precedence
 
-  <rtgl-text c="mu-fg">Small:</rtgl-text>
-  <rtgl-input s="sm" placeholder="Small input"></rtgl-input>
-</rtgl-view>
-```
-
-## Placeholder
-
-Provide helpful placeholder text to guide users on what information to enter.
+- `value` sets the current input text.
+- Removing `value` clears the field.
+- Removing `placeholder` removes placeholder text.
 
 ```html codePreview
-<rtgl-view g="md" w="300">
-  <rtgl-input placeholder="Please input something..."></rtgl-input>
-  <rtgl-input type="email" placeholder="Enter your email address"></rtgl-input>
-  <rtgl-input type="password" placeholder="Create a secure password"></rtgl-input>
+<rtgl-view g="md" w="320" p="lg">
+  <rtgl-input value="Hello"></rtgl-input>
+  <rtgl-input placeholder="Type your message..."></rtgl-input>
 </rtgl-view>
 ```
 
 ## Disabled
 
-Disable inputs to prevent user interaction when data entry is not available or appropriate.
+Use `disabled` when the field is unavailable.
 
 ```html codePreview
-<rtgl-view g="md" w="300">
-  <rtgl-text c="mu-fg">Disabled Input:</rtgl-text>
-  <rtgl-input disabled placeholder="This input is disabled"></rtgl-input>
+<rtgl-view g="md" w="320" p="lg">
+  <rtgl-input value="Disabled value" disabled></rtgl-input>
 </rtgl-view>
 ```
 
-## Value
+## Size
 
-Set default values for inputs to pre-populate forms with existing data or suggested values.
+Use `s` to control compactness.
 
 ```html codePreview
-<rtgl-view g="md" w="300">
-  <rtgl-text c="mu-fg">Text with value:</rtgl-text>
-  <rtgl-input value="Default text" placeholder="Enter text"></rtgl-input>
-
-  <rtgl-text c="mu-fg">Email with value:</rtgl-text>
-  <rtgl-input type="email" value="user@example.com" placeholder="Enter email"></rtgl-input>
+<rtgl-view g="md" w="320" p="lg">
+  <rtgl-input s="sm" placeholder="Small"></rtgl-input>
+  <rtgl-input s="md" placeholder="Medium"></rtgl-input>
 </rtgl-view>
+```
+
+## Dimensions
+
+Control field box dimensions with `w`, `h`, and `wh`.
+
+### Behavior & precedence
+
+- `wh` has priority over `w` and `h` at the same breakpoint.
+- `w="f"` stretches to available width.
+- If both `hide` and `show` are set at the same breakpoint, `show` wins.
+
+```html codePreview
+<rtgl-view g="md" w="f" p="lg">
+  <rtgl-input w="280" placeholder="Fixed width"></rtgl-input>
+  <rtgl-input w="f" placeholder="Full width"></rtgl-input>
+  <rtgl-input hide sm-show placeholder="Only visible on small screens"></rtgl-input>
+</rtgl-view>
+```
+
+## Events Example
+
+```html
+<rtgl-input id="name-input" placeholder="Name"></rtgl-input>
+<script>
+  const input = document.getElementById("name-input");
+  input.addEventListener("value-input", (e) => {
+    console.log("typing", e.detail.value);
+  });
+  input.addEventListener("value-change", (e) => {
+    console.log("committed", e.detail.value);
+  });
+</script>
 ```

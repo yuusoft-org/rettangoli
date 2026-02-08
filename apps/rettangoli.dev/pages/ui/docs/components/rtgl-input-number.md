@@ -5,200 +5,174 @@ tags: documentation
 sidebarId: rtgl-input-number
 ---
 
-A specialized input component for collecting numeric values with built-in validation and constraints.
+A numeric-entry primitive with built-in min/max clamping and numeric events.
+
+Input family contract: [Input Interface](../introduction/input-interface.md).
+
+## Quickstart
+
+Use this baseline for most numeric fields:
+
+```html codePreview
+<rtgl-view d="v" g="sm" p="lg" w="320">
+  <rtgl-text c="mu-fg">Quantity</rtgl-text>
+  <rtgl-input-number
+    value="1"
+    min="1"
+    max="99"
+    step="1"
+    placeholder="Enter quantity"
+  ></rtgl-input-number>
+</rtgl-view>
+```
+
+## Core Decisions
+
+### Choose Constraint Strategy
+
+| Intent | Recommended |
+| --- | --- |
+| Any number | no `min` / `max` |
+| Lower-bounded number | set `min` |
+| Bounded range | set both `min` and `max` |
+| Decimal stepping | set `step` (for example `0.1`) |
+
+### Choose State
+
+| Intent | Recommended |
+| --- | --- |
+| Editable | default |
+| Fully unavailable | `disabled` |
+
+### Responsive Syntax (At a Glance)
+
+Breakpoint prefixes are supported for layout/style attrs like `w`, `h`, `m`, `hide`, `show`, and `op`.
+For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
+
+```html codePreview
+<rtgl-view d="v" g="sm" p="lg" w="f">
+  <rtgl-input-number w="280" sm-w="f" min="0" max="100"></rtgl-input-number>
+</rtgl-view>
+```
 
 ## Attributes
 
 | Name | Attribute | Type | Default |
-|------|-----------|------|---------|
-| Size | `s` | `sm`, `md` | `md` |
+| --- | --- | --- | --- |
 | Value | `value` | number | - |
 | Placeholder | `placeholder` | string | - |
-| Disabled | `disabled` | boolean | - |
 | Min | `min` | number | - |
 | Max | `max` | number | - |
-| Step | `step` | number | 1 |
+| Step | `step` | number | browser default |
+| Disabled | `disabled` | boolean | - |
+| Size | `s` | `sm`, `md` | `md` |
+| Dimensions | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, `f`, CSS length/value | - |
+| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
+| Cursor | `cur` | cursor token (`pointer`, `text`, etc.) | - |
+| Visibility | `hide`, `show` | boolean | - |
+| Opacity | `op` | number (`0`-`1`) | `1` |
+| Z-index | `z` | number | - |
 
 ## Events
 
-| Name | Description |
-|------|-------------|
-| `input-change` | Fired when the input value changes, includes the new value in the detail |
-
-## Basic Usage
-
-Create a basic number input for collecting numeric data.
+| Event | Detail | Description |
+| --- | --- | --- |
+| `value-input` | `{ value: number \| null }` | Fires on each native input update |
+| `value-change` | `{ value: number \| null }` | Fires on committed change |
 
 ```html codePreview
-<rtgl-input-number id="basic-number-example"></rtgl-input-number>
+<rtgl-input-number id="price-input" placeholder="Price"></rtgl-input-number>
+```
 
+```html
 <script>
-  const basicNumberExample = document.getElementById('basic-number-example');
-  if (basicNumberExample) {
-    basicNumberExample.addEventListener('input-change', (e) => {
-      console.log('Number value changed:', { value: e.detail.value });
-    });
-  }
+  const input = document.getElementById("price-input");
+  input.addEventListener("value-input", (e) => {
+    console.log("typing", e.detail.value);
+  });
+  input.addEventListener("value-change", (e) => {
+    console.log("committed", e.detail.value);
+  });
 </script>
 ```
 
-## Size
+## Value
 
-Control the input-number size using predefined values for different layout needs.
+Control current numeric content with `value`.
+
+### Behavior & precedence
+
+- Field type is fixed to numeric input behavior.
+- If `value` is empty, events emit `null`.
+- Non-numeric `value` is treated as empty.
+- Removing `value` clears the field.
 
 ```html codePreview
-<rtgl-view g="md" w="300">
-  <rtgl-text c="mu-fg">Regular (default):</rtgl-text>
-  <rtgl-input-number id="regular-size-example" placeholder="Enter number"></rtgl-input-number>
-
-  <rtgl-text c="mu-fg">Small:</rtgl-text>
-  <rtgl-input-number id="small-size-example" s="sm" placeholder="Small number input"></rtgl-input-number>
+<rtgl-view g="md" w="320" p="lg">
+  <rtgl-input-number value="42"></rtgl-input-number>
+  <rtgl-input-number value="3.14" step="0.01"></rtgl-input-number>
 </rtgl-view>
-
-<script>
-  // Regular size
-  const regularSizeExample = document.getElementById('regular-size-example');
-  if (regularSizeExample) {
-    regularSizeExample.addEventListener('input-change', (e) => {
-      console.log('Regular input value changed:', { value: e.detail.value });
-    });
-  }
-
-  // Small size
-  const smallSizeExample = document.getElementById('small-size-example');
-  if (smallSizeExample) {
-    smallSizeExample.addEventListener('input-change', (e) => {
-      console.log('Small input value changed:', { value: e.detail.value });
-    });
-  }
-</script>
 ```
 
 ## Constraints
 
-Set minimum, maximum, and step values to enforce valid numeric input ranges.
+Use `min`, `max`, and `step` to shape accepted numeric values.
+
+### Behavior & precedence
+
+- Input values are clamped to `min`/`max` bounds.
+- Clamping applies during typing and committed change events.
+- If both `min` and `max` are set and out of order, effective behavior follows native numeric comparison.
 
 ```html codePreview
-<rtgl-view g="md" w="300">
-  <rtgl-text c="mu-fg">Min value (0):</rtgl-text>
-  <rtgl-input-number id="min-zero-example" min="0" placeholder="Positive numbers only"></rtgl-input-number>
-
-  <rtgl-text c="mu-fg">Min value (-10):</rtgl-text>
-  <rtgl-input-number id="min-neg10-example" min="-10" placeholder="Min -10"></rtgl-input-number>
-
-  <rtgl-text c="mu-fg">Max value (100):</rtgl-text>
-  <rtgl-input-number id="max-100-example" max="100" placeholder="Max 100"></rtgl-input-number>
-
-  <rtgl-text c="mu-fg">Step (0.1):</rtgl-text>
-  <rtgl-input-number id="step-01-example" step="0.1" placeholder="Step 0.1"></rtgl-input-number>
+<rtgl-view g="md" w="320" p="lg">
+  <rtgl-input-number min="0" placeholder=">= 0"></rtgl-input-number>
+  <rtgl-input-number min="-10" max="10" placeholder="-10 to 10"></rtgl-input-number>
+  <rtgl-input-number step="0.1" placeholder="step 0.1"></rtgl-input-number>
 </rtgl-view>
-
-<script>
-  // Min zero
-  const minZeroExample = document.getElementById('min-zero-example');
-  if (minZeroExample) {
-    minZeroExample.addEventListener('input-change', (e) => {
-      console.log('Min=0 input value changed:', { value: e.detail.value });
-    });
-  }
-
-  // Min negative 10
-  const minNeg10Example = document.getElementById('min-neg10-example');
-  if (minNeg10Example) {
-    minNeg10Example.addEventListener('input-change', (e) => {
-      console.log('Min=-10 input value changed:', { value: e.detail.value });
-    });
-  }
-
-  // Max 100
-  const max100Example = document.getElementById('max-100-example');
-  if (max100Example) {
-    max100Example.addEventListener('input-change', (e) => {
-      console.log('Max=100 input value changed:', { value: e.detail.value });
-    });
-  }
-
-  // Step 0.1
-  const step01Example = document.getElementById('step-01-example');
-  if (step01Example) {
-    step01Example.addEventListener('input-change', (e) => {
-      console.log('Step=0.1 input value changed:', { value: e.detail.value });
-    });
-  }
-</script>
 ```
 
-## Default Values
-
-Set initial values for number inputs to pre-populate forms with existing data or suggested values.
+## Placeholder
 
 ```html codePreview
-<rtgl-view g="md" w="300">
-  <rtgl-text c="mu-fg">Default value (42):</rtgl-text>
-  <rtgl-input-number id="default-42-example" value="42"></rtgl-input-number>
-
-  <rtgl-text c="mu-fg">Default value (-5):</rtgl-text>
-  <rtgl-input-number id="default-neg5-example" value="-5" min="-10"></rtgl-input-number>
-
-  <rtgl-text c="mu-fg">Default value (3.14):</rtgl-text>
-  <rtgl-input-number id="default-pi-example" value="3.14" step="0.01"></rtgl-input-number>
+<rtgl-view g="md" w="320" p="lg">
+  <rtgl-input-number placeholder="Enter amount"></rtgl-input-number>
 </rtgl-view>
-
-<script>
-  // Default 42
-  const default42Example = document.getElementById('default-42-example');
-  if (default42Example) {
-    default42Example.addEventListener('input-change', (e) => {
-      console.log('Default 42 input value changed:', { value: e.detail.value });
-    });
-  }
-
-  // Default -5
-  const defaultNeg5Example = document.getElementById('default-neg5-example');
-  if (defaultNeg5Example) {
-    defaultNeg5Example.addEventListener('input-change', (e) => {
-      console.log('Default -5 input value changed:', { value: e.detail.value });
-    });
-  }
-
-  // Default 3.14
-  const defaultPiExample = document.getElementById('default-pi-example');
-  if (defaultPiExample) {
-    defaultPiExample.addEventListener('input-change', (e) => {
-      console.log('Default 3.14 input value changed:', { value: e.detail.value });
-    });
-  }
-</script>
 ```
 
 ## Disabled
 
-Disable number inputs to prevent user interaction when data entry is not available or appropriate.
+Use `disabled` when the field is unavailable.
 
 ```html codePreview
-<rtgl-view g="md" w="300">
-  <rtgl-text c="mu-fg">Disabled number input:</rtgl-text>
-  <rtgl-input-number id="disabled-number-example" disabled placeholder="Disabled number"></rtgl-input-number>
-
-  <rtgl-text c="mu-fg">Regular number input:</rtgl-text>
-  <rtgl-input-number id="regular-number-example" placeholder="Regular number"></rtgl-input-number>
+<rtgl-view g="md" w="320" p="lg">
+  <rtgl-input-number value="12" disabled></rtgl-input-number>
 </rtgl-view>
+```
 
-<script>
-  // Disabled input (should not fire events)
-  const disabledNumberExample = document.getElementById('disabled-number-example');
-  if (disabledNumberExample) {
-    disabledNumberExample.addEventListener('input-change', (e) => {
-      console.log('Disabled input value changed (should not fire):', { value: e.detail.value });
-    });
-  }
+## Size
 
-  // Regular input
-  const regularNumberExample = document.getElementById('regular-number-example');
-  if (regularNumberExample) {
-    regularNumberExample.addEventListener('input-change', (e) => {
-      console.log('Regular input value changed:', { value: e.detail.value });
-    });
-  }
-</script>
+```html codePreview
+<rtgl-view g="md" w="320" p="lg">
+  <rtgl-input-number s="sm" placeholder="Small"></rtgl-input-number>
+  <rtgl-input-number s="md" placeholder="Medium"></rtgl-input-number>
+</rtgl-view>
+```
+
+## Dimensions
+
+Control field box dimensions with `w`, `h`, and `wh`.
+
+### Behavior & precedence
+
+- `wh` has priority over `w` and `h` at the same breakpoint.
+- `w="f"` stretches to available width.
+- If both `hide` and `show` are set at the same breakpoint, `show` wins.
+
+```html codePreview
+<rtgl-view g="md" w="f" p="lg">
+  <rtgl-input-number w="280" placeholder="Fixed width"></rtgl-input-number>
+  <rtgl-input-number w="f" placeholder="Full width"></rtgl-input-number>
+  <rtgl-input-number hide sm-show placeholder="Only visible on small screens"></rtgl-input-number>
+</rtgl-view>
 ```
