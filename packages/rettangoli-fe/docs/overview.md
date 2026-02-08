@@ -12,7 +12,7 @@ Normative keywords follow RFC 2119 intent:
 
 | File | Responsibility |
 | --- | --- |
-| `.view.yaml` | UI tree (`template`), `refs`, `styles`, optional `viewDataSchema` |
+| `.view.yaml` | UI tree (`template`), `refs`, `styles` |
 | `.schema.yaml` | Public component API and docs metadata (`componentName`, `description`, `examples`, `propsSchema`, `events`, `methods`) |
 | `.store.js` | `createInitialState`, selectors, `selectViewData`, actions |
 | `.handlers.js` | Lifecycle hooks, side effects, imperative event handling |

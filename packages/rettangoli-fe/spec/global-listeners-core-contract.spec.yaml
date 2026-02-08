@@ -12,6 +12,14 @@ out:
   source: window
   hasEvent: true
 ---
+case: resolves window handler payload expressions with event context
+in:
+  - scenario: window_handler_expression_resolution
+out:
+  called: 1
+  eventType: resize
+  hasEvent: true
+---
 case: dispatches document action listeners
 in:
   - scenario: document_action_dispatch

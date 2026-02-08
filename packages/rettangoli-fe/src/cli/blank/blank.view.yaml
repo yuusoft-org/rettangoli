@@ -1,8 +1,5 @@
 elementName: custom-blank
 
-viewDataSchema:
-  type: object
-
 propsSchema:
   type: object
   properties: {}

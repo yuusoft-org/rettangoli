@@ -1,4 +1,4 @@
-import { render as jemplRender } from 'jempl';
+import { parseAndRender as jemplParseAndRender, render as jemplRender } from 'jempl';
 
 import { flattenArrays } from './common.js';
 import { parseNodeBindings } from './core/view/bindings.js';
@@ -212,6 +212,7 @@ export const createVirtualDom = ({
                     handlers,
                     eventRateLimitState,
                     stateKey,
+                    parseAndRenderFn: jemplParseAndRender,
                     onMissingHandler: (missingHandlerName) => {
                       console.warn(
                         `[Parser] Handler '${missingHandlerName}' for refKey '${bestMatchRefKey}' (matching '${matchIdentity}') is referenced but not found in available handlers.`,

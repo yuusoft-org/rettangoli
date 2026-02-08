@@ -15,7 +15,24 @@ export const createEventDispatchCallback = ({
   eventConfig,
   handlers,
   onMissingHandler,
+  parseAndRenderFn,
 }) => {
+  const getPayload = (event) => {
+    const payloadTemplate = (
+      eventConfig.payload
+      && typeof eventConfig.payload === "object"
+      && !Array.isArray(eventConfig.payload)
+    )
+      ? eventConfig.payload
+      : {};
+    if (typeof parseAndRenderFn !== "function") {
+      return payloadTemplate;
+    }
+    return parseAndRenderFn(payloadTemplate, {
+      _event: event,
+    });
+  };
+
   if (eventConfig.action) {
     if (typeof handlers.handleCallStoreAction !== "function") {
       throw new Error(
@@ -23,8 +40,9 @@ export const createEventDispatchCallback = ({
       );
     }
     return (event) => {
+      const payload = getPayload(event);
       handlers.handleCallStoreAction({
-        ...eventConfig.payload,
+        ...payload,
         _event: event,
         _action: eventConfig.action,
       });
@@ -33,8 +51,9 @@ export const createEventDispatchCallback = ({
 
   if (eventConfig.handler && handlers[eventConfig.handler]) {
     return (event) => {
+      const payload = getPayload(event);
       handlers[eventConfig.handler]({
-        ...eventConfig.payload,
+        ...payload,
         _event: event,
       });
     };
@@ -135,6 +154,7 @@ export const createConfiguredEventListener = ({
   eventRateLimitState,
   stateKey,
   fallbackCurrentTarget = null,
+  parseAndRenderFn,
   onMissingHandler,
   nowFn = Date.now,
   setTimeoutFn = setTimeout,
@@ -150,6 +170,7 @@ export const createConfiguredEventListener = ({
     eventConfig,
     handlers,
     onMissingHandler,
+    parseAndRenderFn,
   });
   if (!callback) {
     return null;

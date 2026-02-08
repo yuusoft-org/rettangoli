@@ -19,6 +19,7 @@ import {
   toCamelCase,
   toKebabCase,
 } from "./core/runtime/props.js";
+import { validateSchemaContract } from "./core/schema/validateSchemaContract.js";
 
 /**
  * Base class for web components
@@ -165,6 +166,7 @@ class BaseComponent extends HTMLElement {
     this._globalListenersCleanup = attachGlobalRefListeners({
       refs: this.refs,
       handlers: this.transformedHandlers,
+      parseAndRenderFn: parseAndRender,
     });
 
     this.render();
@@ -272,8 +274,21 @@ class BaseComponent extends HTMLElement {
   };
 }
 
-const createComponent = ({ handlers, methods, constants, view, store, patch, h }, deps) => {
-  const { elementName, propsSchema, template, refs, styles } = view;
+const createComponent = ({ handlers, methods, constants, schema, view, store, patch, h }, deps) => {
+  if (!view) {
+    throw new Error("view is not defined");
+  }
+
+  const resolvedSchema = schema && typeof schema === "object" ? schema : null;
+  const { elementName: viewElementName, propsSchema: viewPropsSchema, template, refs, styles } = view;
+  if (resolvedSchema) {
+    validateSchemaContract({
+      schema: resolvedSchema,
+      methodExports: Object.keys(methods || {}),
+    });
+  }
+  const elementName = viewElementName || resolvedSchema?.componentName;
+  const propsSchema = resolvedSchema?.propsSchema || viewPropsSchema;
   const propsSchemaKeys = propsSchema?.properties
     ? [...new Set(Object.keys(propsSchema.properties).map((propKey) => toCamelCase(propKey)))]
     : [];
@@ -286,8 +301,8 @@ const createComponent = ({ handlers, methods, constants, view, store, patch, h }
     throw new Error("h is not defined");
   }
 
-  if (!view) {
-    throw new Error("view is not defined");
+  if (!elementName) {
+    throw new Error("elementName is not defined. Provide view.elementName or schema.componentName.");
   }
 
   class MyComponent extends BaseComponent {

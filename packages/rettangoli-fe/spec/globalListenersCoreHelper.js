@@ -1,4 +1,5 @@
 import { attachGlobalRefListeners } from "../src/core/runtime/globalListeners.js";
+import { parseAndRender } from "jempl";
 
 const createMockTarget = () => {
   const listeners = new Map();
@@ -65,6 +66,43 @@ export const runGlobalListenersCoreCase = ({ scenario }) => {
     return {
       called: calls.length,
       source: calls[0]?.source,
+      hasEvent: Boolean(calls[0]?._event),
+    };
+  }
+
+  if (scenario === "window_handler_expression_resolution") {
+    const windowTarget = createMockTarget();
+    const calls = [];
+    const cleanup = attachGlobalRefListeners({
+      refs: {
+        window: {
+          eventListeners: {
+            resize: {
+              handler: "handleResize",
+              payload: { eventType: "${_event.type}" },
+            },
+          },
+        },
+      },
+      handlers: {
+        handleResize: (payload) => {
+          calls.push(payload);
+        },
+      },
+      parseAndRenderFn: parseAndRender,
+      targets: {
+        window: windowTarget,
+        document: createMockTarget(),
+      },
+      warnFn: () => {},
+    });
+
+    windowTarget.emit("resize");
+    cleanup();
+
+    return {
+      called: calls.length,
+      eventType: calls[0]?.eventType,
       hasEvent: Boolean(calls[0]?._event),
     };
   }

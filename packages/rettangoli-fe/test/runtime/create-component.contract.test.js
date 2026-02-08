@@ -241,6 +241,75 @@ describe("createComponent runtime contracts", () => {
     expect(instance.props.maxItems).toBe("7");
   });
 
+  it("uses schema propsSchema when view propsSchema is absent", () => {
+    const TestComponent = createComponent(
+      {
+        handlers: {},
+        methods: {},
+        constants: {},
+        schema: {
+          componentName: "x-schema-props",
+          propsSchema: {
+            type: "object",
+            properties: {
+              maxItems: {},
+            },
+          },
+        },
+        view: {
+          elementName: "x-schema-props",
+          template: [{ div: "" }],
+          refs: {},
+          styles: {},
+        },
+        store: {
+          createInitialState: () => ({}),
+          selectViewData: () => ({}),
+        },
+        patch: (_oldValue, newValue) => newValue,
+        h: (tag, data = {}, children = []) => ({ tag, data, children }),
+      },
+      {},
+    );
+
+    const instance = new TestComponent();
+    instance.setAttribute("max-items", "7");
+    expect(instance.props.maxItems).toBe("7");
+  });
+
+  it("validates schema methods against methods exports", () => {
+    expect(() => createComponent(
+      {
+        handlers: {},
+        methods: {},
+        constants: {},
+        schema: {
+          componentName: "x-schema-methods",
+          methods: [
+            { name: "focusInput" },
+          ],
+        },
+        view: {
+          elementName: "x-schema-methods",
+          propsSchema: {
+            type: "object",
+            properties: {},
+          },
+          template: [{ div: "" }],
+          refs: {},
+          styles: {},
+        },
+        store: {
+          createInitialState: () => ({}),
+          selectViewData: () => ({}),
+        },
+        patch: (_oldValue, newValue) => newValue,
+        h: (tag, data = {}, children = []) => ({ tag, data, children }),
+      },
+      {},
+    )).toThrow("missing in .methods.js exports");
+  });
+
   it("attaches global refs listeners once per mount and cleans up on unmount", () => {
     let resizeCalls = 0;
     let visibilityCalls = 0;

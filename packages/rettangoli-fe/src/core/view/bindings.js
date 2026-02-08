@@ -69,6 +69,17 @@ export const parseNodeBindings = ({
 }) => {
   const attrs = {};
   const props = {};
+  const assertSupportedBooleanToggleAttr = (attrName) => {
+    if (
+      attrName === "role"
+      || attrName.startsWith("aria-")
+      || attrName.startsWith("data-")
+    ) {
+      throw new Error(
+        `[Parser] Invalid boolean attribute '?${attrName}'. Use normal binding for value-carrying attributes such as aria-*, data-*, and role.`,
+      );
+    }
+  };
 
   const setComponentProp = (rawPropName, propValue, sourceLabel) => {
     const normalizedPropName = toCamelCase(rawPropName);
@@ -116,6 +127,7 @@ export const parseNodeBindings = ({
     if (rawBindingName.startsWith("?")) {
       const attrName = rawBindingName.substring(1);
       const attrValue = rawValue;
+      assertSupportedBooleanToggleAttr(attrName);
 
       let evalValue;
       if (attrValue === "true") {

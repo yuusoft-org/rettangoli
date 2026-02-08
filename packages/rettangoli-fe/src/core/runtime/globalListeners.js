@@ -20,6 +20,7 @@ export const attachGlobalRefListeners = ({
     window: globalThis.window,
     document: globalThis.document,
   },
+  parseAndRenderFn,
   timing = {
     nowFn: Date.now,
     setTimeoutFn: setTimeout,
@@ -52,6 +53,7 @@ export const attachGlobalRefListeners = ({
         eventRateLimitState,
         stateKey,
         fallbackCurrentTarget: target,
+        parseAndRenderFn,
         nowFn: timing.nowFn,
         setTimeoutFn: timing.setTimeoutFn,
         clearTimeoutFn: timing.clearTimeoutFn,

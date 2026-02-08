@@ -76,6 +76,7 @@ const buildRettangoliFrontend = async (options) => {
       filePath.endsWith(".handlers.js") ||
       filePath.endsWith(".methods.js") ||
       filePath.endsWith(".constants.yaml") ||
+      filePath.endsWith(".schema.yaml") ||
       filePath.endsWith(".view.yaml")
     );
   });
@@ -116,7 +117,7 @@ const buildRettangoliFrontend = async (options) => {
       replaceMap[count] = `${component}${capitalize(fileType)}`;
       imports[category][component][fileType] = count;
       count++;
-    } else if (["view", "constants"].includes(fileType)) {
+    } else if (["view", "constants", "schema"].includes(fileType)) {
       const yamlObject = loadYaml(readFileSync(filePath, "utf8")) ?? {};
       if (fileType === "view") {
         try {
@@ -152,8 +153,13 @@ const imports = ${JSON.stringify(imports, null, 2)};
 
 Object.keys(imports).forEach(category => {
   Object.keys(imports[category]).forEach(component => {
-    const webComponent = createComponent({ ...imports[category][component], patch, h }, deps[category])
-    customElements.define(imports[category][component].view.elementName, webComponent);
+    const componentConfig = imports[category][component];
+    const webComponent = createComponent({ ...componentConfig, patch, h }, deps[category])
+    const elementName = componentConfig.view?.elementName || componentConfig.schema?.componentName;
+    if (!elementName) {
+      throw new Error(\`[Build] Missing elementName for \${category}/\${component}. Define view.elementName or schema.componentName.\`);
+    }
+    customElements.define(elementName, webComponent);
   })
 })
 

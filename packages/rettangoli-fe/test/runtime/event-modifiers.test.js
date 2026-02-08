@@ -169,6 +169,30 @@ describe("parser event modifiers", () => {
     });
   });
 
+  it("resolves handler payload expressions with _event context", () => {
+    const handler = vi.fn();
+    const click = buildClickListener({
+      eventConfig: {
+        handler: "handleSubmit",
+        payload: {
+          eventType: "${_event.type}",
+        },
+      },
+      handlers: {
+        handleSubmit: handler,
+      },
+    });
+
+    const event = createEvent();
+    click(event);
+
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler).toHaveBeenCalledWith({
+      eventType: "click",
+      _event: event,
+    });
+  });
+
   it("throws clear error when action listener dispatcher is missing", () => {
     expect(() => buildClickListener({
       eventConfig: {

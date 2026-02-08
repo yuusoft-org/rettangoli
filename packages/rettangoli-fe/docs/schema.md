@@ -71,6 +71,7 @@ methods:
 
 - optional schema for public component props
 - SHOULD be JSON-Schema-compatible shape
+- when present, runtime MAY use it as the component props contract source
 
 ### `events`
 
@@ -106,5 +107,4 @@ Invalid because `attrsSchema` is not part of the public schema contract.
 
 ## 6. Notes
 
-- `.schema.yaml` is documentation/contract metadata, not runtime state.
 - Runtime constants belong in `.constants.yaml`.

@@ -37,6 +37,13 @@ out:
   props:
     disabled: true
 ---
+case: rejects boolean toggle for aria attributes
+in:
+  - attrsString: ?aria-pressed=isPressed
+    viewData:
+      isPressed: true
+throws: Invalid boolean attribute '?aria-pressed'
+---
 case: rejects duplicate prop source on one component node
 in:
   - attrsString: value=abc :value=stateValue

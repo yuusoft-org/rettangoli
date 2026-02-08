@@ -12,6 +12,14 @@ out:
   source: button
   hasEvent: true
 ---
+case: resolves handler payload expressions with _event context
+in:
+  - scenario: handler_payload_expression_resolution
+out:
+  called: 1
+  eventType: click
+  hasEvent: true
+---
 case: injects payload and _event/_action for action listeners
 in:
   - scenario: action_payload_injection

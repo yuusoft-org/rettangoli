@@ -1,4 +1,5 @@
 import { createConfiguredEventListener } from "../src/core/runtime/events.js";
+import { parseAndRender } from "jempl";
 
 const createEvent = ({
   type = "click",
@@ -41,6 +42,36 @@ export const runEventsCoreCase = ({ scenario }) => {
     return {
       called: calls.length,
       source: calls[0]?.source,
+      hasEvent: Boolean(calls[0]?._event),
+    };
+  }
+
+  if (scenario === "handler_payload_expression_resolution") {
+    const calls = [];
+    const listener = createConfiguredEventListener({
+      eventType: "click",
+      eventConfig: {
+        handler: "handleSubmit",
+        payload: {
+          eventType: "${_event.type}",
+        },
+      },
+      refKey: "submitButton",
+      handlers: {
+        handleSubmit: (payload) => {
+          calls.push(payload);
+        },
+      },
+      eventRateLimitState: new Map(),
+      stateKey: "submitButton:click",
+      parseAndRenderFn: parseAndRender,
+    });
+
+    listener(createEvent({ type: "click" }));
+
+    return {
+      called: calls.length,
+      eventType: calls[0]?.eventType,
       hasEvent: Boolean(calls[0]?._event),
     };
   }

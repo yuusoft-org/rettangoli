@@ -8,7 +8,6 @@ This document defines the normative view language contract.
 - `template`
 - `refs`
 - `styles`
-- optional `viewDataSchema`
 
 Business logic belongs in `.handlers.js`.
 State logic belongs in `.store.js`.
@@ -19,7 +18,6 @@ State logic belongs in `.store.js`.
 template: []   # required
 refs: {}       # optional
 styles: {}     # optional
-viewDataSchema: {} # optional
 ```
 
 ## 3. Template Grammar
