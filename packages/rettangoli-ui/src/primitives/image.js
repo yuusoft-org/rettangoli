@@ -4,6 +4,10 @@ import {
   convertObjectToCssString,
   styleMapKeys,
   permutateBreakpoints,
+  syncLinkWrapper,
+  createResponsiveStyleBuckets,
+  responsiveStyleSizes,
+  applyDimensionToStyleBucket,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
@@ -79,8 +83,10 @@ class RettangoliImageElement extends HTMLElement {
       ...styleMapKeys,
       "key",
       "src",
+      "alt",
       "href",
       "target",
+      "rel",
       "wh",
       "w",
       "h",
@@ -92,56 +98,23 @@ class RettangoliImageElement extends HTMLElement {
     ]);
   }
 
-  _styles = {
-    default: {},
-    sm: {},
-    md: {},
-    lg: {},
-    xl: {},
-  };
+  _styles = createResponsiveStyleBuckets();
 
   _lastStyleString = "";
 
   _updateDOM() {
     const href = this.getAttribute("href");
     const target = this.getAttribute("target");
+    const rel = this.getAttribute("rel");
 
-    if (href) {
-      if (!this._linkElement) {
-        // Create link wrapper
-        this._linkElement = document.createElement("a");
-      }
-
-      // Update link attributes
-      this._linkElement.href = href;
-      if (target) {
-        this._linkElement.target = target;
-      } else {
-        this._linkElement.removeAttribute("target");
-      }
-
-      // Wrap image in link
-      this._linkElement.appendChild(this._imgElement);
-
-      // Ensure link is in shadow DOM
-      if (this._linkElement.parentNode !== this.shadow) {
-        this.shadow.appendChild(this._linkElement);
-      }
-    } else if (this._linkElement) {
-      // Remove link wrapper
-      if (this._imgElement.parentNode === this._linkElement) {
-        this.shadow.appendChild(this._imgElement);
-      }
-      if (this._linkElement.parentNode === this.shadow) {
-        this.shadow.removeChild(this._linkElement);
-      }
-      this._linkElement = null;
-    } else {
-      // Ensure image is in shadow DOM
-      if (this._imgElement.parentNode !== this.shadow) {
-        this.shadow.appendChild(this._imgElement);
-      }
-    }
+    this._linkElement = syncLinkWrapper({
+      shadowRoot: this.shadow,
+      childElement: this._imgElement,
+      linkElement: this._linkElement,
+      href,
+      target,
+      rel,
+    });
   }
 
   connectedCallback() {
@@ -151,13 +124,13 @@ class RettangoliImageElement extends HTMLElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     // Handle href and target changes
-    if (name === "href" || name === "target") {
+    if (name === "href" || name === "target" || name === "rel") {
       this._updateDOM();
       return;
     }
 
-    // Handle src attribute
-    if (name === "src") {
+    // Handle image attributes
+    if (name === "src" || name === "alt") {
       this._updateImageAttributes();
       return;
     }
@@ -170,15 +143,9 @@ class RettangoliImageElement extends HTMLElement {
 
   updateStyles() {
     // Reset styles for fresh calculation
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+    this._styles = createResponsiveStyleBuckets();
 
-    ["default", "sm", "md", "lg", "xl"].forEach((size) => {
+    responsiveStyleSizes.forEach((size) => {
       const addSizePrefix = (tag) => {
         return `${size === "default" ? "" : `${size}-`}${tag}`;
       };
@@ -201,27 +168,19 @@ class RettangoliImageElement extends HTMLElement {
         this._styles[size].opacity = opacity;
       }
 
-      // Handle fill width
-      if (width === "f") {
-        this._styles[size].width = "var(--width-stretch)";
-      }
-      // Handle normal width
-      else if (width !== undefined) {
-        this._styles[size].width = width;
-        this._styles[size]["min-width"] = width;
-        this._styles[size]["max-width"] = width;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "width",
+        dimension: width,
+        fillValue: "var(--width-stretch)",
+      });
 
-      // Handle fill height
-      if (height === "f") {
-        this._styles[size].height = "100%";
-      }
-      // Handle normal height
-      else if (height !== undefined) {
-        this._styles[size].height = height;
-        this._styles[size]["min-height"] = height;
-        this._styles[size]["max-height"] = height;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "height",
+        dimension: height,
+        fillValue: "100%",
+      });
 
       if (this.hasAttribute(addSizePrefix("hide"))) {
         this._styles[size].display = "none !important";
@@ -242,9 +201,18 @@ class RettangoliImageElement extends HTMLElement {
 
   _updateImageAttributes() {
     const src = this.getAttribute("src");
+    const alt = this.getAttribute("alt");
 
     if (src !== null) {
       this._imgElement.setAttribute("src", src);
+    } else {
+      this._imgElement.removeAttribute("src");
+    }
+
+    if (alt !== null) {
+      this._imgElement.setAttribute("alt", alt);
+    } else {
+      this._imgElement.removeAttribute("alt");
     }
   }
 }

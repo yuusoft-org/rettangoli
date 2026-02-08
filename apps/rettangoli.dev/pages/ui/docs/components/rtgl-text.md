@@ -5,107 +5,197 @@ tags: documentation
 sidebarId: rtgl-text
 ---
 
-A versatile text component for displaying textual content with various styling options.
+A typography primitive for rendering labels, headings, body copy, truncated text, and linkable text surfaces.
+
+## Quickstart
+
+Use this baseline pattern in most UIs:
+
+- Use `s` for hierarchy (`h3`, `lg`, `sm`, etc.).
+- Use `c="mu"` for secondary/supporting copy.
+- Use `w` with `ellipsis` when text must stay on one line.
+
+```html codePreview
+<rtgl-view d="v" g="sm" p="lg" w="f">
+  <rtgl-text s="h3">Billing Settings</rtgl-text>
+  <rtgl-text c="mu">Manage invoices, payment methods, and tax details.</rtgl-text>
+  <rtgl-text w="220" ellipsis>
+    This is a long line that stays to one line and truncates when it exceeds the available width.
+  </rtgl-text>
+</rtgl-view>
+```
 
 ## Attributes
 
 | Name | Attribute | Type | Default |
-|------|-----------|------|---------|
+| --- | --- | --- | --- |
 | Size | `s` | `xs`, `sm`, `md`, `lg`, `h4`, `h3`, `h2`, `h1` | `md` |
-| Color | `c` | `fg`, `mu-fg`, `ac-fg`, etc. | - |
-| Text Align | `ta` | `sm`, `c`, `j`, `e` | `sm` |
+| Color | `c` | `fg`, `mu`, `pr`, `se`, `de`, `ac`, `bg`, `bo`, `tr`, `pr-fg`, `se-fg`, `de-fg`, `mu-fg`, `ac-fg` | `fg` |
+| Text Align | `ta` | `s`, `c`, `j`, `e` | `s` |
+| Width | `w` | number, `%`, `xs`-`xl`, `f`, `1fg`-`12fg`, CSS length/value | - |
 | Ellipsis | `ellipsis` | boolean | - |
-| Width | `w` | number | - |
+| Link | `href`, `target`, `rel` | string | - |
 | Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
+
+Responsive breakpoint prefixes are supported for style attributes such as `s`, `c`, `ta`, and margin attributes.
+For full breakpoint behavior, see [Responsiveness](../introduction/responsiveness.md).
 
 ## Size
 
-Control text size using predefined values from extra small to heading sizes for consistent typography hierarchy.
+Control text scale using predefined sizes from `xs` to heading levels.
 
 ```html codePreview
-<rtgl-view g="md" p="md">
-  <rtgl-text s="xs">Extra Small Text</rtgl-text>
-  <rtgl-text s="sm">Small Text</rtgl-text>
-  <rtgl-text s="md">Medium Text</rtgl-text>
-  <rtgl-text s="lg">Large Text</rtgl-text>
-  <rtgl-text s="h4">Heading 4</rtgl-text>
-  <rtgl-text s="h3">Heading 3</rtgl-text>
-  <rtgl-text s="h2">Heading 2</rtgl-text>
+<rtgl-view d="v" g="sm" p="lg">
   <rtgl-text s="h1">Heading 1</rtgl-text>
+  <rtgl-text s="h2">Heading 2</rtgl-text>
+  <rtgl-text s="h3">Heading 3</rtgl-text>
+  <rtgl-text s="h4">Heading 4</rtgl-text>
+  <rtgl-text s="lg">Large</rtgl-text>
+  <rtgl-text s="md">Medium (default)</rtgl-text>
+  <rtgl-text s="sm">Small</rtgl-text>
+  <rtgl-text s="xs">Extra Small Text</rtgl-text>
 </rtgl-view>
 ```
 
 ## Color
 
-Apply predefined color tokens to text for consistent theming and visual hierarchy.
+Use semantic tokens for predictable contrast and theme consistency.
+
+| Token | Meaning |
+| --- | --- |
+| `fg` | Default foreground text |
+| `mu` / `mu-fg` | Muted/supporting text |
+| `pr`, `se`, `de`, `ac` | Primary, secondary, destructive, accent text |
+| `pr-fg`, `se-fg`, `de-fg`, `ac-fg` | Foreground variants for strong emphasis |
+| `bg`, `bo`, `tr` | Background, border, transparent |
 
 ```html codePreview
-<rtgl-view g="md" p="md">
-  <rtgl-text c="fg">Default Foreground Color</rtgl-text>
-  <rtgl-text c="mu-fg">Muted Foreground Color</rtgl-text>
-  <rtgl-text c="ac-fg">Accent Foreground Color</rtgl-text>
+<rtgl-view d="v" g="sm" p="lg">
+  <rtgl-text c="fg">Default foreground text</rtgl-text>
+  <rtgl-text c="mu">Muted text</rtgl-text>
+  <rtgl-text c="pr">Primary text</rtgl-text>
+  <rtgl-text c="de">Destructive text</rtgl-text>
+  <rtgl-view bgc="pr" p="sm">
+    <rtgl-text c="bg">Text on strong background</rtgl-text>
+  </rtgl-view>
 </rtgl-view>
 ```
 
 ## Text Alignment
 
-Control text alignment within containers. Use `sm` for start, `c` for center, `j` for justify, or `e` for end alignment.
+Control alignment with `ta="s|c|j|e"`.
 
 ```html codePreview
-<rtgl-view g="md" p="md">
-  <rtgl-view bgc="suc" p="md" w="300">
-    <rtgl-text ta="sm">Start aligned text. This is the default alignment for text content.</rtgl-text>
+<rtgl-view d="v" g="md" p="lg">
+  <rtgl-view bgc="mu" p="md" w="300">
+    <rtgl-text ta="s">Start aligned text.</rtgl-text>
   </rtgl-view>
-  <rtgl-view bgc="suc" p="md" w="300">
-    <rtgl-text ta="c">Center aligned text. This centers the text within its container.</rtgl-text>
+  <rtgl-view bgc="mu" p="md" w="300">
+    <rtgl-text ta="c">Center aligned text.</rtgl-text>
   </rtgl-view>
-  <rtgl-view bgc="suc" p="md" w="300">
-    <rtgl-text ta="j">Justified text. This spreads the text to fill the width of the container evenly.</rtgl-text>
+  <rtgl-view bgc="mu" p="md" w="300">
+    <rtgl-text ta="j">Justified text stretches each line to fill the row width.</rtgl-text>
   </rtgl-view>
-  <rtgl-view bgc="suc" p="md" w="300">
-    <rtgl-text ta="e">End aligned text. This aligns the text to the end of its container.</rtgl-text>
+  <rtgl-view bgc="mu" p="md" w="300">
+    <rtgl-text ta="e">End aligned text.</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+```
+
+## Width
+
+Control text width with fixed size, stretch, or proportional flex-grow.
+
+### Behavior & precedence
+
+- Numeric values are pixels (`w="240"`).
+- `%`, spacing tokens (`xs`-`xl`), and CSS lengths are supported.
+- `w="f"` stretches to available width.
+- `w="1fg"`-`w="12fg"` uses proportional flex-grow in flex layouts.
+
+```html codePreview
+<rtgl-view d="h" g="md" p="lg" w="f">
+  <rtgl-view w="120" bgc="mu" p="sm">
+    <rtgl-text>Fixed</rtgl-text>
+  </rtgl-view>
+  <rtgl-view w="1fg" bgc="mu" p="sm">
+    <rtgl-text>Flexible 1</rtgl-text>
+  </rtgl-view>
+  <rtgl-view w="2fg" bgc="mu" p="sm">
+    <rtgl-text>Flexible 2</rtgl-text>
   </rtgl-view>
 </rtgl-view>
 ```
 
 ## Ellipsis
 
-Automatically truncate text with ellipsis (...) when it overflows its container width.
+Truncate overflowing text on a single line.
+
+### Behavior & precedence
+
+- `ellipsis` applies single-line truncation.
+- For predictable truncation, combine `ellipsis` with `w` or another width-constrained parent.
+- If no width constraint exists, text may not truncate.
 
 ```html codePreview
-<rtgl-view g="md" p="md">
-  <rtgl-view bgc="su" p="md" g="md">
-    <rtgl-text w="140">Text without ellipsis that might overflow its container</rtgl-text>
-    <rtgl-text ellipsis w="140">Text with ellipsis that will be truncated with ellipsis when it overflows</rtgl-text>
+<rtgl-view d="v" g="md" p="lg">
+  <rtgl-view bgc="mu" p="md" g="sm">
+    <rtgl-text w="180">
+      Text without ellipsis may wrap or overflow depending on context
+    </rtgl-text>
+    <rtgl-text ellipsis w="180">
+      Text with ellipsis truncates this line when it exceeds the available width
+    </rtgl-text>
   </rtgl-view>
 </rtgl-view>
 ```
 
-## Text Styling
+## Link
 
-Apply inline HTML styling to text for emphasis and semantic meaning using standard HTML elements.
+Use `href` to make the text surface clickable. Use `target` and `rel` for navigation behavior.
+
+### Behavior & precedence
+
+- `href` turns the text surface into a link target.
+- `target` controls where the link opens.
+- `rel` is forwarded to the generated link element.
+- If `target="_blank"` and `rel` is omitted, `rel="noopener noreferrer"` is applied.
+- Avoid mixing host-level `href` with nested `<a>` inside the same `rtgl-text`.
+
+### Inline Anchor Link
 
 ```html codePreview
-<rtgl-view g="md" p="md">
-  <rtgl-text>Plain text with <b>Bold</b> text</rtgl-text>
-  <rtgl-text>Plain text with <i>Italic</i> text</rtgl-text>
-  <rtgl-text>Plain text with <u>Underlined</u> text</rtgl-text>
-  <rtgl-text>Plain text with <code>Code</code> text</rtgl-text>
-  <rtgl-text>Plain text with <del>Deleted</del> text</rtgl-text>
-  <rtgl-text>Plain text with <sub>Subscripted</sub> text</rtgl-text>
-  <rtgl-text>Plain text with <sup>Superscripted</sup> text</rtgl-text>
-  <rtgl-text>Plain text with <ins>Inserted</ins> text</rtgl-text>
-  <rtgl-text>Plain text with <mark>Marked</mark> text</rtgl-text>
+<rtgl-view d="v" g="sm" p="lg">
+  <rtgl-text>
+    Learn more in the <a href="/docs">documentation</a>.
+  </rtgl-text>
 </rtgl-view>
 ```
 
-## Links
-
-Create clickable links within text or as standalone elements using standard HTML anchor tags.
+### Clickable Text Surface
 
 ```html codePreview
-<rtgl-view g="md" p="md">
-  <rtgl-text>Text with an <a href="/">embedded link</a> inside it</rtgl-text>
-  <rtgl-text><a href="/">Standalone link</a></rtgl-text>
+<rtgl-view d="v" g="sm" p="lg">
+  <rtgl-text href="#local-section">Local navigation</rtgl-text>
+  <rtgl-text href="https://rettangoli.dev" target="_blank" rel="noopener noreferrer">
+    External navigation
+  </rtgl-text>
 </rtgl-view>
 ```
+
+## Rich Text
+
+Use standard inline HTML tags inside `rtgl-text` for emphasis and semantics.
+
+```html codePreview
+<rtgl-view d="v" g="sm" p="lg">
+  <rtgl-text>Text with <b>bold</b>, <i>italic</i>, and <code>code</code>.</rtgl-text>
+  <rtgl-text>Use <mark>mark</mark>, <del>delete</del>, and <ins>insert</ins> as needed.</rtgl-text>
+</rtgl-view>
+```
+
+## Gotchas
+
+- `ta` start token is `s` (not `sm`).
+- `ellipsis` is single-line truncation.
+- For full-surface link behavior, use host `href`; for inline links, use nested `<a>` without host `href`.

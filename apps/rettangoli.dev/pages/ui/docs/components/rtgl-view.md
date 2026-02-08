@@ -92,51 +92,6 @@ Common tokens used in this page:
 Layout and style attributes can be used responsively with breakpoint prefixes like `sm-`, `md-`, `lg-`, and `xl-`.
 When multiple breakpoint variants of the same attribute match, the smallest matching breakpoint wins (`sm` > `md` > `lg` > `xl` > base).
 
-## Gotchas
-
-Use the section-level `Behavior & precedence` blocks as the source of truth:
-
-- [Dimensions](#dimensions) for `wh` vs `w`/`h`
-- [Link](#link) for whole-surface link behavior
-- [Overflow](#overflow) for wrap/overflow conflicts
-- [Hide Show](#hide-show) for `hide`/`show` conflict rules
-
-## Link
-
-When `href` is set, `rtgl-view` acts as a clickable surface for navigation. Use `target` for `_blank`, etc.
-
-### Behavior & precedence
-
-- `href` turns the whole container surface into a link target.
-- Child interactions inside that surface are treated as link clicks.
-- `target` controls where the link opens when provided.
-
-### Avoid Nested Interactive Content
-
-Do not place interactive controls (like `rtgl-button`, `input`, `select`) inside an `rtgl-view` that also has `href`.
-
-```html
-<!-- Avoid: nested button competes with the full-surface link -->
-<rtgl-view href="/details" p="md" bgc="mu">
-  <rtgl-button>Delete</rtgl-button>
-</rtgl-view>
-```
-
-```html
-<!-- Better: keep navigation and control interactions separate -->
-<rtgl-view d="h" g="sm" p="md">
-  <rtgl-view href="/details" w="1fg" bgc="mu"></rtgl-view>
-  <rtgl-button>Delete</rtgl-button>
-</rtgl-view>
-```
-
-```html codePreview
-<rtgl-view d="h" g="lg" p="lg" w="f">
-  <rtgl-view href="#first" bgc="pr" wh="80"></rtgl-view>
-  <rtgl-view href="#second" target="_blank" bgc="se" wh="80"></rtgl-view>
-</rtgl-view>
-```
-
 ## Direction
 
 Controls the layout direction of the container. Set to `h` for horizontal or `v` for vertical (default).
@@ -690,3 +645,48 @@ Controls whether the container appears in the layout.
   </rtgl-view>
 </rtgl-view>
 ```
+
+## Link
+
+When `href` is set, `rtgl-view` acts as a clickable surface for navigation. Use `target` for `_blank`, etc.
+
+### Behavior & precedence
+
+- `href` turns the whole container surface into a link target.
+- Child interactions inside that surface are treated as link clicks.
+- `target` controls where the link opens when provided.
+
+### Avoid Nested Interactive Content
+
+Do not place interactive controls (like `rtgl-button`, `input`, `select`) inside an `rtgl-view` that also has `href`.
+
+```html
+<!-- Avoid: nested button competes with the full-surface link -->
+<rtgl-view href="/details" p="md" bgc="mu">
+  <rtgl-button>Delete</rtgl-button>
+</rtgl-view>
+```
+
+```html
+<!-- Better: keep navigation and control interactions separate -->
+<rtgl-view d="h" g="sm" p="md">
+  <rtgl-view href="/details" w="1fg" bgc="mu"></rtgl-view>
+  <rtgl-button>Delete</rtgl-button>
+</rtgl-view>
+```
+
+```html codePreview
+<rtgl-view d="h" g="lg" p="lg" w="f">
+  <rtgl-view href="#first" bgc="pr" wh="80"></rtgl-view>
+  <rtgl-view href="#second" target="_blank" bgc="se" wh="80"></rtgl-view>
+</rtgl-view>
+```
+
+## Gotchas
+
+Use the section-level `Behavior & precedence` blocks as the source of truth:
+
+- [Dimensions](#dimensions) for `wh` vs `w`/`h`
+- [Link](#link) for whole-surface link behavior
+- [Overflow](#overflow) for wrap/overflow conflicts
+- [Hide Show](#hide-show) for `hide`/`show` conflict rules
