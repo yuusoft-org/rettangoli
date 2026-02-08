@@ -1,0 +1,41 @@
+---
+title: Size Full
+steps:
+  - select open-full:
+    - click
+  - wait 600
+  - screenshot
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-button id="open-full" data-testid="open-full">Open Dialog s=f</rtgl-button>
+  <rtgl-dialog id="dialog-full" s="f">
+    <rtgl-view slot="content" d="v" g="md">
+      <rtgl-text s="lg">Full Size Dialog</rtgl-text>
+      <rtgl-text c="mu">Checks that s=f expands to viewport width behavior.</rtgl-text>
+      <pre id="result-full" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById("open-full");
+  const dialog = document.getElementById("dialog-full");
+  const result = document.getElementById("result-full");
+
+  const updateResult = () => {
+    const nativeDialog = dialog.shadowRoot.querySelector("dialog");
+    const dialogWidth = Math.round(nativeDialog.getBoundingClientRect().width);
+    const viewportWidth = Math.round(window.innerWidth);
+    const pass = dialogWidth >= viewportWidth - 8;
+    result.textContent = `${pass ? "PASS" : "FAIL"} s=f width=${dialogWidth}px viewport=${viewportWidth}px`;
+  };
+
+  button.addEventListener("click", () => {
+    dialog.setAttribute("open", "");
+    setTimeout(updateResult, 250);
+  });
+
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>

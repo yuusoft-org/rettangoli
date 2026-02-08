@@ -1,0 +1,40 @@
+---
+title: Width Override
+steps:
+  - select open-width:
+    - click
+  - wait 600
+  - screenshot
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-button id="open-width" data-testid="open-width">Open Dialog w=360px</rtgl-button>
+  <rtgl-dialog id="dialog-width" s="lg" w="360px">
+    <rtgl-view slot="content" d="v" g="md">
+      <rtgl-text s="lg">Width Override</rtgl-text>
+      <rtgl-text c="mu">Checks explicit w while a size preset is also present.</rtgl-text>
+      <pre id="result-width" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById("open-width");
+  const dialog = document.getElementById("dialog-width");
+  const result = document.getElementById("result-width");
+
+  const updateResult = () => {
+    const nativeDialog = dialog.shadowRoot.querySelector("dialog");
+    const dialogWidth = Math.round(nativeDialog.getBoundingClientRect().width);
+    const pass = Math.abs(dialogWidth - 360) <= 8;
+    result.textContent = `${pass ? "PASS" : "FAIL"} w=360px measured=${dialogWidth}px`;
+  };
+
+  button.addEventListener("click", () => {
+    dialog.setAttribute("open", "");
+    setTimeout(updateResult, 250);
+  });
+
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>
