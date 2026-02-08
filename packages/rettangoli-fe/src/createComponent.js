@@ -304,6 +304,7 @@ class BaseComponent extends HTMLElement {
     this.style.display = "contents";
     const deps = {
       ...this.deps,
+      refs: this.refIds,
       refIds: this.refIds,
       getRefIds: () => this.refIds,
       dispatchEvent: this.dispatchEvent.bind(this),
@@ -359,6 +360,16 @@ class BaseComponent extends HTMLElement {
     if (this.unsubscribeAll) {
       this.unsubscribeAll();
     }
+
+    const eventRateLimitState = this.transformedHandlers?.__eventRateLimitState;
+    if (eventRateLimitState && eventRateLimitState instanceof Map) {
+      eventRateLimitState.forEach((state) => {
+        if (state && state.debounceTimer) {
+          clearTimeout(state.debounceTimer);
+        }
+      });
+      eventRateLimitState.clear();
+    }
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -367,6 +378,7 @@ class BaseComponent extends HTMLElement {
       if (this.handlers?.handleOnUpdate) {
         const deps = {
           ...this.deps,
+          refs: this.refIds,
           refIds: this.refIds,
           getRefIds: () => this.refIds,
           dispatchEvent: this.dispatchEvent.bind(this),
@@ -402,6 +414,7 @@ class BaseComponent extends HTMLElement {
     try {
       const deps = {
         ...this.deps,
+        refs: this.refIds,
         refIds: this.refIds,
         getRefIds: () => this.refIds,
         dispatchEvent: this.dispatchEvent.bind(this),
@@ -416,24 +429,50 @@ class BaseComponent extends HTMLElement {
         refs: this.refs,
         handlers: this.transformedHandlers,
       });
-      // parse through vDom and recursively find all elements with id
-      const ids = {};
-      const findIds = (vDom) => {
-        if (vDom.data?.attrs && vDom.data.attrs.id) {
-          ids[vDom.data.attrs.id] = vDom;
-        }
-        if (vDom.children) {
-          vDom.children.forEach(findIds);
-        }
-      };
-      findIds(vDom);
-      this.refIds = ids;
 
       if (!this._oldVNode) {
         this._oldVNode = this.patch(this.renderTarget, vDom);
       } else {
         this._oldVNode = this.patch(this._oldVNode, vDom);
       }
+
+      // Collect refs as direct DOM elements keyed by id.
+      const ids = {};
+      const refKeys = Object.keys(this.refs || {});
+      const refMatchers = refKeys.map((refKey) => ({
+        isWildcard: refKey.endsWith("*"),
+        prefix: refKey.endsWith("*") ? refKey.slice(0, -1) : refKey,
+      }));
+
+      const matchesConfiguredRef = (id) => {
+        if (!id || refMatchers.length === 0) {
+          return false;
+        }
+        return refMatchers.some((refMatcher) => {
+          if (refMatcher.isWildcard) {
+            return id.startsWith(refMatcher.prefix);
+          }
+          return id === refMatcher.prefix;
+        });
+      };
+
+      const findRefElements = (vNode) => {
+        if (!vNode || typeof vNode !== "object") {
+          return;
+        }
+        const id = vNode?.data?.attrs?.id;
+        if (id && vNode.elm && matchesConfiguredRef(id)) {
+          ids[id] = vNode.elm;
+        }
+        if (Array.isArray(vNode.children)) {
+          vNode.children.forEach(findRefElements);
+        }
+      };
+      findRefElements(this._oldVNode);
+      Object.keys(this.refIds).forEach((key) => {
+        delete this.refIds[key];
+      });
+      Object.assign(this.refIds, ids);
     } catch (error) {
       console.error("Error during patching:", error);
     }

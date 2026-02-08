@@ -59,6 +59,67 @@ const lodashGet = (obj, path) => {
   return parts.reduce((acc, part) => acc && acc[part], obj);
 };
 
+const REF_KEY_REGEX = /^[a-z][a-zA-Z0-9]*\*?$/;
+const REF_ID_REGEX = /^[a-z][a-zA-Z0-9]*$/;
+
+const createRefMatchers = (refs) => {
+  return Object.entries(refs || {}).map(([refKey, refConfig]) => {
+    if (!REF_KEY_REGEX.test(refKey)) {
+      throw new Error(
+        `[Parser] Invalid ref key '${refKey}'. Ref keys must be camelCase and may optionally end with '*' for wildcard matching.`,
+      );
+    }
+
+    const isWildcard = refKey.endsWith("*");
+    const prefix = isWildcard ? refKey.slice(0, -1) : refKey;
+
+    return {
+      refKey,
+      refConfig,
+      isWildcard,
+      prefix,
+    };
+  });
+};
+
+const getEventRateLimitState = (handlers) => {
+  if (!handlers.__eventRateLimitState) {
+    Object.defineProperty(handlers, "__eventRateLimitState", {
+      value: new Map(),
+      enumerable: false,
+      configurable: true,
+    });
+  }
+  return handlers.__eventRateLimitState;
+};
+
+const assertBooleanEventOption = ({ optionName, optionValue, eventType, refKey }) => {
+  if (optionValue === undefined) {
+    return;
+  }
+  if (typeof optionValue !== "boolean") {
+    throw new Error(
+      `[Parser] Invalid '${optionName}' for event '${eventType}' on ref '${refKey}'. Expected boolean.`,
+    );
+  }
+};
+
+const assertNumberEventOption = ({ optionName, optionValue, eventType, refKey }) => {
+  if (optionValue === undefined) {
+    return;
+  }
+  if (
+    typeof optionValue !== "number"
+    || Number.isNaN(optionValue)
+    || !Number.isFinite(optionValue)
+    || optionValue < 0
+  ) {
+    throw new Error(
+      `[Parser] Invalid '${optionName}' for event '${eventType}' on ref '${refKey}'. Expected non-negative number.`,
+    );
+  }
+};
+
 export const parseView = ({ h, template, viewData, refs, handlers }) => {
   const result = jemplRender(template, viewData, {});
 
@@ -97,6 +158,8 @@ export const createVirtualDom = ({
     console.error("Input to createVirtualDom must be an array.");
     return [h("div", {}, [])];
   }
+
+  const refMatchers = createRefMatchers(refs);
 
   function processItems(currentItems, parentPath = "") {
     return currentItems
@@ -283,67 +346,108 @@ export const createVirtualDom = ({
         // Apply event listeners
         const eventHandlers = Object.create(null);
 
-        if (elementIdForRefs && refs) {
-          const matchingRefKeys = [];
-          Object.keys(refs).forEach((refKey) => {
-            if (refKey.includes("*")) {
-              const pattern =
-                "^" +
-                refKey
-                  .replace(/[.*+?^${}()|[\\\]\\]/g, "\\$&")
-                  .replace(/\\\*/g, ".*") +
-                "$";
-              try {
-                const regex = new RegExp(pattern);
-                if (regex.test(elementIdForRefs)) {
-                  matchingRefKeys.push(refKey);
-                }
-              } catch (e) {
-                // Keep this warning for invalid regex patterns
-                console.warn(
-                  `[Parser] Invalid regex pattern created from refKey '${refKey}': ${pattern}`,
-                  e,
-                );
-              }
-            } else {
-              if (elementIdForRefs === refKey) {
-                matchingRefKeys.push(refKey);
-              }
+        if (elementIdForRefs && refMatchers.length > 0) {
+          if (!REF_ID_REGEX.test(elementIdForRefs)) {
+            throw new Error(
+              `[Parser] Invalid element id '${elementIdForRefs}' for refs. Use camelCase ids only. Kebab-case ids are not supported.`,
+            );
+          }
+
+          const matchingRefMatchers = refMatchers.filter((refMatcher) => {
+            if (refMatcher.isWildcard) {
+              return elementIdForRefs.startsWith(refMatcher.prefix);
             }
+            return elementIdForRefs === refMatcher.prefix;
           });
 
-          if (matchingRefKeys.length > 0) {
-            matchingRefKeys.sort((a, b) => {
-              const aIsExact = !a.includes("*");
-              const bIsExact = !b.includes("*");
-              if (aIsExact && !bIsExact) return -1;
-              if (!aIsExact && bIsExact) return 1;
-              return b.length - a.length;
+          if (matchingRefMatchers.length > 0) {
+            matchingRefMatchers.sort((a, b) => {
+              if (!a.isWildcard && b.isWildcard) return -1;
+              if (a.isWildcard && !b.isWildcard) return 1;
+              return b.prefix.length - a.prefix.length;
             });
 
-            const bestMatchRefKey = matchingRefKeys[0];
+            const bestMatchRef = matchingRefMatchers[0];
+            const bestMatchRefKey = bestMatchRef.refKey;
 
-            if (refs[bestMatchRefKey] && refs[bestMatchRefKey].eventListeners) {
-              const eventListeners = refs[bestMatchRefKey].eventListeners;
+            if (bestMatchRef.refConfig && bestMatchRef.refConfig.eventListeners) {
+              const eventListeners = bestMatchRef.refConfig.eventListeners;
+              const eventRateLimitState = getEventRateLimitState(handlers);
               Object.entries(eventListeners).forEach(
                 ([eventType, eventConfig]) => {
-                  if (eventConfig.handler && eventConfig.action) {
-                    throw new Error('Each listener can have hanlder or action but not both')
+                  if (typeof eventConfig !== "object" || eventConfig === null) {
+                    throw new Error(
+                      `[Parser] Invalid event config for event '${eventType}' on ref '${bestMatchRefKey}'.`,
+                    );
                   }
 
+                  const hasDebounce = Object.prototype.hasOwnProperty.call(eventConfig, "debounce");
+                  const hasThrottle = Object.prototype.hasOwnProperty.call(eventConfig, "throttle");
+
+                  assertBooleanEventOption({
+                    optionName: "preventDefault",
+                    optionValue: eventConfig.preventDefault,
+                    eventType,
+                    refKey: bestMatchRefKey,
+                  });
+                  assertBooleanEventOption({
+                    optionName: "stopPropagation",
+                    optionValue: eventConfig.stopPropagation,
+                    eventType,
+                    refKey: bestMatchRefKey,
+                  });
+                  assertBooleanEventOption({
+                    optionName: "stopImmediatePropagation",
+                    optionValue: eventConfig.stopImmediatePropagation,
+                    eventType,
+                    refKey: bestMatchRefKey,
+                  });
+                  assertBooleanEventOption({
+                    optionName: "targetOnly",
+                    optionValue: eventConfig.targetOnly,
+                    eventType,
+                    refKey: bestMatchRefKey,
+                  });
+                  assertBooleanEventOption({
+                    optionName: "once",
+                    optionValue: eventConfig.once,
+                    eventType,
+                    refKey: bestMatchRefKey,
+                  });
+                  assertNumberEventOption({
+                    optionName: "debounce",
+                    optionValue: eventConfig.debounce,
+                    eventType,
+                    refKey: bestMatchRefKey,
+                  });
+                  assertNumberEventOption({
+                    optionName: "throttle",
+                    optionValue: eventConfig.throttle,
+                    eventType,
+                    refKey: bestMatchRefKey,
+                  });
+
+                  if (hasDebounce && hasThrottle) {
+                    throw new Error(
+                      `[Parser] Event '${eventType}' on ref '${bestMatchRefKey}' cannot define both 'debounce' and 'throttle'.`,
+                    );
+                  }
+
+                  if (eventConfig.handler && eventConfig.action) {
+                    throw new Error("Each listener can have handler or action but not both")
+                  }
+
+                  let callback = null;
                   if (eventConfig.action) {
-                    eventHandlers[eventType] = (event) => {
+                    callback = (event) => {
                       handlers.handleCallStoreAction({
                         ...eventConfig.payload,
                         _event: event,
                         _action: eventConfig.action,
                       })
-                    }
-                    return;
-                  }
-
-                  if (eventConfig.handler && handlers[eventConfig.handler]) {
-                    eventHandlers[eventType] = (event) => {
+                    };
+                  } else if (eventConfig.handler && handlers[eventConfig.handler]) {
+                    callback = (event) => {
                       handlers[eventConfig.handler]({
                         ...eventConfig.payload,
                         _event: event,
@@ -354,6 +458,77 @@ export const createVirtualDom = ({
                     console.warn(
                       `[Parser] Handler '${eventConfig.handler}' for refKey '${bestMatchRefKey}' (matching elementId '${elementIdForRefs}') is referenced but not found in available handlers.`,
                     );
+                  }
+
+                  if (!callback) {
+                    return;
+                  }
+
+                  const stateKey = `${bestMatchRefKey}:${elementIdForRefs}:${eventType}`;
+                  eventHandlers[eventType] = (event) => {
+                    const state = eventRateLimitState.get(stateKey) || {};
+                    const currentTarget = event.currentTarget || null;
+
+                    if (eventConfig.once) {
+                      if (currentTarget) {
+                        if (!state.onceTargets) {
+                          state.onceTargets = new WeakSet();
+                        }
+                        if (state.onceTargets.has(currentTarget)) {
+                          eventRateLimitState.set(stateKey, state);
+                          return;
+                        }
+                        state.onceTargets.add(currentTarget);
+                      } else if (state.onceTriggered) {
+                        eventRateLimitState.set(stateKey, state);
+                        return;
+                      } else {
+                        state.onceTriggered = true;
+                      }
+                    }
+
+                    if (eventConfig.targetOnly && event.target !== event.currentTarget) {
+                      eventRateLimitState.set(stateKey, state);
+                      return;
+                    }
+
+                    if (eventConfig.preventDefault) {
+                      event.preventDefault();
+                    }
+                    if (eventConfig.stopImmediatePropagation) {
+                      event.stopImmediatePropagation();
+                    } else if (eventConfig.stopPropagation) {
+                      event.stopPropagation();
+                    }
+
+                    if (hasDebounce) {
+                      if (state.debounceTimer) {
+                        clearTimeout(state.debounceTimer);
+                      }
+                      state.debounceTimer = setTimeout(() => {
+                        callback(event);
+                        state.debounceTimer = null;
+                      }, eventConfig.debounce);
+                      eventRateLimitState.set(stateKey, state);
+                      return;
+                    }
+
+                    if (hasThrottle) {
+                      if (!Object.prototype.hasOwnProperty.call(state, "lastThrottleAt")) {
+                        state.lastThrottleAt = 0;
+                      }
+                      const now = Date.now();
+                      if (!state.lastThrottleAt || now - state.lastThrottleAt >= eventConfig.throttle) {
+                        state.lastThrottleAt = now;
+                        eventRateLimitState.set(stateKey, state);
+                        callback(event);
+                        return;
+                      }
+                      eventRateLimitState.set(stateKey, state);
+                      return;
+                    }
+
+                    callback(event);
                   }
                 },
               );
@@ -433,6 +608,7 @@ export const createVirtualDom = ({
                         render: element.render.bind(element),
                         handlers: element.handlers,
                         dispatchEvent: element.dispatchEvent.bind(element),
+                        refs: element.refIds || {},
                         refIds: element.refIds || {},
                         getRefIds: () => element.refIds || {},
                       };

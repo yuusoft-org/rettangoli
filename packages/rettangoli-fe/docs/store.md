@@ -1,320 +1,161 @@
 # Store System (.store.js)
 
-State management using Immer for immutable updates. Defines initial state, actions, selectors, and view data transformations.
+State management contract for Rettangoli components.
 
-## Philosophy
+## Scope
 
-**Pure Functions**: All store functions are essentially pure - they have no side effects and are easily unit testable. Actions transform state predictably, selectors compute derived data, and `selectViewData` formats for display. Side effects (API calls, DOM manipulation, etc.) are handled in handlers, keeping the store layer clean and testable.
+`.store.js` is responsible for:
 
-## File Structure
+- Initial state (`createInitialState`)
+- Normal selectors (derived reads)
+- View projection (`selectViewData`)
+- State mutations (`actions`)
+
+Side effects (API calls, timers, DOM access) belong in `handlers.js`, not in the store.
+
+## File Order (Always)
+
+Use this export order in every store file:
+
+1. `createInitialState`
+2. Normal selectors
+3. `selectViewData`
+4. Actions
+
+## View Access Boundary
+
+Only `selectViewData` output is exposed to `.view.yaml`.
+
+- `.view.yaml` cannot read raw `state` directly
+- `.view.yaml` cannot call normal selectors directly
+- `.view.yaml` cannot call actions directly
+
+If the view needs a value, compute/map it inside `selectViewData` and return it there.
+
+## Minimal File Shape
 
 ```js
-// Initial component state
 export const createInitialState = () => ({
-  // state properties
-});
-
-// Transform state into view-ready data
-export const selectViewData = ({ state, props, attrs }) => {
-  // return view data object
-};
-
-// State selectors
-export const selectItems = ({ state, props, attrs }) => state.items;
-
-// State actions (mutations)
-export const setLoading = (state, isLoading) => {
-  state.loading = isLoading;
-};
-```
-
-## Initial State
-
-### Basic Structure
-```js
-export const createInitialState = () => ({
-  // Primitives
-  title: "My Component",
-  count: 0,
-  isLoading: false,
-
-  // Collections
+  title: '',
   items: [],
-  tags: ['default'],
-
-  // Objects
-  user: {
-    name: "",
-    preferences: { theme: "light" }
-  }
-
-  // Don't store derived data - compute in selectViewData
-  // itemCount: 0  ❌ Use items.length instead
+  isLoading: false,
 });
+
+// Normal selectors
+export const selectItems = ({ state }) => state.items;
+export const selectIsLoading = ({ state }) => state.isLoading;
+
+// View projection
+export const selectViewData = ({ state }) => ({
+  title: state.title,
+  items: state.items,
+  itemCount: state.items.length,
+  isLoading: state.isLoading,
+});
+
+// Actions
+export const setTitle = (state, { title }) => {
+  state.title = title;
+};
+
+export const toggleLoading = (state, _payload = {}) => {
+  state.isLoading = !state.isLoading;
+};
 ```
 
-### Organization Patterns
+## 1) Initial State
 
-**Best Practice**: Group state properties that change together under a single property. This makes state updates more predictable and easier to manage.
+Keep state minimal and serializable.
 
 ```js
-// Simple components - flat structure
 export const createInitialState = () => ({
-  text: "",
-  completed: false,
-  priority: "medium"
-});
-
-// Complex components - group related state
-export const createInitialState = () => ({
-  // UI state that changes together
-  ui: {
-    isEditing: false,
-    selectedTab: "overview",
-    showModal: false
-  },
-
-  // Data and filtering state
-  data: {
-    items: [],
-    filters: { status: "all", category: null }
+  form: {
+    values: { email: '' },
+    isSubmitting: false,
   },
 });
 ```
 
-## State Actions
+## 2) Normal Selectors
 
-Write mutations as if state is mutable - Immer handles immutability:
+Selector contract:
+
+- First argument: `{ state, props, attrs }`
+- Additional arguments: optional and flexible (primitive or object)
+
+Normal selectors are for JavaScript usage (store composition, handlers, tests). They are not directly visible in `.view.yaml`.
 
 ```js
-// Simple updates
+export const selectItemsByCategory = ({ state }, category) =>
+  state.items.filter((item) => item.category === category);
+
+export const selectItemsByFilters = ({ state }, { category, completed }) =>
+  state.items.filter((item) => {
+    if (category && item.category !== category) return false;
+    if (typeof completed === 'boolean' && item.completed !== completed) return false;
+    return true;
+  });
+```
+
+## 3) selectViewData
+
+`selectViewData` returns plain data for `.view.yaml`.
+
+- No side effects
+- No DOM access
+- Keep formatting and derived values here
+
+```js
+export const selectViewData = ({ state, props }) => ({
+  title: state.title || props.defaultTitle || 'Untitled',
+  items: state.items,
+  hasItems: state.items.length > 0,
+});
+```
+
+## 4) Actions
+
+Action contract:
+
+- Signature: `(state, payload)`
+- `payload` must be an object (not a primitive)
+
+Invocation behavior:
+
+- `store.someAction()` is valid
+- `store.someAction({ ... })` is valid
+- Missing payload is normalized to `{}`
+- For event-driven dispatch, `_event` is injected into payload
+- For programmatic calls, `_event` may be `undefined`
+
+```js
+// ❌ Not supported (primitive payload)
 export const setTitle = (state, title) => {
   state.title = title;
 };
 
-export const toggleCompleted = (state) => {
+// ✅ Supported (object payload)
+export const setTitle = (state, { title }) => {
+  state.title = title;
+};
+
+// ✅ Supported when no fields are required
+export const toggleCompleted = (state, _payload = {}) => {
   state.completed = !state.completed;
 };
 
-// Array operations
-export const addItem = (state, item) => {
-  state.items.push(item);
+export const setEmail = (state, { email }) => {
+  state.form.values.email = email;
 };
 
-export const removeItem = (state, itemId) => {
-  const index = state.items.findIndex(item => item.id === itemId);
-  if (index !== -1) {
-    state.items.splice(index, 1);
-  }
-};
-
-export const updateItem = (state, itemId, updates) => {
-  const item = state.items.find(item => item.id === itemId);
-  if (item) {
-    Object.assign(item, updates);
-  }
+export const setSubmitting = (state, { isSubmitting }) => {
+  state.form.isSubmitting = isSubmitting;
 };
 ```
 
-## Selectors
+## Guidelines
 
-Extract and compute data from state:
-
-```js
-// Basic selectors
-export const selectItems = ({ state, props, attrs }) => state.items;
-export const selectIsLoading = ({ state, props, attrs }) => state.isLoading;
-export const selectUserName = ({ state, props, attrs }) => state.user.name;
-
-// Computed selectors
-export const selectCompletedItems = ({ state, props, attrs }) => 
-  state.items.filter(item => item.completed);
-
-export const selectItemsByCategory = ({ state, props, attrs }, category) => 
-  state.items.filter(item => item.category === category);
-
-export const selectCompletionPercentage = ({ state, props, attrs }) => {
-  const total = state.items.length;
-  if (total === 0) return 0;
-  const completed = selectCompletedItems({ state, props, attrs }).length;
-  return Math.round((completed / total) * 100);
-};
-
-// Advanced filtering
-export const selectFilteredItems = ({ state, props, attrs }) => {
-  const { filters } = state;
-  let items = state.items;
-  
-  if (filters.status !== 'all') {
-    items = items.filter(item => 
-      filters.status === 'completed' ? item.completed : !item.completed
-    );
-  }
-  
-  if (filters.category) {
-    items = items.filter(item => item.category === filters.category);
-  }
-  
-  return items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-};
-```
-
-## View Data Transformation
-
-Transform state into view-ready data:
-
-**Note**: It's perfectly fine to call selector functions inside `selectViewData`, even though it makes the function not strictly "pure". This is an accepted pattern for code organization and reusability and in practice does not cause issues to unit testing.
-
-```js
-export const selectViewData = ({ state, props, attrs }) => {
-  return {
-    // Pass through simple values
-    title: state.title,
-    isLoading: state.isLoading,
-
-    // Compute derived values
-    itemCount: state.items.length,
-    hasItems: state.items.length > 0,
-
-    // Format for display
-    displayTitle: state.title || 'Untitled',
-    formattedDate: new Date(state.createdAt).toLocaleDateString(),
-
-    // Use selectors
-    completedItems: selectCompletedItems({ state, props, attrs }),
-    filteredItems: selectFilteredItems({ state, props, attrs }),
-
-    // Combine multiple sources
-    userName: state.user.name || props.defaultName || 'Guest',
-    theme: attrs.theme || state.user.preferences.theme
-  };
-};
-```
-
-## Common Patterns
-
-### Loading States
-```js
-export const createInitialState = () => ({
-  data: [],
-  isLoading: false,
-  error: null
-});
-
-export const setLoading = (state, isLoading) => {
-  state.isLoading = isLoading;
-  if (isLoading) state.error = null;
-};
-
-export const setData = (state, data) => {
-  state.data = data;
-  state.isLoading = false;
-  state.error = null;
-};
-
-export const selectViewData = ({ state }) => ({
-  items: state.data,
-  isLoading: state.isLoading,
-  hasError: !!state.error,
-  isEmpty: !state.isLoading && state.data.length === 0
-});
-```
-
-### Form State
-```js
-export const createInitialState = () => ({
-  form: {
-    values: { name: '', email: '' },
-    errors: {},
-    isSubmitting: false
-  }
-});
-
-export const setFieldValue = (state, field, value) => {
-  state.form.values[field] = value;
-  delete state.form.errors[field]; // Clear error on change
-};
-
-export const setFieldError = (state, field, error) => {
-  state.form.errors[field] = error;
-};
-
-export const selectViewData = ({ state }) => {
-  const { form } = state;
-  return {
-    formValues: form.values,
-    formErrors: form.errors,
-    isValid: Object.keys(form.errors).length === 0,
-    canSubmit: Object.keys(form.errors).length === 0 && !form.isSubmitting
-  };
-};
-```
-
-### Pagination
-```js
-export const createInitialState = () => ({
-  items: [],
-  pagination: {
-    currentPage: 1,
-    pageSize: 10,
-    totalItems: 0
-  }
-});
-
-export const setPage = (state, page) => {
-  state.pagination.currentPage = page;
-};
-
-export const setPaginatedData = (state, { items, totalItems }) => {
-  state.items = items;
-  state.pagination.totalItems = totalItems;
-  state.pagination.totalPages = Math.ceil(totalItems / state.pagination.pageSize);
-};
-
-export const selectViewData = ({ state }) => {
-  const { pagination } = state;
-  return {
-    items: state.items,
-    currentPage: pagination.currentPage,
-    totalPages: pagination.totalPages,
-    hasPrevious: pagination.currentPage > 1,
-    hasNext: pagination.currentPage < pagination.totalPages
-  };
-};
-```
-
-## Best Practices
-
-### 1. Keep State Minimal
-```js
-// ❌ Don't store derived data
-export const createInitialState = () => ({
-  items: [],
-  itemCount: 0,        // Derived from items.length
-  hasItems: false      // Derived from items.length > 0
-});
-
-// ✅ Compute in selectViewData
-export const createInitialState = () => ({
-  items: []
-});
-
-export const selectViewData = ({ state }) => ({
-  items: state.items,
-  itemCount: state.items.length,
-  hasItems: state.items.length > 0
-});
-```
-
-### 2. Use Descriptive Action Names
-```js
-// ✅ Clear, specific names
-export const setUserEmail = (state, email) => { /* */ };
-export const addTodoItem = (state, item) => { /* */ };
-export const markItemCompleted = (state, itemId) => { /* */ };
-
-// ❌ Generic names
-export const update = (state, data) => { /* */ };
-export const set = (state, prop, value) => { /* */ };
-```
-
+- Keep state minimal; compute derived values in selectors or `selectViewData`.
+- Keep action names explicit (`setEmail`, `addItem`, `removeItem`).
+- Keep actions deterministic and side-effect free.
+- Prefer small payload objects with descriptive keys.

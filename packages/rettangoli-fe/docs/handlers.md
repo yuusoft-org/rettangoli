@@ -1,6 +1,7 @@
 # Event Handlers (.handlers.js)
 
 Event handling and lifecycle management with dependency injection. Handlers receive events and dependencies to update state and trigger renders.
+Public imperative component methods are defined in `.methods.js` (optional), not in `.handlers.js`.
 
 ## Philosophy
 
@@ -34,9 +35,16 @@ export const handlerName = (deps, payload) => {
 - **`props`**: Component properties
 - **`attrs`**: HTML attributes
 - **`dispatchEvent`**: Emit custom DOM events
-- **`element`**: Component DOM element
-- **Custom dependencies**: From `setup.js`
-- **`getRefIds`**: Function to get reference IDs from the view YAML
+- **`refs`**: Map of `camelCase ref key -> DOM element`
+- **Custom dependencies**: From `setup.js` (services, event buses, or an `element` reference you provide explicitly)
+
+```js
+export const handleFocus = (deps) => {
+  const submitButton = deps.refs['submitButton'];
+  submitButton.focus();
+  submitButton.callSomeFunction?.();
+};
+```
 
 ## Lifecycle Handlers
 
@@ -76,49 +84,18 @@ export const handleAfterMount = async (deps, payload) => {
   // Can perform async operations here
   try {
     const data = await fetchInitialData();
-    store.setData(data);
+    store.setData({ data });
     render();
   } catch (error) {
-    store.setError(error.message);
+    store.setError({ error: error.message });
     render();
   }
 };
 ```
 
 #### Async Operations (recommended pattern)
-For async operations like API calls, use the `subscriptions` pattern:
-
-```js
-import { of } from 'rxjs';
-import { tap } from 'rxjs/operators';
-
-const doSomeStuff = async (deps, payload) => {
-  // Set loading state
-  store.setLoading(true);
-  render();
-
-  try {
-    const data = await apiService.fetchData();
-    store.setData(data);
-    store.setLoading(false);
-    render();
-  } catch (error) {
-    store.setError(error.message);
-    store.setLoading(false);
-    render();
-  }
-}
-
-export const subscriptions = (deps, payload) => {
-  const { store, render, apiService } = deps;
-  return [
-    // Trigger immediately on mount for async operations
-    of(null).pipe(
-      tap(() => doSomeStuff(deps))
-    )
-  ];
-};
-```
+For one-off async operations (API calls, bootstrap fetches), use lifecycle handlers or event handlers directly.
+For long-lived browser-level listeners, declare them in `.view.yaml` under `refs.window.eventListeners` or `refs.document.eventListeners`.
 
 ### Property Changes
 
@@ -151,7 +128,7 @@ export const handleInputChange = (deps, payload) => {
   const { _event } = payload;
   const { name, value } = _event.target;
 
-  store.setFieldValue(name, value);
+  store.setFieldValue({ field: name, value });
   render();
 };
 ```
@@ -164,6 +141,7 @@ export const handleToggle = (deps, payload) => {
   store.toggleCompleted();
   render();
 };
+```
 
 ### Keyboard Events
 ```js
@@ -186,24 +164,24 @@ export const handleKeyDown = (deps, payload) => {
 
 ## Async Operations
 
-Handlers can be asyncronous
+Handlers can be asynchronous.
 
 ### API Calls
 ```js
 export const handleRefresh = async (deps, payload) => {
   const { store, render, apiService } = deps;
 
-  store.setLoading(true);
+  store.setLoading({ isLoading: true });
   render();
 
   try {
     const data = await apiService.fetchLatest();
-    store.setData(data);
-    store.setLastRefresh(Date.now());
+    store.setData({ data });
+    store.setLastRefresh({ lastRefresh: Date.now() });
   } catch (error) {
-    store.setError(error.message);
+    store.setError({ error: error.message });
   } finally {
-    store.setLoading(false);
+    store.setLoading({ isLoading: false });
     render();
   }
 };
@@ -211,7 +189,8 @@ export const handleRefresh = async (deps, payload) => {
 
 ## Emitting Custom DOM Events
 
-For custom events name. We recommend using the `kebab-case` format.
+For custom event names, we recommend using `kebab-case`.
+Declare emitted event contracts in `.schema.yaml` under `events`.
 
 ### Parent-Child Communication
 ```js
@@ -231,7 +210,7 @@ export const handleItemClick = (deps, payload) => {
 You can pass any dependency in `setup.js` and use it in your handlers.
 This is useful for complex logic that doesn't fit in the store or view.
 
-Some examples of good use cases for dependencies
+Some good use cases for custom dependencies:
 
 ### Complex logic
 
@@ -263,7 +242,7 @@ export const handleCalculateMetrics = (deps, payload) => {
   const rawData = store.getRawData();
   const metrics = dataProcessor.calculateMetrics(rawData);
 
-  store.setMetrics(metrics);
+  store.setMetrics({ metrics });
   render();
 };
 ```
@@ -284,8 +263,8 @@ export const handleDateFormat = (deps, payload) => {
   const formattedDate = format(new Date(), 'yyyy-MM-dd');
   const calculation = Math.round(store.getValue() * 1.2);
 
-  store.setFormattedDate(formattedDate);
-  store.setCalculation(calculation);
+  store.setFormattedDate({ formattedDate });
+  store.setCalculation({ calculation });
   render();
 };
 ```
@@ -315,7 +294,7 @@ export const handleUserSubmit = (deps, payload) => {
   const validationResult = userService.validateUser(userData);
   const paymentResult = paymentProcessor.processPayment(amount, method);
 
-  store.setResults(validationResult, paymentResult);
+  store.setResults({ validationResult, paymentResult });
   render();
 };
 ```
@@ -359,8 +338,8 @@ export const handleBeforeMount = (deps, payload) => {
   const savedTheme = localStorage.getItem('user-theme', 'light');
   const savedSettings = localStorage.getItem('user-settings', {});
 
-  store.setTheme(savedTheme);
-  store.setSettings(savedSettings);
+  store.setTheme({ theme: savedTheme });
+  store.setSettings({ settings: savedSettings });
   render();
 };
 
@@ -370,7 +349,7 @@ export const handleThemeToggle = (deps, payload) => {
   const currentTheme = store.getTheme();
   const newTheme = currentTheme === 'light' ? 'dark' : 'light';
 
-  store.setTheme(newTheme);
+  store.setTheme({ theme: newTheme });
   localStorage.setItem('user-theme', newTheme);
 
   render();
@@ -407,11 +386,11 @@ export const handleBeforeMount = (deps, payload) => {
   // Subscribe to actions from other components
   const unsubscribe = subject.subscribe((action, payload) => {
     if (action === 'user-logged-in') {
-      store.setCurrentUser(payload);
+      store.setCurrentUser({ user: payload });
       render();
     }
     if (action === 'theme-changed') {
-      store.setTheme(payload.theme);
+      store.setTheme({ theme: payload.theme });
       render();
     }
   });
@@ -433,17 +412,32 @@ export const handleUserAction = (deps, payload) => {
     timestamp: Date.now()
   });
 
-  store.recordAction(_event.target.dataset.itemId);
+  store.recordAction({ itemId: _event.target.dataset.itemId });
   render();
 };
 ```
 
-## Custom event subscriptions
+## Global Browser Events
 
-As convenience, the framework provides a special function to subscribe to custom events
-using RxJS observables.
+Global browser events are configured in `.view.yaml`, not in `handlers.js`.
 
-TODO
+```yaml
+refs:
+  window:
+    eventListeners:
+      resize:
+        action: setViewportWidth
+        throttle: 120
+        payload:
+          width: ${_event.target.innerWidth}
+
+  document:
+    eventListeners:
+      visibilitychange:
+        handler: handleVisibilityChange
+```
+
+Handlers for those listeners still receive `(deps, payload)` with `_event` in payload.
 
 ## Best Practices
 
@@ -457,7 +451,7 @@ export const handleSubmit = (deps, payload) => {
   _event.preventDefault();
   const data = getFormData(_event.target);
 
-  store.setSubmitting(true);
+  store.setSubmitting({ isSubmitting: true });
   render();
 
   submitForm(data, deps);
@@ -489,16 +483,16 @@ const handleAsyncAction = async (actionFn, deps, payload) => {
   const { store, render } = deps;
 
   try {
-    store.setLoading(true);
+    store.setLoading({ isLoading: true });
     render();
 
     await actionFn();
 
-    store.setSuccess(true);
+    store.setSuccess({ isSuccess: true });
   } catch (error) {
-    store.setError(error.message);
+    store.setError({ error: error.message });
   } finally {
-    store.setLoading(false);
+    store.setLoading({ isLoading: false });
     render();
   }
 };
@@ -529,7 +523,7 @@ export const handleFormSubmit = (deps, payload) => {
 
   const errors = validateFormData(data);
   if (errors.length > 0) {
-    store.setFormErrors(errors);
+    store.setFormErrors({ errors });
     render();
     return;
   }

@@ -1,10 +1,10 @@
 # Rettangoli Frontend
 
-A modern frontend framework that uses YAML for view definitions, web components for composition, and Immer for state management. Build reactive applications with minimal complexity using just 3 types of files.
+A modern frontend framework that uses YAML for view definitions, web components for composition, and Immer for state management. Build reactive applications with minimal complexity using 4 types of files.
 
 ## Features
 
-- **🗂️ Three-File Architecture** - `.view.yaml`, `.store.js`, `.handlers.js` files scale from single page to complex applications
+- **🗂️ Four-File Architecture** - `.view.yaml`, `.store.js`, `.handlers.js`, `.schema.yaml` scale from single page to complex applications
 - **📝 YAML Views** - Declarative UI definitions that compile to virtual DOM
 - **🧩 Web Components** - Standards-based component architecture
 - **🔄 Reactive State** - Immer-powered immutable state management
@@ -23,6 +23,7 @@ rtgl fe watch     # Start dev server
 
 - **[Developer Quickstart](./docs/overview.md)** - Complete introduction and examples
 - **[View System](./docs/view.md)** - Complete YAML syntax
+- **[Schema System](./docs/schema.md)** - Component API and metadata
 - **[Store Management](./docs/store.md)** - State patterns
 - **[Event Handlers](./docs/handlers.md)** - Event handling
 
@@ -59,7 +60,7 @@ bun install
 2. **Create project structure**:
 ```bash
 # Scaffold a new component
-node ../rettangoli-cli/cli.js fe scaffold --category components --name MyButton
+node ../rettangoli-cli/cli.js fe scaffold --category components --component-name MyButton
 ```
 
 3. **Start development**:

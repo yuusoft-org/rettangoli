@@ -1,8 +1,11 @@
-
-export const handleOnMount = (deps, event) => {
+export const handleBeforeMount = (deps, payload) => {
   //
 }
 
-export const handlerSomeEvent = (deps, event) => {
+export const handleAfterMount = async (deps, payload) => {
+  //
+}
+
+export const handleSomeEvent = (deps, payload) => {
   //
 }
