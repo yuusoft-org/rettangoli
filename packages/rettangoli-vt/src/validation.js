@@ -72,66 +72,38 @@ function validateCaptureConfig(captureConfig, sourcePath) {
 
   assert(
     isPlainObject(captureConfig),
-    `Invalid VT config in ${sourcePath}: "vt.capture" must be an object, got ${valueType(captureConfig)}.`,
+    `Invalid VT config in ${sourcePath}: "vt.capture" must be an object when provided, got ${valueType(captureConfig)}.`,
   );
-
-  validateOptionalNumber(captureConfig.workerCount, "vt.capture.workerCount", { integer: true, min: 1 });
-  validateOptionalEnum(captureConfig.engine, "vt.capture.engine", ["pool"]);
-  validateOptionalNumber(captureConfig.screenshotWaitTime, "vt.capture.screenshotWaitTime", { integer: true, min: 0 });
-  validateOptionalString(captureConfig.waitEvent, "vt.capture.waitEvent");
-  validateOptionalString(captureConfig.waitSelector, "vt.capture.waitSelector");
-  validateOptionalEnum(
-    captureConfig.waitStrategy,
-    "vt.capture.waitStrategy",
-    ["networkidle", "load", "event", "selector"],
+  assert(
+    Object.keys(captureConfig).length === 0,
+    `Invalid VT config in ${sourcePath}: "vt.capture" is internal and no longer user-configurable. Remove this section.`,
   );
-  validateOptionalEnum(captureConfig.isolationMode, "vt.capture.isolationMode", ["strict", "fast"]);
-  validateOptionalNumber(captureConfig.navigationTimeout, "vt.capture.navigationTimeout", { integer: true, min: 1 });
-  validateOptionalNumber(captureConfig.readyTimeout, "vt.capture.readyTimeout", { integer: true, min: 1 });
-  validateOptionalNumber(captureConfig.screenshotTimeout, "vt.capture.screenshotTimeout", { integer: true, min: 1 });
-  validateOptionalNumber(captureConfig.maxRetries, "vt.capture.maxRetries", { integer: true, min: 0 });
-  validateOptionalNumber(captureConfig.recycleEvery, "vt.capture.recycleEvery", { integer: true, min: 0 });
-  validateOptionalString(captureConfig.metricsPath, "vt.capture.metricsPath");
-  validateOptionalBoolean(captureConfig.headless, "vt.capture.headless");
-
-  if (captureConfig.waitStrategy === "event") {
-    assert(
-      typeof captureConfig.waitEvent === "string" && captureConfig.waitEvent.trim().length > 0,
-      `"vt.capture.waitEvent" is required when "vt.capture.waitStrategy" is "event".`,
-    );
-  }
-  if (captureConfig.waitStrategy === "selector") {
-    assert(
-      typeof captureConfig.waitSelector === "string" && captureConfig.waitSelector.trim().length > 0,
-      `"vt.capture.waitSelector" is required when "vt.capture.waitStrategy" is "selector".`,
-    );
-  }
 }
 
 const LEGACY_CAPTURE_FIELDS = {
-  screenshotWaitTime: "vt.capture.screenshotWaitTime",
-  waitEvent: "vt.capture.waitEvent",
-  waitSelector: "vt.capture.waitSelector",
-  waitStrategy: "vt.capture.waitStrategy",
-  concurrency: "vt.capture.workerCount",
-  workerCount: "vt.capture.workerCount",
-  isolationMode: "vt.capture.isolationMode",
-  navigationTimeout: "vt.capture.navigationTimeout",
-  readyTimeout: "vt.capture.readyTimeout",
-  screenshotTimeout: "vt.capture.screenshotTimeout",
-  maxRetries: "vt.capture.maxRetries",
-  recycleEvery: "vt.capture.recycleEvery",
-  metricsPath: "vt.capture.metricsPath",
-  headless: "vt.capture.headless",
+  screenshotWaitTime: true,
+  waitEvent: true,
+  waitSelector: true,
+  waitStrategy: true,
+  concurrency: true,
+  workerCount: true,
+  isolationMode: true,
+  navigationTimeout: true,
+  readyTimeout: true,
+  screenshotTimeout: true,
+  maxRetries: true,
+  recycleEvery: true,
+  metricsPath: true,
+  headless: true,
 };
 
 const SECTION_PAGE_KEY_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 function assertNoLegacyCaptureFields(vtConfig, sourcePath) {
-  for (const [legacyField, newPath] of Object.entries(LEGACY_CAPTURE_FIELDS)) {
+  for (const legacyField of Object.keys(LEGACY_CAPTURE_FIELDS)) {
     if (Object.prototype.hasOwnProperty.call(vtConfig, legacyField)) {
       throw new Error(
-        `Invalid VT config in ${sourcePath}: "vt.${legacyField}" was removed. Use "${newPath}" instead.`,
+        `Invalid VT config in ${sourcePath}: "vt.${legacyField}" was removed and is no longer user-configurable.`,
       );
     }
   }

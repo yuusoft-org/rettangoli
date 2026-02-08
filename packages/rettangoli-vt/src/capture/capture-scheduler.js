@@ -3,6 +3,66 @@ import { PlaywrightRunner } from "./playwright-runner.js";
 import { ResultCollector } from "./result-collector.js";
 import { resolveWorkerPlan } from "./worker-plan.js";
 
+function nowMs() {
+  return performance.now();
+}
+
+function createTaskQueues(tasks) {
+  const freshQueue = tasks
+    .map((task, sourceOrder) => ({
+      task,
+      sourceOrder,
+      attempt: 1,
+      queueType: "fresh",
+      enqueuedAtMs: nowMs(),
+    }))
+    .sort((left, right) => {
+      const leftCost = left.task.estimatedCost ?? 0;
+      const rightCost = right.task.estimatedCost ?? 0;
+      if (leftCost !== rightCost) {
+        return leftCost - rightCost;
+      }
+      return right.sourceOrder - left.sourceOrder;
+    });
+
+  const retryQueue = [];
+  let dispatchCount = 0;
+  const fairRetryInterval = 4; // 3 fresh dispatches then 1 retry when available
+
+  const getNextTask = () => {
+    const shouldDispatchRetry = retryQueue.length > 0
+      && (freshQueue.length === 0 || (dispatchCount % fairRetryInterval) === (fairRetryInterval - 1));
+
+    if (shouldDispatchRetry) {
+      dispatchCount += 1;
+      return retryQueue.shift();
+    }
+    if (freshQueue.length > 0) {
+      dispatchCount += 1;
+      return freshQueue.pop();
+    }
+    if (retryQueue.length > 0) {
+      dispatchCount += 1;
+      return retryQueue.shift();
+    }
+    return null;
+  };
+
+  const enqueueRetry = (item) => {
+    retryQueue.push({
+      task: item.task,
+      attempt: item.attempt + 1,
+      queueType: "retry",
+      enqueuedAtMs: nowMs(),
+    });
+  };
+
+  return {
+    getNextTask,
+    enqueueRetry,
+  };
+}
+
 export async function runCaptureScheduler(options) {
   const {
     tasks,
@@ -34,6 +94,10 @@ export async function runCaptureScheduler(options) {
     isolationMode,
     maxRetries,
     adaptivePolicy,
+    schedulingPolicy: {
+      type: "duration-aware-fair-retry",
+      freshBeforeRetry: 3,
+    },
   });
 
   if (!tasks.length) {
@@ -44,8 +108,8 @@ export async function runCaptureScheduler(options) {
     };
   }
 
-  const queue = tasks.map((task) => ({ task, attempt: 1 })).reverse();
-  const getNextTask = () => queue.pop();
+  const queue = createTaskQueues(tasks);
+  const getNextTask = queue.getNextTask;
 
   const browser = await chromium.launch({ headless });
   const runners = [];
@@ -78,9 +142,18 @@ export async function runCaptureScheduler(options) {
           break;
         }
 
+        const queueWaitMs = Math.max(0, nowMs() - item.enqueuedAtMs);
+        const attemptStartMs = nowMs();
+
         try {
           const result = await runner.runTask(item.task, item.attempt);
-          collector.recordSuccess(item.task, result);
+          const attemptMs = nowMs() - attemptStartMs;
+          collector.recordSuccess(item.task, result, {
+            workerId: runner.workerId,
+            queueType: item.queueType,
+            queueWaitMs,
+            attemptMs,
+          });
           processedSinceRecycle += 1;
 
           if (
@@ -93,16 +166,24 @@ export async function runCaptureScheduler(options) {
             processedSinceRecycle = 0;
           }
         } catch (error) {
+          const attemptMs = nowMs() - attemptStartMs;
           if (item.attempt <= maxRetries) {
-            collector.recordRetry(item.task, item.attempt, error.message);
-            queue.push({
-              task: item.task,
-              attempt: item.attempt + 1,
+            collector.recordRetry(item.task, item.attempt, error.message, {
+              workerId: runner.workerId,
+              queueType: item.queueType,
+              queueWaitMs,
+              attemptMs,
             });
+            queue.enqueueRetry(item);
             continue;
           }
 
-          collector.recordFailure(item.task, item.attempt, error.message);
+          collector.recordFailure(item.task, item.attempt, error.message, {
+            workerId: runner.workerId,
+            queueType: item.queueType,
+            queueWaitMs,
+            attemptMs,
+          });
         }
       }
     });

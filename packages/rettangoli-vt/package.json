@@ -9,7 +9,8 @@
     "./cli": "./src/cli/index.js"
   },
   "scripts": {
-    "test": "vitest run --reporter=verbose"
+    "test": "vitest run --reporter=verbose",
+    "bench:capture": "node ./scripts/benchmark-capture.js"
   },
   "dependencies": {
     "commander": "^13.1.0",

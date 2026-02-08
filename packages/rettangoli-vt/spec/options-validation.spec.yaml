@@ -4,113 +4,58 @@ group: generate-options
 suite: resolveGenerateOptions
 exportName: resolveGenerateOptions
 ---
-case: uses capture-level settings
+case: resolves minimal user options with internal defaults
 in:
   - {}
   - path: ./vt-custom
     skipScreenshots: false
     port: 4100
     url: https://example.com/root
-    capture:
-      screenshotWaitTime: 25
-      waitEvent: capture:ready
-      waitSelector: .capture-ready
-      waitStrategy: selector
-      workerCount: 3
-      isolationMode: fast
-      navigationTimeout: 4100
-      readyTimeout: 5100
-      screenshotTimeout: 6100
-      maxRetries: 2
-      recycleEvery: 5
-      metricsPath: .rettangoli/vt/capture-metrics.json
-      headless: true
 out:
   vtPath: ./vt-custom
   skipScreenshots: false
-  screenshotWaitTime: 25
   port: 4100
-  waitEvent: capture:ready
-  waitSelector: .capture-ready
-  waitStrategy: selector
-  workerCount: 3
-  isolationMode: fast
-  navigationTimeout: 4100
-  readyTimeout: 5100
-  screenshotTimeout: 6100
-  maxRetries: 2
-  recycleEvery: 5
-  metricsPath: .rettangoli/vt/capture-metrics.json
   headless: true
   configUrl: https://example.com/root
+  screenshotWaitTime: 0
+  waitStrategy: load
+  isolationMode: fast
+  navigationTimeout: 30000
+  readyTimeout: 30000
+  screenshotTimeout: 30000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json
 ---
-case: applies cli overrides with highest precedence
+case: applies cli overrides for minimal public surface
 in:
   - vtPath: ./vt-cli
     skipScreenshots: true
-    screenshotWaitTime: 0
     port: 3300
-    waitEvent: cli:ready
-    waitSelector: "#cli-root"
-    waitStrategy: event
-    workers: 4
-    isolationMode: strict
-    navigationTimeout: 101
-    readyTimeout: 102
-    screenshotTimeout: 103
-    maxRetries: 4
-    recycleEvery: 8
-    metricsPath: .rettangoli/vt/cli-metrics.json
     headless: false
     url: http://localhost:9000/render
   - path: ./vt-config
     skipScreenshots: false
     port: 4400
     url: https://example.com/config
-    capture:
-      screenshotWaitTime: 123
-      waitEvent: config:ready
-      waitSelector: .config-ready
-      waitStrategy: load
-      workerCount: 2
-      isolationMode: fast
-      navigationTimeout: 5000
-      readyTimeout: 6000
-      screenshotTimeout: 7000
-      maxRetries: 1
-      recycleEvery: 0
-      metricsPath: .rettangoli/vt/config-metrics.json
-      headless: true
 out:
   vtPath: ./vt-cli
   skipScreenshots: true
-  screenshotWaitTime: 0
   port: 3300
-  waitEvent: cli:ready
-  waitSelector: "#cli-root"
-  waitStrategy: event
-  workerCount: 4
-  isolationMode: strict
-  navigationTimeout: 101
-  readyTimeout: 102
-  screenshotTimeout: 103
-  maxRetries: 4
-  recycleEvery: 8
-  metricsPath: .rettangoli/vt/cli-metrics.json
   headless: false
   configUrl: http://localhost:9000/render
+  screenshotWaitTime: 0
+  waitStrategy: load
+  isolationMode: fast
+  navigationTimeout: 30000
+  readyTimeout: 30000
+  screenshotTimeout: 30000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json
 ---
-case: rejects event strategy without waitEvent
+case: rejects invalid url
 in:
-  - waitStrategy: event
-  - path: ./vt
-    sections:
-      - title: Pages
-        files: pages
-throws: 'Invalid waitStrategy "event": waitEvent must be provided.'
----
-case: rejects unknown wait strategy
-in:
-  - waitStrategy: unsupported
+  - url: ""
   - {}
-throws: Invalid waitStrategy "unsupported"
+throws: Invalid url

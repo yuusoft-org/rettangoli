@@ -8,7 +8,7 @@ This document defines the behavioral and configuration contract for `@rettangoli
 
 - This spec covers `rtgl vt generate`, `rtgl vt report`, and `rtgl vt accept`.
 - This spec reflects the current non-backward-compatible API surface.
-- Legacy root-level capture fields are intentionally rejected.
+- Capture internals are intentionally not user-configurable.
 
 ## Top-Level Config (`rettangoli.config.yaml`)
 
@@ -24,21 +24,6 @@ vt:
   sections:
     - title: Components
       files: components
-  capture:
-    engine: pool
-    screenshotWaitTime: 0
-    workerCount: 8
-    isolationMode: fast      # strict | fast
-    waitStrategy: networkidle # networkidle | load | event | selector
-    waitEvent: vt:ready
-    waitSelector: "#ready"
-    navigationTimeout: 30000
-    readyTimeout: 30000
-    screenshotTimeout: 30000
-    maxRetries: 2
-    recycleEvery: 0
-    metricsPath: .rettangoli/vt/metrics.json
-    headless: true
 ```
 
 ## Required Keys
@@ -50,9 +35,9 @@ vt:
 - Page keys (`section.title` for flat sections and `items[].title` for grouped items) must match `[A-Za-z0-9_-]+` (no spaces).
 - Page keys must be unique case-insensitively.
 
-## Removed Root Capture Fields
+## Removed User Capture Fields
 
-The following root fields are rejected and must be moved under `vt.capture.*`:
+The following fields are rejected and no longer user-configurable:
 
 - `vt.screenshotWaitTime`
 - `vt.waitEvent`
@@ -69,17 +54,7 @@ The following root fields are rejected and must be moved under `vt.capture.*`:
 - `vt.metricsPath`
 - `vt.headless`
 
-## Capture Config Rules
-
-- `vt.capture.engine` allowed values: `pool`.
-- `vt.capture.workerCount` must be an integer >= 1 when provided.
-- `vt.capture.screenshotWaitTime` must be an integer >= 0.
-- `vt.capture.navigationTimeout`, `readyTimeout`, `screenshotTimeout` must be integers >= 1.
-- `vt.capture.maxRetries` must be an integer >= 0.
-- `vt.capture.recycleEvery` must be an integer >= 0.
-- `vt.capture.waitStrategy` allowed values: `networkidle`, `load`, `event`, `selector`.
-- If `waitStrategy=event`, `waitEvent` is required.
-- If `waitStrategy=selector`, `waitSelector` is required.
+`vt.capture` itself is reserved for internal implementation and rejected when non-empty.
 
 ## Frontmatter Spec (Per Spec File)
 
@@ -108,18 +83,6 @@ Step object rules:
 Supported options:
 
 - `--skip-screenshots`
-- `--screenshot-wait-time <time>`
-- `--workers <number>`
-- `--isolation-mode <mode>`
-- `--wait-event <name>`
-- `--wait-selector <selector>`
-- `--wait-strategy <strategy>`
-- `--navigation-timeout <ms>`
-- `--ready-timeout <ms>`
-- `--screenshot-timeout <ms>`
-- `--max-retries <number>`
-- `--recycle-every <number>`
-- `--metrics-path <path>`
 - `--headed` (maps to `headless=false`)
 
 Removed option:
@@ -152,8 +115,8 @@ Wait strategy resolution priority:
 
 - `frontmatter.waitStrategy`
 - inferred from `frontmatter.waitEvent` / `frontmatter.waitSelector`
-- capture defaults (`waitStrategy`, `waitEvent`, `waitSelector`)
-- fallback: `networkidle`
+- internal generate defaults (`waitStrategy=load`)
+- fallback: `load`
 
 Screenshot filename contract:
 
@@ -169,10 +132,17 @@ When `workerCount` is not provided, adaptive worker count is:
 - `memoryBound = max(1, floor(totalMemoryGb / 1.5))`
 - `workers = max(1, min(cpuBound, memoryBound, 16))`
 
+Queue policy:
+
+- Fresh tasks are sorted by `estimatedCost` descending (heavier first).
+- Equal-cost tasks preserve spec order.
+- Retry tasks are enqueued separately and dispatched fairly (after at most 3 fresh tasks) so retries do not starve fresh work.
+
 `recycleEvery` behavior:
 
 - Applied only in `isolationMode=fast`.
 - After N successful tasks in a worker, shared context is recycled.
+- In `fast` mode, worker page is reused and reset deterministically per task (cookies/permissions cleared, runtime storage cleanup, `about:blank` navigation, fixed viewport/media/timeouts).
 
 ## Report Semantics
 
@@ -202,6 +172,7 @@ Comparison methods:
 - HTML report: `.rettangoli/vt/_site/report.html`
 - JSON report: `.rettangoli/vt/report.json`
 - Capture metrics JSON (default): `.rettangoli/vt/metrics.json`
+- Benchmark output (optional): `.rettangoli/vt/benchmark.json`
 
 ## Failure Semantics
 

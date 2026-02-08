@@ -53,6 +53,7 @@ describe("ResultCollector", () => {
         timings: {
           totalMs: 120,
           sessionMs: 5,
+          resetMs: 3,
           navigationMs: 30,
           readyMs: 0,
           settleMs: 10,
@@ -60,11 +61,23 @@ describe("ResultCollector", () => {
           stepsMs: 35,
         },
       },
+      {
+        workerId: 1,
+        queueType: "fresh",
+        queueWaitMs: 8,
+        attemptMs: 121,
+      },
     );
     collector.recordFailure(
       { path: "pages/error.yaml" },
       1,
       "navigation failed",
+      {
+        workerId: 2,
+        queueType: "retry",
+        queueWaitMs: 4,
+        attemptMs: 50,
+      },
     );
     collector.recordRecycle(1, "recycleEvery=10");
 
@@ -74,8 +87,13 @@ describe("ResultCollector", () => {
     expect(summary.successful).toBe(1);
     expect(summary.failed).toBe(1);
     expect(summary.retries).toBe(1);
+    expect(summary.attempts).toBe(3);
     expect(summary.timings.totalMs.avgMs).toBe(120);
+    expect(summary.timings.resetMs.avgMs).toBe(3);
+    expect(summary.timings.attemptMs.maxMs).toBe(121);
+    expect(summary.timings.queueWaitMs.maxMs).toBe(8);
     expect(summary.timings.totalMs.maxMs).toBe(120);
+    expect(summary.workerUtilization).toHaveLength(3);
     expect(failures).toHaveLength(1);
     expect(failures[0].path).toBe("pages/error.yaml");
 
@@ -85,5 +103,6 @@ describe("ResultCollector", () => {
     expect(metricsPayload.failures).toHaveLength(1);
     expect(metricsPayload.retries).toHaveLength(1);
     expect(metricsPayload.recycles).toHaveLength(1);
+    expect(metricsPayload.attempts).toHaveLength(3);
   });
 });

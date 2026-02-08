@@ -30,11 +30,6 @@ function writeFixture(rootDir, htmlContent) {
   sections:
     - title: components_basic
       files: components
-  capture:
-    workerCount: 1
-    waitStrategy: load
-    screenshotWaitTime: 0
-    maxRetries: 0
 `;
   writeFileSync(join(rootDir, "rettangoli.config.yaml"), configYaml, "utf8");
   writeFileSync(join(specsDir, "basic.html"), htmlContent, "utf8");
@@ -99,10 +94,7 @@ describeE2E("VT E2E smoke", () => {
 
     await generate({
       vtPath: "./vt",
-      workers: 1,
       port: firstPort,
-      waitStrategy: "load",
-      screenshotWaitTime: 0,
     });
 
     const candidateScreenshotPath = join(
@@ -129,10 +121,7 @@ describeE2E("VT E2E smoke", () => {
     const secondPort = await getAvailablePort();
     await generate({
       vtPath: "./vt",
-      workers: 1,
       port: secondPort,
-      waitStrategy: "load",
-      screenshotWaitTime: 0,
     });
 
     await expect(

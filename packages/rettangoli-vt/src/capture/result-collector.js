@@ -27,6 +27,18 @@ function summarizeMetric(items, metricName) {
   };
 }
 
+function summarizeValues(values) {
+  const validValues = values
+    .filter((value) => typeof value === "number" && Number.isFinite(value));
+
+  return {
+    avgMs: Number(average(validValues).toFixed(2)),
+    p50Ms: Number(percentile(validValues, 0.5).toFixed(2)),
+    p95Ms: Number(percentile(validValues, 0.95).toFixed(2)),
+    maxMs: Number((validValues.length ? Math.max(...validValues) : 0).toFixed(2)),
+  };
+}
+
 export class ResultCollector {
   constructor(options) {
     const {
@@ -36,6 +48,7 @@ export class ResultCollector {
       isolationMode,
       maxRetries,
       adaptivePolicy,
+      schedulingPolicy,
     } = options;
 
     this.totalTasks = totalTasks;
@@ -44,6 +57,7 @@ export class ResultCollector {
     this.isolationMode = isolationMode;
     this.maxRetries = maxRetries;
     this.adaptivePolicy = adaptivePolicy;
+    this.schedulingPolicy = schedulingPolicy;
 
     this.startedAt = Date.now();
     this.completed = 0;
@@ -51,9 +65,10 @@ export class ResultCollector {
     this.failures = [];
     this.retries = [];
     this.recycles = [];
+    this.attempts = [];
   }
 
-  recordSuccess(task, result) {
+  recordSuccess(task, result, meta = {}) {
     this.completed += 1;
     this.successes.push({
       path: task.path,
@@ -62,31 +77,69 @@ export class ResultCollector {
       strategy: result.strategy,
       screenshotCount: result.screenshotCount,
       timings: result.timings,
+      queueType: meta.queueType,
+      queueWaitMs: meta.queueWaitMs,
+      attemptMs: meta.attemptMs,
+    });
+    this.attempts.push({
+      path: task.path,
+      attempt: result.attempt,
+      workerId: meta.workerId ?? result.workerId,
+      outcome: "success",
+      queueType: meta.queueType,
+      queueWaitMs: meta.queueWaitMs,
+      attemptMs: meta.attemptMs,
     });
 
     const timing = result.timings?.totalMs ? `${result.timings.totalMs.toFixed(0)}ms` : "n/a";
     console.log(`[${this.completed}/${this.totalTasks}] Captured ${task.path} (${timing})`);
   }
 
-  recordRetry(task, attempt, errorMessage) {
+  recordRetry(task, attempt, errorMessage, meta = {}) {
     this.retries.push({
       path: task.path,
       attempt,
       error: errorMessage,
+      workerId: meta.workerId,
+      queueType: meta.queueType,
+      queueWaitMs: meta.queueWaitMs,
+      attemptMs: meta.attemptMs,
       timestamp: new Date().toISOString(),
+    });
+    this.attempts.push({
+      path: task.path,
+      attempt,
+      workerId: meta.workerId,
+      outcome: "retry",
+      queueType: meta.queueType,
+      queueWaitMs: meta.queueWaitMs,
+      attemptMs: meta.attemptMs,
     });
     console.warn(
       `Retry ${attempt}/${this.maxRetries} for ${task.path}: ${errorMessage}`,
     );
   }
 
-  recordFailure(task, attempt, errorMessage) {
+  recordFailure(task, attempt, errorMessage, meta = {}) {
     this.completed += 1;
     this.failures.push({
       path: task.path,
       attempt,
       error: errorMessage,
+      workerId: meta.workerId,
+      queueType: meta.queueType,
+      queueWaitMs: meta.queueWaitMs,
+      attemptMs: meta.attemptMs,
       timestamp: new Date().toISOString(),
+    });
+    this.attempts.push({
+      path: task.path,
+      attempt,
+      workerId: meta.workerId,
+      outcome: "failure",
+      queueType: meta.queueType,
+      queueWaitMs: meta.queueWaitMs,
+      attemptMs: meta.attemptMs,
     });
     console.error(`[${this.completed}/${this.totalTasks}] Failed ${task.path}: ${errorMessage}`);
   }
@@ -101,26 +154,52 @@ export class ResultCollector {
   }
 
   buildSummary() {
+    const durationMs = Date.now() - this.startedAt;
+    const workerUtilization = [];
+    for (let workerId = 1; workerId <= this.workerCount; workerId += 1) {
+      const workerAttempts = this.attempts.filter((item) => item.workerId === workerId);
+      const busyMsRaw = workerAttempts.reduce((sum, item) => sum + (item.attemptMs ?? 0), 0);
+      const busyMs = Number(busyMsRaw.toFixed(2));
+      const utilizationPct = durationMs > 0
+        ? Number(Math.min(100, (busyMsRaw / durationMs) * 100).toFixed(2))
+        : 0;
+      workerUtilization.push({
+        workerId,
+        attempts: workerAttempts.length,
+        successful: workerAttempts.filter((item) => item.outcome === "success").length,
+        retries: workerAttempts.filter((item) => item.outcome === "retry").length,
+        failures: workerAttempts.filter((item) => item.outcome === "failure").length,
+        busyMs,
+        utilizationPct,
+      });
+    }
+
     return {
       totalTasks: this.totalTasks,
       completed: this.completed,
       successful: this.successes.length,
       failed: this.failures.length,
       retries: this.retries.length,
-      durationMs: Date.now() - this.startedAt,
+      attempts: this.attempts.length,
+      durationMs,
       workerCount: this.workerCount,
       isolationMode: this.isolationMode,
       maxRetries: this.maxRetries,
       adaptivePolicy: this.adaptivePolicy,
+      schedulingPolicy: this.schedulingPolicy,
       timings: {
         totalMs: summarizeMetric(this.successes, "totalMs"),
         sessionMs: summarizeMetric(this.successes, "sessionMs"),
+        resetMs: summarizeMetric(this.successes, "resetMs"),
         navigationMs: summarizeMetric(this.successes, "navigationMs"),
         readyMs: summarizeMetric(this.successes, "readyMs"),
         settleMs: summarizeMetric(this.successes, "settleMs"),
         initialScreenshotMs: summarizeMetric(this.successes, "initialScreenshotMs"),
         stepsMs: summarizeMetric(this.successes, "stepsMs"),
+        attemptMs: summarizeValues(this.attempts.map((item) => item.attemptMs)),
+        queueWaitMs: summarizeValues(this.attempts.map((item) => item.queueWaitMs)),
       },
+      workerUtilization,
     };
   }
 
@@ -136,6 +215,7 @@ export class ResultCollector {
       failures: this.failures,
       retries: this.retries,
       recycles: this.recycles,
+      attempts: this.attempts,
     };
 
     mkdirSync(dirname(this.metricsPath), { recursive: true });
@@ -152,4 +232,3 @@ export class ResultCollector {
     };
   }
 }
-

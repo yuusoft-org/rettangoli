@@ -91,6 +91,17 @@ in:
   - rettangoli.config.yaml
 throws: vt.waitEvent
 ---
+case: rejects vt.capture user config
+in:
+  - path: ./vt
+    sections:
+      - title: Pages
+        files: pages
+    capture:
+      waitStrategy: load
+  - rettangoli.config.yaml
+throws: vt.capture
+---
 suite: validateFrontMatter
 exportName: validateFrontMatter
 ---

@@ -194,18 +194,6 @@ vtCommand
   .command("generate")
   .description("Generate visualizations")
   .option("--skip-screenshots", "Skip screenshot generation")
-  .option("--screenshot-wait-time <time>", "Wait time between screenshots", parseInt)
-  .option("--workers <number>", "Number of Playwright workers", parseInt)
-  .option("--isolation-mode <mode>", "Playwright isolation mode: strict or fast")
-  .option("--wait-event <name>", "Custom event name to wait for instead of networkidle (e.g., vt:ready)")
-  .option("--wait-selector <selector>", "Selector to wait for when wait-strategy=selector")
-  .option("--wait-strategy <strategy>", "Wait strategy: networkidle | load | event | selector")
-  .option("--navigation-timeout <ms>", "Navigation timeout in ms", parseInt)
-  .option("--ready-timeout <ms>", "Ready-state timeout in ms", parseInt)
-  .option("--screenshot-timeout <ms>", "Screenshot timeout in ms", parseInt)
-  .option("--max-retries <number>", "Max retries per screenshot task", parseInt)
-  .option("--recycle-every <number>", "Recycle worker context every N successful tasks", parseInt)
-  .option("--metrics-path <path>", "Path to write capture performance metrics JSON")
   .option("--headed", "Run Playwright in headed mode")
   .action(async (options) => {
     console.log(`rtgl v${packageJson.version}`);

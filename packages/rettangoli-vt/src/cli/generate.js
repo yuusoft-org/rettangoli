@@ -112,6 +112,10 @@ async function main(options = {}) {
     if (skippedCount > 0) {
       console.log(`Skipping screenshots for ${skippedCount} files`);
     }
+    if (filesToScreenshot.length === 0) {
+      console.log("No files selected for screenshot capture. Skipping Playwright run.");
+      return;
+    }
 
     const server = configUrl ? null : await startWebServer(siteOutputPath, vtPath, port);
     try {

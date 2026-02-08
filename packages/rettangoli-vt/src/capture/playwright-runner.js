@@ -4,6 +4,11 @@ import sharp from "sharp";
 import { createSteps } from "../createSteps.js";
 import { formatScreenshotOrdinal } from "./screenshot-naming.js";
 
+const DEFAULT_VIEWPORT = Object.freeze({
+  width: 1280,
+  height: 720,
+});
+
 function nowMs() {
   return performance.now();
 }
@@ -56,12 +61,14 @@ export class PlaywrightRunner {
     this.envVars = collectEnvVars(this.envVarPrefix);
     this.sharedContext = null;
     this.sharedPage = null;
+    this.sharedRegisteredReadyEvents = new Set();
   }
 
   async initialize() {
     if (this.isolationMode === "fast") {
       this.sharedContext = await this.createContext();
       this.sharedPage = await this.sharedContext.newPage();
+      await this.configurePage(this.sharedPage);
     }
   }
 
@@ -70,6 +77,7 @@ export class PlaywrightRunner {
       await this.sharedContext.close();
       this.sharedContext = null;
       this.sharedPage = null;
+      this.sharedRegisteredReadyEvents.clear();
     }
   }
 
@@ -79,10 +87,39 @@ export class PlaywrightRunner {
     }
     await this.dispose();
     this.sharedContext = await this.createContext();
+    this.sharedPage = await this.sharedContext.newPage();
+    await this.configurePage(this.sharedPage);
   }
 
   async createContext() {
     const context = await this.browser.newContext();
+    await context.addInitScript(() => {
+      const styleId = "__rtgl_vt_rendering_style";
+      const styleContent = `
+        * {
+          -webkit-font-smoothing: antialiased !important;
+          -moz-osx-font-smoothing: grayscale !important;
+          text-rendering: geometricPrecision !important;
+        }
+      `;
+
+      const installStyle = () => {
+        if (document.getElementById(styleId)) {
+          return;
+        }
+        const style = document.createElement("style");
+        style.id = styleId;
+        style.textContent = styleContent;
+        const parent = document.head || document.documentElement;
+        parent.appendChild(style);
+      };
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", installStyle, { once: true });
+      } else {
+        installStyle();
+      }
+    });
     if (Object.keys(this.envVars).length > 0) {
       await context.addInitScript((vars) => {
         Object.assign(window, vars);
@@ -91,12 +128,26 @@ export class PlaywrightRunner {
     return context;
   }
 
+  async configurePage(page) {
+    await page.setViewportSize(DEFAULT_VIEWPORT);
+    await page.setDefaultNavigationTimeout(this.navigationTimeout);
+    await page.setDefaultTimeout(this.readyTimeout);
+    await page.emulateMedia({
+      colorScheme: "light",
+      reducedMotion: "reduce",
+      forcedColors: "none",
+    });
+  }
+
   async acquireSession() {
     if (this.isolationMode === "strict") {
       const context = await this.createContext();
       const page = await context.newPage();
+      await this.configurePage(page);
       return {
         page,
+        resetSession: async () => 0,
+        registeredReadyEvents: new Set(),
         cleanup: async () => {
           await context.close();
         },
@@ -108,15 +159,61 @@ export class PlaywrightRunner {
     }
     if (!this.sharedPage || this.sharedPage.isClosed()) {
       this.sharedPage = await this.sharedContext.newPage();
+      await this.configurePage(this.sharedPage);
     }
-    await this.sharedContext.clearCookies();
+    const resetSession = async () => {
+      const resetStart = nowMs();
+      // Clear origin-scoped runtime state before switching away.
+      await this.sharedPage.evaluate(async () => {
+        try {
+          localStorage.clear();
+        } catch {}
+        try {
+          sessionStorage.clear();
+        } catch {}
+        try {
+          if ("caches" in globalThis) {
+            const cacheNames = await caches.keys();
+            await Promise.allSettled(cacheNames.map((cacheName) => caches.delete(cacheName)));
+          }
+        } catch {}
+        try {
+          if ("navigator" in globalThis && "serviceWorker" in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.allSettled(registrations.map((registration) => registration.unregister()));
+          }
+        } catch {}
+      });
+      await this.sharedPage.goto("about:blank", { waitUntil: "domcontentloaded" });
+      await this.sharedContext.clearCookies();
+      await this.sharedContext.clearPermissions();
+      await this.configurePage(this.sharedPage);
+      return nowMs() - resetStart;
+    };
+
     return {
       page: this.sharedPage,
+      resetSession,
+      registeredReadyEvents: this.sharedRegisteredReadyEvents,
       cleanup: async () => {},
     };
   }
 
-  async navigateToReadyState(page, task) {
+  async ensureEventInitScript(page, waitEvent, registeredReadyEvents) {
+    if (registeredReadyEvents.has(waitEvent)) {
+      return;
+    }
+    await page.addInitScript((eventName) => {
+      window.__vtReadyState = window.__vtReadyState || {};
+      window.__vtReadyState[eventName] = false;
+      window.addEventListener(eventName, () => {
+        window.__vtReadyState[eventName] = true;
+      }, { once: true });
+    }, waitEvent);
+    registeredReadyEvents.add(waitEvent);
+  }
+
+  async navigateToReadyState(page, task, registeredReadyEvents) {
     const strategy = task.waitStrategy || this.waitStrategy;
     const waitEvent = task.waitEvent || this.waitEvent;
     const waitSelector = task.waitSelector || this.waitSelector;
@@ -140,20 +237,15 @@ export class PlaywrightRunner {
           `waitStrategy "event" requires waitEvent for ${task.path}.`,
         );
       }
-      await page.addInitScript((eventName) => {
-        window.__vtReadyFired = false;
-        window.addEventListener(eventName, () => {
-          window.__vtReadyFired = true;
-        }, { once: true });
-      }, waitEvent);
+      await this.ensureEventInitScript(page, waitEvent, registeredReadyEvents);
       await page.goto(task.url, {
         waitUntil: "load",
-        timeout: this.navigationTimeout,
       });
       const readyStart = nowMs();
-      await page.waitForFunction(() => window.__vtReadyFired === true, {
-        timeout: this.readyTimeout,
-      });
+      await page.waitForFunction(
+        (eventName) => Boolean(window.__vtReadyState && window.__vtReadyState[eventName] === true),
+        waitEvent,
+      );
       return {
         strategy,
         navigationMs: nowMs() - navigationStart,
@@ -169,11 +261,9 @@ export class PlaywrightRunner {
       }
       await page.goto(task.url, {
         waitUntil: "load",
-        timeout: this.navigationTimeout,
       });
       const readyStart = nowMs();
       await page.waitForSelector(waitSelector, {
-        timeout: this.readyTimeout,
         state: "attached",
       });
       return {
@@ -186,7 +276,6 @@ export class PlaywrightRunner {
     if (strategy === "load") {
       await page.goto(task.url, {
         waitUntil: "load",
-        timeout: this.navigationTimeout,
       });
       return {
         strategy,
@@ -198,18 +287,6 @@ export class PlaywrightRunner {
     throw new Error(
       `Unsupported wait strategy "${strategy}" for ${task.path}.`,
     );
-  }
-
-  async normalizeRendering(page) {
-    await page.addStyleTag({
-      content: `
-        * {
-          -webkit-font-smoothing: antialiased !important;
-          -moz-osx-font-smoothing: grayscale !important;
-          text-rendering: geometricPrecision !important;
-        }
-      `,
-    });
   }
 
   async takeAndSaveScreenshot(page, basePath, suffix) {
@@ -250,9 +327,10 @@ export class PlaywrightRunner {
     const sessionStart = nowMs();
     const session = await this.acquireSession();
     const sessionMs = nowMs() - sessionStart;
-    const { page } = session;
+    const { page, resetSession, registeredReadyEvents } = session;
 
     let strategy = task.waitStrategy || this.waitStrategy;
+    let resetMs = 0;
     let navigationMs = 0;
     let readyMs = 0;
     let settleMs = 0;
@@ -269,12 +347,11 @@ export class PlaywrightRunner {
     };
 
     try {
-      const readyState = await this.navigateToReadyState(page, task);
+      resetMs = await resetSession();
+      const readyState = await this.navigateToReadyState(page, task, registeredReadyEvents);
       strategy = readyState.strategy;
       navigationMs = readyState.navigationMs;
       readyMs = readyState.readyMs;
-
-      await this.normalizeRendering(page);
 
       const settleStart = nowMs();
       if (this.screenshotWaitTime > 0) {
@@ -306,6 +383,7 @@ export class PlaywrightRunner {
         timings: {
           totalMs,
           sessionMs,
+          resetMs,
           navigationMs,
           readyMs,
           settleMs,

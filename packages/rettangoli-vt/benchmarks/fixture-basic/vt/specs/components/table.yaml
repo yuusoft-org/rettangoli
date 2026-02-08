@@ -1,0 +1,21 @@
+<table style="font-family: sans-serif; border-collapse: collapse; margin: 24px; width: 560px;">
+  <thead>
+    <tr>
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Name</th>
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Status</th>
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 8px;">Alpha</td>
+      <td style="border: 1px solid #ddd; padding: 8px;">Ready</td>
+      <td style="border: 1px solid #ddd; padding: 8px;">92</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #ddd; padding: 8px;">Beta</td>
+      <td style="border: 1px solid #ddd; padding: 8px;">Pending</td>
+      <td style="border: 1px solid #ddd; padding: 8px;">87</td>
+    </tr>
+  </tbody>
+</table>

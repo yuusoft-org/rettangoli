@@ -12,6 +12,7 @@ A visual testing framework for UI components using Playwright and screenshot com
 - **Test Reports** - Generate detailed reports with diff highlights
 - **Playwright Integration** - Uses Playwright for reliable cross-browser testing
 - **Worker Pool Capture Engine** - Dynamic Playwright task scheduling with adaptive parallelism
+- **Fair Retry Scheduling** - Prioritizes expensive pages first while preventing retry starvation
 - **Template System** - Liquid templates for flexible HTML generation
 - **Configuration** - YAML-based configuration for easy customization
 
@@ -81,22 +82,9 @@ vt:
       files: "components"
   port: 3001
   skipScreenshots: false
-  capture:
-    engine: pool
-    screenshotWaitTime: 500
-    workerCount: 8          # omit for adaptive auto mode
-    isolationMode: fast     # strict | fast
-    waitStrategy: networkidle # networkidle | load | event | selector
-    waitEvent: vt:ready
-    waitSelector: "#app-ready"
-    navigationTimeout: 30000
-    readyTimeout: 30000
-    screenshotTimeout: 30000
-    maxRetries: 2
-    recycleEvery: 50
-    metricsPath: .rettangoli/vt/metrics.json
-    headless: true
 ```
+
+`vt.capture` is now internal and should not be configured by users.
 
 Section page keys (`title` for flat sections and grouped `items[].title`) must use only letters, numbers, `-`, `_` (no spaces).
 
@@ -129,3 +117,14 @@ Optional real-browser smoke test:
 ```bash
 VT_E2E=1 bun test spec/e2e-smoke.spec.js
 ```
+
+Capture benchmark fixture:
+
+```bash
+bun run bench:capture
+```
+
+Useful perf flags through `rtgl vt generate`:
+
+- `--skip-screenshots`
+- `--headed`

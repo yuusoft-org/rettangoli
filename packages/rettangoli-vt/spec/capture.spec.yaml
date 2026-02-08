@@ -28,6 +28,7 @@ out:
     waitEvent: page:ready
     waitSelector: "#root"
     waitStrategy: event
+    estimatedCost: 120
 ---
 case: falls back to config url and capture defaults
 in:
@@ -52,6 +53,7 @@ out:
       - wait 100
     waitSelector: .ready
     waitStrategy: selector
+    estimatedCost: 140
 ---
 case: builds candidate url when no explicit url exists
 in:
@@ -67,3 +69,4 @@ out:
     frontMatter: {}
     steps: []
     waitStrategy: networkidle
+    estimatedCost: 130

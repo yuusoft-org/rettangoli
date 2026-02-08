@@ -40,6 +40,17 @@ function resolveWaitStrategy(frontMatter, defaults) {
   return "networkidle";
 }
 
+function estimateTaskCost(steps, resolvedWaitStrategy) {
+  const strategyBase = {
+    networkidle: 30,
+    load: 10,
+    event: 20,
+    selector: 15,
+  };
+  const stepCost = Array.isArray(steps) ? steps.length * 25 : 0;
+  return 100 + stepCost + (strategyBase[resolvedWaitStrategy] ?? 0);
+}
+
 export function createCaptureTasks(generatedFiles, options) {
   const {
     serverUrl,
@@ -58,6 +69,12 @@ export function createCaptureTasks(generatedFiles, options) {
     const resolvedWaitEvent = frontMatter.waitEvent ?? waitEvent;
     const resolvedWaitSelector = frontMatter.waitSelector ?? waitSelector;
 
+    const resolvedWaitStrategy = resolveWaitStrategy(frontMatter, {
+      waitEvent,
+      waitSelector,
+      waitStrategy,
+    });
+
     const task = {
       id: `${index}:${file.path}`,
       index,
@@ -66,11 +83,8 @@ export function createCaptureTasks(generatedFiles, options) {
       baseName: removeExtension(file.path),
       frontMatter,
       steps: frontMatter.steps || [],
-      waitStrategy: resolveWaitStrategy(frontMatter, {
-        waitEvent,
-        waitSelector,
-        waitStrategy,
-      }),
+      waitStrategy: resolvedWaitStrategy,
+      estimatedCost: estimateTaskCost(frontMatter.steps || [], resolvedWaitStrategy),
     };
 
     if (resolvedWaitEvent !== undefined && resolvedWaitEvent !== null) {
