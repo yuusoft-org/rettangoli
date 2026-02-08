@@ -1,0 +1,52 @@
+file: "../src/cli/report-options.js"
+group: report-options
+---
+suite: resolveReportOptions
+exportName: resolveReportOptions
+---
+case: resolves defaults from config
+in:
+  - {}
+  - path: ./vt-config
+    compareMethod: pixelmatch
+    colorThreshold: 0.2
+    diffThreshold: 5
+out:
+  vtPath: ./vt-config
+  compareMethod: pixelmatch
+  colorThreshold: 0.2
+  diffThreshold: 5
+---
+case: cli values override config values
+in:
+  - vtPath: ./vt-cli
+    compareMethod: md5
+    colorThreshold: 0.01
+    diffThreshold: 0.1
+  - path: ./vt-config
+    compareMethod: pixelmatch
+    colorThreshold: 0.2
+    diffThreshold: 5
+out:
+  vtPath: ./vt-cli
+  compareMethod: md5
+  colorThreshold: 0.01
+  diffThreshold: 0.1
+---
+case: rejects invalid compare method
+in:
+  - compareMethod: ssim
+  - {}
+throws: Invalid compareMethod "ssim"
+---
+case: rejects invalid color threshold
+in:
+  - colorThreshold: 2
+  - {}
+throws: colorThreshold
+---
+case: rejects invalid diff threshold
+in:
+  - diffThreshold: -1
+  - {}
+throws: diffThreshold

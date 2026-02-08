@@ -1,0 +1,40 @@
+file: "../src/capture/worker-plan.js"
+group: capture-worker-plan
+---
+suite: resolveWorkerPlan
+exportName: resolveWorkerPlan
+---
+case: chooses adaptive worker count in auto mode
+in:
+  - null
+  - cpuCount: 8
+    totalMemoryGb: 12
+out:
+  workerCount: 7
+  adaptivePolicy:
+    mode: auto
+    cpuCount: 8
+    cpuBound: 7
+    totalMemoryGb: 12
+    memoryBound: 8
+---
+case: keeps manual worker count when provided
+in:
+  - 3
+  - cpuCount: 8
+    totalMemoryGb: 12
+out:
+  workerCount: 3
+  adaptivePolicy:
+    mode: manual
+    cpuCount: 8
+    cpuBound: 7
+    totalMemoryGb: 12
+    memoryBound: 8
+---
+case: validates manual worker count
+in:
+  - 0
+  - cpuCount: 8
+    totalMemoryGb: 12
+throws: workerCount must be an integer >= 1

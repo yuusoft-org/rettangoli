@@ -9,7 +9,7 @@
     "./cli": "./src/cli/index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run --reporter=verbose"
   },
   "dependencies": {
     "commander": "^13.1.0",
@@ -19,5 +19,9 @@
     "playwright": "1.57.0",
     "sharp": "^0.34.5",
     "shiki": "^3.3.0"
+  },
+  "devDependencies": {
+    "puty": "^0.1.1",
+    "vitest": "^4.0.15"
   }
 }

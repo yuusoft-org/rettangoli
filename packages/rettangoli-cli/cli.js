@@ -25,8 +25,7 @@ function readConfig() {
     const configContent = readFileSync(configPath, "utf8");
     return yaml.load(configContent);
   } catch (error) {
-    console.error("Error reading config file:", error.message);
-    return null;
+    throw new Error(`Error reading config file "${configPath}": ${error.message}`);
   }
 }
 
@@ -195,10 +194,20 @@ vtCommand
   .command("generate")
   .description("Generate visualizations")
   .option("--skip-screenshots", "Skip screenshot generation")
-  .option("--screenshot-wait-time <time>", "Wait time between screenshots", parseInt, 0)
-  .option("--concurrency <number>", "Number of concurrent screenshots", parseInt, 12)
+  .option("--screenshot-wait-time <time>", "Wait time between screenshots", parseInt)
+  .option("--workers <number>", "Number of Playwright workers", parseInt)
+  .option("--isolation-mode <mode>", "Playwright isolation mode: strict or fast")
   .option("--wait-event <name>", "Custom event name to wait for instead of networkidle (e.g., vt:ready)")
-  .action((options) => {
+  .option("--wait-selector <selector>", "Selector to wait for when wait-strategy=selector")
+  .option("--wait-strategy <strategy>", "Wait strategy: networkidle | load | event | selector")
+  .option("--navigation-timeout <ms>", "Navigation timeout in ms", parseInt)
+  .option("--ready-timeout <ms>", "Ready-state timeout in ms", parseInt)
+  .option("--screenshot-timeout <ms>", "Screenshot timeout in ms", parseInt)
+  .option("--max-retries <number>", "Max retries per screenshot task", parseInt)
+  .option("--recycle-every <number>", "Recycle worker context every N successful tasks", parseInt)
+  .option("--metrics-path <path>", "Path to write capture performance metrics JSON")
+  .option("--headed", "Run Playwright in headed mode")
+  .action(async (options) => {
     console.log(`rtgl v${packageJson.version}`);
     const config = readConfig();
 
@@ -208,17 +217,20 @@ vtCommand
 
     // Use vt.path from config, default to 'vt'
     options.vtPath = config.vt?.path || "vt";
+    if (options.headed) {
+      options.headless = false;
+    }
 
-    generate(options);
+    await generate(options);
   });
 
 vtCommand
   .command("report")
   .description("Create reports")
-  .option("--compare-method <method>", "Comparison method: pixelmatch or md5", "pixelmatch")
-  .option("--color-threshold <number>", "Color threshold for pixelmatch (0-1)", parseFloat, 0.1)
-  .option("--diff-threshold <number>", "Max diff pixels percentage to pass (0-100)", parseFloat, 0.3)
-  .action((options) => {
+  .option("--compare-method <method>", "Comparison method: pixelmatch or md5")
+  .option("--color-threshold <number>", "Color threshold for pixelmatch (0-1)", parseFloat)
+  .option("--diff-threshold <number>", "Max diff pixels percentage to pass (0-100)", parseFloat)
+  .action(async (options) => {
     const config = readConfig();
 
     if (!config) {
@@ -226,7 +238,7 @@ vtCommand
     }
 
     const vtPath = config.vt?.path || "vt";
-    report({
+    await report({
       vtPath,
       compareMethod: options.compareMethod,
       colorThreshold: options.colorThreshold,
@@ -237,7 +249,7 @@ vtCommand
 vtCommand
   .command("accept")
   .description("Accept changes")
-  .action(() => {
+  .action(async () => {
     const config = readConfig();
 
     if (!config) {
@@ -245,7 +257,7 @@ vtCommand
     }
 
     const vtPath = config.vt?.path || "vt";
-    accept({ vtPath });
+    await accept({ vtPath });
   });
 
 const sitesCommand = program.command("sites").description("Rettangoli Sites");
@@ -349,4 +361,4 @@ Examples:
     buildSvg(options);
   });
 
-program.parse();
+await program.parseAsync();

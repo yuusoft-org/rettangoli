@@ -1,23 +1,21 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import { Liquid } from "liquidjs";
 import { cp } from "node:fs/promises";
 import pixelmatch from "pixelmatch";
 import sharp from "sharp";
+import { readYaml } from "../common.js";
+import { validateVtConfig } from "../validation.js";
+import { resolveReportOptions } from "./report-options.js";
+import {
+  buildAllRelativePaths,
+  toMismatchingItems,
+  buildJsonReport,
+} from "../report/report-model.js";
+import { renderHtmlReport } from "../report/report-render.js";
 
-const libraryTemplatesPath = new URL('./templates', import.meta.url).pathname;
+const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
 
-// Initialize Liquid engine
-const engine = new Liquid();
-
-// Add custom filter to convert string to lowercase and replace spaces with hyphens
-engine.registerFilter("slug", (value) => {
-  if (typeof value !== "string") return "";
-  return value.toLowerCase().replace(/\s+/g, "-");
-});
-
-// Recursively get all files in a directory
 function getAllFiles(dir, fileList = []) {
   const files = fs.readdirSync(dir);
 
@@ -33,58 +31,20 @@ function getAllFiles(dir, fileList = []) {
   return fileList;
 }
 
-function extractParts(p) {
-  const dir = path.dirname(p);
-  const filename = path.basename(p, '.webp');
-  const lastHyphenIndex = filename.lastIndexOf('-');
-
-  if (lastHyphenIndex > -1) {
-    const suffix = filename.substring(lastHyphenIndex + 1);
-    const number = parseInt(suffix);
-
-    if (!isNaN(number) && String(number) === suffix) {
-      const name = path.join(dir, filename.substring(0, lastHyphenIndex));
-      return { name, number };
-    }
-  }
-  // -1 is for the first file (as it will result in the first index when sorting)
-  return { name: path.join(dir, filename), number: -1 };
-}
-
-function sortPaths(a, b) {
-  const partsA = extractParts(a);
-  const partsB = extractParts(b);
-
-  if (partsA.name < partsB.name) return -1;
-  if (partsA.name > partsB.name) return 1;
-
-  return partsA.number - partsB.number;
-}
-
 async function calculateImageHash(imagePath) {
-  try {
-    const imageBuffer = fs.readFileSync(imagePath);
-    const hash = crypto.createHash('md5').update(imageBuffer).digest('hex');
-    return hash;
-  } catch (error) {
-    console.error(`Error calculating hash for ${imagePath}:`, error);
-    return null;
-  }
+  const imageBuffer = fs.readFileSync(imagePath);
+  const hash = crypto.createHash("md5").update(imageBuffer).digest("hex");
+  return hash;
 }
 
 async function compareImagesMd5(artifactPath, goldPath) {
   try {
     const artifactHash = await calculateImageHash(artifactPath);
     const goldHash = await calculateImageHash(goldPath);
-
-    if (artifactHash === null || goldHash === null) {
-      return { equal: false, error: true };
-    }
-
     return { equal: artifactHash === goldHash, error: false };
   } catch (error) {
     console.error("Error comparing images:", error);
-    return { equal: false, error: true };
+    return { equal: false, error: true, message: error.message };
   }
 }
 
@@ -92,7 +52,6 @@ async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options
   const { colorThreshold = 0.1, diffThreshold = 0.3 } = options;
 
   try {
-    // Load images and convert to raw RGBA using sharp
     const [artifactData, goldData] = await Promise.all([
       sharp(artifactPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
       sharp(goldPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
@@ -103,12 +62,10 @@ async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options
     const goldHeight = goldData.info.height;
     const totalPixels = width * height;
 
-    // If dimensions don't match, images are different
     if (width !== goldWidth || height !== goldHeight) {
       return { equal: false, error: false, diffPixels: -1, totalPixels, similarity: 0 };
     }
 
-    // Create diff image buffer
     const diffBuffer = Buffer.alloc(totalPixels * 4);
 
     const diffPixels = pixelmatch(
@@ -117,14 +74,13 @@ async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options
       diffBuffer,
       width,
       height,
-      { threshold: colorThreshold }
+      { threshold: colorThreshold },
     );
 
     const diffPercent = (diffPixels / totalPixels) * 100;
     const similarity = (100 - diffPercent).toFixed(2);
     const equal = diffPercent < diffThreshold;
 
-    // Save diff image if not equal
     if (!equal && diffPath) {
       fs.mkdirSync(path.dirname(diffPath), { recursive: true });
       await sharp(diffBuffer, { raw: { width, height, channels: 4 } })
@@ -135,43 +91,38 @@ async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options
     return { equal, error: false, diffPixels, totalPixels, similarity };
   } catch (error) {
     console.error("Error comparing images with pixelmatch:", error);
-    return { equal: false, error: true };
+    return { equal: false, error: true, message: error.message };
   }
 }
 
-async function compareImages(artifactPath, goldPath, method = 'pixelmatch', diffPath = null, options = {}) {
-  if (method === 'md5') {
+async function compareImages(artifactPath, goldPath, method = "pixelmatch", diffPath = null, options = {}) {
+  if (method === "md5") {
     return compareImagesMd5(artifactPath, goldPath);
   }
   return compareImagesPixelmatch(artifactPath, goldPath, diffPath, options);
 }
 
-async function generateReport({ results, templatePath, outputPath }) {
-  try {
-    // Read the template file
-    const templateContent = fs.readFileSync(templatePath, "utf8");
-
-    // Render the template with the results data
-    const renderedHtml = await engine.parseAndRender(templateContent, {
-      files: results,
-    });
-
-    // Write the rendered HTML to the output file
-    fs.writeFileSync(outputPath, renderedHtml);
-
-    console.log(`Report generated successfully at ${outputPath}`);
-  } catch (error) {
-    console.error("Error generating report:", error);
-  }
-}
-
 async function main(options = {}) {
+  const mainConfigPath = "rettangoli.config.yaml";
+  let mainConfig;
+  try {
+    mainConfig = await readYaml(mainConfigPath);
+  } catch (error) {
+    throw new Error(`Unable to read "${mainConfigPath}": ${error.message}`, { cause: error });
+  }
+
+  const vtConfig = mainConfig?.vt;
+  if (!vtConfig) {
+    throw new Error(`Invalid "${mainConfigPath}": missing required "vt" section.`);
+  }
+
+  const configData = validateVtConfig(vtConfig, mainConfigPath);
   const {
-    vtPath = "./vt",
-    compareMethod = 'pixelmatch',
-    colorThreshold = 0.1,
-    diffThreshold = 0.3,
-  } = options;
+    vtPath,
+    compareMethod,
+    colorThreshold,
+    diffThreshold,
+  } = resolveReportOptions(options, configData);
 
   const siteOutputPath = path.join(".rettangoli", "vt", "_site");
   const candidateDir = path.join(siteOutputPath, "candidate");
@@ -183,7 +134,7 @@ async function main(options = {}) {
   const jsonReportPath = path.join(".rettangoli", "vt", "report.json");
 
   console.log(`Comparison method: ${compareMethod}`);
-  if (compareMethod === 'pixelmatch') {
+  if (compareMethod === "pixelmatch") {
     console.log(`  color threshold: ${colorThreshold}, diff threshold: ${diffThreshold}%`);
   }
 
@@ -192,52 +143,47 @@ async function main(options = {}) {
     fs.mkdirSync(originalReferenceDir, { recursive: true });
   }
 
-  // Create diff directory for diffs
-  if (compareMethod === 'pixelmatch' && !fs.existsSync(diffDir)) {
+  if (compareMethod === "pixelmatch" && !fs.existsSync(diffDir)) {
     fs.mkdirSync(diffDir, { recursive: true });
   }
 
-  // Copy reference directory to _site for web access
   if (fs.existsSync(originalReferenceDir)) {
     console.log("Copying reference directory to _site...");
     await cp(originalReferenceDir, siteReferenceDir, { recursive: true });
   }
 
   try {
-    // Get all WebP files recursively (only compare screenshots, not HTML)
-    const candidateFiles = getAllFiles(candidateDir).filter(file => file.endsWith('.webp'));
-    const referenceFiles = getAllFiles(originalReferenceDir).filter(file => file.endsWith('.webp'));
+    if (!fs.existsSync(candidateDir)) {
+      throw new Error(`Candidate screenshots directory not found: "${candidateDir}". Run "rtgl vt generate" first.`);
+    }
+
+    const candidateFiles = getAllFiles(candidateDir).filter((file) => file.endsWith(".webp"));
+    const referenceFiles = getAllFiles(originalReferenceDir).filter((file) => file.endsWith(".webp"));
 
     console.log("Candidate Screenshots:", candidateFiles.length);
     console.log("Reference Screenshots:", referenceFiles.length);
 
     const results = [];
+    const comparisonErrors = [];
 
-    // Get relative paths for comparison
     const candidateRelativePaths = candidateFiles.map((file) =>
-      path.relative(candidateDir, file)
+      path.relative(candidateDir, file),
     );
     const referenceRelativePaths = referenceFiles.map((file) =>
-      path.relative(originalReferenceDir, file)
+      path.relative(originalReferenceDir, file),
     );
 
-    // Get all unique paths from both directories
-    const allPaths = [
-      ...new Set([...candidateRelativePaths, ...referenceRelativePaths]),
-    ];
-
-    allPaths.sort(sortPaths);
+    const allPaths = buildAllRelativePaths(candidateRelativePaths, referenceRelativePaths);
 
     for (const relativePath of allPaths) {
       const candidatePath = path.join(candidateDir, relativePath);
       const referencePath = path.join(originalReferenceDir, relativePath);
       const siteReferencePath = path.join(siteReferenceDir, relativePath);
-      const diffPath = path.join(diffDir, relativePath.replace('.webp', '-diff.png'));
+      const diffPath = path.join(diffDir, relativePath.replace(".webp", "-diff.png"));
 
       const candidateExists = fs.existsSync(candidatePath);
       const referenceExists = fs.existsSync(referencePath);
 
-      // Skip if neither file exists (shouldn't happen, but just in case)
       if (!candidateExists && !referenceExists) continue;
 
       let equal = true;
@@ -245,9 +191,7 @@ async function main(options = {}) {
       let similarity = null;
       let diffPixels = null;
 
-      // Compare images if both exist
       if (candidateExists && referenceExists) {
-        // Ensure diff directory exists
         const diffDirPath = path.dirname(diffPath);
         if (!fs.existsSync(diffDirPath)) {
           fs.mkdirSync(diffDirPath, { recursive: true });
@@ -258,20 +202,26 @@ async function main(options = {}) {
           referencePath,
           compareMethod,
           diffPath,
-          { colorThreshold, diffThreshold }
+          { colorThreshold, diffThreshold },
         );
+        if (comparison.error) {
+          comparisonErrors.push(
+            `${relativePath}: ${comparison.message || "unknown comparison error"}`,
+          );
+          continue;
+        }
         equal = comparison.equal;
         error = comparison.error;
         similarity = comparison.similarity;
         diffPixels = comparison.diffPixels;
       } else {
-        equal = false; // If one file is missing, they're not equal
+        equal = false;
       }
 
       if (!error) {
         results.push({
           candidatePath: candidateExists ? candidatePath : null,
-          referencePath: referenceExists ? siteReferencePath : null, // Use site reference path for HTML report
+          referencePath: referenceExists ? siteReferencePath : null,
           path: relativePath,
           equal: candidateExists && referenceExists ? equal : false,
           similarity,
@@ -282,28 +232,15 @@ async function main(options = {}) {
       }
     }
 
-    const mismatchingItems = results
-      .filter(
-        (result) =>
-          !result.equal || result.onlyInCandidate || result.onlyInReference
-      )
-      .map((result) => {
-        return {
-          candidatePath: result.candidatePath
-            ? path.relative(siteOutputPath, result.candidatePath)
-            : null,
-          referencePath: result.referencePath
-            ? path.relative(siteOutputPath, result.referencePath)
-            : null,
-          equal: result.equal,
-          similarity: result.similarity,
-          diffPixels: result.diffPixels,
-          onlyInCandidate: result.onlyInCandidate,
-          onlyInReference: result.onlyInReference,
-        };
-      });
+    if (comparisonErrors.length > 0) {
+      throw new Error(
+        `Image comparison failed for ${comparisonErrors.length} file(s):\n- ${comparisonErrors.join("\n- ")}`,
+      );
+    }
+
+    const mismatchingItems = toMismatchingItems(results, siteOutputPath);
     console.log("Mismatching Items (JSON):");
-    mismatchingItems.forEach(item => {
+    mismatchingItems.forEach((item) => {
       const logData = {
         candidatePath: item.candidatePath,
         referencePath: item.referencePath,
@@ -314,42 +251,28 @@ async function main(options = {}) {
       console.log(JSON.stringify(logData, null, 2));
     });
 
-    // Summary at the end
-    console.log(`\nSummary:`);
+    console.log("\nSummary:");
     console.log(`Total images: ${results.length}`);
     console.log(`Mismatched images: ${mismatchingItems.length}`);
 
-    // Generate HTML report
-    await generateReport({
+    await renderHtmlReport({
       results: mismatchingItems,
       templatePath,
       outputPath,
     });
 
-    // Write JSON report
-    const jsonReport = {
-      timestamp: new Date().toISOString(),
+    const jsonReport = buildJsonReport({
       total: results.length,
-      mismatched: mismatchingItems.length,
-      items: mismatchingItems.map(item => ({
-        path: item.candidatePath || item.referencePath,
-        candidatePath: item.candidatePath,
-        referencePath: item.referencePath,
-        equal: item.equal,
-        similarity: item.similarity,
-        onlyInCandidate: item.onlyInCandidate,
-        onlyInReference: item.onlyInReference,
-      })),
-    };
+      mismatchingItems,
+    });
     fs.writeFileSync(jsonReportPath, JSON.stringify(jsonReport, null, 2));
     console.log(`JSON report written to ${jsonReportPath}`);
 
-    if(mismatchingItems.length > 0){
-      console.error("Error: there are more than 0 mismatching item.")
-      process.exit(1);
+    if (mismatchingItems.length > 0) {
+      throw new Error(`Visual differences found in ${mismatchingItems.length} file(s).`);
     }
   } catch (error) {
-    console.error("Error reading directories:", error);
+    throw new Error(`Error generating VT report: ${error.message}`, { cause: error });
   }
 }
 

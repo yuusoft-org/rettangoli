@@ -103,11 +103,8 @@ async function select(page, args) {
 }
 
 export function createSteps(page, context) {
-  let screenshotIndex = 0;
-
   async function screenshot() {
-    screenshotIndex++;
-    const screenshotPath = await context.takeAndSaveScreenshot(page, `${context.baseName}-${screenshotIndex}`);
+    const screenshotPath = await context.takeAndSaveScreenshot(page, context.baseName);
     console.log(`Screenshot saved: ${screenshotPath}`);
   }
 

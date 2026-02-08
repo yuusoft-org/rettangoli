@@ -8,6 +8,8 @@ import {
   generateOverview,
   readYaml,
 } from "../common.js";
+import { validateVtConfig } from "../validation.js";
+import { resolveGenerateOptions } from "./generate-options.js";
 
 const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
 const libraryStaticPath = new URL("./static", import.meta.url).pathname;
@@ -15,31 +17,46 @@ const libraryStaticPath = new URL("./static", import.meta.url).pathname;
 /**
  * Main function that orchestrates the entire process
  */
-async function main(options) {
-  const {
-    skipScreenshots = false,
-    vtPath = "./vt",
-    screenshotWaitTime = 0,
-    port = 3001,
-    waitEvent,
-    concurrency = 12,
-  } = options;
-
-  const specsPath = join(vtPath, "specs");
+async function main(options = {}) {
   const mainConfigPath = "rettangoli.config.yaml";
   const siteOutputPath = join(".rettangoli", "vt", "_site");
-  const candidatePath = join(siteOutputPath, "candidate");
 
-  // Read VT config from main rettangoli.config.yaml
-  let configData = {};
+  let mainConfig;
   try {
-    const mainConfig = await readYaml(mainConfigPath);
-    configData = mainConfig.vt || {};
+    mainConfig = await readYaml(mainConfigPath);
   } catch (error) {
-    console.log("Main config file not found, using defaults");
+    throw new Error(`Unable to read "${mainConfigPath}": ${error.message}`, { cause: error });
   }
 
-  const configUrl = configData.url;
+  const vtConfig = mainConfig?.vt;
+  if (!vtConfig) {
+    throw new Error(`Invalid "${mainConfigPath}": missing required "vt" section.`);
+  }
+
+  const configData = validateVtConfig(vtConfig, mainConfigPath);
+  const resolvedOptions = resolveGenerateOptions(options, configData);
+  const {
+    vtPath,
+    skipScreenshots,
+    screenshotWaitTime,
+    port,
+    waitEvent,
+    waitSelector,
+    waitStrategy,
+    workerCount,
+    isolationMode,
+    navigationTimeout,
+    readyTimeout,
+    screenshotTimeout,
+    maxRetries,
+    recycleEvery,
+    metricsPath,
+    headless,
+    configUrl,
+  } = resolvedOptions;
+
+  const specsPath = join(vtPath, "specs");
+  const candidatePath = join(siteOutputPath, "candidate");
 
   // Clear candidate directory
   await rm(candidatePath, { recursive: true, force: true });
@@ -96,17 +113,27 @@ async function main(options) {
       console.log(`Skipping screenshots for ${skippedCount} files`);
     }
 
-    const server = configUrl ? null : startWebServer(siteOutputPath, vtPath, port);
+    const server = configUrl ? null : await startWebServer(siteOutputPath, vtPath, port);
     try {
-      await takeScreenshots(
-        filesToScreenshot,
-        `http://localhost:${port}`,
-        candidatePath,
-        concurrency,
+      await takeScreenshots({
+        generatedFiles: filesToScreenshot,
+        serverUrl: `http://localhost:${port}`,
+        screenshotsDir: candidatePath,
+        workerCount,
         screenshotWaitTime,
         configUrl,
         waitEvent,
-      );
+        waitSelector,
+        waitStrategy,
+        navigationTimeout,
+        readyTimeout,
+        screenshotTimeout,
+        maxRetries,
+        recycleEvery,
+        isolationMode,
+        metricsPath,
+        headless,
+      });
     } finally {
       if (server) {
         server.close();

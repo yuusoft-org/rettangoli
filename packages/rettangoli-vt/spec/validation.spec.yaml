@@ -1,0 +1,112 @@
+file: "../src/validation.js"
+group: vt-validation
+---
+suite: validateVtConfig
+exportName: validateVtConfig
+---
+case: accepts minimal valid vt config
+in:
+  - path: ./vt
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  sections:
+    - title: Pages
+      files: pages
+---
+case: accepts page keys with hyphen and underscore
+in:
+  - path: ./vt
+    sections:
+      - title: components_basic
+        files: components
+      - type: groupLabel
+        title: Group label can have spaces
+        items:
+          - title: forms-advanced
+            files: forms
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  sections:
+    - title: components_basic
+      files: components
+    - type: groupLabel
+      title: Group label can have spaces
+      items:
+        - title: forms-advanced
+          files: forms
+---
+case: requires sections to be a non-empty array
+in:
+  - path: ./vt
+  - rettangoli.config.yaml
+throws: vt.sections
+---
+case: rejects spaces in flat section title
+in:
+  - path: ./vt
+    sections:
+      - title: components basic
+        files: components
+  - rettangoli.config.yaml
+throws: cannot include spaces
+---
+case: rejects spaces in group item title
+in:
+  - path: ./vt
+    sections:
+      - type: groupLabel
+        title: Group label
+        items:
+          - title: forms advanced
+            files: forms
+  - rettangoli.config.yaml
+throws: cannot include spaces
+---
+case: rejects case-insensitive duplicate section page keys
+in:
+  - path: ./vt
+    sections:
+      - title: button-basic
+        files: components
+      - type: groupLabel
+        title: Group label
+        items:
+          - title: Button-Basic
+            files: components/forms
+  - rettangoli.config.yaml
+throws: must be unique (case-insensitive)
+---
+case: rejects legacy root capture options
+in:
+  - path: ./vt
+    waitEvent: app:ready
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: vt.waitEvent
+---
+suite: validateFrontMatter
+exportName: validateFrontMatter
+---
+case: accepts block steps and wait selector strategy
+in:
+  - waitStrategy: selector
+    waitSelector: "#ready"
+    steps:
+      - select search-input:
+          - write hi
+          - keypress Enter
+  - specs/page.yaml
+---
+case: rejects empty step strings
+in:
+  - steps:
+      - ""
+  - specs/page.yaml
+throws: frontMatter.steps[0]

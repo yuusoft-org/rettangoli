@@ -11,6 +11,7 @@ A visual testing framework for UI components using Playwright and screenshot com
 - **Visual Comparison** - Compare screenshots to detect visual changes
 - **Test Reports** - Generate detailed reports with diff highlights
 - **Playwright Integration** - Uses Playwright for reliable cross-browser testing
+- **Worker Pool Capture Engine** - Dynamic Playwright task scheduling with adaptive parallelism
 - **Template System** - Liquid templates for flexible HTML generation
 - **Configuration** - YAML-based configuration for easy customization
 
@@ -61,7 +62,7 @@ The visual testing framework provides three main commands:
 - Compares candidate screenshots with reference screenshots
 - Generates visual diff reports highlighting changes
 - Creates an HTML report with before/after comparisons
-- Uses `looks-same` library for pixel-perfect comparison
+- Uses `pixelmatch` for image comparison
 
 #### 3. Accept (`vt accept`)
 - Accepts candidate screenshots as new reference images
@@ -74,10 +75,36 @@ The framework reads configuration from `rettangoli.config.yaml`:
 
 ```yaml
 vt:
+  # Required: drives the index/overview structure
+  sections:
+    - title: "Components"
+      files: "components"
   port: 3001
-  screenshotWaitTime: 500
   skipScreenshots: false
+  capture:
+    engine: pool
+    screenshotWaitTime: 500
+    workerCount: 8          # omit for adaptive auto mode
+    isolationMode: fast     # strict | fast
+    waitStrategy: networkidle # networkidle | load | event | selector
+    waitEvent: vt:ready
+    waitSelector: "#app-ready"
+    navigationTimeout: 30000
+    readyTimeout: 30000
+    screenshotTimeout: 30000
+    maxRetries: 2
+    recycleEvery: 50
+    metricsPath: .rettangoli/vt/metrics.json
+    headless: true
 ```
+
+Section page keys (`title` for flat sections and grouped `items[].title`) must use only letters, numbers, `-`, `_` (no spaces).
+
+### Specification
+
+The detailed contract is documented in:
+
+- `docs/spec.md`
 
 ### Testing Your Changes
 
@@ -95,4 +122,10 @@ node ../rettangoli-cli/cli.js vt accept
 rtgl vt generate
 rtgl vt report
 rtgl vt accept
+```
+
+Optional real-browser smoke test:
+
+```bash
+VT_E2E=1 bun test spec/e2e-smoke.spec.js
 ```

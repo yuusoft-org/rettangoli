@@ -1,0 +1,69 @@
+file: "../src/capture/spec-loader.js"
+group: capture-spec-loader
+---
+suite: createCaptureTasks
+exportName: createCaptureTasks
+---
+case: frontmatter url and waitEvent take precedence
+in:
+  - - path: pages/home.yaml
+      frontMatter:
+        url: https://example.com/custom
+        waitEvent: page:ready
+  - serverUrl: http://localhost:3001
+    configUrl: /preview/index.html
+    waitEvent: app:ready
+    waitSelector: "#root"
+    waitStrategy: networkidle
+out:
+  - id: 0:pages/home.yaml
+    index: 0
+    path: pages/home.yaml
+    url: https://example.com/custom
+    baseName: pages/home
+    frontMatter:
+      url: https://example.com/custom
+      waitEvent: page:ready
+    steps: []
+    waitEvent: page:ready
+    waitSelector: "#root"
+    waitStrategy: event
+---
+case: falls back to config url and capture defaults
+in:
+  - - path: docs/intro.md
+      frontMatter:
+        steps:
+          - wait 100
+  - serverUrl: http://localhost:3001
+    configUrl: /preview/index.html
+    waitStrategy: selector
+    waitSelector: .ready
+out:
+  - id: 0:docs/intro.md
+    index: 0
+    path: docs/intro.md
+    url: http://localhost:3001/preview/index.html
+    baseName: docs/intro
+    frontMatter:
+      steps:
+        - wait 100
+    steps:
+      - wait 100
+    waitSelector: .ready
+    waitStrategy: selector
+---
+case: builds candidate url when no explicit url exists
+in:
+  - - path: windows\test.yaml
+      frontMatter: {}
+  - serverUrl: http://localhost:8080
+out:
+  - id: 0:windows\test.yaml
+    index: 0
+    path: windows\test.yaml
+    url: http://localhost:8080/candidate/windows/test.html
+    baseName: windows\test
+    frontMatter: {}
+    steps: []
+    waitStrategy: networkidle
