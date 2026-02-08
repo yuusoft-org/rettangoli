@@ -55,11 +55,13 @@ export class PlaywrightRunner {
     this.envVarPrefix = envVarPrefix;
     this.envVars = collectEnvVars(this.envVarPrefix);
     this.sharedContext = null;
+    this.sharedPage = null;
   }
 
   async initialize() {
     if (this.isolationMode === "fast") {
       this.sharedContext = await this.createContext();
+      this.sharedPage = await this.sharedContext.newPage();
     }
   }
 
@@ -67,6 +69,7 @@ export class PlaywrightRunner {
     if (this.sharedContext) {
       await this.sharedContext.close();
       this.sharedContext = null;
+      this.sharedPage = null;
     }
   }
 
@@ -103,13 +106,13 @@ export class PlaywrightRunner {
     if (!this.sharedContext) {
       this.sharedContext = await this.createContext();
     }
+    if (!this.sharedPage || this.sharedPage.isClosed()) {
+      this.sharedPage = await this.sharedContext.newPage();
+    }
     await this.sharedContext.clearCookies();
-    const page = await this.sharedContext.newPage();
     return {
-      page,
-      cleanup: async () => {
-        await page.close();
-      },
+      page: this.sharedPage,
+      cleanup: async () => {},
     };
   }
 
