@@ -54,6 +54,33 @@ in:
             handler: handleSubmit
 throws: Invalid ref key 'submit-button'
 ---
+case: rejects wildcard reserved global ref key
+in:
+  - refs:
+      window*:
+        eventListeners:
+          resize:
+            handler: handleResize
+throws: Reserved global keys must be exactly 'window' or 'document'
+---
+case: rejects explicit id reserved global ref key
+in:
+  - refs:
+      "#window":
+        eventListeners:
+          resize:
+            handler: handleResize
+throws: Reserved global keys must be exactly 'window' or 'document'
+---
+case: rejects class reserved global ref key
+in:
+  - refs:
+      ".document":
+        eventListeners:
+          click:
+            handler: handleClick
+throws: Reserved global keys must be exactly 'window' or 'document'
+---
 case: rejects kebab-case element id for refs matching
 in:
   - refs:
@@ -157,6 +184,13 @@ in:
       handler: handleSubmit
       action: submitAction
 throws: handler or action but not both
+---
+case: rejects listener that defines neither handler nor action
+in:
+  - eventConfig:
+      payload:
+        foo: bar
+throws: must define either handler or action
 ---
 case: rejects listener with both debounce and throttle
 in:

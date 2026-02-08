@@ -1,9 +1,20 @@
 export const REF_ID_KEY_REGEX = /^[a-z][a-zA-Z0-9]*\*?$/;
 export const REF_CLASS_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]*\*?$/;
 export const REF_ID_REGEX = /^[a-z][a-zA-Z0-9]*$/;
+export const GLOBAL_REF_KEYS = new Set(["window", "document"]);
 
 export const createRefMatchers = (refs) => {
   return Object.entries(refs || {}).map(([refKey, refConfig]) => {
+    if (GLOBAL_REF_KEYS.has(refKey)) {
+      return {
+        refKey,
+        refConfig,
+        targetType: "global",
+        isWildcard: false,
+        prefix: refKey,
+      };
+    }
+
     let targetType = "id";
     let rawKey = refKey;
     if (refKey.startsWith(".")) {
@@ -12,6 +23,13 @@ export const createRefMatchers = (refs) => {
     } else if (refKey.startsWith("#")) {
       targetType = "id";
       rawKey = refKey.slice(1);
+    }
+
+    const reservedBaseKey = rawKey.endsWith("*") ? rawKey.slice(0, -1) : rawKey;
+    if (GLOBAL_REF_KEYS.has(reservedBaseKey)) {
+      throw new Error(
+        `[Parser] Invalid ref key '${refKey}'. Reserved global keys must be exactly 'window' or 'document'.`,
+      );
     }
 
     if (targetType === "id" && !REF_ID_KEY_REGEX.test(rawKey)) {
@@ -65,6 +83,10 @@ export const resolveBestRefMatcher = ({
   const normalizedClassNames = Array.isArray(classNames) ? classNames : [];
 
   refMatchers.forEach((refMatcher) => {
+    if (refMatcher.targetType === "global") {
+      return;
+    }
+
     if (refMatcher.targetType === "id") {
       if (matchByPrefix({
         value: elementIdForRefs,
@@ -200,6 +222,9 @@ export const validateEventConfig = ({ eventType, eventConfig, refKey }) => {
 
   if (eventConfig.handler && eventConfig.action) {
     throw new Error("Each listener can have handler or action but not both");
+  }
+  if (!eventConfig.handler && !eventConfig.action) {
+    throw new Error("Each listener must define either handler or action");
   }
 
   return {

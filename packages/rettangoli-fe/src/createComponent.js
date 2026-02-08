@@ -12,6 +12,7 @@ import {
   runBeforeMount,
 } from "./core/runtime/lifecycle.js";
 import { collectRefElements } from "./core/runtime/refs.js";
+import { attachGlobalRefListeners } from "./core/runtime/globalListeners.js";
 import {
   createPropsProxy,
   normalizeAttributeValue,
@@ -19,25 +20,6 @@ import {
   toKebabCase,
 } from "./core/runtime/props.js";
 
-/**
- * Subscribes to all observables and returns a function that will unsubscribe
- * from all observables when called
- * @param {*} observables
- * @returns
- */
-const subscribeAll = (observables) => {
-  // Subscribe to all observables and store the subscription objects
-  const subscriptions = observables.map((observable) => observable.subscribe());
-
-  // Return a function that will unsubscribe from all observables when called
-  return () => {
-    for (const subscription of subscriptions) {
-      if (subscription && typeof subscription.unsubscribe === "function") {
-        subscription.unsubscribe();
-      }
-    }
-  };
-};
 /**
  * Base class for web components
  * Connects web compnent with the rettangoli framework
@@ -106,6 +88,7 @@ class BaseComponent extends HTMLElement {
   refIds = {};
   patch;
   _unmountCallback;
+  _globalListenersCleanup;
   _oldVNode;
   deps;
   _propsSchemaKeys = [];
@@ -179,6 +162,11 @@ class BaseComponent extends HTMLElement {
       deps,
     });
 
+    this._globalListenersCleanup = attachGlobalRefListeners({
+      refs: this.refs,
+      handlers: this.transformedHandlers,
+    });
+
     this.render();
 
     runAfterMount({
@@ -186,19 +174,15 @@ class BaseComponent extends HTMLElement {
       deps,
     });
 
-    if (this.handlers?.subscriptions) {
-      this.unsubscribeAll = subscribeAll(this.handlers.subscriptions(deps));
-    }
   }
 
   disconnectedCallback() {
     if (this._unmountCallback) {
       this._unmountCallback();
     }
-    if (this.unsubscribeAll) {
-      this.unsubscribeAll();
+    if (this._globalListenersCleanup) {
+      this._globalListenersCleanup();
     }
-
     const eventRateLimitState = this.transformedHandlers?.__eventRateLimitState;
     if (eventRateLimitState && eventRateLimitState instanceof Map) {
       eventRateLimitState.forEach((state) => {

@@ -2,17 +2,59 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 let createComponent;
 let restoreGlobals;
+let globalWindowTarget;
+let globalDocumentTarget;
+
+const createEventTarget = () => {
+  const listeners = new Map();
+  return {
+    addEventListener(eventType, listener) {
+      if (!listeners.has(eventType)) {
+        listeners.set(eventType, new Set());
+      }
+      listeners.get(eventType).add(listener);
+    },
+    removeEventListener(eventType, listener) {
+      listeners.get(eventType)?.delete(listener);
+      if (listeners.get(eventType)?.size === 0) {
+        listeners.delete(eventType);
+      }
+    },
+    listenerCount(eventType) {
+      return listeners.get(eventType)?.size || 0;
+    },
+  };
+};
+
+const createFakeNode = (tagName = "div") => {
+  return {
+    tagName,
+    children: [],
+    style: { cssText: "" },
+    parentNode: null,
+    appendChild(child) {
+      child.parentNode = this;
+      this.children.push(child);
+      return child;
+    },
+  };
+};
 
 const installHTMLElementStubs = () => {
   const original = {
     HTMLElement: globalThis.HTMLElement,
     CustomEvent: globalThis.CustomEvent,
     requestAnimationFrame: globalThis.requestAnimationFrame,
+    CSSStyleSheet: globalThis.CSSStyleSheet,
+    document: globalThis.document,
+    window: globalThis.window,
   };
 
   class FakeHTMLElement {
     constructor() {
       this.__attrs = new Map();
+      this.children = [];
+      this.style = {};
     }
 
     setAttribute(name, value) {
@@ -33,6 +75,18 @@ const installHTMLElementStubs = () => {
     dispatchEvent() {
       return true;
     }
+
+    appendChild(child) {
+      child.parentNode = this;
+      this.children.push(child);
+      return child;
+    }
+
+    attachShadow() {
+      const root = createFakeNode("shadow-root");
+      root.adoptedStyleSheets = [];
+      return root;
+    }
   }
 
   class FakeCustomEvent {
@@ -46,11 +100,24 @@ const installHTMLElementStubs = () => {
   globalThis.HTMLElement = FakeHTMLElement;
   globalThis.CustomEvent = FakeCustomEvent;
   globalThis.requestAnimationFrame = (cb) => cb();
+  globalThis.CSSStyleSheet = class {
+    replaceSync() {}
+  };
+  globalWindowTarget = createEventTarget();
+  globalDocumentTarget = {
+    ...createEventTarget(),
+    createElement: (tagName) => createFakeNode(tagName),
+  };
+  globalThis.window = globalWindowTarget;
+  globalThis.document = globalDocumentTarget;
 
   return () => {
     globalThis.HTMLElement = original.HTMLElement;
     globalThis.CustomEvent = original.CustomEvent;
     globalThis.requestAnimationFrame = original.requestAnimationFrame;
+    globalThis.CSSStyleSheet = original.CSSStyleSheet;
+    globalThis.document = original.document;
+    globalThis.window = original.window;
   };
 };
 
@@ -178,5 +245,54 @@ describe("createComponent runtime contracts", () => {
 
     instance.setAttribute("max-items", "7");
     expect(instance.props.maxItems).toBe("7");
+  });
+
+  it("attaches global refs listeners once per mount and cleans up on unmount", () => {
+    const TestComponent = createComponent(
+      {
+        handlers: {
+          handleResize: () => {},
+        },
+        methods: {},
+        constants: {},
+        view: {
+          elementName: "x-global-listener-test",
+          propsSchema: {
+            type: "object",
+            properties: {},
+          },
+          template: [],
+          refs: {
+            window: {
+              eventListeners: {
+                resize: {
+                  handler: "handleResize",
+                },
+              },
+            },
+          },
+          styles: {},
+        },
+        store: {
+          createInitialState: () => ({}),
+          selectViewData: () => ({}),
+        },
+        patch: (_oldValue, newValue) => newValue,
+        h: (tag, data = {}, children = []) => ({ tag, data, children }),
+      },
+      {},
+    );
+    const instance = new TestComponent();
+    instance.render = () => {};
+
+    instance.connectedCallback();
+    expect(globalWindowTarget.listenerCount("resize")).toBe(1);
+
+    instance.render();
+    instance.render();
+    expect(globalWindowTarget.listenerCount("resize")).toBe(1);
+
+    instance.disconnectedCallback();
+    expect(globalWindowTarget.listenerCount("resize")).toBe(0);
   });
 });

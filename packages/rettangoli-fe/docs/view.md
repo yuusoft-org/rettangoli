@@ -158,6 +158,30 @@ Rules:
 - match precedence is: ID over class, exact over wildcard, then longest prefix
 - `window` and `document` are reserved refs keys
 
+Global listener lifecycle:
+- listeners under `refs.window` / `refs.document` are attached once on component mount
+- they are removed on component unmount
+- re-renders do not re-attach duplicate global listeners
+
+Example:
+
+```yaml
+refs:
+  window:
+    eventListeners:
+      resize:
+        action: setViewportWidth
+        throttle: 120
+        payload:
+          width: ${_event.target.innerWidth}
+
+  document:
+    eventListeners:
+      visibilitychange:
+        handler: handleVisibilityChange
+        once: true
+```
+
 ### Event Modifier Semantics
 
 - `preventDefault`: call `_event.preventDefault()`
