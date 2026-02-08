@@ -5,29 +5,71 @@ tags: documentation
 sidebarId: rtgl-button
 ---
 
-A versatile button component
+A primary action primitive for commands, navigation actions, and icon-trigger controls.
+
+## Quickstart
+
+Use this as your default action button:
+
+```html codePreview
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-button v="pr" s="md">Save Changes</rtgl-button>
+  <rtgl-button v="ol" s="md">Cancel</rtgl-button>
+</rtgl-view>
+```
+
+## Core Decisions
+
+### Choose Action Type
+
+| Intent | Recommended |
+| --- | --- |
+| Run an in-page action | `rtgl-button` without `href` |
+| Navigate to another route/url | `rtgl-button` with `href` |
+
+### Choose Content Mode
+
+| Intent | Recommended |
+| --- | --- |
+| Text button | Label as slot content |
+| Icon + text button | `pre` or `suf` with label |
+| Icon-only trigger | `sq` + `pre` |
+
+### Responsive Syntax (At a Glance)
+
+Breakpoint prefixes are supported for `v`, `s`, and margin attributes.
+For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
+
+```html codePreview
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-button v="pr" sm-v="ol" s="lg" sm-s="sm">Responsive Action</rtgl-button>
+</rtgl-view>
+```
 
 ## Attributes
+
 | Name | Attribute | Type | Default |
-|-----------|------|---------|---------|
+| --- | --- | --- | --- |
 | Variant | `v` | `pr`, `se`, `de`, `ol`, `gh`, `lk` | `pr` |
 | Size | `s` | `sm`, `md`, `lg` | `md` |
+| Prefix Icon | `pre` | registered svg key | - |
+| Suffix Icon | `suf` | registered svg key | - |
+| Square Mode | `sq` | boolean | - |
 | Disabled | `disabled` | boolean | - |
-| Width | `w` | `f`, number | - |
-| Margin | `m`, `ml`, `mr`, `mt`, `mb`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
-| Href | `href` | string | - |
+| Link | `href`, `target`, `rel` | string | - |
+| Width | `w` | number, `%`, `xs`-`xl`, `f`, CSS length/value | - |
+| Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 
 ## Variant
 
 Control the visual style and emphasis of buttons to match their importance and context.
 
-- **Primary (`pr`)**: The main action button with high emphasis, used for the most important actions
-- **Secondary (`se`)**: Alternative action button with medium emphasis, used for secondary actions
-- **Destructive (`de`)**: Indicates a destructive or negative action such as delete or remove
-- **Outline (`ol`)**: A subtle button with a border and transparent background, for less prominent actions
-- **Ghost (`gh`)**: The most subtle button style with no background or border, for low-emphasis actions
-- **Link (`lk`)**: Appears and behaves like a text link while maintaining button accessibility
-
+- `pr`: Primary action
+- `se`: Secondary action
+- `de`: Destructive action
+- `ol`: Outline action
+- `gh`: Ghost action
+- `lk`: Link-style action
 
 ```html codePreview
 <rtgl-view d="h" g="md">
@@ -42,7 +84,7 @@ Control the visual style and emphasis of buttons to match their importance and c
 
 ## Size
 
-Control the button size using predefined values for consistent spacing and touch targets.
+Control the button scale with `sm`, `md`, and `lg`.
 
 ```html codePreview
 <rtgl-view d="h" g="md">
@@ -52,42 +94,106 @@ Control the button size using predefined values for consistent spacing and touch
 </rtgl-view>
 ```
 
+## Icons
+
+Use `pre` and `suf` to place icons before or after the label.
+
+### Behavior & precedence
+
+- `pre` renders a leading icon.
+- `suf` renders a trailing icon.
+- You can use both in one button.
+- Icon size follows the button size (`s`).
+
+```html codePreview
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-button pre="text">Leading Icon</rtgl-button>
+  <rtgl-button suf="text">Trailing Icon</rtgl-button>
+  <rtgl-button pre="text" suf="spinner">Both Icons</rtgl-button>
+</rtgl-view>
+```
+
+## Square
+
+Use `sq` for icon-only square buttons.
+
+### Behavior & precedence
+
+- `sq` produces square dimensions based on `s`.
+- When `sq` is set, `w` is ignored.
+- Pair `sq` with `pre` for a visible icon.
+
+```html codePreview
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-button sq pre="text"></rtgl-button>
+  <rtgl-button sq pre="text" s="sm"></rtgl-button>
+  <rtgl-button sq pre="text" s="lg"></rtgl-button>
+</rtgl-view>
+```
+
+## Width
+
+Control width with fixed values or stretch mode.
+
+### Behavior & precedence
+
+- Numeric values are pixels (`w="180"`).
+- `%`, spacing tokens (`xs`-`xl`), and CSS length values are supported.
+- `w="f"` stretches to available width.
+- `w` is ignored when `sq` is set.
+
+```html codePreview
+<rtgl-view g="md" w="300" p="lg">
+  <rtgl-button w="f">Full Width</rtgl-button>
+  <rtgl-button w="180">Fixed Width</rtgl-button>
+</rtgl-view>
+```
+
 ## Disabled
 
-Disable buttons to prevent user interaction when actions are not available or appropriate.
+Use `disabled` when an action is temporarily unavailable.
+
+### Behavior & precedence
+
+- Disabled buttons are non-interactive.
+- If both `disabled` and `href` are present, disabled behavior wins.
 
 ```html codePreview
 <rtgl-button disabled>Disabled</rtgl-button>
 ```
 
-## Width
+## Link
 
-Control button width using `f` for full width or specific pixel values for custom sizing.
+Use `href` for navigation-style actions.
+
+### Behavior & precedence
+
+- `href` turns the button into a navigation action.
+- `target` controls where the destination opens.
+- `rel` configures relationship/security metadata.
+- When using `target="_blank"`, set `rel="noopener noreferrer"` explicitly.
 
 ```html codePreview
-<rtgl-view g="md" w="300">
-  <rtgl-button w="f">Full Width</rtgl-button>
-  <rtgl-button w="100">100px</rtgl-button>
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-button href="#overview" v="ol">Go to Overview</rtgl-button>
+  <rtgl-button
+    href="https://rettangoli.dev"
+    target="_blank"
+    rel="noopener noreferrer"
+    v="lk"
+  >
+    Open Site
+  </rtgl-button>
 </rtgl-view>
 ```
 
 ## Margin
 
-Add spacing around buttons using predefined margin values for consistent layout spacing.
+Add external spacing with margin tokens.
 
 ```html codePreview
-<rtgl-view g="md" w="300">
-  <rtgl-button ml="md">Medium Margin</rtgl-button>
-  <rtgl-button ml="lg">Large Margin</rtgl-button>
-  <rtgl-button ml="xl">Extra Large Margin</rtgl-button>
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-button mr="md">Button A</rtgl-button>
+  <rtgl-button>Button B</rtgl-button>
 </rtgl-view>
-```
-
-## Href
-
-Convert buttons into links by providing an href attribute while maintaining button styling and accessibility.
-
-```html codePreview
-<rtgl-button href="/">Link</rtgl-button>
-
 ```

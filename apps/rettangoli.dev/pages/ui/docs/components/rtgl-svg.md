@@ -5,9 +5,11 @@ tags: documentation
 sidebarId: rtgl-svg
 ---
 
-A component for displaying SVG icons with customizable dimensions and colors.
+A primitive for rendering registered SVG icons with token-based color, sizing, and spacing.
 
-SVGs need to be globally defined in javascript in the `window.rtglIcons` object.
+## Quickstart
+
+Register icons once, then render by key:
 
 ```html
 <script>
@@ -17,29 +19,63 @@ SVGs need to be globally defined in javascript in the `window.rtglIcons` object.
 </script>
 ```
 
-You can now use the `text` svg
-```html
-<rtgl-view d="h" g="md" p="md">
-  <rtgl-svg svg="text" wh="24"></rtgl-svg>
+```html codePreview
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-svg svg="text" wh="20"></rtgl-svg>
+  <rtgl-svg svg="text" wh="20" c="mu-fg"></rtgl-svg>
 </rtgl-view>
 ```
 
-Also note SVG's `currentColor` will be used and replaced by the `c` attribute color.
+## Core Decisions
+
+### Choose a Sizing Mode
+
+| Intent | Recommended | Notes |
+| --- | --- | --- |
+| Standard icon size | `wh="16"` or `wh="20"` | Single value for square icons |
+| Custom icon ratio | `w="24" h="16"` | Use explicit width and height |
+| Quick scale variants | `wh="16"`, `wh="24"`, `wh="32"` | Keep a consistent size scale |
+
+### Choose a Color Strategy
+
+| Intent | Recommended |
+| --- | --- |
+| Default icon color | Omit `c` (uses foreground) |
+| Secondary icon | `c="mu-fg"` |
+| Emphasis/accent icon | `c="ac-fg"` or `c="pr-fg"` |
+
+### Responsive Syntax (At a Glance)
+
+Breakpoint prefixes are supported for `c`, `cur`, and margin attributes.
+For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
+
+```html codePreview
+<rtgl-view d="h" g="md" p="lg">
+  <rtgl-svg svg="text" wh="20" c="fg" sm-c="mu-fg"></rtgl-svg>
+  <rtgl-svg svg="text" wh="20" m="md" sm-m="xs"></rtgl-svg>
+</rtgl-view>
+```
 
 ## Attributes
 
 | Name | Attribute | Type | Default |
-|------|-----------|------|---------|
+| --- | --- | --- | --- |
 | SVG | `svg` | string | - |
-| Width | `w` | number | - |
-| Height | `h` | number | - |
-| Width & Height | `wh` | number | - |
-| Color | `c` | `fg`, `mu-fg`, `ac-fg`, `pr-fg`, `se-fg`, etc. | `fg` |
+| Dimensions | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, CSS length/value | - |
+| Color | `c` | `fg`, `mu`, `pr`, `se`, `de`, `ac`, `bo`, `bg`, `tr`, `mu-fg`, `pr-fg`, `se-fg`, `de-fg`, `ac-fg` | `fg` |
+| Padding | `p`, `pt`, `pr`, `pb`, `pl`, `pv`, `ph` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 | Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
+| Cursor | `cur` | cursor token (`pointer`, `move`, `p`, `m`, etc.) | - |
 
-## Icons
+## Icon Source
 
-Display predefined SVG icons that have been registered in the `window.rtglIcons` object.
+Render icons by key from the registry.
+
+### Behavior & precedence
+
+- `svg` must match a registered icon key.
+- If the key is not found, nothing is rendered.
+- Define icons before components that reference them.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="md">
@@ -48,9 +84,45 @@ Display predefined SVG icons that have been registered in the `window.rtglIcons`
 </rtgl-view>
 ```
 
+## Dimensions
+
+Control icon size with `w`, `h`, and `wh`.
+
+### Behavior & precedence
+
+- `wh` has priority over `w` and `h` at the same breakpoint.
+- Numeric values are pixels (`wh="20"`).
+- `%`, spacing tokens (`xs`-`xl`), and CSS length values are supported.
+- Use explicit `w` + `h` when you need a non-square icon box.
+
+### Square Icons
+
+```html codePreview
+<rtgl-view d="h" g="md" p="md">
+  <rtgl-svg svg="text" wh="16"></rtgl-svg>
+  <rtgl-svg svg="text" wh="24"></rtgl-svg>
+  <rtgl-svg svg="text" wh="32"></rtgl-svg>
+</rtgl-view>
+```
+
+### Non-Square Icons
+
+```html codePreview
+<rtgl-view d="h" g="md" p="md">
+  <rtgl-svg svg="text" w="24" h="24"></rtgl-svg>
+  <rtgl-svg svg="text" w="12" h="24"></rtgl-svg>
+  <rtgl-svg svg="text" w="24" h="12"></rtgl-svg>
+</rtgl-view>
+```
+
 ## Color
 
-Customize the SVG color using predefined color tokens. The SVG's `currentColor` will be replaced with the specified color.
+Set icon color using semantic text-color tokens.
+
+### Behavior & precedence
+
+- Icons should use `currentColor` in their SVG markup for token colors to apply.
+- Omitted `c` uses default foreground color.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="md">
@@ -62,27 +134,28 @@ Customize the SVG color using predefined color tokens. The SVG's `currentColor` 
 </rtgl-view>
 ```
 
-## Dimensions
+## Spacing
 
-Control the size of SVG icons using pixel values for precise control over the display.
-
-### Using wh (Width and Height)
+Use padding for internal icon breathing room and margin for layout spacing.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="md">
-  <rtgl-svg svg="text" wh="16"></rtgl-svg>
-  <rtgl-svg svg="text" wh="24"></rtgl-svg>
-  <rtgl-svg svg="text" wh="32"></rtgl-svg>
-  <rtgl-svg svg="text" wh="48"></rtgl-svg>
+  <rtgl-view bgc="mu">
+    <rtgl-svg svg="text" wh="20" p="xs"></rtgl-svg>
+  </rtgl-view>
+  <rtgl-view bgc="mu">
+    <rtgl-svg svg="text" wh="20" m="md"></rtgl-svg>
+  </rtgl-view>
 </rtgl-view>
 ```
 
-### Using w and h separately
+## Cursor
+
+Use `cur` to express icon interactivity.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="md">
-  <rtgl-svg svg="text" w="24" h="24"></rtgl-svg>
-  <rtgl-svg svg="text" w="12" h="24"></rtgl-svg>
-  <rtgl-svg svg="text" w="24" h="12"></rtgl-svg>
+  <rtgl-svg svg="text" wh="20" cur="pointer"></rtgl-svg>
+  <rtgl-svg svg="text" wh="20" cur="move"></rtgl-svg>
 </rtgl-view>
 ```

@@ -59,15 +59,17 @@ class RettangoliSvgElement extends HTMLElement {
     const width = dimensionWithUnit(wh === null ? this.getAttribute("w") : wh);
     const height = dimensionWithUnit(wh === null ? this.getAttribute("h") : wh);
 
-    if (width) {
+    if (width != null) {
       this.style.width = width;
+    } else {
+      this.style.width = "";
     }
 
-    if (height) {
+    if (height != null) {
       this.style.height = height;
+    } else {
+      this.style.height = "";
     }
-
-    this._render();
   }
 
   _render() {

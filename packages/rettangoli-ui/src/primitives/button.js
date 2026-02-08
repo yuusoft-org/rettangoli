@@ -1,4 +1,4 @@
-import { css, dimensionWithUnit } from "../common.js";
+import { css, dimensionWithUnit, applyLinkAttributes } from "../common.js";
 import buttonMarginStyles from "../styles/buttonMarginStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
 
@@ -17,7 +17,7 @@ class RettangoliButtonElement extends HTMLElement {
           display: contents;
         }
 
-        button {
+        .surface {
           display: flex;
           flex-direction: row;
           align-items: center;
@@ -41,7 +41,7 @@ class RettangoliButtonElement extends HTMLElement {
           color: var(--primary-foreground);
         }
 
-        button:hover {
+        .surface:hover {
           cursor: pointer;
           background-color: color-mix(
             in srgb,
@@ -50,11 +50,11 @@ class RettangoliButtonElement extends HTMLElement {
           );
         }
 
-        :host([disabled]) button {
+        :host([disabled]) .surface {
           cursor: not-allowed;
         }
 
-        button:active {
+        .surface:active {
           cursor: pointer;
           background-color: color-mix(
             in srgb,
@@ -63,7 +63,7 @@ class RettangoliButtonElement extends HTMLElement {
           );
         }
 
-        :host([v="pr"]) button:hover {
+        :host([v="pr"]) .surface:hover {
           background-color: color-mix(
               in srgb,
               var(--primary) 85%,
@@ -71,7 +71,7 @@ class RettangoliButtonElement extends HTMLElement {
             );
         }
 
-        :host([v="pr"]) button:active {
+        :host([v="pr"]) .surface:active {
           background-color: color-mix(
               in srgb,
               var(--primary) 80%,
@@ -79,7 +79,7 @@ class RettangoliButtonElement extends HTMLElement {
             );
         }
 
-        :host([v="se"]) button:hover {
+        :host([v="se"]) .surface:hover {
           background-color: color-mix(
               in srgb,
               var(--secondary) 85%,
@@ -87,7 +87,7 @@ class RettangoliButtonElement extends HTMLElement {
             );
         }
 
-        :host([v="se"]) button:active {
+        :host([v="se"]) .surface:active {
           background-color: color-mix(
               in srgb,
               var(--secondary) 80%,
@@ -95,7 +95,7 @@ class RettangoliButtonElement extends HTMLElement {
             );
         }
 
-        :host([v="de"]) button:hover {
+        :host([v="de"]) .surface:hover {
           background-color: color-mix(
               in srgb,
               var(--destructive) 85%,
@@ -103,7 +103,7 @@ class RettangoliButtonElement extends HTMLElement {
             );
         }
 
-        :host([v="de"]) button:active {
+        :host([v="de"]) .surface:active {
           background-color: color-mix(
               in srgb,
               var(--destructive) 80%,
@@ -111,45 +111,45 @@ class RettangoliButtonElement extends HTMLElement {
             );
         }
 
-        :host([v="ol"]) button:hover {
+        :host([v="ol"]) .surface:hover {
           background-color: var(--accent);
         }
 
-        :host([v="gh"]) button:hover {
+        :host([v="gh"]) .surface:hover {
           background-color: var(--accent);
         }
 
-        :host([v="lk"]) button:hover {
+        :host([v="lk"]) .surface:hover {
           text-decoration: underline;
         }
 
         /* Square button styles */
-        :host([sq]) button {
+        :host([sq]) .surface {
           width: 32px;
           height: 32px;
           padding: 0;
           gap: 0;
         }
 
-        :host([sq][s="sm"]) button {
+        :host([sq][s="sm"]) .surface {
           width: 24px;
           height: 24px;
           padding: 0;
           gap: 0;
         }
 
-        :host([sq][s="lg"]) button {
+        :host([sq][s="lg"]) .surface {
           width: 40px;
           height: 40px;
           padding: 0;
           gap: 0;
         }
 
-        ${anchorStyles}
-        
-        a {
-          display: contents;
+        .surface rtgl-svg {
+          color: inherit;
         }
+
+        ${anchorStyles}
 
         ${buttonMarginStyles}
       `);
@@ -164,16 +164,17 @@ class RettangoliButtonElement extends HTMLElement {
     
     // Create initial DOM structure
     this._containerElement = null;
-    this._buttonElement = document.createElement('button');
+    this._surfaceElement = document.createElement('button');
     this._slotElement = document.createElement('slot');
     this._prefixIcon = null;
     this._suffixIcon = null;
     
-    this._buttonElement.appendChild(this._slotElement);
+    this._surfaceElement.className = 'surface';
+    this._surfaceElement.appendChild(this._slotElement);
   }
 
   static get observedAttributes() {
-    return ["key", "href", "target", "w", "pre", "suf", "disabled", "v", "s", "sq"];
+    return ["key", "href", "target", "rel", "w", "pre", "suf", "disabled", "v", "s", "sq"];
   }
 
   connectedCallback() {
@@ -187,44 +188,55 @@ class RettangoliButtonElement extends HTMLElement {
   _updateButton() {
     // Clear shadow DOM
     this.shadow.innerHTML = '';
-    
-    // Update icon
-    this._updateIcon();
-    
-    // Update width styling (skip for square buttons)
-    if (!this.hasAttribute('sq')) {
-      this._updateWidth();
-    }
-    
+
     // Update disabled state
     const isDisabled = this.hasAttribute('disabled');
-    if (isDisabled) {
-      this._buttonElement.setAttribute('disabled', '');
-    } else {
-      this._buttonElement.removeAttribute('disabled');
+    const href = this.getAttribute("href");
+    const target = this.getAttribute("target");
+    const rel = this.getAttribute("rel");
+
+    const shouldUseAnchor = href && !isDisabled;
+    const requiredTag = shouldUseAnchor ? "a" : "button";
+    if (this._surfaceElement.tagName.toLowerCase() !== requiredTag) {
+      const nextSurfaceElement = document.createElement(requiredTag);
+      nextSurfaceElement.className = 'surface';
+      nextSurfaceElement.appendChild(this._slotElement);
+      this._surfaceElement = nextSurfaceElement;
     }
 
-    
-    // Handle href (link) vs button
-    const href = this.getAttribute("href");
-    if (href) {
-      // Create anchor wrapper
-      const anchorElement = document.createElement('a');
-      anchorElement.setAttribute('href', href);
-      
-      const target = this.getAttribute("target");
-      if (target) {
-        anchorElement.setAttribute('target', target);
-      }
-      
-      anchorElement.appendChild(this._buttonElement);
-      this.shadow.appendChild(anchorElement);
-      this._containerElement = anchorElement;
+    // Update icon after surface element is finalized so icons are attached
+    // to the active tag (<button> or <a>) consistently.
+    this._updateIcon();
+
+    if (!this.hasAttribute('sq')) {
+      this._updateWidth();
     } else {
-      // Direct button
-      this.shadow.appendChild(this._buttonElement);
-      this._containerElement = this._buttonElement;
+      this._surfaceElement.style.width = "";
+      this._surfaceElement.style.minWidth = "";
+      this._surfaceElement.style.maxWidth = "";
     }
+
+    if (shouldUseAnchor) {
+      applyLinkAttributes({
+        linkElement: this._surfaceElement,
+        href,
+        target,
+        rel,
+      });
+      this._surfaceElement.removeAttribute("disabled");
+    } else {
+      this._surfaceElement.removeAttribute("href");
+      this._surfaceElement.removeAttribute("target");
+      this._surfaceElement.removeAttribute("rel");
+      if (isDisabled) {
+        this._surfaceElement.setAttribute("disabled", "");
+      } else {
+        this._surfaceElement.removeAttribute("disabled");
+      }
+    }
+
+    this.shadow.appendChild(this._surfaceElement);
+    this._containerElement = this._surfaceElement;
   }
 
   _updateIcon() {
@@ -238,20 +250,11 @@ class RettangoliButtonElement extends HTMLElement {
       this._suffixIcon = null;
     }
 
-    const colorMap = {
-      pr: 'pr-fg',
-      se: 'ac-fg',
-      de: 'pr-fg',
-      ol: 'ac-fg',
-      gh: 'ac-fg',
-      lk: 'ac-fg'
-    };
     const iconSizeMap = {
       sm: 14,
       md: 18,
       lg: 22
     };
-    const color = colorMap[this.getAttribute("v")] || 'pr-fg';
 
     // For square buttons, use button size (s attribute), otherwise use icon size
     let size = 18; // default
@@ -271,10 +274,10 @@ class RettangoliButtonElement extends HTMLElement {
     if (prefixIcon) {
       this._prefixIcon = document.createElement('rtgl-svg');
       this._prefixIcon.setAttribute('svg', prefixIcon);
-      this._prefixIcon.setAttribute('c', color);
       this._prefixIcon.setAttribute('wh', size.toString());
+      this._prefixIcon.style.color = "inherit";
       // Insert before slot (left position)
-      this._buttonElement.insertBefore(this._prefixIcon, this._slotElement);
+      this._surfaceElement.insertBefore(this._prefixIcon, this._slotElement);
     }
 
     // Create suffix icon (after text)
@@ -282,10 +285,10 @@ class RettangoliButtonElement extends HTMLElement {
     if (suffixIcon) {
       this._suffixIcon = document.createElement('rtgl-svg');
       this._suffixIcon.setAttribute('svg', suffixIcon);
-      this._suffixIcon.setAttribute('c', color);
       this._suffixIcon.setAttribute('wh', size.toString());
+      this._suffixIcon.style.color = "inherit";
       // Insert after slot (right position)
-      this._buttonElement.appendChild(this._suffixIcon);
+      this._surfaceElement.appendChild(this._suffixIcon);
     }
   }
 
@@ -293,23 +296,25 @@ class RettangoliButtonElement extends HTMLElement {
     const width = dimensionWithUnit(this.getAttribute("w"));
     
     if (width === "f") {
-      this._buttonElement.style.width = "var(--width-stretch)";
+      this._surfaceElement.style.width = "var(--width-stretch)";
+      this._surfaceElement.style.minWidth = "";
+      this._surfaceElement.style.maxWidth = "";
     } else if (width !== undefined && width !== null) {
-      this._buttonElement.style.width = width;
-      this._buttonElement.style.minWidth = width;
-      this._buttonElement.style.maxWidth = width;
+      this._surfaceElement.style.width = width;
+      this._surfaceElement.style.minWidth = width;
+      this._surfaceElement.style.maxWidth = width;
     } else {
-      this._buttonElement.style.width = "";
-      this._buttonElement.style.minWidth = "";
-      this._buttonElement.style.maxWidth = "";
+      this._surfaceElement.style.width = "";
+      this._surfaceElement.style.minWidth = "";
+      this._surfaceElement.style.maxWidth = "";
     }
   }
   
   // Public method to get the actual button's bounding rect
   // This is needed because the host element has display: contents
   getBoundingClientRect() {
-    if (this._buttonElement) {
-      return this._buttonElement.getBoundingClientRect();
+    if (this._surfaceElement) {
+      return this._surfaceElement.getBoundingClientRect();
     }
     // Fallback to host element
     return super.getBoundingClientRect();
