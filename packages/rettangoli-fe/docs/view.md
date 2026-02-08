@@ -68,8 +68,8 @@ template:
 
 Bindings attached to selectors:
 
-- `name=value`: HTML attribute binding
-- `:name=value`: JS property binding
+- `name=value`: attribute-form binding
+- `:name=value`: property-form binding
 - `?name=value`: boolean-attribute toggling
 
 Example:
@@ -79,6 +79,30 @@ template:
   - input#email type=email value=${email}:
   - user-card#profile :user=${currentUser}:
   - button#submitButton ?disabled=${isSubmitting}: Submit
+```
+
+Component input contract (props-only):
+
+- Components expose only `props` (no separate `attrs` contract).
+- Both `name=value` and `:name=value` map to component props.
+- Kebab-case names from attribute-form are normalized to camelCase (`max-items` -> `maxItems`).
+- For one component node, defining both forms for the same prop key is invalid.
+- Runtime read resolution is property first (`element.value`), then attribute fallback (`value`/`value-name`).
+
+Example:
+
+```yaml
+template:
+  - my-component value=abcd:
+  - my-component :value=${var1}:
+  - my-component max-items=50:
+```
+
+Inside handlers/store for `my-component`, read only from `props`:
+
+```js
+deps.props.value;
+deps.props.maxItems;
 ```
 
 Boolean-attribute rule:
@@ -283,6 +307,13 @@ Use value attribute instead:
 
 ```yaml
 button aria-pressed=${ariaPressedState}: Like
+```
+
+Invalid: duplicate prop source on one component node (`name` + `:name`)
+
+```yaml
+template:
+  - my-component value=abcd :value=${var1}:
 ```
 
 ## End-to-End Example

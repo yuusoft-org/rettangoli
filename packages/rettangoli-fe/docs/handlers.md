@@ -17,7 +17,7 @@ While state and view are pure functions, handlers can be messier as they handle 
 ```js
 export const handlerName = (deps, payload) => {
   // Access dependencies
-  const { store, render, props, attrs, constants, dispatchEvent } = deps;
+  const { store, render, props, constants, dispatchEvent } = deps;
 
   // Access the original event via payload._event
   const { _event } = payload;
@@ -32,8 +32,7 @@ export const handlerName = (deps, payload) => {
 
 - **`store`**: State actions (mutations) - store context object is automatically passed as first argument
 - **`render`**: Trigger component re-render
-- **`props`**: Component properties
-- **`attrs`**: HTML attributes
+- **`props`**: Component properties (includes attribute-form fallback and kebab-case to camelCase normalization)
 - **`constants`**: Static constants from optional `.constants.yaml`
 - **`dispatchEvent`**: Emit custom DOM events
 - **`refs`**: Map of `camelCase ref key -> DOM element`
@@ -102,12 +101,12 @@ For long-lived browser-level listeners, declare them in `.view.yaml` under `refs
 
 ### Property Changes
 
-This is called when any attrs or props have changes.
+This is called when component props have changes.
 
 ```js
 export const handleOnUpdate = (deps, payload) => {
   const { store, render } = deps;
-  const { _event, oldProps, newProps, oldAttrs, newAttrs } = payload;
+  const { _event, oldProps, newProps } = payload;
   // Handle property changes
 };
 ```

@@ -37,8 +37,7 @@ If the view needs a value, compute/map it inside `selectViewData` and return it 
 All store functions receive a first argument context object:
 
 - `state` (available in selectors, `selectViewData`, and actions)
-- `props`
-- `attrs`
+- `props` (includes attribute-form fallback and kebab-case to camelCase normalization)
 - `constants` (from optional `.constants.yaml`)
 
 ## Minimal File Shape

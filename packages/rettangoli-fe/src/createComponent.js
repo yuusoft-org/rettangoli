@@ -114,46 +114,36 @@ const deepFreeze = (value) => {
   return Object.freeze(value);
 };
 
-function createAttrsProxy(source) {
-  return new Proxy(
-    {},
-    {
-      get(_, prop) {
-        if (typeof prop === "string") {
-          const value = source.getAttribute(prop);
-          // Return true for boolean attributes (empty string values)
-          return value === "" ? true : value;
-        }
-        return undefined;
-      },
-      set() {
-        throw new Error("Cannot assign to read-only proxy");
-      },
-      defineProperty() {
-        throw new Error("Cannot define properties on read-only proxy");
-      },
-      deleteProperty() {
-        throw new Error("Cannot delete properties from read-only proxy");
-      },
-      has(_, prop) {
-        return typeof prop === "string" && source.hasAttribute(prop);
-      },
-      ownKeys() {
-        return source.getAttributeNames();
-      },
-      getOwnPropertyDescriptor(_, prop) {
-        if (typeof prop === "string" && source.hasAttribute(prop)) {
-          return {
-            configurable: true,
-            enumerable: true,
-            get: () => source.getAttribute(prop),
-          };
-        }
-        return undefined;
-      },
-    },
-  );
-}
+const toKebabCase = (value) => {
+  return value.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+};
+
+const toCamelCase = (value) => {
+  return value.replace(/-([a-z0-9])/g, (_, chr) => chr.toUpperCase());
+};
+
+const normalizeAttributeValue = (value) => {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+  // HTML boolean attributes are represented as empty strings when present.
+  return value === "" ? true : value;
+};
+
+const readPropFallbackFromAttributes = (source, propName) => {
+  const directAttrValue = source.getAttribute(propName);
+  if (directAttrValue !== null) {
+    return normalizeAttributeValue(directAttrValue);
+  }
+  const kebabPropName = toKebabCase(propName);
+  if (kebabPropName !== propName) {
+    const kebabAttrValue = source.getAttribute(kebabPropName);
+    if (kebabAttrValue !== null) {
+      return normalizeAttributeValue(kebabAttrValue);
+    }
+  }
+  return undefined;
+};
 
 /**
  * Creates a read-only proxy object that only allows access to specified properties from the source object
@@ -173,7 +163,11 @@ function createPropsProxy(source, allowedKeys) {
     {
       get(_, prop) {
         if (typeof prop === "string" && allowed.has(prop)) {
-          return source[prop];
+          const propValue = source[prop];
+          if (propValue !== undefined) {
+            return propValue;
+          }
+          return readPropFallbackFromAttributes(source, prop);
         }
         return undefined;
       },
@@ -197,7 +191,13 @@ function createPropsProxy(source, allowedKeys) {
           return {
             configurable: true,
             enumerable: true,
-            get: () => source[prop],
+            get: () => {
+              const propValue = source[prop];
+              if (propValue !== undefined) {
+                return propValue;
+              }
+              return readPropFallbackFromAttributes(source, prop);
+            },
           };
         }
         return undefined;
@@ -276,6 +276,7 @@ class BaseComponent extends HTMLElement {
   _unmountCallback;
   _oldVNode;
   deps;
+  _propsSchemaKeys = [];
 
   /**
    * @type {string}
@@ -330,8 +331,6 @@ class BaseComponent extends HTMLElement {
     const deps = {
       ...this.deps,
       refs: this.refIds,
-      refIds: this.refIds,
-      getRefIds: () => this.refIds,
       dispatchEvent: this.dispatchEvent.bind(this),
     };
 
@@ -340,20 +339,19 @@ class BaseComponent extends HTMLElement {
         const { render, store } = deps;
         const { _event, _action } = payload;
         const context = parseAndRender(payload, {
-          event: _event
-        })
-        console.log('context', context)
+          _event,
+        });
         if (!store[_action]) {
-          throw new Error(`store action store.${store._action} is not defined`)
+          throw new Error(`[Store] Action 'store.${_action}' is not defined.`);
         }
         store[_action](context);
         render();
-      }
+      },
     };
     // TODO don't include onmount, subscriptions, etc in transformedHandlers
     Object.keys(this.handlers || {}).forEach((key) => {
-      this.transformedHandlers[key] = (event, payload) => {
-        const result = this.handlers[key](deps, event, payload);
+      this.transformedHandlers[key] = (payload) => {
+        const result = this.handlers[key](deps, payload);
         return result;
       };
     });
@@ -404,17 +402,37 @@ class BaseComponent extends HTMLElement {
         const deps = {
           ...this.deps,
           refs: this.refIds,
-          refIds: this.refIds,
-          getRefIds: () => this.refIds,
           dispatchEvent: this.dispatchEvent.bind(this),
           store: this.store,
           render: this.render.bind(this),
         };
+        const changedProp = toCamelCase(name);
+        const newProps = {};
+        this._propsSchemaKeys.forEach((propKey) => {
+          const propValue = deps.props[propKey];
+          if (propValue !== undefined) {
+            newProps[propKey] = propValue;
+          }
+        });
+        const oldProps = {
+          ...newProps,
+        };
+        const normalizedOldValue = normalizeAttributeValue(oldValue);
+        const normalizedNewValue = normalizeAttributeValue(newValue);
+        if (normalizedOldValue === undefined) {
+          delete oldProps[changedProp];
+        } else {
+          oldProps[changedProp] = normalizedOldValue;
+        }
+        if (normalizedNewValue === undefined) {
+          delete newProps[changedProp];
+        } else {
+          newProps[changedProp] = normalizedNewValue;
+        }
         const changes = {
-          oldAttrs: { [name]: oldValue },
-          newAttrs: { [name]: newValue },
-          oldProps: deps.props,
-          newProps: deps.props,
+          changedProp,
+          oldProps,
+          newProps,
         };
         this.handlers.handleOnUpdate(deps, changes);
       } else {
@@ -440,8 +458,6 @@ class BaseComponent extends HTMLElement {
       const deps = {
         ...this.deps,
         refs: this.refIds,
-        refIds: this.refIds,
-        getRefIds: () => this.refIds,
         dispatchEvent: this.dispatchEvent.bind(this),
         store: this.store,
         render: this.render.bind(this),
@@ -551,18 +567,18 @@ const bindMethods = (element, methods) => {
  * @param {*} props
  * @returns
  */
-const bindStore = (store, props, attrs, constants) => {
+const bindStore = (store, props, constants) => {
   const { createInitialState, ...selectorsAndActions } = store;
   const selectors = {};
   const actions = {};
   let currentState = {};
   if (createInitialState) {
-    currentState = createInitialState({ props, attrs, constants });
+    currentState = createInitialState({ props, constants });
   }
   Object.entries(selectorsAndActions).forEach(([key, fn]) => {
     if (key.startsWith("select")) {
       selectors[key] = (...args) => {
-        return fn({ state: currentState, props, attrs, constants }, ...args);
+        return fn({ state: currentState, props, constants }, ...args);
       };
     } else {
       actions[key] = (payload = {}) => {
@@ -573,7 +589,7 @@ const bindStore = (store, props, attrs, constants) => {
           );
         }
         currentState = produce(currentState, (draft) => {
-          return fn({ state: draft, props, attrs, constants }, normalizedPayload);
+          return fn({ state: draft, props, constants }, normalizedPayload);
         });
         return currentState;
       };
@@ -588,7 +604,10 @@ const bindStore = (store, props, attrs, constants) => {
 };
 
 const createComponent = ({ handlers, methods, constants, view, store, patch, h }, deps) => {
-  const { elementName, propsSchema, attrsSchema, template, refs, styles } = view;
+  const { elementName, propsSchema, template, refs, styles } = view;
+  const propsSchemaKeys = propsSchema?.properties
+    ? [...new Set(Object.keys(propsSchema.properties).map((propKey) => toCamelCase(propKey)))]
+    : [];
 
   if (!patch) {
     throw new Error("Patch is not defined");
@@ -605,14 +624,16 @@ const createComponent = ({ handlers, methods, constants, view, store, patch, h }
   class MyComponent extends BaseComponent {
 
     static get observedAttributes() {
-      const baseAttrs = ["key"];
-      const attrKeys = attrsSchema?.properties ? Object.keys(attrsSchema.properties) : [];
-      return [...baseAttrs, ...attrKeys];
+      const observedAttrs = new Set(["key"]);
+      propsSchemaKeys.forEach((propKey) => {
+        observedAttrs.add(propKey);
+        observedAttrs.add(toKebabCase(propKey));
+      });
+      return [...observedAttrs];
     }
 
     constructor() {
       super();
-      const attrsProxy = createAttrsProxy(this);
       const setupConstants = isObjectPayload(deps?.constants) ? deps.constants : {};
       const fileConstants = isObjectPayload(constants) ? constants : {};
       this.constants = deepFreeze({
@@ -621,15 +642,16 @@ const createComponent = ({ handlers, methods, constants, view, store, patch, h }
       });
       this.propsSchema = propsSchema;
       this.props = propsSchema
-        ? createPropsProxy(this, Object.keys(propsSchema.properties))
+        ? createPropsProxy(this, propsSchemaKeys)
         : {};
+      this._propsSchemaKeys = propsSchemaKeys;
       /**
        * TODO currently if user forgot to define propsSchema for a prop
        * there will be no warning. would be better to shos some warnng
       */
       this.elementName = elementName;
       this.styles = styles;
-      this.store = bindStore(store, this.props, attrsProxy, this.constants);
+      this.store = bindStore(store, this.props, this.constants);
       this.template = template;
       this.handlers = handlers;
       this.methods = methods;
@@ -640,7 +662,6 @@ const createComponent = ({ handlers, methods, constants, view, store, patch, h }
         store: this.store,
         render: this.render,
         handlers,
-        attrs: attrsProxy,
         props: this.props,
         constants: this.constants,
       };

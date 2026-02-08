@@ -140,6 +140,5 @@ export const reset = (payload = {}) => {
 
 ## Notes
 
-- `attrsSchema` is intentionally ignored for now.
 - `.constants.yaml` is the contract file for component static constants.
 - Treat this document as the contract format for upcoming implementation work.

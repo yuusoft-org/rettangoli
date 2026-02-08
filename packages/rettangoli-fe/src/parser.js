@@ -61,6 +61,12 @@ const lodashGet = (obj, path) => {
 
 const REF_KEY_REGEX = /^[a-z][a-zA-Z0-9]*\*?$/;
 const REF_ID_REGEX = /^[a-z][a-zA-Z0-9]*$/;
+const LEGACY_PROP_PREFIX = ".";
+const PROP_PREFIX = ":";
+
+const toCamelCase = (value) => {
+  return value.replace(/-([a-z0-9])/g, (_, chr) => chr.toUpperCase());
+};
 
 const createRefMatchers = (refs) => {
   return Object.entries(refs || {}).map(([refKey, refConfig]) => {
@@ -222,6 +228,18 @@ export const createVirtualDom = ({
         // 1. Parse attributes from attrsString
         const attrs = {}; // Ensure attrs is always an object
         const props = {};
+        const setComponentProp = (rawPropName, propValue, sourceLabel) => {
+          const normalizedPropName = toCamelCase(rawPropName);
+          if (!normalizedPropName) {
+            throw new Error(`[Parser] Invalid ${sourceLabel} prop name on '${tagName}'.`);
+          }
+          if (Object.prototype.hasOwnProperty.call(props, normalizedPropName)) {
+            throw new Error(
+              `[Parser] Duplicate prop binding '${normalizedPropName}' on '${tagName}'. Use only one of 'name=value' or ':name=value'.`,
+            );
+          }
+          props[normalizedPropName] = propValue;
+        };
         if (attrsString) {
           // First, handle attributes with values
           const attrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]+))/g;
@@ -229,15 +247,28 @@ export const createVirtualDom = ({
           const processedAttrs = new Set();
 
           while ((match = attrRegex.exec(attrsString)) !== null) {
-            processedAttrs.add(match[1]);
-            if (match[1].startsWith(".")) {
-              const propName = match[1].substring(1);
-              const valuePathName = match[4];
-              props[propName] = lodashGet(viewData, valuePathName);
-            } else if (match[1].startsWith("?")) {
+            const rawBindingName = match[1];
+            const rawValue = match[2] || match[3] || match[4];
+            processedAttrs.add(rawBindingName);
+            if (
+              rawBindingName.startsWith(PROP_PREFIX)
+              || rawBindingName.startsWith(LEGACY_PROP_PREFIX)
+            ) {
+              const propName = rawBindingName.substring(1);
+              let propValue = rawValue;
+              // Keep supporting path-form prop assignments for backwards compatibility.
+              if (match[4] !== undefined) {
+                const valuePathName = match[4];
+                const resolvedPathValue = lodashGet(viewData, valuePathName);
+                if (resolvedPathValue !== undefined) {
+                  propValue = resolvedPathValue;
+                }
+              }
+              setComponentProp(propName, propValue, "property-form");
+            } else if (rawBindingName.startsWith("?")) {
               // Handle conditional boolean attributes
-              const attrName = match[1].substring(1);
-              const attrValue = match[2] || match[3] || match[4];
+              const attrName = rawBindingName.substring(1);
+              const attrValue = rawValue;
 
               // Convert string values to boolean
               let evalValue;
@@ -254,8 +285,14 @@ export const createVirtualDom = ({
               if (evalValue) {
                 attrs[attrName] = "";
               }
+              if (isWebComponent && attrName !== "id") {
+                setComponentProp(attrName, !!evalValue, "boolean attribute-form");
+              }
             } else {
-              attrs[match[1]] = match[2] || match[3] || match[4];
+              attrs[rawBindingName] = rawValue;
+              if (isWebComponent && rawBindingName !== "id") {
+                setComponentProp(rawBindingName, rawValue, "attribute-form");
+              }
             }
           }
 
@@ -278,8 +315,16 @@ export const createVirtualDom = ({
           while ((boolMatch = booleanAttrRegex.exec(remainingAttrsString)) !== null) {
             const attrName = boolMatch[1];
             // Skip if already processed or starts with . (prop) or contains =
-            if (!processedAttrs.has(attrName) && !attrName.startsWith(".") && !attrName.includes("=")) {
+            if (
+              !processedAttrs.has(attrName)
+              && !attrName.startsWith(LEGACY_PROP_PREFIX)
+              && !attrName.startsWith(PROP_PREFIX)
+              && !attrName.includes("=")
+            ) {
               attrs[attrName] = "";
+              if (isWebComponent && attrName !== "id") {
+                setComponentProp(attrName, true, "boolean attribute-form");
+              }
             }
           }
         }
@@ -577,18 +622,12 @@ export const createVirtualDom = ({
             update: (oldVnode, vnode) => {
               const oldProps = oldVnode.data?.props || {};
               const newProps = vnode.data?.props || {};
-              const oldAttrs = oldVnode.data?.attrs || {};
-              const newAttrs = vnode.data?.attrs || {};
 
               // Check if props have changed
               const propsChanged =
                 JSON.stringify(oldProps) !== JSON.stringify(newProps);
 
-              // Check if attrs have changed
-              const attrsChanged =
-                JSON.stringify(oldAttrs) !== JSON.stringify(newAttrs);
-
-              if (propsChanged || attrsChanged) {
+              if (propsChanged) {
                 // Set isDirty attribute and trigger re-render
                 const element = vnode.elm;
                 if (
@@ -609,14 +648,10 @@ export const createVirtualDom = ({
                         handlers: element.handlers,
                         dispatchEvent: element.dispatchEvent.bind(element),
                         refs: element.refIds || {},
-                        refIds: element.refIds || {},
-                        getRefIds: () => element.refIds || {},
                       };
                       element.handlers.handleOnUpdate(deps, {
                         oldProps,
                         newProps,
-                        oldAttrs,
-                        newAttrs,
                       });
                     }
                   });

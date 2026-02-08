@@ -21,6 +21,27 @@ Rettangoli FE is a complete frontend framework for building web applications wit
 | `.methods.js` (optional) | Public component methods callable from the element instance |
 | `.constants.yaml` (optional) | Static constants available as `deps.constants` and `ctx.constants` |
 
+## Unified Inputs
+
+Components expose one input model: `props`.
+
+- `name=value` and `:name=value` both target props.
+- Kebab-case attribute-form keys are normalized to camelCase (`max-items` -> `maxItems`).
+- Do not set both forms for the same prop key on one node.
+- Runtime read order is property first, then attribute-form fallback.
+
+```yaml
+template:
+  - my-component value=abcd:
+  - my-component :value=${var1}:
+```
+
+```js
+export const handleSomething = (deps) => {
+  const value = deps.props.value;
+};
+```
+
 ## Quick Start
 
 ```bash
@@ -60,7 +81,7 @@ export const createInitialState = ({ constants }) => ({
   completed: false,
 });
 
-export const selectViewData = ({ state, props, attrs, constants }) => ({
+export const selectViewData = ({ state, props, constants }) => ({
   text: state.text,
   completed: state.completed,
   submitLabel: constants?.labels?.submit || "Submit",
