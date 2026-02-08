@@ -213,7 +213,7 @@ You must include a theme stylesheet for variables (colors, spacing, typography).
 
 ## Adding or Changing a Component
 
-1. Define interface in `*.view.yaml` (attrsSchema + propsSchema + events).
+1. Define interface in `*.view.yaml` (`propsSchema` + events).
 2. Implement behavior in `*.handlers.js` and `*.store.js`.
 3. Ensure attributes follow the consistency rules.
 4. Emit events with consistent naming and payloads (see Events section).

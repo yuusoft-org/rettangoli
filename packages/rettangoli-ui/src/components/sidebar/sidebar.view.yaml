@@ -115,11 +115,11 @@ propsSchema:
             type: string
 
 refs:
-  header-image:
+  headerImage:
     eventListeners:
       click:
         handler: handleHeaderClick
-  header-label:
+  headerLabel:
     eventListeners:
       click:
         handler: handleHeaderClick
@@ -127,7 +127,7 @@ refs:
     eventListeners:
       click:
         handler: handleHeaderClick
-  item-*:
+  item*:
     eventListeners:
       click:
         handler: handleItemClick
@@ -151,7 +151,7 @@ anchors:
           - a href=${header.image.href}:
             - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
         $elif header.image.path:
-          - rtgl-view#header-image cur=p:
+          - rtgl-view#headerImage cur=p:
             - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
         $else:
           - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
@@ -159,7 +159,7 @@ anchors:
       - $if header.labelHref:
           - rtgl-text href=${header.labelHref} s=lg: "${header.label}"
         $elif header.labelPath:
-          - rtgl-view#header-label cur=p:
+          - rtgl-view#headerLabel cur=p:
             - rtgl-text s=lg: "${header.label}"
         $else:
           - rtgl-text s=lg: "${header.label}"
@@ -183,7 +183,7 @@ template:
               $else:
                 - rtgl-view mt=md h=1 bgc=mu:
           $else:
-            - rtgl-view#item-${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=p data-testid=${item.testId}:
+            - rtgl-view#item${i} data-item-id=${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=p data-testid=${item.testId}:
               - $if item.icon:
                   - $if showLabels:
                       - rtgl-view d=h ah=${itemContentAlign} g=sm:

@@ -2,7 +2,7 @@ export const createInitialState = () => Object.freeze({
   open: false
 });
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'title', 'content'];
+const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'label', 'content'];
 
 const stringifyAttrs = (attrs) => {
   return Object.entries(attrs)
@@ -13,7 +13,7 @@ const stringifyAttrs = (attrs) => {
 
 export const selectViewData = ({ state, props, attrs }) => {
   return {
-    title: attrs['title'] || '',
+    label: attrs['label'] || '',
     content: attrs['content'] || '',
     openClass: state.open ? 'content-wrapper open' : 'content-wrapper',
     chevronIcon: state.open ? 'chevronUp' : 'chevronDown',

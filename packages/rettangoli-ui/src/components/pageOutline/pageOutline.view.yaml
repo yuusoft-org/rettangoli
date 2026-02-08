@@ -18,16 +18,12 @@ viewDataSchema:
 
 propsSchema:
   type: object
-  properties: {}
-
-attrsSchema:
-  type: object
   properties:
-    target-id:
+    targetId:
       type: string
-    scroll-container-id:
+    scrollContainerId:
       type: string
-    offset-top:
+    offsetTop:
       type: string
 
 refs: {}

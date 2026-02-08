@@ -19,7 +19,7 @@ export const handleOnUpdate = (deps, payload) => {
 }
 
 export const handleTextClick = (deps, payload) => {
-  const { store, render, getRefIds, attrs } = deps;
+  const { store, render, refs, attrs } = deps;
   const event = payload._event;
 
   const value = store.selectValue();
@@ -32,13 +32,13 @@ export const handleTextClick = (deps, payload) => {
     }
   });
 
-  const { input } = getRefIds();
-  input.elm.value = value;
+  const { input } = refs;
+  input.value = value;
   render();
 
   if (attrs['auto-focus']) {
     setTimeout(() => {
-      input.elm.focus();
+      input.focus();
     }, 50)
   }
 }
@@ -65,9 +65,9 @@ export const handleInputChange = (deps, payload) => {
 }
 
 export const handleSubmitClick = (deps) => {
-  const { store, render, dispatchEvent, getRefIds } = deps;
-  const { input } = getRefIds()
-  const value = input.elm.value;
+  const { store, render, dispatchEvent, refs } = deps;
+  const { input } = refs
+  const value = input.value;
 
   store.setValue(value)
   store.closePopover();
@@ -81,12 +81,12 @@ export const handleSubmitClick = (deps) => {
 }
 
 export const handleInputKeydown = (deps, payload) => {
-  const { store, render, dispatchEvent, getRefIds } = deps;
+  const { store, render, dispatchEvent, refs } = deps;
   const event = payload._event;
 
   if (event.key === 'Enter') {
-    const { input } = getRefIds()
-    const value = input.elm.value;
+    const { input } = refs
+    const value = input.value;
 
     store.closePopover();
     // Dispatch custom event

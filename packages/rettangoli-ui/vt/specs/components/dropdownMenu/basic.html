@@ -24,27 +24,30 @@ title: "Basic"
   button.addEventListener('click', (e) => {
     dropdownMenu.items = [
       {
-        label: 'Item 1',
+        label: 'Section',
         type: 'label',
       },
       {
+        id: 'item-2',
         label: 'Item 2',
-        type: 'item',
+        path: '/item-2',
       },
       {
+        id: 'item-3',
         label: 'Item 3',
-        type: 'item',
+        href: '/item-3',
       },
       {
         type: 'separator',
       },
       {
+        id: 'item-4',
         label: 'Item 4',
-        type: 'item',
+        disabled: true,
       },
       {
+        id: 'item-5',
         label: 'Item 5',
-        type: 'item',
       },
     ];
     

@@ -3,7 +3,7 @@ elementName: rtgl-tooltip
 viewDataSchema:
   type: object
 
-attrsSchema:
+propsSchema:
   type: object
   properties:
     open:

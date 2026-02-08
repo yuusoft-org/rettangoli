@@ -39,15 +39,15 @@ refs:
     eventListeners:
       close:
         handler: handleDialogClose
-  confirm-button:
+  confirmButton:
     eventListeners:
       click:
         handler: handleConfirm
-  cancel-button:
+  cancelButton:
     eventListeners:
       click:
         handler: handleCancel
-  dropdown-menu:
+  dropdownMenu:
     eventListeners:
       close:
         handler: handleDropdownClose
@@ -65,6 +65,6 @@ template:
                   - rtgl-text: ${config.message}
           - rtgl-view d=h g=md mt=lg w=f ah=e:
               - $if config.mode == 'confirm':
-                  - rtgl-button#cancel-button v=se: ${config.cancelText}
-              - rtgl-button#confirm-button v=pr: ${config.confirmText}
-  - rtgl-dropdown-menu#dropdown-menu ?open=${isDropdownOpen} x=${dropdownConfig.x} y=${dropdownConfig.y} placement=${dropdownConfig.placement} .items=dropdownConfig.items key=dropdown-${isDropdownOpen}:
+                  - rtgl-button#cancelButton v=se: ${config.cancelText}
+              - rtgl-button#confirmButton v=pr: ${config.confirmText}
+  - rtgl-dropdown-menu#dropdownMenu ?open=${isDropdownOpen} x=${dropdownConfig.x} y=${dropdownConfig.y} placement=${dropdownConfig.placement} .items=dropdownConfig.items key=dropdown-${isDropdownOpen}:

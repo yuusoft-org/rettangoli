@@ -43,11 +43,11 @@ export const handleOnUpdate = (deps, payload) => {
 }
 
 export const handleButtonClick = (deps, payload) => {
-  const { store, render, getRefIds, props } = deps;
+  const { store, render, refs, props } = deps;
   const event = payload._event;
   event.stopPropagation();
 
-  const button = getRefIds()['select-button'].elm;
+  const button = refs.selectButton;
 
   // Get first child's bounding rectangle (since button has display: contents)
   const firstChild = button.firstElementChild;
@@ -82,7 +82,7 @@ export const handleOptionClick = (deps, payload) => {
   const { render, dispatchEvent, props, store } = deps;
   const event = payload._event;
   event.stopPropagation();
-  const id = event.currentTarget.id.replace('option-', '');
+  const id = event.currentTarget.id.slice('option'.length);
   const index = Number(id);
 
   const option = props.options[id];
@@ -111,7 +111,7 @@ export const handleOptionClick = (deps, payload) => {
 export const handleOptionMouseEnter = (deps, payload) => {
   const { store, render } = deps;
   const event = payload._event;
-  const id = parseInt(event.currentTarget.id.replace('option-', ''));
+  const id = parseInt(event.currentTarget.id.slice('option'.length), 10);
   store.setHoveredOption(id);
   render();
 }

@@ -9,22 +9,25 @@ title: "Open"
 <script>
   // Small dropdown with few items
   const dropdownMenuSmall = document.getElementById('dropdown-menu-small');
+  dropdownMenuSmall.setAttribute('w', '260');
+  dropdownMenuSmall.setAttribute('h', '220');
   dropdownMenuSmall.items = [
     {
       label: 'File',
       type: 'label',
     },
     {
+      id: 'new',
       label: 'New',
-      type: 'item',
     },
     {
+      id: 'open',
       label: 'Open',
-      type: 'item',
     },
     {
+      id: 'save',
       label: 'Save',
-      type: 'item',
+      disabled: true,
     },
     {
       type: 'separator',
@@ -41,30 +44,32 @@ title: "Open"
 
   // Large dropdown with 20+ items
   const dropdownMenuLarge = document.getElementById('dropdown-menu-large');
+  dropdownMenuLarge.setAttribute('w', '320');
+  dropdownMenuLarge.setAttribute('h', '320');
   dropdownMenuLarge.items = [
     {
       label: 'File Operations',
       type: 'label',
     },
     {
+      id: 'new-file',
       label: 'New File',
-      type: 'item',
     },
     {
+      id: 'open-file',
       label: 'Open File',
-      type: 'item',
     },
     {
+      id: 'save',
       label: 'Save',
-      type: 'item',
     },
     {
+      id: 'save-as',
       label: 'Save As',
-      type: 'item',
     },
     {
+      id: 'close',
       label: 'Close',
-      type: 'item',
     },
     {
       type: 'separator',
@@ -74,36 +79,36 @@ title: "Open"
       type: 'label',
     },
     {
+      id: 'undo',
       label: 'Undo',
-      type: 'item',
     },
     {
+      id: 'redo',
       label: 'Redo',
-      type: 'item',
     },
     {
+      id: 'cut',
       label: 'Cut',
-      type: 'item',
     },
     {
+      id: 'copy',
       label: 'Copy',
-      type: 'item',
     },
     {
+      id: 'paste',
       label: 'Paste',
-      type: 'item',
     },
     {
+      id: 'select-all',
       label: 'Select All',
-      type: 'item',
     },
     {
+      id: 'find',
       label: 'Find',
-      type: 'item',
     },
     {
+      id: 'replace',
       label: 'Replace',
-      type: 'item',
     },
     {
       type: 'separator',
@@ -113,16 +118,16 @@ title: "Open"
       type: 'label',
     },
     {
+      id: 'zoom-in',
       label: 'Zoom In',
-      type: 'item',
     },
     {
+      id: 'zoom-out',
       label: 'Zoom Out',
-      type: 'item',
     },
     {
+      id: 'full-screen',
       label: 'Full Screen',
-      type: 'item',
     },
     {
       type: 'separator',
@@ -132,24 +137,24 @@ title: "Open"
       type: 'label',
     },
     {
+      id: 'doc-1',
       label: 'document1.txt',
-      type: 'item',
     },
     {
+      id: 'doc-2',
       label: 'presentation.pptx',
-      type: 'item',
     },
     {
+      id: 'doc-3',
       label: 'spreadsheet.xlsx',
-      type: 'item',
     },
     {
+      id: 'doc-4',
       label: 'image.jpg',
-      type: 'item',
     },
     {
+      id: 'doc-5',
       label: 'code.js',
-      type: 'item',
     }
   ];
 

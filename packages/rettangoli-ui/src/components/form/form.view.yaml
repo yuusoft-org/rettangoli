@@ -6,6 +6,8 @@ viewDataSchema:
 propsSchema:
   type: object
   properties:
+    autofocus:
+      type: boolean
     defaultValues:
       type: object
     context:
@@ -315,12 +317,6 @@ events:
   form-change: {}
   extra-event: {}
   action-click: {}
-
-attrsSchema:
-  type: object
-  properties:
-    autofocus:
-      type: boolean
 
 template:
   - rtgl-view#formContainer w=f p=md g=lg ${containerAttrString}:

@@ -1,18 +1,18 @@
 export const handleAfterMount = async (deps) => {
-  const { props, store, render, getRefIds, } = deps;
+  const { props, store, render, refs } = deps;
   const { waveformData } = props;
 
   store.setWaveformData(waveformData);
   render();
 
-  const canvas = getRefIds().canvas?.elm;
+  const canvas = refs.canvas;
   if (canvas) {
     renderWaveform(waveformData, canvas);
   }
 };
 
 export const handleOnUpdate = async (deps, payload) => {
-  const { store, render, getRefIds, props } = deps;
+  const { store, render, refs, props } = deps;
   const { waveformData } = props;
 
   if (!waveformData) {
@@ -23,7 +23,7 @@ export const handleOnUpdate = async (deps, payload) => {
   store.setWaveformData(waveformData);
   render();
 
-  const canvas = getRefIds().canvas?.elm;
+  const canvas = refs.canvas;
   if (canvas) {
     renderWaveform(waveformData, canvas);
   }

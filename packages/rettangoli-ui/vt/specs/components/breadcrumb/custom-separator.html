@@ -9,11 +9,11 @@ title: "Breadcrumb - Custom Separator"
 <script>
   const breadcrumb = document.getElementById('breadcrumb');
   breadcrumb.items = [
-    { label: "Home", id: "breadcrumb-home" },
-    { label: "Category", id: "breadcrumb-category" },
-    { label: "Subcategory", id: "breadcrumb-subcategory" },
-    { label: "Current Page" }
+    { label: "Home", id: "breadcrumb-home", href: "/" },
+    { label: "Category", id: "breadcrumb-category", path: "/category" },
+    { label: "Subcategory", id: "breadcrumb-subcategory", path: "/category/subcategory" },
+    { label: "Current Page", current: true }
   ];
-  breadcrumb.separator = "threeDots";
+  breadcrumb.sep = "threeDots";
   breadcrumb.render();
 </script>

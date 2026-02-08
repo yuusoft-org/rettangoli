@@ -56,3 +56,48 @@ items:
       - id: rtgl-popover
         title: "Popover"
         href: "/ui/docs/primitives/rtgl-popover"
+  - title: "Components"
+    type: groupLabel
+    items:
+      - id: rtgl-accordion-item
+        title: "Accordion Item"
+        href: "/ui/docs/components/rtgl-accordion-item"
+      - id: rtgl-breadcrumb
+        title: "Breadcrumb"
+        href: "/ui/docs/components/rtgl-breadcrumb"
+      - id: rtgl-dropdown-menu
+        title: "Dropdown Menu"
+        href: "/ui/docs/components/rtgl-dropdown-menu"
+      - id: rtgl-form
+        title: "Form"
+        href: "/ui/docs/components/rtgl-form"
+      - id: rtgl-global-ui
+        title: "Global UI"
+        href: "/ui/docs/components/rtgl-global-ui"
+      - id: rtgl-navbar
+        title: "Navbar"
+        href: "/ui/docs/components/rtgl-navbar"
+      - id: rtgl-page-outline
+        title: "Page Outline"
+        href: "/ui/docs/components/rtgl-page-outline"
+      - id: rtgl-popover-input
+        title: "Popover Input"
+        href: "/ui/docs/components/rtgl-popover-input"
+      - id: rtgl-select
+        title: "Select"
+        href: "/ui/docs/components/rtgl-select"
+      - id: rtgl-sidebar
+        title: "Sidebar"
+        href: "/ui/docs/components/rtgl-sidebar"
+      - id: rtgl-slider-input
+        title: "Slider Input"
+        href: "/ui/docs/components/rtgl-slider-input"
+      - id: rtgl-table
+        title: "Table"
+        href: "/ui/docs/components/rtgl-table"
+      - id: rtgl-tabs
+        title: "Tabs"
+        href: "/ui/docs/components/rtgl-tabs"
+      - id: rtgl-tooltip
+        title: "Tooltip"
+        href: "/ui/docs/components/rtgl-tooltip"

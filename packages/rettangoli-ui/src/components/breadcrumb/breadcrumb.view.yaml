@@ -14,7 +14,23 @@ viewDataSchema:
             type: string
           id:
             type: string
-    separator:
+          href:
+            type: string
+          path:
+            type: string
+          isCurrent:
+            type: boolean
+          isDisabled:
+            type: boolean
+          isInteractive:
+            type: boolean
+          index:
+            type: number
+          linkExtraAttrs:
+            type: string
+          c:
+            type: string
+    sep:
       type: string
 
 propsSchema:
@@ -29,12 +45,28 @@ propsSchema:
             type: string
           id:
             type: string
-    separator:
+          href:
+            type: string
+          path:
+            type: string
+          current:
+            type: boolean
+          disabled:
+            type: boolean
+          click:
+            type: boolean
+          target:
+            type: string
+          rel:
+            type: string
+    sep:
       type: string
       default: "breadcrumb-arrow"
+    max:
+      type: number
 
 refs:
-  item-*:
+  item*:
     eventListeners:
       click:
         handler: handleClickItem
@@ -42,23 +74,36 @@ events:
   item-click:
     type: object
     properties:
+      id:
+        type: string
+      path:
+        type: string
+      href:
+        type: string
       item:
         type: object
-        properties:
-          label:
-            type: string
-          id:
-            type: string
       index:
         type: number
+      trigger:
+        type: string
+
+styles:
+  a:
+    text-decoration: none
+    color: inherit
 
 template:
   - rtgl-view d=h av=c g=md p=sm ${containerAttrString}:
-    - $for item in items:
+    - $for item, i in items:
         - $if item.isSeparator:
-            - rtgl-svg wh=16 svg=${separator} c=mu-fg:
-          $elif item.id:
-            - rtgl-view#item-${item.id} data-id=${item.id} cur=p:
-              - rtgl-text s=sm c=mu-fg: "${item.label}"
-          $else:
+            - rtgl-svg wh=16 svg=${sep} c=mu-fg:
+          $elif item.isEllipsis:
             - rtgl-text s=sm c=mu-fg: "${item.label}"
+          $elif item.isInteractive && item.href:
+            - a#item${i} href=${item.href} ${item.linkExtraAttrs} data-index=${item.index}:
+                - rtgl-text s=sm c=${item.c}: "${item.label}"
+          $elif item.isInteractive:
+            - rtgl-view#item${i} data-index=${item.index} cur=p:
+                - rtgl-text s=sm c=${item.c}: "${item.label}"
+          $else:
+            - rtgl-text s=sm c=${item.c}: "${item.label}"

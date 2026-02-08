@@ -34,11 +34,11 @@ propsSchema:
       default: true
 
 refs:
-  row-*:
+  row*:
     eventListeners:
       click:
         handler: handleRowClick
-  header-*:
+  header*:
     eventListeners:
       click:
         handler: handleHeaderClick
@@ -92,10 +92,10 @@ template:
         - thead:
           - tr:
             - $for column, i in columns:
-              - th#header-${column.key}: ${column.label}
+              - th#header${i} data-column-key=${column.key}: ${column.label}
         - tbody:
           - $for row, rowIndex in rows:
-            - tr#row-${row.index}:
+            - tr#row${rowIndex}:
               - $for cell, cellIndex in row.cells:
                 - td: ${cell.value}
       $else:

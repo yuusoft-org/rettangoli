@@ -2,6 +2,23 @@ elementName: rtgl-dropdown-menu
 
 viewDataSchema:
   type: object
+  properties:
+    items:
+      type: array
+      items:
+        type: object
+    open:
+      type: boolean
+    x:
+      type: string
+    y:
+      type: string
+    w:
+      type: string
+    h:
+      type: string
+    placement:
+      type: string
 
 propsSchema:
   type: object
@@ -19,12 +36,20 @@ propsSchema:
               - label
               - item
               - separator
+          id:
+            type: string
+          path:
+            type: string
+          href:
+            type: string
+          disabled:
+            type: boolean
+          target:
+            type: string
+          rel:
+            type: string
           testId:
             type: string
-
-attrsSchema:
-  type: object
-  properties:
     open:
       type: string
     x:
@@ -33,26 +58,65 @@ attrsSchema:
       type: string
     placement:
       type: string
+    w:
+      type: string
+    h:
+      type: string
 
 refs:
   popover:
     eventListeners:
       close:
         handler: handleClosePopover
-  option-*:
+  option*:
     eventListeners:
       click:
         handler: handleClickMenuItem
 
+events:
+  close:
+    type: object
+  item-click:
+    type: object
+    properties:
+      index:
+        type: number
+      item:
+        type: object
+      id:
+        type: string
+      path:
+        type: string
+      href:
+        type: string
+      trigger:
+        type: string
+
+styles:
+  a:
+    text-decoration: none
+    color: inherit
+
 template:
   - rtgl-popover#popover ?open=${open} x=${x} y=${y} placement=${placement}:
-      - rtgl-view wh=300 sv g=xs slot=content bgc=bg br=md:
+      - rtgl-view w=${w} h=${h} sv g=xs slot=content bgc=bg br=md:
           - $for item, i in items:
-              - $if item.type == 'label':
+              - $if item.isLabel:
                   - rtgl-view w=f ph=lg pv=md:
                       - rtgl-text s=sm c=mu-fg: ${item.label}
-                $elif item.type == 'item':
-                  - rtgl-view#option-${i} w=f h-bgc=ac ph=lg pv=md cur=p br=md bgc=mu data-testid=${item.testId}:
-                      - rtgl-text: ${item.label}
-                $elif item.type == 'separator':
+                $elif item.isItem && item.isDisabled:
+                  - rtgl-view w=f ph=lg pv=md br=md bgc=${item.bgc}:
+                      - rtgl-text c=${item.c}: ${item.label}
+                $elif item.isItem && item.hasHref && item.linkExtraAttrs:
+                  - a#option${i} href=${item.href} ${item.linkExtraAttrs} data-index=${item.index} data-testid=${item.testId}:
+                      - rtgl-view w=f h-bgc=${item.hoverBgc} ph=lg pv=md cur=p br=md bgc=${item.bgc}:
+                          - rtgl-text c=${item.c}: ${item.label}
+                $elif item.isItem && item.hasHref:
+                  - a#option${i} href=${item.href} data-index=${item.index} data-testid=${item.testId}:
+                      - rtgl-view w=f h-bgc=${item.hoverBgc} ph=lg pv=md cur=p br=md bgc=${item.bgc}:
+                          - rtgl-text c=${item.c}: ${item.label}
+                $elif item.isItem:
+                  - rtgl-view#option${i} w=f h-bgc=${item.hoverBgc} ph=lg pv=md cur=p br=md bgc=${item.bgc} data-index=${item.index} data-testid=${item.testId}:
+                      - rtgl-text c=${item.c}: ${item.label}
+                $elif item.isSeparator:
                   - rtgl-view w=f h=1 ph=lg mv=md bgc=bo:

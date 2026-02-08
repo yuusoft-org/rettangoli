@@ -3,7 +3,7 @@ elementName: rtgl-accordion-item
 viewDataSchema:
   type: object
   properties:
-    title:
+    label:
       type: string
     content:
       type: string
@@ -14,10 +14,10 @@ viewDataSchema:
     containerAttrString:
       type: string
 
-attrsSchema:
+propsSchema:
   type: object
   properties:
-    title:
+    label:
       type: string
     content:
       type: string
@@ -45,7 +45,7 @@ styles:
 template:
   - rtgl-view d=v ${containerAttrString}:
       - rtgl-view#header d=h av=c w=f pv=md cur=p:
-          - rtgl-text: ${title}
+          - rtgl-text: ${label}
           - rtgl-view w=1fg:
           - rtgl-svg svg=${chevronIcon} wh=16 c=mu-fg:
       - div class="${openClass}":

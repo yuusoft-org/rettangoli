@@ -6,9 +6,9 @@ export const handleHeaderClick = (deps, payload) => {
 
   const header = store.selectHeader();
 
-  if (event.currentTarget.id === 'header-label') {
+  if (event.currentTarget.id === 'headerLabel') {
     path = header.labelPath;
-  } else if (event.currentTarget.id === 'header-image') {
+  } else if (event.currentTarget.id === 'headerImage') {
     path = header.image.path;
   } else if (event.currentTarget.id === 'header') {
     path = header.path;
@@ -26,7 +26,7 @@ export const handleHeaderClick = (deps, payload) => {
 export const handleItemClick = (deps, payload) => {
   const { store, dispatchEvent } = deps;
   const event = payload._event;
-  const id = event.currentTarget.id.replace('item-', '');
+  const id = event.currentTarget.dataset.itemId || event.currentTarget.id.slice('item'.length);
   const item = store.selectItem(id);
   dispatchEvent(new CustomEvent('item-click', {
     detail: {
