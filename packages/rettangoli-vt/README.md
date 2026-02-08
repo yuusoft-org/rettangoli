@@ -15,6 +15,53 @@ Visual regression testing for Rettangoli specs using Playwright screenshots.
 - `--concurrency <number>`
 - `--timeout <ms>`
 - `--wait-event <name>`
+- `--folder <path>` (repeatable)
+- `--group <section-key>` (repeatable)
+- `--item <spec-path>` (repeatable)
+
+## Public Report Options
+
+- `--compare-method <method>`
+- `--color-threshold <number>`
+- `--diff-threshold <number>`
+- `--folder <path>` (repeatable)
+- `--group <section-key>` (repeatable)
+- `--item <spec-path>` (repeatable)
+
+## Scoped Runs
+
+Use selectors to run only part of VT in both `generate` and `report`:
+
+- `folder`: matches specs by folder prefix under `vt/specs` (example: `components/forms`)
+- `group`: matches section page key from `vt.sections` (`title` for flat sections, `items[].title` for grouped sections)
+- `item`: matches a single spec path relative to `vt/specs` (with or without extension)
+
+Selector rules:
+
+- selectors are unioned (OR); any matched item is included
+- if no selector is provided, all items are included
+
+Examples:
+
+```bash
+# Only specs under a folder
+rtgl vt generate --folder components/forms
+
+# Only one section/group key from vt.sections
+rtgl vt generate --group components_basic
+
+# Only one spec item (extension optional)
+rtgl vt generate --item components/forms/login
+rtgl vt generate --item components/forms/login.html
+
+# Combine selectors (union)
+rtgl vt generate --group components_basic --item pages/home
+
+# Same selectors for report
+rtgl vt report --folder components/forms
+rtgl vt report --group components_basic
+rtgl vt report --item components/forms/login
+```
 
 Everything else in capture is internal and intentionally not user-configurable.
 

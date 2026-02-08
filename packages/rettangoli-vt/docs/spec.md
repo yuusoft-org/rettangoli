@@ -55,6 +55,9 @@ Supported options:
 - `--concurrency <number>`
 - `--timeout <ms>`
 - `--wait-event <name>`
+- `--folder <path>` (repeatable)
+- `--group <section-key>` (repeatable)
+- `--item <spec-path>` (repeatable)
 
 Generate behavior:
 
@@ -68,6 +71,46 @@ Wait strategy precedence:
 - `frontmatter.waitStrategy`
 - inferred from `frontmatter.waitEvent` / `frontmatter.waitSelector`
 - runtime default: if `waitEvent` is set, uses `event`; otherwise uses `load`
+
+Scope filtering:
+
+- Applies before screenshot capture.
+- Multiple selectors are unioned (OR).
+- No selector means full run.
+
+Examples:
+
+```bash
+rtgl vt generate --folder components/forms
+rtgl vt generate --group components_basic
+rtgl vt generate --item components/forms/login
+rtgl vt generate --item components/forms/login.html
+rtgl vt generate --group components_basic --item pages/home
+```
+
+## Report CLI Contract
+
+Supported options:
+
+- `--compare-method <method>`
+- `--color-threshold <number>`
+- `--diff-threshold <number>`
+- `--folder <path>` (repeatable)
+- `--group <section-key>` (repeatable)
+- `--item <spec-path>` (repeatable)
+
+Scope filtering:
+
+- Uses the same selector model as `generate`.
+- Filters candidate/reference comparison set before mismatch evaluation.
+
+Examples:
+
+```bash
+rtgl vt report --folder components/forms
+rtgl vt report --group components_basic
+rtgl vt report --item components/forms/login
+```
 
 ## Frontmatter Contract
 
@@ -104,6 +147,12 @@ Report command:
 - writes HTML report: `.rettangoli/vt/_site/report.html`
 - writes JSON report: `.rettangoli/vt/report.json`
 - fails when mismatches exist
+
+Selectors:
+
+- `folder`: folder prefix under `vt/specs`
+- `group`: section page key from `vt.sections`
+- `item`: single spec path relative to `vt/specs` (extension optional)
 
 Compare methods:
 
