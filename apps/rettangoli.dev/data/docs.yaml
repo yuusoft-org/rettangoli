@@ -17,33 +17,33 @@ items:
       - id: responsiveness
         title: "Responsiveness"
         href: "/ui/docs/introduction/responsiveness"
-  - title: "Components"
+  - title: "Primitives"
     type: groupLabel
     items:
       - id: rtgl-view
         title: "View"
-        href: "/ui/docs/components/rtgl-view"
+        href: "/ui/docs/primitives/rtgl-view"
       - id: rtgl-text
         title: "Text"
-        href: "/ui/docs/components/rtgl-text"
+        href: "/ui/docs/primitives/rtgl-text"
       - id: rtgl-image
         title: "Image"
-        href: "/ui/docs/components/rtgl-image"
+        href: "/ui/docs/primitives/rtgl-image"
       - id: rtgl-svg
         title: "SVG"
-        href: "/ui/docs/components/rtgl-svg"
+        href: "/ui/docs/primitives/rtgl-svg"
       - id: rtgl-button
         title: "Button"
-        href: "/ui/docs/components/rtgl-button"
+        href: "/ui/docs/primitives/rtgl-button"
       - id: rtgl-color-picker
         title: "Color Picker"
-        href: "/ui/docs/components/rtgl-color-picker"
+        href: "/ui/docs/primitives/rtgl-color-picker"
       - id: rtgl-dialog
         title: "Dialog"
-        href: "/ui/docs/components/rtgl-dialog"
+        href: "/ui/docs/primitives/rtgl-dialog"
       - id: rtgl-input
         title: "Input"
-        href: "/ui/docs/components/rtgl-input"
+        href: "/ui/docs/primitives/rtgl-input"
       # - id: rtgl-input-number
       #   title: "Input Number"
-      #   href: "/ui/docs/components/rtgl-input-number"
+      #   href: "/ui/docs/primitives/rtgl-input-number"
