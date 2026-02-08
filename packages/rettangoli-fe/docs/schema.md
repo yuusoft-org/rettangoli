@@ -1,42 +1,41 @@
-# Schema System (.schema.yaml)
+# Schema Spec (`.schema.yaml`)
 
-Declarative component contract and metadata.
+This document defines the normative component API metadata contract.
 
-`.schema.yaml` is the fourth component file and is the source of truth for component API documentation.
+## 1. Scope
 
-## Purpose
+`.schema.yaml` is the source of truth for public API documentation.
 
-Use `.schema.yaml` to define:
+Supported fields:
+- `componentName` (required)
+- `description` (optional)
+- `examples` (optional)
+- `propsSchema` (optional)
+- `events` (optional)
+- `methods` (optional)
 
-- Component identity (`componentName`)
-- Human-readable docs (`description`)
-- Usage scenarios (`examples`)
-- Public inputs (`propsSchema`)
-- Public emitted events (`events`)
-- Public callable API (`methods`)
+`attrsSchema` is not supported.
 
-This keeps `.view.yaml` focused on rendering and DOM bindings.
-Static runtime constants are defined in optional `.constants.yaml`, not in `.schema.yaml`.
-
-## File Structure
+## 2. File Shape
 
 ```yaml
-componentName: todo-item          # Required
-description: "A single todo row"  # Optional
+componentName: todo-item
 
-examples:                         # Optional
+description: "A single todo row"
+
+examples:
   - name: default
     props:
       text: "Buy milk"
       completed: false
 
-propsSchema:                      # Optional
+propsSchema:
   type: object
   properties:
     text: {}
     completed: {}
 
-events:                           # Optional
+events:
   - name: todo-toggled
     description: "Emitted when completion changes"
     payloadSchema:
@@ -45,100 +44,67 @@ events:                           # Optional
         id: {}
         completed: {}
 
-methods:                          # Optional
+methods:
   - name: focusInput
     description: "Focuses input"
     params: []
     returns: void
 ```
 
-## Field Details
+## 3. Field Contracts
 
-### componentName
+### `componentName`
 
-Required component identifier.
+- required
+- SHOULD follow custom-element naming convention (kebab-case)
+
+### `description`
+
+- optional short summary string
+
+### `examples`
+
+- optional list of named usage examples
+- each example MAY include `props`
+
+### `propsSchema`
+
+- optional schema for public component props
+- SHOULD be JSON-Schema-compatible shape
+
+### `events`
+
+- optional list of emitted custom events
+- each event SHOULD include `name`
+- event names SHOULD be kebab-case
+- `payloadSchema` is optional
+
+### `methods`
+
+- optional list of public methods exposed by the component element
+- each `methods[].name` SHOULD match a named export in `.methods.js`
+- if `methods` is declared, `.methods.js` SHOULD exist
+
+## 4. Validation Errors
+
+Suggested stable error codes:
+- `RTGL-SCHEMA-001`: missing required `componentName`
+- `RTGL-SCHEMA-002`: `attrsSchema` present (unsupported)
+- `RTGL-SCHEMA-003`: method declared in schema but missing in `.methods.js`
+
+## 5. Invalid Example
+
+Unsupported `attrsSchema` field:
 
 ```yaml
-componentName: user-profile-card
-```
-
-### description
-
-Short human-readable summary used by docs, tooling, and discovery.
-
-```yaml
-description: "Displays profile summary and actions"
-```
-
-### examples
-
-Named usage examples for documentation, testing, and previews.
-
-```yaml
-examples:
-  - name: compact
-    props:
-      size: compact
-      isOnline: true
-  - name: expanded
-    props:
-      size: full
-      isOnline: false
-```
-
-### propsSchema
-
-Declares public props accepted by the component.
-
-```yaml
-propsSchema:
+componentName: todo-item
+attrsSchema:
   type: object
-  properties:
-    title: {}
-    items: {}
 ```
 
-### events
+Invalid because `attrsSchema` is not part of the public schema contract.
 
-Declares events emitted by the component.
+## 6. Notes
 
-```yaml
-events:
-  - name: item-selected
-    description: "Emitted when user selects an item"
-    payloadSchema:
-      type: object
-      properties:
-        itemId: {}
-```
-
-### methods
-
-Declares public methods exposed by the component instance.
-Each `methods[].name` should match an exported method in `*.methods.js`.
-Methods are called from the element as `element.methodName(payload)`.
-`payload` is optional and defaults to `{}`.
-If `methods` is declared, `.methods.js` should exist for that component.
-
-```yaml
-methods:
-  - name: reset
-    description: "Reset component internal UI state"
-    params:
-      - payload
-    returns: void
-```
-
-Example method implementation contract:
-
-```js
-// myComponent.methods.js
-export const reset = (payload = {}) => {
-  // payload-only method signature
-};
-```
-
-## Notes
-
-- `.constants.yaml` is the contract file for component static constants.
-- Treat this document as the contract format for upcoming implementation work.
+- `.schema.yaml` is documentation/contract metadata, not runtime state.
+- Runtime constants belong in `.constants.yaml`.

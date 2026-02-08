@@ -1,39 +1,52 @@
-# View System (.view.yaml)
+# View Spec (`.view.yaml`)
 
-This document defines the view language contract for Rettangoli components.
-It is written as a spec first, then followed by current runtime compatibility notes.
+This document defines the normative view language contract.
 
-## Scope
+## 1. Scope
 
-`.view.yaml` is for declarative UI:
+`.view.yaml` defines declarative UI only:
+- `template`
+- `refs`
+- `styles`
+- optional `viewDataSchema`
 
-- Template structure
-- Element refs and DOM event bindings
-- Style maps
-- Optional view-data schema hints
+Business logic belongs in `.handlers.js`.
+State logic belongs in `.store.js`.
 
-Business logic remains in `handlers.js` and state logic remains in `store.js`.
+## 2. Top-Level Shape
 
-## Language Spec
+```yaml
+template: []   # required
+refs: {}       # optional
+styles: {}     # optional
+viewDataSchema: {} # optional
+```
 
-### 1. Template Node Grammar
+## 3. Template Grammar
 
-Each node is a YAML mapping entry:
+A template node is a YAML mapping entry:
 
 ```yaml
 - selector [bindings...]:
   - child
 ```
 
-Selector grammar:
-
+Supported selector forms:
 - `tag`
 - `tag#id`
 - `tag.classA.classB`
 - `tag#id.classA.classB`
 
-For full selector grammar details, see yahtml:
+Selector grammar reference (yahtml):
 https://github.com/yuusoft-org/yahtml
+
+### Dynamic Value Syntax
+
+Dynamic values use `${...}` across:
+- text
+- bindings
+- control-flow expressions
+- event payload values
 
 Example:
 
@@ -41,92 +54,49 @@ Example:
 template:
   - div#app.container:
     - h1: ${title}
-    - button#submitButton.primary: Submit
+    - button#submitButton.primary :disabled=${isSubmitting}: ${submitLabel}
 ```
 
-### 2. Unified Dynamic Binding Rule
+## 4. Binding Types
 
-Dynamic values use `${...}` consistently across:
-
-- Text interpolation
-- Attribute values
-- Property values
-- Conditional expressions (`$if`, `$elif`, `$for`)
-- Event payload values
-
-Static literals are plain YAML values.
-
-Example:
-
-```yaml
-template:
-  - input#email value=${email} placeholder="you@example.com":
-  - button#submitButton :disabled=${isSubmitting}: ${submitLabel}
-```
-
-### 3. Binding Types
-
-Bindings attached to selectors:
-
+Bindings are attached to selector tokens:
 - `name=value`: attribute-form binding
 - `:name=value`: property-form binding
-- `?name=value`: boolean-attribute toggling
+- `?name=value`: boolean attribute toggle
 
-Example:
+### Component Prop Normalization
 
-```yaml
-template:
-  - input#email type=email value=${email}:
-  - user-card#profile :user=${currentUser}:
-  - button#submitButton ?disabled=${isSubmitting}: Submit
-```
+For component tags (tag contains `-`):
+- `name=value` maps to component `props`.
+- `:name=value` maps to component `props`.
+- Attribute-form names are normalized from kebab-case to camelCase.
+- `name=value` and `:name=value` for the same normalized key on one node is invalid.
 
-Component input contract (props-only):
+Precedence when both property and attribute exist at runtime:
+- property value first
+- attribute fallback second
 
-- Components expose only `props` (no separate `attrs` contract).
-- Both `name=value` and `:name=value` map to component props.
-- Kebab-case names from attribute-form are normalized to camelCase (`max-items` -> `maxItems`).
-- For one component node, defining both forms for the same prop key is invalid.
-- Runtime read resolution is property first (`element.value`), then attribute fallback (`value`/`value-name`).
+### Boolean Attribute Rule
 
-Example:
-
-```yaml
-template:
-  - my-component value=abcd:
-  - my-component :value=${var1}:
-  - my-component max-items=50:
-```
-
-Inside handlers/store for `my-component`, read only from `props`:
-
-```js
-deps.props.value;
-deps.props.maxItems;
-```
-
-Boolean-attribute rule:
-
-- Use `?` only for true boolean HTML attributes (`disabled`, `required`, `checked`, `open`, etc.).
-- Do not use `?` for value-carrying attributes (`aria-*`, `data-*`, `role`, etc.).
+- `?name=value` is for true boolean HTML attributes only.
+- Do not use `?` for value-carrying attributes such as `aria-*`, `data-*`, `role`.
 
 Correct accessibility example:
 
 ```yaml
 template:
-  - button#likeButton aria-pressed=${ariaPressedState}: Like
+  - button#toggle aria-pressed=${isPressed}: Toggle
 ```
 
-### 4. Control Flow
+## 5. Control Flow
 
-Supported control directives:
-
+Supported directives:
 - `$if <expr>:`
 - `$elif <expr>:`
 - `$else:`
 - `$for <item>[, <index>] in <expr>:`
 
-For full control-flow syntax and expression reference, see Jempl:
+Control-flow and expression reference (Jempl):
 https://github.com/yuusoft-org/jempl
 
 Example:
@@ -140,46 +110,23 @@ template:
 
   - ul#todoList:
     - $for todo, i in todos:
-      - li#todo-${i}: ${todo.title}
+      - li#todo${i}: ${todo.title}
 ```
 
-Loop variable usage in this spec:
+## 6. Refs and Event Listeners
 
-```yaml
-template:
-  - $for project in projects:
-    - project-card :project=${project}:
-```
+`refs` supports:
+- element ID targets (exact or wildcard)
+- global targets: `window`, `document`
 
-### 5. Styles Map
+Element ref key forms:
+- exact: `submitButton`
+- wildcard: `todo*`
 
-`styles` is a selector-to-declarations mapping.
+Element IDs used by refs matching MUST be camelCase.
+Kebab-case IDs are invalid for refs matching.
 
-```yaml
-styles:
-  '#app':
-    display: grid
-    gap: 16px
-  '.primary:hover':
-    background-color: #0a66ff
-  '@media (min-width: 768px)':
-    '#app':
-      grid-template-columns: 1fr 1fr
-```
-
-### 6. Refs and Event Listener Grammar
-
-`refs` supports two listener target categories:
-
-- Element ID targets
-- Global targets (`window`, `document`)
-
-Element target keys:
-
-- Exact key: `submitButton`
-- Wildcard key: `todo*`
-
-Listener entry grammar:
+Listener entry shape:
 
 ```yaml
 refs:
@@ -187,20 +134,124 @@ refs:
     eventListeners:
       <eventType>:
         handler: <handlerName> | action: <storeActionName>
-        payload: <object>          # optional
-        preventDefault: <boolean>  # optional
-        stopPropagation: <boolean> # optional
+        payload: <object>              # optional
+        preventDefault: <boolean>      # optional
+        stopPropagation: <boolean>     # optional
         stopImmediatePropagation: <boolean> # optional
-        targetOnly: <boolean>      # optional
-        once: <boolean>            # optional
-        debounce: <number>         # optional
-        throttle: <number>         # optional
+        targetOnly: <boolean>          # optional
+        once: <boolean>                # optional
+        debounce: <number>             # optional
+        throttle: <number>             # optional
 ```
 
-Global target example:
+Rules:
+- exactly one of `handler` or `action` is required
+- `debounce` and `throttle` are mutually exclusive
+- `debounce`/`throttle` must be non-negative numbers
+- modifier flags must be booleans
+- wildcard matching applies to element IDs only
+- `window` and `document` are reserved refs keys
+
+### Event Modifier Semantics
+
+- `preventDefault`: call `_event.preventDefault()`
+- `stopPropagation`: call `_event.stopPropagation()`
+- `stopImmediatePropagation`: call `_event.stopImmediatePropagation()`
+- `targetOnly`: execute only if `_event.target === _event.currentTarget`
+- `once`: execute once per listener target
+- `debounce`: trailing-only debounce window
+- `throttle`: leading-only throttle window
+
+### Payload Semantics
+
+Payload semantics are unified for `handler` and `action`:
+- payload expressions are resolved the same way
+- `_event` is available in payload context
+
+Conceptual invocation:
+- `handler`: `handlers.someHandler(deps, { ...payload, _event })`
+- `action`: `store.someAction({ ...payload, _event })` then render
+
+## 7. Refs Runtime Surface
+
+`deps.refs` maps each matched ref ID directly to the DOM element:
+
+```js
+const submitButton = deps.refs.submitButton;
+submitButton.focus();
+```
+
+`deps.refs.submitButton.elm` is not supported.
+
+## 8. Validation Errors
+
+Implementations MUST reject invalid view contracts.
+Suggested stable error codes:
+
+- `RTGL-VIEW-001`: invalid ref key format (not camelCase or invalid wildcard)
+- `RTGL-VIEW-002`: invalid element ID format for refs matching
+- `RTGL-VIEW-003`: duplicate prop binding (`name=` and `:name=` same normalized key)
+- `RTGL-VIEW-004`: listener defines both `handler` and `action`
+- `RTGL-VIEW-005`: listener defines neither `handler` nor `action`
+- `RTGL-VIEW-006`: `debounce` and `throttle` used together
+- `RTGL-VIEW-007`: non-boolean modifier flag
+- `RTGL-VIEW-008`: invalid numeric rate-limit value
+
+## 9. Invalid Examples
+
+Duplicate prop source on one component node:
+
+```yaml
+template:
+  - my-component value=abc :value=${stateValue}:
+```
+
+Invalid because both forms target the same normalized prop key (`value`).
+
+Listener with both `handler` and `action`:
 
 ```yaml
 refs:
+  submitButton:
+    eventListeners:
+      click:
+        handler: handleSubmit
+        action: submitForm
+```
+
+Invalid because listener must define exactly one dispatch mode.
+
+Invalid refs ID for matching:
+
+```yaml
+template:
+  - button#submit-button: Submit
+
+refs:
+  submitButton:
+    eventListeners:
+      click:
+        handler: handleSubmit
+```
+
+Invalid because refs-matched element IDs must be camelCase.
+
+## 10. Minimal Valid Example
+
+```yaml
+template:
+  - rtgl-button#submitButton :disabled=${isSubmitting}: ${submitLabel}
+
+refs:
+  submitButton:
+    eventListeners:
+      click:
+        handler: handleSubmit
+        preventDefault: true
+        stopPropagation: true
+        targetOnly: true
+        once: true
+
   window:
     eventListeners:
       resize:
@@ -208,150 +259,4 @@ refs:
         throttle: 120
         payload:
           width: ${_event.target.innerWidth}
-
-  document:
-    eventListeners:
-      visibilitychange:
-        action: setVisibility
-        payload:
-          hidden: ${_event.target.hidden}
 ```
-
-Event options:
-
-- `preventDefault`: call `_event.preventDefault()`
-- `stopPropagation`: call `_event.stopPropagation()`
-- `stopImmediatePropagation`: call `_event.stopImmediatePropagation()`
-- `targetOnly`: run only when `_event.target === _event.currentTarget`
-- `once`: run once per element target for that listener
-- `debounce`: trailing-edge debounce window in ms
-- `throttle`: leading-edge throttle window in ms
-
-Validation rules:
-
-- Listener must define exactly one of `handler` or `action`
-- `debounce` and `throttle` are mutually exclusive
-- `debounce`/`throttle` values must be non-negative numbers
-- Modifier flags are booleans
-- `window` and `document` are reserved `refs` keys for global listeners
-- Wildcard matching applies only to element ID targets (not `window`/`document`)
-
-Timing semantics:
-
-- Debounce is trailing-only by default: invoke after N ms of silence.
-- New events during debounce reset the timer and replace the pending payload with the latest event/payload.
-- Throttle is leading-only by default: first event invokes immediately, then additional events are ignored for N ms.
-- Throttle does not queue trailing invocations by default.
-- Pending debounce timers are canceled when listener bindings are disposed (for example, element unmount or listener rebind on rerender).
-- Throttle/debounce internal state is reset when listener bindings are recreated.
-
-### 7. Event Payload Semantics (Spec)
-
-Handler and action payload semantics are unified:
-
-- Payload template values are resolved the same way for both
-- Both paths expose `_event` in payload context
-- Payload expressions should use `_event` (not `event`)
-
-Conceptual invocation model:
-
-- Handler: `handlers.someHandler(deps, { ...payload, _event })`
-- Action: `store.someAction({ ...payload, _event })` then `render()`
-
-### 8. Ref Target Resolution and Matching
-
-Matching order:
-
-1. Global target listeners (`refs.window`, `refs.document`) bind to those native targets directly
-2. Element listeners use exact key match by element ID
-3. If no exact key exists, wildcard key match by prefix
-4. If multiple wildcard matches exist, longest prefix wins
-
-### 9. Dispatch Order
-
-For one event/listener, processing order is:
-
-1. `once` gate
-2. `targetOnly` gate
-3. `preventDefault`
-4. `stopImmediatePropagation` or `stopPropagation`
-5. `debounce`/`throttle`
-6. invoke `handler` or `action`
-
-### 10. Invalid Examples
-
-Invalid: both `handler` and `action` together
-
-```yaml
-click:
-  handler: handleSubmit
-  action: submitForm
-```
-
-Invalid: `debounce` and `throttle` together
-
-```yaml
-click:
-  handler: handleClick
-  debounce: 200
-  throttle: 200
-```
-
-Invalid boolean-attribute usage for ARIA:
-
-```yaml
-button ?aria-pressed=${isPressed}: Like
-```
-
-Use value attribute instead:
-
-```yaml
-button aria-pressed=${ariaPressedState}: Like
-```
-
-Invalid: duplicate prop source on one component node (`name` + `:name`)
-
-```yaml
-template:
-  - my-component value=abcd :value=${var1}:
-```
-
-## End-to-End Example
-
-```yaml
-template:
-  - form#signupForm:
-    - input#emailInput type=email value=${email}:
-    - button#submitButton ?disabled=${isSubmitting}: ${submitLabel}
-
-refs:
-  submitButton:
-    eventListeners:
-      click:
-        handler: handleSubmit
-        targetOnly: true
-        preventDefault: true
-        once: true
-        payload:
-          source: signup
-
-  emailInput:
-    eventListeners:
-      input:
-        action: setEmail
-        debounce: 200
-        payload:
-          value: ${_event.target.value}
-```
-
-## Runtime Compatibility Notes (Current Implementation)
-
-The spec above is the intended interface contract. Current runtime behavior still has gaps:
-
-- Refs currently require camelCase IDs and camelCase ref keys; kebab-case matching is not yet supported.
-- Handler and action payload paths are not fully unified yet.
-- Passing loop variable values directly as props in all cases is not fully supported yet.
-- Some existing templates use legacy shorthand dynamic bindings without `${...}`.
-- `keys` filter option is not supported yet.
-
-These are implementation gaps, not intended long-term interface design.

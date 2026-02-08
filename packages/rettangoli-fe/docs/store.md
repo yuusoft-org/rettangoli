@@ -1,46 +1,48 @@
-# Store System (.store.js)
+# Store Spec (`.store.js`)
 
-State management contract for Rettangoli components.
+This document defines the normative store contract.
 
-## Scope
+## 1. Scope
 
-`.store.js` is responsible for:
-
-- Initial state (`createInitialState`)
-- Normal selectors (derived reads)
-- View projection (`selectViewData`)
-- State mutations (`actions`)
-
-Side effects (API calls, timers, DOM access) belong in `handlers.js`, not in the store.
-
-## File Order (Always)
-
-Use this export order in every store file:
-
+`.store.js` owns:
 1. `createInitialState`
-2. Normal selectors
+2. normal selectors
 3. `selectViewData`
-4. Actions
+4. actions
 
-## View Access Boundary
+Side effects (network, timers, DOM) SHOULD be handled in `.handlers.js`.
 
-Only `selectViewData` output is exposed to `.view.yaml`.
+## 2. Required Export Order
 
-- `.view.yaml` cannot read raw `state` directly
-- `.view.yaml` cannot call normal selectors directly
-- `.view.yaml` cannot call actions directly
+Store files MUST keep this order:
+1. `createInitialState`
+2. normal selectors
+3. `selectViewData`
+4. actions
 
-If the view needs a value, compute/map it inside `selectViewData` and return it there.
+## 3. Context Contract (`ctx`)
 
-## Context Contract (`ctx`)
+All store functions receive context as first argument:
+- `state`
+- `props`
+- `constants`
 
-All store functions receive a first argument context object:
+`props` already includes the unified input model:
+- attribute-form fallback is available
+- kebab-case attribute names are normalized to camelCase
 
-- `state` (available in selectors, `selectViewData`, and actions)
-- `props` (includes attribute-form fallback and kebab-case to camelCase normalization)
-- `constants` (from optional `.constants.yaml`)
+## 4. View Access Boundary
 
-## Minimal File Shape
+Only `selectViewData` is visible to `.view.yaml`.
+
+`.view.yaml` MUST NOT access:
+- raw `state`
+- normal selectors directly
+- actions directly
+
+## 5. Function Signatures
+
+### `createInitialState`
 
 ```js
 export const createInitialState = ({ constants }) => ({
@@ -48,21 +50,45 @@ export const createInitialState = ({ constants }) => ({
   items: [],
   isLoading: false,
 });
+```
 
-// Normal selectors
+### Normal selectors
+
+Selector contract:
+- signature: `(ctx, ...args)`
+- additional args are optional and can be primitive or object
+
+```js
 export const selectItems = ({ state }) => state.items;
-export const selectIsLoading = ({ state }) => state.isLoading;
+export const selectItemsByCategory = ({ state }, category) =>
+  state.items.filter((item) => item.category === category);
+```
 
-// View projection
+### `selectViewData`
+
+`selectViewData` contract:
+- signature: `(ctx)`
+- returns plain data used by `.view.yaml`
+- no side effects
+
+```js
 export const selectViewData = ({ state, constants }) => ({
   title: state.title,
   items: state.items,
   itemCount: state.items.length,
-  isLoading: state.isLoading,
   submitLabel: constants?.labels?.submit || 'Submit',
 });
+```
 
-// Actions
+### Actions
+
+Action contract:
+- signature: `(ctx, payload = {})`
+- payload MUST be an object when provided
+- calling with no payload MUST work (`payload` defaults to `{}`)
+- event-driven action dispatch injects `_event` into payload
+
+```js
 export const setTitle = ({ state }, { title }) => {
   state.title = title;
 };
@@ -72,103 +98,44 @@ export const toggleLoading = ({ state }, _payload = {}) => {
 };
 ```
 
-## 1) Initial State
+## 6. Validation Errors
 
-Keep state minimal and serializable.
+Implementations MUST reject invalid action payload calls.
+Suggested stable error codes:
+- `RTGL-STORE-001`: action payload is not an object
+
+## 7. Invalid Example
+
+Primitive action payload:
+
+```js
+store.setTitle('hello');
+```
+
+Invalid because action payload must be an object when provided.
+
+## 8. Minimal Complete Example
 
 ```js
 export const createInitialState = ({ constants }) => ({
-  form: {
-    values: { email: '' },
-    isSubmitting: false,
-    maxItems: constants?.limits?.maxItems || 50,
-  },
+  title: constants?.labels?.defaultTitle || '',
+  items: [],
+  isLoading: false,
 });
-```
 
-## 2) Normal Selectors
+export const selectItems = ({ state }) => state.items;
 
-Selector contract:
-
-- Signature: `(ctx, ...args)`
-- First argument is always context object
-- Additional arguments are optional and flexible (primitive or object)
-
-Normal selectors are for JavaScript usage (store composition, handlers, tests). They are not directly visible in `.view.yaml`.
-
-```js
-export const selectItemsByCategory = ({ state }, category) =>
-  state.items.filter((item) => item.category === category);
-
-export const selectItemsByFilters = ({ state }, { category, completed }) =>
-  state.items.filter((item) => {
-    if (category && item.category !== category) return false;
-    if (typeof completed === 'boolean' && item.completed !== completed) return false;
-    return true;
-  });
-```
-
-## 3) selectViewData
-
-`selectViewData` returns plain data for `.view.yaml`.
-
-- Signature: `(ctx)`
-- No side effects
-- No DOM access
-- Keep formatting and derived values here
-
-```js
-export const selectViewData = ({ state, props, constants }) => ({
-  title: state.title || props.defaultTitle || constants?.labels?.fallbackTitle || 'Untitled',
+export const selectViewData = ({ state }) => ({
+  title: state.title,
   items: state.items,
-  hasItems: state.items.length > 0,
+  isLoading: state.isLoading,
 });
-```
 
-## 4) Actions
-
-Action contract:
-
-- Signature: `(ctx, payload = {})`
-- First argument is always context object
-- `payload` must be an object (not a primitive)
-
-Invocation behavior:
-
-- `store.someAction()` is valid
-- `store.someAction({ ... })` is valid
-- Missing payload is normalized to `{}`
-- For event-driven dispatch, `_event` is injected into payload
-- For programmatic calls, `_event` may be `undefined`
-
-```js
-// ❌ Not supported (primitive payload)
-export const setTitle = ({ state }, title) => {
-  state.title = title;
-};
-
-// ✅ Supported (object payload)
 export const setTitle = ({ state }, { title }) => {
   state.title = title;
 };
 
-// ✅ Supported when no fields are required
-export const toggleCompleted = ({ state }, _payload = {}) => {
-  state.completed = !state.completed;
-};
-
-export const setEmail = ({ state }, { email }) => {
-  state.form.values.email = email;
-};
-
-export const setSubmitting = ({ state }, { isSubmitting }) => {
-  state.form.isSubmitting = isSubmitting;
+export const setLoading = ({ state }, { isLoading }) => {
+  state.isLoading = isLoading;
 };
 ```
-
-## Guidelines
-
-- Keep state minimal; compute derived values in selectors or `selectViewData`.
-- Keep action names explicit (`setEmail`, `addItem`, `removeItem`).
-- Keep actions deterministic and side-effect free.
-- Prefer small payload objects with descriptive keys.

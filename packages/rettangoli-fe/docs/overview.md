@@ -1,154 +1,59 @@
-# Rettangoli Frontend - Developer Quickstart
+# Rettangoli FE Interface Spec Overview
 
-Rettangoli FE is a complete frontend framework for building web applications with minimal boilerplate and pure functions.
+This `docs/` folder is the normative interface spec for `rettangoli-fe`.
+All rules here are contractual unless explicitly marked as non-normative.
 
-**Key principles:**
-- **Minimal boilerplate** - All your code is for the application, not framework overhead
-- **Start small, scale big** - Linear complexity growth from simple to large applications
-- **Pure functions** - Write simple functions following UI = f(state)
-- **Component-based** - Every component has four core files, with optional advanced files when needed
+Normative keywords follow RFC 2119 intent:
+- `MUST` / `MUST NOT`
+- `SHOULD` / `SHOULD NOT`
+- `MAY`
 
-**Architecture:** Each component has `.view.yaml` (UI), `.store.js` (state), `.handlers.js` (events/lifecycle), and `.schema.yaml` (API/metadata contract), with optional `.methods.js` (public imperative methods) and `.constants.yaml` (static constants).
-
-## File Boundaries
+## Component File Set
 
 | File | Responsibility |
 | --- | --- |
 | `.view.yaml` | UI tree (`template`), `refs`, `styles`, optional `viewDataSchema` |
-| `.schema.yaml` | Public component API and docs metadata (name, description, examples, props/events/methods contracts) |
-| `handlers.js` | Lifecycle hooks, side effects, imperative event handling |
-| `store.js` | State initialization, selectors, actions |
-| `.methods.js` (optional) | Public component methods callable from the element instance |
-| `.constants.yaml` (optional) | Static constants available as `deps.constants` and `ctx.constants` |
+| `.schema.yaml` | Public component API and docs metadata (`componentName`, `description`, `examples`, `propsSchema`, `events`, `methods`) |
+| `.store.js` | `createInitialState`, selectors, `selectViewData`, actions |
+| `.handlers.js` | Lifecycle hooks, side effects, imperative event handling |
+| `.methods.js` (optional) | Public element methods (named exports only) |
+| `.constants.yaml` (optional) | Static constants injected into runtime context |
 
-## Unified Inputs
+## Cross-File Contracts
 
-Components expose one input model: `props`.
+### Input Model (`props` only)
 
-- `name=value` and `:name=value` both target props.
-- Kebab-case attribute-form keys are normalized to camelCase (`max-items` -> `maxItems`).
-- Do not set both forms for the same prop key on one node.
-- Runtime read order is property first, then attribute-form fallback.
+- Components expose a single input surface: `props`.
+- Attribute-form (`name=value`) and property-form (`:name=value`) both target `props` for component nodes.
+- Attribute-form kebab-case names are normalized to camelCase (`max-items` -> `maxItems`).
+- A component node `MUST NOT` define both forms for the same normalized prop key.
+- Runtime read precedence is property value first, then attribute fallback.
 
-```yaml
-template:
-  - my-component value=abcd:
-  - my-component :value=${var1}:
-```
+### Payload Model
 
-```js
-export const handleSomething = (deps) => {
-  const value = deps.props.value;
-};
-```
+- Handler signature is `(deps, payload = {})`.
+- Store action signature is `(ctx, payload = {})`.
+- Action payload `MUST` be an object when provided; calling with no payload is valid.
+- Event-driven dispatch injects `_event` into payload.
 
-## Quick Start
+### Refs Model
 
-```bash
-# Install and create first component
-npm i -g rtgl
-rtgl fe watch
-```
+- `deps.refs` is a map of `refId -> DOM element` (direct element, not wrapper object).
+- Element ref IDs `MUST` be camelCase.
+- Kebab-case element IDs are invalid for refs matching.
+- `refs.window` and `refs.document` are reserved global listener targets.
 
-## Quick Example
+## Spec Index
 
-```
-todoItem/
-├── todoItem.view.yaml      # UI definition
-├── todoItem.store.js       # State management
-├── todoItem.handlers.js    # Event handling
-├── todoItem.schema.yaml    # Component contract and metadata
-├── todoItem.methods.js     # Optional public methods
-└── todoItem.constants.yaml # Optional static constants
-```
+- `view.md`: view language grammar, bindings, refs, events, precedence, validation
+- `store.md`: store contracts and view access boundary
+- `handlers.md`: lifecycle and handler contracts
+- `schema.md`: component API metadata contract
+- `methods.md`: optional public imperative method contract
+- `constants.md`: optional constants contract
 
-## Core + Optional Files
+## Conflict Resolution
 
-**View (.view.yaml)** - UI structure with YAML syntax:
-```yaml
-template:
-  - div.todo-item:
-    - input#checkbox type=checkbox :checked=${completed}:
-    - span.text: "${text}"
-    - button#delete: "Delete"
-```
-
-**Store (.store.js)** - State management with pure functions:
-```js
-export const createInitialState = ({ constants }) => ({
-  text: "",
-  maxItems: constants?.limits?.maxItems || 50,
-  completed: false,
-});
-
-export const selectViewData = ({ state, props, constants }) => ({
-  text: state.text,
-  completed: state.completed,
-  submitLabel: constants?.labels?.submit || "Submit",
-});
-
-// Action - modifies state (uses Immer for immutability)
-export const toggleCompleted = ({ state }, _payload = {}) => {
-  state.completed = !state.completed;
-};
-```
-
-**Handlers (.handlers.js)** - Event handling:
-```js
-export const handleToggle = (deps, payload) => {
-  const { store, render } = deps;
-  store.toggleCompleted();
-  render();
-};
-```
-
-**Methods (.methods.js, optional)** - Public methods exposed on the component element:
-```js
-export function focusInput(payload = {}) {
-  const { selector = '#checkbox' } = payload;
-  this.querySelector(selector)?.focus();
-}
-```
-
-**Constants (.constants.yaml, optional)** - Static values injected into handlers/store:
-```yaml
-labels:
-  submit: "Submit"
-limits:
-  maxItems: 50
-```
-
-**Schema (.schema.yaml)** - component contract and metadata:
-```yaml
-componentName: todo-item
-description: "A single todo row"
-
-examples:
-  - name: default
-    props:
-      text: "Buy milk"
-      completed: false
-
-propsSchema:
-  type: object
-  properties:
-    text: {}
-    completed: {}
-
-events:
-  - name: todo-toggled
-    description: "Emitted when todo completion changes"
-
-methods:
-  - name: focusInput
-    description: "Focuses the todo input element"
-```
-
-## Next Steps
-
-- **[View](./view.md)** - Complete YAML syntax
-- **[Schema](./schema.md)** - Component API and metadata
-- **[Store](./store.md)** - State patterns
-- **[Handlers](./handlers.md)** - Event handling
-- **[Methods](./methods.md)** - Optional public component methods
-- **[Constants](./constants.md)** - Optional static constants
+If two documents appear to conflict:
+1. More specific contract wins (`view.md`, `store.md`, `handlers.md`, `schema.md`, `methods.md`, `constants.md`).
+2. `overview.md` acts as index and cross-file baseline.

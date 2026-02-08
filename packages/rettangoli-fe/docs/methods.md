@@ -1,45 +1,74 @@
-# Methods System (.methods.js)
+# Methods Spec (`.methods.js`)
 
-Optional public imperative API for a component.
+This document defines the optional public imperative method contract.
 
-## Scope
+## 1. Scope
 
-Use `.methods.js` only when external callers need to invoke component behavior directly through the element instance.
+Use `.methods.js` only for methods that callers invoke directly on the component element.
 
-Typical use cases:
+## 2. Export Contract
 
-- Focus/scroll/open/close helpers
-- Imperative reset or refresh triggers
-- Read APIs that return computed component data
+- Use named exports only.
+- `default` export is not supported.
+- Exported names become callable element methods.
 
-## File Shape
-
-```js
-export function focusInput(payload = {}) {
-  // payload-only signature
-}
-
-export function resetForm(payload = {}) {
-  // payload-only signature
-}
-```
-
-## Method Contract
+## 3. Method Signature Contract
 
 Method signature:
 
-- `(payload = {})`
-- No `deps` argument in public method signatures
-- `payload` should be an object
-- Methods run with `this` bound to the component element instance
-- Use named exports only; `default` export is not supported
+```js
+export function methodName(payload = {}) {
+  // `this` is bound to the component element
+}
+```
 
-Invocation from element:
+Rules:
+- no `deps` argument
+- `payload` defaults to `{}`
+- payload MUST be an object when provided
+- methods execute with `this` bound to the component element
 
-- `element.focusInput()`
-- `element.focusInput({ selector: '#emailInput' })`
+Invocation contract:
+- `element.methodName()`
+- `element.methodName({ ... })`
 
-## Minimal Example
+## 4. Schema Alignment
+
+Public methods SHOULD be declared in `.schema.yaml` under `methods`.
+Method names in `.schema.yaml` SHOULD match exported names in `.methods.js`.
+
+## 5. Runtime Access
+
+Methods can access:
+- DOM through `this`
+- constants through `this.constants`
+
+## 6. Validation Errors
+
+Suggested stable error codes:
+- `RTGL-METHODS-001`: method name is `default`
+- `RTGL-METHODS-002`: method payload is not an object
+- `RTGL-METHODS-003`: method name conflicts with existing element property
+
+## 7. Invalid Examples
+
+Default export:
+
+```js
+export default function reset(payload = {}) {}
+```
+
+Invalid because only named exports are allowed.
+
+Primitive payload call:
+
+```js
+element.reset('now');
+```
+
+Invalid because payload must be an object when provided.
+
+## 8. Minimal Example
 
 ```js
 export function focusInput(payload = {}) {
@@ -51,18 +80,4 @@ export function reset(payload = {}) {
   const eventName = payload.eventName || 'reset-requested';
   this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
 }
-```
-
-## Schema Contract
-
-Declare public methods in `.schema.yaml` under `methods`.
-Method names in `.schema.yaml` should match exported names in `.methods.js`.
-If a method needs static values, read them from `this.constants`.
-
-```yaml
-methods:
-  - name: focusInput
-    description: "Focus input element"
-  - name: reset
-    description: "Request reset behavior"
 ```

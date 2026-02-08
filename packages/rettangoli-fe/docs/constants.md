@@ -1,19 +1,19 @@
-# Constants System (.constants.yaml)
+# Constants Spec (`.constants.yaml`)
 
-Optional static constants for a component.
+This document defines the optional constants contract.
 
-## Scope
+## 1. Scope
 
-Use `.constants.yaml` for immutable component-level values that should be available in runtime logic.
+`.constants.yaml` contains static component values.
+Use it for immutable defaults such as labels, limits, and feature flags.
 
-Typical use cases:
+## 2. File Contract
 
-- Labels and copy defaults
-- Numeric limits
-- Feature flags
-- Shared static mappings
+- YAML data only
+- no executable code
+- values SHOULD be JSON-serializable
 
-## File Shape
+Example:
 
 ```yaml
 labels:
@@ -26,31 +26,44 @@ features:
   smartSort: true
 ```
 
-## Runtime Access
+## 3. Runtime Injection Contract
 
-Constants are exposed in both places:
-
+Constants are injected into:
 - `deps.constants` in handlers
-- `ctx.constants` in store functions (`createInitialState`, selectors, `selectViewData`, actions)
+- `ctx.constants` in store functions
+- `this.constants` in methods
 
-## Example Usage
+If setup also provides constants, file constants override setup constants on key conflict.
 
-```js
-// handlers.js
-export const handleSubmit = (deps, payload = {}) => {
-  const maxItems = deps.constants?.limits?.maxItems ?? 50;
-  // ...
-};
+## 4. Mutability Contract
 
-// store.js
-export const createInitialState = ({ constants }) => ({
-  title: constants?.labels?.submit || '',
-  items: [],
-});
+Constants MUST be treated as read-only at runtime.
+
+## 5. Invalid Example
+
+Executable content in constants file:
+
+```yaml
+computeLabel: !!js/function >
+  function () { return 'Submit'; }
 ```
 
-## Notes
+Invalid because `.constants.yaml` must be data-only.
 
-- Keep `.constants.yaml` data-only (no functions).
-- Prefer plain JSON-serializable values.
-- Treat constants as read-only at runtime.
+## 6. Minimal Example
+
+```js
+export const createInitialState = ({ constants }) => ({
+  title: constants?.labels?.submit || '',
+  maxItems: constants?.limits?.maxItems || 50,
+  items: [],
+});
+
+export const handleSubmit = (deps) => {
+  const smartSort = deps.constants?.features?.smartSort === true;
+  if (smartSort) {
+    deps.store.sortItems({ strategy: 'smart' });
+    deps.render();
+  }
+};
+```
