@@ -10,19 +10,24 @@ in:
   - path: ./vt-custom
     skipScreenshots: false
     port: 4100
+    concurrency: 3
+    timeout: 45000
+    waitEvent: vt:ready
     url: https://example.com/root
 out:
   vtPath: ./vt-custom
   skipScreenshots: false
   port: 4100
+  waitEvent: vt:ready
   headless: true
   configUrl: https://example.com/root
   screenshotWaitTime: 0
-  waitStrategy: load
+  waitStrategy: event
+  workerCount: 3
   isolationMode: fast
-  navigationTimeout: 30000
-  readyTimeout: 30000
-  screenshotTimeout: 30000
+  navigationTimeout: 45000
+  readyTimeout: 45000
+  screenshotTimeout: 45000
   maxRetries: 1
   recycleEvery: 25
   metricsPath: .rettangoli/vt/metrics.json
@@ -32,24 +37,32 @@ in:
   - vtPath: ./vt-cli
     skipScreenshots: true
     port: 3300
+    concurrency: 6
+    timeout: 15000
+    waitEvent: cli:ready
     headless: false
     url: http://localhost:9000/render
   - path: ./vt-config
     skipScreenshots: false
     port: 4400
+    concurrency: 2
+    timeout: 50000
+    waitEvent: config:ready
     url: https://example.com/config
 out:
   vtPath: ./vt-cli
   skipScreenshots: true
   port: 3300
+  waitEvent: cli:ready
   headless: false
   configUrl: http://localhost:9000/render
   screenshotWaitTime: 0
-  waitStrategy: load
+  waitStrategy: event
+  workerCount: 6
   isolationMode: fast
-  navigationTimeout: 30000
-  readyTimeout: 30000
-  screenshotTimeout: 30000
+  navigationTimeout: 15000
+  readyTimeout: 15000
+  screenshotTimeout: 15000
   maxRetries: 1
   recycleEvery: 25
   metricsPath: .rettangoli/vt/metrics.json
@@ -59,3 +72,15 @@ in:
   - url: ""
   - {}
 throws: Invalid url
+---
+case: rejects invalid concurrency
+in:
+  - concurrency: 0
+  - {}
+throws: concurrency
+---
+case: rejects invalid waitEvent
+in:
+  - waitEvent: ""
+  - {}
+throws: waitEvent

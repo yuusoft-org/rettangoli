@@ -1,130 +1,82 @@
-
 # Rettangoli Visual Testing
 
-A visual testing framework for UI components using Playwright and screenshot comparison. Perfect for regression testing and ensuring UI consistency across changes.
+Visual regression testing for Rettangoli specs using Playwright screenshots.
 
-**In production**, this package is typically used through the `rtgl` CLI tool. For development and testing of this package itself, you should call the local CLI directly.
+## Commands
 
-## Features
+- `rtgl vt generate`
+- `rtgl vt report`
+- `rtgl vt accept`
 
-- **Screenshot Generation** - Automatically generate screenshots from HTML specifications
-- **Visual Comparison** - Compare screenshots to detect visual changes
-- **Test Reports** - Generate detailed reports with diff highlights
-- **Playwright Integration** - Uses Playwright for reliable cross-browser testing
-- **Worker Pool Capture Engine** - Dynamic Playwright task scheduling with adaptive parallelism
-- **Fair Retry Scheduling** - Prioritizes expensive pages first while preventing retry starvation
-- **Template System** - Liquid templates for flexible HTML generation
-- **Configuration** - YAML-based configuration for easy customization
+## Public Generate Options
 
-## Development
+- `--skip-screenshots`
+- `--headed`
+- `--concurrency <number>`
+- `--timeout <ms>`
+- `--wait-event <name>`
 
-### Prerequisites
+Everything else in capture is internal and intentionally not user-configurable.
 
-- Node.js 18+ or Bun
-- Playwright browsers (automatically installed)
+## Config
 
-### Setup
-
-1. **Install dependencies**:
-```bash
-bun install
-```
-
-2. **Install Playwright browsers** (if not already installed):
-```bash
-npx playwright install
-```
-
-### Project Structure
-
-```
-src/
-├── cli/
-│   ├── generate.js    # Generate screenshots from specifications
-│   ├── report.js      # Generate visual comparison reports
-│   ├── accept.js      # Accept screenshot changes as new reference
-│   ├── templates/     # HTML templates for reports
-│   └── static/        # Static assets (CSS, etc.)
-├── common.js          # Shared utilities and functions
-└── index.js           # Main export (empty - CLI focused)
-```
-
-### Core Functionality
-
-The visual testing framework provides three main commands:
-
-#### 1. Generate (`vt generate`)
-- Reads HTML specifications from `vt/specs/` directory
-- Generates screenshots using Playwright
-- Saves candidate screenshots for comparison
-- Creates a static site for viewing results
-
-#### 2. Report (`vt report`)
-- Compares candidate screenshots with reference screenshots
-- Generates visual diff reports highlighting changes
-- Creates an HTML report with before/after comparisons
-- Uses `pixelmatch` for image comparison
-
-#### 3. Accept (`vt accept`)
-- Accepts candidate screenshots as new reference images
-- Updates the golden/reference screenshot directory
-- Used when visual changes are intentional
-
-### Configuration
-
-The framework reads configuration from `rettangoli.config.yaml`:
+`rettangoli.config.yaml`:
 
 ```yaml
 vt:
-  # Required: drives the index/overview structure
-  sections:
-    - title: "Components"
-      files: "components"
+  path: ./vt
   port: 3001
   skipScreenshots: false
+  concurrency: 4
+  timeout: 30000
+  waitEvent: vt:ready
+  sections:
+    - title: components_basic
+      files: components
 ```
 
-`vt.capture` is now internal and should not be configured by users.
+Notes:
 
-Section page keys (`title` for flat sections and grouped `items[].title`) must use only letters, numbers, `-`, `_` (no spaces).
+- `vt.sections` is required.
+- Section page keys (`title` for flat sections and group `items[].title`) allow only letters, numbers, `-`, `_`.
+- `vt.capture` is internal and must be omitted.
 
-### Specification
+## Spec Frontmatter
 
-The detailed contract is documented in:
+Supported frontmatter keys per spec file:
 
-- `docs/spec.md`
+- `title`
+- `description`
+- `template`
+- `url`
+- `waitEvent`
+- `waitSelector`
+- `waitStrategy` (`networkidle` | `load` | `event` | `selector`)
+- `skipScreenshot`
+- `specs`
+- `steps`
 
-### Testing Your Changes
+Screenshot naming:
 
-**Note**: This package doesn't include example files in its directory. For testing during development, use examples from other packages (like `rettangoli-ui`) and call the CLI directly:
+- First screenshot is `-01`.
+- Then `-02`, `-03`, up to `-99`.
+
+## Development
+
+Run tests:
 
 ```bash
-# Call the local CLI directly for development
-node ../rettangoli-cli/cli.js vt generate
-node ../rettangoli-cli/cli.js vt report
-node ../rettangoli-cli/cli.js vt accept
+bun test
 ```
 
-**Production usage** (when rtgl is installed globally):
-```bash
-rtgl vt generate
-rtgl vt report
-rtgl vt accept
-```
-
-Optional real-browser smoke test:
+Run real-browser smoke:
 
 ```bash
 VT_E2E=1 bun test spec/e2e-smoke.spec.js
 ```
 
-Capture benchmark fixture:
+Optional benchmark fixture:
 
 ```bash
 bun run bench:capture
 ```
-
-Useful perf flags through `rtgl vt generate`:
-
-- `--skip-screenshots`
-- `--headed`

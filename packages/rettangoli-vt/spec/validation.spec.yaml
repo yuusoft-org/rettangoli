@@ -84,12 +84,31 @@ throws: must be unique (case-insensitive)
 case: rejects legacy root capture options
 in:
   - path: ./vt
+    waitSelector: "#root"
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: vt.waitSelector
+---
+case: accepts minimal runtime knobs
+in:
+  - path: ./vt
+    concurrency: 4
+    timeout: 45000
     waitEvent: app:ready
     sections:
       - title: Pages
         files: pages
   - rettangoli.config.yaml
-throws: vt.waitEvent
+out:
+  path: ./vt
+  concurrency: 4
+  timeout: 45000
+  waitEvent: app:ready
+  sections:
+    - title: Pages
+      files: pages
 ---
 case: rejects vt.capture user config
 in:

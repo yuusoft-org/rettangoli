@@ -194,6 +194,9 @@ vtCommand
   .command("generate")
   .description("Generate visualizations")
   .option("--skip-screenshots", "Skip screenshot generation")
+  .option("--concurrency <number>", "Number of parallel capture workers", parseInt)
+  .option("--timeout <ms>", "Global capture timeout in ms", parseInt)
+  .option("--wait-event <name>", "Custom event name to mark page ready (uses event wait strategy)")
   .option("--headed", "Run Playwright in headed mode")
   .action(async (options) => {
     console.log(`rtgl v${packageJson.version}`);

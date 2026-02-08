@@ -14,6 +14,50 @@ import { resolveGenerateOptions } from "./generate-options.js";
 const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
 const libraryStaticPath = new URL("./static", import.meta.url).pathname;
 
+export function buildCaptureOptions({
+  filesToScreenshot,
+  port,
+  candidatePath,
+  resolvedOptions,
+}) {
+  const {
+    workerCount,
+    screenshotWaitTime,
+    configUrl,
+    waitEvent,
+    waitSelector,
+    waitStrategy,
+    navigationTimeout,
+    readyTimeout,
+    screenshotTimeout,
+    maxRetries,
+    recycleEvery,
+    isolationMode,
+    metricsPath,
+    headless,
+  } = resolvedOptions;
+
+  return {
+    generatedFiles: filesToScreenshot,
+    serverUrl: `http://localhost:${port}`,
+    screenshotsDir: candidatePath,
+    workerCount,
+    screenshotWaitTime,
+    configUrl,
+    waitEvent,
+    waitSelector,
+    waitStrategy,
+    navigationTimeout,
+    readyTimeout,
+    screenshotTimeout,
+    maxRetries,
+    recycleEvery,
+    isolationMode,
+    metricsPath,
+    headless,
+  };
+}
+
 /**
  * Main function that orchestrates the entire process
  */
@@ -38,20 +82,7 @@ async function main(options = {}) {
   const {
     vtPath,
     skipScreenshots,
-    screenshotWaitTime,
     port,
-    waitEvent,
-    waitSelector,
-    waitStrategy,
-    workerCount,
-    isolationMode,
-    navigationTimeout,
-    readyTimeout,
-    screenshotTimeout,
-    maxRetries,
-    recycleEvery,
-    metricsPath,
-    headless,
     configUrl,
   } = resolvedOptions;
 
@@ -119,25 +150,14 @@ async function main(options = {}) {
 
     const server = configUrl ? null : await startWebServer(siteOutputPath, vtPath, port);
     try {
-      await takeScreenshots({
-        generatedFiles: filesToScreenshot,
-        serverUrl: `http://localhost:${port}`,
-        screenshotsDir: candidatePath,
-        workerCount,
-        screenshotWaitTime,
-        configUrl,
-        waitEvent,
-        waitSelector,
-        waitStrategy,
-        navigationTimeout,
-        readyTimeout,
-        screenshotTimeout,
-        maxRetries,
-        recycleEvery,
-        isolationMode,
-        metricsPath,
-        headless,
-      });
+      await takeScreenshots(
+        buildCaptureOptions({
+          filesToScreenshot,
+          port,
+          candidatePath,
+          resolvedOptions,
+        }),
+      );
     } finally {
       if (server) {
         server.close();

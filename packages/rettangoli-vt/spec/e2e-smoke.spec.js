@@ -19,7 +19,7 @@ function createTempProjectRoot() {
   return mkdtempSync(join(tmpdir(), "rettangoli-vt-e2e-"));
 }
 
-function writeFixture(rootDir, htmlContent) {
+function writeFixture(rootDir, htmlContent, vtOverrides = "") {
   const vtPath = join(rootDir, "vt");
   const specsDir = join(vtPath, "specs", "components");
   mkdirSync(specsDir, { recursive: true });
@@ -30,6 +30,7 @@ function writeFixture(rootDir, htmlContent) {
   sections:
     - title: components_basic
       files: components
+${vtOverrides}
 `;
   writeFileSync(join(rootDir, "rettangoli.config.yaml"), configYaml, "utf8");
   writeFileSync(join(specsDir, "basic.html"), htmlContent, "utf8");
@@ -127,5 +128,45 @@ describeE2E("VT E2E smoke", () => {
     await expect(
       report({ vtPath: "./vt", compareMethod: "md5" }),
     ).rejects.toThrow("Visual differences found");
+  }, 180000);
+
+  it("supports waitEvent readiness with real browser screenshots", async () => {
+    originalCwd = process.cwd();
+    tempRoot = createTempProjectRoot();
+    process.chdir(tempRoot);
+
+    writeFixture(
+      tempRoot,
+      `---
+title: event_ready_component
+---
+<script>
+  setTimeout(() => {
+    window.dispatchEvent(new Event("vt:ready"));
+  }, 20);
+</script>
+<div style="width:360px;height:220px;padding:24px;background:#0b7285;color:#fff;font:700 42px Arial;">
+  Event Ready
+</div>
+`,
+      "  waitEvent: vt:ready\n",
+    );
+
+    const port = await getAvailablePort();
+    await generate({
+      vtPath: "./vt",
+      port,
+    });
+
+    const candidateScreenshotPath = join(
+      tempRoot,
+      ".rettangoli",
+      "vt",
+      "_site",
+      "candidate",
+      "components",
+      "basic-01.webp",
+    );
+    expect(existsSync(candidateScreenshotPath)).toBe(true);
   }, 180000);
 });

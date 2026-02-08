@@ -1,16 +1,20 @@
-# Rettangoli VT Specification
+# Rettangoli VT Spec
 
 Last updated: 2026-02-08
 
-This document defines the behavioral and configuration contract for `@rettangoli/vt`.
+This document defines the public contract for `rtgl vt`.
 
 ## Scope
 
-- This spec covers `rtgl vt generate`, `rtgl vt report`, and `rtgl vt accept`.
-- This spec reflects the current non-backward-compatible API surface.
-- Capture internals are intentionally not user-configurable.
+- `rtgl vt generate`
+- `rtgl vt report`
+- `rtgl vt accept`
 
-## Top-Level Config (`rettangoli.config.yaml`)
+Capture engine internals are intentionally excluded from this contract.
+
+## Config Contract
+
+`rettangoli.config.yaml`:
 
 ```yaml
 vt:
@@ -21,42 +25,51 @@ vt:
   diffThreshold: 0.3
   skipScreenshots: false
   port: 3001
+  concurrency: 4
+  timeout: 30000
+  waitEvent: vt:ready
   sections:
-    - title: Components
+    - title: components_basic
       files: components
 ```
 
-## Required Keys
+Rules:
 
 - `vt` must be an object.
-- `vt.sections` is required and must be a non-empty array.
-- Each flat section must include `title` and `files`.
-- Group sections must set `type: groupLabel` and include non-empty `items`.
-- Page keys (`section.title` for flat sections and `items[].title` for grouped items) must match `[A-Za-z0-9_-]+` (no spaces).
-- Page keys must be unique case-insensitively.
+- `vt.sections` is required and non-empty.
+- Each flat section requires `title` and `files`.
+- Group section requires `type: groupLabel` and non-empty `items`.
+- Section page keys (`title` and `items[].title`) must match `[A-Za-z0-9_-]+`.
+- Section page keys must be unique case-insensitively.
+- `vt.concurrency` optional integer >= 1.
+- `vt.timeout` optional integer >= 1 (ms).
+- `vt.waitEvent` optional non-empty string.
+- `vt.capture` must be omitted or empty object.
 
-## Removed User Capture Fields
+## Generate CLI Contract
 
-The following fields are rejected and no longer user-configurable:
+Supported options:
 
-- `vt.screenshotWaitTime`
-- `vt.waitEvent`
-- `vt.waitSelector`
-- `vt.waitStrategy`
-- `vt.concurrency`
-- `vt.workerCount`
-- `vt.isolationMode`
-- `vt.navigationTimeout`
-- `vt.readyTimeout`
-- `vt.screenshotTimeout`
-- `vt.maxRetries`
-- `vt.recycleEvery`
-- `vt.metricsPath`
-- `vt.headless`
+- `--skip-screenshots`
+- `--headed`
+- `--concurrency <number>`
+- `--timeout <ms>`
+- `--wait-event <name>`
 
-`vt.capture` itself is reserved for internal implementation and rejected when non-empty.
+Generate behavior:
 
-## Frontmatter Spec (Per Spec File)
+- Builds candidate pages from `vt/specs`.
+- Builds section overview pages from `vt.sections`.
+- Captures screenshots for non-`skipScreenshot` specs.
+- Fails if unresolved capture failures remain.
+
+Wait strategy precedence:
+
+- `frontmatter.waitStrategy`
+- inferred from `frontmatter.waitEvent` / `frontmatter.waitSelector`
+- runtime default: if `waitEvent` is set, uses `event`; otherwise uses `load`
+
+## Frontmatter Contract
 
 Allowed keys:
 
@@ -69,114 +82,39 @@ Allowed keys:
 - `waitStrategy` (`networkidle` | `load` | `event` | `selector`)
 - `skipScreenshot` (boolean)
 - `specs` (array of non-empty strings)
-- `steps` (array of non-empty step strings or one-key block objects)
+- `steps` (array of step strings or block step objects)
 
-Step object rules:
+Validation:
 
-- Object step must contain exactly one key (example: `select input-id`).
-- Nested values must be an array of non-empty string steps.
+- `waitStrategy=event` requires `waitEvent`.
+- `waitStrategy=selector` requires `waitSelector`.
+- Block step object must contain exactly one key.
 
-## CLI Contract
+## Screenshot Naming Contract
 
-### `rtgl vt generate`
+- Screenshot filenames are `<base>-NN.webp`.
+- First image is always `-01`.
+- Sequence increments `-02`, `-03`, ... up to `-99`.
 
-Supported options:
+## Report Contract
 
-- `--skip-screenshots`
-- `--headed` (maps to `headless=false`)
+Report command:
 
-Removed option:
+- compares candidate vs reference screenshots
+- writes HTML report: `.rettangoli/vt/_site/report.html`
+- writes JSON report: `.rettangoli/vt/report.json`
+- fails when mismatches exist
 
-- `--concurrency`
+Compare methods:
 
-### `rtgl vt report`
+- `md5` exact match
+- `pixelmatch` threshold-based comparison
 
-Supported options:
+## Artifact Paths
 
-- `--compare-method <method>`
-- `--color-threshold <number>`
-- `--diff-threshold <number>`
-
-## Generate Semantics
-
-- Generates candidate HTML files from `vt/specs`.
-- Generates overview pages from `vt.sections`.
-- Filters screenshot tasks where frontmatter `skipScreenshot=true`.
-- Uses Playwright worker pool capture.
-- Fails the command if any screenshot task still fails after retries.
-
-Screenshot task URL resolution priority:
-
-- `frontmatter.url`
-- `vt.url` (or CLI `--url` if provided)
-- Constructed candidate URL: `http://localhost:<port>/candidate/<file>.html`
-
-Wait strategy resolution priority:
-
-- `frontmatter.waitStrategy`
-- inferred from `frontmatter.waitEvent` / `frontmatter.waitSelector`
-- internal generate defaults (`waitStrategy=load`)
-- fallback: `load`
-
-Screenshot filename contract:
-
-- Every screenshot file is suffixed as `<base>-NN.webp`.
-- First screenshot is always `-01`, then `-02`, `-03`, ... per spec task.
-- Supported range is `01` to `99`; exceeding `99` fails that task.
-
-## Worker Scheduling
-
-When `workerCount` is not provided, adaptive worker count is:
-
-- `cpuBound = max(1, cpuCount - 1)`
-- `memoryBound = max(1, floor(totalMemoryGb / 1.5))`
-- `workers = max(1, min(cpuBound, memoryBound, 16))`
-
-Queue policy:
-
-- Fresh tasks are sorted by `estimatedCost` descending (heavier first).
-- Equal-cost tasks preserve spec order.
-- Retry tasks are enqueued separately and dispatched fairly (after at most 3 fresh tasks) so retries do not starve fresh work.
-
-`recycleEvery` behavior:
-
-- Applied only in `isolationMode=fast`.
-- After N successful tasks in a worker, shared context is recycled.
-- In `fast` mode, worker page is reused and reset deterministically per task (cookies/permissions cleared, runtime storage cleanup, `about:blank` navigation, fixed viewport/media/timeouts).
-
-## Report Semantics
-
-- Requires candidate screenshots in `.rettangoli/vt/_site/candidate`.
-- Ensures `vt/reference` exists.
-- Compares all unique `.webp` relative paths from candidate and reference trees.
-- Produces mismatches for:
-- image differences
-- files only in candidate
-- files only in reference
-- Writes HTML report to `.rettangoli/vt/_site/report.html`.
-- Writes JSON report to `.rettangoli/vt/report.json`.
-- Fails the command when mismatches are present.
-
-Comparison methods:
-
-- `md5`: exact hash match.
-- `pixelmatch`: threshold-based pixel comparison.
-- For `pixelmatch`, dimension mismatch is treated as unequal.
-- For unequal `pixelmatch` results, diff PNGs are written under `.rettangoli/vt/_site/diff`.
-
-## Artifact Layout
-
-- Candidate screenshots and generated files: `.rettangoli/vt/_site/candidate`
-- Copied reference files for report UI: `.rettangoli/vt/_site/reference`
-- Visual diffs: `.rettangoli/vt/_site/diff`
-- HTML report: `.rettangoli/vt/_site/report.html`
-- JSON report: `.rettangoli/vt/report.json`
-- Capture metrics JSON (default): `.rettangoli/vt/metrics.json`
-- Benchmark output (optional): `.rettangoli/vt/benchmark.json`
-
-## Failure Semantics
-
-- Config/frontmatter schema violations fail fast before runtime capture.
-- Invalid numeric CLI/config values fail fast with explicit field names.
-- Generate fails if screenshot capture has unresolved task failures.
-- Report fails if comparison errors occur or mismatches exist.
+- Candidate: `.rettangoli/vt/_site/candidate`
+- Reference mirror for report: `.rettangoli/vt/_site/reference`
+- Diff images: `.rettangoli/vt/_site/diff`
+- Report HTML: `.rettangoli/vt/_site/report.html`
+- Report JSON: `.rettangoli/vt/report.json`
+- Capture metrics: `.rettangoli/vt/metrics.json`
