@@ -1,6 +1,6 @@
 # Rettangoli VT Roadmap
 
-Last updated: 2026-02-08
+Last updated: 2026-02-09
 
 This file is the planning source of truth for `packages/rettangoli-vt`.
 
@@ -14,10 +14,23 @@ This file is the planning source of truth for `packages/rettangoli-vt`.
 
 ### P0
 
-- `Scoped runs (generate + report)`  
-  Status: planned  
-  Goal: run subsets without running everything.  
-  Scope: implement selectors `folder`, `group`, `item` for both commands.  
+- `Docker E2E test coverage`
+  Status: in progress
+  Goal: fully testable in-repo with Docker image build and verification.
+  Scope: test suite that builds local Docker image, runs generate/report/accept in temp folders, validates all output artifacts.
+  Notes: run with `bun run test:docker` (requires Docker daemon).
+  Sub-tasks:
+    - Deep output validation: validate screenshot WebP headers, non-zero file sizes, report.json schema, metrics.json schema, HTML content markers. (in progress)
+    - Multi-spec multi-section fixture test: validate directory structure completeness across multiple section folders. (planned)
+    - Error case matrix: missing config, missing vt section, invalid frontmatter. (planned)
+    - Full baseline flow test with detailed report.json field-by-field validation (pixelmatch mode). (planned)
+    - Multi-screenshot test: specs with `steps: [screenshot]` producing -01, -02 ordinals. (planned)
+    - Fix existing test bug: `reportJson.mismatches` should be `reportJson.mismatched` + `reportJson.items`. (in progress)
+
+- `Scoped runs (generate + report)`
+  Status: planned
+  Goal: run subsets without running everything.
+  Scope: implement selectors `folder`, `group`, `item` for both commands.
   Notes: selector semantics are already documented (union/OR).
 
 - `Release + Docker publish flow`  

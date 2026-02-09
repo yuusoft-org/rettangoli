@@ -122,6 +122,18 @@ Run real-browser smoke:
 VT_E2E=1 bun test spec/e2e-smoke.spec.js
 ```
 
+Run Docker E2E tests (requires Docker daemon running):
+
+```bash
+# Full pipeline: build image → verify → run all Docker E2E tests
+bun run test:docker:full
+
+# Tests only (skip image build, assumes image already exists)
+bun run test:docker
+```
+
+The Docker E2E suite builds a local `rtgl-local-test:latest` image, then runs generate/report/accept in temp directories inside containers. Tests validate WebP screenshot headers, report.json schema, metrics.json schema, HTML content, directory structure, accept file copies, multi-spec fixtures, multi-screenshot ordinals, and pixelmatch diff detection.
+
 Optional benchmark fixture:
 
 ```bash

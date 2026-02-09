@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/public/theme.css">
+    <script>
+      window.rtglIcons = {
+        text: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 12H20M4 8H20M4 16H12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+        home: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.121,9.069,15.536,1.483a5.008,5.008,0,0,0-7.072,0L.879,9.069A2.978,2.978,0,0,0,0,11.19v9.817a3,3,0,0,0,3,3H21a3,3,0,0,0,3-3V11.19A2.978,2.978,0,0,0,23.121,9.069ZM15,22.007H9V18.073a3,3,0,0,1,6,0Zm7-1a1,1,0,0,1-1,1H17V18.073a5,5,0,0,0-10,0v3.934H3a1,1,0,0,1-1-1V11.19a1.008,1.008,0,0,1,.293-.707L9.878,2.9a3.008,3.008,0,0,1,4.244,0l7.585,7.586A1.008,1.008,0,0,1,22,11.19Z"/></svg>`,
+        threeDots: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" d="M18 12H18.01M12 12H12.01M6 12H6.01M13 12C13 12.5523 12.5523 13 12 13C11.4477 13 11 12.5523 11 12C11 11.4477 11.4477 11 12 11C12.5523 11 13 11.4477 13 12ZM19 12C19 12.5523 18.5523 13 18 13C17.4477 13 17 12.5523 17 12C17 11.4477 17.4477 11 18 11C18.5523 11 19 11.4477 19 12ZM7 12C7 12.5523 6.55228 13 6 13C5.44772 13 5 12.5523 5 12C5 11.4477 5.44772 11 6 11C6.55228 11 7 11.4477 7 12Z"/></svg>`,
+        play: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M16.6582 9.28663C18.098 10.1864 18.8178 10.6363 19.0647 11.2124C19.2803 11.7154 19.2803 12.2849 19.0647 12.788C18.8178 13.364 18.098 13.8139 16.6582 14.7138L9.896 18.9402C8.29805 19.9389 7.49907 20.4383 6.83973 20.3852C6.26501 20.339 5.73818 20.0471 5.3944 19.5842C5 19.0532 5 18.111 5 16.2266V7.77382C5 5.88944 5 4.94726 5.3944 4.41623C5.73818 3.95335 6.26501 3.66136 6.83973 3.61515C7.49907 3.56215 8.29805 4.06151 9.896 5.06023L16.6582 9.28663Z" fill="currentColor"/>
+  </svg>
+  `,
+        plus: `<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g clip-path="url(#clip0_911_81)">
+  <path d="M106.25 50H93.75V93.75H50V106.25H93.75V150H106.25V106.25H150V93.75H106.25V50Z" fill="currentColor"/>
+  <path d="M100 0C44.7691 0 0 44.7691 0 100C0 155.231 44.7691 200 100 200C155.231 200 200 155.231 200 100C200 44.7691 155.231 0 100 0ZM100 184.375C53.3996 184.375 15.625 146.6 15.625 100C15.625 53.3996 53.3996 15.625 100 15.625C146.6 15.625 184.375 53.3996 184.375 100C184.375 146.6 146.6 184.375 100 184.375Z" fill="currentColor"/>
+  </g>
+  <defs>
+  <clipPath id="clip0_911_81">
+  <rect width="200" height="200" fill="currentColor"/>
+  </clipPath>
+  </defs>
+  </svg>
+  `,
+        music: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M9 19C9 20.1046 7.65685 21 6 21C4.34315 21 3 20.1046 3 19C3 17.8954 4.34315 17 6 17C7.65685 17 9 17.8954 9 19ZM9 19V5L21 3V17M21 17C21 18.1046 19.6569 19 18 19C16.3431 19 15 18.1046 15 17C15 15.8954 16.3431 15 18 15C19.6569 15 21 15.8954 21 17ZM9 9L21 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`,
+        arrowLeft: `
+  <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M685.248 104.704a64 64 0 0 1 0 90.496L368.448 512l316.8 316.8a64 64 0 0 1-90.496 90.496L232.704 557.248a64 64 0 0 1 0-90.496l362.048-362.048a64 64 0 0 1 90.496 0z"/></svg>
+        `,
+        arrowRight: `
+        <svg viewBox="0 0 212 212" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M70.132 21.6763C67.648 24.161 66.2526 27.5306 66.2526 31.044C66.2526 34.5575 67.648 37.9271 70.132 40.4118L135.719 105.999L70.132 171.587C67.7184 174.086 66.3829 177.433 66.4131 180.907C66.4432 184.381 67.8367 187.704 70.2934 190.161C72.75 192.618 76.0733 194.011 79.5474 194.041C83.0215 194.071 86.3685 192.736 88.8675 190.322L163.823 115.367C166.307 112.882 167.702 109.513 167.702 105.999C167.702 102.486 166.307 99.1163 163.823 96.6315L88.8675 21.6763C86.3827 19.1923 83.0132 17.7969 79.4997 17.7969C75.9863 17.7969 72.6167 19.1923 70.132 21.6763Z" fill="currentColor"/>
+  </svg>
+        `,
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/rettangoli-ui@0.1.0-rc2/dist/rettangoli-iife-ui.min.js"></script>
+    <script src="/public/main.js"></script>
+  </head>
+  <body class="dark">
+    <div class="container">
+      <div style="width:360px;height:220px;padding:24px;background:#2c7be5;color:#fff;font:700 42px Arial;">
+  Hello World
+</div>
+    </div>
+  </body>
+</html>

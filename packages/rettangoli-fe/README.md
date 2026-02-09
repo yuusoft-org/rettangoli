@@ -106,14 +106,30 @@ fe:
 
 ## Testing
 
-### View Components
+### Unit and Contract Tests
 
-Use visual testing with `rtgl vt`:
+- **Puty contract tests** (`spec/`) — YAML-driven pure-function specs for view, store, schema, and handler contracts.
+- **Vitest integration tests** (`test/`) — runtime behavior tests for component lifecycle, props, events, and DOM.
 
 ```bash
-rtgl vt generate
-rtgl vt report
+bun run test           # all tests
+bun run test:puty      # contract tests only
+bun run test:vitest    # integration tests only
 ```
+
+### End-to-End Testing
+
+E2E tests run against real example apps in `examples/` using `@rettangoli/vt`. VT specs define interaction steps (click, write, keypress, etc.) and capture screenshots via Playwright. Assertions are done by comparing candidate screenshots against reference baselines with pixelmatch.
+
+```bash
+# In an example project (e.g. examples/example1/)
+rtgl fe build          # build components
+rtgl vt generate       # capture screenshots (runs Playwright)
+rtgl vt report         # compare against reference — fails on mismatch
+rtgl vt accept         # update baselines when changes are intentional
+```
+
+VT specs live in each example's `vt/specs/` directory. See `examples/example1/` for the full setup.
 
 ## Examples
 

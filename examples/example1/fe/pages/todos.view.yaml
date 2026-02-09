@@ -1,17 +1,3 @@
-elementName: custom-todos
-
-viewDataSchema:
-  type: object
-  properties:
-    title: { type: string }
-    placeholderText: { type: string }
-    todos: { type: array }
-    filteredTodos: { type: array }
-    activeCount: { type: number }
-    completedCount: { type: number }
-    allCompleted: { type: boolean }
-    filter: { type: string }
-
 refs:
   todoInput:
     eventListeners:

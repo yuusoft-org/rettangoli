@@ -28,6 +28,7 @@ Keep implementation and tests aligned with these docs.
 
 - Prefer pure-function contract tests in Puty where possible.
 - Use Vitest for integration/runtime behavior that needs browser-like execution.
+- For end-to-end testing, use `@rettangoli/vt` against `examples/` — write VT specs with interaction steps and assert via screenshot comparison. Do not build a separate Playwright/Cypress E2E suite.
 - Keep schema-first contract behavior intact:
   - `.schema.yaml` required
   - `.view.yaml` is view-only

@@ -1,0 +1,29 @@
+---
+title: item-list-interactions
+steps:
+  - screenshot
+  - select input:
+    - write Apple
+  - select add:
+    - click
+  - select input:
+    - write Banana
+  - select add:
+    - click
+  - select input:
+    - write Cherry
+  - select add:
+    - click
+  - screenshot
+  - select item-1:
+    - click
+  - screenshot
+  - select filter-red:
+    - click
+  - screenshot
+---
+
+<script type="module" src="/static/public/main.js"></script>
+<div style="padding:8px;background:white">
+  <e2e-item-list></e2e-item-list>
+</div>

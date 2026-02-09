@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/vt",
-  "version": "0.0.14",
+  "version": "1.0.0-rc1",
   "description": "Rettangoli Visual Testing",
   "type": "module",
   "main": "./src/index.js",
@@ -10,6 +10,8 @@
   },
   "scripts": {
     "test": "vitest run --reporter=verbose",
+    "test:e2e": "node e2e/run.js",
+    "test:e2e:full": "bash scripts/docker-e2e-test.sh",
     "bench:capture": "node ./scripts/benchmark-capture.js"
   },
   "dependencies": {

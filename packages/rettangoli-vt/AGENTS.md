@@ -50,6 +50,8 @@ This guide is for future coding agents working in `packages/rettangoli-vt`.
 
 - Main suite: `bun test` (from `packages/rettangoli-vt`).
 - Real browser smoke: `VT_E2E=1 bun test spec/e2e-smoke.spec.js`.
+- Docker E2E (full pipeline): `bun run test:docker:full` (builds image + runs tests).
+- Docker E2E (tests only): `bun run test:docker` (requires image already built).
 - Keep tests updated when changing public behavior.
 - Prefer pure-function tests for new filtering/planning logic.
 

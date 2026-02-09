@@ -1,0 +1,11 @@
+componentName: custom-todos
+
+description: Blank component scaffold
+
+propsSchema:
+  type: object
+  properties: {}
+
+events: []
+
+methods: []

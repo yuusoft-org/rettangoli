@@ -1,0 +1,42 @@
+refs:
+  addBtn:
+    eventListeners:
+      click:
+        handler: handleAddItem
+  itemInput:
+    eventListeners:
+      keydown:
+        handler: handleInputKeydown
+  item*:
+    eventListeners:
+      click:
+        handler: handleRemoveItem
+  filterAll:
+    eventListeners:
+      click:
+        handler: handleFilterAll
+  filterRed:
+    eventListeners:
+      click:
+        handler: handleFilterRed
+  filterBlue:
+    eventListeners:
+      click:
+        handler: handleFilterBlue
+
+template:
+  - 'div#root style="display:flex;flex-direction:column;gap:8px;padding:16px;width:240px;font-family:monospace"':
+    - 'div style="display:flex;gap:4px"':
+      - 'input#itemInput data-testid=input style="flex:1;height:28px" placeholder="Add item"':
+      - 'button#addBtn data-testid=add style="height:28px"': "Add"
+    - $if isEmpty:
+        - 'div data-testid=empty style="height:60px;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:11px"': "No items"
+      $else:
+        - 'div#list data-testid=list style="display:flex;flex-direction:column;gap:2px"':
+          - $for item, i in items:
+            - 'div#item${i} data-testid=item-${i} data-item-id=${item.id} style="height:32px;background:${item.color};border-radius:2px;cursor:pointer;padding:0 8px;display:flex;align-items:center;font-size:11px;color:white"': "${item.name}"
+    - 'div style="display:flex;gap:4px;margin-top:4px"':
+      - 'button#filterAll data-testid=filter-all style="${filterAllStyle};height:24px;border:none;padding:0 8px;cursor:pointer;border-radius:2px"': "All"
+      - 'button#filterRed data-testid=filter-red style="${filterRedStyle};height:24px;border:none;padding:0 8px;cursor:pointer;border-radius:2px"': "Red"
+      - 'button#filterBlue data-testid=filter-blue style="${filterBlueStyle};height:24px;border:none;padding:0 8px;cursor:pointer;border-radius:2px"': "Blue"
+    - 'div data-testid=count-bar style="height:8px;background:steelblue;width:${barWidth}px;min-width:2px;border-radius:2px"':

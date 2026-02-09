@@ -1,0 +1,22 @@
+refs:
+  counterEl:
+    eventListeners:
+      count-changed:
+        handler: handleCountChanged
+  document:
+    eventListeners:
+      keydown:
+        handler: handleDocumentKeydown
+
+template:
+  - 'div#root style="display:flex;flex-direction:column;gap:16px;padding:16px;font-family:monospace"':
+    - 'div style="font-size:12px;font-weight:bold"': "${headerLabel}"
+    - 'div style="display:flex;gap:16px;align-items:flex-start"':
+      - e2e-counter#counterEl:
+      - e2e-item-list#itemListEl:
+    - 'div style="display:flex;gap:8px;align-items:center"':
+      - 'div style="font-size:11px"': "Increments: ${totalClicks}"
+      - 'div data-testid=click-indicator style="width:${clickBarWidth}px;height:12px;background:orange;border-radius:2px;min-width:2px"':
+    - 'div style="display:flex;gap:8px;align-items:center"':
+      - 'div style="font-size:11px"': "Esc: ${escLabel}"
+      - 'div data-testid=esc-indicator style="width:24px;height:24px;background:${escColor};border-radius:50%"':

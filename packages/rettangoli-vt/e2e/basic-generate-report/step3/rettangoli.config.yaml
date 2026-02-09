@@ -1,0 +1,6 @@
+vt:
+  path: ./vt
+  compareMethod: md5
+  sections:
+    - title: components_basic
+      files: components
