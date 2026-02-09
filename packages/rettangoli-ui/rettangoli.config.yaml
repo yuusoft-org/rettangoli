@@ -29,7 +29,7 @@ vt:
       items:
         - title: "View"
           files: "primitives/view"
-          description: "View component tests"
+          description: "rtgl-view layout, sizing, spacing, positioning, and visibility visual tests"
         - title: "Button"
           files: "primitives/button"
           description: "Button component tests"

@@ -1,13 +1,10 @@
 ---
-title: Margin
+title: View • Margin • Side and Shorthand
+description: Verifies side-specific and shorthand margin token mappings.
 specs:
-  - mt="xs" should set the top margin to spacing size
-  - mr="xs" should set the right margin to spacing size
-  - mb="xs" should set the bottom margin to spacing size
-  - ml="xs" should set the left margin to spacing size
-  - m="xs" should set the margin to spacing size
-  - mv="xs" should set the vertical margin to spacing size
-  - mh="xs" should set the horizontal margin to spacing size
+  - Side attributes (`mt`, `mr`, `mb`, `ml`) apply tokenized margins.
+  - Shorthand attributes (`m`, `mv`, `mh`) apply multi-side margins.
+  - Token scale from `xs` to `xl` renders consistent spacing growth.
 ---
 <rtgl-view d="h" g="lg" p="lg" wh="f" fw="wrap">
     <rtgl-view bgc="mu">

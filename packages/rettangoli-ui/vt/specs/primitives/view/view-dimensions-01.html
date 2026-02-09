@@ -1,9 +1,10 @@
 ---
-title: Dimensions
+title: View • Dimensions • Pixel Values
+description: Verifies pixel-based sizing through `w`, `h`, and `wh` numeric values.
 specs:
-  - w="10" should set the width to 10 in pixels
-  - h="10" should set the height to 10 in pixels
-  - wh="10" should set the width to 10 and height to 10 in pixels
+  - Width value `10` maps to 10px.
+  - Height value `10` maps to 10px.
+  - Combined `wh="10"` maps both dimensions to 10px.
 ---
 <rtgl-view bgc="mu" g="lg" p="lg">
     <rtgl-view bgc="ac" w="10" h="20"></rtgl-view>

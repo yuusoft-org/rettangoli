@@ -1,0 +1,17 @@
+---
+title: View • Anchor • Rel Handling
+description: Verifies rel handling for explicit rel values and blank-target defaults.
+specs:
+  - Explicit rel values are preserved when href and target are provided.
+  - Target blank without rel still produces safe default rel handling.
+  - Anchor overlay behavior remains visually transparent to content layout.
+---
+<rtgl-view d="h" g="lg" p="lg" wh="f" fw="wrap">
+  <rtgl-view href="#explicit-rel" target="_blank" rel="nofollow" bgc="ac" wh="120" ah="c" av="c">
+    <rtgl-text>explicit rel</rtgl-text>
+  </rtgl-view>
+
+  <rtgl-view href="#default-rel" target="_blank" bgc="mu" wh="120" ah="c" av="c">
+    <rtgl-text>implicit rel</rtgl-text>
+  </rtgl-view>
+</rtgl-view>

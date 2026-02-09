@@ -1,9 +1,10 @@
 ---
-title: Dimensions width and height using viewport
+title: View • Dimensions • Viewport Units
+description: Verifies viewport-relative sizing using `vw` and `vh` values.
 specs:
-  - w="10vw" should set the width to 10 in viewport width
-  - h="10vh" should set the height to 10 in viewport height
-  - wh="10vw" should set the width to 10 and height to 10 in viewport width
+  - Width value `10vw` maps to viewport width units.
+  - Height value `10vh` maps to viewport height units.
+  - Combined `wh="10vw"` applies viewport units to both dimensions.
 ---
 <rtgl-view bgc="mu" g="lg" p="lg">
     <rtgl-view bgc="ac" w="10vw" h="10vh"></rtgl-view>

@@ -1,8 +1,13 @@
 ---
-title: Width
+title: Button • Width • Fixed and Fill
+description: Verifies explicit and fill width behavior for buttons within constrained containers.
+specs:
+  - Fixed width values apply predictable button widths.
+  - Fill width stretches button to parent width.
+  - Default width remains content-driven beside fixed and fill samples.
 ---
 
-<rtgl-view g="md" p="lg" wh="f"">
+<rtgl-view g="md" p="lg" wh="f">
     <rtgl-view w="300" g="md" bgc="mu">
         <rtgl-button w="200">Button</rtgl-button>
         <rtgl-button w="f">Button</rtgl-button>

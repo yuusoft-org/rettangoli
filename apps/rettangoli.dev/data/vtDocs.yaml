@@ -1,0 +1,31 @@
+header:
+  label: Rettangoli VT Docs
+  href: /
+items:
+  - title: "Quickstart"
+    type: groupLabel
+    items:
+      - id: vt-quickstart
+        title: "Quickstart"
+        href: "/vt/docs/introduction/quickstart"
+  - title: "Reference"
+    type: groupLabel
+    items:
+      - id: vt-cli
+        title: "CLI"
+        href: "/vt/docs/reference/cli"
+      - id: vt-configuration
+        title: "Configuration"
+        href: "/vt/docs/reference/configuration"
+      - id: vt-frontmatter
+        title: "Spec Frontmatter"
+        href: "/vt/docs/reference/frontmatter"
+      - id: vt-viewport
+        title: "Viewport"
+        href: "/vt/docs/reference/viewport"
+      - id: vt-step-actions
+        title: "Step Actions"
+        href: "/vt/docs/reference/step-actions"
+      - id: vt-selectors-and-artifacts
+        title: "Selectors & Artifacts"
+        href: "/vt/docs/reference/selectors-and-artifacts"

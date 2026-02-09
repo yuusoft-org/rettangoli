@@ -1,11 +1,28 @@
 ---
-title: "Basic"
+title: Tooltip • Basic • Click Toggle
+description: Verifies click-driven tooltip open and close behavior for short and long content.
+specs:
+  - Clicking trigger toggles tooltip visibility.
+  - Long tooltip content remains readable and anchored.
+  - Multiple tooltip instances operate independently.
+steps:
+  - select tooltip-btn-1:
+    - click
+  - wait 200
+  - screenshot
+  - select tooltip-btn-1:
+    - click
+  - wait 100
+  - select tooltip-btn-2:
+    - click
+  - wait 200
+  - screenshot
 ---
 <rtgl-view h="100vh" w="100vw" ah="c" av="c" g="xl">
-  <rtgl-button id="button">Show Tooltip</rtgl-button>
+  <rtgl-button id="button" data-testid="tooltip-btn-1">Show Tooltip</rtgl-button>
   <rtgl-tooltip id="tooltip" content="This is a basic tooltip" placement="top"></rtgl-tooltip>
 
-  <rtgl-button id="button-2">Show Tooltip</rtgl-button>
+  <rtgl-button id="button-2" data-testid="tooltip-btn-2">Show Tooltip</rtgl-button>
   <rtgl-tooltip id="tooltip-2" content="This is a basic tooltip with a very very very long long long long content of multiple multiple multiple lines" placement="top"></rtgl-tooltip>
 
 </rtgl-view>

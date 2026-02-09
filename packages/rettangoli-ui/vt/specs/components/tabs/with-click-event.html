@@ -1,5 +1,15 @@
 ---
-title: "Tabs - With Click Event"
+title: Tabs • Interaction • Click Selection
+description: Verifies click-driven selection updates and event payload behavior.
+specs:
+  - Clicking a tab dispatches item-click with tab id.
+  - Clicked tab becomes selected via selected-tab update.
+  - Visual selection changes after interaction.
+steps:
+  - select tab-2:
+    - click
+  - wait 200
+  - screenshot
 ---
 <rtgl-view g="lg" h="100vh" w="f" fw="wrap">
   <rtgl-tabs id="tabs" selected-tab="tab1">
@@ -9,9 +19,9 @@ title: "Tabs - With Click Event"
 <script>
   const tabs = document.getElementById('tabs');
   tabs.items = [
-    { label: "Tab 1", id: "tab1" },
-    { label: "Tab 2", id: "tab2" },
-    { label: "Tab 3", id: "tab3" }
+    { label: "Tab 1", id: "tab1", testId: "tab-1" },
+    { label: "Tab 2", id: "tab2", testId: "tab-2" },
+    { label: "Tab 3", id: "tab3", testId: "tab-3" }
   ];
 
   tabs.addEventListener('item-click', (event) => {

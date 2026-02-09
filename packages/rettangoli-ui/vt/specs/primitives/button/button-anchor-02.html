@@ -1,0 +1,21 @@
+---
+title: Button • Anchor • Rel and Disabled Fallback
+description: Verifies explicit rel handling and disabled fallback behavior for link-capable buttons.
+specs:
+  - Explicit rel values are preserved when target blank is used.
+  - Target blank without rel still renders correctly.
+  - Disabled buttons with href render as non-link disabled surfaces.
+---
+<rtgl-view d="h" g="lg" p="lg" wh="f" fw="wrap">
+  <rtgl-button href="#explicit-rel" target="_blank" rel="nofollow" v="pr">
+    Explicit rel
+  </rtgl-button>
+
+  <rtgl-button href="#implicit-rel" target="_blank" v="se">
+    Implicit rel
+  </rtgl-button>
+
+  <rtgl-button href="#disabled-link" disabled v="de">
+    Disabled href fallback
+  </rtgl-button>
+</rtgl-view>

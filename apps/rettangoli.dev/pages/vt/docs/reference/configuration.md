@@ -1,0 +1,71 @@
+---
+template: vt-documentation
+title: Configuration
+tags: documentation
+sidebarId: vt-configuration
+---
+
+VT reads configuration from the `vt` section in `rettangoli.config.yaml`.
+
+## Example
+
+```yaml
+vt:
+  path: ./vt
+  url: http://localhost:5173
+  compareMethod: pixelmatch
+  colorThreshold: 0.1
+  diffThreshold: 0.3
+  skipScreenshots: false
+  port: 3001
+  concurrency: 4
+  timeout: 30000
+  waitEvent: app:ready
+  viewport:
+    - id: desktop
+      width: 1280
+      height: 720
+    - id: mobile
+      width: 390
+      height: 844
+  sections:
+    - title: pages
+      files: pages
+    - type: groupLabel
+      title: Components
+      items:
+        - title: forms
+          files: components/forms
+        - title: table
+          files: components/table
+```
+
+## Top-level `vt` keys
+
+| Key | Type | Description |
+| --- | --- | --- |
+| `path` | string | VT root directory. Default: `./vt` |
+| `url` | string | External app URL to capture instead of local preview server |
+| `compareMethod` | `pixelmatch` or `md5` | Default report compare method |
+| `colorThreshold` | number (`0`-`1`) | Pixelmatch color sensitivity |
+| `diffThreshold` | number (`0`-`100`) | Max diff percentage for a pass |
+| `skipScreenshots` | boolean | Default behavior for generate screenshot capture |
+| `port` | integer (`1`-`65535`) | Local preview server port |
+| `concurrency` | integer (`>=1`) | Default capture workers |
+| `timeout` | integer (`>=1`) | Global timeout in milliseconds |
+| `waitEvent` | string | Default custom event for readiness |
+| `viewport` | object or array | Default viewport(s) for capture |
+| `sections` | array (required) | Sidebar structure and grouping for VT pages |
+
+## `sections` rules
+
+- `sections` is required and cannot be empty.
+- Flat section: must include `title` and `files`.
+- Group section: must include `type: groupLabel` and non-empty `items`.
+- Each group item requires `title` and `files`.
+- Section keys (`title` and `items[].title`) must use only letters, numbers, `-`, `_`.
+- Section keys must be unique case-insensitively.
+
+## Internal fields to avoid
+
+`vt.capture` and legacy capture tuning fields are internal and should not be set in user config.

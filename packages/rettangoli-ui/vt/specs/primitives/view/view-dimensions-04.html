@@ -1,9 +1,10 @@
 ---
-title: Dimensions full height and width
+title: View • Dimensions • Fill Values
+description: Verifies fill behavior with `f` values for width, height, and both dimensions.
 specs:
-  - w="f" should fill the width
-  - h="f" should fill the height
-  - wf="f" should fill the width and height
+  - Width value `f` stretches to container.
+  - Height value `f` stretches to container.
+  - Combined `wh="f"` fills both axes.
 ---
 <rtgl-view bgc="mu" g="lg" p="lg" w="100" h="100">
     <rtgl-view bgc="ac" w="20" h="f"></rtgl-view>

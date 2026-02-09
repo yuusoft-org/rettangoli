@@ -1,7 +1,9 @@
 ---
-title: Gap Vertical
+title: View • Gap • Vertical Only
+description: Verifies vertical-only spacing behavior using `gv`.
 specs:
-  - gv="xs" should set the vertical gap to spacing size
+  - Attribute `gv` maps to row spacing without changing column spacing.
+  - Token scale from `xs` to `xl` increases vertical separation.
 ---
 <rtgl-view d="h" g="lg" p="lg" wh="f" fw="wrap">
     <rtgl-view d="h" bgc="mu" w="100" gv="xs" p="md" fw="wrap">

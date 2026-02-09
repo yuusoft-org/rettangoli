@@ -1,9 +1,10 @@
 ---
-title: Dimensions width and height using spacing
+title: View • Dimensions • Spacing Tokens
+description: Verifies token-based sizing with spacing scale values (`xs` through `xl`).
 specs:
-  - w="sm" should set the width to spacing size
-  - h="sm" should set the height to spacing size
-  - wh="sm" should set the width and height to spacing size
+  - Attributes `w` and `h` accept spacing tokens for mapped dimensions.
+  - Attribute `wh` applies the same spacing token to both dimensions.
+  - Token ordering remains visually consistent from `xs` to `xl`.
 ---
 <rtgl-view bgc="mu" g="lg" p="lg">
     <rtgl-view bgc="ac" w="xs" h="xs"></rtgl-view>

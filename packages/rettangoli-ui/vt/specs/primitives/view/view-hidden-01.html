@@ -1,5 +1,10 @@
 ---
-title: Hidden
+title: View • Visibility • Hide and Responsive Show
+description: Verifies default visibility, hidden state, and breakpoint-based show override.
+specs:
+  - Base node remains visible without visibility attributes.
+  - Attribute `hide` removes node from layout.
+  - Attribute `lg-show` restores visibility at matching breakpoints.
 ---
 <rtgl-view d="h" g="lg" p="lg" wh="f" fw="wrap">
     <rtgl-view d="h" bgc="mu" wh="100" >

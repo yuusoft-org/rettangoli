@@ -1,7 +1,9 @@
 ---
-title: Gap Horizontal
+title: View • Gap • Horizontal Only
+description: Verifies horizontal-only spacing behavior using `gh`.
 specs:
-  - gh="xs" should set the horizontal gap to spacing size
+  - Attribute `gh` maps to column spacing without changing row spacing.
+  - Token scale from `xs` to `xl` increases horizontal separation.
 ---
 <rtgl-view d="h" g="lg" p="lg" wh="f" fw="wrap">
     <rtgl-view d="h" bgc="mu" w="100" gh="xs" p="md" fw="wrap">
