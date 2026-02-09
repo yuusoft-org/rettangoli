@@ -108,9 +108,27 @@ Screenshot naming:
 - First screenshot is `-01`.
 - Then `-02`, `-03`, up to `-99`.
 
+## Docker
+
+A pre-built Docker image with `rtgl` and Playwright browsers is available:
+
+```bash
+docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2
+```
+
+Run commands against a local project:
+
+```bash
+docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl vt generate
+docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl vt report
+docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl vt accept
+```
+
+Supports `linux/amd64` and `linux/arm64`.
+
 ## Development
 
-Run tests:
+Run unit tests:
 
 ```bash
 bun test
@@ -125,14 +143,12 @@ VT_E2E=1 bun test spec/e2e-smoke.spec.js
 Run Docker E2E tests (requires Docker daemon running):
 
 ```bash
-# Full pipeline: build image → verify → run all Docker E2E tests
-bun run test:docker:full
+# Full pipeline: build test image → run all E2E scenarios
+bun run test:e2e:full
 
-# Tests only (skip image build, assumes image already exists)
-bun run test:docker
+# Scenarios only (skip image build, assumes image already exists)
+bun run test:e2e
 ```
-
-The Docker E2E suite builds a local `rtgl-local-test:latest` image, then runs generate/report/accept in temp directories inside containers. Tests validate WebP screenshot headers, report.json schema, metrics.json schema, HTML content, directory structure, accept file copies, multi-spec fixtures, multi-screenshot ordinals, and pixelmatch diff detection.
 
 Optional benchmark fixture:
 
