@@ -69,17 +69,16 @@ export const selectCurrentId = ({ state }) => {
   return state.currentId;
 }
 
-export const setItems = (state, items) => {
-  state.items = items;
+export const setItems = ({ state }, payload = {}) => {
+  state.items = Array.isArray(payload.items) ? payload.items : [];
 }
 
-export const setCurrentId = (state, id) => {
-  state.currentId = id;
+export const setCurrentId = ({ state }, payload = {}) => {
+  state.currentId = payload.id;
 }
 
-export const setContentContainer = (state, container) => {
-  state.contentContainer = container;
+export const setContentContainer = ({ state }, payload = {}) => {
+  state.contentContainer = payload.container;
 }
-
 
 

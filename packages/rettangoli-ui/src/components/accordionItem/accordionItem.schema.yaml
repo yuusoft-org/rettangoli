@@ -1,0 +1,12 @@
+componentName: rtgl-accordion-item
+propsSchema:
+  type: object
+  properties:
+    label:
+      type: string
+    content:
+      type: string
+    w:
+      type: string
+events: []
+methods: []

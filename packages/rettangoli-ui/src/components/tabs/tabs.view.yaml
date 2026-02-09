@@ -1,62 +1,10 @@
-elementName: rtgl-tabs
-
-viewDataSchema:
-  type: object
-  properties:
-    containerAttrString:
-      type: string
-    items:
-      type: array
-      items:
-        type: object
-        properties:
-          label:
-            type: string
-          id:
-            type: string
-          isSelected:
-            type: boolean
-          bgColor:
-            type: string
-          textColor:
-            type: string
-          borderColor:
-            type: string
-    selectedTab:
-      type: string
-
-propsSchema:
-  type: object
-  properties:
-    items:
-      type: array
-      items:
-        type: object
-        properties:
-          label:
-            type: string
-          id:
-            type: string
-          testId:
-            type: string
-    selectedTab:
-      type: string
-
 refs:
   tab*:
     eventListeners:
       click:
         handler: handleClickItem
-
-events:
-  item-click:
-    type: object
-    properties:
-      id:
-        type: string
-
 template:
   - rtgl-view d=h g=sm bgc=mu p=sm br=lg ${containerAttrString}:
-    - $for item, i in items:
-        - rtgl-view#tab${i} data-id=${item.id} cur=p bgc=${item.bgColor} bw=xs bc=${item.borderColor} pv=md ph=lg br=lg data-testid=${item.testId}:
-          - rtgl-text s=sm c=${item.textColor}: "${item.label}"
+      - $for item, i in items:
+          - rtgl-view#tab${i} data-id=${item.id} cur=p bgc=${item.bgColor} bw=xs bc=${item.borderColor} pv=md ph=lg br=lg data-testid=${item.testId}:
+              - rtgl-text s=sm c=${item.textColor}: ${item.label}

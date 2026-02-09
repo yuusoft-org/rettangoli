@@ -1,68 +1,3 @@
-elementName: rtgl-dropdown-menu
-
-viewDataSchema:
-  type: object
-  properties:
-    items:
-      type: array
-      items:
-        type: object
-    open:
-      type: boolean
-    x:
-      type: string
-    y:
-      type: string
-    w:
-      type: string
-    h:
-      type: string
-    placement:
-      type: string
-
-propsSchema:
-  type: object
-  properties:
-    items:
-      type: array
-      items:
-        type: object
-        properties:
-          label:
-            type: string
-          type:
-            type: string
-            enum:
-              - label
-              - item
-              - separator
-          id:
-            type: string
-          path:
-            type: string
-          href:
-            type: string
-          disabled:
-            type: boolean
-          target:
-            type: string
-          rel:
-            type: string
-          testId:
-            type: string
-    open:
-      type: string
-    x:
-      type: string
-    y:
-      type: string
-    placement:
-      type: string
-    w:
-      type: string
-    h:
-      type: string
-
 refs:
   popover:
     eventListeners:
@@ -72,31 +7,10 @@ refs:
     eventListeners:
       click:
         handler: handleClickMenuItem
-
-events:
-  close:
-    type: object
-  item-click:
-    type: object
-    properties:
-      index:
-        type: number
-      item:
-        type: object
-      id:
-        type: string
-      path:
-        type: string
-      href:
-        type: string
-      trigger:
-        type: string
-
 styles:
   a:
     text-decoration: none
     color: inherit
-
 template:
   - rtgl-popover#popover ?open=${open} x=${x} y=${y} placement=${placement}:
       - rtgl-view w=${w} h=${h} sv g=xs slot=content bgc=bg br=md:
@@ -119,4 +33,4 @@ template:
                   - rtgl-view#option${i} w=f h-bgc=${item.hoverBgc} ph=lg pv=md cur=p br=md bgc=${item.bgc} data-index=${item.index} data-testid=${item.testId}:
                       - rtgl-text c=${item.c}: ${item.label}
                 $elif item.isSeparator:
-                  - rtgl-view w=f h=1 ph=lg mv=md bgc=bo:
+                  - rtgl-view w=f h=1 ph=lg mv=md bgc=bo: null

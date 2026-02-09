@@ -1,39 +1,3 @@
-elementName: rtgl-global-ui
-
-viewDataSchema:
-  type: object
-  properties:
-    isOpen:
-      type: boolean
-    uiType:
-      type: string
-    config:
-      type: object
-      properties:
-        status:
-          type: string
-        title:
-          type: string
-        message:
-          type: string
-        confirmText:
-          type: string
-        cancelText:
-          type: string
-        mode:
-          type: string
-    dropdownConfig:
-      type: object
-      properties:
-        items:
-          type: array
-        x:
-          type: number
-        y:
-          type: number
-        placement:
-          type: string
-
 refs:
   dialog:
     eventListeners:
@@ -53,13 +17,12 @@ refs:
         handler: handleDropdownClose
       item-click:
         handler: handleDropdownItemClick
-
 template:
   - rtgl-dialog#dialog ?open=${isDialogOpen} s=sm:
       - rtgl-view slot=content g=lg p=lg:
           - rtgl-view d=h g=md:
               - rtgl-view d=h ah=c av=c g=md:
-                  - rtgl-view g=md:
+                  - rtgl-view g=md: null
                   - rtgl-view h=24 av=c:
                       - rtgl-text s=lg: ${config.title}
                   - rtgl-text: ${config.message}
@@ -67,4 +30,4 @@ template:
               - $if config.mode == 'confirm':
                   - rtgl-button#cancelButton v=se: ${config.cancelText}
               - rtgl-button#confirmButton v=pr: ${config.confirmText}
-  - rtgl-dropdown-menu#dropdownMenu ?open=${isDropdownOpen} x=${dropdownConfig.x} y=${dropdownConfig.y} placement=${dropdownConfig.placement} .items=dropdownConfig.items key=dropdown-${isDropdownOpen}:
+  - rtgl-dropdown-menu#dropdownMenu ?open=${isDropdownOpen} x=${dropdownConfig.x} y=${dropdownConfig.y} placement=${dropdownConfig.placement} :items=dropdownConfig.items key=dropdown-${isDropdownOpen}: null

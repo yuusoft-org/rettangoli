@@ -1,0 +1,49 @@
+componentName: rtgl-breadcrumb
+propsSchema:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          label:
+            type: string
+          id:
+            type: string
+          href:
+            type: string
+          path:
+            type: string
+          current:
+            type: boolean
+          disabled:
+            type: boolean
+          click:
+            type: boolean
+          target:
+            type: string
+          rel:
+            type: string
+    sep:
+      type: string
+      default: breadcrumb-arrow
+    max:
+      type: number
+events:
+  item-click:
+    type: object
+    properties:
+      id:
+        type: string
+      path:
+        type: string
+      href:
+        type: string
+      item:
+        type: object
+      index:
+        type: number
+      trigger:
+        type: string
+methods: []

@@ -4,23 +4,23 @@ export const createInitialState = () => Object.freeze({
 
 const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'label', 'content'];
 
-const stringifyAttrs = (attrs) => {
-  return Object.entries(attrs)
+const stringifyAttrs = (props = {}) => {
+  return Object.entries(props)
     .filter(([key]) => !blacklistedAttrs.includes(key))
     .map(([key, value]) => `${key}=${value}`)
     .join(' ');
 };
 
-export const selectViewData = ({ state, props, attrs }) => {
+export const selectViewData = ({ state, props }) => {
   return {
-    label: attrs['label'] || '',
-    content: attrs['content'] || '',
+    label: props.label || '',
+    content: props.content || '',
     openClass: state.open ? 'content-wrapper open' : 'content-wrapper',
     chevronIcon: state.open ? 'chevronUp' : 'chevronDown',
-    containerAttrString: stringifyAttrs(attrs)
+    containerAttrString: stringifyAttrs(props),
   };
 };
 
-export const toggleOpen = (state) => {
+export const toggleOpen = ({ state }) => {
   state.open = !state.open;
 };

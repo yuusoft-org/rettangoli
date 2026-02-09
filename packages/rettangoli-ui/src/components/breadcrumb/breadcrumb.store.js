@@ -2,8 +2,8 @@ export const createInitialState = () => Object.freeze({});
 
 const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'items', 'sep', 'max', 'separator'];
 
-const stringifyAttrs = (attrs) => {
-  return Object.entries(attrs).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
+const stringifyAttrs = (props = {}) => {
+  return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
 }
 
 const toNumber = (value) => {
@@ -55,12 +55,12 @@ const normalizeItems = (items) => {
   });
 };
 
-export const selectViewData = ({ props, attrs }) => {
-  const containerAttrString = stringifyAttrs(attrs);
+export const selectViewData = ({ props }) => {
+  const containerAttrString = stringifyAttrs(props);
 
   const items = Array.isArray(props.items) ? props.items : [];
-  const max = toNumber(props.max ?? attrs.max);
-  const sep = props.sep || attrs.sep || 'breadcrumb-arrow';
+  const max = toNumber(props.max);
+  const sep = props.sep || 'breadcrumb-arrow';
 
   const normalizedItems = normalizeItems(items);
   const collapsedItems = collapseItems(normalizedItems, max);

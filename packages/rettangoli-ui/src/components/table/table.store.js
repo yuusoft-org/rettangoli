@@ -3,10 +3,10 @@ export const createInitialState = () => Object.freeze({
   sortDirection: null,
 });
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot'];
+const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'data'];
 
-const stringifyAttrs = (attrs) => {
-  return Object.entries(attrs).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
+const stringifyAttrs = (props = {}) => {
+  return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
 }
 
 const getNestedValue = (obj, path) => {
@@ -23,8 +23,8 @@ const getNestedValue = (obj, path) => {
   return result;
 }
 
-export const selectViewData = ({ state, props, attrs }) => {
-  const containerAttrString = stringifyAttrs(attrs);
+export const selectViewData = ({ state, props }) => {
+  const containerAttrString = stringifyAttrs(props);
   const data = props.data || { columns: [], rows: [] };
 
   // Transform rows to create cells array for easier template access
@@ -61,12 +61,12 @@ export const selectSortInfo = ({ state }) => {
   };
 }
 
-export const setSortColumn = (state, { column, direction }) => {
+export const setSortColumn = ({ state }, { column, direction } = {}) => {
   state.sortColumn = column;
   state.sortDirection = direction;
 }
 
-export const clearSort = (state) => {
+export const clearSort = ({ state }) => {
   state.sortColumn = null;
   state.sortDirection = null;
 }

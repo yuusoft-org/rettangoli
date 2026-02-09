@@ -38,7 +38,7 @@ const updateToLatestCurrentId = (headingElements, offsetTop, deps) => {
   }
   
   if (currentHeadingId && currentHeadingId !== store.selectCurrentId()) {
-    store.setCurrentId(currentHeadingId);
+    store.setCurrentId({ id: currentHeadingId });
     render();
   }
 };
@@ -71,7 +71,7 @@ const startListening = (contentContainer, scrollContainer, offsetTop, deps) => {
     };
   });
   
-  store.setItems(items);
+  store.setItems({ items });
   updateToLatestCurrentId(headingElements, offsetTop, deps);
   render();
 
@@ -88,22 +88,28 @@ const startListening = (contentContainer, scrollContainer, offsetTop, deps) => {
 };
 
 export const handleBeforeMount = (deps) => {
-  const { attrs } = deps;
+  const { props } = deps;
+  let stopListening = () => {};
+
   requestAnimationFrame(() => {
-    const targetElement = document.getElementById(attrs['target-id']);
+    const targetElement = document.getElementById(props.targetId);
+    if (!targetElement) {
+      return;
+    }
     
     // Get scroll container - default to window for page scroll if not specified
     let scrollContainer = window;
-    if (attrs['scroll-container-id']) {
-      scrollContainer = document.getElementById(attrs['scroll-container-id']) || window;
+    if (props.scrollContainerId) {
+      scrollContainer = document.getElementById(props.scrollContainerId) || window;
     }
     
     // Get offset top - default to 100px if not specified
-    const offsetTop = parseInt(attrs['offset-top'] || '100', 10);
+    const offsetTop = parseInt(props.offsetTop || '100', 10);
     
-    const stopListening = startListening(targetElement, scrollContainer, offsetTop, deps);
-    return () => {
-      stopListening();
-    }
+    stopListening = startListening(targetElement, scrollContainer, offsetTop, deps);
   })
+
+  return () => {
+    stopListening();
+  };
 }

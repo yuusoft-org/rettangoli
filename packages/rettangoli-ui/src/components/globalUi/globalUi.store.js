@@ -17,7 +17,7 @@ export const createInitialState = () => Object.freeze({
   },
 });
 
-export const setAlertConfig = (state, options) => {
+export const setAlertConfig = ({ state }, options = {}) => {
   if (!options.message) {
     throw new Error("message is required for showAlert");
   }
@@ -34,7 +34,7 @@ export const setAlertConfig = (state, options) => {
   state.isOpen = true;
 };
 
-export const setConfirmConfig = (state, options) => {
+export const setConfirmConfig = ({ state }, options = {}) => {
   if (!options.message) {
     throw new Error("message is required for showConfirm");
   }
@@ -51,7 +51,7 @@ export const setConfirmConfig = (state, options) => {
   state.isOpen = true;
 };
 
-export const setDropdownConfig = (state, options) => {
+export const setDropdownConfig = ({ state }, options = {}) => {
   if (!options.items || !Array.isArray(options.items)) {
     throw new Error("items array is required for showDropdown");
   }
@@ -66,7 +66,7 @@ export const setDropdownConfig = (state, options) => {
   state.isOpen = true;
 };
 
-export const closeAll = (state) => {
+export const closeAll = ({ state }) => {
   state.isOpen = false;
   state.uiType = "dialog"; // Reset to default type
 };

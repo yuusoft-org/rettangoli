@@ -1,0 +1,16 @@
+componentName: rtgl-tooltip
+propsSchema:
+  type: object
+  properties:
+    open:
+      type: string
+    x:
+      type: string
+    'y':
+      type: string
+    placement:
+      type: string
+    content:
+      type: string
+events: []
+methods: []

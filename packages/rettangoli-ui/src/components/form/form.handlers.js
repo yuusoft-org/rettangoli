@@ -45,17 +45,17 @@ const autoFocusFirstInput = (refs) => {
 
 export const handleBeforeMount = (deps) => {
   const { store, props } = deps;
-  store.setFormValues(props.defaultValues);
+  store.setFormValues({ formValues: props.defaultValues });
 };
 
 export const handleAfterMount = (deps) => {
-  const { props, refs, render, attrs } = deps;
+  const { props, refs, render } = deps;
   const { form = {}, defaultValues } = props;
   updateAttributes({ form, defaultValues, refs });
   render();
 
   // Auto-focus first input field if autofocus attribute is set
-  if (attrs?.autofocus) {
+  if (props?.autofocus) {
     setTimeout(() => {
       autoFocusFirstInput(refs);
     }, 50);
@@ -63,12 +63,12 @@ export const handleAfterMount = (deps) => {
 };
 
 export const handleOnUpdate = (deps, payload) => {
-  const { oldAttrs, newAttrs, newProps } = payload;
+  const { oldProps, newProps } = payload;
   const { store, render, refs } = deps;
   const { form = {}, defaultValues } = newProps;
-  if (oldAttrs?.key !== newAttrs?.key) {
+  if (oldProps?.key !== newProps?.key) {
     updateAttributes({ form, defaultValues, refs });
-    store.setFormValues(defaultValues);
+    store.setFormValues({ formValues: defaultValues });
     render();
     return;
   }
@@ -102,7 +102,7 @@ export const handleActionClick = (deps, payload) => {
 };
 
 export const handleInputChange = (deps, payload) => {
-  const { store, dispatchEvent, props } = deps;
+  const { store, dispatchEvent } = deps;
   const event = payload._event;
   let name = event.currentTarget.dataset.fieldName || event.currentTarget.id.slice("field".length);
   if (name && event.detail && Object.prototype.hasOwnProperty.call(event.detail, "value")) {
@@ -110,7 +110,6 @@ export const handleInputChange = (deps, payload) => {
     store.setFormFieldValue({
       name: name,
       value,
-      props,
     });
     dispatchFormChange(
       name,
@@ -197,7 +196,7 @@ export const handleTooltipMouseEnter = (deps, payload) => {
 
 export const handleTooltipMouseLeave = (deps) => {
   const { store, render } = deps;
-  store.hideTooltip();
+  store.hideTooltip({});
   render();
 };
 

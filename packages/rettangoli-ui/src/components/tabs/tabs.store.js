@@ -1,16 +1,19 @@
 export const createInitialState = () => Object.freeze({});
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot'];
+const blacklistedProps = ["id", "class", "style", "slot", "items", "selectedTab"];
 
-const stringifyAttrs = (attrs) => {
-  return Object.entries(attrs).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
-}
+const stringifyProps = (props = {}) => {
+  return Object.entries(props)
+    .filter(([key]) => !blacklistedProps.includes(key))
+    .map(([key, value]) => `${key}=${value}`)
+    .join(" ");
+};
 
-export const selectViewData = ({ state, props, attrs }) => {
-  const containerAttrString = stringifyAttrs(attrs);
+export const selectViewData = ({ props }) => {
+  const containerAttrString = stringifyProps(props);
 
   const items = props.items || [];
-  const selectedTab = attrs['selected-tab'];
+  const selectedTab = props.selectedTab;
 
   // Mark selected tab with styling
   const itemsWithSelection = items.map(item => ({
@@ -24,6 +27,6 @@ export const selectViewData = ({ state, props, attrs }) => {
   return {
     containerAttrString,
     items: itemsWithSelection,
-    selectedTab
+    selectedTab,
   };
-}
+};

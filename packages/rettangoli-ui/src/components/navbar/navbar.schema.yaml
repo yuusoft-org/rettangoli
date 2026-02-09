@@ -1,0 +1,23 @@
+componentName: rtgl-navbar
+propsSchema:
+  type: object
+  properties:
+    start:
+      type: object
+      properties:
+        label:
+          type: string
+        href:
+          type: string
+        image:
+          type: object
+          properties:
+            src:
+              type: string
+events:
+  start-click:
+    type: object
+    properties:
+      path:
+        type: string
+methods: []

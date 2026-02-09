@@ -80,10 +80,10 @@ const set = (obj, path, value) => {
   return obj;
 };
 
-const blacklistedAttrs = ["id", "class", "style", "slot"];
+const blacklistedAttrs = ["id", "class", "style", "slot", "form", "defaultValues", "context", "autofocus", "key"];
 
-const stringifyAttrs = (attrs) => {
-  return Object.entries(attrs)
+const stringifyAttrs = (props = {}) => {
+  return Object.entries(props)
     .filter(([key]) => !blacklistedAttrs.includes(key))
     .map(([key, value]) => `${key}=${value}`)
     .join(" ");
@@ -102,8 +102,8 @@ export const selectForm = ({ props }) => {
 };
 
 
-export const selectViewData = ({ state, props, attrs }) => {
-  const containerAttrString = stringifyAttrs(attrs);
+export const selectViewData = ({ state, props }) => {
+  const containerAttrString = stringifyAttrs(props);
 
   const form = selectForm({ state, props });
   const fields = structuredClone(form.fields || []);
@@ -136,7 +136,7 @@ export const selectViewData = ({ state, props, attrs }) => {
   });
 
   return {
-    key: attrs?.key,
+    key: props?.key,
     containerAttrString,
     title: form?.title || "",
     description: form?.description || "",
@@ -166,11 +166,15 @@ export const getFormFieldValue = ({ state }, name) => {
   return get(state.formValues, name);
 };
 
-export const setFormValues = (state, formValues) => {
-  state.formValues = formValues || {};
+export const setFormValues = ({ state }, payload = {}) => {
+  state.formValues = payload.formValues || {};
 };
 
-export const setFormFieldValue = (state, { name, value, props }) => {
+export const setFormFieldValue = ({ state, props }, payload = {}) => {
+  const { name, value } = payload;
+  if (!name) {
+    return;
+  }
   set(state.formValues, name, value);
   // remove non visible values
   const form = selectForm({ state, props });
@@ -181,16 +185,17 @@ export const setFormFieldValue = (state, { name, value, props }) => {
   state.formValues = formValues;
 };
 
-export const showTooltip = (state, { x, y, content }) => {
+export const showTooltip = ({ state }, payload = {}) => {
+  const { x, y, content } = payload;
   state.tooltipState = {
     open: true,
-    x: x,
-    y: y,
-    content: content
+    x,
+    y,
+    content,
   };
 };
 
-export const hideTooltip = (state) => {
+export const hideTooltip = ({ state }) => {
   state.tooltipState = {
     ...state.tooltipState,
     open: false

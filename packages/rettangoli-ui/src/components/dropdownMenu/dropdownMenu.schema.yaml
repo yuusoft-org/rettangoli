@@ -1,0 +1,62 @@
+componentName: rtgl-dropdown-menu
+propsSchema:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          label:
+            type: string
+          type:
+            type: string
+            enum:
+              - label
+              - item
+              - separator
+          id:
+            type: string
+          path:
+            type: string
+          href:
+            type: string
+          disabled:
+            type: boolean
+          target:
+            type: string
+          rel:
+            type: string
+          testId:
+            type: string
+    open:
+      type: string
+    x:
+      type: string
+    'y':
+      type: string
+    placement:
+      type: string
+    w:
+      type: string
+    h:
+      type: string
+events:
+  close:
+    type: object
+  item-click:
+    type: object
+    properties:
+      index:
+        type: number
+      item:
+        type: object
+      id:
+        type: string
+      path:
+        type: string
+      href:
+        type: string
+      trigger:
+        type: string
+methods: []

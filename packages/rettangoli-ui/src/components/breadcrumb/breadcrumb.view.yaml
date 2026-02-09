@@ -1,109 +1,24 @@
-elementName: rtgl-breadcrumb
-
-viewDataSchema:
-  type: object
-  properties:
-    containerAttrString:
-      type: string
-    items:
-      type: array
-      items:
-        type: object
-        properties:
-          label:
-            type: string
-          id:
-            type: string
-          href:
-            type: string
-          path:
-            type: string
-          isCurrent:
-            type: boolean
-          isDisabled:
-            type: boolean
-          isInteractive:
-            type: boolean
-          index:
-            type: number
-          linkExtraAttrs:
-            type: string
-          c:
-            type: string
-    sep:
-      type: string
-
-propsSchema:
-  type: object
-  properties:
-    items:
-      type: array
-      items:
-        type: object
-        properties:
-          label:
-            type: string
-          id:
-            type: string
-          href:
-            type: string
-          path:
-            type: string
-          current:
-            type: boolean
-          disabled:
-            type: boolean
-          click:
-            type: boolean
-          target:
-            type: string
-          rel:
-            type: string
-    sep:
-      type: string
-      default: "breadcrumb-arrow"
-    max:
-      type: number
-
 refs:
   item*:
     eventListeners:
       click:
         handler: handleClickItem
-events:
-  item-click:
-    type: object
-    properties:
-      id:
-        type: string
-      path:
-        type: string
-      href:
-        type: string
-      item:
-        type: object
-      index:
-        type: number
-      trigger:
-        type: string
-
 styles:
   a:
     text-decoration: none
     color: inherit
-
 template:
   - rtgl-view d=h av=c g=md p=sm ${containerAttrString}:
-    - $for item, i in items:
-        - $if item.isSeparator:
-            - rtgl-svg wh=16 svg=${sep} c=mu-fg:
-          $elif item.isEllipsis:
-            - rtgl-text s=sm c=mu-fg: "${item.label}"
-          $elif item.isInteractive && item.href:
-            - a#item${i} href=${item.href} ${item.linkExtraAttrs} data-index=${item.index}:
-                - rtgl-text s=sm c=${item.c}: "${item.label}"
-          $elif item.isInteractive:
-            - rtgl-view#item${i} data-index=${item.index} cur=p:
-                - rtgl-text s=sm c=${item.c}: "${item.label}"
-          $else:
-            - rtgl-text s=sm c=${item.c}: "${item.label}"
+      - $for item, i in items:
+          - $if item.isSeparator:
+              - rtgl-svg wh=16 svg=${sep} c=mu-fg: null
+            $elif item.isEllipsis:
+              - rtgl-text s=sm c=mu-fg: ${item.label}
+            $elif item.isInteractive && item.href:
+              - a#item${i} href=${item.href} ${item.linkExtraAttrs} data-index=${item.index}:
+                  - rtgl-text s=sm c=${item.c}: ${item.label}
+            $elif item.isInteractive:
+              - rtgl-view#item${i} data-index=${item.index} cur=p:
+                  - rtgl-text s=sm c=${item.c}: ${item.label}
+            $else:
+              - rtgl-text s=sm c=${item.c}: ${item.label}

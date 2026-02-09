@@ -1,36 +1,3 @@
-elementName: rtgl-select
-
-viewDataSchema:
-  type: object
-
-propsSchema:
-  type: object
-  properties:
-    placeholder:
-      type: string
-    options:
-      type: array
-      items:
-        type: object
-        properties:
-          label:
-            type: string
-          value:
-            type: any
-          testId:
-            type: string
-    selectedValue:
-      type: any
-    onChange:
-      type: function
-    noClear:
-      type: boolean
-    addOption:
-      type: object
-      properties:
-        label:
-          type: string
-
 refs:
   selectButton:
     eventListeners:
@@ -60,25 +27,20 @@ refs:
         handler: handleAddOptionMouseEnter
       mouseleave:
         handler: handleAddOptionMouseLeave
-
-events:
-  value-change: {}
-  add-option-click: {}
-
 template:
   - rtgl-button#selectButton v=ol ${containerAttrString} data-testid="select-button":
       - rtgl-view d=h av=c w=f:
           - rtgl-text c=${selectedLabelColor} ellipsis: ${selectedLabel}
-          - rtgl-view mh=md w=1fg:
+          - rtgl-view mh=md w=1fg: null
           - $if showClear:
-              - rtgl-svg#clearButton mr=md svg=x wh=16 c=mu-fg cur=p data-testid="select-clear-button":
-          - rtgl-svg svg=chevronDown wh=16 c=mu-fg:
+              - rtgl-svg#clearButton mr=md svg=x wh=16 c=mu-fg cur=p data-testid="select-clear-button": null
+          - rtgl-svg svg=chevronDown wh=16 c=mu-fg: null
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} placement=right-start:
       - rtgl-view wh=300 g=xs slot=content bgc=bg br=md sv=true:
           - $for option, i in options:
               - rtgl-view#option${i} w=f ph=lg pv=md cur=p br=md bgc=${option.bgc} data-testid=${option.testId}:
                   - rtgl-text: ${option.label}
           - $if showAddOption:
-              - rtgl-view w=f bw=xs bc=mu bwt=sm:
+              - rtgl-view w=f bw=xs bc=mu bwt=sm: null
               - rtgl-view#optionAdd w=f ph=lg pv=md cur=p br=md bgc=${addOptionBgc} data-testid="select-add-option":
                   - rtgl-text c=ac: ${addOptionLabel}

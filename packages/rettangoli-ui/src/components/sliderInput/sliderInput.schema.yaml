@@ -1,0 +1,25 @@
+componentName: rtgl-slider-input
+propsSchema:
+  type: object
+  properties:
+    key:
+      type: string
+    value:
+      type: string
+      default: '0'
+    w:
+      type: string
+      default: ''
+    min:
+      type: string
+      default: '0'
+    max:
+      type: string
+      default: '100'
+    step:
+      type: string
+      default: '1'
+events:
+  value-input: {}
+  value-change: {}
+methods: []

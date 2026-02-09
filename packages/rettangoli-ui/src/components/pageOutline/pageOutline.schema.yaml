@@ -1,0 +1,14 @@
+componentName: rtgl-page-outline
+propsSchema:
+  type: object
+  properties:
+    targetId:
+      type: string
+    scrollContainerId:
+      type: string
+    offsetTop:
+      type: string
+events:
+  onItemClick:
+    type: object
+methods: []

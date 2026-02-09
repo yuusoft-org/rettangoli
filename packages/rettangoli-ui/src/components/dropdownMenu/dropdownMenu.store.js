@@ -37,16 +37,16 @@ const normalizeItems = (items) => {
   });
 };
 
-export const selectViewData = ({ props, attrs }) => {
+export const selectViewData = ({ props }) => {
   const items = Array.isArray(props.items) ? props.items : [];
 
   return {
     items: normalizeItems(items),
-    open: !!attrs.open,
-    x: attrs.x || 0,
-    y: attrs.y || 0,
-    w: attrs.w || '300',
-    h: attrs.h || '300',
-    placement: attrs.placement || 'bottom-start',
+    open: !!props.open,
+    x: props.x || 0,
+    y: props.y || 0,
+    w: props.w || '300',
+    h: props.h || '300',
+    placement: props.placement || 'bottom-start',
   };
 }

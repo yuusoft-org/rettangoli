@@ -1,119 +1,3 @@
-elementName: rtgl-sidebar
-
-viewDataSchema:
-  type: object
-  properties:
-    containerAttrString:
-      type: string
-    mode:
-      type: string
-      enum: ['full', 'shrunk', 'shrunk-lg']
-      default: 'full'
-    sidebarWidth:
-      type: number
-    headerAlign:
-      type: string
-    itemAlign:
-      type: string
-    headerPadding:
-      type: string
-    itemPadding:
-      type: string
-    itemHeight:
-      type: number
-    iconSize:
-      type: number
-    firstLetterSize:
-      type: string
-    showLabels:
-      type: boolean
-    showGroupLabels:
-      type: boolean
-    itemContentAlign:
-      type: string
-    itemAlignAttr:
-      type: string
-    itemWidth:
-      type: string
-    headerWidth:
-      type: string
-    selectedItemId:
-      type: string
-    header:
-      type: object
-      properties:
-        label:
-          type: string
-        href:
-          type: string
-        image:
-          type: object
-          properties:
-            src:
-              type: string
-            width:
-              type: number
-            height:
-              type: number
-            alt:
-              type: string
-    items:
-      type: array
-      items:
-        type: object
-        properties:
-          title:
-            type: string
-          slug:
-            type: string
-          type:
-            type: string
-          active:
-            type: boolean
-          icon:
-            type: string
-
-propsSchema:
-  type: object
-  properties:
-    selectedItemId:
-      type: string
-    header:
-      type: object
-      properties:
-        label:
-          type: string
-        href:
-          type: string
-        testId:
-          type: string
-        image:
-          type: object
-          properties:
-            src:
-              type: string
-            width:
-              type: number
-            height:
-              type: number
-            alt:
-              type: string
-    items:
-      type: array
-      items:
-        type: object
-        properties:
-          title:
-            type: string
-          slug:
-            type: string
-          type:
-            type: string
-          items:
-            type: array
-          testId:
-            type: string
-
 refs:
   headerImage:
     eventListeners:
@@ -131,69 +15,85 @@ refs:
     eventListeners:
       click:
         handler: handleItemClick
-
-events:
-  header-click:
-    type: object
-    properties:
-      path:
-        type: string
-  item-click:
-    type: object
-    properties:
-      item:
-        type: object
-
 anchors:
-  - &headerContent
-    - $if header.image && header.image.src:
-      - $if header.image.href:
-          - a href=${header.image.href}:
-            - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
-        $elif header.image.path:
-          - rtgl-view#headerImage cur=p:
-            - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
-        $else:
-          - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}":
+  - - $if header.image && header.image.src:
+        - $if header.image.href:
+            - a href=${header.image.href}:
+                - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+          $elif header.image.path:
+            - rtgl-view#headerImage cur=p:
+                - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+          $else:
+            - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
     - $if header.label && showLabels:
-      - $if header.labelHref:
-          - rtgl-text href=${header.labelHref} s=lg: "${header.label}"
-        $elif header.labelPath:
-          - rtgl-view#headerLabel cur=p:
-            - rtgl-text s=lg: "${header.label}"
-        $else:
-          - rtgl-text s=lg: "${header.label}"
-
+        - $if header.labelHref:
+            - rtgl-text href=${header.labelHref} s=lg: ${header.label}
+          $elif header.labelPath:
+            - rtgl-view#headerLabel cur=p:
+                - rtgl-text s=lg: ${header.label}
+          $else:
+            - rtgl-text s=lg: ${header.label}
 template:
   - rtgl-view h=f w=${sidebarWidth} bwr=xs ah=${ah} ${containerAttrString}:
-    - rtgl-view ph=${headerPadding} pv=lg:
-      - $if header.href:
-          - rtgl-view href=${header.href} d=h av=c ah=${headerAlign} g=lg w=${headerWidth}:
-            - *headerContent
-        $else:
-            - rtgl-view#header d=h av=c ah=${headerAlign} g=lg w=${headerWidth} cur=p data-testid=${header.testId}:
-              - *headerContent
-
-    - rtgl-view w=f ph=${headerPadding} pb=lg g=xs ah=${ah}:
-      - $for item, i in items:
-        - $if item.type == "groupLabel":
-            - $if showGroupLabels:
-                - rtgl-view mt=md h=32 av=c ph=md:
-                  - rtgl-text s=xs c=mu-fg: "${item.title}"
-              $else:
-                - rtgl-view mt=md h=1 bgc=mu:
-          $else:
-            - rtgl-view#item${i} data-item-id=${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=p data-testid=${item.testId}:
-              - $if item.icon:
-                  - $if showLabels:
-                      - rtgl-view d=h ah=${itemContentAlign} g=sm:
-                        - rtgl-svg wh=16 svg=${item.icon} c=fg:
-                        - rtgl-text s=sm: "${item.title}"
+      - rtgl-view ph=${headerPadding} pv=lg:
+          - $if header.href:
+              - rtgl-view href=${header.href} d=h av=c ah=${headerAlign} g=lg w=${headerWidth}:
+                  - - $if header.image && header.image.src:
+                        - $if header.image.href:
+                            - a href=${header.image.href}:
+                                - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+                          $elif header.image.path:
+                            - rtgl-view#headerImage cur=p:
+                                - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+                          $else:
+                            - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+                    - $if header.label && showLabels:
+                        - $if header.labelHref:
+                            - rtgl-text href=${header.labelHref} s=lg: ${header.label}
+                          $elif header.labelPath:
+                            - rtgl-view#headerLabel cur=p:
+                                - rtgl-text s=lg: ${header.label}
+                          $else:
+                            - rtgl-text s=lg: ${header.label}
+            $else:
+              - rtgl-view#header d=h av=c ah=${headerAlign} g=lg w=${headerWidth} cur=p data-testid=${header.testId}:
+                  - - $if header.image && header.image.src:
+                        - $if header.image.href:
+                            - a href=${header.image.href}:
+                                - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+                          $elif header.image.path:
+                            - rtgl-view#headerImage cur=p:
+                                - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+                          $else:
+                            - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+                    - $if header.label && showLabels:
+                        - $if header.labelHref:
+                            - rtgl-text href=${header.labelHref} s=lg: ${header.label}
+                          $elif header.labelPath:
+                            - rtgl-view#headerLabel cur=p:
+                                - rtgl-text s=lg: ${header.label}
+                          $else:
+                            - rtgl-text s=lg: ${header.label}
+      - rtgl-view w=f ph=${headerPadding} pb=lg g=xs ah=${ah}:
+          - $for item, i in items:
+              - $if item.type == "groupLabel":
+                  - $if showGroupLabels:
+                      - rtgl-view mt=md h=32 av=c ph=md:
+                          - rtgl-text s=xs c=mu-fg: ${item.title}
                     $else:
-                      - rtgl-svg wh=${iconSize} svg=${item.icon} c=fg:
+                      - rtgl-view mt=md h=1 bgc=mu: null
                 $else:
-                  - $if showLabels:
-                      - rtgl-text s=sm: "${item.title}"
-                    $else:
-                      - rtgl-view wh=${iconSize} br=f bgc=mu av=c ah=c:
-                        - rtgl-text s=${firstLetterSize} c=fg: "${item.title.charAt(0).toUpperCase()}"
+                  - rtgl-view#item${i} data-item-id=${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=p data-testid=${item.testId}:
+                      - $if item.icon:
+                          - $if showLabels:
+                              - rtgl-view d=h ah=${itemContentAlign} g=sm:
+                                  - rtgl-svg wh=16 svg=${item.icon} c=fg: null
+                                  - rtgl-text s=sm: ${item.title}
+                            $else:
+                              - rtgl-svg wh=${iconSize} svg=${item.icon} c=fg: null
+                        $else:
+                          - $if showLabels:
+                              - rtgl-text s=sm: ${item.title}
+                            $else:
+                              - rtgl-view wh=${iconSize} br=f bgc=mu av=c ah=c:
+                                  - rtgl-text s=${firstLetterSize} c=fg: ${item.title.charAt(0).toUpperCase()}

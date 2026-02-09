@@ -1,10 +1,32 @@
 export const createInitialState = () => Object.freeze({});
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot'];
+const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode'];
 
-const stringifyAttrs = (attrs) => {
-  return Object.entries(attrs).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
+const stringifyAttrs = (props = {}) => {
+  return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
 }
+
+const parseMaybeEncodedJson = (value) => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (typeof value === "object") {
+    return value;
+  }
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(decodeURIComponent(value));
+  } catch {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return undefined;
+    }
+  }
+};
 
 function flattenItems(items, selectedItemId = null) {
   let result = [];
@@ -50,14 +72,14 @@ function flattenItems(items, selectedItemId = null) {
   return result;
 }
 
-export const selectViewData = ({ state, props, attrs }) => {
-  const attrsHeader = attrs.header ? JSON.parse(decodeURIComponent(attrs.header)) : props.header;
-  const attrsItems = attrs.items ? JSON.parse(decodeURIComponent(attrs.items)) : props.items;
-  const selectedItemId = attrs.selectedItemId || props.selectedItemId;
+export const selectViewData = ({ props }) => {
+  const resolvedHeader = parseMaybeEncodedJson(props.header) || props.header;
+  const resolvedItems = parseMaybeEncodedJson(props.items) || props.items;
+  const selectedItemId = props.selectedItemId;
 
-  const containerAttrString = stringifyAttrs(attrs);
-  const mode = attrs.mode || 'full';
-  const header = attrsHeader || {
+  const containerAttrString = stringifyAttrs(props);
+  const mode = props.mode || 'full';
+  const header = resolvedHeader || {
     label: '',
     path: '',
     image: {
@@ -68,7 +90,7 @@ export const selectViewData = ({ state, props, attrs }) => {
     },
   };
 
-  const items = attrsItems ? flattenItems(attrsItems, selectedItemId) : [];
+  const items = resolvedItems ? flattenItems(resolvedItems, selectedItemId) : [];
 
   // Computed values based on mode
   const sidebarWidth = mode === 'full' ? 272 : 64;
@@ -121,22 +143,22 @@ export const selectViewData = ({ state, props, attrs }) => {
   };
 }
 
-export const selectHeader = ({ state, props, attrs }) => {
-  const attrsHeader = attrs.header ? JSON.parse(decodeURIComponent(attrs.header)) : props.header;
-  return attrsHeader;
-}
+export const selectHeader = ({ props }) => {
+  return parseMaybeEncodedJson(props.header) || props.header;
+};
 
 export const selectActiveItem = ({ state, props }) => {
-  const items = props.items ? flattenItems(props.items) : [];
+  const resolvedItems = parseMaybeEncodedJson(props.items) || props.items;
+  const items = resolvedItems ? flattenItems(resolvedItems) : [];
   return items.find(item => item.active);
-}
+};
 
-export const selectItem = ({ state, props, attrs }, id) => {
-  const attrsItems = attrs.items ? JSON.parse(decodeURIComponent(attrs.items)) : props.items;
-  const items = attrsItems ? flattenItems(attrsItems) : [];
+export const selectItem = ({ props }, id) => {
+  const resolvedItems = parseMaybeEncodedJson(props.items) || props.items;
+  const items = resolvedItems ? flattenItems(resolvedItems) : [];
   return items.find(item => item.id === id);
-}
+};
 
-export const setState = (state) => {
+export const setState = ({ state }) => {
   // State management if needed
-}
+};
