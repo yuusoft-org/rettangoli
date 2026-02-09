@@ -1,4 +1,5 @@
 import path from "path";
+import { stripViewportSuffix } from "./viewport.js";
 
 function toList(value) {
   if (value === undefined || value === null) return [];
@@ -114,7 +115,8 @@ export function filterGeneratedFilesBySelectors(generatedFiles, selectors, confi
 
 function toScreenshotItemKey(relativeScreenshotPath) {
   const normalized = normalizePathValue(relativeScreenshotPath).replace(/\.webp$/i, "");
-  return normalized.replace(/-\d{1,3}$/i, "");
+  const withoutOrdinal = normalized.replace(/-\d{1,3}$/i, "");
+  return stripViewportSuffix(withoutOrdinal);
 }
 
 export function filterRelativeScreenshotPathsBySelectors(relativePaths, selectors, configSections = []) {

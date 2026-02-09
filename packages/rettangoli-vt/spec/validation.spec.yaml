@@ -110,6 +110,82 @@ out:
     - title: Pages
       files: pages
 ---
+case: accepts single viewport object
+in:
+  - path: ./vt
+    viewport:
+      id: desktop
+      width: 1280
+      height: 720
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  viewport:
+    id: desktop
+    width: 1280
+    height: 720
+  sections:
+    - title: Pages
+      files: pages
+---
+case: accepts viewport array with unique ids
+in:
+  - path: ./vt
+    viewport:
+      - id: desktop
+        width: 1280
+        height: 720
+      - id: mobile
+        width: 390
+        height: 844
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  viewport:
+    - id: desktop
+      width: 1280
+      height: 720
+    - id: mobile
+      width: 390
+      height: 844
+  sections:
+    - title: Pages
+      files: pages
+---
+case: rejects viewport entries without id
+in:
+  - path: ./vt
+    viewport:
+      width: 1280
+      height: 720
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: vt.viewport[0].id
+---
+case: rejects duplicate viewport ids case-insensitively
+in:
+  - path: ./vt
+    viewport:
+      - id: Desktop
+        width: 1280
+        height: 720
+      - id: desktop
+        width: 390
+        height: 844
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: duplicates
+---
 case: rejects vt.capture user config
 in:
   - path: ./vt
@@ -133,6 +209,33 @@ in:
           - write hi
           - keypress Enter
   - specs/page.yaml
+---
+case: accepts frontmatter viewport override object
+in:
+  - viewport:
+      id: tablet
+      width: 768
+      height: 1024
+  - specs/page.yaml
+---
+case: accepts frontmatter viewport override array
+in:
+  - viewport:
+      - id: desktop
+        width: 1280
+        height: 720
+      - id: mobile
+        width: 390
+        height: 844
+  - specs/page.yaml
+---
+case: rejects frontmatter viewport without id
+in:
+  - viewport:
+      width: 768
+      height: 1024
+  - specs/page.yaml
+throws: frontMatter.viewport[0].id
 ---
 case: rejects empty step strings
 in:

@@ -74,10 +74,10 @@ describe("selector-filter", () => {
 
   it("filters screenshot paths by folder/group/item and strips -NN suffix", () => {
     const relativePaths = [
-      "components/forms/login-01.webp",
-      "components/forms/login-02.webp",
+      "components/forms/login--desktop-01.webp",
+      "components/forms/login--desktop-02.webp",
       "components/tables/grid-01.webp",
-      "pages/home-01.webp",
+      "pages/home--mobile-01.webp",
       "docs/readme-01.webp",
     ];
 
@@ -90,10 +90,10 @@ describe("selector-filter", () => {
     const selected = filterRelativeScreenshotPathsBySelectors(relativePaths, selectors, sections);
 
     expect(selected).toEqual([
-      "components/forms/login-01.webp",
-      "components/forms/login-02.webp",
+      "components/forms/login--desktop-01.webp",
+      "components/forms/login--desktop-02.webp",
       "components/tables/grid-01.webp",
-      "pages/home-01.webp",
+      "pages/home--mobile-01.webp",
     ]);
   });
 

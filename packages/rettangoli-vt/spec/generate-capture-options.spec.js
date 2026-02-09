@@ -58,4 +58,29 @@ describe("buildCaptureOptions", () => {
     expect(captureOptions.readyTimeout).toBe(12000);
     expect(captureOptions.screenshotTimeout).toBe(12000);
   });
+
+  it("passes viewport config through to capture options", () => {
+    const resolvedOptions = resolveGenerateOptions(
+      {},
+      {
+        path: "./vt",
+        viewport: [
+          { id: "desktop", width: 1280, height: 720 },
+          { id: "mobile", width: 390, height: 844 },
+        ],
+      },
+    );
+
+    const captureOptions = buildCaptureOptions({
+      filesToScreenshot: [{ path: "components/basic.html", frontMatter: {} }],
+      port: 3001,
+      candidatePath: ".rettangoli/vt/_site/candidate",
+      resolvedOptions,
+    });
+
+    expect(captureOptions.viewport).toEqual([
+      { id: "desktop", width: 1280, height: 720 },
+      { id: "mobile", width: 390, height: 844 },
+    ]);
+  });
 });

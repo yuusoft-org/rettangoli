@@ -77,6 +77,10 @@ vt:
   concurrency: 4
   timeout: 30000
   waitEvent: vt:ready
+  viewport:
+    id: desktop
+    width: 1280
+    height: 720
   sections:
     - title: components_basic
       files: components
@@ -86,7 +90,9 @@ Notes:
 
 - `vt.sections` is required.
 - Section page keys (`title` for flat sections and group `items[].title`) allow only letters, numbers, `-`, `_`.
+- `vt.viewport` supports object or array; each viewport requires `id`, `width`, `height`.
 - `vt.capture` is internal and must be omitted.
+- Viewport contract details: `docs/viewport-contract.md`.
 
 ## Spec Frontmatter
 
@@ -99,14 +105,20 @@ Supported frontmatter keys per spec file:
 - `waitEvent`
 - `waitSelector`
 - `waitStrategy` (`networkidle` | `load` | `event` | `selector`)
+- `viewport` (object or array of viewport objects)
 - `skipScreenshot`
 - `specs`
 - `steps`
+
+Step action reference:
+
+- `docs/step-actions.md`
 
 Screenshot naming:
 
 - First screenshot is `-01`.
 - Then `-02`, `-03`, up to `-99`.
+- When viewport id is configured, filenames include `--<viewportId>` before ordinal (for example `pages/home--mobile-01.webp`).
 
 ## Docker
 

@@ -1,3 +1,5 @@
+import { appendViewportToBaseName, resolveViewports } from "../viewport.js";
+
 const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
 
 const toHtmlPath = (filePath) => {
@@ -58,9 +60,13 @@ export function createCaptureTasks(generatedFiles, options) {
     waitEvent,
     waitSelector,
     waitStrategy,
+    viewport,
   } = options;
 
-  return generatedFiles.map((file, index) => {
+  const tasks = [];
+  let taskIndex = 0;
+
+  generatedFiles.forEach((file, fileIndex) => {
     const frontMatter = file.frontMatter || {};
     const normalizedPath = normalizePathForUrl(file.path);
     const constructedUrl = toHtmlPath(`${serverUrl}/candidate/${normalizedPath}`);
@@ -75,25 +81,37 @@ export function createCaptureTasks(generatedFiles, options) {
       waitStrategy,
     });
 
-    const task = {
-      id: `${index}:${file.path}`,
-      index,
-      path: file.path,
-      url,
-      baseName: removeExtension(file.path),
-      frontMatter,
-      steps: frontMatter.steps || [],
-      waitStrategy: resolvedWaitStrategy,
-      estimatedCost: estimateTaskCost(frontMatter.steps || [], resolvedWaitStrategy),
-    };
+    const resolvedViewports = resolveViewports(frontMatter.viewport, viewport);
+    resolvedViewports.forEach((resolvedViewport) => {
+      const viewportId = resolvedViewport.id;
+      const task = {
+        id: `${fileIndex}:${file.path}:${viewportId ?? "default"}`,
+        index: taskIndex,
+        path: file.path,
+        url,
+        baseName: appendViewportToBaseName(removeExtension(file.path), viewportId),
+        frontMatter,
+        steps: frontMatter.steps || [],
+        waitStrategy: resolvedWaitStrategy,
+        estimatedCost: estimateTaskCost(frontMatter.steps || [], resolvedWaitStrategy),
+        viewport: {
+          id: viewportId,
+          width: resolvedViewport.width,
+          height: resolvedViewport.height,
+        },
+      };
 
-    if (resolvedWaitEvent !== undefined && resolvedWaitEvent !== null) {
-      task.waitEvent = resolvedWaitEvent;
-    }
-    if (resolvedWaitSelector !== undefined && resolvedWaitSelector !== null) {
-      task.waitSelector = resolvedWaitSelector;
-    }
+      if (resolvedWaitEvent !== undefined && resolvedWaitEvent !== null) {
+        task.waitEvent = resolvedWaitEvent;
+      }
+      if (resolvedWaitSelector !== undefined && resolvedWaitSelector !== null) {
+        task.waitSelector = resolvedWaitSelector;
+      }
 
-    return task;
+      tasks.push(task);
+      taskIndex += 1;
+    });
   });
+
+  return tasks;
 }

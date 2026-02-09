@@ -135,3 +135,49 @@ out:
   maxRetries: 1
   recycleEvery: 25
   metricsPath: .rettangoli/vt/metrics.json
+---
+case: carries validated viewport config into resolved options
+in:
+  - {}
+  - path: ./vt
+    viewport:
+      - id: desktop
+        width: 1280
+        height: 720
+      - id: mobile
+        width: 390
+        height: 844
+    skipScreenshots: false
+    port: 3001
+    concurrency: 2
+    timeout: 31000
+    waitEvent: vt:ready
+    url: https://example.com
+out:
+  vtPath: ./vt
+  skipScreenshots: false
+  port: 3001
+  waitEvent: vt:ready
+  headless: true
+  configUrl: https://example.com
+  viewport:
+    - id: desktop
+      width: 1280
+      height: 720
+    - id: mobile
+      width: 390
+      height: 844
+  selectors:
+    folders: []
+    groups: []
+    items: []
+  screenshotWaitTime: 0
+  waitStrategy: event
+  workerCount: 2
+  isolationMode: fast
+  navigationTimeout: 31000
+  readyTimeout: 31000
+  screenshotTimeout: 31000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json

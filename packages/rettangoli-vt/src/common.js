@@ -273,6 +273,7 @@ async function takeScreenshots(options) {
     isolationMode = "fast",
     metricsPath = join(".rettangoli", "vt", "metrics.json"),
     headless = true,
+    viewport = undefined,
   } = options;
 
   if (!Array.isArray(generatedFiles)) {
@@ -324,6 +325,7 @@ async function takeScreenshots(options) {
     waitEvent,
     waitSelector,
     waitStrategy,
+    viewport,
   });
 
   const { summary, failures } = await runCaptureScheduler({

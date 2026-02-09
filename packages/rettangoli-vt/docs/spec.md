@@ -1,6 +1,6 @@
 # Rettangoli VT Spec
 
-Last updated: 2026-02-08
+Last updated: 2026-02-09
 
 This document defines the public contract for `rtgl vt`.
 
@@ -28,6 +28,10 @@ vt:
   concurrency: 4
   timeout: 30000
   waitEvent: vt:ready
+  viewport:
+    id: desktop
+    width: 1280
+    height: 720
   sections:
     - title: components_basic
       files: components
@@ -44,6 +48,9 @@ Rules:
 - `vt.concurrency` optional integer >= 1.
 - `vt.timeout` optional integer >= 1 (ms).
 - `vt.waitEvent` optional non-empty string.
+- `vt.viewport` optional object or array of objects.
+- each viewport object requires `id`, `width`, `height`.
+- viewport `id` values must be unique case-insensitively within an array.
 - `vt.capture` must be omitted or empty object.
 
 ## Generate CLI Contract
@@ -123,9 +130,14 @@ Allowed keys:
 - `waitEvent`
 - `waitSelector`
 - `waitStrategy` (`networkidle` | `load` | `event` | `selector`)
+- `viewport` (object or array of viewport objects)
 - `skipScreenshot` (boolean)
 - `specs` (array of non-empty strings)
 - `steps` (array of step strings or block step objects)
+
+Step action reference:
+
+- `docs/step-actions.md`
 
 Validation:
 
@@ -138,6 +150,8 @@ Validation:
 - Screenshot filenames are `<base>-NN.webp`.
 - First image is always `-01`.
 - Sequence increments `-02`, `-03`, ... up to `-99`.
+- When viewport id is configured, filenames include `--<viewportId>` before ordinal.
+  Example: `pages/home--mobile-01.webp`.
 
 ## Report Contract
 

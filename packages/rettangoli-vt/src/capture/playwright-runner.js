@@ -3,11 +3,7 @@ import { dirname, join } from "node:path";
 import sharp from "sharp";
 import { createSteps } from "../createSteps.js";
 import { formatScreenshotOrdinal } from "./screenshot-naming.js";
-
-const DEFAULT_VIEWPORT = Object.freeze({
-  width: 1280,
-  height: 720,
-});
+import { DEFAULT_VIEWPORT } from "../viewport.js";
 
 function nowMs() {
   return performance.now();
@@ -128,8 +124,11 @@ export class PlaywrightRunner {
     return context;
   }
 
-  async configurePage(page) {
-    await page.setViewportSize(DEFAULT_VIEWPORT);
+  async configurePage(page, viewport = DEFAULT_VIEWPORT) {
+    await page.setViewportSize({
+      width: viewport.width,
+      height: viewport.height,
+    });
     await page.setDefaultNavigationTimeout(this.navigationTimeout);
     await page.setDefaultTimeout(this.readyTimeout);
     await page.emulateMedia({
@@ -348,6 +347,7 @@ export class PlaywrightRunner {
 
     try {
       resetMs = await resetSession();
+      await this.configurePage(page, task.viewport ?? DEFAULT_VIEWPORT);
       const readyState = await this.navigateToReadyState(page, task, registeredReadyEvents);
       strategy = readyState.strategy;
       navigationMs = readyState.navigationMs;

@@ -39,6 +39,7 @@ export function buildCaptureOptions({
     isolationMode,
     metricsPath,
     headless,
+    viewport,
   } = resolvedOptions;
 
   return {
@@ -59,6 +60,7 @@ export function buildCaptureOptions({
     isolationMode,
     metricsPath,
     headless,
+    viewport,
   };
 }
 

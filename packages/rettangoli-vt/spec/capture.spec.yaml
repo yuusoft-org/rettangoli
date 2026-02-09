@@ -16,7 +16,7 @@ in:
     waitSelector: "#root"
     waitStrategy: networkidle
 out:
-  - id: 0:pages/home.yaml
+  - id: 0:pages/home.yaml:default
     index: 0
     path: pages/home.yaml
     url: https://example.com/custom
@@ -29,6 +29,10 @@ out:
     waitSelector: "#root"
     waitStrategy: event
     estimatedCost: 120
+    viewport:
+      id: null
+      width: 1280
+      height: 720
 ---
 case: falls back to config url and capture defaults
 in:
@@ -41,7 +45,7 @@ in:
     waitStrategy: selector
     waitSelector: .ready
 out:
-  - id: 0:docs/intro.md
+  - id: 0:docs/intro.md:default
     index: 0
     path: docs/intro.md
     url: http://localhost:3001/preview/index.html
@@ -54,6 +58,10 @@ out:
     waitSelector: .ready
     waitStrategy: selector
     estimatedCost: 140
+    viewport:
+      id: null
+      width: 1280
+      height: 720
 ---
 case: builds candidate url when no explicit url exists
 in:
@@ -61,7 +69,7 @@ in:
       frontMatter: {}
   - serverUrl: http://localhost:8080
 out:
-  - id: 0:windows\test.yaml
+  - id: 0:windows\test.yaml:default
     index: 0
     path: windows\test.yaml
     url: http://localhost:8080/candidate/windows/test.html
@@ -70,3 +78,79 @@ out:
     steps: []
     waitStrategy: networkidle
     estimatedCost: 130
+    viewport:
+      id: null
+      width: 1280
+      height: 720
+---
+case: expands one spec into multiple viewport capture tasks
+in:
+  - - path: pages/home.yaml
+      frontMatter: {}
+  - serverUrl: http://localhost:3001
+    viewport:
+      - id: desktop
+        width: 1280
+        height: 720
+      - id: mobile
+        width: 390
+        height: 844
+out:
+  - id: 0:pages/home.yaml:desktop
+    index: 0
+    path: pages/home.yaml
+    url: http://localhost:3001/candidate/pages/home.html
+    baseName: pages/home--desktop
+    frontMatter: {}
+    steps: []
+    waitStrategy: networkidle
+    estimatedCost: 130
+    viewport:
+      id: desktop
+      width: 1280
+      height: 720
+  - id: 0:pages/home.yaml:mobile
+    index: 1
+    path: pages/home.yaml
+    url: http://localhost:3001/candidate/pages/home.html
+    baseName: pages/home--mobile
+    frontMatter: {}
+    steps: []
+    waitStrategy: networkidle
+    estimatedCost: 130
+    viewport:
+      id: mobile
+      width: 390
+      height: 844
+---
+case: frontmatter viewport overrides config viewport
+in:
+  - - path: pages/home.yaml
+      frontMatter:
+        viewport:
+          id: tablet
+          width: 768
+          height: 1024
+  - serverUrl: http://localhost:3001
+    viewport:
+      id: desktop
+      width: 1280
+      height: 720
+out:
+  - id: 0:pages/home.yaml:tablet
+    index: 0
+    path: pages/home.yaml
+    url: http://localhost:3001/candidate/pages/home.html
+    baseName: pages/home--tablet
+    frontMatter:
+      viewport:
+        id: tablet
+        width: 768
+        height: 1024
+    steps: []
+    waitStrategy: networkidle
+    estimatedCost: 130
+    viewport:
+      id: tablet
+      width: 768
+      height: 1024
