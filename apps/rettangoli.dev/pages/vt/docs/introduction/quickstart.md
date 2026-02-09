@@ -5,15 +5,29 @@ tags: documentation
 sidebarId: vt-quickstart
 ---
 
+Visual testing catches UI regressions that unit tests usually miss. It is especially useful for UI libraries and frontend apps where layout, spacing, typography, and interaction states can break without JavaScript errors.
+
 `@rettangoli/vt` helps you generate visual baselines, compare against references, and review diffs with a report.
 
-## 1. Install the CLI
+## 1. Recommended runtime: Docker
+
+Use the official image so every machine (local and CI) runs the same Playwright + `rtgl` environment:
 
 ```bash
-npm install -D rtgl
+docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2
 ```
 
-You can also run directly with `npx rtgl ...`.
+Set a shell alias so docs and scripts can use plain `rtgl` commands:
+
+```bash
+alias rtgl='docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl'
+```
+
+If you do not use Docker, install `rtgl` globally:
+
+```bash
+npm install -g rtgl
+```
 
 ## 2. Create VT folders
 
@@ -59,19 +73,19 @@ title: Home
 Generate candidate screenshots:
 
 ```bash
-npx rtgl vt generate
+rtgl vt generate
 ```
 
 Compare candidate vs reference and build report:
 
 ```bash
-npx rtgl vt report
+rtgl vt report
 ```
 
 When changes are expected, accept them:
 
 ```bash
-npx rtgl vt accept
+rtgl vt accept
 ```
 
 ## 6. Open the report
@@ -83,16 +97,6 @@ Generated report:
 JSON summary:
 
 - `.rettangoli/vt/report.json`
-
-## Optional: run in Docker
-
-If you prefer a containerized runtime:
-
-```bash
-docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl vt generate
-docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl vt report
-docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl vt accept
-```
 
 ## Next
 

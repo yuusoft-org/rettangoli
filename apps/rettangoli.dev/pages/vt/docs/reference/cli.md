@@ -7,6 +7,12 @@ sidebarId: vt-cli
 
 VT commands are exposed through `rtgl vt`.
 
+Recommended runtime is the official Docker image (for consistent local/CI behavior). You can map it to a shell alias and keep using the same `rtgl` commands:
+
+```bash
+alias rtgl='docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl'
+```
+
 ## Commands
 
 | Command | Purpose |
@@ -18,7 +24,7 @@ VT commands are exposed through `rtgl vt`.
 ## `rtgl vt generate`
 
 ```bash
-npx rtgl vt generate [options]
+rtgl vt generate [options]
 ```
 
 Options:
@@ -37,17 +43,17 @@ Options:
 Examples:
 
 ```bash
-npx rtgl vt generate
-npx rtgl vt generate --concurrency 4 --timeout 45000
-npx rtgl vt generate --wait-event app:ready
-npx rtgl vt generate --folder components/forms --group pages --item components/forms/login
-npx rtgl vt generate --headed
+rtgl vt generate
+rtgl vt generate --concurrency 4 --timeout 45000
+rtgl vt generate --wait-event app:ready
+rtgl vt generate --folder components/forms --group pages --item components/forms/login
+rtgl vt generate --headed
 ```
 
 ## `rtgl vt report`
 
 ```bash
-npx rtgl vt report [options]
+rtgl vt report [options]
 ```
 
 Options:
@@ -64,16 +70,16 @@ Options:
 Examples:
 
 ```bash
-npx rtgl vt report
-npx rtgl vt report --compare-method md5
-npx rtgl vt report --color-threshold 0.2 --diff-threshold 0.5
-npx rtgl vt report --folder components/forms
+rtgl vt report
+rtgl vt report --compare-method md5
+rtgl vt report --color-threshold 0.2 --diff-threshold 0.5
+rtgl vt report --folder components/forms
 ```
 
 ## `rtgl vt accept`
 
 ```bash
-npx rtgl vt accept
+rtgl vt accept
 ```
 
 `accept` uses `.rettangoli/vt/report.json` and copies changed candidate files into `vt/reference`.
@@ -81,8 +87,8 @@ npx rtgl vt accept
 ## Typical Pipeline
 
 ```bash
-npx rtgl vt generate
-npx rtgl vt report
+rtgl vt generate
+rtgl vt report
 # if expected changes:
-npx rtgl vt accept
+rtgl vt accept
 ```

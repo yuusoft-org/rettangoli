@@ -34,10 +34,10 @@ All selector values are repeatable.
 Examples:
 
 ```bash
-npx rtgl vt generate --folder components/forms
-npx rtgl vt generate --group pages
-npx rtgl vt generate --item components/forms/login
-npx rtgl vt report --group forms --item components/forms/login.html
+rtgl vt generate --folder components/forms
+rtgl vt generate --group pages
+rtgl vt generate --item components/forms/login
+rtgl vt report --group forms --item components/forms/login.html
 ```
 
 ## Output artifacts
