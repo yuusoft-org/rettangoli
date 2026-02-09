@@ -1,4 +1,3 @@
-const LEGACY_PROP_PREFIX = ".";
 const PROP_PREFIX = ":";
 
 const lodashGet = (obj, path) => {
@@ -107,10 +106,12 @@ export const parseNodeBindings = ({
     const rawValue = match[2] || match[3] || match[4];
     processedAttrs.add(rawBindingName);
 
-    if (
-      rawBindingName.startsWith(PROP_PREFIX)
-      || rawBindingName.startsWith(LEGACY_PROP_PREFIX)
-    ) {
+    if (rawBindingName.startsWith(".")) {
+      attrs[rawBindingName] = rawValue;
+      continue;
+    }
+
+    if (rawBindingName.startsWith(PROP_PREFIX)) {
       const propName = rawBindingName.substring(1);
       let propValue = rawValue;
       if (match[4] !== undefined) {
@@ -169,9 +170,11 @@ export const parseNodeBindings = ({
   let boolMatch;
   while ((boolMatch = booleanAttrRegex.exec(remainingAttrsString)) !== null) {
     const attrName = boolMatch[1];
+    if (attrName.startsWith(".")) {
+      continue;
+    }
     if (
       !processedAttrs.has(attrName)
-      && !attrName.startsWith(LEGACY_PROP_PREFIX)
       && !attrName.startsWith(PROP_PREFIX)
       && !attrName.includes("=")
     ) {

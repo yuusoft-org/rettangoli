@@ -59,3 +59,24 @@ in:
 out:
   errorCount: 0
   codes: []
+---
+case: rejects legacy dot property binding in view template
+in:
+  - entries:
+      - category: components
+        component: loginForm
+        fileType: view
+        filePath: /tmp/components/loginForm/loginForm.view.yaml
+        yamlObject:
+          template:
+            - rtgl-input .value=user.name:
+      - category: components
+        component: loginForm
+        fileType: schema
+        filePath: /tmp/components/loginForm/loginForm.schema.yaml
+        yamlObject:
+          componentName: rtgl-login-form
+out:
+  errorCount: 1
+  codes:
+    - RTGL-CONTRACT-003

@@ -81,6 +81,42 @@ out:
     - "Details:"
     - "RTGL-CONTRACT-002 components/loginForm: 'elementName' is not allowed in .view.yaml. Move API metadata to .schema.yaml. [/tmp/components/loginForm/loginForm.view.yaml]"
 ---
+case: emits stable legacy dot property binding error string
+in:
+  - includeTextReport: true
+    entries:
+      - category: components
+        component: loginForm
+        fileType: view
+        filePath: /tmp/components/loginForm/loginForm.view.yaml
+        yamlObject:
+          template:
+            - rtgl-input .value=user.name:
+      - category: components
+        component: loginForm
+        fileType: schema
+        filePath: /tmp/components/loginForm/loginForm.schema.yaml
+        yamlObject:
+          componentName: rtgl-login-form
+out:
+  ok: false
+  summary:
+    total: 1
+    byCode:
+      - code: RTGL-CONTRACT-003
+        count: 1
+    byComponent:
+      - component: components/loginForm
+        count: 1
+  errorHeader: "[Check] Component contract validation failed: 1 issue(s)"
+  errorLines:
+    - "By rule:"
+    - "- RTGL-CONTRACT-003: 1"
+    - "By component:"
+    - "- components/loginForm: 1"
+    - "Details:"
+    - "RTGL-CONTRACT-003 components/loginForm: legacy '.prop=' binding is not supported. Use ':prop=' in .view.yaml. [/tmp/components/loginForm/loginForm.view.yaml]"
+---
 case: supports custom error prefixes for entrypoint-specific errors
 in:
   - includeTextReport: true

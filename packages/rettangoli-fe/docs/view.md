@@ -73,6 +73,9 @@ Bindings are attached to selector tokens:
 - `:name=value`: property-form binding
 - `?name=value`: boolean attribute toggle
 
+Legacy `.name=value` property syntax is not supported.
+Validation is enforced at framework level (`rtgl fe check` / `rtgl fe build`).
+
 ### Component Prop Normalization
 
 For component tags (tag contains `-`):
@@ -261,6 +264,15 @@ template: []
 ```
 
 Invalid because `elementName` must live in `.schema.yaml`.
+
+Legacy dot property binding:
+
+```yaml
+template:
+  - rtgl-input .value=${title}:
+```
+
+Invalid because property bindings MUST use `:value=...`.
 
 Listener with both `handler` and `action`:
 
