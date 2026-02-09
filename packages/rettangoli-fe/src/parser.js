@@ -56,8 +56,7 @@ export const createVirtualDom = ({
   createComponentUpdateHook,
 }) => {
   if (!Array.isArray(items)) {
-    console.error("Input to createVirtualDom must be an array.");
-    return [h("div", {}, [])];
+    throw new Error("[Parser] Input to createVirtualDom must be an array, got " + typeof items);
   }
 
   const refMatchers = createRefMatchers(refs);
@@ -251,10 +250,10 @@ export const createVirtualDom = ({
             : String(index);
           snabbdomData.key = `${selector}-${itemPath}`;
 
-          // Include props in key if they exist for better change detection
-          if (Object.keys(props).length > 0) {
-            const propsHash = JSON.stringify(props).substring(0, 50); // Limit length
-            snabbdomData.key += `-${propsHash}`;
+          // Include prop keys in key for better change detection
+          const propKeys = Object.keys(props);
+          if (propKeys.length > 0) {
+            snabbdomData.key += `-p:${propKeys.join(",")}`;
           }
         }
 
@@ -285,22 +284,11 @@ export const createVirtualDom = ({
         }
 
         try {
-          // For web components, use only the tag name without any selectors
-          if (isWebComponent) {
-            // For web components, we need to use just the tag name
-            return h(tagName, snabbdomData, childrenOrText);
-          } else {
-            // For regular elements, we can use the original selector or just the tag
-            return h(tagName, snabbdomData, childrenOrText);
-          }
+          return h(tagName, snabbdomData, childrenOrText);
         } catch (error) {
-          console.error("Error creating virtual node:", error, {
-            tagName,
-            snabbdomData,
-            childrenOrText,
-          });
-          // Fallback to a simple div
-          return h("div", {}, ["Error creating element"]);
+          throw new Error(
+            `[Parser] Error creating virtual node for '${tagName}': ${error.message}`,
+          );
         }
       })
       .filter(Boolean);

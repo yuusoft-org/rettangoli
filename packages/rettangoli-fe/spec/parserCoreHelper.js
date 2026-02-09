@@ -6,6 +6,27 @@ const createH = () => (tag, data = {}, children = []) => ({
   children,
 });
 
+export const runParserCoreErrorContract = ({
+  scenario,
+}) => {
+  if (scenario === "non_array_input") {
+    try {
+      createVirtualDom({
+        h: createH(),
+        items: "not an array",
+        refs: {},
+        handlers: {},
+        viewData: {},
+      });
+      return { threw: false };
+    } catch (e) {
+      return { threw: true, messageContains: e.message.includes("must be an array") };
+    }
+  }
+
+  throw new Error(`Unknown parser error scenario '${scenario}'.`);
+};
+
 export const runParserCoreContract = ({
   item,
   includeHookFactory = true,

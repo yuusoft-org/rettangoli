@@ -97,14 +97,13 @@ const installDomGlobals = () => {
       };
     },
   };
+  globalThis.window = globalThis;
 };
 
 installDomGlobals();
 
 const { default: createComponent } = await import("../src/createComponent.js");
 
-const h = (tag, data = {}, children = []) => ({ tag, data, children });
-const patch = (_oldValue, newValue) => newValue;
 const template = parse([{ div: "" }]);
 
 const defaultStore = {
@@ -178,8 +177,6 @@ const createTestComponentClass = ({
         ...defaultStore,
         ...store,
       },
-      patch,
-      h,
     },
     setupDeps,
   );

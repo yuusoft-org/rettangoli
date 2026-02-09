@@ -111,7 +111,7 @@ export const runRenderComponentLifecycle = ({
   parseViewFn = parseView,
   collectRefElementsFn = collectRefElements,
   onError = (error) => {
-    console.error("Error during patching:", error);
+    console.error("Error during render:", error);
   },
 }) => {
   if (!instance.patch) {
@@ -151,6 +151,8 @@ export const runRenderComponentLifecycle = ({
     return instance._oldVNode;
   } catch (error) {
     onError(error);
-    return null;
+    // Preserve _oldVNode so subsequent renders can still patch against
+    // the last successful vdom tree. The component is not permanently broken.
+    return instance._oldVNode || null;
   }
 };

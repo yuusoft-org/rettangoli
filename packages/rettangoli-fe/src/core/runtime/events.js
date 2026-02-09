@@ -119,7 +119,14 @@ export const createManagedEventListener = ({
         clearTimeoutFn(state.debounceTimer);
       }
       state.debounceTimer = setTimeoutFn(() => {
-        callback(event);
+        const timerId = state.debounceTimer;
+        try {
+          callback(event);
+        } catch (err) {
+          clearTimeoutFn(timerId);
+          state.debounceTimer = null;
+          throw err;
+        }
         state.debounceTimer = null;
       }, eventConfig.debounce);
       eventRateLimitState.set(stateKey, state);

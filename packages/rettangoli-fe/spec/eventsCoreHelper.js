@@ -255,5 +255,50 @@ export const runEventsCoreCase = ({ scenario }) => {
     };
   }
 
+  if (scenario === "debounce_clears_timer_on_callback_error") {
+    let timer = null;
+    let timerId = 0;
+    const listener = createConfiguredEventListener({
+      eventType: "click",
+      eventConfig: {
+        handler: "handleSubmit",
+        debounce: 100,
+      },
+      refKey: "submitButton",
+      handlers: {
+        handleSubmit: () => {
+          throw new Error("handler exploded");
+        },
+      },
+      eventRateLimitState: new Map(),
+      stateKey: "submitButton:click",
+      setTimeoutFn: (callback) => {
+        timerId += 1;
+        timer = { id: timerId, callback };
+        return timer.id;
+      },
+      clearTimeoutFn: (id) => {
+        if (timer && timer.id === id) {
+          timer = null;
+        }
+      },
+    });
+
+    listener(createEvent({ type: "click" }));
+
+    let threw = false;
+    try {
+      timer?.callback();
+    } catch (_e) {
+      threw = true;
+    }
+
+    // After the error, timer ref should be cleared (null) so next event starts fresh
+    return {
+      threw,
+      timerCleared: timer === null || timer?.callback === undefined,
+    };
+  }
+
   throw new Error(`Unknown events core scenario '${scenario}'.`);
 };

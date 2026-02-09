@@ -125,5 +125,67 @@ export const runComponentOrchestratorContract = ({
     };
   }
 
+  if (mode === "render_error_recovery") {
+    const errors = [];
+    const successVNode = { tag: "div", data: {}, key: "ok" };
+    let callCount = 0;
+    const instance = {
+      patch: (_oldNode, nextNode) => nextNode,
+      template: [],
+      h: () => ({}),
+      get viewData() { return {}; },
+      refs: {},
+      transformedHandlers: {},
+      renderTarget: { id: "target" },
+      refIds: {},
+      _oldVNode: null,
+    };
+
+    // First render succeeds
+    const first = runRenderComponentLifecycle({
+      instance,
+      createComponentUpdateHookFn: () => null,
+      parseViewFn: () => {
+        callCount++;
+        return successVNode;
+      },
+      collectRefElementsFn: () => ({}),
+      onError: (e) => errors.push(e.message),
+    });
+
+    // Second render throws
+    const second = runRenderComponentLifecycle({
+      instance,
+      createComponentUpdateHookFn: () => null,
+      parseViewFn: () => {
+        callCount++;
+        throw new Error("template render failed");
+      },
+      collectRefElementsFn: () => ({}),
+      onError: (e) => errors.push(e.message),
+    });
+
+    // Third render succeeds again — component recovers
+    const third = runRenderComponentLifecycle({
+      instance,
+      createComponentUpdateHookFn: () => null,
+      parseViewFn: () => {
+        callCount++;
+        return { tag: "div", data: {}, key: "recovered" };
+      },
+      collectRefElementsFn: () => ({}),
+      onError: (e) => errors.push(e.message),
+    });
+
+    return {
+      firstHasVNode: !!first,
+      secondPreservesVNode: !!second,
+      thirdRecovered: !!third,
+      errorCount: errors.length,
+      errorMessage: errors[0] || null,
+      totalRenderCalls: callCount,
+    };
+  }
+
   return {};
 };

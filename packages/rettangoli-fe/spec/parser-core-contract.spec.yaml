@@ -31,3 +31,13 @@ out:
   hookFactoryCalls: 0
   hasHook: false
   hasUpdateFn: false
+---
+suite: parser-error-contract
+exportName: runParserCoreErrorContract
+---
+case: throws on non-array input to createVirtualDom
+in:
+  - scenario: non_array_input
+out:
+  threw: true
+  messageContains: true

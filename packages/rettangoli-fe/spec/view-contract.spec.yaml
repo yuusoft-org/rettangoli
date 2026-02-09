@@ -49,6 +49,26 @@ in:
   - attrsString: value=abc :value=stateValue
 throws: Duplicate prop binding 'value'
 ---
+case: property-form path traversal blocks __proto__ resolution
+in:
+  - attrsString: ":value=__proto__.polluted"
+    viewData:
+      safe: ok
+out:
+  attrs: {}
+  props:
+    value: "__proto__.polluted"
+---
+case: property-form path traversal blocks constructor resolution
+in:
+  - attrsString: ":value=constructor.name"
+    viewData:
+      safe: ok
+out:
+  attrs: {}
+  props:
+    value: "constructor.name"
+---
 suite: refs-contract
 exportName: runRefsContract
 ---

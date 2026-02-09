@@ -33,7 +33,13 @@ export const collectComponentContractEntriesFromFiles = (allFiles = []) => {
       };
 
       if (["view", "schema"].includes(fileType)) {
-        entry.yamlObject = loadYaml(readFileSync(filePath, "utf8")) ?? {};
+        try {
+          entry.yamlObject = loadYaml(readFileSync(filePath, "utf8")) ?? {};
+        } catch (err) {
+          throw new Error(
+            `[Check] Failed to read or parse ${filePath}: ${err.message}`,
+          );
+        }
       }
 
       return entry;

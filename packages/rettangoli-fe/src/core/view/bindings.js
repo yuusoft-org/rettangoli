@@ -1,5 +1,7 @@
 const PROP_PREFIX = ":";
 
+const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
 const lodashGet = (obj, path) => {
   if (!path) return obj;
 
@@ -53,7 +55,12 @@ const lodashGet = (obj, path) => {
     parts.push(current);
   }
 
-  return parts.reduce((acc, part) => acc && acc[part], obj);
+  return parts.reduce((acc, part) => {
+    if (acc == null) return undefined;
+    const key = typeof part === "number" ? part : String(part);
+    if (typeof key === "string" && UNSAFE_KEYS.has(key)) return undefined;
+    return acc[key];
+  }, obj);
 };
 
 export const toCamelCase = (value) => {
