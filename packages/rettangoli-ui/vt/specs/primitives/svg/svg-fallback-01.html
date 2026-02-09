@@ -1,0 +1,41 @@
+---
+title: SVG • Fallback • Missing Icon and Wh Priority
+description: Verifies missing icon fallback and dimension precedence when wh coexists with w and h.
+specs:
+  - Missing icon key renders empty content without crashing.
+  - Known icon key renders svg markup.
+  - wh dimension value overrides separate w and h values.
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-view d="h" g="md">
+    <rtgl-svg id="svg-known" svg="text" wh="24"></rtgl-svg>
+    <rtgl-svg id="svg-missing" svg="doesNotExist" wh="24"></rtgl-svg>
+    <rtgl-svg id="svg-wh-priority" svg="music" w="48" h="12" wh="24"></rtgl-svg>
+  </rtgl-view>
+  <pre id="results" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+</rtgl-view>
+
+<script>
+  const run = async () => {
+    await customElements.whenDefined("rtgl-svg");
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    const known = document.getElementById("svg-known");
+    const missing = document.getElementById("svg-missing");
+    const whPriority = document.getElementById("svg-wh-priority");
+
+    const knownMarkup = (known.shadowRoot.innerHTML || "").trim();
+    const missingMarkup = (missing.shadowRoot.innerHTML || "").trim();
+
+    const checks = [
+      `${knownMarkup.includes("<svg") ? "PASS" : "FAIL"} known icon renders svg`,
+      `${missingMarkup === "" ? "PASS" : "FAIL"} missing icon renders empty`,
+      `${whPriority.style.width === "24px" ? "PASS" : "FAIL"} wh overrides width`,
+      `${whPriority.style.height === "24px" ? "PASS" : "FAIL"} wh overrides height`,
+    ];
+
+    document.getElementById("results").textContent = checks.join("\n");
+  };
+
+  run();
+</script>

@@ -1,8 +1,19 @@
 ---
-title: "Basic Popover"
+title: Popover • Basic • Open and Close
+description: Verifies manual popover open flow and close handling through content action and close event.
+specs:
+  - Trigger button opens popover at click coordinates.
+  - Content area renders title, body text, and close action.
+  - Close handling clears open and position attributes.
+steps:
+  - select open-popover:
+    - click
+  - 'waitFor #popover[open] visible 1200'
+  - 'assert text #popover Popover Content'
+  - screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="wrap">
-  <rtgl-button id="button">Open Popover</rtgl-button>
+  <rtgl-button id="button" data-testid="open-popover">Open Popover</rtgl-button>
   <rtgl-popover id="popover">
     <rtgl-view slot="content" g="md">
       <rtgl-text s="lg">Popover Content</rtgl-text>

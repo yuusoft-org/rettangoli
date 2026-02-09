@@ -1,0 +1,29 @@
+---
+title: Input • Visibility • Show Hide Responsive
+description: Verifies visibility precedence and breakpoint-prefixed visibility behavior.
+specs:
+  - Hide removes input from visual layout.
+  - Show overrides hide when both attributes are present.
+  - Breakpoint-prefixed show and hide attributes participate in visibility resolution.
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="wrap">
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Visible baseline</rtgl-text>
+    <rtgl-input placeholder="Visible baseline"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Hidden input</rtgl-text>
+    <rtgl-input hide placeholder="Should be hidden"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Hide plus show</rtgl-text>
+    <rtgl-input hide show placeholder="Show overrides hide"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Responsive show/hide</rtgl-text>
+    <rtgl-input hide xl-show placeholder="Visible on xl"></rtgl-input>
+  </rtgl-view>
+</rtgl-view>

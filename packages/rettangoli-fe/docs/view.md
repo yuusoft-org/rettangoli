@@ -209,10 +209,12 @@ refs:
 Payload semantics are unified for `handler` and `action`:
 - payload expressions are resolved the same way
 - `_event` is available in payload context
+- action listeners include internal `_action` dispatch metadata
 
 Conceptual invocation:
 - `handler`: `handlers.someHandler(deps, { ...payload, _event })`
-- `action`: `store.someAction({ ...payload, _event })` then render
+- `action`: `handlers.handleCallStoreAction({ ...payload, _event, _action: "<actionName>" })`
+- runtime dispatcher then calls `store[action](payload)` and triggers render
 
 ## 7. Refs Runtime Surface
 

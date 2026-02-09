@@ -1,5 +1,10 @@
 ---
-title: Ellipsis
+title: Text • Ellipsis • Truncation
+description: Verifies single-line truncation behavior when ellipsis is enabled with constrained width.
+specs:
+  - Constrained width without ellipsis shows natural overflow behavior.
+  - Ellipsis mode truncates overflowed text to one line.
+  - Truncated text remains aligned within container spacing.
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="wrap">
     <rtgl-view bgc="mu" p="md" g="lg">

@@ -1,0 +1,29 @@
+---
+title: Slider • Visibility • Show Hide Responsive
+description: Verifies visibility precedence and breakpoint-prefixed visibility behavior.
+specs:
+  - Hide removes slider from visual layout.
+  - Show overrides hide when both attributes are present.
+  - Breakpoint-prefixed show and hide attributes participate in visibility resolution.
+---
+<rtgl-view g="lg" p="lg" wh="f" fw="wrap">
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Visible baseline</rtgl-text>
+    <rtgl-slider value="50"></rtgl-slider>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Hidden slider</rtgl-text>
+    <rtgl-slider hide value="50"></rtgl-slider>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Hide plus show</rtgl-text>
+    <rtgl-slider hide show value="50"></rtgl-slider>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Responsive show/hide</rtgl-text>
+    <rtgl-slider hide xl-show value="50"></rtgl-slider>
+  </rtgl-view>
+</rtgl-view>

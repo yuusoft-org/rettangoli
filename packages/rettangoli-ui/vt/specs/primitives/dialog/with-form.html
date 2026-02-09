@@ -1,15 +1,27 @@
 ---
-title: "Dialog with Form"
+title: Dialog • Form • Embedded Workflow
+description: Verifies form component rendering and action handling inside dialog content slot.
+specs:
+  - Dialog opens and mounts `rtgl-form` content lazily.
+  - Form schema renders mixed field types and action buttons.
+  - Action events close dialog for cancel and submit outcomes.
+steps:
+  - select open-dialog-form:
+    - click
+  - 'waitFor #dialog[open] attached 1500'
+  - 'waitFor #form attached 1500'
+  - 'assert exists #form'
+  - screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="wrap">
-  <rtgl-button id="button">Open Form Dialog</rtgl-button>
+  <rtgl-button id="button" data-testid="open-dialog-form">Open Form Dialog</rtgl-button>
   <rtgl-dialog id="dialog">
   </rtgl-dialog>
 </rtgl-view>
 
 <script>
-
-const dialog = document.getElementById('dialog');
+  const button = document.getElementById('button');
+  const dialog = document.getElementById('dialog');
   const form = document.createElement('rtgl-form');
 
   form.setAttribute('id', 'form');

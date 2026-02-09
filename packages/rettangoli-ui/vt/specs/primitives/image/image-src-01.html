@@ -1,5 +1,10 @@
 ---
-title: Src
+title: Image • Source • Basic Render
+description: Verifies baseline image rendering from a valid `src` value.
+specs:
+  - Image source is resolved and rendered in the viewport.
+  - Baseline geometry remains stable without additional styling props.
+  - Host layout spacing stays intact around a single image node.
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="wrap">
     <rtgl-image src="/public/sample1.jpg"></rtgl-image>

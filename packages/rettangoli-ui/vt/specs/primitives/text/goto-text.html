@@ -1,8 +1,14 @@
 ---
-title: "Goto Test"
+title: Text • VT Flow • Goto Navigation
+description: Verifies VT goto flow by navigating from fixture page to an external URL.
+specs:
+  - Goto step replaces local fixture content with external page.
+  - URL assertion confirms destination navigation succeeded.
+  - Screenshot step captures navigated destination state.
 steps:
   - goto https://rettangoli.dev
-  - wait 2000
+  - assert url rettangoli.dev
+  - waitFor body visible 5000
   - screenshot
 ---
 <rtgl-view p="lg" ah="c" av="c" h="100vh">

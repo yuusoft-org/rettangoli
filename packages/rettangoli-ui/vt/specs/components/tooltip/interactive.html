@@ -6,9 +6,11 @@ specs:
   - Leaving trigger closes tooltip.
   - Hover interaction remains deterministic for VT capture.
 steps:
+  - wait 150
   - select tooltip-hover-target:
     - hover
-  - wait 200
+  - 'waitFor #tooltip[open] attached 1200'
+  - 'assert exists #tooltip[open]'
   - screenshot
 ---
 <rtgl-view h="100vh" w="100vw" ah="c" av="c">

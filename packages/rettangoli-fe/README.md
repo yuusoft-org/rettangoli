@@ -83,7 +83,7 @@ src/
 │   ├── examples.js    # Generate examples for testing
 │   └── blank/         # Component templates
 ├── createComponent.js # Component factory
-├── createWebPatch.js  # Virtual DOM patching
+├── createWebPatch.js  # Internal virtual DOM patching
 ├── parser.js          # YAML to JSON converter
 ├── common.js          # Shared utilities
 └── index.js           # Main exports
@@ -104,6 +104,47 @@ fe:
     outputDir: "./vt/specs/examples"
 ```
 
+## Setup Contract
+
+`setup.js` should export `deps` only.
+`createWebPatch`/`h` wiring is internalized by the framework.
+
+```js
+const deps = {
+  components: {},
+  pages: {},
+};
+
+export { deps };
+```
+
+## Action Listeners
+
+In `.view.yaml`, listeners can dispatch store actions directly with `action`.
+This path auto-runs render after the action executes.
+
+```yaml
+refs:
+  inputEmail:
+    eventListeners:
+      input:
+        action: setEmail
+        payload:
+          value: ${_event.target.value}
+```
+
+Store action:
+
+```js
+export const setEmail = ({ state }, { value }) => {
+  state.email = value;
+};
+```
+
+Runtime-injected action payload fields:
+- `_event`
+- `_action` (internal dispatch metadata)
+
 ## Testing
 
 ### Unit and Contract Tests
@@ -119,17 +160,45 @@ bun run test:vitest    # integration tests only
 
 ### End-to-End Testing
 
-E2E tests run against real example apps in `examples/` using `@rettangoli/vt`. VT specs define interaction steps (click, write, keypress, etc.) and capture screenshots via Playwright. Assertions are done by comparing candidate screenshots against reference baselines with pixelmatch.
+FE has two E2E suites in this package:
+
+- `packages/rettangoli-fe/e2e/dashboard`
+- `packages/rettangoli-fe/e2e/interactions`
+
+Use this workflow:
+1. Build FE with the local repo CLI (`cli.js`) so it uses your current FE source.
+2. Run VT in Docker for stable Playwright runtime.
+
+Docker image:
 
 ```bash
-# In an example project (e.g. examples/example1/)
-rtgl fe build          # build components
-rtgl vt generate       # capture screenshots (runs Playwright)
-rtgl vt report         # compare against reference — fails on mismatch
-rtgl vt accept         # update baselines when changes are intentional
+IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc3"
 ```
 
-VT specs live in each example's `vt/specs/` directory. See `examples/example1/` for the full setup.
+Dashboard suite:
+
+```bash
+(cd packages/rettangoli-fe/e2e/dashboard && node ../../../rettangoli-cli/cli.js fe build)
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" rtgl vt generate
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" rtgl vt report
+```
+
+Interactions suite:
+
+```bash
+(cd packages/rettangoli-fe/e2e/interactions && node ../../../rettangoli-cli/cli.js fe build)
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" rtgl vt generate
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" rtgl vt report
+```
+
+Accept intentional visual changes:
+
+```bash
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" rtgl vt accept
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" rtgl vt accept
+```
+
+VT specs live under each suite's `vt/specs/` directory.
 
 ## Examples
 

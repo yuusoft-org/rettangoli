@@ -1,5 +1,10 @@
 ---
-title: "Textarea Write Command"
+title: Textarea • VT Flow • Write Input
+description: Verifies VT write action populates textarea content through selected test id.
+specs:
+  - Select step resolves textarea by data test id.
+  - Write step inserts expected text content.
+  - Screenshot captures populated textarea state.
 steps:
   - select my-textarea:
     - write The write is working as expected as well

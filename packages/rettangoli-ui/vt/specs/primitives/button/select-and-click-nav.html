@@ -4,11 +4,12 @@ description: Verifies VT interaction flow using select, click, wait, and screens
 specs:
   - Select step finds button by test id.
   - Click step triggers navigation action.
-  - Final screenshot captures post-click state.
+  - URL assertion confirms the external navigation target.
 steps:
   - select nav-button:
     - click
-  - wait 2000
+  - assert url rettangoli.dev
+  - waitFor body visible 5000
   - screenshot
 ---
 <rtgl-view p="lg" ah="c" av="c" h="100vh">

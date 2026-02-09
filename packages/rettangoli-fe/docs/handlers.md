@@ -103,6 +103,11 @@ Invocation contract:
 - payload values are resolved from view expressions
 - original event is available as `payload._event`
 
+For `action` listeners (`refs.*.eventListeners.*.action`):
+- runtime dispatches directly to `store[action]`
+- render is triggered automatically after action execution
+- `.handlers.js` export is not required for that listener
+
 ## 6. Global Browser Events
 
 Long-lived browser-level listeners SHOULD be declared in `.view.yaml`:

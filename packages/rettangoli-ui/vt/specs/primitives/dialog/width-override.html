@@ -1,9 +1,16 @@
 ---
-title: Width Override
+title: Dialog • Width • Explicit Override
+description: Verifies explicit width prop overrides size preset width behavior.
+specs:
+  - Dialog uses explicit `w=360px` while `s=lg` is also provided.
+  - Runtime measurement validates rendered width near target.
+  - VT flow captures post-open measured dialog state.
 steps:
   - select open-width:
     - click
-  - wait 600
+  - 'waitFor #dialog-width[open] visible 1500'
+  - wait 350
+  - 'assert text #result-width PASS'
   - screenshot
 ---
 <rtgl-view d="v" g="md" p="lg" wh="f">

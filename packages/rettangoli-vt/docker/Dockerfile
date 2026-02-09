@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y unzip curl && rm -rf /var/lib/apt/lists
 RUN curl -fsSL https://bun.sh/install | BUN_INSTALL=/usr/local bash
 
 # Install rtgl globally
-RUN bun install -g rtgl@1.0.0-rc2
+RUN bun install -g rtgl@1.0.0-rc3
 
 # Copy bun global packages to /usr/local/lib/rtgl (accessible to all users)
 RUN mkdir -p /usr/local/lib/rtgl && \
@@ -19,3 +19,6 @@ RUN echo "#!/bin/sh" > /usr/local/bin/rtgl && \
     echo "BUN_INSTALL_LOCKFILE=/usr/local/lib/rtgl/bun/install/cache/bun-install.lock" >> /usr/local/bin/rtgl && \
     echo "exec bun /usr/local/lib/rtgl/global/node_modules/rtgl/cli.js \"\$@\"" >> /usr/local/bin/rtgl && \
     chmod +x /usr/local/bin/rtgl
+
+# Default working directory for mounted projects
+WORKDIR /workspace

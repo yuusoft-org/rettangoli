@@ -85,7 +85,9 @@ Action contract:
 - signature: `(ctx, payload = {})`
 - payload MUST be an object when provided
 - calling with no payload MUST work (`payload` defaults to `{}`)
-- event-driven action dispatch injects `_event` into payload
+- event-driven action dispatch injects `_event` and `_action` into payload
+- `_action` is reserved for runtime dispatch internals
+- action listeners from `.view.yaml` auto-trigger render after action execution
 
 ```js
 export const setTitle = ({ state }, { title }) => {

@@ -8,14 +8,16 @@ specs:
 steps:
   - select tooltip-btn-1:
     - click
-  - wait 200
+  - 'waitFor #tooltip[open] attached 1200'
+  - 'assert exists #tooltip[open]'
   - screenshot
   - select tooltip-btn-1:
     - click
-  - wait 100
+  - 'waitFor #tooltip[open] hidden 1200'
   - select tooltip-btn-2:
     - click
-  - wait 200
+  - 'waitFor #tooltip-2[open] attached 1200'
+  - 'assert exists #tooltip-2[open]'
   - screenshot
 ---
 <rtgl-view h="100vh" w="100vw" ah="c" av="c" g="xl">

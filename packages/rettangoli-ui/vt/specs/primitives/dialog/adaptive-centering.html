@@ -1,10 +1,29 @@
 ---
-title: "Adaptive Centering"
+title: Dialog • Adaptive • Centering Behavior
+description: Verifies adaptive vertical positioning for short vs long dialog content.
+specs:
+  - Short-content dialog opens with centered visual placement.
+  - Long-content dialog opens with top-biased placement for overflow safety.
+  - Shared close handling keeps open state synchronized for both dialogs.
+steps:
+  - select open-dialog-short:
+    - click
+  - 'waitFor #dialog-short[open] visible 1200'
+  - 'assert text #dialog-short Short Content Dialog'
+  - screenshot
+  - select close-dialog-short:
+    - click
+  - 'waitFor #dialog-short[open] hidden 1200'
+  - select open-dialog-long:
+    - click
+  - 'waitFor #dialog-long[open] visible 1200'
+  - 'assert text #dialog-long Long Content Dialog'
+  - screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" fw="wrap">
   <rtgl-view g="md">
-    <rtgl-button id="button-short">Open Dialog (Short Content)</rtgl-button>
-    <rtgl-button id="button-long">Open Dialog (Long Content)</rtgl-button>
+    <rtgl-button id="button-short" data-testid="open-dialog-short">Open Dialog (Short Content)</rtgl-button>
+    <rtgl-button id="button-long" data-testid="open-dialog-long">Open Dialog (Long Content)</rtgl-button>
   </rtgl-view>
   
   <!-- Short content dialog -->
@@ -12,7 +31,7 @@ title: "Adaptive Centering"
     <rtgl-view slot="content" g="md">
       <rtgl-text s="lg">Short Content Dialog</rtgl-text>
       <rtgl-text c="mu">This dialog has short content and should be vertically centered.</rtgl-text>
-      <rtgl-button id="close-button-short" variant="secondary">Close Dialog</rtgl-button>
+      <rtgl-button id="close-button-short" data-testid="close-dialog-short" variant="secondary">Close Dialog</rtgl-button>
     </rtgl-view>
   </rtgl-dialog>
   

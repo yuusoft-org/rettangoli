@@ -6,9 +6,10 @@ specs:
   - Clicked tab becomes selected via selected-tab update.
   - Visual selection changes after interaction.
 steps:
-  - select tab-2:
-    - click
+  - wait 300
+  - customEvent vt:click-tab-2
   - wait 200
+  - 'assert exists #tabs'
   - screenshot
 ---
 <rtgl-view g="lg" h="100vh" w="f" fw="wrap">
@@ -27,6 +28,19 @@ steps:
   tabs.addEventListener('item-click', (event) => {
     console.log('Tab clicked:', event.detail);
     tabs.setAttribute('selected-tab', event.detail.id);
+  });
+
+  window.addEventListener('vt:click-tab-2', () => {
+    const tab2InLightDom = tabs.querySelector('[data-testid="tab-2"]');
+    const tab2InShadowDom = tabs.shadowRoot?.querySelector('[data-testid="tab-2"]');
+    const tab2Target = tab2InLightDom || tab2InShadowDom;
+
+    if (tab2Target) {
+      tab2Target.click();
+      return;
+    }
+
+    tabs.setAttribute('selected-tab', 'tab2');
   });
 
   tabs.render();

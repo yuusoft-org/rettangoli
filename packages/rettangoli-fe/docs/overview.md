@@ -36,7 +36,9 @@ Normative keywords follow RFC 2119 intent:
 - Handler signature is `(deps, payload = {})`.
 - Store action signature is `(ctx, payload = {})`.
 - Action payload `MUST` be an object when provided; calling with no payload is valid.
-- Event-driven dispatch injects `_event` into payload.
+- Event-driven handler dispatch injects `_event` into payload.
+- Event-driven action dispatch injects `_event` and `_action` into payload.
+- `_action` is an internal dispatch field; app payloads SHOULD NOT rely on it.
 
 ### Refs Model
 
