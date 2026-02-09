@@ -159,13 +159,13 @@ const buildRettangoliFrontend = async (options) => {
   const relativeSetup = path.relative(tempDir, resolvedSetup).replaceAll(path.sep, "/");
   output += `
 import { createComponent } from '@rettangoli/fe';
-import { deps, patch, h } from '${relativeSetup}';
+import { deps } from '${relativeSetup}';
 const imports = ${JSON.stringify(imports, null, 2)};
 
 Object.keys(imports).forEach(category => {
   Object.keys(imports[category]).forEach(component => {
     const componentConfig = imports[category][component];
-    const webComponent = createComponent({ ...componentConfig, patch, h }, deps[category])
+    const webComponent = createComponent({ ...componentConfig }, deps[category])
     const elementName = componentConfig.schema?.componentName;
     if (!elementName) {
       throw new Error(\`[Build] Missing schema.componentName for \${category}/\${component}. Define it in .schema.yaml.\`);

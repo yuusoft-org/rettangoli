@@ -1,6 +1,3 @@
-import { createWebPatch } from '@rettangoli/fe';
-import { h } from 'snabbdom/build/h';
-
 const componentDependencies = {
 }
 
@@ -12,10 +9,6 @@ const deps = {
   pages: pageDependencies,
 }
 
-const patch = createWebPatch();
-
 export {
-  h,
-  patch,
   deps,
 }

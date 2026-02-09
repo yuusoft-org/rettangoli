@@ -142,6 +142,26 @@ fe:
 | Key | Description |
 | --- | --- |
 | `dirs` | Directories to scan for component files |
-| `setup` | Optional setup script providing custom dependencies |
+| `setup` | Setup script that exports custom dependencies |
 | `outfile` | Output path for the bundled JavaScript |
 | `examples.outputDir` | Output directory for generated example specs |
+
+## Setup File
+
+The `setup.js` file exports a `deps` object that provides custom dependencies to your components. Dependencies are keyed by category (matching directory names under your configured `dirs`).
+
+```js
+const deps = {
+  components: {
+    // available as deps.apiClient in component handlers
+    apiClient: createApiClient(),
+  },
+  pages: {
+    router: createRouter(),
+  },
+}
+
+export { deps }
+```
+
+Each category's dependencies are merged into the `deps` argument that handlers receive. The framework handles virtual DOM and patching internally — `setup.js` is only for your application-level dependencies.

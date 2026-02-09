@@ -20,6 +20,7 @@ Create this structure:
 ```
 my-app/
   rettangoli.config.yaml
+  setup.js
   src/
     components/
       my-counter/
@@ -36,10 +37,25 @@ Add a `rettangoli.config.yaml` at the root:
 fe:
   dirs:
     - "./src/components"
+  setup: "setup.js"
   outfile: "./dist/bundle.js"
 ```
 
-This tells the CLI where to find your components and where to output the bundle.
+This tells the CLI where to find your components, where to find the setup script, and where to output the bundle.
+
+Create a `setup.js` to provide custom dependencies to your components:
+
+```js
+const deps = {
+  components: {
+    // custom dependencies injected into component handlers
+  },
+}
+
+export { deps }
+```
+
+The `deps` object is keyed by category (matching your directory names). Each category's dependencies are merged into the `deps` argument that handlers receive. For simple projects, an empty object is fine — you can add shared services like API clients or routers later.
 
 ## Create the Component
 

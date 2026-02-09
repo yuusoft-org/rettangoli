@@ -1,9 +1,13 @@
 import { toCamelCase } from "./core/runtime/props.js";
 import { validateSchemaContract } from "./core/schema/validateSchemaContract.js";
 import { createWebComponentClass } from "./web/createWebComponentClass.js";
+import createWebPatch from "./createWebPatch.js";
+import { h } from "snabbdom/build/h.js";
+
+const patch = createWebPatch();
 
 const createComponent = (
-  { handlers, methods, constants, schema, view, store, patch, h },
+  { handlers, methods, constants, schema, view, store },
   deps,
 ) => {
   if (!view) {
@@ -27,14 +31,6 @@ const createComponent = (
   const propsSchemaKeys = propsSchema?.properties
     ? [...new Set(Object.keys(propsSchema.properties).map((propKey) => toCamelCase(propKey)))]
     : [];
-
-  if (!patch) {
-    throw new Error("Patch is not defined");
-  }
-
-  if (!h) {
-    throw new Error("h is not defined");
-  }
 
   return createWebComponentClass({
     elementName,

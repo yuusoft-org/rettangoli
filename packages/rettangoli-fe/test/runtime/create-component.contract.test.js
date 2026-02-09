@@ -151,8 +151,7 @@ const createComponentClass = ({ methods = {}, store = {}, propsSchema = {} } = {
         },
         ...store,
       },
-      patch: (_oldValue, newValue) => newValue,
-      h: (tag, data = {}, children = []) => ({ tag, data, children }),
+
     },
     {},
   );
@@ -283,8 +282,7 @@ describe("createComponent runtime contracts", () => {
           createInitialState: () => ({}),
           selectViewData: () => ({}),
         },
-        patch: (_oldValue, newValue) => newValue,
-        h: (tag, data = {}, children = []) => ({ tag, data, children }),
+
       },
       {},
     );
@@ -325,8 +323,7 @@ describe("createComponent runtime contracts", () => {
           createInitialState: () => ({}),
           selectViewData: () => ({}),
         },
-        patch: (_oldValue, newValue) => newValue,
-        h: (tag, data = {}, children = []) => ({ tag, data, children }),
+
       },
       {},
     );
@@ -353,8 +350,7 @@ describe("createComponent runtime contracts", () => {
           createInitialState: () => ({}),
           selectViewData: () => ({}),
         },
-        patch: (_oldValue, newValue) => newValue,
-        h: (tag, data = {}, children = []) => ({ tag, data, children }),
+
       },
       {},
     )).toThrow("schema is required");
@@ -386,8 +382,7 @@ describe("createComponent runtime contracts", () => {
           createInitialState: () => ({}),
           selectViewData: () => ({}),
         },
-        patch: (_oldValue, newValue) => newValue,
-        h: (tag, data = {}, children = []) => ({ tag, data, children }),
+
       },
       {},
     )).toThrow("missing in .methods.js exports");
@@ -443,8 +438,7 @@ describe("createComponent runtime contracts", () => {
           createInitialState: () => ({}),
           selectViewData: () => ({}),
         },
-        patch: (_oldValue, newValue) => newValue,
-        h: (tag, data = {}, children = []) => ({ tag, data, children }),
+
       },
       {},
     );
