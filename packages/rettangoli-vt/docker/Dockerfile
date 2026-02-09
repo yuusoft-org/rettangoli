@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y unzip curl && rm -rf /var/lib/apt/lists
 RUN curl -fsSL https://bun.sh/install | BUN_INSTALL=/usr/local bash
 
 # Install rtgl globally
-RUN bun install -g rtgl@1.0.0-rc3
+RUN bun install -g rtgl@1.0.0-rc4
 
 # Copy bun global packages to /usr/local/lib/rtgl (accessible to all users)
 RUN mkdir -p /usr/local/lib/rtgl && \

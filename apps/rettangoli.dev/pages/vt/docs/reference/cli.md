@@ -10,8 +10,11 @@ VT commands are exposed through `rtgl vt`.
 Recommended runtime is the official Docker image (for consistent local/CI behavior). You can map it to a shell alias and keep using the same `rtgl` commands:
 
 ```bash
-alias rtgl='docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl'
+alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc4 rtgl'
 ```
+
+The image default working directory is `/workspace`.
+Use `-w /workspace/<subdir>` only when you need to run commands from a nested project path.
 
 ## Commands
 

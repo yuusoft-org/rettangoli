@@ -125,16 +125,21 @@ Screenshot naming:
 A pre-built Docker image with `rtgl` and Playwright browsers is available:
 
 ```bash
-docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2
+docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc4
 ```
 
 Run commands against a local project:
 
 ```bash
-docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl vt generate
-docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl vt report
-docker run --rm -v "$(pwd):/workspace" -w /workspace han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc2 rtgl vt accept
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc4 rtgl vt generate
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc4 rtgl vt report
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc4 rtgl vt accept
 ```
+
+Note:
+
+- Image default working directory is `/workspace`.
+- Use `-w /workspace/<subdir>` only when running commands from a subfolder within the mounted project.
 
 Supports `linux/amd64` and `linux/arm64`.
 
