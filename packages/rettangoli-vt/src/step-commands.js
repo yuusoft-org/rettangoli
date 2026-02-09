@@ -1,0 +1,33 @@
+export const STEP_COMMANDS = Object.freeze([
+  "assert",
+  "blur",
+  "check",
+  "clear",
+  "click",
+  "customEvent",
+  "dblclick",
+  "focus",
+  "goto",
+  "hover",
+  "keypress",
+  "mouseDown",
+  "mouseUp",
+  "move",
+  "rclick",
+  "rightMouseDown",
+  "rightMouseUp",
+  "setViewport",
+  "screenshot",
+  "scroll",
+  "select",
+  "selectOption",
+  "uncheck",
+  "upload",
+  "wait",
+  "waitFor",
+  "write",
+]);
+
+export const BLOCK_COMMANDS = Object.freeze([
+  "select",
+]);

@@ -30,3 +30,35 @@ describe("createSteps screenshot command", () => {
     );
   });
 });
+
+describe("createSteps setViewport command", () => {
+  it("sets viewport size using width and height args", async () => {
+    const setViewportSize = vi.fn().mockResolvedValue(undefined);
+    const page = {
+      setViewportSize,
+    };
+    const stepsExecutor = createSteps(page, {
+      baseName: "pages/button",
+      takeAndSaveScreenshot: vi.fn(),
+    });
+
+    await stepsExecutor.executeStep("setViewport 390 844");
+
+    expect(setViewportSize).toHaveBeenCalledTimes(1);
+    expect(setViewportSize).toHaveBeenCalledWith({ width: 390, height: 844 });
+  });
+
+  it("throws for invalid viewport size args", async () => {
+    const page = {
+      setViewportSize: vi.fn(),
+    };
+    const stepsExecutor = createSteps(page, {
+      baseName: "pages/button",
+      takeAndSaveScreenshot: vi.fn(),
+    });
+
+    await expect(
+      stepsExecutor.executeStep("setViewport 390 not-a-number"),
+    ).rejects.toThrow('Invalid height: expected a finite number, got "not-a-number".');
+  });
+});

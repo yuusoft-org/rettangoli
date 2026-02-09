@@ -6,16 +6,20 @@ This guide is for future coding agents working in `packages/rettangoli-vt`.
 
 1. `README.md` for user-facing behavior.
 2. `docs/spec.md` for public contract details.
-3. `docs/roadmap.md` for current priorities and backlog.  
+3. `docs/viewport-contract.md` for viewport-specific contract details.
+4. `docs/step-actions.md` for current step DSL action behavior.
+5. `docs/roadmap.md` for current priorities and backlog.  
    Treat `docs/roadmap.md` as the planning source of truth.
 
 ## Current Product Direction
 
 - Keep the public interface small.
 - Public generate knobs should stay minimal:  
-  `skipScreenshots`, `headed`, `concurrency`, `timeout`, `waitEvent`.
+  `skipScreenshots`, `headed`, `concurrency`, `timeout`, `waitEvent`, `viewport`.
 - Avoid re-exposing broad internal capture tuning options.
 - Preserve deterministic screenshot naming (`-01`..`-99`).
+- When viewport ids are configured, keep the viewport suffix format:
+  `<base>--<viewportId>-NN.webp`.
 
 ## Key Architecture Map
 
@@ -43,6 +47,8 @@ This guide is for future coding agents working in `packages/rettangoli-vt`.
 - Section page keys allow only `[A-Za-z0-9_-]+` (no spaces).
 - `vt.sections` is required and non-empty.
 - `vt.capture` is internal-only in public contract.
+- `vt.viewport` / frontmatter `viewport` accept object or array.
+- Each viewport requires `id`, `width`, `height`; ids must be unique case-insensitively.
 - `generate` fails on unresolved capture failures.
 - `report` fails when mismatches exist.
 
@@ -66,4 +72,5 @@ This guide is for future coding agents working in `packages/rettangoli-vt`.
 - If behavior changes, update both:
   - `README.md`
   - `docs/spec.md`
-
+- For viewport behavior changes, also update:
+  - `docs/viewport-contract.md`
