@@ -5,4 +5,5 @@ docs/
 e2e/
 scripts/
 spec/
+vitest.config.js
 .work/
