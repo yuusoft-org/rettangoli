@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yuusoft-org/rettangoli@main/apps/rettangoli.dev/static/public/base.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yuusoft-org/rettangoli@main/apps/rettangoli.dev/static/public/theme-rtgl-slate.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc6/dist/themes/base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc6/dist/themes/theme-rtgl-slate.css">
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       if (location.hash) {
@@ -47,14 +47,14 @@
 </head>
 
 <body class="dark">
-  <rtgl-view d="h" w="100vw" h="100vh">
+  <rtgl-view d="h" w="f" h="100vh">
 
     <rtgl-view h="f" sm-hidden>
       <rtgl-sidebar items="{{ sidebarItems }}">
       </rtgl-sidebar>
     </rtgl-view>
 
-    <rtgl-view id="content" h="100vh" w="1fg" p="lg" g="lg" style="flex-wrap: nowrap;" sv ah="c">
+    <rtgl-view id="content" h="100vh" w="1fg" p="lg" g="lg" style="flex-wrap: nowrap; min-width: 0;" sv ah="c">
       <rtgl-view w="f" g="xl">
         <rtgl-text s="h2">{{ currentSection.title }} </rtgl-text>
         {% for file in files %}
@@ -102,8 +102,8 @@
         <rtgl-view h="33vh"></rtgl-view>
       </rtgl-view>
     </rtgl-view>
-    <rtgl-view lg-hidden>
-      <rtgl-page-outline id="page-outline" target-id="content"></rtgl-page-outline>
+    <rtgl-view lg-hidden style="flex: 0 0 auto;">
+      <rtgl-page-outline id="page-outline" target-id="content" scroll-container-id="content"></rtgl-page-outline>
     </rtgl-view>
   </rtgl-view>
 </body>
