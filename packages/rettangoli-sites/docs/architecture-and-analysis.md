@@ -9,7 +9,7 @@
 - Rendering stack: `jempl` + `yahtml` + `markdown-it`
 - Runtime tooling: build + watch dev server
 
-Screenshot config keys are still supported in `sites.config.js`, but screenshot runtime is temporarily disabled and will be reimplemented later.
+Screenshot capture is handled by `@rettangoli/vt`, not by `@rettangoli/sites`.
 
 ## Core Runtime
 
@@ -19,7 +19,7 @@ Screenshot config keys are still supported in `sites.config.js`, but screenshot 
 - CLI-facing functions:
   - `buildSite` (`src/cli/build.js`)
   - `watchSite` (`src/cli/watch.js`)
-  - `screenshotCommand` (`src/screenshotRunner.js`) currently a no-op warning stub
+  - `screenshotCommand` (`src/screenshotRunner.js`) throws a migration error (use VT)
   - `initSite` (`src/cli/init.js`)
 
 ## Directory Contract
@@ -78,6 +78,40 @@ Per-page render context:
 - watches `data`, `templates`, `partials`, `pages`, and `static`
 - rebuilds and broadcasts reload events on changes
 
+## Screenshots With VT
+
+Recommended flow:
+
+1. Build/serve the site from `_site`.
+2. Point VT at that URL with `vt.url`.
+3. Optionally let VT start/stop the preview service via `vt.service.start`.
+4. Use VT commands:
+   - `rtgl vt generate`
+   - `rtgl vt report`
+   - `rtgl vt accept`
+
+Example `rettangoli.config.yaml`:
+
+```yaml
+vt:
+  path: ./vt
+  url: http://127.0.0.1:4173
+  service:
+    start: bun run preview
+  sections:
+    - title: pages
+      files: .
+```
+
+Example VT spec frontmatter:
+
+```yaml
+---
+title: home
+url: /
+---
+```
+
 ## Small Robustness Fixes Applied
 
 1. Unified markdown config keys across build/watch (`md` and `mdRender`)
@@ -85,9 +119,9 @@ Per-page render context:
 3. Fixed `quiet` mode leak (`Building collections...` now respects `quiet`)
 4. Added `static/` to watch directories so static asset edits trigger rebuild/reload
 5. Tightened config loading so nested module import failures are surfaced
-6. Removed active screenshot implementation (stubbed command, kept config shape)
+6. Removed screenshot behavior from sites CLI path and moved capture to VT flow
 
 ## Current Gaps
 
 1. `_site` is not cleaned automatically before build (stale files possible)
-2. Screenshot runtime is intentionally disabled pending redesign
+2. `sites.config.js` may still contain legacy `screenshots` keys, but they are not used by this runtime

@@ -46,6 +46,39 @@ bun run watch
 bun run serve
 ```
 
+## Screenshots
+
+`@rettangoli/sites` builds pages; screenshot capture is handled by `@rettangoli/vt`.
+
+Use VT against your generated site:
+
+1. Add `vt/specs/*.html` specs (use frontmatter `url` for the page to capture).
+2. Add `vt` config in `rettangoli.config.yaml`.
+3. Run `rtgl vt generate`, `rtgl vt report`, and `rtgl vt accept`.
+
+Example:
+
+```yaml
+vt:
+  path: ./vt
+  url: http://127.0.0.1:4173
+  service:
+    start: bun run preview
+  sections:
+    - title: pages
+      files: .
+```
+
+```html
+---
+title: home
+url: /
+---
+<div></div>
+```
+
+`bun run preview` must serve your built site on `vt.url` (for example with `serve _site`).
+
 ## Full Architecture And Analysis
 
 See `docs/architecture-and-analysis.md` for:

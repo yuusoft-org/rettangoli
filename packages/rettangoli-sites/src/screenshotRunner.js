@@ -1,6 +1,7 @@
 const screenshotCommand = async () => {
-  console.warn('Screenshot capture for @rettangoli/sites is temporarily disabled.');
-  console.warn('Keep screenshots config in sites.config.js; implementation will be replaced later.');
+  throw new Error(
+    'Screenshot CLI for @rettangoli/sites was removed. Use "rtgl vt generate" with "vt.url" and optional "vt.service.start".',
+  );
 };
 
 export default screenshotCommand;

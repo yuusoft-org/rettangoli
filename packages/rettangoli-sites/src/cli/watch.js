@@ -285,8 +285,7 @@ const setupWatcher = (directory, options, server) => {
 const watchSite = async (options = {}) => {
   const {
     port = 3001,
-    rootDir = process.cwd(),
-    screenshots = false
+    rootDir = process.cwd()
   } = options;
 
   // Load config file
@@ -322,10 +321,6 @@ const watchSite = async (options = {}) => {
   // Start custom dev server
   const server = new DevServer(port);
   server.start();
-
-  if (screenshots) {
-    console.warn('Screenshot capture is temporarily disabled for sites watch mode.');
-  }
 
   // Watch all relevant directories
   const dirsToWatch = ['data', 'templates', 'partials', 'pages', 'static'];
