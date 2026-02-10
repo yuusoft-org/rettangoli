@@ -13,4 +13,6 @@ propsSchema:
     content:
       type: string
 events: []
-methods: []
+methods:
+  type: object
+  properties: {}

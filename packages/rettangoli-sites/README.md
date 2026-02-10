@@ -41,7 +41,8 @@ my-site/
 
 ## Site Config
 
-Use `sites.config.yaml` (or `sites.config.yml`) for supported settings:
+Use `sites.config.yaml` (or `sites.config.yml`) with top-level `markdownit` for supported settings.
+Legacy key `markdown` is still accepted as an alias.
 
 ```yaml
 markdownit:
@@ -57,7 +58,19 @@ markdownit:
   shiki:
     enabled: true
     theme: slack-dark
-  headingAnchors: true
+  headingAnchors:
+    enabled: true
+    slugMode: unicode
+    wrap: true
+    fallback: section
+```
+
+In the default starter template, CDN runtime scripts are controlled via `data/site.yaml`:
+
+```yaml
+assets:
+  loadUiFromCdn: true
+  loadConstructStyleSheetsPolyfill: true
 ```
 
 ## Commands
@@ -65,7 +78,15 @@ markdownit:
 ```bash
 bunx rtgl sites build
 bunx rtgl sites watch
+bunx rtgl sites build --quiet
+bunx rtgl sites watch --quiet
+bunx rtgl sites watch --reload-mode full
+bunx rtgl sites build --root-dir . --output-path dist
+bunx rtgl sites watch --root-dir . --output-path dist --reload-mode full
 ```
+
+`--reload-mode body` (default) does fast body replacement; `--reload-mode full` forces full page refresh.
+`--root-dir`/`--output-path` are the preferred option names (`--rootDir`/`--outputPath` remain as legacy aliases).
 
 ## Built-in Template Functions
 
@@ -81,6 +102,7 @@ Available in YAML templates/pages without extra setup:
 - `toQueryString(object)`
 
 `formatDate` tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`, `ss`.
+`decodeURI`/`decodeURIComponent` return the original input when decoding fails.
 
 ## Screenshots
 

@@ -315,27 +315,39 @@ sitesCommand
 sitesCommand
   .command("build")
   .description("Build the site")
-  .option("-r, --rootDir <path>", "Path to root directory", "./")
-  .option("-o, --outputPath <path>", "Path to destination directory", "./_site")
+  .option("-r, --root-dir <path>", "Path to root directory", "./")
+  .option("--rootDir <path>", "Deprecated alias for --root-dir")
+  .option("-o, --output-path <path>", "Path to destination directory", "./_site")
+  .option("--outputPath <path>", "Deprecated alias for --output-path")
+  .option("-q, --quiet", "Suppress non-error logs")
   .action(async (options) => {
-    console.log("Building site with options:", options);
     await buildSite({
       rootDir: options.rootDir,
       outputPath: options.outputPath,
+      quiet: !!options.quiet,
     });
-    console.log("Build completed successfully!");
+    if (!options.quiet) {
+      console.log("Build completed successfully!");
+    }
   });
 
 sitesCommand
   .command("watch")
   .description("Watch and rebuild site on changes")
   .option("-p, --port <port>", "The port to use", parseInt, 3001)
-  .option("-r, --rootDir <path>", "Path to root directory", ".")
+  .option("-r, --root-dir <path>", "Path to root directory", ".")
+  .option("--rootDir <path>", "Deprecated alias for --root-dir")
+  .option("-o, --output-path <path>", "Path to destination directory", "./_site")
+  .option("--outputPath <path>", "Deprecated alias for --output-path")
+  .option("--reload-mode <mode>", "Reload mode: body (hot body replacement) or full (full-page reload)", "body")
+  .option("-q, --quiet", "Suppress non-error logs")
   .action(async (options) => {
-    console.log("Starting watch mode with options:", options);
     watchSite({
       port: options.port,
       rootDir: options.rootDir,
+      outputPath: options.outputPath,
+      reloadMode: options.reloadMode,
+      quiet: !!options.quiet,
     });
   });
 

@@ -62,11 +62,20 @@ function toQueryString(value) {
   return params.toString();
 }
 
+function safeDecode(value, decoder) {
+  const input = String(value ?? '');
+  try {
+    return decoder(input);
+  } catch {
+    return input;
+  }
+}
+
 export const builtinTemplateFunctions = {
   encodeURI: (value) => encodeURI(String(value ?? '')),
   encodeURIComponent: (value) => encodeURIComponent(String(value ?? '')),
-  decodeURI: (value) => decodeURI(String(value ?? '')),
-  decodeURIComponent: (value) => decodeURIComponent(String(value ?? '')),
+  decodeURI: (value) => safeDecode(value, decodeURI),
+  decodeURIComponent: (value) => safeDecode(value, decodeURIComponent),
   jsonStringify,
   formatDate: formatDateImpl,
   now: (format = 'YYYYMMDDHHmmss', useUtc = true) => formatDateImpl(new Date(), format, useUtc),

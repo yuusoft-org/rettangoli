@@ -5,64 +5,75 @@ import { WebSocketServer } from 'ws';
 import { buildSite } from './build.js';
 import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 
-// Client script to inject into HTML pages
-const CLIENT_SCRIPT = `
-<script>
-(function() {
-  console.log('🔌 Connecting to WebSocket...');
-  const ws = new WebSocket('ws://' + location.host);
-  
-  ws.onopen = () => {
-    console.log('✅ WebSocket connected');
-  };
-  
-  ws.onmessage = (event) => {
-    console.log('📨 Message received:', event.data);
-    const data = JSON.parse(event.data);
-    
-    if (data.type === 'reload-current') {
-      console.log('🔄 Fetching updated page...');
-      
+const RELOAD_MODES = new Set(['body', 'full']);
+
+export function createClientScript(reloadMode = 'body') {
+  const shouldUseBodyReplacement = reloadMode === 'body';
+  const reloadSnippet = shouldUseBodyReplacement
+    ? `
       // Fetch the current page's HTML
       fetch(window.location.href)
         .then(response => response.text())
         .then(html => {
-          console.log('📄 Received updated HTML');
-          
           // Parse the new HTML
           const parser = new DOMParser();
           const newDoc = parser.parseFromString(html, 'text/html');
-          
+
           // Replace entire body content
           document.body.innerHTML = newDoc.body.innerHTML;
-          
-          console.log('✅ Hot reload complete');
         })
         .catch(err => {
-          console.error('❌ Failed to fetch updated page:', err);
+          console.error('Hot reload failed:', err);
           // Fallback to full reload
           window.location.reload();
         });
+    `
+    : `
+      window.location.reload();
+    `;
+
+  return `
+<script>
+(function() {
+  const wsProtocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+  const ws = new WebSocket(wsProtocol + location.host);
+
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.type === 'reload-current') {
+      ${reloadSnippet}
     }
   };
-  
+
   ws.onclose = () => {
-    console.log('❌ Lost connection to dev server. Reloading in 1s...');
     setTimeout(() => location.reload(), 1000);
-  };
-  
-  ws.onerror = (err) => {
-    console.error('❌ WebSocket error:', err);
   };
 })();
 </script>
 `;
+}
+
+function createLogger(quiet = false) {
+  return {
+    log: (...args) => {
+      if (!quiet) {
+        console.log(...args);
+      }
+    },
+    error: (...args) => {
+      console.error(...args);
+    }
+  };
+}
 
 class DevServer {
-  constructor(port = 3001) {
+  constructor(port = 3001, siteDir = '_site', logger = createLogger(false), reloadMode = 'body') {
     this.port = port;
     this.clients = new Set();
-    this.siteDir = '_site';
+    this.siteDir = siteDir;
+    this.logger = logger;
+    this.clientScript = createClientScript(reloadMode);
   }
 
   start() {
@@ -73,29 +84,23 @@ class DevServer {
 
     // Create WebSocket server
     this.wss = new WebSocketServer({ server: this.httpServer });
-    console.log('WebSocket server created');
 
     this.wss.on('connection', (ws) => {
-      console.log('✅ Client connected. Total clients:', this.clients.size + 1);
       this.clients.add(ws);
 
       ws.on('close', () => {
-        console.log('❌ Client disconnected. Remaining clients:', this.clients.size - 1);
         this.clients.delete(ws);
       });
 
       ws.on('error', (err) => {
-        console.error('❌ WebSocket error:', err);
+        this.logger.error('WebSocket error:', err);
         this.clients.delete(ws);
       });
     });
 
     // Start listening
     this.httpServer.listen(this.port, '0.0.0.0', () => {
-      console.log(`\n  Dev server running at:\n`);
-      console.log(`  > Local:    http://localhost:${this.port}/`);
-      console.log(`  > Network:  http://0.0.0.0:${this.port}/\n`);
-      console.log(`  Hot reload enabled (body replacement)\n`);
+      this.logger.log(`Dev server: http://localhost:${this.port}/`);
     });
   }
 
@@ -168,18 +173,18 @@ class DevServer {
         content = content.toString();
         // Inject before </body> or </html> or at the end
         if (content.includes('</body>')) {
-          content = content.replace('</body>', CLIENT_SCRIPT + '</body>');
+          content = content.replace('</body>', this.clientScript + '</body>');
         } else if (content.includes('</html>')) {
-          content = content.replace('</html>', CLIENT_SCRIPT + '</html>');
+          content = content.replace('</html>', this.clientScript + '</html>');
         } else {
-          content = content + CLIENT_SCRIPT;
+          content = content + this.clientScript;
         }
       }
 
       res.writeHead(200, { 'Content-Type': contentType });
       res.end(content);
     } catch (err) {
-      console.error('Error serving file:', err);
+      this.logger.error('Error serving file:', err);
       res.writeHead(500);
       res.end('Internal Server Error');
     }
@@ -201,8 +206,6 @@ class DevServer {
   }
 
   reloadAll() {
-    console.log('📤 Sending reload message to', this.clients.size, 'clients');
-
     // Send a simple reload command to all clients
     const message = JSON.stringify({
       type: 'reload-current'
@@ -215,8 +218,7 @@ class DevServer {
         sentCount++;
       }
     });
-
-    console.log('✅ Reload message sent to', sentCount, 'clients');
+    this.logger.log(`Reloaded ${sentCount} client(s)`);
   }
 
   close() {
@@ -226,21 +228,25 @@ class DevServer {
 }
 
 // File watcher setup
-const setupWatcher = (directory, options, server) => {
+const setupWatcher = (directory, options, server, logger) => {
   let debounceTimer = null;
+  const outputRootDir = path.resolve(options.rootDir, options.outputPath || '_site');
 
   const processChanges = async () => {
-    console.log('Rebuilding site...');
+    logger.log('Rebuilding site...');
     try {
-      await buildSite({ rootDir: options.rootDir, quiet: true });
-      console.log('Rebuild complete');
+      await buildSite({
+        rootDir: options.rootDir,
+        outputPath: options.outputPath,
+        quiet: true
+      });
+      logger.log('Rebuild complete');
 
       // Just reload all clients - they'll reload their current page
-      console.log('🔄 Reloading all connected clients');
       server.reloadAll();
 
     } catch (error) {
-      console.error('Error during rebuild:', error);
+      logger.error('Error during rebuild:', error);
     }
   };
 
@@ -254,12 +260,12 @@ const setupWatcher = (directory, options, server) => {
           return;
         }
 
-        // Skip _site directory if it somehow gets included
-        if (filename.includes('_site/')) {
+        const changedPath = path.resolve(directory, filename);
+        if (changedPath === outputRootDir || changedPath.startsWith(outputRootDir + path.sep)) {
           return;
         }
 
-        console.log(`Detected ${event} in ${filename}`);
+        logger.log(`Detected ${event} in ${filename}`);
 
         if (debounceTimer) {
           clearTimeout(debounceTimer);
@@ -271,37 +277,69 @@ const setupWatcher = (directory, options, server) => {
   );
 };
 
+const setupConfigWatcher = (rootDir, options, server) => {
+  let debounceTimer = null;
+  const logger = createLogger(options.quiet);
+
+  watch(rootDir, { recursive: false }, async (event, filename) => {
+    if (!filename) {
+      return;
+    }
+
+    const normalized = String(filename).replace(/\\/g, '/');
+    const baseName = path.basename(normalized);
+    if (baseName !== 'sites.config.yaml' && baseName !== 'sites.config.yml') {
+      return;
+    }
+
+    logger.log(`Detected ${event} in ${baseName}`);
+
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+
+    debounceTimer = setTimeout(async () => {
+      logger.log('Rebuilding site...');
+      try {
+        await buildSite({
+          rootDir: options.rootDir,
+          outputPath: options.outputPath,
+          quiet: true
+        });
+        logger.log('Rebuild complete');
+        server.reloadAll();
+      } catch (error) {
+        logger.error('Error during rebuild:', error);
+      }
+    }, 10);
+  });
+};
+
 // Main watch function
 const watchSite = async (options = {}) => {
   const {
     port = 3001,
-    rootDir = process.cwd()
+    rootDir = process.cwd(),
+    outputPath = '_site',
+    quiet = false,
+    reloadMode = 'body'
   } = options;
+  const normalizedReloadMode = String(reloadMode).toLowerCase();
+  if (!RELOAD_MODES.has(normalizedReloadMode)) {
+    throw new Error(`Invalid reload mode "${reloadMode}". Allowed values: body, full.`);
+  }
+  const logger = createLogger(quiet);
 
   // Load config file
-  console.log(`📁 Current working directory: ${process.cwd()}`);
-  console.log(`📁 rootDir parameter: ${rootDir}`);
-  const config = await loadSiteConfig(rootDir, true, true);
-  const hasYamlConfig = existsSync(path.join(rootDir, 'sites.config.yaml')) || existsSync(path.join(rootDir, 'sites.config.yml'));
-  
-  if (hasYamlConfig) {
-    console.log('✅ Loaded site config from sites.config.yaml');
-    if (config.markdown) {
-      console.log('✅ Markdown options configured');
-    } else {
-      console.log('ℹ️  No markdown options in config');
-    }
-  } else {
-    console.log('ℹ️  No sites.config.yaml found, using defaults');
-  }
+  await loadSiteConfig(rootDir, true, true);
 
   // Do initial build with config
-  console.log('Starting initial build...');
-  await buildSite({ rootDir });
-  console.log('Initial build complete');
+  logger.log('Starting initial build...');
+  await buildSite({ rootDir, outputPath, quiet: true });
+  logger.log('Initial build complete');
 
   // Start custom dev server
-  const server = new DevServer(port);
+  const server = new DevServer(port, path.resolve(rootDir, outputPath), logger, normalizedReloadMode);
   server.start();
 
   // Watch all relevant directories
@@ -310,16 +348,20 @@ const watchSite = async (options = {}) => {
   dirsToWatch.forEach(dir => {
     const dirPath = path.join(rootDir, dir);
     if (existsSync(dirPath)) {
-      console.log(`👁️  Watching: ${dir}/`);
+      logger.log(`Watching: ${dir}/`);
       setupWatcher(dirPath, {
-        rootDir
-      }, server);
+        rootDir,
+        outputPath
+      }, server, logger);
     }
   });
 
+  logger.log('Watching: sites.config.yaml');
+  setupConfigWatcher(rootDir, { rootDir, outputPath, quiet }, server);
+
   // Handle process termination
   process.on('SIGINT', async () => {
-    console.log('\nShutting down server...');
+    logger.log('\nShutting down server...');
     server.close();
     process.exit();
   });

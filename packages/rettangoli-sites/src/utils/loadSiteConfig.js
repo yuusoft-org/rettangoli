@@ -3,22 +3,64 @@ import path from 'node:path';
 import yaml from 'js-yaml';
 
 const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit']);
-const MARKDOWN_BOOLEAN_KEYS = new Set(['html', 'linkify', 'typographer', 'breaks', 'headingAnchors', 'xhtmlOut']);
+const MARKDOWN_BOOLEAN_KEYS = new Set(['html', 'linkify', 'typographer', 'breaks', 'xhtmlOut']);
 const MARKDOWN_STRING_KEYS = new Set(['langPrefix', 'quotes', 'preset']);
 const MARKDOWN_NUMBER_KEYS = new Set(['maxNesting']);
 const ALLOWED_MARKDOWN_KEYS = new Set([
   ...MARKDOWN_BOOLEAN_KEYS,
   ...MARKDOWN_STRING_KEYS,
   ...MARKDOWN_NUMBER_KEYS,
-  'shiki'
+  'shiki',
+  'headingAnchors'
 ]);
 const SHIKI_BOOLEAN_KEYS = new Set(['enabled']);
 const SHIKI_STRING_KEYS = new Set(['theme']);
 const ALLOWED_SHIKI_KEYS = new Set([...SHIKI_BOOLEAN_KEYS, ...SHIKI_STRING_KEYS]);
 const ALLOWED_PRESETS = new Set(['default', 'commonmark', 'zero']);
+const HEADING_ANCHORS_BOOLEAN_KEYS = new Set(['enabled', 'wrap']);
+const HEADING_ANCHORS_STRING_KEYS = new Set(['slugMode', 'fallback']);
+const ALLOWED_HEADING_ANCHORS_KEYS = new Set([...HEADING_ANCHORS_BOOLEAN_KEYS, ...HEADING_ANCHORS_STRING_KEYS]);
+const ALLOWED_HEADING_ANCHOR_SLUG_MODES = new Set(['ascii', 'unicode']);
+let didWarnLegacyMarkdownKey = false;
 
 function isPlainObject(value) {
   return value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function validateHeadingAnchors(value, configPath) {
+  if (typeof value === 'boolean') {
+    return;
+  }
+
+  if (!isPlainObject(value)) {
+    throw new Error(`Invalid markdown option "headingAnchors" in "${configPath}": expected a boolean or object.`);
+  }
+
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_HEADING_ANCHORS_KEYS.has(key)) {
+      throw new Error(
+        `Unsupported headingAnchors option "${key}" in "${configPath}". Supported options: ${Array.from(ALLOWED_HEADING_ANCHORS_KEYS).join(', ')}.`
+      );
+    }
+
+    if (HEADING_ANCHORS_BOOLEAN_KEYS.has(key) && typeof value[key] !== 'boolean') {
+      throw new Error(`Invalid headingAnchors option "${key}" in "${configPath}": expected a boolean.`);
+    }
+
+    if (HEADING_ANCHORS_STRING_KEYS.has(key) && typeof value[key] !== 'string') {
+      throw new Error(`Invalid headingAnchors option "${key}" in "${configPath}": expected a string.`);
+    }
+  }
+
+  if (value.slugMode !== undefined && !ALLOWED_HEADING_ANCHOR_SLUG_MODES.has(value.slugMode)) {
+    throw new Error(
+      `Invalid headingAnchors slugMode "${value.slugMode}" in "${configPath}". Allowed: ${Array.from(ALLOWED_HEADING_ANCHOR_SLUG_MODES).join(', ')}.`
+    );
+  }
+
+  if (value.fallback !== undefined && value.fallback.trim() === '') {
+    throw new Error(`Invalid headingAnchors option "fallback" in "${configPath}": expected a non-empty string.`);
+  }
 }
 
 function validateConfig(rawConfig, configPath) {
@@ -34,12 +76,17 @@ function validateConfig(rawConfig, configPath) {
 
   for (const key of Object.keys(config)) {
     if (!ALLOWED_TOP_LEVEL_KEYS.has(key)) {
-      throw new Error(`Unsupported key "${key}" in "${configPath}". Supported keys: markdown, markdownit.`);
+      throw new Error(`Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias).`);
     }
   }
 
   if (config.markdown !== undefined && config.markdownit !== undefined) {
-    throw new Error(`Use only one of "markdown" or "markdownit" in "${configPath}".`);
+    throw new Error(`Use only one of "markdownit" (recommended) or "markdown" (legacy alias) in "${configPath}".`);
+  }
+
+  if (config.markdown !== undefined && config.markdownit === undefined && !didWarnLegacyMarkdownKey) {
+    console.warn(`"${configPath}" uses legacy key "markdown". Please rename it to "markdownit".`);
+    didWarnLegacyMarkdownKey = true;
   }
 
   const markdownConfig = config.markdownit ?? config.markdown;
@@ -53,6 +100,11 @@ function validateConfig(rawConfig, configPath) {
         throw new Error(
           `Unsupported markdown option "${key}" in "${configPath}". Supported options: ${Array.from(ALLOWED_MARKDOWN_KEYS).join(', ')}.`
         );
+      }
+
+      if (key === 'headingAnchors') {
+        validateHeadingAnchors(markdownConfig.headingAnchors, configPath);
+        continue;
       }
 
       if (MARKDOWN_BOOLEAN_KEYS.has(key) && typeof markdownConfig[key] !== 'boolean') {

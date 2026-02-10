@@ -46,4 +46,6 @@ events:
         type: number
       trigger:
         type: string
-methods: []
+methods:
+  type: object
+  properties: {}

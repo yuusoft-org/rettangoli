@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { loadSiteConfig } from '../src/utils/loadSiteConfig.js';
 
 async function withTempDir(fn) {
@@ -60,6 +60,7 @@ describe('loadSiteConfig', () => {
 
   it('supports legacy markdown key as alias', async () => {
     await withTempDir(async (tempDir) => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       fs.writeFileSync(path.join(tempDir, 'sites.config.yaml'), 'markdown:\n  html: true\n');
 
       const config = await loadSiteConfig(tempDir);
@@ -68,6 +69,8 @@ describe('loadSiteConfig', () => {
           html: true
         }
       });
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('legacy key "markdown"'));
+      warnSpy.mockRestore();
     });
   });
 
@@ -84,10 +87,38 @@ describe('loadSiteConfig', () => {
     });
   });
 
+  it('supports headingAnchors object configuration', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'markdownit:',
+          '  headingAnchors:',
+          '    enabled: true',
+          '    slugMode: ascii',
+          '    wrap: false',
+          '    fallback: section'
+        ].join('\n')
+      );
+
+      const config = await loadSiteConfig(tempDir);
+      expect(config).toEqual({
+        markdown: {
+          headingAnchors: {
+            enabled: true,
+            slugMode: 'ascii',
+            wrap: false,
+            fallback: 'section'
+          }
+        }
+      });
+    });
+  });
+
   it('throws when both markdown and markdownit are present', async () => {
     await withTempDir(async (tempDir) => {
       fs.writeFileSync(path.join(tempDir, 'sites.config.yaml'), 'markdown:\n  html: true\nmarkdownit:\n  html: true\n');
-      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Use only one of "markdown" or "markdownit"');
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Use only one of "markdownit"');
     });
   });
 
@@ -96,6 +127,20 @@ describe('loadSiteConfig', () => {
       fs.writeFileSync(path.join(tempDir, 'sites.config.js'), 'export default {};');
 
       await expect(loadSiteConfig(tempDir)).rejects.toThrow('no longer supported');
+    });
+  });
+
+  it('throws on invalid headingAnchors.slugMode', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'markdownit:',
+          '  headingAnchors:',
+          '    slugMode: transliterate'
+        ].join('\n')
+      );
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Invalid headingAnchors slugMode');
     });
   });
 });

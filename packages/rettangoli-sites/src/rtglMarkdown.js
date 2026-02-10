@@ -1,19 +1,47 @@
 import { codeToHtml } from 'shiki';
 import { createMarkdownItAsync } from './markdownItAsync.js';
 
-// Custom slug generation function
-function slugify(text) {
-  return text
+function resolveHeadingAnchorOptions(input) {
+  if (input === false) {
+    return { enabled: false, slugMode: 'unicode', wrap: true, fallback: 'section' };
+  }
+
+  if (input === true || input == null) {
+    return { enabled: true, slugMode: 'unicode', wrap: true, fallback: 'section' };
+  }
+
+  const candidate = typeof input === 'object' && !Array.isArray(input) ? input : {};
+  const fallback = typeof candidate.fallback === 'string' && candidate.fallback.trim()
+    ? candidate.fallback.trim()
+    : 'section';
+
+  return {
+    enabled: candidate.enabled !== undefined ? !!candidate.enabled : true,
+    slugMode: candidate.slugMode === 'ascii' ? 'ascii' : 'unicode',
+    wrap: candidate.wrap !== undefined ? !!candidate.wrap : true,
+    fallback
+  };
+}
+
+function slugify(text, { slugMode = 'unicode', fallback = 'section' } = {}) {
+  const normalized = String(text || '')
     .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
     .trim()
-    .replace(/[^\w\s-]/g, '') // Remove non-word chars (except spaces and hyphens)
+    .replace(
+      slugMode === 'ascii' ? /[^a-z0-9\s-]/g : /[^\p{Letter}\p{Number}\s-]/gu,
+      ''
+    )
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/--+/g, '-') // Replace multiple hyphens with single hyphen
     .replace(/^-+/, '') // Remove leading hyphens
     .replace(/-+$/, '') // Remove trailing hyphens
+
+  return normalized || fallback;
 }
 
-export default function configureMarkdown(_markdownit, options = {}) {
+export function createRtglMarkdown(_markdownit, options = {}) {
   const {
     preset = 'default',
     html = true,
@@ -27,6 +55,7 @@ export default function configureMarkdown(_markdownit, options = {}) {
     shiki = {},
     headingAnchors = true
   } = options;
+  const headingAnchorOptions = resolveHeadingAnchorOptions(headingAnchors);
 
   const shikiEnabled = typeof shiki.enabled === 'boolean' ? shiki.enabled : true;
   const shikiTheme = typeof shiki.theme === 'string' ? shiki.theme : 'slack-dark';
@@ -57,7 +86,7 @@ export default function configureMarkdown(_markdownit, options = {}) {
     warnOnSyncRender: false
   })
 
-  if (!headingAnchors) {
+  if (!headingAnchorOptions.enabled) {
     return md;
   }
 
@@ -71,17 +100,25 @@ export default function configureMarkdown(_markdownit, options = {}) {
   }
 
   md.renderer.rules.heading_open = function (tokens, idx, options, env, renderer) {
+    env = env || {};
     const token = tokens[idx]
     const nextToken = tokens[idx + 1]
-    let slug = ''
+    let slug = headingAnchorOptions.fallback
 
     if (nextToken && nextToken.type === 'inline') {
       const headingText = nextToken.content
-      slug = slugify(headingText)
-      token.attrSet('id', slug)
+      const baseSlug = slugify(headingText, headingAnchorOptions)
+      const headingCounts = env.__rtglHeadingSlugCounts || (env.__rtglHeadingSlugCounts = new Map())
+      const nextCount = (headingCounts.get(baseSlug) || 0) + 1
+      headingCounts.set(baseSlug, nextCount)
+      slug = nextCount === 1 ? baseSlug : `${baseSlug}-${nextCount}`
     }
 
+    token.attrSet('id', slug)
     const headingHtml = defaultHeadingRender(tokens, idx, options, env, renderer)
+    if (!headingAnchorOptions.wrap) {
+      return headingHtml
+    }
     return `<a href="#${slug}" style="display: contents; text-decoration: none; color: inherit;">` + headingHtml
   }
 
@@ -91,3 +128,5 @@ export default function configureMarkdown(_markdownit, options = {}) {
 
   return md
 }
+
+export default createRtglMarkdown;

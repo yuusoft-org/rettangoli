@@ -21,4 +21,6 @@ events:
     properties:
       id:
         type: string
-methods: []
+methods:
+  type: object
+  properties: {}

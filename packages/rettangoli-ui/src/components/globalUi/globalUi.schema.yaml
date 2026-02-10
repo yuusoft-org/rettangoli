@@ -3,4 +3,6 @@ propsSchema:
   type: object
   properties: {}
 events: []
-methods: []
+methods:
+  type: object
+  properties: {}

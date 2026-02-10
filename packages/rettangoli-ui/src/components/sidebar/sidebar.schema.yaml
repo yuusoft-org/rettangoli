@@ -52,4 +52,6 @@ events:
     properties:
       item:
         type: object
-methods: []
+methods:
+  type: object
+  properties: {}

@@ -9,4 +9,6 @@ propsSchema:
     w:
       type: string
 events: []
-methods: []
+methods:
+  type: object
+  properties: {}

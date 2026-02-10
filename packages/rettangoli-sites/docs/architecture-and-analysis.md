@@ -62,8 +62,11 @@ Per-page render context:
 `loadSiteConfig` supports:
 
 - `sites.config.yaml` or `sites.config.yml` in site root
-- top-level key: `markdownit` (and legacy alias `markdown`)
+- top-level key: `markdownit` (recommended; `markdown` is legacy alias)
 - markdown keys: `preset`, `html`, `xhtmlOut`, `linkify`, `typographer`, `breaks`, `langPrefix`, `quotes`, `maxNesting`, `shiki`, `headingAnchors`
+  - `headingAnchors` accepts:
+    - boolean (`true`/`false`)
+    - object with `enabled`, `slugMode` (`ascii`/`unicode`), `wrap`, `fallback`
 - shiki keys: `enabled`, `theme`
 
 ## Watch Mode
@@ -73,6 +76,7 @@ Per-page render context:
 - builds initially
 - serves `_site` via HTTP + WebSocket
 - injects client reload script into HTML responses
+- supports reload modes: `body` (default body replacement) or `full` (full page refresh)
 - watches `data`, `templates`, `partials`, `pages`, and `static`
 - rebuilds and broadcasts reload events on changes
 
@@ -118,8 +122,20 @@ url: /
 4. Added `static/` to watch directories so static asset edits trigger rebuild/reload
 5. Tightened config loading so nested module import failures are surfaced
 6. Removed screenshot behavior from sites CLI path and moved capture to VT flow
+7. Clean output directory on each build with guardrails against dangerous output paths
+8. Switched frontmatter parsing to `gray-matter` with `js-yaml` `JSON_SCHEMA` compatibility
+9. Ignore non-YAML files in `partials/` to avoid accidental parse failures (e.g. `.DS_Store`)
+10. Replace markdown template content placeholder in all occurrences (not just first)
+11. Improved heading anchor slug generation with stable fallback IDs and duplicate deduping
+12. Added `--quiet` support for `rtgl sites build/watch` and reduced watch-mode log noise
+13. Added `--reload-mode body|full` to control watch refresh strategy without JS config
+14. Added protocol-aware WebSocket URL (`ws://` vs `wss://`) for watch mode under HTTPS
+15. Improved YAML page error reporting with page file context
+16. Added kebab-case CLI flags (`--root-dir`, `--output-path`) while retaining legacy aliases
+17. Added legacy-config warning when using top-level `markdown` instead of `markdownit`
+18. Made default template CDN scripts optional via `site.assets.*` toggles
 
 ## Current Gaps
 
-1. `_site` is not cleaned automatically before build (stale files possible)
-2. Editing `sites.config.yaml` alone does not trigger a rebuild until another watched file changes
+1. Heading anchor options are configurable but remain global-only (no per-page overrides).
+2. No CSS/DOM preservation strategy exists for stateful client widgets during body replacement mode (users must use `--reload-mode full` when needed).

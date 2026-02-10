@@ -20,4 +20,6 @@ propsSchema:
       type: boolean
       description: Whether the waveform data is currently being loaded
 events: []
-methods: []
+methods:
+  type: object
+  properties: {}

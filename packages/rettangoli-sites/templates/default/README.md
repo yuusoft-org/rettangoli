@@ -9,7 +9,12 @@ This template works without a site-level `package.json`; run commands with `bunx
 ```bash
 bunx rtgl sites build
 bunx rtgl sites watch
+bunx rtgl sites watch --reload-mode full
+bunx rtgl sites build --root-dir . --output-path dist
 ```
+
+`--reload-mode body` (default) does body replacement; `--reload-mode full` does full page refresh.
+Preferred CLI flags are `--root-dir` and `--output-path` (`--rootDir`/`--outputPath` are legacy aliases).
 
 ## Project Structure
 
@@ -179,7 +184,8 @@ Collection item properties:
 
 ## Site Config
 
-Use `sites.config.yaml` for simple, non-JS options:
+Use `sites.config.yaml` with top-level `markdownit` for simple, non-JS options.
+Legacy key `markdown` still works as an alias.
 
 ```yaml
 markdownit:
@@ -195,7 +201,19 @@ markdownit:
   shiki:
     enabled: true
     theme: slack-dark
-  headingAnchors: true
+  headingAnchors:
+    enabled: true
+    slugMode: unicode
+    wrap: true
+    fallback: section
+```
+
+CDN runtime scripts used by the default template can be toggled in `data/site.yaml`:
+
+```yaml
+assets:
+  loadUiFromCdn: true
+  loadConstructStyleSheetsPolyfill: true
 ```
 
 ## Built-in Template Functions
@@ -212,6 +230,7 @@ Use these directly in `${...}` expressions:
 - `toQueryString(object)`
 
 Date format tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`, `ss`.
+`decodeURI`/`decodeURIComponent` return the original input when decoding fails.
 
 ## Static Files
 

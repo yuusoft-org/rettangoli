@@ -37,6 +37,32 @@ out:
   props:
     disabled: true
 ---
+case: keeps empty unquoted attribute values for web components
+in:
+  - attrsString: cur=
+out:
+  attrs:
+    cur: ""
+  props:
+    cur: ""
+---
+case: keeps quoted empty attribute values for web components
+in:
+  - attrsString: label=""
+out:
+  attrs:
+    label: ""
+  props:
+    label: ""
+---
+case: keeps empty unquoted property-form values as empty string
+in:
+  - attrsString: :value=
+out:
+  attrs: {}
+  props:
+    value: ""
+---
 case: rejects boolean toggle for aria attributes
 in:
   - attrsString: ?aria-pressed=isPressed

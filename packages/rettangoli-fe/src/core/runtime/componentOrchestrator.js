@@ -126,7 +126,7 @@ export const runRenderComponentLifecycle = ({
 
   try {
     const vDom = parseViewFn({
-      h: instance.h,
+      h: instance._snabbdomH,
       template: instance.template,
       viewData: instance.viewData,
       refs: instance.refs,

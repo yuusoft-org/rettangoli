@@ -13,4 +13,8 @@ markdownit:
   shiki:
     enabled: true
     theme: slack-dark
-  headingAnchors: true
+  headingAnchors:
+    enabled: true
+    slugMode: unicode
+    wrap: true
+    fallback: section

@@ -29,4 +29,6 @@ propsSchema:
 events:
   value-change: {}
   add-option-click: {}
-methods: []
+methods:
+  type: object
+  properties: {}

@@ -104,13 +104,13 @@ export const parseNodeBindings = ({
     return { attrs, props };
   }
 
-  const attrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]+))/g;
+  const attrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]*))/g;
   let match;
   const processedAttrs = new Set();
 
   while ((match = attrRegex.exec(attrsString)) !== null) {
     const rawBindingName = match[1];
-    const rawValue = match[2] || match[3] || match[4];
+    const rawValue = match[2] ?? match[3] ?? match[4] ?? "";
     processedAttrs.add(rawBindingName);
 
     if (rawBindingName.startsWith(".")) {
@@ -121,7 +121,7 @@ export const parseNodeBindings = ({
     if (rawBindingName.startsWith(PROP_PREFIX)) {
       const propName = rawBindingName.substring(1);
       let propValue = rawValue;
-      if (match[4] !== undefined) {
+      if (match[4] !== undefined && match[4] !== "") {
         const valuePathName = match[4];
         const resolvedPathValue = lodashGet(viewData, valuePathName);
         if (resolvedPathValue !== undefined) {
@@ -141,6 +141,8 @@ export const parseNodeBindings = ({
       if (attrValue === "true") {
         evalValue = true;
       } else if (attrValue === "false") {
+        evalValue = false;
+      } else if (attrValue === "") {
         evalValue = false;
       } else {
         evalValue = lodashGet(viewData, attrValue);
@@ -164,7 +166,7 @@ export const parseNodeBindings = ({
   let remainingAttrsString = attrsString;
   const processedMatches = [];
   let tempMatch;
-  const tempAttrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]+))/g;
+  const tempAttrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]*))/g;
   while ((tempMatch = tempAttrRegex.exec(attrsString)) !== null) {
     processedMatches.push(tempMatch[0]);
   }

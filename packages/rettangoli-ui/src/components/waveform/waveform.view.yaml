@@ -2,7 +2,7 @@ refs:
   canvas:
     selector: canvas
 template:
-  - rtgl-view w=f h=f pos=rel w=${w} h=${h} cur=${cur}:
+  - rtgl-view pos=rel w=${w} h=${h} cur=${cur}:
       - $if isLoading:
           - rtgl-view w=f h=f av=c ah=c:
               - rtgl-text c=mu-fg: ...

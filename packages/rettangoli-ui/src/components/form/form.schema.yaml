@@ -278,4 +278,6 @@ events:
   form-change: {}
   extra-event: {}
   action-click: {}
-methods: []
+methods:
+  type: object
+  properties: {}

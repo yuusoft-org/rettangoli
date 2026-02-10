@@ -22,4 +22,6 @@ propsSchema:
       type: boolean
       default: true
 events: {}
-methods: []
+methods:
+  type: object
+  properties: {}

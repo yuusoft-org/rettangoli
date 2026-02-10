@@ -121,12 +121,20 @@ export const createVirtualDom = ({
         const isWebComponent = tagName.includes("-");
 
         // 1. Parse selector bindings into attrs/props.
-        const { attrs, props } = parseNodeBindings({
-          attrsString,
-          viewData,
-          tagName,
-          isWebComponent,
-        });
+        let attrs;
+        let props;
+        try {
+          ({ attrs, props } = parseNodeBindings({
+            attrsString,
+            viewData,
+            tagName,
+            isWebComponent,
+          }));
+        } catch (error) {
+          throw new Error(
+            `[Parser] Failed to parse bindings for selector '${selector}' with attrs '${attrsString}': ${error.message}`,
+          );
+        }
 
         // 2. Handle ID from selector string (e.g., tag#id)
         // If an 'id' was already parsed from attrsString (e.g. id=value), it takes precedence.
@@ -140,14 +148,11 @@ export const createVirtualDom = ({
         }
 
         // 3. Determine elementIdForRefs (this ID will be used for matching refs keys)
-        // This should be the actual ID that will be on the DOM element.
+        // Only explicit IDs participate in id-based ref matching.
         let elementIdForRefs = null;
         if (attrs.id) {
-          // Check the definitive id from attrs object
+          // Check the definitive id from attrs object.
           elementIdForRefs = attrs.id;
-        } else if (isWebComponent) {
-          // Fallback for web components that don't end up with an 'id' attribute
-          elementIdForRefs = tagName;
         }
 
         const selectorClassMatches = selector.match(/\.([^.#]+)/g) || [];
@@ -170,9 +175,6 @@ export const createVirtualDom = ({
           if (idMatch) {
             elementId = idMatch[1];
           }
-        } else {
-          // For web components, use the tag name as the element ID for event binding
-          elementId = tagName;
         }
 
         // Determine children or text content

@@ -20,4 +20,6 @@ events:
     properties:
       path:
         type: string
-methods: []
+methods:
+  type: object
+  properties: {}

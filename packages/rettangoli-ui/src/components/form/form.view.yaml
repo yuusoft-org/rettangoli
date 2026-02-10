@@ -59,7 +59,7 @@ template:
                   - $if field.inputType == "input-number":
                       - rtgl-input-number#field${i} data-field-name=${field.name} w=f data-testid=${field.testId}: null
                   - $if field.inputType == "input-textarea":
-                      - rtgl-textarea#field${i} data-field-name=${field.name} w=f rows=${field.rows} w=f data-testid=${field.testId}: null
+                      - rtgl-textarea#field${i} data-field-name=${field.name} w=f rows=${field.rows} data-testid=${field.testId}: null
                   - $if field.inputType == "popover-input":
                       - rtgl-popover-input#field${i} data-field-name=${field.name} label="${field.label}" data-testid=${field.testId}: null
                   - $if field.inputType == "select":

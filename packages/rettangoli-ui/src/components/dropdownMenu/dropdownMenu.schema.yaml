@@ -59,4 +59,6 @@ events:
         type: string
       trigger:
         type: string
-methods: []
+methods:
+  type: object
+  properties: {}

@@ -35,7 +35,7 @@ export const createWebComponentClass = ({
   class BaseComponent extends HTMLElement {
     elementName;
     styles;
-    h;
+    _snabbdomH;
     store;
     props;
     propsSchema;
@@ -141,7 +141,8 @@ export const createWebComponentClass = ({
         constants: this.constants,
       };
       bindMethods(this, this.methods);
-      this.h = h;
+      // Keep the Snabbdom helper off public prop names (e.g. schema prop "h").
+      this._snabbdomH = h;
       this.cssText = yamlToCss(elementName, styles);
     }
   }

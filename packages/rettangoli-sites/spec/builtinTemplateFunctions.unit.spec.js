@@ -13,6 +13,11 @@ describe('builtinTemplateFunctions unit', () => {
     expect(builtinTemplateFunctions.decodeURIComponent('a%20b%2Fc%3Fd%3De')).toBe('a b/c?d=e');
   });
 
+  it('returns original input for malformed decode values', () => {
+    expect(builtinTemplateFunctions.decodeURI('%E0%A4%A')).toBe('%E0%A4%A');
+    expect(builtinTemplateFunctions.decodeURIComponent('%E0%A4%A')).toBe('%E0%A4%A');
+  });
+
   it('stringifies JSON with clamped indentation and undefined safety', () => {
     expect(builtinTemplateFunctions.jsonStringify({ a: 1 })).toBe('{"a":1}');
     expect(builtinTemplateFunctions.jsonStringify({ a: 1 }, 2)).toBe('{\n  "a": 1\n}');

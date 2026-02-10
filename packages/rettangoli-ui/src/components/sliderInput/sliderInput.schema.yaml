@@ -22,4 +22,6 @@ propsSchema:
 events:
   value-input: {}
   value-change: {}
-methods: []
+methods:
+  type: object
+  properties: {}
