@@ -29,3 +29,6 @@ items:
       - id: vt-selectors-and-artifacts
         title: "Selectors & Artifacts"
         href: "/vt/docs/reference/selectors-and-artifacts"
+      - id: vt-sites-integration
+        title: "Sites Integration"
+        href: "/vt/docs/reference/sites-integration"

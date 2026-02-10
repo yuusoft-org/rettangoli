@@ -25,10 +25,10 @@ alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.5
 
 The image default working directory is `/workspace`, so `-w /workspace` is not required.
 
-If you do not use Docker, install `rtgl` globally:
+If you do not use Docker, install `rtgl` locally and run through package scripts (recommended for version pinning):
 
 ```bash
-npm install -g rtgl
+npm install --save-dev rtgl
 ```
 
 ## 2. Create VT folders
@@ -72,22 +72,34 @@ title: Home
 
 ## 5. Run the workflow
 
+In `package.json`, add VT scripts that call local `rtgl`:
+
+```json
+{
+  "scripts": {
+    "generate": "rtgl vt generate",
+    "report": "rtgl vt report",
+    "accept": "rtgl vt accept"
+  }
+}
+```
+
 Generate candidate screenshots:
 
 ```bash
-rtgl vt generate
+npm run generate
 ```
 
 Compare candidate vs reference and build report:
 
 ```bash
-rtgl vt report
+npm run report
 ```
 
 When changes are expected, accept them:
 
 ```bash
-rtgl vt accept
+npm run accept
 ```
 
 ## 6. Open the report
@@ -102,26 +114,39 @@ JSON summary:
 
 ## Optional: use with `@rettangoli/sites`
 
-If your app is built by `rtgl sites`, you can keep everything script-free and run with direct CLI commands.
+If your app is built by `rtgl sites`, define scripts once and keep VT commands simple.
 
-Example config (managed preview service):
+`package.json`:
+
+```json
+{
+  "scripts": {
+    "watch": "rtgl sites watch -p 4173 -o dist --quiet",
+    "build": "rtgl sites build -o dist",
+    "generate": "rtgl vt generate",
+    "report": "rtgl vt report",
+    "accept": "rtgl vt accept"
+  }
+}
+```
+
+Scripts call the project-local `rtgl` binary (`node_modules/.bin/rtgl`) automatically.
+
+Use this managed preview service:
 
 ```yaml
 vt:
   path: ./vt
   url: http://127.0.0.1:4173
   service:
-    start: bunx rtgl sites build -o dist && bunx serve dist -l 4173
+    start: npm run watch
   sections:
     - title: pages
       files: pages
 ```
 
-Notes:
-
-- `rtgl sites build -o dist` builds into `dist/` (instead of default `_site/`).
-- `vt.service.start` starts/stops the preview command automatically during `rtgl vt generate`.
-- `vt.url` is required whenever `vt.service` is used.
+`vt.service.start` starts/stops the preview command automatically during `npm run generate`.
+For full setup details, see [Sites Integration](../reference/sites-integration).
 
 ## Next
 
@@ -131,3 +156,4 @@ Notes:
 - [Viewport](../reference/viewport)
 - [Step Actions](../reference/step-actions)
 - [Selectors & Artifacts](../reference/selectors-and-artifacts)
+- [Sites Integration](../reference/sites-integration)

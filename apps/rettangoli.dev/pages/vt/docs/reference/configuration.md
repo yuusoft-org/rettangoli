@@ -14,7 +14,7 @@ vt:
   path: ./vt
   url: http://localhost:5173
   service:
-    start: bunx rtgl sites build -o dist && bunx serve dist -l 5173
+    start: npm run watch
   compareMethod: pixelmatch
   colorThreshold: 0.1
   diffThreshold: 0.3
@@ -65,6 +65,8 @@ vt:
 - `vt.service` currently supports one key: `start` (string command).
 - When `vt.service` is set, `vt.url` is required.
 - VT starts the service before capture and stops it after `generate`.
+- Recommended setup is a package script that calls local `rtgl`, for example:
+  `watch: rtgl sites watch -p <port> -o <outputDir> --quiet`, then `vt.service.start: npm run watch`.
 
 ## `sections` rules
 
