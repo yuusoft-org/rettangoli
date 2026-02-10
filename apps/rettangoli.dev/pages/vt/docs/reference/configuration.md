@@ -13,6 +13,8 @@ VT reads configuration from the `vt` section in `rettangoli.config.yaml`.
 vt:
   path: ./vt
   url: http://localhost:5173
+  service:
+    start: bunx rtgl sites build -o dist && bunx serve dist -l 5173
   compareMethod: pixelmatch
   colorThreshold: 0.1
   diffThreshold: 0.3
@@ -46,6 +48,7 @@ vt:
 | --- | --- | --- |
 | `path` | string | VT root directory. Default: `./vt` |
 | `url` | string | External app URL to capture instead of local preview server |
+| `service` | object | Optional managed service command (`start`) used during `generate` |
 | `compareMethod` | `pixelmatch` or `md5` | Default report compare method |
 | `colorThreshold` | number (`0`-`1`) | Pixelmatch color sensitivity |
 | `diffThreshold` | number (`0`-`100`) | Max diff percentage for a pass |
@@ -56,6 +59,12 @@ vt:
 | `waitEvent` | string | Default custom event for readiness |
 | `viewport` | object or array | Default viewport(s) for capture |
 | `sections` | array (required) | Sidebar structure and grouping for VT pages |
+
+## `service` rules
+
+- `vt.service` currently supports one key: `start` (string command).
+- When `vt.service` is set, `vt.url` is required.
+- VT starts the service before capture and stops it after `generate`.
 
 ## `sections` rules
 

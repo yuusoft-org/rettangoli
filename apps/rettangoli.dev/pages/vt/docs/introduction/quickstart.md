@@ -100,6 +100,29 @@ JSON summary:
 
 - `.rettangoli/vt/report.json`
 
+## Optional: use with `@rettangoli/sites`
+
+If your app is built by `rtgl sites`, you can keep everything script-free and run with direct CLI commands.
+
+Example config (managed preview service):
+
+```yaml
+vt:
+  path: ./vt
+  url: http://127.0.0.1:4173
+  service:
+    start: bunx rtgl sites build -o dist && bunx serve dist -l 4173
+  sections:
+    - title: pages
+      files: pages
+```
+
+Notes:
+
+- `rtgl sites build -o dist` builds into `dist/` (instead of default `_site/`).
+- `vt.service.start` starts/stops the preview command automatically during `rtgl vt generate`.
+- `vt.url` is required whenever `vt.service` is used.
+
 ## Next
 
 - [CLI](../reference/cli)

@@ -20,7 +20,7 @@ Use `-w /workspace/<subdir>` only when you need to run commands from a nested pr
 
 | Command | Purpose |
 | --- | --- |
-| `rtgl vt generate` | Build candidate pages and capture candidate screenshots |
+| `rtgl vt generate` | Build candidate pages and capture candidate screenshots (can auto-start `vt.service.start`) |
 | `rtgl vt report` | Compare candidate vs reference and generate report output |
 | `rtgl vt accept` | Accept report differences as new reference images |
 
@@ -42,6 +42,8 @@ Options:
 | `--group <section-key>` | repeatable string | Scope to one or more section keys from `vt.sections` |
 | `--item <spec-path>` | repeatable string | Scope to one or more spec paths under `vt/specs` |
 | `--headed` | boolean | Run browser in headed mode (debugging) |
+
+If `vt.service.start` is configured, `generate` manages the service lifecycle automatically.
 
 Examples:
 
