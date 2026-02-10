@@ -40,16 +40,6 @@ Rules:
 - `action: select` is the only nested/block action and requires `steps`.
 - Unknown keys on structured actions fail validation.
 
-## Legacy Compatibility
-
-These older forms are still accepted for backward compatibility:
-
-- string steps, e.g. `waitFor #root visible 5000`
-- `select <testId>` legacy block key
-- `assert: { ... }` legacy structured assert object
-
-Use canonical `action` objects for new specs and generated specs.
-
 ## Select Targeting
 
 `action: select` resolves `data-testid="<testId>"`.

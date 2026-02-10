@@ -172,12 +172,12 @@ Allowed keys:
 - `viewport` (object or array of viewport objects)
 - `skipScreenshot` (boolean)
 - `specs` (array of non-empty strings)
-- `steps` (array of structured action objects; legacy string/block forms are still accepted for compatibility)
+- `steps` (array of structured action objects)
 
 Step action reference:
 
 - `docs/step-actions.md`
-- `assert` is structured-only (`- assert: { ... }`) and supports `js` deep-equal checks (including object/array values).
+- `assert` uses `action: assert` and supports `js` deep-equal checks (including object/array values).
 
 Validation:
 
@@ -185,7 +185,6 @@ Validation:
 - `waitStrategy=selector` requires `waitSelector`.
 - Structured steps require `action`.
 - `action: select` is the only nested/block action and requires `steps`.
-- Legacy block step object must contain exactly one key.
 
 ## Screenshot Naming Contract
 

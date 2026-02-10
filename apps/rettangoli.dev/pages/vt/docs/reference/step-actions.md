@@ -46,16 +46,6 @@ steps:
   - action: screenshot
 ```
 
-## Legacy compatibility
-
-Legacy forms still work for backward compatibility:
-
-- string steps (`wait 200`, `waitFor #root visible 5000`)
-- block key form (`select login-email: ...`)
-- legacy assert key (`assert: { ... }`)
-
-Use action objects for all new specs.
-
 ## Select behavior
 
 `action: select` targets `data-testid="<testId>"`.

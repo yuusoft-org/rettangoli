@@ -31,8 +31,8 @@
     "build": "rtgl fe build && bun run esbuild.js && bun run esbuild-dev.js && npm run verify:vt-bundle",
     "verify:vt-bundle": "rg -q 'customElements\\.define\\(\"rtgl-button\"' vt/static/public/main.js",
     "prepack": "npm run build",
-    "vt:generate": "bun run build:dev && rtgl vt generate --skip-screenshots",
-    "vt:docker": "bun run build:dev && docker run --rm --user $(id -u):$(id -g) -v \"$PWD:/app\" -w /app han4wluc/rtgl:playwright-v1.57.0-rtgl-v0.0.38 rtgl vt generate",
+    "vt:generate": "bun run build:dev && rtgl vt generate",
+    "vt:docker": "bun run build:dev && docker run --rm --user $(id -u):$(id -g) -v \"$PWD:/app\" -w /app han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc10 rtgl vt screenshot",
     "vt:report": "bun run vt:docker && rtgl vt report",
     "vt:accept": "rtgl vt accept",
     "serve": "bunx serve .rettangoli/vt/_site"

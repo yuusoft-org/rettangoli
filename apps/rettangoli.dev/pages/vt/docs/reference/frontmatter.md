@@ -21,13 +21,17 @@ viewport:
   width: 768
   height: 1024
 steps:
-  - wait 200
-  - assert:
-      type: exists
-      selector: "[data-testid='login-email']"
-  - select login-email:
-      - write user@example.com
-  - screenshot
+  - action: sleep
+    timeoutMs: 200
+  - action: assert
+    type: exists
+    selector: "[data-testid='login-email']"
+  - action: select
+    testId: login-email
+    steps:
+      - action: write
+        text: user@example.com
+  - action: screenshot
 ---
 ```
 
@@ -45,7 +49,7 @@ steps:
 | `viewport` | object or array | Viewport override(s) for this spec |
 | `skipScreenshot` | boolean | Skip capture for this spec |
 | `specs` | array of strings | Additional metadata list |
-| `steps` | array | Action steps executed after initial screenshot |
+| `steps` | array | Structured action steps executed after initial screenshot |
 
 ## Wait Strategy Rules
 
@@ -57,26 +61,31 @@ steps:
 
 ## `steps` Shape
 
-`steps` supports:
+`steps` only supports structured action objects:
 
-- string steps
-- block step objects with one key and nested step values
-- structured assert objects (`- assert: { ... }`)
+- each step must include `action`
+- additional keys depend on action type (`waitFor`, `assert`, `select`, `write`, etc.)
+- `select` is the only nested action and requires a `steps` array
 
 Example:
 
 ```yaml
 steps:
-  - wait 200
-  - assert:
-      type: url
-      value: "/login"
-      match: includes
-  - select login-email:
-      - write user@example.com
-      - assert:
-          type: visible
-  - keypress Enter
+  - action: sleep
+    timeoutMs: 200
+  - action: assert
+    type: url
+    value: "/login"
+    match: includes
+  - action: select
+    testId: login-email
+    steps:
+      - action: write
+        text: user@example.com
+      - action: assert
+        type: visible
+  - action: press
+    key: Enter
 ```
 
 For full command reference, see [Step Actions](./step-actions).
