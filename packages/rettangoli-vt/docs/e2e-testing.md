@@ -46,7 +46,7 @@ dynamicFields:
   - workerUtilization
 
 steps:
-  - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt generate
+  - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt screenshot
     expected: step1
   - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt report
     expectFail: true
@@ -106,7 +106,7 @@ e2e/my-new-scenario/
 ```bash
 # Copy initial to a temp dir, run commands manually, then copy back
 cp -r e2e/my-new-scenario/initial /tmp/scenario-run
-docker run --rm -v /tmp/scenario-run:/workspace -w /workspace rtgl-local-test:latest rtgl vt generate
+docker run --rm -v /tmp/scenario-run:/workspace -w /workspace rtgl-local-test:latest rtgl vt screenshot
 cp -r /tmp/scenario-run e2e/my-new-scenario/step1
 
 # Continue for step2, step3, etc.
@@ -324,7 +324,7 @@ dynamicFields:
   - workerUtilization
 
 steps:
-  - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt generate
+  - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt screenshot
     expected: step1
   - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt report
     expectFail: true
@@ -366,7 +366,7 @@ WORK=/tmp/e2e-snapshot-run
 rm -rf "$WORK" && cp -r "$SCENARIO/initial" "$WORK"
 
 # Step 1: generate
-docker run --rm -v "$WORK:/workspace" -w /workspace rtgl-local-test:latest rtgl vt generate
+docker run --rm -v "$WORK:/workspace" -w /workspace rtgl-local-test:latest rtgl vt screenshot
 rm -rf "$SCENARIO/step1" && cp -r "$WORK" "$SCENARIO/step1"
 
 # Step 2: report (expect fail)
@@ -389,7 +389,7 @@ rm -rf "$WORK"
 When a step fails, the runner prints:
 
 ```
-FAIL: basic-generate-report > step1 (docker run ... rtgl vt generate)
+FAIL: basic-generate-report > step1 (docker run ... rtgl vt screenshot)
   MISSING: .rettangoli/vt/_site/candidate/components/basic-01.webp
   EXTRA: .rettangoli/vt/_site/candidate/components/basic-01.png
   CONTENT MISMATCH (json): .rettangoli/vt/report.json
@@ -409,7 +409,7 @@ or:
 Results: 0/1 passed
 
 FAILURES:
-  basic-generate-report > step1 (docker run ... rtgl vt generate)
+  basic-generate-report > step1 (docker run ... rtgl vt screenshot)
     MISSING: .rettangoli/vt/_site/candidate/components/basic-01.webp
 ```
 

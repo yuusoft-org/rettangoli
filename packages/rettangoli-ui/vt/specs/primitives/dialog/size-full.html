@@ -6,12 +6,21 @@ specs:
   - Runtime measurement output reports pass/fail expectation.
   - VT flow opens dialog before screenshot capture.
 steps:
-  - select open-full:
-    - click
-  - 'waitFor #dialog-full[open] visible 1500'
-  - wait 350
-  - 'assert text #result-full PASS'
-  - screenshot
+  - action: select
+    testId: open-full
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog-full[open]'
+    state: visible
+    timeoutMs: 1500
+  - action: wait
+    ms: 350
+  - action: assert
+    type: text
+    selector: '#result-full'
+    value: PASS
+  - action: screenshot
 ---
 <rtgl-view d="v" g="md" p="lg" wh="f">
   <rtgl-button id="open-full" data-testid="open-full">Open Dialog s=f</rtgl-button>

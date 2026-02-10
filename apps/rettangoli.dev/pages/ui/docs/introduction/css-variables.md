@@ -10,7 +10,15 @@ sidebarId: css-variables
 
 CSS Variables (Custom Properties) are used to configure design tokens for your project, ensuring consistent styling across all components. They provide a centralized way to manage colors, typography, spacing, and other design elements.
 
-Rettangoli provides default themes in `theme.css` with support for both light and dark themes. You should customize these variables to match your project's design requirements.
+Rettangoli requires a two-file CSS setup: one base reset plus one theme file.
+
+Available files:
+
+- `reset.css` (base reset for HTML defaults)
+- `theme-default.css` (default light theme + optional `.dark` overrides)
+- `theme-catppuccin.css` (Catppuccin palette; also supports `.dark`)
+
+Use `reset.css` first, then one theme file. Both are required for consistent rendering.
 
 ## Colors
 
@@ -263,4 +271,3 @@ The design system supports automatic theme switching through the `.dark` class. 
 <!-- Dark theme -->
 <html class="dark">
 ```
-

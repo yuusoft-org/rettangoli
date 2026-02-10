@@ -5,12 +5,18 @@ Visual regression testing for Rettangoli specs using Playwright screenshots.
 ## Commands
 
 - `rtgl vt generate`
+- `rtgl vt screenshot`
 - `rtgl vt report`
 - `rtgl vt accept`
 
-## Public Generate Options
+Behavior split:
 
-- `--skip-screenshots`
+- `generate` builds candidate HTML only (no Playwright capture)
+- `screenshot` runs generate flow and captures candidate screenshots
+- `report` compares existing artifacts only (does not run generate/screenshot)
+
+## Public Screenshot Options
+
 - `--headed`
 - `--concurrency <number>`
 - `--timeout <ms>`
@@ -30,7 +36,7 @@ Visual regression testing for Rettangoli specs using Playwright screenshots.
 
 ## Scoped Runs
 
-Use selectors to run only part of VT in both `generate` and `report`:
+Use selectors to run only part of VT in both `screenshot` and `report`:
 
 - `folder`: matches specs by folder prefix under `vt/specs` (example: `components/forms`)
 - `group`: matches section page key from `vt.sections` (`title` for flat sections, `items[].title` for grouped sections)
@@ -45,17 +51,17 @@ Examples:
 
 ```bash
 # Only specs under a folder
-rtgl vt generate --folder components/forms
+rtgl vt screenshot --folder components/forms
 
 # Only one section/group key from vt.sections
-rtgl vt generate --group components_basic
+rtgl vt screenshot --group components_basic
 
 # Only one spec item (extension optional)
-rtgl vt generate --item components/forms/login
-rtgl vt generate --item components/forms/login.html
+rtgl vt screenshot --item components/forms/login
+rtgl vt screenshot --item components/forms/login.html
 
 # Combine selectors (union)
-rtgl vt generate --group components_basic --item pages/home
+rtgl vt screenshot --group components_basic --item pages/home
 
 # Same selectors for report
 rtgl vt report --folder components/forms
@@ -76,7 +82,6 @@ vt:
   url: http://127.0.0.1:4173
   service:
     start: bun run preview
-  skipScreenshots: false
   concurrency: 4
   timeout: 30000
   waitEvent: vt:ready
@@ -118,7 +123,8 @@ Supported frontmatter keys per spec file:
 Step action reference:
 
 - `docs/step-actions.md`
-- `assert` uses structured object syntax (`- assert: { ... }`) and supports `js` deep-equal checks for object values.
+- canonical format is structured action objects (`- action: ...`), with legacy string/block forms still supported.
+- `assert` supports `js` deep-equal checks for object/array values.
 
 Screenshot naming:
 
@@ -137,7 +143,7 @@ docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc6
 Run commands against a local project:
 
 ```bash
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc6 rtgl vt generate
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc6 rtgl vt screenshot
 docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc6 rtgl vt report
 docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc6 rtgl vt accept
 ```

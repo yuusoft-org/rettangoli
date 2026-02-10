@@ -6,21 +6,31 @@ title: Rettangoli
     - $partial: hero1
       title: ${site.hero.title}
       subtitle: ${site.hero.subtitle}
-      cta: ${site.hero.cta}
-    - rtgl-view h=24:
+    - rtgl-view h=96:
     - rtgl-view w="f" d="v" g="lg":
         - rtgl-text s=h3 ta=c: "Libraries"
         - rtgl-text ta=c c="mu-fg": "Use the docs below to get started with each package."
-        - rtgl-view d="h" sm-d="v" g="lg" w="f":
-            - rtgl-view w="1fg" d="v" g="md" bw="xs" br="md" bgc="mu" p="lg":
-                - rtgl-text s=h4: "rettangoli-ui"
-                - rtgl-text c="mu-fg": "Web components and primitives for app UIs."
-                - rtgl-button href="/ui/docs/introduction/introduction/": "Read UI docs"
-            - rtgl-view w="1fg" d="v" g="md" bw="xs" br="md" bgc="mu" p="lg":
-                - rtgl-text s=h4: "rettangoli-sites"
-                - rtgl-text c="mu-fg": "Static site generator for docs and content sites."
-                - rtgl-button href="/sites/docs/introduction/": "Read Sites docs"
-            - rtgl-view w="1fg" d="v" g="md" bw="xs" br="md" bgc="mu" p="lg":
-                - rtgl-text s=h4: "rettangoli-vt"
-                - rtgl-text c="mu-fg": "Visual testing workflow for snapshots and reports."
-                - rtgl-button href="/vt/docs/introduction/quickstart/": "Read VT docs"
+        - rtgl-view d="v" g="lg" w="f":
+            - rtgl-view d="h" sm-d="v" g="lg" w="f":
+                - rtgl-view w="1fg" sm-w="f" h="200" d="v" g="md" bw="xs" br="md" bgc="mu" p="lg":
+                    - rtgl-text s=h4: "rettangoli-ui"
+                    - rtgl-text c="mu-fg": "Web components and primitives for app UIs."
+                    - rtgl-view h="1fg":
+                    - rtgl-button href="/ui/docs/introduction/introduction/": "Read UI docs"
+                - rtgl-view w="1fg" sm-w="f" h="200" d="v" g="md" bw="xs" br="md" bgc="mu" p="lg":
+                    - rtgl-text s=h4: "rettangoli-fe"
+                    - rtgl-text c="mu-fg": "State and view architecture helpers for reactive frontend apps."
+                    - rtgl-view h="1fg":
+                    - rtgl-button href="/fe/docs/introduction/introduction/": "Read FE docs"
+            - rtgl-view d="h" sm-d="v" g="lg" w="f":
+                - rtgl-view w="1fg" sm-w="f" h="200" d="v" g="md" bw="xs" br="md" bgc="mu" p="lg":
+                    - rtgl-text s=h4: "rettangoli-sites"
+                    - rtgl-text c="mu-fg": "Static site generator for docs and content sites."
+                    - rtgl-view h="1fg":
+                    - rtgl-button href="/sites/docs/introduction/introduction/": "Read Sites docs"
+                - rtgl-view w="1fg" sm-w="f" h="200" d="v" g="md" bw="xs" br="md" bgc="mu" p="lg":
+                    - rtgl-text s=h4: "rettangoli-vt"
+                    - rtgl-text c="mu-fg": "Visual testing workflow for snapshots and reports."
+                    - rtgl-view h="1fg":
+                    - rtgl-button href="/vt/docs/introduction/quickstart/": "Read VT docs"
+    - rtgl-view h=160:

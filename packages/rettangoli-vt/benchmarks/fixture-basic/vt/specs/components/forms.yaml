@@ -1,7 +1,8 @@
 ---
 steps:
-  - wait 10
-  - screenshot
+  - action: wait
+    ms: 10
+  - action: screenshot
 ---
 <form style="font-family: sans-serif; max-width: 420px; margin: 24px;">
   <label style="display:block; margin-bottom: 8px;">Email</label>

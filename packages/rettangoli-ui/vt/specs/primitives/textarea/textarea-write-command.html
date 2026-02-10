@@ -6,9 +6,12 @@ specs:
   - Write step inserts expected text content.
   - Screenshot captures populated textarea state.
 steps:
-  - select my-textarea:
-    - write The write is working as expected as well
-  - screenshot
+  - action: select
+    testId: my-textarea
+    steps:
+      - action: write
+        value: The write is working as expected as well
+  - action: screenshot
 ---
 <rtgl-view p="lg" w="400">
   <rtgl-textarea data-testid="my-textarea" rows="5" placeholder="Type here..."></rtgl-textarea>

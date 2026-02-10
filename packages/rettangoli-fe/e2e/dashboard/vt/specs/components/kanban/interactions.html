@@ -1,27 +1,45 @@
 ---
 title: kanban-interactions
 steps:
-  - select kanban-input:
-    - write Deploy
-  - select kanban-add:
-    - click
-  - select kanban-input:
-    - write Review
-  - select kanban-add:
-    - click
-  - screenshot
-  - select move-1:
-    - click
-  - screenshot
-  - select move-1:
-    - click
-  - screenshot
-  - select move-2:
-    - click
-  - screenshot
-  - select del-4:
-    - click
-  - screenshot
+  - action: select
+    testId: kanban-input
+    steps:
+      - action: write
+        value: Deploy
+  - action: select
+    testId: kanban-add
+    steps:
+      - action: click
+  - action: select
+    testId: kanban-input
+    steps:
+      - action: write
+        value: Review
+  - action: select
+    testId: kanban-add
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: move-1
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: move-1
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: move-2
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: del-4
+    steps:
+      - action: click
+  - action: screenshot
 ---
 
 <script type="module" src="/static/public/main.js"></script>

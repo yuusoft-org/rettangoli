@@ -6,12 +6,20 @@ specs:
   - Leaving trigger closes tooltip.
   - Hover interaction remains deterministic for VT capture.
 steps:
-  - wait 150
-  - select tooltip-hover-target:
-    - hover
-  - 'waitFor #tooltip[open] attached 1200'
-  - 'assert exists #tooltip[open]'
-  - screenshot
+  - action: wait
+    ms: 150
+  - action: select
+    testId: tooltip-hover-target
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: '#tooltip[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: exists
+    selector: '#tooltip[open]'
+  - action: screenshot
 ---
 <rtgl-view h="100vh" w="100vw" ah="c" av="c">
   <rtgl-button id="button" data-testid="tooltip-hover-target">Hover for Tooltip</rtgl-button>

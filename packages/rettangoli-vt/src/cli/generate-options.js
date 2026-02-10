@@ -5,6 +5,7 @@ import { normalizeSelectors } from "../selector-filter.js";
 export function resolveGenerateOptions(options = {}, configData = {}) {
   const {
     skipScreenshots: cliSkipScreenshots,
+    captureScreenshots,
     vtPath: cliVtPath,
     port: cliPort,
     concurrency: cliConcurrency,
@@ -25,9 +26,20 @@ export function resolveGenerateOptions(options = {}, configData = {}) {
     item: cliItem,
   });
 
+  let resolvedSkipScreenshots;
+  if (captureScreenshots === true) {
+    resolvedSkipScreenshots = false;
+  } else if (captureScreenshots === false) {
+    resolvedSkipScreenshots = true;
+  } else if (cliSkipScreenshots === true) {
+    resolvedSkipScreenshots = true;
+  } else {
+    resolvedSkipScreenshots = configData.skipScreenshots ?? false;
+  }
+
   const resolvedOptions = {
     vtPath: cliVtPath ?? configData.path ?? "./vt",
-    skipScreenshots: cliSkipScreenshots ? true : (configData.skipScreenshots ?? false),
+    skipScreenshots: resolvedSkipScreenshots,
     port: cliPort ?? configData.port ?? 3001,
     waitEvent,
     headless: cliHeadless ?? true,

@@ -104,6 +104,11 @@ li + li {
   margin-top: var(--spacing-md);
 }
 
+li > ul,
+li > ol {
+  margin-top: var(--spacing-md);
+}
+
 /* Make sidebar sticky */
 rtgl-sidebar {
   position: sticky !important;

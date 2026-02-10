@@ -253,6 +253,24 @@ in:
           - keypress Enter
   - specs/page.yaml
 ---
+case: accepts structured action steps
+in:
+  - steps:
+      - action: waitFor
+        selector: "[data-testid='login-page']"
+        state: visible
+        timeoutMs: 5000
+      - action: select
+        testId: login-email
+        steps:
+          - action: write
+            value: user@example.com
+      - action: assert
+        type: url
+        value: /dashboard
+        match: includes
+  - specs/page.yaml
+---
 case: accepts frontmatter viewport override object
 in:
   - viewport:
@@ -286,6 +304,56 @@ in:
       - ""
   - specs/page.yaml
 throws: frontMatter.steps[0]
+---
+case: rejects unknown structured action
+in:
+  - steps:
+      - action: waitUntil
+  - specs/page.yaml
+throws: must be one of
+---
+case: rejects structured select without testId
+in:
+  - steps:
+      - action: select
+        steps:
+          - action: click
+  - specs/page.yaml
+throws: testId
+---
+case: rejects structured select without nested steps array
+in:
+  - steps:
+      - action: select
+        testId: login-email
+  - specs/page.yaml
+throws: steps
+---
+case: rejects structured waitFor invalid state
+in:
+  - steps:
+      - action: waitFor
+        selector: "#app"
+        state: ready
+  - specs/page.yaml
+throws: must be one of
+---
+case: rejects structured selectOption with multiple discriminators
+in:
+  - steps:
+      - action: selectOption
+        value: one
+        label: One
+  - specs/page.yaml
+throws: exactly one of
+---
+case: rejects unknown keys in structured action
+in:
+  - steps:
+      - action: screenshot
+        foo: bar
+  - specs/page.yaml
+throws: unknown keys
 ---
 case: accepts structured assert steps including js object value
 in:

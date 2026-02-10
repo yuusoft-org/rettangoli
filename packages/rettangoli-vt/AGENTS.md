@@ -14,8 +14,8 @@ This guide is for future coding agents working in `packages/rettangoli-vt`.
 ## Current Product Direction
 
 - Keep the public interface small.
-- Public generate knobs should stay minimal:  
-  `skipScreenshots`, `headed`, `concurrency`, `timeout`, `waitEvent`, `viewport`.
+- Public screenshot knobs should stay minimal:  
+  `headed`, `concurrency`, `timeout`, `waitEvent`, `viewport`.
 - Avoid re-exposing broad internal capture tuning options.
 - Preserve deterministic screenshot naming (`-01`..`-99`).
 - When viewport ids are configured, keep the viewport suffix format:
@@ -49,7 +49,7 @@ This guide is for future coding agents working in `packages/rettangoli-vt`.
 - `vt.capture` is internal-only in public contract.
 - `vt.viewport` / frontmatter `viewport` accept object or array.
 - Each viewport requires `id`, `width`, `height`; ids must be unique case-insensitively.
-- `generate` fails on unresolved capture failures.
+- `screenshot` fails on unresolved capture failures.
 - `report` fails when mismatches exist.
 
 ## Testing Expectations

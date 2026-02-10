@@ -6,12 +6,21 @@ specs:
   - Runtime measurement validates rendered width near target.
   - VT flow captures post-open measured dialog state.
 steps:
-  - select open-width:
-    - click
-  - 'waitFor #dialog-width[open] visible 1500'
-  - wait 350
-  - 'assert text #result-width PASS'
-  - screenshot
+  - action: select
+    testId: open-width
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog-width[open]'
+    state: visible
+    timeoutMs: 1500
+  - action: wait
+    ms: 350
+  - action: assert
+    type: text
+    selector: '#result-width'
+    value: PASS
+  - action: screenshot
 ---
 <rtgl-view d="v" g="md" p="lg" wh="f">
   <rtgl-button id="open-width" data-testid="open-width">Open Dialog w=360px</rtgl-button>

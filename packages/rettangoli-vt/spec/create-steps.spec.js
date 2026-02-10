@@ -87,6 +87,122 @@ describe("createSteps setViewport command", () => {
   });
 });
 
+describe("createSteps structured action steps", () => {
+  it("supports structured waitFor with selector state and timeoutMs", async () => {
+    const page = {
+      waitForSelector: vi.fn().mockResolvedValue(undefined),
+    };
+    const stepsExecutor = createExecutor(page);
+
+    await stepsExecutor.executeStep({
+      action: "waitFor",
+      selector: "[data-testid='login-page']",
+      state: "visible",
+      timeoutMs: 5000,
+    });
+
+    expect(page.waitForSelector).toHaveBeenCalledTimes(1);
+    expect(page.waitForSelector).toHaveBeenCalledWith(
+      "[data-testid='login-page']",
+      { state: "visible", timeout: 5000 },
+    );
+  });
+
+  it("supports structured select with nested structured write", async () => {
+    const fill = vi.fn().mockResolvedValue(undefined);
+    const { page, interactiveLocator } = createSelectBlockPage({
+      selectedElement: { fill },
+    });
+    const stepsExecutor = createExecutor(page);
+
+    await stepsExecutor.executeStep({
+      action: "select",
+      testId: "login-email",
+      steps: [
+        {
+          action: "write",
+          value: "user@example.com",
+        },
+      ],
+    });
+
+    expect(page.getByTestId).toHaveBeenCalledWith("login-email");
+    expect(interactiveLocator.fill).toHaveBeenCalledWith("user@example.com");
+  });
+
+  it("supports structured select with nested click", async () => {
+    const click = vi.fn().mockResolvedValue(undefined);
+    const { page, interactiveLocator } = createSelectBlockPage({
+      selectedElement: { click },
+    });
+    const stepsExecutor = createExecutor(page);
+
+    await stepsExecutor.executeStep({
+      action: "select",
+      testId: "login-submit",
+      steps: [{ action: "click" }],
+    });
+
+    expect(interactiveLocator.click).toHaveBeenCalledTimes(1);
+  });
+
+  it("supports structured click by coordinates", async () => {
+    const page = {
+      mouse: {
+        click: vi.fn().mockResolvedValue(undefined),
+      },
+    };
+    const stepsExecutor = createExecutor(page);
+
+    await stepsExecutor.executeStep({
+      action: "click",
+      x: 24,
+      y: 42,
+    });
+
+    expect(page.mouse.click).toHaveBeenCalledWith(24, 42, { button: "left" });
+  });
+
+  it("supports structured assert action form", async () => {
+    const page = {
+      url: vi.fn().mockReturnValue("https://rettangoli.dev/docs/vt"),
+    };
+    const stepsExecutor = createExecutor(page);
+
+    await expect(
+      stepsExecutor.executeStep({
+        action: "assert",
+        type: "url",
+        value: "rettangoli.dev/docs",
+      }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("throws on unknown structured action", async () => {
+    const page = {};
+    const stepsExecutor = createExecutor(page);
+
+    await expect(
+      stepsExecutor.executeStep({
+        action: "waitUntil",
+      }),
+    ).rejects.toThrow('Unknown structured action: "waitUntil".');
+  });
+
+  it("throws on invalid structured waitFor state", async () => {
+    const page = {};
+    const stepsExecutor = createExecutor(page);
+
+    await expect(
+      stepsExecutor.executeStep({
+        action: "waitFor",
+        selector: "#app",
+        state: "ready",
+      }),
+    ).rejects.toThrow('Structured action "waitFor" has invalid state "ready".');
+  });
+});
+
 describe("createSteps structured assert", () => {
   it("rejects legacy inline assert strings", async () => {
     const page = {};

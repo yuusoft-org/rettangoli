@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/ui",
-  "version": "1.0.0-rc3",
+  "version": "1.0.0-rc4",
   "description": "A UI component library for building web interfaces.",
   "main": "dist/rettangoli-esm.min.js",
   "type": "module",
@@ -10,7 +10,10 @@
   ],
   "exports": {
     ".": "./src/index.js",
-    "./cli": "./src/cli/index.js"
+    "./cli": "./src/cli/index.js",
+    "./themes/reset.css": "./src/themes/reset.css",
+    "./themes/theme-default.css": "./src/themes/theme-default.css",
+    "./themes/theme-catppuccin.css": "./src/themes/theme-catppuccin.css"
   },
   "module": "./src/index.js",
   "repository": {

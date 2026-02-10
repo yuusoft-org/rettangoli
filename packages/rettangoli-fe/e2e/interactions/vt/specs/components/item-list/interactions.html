@@ -1,25 +1,44 @@
 ---
 title: item-list-interactions
 steps:
-  - select input:
-    - write Apple
-  - select add:
-    - click
-  - select input:
-    - write Banana
-  - select add:
-    - click
-  - select input:
-    - write Cherry
-  - select add:
-    - click
-  - screenshot
-  - select item-1:
-    - click
-  - screenshot
-  - select filter-red:
-    - click
-  - screenshot
+  - action: select
+    testId: input
+    steps:
+      - action: write
+        value: Apple
+  - action: select
+    testId: add
+    steps:
+      - action: click
+  - action: select
+    testId: input
+    steps:
+      - action: write
+        value: Banana
+  - action: select
+    testId: add
+    steps:
+      - action: click
+  - action: select
+    testId: input
+    steps:
+      - action: write
+        value: Cherry
+  - action: select
+    testId: add
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: item-1
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: filter-red
+    steps:
+      - action: click
+  - action: screenshot
 ---
 
 <script type="module" src="/static/public/main.js"></script>

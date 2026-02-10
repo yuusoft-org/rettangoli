@@ -18,7 +18,6 @@ vt:
   compareMethod: pixelmatch
   colorThreshold: 0.1
   diffThreshold: 0.3
-  skipScreenshots: false
   port: 3001
   concurrency: 4
   timeout: 30000
@@ -48,11 +47,10 @@ vt:
 | --- | --- | --- |
 | `path` | string | VT root directory. Default: `./vt` |
 | `url` | string | External app URL to capture instead of local preview server |
-| `service` | object | Optional managed service command (`start`) used during `generate` |
+| `service` | object | Optional managed service command (`start`) used during `screenshot` |
 | `compareMethod` | `pixelmatch` or `md5` | Default report compare method |
 | `colorThreshold` | number (`0`-`1`) | Pixelmatch color sensitivity |
 | `diffThreshold` | number (`0`-`100`) | Max diff percentage for a pass |
-| `skipScreenshots` | boolean | Default behavior for generate screenshot capture |
 | `port` | integer (`1`-`65535`) | Local preview server port |
 | `concurrency` | integer (`>=1`) | Default capture workers |
 | `timeout` | integer (`>=1`) | Global timeout in milliseconds |
@@ -64,7 +62,7 @@ vt:
 
 - `vt.service` currently supports one key: `start` (string command).
 - When `vt.service` is set, `vt.url` is required.
-- VT starts the service before capture and stops it after `generate`.
+- VT starts the service before capture and stops it after `screenshot`.
 - Recommended setup is a package script that calls local `rtgl`, for example:
   `watch: rtgl sites watch -p <port> -o <outputDir> --quiet`, then `vt.service.start: npm run watch`.
 

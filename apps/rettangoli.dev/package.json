@@ -4,10 +4,11 @@
     "watch": "rtgl sites watch",
     "dev": "npm run watch",
     "generate": "rtgl vt generate",
+    "screenshot": "rtgl vt screenshot",
     "report": "rtgl vt report",
     "accept": "rtgl vt accept"
   },
   "devDependencies": {
-    "rtgl": "1.0.0-rc7"
+    "rtgl": "1.0.0-rc8"
   }
 }

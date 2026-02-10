@@ -1,20 +1,30 @@
 ---
 title: stepper-interactions
 steps:
-  - select next:
-    - click
-  - screenshot
-  - select next:
-    - click
-  - screenshot
-  - select next:
-    - click
-  - screenshot
-  - select prev:
-    - click
-  - select prev:
-    - click
-  - screenshot
+  - action: select
+    testId: next
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: next
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: next
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: prev
+    steps:
+      - action: click
+  - action: select
+    testId: prev
+    steps:
+      - action: click
+  - action: screenshot
 ---
 
 <script type="module" src="/static/public/main.js"></script>

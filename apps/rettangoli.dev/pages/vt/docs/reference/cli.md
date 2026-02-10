@@ -20,7 +20,8 @@ Use `-w /workspace/<subdir>` only when you need to run commands from a nested pr
 
 | Command | Purpose |
 | --- | --- |
-| `rtgl vt generate` | Build candidate pages and capture candidate screenshots (can auto-start `vt.service.start`) |
+| `rtgl vt generate` | Build candidate pages only (no screenshot capture) |
+| `rtgl vt screenshot` | Build candidate pages and capture candidate screenshots (can auto-start `vt.service.start`) |
 | `rtgl vt report` | Compare candidate vs reference and generate report output |
 | `rtgl vt accept` | Accept report differences as new reference images |
 
@@ -34,7 +35,31 @@ Options:
 
 | Option | Type | Description |
 | --- | --- | --- |
-| `--skip-screenshots` | boolean | Build HTML output only, skip Playwright capture |
+| `--concurrency <number>` | integer | Number of parallel capture workers (reserved for `screenshot` capture phase) |
+| `--timeout <ms>` | integer | Global timeout used by capture runtime settings |
+| `--wait-event <name>` | string | Set default custom browser readiness event |
+| `--folder <path>` | repeatable string | Scope to specs under a folder prefix |
+| `--group <section-key>` | repeatable string | Scope to one or more section keys from `vt.sections` |
+| `--item <spec-path>` | repeatable string | Scope to one or more spec paths under `vt/specs` |
+| `--headed` | boolean | Kept for parity; has no effect when screenshots are not captured |
+
+Examples:
+
+```bash
+rtgl vt generate
+rtgl vt generate --folder components/forms --group pages --item components/forms/login
+```
+
+## `rtgl vt screenshot`
+
+```bash
+rtgl vt screenshot [options]
+```
+
+Options:
+
+| Option | Type | Description |
+| --- | --- | --- |
 | `--concurrency <number>` | integer | Number of parallel capture workers |
 | `--timeout <ms>` | integer | Global timeout used for navigation/ready/screenshot |
 | `--wait-event <name>` | string | Wait for a custom browser event before capture |
@@ -43,16 +68,16 @@ Options:
 | `--item <spec-path>` | repeatable string | Scope to one or more spec paths under `vt/specs` |
 | `--headed` | boolean | Run browser in headed mode (debugging) |
 
-If `vt.service.start` is configured, `generate` manages the service lifecycle automatically.
+If `vt.service.start` is configured, `screenshot` manages the service lifecycle automatically.
 
 Examples:
 
 ```bash
-rtgl vt generate
-rtgl vt generate --concurrency 4 --timeout 45000
-rtgl vt generate --wait-event app:ready
-rtgl vt generate --folder components/forms --group pages --item components/forms/login
-rtgl vt generate --headed
+rtgl vt screenshot
+rtgl vt screenshot --concurrency 4 --timeout 45000
+rtgl vt screenshot --wait-event app:ready
+rtgl vt screenshot --folder components/forms --group pages --item components/forms/login
+rtgl vt screenshot --headed
 ```
 
 ## `rtgl vt report`
@@ -71,6 +96,8 @@ Options:
 | `--folder <path>` | repeatable string | Scope to screenshots under folder prefix |
 | `--group <section-key>` | repeatable string | Scope to one or more section keys from `vt.sections` |
 | `--item <spec-path>` | repeatable string | Scope to one or more spec paths under `vt/specs` |
+
+`report` only compares existing artifacts and does not run `generate` or `screenshot`.
 
 Examples:
 
@@ -92,7 +119,7 @@ rtgl vt accept
 ## Typical Pipeline
 
 ```bash
-rtgl vt generate
+rtgl vt screenshot
 rtgl vt report
 # if expected changes:
 rtgl vt accept

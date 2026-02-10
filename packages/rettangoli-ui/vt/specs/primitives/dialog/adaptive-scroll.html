@@ -6,11 +6,19 @@ specs:
   - Content overflow remains accessible in scrollable layout.
   - Close handling synchronizes dialog open state.
 steps:
-  - select open-dialog-very-long:
-    - click
-  - 'waitFor #dialog-very-long[open] visible 1500'
-  - 'assert text #dialog-very-long Very Long Content - Scrolling Test'
-  - screenshot
+  - action: select
+    testId: open-dialog-very-long
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog-very-long[open]'
+    state: visible
+    timeoutMs: 1500
+  - action: assert
+    type: text
+    selector: '#dialog-very-long'
+    value: Very Long Content - Scrolling Test
+  - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-view g="md">

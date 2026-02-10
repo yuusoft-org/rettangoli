@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { build, check, scaffold, watch, examples } from "@rettangoli/fe/cli";
-import { generate, report, accept } from "@rettangoli/vt/cli";
+import { generate, screenshot, report, accept } from "@rettangoli/vt/cli";
 import { buildSite, watchSite, initSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
 import { Command } from "commander";
@@ -231,8 +231,7 @@ const vtCommand = program
 
 vtCommand
   .command("generate")
-  .description("Generate visualizations")
-  .option("--skip-screenshots", "Skip screenshot generation")
+  .description("Generate candidate HTML pages only (no screenshots)")
   .option("--concurrency <number>", "Number of parallel capture workers", parseInt)
   .option("--timeout <ms>", "Global capture timeout in ms", parseInt)
   .option("--wait-event <name>", "Custom event name to mark page ready (uses event wait strategy)")
@@ -253,8 +252,34 @@ vtCommand
     if (options.headed) {
       options.headless = false;
     }
+    options.captureScreenshots = false;
 
     await generate(options);
+  });
+
+vtCommand
+  .command("screenshot")
+  .description("Generate candidate HTML pages and capture screenshots")
+  .option("--concurrency <number>", "Number of parallel capture workers", parseInt)
+  .option("--timeout <ms>", "Global capture timeout in ms", parseInt)
+  .option("--wait-event <name>", "Custom event name to mark page ready (uses event wait strategy)")
+  .option("--folder <path>", "Run only specs under folder prefix (repeatable)", collectValues, [])
+  .option("--group <section-key>", "Run only one section key from vt.sections (repeatable)", collectValues, [])
+  .option("--item <spec-path>", "Run only one spec path relative to vt/specs (repeatable)", collectValues, [])
+  .option("--headed", "Run Playwright in headed mode")
+  .action(async (options) => {
+    console.log(`rtgl v${packageJson.version}`);
+    const config = readConfig();
+
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+
+    options.vtPath = config.vt?.path || "vt";
+    if (options.headed) {
+      options.headless = false;
+    }
+    await screenshot(options);
   });
 
 vtCommand

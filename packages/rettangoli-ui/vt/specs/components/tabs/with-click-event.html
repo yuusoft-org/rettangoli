@@ -6,11 +6,16 @@ specs:
   - Clicked tab becomes selected via selected-tab update.
   - Visual selection changes after interaction.
 steps:
-  - wait 300
-  - customEvent vt:click-tab-2
-  - wait 200
-  - 'assert exists #tabs'
-  - screenshot
+  - action: wait
+    ms: 300
+  - action: customEvent
+    name: vt:click-tab-2
+  - action: wait
+    ms: 200
+  - action: assert
+    type: exists
+    selector: '#tabs'
+  - action: screenshot
 ---
 <rtgl-view g="lg" h="100vh" w="f" wrap>
   <rtgl-tabs id="tabs" selected-tab="tab1">

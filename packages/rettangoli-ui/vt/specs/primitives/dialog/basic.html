@@ -6,11 +6,19 @@ specs:
   - Close action inside dialog dismisses the overlay.
   - Close event listener keeps `open` state synchronized.
 steps:
-  - select open-dialog-basic:
-    - click
-  - 'waitFor #dialog[open] visible 1200'
-  - 'assert text #dialog Dialog Content'
-  - screenshot
+  - action: select
+    testId: open-dialog-basic
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#dialog'
+    value: Dialog Content
+  - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-button id="button" data-testid="open-dialog-basic">Open Dialog</rtgl-button>

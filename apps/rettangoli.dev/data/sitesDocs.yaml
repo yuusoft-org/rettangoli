@@ -1,0 +1,28 @@
+header:
+  label: Rettangoli Sites Docs
+  href: /
+items:
+  - title: "Introduction"
+    type: groupLabel
+    items:
+      - id: sites-introduction
+        title: "Introduction"
+        href: "/sites/docs/introduction/introduction"
+      - id: sites-getting-started
+        title: "Getting Started"
+        href: "/sites/docs/introduction/getting-started"
+  - title: "Reference"
+    type: groupLabel
+    items:
+      - id: sites-cli
+        title: "CLI"
+        href: "/sites/docs/reference/cli"
+      - id: sites-configuration
+        title: "Configuration"
+        href: "/sites/docs/reference/configuration"
+      - id: sites-markdown-and-frontmatter
+        title: "Markdown & Frontmatter"
+        href: "/sites/docs/reference/markdown-and-frontmatter"
+      - id: sites-template-functions
+        title: "Template Functions"
+        href: "/sites/docs/reference/template-functions"

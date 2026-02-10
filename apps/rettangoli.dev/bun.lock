@@ -4,7 +4,7 @@
   "workspaces": {
     "": {
       "devDependencies": {
-        "rtgl": "1.0.0-rc7",
+        "rtgl": "1.0.0-rc8",
       },
     },
   },
@@ -121,7 +121,7 @@
 
     "@rettangoli/fe": ["@rettangoli/fe@1.0.0-rc3", "", { "dependencies": { "esbuild": "^0.25.5", "immer": "^10.1.1", "jempl": "0.3.2-rc2", "js-yaml": "^4.1.0", "rxjs": "^7.8.2", "snabbdom": "^3.6.2", "vite": "^6.3.5" } }, "sha512-KWykgf8liQfIF4tqpS9bZJE3rGGukYXi7YMqxlYhv7hnPmdAq6JX+Ep5WzGebR7lzw8CSaJSRNZAEjBFQLXXLA=="],
 
-    "@rettangoli/sites": ["@rettangoli/sites@1.0.0-rc1", "", { "dependencies": { "gray-matter": "^4.0.3", "jempl": "^0.3.1-rc1", "js-yaml": "^4.1.0", "markdown-it": "^14.1.0", "shiki": "^3.13.0", "ws": "^8.18.0", "yahtml": "0.0.4" } }, "sha512-AWPIZTEG2SBl7IrEpBwGP+3dy6XuOnw81U48NiuiOTxl+Qlg0gx7Kh9ysyT1Orz+r+vGOXk7I84Flk043el9tg=="],
+    "@rettangoli/sites": ["@rettangoli/sites@1.0.0-rc2", "", { "dependencies": { "gray-matter": "^4.0.3", "jempl": "^0.3.1-rc1", "js-yaml": "^4.1.0", "markdown-it": "^14.1.0", "shiki": "^3.13.0", "ws": "^8.18.0", "yahtml": "0.0.4" } }, "sha512-Ew9F3fSiVIIVnA9FDTsvuZXE/xPZ2otus/S1wb8V8/vWYyC499xUKn9qpon2Jaw7lup1tLuy19HLRK3OAzmlwg=="],
 
     "@rettangoli/ui": ["@rettangoli/ui@1.0.0-rc1", "", { "dependencies": { "@floating-ui/dom": "^1.6.13", "@rettangoli/fe": "1.0.0-rc1", "commander": "^13.1.0", "jempl": "1.0.0", "js-yaml": "^4.1.0", "liquidjs": "^10.21.0", "snabbdom": "^3.6.2" } }, "sha512-OlyLEoIaVne3toZ3PLa+KVRBzDSUARZeQqMlvv0GySJSpNIojyJWm1M2PMjnsTUk8/tvPphTH6BcUYVDc++cVw=="],
 
@@ -301,7 +301,7 @@
 
     "rollup": ["rollup@4.57.1", "", { "dependencies": { "@types/estree": "1.0.8" }, "optionalDependencies": { "@rollup/rollup-android-arm-eabi": "4.57.1", "@rollup/rollup-android-arm64": "4.57.1", "@rollup/rollup-darwin-arm64": "4.57.1", "@rollup/rollup-darwin-x64": "4.57.1", "@rollup/rollup-freebsd-arm64": "4.57.1", "@rollup/rollup-freebsd-x64": "4.57.1", "@rollup/rollup-linux-arm-gnueabihf": "4.57.1", "@rollup/rollup-linux-arm-musleabihf": "4.57.1", "@rollup/rollup-linux-arm64-gnu": "4.57.1", "@rollup/rollup-linux-arm64-musl": "4.57.1", "@rollup/rollup-linux-loong64-gnu": "4.57.1", "@rollup/rollup-linux-loong64-musl": "4.57.1", "@rollup/rollup-linux-ppc64-gnu": "4.57.1", "@rollup/rollup-linux-ppc64-musl": "4.57.1", "@rollup/rollup-linux-riscv64-gnu": "4.57.1", "@rollup/rollup-linux-riscv64-musl": "4.57.1", "@rollup/rollup-linux-s390x-gnu": "4.57.1", "@rollup/rollup-linux-x64-gnu": "4.57.1", "@rollup/rollup-linux-x64-musl": "4.57.1", "@rollup/rollup-openbsd-x64": "4.57.1", "@rollup/rollup-openharmony-arm64": "4.57.1", "@rollup/rollup-win32-arm64-msvc": "4.57.1", "@rollup/rollup-win32-ia32-msvc": "4.57.1", "@rollup/rollup-win32-x64-gnu": "4.57.1", "@rollup/rollup-win32-x64-msvc": "4.57.1", "fsevents": "~2.3.2" }, "bin": { "rollup": "dist/bin/rollup" } }, "sha512-oQL6lgK3e2QZeQ7gcgIkS2YZPg5slw37hYufJ3edKlfQSGGm8ICoxswK15ntSzF/a8+h7ekRy7k7oWc3BQ7y8A=="],
 
-    "rtgl": ["rtgl@1.0.0-rc7", "", { "dependencies": { "@rettangoli/fe": "1.0.0-rc3", "@rettangoli/sites": "1.0.0-rc1", "@rettangoli/ui": "1.0.0-rc1", "@rettangoli/vt": "1.0.0-rc3", "commander": "^14.0.0", "js-yaml": "^4.1.0" }, "bin": { "rtgl": "cli.js" } }, "sha512-Nqtj8WIs8q4kqA861ZxmmrRTSbGzHJokwDkJreCRIx9j6bAqYOlFIikzY2CHz6zoqE0NvR7n6Q7WOhtnzINX/g=="],
+    "rtgl": ["rtgl@1.0.0-rc8", "", { "dependencies": { "@rettangoli/fe": "1.0.0-rc3", "@rettangoli/sites": "1.0.0-rc2", "@rettangoli/ui": "1.0.0-rc1", "@rettangoli/vt": "1.0.0-rc3", "commander": "^14.0.0", "js-yaml": "^4.1.0" }, "bin": { "rtgl": "cli.js" } }, "sha512-UxnyEUAwGQ5qx3+2EIDj2CrzaVNoL6CGldQeHiW5Ms+yc5VRqzt5lH91k8Uz55/jEZXUjpj7qK3Xl/wsTO05fw=="],
 
     "rxjs": ["rxjs@7.8.2", "", { "dependencies": { "tslib": "^2.1.0" } }, "sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA=="],
 

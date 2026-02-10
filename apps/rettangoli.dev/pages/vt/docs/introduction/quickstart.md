@@ -78,16 +78,23 @@ In `package.json`, add VT scripts that call local `rtgl`:
 {
   "scripts": {
     "generate": "rtgl vt generate",
+    "screenshot": "rtgl vt screenshot",
     "report": "rtgl vt report",
     "accept": "rtgl vt accept"
   }
 }
 ```
 
-Generate candidate screenshots:
+Build candidate pages:
 
 ```bash
 npm run generate
+```
+
+Capture candidate screenshots:
+
+```bash
+npm run screenshot
 ```
 
 Compare candidate vs reference and build report:
@@ -124,6 +131,7 @@ If your app is built by `rtgl sites`, define scripts once and keep VT commands s
     "watch": "rtgl sites watch -p 4173 -o dist --quiet",
     "build": "rtgl sites build -o dist",
     "generate": "rtgl vt generate",
+    "screenshot": "rtgl vt screenshot",
     "report": "rtgl vt report",
     "accept": "rtgl vt accept"
   }
@@ -145,7 +153,7 @@ vt:
       files: pages
 ```
 
-`vt.service.start` starts/stops the preview command automatically during `npm run generate`.
+`vt.service.start` starts/stops the preview command automatically during `npm run screenshot`.
 For full setup details, see [Sites Integration](../reference/sites-integration).
 
 ## Next

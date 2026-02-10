@@ -1,6 +1,7 @@
 ---
 steps:
-  - wait 20
+  - action: wait
+    ms: 20
 ---
 <div style="font-family: sans-serif; padding: 24px;">
   <h2>Cards</h2>

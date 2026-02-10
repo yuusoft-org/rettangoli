@@ -1,289 +1,330 @@
-# VT Step Actions (Current DSL)
+# VT Step Actions
 
 Last updated: 2026-02-10
 
-This document describes the currently implemented `frontMatter.steps` action DSL in `@rettangoli/vt`.
+This document defines the `frontMatter.steps` action contract in `@rettangoli/vt`.
 
-## Step Shapes
+## Canonical Step Shape
 
-`steps` accepts:
+Use structured action objects as the primary format:
 
-- string steps
-- block step objects with exactly one key and an array of nested step values
-- structured assert objects (`- assert: { ... }`)
+```yaml
+steps:
+  - action: waitFor
+    selector: "[data-testid='login-page']"
+    state: visible
+    timeoutMs: 5000
+
+  - action: select
+    testId: login-email
+    steps:
+      - action: write
+        value: user@example.com
+
+  - action: select
+    testId: login-submit
+    steps:
+      - action: click
+
+  - action: assert
+    type: url
+    value: /dashboard
+    match: includes
+
+  - action: screenshot
+```
+
+Rules:
+
+- Every structured step must include `action`.
+- `action: select` is the only nested/block action and requires `steps`.
+- Unknown keys on structured actions fail validation.
+
+## Legacy Compatibility
+
+These older forms are still accepted for backward compatibility:
+
+- string steps, e.g. `waitFor #root visible 5000`
+- `select <testId>` legacy block key
+- `assert: { ... }` legacy structured assert object
+
+Use canonical `action` objects for new specs and generated specs.
+
+## Select Targeting
+
+`action: select` resolves `data-testid="<testId>"`.
+
+Target behavior inside select blocks:
+
+- if host contains interactive child (`input`, `textarea`, `button`, `select`, `a`), VT targets the first interactive child
+- otherwise VT targets the host element
+
+## Action Reference
+
+### `assert`
+
+Properties:
+
+- `action`: `assert`
+- `type` (required): `url | exists | visible | hidden | text | js`
+- `match` (optional): `includes | equals` (for `url` and `text`, default `includes`)
+- `selector` (optional): CSS selector for `exists | visible | hidden | text`; required outside select block for those types
+- `timeoutMs` (optional): non-negative integer for `exists | visible | hidden`
+- `value`:
+  - required non-empty string for `url`
+  - required string for `text`
+  - required any YAML/JSON value for `js` (deep-equal)
+- `global` (js only): window global path, e.g. `__APP_READY__` or `app.state.ready`
+- `fn` (js only): window function path, e.g. `app.getPayload`
+- `args` (js only): array passed to `fn`
+
+`js` discriminator rule:
+
+- exactly one of `global` or `fn` must be provided
 
 Example:
 
 ```yaml
 steps:
-  - wait 200
-  - screenshot
-  - select login-email:
-      - write user@example.com
-      - keypress Enter
-      - setViewport 390 844
-```
-
-Parsing behavior:
-
-- Step strings are parsed as `<command> <arg1> <arg2> ...` using space splitting.
-- Unknown or unsupported commands fail the run with an error.
-- `assert` is structured-only and must be provided as an object step.
-
-## Actions
-
-### `assert`
-
-Structured syntax:
-
-```yaml
-steps:
-  - assert:
-      type: url
-      value: "rettangoli.dev"
-      match: includes
-```
-
-Supported fields:
-
-- `type`: `url | exists | visible | hidden | text | js` (required)
-- `match`: `includes | equals` (optional, only for `url` and `text`, default `includes`)
-- `selector`: CSS selector (optional for `exists|visible|hidden|text`, required when not in a `select` block)
-- `timeoutMs`: non-negative integer timeout (optional for `exists|visible|hidden`)
-- `value`: expected value
-  - required string for `url` and `text`
-  - required any JSON/YAML value for `js` (deep-equal comparison, object/array supported)
-- `global`: window global path for `js` (for example `__APP_READY__` or `app.state.ready`)
-- `fn`: window function path for `js` (for example `app.getStatus`)
-- `args`: array of function args for `js` when using `fn`
-
-Examples:
-
-```yaml
-steps:
-  - assert:
-      type: url
-      value: "https://rettangoli.dev/docs"
-      match: includes
-
-  - assert:
-      type: exists
-      selector: "[data-testid='save']"
-
-  - assert:
-      type: visible
-      selector: "#dialog"
-      timeoutMs: 5000
-
-  - assert:
-      type: text
-      selector: "[data-testid='message']"
-      value: "Saved"
-      match: includes
-
-  - assert:
-      type: js
-      global: "__APP_READY__"
-      value: true
-
-  - assert:
-      type: js
-      fn: "app.getPayload"
-      args: ["foo"]
-      value:
-        id: 1
-        tags: ["a", "b"]
+  - action: assert
+    type: js
+    fn: app.getPayload
+    args: [foo]
+    value:
+      ok: true
+      items: [1, 2, 3]
 ```
 
 ### `blur`
 
-Syntax:
+Properties:
 
-- inside `select ...` block: `blur`
+- `action`: `blur`
+
+Context:
+
+- select block only
 
 ### `check`
 
-Syntax:
+Properties:
 
-- inside `select ...` block: `check`
+- `action`: `check`
+
+Context:
+
+- select block only
 
 ### `clear`
 
-Syntax:
+Properties:
 
-- inside `select ...` block: `clear`
+- `action`: `clear`
+
+Context:
+
+- select block only
 
 ### `click`
 
-Syntax:
+Properties:
 
-- `click <x> <y>`
-- inside `select ...` block: `click`
+- `action`: `click`
+- `x`, `y` (optional together): coordinate click; if omitted, requires select block target
 
 ### `customEvent`
 
-Syntax:
+Properties:
 
-- `customEvent <eventName> [key=value ...]`
+- `action`: `customEvent`
+- `name` (required): event name
+- `detail` (optional): object payload sent as `CustomEvent.detail`
 
 ### `dblclick`
 
-Syntax:
+Properties:
 
-- `dblclick <x> <y>`
-- inside `select ...` block: `dblclick`
+- `action`: `dblclick`
+- `x`, `y` (optional together): coordinate double click; if omitted, requires select block target
 
 ### `focus`
 
-Syntax:
+Properties:
 
-- inside `select ...` block: `focus`
+- `action`: `focus`
+
+Context:
+
+- select block only
 
 ### `goto`
 
-Syntax:
+Properties:
 
-- `goto <url>`
+- `action`: `goto`
+- `url` (required): absolute or relative URL
+
+Behavior:
+
+- uses Playwright `page.goto(..., { waitUntil: "networkidle" })`
 
 ### `hover`
 
-Syntax:
+Properties:
 
-- `hover <x> <y>`
-- inside `select ...` block: `hover`
+- `action`: `hover`
+- `x`, `y` (optional together): coordinate hover; if omitted, requires select block target
 
 ### `keypress`
 
-Syntax:
+Properties:
 
-- `keypress <key>`
+- `action`: `keypress`
+- `key` (required): Playwright key string (e.g. `Enter`, `Escape`, `Control+A`)
 
 ### `mouseDown`
 
-Syntax:
+Properties:
 
-- `mouseDown`
+- `action`: `mouseDown`
 
 ### `mouseUp`
 
-Syntax:
+Properties:
 
-- `mouseUp`
+- `action`: `mouseUp`
 
 ### `move`
 
-Syntax:
+Properties:
 
-- `move <x> <y>`
+- `action`: `move`
+- `x` (required)
+- `y` (required)
 
 ### `rclick`
 
-Syntax:
+Properties:
 
-- `rclick <x> <y>`
-- inside `select ...` block: `rclick`
+- `action`: `rclick`
+- `x`, `y` (optional together): coordinate right click; if omitted, requires select block target
 
 ### `rightMouseDown`
 
-Syntax:
+Properties:
 
-- `rightMouseDown`
+- `action`: `rightMouseDown`
 
 ### `rightMouseUp`
 
-Syntax:
+Properties:
 
-- `rightMouseUp`
+- `action`: `rightMouseUp`
 
 ### `scroll`
 
-Syntax:
+Properties:
 
-- `scroll <deltaX> <deltaY>`
+- `action`: `scroll`
+- `deltaX` (required)
+- `deltaY` (required)
 
 ### `select`
 
-Syntax:
+Properties:
 
-- `select <testId>` as block key
+- `action`: `select`
+- `testId` (required)
+- `steps` (required): array of nested steps
 
-Behavior:
+Example:
 
-- Resolves `page.getByTestId(testId)` as host element.
-- If host contains interactive child (`input, textarea, button, select, a`), uses first match.
-- Otherwise uses host itself.
-- Returns selected element to nested steps.
+```yaml
+steps:
+  - action: select
+    testId: profile-form
+    steps:
+      - action: focus
+      - action: write
+        value: luciano
+```
 
 ### `selectOption`
 
-Syntax:
+Properties:
 
-- inside `select ...` block:
-  - `selectOption <value>`
-  - `selectOption value=<value>`
-  - `selectOption label=<label>`
-  - `selectOption index=<n>`
+- `action`: `selectOption`
+- exactly one of:
+  - `value` (string)
+  - `label` (string)
+  - `index` (number)
+
+Context:
+
+- select block only
 
 ### `setViewport`
 
-Syntax:
+Properties:
 
-- `setViewport <width> <height>`
+- `action`: `setViewport`
+- `width` (required integer >= 1)
+- `height` (required integer >= 1)
 
 Behavior:
 
-- Updates viewport for the current running spec session only.
-- The next spec starts with its resolved viewport from config/frontmatter.
+- affects current spec run only
 
 ### `screenshot`
 
-Syntax:
+Properties:
 
-- `screenshot`
+- `action`: `screenshot`
 
 ### `uncheck`
 
-Syntax:
+Properties:
 
-- inside `select ...` block: `uncheck`
+- `action`: `uncheck`
+
+Context:
+
+- select block only
 
 ### `upload`
 
-Syntax:
+Properties:
 
-- inside `select ...` block: `upload <filePath...>`
+- `action`: `upload`
+- `files` (required): non-empty array of file paths
+
+Context:
+
+- select block only
 
 ### `wait`
 
-Syntax:
+Properties:
 
-- `wait <ms>`
+- `action`: `wait`
+- `ms` (required): non-negative number
 
 ### `waitFor`
 
-Syntax:
+Properties:
 
-- `waitFor <selector> [state] [timeout]`
-- `waitFor selector=<selector> [state=<state>] [timeoutMs=<ms>]`
-- inside `select ...` block:
-  - `waitFor [state] [timeout]`
-  - `waitFor state=<state> [timeoutMs=<ms>]`
-
-States:
-
-- `attached`
-- `detached`
-- `visible`
-- `hidden`
+- `action`: `waitFor`
+- `selector` (optional): required outside select block, omitted inside select block
+- `state` (optional): `attached | detached | visible | hidden` (default `visible`)
+- `timeoutMs` (optional): non-negative integer
 
 ### `write`
 
-Syntax:
+Properties:
 
-- inside `select ...` block: `write <text...>`
+- `action`: `write`
+- `value` (required string)
 
-## Block Step Rules
+Context:
 
-- Block step object must have exactly one key.
-- Key is parsed as command string (for example `select search-input`).
-- Value must be an array of step values (non-empty string steps or structured `assert` objects).
+- select block only

@@ -9,7 +9,7 @@ Use selectors to run or compare only part of your VT suite.
 
 ## Selector options
 
-Available in both `generate` and `report`:
+Available in both `screenshot` and `report`:
 
 - `--folder <path>`
 - `--group <section-key>`
@@ -34,9 +34,9 @@ All selector values are repeatable.
 Examples:
 
 ```bash
-rtgl vt generate --folder components/forms
-rtgl vt generate --group pages
-rtgl vt generate --item components/forms/login
+rtgl vt screenshot --folder components/forms
+rtgl vt screenshot --group pages
+rtgl vt screenshot --item components/forms/login
 rtgl vt report --group forms --item components/forms/login.html
 ```
 

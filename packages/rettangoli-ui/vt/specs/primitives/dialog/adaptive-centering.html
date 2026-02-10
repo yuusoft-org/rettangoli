@@ -6,19 +6,40 @@ specs:
   - Long-content dialog opens with top-biased placement for overflow safety.
   - Shared close handling keeps open state synchronized for both dialogs.
 steps:
-  - select open-dialog-short:
-    - click
-  - 'waitFor #dialog-short[open] visible 1200'
-  - 'assert text #dialog-short Short Content Dialog'
-  - screenshot
-  - select close-dialog-short:
-    - click
-  - 'waitFor #dialog-short[open] hidden 1200'
-  - select open-dialog-long:
-    - click
-  - 'waitFor #dialog-long[open] visible 1200'
-  - 'assert text #dialog-long Long Content Dialog'
-  - screenshot
+  - action: select
+    testId: open-dialog-short
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog-short[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#dialog-short'
+    value: Short Content Dialog
+  - action: screenshot
+  - action: select
+    testId: close-dialog-short
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog-short[open]'
+    state: hidden
+    timeoutMs: 1200
+  - action: select
+    testId: open-dialog-long
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog-long[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#dialog-long'
+    value: Long Content Dialog
+  - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-view g="md">

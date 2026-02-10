@@ -1,12 +1,13 @@
 # Rettangoli VT Spec
 
-Last updated: 2026-02-09
+Last updated: 2026-02-10
 
 This document defines the public contract for `rtgl vt`.
 
 ## Scope
 
 - `rtgl vt generate`
+- `rtgl vt screenshot`
 - `rtgl vt report`
 - `rtgl vt accept`
 
@@ -25,7 +26,6 @@ vt:
   compareMethod: pixelmatch # pixelmatch | md5
   colorThreshold: 0.1
   diffThreshold: 0.3
-  skipScreenshots: false
   port: 3001
   concurrency: 4
   timeout: 30000
@@ -61,7 +61,6 @@ Rules:
 
 Supported options:
 
-- `--skip-screenshots`
 - `--headed`
 - `--concurrency <number>`
 - `--timeout <ms>`
@@ -71,6 +70,40 @@ Supported options:
 - `--item <spec-path>` (repeatable)
 
 Generate behavior:
+
+- Builds candidate pages from `vt/specs`.
+- Builds section overview pages from `vt.sections`.
+- Does not capture screenshots.
+
+Scope filtering:
+
+- Applies to generated candidate page set.
+- Multiple selectors are unioned (OR).
+- No selector means full run.
+
+Examples:
+
+```bash
+rtgl vt generate --folder components/forms
+rtgl vt generate --group components_basic
+rtgl vt generate --item components/forms/login
+rtgl vt generate --item components/forms/login.html
+rtgl vt generate --group components_basic --item pages/home
+```
+
+## Screenshot CLI Contract
+
+Supported options:
+
+- `--headed`
+- `--concurrency <number>`
+- `--timeout <ms>`
+- `--wait-event <name>`
+- `--folder <path>` (repeatable)
+- `--group <section-key>` (repeatable)
+- `--item <spec-path>` (repeatable)
+
+Screenshot behavior:
 
 - Builds candidate pages from `vt/specs`.
 - Builds section overview pages from `vt.sections`.
@@ -94,11 +127,11 @@ Scope filtering:
 Examples:
 
 ```bash
-rtgl vt generate --folder components/forms
-rtgl vt generate --group components_basic
-rtgl vt generate --item components/forms/login
-rtgl vt generate --item components/forms/login.html
-rtgl vt generate --group components_basic --item pages/home
+rtgl vt screenshot --folder components/forms
+rtgl vt screenshot --group components_basic
+rtgl vt screenshot --item components/forms/login
+rtgl vt screenshot --item components/forms/login.html
+rtgl vt screenshot --group components_basic --item pages/home
 ```
 
 ## Report CLI Contract
@@ -114,7 +147,7 @@ Supported options:
 
 Scope filtering:
 
-- Uses the same selector model as `generate`.
+- Uses the same selector model as `screenshot`.
 - Filters candidate/reference comparison set before mismatch evaluation.
 
 Examples:
@@ -139,7 +172,7 @@ Allowed keys:
 - `viewport` (object or array of viewport objects)
 - `skipScreenshot` (boolean)
 - `specs` (array of non-empty strings)
-- `steps` (array of step strings, block step objects, or structured `assert` objects)
+- `steps` (array of structured action objects; legacy string/block forms are still accepted for compatibility)
 
 Step action reference:
 
@@ -150,7 +183,9 @@ Validation:
 
 - `waitStrategy=event` requires `waitEvent`.
 - `waitStrategy=selector` requires `waitSelector`.
-- Block step object must contain exactly one key.
+- Structured steps require `action`.
+- `action: select` is the only nested/block action and requires `steps`.
+- Legacy block step object must contain exactly one key.
 
 ## Screenshot Naming Contract
 
@@ -165,6 +200,7 @@ Validation:
 Report command:
 
 - compares candidate vs reference screenshots
+- does not run `generate` or `screenshot`
 - writes HTML report: `.rettangoli/vt/_site/report.html`
 - writes JSON report: `.rettangoli/vt/report.json`
 - fails when mismatches exist

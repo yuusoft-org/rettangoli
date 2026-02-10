@@ -18,11 +18,14 @@ This will setup all the web components.
 
 ## CSS Installation
 
-In addition to the JavaScript file, you need to add the CSS for styling:
+In addition to the JavaScript file, you must add two CSS files in this order:
 
 ```html
-<link href="/public/theme.css" rel="stylesheet">
+<link href="/public/reset.css" rel="stylesheet">
+<link href="/public/theme-default.css" rel="stylesheet">
 ```
+
+`reset.css` is required for base HTML normalization. Then choose one theme file.
 
 For more information on available themes and customization options, see our [CSS Variables](/ui/docs/introduction/css-variables) guide.
 

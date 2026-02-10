@@ -1,18 +1,28 @@
 ---
 title: composed-page
 steps:
-  - select increment:
-    - click
-  - select increment:
-    - click
-  - screenshot
-  - select input:
-    - write Test item
-  - select add:
-    - click
-  - screenshot
-  - keypress Escape
-  - screenshot
+  - action: select
+    testId: increment
+    steps:
+      - action: click
+  - action: select
+    testId: increment
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: input
+    steps:
+      - action: write
+        value: Test item
+  - action: select
+    testId: add
+    steps:
+      - action: click
+  - action: screenshot
+  - action: keypress
+    key: Escape
+  - action: screenshot
 ---
 
 <script type="module" src="/static/public/main.js"></script>

@@ -1,21 +1,33 @@
 ---
 title: counter-interactions
 steps:
-  - select increment:
-    - click
-  - select increment:
-    - click
-  - select increment:
-    - click
-  - screenshot
-  - select toggle:
-    - click
-  - screenshot
-  - select decrement:
-    - click
-  - select decrement:
-    - click
-  - screenshot
+  - action: select
+    testId: increment
+    steps:
+      - action: click
+  - action: select
+    testId: increment
+    steps:
+      - action: click
+  - action: select
+    testId: increment
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: toggle
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: decrement
+    steps:
+      - action: click
+  - action: select
+    testId: decrement
+    steps:
+      - action: click
+  - action: screenshot
 ---
 
 <script type="module" src="/static/public/main.js"></script>

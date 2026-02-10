@@ -6,12 +6,22 @@ specs:
   - Form schema renders mixed field types and action buttons.
   - Action events close dialog for cancel and submit outcomes.
 steps:
-  - select open-dialog-form:
-    - click
-  - 'waitFor #dialog[open] attached 1500'
-  - 'waitFor #form attached 1500'
-  - 'assert exists #form'
-  - screenshot
+  - action: select
+    testId: open-dialog-form
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog[open]'
+    state: attached
+    timeoutMs: 1500
+  - action: waitFor
+    selector: '#form'
+    state: attached
+    timeoutMs: 1500
+  - action: assert
+    type: exists
+    selector: '#form'
+  - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-button id="button" data-testid="open-dialog-form">Open Form Dialog</rtgl-button>

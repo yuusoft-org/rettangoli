@@ -214,3 +214,51 @@ out:
   maxRetries: 1
   recycleEvery: 25
   metricsPath: .rettangoli/vt/metrics.json
+---
+case: forces screenshot capture when captureScreenshots is true
+in:
+  - captureScreenshots: true
+  - path: ./vt
+    skipScreenshots: true
+out:
+  vtPath: ./vt
+  skipScreenshots: false
+  port: 3001
+  headless: true
+  selectors:
+    folders: []
+    groups: []
+    items: []
+  screenshotWaitTime: 0
+  waitStrategy: load
+  isolationMode: fast
+  navigationTimeout: 30000
+  readyTimeout: 30000
+  screenshotTimeout: 30000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json
+---
+case: forces skipScreenshots when captureScreenshots is false
+in:
+  - captureScreenshots: false
+  - path: ./vt
+    skipScreenshots: false
+out:
+  vtPath: ./vt
+  skipScreenshots: true
+  port: 3001
+  headless: true
+  selectors:
+    folders: []
+    groups: []
+    items: []
+  screenshotWaitTime: 0
+  waitStrategy: load
+  isolationMode: fast
+  navigationTimeout: 30000
+  readyTimeout: 30000
+  screenshotTimeout: 30000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json

@@ -213,8 +213,234 @@ function assertUniqueSectionPageKeys(vtConfig, sourcePath) {
   });
 }
 
+function assertNoUnknownStepKeys(stepObject, stepPath, allowedKeys) {
+  const unknownKeys = Object.keys(stepObject).filter((key) => !allowedKeys.has(key));
+  assert(
+    unknownKeys.length === 0,
+    `"${stepPath}" has unknown keys: ${unknownKeys.join(", ")}.`,
+  );
+}
+
+function validateStructuredActionStep(step, stepPath) {
+  validateOptionalString(step.action, `${stepPath}.action`);
+  assert(
+    typeof step.action === "string" && step.action.trim().length > 0,
+    `"${stepPath}.action" is required.`,
+  );
+
+  const action = step.action.trim();
+  const allowedActions = [
+    "assert",
+    "blur",
+    "check",
+    "clear",
+    "click",
+    "customEvent",
+    "dblclick",
+    "focus",
+    "goto",
+    "hover",
+    "keypress",
+    "mouseDown",
+    "mouseUp",
+    "move",
+    "rclick",
+    "rightMouseDown",
+    "rightMouseUp",
+    "scroll",
+    "select",
+    "selectOption",
+    "setViewport",
+    "screenshot",
+    "uncheck",
+    "upload",
+    "wait",
+    "waitFor",
+    "write",
+  ];
+
+  assert(
+    allowedActions.includes(action),
+    `"${stepPath}.action" must be one of: ${allowedActions.join(", ")}.`,
+  );
+
+  if (action === "assert") {
+    assertNoUnknownStepKeys(
+      step,
+      stepPath,
+      new Set(["action", "type", "match", "selector", "timeoutMs", "value", "global", "fn", "args"]),
+    );
+    const assertConfig = { ...step };
+    delete assertConfig.action;
+    validateAssertObject(assertConfig, `${stepPath}`);
+    return;
+  }
+
+  if (action === "select") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "testId", "steps"]));
+    validateOptionalString(step.testId, `${stepPath}.testId`);
+    assert(
+      typeof step.testId === "string" && step.testId.trim().length > 0,
+      `"${stepPath}.testId" is required for action=select.`,
+    );
+    assert(Array.isArray(step.steps), `"${stepPath}.steps" must be an array for action=select.`);
+    step.steps.forEach((nestedStep, nestedIndex) => {
+      const nestedPath = `${stepPath}.steps[${nestedIndex}]`;
+      if (typeof nestedStep === "string") {
+        assert(nestedStep.trim().length > 0, `"${nestedPath}" cannot be empty.`);
+        return;
+      }
+      validateStepObject(nestedStep, nestedPath);
+    });
+    return;
+  }
+
+  if (action === "click" || action === "dblclick" || action === "hover" || action === "rclick") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "x", "y"]));
+    const hasX = Object.prototype.hasOwnProperty.call(step, "x");
+    const hasY = Object.prototype.hasOwnProperty.call(step, "y");
+    assert(hasX === hasY, `"${stepPath}" requires both "x" and "y" together when provided.`);
+    if (hasX) {
+      validateOptionalNumber(step.x, `${stepPath}.x`);
+      validateOptionalNumber(step.y, `${stepPath}.y`);
+    }
+    return;
+  }
+
+  if (action === "move") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "x", "y"]));
+    validateOptionalNumber(step.x, `${stepPath}.x`);
+    validateOptionalNumber(step.y, `${stepPath}.y`);
+    assert(typeof step.x === "number", `"${stepPath}.x" is required for action=move.`);
+    assert(typeof step.y === "number", `"${stepPath}.y" is required for action=move.`);
+    return;
+  }
+
+  if (action === "scroll") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "deltaX", "deltaY"]));
+    validateOptionalNumber(step.deltaX, `${stepPath}.deltaX`);
+    validateOptionalNumber(step.deltaY, `${stepPath}.deltaY`);
+    assert(typeof step.deltaX === "number", `"${stepPath}.deltaX" is required for action=scroll.`);
+    assert(typeof step.deltaY === "number", `"${stepPath}.deltaY" is required for action=scroll.`);
+    return;
+  }
+
+  if (action === "goto") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "url"]));
+    validateOptionalString(step.url, `${stepPath}.url`);
+    assert(
+      typeof step.url === "string" && step.url.trim().length > 0,
+      `"${stepPath}.url" is required for action=goto.`,
+    );
+    return;
+  }
+
+  if (action === "keypress") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "key"]));
+    validateOptionalString(step.key, `${stepPath}.key`);
+    assert(
+      typeof step.key === "string" && step.key.trim().length > 0,
+      `"${stepPath}.key" is required for action=keypress.`,
+    );
+    return;
+  }
+
+  if (action === "wait") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "ms"]));
+    validateOptionalNumber(step.ms, `${stepPath}.ms`, { min: 0 });
+    assert(typeof step.ms === "number", `"${stepPath}.ms" is required for action=wait.`);
+    return;
+  }
+
+  if (action === "setViewport") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "width", "height"]));
+    validateOptionalNumber(step.width, `${stepPath}.width`, { integer: true, min: 1 });
+    validateOptionalNumber(step.height, `${stepPath}.height`, { integer: true, min: 1 });
+    assert(typeof step.width === "number", `"${stepPath}.width" is required for action=setViewport.`);
+    assert(typeof step.height === "number", `"${stepPath}.height" is required for action=setViewport.`);
+    return;
+  }
+
+  if (action === "write") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "value"]));
+    validateOptionalString(step.value, `${stepPath}.value`);
+    assert(typeof step.value === "string", `"${stepPath}.value" is required for action=write.`);
+    return;
+  }
+
+  if (action === "upload") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "files"]));
+    assert(Array.isArray(step.files), `"${stepPath}.files" must be an array for action=upload.`);
+    assert(step.files.length > 0, `"${stepPath}.files" cannot be empty for action=upload.`);
+    step.files.forEach((filePath, index) => {
+      assert(typeof filePath === "string", `"${stepPath}.files[${index}]" must be a string.`);
+      assert(filePath.trim().length > 0, `"${stepPath}.files[${index}]" cannot be empty.`);
+    });
+    return;
+  }
+
+  if (action === "waitFor") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "selector", "state", "timeoutMs"]));
+    if (step.selector !== undefined) {
+      validateOptionalString(step.selector, `${stepPath}.selector`);
+    }
+    if (step.state !== undefined) {
+      validateOptionalEnum(step.state, `${stepPath}.state`, ["attached", "detached", "visible", "hidden"]);
+    }
+    if (step.timeoutMs !== undefined) {
+      validateOptionalNumber(step.timeoutMs, `${stepPath}.timeoutMs`, { integer: true, min: 0 });
+    }
+    return;
+  }
+
+  if (action === "selectOption") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "value", "label", "index"]));
+    if (step.value !== undefined) {
+      validateOptionalString(step.value, `${stepPath}.value`);
+    }
+    if (step.label !== undefined) {
+      validateOptionalString(step.label, `${stepPath}.label`);
+    }
+    if (step.index !== undefined) {
+      validateOptionalNumber(step.index, `${stepPath}.index`);
+    }
+    const chosen = [step.value !== undefined, step.label !== undefined, step.index !== undefined]
+      .filter(Boolean)
+      .length;
+    assert(
+      chosen === 1,
+      `"${stepPath}" for action=selectOption requires exactly one of "value", "label", or "index".`,
+    );
+    return;
+  }
+
+  if (action === "customEvent") {
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "name", "detail"]));
+    validateOptionalString(step.name, `${stepPath}.name`);
+    assert(
+      typeof step.name === "string" && step.name.trim().length > 0,
+      `"${stepPath}.name" is required for action=customEvent.`,
+    );
+    if (step.detail !== undefined) {
+      assert(
+        isPlainObject(step.detail),
+        `"${stepPath}.detail" must be an object when provided.`,
+      );
+    }
+    return;
+  }
+
+  assertNoUnknownStepKeys(step, stepPath, new Set(["action"]));
+}
+
 function validateStepObject(step, stepPath) {
   assert(isPlainObject(step), `"${stepPath}" must be an object with one key or a string.`);
+
+  if (Object.prototype.hasOwnProperty.call(step, "action")) {
+    validateStructuredActionStep(step, stepPath);
+    return;
+  }
+
   const keys = Object.keys(step);
   assert(
     keys.length === 1,

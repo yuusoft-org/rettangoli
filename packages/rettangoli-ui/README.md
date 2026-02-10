@@ -34,7 +34,19 @@ customElements.define('rtgl-view', RettangoliView({}));
 ```
 
 ### Stylesheet
-You must include a theme stylesheet in your app. See `src/vt/static/public/theme.css` for a reference theme.
+You must load two CSS files in this order:
+
+```html
+<link rel="stylesheet" href="node_modules/@rettangoli/ui/src/themes/reset.css">
+<link rel="stylesheet" href="node_modules/@rettangoli/ui/src/themes/theme-default.css">
+```
+
+`reset.css` is required for base HTML normalization. Then choose exactly one theme file.
+
+Available prebuilt themes:
+
+- `src/themes/theme-default.css`
+- `src/themes/theme-catppuccin.css`
 
 ---
 

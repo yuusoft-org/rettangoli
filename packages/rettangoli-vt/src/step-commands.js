@@ -28,6 +28,7 @@ export const STEP_COMMANDS = Object.freeze([
 ]);
 
 export const STRUCTURED_STEP_KEYS = Object.freeze([
+  "action",
   "assert",
 ]);
 

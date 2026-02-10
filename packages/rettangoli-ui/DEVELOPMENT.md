@@ -328,8 +328,16 @@ Then open `http://localhost:3000/view`.
 
 ## Theme / CSS
 
-Include a theme stylesheet for variables (colors, spacing, typography).
-Reference: `src/vt/static/public/theme.css`.
+Load CSS in two steps:
+
+1. `src/themes/reset.css`
+2. one theme file, e.g. `src/themes/theme-default.css` or `src/themes/theme-catppuccin.css`
+
+Reference files for VT examples:
+
+- `vt/static/public/reset.css`
+- `vt/static/public/theme-default.css`
+- `vt/static/public/theme-catppuccin.css`
 
 ## Suggested Change Flow
 

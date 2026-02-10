@@ -6,11 +6,19 @@ specs:
   - Content area renders title, body text, and close action.
   - Close handling clears open and position attributes.
 steps:
-  - select open-popover:
-    - click
-  - 'waitFor #popover[open] visible 1200'
-  - 'assert text #popover Popover Content'
-  - screenshot
+  - action: select
+    testId: open-popover
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#popover[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#popover'
+    value: Popover Content
+  - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-button id="button" data-testid="open-popover">Open Popover</rtgl-button>

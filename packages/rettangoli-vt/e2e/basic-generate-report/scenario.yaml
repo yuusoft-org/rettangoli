@@ -5,7 +5,7 @@ dynamicFields:
   - workerUtilization
 
 steps:
-  - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt generate
+  - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt screenshot
     expected: step1
   - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt report
     expectFail: true

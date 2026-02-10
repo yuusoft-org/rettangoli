@@ -6,23 +6,55 @@ specs:
   - Popover content label tracks active placement value.
   - Reopen flow repositions overlay at trigger click coordinates.
 steps:
-  - select btn-top:
-    - click
-  - 'waitFor #popover[open] visible 1200'
-  - 'assert text #popover-text top'
-  - keypress Escape
-  - 'waitFor #popover[open] hidden 1200'
-  - select btn-right-end:
-    - click
-  - 'waitFor #popover[open] visible 1200'
-  - 'assert text #popover-text right-end'
-  - keypress Escape
-  - 'waitFor #popover[open] hidden 1200'
-  - select btn-left-start:
-    - click
-  - 'waitFor #popover[open] visible 1200'
-  - 'assert text #popover-text left-start'
-  - screenshot
+  - action: select
+    testId: btn-top
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#popover[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#popover-text'
+    value: top
+  - action: keypress
+    key: Escape
+  - action: waitFor
+    selector: '#popover[open]'
+    state: hidden
+    timeoutMs: 1200
+  - action: select
+    testId: btn-right-end
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#popover[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#popover-text'
+    value: right-end
+  - action: keypress
+    key: Escape
+  - action: waitFor
+    selector: '#popover[open]'
+    state: hidden
+    timeoutMs: 1200
+  - action: select
+    testId: btn-left-start
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#popover[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#popover-text'
+    value: left-start
+  - action: screenshot
 ---
 <rtgl-view w="100vw" h="100vh" ah="c" av="c">
   <rtgl-view g="lg">

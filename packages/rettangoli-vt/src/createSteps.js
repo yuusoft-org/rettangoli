@@ -117,6 +117,313 @@ function requireSelectedElement(command, selectedElement) {
   return selectedElement;
 }
 
+const WAIT_FOR_STATES = new Set(["attached", "detached", "visible", "hidden"]);
+
+const STRUCTURED_ACTIONS = new Set([
+  "assert",
+  "blur",
+  "check",
+  "clear",
+  "click",
+  "customEvent",
+  "dblclick",
+  "focus",
+  "goto",
+  "hover",
+  "keypress",
+  "mouseDown",
+  "mouseUp",
+  "move",
+  "rclick",
+  "rightMouseDown",
+  "rightMouseUp",
+  "scroll",
+  "select",
+  "selectOption",
+  "setViewport",
+  "screenshot",
+  "uncheck",
+  "upload",
+  "wait",
+  "waitFor",
+  "write",
+]);
+
+function assertStructuredKeys(stepObject, allowedKeys, actionName) {
+  const unknownKeys = Object.keys(stepObject).filter((key) => !allowedKeys.has(key));
+  if (unknownKeys.length > 0) {
+    throw new Error(
+      `Structured action "${actionName}" has unknown keys: ${unknownKeys.join(", ")}.`,
+    );
+  }
+}
+
+function requireStepAction(stepObject) {
+  if (!isPlainObject(stepObject)) {
+    throw new Error("Invalid step: expected string or object.");
+  }
+  if (typeof stepObject.action !== "string" || stepObject.action.trim().length === 0) {
+    throw new Error("Structured step requires non-empty string `action`.");
+  }
+  const action = stepObject.action.trim();
+  if (!STRUCTURED_ACTIONS.has(action)) {
+    throw new Error(`Unknown structured action: "${action}".`);
+  }
+  return action;
+}
+
+function requireStructuredString(stepObject, key, actionName) {
+  const value = stepObject[key];
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(`Structured action "${actionName}" requires non-empty string \`${key}\`.`);
+  }
+  return value;
+}
+
+function requireStructuredNumber(stepObject, key, actionName) {
+  const value = stepObject[key];
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`Structured action "${actionName}" requires finite number \`${key}\`.`);
+  }
+  return value;
+}
+
+function optionalStructuredNumber(stepObject, key, actionName) {
+  if (!Object.prototype.hasOwnProperty.call(stepObject, key)) {
+    return undefined;
+  }
+  return requireStructuredNumber(stepObject, key, actionName);
+}
+
+function requireCoordinatesPair(stepObject, actionName) {
+  const hasX = Object.prototype.hasOwnProperty.call(stepObject, "x");
+  const hasY = Object.prototype.hasOwnProperty.call(stepObject, "y");
+  if (hasX !== hasY) {
+    throw new Error(`Structured action "${actionName}" requires both \`x\` and \`y\` together.`);
+  }
+  if (!hasX) {
+    return [];
+  }
+  const x = requireStructuredNumber(stepObject, "x", actionName);
+  const y = requireStructuredNumber(stepObject, "y", actionName);
+  return [String(x), String(y)];
+}
+
+function normalizeStructuredActionStep(stepObject) {
+  const action = requireStepAction(stepObject);
+
+  if (action === "assert") {
+    assertStructuredKeys(
+      stepObject,
+      new Set(["action", "type", "match", "selector", "timeoutMs", "value", "global", "fn", "args"]),
+      action,
+    );
+    const assertionConfig = { ...stepObject };
+    delete assertionConfig.action;
+    return { kind: "assert", assertionConfig };
+  }
+
+  if (action === "select") {
+    assertStructuredKeys(stepObject, new Set(["action", "testId", "steps"]), action);
+    const testId = requireStructuredString(stepObject, "testId", action);
+    if (!Array.isArray(stepObject.steps)) {
+      throw new Error('Structured action "select" requires array `steps`.');
+    }
+    const nestedSteps = stepObject.steps.map((nestedStep) => normalizeStepValue(nestedStep));
+    return { kind: "block", command: "select", args: [testId], nestedSteps };
+  }
+
+  if (action === "click" || action === "dblclick" || action === "hover" || action === "rclick") {
+    assertStructuredKeys(stepObject, new Set(["action", "x", "y"]), action);
+    return { kind: "command", command: action, args: requireCoordinatesPair(stepObject, action) };
+  }
+
+  if (action === "move") {
+    assertStructuredKeys(stepObject, new Set(["action", "x", "y"]), action);
+    const x = requireStructuredNumber(stepObject, "x", action);
+    const y = requireStructuredNumber(stepObject, "y", action);
+    return { kind: "command", command: action, args: [String(x), String(y)] };
+  }
+
+  if (action === "scroll") {
+    assertStructuredKeys(stepObject, new Set(["action", "deltaX", "deltaY"]), action);
+    const deltaX = requireStructuredNumber(stepObject, "deltaX", action);
+    const deltaY = requireStructuredNumber(stepObject, "deltaY", action);
+    return { kind: "command", command: action, args: [String(deltaX), String(deltaY)] };
+  }
+
+  if (action === "goto") {
+    assertStructuredKeys(stepObject, new Set(["action", "url"]), action);
+    return { kind: "command", command: action, args: [requireStructuredString(stepObject, "url", action)] };
+  }
+
+  if (action === "keypress") {
+    assertStructuredKeys(stepObject, new Set(["action", "key"]), action);
+    return { kind: "command", command: action, args: [requireStructuredString(stepObject, "key", action)] };
+  }
+
+  if (action === "wait") {
+    assertStructuredKeys(stepObject, new Set(["action", "ms"]), action);
+    const ms = requireStructuredNumber(stepObject, "ms", action);
+    return { kind: "command", command: action, args: [String(ms)] };
+  }
+
+  if (action === "setViewport") {
+    assertStructuredKeys(stepObject, new Set(["action", "width", "height"]), action);
+    const width = requireStructuredNumber(stepObject, "width", action);
+    const height = requireStructuredNumber(stepObject, "height", action);
+    return { kind: "command", command: action, args: [String(width), String(height)] };
+  }
+
+  if (action === "write") {
+    assertStructuredKeys(stepObject, new Set(["action", "value"]), action);
+    const value = stepObject.value;
+    if (typeof value !== "string") {
+      throw new Error('Structured action "write" requires string `value`.');
+    }
+    return { kind: "command", command: action, args: [value] };
+  }
+
+  if (action === "upload") {
+    assertStructuredKeys(stepObject, new Set(["action", "files"]), action);
+    if (!Array.isArray(stepObject.files) || stepObject.files.length === 0) {
+      throw new Error('Structured action "upload" requires non-empty array `files`.');
+    }
+    stepObject.files.forEach((filePath, index) => {
+      if (typeof filePath !== "string" || filePath.length === 0) {
+        throw new Error(
+          `Structured action "upload" requires each file path to be a non-empty string (index ${index}).`,
+        );
+      }
+    });
+    return { kind: "command", command: action, args: [...stepObject.files] };
+  }
+
+  if (action === "waitFor") {
+    assertStructuredKeys(stepObject, new Set(["action", "selector", "state", "timeoutMs"]), action);
+    const args = [];
+    if (Object.prototype.hasOwnProperty.call(stepObject, "selector")) {
+      const selector = requireStructuredString(stepObject, "selector", action);
+      args.push(`selector=${selector}`);
+    }
+    if (Object.prototype.hasOwnProperty.call(stepObject, "state")) {
+      const state = requireStructuredString(stepObject, "state", action);
+      if (!WAIT_FOR_STATES.has(state)) {
+        throw new Error(
+          `Structured action "waitFor" has invalid state "${state}". Supported: attached, detached, visible, hidden.`,
+        );
+      }
+      args.push(`state=${state}`);
+    }
+    const timeoutMs = optionalStructuredNumber(stepObject, "timeoutMs", action);
+    if (timeoutMs !== undefined) {
+      args.push(`timeoutMs=${timeoutMs}`);
+    }
+    return { kind: "command", command: action, args };
+  }
+
+  if (action === "selectOption") {
+    assertStructuredKeys(stepObject, new Set(["action", "value", "label", "index"]), action);
+    const hasValue = Object.prototype.hasOwnProperty.call(stepObject, "value");
+    const hasLabel = Object.prototype.hasOwnProperty.call(stepObject, "label");
+    const hasIndex = Object.prototype.hasOwnProperty.call(stepObject, "index");
+    const setCount = [hasValue, hasLabel, hasIndex].filter(Boolean).length;
+
+    if (setCount !== 1) {
+      throw new Error(
+        'Structured action "selectOption" requires exactly one of `value`, `label`, or `index`.',
+      );
+    }
+
+    if (hasValue) {
+      return {
+        kind: "command",
+        command: action,
+        args: [`value=${requireStructuredString(stepObject, "value", action)}`],
+      };
+    }
+    if (hasLabel) {
+      return {
+        kind: "command",
+        command: action,
+        args: [`label=${requireStructuredString(stepObject, "label", action)}`],
+      };
+    }
+    return {
+      kind: "command",
+      command: action,
+      args: [`index=${requireStructuredNumber(stepObject, "index", action)}`],
+    };
+  }
+
+  if (action === "customEvent") {
+    assertStructuredKeys(stepObject, new Set(["action", "name", "detail"]), action);
+    const eventName = requireStructuredString(stepObject, "name", action);
+    const args = [eventName];
+    if (stepObject.detail !== undefined) {
+      if (!isPlainObject(stepObject.detail)) {
+        throw new Error('Structured action "customEvent" requires object `detail` when provided.');
+      }
+      Object.entries(stepObject.detail).forEach(([key, value]) => {
+        const formattedValue = typeof value === "string" ? value : JSON.stringify(value);
+        args.push(`${key}=${formattedValue}`);
+      });
+    }
+    return { kind: "command", command: action, args };
+  }
+
+  if (
+    action === "blur"
+    || action === "check"
+    || action === "clear"
+    || action === "focus"
+    || action === "mouseDown"
+    || action === "mouseUp"
+    || action === "rightMouseDown"
+    || action === "rightMouseUp"
+    || action === "screenshot"
+    || action === "uncheck"
+  ) {
+    assertStructuredKeys(stepObject, new Set(["action"]), action);
+    return { kind: "command", command: action, args: [] };
+  }
+
+  throw new Error(`Unknown structured action: "${action}".`);
+}
+
+function normalizeLegacyBlockStep(stepObject) {
+  const keys = Object.keys(stepObject);
+  if (keys.length !== 1) {
+    throw new Error(`Step object must have exactly one key, got ${keys.length}.`);
+  }
+  const [key] = keys;
+  if (key === "assert") {
+    return { kind: "assert", assertionConfig: stepObject.assert };
+  }
+
+  const nestedStepValues = stepObject[key];
+  if (!Array.isArray(nestedStepValues)) {
+    throw new Error(`Block step "${key}" must contain an array of nested steps.`);
+  }
+  const { command, args } = parseStepCommand(key);
+  const nestedSteps = nestedStepValues.map((nestedStep) => normalizeStepValue(nestedStep));
+  return { kind: "block", command, args, nestedSteps };
+}
+
+function normalizeStepValue(step) {
+  if (typeof step === "string") {
+    const { command, args } = parseStepCommand(step);
+    return { kind: "command", command, args };
+  }
+  if (!isPlainObject(step)) {
+    throw new Error("Invalid step: expected string or object.");
+  }
+  if (Object.prototype.hasOwnProperty.call(step, "action")) {
+    return normalizeStructuredActionStep(step);
+  }
+  return normalizeLegacyBlockStep(step);
+}
+
 async function click(page, args, context, selectedElement) {
   if (selectedElement) {
     await selectedElement.click();
@@ -579,8 +886,7 @@ export function createSteps(page, context) {
     write,
   };
 
-  async function executeSingleStep(stepString, selectedElement) {
-    const { command, args } = parseStepCommand(stepString);
+  async function executeCommand(command, args, selectedElement) {
     if (!command) {
       return;
     }
@@ -597,42 +903,31 @@ export function createSteps(page, context) {
     }
   }
 
-  async function executeStepValue(step, selectedElement) {
-    if (typeof step === "string") {
-      await executeSingleStep(step, selectedElement);
+  async function executeNormalizedStep(normalizedStep, selectedElement) {
+    if (normalizedStep.kind === "assert") {
+      await assertStructured(page, normalizedStep.assertionConfig, selectedElement);
       return;
     }
 
-    if (typeof step === "object" && step !== null) {
-      const keys = Object.keys(step);
-      if (keys.length !== 1) {
-        throw new Error(`Step object must have exactly one key, got ${keys.length}.`);
-      }
-
-      const [key] = keys;
-      if (key === "assert") {
-        await assertStructured(page, step.assert, selectedElement);
-        return;
-      }
-
-      const nestedStepValues = step[key];
-      if (!Array.isArray(nestedStepValues)) {
-        throw new Error(`Block step "${key}" must contain an array of nested steps.`);
-      }
-      const { command, args } = parseStepCommand(key);
-
+    if (normalizedStep.kind === "block") {
+      const { command, args, nestedSteps } = normalizedStep;
       const blockFn = actionHandlers[command];
       if (!blockFn) {
         throw new Error(`Unsupported block command: "${command}".`);
       }
       const blockSelectedElement = await blockFn(page, args, context, null);
-      for (const nestedStep of nestedStepValues) {
-        await executeStepValue(nestedStep, blockSelectedElement);
+      for (const nestedStep of nestedSteps) {
+        await executeNormalizedStep(nestedStep, blockSelectedElement);
       }
       return;
     }
 
-    throw new Error("Invalid step: expected string or object.");
+    await executeCommand(normalizedStep.command, normalizedStep.args, selectedElement);
+  }
+
+  async function executeStepValue(step, selectedElement) {
+    const normalizedStep = normalizeStepValue(step);
+    await executeNormalizedStep(normalizedStep, selectedElement);
   }
 
   return {

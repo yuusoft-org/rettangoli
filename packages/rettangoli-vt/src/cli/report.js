@@ -159,7 +159,7 @@ async function main(options = {}) {
 
   try {
     if (!fs.existsSync(candidateDir)) {
-      throw new Error(`Candidate screenshots directory not found: "${candidateDir}". Run "rtgl vt generate" first.`);
+      throw new Error(`Candidate screenshots directory not found: "${candidateDir}". Run "rtgl vt screenshot" first.`);
     }
 
     const candidateFiles = getAllFiles(candidateDir).filter((file) => file.endsWith(".webp"));
