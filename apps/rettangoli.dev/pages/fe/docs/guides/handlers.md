@@ -138,10 +138,8 @@ export const handleIncrement = (deps) => {
 
 ## Validation Errors
 
-| Code | Description |
-| --- | --- |
-| RTGL-HANDLERS-001 | `handleBeforeMount` returned a Promise |
-| RTGL-HANDLERS-002 | View references a missing handler export |
+- `handleBeforeMount` returned a Promise
+- `View references a missing handler export`
 
 ## Complete Example
 

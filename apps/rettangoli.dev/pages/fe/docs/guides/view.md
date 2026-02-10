@@ -133,9 +133,12 @@ template:
   - ul#todoList:
     - $for todo, i in todos:
       - li#todo${i}: ${todo.title}
+      - rtgl-input :value=${todo.title}:
 ```
 
 The `$for` directive supports an optional index variable after the item variable.
+For property bindings inside loops, use interpolation form:
+- `:value=${todo.title}`
 
 ## Styles
 
@@ -180,30 +183,4 @@ template:
     - button#toggleBtn: Toggle
     - $if showPanel:
       - div#panel:
-```
-
-## Invalid Examples
-
-Duplicate prop source on one component node:
-
-```yaml
-# Invalid: both forms target the same prop key
-template:
-  - my-component value=abc :value=${stateValue}:
-```
-
-Forbidden API key in `.view.yaml`:
-
-```yaml
-# Invalid: elementName belongs in .schema.yaml
-elementName: todo-item
-template: []
-```
-
-Legacy dot property binding:
-
-```yaml
-# Invalid: use :value= instead of .value=
-template:
-  - rtgl-input .value=${title}:
 ```

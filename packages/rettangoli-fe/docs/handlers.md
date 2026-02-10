@@ -118,9 +118,9 @@ Long-lived browser-level listeners SHOULD be declared in `.view.yaml`:
 
 ## 7. Validation Errors
 
-Suggested stable error codes:
-- `RTGL-HANDLERS-001`: `handleBeforeMount` returned a Promise
-- `RTGL-HANDLERS-002`: view references a missing handler export
+Runtime validation errors:
+- `handleBeforeMount` returned a Promise
+- `view references a missing handler export`
 
 ## 8. Invalid Example
 

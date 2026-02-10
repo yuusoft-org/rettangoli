@@ -13,7 +13,7 @@ sidebarId: fe-cli
 | --- | --- |
 | `rtgl fe build` | Build component bundles |
 | `rtgl fe watch` | Start dev server with file watching |
-| `rtgl fe scaffold <name>` | Generate a new component from a template |
+| `rtgl fe scaffold --category <folder> --component-name <name>` | Generate a new component from a template |
 | `rtgl fe check` | Validate components against contracts |
 | `rtgl fe examples` | Generate example specs for visual testing |
 
@@ -22,7 +22,7 @@ sidebarId: fe-cli
 Bundles all components found in the configured directories into a single output file.
 
 ```bash
-npx rtgl fe build
+rtgl fe build
 ```
 
 Uses the `outfile` path from `rettangoli.config.yaml`:
@@ -41,7 +41,7 @@ The build uses esbuild for fast bundling.
 Starts a development server that watches for file changes and rebuilds automatically.
 
 ```bash
-npx rtgl fe watch
+rtgl fe watch
 ```
 
 Uses Vite under the hood for hot module replacement during development.
@@ -51,13 +51,15 @@ Uses Vite under the hood for hot module replacement during development.
 Generates a new component with the required boilerplate files:
 
 ```bash
-npx rtgl fe scaffold my-component
+rtgl fe scaffold --category components --component-name my-component
 ```
+
+`--category` is the folder name the component is created under (inside `--dir`, default `./example`).
 
 This creates:
 
 ```
-my-component/
+./example/components/my-component/
   my-component.schema.yaml
   my-component.view.yaml
   my-component.store.js
@@ -78,7 +80,7 @@ Validates all components against the framework contracts. Checks include:
 ### Text Output (default)
 
 ```bash
-npx rtgl fe check
+rtgl fe check
 ```
 
 Outputs a grouped summary by rule and component, plus detailed error lines.
@@ -86,7 +88,7 @@ Outputs a grouped summary by rule and component, plus detailed error lines.
 ### JSON Output
 
 ```bash
-npx rtgl fe check --format json
+rtgl fe check --format json
 ```
 
 Machine-readable JSON report for CI integration.
@@ -98,9 +100,6 @@ Machine-readable JSON report for CI integration.
 | RTGL-CONTRACT-001 | Missing `.schema.yaml` for component |
 | RTGL-CONTRACT-002 | Forbidden API key in `.view.yaml` |
 | RTGL-CONTRACT-003 | Legacy dot property binding in view |
-| RTGL-SCHEMA-001 | Missing `componentName` in schema |
-| RTGL-SCHEMA-002 | `attrsSchema` present in schema |
-| RTGL-SCHEMA-003 | Method in schema missing from `.methods.js` |
 | RTGL-HANDLERS-001 | `handleBeforeMount` returned a Promise |
 | RTGL-HANDLERS-002 | View references a missing handler |
 | RTGL-METHODS-001 | Method name is `default` |
@@ -113,7 +112,7 @@ Machine-readable JSON report for CI integration.
 Generates example spec files from `.schema.yaml` examples for use with `@rettangoli/vt` visual testing.
 
 ```bash
-npx rtgl fe examples
+rtgl fe examples
 ```
 
 Output directory is configured in `rettangoli.config.yaml`:

@@ -145,13 +145,13 @@ The pattern is simple: call a store action to change state, then call `render()`
 Build the bundle:
 
 ```bash
-npx rtgl fe build
+rtgl fe build
 ```
 
 Or start the dev server with automatic rebuilds on file changes:
 
 ```bash
-npx rtgl fe watch
+rtgl fe watch
 ```
 
 Then use your component in any HTML page:
@@ -173,9 +173,10 @@ Open it in a browser and you have a working counter.
 Instead of creating files manually, use the CLI to generate a blank component:
 
 ```bash
-npx rtgl fe scaffold my-component
+rtgl fe scaffold --category components --component-name my-component
 ```
 
+`--category` is the folder name created under `--dir` (default `./example`).
 This creates the 4 required files with boilerplate ready to edit.
 
 ## Next Steps

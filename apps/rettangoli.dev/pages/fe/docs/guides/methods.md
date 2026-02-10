@@ -72,14 +72,16 @@ Public methods should be declared in `.schema.yaml` under `methods`. Method name
 ```yaml
 # .schema.yaml
 methods:
-  - name: focusInput
-    description: "Focuses the primary input field"
-    params: []
-    returns: void
-  - name: reset
-    description: "Dispatches a reset event"
-    params: []
-    returns: void
+  type: object
+  properties:
+    focusInput:
+      description: "Focuses the primary input field"
+      params: []
+      returns: void
+    reset:
+      description: "Dispatches a reset event"
+      params: []
+      returns: void
 ```
 
 ## Validation Errors

@@ -35,7 +35,21 @@ Invocation contract:
 ## 4. Schema Alignment
 
 Public methods SHOULD be declared in `.schema.yaml` under `methods`.
-Method names in `.schema.yaml` SHOULD match exported names in `.methods.js`.
+Method names under `methods.properties` in `.schema.yaml` SHOULD match exported names in `.methods.js`.
+
+```yaml
+methods:
+  type: object
+  properties:
+    focusInput:
+      description: "Focuses the primary input field"
+      params: []
+      returns: void
+    reset:
+      description: "Dispatches a reset event"
+      params: []
+      returns: void
+```
 
 ## 5. Runtime Access
 

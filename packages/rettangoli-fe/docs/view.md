@@ -123,7 +123,11 @@ template:
   - ul#todoList:
     - $for todo, i in todos:
       - li#todo${i}: ${todo.title}
+      - rtgl-input :value=${todo.title}:
 ```
+
+For property bindings inside loops, use interpolation form:
+- `:value=${todo.title}`
 
 ## 6. Refs and Event Listeners
 
@@ -248,33 +252,6 @@ Suggested stable error strings:
 - `Expected non-negative number`
 
 ## 9. Invalid Examples
-
-Duplicate prop source on one component node:
-
-```yaml
-template:
-  - my-component value=abc :value=${stateValue}:
-```
-
-Invalid because both forms target the same normalized prop key (`value`).
-
-Forbidden API key in `.view.yaml`:
-
-```yaml
-elementName: todo-item
-template: []
-```
-
-Invalid because `elementName` must live in `.schema.yaml`.
-
-Legacy dot property binding:
-
-```yaml
-template:
-  - rtgl-input .value=${title}:
-```
-
-Invalid because property bindings MUST use `:value=...`.
 
 Listener with both `handler` and `action`:
 

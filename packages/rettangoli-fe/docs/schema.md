@@ -46,10 +46,12 @@ events:
         completed: {}
 
 methods:
-  - name: focusInput
-    description: "Focuses input"
-    params: []
-    returns: void
+  type: object
+  properties:
+    focusInput:
+      description: "Focuses input"
+      params: []
+      returns: void
 ```
 
 ## 3. Field Contracts
@@ -83,16 +85,20 @@ methods:
 
 ### `methods`
 
-- optional list of public methods exposed by the component element
-- each `methods[].name` SHOULD match a named export in `.methods.js`
+- optional JSON-Schema-like object describing public methods exposed by the component element
+- SHOULD use `type: object` and `properties`
+- each `methods.properties.<methodName>` SHOULD match a named export in `.methods.js`
 - if `methods` is declared, `.methods.js` SHOULD exist
 
 ## 4. Validation Errors
 
-Suggested stable error codes:
-- `RTGL-SCHEMA-001`: missing required `componentName`
-- `RTGL-SCHEMA-002`: `attrsSchema` present (unsupported)
-- `RTGL-SCHEMA-003`: method declared in schema but missing in `.methods.js`
+Runtime validation errors:
+- `componentName is required.`
+- `attrsSchema is not supported.`
+- `methods must be an object schema with a properties map.`
+- `methods.type must be 'object'.`
+- `methods.properties must be an object keyed by method name.`
+- `method '<name>' is declared in schema but missing in .methods.js exports.`
 
 ## 5. Invalid Example
 

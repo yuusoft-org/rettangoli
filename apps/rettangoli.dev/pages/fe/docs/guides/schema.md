@@ -36,10 +36,12 @@ events:
         completed: {}
 
 methods:
-  - name: focusInput
-    description: "Focuses the input field"
-    params: []
-    returns: void
+  type: object
+  properties:
+    focusInput:
+      description: "Focuses the input field"
+      params: []
+      returns: void
 ```
 
 ## Fields
@@ -106,14 +108,16 @@ events:
 
 ### `methods` (optional)
 
-List of public methods exposed on the component element. Each declared method name must match a named export in `.methods.js`.
+JSON-Schema-like object of public methods exposed on the component element. Each key under `methods.properties` must match a named export in `.methods.js`.
 
 ```yaml
 methods:
-  - name: focusInput
-    description: "Focuses the primary input field"
-    params: []
-    returns: void
+  type: object
+  properties:
+    focusInput:
+      description: "Focuses the primary input field"
+      params: []
+      returns: void
 ```
 
 ## Notes
@@ -124,11 +128,12 @@ methods:
 
 ## Validation Errors
 
-| Code | Description |
-| --- | --- |
-| RTGL-SCHEMA-001 | Missing required `componentName` |
-| RTGL-SCHEMA-002 | `attrsSchema` field present (unsupported) |
-| RTGL-SCHEMA-003 | Method declared in schema but missing in `.methods.js` |
+- `componentName is required.`
+- `attrsSchema is not supported.`
+- `methods must be an object schema with a properties map.`
+- `methods.type must be 'object'.`
+- `methods.properties must be an object keyed by method name.`
+- `method '<name>' is declared in schema but missing in .methods.js exports.`
 
 ## Minimal Example
 

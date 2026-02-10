@@ -14,7 +14,7 @@ case: requires componentName
 in:
   - schema:
       description: missing name
-throws: RTGL-SCHEMA-001
+throws: componentName is required
 ---
 case: rejects attrsSchema field
 in:
@@ -22,14 +22,17 @@ in:
       componentName: todo-item
       attrsSchema:
         type: object
-throws: RTGL-SCHEMA-002
+throws: attrsSchema is not supported
 ---
 case: validates declared methods against exported method names
 in:
   - schema:
       componentName: todo-item
       methods:
-        - name: focusInput
+        type: object
+        properties:
+          focusInput:
+            description: Focuses the primary input field
     methodExports:
       - focusInput
 out: true
@@ -39,7 +42,18 @@ in:
   - schema:
       componentName: todo-item
       methods:
-        - name: focusInput
+        type: object
+        properties:
+          focusInput:
+            description: Focuses the primary input field
     methodExports:
       - reset
-throws: RTGL-SCHEMA-003
+throws: missing in .methods.js exports
+---
+case: rejects methods that are not object schema
+in:
+  - schema:
+      componentName: todo-item
+      methods:
+        - name: focusInput
+throws: methods must be an object schema with a properties map

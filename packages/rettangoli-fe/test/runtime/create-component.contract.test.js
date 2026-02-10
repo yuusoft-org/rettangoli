@@ -364,9 +364,14 @@ describe("createComponent runtime contracts", () => {
         constants: {},
         schema: {
           componentName: "x-schema-methods",
-          methods: [
-            { name: "focusInput" },
-          ],
+          methods: {
+            type: "object",
+            properties: {
+              focusInput: {
+                description: "Focuses the primary input field",
+              },
+            },
+          },
         },
         view: {
           elementName: "x-schema-methods",
