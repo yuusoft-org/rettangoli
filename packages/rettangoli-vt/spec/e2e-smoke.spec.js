@@ -19,6 +19,70 @@ function createTempProjectRoot() {
   return mkdtempSync(join(tmpdir(), "rettangoli-vt-e2e-"));
 }
 
+function writeManagedServiceFixture(rootDir, servicePort) {
+  const vtPath = join(rootDir, "vt");
+  const specsDir = join(vtPath, "specs", "components");
+  mkdirSync(specsDir, { recursive: true });
+
+  const configYaml = `vt:
+  path: ./vt
+  url: http://127.0.0.1:${servicePort}
+  service:
+    start: node managed-preview.js ${servicePort}
+  compareMethod: md5
+  sections:
+    - title: components_basic
+      files: components
+`;
+
+  const managedServerScript = `const fs = require("node:fs");
+const http = require("node:http");
+const path = require("node:path");
+
+const port = Number(process.argv[2]);
+const rootDir = process.cwd();
+const stoppedMarker = path.join(rootDir, ".service-stopped");
+
+const pages = {
+  "/": "<!doctype html><html><body>root</body></html>",
+  "/about": "<!doctype html><html><body><div style='width:360px;height:220px;padding:24px;background:#198754;color:#fff;font:700 42px Arial;'>Managed Service About</div></body></html>",
+};
+
+const server = http.createServer((req, res) => {
+  const html = pages[req.url] || null;
+  if (!html) {
+    res.writeHead(404, { "content-type": "text/plain" });
+    res.end("not found");
+    return;
+  }
+  res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+  res.end(html);
+});
+
+function shutdown() {
+  server.close(() => {
+    fs.writeFileSync(stoppedMarker, "stopped\\n", "utf8");
+    process.exit(0);
+  });
+}
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
+
+server.listen(port, "127.0.0.1");
+`;
+
+  const specHtml = `---
+title: managed_service_relative_url
+url: /about
+---
+`;
+
+  writeFileSync(join(rootDir, "rettangoli.config.yaml"), configYaml, "utf8");
+  writeFileSync(join(rootDir, "managed-preview.js"), managedServerScript, "utf8");
+  writeFileSync(join(specsDir, "basic.html"), specHtml, "utf8");
+}
+
 function writeFixture(rootDir, htmlContent, vtOverrides = "") {
   const vtPath = join(rootDir, "vt");
   const specsDir = join(vtPath, "specs", "components");
@@ -50,7 +114,7 @@ async function getAvailablePort() {
   return await new Promise((resolve, reject) => {
     const server = net.createServer();
     server.once("error", reject);
-    server.listen(0, () => {
+    server.listen(0, "127.0.0.1", () => {
       const address = server.address();
       if (!address || typeof address === "string") {
         server.close(() => {
@@ -168,5 +232,36 @@ title: event_ready_component
       "basic-01.webp",
     );
     expect(existsSync(candidateScreenshotPath)).toBe(true);
+  }, 180000);
+
+  it("supports managed service lifecycle with vt.service.start and vt.url", async () => {
+    originalCwd = process.cwd();
+    tempRoot = createTempProjectRoot();
+    process.chdir(tempRoot);
+
+    const servicePort = await getAvailablePort();
+    writeManagedServiceFixture(tempRoot, servicePort);
+
+    // Use a different free port for VT internal server slot; managed service mode should not use it.
+    const unusedCapturePort = await getAvailablePort();
+    await generate({
+      vtPath: "./vt",
+      port: unusedCapturePort,
+    });
+
+    const candidateScreenshotPath = join(
+      tempRoot,
+      ".rettangoli",
+      "vt",
+      "_site",
+      "candidate",
+      "components",
+      "basic-01.webp",
+    );
+    expect(existsSync(candidateScreenshotPath)).toBe(true);
+
+    // Managed service should be shut down by VT after capture.
+    const stoppedMarkerPath = join(tempRoot, ".service-stopped");
+    expect(existsSync(stoppedMarkerPath)).toBe(true);
   }, 180000);
 });

@@ -1,0 +1,9 @@
+vt:
+  path: ./vt
+  url: http://127.0.0.1:3001
+  service:
+    start: node managed-preview.js 3001
+  compareMethod: md5
+  sections:
+    - title: components_basic
+      files: components

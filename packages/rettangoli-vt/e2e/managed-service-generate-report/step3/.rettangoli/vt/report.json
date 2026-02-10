@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-02-09T04:42:24.120Z",
+  "total": 1,
+  "mismatched": 1,
+  "items": [
+    {
+      "path": "candidate/components/basic-01.webp",
+      "candidatePath": "candidate/components/basic-01.webp",
+      "referencePath": null,
+      "equal": false,
+      "similarity": null,
+      "onlyInCandidate": true,
+      "onlyInReference": false
+    }
+  ]
+}

@@ -82,6 +82,30 @@ function validateCaptureConfig(captureConfig, sourcePath) {
   );
 }
 
+function validateServiceConfig(serviceConfig, sourcePath) {
+  if (serviceConfig === undefined || serviceConfig === null) {
+    return;
+  }
+
+  assert(
+    isPlainObject(serviceConfig),
+    `Invalid VT config in ${sourcePath}: "vt.service" must be an object when provided, got ${valueType(serviceConfig)}.`,
+  );
+
+  const allowedKeys = new Set(["start"]);
+  const unknownKeys = Object.keys(serviceConfig).filter((key) => !allowedKeys.has(key));
+  assert(
+    unknownKeys.length === 0,
+    `Invalid VT config in ${sourcePath}: "vt.service" supports only "start". Unknown keys: ${unknownKeys.join(", ")}.`,
+  );
+
+  validateOptionalString(serviceConfig.start, "vt.service.start");
+  assert(
+    typeof serviceConfig.start === "string" && serviceConfig.start.trim().length > 0,
+    `Invalid VT config in ${sourcePath}: "vt.service.start" is required when "vt.service" is provided.`,
+  );
+}
+
 const LEGACY_CAPTURE_FIELDS = {
   screenshotWaitTime: true,
   waitSelector: true,
@@ -228,6 +252,13 @@ export function validateVtConfig(vtConfig, sourcePath = "rettangoli.config.yaml"
   normalizeViewportField(vtConfig.viewport, "vt.viewport");
   validateOptionalNumber(vtConfig.colorThreshold, "vt.colorThreshold", { min: 0, max: 1 });
   validateOptionalNumber(vtConfig.diffThreshold, "vt.diffThreshold", { min: 0, max: 100 });
+  validateServiceConfig(vtConfig.service, sourcePath);
+  if (vtConfig.service) {
+    assert(
+      typeof vtConfig.url === "string" && vtConfig.url.trim().length > 0,
+      `Invalid VT config in ${sourcePath}: "vt.url" is required when "vt.service" is configured.`,
+    );
+  }
   assertNoLegacyCaptureFields(vtConfig, sourcePath);
   validateCaptureConfig(vtConfig.capture, sourcePath);
 

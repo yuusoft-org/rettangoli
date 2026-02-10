@@ -20,6 +20,8 @@ Capture engine internals are intentionally excluded from this contract.
 vt:
   path: ./vt
   url: http://localhost:3000
+  service:
+    start: bun run preview
   compareMethod: pixelmatch # pixelmatch | md5
   colorThreshold: 0.1
   diffThreshold: 0.3
@@ -51,6 +53,8 @@ Rules:
 - `vt.viewport` optional object or array of objects.
 - each viewport object requires `id`, `width`, `height`.
 - viewport `id` values must be unique case-insensitively within an array.
+- `vt.service` optional object with required `start` command string.
+- when `vt.service` is set, `vt.url` is required.
 - `vt.capture` must be omitted or empty object.
 
 ## Generate CLI Contract
@@ -71,6 +75,8 @@ Generate behavior:
 - Builds candidate pages from `vt/specs`.
 - Builds section overview pages from `vt.sections`.
 - Captures screenshots for non-`skipScreenshot` specs.
+- when `vt.service.start` exists, starts service, waits for `vt.url`, then stops service after capture.
+- when `vt.service` is omitted and `vt.url` is set, VT captures against the already running service.
 - Fails if unresolved capture failures remain.
 
 Wait strategy precedence:

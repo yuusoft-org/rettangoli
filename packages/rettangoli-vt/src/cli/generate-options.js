@@ -33,6 +33,7 @@ export function resolveGenerateOptions(options = {}, configData = {}) {
     headless: cliHeadless ?? true,
     configUrl: cliUrl ?? configData.url,
     ...(configData.viewport !== undefined ? { viewport: configData.viewport } : {}),
+    ...(configData.service?.start ? { serviceStart: configData.service.start } : {}),
     selectors,
 
     // Internal capture defaults (not user-configurable).

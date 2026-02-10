@@ -14,6 +14,11 @@ import {
   filterGeneratedFilesBySelectors,
   hasSelectors,
 } from "../selector-filter.js";
+import {
+  startManagedService,
+  stopManagedService,
+  waitForServiceReady,
+} from "./service-runtime.js";
 
 const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
 const libraryStaticPath = new URL("./static", import.meta.url).pathname;
@@ -90,6 +95,7 @@ async function main(options = {}) {
     skipScreenshots,
     port,
     configUrl,
+    serviceStart,
   } = resolvedOptions;
 
   const specsPath = join(vtPath, "specs");
@@ -164,8 +170,22 @@ async function main(options = {}) {
       return;
     }
 
-    const server = configUrl ? null : await startWebServer(siteOutputPath, vtPath, port);
+    let server = null;
+    let managedService = null;
+
     try {
+      if (serviceStart) {
+        if (!configUrl) {
+          throw new Error(
+            "vt.service.start requires vt.url (or --url) so VT can wait for readiness and capture against that URL.",
+          );
+        }
+        managedService = startManagedService({ command: serviceStart });
+        await waitForServiceReady({ url: configUrl, handle: managedService });
+      } else if (!configUrl) {
+        server = await startWebServer(siteOutputPath, vtPath, port);
+      }
+
       await takeScreenshots(
         buildCaptureOptions({
           filesToScreenshot,
@@ -178,6 +198,9 @@ async function main(options = {}) {
       if (server) {
         server.close();
         console.log("Server stopped");
+      }
+      if (managedService) {
+        await stopManagedService(managedService);
       }
     }
   }

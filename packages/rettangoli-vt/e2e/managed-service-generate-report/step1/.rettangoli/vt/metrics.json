@@ -1,0 +1,171 @@
+{
+  "generatedAt": "2026-02-09T04:42:10.596Z",
+  "summary": {
+    "totalTasks": 1,
+    "completed": 1,
+    "successful": 1,
+    "failed": 0,
+    "retries": 0,
+    "attempts": 1,
+    "durationMs": 526,
+    "workerCount": 5,
+    "isolationMode": "fast",
+    "maxRetries": 1,
+    "adaptivePolicy": {
+      "mode": "auto",
+      "cpuCount": 8,
+      "cpuBound": 7,
+      "totalMemoryGb": 7.81,
+      "memoryBound": 5
+    },
+    "schedulingPolicy": {
+      "type": "duration-aware-fair-retry",
+      "freshBeforeRetry": 3
+    },
+    "timings": {
+      "totalMs": {
+        "avgMs": 226.21,
+        "p50Ms": 226.21,
+        "p95Ms": 226.21,
+        "maxMs": 226.21
+      },
+      "sessionMs": {
+        "avgMs": 0.06,
+        "p50Ms": 0.06,
+        "p95Ms": 0.06,
+        "maxMs": 0.06
+      },
+      "resetMs": {
+        "avgMs": 9.08,
+        "p50Ms": 9.08,
+        "p95Ms": 9.08,
+        "maxMs": 9.08
+      },
+      "navigationMs": {
+        "avgMs": 122.12,
+        "p50Ms": 122.12,
+        "p95Ms": 122.12,
+        "maxMs": 122.12
+      },
+      "readyMs": {
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      },
+      "settleMs": {
+        "avgMs": 0,
+        "p50Ms": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      },
+      "initialScreenshotMs": {
+        "avgMs": 94.67,
+        "p50Ms": 94.67,
+        "p95Ms": 94.67,
+        "maxMs": 94.67
+      },
+      "stepsMs": {
+        "avgMs": 0.08,
+        "p50Ms": 0.08,
+        "p95Ms": 0.08,
+        "maxMs": 0.08
+      },
+      "attemptMs": {
+        "avgMs": 226.34,
+        "p50Ms": 226.34,
+        "p95Ms": 226.34,
+        "maxMs": 226.34
+      },
+      "queueWaitMs": {
+        "avgMs": 280.32,
+        "p50Ms": 280.32,
+        "p95Ms": 280.32,
+        "maxMs": 280.32
+      }
+    },
+    "workerUtilization": [
+      {
+        "workerId": 1,
+        "attempts": 1,
+        "successful": 1,
+        "retries": 0,
+        "failures": 0,
+        "busyMs": 226.34,
+        "utilizationPct": 43.03
+      },
+      {
+        "workerId": 2,
+        "attempts": 0,
+        "successful": 0,
+        "retries": 0,
+        "failures": 0,
+        "busyMs": 0,
+        "utilizationPct": 0
+      },
+      {
+        "workerId": 3,
+        "attempts": 0,
+        "successful": 0,
+        "retries": 0,
+        "failures": 0,
+        "busyMs": 0,
+        "utilizationPct": 0
+      },
+      {
+        "workerId": 4,
+        "attempts": 0,
+        "successful": 0,
+        "retries": 0,
+        "failures": 0,
+        "busyMs": 0,
+        "utilizationPct": 0
+      },
+      {
+        "workerId": 5,
+        "attempts": 0,
+        "successful": 0,
+        "retries": 0,
+        "failures": 0,
+        "busyMs": 0,
+        "utilizationPct": 0
+      }
+    ]
+  },
+  "successes": [
+    {
+      "path": "components/basic.html",
+      "attempt": 1,
+      "workerId": 1,
+      "strategy": "load",
+      "screenshotCount": 1,
+      "timings": {
+        "totalMs": 226.20536000000004,
+        "sessionMs": 0.06416600000000017,
+        "resetMs": 9.08279600000003,
+        "navigationMs": 122.1152679999999,
+        "readyMs": 0,
+        "settleMs": 0.0009580000000823929,
+        "initialScreenshotMs": 94.67192100000011,
+        "stepsMs": 0.07933299999990595
+      },
+      "queueType": "fresh",
+      "queueWaitMs": 280.3185940000001,
+      "attemptMs": 226.33765100000005
+    }
+  ],
+  "failures": [],
+  "retries": [],
+  "recycles": [],
+  "attempts": [
+    {
+      "path": "components/basic.html",
+      "attempt": 1,
+      "workerId": 1,
+      "outcome": "success",
+      "queueType": "fresh",
+      "queueWaitMs": 280.3185940000001,
+      "attemptMs": 226.33765100000005
+    }
+  ]
+}

@@ -110,6 +110,49 @@ out:
     - title: Pages
       files: pages
 ---
+case: accepts minimal managed service config
+in:
+  - path: ./vt
+    url: http://127.0.0.1:4173
+    service:
+      start: bun run preview
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  url: http://127.0.0.1:4173
+  service:
+    start: bun run preview
+  sections:
+    - title: Pages
+      files: pages
+---
+case: rejects managed service without vt.url
+in:
+  - path: ./vt
+    service:
+      start: bun run preview
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: vt.url
+---
+case: rejects unsupported service keys
+in:
+  - path: ./vt
+    url: http://127.0.0.1:4173
+    service:
+      start: bun run preview
+      cwd: .
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: supports only "start"
+---
 case: accepts single viewport object
 in:
   - path: ./vt

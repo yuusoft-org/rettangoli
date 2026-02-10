@@ -70,8 +70,10 @@ export function createCaptureTasks(generatedFiles, options) {
     const frontMatter = file.frontMatter || {};
     const normalizedPath = normalizePathForUrl(file.path);
     const constructedUrl = toHtmlPath(`${serverUrl}/candidate/${normalizedPath}`);
-    const rawUrl = frontMatter.url ?? configUrl ?? constructedUrl;
-    const url = toAbsoluteUrl(rawUrl, serverUrl);
+    const resolvedConfigUrl = configUrl ? toAbsoluteUrl(configUrl, serverUrl) : null;
+    const urlResolutionBase = resolvedConfigUrl || serverUrl;
+    const rawUrl = frontMatter.url ?? resolvedConfigUrl ?? constructedUrl;
+    const url = toAbsoluteUrl(rawUrl, urlResolutionBase);
     const resolvedWaitEvent = frontMatter.waitEvent ?? waitEvent;
     const resolvedWaitSelector = frontMatter.waitSelector ?? waitSelector;
 

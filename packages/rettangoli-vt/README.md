@@ -73,6 +73,9 @@ Everything else in capture is internal and intentionally not user-configurable.
 vt:
   path: ./vt
   port: 3001
+  url: http://127.0.0.1:4173
+  service:
+    start: bun run preview
   skipScreenshots: false
   concurrency: 4
   timeout: 30000
@@ -89,6 +92,8 @@ vt:
 Notes:
 
 - `vt.sections` is required.
+- `vt.service` is optional. When set, VT starts the command before capture, waits for `vt.url`, then stops it after capture.
+- when `vt.service` is omitted and `vt.url` is set, VT expects that URL to already be running.
 - Section page keys (`title` for flat sections and group `items[].title`) allow only letters, numbers, `-`, `_`.
 - `vt.viewport` supports object or array; each viewport requires `id`, `width`, `height`.
 - `vt.capture` is internal and must be omitted.

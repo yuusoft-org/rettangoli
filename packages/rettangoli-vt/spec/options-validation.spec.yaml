@@ -181,3 +181,36 @@ out:
   maxRetries: 1
   recycleEvery: 25
   metricsPath: .rettangoli/vt/metrics.json
+---
+case: carries managed service start command into resolved options
+in:
+  - {}
+  - path: ./vt
+    url: http://127.0.0.1:4173
+    service:
+      start: bun run preview
+    skipScreenshots: false
+    port: 3001
+    concurrency: 2
+    timeout: 31000
+out:
+  vtPath: ./vt
+  skipScreenshots: false
+  port: 3001
+  headless: true
+  configUrl: http://127.0.0.1:4173
+  serviceStart: bun run preview
+  selectors:
+    folders: []
+    groups: []
+    items: []
+  screenshotWaitTime: 0
+  waitStrategy: load
+  workerCount: 2
+  isolationMode: fast
+  navigationTimeout: 31000
+  readyTimeout: 31000
+  screenshotTimeout: 31000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json

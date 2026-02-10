@@ -34,6 +34,29 @@ out:
       width: 1280
       height: 720
 ---
+case: resolves relative frontmatter url against config url base
+in:
+  - - path: pages/about.yaml
+      frontMatter:
+        url: /about
+  - serverUrl: http://localhost:3001
+    configUrl: http://127.0.0.1:4173
+out:
+  - id: 0:pages/about.yaml:default
+    index: 0
+    path: pages/about.yaml
+    url: http://127.0.0.1:4173/about
+    baseName: pages/about
+    frontMatter:
+      url: /about
+    steps: []
+    waitStrategy: networkidle
+    estimatedCost: 130
+    viewport:
+      id: null
+      width: 1280
+      height: 720
+---
 case: falls back to config url and capture defaults
 in:
   - - path: docs/intro.md

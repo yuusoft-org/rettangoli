@@ -1,0 +1,16 @@
+dynamicFields:
+  - timestamp
+  - generatedAt
+  - "*Ms"
+  - workerUtilization
+
+steps:
+  - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt generate
+    expected: step1
+  - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt report
+    expectFail: true
+    expected: step2
+  - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt accept
+    expected: step3
+  - command: docker run --rm -v "$CWD:/workspace" -w /workspace rtgl-local-test:latest rtgl vt report
+    expected: step4
