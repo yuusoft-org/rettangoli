@@ -10,9 +10,11 @@ import MarkdownIt from 'markdown-it';
  * @returns {Promise<Object>} The loaded config object or empty object if not found
  */
 export async function loadSiteConfig(rootDir, throwOnError = true, bustCache = false) {
+  const configPath = path.join(rootDir, 'sites.config.js');
+  const configFileUrl = pathToFileURL(configPath).href;
+
   try {
-    const configPath = path.join(rootDir, 'sites.config.js');
-    let importUrl = pathToFileURL(configPath).href;
+    let importUrl = configFileUrl;
     
     // Add timestamp to force reload if cache busting is requested
     if (bustCache) {
@@ -31,8 +33,11 @@ export async function loadSiteConfig(rootDir, throwOnError = true, bustCache = f
     // Otherwise return as is (for backward compatibility)
     return configExport || {};
   } catch (e) {
-    // Only ignore file not found errors
-    if (e.code === 'ENOENT' || e.code === 'ERR_MODULE_NOT_FOUND') {
+    // Only ignore when the root sites.config.js file itself is missing
+    const missingConfigByPath = e.code === 'ENOENT' && (e.path === configPath || e.message?.includes(configPath));
+    const missingConfigByImport = e.code === 'ERR_MODULE_NOT_FOUND' && e.message?.includes(configFileUrl);
+
+    if (missingConfigByPath || missingConfigByImport) {
       // Config file is optional, return empty config
       return {};
     } else if (throwOnError) {

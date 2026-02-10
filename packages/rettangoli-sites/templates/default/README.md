@@ -17,7 +17,6 @@ bun run serve
 | `bun run build` | Build site to `_site/` |
 | `bun run watch` | Build and watch for changes |
 | `bun run serve` | Serve `_site/` locally |
-| `bun run screenshot` | Build and capture screenshots |
 
 ## Project Structure
 

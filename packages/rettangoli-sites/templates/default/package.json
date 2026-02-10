@@ -4,8 +4,7 @@
   "scripts": {
     "build": "rtgl sites build",
     "watch": "rtgl sites watch",
-    "serve": "serve _site",
-    "screenshot": "rtgl sites build -s"
+    "serve": "serve _site"
   },
   "devDependencies": {
     "rtgl": "0.0.37",

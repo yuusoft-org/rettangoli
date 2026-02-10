@@ -84,10 +84,10 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
           // Recursively read subdirectories
           const newBasePath = basePath ? `${basePath}/${item.name}` : item.name;
           readTemplatesRecursively(itemPath, newBasePath);
-        } else if (item.isFile() && item.name.endsWith('.yaml')) {
+        } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.yml'))) {
           // Read and convert YAML file
           const fileContent = fs.readFileSync(itemPath, 'utf8');
-          const nameWithoutExt = path.basename(item.name, '.yaml');
+          const nameWithoutExt = path.basename(item.name, path.extname(item.name));
           const templateKey = basePath ? `${basePath}/${nameWithoutExt}` : nameWithoutExt;
           templates[templateKey] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
         }
@@ -147,12 +147,12 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
           if (item.isDirectory()) {
             // Recursively scan subdirectories
             scanPages(dir, relativePath);
-          } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.md'))) {
+          } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.yml') || item.name.endsWith('.md'))) {
             // Extract frontmatter and content
             const { frontmatter, content } = extractFrontmatterAndContent(itemPath);
 
             // Calculate URL
-            const baseFileName = item.name.replace(/\.(yaml|md)$/, '');
+            const baseFileName = item.name.replace(/\.(yaml|yml|md)$/, '');
             let url;
 
             // Special case: index files remain at root, others become directories
@@ -195,7 +195,7 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
     }
 
     // Build collections in first pass
-    console.log('Building collections...');
+    if (!quiet) console.log('Building collections...');
     const collections = buildCollections();
 
     // Function to process a single page file
@@ -369,9 +369,9 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
           // Recursively process subdirectories
           await processAllPages(dir, relativePath);
         } else if (item.isFile()) {
-          if (item.name.endsWith('.yaml')) {
+          if (item.name.endsWith('.yaml') || item.name.endsWith('.yml')) {
             // Process YAML file
-            const outputFileName = item.name.replace('.yaml', '.html');
+            const outputFileName = item.name.replace(/\.(yaml|yml)$/, '.html');
             const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
             await processPage(itemPath, outputRelativePath, false);
           } else if (item.name.endsWith('.md')) {

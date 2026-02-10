@@ -1,10 +1,8 @@
 import fs, { watch, existsSync } from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { buildSite } from './build.js';
-import { createScreenshotCapture } from '../screenshot.js';
 import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 
 // Client script to inject into HTML pages
@@ -104,10 +102,6 @@ class DevServer {
   handleRequest(req, res) {
     const urlParts = req.url.split('?');
     let urlPath = urlParts[0];
-    const queryString = urlParts[1] || '';
-
-    // Check if this is a screenshot request
-    const isScreenshotRequest = queryString.includes('screenshot=true');
 
     // Default to index.html for root
     if (urlPath === '/') {
@@ -150,7 +144,7 @@ class DevServer {
       // Try to serve index.html from the directory
       const indexPath = path.join(filePath, 'index.html');
       if (existsSync(indexPath)) {
-        return this.serveFile(indexPath, res, isScreenshotRequest);
+        return this.serveFile(indexPath, res);
       } else {
         res.writeHead(404);
         res.end('404 Not Found');
@@ -159,18 +153,18 @@ class DevServer {
     }
 
     // Serve the file
-    this.serveFile(filePath, res, isScreenshotRequest);
+    this.serveFile(filePath, res);
   }
 
-  serveFile(filePath, res, skipWebSocket = false) {
+  serveFile(filePath, res) {
     const ext = path.extname(filePath);
     const contentType = this.getContentType(ext);
 
     try {
       let content = fs.readFileSync(filePath);
 
-      // Inject client script into HTML files (unless it's a screenshot request)
-      if (ext === '.html' && !skipWebSocket) {
+      // Inject client script into HTML files
+      if (ext === '.html') {
         content = content.toString();
         // Inject before </body> or </html> or at the end
         if (content.includes('</body>')) {
@@ -226,28 +220,25 @@ class DevServer {
   }
 
   close() {
-    this.wss.close();
-    this.httpServer.close();
+    if (this.wss) this.wss.close();
+    if (this.httpServer) this.httpServer.close();
   }
 }
 
 // File watcher setup
-const setupWatcher = (directory, options, server, screenshotCapture) => {
+const setupWatcher = (directory, options, server) => {
   let debounceTimer = null;
-  let pendingFiles = new Set();
 
   const processChanges = async () => {
-    const files = [...pendingFiles];
-    pendingFiles.clear();
-
     console.log('Rebuilding site...');
     try {
       // Always reload config on rebuild to pick up function changes
       const config = await loadSiteConfig(options.rootDir, true, true);
+      const mdRenderer = config.md || config.mdRender || options.md;
       
       const currentOptions = {
         ...options,
-        md: config.md || options.md,
+        md: mdRenderer,
         functions: config.functions || options.functions || {}
       };
 
@@ -257,24 +248,6 @@ const setupWatcher = (directory, options, server, screenshotCapture) => {
       // Just reload all clients - they'll reload their current page
       console.log('🔄 Reloading all connected clients');
       server.reloadAll();
-
-      // If screenshots are enabled and pages were changed, capture screenshots
-      const pageFiles = files.filter(file =>
-        (file.includes('pages/') || file.startsWith('pages/')) &&
-        (file.endsWith('.md') || file.endsWith('.yaml') || file.endsWith('.yml'))
-      );
-      if (screenshotCapture && pageFiles.length > 0) {
-        // Wait a bit for the server to be ready with new content
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        console.log('📸 Capturing screenshots for changed pages...');
-        // Capture screenshots for changed pages
-        for (const file of pageFiles) {
-          // The file is already in the format "pages/creator/about.yaml"
-          console.log(`📸 Capturing screenshot for: ${file}`);
-          await screenshotCapture.capturePageScreenshot(file);
-        }
-      }
 
     } catch (error) {
       console.error('Error during rebuild:', error);
@@ -296,24 +269,7 @@ const setupWatcher = (directory, options, server, screenshotCapture) => {
           return;
         }
 
-        // For static directory, only rebuild for content files, not binary files
-        const isStaticDir = directory.endsWith('/static') || directory.includes('/static/');
-        if (isStaticDir) {
-          const ext = path.extname(filename).toLowerCase();
-          const binaryExts = ['.png', '.jpg', '.jpeg', '.gif', '.ico', '.pdf', '.zip', '.woff', '.woff2', '.ttf', '.eot'];
-
-          if (binaryExts.includes(ext)) {
-            // For binary files in static, just copy them without full rebuild
-            console.log(`📁 Static file changed: ${directory}/${filename} (skipping rebuild)`);
-            return;
-          }
-        }
-
         console.log(`Detected ${event} in ${filename}`);
-
-        // Add to pending files for rebuild
-        const fullPath = path.join(directory, filename);
-        pendingFiles.add(fullPath);
 
         if (debounceTimer) {
           clearTimeout(debounceTimer);
@@ -339,8 +295,9 @@ const watchSite = async (options = {}) => {
   const config = await loadSiteConfig(rootDir, false);
   
   if (Object.keys(config).length > 0) {
+    const mdRenderer = config.md || config.mdRender;
     console.log('✅ Loaded sites.config.js');
-    if (config.md) {
+    if (mdRenderer) {
       console.log('✅ Custom md function found');
     } else {
       console.log('ℹ️  No custom md function in config');
@@ -354,9 +311,10 @@ const watchSite = async (options = {}) => {
 
   // Do initial build with config
   console.log('Starting initial build...');
+  const mdRenderer = config.md || config.mdRender;
   await buildSite({
     rootDir,
-    md: config.md,
+    md: mdRenderer,
     functions: config.functions || {}
   });
   console.log('Initial build complete');
@@ -365,15 +323,12 @@ const watchSite = async (options = {}) => {
   const server = new DevServer(port);
   server.start();
 
-  // Initialize screenshot capture if enabled
-  let screenshotCapture = null;
   if (screenshots) {
-    console.log('\n📸 Screenshot capture enabled');
-    screenshotCapture = await createScreenshotCapture(port);
+    console.warn('Screenshot capture is temporarily disabled for sites watch mode.');
   }
 
   // Watch all relevant directories
-  const dirsToWatch = ['data', 'templates', 'partials', 'pages'];
+  const dirsToWatch = ['data', 'templates', 'partials', 'pages', 'static'];
 
   dirsToWatch.forEach(dir => {
     const dirPath = path.join(rootDir, dir);
@@ -381,26 +336,20 @@ const watchSite = async (options = {}) => {
       console.log(`👁️  Watching: ${dir}/`);
       setupWatcher(dirPath, {
         rootDir,
-        md: config.md,
+        md: mdRenderer,
         functions: config.functions || {}
-      }, server, screenshotCapture);
+      }, server);
     }
   });
 
   // Handle process termination
   process.on('SIGINT', async () => {
     console.log('\nShutting down server...');
-    if (screenshotCapture) {
-      await screenshotCapture.close();
-    }
     server.close();
     process.exit();
   });
 
   process.on('SIGTERM', async () => {
-    if (screenshotCapture) {
-      await screenshotCapture.close();
-    }
     server.close();
     process.exit();
   });

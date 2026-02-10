@@ -8,7 +8,7 @@ import { loadSiteConfig } from '../utils/loadSiteConfig.js';
  * @param {string} options.rootDir - Root directory of the site (defaults to cwd)
  * @param {Object} options.md - Optional markdown renderer
  * @param {boolean} options.quiet - Suppress build output logs
- * @param {boolean} options.isScreenshotMode - Whether building for screenshot capture
+ * @param {boolean} options.isScreenshotMode - Optional build flag exposed to templates via build.isScreenshotMode
  */
 export const buildSite = async (options = {}) => {
   const { rootDir = process.cwd(), md, functions, quiet = false, isScreenshotMode = false } = options;
@@ -22,7 +22,7 @@ export const buildSite = async (options = {}) => {
   const build = createSiteBuilder({
     fs,
     rootDir,
-    md: md || config.mdRender,
+    md: md || config.md || config.mdRender,
     functions: functions || config.functions || {},
     quiet,
     isScreenshotMode
