@@ -13,7 +13,7 @@ const normalizeItems = (items) => {
     const isDisabled = !!item.disabled;
     const isInteractive = isItem && !isDisabled;
     const c = isDisabled ? 'mu-fg' : 'fg';
-    const bgc = isDisabled ? 'mu' : 'mu';
+    const bgc = isDisabled ? 'mu' : '';
     const hoverBgc = isDisabled ? '' : 'ac';
     const hasHref = typeof item.href === 'string' && item.href.length > 0;
     const relValue = item.rel || (item.newTab ? 'noopener noreferrer' : '');

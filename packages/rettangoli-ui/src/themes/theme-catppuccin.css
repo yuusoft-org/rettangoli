@@ -51,7 +51,7 @@
   --lg-line-height: 1.75rem;
   --lg-letter-spacing: normal;
 
-  --md-font-size: 1rem;
+  --md-font-size: 1.0625rem;
   --md-font-weight: 400;
   --md-line-height: 1.5rem;
   --md-letter-spacing: normal;
@@ -110,6 +110,9 @@
 }
 
 body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  min-height: 100%;
   font-family: var(--font-family-sans);
   font-size: var(--md-font-size);
   font-weight: var(--md-font-weight);
@@ -121,10 +124,49 @@ body {
   color: var(--foreground);
 }
 
+::selection {
+  background-color: var(--foreground);
+  color: var(--background);
+}
+
+::-moz-selection {
+  background-color: var(--foreground);
+  color: var(--background);
+}
+
+.dark ::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.dark ::-moz-selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+html {
+  height: auto;
+  min-height: 100%;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overflow-y: auto;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+::-webkit-scrollbar {
+  width: 4px !important;
+  background: transparent !important;
+}
+
 h1,
 h2,
 h3,
-h4 {
+h4,
+h5,
+h6 {
+  margin: 0;
+  padding-bottom: var(--spacing-sm);
   font-family: var(--font-family-sans);
 }
 
@@ -133,6 +175,7 @@ h1 {
   font-weight: var(--h1-font-weight);
   line-height: var(--h1-line-height);
   letter-spacing: var(--h1-letter-spacing);
+  margin-bottom: var(--spacing-lg);
 }
 
 h2 {
@@ -156,6 +199,15 @@ h4 {
   letter-spacing: var(--h4-letter-spacing);
 }
 
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
+}
+
 p,
 li {
   font-size: var(--md-font-size);
@@ -164,8 +216,14 @@ li {
   letter-spacing: var(--md-letter-spacing);
 }
 
+p {
+  margin: 0 0 var(--spacing-lg);
+  line-height: 1.65;
+}
+
 ul,
 ol {
+  margin: 0 0 var(--spacing-lg);
   padding-left: 1.25rem;
 }
 
@@ -175,4 +233,106 @@ ul {
 
 ol {
   list-style: decimal;
+}
+
+li {
+  margin: 0;
+}
+
+li + li {
+  margin-top: var(--spacing-md);
+}
+
+li > ul,
+li > ol {
+  margin-top: var(--spacing-md);
+}
+
+blockquote {
+  margin: var(--spacing-md) 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-left: 4px solid var(--primary);
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  font-style: italic;
+  width: var(--width-stretch);
+}
+
+blockquote p {
+  margin: 0;
+}
+
+blockquote cite {
+  display: block;
+  margin-top: var(--spacing-sm);
+  font-size: 0.9em;
+  font-style: normal;
+  opacity: 0.8;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: var(--spacing-lg);
+  background-color: var(--background);
+}
+
+th,
+td {
+  padding: var(--spacing-md);
+  text-align: left;
+  border: 1px solid var(--border);
+}
+
+th {
+  background-color: var(--muted);
+  font-weight: var(--md-font-weight);
+  color: var(--muted-foreground);
+}
+
+tr:nth-child(even) {
+  background-color: var(--background);
+}
+
+pre {
+  margin: 0 0 var(--spacing-lg);
+  white-space: pre;
+  font-size: 1rem;
+  line-height: 1.5;
+  padding: var(--spacing-lg);
+  flex: 1;
+  min-height: fit-content;
+  max-width: var(--width-stretch);
+  width: 100%;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+.rtgl-code-preview {
+  margin-bottom: var(--spacing-lg);
+}
+
+.rtgl-code-preview pre {
+  margin-bottom: 0;
+  padding-bottom: var(--spacing-lg);
+}
+
+code:not(pre code) {
+  font-family: "Menlo", "Monaco", "Courier New", monospace;
+  font-size: 0.9em;
+  background-color: var(--muted);
+  padding: 0.1em 0.35em;
+  border-radius: var(--border-radius-sm);
+  display: inline;
+}
+
+a {
+  color: inherit;
+}
+
+@media screen and (max-width: 600px) {
+  table {
+    display: block;
+    overflow-x: auto;
+  }
 }
