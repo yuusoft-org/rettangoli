@@ -83,9 +83,7 @@ class RettangoliPopoverElement extends HTMLElement {
         (path[0].nodeName === 'DIALOG' && path[0] === this._dialogElement);
 
       if (clickedOnBackdrop) {
-        this.dispatchEvent(new CustomEvent('close', {
-          detail: {}
-        }));
+        this._emitClose();
       }
     });
 
@@ -98,18 +96,14 @@ class RettangoliPopoverElement extends HTMLElement {
 
       if (clickedOnBackdrop) {
         e.preventDefault();
-        this.dispatchEvent(new CustomEvent('close', {
-          detail: {}
-        }));
+        this._emitClose();
       }
     });
 
     // Handle ESC key - prevent native close and emit custom event
     this._dialogElement.addEventListener('cancel', (e) => {
       e.preventDefault();
-      this.dispatchEvent(new CustomEvent('close', {
-        detail: {}
-      }));
+      this._emitClose();
     });
 
     // Create popover container
@@ -124,8 +118,15 @@ class RettangoliPopoverElement extends HTMLElement {
     this._isOpen = false;
   }
 
+  _emitClose() {
+    this.dispatchEvent(new CustomEvent('close', {
+      detail: {},
+      bubbles: true,
+    }));
+  }
+
   static get observedAttributes() {
-    return ["open", "x", "y", "placement"];
+    return ["open", "x", "y", "placement", "no-overlay"];
   }
 
   connectedCallback() {
@@ -154,6 +155,9 @@ class RettangoliPopoverElement extends HTMLElement {
       }
     } else if ((name === 'x' || name === 'y' || name === 'placement') && this._isOpen) {
       this._updatePosition();
+    } else if (name === 'no-overlay' && oldValue !== newValue && this._isOpen) {
+      this._hide();
+      this._show();
     }
   }
 

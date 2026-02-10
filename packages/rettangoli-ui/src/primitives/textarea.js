@@ -62,7 +62,6 @@ class RettangoliTextAreaElement extends HTMLElement {
 
     // Create initial DOM structure
     this._textareaElement = document.createElement('textarea');
-    this._textareaElement.setAttribute('type', 'text');
     this._styleElement = document.createElement('style');
 
     this.shadow.appendChild(this._styleElement);
@@ -94,13 +93,11 @@ class RettangoliTextAreaElement extends HTMLElement {
   static get observedAttributes() {
     return [
       "key",
-      "type",
       "placeholder",
       "disabled",
       "value",
       "cols",
       "rows",
-      "ellipsis",
       ...permutateBreakpoints([
         ...styleMapKeys,
         "wh",
@@ -140,6 +137,14 @@ class RettangoliTextAreaElement extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "key") {
+      requestAnimationFrame(() => {
+        const value = this.getAttribute("value");
+        this._textareaElement.value = value ?? "";
+      });
+      return;
+    }
+
     if (name === 'value') {
       requestAnimationFrame((() => {
         const value = this.getAttribute("value");

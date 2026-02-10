@@ -142,6 +142,11 @@ class RettangoliInputElement extends HTMLElement {
       return;
     }
 
+    if (name === "key") {
+      this._syncValueAttribute();
+      return;
+    }
+
     if (name === "value") {
       this._syncValueAttribute();
       return;

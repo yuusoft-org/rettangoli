@@ -7,6 +7,8 @@ sidebarId: input-interface
 
 Shared contract for input primitives.
 
+For library-wide guidance, see [Component Model](./component-model.md).
+
 ## Goals
 
 - Keep the interface consistent across input primitives.

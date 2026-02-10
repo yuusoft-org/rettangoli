@@ -2,6 +2,13 @@ import { css, dimensionWithUnit, applyLinkAttributes } from "../common.js";
 import buttonMarginStyles from "../styles/buttonMarginStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
 
+const responsiveSizeBreakpoints = [
+  { prefix: "sm", maxWidth: 640 },
+  { prefix: "md", maxWidth: 768 },
+  { prefix: "lg", maxWidth: 1024 },
+  { prefix: "xl", maxWidth: 1280 },
+];
+
 // Internal implementation without uhtml
 class RettangoliButtonElement extends HTMLElement {
   static styleSheet = null;
@@ -171,18 +178,65 @@ class RettangoliButtonElement extends HTMLElement {
     
     this._surfaceElement.className = 'surface';
     this._surfaceElement.appendChild(this._slotElement);
+
+    this._onWindowResize = this._onWindowResize.bind(this);
   }
 
   static get observedAttributes() {
-    return ["key", "href", "target", "rel", "w", "pre", "suf", "disabled", "v", "s", "sq"];
+    return [
+      "key",
+      "href",
+      "target",
+      "rel",
+      "w",
+      "pre",
+      "suf",
+      "disabled",
+      "v",
+      "s",
+      "sq",
+      "sm-s",
+      "md-s",
+      "lg-s",
+      "xl-s",
+    ];
   }
 
   connectedCallback() {
+    window.addEventListener("resize", this._onWindowResize);
     this._updateButton();
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener("resize", this._onWindowResize);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     this._updateButton();
+  }
+
+  _onWindowResize() {
+    if (
+      this.hasAttribute("sm-s") ||
+      this.hasAttribute("md-s") ||
+      this.hasAttribute("lg-s") ||
+      this.hasAttribute("xl-s")
+    ) {
+      this._updateIcon();
+    }
+  }
+
+  _resolveResponsiveSizeToken() {
+    const viewportWidth = window.innerWidth;
+
+    for (const { prefix, maxWidth } of responsiveSizeBreakpoints) {
+      const responsiveAttrName = `${prefix}-s`;
+      if (viewportWidth <= maxWidth && this.hasAttribute(responsiveAttrName)) {
+        return this.getAttribute(responsiveAttrName);
+      }
+    }
+
+    return this.getAttribute("s");
   }
 
   _updateButton() {
@@ -256,17 +310,17 @@ class RettangoliButtonElement extends HTMLElement {
       lg: 22
     };
 
-    // For square buttons, use button size (s attribute), otherwise use icon size
+    // For square buttons, use button size token, otherwise use icon size token.
+    const resolvedSizeToken = this._resolveResponsiveSizeToken();
     let size = 18; // default
     if (this.hasAttribute('sq')) {
       const buttonSizeMap = {
         sm: 14,
         lg: 22
       };
-      const buttonSize = this.getAttribute("s");
-      size = buttonSizeMap[buttonSize] || 18;
+      size = buttonSizeMap[resolvedSizeToken] || 18;
     } else {
-      size = iconSizeMap[this.getAttribute("s")] || 18;
+      size = iconSizeMap[resolvedSizeToken] || 18;
     }
 
     // Create prefix icon (before text)

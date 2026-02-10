@@ -8,9 +8,15 @@ items:
       - id: introduction
         title: "Introduction"
         href: "/ui/docs/introduction/introduction"
+      - id: component-model
+        title: "Component Model"
+        href: "/ui/docs/introduction/component-model"
       - id: getting-started
         title: "Getting Started"
         href: "/ui/docs/introduction/getting-started"
+      - id: input-interface
+        title: "Input Interface"
+        href: "/ui/docs/introduction/input-interface"
       - id: css-variables
         title: "CSS Variables"
         href: "/ui/docs/introduction/css-variables"

@@ -76,9 +76,6 @@ For full behavior details, see [Responsiveness](../introduction/responsiveness.m
 | Link | `href`, `target`, `rel` | string | - |
 | Dimensions | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, `f`, CSS length/value | - |
 | Object Fit | `of` | `cov`, `con`, `none` | - |
-| Responsive Source | `srcset`, `sizes` | string | - |
-| Loading | `loading` | `lazy`, `eager` | browser default |
-| Decoding | `decoding` | `async`, `sync`, `auto` | browser default |
 | Visibility | `hide`, `show` | boolean | - |
 | Opacity | `op` | number (`0`-`1`) | `1` |
 | Position | `pos` | `abs`, `rel`, `fix` | - |
@@ -219,24 +216,6 @@ Use `hide`/`show` when toggling visibility across breakpoints.
   <rtgl-image src="/public/sample1.jpg" alt="Hidden on small screens" wh="96" sm-hide></rtgl-image>
   <rtgl-image src="/public/sample1.jpg" alt="Only visible on small screens" wh="96" hide sm-show></rtgl-image>
 </rtgl-view>
-```
-
-## Performance
-
-Use native image loading controls for large image-heavy screens.
-
-```html
-<rtgl-image
-  src="/public/sample1.jpg"
-  srcset="/public/sample1.jpg 480w, /public/sample1.jpg 960w"
-  sizes="(max-width: 640px) 100vw, 480px"
-  alt="Dashboard preview"
-  loading="lazy"
-  decoding="async"
-  w="f"
-  h="220"
-  of="cov"
-></rtgl-image>
 ```
 
 ## Visual Styling

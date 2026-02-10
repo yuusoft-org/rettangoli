@@ -67,7 +67,7 @@ Common tokens used in this page:
 
 | Name | Attribute | Type | Default |
 | --- | --- | --- | --- |
-| [Link](#link) | `href`, `target` | string | - |
+| [Link](#link) | `href`, `target`, `rel` | string | - |
 | [Direction](#direction) | `d` | `h`, `v` | `v` |
 | [Dimensions](#dimensions) | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, `f`, `1fg`-`12fg`, CSS length/value | - |
 | [Align Horizontal](#align-horizontal) | `ah` | `s`, `c`, `e` | `s` |

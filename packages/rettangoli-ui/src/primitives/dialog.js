@@ -131,7 +131,8 @@ class RettangoliDialogElement extends HTMLElement {
 
   _attemptClose() {
     this.dispatchEvent(new CustomEvent('close', {
-      detail: {}
+      detail: {},
+      bubbles: true,
     }));
   }
 
