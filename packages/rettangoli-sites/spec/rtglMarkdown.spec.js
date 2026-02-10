@@ -68,4 +68,58 @@ describe('rtglMarkdown', () => {
     expect(html).toContain('id="part"');
     expect(html).toContain('id="part-2"');
   });
+
+  it('renders codePreview fenced blocks with preview layout when enabled', async () => {
+    const md = rtglMarkdown(MarkdownIt, {
+      shiki: {
+        enabled: true,
+        theme: 'slack-dark'
+      },
+      codePreview: {
+        enabled: true
+      }
+    });
+
+    const html = await md.renderAsync('```html codePreview\n<rtgl-button>Click</rtgl-button>\n```');
+    expect(html).toContain('<rtgl-view w="f" bw="xs" br="md">');
+    expect(html).toContain('<rtgl-button>Click</rtgl-button>');
+    expect(html).toContain('class="shiki');
+  });
+
+  it('hides source pane when codePreview.showSource is false', async () => {
+    const md = rtglMarkdown(MarkdownIt, {
+      shiki: {
+        enabled: true,
+        theme: 'slack-dark'
+      },
+      codePreview: {
+        enabled: true,
+        showSource: false
+      }
+    });
+
+    const html = await md.renderAsync('```html codePreview\n<rtgl-button>Click</rtgl-button>\n```');
+    expect(html).toContain('<rtgl-view w="f" bw="xs" br="md">');
+    expect(html).not.toContain('<rtgl-view w="f" p="lg">');
+    expect(html).not.toContain('<rtgl-view h="1" w="f" bgc="bo"></rtgl-view>');
+    expect(html).toContain('class="shiki');
+  });
+
+  it('uses codePreview.theme for preview blocks only', async () => {
+    const md = rtglMarkdown(MarkdownIt, {
+      shiki: {
+        enabled: true,
+        theme: 'slack-dark'
+      },
+      codePreview: {
+        enabled: true,
+        theme: 'github-dark'
+      }
+    });
+
+    const previewHtml = await md.renderAsync('```html codePreview\n<rtgl-button>Click</rtgl-button>\n```');
+    const normalHtml = await md.renderAsync('```html\n<rtgl-button>Click</rtgl-button>\n```');
+    expect(previewHtml).toContain('github-dark');
+    expect(normalHtml).toContain('slack-dark');
+  });
 });

@@ -13,6 +13,10 @@ markdownit:
   shiki:
     enabled: true
     theme: slack-dark
+  codePreview:
+    enabled: false
+    showSource: true
+    theme: slack-dark
   headingAnchors:
     enabled: true
     slugMode: unicode

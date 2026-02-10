@@ -32,6 +32,10 @@ describe('loadSiteConfig', () => {
           '  shiki:',
           '    enabled: true',
           '    theme: github-dark',
+          '  codePreview:',
+          '    enabled: true',
+          '    showSource: false',
+          '    theme: one-dark-pro',
           '  headingAnchors: false'
         ].join('\n')
       );
@@ -51,6 +55,11 @@ describe('loadSiteConfig', () => {
           shiki: {
             enabled: true,
             theme: 'github-dark'
+          },
+          codePreview: {
+            enabled: true,
+            showSource: false,
+            theme: 'one-dark-pro'
           },
           headingAnchors: false
         }
@@ -141,6 +150,48 @@ describe('loadSiteConfig', () => {
         ].join('\n')
       );
       await expect(loadSiteConfig(tempDir)).rejects.toThrow('Invalid headingAnchors slugMode');
+    });
+  });
+
+  it('throws on invalid codePreview option', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'markdownit:',
+          '  codePreview:',
+          '    enabled: yes'
+        ].join('\n')
+      );
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Invalid codePreview option "enabled"');
+    });
+  });
+
+  it('throws on invalid codePreview.showSource type', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'markdownit:',
+          '  codePreview:',
+          '    showSource: 1'
+        ].join('\n')
+      );
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Invalid codePreview option "showSource"');
+    });
+  });
+
+  it('throws on empty codePreview.theme', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'markdownit:',
+          '  codePreview:',
+          '    theme: ""'
+        ].join('\n')
+      );
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Invalid codePreview option "theme"');
     });
   });
 });

@@ -1,0 +1,17 @@
+vt:
+  path: ./vt
+  url: http://127.0.0.1:3001
+  service:
+    start: npm run watch
+  concurrency: 2
+  timeout: 45000
+  viewport:
+    - id: desktop
+      width: 1440
+      height: 900
+    - id: mobile
+      width: 390
+      height: 844
+  sections:
+    - title: critical
+      files: critical

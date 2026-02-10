@@ -56,3 +56,23 @@ npm run accept
 - Keep `vt.url` and `-p` on the same port.
 - `-o dist` is optional; default output is `_site`.
 - If your preview server is already running elsewhere, you can omit `vt.service` and keep only `vt.url`.
+
+## Optional: Markdown `codePreview` blocks
+
+If your Sites pages include fenced blocks like:
+
+````markdown
+```html codePreview
+<rtgl-button>Click</rtgl-button>
+```
+````
+
+Enable it in `sites.config.yaml`:
+
+```yaml
+markdownit:
+  codePreview:
+    enabled: true
+    showSource: true
+    theme: slack-dark
+```

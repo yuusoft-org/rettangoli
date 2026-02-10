@@ -58,6 +58,10 @@ markdownit:
   shiki:
     enabled: true
     theme: slack-dark
+  codePreview:
+    enabled: false
+    showSource: true
+    theme: slack-dark
   headingAnchors:
     enabled: true
     slugMode: unicode
@@ -72,6 +76,9 @@ assets:
   loadUiFromCdn: true
   loadConstructStyleSheetsPolyfill: true
 ```
+
+Enable `codePreview` if you want fenced blocks like ```` ```html codePreview ```` to render a live preview panel.
+Use `showSource` to show/hide the source pane and `theme` to override the highlight theme for preview blocks.
 
 ## Commands
 

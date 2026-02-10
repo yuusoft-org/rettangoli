@@ -248,7 +248,7 @@ function getContentType(filePath) {
 }
 
 function toSectionPageKey(sectionLike) {
-  return sectionLike.title;
+  return String(sectionLike.title || "").toLowerCase();
 }
 
 /**

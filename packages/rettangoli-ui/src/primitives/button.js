@@ -1,6 +1,5 @@
 import { css, dimensionWithUnit, applyLinkAttributes } from "../common.js";
 import buttonMarginStyles from "../styles/buttonMarginStyles.js";
-import anchorStyles from "../styles/anchorStyles.js";
 
 const responsiveSizeBreakpoints = [
   { prefix: "sm", maxWidth: 640 },
@@ -18,7 +17,7 @@ class RettangoliButtonElement extends HTMLElement {
       RettangoliButtonElement.styleSheet = new CSSStyleSheet();
       RettangoliButtonElement.styleSheet.replaceSync(css`
         :host {
-          display: contents;
+          display: inline-flex;
         }
         slot {
           display: contents;
@@ -46,6 +45,16 @@ class RettangoliButtonElement extends HTMLElement {
 
           background-color: var(--primary);
           color: var(--primary-foreground);
+          text-decoration: none;
+        }
+
+        a.surface,
+        a.surface:link,
+        a.surface:visited,
+        a.surface:hover,
+        a.surface:active {
+          color: inherit;
+          text-decoration: none;
         }
 
         .surface:hover {
@@ -156,8 +165,6 @@ class RettangoliButtonElement extends HTMLElement {
           color: inherit;
         }
 
-        ${anchorStyles}
-
         ${buttonMarginStyles}
       `);
     }
@@ -265,6 +272,9 @@ class RettangoliButtonElement extends HTMLElement {
     if (!this.hasAttribute('sq')) {
       this._updateWidth();
     } else {
+      this.style.width = "";
+      this.style.minWidth = "";
+      this.style.maxWidth = "";
       this._surfaceElement.style.width = "";
       this._surfaceElement.style.minWidth = "";
       this._surfaceElement.style.maxWidth = "";
@@ -350,14 +360,23 @@ class RettangoliButtonElement extends HTMLElement {
     const width = dimensionWithUnit(this.getAttribute("w"));
     
     if (width === "f") {
-      this._surfaceElement.style.width = "var(--width-stretch)";
+      this.style.width = "var(--width-stretch)";
+      this.style.minWidth = "";
+      this.style.maxWidth = "";
+      this._surfaceElement.style.width = "100%";
       this._surfaceElement.style.minWidth = "";
       this._surfaceElement.style.maxWidth = "";
     } else if (width !== undefined && width !== null) {
-      this._surfaceElement.style.width = width;
-      this._surfaceElement.style.minWidth = width;
-      this._surfaceElement.style.maxWidth = width;
+      this.style.width = width;
+      this.style.minWidth = width;
+      this.style.maxWidth = width;
+      this._surfaceElement.style.width = "100%";
+      this._surfaceElement.style.minWidth = "";
+      this._surfaceElement.style.maxWidth = "";
     } else {
+      this.style.width = "";
+      this.style.minWidth = "";
+      this.style.maxWidth = "";
       this._surfaceElement.style.width = "";
       this._surfaceElement.style.minWidth = "";
       this._surfaceElement.style.maxWidth = "";

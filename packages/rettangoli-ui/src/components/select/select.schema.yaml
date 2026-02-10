@@ -26,6 +26,8 @@ propsSchema:
       properties:
         label:
           type: string
+    w:
+      type: string
 events:
   value-change: {}
   add-option-click: {}

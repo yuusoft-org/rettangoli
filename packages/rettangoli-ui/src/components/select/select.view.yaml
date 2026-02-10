@@ -30,13 +30,12 @@ refs:
 template:
   - rtgl-button#selectButton v=ol ${containerAttrString} data-testid="select-button":
       - rtgl-view d=h av=c w=f:
-          - rtgl-text c=${selectedLabelColor} ellipsis: ${selectedLabel}
-          - rtgl-view mh=md w=1fg: null
+          - rtgl-text w=1fg c=${selectedLabelColor} ellipsis: ${selectedLabel}
           - $if showClear:
-              - rtgl-svg#clearButton mr=md svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
-          - rtgl-svg svg=chevronDown wh=16 c=mu-fg: null
+              - rtgl-svg#clearButton ml=md svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
+          - rtgl-svg ml=md svg=chevronDown wh=16 c=mu-fg: null
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs:
-      - rtgl-view wh=300 g=xs slot=content bgc=bg br=md sv=true:
+      - rtgl-view wh=300 g=xs slot=content bgc=mu br=md sv=true:
           - $for option, i in options:
               - rtgl-view#option${i} w=f ph=lg pv=md cur=pointer br=md bgc=${option.bgc} data-testid=${option.testId}:
                   - rtgl-text: ${option.label}

@@ -11,7 +11,7 @@
     - body.dark:
         - rtgl-view bgc="bg" w="f" d=h:
             - 'rtgl-view md-hide pos=fix h=100vh bgc=bg style="left: 0"':
-                - rtgl-sidebar selectedItemId=${sidebarId} header="${escapeJson(docs.header)}" items="${escapeJson(docs.items)}":
+                - rtgl-sidebar selectedItemId=${sidebarId} header="${encodeURIComponent(jsonStringify(docs.header))}" items="${encodeURIComponent(jsonStringify(docs.items))}":
             - rtgl-view md-hide xl-show hide w=272:
             - rtgl-view w="1fg" ah=c:
                 - rtgl-view pv="lg" lg-w="100vw" w="720" ph="xl" sv id="content-container":

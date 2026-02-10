@@ -23,6 +23,62 @@ function resolveHeadingAnchorOptions(input) {
   };
 }
 
+function resolveCodePreviewOptions(input) {
+  if (input === false || input == null) {
+    return { enabled: false, showSource: true, theme: undefined };
+  }
+
+  if (input === true) {
+    return { enabled: true, showSource: true, theme: undefined };
+  }
+
+  if (typeof input === 'object' && !Array.isArray(input)) {
+    const theme = typeof input.theme === 'string' && input.theme.trim()
+      ? input.theme.trim()
+      : undefined;
+    return {
+      enabled: input.enabled !== undefined ? !!input.enabled : true,
+      showSource: input.showSource !== undefined ? !!input.showSource : true,
+      theme
+    };
+  }
+
+  return { enabled: false, showSource: true, theme: undefined };
+}
+
+function hasCodePreviewAttribute(attrs) {
+  if (typeof attrs !== 'string') {
+    return false;
+  }
+  return attrs
+    .split(/\s+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .includes('codePreview');
+}
+
+function renderCodePreviewLayout(code, highlightedCode, showSource = true) {
+  if (!showSource) {
+    return `
+        <rtgl-view w="f" bw="xs" br="md">
+          <rtgl-view w="f" d="h">
+          ${highlightedCode}
+          </rtgl-view>
+        </rtgl-view>`;
+  }
+
+  return `
+        <rtgl-view w="f" bw="xs" br="md">
+          <rtgl-view w="f" p="lg">
+          ${code}
+          </rtgl-view>
+          <rtgl-view h="1" w="f" bgc="bo"></rtgl-view>
+          <rtgl-view w="f" d="h">
+          ${highlightedCode}
+          </rtgl-view>
+        </rtgl-view>`;
+}
+
 function slugify(text, { slugMode = 'unicode', fallback = 'section' } = {}) {
   const normalized = String(text || '')
     .toLowerCase()
@@ -53,9 +109,11 @@ export function createRtglMarkdown(_markdownit, options = {}) {
     quotes = '\u201c\u201d\u2018\u2019',
     maxNesting = 100,
     shiki = {},
-    headingAnchors = true
+    headingAnchors = true,
+    codePreview = false
   } = options;
   const headingAnchorOptions = resolveHeadingAnchorOptions(headingAnchors);
+  const codePreviewOptions = resolveCodePreviewOptions(codePreview);
 
   const shikiEnabled = typeof shiki.enabled === 'boolean' ? shiki.enabled : true;
   const shikiTheme = typeof shiki.theme === 'string' ? shiki.theme : 'slack-dark';
@@ -71,12 +129,20 @@ export function createRtglMarkdown(_markdownit, options = {}) {
     maxNesting,
     ...(shikiEnabled
       ? {
-          async highlight(code, lang) {
+          async highlight(code, lang, attrs) {
             try {
-              return await codeToHtml(code, {
+              const isCodePreview = codePreviewOptions.enabled && hasCodePreviewAttribute(attrs);
+              const highlightTheme = isCodePreview
+                ? (codePreviewOptions.theme || shikiTheme)
+                : shikiTheme;
+              const highlightedCode = await codeToHtml(code, {
                 lang: lang || 'text',
-                theme: shikiTheme
+                theme: highlightTheme
               });
+              if (isCodePreview) {
+                return renderCodePreviewLayout(code, highlightedCode, codePreviewOptions.showSource);
+              }
+              return highlightedCode;
             } catch {
               return '';
             }

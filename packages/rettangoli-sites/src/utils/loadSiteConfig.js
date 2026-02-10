@@ -11,11 +11,15 @@ const ALLOWED_MARKDOWN_KEYS = new Set([
   ...MARKDOWN_STRING_KEYS,
   ...MARKDOWN_NUMBER_KEYS,
   'shiki',
-  'headingAnchors'
+  'headingAnchors',
+  'codePreview'
 ]);
 const SHIKI_BOOLEAN_KEYS = new Set(['enabled']);
 const SHIKI_STRING_KEYS = new Set(['theme']);
 const ALLOWED_SHIKI_KEYS = new Set([...SHIKI_BOOLEAN_KEYS, ...SHIKI_STRING_KEYS]);
+const CODE_PREVIEW_BOOLEAN_KEYS = new Set(['enabled', 'showSource']);
+const CODE_PREVIEW_STRING_KEYS = new Set(['theme']);
+const ALLOWED_CODE_PREVIEW_KEYS = new Set([...CODE_PREVIEW_BOOLEAN_KEYS, ...CODE_PREVIEW_STRING_KEYS]);
 const ALLOWED_PRESETS = new Set(['default', 'commonmark', 'zero']);
 const HEADING_ANCHORS_BOOLEAN_KEYS = new Set(['enabled', 'wrap']);
 const HEADING_ANCHORS_STRING_KEYS = new Set(['slugMode', 'fallback']);
@@ -63,6 +67,36 @@ function validateHeadingAnchors(value, configPath) {
   }
 }
 
+function validateCodePreview(value, configPath) {
+  if (typeof value === 'boolean') {
+    return;
+  }
+
+  if (!isPlainObject(value)) {
+    throw new Error(`Invalid markdown option "codePreview" in "${configPath}": expected a boolean or object.`);
+  }
+
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_CODE_PREVIEW_KEYS.has(key)) {
+      throw new Error(
+        `Unsupported codePreview option "${key}" in "${configPath}". Supported options: ${Array.from(ALLOWED_CODE_PREVIEW_KEYS).join(', ')}.`
+      );
+    }
+
+    if (CODE_PREVIEW_BOOLEAN_KEYS.has(key) && typeof value[key] !== 'boolean') {
+      throw new Error(`Invalid codePreview option "${key}" in "${configPath}": expected a boolean.`);
+    }
+
+    if (CODE_PREVIEW_STRING_KEYS.has(key) && typeof value[key] !== 'string') {
+      throw new Error(`Invalid codePreview option "${key}" in "${configPath}": expected a string.`);
+    }
+  }
+
+  if (typeof value.theme === 'string' && value.theme.trim() === '') {
+    throw new Error(`Invalid codePreview option "theme" in "${configPath}": expected a non-empty string.`);
+  }
+}
+
 function validateConfig(rawConfig, configPath) {
   if (rawConfig == null) {
     return {};
@@ -104,6 +138,11 @@ function validateConfig(rawConfig, configPath) {
 
       if (key === 'headingAnchors') {
         validateHeadingAnchors(markdownConfig.headingAnchors, configPath);
+        continue;
+      }
+
+      if (key === 'codePreview') {
+        validateCodePreview(markdownConfig.codePreview, configPath);
         continue;
       }
 
