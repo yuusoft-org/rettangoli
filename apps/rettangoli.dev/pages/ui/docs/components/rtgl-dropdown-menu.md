@@ -35,7 +35,7 @@ A contextual floating menu for labels, actions, and separators.
 
     menu.setAttribute("x", String(e.clientX));
     menu.setAttribute("y", String(e.clientY));
-    menu.setAttribute("placement", "bottom-start");
+    menu.setAttribute("place", "bs");
     menu.setAttribute("open", "");
   });
 </script>
@@ -48,7 +48,7 @@ A contextual floating menu for labels, actions, and separators.
 | Open | `open` | boolean | off |
 | Position X | `x` | number | `0` |
 | Position Y | `y` | number | `0` |
-| Placement | `placement` | popover placement string | `bottom-start` |
+| Place | `place` | popover place token (`t`, `ts`, `te`, `r`, `rs`, `re`, `b`, `bs`, `be`, `l`, `ls`, `le`) | `bs` |
 | Width | `w` | number, `%`, `f`, CSS length/value | `300` |
 | Height | `h` | number, `%`, `f`, CSS length/value | `300` |
 | Items | `items` (property) | `DropdownItem[]` | `[]` |
@@ -63,7 +63,7 @@ A contextual floating menu for labels, actions, and separators.
 | `path` | string | app/router navigation intent |
 | `href` | string | native link navigation |
 | `disabled` | boolean | disabled item, not interactive |
-| `target` | string | link target (for `href`) |
+| `newTab` | boolean | opens `href` in a new tab |
 | `rel` | string | link rel (for `href`) |
 | `testId` | string | optional testing id |
 
@@ -82,6 +82,7 @@ A contextual floating menu for labels, actions, and separators.
 - `type="item"` is interactive unless `disabled` is true.
 - Interaction precedence is `href` > `path` > event-only item.
 - `id` is identity only and does not control clickability.
+- If `newTab` is true and `rel` is omitted, `rel="noopener noreferrer"` is applied.
 
 ```html codePreview
 <rtgl-dropdown-menu id="menu2" open x="24" y="24"></rtgl-dropdown-menu>
@@ -91,7 +92,7 @@ A contextual floating menu for labels, actions, and separators.
 
   menu2.items = [
     { label: "Navigation", type: "label" },
-    { id: "docs", label: "Docs", href: "/docs", target: "_blank", rel: "noopener" },
+    { id: "docs", label: "Docs", href: "/docs", newTab: true, rel: "noopener" },
     { id: "settings", label: "Settings", path: "/settings" },
     { id: "danger", label: "Delete", disabled: true },
     { type: "separator" },

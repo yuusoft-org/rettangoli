@@ -73,7 +73,7 @@ For full behavior details, see [Responsiveness](../introduction/responsiveness.m
 | --- | --- | --- | --- |
 | Source | `src` | string | - |
 | Alt Text | `alt` | string | - |
-| Link | `href`, `target`, `rel` | string | - |
+| Link | `href`, `new-tab`, `rel` | string, boolean | - |
 | Dimensions | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, `f`, CSS length/value | - |
 | Object Fit | `of` | `cov`, `con`, `none` | - |
 | Visibility | `hide`, `show` | boolean | - |
@@ -86,7 +86,7 @@ For full behavior details, see [Responsiveness](../introduction/responsiveness.m
 | Shadow | `shadow` | `sm`, `md`, `lg` | - |
 | Background Color | `bgc` | `pr`, `se`, `de`, `fg`, `bg`, `mu`, `ac`, `bo` | - |
 | Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
-| Cursor | `cur` | cursor token (`pointer`, `move`, `p`, `m`, etc.) | - |
+| Cursor | `cur` | cursor token (`pointer`, `move`, etc.) | - |
 
 Layout and style attributes support breakpoint prefixes such as `sm-`, `md-`, `lg-`, and `xl-`.
 
@@ -174,9 +174,9 @@ Use `href` to make the entire image surface clickable.
 ### Behavior & precedence
 
 - `href` turns the image surface into a link target.
-- `target` controls where the link opens.
+- `new-tab` opens the destination in a new tab.
 - `rel` configures relationship/security metadata.
-- When using `target="_blank"`, set `rel="noopener noreferrer"` explicitly.
+- If `new-tab` is set and `rel` is omitted, `rel="noopener noreferrer"` is applied.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
@@ -191,7 +191,7 @@ Use `href` to make the entire image surface clickable.
     src="/public/sample1.jpg"
     alt="Open external site"
     href="https://rettangoli.dev"
-    target="_blank"
+    new-tab
     rel="noopener noreferrer"
     wh="96"
     br="md"

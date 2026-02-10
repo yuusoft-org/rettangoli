@@ -58,7 +58,7 @@ class RettangoliTextElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "w", "ellipsis", "href", "target", "rel"];
+    return ["key", "w", "ellipsis", "href", "new-tab", "rel"];
   }
 
   connectedCallback() {
@@ -67,7 +67,7 @@ class RettangoliTextElement extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "href" || name === "target" || name === "rel") {
+    if (name === "href" || name === "new-tab" || name === "rel") {
       this._updateDOM();
     } else {
       this._updateStyling();
@@ -98,7 +98,7 @@ class RettangoliTextElement extends HTMLElement {
 
   _updateDOM() {
     const href = this.getAttribute("href");
-    const target = this.getAttribute("target");
+    const newTab = this.hasAttribute("new-tab");
     const rel = this.getAttribute("rel");
 
     this._linkElement = syncLinkOverlay({
@@ -106,7 +106,7 @@ class RettangoliTextElement extends HTMLElement {
       slotElement: this._slotElement,
       linkElement: this._linkElement,
       href,
-      target,
+      newTab,
       rel,
     });
   }

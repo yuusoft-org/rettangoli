@@ -56,7 +56,7 @@ steps:
   </rtgl-view>
 
   <!-- Single popover that will change placement -->
-  <rtgl-popover id="popover" placement="bottom-start">
+  <rtgl-popover id="popover" place="bs">
     <rtgl-view slot="content"><rtgl-text id="popover-text">bottom-start</rtgl-text></rtgl-view>
   </rtgl-popover>
 </rtgl-view>
@@ -73,6 +73,21 @@ steps:
     'left', 'left-start', 'left-end'
   ];
 
+  const placeMap = {
+    'top': 't',
+    'top-start': 'ts',
+    'top-end': 'te',
+    'right': 'r',
+    'right-start': 'rs',
+    'right-end': 're',
+    'bottom': 'b',
+    'bottom-start': 'bs',
+    'bottom-end': 'be',
+    'left': 'l',
+    'left-start': 'ls',
+    'left-end': 'le',
+  };
+
   placements.forEach(placement => {
     const button = document.getElementById(`btn-${placement}`);
 
@@ -82,7 +97,7 @@ steps:
       popover.removeAttribute('open');
       
       // Update placement and text
-      popover.setAttribute('placement', placement);
+      popover.setAttribute('place', placeMap[placement] || 'bs');
       popoverText.textContent = placement;
       
       // Show popover at click position

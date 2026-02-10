@@ -186,7 +186,7 @@ class RettangoliButtonElement extends HTMLElement {
     return [
       "key",
       "href",
-      "target",
+      "new-tab",
       "rel",
       "w",
       "pre",
@@ -246,7 +246,7 @@ class RettangoliButtonElement extends HTMLElement {
     // Update disabled state
     const isDisabled = this.hasAttribute('disabled');
     const href = this.getAttribute("href");
-    const target = this.getAttribute("target");
+    const newTab = this.hasAttribute("new-tab");
     const rel = this.getAttribute("rel");
 
     const shouldUseAnchor = href && !isDisabled;
@@ -274,7 +274,7 @@ class RettangoliButtonElement extends HTMLElement {
       applyLinkAttributes({
         linkElement: this._surfaceElement,
         href,
-        target,
+        newTab,
         rel,
       });
       this._surfaceElement.removeAttribute("disabled");

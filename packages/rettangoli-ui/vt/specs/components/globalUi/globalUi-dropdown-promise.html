@@ -4,7 +4,7 @@ title: "Global UI - Dropdown Promise Handling"
 <!-- Global UI element must be present before main.js loads -->
 <rtgl-global-ui></rtgl-global-ui>
 
-<rtgl-view g="lg" h="100vh" w="f" fw="wrap" p="lg">
+<rtgl-view g="lg" h="100vh" w="f" wrap p="lg">
   <rtgl-view d="h" g="md" mb="lg">
     <rtgl-button id="test-item-click">Test Item Click</rtgl-button>
     <rtgl-button id="test-close-without-selection">Test Close Without Selection</rtgl-button>
@@ -73,7 +73,7 @@ title: "Global UI - Dropdown Promise Handling"
         ],
         x: rect.left + rect.width / 2,
         y: rect.bottom + 5,
-        placement: 'bottom'
+        place: 'b'
       });
 
       if (result) {
@@ -100,7 +100,7 @@ title: "Global UI - Dropdown Promise Handling"
         ],
         x: rect.left + rect.width / 2,
         y: rect.bottom + 5,
-        placement: 'bottom'
+        place: 'b'
       });
 
       addResult('ℹ️ Info: This should not appear if clicked outside');
@@ -151,7 +151,7 @@ title: "Global UI - Dropdown Promise Handling"
         ],
         x: rect.left + rect.width / 2,
         y: rect.bottom + 5,
-        placement: 'bottom'
+        place: 'b'
       });
 
       // Immediately try to open another dialog - should fail

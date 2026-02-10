@@ -11,12 +11,12 @@ A core layout primitive for Rettangoli UI. Use `rtgl-view` to compose flex layou
 
 Use this starter pattern for most screens:
 
-- Start with a vertical page container: `d="v" p="lg" g="md"`.
+- Start with a page container using default vertical direction: `p="lg" g="md"`.
 - Build horizontal sections with `d="h"` and proportional sizing via `w="1fg"` / `w="2fg"`.
 - Add responsive overrides with breakpoint prefixes like `sm-d="v"`.
 
 ```html codePreview
-<rtgl-view d="v" p="lg" g="md" w="f">
+<rtgl-view p="lg" g="md" w="f">
   <rtgl-view d="h" g="md" w="f">
     <rtgl-view bgc="ac" w="1fg" h="96"></rtgl-view>
     <rtgl-view bgc="pr" w="2fg" h="96"></rtgl-view>
@@ -67,12 +67,12 @@ Common tokens used in this page:
 
 | Name | Attribute | Type | Default |
 | --- | --- | --- | --- |
-| [Link](#link) | `href`, `target`, `rel` | string | - |
+| [Link](#link) | `href`, `new-tab`, `rel` | string, boolean | - |
 | [Direction](#direction) | `d` | `h`, `v` | `v` |
 | [Dimensions](#dimensions) | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, `f`, `1fg`-`12fg`, CSS length/value | - |
 | [Align Horizontal](#align-horizontal) | `ah` | `s`, `c`, `e` | `s` |
 | [Align Vertical](#align-vertical) | `av` | `s`, `c`, `e` | `s` |
-| [Wrap](#wrap) | `fw` | `wrap` | - |
+| [Wrap](#wrap) | `wrap`, `no-wrap` | boolean | - |
 | [Overflow](#overflow) | `sv`, `sh`, `overflow` | boolean, `hidden` | - |
 | [Padding](#padding) | `p`, `pt`, `pr`, `pb`, `pl`, `pv`, `ph` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 | [Margin](#margin) | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
@@ -86,7 +86,7 @@ Common tokens used in this page:
 | [Position](#position) | `pos` | `abs`, `rel`, `fix` | - |
 | [Edge Anchoring](#edge-anchoring) | `edge` | `t | r | b | l | f` | - |
 | [Z-index](#z-index) | `z` | number | - |
-| [Cursor](#cursor) | `cur` | cursor token (`pointer`, `move`, `p`, `m`, etc.) | - |
+| [Cursor](#cursor) | `cur` | cursor token (`pointer`, `move`, etc.) | - |
 | [Hide Show](#hide-show) | `hide`, `show` | boolean | - |
 
 Layout and style attributes can be used responsively with breakpoint prefixes like `sm-`, `md-`, `lg-`, and `xl-`.
@@ -235,6 +235,7 @@ Flex-grow works in vertical containers using `h="1fg"`.
 
 Controls horizontal alignment of child elements.
 
+- Values: `s` (start), `c` (center), `e` (end)
 - In `d="h"`: `ah` controls left/center/right distribution of children.
 - In `d="v"` (or default): `ah` controls left/center/right alignment of children.
 
@@ -293,15 +294,17 @@ Controls vertical alignment of child elements.
 
 ## Wrap
 
-Use `fw="wrap"` to enable wrapping in a horizontal flex row.
+Use `wrap` to enable wrapping in a horizontal flex row. Use `no-wrap` to force one-line flow.
 
 ### Behavior & precedence
 
-- `fw="wrap"` enables wrapping.
-- `sv`, `sh`, or `overflow="hidden"` can disable wrapping and override `fw="wrap"`.
+- `wrap` enables wrapping.
+- `no-wrap` forces no-wrap and overrides `wrap` when both are present at the same breakpoint.
+- Responsive variants are supported, e.g. `wrap sm-no-wrap`.
+- `sv`, `sh`, or `overflow="hidden"` can disable wrapping and override `wrap`.
 
 ```html codePreview
-<rtgl-view d="h" fw="wrap" g="sm" p="lg" w="160" bgc="mu">
+<rtgl-view d="h" wrap sm-no-wrap g="sm" p="lg" w="160" bgc="mu">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
@@ -322,18 +325,18 @@ Use `sv` for vertical scroll, `sh` for horizontal scroll, or `overflow="hidden"`
 
 ### Wrap vs Overflow Conflict
 
-`fw="wrap"` wraps items in the first container. Adding `sh` in the second container keeps items on one line, even with `fw="wrap"` set.
+`wrap` wraps items in the first container. Adding `sh` in the second container keeps items on one line, even with `wrap` set.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg" w="f">
-  <rtgl-view d="h" fw="wrap" g="sm" w="160" bgc="mu" p="sm">
+  <rtgl-view d="h" wrap g="sm" w="160" bgc="mu" p="sm">
     <rtgl-view bgc="ac" wh="48"></rtgl-view>
     <rtgl-view bgc="ac" wh="48"></rtgl-view>
     <rtgl-view bgc="ac" wh="48"></rtgl-view>
     <rtgl-view bgc="ac" wh="48"></rtgl-view>
     <rtgl-view bgc="ac" wh="48"></rtgl-view>
   </rtgl-view>
-  <rtgl-view d="h" fw="wrap" sh g="sm" w="160" bgc="mu" p="sm">
+  <rtgl-view d="h" wrap sh g="sm" w="160" bgc="mu" p="sm">
     <rtgl-view bgc="ac" wh="48"></rtgl-view>
     <rtgl-view bgc="ac" wh="48"></rtgl-view>
     <rtgl-view bgc="ac" wh="48"></rtgl-view>
@@ -484,6 +487,11 @@ Controls the roundness of container corners. Use predefined sizes from `xs` to `
 
 Controls elevation using theme shadow tokens.
 
+### Behavior & precedence
+
+- Supported values are `sm`, `md`, and `lg`.
+- No shorthand alias is supported; use `shadow` explicitly.
+
 ```html codePreview
 <rtgl-view d="h" g="xl" p="xl" w="f">
   <rtgl-view bgc="mu" wh="64" shadow="sm"></rtgl-view>
@@ -615,11 +623,11 @@ Controls the stacking order of positioned elements. Higher values appear on top 
 
 ## Cursor
 
-Controls pointer style using cursor tokens. Use `cur="p"` for click targets and `cur="move"` (or `cur="m"`) for draggable surfaces.
+Controls pointer style using cursor tokens. Use `cur="pointer"` for click targets and `cur="move"` for draggable surfaces.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
-  <rtgl-view bgc="mu" wh="80" cur="p"></rtgl-view>
+  <rtgl-view bgc="mu" wh="80" cur="pointer"></rtgl-view>
   <rtgl-view bgc="ac" wh="80" cur="move"></rtgl-view>
 </rtgl-view>
 ```
@@ -648,13 +656,14 @@ Controls whether the container appears in the layout.
 
 ## Link
 
-When `href` is set, `rtgl-view` acts as a clickable surface for navigation. Use `target` for `_blank`, etc.
+When `href` is set, `rtgl-view` acts as a clickable surface for navigation. Use `new-tab` to open in a new tab.
 
 ### Behavior & precedence
 
 - `href` turns the whole container surface into a link target.
 - Child interactions inside that surface are treated as link clicks.
-- `target` controls where the link opens when provided.
+- `new-tab` opens the destination in a new tab.
+- `rel` is optional for advanced link behavior. If `new-tab` is set and `rel` is omitted, `noopener noreferrer` is applied.
 
 ### Avoid Nested Interactive Content
 
@@ -678,7 +687,7 @@ Do not place interactive controls (like `rtgl-button`, `input`, `select`) inside
 ```html codePreview
 <rtgl-view d="h" g="lg" p="lg" w="f">
   <rtgl-view href="#first" bgc="pr" wh="80"></rtgl-view>
-  <rtgl-view href="#second" target="_blank" bgc="se" wh="80"></rtgl-view>
+  <rtgl-view href="#second" new-tab bgc="se" wh="80"></rtgl-view>
 </rtgl-view>
 ```
 

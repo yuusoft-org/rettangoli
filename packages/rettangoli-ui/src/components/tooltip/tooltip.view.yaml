@@ -1,5 +1,5 @@
 template:
-  - rtgl-popover#popover ?open=${open} x=${x} y=${y} placement=${placement} no-overlay:
+  - rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place} no-overlay:
       - rtgl-view slot=content bgc=bg bc=bo br=md p=sm ah=c av=c:
           - rtgl-text ta=c s=sm c=fg: ${content}
 refs: {}

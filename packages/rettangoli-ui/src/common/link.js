@@ -14,18 +14,18 @@ export const overlayLinkStyles = `
   }
 `;
 
-export const applyLinkAttributes = ({ linkElement, href, target, rel }) => {
+export const applyLinkAttributes = ({ linkElement, href, newTab, rel }) => {
   linkElement.href = href;
 
-  if (target != null) {
-    linkElement.target = target;
+  if (newTab) {
+    linkElement.target = "_blank";
   } else {
     linkElement.removeAttribute("target");
   }
 
   if (rel != null) {
     linkElement.rel = rel;
-  } else if (target === "_blank") {
+  } else if (newTab) {
     linkElement.rel = "noopener noreferrer";
   } else {
     linkElement.removeAttribute("rel");
@@ -37,7 +37,7 @@ export const syncLinkOverlay = ({
   slotElement,
   linkElement,
   href,
-  target,
+  newTab,
   rel,
 }) => {
   if (slotElement.parentNode !== shadowRoot) {
@@ -55,7 +55,7 @@ export const syncLinkOverlay = ({
   applyLinkAttributes({
     linkElement: nextLinkElement,
     href,
-    target,
+    newTab,
     rel,
   });
 
@@ -71,7 +71,7 @@ export const syncLinkWrapper = ({
   childElement,
   linkElement,
   href,
-  target,
+  newTab,
   rel,
 }) => {
   if (!href) {
@@ -95,7 +95,7 @@ export const syncLinkWrapper = ({
   applyLinkAttributes({
     linkElement: nextLinkElement,
     href,
-    target,
+    newTab,
     rel,
   });
 

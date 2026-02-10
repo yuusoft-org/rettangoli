@@ -14,7 +14,7 @@ styles:
     overflow: hidden
 template:
   - rtgl-view d=v ${containerAttrString}:
-      - rtgl-view#header d=h av=c w=f pv=md cur=p:
+      - rtgl-view#header d=h av=c w=f pv=md cur=pointer:
           - rtgl-text: ${label}
           - rtgl-view w=1fg: null
           - rtgl-svg svg=${chevronIcon} wh=16 c=mu-fg: null

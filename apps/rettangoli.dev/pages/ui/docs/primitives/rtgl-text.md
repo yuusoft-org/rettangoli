@@ -34,7 +34,7 @@ Use this baseline pattern in most UIs:
 | Text Align | `ta` | `s`, `c`, `j`, `e` | `s` |
 | Width | `w` | number, `%`, `xs`-`xl`, `f`, `1fg`-`12fg`, CSS length/value | - |
 | Ellipsis | `ellipsis` | boolean | - |
-| Link | `href`, `target`, `rel` | string | - |
+| Link | `href`, `new-tab`, `rel` | string, boolean | - |
 | Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 
 Responsive breakpoint prefixes are supported for style attributes such as `s`, `c`, `ta`, and margin attributes.
@@ -136,6 +136,7 @@ Truncate overflowing text on a single line.
 - `ellipsis` applies single-line truncation.
 - For predictable truncation, combine `ellipsis` with `w` or another width-constrained parent.
 - If no width constraint exists, text may not truncate.
+- No shorthand alias is supported; use `ellipsis` explicitly.
 
 ```html codePreview
 <rtgl-view d="v" g="md" p="lg">
@@ -152,14 +153,14 @@ Truncate overflowing text on a single line.
 
 ## Link
 
-Use `href` to make the text surface clickable. Use `target` and `rel` for navigation behavior.
+Use `href` to make the text surface clickable. Use `new-tab` and `rel` for navigation behavior.
 
 ### Behavior & precedence
 
 - `href` turns the text surface into a link target.
-- `target` controls where the link opens.
+- `new-tab` opens the destination in a new tab.
 - `rel` is forwarded to the generated link element.
-- If `target="_blank"` and `rel` is omitted, `rel="noopener noreferrer"` is applied.
+- If `new-tab` is set and `rel` is omitted, `rel="noopener noreferrer"` is applied.
 - Avoid mixing host-level `href` with nested `<a>` inside the same `rtgl-text`.
 
 ### Inline Anchor Link
@@ -177,7 +178,7 @@ Use `href` to make the text surface clickable. Use `target` and `rel` for naviga
 ```html codePreview
 <rtgl-view d="v" g="sm" p="lg">
   <rtgl-text href="#local-section">Local navigation</rtgl-text>
-  <rtgl-text href="https://rettangoli.dev" target="_blank" rel="noopener noreferrer">
+  <rtgl-text href="https://rettangoli.dev" new-tab rel="noopener noreferrer">
     External navigation
   </rtgl-text>
 </rtgl-view>

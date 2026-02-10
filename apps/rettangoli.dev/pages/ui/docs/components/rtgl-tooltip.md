@@ -11,7 +11,7 @@ A lightweight floating hint component for short contextual help.
 
 ```html codePreview
 <rtgl-button id="help-btn">Show Tooltip</rtgl-button>
-<rtgl-tooltip id="tooltip" content="Helpful context" placement="top"></rtgl-tooltip>
+<rtgl-tooltip id="tooltip" content="Helpful context" place="t"></rtgl-tooltip>
 
 <script>
   const button = document.getElementById("help-btn");
@@ -37,7 +37,7 @@ A lightweight floating hint component for short contextual help.
 | Open | `open` | boolean | - |
 | Position X | `x` | number | `0` |
 | Position Y | `y` | number | `0` |
-| Placement | `placement` | popover placement string | `top` |
+| Place | `place` | popover place token (`t`, `ts`, `te`, `r`, `rs`, `re`, `b`, `bs`, `be`, `l`, `ls`, `le`) | `t` |
 | Content | `content` | string | `""` |
 
 ## Behavior
@@ -46,4 +46,4 @@ A lightweight floating hint component for short contextual help.
 
 - Controlled by `open`.
 - Uses explicit `x`/`y` positioning.
-- `placement` controls orientation relative to anchor point.
+- `place` controls orientation relative to anchor point.

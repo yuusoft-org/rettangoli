@@ -85,7 +85,7 @@ class RettangoliImageElement extends HTMLElement {
       "src",
       "alt",
       "href",
-      "target",
+      "new-tab",
       "rel",
       "wh",
       "w",
@@ -104,7 +104,7 @@ class RettangoliImageElement extends HTMLElement {
 
   _updateDOM() {
     const href = this.getAttribute("href");
-    const target = this.getAttribute("target");
+    const newTab = this.hasAttribute("new-tab");
     const rel = this.getAttribute("rel");
 
     this._linkElement = syncLinkWrapper({
@@ -112,7 +112,7 @@ class RettangoliImageElement extends HTMLElement {
       childElement: this._imgElement,
       linkElement: this._linkElement,
       href,
-      target,
+      newTab,
       rel,
     });
   }
@@ -123,8 +123,8 @@ class RettangoliImageElement extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    // Handle href and target changes
-    if (name === "href" || name === "target" || name === "rel") {
+    // Handle href and link behavior changes
+    if (name === "href" || name === "new-tab" || name === "rel") {
       this._updateDOM();
       return;
     }

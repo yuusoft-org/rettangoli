@@ -36,7 +36,7 @@ Call through `globalUiElement.transformedHandlers`:
 | --- | --- | --- |
 | `showAlert(options)` | `{ message, title?, status?, confirmText? }` | Promise-like async flow (no selection payload) |
 | `showConfirm(options)` | `{ message, title?, status?, confirmText?, cancelText? }` | resolves `true` (confirm) or `false` (cancel) |
-| `showDropdownMenu(options)` | `{ items, x, y, placement? }` | resolves `{ index, item }` or `null` |
+| `showDropdownMenu(options)` | `{ items, x, y, place? }` | resolves `{ index, item }` or `null` |
 | `closeAll()` | none | closes any open global dialog/dropdown |
 
 ## Dropdown Item Shape

@@ -65,6 +65,21 @@ steps:
       'bottom-start', 'bottom', 'bottom-end'
     ];
 
+    const placeMap = {
+      'top': 't',
+      'top-start': 'ts',
+      'top-end': 'te',
+      'right': 'r',
+      'right-start': 'rs',
+      'right-end': 're',
+      'bottom': 'b',
+      'bottom-start': 'bs',
+      'bottom-end': 'be',
+      'left': 'l',
+      'left-start': 'ls',
+      'left-end': 'le',
+    };
+
     placements.forEach(placement => {
     const btnId = `btn-${placement}`;
     const button = document.getElementById(btnId);
@@ -88,7 +103,7 @@ steps:
       }
       
       tooltip.setAttribute('content', `Placement: ${placement}`);
-      tooltip.setAttribute('placement', placement);
+      tooltip.setAttribute('place', placeMap[placement] || 't');
       tooltip.setAttribute('open', '');
       tooltip.setAttribute('x', x);
       tooltip.setAttribute('y', y);

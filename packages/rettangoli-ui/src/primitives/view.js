@@ -39,10 +39,6 @@ class RettangoliViewElement extends HTMLElement {
           border-color: var(--border);
         }
 
-        :host([fw="wrap"]) {
-          flex-wrap: wrap;
-        }
-
 
         ${scrollStyle}
         ${flexDirectionStyles}
@@ -73,7 +69,7 @@ class RettangoliViewElement extends HTMLElement {
   static get observedAttributes() {
     return [
       "href",
-      "target",
+      "new-tab",
       "rel",
       ...permutateBreakpoints([
         ...styleMapKeys,
@@ -89,7 +85,8 @@ class RettangoliViewElement extends HTMLElement {
         "d",
         "ah",
         "av",
-        "fw",
+        "wrap",
+        "no-wrap",
         "overflow"
       ]),
     ];
@@ -101,7 +98,7 @@ class RettangoliViewElement extends HTMLElement {
 
   _updateDOM() {
     const href = this.getAttribute("href");
-    const target = this.getAttribute("target");
+    const newTab = this.hasAttribute("new-tab");
     const rel = this.getAttribute("rel");
 
     this._linkElement = syncLinkOverlay({
@@ -109,7 +106,7 @@ class RettangoliViewElement extends HTMLElement {
       slotElement: this._slotElement,
       linkElement: this._linkElement,
       href,
-      target,
+      newTab,
       rel,
     });
   }
@@ -237,9 +234,13 @@ class RettangoliViewElement extends HTMLElement {
       }
 
       // Handle flex-wrap
-      const flexWrap = this.getAttribute(addSizePrefix("fw"));
-      if (flexWrap === "wrap") {
+      const isWrap = this.hasAttribute(addSizePrefix("wrap"));
+      const isNoWrap = this.hasAttribute(addSizePrefix("no-wrap"));
+      if (isWrap) {
         this._styles[size]["flex-wrap"] = "wrap";
+      }
+      if (isNoWrap) {
+        this._styles[size]["flex-wrap"] = "nowrap";
       }
 
       // Handle scroll properties
@@ -274,8 +275,8 @@ class RettangoliViewElement extends HTMLElement {
   }
   
   attributeChangedCallback(name, oldValue, newValue) {
-    // Handle href and target changes
-    if (name === "href" || name === "target" || name === "rel") {
+    // Handle link-related changes
+    if (name === "href" || name === "new-tab" || name === "rel") {
       this._updateDOM();
       return;
     }

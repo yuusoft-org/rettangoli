@@ -38,10 +38,6 @@ const styles = {
         "wait": "wait",
         "zoom-in": "zoom-in",
         "zoom-out": "zoom-out",
-        
-        // Keep short aliases for common cursors
-        "p": "pointer",
-        "m": "move",
     },
 };
 

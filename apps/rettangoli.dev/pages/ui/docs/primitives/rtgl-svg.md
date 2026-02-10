@@ -65,7 +65,7 @@ For full behavior details, see [Responsiveness](../introduction/responsiveness.m
 | Color | `c` | `fg`, `mu`, `pr`, `se`, `de`, `ac`, `bo`, `bg`, `tr`, `mu-fg`, `pr-fg`, `se-fg`, `de-fg`, `ac-fg` | `fg` |
 | Padding | `p`, `pt`, `pr`, `pb`, `pl`, `pv`, `ph` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 | Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
-| Cursor | `cur` | cursor token (`pointer`, `move`, `p`, `m`, etc.) | - |
+| Cursor | `cur` | cursor token (`pointer`, `move`, etc.) | - |
 
 ## Icon Source
 

@@ -56,7 +56,7 @@ For full behavior details, see [Responsiveness](../introduction/responsiveness.m
 | Suffix Icon | `suf` | registered svg key | - |
 | Square Mode | `sq` | boolean | - |
 | Disabled | `disabled` | boolean | - |
-| Link | `href`, `target`, `rel` | string | - |
+| Link | `href`, `new-tab`, `rel` | string, boolean | - |
 | Width | `w` | number, `%`, `xs`-`xl`, `f`, CSS length/value | - |
 | Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 
@@ -169,16 +169,16 @@ Use `href` for navigation-style actions.
 ### Behavior & precedence
 
 - `href` turns the button into a navigation action.
-- `target` controls where the destination opens.
+- `new-tab` opens the destination in a new tab.
 - `rel` configures relationship/security metadata.
-- When using `target="_blank"`, set `rel="noopener noreferrer"` explicitly.
+- If `new-tab` is set and `rel` is omitted, `rel="noopener noreferrer"` is applied.
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
   <rtgl-button href="#overview" v="ol">Go to Overview</rtgl-button>
   <rtgl-button
     href="https://rettangoli.dev"
-    target="_blank"
+    new-tab
     rel="noopener noreferrer"
     v="lk"
   >

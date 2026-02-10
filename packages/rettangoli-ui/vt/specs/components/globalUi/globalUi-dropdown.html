@@ -4,7 +4,7 @@ title: "Global UI - Dropdown"
 <!-- Global UI element must be present before main.js loads -->
 <rtgl-global-ui></rtgl-global-ui>
 
-<rtgl-view g="lg" h="100vh" w="f" fw="wrap">
+<rtgl-view g="lg" h="100vh" w="f" wrap>
   <rtgl-view d="h" g="lg">
     <rtgl-button id="dropdown-btn">Show Dropdown</rtgl-button>
     <rtgl-button id="dropdown-custom-btn">Show Custom Position</rtgl-button>
@@ -49,7 +49,7 @@ title: "Global UI - Dropdown"
       ],
       x: rect.left + rect.width / 2,
       y: rect.bottom + 5,
-      placement: 'bottom-start'
+      place: 'bs'
     });
     resultEl.textContent = `Dropdown result: ${JSON.stringify(result)}`;
   });
@@ -67,7 +67,7 @@ title: "Global UI - Dropdown"
       ],
       x: rect.right - 200,
       y: rect.bottom + 10,
-      placement: 'bottom-end'
+      place: 'be'
     });
     resultEl.textContent = `Custom dropdown result: ${JSON.stringify(result)}`;
   });
@@ -88,7 +88,7 @@ title: "Global UI - Dropdown"
       ],
       x: rect.left + rect.width / 2,
       y: rect.bottom + 5,
-      placement: 'bottom'
+      place: 'b'
     });
     resultEl.textContent = `Mixed dropdown result: ${JSON.stringify(result)}`;
   });
@@ -111,7 +111,7 @@ title: "Global UI - Dropdown"
       items: items,
       x: rect.left + rect.width / 2,
       y: rect.bottom + 5,
-      placement: 'bottom'
+      place: 'b'
     });
     resultEl.textContent = `Large dropdown result: ${JSON.stringify(result)}`;
   });

@@ -43,7 +43,9 @@ Rettangoli favors consistency over one-off convenience.
 - direct property value takes precedence over attr fallback
 - do not bind the same prop using both `name=value` and `:name=value` on one node
 - prefer props for data/state, attrs for layout/styling
-- keep attrs short unless semantic/native names are clearer (`value`, `disabled`, `placeholder`, and similar)
+- keep established shorthand attrs where they already exist (`w`, `h`, `wh`, `m*`, `op`, and similar)
+- keep descriptive attrs explicit in kebab-case when clarity is better (`new-tab`, `no-wrap`, `ellipsis`, `shadow`)
+- do not introduce alias attrs for the same behavior
 
 ## API Quality Rules
 
@@ -74,7 +76,7 @@ For responsive behavior, see [Responsiveness](./responsiveness.md).
 | `rtgl-slider-input` | numeric dual control | synchronized slider + number input, min/max/step |
 | `rtgl-table` | tabular data display | column/row model, header sort event, row click event |
 | `rtgl-tabs` | segmented selection | tab items, selected tab, item click event |
-| `rtgl-tooltip` | contextual hint | controlled open/position/placement/content |
+| `rtgl-tooltip` | contextual hint | controlled open/position/place/content |
 
 ## Primitive Families
 

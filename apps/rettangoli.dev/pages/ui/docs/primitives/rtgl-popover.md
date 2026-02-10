@@ -13,7 +13,7 @@ Use `open` as the source of truth, and set `x`/`y` from the trigger event.
 
 ```html codePreview
 <rtgl-button id="open-popover">Open Popover</rtgl-button>
-<rtgl-popover id="popover" placement="bottom-start">
+<rtgl-popover id="popover" place="bs">
   <rtgl-view slot="content" d="v" g="sm">
     <rtgl-text s="h5">Popover</rtgl-text>
     <rtgl-text c="mu">Contextual content goes here.</rtgl-text>
@@ -46,7 +46,7 @@ Use `open` as the source of truth, and set `x`/`y` from the trigger event.
 | Open | `open` | boolean | - |
 | Position X | `x` | number (viewport px) | `0` |
 | Position Y | `y` | number (viewport px) | `0` |
-| Placement | `placement` | `top`, `top-start`, `top-end`, `right`, `right-start`, `right-end`, `bottom`, `bottom-start`, `bottom-end`, `left`, `left-start`, `left-end` | `bottom-start` |
+| Place | `place` | `t`, `ts`, `te`, `r`, `rs`, `re`, `b`, `bs`, `be`, `l`, `ls`, `le` | `bs` |
 | No Overlay | `no-overlay` | boolean | - |
 
 ## Events
@@ -82,7 +82,7 @@ Use `x` and `y` to anchor the popover at viewport coordinates.
 
 - `x` and `y` are read as numbers.
 - Omitted coordinates resolve to `0`.
-- Position updates when `x`, `y`, or `placement` changes while open.
+- Position updates when `x`, `y`, or `place` changes while open.
 
 ```html codePreview
 <rtgl-button id="at-cursor">Open At Cursor</rtgl-button>
@@ -102,21 +102,21 @@ Use `x` and `y` to anchor the popover at viewport coordinates.
 </script>
 ```
 
-## Placement
+## Place
 
 Choose where the surface appears relative to the `x`/`y` anchor.
 
-- `top`, `top-start`, `top-end`
-- `right`, `right-start`, `right-end`
-- `bottom`, `bottom-start`, `bottom-end`
-- `left`, `left-start`, `left-end`
+- `t`, `ts`, `te`
+- `r`, `rs`, `re`
+- `b`, `bs`, `be`
+- `l`, `ls`, `le`
 
 ```html codePreview
 <rtgl-view d="h" g="md" p="lg">
-  <rtgl-popover open x="120" y="120" placement="top">
+  <rtgl-popover open x="120" y="120" place="t">
     <rtgl-view slot="content"><rtgl-text>Top</rtgl-text></rtgl-view>
   </rtgl-popover>
-  <rtgl-popover open x="260" y="120" placement="right-start">
+  <rtgl-popover open x="260" y="120" place="rs">
     <rtgl-view slot="content"><rtgl-text>Right Start</rtgl-text></rtgl-view>
   </rtgl-popover>
 </rtgl-view>

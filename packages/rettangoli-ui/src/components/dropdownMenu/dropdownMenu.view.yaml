@@ -12,7 +12,7 @@ styles:
     text-decoration: none
     color: inherit
 template:
-  - rtgl-popover#popover ?open=${open} x=${x} y=${y} placement=${placement}:
+  - rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place}:
       - rtgl-view w=${w} h=${h} sv g=xs slot=content bgc=bg br=md:
           - $for item, i in items:
               - $if item.isLabel:
@@ -23,14 +23,14 @@ template:
                       - rtgl-text c=${item.c}: ${item.label}
                 $elif item.isItem && item.hasHref && item.linkExtraAttrs:
                   - a#option${i} href=${item.href} ${item.linkExtraAttrs} data-index=${item.index} data-testid=${item.testId}:
-                      - rtgl-view w=f h-bgc=${item.hoverBgc} ph=lg pv=md cur=p br=md bgc=${item.bgc}:
+                      - rtgl-view w=f h-bgc=${item.hoverBgc} ph=lg pv=md cur=pointer br=md bgc=${item.bgc}:
                           - rtgl-text c=${item.c}: ${item.label}
                 $elif item.isItem && item.hasHref:
                   - a#option${i} href=${item.href} data-index=${item.index} data-testid=${item.testId}:
-                      - rtgl-view w=f h-bgc=${item.hoverBgc} ph=lg pv=md cur=p br=md bgc=${item.bgc}:
+                      - rtgl-view w=f h-bgc=${item.hoverBgc} ph=lg pv=md cur=pointer br=md bgc=${item.bgc}:
                           - rtgl-text c=${item.c}: ${item.label}
                 $elif item.isItem:
-                  - rtgl-view#option${i} w=f h-bgc=${item.hoverBgc} ph=lg pv=md cur=p br=md bgc=${item.bgc} data-index=${item.index} data-testid=${item.testId}:
+                  - rtgl-view#option${i} w=f h-bgc=${item.hoverBgc} ph=lg pv=md cur=pointer br=md bgc=${item.bgc} data-index=${item.index} data-testid=${item.testId}:
                       - rtgl-text c=${item.c}: ${item.label}
                 $elif item.isSeparator:
                   - rtgl-view w=f h=1 ph=lg mv=md bgc=bo: null

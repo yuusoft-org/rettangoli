@@ -15,6 +15,8 @@ const toNumber = (value) => {
   return Number.isNaN(parsed) ? undefined : parsed;
 };
 
+const escapeAttrValue = (value) => `${value}`.replace(/"/g, '&quot;');
+
 const collapseItems = (items, max) => {
   if (!max || max < 3 || items.length <= max) {
     return items;
@@ -35,9 +37,10 @@ const normalizeItems = (items) => {
     const isCurrent = !!item.current;
     const isDisabled = !!item.disabled;
     const isInteractive = !isCurrent && !isDisabled && (hasHref || hasPath || !!item.click);
+    const relValue = item.rel || (item.newTab ? 'noopener noreferrer' : '');
     const linkExtraAttrs = [
-      item.target ? `target=${item.target}` : '',
-      item.rel ? `rel=${item.rel}` : '',
+      item.newTab ? 'target="_blank"' : '',
+      relValue ? `rel="${escapeAttrValue(relValue)}"` : '',
     ].filter(Boolean).join(' ');
 
     return {

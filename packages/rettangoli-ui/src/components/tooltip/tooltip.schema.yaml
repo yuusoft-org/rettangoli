@@ -8,7 +8,7 @@ propsSchema:
       type: string
     'y':
       type: string
-    placement:
+    place:
       type: string
     content:
       type: string

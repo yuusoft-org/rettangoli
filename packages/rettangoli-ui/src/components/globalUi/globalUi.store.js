@@ -13,7 +13,7 @@ export const createInitialState = () => Object.freeze({
     items: [],
     x: 0,
     y: 0,
-    placement: "bottom-start",
+    place: "bs",
   },
 });
 
@@ -60,7 +60,7 @@ export const setDropdownConfig = ({ state }, options = {}) => {
     items: options.items,
     x: options.x || 0,
     y: options.y || 0,
-    placement: options.placement || "bottom-start",
+    place: options.place || "bs",
   };
   state.uiType = "dropdown";
   state.isOpen = true;
@@ -85,7 +85,7 @@ export const selectViewData = ({ state }) => {
       items: state.dropdownConfig?.items || [],
       x: state.dropdownConfig?.x || 0,
       y: state.dropdownConfig?.y || 0,
-      placement: state.dropdownConfig?.placement || 'bottom-start',
+      place: state.dropdownConfig?.place || 'bs',
     },
     isDialogOpen: state.isOpen && state.uiType === 'dialog',
     isDropdownOpen: state.isOpen && state.uiType === 'dropdown',

@@ -30,4 +30,4 @@ template:
               - $if config.mode == 'confirm':
                   - rtgl-button#cancelButton v=se: ${config.cancelText}
               - rtgl-button#confirmButton v=pr: ${config.confirmText}
-  - rtgl-dropdown-menu#dropdownMenu ?open=${isDropdownOpen} x=${dropdownConfig.x} y=${dropdownConfig.y} placement=${dropdownConfig.placement} :items=dropdownConfig.items key=dropdown-${isDropdownOpen}: null
+  - rtgl-dropdown-menu#dropdownMenu ?open=${isDropdownOpen} x=${dropdownConfig.x} y=${dropdownConfig.y} place=${dropdownConfig.place} :items=dropdownConfig.items key=dropdown-${isDropdownOpen}: null

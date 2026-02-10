@@ -23,8 +23,8 @@ propsSchema:
             type: string
           disabled:
             type: boolean
-          target:
-            type: string
+          newTab:
+            type: boolean
           rel:
             type: string
           testId:
@@ -35,7 +35,7 @@ propsSchema:
       type: string
     'y':
       type: string
-    placement:
+    place:
       type: string
     w:
       type: string

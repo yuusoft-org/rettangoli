@@ -21,5 +21,27 @@
 - `rtgl-form` inputType values are now kebab-case only:
   - `inputText` → `input-text`
   - `colorPicker` → `color-picker`
+- `rtgl-view` wrap API changed:
+  - `fw="wrap"` removed
+  - use boolean attributes `wrap` and `no-wrap` (including responsive variants like `sm-wrap` / `sm-no-wrap`)
+- Link API changed for `rtgl-view`, `rtgl-text`, `rtgl-image`, and `rtgl-button`:
+  - `target` removed
+  - use boolean `new-tab` instead (keep `rel` for advanced behavior)
+- Item link API changed for `rtgl-breadcrumb` and `rtgl-dropdown-menu`:
+  - item field `target` removed
+  - use boolean `newTab` instead (keep `rel` for advanced behavior)
+- Cursor shorthand values removed:
+  - `cur="p"` removed
+  - `cur="m"` removed
+  - use explicit CSS cursor values like `cur="pointer"` and `cur="move"`
+- Popover place API changed across overlays:
+  - `placement` removed; use `place`
+  - supported values changed to short tokens:
+    - `t`, `ts`, `te`, `r`, `rs`, `re`, `b`, `bs`, `be`, `l`, `ls`, `le`
+  - impacts:
+    - `rtgl-popover` attribute
+    - `rtgl-tooltip` attribute/property
+    - `rtgl-dropdown-menu` attribute/property
+    - `showDropdownMenu({ place })` in `rtgl-global-ui`
 
 Update any event listeners accordingly.

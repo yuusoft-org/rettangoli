@@ -71,14 +71,14 @@ template:
                   - $if field.inputType == "slider-input":
                       - rtgl-slider-input#field${i} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}: null
                   - $if field.inputType == "image" && field.imageSrc:
-                      - rtgl-image#image${i} data-field-name=${field.name} src=${field.imageSrc} w=${field.width} h=${field.height} cur=p data-testid=${field.testId}: null
+                      - rtgl-image#image${i} data-field-name=${field.name} src=${field.imageSrc} w=${field.width} h=${field.height} cur=pointer data-testid=${field.testId}: null
                   - $if field.inputType == "image" && !field.imageSrc:
-                      - rtgl-view#image${i} data-field-name=${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md data-testid=${field.testId}:
+                      - rtgl-view#image${i} data-field-name=${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=pointer p=md data-testid=${field.testId}:
                           - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
                   - $if field.inputType == "waveform" && field.waveformData:
-                      - rtgl-waveform#waveform${i} data-field-name=${field.name} :waveformData=fields[${i}].waveformData w=${field.width} h=${field.height} cur=p data-testid=${field.testId}: null
+                      - rtgl-waveform#waveform${i} data-field-name=${field.name} :waveformData=fields[${i}].waveformData w=${field.width} h=${field.height} cur=pointer data-testid=${field.testId}: null
                   - $if field.inputType == "waveform" && !field.waveformData:
-                      - rtgl-view#waveform${i} data-field-name=${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md data-testid=${field.testId}:
+                      - rtgl-view#waveform${i} data-field-name=${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=pointer p=md data-testid=${field.testId}:
                           - rtgl-text c=mu-fg ta=c: ${field.placeholder}
                   - $if field.inputType == "slot":
                       - 'slot#fieldSlot${i} data-field-name=${field.name} name=${field.slot} style="display: contents;"': null
@@ -86,4 +86,4 @@ template:
           - rtgl-view d=h ah=e g=sm w=f:
               - $for button, i in actions.buttons:
                   - rtgl-button#action${i} data-action-id=${button.id} data-testid=${button.testId}: ${button.content}
-      - rtgl-tooltip ?open=${tooltipState.open} x=${tooltipState.x} y=${tooltipState.y} placement="top" content="${tooltipState.content}": null
+      - rtgl-tooltip ?open=${tooltipState.open} x=${tooltipState.x} y=${tooltipState.y} place="t" content="${tooltipState.content}": null

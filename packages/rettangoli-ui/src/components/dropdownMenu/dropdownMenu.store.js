@@ -2,6 +2,8 @@
 export const createInitialState = () => Object.freeze({
 });
 
+const escapeAttrValue = (value) => `${value}`.replace(/"/g, '&quot;');
+
 const normalizeItems = (items) => {
   return items.map((item, index) => {
     const type = item.type || 'item';
@@ -14,9 +16,10 @@ const normalizeItems = (items) => {
     const bgc = isDisabled ? 'mu' : 'mu';
     const hoverBgc = isDisabled ? '' : 'ac';
     const hasHref = typeof item.href === 'string' && item.href.length > 0;
+    const relValue = item.rel || (item.newTab ? 'noopener noreferrer' : '');
     const linkExtraAttrs = [
-      item.target ? `target=${item.target}` : '',
-      item.rel ? `rel=${item.rel}` : '',
+      item.newTab ? 'target="_blank"' : '',
+      relValue ? `rel="${escapeAttrValue(relValue)}"` : '',
     ].filter(Boolean).join(' ');
 
     return {
@@ -47,6 +50,6 @@ export const selectViewData = ({ props }) => {
     y: props.y || 0,
     w: props.w || '300',
     h: props.h || '300',
-    placement: props.placement || 'bottom-start',
+    place: props.place || 'bs',
   };
 }

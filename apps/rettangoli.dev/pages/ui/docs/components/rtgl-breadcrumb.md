@@ -51,7 +51,7 @@ A path-navigation component for hierarchical context and route navigation.
 | `current` | boolean | marks current crumb, not interactive |
 | `disabled` | boolean | disabled, not interactive |
 | `click` | boolean | event-only interactive row |
-| `target` | string | link target (for `href`) |
+| `newTab` | boolean | opens `href` in a new tab |
 | `rel` | string | link rel (for `href`) |
 
 ## Events
@@ -69,6 +69,7 @@ A path-navigation component for hierarchical context and route navigation.
 - `id` is identity only and does not control clickability.
 - `max` collapses middle items with an ellipsis.
 - Separators are inserted automatically between visible items.
+- If `newTab` is true and `rel` is omitted, `rel="noopener noreferrer"` is applied.
 
 ```html codePreview
 <rtgl-breadcrumb id="crumbs"></rtgl-breadcrumb>
