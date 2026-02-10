@@ -1,7 +1,12 @@
 ---
-title: Disabled
+title: Input Number - Disabled - Interactive State
+description: Verifies disabled appearance and contrast with an enabled number input.
+specs:
+  - Disabled input remains visibly non-interactive.
+  - Enabled input in same layout keeps normal affordances.
+  - Event wiring remains safe when disabled field is present.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-text>Disabled number input:</rtgl-text>
   <rtgl-input-number id="disabled-input" disabled placeholder="Disabled number"></rtgl-input-number>
   <rtgl-text>Regular number input:</rtgl-text>
@@ -14,13 +19,13 @@ title: Disabled
     const regularDisabledInput = document.getElementById('regular-disabled-input');
 
     if (disabledInput) {
-      disabledInput.addEventListener('input-change', (e) => {
+      disabledInput.addEventListener('value-input', (e) => {
         console.log('Disabled input value changed (should not fire):', { value: e.detail.value });
       });
     }
 
     if (regularDisabledInput) {
-      regularDisabledInput.addEventListener('input-change', (e) => {
+      regularDisabledInput.addEventListener('value-input', (e) => {
         console.log('Regular input value changed:', { value: e.detail.value });
       });
     }

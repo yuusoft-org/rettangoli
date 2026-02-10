@@ -1,0 +1,50 @@
+# Rettangoli
+> Rettangoli is a frontend toolkit with three main parts: FE (schema-driven app layer), UI (web components and primitives), and VT (visual testing).
+
+This file is a curated index for LLM-based tools. Prefer linked docs over guessing behavior.
+
+## Core Docs
+- https://rettangoli.dev/fe/docs/introduction/introduction/
+- https://rettangoli.dev/fe/docs/introduction/getting-started/
+- https://rettangoli.dev/ui/docs/introduction/introduction/
+- https://rettangoli.dev/ui/docs/introduction/getting-started/
+- https://rettangoli.dev/vt/docs/introduction/quickstart/
+
+## FE (Rettangoli FE)
+- https://rettangoli.dev/fe/docs/guides/schema/
+- https://rettangoli.dev/fe/docs/guides/view/
+- https://rettangoli.dev/fe/docs/guides/store/
+- https://rettangoli.dev/fe/docs/guides/handlers/
+- https://rettangoli.dev/fe/docs/guides/methods/
+- https://rettangoli.dev/fe/docs/guides/constants/
+- https://rettangoli.dev/fe/docs/guides/refs-and-events/
+- https://rettangoli.dev/fe/docs/guides/component-architecture/
+- https://rettangoli.dev/fe/docs/guides/cli/
+
+## UI (Rettangoli UI)
+- https://rettangoli.dev/ui/docs/introduction/component-model/
+- https://rettangoli.dev/ui/docs/introduction/css-variables/
+- https://rettangoli.dev/ui/docs/introduction/responsiveness/
+- https://rettangoli.dev/ui/docs/primitives/rtgl-view/
+- https://rettangoli.dev/ui/docs/primitives/rtgl-button/
+- https://rettangoli.dev/ui/docs/primitives/rtgl-input/
+- https://rettangoli.dev/ui/docs/primitives/rtgl-text/
+- https://rettangoli.dev/ui/docs/components/rtgl-form/
+- https://rettangoli.dev/ui/docs/components/rtgl-select/
+- https://rettangoli.dev/ui/docs/components/rtgl-popover-input/
+- https://rettangoli.dev/ui/docs/components/rtgl-dropdown-menu/
+- https://rettangoli.dev/ui/docs/components/rtgl-table/
+
+## VT (Rettangoli VT)
+- https://rettangoli.dev/vt/docs/reference/cli/
+- https://rettangoli.dev/vt/docs/reference/configuration/
+- https://rettangoli.dev/vt/docs/reference/frontmatter/
+- https://rettangoli.dev/vt/docs/reference/step-actions/
+- https://rettangoli.dev/vt/docs/reference/viewport/
+- https://rettangoli.dev/vt/docs/reference/selectors-and-artifacts/
+- https://rettangoli.dev/vt/docs/reference/sites-integration/
+
+## Notes
+- UI docs describe current attribute names and behavior; treat those as source of truth for component usage.
+- VT docs define capture/report workflow, config contract, and step action semantics.
+- FE docs define schema, handlers, state flow, and architecture conventions.

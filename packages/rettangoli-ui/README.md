@@ -1,106 +1,54 @@
+# Rettangoli UI
 
-# Rettangoli
+A UI component library built on Web Components with attribute-first styling.
 
-## Development
+## Quickstart
 
-### Folder Structure
-
-```
-src/
-├── primitives/     # Basic web components built from scratch, no dependencies
-└── components/     # Pre-built components using @rettangoli/fe
-vt/                 # Uses @rettangoli/vt visual testing library
-├── reference/      # Golden screenshots for visual testing
-└── specs/          # HTML test specifications
-```
-
-### Install dependencies
-
-Use npx to install `rtgl` cli globally. You run into issues if try to use `bunx`.
-
-```bash
-npx i -g rtgl
-```
-
-Install dependencies
-
-```bash
-bun install
-```
-
-### Generate specification screens
-
-Bundles the code to be used for `rettangoli-vt`
-
-```bash
-bun run build:dev
-```
-
-Uses `rettangoli-vt` to generates test screens 
-
-```bash
-bun run vt:generate
-```
-
-Test for any change using `rettangoli-vt`
-
-```bash
-bun run vt:report
-```
-
-Accept the changes by updating the reference screenshots
-
-```bash
-bun run vt:accept
-```
-
-You can then access the generates screens
-
-```bash
-bun run serve
-```
-
-Open http://localhost:3000/view to see the specification screens
-
-
-## Usage
-
-### Install via CDN
-
-Use via CDN iife (Immediately Invoked Function Expression) us [JSDeliver](https://www.jsdelivr.com/package/npm/@rettangoli/ui)
-
-Primitives only. This might be useful if you want a light weight version and use only the primitives.
-
+### CDN (iife)
+Primitives only (lightweight):
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@latest/dist/rettangoli-layout.iife.min.js"></script>
 ```
 
-All primitives and components
-
+Primitives + components:
 ```html
 <script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@latest/dist/rettangoli-ui.iife.min.js"></script>
 ```
 
-### Install via NPM
-
-Install package
-
+### NPM (ESM)
 ```bash
 npm install @rettangoli/ui
 ```
 
-Import the package. This allows you to configure more flexible options and to treeshake only the code that you need.
-
 ```js
-import { RettangoliView } '@rettangoli/ui';
-customElements.define("rtgl-view", RettangoliView({}));
+import { RettangoliView } from '@rettangoli/ui';
+customElements.define('rtgl-view', RettangoliView({}));
 ```
 
-### Stylesheet file
+### Minimal usage
+```html
+<rtgl-view p=md g=sm>
+  <rtgl-text>Hello</rtgl-text>
+  <rtgl-button>Click</rtgl-button>
+</rtgl-view>
+```
 
-Make sure you import a stylesheet file from your html file. [Example](./src/vt/static/public/theme.css)
+### Stylesheet
+You must load two CSS files in this order:
 
+```html
+<link rel="stylesheet" href="node_modules/@rettangoli/ui/dist/themes/base.css">
+<link rel="stylesheet" href="node_modules/@rettangoli/ui/dist/themes/theme-rtgl-slate.css">
+```
 
+`base.css` is required for base HTML normalization. Then choose exactly one theme file.
 
+Available prebuilt themes:
 
+- `dist/themes/theme-rtgl-slate.css`
+- `dist/themes/theme-rtgl-mono.css`
+- `dist/themes/theme-catppuccin.css`
 
+---
+
+For development workflows, component architecture, and interface rules, see `DEVELOPMENT.md`.

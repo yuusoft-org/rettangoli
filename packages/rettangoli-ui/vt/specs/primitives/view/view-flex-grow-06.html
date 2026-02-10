@@ -1,0 +1,12 @@
+---
+title: View - Flex Grow - Maximum Multiplier
+description: Verifies support for the documented upper flex-grow multiplier (`12fg`).
+specs:
+  - Width `12fg` renders and dominates space versus `1fg`.
+  - Confirms upper bound parsing remains stable in layout output.
+---
+
+<rtgl-view d="h" bgc="mu" g="lg" p="lg" wh="f">
+  <rtgl-view bgc="ac" w="12fg" h="100">Max flex-grow</rtgl-view>
+  <rtgl-view bgc="ac" w="1fg" h="100">Min flex-grow</rtgl-view>
+</rtgl-view>

@@ -1,0 +1,25 @@
+componentName: rtgl-waveform
+propsSchema:
+  type: object
+  properties:
+    w:
+      type: string
+      description: Width of the waveform visualizer
+      default: '250'
+    h:
+      type: string
+      description: Height of the waveform visualizer
+      default: '150'
+    cur:
+      type: string
+      description: cursor
+    waveformData:
+      type: object
+      description: File ID of the waveform data in object storage
+    isLoading:
+      type: boolean
+      description: Whether the waveform data is currently being loaded
+events: []
+methods:
+  type: object
+  properties: {}

@@ -2,15 +2,27 @@ import {
   css,
   dimensionWithUnit,
   convertObjectToCssString,
-  styleMapKeys,
   permutateBreakpoints,
+  createResponsiveStyleBuckets,
+  responsiveStyleSizes,
+  applyDimensionToStyleBucket,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 
+const inputNumberStyleMapKeys = ["mt", "mr", "mb", "ml", "m", "mh", "mv", "cur"];
+
 // Internal implementation without uhtml
 class RettangoliInputNumberElement extends HTMLElement {
   static styleSheet = null;
+
+  static inputSpecificAttributes = [
+    "disabled",
+    "step",
+    "min",
+    "max",
+    "s",
+  ];
 
   static initializeStyleSheet() {
     if (!RettangoliInputNumberElement.styleSheet) {
@@ -61,13 +73,7 @@ class RettangoliInputNumberElement extends HTMLElement {
     this.shadow.adoptedStyleSheets = [RettangoliInputNumberElement.styleSheet];
 
     // Initialize style tracking properties
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+    this._styles = createResponsiveStyleBuckets();
     this._lastStyleString = "";
 
     // Create initial DOM structure
@@ -77,14 +83,14 @@ class RettangoliInputNumberElement extends HTMLElement {
     this.shadow.appendChild(this._styleElement);
     this.shadow.appendChild(this._inputElement);
 
-    // Bind event handler
-    this._inputElement.addEventListener('input', this._onChange);
+    // Bind event handlers
+    this._inputElement.addEventListener('input', this._onInput);
+    this._inputElement.addEventListener('change', this._onChange);
   }
 
   static get observedAttributes() {
     return [
       "key",
-      "type",
       "placeholder",
       "disabled",
       "value",
@@ -93,7 +99,7 @@ class RettangoliInputNumberElement extends HTMLElement {
       "max",
       "s",
       ...permutateBreakpoints([
-        ...styleMapKeys,
+        ...inputNumberStyleMapKeys,
         "wh",
         "w",
         "h",
@@ -117,75 +123,79 @@ class RettangoliInputNumberElement extends HTMLElement {
     this._inputElement.focus();
   }
 
-  _onChange = (event) => {
+  _emitValueEvent = (eventName) => {
     const inputValue = this._inputElement.value;
+    if (inputValue.trim() === "") {
+      this.dispatchEvent(new CustomEvent(eventName, {
+        detail: {
+          value: null,
+        },
+        bubbles: true,
+      }));
+      return;
+    }
+
     let numericValue = parseFloat(inputValue);
 
     // Only process if the value is a valid number (not NaN)
     if (!isNaN(numericValue)) {
-      // Enforce minimum value if set
-      const minAttr = this.getAttribute("min");
-      if (minAttr !== null) {
-        const minValue = parseFloat(minAttr);
-        if (!isNaN(minValue) && numericValue < minValue) {
-          numericValue = minValue;
-          this._inputElement.value = minValue.toString();
-        }
-      }
+      numericValue = this._clampValueToBounds(numericValue);
+      this._inputElement.value = numericValue.toString();
 
-      // Enforce maximum value if set
-      const maxAttr = this.getAttribute("max");
-      if (maxAttr !== null) {
-        const maxValue = parseFloat(maxAttr);
-        if (!isNaN(maxValue) && numericValue > maxValue) {
-          numericValue = maxValue;
-          this._inputElement.value = maxValue.toString();
-        }
-      }
-
-      this.dispatchEvent(new CustomEvent('input-change', {
+      this.dispatchEvent(new CustomEvent(eventName, {
         detail: {
           value: numericValue,
         },
+        bubbles: true,
       }));
     }
   };
 
+  _onInput = () => {
+    this._emitValueEvent('value-input');
+  };
+
+  _onChange = () => {
+    this._emitValueEvent('value-change');
+  };
+
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'value') {
-      requestAnimationFrame((() => {
-        const value = this.getAttribute("value");
-        this._inputElement.value = value ?? "";
-      }))
-    }
-
-    if (name === 'placeholder') {
-      requestAnimationFrame((() => {
-        const placeholder = this.getAttribute("placeholder");
-        if (placeholder === undefined || placeholder === 'null') {
-          this._inputElement.removeAttribute('placeholder');
-        } else {
-          this._inputElement.setAttribute('placeholder', placeholder ?? "");
-        }
-      }))
-    }
-
-    // Handle input-specific attributes first
-    if (["type", "disabled", "step", "min", "max", "s"].includes(name)) {
-      this._updateInputAttributes();
+    if (oldValue === newValue) {
       return;
     }
 
-    // Reset styles for fresh calculation
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+    if (name === "key") {
+      this._syncValueAttribute();
+      return;
+    }
 
-    ["default", "sm", "md", "lg", "xl"].forEach((size) => {
+    if (name === "value") {
+      this._syncValueAttribute();
+      return;
+    }
+
+    if (name === "placeholder") {
+      this._syncPlaceholderAttribute();
+      return;
+    }
+
+    // Handle input-specific attributes first
+    if (RettangoliInputNumberElement.inputSpecificAttributes.includes(name)) {
+      this._updateInputAttributes();
+      if (name === "min" || name === "max") {
+        this._syncValueAttribute();
+      }
+      return;
+    }
+
+    this.updateStyles();
+  }
+
+  updateStyles() {
+    // Reset styles for fresh calculation
+    this._styles = createResponsiveStyleBuckets();
+
+    responsiveStyleSizes.forEach((size) => {
       const addSizePrefix = (tag) => {
         return `${size === "default" ? "" : `${size}-`}${tag}`;
       };
@@ -208,28 +218,26 @@ class RettangoliInputNumberElement extends HTMLElement {
         this._styles[size].opacity = opacity;
       }
 
-      if (width === "f") {
-        this._styles[size].width = "var(--width-stretch)";
-      } else if (width !== undefined) {
-        this._styles[size].width = width;
-        this._styles[size]["min-width"] = width;
-        this._styles[size]["max-width"] = width;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "width",
+        dimension: width,
+        fillValue: "var(--width-stretch)",
+      });
 
-      if (height === "f") {
-        this._styles[size].height = "100%";
-      } else if (height !== undefined) {
-        this._styles[size].height = height;
-        this._styles[size]["min-height"] = height;
-        this._styles[size]["max-height"] = height;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "height",
+        dimension: height,
+        fillValue: "100%",
+      });
 
       if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none !important";
+        this._styles[size].display = "none";
       }
 
       if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "block !important";
+        this._styles[size].display = "block";
       }
     });
 
@@ -241,32 +249,67 @@ class RettangoliInputNumberElement extends HTMLElement {
     }
   }
 
+  _setOrRemoveInputAttribute(name, value) {
+    if (value === null || value === undefined || value === "null") {
+      this._inputElement.removeAttribute(name);
+      return;
+    }
+    this._inputElement.setAttribute(name, value);
+  }
+
+  _clampValueToBounds(value) {
+    let nextValue = value;
+
+    const minAttr = this.getAttribute("min");
+    if (minAttr !== null) {
+      const minValue = parseFloat(minAttr);
+      if (!isNaN(minValue)) {
+        nextValue = Math.max(nextValue, minValue);
+      }
+    }
+
+    const maxAttr = this.getAttribute("max");
+    if (maxAttr !== null) {
+      const maxValue = parseFloat(maxAttr);
+      if (!isNaN(maxValue)) {
+        nextValue = Math.min(nextValue, maxValue);
+      }
+    }
+
+    return nextValue;
+  }
+
+  _syncValueAttribute() {
+    const value = this.getAttribute("value");
+    if (value === null || value === undefined || value === "") {
+      this._inputElement.value = "";
+      return;
+    }
+
+    const numericValue = parseFloat(value);
+    if (isNaN(numericValue)) {
+      this._inputElement.value = "";
+      return;
+    }
+
+    const clampedValue = this._clampValueToBounds(numericValue);
+    this._inputElement.value = clampedValue.toString();
+  }
+
+  _syncPlaceholderAttribute() {
+    this._setOrRemoveInputAttribute("placeholder", this.getAttribute("placeholder"));
+  }
+
   _updateInputAttributes() {
-    const type = this.getAttribute("type") || "number";
     const step = this.getAttribute("step");
     const min = this.getAttribute("min");
     const max = this.getAttribute("max");
     const isDisabled = this.hasAttribute('disabled');
 
-    this._inputElement.setAttribute("type", type);
-
-    if (step !== null) {
-      this._inputElement.setAttribute("step", step);
-    } else {
-      this._inputElement.removeAttribute("step");
-    }
-
-    if (min !== null) {
-      this._inputElement.setAttribute("min", min);
-    } else {
-      this._inputElement.removeAttribute("min");
-    }
-
-    if (max !== null) {
-      this._inputElement.setAttribute("max", max);
-    } else {
-      this._inputElement.removeAttribute("max");
-    }
+    this._inputElement.setAttribute("type", "number");
+    this._setOrRemoveInputAttribute("step", step);
+    this._setOrRemoveInputAttribute("min", min);
+    this._setOrRemoveInputAttribute("max", max);
 
     if (isDisabled) {
       this._inputElement.setAttribute("disabled", "");
@@ -277,6 +320,9 @@ class RettangoliInputNumberElement extends HTMLElement {
 
   connectedCallback() {
     this._updateInputAttributes();
+    this._syncValueAttribute();
+    this._syncPlaceholderAttribute();
+    this.updateStyles();
   }
 }
 

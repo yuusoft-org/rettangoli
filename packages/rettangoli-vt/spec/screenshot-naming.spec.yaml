@@ -1,0 +1,35 @@
+file: "../src/capture/screenshot-naming.js"
+group: screenshot-naming
+---
+suite: formatScreenshotOrdinal
+exportName: formatScreenshotOrdinal
+---
+case: formats first screenshot as 01
+in:
+  - 1
+out: "01"
+---
+case: formats intermediate screenshot with zero padding
+in:
+  - 8
+out: "08"
+---
+case: formats two-digit screenshots
+in:
+  - 42
+out: "42"
+---
+case: formats max supported screenshot index
+in:
+  - 99
+out: "99"
+---
+case: rejects non-positive index
+in:
+  - 0
+throws: screenshot index must be an integer >= 1
+---
+case: rejects index above 99
+in:
+  - 100
+throws: exceeds supported range (01-99)

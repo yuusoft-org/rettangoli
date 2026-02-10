@@ -4,13 +4,17 @@ import {
   convertObjectToCssString,
   styleMapKeys,
   permutateBreakpoints,
+  overlayLinkStyles,
+  syncLinkOverlay,
+  createResponsiveStyleBuckets,
+  responsiveStyleSizes,
+  applyDimensionToStyleBucket,
 } from "../common.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import scrollStyle from "../styles/scrollStyles.js";
 import stylesGenerator from "../styles/viewStyles.js";
 import marginStyles from "../styles/marginStyles.js";
-import flexChildStyles from "../styles/flexChildStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
 
 // Internal implementation without uhtml
@@ -35,31 +39,14 @@ class RettangoliViewElement extends HTMLElement {
           border-color: var(--border);
         }
 
-        :host([fw="w"]) {
-          flex-wrap: wrap;
-        }
 
-        ${flexChildStyles}
         ${scrollStyle}
         ${flexDirectionStyles}
         ${marginStyles}
         ${cursorStyles}
         ${stylesGenerator}
         ${anchorStyles}
-
-        :host([href]) {
-          cursor: pointer;
-          position: relative;
-        }
-
-        :host([href]) a {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          z-index: 1;
-        }
+        ${overlayLinkStyles}
       `);
     }
   }
@@ -82,10 +69,11 @@ class RettangoliViewElement extends HTMLElement {
   static get observedAttributes() {
     return [
       "href",
-      "target",
-      "op",
+      "new-tab",
+      "rel",
       ...permutateBreakpoints([
         ...styleMapKeys,
+        "op",
         "wh",
         "w",
         "h",
@@ -97,51 +85,30 @@ class RettangoliViewElement extends HTMLElement {
         "d",
         "ah",
         "av",
-        "flex",
-        "fw",
+        "wrap",
+        "no-wrap",
         "overflow"
       ]),
     ];
   }
 
-  _styles = {
-    default: {},
-    sm: {},
-    md: {},
-    lg: {},
-    xl: {},
-  };
+  _styles = createResponsiveStyleBuckets();
 
   _lastStyleString = "";
 
   _updateDOM() {
     const href = this.getAttribute("href");
-    const target = this.getAttribute("target");
+    const newTab = this.hasAttribute("new-tab");
+    const rel = this.getAttribute("rel");
 
-    // Ensure slot is always in the shadow DOM
-    if (this._slotElement.parentNode !== this.shadow) {
-      this.shadow.appendChild(this._slotElement);
-    }
-
-    if (href) {
-      if (!this._linkElement) {
-        // Create link overlay only if it doesn't exist
-        this._linkElement = document.createElement("a");
-        this.shadow.appendChild(this._linkElement);
-      }
-
-      // Update link attributes
-      this._linkElement.href = href;
-      if (target) {
-        this._linkElement.target = target;
-      } else {
-        this._linkElement.removeAttribute("target");
-      }
-    } else if (this._linkElement) {
-      // Remove link overlay
-      this.shadow.removeChild(this._linkElement);
-      this._linkElement = null;
-    }
+    this._linkElement = syncLinkOverlay({
+      shadowRoot: this.shadow,
+      slotElement: this._slotElement,
+      linkElement: this._linkElement,
+      href,
+      newTab,
+      rel,
+    });
   }
   
   connectedCallback() {
@@ -151,15 +118,9 @@ class RettangoliViewElement extends HTMLElement {
 
   updateStyles() {
     // Reset styles for fresh calculation
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+    this._styles = createResponsiveStyleBuckets();
 
-    ["default", "sm", "md", "lg", "xl"].forEach((size) => {
+    responsiveStyleSizes.forEach((size) => {
       const addSizePrefix = (tag) => {
         return `${size === "default" ? "" : `${size}-`}${tag}`;
       };
@@ -183,21 +144,21 @@ class RettangoliViewElement extends HTMLElement {
         this._styles[size].opacity = opacity;
       }
 
-      if (width === "f") {
-        this._styles[size].width = "var(--width-stretch)";
-      } else if (width !== undefined) {
-        this._styles[size].width = width;
-        this._styles[size]["min-width"] = width;
-        this._styles[size]["max-width"] = width;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "width",
+        dimension: width,
+        fillValue: "var(--width-stretch)",
+        allowFlexGrow: true,
+      });
 
-      if (height === "f") {
-        this._styles[size].height = "100%";
-      } else if (height !== undefined) {
-        this._styles[size].height = height;
-        this._styles[size]["min-height"] = height;
-        this._styles[size]["max-height"] = height;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "height",
+        dimension: height,
+        fillValue: "100%",
+        allowFlexGrow: true,
+      });
 
       if (this.hasAttribute(addSizePrefix("hide"))) {
         this._styles[size].display = "none";
@@ -272,16 +233,14 @@ class RettangoliViewElement extends HTMLElement {
         }
       }
 
-      // Handle flex property
-      const flex = this.getAttribute(addSizePrefix("flex"));
-      if (flex !== null) {
-        this._styles[size]["flex"] = flex;
-      }
-
       // Handle flex-wrap
-      const flexWrap = this.getAttribute(addSizePrefix("fw"));
-      if (flexWrap === "w") {
+      const isWrap = this.hasAttribute(addSizePrefix("wrap"));
+      const isNoWrap = this.hasAttribute(addSizePrefix("no-wrap"));
+      if (isWrap) {
         this._styles[size]["flex-wrap"] = "wrap";
+      }
+      if (isNoWrap) {
+        this._styles[size]["flex-wrap"] = "nowrap";
       }
 
       // Handle scroll properties
@@ -316,8 +275,8 @@ class RettangoliViewElement extends HTMLElement {
   }
   
   attributeChangedCallback(name, oldValue, newValue) {
-    // Handle href and target changes
-    if (name === "href" || name === "target") {
+    // Handle link-related changes
+    if (name === "href" || name === "new-tab" || name === "rel") {
       this._updateDOM();
       return;
     }

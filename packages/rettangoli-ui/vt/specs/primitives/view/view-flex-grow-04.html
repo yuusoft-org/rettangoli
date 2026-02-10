@@ -1,0 +1,13 @@
+---
+title: View - Flex Grow - Gap Interaction
+description: Verifies that gaps are accounted for when calculating flex-grow distribution.
+specs:
+  - Horizontal gap space is excluded before flex distribution.
+  - Equal multipliers remain balanced after gap subtraction.
+---
+
+<rtgl-view d="h" bgc="mu" g="lg" p="lg" wh="f">
+  <rtgl-view bgc="ac" w="1fg" h="100">Flex</rtgl-view>
+  <rtgl-view bgc="ac" w="1fg" h="100">Flex</rtgl-view>
+  <rtgl-view bgc="ac" w="1fg" h="100">Flex</rtgl-view>
+</rtgl-view>

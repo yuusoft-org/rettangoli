@@ -1,6 +1,11 @@
 ---
-title: Placeholder
+title: Input - Placeholder - Text Hint
+description: Verifies placeholder text rendering for empty input values.
+specs:
+  - Placeholder text is visible when value is empty.
+  - Placeholder styling remains legible in default theme tokens.
+  - Input geometry remains unchanged by placeholder content.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-input placeholder="Please input something..." ></rtgl-input>
 </rtgl-view>

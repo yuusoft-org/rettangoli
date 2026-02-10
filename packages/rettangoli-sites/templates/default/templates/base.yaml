@@ -4,8 +4,10 @@
         - meta name="viewport" content="width=device-width,initial-scale=1":
         - title: ${title} - ${site.name}
         - link rel="stylesheet" href="/css/theme.css":
-        - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
-        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.31/dist/rettangoli-iife-ui.min.js":
+        - $if site.assets.loadConstructStyleSheetsPolyfill:
+            - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
+        - $if site.assets.loadUiFromCdn:
+            - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.32/dist/rettangoli-iife-ui.min.js":
     - body.dark:
         - rtgl-view w="f":
             - rtgl-view h="64":
@@ -14,5 +16,5 @@
                     - "${content}"
                 - rtgl-view h="30vh":
                 - $partial: footer
-            - rtgl-view pos="abs" cor="top" ah="c" bgc="bg":
+            - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
                 - $partial: header

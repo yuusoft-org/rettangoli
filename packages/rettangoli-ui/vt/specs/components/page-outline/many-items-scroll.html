@@ -1,0 +1,41 @@
+---
+title: "Page Outline - Many Items (Manual Scroll Check)"
+description: "Manual verification page for page-outline internal scrolling with many headings."
+specs:
+  - "Scroll the content pane on the left."
+  - "Page outline should update active item."
+  - "Page outline list should support internal scrolling when long."
+---
+<rtgl-view d="h" g="lg" h="100vh" w="f" wrap>
+  <rtgl-view id="content" w="1fg" g="xl" h="100vh" sv></rtgl-view>
+  <rtgl-page-outline
+    id="page-outline"
+    target-id="content"
+    scroll-container-id="content"
+    offset-top="80">
+  </rtgl-page-outline>
+</rtgl-view>
+
+<script>
+  const content = document.getElementById('content');
+
+  for (let i = 1; i <= 60; i += 1) {
+    const block = document.createElement('rtgl-view');
+    block.setAttribute('g', 'sm');
+
+    const heading = document.createElement(i % 4 === 0 ? 'h3' : (i % 3 === 0 ? 'h2' : 'h1'));
+    heading.id = `section-${i}`;
+    heading.textContent = `Section ${i}`;
+
+    const paragraph = document.createElement('rtgl-text');
+    paragraph.textContent = `Content for section ${i}. Scroll to validate outline behavior.`;
+
+    block.appendChild(heading);
+    block.appendChild(paragraph);
+    content.appendChild(block);
+  }
+
+  const spacer = document.createElement('rtgl-view');
+  spacer.setAttribute('h', '80vh');
+  content.appendChild(spacer);
+</script>

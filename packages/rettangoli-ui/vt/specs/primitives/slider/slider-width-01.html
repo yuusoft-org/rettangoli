@@ -1,6 +1,11 @@
 ---
-title: Custom Width
+title: Slider - Width - Fixed Dimension
+description: Verifies explicit width behavior for slider controls.
+specs:
+  - Fixed width value applies predictable control width.
+  - Thumb placement still reflects configured value.
+  - Explicit width does not break track styling.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-slider w="300" value="40"></rtgl-slider>
 </rtgl-view>

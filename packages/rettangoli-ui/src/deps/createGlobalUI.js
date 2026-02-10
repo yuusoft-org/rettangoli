@@ -98,7 +98,7 @@ const createGlobalUI = (globalUIElement) => {
      * @param {Array<Object>} options.items - Array of dropdown menu items (required)
      * @param {number} options.x - X coordinate position (required)
      * @param {number} options.y - Y coordinate position (required)
-     * @param {string} [options.placement] - Dropdown menu placement (default: "bottom-start")
+     * @param {string} [options.place] - Dropdown menu place token (default: "bs")
      * @returns {Promise<Object|null>} Promise that resolves with clicked item info or null if closed without selection
      * @returns {Object} [result.index] - Index of the clicked item
      * @returns {Object} [result.item] - The clicked item object

@@ -1,7 +1,12 @@
 ---
-title: "Tabs - No Selection"
+title: Tabs - Basic - No Selection
+description: Verifies rendering when no selected tab is provided.
+specs:
+  - Tabs render without an active state when selected tab is absent.
+  - All tabs use unselected visual styling.
+  - Clicking still updates selected-tab at runtime.
 ---
-<rtgl-view g="lg" h="100vh" w="f" fw="w">
+<rtgl-view g="lg" h="100vh" w="f" wrap>
   <rtgl-tabs id="tabs">
   </rtgl-tabs>
 </rtgl-view>

@@ -13,11 +13,11 @@ export const createInitialState = () => Object.freeze({
     items: [],
     x: 0,
     y: 0,
-    placement: "bottom-start",
+    place: "bs",
   },
 });
 
-export const setAlertConfig = (state, options) => {
+export const setAlertConfig = ({ state }, options = {}) => {
   if (!options.message) {
     throw new Error("message is required for showAlert");
   }
@@ -34,7 +34,7 @@ export const setAlertConfig = (state, options) => {
   state.isOpen = true;
 };
 
-export const setConfirmConfig = (state, options) => {
+export const setConfirmConfig = ({ state }, options = {}) => {
   if (!options.message) {
     throw new Error("message is required for showConfirm");
   }
@@ -51,7 +51,7 @@ export const setConfirmConfig = (state, options) => {
   state.isOpen = true;
 };
 
-export const setDropdownConfig = (state, options) => {
+export const setDropdownConfig = ({ state }, options = {}) => {
   if (!options.items || !Array.isArray(options.items)) {
     throw new Error("items array is required for showDropdown");
   }
@@ -60,13 +60,13 @@ export const setDropdownConfig = (state, options) => {
     items: options.items,
     x: options.x || 0,
     y: options.y || 0,
-    placement: options.placement || "bottom-start",
+    place: options.place || "bs",
   };
   state.uiType = "dropdown";
   state.isOpen = true;
 };
 
-export const closeAll = (state) => {
+export const closeAll = ({ state }) => {
   state.isOpen = false;
   state.uiType = "dialog"; // Reset to default type
 };
@@ -85,7 +85,7 @@ export const selectViewData = ({ state }) => {
       items: state.dropdownConfig?.items || [],
       x: state.dropdownConfig?.x || 0,
       y: state.dropdownConfig?.y || 0,
-      placement: state.dropdownConfig?.placement || 'bottom-start',
+      place: state.dropdownConfig?.place || 'bs',
     },
     isDialogOpen: state.isOpen && state.uiType === 'dialog',
     isDropdownOpen: state.isOpen && state.uiType === 'dropdown',

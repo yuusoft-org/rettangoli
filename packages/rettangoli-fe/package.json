@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/fe",
-  "version": "0.0.14",
+  "version": "1.0.0-rc3",
   "description": "Frontend framework for building reactive web components",
   "type": "module",
   "main": "./src/index.js",
@@ -25,7 +25,10 @@
     ".": "./src/index.js",
     "./cli": "./src/cli/index.js"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "puty": "^0.1.1",
+    "vitest": "^4.0.15"
+  },
   "dependencies": {
     "esbuild": "^0.25.5",
     "immer": "^10.1.1",
@@ -36,6 +39,9 @@
     "vite": "^6.3.5"
   },
   "scripts": {
-    "dev": "node watch.js --watch"
+    "dev": "node watch.js --watch",
+    "test": "vitest run --reporter=verbose",
+    "test:puty": "vitest run puty.spec.js --reporter=verbose",
+    "test:vitest": "vitest run test/**/*.test.js --reporter=verbose"
   }
 }

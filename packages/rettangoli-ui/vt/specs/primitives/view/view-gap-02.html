@@ -1,10 +1,12 @@
 ---
-title: Gap Horizontal
+title: View - Gap - Horizontal Only
+description: Verifies horizontal-only spacing behavior using `gh`.
 specs:
-  - gh="xs" should set the horizontal gap to spacing size
+  - Attribute `gh` maps to column spacing without changing row spacing.
+  - Token scale from `xs` to `xl` increases horizontal separation.
 ---
-<rtgl-view d="h" g="lg" p="lg" wh="f" fw="w">
-    <rtgl-view d="h" bgc="mu" w="100" gh="xs" p="md" fw="w">
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap>
+    <rtgl-view d="h" bgc="mu" w="100" gh="xs" p="md" wrap>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
@@ -12,7 +14,7 @@ specs:
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
     </rtgl-view>
-    <rtgl-view d="h" bgc="mu" w="100" gh="sm" p="md" fw="w">
+    <rtgl-view d="h" bgc="mu" w="100" gh="sm" p="md" wrap>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
@@ -20,7 +22,7 @@ specs:
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
     </rtgl-view>
-    <rtgl-view d="h" bgc="mu" w="100" gh="md" p="md" fw="w">
+    <rtgl-view d="h" bgc="mu" w="100" gh="md" p="md" wrap>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
@@ -28,7 +30,7 @@ specs:
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
     </rtgl-view>
-    <rtgl-view d="h" bgc="mu" w="100" gh="lg" p="md" fw="w">
+    <rtgl-view d="h" bgc="mu" w="100" gh="lg" p="md" wrap>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
@@ -36,7 +38,7 @@ specs:
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
     </rtgl-view>
-    <rtgl-view d="h" bgc="mu" w="100" gh="xl" p="md" fw="w">
+    <rtgl-view d="h" bgc="mu" w="100" gh="xl" p="md" wrap>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>
         <rtgl-view bgc="ac" wh="20"></rtgl-view>

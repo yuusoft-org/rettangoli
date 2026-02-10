@@ -1,7 +1,12 @@
 ---
-title: "Tabs - Basic"
+title: Tabs - Basic - Selected First
+description: Verifies baseline tabs rendering with the first tab selected by id.
+specs:
+  - Selected tab applies active visual styling.
+  - Unselected tabs retain muted visual styling.
+  - Horizontal tab row spacing remains consistent.
 ---
-<rtgl-view g="lg" h="100vh" w="f" fw="w">
+<rtgl-view g="lg" h="100vh" w="f" wrap>
   <rtgl-tabs id="tabs" selected-tab="tab1">
   </rtgl-tabs>
 </rtgl-view>

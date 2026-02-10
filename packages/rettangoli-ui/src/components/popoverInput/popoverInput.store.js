@@ -8,7 +8,7 @@ export const createInitialState = () => Object.freeze({
   tempValue: '',
 });
 
-export const selectViewData = ({ attrs, state }) => {
+export const selectViewData = ({ props, state }) => {
   const value = state.value || '-';
 
   return {
@@ -16,29 +16,29 @@ export const selectViewData = ({ attrs, state }) => {
     position: state.position,
     value: value,
     tempValue: state.tempValue,
-    placeholder: attrs.placeholder ?? '',
-    label: attrs.label,
+    placeholder: props.placeholder ?? '',
+    label: props.label,
   };
 }
 
-export const setTempValue = (state, value) => {
-  state.tempValue = value;
+export const setTempValue = ({ state }, payload = {}) => {
+  state.tempValue = payload.value;
 }
 
-export const openPopover = (state, payload) => {
+export const openPopover = ({ state }, payload = {}) => {
   const { position } = payload;
   state.position = position;
   state.isOpen = true;
   state.hasUnsavedChanges = false;
 }
 
-export const closePopover = (state) => {
+export const closePopover = ({ state }) => {
   state.isOpen = false;
   state.tempValue = '';
 }
 
-export const setValue = (state, value) => {
-  state.value = value;
+export const setValue = ({ state }, payload = {}) => {
+  state.value = payload.value;
 }
 
 export const selectValue = ({ state }) => {

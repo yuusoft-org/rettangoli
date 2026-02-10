@@ -1,0 +1,33 @@
+---
+title: stepper-interactions
+steps:
+  - action: select
+    testId: next
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: next
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: next
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: prev
+    steps:
+      - action: click
+  - action: select
+    testId: prev
+    steps:
+      - action: click
+  - action: screenshot
+---
+
+<script type="module" src="/static/public/main.js"></script>
+<div style="padding:8px;background:white">
+  <e2e-stepper></e2e-stepper>
+</div>

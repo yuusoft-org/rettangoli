@@ -1,8 +1,11 @@
 ---
-title: Margin Full Width
-description: "Fixes CSS issue of width: 100% + margin.  Use stretch/fill-available to fix: https://caniuse.com/mdn-css_properties_width_stretch"
+title: View - Margin - Fill Width Interaction
+description: Verifies how `m` interacts with children using `wh="f"` inside fixed-width parents.
+specs:
+  - Child fill width respects outer margin constraints.
+  - Margin remains visible without overflow artifacts.
 ---
-<rtgl-view d="h" g="lg" p="lg" wh="f" fw="w">
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap>
     <rtgl-view bgc="mu" wh="80">
         <rtgl-view bgc="ac" wh="f" m="lg"></rtgl-view>
     </rtgl-view>

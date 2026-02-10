@@ -3,19 +3,20 @@
         - $partial: seo1
           page: ${page}
           seo: ${seo}
-        - link rel="stylesheet" href="/public/theme.css":
+        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc6/dist/themes/base.css":
+        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc6/dist/themes/theme-rtgl-slate.css":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
-        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.8/dist/rettangoli-iife-ui.min.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc6/dist/rettangoli-iife-ui.min.js":
         - script src="/public/rtgl-icons.js":
 
     - body.dark:
         - rtgl-view bgc="bg" w="f" d=h:
             - 'rtgl-view md-hide pos=fix h=100vh bgc=bg style="left: 0"':
-                - rtgl-sidebar selectedItemId=${sidebarId} header="${escapeJson(docs.header)}" items="${escapeJson(docs.items)}":
+                - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(docs.header))}" items="${encodeURIComponent(jsonStringify(docs.items))}":
             - rtgl-view md-hide xl-show hide w=272:
-            - rtgl-view flex="1" ah=c w=f:
+            - rtgl-view w="1fg" ah=c:
                 - rtgl-view pv="lg" lg-w="100vw" w="720" ph="xl" sv id="content-container":
-                    - rtgl-text s="h1" mb="md": ${title}
+                    - rtgl-text s="h1" mb="lg": ${title}
                     - "${content}"
                     - rtgl-view h=200:
             - 'rtgl-view xl-hide style="position: fixed; right: 0"':

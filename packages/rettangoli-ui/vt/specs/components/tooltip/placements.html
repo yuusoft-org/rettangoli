@@ -1,5 +1,10 @@
 ---
-title: "Placements Open"
+title: Tooltip - Placement - Open States
+description: Verifies static open tooltip rendering for primary top, bottom, left, and right placements.
+specs:
+  - Open tooltips render with explicit coordinates.
+  - Placement token changes orientation around anchor points.
+  - Multiple simultaneously open tooltips do not crash layout.
 skipScreenshot: true
 ---
 <rtgl-view h="100vh" w="100vw" ah="c" av="c">
@@ -10,7 +15,7 @@ skipScreenshot: true
       content="Tooltip positioned at the top"
       x="500"
       y="300"
-      placement="top">
+      place="t">
     </rtgl-tooltip>
 
     <!-- Bottom placement -->
@@ -19,7 +24,7 @@ skipScreenshot: true
       content="Tooltip positioned at the bottom"
       x="500"
       y="400"
-      placement="bottom">
+      place="b">
     </rtgl-tooltip>
 
     <!-- Left placement -->
@@ -28,7 +33,7 @@ skipScreenshot: true
       content="Tooltip positioned to the left"
       x="600"
       y="500"
-      placement="left">
+      place="l">
     </rtgl-tooltip>
 
     <!-- Right placement -->
@@ -37,7 +42,7 @@ skipScreenshot: true
       content="Tooltip positioned to the right"
       x="400"
       y="600"
-      placement="right">
+      place="r">
     </rtgl-tooltip>
   </rtgl-view>
 </rtgl-view>

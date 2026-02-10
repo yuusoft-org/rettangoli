@@ -1,0 +1,37 @@
+---
+title: Color Picker - Value - Invalid Fallback
+description: Verifies invalid color values fall back to default black while valid values remain intact.
+specs:
+  - Invalid hex value falls back to #000000.
+  - Valid hex value is preserved as provided.
+  - Value fallback behavior remains stable after render cycle.
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-view d="h" g="md">
+    <rtgl-color-picker id="cp-valid" value="#12ab34"></rtgl-color-picker>
+    <rtgl-color-picker id="cp-invalid" value="#xyzxyz"></rtgl-color-picker>
+  </rtgl-view>
+  <pre id="results" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+</rtgl-view>
+
+<script>
+  const run = async () => {
+    await customElements.whenDefined("rtgl-color-picker");
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    const valid = document.getElementById("cp-valid");
+    const invalid = document.getElementById("cp-invalid");
+
+    const validValue = valid.shadowRoot.querySelector('input[type="color"]').value;
+    const invalidValue = invalid.shadowRoot.querySelector('input[type="color"]').value;
+
+    const checks = [
+      `${validValue === "#12ab34" ? "PASS" : "FAIL"} valid value preserved`,
+      `${invalidValue === "#000000" ? "PASS" : "FAIL"} invalid value fallback`,
+    ];
+
+    document.getElementById("results").textContent = checks.join("\n");
+  };
+
+  run();
+</script>

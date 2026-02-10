@@ -1,7 +1,7 @@
 ---
 title: Undefined value
 ---
-<rtgl-view id="container" g="lg" p="lg" wh="f" fw="w">
+<rtgl-view id="container" g="lg" p="lg" wh="f" wrap>
 </rtgl-view>
 
 <script>
@@ -9,7 +9,7 @@ title: Undefined value
   const select = document.createElement('rtgl-select');
   const container = document.getElementById('container');
 
-  select.addEventListener('option-selected', (e) => {
+  select.addEventListener('value-change', (e) => {
     console.log(e.detail);
   });
 

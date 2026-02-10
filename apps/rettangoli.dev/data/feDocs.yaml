@@ -1,0 +1,43 @@
+header:
+  label: Rettangoli FE Docs
+  href: /
+items:
+  - title: "Introduction"
+    type: groupLabel
+    items:
+      - id: fe-introduction
+        title: "Introduction"
+        href: "/fe/docs/introduction/introduction"
+      - id: fe-getting-started
+        title: "Getting Started"
+        href: "/fe/docs/introduction/getting-started"
+  - title: "Guides"
+    type: groupLabel
+    items:
+      - id: fe-component-architecture
+        title: "Component Architecture"
+        href: "/fe/docs/guides/component-architecture"
+      - id: fe-view
+        title: "View"
+        href: "/fe/docs/guides/view"
+      - id: fe-schema
+        title: "Schema"
+        href: "/fe/docs/guides/schema"
+      - id: fe-store
+        title: "Store"
+        href: "/fe/docs/guides/store"
+      - id: fe-handlers
+        title: "Handlers"
+        href: "/fe/docs/guides/handlers"
+      - id: fe-refs-and-events
+        title: "Refs & Events"
+        href: "/fe/docs/guides/refs-and-events"
+      - id: fe-methods
+        title: "Methods"
+        href: "/fe/docs/guides/methods"
+      - id: fe-constants
+        title: "Constants"
+        href: "/fe/docs/guides/constants"
+      - id: fe-cli
+        title: "CLI"
+        href: "/fe/docs/guides/cli"

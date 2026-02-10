@@ -11,9 +11,9 @@ export function initSite({ projectName, template = 'default' }) {
 
   // Check if template exists
   if (!existsSync(templatePath)) {
-    const available = readdirSync(templatesDir).filter(f =>
-      existsSync(resolve(templatesDir, f, 'package.json'))
-    );
+    const available = readdirSync(templatesDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name);
     console.error(`Template "${template}" not found.`);
     console.error(`Available templates: ${available.join(', ')}`);
     process.exit(1);
@@ -33,6 +33,6 @@ export function initSite({ projectName, template = 'default' }) {
   console.log('');
   console.log('Next steps:');
   console.log(`  cd ${projectName}`);
-  console.log('  bun install');
-  console.log('  bun run build');
+  console.log('  bunx rtgl sites build');
+  console.log('  bunx rtgl sites watch');
 }

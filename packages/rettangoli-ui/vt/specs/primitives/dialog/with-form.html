@@ -1,15 +1,37 @@
 ---
-title: "Dialog with Form"
+title: Dialog - Form - Embedded Workflow
+description: Verifies form component rendering and action handling inside dialog content slot.
+specs:
+  - Dialog opens and mounts `rtgl-form` content lazily.
+  - Form schema renders mixed field types and action buttons.
+  - Action events close dialog for cancel and submit outcomes.
+steps:
+  - action: select
+    testId: open-dialog-form
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog[open]'
+    state: attached
+    timeoutMs: 1500
+  - action: waitFor
+    selector: '#form'
+    state: attached
+    timeoutMs: 1500
+  - action: assert
+    type: exists
+    selector: '#form'
+  - action: screenshot
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
-  <rtgl-button id="button">Open Form Dialog</rtgl-button>
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-button id="button" data-testid="open-dialog-form">Open Form Dialog</rtgl-button>
   <rtgl-dialog id="dialog">
   </rtgl-dialog>
 </rtgl-view>
 
 <script>
-
-const dialog = document.getElementById('dialog');
+  const button = document.getElementById('button');
+  const dialog = document.getElementById('dialog');
   const form = document.createElement('rtgl-form');
 
   form.setAttribute('id', 'form');
@@ -28,21 +50,21 @@ const dialog = document.getElementById('dialog');
     fields: [{
       id: 'name',
       fieldName: 'name',
-      inputType: 'inputText',
+      inputType: 'input-text',
       label: 'Full Name',
       description: 'Enter your full name',
       placeholder: 'John Doe'
     }, {
       id: 'email',
       fieldName: 'email',
-      inputType: 'inputText',
+      inputType: 'input-text',
       label: 'Email Address',
       description: 'Enter your email address',
       placeholder: 'john@example.com'
     }, {
       id: 'favoriteColor',
       fieldName: 'favoriteColor',
-      inputType: 'colorPicker',
+      inputType: 'color-picker',
       label: 'Favorite Color',
       description: 'Pick your favorite color',
       value: '#3498db'

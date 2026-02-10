@@ -1,0 +1,12 @@
+---
+title: View - Flex Grow - Fixed and Flexible
+description: Verifies layout when fixed-size and flex-grow children coexist in one row.
+specs:
+  - Fixed-size child keeps explicit width.
+  - Flex child fills remaining width after fixed elements and gap.
+---
+
+<rtgl-view d="h" bgc="mu" g="lg" p="lg" wh="f">
+  <rtgl-view bgc="ac" w="100" h="100">Fixed</rtgl-view>
+  <rtgl-view bgc="ac" w="1fg" h="100">Flexible</rtgl-view>
+</rtgl-view>

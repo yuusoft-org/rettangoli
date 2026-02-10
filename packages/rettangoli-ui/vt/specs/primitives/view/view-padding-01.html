@@ -1,7 +1,12 @@
 ---
-title: Padding
+title: View - Padding - Side and Shorthand
+description: Verifies side-specific and shorthand padding token mappings.
+specs:
+  - Side attributes (`pt`, `pr`, `pb`, `pl`) apply tokenized padding.
+  - Shorthand attributes (`p`, `pv`, `ph`) apply multi-side padding.
+  - Token scale from `xs` to `xl` renders consistent inset growth.
 ---
-<rtgl-view d="h" g="lg" p="lg" wh="f" fw="w">
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap>
     <rtgl-view bgc="mu" pt="xs">
         <rtgl-view bgc="ac" wh="50"></rtgl-view>
     </rtgl-view>

@@ -20,9 +20,10 @@ const setupWatcher = (directory, options) => {
       console.log(`Detected ${event} in ${directory}/${filename}`);
       if (filename) {
         try {
+          const changedFilePath = path.join(directory, filename);
           if (filename.endsWith('.view.yaml')) {
-            const view = loadYaml(readFileSync(path.join(directory, filename), "utf8"));
-            const { category, component } = extractCategoryAndComponent(filename);
+            const view = loadYaml(readFileSync(changedFilePath, "utf8"));
+            const { category, component } = extractCategoryAndComponent(changedFilePath);
             await writeViewFile(view, category, component);
           }
 

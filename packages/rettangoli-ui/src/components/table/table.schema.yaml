@@ -1,0 +1,27 @@
+componentName: rtgl-table
+propsSchema:
+  type: object
+  properties:
+    data:
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            type: object
+            properties:
+              key:
+                type: string
+              label:
+                type: string
+        rows:
+          type: array
+          items:
+            type: object
+    responsive:
+      type: boolean
+      default: true
+events: {}
+methods:
+  type: object
+  properties: {}

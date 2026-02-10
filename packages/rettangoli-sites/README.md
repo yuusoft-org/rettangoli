@@ -1,133 +1,164 @@
 # Rettangoli Sites
 
-A static site generator using Markdown and YAML.
+`@rettangoli/sites` is the static-site engine used by Rettangoli. It renders pages from YAML and Markdown into `_site/`, with support for templates, partials, global data, collections, and watch mode.
+
+It can run directly with `bunx rtgl`, so a site-level `package.json` is optional.
 
 ## Quick Start
 
 ```bash
-# Create a new site from template
-bunx rtgl sites init my-site                   # Uses 'default' template
-bunx rtgl sites init my-site -t default        # Explicit template name
+# scaffold
+bunx rtgl sites init my-site
 
-# Install and build
+# run
 cd my-site
-bun install
-bun run build
+bunx rtgl sites build
 ```
 
-## Project Structure
+## Package Contract
 
-```
+```text
 my-site/
-├── pages/           # Content (YAML and Markdown)
-├── templates/       # Page layouts
-├── partials/        # Reusable components
-├── data/            # Global data files
-├── static/          # Static assets
-├── sites.config.js  # Optional config
-├── package.json
-└── _site/           # Generated output
+  pages/           # YAML or Markdown pages (with optional frontmatter)
+  templates/       # YAML templates
+  partials/        # YAML partials
+  data/            # Global YAML data
+  static/          # Static assets copied to _site/
+  sites.config.yaml # Optional site settings
+  _site/           # Generated output
 ```
 
-## Pages
+## What It Supports
 
-**YAML page:**
-```yaml
----
-template: base
-title: Home
----
-- h1: Welcome
-- p: Hello world
-```
+- YAML pages rendered through `jempl` + `yahtml`
+- Markdown pages rendered through `markdown-it` + Shiki (default `rtglMarkdown`)
+- Frontmatter (`template`, `tags`, arbitrary page metadata)
+- Global data (`data/*.yaml`) merged with page frontmatter
+- Collections built from page tags
+- `$if`, `$for`, `$partial`, template functions
+- Static file copying from `static/` to `_site/`
+- Watch mode with local dev server + websocket reload
 
-**Markdown page:**
-```markdown
----
-template: base
-title: About
----
-# About Us
+## Site Config
 
-Content in **markdown**.
-```
-
-## Syntax
+Use `sites.config.yaml` (or `sites.config.yml`) with top-level `markdownit` for supported settings.
+Legacy key `markdown` is still accepted as an alias.
 
 ```yaml
-# Element with class and id
-- div.container#main:
-    - h1: Title
-
-# Attributes
-- 'a href="/about"': About Us
-- 'img src="/logo.png" alt="Logo"':
-
-# Variables
-- h1: ${title}
-- p: ${site.description}
-
-# Conditionals
-- $if showBanner:
-    - div.banner: Hello!
-
-# Loops
-- $for item in items:
-    - li: ${item.name}
-
-# Partials
-- $partial: header
-- $partial: card
-  title: My Card
-  description: Card content
+markdownit:
+  preset: default
+  html: true
+  xhtmlOut: false
+  linkify: true
+  typographer: false
+  breaks: false
+  langPrefix: language-
+  quotes: "\u201c\u201d\u2018\u2019"
+  maxNesting: 100
+  shiki:
+    enabled: true
+    theme: slack-dark
+  codePreview:
+    enabled: false
+    showSource: true
+    theme: slack-dark
+  headingAnchors:
+    enabled: true
+    slugMode: unicode
+    wrap: true
+    fallback: section
+build:
+  keepMarkdownFiles: false
 ```
 
-## Data Files
-
-`data/site.yaml` → available as `${site.name}`, `${site.nav}`, etc.
-
-## Collections
-
-Tag pages to create collections:
+In the default starter template, CDN runtime scripts are controlled via `data/site.yaml`:
 
 ```yaml
-# pages/blog/post.md
----
-tags: [blog]
----
+assets:
+  loadUiFromCdn: true
+  loadConstructStyleSheetsPolyfill: true
 ```
 
-```yaml
-# pages/blog.yaml
-- $for post in collections.blog:
-    - a href="${post.url}": ${post.data.title}
-```
+Enable `codePreview` if you want fenced blocks like ```` ```html codePreview ```` to render a live preview panel.
+Use `showSource` to show/hide the source pane and `theme` to override the highlight theme for preview blocks.
 
-## Configuration
+Set `build.keepMarkdownFiles: true` to keep source Markdown files in output in addition to generated HTML.
+Example mappings:
+- `pages/index.md` -> `_site/index.html` and `_site/index.md`
+- `pages/docs/intro.md` -> `_site/docs/intro/index.html` and `_site/docs/intro.md`
 
-`sites.config.js`:
-```javascript
-export default {
-  mdRender: customMarkdownRenderer,
-  functions: {
-    sortDate: (list) => list.sort((a, b) =>
-      new Date(b.data.date) - new Date(a.data.date)
-    )
-  }
-}
-```
+If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it will be copied to `_site/llms.txt`.
 
-## Scripts
+## Commands
 
 ```bash
-bun run build       # Build site to _site/
-bun run watch       # Build + watch for changes
-bun run serve       # Serve _site/
-bun run screenshot  # Generate page screenshots
+bunx rtgl sites build
+bunx rtgl sites watch
+bunx rtgl sites build --quiet
+bunx rtgl sites watch --quiet
+bunx rtgl sites watch --reload-mode full
+bunx rtgl sites build --root-dir . --output-path dist
+bunx rtgl sites watch --root-dir . --output-path dist --reload-mode full
 ```
 
-## Templates
+`--reload-mode body` (default) does fast body replacement; `--reload-mode full` forces full page refresh.
+`--root-dir`/`--output-path` are the preferred option names (`--rootDir`/`--outputPath` remain as legacy aliases).
 
-Starter templates in `templates/`:
+## Built-in Template Functions
 
-- **default** - Basic site with homepage, blog, and about page
+Available in YAML templates/pages without extra setup:
+
+- `encodeURI(value)`
+- `encodeURIComponent(value)`
+- `decodeURI(value)`
+- `decodeURIComponent(value)`
+- `jsonStringify(value, space = 0)`
+- `formatDate(value, format = "YYYYMMDDHHmmss", useUtc = true)`
+- `now(format = "YYYYMMDDHHmmss", useUtc = true)`
+- `toQueryString(object)`
+
+`formatDate` tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`, `ss`.
+`decodeURI`/`decodeURIComponent` return the original input when decoding fails.
+
+## Screenshots
+
+`@rettangoli/sites` builds pages; screenshot capture is handled by `@rettangoli/vt`.
+
+Use VT against your generated site:
+
+1. Add `vt/specs/*.html` specs (use frontmatter `url` for the page to capture).
+2. Add `vt` config in `rettangoli.config.yaml`.
+3. Run `rtgl vt generate`, `rtgl vt report`, and `rtgl vt accept`.
+
+Example:
+
+```yaml
+vt:
+  path: ./vt
+  url: http://127.0.0.1:4173
+  service:
+    start: bun run preview
+  sections:
+    - title: pages
+      files: .
+```
+
+```html
+---
+title: home
+url: /
+---
+<div></div>
+```
+
+`bun run preview` (or any equivalent local server command) must serve your built site on `vt.url` (for example serving `_site/` on port `4173`).
+
+## Full Architecture And Analysis
+
+See `docs/architecture-and-analysis.md` for:
+
+- End-to-end rendering flow
+- Data/context model used during render
+- URL/output mapping rules
+- Config contract details
+- Full robustness analysis and prioritized improvements

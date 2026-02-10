@@ -1,0 +1,29 @@
+---
+title: Textarea - Visibility - Show Hide Responsive
+description: Verifies visibility precedence and breakpoint-prefixed visibility behavior.
+specs:
+  - Hide removes textarea from visual layout.
+  - Show overrides hide when both attributes are present.
+  - Breakpoint-prefixed show and hide attributes participate in visibility resolution.
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Visible baseline</rtgl-text>
+    <rtgl-textarea rows="3" placeholder="Visible baseline"></rtgl-textarea>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Hidden textarea</rtgl-text>
+    <rtgl-textarea hide rows="3" placeholder="Should be hidden"></rtgl-textarea>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Hide plus show</rtgl-text>
+    <rtgl-textarea hide show rows="3" placeholder="Show overrides hide"></rtgl-textarea>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Responsive show hide</rtgl-text>
+    <rtgl-textarea hide xl-show rows="3" placeholder="Visible on xl"></rtgl-textarea>
+  </rtgl-view>
+</rtgl-view>

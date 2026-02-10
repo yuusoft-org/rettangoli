@@ -1,0 +1,27 @@
+---
+title: Tabs - Edge Case - Missing Selected Id
+description: Verifies behavior when selected-tab references an id not present in items.
+specs:
+  - No tab is marked selected when selected id is missing.
+  - Tab layout remains stable without an active item.
+  - Subsequent clicks can establish a valid selection.
+---
+<rtgl-view g="lg" h="100vh" w="f" wrap>
+  <rtgl-tabs id="tabs" selected-tab="tab-unknown">
+  </rtgl-tabs>
+</rtgl-view>
+
+<script>
+  const tabs = document.getElementById('tabs');
+  tabs.items = [
+    { label: "Tab 1", id: "tab1" },
+    { label: "Tab 2", id: "tab2" },
+    { label: "Tab 3", id: "tab3" }
+  ];
+
+  tabs.addEventListener('item-click', (event) => {
+    tabs.setAttribute('selected-tab', event.detail.id);
+  });
+
+  tabs.render();
+</script>

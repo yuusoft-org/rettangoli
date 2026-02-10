@@ -1,0 +1,39 @@
+---
+title: "Many Items (Manual Scroll Check)"
+description: "Manual verification page for sidebar internal scrolling with a fixed header."
+specs:
+  - "Use mouse wheel/trackpad inside sidebar: item list should scroll."
+  - "Header (logo + label) should stay fixed at top."
+---
+<rtgl-view g="lg" h="100vh" w="f" wrap>
+  <rtgl-sidebar id="sidebar"></rtgl-sidebar>
+</rtgl-view>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+
+  sidebar.header = {
+    label: "Sidebar",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Sidebar",
+    },
+  };
+
+  sidebar.items = [
+    { type: "groupLabel", title: "Main" },
+    ...Array.from({ length: 30 }, (_, i) => ({
+      id: `main-${i + 1}`,
+      title: `Main Item ${i + 1}`,
+    })),
+    { type: "groupLabel", title: "Settings" },
+    ...Array.from({ length: 30 }, (_, i) => ({
+      id: `settings-${i + 1}`,
+      title: `Settings Item ${i + 1}`,
+    })),
+  ];
+
+  sidebar.render();
+</script>

@@ -35,6 +35,11 @@ in:
   - fixtures/fixture006
 out: true
 ---
+case: fixture-keep-markdown-files - Keep markdown sources in output
+in:
+  - fixtures/fixture-keep-markdown-files
+out: true
+---
 case: fixture007 - Nested directories
 in:
   - fixtures/fixture007

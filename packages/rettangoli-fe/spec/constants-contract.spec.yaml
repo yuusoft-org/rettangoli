@@ -1,0 +1,34 @@
+file: "./runtimeContractHelper.js"
+group: rettangoli-fe-constants-contract
+---
+suite: constants-contract
+exportName: runConstantsCase
+---
+case: constants merge setup and file values with file precedence
+in:
+  - scenario: merge_and_precedence
+out:
+  submit: File Submit
+  maxItems: 10
+  fromSetup: true
+---
+case: constants are injected into store context
+in:
+  - scenario: injected_into_store_context
+out:
+  maxItems: 77
+  submitLabel: Confirm
+---
+case: constants are deeply frozen at runtime
+in:
+  - scenario: deep_frozen
+out:
+  rootFrozen: true
+  labelsFrozen: true
+  limitsFrozen: true
+---
+case: non object constants are ignored
+in:
+  - scenario: non_object_constants_ignored
+out:
+  keyCount: 0

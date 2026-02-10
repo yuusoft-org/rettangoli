@@ -4,11 +4,15 @@ import {
   convertObjectToCssString,
   styleMapKeys,
   permutateBreakpoints,
+  syncLinkWrapper,
+  createResponsiveStyleBuckets,
+  responsiveStyleSizes,
+  applyDimensionToStyleBucket,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
-import marginStyles from "../styles/marginStyles.js";
-import viewStyles from "../styles/viewStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
+import viewStylesForTarget from "../styles/viewStylesForTarget.js";
+import marginStylesForTarget from "../styles/marginStylesForTarget.js";
 
 // Internal implementation without uhtml
 class RettangoliImageElement extends HTMLElement {
@@ -19,13 +23,13 @@ class RettangoliImageElement extends HTMLElement {
       RettangoliImageElement.styleSheet = new CSSStyleSheet();
       RettangoliImageElement.styleSheet.replaceSync(css`
         :host {
+          display: contents;
+        }
+        img, a {
           border-style: solid;
           box-sizing: border-box;
           overflow: hidden;
           border-width: 0;
-        }
-        slot {
-          display: contents;
         }
         :host([of="con"]) img {
           object-fit: contain;
@@ -35,10 +39,6 @@ class RettangoliImageElement extends HTMLElement {
         }
         :host([of="none"]) img {
           object-fit: none;
-        }
-        img {
-          height: 100%;
-          width: 100%;
         }
         :host([w]:not([h]):not([wh])) img,
         :host([sm-w]:not([sm-h]):not([sm-wh])) img,
@@ -56,12 +56,8 @@ class RettangoliImageElement extends HTMLElement {
           width: 100%;
         }
 
-        :host([href]) {
-          cursor: pointer;
-        }
-
-        ${viewStyles}
-        ${marginStyles}
+        ${viewStylesForTarget('img, a')}
+        ${marginStylesForTarget('img, a')}
         ${cursorStyles}
       `);
     }
@@ -87,87 +83,69 @@ class RettangoliImageElement extends HTMLElement {
       ...styleMapKeys,
       "key",
       "src",
+      "alt",
       "href",
-      "target",
+      "new-tab",
+      "rel",
       "wh",
       "w",
       "h",
       "hide",
       "show",
-      "height",
-      "width",
+      "op",
       "z",
+      "of",
     ]);
   }
 
-  _styles = {
-    default: {},
-    sm: {},
-    md: {},
-    lg: {},
-    xl: {},
-  };
+  _styles = createResponsiveStyleBuckets();
 
   _lastStyleString = "";
 
   _updateDOM() {
     const href = this.getAttribute("href");
-    const target = this.getAttribute("target");
+    const newTab = this.hasAttribute("new-tab");
+    const rel = this.getAttribute("rel");
 
-    if (href) {
-      if (!this._linkElement) {
-        // Create link wrapper
-        this._linkElement = document.createElement("a");
-      }
+    this._linkElement = syncLinkWrapper({
+      shadowRoot: this.shadow,
+      childElement: this._imgElement,
+      linkElement: this._linkElement,
+      href,
+      newTab,
+      rel,
+    });
+  }
 
-      // Update link attributes
-      this._linkElement.href = href;
-      if (target) {
-        this._linkElement.target = target;
-      } else {
-        this._linkElement.removeAttribute("target");
-      }
-
-      // Wrap image in link
-      this._linkElement.appendChild(this._imgElement);
-
-      // Ensure link is in shadow DOM
-      if (this._linkElement.parentNode !== this.shadow) {
-        this.shadow.appendChild(this._linkElement);
-      }
-    } else if (this._linkElement) {
-      // Remove link wrapper
-      if (this._imgElement.parentNode === this._linkElement) {
-        this.shadow.appendChild(this._imgElement);
-      }
-      if (this._linkElement.parentNode === this.shadow) {
-        this.shadow.removeChild(this._linkElement);
-      }
-      this._linkElement = null;
-    } else {
-      // Ensure image is in shadow DOM
-      if (this._imgElement.parentNode !== this.shadow) {
-        this.shadow.appendChild(this._imgElement);
-      }
-    }
+  connectedCallback() {
+    this._updateImageAttributes();
+    this.updateStyles();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    // Handle href and target changes
-    if (name === "href" || name === "target") {
+    // Handle href and link behavior changes
+    if (name === "href" || name === "new-tab" || name === "rel") {
       this._updateDOM();
       return;
     }
-    // Reset styles for fresh calculation
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
 
-    ["default", "sm", "md", "lg", "xl"].forEach((size) => {
+    // Handle image attributes
+    if (name === "src" || name === "alt") {
+      this._updateImageAttributes();
+      return;
+    }
+
+    // Update styles for all other attributes
+    if (oldValue !== newValue) {
+      this.updateStyles();
+    }
+  }
+
+  updateStyles() {
+    // Reset styles for fresh calculation
+    this._styles = createResponsiveStyleBuckets();
+
+    responsiveStyleSizes.forEach((size) => {
       const addSizePrefix = (tag) => {
         return `${size === "default" ? "" : `${size}-`}${tag}`;
       };
@@ -179,7 +157,7 @@ class RettangoliImageElement extends HTMLElement {
       const height = dimensionWithUnit(
         wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
       );
-      const opacity = this.getAttribute(addSizePrefix("o"));
+      const opacity = this.getAttribute(addSizePrefix("op"));
       const zIndex = this.getAttribute(addSizePrefix("z"));
 
       if (zIndex !== null) {
@@ -190,21 +168,19 @@ class RettangoliImageElement extends HTMLElement {
         this._styles[size].opacity = opacity;
       }
 
-      if (width === "f") {
-        this._styles[size].width = "var(--width-stretch)";
-      } else if (width !== undefined) {
-        this._styles[size].width = width;
-        this._styles[size]["min-width"] = width;
-        this._styles[size]["max-width"] = width;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "width",
+        dimension: width,
+        fillValue: "var(--width-stretch)",
+      });
 
-      if (height === "f") {
-        this._styles[size].height = "100%";
-      } else if (height !== undefined) {
-        this._styles[size].height = height;
-        this._styles[size]["min-height"] = height;
-        this._styles[size]["max-height"] = height;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "height",
+        dimension: height,
+        fillValue: "100%",
+      });
 
       if (this.hasAttribute(addSizePrefix("hide"))) {
         this._styles[size].display = "none !important";
@@ -216,34 +192,28 @@ class RettangoliImageElement extends HTMLElement {
     });
 
     // Update styles only if changed
-    const newStyleString = convertObjectToCssString(this._styles);
+    const newStyleString = convertObjectToCssString(this._styles, 'img, a');
     if (newStyleString !== this._lastStyleString) {
       this._styleElement.textContent = newStyleString;
       this._lastStyleString = newStyleString;
     }
-
-    // Update img attributes
-    this._updateImageAttributes();
   }
 
   _updateImageAttributes() {
     const src = this.getAttribute("src");
-    const width = this.getAttribute("width");
-    const height = this.getAttribute("height");
+    const alt = this.getAttribute("alt");
 
     if (src !== null) {
       this._imgElement.setAttribute("src", src);
+    } else {
+      this._imgElement.removeAttribute("src");
     }
-    if (width !== null) {
-      this._imgElement.setAttribute("width", width);
-    }
-    if (height !== null) {
-      this._imgElement.setAttribute("height", height);
-    }
-  }
 
-  connectedCallback() {
-    this._updateImageAttributes();
+    if (alt !== null) {
+      this._imgElement.setAttribute("alt", alt);
+    } else {
+      this._imgElement.removeAttribute("alt");
+    }
   }
 }
 

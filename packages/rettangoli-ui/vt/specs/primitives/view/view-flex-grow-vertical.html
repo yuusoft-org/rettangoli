@@ -1,0 +1,13 @@
+---
+title: View - Flex Grow - Vertical Layout
+description: Verifies vertical growth behavior using `h="fg"` in column direction containers.
+specs:
+  - Height `1fg` in children consumes available column height.
+  - Multiple `h="1fg"` siblings split height evenly.
+---
+
+<rtgl-view d="v" bgc="mu" g="lg" p="lg" h="600">
+  <rtgl-view bgc="ac" w="f" h="1fg">1/3</rtgl-view>
+  <rtgl-view bgc="ac" w="f" h="1fg">1/3</rtgl-view>
+  <rtgl-view bgc="ac" w="f" h="1fg">1/3</rtgl-view>
+</rtgl-view>

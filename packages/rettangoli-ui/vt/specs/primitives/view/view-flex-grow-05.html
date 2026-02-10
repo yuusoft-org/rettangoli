@@ -1,0 +1,16 @@
+---
+title: View - Flex Grow - Cross-Axis Sizing
+description: Verifies combining `fg` growth on one axis with fixed sizing on the cross axis.
+specs:
+  - Row container uses `w="1fg"` while height stays fixed.
+  - Column container uses `h="1fg"` while width stays fixed.
+---
+
+<rtgl-view bgc="mu" g="lg" p="lg" w="f" h="600">
+  <rtgl-view d="h" w="f">
+    <rtgl-view bgc="ac" w="1fg" h="100">Width flex, Height fixed</rtgl-view>
+  </rtgl-view>
+  <rtgl-view d="v" h="f">
+    <rtgl-view bgc="ac" w="100" h="1fg">Width fixed, Height flex</rtgl-view>
+  </rtgl-view>
+</rtgl-view>

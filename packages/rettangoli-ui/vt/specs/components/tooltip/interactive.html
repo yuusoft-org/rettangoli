@@ -1,10 +1,30 @@
 ---
-title: "Interactive"
+title: Tooltip - Interaction - Hover Trigger
+description: Verifies hover-based tooltip behavior using mouseenter and mouseleave interactions.
+specs:
+  - Hover opens tooltip near trigger anchor coordinates.
+  - Leaving trigger closes tooltip.
+  - Hover interaction remains deterministic for VT capture.
+steps:
+  - action: wait
+    ms: 150
+  - action: select
+    testId: tooltip-hover-target
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: '#tooltip[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: exists
+    selector: '#tooltip[open]'
+  - action: screenshot
 ---
 <rtgl-view h="100vh" w="100vw" ah="c" av="c">
-  <rtgl-button id="button">Hover for Tooltip</rtgl-button>
+  <rtgl-button id="button" data-testid="tooltip-hover-target">Hover for Tooltip</rtgl-button>
 
-  <rtgl-tooltip id="tooltip" content="This is a tooltip!" placement="top"></rtgl-tooltip>
+  <rtgl-tooltip id="tooltip" content="This is a tooltip!" place="t"></rtgl-tooltip>
 </rtgl-view>
 
 <script>

@@ -1,8 +1,13 @@
 ---
-title: Style
+title: Text - Inline Styles - Rich Markup
+description: Verifies inline semantic markup rendering inside text content.
+specs:
+  - Bold, italic, and underline markup render correctly.
+  - Code, deletion, insertion, and mark tags keep readable style distinctions.
+  - Subscript and superscript inline positioning remains legible.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
-    <rtgl-view bgc="su" p="md">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+    <rtgl-view bgc="mu" p="md">
         <rtgl-text> Start text <b>Bold</b> end text </rtgl-text>
         <rtgl-text> Start text <i> Italic </i> end text</rtgl-text>
         <rtgl-text> Start text <u>Underline</u> end text </rtgl-text>

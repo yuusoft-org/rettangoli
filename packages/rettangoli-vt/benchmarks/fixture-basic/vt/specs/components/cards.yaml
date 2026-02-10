@@ -1,0 +1,13 @@
+---
+steps:
+  - action: wait
+    ms: 20
+---
+<div style="font-family: sans-serif; padding: 24px;">
+  <h2>Cards</h2>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+    <article style="border: 1px solid #ddd; border-radius: 8px; padding: 16px;">Card A</article>
+    <article style="border: 1px solid #ddd; border-radius: 8px; padding: 16px;">Card B</article>
+    <article style="border: 1px solid #ddd; border-radius: 8px; padding: 16px;">Card C</article>
+  </div>
+</div>

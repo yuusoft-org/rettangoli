@@ -7,5 +7,5 @@ hero:
   title: "Rettangoli"
   subtitle: "A collection of development libraries to build great products"
   cta:
-    href: "/docs/introduction/introduction/"
+    href: "/ui/docs/introduction/introduction/"
     label: "Read the docs"

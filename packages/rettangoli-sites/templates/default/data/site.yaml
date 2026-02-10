@@ -1,4 +1,7 @@
 name: My Site
+assets:
+  loadUiFromCdn: true
+  loadConstructStyleSheetsPolyfill: true
 
 nav:
   - text: Home

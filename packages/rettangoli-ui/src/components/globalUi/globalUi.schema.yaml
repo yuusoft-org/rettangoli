@@ -1,0 +1,8 @@
+componentName: rtgl-global-ui
+propsSchema:
+  type: object
+  properties: {}
+events: []
+methods:
+  type: object
+  properties: {}

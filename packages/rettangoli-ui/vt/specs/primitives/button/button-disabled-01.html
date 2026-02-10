@@ -1,8 +1,13 @@
 ---
-title: Disabled
+title: Button - Disabled - Interactive State
+description: Verifies disabled button styling and contrast against enabled buttons.
+specs:
+  - Disabled buttons remain visibly non-interactive.
+  - Enabled buttons preserve normal baseline appearance nearby.
+  - State contrast is clear in a shared layout context.
 ---
 
-<rtgl-view g="md" p="lg" wh="f"">
+<rtgl-view g="md" p="lg" wh="f">
     <rtgl-text>Disabled</rtgl-text>
     <rtgl-button disabled>Button</rtgl-button>
     <rtgl-text>Not Disabled</rtgl-text>

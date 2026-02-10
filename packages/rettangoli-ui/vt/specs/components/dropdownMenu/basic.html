@@ -1,7 +1,7 @@
 ---
 title: "Basic"
 ---
-<rtgl-view g="lg" h="100vh" w="100vw" fw="w">
+<rtgl-view g="lg" h="100vh" w="100vw" wrap>
   <rtgl-button id="button">Open Dropdown Menu</rtgl-button>
 
   <rtgl-dropdown-menu id="dropdown-menu"></rtgl-dropdown-menu>
@@ -17,34 +17,37 @@ title: "Basic"
     dropdownMenu.removeAttribute('y');
   });
 
-  dropdownMenu.addEventListener('click-item', (e) => {
+  dropdownMenu.addEventListener('item-click', (e) => {
     console.log(e.detail);
   });
 
   button.addEventListener('click', (e) => {
     dropdownMenu.items = [
       {
-        label: 'Item 1',
+        label: 'Section',
         type: 'label',
       },
       {
+        id: 'item-2',
         label: 'Item 2',
-        type: 'item',
+        path: '/item-2',
       },
       {
+        id: 'item-3',
         label: 'Item 3',
-        type: 'item',
+        href: '/item-3',
       },
       {
         type: 'separator',
       },
       {
+        id: 'item-4',
         label: 'Item 4',
-        type: 'item',
+        disabled: true,
       },
       {
+        id: 'item-5',
         label: 'Item 5',
-        type: 'item',
       },
     ];
     

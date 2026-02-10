@@ -1,7 +1,7 @@
 {
   "name": "@rettangoli/sites",
-  "version": "0.2.7",
-  "description": "Generate static sites using Markdown and YAML. Straightforward, zero-complexity. Complete toolkit for landing pages, blogs, documentation, admin dashboards, and more.git remote add origin git@github.com:yuusoft-org/sitic.git",
+  "version": "1.0.0-rc2",
+  "description": "Generate static sites using Markdown and YAML for docs, blogs, and marketing sites.",
   "author": {
     "name": "Luciano Hanyon Wu",
     "email": "han4wluc@yuusoft.com"
@@ -17,12 +17,11 @@
     "templates"
   ],
   "dependencies": {
+    "gray-matter": "^4.0.3",
     "jempl": "^0.3.1-rc1",
     "js-yaml": "^4.1.0",
     "markdown-it": "^14.1.0",
-    "minimatch": "^10.0.3",
-    "playwright": "^1.55.0",
-    "sharp": "^0.34.3",
+    "shiki": "^3.13.0",
     "ws": "^8.18.0",
     "yahtml": "0.0.4"
   },
@@ -50,7 +49,7 @@
     "dashboard"
   ],
   "bugs": {
-    "url": "https://github.com/yuusoft-org/sitic/issues"
+    "url": "https://github.com/yuusoft-org/rettangoli/issues"
   },
-  "homepage": "https://github.com/yuusoft-org/sitic#readme"
+  "homepage": "https://github.com/yuusoft-org/rettangoli/tree/main/packages/rettangoli-sites#readme"
 }

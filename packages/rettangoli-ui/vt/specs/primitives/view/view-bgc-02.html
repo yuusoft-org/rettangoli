@@ -1,7 +1,11 @@
 ---
-title: "Background color with hover"
+title: View - Background Color - Hover Tokens
+description: Verifies hover background token mapping via `h-bgc` across multiple token values.
+specs:
+  - Confirms hover token application on each sample tile.
+  - Ensures non-hover render remains stable before interaction.
 ---
-<rtgl-view g="sm" p="lg" wh="f" fw="w">
+<rtgl-view g="sm" p="lg" wh="f" wrap>
   <rtgl-view d="h">
     <rtgl-view h-bgc="ac" wh="40" g="md" p="md"> </rtgl-view>
     <rtgl-view h-bgc="mu" wh="40" g="md" p="md"> </rtgl-view>

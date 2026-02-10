@@ -40,31 +40,31 @@ const styles = {
     abs: "absolute",
     fix: "fixed",
   },
-  cor: {
-    full: `
+  edge: {
+    f: `
         top: 0;
         right: 0;
         bottom: 0;
         left: 0;
         height: 100%;
         `,
-    top: `
+    t: `
         top: 0;
         right: 0;
         left: 0;
         `,
-    right: `
+    r: `
         top: 0;
         right: 0;
         bottom: 0;
         height: 100%;
         `,
-    bottom: `
+    b: `
         right: 0;
         bottom: 0;
         left: 0;
         `,
-    left: `
+    l: `
         bottom: 0;
         left: 0;
         top: 0;

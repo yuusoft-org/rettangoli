@@ -1,11 +1,18 @@
 ---
-title: "Anchor"
+title: Button - Anchor - Variants and New Tab
+description: Verifies anchor rendering with button variants and mixed new-tab behaviors.
+specs:
+  - Buttons with href render as links while preserving variant styling.
+  - Buttons with href and no explicit s/v use default button size and variant styles.
+  - new-tab links render correctly alongside same-tab links.
+  - Icon and text combinations remain aligned in anchor mode.
 ---
 
-<rtgl-view d="h" g="lg" p="lg" wh="f" fw="w">
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap>
+  <rtgl-button href="#default">Default link</rtgl-button>
   <rtgl-button href="#1" v="pr">Link #1</rtgl-button>
-  <rtgl-button href="#2" target="_blank" v="se">Link #2 (New Tab)</rtgl-button>
+  <rtgl-button href="#2" new-tab v="se">Link #2 (New Tab)</rtgl-button>
   <rtgl-button href="#3" v="de">Link #3</rtgl-button>
   <rtgl-button href="#4" v="ol">Link #4</rtgl-button>
-  <rtgl-button href="#5" target="_blank" v="gh" icon="github">Link #5</rtgl-button>
+  <rtgl-button href="#5" new-tab v="gh" icon="github">Link #5</rtgl-button>
 </rtgl-view>

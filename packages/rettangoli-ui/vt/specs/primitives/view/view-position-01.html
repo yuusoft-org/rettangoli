@@ -1,9 +1,13 @@
 ---
-title: Position absolute (top and bottom)
+title: View - Position - Fixed Top Bottom
+description: Verifies fixed positioning using `pos="fix"` with top and bottom edge shorthands.
+specs:
+  - Edge value `t` pins element to top with full width.
+  - Edge value `b` pins element to bottom with full width.
 ---
 <rtgl-view d="h" g="lg" p="lg" wh="f">
-    <rtgl-view bgc="mu" pos="fix" cor="top" h="100">
+    <rtgl-view bgc="mu" pos="fix" edge="t" h="100">
     </rtgl-view>
-    <rtgl-view bgc="mu" pos="fix" cor="bottom" h="100">
+    <rtgl-view bgc="mu" pos="fix" edge="b" h="100">
     </rtgl-view>
 </rtgl-view>

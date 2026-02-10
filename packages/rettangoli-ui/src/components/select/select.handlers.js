@@ -15,13 +15,13 @@ export const handleBeforeMount = (deps) => {
 }
 
 export const handleOnUpdate = (deps, payload) => {
-  const { oldAttrs, newAttrs, oldProps, newProps } = payload;
+  const { oldProps, newProps } = payload;
   const { store, render } = deps;
 
   // Check if key changed
-  if (oldAttrs?.key !== newAttrs?.key && newAttrs?.key) {
+  if (oldProps?.key !== newProps?.key && newProps?.key) {
     // Clear current state using store action
-    store.resetSelection();
+    store.resetSelection({});
 
     // Re-apply the prop value if available
     const selectedValue = newProps?.selectedValue;
@@ -43,11 +43,11 @@ export const handleOnUpdate = (deps, payload) => {
 }
 
 export const handleButtonClick = (deps, payload) => {
-  const { store, render, getRefIds, props } = deps;
+  const { store, render, refs, props } = deps;
   const event = payload._event;
   event.stopPropagation();
 
-  const button = getRefIds()['select-button'].elm;
+  const button = refs.selectButton;
 
   // Get first child's bounding rectangle (since button has display: contents)
   const firstChild = button.firstElementChild;
@@ -74,7 +74,7 @@ export const handleButtonClick = (deps, payload) => {
 
 export const handleClickOptionsPopoverOverlay = (deps) => {
   const { store, render } = deps;
-  store.closeOptionsPopover();
+  store.closeOptionsPopover({});
   render();
 }
 
@@ -82,7 +82,8 @@ export const handleOptionClick = (deps, payload) => {
   const { render, dispatchEvent, props, store } = deps;
   const event = payload._event;
   event.stopPropagation();
-  const id = event.currentTarget.id.replace('option-', '');
+  const id = event.currentTarget.id.slice('option'.length);
+  const index = Number(id);
 
   const option = props.options[id];
 
@@ -94,15 +95,13 @@ export const handleOptionClick = (deps, payload) => {
     props.onChange(option.value);
   }
 
-  // Dispatch custom event for backward compatibility
-  dispatchEvent(new CustomEvent('option-selected', {
-    detail: { value: option.value, label: option.label },
-    bubbles: true
-  }));
-
-  // Also dispatch select-change event to match form's event listener pattern
-  dispatchEvent(new CustomEvent('select-change', {
-    detail: { selectedValue: option.value },
+  dispatchEvent(new CustomEvent('value-change', {
+    detail: {
+      value: option.value,
+      label: option.label,
+      index,
+      item: option,
+    },
     bubbles: true
   }));
 
@@ -112,14 +111,14 @@ export const handleOptionClick = (deps, payload) => {
 export const handleOptionMouseEnter = (deps, payload) => {
   const { store, render } = deps;
   const event = payload._event;
-  const id = parseInt(event.currentTarget.id.replace('option-', ''));
-  store.setHoveredOption(id);
+  const id = parseInt(event.currentTarget.id.slice('option'.length), 10);
+  store.setHoveredOption({ optionId: id });
   render();
 }
 
 export const handleOptionMouseLeave = (deps, payload) => {
   const { store, render } = deps;
-  store.clearHoveredOption();
+  store.clearHoveredOption({});
   render();
 }
 
@@ -130,22 +129,20 @@ export const handleClearClick = (deps, payload) => {
   event.stopPropagation();
 
   // Clear the internal state
-  store.clearSelectedValue();
+  store.clearSelectedValue({});
 
   // Call onChange if provided
   if (props.onChange && typeof props.onChange === 'function') {
     props.onChange(undefined);
   }
 
-  // Dispatch custom event for backward compatibility
-  dispatchEvent(new CustomEvent('option-selected', {
-    detail: { value: undefined, label: undefined },
-    bubbles: true
-  }));
-
-  // Also dispatch select-change event to match form's event listener pattern
-  dispatchEvent(new CustomEvent('select-change', {
-    detail: { selectedValue: undefined },
+  dispatchEvent(new CustomEvent('value-change', {
+    detail: {
+      value: undefined,
+      label: undefined,
+      index: null,
+      item: undefined,
+    },
     bubbles: true
   }));
 
@@ -157,11 +154,10 @@ export const handleAddOptionClick = (deps, payload) => {
   const { _event: event } = payload;
   event.stopPropagation();
   // Close the popover
-  store.closeOptionsPopover();
+  store.closeOptionsPopover({});
 
-  // Dispatch custom event for add option (no detail)
-  dispatchEvent(new CustomEvent('add-option-selected', {
-    bubbles: true
+  dispatchEvent(new CustomEvent('add-option-click', {
+    bubbles: true,
   }));
 
   render();
@@ -169,12 +165,12 @@ export const handleAddOptionClick = (deps, payload) => {
 
 export const handleAddOptionMouseEnter = (deps, payload) => {
   const { store, render } = deps;
-  store.setHoveredAddOption(true);
+  store.setHoveredAddOption({ isHovered: true });
   render();
 }
 
 export const handleAddOptionMouseLeave = (deps, payload) => {
   const { store, render } = deps;
-  store.setHoveredAddOption(false);
+  store.setHoveredAddOption({ isHovered: false });
   render();
 }

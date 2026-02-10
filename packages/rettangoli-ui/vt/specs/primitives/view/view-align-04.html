@@ -1,110 +1,114 @@
 ---
-title: Align (Flex wrap items direction vertical)
+title: View - Align - Wrapped Column Items
+description: Verifies alignment behavior for wrapped layouts that emphasize vertical grouping.
+specs:
+  - Checks `ah` permutations for wrapped item groups.
+  - Checks `av` permutations for wrapped item groups.
 ---
 
-<rtgl-view d="h" g="md" p="lg" wh="f" fw="w">
-  <rtgl-view bgc="mu" wh="80" g="sm" fw="w">
+<rtgl-view d="h" g="md" p="lg" wh="f" wrap>
+  <rtgl-view bgc="mu" wh="80" g="sm" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
   <!-- TODO fix inconsisteincies between justify and align -->
-  <rtgl-view bgc="mu" wh="80" ah="c" g="sm" fw="w">
+  <rtgl-view bgc="mu" wh="80" ah="c" g="sm" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
-  <rtgl-view bgc="mu" wh="80" ah="e" g="sm" fw="w">
+  <rtgl-view bgc="mu" wh="80" ah="e" g="sm" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
-  <rtgl-view bgc="mu" wh="80" g="sm" fw="w">
+  <rtgl-view bgc="mu" wh="80" g="sm" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
-  <rtgl-view bgc="mu" wh="80" av="c" g="sm" fw="w">
+  <rtgl-view bgc="mu" wh="80" av="c" g="sm" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
-  <rtgl-view bgc="mu" wh="80" av="e" g="sm" fw="w">
-    <rtgl-view bgc="ac" wh="20"></rtgl-view>
-    <rtgl-view bgc="ac" wh="20"></rtgl-view>
-    <rtgl-view bgc="ac" wh="20"></rtgl-view>
-    <rtgl-view bgc="ac" wh="20"></rtgl-view>
-  </rtgl-view>
-
-  <rtgl-view bgc="mu" wh="80" g="sm" fw="w">
+  <rtgl-view bgc="mu" wh="80" av="e" g="sm" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
 
-  <rtgl-view bgc="mu" wh="80" av="c" g="sm" fw="w">
+  <rtgl-view bgc="mu" wh="80" g="sm" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
 
-  <rtgl-view bgc="mu" wh="80" av="e" g="sm" fw="w">
+  <rtgl-view bgc="mu" wh="80" av="c" g="sm" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
 
-  <rtgl-view bgc="mu" wh="80" ah="c" g="md" fw="w">
+  <rtgl-view bgc="mu" wh="80" av="e" g="sm" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
 
-  <rtgl-view bgc="mu" wh="80" ah="c" av="c" g="md" fw="w">
+  <rtgl-view bgc="mu" wh="80" ah="c" g="md" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
 
-  <rtgl-view bgc="mu" wh="80" ah="c" av="e" g="md" fw="w">
+  <rtgl-view bgc="mu" wh="80" ah="c" av="c" g="md" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
 
-  <rtgl-view bgc="mu" wh="80" ah="e" g="md" fw="w">
+  <rtgl-view bgc="mu" wh="80" ah="c" av="e" g="md" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
 
-  <rtgl-view bgc="mu" wh="80" ah="e" av="c" g="md" fw="w">
+  <rtgl-view bgc="mu" wh="80" ah="e" g="md" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
 
-  <rtgl-view bgc="mu" wh="80" ah="e" av="e" g="md" fw="w">
+  <rtgl-view bgc="mu" wh="80" ah="e" av="c" g="md" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
   </rtgl-view>
 
-  <rtgl-view bgc="mu" wh="80" g="md" fw="w">
+  <rtgl-view bgc="mu" wh="80" ah="e" av="e" g="md" wrap>
+    <rtgl-view bgc="ac" wh="20"></rtgl-view>
+    <rtgl-view bgc="ac" wh="20"></rtgl-view>
+    <rtgl-view bgc="ac" wh="20"></rtgl-view>
+    <rtgl-view bgc="ac" wh="20"></rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view bgc="mu" wh="80" g="md" wrap>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>
     <rtgl-view bgc="ac" wh="20"></rtgl-view>

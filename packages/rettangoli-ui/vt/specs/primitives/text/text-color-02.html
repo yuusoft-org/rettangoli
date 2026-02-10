@@ -1,7 +1,12 @@
 ---
-title: Color 2
+title: Text - Color - Muted Background
+description: Verifies text color token contrast against muted container backgrounds.
+specs:
+  - Default text remains readable on muted background.
+  - Foreground and accent foreground tokens keep contrast.
+  - Muted foreground token remains intentionally subdued.
 ---
-<rtgl-view bgc="mu" g="lg" p="lg" wh="f" fw="w">
+<rtgl-view bgc="mu" g="lg" p="lg" wh="f" wrap>
     <rtgl-text>abcdefghijklmnopqrstuvwxyz</rtgl-text>
     <rtgl-text c="fg">abcdefghijklmnopqrstuvwxyz</rtgl-text>
     <rtgl-text c="mu-fg">abcdefghijklmnopqrstuvwxyz</rtgl-text>

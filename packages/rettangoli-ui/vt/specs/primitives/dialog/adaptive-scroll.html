@@ -1,10 +1,29 @@
 ---
-title: "Adaptive Scroll Test"
+title: Dialog - Adaptive - Scroll Stress
+description: Verifies adaptive layout and scrolling with very long dialog content.
+specs:
+  - Trigger opens dialog containing multiple long sections.
+  - Content overflow remains accessible in scrollable layout.
+  - Close handling synchronizes dialog open state.
+steps:
+  - action: select
+    testId: open-dialog-very-long
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog-very-long[open]'
+    state: visible
+    timeoutMs: 1500
+  - action: assert
+    type: text
+    selector: '#dialog-very-long'
+    value: Very Long Content - Scrolling Test
+  - action: screenshot
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-view g="md">
     <rtgl-text s="lg">Dialog Adaptive Centering Tests</rtgl-text>
-    <rtgl-button id="button-very-long">Open Very Long Content (Should scroll)</rtgl-button>
+    <rtgl-button id="button-very-long" data-testid="open-dialog-very-long">Open Very Long Content (Should scroll)</rtgl-button>
   </rtgl-view>
   
   <!-- Very long content dialog to test scrolling -->

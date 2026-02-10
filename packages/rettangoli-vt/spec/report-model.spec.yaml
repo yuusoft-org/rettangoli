@@ -1,0 +1,110 @@
+file: "../src/report/report-model.js"
+group: report-model
+---
+suite: buildAllRelativePaths
+exportName: buildAllRelativePaths
+---
+case: keeps zero-padded screenshot files in numeric order
+in:
+  - - cards/button-10.webp
+    - cards/button-02.webp
+    - cards/button-01.webp
+  - []
+out:
+  - cards/button-01.webp
+  - cards/button-02.webp
+  - cards/button-10.webp
+---
+case: supports ordered range up to 99
+in:
+  - - cards/button-99.webp
+    - cards/button-03.webp
+    - cards/button-01.webp
+  - []
+out:
+  - cards/button-01.webp
+  - cards/button-03.webp
+  - cards/button-99.webp
+---
+suite: toMismatchingItems
+exportName: toMismatchingItems
+---
+case: filters only mismatches and relativizes paths
+in:
+  - - candidatePath: /tmp/site/candidate/button-01.webp
+      referencePath: /tmp/site/reference/button-01.webp
+      equal: true
+      similarity: "100.00"
+      diffPixels: 0
+      onlyInCandidate: false
+      onlyInReference: false
+    - candidatePath: /tmp/site/candidate/button-02.webp
+      referencePath: /tmp/site/reference/button-02.webp
+      equal: false
+      similarity: "98.00"
+      diffPixels: 12
+      onlyInCandidate: false
+      onlyInReference: false
+    - candidatePath: /tmp/site/candidate/button-03.webp
+      referencePath: null
+      equal: false
+      similarity: null
+      diffPixels: null
+      onlyInCandidate: true
+      onlyInReference: false
+  - /tmp/site
+out:
+  - candidatePath: candidate/button-02.webp
+    referencePath: reference/button-02.webp
+    equal: false
+    similarity: "98.00"
+    diffPixels: 12
+    onlyInCandidate: false
+    onlyInReference: false
+  - candidatePath: candidate/button-03.webp
+    referencePath: null
+    equal: false
+    similarity: null
+    diffPixels: null
+    onlyInCandidate: true
+    onlyInReference: false
+---
+suite: buildJsonReport
+exportName: buildJsonReport
+---
+case: builds stable json report payload
+in:
+  - total: 3
+    timestamp: "2026-02-08T00:00:00.000Z"
+    mismatchingItems:
+      - candidatePath: candidate/button-02.webp
+        referencePath: reference/button-02.webp
+        equal: false
+        similarity: "98.00"
+        onlyInCandidate: false
+        onlyInReference: false
+      - candidatePath: candidate/button-03.webp
+        referencePath: null
+        equal: false
+        similarity: null
+        onlyInCandidate: true
+        onlyInReference: false
+out:
+  timestamp: "2026-02-08T00:00:00.000Z"
+  total: 3
+  mismatched: 2
+  items:
+    - path: candidate/button-02.webp
+      candidatePath: candidate/button-02.webp
+      referencePath: reference/button-02.webp
+      equal: false
+      similarity: "98.00"
+      onlyInCandidate: false
+      onlyInReference: false
+    - path: candidate/button-03.webp
+      candidatePath: candidate/button-03.webp
+      referencePath: null
+      equal: false
+      similarity: null
+      onlyInCandidate: true
+      onlyInReference: false

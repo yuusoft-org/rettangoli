@@ -1,7 +1,12 @@
 ---
-title: Disabled
+title: Input - Disabled - Interactive State
+description: Verifies disabled input rendering alongside an enabled control.
+specs:
+  - Disabled input shows non-interactive appearance.
+  - Enabled input retains baseline interactive style.
+  - Visual contrast between disabled and enabled states is clear.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-text>Disabled</rtgl-text>
   <rtgl-input disabled></rtgl-input>
   <rtgl-text>Not Disabled</rtgl-text>

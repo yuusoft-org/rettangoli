@@ -1,43 +1,29 @@
-elementName: custom-todos
-
-viewDataSchema:
-  type: object
-  properties:
-    title: { type: string }
-    placeholderText: { type: string }
-    todos: { type: array }
-    filteredTodos: { type: array }
-    activeCount: { type: number }
-    completedCount: { type: number }
-    allCompleted: { type: boolean }
-    filter: { type: string }
-
 refs:
-  todo-input:
+  todoInput:
     eventListeners:
       keydown:
         handler: handleNewTodoKeyDown
-  toggle-all:
+  toggleAll:
     eventListeners:
       click:
         handler: handleToggleAllClick
-  clear-completed:
+  clearCompleted:
     eventListeners:
       click:
         handler: handleClearCompletedClick
-  completed-todo-svg:
+  completedTodoSvg:
     eventListeners:
       click:
         handler: handleTodoClick
-  todo-*:
+  todo*:
     eventListeners:
       click:
         handler: handleTodoClick
-  delete-*:
+  delete*:
     eventListeners:
       click:
         handler: handleDeleteClick
-  filter-*:
+  filter*:
     eventListeners:
       click:
         handler: handleFilterClick
@@ -50,35 +36,35 @@ template:
         - rtgl-view#header ah=c ph=lg pv=xl w=f:
           - rtgl-text s=h1 ta=c c=fg: "${title}"
           - rtgl-view d=h av=c mt=xl w=f:
-            - rtgl-svg#toggle-all mr=sm svg=tick c=fg wh=48:
-            - 'input#todo-input style="height: 48px; width: 100%; flex: 1;" ph=xl w=f placeholder="${placeholderText}"':
+            - rtgl-svg#toggleAll mr=sm svg=tick c=fg wh=48:
+            - 'input#todoInput style="height: 48px; width: 100%; flex: 1;" ph=xl w=f placeholder="${placeholderText}"':
         - rtgl-view#main ah=c w=f:
-          - rtgl-view#todo-list w=f:
+          - rtgl-view#todoList w=f:
             - $for todo, i in filteredTodos:
               - rtgl-view#todo w=f g=xl d=h av=c pv=md ph=lg bwb=xs:
-                - rtgl-view flex=1 d=h av=c:
+                - rtgl-view w=1fg d=h av=c:
                   - $if todo.completed:
-                      - rtgl-svg#todo-${todo.id} svg=tick c=fg wh=16:
+                      - rtgl-svg#todo${i} data-todo-id=${todo.id} svg=tick c=fg wh=16:
                       - rtgl-text c=su-fg ml=md: 
                         - del: "${todo.title}"
                     $else:
-                      - rtgl-view#todo-${todo.id} bgc=fg w=16 h=16:
+                      - rtgl-view#todo${i} data-todo-id=${todo.id} bgc=fg w=16 h=16:
                       - rtgl-text c=er-fg ml=md: "${todo.title}"
-                  - rtgl-view flex=1:
-                  - rtgl-svg#delete-${todo.id} svg=cross c=fg wh=16:
+                  - rtgl-view w=1fg:
+                  - rtgl-svg#delete${i} data-todo-id=${todo.id} svg=cross c=fg wh=16:
         - rtgl-view#footer d=h p=md c=mu-fg av=c mt=xl:
           - rtgl-text: "${activeCount} ${itemText} left"
           - rtgl-view w=8:
           - $if isAllFilter:
-              - rtgl-button#filter-all s=sm v=pr: "All"
+              - rtgl-button#filterAll s=sm v=pr: "All"
             $else:
-              - rtgl-button#filter-all s=sm v=lk: "All"
+              - rtgl-button#filterAll s=sm v=lk: "All"
           - $if isActiveFilter:
-              - rtgl-button#filter-active s=sm v=pr: "Active"
+              - rtgl-button#filterActive s=sm v=pr: "Active"
             $else:
-              - rtgl-button#filter-active s=sm v=lk: "Active"
+              - rtgl-button#filterActive s=sm v=lk: "Active"
           - $if isCompletedFilter:
-              - rtgl-button#filter-completed s=sm v=pr: "Completed"
+              - rtgl-button#filterCompleted s=sm v=pr: "Completed"
             $else:
-              - rtgl-button#filter-completed s=sm v=lk: "Completed"
-          - rtgl-button#clear-completed s=sm v=lk: "Clear completed (${completedCount})"
+              - rtgl-button#filterCompleted s=sm v=lk: "Completed"
+          - rtgl-button#clearCompleted s=sm v=lk: "Clear completed (${completedCount})"

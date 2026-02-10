@@ -1,0 +1,12 @@
+vt:
+  path: "./vt"
+  sections:
+    - title: bench_components
+      files: "components"
+  capture:
+    workerCount: 2
+    isolationMode: "fast"
+    waitStrategy: "load"
+    screenshotWaitTime: 0
+    maxRetries: 0
+    recycleEvery: 25

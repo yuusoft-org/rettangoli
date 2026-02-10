@@ -1,0 +1,12 @@
+---
+title: Tooltip - Defaults - Placement Fallback
+description: Verifies default placement behavior when placement is omitted.
+specs:
+  - Tooltip defaults to top placement when placement prop is absent.
+  - Explicit top placement remains visually consistent with default behavior.
+  - Baseline open rendering is stable with centered coordinates.
+---
+<rtgl-view h="100vh" w="100vw" ah="c" av="c" g="xl">
+  <rtgl-tooltip open content="Default placement (no prop)" x="420" y="420"></rtgl-tooltip>
+  <rtgl-tooltip open content="Explicit top placement" place="t" x="720" y="420"></rtgl-tooltip>
+</rtgl-view>

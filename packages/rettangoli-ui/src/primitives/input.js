@@ -2,15 +2,25 @@ import {
   css,
   dimensionWithUnit,
   convertObjectToCssString,
-  styleMapKeys,
   permutateBreakpoints,
+  createResponsiveStyleBuckets,
+  responsiveStyleSizes,
+  applyDimensionToStyleBucket,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 
+const inputStyleMapKeys = ["mt", "mr", "mb", "ml", "m", "mh", "mv", "cur"];
+
 // Internal implementation without uhtml
 class RettangoliInputElement extends HTMLElement {
   static styleSheet = null;
+
+  static inputSpecificAttributes = [
+    "type",
+    "disabled",
+    "s",
+  ];
 
   static initializeStyleSheet() {
     if (!RettangoliInputElement.styleSheet) {
@@ -61,13 +71,7 @@ class RettangoliInputElement extends HTMLElement {
     this.shadow.adoptedStyleSheets = [RettangoliInputElement.styleSheet];
 
     // Initialize style tracking properties
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+    this._styles = createResponsiveStyleBuckets();
     this._lastStyleString = "";
 
     // Create initial DOM structure
@@ -77,8 +81,9 @@ class RettangoliInputElement extends HTMLElement {
     this.shadow.appendChild(this._styleElement);
     this.shadow.appendChild(this._inputElement);
 
-    // Bind event handler
-    this._inputElement.addEventListener('input', this._onChange);
+    // Bind event handlers
+    this._inputElement.addEventListener('input', this._onInput);
+    this._inputElement.addEventListener('change', this._onChange);
   }
 
   static get observedAttributes() {
@@ -90,7 +95,7 @@ class RettangoliInputElement extends HTMLElement {
       "value",
       "s",
       ...permutateBreakpoints([
-        ...styleMapKeys,
+        ...inputStyleMapKeys,
         "wh",
         "w",
         "h",
@@ -114,49 +119,58 @@ class RettangoliInputElement extends HTMLElement {
     this._inputElement.focus();
   }
 
-  _onChange = (event) => {
-    this.dispatchEvent(new CustomEvent('input-change', {
+  _onInput = () => {
+    this.dispatchEvent(new CustomEvent('value-input', {
       detail: {
         value: this._inputElement.value,
       },
+      bubbles: true,
+    }));
+  };
+
+  _onChange = () => {
+    this.dispatchEvent(new CustomEvent('value-change', {
+      detail: {
+        value: this._inputElement.value,
+      },
+      bubbles: true,
     }));
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'value') {
-      requestAnimationFrame((() => {
-        const value = this.getAttribute("value");
-        this._inputElement.value = value ?? "";
-      }))
+    if (oldValue === newValue) {
+      return;
     }
 
-    if (name === 'placeholder') {
-      requestAnimationFrame((() => {
-        const placeholder = this.getAttribute("placeholder");
-        if (placeholder === undefined || placeholder === 'null') {
-          this._inputElement.removeAttribute('placeholder');
-        } else {
-          this._inputElement.setAttribute('placeholder', placeholder ?? "");
-        }
-      }))
+    if (name === "key") {
+      this._syncValueAttribute();
+      return;
+    }
+
+    if (name === "value") {
+      this._syncValueAttribute();
+      return;
+    }
+
+    if (name === "placeholder") {
+      this._syncPlaceholderAttribute();
+      return;
     }
 
     // Handle input-specific attributes first
-    if (["type", "disabled", "step", "s"].includes(name)) {
+    if (RettangoliInputElement.inputSpecificAttributes.includes(name)) {
       this._updateInputAttributes();
       return;
     }
 
-    // Reset styles for fresh calculation
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+    this.updateStyles();
+  }
 
-    ["default", "sm", "md", "lg", "xl"].forEach((size) => {
+  updateStyles() {
+    // Reset styles for fresh calculation
+    this._styles = createResponsiveStyleBuckets();
+
+    responsiveStyleSizes.forEach((size) => {
       const addSizePrefix = (tag) => {
         return `${size === "default" ? "" : `${size}-`}${tag}`;
       };
@@ -179,28 +193,26 @@ class RettangoliInputElement extends HTMLElement {
         this._styles[size].opacity = opacity;
       }
 
-      if (width === "f") {
-        this._styles[size].width = "var(--width-stretch)";
-      } else if (width !== undefined) {
-        this._styles[size].width = width;
-        this._styles[size]["min-width"] = width;
-        this._styles[size]["max-width"] = width;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "width",
+        dimension: width,
+        fillValue: "var(--width-stretch)",
+      });
 
-      if (height === "f") {
-        this._styles[size].height = "100%";
-      } else if (height !== undefined) {
-        this._styles[size].height = height;
-        this._styles[size]["min-height"] = height;
-        this._styles[size]["max-height"] = height;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "height",
+        dimension: height,
+        fillValue: "100%",
+      });
 
       if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none !important";
+        this._styles[size].display = "none";
       }
 
       if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "block !important";
+        this._styles[size].display = "block";
       }
     });
 
@@ -212,20 +224,28 @@ class RettangoliInputElement extends HTMLElement {
     }
   }
 
+  _setOrRemoveInputAttribute(name, value) {
+    if (value === null || value === undefined || value === "null") {
+      this._inputElement.removeAttribute(name);
+      return;
+    }
+    this._inputElement.setAttribute(name, value);
+  }
+
+  _syncValueAttribute() {
+    this._inputElement.value = this.getAttribute("value") ?? "";
+  }
+
+  _syncPlaceholderAttribute() {
+    this._setOrRemoveInputAttribute("placeholder", this.getAttribute("placeholder"));
+  }
+
   _updateInputAttributes() {
-    const type = this.getAttribute("type") || "text";
-    // const placeholder = this.getAttribute("placeholder");
-    // const value = this.getAttribute("value");
-    const step = this.getAttribute("step");
+    const requestedType = this.getAttribute("type");
+    const type = requestedType === "password" ? "password" : "text";
     const isDisabled = this.hasAttribute('disabled');
 
-    this._inputElement.setAttribute("type", type);
-
-    if (step !== null) {
-      this._inputElement.setAttribute("step", step);
-    } else {
-      this._inputElement.removeAttribute("step");
-    }
+    this._setOrRemoveInputAttribute("type", type);
 
     if (isDisabled) {
       this._inputElement.setAttribute("disabled", "");
@@ -236,6 +256,9 @@ class RettangoliInputElement extends HTMLElement {
 
   connectedCallback() {
     this._updateInputAttributes();
+    this._syncValueAttribute();
+    this._syncPlaceholderAttribute();
+    this.updateStyles();
   }
 }
 

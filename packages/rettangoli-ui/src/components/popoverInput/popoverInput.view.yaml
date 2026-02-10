@@ -1,18 +1,5 @@
-elementName: rtgl-popover-input
-
-viewDataSchema:
-  type: object
-
-attrsSchema:
-  type: object
-  properties:
-    value:
-      type: string
-    placeholder:
-      type: string
-
 refs:
-  text-display:
+  textDisplay:
     eventListeners:
       click:
         handler: handleTextClick
@@ -22,7 +9,7 @@ refs:
         handler: handlePopoverClose
   input:
     eventListeners:
-      input-change:
+      value-input:
         handler: handleInputChange
       keydown:
         handler: handleInputKeydown
@@ -30,16 +17,12 @@ refs:
     eventListeners:
       click:
         handler: handleSubmitClick
-
-events:
-  input-change: {}
-
 template:
-  - rtgl-view#text-display w=f cur=p:
+  - rtgl-view#textDisplay w=f cur=pointer:
       - rtgl-text: ${value}
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y}:
-      - rtgl-view g=md w=240 slot=content bgc=background br=md:
+      - rtgl-view g=md w=240 slot=content bgc=bg br=md:
           - rtgl-text: ${label}
-          - rtgl-input#input w=f placeholder=${placeholder}:
+          - rtgl-input#input w=f placeholder=${placeholder}: null
           - rtgl-view w=f ah=e:
               - rtgl-button#submit: Submit

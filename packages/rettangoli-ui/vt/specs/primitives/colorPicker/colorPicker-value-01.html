@@ -1,6 +1,11 @@
 ---
-title: With Value
+title: Color Picker - Value - Seeded Hex
+description: Verifies initial color swatch rendering from a valid hex value.
+specs:
+  - Valid hex value initializes color picker swatch.
+  - Initial value is reflected without user interaction.
+  - Seeded value coexists with baseline control styling.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-color-picker value="#ff5733"></rtgl-color-picker>
 </rtgl-view>

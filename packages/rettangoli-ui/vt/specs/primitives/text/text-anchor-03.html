@@ -1,0 +1,17 @@
+---
+title: Text - Anchor - Rel Handling
+description: Verifies explicit rel usage and new-tab fallback behavior for host links.
+specs:
+  - Explicit rel values are preserved with new-tab links.
+  - new-tab without rel still renders as a valid host link.
+  - Link overlays remain compatible with style and size attributes.
+---
+<rtgl-view d="v" g="lg" p="lg" wh="f" wrap>
+  <rtgl-text href="#explicit-rel" new-tab rel="nofollow" c="pr">
+    Explicit rel link text
+  </rtgl-text>
+
+  <rtgl-text href="#implicit-rel" new-tab s="lg">
+    Implicit rel link text
+  </rtgl-text>
+</rtgl-view>

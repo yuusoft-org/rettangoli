@@ -8,38 +8,98 @@ import {
   generateOverview,
   readYaml,
 } from "../common.js";
+import { validateVtConfig } from "../validation.js";
+import { resolveGenerateOptions } from "./generate-options.js";
+import {
+  filterGeneratedFilesBySelectors,
+  hasSelectors,
+} from "../selector-filter.js";
+import {
+  startManagedService,
+  stopManagedService,
+  waitForServiceReady,
+} from "./service-runtime.js";
 
 const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
 const libraryStaticPath = new URL("./static", import.meta.url).pathname;
 
+export function buildCaptureOptions({
+  filesToScreenshot,
+  port,
+  candidatePath,
+  resolvedOptions,
+}) {
+  const {
+    workerCount,
+    screenshotWaitTime,
+    configUrl,
+    waitEvent,
+    waitSelector,
+    waitStrategy,
+    navigationTimeout,
+    readyTimeout,
+    screenshotTimeout,
+    maxRetries,
+    recycleEvery,
+    isolationMode,
+    metricsPath,
+    headless,
+    viewport,
+  } = resolvedOptions;
+
+  return {
+    generatedFiles: filesToScreenshot,
+    serverUrl: `http://localhost:${port}`,
+    screenshotsDir: candidatePath,
+    workerCount,
+    screenshotWaitTime,
+    configUrl,
+    waitEvent,
+    waitSelector,
+    waitStrategy,
+    navigationTimeout,
+    readyTimeout,
+    screenshotTimeout,
+    maxRetries,
+    recycleEvery,
+    isolationMode,
+    metricsPath,
+    headless,
+    viewport,
+  };
+}
+
 /**
  * Main function that orchestrates the entire process
  */
-async function main(options) {
-  const {
-    skipScreenshots = false,
-    vtPath = "./vt",
-    screenshotWaitTime = 0,
-    port = 3001,
-    waitEvent,
-    concurrency = 12,
-  } = options;
-
-  const specsPath = join(vtPath, "specs");
+async function main(options = {}) {
   const mainConfigPath = "rettangoli.config.yaml";
   const siteOutputPath = join(".rettangoli", "vt", "_site");
-  const candidatePath = join(siteOutputPath, "candidate");
 
-  // Read VT config from main rettangoli.config.yaml
-  let configData = {};
+  let mainConfig;
   try {
-    const mainConfig = await readYaml(mainConfigPath);
-    configData = mainConfig.vt || {};
+    mainConfig = await readYaml(mainConfigPath);
   } catch (error) {
-    console.log("Main config file not found, using defaults");
+    throw new Error(`Unable to read "${mainConfigPath}": ${error.message}`, { cause: error });
   }
 
-  const configUrl = configData.url;
+  const vtConfig = mainConfig?.vt;
+  if (!vtConfig) {
+    throw new Error(`Invalid "${mainConfigPath}": missing required "vt" section.`);
+  }
+
+  const configData = validateVtConfig(vtConfig, mainConfigPath);
+  const resolvedOptions = resolveGenerateOptions(options, configData);
+  const {
+    vtPath,
+    skipScreenshots,
+    port,
+    configUrl,
+    serviceStart,
+  } = resolvedOptions;
+
+  const specsPath = join(vtPath, "specs");
+  const candidatePath = join(siteOutputPath, "candidate");
 
   // Clear candidate directory
   await rm(candidatePath, { recursive: true, force: true });
@@ -76,6 +136,16 @@ async function main(options) {
     templateConfig,
   );
 
+  const scopedFiles = filterGeneratedFilesBySelectors(
+    generatedFiles,
+    resolvedOptions.selectors,
+    configData.sections,
+  );
+  if (hasSelectors(resolvedOptions.selectors)) {
+    const excludedCount = generatedFiles.length - scopedFiles.length;
+    console.log(`Selector scope: ${scopedFiles.length} file(s) selected, ${excludedCount} excluded.`);
+  }
+
   // Generate overview page (includes all files, skipped or not)
   generateOverview(
     generatedFiles,
@@ -87,30 +157,50 @@ async function main(options) {
   // Take screenshots (only for non-skipped files)
   if (!skipScreenshots) {
     // Filter out files with skipScreenshot: true in frontmatter
-    const filesToScreenshot = generatedFiles.filter(
+    const filesToScreenshot = scopedFiles.filter(
       (file) => !file.frontMatter?.skipScreenshot
     );
 
-    const skippedCount = generatedFiles.length - filesToScreenshot.length;
+    const skippedCount = scopedFiles.length - filesToScreenshot.length;
     if (skippedCount > 0) {
       console.log(`Skipping screenshots for ${skippedCount} files`);
     }
+    if (filesToScreenshot.length === 0) {
+      console.log("No files selected for screenshot capture. Skipping Playwright run.");
+      return;
+    }
 
-    const server = configUrl ? null : startWebServer(siteOutputPath, vtPath, port);
+    let server = null;
+    let managedService = null;
+
     try {
+      if (serviceStart) {
+        if (!configUrl) {
+          throw new Error(
+            "vt.service.start requires vt.url (or --url) so VT can wait for readiness and capture against that URL.",
+          );
+        }
+        managedService = startManagedService({ command: serviceStart });
+        await waitForServiceReady({ url: configUrl, handle: managedService });
+      } else if (!configUrl) {
+        server = await startWebServer(siteOutputPath, vtPath, port);
+      }
+
       await takeScreenshots(
-        filesToScreenshot,
-        `http://localhost:${port}`,
-        candidatePath,
-        concurrency,
-        screenshotWaitTime,
-        configUrl,
-        waitEvent,
+        buildCaptureOptions({
+          filesToScreenshot,
+          port,
+          candidatePath,
+          resolvedOptions,
+        }),
       );
     } finally {
       if (server) {
         server.close();
         console.log("Server stopped");
+      }
+      if (managedService) {
+        await stopManagedService(managedService);
       }
     }
   }

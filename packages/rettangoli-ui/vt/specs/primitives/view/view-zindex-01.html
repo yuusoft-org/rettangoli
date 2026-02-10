@@ -1,5 +1,10 @@
 ---
-title: Z-index
+title: View - Z-Index - Layer Ordering
+description: Verifies stacking order changes when `z` is applied to absolutely positioned layers.
+specs:
+  - Baseline stack order follows DOM order without `z`.
+  - Explicit `z` values reorder layers predictably.
+  - Higher `z` values appear above lower layers.
 ---
 
 <rtgl-view d="h" g="lg" p="lg" wh="f">

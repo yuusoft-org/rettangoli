@@ -1,9 +1,14 @@
 ---
-title: "Anchor"
+title: Image - Anchor - Link New Tab
+description: Verifies image anchor mode with mixed new-tab behavior and consistent thumbnail framing.
+specs:
+  - Images with href render as clickable anchors.
+  - new-tab links keep the same visual presentation as same-tab links.
+  - Rounded corners and fixed dimensions remain stable in anchor mode.
 ---
 
-<rtgl-view d="h" g="lg" p="lg" wh="f" fw="w">
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap>
   <rtgl-image href="#1" src="/public/sample1.jpg" wh="120" br="md"></rtgl-image>
-  <rtgl-image href="#2" target="_blank" src="/public/sample1.jpg" wh="120" br="md"></rtgl-image>
+  <rtgl-image href="#2" new-tab src="/public/sample1.jpg" wh="120" br="md"></rtgl-image>
   <rtgl-image href="#3" src="/public/sample1.jpg" wh="120" br="md"></rtgl-image>
 </rtgl-view>

@@ -40,7 +40,8 @@ export const selectViewData = ({ state }) => {
 };
 
 // Add a new todo
-export const addTodo = (state, title) => {
+export const addTodo = ({ state }, payload = {}) => {
+  const { title = "" } = payload;
   if (!title.trim()) return;
   const newTodo = {
     id: Date.now().toString(),
@@ -51,7 +52,8 @@ export const addTodo = (state, title) => {
 };
 
 // Toggle completion for a todo by id
-export const toggleTodo = (state, id) => {
+export const toggleTodo = ({ state }, payload = {}) => {
+  const { id } = payload;
   state.todos.forEach(todo => {
     if (todo.id === id) {
       todo.completed = !todo.completed;
@@ -60,7 +62,7 @@ export const toggleTodo = (state, id) => {
 };
 
 // Action: Toggle all todos
-export const toggleAll = (state) => {
+export const toggleAll = ({ state }) => {
   const allCompleted = state.todos.every(todo => todo.completed);
   state.todos.forEach(todo => {
     todo.completed = !allCompleted;
@@ -68,16 +70,18 @@ export const toggleAll = (state) => {
 };
 
 // Action: Delete todo
-export const deleteTodo = (state, id) => {
+export const deleteTodo = ({ state }, payload = {}) => {
+  const { id } = payload;
   state.todos = state.todos.filter(todo => todo.id !== id);
 };
 
 // Action: Clear completed todos
-export const clearCompleted = (state) => {
+export const clearCompleted = ({ state }) => {
   state.todos = state.todos.filter(todo => !todo.completed);
 };
 
 // Action: Set filter
-export const setFilter = (state, filter) => {
+export const setFilter = ({ state }, payload = {}) => {
+  const { filter } = payload;
   state.filter = filter;
 };

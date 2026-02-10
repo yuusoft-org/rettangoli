@@ -1,0 +1,13 @@
+componentName: e2e-pixel-grid
+
+description: Blank component scaffold
+
+propsSchema:
+  type: object
+  properties: {}
+
+events: []
+
+methods:
+  type: object
+  properties: {}

@@ -1,8 +1,12 @@
 ---
-title: "Size Medium"
-skipScreenshot: true
+title: Dialog - Size - Medium Preset
+description: Verifies `s=md` dialog preset width rendering.
+specs:
+  - Medium size preset applies expected dialog width.
+  - Content layout remains balanced at medium breakpoint.
+  - Close event handling stays consistent with sized dialog.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-button id="button">Open Dialog s=md</rtgl-button>
   <rtgl-dialog id="dialog" open s="md">
     <rtgl-view slot="content" g="md">

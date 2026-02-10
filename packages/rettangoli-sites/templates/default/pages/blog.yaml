@@ -10,5 +10,5 @@ title: Blog
             - rtgl-view w="f" p="lg" bgc="su" br="lg" h-bgc="suv" h-cur="p":
                 - rtgl-view d="h" av="c" w="f":
                     - rtgl-text s="lg": ${post.data.title}
-                    - rtgl-view flex="1":
+                    - rtgl-view w="1fg":
                     - rtgl-text s="sm" c="mu-fg": ${post.data.date}

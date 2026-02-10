@@ -1,7 +1,7 @@
 ---
 title: "With Select"
 ---
-<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
 
 <script>
@@ -18,7 +18,7 @@ title: "With Select"
     description: 'Please fill out the form below',
     fields: [{
       name: 'email',
-      inputType: 'inputText',
+      inputType: 'input-text',
       label: 'Email',
       description: 'Enter your email address',
       placeholder: 'user@example.com',
@@ -29,7 +29,7 @@ title: "With Select"
       }],
     }, {
       name: 'password',
-      inputType: 'inputText',
+      inputType: 'input-text',
       label: 'Password',
       description: 'Choose a strong password',
       placeholder: 'Enter password',

@@ -1,0 +1,264 @@
+file: "../src/cli/generate-options.js"
+group: generate-options
+---
+suite: resolveGenerateOptions
+exportName: resolveGenerateOptions
+---
+case: resolves minimal user options with internal defaults
+in:
+  - {}
+  - path: ./vt-custom
+    skipScreenshots: false
+    port: 4100
+    concurrency: 3
+    timeout: 45000
+    waitEvent: vt:ready
+    url: https://example.com/root
+out:
+  vtPath: ./vt-custom
+  skipScreenshots: false
+  port: 4100
+  waitEvent: vt:ready
+  headless: true
+  configUrl: https://example.com/root
+  selectors:
+    folders: []
+    groups: []
+    items: []
+  screenshotWaitTime: 0
+  waitStrategy: event
+  workerCount: 3
+  isolationMode: fast
+  navigationTimeout: 45000
+  readyTimeout: 45000
+  screenshotTimeout: 45000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json
+---
+case: applies cli overrides for minimal public surface
+in:
+  - vtPath: ./vt-cli
+    skipScreenshots: true
+    port: 3300
+    concurrency: 6
+    timeout: 15000
+    waitEvent: cli:ready
+    headless: false
+    url: http://localhost:9000/render
+  - path: ./vt-config
+    skipScreenshots: false
+    port: 4400
+    concurrency: 2
+    timeout: 50000
+    waitEvent: config:ready
+    url: https://example.com/config
+out:
+  vtPath: ./vt-cli
+  skipScreenshots: true
+  port: 3300
+  waitEvent: cli:ready
+  headless: false
+  configUrl: http://localhost:9000/render
+  selectors:
+    folders: []
+    groups: []
+    items: []
+  screenshotWaitTime: 0
+  waitStrategy: event
+  workerCount: 6
+  isolationMode: fast
+  navigationTimeout: 15000
+  readyTimeout: 15000
+  screenshotTimeout: 15000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json
+---
+case: rejects invalid url
+in:
+  - url: ""
+  - {}
+throws: Invalid url
+---
+case: rejects invalid concurrency
+in:
+  - concurrency: 0
+  - {}
+throws: concurrency
+---
+case: rejects invalid waitEvent
+in:
+  - waitEvent: ""
+  - {}
+throws: waitEvent
+---
+case: normalizes selector inputs
+in:
+  - folder:
+      - ./components/forms/
+      - components/forms
+    group:
+      - Components_Basic
+      - components_basic
+    item:
+      - pages/home.html
+      - ./pages/home
+  - path: ./vt
+    skipScreenshots: false
+    port: 3001
+    concurrency: 2
+    timeout: 31000
+    waitEvent: vt:ready
+    url: https://example.com
+out:
+  vtPath: ./vt
+  skipScreenshots: false
+  port: 3001
+  waitEvent: vt:ready
+  headless: true
+  configUrl: https://example.com
+  selectors:
+    folders:
+      - components/forms
+    groups:
+      - components_basic
+    items:
+      - pages/home
+  screenshotWaitTime: 0
+  waitStrategy: event
+  workerCount: 2
+  isolationMode: fast
+  navigationTimeout: 31000
+  readyTimeout: 31000
+  screenshotTimeout: 31000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json
+---
+case: carries validated viewport config into resolved options
+in:
+  - {}
+  - path: ./vt
+    viewport:
+      - id: desktop
+        width: 1280
+        height: 720
+      - id: mobile
+        width: 390
+        height: 844
+    skipScreenshots: false
+    port: 3001
+    concurrency: 2
+    timeout: 31000
+    waitEvent: vt:ready
+    url: https://example.com
+out:
+  vtPath: ./vt
+  skipScreenshots: false
+  port: 3001
+  waitEvent: vt:ready
+  headless: true
+  configUrl: https://example.com
+  viewport:
+    - id: desktop
+      width: 1280
+      height: 720
+    - id: mobile
+      width: 390
+      height: 844
+  selectors:
+    folders: []
+    groups: []
+    items: []
+  screenshotWaitTime: 0
+  waitStrategy: event
+  workerCount: 2
+  isolationMode: fast
+  navigationTimeout: 31000
+  readyTimeout: 31000
+  screenshotTimeout: 31000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json
+---
+case: carries managed service start command into resolved options
+in:
+  - {}
+  - path: ./vt
+    url: http://127.0.0.1:4173
+    service:
+      start: bun run preview
+    skipScreenshots: false
+    port: 3001
+    concurrency: 2
+    timeout: 31000
+out:
+  vtPath: ./vt
+  skipScreenshots: false
+  port: 3001
+  headless: true
+  configUrl: http://127.0.0.1:4173
+  serviceStart: bun run preview
+  selectors:
+    folders: []
+    groups: []
+    items: []
+  screenshotWaitTime: 0
+  waitStrategy: load
+  workerCount: 2
+  isolationMode: fast
+  navigationTimeout: 31000
+  readyTimeout: 31000
+  screenshotTimeout: 31000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json
+---
+case: forces screenshot capture when captureScreenshots is true
+in:
+  - captureScreenshots: true
+  - path: ./vt
+    skipScreenshots: true
+out:
+  vtPath: ./vt
+  skipScreenshots: false
+  port: 3001
+  headless: true
+  selectors:
+    folders: []
+    groups: []
+    items: []
+  screenshotWaitTime: 0
+  waitStrategy: load
+  isolationMode: fast
+  navigationTimeout: 30000
+  readyTimeout: 30000
+  screenshotTimeout: 30000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json
+---
+case: forces skipScreenshots when captureScreenshots is false
+in:
+  - captureScreenshots: false
+  - path: ./vt
+    skipScreenshots: false
+out:
+  vtPath: ./vt
+  skipScreenshots: true
+  port: 3001
+  headless: true
+  selectors:
+    folders: []
+    groups: []
+    items: []
+  screenshotWaitTime: 0
+  waitStrategy: load
+  isolationMode: fast
+  navigationTimeout: 30000
+  readyTimeout: 30000
+  screenshotTimeout: 30000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json

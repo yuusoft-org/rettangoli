@@ -1,0 +1,57 @@
+componentName: rtgl-sidebar
+propsSchema:
+  type: object
+  properties:
+    mode:
+      type: string
+    selectedItemId:
+      type: string
+    header:
+      type: object
+      properties:
+        label:
+          type: string
+        href:
+          type: string
+        testId:
+          type: string
+        image:
+          type: object
+          properties:
+            src:
+              type: string
+            width:
+              type: number
+            height:
+              type: number
+            alt:
+              type: string
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          title:
+            type: string
+          slug:
+            type: string
+          type:
+            type: string
+          items:
+            type: array
+          testId:
+            type: string
+events:
+  header-click:
+    type: object
+    properties:
+      path:
+        type: string
+  item-click:
+    type: object
+    properties:
+      item:
+        type: object
+methods:
+  type: object
+  properties: {}

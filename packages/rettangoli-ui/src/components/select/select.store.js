@@ -2,7 +2,7 @@ import { deepEqual } from '../../common.js';
 
 // Attributes that should not be passed through to the container
 // These are either handled internally or have special meaning
-const blacklistedAttrs = [
+const blacklistedProps = [
   "id",
   "class",
   "style",
@@ -10,15 +10,15 @@ const blacklistedAttrs = [
   // Select-specific props that are handled separately
   "placeholder",
   "selectedValue",
-  "selected-value",
   "onChange",
-  "on-change",
-  "options"
+  "options",
+  "noClear",
+  "addOption",
 ];
 
-const stringifyAttrs = (attrs) => {
-  return Object.entries(attrs || {})
-    .filter(([key]) => !blacklistedAttrs.includes(key))
+const stringifyProps = (props = {}) => {
+  return Object.entries(props)
+    .filter(([key]) => !blacklistedProps.includes(key))
     .map(([key, value]) => `${key}=${value}`)
     .join(" ");
 };
@@ -34,15 +34,15 @@ export const createInitialState = () => Object.freeze({
   hoveredAddOption: false,
 });
 
-export const selectViewData = ({ state, props, attrs }) => {
+export const selectViewData = ({ state, props }) => {
   // Generate container attribute string
-  const containerAttrString = stringifyAttrs(attrs);
+  const containerAttrString = stringifyProps(props);
 
   // Use state's selected value if available, otherwise use props.selectedValue
   const currentValue = state.selectedValue !== null ? state.selectedValue : props.selectedValue;
 
   // Calculate display label from value
-  let displayLabel = props.placeholder || attrs.placeholder || 'Select an option';
+  let displayLabel = props.placeholder || "Select an option";
   let isPlaceholderLabel = true;
 
   const options = props.options || [];
@@ -72,22 +72,22 @@ export const selectViewData = ({ state, props, attrs }) => {
     selectedLabel: displayLabel,
     selectedLabelColor: isPlaceholderLabel ? "mu-fg" : "fg",
     hasValue: currentValue !== null && currentValue !== undefined,
-    showClear: !attrs['no-clear'] && !props['no-clear'] && (currentValue !== null && currentValue !== undefined),
+    showClear: !props.noClear && (currentValue !== null && currentValue !== undefined),
     showAddOption: !!props.addOption,
-    addOptionLabel: props.addOption?.label ? `+ ${props.addOption.label}` : '+ Add',
-    addOptionBgc: state.hoveredAddOption ? 'ac' : ''
+    addOptionLabel: props.addOption?.label ? `+ ${props.addOption.label}` : "+ Add",
+    addOptionBgc: state.hoveredAddOption ? "ac" : "",
   };
-}
+};
 
 export const selectState = ({ state }) => {
   return state;
-}
+};
 
 export const selectSelectedValue = ({ state }) => {
   return state.selectedValue;
-}
+};
 
-export const openOptionsPopover = (state, payload) => {
+export const openOptionsPopover = ({ state }, payload = {}) => {
   const { position, selectedIndex } = payload;
   state.position = position;
   state.isOpen = true;
@@ -95,36 +95,35 @@ export const openOptionsPopover = (state, payload) => {
   if (selectedIndex !== undefined && selectedIndex !== null) {
     state.hoveredOptionId = selectedIndex;
   }
-}
+};
 
-export const closeOptionsPopover = (state) => {
+export const closeOptionsPopover = ({ state }) => {
   state.isOpen = false;
-}
+};
 
-export const updateSelectedValue = (state, payload) => {
+export const updateSelectedValue = ({ state }, payload = {}) => {
   state.selectedValue = payload.value;
   state.isOpen = false;
-}
+};
 
-export const resetSelection = (state) => {
+export const resetSelection = ({ state }) => {
   state.selectedValue = undefined;
-}
+};
 
-export const setHoveredOption = (state, optionId) => {
-  state.hoveredOptionId = optionId;
-}
+export const setHoveredOption = ({ state }, payload = {}) => {
+  state.hoveredOptionId = payload.optionId;
+};
 
-export const clearHoveredOption = (state) => {
+export const clearHoveredOption = ({ state }) => {
   state.hoveredOptionId = null;
-}
+};
 
-export const clearSelectedValue = (state) => {
+export const clearSelectedValue = ({ state }) => {
   state.selectedValue = undefined;
-}
+};
 
-export const setHoveredAddOption = (state, isHovered) => {
-  state.hoveredAddOption = isHovered;
-}
-
+export const setHoveredAddOption = ({ state }, payload = {}) => {
+  state.hoveredAddOption = !!payload.isHovered;
+};
 
 

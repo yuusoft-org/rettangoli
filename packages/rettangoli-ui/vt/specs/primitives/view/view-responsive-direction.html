@@ -1,5 +1,10 @@
 ---
-title: Responsive Direction Tests
+title: View - Responsive - Direction by Breakpoint
+description: Verifies breakpoint-prefixed direction attributes (`sm-d`) override base direction.
+specs:
+  - Default direction remains stable without breakpoint overrides.
+  - Small breakpoint direction overrides base flow with `sm-d`.
+  - Nested samples preserve spacing and order while direction changes.
 ---
 <!-- Test 1: Basic horizontal to vertical -->
 <rtgl-view m="md">

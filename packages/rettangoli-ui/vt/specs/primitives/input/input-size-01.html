@@ -1,7 +1,12 @@
 ---
-title: Input Sizes
+title: Input - Size - Default and Small
+description: Verifies supported input size variants and their visual differences.
+specs:
+  - Default size uses baseline control height and typography.
+  - Small size uses compact height and typography scale.
+  - Layout alignment stays consistent across both variants.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-view g="sm" w="f">
     <rtgl-text s="sm" c="mu-fg">Regular (default):</rtgl-text>
     <rtgl-input placeholder="Regular input"></rtgl-input>

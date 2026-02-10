@@ -1,331 +1,40 @@
-elementName: rtgl-form
-
-viewDataSchema:
-  type: object
-
-propsSchema:
-  type: object
-  properties:
-    defaultValues:
-      type: object
-    context:
-      type: object
-    form:
-      type: object
-      properties:
-        title:
-          type: string
-        description:
-          type: string
-        fields:
-          type: array
-          items:
-            anyOf:
-              - type: object
-                properties:
-                  name:
-                    type: string
-                  label:
-                    type: string
-                  description:
-                    type: string
-                  inputType:
-                    const: inputText
-                  placeholder:
-                    type: string
-                  testId:
-                    type: string
-                  tooltip:
-                    type: object
-                    properties:
-                      content:
-                        type: string
-                required:
-                  - name
-                  - label
-                  - inputType
-                additionalProperties: false
-              - type: object
-                properties:
-                  name:
-                    type: string
-                  label:
-                    type: string
-                  description:
-                    type: string
-                  inputType:
-                    const: select
-                  placeholder:
-                    type: string
-                  noClear:
-                    type: boolean
-                  addOption:
-                    type: object
-                    properties:
-                      label:
-                        type: string
-                  options:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        label:
-                          type: string
-                        value:
-                          type: any
-                      required:
-                        - label
-                        - value
-                  testId:
-                    type: string
-                  tooltip:
-                    type: object
-                    properties:
-                      content:
-                        type: string
-                required:
-                  - name
-                  - label
-                  - inputType
-                  - options
-                additionalProperties: false
-              - type: object
-                properties:
-                  name:
-                    type: string
-                  label:
-                    type: string
-                  description:
-                    type: string
-                  inputType:
-                    const: colorPicker
-                  value:
-                    type: string
-                  testId:
-                    type: string
-                  tooltip:
-                    type: object
-                    properties:
-                      content:
-                        type: string
-                required:
-                  - name
-                  - label
-                  - inputType
-                additionalProperties: false
-              - type: object
-                properties:
-                  name:
-                    type: string
-                  label:
-                    type: string
-                  description:
-                    type: string
-                  inputType:
-                    const: slider
-                  min:
-                    type: number
-                  max:
-                    type: number
-                  step:
-                    type: number
-                  value:
-                    type: number
-                  testId:
-                    type: string
-                  tooltip:
-                    type: object
-                    properties:
-                      content:
-                        type: string
-                required:
-                  - name
-                  - label
-                  - inputType
-                additionalProperties: false
-              - type: object
-                properties:
-                  name:
-                    type: string
-                  label:
-                    type: string
-                  description:
-                    type: string
-                  inputType:
-                    const: slider-input
-                  min:
-                    type: number
-                  max:
-                    type: number
-                  step:
-                    type: number
-                  value:
-                    type: number
-                  testId:
-                    type: string
-                  tooltip:
-                    type: object
-                    properties:
-                      content:
-                        type: string
-                required:
-                  - name
-                  - label
-                  - inputType
-                additionalProperties: false
-              - type: object
-                properties:
-                  name:
-                    type: string
-                  label:
-                    type: string
-                  description:
-                    type: string
-                  inputType:
-                    const: image
-                  width:
-                    type: number
-                  height:
-                    type: number
-                  placeholder:
-                    type: string
-                  testId:
-                    type: string
-                  tooltip:
-                    type: object
-                    properties:
-                      content:
-                        type: string
-                required:
-                  - name
-                  - label
-                  - inputType
-                additionalProperties: false
-              - type: object
-                properties:
-                  name:
-                    type: string
-                  label:
-                    type: string
-                  description:
-                    type: string
-                  inputType:
-                    const: waveform
-                  width:
-                    type: number
-                  height:
-                    type: number
-                  placeholder:
-                    type: string
-                  defaultValue:
-                    type: object
-                  waveformData:
-                    type: object
-                  testId:
-                    type: string
-                  tooltip:
-                    type: object
-                    properties:
-                      content:
-                        type: string
-                required:
-                  - name
-                  - label
-                  - inputType
-                additionalProperties: false
-              - type: object
-                properties:
-                  name:
-                    type: string
-                  label:
-                    type: string
-                  description:
-                    type: string
-                  inputType:
-                    const: popover-input
-                  placeholder:
-                    type: string
-                  testId:
-                    type: string
-                  tooltip:
-                    type: object
-                    properties:
-                      content:
-                        type: string
-                required:
-                  - name
-                  - label
-                  - inputType
-                additionalProperties: false
-        actions:
-          type: object
-          properties:
-            buttons:
-              type: array
-              items:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  content:
-                    type: string
-                  testId:
-                    type: string
-                required:
-                  - id
-                  - content
-
 refs:
-  form-container:
+  formContainer:
     eventListeners:
       keydown:
         handler: handleKeyDown
-  action-*:
+  action*:
     eventListeners:
       click:
         handler: handleActionClick
-  tooltip-icon-*:
+  tooltipIcon*:
     eventListeners:
       mouseenter:
         handler: handleTooltipMouseEnter
       mouseleave:
         handler: handleTooltipMouseLeave
-  field-*:
+  field*:
     eventListeners:
-      input-change:
+      value-input:
         handler: handleInputChange
-      textarea-change:
+      value-change:
         handler: handleInputChange
-      select-change:
-        handler: handleSelectChange
-      add-option-selected:
+      add-option-click:
         handler: handleSelectAddOption
-      colorpicker-change:
-        handler: handleColorPickerChange
-      slider-change:
-        handler: handleSliderChange
-      slider-input-value-change:
-        handler: handleSliderInputChange
-  image-*:
+  image*:
     eventListeners:
       click:
         handler: handleImageClick
       contextmenu:
         handler: handleImageClick
-  waveform-*:
+  waveform*:
     eventListeners:
       click:
         handler: handleWaveformClick
       contextmenu:
         handler: handleWaveformClick
-
-events:
-  form-change: {}
-  extra-event: {}
-  action-click: {}
-
 template:
-  - rtgl-view#form-container w=f p=md g=lg ${containerAttrString}:
+  - rtgl-view#formContainer w=f p=md g=lg ${containerAttrString}:
       - rtgl-view g=sm w=f:
           - $if title:
               - rtgl-text s=lg: ${title}
@@ -340,41 +49,41 @@ template:
                               - $if field.label:
                                   - rtgl-text: ${field.label}
                               - $if field.label && field.tooltip:
-                                  - rtgl-svg#tooltip-icon-${field.name} svg="info" wh=16 c=mu-fg cur=help ml=xs:
+                                  - rtgl-svg#tooltipIcon${i} data-field-name=${field.name} svg="info" wh=16 c=mu-fg cur=help ml=xs: null
                           - $if field.description:
                               - rtgl-text s=sm c=mu-fg: ${field.description}
                   - $if field.inputType == "read-only-text":
                       - rtgl-text s=sm: ${field.defaultValue}
-                  - $if field.inputType == "inputText" || field.inputType == 'input-text':
-                      - rtgl-input#field-${field.name} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}:
+                  - $if field.inputType == "input-text":
+                      - rtgl-input#field${i} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}: null
                   - $if field.inputType == "input-number":
-                      - rtgl-input-number#field-${field.name} w=f data-testid=${field.testId}:
+                      - rtgl-input-number#field${i} data-field-name=${field.name} w=f data-testid=${field.testId}: null
                   - $if field.inputType == "input-textarea":
-                      - rtgl-textarea#field-${field.name} w=f rows=${field.rows} w=f data-testid=${field.testId}:
+                      - rtgl-textarea#field${i} data-field-name=${field.name} w=f rows=${field.rows} data-testid=${field.testId}: null
                   - $if field.inputType == "popover-input":
-                      - rtgl-popover-input#field-${field.name} label="${field.label}" data-testid=${field.testId}:
+                      - rtgl-popover-input#field${i} data-field-name=${field.name} label="${field.label}" data-testid=${field.testId}: null
                   - $if field.inputType == "select":
-                      - rtgl-select#field-${field.name} key=${key} w=f .options=fields[${i}].options ?no-clear=fields[${i}].noClear .addOption=fields[${i}].addOption .selectedValue=#{field.selectedValue} .placeholder=#{field.placeholder} data-testid=${field.testId}:
-                  - $if field.inputType == "colorPicker":
-                      - rtgl-color-picker#field-${field.name} key=${key} data-testid=${field.testId}:
+                      - rtgl-select#field${i} data-field-name=${field.name} key=${key} w=f :options=fields[${i}].options ?no-clear=fields[${i}].noClear :addOption=fields[${i}].addOption :selectedValue=#{field.selectedValue} :placeholder=#{field.placeholder} data-testid=${field.testId}: null
+                  - $if field.inputType == "color-picker":
+                      - rtgl-color-picker#field${i} data-field-name=${field.name} key=${key} data-testid=${field.testId}: null
                   - $if field.inputType == "slider":
-                      - rtgl-slider#field-${field.name} key=${key} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}:
+                      - rtgl-slider#field${i} data-field-name=${field.name} key=${key} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}: null
                   - $if field.inputType == "slider-input":
-                      - rtgl-slider-input#field-${field.name} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}:
+                      - rtgl-slider-input#field${i} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}: null
                   - $if field.inputType == "image" && field.imageSrc:
-                      - rtgl-image#image-${field.name} src=${field.imageSrc} w=${field.width} h=${field.height} cur=p data-testid=${field.testId}:
+                      - rtgl-image#image${i} data-field-name=${field.name} src=${field.imageSrc} w=${field.width} h=${field.height} cur=pointer data-testid=${field.testId}: null
                   - $if field.inputType == "image" && !field.imageSrc:
-                      - rtgl-view#field-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md data-testid=${field.testId}:
+                      - rtgl-view#image${i} data-field-name=${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=pointer p=md data-testid=${field.testId}:
                           - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
                   - $if field.inputType == "waveform" && field.waveformData:
-                      - rtgl-waveform#field-${field.name} .waveformData=fields[${i}].waveformData w=${field.width} h=${field.height} cur=p data-testid=${field.testId}:
+                      - rtgl-waveform#waveform${i} data-field-name=${field.name} :waveformData=fields[${i}].waveformData w=${field.width} h=${field.height} cur=pointer data-testid=${field.testId}: null
                   - $if field.inputType == "waveform" && !field.waveformData:
-                      - rtgl-view#field-${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=p p=md data-testid=${field.testId}:
+                      - rtgl-view#waveform${i} data-field-name=${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=pointer p=md data-testid=${field.testId}:
                           - rtgl-text c=mu-fg ta=c: ${field.placeholder}
                   - $if field.inputType == "slot":
-                      - 'slot#field-${field.slotName} name=${field.slot} style="display: contents;"':
+                      - 'slot#fieldSlot${i} data-field-name=${field.name} name=${field.slot} style="display: contents;"': null
       - rtgl-view g=sm w=f:
           - rtgl-view d=h ah=e g=sm w=f:
               - $for button, i in actions.buttons:
-                  - rtgl-button#action-${button.id} data-testid=${button.testId}: ${button.content}
-      - rtgl-tooltip ?open=${tooltipState.open} x=${tooltipState.x} y=${tooltipState.y} placement="top" content="${tooltipState.content}":
+                  - rtgl-button#action${i} data-action-id=${button.id} data-testid=${button.testId}: ${button.content}
+      - rtgl-tooltip ?open=${tooltipState.open} x=${tooltipState.x} y=${tooltipState.y} place="t" content="${tooltipState.content}": null

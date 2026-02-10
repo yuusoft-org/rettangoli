@@ -1,0 +1,24 @@
+refs:
+  swatch*:
+    eventListeners:
+      click:
+        handler: handleSelectColor
+  cell*:
+    eventListeners:
+      click:
+        handler: handlePaintCell
+  clearBtn:
+    eventListeners:
+      click:
+        handler: handleClear
+
+template:
+  - 'div#root style="display:flex;flex-direction:column;gap:8px;padding:16px;font-family:monospace"':
+    - 'div style="font-size:11px"': "Painted: ${paintedCount} / 64"
+    - 'div style="display:grid;grid-template-columns:repeat(8,24px);gap:1px;background:#ccc;padding:1px"':
+      - $for cell, i in cells:
+        - 'div#cell${i} data-testid=cell-${i} data-cell-id=${i} style="width:24px;height:24px;background:${cell.color};cursor:crosshair"':
+    - 'div style="display:flex;gap:4px;margin-top:4px"':
+      - $for sw, si in palette:
+        - 'div#swatch${si} data-testid=swatch-${si} data-swatch-color=${sw.color} style="width:24px;height:24px;background:${sw.color};border:${sw.border};cursor:pointer;border-radius:2px"':
+    - 'button#clearBtn data-testid=clear style="height:28px;width:80px"': "Clear"

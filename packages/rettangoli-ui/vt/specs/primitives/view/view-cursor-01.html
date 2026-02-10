@@ -1,0 +1,25 @@
+---
+title: View - Cursor - Token Variants
+description: Verifies cursor token mapping for long-form values and short aliases.
+specs:
+  - Long-form cursor tokens are accepted by the view primitive.
+  - Common aliases p and m map to pointer and move behavior.
+  - Cursor attributes do not alter layout geometry.
+---
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap>
+  <rtgl-view bgc="mu" wh="90" p="md" cur="pointer" ah="c" av="c">
+    <rtgl-text>pointer</rtgl-text>
+  </rtgl-view>
+  <rtgl-view bgc="mu" wh="90" p="md" cur="grab" ah="c" av="c">
+    <rtgl-text>grab</rtgl-text>
+  </rtgl-view>
+  <rtgl-view bgc="mu" wh="90" p="md" cur="not-allowed" ah="c" av="c">
+    <rtgl-text>not-allowed</rtgl-text>
+  </rtgl-view>
+  <rtgl-view bgc="mu" wh="90" p="md" cur="pointer" ah="c" av="c">
+    <rtgl-text>alias p</rtgl-text>
+  </rtgl-view>
+  <rtgl-view bgc="mu" wh="90" p="md" cur="move" ah="c" av="c">
+    <rtgl-text>alias m</rtgl-text>
+  </rtgl-view>
+</rtgl-view>

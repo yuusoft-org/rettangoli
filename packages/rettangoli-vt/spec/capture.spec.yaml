@@ -1,0 +1,179 @@
+file: "../src/capture/spec-loader.js"
+group: capture-spec-loader
+---
+suite: createCaptureTasks
+exportName: createCaptureTasks
+---
+case: frontmatter url and waitEvent take precedence
+in:
+  - - path: pages/home.yaml
+      frontMatter:
+        url: https://example.com/custom
+        waitEvent: page:ready
+  - serverUrl: http://localhost:3001
+    configUrl: /preview/index.html
+    waitEvent: app:ready
+    waitSelector: "#root"
+    waitStrategy: networkidle
+out:
+  - id: 0:pages/home.yaml:default
+    index: 0
+    path: pages/home.yaml
+    url: https://example.com/custom
+    baseName: pages/home
+    frontMatter:
+      url: https://example.com/custom
+      waitEvent: page:ready
+    steps: []
+    waitEvent: page:ready
+    waitSelector: "#root"
+    waitStrategy: event
+    estimatedCost: 120
+    viewport:
+      id: null
+      width: 1280
+      height: 720
+---
+case: resolves relative frontmatter url against config url base
+in:
+  - - path: pages/about.yaml
+      frontMatter:
+        url: /about
+  - serverUrl: http://localhost:3001
+    configUrl: http://127.0.0.1:4173
+out:
+  - id: 0:pages/about.yaml:default
+    index: 0
+    path: pages/about.yaml
+    url: http://127.0.0.1:4173/about
+    baseName: pages/about
+    frontMatter:
+      url: /about
+    steps: []
+    waitStrategy: networkidle
+    estimatedCost: 130
+    viewport:
+      id: null
+      width: 1280
+      height: 720
+---
+case: falls back to config url and capture defaults
+in:
+  - - path: docs/intro.md
+      frontMatter:
+        steps:
+          - wait 100
+  - serverUrl: http://localhost:3001
+    configUrl: /preview/index.html
+    waitStrategy: selector
+    waitSelector: .ready
+out:
+  - id: 0:docs/intro.md:default
+    index: 0
+    path: docs/intro.md
+    url: http://localhost:3001/preview/index.html
+    baseName: docs/intro
+    frontMatter:
+      steps:
+        - wait 100
+    steps:
+      - wait 100
+    waitSelector: .ready
+    waitStrategy: selector
+    estimatedCost: 140
+    viewport:
+      id: null
+      width: 1280
+      height: 720
+---
+case: builds candidate url when no explicit url exists
+in:
+  - - path: windows\test.yaml
+      frontMatter: {}
+  - serverUrl: http://localhost:8080
+out:
+  - id: 0:windows\test.yaml:default
+    index: 0
+    path: windows\test.yaml
+    url: http://localhost:8080/candidate/windows/test.html
+    baseName: windows\test
+    frontMatter: {}
+    steps: []
+    waitStrategy: networkidle
+    estimatedCost: 130
+    viewport:
+      id: null
+      width: 1280
+      height: 720
+---
+case: expands one spec into multiple viewport capture tasks
+in:
+  - - path: pages/home.yaml
+      frontMatter: {}
+  - serverUrl: http://localhost:3001
+    viewport:
+      - id: desktop
+        width: 1280
+        height: 720
+      - id: mobile
+        width: 390
+        height: 844
+out:
+  - id: 0:pages/home.yaml:desktop
+    index: 0
+    path: pages/home.yaml
+    url: http://localhost:3001/candidate/pages/home.html
+    baseName: pages/home--desktop
+    frontMatter: {}
+    steps: []
+    waitStrategy: networkidle
+    estimatedCost: 130
+    viewport:
+      id: desktop
+      width: 1280
+      height: 720
+  - id: 0:pages/home.yaml:mobile
+    index: 1
+    path: pages/home.yaml
+    url: http://localhost:3001/candidate/pages/home.html
+    baseName: pages/home--mobile
+    frontMatter: {}
+    steps: []
+    waitStrategy: networkidle
+    estimatedCost: 130
+    viewport:
+      id: mobile
+      width: 390
+      height: 844
+---
+case: frontmatter viewport overrides config viewport
+in:
+  - - path: pages/home.yaml
+      frontMatter:
+        viewport:
+          id: tablet
+          width: 768
+          height: 1024
+  - serverUrl: http://localhost:3001
+    viewport:
+      id: desktop
+      width: 1280
+      height: 720
+out:
+  - id: 0:pages/home.yaml:tablet
+    index: 0
+    path: pages/home.yaml
+    url: http://localhost:3001/candidate/pages/home.html
+    baseName: pages/home--tablet
+    frontMatter:
+      viewport:
+        id: tablet
+        width: 768
+        height: 1024
+    steps: []
+    waitStrategy: networkidle
+    estimatedCost: 130
+    viewport:
+      id: tablet
+      width: 768
+      height: 1024

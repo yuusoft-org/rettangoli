@@ -1,0 +1,43 @@
+file: "./parserCoreHelper.js"
+group: rettangoli-fe-parser-core-contract
+---
+suite: parser-core-contract
+exportName: runParserCoreContract
+---
+case: applies injected hook for web component nodes
+in:
+  - item:
+      rtgl-button: Submit
+out:
+  hookFactoryCalls: 1
+  hasHook: true
+  hasUpdateFn: true
+---
+case: skips injected hook for non web element nodes
+in:
+  - item:
+      div: text
+out:
+  hookFactoryCalls: 0
+  hasHook: false
+  hasUpdateFn: false
+---
+case: does not attach hook when no hook factory is provided
+in:
+  - includeHookFactory: false
+    item:
+      rtgl-button: Submit
+out:
+  hookFactoryCalls: 0
+  hasHook: false
+  hasUpdateFn: false
+---
+suite: parser-error-contract
+exportName: runParserCoreErrorContract
+---
+case: throws on non-array input to createVirtualDom
+in:
+  - scenario: non_array_input
+out:
+  threw: true
+  messageContains: true

@@ -1,7 +1,12 @@
 ---
-title: Border
+title: Image - Border - Width and Color
+description: Verifies image border styling with and without border utility attributes.
+specs:
+  - Base image renders without explicit border utilities.
+  - Border width and color utilities apply visible frame styling.
+  - Border styling does not distort image dimensions.
 ---
 <rtgl-view g="lg" p="lg" w="100vw" h="100vh" d="h">
     <rtgl-image w="200" src="/public/sample1.jpg"></rtgl-image>
-    <rtgl-image w="200" src="/public/sample1.jpg" bw="md" bc="p"></rtgl-image>
+    <rtgl-image w="200" src="/public/sample1.jpg" bw="lg" bc="p"></rtgl-image>
 </rtgl-view>

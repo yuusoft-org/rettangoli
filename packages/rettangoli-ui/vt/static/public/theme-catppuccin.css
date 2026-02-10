@@ -1,0 +1,110 @@
+/* Rettangoli UI Catppuccin theme (Latte default, Mocha on .dark). */
+:root {
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --spacing-xs: 2px;
+  --spacing-sm: 4px;
+  --spacing-md: 8px;
+  --spacing-lg: 16px;
+  --spacing-xl: 32px;
+
+  --border-radius-xs: 1px;
+  --border-radius-sm: 2px;
+  --border-radius-md: 4px;
+  --border-radius-lg: 8px;
+  --border-radius-xl: 16px;
+  --border-radius-f: 50%;
+  --border-radius-full: 9999px;
+
+  --border-width-xs: 1px;
+  --border-width-sm: 2px;
+  --border-width-md: 4px;
+  --border-width-lg: 8px;
+  --border-width-xl: 16px;
+
+  --shadow-sm: 0px 2px 6px rgba(0, 0, 0, .35), 0px 3px 5px rgba(0, 0, 0, .25), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .25);
+  --shadow-md: 0px 5px 12px rgba(0, 0, 0, .35), 0px 3px 5px rgba(0, 0, 0, .25), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .25);
+  --shadow-lg: 0px 10px 24px rgba(0, 0, 0, .35), 0px 3px 5px rgba(0, 0, 0, .25), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .25);
+
+  --h1-font-size: 3rem;
+  --h1-font-weight: 800;
+  --h1-line-height: 1;
+  --h1-letter-spacing: -.025em;
+
+  --h2-font-size: 1.875rem;
+  --h2-font-weight: 600;
+  --h2-line-height: 2.25rem;
+  --h2-letter-spacing: -.025em;
+
+  --h3-font-size: 1.5rem;
+  --h3-font-weight: 600;
+  --h3-line-height: 2rem;
+  --h3-letter-spacing: -.025em;
+
+  --h4-font-size: 1.25rem;
+  --h4-font-weight: 600;
+  --h4-line-height: 1.75rem;
+  --h4-letter-spacing: -.025em;
+
+  --lg-font-size: 1.125rem;
+  --lg-font-weight: 400;
+  --lg-line-height: 1.75rem;
+  --lg-letter-spacing: normal;
+
+  --md-font-size: 1.0625rem;
+  --md-font-weight: 400;
+  --md-line-height: 1.5rem;
+  --md-letter-spacing: normal;
+
+  --sm-font-size: .875rem;
+  --sm-font-weight: 400;
+  --sm-line-height: 1;
+  --sm-letter-spacing: normal;
+
+  --xs-font-size: .75rem;
+  --xs-font-weight: 400;
+  --xs-line-height: 1;
+  --xs-letter-spacing: normal;
+
+  /* Catppuccin Latte */
+  --primary: #1e66f5;
+  --primary-foreground: #eff1f5;
+  --secondary: #ccd0da;
+  --secondary-foreground: #4c4f69;
+  --destructive: #d20f39;
+  --destructive-foreground: #eff1f5;
+
+  --background: #eff1f5;
+  --foreground: #4c4f69;
+  --muted: #e6e9ef;
+  --muted-foreground: #6c6f85;
+  --accent: #dce0e8;
+  --accent-foreground: #4c4f69;
+  --border: #bcc0cc;
+  --input: #ccd0da;
+  --ring: #7287fd;
+
+  --anchor-color: inherit;
+  --anchor-color-hover: inherit;
+  --anchor-text-decoration: none;
+  --anchor-text-decoration-hover: underline;
+}
+
+.dark {
+  /* Catppuccin Mocha */
+  --background: #1e1e2e;
+  --foreground: #cdd6f4;
+  --primary: #89b4fa;
+  --primary-foreground: #1e1e2e;
+  --secondary: #313244;
+  --secondary-foreground: #cdd6f4;
+  --muted: #313244;
+  --muted-foreground: #a6adc8;
+  --accent: #45475a;
+  --accent-foreground: #cdd6f4;
+  --destructive: #f38ba8;
+  --destructive-foreground: #1e1e2e;
+  --border: #585b70;
+  --input: #45475a;
+  --ring: #b4befe;
+}

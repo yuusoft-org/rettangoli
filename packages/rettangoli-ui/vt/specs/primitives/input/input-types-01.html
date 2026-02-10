@@ -1,17 +1,14 @@
 ---
-title: Types
+title: Input - Type - Text and Password
+description: Verifies type switching between text and password input modes.
+specs:
+  - Missing type defaults to text behavior.
+  - Password type masks input characters visually.
+  - Mixed type controls render consistently in one layout.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
-  <rtgl-text>email</rtgl-text>
-  <rtgl-input type="email" ></rtgl-input>
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-text>text (default)</rtgl-text>
+  <rtgl-input></rtgl-input>
   <rtgl-text>password</rtgl-text>
-  <rtgl-input type="password" ></rtgl-input>
-  <rtgl-text>number</rtgl-text>
-  <rtgl-input type="number" ></rtgl-input>
-  <rtgl-text>tel</rtgl-text>
-  <rtgl-input type="tel" ></rtgl-input>
-  <rtgl-text>url</rtgl-text>
-  <rtgl-input type="url" ></rtgl-input>
-  <rtgl-text>text</rtgl-text>
-  <rtgl-input type="text" ></rtgl-input>
+  <rtgl-input type="password"></rtgl-input>
 </rtgl-view>

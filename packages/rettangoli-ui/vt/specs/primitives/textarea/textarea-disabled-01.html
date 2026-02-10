@@ -1,0 +1,19 @@
+---
+title: Textarea - Disabled - Interactive State
+description: Verifies disabled textarea rendering against an enabled textarea for contrast.
+specs:
+  - Disabled textarea appears non-interactive.
+  - Enabled textarea preserves baseline interaction affordance.
+  - Disabled and enabled controls align consistently in shared layout.
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Disabled textarea</rtgl-text>
+    <rtgl-textarea disabled rows="4" placeholder="Disabled"></rtgl-textarea>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Enabled textarea</rtgl-text>
+    <rtgl-textarea rows="4" placeholder="Enabled"></rtgl-textarea>
+  </rtgl-view>
+</rtgl-view>

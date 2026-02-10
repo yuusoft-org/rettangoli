@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/vt",
-  "version": "0.0.14",
+  "version": "1.0.0-rc5",
   "description": "Rettangoli Visual Testing",
   "type": "module",
   "main": "./src/index.js",
@@ -9,7 +9,10 @@
     "./cli": "./src/cli/index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run --reporter=verbose",
+    "test:e2e": "node e2e/run.js",
+    "test:e2e:full": "bash scripts/docker-e2e-test.sh",
+    "bench:capture": "node ./scripts/benchmark-capture.js"
   },
   "dependencies": {
     "commander": "^13.1.0",
@@ -19,5 +22,9 @@
     "playwright": "1.57.0",
     "sharp": "^0.34.5",
     "shiki": "^3.3.0"
+  },
+  "devDependencies": {
+    "puty": "^0.1.1",
+    "vitest": "^4.0.15"
   }
 }

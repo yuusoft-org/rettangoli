@@ -1,48 +1,9 @@
-elementName: rtgl-select
-
-viewDataSchema:
-  type: object
-
-attrsSchema:
-  type: object
-  properties:
-    placeholder:
-      type: string
-
-propsSchema:
-  type: object
-  properties:
-    placeholder:
-      type: string
-    options:
-      type: array
-      items:
-        type: object
-        properties:
-          label:
-            type: string
-          value:
-            type: any
-          testId:
-            type: string
-    selectedValue:
-      type: any
-    onChange:
-      type: function
-    no-clear:
-      type: boolean
-    addOption:
-      type: object
-      properties:
-        label:
-          type: string
-
 refs:
-  select-button:
+  selectButton:
     eventListeners:
       click:
         handler: handleButtonClick
-  clear-button:
+  clearButton:
     eventListeners:
       click:
         handler: handleClearClick
@@ -50,7 +11,7 @@ refs:
     eventListeners:
       close:
         handler: handleClickOptionsPopoverOverlay
-  option-*:
+  option*:
     eventListeners:
       click:
         handler: handleOptionClick
@@ -58,7 +19,7 @@ refs:
         handler: handleOptionMouseEnter
       mouseleave:
         handler: handleOptionMouseLeave
-  option-add:
+  optionAdd:
     eventListeners:
       click:
         handler: handleAddOptionClick
@@ -66,23 +27,19 @@ refs:
         handler: handleAddOptionMouseEnter
       mouseleave:
         handler: handleAddOptionMouseLeave
-
-events: {}
-
 template:
-  - rtgl-button#select-button v=ol ${containerAttrString} data-testid="select-button":
+  - rtgl-button#selectButton v=ol ${containerAttrString} data-testid="select-button":
       - rtgl-view d=h av=c w=f:
-          - rtgl-text c=${selectedLabelColor} ellipsis: ${selectedLabel}
-          - rtgl-view mh=md flex=1:
+          - rtgl-text w=1fg c=${selectedLabelColor} ellipsis: ${selectedLabel}
           - $if showClear:
-              - rtgl-svg#clear-button mr=md svg=x wh=16 c=mu-fg cur=p data-testid="select-clear-button":
-          - rtgl-svg svg=chevronDown wh=16 c=mu-fg:
-  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} placement=right-start:
-      - rtgl-view wh=300 g=xs slot=content bgc=background br=md sv=true:
+              - rtgl-svg#clearButton ml=md svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
+          - rtgl-svg ml=md svg=chevronDown wh=16 c=mu-fg: null
+  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs:
+      - rtgl-view wh=300 g=xs slot=content bgc=mu br=md sv=true:
           - $for option, i in options:
-              - rtgl-view#option-${i} w=f ph=lg pv=md cur=p br=md bgc=${option.bgc} data-testid=${option.testId}:
+              - rtgl-view#option${i} w=f ph=lg pv=md cur=pointer br=md bgc=${option.bgc} data-testid=${option.testId}:
                   - rtgl-text: ${option.label}
           - $if showAddOption:
-              - rtgl-view w=f bw=xs bc=mu-bg bt=sm:
-              - rtgl-view#option-add w=f ph=lg pv=md cur=p br=md bgc=${addOptionBgc} data-testid="select-add-option":
+              - rtgl-view w=f bw=xs bc=mu bwt=sm: null
+              - rtgl-view#optionAdd w=f ph=lg pv=md cur=pointer br=md bgc=${addOptionBgc} data-testid="select-add-option":
                   - rtgl-text c=ac: ${addOptionLabel}

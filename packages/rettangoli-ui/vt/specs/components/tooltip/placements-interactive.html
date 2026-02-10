@@ -1,11 +1,43 @@
 ---
-title: "Placements Interactive"
+title: Tooltip - Placement - Interactive Grid
+description: Verifies dynamic placement changes across edge and center placement variants.
+specs:
+  - Hovering triggers updates tooltip placement and coordinates.
+  - Top, side, and bottom placement families render in one grid.
+  - Placement text content updates with active placement.
+steps:
+  - action: wait
+    ms: 150
+  - action: select
+    testId: tooltip-top-start
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: '#tooltip[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: exists
+    selector: '#tooltip[open]'
+  - action: screenshot
+  - action: select
+    testId: tooltip-right-end
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: '#tooltip[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: exists
+    selector: '#tooltip[open]'
+  - action: screenshot
 ---
 <rtgl-view g="lg" h="100vh" w="100vw" ah="c" av="c">
   <rtgl-view dir="col" g="xl">
     <!-- Top placements -->
     <rtgl-view g="lg" ah="c">
-      <rtgl-button id="btn-top-start" w="120">Top Start</rtgl-button>
+      <rtgl-button id="btn-top-start" data-testid="tooltip-top-start" w="120">Top Start</rtgl-button>
       <rtgl-button id="btn-top" w="120">Top</rtgl-button>
       <rtgl-button id="btn-top-end" w="120">Top End</rtgl-button>
     </rtgl-view>
@@ -23,7 +55,7 @@ title: "Placements Interactive"
       <rtgl-view dir="col" g="md">
         <rtgl-button id="btn-right-start" w="120">Right Start</rtgl-button>
         <rtgl-button id="btn-right" w="120">Right</rtgl-button>
-        <rtgl-button id="btn-right-end" w="120">Right End</rtgl-button>
+        <rtgl-button id="btn-right-end" data-testid="tooltip-right-end" w="120">Right End</rtgl-button>
       </rtgl-view>
     </rtgl-view>
 
@@ -48,6 +80,21 @@ title: "Placements Interactive"
       'bottom-start', 'bottom', 'bottom-end'
     ];
 
+    const placeMap = {
+      'top': 't',
+      'top-start': 'ts',
+      'top-end': 'te',
+      'right': 'r',
+      'right-start': 'rs',
+      'right-end': 're',
+      'bottom': 'b',
+      'bottom-start': 'bs',
+      'bottom-end': 'be',
+      'left': 'l',
+      'left-start': 'ls',
+      'left-end': 'le',
+    };
+
     placements.forEach(placement => {
     const btnId = `btn-${placement}`;
     const button = document.getElementById(btnId);
@@ -71,7 +118,7 @@ title: "Placements Interactive"
       }
       
       tooltip.setAttribute('content', `Placement: ${placement}`);
-      tooltip.setAttribute('placement', placement);
+      tooltip.setAttribute('place', placeMap[placement] || 't');
       tooltip.setAttribute('open', '');
       tooltip.setAttribute('x', x);
       tooltip.setAttribute('y', y);

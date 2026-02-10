@@ -1,8 +1,12 @@
 ---
-title: "Scroll"
-skipScreenshot: true
+title: Dialog - Scroll - Long Content Overflow
+description: Verifies scrolling behavior when dialog content exceeds available viewport height.
+specs:
+  - Dialog remains open with a large repeated content block.
+  - Overflowing content area supports scrollable presentation.
+  - Host layout remains stable while dialog is active.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-button id="button">Open Dialog</rtgl-button>
   <rtgl-dialog id="dialog" open>
     <rtgl-view slot="content" g="md">

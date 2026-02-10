@@ -1,7 +1,7 @@
 ---
 title: Basic
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-select id="select"></rtgl-select>
   <rtgl-select id="select2" w="300"></rtgl-select>
   <rtgl-select id="select3" w="f"></rtgl-select>
@@ -13,7 +13,7 @@ title: Basic
   const select2 = document.getElementById('select2')
   const select3 = document.getElementById('select3')
 
-  select.addEventListener('option-selected', (e) => {
+  select.addEventListener('value-change', (e) => {
     console.log(e.detail);
   });
 
@@ -23,7 +23,7 @@ title: Basic
     { value: 3, label: 'Option 3' },
   ]
 
-  select2.addEventListener('option-selected', (e) => {
+  select2.addEventListener('value-change', (e) => {
     console.log(e.detail);
   });
 
@@ -33,7 +33,7 @@ title: Basic
     { value: 3, label: 'Option 3' },
   ]
 
-  select3.addEventListener('option-selected', (e) => {
+  select3.addEventListener('value-change', (e) => {
     console.log(e.detail);
   });
 

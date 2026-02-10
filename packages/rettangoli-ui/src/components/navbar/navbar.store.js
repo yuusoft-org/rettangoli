@@ -1,20 +1,36 @@
 export const createInitialState = () => Object.freeze({});
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot'];
+const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'start'];
 
-const stringifyAttrs = (attrs) => {
-  return Object.entries(attrs).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
+const stringifyAttrs = (props = {}) => {
+  return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
 }
 
-export const selectViewData = ({ state, props, attrs }) => {
-  console.log('attrs', {
-    attrs,
-    entries: Object.entries(attrs)
-  })
+const parseMaybeEncodedJson = (value) => {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (typeof value === "object") {
+    return value;
+  }
+  if (typeof value !== "string") {
+    return undefined;
+  }
+  try {
+    return JSON.parse(decodeURIComponent(value));
+  } catch {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return undefined;
+    }
+  }
+};
 
-  const attrsStart = attrs.start ? JSON.parse(decodeURIComponent(attrs.start)) : props.start;
+export const selectViewData = ({ props }) => {
+  const attrsStart = parseMaybeEncodedJson(props.start) || props.start;
 
-  const containerAttrString = stringifyAttrs(attrs);
+  const containerAttrString = stringifyAttrs(props);
   const start = attrsStart || {
     label: '',
     // href: undefined,
@@ -35,12 +51,10 @@ export const selectViewData = ({ state, props, attrs }) => {
 }
 
 export const selectPath = ({ props }) => {
-  return props.start.path;
+  return props.start?.path;
 }
 
-export const setState = (state) => {
+export const setState = ({ state }) => {
   // do doSomething
 }
-
-
 

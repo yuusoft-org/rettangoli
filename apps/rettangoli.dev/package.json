@@ -1,12 +1,14 @@
 {
-  "type": "module",
   "scripts": {
     "build": "rtgl sites build",
-    "dev": "rtgl sites watch",
-    "serve": "bunx serve _site"
+    "watch": "rtgl sites watch",
+    "dev": "npm run watch",
+    "generate": "rtgl vt generate",
+    "screenshot": "rtgl vt screenshot",
+    "report": "rtgl vt report",
+    "accept": "rtgl vt accept"
   },
-  "dependencies": {
-    "markdown-it": "^14.1.0",
-    "shiki": "^3.13.0"
+  "devDependencies": {
+    "rtgl": "1.0.0-rc8"
   }
 }

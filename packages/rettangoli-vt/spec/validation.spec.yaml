@@ -1,0 +1,480 @@
+file: "../src/validation.js"
+group: vt-validation
+---
+suite: validateVtConfig
+exportName: validateVtConfig
+---
+case: accepts minimal valid vt config
+in:
+  - path: ./vt
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  sections:
+    - title: Pages
+      files: pages
+---
+case: accepts page keys with hyphen and underscore
+in:
+  - path: ./vt
+    sections:
+      - title: components_basic
+        files: components
+      - type: groupLabel
+        title: Group label can have spaces
+        items:
+          - title: forms-advanced
+            files: forms
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  sections:
+    - title: components_basic
+      files: components
+    - type: groupLabel
+      title: Group label can have spaces
+      items:
+        - title: forms-advanced
+          files: forms
+---
+case: requires sections to be a non-empty array
+in:
+  - path: ./vt
+  - rettangoli.config.yaml
+throws: vt.sections
+---
+case: rejects spaces in flat section title
+in:
+  - path: ./vt
+    sections:
+      - title: components basic
+        files: components
+  - rettangoli.config.yaml
+throws: cannot include spaces
+---
+case: rejects spaces in group item title
+in:
+  - path: ./vt
+    sections:
+      - type: groupLabel
+        title: Group label
+        items:
+          - title: forms advanced
+            files: forms
+  - rettangoli.config.yaml
+throws: cannot include spaces
+---
+case: rejects case-insensitive duplicate section page keys
+in:
+  - path: ./vt
+    sections:
+      - title: button-basic
+        files: components
+      - type: groupLabel
+        title: Group label
+        items:
+          - title: Button-Basic
+            files: components/forms
+  - rettangoli.config.yaml
+throws: must be unique (case-insensitive)
+---
+case: rejects legacy root capture options
+in:
+  - path: ./vt
+    waitSelector: "#root"
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: vt.waitSelector
+---
+case: accepts minimal runtime knobs
+in:
+  - path: ./vt
+    concurrency: 4
+    timeout: 45000
+    waitEvent: app:ready
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  concurrency: 4
+  timeout: 45000
+  waitEvent: app:ready
+  sections:
+    - title: Pages
+      files: pages
+---
+case: accepts minimal managed service config
+in:
+  - path: ./vt
+    url: http://127.0.0.1:4173
+    service:
+      start: bun run preview
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  url: http://127.0.0.1:4173
+  service:
+    start: bun run preview
+  sections:
+    - title: Pages
+      files: pages
+---
+case: rejects managed service without vt.url
+in:
+  - path: ./vt
+    service:
+      start: bun run preview
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: vt.url
+---
+case: rejects unsupported service keys
+in:
+  - path: ./vt
+    url: http://127.0.0.1:4173
+    service:
+      start: bun run preview
+      cwd: .
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: supports only "start"
+---
+case: accepts single viewport object
+in:
+  - path: ./vt
+    viewport:
+      id: desktop
+      width: 1280
+      height: 720
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  viewport:
+    id: desktop
+    width: 1280
+    height: 720
+  sections:
+    - title: Pages
+      files: pages
+---
+case: accepts viewport array with unique ids
+in:
+  - path: ./vt
+    viewport:
+      - id: desktop
+        width: 1280
+        height: 720
+      - id: mobile
+        width: 390
+        height: 844
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  viewport:
+    - id: desktop
+      width: 1280
+      height: 720
+    - id: mobile
+      width: 390
+      height: 844
+  sections:
+    - title: Pages
+      files: pages
+---
+case: rejects viewport entries without id
+in:
+  - path: ./vt
+    viewport:
+      width: 1280
+      height: 720
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: vt.viewport[0].id
+---
+case: rejects duplicate viewport ids case-insensitively
+in:
+  - path: ./vt
+    viewport:
+      - id: Desktop
+        width: 1280
+        height: 720
+      - id: desktop
+        width: 390
+        height: 844
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: duplicates
+---
+case: rejects vt.capture user config
+in:
+  - path: ./vt
+    sections:
+      - title: Pages
+        files: pages
+    capture:
+      waitStrategy: load
+  - rettangoli.config.yaml
+throws: vt.capture
+---
+suite: validateFrontMatter
+exportName: validateFrontMatter
+---
+case: accepts block steps and wait selector strategy
+in:
+  - waitStrategy: selector
+    waitSelector: "#ready"
+    steps:
+      - select search-input:
+          - write hi
+          - keypress Enter
+  - specs/page.yaml
+---
+case: accepts structured action steps
+in:
+  - steps:
+      - action: waitFor
+        selector: "[data-testid='login-page']"
+        state: visible
+        timeoutMs: 5000
+      - action: select
+        testId: login-email
+        steps:
+          - action: write
+            value: user@example.com
+      - action: assert
+        type: url
+        value: /dashboard
+        match: includes
+  - specs/page.yaml
+---
+case: accepts frontmatter viewport override object
+in:
+  - viewport:
+      id: tablet
+      width: 768
+      height: 1024
+  - specs/page.yaml
+---
+case: accepts frontmatter viewport override array
+in:
+  - viewport:
+      - id: desktop
+        width: 1280
+        height: 720
+      - id: mobile
+        width: 390
+        height: 844
+  - specs/page.yaml
+---
+case: rejects frontmatter viewport without id
+in:
+  - viewport:
+      width: 768
+      height: 1024
+  - specs/page.yaml
+throws: frontMatter.viewport[0].id
+---
+case: rejects empty step strings
+in:
+  - steps:
+      - ""
+  - specs/page.yaml
+throws: frontMatter.steps[0]
+---
+case: rejects unknown structured action
+in:
+  - steps:
+      - action: waitUntil
+  - specs/page.yaml
+throws: must be one of
+---
+case: rejects structured select without testId
+in:
+  - steps:
+      - action: select
+        steps:
+          - action: click
+  - specs/page.yaml
+throws: testId
+---
+case: rejects structured select without nested steps array
+in:
+  - steps:
+      - action: select
+        testId: login-email
+  - specs/page.yaml
+throws: steps
+---
+case: rejects structured waitFor invalid state
+in:
+  - steps:
+      - action: waitFor
+        selector: "#app"
+        state: ready
+  - specs/page.yaml
+throws: must be one of
+---
+case: rejects structured selectOption with multiple discriminators
+in:
+  - steps:
+      - action: selectOption
+        value: one
+        label: One
+  - specs/page.yaml
+throws: exactly one of
+---
+case: rejects unknown keys in structured action
+in:
+  - steps:
+      - action: screenshot
+        foo: bar
+  - specs/page.yaml
+throws: unknown keys
+---
+case: accepts structured assert steps including js object value
+in:
+  - steps:
+      - assert:
+          type: url
+          value: rettangoli.dev
+          match: includes
+      - assert:
+          type: js
+          fn: app.getPayload
+          args: [foo]
+          value:
+            ok: true
+            tags: [a, b]
+  - specs/page.yaml
+---
+case: rejects js assert without global/fn discriminator
+in:
+  - steps:
+      - assert:
+          type: js
+          value: true
+  - specs/page.yaml
+throws: requires exactly one of "global" or "fn"
+---
+case: accepts structured exists visible hidden and text asserts
+in:
+  - steps:
+      - assert:
+          type: exists
+          selector: "[data-testid='status']"
+          timeoutMs: 200
+      - assert:
+          type: visible
+          selector: "#status"
+      - assert:
+          type: hidden
+          selector: "#spinner"
+      - assert:
+          type: text
+          selector: "#message"
+          value: ready
+          match: equals
+  - specs/page.yaml
+---
+case: rejects assert with unsupported type
+in:
+  - steps:
+      - assert:
+          type: attr
+          selector: "#status"
+          value: ready
+  - specs/page.yaml
+throws: must be one of
+---
+case: rejects assert with unsupported match mode
+in:
+  - steps:
+      - assert:
+          type: text
+          selector: "#message"
+          value: ready
+          match: startsWith
+  - specs/page.yaml
+throws: must be one of
+---
+case: rejects assert with invalid timeoutMs
+in:
+  - steps:
+      - assert:
+          type: exists
+          selector: "#message"
+          timeoutMs: -1
+  - specs/page.yaml
+throws: must be >= 0
+---
+case: rejects url assert without non-empty value
+in:
+  - steps:
+      - assert:
+          type: url
+          value: ""
+  - specs/page.yaml
+throws: cannot be empty
+---
+case: rejects text assert without string value
+in:
+  - steps:
+      - assert:
+          type: text
+          selector: "#message"
+          value: 12
+  - specs/page.yaml
+throws: must be a string
+---
+case: rejects js assert with both global and fn
+in:
+  - steps:
+      - assert:
+          type: js
+          global: app.ready
+          fn: app.getReady
+          value: true
+  - specs/page.yaml
+throws: requires exactly one of "global" or "fn"
+---
+case: rejects js assert with non-array args
+in:
+  - steps:
+      - assert:
+          type: js
+          fn: app.getReady
+          args: nope
+          value: true
+  - specs/page.yaml
+throws: args
+---
+case: rejects assert step when assert payload is not an object
+in:
+  - steps:
+      - assert: nope
+  - specs/page.yaml
+throws: must be an object

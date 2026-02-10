@@ -1,7 +1,7 @@
 ---
 title: "Update Key"
 ---
-<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
   <rtgl-button id="update-button">Update</rtgl-button>
 </rtgl-view>
 
@@ -41,7 +41,7 @@ title: "Update Key"
     description: 'Testing key update for all input components',
     fields: [{
       name: 'email',
-      inputType: 'inputText',
+      inputType: 'input-text',
       label: 'Email (Input)',
       description: 'Text input field',
       placeholder: 'Enter email',
@@ -52,7 +52,7 @@ title: "Update Key"
       }],
     }, {
       name: 'age',
-      inputType: 'inputText',
+      inputType: 'input-text',
       label: 'Age (Input)',
       description: 'Number input field',
       required: true,
@@ -73,7 +73,7 @@ title: "Update Key"
       ]
     }, {
       name: 'color',
-      inputType: 'colorPicker',
+      inputType: 'color-picker',
       label: 'Color (Color Picker)',
       description: 'Color selection'
     }, {

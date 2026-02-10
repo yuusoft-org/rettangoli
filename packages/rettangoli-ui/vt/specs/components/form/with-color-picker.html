@@ -1,7 +1,7 @@
 ---
 title: "With Color Picker"
 ---
-<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
 
 <script>
@@ -16,12 +16,12 @@ title: "With Color Picker"
     description: 'Select your favorite colors',
     fields: [{
       name: 'favoriteColor',
-      inputType: 'colorPicker',
+      inputType: 'color-picker',
       label: 'Favorite Color',
       description: 'Pick your favorite color',
     }, {
       name: 'backgroundColor',
-      inputType: 'colorPicker',
+      inputType: 'color-picker',
       label: 'Background Color',
       description: 'Choose a background color',
     }],

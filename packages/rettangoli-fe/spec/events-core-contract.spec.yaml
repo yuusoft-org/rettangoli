@@ -1,0 +1,68 @@
+file: "./eventsCoreHelper.js"
+group: rettangoli-fe-events-core-contract
+---
+suite: events-core-contract
+exportName: runEventsCoreCase
+---
+case: injects payload and _event for handler listeners
+in:
+  - scenario: handler_payload_injection
+out:
+  called: 1
+  source: button
+  hasEvent: true
+---
+case: resolves handler payload expressions with _event context
+in:
+  - scenario: handler_payload_expression_resolution
+out:
+  called: 1
+  eventType: click
+  hasEvent: true
+---
+case: injects payload and _event/_action for action listeners
+in:
+  - scenario: action_payload_injection
+out:
+  called: 1
+  field: email
+  action: setEmail
+  hasEvent: true
+---
+case: action listeners require store action dispatcher
+in:
+  - scenario: action_requires_dispatcher
+throws: requires handlers.handleCallStoreAction
+---
+case: targetOnly blocks bubbled events
+in:
+  - scenario: target_only_guard
+out:
+  called: 0
+---
+case: once executes only once per target
+in:
+  - scenario: once_per_target
+out:
+  called: 1
+---
+case: debounce is trailing-only
+in:
+  - scenario: debounce_trailing_only
+out:
+  calledBeforeFlush: 0
+  calledAfterFlush: 1
+  clearCalls: 1
+---
+case: throttle is leading-only
+in:
+  - scenario: throttle_leading_only
+out:
+  called: 2
+---
+case: debounce clears timer ref even when callback throws
+in:
+  - scenario: debounce_clears_timer_on_callback_error
+out:
+  threw: true
+  timerCleared: true

@@ -1,9 +1,13 @@
 ---
-title: Position absolute (left and right)
+title: View - Position - Fixed Left Right
+description: Verifies fixed positioning using `pos="fix"` with left and right edge shorthands.
+specs:
+  - Edge value `l` pins element to left with full height.
+  - Edge value `r` pins element to right with full height.
 ---
 <rtgl-view d="h" g="lg" p="lg" wh="f">
-    <rtgl-view bgc="mu" pos="fix" cor="left" w="100">
+    <rtgl-view bgc="mu" pos="fix" edge="l" w="100">
     </rtgl-view>
-    <rtgl-view bgc="mu" pos="fix" cor="right" w="100"">
+    <rtgl-view bgc="mu" pos="fix" edge="r" w="100">
     </rtgl-view>
 </rtgl-view>

@@ -1,4 +1,10 @@
-import { css, dimensionWithUnit } from "../common.js";
+import {
+  css,
+  dimensionWithUnit,
+  overlayLinkStyles,
+  syncLinkOverlay,
+  applyInlineWidthDimension,
+} from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import textStyles from "../styles/textStyles.js";
 import textColorStyles from "../styles/textColorStyles.js";
@@ -30,18 +36,7 @@ class RettangoliTextElement extends HTMLElement {
           text-decoration: var(--anchor-text-decoration-hover);
           color: var(--anchor-color-hover);
         }
-        :host([href]) {
-          cursor: pointer;
-          position: relative;
-        }
-        :host([href]) a {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          z-index: 1;
-        }
+        ${overlayLinkStyles}
         ${textStyles}
         ${textColorStyles}
         ${marginStyles}
@@ -63,7 +58,7 @@ class RettangoliTextElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "w", "ellipsis", "href", "target"];
+    return ["key", "w", "ellipsis", "href", "new-tab", "rel"];
   }
 
   connectedCallback() {
@@ -72,7 +67,7 @@ class RettangoliTextElement extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "href" || name === "target") {
+    if (name === "href" || name === "new-tab" || name === "rel") {
       this._updateDOM();
     } else {
       this._updateStyling();
@@ -93,43 +88,27 @@ class RettangoliTextElement extends HTMLElement {
       this.style.whiteSpace = "";
     }
 
-    if (width === "f") {
-      this.style.width = "var(--width-stretch)";
-    } else if (width !== undefined) {
-      this.style.width = width;
-    } else {
-      this.style.width = "";
-    }
+    // Allow shrinking in flex layouts so ellipsis and wrapping constraints work predictably.
+    applyInlineWidthDimension({
+      style: this.style,
+      width,
+      flexMinWidth: "0",
+    });
   }
 
   _updateDOM() {
     const href = this.getAttribute("href");
-    const target = this.getAttribute("target");
+    const newTab = this.hasAttribute("new-tab");
+    const rel = this.getAttribute("rel");
 
-    // Ensure slot is always in the shadow DOM
-    if (this._slotElement.parentNode !== this.shadow) {
-      this.shadow.appendChild(this._slotElement);
-    }
-
-    if (href) {
-      if (!this._linkElement) {
-        // Create link overlay only if it doesn't exist
-        this._linkElement = document.createElement("a");
-        this.shadow.appendChild(this._linkElement);
-      }
-
-      // Update link attributes
-      this._linkElement.href = href;
-      if (target) {
-        this._linkElement.target = target;
-      } else {
-        this._linkElement.removeAttribute("target");
-      }
-    } else if (this._linkElement) {
-      // Remove link overlay
-      this.shadow.removeChild(this._linkElement);
-      this._linkElement = null;
-    }
+    this._linkElement = syncLinkOverlay({
+      shadowRoot: this.shadow,
+      slotElement: this._slotElement,
+      linkElement: this._linkElement,
+      href,
+      newTab,
+      rel,
+    });
   }
 }
 

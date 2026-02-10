@@ -1,0 +1,36 @@
+componentName: rtgl-select
+propsSchema:
+  type: object
+  properties:
+    placeholder:
+      type: string
+    options:
+      type: array
+      items:
+        type: object
+        properties:
+          label:
+            type: string
+          value:
+            type: any
+          testId:
+            type: string
+    selectedValue:
+      type: any
+    onChange:
+      type: function
+    noClear:
+      type: boolean
+    addOption:
+      type: object
+      properties:
+        label:
+          type: string
+    w:
+      type: string
+events:
+  value-change: {}
+  add-option-click: {}
+methods:
+  type: object
+  properties: {}

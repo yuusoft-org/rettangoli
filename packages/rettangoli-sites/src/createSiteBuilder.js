@@ -2,9 +2,17 @@ import { convertToHtml } from 'yahtml';
 import { parseAndRender } from 'jempl';
 import path from 'path';
 import yaml from 'js-yaml';
+import matter from 'gray-matter';
 
 import MarkdownIt from 'markdown-it';
 import rtglMarkdown from './rtglMarkdown.js';
+import builtinTemplateFunctions from './builtinTemplateFunctions.js';
+
+const MATTER_OPTIONS = {
+  engines: {
+    yaml: (source) => yaml.load(source, { schema: yaml.JSON_SCHEMA })
+  }
+};
 
 // Deep merge utility function
 function deepMerge(target, source) {
@@ -31,21 +39,59 @@ function isObject(item) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
 
-export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet = false, isScreenshotMode = false }) {
+export function createSiteBuilder({
+  fs,
+  rootDir = '.',
+  outputPath = '_site',
+  md,
+  markdown = {},
+  keepMarkdownFiles = false,
+  functions = {},
+  quiet = false,
+  isScreenshotMode = false
+}) {
   return async function build() {
+    const templateFunctions = {
+      ...builtinTemplateFunctions,
+      ...functions
+    };
+
     // Use provided md or default to rtglMarkdown
-    const mdInstance = md || rtglMarkdown(MarkdownIt);
+    const mdInstance = md || rtglMarkdown(MarkdownIt, markdown);
+    const absoluteRootDir = path.resolve(rootDir);
+    const outputRootDir = path.resolve(rootDir, outputPath);
+
+    function cleanOutputDir() {
+      const rootPathInfo = path.parse(absoluteRootDir);
+      const outputPathInfo = path.parse(outputRootDir);
+
+      if (outputRootDir === absoluteRootDir) {
+        throw new Error(`Refusing to clean output path "${outputPath}" because it resolves to rootDir.`);
+      }
+
+      if (outputRootDir === outputPathInfo.root || outputRootDir === rootPathInfo.root) {
+        throw new Error(`Refusing to clean output path "${outputPath}" because it resolves to filesystem root.`);
+      }
+
+      if (fs.existsSync(outputRootDir)) {
+        fs.rmSync(outputRootDir, { recursive: true, force: true });
+      }
+      fs.mkdirSync(outputRootDir, { recursive: true });
+    }
 
     // Read all partials and create a JSON object
     const partialsDir = path.join(rootDir, 'partials');
     const partials = {};
 
     if (fs.existsSync(partialsDir)) {
-      const files = fs.readdirSync(partialsDir);
+      const files = fs.readdirSync(partialsDir, { withFileTypes: true });
       files.forEach(file => {
-        const filePath = path.join(partialsDir, file);
+        if (!file.isFile() || (!file.name.endsWith('.yaml') && !file.name.endsWith('.yml'))) {
+          return;
+        }
+        const filePath = path.join(partialsDir, file.name);
         const fileContent = fs.readFileSync(filePath, 'utf8');
-        const nameWithoutExt = path.basename(file, path.extname(file));
+        const nameWithoutExt = path.basename(file.name, path.extname(file.name));
         // Convert partial content from YAML string to JSON
         partials[nameWithoutExt] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
       });
@@ -84,10 +130,10 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
           // Recursively read subdirectories
           const newBasePath = basePath ? `${basePath}/${item.name}` : item.name;
           readTemplatesRecursively(itemPath, newBasePath);
-        } else if (item.isFile() && item.name.endsWith('.yaml')) {
+        } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.yml'))) {
           // Read and convert YAML file
           const fileContent = fs.readFileSync(itemPath, 'utf8');
-          const nameWithoutExt = path.basename(item.name, '.yaml');
+          const nameWithoutExt = path.basename(item.name, path.extname(item.name));
           const templateKey = basePath ? `${basePath}/${nameWithoutExt}` : nameWithoutExt;
           templates[templateKey] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
         }
@@ -96,37 +142,20 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
 
     readTemplatesRecursively(templatesDir);
 
-    // Function to extract frontmatter and content from a page file
+    // Parse frontmatter only when it is truly at the file start.
     function extractFrontmatterAndContent(pagePath) {
       const pageFileContent = fs.readFileSync(pagePath, 'utf8');
-      const lines = pageFileContent.split('\n');
-      let frontmatterStart = -1;
-      let frontmatterEnd = -1;
-      let frontmatterCount = 0;
-
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].trim() === '---') {
-          frontmatterCount++;
-          if (frontmatterCount === 1) {
-            frontmatterStart = i + 1;
-          } else if (frontmatterCount === 2) {
-            frontmatterEnd = i;
-            break;
-          }
-        }
+      let parsed;
+      try {
+        parsed = matter(pageFileContent, MATTER_OPTIONS);
+      } catch (error) {
+        throw new Error(`Invalid frontmatter in ${pagePath}: ${error.message}`);
       }
 
-      let frontmatter = {};
-      if (frontmatterStart > 0 && frontmatterEnd > frontmatterStart) {
-        const frontmatterContent = lines.slice(frontmatterStart, frontmatterEnd).join('\n');
-        frontmatter = yaml.load(frontmatterContent, { schema: yaml.JSON_SCHEMA }) || {};
-      }
-
-      // Extract content after frontmatter
-      const contentStart = frontmatterEnd + 1;
-      const content = lines.slice(contentStart).join('\n').trim();
-
-      return { frontmatter, content };
+      return {
+        frontmatter: isObject(parsed.data) ? parsed.data : {},
+        content: (parsed.content || '').trim()
+      };
     }
 
     // Function to scan all pages and build collections
@@ -147,12 +176,12 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
           if (item.isDirectory()) {
             // Recursively scan subdirectories
             scanPages(dir, relativePath);
-          } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.md'))) {
+          } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.yml') || item.name.endsWith('.md'))) {
             // Extract frontmatter and content
             const { frontmatter, content } = extractFrontmatterAndContent(itemPath);
 
             // Calculate URL
-            const baseFileName = item.name.replace(/\.(yaml|md)$/, '');
+            const baseFileName = item.name.replace(/\.(yaml|yml|md)$/, '');
             let url;
 
             // Special case: index files remain at root, others become directories
@@ -195,44 +224,14 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
     }
 
     // Build collections in first pass
-    console.log('Building collections...');
+    if (!quiet) console.log('Building collections...');
     const collections = buildCollections();
 
     // Function to process a single page file
-    async function processPage(pagePath, outputRelativePath, isMarkdown = false) {
+    async function processPage(pagePath, outputRelativePath, isMarkdown = false, markdownOutputRelativePath = null) {
       if (!quiet) console.log(`Processing ${pagePath}...`);
 
-      // Read page content
-      const pageFileContent = fs.readFileSync(pagePath, 'utf8');
-
-      // Extract frontmatter and content
-      const lines = pageFileContent.split('\n');
-      let frontmatterStart = -1;
-      let frontmatterEnd = -1;
-      let frontmatterCount = 0;
-
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].trim() === '---') {
-          frontmatterCount++;
-          if (frontmatterCount === 1) {
-            frontmatterStart = i + 1;
-          } else if (frontmatterCount === 2) {
-            frontmatterEnd = i;
-            break;
-          }
-        }
-      }
-
-      // Store frontmatter
-      let frontmatter = {};
-      if (frontmatterStart > 0 && frontmatterEnd > frontmatterStart) {
-        const frontmatterContent = lines.slice(frontmatterStart, frontmatterEnd).join('\n');
-        frontmatter = yaml.load(frontmatterContent, { schema: yaml.JSON_SCHEMA }) || {};
-      }
-
-      // Get content after frontmatter
-      const contentStart = frontmatterEnd + 1;
-      const rawContent = lines.slice(contentStart).join('\n').trim();
+      const { frontmatter, content: rawContent } = extractFrontmatterAndContent(pagePath);
 
       // Calculate URL for current page
       let url;
@@ -271,9 +270,14 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
         processedPageContent = { __html: htmlContent };
       } else {
         // Convert YAML content to JSON
-        const pageContent = yaml.load(rawContent, { schema: yaml.JSON_SCHEMA });
+        let pageContent;
+        try {
+          pageContent = yaml.load(rawContent, { schema: yaml.JSON_SCHEMA });
+        } catch (error) {
+          throw new Error(`Invalid YAML page content in ${pagePath}: ${error.message}`);
+        }
         // Process the page content to resolve any $partial references with page data
-        processedPageContent = parseAndRender(pageContent, pageData, { partials, functions });
+        processedPageContent = parseAndRender(pageContent, pageData, { partials, functions: templateFunctions });
       }
 
       // Find the template specified in frontmatter
@@ -292,12 +296,12 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
       if (isMarkdown) {
         if (templateToUse) {
           // For markdown with template, use a placeholder and replace after
-          const placeholder = '___MARKDOWN_CONTENT_PLACEHOLDER___';
+          const placeholder = `___MARKDOWN_CONTENT_PLACEHOLDER_${Math.random().toString(36).slice(2)}___`;
           const templateData = { ...pageData, content: placeholder, collections };
-          const templateResult = parseAndRender(templateToUse, templateData, { partials, functions });
+          const templateResult = parseAndRender(templateToUse, templateData, { partials, functions: templateFunctions });
           htmlString = convertToHtml(templateResult);
-          // Replace the placeholder with actual HTML content
-          htmlString = htmlString.replace(placeholder, processedPageContent.__html);
+          // Replace all placeholders with actual markdown HTML content.
+          htmlString = htmlString.split(placeholder).join(processedPageContent.__html);
         } else {
           // Markdown without template - use HTML directly
           htmlString = processedPageContent.__html;
@@ -306,7 +310,7 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
         // YAML content
         const templateData = { ...pageData, content: processedPageContent, collections };
         const result = templateToUse
-          ? parseAndRender(templateToUse, templateData, { partials, functions })
+          ? parseAndRender(templateToUse, templateData, { partials, functions: templateFunctions })
           : processedPageContent;
         // Ensure result is an array for convertToHtml
         const resultArray = Array.isArray(result) ? result : [result];
@@ -323,23 +327,23 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
       if (pageFileName === 'index') {
         if (dirPath && dirPath !== '.') {
           // Nested index file: pages/blog/index.yaml -> _site/blog/index.html
-          outputPath = path.join(rootDir, '_site', dirPath, 'index.html');
-          outputDir = path.join(rootDir, '_site', dirPath);
+          outputPath = path.join(outputRootDir, dirPath, 'index.html');
+          outputDir = path.join(outputRootDir, dirPath);
         } else {
           // Root index file: pages/index.yaml -> _site/index.html
-          outputPath = path.join(rootDir, '_site', 'index.html');
-          outputDir = path.join(rootDir, '_site');
+          outputPath = path.join(outputRootDir, 'index.html');
+          outputDir = path.join(outputRootDir);
         }
       } else {
         // Regular file: pages/test.yaml -> _site/test/index.html
         if (dirPath && dirPath !== '.') {
           // Nested regular file: pages/blog/post.yaml -> _site/blog/post/index.html
-          outputPath = path.join(rootDir, '_site', dirPath, pageFileName, 'index.html');
-          outputDir = path.join(rootDir, '_site', dirPath, pageFileName);
+          outputPath = path.join(outputRootDir, dirPath, pageFileName, 'index.html');
+          outputDir = path.join(outputRootDir, dirPath, pageFileName);
         } else {
           // Root level regular file: pages/test.yaml -> _site/test/index.html
-          outputPath = path.join(rootDir, '_site', pageFileName, 'index.html');
-          outputDir = path.join(rootDir, '_site', pageFileName);
+          outputPath = path.join(outputRootDir, pageFileName, 'index.html');
+          outputDir = path.join(outputRootDir, pageFileName);
         }
       }
 
@@ -350,6 +354,16 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
       // Write HTML to output file
       fs.writeFileSync(outputPath, htmlString);
       if (!quiet) console.log(`  -> Written to ${outputPath}`);
+
+      if (isMarkdown && keepMarkdownFiles && typeof markdownOutputRelativePath === 'string') {
+        const markdownOutputPath = path.join(outputRootDir, markdownOutputRelativePath);
+        const markdownOutputDir = path.dirname(markdownOutputPath);
+        if (!fs.existsSync(markdownOutputDir)) {
+          fs.mkdirSync(markdownOutputDir, { recursive: true });
+        }
+        fs.copyFileSync(pagePath, markdownOutputPath);
+        if (!quiet) console.log(`  -> Copied markdown to ${markdownOutputPath}`);
+      }
     }
 
     // Process all YAML and Markdown files in pages directory recursively
@@ -369,16 +383,16 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
           // Recursively process subdirectories
           await processAllPages(dir, relativePath);
         } else if (item.isFile()) {
-          if (item.name.endsWith('.yaml')) {
+          if (item.name.endsWith('.yaml') || item.name.endsWith('.yml')) {
             // Process YAML file
-            const outputFileName = item.name.replace('.yaml', '.html');
+            const outputFileName = item.name.replace(/\.(yaml|yml)$/, '.html');
             const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
             await processPage(itemPath, outputRelativePath, false);
           } else if (item.name.endsWith('.md')) {
             // Process Markdown file
             const outputFileName = item.name.replace('.md', '.html');
             const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
-            await processPage(itemPath, outputRelativePath, true);
+            await processPage(itemPath, outputRelativePath, true, relativePath);
           }
           // Ignore other file types
         }
@@ -388,15 +402,14 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
     // Function to copy static files recursively
     function copyStaticFiles() {
       const staticDir = path.join(rootDir, 'static');
-      const outputDir = path.join(rootDir, '_site');
 
       if (!fs.existsSync(staticDir)) {
         return;
       }
 
       // Ensure output directory exists
-      if (!fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir, { recursive: true });
+      if (!fs.existsSync(outputRootDir)) {
+        fs.mkdirSync(outputRootDir, { recursive: true });
       }
 
       function copyRecursive(src, dest) {
@@ -424,13 +437,16 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
       const items = fs.readdirSync(staticDir);
       items.forEach(item => {
         const srcPath = path.join(staticDir, item);
-        const destPath = path.join(outputDir, item);
+        const destPath = path.join(outputRootDir, item);
         copyRecursive(srcPath, destPath);
       });
     }
 
     // Start build process
     if (!quiet) console.log('Starting build process...');
+
+    // Clean output directory before each build
+    cleanOutputDir();
 
     // Copy static files first (they can be overwritten by pages)
     copyStaticFiles();

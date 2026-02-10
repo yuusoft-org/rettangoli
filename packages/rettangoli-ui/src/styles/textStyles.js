@@ -2,10 +2,10 @@ import { generateCSS } from "../common.js";
 
 const styles = {
   ta: {
-    s: 'start',
-    c: 'center',
-    e: 'end',
-    j: 'justify'
+    s: "text-align: start;",
+    c: "text-align: center;",
+    e: "text-align: end;",
+    j: "text-align: justify;",
   },
   s: {
     h1: `

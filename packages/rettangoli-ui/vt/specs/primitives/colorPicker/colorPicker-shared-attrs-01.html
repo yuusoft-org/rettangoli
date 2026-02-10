@@ -1,0 +1,77 @@
+---
+title: Color Picker - Shared Attributes - Contract Checks
+description: Verifies shared dimension, visibility, opacity, z-index, and responsive attribute behavior.
+specs:
+  - wh should override w and h
+  - w="f" should map to stretch width
+  - show should win over hide at the same breakpoint
+  - op and z should apply to rendered input styles
+  - responsive-prefixed dimensions should generate media-query rules
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-view d="h" g="md" w="260">
+    <rtgl-color-picker id="cp-wh" w="80" h="20" wh="40" value="#ff5733"></rtgl-color-picker>
+    <rtgl-color-picker id="cp-fill" w="f" h="32" value="#3498db"></rtgl-color-picker>
+  </rtgl-view>
+
+  <rtgl-view d="h" g="md">
+    <rtgl-color-picker id="cp-visibility" hide show value="#2ecc71"></rtgl-color-picker>
+    <rtgl-color-picker id="cp-op-z" op="0.5" z="4" value="#9b59b6"></rtgl-color-picker>
+    <rtgl-color-picker id="cp-responsive" wh="16" md-wh="28" value="#f1c40f"></rtgl-color-picker>
+  </rtgl-view>
+
+  <pre id="results" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+</rtgl-view>
+
+<script>
+  const checks = [];
+
+  const hasRules = (el, expectedRules) => {
+    const styleText = el.shadowRoot.querySelector("style")?.textContent || "";
+    return expectedRules.every((rule) => styleText.includes(rule));
+  };
+
+  const pushCheck = (label, ok) => {
+    checks.push(`${ok ? "PASS" : "FAIL"} ${label}`);
+  };
+
+  const run = async () => {
+    await customElements.whenDefined("rtgl-color-picker");
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    const cpWh = document.getElementById("cp-wh");
+    const cpFill = document.getElementById("cp-fill");
+    const cpVisibility = document.getElementById("cp-visibility");
+    const cpOpZ = document.getElementById("cp-op-z");
+    const cpResponsive = document.getElementById("cp-responsive");
+
+    pushCheck(
+      "wh over w/h (40px x 40px)",
+      hasRules(cpWh, ["width: 40px", "height: 40px"]),
+    );
+    pushCheck(
+      'w="f" maps to --width-stretch',
+      hasRules(cpFill, ["width: var(--width-stretch)"]),
+    );
+    pushCheck(
+      "show wins over hide",
+      hasRules(cpVisibility, ["display: block"]),
+    );
+    pushCheck(
+      "op and z applied",
+      hasRules(cpOpZ, ["opacity: 0.5", "z-index: 4"]),
+    );
+    pushCheck(
+      "md-wh emits responsive width/height rules",
+      hasRules(cpResponsive, [
+        "@media only screen and (max-width: 768px)",
+        "width: 28px",
+        "height: 28px",
+      ]),
+    );
+
+    document.getElementById("results").textContent = checks.join("\n");
+  };
+
+  run();
+</script>

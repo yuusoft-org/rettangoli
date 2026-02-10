@@ -1,0 +1,22 @@
+fe:
+  dirs: ["fe/components"]
+  setup: "fe/setup.js"
+  outfile: "vt/static/public/main.js"
+
+vt:
+  path: "vt"
+  name: "Example3 Advanced E2E Tests"
+  description: "Complex interaction and composition tests for @rettangoli/fe"
+  sections:
+    - title: "PixelGrid"
+      files: "components/pixel-grid"
+      description: "Pixel art canvas"
+    - title: "Kanban"
+      files: "components/kanban"
+      description: "Kanban board"
+    - title: "Stepper"
+      files: "components/stepper"
+      description: "Multi-step wizard"
+    - title: "Dashboard"
+      files: "components/dashboard"
+      description: "Composed dashboard"

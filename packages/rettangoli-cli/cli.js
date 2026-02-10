@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { build, scaffold, watch, examples } from "@rettangoli/fe/cli";
-import { generate, report, accept } from "@rettangoli/vt/cli";
-import { buildSite, watchSite, screenshotCommand, initSite } from "@rettangoli/sites/cli";
+import { build, check, scaffold, watch, examples } from "@rettangoli/fe/cli";
+import { generate, screenshot, report, accept } from "@rettangoli/vt/cli";
+import { buildSite, watchSite, initSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
 import { Command } from "commander";
 import { readFileSync, existsSync } from "fs";
@@ -25,9 +25,12 @@ function readConfig() {
     const configContent = readFileSync(configPath, "utf8");
     return yaml.load(configContent);
   } catch (error) {
-    console.error("Error reading config file:", error.message);
-    return null;
+    throw new Error(`Error reading config file "${configPath}": ${error.message}`);
   }
+}
+
+function collectValues(value, previous = []) {
+  return [...previous, value];
 }
 
 const program = new Command();
@@ -101,6 +104,41 @@ Examples:
     }
 
     build(options);
+  });
+
+feCommand
+  .command("check")
+  .description("Validate frontend component file contracts")
+  .option("--format <format>", "Output format: text or json", "text")
+  .addHelpText(
+    "after",
+    `
+
+Examples:
+  $ rettangoli fe check
+  $ rettangoli fe check --format json
+`,
+  )
+  .action((options) => {
+    const config = readConfig();
+
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+
+    if (!config.fe?.dirs?.length) {
+      throw new Error("fe.dirs not found or empty in config");
+    }
+
+    const missingDirs = config.fe.dirs.filter(
+      (dir) => !existsSync(resolve(process.cwd(), dir)),
+    );
+    if (missingDirs.length > 0) {
+      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
+    }
+
+    options.dirs = config.fe.dirs;
+    check(options);
   });
 
 feCommand
@@ -193,12 +231,15 @@ const vtCommand = program
 
 vtCommand
   .command("generate")
-  .description("Generate visualizations")
-  .option("--skip-screenshots", "Skip screenshot generation")
-  .option("--screenshot-wait-time <time>", "Wait time between screenshots", parseInt, 0)
-  .option("--concurrency <number>", "Number of concurrent screenshots", parseInt, 12)
-  .option("--wait-event <name>", "Custom event name to wait for instead of networkidle (e.g., vt:ready)")
-  .action((options) => {
+  .description("Generate candidate HTML pages only (no screenshots)")
+  .option("--concurrency <number>", "Number of parallel capture workers", parseInt)
+  .option("--timeout <ms>", "Global capture timeout in ms", parseInt)
+  .option("--wait-event <name>", "Custom event name to mark page ready (uses event wait strategy)")
+  .option("--folder <path>", "Run only specs under folder prefix (repeatable)", collectValues, [])
+  .option("--group <section-key>", "Run only one section key from vt.sections (repeatable)", collectValues, [])
+  .option("--item <spec-path>", "Run only one spec path relative to vt/specs (repeatable)", collectValues, [])
+  .option("--headed", "Run Playwright in headed mode")
+  .action(async (options) => {
     console.log(`rtgl v${packageJson.version}`);
     const config = readConfig();
 
@@ -208,17 +249,49 @@ vtCommand
 
     // Use vt.path from config, default to 'vt'
     options.vtPath = config.vt?.path || "vt";
+    if (options.headed) {
+      options.headless = false;
+    }
+    options.captureScreenshots = false;
 
-    generate(options);
+    await generate(options);
+  });
+
+vtCommand
+  .command("screenshot")
+  .description("Generate candidate HTML pages and capture screenshots")
+  .option("--concurrency <number>", "Number of parallel capture workers", parseInt)
+  .option("--timeout <ms>", "Global capture timeout in ms", parseInt)
+  .option("--wait-event <name>", "Custom event name to mark page ready (uses event wait strategy)")
+  .option("--folder <path>", "Run only specs under folder prefix (repeatable)", collectValues, [])
+  .option("--group <section-key>", "Run only one section key from vt.sections (repeatable)", collectValues, [])
+  .option("--item <spec-path>", "Run only one spec path relative to vt/specs (repeatable)", collectValues, [])
+  .option("--headed", "Run Playwright in headed mode")
+  .action(async (options) => {
+    console.log(`rtgl v${packageJson.version}`);
+    const config = readConfig();
+
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+
+    options.vtPath = config.vt?.path || "vt";
+    if (options.headed) {
+      options.headless = false;
+    }
+    await screenshot(options);
   });
 
 vtCommand
   .command("report")
   .description("Create reports")
-  .option("--compare-method <method>", "Comparison method: pixelmatch or md5", "pixelmatch")
-  .option("--color-threshold <number>", "Color threshold for pixelmatch (0-1)", parseFloat, 0.1)
-  .option("--diff-threshold <number>", "Max diff pixels percentage to pass (0-100)", parseFloat, 0.3)
-  .action((options) => {
+  .option("--compare-method <method>", "Comparison method: pixelmatch or md5")
+  .option("--color-threshold <number>", "Color threshold for pixelmatch (0-1)", parseFloat)
+  .option("--diff-threshold <number>", "Max diff pixels percentage to pass (0-100)", parseFloat)
+  .option("--folder <path>", "Compare only screenshots under folder prefix (repeatable)", collectValues, [])
+  .option("--group <section-key>", "Compare only one section key from vt.sections (repeatable)", collectValues, [])
+  .option("--item <spec-path>", "Compare only one spec path relative to vt/specs (repeatable)", collectValues, [])
+  .action(async (options) => {
     const config = readConfig();
 
     if (!config) {
@@ -226,18 +299,21 @@ vtCommand
     }
 
     const vtPath = config.vt?.path || "vt";
-    report({
+    await report({
       vtPath,
       compareMethod: options.compareMethod,
       colorThreshold: options.colorThreshold,
       diffThreshold: options.diffThreshold,
+      folder: options.folder,
+      group: options.group,
+      item: options.item,
     });
   });
 
 vtCommand
   .command("accept")
   .description("Accept changes")
-  .action(() => {
+  .action(async () => {
     const config = readConfig();
 
     if (!config) {
@@ -245,7 +321,7 @@ vtCommand
     }
 
     const vtPath = config.vt?.path || "vt";
-    accept({ vtPath });
+    await accept({ vtPath });
   });
 
 const sitesCommand = program.command("sites").description("Rettangoli Sites");
@@ -264,23 +340,19 @@ sitesCommand
 sitesCommand
   .command("build")
   .description("Build the site")
-  .option("-r, --rootDir <path>", "Path to root directory", "./")
-  .option("-o, --outputPath <path>", "Path to destination directory", "./_site")
-  .option("-s, --screenshots", "Capture screenshots after build", false)
+  .option("-r, --root-dir <path>", "Path to root directory", "./")
+  .option("--rootDir <path>", "Deprecated alias for --root-dir")
+  .option("-o, --output-path <path>", "Path to destination directory", "./_site")
+  .option("--outputPath <path>", "Deprecated alias for --output-path")
+  .option("-q, --quiet", "Suppress non-error logs")
   .action(async (options) => {
-    console.log("Building site with options:", options);
     await buildSite({
       rootDir: options.rootDir,
       outputPath: options.outputPath,
+      quiet: !!options.quiet,
     });
-    console.log("Build completed successfully!");
-
-    // If screenshots option is enabled, run screenshot command
-    if (options.screenshots) {
-      console.log("Capturing screenshots...");
-      await screenshotCommand({
-        rootDir: options.rootDir,
-      });
+    if (!options.quiet) {
+      console.log("Build completed successfully!");
     }
   });
 
@@ -288,27 +360,19 @@ sitesCommand
   .command("watch")
   .description("Watch and rebuild site on changes")
   .option("-p, --port <port>", "The port to use", parseInt, 3001)
-  .option("-r, --rootDir <path>", "Path to root directory", ".")
-  .option("-s, --screenshots", "Enable automatic screenshot capture on page changes", false)
+  .option("-r, --root-dir <path>", "Path to root directory", ".")
+  .option("--rootDir <path>", "Deprecated alias for --root-dir")
+  .option("-o, --output-path <path>", "Path to destination directory", "./_site")
+  .option("--outputPath <path>", "Deprecated alias for --output-path")
+  .option("--reload-mode <mode>", "Reload mode: body (hot body replacement) or full (full-page reload)", "body")
+  .option("-q, --quiet", "Suppress non-error logs")
   .action(async (options) => {
-    console.log("Starting watch mode with options:", options);
     watchSite({
       port: options.port,
       rootDir: options.rootDir,
-      screenshots: options.screenshots,
-    });
-  });
-
-sitesCommand
-  .command("screenshot")
-  .description("Capture screenshots of all pages")
-  .option("-p, --port <port>", "The port to use for temp server", parseInt, 3001)
-  .option("-r, --rootDir <path>", "Path to root directory", ".")
-  .action(async (options) => {
-    console.log("Capturing screenshots with options:", options);
-    await screenshotCommand({
-      port: options.port,
-      rootDir: options.rootDir,
+      outputPath: options.outputPath,
+      reloadMode: options.reloadMode,
+      quiet: !!options.quiet,
     });
   });
 
@@ -349,4 +413,4 @@ Examples:
     buildSvg(options);
   });
 
-program.parse();
+await program.parseAsync();

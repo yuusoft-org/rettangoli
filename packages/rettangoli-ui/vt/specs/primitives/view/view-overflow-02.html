@@ -1,0 +1,17 @@
+---
+title: View - Overflow - Hidden Clipping
+description: Verifies clipping behavior when overflow is set to hidden.
+specs:
+  - Without overflow hidden, oversized children can visibly exceed the parent box.
+  - With overflow hidden, child content is clipped to parent bounds.
+  - Hidden overflow keeps layout stable for adjacent containers.
+---
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap>
+  <rtgl-view bgc="mu" w="100" h="56" p="sm">
+    <rtgl-view bgc="ac" w="160" h="40"></rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view bgc="mu" w="100" h="56" p="sm" overflow="hidden">
+    <rtgl-view bgc="ac" w="160" h="40"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>

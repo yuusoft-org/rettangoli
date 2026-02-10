@@ -1,9 +1,10 @@
 ---
-title: "Direction"
+title: View - Direction - Default and Explicit
+description: Verifies default vertical flow and explicit `d="v"` / `d="h"` behavior.
 specs:
-  - without `d`, direction should be vertical
-  - with `d="v"`, direction should be vertical
-  - with `d="h"`, direction should be horizontal
+  - Without `d`, flow defaults to vertical.
+  - Direction value `v` keeps vertical flow.
+  - Direction value `h` switches to horizontal flow.
 ---
 <rtgl-view d="h" g="lg" p="lg" wh="f">
     <rtgl-view bgc="mu" wh="100" g="md" p="md">

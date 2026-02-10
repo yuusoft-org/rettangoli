@@ -1,26 +1,31 @@
 ---
-title: Object Fit
+title: Image - Object Fit - Mode Comparison
+description: Verifies object-fit mode rendering across square, portrait, and landscape frames.
+specs:
+  - Default fit, cover, contain, and none modes render distinct crop/scale behavior.
+  - Fit behavior stays consistent across different aspect-ratio containers.
+  - Background color framing reveals object-fit differences reliably.
 ---
 <rtgl-view g="lg" p="lg" wh="f">
     <rtgl-view d="h" g="lg">
-        <rtgl-image bgc="suc" wh="60" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
-        <rtgl-image bgc="suc" of="cov" wh="60" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
-        <rtgl-image bgc="suc" of="con" wh="60" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
-        <rtgl-image bgc="suc" of="none" wh="60" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" wh="60" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" of="cov" wh="60" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" of="con" wh="60" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" of="none" wh="60" src="/public/sample1.jpg"></rtgl-image>
     </rtgl-view>
 
     <rtgl-view d="h" g="lg">
-        <rtgl-image bgc="suc" w="50" h="100" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
-        <rtgl-image bgc="suc" of="cov" w="50" h="100" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
-        <rtgl-image bgc="suc" of="con" w="50" h="100" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
-        <rtgl-image bgc="suc" of="none" w="50" h="100" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" w="50" h="100" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" of="cov" w="50" h="100" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" of="con" w="50" h="100" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" of="none" w="50" h="100" src="/public/sample1.jpg"></rtgl-image>
     </rtgl-view>
 
 
     <rtgl-view d="h" g="lg">
-        <rtgl-image bgc="suc" w="100" h="50" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
-        <rtgl-image bgc="suc" of="cov" w="100" h="50" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
-        <rtgl-image bgc="suc" of="con" w="100" h="50" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
-        <rtgl-image bgc="suc" of="none" w="100" h="50" width="200" height="150" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" w="100" h="50" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" of="cov" w="100" h="50" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" of="con" w="100" h="50" src="/public/sample1.jpg"></rtgl-image>
+        <rtgl-image bgc="suc" of="none" w="100" h="50" src="/public/sample1.jpg"></rtgl-image>
     </rtgl-view>
 </rtgl-view>

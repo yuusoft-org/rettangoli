@@ -1,13 +1,13 @@
 const updateAttributes = ({ form, defaultValues = {}, refs }) => {
   const { fields = [] } = form;
-  fields.forEach((field) => {
-    const ref = refs[`field-${field.name}`]?.elm;
+  fields.forEach((field, index) => {
+    const ref = refs[`field${index}`];
 
     if (!ref) {
       return;
     }
 
-    if (['input-textarea', 'inputText', 'input-text', 'input-number', 'colorPicker', 'slider', 'slider-input', 'popover-input'].includes(field.inputType)) {
+    if (['input-textarea', 'input-text', 'input-number', 'color-picker', 'slider', 'slider-input', 'popover-input'].includes(field.inputType)) {
       const defaultValue = defaultValues[field.name];
       if (defaultValue === undefined || defaultValue === null) {
         ref.removeAttribute('value')
@@ -15,7 +15,7 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
         ref.setAttribute('value', defaultValue)
       }
     }
-    if (['inputText', 'input-text', 'input-textarea'].includes(field.inputType) && field.placeholder) {
+    if (['input-text', 'input-textarea'].includes(field.inputType) && field.placeholder) {
       const currentPlaceholder = ref.getAttribute('placeholder')
       if (currentPlaceholder !== field.placeholder) {
         if (field.placeholder === undefined || field.placeholder === null) {
@@ -31,16 +31,12 @@ const updateAttributes = ({ form, defaultValues = {}, refs }) => {
 const autoFocusFirstInput = (refs) => {
   // Find first focusable field
   for (const fieldKey in refs) {
-    if (fieldKey.startsWith('field-')) {
+    if (fieldKey.startsWith('field')) {
       const fieldRef = refs[fieldKey];
-      if (fieldRef && fieldRef.elm) {
-        const element = fieldRef.elm;
-
-        if (element.focus) {
-          // Currently only available for input-text and input-textarea
-          element.focus();
-          return;
-        }
+      if (fieldRef && fieldRef.focus) {
+        // Currently only available for input-text and input-textarea
+        fieldRef.focus();
+        return;
       }
     }
   }
@@ -49,18 +45,17 @@ const autoFocusFirstInput = (refs) => {
 
 export const handleBeforeMount = (deps) => {
   const { store, props } = deps;
-  store.setFormValues(props.defaultValues);
+  store.setFormValues({ formValues: props.defaultValues });
 };
 
 export const handleAfterMount = (deps) => {
-  const { props, getRefIds, render, attrs } = deps;
+  const { props, refs, render } = deps;
   const { form = {}, defaultValues } = props;
-  const refs = getRefIds();
   updateAttributes({ form, defaultValues, refs });
   render();
 
   // Auto-focus first input field if autofocus attribute is set
-  if (attrs?.autofocus) {
+  if (props?.autofocus) {
     setTimeout(() => {
       autoFocusFirstInput(refs);
     }, 50);
@@ -68,13 +63,12 @@ export const handleAfterMount = (deps) => {
 };
 
 export const handleOnUpdate = (deps, payload) => {
-  const { oldAttrs, newAttrs, newProps } = payload;
-  const { store, render, getRefIds } = deps;
+  const { oldProps, newProps } = payload;
+  const { store, render, refs } = deps;
   const { form = {}, defaultValues } = newProps;
-  if (oldAttrs?.key !== newAttrs?.key) {
-    const refs = getRefIds();
+  if (oldProps?.key !== newProps?.key) {
     updateAttributes({ form, defaultValues, refs });
-    store.setFormValues(defaultValues);
+    store.setFormValues({ formValues: defaultValues });
     render();
     return;
   }
@@ -96,7 +90,7 @@ const dispatchFormChange = (name, fieldValue, formValues, dispatchEvent) => {
 export const handleActionClick = (deps, payload) => {
   const { store, dispatchEvent } = deps;
   const event = payload._event;
-  const id = event.currentTarget.id.replace("action-", "");
+  const id = event.currentTarget.dataset.actionId || event.currentTarget.id.slice("action".length);
   dispatchEvent(
     new CustomEvent("action-click", {
       detail: {
@@ -108,15 +102,14 @@ export const handleActionClick = (deps, payload) => {
 };
 
 export const handleInputChange = (deps, payload) => {
-  const { store, dispatchEvent, props } = deps;
+  const { store, dispatchEvent } = deps;
   const event = payload._event;
-  let name = event.currentTarget.id.replace("field-", "");
-  if (name && event.detail.value !== undefined) {
+  let name = event.currentTarget.dataset.fieldName || event.currentTarget.id.slice("field".length);
+  if (name && event.detail && Object.prototype.hasOwnProperty.call(event.detail, "value")) {
     const value = event.detail.value
     store.setFormFieldValue({
       name: name,
       value,
-      props,
     });
     dispatchFormChange(
       name,
@@ -127,82 +120,6 @@ export const handleInputChange = (deps, payload) => {
   }
 };
 
-export const handleSelectChange = (deps, payload) => {
-  const { store, dispatchEvent, render, props } = deps;
-  const event = payload._event;
-  const name = event.currentTarget.id.replace("field-", "");
-  if (name) {
-    store.setFormFieldValue({
-      name: name,
-      value: event.detail.selectedValue,
-      props,
-    });
-    dispatchFormChange(
-      name,
-      event.detail.selectedValue,
-      store.selectFormValues(),
-      dispatchEvent,
-    );
-    render();
-  }
-};
-
-export const handleColorPickerChange = (deps, payload) => {
-  const { store, dispatchEvent, props } = deps;
-  const event = payload._event;
-  const name = event.currentTarget.id.replace("field-", "");
-  if (name && event.detail.value !== undefined) {
-    store.setFormFieldValue({
-      name: name,
-      value: event.detail.value,
-      props,
-    });
-    dispatchFormChange(
-      name,
-      event.detail.value,
-      store.selectFormValues(),
-      dispatchEvent,
-    );
-  }
-};
-
-export const handleSliderChange = (deps, payload) => {
-  const { store, dispatchEvent, props } = deps;
-  const event = payload._event;
-  const name = event.currentTarget.id.replace("field-", "");
-  if (name && event.detail.value !== undefined) {
-    store.setFormFieldValue({
-      name: name,
-      value: event.detail.value,
-      props,
-    });
-    dispatchFormChange(
-      name,
-      event.detail.value,
-      store.selectFormValues(),
-      dispatchEvent,
-    );
-  }
-};
-
-export const handleSliderInputChange = (deps, payload) => {
-  const { store, dispatchEvent, props } = deps;
-  const event = payload._event;
-  const name = event.currentTarget.id.replace("field-", "");
-  if (name && event.detail.value !== undefined) {
-    store.setFormFieldValue({
-      name: name,
-      value: event.detail.value,
-      props,
-    });
-    dispatchFormChange(
-      name,
-      event.detail.value,
-      store.selectFormValues(),
-      dispatchEvent,
-    );
-  }
-};
 
 export const handleImageClick = (deps, payload) => {
   const event = payload._event;
@@ -210,7 +127,7 @@ export const handleImageClick = (deps, payload) => {
     event.preventDefault();
   }
   const { dispatchEvent } = deps;
-  const name = event.currentTarget.id.replace("image-", "");
+  const name = event.currentTarget.dataset.fieldName || event.currentTarget.id.slice("image".length);
   dispatchEvent(
     new CustomEvent("extra-event", {
       detail: {
@@ -229,7 +146,7 @@ export const handleWaveformClick = (deps, payload) => {
     event.preventDefault();
   }
   const { dispatchEvent } = deps;
-  const name = event.currentTarget.id.replace("waveform-", "");
+  const name = event.currentTarget.dataset.fieldName || event.currentTarget.id.slice("waveform".length);
   dispatchEvent(
     new CustomEvent("extra-event", {
       detail: {
@@ -245,7 +162,7 @@ export const handleWaveformClick = (deps, payload) => {
 export const handleSelectAddOption = (deps, payload) => {
   const { store, dispatchEvent } = deps;
   const event = payload._event;
-  const name = event.currentTarget.id.replace("field-", "");
+  const name = event.currentTarget.dataset.fieldName || event.currentTarget.id.slice("field".length);
   dispatchEvent(
     new CustomEvent("action-click", {
       detail: {
@@ -260,7 +177,7 @@ export const handleSelectAddOption = (deps, payload) => {
 export const handleTooltipMouseEnter = (deps, payload) => {
   const { store, render, props } = deps;
   const event = payload._event;
-  const fieldName = event.currentTarget.id.replace('tooltip-icon-', '');
+  const fieldName = event.currentTarget.dataset.fieldName || event.currentTarget.id.slice('tooltipIcon'.length);
 
   // Find the field with matching name to get tooltip content
   const form = props.form;
@@ -279,7 +196,7 @@ export const handleTooltipMouseEnter = (deps, payload) => {
 
 export const handleTooltipMouseLeave = (deps) => {
   const { store, render } = deps;
-  store.hideTooltip();
+  store.hideTooltip({});
   render();
 };
 

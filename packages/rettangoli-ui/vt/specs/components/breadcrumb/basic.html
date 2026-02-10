@@ -1,7 +1,7 @@
 ---
 title: "Breadcrumb - Basic"
 ---
-<rtgl-view g="lg" h="100vh" w="f" fw="w">
+<rtgl-view g="lg" h="100vh" w="f" wrap>
   <rtgl-breadcrumb id="breadcrumb">
   </rtgl-breadcrumb>
 </rtgl-view>
@@ -9,9 +9,9 @@ title: "Breadcrumb - Basic"
 <script>
   const breadcrumb = document.getElementById('breadcrumb');
   breadcrumb.items = [
-    { label: "Actions", id: "breadcrumb-actions" },
-    { label: "BGM", id: "breadcrumb-bgm" },
-    { label: "Audio Selection" }
+    { label: "Actions", id: "breadcrumb-actions", path: "/actions" },
+    { label: "BGM", id: "breadcrumb-bgm", path: "/actions/bgm" },
+    { label: "Audio Selection", current: true }
   ];
   breadcrumb.render();
 </script>

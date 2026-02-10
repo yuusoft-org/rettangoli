@@ -1,5 +1,10 @@
 ---
-title: Overflow
+title: View - Overflow - Horizontal and Vertical Scroll
+description: Verifies scroll behavior for `sv`, `sh`, and both directions together.
+specs:
+  - Attribute `sv` enables vertical scrolling.
+  - Attribute `sh` enables horizontal scrolling.
+  - Combined `sh` + `sv` enables bidirectional scrolling.
 ---
 <rtgl-view d="h" g="lg" p="lg" wh="f">
     <rtgl-view bgc="mu" g="md" wh="40" sv>
@@ -42,13 +47,13 @@ title: Overflow
         <rtgl-view wh="12" bgc="ac"></rtgl-view>
     </rtgl-view>
 
-    <rtgl-view bgc="mu" g="md" wh="40" fw="w">
+    <rtgl-view bgc="mu" g="md" wh="40" wrap>
         <rtgl-view wh="12" bgc="ac"></rtgl-view>
         <rtgl-view wh="12" bgc="ac"></rtgl-view>
         <rtgl-view wh="12" bgc="ac"></rtgl-view>
     </rtgl-view>
 
-    <rtgl-view bgc="mu" g="md" wh="40" fw="w">
+    <rtgl-view bgc="mu" g="md" wh="40" wrap>
         <rtgl-view wh="12" bgc="ac"></rtgl-view>
         <rtgl-view wh="12" bgc="ac"></rtgl-view>
         <rtgl-view wh="12" bgc="ac"></rtgl-view>

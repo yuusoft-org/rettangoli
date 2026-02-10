@@ -1,7 +1,7 @@
 ---
 title: Select with Add Option
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-select id="select-with-add" />
   <rtgl-select id="select-custom-label" />
 </rtgl-view>
@@ -30,19 +30,15 @@ title: Select with Add Option
   selectCustomLabel.render();
 
   // Listen for events
-  selectWithAdd.addEventListener('option-selected', (e) => {
-    console.log('option-selected', e.detail);
+  selectWithAdd.addEventListener('value-change', (e) => {
+    console.log('value-change', e.detail);
   });
 
-  selectWithAdd.addEventListener('add-option-selected', (e) => {
-    console.log('add-option-selected triggered');
+  selectWithAdd.addEventListener('add-option-click', (e) => {
+    console.log('add-option-click triggered');
   });
 
-  selectWithAdd.addEventListener('select-change', (e) => {
-    console.log('select-change', e.detail);
-  });
-
-  selectCustomLabel.addEventListener('add-option-selected', (e) => {
-    console.log('custom select add-option-selected triggered');
+  selectCustomLabel.addEventListener('add-option-click', (e) => {
+    console.log('custom select add-option-click triggered');
   });
 </script>

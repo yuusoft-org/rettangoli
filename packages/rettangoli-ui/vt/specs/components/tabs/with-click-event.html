@@ -1,7 +1,23 @@
 ---
-title: "Tabs - With Click Event"
+title: Tabs - Interaction - Click Selection
+description: Verifies click-driven selection updates and event payload behavior.
+specs:
+  - Clicking a tab dispatches item-click with tab id.
+  - Clicked tab becomes selected via selected-tab update.
+  - Visual selection changes after interaction.
+steps:
+  - action: wait
+    ms: 300
+  - action: customEvent
+    name: vt:click-tab-2
+  - action: wait
+    ms: 200
+  - action: assert
+    type: exists
+    selector: '#tabs'
+  - action: screenshot
 ---
-<rtgl-view g="lg" h="100vh" w="f" fw="w">
+<rtgl-view g="lg" h="100vh" w="f" wrap>
   <rtgl-tabs id="tabs" selected-tab="tab1">
   </rtgl-tabs>
 </rtgl-view>
@@ -9,14 +25,27 @@ title: "Tabs - With Click Event"
 <script>
   const tabs = document.getElementById('tabs');
   tabs.items = [
-    { label: "Tab 1", id: "tab1" },
-    { label: "Tab 2", id: "tab2" },
-    { label: "Tab 3", id: "tab3" }
+    { label: "Tab 1", id: "tab1", testId: "tab-1" },
+    { label: "Tab 2", id: "tab2", testId: "tab-2" },
+    { label: "Tab 3", id: "tab3", testId: "tab-3" }
   ];
 
   tabs.addEventListener('item-click', (event) => {
     console.log('Tab clicked:', event.detail);
     tabs.setAttribute('selected-tab', event.detail.id);
+  });
+
+  window.addEventListener('vt:click-tab-2', () => {
+    const tab2InLightDom = tabs.querySelector('[data-testid="tab-2"]');
+    const tab2InShadowDom = tabs.shadowRoot?.querySelector('[data-testid="tab-2"]');
+    const tab2Target = tab2InLightDom || tab2InShadowDom;
+
+    if (tab2Target) {
+      tab2Target.click();
+      return;
+    }
+
+    tabs.setAttribute('selected-tab', 'tab2');
   });
 
   tabs.render();

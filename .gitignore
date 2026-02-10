@@ -12,6 +12,11 @@
 
 /examples/example1/dist
 
+/packages/rettangoli-fe/e2e/*/.rettangoli
+/packages/rettangoli-fe/e2e/*/.temp
+/packages/rettangoli-fe/e2e/*/static
+/packages/rettangoli-fe/e2e/*/vt/static
+
 /node_modules
 
 .claude/

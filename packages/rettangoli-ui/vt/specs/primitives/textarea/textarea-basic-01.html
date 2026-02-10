@@ -1,6 +1,11 @@
 ---
-title: Basic
+title: Textarea - Basic - Default Field
+description: Verifies baseline textarea rendering with default rows and columns behavior.
+specs:
+  - Textarea renders baseline border and padding styles.
+  - Default sizing is stable in wrapped layout context.
+  - Empty state remains visually consistent.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
-  <rtgl-textarea />
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-textarea></rtgl-textarea>
 </rtgl-view>

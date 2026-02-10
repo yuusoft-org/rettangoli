@@ -1,12 +1,17 @@
-import { 
-  css, 
+import {
+  css,
   dimensionWithUnit,
   convertObjectToCssString,
-  styleMapKeys,
   permutateBreakpoints,
+  createResponsiveStyleBuckets,
+  responsiveStyleSizes,
+  applyDimensionToStyleBucket,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
+
+const colorPickerStyleMapKeys = ["mt", "mr", "mb", "ml", "m", "mh", "mv", "cur"];
+const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
 
 // Internal implementation without uhtml
 class RettangoliColorPickerElement extends HTMLElement {
@@ -49,13 +54,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     this.shadow.adoptedStyleSheets = [RettangoliColorPickerElement.styleSheet];
     
     // Initialize style tracking properties
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+    this._styles = createResponsiveStyleBuckets();
     this._lastStyleString = "";
     
     // Create initial DOM structure
@@ -77,7 +76,7 @@ class RettangoliColorPickerElement extends HTMLElement {
       "value", 
       "disabled",
       ...permutateBreakpoints([
-        ...styleMapKeys,
+        ...colorPickerStyleMapKeys,
         "wh",
         "w",
         "h",
@@ -97,29 +96,32 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._inputElement.value = newValue;
   }
 
-  _onChange = (event) => {
-    this.dispatchEvent(new CustomEvent('colorpicker-change', {
+  _onChange = () => {
+    this.dispatchEvent(new CustomEvent('value-change', {
       detail: {
         value: this._inputElement.value,
       },
+      bubbles: true,
     }));
   };
 
-  _onInput = (event) => {
-    this.dispatchEvent(new CustomEvent('colorpicker-input', {
+  _onInput = () => {
+    this.dispatchEvent(new CustomEvent('value-input', {
       detail: {
         value: this._inputElement.value,
       },
+      bubbles: true,
     }));
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) {
+      return;
+    }
+
     // Handle key attribute change - reset value
-    if (name === "key" && oldValue !== newValue) {
-      requestAnimationFrame(() => {
-        const value = this.getAttribute("value");
-        this._inputElement.value = value ?? "#000000";
-      });
+    if (name === "key") {
+      this._syncValueAttribute();
       return;
     }
 
@@ -129,16 +131,14 @@ class RettangoliColorPickerElement extends HTMLElement {
       return;
     }
 
-    // Reset styles for fresh calculation
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+    this.updateStyles();
+  }
 
-    ["default", "sm", "md", "lg", "xl"].forEach((size) => {
+  updateStyles() {
+    // Reset styles for fresh calculation
+    this._styles = createResponsiveStyleBuckets();
+
+    responsiveStyleSizes.forEach((size) => {
       const addSizePrefix = (tag) => {
         return `${size === "default" ? "" : `${size}-`}${tag}`;
       };
@@ -161,28 +161,26 @@ class RettangoliColorPickerElement extends HTMLElement {
         this._styles[size].opacity = opacity;
       }
 
-      if (width === "f") {
-        this._styles[size].width = "var(--width-stretch)";
-      } else if (width !== undefined) {
-        this._styles[size].width = width;
-        this._styles[size]["min-width"] = width;
-        this._styles[size]["max-width"] = width;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "width",
+        dimension: width,
+        fillValue: "var(--width-stretch)",
+      });
 
-      if (height === "f") {
-        this._styles[size].height = "100%";
-      } else if (height !== undefined) {
-        this._styles[size].height = height;
-        this._styles[size]["min-height"] = height;
-        this._styles[size]["max-height"] = height;
-      }
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "height",
+        dimension: height,
+        fillValue: "100%",
+      });
 
       if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none !important";
+        this._styles[size].display = "none";
       }
 
       if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "block !important";
+        this._styles[size].display = "block";
       }
     });
 
@@ -194,13 +192,20 @@ class RettangoliColorPickerElement extends HTMLElement {
     }
   }
 
-  _updateInputAttributes() {
+  _syncValueAttribute() {
     const value = this.getAttribute("value");
+    if (value === null) {
+      this._inputElement.value = "#000000";
+      return;
+    }
+
+    this._inputElement.value = HEX_COLOR_REGEX.test(value) ? value : "#000000";
+  }
+
+  _updateInputAttributes() {
     const isDisabled = this.hasAttribute('disabled');
 
-    if (value !== null) {
-      this._inputElement.value = value;
-    }
+    this._syncValueAttribute();
     
     if (isDisabled) {
       this._inputElement.setAttribute("disabled", "");
@@ -211,6 +216,7 @@ class RettangoliColorPickerElement extends HTMLElement {
 
   connectedCallback() {
     this._updateInputAttributes();
+    this.updateStyles();
   }
 }
 

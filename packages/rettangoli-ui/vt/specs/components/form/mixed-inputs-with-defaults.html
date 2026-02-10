@@ -1,7 +1,7 @@
 ---
 title: "Mixed Inputs With Defaults"
 ---
-<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
 
 <script>
@@ -39,19 +39,19 @@ title: "Mixed Inputs With Defaults"
       src: '/public/sample1.jpg'
     }, {
       name: 'name',
-      inputType: 'inputText',
+      inputType: 'input-text',
       label: 'Full Name',
       description: 'Enter your full name',
       placeholder: 'John Doe',
     }, {
       name: 'email',
-      inputType: 'inputText',
+      inputType: 'input-text',
       label: 'Email',
       description: 'Enter your email address',
       placeholder: 'user@example.com',
     }, {
       name: 'favoriteColor',
-      inputType: 'colorPicker',
+      inputType: 'color-picker',
       label: 'Favorite Color',
       description: 'Pick your favorite color',
     }, {

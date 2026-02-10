@@ -1,0 +1,88 @@
+file: "../src/cli/report-options.js"
+group: report-options
+---
+suite: resolveReportOptions
+exportName: resolveReportOptions
+---
+case: resolves defaults from config
+in:
+  - {}
+  - path: ./vt-config
+    compareMethod: pixelmatch
+    colorThreshold: 0.2
+    diffThreshold: 5
+out:
+  vtPath: ./vt-config
+  compareMethod: pixelmatch
+  colorThreshold: 0.2
+  diffThreshold: 5
+  selectors:
+    folders: []
+    groups: []
+    items: []
+---
+case: cli values override config values
+in:
+  - vtPath: ./vt-cli
+    compareMethod: md5
+    colorThreshold: 0.01
+    diffThreshold: 0.1
+  - path: ./vt-config
+    compareMethod: pixelmatch
+    colorThreshold: 0.2
+    diffThreshold: 5
+out:
+  vtPath: ./vt-cli
+  compareMethod: md5
+  colorThreshold: 0.01
+  diffThreshold: 0.1
+  selectors:
+    folders: []
+    groups: []
+    items: []
+---
+case: rejects invalid compare method
+in:
+  - compareMethod: ssim
+  - {}
+throws: Invalid compareMethod "ssim"
+---
+case: rejects invalid color threshold
+in:
+  - colorThreshold: 2
+  - {}
+throws: colorThreshold
+---
+case: rejects invalid diff threshold
+in:
+  - diffThreshold: -1
+  - {}
+throws: diffThreshold
+---
+case: normalizes selector inputs
+in:
+  - folder:
+      - ./components/forms/
+      - components/forms
+    group:
+      - Components_Basic
+      - components_basic
+    item:
+      - pages/home.yaml
+      - ./pages/home
+  - path: ./vt-config
+    compareMethod: pixelmatch
+    colorThreshold: 0.2
+    diffThreshold: 5
+out:
+  vtPath: ./vt-config
+  compareMethod: pixelmatch
+  colorThreshold: 0.2
+  diffThreshold: 5
+  selectors:
+    folders:
+      - components/forms
+    groups:
+      - components_basic
+    items:
+      - pages/home

@@ -4,8 +4,10 @@
         - meta name="viewport" content="width=device-width,initial-scale=1":
         - title: ${title} - ${site.name}
         - link rel="stylesheet" href="/css/theme.css":
-        - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
-        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.31/dist/rettangoli-iife-ui.min.js":
+        - $if site.assets.loadConstructStyleSheetsPolyfill:
+            - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
+        - $if site.assets.loadUiFromCdn:
+            - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.32/dist/rettangoli-iife-ui.min.js":
     - body.dark:
         - rtgl-view h="64":
         - rtgl-view w="f" ah="c":
@@ -16,9 +18,9 @@
                     - rtgl-view h="xl":
                     - 'a href="/blog/" style="text-decoration: none"':
                         - rtgl-text c="pr" h-cur="p": ← Back to Blog
-                - 'rtgl-view lg-hide flex="1" style="position: sticky; top: 64px;"':
+                - 'rtgl-view lg-hide w="1fg" style="position: sticky; top: 64px;"':
                     - rtgl-page-outline id="page-outline" target-id="content-container":
             - rtgl-view h="30vh":
             - $partial: footer
-        - rtgl-view pos="abs" cor="top" ah="c" bgc="bg":
+        - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
             - $partial: header

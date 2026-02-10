@@ -1,10 +1,15 @@
 ---
-title: Basic 2
+title: Textarea - Basic - Rows Cols Placeholder
+description: Verifies explicit rows, cols, and placeholder attributes on textarea.
+specs:
+  - Rows and cols attributes change control geometry.
+  - Placeholder text renders for empty textarea state.
+  - Extended dimensions remain stable in layout.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-textarea
     rows="10"
     cols="80"
     placeholder="Placeholder"
-  />
+  ></rtgl-textarea>
 </rtgl-view>

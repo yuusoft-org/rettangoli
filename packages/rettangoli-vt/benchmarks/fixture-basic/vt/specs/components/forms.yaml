@@ -1,0 +1,15 @@
+---
+steps:
+  - action: wait
+    ms: 10
+  - action: screenshot
+---
+<form style="font-family: sans-serif; max-width: 420px; margin: 24px;">
+  <label style="display:block; margin-bottom: 8px;">Email</label>
+  <input type="email" value="user@example.com" style="width:100%; padding:8px; margin-bottom: 16px;" />
+  <label style="display:block; margin-bottom: 8px;">Role</label>
+  <select style="width:100%; padding:8px;">
+    <option>Admin</option>
+    <option>User</option>
+  </select>
+</form>

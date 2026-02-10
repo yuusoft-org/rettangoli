@@ -1,8 +1,12 @@
 ---
-title: "Size Small"
-skipScreenshot: true
+title: Dialog - Size - Small Preset
+description: Verifies `s=sm` dialog preset width rendering.
+specs:
+  - Small size preset constrains dialog width.
+  - Content spacing remains readable in compact layout.
+  - Close event handling stays consistent with sized dialog.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-button id="button">Open Dialog s=sm</rtgl-button>
   <rtgl-dialog id="dialog" open s="sm">
     <rtgl-view slot="content" g="md">

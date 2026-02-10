@@ -1,7 +1,7 @@
 ---
 title: "Navbar - With logo and path"
 ---
-<rtgl-view g="lg" h="100vh" w="f" fw="w">
+<rtgl-view g="lg" h="100vh" w="f" wrap>
   <rtgl-navbar id="navbar">
   </rtgl-navbar>
 </rtgl-view>
@@ -18,7 +18,7 @@ title: "Navbar - With logo and path"
       alt: "Navbar",
     },
   }
-  navbar.addEventListener('clickStart', (e) => {
+  navbar.addEventListener('start-click', (e) => {
     console.log(e.detail);
   });
   navbar.render();

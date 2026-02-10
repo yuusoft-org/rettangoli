@@ -1,0 +1,18 @@
+markdownit:
+  html: true
+  linkify: true
+  typographer: false
+  shiki:
+    enabled: true
+    theme: slack-dark
+  codePreview:
+    enabled: true
+    showSource: true
+    theme: slack-dark
+  headingAnchors:
+    enabled: true
+    slugMode: ascii
+    wrap: true
+    fallback: section
+build:
+  keepMarkdownFiles: true

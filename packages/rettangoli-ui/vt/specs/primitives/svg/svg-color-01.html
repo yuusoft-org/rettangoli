@@ -1,7 +1,12 @@
 ---
-title: "SVG - Color"
+title: SVG - Color - Token Variants
+description: Verifies svg icon color token mapping across semantic foreground variants.
+specs:
+  - Default icon color uses foreground token.
+  - Semantic color tokens map correctly to icon color.
+  - Color changes do not affect icon geometry.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
     <rtgl-svg svg="text" wh="24"></rtgl-svg>
     <rtgl-svg svg="text" wh="24" c="mu-fg"></rtgl-svg>
     <rtgl-svg svg="text" wh="24" c="ac-fg"></rtgl-svg>

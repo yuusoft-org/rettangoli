@@ -1,394 +1,307 @@
-# View System (.view.yaml)
+# View Spec (`.view.yaml`)
 
-Declarative UI definitions using YAML syntax
+This document defines the normative view language contract.
 
-## Philosophy & Advantages
+## 1. Scope
 
-### Why YAML for UI?
+`.view.yaml` defines declarative UI only:
+- `template`
+- `refs`
+- `styles`
 
-**Pure View Structure**: Views contain only UI structure - no business logic, no complex JavaScript expressions. This enforces clean separation of concerns and makes it easy to read and maintain.
+`.view.yaml` MUST NOT declare API metadata keys:
+- `elementName`
+- `viewDataSchema`
+- `propsSchema`
+- `events`
+- `methods`
+- `attrsSchema`
 
-**Less Verbose**: No closing tags needed, cleaner syntax compared to HTML/JSX
+Define API metadata in `.schema.yaml`.
+`rtgl fe check` and `rtgl fe build` reject forbidden keys.
 
-**Structured Data**: YAML naturally handles complex objects, enabling powerful features like schemas, refs and event listeners, control flow (conditionals, loops) without verbose syntax.
+Business logic belongs in `.handlers.js`.
+State logic belongs in `.store.js`.
 
-**Compile-time Optimization**: Templates are pre-compiled to virtual DOM, eliminating runtime template parsing
-
-## File Structure
-
-```yaml
-elementName: my-component        # Required: Web component tag name
-template: []                     # Required: UI structure
-styles: {}                       # Optional: CSS styling
-refs: {}                         # Optional: Element references and events
-viewDataSchema: {}              # Optional: Input data validation
-propsSchema: {}                 # Optional: Props validation
-attrsSchema: {}                 # Optional: Attributes validation
-```
-
-## Template Syntax
-
-### Basic Elements
-
-YAML templates can express any HTML structure. In YAML, each child element is represented as an array item, except for the very last level where text content is provided as a string.
+## 2. Top-Level Shape
 
 ```yaml
-template:
-  - div:
-    - span#my-id.class1.class2: "Element with ID and classes"
-    - button#submit.btn.primary: "Submit"
-    - input type=text placeholder="Enter name" required=true:
+template: []   # required
+refs: {}       # optional
+styles: {}     # optional
 ```
 
-**Selector Syntax:**
-- `#` creates an `id` attribute: `div#header` → `<div id="header">`
-- `.` creates `class` attributes: `div.btn.primary` → `<div class="btn primary">`
-- Combined: `button#submit.btn.primary` → `<button id="submit" class="btn primary">`
+## 3. Template Grammar
 
-**Output HTML:**
-```html
-<div>
-  <span id="my-id" class="class1 class2">Element with ID and classes</span>
-  <button id="submit" class="btn primary">Submit</button>
-  <input type="text" placeholder="Enter name" required="true">
-</div>
-```
+A template node is a YAML mapping entry:
 
-### Attributes vs Props
 ```yaml
-template:
-  # Attributes: string values, become HTML attributes
-  - custom-component#myComponent title=Hello name=World:
-  
-  # Props: JavaScript values from viewData, passed as component properties
-  - another-component#anotherComponent .items=todoItems .onSelect=handleSelect:
-  
-  # Conditional boolean attributes: only added to DOM when condition is truthy
-  - input#myInput ?disabled=isFormDisabled ?required=fieldIsRequired:
-  
-  # Mixed: Attributes, props, and conditional attributes on same element
-  - user-card#userCard name=John .user=currentUser ?hidden=shouldHide
+- selector [bindings...]:
+  - child
 ```
 
-**Key Differences:**
-- **Attributes** (no prefix): Set as HTML attributes (`title="Hello"`) - visible in HTML
-- **Props** (`.` prefix): Set as JavaScript properties on the element - NOT visible in HTML, only accessible via JavaScript  
-- **Conditional Boolean Attributes** (`?` prefix): Only added to DOM when the value is truthy, always as boolean attributes without values
+Supported selector forms:
+- `tag`
+- `tag#id`
+- `tag.classA.classB`
+- `tag#id.classA.classB`
 
-**Example:**
-```js
-const userCard = document.getElementById('userCard');
-console.log(userCard.user); // Returns the currentUser object
-console.log(userCard.getAttribute('name')); // Returns "John"
-console.log(userCard.hasAttribute('hidden')); // true if shouldHide was truthy
-```
+Selector grammar reference (yahtml):
+https://github.com/yuusoft-org/yahtml
 
-### Conditional Boolean Attributes
+### Dynamic Value Syntax
 
-Use the `?` prefix to conditionally add boolean attributes based on viewData values:
+Dynamic values use `${...}` across:
+- text
+- bindings
+- control-flow expressions
+- event payload values
+
+Example:
 
 ```yaml
 template:
-  # These will only appear in DOM if the condition is truthy
-  - input#email ?disabled=${isSubmitting} ?required=true:
-  - dialog#modal ?open=${showModal}:
-  - button#submit ?aria-pressed=${isPressed}:
+  - div#app.container:
+    - h1: ${title}
+    - button#submitButton.primary :disabled=${isSubmitting}: ${submitLabel}
 ```
 
-**How it works:**
-- `?disabled=true` → `<input disabled>` (attribute present)  
-- `?disabled=false` → `<input>` (attribute absent)
-- `?disabled=${isFormDisabled}` → depends on the `isFormDisabled` value from viewData
+## 4. Binding Types
 
-**Common use cases:**
+Bindings are attached to selector tokens:
+- `name=value`: attribute-form binding
+- `:name=value`: property-form binding
+- `?name=value`: boolean attribute toggle
+
+Legacy `.name=value` property syntax is not supported.
+Validation is enforced at framework level (`rtgl fe check` / `rtgl fe build`).
+
+### Component Prop Normalization
+
+For component tags (tag contains `-`):
+- `name=value` maps to component `props`.
+- `:name=value` maps to component `props`.
+- Attribute-form names are normalized from kebab-case to camelCase.
+- `name=value` and `:name=value` for the same normalized key on one node is invalid.
+
+Precedence when both property and attribute exist at runtime:
+- property value first
+- attribute fallback second
+
+### Boolean Attribute Rule
+
+- `?name=value` is for true boolean HTML attributes only.
+- Do not use `?` for value-carrying attributes such as `aria-*`, `data-*`, `role`.
+
+Correct accessibility example:
+
 ```yaml
 template:
-  # Form controls
-  - input ?disabled=${isLoading} ?required=${fieldIsRequired}:
-  
-  # Modal/dialog states  
-  - dialog ?open=${showDialog}:
-  
-  # Interactive elements
-  - button ?aria-pressed=${isToggled} ?disabled=${!canSubmit}:
-  
-  # Custom boolean attributes
-  - my-component ?loading=${isFetching} ?error=${hasError}:
+  - button#toggle aria-pressed=${isPressed}: Toggle
 ```
 
-## Templating with Jempl
+## 5. Control Flow
 
-Templates use [Jempl](https://github.com/yuusoft-org/jempl) for variables, conditionals, and loops.
+Supported directives:
+- `$if <expr>:`
+- `$elif <expr>:`
+- `$else:`
+- `$for <item>[, <index>] in <expr>:`
 
-### Variables
-```yaml
-template:
-  - h1: "${title}"
-  - div: "${statusText}"
-```
+Control-flow and expression reference (Jempl):
+https://github.com/yuusoft-org/jempl
 
-**Variable Limitations**: 
-Inline transformations and complex expressions in variables don't work.
+Example:
 
-```yaml
-# ❌ DOES NOT WORK - Inline transformations
-template:
-  - h1: "${title || 'default title'}"
-  - div: "${isActive ? 'Active' : 'Inactive'}"
-
-# ✅ WORKS - Pre-compute in selectViewData
-template:
-  - h1: "${displayTitle}"
-  - div: "${statusText}"
-```
-
-Any transformations or complex logic should be handled in the `selectViewData` function in your store.
-
-```js
-// In store.js
-export const selectViewData = ({ state }) => ({
-  displayTitle: state.title || 'default title',
-  displayName: state.user.name || 'Guest',
-  statusText: state.isActive ? 'Active' : 'Inactive'
-});
-```
-
-### Conditionals & Loops
 ```yaml
 template:
   - $if isLoggedIn:
-    - user-dashboard: []
+    - user-dashboard:
   - $else:
-    - login-form: []
-    
-  - ul.todo-list:
-    - $for item in todoItems:
-      - li: "${item.text}"
+    - login-form:
+
+  - ul#todoList:
+    - $for todo, i in todos:
+      - li#todo${i}: ${todo.title}
+      - rtgl-input :value=${todo.title}:
 ```
 
-**Props in Loops - Important Limitation**: 
-You cannot directly pass loop variables as props. This is a known limitation.
+For property bindings inside loops, use interpolation form:
+- `:value=${todo.title}`
 
-```yaml
-# ❌ DOES NOT WORK - Direct variable won't be passed as prop
-- $for project in projects:
-  - project-card .data=project:
+## 6. Refs and Event Listeners
 
-# ✅ WORKS - Use array indexing instead
-- $for project, index in projects:
-  - project-card .data=projects[${index}]:
-```
+`refs` supports:
+- element targets by ID or class (exact or wildcard)
+- global targets: `window`, `document`
 
-For complete syntax documentation, see [Jempl documentation](https://github.com/yuusoft-org/jempl).
+Element ref key forms:
+- ID default: `submitButton`
+- explicit ID: `#submitButton`
+- ID wildcard: `todo*`, `#todo*`
+- class exact: `.label`
+- class wildcard: `.todo*`
 
-## Styling
+ID refs rules:
+- IDs used by refs matching MUST be camelCase
+- kebab-case IDs are invalid for refs matching
+- unprefixed refs keys are treated as ID refs
 
-**Note**: If using `rettangoli-ui`, you should rarely need custom styling. The UI library provides pre-built components that handle 95% of styling needs.
-
-### Basic Styles
-```yaml
-styles:
-  '.container':
-    display: flex
-    padding: 20px
-    
-  '#header':
-    background-color: '#f0f0f0'
-    
-  '.button:hover':
-    background-color: darkblue
-```
-
-### Media Queries & Animations
-```yaml
-styles:
-  '@media (min-width: 768px)':
-    '.container':
-      max-width: 1200px
-      
-  '@keyframes fadeIn':
-    '0%': { opacity: 0 }
-    '100%': { opacity: 1 }
-    
-  '.fade-in':
-    animation: 'fadeIn 0.3s ease-out'
-```
-
-## Event Handling
-
-Event listeners support `handler` or `action` (but not both), with optional payloads.
-
-### Event Listener Syntax
+Listener entry shape:
 
 ```yaml
 refs:
-  submitButton:
+  window | document | <refKey>:
     eventListeners:
-      click:
-        handler: handleSubmit  # Calls handler function
-        payload:  # Optional data passed to handler/action
-          key: "value"
-          userId: 123
-
-  nameInput:
-    eventListeners:
-      input:
-        handler: handleNameChange
-        payload:
-          fieldName: "name"
-
-  toggleButton:
-    eventListeners:
-      click:
-        action: toggleItem  # Calls store action directly
-        payload:
-          itemId: ${item.id}
-
-template:
-  - form:
-    - input#nameInput type=text:
-    - button#submitButton: "Submit"
+      <eventType>:
+        handler: <handlerName> | action: <storeActionName>
+        payload: <object>              # optional
+        preventDefault: <boolean>      # optional
+        stopPropagation: <boolean>     # optional
+        stopImmediatePropagation: <boolean> # optional
+        targetOnly: <boolean>          # optional
+        once: <boolean>                # optional
+        debounce: <number>             # optional
+        throttle: <number>             # optional
 ```
 
-### Handler vs Action
+Rules:
+- exactly one of `handler` or `action` is required
+- `debounce` and `throttle` are mutually exclusive
+- `debounce`/`throttle` must be non-negative numbers
+- modifier flags must be booleans
+- wildcard matching applies to ID refs and class refs
+- match precedence is: ID over class, exact over wildcard, then longest prefix
+- `window` and `document` are reserved refs keys
 
-**Handler**:
-- Calls a function from `handlers.js`
-- Receives `(deps, payload)` parameters
-- Can perform complex logic, side effects, API calls
-- Original event is accessible via `payload._event`
+Global listener lifecycle:
+- listeners under `refs.window` / `refs.document` are attached once on component mount
+- they are removed on component unmount
+- re-renders do not re-attach duplicate global listeners
 
-**Action**:
-- Calls a store action directly
-- Automatically calls `render()` after action
-- Simpler for basic state updates
-- Payload is parsed with Jempl for dynamic values
-
-### Payload Support
-
-Both handlers and actions support optional payloads. Payload supports Jempl templating for dynamic values.
-
-### Validation Rules
-
-- Each listener can have **either** `handler` OR `action`, but not both
-- Framework will throw an error if both are specified
-- `payload` is optional for both handler and action
-
-### Event Options
-
-Keys under `refs` must match the `id` attribute of HTML elements in the template.
+Example:
 
 ```yaml
 refs:
-  submitButton:  # Must match id="submitButton" in template
+  window:
     eventListeners:
-      click:    # Standard HTML DOM event (click, submit, input, etc.)
-        handler: handleSubmit  # Function name from handlers.js
+      resize:
+        action: setViewportWidth
+        throttle: 120
         payload:
-          formType: "login"
-      keydown:  # Any HTML event is supported
-        action: handleKeyDown  # Direct store action
+          width: ${_event.target.innerWidth}
 
-template:
-  - rtgl-button#submitButton: "Submit"  # id matches refs key
+  document:
+    eventListeners:
+      visibilitychange:
+        handler: handleVisibilityChange
+        once: true
 ```
 
-**Current Limitations**:
-- Event listeners support `handler` OR `action` plus optional `payload`
-- No event options like `preventDefault` or `passive`
-- All event handlers must be defined in the component's `handlers.js` file (for handler type)
-- Store actions must be defined in the component's `store.js` file (for action type)
+### Event Modifier Semantics
 
-## Data Schemas
+- `preventDefault`: call `_event.preventDefault()`
+- `stopPropagation`: call `_event.stopPropagation()`
+- `stopImmediatePropagation`: call `_event.stopImmediatePropagation()`
+- `targetOnly`: execute only if `_event.target === _event.currentTarget`
+- `once`: execute once per listener target
+- `debounce`: trailing-only debounce window
+- `throttle`: leading-only throttle window
 
-### ViewData Schema
-This is standard [JSON Schema](https://json-schema.org/) validation for data passed to templates.
+### Payload Semantics
 
-```yaml
-viewDataSchema:
-  type: object
-  properties:
-    title:
-      type: string
-      default: "Default Title"
-    items:
-      type: array
-      items:
-        type: object
-        properties:
-          id: { type: number }
-          name: { type: string }
+Payload semantics are unified for `handler` and `action`:
+- payload expressions are resolved the same way
+- `_event` is available in payload context
+- action listeners include internal `_action` dispatch metadata
+
+Conceptual invocation:
+- `handler`: `handlers.someHandler(deps, { ...payload, _event })`
+- `action`: `handlers.handleCallStoreAction({ ...payload, _event, _action: "<actionName>" })`
+- runtime dispatcher then calls `store[action](payload)` and triggers render
+
+## 7. Refs Runtime Surface
+
+`deps.refs` maps matched refs directly to DOM elements:
+
+```js
+const submitButton = deps.refs.submitButton;
+submitButton.focus();
 ```
 
-### Props & Attributes
-```yaml
-propsSchema:
-  type: object
-  properties:
-    onItemClick: { type: function }
-    initialItems: { type: array }
+Class refs use their configured ref key when no ID exists:
 
-attrsSchema:
-  type: object
-  properties:
-    variant:
-      type: string
-      enum: [primary, secondary]
-      default: primary
+```js
+const labelNode = deps.refs[".label"];
 ```
 
-**Note**: Attributes are always string type in HTML, so `attrsSchema` properties should use `type: string`.
+`deps.refs.submitButton.elm` is not supported.
 
-## Common Patterns
+## 8. Validation Errors
 
-**Note**: These examples use `rettangoli-ui` components, but the system works with any HTML elements.
+Implementations MUST reject invalid view contracts.
+Suggested stable error strings:
 
-### Loading States
-```yaml
-template:
-  - rtgl-view w=f h=f p=md:
-    - $if isLoading:
-      - rtgl-text c=mu-fg: "Loading..."
-    - $elif hasError:
-      - rtgl-text c=error: "Error: ${errorMessage}"
-    - $else:
-      - rtgl-view d=v g=md:
-        - $for item in items:
-          - rtgl-view p=sm bgc=bg br=sm:
-            - rtgl-text: "${item.name}"
-```
+- `Invalid ref key`
+- `Invalid element id`
+- `Duplicate prop binding`
+- `Each listener can have handler or action but not both`
+- `Each listener must define either handler or action`
+- `cannot define both 'debounce' and 'throttle'`
+- `Expected boolean`
+- `Expected non-negative number`
 
-### Forms
+## 9. Invalid Examples
+
+Listener with both `handler` and `action`:
+
 ```yaml
 refs:
   submitButton:
     eventListeners:
       click:
         handler: handleSubmit
-
-template:
-  - rtgl-view d=v g=md p=md:
-    - rtgl-input#email w=f placeholder="Enter email":
-    - rtgl-button#submitButton w=f .disabled=isSubmitting:
-      - $if isSubmitting: "Sending..."
-      - $else: "Send"
+        action: submitForm
 ```
 
-### Modals
+Invalid because listener must define exactly one dispatch mode.
+
+Invalid refs ID for matching:
+
 ```yaml
+template:
+  - button#submit-button: Submit
+
 refs:
-  closeModal:
+  submitButton:
     eventListeners:
       click:
-        handler: handleCloseModal
-
-template:
-  - rtgl-dialog .isOpen=showModal w="500px":
-    - slot name=content:
-      - rtgl-view d=v g=md:
-        - rtgl-text s=lg: "${modalTitle}"
-        - rtgl-text: "${modalContent}"
-        - rtgl-button#closeModal v=ol:
-          - rtgl-text: "Close"
+        handler: handleSubmit
 ```
 
+Invalid because refs-matched element IDs must be camelCase.
+
+## 10. Minimal Valid Example
+
+```yaml
+template:
+  - rtgl-button#submitButton :disabled=${isSubmitting}: ${submitLabel}
+
+refs:
+  submitButton:
+    eventListeners:
+      click:
+        handler: handleSubmit
+        preventDefault: true
+        stopPropagation: true
+        targetOnly: true
+        once: true
+
+  window:
+    eventListeners:
+      resize:
+        action: setViewportWidth
+        throttle: 120
+        payload:
+          width: ${_event.target.innerWidth}
+```

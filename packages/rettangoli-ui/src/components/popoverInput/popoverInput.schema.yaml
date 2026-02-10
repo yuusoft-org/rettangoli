@@ -1,0 +1,18 @@
+componentName: rtgl-popover-input
+propsSchema:
+  type: object
+  properties:
+    value:
+      type: string
+    placeholder:
+      type: string
+    label:
+      type: string
+    autoFocus:
+      type: boolean
+events:
+  value-input: {}
+  value-change: {}
+methods:
+  type: object
+  properties: {}

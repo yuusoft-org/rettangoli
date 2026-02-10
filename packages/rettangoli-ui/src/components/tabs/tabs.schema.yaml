@@ -1,0 +1,26 @@
+componentName: rtgl-tabs
+propsSchema:
+  type: object
+  properties:
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          label:
+            type: string
+          id:
+            type: string
+          testId:
+            type: string
+    selectedTab:
+      type: string
+events:
+  item-click:
+    type: object
+    properties:
+      id:
+        type: string
+methods:
+  type: object
+  properties: {}

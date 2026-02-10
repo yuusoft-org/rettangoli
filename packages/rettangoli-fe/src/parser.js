@@ -1,65 +1,25 @@
-import { render as jemplRender } from 'jempl';
+import { parseAndRender as jemplParseAndRender, render as jemplRender } from "jempl";
 
 import { flattenArrays } from './common.js';
+import { parseNodeBindings } from './core/view/bindings.js';
+import {
+  createRefMatchers,
+  resolveBestRefMatcher,
+  validateElementIdForRefs,
+} from './core/view/refs.js';
+import {
+  createConfiguredEventListener,
+  getEventRateLimitState,
+} from "./core/runtime/events.js";
 
-const lodashGet = (obj, path) => {
-  if (!path) return obj;
-
-  // Parse path to handle both dot notation and bracket notation
-  const parts = [];
-  let current = '';
-  let inBrackets = false;
-  let quoteChar = null;
-
-  for (let i = 0; i < path.length; i++) {
-    const char = path[i];
-
-    if (!inBrackets && char === '.') {
-      if (current) {
-        parts.push(current);
-        current = '';
-      }
-    } else if (!inBrackets && char === '[') {
-      if (current) {
-        parts.push(current);
-        current = '';
-      }
-      inBrackets = true;
-    } else if (inBrackets && char === ']') {
-      if (current) {
-        // Remove quotes if present and add the key
-        if ((current.startsWith('"') && current.endsWith('"')) ||
-          (current.startsWith("'") && current.endsWith("'"))) {
-          parts.push(current.slice(1, -1));
-        } else {
-          // Numeric index or unquoted string
-          const numValue = Number(current);
-          parts.push(isNaN(numValue) ? current : numValue);
-        }
-        current = '';
-      }
-      inBrackets = false;
-      quoteChar = null;
-    } else if (inBrackets && (char === '"' || char === "'")) {
-      if (!quoteChar) {
-        quoteChar = char;
-      } else if (char === quoteChar) {
-        quoteChar = null;
-      }
-      current += char;
-    } else {
-      current += char;
-    }
-  }
-
-  if (current) {
-    parts.push(current);
-  }
-
-  return parts.reduce((acc, part) => acc && acc[part], obj);
-};
-
-export const parseView = ({ h, template, viewData, refs, handlers }) => {
+export const parseView = ({
+  h,
+  template,
+  viewData,
+  refs,
+  handlers,
+  createComponentUpdateHook,
+}) => {
   const result = jemplRender(template, viewData, {});
 
   // Flatten the array carefully to maintain structure
@@ -71,6 +31,7 @@ export const parseView = ({ h, template, viewData, refs, handlers }) => {
     refs,
     handlers,
     viewData,
+    createComponentUpdateHook,
   });
 
   const vdom = h("div", { style: { display: "contents" } }, childNodes);
@@ -91,12 +52,15 @@ export const createVirtualDom = ({
   items,
   refs = {},
   handlers = {},
-  viewData = {}
+  viewData = {},
+  createComponentUpdateHook,
 }) => {
   if (!Array.isArray(items)) {
-    console.error("Input to createVirtualDom must be an array.");
-    return [h("div", {}, [])];
+    throw new Error("[Parser] Input to createVirtualDom must be an array, got " + typeof items);
   }
+
+  const refMatchers = createRefMatchers(refs);
+  const hasIdRefMatchers = refMatchers.some((refMatcher) => refMatcher.targetType === "id");
 
   function processItems(currentItems, parentPath = "") {
     return currentItems
@@ -156,69 +120,20 @@ export const createVirtualDom = ({
         const tagName = selector.split(/[.#]/)[0];
         const isWebComponent = tagName.includes("-");
 
-        // 1. Parse attributes from attrsString
-        const attrs = {}; // Ensure attrs is always an object
-        const props = {};
-        if (attrsString) {
-          // First, handle attributes with values
-          const attrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]+))/g;
-          let match;
-          const processedAttrs = new Set();
-
-          while ((match = attrRegex.exec(attrsString)) !== null) {
-            processedAttrs.add(match[1]);
-            if (match[1].startsWith(".")) {
-              const propName = match[1].substring(1);
-              const valuePathName = match[4];
-              props[propName] = lodashGet(viewData, valuePathName);
-            } else if (match[1].startsWith("?")) {
-              // Handle conditional boolean attributes
-              const attrName = match[1].substring(1);
-              const attrValue = match[2] || match[3] || match[4];
-
-              // Convert string values to boolean
-              let evalValue;
-              if (attrValue === "true") {
-                evalValue = true;
-              } else if (attrValue === "false") {
-                evalValue = false;
-              } else {
-                // Try to get from viewData if it's not a literal boolean
-                evalValue = lodashGet(viewData, attrValue);
-              }
-
-              // Only add attribute if value is truthy
-              if (evalValue) {
-                attrs[attrName] = "";
-              }
-            } else {
-              attrs[match[1]] = match[2] || match[3] || match[4];
-            }
-          }
-
-          // Then, handle boolean attributes without values
-          // Remove all processed attribute-value pairs from the string first
-          let remainingAttrsString = attrsString;
-          const processedMatches = [];
-          let tempMatch;
-          const tempAttrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]+))/g;
-          while ((tempMatch = tempAttrRegex.exec(attrsString)) !== null) {
-            processedMatches.push(tempMatch[0]);
-          }
-          // Remove all matched attribute=value pairs
-          processedMatches.forEach(match => {
-            remainingAttrsString = remainingAttrsString.replace(match, ' ');
-          });
-
-          const booleanAttrRegex = /\b(\S+?)(?=\s|$)/g;
-          let boolMatch;
-          while ((boolMatch = booleanAttrRegex.exec(remainingAttrsString)) !== null) {
-            const attrName = boolMatch[1];
-            // Skip if already processed or starts with . (prop) or contains =
-            if (!processedAttrs.has(attrName) && !attrName.startsWith(".") && !attrName.includes("=")) {
-              attrs[attrName] = "";
-            }
-          }
+        // 1. Parse selector bindings into attrs/props.
+        let attrs;
+        let props;
+        try {
+          ({ attrs, props } = parseNodeBindings({
+            attrsString,
+            viewData,
+            tagName,
+            isWebComponent,
+          }));
+        } catch (error) {
+          throw new Error(
+            `[Parser] Failed to parse bindings for selector '${selector}' with attrs '${attrsString}': ${error.message}`,
+          );
         }
 
         // 2. Handle ID from selector string (e.g., tag#id)
@@ -233,36 +148,33 @@ export const createVirtualDom = ({
         }
 
         // 3. Determine elementIdForRefs (this ID will be used for matching refs keys)
-        // This should be the actual ID that will be on the DOM element.
+        // Only explicit IDs participate in id-based ref matching.
         let elementIdForRefs = null;
         if (attrs.id) {
-          // Check the definitive id from attrs object
+          // Check the definitive id from attrs object.
           elementIdForRefs = attrs.id;
-        } else if (isWebComponent) {
-          // Fallback for web components that don't end up with an 'id' attribute
-          elementIdForRefs = tagName;
         }
+
+        const selectorClassMatches = selector.match(/\.([^.#]+)/g) || [];
+        const selectorClassNames = selectorClassMatches.map((classMatch) => classMatch.substring(1));
+        const attributeClassNames = typeof attrs.class === "string"
+          ? attrs.class.split(/\s+/).filter(Boolean)
+          : [];
+        const classNamesForRefs = [...new Set([...selectorClassNames, ...attributeClassNames])];
 
         // Extract classes and ID from selector (if not a web component)
         const classObj = Object.create(null); // Using Object.create(null) to avoid prototype issues
         let elementId = null;
 
         if (!isWebComponent) {
-          const classMatches = selector.match(/\.([^.#]+)/g);
-          if (classMatches) {
-            classMatches.forEach((classMatch) => {
-              const className = classMatch.substring(1);
-              classObj[className] = true;
-            });
-          }
+          selectorClassNames.forEach((className) => {
+            classObj[className] = true;
+          });
 
           const idMatch = selector.match(/#([^.#\s]+)/);
           if (idMatch) {
             elementId = idMatch[1];
           }
-        } else {
-          // For web components, use the tag name as the element ID for event binding
-          elementId = tagName;
         }
 
         // Determine children or text content
@@ -283,78 +195,44 @@ export const createVirtualDom = ({
         // Apply event listeners
         const eventHandlers = Object.create(null);
 
-        if (elementIdForRefs && refs) {
-          const matchingRefKeys = [];
-          Object.keys(refs).forEach((refKey) => {
-            if (refKey.includes("*")) {
-              const pattern =
-                "^" +
-                refKey
-                  .replace(/[.*+?^${}()|[\\\]\\]/g, "\\$&")
-                  .replace(/\\\*/g, ".*") +
-                "$";
-              try {
-                const regex = new RegExp(pattern);
-                if (regex.test(elementIdForRefs)) {
-                  matchingRefKeys.push(refKey);
-                }
-              } catch (e) {
-                // Keep this warning for invalid regex patterns
-                console.warn(
-                  `[Parser] Invalid regex pattern created from refKey '${refKey}': ${pattern}`,
-                  e,
-                );
-              }
-            } else {
-              if (elementIdForRefs === refKey) {
-                matchingRefKeys.push(refKey);
-              }
-            }
+        if (refMatchers.length > 0) {
+          if (hasIdRefMatchers && elementIdForRefs) {
+            validateElementIdForRefs(elementIdForRefs);
+          }
+          const bestMatchRef = resolveBestRefMatcher({
+            elementIdForRefs,
+            classNames: classNamesForRefs,
+            refMatchers,
           });
 
-          if (matchingRefKeys.length > 0) {
-            matchingRefKeys.sort((a, b) => {
-              const aIsExact = !a.includes("*");
-              const bIsExact = !b.includes("*");
-              if (aIsExact && !bIsExact) return -1;
-              if (!aIsExact && bIsExact) return 1;
-              return b.length - a.length;
-            });
+          if (bestMatchRef) {
+            const bestMatchRefKey = bestMatchRef.refKey;
+            const matchIdentity = bestMatchRef.matchedValue || elementIdForRefs || bestMatchRefKey;
 
-            const bestMatchRefKey = matchingRefKeys[0];
-
-            if (refs[bestMatchRefKey] && refs[bestMatchRefKey].eventListeners) {
-              const eventListeners = refs[bestMatchRefKey].eventListeners;
+            if (bestMatchRef.refConfig && bestMatchRef.refConfig.eventListeners) {
+              const eventListeners = bestMatchRef.refConfig.eventListeners;
+              const eventRateLimitState = getEventRateLimitState(handlers);
               Object.entries(eventListeners).forEach(
                 ([eventType, eventConfig]) => {
-                  if (eventConfig.handler && eventConfig.action) {
-                    throw new Error('Each listener can have hanlder or action but not both')
-                  }
-
-                  if (eventConfig.action) {
-                    eventHandlers[eventType] = (event) => {
-                      handlers.handleCallStoreAction({
-                        ...eventConfig.payload,
-                        _event: event,
-                        _action: eventConfig.action,
-                      })
-                    }
+                  const stateKey = `${bestMatchRefKey}:${matchIdentity}:${eventType}`;
+                  const listener = createConfiguredEventListener({
+                    eventType,
+                    eventConfig,
+                    refKey: bestMatchRefKey,
+                    handlers,
+                    eventRateLimitState,
+                    stateKey,
+                    parseAndRenderFn: jemplParseAndRender,
+                    onMissingHandler: (missingHandlerName) => {
+                      console.warn(
+                        `[Parser] Handler '${missingHandlerName}' for refKey '${bestMatchRefKey}' (matching '${matchIdentity}') is referenced but not found in available handlers.`,
+                      );
+                    },
+                  });
+                  if (!listener) {
                     return;
                   }
-
-                  if (eventConfig.handler && handlers[eventConfig.handler]) {
-                    eventHandlers[eventType] = (event) => {
-                      handlers[eventConfig.handler]({
-                        ...eventConfig.payload,
-                        _event: event,
-                      });
-                    };
-                  } else if (eventConfig.handler) {
-                    // Keep this warning for missing handlers
-                    console.warn(
-                      `[Parser] Handler '${eventConfig.handler}' for refKey '${bestMatchRefKey}' (matching elementId '${elementIdForRefs}') is referenced but not found in available handlers.`,
-                    );
-                  }
+                  eventHandlers[eventType] = listener;
                 },
               );
             }
@@ -374,10 +252,10 @@ export const createVirtualDom = ({
             : String(index);
           snabbdomData.key = `${selector}-${itemPath}`;
 
-          // Include props in key if they exist for better change detection
-          if (Object.keys(props).length > 0) {
-            const propsHash = JSON.stringify(props).substring(0, 50); // Limit length
-            snabbdomData.key += `-${propsHash}`;
+          // Include prop keys in key for better change detection
+          const propKeys = Object.keys(props);
+          if (propKeys.length > 0) {
+            snabbdomData.key += `-p:${propKeys.join(",")}`;
           }
         }
 
@@ -396,77 +274,23 @@ export const createVirtualDom = ({
           snabbdomData.props = props;
         }
 
-        // For web components, add a hook to detect prop and attr changes
-        if (isWebComponent) {
-          snabbdomData.hook = {
-            update: (oldVnode, vnode) => {
-              const oldProps = oldVnode.data?.props || {};
-              const newProps = vnode.data?.props || {};
-              const oldAttrs = oldVnode.data?.attrs || {};
-              const newAttrs = vnode.data?.attrs || {};
-
-              // Check if props have changed
-              const propsChanged =
-                JSON.stringify(oldProps) !== JSON.stringify(newProps);
-
-              // Check if attrs have changed
-              const attrsChanged =
-                JSON.stringify(oldAttrs) !== JSON.stringify(newAttrs);
-
-              if (propsChanged || attrsChanged) {
-                // Set isDirty attribute and trigger re-render
-                const element = vnode.elm;
-                if (
-                  element &&
-                  element.render &&
-                  typeof element.render === "function"
-                ) {
-                  element.setAttribute("isDirty", "true");
-                  requestAnimationFrame(() => {
-                    element.render();
-                    element.removeAttribute("isDirty");
-                    // Call the specific component's handleOnUpdate instead of the parent's onUpdate
-                    if (element.handlers && element.handlers.handleOnUpdate) {
-                      const deps = {
-                        ...(element.deps),
-                        store: element.store,
-                        render: element.render.bind(element),
-                        handlers: element.handlers,
-                        dispatchEvent: element.dispatchEvent.bind(element),
-                        refIds: element.refIds || {},
-                        getRefIds: () => element.refIds || {},
-                      };
-                      element.handlers.handleOnUpdate(deps, {
-                        oldProps,
-                        newProps,
-                        oldAttrs,
-                        newAttrs,
-                      });
-                    }
-                  });
-                }
-              }
-            },
-          };
+        // Hook behavior is injected so parser core stays environment-agnostic.
+        if (isWebComponent && typeof createComponentUpdateHook === "function") {
+          const componentHook = createComponentUpdateHook({
+            selector,
+            tagName,
+          });
+          if (componentHook) {
+            snabbdomData.hook = componentHook;
+          }
         }
 
         try {
-          // For web components, use only the tag name without any selectors
-          if (isWebComponent) {
-            // For web components, we need to use just the tag name
-            return h(tagName, snabbdomData, childrenOrText);
-          } else {
-            // For regular elements, we can use the original selector or just the tag
-            return h(tagName, snabbdomData, childrenOrText);
-          }
+          return h(tagName, snabbdomData, childrenOrText);
         } catch (error) {
-          console.error("Error creating virtual node:", error, {
-            tagName,
-            snabbdomData,
-            childrenOrText,
-          });
-          // Fallback to a simple div
-          return h("div", {}, ["Error creating element"]);
+          throw new Error(
+            `[Parser] Error creating virtual node for '${tagName}': ${error.message}`,
+          );
         }
       })
       .filter(Boolean);

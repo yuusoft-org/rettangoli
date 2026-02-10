@@ -1,0 +1,13 @@
+---
+title: View - Flex Grow - Equal Distribution
+description: Verifies equal space distribution when siblings share identical `fg` multipliers.
+specs:
+  - Width `1fg` consumes available row space.
+  - Multiple `1fg` siblings split space evenly.
+---
+
+<rtgl-view d="h" bgc="mu" g="lg" p="lg">
+  <rtgl-view bgc="ac" w="1fg" h="100">1/3</rtgl-view>
+  <rtgl-view bgc="ac" w="1fg" h="100">1/3</rtgl-view>
+  <rtgl-view bgc="ac" w="1fg" h="100">1/3</rtgl-view>
+</rtgl-view>

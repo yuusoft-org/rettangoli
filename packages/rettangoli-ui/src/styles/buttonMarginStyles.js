@@ -72,16 +72,4 @@ const styles = {
   },
 };
 
-const descendants = {
-  mt: "button",
-  mr: "button",
-  mb: "button",
-  ml: "button",
-  m: "button",
-  mh: "button",
-  mv: "button",
-  s: "button",
-  v: "button",
-};
-
-export default generateCSS(styles, descendants);
+export default generateCSS(styles, {}, ".surface");

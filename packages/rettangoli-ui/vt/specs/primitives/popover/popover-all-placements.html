@@ -1,40 +1,94 @@
 ---
-title: "All Popover Placements"
-description: "Click buttons to see different placement options"
+title: Popover - Placement - Preset Matrix
+description: Verifies placement switching across all directional presets using one reusable popover instance.
+specs:
+  - Placement attribute updates based on clicked trigger.
+  - Popover content label tracks active placement value.
+  - Reopen flow repositions overlay at trigger click coordinates.
+steps:
+  - action: select
+    testId: btn-top
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#popover[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#popover-text'
+    value: top
+  - action: keypress
+    key: Escape
+  - action: waitFor
+    selector: '#popover[open]'
+    state: hidden
+    timeoutMs: 1200
+  - action: select
+    testId: btn-right-end
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#popover[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#popover-text'
+    value: right-end
+  - action: keypress
+    key: Escape
+  - action: waitFor
+    selector: '#popover[open]'
+    state: hidden
+    timeoutMs: 1200
+  - action: select
+    testId: btn-left-start
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#popover[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#popover-text'
+    value: left-start
+  - action: screenshot
 ---
 <rtgl-view w="100vw" h="100vh" ah="c" av="c">
   <rtgl-view g="lg">
     <!-- Row 1 -->
     <rtgl-view d="h" g="md">
-      <rtgl-button id="btn-top-start" w="120">top-start</rtgl-button>
-      <rtgl-button id="btn-top" w="120">top</rtgl-button>
-      <rtgl-button id="btn-top-end" w="120">top-end</rtgl-button>
+      <rtgl-button id="btn-top-start" data-testid="btn-top-start" w="120">top-start</rtgl-button>
+      <rtgl-button id="btn-top" data-testid="btn-top" w="120">top</rtgl-button>
+      <rtgl-button id="btn-top-end" data-testid="btn-top-end" w="120">top-end</rtgl-button>
     </rtgl-view>
 
     <!-- Row 2 -->
     <rtgl-view d="h" g="md">
-      <rtgl-button id="btn-right-start" w="120">right-start</rtgl-button>
-      <rtgl-button id="btn-right" w="120">right</rtgl-button>
-      <rtgl-button id="btn-right-end" w="120">right-end</rtgl-button>
+      <rtgl-button id="btn-right-start" data-testid="btn-right-start" w="120">right-start</rtgl-button>
+      <rtgl-button id="btn-right" data-testid="btn-right" w="120">right</rtgl-button>
+      <rtgl-button id="btn-right-end" data-testid="btn-right-end" w="120">right-end</rtgl-button>
     </rtgl-view>
 
     <!-- Row 3 -->
     <rtgl-view d="h" g="md">
-      <rtgl-button id="btn-bottom-start" w="120">bottom-start</rtgl-button>
-      <rtgl-button id="btn-bottom" w="120">bottom</rtgl-button>
-      <rtgl-button id="btn-bottom-end" w="120">bottom-end</rtgl-button>
+      <rtgl-button id="btn-bottom-start" data-testid="btn-bottom-start" w="120">bottom-start</rtgl-button>
+      <rtgl-button id="btn-bottom" data-testid="btn-bottom" w="120">bottom</rtgl-button>
+      <rtgl-button id="btn-bottom-end" data-testid="btn-bottom-end" w="120">bottom-end</rtgl-button>
     </rtgl-view>
 
     <!-- Row 4 -->
     <rtgl-view d="h" g="md">
-      <rtgl-button id="btn-left-start" w="120">left-start</rtgl-button>
-      <rtgl-button id="btn-left" w="120">left</rtgl-button>
-      <rtgl-button id="btn-left-end" w="120">left-end</rtgl-button>
+      <rtgl-button id="btn-left-start" data-testid="btn-left-start" w="120">left-start</rtgl-button>
+      <rtgl-button id="btn-left" data-testid="btn-left" w="120">left</rtgl-button>
+      <rtgl-button id="btn-left-end" data-testid="btn-left-end" w="120">left-end</rtgl-button>
     </rtgl-view>
   </rtgl-view>
 
   <!-- Single popover that will change placement -->
-  <rtgl-popover id="popover" placement="bottom-start">
+  <rtgl-popover id="popover" place="bs">
     <rtgl-view slot="content"><rtgl-text id="popover-text">bottom-start</rtgl-text></rtgl-view>
   </rtgl-popover>
 </rtgl-view>
@@ -51,6 +105,21 @@ description: "Click buttons to see different placement options"
     'left', 'left-start', 'left-end'
   ];
 
+  const placeMap = {
+    'top': 't',
+    'top-start': 'ts',
+    'top-end': 'te',
+    'right': 'r',
+    'right-start': 'rs',
+    'right-end': 're',
+    'bottom': 'b',
+    'bottom-start': 'bs',
+    'bottom-end': 'be',
+    'left': 'l',
+    'left-start': 'ls',
+    'left-end': 'le',
+  };
+
   placements.forEach(placement => {
     const button = document.getElementById(`btn-${placement}`);
 
@@ -60,7 +129,7 @@ description: "Click buttons to see different placement options"
       popover.removeAttribute('open');
       
       // Update placement and text
-      popover.setAttribute('placement', placement);
+      popover.setAttribute('place', placeMap[placement] || 'bs');
       popoverText.textContent = placement;
       
       // Show popover at click position

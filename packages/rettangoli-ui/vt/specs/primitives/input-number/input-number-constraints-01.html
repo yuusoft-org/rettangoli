@@ -1,7 +1,12 @@
 ---
-title: Number Constraints
+title: Input Number - Constraints - Min Max Step
+description: Verifies numeric constraint attributes for min, max, and step configurations.
+specs:
+  - Min constraint supports zero and negative lower bounds.
+  - Max constraint limits upper input range.
+  - Step values render correctly for decimal increments.
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-view g="sm" w="f">
     <rtgl-text s="sm" c="mu-fg">Min value (0):</rtgl-text>
     <rtgl-input-number id="min-zero-input" min="0" placeholder="Positive numbers only"></rtgl-input-number>
@@ -28,25 +33,25 @@ title: Number Constraints
     const step01Input = document.getElementById('step-01-input');
 
     if (minZeroInput) {
-      minZeroInput.addEventListener('input-change', (e) => {
+      minZeroInput.addEventListener('value-input', (e) => {
         console.log('Min=0 input value changed:', { value: e.detail.value });
       });
     }
 
     if (minNeg10Input) {
-      minNeg10Input.addEventListener('input-change', (e) => {
+      minNeg10Input.addEventListener('value-input', (e) => {
         console.log('Min=-10 input value changed:', { value: e.detail.value });
       });
     }
 
     if (max100Input) {
-      max100Input.addEventListener('input-change', (e) => {
+      max100Input.addEventListener('value-input', (e) => {
         console.log('Max=100 input value changed:', { value: e.detail.value });
       });
     }
 
     if (step01Input) {
-      step01Input.addEventListener('input-change', (e) => {
+      step01Input.addEventListener('value-input', (e) => {
         console.log('Step=0.1 input value changed:', { value: e.detail.value });
       });
     }

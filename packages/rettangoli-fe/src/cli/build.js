@@ -10,22 +10,30 @@ import { load as loadYaml } from "js-yaml";
 import { parse } from 'jempl';
 import { extractCategoryAndComponent } from '../commonBuild.js';
 import { getAllFiles } from '../commonBuild.js';
+import {
+  isSupportedComponentFile,
+  validateComponentEntries,
+} from "./contracts.js";
 import path from "node:path";
 
 function capitalize(word) {
   return word ? word[0].toUpperCase() + word.slice(1) : word;
 }
 
-// Function to process view files - loads YAML and creates temporary JS file
-export const writeViewFile = (view, category, component, tempDir) => {
+const writeYamlModuleFile = (yamlObject, category, component, fileType, tempDir = path.resolve(process.cwd(), ".temp")) => {
   const dir = path.join(tempDir, category);
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
   writeFileSync(
-    path.join(dir, `${component}.view.js`),
-    `export default ${JSON.stringify(view)};`,
+    path.join(dir, `${component}.${fileType}.js`),
+    `export default ${JSON.stringify(yamlObject)};`,
   );
+};
+
+// Function to process view files - loads YAML and creates temporary JS file
+export const writeViewFile = (view, category, component, tempDir = path.resolve(process.cwd(), ".temp")) => {
+  writeYamlModuleFile(view, category, component, "view", tempDir);
 };
 
 export const bundleFile = async (options) => {
@@ -66,18 +74,13 @@ const buildRettangoliFrontend = async (options) => {
     mkdirSync(tempDir, { recursive: true });
   }
 
-  const allFiles = getAllFiles(resolvedDirs).filter((filePath) => {
-    return (
-      filePath.endsWith(".store.js") ||
-      filePath.endsWith(".handlers.js") ||
-      filePath.endsWith(".view.yaml")
-    );
-  });
+  const allFiles = getAllFiles(resolvedDirs).filter((filePath) => isSupportedComponentFile(filePath));
 
   let output = "";
 
   const categories = [];
   const imports = {};
+  const componentContractEntries = [];
 
   // unique identifier needed for replacing
   let count = 10000000000;
@@ -101,7 +104,14 @@ const buildRettangoliFrontend = async (options) => {
     }
 
 
-    if (["handlers", "store"].includes(fileType)) {
+    const componentContractEntry = {
+      category,
+      component,
+      fileType,
+      filePath,
+    };
+
+    if (["handlers", "store", "methods"].includes(fileType)) {
       const relativePath = path.relative(tempDir, filePath).replaceAll(path.sep, "/");
       output += `import * as ${component}${capitalize(
         fileType,
@@ -110,35 +120,57 @@ const buildRettangoliFrontend = async (options) => {
       replaceMap[count] = `${component}${capitalize(fileType)}`;
       imports[category][component][fileType] = count;
       count++;
-    } else if (["view"].includes(fileType)) {
-      const view = loadYaml(readFileSync(filePath, "utf8"));
-      try {
-        view.template = parse(view.template);
-      } catch (error) {
-        console.error(`Error parsing template in file: ${filePath}`);
-        throw error;
+    } else if (["view", "constants", "schema"].includes(fileType)) {
+      const yamlObject = loadYaml(readFileSync(filePath, "utf8")) ?? {};
+      componentContractEntry.yamlObject = yamlObject;
+      if (fileType === "view") {
+        try {
+          yamlObject.template = parse(yamlObject.template);
+        } catch (error) {
+          console.error(`Error parsing template in file: ${filePath}`);
+          throw error;
+        }
       }
-      writeViewFile(view, category, component, tempDir);
+      if (
+        fileType === "constants" &&
+        (yamlObject === null || typeof yamlObject !== "object" || Array.isArray(yamlObject))
+      ) {
+        throw new Error(`[Build] ${filePath} must contain a YAML object at the root.`);
+      }
+
+      writeYamlModuleFile(yamlObject, category, component, fileType, tempDir);
       output += `import ${component}${capitalize(
         fileType,
-      )} from './${category}/${component}.view.js';\n`;
+      )} from './${category}/${component}.${fileType}.js';\n`;
       replaceMap[count] = `${component}${capitalize(fileType)}`;
 
       imports[category][component][fileType] = count;
       count++;
     }
+
+    componentContractEntries.push(componentContractEntry);
   }
+
+  validateComponentEntries({
+    entries: componentContractEntries,
+    errorPrefix: "[Build]",
+  });
 
   const relativeSetup = path.relative(tempDir, resolvedSetup).replaceAll(path.sep, "/");
   output += `
 import { createComponent } from '@rettangoli/fe';
-import { deps, patch, h } from '${relativeSetup}';
+import { deps } from '${relativeSetup}';
 const imports = ${JSON.stringify(imports, null, 2)};
 
 Object.keys(imports).forEach(category => {
   Object.keys(imports[category]).forEach(component => {
-    const webComponent = createComponent({ ...imports[category][component], patch, h }, deps[category])
-    customElements.define(imports[category][component].view.elementName, webComponent);
+    const componentConfig = imports[category][component];
+    const webComponent = createComponent({ ...componentConfig }, deps[category])
+    const elementName = componentConfig.schema?.componentName;
+    if (!elementName) {
+      throw new Error(\`[Build] Missing schema.componentName for \${category}/\${component}. Define it in .schema.yaml.\`);
+    }
+    customElements.define(elementName, webComponent);
   })
 })
 

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yuusoft-org/rettangoli@main/apps/rettangoli.dev/static/public/base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/yuusoft-org/rettangoli@main/apps/rettangoli.dev/static/public/theme-rtgl-slate.css">
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      if (location.hash) {
+        const el = document.getElementById(location.hash.substring(1));
+        if (el) {
+          el.scrollIntoView({ behavior: 'auto' });
+        }
+      }
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc5/dist/rettangoli-iife-ui.min.js"></script>
+
+  <style>
+    pre {
+      width: 100%;
+      margin: 0px;
+    }
+
+    code {
+      white-space: pre-wrap;
+      display: block;
+      overflow: auto;
+      max-height: 400px;
+      word-break: break-all;
+      padding: 1rem;
+      width: -webkit-fill-available;
+    }
+
+    iframe {
+      height: 400px;
+      border: none;
+      border-color: var(--border);
+      border-width: 1px;
+      border-style: solid;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+
+<body class="dark">
+  <rtgl-view d="h" w="100vw" h="100vh">
+
+    <rtgl-view h="f" sm-hidden>
+      <rtgl-sidebar items="%5B%7B%22id%22%3A%22components_basic%22%2C%22title%22%3A%22components_basic%22%2C%22href%22%3A%22%2Fcomponents_basic.html%22%7D%5D">
+      </rtgl-sidebar>
+    </rtgl-view>
+
+    <rtgl-view id="content" h="100vh" w="1fg" p="lg" g="lg" style="flex-wrap: nowrap;" sv ah="c">
+      <rtgl-view w="f" g="xl">
+        <rtgl-text s="h2">components_basic </rtgl-text>
+        
+        <rtgl-view w="f">
+          <a style="display: contents; text-decoration: none; color: inherit;"
+            href="#basic_component">
+            <rtgl-text id="basic_component" s="h3">basic_component</rtgl-text>
+          </a>
+
+          
+          
+          
+
+          <rtgl-view w="f" mt="sm">
+            <rtgl-view w="f">
+              <pre class="shiki slack-dark" style="background-color:#222222;color:#E6E6E6" tabindex="0"><code><span class="line"><span style="color:#808080">&#x3C;</span><span style="color:#569CD6">div</span><span style="color:#9CDCFE"> style</span><span style="color:#E6E6E6">=</span><span style="color:#CE9178">"width:360px;height:220px;padding:24px;background:#2c7be5;color:#fff;font:700 42px Arial;"</span><span style="color:#808080">></span></span>
+<span class="line"><span style="color:#E6E6E6">  Hello World</span></span>
+<span class="line"><span style="color:#808080">&#x3C;/</span><span style="color:#569CD6">div</span><span style="color:#808080">></span></span></code></pre>
+            </rtgl-view>
+            <rtgl-view w="f">
+              <iframe
+                loading="lazy"
+                width="100%"
+                src="/candidate/components/basic.html"
+                frameborder="0"
+                style="
+                      width: 1080px;
+                      height: 720px;
+                      transform: scale(0.66);
+                      transform-origin: top left;
+                      border: none;
+                "
+              ></iframe>
+            </rtgl-view>
+          </rtgl-view>
+        </rtgl-view>
+        
+        <rtgl-view h="33vh"></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+    <rtgl-view lg-hidden>
+      <rtgl-page-outline id="page-outline" target-id="content"></rtgl-page-outline>
+    </rtgl-view>
+  </rtgl-view>
+</body>
+
+</html>

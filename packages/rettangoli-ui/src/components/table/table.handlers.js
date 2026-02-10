@@ -5,7 +5,7 @@ export const handleBeforeMount = (deps) => {
 export const handleRowClick = (deps, payload) => {
   const { dispatchEvent, props } = deps;
   const event = payload._event;
-  const rowIndex = parseInt(event.currentTarget.id.replace("row-", ""));
+  const rowIndex = parseInt(event.currentTarget.id.slice("row".length), 10);
   const rowData = props.data?.rows?.[rowIndex];
 
   if (rowData) {
@@ -23,7 +23,7 @@ export const handleRowClick = (deps, payload) => {
 export const handleHeaderClick = (deps, payload) => {
   const { store, render, dispatchEvent } = deps;
   const event = payload._event;
-  const columnKey = event.currentTarget.id.replace("header-", "");
+  const columnKey = event.currentTarget.dataset.columnKey;
   const currentSort = store.selectSortInfo();
 
   // Determine new sort direction

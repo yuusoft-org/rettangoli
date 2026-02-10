@@ -1,11 +1,5 @@
-import build from './build.js';
-import scaffold from './scaffold.js';
-import watch from './watch.js';
-import examples from './examples.js';
-
-export {
-  build,
-  scaffold,
-  watch,
-  examples
-}
+export { default as build } from "./build.js";
+export { default as check } from "./check.js";
+export { default as scaffold } from "./scaffold.js";
+export { default as watch } from "./watch.js";
+export { default as examples } from "./examples.js";

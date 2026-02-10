@@ -1,12 +1,27 @@
 ---
-title: "Size Medium"
+title: Dialog - VT Flow - Open via Click
+description: Verifies click-driven open interaction and screenshot capture for a medium dialog.
+specs:
+  - Select step resolves the test trigger button.
+  - Click action opens dialog from closed state.
+  - Screenshot captures the resulting visible dialog.
 steps:
-  - click 80 40
-  - wait 500
-  - screenshot
+  - action: select
+    testId: open-dialog-test
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#dialog'
+    value: Medium Dialog
+  - action: screenshot
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
-  <rtgl-button id="button">Open Dialog s=md</rtgl-button>
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-button id="button" data-testid="open-dialog-test">Open Dialog s=md</rtgl-button>
   <rtgl-dialog id="dialog" s="md">
     <rtgl-view slot="content" g="md">
       <rtgl-text s="lg">Medium Dialog</rtgl-text>

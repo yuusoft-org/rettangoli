@@ -1,29 +1,29 @@
 export const handleBeforeMount = (deps) => {
-  const { store, attrs } = deps;
+  const { store, props } = deps;
 
-  if (attrs.value !== undefined) {
-    store.setValue(attrs.value || '');
+  if (props.value !== undefined) {
+    store.setValue({ value: props.value || '' });
   }
 }
 
 export const handleOnUpdate = (deps, payload) => {
-  const { oldAttrs, newAttrs } = payload;
+  const { oldProps, newProps } = payload;
   const { store, render } = deps;
 
-  if (oldAttrs?.value !== newAttrs?.value) {
-    const value = newAttrs?.value ?? '';
-    store.setValue(value);
+  if (oldProps?.value !== newProps?.value) {
+    const value = newProps?.value ?? '';
+    store.setValue({ value });
   }
 
   render();
 }
 
 export const handleTextClick = (deps, payload) => {
-  const { store, render, getRefIds, attrs } = deps;
+  const { store, render, refs, props } = deps;
   const event = payload._event;
 
   const value = store.selectValue();
-  store.setTempValue(value)
+  store.setTempValue({ value })
 
   store.openPopover({
     position: {
@@ -32,20 +32,20 @@ export const handleTextClick = (deps, payload) => {
     }
   });
 
-  const { input } = getRefIds();
-  input.elm.value = value;
+  const { input } = refs;
+  input.value = value;
   render();
 
-  if (attrs['auto-focus']) {
+  if (props.autoFocus) {
     setTimeout(() => {
-      input.elm.focus();
+      input.focus();
     }, 50)
   }
 }
 
 export const handlePopoverClose = (deps, payload) => {
   const { store, render } = deps;
-  store.closePopover();
+  store.closePopover({});
   render();
 }
 
@@ -54,50 +54,50 @@ export const handleInputChange = (deps, payload) => {
   const event = payload._event;
   const value = event.detail.value;
 
-  store.setTempValue(value);
+  store.setTempValue({ value });
 
-  dispatchEvent(new CustomEvent('temp-input-change', {
+  dispatchEvent(new CustomEvent('value-input', {
     detail: { value },
-    bubbles: true
+    bubbles: true,
   }));
 
   render();
 }
 
 export const handleSubmitClick = (deps) => {
-  const { store, render, dispatchEvent, getRefIds } = deps;
-  const { input } = getRefIds()
-  const value = input.elm.value;
+  const { store, render, dispatchEvent, refs } = deps;
+  const { input } = refs
+  const value = input.value;
 
-  store.setValue(value)
-  store.closePopover();
+  store.setValue({ value });
+  store.closePopover({});
 
-  dispatchEvent(new CustomEvent('input-change', {
+  dispatchEvent(new CustomEvent('value-change', {
     detail: { value },
-    bubbles: true
+    bubbles: true,
   }));
 
   render();
 }
 
 export const handleInputKeydown = (deps, payload) => {
-  const { store, render, dispatchEvent, getRefIds } = deps;
+  const { store, render, dispatchEvent, refs } = deps;
   const event = payload._event;
 
   if (event.key === 'Enter') {
-    const { input } = getRefIds()
-    const value = input.elm.value;
+    const { input } = refs
+    const value = input.value;
 
-    store.closePopover();
+    store.closePopover({});
     // Dispatch custom event
-    dispatchEvent(new CustomEvent('input-change', {
+    dispatchEvent(new CustomEvent('value-change', {
       detail: { value },
-      bubbles: true
+      bubbles: true,
     }));
 
     render();
   } else if (event.key === 'Escape') {
-    store.closePopover();
+    store.closePopover({});
     render();
   }
 }

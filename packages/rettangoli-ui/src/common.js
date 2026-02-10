@@ -7,7 +7,7 @@ function css(strings, ...values) {
   return str;
 }
 
-const breakpoints = ["xs", "sm", "md", "lg", "xl"];
+const breakpoints = ["sm", "md", "lg", "xl"];
 
 const styleMap = {
   mt: "margin-top",
@@ -36,8 +36,6 @@ const styleMap = {
   br: "border-radius",
   pos: "position",
   shadow: "box-shadow",
-  ta: "text-align",
-  c: "color",
   cur: "cursor",
 };
 
@@ -59,7 +57,7 @@ const mediaQueries = {
   sm: "@media only screen and (max-width: 640px)",
 };
 
-const generateCSS = (styles, descendants = {}) => {
+const generateCSS = (styles, descendants = {}, targetSelector = null) => {
   let css = "";
 
   for (const [size, mediaQuery] of Object.entries(mediaQueries)) {
@@ -67,7 +65,6 @@ const generateCSS = (styles, descendants = {}) => {
       css += `${mediaQuery} {`;
     }
     for (const [attr, values] of Object.entries(styles)) {
-      const dscendant = descendants[attr] ? ` ${descendants[attr]} ` : " ";
       for (const [value, rule] of Object.entries(values)) {
         const cssProperties = styleMap[attr];
         const cssRule = rule.startsWith("--") ? `var(${rule})` : rule;
@@ -77,6 +74,26 @@ const generateCSS = (styles, descendants = {}) => {
         const hoverAttributeWithBreakpoint =
           size === "default" ? `h-${attr}` : `${size}-h-${attr}`;
 
+        const buildSelector = (attrStr, includeHover = false) => {
+          const base = includeHover
+            ? `:host([${attrStr}="${value}"]:hover)`
+            : `:host([${attrStr}="${value}"])`;
+
+          if (targetSelector) {
+            return targetSelector
+              .split(",")
+              .map((target) => `${base} ${target.trim()}`)
+              .join(", ");
+          }
+
+          const descendant = descendants[attr];
+          if (descendant) {
+            return `${base} ${descendant}`;
+          }
+
+          return base;
+        };
+
         if (cssProperties) {
           // Handle multiple properties if mapped in styleMap
           const properties = cssProperties.split(" ");
@@ -85,20 +102,20 @@ const generateCSS = (styles, descendants = {}) => {
             .join(" ");
 
           css += `
-            :host([${attributeWithBreakpoint}="${value}"])${dscendant}{
+            ${buildSelector(attributeWithBreakpoint)}{
               ${propertyRules}
             }
-            :host([${hoverAttributeWithBreakpoint}="${value}"]:hover)${dscendant}{
+            ${buildSelector(hoverAttributeWithBreakpoint, true)}{
               ${propertyRules}
             }
           `;
         } else {
           // Attribute is not mapped, handle directly
           css += `
-            :host([${attributeWithBreakpoint}="${value}"])${dscendant}{
+            ${buildSelector(attributeWithBreakpoint)}{
               ${rule}
             }
-            :host([${hoverAttributeWithBreakpoint}="${value}"]:hover)${dscendant}{
+            ${buildSelector(hoverAttributeWithBreakpoint, true)}{
               ${rule}
             }
           `;
@@ -129,9 +146,18 @@ const endsWithPercentage = (inputStr) => {
   return /%$/.test(inputStr);
 };
 
+const endsWithFlexGrowUnit = (inputStr) => {
+  // Matches integers 1-12 followed by "fg"
+  return /^([1-9]|1[0-2])fg$/.test(inputStr);
+};
+
 const dimensionWithUnit = (dimension) => {
   if (dimension === undefined) {
     return;
+  }
+
+  if (endsWithFlexGrowUnit(dimension)) {
+    return dimension;
   }
 
   if (endsWithPercentage(dimension)) {
@@ -216,3 +242,21 @@ export {
   convertObjectToCssString,
   mediaQueries,
 };
+
+export {
+  overlayLinkStyles,
+  applyLinkAttributes,
+  syncLinkOverlay,
+  syncLinkWrapper,
+} from "./common/link.js";
+
+export {
+  responsiveStyleSizes,
+  createResponsiveStyleBuckets,
+} from "./common/responsive.js";
+
+export {
+  isFlexGrowDimension,
+  applyDimensionToStyleBucket,
+  applyInlineWidthDimension,
+} from "./common/dimensions.js";

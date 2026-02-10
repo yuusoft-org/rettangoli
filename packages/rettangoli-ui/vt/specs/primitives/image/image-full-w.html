@@ -1,11 +1,16 @@
 ---
-title: "Image full width"
+title: Image - Width - Fill Container
+description: Verifies `w=f` image behavior inside a constrained flexible layout column.
+specs:
+  - Image expands to fill the width of its parent container.
+  - Adjacent layout column remains unaffected by full-width image sizing.
+  - Fill behavior remains stable in horizontal flex context.
 ---
 
-<rtgl-view d="h" g="lg" p="lg" wh="f" fw="w">
-  <rtgl-view flex=1>
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap>
+  <rtgl-view w="2fg">
     <rtgl-image src="/public/sample1.jpg" w="f"></rtgl-image>
   </rtgl-view>
-  <rtgl-view flex=3>
+  <rtgl-view w="2fg">
   </rtgl-view>
 </rtgl-view>

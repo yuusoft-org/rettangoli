@@ -1,14 +1,14 @@
 ---
 title: Overflow
 ---
-<rtgl-view g="lg" p="lg" wh="f" fw="w">
+<rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-select id="select" />
 </rtgl-view>
 
 <script>
   const select = document.getElementById('select')
 
-  select.addEventListener('option-selected', (e) => {
+  select.addEventListener('value-change', (e) => {
     console.log(e.detail);
   });
 

@@ -1,59 +1,19 @@
-elementName: rtgl-table
-
-viewDataSchema:
-  type: object
-  properties:
-    columns:
-      type: array
-    rows:
-      type: array
-    containerAttrString:
-      type: string
-
-propsSchema:
-  type: object
-  properties:
-    data:
-      type: object
-      properties:
-        columns:
-          type: array
-          items:
-            type: object
-            properties:
-              key:
-                type: string
-              label:
-                type: string
-        rows:
-          type: array
-          items:
-            type: object
-    responsive:
-      type: boolean
-      default: true
-
 refs:
-  row-*:
+  row*:
     eventListeners:
       click:
         handler: handleRowClick
-  header-*:
+  header*:
     eventListeners:
       click:
         handler: handleHeaderClick
-
-events: {}
-
 styles:
   table:
     width: 100%
     border-collapse: collapse
     border-spacing: 0
-  
   thead:
     border-bottom: 2px solid var(--border)
-  
   th:
     padding: 12px
     text-align: left
@@ -64,40 +24,34 @@ styles:
     position: sticky
     top: 0
     z-index: 1
-  
   tbody tr:
     border-bottom: 1px solid var(--border)
-  
   tbody tr:last-child:
     border-bottom: none
-  
   td:
     padding: 12px
     color: var(--foreground)
-  
   .table-container:
     width: 100%
     height: 100%
     overflow: auto
-  
   .empty-state:
     text-align: center
     padding: 24px
     color: var(--muted-foreground)
-
 template:
   - rtgl-view.table-container ${containerAttrString}:
-    - $if rows.length > 0:
-      - table:
-        - thead:
-          - tr:
-            - $for column, i in columns:
-              - th#header-${column.key}: ${column.label}
-        - tbody:
-          - $for row, rowIndex in rows:
-            - tr#row-${row.index}:
-              - $for cell, cellIndex in row.cells:
-                - td: ${cell.value}
-      $else:
-        - rtgl-view.empty-state w=f p=xl:
-          - rtgl-text c=mu-fg: No data available
+      - $if rows.length > 0:
+          - table:
+              - thead:
+                  - tr:
+                      - $for column, i in columns:
+                          - th#header${i} data-column-key=${column.key}: ${column.label}
+              - tbody:
+                  - $for row, rowIndex in rows:
+                      - tr#row${rowIndex}:
+                          - $for cell, cellIndex in row.cells:
+                              - td: ${cell.value}
+        $else:
+          - rtgl-view.empty-state w=f p=xl:
+              - rtgl-text c=mu-fg: No data available

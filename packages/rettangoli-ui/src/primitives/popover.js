@@ -83,9 +83,7 @@ class RettangoliPopoverElement extends HTMLElement {
         (path[0].nodeName === 'DIALOG' && path[0] === this._dialogElement);
 
       if (clickedOnBackdrop) {
-        this.dispatchEvent(new CustomEvent('close', {
-          detail: {}
-        }));
+        this._emitClose();
       }
     });
 
@@ -98,18 +96,14 @@ class RettangoliPopoverElement extends HTMLElement {
 
       if (clickedOnBackdrop) {
         e.preventDefault();
-        this.dispatchEvent(new CustomEvent('close', {
-          detail: {}
-        }));
+        this._emitClose();
       }
     });
 
     // Handle ESC key - prevent native close and emit custom event
     this._dialogElement.addEventListener('cancel', (e) => {
       e.preventDefault();
-      this.dispatchEvent(new CustomEvent('close', {
-        detail: {}
-      }));
+      this._emitClose();
     });
 
     // Create popover container
@@ -124,8 +118,15 @@ class RettangoliPopoverElement extends HTMLElement {
     this._isOpen = false;
   }
 
+  _emitClose() {
+    this.dispatchEvent(new CustomEvent('close', {
+      detail: {},
+      bubbles: true,
+    }));
+  }
+
   static get observedAttributes() {
-    return ["open", "x", "y", "placement"];
+    return ["open", "x", "y", "place", "no-overlay"];
   }
 
   connectedCallback() {
@@ -152,8 +153,11 @@ class RettangoliPopoverElement extends HTMLElement {
       } else if (newValue === null && this._isOpen) {
         this._hide();
       }
-    } else if ((name === 'x' || name === 'y' || name === 'placement') && this._isOpen) {
+    } else if ((name === 'x' || name === 'y' || name === 'place') && this._isOpen) {
       this._updatePosition();
+    } else if (name === 'no-overlay' && oldValue !== newValue && this._isOpen) {
+      this._hide();
+      this._show();
     }
   }
 
@@ -208,16 +212,16 @@ class RettangoliPopoverElement extends HTMLElement {
   _updatePosition() {
     const x = parseFloat(this.getAttribute('x') || '0');
     const y = parseFloat(this.getAttribute('y') || '0');
-    const placement = this.getAttribute('placement') || 'bottom-start';
+    const place = this.getAttribute('place') || 'bs';
 
     // Remove positioned attribute to hide during repositioning
     this.removeAttribute('positioned');
 
-    // Calculate position based on placement
+    // Calculate position based on place
     // We'll position after the popover is rendered to get its dimensions
     requestAnimationFrame(() => {
       const rect = this._popoverContainer.getBoundingClientRect();
-      const { left, top } = this._calculatePosition(x, y, rect.width, rect.height, placement);
+      const { left, top } = this._calculatePosition(x, y, rect.width, rect.height, place);
 
       // Set position first
       this._popoverContainer.style.left = `${left}px`;
@@ -230,59 +234,63 @@ class RettangoliPopoverElement extends HTMLElement {
     });
   }
 
-  _calculatePosition(x, y, width, height, placement) {
+  _calculatePosition(x, y, width, height, place) {
     const offset = 8; // Small offset from the cursor
     let left = x;
     let top = y;
 
-    switch (placement) {
-      case 'top':
+    switch (place) {
+      case 't':
         left = x - width / 2;
         top = y - height - offset;
         break;
-      case 'top-start':
+      case 'ts':
         left = x;
         top = y - height - offset;
         break;
-      case 'top-end':
+      case 'te':
         left = x - width;
         top = y - height - offset;
         break;
-      case 'right':
+      case 'r':
         left = x + offset;
         top = y - height / 2;
         break;
-      case 'right-start':
+      case 'rs':
         left = x + offset;
         top = y;
         break;
-      case 'right-end':
+      case 're':
         left = x + offset;
         top = y - height;
         break;
-      case 'bottom':
+      case 'b':
         left = x - width / 2;
         top = y + offset;
         break;
-      case 'bottom-start':
+      case 'bs':
         left = x;
         top = y + offset;
         break;
-      case 'bottom-end':
+      case 'be':
         left = x - width;
         top = y + offset;
         break;
-      case 'left':
+      case 'l':
         left = x - width - offset;
         top = y - height / 2;
         break;
-      case 'left-start':
+      case 'ls':
         left = x - width - offset;
         top = y;
         break;
-      case 'left-end':
+      case 'le':
         left = x - width - offset;
         top = y - height;
+        break;
+      default:
+        left = x;
+        top = y + offset;
         break;
     }
 

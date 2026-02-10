@@ -1,0 +1,29 @@
+---
+title: Input Number - Visibility - Show Hide Responsive
+description: Verifies visibility precedence and breakpoint-prefixed visibility for number inputs.
+specs:
+  - Hide removes an input from visual layout.
+  - Show overrides hide when both are present.
+  - Breakpoint-prefixed show and hide attributes participate in visibility resolution.
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Visible baseline</rtgl-text>
+    <rtgl-input-number placeholder="Visible baseline"></rtgl-input-number>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Hidden input</rtgl-text>
+    <rtgl-input-number hide placeholder="Should be hidden"></rtgl-input-number>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Hide plus show</rtgl-text>
+    <rtgl-input-number hide show placeholder="Show overrides hide"></rtgl-input-number>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu-fg">Responsive show/hide</rtgl-text>
+    <rtgl-input-number hide xl-show placeholder="Visible on xl"></rtgl-input-number>
+  </rtgl-view>
+</rtgl-view>

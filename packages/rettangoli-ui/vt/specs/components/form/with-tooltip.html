@@ -1,7 +1,7 @@
 ---
 title: "With Tooltips"
 ---
-<rtgl-view id="container" g="lg" h="100vh" w="100vw" fw="w">
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
 
 <script>
@@ -19,7 +19,7 @@ title: "With Tooltips"
     description: 'Hover over the info icons to see tooltips',
     fields: [{
       name: 'username',
-      inputType: 'inputText',
+      inputType: 'input-text',
       label: 'Username',
       description: 'Enter your username',
       placeholder: 'Enter username',
@@ -42,7 +42,7 @@ title: "With Tooltips"
       }
     }, {
       name: 'theme',
-      inputType: 'colorPicker',
+      inputType: 'color-picker',
       label: 'Theme Color',
       description: 'Choose theme color',
       tooltip: {
