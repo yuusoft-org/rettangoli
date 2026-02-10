@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/ui",
-  "version": "1.0.0-rc1",
+  "version": "1.0.0-rc2",
   "description": "A UI component library for building web interfaces.",
   "main": "dist/rettangoli-esm.min.js",
   "type": "module",
@@ -25,7 +25,9 @@
   "scripts": {
     "check:contracts": "rtgl fe check",
     "build:dev": "rtgl fe build -d && bun run esbuild-dev.js",
-    "build": "rtgl fe build && bun run esbuild.js",
+    "build": "rtgl fe build && bun run esbuild.js && bun run esbuild-dev.js && npm run verify:vt-bundle",
+    "verify:vt-bundle": "rg -q 'customElements\\.define\\(\"rtgl-button\"' vt/static/public/main.js",
+    "prepack": "npm run build",
     "vt:generate": "bun run build:dev && rtgl vt generate --skip-screenshots",
     "vt:docker": "bun run build:dev && docker run --rm --user $(id -u):$(id -g) -v \"$PWD:/app\" -w /app han4wluc/rtgl:playwright-v1.57.0-rtgl-v0.0.38 rtgl vt generate",
     "vt:report": "bun run vt:docker && rtgl vt report",

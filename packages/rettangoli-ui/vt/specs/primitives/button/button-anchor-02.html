@@ -4,9 +4,12 @@ description: Verifies explicit rel handling and disabled fallback behavior for l
 specs:
   - Explicit rel values are preserved when new-tab is used.
   - new-tab without rel still renders correctly.
+  - href links without explicit s/v use default button styling.
   - Disabled buttons with href render as non-link disabled surfaces.
 ---
 <rtgl-view d="h" g="lg" p="lg" wh="f" wrap>
+  <rtgl-button href="#default-rel">Default href fallback</rtgl-button>
+
   <rtgl-button href="#explicit-rel" new-tab rel="nofollow" v="pr">
     Explicit rel
   </rtgl-button>

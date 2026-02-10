@@ -11,7 +11,7 @@ sidebarId: getting-started
 The simplest way to use rettangoli-ui is import directly from CDN. For example:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc1/dist/rettangoli-iife-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc2/dist/rettangoli-iife-ui.min.js"></script>
 ```
 
 This will setup all the web components.

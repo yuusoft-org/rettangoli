@@ -53,7 +53,24 @@ class RettangoliButtonElement extends HTMLElement {
         a.surface:visited,
         a.surface:hover,
         a.surface:active {
-          color: inherit;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+          gap: var(--spacing-md);
+          border-width: 0px;
+          border-style: solid;
+          border-color: var(--border);
+          height: 32px;
+          padding-left: 16px;
+          padding-right: 16px;
+          border-radius: 4px;
+          font-size: var(--sm-font-size);
+          font-weight: var(--sm-font-weight);
+          line-height: var(--sm-line-height);
+          letter-spacing: var(--sm-letter-spacing);
+          background-color: var(--primary);
+          color: var(--primary-foreground);
           text-decoration: none;
         }
 
