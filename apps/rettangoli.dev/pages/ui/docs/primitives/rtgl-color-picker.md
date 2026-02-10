@@ -10,7 +10,7 @@ A color selection primitive based on native color input behavior.
 ## Quickstart
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-color-picker value="#3498db"></rtgl-color-picker>
 </rtgl-view>
 ```
@@ -45,7 +45,7 @@ Set or control the selected color.
 - Invalid/empty values resolve to `#000000`.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-color-picker value="#ff5733"></rtgl-color-picker>
   <rtgl-color-picker value="#2ecc71"></rtgl-color-picker>
 </rtgl-view>
@@ -62,7 +62,7 @@ Control size with `w`, `h`, and `wh`.
 - If both `hide` and `show` are set at the same breakpoint, `show` wins.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-color-picker wh="24" value="#e74c3c"></rtgl-color-picker>
   <rtgl-color-picker wh="32" value="#3498db"></rtgl-color-picker>
   <rtgl-color-picker w="48" h="32" value="#2ecc71"></rtgl-color-picker>
@@ -72,7 +72,7 @@ Control size with `w`, `h`, and `wh`.
 ## Disabled
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-color-picker disabled value="#3498db"></rtgl-color-picker>
   <rtgl-color-picker disabled value="#2ecc71"></rtgl-color-picker>
 </rtgl-view>

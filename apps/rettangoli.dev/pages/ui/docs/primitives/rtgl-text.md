@@ -16,7 +16,7 @@ Use this baseline pattern in most UIs:
 - Use `w` with `ellipsis` when text must stay on one line.
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg" w="f">
+<rtgl-view d="v" g="sm" w="f">
   <rtgl-text s="h3">Billing Settings</rtgl-text>
   <rtgl-text c="mu">Manage invoices, payment methods, and tax details.</rtgl-text>
   <rtgl-text w="220" ellipsis>
@@ -45,7 +45,7 @@ For full breakpoint behavior, see [Responsiveness](../introduction/responsivenes
 Control text scale using predefined sizes from `xs` to heading levels.
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg">
+<rtgl-view d="v" g="sm">
   <rtgl-text s="h1">Heading 1</rtgl-text>
   <rtgl-text s="h2">Heading 2</rtgl-text>
   <rtgl-text s="h3">Heading 3</rtgl-text>
@@ -70,7 +70,7 @@ Use semantic tokens for predictable contrast and theme consistency.
 | `bg`, `bo`, `tr` | Background, border, transparent |
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg">
+<rtgl-view d="v" g="sm">
   <rtgl-text c="fg">Default foreground text</rtgl-text>
   <rtgl-text c="mu">Muted text</rtgl-text>
   <rtgl-text c="pr">Primary text</rtgl-text>
@@ -86,7 +86,7 @@ Use semantic tokens for predictable contrast and theme consistency.
 Control alignment with `ta="s|c|j|e"`.
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg">
+<rtgl-view d="v" g="md">
   <rtgl-view bgc="mu" p="md" w="300">
     <rtgl-text ta="s">Start aligned text.</rtgl-text>
   </rtgl-view>
@@ -114,7 +114,7 @@ Control text width with fixed size, stretch, or proportional flex-grow.
 - `w="1fg"`-`w="12fg"` uses proportional flex-grow in flex layouts.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg" w="f">
+<rtgl-view d="h" g="md" w="f">
   <rtgl-view w="120" bgc="mu" p="sm">
     <rtgl-text>Fixed</rtgl-text>
   </rtgl-view>
@@ -139,7 +139,7 @@ Truncate overflowing text on a single line.
 - No shorthand alias is supported; use `ellipsis` explicitly.
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg">
+<rtgl-view d="v" g="md">
   <rtgl-view bgc="mu" p="md" g="sm">
     <rtgl-text w="180">
       Text without ellipsis may wrap or overflow depending on context
@@ -166,7 +166,7 @@ Use `href` to make the text surface clickable. Use `new-tab` and `rel` for navig
 ### Inline Anchor Link
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg">
+<rtgl-view d="v" g="sm">
   <rtgl-text>
     Learn more in the <a href="/docs">documentation</a>.
   </rtgl-text>
@@ -176,7 +176,7 @@ Use `href` to make the text surface clickable. Use `new-tab` and `rel` for navig
 ### Clickable Text Surface
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg">
+<rtgl-view d="v" g="sm">
   <rtgl-text href="#local-section">Local navigation</rtgl-text>
   <rtgl-text href="https://rettangoli.dev" new-tab rel="noopener noreferrer">
     External navigation
@@ -189,7 +189,7 @@ Use `href` to make the text surface clickable. Use `new-tab` and `rel` for navig
 Use standard inline HTML tags inside `rtgl-text` for emphasis and semantics.
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg">
+<rtgl-view d="v" g="sm">
   <rtgl-text>Text with <b>bold</b>, <i>italic</i>, and <code>code</code>.</rtgl-text>
   <rtgl-text>Use <mark>mark</mark>, <del>delete</del>, and <ins>insert</ins> as needed.</rtgl-text>
 </rtgl-view>

@@ -12,7 +12,7 @@ A multiline text-entry primitive for notes, descriptions, and long-form input.
 Use textarea when users need multiple lines of text.
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg" w="360">
+<rtgl-view d="v" g="sm" w="360">
   <rtgl-text c="mu">Description</rtgl-text>
   <rtgl-textarea rows="5" placeholder="Write details..."></rtgl-textarea>
 </rtgl-view>
@@ -41,7 +41,7 @@ Breakpoint prefixes are supported for layout/style attrs like `w`, `h`, `m`, `hi
 For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg" w="f">
+<rtgl-view d="v" g="sm" w="f">
   <rtgl-textarea w="400" sm-w="f" rows="5" placeholder="Responsive textarea"></rtgl-textarea>
 </rtgl-view>
 ```
@@ -80,7 +80,7 @@ Control content with `value` and guidance text with `placeholder`.
 - Removing `placeholder` removes placeholder text.
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg" w="360">
+<rtgl-view d="v" g="md" w="360">
   <rtgl-textarea value="Initial text"></rtgl-textarea>
   <rtgl-textarea placeholder="Tell us more..."></rtgl-textarea>
 </rtgl-view>
@@ -91,7 +91,7 @@ Control content with `value` and guidance text with `placeholder`.
 Use `rows` and `cols` to suggest the initial editing area.
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg" w="f">
+<rtgl-view d="v" g="md" w="f">
   <rtgl-textarea rows="4" cols="40" placeholder="Compact"></rtgl-textarea>
   <rtgl-textarea rows="8" cols="60" placeholder="Expanded"></rtgl-textarea>
 </rtgl-view>
@@ -100,7 +100,7 @@ Use `rows` and `cols` to suggest the initial editing area.
 ## Disabled
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg" w="360">
+<rtgl-view d="v" g="md" w="360">
   <rtgl-textarea value="Readonly for now" rows="4" disabled></rtgl-textarea>
 </rtgl-view>
 ```
@@ -115,7 +115,7 @@ Control textarea box dimensions with `w`, `h`, and `wh`.
 - `w="f"` stretches to available width.
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg" w="f">
+<rtgl-view d="v" g="md" w="f">
   <rtgl-textarea w="320" rows="4" placeholder="Fixed width"></rtgl-textarea>
   <rtgl-textarea w="f" rows="4" placeholder="Full width"></rtgl-textarea>
   <rtgl-textarea wh="120" placeholder="Square area"></rtgl-textarea>

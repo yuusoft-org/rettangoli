@@ -10,7 +10,7 @@ A collapsible section component for toggled content blocks.
 ## Quickstart
 
 ```html codePreview
-<rtgl-view w="420" p="lg">
+<rtgl-view w="420">
   <rtgl-accordion-item
     label="What is Rettangoli?"
     content="Rettangoli is a UI component library built with web components."
@@ -36,7 +36,7 @@ A collapsible section component for toggled content blocks.
 - `slot="content"` is rendered below `content` and is useful for richer layouts.
 
 ```html codePreview
-<rtgl-view w="420" p="lg">
+<rtgl-view w="420">
   <rtgl-accordion-item label="Advanced" content="Inline summary">
     <rtgl-view slot="content" g="sm">
       <rtgl-text c="mu-fg">Slotted content area</rtgl-text>

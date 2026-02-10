@@ -12,7 +12,7 @@ A primary action primitive for commands, navigation actions, and icon-trigger co
 Use this as your default action button:
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-button v="pr" s="md">Save Changes</rtgl-button>
   <rtgl-button v="ol" s="md">Cancel</rtgl-button>
 </rtgl-view>
@@ -41,7 +41,7 @@ Breakpoint prefixes are supported for `v`, `s`, and margin attributes.
 For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-button v="pr" sm-v="ol" s="lg" sm-s="sm">Responsive Action</rtgl-button>
 </rtgl-view>
 ```
@@ -106,7 +106,7 @@ Use `pre` and `suf` to place icons before or after the label.
 - Icon size follows the button size (`s`).
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-button pre="text">Leading Icon</rtgl-button>
   <rtgl-button suf="text">Trailing Icon</rtgl-button>
   <rtgl-button pre="text" suf="spinner">Both Icons</rtgl-button>
@@ -124,7 +124,7 @@ Use `sq` for icon-only square buttons.
 - Pair `sq` with `pre` for a visible icon.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-button sq pre="text"></rtgl-button>
   <rtgl-button sq pre="text" s="sm"></rtgl-button>
   <rtgl-button sq pre="text" s="lg"></rtgl-button>
@@ -143,7 +143,7 @@ Control width with fixed values or stretch mode.
 - `w` is ignored when `sq` is set.
 
 ```html codePreview
-<rtgl-view g="md" w="300" p="lg">
+<rtgl-view g="md" w="300">
   <rtgl-button w="f">Full Width</rtgl-button>
   <rtgl-button w="180">Fixed Width</rtgl-button>
 </rtgl-view>
@@ -174,7 +174,7 @@ Use `href` for navigation-style actions.
 - If `new-tab` is set and `rel` is omitted, `rel="noopener noreferrer"` is applied.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-button href="#overview" v="ol">Go to Overview</rtgl-button>
   <rtgl-button
     href="https://rettangoli.dev"
@@ -192,7 +192,7 @@ Use `href` for navigation-style actions.
 Add external spacing with margin tokens.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-button mr="md">Button A</rtgl-button>
   <rtgl-button>Button B</rtgl-button>
 </rtgl-view>

@@ -16,7 +16,7 @@ Use this starter pattern for most screens:
 - Add responsive overrides with breakpoint prefixes like `sm-d="v"`.
 
 ```html codePreview
-<rtgl-view p="lg" g="md" w="f">
+<rtgl-view g="md" w="f">
   <rtgl-view d="h" g="md" w="f">
     <rtgl-view bgc="ac" w="1fg" h="96"></rtgl-view>
     <rtgl-view bgc="pr" w="2fg" h="96"></rtgl-view>
@@ -104,7 +104,7 @@ Controls the layout direction of the container. Set to `h` for horizontal or `v`
 ### Vertical
 
 ```html codePreview
-<rtgl-view p="lg" g="md" w="f">
+<rtgl-view g="md" w="f">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
 </rtgl-view>
@@ -113,7 +113,7 @@ Controls the layout direction of the container. Set to `h` for horizontal or `v`
 ### Horizontal
 
 ```html codePreview
-<rtgl-view d="h" p="lg" g="md" w="f">
+<rtgl-view d="h" g="md" w="f">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
 </rtgl-view>
@@ -139,7 +139,7 @@ Controls the width and height of the container.
 ### Pixels
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg" w="f">
+<rtgl-view d="h" g="md" w="f">
   <rtgl-view bgc="ac" wh="80"></rtgl-view>
   <rtgl-view bgc="ac" w="120" h="80"></rtgl-view>
 </rtgl-view>
@@ -148,7 +148,7 @@ Controls the width and height of the container.
 ### Percentage
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg" w="f">
+<rtgl-view d="h" g="md" w="f">
   <rtgl-view bgc="ac" w="50%" h="80"></rtgl-view>
   <rtgl-view bgc="mu" w="50%" h="80"></rtgl-view>
 </rtgl-view>
@@ -157,7 +157,7 @@ Controls the width and height of the container.
 ### Spacing
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg" w="f">
+<rtgl-view d="h" g="md" w="f">
   <rtgl-view bgc="ac" wh="xl"></rtgl-view>
   <rtgl-view bgc="ac" w="lg" h="xl"></rtgl-view>
 </rtgl-view>
@@ -166,7 +166,7 @@ Controls the width and height of the container.
 ### Full
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg" w="f">
+<rtgl-view d="h" g="md" w="f">
   <rtgl-view bgc="ac" w="f" h="80"></rtgl-view>
 </rtgl-view>
 ```
@@ -174,7 +174,7 @@ Controls the width and height of the container.
 ### `wh` Priority
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg" w="f">
+<rtgl-view d="h" g="md" w="f">
   <rtgl-view bgc="ac" w="120" h="60"></rtgl-view>
   <rtgl-view bgc="mu" w="120" h="60" wh="80"></rtgl-view>
 </rtgl-view>
@@ -189,7 +189,7 @@ Use flex-grow values to make elements fill remaining space proportionally. Value
 Multiple elements with the same flex-grow value share space equally.
 
 ```html codePreview
-<rtgl-view d="h" bgc="mu" g="lg" p="lg" w="f">
+<rtgl-view d="h" bgc="mu" g="lg" w="f">
   <rtgl-view bgc="ac" w="1fg" h="100">1/3</rtgl-view>
   <rtgl-view bgc="ac" w="1fg" h="100">1/3</rtgl-view>
   <rtgl-view bgc="ac" w="1fg" h="100">1/3</rtgl-view>
@@ -201,7 +201,7 @@ Multiple elements with the same flex-grow value share space equally.
 Different flex-grow values take space proportionally.
 
 ```html codePreview
-<rtgl-view d="h" bgc="mu" g="lg" p="lg" w="f">
+<rtgl-view d="h" bgc="mu" g="lg" w="f">
   <rtgl-view bgc="ac" w="1fg" h="100">1/6</rtgl-view>
   <rtgl-view bgc="ac" w="2fg" h="100">2/6</rtgl-view>
   <rtgl-view bgc="ac" w="3fg" h="100">3/6</rtgl-view>
@@ -213,7 +213,7 @@ Different flex-grow values take space proportionally.
 Combine fixed widths with flex-grow to fill remaining space.
 
 ```html codePreview
-<rtgl-view d="h" bgc="mu" g="lg" p="lg" w="f">
+<rtgl-view d="h" bgc="mu" g="lg" w="f">
   <rtgl-view bgc="ac" w="100" h="100">Fixed</rtgl-view>
   <rtgl-view bgc="ac" w="1fg" h="100">Flexible</rtgl-view>
 </rtgl-view>
@@ -224,7 +224,7 @@ Combine fixed widths with flex-grow to fill remaining space.
 Flex-grow works in vertical containers using `h="1fg"`.
 
 ```html codePreview
-<rtgl-view d="v" bgc="mu" g="lg" p="lg" h="400">
+<rtgl-view d="v" bgc="mu" g="lg" h="400">
   <rtgl-view bgc="ac" w="f" h="1fg">1/3</rtgl-view>
   <rtgl-view bgc="ac" w="f" h="1fg">1/3</rtgl-view>
   <rtgl-view bgc="ac" w="f" h="1fg">1/3</rtgl-view>
@@ -245,7 +245,7 @@ Controls horizontal alignment of child elements.
 - If `d` changes across breakpoints, the meaning of `ah` changes at those breakpoints as well.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="mu" wh="80">
     <rtgl-view bgc="ac" wh="24"></rtgl-view>
   </rtgl-view>
@@ -271,7 +271,7 @@ Controls vertical alignment of child elements.
 - If `d` changes across breakpoints, the meaning of `av` changes at those breakpoints as well.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="mu" wh="80">
     <rtgl-view bgc="ac" wh="24"></rtgl-view>
   </rtgl-view>
@@ -285,7 +285,7 @@ Controls vertical alignment of child elements.
 ```
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="ac" wh="80" ah="c" av="c">
     <rtgl-view bgc="ac" wh="24"></rtgl-view>
   </rtgl-view>
@@ -304,7 +304,7 @@ Use `wrap` to enable wrapping in a horizontal flex row. Use `no-wrap` to force o
 - `sv`, `sh`, or `overflow="hidden"` can disable wrapping and override `wrap`.
 
 ```html codePreview
-<rtgl-view d="h" wrap sm-no-wrap g="sm" p="lg" w="160" bgc="mu">
+<rtgl-view d="h" wrap sm-no-wrap g="sm" w="160" bgc="mu">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
@@ -328,7 +328,7 @@ Use `sv` for vertical scroll, `sh` for horizontal scroll, or `overflow="hidden"`
 `wrap` wraps items in the first container. Adding `sh` in the second container keeps items on one line, even with `wrap` set.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg" w="f">
+<rtgl-view d="h" g="md" w="f">
   <rtgl-view d="h" wrap g="sm" w="160" bgc="mu" p="sm">
     <rtgl-view bgc="ac" wh="48"></rtgl-view>
     <rtgl-view bgc="ac" wh="48"></rtgl-view>
@@ -349,7 +349,7 @@ Use `sv` for vertical scroll, `sh` for horizontal scroll, or `overflow="hidden"`
 ### Vertical and Horizontal Scroll
 
 ```html codePreview
-<rtgl-view d="h" g="lg" p="lg" w="f">
+<rtgl-view d="h" g="lg" w="f">
   <rtgl-view bgc="mu" w="200" h="100" sv g="sm">
     <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
     <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
@@ -368,7 +368,7 @@ Use `sv` for vertical scroll, `sh` for horizontal scroll, or `overflow="hidden"`
 ### Hidden Overflow
 
 ```html codePreview
-<rtgl-view p="lg">
+<rtgl-view>
   <rtgl-view bgc="mu" w="120" h="80" overflow="hidden">
     <rtgl-view bgc="ac" w="200" h="120"></rtgl-view>
   </rtgl-view>
@@ -380,7 +380,7 @@ Use `sv` for vertical scroll, `sh` for horizontal scroll, or `overflow="hidden"`
 Controls the spacing inside the container around its content. Use predefined sizes from `xs` to `xl` for consistent spacing.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="ac" wh="80" p="md">
     <rtgl-view bgc="mu" wh="f"></rtgl-view>
   </rtgl-view>
@@ -395,7 +395,7 @@ Controls the spacing inside the container around its content. Use predefined siz
 Controls the external spacing outside the container. Use predefined sizes from `xs` to `xl` for consistent spacing.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="ac" wh="80">
     <rtgl-view bgc="mu" wh="f" m="md"></rtgl-view>
   </rtgl-view>
@@ -410,19 +410,19 @@ Controls the external spacing outside the container. Use predefined sizes from `
 Controls the spacing between child elements in a container. Use predefined sizes from `xs` to `xl` for consistent spacing.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="ac" wh="60"></rtgl-view>
   <rtgl-view bgc="ac" wh="60"></rtgl-view>
   <rtgl-view bgc="ac" wh="60"></rtgl-view>
 </rtgl-view>
 
-<rtgl-view d="h" g="xl" p="lg">
+<rtgl-view d="h" g="xl">
   <rtgl-view bgc="ac" wh="60"></rtgl-view>
   <rtgl-view bgc="ac" wh="60"></rtgl-view>
   <rtgl-view bgc="ac" wh="60"></rtgl-view>
 </rtgl-view>
 
-<rtgl-view d="v" g="md" p="lg">
+<rtgl-view d="v" g="md">
   <rtgl-view bgc="ac" wh="60"></rtgl-view>
   <rtgl-view bgc="ac" wh="60"></rtgl-view>
   <rtgl-view bgc="ac" wh="60"></rtgl-view>
@@ -434,7 +434,7 @@ Controls the spacing between child elements in a container. Use predefined sizes
 Control horizontal and vertical spacing independently using `gh` and `gv`.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view d="v" g="md" p="md" w="100">
     <rtgl-view bgc="ac" wh="40"></rtgl-view>
     <rtgl-view bgc="ac" wh="40"></rtgl-view>
@@ -451,7 +451,7 @@ Control horizontal and vertical spacing independently using `gh` and `gv`.
 Controls the thickness of the container border. Use predefined sizes from `xs` to `xl` for consistent border widths.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="ac" wh="80" bw="md"></rtgl-view>
   <rtgl-view bgc="ac" wh="80" bwt="md"></rtgl-view>
   <rtgl-view bgc="ac" wh="80" bwr="md"></rtgl-view>
@@ -465,7 +465,7 @@ Controls the thickness of the container border. Use predefined sizes from `xs` t
 Controls the color of the container border using predefined color tokens for consistent theming.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="ac" wh="80" bw="md" bc="pr"></rtgl-view>
   <rtgl-view bgc="ac" wh="80" bw="md" bc="se"></rtgl-view>
   <rtgl-view bgc="ac" wh="80" bw="md" bc="de"></rtgl-view>
@@ -478,7 +478,7 @@ Controls the color of the container border using predefined color tokens for con
 Controls the roundness of container corners. Use predefined sizes from `xs` to `xl` or `f` for fully rounded.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="ac" wh="80" br="lg"></rtgl-view>
 </rtgl-view>
 ```
@@ -505,7 +505,7 @@ Controls elevation using theme shadow tokens.
 Controls the background color of the container using predefined color tokens.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="fg" wh="80"></rtgl-view>
   <rtgl-view bgc="mu" wh="80"></rtgl-view>
   <rtgl-view bgc="ac" wh="80"></rtgl-view>
@@ -517,7 +517,7 @@ Controls the background color of the container using predefined color tokens.
 You can also use predefined color tokens for consistent theming.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="pr" wh="80"></rtgl-view>
   <rtgl-view bgc="se" wh="80"></rtgl-view>
   <rtgl-view bgc="ac" wh="80"></rtgl-view>
@@ -529,7 +529,7 @@ You can also use predefined color tokens for consistent theming.
 Controls the transparency level of the container. Use values from 0 (transparent) to 1 (opaque).
 
 ```html codePreview
-<rtgl-view d="h" g="lg" p="lg" wh="f">
+<rtgl-view d="h" g="lg" wh="f">
   <rtgl-view bgc="mu" wh="100" op="0.1"></rtgl-view>
   <rtgl-view bgc="mu" wh="100" op="0.5"></rtgl-view>
   <rtgl-view bgc="mu" wh="100" op="1"></rtgl-view>
@@ -547,7 +547,7 @@ Controls how the element is placed relative to surrounding content or a parent c
 - Responsive `sm-pos`/`md-pos`/`lg-pos`/`xl-pos` follows normal breakpoint precedence.
 
 ```html codePreview
-<rtgl-view p="lg" g="md">
+<rtgl-view g="md">
   <rtgl-view bgc="mu" wh="80" pos="rel">
     <rtgl-view bgc="ac" wh="24" pos="abs" edge="t"></rtgl-view>
     <rtgl-view bgc="ac" wh="24" pos="abs" edge="b"></rtgl-view>
@@ -587,7 +587,7 @@ Controls the edge anchoring for positioned elements.
 ```
 
 ```html codePreview
-<rtgl-view d="h" p="lg" g="md">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="mu" wh="96" pos="rel">
     <rtgl-view bgc="ac" op="0.3" pos="abs" edge="f"></rtgl-view>
     <rtgl-view bgc="pr" h="16" pos="abs" edge="t"></rtgl-view>
@@ -612,7 +612,7 @@ Controls the stacking order of positioned elements. Higher values appear on top 
 - Responsive `sm-z`/`md-z`/`lg-z`/`xl-z` follows normal breakpoint precedence.
 
 ```html codePreview
-<rtgl-view p="lg" g="md" w="f">
+<rtgl-view g="md" w="f">
   <rtgl-view bgc="mu" wh="220" pos="rel" br="lg" overflow="hidden">
     <rtgl-view bgc="de" op="0.2" pos="abs" edge="f" z="1"></rtgl-view>
     <rtgl-view bgc="pr" h="28" pos="abs" edge="t" z="2"></rtgl-view>
@@ -626,7 +626,7 @@ Controls the stacking order of positioned elements. Higher values appear on top 
 Controls pointer style using cursor tokens. Use `cur="pointer"` for click targets and `cur="move"` for draggable surfaces.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="mu" wh="80" cur="pointer"></rtgl-view>
   <rtgl-view bgc="ac" wh="80" cur="move"></rtgl-view>
 </rtgl-view>
@@ -642,7 +642,7 @@ Controls whether the container appears in the layout.
 - Responsive `sm-hide`/`md-show` (etc.) follows normal breakpoint precedence.
 
 ```html codePreview
-<rtgl-view p="lg" g="md">
+<rtgl-view g="md">
   <rtgl-view d="h" g="md">
     <rtgl-view bgc="ac" wh="80"></rtgl-view>
     <rtgl-view bgc="ac" wh="80" hide></rtgl-view>
@@ -671,21 +671,21 @@ Do not place interactive controls (like `rtgl-button`, `input`, `select`) inside
 
 ```html
 <!-- Avoid: nested button competes with the full-surface link -->
-<rtgl-view href="/details" p="lg" bgc="mu" w="f">
+<rtgl-view href="/details" bgc="mu" w="f">
   <rtgl-button>Delete</rtgl-button>
 </rtgl-view>
 ```
 
 ```html
 <!-- Better: keep navigation and control interactions separate -->
-<rtgl-view d="h" g="sm" p="lg" w="f">
+<rtgl-view d="h" g="sm" w="f">
   <rtgl-view href="/details" w="1fg" bgc="mu"></rtgl-view>
   <rtgl-button>Delete</rtgl-button>
 </rtgl-view>
 ```
 
 ```html codePreview
-<rtgl-view d="h" g="lg" p="lg" w="f">
+<rtgl-view d="h" g="lg" w="f">
   <rtgl-view href="#first" bgc="pr" wh="80"></rtgl-view>
   <rtgl-view href="#second" new-tab bgc="se" wh="80"></rtgl-view>
 </rtgl-view>

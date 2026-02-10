@@ -37,16 +37,17 @@ customElements.define('rtgl-view', RettangoliView({}));
 You must load two CSS files in this order:
 
 ```html
-<link rel="stylesheet" href="node_modules/@rettangoli/ui/src/themes/reset.css">
-<link rel="stylesheet" href="node_modules/@rettangoli/ui/src/themes/theme-default.css">
+<link rel="stylesheet" href="node_modules/@rettangoli/ui/dist/themes/base.css">
+<link rel="stylesheet" href="node_modules/@rettangoli/ui/dist/themes/theme-rtgl-slate.css">
 ```
 
-`reset.css` is required for base HTML normalization. Then choose exactly one theme file.
+`base.css` is required for base HTML normalization. Then choose exactly one theme file.
 
 Available prebuilt themes:
 
-- `src/themes/theme-default.css`
-- `src/themes/theme-catppuccin.css`
+- `dist/themes/theme-rtgl-slate.css`
+- `dist/themes/theme-rtgl-mono.css`
+- `dist/themes/theme-catppuccin.css`
 
 ---
 

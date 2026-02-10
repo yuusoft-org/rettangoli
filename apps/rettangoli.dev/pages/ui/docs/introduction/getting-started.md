@@ -11,7 +11,7 @@ sidebarId: getting-started
 The simplest way to use rettangoli-ui is import directly from CDN. For example:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc3/dist/rettangoli-iife-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc6/dist/rettangoli-iife-ui.min.js"></script>
 ```
 
 This will setup all the web components.
@@ -21,11 +21,11 @@ This will setup all the web components.
 In addition to the JavaScript file, you must add two CSS files in this order:
 
 ```html
-<link href="/public/reset.css" rel="stylesheet">
-<link href="/public/theme-default.css" rel="stylesheet">
+<link rel="stylesheet" href="/public/base.css">
+<link rel="stylesheet" href="/public/theme-rtgl-slate.css">
 ```
 
-`reset.css` is required for base HTML normalization. Then choose one theme file.
+`base.css` is required for base HTML normalization. Then choose one theme file.
 
 For more information on available themes and customization options, see our [CSS Variables](/ui/docs/introduction/css-variables) guide.
 

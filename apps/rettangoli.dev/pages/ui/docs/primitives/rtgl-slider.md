@@ -12,7 +12,7 @@ A range-selection primitive for bounded numeric input.
 Use slider for choosing values inside a known range.
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg" w="320">
+<rtgl-view d="v" g="sm" w="320">
   <rtgl-text c="mu">Volume</rtgl-text>
   <rtgl-slider min="0" max="100" value="40"></rtgl-slider>
 </rtgl-view>
@@ -41,7 +41,7 @@ Breakpoint prefixes are supported for layout/style attrs like `w`, `h`, `m`, `hi
 For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg" w="f">
+<rtgl-view d="v" g="sm" w="f">
   <rtgl-slider w="320" sm-w="f" value="35"></rtgl-slider>
 </rtgl-view>
 ```
@@ -80,7 +80,7 @@ Use `min`, `max`, and `step` to define the allowed value space.
 - Browser range rules apply for bounds and step behavior.
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg" w="320">
+<rtgl-view d="v" g="md" w="320">
   <rtgl-slider min="0" max="10" step="0.5" value="6"></rtgl-slider>
   <rtgl-slider min="-50" max="50" step="5" value="0"></rtgl-slider>
 </rtgl-view>
@@ -89,7 +89,7 @@ Use `min`, `max`, and `step` to define the allowed value space.
 ## Value
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg" w="320">
+<rtgl-view d="v" g="md" w="320">
   <rtgl-slider value="25"></rtgl-slider>
   <rtgl-slider value="75"></rtgl-slider>
 </rtgl-view>
@@ -98,7 +98,7 @@ Use `min`, `max`, and `step` to define the allowed value space.
 ## Disabled
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg" w="320">
+<rtgl-view d="v" g="md" w="320">
   <rtgl-slider value="50" disabled></rtgl-slider>
 </rtgl-view>
 ```
@@ -113,7 +113,7 @@ Control slider box dimensions with `w`, `h`, and `wh`.
 - `w="f"` stretches to available width.
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg" w="f">
+<rtgl-view d="v" g="md" w="f">
   <rtgl-slider w="280" value="30"></rtgl-slider>
   <rtgl-slider w="f" value="60"></rtgl-slider>
   <rtgl-slider wh="24" value="80"></rtgl-slider>

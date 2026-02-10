@@ -16,7 +16,7 @@ Use this pattern for most image surfaces:
 - Use `of="cov"` for card/media surfaces.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg" w="f">
+<rtgl-view d="h" g="md" w="f">
   <rtgl-image
     src="/public/sample1.jpg"
     alt="Product preview"
@@ -53,7 +53,7 @@ Use base attributes for larger screens and override with breakpoint prefixes:
 For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg" w="f">
+<rtgl-view d="h" g="md" w="f">
   <rtgl-image
     src="/public/sample1.jpg"
     alt="Responsive card image"
@@ -98,7 +98,7 @@ Use `src` to provide the image URL and `alt` for accessibility.
 - Decorative images should use empty alt text (`alt=""`).
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg">
+<rtgl-view d="v" g="sm">
   <rtgl-image src="/public/sample1.jpg" alt="Team photo in office" w="220" h="140" of="cov"></rtgl-image>
   <rtgl-image src="/public/sample1.jpg" alt="" w="220" h="140" of="cov"></rtgl-image>
 </rtgl-view>
@@ -119,7 +119,7 @@ Control the rendered image box using `w`, `h`, and `wh`.
 ### Width, Height, and `wh`
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg" w="f">
+<rtgl-view d="h" g="md" w="f">
   <rtgl-image src="/public/sample1.jpg" alt="Natural size"></rtgl-image>
   <rtgl-image src="/public/sample1.jpg" alt="Fixed box" w="180" h="120"></rtgl-image>
   <rtgl-image src="/public/sample1.jpg" alt="Square" wh="96"></rtgl-image>
@@ -129,7 +129,7 @@ Control the rendered image box using `w`, `h`, and `wh`.
 ### Full Width
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg" w="f">
+<rtgl-view d="v" g="md" w="f">
   <rtgl-image src="/public/sample1.jpg" alt="Banner image" w="f" h="180" of="cov" br="md"></rtgl-image>
 </rtgl-view>
 ```
@@ -144,7 +144,7 @@ Control how the bitmap is placed inside its box.
 - For predictable results, pair `of` with explicit `w` and `h` (or `wh`).
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-view bgc="mu" p="xs">
     <rtgl-image w="100" h="100" src="/public/sample1.jpg" alt="Default fit"></rtgl-image>
     <rtgl-text>Default</rtgl-text>
@@ -179,7 +179,7 @@ Use `href` to make the entire image surface clickable.
 - If `new-tab` is set and `rel` is omitted, `rel="noopener noreferrer"` is applied.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-image
     src="/public/sample1.jpg"
     alt="Open internal details"
@@ -211,7 +211,7 @@ Use `hide`/`show` when toggling visibility across breakpoints.
 - Prefer using `show` as a responsive override after a `hide`.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-image src="/public/sample1.jpg" alt="Always visible" wh="96"></rtgl-image>
   <rtgl-image src="/public/sample1.jpg" alt="Hidden on small screens" wh="96" sm-hide></rtgl-image>
   <rtgl-image src="/public/sample1.jpg" alt="Only visible on small screens" wh="96" hide sm-show></rtgl-image>
@@ -223,7 +223,7 @@ Use `hide`/`show` when toggling visibility across breakpoints.
 Use the same visual tokens as other primitives for consistent surfaces.
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-image
     src="/public/sample1.jpg"
     alt="Card image with border"

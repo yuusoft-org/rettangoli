@@ -10,7 +10,7 @@ A schema-driven form component that composes Rettangoli input primitives.
 ## Quickstart
 
 ```html codePreview
-<rtgl-view id="form-container" p="lg"></rtgl-view>
+<rtgl-view id="form-container"></rtgl-view>
 
 <script>
   const form = document.createElement("rtgl-form");

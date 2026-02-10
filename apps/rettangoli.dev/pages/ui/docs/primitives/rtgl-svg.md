@@ -20,7 +20,7 @@ Register icons once, then render by key:
 ```
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-svg svg="text" wh="20"></rtgl-svg>
   <rtgl-svg svg="text" wh="20" c="mu-fg"></rtgl-svg>
 </rtgl-view>
@@ -50,7 +50,7 @@ Breakpoint prefixes are supported for `c`, `cur`, and margin attributes.
 For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-svg svg="text" wh="20" c="fg" sm-c="mu-fg"></rtgl-svg>
   <rtgl-svg svg="text" wh="20" m="md" sm-m="xs"></rtgl-svg>
 </rtgl-view>

@@ -12,7 +12,7 @@ A numeric-entry primitive with built-in min/max clamping and numeric events.
 Use this baseline for most numeric fields:
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg" w="320">
+<rtgl-view d="v" g="sm" w="320">
   <rtgl-text c="mu-fg">Quantity</rtgl-text>
   <rtgl-input-number
     value="1"
@@ -48,7 +48,7 @@ Breakpoint prefixes are supported for layout/style attrs like `w`, `h`, `m`, `hi
 For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg" w="f">
+<rtgl-view d="v" g="sm" w="f">
   <rtgl-input-number w="280" sm-w="f" min="0" max="100"></rtgl-input-number>
 </rtgl-view>
 ```
@@ -106,7 +106,7 @@ Control current numeric content with `value`.
 - Removing `value` clears the field.
 
 ```html codePreview
-<rtgl-view g="md" w="320" p="lg">
+<rtgl-view g="md" w="320">
   <rtgl-input-number value="42"></rtgl-input-number>
   <rtgl-input-number value="3.14" step="0.01"></rtgl-input-number>
 </rtgl-view>
@@ -123,7 +123,7 @@ Use `min`, `max`, and `step` to shape accepted numeric values.
 - If both `min` and `max` are set and out of order, effective behavior follows native numeric comparison.
 
 ```html codePreview
-<rtgl-view g="md" w="320" p="lg">
+<rtgl-view g="md" w="320">
   <rtgl-input-number min="0" placeholder=">= 0"></rtgl-input-number>
   <rtgl-input-number min="-10" max="10" placeholder="-10 to 10"></rtgl-input-number>
   <rtgl-input-number step="0.1" placeholder="step 0.1"></rtgl-input-number>
@@ -133,7 +133,7 @@ Use `min`, `max`, and `step` to shape accepted numeric values.
 ## Placeholder
 
 ```html codePreview
-<rtgl-view g="md" w="320" p="lg">
+<rtgl-view g="md" w="320">
   <rtgl-input-number placeholder="Enter amount"></rtgl-input-number>
 </rtgl-view>
 ```
@@ -143,7 +143,7 @@ Use `min`, `max`, and `step` to shape accepted numeric values.
 Use `disabled` when the field is unavailable.
 
 ```html codePreview
-<rtgl-view g="md" w="320" p="lg">
+<rtgl-view g="md" w="320">
   <rtgl-input-number value="12" disabled></rtgl-input-number>
 </rtgl-view>
 ```
@@ -151,7 +151,7 @@ Use `disabled` when the field is unavailable.
 ## Size
 
 ```html codePreview
-<rtgl-view g="md" w="320" p="lg">
+<rtgl-view g="md" w="320">
   <rtgl-input-number s="sm" placeholder="Small"></rtgl-input-number>
   <rtgl-input-number s="md" placeholder="Medium"></rtgl-input-number>
 </rtgl-view>
@@ -168,7 +168,7 @@ Control field box dimensions with `w`, `h`, and `wh`.
 - If both `hide` and `show` are set at the same breakpoint, `show` wins.
 
 ```html codePreview
-<rtgl-view g="md" w="f" p="lg">
+<rtgl-view g="md" w="f">
   <rtgl-input-number w="280" placeholder="Fixed width"></rtgl-input-number>
   <rtgl-input-number w="f" placeholder="Full width"></rtgl-input-number>
   <rtgl-input-number hide sm-show placeholder="Only visible on small screens"></rtgl-input-number>

@@ -12,7 +12,7 @@ A text-entry primitive for form fields, filters, and inline editing.
 Use this as the default text field pattern:
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg" w="320">
+<rtgl-view d="v" g="sm" w="320">
   <rtgl-text c="mu-fg">Password</rtgl-text>
   <rtgl-input
     type="password"
@@ -43,7 +43,7 @@ Breakpoint prefixes are supported for layout/style attrs like `w`, `h`, `m`, `hi
 For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg" w="f">
+<rtgl-view d="v" g="sm" w="f">
   <rtgl-input w="320" sm-w="f" placeholder="Responsive input"></rtgl-input>
 </rtgl-view>
 ```
@@ -82,7 +82,7 @@ For full behavior details, see [Responsiveness](../introduction/responsiveness.m
 - Any non-`password` type value resolves to text behavior.
 
 ```html codePreview
-<rtgl-view g="md" w="320" p="lg">
+<rtgl-view g="md" w="320">
   <rtgl-input placeholder="Text"></rtgl-input>
   <rtgl-input type="password" placeholder="Password"></rtgl-input>
 </rtgl-view>
@@ -99,7 +99,7 @@ Control initial field content with `value` and guidance text with `placeholder`.
 - Removing `placeholder` removes placeholder text.
 
 ```html codePreview
-<rtgl-view g="md" w="320" p="lg">
+<rtgl-view g="md" w="320">
   <rtgl-input value="Hello"></rtgl-input>
   <rtgl-input placeholder="Type your message..."></rtgl-input>
 </rtgl-view>
@@ -110,7 +110,7 @@ Control initial field content with `value` and guidance text with `placeholder`.
 Use `disabled` when the field is unavailable.
 
 ```html codePreview
-<rtgl-view g="md" w="320" p="lg">
+<rtgl-view g="md" w="320">
   <rtgl-input value="Disabled value" disabled></rtgl-input>
 </rtgl-view>
 ```
@@ -120,7 +120,7 @@ Use `disabled` when the field is unavailable.
 Use `s` to control compactness.
 
 ```html codePreview
-<rtgl-view g="md" w="320" p="lg">
+<rtgl-view g="md" w="320">
   <rtgl-input s="sm" placeholder="Small"></rtgl-input>
   <rtgl-input s="md" placeholder="Medium"></rtgl-input>
 </rtgl-view>
@@ -137,7 +137,7 @@ Control field box dimensions with `w`, `h`, and `wh`.
 - If both `hide` and `show` are set at the same breakpoint, `show` wins.
 
 ```html codePreview
-<rtgl-view g="md" w="f" p="lg">
+<rtgl-view g="md" w="f">
   <rtgl-input w="280" placeholder="Fixed width"></rtgl-input>
   <rtgl-input w="f" placeholder="Full width"></rtgl-input>
   <rtgl-input hide sm-show placeholder="Only visible on small screens"></rtgl-input>

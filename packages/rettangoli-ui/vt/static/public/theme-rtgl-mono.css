@@ -1,4 +1,4 @@
-/* Rettangoli UI Catppuccin theme (Latte default, Mocha on .dark). */
+/* Rettangoli Mono theme tokens (high contrast). */
 :root {
   --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
@@ -22,9 +22,9 @@
   --border-width-lg: 8px;
   --border-width-xl: 16px;
 
-  --shadow-sm: 0px 2px 6px rgba(0, 0, 0, .35), 0px 3px 5px rgba(0, 0, 0, .25), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .25);
-  --shadow-md: 0px 5px 12px rgba(0, 0, 0, .35), 0px 3px 5px rgba(0, 0, 0, .25), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .25);
-  --shadow-lg: 0px 10px 24px rgba(0, 0, 0, .35), 0px 3px 5px rgba(0, 0, 0, .25), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .25);
+  --shadow-sm: 0px 2px 6px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
+  --shadow-md: 0px 5px 12px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
+  --shadow-lg: 0px 10px 24px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
 
   --h1-font-size: 3rem;
   --h1-font-weight: 800;
@@ -66,23 +66,22 @@
   --xs-line-height: 1;
   --xs-letter-spacing: normal;
 
-  /* Catppuccin Latte */
-  --primary: #1e66f5;
-  --primary-foreground: #eff1f5;
-  --secondary: #ccd0da;
-  --secondary-foreground: #4c4f69;
-  --destructive: #d20f39;
-  --destructive-foreground: #eff1f5;
+  --primary: #171717;
+  --primary-foreground: #fafafa;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --destructive: #e40014;
+  --destructive-foreground: #fcf3f3;
 
-  --background: #eff1f5;
-  --foreground: #4c4f69;
-  --muted: #e6e9ef;
-  --muted-foreground: #6c6f85;
-  --accent: #dce0e8;
-  --accent-foreground: #4c4f69;
-  --border: #bcc0cc;
-  --input: #ccd0da;
-  --ring: #7287fd;
+  --background: #fff;
+  --foreground: #0a0a0a;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #171717;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #a1a1a1;
 
   --anchor-color: inherit;
   --anchor-color-hover: inherit;
@@ -91,20 +90,19 @@
 }
 
 .dark {
-  /* Catppuccin Mocha */
-  --background: #1e1e2e;
-  --foreground: #cdd6f4;
-  --primary: #89b4fa;
-  --primary-foreground: #1e1e2e;
-  --secondary: #313244;
-  --secondary-foreground: #cdd6f4;
-  --muted: #313244;
-  --muted-foreground: #a6adc8;
-  --accent: #45475a;
-  --accent-foreground: #cdd6f4;
-  --destructive: #f38ba8;
-  --destructive-foreground: #1e1e2e;
-  --border: #585b70;
-  --input: #45475a;
-  --ring: #b4befe;
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --primary: #e5e5e5;
+  --primary-foreground: #171717;
+  --secondary: #262626;
+  --secondary-foreground: #fafafa;
+  --muted: #262626;
+  --muted-foreground: #a1a1a1;
+  --accent: #404040;
+  --accent-foreground: #fafafa;
+  --destructive: #ff6568;
+  --destructive-foreground: #df2225;
+  --border: #ffffff1a;
+  --input: #ffffff26;
+  --ring: #737373;
 }

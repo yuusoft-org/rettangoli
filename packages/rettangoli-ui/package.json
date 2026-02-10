@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/ui",
-  "version": "1.0.0-rc5",
+  "version": "1.0.0-rc6",
   "description": "A UI component library for building web interfaces.",
   "main": "dist/rettangoli-esm.min.js",
   "type": "module",
@@ -11,9 +11,10 @@
   "exports": {
     ".": "./src/index.js",
     "./cli": "./src/cli/index.js",
-    "./themes/reset.css": "./src/themes/reset.css",
-    "./themes/theme-default.css": "./src/themes/theme-default.css",
-    "./themes/theme-catppuccin.css": "./src/themes/theme-catppuccin.css"
+    "./themes/base.css": "./dist/themes/base.css",
+    "./themes/theme-catppuccin.css": "./dist/themes/theme-catppuccin.css",
+    "./themes/theme-rtgl-mono.css": "./dist/themes/theme-rtgl-mono.css",
+    "./themes/theme-rtgl-slate.css": "./dist/themes/theme-rtgl-slate.css"
   },
   "module": "./src/index.js",
   "repository": {
@@ -27,8 +28,9 @@
   "license": "MIT",
   "scripts": {
     "check:contracts": "rtgl fe check",
-    "build:dev": "rtgl fe build -d && bun run esbuild-dev.js",
-    "build": "rtgl fe build && bun run esbuild.js && bun run esbuild-dev.js && npm run verify:vt-bundle",
+    "copy:css": "node copy-css.js",
+    "build:dev": "rtgl fe build -d && bun run esbuild-dev.js && npm run copy:css",
+    "build": "rtgl fe build && bun run esbuild.js && bun run esbuild-dev.js && npm run copy:css && npm run verify:vt-bundle",
     "verify:vt-bundle": "rg -q 'customElements\\.define\\(\"rtgl-button\"' vt/static/public/main.js",
     "prepack": "npm run build",
     "vt:generate": "bun run build:dev && rtgl vt generate",

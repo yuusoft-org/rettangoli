@@ -330,13 +330,14 @@ Then open `http://localhost:3000/view`.
 
 Load CSS in two steps:
 
-1. `src/themes/reset.css`
-2. one theme file, e.g. `src/themes/theme-default.css` or `src/themes/theme-catppuccin.css`
+1. `src/themes/base.css`
+2. one theme file, e.g. `src/themes/theme-rtgl-slate.css` or `src/themes/theme-catppuccin.css`
 
 Reference files for VT examples:
 
-- `vt/static/public/reset.css`
-- `vt/static/public/theme-default.css`
+- `vt/static/public/base.css`
+- `vt/static/public/theme-rtgl-slate.css`
+- `vt/static/public/theme-rtgl-mono.css`
 - `vt/static/public/theme-catppuccin.css`
 
 ## Suggested Change Flow

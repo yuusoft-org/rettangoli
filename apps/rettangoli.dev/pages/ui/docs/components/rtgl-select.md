@@ -12,7 +12,7 @@ A controlled option-picker component for single-choice selection.
 Use `options` as data source and listen to `value-change`.
 
 ```html codePreview
-<rtgl-view d="v" g="sm" p="lg" w="320">
+<rtgl-view d="v" g="sm" w="320">
   <rtgl-text c="mu">Fruit</rtgl-text>
   <rtgl-select id="fruit-select" placeholder="Choose fruit" w="f"></rtgl-select>
 </rtgl-view>
@@ -129,7 +129,7 @@ Set initial/current selection via `selectedValue` or `selected-value`.
 Use `no-clear` when clear affordance must be hidden.
 
 ```html codePreview
-<rtgl-view d="v" g="md" p="lg" w="320">
+<rtgl-view d="v" g="md" w="320">
   <rtgl-select id="clear-on"></rtgl-select>
   <rtgl-select id="clear-off" no-clear></rtgl-select>
 </rtgl-view>

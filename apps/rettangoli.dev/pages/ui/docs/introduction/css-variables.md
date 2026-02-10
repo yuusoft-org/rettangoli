@@ -14,11 +14,12 @@ Rettangoli requires a two-file CSS setup: one base reset plus one theme file.
 
 Available files:
 
-- `reset.css` (base reset for HTML defaults)
-- `theme-default.css` (default light theme + optional `.dark` overrides)
+- `base.css` (base reset for HTML defaults)
+- `theme-rtgl-mono.css` (high-contrast black/white palette)
 - `theme-catppuccin.css` (Catppuccin palette; also supports `.dark`)
+- `theme-rtgl-slate.css` (lower-contrast gray palette, used by rettangoli.dev)
 
-Use `reset.css` first, then one theme file. Both are required for consistent rendering.
+Use `base.css` first, then one theme file. Both are required for consistent rendering.
 
 ## Colors
 

@@ -112,7 +112,7 @@ Choose where the surface appears relative to the `x`/`y` anchor.
 - `l`, `ls`, `le`
 
 ```html codePreview
-<rtgl-view d="h" g="md" p="lg">
+<rtgl-view d="h" g="md">
   <rtgl-popover open x="120" y="120" place="t">
     <rtgl-view slot="content"><rtgl-text>Top</rtgl-text></rtgl-view>
   </rtgl-popover>
