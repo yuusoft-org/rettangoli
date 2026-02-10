@@ -232,17 +232,7 @@ const setupWatcher = (directory, options, server) => {
   const processChanges = async () => {
     console.log('Rebuilding site...');
     try {
-      // Always reload config on rebuild to pick up function changes
-      const config = await loadSiteConfig(options.rootDir, true, true);
-      const mdRenderer = config.md || config.mdRender || options.md;
-      
-      const currentOptions = {
-        ...options,
-        md: mdRenderer,
-        functions: config.functions || options.functions || {}
-      };
-
-      await buildSite({ ...currentOptions, quiet: true });
+      await buildSite({ rootDir: options.rootDir, quiet: true });
       console.log('Rebuild complete');
 
       // Just reload all clients - they'll reload their current page
@@ -291,31 +281,23 @@ const watchSite = async (options = {}) => {
   // Load config file
   console.log(`📁 Current working directory: ${process.cwd()}`);
   console.log(`📁 rootDir parameter: ${rootDir}`);
-  const config = await loadSiteConfig(rootDir, false);
+  const config = await loadSiteConfig(rootDir, true, true);
+  const hasYamlConfig = existsSync(path.join(rootDir, 'sites.config.yaml')) || existsSync(path.join(rootDir, 'sites.config.yml'));
   
-  if (Object.keys(config).length > 0) {
-    const mdRenderer = config.md || config.mdRender;
-    console.log('✅ Loaded sites.config.js');
-    if (mdRenderer) {
-      console.log('✅ Custom md function found');
+  if (hasYamlConfig) {
+    console.log('✅ Loaded site config from sites.config.yaml');
+    if (config.markdown) {
+      console.log('✅ Markdown options configured');
     } else {
-      console.log('ℹ️  No custom md function in config');
-    }
-    if (config.functions) {
-      console.log(`✅ Found ${Object.keys(config.functions).length} custom function(s)`);
+      console.log('ℹ️  No markdown options in config');
     }
   } else {
-    console.log('ℹ️  No sites.config.js found, using defaults');
+    console.log('ℹ️  No sites.config.yaml found, using defaults');
   }
 
   // Do initial build with config
   console.log('Starting initial build...');
-  const mdRenderer = config.md || config.mdRender;
-  await buildSite({
-    rootDir,
-    md: mdRenderer,
-    functions: config.functions || {}
-  });
+  await buildSite({ rootDir });
   console.log('Initial build complete');
 
   // Start custom dev server
@@ -330,9 +312,7 @@ const watchSite = async (options = {}) => {
     if (existsSync(dirPath)) {
       console.log(`👁️  Watching: ${dir}/`);
       setupWatcher(dirPath, {
-        rootDir,
-        md: mdRenderer,
-        functions: config.functions || {}
+        rootDir
       }, server);
     }
   });

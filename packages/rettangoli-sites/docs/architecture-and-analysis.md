@@ -6,7 +6,7 @@
 
 - Inputs: YAML/Markdown pages, YAML templates/partials/data, static assets
 - Output: HTML and copied files under `_site/`
-- Rendering stack: `jempl` + `yahtml` + `markdown-it`
+- Rendering stack: `jempl` + `yahtml` + `markdown-it` (+ async Shiki highlighting)
 - Runtime tooling: build + watch dev server
 
 Screenshot capture is handled by `@rettangoli/vt`, not by `@rettangoli/sites`.
@@ -55,18 +55,16 @@ Per-page render context:
   - `collections`
   - `page.url`
   - `build.isScreenshotMode` (retained for compatibility)
+  - built-in template functions (URI helpers, JSON stringify, date formatters)
 
 ## Config Loading
 
 `loadSiteConfig` supports:
 
-- default object export
-- default function export receiving `{ markdownit }`
-
-`buildSite` and `watchSite` now both accept either key:
-
-- `config.md`
-- `config.mdRender`
+- `sites.config.yaml` or `sites.config.yml` in site root
+- top-level key: `markdownit` (and legacy alias `markdown`)
+- markdown keys: `preset`, `html`, `xhtmlOut`, `linkify`, `typographer`, `breaks`, `langPrefix`, `quotes`, `maxNesting`, `shiki`, `headingAnchors`
+- shiki keys: `enabled`, `theme`
 
 ## Watch Mode
 
@@ -114,7 +112,7 @@ url: /
 
 ## Small Robustness Fixes Applied
 
-1. Unified markdown config keys across build/watch (`md` and `mdRender`)
+1. Switched site config loading to YAML (`sites.config.yaml` / `.yml`) and removed JS config hooks
 2. Added `.yml` support for templates and pages in build pipeline
 3. Fixed `quiet` mode leak (`Building collections...` now respects `quiet`)
 4. Added `static/` to watch directories so static asset edits trigger rebuild/reload
@@ -124,4 +122,4 @@ url: /
 ## Current Gaps
 
 1. `_site` is not cleaned automatically before build (stale files possible)
-2. `sites.config.js` may still contain legacy `screenshots` keys, but they are not used by this runtime
+2. Editing `sites.config.yaml` alone does not trigger a rebuild until another watched file changes

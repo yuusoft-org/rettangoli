@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import MarkdownIt from 'markdown-it';
-import configFunction from '../sites.config.js';
+import rtglMarkdown from '../src/rtglMarkdown.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -45,8 +45,7 @@ export async function runTest(fixturePath) {
   const inputFiles = loadFixture(path.join(fixtureDir, 'in'));
   vol.fromJSON(inputFiles);
 
-  // Get config by calling the function
-  const config = configFunction({ markdownit: MarkdownIt });
+  const md = rtglMarkdown(MarkdownIt);
   
   // Check if this is a fixture that needs custom functions
   const isCustomFunctionsFixture = fixturePath.includes('fixture-custom-functions');
@@ -57,7 +56,18 @@ export async function runTest(fixturePath) {
     renderMarkdown: (text) => ({ __html: `<strong>${text}</strong>` }),
     normalString: (content) => `<em>${content}</em>`
   } : isCustomFunctionsFixture ? {
-    ...config.functions,
+    uppercase: (str) => String(str).toUpperCase(),
+    formatDate: (date, format = 'short') => {
+      const d = new Date(date);
+      if (format === 'short') {
+        return d.toLocaleDateString();
+      }
+      if (format === 'long') {
+        return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      }
+      return d.toString();
+    },
+    join: (arr, separator = ', ') => Array.isArray(arr) ? arr.join(separator) : String(arr),
     // Additional functions needed for the test
     lowercase: (str) => String(str).toLowerCase(),
     capitalize: (str) => {
@@ -87,7 +97,7 @@ export async function runTest(fixturePath) {
   const build = createSiteBuilder({
     fs: memfs,
     rootDir: '/',
-    md: config.md,
+    md,
     functions: functions
   });
   await build();
@@ -151,4 +161,3 @@ export default (fixture) => {
   });
   return true;
 };
-

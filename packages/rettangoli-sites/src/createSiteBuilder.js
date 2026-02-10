@@ -5,6 +5,7 @@ import yaml from 'js-yaml';
 
 import MarkdownIt from 'markdown-it';
 import rtglMarkdown from './rtglMarkdown.js';
+import builtinTemplateFunctions from './builtinTemplateFunctions.js';
 
 // Deep merge utility function
 function deepMerge(target, source) {
@@ -31,10 +32,23 @@ function isObject(item) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
 
-export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet = false, isScreenshotMode = false }) {
+export function createSiteBuilder({
+  fs,
+  rootDir = '.',
+  md,
+  markdown = {},
+  functions = {},
+  quiet = false,
+  isScreenshotMode = false
+}) {
   return async function build() {
+    const templateFunctions = {
+      ...builtinTemplateFunctions,
+      ...functions
+    };
+
     // Use provided md or default to rtglMarkdown
-    const mdInstance = md || rtglMarkdown(MarkdownIt);
+    const mdInstance = md || rtglMarkdown(MarkdownIt, markdown);
 
     // Read all partials and create a JSON object
     const partialsDir = path.join(rootDir, 'partials');
@@ -273,7 +287,7 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
         // Convert YAML content to JSON
         const pageContent = yaml.load(rawContent, { schema: yaml.JSON_SCHEMA });
         // Process the page content to resolve any $partial references with page data
-        processedPageContent = parseAndRender(pageContent, pageData, { partials, functions });
+        processedPageContent = parseAndRender(pageContent, pageData, { partials, functions: templateFunctions });
       }
 
       // Find the template specified in frontmatter
@@ -294,7 +308,7 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
           // For markdown with template, use a placeholder and replace after
           const placeholder = '___MARKDOWN_CONTENT_PLACEHOLDER___';
           const templateData = { ...pageData, content: placeholder, collections };
-          const templateResult = parseAndRender(templateToUse, templateData, { partials, functions });
+          const templateResult = parseAndRender(templateToUse, templateData, { partials, functions: templateFunctions });
           htmlString = convertToHtml(templateResult);
           // Replace the placeholder with actual HTML content
           htmlString = htmlString.replace(placeholder, processedPageContent.__html);
@@ -306,7 +320,7 @@ export function createSiteBuilder({ fs, rootDir = '.', md, functions = {}, quiet
         // YAML content
         const templateData = { ...pageData, content: processedPageContent, collections };
         const result = templateToUse
-          ? parseAndRender(templateToUse, templateData, { partials, functions })
+          ? parseAndRender(templateToUse, templateData, { partials, functions: templateFunctions })
           : processedPageContent;
         // Ensure result is an array for convertToHtml
         const resultArray = Array.isArray(result) ? result : [result];

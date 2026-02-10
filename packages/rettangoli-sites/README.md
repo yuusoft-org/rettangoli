@@ -2,6 +2,8 @@
 
 `@rettangoli/sites` is the static-site engine used by Rettangoli. It renders pages from YAML and Markdown into `_site/`, with support for templates, partials, global data, collections, and watch mode.
 
+It can run directly with `bunx rtgl`, so a site-level `package.json` is optional.
+
 ## Quick Start
 
 ```bash
@@ -10,8 +12,7 @@ bunx rtgl sites init my-site
 
 # run
 cd my-site
-bun install
-bun run build
+bunx rtgl sites build
 ```
 
 ## Package Contract
@@ -23,14 +24,14 @@ my-site/
   partials/        # YAML partials
   data/            # Global YAML data
   static/          # Static assets copied to _site/
-  sites.config.js  # Optional user config
+  sites.config.yaml # Optional site settings
   _site/           # Generated output
 ```
 
 ## What It Supports
 
 - YAML pages rendered through `jempl` + `yahtml`
-- Markdown pages rendered through `markdown-it` (default `rtglMarkdown`)
+- Markdown pages rendered through `markdown-it` + Shiki (default `rtglMarkdown`)
 - Frontmatter (`template`, `tags`, arbitrary page metadata)
 - Global data (`data/*.yaml`) merged with page frontmatter
 - Collections built from page tags
@@ -38,13 +39,48 @@ my-site/
 - Static file copying from `static/` to `_site/`
 - Watch mode with local dev server + websocket reload
 
-## Commands (from scaffolded template)
+## Site Config
+
+Use `sites.config.yaml` (or `sites.config.yml`) for supported settings:
+
+```yaml
+markdownit:
+  preset: default
+  html: true
+  xhtmlOut: false
+  linkify: true
+  typographer: false
+  breaks: false
+  langPrefix: language-
+  quotes: "\u201c\u201d\u2018\u2019"
+  maxNesting: 100
+  shiki:
+    enabled: true
+    theme: slack-dark
+  headingAnchors: true
+```
+
+## Commands
 
 ```bash
-bun run build
-bun run watch
-bun run serve
+bunx rtgl sites build
+bunx rtgl sites watch
 ```
+
+## Built-in Template Functions
+
+Available in YAML templates/pages without extra setup:
+
+- `encodeURI(value)`
+- `encodeURIComponent(value)`
+- `decodeURI(value)`
+- `decodeURIComponent(value)`
+- `jsonStringify(value, space = 0)`
+- `formatDate(value, format = "YYYYMMDDHHmmss", useUtc = true)`
+- `now(format = "YYYYMMDDHHmmss", useUtc = true)`
+- `toQueryString(object)`
+
+`formatDate` tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`, `ss`.
 
 ## Screenshots
 
@@ -77,7 +113,7 @@ url: /
 <div></div>
 ```
 
-`bun run preview` must serve your built site on `vt.url` (for example with `serve _site`).
+`bun run preview` (or any equivalent local server command) must serve your built site on `vt.url` (for example serving `_site/` on port `4173`).
 
 ## Full Architecture And Analysis
 

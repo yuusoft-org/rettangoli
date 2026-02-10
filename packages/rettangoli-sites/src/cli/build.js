@@ -13,17 +13,14 @@ import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 export const buildSite = async (options = {}) => {
   const { rootDir = process.cwd(), md, functions, quiet = false, isScreenshotMode = false } = options;
 
-  // Load config file if needed
-  let config = {};
-  if (!md || !functions) {
-    config = await loadSiteConfig(rootDir);
-  }
+  const config = await loadSiteConfig(rootDir);
 
   const build = createSiteBuilder({
     fs,
     rootDir,
-    md: md || config.md || config.mdRender,
-    functions: functions || config.functions || {},
+    md,
+    markdown: config.markdown || {},
+    functions: functions || {},
     quiet,
     isScreenshotMode
   });

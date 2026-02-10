@@ -2,21 +2,14 @@
 
 A static site built with [Rettangoli Sites](https://github.com/yuusoft-org/rettangoli) using the [rtgl UI](https://github.com/yuusoft-org/rettangoli/tree/main/packages/rettangoli-ui) framework.
 
+This template works without a site-level `package.json`; run commands with `bunx rtgl`.
+
 ## Getting Started
 
 ```bash
-bun install
-bun run build
-bun run serve
+bunx rtgl sites build
+bunx rtgl sites watch
 ```
-
-## Scripts
-
-| Script | Description |
-|--------|-------------|
-| `bun run build` | Build site to `_site/` |
-| `bun run watch` | Build and watch for changes |
-| `bun run serve` | Serve `_site/` locally |
 
 ## Project Structure
 
@@ -26,7 +19,7 @@ bun run serve
 ├── partials/        # Reusable components
 ├── data/            # Global data files
 ├── static/          # Static assets (copied as-is)
-├── sites.config.js  # Configuration and custom functions
+├── sites.config.yaml # Optional site settings
 └── _site/           # Generated output
 ```
 
@@ -184,24 +177,41 @@ Collection item properties:
 - `item.data` - Frontmatter (title, date, etc.)
 - `item.content` - Raw content
 
-## Configuration
+## Site Config
 
-`sites.config.js` for custom functions:
+Use `sites.config.yaml` for simple, non-JS options:
 
-```javascript
-export default {
-  functions: {
-    sortDate: (list) => [...list].sort((a, b) =>
-      new Date(b.data.date) - new Date(a.data.date)
-    ),
-  },
-}
-```
-
-Use in templates:
 ```yaml
-- $for post in sortDate(collections.blog):
+markdownit:
+  preset: default
+  html: true
+  xhtmlOut: false
+  linkify: true
+  typographer: false
+  breaks: false
+  langPrefix: language-
+  quotes: "\u201c\u201d\u2018\u2019"
+  maxNesting: 100
+  shiki:
+    enabled: true
+    theme: slack-dark
+  headingAnchors: true
 ```
+
+## Built-in Template Functions
+
+Use these directly in `${...}` expressions:
+
+- `encodeURI(value)`
+- `encodeURIComponent(value)`
+- `decodeURI(value)`
+- `decodeURIComponent(value)`
+- `jsonStringify(value, space = 0)`
+- `formatDate(value, format = "YYYYMMDDHHmmss", useUtc = true)`
+- `now(format = "YYYYMMDDHHmmss", useUtc = true)`
+- `toQueryString(object)`
+
+Date format tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`, `ss`.
 
 ## Static Files
 

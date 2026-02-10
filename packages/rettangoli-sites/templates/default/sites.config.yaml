@@ -1,0 +1,16 @@
+# Optional site configuration.
+# You can keep this file, remove it, or tune the values below.
+markdownit:
+  preset: default
+  html: true
+  xhtmlOut: false
+  linkify: true
+  typographer: false
+  breaks: false
+  langPrefix: language-
+  quotes: "\u201c\u201d\u2018\u2019"
+  maxNesting: 100
+  shiki:
+    enabled: true
+    theme: slack-dark
+  headingAnchors: true
