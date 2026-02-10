@@ -137,15 +137,15 @@ Screenshot naming:
 A pre-built Docker image with `rtgl` and Playwright browsers is available:
 
 ```bash
-docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc10
+docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc11
 ```
 
 Run commands against a local project:
 
 ```bash
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc10 rtgl vt screenshot
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc10 rtgl vt report
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc10 rtgl vt accept
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc11 rtgl vt screenshot
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc11 rtgl vt report
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc11 rtgl vt accept
 ```
 
 Note:

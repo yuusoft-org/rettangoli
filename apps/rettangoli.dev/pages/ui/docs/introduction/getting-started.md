@@ -21,8 +21,8 @@ This will setup all the web components.
 In addition to the JavaScript file, you must add two CSS files in this order:
 
 ```html
-<link rel="stylesheet" href="/public/base.css">
-<link rel="stylesheet" href="/public/theme-rtgl-slate.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc6/dist/themes/base.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc6/dist/themes/theme-rtgl-slate.css">
 ```
 
 `base.css` is required for base HTML normalization. Then choose one theme file.
