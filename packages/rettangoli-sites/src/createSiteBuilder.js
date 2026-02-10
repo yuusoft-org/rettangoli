@@ -45,6 +45,7 @@ export function createSiteBuilder({
   outputPath = '_site',
   md,
   markdown = {},
+  keepMarkdownFiles = false,
   functions = {},
   quiet = false,
   isScreenshotMode = false
@@ -227,7 +228,7 @@ export function createSiteBuilder({
     const collections = buildCollections();
 
     // Function to process a single page file
-    async function processPage(pagePath, outputRelativePath, isMarkdown = false) {
+    async function processPage(pagePath, outputRelativePath, isMarkdown = false, markdownOutputRelativePath = null) {
       if (!quiet) console.log(`Processing ${pagePath}...`);
 
       const { frontmatter, content: rawContent } = extractFrontmatterAndContent(pagePath);
@@ -353,6 +354,16 @@ export function createSiteBuilder({
       // Write HTML to output file
       fs.writeFileSync(outputPath, htmlString);
       if (!quiet) console.log(`  -> Written to ${outputPath}`);
+
+      if (isMarkdown && keepMarkdownFiles && typeof markdownOutputRelativePath === 'string') {
+        const markdownOutputPath = path.join(outputRootDir, markdownOutputRelativePath);
+        const markdownOutputDir = path.dirname(markdownOutputPath);
+        if (!fs.existsSync(markdownOutputDir)) {
+          fs.mkdirSync(markdownOutputDir, { recursive: true });
+        }
+        fs.copyFileSync(pagePath, markdownOutputPath);
+        if (!quiet) console.log(`  -> Copied markdown to ${markdownOutputPath}`);
+      }
     }
 
     // Process all YAML and Markdown files in pages directory recursively
@@ -381,7 +392,7 @@ export function createSiteBuilder({
             // Process Markdown file
             const outputFileName = item.name.replace('.md', '.html');
             const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
-            await processPage(itemPath, outputRelativePath, true);
+            await processPage(itemPath, outputRelativePath, true, relativePath);
           }
           // Ignore other file types
         }

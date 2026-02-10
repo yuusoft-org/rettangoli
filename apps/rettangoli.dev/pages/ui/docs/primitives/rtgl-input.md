@@ -7,8 +7,6 @@ sidebarId: rtgl-input
 
 A text-entry primitive for form fields, filters, and inline editing.
 
-Input family contract: [Input Interface](../introduction/input-interface.md).
-
 ## Quickstart
 
 Use this as the default text field pattern:

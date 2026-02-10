@@ -25,16 +25,18 @@ Use `open` as the source of truth and close by removing `open`.
 </rtgl-dialog>
 
 <script>
-  const dialog = document.getElementById("dialog-basic");
-  document.getElementById("open-basic").addEventListener("click", () => {
-    dialog.setAttribute("open", "");
-  });
-  document.getElementById("close-basic").addEventListener("click", () => {
-    dialog.removeAttribute("open");
-  });
-  dialog.addEventListener("close", () => {
-    dialog.removeAttribute("open");
-  });
+  (() => {
+    const dialogBasic = document.getElementById("dialog-basic");
+    document.getElementById("open-basic").addEventListener("click", () => {
+      dialogBasic.setAttribute("open", "");
+    });
+    document.getElementById("close-basic").addEventListener("click", () => {
+      dialogBasic.removeAttribute("open");
+    });
+    dialogBasic.addEventListener("close", () => {
+      dialogBasic.removeAttribute("open");
+    });
+  })();
 </script>
 ```
 
@@ -72,16 +74,18 @@ Use `open` as the source of truth and close by removing `open`.
 </rtgl-dialog>
 
 <script>
-  const dialog = document.getElementById("dialog-state");
-  document.getElementById("open-state").addEventListener("click", () => {
-    dialog.setAttribute("open", "");
-  });
-  document.getElementById("close-state").addEventListener("click", () => {
-    dialog.removeAttribute("open");
-  });
-  dialog.addEventListener("close", () => {
-    dialog.removeAttribute("open");
-  });
+  (() => {
+    const dialogState = document.getElementById("dialog-state");
+    document.getElementById("open-state").addEventListener("click", () => {
+      dialogState.setAttribute("open", "");
+    });
+    document.getElementById("close-state").addEventListener("click", () => {
+      dialogState.removeAttribute("open");
+    });
+    dialogState.addEventListener("close", () => {
+      dialogState.removeAttribute("open");
+    });
+  })();
 </script>
 ```
 
@@ -90,17 +94,48 @@ Use `open` as the source of truth and close by removing `open`.
 Use `s` to choose a standard dialog width profile.
 
 ```html codePreview
-<rtgl-view d="h" g="md">
-  <rtgl-dialog s="sm" open>
-    <rtgl-view slot="content"><rtgl-text>Small</rtgl-text></rtgl-view>
-  </rtgl-dialog>
-  <rtgl-dialog s="md" open>
-    <rtgl-view slot="content"><rtgl-text>Medium</rtgl-text></rtgl-view>
-  </rtgl-dialog>
-  <rtgl-dialog s="lg" open>
-    <rtgl-view slot="content"><rtgl-text>Large</rtgl-text></rtgl-view>
-  </rtgl-dialog>
+<rtgl-view d="h" g="sm" wrap>
+  <rtgl-button id="open-size-sm">Open Small</rtgl-button>
+  <rtgl-button id="open-size-md">Open Medium</rtgl-button>
+  <rtgl-button id="open-size-lg">Open Large</rtgl-button>
 </rtgl-view>
+
+<rtgl-dialog id="dialog-size-sm" s="sm">
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-text s="h4">Small</rtgl-text>
+    <rtgl-button v="ol" id="close-size-sm">Close</rtgl-button>
+  </rtgl-view>
+</rtgl-dialog>
+<rtgl-dialog id="dialog-size-md" s="md">
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-text s="h4">Medium</rtgl-text>
+    <rtgl-button v="ol" id="close-size-md">Close</rtgl-button>
+  </rtgl-view>
+</rtgl-dialog>
+<rtgl-dialog id="dialog-size-lg" s="lg">
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-text s="h4">Large</rtgl-text>
+    <rtgl-button v="ol" id="close-size-lg">Close</rtgl-button>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  (() => {
+    const sizes = ["sm", "md", "lg"];
+    for (const size of sizes) {
+      const dialog = document.getElementById(`dialog-size-${size}`);
+      document.getElementById(`open-size-${size}`).addEventListener("click", () => {
+        dialog.setAttribute("open", "");
+      });
+      document.getElementById(`close-size-${size}`).addEventListener("click", () => {
+        dialog.removeAttribute("open");
+      });
+      dialog.addEventListener("close", () => {
+        dialog.removeAttribute("open");
+      });
+    }
+  })();
+</script>
 ```
 
 ## Width Override
@@ -114,12 +149,29 @@ Use `w` when you need explicit width control.
 - If both are set, treat `w` as the explicit override you are opting into.
 
 ```html codePreview
-<rtgl-dialog open w="640px">
+<rtgl-button id="open-width">Open Custom Width</rtgl-button>
+<rtgl-dialog id="dialog-width" w="640px">
   <rtgl-view slot="content" d="v" g="md">
     <rtgl-text s="h4">Custom Width</rtgl-text>
     <rtgl-text c="mu">This dialog uses explicit width.</rtgl-text>
+    <rtgl-button v="ol" id="close-width">Close</rtgl-button>
   </rtgl-view>
 </rtgl-dialog>
+
+<script>
+  (() => {
+    const dialogWidth = document.getElementById("dialog-width");
+    document.getElementById("open-width").addEventListener("click", () => {
+      dialogWidth.setAttribute("open", "");
+    });
+    document.getElementById("close-width").addEventListener("click", () => {
+      dialogWidth.removeAttribute("open");
+    });
+    dialogWidth.addEventListener("close", () => {
+      dialogWidth.removeAttribute("open");
+    });
+  })();
+</script>
 ```
 
 ## Content Slot
@@ -127,10 +179,27 @@ Use `w` when you need explicit width control.
 Render dialog body via `slot="content"`.
 
 ```html codePreview
-<rtgl-dialog open>
+<rtgl-button id="open-slot">Open Slotted Dialog</rtgl-button>
+<rtgl-dialog id="dialog-slot">
   <rtgl-view slot="content" d="v" g="md">
     <rtgl-text s="h4">Slotted Content</rtgl-text>
     <rtgl-text c="mu">Any Rettangoli layout/content can be used here.</rtgl-text>
+    <rtgl-button v="ol" id="close-slot">Close</rtgl-button>
   </rtgl-view>
 </rtgl-dialog>
+
+<script>
+  (() => {
+    const dialogSlot = document.getElementById("dialog-slot");
+    document.getElementById("open-slot").addEventListener("click", () => {
+      dialogSlot.setAttribute("open", "");
+    });
+    document.getElementById("close-slot").addEventListener("click", () => {
+      dialogSlot.removeAttribute("open");
+    });
+    dialogSlot.addEventListener("close", () => {
+      dialogSlot.removeAttribute("open");
+    });
+  })();
+</script>
 ```

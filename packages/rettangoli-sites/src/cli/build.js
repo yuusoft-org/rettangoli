@@ -29,6 +29,7 @@ export const buildSite = async (options = {}) => {
     outputPath,
     md,
     markdown: config.markdown || {},
+    keepMarkdownFiles: config.build?.keepMarkdownFiles === true,
     functions: functions || {},
     quiet,
     isScreenshotMode

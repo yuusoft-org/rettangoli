@@ -6,5 +6,8 @@
     "generate": "rtgl vt generate",
     "report": "rtgl vt report",
     "accept": "rtgl vt accept"
+  },
+  "devDependencies": {
+    "rtgl": "1.0.0-rc7"
   }
 }

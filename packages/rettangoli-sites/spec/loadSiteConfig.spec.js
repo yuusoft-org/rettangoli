@@ -194,4 +194,49 @@ describe('loadSiteConfig', () => {
       await expect(loadSiteConfig(tempDir)).rejects.toThrow('Invalid codePreview option "theme"');
     });
   });
+
+  it('loads build.keepMarkdownFiles from sites.config.yaml', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'build:',
+          '  keepMarkdownFiles: true'
+        ].join('\n')
+      );
+
+      const config = await loadSiteConfig(tempDir);
+      expect(config).toEqual({
+        build: {
+          keepMarkdownFiles: true
+        }
+      });
+    });
+  });
+
+  it('throws on invalid build option key', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'build:',
+          '  unknownOption: true'
+        ].join('\n')
+      );
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Unsupported build option "unknownOption"');
+    });
+  });
+
+  it('throws on non-boolean build.keepMarkdownFiles', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'build:',
+          '  keepMarkdownFiles: yes'
+        ].join('\n')
+      );
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Invalid build option "keepMarkdownFiles"');
+    });
+  });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import watchSite, { createClientScript } from '../src/cli/watch.js';
+import watchSite, { createClientScript, getContentType } from '../src/cli/watch.js';
 
 describe('watch reload mode script', () => {
   it('uses body replacement logic in body mode', () => {
@@ -17,5 +17,10 @@ describe('watch reload mode script', () => {
 
   it('throws on invalid reload mode', async () => {
     await expect(watchSite({ reloadMode: 'instant' })).rejects.toThrow('Invalid reload mode');
+  });
+
+  it('serves markdown as text instead of download-oriented binary type', () => {
+    expect(getContentType('.md')).toBe('text/plain; charset=utf-8');
+    expect(getContentType('.txt')).toBe('text/plain; charset=utf-8');
   });
 });

@@ -62,12 +62,14 @@ Per-page render context:
 `loadSiteConfig` supports:
 
 - `sites.config.yaml` or `sites.config.yml` in site root
-- top-level key: `markdownit` (recommended; `markdown` is legacy alias)
+- top-level keys: `markdownit` (recommended; `markdown` is legacy alias), `build`
 - markdown keys: `preset`, `html`, `xhtmlOut`, `linkify`, `typographer`, `breaks`, `langPrefix`, `quotes`, `maxNesting`, `shiki`, `headingAnchors`
   - `headingAnchors` accepts:
     - boolean (`true`/`false`)
     - object with `enabled`, `slugMode` (`ascii`/`unicode`), `wrap`, `fallback`
 - shiki keys: `enabled`, `theme`
+- build keys:
+  - `keepMarkdownFiles` (boolean): when true, copy original `pages/**/*.md` into output in addition to generated HTML
 
 ## Watch Mode
 

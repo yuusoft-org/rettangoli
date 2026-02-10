@@ -104,7 +104,7 @@ Controls the layout direction of the container. Set to `h` for horizontal or `v`
 ### Vertical
 
 ```html codePreview
-<rtgl-view p="md" g="md">
+<rtgl-view p="lg" g="md" w="f">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
 </rtgl-view>
@@ -113,7 +113,7 @@ Controls the layout direction of the container. Set to `h` for horizontal or `v`
 ### Horizontal
 
 ```html codePreview
-<rtgl-view d="h" p="md" g="md">
+<rtgl-view d="h" p="lg" g="md" w="f">
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
   <rtgl-view bgc="ac" wh="48"></rtgl-view>
 </rtgl-view>
@@ -671,14 +671,14 @@ Do not place interactive controls (like `rtgl-button`, `input`, `select`) inside
 
 ```html
 <!-- Avoid: nested button competes with the full-surface link -->
-<rtgl-view href="/details" p="md" bgc="mu">
+<rtgl-view href="/details" p="lg" bgc="mu" w="f">
   <rtgl-button>Delete</rtgl-button>
 </rtgl-view>
 ```
 
 ```html
 <!-- Better: keep navigation and control interactions separate -->
-<rtgl-view d="h" g="sm" p="md">
+<rtgl-view d="h" g="sm" p="lg" w="f">
   <rtgl-view href="/details" w="1fg" bgc="mu"></rtgl-view>
   <rtgl-button>Delete</rtgl-button>
 </rtgl-view>

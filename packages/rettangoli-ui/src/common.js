@@ -65,7 +65,6 @@ const generateCSS = (styles, descendants = {}, targetSelector = null) => {
       css += `${mediaQuery} {`;
     }
     for (const [attr, values] of Object.entries(styles)) {
-      const dscendant = descendants[attr] ? ` ${descendants[attr]} ` : " ";
       for (const [value, rule] of Object.entries(values)) {
         const cssProperties = styleMap[attr];
         const cssRule = rule.startsWith("--") ? `var(${rule})` : rule;
@@ -75,14 +74,24 @@ const generateCSS = (styles, descendants = {}, targetSelector = null) => {
         const hoverAttributeWithBreakpoint =
           size === "default" ? `h-${attr}` : `${size}-h-${attr}`;
 
-        // Build selector: either :host([...]) or :host([...]) targetSelector
-        const buildSelector = (attrStr) => {
-          const base = `:host([${attrStr}="${value}"])`;
+        const buildSelector = (attrStr, includeHover = false) => {
+          const base = includeHover
+            ? `:host([${attrStr}="${value}"]:hover)`
+            : `:host([${attrStr}="${value}"])`;
+
           if (targetSelector) {
-            // Generate: :host([...]) target1, :host([...]) target2
-            return targetSelector.split(',').map(t => `${base} ${t.trim()}`).join(', ');
+            return targetSelector
+              .split(",")
+              .map((target) => `${base} ${target.trim()}`)
+              .join(", ");
           }
-          return base + dscendant;
+
+          const descendant = descendants[attr];
+          if (descendant) {
+            return `${base} ${descendant}`;
+          }
+
+          return base;
         };
 
         if (cssProperties) {
@@ -96,7 +105,7 @@ const generateCSS = (styles, descendants = {}, targetSelector = null) => {
             ${buildSelector(attributeWithBreakpoint)}{
               ${propertyRules}
             }
-            ${buildSelector(hoverAttributeWithBreakpoint)}:hover{
+            ${buildSelector(hoverAttributeWithBreakpoint, true)}{
               ${propertyRules}
             }
           `;
@@ -106,7 +115,7 @@ const generateCSS = (styles, descendants = {}, targetSelector = null) => {
             ${buildSelector(attributeWithBreakpoint)}{
               ${rule}
             }
-            ${buildSelector(hoverAttributeWithBreakpoint)}:hover{
+            ${buildSelector(hoverAttributeWithBreakpoint, true)}{
               ${rule}
             }
           `;

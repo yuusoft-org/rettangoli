@@ -54,6 +54,25 @@ export function createClientScript(reloadMode = 'body') {
 `;
 }
 
+export function getContentType(ext) {
+  const types = {
+    '.html': 'text/html; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.txt': 'text/plain; charset=utf-8',
+    '.md': 'text/plain; charset=utf-8',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.svg': 'image/svg+xml',
+    '.ico': 'image/x-icon',
+    '.webp': 'image/webp'
+  };
+  return types[ext] || 'application/octet-stream';
+}
+
 function createLogger(quiet = false) {
   return {
     log: (...args) => {
@@ -163,7 +182,7 @@ class DevServer {
 
   serveFile(filePath, res) {
     const ext = path.extname(filePath);
-    const contentType = this.getContentType(ext);
+    const contentType = getContentType(ext);
 
     try {
       let content = fs.readFileSync(filePath);
@@ -181,28 +200,17 @@ class DevServer {
         }
       }
 
-      res.writeHead(200, { 'Content-Type': contentType });
+      const headers = { 'Content-Type': contentType };
+      if (ext === '.md' || ext === '.txt') {
+        headers['Content-Disposition'] = 'inline';
+      }
+      res.writeHead(200, headers);
       res.end(content);
     } catch (err) {
       this.logger.error('Error serving file:', err);
       res.writeHead(500);
       res.end('Internal Server Error');
     }
-  }
-
-  getContentType(ext) {
-    const types = {
-      '.html': 'text/html',
-      '.css': 'text/css',
-      '.js': 'application/javascript',
-      '.json': 'application/json',
-      '.png': 'image/png',
-      '.jpg': 'image/jpeg',
-      '.gif': 'image/gif',
-      '.svg': 'image/svg+xml',
-      '.ico': 'image/x-icon'
-    };
-    return types[ext] || 'application/octet-stream';
   }
 
   reloadAll() {

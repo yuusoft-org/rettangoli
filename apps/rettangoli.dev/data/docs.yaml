@@ -14,9 +14,6 @@ items:
       - id: getting-started
         title: "Getting Started"
         href: "/ui/docs/introduction/getting-started"
-      - id: input-interface
-        title: "Input Interface"
-        href: "/ui/docs/introduction/input-interface"
       - id: css-variables
         title: "CSS Variables"
         href: "/ui/docs/introduction/css-variables"

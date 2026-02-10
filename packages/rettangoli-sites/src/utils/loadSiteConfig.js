@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 
-const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit']);
+const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build']);
 const MARKDOWN_BOOLEAN_KEYS = new Set(['html', 'linkify', 'typographer', 'breaks', 'xhtmlOut']);
 const MARKDOWN_STRING_KEYS = new Set(['langPrefix', 'quotes', 'preset']);
 const MARKDOWN_NUMBER_KEYS = new Set(['maxNesting']);
@@ -25,6 +25,8 @@ const HEADING_ANCHORS_BOOLEAN_KEYS = new Set(['enabled', 'wrap']);
 const HEADING_ANCHORS_STRING_KEYS = new Set(['slugMode', 'fallback']);
 const ALLOWED_HEADING_ANCHORS_KEYS = new Set([...HEADING_ANCHORS_BOOLEAN_KEYS, ...HEADING_ANCHORS_STRING_KEYS]);
 const ALLOWED_HEADING_ANCHOR_SLUG_MODES = new Set(['ascii', 'unicode']);
+const BUILD_BOOLEAN_KEYS = new Set(['keepMarkdownFiles']);
+const ALLOWED_BUILD_KEYS = new Set([...BUILD_BOOLEAN_KEYS]);
 let didWarnLegacyMarkdownKey = false;
 
 function isPlainObject(value) {
@@ -97,6 +99,26 @@ function validateCodePreview(value, configPath) {
   }
 }
 
+function validateBuildConfig(value, configPath) {
+  if (!isPlainObject(value)) {
+    throw new Error(`Invalid build config in "${configPath}": expected an object.`);
+  }
+
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_BUILD_KEYS.has(key)) {
+      throw new Error(
+        `Unsupported build option "${key}" in "${configPath}". Supported options: ${Array.from(ALLOWED_BUILD_KEYS).join(', ')}.`
+      );
+    }
+
+    if (BUILD_BOOLEAN_KEYS.has(key) && typeof value[key] !== 'boolean') {
+      throw new Error(`Invalid build option "${key}" in "${configPath}": expected a boolean.`);
+    }
+  }
+
+  return { ...value };
+}
+
 function validateConfig(rawConfig, configPath) {
   if (rawConfig == null) {
     return {};
@@ -110,7 +132,9 @@ function validateConfig(rawConfig, configPath) {
 
   for (const key of Object.keys(config)) {
     if (!ALLOWED_TOP_LEVEL_KEYS.has(key)) {
-      throw new Error(`Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias).`);
+      throw new Error(
+        `Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias), build.`
+      );
     }
   }
 
@@ -123,6 +147,7 @@ function validateConfig(rawConfig, configPath) {
     didWarnLegacyMarkdownKey = true;
   }
 
+  const normalizedConfig = {};
   const markdownConfig = config.markdownit ?? config.markdown;
   if (markdownConfig !== undefined) {
     if (!isPlainObject(markdownConfig)) {
@@ -189,12 +214,14 @@ function validateConfig(rawConfig, configPath) {
       }
     }
 
-    return {
-      markdown: { ...markdownConfig }
-    };
+    normalizedConfig.markdown = { ...markdownConfig };
   }
 
-  return {};
+  if (config.build !== undefined) {
+    normalizedConfig.build = validateBuildConfig(config.build, configPath);
+  }
+
+  return normalizedConfig;
 }
 
 function readFirstExistingConfigPath(rootDir) {

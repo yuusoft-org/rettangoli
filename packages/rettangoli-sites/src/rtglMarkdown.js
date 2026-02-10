@@ -60,7 +60,7 @@ function hasCodePreviewAttribute(attrs) {
 function renderCodePreviewLayout(code, highlightedCode, showSource = true) {
   if (!showSource) {
     return `
-        <rtgl-view w="f" bw="xs" br="md">
+        <rtgl-view class="rtgl-code-preview" w="f" bw="xs" br="md">
           <rtgl-view w="f" d="h">
           ${highlightedCode}
           </rtgl-view>
@@ -68,7 +68,7 @@ function renderCodePreviewLayout(code, highlightedCode, showSource = true) {
   }
 
   return `
-        <rtgl-view w="f" bw="xs" br="md">
+        <rtgl-view class="rtgl-code-preview" w="f" bw="xs" br="md">
           <rtgl-view w="f" p="lg">
           ${code}
           </rtgl-view>

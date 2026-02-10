@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import MarkdownIt from 'markdown-it';
+import yaml from 'js-yaml';
 import rtglMarkdown from '../src/rtglMarkdown.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -46,6 +47,15 @@ export async function runTest(fixturePath) {
   vol.fromJSON(inputFiles);
 
   const md = rtglMarkdown(MarkdownIt);
+
+  let keepMarkdownFiles = false;
+  const configPath = memfs.existsSync('/sites.config.yaml')
+    ? '/sites.config.yaml'
+    : (memfs.existsSync('/sites.config.yml') ? '/sites.config.yml' : null);
+  if (configPath) {
+    const parsedConfig = yaml.load(memfs.readFileSync(configPath, 'utf8'), { schema: yaml.JSON_SCHEMA }) || {};
+    keepMarkdownFiles = parsedConfig?.build?.keepMarkdownFiles === true;
+  }
   
   // Check if this is a fixture that needs custom functions
   const isCustomFunctionsFixture = fixturePath.includes('fixture-custom-functions');
@@ -98,6 +108,7 @@ export async function runTest(fixturePath) {
     fs: memfs,
     rootDir: '/',
     md,
+    keepMarkdownFiles,
     functions: functions
   });
   await build();

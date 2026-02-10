@@ -81,7 +81,7 @@ describe('rtglMarkdown', () => {
     });
 
     const html = await md.renderAsync('```html codePreview\n<rtgl-button>Click</rtgl-button>\n```');
-    expect(html).toContain('<rtgl-view w="f" bw="xs" br="md">');
+    expect(html).toContain('<rtgl-view class="rtgl-code-preview" w="f" bw="xs" br="md">');
     expect(html).toContain('<rtgl-button>Click</rtgl-button>');
     expect(html).toContain('class="shiki');
   });
@@ -99,7 +99,7 @@ describe('rtglMarkdown', () => {
     });
 
     const html = await md.renderAsync('```html codePreview\n<rtgl-button>Click</rtgl-button>\n```');
-    expect(html).toContain('<rtgl-view w="f" bw="xs" br="md">');
+    expect(html).toContain('<rtgl-view class="rtgl-code-preview" w="f" bw="xs" br="md">');
     expect(html).not.toContain('<rtgl-view w="f" p="lg">');
     expect(html).not.toContain('<rtgl-view h="1" w="f" bgc="bo"></rtgl-view>');
     expect(html).toContain('class="shiki');

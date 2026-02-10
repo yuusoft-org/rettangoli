@@ -7,8 +7,6 @@ sidebarId: rtgl-input-number
 
 A numeric-entry primitive with built-in min/max clamping and numeric events.
 
-Input family contract: [Input Interface](../introduction/input-interface.md).
-
 ## Quickstart
 
 Use this baseline for most numeric fields:

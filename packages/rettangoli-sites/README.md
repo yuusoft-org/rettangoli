@@ -67,6 +67,8 @@ markdownit:
     slugMode: unicode
     wrap: true
     fallback: section
+build:
+  keepMarkdownFiles: false
 ```
 
 In the default starter template, CDN runtime scripts are controlled via `data/site.yaml`:
@@ -79,6 +81,13 @@ assets:
 
 Enable `codePreview` if you want fenced blocks like ```` ```html codePreview ```` to render a live preview panel.
 Use `showSource` to show/hide the source pane and `theme` to override the highlight theme for preview blocks.
+
+Set `build.keepMarkdownFiles: true` to keep source Markdown files in output in addition to generated HTML.
+Example mappings:
+- `pages/index.md` -> `_site/index.html` and `_site/index.md`
+- `pages/docs/intro.md` -> `_site/docs/intro/index.html` and `_site/docs/intro.md`
+
+If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it will be copied to `_site/llms.txt`.
 
 ## Commands
 

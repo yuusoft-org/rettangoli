@@ -186,4 +186,54 @@ describe('createSiteBuilder output behavior', () => {
     expect(html).not.toContain('___MARKDOWN_CONTENT_PLACEHOLDER_');
     expect((html.match(/<h1[^>]*>Hello<\/h1>/g) || []).length).toBe(2);
   });
+
+  it('copies original markdown files to output when keepMarkdownFiles is enabled', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/index.md': [
+        '---',
+        'title: Home',
+        '---',
+        '# Hello'
+      ].join('\n'),
+      '/pages/docs/intro.md': '# Intro'
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      keepMarkdownFiles: true
+    });
+
+    await build();
+
+    expect(memfs.existsSync('/_site/index.html')).toBe(true);
+    expect(memfs.existsSync('/_site/docs/intro/index.html')).toBe(true);
+    expect(memfs.existsSync('/_site/index.md')).toBe(true);
+    expect(memfs.existsSync('/_site/docs/intro.md')).toBe(true);
+    expect(memfs.readFileSync('/_site/docs/intro.md', 'utf8')).toBe('# Intro');
+  });
+
+  it('does not copy markdown files by default', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/docs/intro.md': '# Intro'
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await build();
+
+    expect(memfs.existsSync('/_site/docs/intro/index.html')).toBe(true);
+    expect(memfs.existsSync('/_site/docs/intro.md')).toBe(false);
+  });
 });

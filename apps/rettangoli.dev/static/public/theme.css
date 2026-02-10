@@ -70,6 +70,40 @@ body {
   color: var(--foreground);
 }
 
+/* Normalize prose spacing for markdown-rendered HTML */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  line-height: 1.25;
+  padding-bottom: var(--spacing-sm);
+}
+
+h1 {
+  margin-bottom: var(--spacing-lg);
+}
+
+h2, h3, h4, h5, h6 {
+  margin-top: var(--spacing-xl);
+  margin-bottom: var(--spacing-md);
+}
+
+p {
+  margin: 0 0 var(--spacing-lg);
+  line-height: 1.65;
+}
+
+ul, ol {
+  margin: 0 0 var(--spacing-lg);
+  padding-left: 1.25rem;
+}
+
+li {
+  margin: 0;
+}
+
+li + li {
+  margin-top: var(--spacing-md);
+}
+
 /* Make sidebar sticky */
 rtgl-sidebar {
   position: sticky !important;
@@ -111,7 +145,7 @@ tr:nth-child(even) {
 
 
 pre {
-  margin: 0;
+  margin: 0 0 var(--spacing-lg);
   white-space: pre; /* or pre-wrap/pre-line if you want line wrapping */
   padding: var(--spacing-lg);
   flex: 1;
@@ -125,13 +159,23 @@ pre {
   /* margin-bottom: var(--spacing-g); */
 }
 
+/* Code preview blocks: spacing belongs to wrapper, not inner pre. */
+.rtgl-code-preview {
+  margin-bottom: var(--spacing-lg);
+}
+
+.rtgl-code-preview pre {
+  margin-bottom: 0;
+  padding-bottom: var(--spacing-lg);
+}
+
 code:not(pre code) {
   font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
   font-size: 0.9em;
   background-color: var(--muted);
-  padding: var(--spacing-xs) var(--spacing-md);
+  padding: 0.1em 0.35em;
   border-radius: var(--border-radius-sm);
-  display: inline-block;
+  display: inline;
 }
 
 a {
