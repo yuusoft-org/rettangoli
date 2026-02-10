@@ -22,6 +22,9 @@ viewport:
   height: 1024
 steps:
   - wait 200
+  - assert:
+      type: exists
+      selector: "[data-testid='login-email']"
   - select login-email:
       - write user@example.com
   - screenshot
@@ -57,16 +60,23 @@ steps:
 `steps` supports:
 
 - string steps
-- block step objects with one key and nested string steps
+- block step objects with one key and nested step values
+- structured assert objects (`- assert: { ... }`)
 
 Example:
 
 ```yaml
 steps:
   - wait 200
+  - assert:
+      type: url
+      value: "/login"
+      match: includes
   - select login-email:
       - write user@example.com
-      - keypress Enter
+      - assert:
+          type: visible
+  - keypress Enter
 ```
 
 For full command reference, see [Step Actions](./step-actions).

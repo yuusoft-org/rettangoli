@@ -4,6 +4,12 @@ Folder-based snapshot testing. Each scenario is a directory containing real proj
 
 Zero dependencies. Single standalone JS file. Uses only Node.js built-ins (`fs`, `path`, `child_process`, `os`). Runs as a CLI command — not tied to any test framework. Agnostic to what commands are run (Docker, local, anything).
 
+Note:
+
+- This document covers the folder-based runner at `e2e/run.js`.
+- Separate Vitest smoke tests exist at `spec/e2e-smoke.spec.js`.
+- Those smoke tests are skipped by default and only run when `VT_E2E=1`.
+
 ## How it works
 
 1. Delete `{scenario}/.work/` if it exists.

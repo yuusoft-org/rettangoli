@@ -286,3 +286,127 @@ in:
       - ""
   - specs/page.yaml
 throws: frontMatter.steps[0]
+---
+case: accepts structured assert steps including js object value
+in:
+  - steps:
+      - assert:
+          type: url
+          value: rettangoli.dev
+          match: includes
+      - assert:
+          type: js
+          fn: app.getPayload
+          args: [foo]
+          value:
+            ok: true
+            tags: [a, b]
+  - specs/page.yaml
+---
+case: rejects js assert without global/fn discriminator
+in:
+  - steps:
+      - assert:
+          type: js
+          value: true
+  - specs/page.yaml
+throws: requires exactly one of "global" or "fn"
+---
+case: accepts structured exists visible hidden and text asserts
+in:
+  - steps:
+      - assert:
+          type: exists
+          selector: "[data-testid='status']"
+          timeoutMs: 200
+      - assert:
+          type: visible
+          selector: "#status"
+      - assert:
+          type: hidden
+          selector: "#spinner"
+      - assert:
+          type: text
+          selector: "#message"
+          value: ready
+          match: equals
+  - specs/page.yaml
+---
+case: rejects assert with unsupported type
+in:
+  - steps:
+      - assert:
+          type: attr
+          selector: "#status"
+          value: ready
+  - specs/page.yaml
+throws: must be one of
+---
+case: rejects assert with unsupported match mode
+in:
+  - steps:
+      - assert:
+          type: text
+          selector: "#message"
+          value: ready
+          match: startsWith
+  - specs/page.yaml
+throws: must be one of
+---
+case: rejects assert with invalid timeoutMs
+in:
+  - steps:
+      - assert:
+          type: exists
+          selector: "#message"
+          timeoutMs: -1
+  - specs/page.yaml
+throws: must be >= 0
+---
+case: rejects url assert without non-empty value
+in:
+  - steps:
+      - assert:
+          type: url
+          value: ""
+  - specs/page.yaml
+throws: cannot be empty
+---
+case: rejects text assert without string value
+in:
+  - steps:
+      - assert:
+          type: text
+          selector: "#message"
+          value: 12
+  - specs/page.yaml
+throws: must be a string
+---
+case: rejects js assert with both global and fn
+in:
+  - steps:
+      - assert:
+          type: js
+          global: app.ready
+          fn: app.getReady
+          value: true
+  - specs/page.yaml
+throws: requires exactly one of "global" or "fn"
+---
+case: rejects js assert with non-array args
+in:
+  - steps:
+      - assert:
+          type: js
+          fn: app.getReady
+          args: nope
+          value: true
+  - specs/page.yaml
+throws: args
+---
+case: rejects assert step when assert payload is not an object
+in:
+  - steps:
+      - assert: nope
+  - specs/page.yaml
+throws: must be an object

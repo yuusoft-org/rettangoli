@@ -1,5 +1,4 @@
 export const STEP_COMMANDS = Object.freeze([
-  "assert",
   "blur",
   "check",
   "clear",
@@ -26,6 +25,10 @@ export const STEP_COMMANDS = Object.freeze([
   "wait",
   "waitFor",
   "write",
+]);
+
+export const STRUCTURED_STEP_KEYS = Object.freeze([
+  "assert",
 ]);
 
 export const BLOCK_COMMANDS = Object.freeze([

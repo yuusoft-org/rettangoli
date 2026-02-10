@@ -11,7 +11,7 @@ sidebarId: getting-started
 The simplest way to use rettangoli-ui is import directly from CDN. For example:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@0.1.7/dist/rettangoli-iife-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc1/dist/rettangoli-iife-ui.min.js"></script>
 ```
 
 This will setup all the web components.
@@ -24,7 +24,7 @@ In addition to the JavaScript file, you need to add the CSS for styling:
 <link href="/public/theme.css" rel="stylesheet">
 ```
 
-For more information on available themes and customization options, see our [CSS Variables](/docs/introduction/css-variables) guide.
+For more information on available themes and customization options, see our [CSS Variables](/ui/docs/introduction/css-variables) guide.
 
 ## Advanced usage
 
@@ -38,7 +38,7 @@ First, install the package:
 npm install @rettangoli/ui
 ```
 
-Then you can impornt the components and define custom elements on your own.
+Then you can import the components and define custom elements on your own.
 This method allows for more flexibility if you need customizations
 
 For example
@@ -47,4 +47,3 @@ For example
 import { RettangoliButton } from '@rettangoli/ui'
 customElements.define("rtgl-button", RettangoliButton({}));
 ```
-

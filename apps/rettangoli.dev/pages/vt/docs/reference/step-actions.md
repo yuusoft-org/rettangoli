@@ -26,6 +26,16 @@ steps:
       - keypress Enter
 ```
 
+Structured assert step:
+
+```yaml
+steps:
+  - assert:
+      type: url
+      value: "rettangoli.dev"
+      match: includes
+```
+
 ## Targeting with `select`
 
 `select <testId>` is used as a block key and resolves `data-testid="<testId>"`.
@@ -39,12 +49,7 @@ Inside a `select` block, VT will target:
 
 | Action | Syntax | Notes |
 | --- | --- | --- |
-| `assert` | `assert url <substring>` | URL contains check |
-| `assert` | `assert urlExact <url>` | Exact URL check |
-| `assert` | `assert exists <selector>` | Selector exists |
-| `assert` | `assert visible <selector>` | Selector becomes visible |
-| `assert` | `assert hidden <selector>` | Selector becomes hidden |
-| `assert` | `assert text <selector> <expected...>` | Selector text includes expected |
+| `assert` | `assert: { type: ... }` | Structured-only assertion object |
 | `blur` | `blur` | `select` block only |
 | `check` | `check` | `select` block only |
 | `clear` | `clear` | `select` block only |
@@ -76,24 +81,81 @@ Inside a `select` block, VT will target:
 | `waitFor` | `waitFor selector=<selector> [state=<state>] [timeoutMs=<ms>]` | Named form |
 | `write` | `write <text...>` | `select` block only |
 
-## Assertions inside `select` block
+## `assert` interface
 
-Inside `select ...`, you can use:
+`assert` is structured-only and supports these fields:
 
-- `assert exists`
-- `assert visible`
-- `assert hidden`
-- `assert text <expected...>`
+- `type`: `url | exists | visible | hidden | text | js` (required)
+- `match`: `includes | equals` (optional; only for `url` and `text`; default `includes`)
+- `selector`: CSS selector (optional for `exists|visible|hidden|text`, required when not in `select` block)
+- `timeoutMs`: non-negative integer timeout (optional for `exists|visible|hidden`)
+- `value`:
+  - required string for `url` and `text`
+  - required any YAML/JSON value for `js` (deep-equal; object/array supported)
+- `global`: window global path for `js` (for example `__APP_READY__` or `app.state.ready`)
+- `fn`: window function path for `js` (for example `app.getPayload`)
+- `args`: function args array for `js` when using `fn`
+
+Examples:
+
+```yaml
+steps:
+  - assert:
+      type: url
+      value: "https://rettangoli.dev/docs"
+      match: includes
+
+  - assert:
+      type: visible
+      selector: "#dialog"
+      timeoutMs: 5000
+
+  - assert:
+      type: text
+      selector: "[data-testid='message']"
+      value: "Saved"
+      match: includes
+
+  - assert:
+      type: js
+      global: "__APP_READY__"
+      value: true
+
+  - assert:
+      type: js
+      fn: "app.getPayload"
+      args: ["foo"]
+      value:
+        ok: true
+        items: [1, 2, 3]
+```
+
+Inside `select ...` blocks, structured `assert` also works:
+
+```yaml
+steps:
+  - select status-pill:
+      - assert:
+          type: text
+          value: "ready"
+```
 
 ## Example flow
 
 ```yaml
 steps:
   - waitFor [data-testid='login-page'] visible 5000
+  - assert:
+      type: exists
+      selector: "[data-testid='login-email']"
   - select login-email:
       - write user@example.com
   - select login-submit:
       - click
   - waitFor [data-testid='dashboard'] visible 5000
+  - assert:
+      type: url
+      value: "/dashboard"
+      match: includes
   - screenshot
 ```

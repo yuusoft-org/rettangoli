@@ -1,6 +1,6 @@
 # VT Step Actions (Current DSL)
 
-Last updated: 2026-02-09
+Last updated: 2026-02-10
 
 This document describes the currently implemented `frontMatter.steps` action DSL in `@rettangoli/vt`.
 
@@ -9,7 +9,8 @@ This document describes the currently implemented `frontMatter.steps` action DSL
 `steps` accepts:
 
 - string steps
-- block step objects with exactly one key and an array of nested string steps
+- block step objects with exactly one key and an array of nested step values
+- structured assert objects (`- assert: { ... }`)
 
 Example:
 
@@ -27,24 +28,72 @@ Parsing behavior:
 
 - Step strings are parsed as `<command> <arg1> <arg2> ...` using space splitting.
 - Unknown or unsupported commands fail the run with an error.
+- `assert` is structured-only and must be provided as an object step.
 
 ## Actions
 
 ### `assert`
 
-Syntax:
+Structured syntax:
 
-- `assert url <substring>`
-- `assert urlExact <url>`
-- `assert exists <selector>`
-- `assert visible <selector>`
-- `assert hidden <selector>`
-- `assert text <selector> <expected...>`
-- inside `select ...` block:
-  - `assert exists`
-  - `assert visible`
-  - `assert hidden`
-  - `assert text <expected...>`
+```yaml
+steps:
+  - assert:
+      type: url
+      value: "rettangoli.dev"
+      match: includes
+```
+
+Supported fields:
+
+- `type`: `url | exists | visible | hidden | text | js` (required)
+- `match`: `includes | equals` (optional, only for `url` and `text`, default `includes`)
+- `selector`: CSS selector (optional for `exists|visible|hidden|text`, required when not in a `select` block)
+- `timeoutMs`: non-negative integer timeout (optional for `exists|visible|hidden`)
+- `value`: expected value
+  - required string for `url` and `text`
+  - required any JSON/YAML value for `js` (deep-equal comparison, object/array supported)
+- `global`: window global path for `js` (for example `__APP_READY__` or `app.state.ready`)
+- `fn`: window function path for `js` (for example `app.getStatus`)
+- `args`: array of function args for `js` when using `fn`
+
+Examples:
+
+```yaml
+steps:
+  - assert:
+      type: url
+      value: "https://rettangoli.dev/docs"
+      match: includes
+
+  - assert:
+      type: exists
+      selector: "[data-testid='save']"
+
+  - assert:
+      type: visible
+      selector: "#dialog"
+      timeoutMs: 5000
+
+  - assert:
+      type: text
+      selector: "[data-testid='message']"
+      value: "Saved"
+      match: includes
+
+  - assert:
+      type: js
+      global: "__APP_READY__"
+      value: true
+
+  - assert:
+      type: js
+      fn: "app.getPayload"
+      args: ["foo"]
+      value:
+        id: 1
+        tags: ["a", "b"]
+```
 
 ### `blur`
 
@@ -237,4 +286,4 @@ Syntax:
 
 - Block step object must have exactly one key.
 - Key is parsed as command string (for example `select search-input`).
-- Value must be an array of non-empty string steps.
+- Value must be an array of step values (non-empty string steps or structured `assert` objects).

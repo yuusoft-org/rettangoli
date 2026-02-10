@@ -118,6 +118,7 @@ Supported frontmatter keys per spec file:
 Step action reference:
 
 - `docs/step-actions.md`
+- `assert` uses structured object syntax (`- assert: { ... }`) and supports `js` deep-equal checks for object values.
 
 Screenshot naming:
 
@@ -130,15 +131,15 @@ Screenshot naming:
 A pre-built Docker image with `rtgl` and Playwright browsers is available:
 
 ```bash
-docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc4
+docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc6
 ```
 
 Run commands against a local project:
 
 ```bash
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc4 rtgl vt generate
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc4 rtgl vt report
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc4 rtgl vt accept
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc6 rtgl vt generate
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc6 rtgl vt report
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc6 rtgl vt accept
 ```
 
 Note:
@@ -155,6 +156,14 @@ Run unit tests:
 ```bash
 bun test
 ```
+
+Default unit run behavior:
+
+- `bun test` skips the real-browser smoke tests in `spec/e2e-smoke.spec.js` unless `VT_E2E=1`.
+- Skipped smoke tests are:
+  - `runs generate, accept, and report with real screenshots`
+  - `supports waitEvent readiness with real browser screenshots`
+  - `supports managed service lifecycle with vt.service.start and vt.url`
 
 Run real-browser smoke:
 

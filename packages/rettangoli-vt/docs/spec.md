@@ -139,11 +139,12 @@ Allowed keys:
 - `viewport` (object or array of viewport objects)
 - `skipScreenshot` (boolean)
 - `specs` (array of non-empty strings)
-- `steps` (array of step strings or block step objects)
+- `steps` (array of step strings, block step objects, or structured `assert` objects)
 
 Step action reference:
 
 - `docs/step-actions.md`
+- `assert` is structured-only (`- assert: { ... }`) and supports `js` deep-equal checks (including object/array values).
 
 Validation:
 

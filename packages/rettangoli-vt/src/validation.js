@@ -221,16 +221,103 @@ function validateStepObject(step, stepPath) {
     `"${stepPath}" must have exactly one key (e.g. "select my-id"), got ${keys.length}.`,
   );
 
-  const [blockCommand] = keys;
-  validateOptionalString(blockCommand, `${stepPath} key`);
+  const [stepKey] = keys;
+  validateOptionalString(stepKey, `${stepPath} key`);
 
-  const nestedSteps = step[blockCommand];
-  assert(Array.isArray(nestedSteps), `"${stepPath}.${blockCommand}" must be an array of step strings.`);
+  if (stepKey === "assert") {
+    validateAssertObject(step[stepKey], `${stepPath}.assert`);
+    return;
+  }
+
+  const nestedSteps = step[stepKey];
+  assert(Array.isArray(nestedSteps), `"${stepPath}.${stepKey}" must be an array of step values.`);
   nestedSteps.forEach((nestedStep, nestedIndex) => {
-    const nestedPath = `${stepPath}.${blockCommand}[${nestedIndex}]`;
-    assert(typeof nestedStep === "string", `"${nestedPath}" must be a string step command.`);
-    assert(nestedStep.trim().length > 0, `"${nestedPath}" cannot be empty.`);
+    const nestedPath = `${stepPath}.${stepKey}[${nestedIndex}]`;
+    if (typeof nestedStep === "string") {
+      assert(nestedStep.trim().length > 0, `"${nestedPath}" cannot be empty.`);
+      return;
+    }
+    validateStepObject(nestedStep, nestedPath);
   });
+}
+
+function validateAssertObject(assertObject, assertPath) {
+  assert(isPlainObject(assertObject), `"${assertPath}" must be an object.`);
+
+  validateOptionalString(assertObject.type, `${assertPath}.type`);
+  assert(
+    typeof assertObject.type === "string" && assertObject.type.trim().length > 0,
+    `"${assertPath}.type" is required.`,
+  );
+
+  const type = assertObject.type;
+  assert(
+    ["url", "exists", "visible", "hidden", "text", "js"].includes(type),
+    `"${assertPath}.type" must be one of: url, exists, visible, hidden, text, js.`,
+  );
+
+  if (assertObject.match !== undefined) {
+    validateOptionalEnum(assertObject.match, `${assertPath}.match`, ["includes", "equals"]);
+  }
+  if (assertObject.timeoutMs !== undefined) {
+    validateOptionalNumber(assertObject.timeoutMs, `${assertPath}.timeoutMs`, { integer: true, min: 0 });
+  }
+
+  if (type === "url") {
+    validateOptionalString(assertObject.value, `${assertPath}.value`);
+    assert(
+      typeof assertObject.value === "string" && assertObject.value.length > 0,
+      `"${assertPath}.value" is required for type=url and must be a non-empty string.`,
+    );
+    return;
+  }
+
+  if (type === "exists" || type === "visible" || type === "hidden") {
+    if (assertObject.selector !== undefined) {
+      validateOptionalString(assertObject.selector, `${assertPath}.selector`);
+    }
+    return;
+  }
+
+  if (type === "text") {
+    if (assertObject.selector !== undefined) {
+      validateOptionalString(assertObject.selector, `${assertPath}.selector`);
+    }
+    validateOptionalString(assertObject.value, `${assertPath}.value`);
+    assert(
+      typeof assertObject.value === "string",
+      `"${assertPath}.value" is required for type=text and must be a string.`,
+    );
+    return;
+  }
+
+  if (type === "js") {
+    if (assertObject.global !== undefined) {
+      validateOptionalString(assertObject.global, `${assertPath}.global`);
+    }
+    if (assertObject.fn !== undefined) {
+      validateOptionalString(assertObject.fn, `${assertPath}.fn`);
+    }
+
+    const hasGlobal = typeof assertObject.global === "string" && assertObject.global.length > 0;
+    const hasFn = typeof assertObject.fn === "string" && assertObject.fn.length > 0;
+    assert(
+      hasGlobal !== hasFn,
+      `"${assertPath}" for type=js requires exactly one of "global" or "fn".`,
+    );
+
+    assert(
+      Object.prototype.hasOwnProperty.call(assertObject, "value"),
+      `"${assertPath}.value" is required for type=js.`,
+    );
+
+    if (assertObject.args !== undefined) {
+      assert(
+        Array.isArray(assertObject.args),
+        `"${assertPath}.args" must be an array when provided.`,
+      );
+    }
+  }
 }
 
 export function validateVtConfig(vtConfig, sourcePath = "rettangoli.config.yaml") {
