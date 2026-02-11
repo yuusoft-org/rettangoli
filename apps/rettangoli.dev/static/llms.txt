@@ -1,48 +1,61 @@
 # Rettangoli
-> Rettangoli is a frontend toolkit with three main parts: FE (schema-driven app layer), UI (web components and primitives), and VT (visual testing).
+> Rettangoli is a frontend library suite for building, styling, documenting, and visually testing web applications.
 
 This file is a curated index for LLM-based tools. Prefer linked docs over guessing behavior.
 
+## Projects
+- **Rettangoli FE**: Schema-driven app layer with component architecture, handlers, store/actions, and view data flow.
+- **Rettangoli UI**: Web component and primitive library with tokenized styling and responsive behavior.
+- **Rettangoli VT**: Visual testing runner for capture, compare, reporting, and CI-friendly workflows.
+- **Rettangoli Sites**: Markdown-first documentation/site generator used to build structured docs portals.
+
 ## Core Docs
-- https://rettangoli.dev/fe/docs/introduction/introduction/
-- https://rettangoli.dev/fe/docs/introduction/getting-started/
-- https://rettangoli.dev/ui/docs/introduction/introduction/
-- https://rettangoli.dev/ui/docs/introduction/getting-started/
-- https://rettangoli.dev/vt/docs/introduction/quickstart/
+- https://rettangoli.dev/fe/docs/introduction/introduction.md
+- https://rettangoli.dev/fe/docs/introduction/getting-started.md
+- https://rettangoli.dev/ui/docs/introduction/introduction.md
+- https://rettangoli.dev/ui/docs/introduction/getting-started.md
+- https://rettangoli.dev/vt/docs/introduction/quickstart.md
+- https://rettangoli.dev/sites/docs/introduction/introduction.md
+- https://rettangoli.dev/sites/docs/introduction/getting-started.md
 
 ## FE (Rettangoli FE)
-- https://rettangoli.dev/fe/docs/guides/schema/
-- https://rettangoli.dev/fe/docs/guides/view/
-- https://rettangoli.dev/fe/docs/guides/store/
-- https://rettangoli.dev/fe/docs/guides/handlers/
-- https://rettangoli.dev/fe/docs/guides/methods/
-- https://rettangoli.dev/fe/docs/guides/constants/
-- https://rettangoli.dev/fe/docs/guides/refs-and-events/
-- https://rettangoli.dev/fe/docs/guides/component-architecture/
-- https://rettangoli.dev/fe/docs/guides/cli/
+- https://rettangoli.dev/fe/docs/guides/schema.md
+- https://rettangoli.dev/fe/docs/guides/view.md
+- https://rettangoli.dev/fe/docs/guides/store.md
+- https://rettangoli.dev/fe/docs/guides/handlers.md
+- https://rettangoli.dev/fe/docs/guides/methods.md
+- https://rettangoli.dev/fe/docs/guides/constants.md
+- https://rettangoli.dev/fe/docs/guides/refs-and-events.md
+- https://rettangoli.dev/fe/docs/guides/component-architecture.md
+- https://rettangoli.dev/fe/docs/guides/cli.md
 
 ## UI (Rettangoli UI)
-- https://rettangoli.dev/ui/docs/introduction/component-model/
-- https://rettangoli.dev/ui/docs/introduction/css-variables/
-- https://rettangoli.dev/ui/docs/introduction/responsiveness/
-- https://rettangoli.dev/ui/docs/primitives/rtgl-view/
-- https://rettangoli.dev/ui/docs/primitives/rtgl-button/
-- https://rettangoli.dev/ui/docs/primitives/rtgl-input/
-- https://rettangoli.dev/ui/docs/primitives/rtgl-text/
-- https://rettangoli.dev/ui/docs/components/rtgl-form/
-- https://rettangoli.dev/ui/docs/components/rtgl-select/
-- https://rettangoli.dev/ui/docs/components/rtgl-popover-input/
-- https://rettangoli.dev/ui/docs/components/rtgl-dropdown-menu/
-- https://rettangoli.dev/ui/docs/components/rtgl-table/
+- https://rettangoli.dev/ui/docs/introduction/component-model.md
+- https://rettangoli.dev/ui/docs/introduction/css-variables.md
+- https://rettangoli.dev/ui/docs/introduction/responsiveness.md
+- https://rettangoli.dev/ui/docs/primitives/rtgl-view.md
+- https://rettangoli.dev/ui/docs/primitives/rtgl-button.md
+- https://rettangoli.dev/ui/docs/primitives/rtgl-input.md
+- https://rettangoli.dev/ui/docs/primitives/rtgl-text.md
+- https://rettangoli.dev/ui/docs/components/rtgl-form.md
+- https://rettangoli.dev/ui/docs/components/rtgl-select.md
+- https://rettangoli.dev/ui/docs/components/rtgl-popover-input.md
+- https://rettangoli.dev/ui/docs/components/rtgl-dropdown-menu.md
+- https://rettangoli.dev/ui/docs/components/rtgl-table.md
 
 ## VT (Rettangoli VT)
-- https://rettangoli.dev/vt/docs/reference/cli/
-- https://rettangoli.dev/vt/docs/reference/configuration/
-- https://rettangoli.dev/vt/docs/reference/frontmatter/
-- https://rettangoli.dev/vt/docs/reference/step-actions/
-- https://rettangoli.dev/vt/docs/reference/viewport/
-- https://rettangoli.dev/vt/docs/reference/selectors-and-artifacts/
-- https://rettangoli.dev/vt/docs/reference/sites-integration/
+- https://rettangoli.dev/vt/docs/reference/cli.md
+- https://rettangoli.dev/vt/docs/reference/configuration.md
+- https://rettangoli.dev/vt/docs/reference/frontmatter.md
+- https://rettangoli.dev/vt/docs/reference/step-actions.md
+- https://rettangoli.dev/vt/docs/reference/viewport.md
+- https://rettangoli.dev/vt/docs/reference/selectors-and-artifacts.md
+- https://rettangoli.dev/vt/docs/reference/sites-integration.md
+
+## Sites (Rettangoli Sites)
+- https://rettangoli.dev/sites/docs/reference/cli.md
+- https://rettangoli.dev/sites/docs/reference/configuration.md
+- https://rettangoli.dev/sites/docs/reference/markdown-and-frontmatter.md
 
 ## Notes
 - UI docs describe current attribute names and behavior; treat those as source of truth for component usage.

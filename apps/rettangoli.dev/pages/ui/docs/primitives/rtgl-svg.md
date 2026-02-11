@@ -47,7 +47,7 @@ Register icons once, then render by key:
 ### Responsive Syntax (At a Glance)
 
 Breakpoint prefixes are supported for `c`, `cur`, and margin attributes.
-For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
+For full behavior details, see [Responsiveness](/ui/docs/introduction/responsiveness.md).
 
 ```html codePreview
 <rtgl-view d="h" g="md">
