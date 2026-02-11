@@ -1,5 +1,8 @@
 import { css } from "../common.js";
 
+const MIN_MARGIN_PX = 40;
+const MAX_LAYOUT_RETRIES = 6;
+
 class RettangoliDialogElement extends HTMLElement {
   static styleSheet = null;
 
@@ -77,6 +80,12 @@ class RettangoliDialogElement extends HTMLElement {
         dialog[open] slot[name="content"] {
           animation: dialog-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        @media (prefers-reduced-motion: reduce) {
+          dialog[open] slot[name="content"] {
+            animation: none;
+          }
+        }
       `);
     }
   }
@@ -94,6 +103,21 @@ class RettangoliDialogElement extends HTMLElement {
     // Store reference for content slot
     this._slotElement = null;
     this._isConnected = false;
+    this._adaptiveFrameId = null;
+    this._layoutRetryCount = 0;
+    this._observedContentElement = null;
+    this._resizeObserver = typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(() => {
+        this._scheduleAdaptiveCentering();
+      })
+      : null;
+    this._onSlotChange = () => {
+      this._observeAssignedContent();
+      this._scheduleAdaptiveCentering({ resetRetries: true });
+    };
+    this._onWindowResize = () => {
+      this._scheduleAdaptiveCentering({ resetRetries: true });
+    };
 
     // Track if mouse down occurred inside dialog content
     this._mouseDownInContent = false;
@@ -149,6 +173,17 @@ class RettangoliDialogElement extends HTMLElement {
     }
   }
 
+  disconnectedCallback() {
+    this._isConnected = false;
+    this._stopAdaptiveObservers();
+    if (this._slotElement) {
+      this._slotElement.removeEventListener('slotchange', this._onSlotChange);
+    }
+    if (this._dialogElement.open) {
+      this._dialogElement.close();
+    }
+  }
+
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'open') {
       if (newValue !== null && !this._dialogElement.open && this._isConnected) {
@@ -183,6 +218,7 @@ class RettangoliDialogElement extends HTMLElement {
       if (!this._slotElement) {
         this._slotElement = document.createElement('slot');
         this._slotElement.setAttribute('name', 'content');
+        this._slotElement.addEventListener('slotchange', this._onSlotChange);
         this._dialogElement.appendChild(this._slotElement);
       }
 
@@ -191,17 +227,20 @@ class RettangoliDialogElement extends HTMLElement {
       // Reset scroll position
       this._dialogElement.scrollTop = 0;
 
-      // Apply adaptive centering
-      this._applyAdaptiveCentering();
+      window.addEventListener("resize", this._onWindowResize);
+      this._observeAssignedContent();
+      this._scheduleAdaptiveCentering({ resetRetries: true });
     }
   }
 
   _hideModal() {
     if (this._dialogElement.open) {
+      this._stopAdaptiveObservers();
       this._dialogElement.close();
 
       // Remove slot to unmount content
       if (this._slotElement) {
+        this._slotElement.removeEventListener('slotchange', this._onSlotChange);
         // Reset any inline styles applied for adaptive centering
         this._slotElement.style.marginTop = '';
         this._slotElement.style.marginBottom = '';
@@ -217,39 +256,96 @@ class RettangoliDialogElement extends HTMLElement {
     }
   }
 
-  _applyAdaptiveCentering() {
+  _stopAdaptiveObservers() {
+    if (this._adaptiveFrameId !== null) {
+      cancelAnimationFrame(this._adaptiveFrameId);
+      this._adaptiveFrameId = null;
+    }
+    this._layoutRetryCount = 0;
+    window.removeEventListener("resize", this._onWindowResize);
+    if (this._resizeObserver && this._observedContentElement) {
+      this._resizeObserver.unobserve(this._observedContentElement);
+    }
+    this._observedContentElement = null;
+  }
+
+  _getAssignedContentElement() {
     if (!this._slotElement) {
+      return null;
+    }
+    const assignedElements = this._slotElement.assignedElements({ flatten: true });
+    return assignedElements.length > 0 ? assignedElements[0] : null;
+  }
+
+  _observeAssignedContent() {
+    if (!this._resizeObserver) {
+      return;
+    }
+    const nextContentElement = this._getAssignedContentElement();
+    if (this._observedContentElement === nextContentElement) {
+      return;
+    }
+    if (this._observedContentElement) {
+      this._resizeObserver.unobserve(this._observedContentElement);
+    }
+    this._observedContentElement = nextContentElement;
+    if (this._observedContentElement) {
+      this._resizeObserver.observe(this._observedContentElement);
+    }
+  }
+
+  _scheduleAdaptiveCentering({ resetRetries = false } = {}) {
+    if (!this._slotElement || !this._dialogElement.open) {
+      return;
+    }
+    if (resetRetries) {
+      this._layoutRetryCount = 0;
+    }
+    if (this._adaptiveFrameId !== null) {
+      cancelAnimationFrame(this._adaptiveFrameId);
+    }
+    this._adaptiveFrameId = requestAnimationFrame(() => {
+      this._adaptiveFrameId = requestAnimationFrame(() => {
+        this._adaptiveFrameId = null;
+        this._applyAdaptiveCentering();
+      });
+    });
+  }
+
+  _applyAdaptiveCentering() {
+    if (!this._slotElement || !this._dialogElement.open) {
       return;
     }
 
-    // Use requestAnimationFrame to ensure DOM has updated
-    requestAnimationFrame(() => {
-      if (!this._slotElement) return;
-      
-      // Get the actual height of the content
-      const contentHeight = this._slotElement.offsetHeight;
-      const viewportHeight = window.innerHeight;
-      
-      // Calculate centered position with minimum margins for scrollability
-      const minMargin = 40; // Minimum margin in pixels to ensure scrollability
-      
-      if (contentHeight >= viewportHeight - (2 * minMargin)) {
-        // Content is too tall, use minimum margins to allow scrolling
-        // Start near the top with small margin so content isn't pushed too far down
-        this._slotElement.style.marginTop = `${minMargin}px`;
-        this._slotElement.style.marginBottom = `${minMargin}px`;
-        // Keep dialog at full height for scrolling
-        this._dialogElement.style.height = '100vh';
-      } else {
-        // Content fits, center it vertically
-        const totalMargin = viewportHeight - contentHeight;
-        const margin = Math.floor(totalMargin / 2);
-        this._slotElement.style.marginTop = `${margin}px`;
-        this._slotElement.style.marginBottom = `${margin}px`;
-        // Set dialog height to auto to prevent unnecessary scrollbar
-        this._dialogElement.style.height = 'auto';
+    this._observeAssignedContent();
+    const contentElement = this._getAssignedContentElement();
+    const contentHeight = contentElement
+      ? Math.round(contentElement.getBoundingClientRect().height)
+      : 0;
+
+    if (contentHeight <= 0) {
+      if (this._layoutRetryCount < MAX_LAYOUT_RETRIES) {
+        this._layoutRetryCount += 1;
+        this._scheduleAdaptiveCentering();
       }
-    });
+      return;
+    }
+    this._layoutRetryCount = 0;
+
+    const viewportHeight = window.innerHeight;
+
+    if (contentHeight >= viewportHeight - (2 * MIN_MARGIN_PX)) {
+      this._slotElement.style.marginTop = `${MIN_MARGIN_PX}px`;
+      this._slotElement.style.marginBottom = `${MIN_MARGIN_PX}px`;
+      this._dialogElement.style.height = '100vh';
+      return;
+    }
+
+    const totalMargin = viewportHeight - contentHeight;
+    const margin = Math.floor(totalMargin / 2);
+    this._slotElement.style.marginTop = `${margin}px`;
+    this._slotElement.style.marginBottom = `${margin}px`;
+    this._dialogElement.style.height = 'auto';
   }
 
 

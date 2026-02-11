@@ -39,7 +39,7 @@ Behavior split:
 Use selectors to run only part of VT in both `screenshot` and `report`:
 
 - `folder`: matches specs by folder prefix under `vt/specs` (example: `components/forms`)
-- `group`: matches section page key from `vt.sections` (`title` for flat sections, `items[].title` for grouped sections)
+- `group`: matches derived section page key from `vt.sections` titles (`kebab-case(title)`)
 - `item`: matches a single spec path relative to `vt/specs` (with or without extension)
 
 Selector rules:
@@ -54,18 +54,18 @@ Examples:
 rtgl vt screenshot --folder components/forms
 
 # Only one section/group key from vt.sections
-rtgl vt screenshot --group components_basic
+rtgl vt screenshot --group components-basic
 
 # Only one spec item (extension optional)
 rtgl vt screenshot --item components/forms/login
 rtgl vt screenshot --item components/forms/login.html
 
 # Combine selectors (union)
-rtgl vt screenshot --group components_basic --item pages/home
+rtgl vt screenshot --group components-basic --item pages/home
 
 # Same selectors for report
 rtgl vt report --folder components/forms
-rtgl vt report --group components_basic
+rtgl vt report --group components-basic
 rtgl vt report --item components/forms/login
 ```
 
@@ -90,7 +90,7 @@ vt:
     width: 1280
     height: 720
   sections:
-    - title: components_basic
+    - title: Components Basic
       files: components
 ```
 
@@ -99,7 +99,8 @@ Notes:
 - `vt.sections` is required.
 - `vt.service` is optional. When set, VT starts the command before capture, waits for `vt.url`, then stops it after capture.
 - when `vt.service` is omitted and `vt.url` is set, VT expects that URL to already be running.
-- Section page keys (`title` for flat sections and group `items[].title`) allow only letters, numbers, `-`, `_`.
+- Section page keys are derived as `kebab-case(title)` for flat sections and group `items[].title`.
+- Derived section page keys must be unique case-insensitively.
 - `vt.viewport` supports object or array; each viewport requires `id`, `width`, `height`.
 - `vt.capture` is internal and must be omitted.
 - Viewport contract details: `docs/viewport-contract.md`.
@@ -117,18 +118,21 @@ Supported frontmatter keys per spec file:
 - `waitStrategy` (`networkidle` | `load` | `event` | `selector`)
 - `viewport` (object or array of viewport objects)
 - `skipScreenshot`
+- `skipInitialScreenshot`
 - `specs`
 - `steps`
 
 Step action reference:
 
 - `docs/step-actions.md`
-- canonical format is structured action objects (`- action: ...`), with legacy string/block forms still supported.
+- canonical format is structured action objects (`- action: ...`); legacy one-line string steps are not supported.
 - `assert` supports `js` deep-equal checks for object/array values.
 
 Screenshot naming:
 
-- First screenshot is `-01`.
+- By default, VT takes an immediate first screenshot before running `steps`.
+- Set `skipInitialScreenshot: true` in frontmatter to skip that immediate first screenshot.
+- First captured screenshot is `-01`.
 - Then `-02`, `-03`, up to `-99`.
 - When viewport id is configured, filenames include `--<viewportId>` before ordinal (for example `pages/home--mobile-01.webp`).
 
@@ -137,15 +141,15 @@ Screenshot naming:
 A pre-built Docker image with `rtgl` and Playwright browsers is available:
 
 ```bash
-docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc11
+docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc12
 ```
 
 Run commands against a local project:
 
 ```bash
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc11 rtgl vt screenshot
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc11 rtgl vt report
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc11 rtgl vt accept
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc12 rtgl vt screenshot
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc12 rtgl vt report
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc12 rtgl vt accept
 ```
 
 Note:

@@ -5,6 +5,7 @@ specs:
   - Trigger button opens dialog with content slot rendered.
   - Close action inside dialog dismisses the overlay.
   - Close event listener keeps `open` state synchronized.
+skipInitialScreenshot: true
 steps:
   - action: select
     testId: open-dialog-basic
@@ -18,6 +19,8 @@ steps:
     type: text
     selector: '#dialog'
     value: Dialog Content
+  - action: wait
+    ms: 220
   - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>

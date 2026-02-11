@@ -341,7 +341,7 @@ vt:
   path: ./vt
   compareMethod: md5
   sections:
-    - title: components_basic
+    - title: Components Basic
       files: components
 ```
 

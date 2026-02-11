@@ -5,6 +5,15 @@ specs:
   - Large size preset expands dialog width relative to smaller presets.
   - Content block remains aligned and readable at larger width.
   - Close event handling stays consistent with sized dialog.
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '#dialog[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 220
+  - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-button id="button">Open Dialog s=lg</rtgl-button>

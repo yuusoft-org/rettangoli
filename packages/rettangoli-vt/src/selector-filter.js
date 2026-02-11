@@ -1,5 +1,6 @@
 import path from "path";
 import { stripViewportSuffix } from "./viewport.js";
+import { deriveSectionPageKey } from "./section-page-key.js";
 
 function toList(value) {
   if (value === undefined || value === null) return [];
@@ -25,7 +26,7 @@ export function normalizeSelectors(raw = {}) {
     .map(normalizePathValue)
     .filter((item) => item.length > 0);
   const groups = toList(raw.group)
-    .map((item) => String(item).trim().toLowerCase())
+    .map((item) => deriveSectionPageKey({ title: String(item) }))
     .filter((item) => item.length > 0);
   const items = toList(raw.item)
     .map(normalizeItemKey)
@@ -59,12 +60,12 @@ function resolveGroupFolders(configSections = [], groupSelectors = []) {
   for (const section of configSections) {
     if (section.type === "groupLabel" && Array.isArray(section.items)) {
       for (const item of section.items) {
-        groupFolderMap.set(String(item.title).toLowerCase(), normalizePathValue(item.files));
+        groupFolderMap.set(deriveSectionPageKey(item), normalizePathValue(item.files));
       }
       continue;
     }
     if (section.files) {
-      groupFolderMap.set(String(section.title).toLowerCase(), normalizePathValue(section.files));
+      groupFolderMap.set(deriveSectionPageKey(section), normalizePathValue(section.files));
     }
   }
 

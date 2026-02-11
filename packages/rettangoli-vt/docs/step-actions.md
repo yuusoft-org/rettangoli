@@ -6,7 +6,7 @@ This document defines the `frontMatter.steps` action contract in `@rettangoli/vt
 
 ## Canonical Step Shape
 
-Use structured action objects as the primary format:
+Use structured action objects as the required format:
 
 ```yaml
 steps:
@@ -38,7 +38,9 @@ Rules:
 
 - Every structured step must include `action`.
 - `action: select` is the only nested/block action and requires `steps`.
+- One-line string steps (for example `click 10 20`) are not supported.
 - Unknown keys on structured actions fail validation.
+- VT takes an automatic initial screenshot before steps unless frontmatter sets `skipInitialScreenshot: true`.
 
 ## Select Targeting
 

@@ -38,8 +38,8 @@ describe("createSteps screenshot command", () => {
       takeAndSaveScreenshot,
     });
 
-    await stepsExecutor.executeStep("screenshot");
-    await stepsExecutor.executeStep("screenshot");
+    await stepsExecutor.executeStep({ action: "screenshot" });
+    await stepsExecutor.executeStep({ action: "screenshot" });
 
     expect(takeAndSaveScreenshot).toHaveBeenCalledTimes(2);
     expect(takeAndSaveScreenshot).toHaveBeenNthCalledWith(
@@ -66,7 +66,11 @@ describe("createSteps setViewport command", () => {
       takeAndSaveScreenshot: vi.fn(),
     });
 
-    await stepsExecutor.executeStep("setViewport 390 844");
+    await stepsExecutor.executeStep({
+      action: "setViewport",
+      width: 390,
+      height: 844,
+    });
 
     expect(setViewportSize).toHaveBeenCalledTimes(1);
     expect(setViewportSize).toHaveBeenCalledWith({ width: 390, height: 844 });
@@ -82,8 +86,12 @@ describe("createSteps setViewport command", () => {
     });
 
     await expect(
-      stepsExecutor.executeStep("setViewport 390 not-a-number"),
-    ).rejects.toThrow('Invalid height: expected a finite number, got "not-a-number".');
+      stepsExecutor.executeStep({
+        action: "setViewport",
+        width: 390,
+        height: "not-a-number",
+      }),
+    ).rejects.toThrow('Structured action "setViewport" requires finite number `height`.');
   });
 });
 
@@ -204,13 +212,13 @@ describe("createSteps structured action steps", () => {
 });
 
 describe("createSteps structured assert", () => {
-  it("rejects legacy inline assert strings", async () => {
+  it("rejects legacy one-line string steps", async () => {
     const page = {};
     const stepsExecutor = createExecutor(page);
 
     await expect(
       stepsExecutor.executeStep("assert url rettangoli.dev"),
-    ).rejects.toThrow("Inline `assert` step strings are no longer supported.");
+    ).rejects.toThrow("Invalid step: expected an object.");
   });
 
   it("asserts url includes by default", async () => {
