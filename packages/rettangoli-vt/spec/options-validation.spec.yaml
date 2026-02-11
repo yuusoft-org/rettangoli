@@ -122,7 +122,7 @@ out:
     folders:
       - components/forms
     groups:
-      - components_basic
+      - components-basic
     items:
       - pages/home
   screenshotWaitTime: 0

@@ -44,7 +44,7 @@ This guide is for future coding agents working in `packages/rettangoli-vt`.
 
 ## Non-Negotiable Invariants
 
-- Section page keys allow only `[A-Za-z0-9_-]+` (no spaces).
+- Section page keys are derived from titles via kebab-case and must be unique case-insensitively.
 - `vt.sections` is required and non-empty.
 - `vt.capture` is internal-only in public contract.
 - `vt.viewport` / frontmatter `viewport` accept object or array.
@@ -69,6 +69,13 @@ This guide is for future coding agents working in `packages/rettangoli-vt`.
 - Docker assets live in:
   - `docker/Dockerfile`
   - `docker/build-and-push.sh`
+- When bumping Docker image tag or `rtgl` version, always update docs/examples too:
+  - `packages/rettangoli-vt/README.md`
+  - `apps/rettangoli.dev/pages/vt/docs/introduction/quickstart.md`
+  - `apps/rettangoli.dev/pages/vt/docs/reference/cli.md`
+  - `packages/rettangoli-fe/README.md`
+  - Verify no stale references remain with:
+    - `rg -n "han4wluc/rtgl:|rtgl@1\\." packages apps`
 - If behavior changes, update both:
   - `README.md`
   - `docs/spec.md`

@@ -35,7 +35,7 @@ vt:
     width: 1280
     height: 720
   sections:
-    - title: components_basic
+    - title: Components Basic
       files: components
 ```
 
@@ -45,8 +45,8 @@ Rules:
 - `vt.sections` is required and non-empty.
 - Each flat section requires `title` and `files`.
 - Group section requires `type: groupLabel` and non-empty `items`.
-- Section page keys (`title` and `items[].title`) must match `[A-Za-z0-9_-]+`.
-- Section page keys must be unique case-insensitively.
+- Section page keys are derived from section titles as `kebab-case(title)`.
+- Derived section page keys must be unique case-insensitively.
 - `vt.concurrency` optional integer >= 1.
 - `vt.timeout` optional integer >= 1 (ms).
 - `vt.waitEvent` optional non-empty string.
@@ -85,10 +85,10 @@ Examples:
 
 ```bash
 rtgl vt generate --folder components/forms
-rtgl vt generate --group components_basic
+rtgl vt generate --group components-basic
 rtgl vt generate --item components/forms/login
 rtgl vt generate --item components/forms/login.html
-rtgl vt generate --group components_basic --item pages/home
+rtgl vt generate --group components-basic --item pages/home
 ```
 
 ## Screenshot CLI Contract
@@ -108,6 +108,7 @@ Screenshot behavior:
 - Builds candidate pages from `vt/specs`.
 - Builds section overview pages from `vt.sections`.
 - Captures screenshots for non-`skipScreenshot` specs.
+- Takes an immediate initial screenshot before running `steps` unless `frontmatter.skipInitialScreenshot=true`.
 - when `vt.service.start` exists, starts service, waits for `vt.url`, then stops service after capture.
 - when `vt.service` is omitted and `vt.url` is set, VT captures against the already running service.
 - Fails if unresolved capture failures remain.
@@ -128,10 +129,10 @@ Examples:
 
 ```bash
 rtgl vt screenshot --folder components/forms
-rtgl vt screenshot --group components_basic
+rtgl vt screenshot --group components-basic
 rtgl vt screenshot --item components/forms/login
 rtgl vt screenshot --item components/forms/login.html
-rtgl vt screenshot --group components_basic --item pages/home
+rtgl vt screenshot --group components-basic --item pages/home
 ```
 
 ## Report CLI Contract
@@ -154,7 +155,7 @@ Examples:
 
 ```bash
 rtgl vt report --folder components/forms
-rtgl vt report --group components_basic
+rtgl vt report --group components-basic
 rtgl vt report --item components/forms/login
 ```
 
@@ -171,6 +172,7 @@ Allowed keys:
 - `waitStrategy` (`networkidle` | `load` | `event` | `selector`)
 - `viewport` (object or array of viewport objects)
 - `skipScreenshot` (boolean)
+- `skipInitialScreenshot` (boolean)
 - `specs` (array of non-empty strings)
 - `steps` (array of structured action objects)
 
@@ -185,11 +187,12 @@ Validation:
 - `waitStrategy=selector` requires `waitSelector`.
 - Structured steps require `action`.
 - `action: select` is the only nested/block action and requires `steps`.
+- `skipInitialScreenshot=true` disables only the immediate pre-step screenshot; explicit `action: screenshot` steps still run.
 
 ## Screenshot Naming Contract
 
 - Screenshot filenames are `<base>-NN.webp`.
-- First image is always `-01`.
+- First captured image is `-01`.
 - Sequence increments `-02`, `-03`, ... up to `-99`.
 - When viewport id is configured, filenames include `--<viewportId>` before ordinal.
   Example: `pages/home--mobile-01.webp`.

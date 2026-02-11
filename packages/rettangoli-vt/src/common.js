@@ -15,6 +15,7 @@ import path from "path";
 import { validateFiniteNumber, validateFrontMatter } from "./validation.js";
 import { createCaptureTasks } from "./capture/spec-loader.js";
 import { runCaptureScheduler } from "./capture/capture-scheduler.js";
+import { deriveSectionPageKey } from "./section-page-key.js";
 
 const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
 
@@ -248,7 +249,7 @@ function getContentType(filePath) {
 }
 
 function toSectionPageKey(sectionLike) {
-  return String(sectionLike.title || "").toLowerCase();
+  return deriveSectionPageKey(sectionLike);
 }
 
 /**

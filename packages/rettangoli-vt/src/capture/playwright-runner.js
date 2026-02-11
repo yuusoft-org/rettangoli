@@ -359,10 +359,12 @@ export class PlaywrightRunner {
       }
       settleMs = nowMs() - settleStart;
 
-      const firstScreenshotStart = nowMs();
-      const firstScreenshotPath = await wrappedScreenshot(page, task.baseName);
-      initialScreenshotMs = nowMs() - firstScreenshotStart;
-      console.log(`Screenshot saved: ${firstScreenshotPath}`);
+      if (!task.frontMatter?.skipInitialScreenshot) {
+        const firstScreenshotStart = nowMs();
+        const firstScreenshotPath = await wrappedScreenshot(page, task.baseName);
+        initialScreenshotMs = nowMs() - firstScreenshotStart;
+        console.log(`Screenshot saved: ${firstScreenshotPath}`);
+      }
 
       const stepsStart = nowMs();
       const stepsExecutor = createSteps(page, {

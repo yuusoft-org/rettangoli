@@ -1,4 +1,5 @@
 import { normalizeViewportField } from "./viewport.js";
+import { deriveSectionPageKey } from "./section-page-key.js";
 
 function isPlainObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -121,8 +122,6 @@ const LEGACY_CAPTURE_FIELDS = {
   headless: true,
 };
 
-const SECTION_PAGE_KEY_PATTERN = /^[A-Za-z0-9_-]+$/;
-
 function assertNoLegacyCaptureFields(vtConfig, sourcePath) {
   for (const legacyField of Object.keys(LEGACY_CAPTURE_FIELDS)) {
     if (Object.prototype.hasOwnProperty.call(vtConfig, legacyField)) {
@@ -133,14 +132,11 @@ function assertNoLegacyCaptureFields(vtConfig, sourcePath) {
   }
 }
 
-function assertValidSectionPageKey(value, path) {
+function assertDerivableSectionPageKey(sectionLike, path) {
+  const pageKey = deriveSectionPageKey(sectionLike);
   assert(
-    typeof value === "string" && value.trim().length > 0,
-    `"${path}" is required.`,
-  );
-  assert(
-    SECTION_PAGE_KEY_PATTERN.test(value),
-    `"${path}" must contain only letters, numbers, "-" or "_", and cannot include spaces.`,
+    pageKey.length > 0,
+    `"${path}" must contain at least one letter or number.`,
   );
 }
 
@@ -173,25 +169,25 @@ function validateSection(section, index) {
 
       assert(typeof item.title === "string" && item.title.trim().length > 0, `"${itemPath}.title" is required.`);
       assert(typeof item.files === "string" && item.files.trim().length > 0, `"${itemPath}.files" is required.`);
-      assertValidSectionPageKey(item.title, `${itemPath}.title`);
+      assertDerivableSectionPageKey(item, `${itemPath}.title`);
     });
     return;
   }
 
   validateOptionalString(section.files, `${sectionPath}.files`);
   assert(typeof section.files === "string" && section.files.trim().length > 0, `"${sectionPath}.files" is required.`);
-  assertValidSectionPageKey(section.title, `${sectionPath}.title`);
+  assertDerivableSectionPageKey(section, `${sectionPath}.title`);
 }
 
 function collectSectionPageKeys(vtConfig) {
   const keys = [];
   vtConfig.sections.forEach((section) => {
     if (section.type === "groupLabel" && Array.isArray(section.items)) {
-      section.items.forEach((item) => keys.push(item.title));
+      section.items.forEach((item) => keys.push(deriveSectionPageKey(item)));
       return;
     }
     if (section.files) {
-      keys.push(section.title);
+      keys.push(deriveSectionPageKey(section));
     }
   });
   return keys;
@@ -286,10 +282,6 @@ function validateStructuredActionStep(step, stepPath) {
     assert(Array.isArray(step.steps), `"${stepPath}.steps" must be an array for action=select.`);
     step.steps.forEach((nestedStep, nestedIndex) => {
       const nestedPath = `${stepPath}.steps[${nestedIndex}]`;
-      if (typeof nestedStep === "string") {
-        assert(nestedStep.trim().length > 0, `"${nestedPath}" cannot be empty.`);
-        return;
-      }
       validateStepObject(nestedStep, nestedPath);
     });
     return;
@@ -434,7 +426,7 @@ function validateStructuredActionStep(step, stepPath) {
 }
 
 function validateStepObject(step, stepPath) {
-  assert(isPlainObject(step), `"${stepPath}" must be an object with one key or a string.`);
+  assert(isPlainObject(step), `"${stepPath}" must be an object.`);
 
   if (Object.prototype.hasOwnProperty.call(step, "action")) {
     validateStructuredActionStep(step, stepPath);
@@ -459,10 +451,6 @@ function validateStepObject(step, stepPath) {
   assert(Array.isArray(nestedSteps), `"${stepPath}.${stepKey}" must be an array of step values.`);
   nestedSteps.forEach((nestedStep, nestedIndex) => {
     const nestedPath = `${stepPath}.${stepKey}[${nestedIndex}]`;
-    if (typeof nestedStep === "string") {
-      assert(nestedStep.trim().length > 0, `"${nestedPath}" cannot be empty.`);
-      return;
-    }
     validateStepObject(nestedStep, nestedPath);
   });
 }
@@ -606,6 +594,10 @@ export function validateFrontMatter(frontMatter, specPath) {
     ["networkidle", "load", "event", "selector"],
   );
   validateOptionalBoolean(frontMatter.skipScreenshot, `${specPath}: frontMatter.skipScreenshot`);
+  validateOptionalBoolean(
+    frontMatter.skipInitialScreenshot,
+    `${specPath}: frontMatter.skipInitialScreenshot`,
+  );
 
   if (frontMatter.waitStrategy === "event") {
     assert(
@@ -633,10 +625,6 @@ export function validateFrontMatter(frontMatter, specPath) {
     assert(Array.isArray(frontMatter.steps), `"${specPath}: frontMatter.steps" must be an array.`);
     frontMatter.steps.forEach((step, index) => {
       const stepPath = `${specPath}: frontMatter.steps[${index}]`;
-      if (typeof step === "string") {
-        assert(step.trim().length > 0, `"${stepPath}" cannot be empty.`);
-        return;
-      }
       validateStepObject(step, stepPath);
     });
   }

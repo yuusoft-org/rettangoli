@@ -17,27 +17,27 @@ out:
     - title: Pages
       files: pages
 ---
-case: accepts page keys with hyphen and underscore
+case: accepts section titles with spaces and punctuation
 in:
   - path: ./vt
     sections:
-      - title: components_basic
+      - title: Components Basic
         files: components
       - type: groupLabel
         title: Group label can have spaces
         items:
-          - title: forms-advanced
+          - title: Forms advanced!
             files: forms
   - rettangoli.config.yaml
 out:
   path: ./vt
   sections:
-    - title: components_basic
+    - title: Components Basic
       files: components
     - type: groupLabel
       title: Group label can have spaces
       items:
-        - title: forms-advanced
+        - title: Forms advanced!
           files: forms
 ---
 case: requires sections to be a non-empty array
@@ -46,37 +46,25 @@ in:
   - rettangoli.config.yaml
 throws: vt.sections
 ---
-case: rejects spaces in flat section title
+case: rejects section title that cannot derive a page key
 in:
   - path: ./vt
     sections:
-      - title: components basic
+      - title: "!!!"
         files: components
   - rettangoli.config.yaml
-throws: cannot include spaces
+throws: vt.sections[0].title
 ---
-case: rejects spaces in group item title
+case: rejects duplicate derived section page keys
 in:
   - path: ./vt
     sections:
-      - type: groupLabel
-        title: Group label
-        items:
-          - title: forms advanced
-            files: forms
-  - rettangoli.config.yaml
-throws: cannot include spaces
----
-case: rejects case-insensitive duplicate section page keys
-in:
-  - path: ./vt
-    sections:
-      - title: button-basic
+      - title: Button Basic
         files: components
       - type: groupLabel
         title: Group label
         items:
-          - title: Button-Basic
+          - title: button-basic
             files: components/forms
   - rettangoli.config.yaml
 throws: must be unique (case-insensitive)
@@ -243,14 +231,18 @@ throws: vt.capture
 suite: validateFrontMatter
 exportName: validateFrontMatter
 ---
-case: accepts block steps and wait selector strategy
+case: accepts structured steps and wait selector strategy
 in:
   - waitStrategy: selector
     waitSelector: "#ready"
     steps:
-      - select search-input:
-          - write hi
-          - keypress Enter
+      - action: select
+        testId: search-input
+        steps:
+          - action: write
+            value: hi
+          - action: keypress
+            key: Enter
   - specs/page.yaml
 ---
 case: accepts structured action steps
@@ -269,6 +261,14 @@ in:
         type: url
         value: /dashboard
         match: includes
+  - specs/page.yaml
+---
+case: accepts skipInitialScreenshot frontmatter flag
+in:
+  - skipInitialScreenshot: true
+    steps:
+      - action: wait
+        ms: 10
   - specs/page.yaml
 ---
 case: accepts frontmatter viewport override object
@@ -298,12 +298,18 @@ in:
   - specs/page.yaml
 throws: frontMatter.viewport[0].id
 ---
-case: rejects empty step strings
+case: rejects non-boolean skipInitialScreenshot
+in:
+  - skipInitialScreenshot: "yes"
+  - specs/page.yaml
+throws: frontMatter.skipInitialScreenshot
+---
+case: rejects legacy one-line step strings
 in:
   - steps:
-      - ""
+      - screenshot
   - specs/page.yaml
-throws: frontMatter.steps[0]
+throws: must be an object
 ---
 case: rejects unknown structured action
 in:

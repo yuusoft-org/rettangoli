@@ -160,7 +160,7 @@ function assertStructuredKeys(stepObject, allowedKeys, actionName) {
 
 function requireStepAction(stepObject) {
   if (!isPlainObject(stepObject)) {
-    throw new Error("Invalid step: expected string or object.");
+    throw new Error("Invalid step: expected an object.");
   }
   if (typeof stepObject.action !== "string" || stepObject.action.trim().length === 0) {
     throw new Error("Structured step requires non-empty string `action`.");
@@ -411,12 +411,8 @@ function normalizeLegacyBlockStep(stepObject) {
 }
 
 function normalizeStepValue(step) {
-  if (typeof step === "string") {
-    const { command, args } = parseStepCommand(step);
-    return { kind: "command", command, args };
-  }
   if (!isPlainObject(step)) {
-    throw new Error("Invalid step: expected string or object.");
+    throw new Error("Invalid step: expected an object.");
   }
   if (Object.prototype.hasOwnProperty.call(step, "action")) {
     return normalizeStructuredActionStep(step);
@@ -889,11 +885,6 @@ export function createSteps(page, context) {
   async function executeCommand(command, args, selectedElement) {
     if (!command) {
       return;
-    }
-    if (command === "assert") {
-      throw new Error(
-        "Inline `assert` step strings are no longer supported. Use structured syntax: `- assert: { type: ..., ... }`.",
-      );
     }
     const actionFn = actionHandlers[command];
     if (actionFn) {

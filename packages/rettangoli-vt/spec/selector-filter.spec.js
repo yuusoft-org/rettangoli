@@ -8,15 +8,15 @@ import {
 
 const sections = [
   {
-    title: "components_basic",
+    title: "Components Basic",
     files: "components/basic",
   },
   {
     type: "groupLabel",
     title: "Components",
     items: [
-      { title: "forms_group", files: "components/forms" },
-      { title: "tables_group", files: "components/tables" },
+      { title: "Forms Group", files: "components/forms" },
+      { title: "Tables Group", files: "components/tables" },
     ],
   },
 ];
@@ -25,13 +25,13 @@ describe("selector-filter", () => {
   it("normalizes and deduplicates selector inputs", () => {
     const selectors = normalizeSelectors({
       folder: ["./components/forms/", "components/forms"],
-      group: ["Forms_Group", "forms_group"],
+      group: ["Forms_Group", "forms-group"],
       item: ["pages/home.html", "./pages/home"],
     });
 
     expect(selectors).toEqual({
       folders: ["components/forms"],
-      groups: ["forms_group"],
+      groups: ["forms-group"],
       items: ["pages/home"],
     });
     expect(hasSelectors(selectors)).toBe(true);
@@ -47,7 +47,7 @@ describe("selector-filter", () => {
 
     const selectors = normalizeSelectors({
       folder: "components/forms",
-      group: "tables_group",
+      group: "tables-group",
       item: "pages/home.html",
     });
 
@@ -61,7 +61,7 @@ describe("selector-filter", () => {
   });
 
   it("throws for unknown group selectors", () => {
-    const selectors = normalizeSelectors({ group: "missing_group" });
+    const selectors = normalizeSelectors({ group: "missing-group" });
 
     expect(() =>
       filterGeneratedFilesBySelectors(
@@ -83,7 +83,7 @@ describe("selector-filter", () => {
 
     const selectors = normalizeSelectors({
       folder: "components/forms",
-      group: "tables_group",
+      group: "tables-group",
       item: "pages/home.yaml",
     });
 
