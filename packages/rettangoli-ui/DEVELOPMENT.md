@@ -322,6 +322,7 @@ Temporary VT skips (as of 2026-02-11):
 - `vt/specs/components/select/basic.html`
 - `vt/specs/components/select/object-value.html`
 - `vt/specs/components/select/overflow.html`
+- `vt/specs/components/select/select-with-add-option.html`
 - `vt/specs/components/select/select-placeholder.html`
 - `vt/specs/components/select/select-selected.html`
 - `vt/specs/components/sidebar/basic-1.html`
