@@ -81,6 +81,6 @@ build:
 
 ## Next
 
-- [CLI](../reference/cli)
-- [Configuration](../reference/configuration)
-- [Markdown & Frontmatter](../reference/markdown-and-frontmatter)
+- [CLI](/sites/docs/reference/cli.md)
+- [Configuration](/sites/docs/reference/configuration.md)
+- [Markdown & Frontmatter](/sites/docs/reference/markdown-and-frontmatter.md)

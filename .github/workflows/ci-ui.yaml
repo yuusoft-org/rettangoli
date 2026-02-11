@@ -4,16 +4,31 @@ on:
     branches:
       - main
     paths:
+      - ".github/workflows/ci-ui.yaml"
+      - "package.json"
+      - "bun.lock"
+      - "packages/rettangoli-cli/**"
+      - "packages/rettangoli-fe/**"
       - "packages/rettangoli-ui/**"
       - "packages/rettangoli-vt/**"
   pull_request:
     paths:
+      - ".github/workflows/ci-ui.yaml"
+      - "package.json"
+      - "bun.lock"
+      - "packages/rettangoli-cli/**"
+      - "packages/rettangoli-fe/**"
       - "packages/rettangoli-ui/**"
       - "packages/rettangoli-vt/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   visual-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 

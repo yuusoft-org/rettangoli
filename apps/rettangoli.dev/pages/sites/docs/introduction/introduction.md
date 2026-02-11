@@ -44,6 +44,6 @@ my-site/
 
 ## Next
 
-- [Getting Started](./getting-started)
-- [CLI](../reference/cli)
-- [Configuration](../reference/configuration)
+- [Getting Started](/sites/docs/introduction/getting-started.md)
+- [CLI](/sites/docs/reference/cli.md)
+- [Configuration](/sites/docs/reference/configuration.md)

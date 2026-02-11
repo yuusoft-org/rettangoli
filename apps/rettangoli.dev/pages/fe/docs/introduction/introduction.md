@@ -122,7 +122,7 @@ User Interaction ─> Handler ─> Store Action ─> Re-render
 | `.methods.js` | No | Exposes public methods on the element (e.g., `el.focus()`) |
 | `.constants.yaml` | No | Provides static config: labels, limits, feature flags |
 
-Ready to build something? Head to [Getting Started](../introduction/getting-started).
+Ready to build something? Head to [Getting Started](/fe/docs/introduction/getting-started.md).
 
 ## Current Limitations
 

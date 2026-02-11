@@ -38,7 +38,7 @@ Use this baseline pattern in most UIs:
 | Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 
 Responsive breakpoint prefixes are supported for style attributes such as `s`, `c`, `ta`, and margin attributes.
-For full breakpoint behavior, see [Responsiveness](../introduction/responsiveness.md).
+For full breakpoint behavior, see [Responsiveness](/ui/docs/introduction/responsiveness.md).
 
 ## Size
 

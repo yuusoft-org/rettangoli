@@ -45,7 +45,7 @@ Use this baseline for most numeric fields:
 ### Responsive Syntax (At a Glance)
 
 Breakpoint prefixes are supported for layout/style attrs like `w`, `h`, `m`, `hide`, `show`, and `op`.
-For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
+For full behavior details, see [Responsiveness](/ui/docs/introduction/responsiveness.md).
 
 ```html codePreview
 <rtgl-view d="v" g="sm" w="f">

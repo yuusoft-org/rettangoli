@@ -50,7 +50,7 @@ Use this pattern for most image surfaces:
 ### Responsive Syntax (At a Glance)
 
 Use base attributes for larger screens and override with breakpoint prefixes:
-For full behavior details, see [Responsiveness](../introduction/responsiveness.md).
+For full behavior details, see [Responsiveness](/ui/docs/introduction/responsiveness.md).
 
 ```html codePreview
 <rtgl-view d="h" g="md" w="f">
