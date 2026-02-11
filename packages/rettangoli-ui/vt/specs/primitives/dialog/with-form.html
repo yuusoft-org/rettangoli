@@ -5,6 +5,7 @@ specs:
   - Dialog opens and mounts `rtgl-form` content lazily.
   - Form schema renders mixed field types and action buttons.
   - Action events close dialog for cancel and submit outcomes.
+skipInitialScreenshot: true
 steps:
   - action: select
     testId: open-dialog-form
@@ -21,6 +22,8 @@ steps:
   - action: assert
     type: exists
     selector: '#form'
+  - action: wait
+    ms: 260
   - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>

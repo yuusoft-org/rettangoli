@@ -5,6 +5,15 @@ specs:
   - Medium size preset applies expected dialog width.
   - Content layout remains balanced at medium breakpoint.
   - Close event handling stays consistent with sized dialog.
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '#dialog[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 220
+  - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-button id="button">Open Dialog s=md</rtgl-button>

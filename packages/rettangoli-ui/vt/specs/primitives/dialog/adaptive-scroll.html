@@ -5,6 +5,7 @@ specs:
   - Trigger opens dialog containing multiple long sections.
   - Content overflow remains accessible in scrollable layout.
   - Close handling synchronizes dialog open state.
+skipInitialScreenshot: true
 steps:
   - action: select
     testId: open-dialog-very-long
@@ -18,6 +19,8 @@ steps:
     type: text
     selector: '#dialog-very-long'
     value: Very Long Content - Scrolling Test
+  - action: wait
+    ms: 220
   - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>

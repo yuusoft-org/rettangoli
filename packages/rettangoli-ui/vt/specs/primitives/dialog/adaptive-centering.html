@@ -5,6 +5,7 @@ specs:
   - Short-content dialog opens with centered visual placement.
   - Long-content dialog opens with top-biased placement for overflow safety.
   - Shared close handling keeps open state synchronized for both dialogs.
+skipInitialScreenshot: true
 steps:
   - action: select
     testId: open-dialog-short
@@ -18,6 +19,8 @@ steps:
     type: text
     selector: '#dialog-short'
     value: Short Content Dialog
+  - action: wait
+    ms: 220
   - action: screenshot
   - action: select
     testId: close-dialog-short
@@ -39,6 +42,8 @@ steps:
     type: text
     selector: '#dialog-long'
     value: Long Content Dialog
+  - action: wait
+    ms: 220
   - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
