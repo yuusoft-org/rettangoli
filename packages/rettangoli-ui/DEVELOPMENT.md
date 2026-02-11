@@ -318,6 +318,16 @@ Accept intended baselines:
 bun run vt:accept
 ```
 
+Temporary VT skips (as of 2026-02-11):
+- `vt/specs/components/select/basic.html`
+- `vt/specs/components/select/object-value.html`
+- `vt/specs/components/select/overflow.html`
+- `vt/specs/components/select/select-placeholder.html`
+- `vt/specs/components/select/select-selected.html`
+- `vt/specs/components/sidebar/basic-1.html`
+- `vt/specs/components/sidebar/basic-3.html`
+- These specs currently set `skipScreenshot: true` due intermittent CI rendering drift. Remove the skip once stabilized.
+
 Serve VT output:
 
 ```bash
