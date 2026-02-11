@@ -10,14 +10,24 @@
         - script src="/public/rtgl-icons.js":
 
     - body.dark:
+        - $partial: mobile-nav1
+          headerLabel: ${vtDocs.header.label}
+          headerHref: ${vtDocs.header.href}
+          header: ${vtDocs.header}
+          items: ${vtDocs.items}
+          sidebarId: ${sidebarId}
+
         - rtgl-view bgc="bg" w="f" d=h:
             - 'rtgl-view md-hide pos=fix h=100vh bgc=bg style="left: 0"':
                 - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(vtDocs.header))}" items="${encodeURIComponent(jsonStringify(vtDocs.items))}":
             - rtgl-view md-hide xl-show hide w=272:
             - rtgl-view w="1fg" ah=c:
                 - rtgl-view pv="lg" lg-w="100vw" w="720" ph="xl" sv id="content-container":
+                    - rtgl-view hide md-show h=56:
                     - rtgl-text s="h1" mb="lg": ${title}
                     - "${content}"
                     - rtgl-view h=200:
             - 'rtgl-view xl-hide style="position: fixed; right: 0"':
                 - rtgl-page-outline id="page-outline" target-id="content-container" scroll-container-id="window" offset-top="80":
+
+        - script src="/public/mobile-nav.js":
