@@ -233,7 +233,7 @@ Use these directly in `${...}` expressions:
 
 Date format tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`, `ss`.
 `decodeURI`/`decodeURIComponent` return the original input when decoding fails.
-`sort` supports `order` as `asc` or `desc`, accepts dot-path keys (for example `data.date`), and returns a new array.
+`sort` supports `order` as `asc` or `desc` (default: `asc`), accepts dot-path keys (for example `data.date`), and returns a new array.
 `md` returns raw rendered HTML from Markdown for template insertion.
 
 ## Static Files
