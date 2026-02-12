@@ -1,6 +1,6 @@
 export const createInitialState = () => Object.freeze({});
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode', 'hideHeader', 'hideRightBorder', 'w'];
+const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode', 'hideHeader', 'w', 'bwr'];
 
 const stringifyAttrs = (props = {}) => {
   return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
@@ -114,9 +114,7 @@ export const selectViewData = ({ props }) => {
   const items = resolvedItems ? flattenItems(resolvedItems, selectedItemId) : [];
 
   const showHeader = !parseBooleanProp(props.hideHeader);
-  const showRightBorder = !parseBooleanProp(props.hideRightBorder);
-  const rightBorderAttr = showRightBorder ? 'bwr=xs' : '';
-
+  const rightBorderWidth = props.bwr || 'xs';
   // Computed values based on mode
   const sidebarWidth = resolveSidebarWidth(props.w, mode);
   const headerAlign = mode === 'full' ? 'fs' : 'c';
@@ -166,7 +164,7 @@ export const selectViewData = ({ props }) => {
     selectedItemId,
     ah,
     showHeader,
-    rightBorderAttr,
+    rightBorderWidth,
   };
 }
 

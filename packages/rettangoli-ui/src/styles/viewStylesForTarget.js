@@ -1,6 +1,7 @@
 import { generateCSS, spacing } from "../common.js";
 
 const borderWidth = {
+  none: "0",
   xs: "--border-width-xs",
   sm: "--border-width-sm",
   md: "--border-width-md",

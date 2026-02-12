@@ -34,7 +34,7 @@ anchors:
           $else:
             - rtgl-text s=lg: ${header.label}
 template:
-  - rtgl-view h=f w=${sidebarWidth} d=v ${rightBorderAttr} ah=${ah} ${containerAttrString}:
+  - rtgl-view h=f w=${sidebarWidth} d=v bwr=${rightBorderWidth} ah=${ah} ${containerAttrString}:
       - $if showHeader:
           - rtgl-view ph=${headerPadding} pv=lg:
               - $if header.href:
