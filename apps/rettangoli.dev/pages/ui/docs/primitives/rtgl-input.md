@@ -40,7 +40,7 @@ Use this as the default text field pattern:
 ### Responsive Syntax (At a Glance)
 
 Breakpoint prefixes are supported for layout/style attrs like `w`, `h`, `m`, `hide`, `show`, and `op`.
-For full behavior details, see [Responsiveness](/ui/docs/introduction/responsiveness.md).
+For full behavior details, see [Responsiveness](/ui/docs/introduction/responsiveness).
 
 ```html codePreview
 <rtgl-view d="v" g="sm" w="f">

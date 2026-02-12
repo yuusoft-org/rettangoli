@@ -88,4 +88,4 @@ steps:
     key: Enter
 ```
 
-For full command reference, see [Step Actions](/vt/docs/reference/step-actions.md).
+For full command reference, see [Step Actions](/vt/docs/reference/step-actions).

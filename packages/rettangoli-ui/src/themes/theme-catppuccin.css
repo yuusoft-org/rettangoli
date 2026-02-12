@@ -86,7 +86,7 @@
 
   --anchor-color: inherit;
   --anchor-color-hover: inherit;
-  --anchor-text-decoration: none;
+  --anchor-text-decoration: underline;
   --anchor-text-decoration-hover: underline;
 }
 

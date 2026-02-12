@@ -56,7 +56,7 @@ Rettangoli favors consistency over one-off convenience.
 - event behavior should be predictable; when an event does not bubble, document it explicitly
 - keep cross-primitive semantics aligned (for example lifecycle/reset attrs such as `key`)
 
-For responsive behavior, see [Responsiveness](/ui/docs/introduction/responsiveness.md).
+For responsive behavior, see [Responsiveness](/ui/docs/introduction/responsiveness).
 
 ## Components and Feature Scope
 

@@ -46,7 +46,7 @@ Use the sizing mode that matches your layout intent:
 ### Responsive Syntax (At a Glance)
 
 Define base attributes for larger screens, then override with breakpoint prefixes:
-For full breakpoint behavior, see [Responsiveness](/ui/docs/introduction/responsiveness.md).
+For full breakpoint behavior, see [Responsiveness](/ui/docs/introduction/responsiveness).
 
 ```html codePreview
 <rtgl-view d="h" g="md" w="f">
