@@ -1,16 +1,9 @@
 ---
 title: "Hide right border"
 ---
-<rtgl-view d="h" g="lg" h="100vh" w="f" p="lg">
-  <rtgl-view d="v" g="sm">
-    <rtgl-text s="sm">Default right border</rtgl-text>
-    <rtgl-sidebar id="sidebarWithBorder" h="360"></rtgl-sidebar>
-  </rtgl-view>
-
-  <rtgl-view d="v" g="sm">
-    <rtgl-text s="sm">hide-right-border</rtgl-text>
-    <rtgl-sidebar id="sidebarNoBorder" hide-right-border h="360"></rtgl-sidebar>
-  </rtgl-view>
+<rtgl-view d="v" g="sm" h="100vh" w="f" p="lg">
+  <rtgl-text s="sm">Single sidebar with hide-right-border</rtgl-text>
+  <rtgl-sidebar id="sidebarNoBorder" hide-right-border h="360"></rtgl-sidebar>
 </rtgl-view>
 
 <script>
@@ -29,11 +22,6 @@ title: "Hide right border"
       alt: "Sidebar",
     },
   };
-
-  const sidebarWithBorder = document.getElementById('sidebarWithBorder');
-  sidebarWithBorder.header = header;
-  sidebarWithBorder.items = items;
-  sidebarWithBorder.render();
 
   const sidebarNoBorder = document.getElementById('sidebarNoBorder');
   sidebarNoBorder.header = header;
