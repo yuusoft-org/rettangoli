@@ -1,5 +1,5 @@
 ---
-title: "Read Only Text"
+title: "Actions - Stretch Layout"
 ---
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
@@ -7,34 +7,35 @@ title: "Read Only Text"
 <script>
   const form = document.createElement('rtgl-form');
   form.id = 'form';
-  form.setAttribute('w', '300');
+  form.setAttribute('w', '400');
 
-  form.defaultValues = {
-    email: 'example@example.com',
-  }
+  form.defaultValues = {}
 
   form.form = {
+    title: 'Confirmation',
+    description: 'Equal-width buttons',
     fields: [{
-      name: 'email',
-      type: 'read-only-text',
-      label: 'Email',
-      description: 'Enter your email',
+      name: 'note',
+      type: 'input-textarea',
+      label: 'Note',
+      rows: 3,
     }],
     actions: {
+      layout: 'stretch',
       buttons: [{
-        id: 'submit',
+        id: 'cancel',
+        variant: 'se',
+        label: 'Cancel',
+      }, {
+        id: 'confirm',
         variant: 'pr',
-        label: 'Submit',
+        label: 'Confirm',
       }],
     }
   }
 
   form.addEventListener('form-action', (e) => {
     console.log('form-action', e.detail);
-  });
-
-  form.addEventListener('form-change', (e) => {
-    console.log('form-change', e.detail);
   });
 
   document.getElementById('container').appendChild(form);

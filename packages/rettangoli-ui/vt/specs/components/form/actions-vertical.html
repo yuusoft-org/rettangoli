@@ -1,5 +1,5 @@
 ---
-title: "Mode Popover"
+title: "Actions - Vertical Layout"
 ---
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
@@ -9,49 +9,41 @@ title: "Mode Popover"
   form.id = 'form';
   form.setAttribute('w', '300');
 
-  form.defaultValues = {
-    email: 'Hello'
-  }
-
-  form.mode = 'popover'
+  form.defaultValues = {}
 
   form.form = {
-    title: 'Form Title',
-    description: 'Form Description',
+    title: 'Login',
+    description: 'Sign in to your account',
     fields: [{
       name: 'email',
-      type: 'popover-input',
+      type: 'input-text',
       label: 'Email',
-      description: 'Enter your email',
+      placeholder: 'user@example.com',
       required: true,
     }, {
       name: 'password',
-      type: 'popover-input',
+      type: 'input-text',
       label: 'Password',
-      description: 'Enter your password',
-      required: true,
-    }, {
-      name: 'age',
-      type: 'popover-input',
-      label: 'Age',
-      description: 'Enter your age',
+      inputType: 'password',
       required: true,
     }],
     actions: {
+      layout: 'vertical',
       buttons: [{
-        id: 'submit',
+        id: 'login',
         variant: 'pr',
-        label: 'Submit',
+        label: 'Sign In',
+        validate: true,
+      }, {
+        id: 'register',
+        variant: 'gh',
+        label: 'Create Account',
       }],
     }
   }
 
   form.addEventListener('form-action', (e) => {
     console.log('form-action', e.detail);
-  });
-
-  form.addEventListener('form-change', (e) => {
-    console.log('form-change', e.detail);
   });
 
   document.getElementById('container').appendChild(form);

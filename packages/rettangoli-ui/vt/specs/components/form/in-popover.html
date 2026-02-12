@@ -30,7 +30,7 @@ title: In popover
       {
         name: 'value',
         description: 'Text Value',
-        inputType: 'input-text'
+        type: 'input-text'
       }
     ],
     actions: {
@@ -38,7 +38,7 @@ title: In popover
         {
           id: 'submit',
           variant: 'pr',
-          content: 'Submit'
+          label: 'Submit'
         }
       ]
     }
@@ -68,7 +68,7 @@ title: In popover
     popoverForm.setAttribute('open', '');
 
     // Handle form submit
-    form.addEventListener('action-click', (e) => {
+    form.addEventListener('form-action', (e) => {
       const formValues = e.detail.formValues;
       console.log('[Form submitted]', formValues);
       textValue = formValues.value;

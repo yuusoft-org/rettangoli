@@ -1,0 +1,565 @@
+file: "./formValidationHelper.js"
+group: form-validation
+---
+suite: validateField - required
+exportName: runValidateFieldCase
+---
+case: required true on empty string returns default message
+in:
+  - field:
+      name: email
+      type: input-text
+      required: true
+    value: ""
+out:
+  error: "This field is required"
+---
+case: required true on null returns default message
+in:
+  - field:
+      name: age
+      type: input-number
+      required: true
+    value: null
+out:
+  error: "This field is required"
+---
+case: required with custom message on empty returns custom message
+in:
+  - field:
+      name: email
+      type: input-text
+      required:
+        message: "Email cannot be empty"
+    value: ""
+out:
+  error: "Email cannot be empty"
+---
+case: required on non-empty field returns null
+in:
+  - field:
+      name: email
+      type: input-text
+      required: true
+    value: "test@example.com"
+out:
+  error: null
+---
+case: required checkbox false returns error
+in:
+  - field:
+      name: terms
+      type: checkbox
+      required: true
+    value: false
+out:
+  error: "This field is required"
+---
+case: required checkbox true passes
+in:
+  - field:
+      name: terms
+      type: checkbox
+      required: true
+    value: true
+out:
+  error: null
+---
+case: required input-number with 0 passes
+in:
+  - field:
+      name: age
+      type: input-number
+      required: true
+    value: 0
+out:
+  error: null
+---
+suite: validateField - minLength
+exportName: runValidateFieldCase
+---
+case: minLength below threshold returns error
+in:
+  - field:
+      name: name
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+    value: "ab"
+out:
+  error: "Must be at least 3 characters"
+---
+case: minLength at threshold passes
+in:
+  - field:
+      name: name
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+    value: "abc"
+out:
+  error: null
+---
+case: minLength above threshold passes
+in:
+  - field:
+      name: name
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+    value: "abcdef"
+out:
+  error: null
+---
+case: minLength with custom message
+in:
+  - field:
+      name: name
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 5
+          message: "Too short!"
+    value: "abc"
+out:
+  error: "Too short!"
+---
+case: minLength on empty value skipped (required handles empty)
+in:
+  - field:
+      name: name
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+    value: ""
+out:
+  error: null
+---
+suite: validateField - maxLength
+exportName: runValidateFieldCase
+---
+case: maxLength above threshold returns error
+in:
+  - field:
+      name: name
+      type: input-text
+      rules:
+        - rule: maxLength
+          value: 5
+    value: "abcdef"
+out:
+  error: "Must be at most 5 characters"
+---
+case: maxLength at threshold passes
+in:
+  - field:
+      name: name
+      type: input-text
+      rules:
+        - rule: maxLength
+          value: 5
+    value: "abcde"
+out:
+  error: null
+---
+case: maxLength with custom message
+in:
+  - field:
+      name: name
+      type: input-text
+      rules:
+        - rule: maxLength
+          value: 3
+          message: "Too long!"
+    value: "abcde"
+out:
+  error: "Too long!"
+---
+suite: validateField - pattern
+exportName: runValidateFieldCase
+---
+case: pattern email preset passes valid email
+in:
+  - field:
+      name: email
+      type: input-text
+      rules:
+        - rule: pattern
+          value: email
+    value: "test@example.com"
+out:
+  error: null
+---
+case: pattern email preset fails invalid email
+in:
+  - field:
+      name: email
+      type: input-text
+      rules:
+        - rule: pattern
+          value: email
+    value: "notanemail"
+out:
+  error: "Invalid format"
+---
+case: pattern email preset with custom message
+in:
+  - field:
+      name: email
+      type: input-text
+      rules:
+        - rule: pattern
+          value: email
+          message: "Must be a valid email"
+    value: "bad"
+out:
+  error: "Must be a valid email"
+---
+case: pattern url preset passes valid url
+in:
+  - field:
+      name: website
+      type: input-text
+      rules:
+        - rule: pattern
+          value: url
+    value: "https://example.com"
+out:
+  error: null
+---
+case: pattern url preset fails invalid url
+in:
+  - field:
+      name: website
+      type: input-text
+      rules:
+        - rule: pattern
+          value: url
+    value: "not a url"
+out:
+  error: "Invalid format"
+---
+case: pattern raw regex passes
+in:
+  - field:
+      name: code
+      type: input-text
+      rules:
+        - rule: pattern
+          value: "^[A-Z]{3}-\\d{4}$"
+    value: "ABC-1234"
+out:
+  error: null
+---
+case: pattern raw regex fails
+in:
+  - field:
+      name: code
+      type: input-text
+      rules:
+        - rule: pattern
+          value: "^[A-Z]{3}-\\d{4}$"
+          message: "Must match format ABC-1234"
+    value: "abc-12"
+out:
+  error: "Must match format ABC-1234"
+---
+suite: validateField - multiple rules
+exportName: runValidateFieldCase
+---
+case: first failing rule produces error
+in:
+  - field:
+      name: name
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+        - rule: maxLength
+          value: 10
+    value: "ab"
+out:
+  error: "Must be at least 3 characters"
+---
+case: second rule fails when first passes
+in:
+  - field:
+      name: name
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+        - rule: maxLength
+          value: 5
+    value: "abcdefgh"
+out:
+  error: "Must be at most 5 characters"
+---
+case: all rules pass
+in:
+  - field:
+      name: name
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+        - rule: maxLength
+          value: 10
+    value: "hello"
+out:
+  error: null
+---
+suite: validateForm
+exportName: runValidateFormCase
+---
+case: valid form returns valid true and empty errors
+in:
+  - fields:
+      - name: name
+        type: input-text
+        required: true
+      - name: email
+        type: input-text
+        required: true
+    formValues:
+      name: "John"
+      email: "john@example.com"
+out:
+  valid: true
+  errors: {}
+---
+case: invalid form returns valid false with errors
+in:
+  - fields:
+      - name: name
+        type: input-text
+        required: true
+      - name: email
+        type: input-text
+        required: true
+    formValues:
+      name: ""
+      email: ""
+out:
+  valid: false
+  errors:
+    name: "This field is required"
+    email: "This field is required"
+---
+case: mixed valid and invalid fields
+in:
+  - fields:
+      - name: name
+        type: input-text
+        required: true
+      - name: email
+        type: input-text
+        required: true
+        rules:
+          - rule: pattern
+            value: email
+            message: "Must be a valid email"
+    formValues:
+      name: "John"
+      email: "notanemail"
+out:
+  valid: false
+  errors:
+    email: "Must be a valid email"
+---
+case: fields inside section are validated
+in:
+  - fields:
+      - type: section
+        label: Personal
+        fields:
+          - name: firstName
+            type: input-text
+            required: true
+          - name: lastName
+            type: input-text
+            required: true
+    formValues:
+      firstName: ""
+      lastName: "Doe"
+out:
+  valid: false
+  errors:
+    firstName: "This field is required"
+---
+suite: getDefaultValue
+exportName: runGetDefaultValueCase
+---
+case: input-text defaults to empty string
+in:
+  - field:
+      type: input-text
+out:
+  value: ""
+---
+case: input-textarea defaults to empty string
+in:
+  - field:
+      type: input-textarea
+out:
+  value: ""
+---
+case: popover-input defaults to empty string
+in:
+  - field:
+      type: popover-input
+out:
+  value: ""
+---
+case: input-number defaults to null
+in:
+  - field:
+      type: input-number
+out:
+  value: null
+---
+case: select defaults to null
+in:
+  - field:
+      type: select
+out:
+  value: null
+---
+case: checkbox defaults to false
+in:
+  - field:
+      type: checkbox
+out:
+  value: false
+---
+case: color-picker defaults to hex string
+in:
+  - field:
+      type: color-picker
+out:
+  value: "#000000"
+---
+case: slider defaults to 0
+in:
+  - field:
+      type: slider
+out:
+  value: 0
+---
+case: slider with min defaults to min
+in:
+  - field:
+      type: slider
+      min: 10
+out:
+  value: 10
+---
+case: slider-with-input defaults to 0
+in:
+  - field:
+      type: slider-with-input
+out:
+  value: 0
+---
+case: image defaults to null
+in:
+  - field:
+      type: image
+out:
+  value: null
+---
+suite: flattenFields
+exportName: runFlattenFieldsCase
+---
+case: flat fields get sequential indices
+in:
+  - fields:
+      - name: name
+        type: input-text
+      - name: email
+        type: input-text
+out:
+  count: 2
+  fields:
+    - type: input-text
+      name: name
+      _isSection: false
+      _idx: 0
+    - type: input-text
+      name: email
+      _isSection: false
+      _idx: 1
+---
+case: section is flattened with nested fields
+in:
+  - fields:
+      - type: section
+        label: Info
+        fields:
+          - name: firstName
+            type: input-text
+          - name: lastName
+            type: input-text
+      - name: email
+        type: input-text
+out:
+  count: 4
+  fields:
+    - type: section
+      name: null
+      _isSection: true
+      _idx: 0
+    - type: input-text
+      name: firstName
+      _isSection: false
+      _idx: 1
+    - type: input-text
+      name: lastName
+      _isSection: false
+      _idx: 2
+    - type: input-text
+      name: email
+      _isSection: false
+      _idx: 3
+---
+case: empty fields returns empty
+in:
+  - fields: []
+out:
+  count: 0
+  fields: []
+---
+suite: collectAllDataFields
+exportName: runCollectAllDataFieldsCase
+---
+case: collects data fields and skips display types
+in:
+  - fields:
+      - name: name
+        type: input-text
+      - type: section
+        label: Info
+        fields:
+          - name: email
+            type: input-text
+      - type: read-only-text
+        content: hello
+      - type: slot
+        slot: mySlot
+      - name: age
+        type: input-number
+out:
+  names:
+    - name
+    - email
+    - age
+---
+case: empty fields returns empty
+in:
+  - fields: []
+out:
+  names: []

@@ -18,29 +18,21 @@ title: "With Select"
     description: 'Please fill out the form below',
     fields: [{
       name: 'email',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Email',
       description: 'Enter your email address',
       placeholder: 'user@example.com',
       required: true,
-      validations: [{
-        rule: /^\w+@\w+\.\w+$/,
-        message: 'Must be a valid email'
-      }],
     }, {
       name: 'password',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Password',
       description: 'Choose a strong password',
       placeholder: 'Enter password',
       required: true,
-      validations: [{
-        rule: /^\w+$/,
-        message: 'Must be a valid password'
-      }],
     }, {
       name: 'country',
-      inputType: 'select',
+      type: 'select',
       label: 'Country',
       description: 'Select your country',
       placeholder: 'Choose a country',
@@ -56,12 +48,12 @@ title: "With Select"
       ],
     }, {
       name: 'role',
-      inputType: 'select',
+      type: 'select',
       label: 'Role',
       description: 'Select your role',
       placeholder: 'Select role',
       required: true,
-      noClear: true,
+      clearable: false,
       options: [
         { label: 'Administrator', value: 'admin' },
         { label: 'Editor', value: 'editor' },
@@ -69,37 +61,36 @@ title: "With Select"
       ]
     }, {
       name: 'anchor',
-      inputType: 'select',
+      type: 'select',
       label: 'Anchor',
       description: 'This is an anchor field',
       placeholder: 'Click here',
       required: false,
       options: [{
-        label: 'Top Left', value: { x: 0, y: 0 },
+        label: 'Top Left', value: '0,0',
       }, {
-        label: 'Top Right', value: { x: 1, y: 0 },
+        label: 'Top Right', value: '1,0',
       }, {
-        label: 'Bottom Left', value: { x: 0, y: 1 },
+        label: 'Bottom Left', value: '0,1',
       }, {
-        label: 'Bottom Right', value: { x: 1, y: 1 },
+        label: 'Bottom Right', value: '1,1',
       }],
     }],
     actions: {
-      layout: '',
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Submit',
+        label: 'Submit',
       }, {
         id: 'cancel',
         variant: 'se',
-        content: 'Cancel',
+        label: 'Cancel',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {

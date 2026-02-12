@@ -41,28 +41,20 @@ title: "Update Key"
     description: 'Testing key update for all input components',
     fields: [{
       name: 'email',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Email (Input)',
       description: 'Text input field',
       placeholder: 'Enter email',
       required: true,
-      validations: [{
-        rule: /^\w+@\w+\.\w+$/,
-        message: 'Must be a valid email'
-      }],
     }, {
       name: 'age',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Age (Input)',
       description: 'Number input field',
       required: true,
-      validations: [{
-        rule: /^\d+$/,
-        message: 'Must be a valid age'
-      }],
     }, {
       name: 'category',
-      inputType: 'select',
+      type: 'select',
       label: 'Category (Select)',
       description: 'Dropdown selection',
       placeholder: 'Choose category',
@@ -73,12 +65,12 @@ title: "Update Key"
       ]
     }, {
       name: 'color',
-      inputType: 'color-picker',
+      type: 'color-picker',
       label: 'Color (Color Picker)',
       description: 'Color selection'
     }, {
       name: 'volume',
-      inputType: 'slider',
+      type: 'slider',
       label: 'Volume (Slider)',
       description: 'Slider control',
       min: 0,
@@ -86,7 +78,7 @@ title: "Update Key"
       step: 5
     }, {
       name: 'brightness',
-      inputType: 'slider-input',
+      type: 'slider-with-input',
       label: 'Brightness (Slider Input)',
       description: 'Slider with input field',
       min: 0,
@@ -94,17 +86,16 @@ title: "Update Key"
       step: 1
     }],
     actions: {
-      layout: '', // vertical, fill, right, left
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Submit',
+        label: 'Submit',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {

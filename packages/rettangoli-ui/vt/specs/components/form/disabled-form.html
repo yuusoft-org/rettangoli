@@ -1,0 +1,54 @@
+---
+title: "Disabled Form"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
+  form.disabled = true;
+
+  form.defaultValues = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'editor',
+    active: true,
+  }
+
+  form.form = {
+    title: 'View User',
+    description: 'All fields disabled via form-level prop',
+    fields: [{
+      name: 'name',
+      type: 'input-text',
+      label: 'Name',
+    }, {
+      name: 'email',
+      type: 'input-text',
+      label: 'Email',
+    }, {
+      name: 'role',
+      type: 'select',
+      label: 'Role',
+      options: [
+        { label: 'Admin', value: 'admin' },
+        { label: 'Editor', value: 'editor' },
+      ],
+    }, {
+      name: 'active',
+      type: 'checkbox',
+      label: 'Active',
+    }],
+    actions: {
+      buttons: [{
+        id: 'edit',
+        variant: 'pr',
+        label: 'Edit',
+      }],
+    }
+  }
+
+  document.getElementById('container').appendChild(form);
+</script>

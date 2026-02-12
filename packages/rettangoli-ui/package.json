@@ -27,6 +27,8 @@
   },
   "license": "MIT",
   "scripts": {
+    "test": "vitest run --reporter=verbose",
+    "test:puty": "vitest run puty.spec.js --reporter=verbose",
     "check:contracts": "rtgl fe check",
     "copy:css": "node copy-css.js",
     "build:dev": "rtgl fe build -d && bun run esbuild-dev.js && npm run copy:css",
@@ -44,7 +46,9 @@
     "looks-same": "^9.0.1",
     "pixelmatch": "^6.0.0",
     "playwright": "1.57.0",
-    "pngjs": "^7.0.0"
+    "pngjs": "^7.0.0",
+    "puty": "^0.1.1",
+    "vitest": "^4.0.15"
   },
   "keywords": [
     "ui",

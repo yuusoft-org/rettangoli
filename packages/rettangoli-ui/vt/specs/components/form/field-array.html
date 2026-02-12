@@ -19,22 +19,22 @@ title: "Field Array"
     description: 'Using lodash-style array notation for fields',
     fields: [{
       name: 'items[0]',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Item 1',
       placeholder: 'Enter item name'
     }, {
       name: 'items[1]',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Item 2',
       placeholder: 'Enter item name'
     }, {
       name: 'items[2]',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Item 3',
       placeholder: 'Enter item name'
     }, {
       name: 'items[3]',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Item 4',
       placeholder: 'Enter item name'
     }],
@@ -42,13 +42,13 @@ title: "Field Array"
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Submit Form',
+        label: 'Submit Form',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {

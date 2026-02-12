@@ -20,7 +20,7 @@ title: "Context"
     description: 'Form Description',
     fields: [{
       name: 'contentType',
-      inputType: 'select',
+      type: 'select',
       label: 'Text content',
       options: [
         { label: 'Dialogue Content', value: 'dialogue.content' },
@@ -31,23 +31,22 @@ title: "Context"
     }, {
       '$if contentType == "custom"': {
         name: 'content',
-        inputType: 'input-text',
+        type: 'input-text',
         label: 'Text Content',
         required: true,
       }
     }],
     actions: {
-      layout: '', // vertical, fill, right, left
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Submit',
+        label: 'Submit',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {

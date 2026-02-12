@@ -1,0 +1,72 @@
+---
+title: "Validate on Action"
+description: Clicking a validate button on empty required fields shows error state.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
+
+  form.defaultValues = {}
+
+  form.form = {
+    title: 'Validation Test',
+    description: 'Required fields left empty',
+    fields: [{
+      name: 'name',
+      type: 'input-text',
+      label: 'Name',
+      required: true,
+    }, {
+      name: 'email',
+      type: 'input-text',
+      label: 'Email',
+      required: { message: 'Email is required' },
+      rules: [{
+        rule: 'pattern',
+        value: 'email',
+        message: 'Must be a valid email',
+      }],
+    }, {
+      name: 'age',
+      type: 'input-number',
+      label: 'Age',
+      required: true,
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Submit',
+        validate: true,
+      }],
+    }
+  }
+
+  // Add a testId to the button for step-based interaction
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+
+  // Wait for form to render, then set testId on the button
+  requestAnimationFrame(() => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    if (btn) {
+      btn.setAttribute('data-testid', 'submit-btn');
+    }
+  });
+</script>
