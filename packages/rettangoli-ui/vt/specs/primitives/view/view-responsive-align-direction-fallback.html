@@ -1,0 +1,14 @@
+---
+title: View - Responsive - Alignment Uses Base Direction
+description: Verifies breakpoint-prefixed alignment (`sm-ah`, `sm-av`) uses base `d` when `sm-d` is not provided.
+specs:
+  - Breakpoint-prefixed alignment should not require breakpoint-prefixed direction.
+  - With base `d="h"`, `sm-ah` controls justify-content and `sm-av` controls align-items.
+---
+<rtgl-view m="md" g="lg">
+  <rtgl-text s="sm">Base d=h, sm-ah/av without sm-d</rtgl-text>
+  <rtgl-view d="h" w="280" h="140" bgc="mu" p="sm" sm-ah="c" sm-av="e">
+    <rtgl-view wh="40" bgc="pr"></rtgl-view>
+    <rtgl-view wh="40" bgc="se"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>

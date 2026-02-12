@@ -119,6 +119,7 @@ class RettangoliViewElement extends HTMLElement {
   updateStyles() {
     // Reset styles for fresh calculation
     this._styles = createResponsiveStyleBuckets();
+    const baseDirection = this.getAttribute("d");
 
     responsiveStyleSizes.forEach((size) => {
       const addSizePrefix = (tag) => {
@@ -172,6 +173,7 @@ class RettangoliViewElement extends HTMLElement {
       const direction = this.getAttribute(addSizePrefix("d"));
       const alignHorizontal = this.getAttribute(addSizePrefix("ah"));
       const alignVertical = this.getAttribute(addSizePrefix("av"));
+      const effectiveDirection = direction ?? baseDirection;
 
 
       if (direction === "h") {
@@ -190,8 +192,8 @@ class RettangoliViewElement extends HTMLElement {
       }
 
       // Handle alignment based on direction
-      const isHorizontal = direction === "h";
-      const isVerticalOrDefault = direction === "v" || !direction;
+      const isHorizontal = effectiveDirection === "h";
+      const isVerticalOrDefault = effectiveDirection === "v" || !effectiveDirection;
 
       // For horizontal direction: ah controls justify-content, av controls align-items
       if (isHorizontal) {
