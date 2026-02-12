@@ -55,24 +55,22 @@ describe('builtinTemplateFunctions unit', () => {
     ).toBe('q=hello+world&page=2&tags=a&tags=b');
   });
 
-  it('compares and sorts by date without semver parsing', () => {
-    expect(builtinTemplateFunctions.compareDate('2026-02-10', '2026-02-09')).toBe(1);
-    expect(builtinTemplateFunctions.compareDate('2026-02-09', '2026-02-10')).toBe(-1);
-    expect(builtinTemplateFunctions.compareDate('not-a-date', '2026-02-10')).toBe(0);
-    expect(builtinTemplateFunctions.isAfterDate('2026-02-10', '2026-02-09')).toBe(true);
-
-    const releases = [
+  it('sorts a list by key and order', () => {
+    const list = [
+      { version: '1.0.0-rc12', publishedAt: '2026-02-10T09:00:00Z' },
       { version: '1.0.0-rc11', publishedAt: '2026-02-08T09:00:00Z' },
       { version: '1.0.0-rc13', publishedAt: '2026-02-11T09:00:00Z' },
-      { version: '1.0.0-rc12', publishedAt: '2026-02-10T09:00:00Z' },
-      { version: 'invalid', publishedAt: 'invalid' },
     ];
 
-    expect(builtinTemplateFunctions.sortByDate(releases, 'publishedAt', 'desc').map((item) => item.version))
-      .toEqual(['1.0.0-rc13', '1.0.0-rc12', '1.0.0-rc11', 'invalid']);
-    expect(builtinTemplateFunctions.sortByDate(releases, 'publishedAt', 'asc').map((item) => item.version))
-      .toEqual(['1.0.0-rc11', '1.0.0-rc12', '1.0.0-rc13', 'invalid']);
-    expect(builtinTemplateFunctions.latestByDate(releases, 'publishedAt')?.version).toBe('1.0.0-rc13');
-    expect(builtinTemplateFunctions.latestByDate([], 'publishedAt')).toBeNull();
+    expect(builtinTemplateFunctions.sort(list, 'publishedAt', 'desc').map((item) => item.version))
+      .toEqual(['1.0.0-rc13', '1.0.0-rc12', '1.0.0-rc11']);
+    expect(builtinTemplateFunctions.sort(list, 'publishedAt', 'asc').map((item) => item.version))
+      .toEqual(['1.0.0-rc11', '1.0.0-rc12', '1.0.0-rc13']);
+  });
+
+  it('renders markdown to raw html payload', () => {
+    expect(builtinTemplateFunctions.md('**hello**')).toEqual({
+      __html: '<p><strong>hello</strong></p>\n',
+    });
   });
 });

@@ -115,15 +115,14 @@ Available in YAML templates/pages without extra setup:
 - `jsonStringify(value, space = 0)`
 - `formatDate(value, format = "YYYYMMDDHHmmss", useUtc = true)`
 - `now(format = "YYYYMMDDHHmmss", useUtc = true)`
-- `compareDate(a, b)`
-- `isAfterDate(a, b)`
-- `sortByDate(items, dateKey = "date", order = "desc")`
-- `latestByDate(items, dateKey = "date")`
+- `sort(list, key, order = "asc")`
+- `md(content)`
 - `toQueryString(object)`
 
 `formatDate` tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`, `ss`.
 `decodeURI`/`decodeURIComponent` return the original input when decoding fails.
-Date comparison helpers are date-based only (no semver parsing).
+`sort` supports `order` as `asc` or `desc` and returns a new array.
+`md` returns raw rendered HTML from Markdown for template insertion.
 
 ## Screenshots
 

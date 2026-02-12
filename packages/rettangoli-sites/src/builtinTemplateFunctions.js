@@ -1,3 +1,7 @@
+import MarkdownIt from 'markdown-it';
+
+const markdownRenderer = new MarkdownIt();
+
 function toDate(value) {
   if (value instanceof Date) {
     return value;
@@ -71,72 +75,46 @@ function safeDecode(value, decoder) {
   }
 }
 
-function toTimestamp(value) {
-  const date = toDate(value);
-  const ms = date.getTime();
-  return Number.isNaN(ms) ? null : ms;
-}
-
-function readDateField(item, dateKey) {
-  if (!item || typeof item !== 'object') {
-    return null;
-  }
-  return toTimestamp(item[dateKey]);
-}
-
-function compareDateImpl(a, b) {
-  const aMs = toTimestamp(a);
-  const bMs = toTimestamp(b);
-  if (aMs === null || bMs === null) {
-    return 0;
-  }
-  if (aMs > bMs) return 1;
-  if (aMs < bMs) return -1;
-  return 0;
-}
-
-function isAfterDateImpl(a, b) {
-  return compareDateImpl(a, b) === 1;
-}
-
-function sortByDateImpl(value, dateKey = 'date', order = 'desc') {
+function sortImpl(value, key, order = 'asc') {
   if (!Array.isArray(value)) {
     return [];
   }
-  const normalizedOrder = String(order ?? 'desc').toLowerCase() === 'asc' ? 'asc' : 'desc';
+  const normalizedOrder = String(order ?? 'asc').toLowerCase() === 'desc' ? 'desc' : 'asc';
   const factor = normalizedOrder === 'asc' ? 1 : -1;
   return [...value].sort((left, right) => {
-    const leftMs = readDateField(left, dateKey);
-    const rightMs = readDateField(right, dateKey);
+    const leftRaw = key == null ? left : left?.[key];
+    const rightRaw = key == null ? right : right?.[key];
 
-    if (leftMs === null && rightMs === null) return 0;
-    if (leftMs === null) return 1;
-    if (rightMs === null) return -1;
-    if (leftMs === rightMs) return 0;
-    return leftMs > rightMs ? factor : -factor;
+    if (leftRaw == null && rightRaw == null) return 0;
+    if (leftRaw == null) return 1;
+    if (rightRaw == null) return -1;
+
+    const leftDate = Date.parse(String(leftRaw));
+    const rightDate = Date.parse(String(rightRaw));
+    const canCompareAsDate = !Number.isNaN(leftDate) && !Number.isNaN(rightDate);
+
+    if (canCompareAsDate) {
+      if (leftDate === rightDate) return 0;
+      return leftDate > rightDate ? factor : -factor;
+    }
+
+    if (typeof leftRaw === 'number' && typeof rightRaw === 'number') {
+      if (leftRaw === rightRaw) return 0;
+      return leftRaw > rightRaw ? factor : -factor;
+    }
+
+    const leftText = String(leftRaw);
+    const rightText = String(rightRaw);
+    const result = leftText.localeCompare(rightText);
+    if (result === 0) return 0;
+    return result > 0 ? factor : -factor;
   });
 }
 
-function latestByDateImpl(value, dateKey = 'date') {
-  if (!Array.isArray(value) || value.length === 0) {
-    return null;
-  }
-
-  let latestItem = null;
-  let latestMs = null;
-
-  for (const item of value) {
-    const itemMs = readDateField(item, dateKey);
-    if (itemMs === null) {
-      continue;
-    }
-    if (latestMs === null || itemMs > latestMs) {
-      latestMs = itemMs;
-      latestItem = item;
-    }
-  }
-
-  return latestItem;
+function mdImpl(content) {
+  return {
+    __html: markdownRenderer.render(String(content ?? '')),
+  };
 }
 
 export const builtinTemplateFunctions = {
@@ -147,10 +125,8 @@ export const builtinTemplateFunctions = {
   jsonStringify,
   formatDate: formatDateImpl,
   now: (format = 'YYYYMMDDHHmmss', useUtc = true) => formatDateImpl(new Date(), format, useUtc),
-  compareDate: compareDateImpl,
-  isAfterDate: isAfterDateImpl,
-  sortByDate: sortByDateImpl,
-  latestByDate: latestByDateImpl,
+  sort: sortImpl,
+  md: mdImpl,
   toQueryString,
 };
 
