@@ -7,6 +7,9 @@ propsSchema:
     hideHeader:
       type: boolean
       default: false
+    hideRightBorder:
+      type: boolean
+      default: false
     w:
       type: string
     selectedItemId:

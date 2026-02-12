@@ -1,0 +1,35 @@
+---
+title: "Width override with w=f"
+---
+<rtgl-view d="h" g="lg" h="100vh" w="f" p="lg">
+  <rtgl-view d="v" g="sm">
+    <rtgl-text s="sm">Default width (mode full)</rtgl-text>
+    <rtgl-view w="360" h="360" bc="bo" bwr="xs" bgc="mu">
+      <rtgl-sidebar id="sidebarDefault" hide-header></rtgl-sidebar>
+    </rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view d="v" g="sm">
+    <rtgl-text s="sm">w=f override</rtgl-text>
+    <rtgl-view w="360" h="360" bc="bo" bwr="xs" bgc="mu">
+      <rtgl-sidebar id="sidebarFill" hide-header w="f"></rtgl-sidebar>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const items = [
+    { id: "home", title: "Home", icon: "home" },
+    { id: "about", title: "About" },
+    { type: "groupLabel", title: "More" },
+    { id: "settings", title: "Settings", icon: "gear" },
+  ];
+
+  const sidebarDefault = document.getElementById('sidebarDefault');
+  sidebarDefault.items = items;
+  sidebarDefault.render();
+
+  const sidebarFill = document.getElementById('sidebarFill');
+  sidebarFill.items = items;
+  sidebarFill.render();
+</script>

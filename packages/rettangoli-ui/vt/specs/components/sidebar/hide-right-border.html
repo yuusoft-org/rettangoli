@@ -1,0 +1,42 @@
+---
+title: "Hide right border"
+---
+<rtgl-view d="h" g="lg" h="100vh" w="f" p="lg">
+  <rtgl-view d="v" g="sm">
+    <rtgl-text s="sm">Default right border</rtgl-text>
+    <rtgl-sidebar id="sidebarWithBorder" h="360"></rtgl-sidebar>
+  </rtgl-view>
+
+  <rtgl-view d="v" g="sm">
+    <rtgl-text s="sm">hide-right-border</rtgl-text>
+    <rtgl-sidebar id="sidebarNoBorder" hide-right-border h="360"></rtgl-sidebar>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const items = [
+    { id: "home", title: "Home", icon: "home" },
+    { id: "about", title: "About" },
+    { id: "settings", title: "Settings", icon: "gear" },
+  ];
+
+  const header = {
+    label: "Sidebar",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Sidebar",
+    },
+  };
+
+  const sidebarWithBorder = document.getElementById('sidebarWithBorder');
+  sidebarWithBorder.header = header;
+  sidebarWithBorder.items = items;
+  sidebarWithBorder.render();
+
+  const sidebarNoBorder = document.getElementById('sidebarNoBorder');
+  sidebarNoBorder.header = header;
+  sidebarNoBorder.items = items;
+  sidebarNoBorder.render();
+</script>

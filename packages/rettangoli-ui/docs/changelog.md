@@ -4,6 +4,7 @@
 
 ### Improvements
 - `rtgl-sidebar`: added `hide-header` to hide the header block.
+- `rtgl-sidebar`: added `hide-right-border` to hide the right divider.
 - `rtgl-sidebar`: added `w` width override so values like `w="f"` are supported.
 
 ### Breaking Changes
