@@ -20,7 +20,7 @@ title: "With Slider Input"
     description: 'Configure your audio and display preferences using slider inputs',
     fields: [{
       name: 'volume',
-      inputType: 'slider-input',
+      type: 'slider-with-input',
       label: 'Volume Level',
       description: 'Control the system volume (0-100)',
       min: 0,
@@ -29,7 +29,7 @@ title: "With Slider Input"
       w: '300'
     }, {
       name: 'brightness',
-      inputType: 'slider-input',
+      type: 'slider-with-input',
       label: 'Screen Brightness',
       description: 'Adjust screen brightness (10-100)',
       min: 10,
@@ -38,7 +38,7 @@ title: "With Slider Input"
       w: '350'
     }, {
       name: 'temperature',
-      inputType: 'slider-input',
+      type: 'slider-with-input',
       label: 'Color Temperature',
       description: 'Set color temperature in Kelvin (2500-6500)',
       min: 2500,
@@ -50,13 +50,13 @@ title: "With Slider Input"
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Apply Settings',
+        label: 'Apply Settings',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
     if (e.detail.actionId === 'reset') {
       // Reset to new default values
       const newDefaults = {
@@ -64,10 +64,10 @@ title: "With Slider Input"
         brightness: 70,
         temperature: 4000
       };
-      
+
       // Recreate the form with new default values
       form.remove();
-      
+
       const newForm = document.createElement('rtgl-form');
       newForm.id = 'form';
       newForm.setAttribute('w', '400');
@@ -77,7 +77,7 @@ title: "With Slider Input"
         description: 'Configure your audio and display preferences using slider inputs',
         fields: [{
           name: 'volume',
-          inputType: 'slider-input',
+          type: 'slider-with-input',
           label: 'Volume Level',
           description: 'Control the system volume (0-100)',
           min: 0,
@@ -86,7 +86,7 @@ title: "With Slider Input"
           w: '300'
         }, {
           name: 'brightness',
-          inputType: 'slider-input',
+          type: 'slider-with-input',
           label: 'Screen Brightness',
           description: 'Adjust screen brightness (10-100)',
           min: 10,
@@ -95,7 +95,7 @@ title: "With Slider Input"
           w: '350'
         }, {
           name: 'temperature',
-          inputType: 'slider-input',
+          type: 'slider-with-input',
           label: 'Color Temperature',
           description: 'Set color temperature in Kelvin (2500-6500)',
           min: 2500,
@@ -107,13 +107,13 @@ title: "With Slider Input"
           buttons: [{
             id: 'submit',
             variant: 'pr',
-            content: 'Apply Settings',
+            label: 'Apply Settings',
           }],
         }
       };
-      
+
       // Add event listeners to the new form
-      newForm.addEventListener('action-click', arguments.callee);
+      newForm.addEventListener('form-action', arguments.callee);
       newForm.addEventListener('form-change', (e) => {
         console.log('form-change', e.detail);
         const statusDiv = document.getElementById('status');
@@ -121,11 +121,11 @@ title: "With Slider Input"
           statusDiv.textContent = `${e.detail.name}: ${e.detail.fieldValue}`;
         }
       });
-      
+
       // Insert the new form
       const container = document.getElementById('container');
       container.insertBefore(newForm, container.lastElementChild);
-      
+
       // Update status
       const statusDiv = document.getElementById('status');
       if (statusDiv) {

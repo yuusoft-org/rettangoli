@@ -1,0 +1,62 @@
+---
+title: "Disabled Fields"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+
+  form.defaultValues = {
+    name: 'John Doe',
+    role: 'editor',
+    bio: 'Hello world',
+    agree: true,
+  }
+
+  form.form = {
+    title: 'Disabled Fields',
+    description: 'Individual fields disabled',
+    fields: [{
+      name: 'name',
+      type: 'input-text',
+      label: 'Name',
+      disabled: true,
+    }, {
+      name: 'email',
+      type: 'input-text',
+      label: 'Email (enabled)',
+      placeholder: 'user@example.com',
+    }, {
+      name: 'role',
+      type: 'select',
+      label: 'Role',
+      disabled: true,
+      options: [
+        { label: 'Admin', value: 'admin' },
+        { label: 'Editor', value: 'editor' },
+      ],
+    }, {
+      name: 'bio',
+      type: 'input-textarea',
+      label: 'Bio',
+      disabled: true,
+      rows: 2,
+    }, {
+      name: 'agree',
+      type: 'checkbox',
+      label: 'Agree to terms',
+      disabled: true,
+    }],
+    actions: {
+      buttons: [{
+        id: 'save',
+        label: 'Save',
+        variant: 'pr',
+      }],
+    }
+  }
+
+  document.getElementById('container').appendChild(form);
+</script>

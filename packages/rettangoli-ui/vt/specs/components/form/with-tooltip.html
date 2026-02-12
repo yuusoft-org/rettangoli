@@ -19,7 +19,7 @@ title: "With Tooltips"
     description: 'Hover over the info icons to see tooltips',
     fields: [{
       name: 'username',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Username',
       description: 'Enter your username',
       placeholder: 'Enter username',
@@ -28,7 +28,7 @@ title: "With Tooltips"
       }
     }, {
       name: 'role',
-      inputType: 'select',
+      type: 'select',
       label: 'Role',
       description: 'Select your role',
       placeholder: 'Choose a role',
@@ -42,7 +42,7 @@ title: "With Tooltips"
       }
     }, {
       name: 'theme',
-      inputType: 'color-picker',
+      type: 'color-picker',
       label: 'Theme Color',
       description: 'Choose theme color',
       tooltip: {
@@ -50,7 +50,7 @@ title: "With Tooltips"
       }
     }, {
       name: 'volume',
-      inputType: 'slider',
+      type: 'slider',
       label: 'Volume',
       description: 'Adjust volume',
       min: 0,
@@ -61,7 +61,7 @@ title: "With Tooltips"
       }
     }, {
       name: 'brightness',
-      inputType: 'slider-input',
+      type: 'slider-with-input',
       label: 'Brightness',
       description: 'Set brightness',
       min: 0,
@@ -72,7 +72,7 @@ title: "With Tooltips"
       }
     }, {
       name: 'profile_picture',
-      inputType: 'image',
+      type: 'image',
       label: 'Profile Picture',
       description: 'Upload profile picture',
       width: 100,
@@ -81,33 +81,22 @@ title: "With Tooltips"
       tooltip: {
         content: 'Upload your profile picture (JPG/PNG)'
       }
-    }, {
-      name: 'audio_signature',
-      inputType: 'waveform',
-      label: 'Audio Signature',
-      description: 'Audio waveform',
-      width: 200,
-      height: 60,
-      placeholder: 'No waveform',
-      tooltip: {
-        content: 'Your audio signature waveform'
-      }
     }],
     actions: {
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Submit',
+        label: 'Submit',
       }, {
         id: 'cancel',
         variant: 'se',
-        content: 'Cancel',
+        label: 'Cancel',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {

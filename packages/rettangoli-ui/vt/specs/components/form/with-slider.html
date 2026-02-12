@@ -16,7 +16,7 @@ title: "With Slider"
     description: 'Adjust your preferences',
     fields: [{
       name: 'volume',
-      inputType: 'slider',
+      type: 'slider',
       label: 'Volume',
       description: 'Adjust the volume level',
       min: 0,
@@ -24,7 +24,7 @@ title: "With Slider"
       step: 1,
     }, {
       name: 'brightness',
-      inputType: 'slider',
+      type: 'slider',
       label: 'Brightness',
       description: 'Set screen brightness',
       min: 10,
@@ -32,7 +32,7 @@ title: "With Slider"
       step: 5,
     }, {
       name: 'temperature',
-      inputType: 'slider',
+      type: 'slider',
       label: 'Temperature',
       description: 'Room temperature in Celsius',
       min: 16,
@@ -43,13 +43,13 @@ title: "With Slider"
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Save Settings',
+        label: 'Save Settings',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {

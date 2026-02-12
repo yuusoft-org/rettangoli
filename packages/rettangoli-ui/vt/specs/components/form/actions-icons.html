@@ -1,0 +1,49 @@
+---
+title: "Actions - With Icons"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+
+  form.defaultValues = {}
+
+  form.form = {
+    title: 'Button Icons',
+    description: 'Buttons with prefix and suffix icons',
+    fields: [{
+      name: 'name',
+      type: 'input-text',
+      label: 'Name',
+    }],
+    actions: {
+      layout: 'vertical',
+      buttons: [{
+        id: 'save',
+        label: 'Save',
+        variant: 'pr',
+        pre: 'check',
+      }, {
+        id: 'add',
+        label: 'Add Item',
+        variant: 'se',
+        pre: 'plus',
+      }, {
+        id: 'next',
+        label: 'Next',
+        variant: 'ol',
+        suf: 'chevronRight',
+      }, {
+        id: 'loading',
+        label: 'Processing',
+        variant: 'pr',
+        pre: 'loading',
+        disabled: true,
+      }],
+    }
+  }
+
+  document.getElementById('container').appendChild(form);
+</script>

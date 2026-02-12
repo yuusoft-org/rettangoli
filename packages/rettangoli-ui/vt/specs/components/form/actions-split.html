@@ -1,5 +1,5 @@
 ---
-title: "Empty title and description"
+title: "Actions - Split Layout"
 ---
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
@@ -7,31 +7,39 @@ title: "Empty title and description"
 <script>
   const form = document.createElement('rtgl-form');
   form.id = 'form';
-  form.setAttribute('w', '300');
+  form.setAttribute('w', '400');
 
   form.defaultValues = {}
 
   form.form = {
+    title: 'Split Layout',
+    description: 'Buttons split left and right',
     fields: [{
-      name: 'email',
+      name: 'name',
       type: 'input-text',
-      required: true,
+      label: 'Name',
     }],
     actions: {
       buttons: [{
-        id: 'submit',
+        id: 'delete',
+        variant: 'de',
+        label: 'Delete',
+        align: 'left',
+      }, {
+        id: 'cancel',
+        variant: 'gh',
+        label: 'Cancel',
+      }, {
+        id: 'save',
         variant: 'pr',
-        label: 'Submit',
+        label: 'Save',
+        validate: true,
       }],
     }
   }
 
   form.addEventListener('form-action', (e) => {
     console.log('form-action', e.detail);
-  });
-
-  form.addEventListener('form-change', (e) => {
-    console.log('form-change', e.detail);
   });
 
   document.getElementById('container').appendChild(form);

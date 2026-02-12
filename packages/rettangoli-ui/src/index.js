@@ -10,6 +10,7 @@ import RettangoliDialog from './primitives/dialog.js';
 import RettangoliPopover from './primitives/popover.js';
 import RettangoliColorPicker from './primitives/colorPicker.js';
 import RettangoliSlider from './primitives/slider.js';
+import RettangoliCheckbox from './primitives/checkbox.js';
 import createGlobalUI from './deps/createGlobalUI.js';
 
 export {
@@ -25,5 +26,6 @@ export {
     RettangoliPopover,
     RettangoliColorPicker,
     RettangoliSlider,
+    RettangoliCheckbox,
     createGlobalUI,
 }

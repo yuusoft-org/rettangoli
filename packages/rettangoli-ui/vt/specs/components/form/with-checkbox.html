@@ -1,5 +1,5 @@
 ---
-title: "Mode Popover"
+title: "With Checkbox"
 ---
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
@@ -10,38 +10,34 @@ title: "Mode Popover"
   form.setAttribute('w', '300');
 
   form.defaultValues = {
-    email: 'Hello'
+    newsletter: true,
+    terms: false,
   }
 
-  form.mode = 'popover'
-
   form.form = {
-    title: 'Form Title',
-    description: 'Form Description',
+    title: 'Checkbox Fields',
+    description: 'Form with checkbox inputs',
     fields: [{
-      name: 'email',
-      type: 'popover-input',
-      label: 'Email',
-      description: 'Enter your email',
+      name: 'newsletter',
+      type: 'checkbox',
+      label: 'Subscribe to newsletter',
+      description: 'Receive weekly updates',
+    }, {
+      name: 'terms',
+      type: 'checkbox',
+      label: 'Accept terms and conditions',
       required: true,
     }, {
-      name: 'password',
-      type: 'popover-input',
-      label: 'Password',
-      description: 'Enter your password',
-      required: true,
-    }, {
-      name: 'age',
-      type: 'popover-input',
-      label: 'Age',
-      description: 'Enter your age',
-      required: true,
+      name: 'notifications',
+      type: 'checkbox',
+      label: 'Enable notifications',
     }],
     actions: {
       buttons: [{
-        id: 'submit',
+        id: 'save',
         variant: 'pr',
-        label: 'Submit',
+        label: 'Save',
+        validate: true,
       }],
     }
   }

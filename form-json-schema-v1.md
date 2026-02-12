@@ -29,24 +29,22 @@ actions:
     - id: save
       label: Save
       variant: pr
+      validate: true
 ```
 
-The form schema defines structure. Initial values for editing are passed separately via a `defaultValues` prop on the form component:
+## Component Props
 
 ```html
-<rtgl-form .form=${schema} .defaultValues=${{ name: "John", email: "john@co.com" }}></rtgl-form>
+<rtgl-form .form=${schema} .defaultValues=${values} ?disabled=${true}></rtgl-form>
 ```
 
-`defaultValues` is the initial form state. It is read on mount and on reset. It is not reactive — changing it after mount has no effect.
+| prop | type | description |
+|---|---|---|
+| `form` | object | The form schema (this spec). |
+| `defaultValues` | object | Initial form state. Read on mount and on reset. Not reactive — changing it after mount has no effect. |
+| `disabled` | boolean | Disable the entire form. All fields and buttons become non-interactive. |
 
-To update field values dynamically, use the `setValues()` method:
-
-```js
-// shallow merge into current form state — only the keys you pass get updated
-formEl.setValues({ avatar: "https://cdn.example.com/photo.jpg" });
-```
-
-This keeps the schema reusable — the same form definition works for both "create" and "edit" flows.
+`defaultValues` keeps the schema reusable — the same form definition works for both "create" and "edit" flows.
 
 ## Common Field Properties
 
@@ -64,7 +62,7 @@ Data types additionally have:
 | property | required | description |
 |---|---|---|
 | `name` | yes | Output key path (supports `user.email`, `items[0]`) |
-| `required` | no | Boolean. |
+| `required` | no | `true` or `{ message: "custom message" }`. |
 | `disabled` | no | Boolean. |
 
 Display types (`section`, `read-only-text`, `slot`) have no `name` and produce no values. They are never included in event payloads.
@@ -80,6 +78,7 @@ Value: `string` (`""` when empty)
 | property | description |
 |---|---|
 | `placeholder` | Placeholder text |
+| `inputType` | `text` (default) or `password`. |
 | `rules` | Validation rules (`minLength`, `maxLength`, `pattern`) |
 
 ```yaml
@@ -90,6 +89,12 @@ Value: `string` (`""` when empty)
   rules:
     - rule: pattern
       value: email
+
+- name: password
+  type: input-text
+  label: Password
+  inputType: password
+  required: true
 ```
 
 #### `input-number`
@@ -228,12 +233,17 @@ The form cannot produce the image value by itself — the consumer provides it v
 
 Value: `string`
 
-No additional properties.
+A text field that opens a popover panel for editing. Useful when the input needs more space or context than an inline field provides (e.g. code snippets, rich text, long-form values).
+
+| property | description |
+|---|---|
+| `placeholder` | Placeholder text |
 
 ```yaml
 - name: customValue
   type: popover-input
   label: Custom Value
+  placeholder: Click to edit
 ```
 
 #### `checkbox`
@@ -354,7 +364,6 @@ Built-in presets:
 |---|---|
 | `email` | Valid email address |
 | `url` | Valid URL |
-| `date` | ISO date (YYYY-MM-DD) |
 
 ## Actions
 
@@ -373,6 +382,7 @@ actions:
     - id: save
       label: Save
       variant: pr
+      validate: true
 ```
 
 ### `actions` properties
@@ -393,14 +403,17 @@ actions:
 | property | required | description |
 |---|---|---|
 | `id` | yes | Unique identifier, sent in event payloads |
-| `label` | yes | Button text (omit for icon-only with `icon`) |
+| `label` | yes | Button text |
 | `variant` | no | `pr` (primary), `se` (secondary), `de` (destructive), `ol` (outline), `gh` (ghost), `lk` (link). Default: `se`. |
 | `align` | no | `left` or `right`. Only used with `split` layout. Default: `right`. |
 | `disabled` | no | Boolean. |
+| `validate` | no | Boolean. Run validation on click. If invalid, errors display inline. Event includes `valid` and `errors`. Default: `false`. |
 | `pre` | no | Leading icon name (e.g. `loading`, `plus`, `check`). |
 | `suf` | no | Trailing icon name (e.g. `chevronDown`). |
 
-All buttons emit `form-action` with `{ actionId, values, valid, errors }`. The consumer handles behavior based on `actionId`.
+All buttons emit `form-action`. Buttons without `validate` emit `{ actionId, values }`. Buttons with `validate: true` emit `{ actionId, values, valid, errors }` and display errors inline.
+
+After the first validation failure, the form switches to reactive mode — it re-validates on every `form-change` and clears errors as the user fixes them.
 
 ## Conditional Fields (via jempl)
 
@@ -465,7 +478,7 @@ fields:
 
 ### Hidden field values
 
-When a conditional removes a field from the rendered form, that field's value **must not** be included in `form-submit`, `form-change`, or `form-input` event payloads. The implementation must collect `values` only from fields currently present in the DOM.
+When a conditional removes a field from the rendered form, that field's value **must not** be included in `form-action`, `form-change`, or `form-input` event payloads. The implementation must collect `values` only from fields currently present in the DOM.
 
 This handles the case where a user types into a field, then a conditional hides it — the stale value is excluded from all subsequent events and submission.
 
@@ -530,6 +543,7 @@ actions:
     - id: save
       label: Save
       variant: pr
+      validate: true
 ```
 
 ## Events
@@ -537,18 +551,38 @@ actions:
 1. `form-input`: `{ name, value, values }`
 2. `form-change`: `{ name, value, values }`
 3. `form-field-event`: `{ name, event, values }`
-4. `form-action`: `{ actionId, values, valid, errors }`
+4. `form-action`: `{ actionId, values }`
 
 All events bubble.
 
+### Validation
+
+Buttons with `validate: true` run validation automatically on click. The `form-action` event includes `{ actionId, values, valid, errors }` and errors display inline. Buttons without `validate` skip validation and emit `{ actionId, values }`.
+
+After the first validation failure, the form switches to reactive mode — it re-validates on every `form-change` and clears errors as the user fixes them.
+
+```js
+form.addEventListener('form-action', (e) => {
+  const { actionId, values, valid, errors } = e.detail;
+  if (actionId === 'save' && valid) {
+    save(values);
+  }
+  if (actionId === 'cancel') {
+    navigateAway();
+  }
+});
+```
+
+Validation checks `required` fields and `rules`. The consumer can also call `validate()` manually at any time.
+
 ### `errors` shape
 
-`errors` is an object keyed by field name. Each value is the error message string from the first failing rule. Only invalid fields are included.
+`errors` is an object keyed by field name. Each value is the error message string from the first failing rule. Only invalid fields are included. `required` fields that are empty use the custom message if provided (`required: { message: "..." }`), otherwise a default (e.g. "This field is required").
 
 ```js
 {
   email: "Must be a valid email",
-  name: "Minimum 1 character"
+  name: "This field is required"
 }
 ```
 
@@ -567,10 +601,12 @@ All events bubble.
 | `slider` | every drag tick | mouse release |
 | `slider-with-input` | every drag tick / keystroke | mouse release / blur |
 | `color-picker` | while picking | picker closed |
+| `popover-input` | every keystroke (in popover) | popover closed |
 | `select` | does not fire | option selected |
 | `checkbox` | does not fire | toggled |
+| `image` | does not fire | does not fire (uses `form-field-event`) |
 
-Discrete inputs (`select`, `checkbox`) only emit `form-change`. They have no in-progress state, so `form-input` never fires for them.
+Discrete inputs (`select`, `checkbox`) only emit `form-change`. `image` does not emit `form-input` or `form-change` — it uses `form-field-event` for click interactions.
 
 ### `form-field-event`
 
@@ -598,10 +634,114 @@ Other field types do not emit this event. New interaction types can be added per
 
 ## Methods
 
-| method | description |
-|---|---|
-| `setValues(values)` | Shallow merge `values` into current form state. Only the keys passed get updated. |
-| `reset()` | Reset all fields to `defaultValues`. |
+| method | returns | description |
+|---|---|---|
+| `getValues()` | `{ [name]: value }` | Returns the current form values. |
+| `setValues(values)` | — | Shallow merge `values` into current form state. Only the keys passed get updated. |
+| `validate()` | `{ valid, errors }` | Runs validation on all fields. Returns result and displays errors inline. |
+| `reset()` | — | Reset all fields to `defaultValues`. Clears validation errors. |
+
+## Test Plan
+
+Testing uses two systems: **puty** (YAML-driven unit tests via vitest) for logic, and **VT** (visual testing via Playwright screenshots) for rendering.
+
+### Unit Tests (puty)
+
+Contract tests in `spec/` directory with YAML cases and JS helper functions. Each case passes input to a helper and asserts output.
+
+#### Validation logic
+
+- `required: true` on empty field → error with default message
+- `required: { message: "custom" }` on empty field → error with custom message
+- `required` on non-empty field → no error
+- `minLength` rule → error when below, pass when at/above
+- `maxLength` rule → error when above, pass when at/below
+- `pattern` with preset `email` → valid/invalid emails
+- `pattern` with preset `url` → valid/invalid URLs
+- `pattern` with raw regex → matches/mismatches
+- Multiple rules on one field → first failing rule produces error
+- Validation on fields inside `section` → errors keyed by field name
+- `valid` is `true` when `errors` is empty
+
+#### Value collection
+
+- `getValues()` returns current form state
+- `setValues()` shallow merges into current state
+- `setValues()` does not overwrite keys not passed
+- `reset()` returns values to `defaultValues`
+- `reset()` clears validation errors
+- Empty `input-text` → `""`
+- Empty `input-number` → `null`
+- Empty `select` → `null`
+- `checkbox` → `boolean`
+- `color-picker` → hex string
+- `slider` / `slider-with-input` → `number`
+
+#### Event payloads
+
+- `form-input` carries `{ name, value, values }`
+- `form-change` carries `{ name, value, values }`
+- `form-action` without `validate` carries `{ actionId, values }`
+- `form-action` with `validate: true` carries `{ actionId, values, valid, errors }`
+- `form-field-event` carries `{ name, event, values }`
+- Discrete inputs (`select`, `checkbox`) do not fire `form-input`
+- `image` does not fire `form-input` or `form-change`
+
+#### Conditional fields (hidden values)
+
+- Field removed by `$when` → value excluded from `getValues()`
+- Field removed by `$when` → value excluded from `form-action` payload
+- Field re-shown → value is empty (stale value not restored)
+
+### Visual Tests (VT)
+
+VT specs in `vt/specs/components/form/` as HTML files with optional step-based interactions.
+
+#### Rendering — static screenshots
+
+- `basic.html` — form with title, description, text inputs, and actions
+- `with-password.html` — `inputType: password` masks input
+- `with-select.html` — select with options and placeholder
+- `with-checkbox.html` — checkbox field checked and unchecked
+- `with-color-picker.html` — color picker with default value
+- `with-slider.html` — slider with min/max/step
+- `with-slider-with-input.html` — slider paired with number input
+- `with-image.html` — image with placeholder text, image with URL
+- `with-popover-input.html` — popover input field
+- `with-section.html` — section grouping with label and nested fields
+- `with-read-only-text.html` — read-only text display
+- `with-slot.html` — slotted custom content
+- `with-tooltip.html` — tooltip info icon on hover
+- `with-description.html` — field descriptions below labels
+- `mixed-inputs.html` — all field types together
+- `mixed-inputs-with-defaults.html` — all types with defaultValues
+
+#### Rendering — actions layout
+
+- `actions-split.html` — split layout with left/right buttons
+- `actions-vertical.html` — vertical stacked buttons
+- `actions-stretch.html` — equal-width stretched buttons
+- `actions-variants.html` — all button variants (`pr`, `se`, `de`, `ol`, `gh`, `lk`)
+- `actions-icons.html` — buttons with `pre` and `suf` icons
+
+#### Rendering — states
+
+- `disabled-form.html` — form-level `disabled` prop
+- `disabled-fields.html` — individual field `disabled`
+- `required-fields.html` — required fields with indicators
+
+#### Interaction — step-based tests
+
+- `input-text-type.html` — type text, verify `form-input` and `form-change` events via `assert type: js`
+- `select-option.html` — select an option, verify `form-change` fires, `form-input` does not
+- `checkbox-toggle.html` — toggle checkbox, verify `form-change` fires
+- `slider-drag.html` — drag slider, verify `form-input` during drag, `form-change` on release
+- `action-click.html` — click action button, verify `form-action` event payload
+- `validate-on-action.html` — click button with `validate: true` on empty required fields, screenshot error state
+- `validate-reactive.html` — after first validation failure, type into field, verify error clears
+- `image-click.html` — click image area, verify `form-field-event` with `event: "click"`
+- `reset.html` — fill form, click reset, verify values return to defaults
+- `set-values.html` — call `setValues()`, verify form updates
 
 ## Notes
 

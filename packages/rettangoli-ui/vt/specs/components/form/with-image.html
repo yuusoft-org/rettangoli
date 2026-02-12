@@ -11,7 +11,9 @@ title: "With Image"
 
   form.defaultValues = {
     username: 'john_doe',
-    email: 'john@example.com'
+    email: 'john@example.com',
+    profilePicture: '/public/sample1.jpg',
+    coverImage: '/public/sample1.jpg'
   }
 
   form.form = {
@@ -19,23 +21,21 @@ title: "With Image"
     description: 'Update your profile information',
     fields: [{
       name: 'profilePicture',
-      inputType: 'image',
+      type: 'image',
       label: 'Profile Picture',
       description: 'Click to change your profile picture',
       width: 120,
       height: 120,
-      src: '/public/sample1.jpg'
     }, {
       name: 'coverImage',
-      inputType: 'image',
+      type: 'image',
       label: 'Cover Image',
       description: 'Click to update your cover image',
       width: 150,
       height: 90,
-      src: '/public/sample1.jpg'
     }, {
       name: 'placeholderImage',
-      inputType: 'image',
+      type: 'image',
       label: 'Placeholder Image',
       description: 'This shows placeholder when no image is available',
       width: 120,
@@ -46,35 +46,31 @@ title: "With Image"
       buttons: [{
         id: 'save',
         variant: 'pr',
-        content: 'Save Profile',
+        label: 'Save Profile',
       }, {
         id: 'cancel',
         variant: 'se',
-        content: 'Cancel',
+        label: 'Cancel',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
 
     // Update image data when save is clicked
     if (e.detail.actionId === 'save') {
-      // Find the image fields and toggle between sample1 and sample2
-      const profileField = form.form.fields.find(f => f.name === 'profilePicture');
-      const coverField = form.form.fields.find(f => f.name === 'coverImage');
-      
-      if (profileField) {
-        const currentSrc = profileField.src;
-        const newSrc = currentSrc.includes('sample2') ? '/public/sample1.jpg' : '/public/sample2.jpg';
-        profileField.src = newSrc;
-      }
-      
-      if (coverField) {
-        const currentSrc = coverField.src;
-        const newSrc = currentSrc.includes('sample2') ? '/public/sample1.jpg' : '/public/sample2.jpg';
-        coverField.src = newSrc;
-      }
+      const currentProfileSrc = form.defaultValues.profilePicture;
+      const newProfileSrc = currentProfileSrc.includes('sample2') ? '/public/sample1.jpg' : '/public/sample2.jpg';
+
+      const currentCoverSrc = form.defaultValues.coverImage;
+      const newCoverSrc = currentCoverSrc.includes('sample2') ? '/public/sample1.jpg' : '/public/sample2.jpg';
+
+      form.defaultValues = {
+        ...form.defaultValues,
+        profilePicture: newProfileSrc,
+        coverImage: newCoverSrc,
+      };
 
       form.render();
 

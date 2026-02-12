@@ -1,0 +1,52 @@
+---
+title: "Actions - All Variants"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+
+  form.defaultValues = {}
+
+  form.form = {
+    title: 'Button Variants',
+    description: 'All six button variants',
+    fields: [{
+      name: 'note',
+      type: 'input-text',
+      label: 'Note',
+    }],
+    actions: {
+      layout: 'vertical',
+      buttons: [{
+        id: 'primary',
+        label: 'Primary (pr)',
+        variant: 'pr',
+      }, {
+        id: 'secondary',
+        label: 'Secondary (se)',
+        variant: 'se',
+      }, {
+        id: 'destructive',
+        label: 'Destructive (de)',
+        variant: 'de',
+      }, {
+        id: 'outline',
+        label: 'Outline (ol)',
+        variant: 'ol',
+      }, {
+        id: 'ghost',
+        label: 'Ghost (gh)',
+        variant: 'gh',
+      }, {
+        id: 'link',
+        label: 'Link (lk)',
+        variant: 'lk',
+      }],
+    }
+  }
+
+  document.getElementById('container').appendChild(form);
+</script>

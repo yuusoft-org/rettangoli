@@ -1,0 +1,81 @@
+---
+title: "With Section"
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {}
+
+  form.form = {
+    title: 'User Registration',
+    description: 'Fill out all sections',
+    fields: [{
+      type: 'section',
+      label: 'Personal Information',
+      description: 'Basic details about you',
+      fields: [{
+        name: 'firstName',
+        type: 'input-text',
+        label: 'First Name',
+        required: true,
+      }, {
+        name: 'lastName',
+        type: 'input-text',
+        label: 'Last Name',
+        required: true,
+      }, {
+        name: 'email',
+        type: 'input-text',
+        label: 'Email',
+        placeholder: 'user@example.com',
+        rules: [{
+          rule: 'pattern',
+          value: 'email',
+          message: 'Must be a valid email',
+        }],
+      }],
+    }, {
+      type: 'section',
+      label: 'Preferences',
+      description: 'Customize your experience',
+      fields: [{
+        name: 'role',
+        type: 'select',
+        label: 'Role',
+        options: [
+          { label: 'Developer', value: 'developer' },
+          { label: 'Designer', value: 'designer' },
+          { label: 'Manager', value: 'manager' },
+        ],
+      }, {
+        name: 'theme',
+        type: 'color-picker',
+        label: 'Theme Color',
+      }],
+    }],
+    actions: {
+      buttons: [{
+        id: 'cancel',
+        variant: 'gh',
+        label: 'Cancel',
+        align: 'left',
+      }, {
+        id: 'save',
+        variant: 'pr',
+        label: 'Save',
+        validate: true,
+      }],
+    }
+  }
+
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>
