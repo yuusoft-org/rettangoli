@@ -71,6 +71,74 @@ function safeDecode(value, decoder) {
   }
 }
 
+function toTimestamp(value) {
+  const date = toDate(value);
+  const ms = date.getTime();
+  return Number.isNaN(ms) ? null : ms;
+}
+
+function readDateField(item, dateKey) {
+  if (!item || typeof item !== 'object') {
+    return null;
+  }
+  return toTimestamp(item[dateKey]);
+}
+
+function compareDateImpl(a, b) {
+  const aMs = toTimestamp(a);
+  const bMs = toTimestamp(b);
+  if (aMs === null || bMs === null) {
+    return 0;
+  }
+  if (aMs > bMs) return 1;
+  if (aMs < bMs) return -1;
+  return 0;
+}
+
+function isAfterDateImpl(a, b) {
+  return compareDateImpl(a, b) === 1;
+}
+
+function sortByDateImpl(value, dateKey = 'date', order = 'desc') {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const normalizedOrder = String(order ?? 'desc').toLowerCase() === 'asc' ? 'asc' : 'desc';
+  const factor = normalizedOrder === 'asc' ? 1 : -1;
+  return [...value].sort((left, right) => {
+    const leftMs = readDateField(left, dateKey);
+    const rightMs = readDateField(right, dateKey);
+
+    if (leftMs === null && rightMs === null) return 0;
+    if (leftMs === null) return 1;
+    if (rightMs === null) return -1;
+    if (leftMs === rightMs) return 0;
+    return leftMs > rightMs ? factor : -factor;
+  });
+}
+
+function latestByDateImpl(value, dateKey = 'date') {
+  if (!Array.isArray(value) || value.length === 0) {
+    return null;
+  }
+
+  let latestItem = null;
+  let latestMs = null;
+
+  for (const item of value) {
+    const itemMs = readDateField(item, dateKey);
+    if (itemMs === null) {
+      continue;
+    }
+    if (latestMs === null || itemMs > latestMs) {
+      latestMs = itemMs;
+      latestItem = item;
+    }
+  }
+
+  return latestItem;
+}
+
 export const builtinTemplateFunctions = {
   encodeURI: (value) => encodeURI(String(value ?? '')),
   encodeURIComponent: (value) => encodeURIComponent(String(value ?? '')),
@@ -79,6 +147,10 @@ export const builtinTemplateFunctions = {
   jsonStringify,
   formatDate: formatDateImpl,
   now: (format = 'YYYYMMDDHHmmss', useUtc = true) => formatDateImpl(new Date(), format, useUtc),
+  compareDate: compareDateImpl,
+  isAfterDate: isAfterDateImpl,
+  sortByDate: sortByDateImpl,
+  latestByDate: latestByDateImpl,
   toQueryString,
 };
 
