@@ -75,15 +75,45 @@ function safeDecode(value, decoder) {
   }
 }
 
+function readSortValue(item, key, keyParts) {
+  if (key == null) {
+    return item;
+  }
+
+  if (item == null) {
+    return undefined;
+  }
+
+  if (!keyParts) {
+    return item?.[key];
+  }
+
+  if (Object.prototype.hasOwnProperty.call(item, key)) {
+    return item[key];
+  }
+
+  let current = item;
+  for (const part of keyParts) {
+    if (!part) {
+      return undefined;
+    }
+    current = current?.[part];
+  }
+  return current;
+}
+
 function sortImpl(value, key, order = 'asc') {
   if (!Array.isArray(value)) {
     return [];
   }
+
   const normalizedOrder = String(order ?? 'asc').toLowerCase() === 'desc' ? 'desc' : 'asc';
   const factor = normalizedOrder === 'asc' ? 1 : -1;
+  const keyParts = typeof key === 'string' && key.includes('.') ? key.split('.') : null;
+
   return [...value].sort((left, right) => {
-    const leftRaw = key == null ? left : left?.[key];
-    const rightRaw = key == null ? right : right?.[key];
+    const leftRaw = readSortValue(left, key, keyParts);
+    const rightRaw = readSortValue(right, key, keyParts);
 
     if (leftRaw == null && rightRaw == null) return 0;
     if (leftRaw == null) return 1;
