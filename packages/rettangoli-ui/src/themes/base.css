@@ -264,8 +264,10 @@ tr:nth-child(even) {
 pre {
   margin: 0 0 var(--spacing-lg);
   white-space: pre;
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: var(--sm-font-size);
+  font-weight: var(--sm-font-weight);
+  line-height: var(--sm-line-height);
+  letter-spacing: var(--sm-letter-spacing);
   padding: var(--spacing-lg);
   flex: 1;
   min-height: fit-content;
@@ -286,7 +288,10 @@ pre {
 
 code:not(pre code) {
   font-family: "Menlo", "Monaco", "Courier New", monospace;
-  font-size: 0.9em;
+  font-size: var(--sm-font-size);
+  font-weight: var(--sm-font-weight);
+  line-height: var(--sm-line-height);
+  letter-spacing: var(--sm-letter-spacing);
   background-color: var(--muted);
   padding: 0.1em 0.35em;
   border-radius: var(--border-radius-sm);

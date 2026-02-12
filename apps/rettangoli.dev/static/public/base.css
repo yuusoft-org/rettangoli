@@ -303,12 +303,6 @@ a:hover {
   text-decoration: var(--anchor-text-decoration-hover, underline);
 }
 
-a rtgl-svg,
-button rtgl-svg,
-[cur="p"] rtgl-svg {
-  cursor: pointer;
-}
-
 body.mobile-nav-open {
   overflow: hidden;
 }
