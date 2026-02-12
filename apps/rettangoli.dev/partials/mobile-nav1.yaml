@@ -1,4 +1,4 @@
-- 'rtgl-view hide md-show pos=fix w=f h=56 bgc=bg av=c ph=lg d=h bwb=xs z=10 style="top:0;left:0"':
+- 'rtgl-view data-mobile-autohide="true" hide md-show pos=fix w=f h=56 bgc=bg av=c ph=lg d=h bwb=xs z=10 style="top:0;left:0"':
     - 'a href="${headerHref}" style="text-decoration:none;display:contents;color:inherit;"':
         - rtgl-text s=md: ${headerLabel}
     - rtgl-view w=1fg:

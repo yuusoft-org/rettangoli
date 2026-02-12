@@ -38,7 +38,7 @@ Use this as your default action button:
 ### Responsive Syntax (At a Glance)
 
 Breakpoint prefixes are supported for `v`, `s`, and margin attributes.
-For full behavior details, see [Responsiveness](/ui/docs/introduction/responsiveness.md).
+For full behavior details, see [Responsiveness](/ui/docs/introduction/responsiveness).
 
 ```html codePreview
 <rtgl-view d="h" g="md">

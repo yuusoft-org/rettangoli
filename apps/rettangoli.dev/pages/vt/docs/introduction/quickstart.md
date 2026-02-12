@@ -154,14 +154,14 @@ vt:
 ```
 
 `vt.service.start` starts/stops the preview command automatically during `npm run screenshot`.
-For full setup details, see [Sites Integration](/vt/docs/reference/sites-integration.md).
+For full setup details, see [Sites Integration](/vt/docs/reference/sites-integration).
 
 ## Next
 
-- [CLI](/vt/docs/reference/cli.md)
-- [Configuration](/vt/docs/reference/configuration.md)
-- [Spec Frontmatter](/vt/docs/reference/frontmatter.md)
-- [Viewport](/vt/docs/reference/viewport.md)
-- [Step Actions](/vt/docs/reference/step-actions.md)
-- [Selectors & Artifacts](/vt/docs/reference/selectors-and-artifacts.md)
-- [Sites Integration](/vt/docs/reference/sites-integration.md)
+- [CLI](/vt/docs/reference/cli)
+- [Configuration](/vt/docs/reference/configuration)
+- [Spec Frontmatter](/vt/docs/reference/frontmatter)
+- [Viewport](/vt/docs/reference/viewport)
+- [Step Actions](/vt/docs/reference/step-actions)
+- [Selectors & Artifacts](/vt/docs/reference/selectors-and-artifacts)
+- [Sites Integration](/vt/docs/reference/sites-integration)
