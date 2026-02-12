@@ -65,7 +65,7 @@ For responsive behavior, see [Responsiveness](/ui/docs/introduction/responsivene
 | `rtgl-accordion-item` | toggled content section | collapsible state, label/content/slot |
 | `rtgl-breadcrumb` | hierarchical navigation | item list, collapse by max items, separator icon, `item-click` |
 | `rtgl-dropdown-menu` | contextual menu overlay | positioned menu, item/label/separator rows, close + item events |
-| `rtgl-form` | schema-driven form workflow | field schema, defaults, actions, `form-change` and `action-click` |
+| `rtgl-form` | schema-driven form workflow | field schema, defaults, actions, `form-input`, `form-change`, `form-action`, `form-field-event` |
 | `rtgl-global-ui` | app-level interaction layer | alert/confirm/dropdown flows with promise-like API |
 | `rtgl-navbar` | top navigation shell | configurable start area, right slot, start click event |
 | `rtgl-page-outline` | document section tracking | target and scroll container linkage, active offset |
