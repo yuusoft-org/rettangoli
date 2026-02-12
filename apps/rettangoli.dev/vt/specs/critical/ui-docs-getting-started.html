@@ -2,6 +2,10 @@
 title: UI Docs Getting Started
 url: /ui/docs/introduction/getting-started/
 steps:
+  - action: waitFor
+    selector: "#content-container"
+    state: visible
+    timeoutMs: 15000
   - action: wait
     ms: 1200
 ---

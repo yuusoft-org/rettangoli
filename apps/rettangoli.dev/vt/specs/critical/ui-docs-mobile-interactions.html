@@ -1,0 +1,72 @@
+---
+title: UI Docs Mobile Interactions
+url: /ui/docs/components/rtgl-sidebar/
+description: Mobile docs interaction states for sidebar and hide-on-scroll navbar.
+viewport:
+  - id: mobile
+    width: 390
+    height: 844
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: "#content-container"
+    state: visible
+    timeoutMs: 15000
+  - action: waitFor
+    selector: "#docs-mobile-navbar-toggle"
+    state: visible
+    timeoutMs: 15000
+  - action: assert
+    type: exists
+    selector: "#docs-mobile-sidebar-nav[w=f]"
+  - action: assert
+    type: exists
+    selector: "#docs-mobile-sidebar-nav[hide-header=true]"
+  - action: assert
+    type: visible
+    selector: "#docs-mobile-navbar"
+  - action: select
+    testId: docs-mobile-navbar-toggle
+    steps:
+      - action: click
+  - action: waitFor
+    selector: "#docs-mobile-sidebar-overlay"
+    state: visible
+    timeoutMs: 3000
+  - action: wait
+    ms: 300
+  - action: screenshot
+  - action: keypress
+    key: Escape
+  - action: waitFor
+    selector: "#docs-mobile-sidebar-overlay"
+    state: hidden
+    timeoutMs: 3000
+  - action: wait
+    ms: 200
+  - action: move
+    x: 195
+    y: 420
+  - action: scroll
+    deltaX: 0
+    deltaY: 1600
+  - action: wait
+    ms: 400
+  - action: assert
+    type: visible
+    selector: ".docs-mobile-navbar.is-hidden"
+  - action: screenshot
+  - action: move
+    x: 195
+    y: 420
+  - action: scroll
+    deltaX: 0
+    deltaY: -1600
+  - action: wait
+    ms: 400
+  - action: assert
+    type: hidden
+    selector: ".docs-mobile-navbar.is-hidden"
+  - action: screenshot
+---
+<main data-testid="ui-docs-mobile-interactions"></main>
