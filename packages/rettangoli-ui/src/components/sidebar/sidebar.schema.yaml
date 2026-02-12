@@ -4,6 +4,13 @@ propsSchema:
   properties:
     mode:
       type: string
+    hideHeader:
+      type: boolean
+      default: false
+    w:
+      type: string
+    bwr:
+      type: string
     selectedItemId:
       type: string
     header:

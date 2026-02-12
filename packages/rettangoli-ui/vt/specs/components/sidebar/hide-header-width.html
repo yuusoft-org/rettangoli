@@ -1,0 +1,28 @@
+---
+title: "Hide header and full width override"
+---
+<rtgl-view d="h" g="lg" h="100vh" w="f" p="lg">
+  <rtgl-view w="360" h="360" bc="bo" bwr="xs">
+    <rtgl-sidebar id="sidebar" hide-header w="f"></rtgl-sidebar>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  sidebar.header = {
+    label: "Hidden Header",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Hidden Header",
+    },
+  };
+  sidebar.items = [
+    { id: "home", title: "Home", icon: "home" },
+    { id: "about", title: "About" },
+    { type: "groupLabel", title: "More" },
+    { id: "settings", title: "Settings", icon: "gear" },
+  ];
+  sidebar.render();
+</script>

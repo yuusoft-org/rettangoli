@@ -1,6 +1,6 @@
 export const createInitialState = () => Object.freeze({});
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode'];
+const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode', 'hideHeader', 'w', 'bwr'];
 
 const stringifyAttrs = (props = {}) => {
   return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
@@ -26,6 +26,27 @@ const parseMaybeEncodedJson = (value) => {
       return undefined;
     }
   }
+};
+
+const parseBooleanProp = (value) => {
+  if (value === true) {
+    return true;
+  }
+  if (value === false || value === undefined || value === null) {
+    return false;
+  }
+  if (typeof value === 'string') {
+    const normalizedValue = value.trim().toLowerCase();
+    return normalizedValue === '' || normalizedValue === 'true';
+  }
+  return false;
+};
+
+const resolveSidebarWidth = (value, mode) => {
+  if (value !== undefined && value !== null && value !== '') {
+    return value;
+  }
+  return mode === 'full' ? 272 : 64;
 };
 
 function flattenItems(items, selectedItemId = null) {
@@ -92,8 +113,10 @@ export const selectViewData = ({ props }) => {
 
   const items = resolvedItems ? flattenItems(resolvedItems, selectedItemId) : [];
 
+  const showHeader = !parseBooleanProp(props.hideHeader);
+  const rightBorderWidth = props.bwr || 'xs';
   // Computed values based on mode
-  const sidebarWidth = mode === 'full' ? 272 : 64;
+  const sidebarWidth = resolveSidebarWidth(props.w, mode);
   const headerAlign = mode === 'full' ? 'fs' : 'c';
   const itemAlign = mode === 'full' ? 'fs' : 'c';
   const headerPadding = mode === 'full' ? 'lg' : 'sm';
@@ -140,6 +163,8 @@ export const selectViewData = ({ props }) => {
     headerWidth,
     selectedItemId,
     ah,
+    showHeader,
+    rightBorderWidth,
   };
 }
 
