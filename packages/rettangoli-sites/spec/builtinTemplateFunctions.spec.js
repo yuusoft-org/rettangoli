@@ -9,6 +9,15 @@ describe('builtin template functions', () => {
 
     vol.fromJSON({
       '/data/site.yaml': 'meta:\n  name: Rettangoli\n  version: 1\n',
+      '/data/releases.yaml': [
+        'items:',
+        '  - version: "1.0.0-rc11"',
+        '    publishedAt: "2026-02-08T09:00:00Z"',
+        '  - version: "1.0.0-rc13"',
+        '    publishedAt: "2026-02-11T09:00:00Z"',
+        '  - version: "1.0.0-rc12"',
+        '    publishedAt: "2026-02-10T09:00:00Z"'
+      ].join('\n'),
       '/templates/base.yaml': '- html:\n    - body:\n        - "${content}"\n',
       '/pages/index.yaml': [
         '---',
@@ -18,7 +27,9 @@ describe('builtin template functions', () => {
         '- p id="json-compact": "${jsonStringify(site.meta)}"',
         '- p id="json-pretty": "${jsonStringify(site.meta, 2)}"',
         '- p id="date-custom": "${formatDate(\'2024-03-15T13:45:09Z\', \'YYYY/MM/DD HH:mm:ss\')}"',
-        '- p id="date-compact": "${formatDate(\'2024-03-15T13:45:09Z\', \'YYYYMMDDHHmmss\')}"'
+        '- p id="date-compact": "${formatDate(\'2024-03-15T13:45:09Z\', \'YYYYMMDDHHmmss\')}"',
+        '- p id="sorted-latest": "${sort(releases.items, \'publishedAt\', \'desc\')[0].version}"',
+        '- div id="md-snippet": "${md(\'**Hello**\')}"'
       ].join('\n'),
     });
 
@@ -35,5 +46,7 @@ describe('builtin template functions', () => {
     expect(html).toContain('&quot;name&quot;: &quot;Rettangoli&quot;');
     expect(html).toContain('2024/03/15 13:45:09');
     expect(html).toContain('20240315134509');
+    expect(html).toContain('<p id="sorted-latest">1.0.0-rc13</p>');
+    expect(html).toContain('<div id="md-snippet"><p><strong>Hello</strong></p>');
   });
 });

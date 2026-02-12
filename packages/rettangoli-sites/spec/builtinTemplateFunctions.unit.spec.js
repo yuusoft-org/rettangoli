@@ -54,4 +54,23 @@ describe('builtinTemplateFunctions unit', () => {
       })
     ).toBe('q=hello+world&page=2&tags=a&tags=b');
   });
+
+  it('sorts a list by key and order', () => {
+    const list = [
+      { version: '1.0.0-rc12', publishedAt: '2026-02-10T09:00:00Z' },
+      { version: '1.0.0-rc11', publishedAt: '2026-02-08T09:00:00Z' },
+      { version: '1.0.0-rc13', publishedAt: '2026-02-11T09:00:00Z' },
+    ];
+
+    expect(builtinTemplateFunctions.sort(list, 'publishedAt', 'desc').map((item) => item.version))
+      .toEqual(['1.0.0-rc13', '1.0.0-rc12', '1.0.0-rc11']);
+    expect(builtinTemplateFunctions.sort(list, 'publishedAt', 'asc').map((item) => item.version))
+      .toEqual(['1.0.0-rc11', '1.0.0-rc12', '1.0.0-rc13']);
+  });
+
+  it('renders markdown to raw html payload', () => {
+    expect(builtinTemplateFunctions.md('**hello**')).toEqual({
+      __html: '<p><strong>hello</strong></p>\n',
+    });
+  });
 });
