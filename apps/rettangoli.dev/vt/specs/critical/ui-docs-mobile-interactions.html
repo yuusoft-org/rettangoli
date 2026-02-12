@@ -1,0 +1,57 @@
+---
+title: UI Docs Mobile Interactions
+url: /ui/docs/introduction/getting-started/
+description: Mobile docs interaction states for sidebar and hide-on-scroll navbar.
+viewport:
+  - id: mobile
+    width: 390
+    height: 844
+waitStrategy: selector
+waitSelector: "#docs-mobile-navbar-toggle"
+steps:
+  - action: assert
+    type: exists
+    selector: "#docs-mobile-sidebar-nav[sm-full-width=true]"
+  - action: assert
+    type: exists
+    selector: "#docs-mobile-sidebar-nav[sm-hide-header=true]"
+  - action: assert
+    type: visible
+    selector: "#docs-mobile-navbar"
+  - action: select
+    testId: docs-mobile-navbar-toggle
+    steps:
+      - action: click
+  - action: waitFor
+    selector: "#docs-mobile-sidebar-overlay"
+    state: visible
+    timeoutMs: 3000
+  - action: screenshot
+  - action: keypress
+    key: Escape
+  - action: waitFor
+    selector: "#docs-mobile-sidebar-overlay"
+    state: hidden
+    timeoutMs: 3000
+  - action: wait
+    ms: 200
+  - action: scroll
+    deltaX: 0
+    deltaY: 1200
+  - action: wait
+    ms: 250
+  - action: assert
+    type: visible
+    selector: ".docs-mobile-navbar.is-hidden"
+  - action: screenshot
+  - action: scroll
+    deltaX: 0
+    deltaY: -1200
+  - action: wait
+    ms: 250
+  - action: assert
+    type: hidden
+    selector: ".docs-mobile-navbar.is-hidden"
+  - action: screenshot
+---
+<main data-testid="ui-docs-mobile-interactions"></main>

@@ -1,6 +1,6 @@
 export const createInitialState = () => Object.freeze({});
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode'];
+const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode', 'smFullWidth', 'smHideHeader'];
 
 const stringifyAttrs = (props = {}) => {
   return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
@@ -26,6 +26,10 @@ const parseMaybeEncodedJson = (value) => {
       return undefined;
     }
   }
+};
+
+const parseBoolean = (value) => {
+  return value === true || value === "true";
 };
 
 function flattenItems(items, selectedItemId = null) {
@@ -79,6 +83,8 @@ export const selectViewData = ({ props }) => {
 
   const containerAttrString = stringifyAttrs(props);
   const mode = props.mode || 'full';
+  const smFullWidth = parseBoolean(props.smFullWidth);
+  const smHideHeader = parseBoolean(props.smHideHeader);
   const header = resolvedHeader || {
     label: '',
     path: '',
@@ -118,6 +124,8 @@ export const selectViewData = ({ props }) => {
   const headerWidth = itemWidth;
 
   const ah = mode === 'shrunk-lg' || mode === 'shrunk-md' ? 'c' : '';
+  const smWidthAttr = smFullWidth ? 'sm-w=f' : '';
+  const smHeaderHideAttr = smHideHeader ? 'sm-hide' : '';
 
   return {
     containerAttrString,
@@ -140,6 +148,8 @@ export const selectViewData = ({ props }) => {
     headerWidth,
     selectedItemId,
     ah,
+    smWidthAttr,
+    smHeaderHideAttr,
   };
 }
 

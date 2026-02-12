@@ -1,0 +1,9 @@
+- 'div class="docs-mobile-navbar" id="docs-mobile-navbar" data-testid="docs-mobile-navbar"':
+    - 'div class="docs-mobile-navbar-inner"':
+        - 'a class="docs-mobile-navbar-title" href="${header.href}"': ${header.label}
+        - 'button type="button" class="docs-mobile-navbar-toggle" id="docs-mobile-navbar-toggle" data-testid="docs-mobile-navbar-toggle" aria-label="Open docs navigation" aria-controls="docs-mobile-sidebar-overlay" aria-expanded="false"':
+            - rtgl-svg wh=20 svg="text":
+
+- 'div class="docs-mobile-sidebar-overlay" id="docs-mobile-sidebar-overlay" data-testid="docs-mobile-sidebar-overlay" hidden':
+    - 'div class="docs-mobile-sidebar-panel"':
+        - rtgl-sidebar id="docs-mobile-sidebar-nav" data-testid="docs-mobile-sidebar-nav" selected-item-id=${sidebarId} header="%7B%7D" items="${encodeURIComponent(jsonStringify(items))}" sm-full-width="true" sm-hide-header="true" w=f:

@@ -6,6 +6,10 @@ propsSchema:
       type: string
     selectedItemId:
       type: string
+    smFullWidth:
+      type: boolean
+    smHideHeader:
+      type: boolean
     header:
       type: object
       properties:

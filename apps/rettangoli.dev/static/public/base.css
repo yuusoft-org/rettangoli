@@ -318,6 +318,112 @@ rtgl-page-outline {
   overflow-y: auto !important;
 }
 
+/* Mobile docs shell */
+:root {
+  --docs-mobile-navbar-height: 56px;
+}
+
+.docs-mobile-navbar {
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--background);
+  transform: translateY(0);
+  transition: transform 180ms ease;
+}
+
+.docs-mobile-navbar.is-hidden {
+  transform: translateY(calc(var(--docs-mobile-navbar-height) * -1));
+}
+
+.docs-mobile-navbar-inner {
+  width: min(100%, 720px);
+  height: var(--docs-mobile-navbar-height);
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.docs-mobile-navbar-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--lg-font-size);
+  font-weight: var(--lg-font-weight);
+  line-height: var(--lg-line-height);
+  letter-spacing: var(--lg-letter-spacing);
+}
+
+.docs-mobile-navbar-toggle {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.docs-mobile-navbar-toggle:hover {
+  background-color: var(--muted);
+}
+
+.docs-mobile-sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: var(--docs-mobile-navbar-height);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+.docs-mobile-sidebar-panel {
+  width: 100%;
+  height: 100%;
+  background-color: var(--background);
+}
+
+.docs-mobile-sidebar-panel rtgl-sidebar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: static !important;
+  top: auto !important;
+}
+
+body.docs-mobile-sidebar-open {
+  overflow: hidden;
+}
+
+@media only screen and (max-width: 768px) {
+  .docs-mobile-navbar {
+    display: block;
+  }
+
+  .docs-mobile-sidebar-overlay {
+    display: block;
+  }
+
+  #content-container {
+    padding-top: calc(var(--docs-mobile-navbar-height) + var(--spacing-lg)) !important;
+    padding-right: var(--spacing-lg) !important;
+    padding-left: var(--spacing-lg) !important;
+  }
+}
+
 @media screen and (max-width: 600px) {
   table {
     display: block;
