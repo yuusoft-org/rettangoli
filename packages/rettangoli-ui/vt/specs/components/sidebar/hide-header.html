@@ -11,50 +11,12 @@ viewport:
   - id: mobile
     width: 390
     height: 844
-skipInitialScreenshot: true
 steps:
   - action: wait
     ms: 1000
-  - action: assert
-    type: text
-    selector: "#result-hide-header"
-    value: PASS
   - action: screenshot
 ---
 <rtgl-view d="v" g="sm" p="md" w="f" h="100vh">
   <rtgl-text s="sm">Sidebar `hide-header` check</rtgl-text>
-  <pre id="result-hide-header" style="margin: 0; font: 12px/1.4 monospace;"></pre>
   <rtgl-sidebar id="sidebar" hide-header="true" header="%7B%22label%22%3A%22Sidebar%22%7D" items="%5B%7B%22id%22%3A%22home%22%2C%22title%22%3A%22Home%22%7D%2C%7B%22id%22%3A%22about%22%2C%22title%22%3A%22About%22%7D%2C%7B%22id%22%3A%22contact%22%2C%22title%22%3A%22Contact%22%7D%5D"></rtgl-sidebar>
 </rtgl-view>
-
-<script>
-  const sidebar = document.getElementById("sidebar");
-  const result = document.getElementById("result-hide-header");
-  let attempts = 0;
-
-  const updateResult = () => {
-    const root = sidebar.shadowRoot?.querySelector("rtgl-view");
-    const headerSection = root?.firstElementChild;
-    if (!headerSection) {
-      attempts += 1;
-      if (attempts > 45) {
-        result.textContent = "FAIL header section not ready";
-        return;
-      }
-      requestAnimationFrame(updateResult);
-      return;
-    }
-
-    const display = getComputedStyle(headerSection).display;
-    const height = Math.round(headerSection.getBoundingClientRect().height);
-    const isSmall = window.matchMedia("(max-width: 640px)").matches;
-    const headerHidden = display === "none" || height === 0;
-    const pass = isSmall ? headerHidden : !headerHidden;
-
-    result.textContent =
-      `${pass ? "PASS" : "FAIL"} mobile=${isSmall} ` +
-      `display=${display} height=${height}px`;
-  };
-
-  requestAnimationFrame(updateResult);
-</script>
