@@ -1,9 +1,11 @@
 import {
   get,
+  set,
   selectForm,
   selectFormValues,
   collectAllDataFields,
   getDefaultValue,
+  pruneHiddenValues,
   validateField,
   validateForm,
 } from "./form.store.js";
@@ -47,7 +49,7 @@ const updateFieldAttributes = ({ form, formValues = {}, refs, formDisabled = fal
         }
       }
 
-      if (["input-text", "input-textarea"].includes(field.type) && field.placeholder) {
+      if (["input-text", "input-number", "input-textarea", "popover-input"].includes(field.type) && field.placeholder) {
         const current = ref.getAttribute("placeholder");
         if (current !== field.placeholder) {
           if (field.placeholder === undefined || field.placeholder === null) {
@@ -70,17 +72,21 @@ const updateFieldAttributes = ({ form, formValues = {}, refs, formDisabled = fal
 };
 
 const initFormValues = (store, props) => {
-  const form = selectForm({ props });
   const defaultValues = props?.defaultValues || {};
+  const seededValues = {};
+  Object.keys(defaultValues).forEach((path) => {
+    set(seededValues, path, defaultValues[path]);
+  });
+  const form = selectForm({ state: { formValues: seededValues }, props });
   const dataFields = collectAllDataFields(form.fields || []);
   const initial = {};
 
   for (const field of dataFields) {
     const defaultVal = get(defaultValues, field.name);
     if (defaultVal !== undefined) {
-      initial[field.name] = defaultVal;
+      set(initial, field.name, defaultVal);
     } else {
-      initial[field.name] = getDefaultValue(field);
+      set(initial, field.name, getDefaultValue(field));
     }
   }
 
@@ -94,11 +100,11 @@ export const handleBeforeMount = (deps) => {
 
 export const handleAfterMount = (deps) => {
   const { props, refs, render } = deps;
-  const form = selectForm({ props });
-  const formValues = selectFormValues({ state: deps.store.getState(), props });
+  const state = deps.store.getState();
+  const form = selectForm({ state, props });
   updateFieldAttributes({
     form,
-    formValues: deps.store.getState().formValues,
+    formValues: state.formValues,
     refs,
     formDisabled: !!props?.disabled,
   });
@@ -108,14 +114,15 @@ export const handleAfterMount = (deps) => {
 export const handleOnUpdate = (deps, payload) => {
   const { oldProps, newProps } = payload;
   const { store, render, refs } = deps;
-  const form = selectForm({ props: newProps });
   const formDisabled = !!newProps?.disabled;
 
   if (oldProps?.key !== newProps?.key) {
     initFormValues(store, newProps);
+    const state = store.getState();
+    const form = selectForm({ state, props: newProps });
     updateFieldAttributes({
       form,
-      formValues: store.getState().formValues,
+      formValues: state.formValues,
       refs,
       formDisabled,
     });
@@ -123,6 +130,15 @@ export const handleOnUpdate = (deps, payload) => {
     return;
   }
 
+  const state = store.getState();
+  pruneHiddenValues({ state, props: newProps });
+  const form = selectForm({ state, props: newProps });
+  updateFieldAttributes({
+    form,
+    formValues: state.formValues,
+    refs,
+    formDisabled,
+  });
   render();
 };
 
@@ -141,7 +157,7 @@ export const handleValueInput = (deps, payload) => {
 
   // Reactive validation
   if (state.reactiveMode) {
-    const form = selectForm({ props });
+    const form = selectForm({ state, props });
     const dataFields = collectAllDataFields(form.fields || []);
     const field = dataFields.find((f) => f.name === name);
     if (field) {
@@ -157,6 +173,7 @@ export const handleValueInput = (deps, payload) => {
 
   dispatchEvent(
     new CustomEvent("form-input", {
+      bubbles: true,
       detail: {
         name,
         value,
@@ -181,7 +198,7 @@ export const handleValueChange = (deps, payload) => {
 
   // Reactive validation
   if (state.reactiveMode) {
-    const form = selectForm({ props });
+    const form = selectForm({ state, props });
     const dataFields = collectAllDataFields(form.fields || []);
     const field = dataFields.find((f) => f.name === name);
     if (field) {
@@ -197,6 +214,7 @@ export const handleValueChange = (deps, payload) => {
 
   dispatchEvent(
     new CustomEvent("form-change", {
+      bubbles: true,
       detail: {
         name,
         value,
@@ -212,16 +230,17 @@ export const handleActionClick = (deps, payload) => {
   const actionId = event.currentTarget.dataset.actionId;
   if (!actionId) return;
 
-  const form = selectForm({ props });
+  const state = store.getState();
+  const form = selectForm({ state, props });
   const actions = form.actions || {};
   const buttons = actions.buttons || [];
   const button = buttons.find((b) => b.id === actionId);
 
-  const values = selectFormValues({ state: store.getState(), props });
+  const values = selectFormValues({ state, props });
 
   if (button && button.validate) {
     const dataFields = collectAllDataFields(form.fields || []);
-    const { valid, errors } = validateForm(dataFields, store.getState().formValues);
+    const { valid, errors } = validateForm(dataFields, state.formValues);
     store.setErrors({ errors });
     if (!valid) {
       store.setReactiveMode();
@@ -230,6 +249,7 @@ export const handleActionClick = (deps, payload) => {
 
     dispatchEvent(
       new CustomEvent("form-action", {
+        bubbles: true,
         detail: {
           actionId,
           values,
@@ -241,6 +261,7 @@ export const handleActionClick = (deps, payload) => {
   } else {
     dispatchEvent(
       new CustomEvent("form-action", {
+        bubbles: true,
         detail: {
           actionId,
           values,
@@ -260,6 +281,7 @@ export const handleImageClick = (deps, payload) => {
 
   dispatchEvent(
     new CustomEvent("form-field-event", {
+      bubbles: true,
       detail: {
         name,
         event: event.type,
@@ -281,7 +303,8 @@ export const handleKeyDown = (deps, payload) => {
 
     event.preventDefault();
 
-    const form = selectForm({ props });
+    const state = store.getState();
+    const form = selectForm({ state, props });
     const actions = form.actions || {};
     const buttons = actions.buttons || [];
 
@@ -291,11 +314,11 @@ export const handleKeyDown = (deps, payload) => {
 
     if (!targetButton) return;
 
-    const values = selectFormValues({ state: store.getState(), props });
+    const values = selectFormValues({ state, props });
 
     if (targetButton.validate) {
       const dataFields = collectAllDataFields(form.fields || []);
-      const { valid, errors } = validateForm(dataFields, store.getState().formValues);
+      const { valid, errors } = validateForm(dataFields, state.formValues);
       store.setErrors({ errors });
       if (!valid) {
         store.setReactiveMode();
@@ -304,6 +327,7 @@ export const handleKeyDown = (deps, payload) => {
 
       dispatchEvent(
         new CustomEvent("form-action", {
+          bubbles: true,
           detail: {
             actionId: targetButton.id,
             values,
@@ -315,6 +339,7 @@ export const handleKeyDown = (deps, payload) => {
     } else {
       dispatchEvent(
         new CustomEvent("form-action", {
+          bubbles: true,
           detail: {
             actionId: targetButton.id,
             values,
@@ -330,7 +355,7 @@ export const handleTooltipMouseEnter = (deps, payload) => {
   const event = payload._event;
   const fieldName = event.currentTarget.dataset.fieldName;
 
-  const form = selectForm({ props });
+  const form = selectForm({ state: store.getState(), props });
   const allFields = collectAllDataFields(form.fields || []);
   const field = allFields.find((f) => f.name === fieldName);
 

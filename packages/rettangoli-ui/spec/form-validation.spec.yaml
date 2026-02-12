@@ -268,6 +268,18 @@ in:
 out:
   error: "Must match format ABC-1234"
 ---
+case: pattern invalid regex is treated as validation failure
+in:
+  - field:
+      name: code
+      type: input-text
+      rules:
+        - rule: pattern
+          value: "([A-Z"
+    value: "ABC"
+out:
+  error: "Invalid format"
+---
 suite: validateField - multiple rules
 exportName: runValidateFieldCase
 ---
@@ -563,3 +575,89 @@ in:
   - fields: []
 out:
   names: []
+---
+suite: selectFormValues
+exportName: runSelectFormValuesCase
+---
+case: nested field paths return nested values and skip unrelated keys
+in:
+  - form:
+      fields:
+        - name: user.email
+          type: input-text
+        - name: age
+          type: input-number
+    formValues:
+      user:
+        email: "jane@example.com"
+      age: 28
+      extra: true
+out:
+  values:
+    user:
+      email: "jane@example.com"
+    age: 28
+---
+case: conditional hidden field is excluded from selected values
+in:
+  - form:
+      fields:
+        - name: mode
+          type: select
+          options:
+            - label: Basic
+              value: basic
+            - label: Advanced
+              value: advanced
+        - name: secret
+          type: input-text
+          $when: formValues.mode == "advanced"
+    formValues:
+      mode: basic
+      secret: "should-not-be-exposed"
+out:
+  values:
+    mode: basic
+---
+case: array-like field paths are collected into array output
+in:
+  - form:
+      fields:
+        - name: items[0]
+          type: input-text
+        - name: items[1]
+          type: input-text
+    formValues:
+      items:
+        - "first"
+        - "second"
+out:
+  values:
+    items:
+      - "first"
+      - "second"
+---
+suite: set path normalization
+exportName: runSetPathCase
+---
+case: dotted path write replaces legacy flat key
+in:
+  - initial:
+      "user.email": "old@example.com"
+    path: user.email
+    value: "new@example.com"
+out:
+  values:
+    user:
+      email: "new@example.com"
+---
+case: array path write replaces legacy flat key
+in:
+  - initial:
+      "items[0]": "legacy"
+    path: items[0]
+    value: "fresh"
+out:
+  values:
+    items:
+      - "fresh"

@@ -1,5 +1,6 @@
 import {
   get,
+  set,
   selectForm,
   selectFormValues,
   collectAllDataFields,
@@ -13,14 +14,18 @@ export const getValues = function () {
 };
 
 export const setValues = function (payload = {}) {
-  const { values } = payload;
-  if (!values || typeof values !== "object") return;
+  const values =
+    payload && typeof payload === "object" && payload.values && typeof payload.values === "object"
+      ? payload.values
+      : payload;
+  if (!values || typeof values !== "object" || Array.isArray(values)) return;
 
   this.store.setFormValues({ values });
+  this.store.pruneHiddenValues();
 
   // Update DOM attributes for affected fields
-  const form = selectForm({ props: this.props });
   const state = this.store.getState();
+  const form = selectForm({ state, props: this.props });
 
   const fields = form.fields || [];
   let idx = 0;
@@ -37,7 +42,9 @@ export const setValues = function (payload = {}) {
       idx++;
 
       if (!ref || !field.name) continue;
-      if (!(field.name in values)) continue;
+      const hasDirectValue = Object.prototype.hasOwnProperty.call(values, field.name);
+      const incomingValue = get(values, field.name);
+      if (!hasDirectValue && incomingValue === undefined) continue;
 
       const value = get(state.formValues, field.name);
 
@@ -64,8 +71,8 @@ export const setValues = function (payload = {}) {
 };
 
 export const validate = function () {
-  const form = selectForm({ props: this.props });
   const state = this.store.getState();
+  const form = selectForm({ state, props: this.props });
   const dataFields = collectAllDataFields(form.fields || []);
   const { valid, errors } = validateForm(dataFields, state.formValues);
 
@@ -79,17 +86,21 @@ export const validate = function () {
 };
 
 export const reset = function () {
-  const form = selectForm({ props: this.props });
   const defaultValues = this.props?.defaultValues || {};
+  const seededValues = {};
+  Object.keys(defaultValues).forEach((path) => {
+    set(seededValues, path, defaultValues[path]);
+  });
+  const form = selectForm({ state: { formValues: seededValues }, props: this.props });
   const dataFields = collectAllDataFields(form.fields || []);
   const initial = {};
 
   for (const field of dataFields) {
     const defaultVal = get(defaultValues, field.name);
     if (defaultVal !== undefined) {
-      initial[field.name] = defaultVal;
+      set(initial, field.name, defaultVal);
     } else {
-      initial[field.name] = getDefaultValue(field);
+      set(initial, field.name, getDefaultValue(field));
     }
   }
 

@@ -57,7 +57,7 @@ template:
                       - $if field.type == "input-text":
                           - rtgl-input#field${field._idx} data-field-name=${field.name} w=f type=${field._inputType} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "input-number":
-                          - rtgl-input-number#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} ?disabled=${field._disabled}: null
+                          - rtgl-input-number#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "input-textarea":
                           - rtgl-textarea#field${field._idx} data-field-name=${field.name} w=f rows=${field.rows} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "select":
@@ -69,7 +69,7 @@ template:
                       - $if field.type == "slider-with-input":
                           - rtgl-slider-input#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} ?disabled=${field._disabled}: null
                       - $if field.type == "popover-input":
-                          - rtgl-popover-input#field${field._idx} data-field-name=${field.name} label="${field.label}" ?disabled=${field._disabled}: null
+                          - rtgl-popover-input#field${field._idx} data-field-name=${field.name} label="${field.label}" placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "checkbox":
                           - rtgl-checkbox#field${field._idx} data-field-name=${field.name} ?disabled=${field._disabled}: null
                       - $if field.type == "image" && field._imageSrc:

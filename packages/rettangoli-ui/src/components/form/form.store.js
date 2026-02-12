@@ -17,20 +17,70 @@ const encode = (input) => {
   return `"${escapeHtml(String(input))}"`;
 };
 
-function pick(obj, keys) {
-  return keys.reduce((acc, key) => {
-    if (key in obj) acc[key] = obj[key];
-    return acc;
-  }, {});
+const isObjectLike = (value) => value !== null && typeof value === "object";
+const isPlainObject = (value) => isObjectLike(value) && !Array.isArray(value);
+const isPathLike = (path) => typeof path === "string" && /[.\[]/.test(path);
+
+function pickByPaths(obj, paths) {
+  const result = {};
+  for (const path of paths) {
+    if (typeof path !== "string" || path.length === 0) continue;
+    const value = get(obj, path);
+    if (value !== undefined) {
+      set(result, path, value);
+    }
+  }
+  return result;
+}
+
+function normalizeWhenDirectives(form) {
+  if (!isPlainObject(form) || !Array.isArray(form.fields)) {
+    return form;
+  }
+
+  const normalizeFields = (fields = []) =>
+    fields.map((field) => {
+      if (!isPlainObject(field)) {
+        return field;
+      }
+
+      if (typeof field.$when === "string" && field.$when.trim().length > 0) {
+        const { $when, ...rest } = field;
+        const normalizedField = Array.isArray(rest.fields)
+          ? { ...rest, fields: normalizeFields(rest.fields) }
+          : rest;
+        return {
+          [`$if ${$when}`]: normalizedField,
+        };
+      }
+
+      if (Array.isArray(field.fields)) {
+        return {
+          ...field,
+          fields: normalizeFields(field.fields),
+        };
+      }
+
+      return field;
+    });
+
+  return {
+    ...form,
+    fields: normalizeFields(form.fields),
+  };
 }
 
 // Nested property access utilities
 export const get = (obj, path, defaultValue = undefined) => {
   if (!path) return defaultValue;
+  if (!isObjectLike(obj)) return defaultValue;
   const keys = path.split(/[\[\].]/).filter((key) => key !== "");
   let current = obj;
   for (const key of keys) {
     if (current === null || current === undefined || !(key in current)) {
+      if (Object.prototype.hasOwnProperty.call(obj, path)) {
+        return obj[path];
+      }
       return defaultValue;
     }
     current = current[key];
@@ -39,8 +89,14 @@ export const get = (obj, path, defaultValue = undefined) => {
 };
 
 export const set = (obj, path, value) => {
+  if (!isObjectLike(obj) || typeof path !== "string" || path.length === 0) {
+    return obj;
+  }
   const keys = path.split(/[\[\].]/).filter((key) => key !== "");
-  if (path.includes("[") && path in obj) {
+  if (keys.length === 0) {
+    return obj;
+  }
+  if (isPathLike(path) && Object.prototype.hasOwnProperty.call(obj, path)) {
     delete obj[path];
   }
   let current = obj;
@@ -136,7 +192,14 @@ const validateRule = (rule, value) => {
     }
     case "pattern": {
       const preset = PATTERN_PRESETS[rule.value];
-      const regex = preset || new RegExp(rule.value);
+      let regex = preset;
+      if (!regex) {
+        try {
+          regex = new RegExp(rule.value);
+        } catch {
+          return rule.message || DEFAULT_MESSAGES.pattern;
+        }
+      }
       if (!regex.test(strValue)) {
         return rule.message || DEFAULT_MESSAGES.pattern;
       }
@@ -254,13 +317,23 @@ export const createInitialState = () =>
     },
   });
 
-export const selectForm = ({ props }) => {
-  const { form = {} } = props;
-  const { context } = props;
-  if (context) {
-    return parseAndRender(form, context);
+export const selectForm = ({ state, props }) => {
+  const { form = {} } = props || {};
+  const normalizedForm = normalizeWhenDirectives(form);
+  const context = isPlainObject(props?.context) ? props.context : {};
+  const stateFormValues = isPlainObject(state?.formValues)
+    ? state.formValues
+    : {};
+  const mergedContext = {
+    ...context,
+    ...stateFormValues,
+    formValues: stateFormValues,
+  };
+
+  if (Object.keys(mergedContext).length > 0) {
+    return parseAndRender(normalizedForm, mergedContext);
   }
-  return form;
+  return normalizedForm;
 };
 
 export const selectViewData = ({ state, props }) => {
@@ -352,9 +425,9 @@ export const selectViewData = ({ state, props }) => {
 export const selectFormValues = ({ state, props }) => {
   const form = selectForm({ state, props });
   const dataFields = collectAllDataFields(form.fields || []);
-  return pick(
+  return pickByPaths(
     state.formValues,
-    dataFields.map((f) => f.name),
+    dataFields.map((f) => f.name).filter((name) => typeof name === "string" && name.length > 0),
   );
 };
 
@@ -362,12 +435,17 @@ export const setFormFieldValue = ({ state, props }, payload = {}) => {
   const { name, value } = payload;
   if (!name) return;
   set(state.formValues, name, value);
+  pruneHiddenValues({ state, props });
+};
+
+export const pruneHiddenValues = ({ state, props }) => {
+  if (!props) return;
   // Prune to only visible field names
   const form = selectForm({ state, props });
   const dataFields = collectAllDataFields(form.fields || []);
-  state.formValues = pick(
+  state.formValues = pickByPaths(
     state.formValues,
-    dataFields.map((f) => f.name),
+    dataFields.map((f) => f.name).filter((name) => typeof name === "string" && name.length > 0),
   );
 };
 

@@ -4,6 +4,8 @@ import {
   getDefaultValue,
   flattenFields,
   collectAllDataFields,
+  selectFormValues,
+  set,
 } from "../src/components/form/form.store.js";
 
 export const runValidateFieldCase = ({ field, value }) => {
@@ -39,4 +41,20 @@ export const runCollectAllDataFieldsCase = ({ fields }) => {
   return {
     names: result.map((f) => f.name),
   };
+};
+
+export const runSelectFormValuesCase = ({ form, formValues = {}, context = undefined }) => {
+  const props = context === undefined ? { form } : { form, context };
+  return {
+    values: selectFormValues({
+      state: { formValues },
+      props,
+    }),
+  };
+};
+
+export const runSetPathCase = ({ initial = {}, path, value }) => {
+  const result = structuredClone(initial);
+  set(result, path, value);
+  return { values: result };
 };
