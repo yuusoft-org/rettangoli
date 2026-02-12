@@ -5,7 +5,7 @@
     - rtgl-view id="mobile-menu-btn" cur=p:
         - rtgl-svg wh=24 svg=menu:
 
-- 'rtgl-view id="mobile-nav-overlay" pos=fix w=f h=100vh bgc=bg z=20 d=v style="display:none;top:0;left:0"':
+- 'rtgl-view id="mobile-nav-overlay" hide pos=fix w=f h=100vh bgc=bg z=20 d=v style="top:0;left:0"':
     - rtgl-view d=h av=c ph=lg h=56 bwb=xs:
         - rtgl-view w=1fg:
         - rtgl-view id="mobile-nav-close" cur=p:

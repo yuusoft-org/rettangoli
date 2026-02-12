@@ -3,14 +3,23 @@
   var overlay = document.getElementById('mobile-nav-overlay');
   var closeBtn = document.getElementById('mobile-nav-close');
 
+  function setOpen(open) {
+    if (!overlay) return;
+    if (open) {
+      overlay.removeAttribute('hide');
+    } else {
+      overlay.setAttribute('hide', '');
+    }
+  }
+
   if (btn && overlay) {
     btn.addEventListener('click', function () {
-      overlay.style.display = 'flex';
+      setOpen(true);
     });
   }
   if (closeBtn && overlay) {
     closeBtn.addEventListener('click', function () {
-      overlay.style.display = 'none';
+      setOpen(false);
     });
   }
 })();
