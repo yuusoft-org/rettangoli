@@ -8,10 +8,16 @@
     const navbarToggle = document.getElementById("docs-mobile-navbar-toggle");
     const sidebarOverlay = document.getElementById("docs-mobile-sidebar-overlay");
     const sidebar = document.getElementById("docs-mobile-sidebar-nav");
+    const contentContainer = document.getElementById("content-container");
 
     if (!navbar || !navbarToggle || !sidebarOverlay || !sidebar) {
       return;
     }
+
+    const readScrollTop = () => {
+      const containerTop = contentContainer ? contentContainer.scrollTop : 0;
+      return Math.max(window.scrollY, containerTop);
+    };
 
     const isMobileViewport = () => window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`).matches;
 
@@ -49,21 +55,21 @@
       }
     });
 
-    let lastY = window.scrollY;
-    window.addEventListener("scroll", () => {
+    let lastY = readScrollTop();
+    const handleScroll = () => {
       if (!isMobileViewport()) {
         setNavbarHidden(false);
-        lastY = window.scrollY;
+        lastY = readScrollTop();
         return;
       }
 
       if (!sidebarOverlay.hidden) {
         setNavbarHidden(false);
-        lastY = window.scrollY;
+        lastY = readScrollTop();
         return;
       }
 
-      const currentY = window.scrollY;
+      const currentY = readScrollTop();
       const delta = currentY - lastY;
 
       if (currentY <= TOP_THRESHOLD || delta <= -SCROLL_DELTA) {
@@ -73,7 +79,12 @@
       }
 
       lastY = currentY;
-    }, { passive: true });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    if (contentContainer) {
+      contentContainer.addEventListener("scroll", handleScroll, { passive: true });
+    }
 
     window.addEventListener("resize", () => {
       if (!isMobileViewport()) {

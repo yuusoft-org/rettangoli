@@ -40,8 +40,8 @@ A navigation sidebar component with header, grouped items, and selectable states
 | --- | --- | --- | --- |
 | Selected Item | `selected-item-id` / `selectedItemId` | string | - |
 | Mode | `mode` | `full`, `shrunk`, `shrunk-lg` | `full` |
-| Small Full Width | `sm-full-width` / `smFullWidth` | boolean | `false` |
-| Small Hide Header | `sm-hide-header` / `smHideHeader` | boolean | `false` |
+| Full Width | `full-width` / `fullWidth` | boolean | `false` |
+| Hide Header | `hide-header` / `hideHeader` | boolean | `false` |
 | Header | `header` (property) | object | `{}` |
 | Items | `items` (property) | array | `[]` |
 
@@ -67,6 +67,6 @@ A navigation sidebar component with header, grouped items, and selectable states
 
 - `selected-item-id` drives active styling.
 - `mode` changes width and label/icon density.
-- `sm-full-width` sets sidebar width to fill at `<= 640px`.
-- `sm-hide-header` hides the header block at `<= 640px`.
+- `full-width` sets sidebar width to fill at `<= 640px`.
+- `hide-header` hides the header block at `<= 640px`.
 - `href` navigates directly; `path` emits events for app-level routing.

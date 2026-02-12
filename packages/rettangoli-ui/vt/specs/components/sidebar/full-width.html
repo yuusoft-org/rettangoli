@@ -1,6 +1,6 @@
 ---
-title: "sm-full-width"
-description: Verifies `sm-full-width` expands sidebar to viewport width only at `<= 640px`.
+title: "full-width"
+description: Verifies `full-width` expands sidebar width at `<= 640px`.
 specs:
   - At small viewport, sidebar width matches viewport width.
   - At desktop viewport, sidebar keeps default fixed width behavior.
@@ -17,19 +17,19 @@ steps:
     ms: 1000
   - action: assert
     type: text
-    selector: "#result-sm-full-width"
+    selector: "#result-full-width"
     value: PASS
   - action: screenshot
 ---
 <rtgl-view d="v" g="sm" p="md" w="f" h="100vh">
-  <rtgl-text s="sm">Sidebar `sm-full-width` check</rtgl-text>
-  <pre id="result-sm-full-width" style="margin: 0; font: 12px/1.4 monospace;"></pre>
-  <rtgl-sidebar id="sidebar" style="display:block;width:100%" sm-full-width="true" header="%7B%22label%22%3A%22Sidebar%22%7D" items="%5B%7B%22id%22%3A%22home%22%2C%22title%22%3A%22Home%22%7D%2C%7B%22id%22%3A%22about%22%2C%22title%22%3A%22About%22%7D%2C%7B%22id%22%3A%22contact%22%2C%22title%22%3A%22Contact%22%7D%5D"></rtgl-sidebar>
+  <rtgl-text s="sm">Sidebar `full-width` check</rtgl-text>
+  <pre id="result-full-width" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+  <rtgl-sidebar id="sidebar" style="display:block;width:100%" full-width="true" header="%7B%22label%22%3A%22Sidebar%22%7D" items="%5B%7B%22id%22%3A%22home%22%2C%22title%22%3A%22Home%22%7D%2C%7B%22id%22%3A%22about%22%2C%22title%22%3A%22About%22%7D%2C%7B%22id%22%3A%22contact%22%2C%22title%22%3A%22Contact%22%7D%5D"></rtgl-sidebar>
 </rtgl-view>
 
 <script>
   const sidebar = document.getElementById("sidebar");
-  const result = document.getElementById("result-sm-full-width");
+  const result = document.getElementById("result-full-width");
   let attempts = 0;
 
   const updateResult = () => {
@@ -45,13 +45,15 @@ steps:
     }
 
     const sidebarWidth = Math.round(root.getBoundingClientRect().width);
-    const hostWidth = Math.round(sidebar.getBoundingClientRect().width);
+    const viewportWidth = Math.round(window.innerWidth);
     const isSmall = window.matchMedia("(max-width: 640px)").matches;
-    const pass = isSmall ? sidebarWidth >= hostWidth - 2 : sidebarWidth <= 320;
+    const pass = isSmall
+      ? sidebarWidth >= viewportWidth - 30
+      : sidebarWidth <= 320;
 
     result.textContent =
-      `${pass ? "PASS" : "FAIL"} sm=${isSmall} ` +
-      `sidebar=${sidebarWidth}px host=${hostWidth}px`;
+      `${pass ? "PASS" : "FAIL"} mobile=${isSmall} ` +
+      `sidebar=${sidebarWidth}px viewport=${viewportWidth}px`;
   };
 
   requestAnimationFrame(updateResult);

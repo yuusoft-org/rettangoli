@@ -1,6 +1,6 @@
 export const createInitialState = () => Object.freeze({});
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode', 'smFullWidth', 'smHideHeader'];
+const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode', 'fullWidth', 'hideHeader'];
 
 const stringifyAttrs = (props = {}) => {
   return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
@@ -83,8 +83,8 @@ export const selectViewData = ({ props }) => {
 
   const containerAttrString = stringifyAttrs(props);
   const mode = props.mode || 'full';
-  const smFullWidth = parseBoolean(props.smFullWidth);
-  const smHideHeader = parseBoolean(props.smHideHeader);
+  const fullWidth = parseBoolean(props.fullWidth);
+  const hideHeader = parseBoolean(props.hideHeader);
   const header = resolvedHeader || {
     label: '',
     path: '',
@@ -124,8 +124,8 @@ export const selectViewData = ({ props }) => {
   const headerWidth = itemWidth;
 
   const ah = mode === 'shrunk-lg' || mode === 'shrunk-md' ? 'c' : '';
-  const smWidthAttr = smFullWidth ? 'sm-w=f' : '';
-  const smHeaderHideAttr = smHideHeader ? 'sm-hide' : '';
+  const smWidthAttr = fullWidth ? 'sm-w=100%' : '';
+  const smHeaderHideAttr = hideHeader ? 'sm-hide' : '';
 
   return {
     containerAttrString,

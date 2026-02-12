@@ -6,15 +6,22 @@ viewport:
   - id: mobile
     width: 390
     height: 844
-waitStrategy: selector
-waitSelector: "#docs-mobile-navbar-toggle"
+skipInitialScreenshot: true
 steps:
+  - action: waitFor
+    selector: "#content-container"
+    state: visible
+    timeoutMs: 15000
+  - action: waitFor
+    selector: "#docs-mobile-navbar-toggle"
+    state: visible
+    timeoutMs: 15000
   - action: assert
     type: exists
-    selector: "#docs-mobile-sidebar-nav[sm-full-width=true]"
+    selector: "#docs-mobile-sidebar-nav[full-width=true]"
   - action: assert
     type: exists
-    selector: "#docs-mobile-sidebar-nav[sm-hide-header=true]"
+    selector: "#docs-mobile-sidebar-nav[hide-header=true]"
   - action: assert
     type: visible
     selector: "#docs-mobile-navbar"
@@ -26,6 +33,8 @@ steps:
     selector: "#docs-mobile-sidebar-overlay"
     state: visible
     timeoutMs: 3000
+  - action: wait
+    ms: 300
   - action: screenshot
   - action: keypress
     key: Escape
@@ -35,20 +44,26 @@ steps:
     timeoutMs: 3000
   - action: wait
     ms: 200
+  - action: move
+    x: 195
+    y: 420
   - action: scroll
     deltaX: 0
-    deltaY: 1200
+    deltaY: 1600
   - action: wait
-    ms: 250
+    ms: 400
   - action: assert
     type: visible
     selector: ".docs-mobile-navbar.is-hidden"
   - action: screenshot
+  - action: move
+    x: 195
+    y: 420
   - action: scroll
     deltaX: 0
-    deltaY: -1200
+    deltaY: -1600
   - action: wait
-    ms: 250
+    ms: 400
   - action: assert
     type: hidden
     selector: ".docs-mobile-navbar.is-hidden"

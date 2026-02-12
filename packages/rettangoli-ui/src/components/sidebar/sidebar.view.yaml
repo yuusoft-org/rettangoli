@@ -15,6 +15,7 @@ refs:
     eventListeners:
       click:
         handler: handleItemClick
+styles:
 anchors:
   - - $if header.image && header.image.src:
         - $if header.image.href:
