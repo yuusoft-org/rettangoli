@@ -303,10 +303,6 @@ a:hover {
   text-decoration: var(--anchor-text-decoration-hover, underline);
 }
 
-body.mobile-nav-open {
-  overflow: hidden;
-}
-
 /* Keep docs side rails pinned while content scrolls. */
 rtgl-sidebar {
   position: sticky !important;

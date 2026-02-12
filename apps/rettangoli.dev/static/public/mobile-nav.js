@@ -9,17 +9,20 @@
   }
 
   function setOpen(open) {
-    overlay.hidden = !open;
+    if (open) {
+      overlay.removeAttribute('hidden');
+    } else {
+      overlay.setAttribute('hidden', '');
+    }
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     btn.setAttribute('aria-label', open ? 'Close docs navigation' : 'Open docs navigation');
-    document.body.classList.toggle('mobile-nav-open', open);
     if (icon) {
       icon.setAttribute('svg', open ? 'close' : 'menu');
     }
   }
 
   btn.addEventListener('click', function () {
-    setOpen(overlay.hidden);
+    setOpen(overlay.hasAttribute('hidden'));
   });
 
   if (sidebar) {
