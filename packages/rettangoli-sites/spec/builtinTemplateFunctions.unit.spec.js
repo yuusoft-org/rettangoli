@@ -68,6 +68,19 @@ describe('builtinTemplateFunctions unit', () => {
       .toEqual(['1.0.0-rc11', '1.0.0-rc12', '1.0.0-rc13']);
   });
 
+  it('sorts a list by nested dot-path key', () => {
+    const list = [
+      { data: { version: '1.0.0-rc12', date: '2026-02-10T09:00:00Z' } },
+      { data: { version: '1.0.0-rc11', date: '2026-02-08T09:00:00Z' } },
+      { data: { version: '1.0.0-rc13', date: '2026-02-11T09:00:00Z' } },
+    ];
+
+    expect(builtinTemplateFunctions.sort(list, 'data.date', 'desc').map((item) => item.data.version))
+      .toEqual(['1.0.0-rc13', '1.0.0-rc12', '1.0.0-rc11']);
+    expect(builtinTemplateFunctions.sort(list, 'data.date', 'asc').map((item) => item.data.version))
+      .toEqual(['1.0.0-rc11', '1.0.0-rc12', '1.0.0-rc13']);
+  });
+
   it('renders markdown to raw html payload', () => {
     expect(builtinTemplateFunctions.md('**hello**')).toEqual({
       __html: '<p><strong>hello</strong></p>\n',
