@@ -21,7 +21,7 @@ html {
 
 body {
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.2;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -266,7 +266,7 @@ pre {
   white-space: pre;
   font-size: var(--sm-font-size);
   font-weight: var(--sm-font-weight);
-  line-height: var(--sm-line-height);
+  line-height: 1.2;
   letter-spacing: var(--sm-letter-spacing);
   padding: var(--spacing-lg);
   flex: 1;
@@ -290,7 +290,7 @@ code:not(pre code) {
   font-family: "Menlo", "Monaco", "Courier New", monospace;
   font-size: var(--sm-font-size);
   font-weight: var(--sm-font-weight);
-  line-height: var(--sm-line-height);
+  line-height: 1.5;
   letter-spacing: var(--sm-letter-spacing);
   background-color: var(--muted);
   padding: 0.1em 0.35em;
