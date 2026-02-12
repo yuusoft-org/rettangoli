@@ -290,7 +290,7 @@ code:not(pre code) {
   font-family: "Menlo", "Monaco", "Courier New", monospace;
   font-size: var(--sm-font-size);
   font-weight: var(--sm-font-weight);
-  line-height: 1.5;
+  line-height: 1.2;
   letter-spacing: var(--sm-letter-spacing);
   background-color: var(--muted);
   padding: 0.1em 0.35em;
