@@ -1,6 +1,8 @@
 ---
 title: "Page Outline - Many Items (Manual Scroll Check)"
 description: "Manual verification page for page-outline internal scrolling with many headings."
+waitStrategy: selector
+waitSelector: "rtgl-page-outline [href='#section-60']"
 specs:
   - "Scroll the content pane on the left."
   - "Page outline should update active item."
@@ -12,7 +14,7 @@ specs:
     id="page-outline"
     target-id="content"
     scroll-container-id="content"
-    offset-top="80">
+    offset-top="0">
   </rtgl-page-outline>
 </rtgl-view>
 
