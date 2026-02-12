@@ -40,6 +40,9 @@ A navigation sidebar component with header, grouped items, and selectable states
 | --- | --- | --- | --- |
 | Selected Item | `selected-item-id` / `selectedItemId` | string | - |
 | Mode | `mode` | `full`, `shrunk`, `shrunk-lg` | `full` |
+| Width Override | `w` | string | mode-based width |
+| Right Border Width | `bwr` | string | `xs` |
+| Hide Header | `hide-header` / `hideHeader` | boolean | `false` |
 | Header | `header` (property) | object | `{}` |
 | Items | `items` (property) | array | `[]` |
 
@@ -65,4 +68,7 @@ A navigation sidebar component with header, grouped items, and selectable states
 
 - `selected-item-id` drives active styling.
 - `mode` changes width and label/icon density.
+- `w` overrides computed width (for example `w="f"` fills the parent width).
+- `bwr` controls right border width (`bwr="none"` hides the border).
+- `hide-header` hides the header block.
 - `href` navigates directly; `path` emits events for app-level routing.

@@ -2,13 +2,9 @@
     - 'a href="${headerHref}" style="text-decoration:none;display:contents;color:inherit;"':
         - rtgl-text s=md: ${headerLabel}
     - rtgl-view w=1fg:
-    - rtgl-view id="mobile-menu-btn" cur=p:
-        - rtgl-svg wh=24 svg=menu:
+    - 'rtgl-view id="mobile-menu-btn" data-testid="mobile-menu-btn" cur=pointer aria-label="Open docs navigation" aria-controls="mobile-nav-overlay" aria-expanded="false"':
+        - rtgl-svg id="mobile-menu-icon" data-testid="mobile-menu-icon" wh=24 svg=menu cur=pointer:
 
-- 'rtgl-view id="mobile-nav-overlay" pos=fix w=f h=100vh bgc=bg z=20 d=v style="display:none;top:0;left:0"':
-    - rtgl-view d=h av=c ph=lg h=56 bwb=xs:
-        - rtgl-view w=1fg:
-        - rtgl-view id="mobile-nav-close" cur=p:
-            - rtgl-svg wh=24 svg=close:
-    - rtgl-view sv w=f h=1fg:
-        - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(header))}" items="${encodeURIComponent(jsonStringify(items))}":
+- 'rtgl-view id="mobile-nav-overlay" pos=fix w=f bgc=bg z=20 d=v hidden style="top:56px;left:0;height:calc(100vh - 56px)"':
+    - rtgl-view sv w=f h=f:
+        - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(header))}" items="${encodeURIComponent(jsonStringify(items))}" w=f bwr=none hide-header="true":
