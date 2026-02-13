@@ -49,7 +49,7 @@ template:
                                   - $if field.label:
                                       - rtgl-text: ${field.label}
                                   - $if field.required:
-                                      - rtgl-text c=de-fg s=sm: "*"
+                                      - rtgl-text c=de s=sm: "*"
                                   - $if field.tooltip:
                                       - rtgl-svg#tooltipIcon${field._idx} data-field-name=${field.name} svg="info" wh=16 c=mu-fg cur=help ml=xs: null
                               - $if field.description:
@@ -82,7 +82,7 @@ template:
                       - $if field.type == "slot":
                           - 'slot#fieldSlot${field._idx} name=${field.slot} style="display: contents;"': null
                       - $if field._error:
-                          - rtgl-text s=sm c=de-fg: ${field._error}
+                          - rtgl-text s=sm c=de: ${field._error}
       - $if actions.buttons.length > 0:
           - $if actions._layout == "split":
               - rtgl-view d=h w=f g=sm:
