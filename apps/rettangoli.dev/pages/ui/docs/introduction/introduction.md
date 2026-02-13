@@ -12,7 +12,7 @@ sidebarId: introduction
 
 Rettangoli is a UI library with a small yet practical API designed for building modern web applications efficiently.
 
-Start with the [Component Model](/ui/docs/introduction/component-model.md) before implementing new primitives or components.
+Start with the [Component Model](/ui/docs/introduction/component-model) before implementing new primitives or components.
 
 ## Core Philosophy
 

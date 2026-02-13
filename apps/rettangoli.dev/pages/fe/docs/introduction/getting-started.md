@@ -183,7 +183,7 @@ This creates the 4 required files with boilerplate ready to edit.
 
 Now that you have a working component, explore the guides to learn more:
 
-- [Component Architecture](/fe/docs/guides/component-architecture.md) — understand the 4-file pattern and data flow
-- [View](/fe/docs/guides/view.md) — template syntax, bindings, and control flow
-- [Store](/fe/docs/guides/store.md) — state management and actions
-- [Handlers](/fe/docs/guides/handlers.md) — lifecycle hooks and event handling
+- [Component Architecture](/fe/docs/guides/component-architecture) — understand the 4-file pattern and data flow
+- [View](/fe/docs/guides/view) — template syntax, bindings, and control flow
+- [Store](/fe/docs/guides/store) — state management and actions
+- [Handlers](/fe/docs/guides/handlers) — lifecycle hooks and event handling

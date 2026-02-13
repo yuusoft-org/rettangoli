@@ -34,46 +34,47 @@ anchors:
           $else:
             - rtgl-text s=lg: ${header.label}
 template:
-  - rtgl-view h=f w=${sidebarWidth} d=v bwr=xs ah=${ah} ${containerAttrString}:
-      - rtgl-view ph=${headerPadding} pv=lg:
-          - $if header.href:
-              - rtgl-view href=${header.href} d=h av=c ah=${headerAlign} g=lg w=${headerWidth}:
-                  - - $if header.image && header.image.src:
-                        - $if header.image.href:
-                            - a href=${header.image.href}:
+  - rtgl-view h=f w=${sidebarWidth} d=v bwr=${rightBorderWidth} ah=${ah} ${containerAttrString}:
+      - $if showHeader:
+          - rtgl-view ph=${headerPadding} pv=lg:
+              - $if header.href:
+                  - rtgl-view href=${header.href} d=h av=c ah=${headerAlign} g=lg w=${headerWidth}:
+                      - - $if header.image && header.image.src:
+                            - $if header.image.href:
+                                - a href=${header.image.href}:
+                                    - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+                              $elif header.image.path:
+                                - rtgl-view#headerImage cur=pointer:
+                                    - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+                              $else:
                                 - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
-                          $elif header.image.path:
-                            - rtgl-view#headerImage cur=pointer:
-                                - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
-                          $else:
-                            - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
-                    - $if header.label && showLabels:
-                        - $if header.labelHref:
-                            - rtgl-text href=${header.labelHref} s=lg: ${header.label}
-                          $elif header.labelPath:
-                            - rtgl-view#headerLabel cur=pointer:
+                        - $if header.label && showLabels:
+                            - $if header.labelHref:
+                                - rtgl-text href=${header.labelHref} s=lg: ${header.label}
+                              $elif header.labelPath:
+                                - rtgl-view#headerLabel cur=pointer:
+                                    - rtgl-text s=lg: ${header.label}
+                              $else:
                                 - rtgl-text s=lg: ${header.label}
-                          $else:
-                            - rtgl-text s=lg: ${header.label}
-            $else:
-              - rtgl-view#header d=h av=c ah=${headerAlign} g=lg w=${headerWidth} cur=pointer data-testid=${header.testId}:
-                  - - $if header.image && header.image.src:
-                        - $if header.image.href:
-                            - a href=${header.image.href}:
+                $else:
+                  - rtgl-view#header d=h av=c ah=${headerAlign} g=lg w=${headerWidth} cur=pointer data-testid=${header.testId}:
+                      - - $if header.image && header.image.src:
+                            - $if header.image.href:
+                                - a href=${header.image.href}:
+                                    - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+                              $elif header.image.path:
+                                - rtgl-view#headerImage cur=pointer:
+                                    - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
+                              $else:
                                 - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
-                          $elif header.image.path:
-                            - rtgl-view#headerImage cur=pointer:
-                                - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
-                          $else:
-                            - rtgl-image w=${header.image.width} h=${header.image.height} src=${header.image.src} alt="${header.image.alt}": null
-                    - $if header.label && showLabels:
-                        - $if header.labelHref:
-                            - rtgl-text href=${header.labelHref} s=lg: ${header.label}
-                          $elif header.labelPath:
-                            - rtgl-view#headerLabel cur=pointer:
+                        - $if header.label && showLabels:
+                            - $if header.labelHref:
+                                - rtgl-text href=${header.labelHref} s=lg: ${header.label}
+                              $elif header.labelPath:
+                                - rtgl-view#headerLabel cur=pointer:
+                                    - rtgl-text s=lg: ${header.label}
+                              $else:
                                 - rtgl-text s=lg: ${header.label}
-                          $else:
-                            - rtgl-text s=lg: ${header.label}
       - rtgl-view w=f h=1fg sv ph=${headerPadding} pb=lg g=xs ah=${ah}:
           - $for item, i in items:
               - $if item.type == "groupLabel":

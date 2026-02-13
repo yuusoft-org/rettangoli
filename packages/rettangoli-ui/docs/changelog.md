@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Improvements
+- `rtgl-sidebar`: added `hide-header` to hide the header block.
+- `rtgl-sidebar`: supports `bwr` overrides with default `bwr="xs"` so right border can be disabled via `bwr="none"`.
+- `rtgl-sidebar`: added `w` width override so values like `w="f"` are supported.
+
 ### Breaking Changes
 - Disabled attribute standardized to `disabled` (replaces `dis`) on primitives: `rtgl-button`, `rtgl-input`, `rtgl-input-number`, `rtgl-textarea`, `rtgl-slider`, `rtgl-color-picker`.
 - Event names standardized to kebab-case with action suffixes:
