@@ -252,7 +252,8 @@ Value: `boolean`
 
 | property | description |
 |---|---|
-| `checkboxLabel` | Optional inline text rendered to the right of the checkbox (useful for terms/consent text). |
+| `content` | Optional inline text rendered to the right of the checkbox (useful for terms/consent text). |
+| `checkboxLabel` | Legacy alias for `content` (still supported). |
 
 ```yaml
 - name: newsletter
@@ -261,7 +262,7 @@ Value: `boolean`
 
 - name: termsAccepted
   type: checkbox
-  checkboxLabel: I agree to the Terms and Conditions
+  content: I agree to the Terms and Conditions
 ```
 
 ### Display types

@@ -383,6 +383,13 @@ export const selectViewData = ({ state, props }) => {
     if (field.type === "read-only-text") {
       field.content = field.content || "";
     }
+
+    if (field.type === "checkbox") {
+      const inlineText = typeof field.content === "string"
+        ? field.content
+        : (typeof field.checkboxLabel === "string" ? field.checkboxLabel : "");
+      field._checkboxText = inlineText;
+    }
   });
 
   // Actions
