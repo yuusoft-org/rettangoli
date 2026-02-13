@@ -1,14 +1,10 @@
-export const createHealthPingMethod = ({ now }) => {
-  if (!now) throw new Error('createHealthPingMethod: now is required');
+export const healthPingMethod = async ({ payload, context, deps }) => {
+  if (!deps?.now) throw new Error('healthPingMethod: deps.now is required');
 
   return {
-    'health.ping': async ({ params, context }) => {
-      return {
-        ok: true,
-        echo: params.echo,
-        ts: now(),
-        requestId: context.requestId,
-      };
-    },
+    ok: true,
+    echo: payload.echo,
+    ts: deps.now(),
+    requestId: context.requestId,
   };
 };

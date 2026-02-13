@@ -1,0 +1,65 @@
+file: './getProfile.handlers.js'
+group: user-get-profile
+---
+suite: userGetProfileMethod
+exportName: userGetProfileMethod
+---
+case: returns-profile
+in:
+  - payload: {}
+    context:
+      authUser:
+        userId: u-1
+    deps:
+      userDao:
+        findById: $mock:findById
+out:
+  id: u-1
+  email: demo@example.com
+  role: user
+mocks:
+  findById:
+    calls:
+      - in:
+          - userId: u-1
+        out:
+          id: u-1
+          email: demo@example.com
+          role: user
+---
+case: requires-auth
+in:
+  - payload: {}
+    context: {}
+    deps:
+      userDao:
+        findById: $mock:findById
+out:
+  _error: true
+  type: AUTH_REQUIRED
+  details:
+    reason: auth_required
+mocks:
+  findById:
+    fn: true
+---
+case: returns-user-not-found-error
+in:
+  - payload: {}
+    context:
+      authUser:
+        userId: u-404
+    deps:
+      userDao:
+        findById: $mock:findById
+out:
+  _error: true
+  type: USER_NOT_FOUND
+  details:
+    userId: u-404
+mocks:
+  findById:
+    calls:
+      - in:
+          - userId: u-404
+        out: __undefined__

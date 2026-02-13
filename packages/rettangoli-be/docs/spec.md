@@ -10,9 +10,10 @@ It does **not** define internal framework implementation files.
 - No classes.
 - Factory functions + pure functions.
 - Never use `null`; use `undefined` instead.
-- Dependency injection via one `src/setup.js`.
+- Dependency injection via one `src/setup.js` object.
 - API contract: JSON-RPC 2.0.
 - Method contract: JSON Schema for `params` and `result`.
+- Method tests: puty `*.spec.yaml` files.
 - Fail fast at startup and request runtime.
 
 ## Canonical Application Structure
@@ -20,10 +21,8 @@ It does **not** define internal framework implementation files.
 ```txt
 <your-app>/
   src/
-    index.js
     setup.js
     deps/
-      index.js
       createConfig.js
       createLogger.js
       createClock.js
@@ -36,15 +35,15 @@ It does **not** define internal framework implementation files.
       withAuthUser.js
     modules/
       health/
-        module.js
         ping/
           ping.handlers.js
           ping.schema.yaml
+          ping.spec.yaml
       user/
-        module.js
         getProfile/
           getProfile.handlers.js
           getProfile.schema.yaml
+          getProfile.spec.yaml
 ```
 
 ## Ownership Boundaries
@@ -53,7 +52,7 @@ Application code owns:
 - `deps/*`
 - `modules/*`
 - app middleware
-- app entry/bootstrap wiring
+- app setup/bootstrap metadata
 
 Framework runtime owns:
 - JSON-RPC envelope processing
@@ -76,63 +75,60 @@ Do not put in `deps`:
 - JSON-RPC method contracts
 
 Rule of thumb:
-- `deps` answers “how to talk to external systems”.
-- `modules/*/*/*.handlers.js` answers “what business behavior to run”.
+- `deps` answers "how to talk to external systems".
+- `modules/*/*/*.handlers.js` answers "what business behavior to run".
 
-## Module Contract (What Users Implement)
+## Module Folder Contract (What Users Implement)
 
-Each module exports one registration function from `src/modules/<domain>/module.js`.
+There is no `module.js` file.
 
-Required return shape:
+Each RPC method lives in one method folder:
+- `src/modules/<domain>/<action>/`
 
-```js
-{
-  name: string,
-  methods: Record<string, Function>,
-  contracts: Record<string, { paramsSchema: object, resultSchema: object }>
-}
-```
+The runtime (or a future registry) imports handlers and schemas directly from those method folders.
 
 Rules:
 - method keys must be globally unique (example: `health.ping`, `user.getProfile`)
-- every method key must exist in `contracts`
-- module throws at registration if required deps are missing
+- every method key must have a matching schema contract file
 - no direct env access inside method handlers
 
 ## Method File Rules
 
-For each RPC method, user creates two files:
+For each RPC method, user creates three files:
 - `<action>/<action>.handlers.js`
 - `<action>/<action>.schema.yaml`
+- `<action>/<action>.spec.yaml` (puty tests)
 
-Example pair:
+Example set:
 - `ping/ping.handlers.js`
 - `ping/ping.schema.yaml`
+- `ping/ping.spec.yaml`
 
 Method naming format:
 - `<domain>.<action>`
 
 Mandatory convention:
-- exactly one RPC method per `*.handlers.js` file
+- each `*.handlers.js` file exports one async method handler function directly
 - exactly one RPC method contract per `*.schema.yaml` file
+- exactly one method test suite per `*.spec.yaml` file
 - no multi-method handler files
 - no multi-method schema files
-- module `module.js` is only for aggregation/registration
-- method folders (`modules/<domain>/<action>/`) can host extra files later (tests, fixtures, docs)
+- no handler factory wrapper layer
+- `*.spec.yaml` follows puty multi-document format:
+  1. config doc: `file`, `group`
+  2. suite doc: `suite`, `exportName`
+  3. case docs: `case`, `in`, optional `out`, optional `throws`, optional `mocks`
 
 ## setup.js Responsibilities (App Composition Root)
 
 `src/setup.js` must:
-1. build deps (`createDeps`)
-2. register modules with deps
-3. merge all module `methods` and `contracts`
-4. fail on duplicate method/contract keys
-5. pass everything into framework runtime factory
-6. export app `port` value for bootstrap usage
+1. compose deps inline as `deps: { [moduleName]: { ... } }`
+2. export one object with `port` and `deps`
 
 `setup.js` must not:
 - contain domain business logic
 - parse HTTP requests
+- aggregate module contracts/handlers
 
 ## JSON-RPC v1 App Behavior
 
@@ -148,12 +144,14 @@ Required request validation:
 - `id` is string or number
 - `params` absent or object
 
-Standard errors used by apps:
+Standard JSON-RPC errors emitted by runtime:
 - `-32700` parse error
 - `-32600` invalid request
 - `-32601` method not found
 - `-32602` invalid params
 - `-32603` internal error
+
+Domain methods must not emit these codes directly.
 
 ## Middleware Model (Koa Style)
 
@@ -182,6 +180,8 @@ Rules:
 - middleware post-step must not mutate validated handler result shape
 - error mapping to JSON-RPC response happens at runtime boundary
 - middleware must stay domain-agnostic
+- middleware mutates `ctx` in-place and calls `next(ctx)`
+- do not clone/replace root context objects in middleware (`{ ...ctx }` style is disallowed)
 
 ## Context Contract (`ctx`)
 
@@ -203,6 +203,25 @@ Base shape:
     userAgent?: string,
     headers?: Record<string, string>,
   },
+  cookies: {
+    request: Record<string, string | undefined>,
+    response: Array<{
+      name: string,
+      value: string,
+      config?: {
+        path?: string,
+        domain?: string,
+        expires?: string,
+        maxAge?: number,
+        httpOnly?: boolean,
+        secure?: boolean,
+        sameSite?: 'Strict' | 'Lax' | 'None',
+        priority?: 'Low' | 'Medium' | 'High',
+        partitioned?: boolean,
+        attributes?: Record<string, string | number | boolean>,
+      },
+    }>,
+  },
   deps: object,
   logger: {
     info: Function,
@@ -219,29 +238,78 @@ Base shape:
 
 Key ownership:
 - runtime sets `request`
+- runtime parses and sets `cookies.request`
 - `withRequestId` sets `requestId`
 - `withLogger` sets `logger`
 - auth middleware sets `authUser`
+- middleware appends to `cookies.response`
 - `setup` injects `deps`
 
 Mutation policy:
-- allowed to set: `requestId`, `logger`, `authUser`, `meta.*`
+- allowed to set: `requestId`, `logger`, `authUser`, `meta.*`, `cookies.response`
 - disallowed to replace: `deps`, `request.method`, `request.id`
 - disallowed to inject domain state blobs into top-level `ctx`
+- middleware preserves root `ctx` identity and mutates fields in place
+
+Cookie JSON policy:
+- read incoming cookies from `ctx.cookies.request`
+- write outgoing cookies by appending objects to `ctx.cookies.response` (for example: `push`)
+- no special cookie helper APIs in middleware; only JSON object reads/writes
+- `cookies.response[*].config` is the full cookie config object passed to runtime serializer
+- unknown cookie attributes go under `config.attributes`
 
 Handler input contract:
-- handlers receive `{ params, context, deps }`
-- `params` comes from validated `ctx.request.params`
+- handlers receive `{ payload, context, deps }`
+- `payload` comes from validated `ctx.request.params`
 - `context` is `ctx` (read-only by convention inside handlers)
 - `deps` is `ctx.deps` (read-only)
+
+## Handler Outcome Contract
+
+Handlers are transport-agnostic and do not know JSON-RPC codes.
+
+Success shape:
+- return a normal object
+- if `_error` is absent (or not `true`), runtime treats it as success `result`
+
+Expected business failure shape:
+- return an object with `_error: true`
+- required field: `type` (stable domain error key, example: `AUTH_REQUIRED`)
+- optional field: `details` (domain context)
+
+Example business failure:
+
+```js
+{
+  _error: true,
+  type: 'USER_NOT_FOUND',
+  details: { userId: 'u-404' },
+}
+```
+
+Unexpected/system failure:
+- `throw` only for bugs, broken deps, and invariants
+- runtime maps thrown errors to internal/server error handling
+
+Runtime mapping responsibility:
+- runtime maps domain `type` values to protocol-specific errors (JSON-RPC `code/message/data`)
+- handlers must not return protocol codes/messages
+
+Reserved key:
+- top-level `_error` is framework-reserved and must not be used in normal success payloads
+
+`deps` shape convention:
+- top-level keys are module names
+- example: `deps.health`, `deps.user`
 
 ## Schema Rules (App-Level)
 
 - schema file must include `method`, `paramsSchema`, `resultSchema`
-- `method` must exactly match handler map key
+- `method` must exactly match the method id resolved for that handler folder
 - both schemas are object schemas in v1
 - default to `additionalProperties: false`
 - schema compile must fail app startup if invalid
+- `resultSchema` validates success payloads only (objects without `_error: true`)
 
 ## Middleware Rules (App-Level)
 
@@ -250,6 +318,7 @@ Allowed app middleware responsibilities:
 - scoped logger
 - auth/rate-limit checks
 - metrics/logging
+- cookie read/write via `ctx.cookies` JSON objects
 
 Forbidden:
 - domain business logic in middleware
@@ -257,23 +326,4 @@ Forbidden:
 - hidden dependency creation
 - replacing `ctx.deps`
 - rewriting `ctx.request.method` or `ctx.request.id`
-
-## Fail-Fast Startup Checklist
-
-Startup must throw when:
-- required env/config is missing
-- required module deps are missing
-- duplicate method keys exist
-- duplicate contract keys exist
-- any schema is invalid
-
-## Minimum Test Checklist
-
-- valid request -> success
-- invalid JSON -> parse error
-- invalid envelope -> invalid request
-- unknown method -> method not found
-- invalid params -> invalid params
-- handler throw -> mapped app/internal error
-- invalid result -> internal error
-- duplicate method during startup -> throw
+- cookie helper method APIs (use `ctx.cookies` objects only)

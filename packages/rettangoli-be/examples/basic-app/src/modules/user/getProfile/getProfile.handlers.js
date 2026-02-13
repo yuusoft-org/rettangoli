@@ -1,39 +1,29 @@
-const unauthorizedError = () => {
-  const error = new Error('Unauthorized');
-  error.code = -32001;
-  error.data = { reason: 'auth_required' };
-  return error;
-};
+export const userGetProfileMethod = async ({ context, deps }) => {
+  if (!deps?.userDao?.findById) {
+    throw new Error('userGetProfileMethod: deps.userDao.findById is required');
+  }
 
-const userNotFoundError = (userId) => {
-  const error = new Error('User not found');
-  error.code = -32010;
-  error.data = { userId };
-  return error;
-};
+  if (!context.authUser?.userId) {
+    return {
+      _error: true,
+      type: 'AUTH_REQUIRED',
+      details: { reason: 'auth_required' },
+    };
+  }
 
-export const createUserGetProfileMethod = ({ userDao }) => {
-  if (!userDao?.findById) {
-    throw new Error('createUserGetProfileMethod: userDao.findById is required');
+  const user = await deps.userDao.findById({ userId: context.authUser.userId });
+
+  if (!user) {
+    return {
+      _error: true,
+      type: 'USER_NOT_FOUND',
+      details: { userId: context.authUser.userId },
+    };
   }
 
   return {
-    'user.getProfile': async ({ context }) => {
-      if (!context.authUser?.userId) {
-        throw unauthorizedError();
-      }
-
-      const user = await userDao.findById({ userId: context.authUser.userId });
-
-      if (!user) {
-        throw userNotFoundError(context.authUser.userId);
-      }
-
-      return {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      };
-    },
+    id: user.id,
+    email: user.email,
+    role: user.role,
   };
 };

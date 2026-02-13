@@ -7,20 +7,18 @@ Example application code structure for the proposed rettangoli backend framework
 This folder is for design review, not production use.
 
 What it demonstrates:
-- `setup.js` as composition root
+- `setup.js` exports only `{ port, deps }`
+- `deps` is grouped by module name (`deps: { [moduleName]: { ... } }`)
 - DI boundary with DAO/services in `deps/`
-- Koa-style middleware chain
-- module registration contract (`methods` + `contracts`)
+- middleware cookie handling via `ctx.cookies` JSON objects
+- per-method folders in `modules/` (no `module.js` aggregators)
 - per-method schema files for params/result
-
-What is intentionally placeholder:
-- framework import (`@rettangoli/be`) because runtime package is not implemented yet
+- per-method puty specs via `*.spec.yaml` (multi-document puty format)
 
 ## Structure
 
 ```txt
 src/
-  index.js
   setup.js
   deps/
   middleware/
@@ -30,6 +28,6 @@ src/
 ## Suggested review checklist
 
 1. Is the `deps` boundary clear enough for DAO/services?
-2. Is `ctx` shape in middleware/handlers sufficient?
-3. Are module contracts ergonomic for scaling domains?
-4. Are schema files expressive enough for request/result contracts?
+2. Are per-method folders ergonomic for scaling domains?
+3. Are schema files expressive enough for request/result contracts?
+4. Is the new `*.spec.yaml` format sufficient for puty tests?

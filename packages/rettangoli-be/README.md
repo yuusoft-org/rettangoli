@@ -42,11 +42,9 @@ Design baseline:
 packages/rettangoli-be/
   README.md
   src/
-    index.js
     setup.js
     createApp.js
     deps/
-      index.js
       createConfig.js
       createLogger.js
       createClock.js
@@ -64,10 +62,10 @@ packages/rettangoli-be/
       withLogger.js
     modules/
       health/
-        index.js
         rpc/
           health.ping.handlers.js
           health.ping.schema.yaml
+          health.ping.spec.yaml
     transport/
       http/
         createHttpHandler.js
@@ -103,42 +101,46 @@ methods:
 ## Handler Contract
 
 ```js
-const createHealthHandlers = ({ now }) => {
-  if (!now) throw new Error('createHealthHandlers: now is required');
+const healthPingMethod = async ({ payload, deps }) => {
+  if (!deps?.now) throw new Error('healthPingMethod: deps.now is required');
 
   return {
-    'health.ping': async ({ params }) => {
-      return {
-        ok: true,
-        echo: params.echo,
-        ts: now(),
-      };
-    },
+    ok: true,
+    echo: payload.echo,
+    ts: deps.now(),
   };
 };
 
-export { createHealthHandlers };
+export { healthPingMethod };
 ```
+
+For expected business failures, handlers return a domain error object (not JSON-RPC codes):
+
+```js
+return {
+  _error: true,
+  type: 'AUTH_REQUIRED',
+  details: { reason: 'auth_required' },
+};
+```
+
+Runtime maps `type` to JSON-RPC `code/message/data`. Use `throw` only for unexpected/system failures.
 
 ## setup.js Contract (DI Root)
 
 All side-effect deps are injected here. No hidden globals.
 
 ```js
-const setup = ({ deps }) => {
-  if (!deps) throw new Error('setup: deps is required');
-  if (!deps.logger) throw new Error('setup: deps.logger is required');
-  if (!deps.now) throw new Error('setup: deps.now is required');
-
-  const methods = {
-    ...createHealthHandlers({ now: deps.now }),
-  };
-
-  return createApp({
-    logger: deps.logger,
-    methods,
-    middleware: [],
-  });
+const setup = {
+  port: Number(process.env.PORT || 3000),
+  deps: {
+    health: {
+      // health-specific deps
+    },
+    user: {
+      // user-specific deps
+    },
+  },
 };
 
 export { setup };
@@ -179,15 +181,20 @@ Middleware can only:
 - Read/update request context.
 - Add diagnostics/logging.
 - Short-circuit with a JSON-RPC error response.
+- Read incoming cookies from `ctx.cookies.request`.
+- Write outgoing cookies to `ctx.cookies.response` using plain JSON objects.
+- Mutate `ctx` in place and pass `next(ctx)`.
 
 Middleware must not:
 - Hide dependency wiring.
 - Mutate handler result shape post-validation.
+- Use cookie helper functions; cookie handling is JSON-object only.
+- Clone/replace the root `ctx` object in middleware.
 
 ## Immediate Build Plan
 
 1. Scaffold `src/` files and export surface.
 2. Implement dispatcher + JSON-RPC error helpers.
 3. Implement AJV-based schema compiler and fail-fast validation.
-4. Add `health.ping` method + schema as first vertical slice.
+4. Add `health.ping` method + schema/spec as first vertical slice.
 5. Add HTTP adapter and integration tests for valid/invalid JSON-RPC requests.
