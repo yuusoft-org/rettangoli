@@ -17,6 +17,12 @@ export const handleBeforeMount = (deps) => {
 export const handleOnUpdate = (deps, payload) => {
   const { oldProps, newProps } = payload;
   const { store, render } = deps;
+  let shouldRender = false;
+
+  if (!!newProps?.disabled && !oldProps?.disabled) {
+    store.closeOptionsPopover({});
+    shouldRender = true;
+  }
 
   // Check if key changed
   if (oldProps?.key !== newProps?.key && newProps?.key) {
@@ -35,15 +41,20 @@ export const handleOnUpdate = (deps, payload) => {
         });
       }
     }
-    render();
+    shouldRender = true;
   } else if (oldProps.selectedValue !== newProps.selectedValue) {
     store.updateSelectedValue({ value: newProps.selectedValue });
+    shouldRender = true;
+  }
+
+  if (shouldRender) {
     render();
   }
 }
 
 export const handleButtonClick = (deps, payload) => {
   const { store, render, refs, props } = deps;
+  if (props.disabled) return;
   const event = payload._event;
   event.stopPropagation();
 
@@ -80,6 +91,7 @@ export const handleClickOptionsPopoverOverlay = (deps) => {
 
 export const handleOptionClick = (deps, payload) => {
   const { render, dispatchEvent, props, store } = deps;
+  if (props.disabled) return;
   const event = payload._event;
   event.stopPropagation();
   const id = event.currentTarget.id.slice('option'.length);
@@ -124,6 +136,7 @@ export const handleOptionMouseLeave = (deps, payload) => {
 
 export const handleClearClick = (deps, payload) => {
   const { store, render, dispatchEvent, props } = deps;
+  if (props.disabled) return;
   const event = payload._event;
 
   event.stopPropagation();
@@ -150,6 +163,7 @@ export const handleClearClick = (deps, payload) => {
 }
 
 export const handleAddOptionClick = (deps, payload) => {
+  if (deps.props.disabled) return;
   const { store, render, dispatchEvent } = deps;
   const { _event: event } = payload;
   event.stopPropagation();

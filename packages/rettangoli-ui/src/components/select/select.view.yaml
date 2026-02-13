@@ -28,7 +28,7 @@ refs:
       mouseleave:
         handler: handleAddOptionMouseLeave
 template:
-  - rtgl-button#selectButton v=ol ${containerAttrString} data-testid="select-button":
+  - rtgl-button#selectButton v=ol ${containerAttrString} ?disabled=${isDisabled} data-testid="select-button":
       - rtgl-view d=h av=c w=f:
           - rtgl-text w=1fg c=${selectedLabelColor} ellipsis: ${selectedLabel}
           - $if showClear:

@@ -1,0 +1,25 @@
+---
+title: Select Disabled
+---
+<rtgl-view g="lg" p="lg" w="400">
+  <rtgl-select id="enabled-select"></rtgl-select>
+  <rtgl-select id="disabled-select" disabled></rtgl-select>
+</rtgl-view>
+
+<script>
+  const options = [
+    { value: "1", label: "Option 1" },
+    { value: "2", label: "Option 2" },
+    { value: "3", label: "Option 3" },
+  ];
+
+  const enabledSelect = document.getElementById("enabled-select");
+  enabledSelect.selectedValue = "2";
+  enabledSelect.options = options;
+  enabledSelect.render();
+
+  const disabledSelect = document.getElementById("disabled-select");
+  disabledSelect.selectedValue = "2";
+  disabledSelect.options = options;
+  disabledSelect.render();
+</script>

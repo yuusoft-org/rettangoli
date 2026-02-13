@@ -67,6 +67,7 @@ Use `options` as data source and listen to `value-change`.
 | Options | `options` (property) | `{ label: string, value: any, testId?: string }[]` | `[]` |
 | No Clear | `no-clear` | boolean | off |
 | Add Option | `addOption` (property) | `{ label?: string }` | - |
+| Disabled | `disabled` | boolean | `false` |
 | Trigger Width | `w` | number, `%`, `xs`-`xl`, `f`, CSS length/value | content-based |
 | Trigger Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 
@@ -175,6 +176,30 @@ Use `addOption` to render an extra action row at the bottom of the menu.
   select.addEventListener("add-option-click", () => {
     console.log("Add option clicked");
   });
+  select.render();
+</script>
+```
+
+## Disabled
+
+Use `disabled` to make the select non-interactive.
+
+### Behavior & precedence
+
+- Trigger cannot be opened while disabled.
+- Clear icon and add-option row are hidden while disabled.
+- Programmatic value updates still work.
+
+```html codePreview
+<rtgl-select id="disabled-select" disabled></rtgl-select>
+
+<script>
+  const select = document.getElementById("disabled-select");
+  select.options = [
+    { value: "1", label: "Option 1" },
+    { value: "2", label: "Option 2" },
+  ];
+  select.selectedValue = "2";
   select.render();
 </script>
 ```

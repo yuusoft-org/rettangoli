@@ -14,6 +14,7 @@ const blacklistedProps = [
   "options",
   "noClear",
   "addOption",
+  "disabled",
 ];
 
 const stringifyProps = (props = {}) => {
@@ -37,6 +38,7 @@ export const createInitialState = () => Object.freeze({
 export const selectViewData = ({ state, props }) => {
   // Generate container attribute string
   const containerAttrString = stringifyProps(props);
+  const isDisabled = !!props.disabled;
 
   // Use state's selected value if available, otherwise use props.selectedValue
   const currentValue = state.selectedValue !== null ? state.selectedValue : props.selectedValue;
@@ -65,6 +67,7 @@ export const selectViewData = ({ state, props }) => {
 
   return {
     containerAttrString,
+    isDisabled,
     isOpen: state.isOpen,
     position: state.position,
     options: optionsWithSelection,
@@ -72,8 +75,8 @@ export const selectViewData = ({ state, props }) => {
     selectedLabel: displayLabel,
     selectedLabelColor: isPlaceholderLabel ? "mu-fg" : "fg",
     hasValue: currentValue !== null && currentValue !== undefined,
-    showClear: !props.noClear && (currentValue !== null && currentValue !== undefined),
-    showAddOption: !!props.addOption,
+    showClear: !isDisabled && !props.noClear && (currentValue !== null && currentValue !== undefined),
+    showAddOption: !isDisabled && !!props.addOption,
     addOptionLabel: props.addOption?.label ? `+ ${props.addOption.label}` : "+ Add",
     addOptionBgc: state.hoveredAddOption ? "ac" : "",
   };
@@ -125,5 +128,4 @@ export const clearSelectedValue = ({ state }) => {
 export const setHoveredAddOption = ({ state }, payload = {}) => {
   state.hoveredAddOption = !!payload.isHovered;
 };
-
 
