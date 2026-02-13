@@ -38,6 +38,9 @@ class RettangoliTextAreaElement extends HTMLElement {
         textarea:focus {
           border-color: var(--foreground);
         }
+        textarea:disabled {
+          cursor: not-allowed;
+        }
         ${marginStyles}
         ${cursorStyles}
       `);

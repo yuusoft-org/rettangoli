@@ -250,12 +250,18 @@ A text field that opens a popover panel for editing. Useful when the input needs
 
 Value: `boolean`
 
-No additional properties.
+| property | description |
+|---|---|
+| `checkboxLabel` | Optional inline text rendered to the right of the checkbox (useful for terms/consent text). |
 
 ```yaml
 - name: newsletter
   type: checkbox
   label: Subscribe to updates
+
+- name: termsAccepted
+  type: checkbox
+  checkboxLabel: I agree to the Terms and Conditions
 ```
 
 ### Display types

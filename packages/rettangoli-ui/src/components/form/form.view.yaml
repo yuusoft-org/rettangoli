@@ -71,7 +71,7 @@ template:
                       - $if field.type == "popover-input":
                           - rtgl-popover-input#field${field._idx} data-field-name=${field.name} label="${field.label}" placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "checkbox":
-                          - rtgl-checkbox#field${field._idx} data-field-name=${field.name} ?disabled=${field._disabled}: null
+                          - rtgl-checkbox#field${field._idx} data-field-name=${field.name} :label=#{field.checkboxLabel} ?disabled=${field._disabled}: null
                       - $if field.type == "image" && field._imageSrc:
                           - rtgl-image#image${field._idx} data-field-name=${field.name} src=${field._imageSrc} w=${field.width} h=${field.height} cur=pointer: null
                       - $if field.type == "image" && !field._imageSrc:

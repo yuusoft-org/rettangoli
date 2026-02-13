@@ -16,19 +16,44 @@ class RettangoliCheckboxElement extends HTMLElement {
       RettangoliCheckboxElement.styleSheet = new CSSStyleSheet();
       RettangoliCheckboxElement.styleSheet.replaceSync(css`
         :host {
-          display: contents;
+          display: inline-flex;
+        }
+        .checkbox-wrapper {
+          display: inline-flex;
+          align-items: flex-start;
+          cursor: pointer;
+          color: var(--foreground);
+        }
+        :host([has-label]) .checkbox-wrapper {
+          gap: var(--spacing-sm);
+        }
+        :host([disabled]) .checkbox-wrapper {
+          cursor: not-allowed;
+        }
+        .checkbox-label {
+          display: none;
+          font-size: var(--sm-font-size);
+          font-weight: var(--sm-font-weight);
+          line-height: var(--sm-line-height);
+          letter-spacing: var(--sm-letter-spacing);
+          user-select: none;
+        }
+        :host([has-label]) .checkbox-label {
+          display: block;
         }
         input[type="checkbox"] {
           -webkit-appearance: none;
           appearance: none;
           width: 18px;
           height: 18px;
-          border: 2px solid var(--muted);
+          border: 2px solid var(--muted-foreground);
           border-radius: var(--border-radius-sm);
-          background: var(--background);
+          background: var(--muted);
           cursor: pointer;
           transition: all 0.2s ease;
           position: relative;
+          margin: 0;
+          flex-shrink: 0;
         }
         input[type="checkbox"]:checked {
           background: var(--foreground);
@@ -79,10 +104,21 @@ class RettangoliCheckboxElement extends HTMLElement {
 
     this._inputElement = document.createElement('input');
     this._inputElement.type = 'checkbox';
+    this._wrapperElement = document.createElement('label');
+    this._wrapperElement.className = 'checkbox-wrapper';
+    this._labelElement = document.createElement('span');
+    this._labelElement.className = 'checkbox-label';
+    this._labelSlotElement = document.createElement('slot');
+    this._labelSlotElement.addEventListener('slotchange', () => {
+      this._updateLabelState();
+    });
+    this._labelElement.appendChild(this._labelSlotElement);
     this._styleElement = document.createElement('style');
 
     this.shadow.appendChild(this._styleElement);
-    this.shadow.appendChild(this._inputElement);
+    this._wrapperElement.appendChild(this._inputElement);
+    this._wrapperElement.appendChild(this._labelElement);
+    this.shadow.appendChild(this._wrapperElement);
 
     this._inputElement.addEventListener('change', this._onChange);
   }
@@ -92,6 +128,7 @@ class RettangoliCheckboxElement extends HTMLElement {
       "key",
       "checked",
       "disabled",
+      "label",
       ...permutateBreakpoints([
         ...styleMapKeys,
         "wh",
@@ -150,6 +187,11 @@ class RettangoliCheckboxElement extends HTMLElement {
       } else {
         this._inputElement.removeAttribute("disabled");
       }
+      return;
+    }
+
+    if (name === "label") {
+      this._updateLabelState();
       return;
     }
 
@@ -222,6 +264,28 @@ class RettangoliCheckboxElement extends HTMLElement {
 
     if (this.hasAttribute("disabled")) {
       this._inputElement.setAttribute("disabled", "");
+    }
+
+    this._updateLabelState();
+  }
+
+  _updateLabelState() {
+    const fallbackLabel = this.getAttribute("label");
+    this._labelSlotElement.textContent = fallbackLabel ?? "";
+
+    const assignedNodes = this._labelSlotElement.assignedNodes({ flatten: true });
+    const hasAssignedLabel = assignedNodes.some((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent.trim().length > 0;
+      }
+      return node.nodeType === Node.ELEMENT_NODE;
+    });
+    const hasFallbackLabel = typeof fallbackLabel === "string" && fallbackLabel.trim().length > 0;
+
+    if (hasAssignedLabel || hasFallbackLabel) {
+      this.setAttribute("has-label", "");
+    } else {
+      this.removeAttribute("has-label");
     }
   }
 }
