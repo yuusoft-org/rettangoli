@@ -106,5 +106,6 @@ All events bubble.
 ### Behavior & precedence
 
 - `defaultValues` seeds internal state on mount.
+- Field `name` paths support dot notation (`user.email`) for nested objects; bracket array paths (`items[0]`) are not supported.
 - `key` change resets field state from current `defaultValues`.
 - Enter key submits first action button (except within textarea).

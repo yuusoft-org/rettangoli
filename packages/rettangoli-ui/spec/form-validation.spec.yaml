@@ -619,24 +619,6 @@ out:
   values:
     mode: basic
 ---
-case: array-like field paths are collected into array output
-in:
-  - form:
-      fields:
-        - name: items[0]
-          type: input-text
-        - name: items[1]
-          type: input-text
-    formValues:
-      items:
-        - "first"
-        - "second"
-out:
-  values:
-    items:
-      - "first"
-      - "second"
----
 suite: set path normalization
 exportName: runSetPathCase
 ---
@@ -651,7 +633,7 @@ out:
     user:
       email: "new@example.com"
 ---
-case: array path write replaces legacy flat key
+case: bracket path is treated as a plain key
 in:
   - initial:
       "items[0]": "legacy"
@@ -659,5 +641,4 @@ in:
     value: "fresh"
 out:
   values:
-    items:
-      - "fresh"
+    "items[0]": "fresh"

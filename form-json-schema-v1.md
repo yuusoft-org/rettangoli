@@ -61,7 +61,7 @@ Data types additionally have:
 
 | property | required | description |
 |---|---|---|
-| `name` | yes | Output key path (supports `user.email`, `items[0]`) |
+| `name` | yes | Output key path (supports dot notation like `user.email`) |
 | `required` | no | `true` or `{ message: "custom message" }`. |
 | `disabled` | no | Boolean. |
 
