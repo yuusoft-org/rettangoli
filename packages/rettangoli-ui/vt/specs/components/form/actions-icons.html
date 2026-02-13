@@ -12,7 +12,7 @@ title: "Actions - With Icons"
 
   form.form = {
     title: 'Button Icons',
-    description: 'Buttons with prefix and suffix icons',
+    description: 'Buttons with plus icon only',
     fields: [{
       name: 'name',
       type: 'input-text',
@@ -21,25 +21,25 @@ title: "Actions - With Icons"
     actions: {
       layout: 'vertical',
       buttons: [{
-        id: 'save',
-        label: 'Save',
-        variant: 'pr',
-        pre: 'check',
-      }, {
         id: 'add',
         label: 'Add Item',
+        variant: 'pr',
+        pre: 'plus',
+      }, {
+        id: 'add-alt',
+        label: 'Add More',
         variant: 'se',
         pre: 'plus',
       }, {
         id: 'next',
         label: 'Next',
         variant: 'ol',
-        suf: 'chevronRight',
+        suf: 'plus',
       }, {
-        id: 'loading',
-        label: 'Processing',
+        id: 'disabled',
+        label: 'Disabled Add',
         variant: 'pr',
-        pre: 'loading',
+        pre: 'plus',
         disabled: true,
       }],
     }
