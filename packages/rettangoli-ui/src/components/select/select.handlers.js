@@ -24,25 +24,7 @@ export const handleOnUpdate = (deps, payload) => {
     shouldRender = true;
   }
 
-  // Check if key changed
-  if (oldProps?.key !== newProps?.key && newProps?.key) {
-    // Clear current state using store action
-    store.resetSelection({});
-
-    // Re-apply the prop value if available
-    const selectedValue = newProps?.selectedValue;
-    const options = newProps?.options || [];
-
-    if (selectedValue !== null && selectedValue !== undefined && options) {
-      const selectedOption = options.find(opt => deepEqual(opt.value, selectedValue));
-      if (selectedOption) {
-        store.updateSelectedValue({
-          value: selectedOption.value
-        });
-      }
-    }
-    shouldRender = true;
-  } else if (oldProps.selectedValue !== newProps.selectedValue) {
+  if (oldProps.selectedValue !== newProps.selectedValue) {
     store.updateSelectedValue({ value: newProps.selectedValue });
     shouldRender = true;
   }

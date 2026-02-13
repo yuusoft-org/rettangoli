@@ -13,15 +13,17 @@ viewport:
   form.id = 'form';
   form.setAttribute('w', '300');
 
-  form.defaultValues = {}
+  form.defaultValues = {
+    contentType: 'dialogue.content'
+  }
 
   form.context = {
-    title: 'My title from context'
+    titlePrefix: 'My title from context'
   }
 
   form.form = {
-    title: '${title}',
-    description: 'Form Description',
+    title: '${titlePrefix} - ${formValues.contentType}',
+    description: 'Form Description (${contentType})',
     fields: [{
       name: 'contentType',
       type: 'select',
@@ -54,7 +56,7 @@ viewport:
   });
 
   form.addEventListener('form-change', (e) => {
-    form.context = { title: 'My title from context', ...e.detail.formValues};
+    form.context = { titlePrefix: 'My title from context', ...e.detail.values };
     console.log('form-change', e.detail);
   });
 

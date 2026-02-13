@@ -41,7 +41,7 @@ actions:
 | prop | type | description |
 |---|---|---|
 | `form` | object | The form schema (this spec). |
-| `defaultValues` | object | Initial form state. Read on mount and on reset. Not reactive — changing it after mount has no effect. |
+| `defaultValues` | object | Initial form state. Read on mount and on `reset()`. To apply new defaults after mount, update `defaultValues` then call `reset()`. |
 | `disabled` | boolean | Disable the entire form. All fields and buttons become non-interactive. |
 
 `defaultValues` keeps the schema reusable — the same form definition works for both "create" and "edit" flows.
@@ -235,6 +235,8 @@ Value: `string`
 
 A text field that opens a popover panel for editing. Useful when the input needs more space or context than an inline field provides (e.g. code snippets, rich text, long-form values).
 
+Popover edits are staged locally while the panel is open. The form value updates only when the popover `Submit` button is clicked.
+
 | property | description |
 |---|---|
 | `placeholder` | Placeholder text |
@@ -243,7 +245,7 @@ A text field that opens a popover panel for editing. Useful when the input needs
 - name: customValue
   type: popover-input
   label: Custom Value
-  placeholder: Click to edit
+  placeholder: Enter value
 ```
 
 #### `checkbox`
@@ -489,6 +491,102 @@ When a conditional removes a field from the rendered form, that field's value **
 
 This handles the case where a user types into a field, then a conditional hides it — the stale value is excluded from all subsequent events and submission.
 
+## Jempl in Text Properties
+
+`title`, `description`, and display field text can use jempl expressions with current form values.
+
+### Example: dynamic title + description
+
+```yaml
+title: "Profile: ${formValues.user.name}"
+description: "Plan: ${formValues.plan}"
+fields:
+  - name: user.name
+    type: input-text
+    label: Name
+  - name: plan
+    type: select
+    label: Plan
+    options:
+      - label: Free
+        value: free
+      - label: Pro
+        value: pro
+```
+
+### Example: conditional read-only summary
+
+```yaml
+fields:
+  - name: accepted
+    type: checkbox
+    content: I agree to the terms
+
+  - type: read-only-text
+    content: "Accepted by ${formValues.user.name}"
+    $when: formValues.accepted
+```
+
+These expressions are evaluated against merged context (`context`, current field values, and `formValues`) and update reactively during input/change events.
+
+## Advanced Context Case Scenarios
+
+Use `context` to inject non-field runtime data (team, tenant, environment). Keep branching logic in schema with `$when`/Jempl instead of JavaScript listeners.
+
+### Scenario 1: Production Change Request (risk + approvals)
+
+```js
+form.context = {
+  formTitle: "Production Change Request",
+  teamName: "Payments Platform",
+  environmentLabel: "Environment: Production",
+};
+form.form = {
+  title: "${formTitle} - ${teamName}",
+  description: "${environmentLabel} | Type: ${formValues.request.changeType} | Severity: ${formValues.request.severity}",
+  fields: [
+    { name: "request.changeType", type: "select", options: [...] },
+    { name: "request.severity", type: "select", options: [...] },
+    { name: "flags.hotfixReason", type: "input-textarea", $when: "formValues.request.changeType == 'hotfix'" },
+    { name: "rollout.strategy", type: "select", options: [...] },
+    { name: "rollout.canaryPercent", type: "slider-with-input", $when: "formValues.rollout.strategy == 'canary'" },
+    { name: "approvals.mode", type: "select", options: [...] },
+    { name: "approvals.secondaryApprover", type: "input-text", $when: "formValues.approvals.mode == 'dual'" },
+    { name: "approvals.cabTicket", type: "input-text", $when: "formValues.approvals.mode == 'cab'" },
+    { type: "read-only-text", content: "Single approver flow selected.", $when: "formValues.approvals.mode == 'single'" },
+    { type: "read-only-text", content: "Dual approver flow selected.", $when: "formValues.approvals.mode == 'dual'" },
+    { type: "read-only-text", content: "CAB review flow selected.", $when: "formValues.approvals.mode == 'cab'" },
+  ],
+};
+```
+
+### Scenario 2: Multi-country Billing + Compliance Onboarding
+
+```js
+form.context = {
+  tenantName: "Studio Orbit",
+  regionLabel: "Region: Global",
+};
+
+form.form = {
+  title: "Customer Onboarding - ${tenantName}",
+  description: "${regionLabel} | Country: ${formValues.account.country} | Billing: ${formValues.billing.method}",
+  fields: [
+    { name: "account.country", type: "select", options: [...] },
+    { name: "account.hasVat", type: "checkbox" },
+    { name: "account.vatId", type: "input-text", $when: "formValues.account.hasVat" },
+    { name: "billing.method", type: "select", options: [...] },
+    { name: "billing.invoiceEmail", type: "input-text", $when: "formValues.billing.method == 'invoice'" },
+    { name: "billing.poNumber", type: "input-text", $when: "formValues.billing.method == 'purchase_order'" },
+    { name: "security.storesPII", type: "checkbox" },
+    { name: "security.requiresDpa", type: "checkbox" },
+    { name: "security.dpaContact", type: "input-text", $when: "formValues.security.requiresDpa" },
+    { type: "read-only-text", content: "Legal review required.", $when: "formValues.security.storesPII && formValues.security.requiresDpa" },
+    { type: "read-only-text", content: "VAT is required for Germany billing profiles.", $when: "formValues.account.country == 'de' && !formValues.account.hasVat" },
+  ],
+};
+```
+
 ## Full Example
 
 ```yaml
@@ -608,7 +706,7 @@ Validation checks `required` fields and `rules`. The consumer can also call `val
 | `slider` | every drag tick | mouse release |
 | `slider-with-input` | every drag tick / keystroke | mouse release / blur |
 | `color-picker` | while picking | picker closed |
-| `popover-input` | every keystroke (in popover) | popover closed |
+| `popover-input` | does not fire | submit button click |
 | `select` | does not fire | option selected |
 | `checkbox` | does not fire | toggled |
 | `image` | does not fire | does not fire (uses `form-field-event`) |
@@ -647,6 +745,16 @@ Other field types do not emit this event. New interaction types can be added per
 | `setValues(values)` | — | Shallow merge `values` into current form state. Only the keys passed get updated. |
 | `validate()` | `{ valid, errors }` | Runs validation on all fields. Returns result and displays errors inline. |
 | `reset()` | — | Reset all fields to `defaultValues`. Clears validation errors. |
+
+Update defaults after mount:
+
+```js
+form.defaultValues = {
+  email: "updated@email.com",
+  age: 25,
+};
+form.reset();
+```
 
 ## Test Plan
 

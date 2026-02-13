@@ -1,5 +1,5 @@
 ---
-title: "Update Key"
+title: "Update Defaults and Reset"
 viewport:
   id: form-compact
   width: 700
@@ -24,7 +24,7 @@ viewport:
       volume: 75,
       brightness: 60
     }
-    form.setAttribute('key', `${Math.random()}`);
+    form.reset();
   });
 
   const form = document.createElement('rtgl-form');
@@ -42,7 +42,7 @@ viewport:
 
   form.form = {
     title: 'Form with All Input Types',
-    description: 'Testing key update for all input components',
+    description: 'Testing defaultValues update + reset() for all input components',
     fields: [{
       name: 'email',
       type: 'input-text',

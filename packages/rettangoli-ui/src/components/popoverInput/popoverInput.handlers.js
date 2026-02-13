@@ -1,18 +1,46 @@
+const normalizePopoverValue = (value) => {
+  if (value === undefined || value === null || value === true) {
+    return "";
+  }
+  return String(value);
+};
+
+const commitValue = (deps, value) => {
+  const { store, render, dispatchEvent } = deps;
+  const nextValue = normalizePopoverValue(value);
+
+  store.setValue({ value: nextValue });
+  store.closePopover({});
+
+  dispatchEvent(new CustomEvent("value-change", {
+    detail: { value: nextValue },
+    bubbles: true,
+  }));
+
+  render();
+};
+
 export const handleBeforeMount = (deps) => {
   const { store, props } = deps;
 
   if (props.value !== undefined) {
-    store.setValue({ value: props.value || '' });
+    const value = normalizePopoverValue(props.value);
+    store.setValue({ value });
+    store.setTempValue({ value });
   }
 }
 
 export const handleOnUpdate = (deps, payload) => {
   const { oldProps, newProps } = payload;
   const { store, render } = deps;
+  const valueChanged = oldProps?.value !== newProps?.value;
 
-  if (oldProps?.value !== newProps?.value) {
-    const value = newProps?.value ?? '';
+  if (valueChanged) {
+    const value = normalizePopoverValue(newProps?.value);
     store.setValue({ value });
+    if (!store.getState().isOpen) {
+      store.setTempValue({ value });
+    }
   }
 
   render();
@@ -22,8 +50,9 @@ export const handleTextClick = (deps, payload) => {
   const { store, render, refs, props } = deps;
   const event = payload._event;
 
-  const value = store.selectValue();
-  store.setTempValue({ value })
+  const value = normalizePopoverValue(props.value);
+  store.setValue({ value });
+  store.setTempValue({ value });
 
   store.openPopover({
     position: {
@@ -31,16 +60,18 @@ export const handleTextClick = (deps, payload) => {
       y: event.currentTarget.getBoundingClientRect().bottom,
     }
   });
-
-  const { input } = refs;
-  input.value = value;
   render();
 
-  if (props.autoFocus) {
-    setTimeout(() => {
-      input.focus();
-    }, 50)
-  }
+  setTimeout(() => {
+    const { input } = refs;
+    if (!input) return;
+    input.value = value;
+    input.focus();
+    const innerInput = input.shadowRoot?.querySelector("input, textarea");
+    if (innerInput && typeof innerInput.focus === "function") {
+      innerInput.focus();
+    }
+  }, 50);
 }
 
 export const handlePopoverClose = (deps, payload) => {
@@ -50,54 +81,34 @@ export const handlePopoverClose = (deps, payload) => {
 }
 
 export const handleInputChange = (deps, payload) => {
-  const { store, render, dispatchEvent } = deps;
+  const { store } = deps;
   const event = payload._event;
-  const value = event.detail.value;
+  const value = normalizePopoverValue(event.detail.value);
 
   store.setTempValue({ value });
-
-  dispatchEvent(new CustomEvent('value-input', {
-    detail: { value },
-    bubbles: true,
-  }));
-
-  render();
 }
 
 export const handleSubmitClick = (deps) => {
-  const { store, render, dispatchEvent, refs } = deps;
-  const { input } = refs
-  const value = input.value;
-
-  store.setValue({ value });
-  store.closePopover({});
-
-  dispatchEvent(new CustomEvent('value-change', {
-    detail: { value },
-    bubbles: true,
-  }));
-
-  render();
+  const { store, refs } = deps;
+  const { input } = refs;
+  const value = input ? input.value : store.getState().tempValue;
+  commitValue(deps, value);
 }
 
 export const handleInputKeydown = (deps, payload) => {
-  const { store, render, dispatchEvent, refs } = deps;
+  const { store, refs } = deps;
   const event = payload._event;
 
-  if (event.key === 'Enter') {
-    const { input } = refs
-    const value = input.value;
-
+  if (event.key === "Enter") {
+    event.preventDefault();
+    event.stopPropagation();
+    const { input } = refs;
+    const value = input ? input.value : store.getState().tempValue;
+    commitValue(deps, value);
+  } else if (event.key === "Escape") {
+    event.preventDefault();
+    event.stopPropagation();
     store.closePopover({});
-    // Dispatch custom event
-    dispatchEvent(new CustomEvent('value-change', {
-      detail: { value },
-      bubbles: true,
-    }));
-
-    render();
-  } else if (event.key === 'Escape') {
-    store.closePopover({});
-    render();
+    deps.render();
   }
 }

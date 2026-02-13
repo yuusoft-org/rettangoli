@@ -120,7 +120,7 @@ export const set = (obj, path, value) => {
   return obj;
 };
 
-const blacklistedAttrs = ["id", "class", "style", "slot", "form", "defaultValues", "disabled", "key"];
+const blacklistedAttrs = ["id", "class", "style", "slot", "form", "defaultValues", "disabled"];
 
 const stringifyAttrs = (props = {}) => {
   return Object.entries(props)
@@ -421,7 +421,6 @@ export const selectViewData = ({ state, props }) => {
   }
 
   return {
-    key: props?.key,
     containerAttrString,
     title: form?.title || "",
     description: form?.description || "",

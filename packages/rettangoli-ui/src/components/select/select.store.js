@@ -40,8 +40,9 @@ export const selectViewData = ({ state, props }) => {
   const containerAttrString = stringifyProps(props);
   const isDisabled = !!props.disabled;
 
-  // Use state's selected value if available, otherwise use props.selectedValue
-  const currentValue = state.selectedValue !== null ? state.selectedValue : props.selectedValue;
+  // Treat selectedValue as a controlled prop when provided by parent.
+  const hasControlledValue = Object.prototype.hasOwnProperty.call(props || {}, "selectedValue");
+  const currentValue = hasControlledValue ? props.selectedValue : state.selectedValue;
 
   // Calculate display label from value
   let displayLabel = props.placeholder || "Select an option";
@@ -128,4 +129,3 @@ export const clearSelectedValue = ({ state }) => {
 export const setHoveredAddOption = ({ state }, payload = {}) => {
   state.hoveredAddOption = !!payload.isHovered;
 };
-

@@ -2,11 +2,11 @@ componentName: rtgl-form
 propsSchema:
   type: object
   properties:
-    key:
-      type: string
     form:
       type: object
     defaultValues:
+      type: object
+    context:
       type: object
     disabled:
       type: boolean

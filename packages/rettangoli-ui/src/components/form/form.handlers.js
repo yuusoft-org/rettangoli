@@ -10,7 +10,23 @@ import {
   validateForm,
 } from "./form.store.js";
 
-const updateFieldAttributes = ({ form, formValues = {}, refs, formDisabled = false }) => {
+const syncInteractiveFieldAttribute = ({ field, target, value }) => {
+  if (!field || !target) return;
+  if (!["slider-with-input", "popover-input"].includes(field.type)) return;
+
+  if (value === undefined || value === null) {
+    target.removeAttribute("value");
+  } else {
+    target.setAttribute("value", String(value));
+  }
+};
+
+const updateFieldAttributes = ({
+  form,
+  formValues = {},
+  refs,
+  formDisabled = false,
+}) => {
   const fields = form.fields || [];
   let idx = 0;
 
@@ -37,6 +53,21 @@ const updateFieldAttributes = ({ form, formValues = {}, refs, formDisabled = fal
           ref.removeAttribute("value");
         } else {
           ref.setAttribute("value", String(value));
+        }
+
+        if (field.type === "slider-with-input" && ref.store?.setValue) {
+          const normalized = Number(value ?? 0);
+          ref.store.setValue({ value: Number.isFinite(normalized) ? normalized : 0 });
+          if (typeof ref.render === "function") {
+            ref.render();
+          }
+        }
+
+        if (field.type === "popover-input" && ref.store?.setValue) {
+          ref.store.setValue({ value: value === undefined || value === null ? "" : String(value) });
+          if (typeof ref.render === "function") {
+            ref.render();
+          }
         }
       }
 
@@ -112,23 +143,9 @@ export const handleAfterMount = (deps) => {
 };
 
 export const handleOnUpdate = (deps, payload) => {
-  const { oldProps, newProps } = payload;
+  const { newProps } = payload;
   const { store, render, refs } = deps;
   const formDisabled = !!newProps?.disabled;
-
-  if (oldProps?.key !== newProps?.key) {
-    initFormValues(store, newProps);
-    const state = store.getState();
-    const form = selectForm({ state, props: newProps });
-    updateFieldAttributes({
-      form,
-      formValues: state.formValues,
-      refs,
-      formDisabled,
-    });
-    render();
-    return;
-  }
 
   const state = store.getState();
   pruneHiddenValues({ state, props: newProps });
@@ -154,12 +171,19 @@ export const handleValueInput = (deps, payload) => {
   store.setFormFieldValue({ name, value });
 
   const state = store.getState();
+  pruneHiddenValues({ state, props });
+  const form = selectForm({ state, props });
+  const dataFields = collectAllDataFields(form.fields || []);
+  const field = dataFields.find((f) => f.name === name);
+
+  syncInteractiveFieldAttribute({
+    field,
+    target: event.currentTarget,
+    value,
+  });
 
   // Reactive validation
   if (state.reactiveMode) {
-    const form = selectForm({ state, props });
-    const dataFields = collectAllDataFields(form.fields || []);
-    const field = dataFields.find((f) => f.name === name);
     if (field) {
       const error = validateField(field, value);
       if (error) {
@@ -167,9 +191,11 @@ export const handleValueInput = (deps, payload) => {
       } else {
         store.clearFieldError({ name });
       }
-      render();
     }
   }
+
+  // Keep conditional fields and jempl-rendered content in sync while typing.
+  render();
 
   dispatchEvent(
     new CustomEvent("form-input", {
@@ -195,12 +221,19 @@ export const handleValueChange = (deps, payload) => {
   store.setFormFieldValue({ name, value });
 
   const state = store.getState();
+  pruneHiddenValues({ state, props });
+  const form = selectForm({ state, props });
+  const dataFields = collectAllDataFields(form.fields || []);
+  const field = dataFields.find((f) => f.name === name);
+
+  syncInteractiveFieldAttribute({
+    field,
+    target: event.currentTarget,
+    value,
+  });
 
   // Reactive validation
   if (state.reactiveMode) {
-    const form = selectForm({ state, props });
-    const dataFields = collectAllDataFields(form.fields || []);
-    const field = dataFields.find((f) => f.name === name);
     if (field) {
       const error = validateField(field, value);
       if (error) {
@@ -208,9 +241,11 @@ export const handleValueChange = (deps, payload) => {
       } else {
         store.clearFieldError({ name });
       }
-      render();
     }
   }
+
+  // Re-render on committed changes so controlled child components stay synchronized.
+  render();
 
   dispatchEvent(
     new CustomEvent("form-change", {

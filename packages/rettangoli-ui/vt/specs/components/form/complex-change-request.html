@@ -1,0 +1,220 @@
+---
+title: "Complex Change Request"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'complex-change-request-form';
+  form.setAttribute('w', '520');
+
+  form.context = {
+    formTitle: 'Production Change Request',
+    teamName: 'Payments Platform',
+    environmentLabel: 'Environment: Production',
+  };
+
+  form.defaultValues = {
+    request: {
+      changeType: 'hotfix',
+      severity: 'high',
+      summary: 'Update settlement retry thresholds',
+      plannedStart: '2026-03-01 09:00',
+      plannedEnd: '2026-03-01 10:00',
+    },
+    rollout: {
+      strategy: 'canary',
+      canaryPercent: 20,
+      rollbackReady: false,
+      rollbackPlan: 'Revert feature flag and redeploy prior image',
+    },
+    approvals: {
+      mode: 'dual',
+      primaryApprover: 'alice@company.com',
+      secondaryApprover: 'bob@company.com',
+      cabTicket: '',
+    },
+    comms: {
+      notifyChannel: 'email',
+      channelTarget: '#payments-alerts',
+      emailList: 'ops@company.com, support@company.com',
+      incidentTicket: '',
+    },
+    flags: {
+      freezeBypass: true,
+      businessJustification: 'Critical card settlement outage mitigation.',
+      hotfixReason: 'Live retries failing on subset of acquirers.',
+    },
+  };
+
+  form.form = {
+    title: '${formTitle} - ${teamName}',
+    description: '${environmentLabel} | Type: ${formValues.request.changeType} | Severity: ${formValues.request.severity}',
+    fields: [{
+      type: 'section',
+      label: 'Request',
+      fields: [{
+        name: 'request.changeType',
+        type: 'select',
+        label: 'Change type',
+        options: [
+          { label: 'Configuration', value: 'config' },
+          { label: 'Schema', value: 'schema' },
+          { label: 'Infrastructure', value: 'infrastructure' },
+          { label: 'Hotfix', value: 'hotfix' }
+        ]
+      }, {
+        name: 'request.severity',
+        type: 'select',
+        label: 'Severity',
+        options: [
+          { label: 'Low', value: 'low' },
+          { label: 'Medium', value: 'medium' },
+          { label: 'High', value: 'high' },
+          { label: 'Critical', value: 'critical' }
+        ]
+      }, {
+        name: 'request.summary',
+        type: 'input-textarea',
+        label: 'Summary',
+        rows: 3,
+        required: true
+      }, {
+        name: 'request.plannedStart',
+        type: 'input-text',
+        label: 'Planned start (UTC)'
+      }, {
+        name: 'request.plannedEnd',
+        type: 'input-text',
+        label: 'Planned end (UTC)'
+      }, {
+        name: 'flags.hotfixReason',
+        type: 'input-textarea',
+        label: 'Hotfix reason',
+        rows: 3,
+        $when: "formValues.request.changeType == 'hotfix'"
+      }]
+    }, {
+      type: 'section',
+      label: 'Rollout',
+      fields: [{
+        name: 'rollout.strategy',
+        type: 'select',
+        label: 'Rollout strategy',
+        options: [
+          { label: 'Standard', value: 'standard' },
+          { label: 'Canary', value: 'canary' },
+          { label: 'Blue/Green', value: 'bluegreen' }
+        ]
+      }, {
+        name: 'rollout.canaryPercent',
+        type: 'slider-with-input',
+        label: 'Canary percentage',
+        min: 1,
+        max: 50,
+        step: 1,
+        $when: "formValues.rollout.strategy == 'canary'"
+      }, {
+        name: 'rollout.rollbackReady',
+        type: 'checkbox',
+        content: 'Rollback plan is ready'
+      }, {
+        name: 'rollout.rollbackPlan',
+        type: 'input-textarea',
+        label: 'Rollback plan',
+        rows: 3,
+        $when: "formValues.rollout.rollbackReady == false"
+      }]
+    }, {
+      type: 'section',
+      label: 'Approvals',
+      fields: [{
+        name: 'approvals.mode',
+        type: 'select',
+        label: 'Approval mode',
+        options: [
+          { label: 'Single', value: 'single' },
+          { label: 'Dual', value: 'dual' },
+          { label: 'CAB', value: 'cab' }
+        ]
+      }, {
+        name: 'approvals.primaryApprover',
+        type: 'input-text',
+        label: 'Primary approver',
+        required: true
+      }, {
+        name: 'approvals.secondaryApprover',
+        type: 'input-text',
+        label: 'Secondary approver',
+        $when: "formValues.approvals.mode == 'dual'"
+      }, {
+        name: 'approvals.cabTicket',
+        type: 'input-text',
+        label: 'CAB ticket',
+        $when: "formValues.approvals.mode == 'cab'"
+      }]
+    }, {
+      type: 'section',
+      label: 'Communication',
+      fields: [{
+        name: 'comms.notifyChannel',
+        type: 'select',
+        label: 'Notify channel',
+        options: [
+          { label: 'Slack', value: 'slack' },
+          { label: 'Email', value: 'email' },
+          { label: 'PagerDuty', value: 'pagerduty' }
+        ]
+      }, {
+        name: 'comms.channelTarget',
+        type: 'input-text',
+        label: 'Slack channel',
+        $when: "formValues.comms.notifyChannel == 'slack'"
+      }, {
+        name: 'comms.emailList',
+        type: 'input-textarea',
+        label: 'Email recipients',
+        rows: 2,
+        $when: "formValues.comms.notifyChannel == 'email'"
+      }, {
+        name: 'comms.incidentTicket',
+        type: 'input-text',
+        label: 'Incident ticket',
+        $when: "formValues.request.severity == 'critical'"
+      }]
+    }, {
+      name: 'flags.freezeBypass',
+      type: 'checkbox',
+      content: 'Request change-freeze bypass'
+    }, {
+      name: 'flags.businessJustification',
+      type: 'input-textarea',
+      label: 'Freeze bypass justification',
+      rows: 3,
+      $when: "formValues.flags.freezeBypass"
+    }, {
+      type: 'read-only-text',
+      content: 'High-risk requests require rollback confirmation before approval.',
+      $when: "formValues.request.severity == 'high' || formValues.request.severity == 'critical'"
+    }],
+    actions: {
+      buttons: [{
+        id: 'saveDraft',
+        label: 'Save Draft',
+        variant: 'se',
+      }, {
+        id: 'submit',
+        label: 'Submit Request',
+        variant: 'pr',
+        validate: true,
+      }]
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+</script>
