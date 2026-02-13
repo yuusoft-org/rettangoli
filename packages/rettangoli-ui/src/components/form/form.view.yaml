@@ -49,7 +49,7 @@ template:
                                   - $if field.label:
                                       - rtgl-text: ${field.label}
                                   - $if field.required:
-                                      - rtgl-text c=de s=sm: "*"
+                                      - rtgl-text c=fg s=sm: "*"
                                   - $if field.tooltip:
                                       - rtgl-svg#tooltipIcon${field._idx} data-field-name=${field.name} svg="info" wh=16 c=mu-fg cur=help ml=xs: null
                               - $if field.description:
