@@ -1,0 +1,17 @@
+method: user.getProfile
+paramsSchema:
+  type: object
+  additionalProperties: false
+  properties: {}
+  required: []
+resultSchema:
+  type: object
+  additionalProperties: false
+  properties:
+    id:
+      type: string
+    email:
+      type: string
+    role:
+      type: string
+  required: [id, email, role]
