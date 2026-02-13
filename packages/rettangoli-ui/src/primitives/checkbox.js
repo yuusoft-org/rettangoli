@@ -56,7 +56,7 @@ class RettangoliCheckboxElement extends HTMLElement {
           flex-shrink: 0;
         }
         input[type="checkbox"]:checked {
-          background: var(--foreground);
+          background: var(--muted);
           border-color: var(--foreground);
         }
         input[type="checkbox"]:checked::after {
@@ -66,7 +66,7 @@ class RettangoliCheckboxElement extends HTMLElement {
           top: 1px;
           width: 6px;
           height: 10px;
-          border: solid var(--background);
+          border: solid var(--foreground);
           border-width: 0 2px 2px 0;
           transform: rotate(45deg);
         }

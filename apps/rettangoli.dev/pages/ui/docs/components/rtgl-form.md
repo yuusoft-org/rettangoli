@@ -58,6 +58,34 @@ A schema-driven form component that composes Rettangoli input primitives.
 | Reset Key | `key` | string | - |
 | Template Context | `context` (property) | object | - |
 
+## Width
+
+By default, `rtgl-form` fills the available width of its parent container.
+
+Use `w` to set a fixed width.
+
+```html codePreview
+<rtgl-view id="fixed-form-container"></rtgl-view>
+
+<script>
+  const form = document.createElement("rtgl-form");
+  form.setAttribute("w", "420");
+
+  form.form = {
+    title: "Fixed Width Form",
+    fields: [
+      { name: "email", label: "Email", type: "input-text", required: true },
+      { name: "notes", label: "Notes", type: "input-textarea", rows: 3 },
+    ],
+    actions: {
+      buttons: [{ id: "save", label: "Save", variant: "pr" }],
+    },
+  };
+
+  document.getElementById("fixed-form-container").appendChild(form);
+</script>
+```
+
 ## Field Types
 
 - `input-text`

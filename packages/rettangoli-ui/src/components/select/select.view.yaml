@@ -29,8 +29,8 @@ refs:
         handler: handleAddOptionMouseLeave
 template:
   - rtgl-button#selectButton v=ol ${containerAttrString} ?disabled=${isDisabled} data-testid="select-button":
-      - rtgl-view d=h av=c w=f:
-          - rtgl-text w=1fg c=${selectedLabelColor} ellipsis: ${selectedLabel}
+      - rtgl-view d=h av=c ah=s w=f:
+          - rtgl-text w=1fg ta=l c=${selectedLabelColor} ellipsis: ${selectedLabel}
           - $if showClear:
               - rtgl-svg#clearButton ml=md svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
           - rtgl-svg ml=md svg=chevronDown wh=16 c=mu-fg: null
