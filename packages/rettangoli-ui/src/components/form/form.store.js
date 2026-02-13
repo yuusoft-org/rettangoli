@@ -20,6 +20,7 @@ const encode = (input) => {
 const isObjectLike = (value) => value !== null && typeof value === "object";
 const isPlainObject = (value) => isObjectLike(value) && !Array.isArray(value);
 const isPathLike = (path) => typeof path === "string" && path.includes(".");
+const hasBracketPathToken = (path) => typeof path === "string" && /[\[\]]/.test(path);
 
 function pickByPaths(obj, paths) {
   const result = {};
@@ -74,6 +75,7 @@ function normalizeWhenDirectives(form) {
 export const get = (obj, path, defaultValue = undefined) => {
   if (!path) return defaultValue;
   if (!isObjectLike(obj)) return defaultValue;
+  if (hasBracketPathToken(path)) return defaultValue;
   const keys = path.split(".").filter((key) => key !== "");
   let current = obj;
   for (const key of keys) {
@@ -90,6 +92,9 @@ export const get = (obj, path, defaultValue = undefined) => {
 
 export const set = (obj, path, value) => {
   if (!isObjectLike(obj) || typeof path !== "string" || path.length === 0) {
+    return obj;
+  }
+  if (hasBracketPathToken(path)) {
     return obj;
   }
   const keys = path.split(".").filter((key) => key !== "");

@@ -633,7 +633,7 @@ out:
     user:
       email: "new@example.com"
 ---
-case: bracket path is treated as a plain key
+case: bracket path write is ignored
 in:
   - initial:
       "items[0]": "legacy"
@@ -641,4 +641,4 @@ in:
     value: "fresh"
 out:
   values:
-    "items[0]": "fresh"
+    "items[0]": "legacy"
