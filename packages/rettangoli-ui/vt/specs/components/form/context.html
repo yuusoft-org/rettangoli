@@ -1,5 +1,9 @@
 ---
 title: "Context"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
 ---
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
@@ -9,18 +13,20 @@ title: "Context"
   form.id = 'form';
   form.setAttribute('w', '300');
 
-  form.defaultValues = {}
+  form.defaultValues = {
+    contentType: 'dialogue.content'
+  }
 
   form.context = {
-    title: 'My title from context'
+    titlePrefix: 'My title from context'
   }
 
   form.form = {
-    title: '${title}',
-    description: 'Form Description',
+    title: '${titlePrefix} - ${formValues.contentType}',
+    description: 'Form Description (${contentType})',
     fields: [{
       name: 'contentType',
-      inputType: 'select',
+      type: 'select',
       label: 'Text content',
       options: [
         { label: 'Dialogue Content', value: 'dialogue.content' },
@@ -31,27 +37,26 @@ title: "Context"
     }, {
       '$if contentType == "custom"': {
         name: 'content',
-        inputType: 'input-text',
+        type: 'input-text',
         label: 'Text Content',
         required: true,
       }
     }],
     actions: {
-      layout: '', // vertical, fill, right, left
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Submit',
+        label: 'Submit',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {
-    form.context = { title: 'My title from context', ...e.detail.formValues};
+    form.context = { titlePrefix: 'My title from context', ...e.detail.values };
     console.log('form-change', e.detail);
   });
 

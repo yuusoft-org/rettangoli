@@ -1,5 +1,9 @@
 ---
 title: "Read Only Text"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
 ---
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
@@ -16,22 +20,21 @@ title: "Read Only Text"
   form.form = {
     fields: [{
       name: 'email',
-      inputType: 'read-only-text',
+      type: 'read-only-text',
       label: 'Email',
       description: 'Enter your email',
     }],
     actions: {
-      layout: '', // vertical, fill, right, left
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Submit',
+        label: 'Submit',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {

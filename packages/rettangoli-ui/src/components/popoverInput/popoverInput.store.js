@@ -9,15 +9,19 @@ export const createInitialState = () => Object.freeze({
 });
 
 export const selectViewData = ({ props, state }) => {
-  const value = state.value || '-';
+  const hasValue = typeof state.value === "string" && state.value.length > 0;
+  const value = hasValue ? state.value : "-";
+  const placeholder = typeof props.placeholder === "string" ? props.placeholder : "";
+  const label = typeof props.label === "string" ? props.label : "";
 
   return {
     isOpen: state.isOpen,
     position: state.position,
     value: value,
+    valueColor: hasValue ? "fg" : "mu-fg",
     tempValue: state.tempValue,
-    placeholder: props.placeholder ?? '',
-    label: props.label,
+    placeholder,
+    label,
   };
 }
 

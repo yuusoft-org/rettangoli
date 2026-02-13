@@ -7,7 +7,7 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "1.0.0-rc4",
+      "version": "1.0.0-rc12",
       "bin": {
         "rtgl": "./cli.js",
       },
@@ -22,7 +22,7 @@
     },
     "packages/rettangoli-fe": {
       "name": "@rettangoli/fe",
-      "version": "1.0.0-rc1",
+      "version": "1.0.0-rc3",
       "dependencies": {
         "esbuild": "^0.25.5",
         "immer": "^10.1.1",
@@ -39,7 +39,7 @@
     },
     "packages/rettangoli-sites": {
       "name": "@rettangoli/sites",
-      "version": "0.2.7",
+      "version": "1.0.0-rc2",
       "dependencies": {
         "gray-matter": "^4.0.3",
         "jempl": "^0.3.1-rc1",
@@ -57,7 +57,7 @@
     },
     "packages/rettangoli-ui": {
       "name": "@rettangoli/ui",
-      "version": "0.1.31",
+      "version": "1.0.0-rc6",
       "dependencies": {
         "@floating-ui/dom": "^1.6.13",
         "@rettangoli/fe": "workspace:*",
@@ -73,11 +73,13 @@
         "pixelmatch": "^6.0.0",
         "playwright": "1.57.0",
         "pngjs": "^7.0.0",
+        "puty": "^0.1.1",
+        "vitest": "^4.0.15",
       },
     },
     "packages/rettangoli-vt": {
       "name": "@rettangoli/vt",
-      "version": "1.0.0-rc3",
+      "version": "1.0.0-rc12",
       "dependencies": {
         "commander": "^13.1.0",
         "js-yaml": "^4.1.0",

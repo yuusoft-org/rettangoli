@@ -1,0 +1,54 @@
+---
+title: "Actions - Vertical Layout"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
+
+  form.defaultValues = {}
+
+  form.form = {
+    title: 'Login',
+    description: 'Sign in to your account',
+    fields: [{
+      name: 'email',
+      type: 'input-text',
+      label: 'Email',
+      placeholder: 'user@example.com',
+      required: true,
+    }, {
+      name: 'password',
+      type: 'input-text',
+      label: 'Password',
+      inputType: 'password',
+      required: true,
+    }],
+    actions: {
+      layout: 'vertical',
+      buttons: [{
+        id: 'login',
+        variant: 'pr',
+        label: 'Sign In',
+        validate: true,
+      }, {
+        id: 'register',
+        variant: 'gh',
+        label: 'Create Account',
+      }],
+    }
+  }
+
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

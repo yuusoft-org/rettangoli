@@ -19,9 +19,9 @@ refs:
         handler: handleSubmitClick
 template:
   - rtgl-view#textDisplay w=f cur=pointer:
-      - rtgl-text: ${value}
+      - rtgl-text c=${valueColor}: ${value}
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y}:
-      - rtgl-view g=md w=240 slot=content bgc=bg br=md:
+      - rtgl-view g=md w=240 slot=content bgc=mu br=md:
           - rtgl-text: ${label}
           - rtgl-input#input w=f placeholder=${placeholder}: null
           - rtgl-view w=f ah=e:

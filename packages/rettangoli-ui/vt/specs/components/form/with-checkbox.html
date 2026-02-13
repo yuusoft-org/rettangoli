@@ -1,0 +1,58 @@
+---
+title: "With Checkbox"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
+
+  form.defaultValues = {
+    newsletter: true,
+    terms: false,
+  }
+
+  form.form = {
+    title: 'Checkbox Fields',
+    description: 'Form with checkbox inputs',
+    fields: [{
+      name: 'newsletter',
+      type: 'checkbox',
+      label: 'Subscribe to newsletter',
+      description: 'Receive weekly updates',
+    }, {
+      name: 'terms',
+      type: 'checkbox',
+      content: 'I agree to the terms and conditions',
+      required: true,
+    }, {
+      name: 'notifications',
+      type: 'checkbox',
+      label: 'Enable notifications',
+    }],
+    actions: {
+      buttons: [{
+        id: 'save',
+        variant: 'pr',
+        label: 'Save',
+        validate: true,
+      }],
+    }
+  }
+
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

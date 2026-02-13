@@ -1,0 +1,46 @@
+---
+title: "Actions - Stretch Layout"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {}
+
+  form.form = {
+    title: 'Confirmation',
+    description: 'Equal-width buttons',
+    fields: [{
+      name: 'note',
+      type: 'input-textarea',
+      label: 'Note',
+      rows: 3,
+    }],
+    actions: {
+      layout: 'stretch',
+      buttons: [{
+        id: 'cancel',
+        variant: 'se',
+        label: 'Cancel',
+      }, {
+        id: 'confirm',
+        variant: 'pr',
+        label: 'Confirm',
+      }],
+    }
+  }
+
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

@@ -28,9 +28,9 @@ refs:
       mouseleave:
         handler: handleAddOptionMouseLeave
 template:
-  - rtgl-button#selectButton v=ol ${containerAttrString} data-testid="select-button":
-      - rtgl-view d=h av=c w=f:
-          - rtgl-text w=1fg c=${selectedLabelColor} ellipsis: ${selectedLabel}
+  - rtgl-button#selectButton v=ol ${containerAttrString} ?disabled=${isDisabled} data-testid="select-button":
+      - rtgl-view d=h av=c ah=s w=f:
+          - rtgl-text w=1fg ta=s c=${selectedLabelColor} ellipsis: ${selectedLabel}
           - $if showClear:
               - rtgl-svg#clearButton ml=md svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
           - rtgl-svg ml=md svg=chevronDown wh=16 c=mu-fg: null
@@ -38,7 +38,7 @@ template:
       - rtgl-view wh=300 g=xs slot=content bgc=mu br=md sv=true:
           - $for option, i in options:
               - rtgl-view#option${i} w=f ph=lg pv=md cur=pointer br=md bgc=${option.bgc} data-testid=${option.testId}:
-                  - rtgl-text: ${option.label}
+                  - rtgl-text ta=s: ${option.label}
           - $if showAddOption:
               - rtgl-view w=f bw=xs bc=mu bwt=sm: null
               - rtgl-view#optionAdd w=f ph=lg pv=md cur=pointer br=md bgc=${addOptionBgc} data-testid="select-add-option":

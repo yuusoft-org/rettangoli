@@ -1,0 +1,53 @@
+---
+title: "Actions - With Icons"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+
+  form.defaultValues = {}
+
+  form.form = {
+    title: 'Button Icons',
+    description: 'Buttons with plus icon only',
+    fields: [{
+      name: 'name',
+      type: 'input-text',
+      label: 'Name',
+    }],
+    actions: {
+      layout: 'vertical',
+      buttons: [{
+        id: 'add',
+        label: 'Add Item',
+        variant: 'pr',
+        pre: 'plus',
+      }, {
+        id: 'add-alt',
+        label: 'Add More',
+        variant: 'se',
+        pre: 'plus',
+      }, {
+        id: 'next',
+        label: 'Next',
+        variant: 'ol',
+        suf: 'plus',
+      }, {
+        id: 'disabled',
+        label: 'Disabled Add',
+        variant: 'pr',
+        pre: 'plus',
+        disabled: true,
+      }],
+    }
+  }
+
+  document.getElementById('container').appendChild(form);
+</script>

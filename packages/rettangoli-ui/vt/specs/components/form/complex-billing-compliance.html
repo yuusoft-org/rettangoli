@@ -1,0 +1,249 @@
+---
+title: "Complex Billing Compliance"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'complex-billing-compliance-form';
+  form.setAttribute('w', '520');
+
+  form.context = {
+    tenantName: 'Studio Orbit',
+    regionLabel: 'Region: Global',
+  };
+
+  form.defaultValues = {
+    account: {
+      country: 'de',
+      legalEntityType: 'corp',
+      legalName: 'Orbit GmbH',
+      hasVat: false,
+      vatId: '',
+    },
+    billing: {
+      method: 'purchase_order',
+      plan: 'enterprise',
+      seats: 85,
+      cardLast4: '',
+      invoiceEmail: '',
+      netTerms: 'net30',
+      poNumber: 'PO-2026-0091',
+      poExpiry: '2026-12-31',
+    },
+    security: {
+      storesPII: true,
+      dataClass: 'confidential',
+      requiresDpa: true,
+      dpaContact: 'legal@orbit.example',
+    },
+    contacts: {
+      opsEmail: 'ops@orbit.example',
+      financeEmail: 'finance@orbit.example',
+      escalationEnabled: true,
+      escalationPhone: '+49-555-001122',
+    },
+    integrations: {
+      erpEnabled: true,
+      erpVendor: 'sap',
+      erpProjectCode: 'ORBIT-ERP-42',
+    },
+  };
+
+  form.form = {
+    title: 'Customer Onboarding - ${tenantName}',
+    description: '${regionLabel} | Country: ${formValues.account.country} | Billing: ${formValues.billing.method}',
+    fields: [{
+      type: 'section',
+      label: 'Account',
+      fields: [{
+        name: 'account.country',
+        type: 'select',
+        label: 'Country',
+        options: [
+          { label: 'United States', value: 'us' },
+          { label: 'Germany', value: 'de' },
+          { label: 'United Kingdom', value: 'uk' },
+          { label: 'Singapore', value: 'sg' }
+        ]
+      }, {
+        name: 'account.legalEntityType',
+        type: 'select',
+        label: 'Legal entity',
+        options: [
+          { label: 'LLC', value: 'llc' },
+          { label: 'Corporation', value: 'corp' },
+          { label: 'Nonprofit', value: 'nonprofit' }
+        ]
+      }, {
+        name: 'account.legalName',
+        type: 'input-text',
+        label: 'Legal name',
+        required: true
+      }, {
+        name: 'account.hasVat',
+        type: 'checkbox',
+        content: 'VAT-registered entity'
+      }, {
+        name: 'account.vatId',
+        type: 'input-text',
+        label: 'VAT ID',
+        $when: "formValues.account.hasVat"
+      }]
+    }, {
+      type: 'section',
+      label: 'Billing',
+      fields: [{
+        name: 'billing.method',
+        type: 'select',
+        label: 'Billing method',
+        options: [
+          { label: 'Card', value: 'card' },
+          { label: 'Invoice', value: 'invoice' },
+          { label: 'Purchase Order', value: 'purchase_order' }
+        ]
+      }, {
+        name: 'billing.plan',
+        type: 'select',
+        label: 'Plan',
+        options: [
+          { label: 'Starter', value: 'starter' },
+          { label: 'Pro', value: 'pro' },
+          { label: 'Enterprise', value: 'enterprise' }
+        ]
+      }, {
+        name: 'billing.seats',
+        type: 'slider-with-input',
+        label: 'Seats',
+        min: 1,
+        max: 500,
+        step: 1,
+      }, {
+        name: 'billing.cardLast4',
+        type: 'input-text',
+        label: 'Card last 4',
+        $when: "formValues.billing.method == 'card'"
+      }, {
+        name: 'billing.invoiceEmail',
+        type: 'input-text',
+        label: 'Invoice email',
+        $when: "formValues.billing.method == 'invoice'"
+      }, {
+        name: 'billing.netTerms',
+        type: 'select',
+        label: 'Net terms',
+        options: [
+          { label: 'Net 15', value: 'net15' },
+          { label: 'Net 30', value: 'net30' },
+          { label: 'Net 45', value: 'net45' }
+        ],
+        $when: "formValues.billing.method == 'invoice'"
+      }, {
+        name: 'billing.poNumber',
+        type: 'input-text',
+        label: 'PO number',
+        $when: "formValues.billing.method == 'purchase_order'"
+      }, {
+        name: 'billing.poExpiry',
+        type: 'input-text',
+        label: 'PO expiry date',
+        $when: "formValues.billing.method == 'purchase_order'"
+      }]
+    }, {
+      type: 'section',
+      label: 'Security and Compliance',
+      fields: [{
+        name: 'security.storesPII',
+        type: 'checkbox',
+        content: 'System stores PII'
+      }, {
+        name: 'security.dataClass',
+        type: 'select',
+        label: 'Data classification',
+        options: [
+          { label: 'Internal', value: 'internal' },
+          { label: 'Confidential', value: 'confidential' },
+          { label: 'Restricted', value: 'restricted' }
+        ],
+        $when: "formValues.security.storesPII"
+      }, {
+        name: 'security.requiresDpa',
+        type: 'checkbox',
+        content: 'DPA required'
+      }, {
+        name: 'security.dpaContact',
+        type: 'input-text',
+        label: 'DPA contact',
+        $when: "formValues.security.requiresDpa"
+      }, {
+        type: 'read-only-text',
+        content: 'Legal review required before activation.',
+        $when: "formValues.security.storesPII && formValues.security.requiresDpa"
+      }]
+    }, {
+      type: 'section',
+      label: 'Contacts and Integrations',
+      fields: [{
+        name: 'contacts.opsEmail',
+        type: 'input-text',
+        label: 'Ops email',
+        required: true
+      }, {
+        name: 'contacts.financeEmail',
+        type: 'input-text',
+        label: 'Finance email'
+      }, {
+        name: 'contacts.escalationEnabled',
+        type: 'checkbox',
+        content: 'Enable escalation contact'
+      }, {
+        name: 'contacts.escalationPhone',
+        type: 'input-text',
+        label: 'Escalation phone',
+        $when: "formValues.contacts.escalationEnabled"
+      }, {
+        name: 'integrations.erpEnabled',
+        type: 'checkbox',
+        content: 'Enable ERP integration'
+      }, {
+        name: 'integrations.erpVendor',
+        type: 'select',
+        label: 'ERP vendor',
+        options: [
+          { label: 'NetSuite', value: 'netsuite' },
+          { label: 'SAP', value: 'sap' },
+          { label: 'Other', value: 'other' }
+        ],
+        $when: "formValues.integrations.erpEnabled"
+      }, {
+        name: 'integrations.erpProjectCode',
+        type: 'input-text',
+        label: 'ERP project code',
+        $when: "formValues.integrations.erpEnabled"
+      }]
+    }, {
+      type: 'read-only-text',
+      content: 'PO uploads must be completed before activation.',
+      $when: "formValues.billing.method == 'purchase_order'"
+    }, {
+      type: 'read-only-text',
+      content: 'VAT is required for Germany billing profiles.',
+      $when: "formValues.account.country == 'de' && !formValues.account.hasVat"
+    }],
+    actions: {
+      buttons: [{
+        id: 'activate',
+        label: 'Activate Account',
+        variant: 'pr',
+        validate: true,
+      }]
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+</script>

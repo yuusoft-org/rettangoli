@@ -1,5 +1,9 @@
 ---
 title: "Mixed Inputs With Defaults"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
 ---
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
@@ -20,10 +24,8 @@ title: "Mixed Inputs With Defaults"
     role: 'designer',
     volume: 75,
     isActive: true,
-    anchor: {
-      x: 1,
-      y: 1,
-    }
+    anchor: '1,1',
+    avatar: '/public/sample1.jpg'
   }
 
   form.form = {
@@ -31,45 +33,44 @@ title: "Mixed Inputs With Defaults"
     description: 'Complete your profile information with default values',
     fields: [{
       name: 'avatar',
-      inputType: 'image',
+      type: 'image',
       label: 'Avatar',
       description: 'Your profile picture',
       width: 80,
       height: 80,
-      src: '/public/sample1.jpg'
     }, {
       name: 'name',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Full Name',
       description: 'Enter your full name',
       placeholder: 'John Doe',
     }, {
       name: 'email',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Email',
       description: 'Enter your email address',
       placeholder: 'user@example.com',
     }, {
       name: 'favoriteColor',
-      inputType: 'color-picker',
+      type: 'color-picker',
       label: 'Favorite Color',
       description: 'Pick your favorite color',
     }, {
       name: 'age',
-      inputType: 'input-number',
+      type: 'input-number',
       label: 'Age',
       description: 'Enter your age',
       min: 0,
       max: 150,
     }, {
       name: 'bio',
-      inputType: 'input-textarea',
+      type: 'input-textarea',
       label: 'Bio',
       description: 'Tell us about yourself',
       placeholder: 'Enter your bio here...',
     }, {
       name: 'experience',
-      inputType: 'slider',
+      type: 'slider',
       label: 'Years of Experience',
       description: 'How many years of work experience?',
       min: 0,
@@ -77,7 +78,7 @@ title: "Mixed Inputs With Defaults"
       step: 1,
     }, {
       name: 'salary',
-      inputType: 'slider-input',
+      type: 'slider-with-input',
       label: 'Ideal Salary',
       description: 'How much salary do you want every month?',
       min: 3000,
@@ -85,7 +86,7 @@ title: "Mixed Inputs With Defaults"
       step: 1000,
     }, {
       name: 'role',
-      inputType: 'select',
+      type: 'select',
       label: 'Role',
       description: 'Select your role',
       placeholder: 'Choose a role',
@@ -96,7 +97,7 @@ title: "Mixed Inputs With Defaults"
       ]
     }, {
       name: 'volume',
-      inputType: 'slider',
+      type: 'slider',
       label: 'Volume',
       description: 'Adjust the volume level',
       min: 0,
@@ -104,32 +105,32 @@ title: "Mixed Inputs With Defaults"
       step: 1,
     }, {
       name: 'anchor',
-      inputType: 'select',
+      type: 'select',
       label: 'Anchor',
       description: 'This is an anchor field',
       placeholder: 'Click here',
       required: false,
       options: [{
-        label: 'Top Left', value: { x: 0, y: 0 },
+        label: 'Top Left', value: '0,0',
       }, {
-        label: 'Top Right', value: { x: 1, y: 0 },
+        label: 'Top Right', value: '1,0',
       }, {
-        label: 'Bottom Left', value: { x: 0, y: 1 },
+        label: 'Bottom Left', value: '0,1',
       }, {
-        label: 'Bottom Right', value: { x: 1, y: 1 },
+        label: 'Bottom Right', value: '1,1',
       }],
     }],
     actions: {
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Save Profile',
+        label: 'Save Profile',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {

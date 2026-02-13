@@ -11,7 +11,6 @@ propsSchema:
     autoFocus:
       type: boolean
 events:
-  value-input: {}
   value-change: {}
 methods:
   type: object

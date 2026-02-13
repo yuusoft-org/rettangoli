@@ -16,23 +16,15 @@ refs:
   field*:
     eventListeners:
       value-input:
-        handler: handleInputChange
+        handler: handleValueInput
       value-change:
-        handler: handleInputChange
-      add-option-click:
-        handler: handleSelectAddOption
+        handler: handleValueChange
   image*:
     eventListeners:
       click:
         handler: handleImageClick
       contextmenu:
         handler: handleImageClick
-  waveform*:
-    eventListeners:
-      click:
-        handler: handleWaveformClick
-      contextmenu:
-        handler: handleWaveformClick
 template:
   - rtgl-view#formContainer w=f p=md g=lg ${containerAttrString}:
       - rtgl-view g=sm w=f:
@@ -41,49 +33,72 @@ template:
           - $if description:
               - rtgl-text c=mu-fg: ${description}
       - rtgl-view g=lg w=f:
-          - $for field, i in fields:
-              - rtgl-view g=md w=f:
-                  - $if field.label || field.description:
+          - $for field, i in flatFields:
+              - $if field._isSection:
+                  - rtgl-view g=md w=f:
                       - rtgl-view g=sm:
-                          - rtgl-view d=h g=md av=c:
-                              - $if field.label:
-                                  - rtgl-text: ${field.label}
-                              - $if field.label && field.tooltip:
-                                  - rtgl-svg#tooltipIcon${i} data-field-name=${field.name} svg="info" wh=16 c=mu-fg cur=help ml=xs: null
+                          - $if field.label:
+                              - rtgl-text s=md fw=bd: ${field.label}
                           - $if field.description:
                               - rtgl-text s=sm c=mu-fg: ${field.description}
-                  - $if field.inputType == "read-only-text":
-                      - rtgl-text s=sm: ${field.defaultValue}
-                  - $if field.inputType == "input-text":
-                      - rtgl-input#field${i} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}: null
-                  - $if field.inputType == "input-number":
-                      - rtgl-input-number#field${i} data-field-name=${field.name} w=f data-testid=${field.testId}: null
-                  - $if field.inputType == "input-textarea":
-                      - rtgl-textarea#field${i} data-field-name=${field.name} w=f rows=${field.rows} data-testid=${field.testId}: null
-                  - $if field.inputType == "popover-input":
-                      - rtgl-popover-input#field${i} data-field-name=${field.name} label="${field.label}" data-testid=${field.testId}: null
-                  - $if field.inputType == "select":
-                      - rtgl-select#field${i} data-field-name=${field.name} key=${key} w=f :options=fields[${i}].options ?no-clear=fields[${i}].noClear :addOption=fields[${i}].addOption :selectedValue=#{field.selectedValue} :placeholder=#{field.placeholder} data-testid=${field.testId}: null
-                  - $if field.inputType == "color-picker":
-                      - rtgl-color-picker#field${i} data-field-name=${field.name} key=${key} data-testid=${field.testId}: null
-                  - $if field.inputType == "slider":
-                      - rtgl-slider#field${i} data-field-name=${field.name} key=${key} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}: null
-                  - $if field.inputType == "slider-input":
-                      - rtgl-slider-input#field${i} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} data-testid=${field.testId}: null
-                  - $if field.inputType == "image" && field.imageSrc:
-                      - rtgl-image#image${i} data-field-name=${field.name} src=${field.imageSrc} w=${field.width} h=${field.height} cur=pointer data-testid=${field.testId}: null
-                  - $if field.inputType == "image" && !field.imageSrc:
-                      - rtgl-view#image${i} data-field-name=${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=pointer p=md data-testid=${field.testId}:
-                          - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
-                  - $if field.inputType == "waveform" && field.waveformData:
-                      - rtgl-waveform#waveform${i} data-field-name=${field.name} :waveformData=fields[${i}].waveformData w=${field.width} h=${field.height} cur=pointer data-testid=${field.testId}: null
-                  - $if field.inputType == "waveform" && !field.waveformData:
-                      - rtgl-view#waveform${i} data-field-name=${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=pointer p=md data-testid=${field.testId}:
-                          - rtgl-text c=mu-fg ta=c: ${field.placeholder}
-                  - $if field.inputType == "slot":
-                      - 'slot#fieldSlot${i} data-field-name=${field.name} name=${field.slot} style="display: contents;"': null
-      - rtgl-view g=sm w=f:
-          - rtgl-view d=h ah=e g=sm w=f:
-              - $for button, i in actions.buttons:
-                  - rtgl-button#action${i} data-action-id=${button.id} data-testid=${button.testId}: ${button.content}
+              - $if !field._isSection:
+                  - rtgl-view g=md w=f:
+                      - $if field.label || field.description:
+                          - rtgl-view g=sm:
+                              - rtgl-view d=h g=md av=c:
+                                  - $if field.label:
+                                      - rtgl-text: ${field.label}
+                                  - $if field.required:
+                                      - rtgl-text c=fg s=sm: "*"
+                                  - $if field.tooltip:
+                                      - rtgl-svg#tooltipIcon${field._idx} data-field-name=${field.name} svg="info" wh=16 c=mu-fg cur=help ml=xs: null
+                              - $if field.description:
+                                  - rtgl-text s=sm c=mu-fg: ${field.description}
+                      - $if field.type == "input-text":
+                          - rtgl-input#field${field._idx} data-field-name=${field.name} w=f type=${field._inputType} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                      - $if field.type == "input-number":
+                          - rtgl-input-number#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                      - $if field.type == "input-textarea":
+                          - rtgl-textarea#field${field._idx} data-field-name=${field.name} w=f rows=${field.rows} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                      - $if field.type == "select":
+                          - rtgl-select#field${field._idx} data-field-name=${field.name} w=f :options=flatFields[${field._arrIdx}].options ?no-clear=flatFields[${field._arrIdx}].noClear :selectedValue=#{field._selectedValue} :placeholder=#{field.placeholder} ?disabled=${field._disabled}: null
+                      - $if field.type == "color-picker":
+                          - rtgl-color-picker#field${field._idx} data-field-name=${field.name} ?disabled=${field._disabled}: null
+                      - $if field.type == "slider":
+                          - rtgl-slider#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} ?disabled=${field._disabled}: null
+                      - $if field.type == "slider-with-input":
+                          - rtgl-slider-input#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} ?disabled=${field._disabled}: null
+                      - $if field.type == "popover-input":
+                          - rtgl-popover-input#field${field._idx} data-field-name=${field.name} label="${field.label}" placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                      - $if field.type == "checkbox":
+                          - rtgl-checkbox#field${field._idx} data-field-name=${field.name} label="${field._checkboxText}" ?disabled=${field._disabled}: null
+                      - $if field.type == "image" && field._imageSrc:
+                          - rtgl-image#image${field._idx} data-field-name=${field.name} src=${field._imageSrc} w=${field.width} h=${field.height} cur=pointer: null
+                      - $if field.type == "image" && !field._imageSrc:
+                          - rtgl-view#image${field._idx} data-field-name=${field.name} w=${field.width} h=${field.height} bc=ac bw=sm ah=c av=c cur=pointer p=md:
+                              - rtgl-text c=mu-fg ta=c: ${field.placeholderText}
+                      - $if field.type == "read-only-text":
+                          - rtgl-text s=sm: ${field.content}
+                      - $if field.type == "slot":
+                          - 'slot#fieldSlot${field._idx} name=${field.slot} style="display: contents;"': null
+                      - $if field._error:
+                          - rtgl-text s=sm c=de: ${field._error}
+      - $if actions.buttons.length > 0:
+          - $if actions._layout == "split":
+              - rtgl-view d=h w=f g=sm:
+                  - rtgl-view d=h g=sm:
+                      - $for button, i in actions._leftButtons:
+                          - rtgl-button#action${button._globalIdx} data-action-id=${button.id} v=${button.variant} ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
+                  - rtgl-view d=h g=sm ah=e w=1fg:
+                      - $for button, i in actions._rightButtons:
+                          - rtgl-button#action${button._globalIdx} data-action-id=${button.id} v=${button.variant} ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
+          - $if actions._layout == "vertical":
+              - rtgl-view g=sm w=f:
+                  - $for button, i in actions._allButtons:
+                      - rtgl-button#action${button._globalIdx} data-action-id=${button.id} v=${button.variant} w=f ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
+          - $if actions._layout == "stretch":
+              - rtgl-view d=h g=sm w=f:
+                  - $for button, i in actions._allButtons:
+                      - rtgl-view w=1fg:
+                          - rtgl-button#action${button._globalIdx} data-action-id=${button.id} v=${button.variant} w=f ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
       - rtgl-tooltip ?open=${tooltipState.open} x=${tooltipState.x} y=${tooltipState.y} place="t" content="${tooltipState.content}": null

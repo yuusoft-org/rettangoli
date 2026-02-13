@@ -1,0 +1,76 @@
+---
+title: "Rules Validation - Required Precedence"
+description: Empty required fields with rules should show required messages before rule messages.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '360');
+
+  form.defaultValues = {
+    username: '',
+    email: '',
+  };
+
+  form.form = {
+    title: 'Required Precedence',
+    description: 'Required messages should be displayed for empty values',
+    fields: [{
+      name: 'username',
+      type: 'input-text',
+      label: 'Username',
+      required: { message: 'Username is required' },
+      rules: [{
+        rule: 'minLength',
+        value: 4,
+        message: 'Username must be at least 4 characters',
+      }],
+    }, {
+      name: 'email',
+      type: 'input-text',
+      label: 'Email',
+      required: { message: 'Email is required' },
+      rules: [{
+        rule: 'pattern',
+        value: 'email',
+        message: 'Email format is invalid',
+      }],
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Validate',
+        validate: true,
+      }],
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  const setSubmitButtonTestId = () => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    if (btn) {
+      btn.setAttribute('data-testid', 'submit-btn');
+      return;
+    }
+    setTimeout(setSubmitButtonTestId, 0);
+  };
+  setSubmitButtonTestId();
+</script>

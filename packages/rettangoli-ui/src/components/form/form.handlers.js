@@ -1,194 +1,405 @@
-const updateAttributes = ({ form, defaultValues = {}, refs }) => {
-  const { fields = [] } = form;
-  fields.forEach((field, index) => {
-    const ref = refs[`field${index}`];
+import {
+  get,
+  set,
+  selectForm,
+  selectFormValues,
+  collectAllDataFields,
+  getDefaultValue,
+  pruneHiddenValues,
+  validateField,
+  validateForm,
+} from "./form.store.js";
 
-    if (!ref) {
-      return;
-    }
+const syncInteractiveFieldAttribute = ({ field, target, value }) => {
+  if (!field || !target) return;
+  if (!["slider-with-input", "popover-input"].includes(field.type)) return;
 
-    if (['input-textarea', 'input-text', 'input-number', 'color-picker', 'slider', 'slider-input', 'popover-input'].includes(field.inputType)) {
-      const defaultValue = defaultValues[field.name];
-      if (defaultValue === undefined || defaultValue === null) {
-        ref.removeAttribute('value')
-      } else {
-        ref.setAttribute('value', defaultValue)
-      }
-    }
-    if (['input-text', 'input-textarea'].includes(field.inputType) && field.placeholder) {
-      const currentPlaceholder = ref.getAttribute('placeholder')
-      if (currentPlaceholder !== field.placeholder) {
-        if (field.placeholder === undefined || field.placeholder === null) {
-          ref.removeAttribute('placeholder');
-        } else {
-          ref.setAttribute('placeholder', field.placeholder);
-        }
-      }
-    }
-  })
-}
-
-const autoFocusFirstInput = (refs) => {
-  // Find first focusable field
-  for (const fieldKey in refs) {
-    if (fieldKey.startsWith('field')) {
-      const fieldRef = refs[fieldKey];
-      if (fieldRef && fieldRef.focus) {
-        // Currently only available for input-text and input-textarea
-        fieldRef.focus();
-        return;
-      }
-    }
+  if (value === undefined || value === null) {
+    target.removeAttribute("value");
+  } else {
+    target.setAttribute("value", String(value));
   }
 };
 
+const updateFieldAttributes = ({
+  form,
+  formValues = {},
+  refs,
+  formDisabled = false,
+}) => {
+  const fields = form.fields || [];
+  let idx = 0;
+
+  const walk = (fieldList) => {
+    for (const field of fieldList) {
+      if (field.type === "section") {
+        idx++;
+        if (Array.isArray(field.fields)) {
+          walk(field.fields);
+        }
+        continue;
+      }
+
+      const ref = refs[`field${idx}`];
+      idx++;
+
+      if (!ref) continue;
+
+      const disabled = formDisabled || !!field.disabled;
+
+      if (["input-text", "input-number", "input-textarea", "color-picker", "slider", "slider-with-input", "popover-input"].includes(field.type)) {
+        const value = get(formValues, field.name);
+        if (value === undefined || value === null) {
+          ref.removeAttribute("value");
+        } else {
+          ref.setAttribute("value", String(value));
+        }
+
+        if (field.type === "slider-with-input" && ref.store?.setValue) {
+          const normalized = Number(value ?? 0);
+          ref.store.setValue({ value: Number.isFinite(normalized) ? normalized : 0 });
+          if (typeof ref.render === "function") {
+            ref.render();
+          }
+        }
+
+        if (field.type === "popover-input" && ref.store?.setValue) {
+          ref.store.setValue({ value: value === undefined || value === null ? "" : String(value) });
+          if (typeof ref.render === "function") {
+            ref.render();
+          }
+        }
+      }
+
+      if (field.type === "checkbox") {
+        const value = get(formValues, field.name);
+        if (value) {
+          ref.setAttribute("checked", "");
+        } else {
+          ref.removeAttribute("checked");
+        }
+      }
+
+      if (["input-text", "input-number", "input-textarea", "popover-input"].includes(field.type) && field.placeholder) {
+        const current = ref.getAttribute("placeholder");
+        if (current !== field.placeholder) {
+          if (field.placeholder === undefined || field.placeholder === null) {
+            ref.removeAttribute("placeholder");
+          } else {
+            ref.setAttribute("placeholder", field.placeholder);
+          }
+        }
+      }
+
+      if (disabled) {
+        ref.setAttribute("disabled", "");
+      } else {
+        ref.removeAttribute("disabled");
+      }
+    }
+  };
+
+  walk(fields);
+};
+
+const initFormValues = (store, props) => {
+  const defaultValues = props?.defaultValues || {};
+  const seededValues = {};
+  Object.keys(defaultValues).forEach((path) => {
+    set(seededValues, path, defaultValues[path]);
+  });
+  const form = selectForm({ state: { formValues: seededValues }, props });
+  const dataFields = collectAllDataFields(form.fields || []);
+  const initial = {};
+
+  for (const field of dataFields) {
+    const defaultVal = get(defaultValues, field.name);
+    if (defaultVal !== undefined) {
+      set(initial, field.name, defaultVal);
+    } else {
+      set(initial, field.name, getDefaultValue(field));
+    }
+  }
+
+  store.resetFormValues({ defaultValues: initial });
+};
 
 export const handleBeforeMount = (deps) => {
   const { store, props } = deps;
-  store.setFormValues({ formValues: props.defaultValues });
+  initFormValues(store, props);
 };
 
 export const handleAfterMount = (deps) => {
   const { props, refs, render } = deps;
-  const { form = {}, defaultValues } = props;
-  updateAttributes({ form, defaultValues, refs });
+  const state = deps.store.getState();
+  const form = selectForm({ state, props });
+  updateFieldAttributes({
+    form,
+    formValues: state.formValues,
+    refs,
+    formDisabled: !!props?.disabled,
+  });
   render();
-
-  // Auto-focus first input field if autofocus attribute is set
-  if (props?.autofocus) {
-    setTimeout(() => {
-      autoFocusFirstInput(refs);
-    }, 50);
-  }
 };
 
 export const handleOnUpdate = (deps, payload) => {
-  const { oldProps, newProps } = payload;
+  const { newProps } = payload;
   const { store, render, refs } = deps;
-  const { form = {}, defaultValues } = newProps;
-  if (oldProps?.key !== newProps?.key) {
-    updateAttributes({ form, defaultValues, refs });
-    store.setFormValues({ formValues: defaultValues });
-    render();
-    return;
-  }
+  const formDisabled = !!newProps?.disabled;
+
+  const state = store.getState();
+  pruneHiddenValues({ state, props: newProps });
+  const form = selectForm({ state, props: newProps });
+  updateFieldAttributes({
+    form,
+    formValues: state.formValues,
+    refs,
+    formDisabled,
+  });
   render();
 };
 
-const dispatchFormChange = (name, fieldValue, formValues, dispatchEvent) => {
+export const handleValueInput = (deps, payload) => {
+  const { store, dispatchEvent, render, props } = deps;
+  const event = payload._event;
+  const name = event.currentTarget.dataset.fieldName;
+  if (!name || !event.detail || !Object.prototype.hasOwnProperty.call(event.detail, "value")) {
+    return;
+  }
+
+  const value = event.detail.value;
+  store.setFormFieldValue({ name, value });
+
+  const state = store.getState();
+  pruneHiddenValues({ state, props });
+  const form = selectForm({ state, props });
+  const dataFields = collectAllDataFields(form.fields || []);
+  const field = dataFields.find((f) => f.name === name);
+
+  syncInteractiveFieldAttribute({
+    field,
+    target: event.currentTarget,
+    value,
+  });
+
+  // Reactive validation
+  if (state.reactiveMode) {
+    if (field) {
+      const error = validateField(field, value);
+      if (error) {
+        store.setErrors({ errors: { ...state.errors, [name]: error } });
+      } else {
+        store.clearFieldError({ name });
+      }
+    }
+  }
+
+  // Keep conditional fields and jempl-rendered content in sync while typing.
+  render();
+
   dispatchEvent(
-    new CustomEvent("form-change", {
+    new CustomEvent("form-input", {
+      bubbles: true,
       detail: {
         name,
-        fieldValue,
-        formValues,
+        value,
+        values: selectFormValues({ state: store.getState(), props }),
+      },
+    }),
+  );
+};
+
+export const handleValueChange = (deps, payload) => {
+  const { store, dispatchEvent, render, props } = deps;
+  const event = payload._event;
+  const name = event.currentTarget.dataset.fieldName;
+  if (!name || !event.detail || !Object.prototype.hasOwnProperty.call(event.detail, "value")) {
+    return;
+  }
+
+  const value = event.detail.value;
+  store.setFormFieldValue({ name, value });
+
+  const state = store.getState();
+  pruneHiddenValues({ state, props });
+  const form = selectForm({ state, props });
+  const dataFields = collectAllDataFields(form.fields || []);
+  const field = dataFields.find((f) => f.name === name);
+
+  syncInteractiveFieldAttribute({
+    field,
+    target: event.currentTarget,
+    value,
+  });
+
+  // Reactive validation
+  if (state.reactiveMode) {
+    if (field) {
+      const error = validateField(field, value);
+      if (error) {
+        store.setErrors({ errors: { ...state.errors, [name]: error } });
+      } else {
+        store.clearFieldError({ name });
+      }
+    }
+  }
+
+  // Re-render on committed changes so controlled child components stay synchronized.
+  render();
+
+  dispatchEvent(
+    new CustomEvent("form-change", {
+      bubbles: true,
+      detail: {
+        name,
+        value,
+        values: selectFormValues({ state: store.getState(), props }),
       },
     }),
   );
 };
 
 export const handleActionClick = (deps, payload) => {
-  const { store, dispatchEvent } = deps;
+  const { store, dispatchEvent, render, props } = deps;
   const event = payload._event;
-  const id = event.currentTarget.dataset.actionId || event.currentTarget.id.slice("action".length);
-  dispatchEvent(
-    new CustomEvent("action-click", {
-      detail: {
-        actionId: id,
-        formValues: store.selectFormValues(),
-      },
-    }),
-  );
-};
+  const actionId = event.currentTarget.dataset.actionId;
+  if (!actionId) return;
 
-export const handleInputChange = (deps, payload) => {
-  const { store, dispatchEvent } = deps;
-  const event = payload._event;
-  let name = event.currentTarget.dataset.fieldName || event.currentTarget.id.slice("field".length);
-  if (name && event.detail && Object.prototype.hasOwnProperty.call(event.detail, "value")) {
-    const value = event.detail.value
-    store.setFormFieldValue({
-      name: name,
-      value,
-    });
-    dispatchFormChange(
-      name,
-      value,
-      store.selectFormValues(),
-      dispatchEvent,
+  const state = store.getState();
+  const form = selectForm({ state, props });
+  const actions = form.actions || {};
+  const buttons = actions.buttons || [];
+  const button = buttons.find((b) => b.id === actionId);
+
+  const values = selectFormValues({ state, props });
+
+  if (button && button.validate) {
+    const dataFields = collectAllDataFields(form.fields || []);
+    const { valid, errors } = validateForm(dataFields, state.formValues);
+    store.setErrors({ errors });
+    if (!valid) {
+      store.setReactiveMode();
+    }
+    render();
+
+    dispatchEvent(
+      new CustomEvent("form-action", {
+        bubbles: true,
+        detail: {
+          actionId,
+          values,
+          valid,
+          errors,
+        },
+      }),
+    );
+  } else {
+    dispatchEvent(
+      new CustomEvent("form-action", {
+        bubbles: true,
+        detail: {
+          actionId,
+          values,
+        },
+      }),
     );
   }
 };
-
 
 export const handleImageClick = (deps, payload) => {
   const event = payload._event;
   if (event.type === "contextmenu") {
     event.preventDefault();
   }
-  const { dispatchEvent } = deps;
-  const name = event.currentTarget.dataset.fieldName || event.currentTarget.id.slice("image".length);
+  const { store, dispatchEvent, props } = deps;
+  const name = event.currentTarget.dataset.fieldName;
+
   dispatchEvent(
-    new CustomEvent("extra-event", {
+    new CustomEvent("form-field-event", {
+      bubbles: true,
       detail: {
-        name: name,
-        x: event.clientX,
-        y: event.clientY,
-        trigger: event.type,
+        name,
+        event: event.type,
+        values: selectFormValues({ state: store.getState(), props }),
       },
     }),
   );
 };
 
-export const handleWaveformClick = (deps, payload) => {
+export const handleKeyDown = (deps, payload) => {
+  const { store, dispatchEvent, render, props } = deps;
   const event = payload._event;
-  if (event.type === "contextmenu") {
+
+  if (event.key === "Enter" && !event.shiftKey) {
+    const target = event.target;
+    if (target.tagName === "TEXTAREA" || target.tagName === "RTGL-TEXTAREA") {
+      return;
+    }
+
     event.preventDefault();
-  }
-  const { dispatchEvent } = deps;
-  const name = event.currentTarget.dataset.fieldName || event.currentTarget.id.slice("waveform".length);
-  dispatchEvent(
-    new CustomEvent("extra-event", {
-      detail: {
-        name: name,
-        x: event.clientX,
-        y: event.clientY,
-        trigger: event.type,
-      },
-    }),
-  );
-};
 
-export const handleSelectAddOption = (deps, payload) => {
-  const { store, dispatchEvent } = deps;
-  const event = payload._event;
-  const name = event.currentTarget.dataset.fieldName || event.currentTarget.id.slice("field".length);
-  dispatchEvent(
-    new CustomEvent("action-click", {
-      detail: {
-        actionId: 'select-options-add',
-        name: name,
-        formValues: store.selectFormValues(),
-      },
-    }),
-  );
+    const state = store.getState();
+    const form = selectForm({ state, props });
+    const actions = form.actions || {};
+    const buttons = actions.buttons || [];
+
+    // Find the first button with validate: true, or the first button
+    const validateButton = buttons.find((b) => b.validate);
+    const targetButton = validateButton || buttons[0];
+
+    if (!targetButton) return;
+
+    const values = selectFormValues({ state, props });
+
+    if (targetButton.validate) {
+      const dataFields = collectAllDataFields(form.fields || []);
+      const { valid, errors } = validateForm(dataFields, state.formValues);
+      store.setErrors({ errors });
+      if (!valid) {
+        store.setReactiveMode();
+      }
+      render();
+
+      dispatchEvent(
+        new CustomEvent("form-action", {
+          bubbles: true,
+          detail: {
+            actionId: targetButton.id,
+            values,
+            valid,
+            errors,
+          },
+        }),
+      );
+    } else {
+      dispatchEvent(
+        new CustomEvent("form-action", {
+          bubbles: true,
+          detail: {
+            actionId: targetButton.id,
+            values,
+          },
+        }),
+      );
+    }
+  }
 };
 
 export const handleTooltipMouseEnter = (deps, payload) => {
   const { store, render, props } = deps;
   const event = payload._event;
-  const fieldName = event.currentTarget.dataset.fieldName || event.currentTarget.id.slice('tooltipIcon'.length);
+  const fieldName = event.currentTarget.dataset.fieldName;
 
-  // Find the field with matching name to get tooltip content
-  const form = props.form;
-  const field = form.fields.find(f => f.name === fieldName);
+  const form = selectForm({ state: store.getState(), props });
+  const allFields = collectAllDataFields(form.fields || []);
+  const field = allFields.find((f) => f.name === fieldName);
 
   if (field && field.tooltip) {
     const rect = event.currentTarget.getBoundingClientRect();
     store.showTooltip({
       x: rect.left + rect.width / 2,
       y: rect.top - 8,
-      content: field.tooltip.content
+      content: typeof field.tooltip === "string" ? field.tooltip : field.tooltip.content || "",
     });
     render();
   }
@@ -198,39 +409,4 @@ export const handleTooltipMouseLeave = (deps) => {
   const { store, render } = deps;
   store.hideTooltip({});
   render();
-};
-
-export const handleKeyDown = (deps, payload) => {
-  const { store, dispatchEvent, props } = deps;
-  const event = payload._event;
-
-  // Handle Enter key to submit form
-  if (event.key === 'Enter' && !event.shiftKey) {
-    const target = event.target;
-    // Don't submit if we're in a textarea (native or custom component)
-    if (target.tagName === 'TEXTAREA' || target.tagName === 'RTGL-TEXTAREA') {
-      return;
-    }
-
-    event.preventDefault();
-
-    // Dispatch action-click event for the first button
-    const form = props.form || {};
-    const actions = form.actions || {};
-    const buttons = actions.buttons || [];
-
-    if (buttons.length > 0) {
-      const firstButtonId = buttons[0].id;
-      const formValues = store.selectFormValues();
-
-      dispatchEvent(
-        new CustomEvent("action-click", {
-          detail: {
-            actionId: firstButtonId,
-            formValues: formValues,
-          },
-        }),
-      );
-    }
-  }
 };

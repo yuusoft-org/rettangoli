@@ -1,0 +1,57 @@
+---
+title: "Required Fields"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+
+  form.defaultValues = {}
+
+  form.form = {
+    title: 'Required Fields',
+    description: 'Fields with required indicators',
+    fields: [{
+      name: 'firstName',
+      type: 'input-text',
+      label: 'First Name',
+      required: true,
+    }, {
+      name: 'lastName',
+      type: 'input-text',
+      label: 'Last Name',
+      required: { message: 'Last name is required' },
+    }, {
+      name: 'nickname',
+      type: 'input-text',
+      label: 'Nickname (optional)',
+    }, {
+      name: 'email',
+      type: 'input-text',
+      label: 'Email',
+      required: true,
+      description: 'We will never share your email',
+    }, {
+      name: 'terms',
+      type: 'checkbox',
+      label: 'Accept terms',
+      required: true,
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        label: 'Submit',
+        variant: 'pr',
+        validate: true,
+      }],
+    }
+  }
+
+  document.getElementById('container').appendChild(form);
+</script>

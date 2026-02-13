@@ -11,7 +11,7 @@ steps:
     steps:
       - action: click
   - action: waitFor
-    selector: '#popover[open]'
+    selector: '#popover[open][positioned]'
     state: visible
     timeoutMs: 1200
   - action: assert
@@ -29,7 +29,7 @@ steps:
     steps:
       - action: click
   - action: waitFor
-    selector: '#popover[open]'
+    selector: '#popover[open][positioned]'
     state: visible
     timeoutMs: 1200
   - action: assert
@@ -47,7 +47,7 @@ steps:
     steps:
       - action: click
   - action: waitFor
-    selector: '#popover[open]'
+    selector: '#popover[open][positioned]'
     state: visible
     timeoutMs: 1200
   - action: assert
@@ -124,18 +124,33 @@ steps:
     const button = document.getElementById(`btn-${placement}`);
 
     // Button click handler
-    button.addEventListener('click', (e) => {
+    button.addEventListener('click', () => {
+      const rect = button.getBoundingClientRect();
+
+      const horizontalAnchor = placement.endsWith('start')
+        ? rect.left
+        : placement.endsWith('end')
+          ? rect.right
+          : rect.left + (rect.width / 2);
+      const verticalAnchor = placement.endsWith('start')
+        ? rect.top
+        : placement.endsWith('end')
+          ? rect.bottom
+          : rect.top + (rect.height / 2);
+
       // Close popover first to reset position
       popover.removeAttribute('open');
-      
+
       // Update placement and text
       popover.setAttribute('place', placeMap[placement] || 'bs');
       popoverText.textContent = placement;
-      
-      // Show popover at click position
+
+      // Set deterministic anchor coords before opening to avoid async races.
+      popover.setAttribute('x', String(Math.round(horizontalAnchor)));
+      popover.setAttribute('y', String(Math.round(verticalAnchor)));
+
+      // Show popover at computed position.
       popover.setAttribute('open', '');
-      popover.setAttribute('x', e.clientX);
-      popover.setAttribute('y', e.clientY);
     });
   });
 

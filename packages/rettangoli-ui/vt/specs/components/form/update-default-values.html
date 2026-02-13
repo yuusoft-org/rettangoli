@@ -1,0 +1,110 @@
+---
+title: "Update Defaults and Reset"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+  <rtgl-button id="update-button">Update</rtgl-button>
+</rtgl-view>
+
+<script>
+
+
+  const updateButton = document.getElementById('update-button');
+  updateButton.addEventListener('click', () => {
+    console.log('Update button clicked');
+    const form = document.getElementById('form');
+    form.defaultValues = {
+      email: 'updated@email.com',
+      age: '25',
+      category: 'option2',
+      color: '#FF0000',
+      volume: 75,
+      brightness: 60
+    }
+    form.reset();
+  });
+
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    email: 'hello@example.com',
+    age: '12',
+    category: 'option1',
+    color: '#0000FF',
+    volume: 50,
+    brightness: 30
+  }
+
+  form.form = {
+    title: 'Form with All Input Types',
+    description: 'Testing defaultValues update + reset() for all input components',
+    fields: [{
+      name: 'email',
+      type: 'input-text',
+      label: 'Email (Input)',
+      description: 'Text input field',
+      placeholder: 'Enter email',
+      required: true,
+    }, {
+      name: 'age',
+      type: 'input-text',
+      label: 'Age (Input)',
+      description: 'Number input field',
+      required: true,
+    }, {
+      name: 'category',
+      type: 'select',
+      label: 'Category (Select)',
+      description: 'Dropdown selection',
+      placeholder: 'Choose category',
+      options: [
+        { label: 'Option 1', value: 'option1' },
+        { label: 'Option 2', value: 'option2' },
+        { label: 'Option 3', value: 'option3' }
+      ]
+    }, {
+      name: 'color',
+      type: 'color-picker',
+      label: 'Color (Color Picker)',
+      description: 'Color selection'
+    }, {
+      name: 'volume',
+      type: 'slider',
+      label: 'Volume (Slider)',
+      description: 'Slider control',
+      min: 0,
+      max: 100,
+      step: 5
+    }, {
+      name: 'brightness',
+      type: 'slider-with-input',
+      label: 'Brightness (Slider Input)',
+      description: 'Slider with input field',
+      min: 0,
+      max: 100,
+      step: 1
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Submit',
+      }],
+    }
+  }
+
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

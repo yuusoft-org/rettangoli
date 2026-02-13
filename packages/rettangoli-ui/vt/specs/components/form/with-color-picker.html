@@ -1,5 +1,9 @@
 ---
 title: "With Color Picker"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
 ---
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
@@ -16,12 +20,12 @@ title: "With Color Picker"
     description: 'Select your favorite colors',
     fields: [{
       name: 'favoriteColor',
-      inputType: 'color-picker',
+      type: 'color-picker',
       label: 'Favorite Color',
       description: 'Pick your favorite color',
     }, {
       name: 'backgroundColor',
-      inputType: 'color-picker',
+      type: 'color-picker',
       label: 'Background Color',
       description: 'Choose a background color',
     }],
@@ -29,13 +33,13 @@ title: "With Color Picker"
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Save Colors',
+        label: 'Save Colors',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {

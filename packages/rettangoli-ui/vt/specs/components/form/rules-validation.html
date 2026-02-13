@@ -1,0 +1,84 @@
+---
+title: "Rules Validation"
+description: Clicking validate with invalid non-empty values shows minLength, maxLength, and pattern rule errors.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '360');
+
+  form.defaultValues = {
+    username: 'ab',
+    summary: 'This summary is too long',
+    slug: 'Invalid Slug',
+  };
+
+  form.form = {
+    title: 'Rules Validation',
+    description: 'Invalid values should show rule messages',
+    fields: [{
+      name: 'username',
+      type: 'input-text',
+      label: 'Username',
+      rules: [{
+        rule: 'minLength',
+        value: 4,
+        message: 'Username must be at least 4 characters',
+      }],
+    }, {
+      name: 'summary',
+      type: 'input-text',
+      label: 'Summary',
+      rules: [{
+        rule: 'maxLength',
+        value: 10,
+        message: 'Summary must be at most 10 characters',
+      }],
+    }, {
+      name: 'slug',
+      type: 'input-text',
+      label: 'Slug',
+      rules: [{
+        rule: 'pattern',
+        value: '^[a-z0-9-]+$',
+        message: 'Slug can only use lowercase letters, numbers, and hyphens',
+      }],
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Validate',
+        validate: true,
+      }],
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  const setSubmitButtonTestId = () => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    if (btn) {
+      btn.setAttribute('data-testid', 'submit-btn');
+      return;
+    }
+    setTimeout(setSubmitButtonTestId, 0);
+  };
+  setSubmitButtonTestId();
+</script>

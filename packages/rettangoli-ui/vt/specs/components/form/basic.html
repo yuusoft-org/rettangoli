@@ -16,25 +16,26 @@ title: "Basic"
     description: 'Form Description',
     fields: [{
       name: 'email',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Email',
       description: 'Enter your email',
       required: true,
     }, {
       name: 'password',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Password',
+      inputType: 'password',
       description: 'Enter your password',
       required: true,
     }, {
       name: 'age',
-      inputType: 'input-number',
+      type: 'input-number',
       label: 'Age',
       description: 'Enter your age',
       required: true,
     }, {
       name: 'comments',
-      inputType: 'input-textarea',
+      type: 'input-textarea',
       label: 'Comments',
       description: 'Any additional comments?',
       placeholder: 'Enter your comments here...',
@@ -42,17 +43,16 @@ title: "Basic"
       rows: 12,
     }],
     actions: {
-      layout: '', // vertical, fill, right, left
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Submit',
+        label: 'Submit',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {

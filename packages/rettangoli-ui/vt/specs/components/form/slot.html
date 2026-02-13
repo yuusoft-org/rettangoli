@@ -1,5 +1,9 @@
 ---
 title: "Slot"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
 ---
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
@@ -16,29 +20,28 @@ title: "Slot"
     description: 'Form Description',
     fields: [{
       name: 'email',
-      inputType: 'input-text',
+      type: 'input-text',
       label: 'Email',
       description: 'Enter your email',
       required: true,
     }, {
       slot: 'my-slot',
-      inputType: 'slot',
+      type: 'slot',
       label: 'Slot Label',
       description: 'My Slot description',
       required: true,
     }],
     actions: {
-      layout: '', // vertical, fill, right, left
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        content: 'Submit',
+        label: 'Submit',
       }],
     }
   }
 
-  form.addEventListener('action-click', (e) => {
-    console.log('action-click', e.detail);
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
   });
 
   form.addEventListener('form-change', (e) => {
