@@ -32,7 +32,7 @@ Design baseline:
 
 - No path-based REST router as the core API contract.
 - JSON-RPC 2.0 envelope everywhere.
-- Schema validation for both `params` and `result`.
+- Schema validation for both `params` and `output` (success + error).
 - Deterministic JSON-RPC errors (`code`, `message`, optional `data`).
 - Transport adapters stay thin wrappers around one dispatcher.
 
@@ -64,7 +64,7 @@ packages/rettangoli-be/
       health/
         rpc/
           health.ping.handlers.js
-          health.ping.schema.yaml
+          health.ping.rpc.yaml
           health.ping.spec.yaml
     transport/
       http/
@@ -75,27 +75,43 @@ No global `rpc/` folder is used. Shared JSON-RPC envelope/runtime orchestration 
 
 ## Method Contract Pattern
 
-Use one `*.schema.yaml` per method group (same spirit as `rettangoli-ui` schema files).
+Use one `*.rpc.yaml` per method.
 
 ```yaml
-methods:
-  health.ping:
-    paramsSchema:
-      type: object
-      additionalProperties: false
-      properties:
-        echo:
-          type: string
-      required: []
-    resultSchema:
-      type: object
-      additionalProperties: false
-      properties:
-        ok:
-          type: boolean
-        echo:
-          type: string
-      required: [ok]
+method: health.ping
+description: Health check ping method.
+middleware:
+  before: [withRequestId]
+  after: [withLogger]
+paramsSchema:
+  type: object
+  additionalProperties: false
+  properties:
+    echo:
+      type: string
+  required: []
+outputSchema:
+  success:
+    type: object
+    additionalProperties: false
+    properties:
+      ok:
+        type: boolean
+      echo:
+        type: string
+    required: [ok]
+  error:
+    type: object
+    additionalProperties: false
+    properties:
+      _error:
+        const: true
+      type:
+        type: string
+      details:
+        type: object
+        additionalProperties: true
+    required: [_error, type]
 ```
 
 ## Handler Contract
@@ -153,7 +169,7 @@ export { setup };
 3. Resolve method from module registry.
 4. Validate `params` via JSON Schema.
 5. Execute handler with injected deps.
-6. Validate handler `result` via JSON Schema.
+6. Validate handler output via JSON Schema (`outputSchema.success` or `outputSchema.error`).
 7. Return JSON-RPC success response.
 8. Map known errors to JSON-RPC error response.
 
@@ -196,5 +212,5 @@ Middleware must not:
 1. Scaffold `src/` files and export surface.
 2. Implement dispatcher + JSON-RPC error helpers.
 3. Implement AJV-based schema compiler and fail-fast validation.
-4. Add `health.ping` method + schema/spec as first vertical slice.
+4. Add `health.ping` method + rpc/spec as first vertical slice.
 5. Add HTTP adapter and integration tests for valid/invalid JSON-RPC requests.

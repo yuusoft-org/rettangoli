@@ -12,7 +12,7 @@ What it demonstrates:
 - DI boundary with DAO/services in `deps/`
 - middleware cookie handling via `ctx.cookies` JSON objects
 - per-method folders in `modules/` (no `module.js` aggregators)
-- per-method schema files for params/result
+- per-method RPC contract files (`*.rpc.yaml`) for params/middleware/output
 - per-method puty specs via `*.spec.yaml` (multi-document puty format)
 
 ## Structure
@@ -29,5 +29,5 @@ src/
 
 1. Is the `deps` boundary clear enough for DAO/services?
 2. Are per-method folders ergonomic for scaling domains?
-3. Are schema files expressive enough for request/result contracts?
+3. Are RPC files expressive enough for request/output contracts and method middleware hooks?
 4. Is the new `*.spec.yaml` format sufficient for puty tests?

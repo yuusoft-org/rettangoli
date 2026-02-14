@@ -19,8 +19,11 @@
 
 ## Contracts, Tests, And Errors
 
-7. Keep result schema validation mandatory for every method?
-8. Keep `*.spec.yaml` as the puty test file convention?
-9. Standardize domain error `type` keys per module and keep runtime-only JSON-RPC code mapping?
-10. Confirm middleware cookie contract uses `ctx.cookies.request/response` JSON objects only (no helper APIs)?
-11. Confirm middleware style is always mutable (`ctx` in place + `next(ctx)`, no `{ ...ctx }`)?
+7. Confirm `*.rpc.yaml` replaces `*.schema.yaml` as the per-method contract file?
+8. Keep `description` mandatory in every `*.rpc.yaml`?
+9. Keep both `outputSchema.success` and `outputSchema.error` mandatory for every method?
+10. Confirm method-level middleware hooks in RPC files (`middleware.before` and `middleware.after`)?
+11. Keep `*.spec.yaml` as the puty test file convention?
+12. Standardize domain error `type` keys per module and keep runtime-only JSON-RPC code mapping?
+13. Confirm middleware cookie contract uses `ctx.cookies.request/response` JSON objects only (no helper APIs)?
+14. Confirm middleware style is always mutable (`ctx` in place + `next(ctx)`, no `{ ...ctx }`)?

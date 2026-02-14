@@ -106,10 +106,14 @@ export const healthPingMethod = async ({ payload, context, deps }) => {
 };
 ```
 
-## src/modules/health/ping/ping.schema.yaml
+## src/modules/health/ping/ping.rpc.yaml
 
 ```yaml
 method: health.ping
+description: Health check ping method.
+middleware:
+  before: [withRequestId]
+  after: [withLogger]
 paramsSchema:
   type: object
   additionalProperties: false
@@ -117,19 +121,32 @@ paramsSchema:
     echo:
       type: string
   required: []
-resultSchema:
-  type: object
-  additionalProperties: false
-  properties:
-    ok:
-      type: boolean
-    echo:
-      type: string
-    ts:
-      type: number
-    requestId:
-      type: string
-  required: [ok, ts, requestId]
+outputSchema:
+  success:
+    type: object
+    additionalProperties: false
+    properties:
+      ok:
+        type: boolean
+      echo:
+        type: string
+      ts:
+        type: number
+      requestId:
+        type: string
+    required: [ok, ts, requestId]
+  error:
+    type: object
+    additionalProperties: false
+    properties:
+      _error:
+        const: true
+      type:
+        type: string
+      details:
+        type: object
+        additionalProperties: true
+    required: [_error, type]
 ```
 
 ## src/modules/health/ping/ping.spec.yaml
@@ -215,24 +232,41 @@ export const userGetProfileMethod = async ({ context, deps }) => {
 
 Runtime maps `{ _error: true, type, details }` to protocol-specific error responses.
 
-## src/modules/user/getProfile/getProfile.schema.yaml
+## src/modules/user/getProfile/getProfile.rpc.yaml
 
 ```yaml
 method: user.getProfile
+description: Return the authenticated user profile.
+middleware:
+  before: [withAuthUser]
+  after: [withLogger]
 paramsSchema:
   type: object
   additionalProperties: false
   properties: {}
   required: []
-resultSchema:
-  type: object
-  additionalProperties: false
-  properties:
-    id:
-      type: string
-    email:
-      type: string
-    role:
-      type: string
-  required: [id, email, role]
+outputSchema:
+  success:
+    type: object
+    additionalProperties: false
+    properties:
+      id:
+        type: string
+      email:
+        type: string
+      role:
+        type: string
+    required: [id, email, role]
+  error:
+    type: object
+    additionalProperties: false
+    properties:
+      _error:
+        const: true
+      type:
+        type: string
+      details:
+        type: object
+        additionalProperties: true
+    required: [_error, type]
 ```

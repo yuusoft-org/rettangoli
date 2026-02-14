@@ -12,7 +12,7 @@ It does **not** define internal framework implementation files.
 - Never use `null`; use `undefined` instead.
 - Dependency injection via one `src/setup.js` object.
 - API contract: JSON-RPC 2.0.
-- Method contract: JSON Schema for `params` and `result`.
+- Method contract: JSON Schema for `params` and `output` (success + error).
 - Method tests: puty `*.spec.yaml` files.
 - Fail fast at startup and request runtime.
 
@@ -37,12 +37,12 @@ It does **not** define internal framework implementation files.
       health/
         ping/
           ping.handlers.js
-          ping.schema.yaml
+          ping.rpc.yaml
           ping.spec.yaml
       user/
         getProfile/
           getProfile.handlers.js
-          getProfile.schema.yaml
+          getProfile.rpc.yaml
           getProfile.spec.yaml
 ```
 
@@ -85,23 +85,23 @@ There is no `module.js` file.
 Each RPC method lives in one method folder:
 - `src/modules/<domain>/<action>/`
 
-The runtime (or a future registry) imports handlers and schemas directly from those method folders.
+The runtime (or a future registry) imports handlers and RPC contracts directly from those method folders.
 
 Rules:
 - method keys must be globally unique (example: `health.ping`, `user.getProfile`)
-- every method key must have a matching schema contract file
+- every method key must have a matching RPC contract file
 - no direct env access inside method handlers
 
 ## Method File Rules
 
 For each RPC method, user creates three files:
 - `<action>/<action>.handlers.js`
-- `<action>/<action>.schema.yaml`
+- `<action>/<action>.rpc.yaml`
 - `<action>/<action>.spec.yaml` (puty tests)
 
 Example set:
 - `ping/ping.handlers.js`
-- `ping/ping.schema.yaml`
+- `ping/ping.rpc.yaml`
 - `ping/ping.spec.yaml`
 
 Method naming format:
@@ -109,15 +109,24 @@ Method naming format:
 
 Mandatory convention:
 - each `*.handlers.js` file exports one async method handler function directly
-- exactly one RPC method contract per `*.schema.yaml` file
+- exactly one RPC method contract per `*.rpc.yaml` file
 - exactly one method test suite per `*.spec.yaml` file
 - no multi-method handler files
-- no multi-method schema files
+- no multi-method RPC files
 - no handler factory wrapper layer
 - `*.spec.yaml` follows puty multi-document format:
   1. config doc: `file`, `group`
   2. suite doc: `suite`, `exportName`
   3. case docs: `case`, `in`, optional `out`, optional `throws`, optional `mocks`
+
+`*.rpc.yaml` required keys:
+- `method`: method id (example: `user.getProfile`)
+- `description`: human-readable method purpose
+- `middleware.before`: ordered middleware names to run before handler
+- `middleware.after`: ordered middleware names to run after handler
+- `paramsSchema`: JSON Schema for incoming payload (`ctx.request.params`)
+- `outputSchema.success`: JSON Schema for success object
+- `outputSchema.error`: JSON Schema for expected business error object (`_error: true`)
 
 ## setup.js Responsibilities (App Composition Root)
 
@@ -182,6 +191,13 @@ Rules:
 - middleware must stay domain-agnostic
 - middleware mutates `ctx` in-place and calls `next(ctx)`
 - do not clone/replace root context objects in middleware (`{ ...ctx }` style is disallowed)
+
+Method middleware order for one method call:
+1. app global middleware `pre`
+2. method `middleware.before` `pre` (from `*.rpc.yaml`)
+3. handler
+4. method `middleware.after` `post`
+5. app global middleware `post`
 
 ## Context Contract (`ctx`)
 
@@ -302,14 +318,16 @@ Reserved key:
 - top-level keys are module names
 - example: `deps.health`, `deps.user`
 
-## Schema Rules (App-Level)
+## RPC Contract Rules (App-Level)
 
-- schema file must include `method`, `paramsSchema`, `resultSchema`
+- RPC file must include `method`, `description`, `middleware`, `paramsSchema`, `outputSchema`
+- `description` must be a non-empty string
 - `method` must exactly match the method id resolved for that handler folder
-- both schemas are object schemas in v1
+- `paramsSchema`, `outputSchema.success`, and `outputSchema.error` are object schemas in v1
 - default to `additionalProperties: false`
-- schema compile must fail app startup if invalid
-- `resultSchema` validates success payloads only (objects without `_error: true`)
+- compile must fail app startup if any RPC contract is invalid
+- `outputSchema.success` validates success payloads only (objects without `_error: true`)
+- `outputSchema.error` validates expected business error payloads (`_error: true`)
 
 ## Middleware Rules (App-Level)
 

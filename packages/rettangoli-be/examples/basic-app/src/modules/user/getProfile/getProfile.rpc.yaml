@@ -1,0 +1,34 @@
+method: user.getProfile
+description: Return the authenticated user profile.
+middleware:
+  before: [withAuthUser]
+  after: [withLogger]
+paramsSchema:
+  type: object
+  additionalProperties: false
+  properties: {}
+  required: []
+outputSchema:
+  success:
+    type: object
+    additionalProperties: false
+    properties:
+      id:
+        type: string
+      email:
+        type: string
+      role:
+        type: string
+    required: [id, email, role]
+  error:
+    type: object
+    additionalProperties: false
+    properties:
+      _error:
+        const: true
+      type:
+        type: string
+      details:
+        type: object
+        additionalProperties: true
+    required: [_error, type]
