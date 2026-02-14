@@ -1,0 +1,4 @@
+template:
+  - rtgl-test-child-nonobject-props 0=bad:
+      - rtgl-text: Host
+styles: {}

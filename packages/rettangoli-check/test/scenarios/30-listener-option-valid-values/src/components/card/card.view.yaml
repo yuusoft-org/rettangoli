@@ -1,0 +1,17 @@
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: handleTap
+        preventDefault: true
+        stopPropagation: false
+        stopImmediatePropagation: true
+        targetOnly: false
+        once: true
+        debounce: 0
+      hold:
+        handler: handleHold
+        throttle: 120
+template:
+  - rtgl-view:
+      - rtgl-text: Listener options valid

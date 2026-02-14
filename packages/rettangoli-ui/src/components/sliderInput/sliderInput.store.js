@@ -9,7 +9,8 @@ export const selectViewData = ({ state, props }) => {
     w: props.w || '',
     min: props.min || 0,
     max: props.max || 100,
-    step: props.step || 1
+    step: props.step || 1,
+    disabled: Boolean(props.disabled),
   };
 }
 

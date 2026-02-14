@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-jempl-control-flow-mapping-child
+propsSchema:
+  type: object
+  properties:
+    isVisible:
+      type: boolean

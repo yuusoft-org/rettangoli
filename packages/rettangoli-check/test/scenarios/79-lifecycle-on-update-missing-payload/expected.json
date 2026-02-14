@@ -1,0 +1,16 @@
+{
+  "name": "lifecycle on update missing payload",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-LIFECYCLE-003": 1
+    },
+    "warnCodes": {}
+  }
+}

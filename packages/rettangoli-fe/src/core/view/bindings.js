@@ -67,6 +67,52 @@ export const toCamelCase = (value) => {
   return value.replace(/-([a-z0-9])/g, (_, chr) => chr.toUpperCase());
 };
 
+export const collectBindingNames = (attrsString = "") => {
+  if (!attrsString) {
+    return [];
+  }
+
+  const attrAssignmentRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]*))/g;
+  const booleanAttrRegex = /\b(\S+?)(?=\s|$)/g;
+  const processedAttrs = new Set();
+  const bindingNames = [];
+  let match;
+
+  while ((match = attrAssignmentRegex.exec(attrsString)) !== null) {
+    const rawBindingName = match[1];
+    processedAttrs.add(rawBindingName);
+    bindingNames.push(rawBindingName);
+  }
+  attrAssignmentRegex.lastIndex = 0;
+
+  let remainingAttrsString = attrsString;
+  const processedMatches = [];
+  while ((match = attrAssignmentRegex.exec(attrsString)) !== null) {
+    processedMatches.push(match[0]);
+  }
+
+  processedMatches.forEach((processedMatch) => {
+    remainingAttrsString = remainingAttrsString.replace(processedMatch, " ");
+  });
+
+  let boolMatch;
+  while ((boolMatch = booleanAttrRegex.exec(remainingAttrsString)) !== null) {
+    const attrName = boolMatch[1];
+    if (attrName.startsWith(".")) {
+      continue;
+    }
+    if (
+      !processedAttrs.has(attrName)
+      && !attrName.startsWith(PROP_PREFIX)
+      && !attrName.includes("=")
+    ) {
+      bindingNames.push(attrName);
+    }
+  }
+
+  return [...new Set(bindingNames)];
+};
+
 export const parseNodeBindings = ({
   attrsString = "",
   viewData = {},

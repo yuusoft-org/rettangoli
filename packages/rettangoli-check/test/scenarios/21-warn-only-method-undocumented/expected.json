@@ -1,0 +1,24 @@
+{
+  "name": "warn-only undocumented method export",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": true,
+    "errorCount": 0,
+    "warnCount": 1,
+    "errorCodes": {},
+    "warnCodes": {
+      "RTGL-CHECK-SYMBOL-005": 1
+    },
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-SYMBOL-005",
+        "severity": "warn",
+        "message": "components/card: method 'orphanMethod' is exported in .methods.js but not documented in schema.methods.properties.",
+        "filePath": "src/components/card/card.methods.js"
+      }
+    ]
+  }
+}

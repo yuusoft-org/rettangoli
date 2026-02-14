@@ -1,0 +1,32 @@
+{
+  "name": "@rettangoli/check",
+  "version": "0.1.0",
+  "description": "Static contract checker for Rettangoli projects",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./cli": "./src/cli/index.js"
+  },
+  "bin": {
+    "rtgl-check": "./src/cli/bin.js"
+  },
+  "scripts": {
+    "test:scenarios": "node ./test/run-scenarios.mjs",
+    "test:diff-js-exports": "node ./scripts/differential-js-exports.mjs",
+    "test:fuzz-template-pipeline": "node ./scripts/fuzz-template-pipeline.mjs"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "ROADMAP.md"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@rettangoli/fe": "workspace:1.0.0-rc3",
+    "jempl": "0.3.2-rc2",
+    "js-yaml": "^4.1.0",
+    "oxc-parser": "^0.112.0",
+    "yahtml": "0.0.5"
+  }
+}

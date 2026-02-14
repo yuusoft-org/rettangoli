@@ -1,0 +1,14 @@
+{
+  "name": "cross-file symbol support for export star typescript target",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": true,
+    "errorCount": 0,
+    "warnCount": 0,
+    "errorCodes": {},
+    "warnCodes": {}
+  }
+}

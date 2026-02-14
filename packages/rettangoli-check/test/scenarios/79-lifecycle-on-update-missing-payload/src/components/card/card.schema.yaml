@@ -1,0 +1,6 @@
+componentName: rtgl-card
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

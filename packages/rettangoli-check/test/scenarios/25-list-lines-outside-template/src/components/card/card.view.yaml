@@ -1,0 +1,7 @@
+template:
+  - rtgl-view:
+      - rtgl-text: Stable template node
+styles:
+  tokens:
+    - style-token: md
+    - spacing-scale: 2

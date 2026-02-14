@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-yahtml-ast-fallback
+propsSchema:
+  type: object
+  properties:
+    isVisible:
+      type: boolean

@@ -1,0 +1,24 @@
+{
+  "name": "cli emits json report on stdout",
+  "mode": "cli",
+  "options": {
+    "args": ["--format", "json"]
+  },
+  "expected": {
+    "exitCode": 0,
+    "stderr": "",
+    "stdoutJson": {
+      "ok": true,
+      "componentCount": 1,
+      "summary": {
+        "total": 0,
+        "bySeverity": {
+          "error": 0,
+          "warn": 0
+        }
+      },
+      "warnAsError": false,
+      "diagnostics": []
+    }
+  }
+}

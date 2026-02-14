@@ -1,0 +1,25 @@
+{
+  "name": "legacy dot prop binding",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": false
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CONTRACT-003": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CONTRACT-003",
+        "severity": "error",
+        "message": "components/card: legacy '.prop=' binding is not supported. Use ':prop=' in .view.yaml.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 2
+      }
+    ]
+  }
+}

@@ -48,6 +48,9 @@ export const handleOnUpdate = (deps, payload) => {
 
 export const handleTextClick = (deps, payload) => {
   const { store, render, refs, props } = deps;
+  if (props.disabled) {
+    return;
+  }
   const event = payload._event;
 
   const value = normalizePopoverValue(props.value);

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { build, check, scaffold, watch, examples } from "@rettangoli/fe/cli";
+import { check as checkContracts } from "@rettangoli/check/cli";
 import { generate, screenshot, report, accept } from "@rettangoli/vt/cli";
 import { buildSite, watchSite, initSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
@@ -51,6 +52,39 @@ Examples:
   $ rettangoli fe watch -p 3001
 `,
 );
+
+program
+  .command("check")
+  .description("Run Rettangoli static contract checks")
+  .option("--dir <path>", "Component directory to scan (repeatable)", collectValues, [])
+  .option("--format <format>", "Output format: text, json, or sarif", "text")
+  .option("--warn-as-error", "Treat warnings as errors")
+  .option("--no-yahtml", "Disable YAHTML attr/prop validation")
+  .option("--expr", "Enable expression scope/type checks")
+  .option("--watch", "Watch for file changes and re-run checks")
+  .option("--watch-interval-ms <ms>", "Watch poll interval in milliseconds", parseInt, 800)
+  .addHelpText(
+    "after",
+    `
+
+Examples:
+  $ rtgl check
+  $ rtgl check --dir src/components --format json
+  $ rtgl check --warn-as-error
+`,
+  )
+  .action(async (options) => {
+    await checkContracts({
+      cwd: process.cwd(),
+      dirs: options.dir,
+      format: options.format,
+      warnAsError: !!options.warnAsError,
+      includeYahtml: options.yahtml !== false,
+      includeExpression: !!options.expr,
+      watch: !!options.watch,
+      watchIntervalMs: Number.isFinite(options.watchIntervalMs) ? options.watchIntervalMs : 800,
+    });
+  });
 
 const feCommand = program.command("fe").description("Frontend framework");
 

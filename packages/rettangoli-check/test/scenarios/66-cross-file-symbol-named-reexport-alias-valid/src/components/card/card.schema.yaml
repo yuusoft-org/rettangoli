@@ -1,0 +1,6 @@
+componentName: rtgl-test-cross-file-named-reexport-alias-valid
+methods:
+  type: object
+  properties:
+    focusInput:
+      type: function

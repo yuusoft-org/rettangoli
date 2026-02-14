@@ -1,0 +1,18 @@
+{
+  "name": "commented exports are ignored for symbols",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 3,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-SYMBOL-001": 1,
+      "RTGL-CHECK-SYMBOL-002": 1,
+      "RTGL-CHECK-SYMBOL-003": 1
+    },
+    "warnCodes": {}
+  }
+}

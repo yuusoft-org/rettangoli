@@ -1,0 +1,6 @@
+template:
+  - rtgl-button:
+      data-test-id: save-btn
+      aria-label: Save item
+      children: Save
+styles: {}

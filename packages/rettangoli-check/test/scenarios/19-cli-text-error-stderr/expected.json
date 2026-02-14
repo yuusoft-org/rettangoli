@@ -1,0 +1,16 @@
+{
+  "name": "cli prints text report to stderr on error",
+  "mode": "cli",
+  "options": {
+    "args": []
+  },
+  "expected": {
+    "exitCode": 1,
+    "stdout": "",
+    "stderrIncludes": [
+      "[Check] Errors: 1, Warnings: 0.",
+      "- RTGL-CONTRACT-001: 1",
+      "RTGL-CONTRACT-001 [error] components/card: missing required .schema.yaml file. [src/components/card/card.view.yaml]"
+    ]
+  }
+}

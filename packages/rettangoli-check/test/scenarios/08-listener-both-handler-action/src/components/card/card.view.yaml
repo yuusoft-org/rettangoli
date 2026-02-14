@@ -1,0 +1,9 @@
+refs:
+  ctaButton:
+    eventListeners:
+      click:
+        handler: handleClick
+        action: setCount
+template:
+  - rtgl-button#ctaButton: Do both
+styles: {}

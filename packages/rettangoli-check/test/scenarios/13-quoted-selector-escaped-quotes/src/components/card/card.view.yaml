@@ -1,0 +1,3 @@
+template:
+  - "rtgl-button aria-label=\"Save: now\" banana=ripe": Save
+styles: {}

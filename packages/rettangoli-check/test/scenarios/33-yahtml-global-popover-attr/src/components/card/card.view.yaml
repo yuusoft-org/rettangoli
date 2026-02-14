@@ -1,0 +1,3 @@
+template:
+  - rtgl-button popover=auto: Open
+styles: {}

@@ -30,7 +30,7 @@ propsSchema:
           testId:
             type: string
     open:
-      type: string
+      type: boolean
     x:
       type: string
     'y':

@@ -1,0 +1,55 @@
+{
+  "name": "listener option type validation",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 5,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-LISTENER-004": 2,
+      "RTGL-CHECK-LISTENER-005": 2,
+      "RTGL-CHECK-LISTENER-006": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-LISTENER-004",
+        "severity": "error",
+        "message": "components/card: invalid 'preventDefault' for event 'tap' on ref 'root'. Expected boolean.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 6
+      },
+      {
+        "code": "RTGL-CHECK-LISTENER-004",
+        "severity": "error",
+        "message": "components/card: invalid 'once' for event 'tap' on ref 'root'. Expected boolean.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 7
+      },
+      {
+        "code": "RTGL-CHECK-LISTENER-005",
+        "severity": "error",
+        "message": "components/card: invalid 'debounce' for event 'tap' on ref 'root'. Expected non-negative number.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 8
+      },
+      {
+        "code": "RTGL-CHECK-LISTENER-005",
+        "severity": "error",
+        "message": "components/card: invalid 'throttle' for event 'tap' on ref 'root'. Expected non-negative number.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 9
+      },
+      {
+        "code": "RTGL-CHECK-LISTENER-006",
+        "severity": "error",
+        "message": "components/card: event 'tap' on ref 'root' cannot define both debounce and throttle.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 8
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "quoted selector line with escaped quotes",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-YAHTML-003": 1
+    },
+    "warnCodes": {}
+  }
+}

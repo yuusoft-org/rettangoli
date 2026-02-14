@@ -1,0 +1,14 @@
+{
+  "name": "yahtml bare event token no false positive",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": true,
+    "errorCount": 0,
+    "warnCount": 0,
+    "errorCodes": {},
+    "warnCodes": {}
+  }
+}

@@ -1,0 +1,8 @@
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: "   "
+template:
+  - rtgl-view:
+      - rtgl-text: Listener invalid symbol

@@ -1,0 +1,25 @@
+{
+  "name": "schema method missing export",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-SYMBOL-003": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-SYMBOL-003",
+        "severity": "error",
+        "message": "components/card: method 'focusInput' is declared in schema but missing in .methods.js exports.",
+        "filePath": "src/components/card/card.schema.yaml",
+        "line": 5
+      }
+    ]
+  }
+}

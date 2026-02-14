@@ -1,0 +1,16 @@
+{
+  "name": "compat boolean binding type mismatch",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-COMPAT-003": 1
+    },
+    "warnCodes": {}
+  }
+}

@@ -1,0 +1,4 @@
+componentName: rtgl-test-card-global-popover-attr
+propsSchema:
+  type: object
+  properties: {}

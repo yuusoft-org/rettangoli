@@ -66,7 +66,7 @@ const createGlobalUI = (globalUIElement) => {
       {
         throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
       }
-      globalUIElement.transformedHandlers.showAlert(options);
+      globalUIElement.transformedHandlers.handleShowAlert(options);
     },
 
     /**
@@ -87,7 +87,7 @@ const createGlobalUI = (globalUIElement) => {
       {
         throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
       }
-      return globalUIElement.transformedHandlers.showConfirm(options);
+      return globalUIElement.transformedHandlers.handleShowConfirm(options);
     },
 
     /**
@@ -109,7 +109,7 @@ const createGlobalUI = (globalUIElement) => {
       {
         throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
       }
-      return globalUIElement.transformedHandlers.showDropdownMenu(options);
+      return globalUIElement.transformedHandlers.handleShowDropdownMenu(options);
     },
 
     /**
@@ -125,7 +125,7 @@ const createGlobalUI = (globalUIElement) => {
       {
         throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
       }
-      return globalUIElement.transformedHandlers.closeAll();
+      return globalUIElement.transformedHandlers.handleCloseAll();
     }
   };
 }

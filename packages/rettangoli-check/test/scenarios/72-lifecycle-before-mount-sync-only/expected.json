@@ -1,0 +1,17 @@
+{
+  "name": "lifecycle before mount sync only",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 2,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-LIFECYCLE-001": 1,
+      "RTGL-CHECK-LIFECYCLE-002": 1
+    },
+    "warnCodes": {}
+  }
+}
