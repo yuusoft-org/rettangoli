@@ -191,6 +191,50 @@ describe('createApp', () => {
     });
   });
 
+  it('treats unknown domain error type as internal error by default', async () => {
+    const app = createApp({
+      setup: {
+        port: 3000,
+        deps: {
+          health: {},
+        },
+      },
+      methodContracts: {
+        'health.ping': healthContract,
+      },
+      methodHandlers: {
+        'health.ping': {
+          healthPingMethod: async () => ({
+            _error: true,
+            type: 'UNDECLARED_DOMAIN_ERROR',
+            details: {},
+          }),
+        },
+      },
+      middlewareModules: {
+        withBefore: {
+          withBefore: () => (next) => async (ctx) => next(ctx),
+        },
+        withAfter: {
+          withAfter: () => (next) => async (ctx) => next(ctx),
+        },
+      },
+      createRequestId: () => 'req-unknown-domain',
+    });
+
+    const response = await app.dispatch({
+      request: {
+        jsonrpc: '2.0',
+        id: 'unknown-domain',
+        method: 'health.ping',
+        params: {},
+      },
+    });
+
+    expect(response.error.code).toBe(-32603);
+    expect(response.error.message).toBe('Internal error');
+  });
+
   it('returns internal error when output schema validation fails', async () => {
     const app = createApp({
       setup: {
@@ -289,5 +333,78 @@ describe('createApp', () => {
         },
       });
     }).toThrow("middleware.before and middleware.after must be arrays");
+  });
+
+  it('fails when success payload uses reserved _error key', async () => {
+    const app = createApp({
+      setup: {
+        port: 3000,
+        deps: {
+          health: {},
+        },
+      },
+      methodContracts: {
+        'health.ping': healthContract,
+      },
+      methodHandlers: {
+        'health.ping': {
+          healthPingMethod: async () => ({
+            _error: false,
+            ok: true,
+            requestId: 'x',
+          }),
+        },
+      },
+      middlewareModules: {
+        withBefore: {
+          withBefore: () => (next) => async (ctx) => next(ctx),
+        },
+        withAfter: {
+          withAfter: () => (next) => async (ctx) => next(ctx),
+        },
+      },
+      createRequestId: () => 'req-reserved',
+    });
+
+    const response = await app.dispatch({
+      request: {
+        jsonrpc: '2.0',
+        id: 'reserved',
+        method: 'health.ping',
+        params: {},
+      },
+    });
+
+    expect(response.error.code).toBe(-32603);
+  });
+
+  it('fails fast when handler module exports multiple functions', () => {
+    expect(() => {
+      createApp({
+        setup: {
+          port: 3000,
+          deps: {
+            health: {},
+          },
+        },
+        methodContracts: {
+          'health.ping': healthContract,
+        },
+        methodHandlers: {
+          'health.ping': {
+            firstHandler: async () => ({ ok: true, requestId: 'a' }),
+            secondHandler: async () => ({ ok: true, requestId: 'b' }),
+          },
+        },
+        middlewareModules: {
+          withBefore: {
+            withBefore: () => (next) => async (ctx) => next(ctx),
+          },
+          withAfter: {
+            withAfter: () => (next) => async (ctx) => next(ctx),
+          },
+        },
+      });
+    }).toThrow("Multiple function exports found for handler 'health.ping'");
   });
 });

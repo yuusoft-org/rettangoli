@@ -163,5 +163,56 @@ describe('createHttpHandler', () => {
     const payload = JSON.parse(response.getBody());
     expect(response.statusCode).toBe(405);
     expect(payload.error.code).toBe(-32600);
+    expect(payload.error.data.reason).toBe('http_method_must_be_post');
+  });
+
+  it('rejects oversized body with 413', async () => {
+    const app = {
+      dispatchWithContext: async () => ({ response: { jsonrpc: '2.0', id: 'x', result: {} } }),
+    };
+
+    const handler = createHttpHandler({ app, maxBodyBytes: 32 });
+    const request = new PassThrough();
+    request.method = 'POST';
+    request.headers = {};
+    request.socket = { remoteAddress: '127.0.0.1' };
+    const response = buildHttpResponseMock();
+
+    const runPromise = handler(request, response);
+    request.end(JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'oversized',
+      method: 'health.ping',
+      params: { echo: 'x'.repeat(256) },
+    }));
+
+    await runPromise;
+
+    const payload = JSON.parse(response.getBody());
+    expect(response.statusCode).toBe(413);
+    expect(payload.error.code).toBe(-32600);
+    expect(payload.error.data.reason).toBe('request_body_too_large');
+  });
+
+  it('returns timeout when request body does not complete', async () => {
+    const app = {
+      dispatchWithContext: async () => ({ response: { jsonrpc: '2.0', id: 'x', result: {} } }),
+    };
+
+    const handler = createHttpHandler({ app, requestTimeoutMs: 25 });
+    const request = new PassThrough();
+    request.method = 'POST';
+    request.headers = {};
+    request.socket = { remoteAddress: '127.0.0.1' };
+    const response = buildHttpResponseMock();
+
+    const runPromise = handler(request, response);
+    request.write('{"jsonrpc":"2.0"');
+    await runPromise;
+
+    const payload = JSON.parse(response.getBody());
+    expect(response.statusCode).toBe(408);
+    expect(payload.error.code).toBe(-32600);
+    expect(payload.error.data.reason).toBe('request_timeout');
   });
 });

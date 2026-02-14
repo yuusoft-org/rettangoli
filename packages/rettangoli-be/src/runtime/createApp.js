@@ -80,14 +80,53 @@ const createOutputValidationError = ({ method, target, validationErrors }) => {
   return new Error(`Invalid ${target} output for ${method}: ${details}`);
 };
 
-const createDomainJsonRpcError = ({ domainError, domainErrors }) => {
-  const mapped = domainErrors[domainError.type] || {};
-  const code = typeof mapped.code === 'number'
-    ? mapped.code
-    : JSON_RPC_ERROR_CODES.DOMAIN_ERROR_DEFAULT;
-  const message = typeof mapped.message === 'string' && mapped.message.trim()
-    ? mapped.message
-    : domainError.type;
+const normalizeDomainErrors = (domainErrors) => {
+  if (!isPlainObject(domainErrors)) {
+    throw new Error('createApp: domainErrors must be an object');
+  }
+
+  const normalized = {};
+  Object.entries(domainErrors).forEach(([type, value]) => {
+    if (!isPlainObject(value)) {
+      throw new Error(`createApp: domainErrors.${type} must be an object with code/message`);
+    }
+
+    if (!Number.isInteger(value.code)) {
+      throw new Error(`createApp: domainErrors.${type}.code must be an integer`);
+    }
+
+    if (typeof value.message !== 'string' || !value.message.trim()) {
+      throw new Error(`createApp: domainErrors.${type}.message must be a non-empty string`);
+    }
+
+    normalized[type] = {
+      code: value.code,
+      message: value.message,
+    };
+  });
+
+  return normalized;
+};
+
+const createDomainJsonRpcError = ({ domainError, domainErrors, allowUnknownDomainErrors }) => {
+  const mapped = domainErrors[domainError.type];
+  if (!mapped) {
+    if (!allowUnknownDomainErrors) {
+      throw new Error(`Unknown domain error type '${domainError.type}'`);
+    }
+
+    return createJsonRpcError({
+      code: JSON_RPC_ERROR_CODES.DOMAIN_ERROR_DEFAULT,
+      message: domainError.type,
+      data: {
+        type: domainError.type,
+        details: domainError.details,
+      },
+    });
+  }
+
+  const code = mapped.code;
+  const message = mapped.message;
 
   return createJsonRpcError({
     code,
@@ -133,10 +172,12 @@ export const createApp = ({
   globalMiddleware = [],
   middlewareDeps = {},
   domainErrors = {},
+  allowUnknownDomainErrors = false,
   createRequestId,
   includeInternalErrorDetails = false,
 } = {}) => {
   const normalizedSetup = normalizeSetup(setup);
+  const normalizedDomainErrors = normalizeDomainErrors(domainErrors);
   const requestIdFactory = withDefaultRequestIdFactory(createRequestId);
   const schemaCompiler = createSchemaCompiler();
 
@@ -343,10 +384,18 @@ export const createApp = ({
             id: request.id,
             error: createDomainJsonRpcError({
               domainError: handlerOutput,
-              domainErrors,
+              domainErrors: normalizedDomainErrors,
+              allowUnknownDomainErrors,
             }),
           }),
         };
+      }
+
+      if (
+        isPlainObject(handlerOutput)
+        && Object.prototype.hasOwnProperty.call(handlerOutput, '_error')
+      ) {
+        throw new Error(`Reserved key '_error' cannot be used in success payload for ${runtimeMethod.method}`);
       }
 
       const successValid = runtimeMethod.validators.success(handlerOutput);

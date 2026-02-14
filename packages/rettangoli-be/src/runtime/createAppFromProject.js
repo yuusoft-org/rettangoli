@@ -33,6 +33,7 @@ export const createAppFromProject = async ({
   globalMiddleware = [],
   middlewareDeps = {},
   domainErrors = {},
+  allowUnknownDomainErrors = false,
   createRequestId,
   includeInternalErrorDetails = false,
 } = {}) => {
@@ -71,6 +72,7 @@ export const createAppFromProject = async ({
     globalMiddleware,
     middlewareDeps,
     domainErrors,
+    allowUnknownDomainErrors,
     createRequestId,
     includeInternalErrorDetails,
   });

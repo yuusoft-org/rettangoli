@@ -36,7 +36,14 @@ be:
   middlewareDir: "./src/middleware"
   setup: "./src/setup.js"
   outdir: "./.rtgl-be/generated"
+  domainErrors:
+    AUTH_REQUIRED:
+      code: -32010
+      message: Authentication required
 ```
+
+`be.domainErrors` is the domain error registry used by runtime mapping. Unknown
+`_error.type` values are treated as internal errors by default.
 
 ## Commands
 

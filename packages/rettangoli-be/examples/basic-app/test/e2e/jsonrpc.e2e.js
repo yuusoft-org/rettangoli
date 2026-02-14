@@ -11,10 +11,10 @@ const parseJsonSafe = (value) => {
   }
 };
 
-const withGeneratedServer = async (run) => {
+const withGeneratedServer = async (run, handlerOptions = {}) => {
   process.env.OTP_SECRET = process.env.OTP_SECRET || 'e2e-secret';
   const { app } = await import('../../.rtgl-be/generated/app.js');
-  const rpcHandler = createHttpHandler({ app });
+  const rpcHandler = createHttpHandler({ app, ...handlerOptions });
 
   const server = createServer((request, response) => {
     rpcHandler(request, response).catch((error) => {
@@ -57,20 +57,20 @@ const withGeneratedServer = async (run) => {
   }
 };
 
-const callRpc = async ({ baseUrl, body, cookie, method = 'POST' }) => {
-  const headers = {};
+const callRpc = async ({ baseUrl, body, cookie, method = 'POST', headers = {} }) => {
+  const requestHeaders = { ...headers };
 
   if (method === 'POST') {
-    headers['content-type'] = 'application/json';
+    requestHeaders['content-type'] = requestHeaders['content-type'] || 'application/json';
   }
 
   if (cookie) {
-    headers.cookie = cookie;
+    requestHeaders.cookie = cookie;
   }
 
   const response = await fetch(`${baseUrl}/rpc`, {
     method,
-    headers,
+    headers: requestHeaders,
     body,
   });
 
@@ -128,7 +128,7 @@ test('e2e: health.ping invalid params -> -32602', async () => {
   });
 });
 
-test('e2e: user.getProfile without cookie -> domain error envelope', async () => {
+test('e2e: user.getProfile without cookie -> mapped domain error', async () => {
   await withGeneratedServer(async ({ baseUrl }) => {
     const result = await callRpc({
       baseUrl,
@@ -141,8 +141,8 @@ test('e2e: user.getProfile without cookie -> domain error envelope', async () =>
     });
 
     assert.equal(result.status, 200);
-    assert.equal(result.json.error.code, -32000);
-    assert.equal(result.json.error.message, 'AUTH_REQUIRED');
+    assert.equal(result.json.error.code, -32010);
+    assert.equal(result.json.error.message, 'Authentication required');
     assert.equal(result.json.error.data.type, 'AUTH_REQUIRED');
     assert.deepEqual(result.json.error.data.details, { reason: 'auth_required' });
   });
@@ -214,5 +214,78 @@ test('e2e: GET request -> 405 + -32600', async () => {
     assert.equal(result.status, 405);
     assert.equal(result.json.error.code, -32600);
     assert.equal(result.json.error.message, 'Invalid Request');
+    assert.equal(result.json.error.data.reason, 'http_method_must_be_post');
+  });
+});
+
+test('e2e: oversized body -> 413 + invalid request', async () => {
+  await withGeneratedServer(async ({ baseUrl }) => {
+    const largeBody = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'e2e-oversize',
+      method: 'health.ping',
+      params: {
+        echo: 'x'.repeat(4096),
+      },
+    });
+
+    const result = await callRpc({
+      baseUrl,
+      body: largeBody,
+    });
+
+    assert.equal(result.status, 413);
+    assert.equal(result.json.error.code, -32600);
+    assert.equal(result.json.error.data.reason, 'request_body_too_large');
+  }, { maxBodyBytes: 512 });
+});
+
+test('e2e: middleware throw -> -32603 internal error', async () => {
+  await withGeneratedServer(async ({ baseUrl }) => {
+    const result = await callRpc({
+      baseUrl,
+      headers: {
+        'x-e2e-throw-middleware': '1',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'e2e-mw-throw',
+        method: 'health.ping',
+        params: {},
+      }),
+    });
+
+    assert.equal(result.status, 200);
+    assert.equal(result.json.error.code, -32603);
+    assert.equal(result.json.error.message, 'Internal error');
+  });
+});
+
+test('e2e: concurrent health.ping calls all succeed', async () => {
+  await withGeneratedServer(async ({ baseUrl }) => {
+    const requestCount = 20;
+
+    const responses = await Promise.all(
+      Array.from({ length: requestCount }, (_, index) => {
+        return callRpc({
+          baseUrl,
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: `e2e-concurrent-${index}`,
+            method: 'health.ping',
+            params: {
+              echo: `msg-${index}`,
+            },
+          }),
+        });
+      }),
+    );
+
+    responses.forEach((response, index) => {
+      assert.equal(response.status, 200);
+      assert.equal(response.json.id, `e2e-concurrent-${index}`);
+      assert.equal(response.json.result.ok, true);
+      assert.equal(response.json.result.echo, `msg-${index}`);
+    });
   });
 });

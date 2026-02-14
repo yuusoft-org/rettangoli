@@ -13,10 +13,6 @@ export const resolveSingleFunctionExport = ({
     return moduleObject[preferredName];
   }
 
-  if (isFunction(moduleObject.default)) {
-    return moduleObject.default;
-  }
-
   const functionEntries = Object.entries(moduleObject).filter(([, value]) => isFunction(value));
 
   if (functionEntries.length === 1) {

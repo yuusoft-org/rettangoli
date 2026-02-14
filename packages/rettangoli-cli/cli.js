@@ -256,6 +256,7 @@ beCommand
     options.middlewareDir = options.middlewareDir || config.be.middlewareDir || "./src/middleware";
     options.setup = options.setupPath || config.be.setup || "./src/setup.js";
     options.outdir = options.outdir || config.be.outdir || "./.rtgl-be/generated";
+    options.domainErrors = config.be.domainErrors || {};
 
     buildBe(options);
   });
@@ -317,6 +318,7 @@ beCommand
     options.middlewareDir = options.middlewareDir || config.be.middlewareDir || "./src/middleware";
     options.setup = options.setupPath || config.be.setup || "./src/setup.js";
     options.outdir = options.outdir || config.be.outdir || "./.rtgl-be/generated";
+    options.domainErrors = config.be.domainErrors || {};
 
     watchBe(options);
   });

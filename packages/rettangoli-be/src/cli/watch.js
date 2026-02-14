@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { existsSync, statSync, watch } from 'node:fs';
+import chokidar from 'chokidar';
 import build from './build.js';
 
 const DEBOUNCE_DELAY = 250;
@@ -13,15 +13,11 @@ const startWatch = (options = {}) => {
   } = options;
 
   const setupPath = path.resolve(cwd, setup);
-  const watchTargets = new Map();
-
-  dirs.forEach((dir) => {
-    const target = path.resolve(cwd, dir);
-    watchTargets.set(target, { recursive: true });
-  });
-
-  watchTargets.set(path.resolve(cwd, middlewareDir), { recursive: true });
-  watchTargets.set(path.dirname(setupPath), { recursive: false });
+  const watchTargets = [
+    ...dirs.map((dir) => path.resolve(cwd, dir)),
+    path.resolve(cwd, middlewareDir),
+    setupPath,
+  ];
 
   let timeout;
 
@@ -41,25 +37,20 @@ const startWatch = (options = {}) => {
 
   build(options);
 
-  watchTargets.forEach((watchOptions, target) => {
-    if (!existsSync(target)) {
-      return;
-    }
+  const watcher = chokidar.watch(watchTargets, {
+    ignoreInitial: true,
+    awaitWriteFinish: {
+      stabilityThreshold: 100,
+      pollInterval: 25,
+    },
+  });
 
-    const stats = statSync(target);
-    const recursive = stats.isDirectory() ? watchOptions.recursive : false;
-    const onChange = () => {
-      scheduleBuild();
-    };
-
-    try {
-      watch(target, { recursive }, onChange);
-    } catch {
-      watch(target, { recursive: false }, onChange);
-    }
+  watcher.on('all', () => {
+    scheduleBuild();
   });
 
   console.log('[Watch] Watching backend files for changes...');
+  return watcher;
 };
 
 export default startWatch;
