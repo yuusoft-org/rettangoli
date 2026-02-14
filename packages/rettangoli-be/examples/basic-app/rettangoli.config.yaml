@@ -1,0 +1,6 @@
+be:
+  dirs:
+    - "./src/modules"
+  middlewareDir: "./src/middleware"
+  setup: "./src/setup.js"
+  outdir: "./.rtgl-be/generated"

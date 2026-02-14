@@ -1,0 +1,37 @@
+{
+  "name": "@rettangoli/be",
+  "version": "1.0.0-rc1",
+  "description": "Backend framework for Rettangoli JSON-RPC applications",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./cli": "./src/cli/index.js"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuusoft-org/rettangoli.git",
+    "directory": "packages/rettangoli-be"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "test": "vitest run --reporter=verbose",
+    "test:puty": "vitest run puty.spec.js --reporter=verbose"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "puty": "^0.1.1",
+    "vitest": "^4.0.15"
+  }
+}

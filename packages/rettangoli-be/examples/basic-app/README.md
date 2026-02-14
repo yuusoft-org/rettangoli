@@ -31,3 +31,10 @@ src/
 2. Are per-method folders ergonomic for scaling domains?
 3. Are RPC files expressive enough for request/output contracts and method middleware hooks?
 4. Is the new `*.spec.yaml` format sufficient for puty tests?
+
+## Local commands
+
+```bash
+bun run check
+bun run build
+```
