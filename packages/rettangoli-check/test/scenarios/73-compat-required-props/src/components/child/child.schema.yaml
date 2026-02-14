@@ -1,0 +1,8 @@
+componentName: rtgl-test-required-child
+propsSchema:
+  type: object
+  required:
+    - title
+  properties:
+    title:
+      type: string

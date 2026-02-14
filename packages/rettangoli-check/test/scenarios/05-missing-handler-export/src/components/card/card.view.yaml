@@ -1,0 +1,8 @@
+refs:
+  ctaButton:
+    eventListeners:
+      click:
+        handler: handleTap
+template:
+  - rtgl-button#ctaButton: Click
+styles: {}

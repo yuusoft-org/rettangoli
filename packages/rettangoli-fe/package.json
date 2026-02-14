@@ -23,7 +23,8 @@
   "license": "MIT",
   "exports": {
     ".": "./src/index.js",
-    "./cli": "./src/cli/index.js"
+    "./cli": "./src/cli/index.js",
+    "./contracts": "./src/contracts/index.js"
   },
   "devDependencies": {
     "puty": "^0.1.1",

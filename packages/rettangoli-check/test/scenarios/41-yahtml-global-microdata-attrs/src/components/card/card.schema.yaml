@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-global-microdata-attrs
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

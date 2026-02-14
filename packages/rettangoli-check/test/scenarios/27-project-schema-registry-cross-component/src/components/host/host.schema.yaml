@@ -1,0 +1,4 @@
+componentName: rtgl-test-host-card
+propsSchema:
+  type: object
+  properties: {}

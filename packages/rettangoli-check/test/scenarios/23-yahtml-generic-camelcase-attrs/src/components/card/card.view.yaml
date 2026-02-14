@@ -1,0 +1,3 @@
+template:
+  - rtgl-button tabIndex=0 contentEditable=true newTab ariaLabel="save item" dataTestId=save-btn: Save
+styles: {}

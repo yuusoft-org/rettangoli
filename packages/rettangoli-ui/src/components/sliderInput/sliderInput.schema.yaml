@@ -19,6 +19,9 @@ propsSchema:
     step:
       type: string
       default: '1'
+    disabled:
+      type: boolean
+      default: false
 events:
   value-input: {}
   value-change: {}

@@ -1,0 +1,5 @@
+componentName: rtgl-test-child-nonobject-props
+propsSchema:
+  type: object
+  properties:
+    - accentColor

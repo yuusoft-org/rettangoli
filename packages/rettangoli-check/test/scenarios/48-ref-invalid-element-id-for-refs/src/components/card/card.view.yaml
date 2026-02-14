@@ -1,0 +1,7 @@
+refs:
+  submitButton:
+    eventListeners:
+      click:
+        handler: handleClick
+template:
+  - rtgl-button#submit-button: Save

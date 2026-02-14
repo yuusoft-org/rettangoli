@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-cli-json
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

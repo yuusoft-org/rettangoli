@@ -1,0 +1,4 @@
+componentName: rtgl-test-host-duplicate-merge
+propsSchema:
+  type: object
+  properties: {}

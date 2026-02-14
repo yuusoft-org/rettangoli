@@ -1,0 +1,25 @@
+{
+  "name": "forbidden key in view",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": false
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CONTRACT-002": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CONTRACT-002",
+        "severity": "error",
+        "message": "components/card: 'propsSchema' is not allowed in .view.yaml. Move API metadata to .schema.yaml.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 1
+      }
+    ]
+  }
+}

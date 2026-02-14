@@ -1,0 +1,6 @@
+componentName: rtgl-test-cross-file-explicit-js-specifier-typescript-target
+methods:
+  type: object
+  properties:
+    focusInput:
+      type: function

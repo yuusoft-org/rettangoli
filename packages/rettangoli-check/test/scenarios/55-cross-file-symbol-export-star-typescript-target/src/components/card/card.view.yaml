@@ -1,0 +1,11 @@
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: handleTap
+      hold:
+        action: setCount
+template:
+  - rtgl-view#root:
+      - rtgl-text: Cross-file export star typescript target
+styles: {}

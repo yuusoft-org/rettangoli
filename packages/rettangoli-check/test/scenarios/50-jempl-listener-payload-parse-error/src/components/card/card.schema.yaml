@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-jempl-payload-parse-error
+propsSchema:
+  type: object
+  properties:
+    count:
+      type: number

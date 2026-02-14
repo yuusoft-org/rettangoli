@@ -13,6 +13,7 @@ export const selectViewData = ({ props, state }) => {
   const value = hasValue ? state.value : "-";
   const placeholder = typeof props.placeholder === "string" ? props.placeholder : "";
   const label = typeof props.label === "string" ? props.label : "";
+  const disabled = Boolean(props.disabled);
 
   return {
     isOpen: state.isOpen,
@@ -22,6 +23,7 @@ export const selectViewData = ({ props, state }) => {
     tempValue: state.tempValue,
     placeholder,
     label,
+    disabled,
   };
 }
 

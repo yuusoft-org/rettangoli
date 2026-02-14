@@ -1,0 +1,6 @@
+componentName: rtgl-test-listener-options
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

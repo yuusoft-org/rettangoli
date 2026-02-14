@@ -1,0 +1,3 @@
+template:
+  - rtgl-view p=sm:
+      - rtgl-text: Missing schema prefers view file

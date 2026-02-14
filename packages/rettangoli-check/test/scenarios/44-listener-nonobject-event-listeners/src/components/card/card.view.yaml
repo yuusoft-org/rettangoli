@@ -1,0 +1,6 @@
+refs:
+  root:
+    eventListeners: invalid-listeners-map
+template:
+  - rtgl-view:
+      - rtgl-text: Listener eventListeners config should be object

@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-handler-export-prefix
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

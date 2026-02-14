@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-constants-root
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

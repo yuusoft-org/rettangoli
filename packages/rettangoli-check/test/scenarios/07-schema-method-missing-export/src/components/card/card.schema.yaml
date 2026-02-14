@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-method-missing
+methods:
+  type: object
+  properties:
+    focusInput:
+      type: function

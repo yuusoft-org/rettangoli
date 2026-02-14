@@ -1,0 +1,3 @@
+template:
+  - rtgl-button#ctaButton: Click
+styles: {}

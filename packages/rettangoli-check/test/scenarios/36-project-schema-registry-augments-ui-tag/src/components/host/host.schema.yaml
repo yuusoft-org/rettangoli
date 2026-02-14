@@ -1,0 +1,4 @@
+componentName: rtgl-test-host-augment-ui
+propsSchema:
+  type: object
+  properties: {}

@@ -1,0 +1,4 @@
+template:
+  - ? 'rtgl-button aria-label="Save: now" banana=ripe'
+    : Bad attr
+styles: {}

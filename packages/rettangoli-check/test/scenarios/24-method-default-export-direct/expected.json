@@ -1,0 +1,17 @@
+{
+  "name": "method direct default export",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 2,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-SYMBOL-003": 1,
+      "RTGL-CHECK-SYMBOL-004": 1
+    },
+    "warnCodes": {}
+  }
+}

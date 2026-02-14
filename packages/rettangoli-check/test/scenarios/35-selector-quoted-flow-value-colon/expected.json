@@ -1,0 +1,14 @@
+{
+  "name": "quoted selector with flow-style attr value containing colon",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": true,
+    "errorCount": 0,
+    "warnCount": 0,
+    "errorCodes": {},
+    "warnCodes": {}
+  }
+}

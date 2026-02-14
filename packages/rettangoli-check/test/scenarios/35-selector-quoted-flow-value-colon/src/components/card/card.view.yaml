@@ -1,0 +1,3 @@
+template:
+  - "rtgl-card config={ foo: bar } aria-label=Save": Stable
+styles: {}

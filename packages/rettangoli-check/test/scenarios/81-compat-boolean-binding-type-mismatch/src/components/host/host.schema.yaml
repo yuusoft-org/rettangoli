@@ -1,0 +1,6 @@
+componentName: rtgl-host
+propsSchema:
+  type: object
+  properties:
+    count:
+      type: number

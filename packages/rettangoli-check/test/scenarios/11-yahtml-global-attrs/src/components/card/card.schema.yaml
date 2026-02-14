@@ -1,0 +1,4 @@
+componentName: rtgl-test-card-global-attrs
+propsSchema:
+  type: object
+  properties: {}

@@ -1,0 +1,30 @@
+{
+  "name": "cli json format prints runtime errors to stdout",
+  "mode": "cli",
+  "options": {
+    "args": ["--format", "json", "--dir", "./does-not-exist"]
+  },
+  "expected": {
+    "exitCode": 1,
+    "stderr": "",
+    "stdoutJson": {
+      "ok": false,
+      "summary": {
+        "total": 1,
+        "bySeverity": {
+          "error": 1,
+          "warn": 0
+        }
+      },
+      "warnAsError": false,
+      "diagnostics": [
+        {
+          "code": "RTGL-CLI-001",
+          "severity": "error",
+          "message": "Component directories do not exist: ./does-not-exist",
+          "filePath": "unknown"
+        }
+      ]
+    }
+  }
+}

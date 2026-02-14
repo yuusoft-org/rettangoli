@@ -1,0 +1,16 @@
+{
+  "name": "missing schema file",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CONTRACT-001": 1
+    },
+    "warnCodes": {}
+  }
+}

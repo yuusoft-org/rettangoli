@@ -1,0 +1,9 @@
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string
+template:
+  - rtgl-view:
+      - rtgl-text: Forbidden key case
+styles: {}

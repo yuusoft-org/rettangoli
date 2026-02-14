@@ -1,0 +1,9 @@
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: handleTap
+        preventDefualt: true
+template:
+  - rtgl-view:
+      - rtgl-text: Listener unknown option

@@ -1,0 +1,6 @@
+componentName: rtgl-test-commented-exports-ignored
+methods:
+  type: object
+  properties:
+    focusInput:
+      type: function

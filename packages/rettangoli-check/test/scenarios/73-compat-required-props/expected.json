@@ -1,0 +1,16 @@
+{
+  "name": "compat required props",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-COMPAT-001": 1
+    },
+    "warnCodes": {}
+  }
+}

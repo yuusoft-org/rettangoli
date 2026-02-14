@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-ref-invalid-element-id
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

@@ -1,0 +1,4 @@
+componentName: rtgl-host
+propsSchema:
+  type: object
+  properties: {}

@@ -1,0 +1,6 @@
+componentName: rtgl-test-duplicate-merge
+propsSchema:
+  type: object
+  properties:
+    accentColor:
+      type: string

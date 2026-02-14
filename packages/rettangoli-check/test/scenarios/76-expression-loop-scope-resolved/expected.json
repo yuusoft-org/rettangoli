@@ -1,0 +1,15 @@
+{
+  "name": "expression loop scope resolved",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true,
+    "includeExpression": true
+  },
+  "expected": {
+    "ok": true,
+    "errorCount": 0,
+    "warnCount": 0,
+    "errorCodes": {},
+    "warnCodes": {}
+  }
+}

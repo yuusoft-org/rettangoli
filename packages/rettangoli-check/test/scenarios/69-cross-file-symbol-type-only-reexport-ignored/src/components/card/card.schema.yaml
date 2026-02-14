@@ -1,0 +1,6 @@
+componentName: rtgl-test-cross-file-type-only-reexport-ignored
+methods:
+  type: object
+  properties:
+    focusInput:
+      type: function

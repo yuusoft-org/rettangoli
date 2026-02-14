@@ -55,7 +55,7 @@ export const handleDropdownItemClick = (deps, payload) => {
  * @param {string} [payload.confirmText] - Text for the confirm button (default: "OK")
  * @returns {void}
  */
-export const showAlert = (deps, payload) => {
+export const handleShowAlert = (deps, payload) => {
   const { store, render } = deps;
   const options = payload;
 
@@ -69,7 +69,7 @@ export const showAlert = (deps, payload) => {
   render();
 };
 
-export const showConfirm = async (deps, payload) => {
+export const handleShowConfirm = async (deps, payload) => {
   const { store, render, globalUI } = deps;
   const options = payload;
 
@@ -107,7 +107,7 @@ export const showConfirm = async (deps, payload) => {
  * @returns {Object} [result.index] - Index of the clicked item
  * @returns {Object} [result.item] - The clicked item object
  */
-export const showDropdownMenu = async (deps, payload) => {
+export const handleShowDropdownMenu = async (deps, payload) => {
   const { store, render, globalUI } = deps;
   const options = payload;
 
@@ -140,7 +140,7 @@ export const showDropdownMenu = async (deps, payload) => {
  * @param {Object} deps.globalUI - The globalUI event emitter
  * @returns {void}
  */
-export const closeAll = (deps) => {
+export const handleCloseAll = (deps) => {
   const { store, render } = deps;
 
   // Close global UI dialogs/dropdowns

@@ -1,0 +1,3 @@
+template:
+  - rtgl-test-required-child: Missing title required prop
+styles: {}

@@ -1,0 +1,8 @@
+componentName: rtgl-test-cross-file-multi-export-declarators
+methods:
+  type: object
+  properties:
+    helper:
+      type: object
+    focusInput:
+      type: object

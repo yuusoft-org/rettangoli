@@ -1,0 +1,16 @@
+{
+  "name": "compat unsupported event",
+  "options": {
+    "dirs": ["./src/components"],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-COMPAT-002": 1
+    },
+    "warnCodes": {}
+  }
+}

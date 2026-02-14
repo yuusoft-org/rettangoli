@@ -1,0 +1,3 @@
+template:
+  - rtgl-input :value=${missingProp}: hello
+styles: {}

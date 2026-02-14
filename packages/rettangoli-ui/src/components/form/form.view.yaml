@@ -38,7 +38,7 @@ template:
                   - rtgl-view g=md w=f:
                       - rtgl-view g=sm:
                           - $if field.label:
-                              - rtgl-text s=md fw=bd: ${field.label}
+                              - rtgl-text s=md: ${field.label}
                           - $if field.description:
                               - rtgl-text s=sm c=mu-fg: ${field.description}
               - $if !field._isSection:

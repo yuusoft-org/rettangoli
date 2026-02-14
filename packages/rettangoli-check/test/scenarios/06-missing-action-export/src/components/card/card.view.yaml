@@ -1,0 +1,8 @@
+refs:
+  ctaButton:
+    eventListeners:
+      click:
+        action: setCount
+template:
+  - rtgl-button#ctaButton: Increment
+styles: {}

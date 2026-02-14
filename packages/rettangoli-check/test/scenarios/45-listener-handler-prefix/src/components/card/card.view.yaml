@@ -1,0 +1,8 @@
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: onTap
+template:
+  - rtgl-view:
+      - rtgl-text: Listener handler naming strict mode

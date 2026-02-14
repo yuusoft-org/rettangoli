@@ -1,0 +1,8 @@
+componentName: rtgl-test-child-card
+propsSchema:
+  type: object
+  properties:
+    accentColor:
+      type: string
+    showIcon:
+      type: boolean

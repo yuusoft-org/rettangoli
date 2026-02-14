@@ -1,0 +1,4 @@
+template:
+  - rtgl-text c=fg accent-color=blue :accentColor=blue:
+      - rtgl-text: Host
+styles: {}

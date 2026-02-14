@@ -1,0 +1,6 @@
+componentName: rtgl-test-listener-nonobject-event-listeners
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

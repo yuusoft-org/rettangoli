@@ -1,0 +1,10 @@
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: handleTap
+        payload:
+          countLabel: "Count: ${count + 1}"
+template:
+  - rtgl-view:
+      - rtgl-text: Payload parse error scenario
