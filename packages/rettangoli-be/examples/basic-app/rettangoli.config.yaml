@@ -1,0 +1,13 @@
+be:
+  dirs:
+    - "./src/modules"
+  middlewareDir: "./src/middleware"
+  setup: "./src/setup.js"
+  outdir: "./.rtgl-be/generated"
+  domainErrors:
+    AUTH_REQUIRED:
+      code: -32010
+      message: Authentication required
+    USER_NOT_FOUND:
+      code: -32011
+      message: User not found
