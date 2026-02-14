@@ -6,6 +6,7 @@
   "description": "Design example app for rettangoli-be",
   "scripts": {
     "check": "node ../../../rettangoli-cli/cli.js be check",
-    "build": "node ../../../rettangoli-cli/cli.js be build"
+    "build": "node ../../../rettangoli-cli/cli.js be build",
+    "test:e2e": "node ../../../rettangoli-cli/cli.js be build && node --test ./test/e2e/*.e2e.js"
   }
 }

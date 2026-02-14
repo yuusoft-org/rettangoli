@@ -23,7 +23,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test": "vitest run --reporter=verbose",
+    "test": "vitest run puty.spec.js test/**/*.test.js --reporter=verbose",
     "test:puty": "vitest run puty.spec.js --reporter=verbose"
   },
   "dependencies": {

@@ -37,4 +37,9 @@ src/
 ```bash
 bun run check
 bun run build
+bun run test:e2e
 ```
+
+`test:e2e` boots a real HTTP server from the generated `.rtgl-be/generated/app.js`
+and runs end-to-end JSON-RPC requests (success, validation errors, domain errors,
+method-not-found, parse errors, and cookie roundtrip).
