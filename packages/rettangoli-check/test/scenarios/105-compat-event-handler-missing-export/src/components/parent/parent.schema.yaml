@@ -1,0 +1,4 @@
+componentName: rtgl-check-parent-handler-missing
+propsSchema:
+  type: object
+  properties: {}

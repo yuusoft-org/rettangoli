@@ -1,0 +1,29 @@
+{
+  "name": "cli doctor fails on unknown language level pin",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "doctor",
+      "--format",
+      "json"
+    ]
+  },
+  "expected": {
+    "exitCode": 1,
+    "stderr": "",
+    "stdoutJson": {
+      "contractVersion": 1,
+      "ok": false,
+      "command": "doctor",
+      "language": {
+        "configured": "future-unstable-mode",
+        "resolved": "future-unstable-mode",
+        "known": false
+      }
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
+}

@@ -20,18 +20,37 @@ const pick = (rng, values) => {
   return values[index];
 };
 
-const createCaseSource = (rng) => {
+const createCaseSource = (rng, extension) => {
   const nameA = pick(rng, ["alpha", "beta", "gamma", "delta"]);
   const nameB = pick(rng, ["handleTap", "setCount", "focusInput", "valueChanged"]);
-  const list = [
+  const baseList = [
     `export function ${nameA}() {}`,
     `export class ${nameA.charAt(0).toUpperCase() + nameA.slice(1)} {}`,
     `export const ${nameB} = () => {};`,
+    `export const ${nameB}Typed: () => void = () => {};`,
+    `export let ${nameA}Ready!: boolean;`,
+    `const ${nameA}Bag = { ${nameB}: () => {} }; export const { ${nameB} } = ${nameA}Bag;`,
+    `const ${nameA}TypedBag: { ${nameB}: () => void } = { ${nameB}: () => {} }; export const { ${nameB}: ${nameB}Alias }: { ${nameB}: () => void } = ${nameA}TypedBag;`,
+    `const ${nameA}Tuple = [() => {}]; export const [${nameA}Item] = ${nameA}Tuple;`,
+    `const ${nameA}TypedTuple: [() => void] = [() => {}]; export const [${nameA}TypedItem]: [() => void] = ${nameA}TypedTuple;`,
     `export { ${nameB} as ${nameA}Alias };`,
     `export * from "./dep-${nameA}.js";`,
+    `export * as ${nameA}Ns from "./dep-${nameA}.js";`,
     `export { ${nameB} } from "./dep-${nameB}.js";`,
+    `export { default } from "./dep-${nameA}.js";`,
+    `export { ${nameB} as default } from "./dep-${nameB}.js";`,
     `export default function () {};`,
   ];
+  const tsOnlyList = [
+    `export enum ${nameA.charAt(0).toUpperCase() + nameA.slice(1)}Kind { Ready = "ready" }`,
+    `export const enum ${nameA.charAt(0).toUpperCase() + nameA.slice(1)}ConstKind { Ready = "ready" }`,
+    `export abstract class ${nameA.charAt(0).toUpperCase() + nameA.slice(1)}Abstract {}`,
+    `export import ${nameA}Alias = ${nameA.charAt(0).toUpperCase() + nameA.slice(1)}Ns.${nameB};`,
+    `const ${nameB}Assigned = () => {}; export = ${nameB}Assigned;`,
+  ];
+  const list = extension === "ts"
+    ? [...baseList, ...tsOnlyList]
+    : baseList;
 
   const statementCount = 2 + Math.floor(rng() * 4);
   const statements = [];
@@ -62,8 +81,9 @@ const main = () => {
   const mismatches = [];
 
   for (let i = 0; i < CASES; i += 1) {
-    const source = createCaseSource(rng);
-    const filePath = `fuzz-case-${i}.js`;
+    const extension = rng() < 0.5 ? "js" : "ts";
+    const source = createCaseSource(rng, extension);
+    const filePath = `fuzz-case-${i}.${extension}`;
     const oxc = normalize(extractModuleExports({ sourceCode: source, filePath }));
     const regex = normalize(extractModuleExportsRegexLegacy({ sourceCode: source, filePath }));
 

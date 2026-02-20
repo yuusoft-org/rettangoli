@@ -1,0 +1,41 @@
+name: Reliability Nightly
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.5
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Reliability Soak
+        run: bun run test:reliability-soak
+        working-directory: ./packages/rettangoli-check
+
+      - name: Detect Flaky Reliability Gate
+        run: bun run tools:reliability-detect-flaky -- --cmd "node ./scripts/test-reliability-gates.mjs" --runs 3 --quarantine-file ./test/flaky-quarantine.json
+        working-directory: ./packages/rettangoli-check
+
+      - name: Upload Reliability Soak Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reliability-soak-report-${{ github.run_number }}
+          path: |
+            packages/rettangoli-check/test/reliability-scorecard.json
+            packages/rettangoli-check/test/reliability-soak-report.json
+            packages/rettangoli-check/test/flaky-quarantine.json
+          retention-days: 30

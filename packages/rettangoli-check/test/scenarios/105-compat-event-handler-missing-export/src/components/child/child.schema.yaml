@@ -1,0 +1,6 @@
+componentName: rtgl-check-child-handler-missing
+propsSchema:
+  type: object
+  properties: {}
+events:
+  tap: {}

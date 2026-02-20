@@ -1,7 +1,16 @@
 #!/usr/bin/env node
 
 import { spawnSync } from "node:child_process";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import {
+  cpSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyzeProject } from "../src/core/analyze.js";
@@ -10,6 +19,26 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const scenariosDir = path.join(currentDir, "scenarios");
 const workspaceRoot = path.resolve(currentDir, "../../..");
 const cliBinPath = path.resolve(currentDir, "../src/cli/bin.js");
+const specIndexPath = path.resolve(currentDir, "../docs/language-spec/spec-index.json");
+
+const loadSpecIndex = () => {
+  const parsed = JSON.parse(readFileSync(specIndexPath, "utf8"));
+  const specs = Array.isArray(parsed?.specs) ? parsed.specs : [];
+  const ids = new Set();
+  specs.forEach((entry) => {
+    const id = typeof entry?.id === "string" ? entry.id.trim() : "";
+    if (id) {
+      ids.add(id);
+    }
+  });
+
+  return {
+    version: Number.isInteger(parsed?.version) ? parsed.version : 1,
+    ids,
+  };
+};
+
+const SPEC_INDEX = loadSpecIndex();
 
 const parseArgs = () => {
   const args = process.argv.slice(2);
@@ -49,6 +78,81 @@ const summarizeResult = (result = {}, diagnostics = []) => ({
 });
 
 const toPosixPath = (value = "") => value.replaceAll(path.sep, "/");
+const MUTATABLE_SOURCE_FILE_EXTENSIONS = new Set([
+  ".yaml",
+  ".yml",
+  ".js",
+  ".mjs",
+  ".cjs",
+  ".ts",
+  ".mts",
+  ".cts",
+]);
+
+const listFilesRecursively = (rootDir) => {
+  if (!rootDir) {
+    return [];
+  }
+
+  const entries = readdirSync(rootDir);
+  return entries.flatMap((entry) => {
+    const filePath = path.join(rootDir, entry);
+    const fileStat = statSync(filePath);
+    if (fileStat.isDirectory()) {
+      return listFilesRecursively(filePath);
+    }
+    if (fileStat.isFile()) {
+      return [filePath];
+    }
+    return [];
+  });
+};
+
+const applyWhitespaceNoiseMutation = (sourceCode = "") => {
+  const usesCrlf = sourceCode.includes("\r\n");
+  const newline = usesCrlf ? "\r\n" : "\n";
+  const normalizedSource = sourceCode.replace(/\r\n/g, "\n");
+
+  const mutated = normalizedSource
+    .split("\n")
+    .map((line, index) => {
+      if (line.length === 0) {
+        return line;
+      }
+      const suffix = index % 2 === 0 ? "  " : " ";
+      return `${line}${suffix}`;
+    })
+    .join("\n");
+
+  if (usesCrlf) {
+    return mutated.replace(/\n/g, newline);
+  }
+
+  return mutated;
+};
+
+const createMutatedScenarioWorkspace = ({ scenarioRoot }) => {
+  const mutationSandboxRoot = mkdtempSync(path.join(tmpdir(), "rtgl-scenario-mutation-"));
+  const mutatedScenarioRoot = path.join(mutationSandboxRoot, path.basename(scenarioRoot));
+  cpSync(scenarioRoot, mutatedScenarioRoot, { recursive: true });
+
+  const mutatedSrcRoot = path.join(mutatedScenarioRoot, "src");
+  const sourceFiles = listFilesRecursively(mutatedSrcRoot);
+  sourceFiles.forEach((filePath) => {
+    if (!MUTATABLE_SOURCE_FILE_EXTENSIONS.has(path.extname(filePath))) {
+      return;
+    }
+
+    const sourceCode = readFileSync(filePath, "utf8");
+    const mutatedSourceCode = applyWhitespaceNoiseMutation(sourceCode);
+    writeFileSync(filePath, mutatedSourceCode, "utf8");
+  });
+
+  return {
+    mutationSandboxRoot,
+    mutatedScenarioRoot,
+  };
+};
 
 const compareDiagnostics = (left, right) => {
   const leftLine = Number.isInteger(left.line) ? left.line : 0;
@@ -134,6 +238,30 @@ const isObject = (value) => {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 };
 
+const normalizeSpecRefs = (value) => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return [...new Set(
+    value
+      .map((item) => String(item || "").trim())
+      .filter(Boolean),
+  )].sort();
+};
+
+const validateScenarioTraceability = ({ scenarioDirName, specRefs = [] }) => {
+  if (specRefs.length === 0) {
+    return `missing required non-empty 'specRefs' in scenario '${scenarioDirName}'.`;
+  }
+
+  const unknownRefs = specRefs.filter((ref) => !SPEC_INDEX.ids.has(ref));
+  if (unknownRefs.length > 0) {
+    return `unknown specRefs [${unknownRefs.join(", ")}] in scenario '${scenarioDirName}'.`;
+  }
+
+  return null;
+};
+
 const matchesSubset = (actual, expected) => {
   if (Array.isArray(expected)) {
     if (!Array.isArray(actual) || actual.length !== expected.length) {
@@ -177,7 +305,6 @@ const runAnalyzeScenario = async ({ scenarioDirName, scenarioRoot, spec, expecte
     includeYahtml: options.includeYahtml !== false,
     includeExpression: options.includeExpression === true,
     workspaceRoot,
-    jsExportBackend: options.jsExportBackend,
   });
 
   const actualDiagnostics = normalizeDiagnostics({
@@ -202,7 +329,6 @@ const runAnalyzeScenario = async ({ scenarioDirName, scenarioRoot, spec, expecte
       includeYahtml: options.includeYahtml !== false,
       includeExpression: options.includeExpression === true,
       workspaceRoot,
-      jsExportBackend: options.jsExportBackend,
     });
     const secondNormalized = summarizeResult(secondResult, normalizeDiagnostics({
       scenarioRoot,
@@ -224,51 +350,43 @@ const runAnalyzeScenario = async ({ scenarioDirName, scenarioRoot, spec, expecte
     }
   }
 
-  let parityMismatch = null;
-  const enforceJsExportParity = options.enforceJsExportParity !== false;
-  if (enforceJsExportParity) {
-    const [oxcResult, regexResult] = await Promise.all([
-      analyzeProject({
-        cwd: scenarioRoot,
+  let mutationMismatch = null;
+  const enforceMutationStability = options.enforceMutationStability !== false;
+  if (enforceMutationStability) {
+    const { mutationSandboxRoot, mutatedScenarioRoot } = createMutatedScenarioWorkspace({
+      scenarioRoot,
+    });
+
+    try {
+      const mutatedResult = await analyzeProject({
+        cwd: mutatedScenarioRoot,
         dirs: Array.isArray(options.dirs) ? options.dirs : ["./src/components"],
         includeYahtml: options.includeYahtml !== false,
         includeExpression: options.includeExpression === true,
         workspaceRoot,
-        jsExportBackend: "oxc",
-      }),
-      analyzeProject({
-        cwd: scenarioRoot,
-        dirs: Array.isArray(options.dirs) ? options.dirs : ["./src/components"],
-        includeYahtml: options.includeYahtml !== false,
-        includeExpression: options.includeExpression === true,
-        workspaceRoot,
-        jsExportBackend: "regex-legacy",
-      }),
-    ]);
+      });
+      const mutatedNormalized = summarizeResult(mutatedResult, normalizeDiagnostics({
+        scenarioRoot: mutatedScenarioRoot,
+        diagnostics: mutatedResult.diagnostics,
+      }));
 
-    const oxcNormalized = summarizeResult(oxcResult, normalizeDiagnostics({
-      scenarioRoot,
-      diagnostics: oxcResult.diagnostics,
-    }));
-    const regexNormalized = summarizeResult(regexResult, normalizeDiagnostics({
-      scenarioRoot,
-      diagnostics: regexResult.diagnostics,
-    }));
+      const hasMismatch = (
+        actual.ok !== mutatedNormalized.ok
+        || actual.errorCount !== mutatedNormalized.errorCount
+        || actual.warnCount !== mutatedNormalized.warnCount
+        || !equalCodeMaps(actual.errorCodes, mutatedNormalized.errorCodes)
+        || !equalCodeMaps(actual.warnCodes, mutatedNormalized.warnCodes)
+        || !equalDiagnosticLists(actual.diagnostics, mutatedNormalized.diagnostics)
+      );
 
-    const hasMismatch = (
-      oxcNormalized.ok !== regexNormalized.ok
-      || oxcNormalized.errorCount !== regexNormalized.errorCount
-      || oxcNormalized.warnCount !== regexNormalized.warnCount
-      || !equalCodeMaps(oxcNormalized.errorCodes, regexNormalized.errorCodes)
-      || !equalCodeMaps(oxcNormalized.warnCodes, regexNormalized.warnCodes)
-      || !equalDiagnosticLists(oxcNormalized.diagnostics, regexNormalized.diagnostics)
-    );
-
-    if (hasMismatch) {
-      parityMismatch = {
-        oxc: oxcNormalized,
-        regex: regexNormalized,
-      };
+      if (hasMismatch) {
+        mutationMismatch = {
+          baseline: actual,
+          mutated: mutatedNormalized,
+        };
+      }
+    } finally {
+      rmSync(mutationSandboxRoot, { recursive: true, force: true });
     }
   }
 
@@ -280,18 +398,19 @@ const runAnalyzeScenario = async ({ scenarioDirName, scenarioRoot, spec, expecte
     && equalCodeMaps(actual.warnCodes, expected.warnCodes || {})
     && (expectedDiagnostics === null || equalDiagnosticLists(actualDiagnostics, expectedDiagnostics))
     && deterministicMismatch === null
-    && parityMismatch === null
+    && mutationMismatch === null
   );
 
   return {
     scenarioDirName,
     scenarioRoot,
     name: spec.name || scenarioDirName,
+    specRefs: normalizeSpecRefs(spec.specRefs),
     expected,
     actual,
     result: primaryResult,
     deterministicMismatch,
-    parityMismatch,
+    mutationMismatch,
     passed,
   };
 };
@@ -300,10 +419,19 @@ const runCliScenario = ({ scenarioDirName, scenarioRoot, spec, expected }) => {
   const options = spec.options || {};
   const args = Array.isArray(options.args) ? options.args.map((item) => String(item)) : [];
   const scenarioCwd = path.resolve(scenarioRoot, options.cwd || ".");
+  const envOverrides = isObject(options.env)
+    ? Object.fromEntries(
+      Object.entries(options.env).map(([key, value]) => [String(key), String(value)]),
+    )
+    : {};
 
   const execution = spawnSync(process.execPath, [cliBinPath, ...args], {
     cwd: scenarioCwd,
     encoding: "utf8",
+    env: {
+      ...process.env,
+      ...envOverrides,
+    },
   });
 
   const stdout = normalizeStream(execution.stdout || "");
@@ -341,6 +469,7 @@ const runCliScenario = ({ scenarioDirName, scenarioRoot, spec, expected }) => {
     scenarioDirName,
     scenarioRoot,
     name: spec.name || scenarioDirName,
+    specRefs: normalizeSpecRefs(spec.specRefs),
     expected,
     actual,
     result: null,
@@ -354,6 +483,25 @@ const runScenario = async ({ scenarioDirName }) => {
 
   const spec = JSON.parse(readFileSync(expectedPath, "utf8"));
   const expected = spec.expected || {};
+  const specRefs = normalizeSpecRefs(spec.specRefs);
+  const traceabilityError = validateScenarioTraceability({ scenarioDirName, specRefs });
+
+  if (traceabilityError) {
+    return {
+      scenarioDirName,
+      scenarioRoot,
+      name: spec.name || scenarioDirName,
+      specRefs,
+      expected,
+      actual: {
+        traceabilityError,
+        specIndexVersion: SPEC_INDEX.version,
+      },
+      result: null,
+      traceabilityError,
+      passed: false,
+    };
+  }
 
   if (spec.mode === "cli") {
     return runCliScenario({
@@ -400,13 +548,16 @@ const main = async () => {
     console.error(`\nScenario failures: ${failures.length}/${results.length}`);
     failures.forEach((failure) => {
       console.error(`\n[${failure.scenarioDirName}] ${failure.name}`);
+      if (failure.traceabilityError) {
+        console.error(`Traceability failure: ${failure.traceabilityError}`);
+      }
       console.error(`Expected: ${JSON.stringify(failure.expected, null, 2)}`);
       console.error(`Actual: ${JSON.stringify(failure.actual, null, 2)}`);
       if (failure.deterministicMismatch) {
         console.error(`Deterministic mismatch: ${JSON.stringify(failure.deterministicMismatch, null, 2)}`);
       }
-      if (failure.parityMismatch) {
-        console.error(`Parity mismatch: ${JSON.stringify(failure.parityMismatch, null, 2)}`);
+      if (failure.mutationMismatch) {
+        console.error(`Mutation mismatch: ${JSON.stringify(failure.mutationMismatch, null, 2)}`);
       }
       if (failure.result?.diagnostics?.length > 0) {
         console.error("Diagnostics:");

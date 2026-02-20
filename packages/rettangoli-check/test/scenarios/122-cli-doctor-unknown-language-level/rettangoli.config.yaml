@@ -1,0 +1,5 @@
+language:
+  level: future-unstable-mode
+fe:
+  dirs:
+    - ./src/components

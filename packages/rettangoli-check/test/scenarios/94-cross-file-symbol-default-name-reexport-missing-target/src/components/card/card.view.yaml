@@ -1,0 +1,3 @@
+template:
+  - rtgl-view#root: Default-name re-export missing target
+styles: {}

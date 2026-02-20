@@ -1,0 +1,10 @@
+template:
+  - rtgl-view#root: Missing namespace re-export targets
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: handleTap
+      click:
+        action: setCount
+styles: {}

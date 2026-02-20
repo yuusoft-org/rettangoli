@@ -10,6 +10,8 @@ import {
   validateElementIdForRefs,
   validateEventConfig as validateFeEventConfig,
 } from "@rettangoli/fe/contracts";
+import { parseSync } from "oxc-parser";
+import { parseNamedExportedFunctions } from "../core/exportedFunctions.js";
 const GLOBAL_REF_KEYS = new Set(["window", "document"]);
 
 const BOOLEAN_OPTIONS = new Set([
@@ -222,11 +224,80 @@ const applyValidationFix = ({ validationConfig, issue }) => {
   return false;
 };
 
+const getObjectExpressionKeys = (expressionNode) => {
+  if (expressionNode?.type === "ParenthesizedExpression") {
+    return getObjectExpressionKeys(expressionNode.expression);
+  }
+
+  if (!expressionNode || expressionNode.type !== "ObjectExpression" || !Array.isArray(expressionNode.properties)) {
+    return null;
+  }
+
+  const keys = new Set();
+  expressionNode.properties.forEach((property) => {
+    if (!property || property.type !== "Property" || property.computed) {
+      return;
+    }
+    if (property.key?.type === "Identifier" && property.key.name) {
+      keys.add(property.key.name);
+      return;
+    }
+    if (property.key?.type === "StringLiteral" && property.key.value) {
+      keys.add(property.key.value);
+      return;
+    }
+    if (property.key?.type === "Literal" && typeof property.key.value === "string" && property.key.value) {
+      keys.add(property.key.value);
+    }
+  });
+
+  return keys;
+};
+
+const parsePayloadObjectKeys = (payloadSource = "") => {
+  const trimmed = String(payloadSource || "").trim();
+  if (!trimmed || !trimmed.startsWith("{") || !trimmed.endsWith("}")) {
+    return null;
+  }
+
+  try {
+    const parsed = parseSync("listener-payload.js", `const __payload = (${trimmed});`, {
+      sourceType: "module",
+    });
+    if (Array.isArray(parsed?.errors) && parsed.errors.length > 0) {
+      return null;
+    }
+
+    const declaration = parsed?.program?.body?.[0];
+    if (
+      !declaration
+      || declaration.type !== "VariableDeclaration"
+      || !Array.isArray(declaration.declarations)
+      || declaration.declarations.length === 0
+    ) {
+      return null;
+    }
+
+    const init = declaration.declarations[0]?.init;
+    return getObjectExpressionKeys(init);
+  } catch {
+    return null;
+  }
+};
+
 export const runListenerConfigRules = ({ models = [] }) => {
   const diagnostics = [];
 
   models.forEach((model) => {
     const viewFilePath = getModelFilePath({ model, fileType: "view" });
+    const handlerFunctions = parseNamedExportedFunctions({
+      sourceText: model?.handlers?.sourceText || "",
+      filePath: model?.handlers?.filePath || model?.files?.handlers || "unknown.handlers.js",
+    });
+    const actionFunctions = parseNamedExportedFunctions({
+      sourceText: model?.store?.sourceText || "",
+      filePath: model?.store?.filePath || model?.files?.store || "unknown.store.js",
+    });
     const refs = model?.view?.yaml?.refs;
     const invalidRefKeys = collectInvalidRefKeys(refs);
 
@@ -416,6 +487,67 @@ export const runListenerConfigRules = ({ models = [] }) => {
             break;
           }
         }
+      }
+
+      const payloadObjectKeys = parsePayloadObjectKeys(eventConfig.payload);
+      if (!(payloadObjectKeys instanceof Set) || payloadObjectKeys.size === 0) {
+        return;
+      }
+
+      const payloadLine = resolveListenerLine({
+        listenerLine: line,
+        optionLines,
+        preferredKeys: ["payload"],
+      });
+
+      const validateSymbolPayloadContract = ({
+        symbolName,
+        symbolType,
+        functionMap,
+      }) => {
+        if (!symbolName || !(functionMap instanceof Map)) {
+          return;
+        }
+
+        const functionMeta = functionMap.get(symbolName);
+        if (!functionMeta || functionMeta.secondParam?.kind !== "object" || functionMeta.secondParam?.hasRest) {
+          return;
+        }
+
+        const requiredPayloadKeys = new Set(functionMeta.secondParam.objectKeys || []);
+        if (requiredPayloadKeys.size === 0) {
+          return;
+        }
+
+        const missingKeys = [...requiredPayloadKeys]
+          .filter((key) => !payloadObjectKeys.has(key))
+          .sort((left, right) => left.localeCompare(right));
+        if (missingKeys.length === 0) {
+          return;
+        }
+
+        diagnostics.push({
+          code: "RTGL-CHECK-CONTRACT-004",
+          severity: "error",
+          filePath: viewFilePath,
+          line: payloadLine,
+          message: `${model.componentKey}: listener payload for '${symbolType}' '${symbolName}' on ref '${refKey}' is missing required key(s) [${missingKeys.join(", ")}].`,
+        });
+      };
+
+      if (listenerSymbols.handler.isValid && model.handlers.exports.has(listenerSymbols.handler.value)) {
+        validateSymbolPayloadContract({
+          symbolName: listenerSymbols.handler.value,
+          symbolType: "handler",
+          functionMap: handlerFunctions,
+        });
+      }
+      if (listenerSymbols.action.isValid && model.store.exports.has(listenerSymbols.action.value)) {
+        validateSymbolPayloadContract({
+          symbolName: listenerSymbols.action.value,
+          symbolType: "action",
+          functionMap: actionFunctions,
+        });
       }
     });
   });

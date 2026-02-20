@@ -6,6 +6,7 @@ Structure per scenario:
 
 - `src/components/**` => input files (`.view.yaml`, `.schema.yaml`, `.handlers.js`, etc.)
 - `expected.json` => expected output contract:
+  - required `specRefs`: non-empty array of spec IDs from `docs/language-spec/spec-index.json`
   - default analyzer mode:
     - `ok`
     - `errorCount`
@@ -15,11 +16,21 @@ Structure per scenario:
     - optional `diagnostics` array with exact diagnostic entries (`code`, `severity`, `message`, `filePath`, `line`)
   - optional CLI mode (`mode: "cli"`):
     - `exitCode`
+    - optional `options.env` map for command-specific environment overrides
     - optional `stdout` / `stderr` exact strings
     - optional `stdoutIncludes` / `stderrIncludes` arrays
     - optional `stdoutJson` subset assertion
 
-## Scenarios (81)
+Default analyzer scenarios also enforce:
+
+- deterministic repeatability (same diagnostics across repeated runs)
+- formatting/noise mutation stability (same diagnostics after whitespace-noise mutation on `src/**`)
+- spec traceability validity (`specRefs` must map to known language-spec IDs)
+
+JS export differential parity (`oxc` vs `regex-legacy`) is validated separately by
+`bun run --cwd packages/rettangoli-check test:diff-js-exports`.
+
+## Scenarios (127)
 
 1. `01-valid-minimal`
 2. `02-missing-schema`
@@ -102,6 +113,52 @@ Structure per scenario:
 79. `79-lifecycle-on-update-missing-payload`
 80. `80-compat-unsupported-event`
 81. `81-compat-boolean-binding-type-mismatch`
+82. `82-jempl-control-unknown-directive`
+83. `83-jempl-control-for-signature-invalid`
+84. `84-expression-loop-local-schema-path-invalid`
+85. `85-expression-condition-operator-type-mismatch`
+86. `86-expression-branch-loop-scope-boundary`
+87. `87-expression-nested-loop-shadowing-resolved`
+88. `88-expression-equality-operator-type-mismatch`
+89. `89-cross-file-symbol-namespace-reexport-handler-alias-invalid`
+90. `90-cross-file-symbol-destructured-export-bindings`
+91. `91-cross-file-symbol-typescript-typed-export-declarations`
+92. `92-cross-file-symbol-namespace-reexport-missing-target`
+93. `93-cross-file-symbol-typescript-enum-export-invalid-handler-name`
+94. `94-cross-file-symbol-default-name-reexport-missing-target`
+95. `95-component-identity-noncanonical-folder`
+96. `96-component-identity-file-stem-mismatch`
+97. `97-cross-file-symbol-typescript-export-assignment-default-alias-valid`
+98. `98-cross-file-symbol-default-function-reexport-alias-valid`
+99. `99-cross-file-symbol-default-class-reexport-alias-valid`
+100. `100-cross-file-symbol-default-reexport-symbol-missing`
+101. `101-compat-prop-binding-type-mismatch`
+102. `102-compat-prop-binding-type-match`
+103. `103-lifecycle-on-update-payload-name-invalid`
+104. `104-compat-event-handler-prefix-invalid`
+105. `105-compat-event-handler-missing-export`
+106. `106-compat-event-payload-contract-missing-param`
+107. `107-listener-payload-contract-missing-key`
+108. `108-expression-condition-schema-path-invalid`
+109. `109-compat-required-prop-with-default`
+110. `110-method-signature-nonobject-pattern-invalid`
+111. `111-method-signature-extra-param-warn`
+112. `112-method-payload-contract-missing-key`
+113. `113-method-payload-contract-valid`
+114. `114-cli-compile-json-success`
+115. `115-cli-compile-local-mode-ci-guard`
+116. `116-cli-doctor-json-success`
+117. `117-cli-policy-validate-json-success`
+118. `118-cli-baseline-capture-json-success`
+119. `119-cli-baseline-verify-json-success`
+120. `120-cli-policy-validate-signature-valid`
+121. `121-cli-policy-validate-signature-invalid`
+122. `122-cli-doctor-unknown-language-level`
+123. `123-cli-autofix-dry-run-json`
+124. `124-cli-autofix-dry-run-patch-json`
+125. `125-cli-autofix-apply-json-success`
+126. `126-cli-lsp-help`
+127. `127-cli-lsp-unknown-flag`
 
 ## Run
 
@@ -114,4 +171,40 @@ Or from package scripts:
 ```bash
 cd packages/rettangoli-check
 npm run test:scenarios
+```
+
+Phase 7 end-state gate:
+
+```bash
+cd packages/rettangoli-check
+npm run test:type-system-end-state-gate
+```
+
+Reliability gate and soak:
+
+```bash
+cd packages/rettangoli-check
+npm run test:reliability-gates
+npm run test:reliability-soak
+```
+
+Diagnostics/reporting contract gate:
+
+```bash
+cd packages/rettangoli-check
+npm run test:diagnostics-reporting-contract
+```
+
+LSP, performance, security, and GA gates:
+
+```bash
+cd packages/rettangoli-check
+npm run test:lsp-contract
+npm run test:lsp-performance-sla
+npm run test:incremental-graph-contract
+npm run test:performance-gates
+npm run test:parser-security-scan
+npm run test:adversarial-inputs
+npm run test:release-provenance-gate
+npm run test:ga-readiness-gate
 ```

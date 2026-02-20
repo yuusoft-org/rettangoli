@@ -1,0 +1,3 @@
+const handleTap = () => {};
+
+export = handleTap;

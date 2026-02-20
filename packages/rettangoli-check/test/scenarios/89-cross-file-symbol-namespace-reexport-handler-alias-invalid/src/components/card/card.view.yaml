@@ -1,0 +1,8 @@
+template:
+  - rtgl-view#root:
+      - rtgl-button: Submit
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: handleTap

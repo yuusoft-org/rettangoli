@@ -1,0 +1,8 @@
+componentName: rtgl-card
+propsSchema:
+  type: object
+  properties:
+    count:
+      type: number
+    isVisible:
+      type: boolean

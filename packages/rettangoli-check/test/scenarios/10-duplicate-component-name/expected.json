@@ -1,7 +1,9 @@
 {
   "name": "duplicate componentName",
   "options": {
-    "dirs": ["./src/components"],
+    "dirs": [
+      "./src/components"
+    ],
     "includeYahtml": true
   },
   "expected": {
@@ -28,5 +30,10 @@
         "line": 1
       }
     ]
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-002"
+  ]
 }

@@ -1,0 +1,6 @@
+componentName: rtgl-test-default-function-reexport-alias-valid
+methods:
+  type: object
+  properties:
+    focusInput:
+      type: function

@@ -2,7 +2,9 @@
   "name": "cli warn-as-error fails warning-only project",
   "mode": "cli",
   "options": {
-    "args": ["--warn-as-error"]
+    "args": [
+      "--warn-as-error"
+    ]
   },
   "expected": {
     "exitCode": 1,
@@ -12,5 +14,9 @@
       "- RTGL-CHECK-SYMBOL-005: 1",
       "RTGL-CHECK-SYMBOL-005 [error] components/card: method 'orphanMethod' is exported in .methods.js but not documented in schema.methods.properties. [src/components/card/card.methods.js]"
     ]
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
 }

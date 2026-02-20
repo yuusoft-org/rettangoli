@@ -1,0 +1,40 @@
+{
+  "name": "cross-file symbol namespace re-export handler alias invalid",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 2,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-HANDLER-002": 1,
+      "RTGL-CHECK-SYMBOL-001": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-HANDLER-002",
+        "severity": "error",
+        "message": "components/card: invalid handler export 'nsHandlers' in .handlers.js. Handler names must start with 'handle'.",
+        "filePath": "src/components/card/card.handlers.js"
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-001",
+        "severity": "error",
+        "message": "components/card: handler 'handleTap' for event 'tap' on ref 'root' is missing in .handlers.js exports.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 8
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-010",
+    "RTGL-SPEC-SYMBOL-004"
+  ]
+}

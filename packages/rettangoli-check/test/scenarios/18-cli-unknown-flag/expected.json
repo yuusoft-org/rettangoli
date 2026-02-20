@@ -2,11 +2,17 @@
   "name": "cli rejects unknown option",
   "mode": "cli",
   "options": {
-    "args": ["--unknown"]
+    "args": [
+      "--unknown"
+    ]
   },
   "expected": {
     "exitCode": 1,
     "stdout": "",
-    "stderr": "[Check] Unknown option: --unknown\n\nUsage: rtgl-check [options]\n\nOptions:\n  --dir <path>        Component directory (repeatable)\n  --dirs <path>       Alias for --dir\n  --format <value>    Report format: text | json | sarif\n  --warn-as-error     Treat warnings as errors\n  --no-yahtml         Disable YAHTML attribute checks\n  --expr              Enable template expression root checks\n  --watch             Re-run check when files change (polling)\n  --watch-interval-ms Poll interval in milliseconds (default: 800)\n  -h, --help          Show this help"
-  }
+    "stderr": "[Check] Unknown option: --unknown\n\nUsage: rtgl-check [options]\n\nOptions:\n  --dir <path>        Component directory (repeatable)\n  --dirs <path>       Alias for --dir\n  --format <value>    Report format: text | json | sarif\n  --warn-as-error     Treat warnings as errors\n  --no-yahtml         Disable YAHTML attribute checks\n  --expr              Enable template expression root checks\n  --autofix           Apply safe autofixes in place\n  --autofix-dry-run   Preview safe autofixes without writing files\n  --autofix-min-confidence <0-1> Minimum confidence threshold (default: 0.9)\n  --autofix-patch     Include patch output for autofix candidates\n  --watch             Re-run check when files change (polling)\n  --watch-interval-ms Poll interval in milliseconds (default: 800)\n  -h, --help          Show this help"
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
 }

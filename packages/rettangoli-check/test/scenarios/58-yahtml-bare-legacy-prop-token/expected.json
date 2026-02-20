@@ -1,7 +1,9 @@
 {
   "name": "yahtml bare legacy prop token",
   "options": {
-    "dirs": ["./src/components"],
+    "dirs": [
+      "./src/components"
+    ],
     "includeYahtml": true
   },
   "expected": {
@@ -29,5 +31,10 @@
         "line": 2
       }
     ]
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-YAHTML-004"
+  ]
 }

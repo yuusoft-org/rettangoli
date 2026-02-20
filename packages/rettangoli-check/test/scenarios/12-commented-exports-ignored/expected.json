@@ -1,7 +1,9 @@
 {
   "name": "commented exports are ignored for symbols",
   "options": {
-    "dirs": ["./src/components"],
+    "dirs": [
+      "./src/components"
+    ],
     "includeYahtml": true
   },
   "expected": {
@@ -14,5 +16,10 @@
       "RTGL-CHECK-SYMBOL-003": 1
     },
     "warnCodes": {}
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-SYMBOL-004"
+  ]
 }

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "scenarios": [
+    "78-expression-boolean-type-mismatch",
+    "80-compat-unsupported-event",
+    "81-compat-boolean-binding-type-mismatch",
+    "101-compat-prop-binding-type-mismatch",
+    "102-compat-prop-binding-type-match",
+    "103-lifecycle-on-update-payload-name-invalid",
+    "104-compat-event-handler-prefix-invalid",
+    "105-compat-event-handler-missing-export",
+    "106-compat-event-payload-contract-missing-param",
+    "107-listener-payload-contract-missing-key",
+    "108-expression-condition-schema-path-invalid",
+    "109-compat-required-prop-with-default",
+    "110-method-signature-nonobject-pattern-invalid",
+    "111-method-signature-extra-param-warn",
+    "112-method-payload-contract-missing-key",
+    "113-method-payload-contract-valid"
+  ],
+  "codePrefixes": [
+    "RTGL-CHECK-COMPAT-",
+    "RTGL-CHECK-EXPR-",
+    "RTGL-CHECK-CONTRACT-",
+    "RTGL-CHECK-LIFECYCLE-",
+    "RTGL-CHECK-HANDLER-",
+    "RTGL-CHECK-METHOD-"
+  ],
+  "thresholds": {
+    "precision": 1,
+    "recall": 1
+  }
+}

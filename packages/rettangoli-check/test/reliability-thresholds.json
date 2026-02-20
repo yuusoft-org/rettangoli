@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "thresholds": {
+    "maxScenarioFailures": 0,
+    "minDifferentialPassRate": 1,
+    "minFuzzPassRate": 1
+  }
+}

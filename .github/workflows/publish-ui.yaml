@@ -25,6 +25,14 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      - name: Run Reliability Gates
+        run: bun run test:reliability-gates
+        working-directory: ./packages/rettangoli-check
+
+      - name: Run GA Readiness Gate
+        run: bun run test:ga-readiness-gate
+        working-directory: ./packages/rettangoli-check
+
       - name: Build UI Package
         run: bun run build
         working-directory: ./packages/rettangoli-ui

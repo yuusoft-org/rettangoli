@@ -1,0 +1,29 @@
+{
+  "name": "cli baseline capture emits json report on stdout",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "baseline",
+      "capture",
+      "--file",
+      "baseline.json",
+      "--format",
+      "json"
+    ]
+  },
+  "expected": {
+    "exitCode": 0,
+    "stderr": "",
+    "stdoutJson": {
+      "contractVersion": 1,
+      "ok": true,
+      "command": "baseline.capture",
+      "baselineFile": "baseline.json",
+      "diagnosticsCount": 0
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
+}

@@ -1,0 +1,4 @@
+componentName: rtgl-check-required-default-host
+propsSchema:
+  type: object
+  properties: {}

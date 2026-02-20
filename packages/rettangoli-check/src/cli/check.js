@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { load as loadYaml } from "js-yaml";
 import { analyzeProject } from "../core/analyze.js";
+import { applyDiagnosticFixes } from "../diagnostics/autofix.js";
 import { formatReport } from "../reporters/index.js";
 import { isDirectoryPath } from "../utils/fs.js";
 
@@ -32,6 +33,35 @@ const resolveDirs = ({ cwd, dirs, config }) => {
   return ["./src/components"];
 };
 
+const toAutofixReport = ({
+  autofixResult,
+  mode = "off",
+  includePatchText = false,
+}) => {
+  if (!autofixResult) {
+    return undefined;
+  }
+
+  return {
+    mode,
+    dryRun: Boolean(autofixResult.dryRun),
+    patchOutput: includePatchText,
+    candidateCount: Number(autofixResult.candidateCount) || 0,
+    appliedCount: Number(autofixResult.appliedCount) || 0,
+    skippedCount: Number(autofixResult.skippedCount) || 0,
+    patches: Array.isArray(autofixResult.patches)
+      ? autofixResult.patches.map((patch) => ({
+        code: patch.code,
+        filePath: patch.filePath,
+        line: patch.line,
+        description: patch.description,
+        confidence: patch.confidence,
+        ...(includePatchText && typeof patch.patch === "string" ? { patch: patch.patch } : {}),
+      }))
+      : [],
+  };
+};
+
 export const check = async (options = {}) => {
   const {
     cwd = process.cwd(),
@@ -42,6 +72,9 @@ export const check = async (options = {}) => {
     includeExpression = false,
     watch = false,
     watchIntervalMs = 800,
+    autofixMode = "off",
+    autofixMinConfidence = 0.9,
+    autofixPatch = false,
   } = options;
 
   const config = readConfig(cwd);
@@ -53,15 +86,45 @@ export const check = async (options = {}) => {
     throw new Error(`Component directories do not exist: ${missingDirs.join(", ")}`);
   }
 
+  if (watch && autofixMode !== "off") {
+    throw new Error("Autofix is not supported with --watch.");
+  }
+
+  const runAnalysis = async () => analyzeProject({
+    cwd,
+    dirs: resolvedDirs,
+    workspaceRoot: cwd,
+    includeYahtml,
+    includeExpression,
+    incrementalState,
+  });
+
   const runOnce = async () => {
-    const result = await analyzeProject({
-      cwd,
-      dirs: resolvedDirs,
-      workspaceRoot: cwd,
-      includeYahtml,
-      includeExpression,
-      incrementalState,
-    });
+    const initialResult = await runAnalysis();
+    let result = initialResult;
+
+    let autofixResult = null;
+    if (autofixMode !== "off") {
+      autofixResult = applyDiagnosticFixes({
+        diagnostics: initialResult.diagnostics,
+        dryRun: autofixMode !== "apply",
+        minConfidence: autofixMinConfidence,
+        includePatchText: autofixPatch,
+      });
+
+      if (autofixMode === "apply" && autofixResult.appliedCount > 0) {
+        result = await runAnalysis();
+      }
+
+      result = {
+        ...result,
+        autofix: toAutofixReport({
+          autofixResult,
+          mode: autofixMode,
+          includePatchText: autofixPatch,
+        }),
+      };
+    }
 
     const report = formatReport({
       format: (format === "json" || format === "sarif") ? format : "text",

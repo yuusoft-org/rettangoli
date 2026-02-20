@@ -1,0 +1,71 @@
+{
+  "name": "cross-file symbol namespace re-export missing target",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 6,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-SYMBOL-001": 1,
+      "RTGL-CHECK-SYMBOL-002": 1,
+      "RTGL-CHECK-SYMBOL-003": 1,
+      "RTGL-CHECK-SYMBOL-006": 3
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-SYMBOL-001",
+        "severity": "error",
+        "message": "components/card: handler 'handleTap' for event 'tap' on ref 'root' is missing in .handlers.js exports.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 7
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-002",
+        "severity": "error",
+        "message": "components/card: action 'setCount' for event 'click' on ref 'root' is missing in .store.js exports.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 9
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-003",
+        "severity": "error",
+        "message": "components/card: method 'focusInput' is declared in schema but missing in .methods.js exports.",
+        "filePath": "src/components/card/card.schema.yaml",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-006",
+        "severity": "error",
+        "message": "card.handlers.js: unable to resolve namespace re-export target './card.handlers.impl.js' for 'handleTap'. Tried: card.handlers.impl.js, card.handlers.impl.ts, card.handlers.impl.mts, card.handlers.impl.cts, card.handlers.impl.mjs, card.handlers.impl.cjs.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 1
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-006",
+        "severity": "error",
+        "message": "card.methods.js: unable to resolve namespace re-export target './card.methods.impl.js' for 'focusInput'. Tried: card.methods.impl.js, card.methods.impl.ts, card.methods.impl.mts, card.methods.impl.cts, card.methods.impl.mjs, card.methods.impl.cjs.",
+        "filePath": "src/components/card/card.methods.js",
+        "line": 1
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-006",
+        "severity": "error",
+        "message": "card.store.js: unable to resolve namespace re-export target './card.store.impl.js' for 'setCount'. Tried: card.store.impl.js, card.store.impl.ts, card.store.impl.mts, card.store.impl.cts, card.store.impl.mjs, card.store.impl.cjs.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 1
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-010",
+    "RTGL-SPEC-SYMBOL-004"
+  ]
+}

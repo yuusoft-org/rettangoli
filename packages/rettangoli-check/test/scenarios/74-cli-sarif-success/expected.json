@@ -2,7 +2,10 @@
   "name": "cli emits sarif report on stdout",
   "mode": "cli",
   "options": {
-    "args": ["--format", "sarif"]
+    "args": [
+      "--format",
+      "sarif"
+    ]
   },
   "expected": {
     "exitCode": 0,
@@ -19,5 +22,9 @@
         }
       ]
     }
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
 }

@@ -2,7 +2,12 @@
   "name": "cli emits sarif runtime error report",
   "mode": "cli",
   "options": {
-    "args": ["--format", "sarif", "--dir", "./missing-components"]
+    "args": [
+      "--format",
+      "sarif",
+      "--dir",
+      "./missing-components"
+    ]
   },
   "expected": {
     "exitCode": 1,
@@ -20,5 +25,9 @@
         }
       ]
     }
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
 }

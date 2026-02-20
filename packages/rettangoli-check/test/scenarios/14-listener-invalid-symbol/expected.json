@@ -1,7 +1,9 @@
 {
   "name": "listener invalid symbol",
   "options": {
-    "dirs": ["./src/components"],
+    "dirs": [
+      "./src/components"
+    ],
     "includeYahtml": true
   },
   "expected": {
@@ -21,5 +23,10 @@
         "line": 5
       }
     ]
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-005"
+  ]
 }

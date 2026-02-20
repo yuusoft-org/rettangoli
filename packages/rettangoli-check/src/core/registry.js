@@ -2,6 +2,7 @@ import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { load as loadYaml } from "js-yaml";
+import { parseSync } from "oxc-parser";
 import { walkFiles } from "../utils/fs.js";
 import { toCamelCase, toKebabCase } from "../utils/case.js";
 
@@ -31,6 +32,7 @@ const createContract = ({ tagName }) => {
     props: new Set(),
     requiredProps: new Set(),
     events: new Set(),
+    eventTypes: new Map(),
     propTypes: new Map(),
     source: new Set(),
   };
@@ -102,6 +104,9 @@ const addSchemaEventsToContract = ({ contract, schemaYaml = {} }) => {
     events.forEach((eventName) => {
       if (typeof eventName === "string" && eventName.trim() === eventName && eventName.length > 0) {
         contract.events.add(eventName);
+        if (!contract.eventTypes.has(eventName)) {
+          contract.eventTypes.set(eventName, {});
+        }
       }
     });
     return;
@@ -114,6 +119,12 @@ const addSchemaEventsToContract = ({ contract, schemaYaml = {} }) => {
   Object.keys(events).forEach((eventName) => {
     if (typeof eventName === "string" && eventName.trim() === eventName && eventName.length > 0) {
       contract.events.add(eventName);
+      const eventSchema = events[eventName];
+      if (eventSchema && typeof eventSchema === "object" && !Array.isArray(eventSchema)) {
+        contract.eventTypes.set(eventName, eventSchema);
+      } else if (!contract.eventTypes.has(eventName)) {
+        contract.eventTypes.set(eventName, {});
+      }
     }
   });
 };
@@ -139,6 +150,62 @@ const buildSchemaRegistry = ({
   }, new Map());
 };
 
+const addNormalizedModelSchemaToContract = ({ contract, normalizedSchema }) => {
+  const normalizedProps = normalizedSchema?.props;
+  if (normalizedProps?.byName instanceof Map) {
+    normalizedProps.byName.forEach((propertySchema, propKey) => {
+      if (!propKey) {
+        return;
+      }
+      contract.props.add(propKey);
+      contract.props.add(toCamelCase(propKey));
+      contract.attrs.add(toKebabCase(propKey));
+      if (propertySchema && typeof propertySchema === "object" && !Array.isArray(propertySchema)) {
+        const aliases = [propKey, toCamelCase(propKey), toKebabCase(propKey)];
+        aliases.forEach((alias) => {
+          if (alias) {
+            contract.propTypes.set(alias, propertySchema);
+          }
+        });
+      }
+    });
+  }
+
+  const requiredProps = Array.isArray(normalizedProps?.requiredNames)
+    ? normalizedProps.requiredNames
+    : [];
+  requiredProps.forEach((propKey) => {
+    if (propKey) {
+      contract.requiredProps.add(propKey);
+    }
+  });
+
+  const eventNames = Array.isArray(normalizedSchema?.events?.names)
+    ? normalizedSchema.events.names
+    : [];
+  eventNames.forEach((eventName) => {
+    if (eventName) {
+      contract.events.add(eventName);
+      if (!contract.eventTypes.has(eventName)) {
+        contract.eventTypes.set(eventName, {});
+      }
+    }
+  });
+
+  if (normalizedSchema?.events?.byName instanceof Map) {
+    normalizedSchema.events.byName.forEach((eventSchema, eventName) => {
+      if (!eventName) {
+        return;
+      }
+      if (eventSchema && typeof eventSchema === "object" && !Array.isArray(eventSchema)) {
+        contract.eventTypes.set(eventName, eventSchema);
+      } else if (!contract.eventTypes.has(eventName)) {
+        contract.eventTypes.set(eventName, {});
+      }
+    });
+  }
+};
+
 const mergeContracts = (target, source) => {
   source.forEach((contract, tagName) => {
     const targetContract = getOrCreateContract(target, tagName);
@@ -146,6 +213,7 @@ const mergeContracts = (target, source) => {
     contract.props.forEach((prop) => targetContract.props.add(prop));
     contract.requiredProps.forEach((prop) => targetContract.requiredProps.add(prop));
     contract.events.forEach((eventName) => targetContract.events.add(eventName));
+    contract.eventTypes.forEach((schema, eventName) => targetContract.eventTypes.set(eventName, schema));
     contract.propTypes.forEach((schema, propName) => targetContract.propTypes.set(propName, schema));
     contract.source.forEach((from) => targetContract.source.add(from));
   });
@@ -182,8 +250,67 @@ const extractUiComponentContracts = ({ uiDir }) => {
   });
 };
 
-const parseEntryImports = (entryCode) => {
+const parseProgramWithOxc = ({ sourceCode = "", filePath = "unknown.js" } = {}) => {
+  try {
+    const parsed = parseSync(filePath, sourceCode, { sourceType: "unambiguous" });
+    if (!parsed?.program?.body || !Array.isArray(parsed.program.body)) {
+      return null;
+    }
+    if (Array.isArray(parsed.errors) && parsed.errors.length > 0) {
+      return null;
+    }
+    return parsed.program;
+  } catch {
+    return null;
+  }
+};
+
+const getStringLiteralValue = (node) => {
+  if (!node || typeof node !== "object") {
+    return null;
+  }
+  if (node.type === "Literal" && typeof node.value === "string") {
+    return node.value;
+  }
+  if (node.type === "StringLiteral" && typeof node.value === "string") {
+    return node.value;
+  }
+  return null;
+};
+
+const getIdentifierName = (node) => {
+  if (!node || typeof node !== "object") {
+    return null;
+  }
+  if (node.type === "Identifier" && typeof node.name === "string" && node.name) {
+    return node.name;
+  }
+  return null;
+};
+
+const parseEntryImports = (entryCode, filePath = "entry.js") => {
   const imports = new Map();
+  const program = parseProgramWithOxc({ sourceCode: entryCode, filePath });
+  if (program) {
+    program.body.forEach((statement) => {
+      if (statement?.type !== "ImportDeclaration") {
+        return;
+      }
+      const importPath = getStringLiteralValue(statement.source);
+      if (!importPath || !importPath.startsWith(".")) {
+        return;
+      }
+      const specifiers = Array.isArray(statement.specifiers) ? statement.specifiers : [];
+      specifiers.forEach((specifier) => {
+        const localName = getIdentifierName(specifier?.local);
+        if (localName) {
+          imports.set(localName, importPath);
+        }
+      });
+    });
+    return imports;
+  }
+
   const importRegex = /import\s+([A-Za-z0-9_$]+)\s+from\s+['\"](\.[^'\"]+)['\"];?/g;
   let match = importRegex.exec(entryCode);
   while (match) {
@@ -193,8 +320,60 @@ const parseEntryImports = (entryCode) => {
   return imports;
 };
 
-const parseCustomElementDefines = (entryCode) => {
+const parseCustomElementDefines = (entryCode, filePath = "entry.js") => {
   const definitions = [];
+  const program = parseProgramWithOxc({ sourceCode: entryCode, filePath });
+  if (program) {
+    program.body.forEach((statement) => {
+      if (statement?.type !== "ExpressionStatement") {
+        return;
+      }
+      const expression = statement.expression;
+      if (expression?.type !== "CallExpression") {
+        return;
+      }
+      const callee = expression.callee;
+      if (
+        callee?.type !== "MemberExpression"
+        || callee.computed
+        || getIdentifierName(callee.object) !== "customElements"
+        || getIdentifierName(callee.property) !== "define"
+      ) {
+        return;
+      }
+      const args = Array.isArray(expression.arguments) ? expression.arguments : [];
+      if (args.length < 2) {
+        return;
+      }
+      const tagName = getStringLiteralValue(args[0]);
+      if (!tagName) {
+        return;
+      }
+
+      const constructorArg = args[1];
+      let symbol = getIdentifierName(constructorArg);
+      if (!symbol && constructorArg?.type === "CallExpression") {
+        const calleeName = getIdentifierName(constructorArg.callee);
+        const firstArg = Array.isArray(constructorArg.arguments) ? constructorArg.arguments[0] : undefined;
+        if (
+          calleeName
+          && (
+            firstArg === undefined
+            || (firstArg?.type === "ObjectExpression" && Array.isArray(firstArg.properties) && firstArg.properties.length === 0)
+          )
+        ) {
+          symbol = calleeName;
+        }
+      }
+      if (!symbol) {
+        return;
+      }
+
+      definitions.push({ tagName, symbol });
+    });
+    return definitions;
+  }
+
   const defineRegex = /customElements\.define\(\s*['\"]([^'\"]+)['\"]\s*,\s*([A-Za-z0-9_$]+)\(\{\}\)\s*\)/g;
   let match = defineRegex.exec(entryCode);
   while (match) {
@@ -207,7 +386,54 @@ const parseCustomElementDefines = (entryCode) => {
   return definitions;
 };
 
-const extractTopLevelObjectKeys = ({ sourceCode, objectName }) => {
+const collectObjectExpressionKeys = (node) => {
+  if (!node || node.type !== "ObjectExpression" || !Array.isArray(node.properties)) {
+    return [];
+  }
+  const keys = [];
+  node.properties.forEach((property) => {
+    if (!property || property.type !== "Property" || property.computed) {
+      return;
+    }
+    const keyName = getIdentifierName(property.key) || getStringLiteralValue(property.key);
+    if (keyName) {
+      keys.push(keyName);
+    }
+  });
+  return keys;
+};
+
+const extractTopLevelObjectKeys = ({ sourceCode, objectName, filePath = "source.js" }) => {
+  const program = parseProgramWithOxc({ sourceCode, filePath });
+  if (program) {
+    const keys = new Set();
+    const consumeDeclaration = (declaration) => {
+      if (!declaration || declaration.type !== "VariableDeclaration" || !Array.isArray(declaration.declarations)) {
+        return;
+      }
+      declaration.declarations.forEach((declarator) => {
+        if (getIdentifierName(declarator?.id) !== objectName) {
+          return;
+        }
+        collectObjectExpressionKeys(declarator.init).forEach((key) => keys.add(key));
+      });
+    };
+
+    program.body.forEach((statement) => {
+      if (statement?.type === "VariableDeclaration") {
+        consumeDeclaration(statement);
+        return;
+      }
+      if (statement?.type === "ExportNamedDeclaration") {
+        consumeDeclaration(statement.declaration);
+      }
+    });
+
+    if (keys.size > 0) {
+      return [...keys];
+    }
+  }
+
   const marker = `const ${objectName} = {`;
   const markerIndex = sourceCode.indexOf(marker);
   if (markerIndex === -1) {
@@ -221,7 +447,7 @@ const extractTopLevelObjectKeys = ({ sourceCode, objectName }) => {
 
   while (i < sourceCode.length) {
     const chr = sourceCode[i];
-    if ((chr === "\"" || chr === "'")) {
+    if (chr === "\"" || chr === "'") {
       if (quote === chr) {
         quote = null;
       } else if (!quote) {
@@ -248,7 +474,7 @@ const extractTopLevelObjectKeys = ({ sourceCode, objectName }) => {
 
   for (let idx = 0; idx < body.length; idx += 1) {
     const chr = body[idx];
-    if ((chr === "\"" || chr === "'")) {
+    if (chr === "\"" || chr === "'") {
       if (quote === chr) {
         quote = null;
       } else if (!quote) {
@@ -296,7 +522,19 @@ const extractTopLevelObjectKeys = ({ sourceCode, objectName }) => {
   return keys;
 };
 
-const extractPrimitiveAttrsFromSource = (sourceCode = "") => {
+const collectBracketSelectorAttrs = ({ sourceText = "", attrs }) => {
+  if (!sourceText || !(attrs instanceof Set)) {
+    return;
+  }
+  const hostSelectorRegex = /\[([a-zA-Z][a-zA-Z0-9-]*)\b(?:=[^\]]*)?\]/g;
+  let match = hostSelectorRegex.exec(sourceText);
+  while (match) {
+    attrs.add(match[1]);
+    match = hostSelectorRegex.exec(sourceText);
+  }
+};
+
+const extractPrimitiveAttrsFromSourceRegexLegacy = (sourceCode = "") => {
   const attrs = new Set();
   const hostSelectorRegex = /\[([a-zA-Z][a-zA-Z0-9-]*)\b(?:=[^\]]*)?\]/g;
   const attrCallRegex = /(?:hasAttribute|getAttribute|setAttribute|removeAttribute)\(\s*['"]([a-zA-Z][a-zA-Z0-9-]*)['"]/g;
@@ -313,6 +551,62 @@ const extractPrimitiveAttrsFromSource = (sourceCode = "") => {
     match = attrCallRegex.exec(sourceCode);
   }
 
+  return attrs;
+};
+
+const extractPrimitiveAttrsFromSource = (sourceCode = "", filePath = "primitive.js") => {
+  const program = parseProgramWithOxc({ sourceCode, filePath });
+  if (!program) {
+    return extractPrimitiveAttrsFromSourceRegexLegacy(sourceCode);
+  }
+
+  const attrs = new Set();
+  const visit = (node) => {
+    if (Array.isArray(node)) {
+      node.forEach((item) => visit(item));
+      return;
+    }
+    if (!node || typeof node !== "object") {
+      return;
+    }
+
+    if (node.type === "CallExpression") {
+      const callee = node.callee;
+      if (callee?.type === "MemberExpression" && !callee.computed) {
+        const methodName = getIdentifierName(callee.property);
+        if (["hasAttribute", "getAttribute", "setAttribute", "removeAttribute"].includes(methodName)) {
+          const firstArg = Array.isArray(node.arguments) ? node.arguments[0] : undefined;
+          const attrName = getStringLiteralValue(firstArg);
+          if (attrName && /^[a-zA-Z][a-zA-Z0-9-]*$/u.test(attrName)) {
+            attrs.add(attrName);
+          }
+        }
+      }
+    }
+
+    if (node.type === "Literal" || node.type === "StringLiteral") {
+      const value = getStringLiteralValue(node);
+      if (value) {
+        collectBracketSelectorAttrs({ sourceText: value, attrs });
+      }
+    }
+
+    if (node.type === "TemplateLiteral" && Array.isArray(node.quasis)) {
+      node.quasis.forEach((quasi) => {
+        const raw = quasi?.value?.raw;
+        const cooked = quasi?.value?.cooked;
+        if (typeof raw === "string") {
+          collectBracketSelectorAttrs({ sourceText: raw, attrs });
+        } else if (typeof cooked === "string") {
+          collectBracketSelectorAttrs({ sourceText: cooked, attrs });
+        }
+      });
+    }
+
+    Object.values(node).forEach((value) => visit(value));
+  };
+
+  visit(program.body);
   return attrs;
 };
 
@@ -340,6 +634,7 @@ const buildGlobalStyleAttrs = ({ uiDir }) => {
     const styleMapKeys = extractTopLevelObjectKeys({
       sourceCode: commonSource,
       objectName: "styleMap",
+      filePath: commonPath,
     });
     expandWithResponsiveAndHover(styleMapKeys).forEach((attr) => attrs.add(attr));
   }
@@ -352,8 +647,9 @@ const buildGlobalStyleAttrs = ({ uiDir }) => {
       extractTopLevelObjectKeys({
         sourceCode: styleSource,
         objectName: "styles",
+        filePath: styleFilePath,
       }).forEach((key) => styleKeys.add(key));
-      extractPrimitiveAttrsFromSource(styleSource).forEach((key) => styleKeys.add(key));
+      extractPrimitiveAttrsFromSource(styleSource, styleFilePath).forEach((key) => styleKeys.add(key));
     });
     expandWithResponsiveAndHover([...styleKeys]).forEach((attr) => attrs.add(attr));
   }
@@ -368,8 +664,8 @@ const getPrimitiveContractsFromEntry = async ({ entryPath, globalStyleAttrs = ne
   }
 
   const entryCode = readFileSync(entryPath, "utf8");
-  const imports = parseEntryImports(entryCode);
-  const definitions = parseCustomElementDefines(entryCode);
+  const imports = parseEntryImports(entryCode, entryPath);
+  const definitions = parseCustomElementDefines(entryCode, entryPath);
 
   ensureRuntimeStubs();
 
@@ -398,7 +694,7 @@ const getPrimitiveContractsFromEntry = async ({ entryPath, globalStyleAttrs = ne
       observed.forEach((attr) => {
         contract.attrs.add(attr);
       });
-      extractPrimitiveAttrsFromSource(primitiveSource).forEach((attr) => {
+      extractPrimitiveAttrsFromSource(primitiveSource, absolutePrimitivePath).forEach((attr) => {
         contract.attrs.add(attr);
       });
       globalStyleAttrs.forEach((attr) => {
@@ -454,14 +750,25 @@ export const buildUiRegistry = async ({ workspaceRoot = process.cwd() } = {}) =>
 };
 
 export const buildProjectSchemaRegistry = ({ models = [] }) => {
-  return buildSchemaRegistry({
-    schemas: models.map((model) => model?.schema?.yaml),
-    source: "project-schema",
-    isValidComponentName: hasNonBlankComponentName,
-    normalizeComponentName: (componentName) => (
-      typeof componentName === "string" ? componentName.trim() : componentName
-    ),
+  const registryMap = new Map();
+
+  models.forEach((model) => {
+    const normalizedSchema = model?.schema?.normalized;
+    if (!normalizedSchema) {
+      return;
+    }
+
+    const componentName = normalizedSchema.componentName;
+    if (!hasNonBlankComponentName(componentName)) {
+      return;
+    }
+
+    const contract = getOrCreateContract(registryMap, componentName);
+    contract.source.add("project-schema");
+    addNormalizedModelSchemaToContract({ contract, normalizedSchema });
   });
+
+  return registryMap;
 };
 
 export const buildMergedRegistry = async ({ models = [], workspaceRoot = process.cwd() } = {}) => {

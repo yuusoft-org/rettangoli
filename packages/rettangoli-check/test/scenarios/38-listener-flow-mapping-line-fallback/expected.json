@@ -1,7 +1,9 @@
 {
   "name": "listener flow mapping line fallback",
   "options": {
-    "dirs": ["./src/components"],
+    "dirs": [
+      "./src/components"
+    ],
     "includeYahtml": true
   },
   "expected": {
@@ -37,5 +39,11 @@
         "line": 4
       }
     ]
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-005",
+    "RTGL-SPEC-SYMBOL-004"
+  ]
 }

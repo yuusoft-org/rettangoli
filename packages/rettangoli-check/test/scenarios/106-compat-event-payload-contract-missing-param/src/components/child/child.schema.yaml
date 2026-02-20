@@ -1,0 +1,14 @@
+componentName: rtgl-check-child-event-payload
+propsSchema:
+  type: object
+  properties: {}
+events:
+  select:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      label:
+        type: string

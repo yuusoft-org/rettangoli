@@ -21,6 +21,7 @@ bun install
 
 ### Packages
 - **[rettangoli-cli](./packages/rettangoli-cli/)** - The official command-line interface for the Rettangoli framework
+- **[rettangoli-check](./packages/rettangoli-check/)** - Compiler-grade static analysis and contract checker for Rettangoli language stack
 - **[rettangoli-fe](./packages/rettangoli-fe/)** - Frontend framework with YAML views, state management, and event handlers
 - **[rettangoli-sites](./packages/rettangoli-sites/)** - Static site generator using Markdown and YAML (formerly Sitic)
 - **[rettangoli-ui](./packages/rettangoli-ui/)** - Web component library with primitives and pre-built components

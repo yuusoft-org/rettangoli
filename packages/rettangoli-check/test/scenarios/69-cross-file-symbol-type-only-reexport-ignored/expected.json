@@ -1,7 +1,9 @@
 {
   "name": "cross-file symbol type-only re-export ignored",
   "options": {
-    "dirs": ["./src/components"],
+    "dirs": [
+      "./src/components"
+    ],
     "includeYahtml": true
   },
   "expected": {
@@ -10,5 +12,11 @@
     "warnCount": 0,
     "errorCodes": {},
     "warnCodes": {}
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-001",
+    "RTGL-SPEC-YAHTML-001"
+  ]
 }

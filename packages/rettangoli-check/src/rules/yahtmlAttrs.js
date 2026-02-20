@@ -189,6 +189,17 @@ export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
             endLine: line,
             endColumn: diagnosticEndColumn,
             message: `${model.componentKey}: legacy '.${normalized.name}' binding is not supported. Use ':${normalized.name}'.`,
+            fix: {
+              kind: "line-regex-replace",
+              filePath,
+              line,
+              pattern: `\\.${normalized.name.replaceAll(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}\\s*=`,
+              replacement: `:${normalized.name}=`,
+              flags: "g",
+              description: `Convert '.${normalized.name}=' to ':${normalized.name}='.`,
+              safe: true,
+              confidence: 0.98,
+            },
           });
           return;
         }

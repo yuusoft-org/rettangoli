@@ -1,0 +1,32 @@
+{
+  "name": "compat prop binding type mismatch",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-COMPAT-004": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-COMPAT-004",
+        "severity": "error",
+        "message": "components/parent: prop binding ':count' is incompatible with 'rtgl-test-compat-child-prop-type-mismatch' expected type 'number' but resolved 'string'.",
+        "filePath": "src/components/parent/parent.view.yaml",
+        "line": 3
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-010"
+  ]
+}

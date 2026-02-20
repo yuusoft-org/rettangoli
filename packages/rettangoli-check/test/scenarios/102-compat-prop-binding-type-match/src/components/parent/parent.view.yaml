@@ -1,0 +1,4 @@
+template:
+  - rtgl-view#root:
+      - rtgl-test-compat-child-prop-type-match :count=${countValue}: item
+styles: {}

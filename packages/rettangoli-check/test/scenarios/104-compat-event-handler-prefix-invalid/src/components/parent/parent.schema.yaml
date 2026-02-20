@@ -1,0 +1,4 @@
+componentName: rtgl-check-parent-handler-prefix
+propsSchema:
+  type: object
+  properties: {}

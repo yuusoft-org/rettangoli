@@ -1,13 +1,6 @@
-import { parse as parseJempl } from "jempl";
+import { normalizeJemplErrorMessage, parseJemplForCompiler } from "../core/parsers.js";
 import { resolveListenerLine } from "./listenerSymbols.js";
 import { getModelFilePath, isObjectRecord } from "./shared.js";
-
-const normalizeJemplErrorMessage = (error, fallbackMessage) => {
-  const rawMessage = typeof error?.message === "string" ? error.message : "";
-  const normalizedMessage = rawMessage.replace(/\s+/gu, " ").trim();
-  const message = normalizedMessage || fallbackMessage;
-  return message.endsWith(".") ? message : `${message}.`;
-};
 
 export const runJemplRules = ({ models = [] }) => {
   const diagnostics = [];
@@ -21,17 +14,35 @@ export const runJemplRules = ({ models = [] }) => {
     }
 
     if (Object.prototype.hasOwnProperty.call(viewYaml, "template")) {
-      try {
-        parseJempl(viewYaml.template);
-      } catch (error) {
+      const templateLine = model?.view?.topLevelKeyLines?.get("template");
+      const templateParse = parseJemplForCompiler({
+        source: viewYaml.template,
+        viewText: model?.view?.text || "",
+        fallbackLine: templateLine,
+        strictControlDirectives: true,
+      });
+
+      if (templateParse.parseError) {
         diagnostics.push({
           code: "RTGL-CHECK-JEMPL-001",
           severity: "error",
           filePath: viewPath,
-          line: model?.view?.topLevelKeyLines?.get("template"),
-          message: `${model.componentKey}: invalid Jempl in view template. ${normalizeJemplErrorMessage(error, "Template parse failed")}`,
+          line: templateParse.parseError.line,
+          message: `${model.componentKey}: invalid Jempl in view template. ${templateParse.parseError.message}`,
         });
       }
+
+      templateParse.controlDiagnostics.forEach((controlDiagnostic) => {
+        diagnostics.push({
+          code: "RTGL-CHECK-JEMPL-003",
+          severity: "error",
+          filePath: viewPath,
+          line: controlDiagnostic.line,
+          message: `${model.componentKey}: ${normalizeJemplErrorMessage({
+            message: controlDiagnostic.message,
+          }, "Invalid Jempl control directive")}`,
+        });
+      });
     }
 
     model.view.refListeners.forEach(({ refKey, eventType, eventConfig, line, optionLines }) => {
@@ -43,19 +54,23 @@ export const runJemplRules = ({ models = [] }) => {
         return;
       }
 
-      try {
-        parseJempl(eventConfig.payload);
-      } catch (error) {
+      const payloadLine = resolveListenerLine({
+        listenerLine: line,
+        optionLines,
+        preferredKeys: ["payload"],
+      });
+      const payloadParse = parseJemplForCompiler({
+        source: eventConfig.payload,
+        fallbackLine: payloadLine,
+      });
+
+      if (payloadParse.parseError) {
         diagnostics.push({
           code: "RTGL-CHECK-JEMPL-002",
           severity: "error",
           filePath: viewPath,
-          line: resolveListenerLine({
-            listenerLine: line,
-            optionLines,
-            preferredKeys: ["payload"],
-          }),
-          message: `${model.componentKey}: invalid Jempl in listener payload for event '${eventType}' on ref '${refKey}'. ${normalizeJemplErrorMessage(error, "Payload parse failed")}`,
+          line: payloadParse.parseError.line,
+          message: `${model.componentKey}: invalid Jempl in listener payload for event '${eventType}' on ref '${refKey}'. ${payloadParse.parseError.message}`,
         });
       }
     });

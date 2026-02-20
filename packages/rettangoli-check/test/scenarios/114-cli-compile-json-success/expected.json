@@ -1,0 +1,35 @@
+{
+  "name": "cli compile emits json report on stdout",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "compile",
+      "--format",
+      "json",
+      "--no-emit-artifact"
+    ]
+  },
+  "expected": {
+    "exitCode": 0,
+    "stderr": "",
+    "stdoutJson": {
+      "contractVersion": 1,
+      "ok": true,
+      "command": "compile",
+      "mode": "strict",
+      "warnAsError": false,
+      "policyPacks": [],
+      "componentCount": 1,
+      "summary": {
+        "bySeverity": {
+          "error": 0
+        }
+      },
+      "cacheHit": false
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "specs": [
+    {
+      "id": "RTGL-SPEC-CONF-CORE-001",
+      "title": "Scenario traceability requirement",
+      "file": "packages/rettangoli-check/docs/language-spec/conformance-contract.md"
+    },
+    {
+      "id": "RTGL-SPEC-CONF-CORE-002",
+      "title": "Deterministic analyzer behavior",
+      "file": "packages/rettangoli-check/docs/language-spec/conformance-contract.md"
+    },
+    {
+      "id": "RTGL-SPEC-CONF-CLI-001",
+      "title": "CLI scenario contract",
+      "file": "packages/rettangoli-check/docs/language-spec/conformance-contract.md"
+    },
+    {
+      "id": "RTGL-SPEC-YAHTML-001",
+      "title": "Selector key tokenization and tag extraction",
+      "file": "packages/rettangoli-check/docs/language-spec/yahtml-grammar-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-YAHTML-002",
+      "title": "Binding prefix semantics",
+      "file": "packages/rettangoli-check/docs/language-spec/yahtml-grammar-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-YAHTML-003",
+      "title": "Expression token extraction delimiters",
+      "file": "packages/rettangoli-check/docs/language-spec/yahtml-grammar-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-YAHTML-004",
+      "title": "Invalid forms and diagnostics",
+      "file": "packages/rettangoli-check/docs/language-spec/yahtml-grammar-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-YAHTML-005",
+      "title": "Typed template AST and source ranges",
+      "file": "packages/rettangoli-check/docs/language-spec/yahtml-grammar-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-JEMPL-001",
+      "title": "Template parse validity",
+      "file": "packages/rettangoli-check/docs/language-spec/jempl-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-JEMPL-002",
+      "title": "Listener payload parse validity",
+      "file": "packages/rettangoli-check/docs/language-spec/jempl-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-JEMPL-003",
+      "title": "Control-flow and scope semantics",
+      "file": "packages/rettangoli-check/docs/language-spec/jempl-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-JEMPL-004",
+      "title": "Expression root extraction",
+      "file": "packages/rettangoli-check/docs/language-spec/jempl-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-JEMPL-005",
+      "title": "Strict control-directive validation",
+      "file": "packages/rettangoli-check/docs/language-spec/jempl-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-001",
+      "title": "Required files and forbidden in-view API metadata",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-002",
+      "title": "Schema component identity and shape",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-003",
+      "title": "YAML parse failure contract",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-004",
+      "title": "Constants contract",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-005",
+      "title": "Listener/ref event config semantics",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-006",
+      "title": "Handler and lifecycle contracts",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-007",
+      "title": "Expression-to-schema compatibility",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-008",
+      "title": "Inter-component compatibility",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-009",
+      "title": "Ref key and element-id constraints",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-010",
+      "title": "JS/TS export extraction backend parity contract",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-011",
+      "title": "Listener payload-to-symbol contract",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-FE-012",
+      "title": "Method exposure and invocation compatibility",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
+      "id": "RTGL-SPEC-SYMBOL-001",
+      "title": "Canonical source sets",
+      "file": "packages/rettangoli-check/docs/language-spec/symbol-resolution-order.md"
+    },
+    {
+      "id": "RTGL-SPEC-SYMBOL-002",
+      "title": "Resolution precedence",
+      "file": "packages/rettangoli-check/docs/language-spec/symbol-resolution-order.md"
+    },
+    {
+      "id": "RTGL-SPEC-SYMBOL-003",
+      "title": "Cross-file export-chain semantics",
+      "file": "packages/rettangoli-check/docs/language-spec/symbol-resolution-order.md"
+    },
+    {
+      "id": "RTGL-SPEC-SYMBOL-004",
+      "title": "Symbol contract diagnostics",
+      "file": "packages/rettangoli-check/docs/language-spec/symbol-resolution-order.md"
+    },
+    {
+      "id": "RTGL-SPEC-LVL-001",
+      "title": "strict-legacy-parity",
+      "file": "packages/rettangoli-check/docs/language-spec/language-level-compatibility-matrix.md"
+    },
+    {
+      "id": "RTGL-SPEC-LVL-002",
+      "title": "strict-deterministic-core",
+      "file": "packages/rettangoli-check/docs/language-spec/language-level-compatibility-matrix.md"
+    },
+    {
+      "id": "RTGL-SPEC-LVL-003",
+      "title": "compiler-platform-v1",
+      "file": "packages/rettangoli-check/docs/language-spec/language-level-compatibility-matrix.md"
+    }
+  ]
+}

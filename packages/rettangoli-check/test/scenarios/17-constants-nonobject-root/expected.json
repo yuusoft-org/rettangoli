@@ -1,7 +1,9 @@
 {
   "name": "constants yaml requires object root",
   "options": {
-    "dirs": ["./src/components"],
+    "dirs": [
+      "./src/components"
+    ],
     "includeYahtml": true
   },
   "expected": {
@@ -20,5 +22,10 @@
         "filePath": "src/components/card/card.constants.yaml"
       }
     ]
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-004"
+  ]
 }

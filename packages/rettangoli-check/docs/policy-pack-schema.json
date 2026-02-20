@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rettangoli.dev/schemas/policy-pack.v1.json",
+  "title": "Rettangoli Policy Pack v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "rules"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "languageLevel": { "type": "string" },
+    "name": { "type": "string", "minLength": 1 },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "digest"],
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "severity": { "enum": ["error", "warn"] },
+          "enabled": { "type": "boolean" },
+          "description": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "metadata": { "type": "object" }
+        }
+      }
+    }
+  }
+}

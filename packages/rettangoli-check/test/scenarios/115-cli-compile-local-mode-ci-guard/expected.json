@@ -1,0 +1,45 @@
+{
+  "name": "cli compile local-non-authoritative mode is blocked in ci",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "compile",
+      "--mode",
+      "local-non-authoritative",
+      "--format",
+      "json",
+      "--no-emit-artifact"
+    ],
+    "env": {
+      "CI": "true"
+    }
+  },
+  "expected": {
+    "exitCode": 1,
+    "stderr": "",
+    "stdoutJson": {
+      "contractVersion": 1,
+      "ok": false,
+      "command": "compile",
+      "summary": {
+        "total": 1,
+        "bySeverity": {
+          "error": 1,
+          "warn": 0
+        }
+      },
+      "diagnostics": [
+        {
+          "code": "RTGL-CLI-001",
+          "severity": "error",
+          "message": "local-non-authoritative mode is not allowed in CI.",
+          "filePath": "unknown"
+        }
+      ]
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
+}

@@ -6,6 +6,7 @@ import { runFeParityRules } from "./feParity.js";
 import { runJemplRules } from "./jempl.js";
 import { runLifecycleRules } from "./lifecycle.js";
 import { runListenerConfigRules } from "./listenerConfig.js";
+import { runMethodRules } from "./methods.js";
 import { runSchemaRules } from "./schema.js";
 import { runYahtmlAttrRules } from "./yahtmlAttrs.js";
 
@@ -23,6 +24,7 @@ export const runRules = ({
   diagnostics.push(...runJemplRules({ models }));
   diagnostics.push(...runListenerConfigRules({ models }));
   diagnostics.push(...runCrossFileSymbolRules({ models }));
+  diagnostics.push(...runMethodRules({ models }));
   diagnostics.push(...runLifecycleRules({ models }));
   if (includeExpression) {
     diagnostics.push(...runExpressionRules({ models }));

@@ -1,0 +1,4 @@
+componentName: rtgl-check-listener-payload-contract
+propsSchema:
+  type: object
+  properties: {}

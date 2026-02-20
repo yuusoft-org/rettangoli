@@ -2,12 +2,16 @@
   "name": "cli json format reports failing result on stdout",
   "mode": "cli",
   "options": {
-    "args": ["--format", "json"]
+    "args": [
+      "--format",
+      "json"
+    ]
   },
   "expected": {
     "exitCode": 1,
     "stderr": "",
     "stdoutJson": {
+      "contractVersion": 1,
       "ok": false,
       "warnAsError": false,
       "summary": {
@@ -23,5 +27,9 @@
         }
       ]
     }
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
 }

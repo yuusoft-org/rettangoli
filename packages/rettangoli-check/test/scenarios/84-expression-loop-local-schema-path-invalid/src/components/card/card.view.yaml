@@ -1,0 +1,4 @@
+template:
+  - $for item, i in items:
+      - rtgl-text: ${item.title}
+      - rtgl-text: ${item.profile.name}

@@ -1,0 +1,5 @@
+template:
+  - $for item in sections:
+      - $if item.enabled:
+          - $for item in item.entries:
+              - rtgl-view :title=${item.name}: null

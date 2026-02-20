@@ -1,0 +1,12 @@
+# Default ownership
+* @hanyonwu
+
+# Compiler platform core boundaries
+/packages/rettangoli-check/src/core/parsers.js @hanyonwu
+/packages/rettangoli-check/src/core/scopeGraph.js @hanyonwu
+/packages/rettangoli-check/src/core/semantic.js @hanyonwu
+/packages/rettangoli-check/src/core/model.js @hanyonwu
+/packages/rettangoli-check/src/core/registry.js @hanyonwu
+/packages/rettangoli-check/src/rules/ @hanyonwu
+/packages/rettangoli-check/docs/ @hanyonwu
+/packages/rettangoli-check/test/ @hanyonwu

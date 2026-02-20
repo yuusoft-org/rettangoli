@@ -1,7 +1,9 @@
 {
   "name": "warn-only undocumented method export",
   "options": {
-    "dirs": ["./src/components"],
+    "dirs": [
+      "./src/components"
+    ],
     "includeYahtml": true
   },
   "expected": {
@@ -20,5 +22,10 @@
         "filePath": "src/components/card/card.methods.js"
       }
     ]
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-SYMBOL-004"
+  ]
 }

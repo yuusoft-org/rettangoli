@@ -46,6 +46,17 @@ export const runFeParityRules = ({ models = [] }) => {
         filePath: viewPath,
         line: model.view.legacyDotPropBindingLine,
         message: `${model.componentKey}: legacy '.prop=' binding is not supported. Use ':prop=' in .view.yaml.`,
+        fix: {
+          kind: "line-regex-replace",
+          filePath: viewPath,
+          line: model.view.legacyDotPropBindingLine,
+          pattern: "\\.([a-zA-Z][\\w-]*)\\s*=",
+          replacement: ":$1=",
+          flags: "g",
+          description: "Convert legacy '.prop=' binding to ':prop='.",
+          safe: true,
+          confidence: 0.98,
+        },
       });
     }
   });

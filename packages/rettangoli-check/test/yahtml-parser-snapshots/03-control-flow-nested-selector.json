@@ -1,0 +1,193 @@
+{
+  "description": "control flow keys map to child selector element",
+  "templateAst": {
+    "type": "Template",
+    "kind": "YahtmlTemplateAst",
+    "nodes": [
+      {
+        "type": "Element",
+        "kind": "YahtmlElementAst",
+        "tagName": "rtgl-card",
+        "selector": "rtgl-card",
+        "rawKey": "rtgl-card title=hello",
+        "rawLexeme": "rtgl-card title=hello",
+        "range": {
+          "line": 3,
+          "column": 10,
+          "endLine": 3,
+          "endColumn": 30,
+          "offset": 40,
+          "endOffset": 61,
+          "length": 21
+        },
+        "attributes": [
+          {
+            "type": "Attribute",
+            "kind": "YahtmlAttributeAst",
+            "raw": "title=hello",
+            "rawLexeme": "title=hello",
+            "bindingName": "title",
+            "sourceType": "attr",
+            "name": "title",
+            "valueText": "hello",
+            "expressions": [],
+            "expressionNodes": [],
+            "range": {
+              "line": 3,
+              "column": 20,
+              "endLine": 3,
+              "endColumn": 30,
+              "offset": 50,
+              "endOffset": 61,
+              "length": 11
+            }
+          }
+        ]
+      }
+    ],
+    "cst": {
+      "kind": "YahtmlTemplateCst",
+      "nodes": [
+        {
+          "kind": "YahtmlElementCst",
+          "rawKey": "rtgl-card title=hello",
+          "selectorToken": {
+            "kind": "YahtmlSelectorToken",
+            "raw": "rtgl-card",
+            "startOffset": 0,
+            "endOffset": 9,
+            "length": 9,
+            "column": 1,
+            "endColumn": 9
+          },
+          "attributeTokens": [
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "title=hello",
+              "bindingName": "title",
+              "sourceType": "attr",
+              "name": "title",
+              "valueText": "hello",
+              "expressions": [],
+              "expressionNodes": [],
+              "startOffset": 10,
+              "endOffset": 21,
+              "length": 11,
+              "column": 11,
+              "endColumn": 21
+            }
+          ]
+        }
+      ]
+    },
+    "parseDiagnostics": []
+  },
+  "selectorApis": [
+    {
+      "rawKey": "rtgl-card title=hello",
+      "tokenStream": {
+        "kind": "YahtmlSelectorTokenStream",
+        "raw": "rtgl-card title=hello",
+        "selectorToken": {
+          "kind": "YahtmlSelectorToken",
+          "raw": "rtgl-card",
+          "startOffset": 0,
+          "endOffset": 9,
+          "length": 9,
+          "column": 1,
+          "endColumn": 9
+        },
+        "attributeTokens": [
+          {
+            "kind": "YahtmlAttributeToken",
+            "raw": "title=hello",
+            "bindingName": "title",
+            "sourceType": "attr",
+            "name": "title",
+            "valueText": "hello",
+            "expressions": [],
+            "expressionNodes": [],
+            "startOffset": 10,
+            "endOffset": 21,
+            "length": 11,
+            "column": 11,
+            "endColumn": 21
+          }
+        ]
+      },
+      "parsedSelector": {
+        "ast": {
+          "type": "Element",
+          "kind": "YahtmlElementAst",
+          "tagName": "rtgl-card",
+          "selector": "rtgl-card",
+          "rawKey": "rtgl-card title=hello",
+          "rawLexeme": "rtgl-card title=hello",
+          "range": {
+            "line": 3,
+            "column": 10,
+            "endLine": 3,
+            "endColumn": 30,
+            "offset": 40,
+            "endOffset": 61,
+            "length": 21
+          },
+          "attributes": [
+            {
+              "type": "Attribute",
+              "kind": "YahtmlAttributeAst",
+              "raw": "title=hello",
+              "rawLexeme": "title=hello",
+              "bindingName": "title",
+              "sourceType": "attr",
+              "name": "title",
+              "valueText": "hello",
+              "expressions": [],
+              "expressionNodes": [],
+              "range": {
+                "line": 3,
+                "column": 20,
+                "endLine": 3,
+                "endColumn": 30,
+                "offset": 50,
+                "endOffset": 61,
+                "length": 11
+              }
+            }
+          ]
+        },
+        "cst": {
+          "kind": "YahtmlElementCst",
+          "rawKey": "rtgl-card title=hello",
+          "selectorToken": {
+            "kind": "YahtmlSelectorToken",
+            "raw": "rtgl-card",
+            "startOffset": 0,
+            "endOffset": 9,
+            "length": 9,
+            "column": 1,
+            "endColumn": 9
+          },
+          "attributeTokens": [
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "title=hello",
+              "bindingName": "title",
+              "sourceType": "attr",
+              "name": "title",
+              "valueText": "hello",
+              "expressions": [],
+              "expressionNodes": [],
+              "startOffset": 10,
+              "endOffset": 21,
+              "length": 11,
+              "column": 11,
+              "endColumn": 21
+            }
+          ]
+        },
+        "diagnostics": []
+      }
+    }
+  ]
+}

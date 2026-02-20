@@ -6,8 +6,13 @@ import {
 import { collectInvalidRefKeys } from "./refs.js";
 import { getModelFilePath, getYamlPathLine } from "./shared.js";
 
-const getSchemaMethodNames = (schemaYaml) => {
-  const methodProps = schemaYaml?.methods?.properties;
+const getSchemaMethodNames = (model) => {
+  const normalizedMethodNames = model?.schema?.normalized?.methods?.names;
+  if (Array.isArray(normalizedMethodNames)) {
+    return normalizedMethodNames;
+  }
+
+  const methodProps = model?.schema?.yaml?.methods?.properties;
   if (!methodProps || typeof methodProps !== "object" || Array.isArray(methodProps)) {
     return [];
   }
@@ -19,22 +24,8 @@ export const runCrossFileSymbolRules = ({ models = [] }) => {
 
   models.forEach((model) => {
     const viewFilePath = getModelFilePath({ model, fileType: "view" });
-    const handlersFilePath = getModelFilePath({ model, fileType: "handlers" });
     const refs = model?.view?.yaml?.refs;
     const invalidRefKeys = collectInvalidRefKeys(refs);
-
-    model.handlers.exports.forEach((handlerName) => {
-      if (isValidHandlerSymbol(handlerName)) {
-        return;
-      }
-
-      diagnostics.push({
-        code: "RTGL-CHECK-HANDLER-002",
-        severity: "error",
-        filePath: handlersFilePath,
-        message: `${model.componentKey}: invalid handler export '${handlerName}' in .handlers.js. Handler names must start with 'handle'.`,
-      });
-    });
 
     model.view.refListeners.forEach(({ refKey, eventType, eventConfig, line, optionLines }) => {
       if (invalidRefKeys.has(refKey)) {
@@ -78,7 +69,7 @@ export const runCrossFileSymbolRules = ({ models = [] }) => {
       }
     });
 
-    const declaredMethods = getSchemaMethodNames(model.schema.yaml);
+    const declaredMethods = getSchemaMethodNames(model);
     declaredMethods.forEach((methodName) => {
       if (!model.methods.exports.has(methodName)) {
         diagnostics.push({

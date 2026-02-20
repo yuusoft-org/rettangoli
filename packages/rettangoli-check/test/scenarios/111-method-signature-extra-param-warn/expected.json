@@ -1,0 +1,23 @@
+{
+  "name": "method signature extra param warn",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": true,
+    "errorCount": 0,
+    "warnCount": 1,
+    "errorCodes": {},
+    "warnCodes": {
+      "RTGL-CHECK-METHOD-002": 1
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-012"
+  ]
+}

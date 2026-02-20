@@ -1,7 +1,9 @@
 {
   "name": "quoted selector line with escaped quotes",
   "options": {
-    "dirs": ["./src/components"],
+    "dirs": [
+      "./src/components"
+    ],
     "includeYahtml": true
   },
   "expected": {
@@ -12,5 +14,10 @@
       "RTGL-CHECK-YAHTML-003": 1
     },
     "warnCodes": {}
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-YAHTML-004"
+  ]
 }

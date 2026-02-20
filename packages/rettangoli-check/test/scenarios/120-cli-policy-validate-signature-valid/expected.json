@@ -1,0 +1,36 @@
+{
+  "name": "cli policy validate verifies valid signature",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "policy",
+      "validate",
+      "--file",
+      "policy.yaml",
+      "--verify-signature",
+      "--format",
+      "json"
+    ]
+  },
+  "expected": {
+    "exitCode": 0,
+    "stderr": "",
+    "stdoutJson": {
+      "contractVersion": 1,
+      "ok": true,
+      "command": "policy.validate",
+      "filePath": "policy.yaml",
+      "name": "signed-policy",
+      "ruleCount": 2,
+      "signature": {
+        "enabled": true,
+        "verified": true,
+        "algorithm": "sha256"
+      }
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "expression nested loop shadowing resolved",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true,
+    "includeExpression": true
+  },
+  "expected": {
+    "ok": true,
+    "errorCount": 0,
+    "warnCount": 0,
+    "errorCodes": {},
+    "warnCodes": {}
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-JEMPL-003",
+    "RTGL-SPEC-FE-007"
+  ]
+}

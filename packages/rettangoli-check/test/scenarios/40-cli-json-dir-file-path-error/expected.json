@@ -2,12 +2,18 @@
   "name": "cli json format rejects file path passed to --dir",
   "mode": "cli",
   "options": {
-    "args": ["--format", "json", "--dir", "./src/not-a-dir.txt"]
+    "args": [
+      "--format",
+      "json",
+      "--dir",
+      "./src/not-a-dir.txt"
+    ]
   },
   "expected": {
     "exitCode": 1,
     "stderr": "",
     "stdoutJson": {
+      "contractVersion": 1,
       "ok": false,
       "summary": {
         "total": 1,
@@ -26,5 +32,9 @@
         }
       ]
     }
-  }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
 }

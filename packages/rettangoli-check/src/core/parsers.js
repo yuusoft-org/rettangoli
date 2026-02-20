@@ -166,6 +166,178 @@ const splitTopLevelCommaSeparated = (value = "") => {
   return parts;
 };
 
+const findTopLevelCharacterIndex = (value = "", character = "=") => {
+  let parenDepth = 0;
+  let bracketDepth = 0;
+  let braceDepth = 0;
+  let quote = null;
+  let escaped = false;
+
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+
+    if (quote) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+
+      if (char === "\\") {
+        escaped = true;
+        continue;
+      }
+
+      if (char === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (char === "\"" || char === "'" || char === "`") {
+      quote = char;
+      continue;
+    }
+
+    if (char === "(") {
+      parenDepth += 1;
+      continue;
+    }
+    if (char === ")" && parenDepth > 0) {
+      parenDepth -= 1;
+      continue;
+    }
+    if (char === "[") {
+      bracketDepth += 1;
+      continue;
+    }
+    if (char === "]" && bracketDepth > 0) {
+      bracketDepth -= 1;
+      continue;
+    }
+    if (char === "{") {
+      braceDepth += 1;
+      continue;
+    }
+    if (char === "}" && braceDepth > 0) {
+      braceDepth -= 1;
+      continue;
+    }
+
+    if (char === character && parenDepth === 0 && bracketDepth === 0 && braceDepth === 0) {
+      return index;
+    }
+  }
+
+  return -1;
+};
+
+const stripTopLevelDefaultAssignment = (value = "") => {
+  const assignmentIndex = findTopLevelCharacterIndex(value, "=");
+  if (assignmentIndex === -1) {
+    return value.trim();
+  }
+  return value.slice(0, assignmentIndex).trim();
+};
+
+const stripTopLevelTypeAnnotation = (value = "") => {
+  const typeAnnotationIndex = findTopLevelCharacterIndex(value, ":");
+  if (typeAnnotationIndex === -1) {
+    return value.trim();
+  }
+  return value.slice(0, typeAnnotationIndex).trim();
+};
+
+const stripTypeScriptDefiniteAssignment = (value = "") => {
+  const trimmed = value.trim();
+  if (!trimmed.endsWith("!")) {
+    return trimmed;
+  }
+  return trimmed.slice(0, -1).trim();
+};
+
+const collectBindingNamesFromPattern = (pattern = "") => {
+  const trimmed = pattern.trim();
+  if (!trimmed) {
+    return [];
+  }
+
+  if (trimmed.startsWith("...")) {
+    return collectBindingNamesFromPattern(trimmed.slice(3));
+  }
+
+  const withoutTypeAnnotation = stripTopLevelTypeAnnotation(trimmed);
+  if (withoutTypeAnnotation !== trimmed) {
+    return collectBindingNamesFromPattern(withoutTypeAnnotation);
+  }
+
+  const withoutDefiniteAssignment = stripTypeScriptDefiniteAssignment(trimmed);
+  if (withoutDefiniteAssignment !== trimmed) {
+    return collectBindingNamesFromPattern(withoutDefiniteAssignment);
+  }
+
+  if (IDENTIFIER_REGEX.test(trimmed)) {
+    return [trimmed];
+  }
+
+  const withoutDefault = stripTopLevelDefaultAssignment(trimmed);
+  if (withoutDefault !== trimmed) {
+    return collectBindingNamesFromPattern(withoutDefault);
+  }
+
+  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+    const objectBody = trimmed.slice(1, -1);
+    const parts = splitTopLevelCommaSeparated(objectBody);
+    const names = [];
+
+    parts.forEach((part) => {
+      const token = part.trim();
+      if (!token) {
+        return;
+      }
+
+      if (token.startsWith("...")) {
+        names.push(...collectBindingNamesFromPattern(token.slice(3)));
+        return;
+      }
+
+      const colonIndex = findTopLevelCharacterIndex(token, ":");
+      if (colonIndex !== -1) {
+        const valuePattern = token.slice(colonIndex + 1).trim();
+        names.push(...collectBindingNamesFromPattern(valuePattern));
+        return;
+      }
+
+      names.push(...collectBindingNamesFromPattern(stripTopLevelDefaultAssignment(token)));
+    });
+
+    return names;
+  }
+
+  if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+    const arrayBody = trimmed.slice(1, -1);
+    const parts = splitTopLevelCommaSeparated(arrayBody);
+    const names = [];
+
+    parts.forEach((part) => {
+      const token = part.trim();
+      if (!token) {
+        return;
+      }
+
+      if (token.startsWith("...")) {
+        names.push(...collectBindingNamesFromPattern(token.slice(3)));
+        return;
+      }
+
+      names.push(...collectBindingNamesFromPattern(stripTopLevelDefaultAssignment(token)));
+    });
+
+    return names;
+  }
+
+  return [];
+};
+
 const collectExportedVariableDeclarationNames = (sourceForScan = "") => {
   const names = [];
   const exportVariableStartRegex = /export\s+(?:const|let|var)\s+/g;
@@ -211,10 +383,13 @@ const collectExportedVariableDeclarationNames = (sourceForScan = "") => {
 
     const declarators = splitTopLevelCommaSeparated(declaration);
     declarators.forEach((declarator) => {
-      const declaratorMatch = declarator.match(/^([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:=|$)/);
-      if (declaratorMatch) {
-        names.push(declaratorMatch[1]);
-      }
+      const assignmentIndex = findTopLevelCharacterIndex(declarator, "=");
+      const bindingPattern = assignmentIndex === -1
+        ? declarator.trim()
+        : declarator.slice(0, assignmentIndex).trim();
+      collectBindingNamesFromPattern(bindingPattern).forEach((name) => {
+        names.push(name);
+      });
     });
 
     match = exportVariableStartRegex.exec(sourceForScan);
@@ -229,6 +404,10 @@ const extractNamedExportsRegex = (sourceCode = "") => {
 
   const functionRegex = /export\s+(?:async\s+)?function\s*\*?\s*([A-Za-z_$][A-Za-z0-9_$]*)/g;
   const classRegex = /export\s+class\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
+  const abstractClassRegex = /export\s+abstract\s+class\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
+  const enumRegex = /export\s+(?:const\s+)?enum\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
+  const exportImportAliasRegex = /export\s+import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=/g;
+  const tsExportAssignmentRegex = /export\s*=\s*/g;
   const listRegex = /export\s*\{([^}]+)\}(?!\s*from\b)/g;
   const defaultRegex = /export\s+default\b/g;
 
@@ -242,6 +421,24 @@ const extractNamedExportsRegex = (sourceCode = "") => {
   while (match) {
     exports.add(match[1]);
     match = classRegex.exec(sourceForScan);
+  }
+
+  match = abstractClassRegex.exec(sourceForScan);
+  while (match) {
+    exports.add(match[1]);
+    match = abstractClassRegex.exec(sourceForScan);
+  }
+
+  match = enumRegex.exec(sourceForScan);
+  while (match) {
+    exports.add(match[1]);
+    match = enumRegex.exec(sourceForScan);
+  }
+
+  match = exportImportAliasRegex.exec(sourceForScan);
+  while (match) {
+    exports.add(match[1]);
+    match = exportImportAliasRegex.exec(sourceForScan);
   }
 
   match = listRegex.exec(sourceForScan);
@@ -265,6 +462,14 @@ const extractNamedExportsRegex = (sourceCode = "") => {
   if (defaultRegex.test(sourceForScan)) {
     exports.add("default");
   }
+  if (tsExportAssignmentRegex.test(sourceForScan)) {
+    exports.add("default");
+  }
+  collectNamespaceReExportsRegex(sourceCode).forEach(({ exportedName }) => {
+    if (IDENTIFIER_REGEX.test(exportedName)) {
+      exports.add(exportedName);
+    }
+  });
 
   return exports;
 };
@@ -307,6 +512,50 @@ const collectExportStarSpecifiersRegex = (sourceCode = "") => {
   }
 
   return [...specifiers];
+};
+
+const collectNamespaceReExportsRegex = (sourceCode = "") => {
+  const namespaceReExports = [];
+  const sourceForScan = maskCommentsAndStrings(sourceCode);
+  const namespaceReExportRegex = /export\s*\*\s*as\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*from\b/g;
+  let match = namespaceReExportRegex.exec(sourceForScan);
+
+  while (match) {
+    const exportedName = match[1];
+    let index = namespaceReExportRegex.lastIndex;
+    while (index < sourceCode.length && /\s/.test(sourceCode[index])) {
+      index += 1;
+    }
+
+    let moduleRequest = "";
+    const quote = sourceCode[index];
+    if (quote === "\"" || quote === "'") {
+      index += 1;
+      while (index < sourceCode.length) {
+        const char = sourceCode[index];
+        if (char === quote) {
+          break;
+        }
+        if (char === "\n" || char === "\r") {
+          moduleRequest = "";
+          break;
+        }
+        moduleRequest += char;
+        index += 1;
+      }
+    }
+
+    if (moduleRequest) {
+      namespaceReExports.push({
+        moduleRequest,
+        exportedName,
+      });
+    }
+
+    match = namespaceReExportRegex.exec(sourceForScan);
+  }
+
+  return namespaceReExports;
 };
 
 const collectNamedReExportsRegex = (sourceCode = "") => {
@@ -370,6 +619,65 @@ const collectNamedReExportsRegex = (sourceCode = "") => {
   return reExports;
 };
 
+const offsetToLineColumn = ({ lineOffsets = [], offset = 0 }) => {
+  if (!Array.isArray(lineOffsets) || lineOffsets.length === 0) {
+    return {};
+  }
+
+  const safeOffset = Math.max(0, Number.isInteger(offset) ? offset : 0);
+  let low = 0;
+  let high = lineOffsets.length - 1;
+
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    const start = lineOffsets[mid];
+    const next = lineOffsets[mid + 1] ?? Number.POSITIVE_INFINITY;
+
+    if (safeOffset >= start && safeOffset < next) {
+      return {
+        line: mid + 1,
+        column: safeOffset - start + 1,
+      };
+    }
+
+    if (safeOffset < start) {
+      high = mid - 1;
+    } else {
+      low = mid + 1;
+    }
+  }
+
+  const lastLineIndex = lineOffsets.length - 1;
+  const lastStart = lineOffsets[lastLineIndex] ?? 0;
+  return {
+    line: lastLineIndex + 1,
+    column: Math.max(1, safeOffset - lastStart + 1),
+  };
+};
+
+const offsetRangeToLocation = ({
+  lineOffsets = [],
+  startOffset,
+  endOffset,
+}) => {
+  if (!Number.isInteger(startOffset)) {
+    return undefined;
+  }
+
+  const start = offsetToLineColumn({ lineOffsets, offset: startOffset });
+  const resolvedEndOffset = Number.isInteger(endOffset) && endOffset >= startOffset
+    ? endOffset
+    : startOffset;
+  const end = offsetToLineColumn({ lineOffsets, offset: resolvedEndOffset });
+
+  return {
+    line: start.line,
+    column: start.column,
+    endLine: end.line,
+    endColumn: end.column,
+  };
+};
+
 const extractModuleExportsOxc = ({
   sourceCode = "",
   filePath = "unknown.js",
@@ -419,7 +727,9 @@ const extractModuleExportsOxc = ({
       ok: false,
       namedExports: new Set(),
       exportStarSpecifiers: [],
+      namespaceReExports: [],
       namedReExports: [],
+      reExportReferences: [],
     };
   }
 
@@ -428,7 +738,9 @@ const extractModuleExportsOxc = ({
       ok: false,
       namedExports: new Set(),
       exportStarSpecifiers: [],
+      namespaceReExports: [],
       namedReExports: [],
+      reExportReferences: [],
     };
   }
 
@@ -437,18 +749,38 @@ const extractModuleExportsOxc = ({
       ok: false,
       namedExports: new Set(),
       exportStarSpecifiers: [],
+      namespaceReExports: [],
       namedReExports: [],
+      reExportReferences: [],
     };
   }
 
   const namedExports = new Set();
   const exportStarSpecifiers = new Set();
+  const namespaceReExports = [];
   const namedReExports = [];
+  const reExportReferences = [];
+  const lineOffsets = createLineOffsets(sourceCode);
+  const programBody = Array.isArray(parseResult?.program?.body)
+    ? parseResult.program.body
+    : [];
+
+  programBody.forEach((statement) => {
+    if (statement?.type === "TSExportAssignment") {
+      namedExports.add("default");
+    }
+  });
 
   parseResult.module.staticExports.forEach((staticExport) => {
     if (!Array.isArray(staticExport?.entries)) {
       return;
     }
+
+    const statementRange = offsetRangeToLocation({
+      lineOffsets,
+      startOffset: staticExport?.start,
+      endOffset: staticExport?.end,
+    });
 
     staticExport.entries.forEach((entry) => {
       if (!entry || entry.isType) {
@@ -458,6 +790,11 @@ const extractModuleExportsOxc = ({
       const exportNameKind = entry?.exportName?.kind;
       const exportName = entry?.exportName?.name;
       const moduleRequest = entry?.moduleRequest?.value;
+      const moduleRequestRange = offsetRangeToLocation({
+        lineOffsets,
+        startOffset: entry?.moduleRequest?.start,
+        endOffset: entry?.moduleRequest?.end,
+      });
       if (!moduleRequest && exportNameKind === "Name" && typeof exportName === "string"
         && IDENTIFIER_REGEX.test(exportName)) {
         namedExports.add(exportName);
@@ -470,10 +807,43 @@ const extractModuleExportsOxc = ({
       const importNameKind = entry?.importName?.kind;
       if (importNameKind === "AllButDefault" && typeof moduleRequest === "string" && moduleRequest.length > 0) {
         exportStarSpecifiers.add(moduleRequest);
+        reExportReferences.push({
+          kind: "export-star",
+          moduleRequest,
+          range: statementRange,
+          moduleRequestRange,
+        });
+      }
+      if (importNameKind === "All" && typeof moduleRequest === "string" && moduleRequest.length > 0
+        && exportNameKind === "Name" && typeof exportName === "string" && IDENTIFIER_REGEX.test(exportName)) {
+        const exportedNameRange = offsetRangeToLocation({
+          lineOffsets,
+          startOffset: entry?.exportName?.start,
+          endOffset: entry?.exportName?.end,
+        });
+        namedExports.add(exportName);
+        namespaceReExports.push({
+          moduleRequest,
+          exportedName: exportName,
+        });
+        reExportReferences.push({
+          kind: "namespace-reexport",
+          moduleRequest,
+          exportedName: exportName,
+          range: statementRange,
+          moduleRequestRange,
+          exportedNameRange,
+        });
       }
 
-      if (typeof moduleRequest === "string" && moduleRequest.length > 0 && exportNameKind === "Name"
-        && typeof exportName === "string" && IDENTIFIER_REGEX.test(exportName)) {
+      let resolvedExportedName = null;
+      if (exportNameKind === "Name" && typeof exportName === "string" && IDENTIFIER_REGEX.test(exportName)) {
+        resolvedExportedName = exportName;
+      } else if (exportNameKind === "Default") {
+        resolvedExportedName = "default";
+      }
+
+      if (typeof moduleRequest === "string" && moduleRequest.length > 0 && resolvedExportedName) {
         let importedName = null;
         if (importNameKind === "Name" && typeof entry?.importName?.name === "string"
           && IDENTIFIER_REGEX.test(entry.importName.name)) {
@@ -483,10 +853,31 @@ const extractModuleExportsOxc = ({
         }
 
         if (importedName) {
+          const importedNameRange = offsetRangeToLocation({
+            lineOffsets,
+            startOffset: entry?.importName?.start,
+            endOffset: entry?.importName?.end,
+          });
+          const exportedNameRange = offsetRangeToLocation({
+            lineOffsets,
+            startOffset: entry?.exportName?.start,
+            endOffset: entry?.exportName?.end,
+          });
+
           namedReExports.push({
             moduleRequest,
             importedName,
-            exportedName: exportName,
+            exportedName: resolvedExportedName,
+          });
+          reExportReferences.push({
+            kind: "named-reexport",
+            moduleRequest,
+            importedName,
+            exportedName: resolvedExportedName,
+            range: statementRange,
+            moduleRequestRange,
+            importedNameRange,
+            exportedNameRange,
           });
         }
       }
@@ -497,7 +888,9 @@ const extractModuleExportsOxc = ({
     ok: true,
     namedExports,
     exportStarSpecifiers: [...exportStarSpecifiers],
+    namespaceReExports,
     namedReExports,
+    reExportReferences,
   };
 };
 
@@ -516,7 +909,9 @@ export const extractModuleExports = ({
   return {
     namedExports: new Set(),
     exportStarSpecifiers: [],
+    namespaceReExports: [],
     namedReExports: [],
+    reExportReferences: [],
     backendUsed: "oxc",
     parseFailed: true,
   };
@@ -528,7 +923,9 @@ export const extractModuleExportsRegexLegacy = ({
   return {
     namedExports: extractNamedExportsRegex(sourceCode),
     exportStarSpecifiers: collectExportStarSpecifiersRegex(sourceCode),
+    namespaceReExports: collectNamespaceReExportsRegex(sourceCode),
     namedReExports: collectNamedReExportsRegex(sourceCode),
+    reExportReferences: [],
     backendUsed: "regex-legacy",
   };
 };
@@ -853,15 +1250,108 @@ const collectTemplateSelectorLineCandidates = (viewText = "") => {
   return candidates;
 };
 
-const JEMPL_NODE = {
+export const JEMPL_NODE = {
+  LITERAL: 0,
+  PATH: 1,
+  TEMPLATE: 2,
+  BINARY: 4,
+  UNARY: 5,
   CONDITIONAL: 6,
   LOOP: 7,
   OBJECT: 8,
   ARRAY: 9,
 };
 
+export const JEMPL_BINARY_OP = {
+  EQ: 0,
+  NEQ: 1,
+  GT: 2,
+  LT: 3,
+  GTE: 4,
+  LTE: 5,
+  AND: 6,
+  OR: 7,
+  IN: 8,
+  ADD: 10,
+  SUBTRACT: 11,
+};
+
+export const JEMPL_UNARY_OP = {
+  NOT: 0,
+};
+
+const JEMPL_BINARY_OPERATOR_SYMBOL_BY_OP = new Map([
+  [JEMPL_BINARY_OP.EQ, "=="],
+  [JEMPL_BINARY_OP.NEQ, "!="],
+  [JEMPL_BINARY_OP.GT, ">"],
+  [JEMPL_BINARY_OP.LT, "<"],
+  [JEMPL_BINARY_OP.GTE, ">="],
+  [JEMPL_BINARY_OP.LTE, "<="],
+  [JEMPL_BINARY_OP.AND, "&&"],
+  [JEMPL_BINARY_OP.OR, "||"],
+  [JEMPL_BINARY_OP.IN, "in"],
+  [JEMPL_BINARY_OP.ADD, "+"],
+  [JEMPL_BINARY_OP.SUBTRACT, "-"],
+]);
+
+const JEMPL_UNARY_OPERATOR_SYMBOL_BY_OP = new Map([
+  [JEMPL_UNARY_OP.NOT, "!"],
+]);
+
+const JEMPL_NODE_KIND_BY_TYPE = new Map([
+  [JEMPL_NODE.LITERAL, "JemplLiteralAst"],
+  [JEMPL_NODE.PATH, "JemplPathAst"],
+  [JEMPL_NODE.TEMPLATE, "JemplTemplateAst"],
+  [JEMPL_NODE.BINARY, "JemplBinaryAst"],
+  [JEMPL_NODE.UNARY, "JemplUnaryAst"],
+  [JEMPL_NODE.CONDITIONAL, "JemplConditionalAst"],
+  [JEMPL_NODE.LOOP, "JemplLoopAst"],
+  [JEMPL_NODE.OBJECT, "JemplObjectAst"],
+  [JEMPL_NODE.ARRAY, "JemplArrayAst"],
+]);
+
 const isControlKey = (key = "") => {
   return CONTROL_PREFIXES.some((prefix) => key.startsWith(prefix));
+};
+
+const resolveJemplNodeKind = (type) => {
+  if (!Number.isInteger(type)) {
+    return "JemplUnknownAst";
+  }
+  return JEMPL_NODE_KIND_BY_TYPE.get(type) || `JemplNodeType${type}`;
+};
+
+const mapJemplNodeToTypedAst = (node) => {
+  if (Array.isArray(node)) {
+    return node.map((item) => mapJemplNodeToTypedAst(item));
+  }
+
+  if (!node || typeof node !== "object") {
+    return node;
+  }
+
+  const mappedNode = {};
+
+  Object.entries(node).forEach(([key, value]) => {
+    mappedNode[key] = mapJemplNodeToTypedAst(value);
+  });
+
+  if (node.type === JEMPL_NODE.BINARY && Number.isInteger(node.op)) {
+    mappedNode.operator = JEMPL_BINARY_OPERATOR_SYMBOL_BY_OP.get(node.op) || null;
+  }
+  if (node.type === JEMPL_NODE.UNARY && Number.isInteger(node.op)) {
+    mappedNode.operator = JEMPL_UNARY_OPERATOR_SYMBOL_BY_OP.get(node.op) || null;
+  }
+
+  mappedNode.kind = resolveJemplNodeKind(node.type);
+  return mappedNode;
+};
+
+export const normalizeJemplErrorMessage = (error, fallbackMessage) => {
+  const rawMessage = typeof error?.message === "string" ? error.message : "";
+  const normalizedMessage = rawMessage.replace(/\s+/gu, " ").trim();
+  const message = normalizedMessage || fallbackMessage;
+  return message.endsWith(".") ? message : `${message}.`;
 };
 
 const collectElementObjectBindings = (node) => {
@@ -999,12 +1489,236 @@ const consumeCandidateLineForKey = ({
   };
 };
 
+const createTemplateKeyLineResolver = ({
+  viewText = "",
+  fallbackLine,
+} = {}) => {
+  const candidates = collectTemplateSelectorLineCandidates(viewText);
+  let lastMatchedIndex = -1;
+
+  return {
+    resolveLineForKey: (key = "") => {
+      const lineMatch = consumeCandidateLineForKey({
+        candidates,
+        key,
+        lastMatchedIndex,
+      });
+      lastMatchedIndex = lineMatch.nextIndex;
+
+      if (Number.isInteger(lineMatch.line)) {
+        return lineMatch.line;
+      }
+
+      return Number.isInteger(fallbackLine) ? fallbackLine : undefined;
+    },
+  };
+};
+
+const classifyJemplControlDirective = (rawKey = "") => {
+  const key = String(rawKey || "").trim();
+  if (!key.startsWith("$")) {
+    return null;
+  }
+  if (/^\$if(?:\s|\(|$)/u.test(key)) {
+    return "if";
+  }
+  if (/^\$elif(?:\s|\(|$)/u.test(key)) {
+    return "elif";
+  }
+  if (/^\$else(?:\s|$)/u.test(key)) {
+    return "else";
+  }
+  if (/^\$for(?:\s|\(|$)/u.test(key)) {
+    return "for";
+  }
+  return "unknown";
+};
+
+const validateJemplConditionDirectiveSyntax = (rawKey = "", directive = "$if") => {
+  const suffix = rawKey.slice(directive.length).trim();
+  if (!suffix) {
+    return `missing condition after '${directive}'`;
+  }
+  if (suffix.startsWith("(") && suffix.endsWith(")")) {
+    const expression = suffix.slice(1, -1).trim();
+    if (!expression) {
+      return `missing condition after '${directive}'`;
+    }
+  }
+  return null;
+};
+
+const validateJemplForDirectiveSyntax = (rawKey = "") => {
+  const forMatchWithParentheses = rawKey.match(
+    /^\$for\s*\(\s*([A-Za-z_$][A-Za-z0-9_$]*)(?:\s*,\s*([A-Za-z_$][A-Za-z0-9_$]*))?\s+in\s+(.+)\)$/u,
+  );
+  const forMatchWithoutParentheses = rawKey.match(
+    /^\$for\s+([A-Za-z_$][A-Za-z0-9_$]*)(?:\s*,\s*([A-Za-z_$][A-Za-z0-9_$]*))?\s+in\s+(.+)$/u,
+  );
+  const forMatch = forMatchWithParentheses || forMatchWithoutParentheses;
+  if (!forMatch) {
+    return "expected '$for(item[, index] in iterable)' or '$for item[, index] in iterable'";
+  }
+
+  const iterableExpression = String(forMatch[3] || "").trim();
+  if (!iterableExpression) {
+    return "missing iterable expression in '$for(...)'";
+  }
+
+  return null;
+};
+
+const createJemplControlDiagnostic = ({
+  key,
+  line,
+  message,
+}) => {
+  return {
+    line,
+    message: `Invalid Jempl control directive '${key}': ${message}.`,
+  };
+};
+
+const collectJemplControlDirectiveDiagnostics = ({
+  template,
+  viewText = "",
+  fallbackLine,
+} = {}) => {
+  const diagnostics = [];
+  const lineResolver = createTemplateKeyLineResolver({
+    viewText,
+    fallbackLine,
+  });
+
+  const visitNode = (node) => {
+    if (Array.isArray(node)) {
+      node.forEach((item) => visitNode(item));
+      return;
+    }
+
+    if (!node || typeof node !== "object") {
+      return;
+    }
+
+    let hasOpenIfChain = false;
+    Object.entries(node).forEach(([rawKey, value]) => {
+      const key = String(rawKey || "").trim();
+      const directiveKind = classifyJemplControlDirective(key);
+
+      if (!directiveKind) {
+        hasOpenIfChain = false;
+        visitNode(value);
+        return;
+      }
+
+      const line = lineResolver.resolveLineForKey(key);
+      if (directiveKind === "unknown") {
+        diagnostics.push(createJemplControlDiagnostic({
+          key,
+          line,
+          message: "unknown control keyword",
+        }));
+        hasOpenIfChain = false;
+        visitNode(value);
+        return;
+      }
+
+      let syntaxError = null;
+      if (directiveKind === "if") {
+        syntaxError = validateJemplConditionDirectiveSyntax(key, "$if");
+      } else if (directiveKind === "elif") {
+        syntaxError = validateJemplConditionDirectiveSyntax(key, "$elif");
+      } else if (directiveKind === "else" && key !== "$else") {
+        syntaxError = "expected '$else' with no trailing tokens";
+      } else if (directiveKind === "for") {
+        syntaxError = validateJemplForDirectiveSyntax(key);
+      }
+
+      if (syntaxError) {
+        diagnostics.push(createJemplControlDiagnostic({
+          key,
+          line,
+          message: syntaxError,
+        }));
+      }
+
+      if (directiveKind === "if") {
+        hasOpenIfChain = !syntaxError;
+      } else if (directiveKind === "elif") {
+        if (!hasOpenIfChain) {
+          diagnostics.push(createJemplControlDiagnostic({
+            key,
+            line,
+            message: "'$elif' requires a preceding '$if' in the same object scope",
+          }));
+        }
+        hasOpenIfChain = !syntaxError;
+      } else if (directiveKind === "else") {
+        if (!hasOpenIfChain) {
+          diagnostics.push(createJemplControlDiagnostic({
+            key,
+            line,
+            message: "'$else' requires a preceding '$if' or '$elif' in the same object scope",
+          }));
+        }
+        hasOpenIfChain = false;
+      } else {
+        hasOpenIfChain = false;
+      }
+
+      visitNode(value);
+    });
+  };
+
+  visitNode(template);
+  return diagnostics;
+};
+
+export const parseJemplForCompiler = ({
+  source,
+  viewText = "",
+  fallbackLine,
+  strictControlDirectives = false,
+} = {}) => {
+  try {
+    const ast = parseJempl(source);
+    const controlDiagnostics = strictControlDirectives
+      ? collectJemplControlDirectiveDiagnostics({
+        template: source,
+        viewText,
+        fallbackLine,
+      })
+      : [];
+
+    return {
+      ast,
+      typedAst: mapJemplNodeToTypedAst(ast),
+      parseError: null,
+      controlDiagnostics,
+    };
+  } catch (error) {
+    return {
+      ast: null,
+      typedAst: null,
+      parseError: {
+        line: Number.isInteger(fallbackLine) ? fallbackLine : undefined,
+        message: normalizeJemplErrorMessage(error, "Jempl parse failed"),
+      },
+      controlDiagnostics: [],
+    };
+  }
+};
+
 const collectSelectorBindingsFromViewAst = ({
   viewText = "",
   template,
 }) => {
   const lineCandidates = collectTemplateSelectorLineCandidates(viewText);
-  const jemplAst = parseJempl(template);
+  const parsedTemplate = parseJemplForCompiler({ source: template });
+  if (!parsedTemplate.ast) {
+    return [];
+  }
+  const jemplAst = parsedTemplate.ast;
   const selectorEntries = collectSelectorEntriesFromJemplAst(jemplAst);
 
   let lastMatchedIndex = -1;
@@ -1284,14 +1998,10 @@ export const collectSelectorBindingsFromView = ({
     return collectSelectorBindingsFromViewText(viewText);
   }
 
-  try {
-    return collectSelectorBindingsFromViewAst({
-      viewText,
-      template,
-    });
-  } catch {
-    return collectSelectorBindingsFromViewText(viewText);
-  }
+  return collectSelectorBindingsFromViewAst({
+    viewText,
+    template,
+  });
 };
 
 const createLineOffsets = (source = "") => {
@@ -1308,6 +2018,18 @@ const getOffsetFromLineColumn = ({ lineOffsets = [], line = 1, column = 1 }) => 
   const lineIndex = Math.max(0, line - 1);
   const lineStart = lineOffsets[lineIndex] || 0;
   return lineStart + Math.max(0, column - 1);
+};
+
+const toRangeWithLength = (range = {}) => {
+  const offset = Number.isInteger(range.offset) ? range.offset : 0;
+  const endOffset = Number.isInteger(range.endOffset) ? range.endOffset : offset;
+
+  return {
+    ...range,
+    offset,
+    endOffset,
+    length: Math.max(0, endOffset - offset),
+  };
 };
 
 const detectBindingSourceType = (bindingName = "") => {
@@ -1328,39 +2050,73 @@ const splitBindingNameAndValue = (rawToken = "") => {
     return {
       bindingName: rawToken.trim(),
       valueText: undefined,
+      valueSource: "",
+      valueStartOffset: 0,
     };
   }
 
+  const valueSourceRaw = rawToken.slice(assignmentIndex + 1);
+  const firstValueCharOffset = valueSourceRaw.search(/\S/u);
+  const hasValue = firstValueCharOffset !== -1;
+  const resolvedValueStartOffset = assignmentIndex + 1 + (hasValue ? firstValueCharOffset : valueSourceRaw.length);
+  const valueSource = hasValue ? valueSourceRaw.slice(firstValueCharOffset) : "";
+
   return {
     bindingName: rawToken.slice(0, assignmentIndex).trim(),
-    valueText: rawToken.slice(assignmentIndex + 1).trim(),
+    valueText: hasValue ? valueSource.trimEnd() : undefined,
+    valueSource,
+    valueStartOffset: resolvedValueStartOffset,
   };
 };
 
-const extractExpressionTokens = (valueText = "") => {
-  if (!valueText) {
+const extractExpressionTokensWithRanges = (valueSource = "") => {
+  if (!valueSource) {
     return [];
   }
 
-  const expressions = [];
+  const matches = [];
   const patterns = [
-    /\$\{([^}]*)\}/g,
-    /#\{([^}]*)\}/g,
-    /\{\{([^}]*)\}\}/g,
+    { regex: /\$\{([^}]*)\}/gu, wrapperStartLength: 2, wrapperEndLength: 1 },
+    { regex: /#\{([^}]*)\}/gu, wrapperStartLength: 2, wrapperEndLength: 1 },
+    { regex: /\{\{([^}]*)\}\}/gu, wrapperStartLength: 2, wrapperEndLength: 2 },
   ];
 
   patterns.forEach((pattern) => {
-    let match = pattern.exec(valueText);
+    let match = pattern.regex.exec(valueSource);
     while (match) {
-      const expression = String(match[1] || "").trim();
+      const rawBody = String(match[1] || "");
+      const expression = rawBody.trim();
       if (expression) {
-        expressions.push(expression);
+        const leadingWhitespaceLength = rawBody.length - rawBody.trimStart().length;
+        const bodyStartOffset = match.index + pattern.wrapperStartLength + leadingWhitespaceLength;
+        const bodyEndOffset = bodyStartOffset + expression.length;
+
+        matches.push({
+          expression,
+          raw: String(match[0] || ""),
+          startOffset: bodyStartOffset,
+          endOffset: bodyEndOffset,
+          length: expression.length,
+        });
       }
-      match = pattern.exec(valueText);
+      match = pattern.regex.exec(valueSource);
     }
   });
 
-  return [...new Set(expressions)];
+  matches.sort((left, right) => {
+    if (left.startOffset !== right.startOffset) {
+      return left.startOffset - right.startOffset;
+    }
+    return left.endOffset - right.endOffset;
+  });
+
+  return matches;
+};
+
+const extractExpressionTokens = (valueText = "") => {
+  return [...new Set(
+    extractExpressionTokensWithRanges(valueText).map((entry) => entry.expression),
+  )];
 };
 
 const tokenizeTopLevelWhitespaceWithOffsets = (source = "") => {
@@ -1468,6 +2224,94 @@ const tokenizeTopLevelWhitespaceWithOffsets = (source = "") => {
   return tokens;
 };
 
+const toRelativeTokenRange = ({ startOffset = 0, endOffset = 0 }) => {
+  const safeStartOffset = Math.max(0, Number(startOffset) || 0);
+  const safeEndOffset = Math.max(safeStartOffset, Number(endOffset) || safeStartOffset);
+  const length = safeEndOffset - safeStartOffset;
+
+  return {
+    startOffset: safeStartOffset,
+    endOffset: safeEndOffset,
+    length,
+    column: safeStartOffset + 1,
+    endColumn: safeStartOffset + Math.max(length, 1),
+  };
+};
+
+export const tokenizeYahtmlSelectorKey = (rawKey = "") => {
+  const source = String(rawKey || "");
+  let cursor = 0;
+
+  while (cursor < source.length && /\s/u.test(source[cursor])) {
+    cursor += 1;
+  }
+
+  const selectorStart = cursor;
+  while (cursor < source.length && !/\s/u.test(source[cursor])) {
+    cursor += 1;
+  }
+  const selectorEnd = cursor;
+  const selectorRaw = source.slice(selectorStart, selectorEnd);
+
+  while (cursor < source.length && /\s/u.test(source[cursor])) {
+    cursor += 1;
+  }
+  const attrsStart = cursor;
+  const attrsText = source.slice(attrsStart);
+  const attrsTextTokens = tokenizeTopLevelWhitespaceWithOffsets(attrsText);
+
+  const selectorToken = selectorRaw
+    ? {
+      kind: "YahtmlSelectorToken",
+      raw: selectorRaw,
+      ...toRelativeTokenRange({
+        startOffset: selectorStart,
+        endOffset: selectorEnd,
+      }),
+    }
+    : null;
+
+  const attributeTokens = attrsTextTokens.map((token) => {
+    const {
+      bindingName,
+      valueText,
+      valueSource,
+      valueStartOffset,
+    } = splitBindingNameAndValue(token.raw);
+    const expressionNodes = extractExpressionTokensWithRanges(valueSource).map((expressionNode) => ({
+      kind: "YahtmlExpressionToken",
+      expression: expressionNode.expression,
+      raw: expressionNode.raw,
+      ...toRelativeTokenRange({
+        startOffset: attrsStart + token.start + valueStartOffset + expressionNode.startOffset,
+        endOffset: attrsStart + token.start + valueStartOffset + expressionNode.endOffset,
+      }),
+    }));
+
+    return {
+      kind: "YahtmlAttributeToken",
+      raw: token.raw,
+      bindingName,
+      sourceType: detectBindingSourceType(bindingName),
+      name: stripBindingPrefix(bindingName),
+      valueText,
+      expressions: [...new Set(expressionNodes.map((node) => node.expression))],
+      expressionNodes,
+      ...toRelativeTokenRange({
+        startOffset: attrsStart + token.start,
+        endOffset: attrsStart + token.end,
+      }),
+    };
+  });
+
+  return {
+    kind: "YahtmlSelectorTokenStream",
+    raw: source,
+    selectorToken,
+    attributeTokens,
+  };
+};
+
 const resolveRawKeyRange = ({
   lineText = "",
   rawKey = "",
@@ -1501,14 +2345,14 @@ const resolveRawKeyRange = ({
   const startColumn = index + 1;
   const endColumn = index + Math.max(matched.length, 1);
 
-  return {
+  return toRangeWithLength({
     line,
     column: startColumn,
     endLine: line,
     endColumn,
     offset: getOffsetFromLineColumn({ lineOffsets, line, column: startColumn }),
     endOffset: getOffsetFromLineColumn({ lineOffsets, line, column: endColumn + 1 }),
-  };
+  });
 };
 
 const buildAttributeNodes = ({
@@ -1535,20 +2379,55 @@ const buildAttributeNodes = ({
       : Math.max(rawKey.indexOf(token.raw), 0);
     const tokenColumn = rawStartColumn + tokenIndexInRaw;
     const tokenEndColumn = tokenColumn + Math.max(token.raw.length, 1) - 1;
-    const { bindingName, valueText } = splitBindingNameAndValue(token.raw);
+    const {
+      bindingName,
+      valueText,
+      valueSource,
+      valueStartOffset,
+    } = splitBindingNameAndValue(token.raw);
     const sourceType = detectBindingSourceType(bindingName);
     const name = stripBindingPrefix(bindingName);
-    const expressions = extractExpressionTokens(valueText);
+    const expressionNodes = extractExpressionTokensWithRanges(valueSource).map((expressionNode) => {
+      const expressionColumn = tokenColumn + valueStartOffset + expressionNode.startOffset;
+      const expressionEndColumn = expressionColumn + Math.max(expressionNode.length, 1) - 1;
+      return {
+        type: "Expression",
+        kind: "YahtmlExpressionAst",
+        expression: expressionNode.expression,
+        raw: expressionNode.raw,
+        rawLexeme: expressionNode.raw,
+        range: toRangeWithLength({
+          line: elementRange.line,
+          column: expressionColumn,
+          endLine: elementRange.endLine,
+          endColumn: expressionEndColumn,
+          offset: getOffsetFromLineColumn({
+            lineOffsets,
+            line: elementRange.line,
+            column: expressionColumn,
+          }),
+          endOffset: getOffsetFromLineColumn({
+            lineOffsets,
+            line: elementRange.endLine,
+            column: expressionEndColumn + 1,
+          }),
+        }),
+      };
+    });
+    const expressions = [...new Set(expressionNodes.map((entry) => entry.expression))];
 
     return {
       type: "Attribute",
+      kind: "YahtmlAttributeAst",
       raw: token.raw,
+      rawLexeme: token.raw,
       bindingName,
       sourceType,
       name,
       valueText,
       expressions,
-      range: {
+      expressionNodes,
+      range: toRangeWithLength({
         line: elementRange.line,
         column: tokenColumn,
         endLine: elementRange.endLine,
@@ -1563,9 +2442,133 @@ const buildAttributeNodes = ({
           line: elementRange.endLine,
           column: tokenEndColumn + 1,
         }),
-      },
+      }),
     };
   });
+};
+
+const parseYahtmlSelectorErrorMessage = (error) => {
+  const fallback = "selector key parse failed";
+  if (!error) {
+    return fallback;
+  }
+  if (typeof error?.message === "string" && error.message.trim().length > 0) {
+    return error.message.trim();
+  }
+  return fallback;
+};
+
+const createYahtmlParseDiagnostic = ({
+  code = "RTGL-CHECK-YAHTML-PARSE-001",
+  filePath,
+  line,
+  column,
+  endLine,
+  endColumn,
+  message,
+}) => {
+  return {
+    code,
+    severity: "error",
+    filePath,
+    line,
+    column,
+    endLine,
+    endColumn,
+    message,
+  };
+};
+
+export const parseYahtmlSelectorKey = ({
+  rawKey = "",
+  line = 1,
+  lineText = "",
+  lineOffsets = [],
+  filePath,
+} = {}) => {
+  const keyText = String(rawKey || "");
+  const parsedFe = parseSelectorKeyWithFe(keyText);
+  const tokenStream = tokenizeYahtmlSelectorKey(keyText);
+  const resolvedLine = Number.isInteger(line) ? line : 1;
+  const resolvedLineText = lineText || keyText;
+  const resolvedLineOffsets = Array.isArray(lineOffsets) && lineOffsets.length > 0
+    ? lineOffsets
+    : createLineOffsets(resolvedLineText);
+  const range = resolveRawKeyRange({
+    lineText: resolvedLineText,
+    rawKey: keyText,
+    line: resolvedLine,
+    lineOffsets: resolvedLineOffsets,
+  });
+  const attributes = buildAttributeNodes({
+    attrsText: parsedFe.attrsText,
+    rawKey: keyText,
+    elementRange: range,
+    lineOffsets: resolvedLineOffsets,
+  });
+  const diagnostics = [];
+
+  if (!parsedFe.selector) {
+    diagnostics.push(createYahtmlParseDiagnostic({
+      filePath,
+      line: range.line,
+      column: range.column,
+      endLine: range.endLine,
+      endColumn: range.endColumn,
+      message: "Invalid YAHTML selector key: missing selector token.",
+    }));
+  } else {
+    try {
+      parseYahtmlElementKey(keyText);
+    } catch (error) {
+      diagnostics.push(createYahtmlParseDiagnostic({
+        filePath,
+        line: range.line,
+        column: range.column,
+        endLine: range.endLine,
+        endColumn: range.endColumn,
+        message: `Invalid YAHTML selector key '${keyText}': ${parseYahtmlSelectorErrorMessage(error)}.`,
+      }));
+    }
+  }
+
+  tokenStream.attributeTokens.forEach((token) => {
+    if (token.bindingName && token.bindingName.length > 0) {
+      return;
+    }
+    const tokenColumn = range.column + token.startOffset;
+    const tokenEndColumn = tokenColumn + Math.max(token.length, 1) - 1;
+    diagnostics.push(createYahtmlParseDiagnostic({
+      filePath,
+      line: range.line,
+      column: tokenColumn,
+      endLine: range.endLine,
+      endColumn: tokenEndColumn,
+      message: `Invalid YAHTML attribute token '${token.raw}'.`,
+    }));
+  });
+
+  const cst = {
+    kind: "YahtmlElementCst",
+    rawKey: keyText,
+    selectorToken: tokenStream.selectorToken,
+    attributeTokens: tokenStream.attributeTokens,
+  };
+
+  return {
+    ast: {
+      type: "Element",
+      kind: "YahtmlElementAst",
+      tagName: parsedFe.tagName,
+      selector: parsedFe.selector,
+      rawKey: keyText,
+      rawLexeme: keyText,
+      range,
+      attributes,
+    },
+    cst,
+    diagnostics,
+  };
 };
 
 export const collectTemplateAstFromView = ({
@@ -1575,37 +2578,46 @@ export const collectTemplateAstFromView = ({
   const selectorBindings = collectSelectorBindingsFromView({ viewText, viewYaml });
   const lines = viewText.split("\n");
   const lineOffsets = createLineOffsets(viewText);
+  const parseDiagnostics = [];
+  const cstNodes = [];
 
   const nodes = selectorBindings.map((binding) => {
     const line = Number.isInteger(binding?.line) ? binding.line : 1;
     const lineText = lines[line - 1] || "";
     const rawKey = String(binding?.rawKey || "");
-    const range = resolveRawKeyRange({
-      lineText,
+    const parsedSelector = parseYahtmlSelectorKey({
       rawKey,
       line,
+      lineText,
       lineOffsets,
     });
-    const attributes = buildAttributeNodes({
-      attrsText: String(binding?.attrsText || ""),
-      rawKey,
-      elementRange: range,
-      lineOffsets,
-    });
+    if (Array.isArray(parsedSelector.diagnostics) && parsedSelector.diagnostics.length > 0) {
+      parsedSelector.diagnostics.forEach((diagnostic) => {
+        parseDiagnostics.push(diagnostic);
+      });
+    }
+    if (parsedSelector.cst) {
+      cstNodes.push(parsedSelector.cst);
+    }
 
     return {
-      type: "Element",
-      tagName: binding?.tagName || "",
-      selector: binding?.selector || "",
+      ...parsedSelector.ast,
+      tagName: binding?.tagName || parsedSelector.ast.tagName || "",
+      selector: binding?.selector || parsedSelector.ast.selector || "",
       rawKey,
-      range,
-      attributes,
+      rawLexeme: rawKey,
     };
   });
 
   return {
     type: "Template",
+    kind: "YahtmlTemplateAst",
     nodes,
+    cst: {
+      kind: "YahtmlTemplateCst",
+      nodes: cstNodes,
+    },
+    parseDiagnostics,
   };
 };
 
