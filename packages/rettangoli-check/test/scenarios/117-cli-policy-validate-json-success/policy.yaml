@@ -1,8 +1,0 @@
-name: example-policy
-rules:
-  - id: RTGL-CONTRACT-001
-    severity: error
-    enabled: true
-  - id: RTGL-CONTRACT-073
-    severity: warn
-    enabled: true

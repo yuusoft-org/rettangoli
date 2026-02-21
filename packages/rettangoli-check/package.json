@@ -28,15 +28,7 @@
     "test:yahtml-parser-snapshots": "node ./scripts/test-yahtml-parser-snapshots.mjs",
     "test:yahtml-parser-crash": "node ./scripts/test-yahtml-parser-crash-containment.mjs",
     "test:fuzz-yahtml-parser": "node ./scripts/fuzz-yahtml-parser.mjs",
-    "test:fuzz-fe-contract-combinations": "node ./scripts/fuzz-fe-contract-combinations.mjs",
-    "tools:profile-analysis": "node ./scripts/profile-analysis.mjs",
-    "tools:release-sign-artifacts": "node ./scripts/release-sign-artifacts.mjs",
-    "tools:release-verify-artifacts": "node ./scripts/release-verify-artifacts.mjs",
-    "tools:release-generate-provenance": "node ./scripts/release-generate-provenance.mjs",
-    "tools:release-verify-provenance": "node ./scripts/release-verify-provenance.mjs",
-    "tools:reliability-shrink-corpus": "node ./scripts/reliability-shrink-corpus.mjs",
-    "tools:reliability-crash-triage": "node ./scripts/reliability-crash-triage.mjs",
-    "tools:reliability-detect-flaky": "node ./scripts/reliability-detect-flaky.mjs"
+    "test:fuzz-fe-contract-combinations": "node ./scripts/fuzz-fe-contract-combinations.mjs"
   },
   "files": [
     "src",

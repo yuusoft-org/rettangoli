@@ -73,47 +73,21 @@ rtgl check --dir src/components --autofix-dry-run --autofix-patch --format json
 rtgl check --dir src/components --autofix --autofix-min-confidence 0.95
 ```
 
-Phase 9 command surface (`rtgl-check`):
+`rtgl-check` command surface:
 
 ```bash
-# semantic compile (same semantic core as check)
-rtgl-check compile --dir src/components --format json
-
-# environment + config + directory health checks
-rtgl-check doctor --format json
-
-# language server (stdio)
-rtgl-check lsp --stdio --dir src/components
-
-# baseline lifecycle
-rtgl-check baseline capture --file .rettangoli/baseline.json --format json
-rtgl-check baseline verify --file .rettangoli/baseline.json --format json
-
-# policy pack validation
-rtgl-check policy validate --file ./policy.yaml --format json
+# check contracts
+rtgl-check --dir src/components --format json
 ```
 
 CLI contract references:
 
 - `packages/rettangoli-check/docs/cli-contract.md`
-- `packages/rettangoli-check/docs/cli-migration-guide.md`
-- `packages/rettangoli-check/docs/type-system-end-state-contract.md`
-- `packages/rettangoli-check/docs/ir-execution-contract.md`
-- `packages/rettangoli-check/docs/reliability-program-contract.md`
-- `packages/rettangoli-check/docs/language-level-versioning-model.md`
 - `packages/rettangoli-check/docs/semantic-compatibility-guarantees.md`
-- `packages/rettangoli-check/docs/policy-pack-contract.md`
-- `packages/rettangoli-check/docs/compatibility-deprecation-calendar.md`
-- `packages/rettangoli-check/docs/governance-handbook.md`
 - `packages/rettangoli-check/docs/diagnostics-reporting-contract.md`
 - `packages/rettangoli-check/docs/diagnostics-reference.md`
 - `packages/rettangoli-check/docs/diagnostics-sarif-contract.md`
-- `packages/rettangoli-check/docs/lsp-setup-and-protocol-matrix.md`
-- `packages/rettangoli-check/docs/performance-tuning-playbook.md`
 - `packages/rettangoli-check/docs/security-parser-attack-surface.md`
-- `packages/rettangoli-check/docs/release-signing-provenance-contract.md`
-- `packages/rettangoli-check/docs/dependency-update-policy-and-audit.md`
-- `packages/rettangoli-check/docs/ga-readiness-runbook.md`
 
 ## JS Export Parser Backend
 

@@ -145,20 +145,9 @@ JS export differential parity (`oxc` vs `regex-legacy`) is validated separately 
 111. `111-method-signature-extra-param-warn`
 112. `112-method-payload-contract-missing-key`
 113. `113-method-payload-contract-valid`
-114. `114-cli-compile-json-success`
-115. `115-cli-compile-local-mode-ci-guard`
-116. `116-cli-doctor-json-success`
-117. `117-cli-policy-validate-json-success`
-118. `118-cli-baseline-capture-json-success`
-119. `119-cli-baseline-verify-json-success`
-120. `120-cli-policy-validate-signature-valid`
-121. `121-cli-policy-validate-signature-invalid`
-122. `122-cli-doctor-unknown-language-level`
 123. `123-cli-autofix-dry-run-json`
 124. `124-cli-autofix-dry-run-patch-json`
 125. `125-cli-autofix-apply-json-success`
-126. `126-cli-lsp-help`
-127. `127-cli-lsp-unknown-flag`
 
 ## Run
 

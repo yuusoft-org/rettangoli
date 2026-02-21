@@ -1,5 +1,0 @@
-template:
-  - rtgl-view p=md g=sm:
-      - rtgl-text: Valid card
-      - rtgl-button: Save
-styles: {}

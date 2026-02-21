@@ -4,8 +4,6 @@ import { discoverComponentEntries, groupEntriesByComponent } from "./discovery.j
 import { buildMergedRegistry } from "./registry.js";
 import { runRules } from "../rules/index.js";
 import { runSemanticEngine } from "../semantic/engine.js";
-import { migrateAnalysisToCompilerIr } from "../ir/migrate.js";
-import { validateCompilerIr } from "../ir/validate.js";
 import { getDiagnosticCatalogEntry } from "../diagnostics/catalog.js";
 
 const summarizeDiagnostics = (diagnostics = []) => {
@@ -150,7 +148,6 @@ export const analyzeProject = async ({
   includeYahtml = true,
   includeExpression = false,
   includeSemantic = false,
-  emitCompilerIr = true,
   incrementalState,
 } = {}) => {
   const discovery = discoverComponentEntries({ cwd, dirs });
@@ -210,31 +207,14 @@ export const analyzeProject = async ({
     ? normalizeDiagnostics(semanticResult?.diagnostics || [])
     : [];
   const diagnostics = [...modelDiagnostics, ...ruleDiagnostics, ...semanticDiagnostics];
-  const preIrSummary = summarizeDiagnostics(diagnostics);
-  const compilerIr = emitCompilerIr
-    ? migrateAnalysisToCompilerIr({
-      models,
-      diagnostics,
-      summary: preIrSummary,
-      metadata: {
-        cwd,
-        dirs: discovery.resolvedDirs,
-        registryTagCount: registry.size,
-      },
-    })
-    : null;
-  const compilerIrValidation = compilerIr ? validateCompilerIr(compilerIr) : null;
-  const irDiagnostics = compilerIr
-    ? normalizeDiagnostics(compilerIr?.diagnostics?.items || [])
-    : diagnostics;
-  const summary = summarizeDiagnostics(irDiagnostics);
+  const summary = summarizeDiagnostics(diagnostics);
 
   return {
     ok: summary.bySeverity.error === 0,
     cwd,
     dirs: discovery.resolvedDirs,
     componentCount: models.length,
-    diagnostics: irDiagnostics,
+    diagnostics,
     summary,
     registryTagCount: registry.size,
     semantic: semanticResult
@@ -243,7 +223,5 @@ export const analyzeProject = async ({
         invariants: semanticResult.invariants,
       }
       : undefined,
-    compilerIr,
-    compilerIrValidation,
   };
 };

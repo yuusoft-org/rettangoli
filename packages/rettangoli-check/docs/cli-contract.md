@@ -1,22 +1,20 @@
 # CLI Contract
 
-This document defines the Phase 9 command contract for `@rettangoli/check`.
+This document defines the current command contract for `@rettangoli/check`.
 
 ## 1. Commands
 
-`rtgl-check` supports:
+`rtgl-check` supports a single command surface:
 
-- `check` (default command when no subcommand is provided)
-- `compile`
-- `doctor`
-- `lsp`
-- `baseline capture`
-- `baseline verify`
-- `policy validate`
+- `check` (default behavior; explicit `check` is also accepted)
 
-All commands support deterministic `--format json` output.
+Supported output formats:
 
-`check` additionally supports diagnostics/autofix controls:
+- `text`
+- `json`
+- `sarif`
+
+Supported diagnostics/autofix controls:
 
 - `--autofix`
 - `--autofix-dry-run`
@@ -39,34 +37,19 @@ Compatibility windows for the CLI surface:
 
 - Flags and payload fields in `contractVersion: 1` are supported for the current minor and next minor release.
 - Deprecated flags remain accepted for at least one minor release before removal.
-- Exit behavior remains stable by `EXIT_CODE_MATRIX` (`0` success, `1` failure) for all `contractVersion: 1` commands.
+- Exit behavior remains stable (`0` success, `1` failure) for `contractVersion: 1`.
 
-## 4. Guardrails
-
-Strictness guardrails:
-
-- `--mode strict` is the default for `check` and `compile`.
-- `--mode local-non-authoritative` is blocked when `CI=true`.
-
-These guardrails are contract-tested in CLI scenarios.
-
-## 5. Determinism And Tests
+## 4. Determinism And Tests
 
 CLI contract determinism is enforced by scenario tests:
 
 - `test/scenarios/20-cli-json-success`
 - `test/scenarios/32-cli-json-error-stdout`
-- `test/scenarios/114-cli-compile-json-success`
-- `test/scenarios/115-cli-compile-local-mode-ci-guard`
-- `test/scenarios/116-cli-doctor-json-success`
-- `test/scenarios/117-cli-policy-validate-json-success`
-- `test/scenarios/118-cli-baseline-capture-json-success`
-- `test/scenarios/119-cli-baseline-verify-json-success`
+- `test/scenarios/74-cli-sarif-success`
+- `test/scenarios/75-cli-sarif-runtime-error`
 - `test/scenarios/123-cli-autofix-dry-run-json`
 - `test/scenarios/124-cli-autofix-dry-run-patch-json`
 - `test/scenarios/125-cli-autofix-apply-json-success`
-- `test/scenarios/126-cli-lsp-help`
-- `test/scenarios/127-cli-lsp-unknown-flag`
 
 Run with:
 
