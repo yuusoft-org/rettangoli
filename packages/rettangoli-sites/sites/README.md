@@ -60,6 +60,11 @@ Supported `_bind.docs` values in rettangoli.dev:
 - `sitesDocs`
 - `vtDocs`
 
+Notes:
+
+- `_bind.docs` must reference an existing global data key (`data/*.yaml`)
+- `_bind` is a system field and is not available directly in template expressions
+
 ## Default Scaffold Base Template
 
 This template mirrors `packages/rettangoli-sites/templates/default/templates/base.yaml`.

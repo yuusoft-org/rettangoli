@@ -121,6 +121,18 @@ _bind:
 This resolves `docs` from `data/feDocs.yaml` for that page.
 `_bind` is a system property and is not exposed to templates directly.
 
+Rules:
+
+- `_bind` must be an object
+- each `_bind` value must be a non-empty string
+- each `_bind` value must point to an existing `data/*.yaml` key
+- `_bind` is removed from public frontmatter before rendering/collections
+
+Binding order:
+
+1. build page context from `deepMerge(globalData, frontmatterWithoutSystemKeys)`
+2. apply `_bind` aliases on top (alias wins for that key)
+
 ## Pre-published Import Assets
 
 `@rettangoli/sites` publishes reusable template/partial YAML assets under `sites/` for URL imports.

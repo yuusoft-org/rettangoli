@@ -41,6 +41,27 @@ Common keys:
 
 Frontmatter is merged with global `data/*.yaml` values for render context.
 
+## `_bind` (system field)
+
+Use `_bind` when a page needs to alias global data into a local variable name.
+
+```yaml
+---
+template: base
+_bind:
+  docs: feDocs
+---
+```
+
+This binds `data/feDocs.yaml` to `docs` for that page, so templates/partials can use `${docs...}`.
+
+Rules:
+
+- `_bind` must be an object
+- values must be non-empty strings
+- values must reference existing global data keys
+- `_bind` itself is not exposed to templates
+
 ## Template and partial pattern
 
 Use templates as layout shells, and keep them minimal:
