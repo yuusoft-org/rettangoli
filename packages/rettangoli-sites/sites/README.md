@@ -3,49 +3,43 @@
 This folder contains publish-only YAML templates/partials for `@rettangoli/sites` URL imports.
 These files are distribution assets, not `@rettangoli/sites` runtime source code.
 
-## Docs Bundle
+## Published Templates
 
-Docs assets are partial-only.
-There is no dedicated docs template; docs pages should use `template: base`.
+- Base shell template:
+  - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/base.yaml`
+- Docs layout template:
+  - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs.yaml`
+- Default scaffold template:
+  - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/default/base.yaml`
 
-Partial URL:
+## Published Partials
 
-`https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs/mobile-nav.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/seo.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/navbar.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/mobile-nav.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-sidebar.yaml`
 
-## Rettangoli.dev Shared Assets
-
-Rettangoli.dev docs and non-doc pages both use the same shared `base` template.
-Docs pages set `_bind.docs` in page frontmatter to enable docs layout.
-
-Template URL:
-
-- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/base.yaml`
-
-Partial URLs:
-
-- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/seo1.yaml`
-- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/navbar1.yaml`
-- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/mobile-nav1.yaml`
-- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/docs-sidebar1.yaml`
-
-`sites.config.yaml` alias example:
+## Recommended Alias Map
 
 ```yaml
 imports:
   templates:
-    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/base.yaml
+    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/base.yaml
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs.yaml
   partials:
-    seo1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/seo1.yaml
-    navbar1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/navbar1.yaml
-    mobile-nav1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/mobile-nav1.yaml
-    docs-sidebar1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/docs-sidebar1.yaml
+    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/seo.yaml
+    navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/navbar.yaml
+    mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/mobile-nav.yaml
+    docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-sidebar.yaml
 ```
 
-Docs page frontmatter example:
+## Frontmatter Examples
+
+Docs page:
 
 ```yaml
 ---
-template: base
+template: docs
 _bind:
   docs: docs
 title: Getting Started
@@ -53,22 +47,24 @@ sidebarId: getting-started
 ---
 ```
 
-Supported `_bind.docs` values in rettangoli.dev:
+Regular page:
 
-- `docs`
-- `feDocs`
-- `sitesDocs`
-- `vtDocs`
+```yaml
+---
+template: base
+title: Home
+---
+```
 
-Notes:
+## Docs Template Data Contract
 
-- `_bind.docs` must reference an existing global data key (`data/*.yaml`)
-- `_bind` is a system field and is not available directly in template expressions
+The `docs` template expects:
 
-## Default Scaffold Base Template
+- `docs.header` with `label` and `href`
+- `docs.items` (sidebar items)
+- `sidebarId`
+- `title`
 
-This template mirrors `packages/rettangoli-sites/templates/default/templates/base.yaml`.
+Use `_bind.docs` to map `docs` from a global data file (for example `data/docs.yaml`).
 
-Template URL:
-
-- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/default/base.yaml`
+Legacy `rettangoli-dev/*` assets remain in this package for compatibility, but new integrations should use the generic template/partial URLs above.

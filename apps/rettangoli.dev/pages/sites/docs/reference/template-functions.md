@@ -1,5 +1,5 @@
 ---
-template: base
+template: docs
 _bind:
   docs: sitesDocs
 title: Template Functions

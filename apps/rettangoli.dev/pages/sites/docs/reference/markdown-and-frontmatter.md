@@ -1,5 +1,5 @@
 ---
-template: base
+template: docs
 _bind:
   docs: sitesDocs
 title: Markdown & Frontmatter
@@ -15,7 +15,7 @@ Markdown pages can include frontmatter for template and page metadata.
 
 ```md
 ---
-template: base
+template: docs
 _bind:
   docs: sitesDocs
 title: Introduction
@@ -47,7 +47,7 @@ Use `_bind` when a page needs to alias global data into a local variable name.
 
 ```yaml
 ---
-template: base
+template: docs
 _bind:
   docs: feDocs
 ---
