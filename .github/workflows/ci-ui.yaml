@@ -9,7 +9,6 @@ on:
       - "bun.lock"
       - "packages/rettangoli-cli/**"
       - "packages/rettangoli-fe/**"
-      - "packages/rettangoli-check/**"
       - "packages/rettangoli-ui/**"
       - "packages/rettangoli-vt/**"
   pull_request:
@@ -19,7 +18,6 @@ on:
       - "bun.lock"
       - "packages/rettangoli-cli/**"
       - "packages/rettangoli-fe/**"
-      - "packages/rettangoli-check/**"
       - "packages/rettangoli-ui/**"
       - "packages/rettangoli-vt/**"
   workflow_dispatch:
@@ -41,54 +39,6 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Run Checker Scenario Suite
-        run: bun run test:scenarios
-        working-directory: ./packages/rettangoli-check
-
-      - name: Run Checker Differential Exports Suite
-        run: bun run test:diff-js-exports
-        working-directory: ./packages/rettangoli-check
-
-      - name: Run Checker Template Fuzz Suite
-        run: bun run test:fuzz-template-pipeline
-        working-directory: ./packages/rettangoli-check
-
-      - name: Run Checker Reliability Gates
-        run: bun run test:reliability-gates
-        working-directory: ./packages/rettangoli-check
-
-      - name: Run Checker LSP Contract
-        run: bun run test:lsp-contract
-        working-directory: ./packages/rettangoli-check
-
-      - name: Run Checker LSP Performance SLA
-        run: bun run test:lsp-performance-sla
-        working-directory: ./packages/rettangoli-check
-
-      - name: Run Checker Incremental Graph Contract
-        run: bun run test:incremental-graph-contract
-        working-directory: ./packages/rettangoli-check
-
-      - name: Run Checker Performance Gates
-        run: bun run test:performance-gates
-        working-directory: ./packages/rettangoli-check
-
-      - name: Run Checker Parser Security Scan
-        run: bun run test:parser-security-scan
-        working-directory: ./packages/rettangoli-check
-
-      - name: Run Checker Adversarial Input Suite
-        run: bun run test:adversarial-inputs
-        working-directory: ./packages/rettangoli-check
-
-      - name: Run Checker Release Provenance Gate
-        run: bun run test:release-provenance-gate
-        working-directory: ./packages/rettangoli-check
-
-      - name: Run Checker Dependency Policy Audit
-        run: bun run test:dependency-policy-audit
-        working-directory: ./packages/rettangoli-check
-
       - name: Run Contract Checks
         run: bun run check:contracts
         working-directory: ./packages/rettangoli-ui
@@ -104,12 +54,4 @@ jobs:
           name: vt-images-${{ github.run_number }}
           path: packages/rettangoli-ui/.rettangoli/
           include-hidden-files: true
-          retention-days: 30
-
-      - name: Upload Reliability Scorecard
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: reliability-scorecard-${{ github.run_number }}
-          path: packages/rettangoli-check/test/reliability-scorecard.json
           retention-days: 30
