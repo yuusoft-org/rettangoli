@@ -30,7 +30,6 @@ Editor clients should connect using LSP over stdio.
 
 ## Conformance
 
-Contract and SLA tests:
+Contract tests:
 
 - `scripts/test-lsp-contract.mjs`
-- `scripts/test-lsp-performance-sla.mjs`

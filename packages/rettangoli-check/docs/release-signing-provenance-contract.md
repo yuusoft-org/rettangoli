@@ -27,11 +27,11 @@ Output:
 
 Provenance includes builder metadata, source metadata, and per-artifact digest subjects.
 
-## Gate
+## Verification
 
-Release provenance gate:
+Use the release tooling scripts directly during release preparation:
 
-```bash
-cd packages/rettangoli-check
-node ./scripts/test-release-provenance-gate.mjs
-```
+- `scripts/release-sign-artifacts.mjs`
+- `scripts/release-verify-artifacts.mjs`
+- `scripts/release-generate-provenance.mjs`
+- `scripts/release-verify-provenance.mjs`

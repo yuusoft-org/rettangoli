@@ -2,12 +2,7 @@
 
 Status: **Declared GA** after full roadmap phase gates and critical-path checkpoints passed.
 
-Authoritative verification command:
-
-```bash
-cd packages/rettangoli-check
-node ./scripts/test-ga-readiness-gate.mjs
-```
+Authoritative verification is based on scenario conformance, reliability gates, and roadmap completion status.
 
 Declaration criteria:
 

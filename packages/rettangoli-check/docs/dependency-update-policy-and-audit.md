@@ -9,12 +9,7 @@
 
 ## Audit Workflow
 
-Automated policy gate:
-
-```bash
-cd packages/rettangoli-check
-node ./scripts/test-dependency-policy-audit.mjs
-```
+Policy audit is currently manual/reviewer-driven.
 
 Manual review checklist:
 

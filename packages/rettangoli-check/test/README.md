@@ -173,19 +173,11 @@ cd packages/rettangoli-check
 npm run test:scenarios
 ```
 
-Phase 7 end-state gate:
-
-```bash
-cd packages/rettangoli-check
-npm run test:type-system-end-state-gate
-```
-
 Reliability gate and soak:
 
 ```bash
 cd packages/rettangoli-check
 npm run test:reliability-gates
-npm run test:reliability-soak
 ```
 
 Diagnostics/reporting contract gate:
@@ -195,16 +187,10 @@ cd packages/rettangoli-check
 npm run test:diagnostics-reporting-contract
 ```
 
-LSP, performance, security, and GA gates:
+LSP and incremental contracts:
 
 ```bash
 cd packages/rettangoli-check
 npm run test:lsp-contract
-npm run test:lsp-performance-sla
 npm run test:incremental-graph-contract
-npm run test:performance-gates
-npm run test:parser-security-scan
-npm run test:adversarial-inputs
-npm run test:release-provenance-gate
-npm run test:ga-readiness-gate
 ```

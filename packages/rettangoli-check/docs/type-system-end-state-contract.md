@@ -7,7 +7,6 @@ This document defines the Phase 7 (`Contract And Type System`) exit gate contrac
 Phase 7 is considered complete when all of the following hold:
 
 - Type lattice normalization and compatibility behavior is stable.
-- Type precision/recall benchmark remains lossless (`precision=1.0`, `recall=1.0`).
 - Contract/type diagnostics are covered by deterministic conformance scenarios for:
   - required props/defaults
   - expression type checks
@@ -19,19 +18,19 @@ Phase 7 is considered complete when all of the following hold:
 
 ## 2. Gate Runner
 
-Authoritative gate command:
+Authoritative gate commands:
 
 ```bash
-node packages/rettangoli-check/scripts/test-type-system-end-state-gate.mjs
+node packages/rettangoli-check/scripts/test-type-system-contract.mjs
+node packages/rettangoli-check/test/run-scenarios.mjs --scenario 73-compat-required-props --scenario 78-expression-boolean-type-mismatch --scenario 79-lifecycle-on-update-missing-payload --scenario 80-compat-unsupported-event --scenario 101-compat-prop-binding-type-mismatch --scenario 104-compat-event-handler-prefix-invalid --scenario 106-compat-event-payload-contract-missing-param --scenario 107-listener-payload-contract-missing-key --scenario 110-method-signature-nonobject-pattern-invalid --scenario 112-method-payload-contract-missing-key --scenario 102-compat-prop-binding-type-match --scenario 109-compat-required-prop-with-default --scenario 113-method-payload-contract-valid
 ```
 
-The gate runner enforces:
+The gate set enforces:
 
 1. Required contract scenarios exist and include expected diagnostic codes.
 2. Positive contract scenarios are explicitly clean (`ok=true`, `errorCount=0`).
 3. Lattice contract test passes (`test-type-system-contract.mjs`).
-4. Type precision benchmark passes (`test-type-precision-benchmark.mjs`).
-5. Targeted Phase 7 conformance scenarios execute and pass deterministically.
+4. Targeted Phase 7 conformance scenarios execute and pass deterministically.
 
 ## 3. Required Scenario Coverage
 

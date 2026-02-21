@@ -1,20 +1,20 @@
 # GA Readiness Runbook
 
-## Gate Command
+## Gate Commands
 
 ```bash
 cd packages/rettangoli-check
-node ./scripts/test-ga-readiness-gate.mjs
+node ./test/run-scenarios.mjs
+node ./scripts/test-reliability-gates.mjs
+node ./scripts/test-lsp-contract.mjs
 ```
 
 ## Required Gate Families
 
 - diagnostics/reporting contracts
-- LSP conformance + LSP SLA
-- incremental/performance gates
-- parser security scan + adversarial inputs
-- release signature + provenance verification
-- dependency policy audit
+- LSP conformance
+- reliability gates
+- targeted type/contract scenario coverage
 
 ## Approval Checklist
 

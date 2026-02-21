@@ -37,16 +37,6 @@ Thresholds are configured in:
 - Flaky detection and quarantine record generation:
   - `scripts/reliability-detect-flaky.mjs`
 
-## 4. Soak And Nightly
+## 4. CI Usage
 
-Long-run soak command:
-
-```bash
-node packages/rettangoli-check/scripts/test-reliability-soak.mjs --loops 5
-```
-
-Nightly CI workflow:
-
-- `.github/workflows/reliability-nightly.yaml`
-
-Artifacts published by CI/nightly include reliability scorecards and soak reports.
+Reliability execution is currently expected in explicit/manual validation flows and not in nightly workflows.
