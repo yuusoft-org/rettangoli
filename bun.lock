@@ -28,7 +28,7 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "1.0.0-rc15",
+      "version": "1.0.0-rc16",
       "bin": {
         "rtgl": "./cli.js",
       },
@@ -37,7 +37,7 @@
         "@rettangoli/fe": "workspace:1.0.0-rc3",
         "@rettangoli/sites": "workspace:1.0.0-rc4",
         "@rettangoli/ui": "workspace:1.0.0-rc14",
-        "@rettangoli/vt": "workspace:1.0.0-rc13",
+        "@rettangoli/vt": "workspace:1.0.0-rc14",
         "commander": "^14.0.0",
         "js-yaml": "^4.1.0",
       },
@@ -77,6 +77,23 @@
         "vitest": "^4.0.15",
       },
     },
+    "packages/rettangoli-tui": {
+      "name": "@rettangoli/tui",
+      "version": "0.0.1",
+      "dependencies": {
+        "esbuild": "^0.25.5",
+        "immer": "^10.1.1",
+        "jempl": "0.3.2-rc2",
+        "js-yaml": "^4.1.0",
+        "rxjs": "^7.8.2",
+        "snabbdom": "^3.6.2",
+        "vite": "^6.3.5",
+      },
+      "devDependencies": {
+        "puty": "^0.1.1",
+        "vitest": "^4.0.15",
+      },
+    },
     "packages/rettangoli-ui": {
       "name": "@rettangoli/ui",
       "version": "1.0.0-rc14",
@@ -101,7 +118,7 @@
     },
     "packages/rettangoli-vt": {
       "name": "@rettangoli/vt",
-      "version": "1.0.0-rc13",
+      "version": "1.0.0-rc14",
       "dependencies": {
         "commander": "^13.1.0",
         "js-yaml": "^4.1.0",
@@ -250,11 +267,15 @@
 
     "@jsonjoy.com/util": ["@jsonjoy.com/util@1.9.0", "", { "dependencies": { "@jsonjoy.com/buffers": "^1.0.0", "@jsonjoy.com/codegen": "^1.0.0" }, "peerDependencies": { "tslib": "2" } }, "sha512-pLuQo+VPRnN8hfPqUTLTHk126wuYdXVxE6aDmjSeV4NCAgyxWbiOIeNJVtID3h1Vzpoi9m4jXezf73I6LgabgQ=="],
 
+    "@rettangoli/ansi-json": ["@rettangoli/ansi-json@workspace:packages/rettangoli-ansi-json"],
+
     "@rettangoli/be": ["@rettangoli/be@workspace:packages/rettangoli-be"],
 
     "@rettangoli/fe": ["@rettangoli/fe@workspace:packages/rettangoli-fe"],
 
     "@rettangoli/sites": ["@rettangoli/sites@workspace:packages/rettangoli-sites"],
+
+    "@rettangoli/tui": ["@rettangoli/tui@workspace:packages/rettangoli-tui"],
 
     "@rettangoli/ui": ["@rettangoli/ui@workspace:packages/rettangoli-ui"],
 
@@ -571,8 +592,6 @@
     "regex-utilities": ["regex-utilities@2.3.0", "", {}, "sha512-8VhliFJAWRaUiVvREIiW2NXXTmHs4vMNnSzuJVhscgmGav3g9VDxLrQndI3dZZVVdp0ZO/5v0xmX516/7M9cng=="],
 
     "require-from-string": ["require-from-string@2.0.2", "", {}, "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw=="],
-
-    "@rettangoli/ansi-json": ["@rettangoli/ansi-json@workspace:packages/rettangoli-ansi-json"],
 
     "rollup": ["rollup@4.41.1", "", { "dependencies": { "@types/estree": "1.0.7" }, "optionalDependencies": { "@rollup/rollup-android-arm-eabi": "4.41.1", "@rollup/rollup-android-arm64": "4.41.1", "@rollup/rollup-darwin-arm64": "4.41.1", "@rollup/rollup-darwin-x64": "4.41.1", "@rollup/rollup-freebsd-arm64": "4.41.1", "@rollup/rollup-freebsd-x64": "4.41.1", "@rollup/rollup-linux-arm-gnueabihf": "4.41.1", "@rollup/rollup-linux-arm-musleabihf": "4.41.1", "@rollup/rollup-linux-arm64-gnu": "4.41.1", "@rollup/rollup-linux-arm64-musl": "4.41.1", "@rollup/rollup-linux-loongarch64-gnu": "4.41.1", "@rollup/rollup-linux-powerpc64le-gnu": "4.41.1", "@rollup/rollup-linux-riscv64-gnu": "4.41.1", "@rollup/rollup-linux-riscv64-musl": "4.41.1", "@rollup/rollup-linux-s390x-gnu": "4.41.1", "@rollup/rollup-linux-x64-gnu": "4.41.1", "@rollup/rollup-linux-x64-musl": "4.41.1", "@rollup/rollup-win32-arm64-msvc": "4.41.1", "@rollup/rollup-win32-ia32-msvc": "4.41.1", "@rollup/rollup-win32-x64-msvc": "4.41.1", "fsevents": "~2.3.2" }, "bin": { "rollup": "dist/bin/rollup" } }, "sha512-cPmwD3FnFv8rKMBc1MxWCwVQFxwf1JEmSX3iQXrRVVG15zerAIXRjMFVWnd5Q5QvgKF7Aj+5ykXFhUl+QGnyOw=="],
 
