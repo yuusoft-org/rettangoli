@@ -1,0 +1,15 @@
+componentName: tui-dashboard
+
+description: Dashboard proof of concept for rettangoli-tui
+
+propsSchema:
+  type: object
+  properties:
+    environment:
+      type: string
+
+events: []
+
+methods:
+  type: object
+  properties: {}

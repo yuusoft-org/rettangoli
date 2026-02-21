@@ -1,0 +1,51 @@
+file: "./componentRuntimeHelper.js"
+group: rettangoli-tui-component-runtime-contract
+---
+suite: component-runtime-contract
+exportName: runComponentRuntimeContract
+---
+case: observed attributes include key and camel plus kebab props
+in:
+  - propsSchemaKeys:
+      - maxItems
+      - submitLabel
+out:
+  observed:
+    - key
+    - max-items
+    - maxItems
+    - submit-label
+    - submitLabel
+---
+case: runtime deps merge base deps with runtime fields
+in:
+  - baseDeps:
+      marker: keep-me
+    refs:
+      submitButton: {}
+out:
+  hasRefs: true
+  hasStore: true
+  hasRender: true
+  baseMarker: keep-me
+---
+case: ref map sync replaces stale refs and preserves latest matches
+in:
+  - stateKeyToSync: yes
+out:
+  keys:
+    - .label
+    - submitButton
+  submitButton: new
+  labelRef: label-node
+  hasStaleRef: false
+---
+case: cleanup clears debounce timers and map state
+in:
+  - {}
+out:
+  clearedCount: 2
+  mapSizeAfterCleanup: 0
+  clearedTimers:
+    - timer-1
+    - timer-2

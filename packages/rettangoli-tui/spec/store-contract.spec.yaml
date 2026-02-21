@@ -1,0 +1,28 @@
+file: "./runtimeContractHelper.js"
+group: rettangoli-tui-store-contract
+---
+suite: store-contract
+exportName: runStoreCase
+---
+case: action allows missing payload and defaults to empty object
+in:
+  - scenario: action_allows_missing_payload
+out:
+  ready: true
+---
+case: action rejects primitive payload
+in:
+  - scenario: action_rejects_primitive_payload
+throws: expects payload to be an object
+---
+case: selector supports primitive second argument
+in:
+  - scenario: selector_supports_primitive_second_arg
+out:
+  count: 2
+---
+case: selector supports object second argument
+in:
+  - scenario: selector_supports_object_second_arg
+out:
+  count: 1

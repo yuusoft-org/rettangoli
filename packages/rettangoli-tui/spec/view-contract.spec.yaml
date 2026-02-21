@@ -1,0 +1,268 @@
+file: "./viewCoreHelper.js"
+group: rettangoli-tui-view-contract
+---
+suite: bindings-contract
+exportName: runBindingsContract
+---
+case: maps attribute-form kebab-case keys to camelCase props for component tags
+in:
+  - attrsString: max-items=10 label=Save
+out:
+  attrs:
+    max-items: "10"
+    label: Save
+  props:
+    maxItems: "10"
+    label: Save
+---
+case: resolves property-form path values from viewData
+in:
+  - attrsString: :value=user.name
+    viewData:
+      user:
+        name: Alice
+out:
+  attrs: {}
+  props:
+    value: Alice
+---
+case: maps boolean attribute-form to both attrs and props for component tags
+in:
+  - attrsString: ?disabled=isLoading
+    viewData:
+      isLoading: true
+out:
+  attrs:
+    disabled: ""
+  props:
+    disabled: true
+---
+case: keeps empty unquoted attribute values for component tags
+in:
+  - attrsString: cur=
+out:
+  attrs:
+    cur: ""
+  props:
+    cur: ""
+---
+case: keeps quoted empty attribute values for component tags
+in:
+  - attrsString: label=""
+out:
+  attrs:
+    label: ""
+  props:
+    label: ""
+---
+case: keeps empty unquoted property-form values as empty string
+in:
+  - attrsString: :value=
+out:
+  attrs: {}
+  props:
+    value: ""
+---
+case: rejects boolean toggle for aria attributes
+in:
+  - attrsString: ?aria-pressed=isPressed
+    viewData:
+      isPressed: true
+throws: Invalid boolean attribute '?aria-pressed'
+---
+case: rejects duplicate prop source on one component node
+in:
+  - attrsString: value=abc :value=stateValue
+throws: Duplicate prop binding 'value'
+---
+case: property-form path traversal blocks __proto__ resolution
+in:
+  - attrsString: ":value=__proto__.polluted"
+    viewData:
+      safe: ok
+out:
+  attrs: {}
+  props:
+    value: "__proto__.polluted"
+---
+case: property-form path traversal blocks constructor resolution
+in:
+  - attrsString: ":value=constructor.name"
+    viewData:
+      safe: ok
+out:
+  attrs: {}
+  props:
+    value: "constructor.name"
+---
+suite: refs-contract
+exportName: runRefsContract
+---
+case: rejects invalid kebab-case ref key
+in:
+  - refs:
+      submit-button:
+        eventListeners:
+          click:
+            handler: handleSubmit
+throws: Invalid ref key 'submit-button'
+---
+case: rejects wildcard reserved global ref key
+in:
+  - refs:
+      window*:
+        eventListeners:
+          resize:
+            handler: handleResize
+throws: Reserved global keys must be exactly 'window' or 'document'
+---
+case: rejects explicit id reserved global ref key
+in:
+  - refs:
+      "#window":
+        eventListeners:
+          resize:
+            handler: handleResize
+throws: Reserved global keys must be exactly 'window' or 'document'
+---
+case: rejects class reserved global ref key
+in:
+  - refs:
+      ".document":
+        eventListeners:
+          click:
+            handler: handleClick
+throws: Reserved global keys must be exactly 'window' or 'document'
+---
+case: rejects kebab-case element id for refs matching
+in:
+  - refs:
+      submitButton:
+        eventListeners:
+          click:
+            handler: handleSubmit
+    elementIdForRefs: submit-button
+throws: Invalid element id 'submit-button'
+---
+case: exact ref key has precedence over wildcard
+in:
+  - refs:
+      todo*:
+        eventListeners: {}
+      todoItem*:
+        eventListeners: {}
+      todoItem:
+        eventListeners: {}
+    elementIdForRefs: todoItem
+out:
+  refKey: todoItem
+  targetType: id
+  matchedValue: todoItem
+  prefix: todoItem
+  isWildcard: false
+---
+case: longest wildcard prefix wins
+in:
+  - refs:
+      todo*:
+        eventListeners: {}
+      todoItem*:
+        eventListeners: {}
+    elementIdForRefs: todoItem42
+out:
+  refKey: todoItem*
+  targetType: id
+  matchedValue: todoItem42
+  prefix: todoItem
+  isWildcard: true
+---
+case: supports explicit id refs with hash prefix
+in:
+  - refs:
+      "#submitButton":
+        eventListeners: {}
+    elementIdForRefs: submitButton
+out:
+  refKey: "#submitButton"
+  targetType: id
+  matchedValue: submitButton
+  prefix: submitButton
+  isWildcard: false
+---
+case: supports class refs with dot prefix
+in:
+  - refs:
+      ".label":
+        eventListeners: {}
+    classNames:
+      - label
+      - muted
+out:
+  refKey: ".label"
+  targetType: class
+  matchedValue: label
+  prefix: label
+  isWildcard: false
+---
+case: supports wildcard class refs with dot prefix
+in:
+  - refs:
+      ".todo*":
+        eventListeners: {}
+    classNames:
+      - todoItem
+      - muted
+out:
+  refKey: ".todo*"
+  targetType: class
+  matchedValue: todoItem
+  prefix: todo
+  isWildcard: true
+---
+suite: event-contract
+exportName: runEventContract
+---
+case: validates debounce option for listener
+in:
+  - eventConfig:
+      handler: handleSubmit
+      debounce: 100
+out:
+  hasDebounce: true
+  hasThrottle: false
+---
+case: rejects listener that defines both handler and action
+in:
+  - eventConfig:
+      handler: handleSubmit
+      action: submitAction
+throws: handler or action but not both
+---
+case: rejects listener that defines neither handler nor action
+in:
+  - eventConfig:
+      payload:
+        foo: bar
+throws: must define either handler or action
+---
+case: rejects listener with both debounce and throttle
+in:
+  - eventConfig:
+      handler: handleSubmit
+      debounce: 100
+      throttle: 100
+throws: cannot define both 'debounce' and 'throttle'
+---
+case: rejects non-boolean targetOnly value
+in:
+  - eventConfig:
+      handler: handleSubmit
+      targetOnly: "yes"
+throws: Invalid 'targetOnly'
+---
+case: rejects negative debounce value
+in:
+  - eventConfig:
+      handler: handleSubmit
+      debounce: -1
+throws: Invalid 'debounce'

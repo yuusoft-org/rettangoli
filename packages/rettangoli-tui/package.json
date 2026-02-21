@@ -1,0 +1,48 @@
+{
+  "name": "@rettangoli/tui",
+  "version": "0.0.1",
+  "description": "Terminal UI framework using Rettangoli FE contracts",
+  "type": "module",
+  "main": "./src/index.js",
+  "keywords": [
+    "tui",
+    "terminal",
+    "components",
+    "framework"
+  ],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuusoft-org/rettangoli.git"
+  },
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.js",
+    "./cli": "./src/cli/index.js",
+    "./setup": "./src/setup.js"
+  },
+  "devDependencies": {
+    "puty": "^0.1.1",
+    "vitest": "^4.0.15"
+  },
+  "dependencies": {
+    "esbuild": "^0.25.5",
+    "immer": "^10.1.1",
+    "jempl": "0.3.2-rc2",
+    "js-yaml": "^4.1.0",
+    "rxjs": "^7.8.2",
+    "snabbdom": "^3.6.2",
+    "vite": "^6.3.5"
+  },
+  "scripts": {
+    "poc": "node examples/poc/run.js",
+    "poc:static": "node examples/poc/run.js --static",
+    "showcase": "node examples/showcase/run.js",
+    "showcase:static": "node examples/showcase/run.js --static",
+    "test": "vitest run test/tui --reporter=verbose"
+  }
+}

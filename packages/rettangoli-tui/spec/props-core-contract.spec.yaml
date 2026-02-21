@@ -1,0 +1,40 @@
+file: "./propsCoreHelper.js"
+group: rettangoli-tui-props-core-contract
+---
+suite: props-core-contract
+exportName: runPropsCoreCase
+---
+case: converts kebab case to camel case
+in:
+  - scenario: to_camel_case
+out:
+  value: maxItems
+---
+case: converts camel case to kebab case
+in:
+  - scenario: to_kebab_case
+out:
+  value: max-items
+---
+case: normalizes empty attribute value to boolean true
+in:
+  - scenario: normalize_empty_attr
+out:
+  value: true
+---
+case: props proxy prefers direct property value over attribute fallback
+in:
+  - scenario: proxy_property_precedence
+out:
+  value: propValue
+---
+case: props proxy falls back to kebab-case attribute value
+in:
+  - scenario: proxy_kebab_fallback
+out:
+  value: "12"
+---
+case: props proxy is read only
+in:
+  - scenario: proxy_readonly
+throws: Cannot assign to read-only proxy

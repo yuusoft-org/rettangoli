@@ -1,0 +1,68 @@
+file: "./lifecycleCoreHelper.js"
+group: rettangoli-tui-lifecycle-core-contract
+---
+suite: lifecycle-core-contract
+exportName: runLifecycleCoreCase
+---
+case: createRuntimeDeps merges base and runtime fields
+in:
+  - scenario: create_runtime_deps_merges_fields
+out:
+  hasA: true
+  hasRefs: true
+  hasDispatchEvent: true
+  hasStore: true
+  hasRender: true
+---
+case: store action dispatcher injects event context and triggers render
+in:
+  - scenario: store_action_dispatcher_injects_event_context
+out:
+  value: a@b.com
+  eventType: input
+  renderCount: 1
+---
+case: store action dispatcher rejects missing action
+in:
+  - scenario: store_action_dispatcher_rejects_missing_action
+throws: Action 'store.missingAction' is not defined
+---
+case: transformed handlers wrap user handler and expose store action dispatcher
+in:
+  - scenario: transformed_handlers_wrap_user_handlers
+out:
+  result: 6
+  hasStoreActionDispatcher: true
+---
+case: ensureSyncBeforeMountResult rejects Promise result
+in:
+  - scenario: before_mount_rejects_promise
+throws: handleBeforeMount must be synchronous
+---
+case: runBeforeMount returns cleanup function
+in:
+  - scenario: run_before_mount_returns_cleanup
+out:
+  isFunction: true
+---
+case: runAfterMount invokes handler
+in:
+  - scenario: run_after_mount_invokes_handler
+out:
+  called: true
+---
+case: buildOnUpdateChanges normalizes changed prop name
+in:
+  - scenario: build_on_update_changes_normalizes_names
+out:
+  changedProp: maxItems
+  oldValue: "1"
+  newValue: "2"
+  title: hello
+---
+case: buildOnUpdateChanges removes missing new value
+in:
+  - scenario: build_on_update_changes_removes_missing_new_value
+out:
+  hasMaxItems: false
+  oldValue: "1"

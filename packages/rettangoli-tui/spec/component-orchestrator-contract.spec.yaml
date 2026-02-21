@@ -1,0 +1,59 @@
+file: "./componentOrchestratorHelper.js"
+group: rettangoli-tui-component-orchestrator-contract
+---
+suite: component-orchestrator-contract
+exportName: runComponentOrchestratorContract
+---
+case: connected lifecycle wires handlers and cleanup callbacks
+in:
+  - mode: connected
+out:
+  calls:
+    - createTransformedHandlers
+    - runBeforeMount
+    - attachGlobalRefListeners
+    - render
+    - runAfterMount
+  hasUnmountCallback: true
+  hasGlobalCleanup: true
+---
+case: disconnected lifecycle runs cleanups and clears debounce timers
+in:
+  - mode: disconnected
+out:
+  calls:
+    - unmount
+    - globalCleanup
+  clearedCount: 1
+  timers:
+    - t1
+  remainingStateEntries: 0
+---
+case: attribute change schedules render when no handleOnUpdate exists
+in:
+  - mode: attributeChanged
+out:
+  calls:
+    - scheduleFrame
+    - render
+---
+case: render lifecycle patches vnode and syncs refs
+in:
+  - mode: render
+out:
+  hasVNode: true
+  refKeys:
+    - submitButton
+  submitButton: btn-elm
+  hasStale: false
+---
+case: render error preserves previous vnode and component recovers on next render
+in:
+  - mode: render_error_recovery
+out:
+  firstHasVNode: true
+  secondPreservesVNode: true
+  thirdRecovered: true
+  errorCount: 1
+  errorMessage: template render failed
+  totalRenderCalls: 3

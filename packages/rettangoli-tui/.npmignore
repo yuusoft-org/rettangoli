@@ -1,0 +1,7 @@
+# Development files
+.temp/
+viz/
+e2e/
+node_modules/
+.git/
+src/cli/*
