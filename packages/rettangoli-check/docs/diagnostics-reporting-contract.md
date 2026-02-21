@@ -31,6 +31,5 @@ Validation commands:
 
 ```bash
 cd packages/rettangoli-check
-npm run test:diagnostics-reporting-contract
 npm run test:scenarios -- --scenario 74-cli-sarif-success --scenario 123-cli-autofix-dry-run-json --scenario 124-cli-autofix-dry-run-patch-json --scenario 125-cli-autofix-apply-json-success
 ```

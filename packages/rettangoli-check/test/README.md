@@ -173,24 +173,4 @@ cd packages/rettangoli-check
 npm run test:scenarios
 ```
 
-Reliability gate and soak:
-
-```bash
-cd packages/rettangoli-check
-npm run test:reliability-gates
-```
-
-Diagnostics/reporting contract gate:
-
-```bash
-cd packages/rettangoli-check
-npm run test:diagnostics-reporting-contract
-```
-
-LSP and incremental contracts:
-
-```bash
-cd packages/rettangoli-check
-npm run test:lsp-contract
-npm run test:incremental-graph-contract
-```
+Additional FE/frontend contracts and parser/fuzz suites can be run from `packages/rettangoli-check/package.json` scripts as needed.

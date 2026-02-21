@@ -2,28 +2,15 @@
 
 This document defines the Phase 13 reliability gate contract.
 
-## 1. Gate Command
+## 1. Reliability Scope
 
-Release-blocking reliability command:
-
-```bash
-node packages/rettangoli-check/scripts/test-reliability-gates.mjs
-```
-
-The command writes a scorecard at:
-
-- `packages/rettangoli-check/test/reliability-scorecard.json`
-
-Thresholds are configured in:
-
-- `packages/rettangoli-check/test/reliability-thresholds.json`
+Reliability confidence is maintained through scenario conformance and parser/contract fuzzing coverage.
 
 ## 2. Gate Components
 
-`test-reliability-gates.mjs` executes and enforces pass-rate thresholds for:
+Core reliability coverage includes:
 
 - conformance scenarios (`test/run-scenarios.mjs`)
-- checker/compile/runtime differential harness (`test-compile-runtime-differential.mjs`)
 - YAHTML grammar-aware fuzzer (`fuzz-yahtml-parser.mjs`)
 - Jempl grammar-aware fuzzer (`fuzz-jempl-parser.mjs`)
 - FE schema/export contract-combination fuzzer (`fuzz-fe-contract-combinations.mjs`)
@@ -39,4 +26,4 @@ Thresholds are configured in:
 
 ## 4. CI Usage
 
-Reliability execution is currently expected in explicit/manual validation flows and not in nightly workflows.
+Reliability execution is currently expected in explicit/manual validation flows.

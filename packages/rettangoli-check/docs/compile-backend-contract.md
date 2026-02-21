@@ -31,8 +31,6 @@ This document defines the current contract for the compiler backend foundation.
   - `contracts` (`props`, `requiredProps`, `events`, `methods`, `handlers`, `actions`, `refs`)
 - `diagnostics[]` in checker-compatible shape
 
-## Contract Test
+## Contract Validation
 
-- `node packages/rettangoli-check/scripts/test-compile-backend-contract.mjs`
-- `node packages/rettangoli-check/scripts/test-compile-artifact-reproducibility.mjs`
-- `node packages/rettangoli-check/scripts/test-compile-runtime-differential.mjs`
+Compile backend behavior is validated indirectly through scenario conformance and FE contract checks.

@@ -67,7 +67,6 @@ Example:
 
 Contract tests:
 
-- `scripts/test-diagnostics-reporting-contract.mjs`
 - `test/scenarios/74-cli-sarif-success`
 - `test/scenarios/123-cli-autofix-dry-run-json`
 - `test/scenarios/124-cli-autofix-dry-run-patch-json`

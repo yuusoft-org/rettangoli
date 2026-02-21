@@ -121,6 +121,6 @@ Adapter entrypoints:
 - `migrateLegacyModelToCompilerIr`
 - `adaptLegacyAnalysisModel`
 
-## 10. Contract Validation Command
+## 10. Contract Validation
 
-- `bun run --cwd packages/rettangoli-check test:ir-foundation-contract`
+IR validation is exercised through scenario conformance and checker execution paths.

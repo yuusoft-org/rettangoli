@@ -30,6 +30,4 @@ Editor clients should connect using LSP over stdio.
 
 ## Conformance
 
-Contract tests:
-
-- `scripts/test-lsp-contract.mjs`
+LSP behavior is validated through scenario conformance and manual editor integration checks.

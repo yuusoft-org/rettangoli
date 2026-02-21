@@ -10,8 +10,7 @@
 A release is allowed only if all pass:
 
 - `test:scenarios`
-- `test:reliability-gates`
-- `test:governance-backward-compatibility`
+- FE frontend contract checks (`test:fe-frontend-*`)
 
 ## 3. Change Protocol
 
@@ -23,4 +22,4 @@ A release is allowed only if all pass:
 ## 4. Audit Trail
 
 - roadmap and compiler journal entries are append-only evidence
-- scorecard artifacts from CI/nightly are retained for release audit
+- scenario and contract evidence from CI are retained for release audit

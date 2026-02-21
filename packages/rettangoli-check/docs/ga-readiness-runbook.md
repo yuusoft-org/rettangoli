@@ -5,15 +5,13 @@
 ```bash
 cd packages/rettangoli-check
 node ./test/run-scenarios.mjs
-node ./scripts/test-reliability-gates.mjs
-node ./scripts/test-lsp-contract.mjs
 ```
 
 ## Required Gate Families
 
 - diagnostics/reporting contracts
-- LSP conformance
-- reliability gates
+- scenario conformance
+- FE/frontend contract coverage
 - targeted type/contract scenario coverage
 
 ## Approval Checklist
