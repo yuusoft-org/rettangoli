@@ -9,6 +9,8 @@ These are publish-only assets and are not used by VT runtime code.
 
 - Folder: `sites/`
 - Docs template bundle: `sites/templates/docs/documentation.yaml` and `sites/partials/docs/mobile-nav.yaml`
+- Rettangoli.dev shell templates: `sites/templates/rettangoli-dev/*.yaml`
+- Sites default scaffold base: `sites/templates/default/base.yaml`
 - Usage guide: `sites/README.md`
 
 Published URL pattern (jsDelivr):

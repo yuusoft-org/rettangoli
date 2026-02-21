@@ -72,3 +72,36 @@ sidebar:
           title: Introduction
           href: /docs/introduction/
 ```
+
+## Rettangoli.dev Shell Templates
+
+These templates mirror `apps/rettangoli.dev/templates/*` so the app can consume
+them via URL imports instead of local template files.
+
+Template URLs:
+
+- `https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/rettangoli-dev/base.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/rettangoli-dev/documentation.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/rettangoli-dev/fe-documentation.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/rettangoli-dev/sites-documentation.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/rettangoli-dev/vt-documentation.yaml`
+
+`sites.config.yaml` alias example:
+
+```yaml
+imports:
+  templates:
+    base: https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/rettangoli-dev/base.yaml
+    documentation: https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/rettangoli-dev/documentation.yaml
+    fe-documentation: https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/rettangoli-dev/fe-documentation.yaml
+    sites-documentation: https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/rettangoli-dev/sites-documentation.yaml
+    vt-documentation: https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/rettangoli-dev/vt-documentation.yaml
+```
+
+## Default Scaffold Base Template
+
+This template mirrors `packages/rettangoli-sites/templates/default/templates/base.yaml`.
+
+Template URL:
+
+- `https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/default/base.yaml`
