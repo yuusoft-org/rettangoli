@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/vt",
-  "version": "1.0.0-rc15",
+  "version": "1.0.0-rc14",
   "description": "Rettangoli Visual Testing",
   "type": "module",
   "main": "./src/index.js",
@@ -8,12 +8,6 @@
     ".": "./src/index.js",
     "./cli": "./src/cli/index.js"
   },
-  "files": [
-    "src",
-    "sites",
-    "README.md",
-    "LICENSE"
-  ],
   "scripts": {
     "test": "vitest run --reporter=verbose",
     "test:e2e": "node e2e/run.js",

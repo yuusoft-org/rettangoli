@@ -104,6 +104,17 @@ When an alias exists both remotely and locally, local files under `templates/` a
 
 If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it will be copied to `_site/llms.txt`.
 
+## Pre-published Import Assets
+
+`@rettangoli/sites` publishes reusable template/partial YAML assets under `sites/` for URL imports.
+
+- Docs template: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs/documentation.yaml`
+- Docs partial: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs/mobile-nav.yaml`
+- Rettangoli.dev shells: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/*.yaml`
+- Default scaffold base: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/default/base.yaml`
+
+See `sites/README.md` for full alias examples and required data contract.
+
 ## Template Authoring Pattern
 
 Keep base templates as shells with minimal logic:
