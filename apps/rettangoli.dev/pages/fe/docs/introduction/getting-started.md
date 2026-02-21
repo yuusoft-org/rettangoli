@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: feDocs
+_bind:
+  docs: feDocs
 title: Getting Started
 tags: documentation
 sidebarId: fe-getting-started

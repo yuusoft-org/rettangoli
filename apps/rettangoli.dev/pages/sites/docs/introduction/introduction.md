@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: sitesDocs
+_bind:
+  docs: sitesDocs
 title: Introduction
 tags: documentation
 sidebarId: sites-introduction

@@ -40,6 +40,41 @@ function isObject(item) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
 
+function splitSystemFrontmatter(frontmatter, globalData, pagePath) {
+  const normalized = isObject(frontmatter) ? { ...frontmatter } : {};
+  const bindConfig = normalized._bind;
+  delete normalized._bind;
+
+  if (bindConfig === undefined) {
+    return { frontmatter: normalized, bindings: {} };
+  }
+
+  if (!isObject(bindConfig)) {
+    throw new Error(`Invalid _bind in ${pagePath}: expected an object mapping local names to global data keys.`);
+  }
+
+  const bindings = {};
+  for (const [rawLocalKey, rawSourceKey] of Object.entries(bindConfig)) {
+    const localKey = String(rawLocalKey).trim();
+    if (localKey === '') {
+      throw new Error(`Invalid _bind in ${pagePath}: local key names must be non-empty.`);
+    }
+
+    if (typeof rawSourceKey !== 'string' || rawSourceKey.trim() === '') {
+      throw new Error(`Invalid _bind in ${pagePath} for "${localKey}": expected a non-empty global data key string.`);
+    }
+
+    const sourceKey = rawSourceKey.trim();
+    if (!Object.prototype.hasOwnProperty.call(globalData, sourceKey)) {
+      throw new Error(`Invalid _bind in ${pagePath} for "${localKey}": global data key "${sourceKey}" not found.`);
+    }
+
+    bindings[localKey] = globalData[sourceKey];
+  }
+
+  return { frontmatter: normalized, bindings };
+}
+
 function parseYamlWithContext(content, contextLabel) {
   try {
     return yaml.load(content, { schema: yaml.JSON_SCHEMA });
@@ -418,6 +453,7 @@ export function createSiteBuilder({
           } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.yml') || item.name.endsWith('.md'))) {
             // Extract frontmatter and content
             const { frontmatter, content } = extractFrontmatterAndContent(itemPath);
+            const { frontmatter: publicFrontmatter } = splitSystemFrontmatter(frontmatter, globalData, itemPath);
 
             // Calculate URL
             const baseFileName = item.name.replace(/\.(yaml|yml|md)$/, '');
@@ -435,9 +471,9 @@ export function createSiteBuilder({
             }
 
             // Process tags
-            if (frontmatter.tags) {
+            if (publicFrontmatter.tags) {
               // Normalize tags to array
-              const tags = Array.isArray(frontmatter.tags) ? frontmatter.tags : [frontmatter.tags];
+              const tags = Array.isArray(publicFrontmatter.tags) ? publicFrontmatter.tags : [publicFrontmatter.tags];
 
               // Add to collections
               tags.forEach(tag => {
@@ -447,7 +483,7 @@ export function createSiteBuilder({
                     collections[trimmedTag] = [];
                   }
                   collections[trimmedTag].push({
-                    data: frontmatter,
+                    data: publicFrontmatter,
                     url: url,
                     content: content
                   });
@@ -471,6 +507,7 @@ export function createSiteBuilder({
       if (!quiet) console.log(`Processing ${pagePath}...`);
 
       const { frontmatter, content: rawContent } = extractFrontmatterAndContent(pagePath);
+      const { frontmatter: publicFrontmatter, bindings: boundData } = splitSystemFrontmatter(frontmatter, globalData, pagePath);
 
       // Calculate URL for current page
       let url;
@@ -489,7 +526,8 @@ export function createSiteBuilder({
       }
 
       // Deep merge global data with frontmatter and collections for the page context
-      const pageData = deepMerge(globalData, frontmatter);
+      const pageData = deepMerge(globalData, publicFrontmatter);
+      Object.assign(pageData, boundData);
       pageData.collections = collections;
       pageData.page = { url };
       pageData.build = { isScreenshotMode };
@@ -521,11 +559,11 @@ export function createSiteBuilder({
 
       // Find the template specified in frontmatter
       let templateToUse = null;
-      if (frontmatter.template) {
+      if (publicFrontmatter.template) {
         // Look up template by exact path
-        templateToUse = templates[frontmatter.template];
+        templateToUse = templates[publicFrontmatter.template];
         if (!templateToUse) {
-          throw new Error(`Template "${frontmatter.template}" not found in ${pagePath}. Available templates: ${Object.keys(templates).join(', ')}`);
+          throw new Error(`Template "${publicFrontmatter.template}" not found in ${pagePath}. Available templates: ${Object.keys(templates).join(', ')}`);
         }
       }
 

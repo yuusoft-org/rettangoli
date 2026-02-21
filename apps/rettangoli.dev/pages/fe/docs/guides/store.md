@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: feDocs
+_bind:
+  docs: feDocs
 title: Store
 tags: documentation
 sidebarId: fe-store

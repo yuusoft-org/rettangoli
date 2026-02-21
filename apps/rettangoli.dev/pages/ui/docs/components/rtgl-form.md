@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: docs
+_bind:
+  docs: docs
 title: Form
 tags: documentation
 sidebarId: rtgl-form

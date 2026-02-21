@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: sitesDocs
+_bind:
+  docs: sitesDocs
 title: Getting Started
 tags: documentation
 sidebarId: sites-getting-started

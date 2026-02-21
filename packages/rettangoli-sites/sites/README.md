@@ -15,7 +15,7 @@ Partial URL:
 ## Rettangoli.dev Shared Assets
 
 Rettangoli.dev docs and non-doc pages both use the same shared `base` template.
-Docs pages set `docsDataKey` in page frontmatter to enable docs layout.
+Docs pages set `_bind.docs` in page frontmatter to enable docs layout.
 
 Template URL:
 
@@ -46,13 +46,14 @@ Docs page frontmatter example:
 ```yaml
 ---
 template: base
-docsDataKey: docs
+_bind:
+  docs: docs
 title: Getting Started
 sidebarId: getting-started
 ---
 ```
 
-Supported `docsDataKey` values in rettangoli.dev:
+Supported `_bind.docs` values in rettangoli.dev:
 
 - `docs`
 - `feDocs`

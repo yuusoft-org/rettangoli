@@ -104,6 +104,23 @@ When an alias exists both remotely and locally, local files under `templates/` a
 
 If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it will be copied to `_site/llms.txt`.
 
+## System Frontmatter
+
+Use `_bind` to map global data keys into page-local variables.
+
+Example:
+
+```yaml
+---
+template: base
+_bind:
+  docs: feDocs
+---
+```
+
+This resolves `docs` from `data/feDocs.yaml` for that page.
+`_bind` is a system property and is not exposed to templates directly.
+
 ## Pre-published Import Assets
 
 `@rettangoli/sites` publishes reusable template/partial YAML assets under `sites/` for URL imports.

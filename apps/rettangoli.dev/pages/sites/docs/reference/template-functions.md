@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: sitesDocs
+_bind:
+  docs: sitesDocs
 title: Template Functions
 tags: documentation
 sidebarId: sites-template-functions

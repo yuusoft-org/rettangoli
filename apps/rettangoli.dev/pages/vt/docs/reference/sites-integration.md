@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: vtDocs
+_bind:
+  docs: vtDocs
 title: Sites Integration
 tags: documentation
 sidebarId: vt-sites-integration

@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: feDocs
+_bind:
+  docs: feDocs
 title: Handlers
 tags: documentation
 sidebarId: fe-handlers

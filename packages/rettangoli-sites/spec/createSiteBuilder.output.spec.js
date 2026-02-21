@@ -135,6 +135,67 @@ describe('createSiteBuilder output behavior', () => {
     await expect(build()).rejects.toThrow('Invalid YAML page content in /pages/index.yaml');
   });
 
+  it('resolves frontmatter _bind aliases from global data', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/data/feDocs.yaml': [
+        'header:',
+        '  label: Rettangoli FE Docs'
+      ].join('\n'),
+      '/templates/base.yaml': [
+        '- html:',
+        '    - body:',
+        '        - rtgl-text: ${docs.header.label}',
+      ].join('\n'),
+      '/pages/index.md': [
+        '---',
+        'template: base',
+        '_bind:',
+        '  docs: feDocs',
+        '---',
+        '# Intro'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await build();
+
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('Rettangoli FE Docs');
+  });
+
+  it('throws a clear error when _bind references unknown global data', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/templates/base.yaml': '- html:',
+      '/pages/index.md': [
+        '---',
+        'template: base',
+        '_bind:',
+        '  docs: missingDocs',
+        '---',
+        '# Intro'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await expect(build()).rejects.toThrow('Invalid _bind in /pages/index.md for "docs": global data key "missingDocs" not found.');
+  });
+
   it('ignores non-yaml files in partials directory', async () => {
     const vol = new Volume();
     const memfs = createFsFromVolume(vol);

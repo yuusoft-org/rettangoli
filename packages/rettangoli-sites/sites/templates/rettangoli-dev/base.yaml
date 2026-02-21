@@ -11,20 +11,20 @@
         - script src="/public/rtgl-icons.js":
 
     - body.dark:
-        - $if docsDataKey:
+        - $if docs:
             - $partial: mobile-nav1
-              headerLabel: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].header.label}"
-              headerHref: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].header.href}"
-              header: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].header}"
-              items: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].items}"
+              headerLabel: ${docs.header.label}
+              headerHref: ${docs.header.href}
+              header: ${docs.header}
+              items: ${docs.items}
               sidebarId: ${sidebarId}
 
             - rtgl-view bgc="bg" w="f" d=h:
                 - 'rtgl-view md-hide pos=fix h=100vh bgc=bg style="left: 0"':
                     - $partial: docs-sidebar1
                       sidebarId: ${sidebarId}
-                      header: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].header}"
-                      items: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].items}"
+                      header: ${docs.header}
+                      items: ${docs.items}
                 - rtgl-view md-hide xl-show hide w=272:
                 - rtgl-view w="1fg" ah=c:
                     - rtgl-view pv="lg" lg-w="100vw" w="720" ph="lg" sv id="content-container":

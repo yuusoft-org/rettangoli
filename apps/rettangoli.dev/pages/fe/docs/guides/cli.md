@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: feDocs
+_bind:
+  docs: feDocs
 title: CLI
 tags: documentation
 sidebarId: fe-cli

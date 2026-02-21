@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: sitesDocs
+_bind:
+  docs: sitesDocs
 title: CLI
 tags: documentation
 sidebarId: sites-cli

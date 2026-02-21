@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: vtDocs
+_bind:
+  docs: vtDocs
 title: Configuration
 tags: documentation
 sidebarId: vt-configuration

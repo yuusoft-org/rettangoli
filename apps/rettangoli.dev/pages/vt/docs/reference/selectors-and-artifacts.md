@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: vtDocs
+_bind:
+  docs: vtDocs
 title: Selectors & Artifacts
 tags: documentation
 sidebarId: vt-selectors-and-artifacts

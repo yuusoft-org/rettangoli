@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: docs
+_bind:
+  docs: docs
 title: Dialog
 tags: documentation
 sidebarId: rtgl-dialog

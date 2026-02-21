@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: vtDocs
+_bind:
+  docs: vtDocs
 title: Quickstart
 tags: documentation
 sidebarId: vt-quickstart

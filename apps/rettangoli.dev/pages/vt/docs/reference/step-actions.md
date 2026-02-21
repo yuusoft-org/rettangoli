@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: vtDocs
+_bind:
+  docs: vtDocs
 title: Step Actions
 tags: documentation
 sidebarId: vt-step-actions

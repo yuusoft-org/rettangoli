@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: sitesDocs
+_bind:
+  docs: sitesDocs
 title: Configuration
 tags: documentation
 sidebarId: sites-configuration

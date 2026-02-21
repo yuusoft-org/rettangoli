@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: docs
+_bind:
+  docs: docs
 title: Page Outline
 tags: documentation
 sidebarId: rtgl-page-outline

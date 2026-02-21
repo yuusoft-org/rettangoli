@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: vtDocs
+_bind:
+  docs: vtDocs
 title: Spec Frontmatter
 tags: documentation
 sidebarId: vt-frontmatter

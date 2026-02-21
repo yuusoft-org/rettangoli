@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: sitesDocs
+_bind:
+  docs: sitesDocs
 title: Markdown & Frontmatter
 tags: documentation
 sidebarId: sites-markdown-and-frontmatter
@@ -15,7 +16,8 @@ Markdown pages can include frontmatter for template and page metadata.
 ```md
 ---
 template: base
-docsDataKey: sitesDocs
+_bind:
+  docs: sitesDocs
 title: Introduction
 tags:
   - docs
@@ -34,6 +36,7 @@ Common keys:
 - `template`: template name from `templates/*.yaml`
 - `title`: page title (also available to templates)
 - `tags`: used for collections
+- `_bind`: system mapping of local variable names to global `data/*.yaml` keys
 - Any additional custom keys used by your templates
 
 Frontmatter is merged with global `data/*.yaml` values for render context.

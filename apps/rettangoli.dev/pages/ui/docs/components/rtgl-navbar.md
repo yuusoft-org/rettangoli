@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: docs
+_bind:
+  docs: docs
 title: Navbar
 tags: documentation
 sidebarId: rtgl-navbar

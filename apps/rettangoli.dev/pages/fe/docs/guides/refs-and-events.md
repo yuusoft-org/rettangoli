@@ -1,6 +1,7 @@
 ---
 template: base
-docsDataKey: feDocs
+_bind:
+  docs: feDocs
 title: Refs & Events
 tags: documentation
 sidebarId: fe-refs-and-events
