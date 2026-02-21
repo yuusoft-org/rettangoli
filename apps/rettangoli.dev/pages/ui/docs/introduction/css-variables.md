@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: CSS Variables
 tags: documentation
 sidebarId: css-variables

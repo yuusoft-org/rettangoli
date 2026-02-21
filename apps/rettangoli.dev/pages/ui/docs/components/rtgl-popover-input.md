@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Popover Input
 tags: documentation
 sidebarId: rtgl-popover-input

@@ -1,5 +1,6 @@
 ---
-template: fe-documentation
+template: base
+docsDataKey: feDocs
 title: View
 tags: documentation
 sidebarId: fe-view

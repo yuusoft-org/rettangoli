@@ -1,5 +1,6 @@
 ---
-template: sites-documentation
+template: base
+docsDataKey: sitesDocs
 title: Getting Started
 tags: documentation
 sidebarId: sites-getting-started

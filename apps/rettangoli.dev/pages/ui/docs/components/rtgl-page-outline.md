@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Page Outline
 tags: documentation
 sidebarId: rtgl-page-outline

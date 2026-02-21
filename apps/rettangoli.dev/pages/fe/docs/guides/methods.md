@@ -1,5 +1,6 @@
 ---
-template: fe-documentation
+template: base
+docsDataKey: feDocs
 title: Methods
 tags: documentation
 sidebarId: fe-methods

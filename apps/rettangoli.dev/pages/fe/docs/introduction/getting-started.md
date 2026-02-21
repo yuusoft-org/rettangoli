@@ -1,5 +1,6 @@
 ---
-template: fe-documentation
+template: base
+docsDataKey: feDocs
 title: Getting Started
 tags: documentation
 sidebarId: fe-getting-started

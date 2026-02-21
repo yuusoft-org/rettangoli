@@ -1,5 +1,6 @@
 ---
-template: sites-documentation
+template: base
+docsDataKey: sitesDocs
 title: CLI
 tags: documentation
 sidebarId: sites-cli

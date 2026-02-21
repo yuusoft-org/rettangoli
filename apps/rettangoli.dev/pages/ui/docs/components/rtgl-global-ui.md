@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Global UI
 tags: documentation
 sidebarId: rtgl-global-ui

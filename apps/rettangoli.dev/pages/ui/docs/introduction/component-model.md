@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Component Model
 tags: documentation
 sidebarId: component-model

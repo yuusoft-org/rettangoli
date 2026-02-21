@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Slider
 tags: documentation
 sidebarId: rtgl-slider

@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Introduction
 tags: documentation
 sidebarId: introduction

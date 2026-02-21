@@ -1,5 +1,6 @@
 ---
-template: vt-documentation
+template: base
+docsDataKey: vtDocs
 title: Viewport
 tags: documentation
 sidebarId: vt-viewport

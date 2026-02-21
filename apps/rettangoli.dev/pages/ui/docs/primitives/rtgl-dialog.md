@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Dialog
 tags: documentation
 sidebarId: rtgl-dialog

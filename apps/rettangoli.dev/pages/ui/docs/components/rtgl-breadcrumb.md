@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Breadcrumb
 tags: documentation
 sidebarId: rtgl-breadcrumb

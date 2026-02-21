@@ -1,5 +1,6 @@
 ---
-template: fe-documentation
+template: base
+docsDataKey: feDocs
 title: Component Architecture
 tags: documentation
 sidebarId: fe-component-architecture

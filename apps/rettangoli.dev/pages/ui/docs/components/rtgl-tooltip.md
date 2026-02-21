@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Tooltip
 tags: documentation
 sidebarId: rtgl-tooltip

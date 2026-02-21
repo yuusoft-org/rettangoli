@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Color Picker
 tags: documentation
 sidebarId: rtgl-color-picker

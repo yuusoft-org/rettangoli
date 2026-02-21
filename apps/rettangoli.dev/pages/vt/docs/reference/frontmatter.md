@@ -1,5 +1,6 @@
 ---
-template: vt-documentation
+template: base
+docsDataKey: vtDocs
 title: Spec Frontmatter
 tags: documentation
 sidebarId: vt-frontmatter

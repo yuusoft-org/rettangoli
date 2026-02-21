@@ -1,5 +1,6 @@
 ---
-template: sites-documentation
+template: base
+docsDataKey: sitesDocs
 title: Introduction
 tags: documentation
 sidebarId: sites-introduction

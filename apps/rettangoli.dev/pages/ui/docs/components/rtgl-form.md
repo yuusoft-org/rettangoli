@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Form
 tags: documentation
 sidebarId: rtgl-form

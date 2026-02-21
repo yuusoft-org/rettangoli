@@ -1,5 +1,6 @@
 ---
-template: fe-documentation
+template: base
+docsDataKey: feDocs
 title: Schema
 tags: documentation
 sidebarId: fe-schema

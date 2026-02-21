@@ -5,89 +5,28 @@ These files are distribution assets, not `@rettangoli/sites` runtime source code
 
 ## Docs Bundle
 
-Template URL:
-
-`https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs/documentation.yaml`
+Docs assets are partial-only.
+There is no dedicated docs template; docs pages should use `template: base`.
 
 Partial URL:
 
 `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs/mobile-nav.yaml`
 
-`sites.config.yaml` example:
-
-```yaml
-imports:
-  templates:
-    docs/documentation: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs/documentation.yaml
-  partials:
-    docs/mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs/mobile-nav.yaml
-```
-
-Page frontmatter example:
-
-```yaml
----
-template: docs/documentation
-title: Getting Started
-sidebarId: intro
----
-```
-
-Required template data:
-
-- `title`
-- `docsLayout.sidebar.header` (object for sidebar header)
-- `docsLayout.sidebar.items` (sidebar items)
-- `docsLayout.assets.stylesheets` (array of stylesheet URLs)
-- `docsLayout.assets.scripts` (array of script URLs)
-
-Optional data:
-
-- `docsLayout.metaDescription`
-- `docsLayout.canonicalUrl`
-
-Create `data/docsLayout.yaml`:
-
-```yaml
-assets:
-  stylesheets:
-    - https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc14/dist/themes/base.css
-    - https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc14/dist/themes/theme-rtgl-slate.css
-  scripts:
-    - https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js
-    - https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc14/dist/rettangoli-iife-ui.min.js
-
-metaDescription: Documentation portal
-canonicalUrl: https://example.com/docs/getting-started/
-
-sidebar:
-  header:
-    label: Docs
-    href: /
-  items:
-    - title: Introduction
-      type: groupLabel
-      items:
-        - id: intro
-          title: Introduction
-          href: /docs/introduction/
-```
-
 ## Rettangoli.dev Shared Assets
 
-Rettangoli.dev keeps per-library docs template wrappers locally in
-`apps/rettangoli.dev/templates/` and uses these shared import assets:
+Rettangoli.dev docs and non-doc pages both use the same shared `base` template.
+Docs pages set `docsDataKey` in page frontmatter to enable docs layout.
 
-Template URLs:
+Template URL:
 
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/base.yaml`
-- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/documentation.yaml`
 
 Partial URLs:
 
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/seo1.yaml`
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/navbar1.yaml`
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/mobile-nav1.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/docs-sidebar1.yaml`
 
 `sites.config.yaml` alias example:
 
@@ -95,12 +34,30 @@ Partial URLs:
 imports:
   templates:
     base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/base.yaml
-    documentation: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/documentation.yaml
   partials:
     seo1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/seo1.yaml
     navbar1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/navbar1.yaml
     mobile-nav1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/mobile-nav1.yaml
+    docs-sidebar1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/docs-sidebar1.yaml
 ```
+
+Docs page frontmatter example:
+
+```yaml
+---
+template: base
+docsDataKey: docs
+title: Getting Started
+sidebarId: getting-started
+---
+```
+
+Supported `docsDataKey` values in rettangoli.dev:
+
+- `docs`
+- `feDocs`
+- `sitesDocs`
+- `vtDocs`
 
 ## Default Scaffold Base Template
 

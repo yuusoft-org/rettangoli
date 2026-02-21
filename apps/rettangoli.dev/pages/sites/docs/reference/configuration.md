@@ -1,5 +1,6 @@
 ---
-template: sites-documentation
+template: base
+docsDataKey: sitesDocs
 title: Configuration
 tags: documentation
 sidebarId: sites-configuration

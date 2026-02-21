@@ -1,5 +1,6 @@
 ---
-template: vt-documentation
+template: base
+docsDataKey: vtDocs
 title: CLI
 tags: documentation
 sidebarId: vt-cli

@@ -71,7 +71,7 @@ build:
   keepMarkdownFiles: false
 imports:
   templates:
-    docs/documentation: https://example.com/templates/docs-documentation.yaml
+    base: https://example.com/templates/base.yaml
   partials:
     docs/nav: https://example.com/partials/docs-nav.yaml
 ```
@@ -93,7 +93,7 @@ Example mappings:
 - `pages/docs/intro.md` -> `_site/docs/intro/index.html` and `_site/docs/intro.md`
 
 `imports` lets you map aliases to remote YAML files (HTTP/HTTPS only). Use aliases in pages/templates:
-- page frontmatter: `template: docs/documentation`
+- page frontmatter: `template: base`
 - template/page content: `$partial: docs/nav`
 
 Imported files are cached on disk under `.rettangoli/sites/imports/{templates|partials}/` (hashed filenames).
@@ -107,10 +107,10 @@ If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it wi
 ## Pre-published Import Assets
 
 `@rettangoli/sites` publishes reusable template/partial YAML assets under `sites/` for URL imports.
+Docs are now modeled as page-level data on top of `base` template (no standalone docs template).
 
-- Docs template: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs/documentation.yaml`
 - Docs partial: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs/mobile-nav.yaml`
-- Rettangoli.dev shared templates: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/{base,documentation}.yaml`
+- Rettangoli.dev shared templates: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/base.yaml`
 - Rettangoli.dev partials: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/*.yaml`
 - Default scaffold base: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/default/base.yaml`
 

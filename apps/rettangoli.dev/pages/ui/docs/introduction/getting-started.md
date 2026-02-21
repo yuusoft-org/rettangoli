@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Getting Started
 tags: documentation
 sidebarId: getting-started

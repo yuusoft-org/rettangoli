@@ -11,14 +11,39 @@
         - script src="/public/rtgl-icons.js":
 
     - body.dark:
-        - rtgl-view:
-            - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
-                - $partial: navbar1
-                  title: ${site.navbar.title}
-                  cta: ${site.navbar.cta}
-            - rtgl-view w=f:
-                - rtgl-view h="48":
-                - rtgl-view w="f" ah="c":
-                    - rtgl-view w=f ph="lg" pb="lg" ah=c:
+        - $if docsDataKey:
+            - $partial: mobile-nav1
+              headerLabel: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].header.label}"
+              headerHref: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].header.href}"
+              header: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].header}"
+              items: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].items}"
+              sidebarId: ${sidebarId}
+
+            - rtgl-view bgc="bg" w="f" d=h:
+                - 'rtgl-view md-hide pos=fix h=100vh bgc=bg style="left: 0"':
+                    - $partial: docs-sidebar1
+                      sidebarId: ${sidebarId}
+                      header: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].header}"
+                      items: "${{ docs: docs, feDocs: feDocs, sitesDocs: sitesDocs, vtDocs: vtDocs }[docsDataKey].items}"
+                - rtgl-view md-hide xl-show hide w=272:
+                - rtgl-view w="1fg" ah=c:
+                    - rtgl-view pv="lg" lg-w="100vw" w="720" ph="lg" sv id="content-container":
+                        - rtgl-view hide md-show h=56:
+                        - rtgl-text s="h1" mb="lg": ${title}
                         - "${content}"
+                        - rtgl-view h=200:
+                - 'rtgl-view xl-hide style="position: fixed; right: 0"':
+                    - rtgl-page-outline id="page-outline" target-id="content-container" scroll-container-id="window" offset-top="80":
+          $else:
+            - rtgl-view:
+                - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
+                    - $partial: navbar1
+                      title: ${site.navbar.title}
+                      cta: ${site.navbar.cta}
+                - rtgl-view w=f:
+                    - rtgl-view h="48":
+                    - rtgl-view w="f" ah="c":
+                        - rtgl-view w=f ph="lg" pb="lg" ah=c:
+                            - "${content}"
+
         - script src="/public/mobile-nav.js":

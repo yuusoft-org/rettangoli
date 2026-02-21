@@ -1,5 +1,6 @@
 ---
-template: fe-documentation
+template: base
+docsDataKey: feDocs
 title: Refs & Events
 tags: documentation
 sidebarId: fe-refs-and-events

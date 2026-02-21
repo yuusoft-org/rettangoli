@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Slider Input
 tags: documentation
 sidebarId: rtgl-slider-input

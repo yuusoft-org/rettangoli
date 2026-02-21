@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: SVG
 tags: documentation
 sidebarId: rtgl-svg

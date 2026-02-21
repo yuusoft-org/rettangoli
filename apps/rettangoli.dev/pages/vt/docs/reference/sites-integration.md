@@ -1,5 +1,6 @@
 ---
-template: vt-documentation
+template: base
+docsDataKey: vtDocs
 title: Sites Integration
 tags: documentation
 sidebarId: vt-sites-integration

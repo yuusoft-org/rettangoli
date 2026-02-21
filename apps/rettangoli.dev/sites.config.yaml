@@ -1,10 +1,11 @@
 imports:
   templates:
-    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc6/sites/templates/rettangoli-dev/base.yaml
+    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc7/sites/templates/rettangoli-dev/base.yaml
   partials:
-    seo1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc6/sites/partials/rettangoli-dev/seo1.yaml
-    navbar1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc6/sites/partials/rettangoli-dev/navbar1.yaml
-    mobile-nav1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc6/sites/partials/rettangoli-dev/mobile-nav1.yaml
+    seo1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc7/sites/partials/rettangoli-dev/seo1.yaml
+    navbar1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc7/sites/partials/rettangoli-dev/navbar1.yaml
+    mobile-nav1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc7/sites/partials/rettangoli-dev/mobile-nav1.yaml
+    docs-sidebar1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc7/sites/partials/rettangoli-dev/docs-sidebar1.yaml
 
 markdownit:
   html: true

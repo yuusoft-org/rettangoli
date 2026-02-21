@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Image
 tags: documentation
 sidebarId: rtgl-image

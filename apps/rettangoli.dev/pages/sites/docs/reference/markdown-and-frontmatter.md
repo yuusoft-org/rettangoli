@@ -1,5 +1,6 @@
 ---
-template: sites-documentation
+template: base
+docsDataKey: sitesDocs
 title: Markdown & Frontmatter
 tags: documentation
 sidebarId: sites-markdown-and-frontmatter
@@ -13,7 +14,8 @@ Markdown pages can include frontmatter for template and page metadata.
 
 ```md
 ---
-template: documentation
+template: base
+docsDataKey: sitesDocs
 title: Introduction
 tags:
   - docs

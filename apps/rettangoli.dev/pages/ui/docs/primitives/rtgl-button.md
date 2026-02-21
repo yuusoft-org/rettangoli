@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Button
 tags: documentation
 sidebarId: rtgl-button

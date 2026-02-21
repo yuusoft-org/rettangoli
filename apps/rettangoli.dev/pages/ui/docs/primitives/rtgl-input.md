@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Input
 tags: documentation
 sidebarId: rtgl-input

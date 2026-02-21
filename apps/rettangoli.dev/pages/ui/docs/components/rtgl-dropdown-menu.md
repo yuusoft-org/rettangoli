@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Dropdown Menu
 tags: documentation
 sidebarId: rtgl-dropdown-menu

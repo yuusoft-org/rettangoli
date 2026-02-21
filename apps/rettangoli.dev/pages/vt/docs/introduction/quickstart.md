@@ -1,5 +1,6 @@
 ---
-template: vt-documentation
+template: base
+docsDataKey: vtDocs
 title: Quickstart
 tags: documentation
 sidebarId: vt-quickstart

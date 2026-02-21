@@ -1,5 +1,6 @@
 ---
-template: sites-documentation
+template: base
+docsDataKey: sitesDocs
 title: Template Functions
 tags: documentation
 sidebarId: sites-template-functions

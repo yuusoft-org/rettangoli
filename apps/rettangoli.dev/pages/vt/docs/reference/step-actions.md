@@ -1,5 +1,6 @@
 ---
-template: vt-documentation
+template: base
+docsDataKey: vtDocs
 title: Step Actions
 tags: documentation
 sidebarId: vt-step-actions

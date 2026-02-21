@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: View
 tags: documentation
 sidebarId: rtgl-view

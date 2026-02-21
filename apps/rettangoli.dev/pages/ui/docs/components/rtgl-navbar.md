@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Navbar
 tags: documentation
 sidebarId: rtgl-navbar

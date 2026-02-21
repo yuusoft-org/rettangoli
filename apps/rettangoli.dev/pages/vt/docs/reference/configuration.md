@@ -1,5 +1,6 @@
 ---
-template: vt-documentation
+template: base
+docsDataKey: vtDocs
 title: Configuration
 tags: documentation
 sidebarId: vt-configuration

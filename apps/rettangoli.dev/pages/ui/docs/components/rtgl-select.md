@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Select
 tags: documentation
 sidebarId: rtgl-select

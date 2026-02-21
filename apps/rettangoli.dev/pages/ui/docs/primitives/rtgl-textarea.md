@@ -1,5 +1,6 @@
 ---
-template: documentation
+template: base
+docsDataKey: docs
 title: Textarea
 tags: documentation
 sidebarId: rtgl-textarea

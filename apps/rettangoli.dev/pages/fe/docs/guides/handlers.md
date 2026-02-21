@@ -1,5 +1,6 @@
 ---
-template: fe-documentation
+template: base
+docsDataKey: feDocs
 title: Handlers
 tags: documentation
 sidebarId: fe-handlers
