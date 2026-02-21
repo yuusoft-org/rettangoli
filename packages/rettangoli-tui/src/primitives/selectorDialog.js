@@ -3,6 +3,26 @@ import { ansi } from "../tui/ansi.js";
 const ANSI_SEQUENCE_REGEX = /\u001b\[[0-9;]*m/g;
 const YES_VALUES = new Set(["", "1", "true", "yes", "on"]);
 const DIALOG_MODE_TOKENS = new Set(["dialog", "floating", "center", "modal"]);
+const SIZE_PRESETS = {
+  sm: {
+    widthRatio: 0.5,
+    minWidth: 36,
+    maxWidth: 56,
+    maxHeight: 12,
+  },
+  md: {
+    widthRatio: 0.64,
+    minWidth: 44,
+    maxWidth: 72,
+    maxHeight: 16,
+  },
+  lg: {
+    widthRatio: 0.78,
+    minWidth: 56,
+    maxWidth: 92,
+    maxHeight: 22,
+  },
+};
 
 const isTrue = (value) => {
   if (value === true || value === 1) {
@@ -143,8 +163,17 @@ const resolveSelectorMode = (value) => {
   return "fullscreen";
 };
 
+const resolveDialogSize = (value) => {
+  const token = String(value || "md").toLowerCase();
+  if (SIZE_PRESETS[token]) {
+    return token;
+  }
+  return "md";
+};
+
 const resolveDialogFrame = ({
   mode,
+  size,
   optionCount,
   attrs,
   props,
@@ -162,13 +191,23 @@ const resolveDialogFrame = ({
 
   const maxWidth = Math.max(18, terminalWidth - 2);
   const maxHeight = Math.max(8, terminalHeight - 2);
+  const preset = SIZE_PRESETS[size] || SIZE_PRESETS.md;
 
   const widthValue = toNumber(props.w ?? attrs.w);
-  const defaultWidth = Math.min(72, maxWidth);
+  const presetWidth = Math.floor(terminalWidth * preset.widthRatio);
+  const defaultWidth = clamp(
+    presetWidth,
+    Math.min(preset.minWidth, maxWidth),
+    Math.min(preset.maxWidth, maxWidth),
+  );
   const width = clamp(widthValue ?? defaultWidth, 18, maxWidth);
 
   const heightValue = toNumber(props.h ?? attrs.h);
-  const autoHeight = clamp(optionCount + 7, 8, maxHeight);
+  const autoHeight = clamp(
+    optionCount + 7,
+    8,
+    Math.min(preset.maxHeight, maxHeight),
+  );
   const height = clamp(heightValue ?? autoHeight, 8, maxHeight);
 
   const defaultX = Math.max(1, Math.floor((terminalWidth - width) / 2) + 1);
@@ -203,6 +242,7 @@ const renderSelectorDialog = ({ attrs, props, renderChildren }) => {
   const title = String(props.title || attrs.title || "Select Option");
   const options = normalizeOptions(props.options ?? attrs.options);
   const mode = resolveSelectorMode(props.mode ?? attrs.mode);
+  const size = resolveDialogSize(props.size ?? attrs.size);
   const safeSelectedIndex = clamp(
     Number(props.selectedIndex ?? attrs.selectedIndex) || 0,
     0,
@@ -220,6 +260,7 @@ const renderSelectorDialog = ({ attrs, props, renderChildren }) => {
   const terminalSize = resolveTerminalSize();
   const { width, height, x, y } = resolveDialogFrame({
     mode,
+    size,
     optionCount: options.length,
     attrs,
     props,

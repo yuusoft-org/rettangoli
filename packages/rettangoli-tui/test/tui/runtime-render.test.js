@@ -47,7 +47,7 @@ const view = {
           "rtgl-selector-dialog title='Select environment' open=${selectorOpen} :options=selectorOptions :selectedIndex=2": null,
         },
         {
-          "rtgl-selector-dialog title='Select action' mode=dialog open=${selectorDialogOpen} :options=selectorDialogOptions :selectedIndex=1 w=42 h=10": null,
+          "rtgl-selector-dialog title='Select action' mode=dialog size=sm open=${selectorDialogOpen} :options=selectorDialogOptions :selectedIndex=1": null,
         },
       ],
     },

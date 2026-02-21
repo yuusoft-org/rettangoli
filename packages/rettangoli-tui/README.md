@@ -70,7 +70,8 @@ Dialog renders as a floating overlay layer and does not consume normal layout fl
 - `:options=${array}` (string/object options)
 - `:selectedIndex=${index}` (highlighted option)
 - `mode="fullscreen"` (default) or `mode="dialog"`/`"floating"` (centered box)
-- optional `w`, `h`, `x`, `y` for dialog mode sizing/position
+- `size="sm" | "md" | "lg"` for dialog mode (`md` default)
+- optional `x`, `y` for dialog mode position
 - optional child text as hint line (for key instructions)
 
 Selector dialog keyboard behavior is handled in component handlers:
@@ -87,6 +88,7 @@ Interactive runtime exposes a global selector service in handlers:
 const result = await deps.ui.select({
   title: "Select Environment",
   mode: "dialog", // "fullscreen" (default) or "dialog"
+  size: "md",     // "sm" | "md" | "lg"
   options: [
     { id: "local", label: "Local" },
     { id: "staging", label: "Staging" },
@@ -94,8 +96,6 @@ const result = await deps.ui.select({
   ],
   selectedIndex: 0,
   hint: "ArrowUp/ArrowDown move, Enter select, Esc cancel",
-  w: 56, // optional, dialog mode
-  h: 12, // optional, dialog mode
 });
 
 if (result) {
@@ -116,7 +116,7 @@ Use primitive mode when you want fully declarative component state:
 
 ```yaml
 template:
-  - rtgl-selector-dialog open=${selectorOpen} :mode=selectorMode title="Pick Environment" :options=selectorOptions :selectedIndex=selectorIndex w=56 h=12:
+  - rtgl-selector-dialog open=${selectorOpen} :mode=selectorMode size=md title="Pick Environment" :options=selectorOptions :selectedIndex=selectorIndex:
       - rtgl-text: "ArrowUp/ArrowDown to move, Enter select, Esc cancel"
 ```
 

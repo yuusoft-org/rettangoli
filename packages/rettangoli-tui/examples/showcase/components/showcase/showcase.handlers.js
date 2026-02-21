@@ -111,10 +111,9 @@ const openEnvironmentSelector = async (deps, mode) => {
       title: "Select Environment",
       options,
       mode,
+      size: mode === "dialog" ? "md" : "lg",
       selectedIndex: resolveSelectedEnvironmentIndex(currentState),
       hint: "ArrowUp/ArrowDown move, Enter select, Esc cancel",
-      w: 60,
-      h: 12,
     });
 
     if (result?.option) {
