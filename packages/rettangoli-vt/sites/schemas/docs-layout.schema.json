@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cdn.jsdelivr.net/npm/@rettangoli/vt@latest/sites/schemas/docs-layout.schema.json",
+  "title": "Rettangoli Docs Layout",
+  "type": "object",
+  "required": [
+    "assets",
+    "sidebar"
+  ],
+  "properties": {
+    "assets": {
+      "type": "object",
+      "required": [
+        "stylesheets",
+        "scripts"
+      ],
+      "properties": {
+        "stylesheets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "scripts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "sidebar": {
+      "type": "object",
+      "required": [
+        "header",
+        "items"
+      ],
+      "properties": {
+        "header": {
+          "type": "object",
+          "required": [
+            "label",
+            "href"
+          ],
+          "properties": {
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "href": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": true
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "metaDescription": {
+      "type": "string"
+    },
+    "canonicalUrl": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

@@ -13,6 +13,14 @@ Partial URL:
 
 `https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/partials/docs/mobile-nav.yaml`
 
+Schema URL:
+
+`https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/schemas/docs-layout.schema.json`
+
+Starter data file URL:
+
+`https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/data/docs-layout.example.yaml`
+
 `sites.config.yaml` example:
 
 ```yaml
@@ -35,11 +43,41 @@ sidebarId: intro
 
 Required template data:
 
-- `docs.header` (object for sidebar header)
-- `docs.items` (sidebar items)
 - `title`
+- `docsLayout.sidebar.header` (object for sidebar header)
+- `docsLayout.sidebar.items` (sidebar items)
+- `docsLayout.assets.stylesheets` (array of stylesheet URLs)
+- `docsLayout.assets.scripts` (array of script URLs)
 
 Optional data:
 
-- `seo.description`
-- `site.baseUrl` (used with `page.url` for canonical URL)
+- `docsLayout.metaDescription`
+- `docsLayout.canonicalUrl`
+
+Create `data/docsLayout.yaml`:
+
+```yaml
+# yaml-language-server: $schema=https://cdn.jsdelivr.net/npm/@rettangoli/vt@latest/sites/schemas/docs-layout.schema.json
+assets:
+  stylesheets:
+    - https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc14/dist/themes/base.css
+    - https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc14/dist/themes/theme-rtgl-slate.css
+  scripts:
+    - https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js
+    - https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc14/dist/rettangoli-iife-ui.min.js
+
+metaDescription: Documentation portal
+canonicalUrl: https://example.com/docs/getting-started/
+
+sidebar:
+  header:
+    label: Docs
+    href: /
+  items:
+    - title: Introduction
+      type: groupLabel
+      items:
+        - id: intro
+          title: Introduction
+          href: /docs/introduction/
+```

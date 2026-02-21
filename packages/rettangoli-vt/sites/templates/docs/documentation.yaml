@@ -3,23 +3,26 @@
         - meta charset="utf-8":
         - meta name="viewport" content="width=device-width,initial-scale=1":
         - title: ${title}
-        - $if seo && seo.description:
-            - meta name="description" content="${seo.description}":
-        - $if site && site.baseUrl && page && page.url:
-            - link rel="canonical" href="${site.baseUrl}${page.url}":
-        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc13/dist/themes/base.css":
-        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc13/dist/themes/theme-rtgl-slate.css":
-        - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
-        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc13/dist/rettangoli-iife-ui.min.js":
+        - $if docsLayout && docsLayout.metaDescription:
+            - meta name="description" content="${docsLayout.metaDescription}":
+        - $if docsLayout && docsLayout.canonicalUrl:
+            - link rel="canonical" href="${docsLayout.canonicalUrl}":
+        - $if docsLayout && docsLayout.assets && docsLayout.assets.stylesheets:
+            - $for href in docsLayout.assets.stylesheets:
+                - link rel="stylesheet" href="${href}":
+        - $if docsLayout && docsLayout.assets && docsLayout.assets.scripts:
+            - $for src in docsLayout.assets.scripts:
+                - script src="${src}":
 
     - body.dark:
         - $partial: docs/mobile-nav
-          docs: ${docs}
+          docsLayout: ${docsLayout}
           sidebarId: ${sidebarId}
 
         - rtgl-view bgc="bg" w="f" d=h:
-            - 'rtgl-view md-hide pos=fix h=100vh bgc=bg style="left: 0"':
-                - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(docs.header))}" items="${encodeURIComponent(jsonStringify(docs.items))}":
+            - $if docsLayout && docsLayout.sidebar && docsLayout.sidebar.header && docsLayout.sidebar.items:
+                - 'rtgl-view md-hide pos=fix h=100vh bgc=bg style="left: 0"':
+                    - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(docsLayout.sidebar.header))}" items="${encodeURIComponent(jsonStringify(docsLayout.sidebar.items))}":
             - rtgl-view md-hide xl-show hide w=272:
             - rtgl-view w="1fg" ah=c:
                 - rtgl-view pv="lg" lg-w="100vw" w="720" ph="lg" sv id="content-container":
