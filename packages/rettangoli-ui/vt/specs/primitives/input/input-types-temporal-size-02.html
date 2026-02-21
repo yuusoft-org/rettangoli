@@ -1,0 +1,38 @@
+---
+title: Input - Type - Native Temporal Sizes and Constraints
+description: Verifies temporal native inputs with size variants and min/max/step attributes.
+specs:
+  - Date, time, and datetime-local values render with temporal icons.
+  - Small size variant keeps temporal controls aligned and legible.
+  - Min, max, and step constrained values keep normal input geometry.
+viewport:
+  id: temporal-wide
+  width: 1600
+  height: 900
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-view g="sm" w="420">
+    <rtgl-text s="sm" c="mu-fg">date constrained</rtgl-text>
+    <rtgl-input type="date" value="2026-08-15" min="2026-01-01" max="2026-12-31"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="420">
+    <rtgl-text s="sm" c="mu-fg">time constrained (15 min step)</rtgl-text>
+    <rtgl-input type="time" value="13:45" min="09:00" max="18:00" step="900"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="420">
+    <rtgl-text s="sm" c="mu-fg">datetime constrained</rtgl-text>
+    <rtgl-input type="datetime-local" value="2026-08-15T13:45" min="2026-01-01T09:00" max="2026-12-31T18:00" step="60"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="420">
+    <rtgl-text s="sm" c="mu-fg">date small</rtgl-text>
+    <rtgl-input s="sm" type="date" value="2026-08-15"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="420">
+    <rtgl-text s="sm" c="mu-fg">time small disabled</rtgl-text>
+    <rtgl-input s="sm" type="time" value="13:45" disabled></rtgl-input>
+  </rtgl-view>
+</rtgl-view>

@@ -1,0 +1,33 @@
+---
+title: Input - Type - Native Temporal
+description: Verifies native date, time, and datetime-local inputs inherit RTGL input styling.
+specs:
+  - Native temporal input types render with RTGL geometry and typography.
+  - Default values are visible for date, time, and datetime-local types.
+  - Disabled temporal input preserves non-interactive style treatment.
+viewport:
+  id: temporal-wide
+  width: 1600
+  height: 1000
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-view g="sm" w="420">
+    <rtgl-text s="sm" c="mu-fg">date</rtgl-text>
+    <rtgl-input type="date" value="2026-02-14"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="420">
+    <rtgl-text s="sm" c="mu-fg">time</rtgl-text>
+    <rtgl-input type="time" value="09:30" step="60"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="420">
+    <rtgl-text s="sm" c="mu-fg">datetime-local</rtgl-text>
+    <rtgl-input type="datetime-local" value="2026-02-14T09:30" step="60"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="420">
+    <rtgl-text s="sm" c="mu-fg">date disabled</rtgl-text>
+    <rtgl-input type="date" value="2026-02-14" disabled></rtgl-input>
+  </rtgl-view>
+</rtgl-view>

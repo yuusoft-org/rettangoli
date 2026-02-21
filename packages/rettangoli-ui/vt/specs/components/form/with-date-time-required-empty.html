@@ -1,0 +1,77 @@
+---
+title: "With Date Time Required Empty"
+description: Validate required precedence for empty temporal fields.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 920
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '360');
+
+  form.defaultValues = {
+    requiredDate: '',
+    requiredTime: '',
+    requiredDateTime: '',
+  };
+
+  form.form = {
+    title: 'Temporal Required Empty',
+    description: 'Required messages should appear for all empty temporal fields',
+    fields: [{
+      name: 'requiredDate',
+      type: 'input-date',
+      label: 'Required Date',
+      required: { message: 'Date is required' },
+      min: '2028-01-01',
+    }, {
+      name: 'requiredTime',
+      type: 'input-time',
+      label: 'Required Time',
+      required: { message: 'Time is required' },
+      min: '08:00',
+      max: '18:00',
+    }, {
+      name: 'requiredDateTime',
+      type: 'input-datetime',
+      label: 'Required DateTime',
+      required: { message: 'DateTime is required' },
+      min: '2028-01-01T08:00',
+      max: '2028-12-31T18:00',
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Validate',
+        validate: true,
+      }],
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  const setSubmitButtonTestId = () => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    if (btn) {
+      btn.setAttribute('data-testid', 'submit-btn');
+      return;
+    }
+    setTimeout(setSubmitButtonTestId, 0);
+  };
+  setSubmitButtonTestId();
+</script>
