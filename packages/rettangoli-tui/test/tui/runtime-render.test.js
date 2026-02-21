@@ -11,6 +11,8 @@ const schema = {
     properties: {
       title: { type: "string" },
       dialogOpen: { type: "boolean" },
+      selectorOpen: { type: "boolean" },
+      selectorDialogOpen: { type: "boolean" },
     },
   },
 };
@@ -41,6 +43,12 @@ const view = {
             { "rtgl-text": "inside dialog" },
           ],
         },
+        {
+          "rtgl-selector-dialog title='Select environment' size=f open=${selectorOpen} :options=selectorOptions :selectedIndex=2": null,
+        },
+        {
+          "rtgl-selector-dialog title='Select action' size=sm open=${selectorDialogOpen} :options=selectorDialogOptions :selectedIndex=1": null,
+        },
       ],
     },
   ]),
@@ -54,6 +62,16 @@ const store = {
     items: [
       { label: "ship v1", done: false },
       { label: "release notes", done: true },
+    ],
+    selectorOptions: [
+      { id: "local", label: "Local environment" },
+      { id: "staging", label: "Staging cluster" },
+      { id: "production", label: "Production cluster" },
+    ],
+    selectorDialogOptions: [
+      { id: "open", label: "Open settings" },
+      { id: "rename", label: "Rename item" },
+      { id: "delete", label: "Delete item" },
     ],
     tableData: {
       columns: [
@@ -72,6 +90,8 @@ const store = {
       ...state,
       title: props.title || "demo",
       dialogOpen: !!props.dialogOpen,
+      selectorOpen: !!props.selectorOpen,
+      selectorDialogOpen: !!props.selectorDialogOpen,
     };
   },
 };
@@ -101,6 +121,8 @@ describe("tui runtime", () => {
       props: {
         title: "Ops",
         dialogOpen: true,
+        selectorOpen: true,
+        selectorDialogOpen: true,
       },
     });
 
@@ -120,6 +142,12 @@ describe("tui runtime", () => {
     expect(output).toContain("alpha");
     expect(output).toContain("Preview");
     expect(output).toContain("inside dialog");
+    expect(output).toContain("Select environment");
+    expect(output).toContain("Staging cluster");
+    expect(output).toContain("Production cluster");
+    expect(output).toContain("Select action");
+    expect(output).toContain("Rename item");
+    expect(output).toContain("Use ArrowUp/ArrowDown and Enter to select");
     expect(output).toContain("╭");
     expect(output).toContain("\u001b[s");
     expect(output).toContain("\u001b[");
@@ -149,10 +177,14 @@ describe("tui runtime", () => {
       props: {
         title: "Ops",
         dialogOpen: false,
+        selectorOpen: false,
+        selectorDialogOpen: false,
       },
     });
 
     expect(output).not.toContain("inside dialog");
+    expect(output).not.toContain("Staging cluster");
+    expect(output).not.toContain("Rename item");
   });
 
   it("keeps base flow line count stable when dialog toggles", () => {
@@ -179,6 +211,8 @@ describe("tui runtime", () => {
       props: {
         title: "Ops",
         dialogOpen: true,
+        selectorOpen: true,
+        selectorDialogOpen: true,
       },
     });
 
@@ -187,6 +221,8 @@ describe("tui runtime", () => {
       props: {
         title: "Ops",
         dialogOpen: false,
+        selectorOpen: false,
+        selectorDialogOpen: false,
       },
     });
 

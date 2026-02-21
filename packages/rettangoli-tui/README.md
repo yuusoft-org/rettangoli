@@ -17,6 +17,7 @@ import { createComponent, createTuiRuntime } from "@rettangoli/tui";
 
 - `createComponent(componentFiles, deps)` creates a TUI component class using FE contracts.
 - `createTuiRuntime({ componentRegistry })` renders registered components to terminal strings.
+- In interactive mode (`runtime.start(...)`), handlers receive `deps.ui.select(...)` for global selector prompts.
 
 ## Default TUI Primitives
 
@@ -30,6 +31,7 @@ Included core primitives:
 - `rtgl-textarea`
 - `rtgl-divider`
 - `rtgl-dialog`
+- `rtgl-selector-dialog`
 
 `rtgl-divider` supports:
 
@@ -60,6 +62,68 @@ Included core primitives:
 - `y=12` (top row offset)
 
 Dialog renders as a floating overlay layer and does not consume normal layout flow.
+
+`rtgl-selector-dialog` supports:
+
+- `open` / `open=true` (show selector overlay)
+- `title="Select option"`
+- `:options=${array}` (string/object options)
+- `:selectedIndex=${index}` (highlighted option)
+- `size="f"` for fullscreen
+- `size="sm" | "md" | "lg"` for centered dialog (`md` default)
+- optional `x`, `y` to override centered dialog position
+- optional child text as hint line (for key instructions)
+
+Selector dialog keyboard behavior is handled in component handlers:
+
+- `ArrowUp` / `ArrowDown`: update `selectedIndex` in store
+- `Enter`: confirm selected option in store
+- `Esc`: close selector dialog
+
+## Global Selector Service (Recommended)
+
+Interactive runtime exposes a global selector service in handlers:
+
+```js
+const result = await deps.ui.select({
+  title: "Select Environment",
+  size: "md", // "f" fullscreen, or "sm" | "md" | "lg" centered dialog
+  options: [
+    { id: "local", label: "Local" },
+    { id: "staging", label: "Staging" },
+    { id: "production", label: "Production" },
+  ],
+  selectedIndex: 0,
+  hint: "ArrowUp/ArrowDown move, Enter select, Esc cancel",
+});
+
+if (result) {
+  // result = { index, option }
+  console.log(result.option);
+}
+```
+
+Service behavior:
+
+- returns `Promise<{ index, option } | null>`
+- `null` means user canceled (`Esc` or `q`)
+- while open, selector captures input globally (component handlers do not receive keys)
+
+## Using `rtgl-selector-dialog` Primitive (Manual)
+
+Use primitive mode when you want fully declarative component state:
+
+```yaml
+template:
+  - rtgl-selector-dialog open=${selectorOpen} size=md title="Pick Environment" :options=selectorOptions :selectedIndex=selectorIndex:
+      - rtgl-text: "ArrowUp/ArrowDown to move, Enter select, Esc cancel"
+```
+
+Then implement key handling in your store/handlers for:
+
+- `ArrowUp` / `ArrowDown`
+- `Enter`
+- `Esc`
 
 For rich multiline input you can either:
 
@@ -125,9 +189,12 @@ Showcase controls:
 
 - `q` quit
 - `r` reset demo state
+- `s` open global full-screen selector
+- `f` open global centered selector
 - `d`/`t` open title editor dialog
 - `e` open task content in external editor
 - `ArrowUp` / `ArrowDown` move selected task row
+- inside selector dialog: `ArrowUp` / `ArrowDown` move, `Enter` select, `Esc` cancel
 - inside title dialog: type (auto-wrap), `Enter`, `Backspace`, arrows
 - `Ctrl+S` save title, `Esc` cancel
 
