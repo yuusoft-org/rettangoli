@@ -239,4 +239,61 @@ describe('loadSiteConfig', () => {
       await expect(loadSiteConfig(tempDir)).rejects.toThrow('Invalid build option "keepMarkdownFiles"');
     });
   });
+
+  it('loads imports.templates and imports.partials alias maps', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'imports:',
+          '  templates:',
+          '    docs/layout: https://example.com/templates/docs-layout.yaml',
+          '  partials:',
+          '    docs/nav: https://example.com/partials/docs-nav.yaml'
+        ].join('\n')
+      );
+
+      const config = await loadSiteConfig(tempDir);
+      expect(config).toEqual({
+        imports: {
+          templates: {
+            'docs/layout': 'https://example.com/templates/docs-layout.yaml'
+          },
+          partials: {
+            'docs/nav': 'https://example.com/partials/docs-nav.yaml'
+          }
+        }
+      });
+    });
+  });
+
+  it('throws on unsupported imports group', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'imports:',
+          '  data:',
+          '    shared/site: https://example.com/data/site.yaml'
+        ].join('\n')
+      );
+
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Unsupported imports group "data"');
+    });
+  });
+
+  it('throws on invalid imports URL protocol', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'imports:',
+          '  templates:',
+          '    docs/layout: ftp://example.com/layout.yaml'
+        ].join('\n')
+      );
+
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('protocol "ftp:" is not supported');
+    });
+  });
 });

@@ -1,5 +1,7 @@
 ---
-template: documentation
+template: docs
+_bind:
+  docs: docs
 title: Color Picker
 tags: documentation
 sidebarId: rtgl-color-picker

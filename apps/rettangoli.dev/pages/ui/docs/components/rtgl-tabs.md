@@ -1,5 +1,7 @@
 ---
-template: documentation
+template: docs
+_bind:
+  docs: docs
 title: Tabs
 tags: documentation
 sidebarId: rtgl-tabs

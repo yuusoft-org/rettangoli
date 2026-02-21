@@ -1,5 +1,7 @@
 ---
-template: fe-documentation
+template: docs
+_bind:
+  docs: feDocs
 title: Getting Started
 tags: documentation
 sidebarId: fe-getting-started

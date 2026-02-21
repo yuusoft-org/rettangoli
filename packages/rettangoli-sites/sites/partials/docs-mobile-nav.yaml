@@ -1,0 +1,7 @@
+- $if docsLayout && docsLayout.sidebar && docsLayout.sidebar.header && docsLayout.sidebar.items:
+    - 'rtgl-view hide md-show w=f d=v bgc=bg':
+        - 'rtgl-view pos=fix w=f h=56 bgc=bg av=c ph=lg bwb=xs z=10 style="top:0;left:0"':
+            - 'a href="${docsLayout.sidebar.header.href}" style="text-decoration:none;display:contents;color:inherit;"':
+                - rtgl-text s=md: ${docsLayout.sidebar.header.label}
+        - rtgl-view h=56:
+        - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(docsLayout.sidebar.header))}" items="${encodeURIComponent(jsonStringify(docsLayout.sidebar.items))}" w=f:

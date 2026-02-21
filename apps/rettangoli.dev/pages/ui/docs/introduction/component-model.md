@@ -1,5 +1,7 @@
 ---
-template: documentation
+template: docs
+_bind:
+  docs: docs
 title: Component Model
 tags: documentation
 sidebarId: component-model
