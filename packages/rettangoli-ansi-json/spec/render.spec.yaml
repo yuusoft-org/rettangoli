@@ -1,0 +1,385 @@
+file: "../src/index.js"
+group: render
+suites: [document, integration, realworld]
+---
+# =============================================================================
+# DOCUMENT STRUCTURE
+# =============================================================================
+suite: document
+exportName: render
+---
+case: minimal document
+in:
+  - content: []
+out: ""
+---
+case: content only
+in:
+  - content: ["Hello"]
+out: "Hello"
+---
+case: with empty styles
+in:
+  - styles: {}
+    content: ["Hello"]
+out: "Hello"
+---
+case: with version
+in:
+  - version: "1.0"
+    content: ["Hello"]
+out: "Hello"
+---
+case: full document structure
+in:
+  - version: "1.0"
+    styles:
+      bold:
+        bold: true
+    content:
+      - text: "Hello"
+        style: bold
+out: "\x1b[1mHello\x1b[0m"
+---
+# =============================================================================
+# INTEGRATION TESTS
+# =============================================================================
+suite: integration
+exportName: render
+---
+case: styles with colors and attributes
+in:
+  - content:
+      - text: "Error"
+        style:
+          fg: red
+          bold: true
+          underline: true
+out: "\x1b[1;4;31mError\x1b[0m"
+---
+case: nested inheritance with controls
+in:
+  - content:
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+      - style:
+          bold: true
+        children:
+          - text: "Title"
+            style:
+              fg: white
+              bg: blue
+out: "\x1b[1;1H\x1b[1;37;44mTitle\x1b[0m"
+---
+case: named styles with inheritance
+in:
+  - styles:
+      base:
+        fg: cyan
+      highlight:
+        bold: true
+        bg: yellow
+    content:
+      - style: base
+        children:
+          - "Normal "
+          - text: "Highlighted"
+            style: highlight
+          - " Normal"
+out: "\x1b[36mNormal \x1b[0m\x1b[1;36;43mHighlighted\x1b[0m\x1b[36m Normal\x1b[0m"
+---
+case: multiple control sequences
+in:
+  - content:
+      - ctrl: cursor
+        hide: true
+      - ctrl: clear
+        mode: screen
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+      - "Content"
+      - ctrl: cursor
+        show: true
+out: "\x1b[?25l\x1b[2J\x1b[1;1HContent\x1b[?25h"
+---
+case: link with inherited style
+in:
+  - styles:
+      linkBase:
+        underline: true
+    content:
+      - style: linkBase
+        children:
+          - ctrl: link
+            url: "https://example.com"
+            text: "Click"
+            style:
+              fg: blue
+out: "\x1b]8;;https://example.com\x07\x1b[4;34mClick\x1b[0m\x1b]8;;\x07"
+---
+case: complex nesting with all node types
+in:
+  - styles:
+      header:
+        bold: true
+        fg: white
+        bg: blue
+    content:
+      - ctrl: clear
+        mode: line
+      - style: header
+        children:
+          - " "
+          - text: "Title"
+          - " "
+      - "\n"
+      - "Plain text "
+      - text: "styled"
+        style:
+          italic: true
+      - ctrl: bell
+out: "\x1b[2K\x1b[1;37;44m \x1b[0m\x1b[1;37;44mTitle\x1b[0m\x1b[1;37;44m \x1b[0m\nPlain text \x1b[3mstyled\x1b[0m\x07"
+---
+case: hex and rgb colors mixed
+in:
+  - content:
+      - text: "Hex"
+        style:
+          fg: "#ff0000"
+      - " "
+      - text: "RGB"
+        style:
+          fg: "rgb(0, 255, 0)"
+      - " "
+      - text: "256"
+        style:
+          fg: 21
+out: "\x1b[38;2;255;0;0mHex\x1b[0m \x1b[38;2;0;255;0mRGB\x1b[0m \x1b[38;5;21m256\x1b[0m"
+---
+case: deeply nested with style accumulation
+in:
+  - content:
+      - style:
+          fg: red
+        children:
+          - style:
+              bold: true
+            children:
+              - style:
+                  underline: true
+                children:
+                  - style:
+                      bg: white
+                    children:
+                      - "Deep"
+out: "\x1b[1;4;31;47mDeep\x1b[0m"
+---
+# =============================================================================
+# REAL WORLD USE CASES
+# =============================================================================
+suite: realworld
+exportName: render
+---
+case: error message
+in:
+  - styles:
+      error:
+        fg: red
+        bold: true
+      errorLabel:
+        fg: white
+        bg: red
+        bold: true
+      dim:
+        dim: true
+    content:
+      - text: " ERROR "
+        style: errorLabel
+      - " "
+      - text: "Failed to connect to database"
+        style: error
+      - "\n"
+      - text: "  at connection.js:42"
+        style: dim
+      - "\n"
+out: "\x1b[1;37;41m ERROR \x1b[0m \x1b[1;31mFailed to connect to database\x1b[0m\n\x1b[2m  at connection.js:42\x1b[0m\n"
+---
+case: menu with selection
+in:
+  - styles:
+      normal:
+        fg: white
+      selected:
+        fg: black
+        bg: white
+        bold: true
+    content:
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+      - text: "  Option 1"
+        style: normal
+      - "\n"
+      - text: "> Option 2"
+        style: selected
+      - "\n"
+      - text: "  Option 3"
+        style: normal
+      - "\n"
+out: "\x1b[1;1H\x1b[37m  Option 1\x1b[0m\n\x1b[1;30;47m> Option 2\x1b[0m\n\x1b[37m  Option 3\x1b[0m\n"
+---
+case: table row
+in:
+  - styles:
+      header:
+        bold: true
+        underline: true
+      cell:
+        fg: cyan
+    content:
+      - text: "ID"
+        style: header
+      - "    "
+      - text: "Name"
+        style: header
+      - "      "
+      - text: "Status"
+        style: header
+      - "\n"
+      - text: "1"
+        style: cell
+      - "     "
+      - text: "Alice"
+        style: cell
+      - "     "
+      - text: "Active"
+        style:
+          fg: green
+      - "\n"
+out: "\x1b[1;4mID\x1b[0m    \x1b[1;4mName\x1b[0m      \x1b[1;4mStatus\x1b[0m\n\x1b[36m1\x1b[0m     \x1b[36mAlice\x1b[0m     \x1b[32mActive\x1b[0m\n"
+---
+case: progress indicator
+in:
+  - content:
+      - ctrl: cursor
+        col: 1
+      - ctrl: clear
+        mode: line
+      - "["
+      - text: "████████"
+        style:
+          fg: green
+      - text: "░░░░░░░░░░░░"
+        style:
+          fg: brightBlack
+      - "] "
+      - text: "40%"
+        style:
+          bold: true
+out: "\x1b[1G\x1b[2K[\x1b[32m████████\x1b[0m\x1b[90m░░░░░░░░░░░░\x1b[0m] \x1b[1m40%\x1b[0m"
+---
+case: log levels
+in:
+  - styles:
+      debug:
+        fg: brightBlack
+      info:
+        fg: blue
+      warn:
+        fg: yellow
+      error:
+        fg: red
+        bold: true
+      timestamp:
+        dim: true
+    content:
+      - text: "[10:30:01]"
+        style: timestamp
+      - " "
+      - text: "DEBUG"
+        style: debug
+      - " Starting...\n"
+      - text: "[10:30:02]"
+        style: timestamp
+      - " "
+      - text: "INFO"
+        style: info
+      - "  Connected\n"
+      - text: "[10:30:03]"
+        style: timestamp
+      - " "
+      - text: "WARN"
+        style: warn
+      - "  High memory\n"
+      - text: "[10:30:04]"
+        style: timestamp
+      - " "
+      - text: "ERROR"
+        style: error
+      - " Failed!\n"
+out: "\x1b[2m[10:30:01]\x1b[0m \x1b[90mDEBUG\x1b[0m Starting...\n\x1b[2m[10:30:02]\x1b[0m \x1b[34mINFO\x1b[0m  Connected\n\x1b[2m[10:30:03]\x1b[0m \x1b[33mWARN\x1b[0m  High memory\n\x1b[2m[10:30:04]\x1b[0m \x1b[1;31mERROR\x1b[0m Failed!\n"
+---
+case: tui app setup
+in:
+  - content:
+      - ctrl: altBuffer
+        enable: true
+      - ctrl: cursor
+        hide: true
+      - ctrl: clear
+        mode: screen
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+      - text: " My Application "
+        style:
+          fg: white
+          bg: blue
+          bold: true
+out: "\x1b[?1049h\x1b[?25l\x1b[2J\x1b[1;1H\x1b[1;37;44m My Application \x1b[0m"
+---
+case: tui app teardown
+in:
+  - content:
+      - ctrl: clear
+        mode: screen
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+      - ctrl: cursor
+        show: true
+      - ctrl: altBuffer
+        enable: false
+out: "\x1b[2J\x1b[1;1H\x1b[?25h\x1b[?1049l"
+---
+case: hyperlink in text
+in:
+  - content:
+      - "Check out "
+      - ctrl: link
+        url: "https://github.com"
+        text: "GitHub"
+        style:
+          fg: cyan
+          underline: true
+      - " for more info."
+out: "Check out \x1b]8;;https://github.com\x07\x1b[4;36mGitHub\x1b[0m\x1b]8;;\x07 for more info."
+---
+case: spinner frame
+in:
+  - content:
+      - ctrl: cursor
+        col: 1
+      - text: "⠋"
+        style:
+          fg: cyan
+          bold: true
+      - " Loading..."
+out: "\x1b[1G\x1b[1;36m⠋\x1b[0m Loading..."

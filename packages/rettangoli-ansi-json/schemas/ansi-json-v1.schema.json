@@ -1,0 +1,296 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rettangoli.dev/schemas/ansi-json-v1.json",
+  "title": "AnsiJson",
+  "description": "JSON format for ANSI terminal output",
+
+  "definitions": {
+
+    "color": {
+      "description": "Color value: named, hex, rgb(), or 256-index",
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white",
+            "brightBlack", "brightRed", "brightGreen", "brightYellow",
+            "brightBlue", "brightMagenta", "brightCyan", "brightWhite",
+            "default"
+          ]
+        },
+        {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Hex color: #rrggbb"
+        },
+        {
+          "type": "string",
+          "pattern": "^rgb\\(\\s*\\d{1,3}\\s*,\\s*\\d{1,3}\\s*,\\s*\\d{1,3}\\s*\\)$",
+          "description": "RGB color: rgb(r,g,b) with optional whitespace"
+        },
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255,
+          "description": "256-color index"
+        }
+      ]
+    },
+
+    "style": {
+      "type": "object",
+      "description": "Text styling attributes",
+      "properties": {
+        "fg": { "$ref": "#/definitions/color" },
+        "bg": { "$ref": "#/definitions/color" },
+        "bold": { "type": "boolean" },
+        "dim": { "type": "boolean" },
+        "italic": { "type": "boolean" },
+        "underline": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "string", "enum": ["double"] }
+          ]
+        },
+        "blink": {
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "string", "enum": ["rapid"] }
+          ]
+        },
+        "reverse": { "type": "boolean" },
+        "hidden": { "type": "boolean" },
+        "strike": { "type": "boolean" },
+        "overline": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+
+    "styleRef": {
+      "description": "Style reference: inline object or named ref (use nesting for composition)",
+      "oneOf": [
+        { "$ref": "#/definitions/style" },
+        { "type": "string", "description": "Named style reference" }
+      ]
+    },
+
+    "textNode": {
+      "type": "object",
+      "description": "Styled text node",
+      "properties": {
+        "text": { "type": "string" },
+        "style": { "$ref": "#/definitions/styleRef" }
+      },
+      "required": ["text"],
+      "additionalProperties": false
+    },
+
+    "spanNode": {
+      "type": "object",
+      "description": "Container node with style inheritance",
+      "properties": {
+        "style": { "$ref": "#/definitions/styleRef" },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/node" }
+        }
+      },
+      "required": ["children"],
+      "additionalProperties": false
+    },
+
+    "cursorControl": {
+      "type": "object",
+      "description": "Cursor movement and visibility control",
+      "properties": {
+        "ctrl": { "const": "cursor" },
+        "to": {
+          "type": "object",
+          "properties": {
+            "row": { "type": "integer", "minimum": 1 },
+            "col": { "type": "integer", "minimum": 1 }
+          },
+          "description": "Absolute position"
+        },
+        "up": { "type": "integer", "minimum": 1 },
+        "down": { "type": "integer", "minimum": 1 },
+        "left": { "type": "integer", "minimum": 1 },
+        "right": { "type": "integer", "minimum": 1 },
+        "col": { "type": "integer", "minimum": 1, "description": "Move to column" },
+        "nextLine": { "type": "integer", "minimum": 1 },
+        "prevLine": { "type": "integer", "minimum": 1 },
+        "show": { "type": "boolean" },
+        "hide": { "type": "boolean" },
+        "save": { "type": "boolean" },
+        "restore": { "type": "boolean" }
+      },
+      "required": ["ctrl"],
+      "additionalProperties": false
+    },
+
+    "clearControl": {
+      "type": "object",
+      "properties": {
+        "ctrl": { "const": "clear" },
+        "mode": {
+          "enum": ["screen", "screenEnd", "screenStart", "screenAll", "line", "lineEnd", "lineStart"]
+        }
+      },
+      "required": ["ctrl", "mode"],
+      "additionalProperties": false
+    },
+
+    "scrollControl": {
+      "type": "object",
+      "description": "Scroll screen content",
+      "properties": {
+        "ctrl": { "const": "scroll" },
+        "up": { "type": "integer", "minimum": 1 },
+        "down": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["ctrl"],
+      "additionalProperties": false
+    },
+
+    "scrollRegionControl": {
+      "type": "object",
+      "description": "Set or reset scroll region",
+      "properties": {
+        "ctrl": { "const": "scrollRegion" },
+        "top": { "type": "integer", "minimum": 1 },
+        "bottom": { "type": "integer", "minimum": 1 },
+        "reset": { "type": "boolean", "description": "Reset to full screen" }
+      },
+      "required": ["ctrl"],
+      "additionalProperties": false
+    },
+
+    "titleControl": {
+      "type": "object",
+      "properties": {
+        "ctrl": { "const": "title" },
+        "text": { "type": "string" }
+      },
+      "required": ["ctrl", "text"],
+      "additionalProperties": false
+    },
+
+    "linkControl": {
+      "type": "object",
+      "description": "Hyperlink with optional styling",
+      "properties": {
+        "ctrl": { "const": "link" },
+        "url": { "type": "string", "format": "uri" },
+        "text": { "type": "string" },
+        "style": { "$ref": "#/definitions/styleRef" }
+      },
+      "required": ["ctrl", "url", "text"],
+      "additionalProperties": false
+    },
+
+    "altBufferControl": {
+      "type": "object",
+      "properties": {
+        "ctrl": { "const": "altBuffer" },
+        "enable": { "type": "boolean" }
+      },
+      "required": ["ctrl", "enable"],
+      "additionalProperties": false
+    },
+
+    "resetControl": {
+      "type": "object",
+      "properties": {
+        "ctrl": { "const": "reset" }
+      },
+      "required": ["ctrl"],
+      "additionalProperties": false
+    },
+
+    "bellControl": {
+      "type": "object",
+      "description": "Terminal bell/beep",
+      "properties": {
+        "ctrl": { "const": "bell" }
+      },
+      "required": ["ctrl"],
+      "additionalProperties": false
+    },
+
+    "clipboardControl": {
+      "type": "object",
+      "description": "Set clipboard content (OSC 52)",
+      "properties": {
+        "ctrl": { "const": "clipboard" },
+        "content": { "type": "string" },
+        "target": {
+          "type": "string",
+          "enum": ["clipboard", "primary", "select"],
+          "default": "clipboard",
+          "description": "c=clipboard, p=primary, s=select"
+        }
+      },
+      "required": ["ctrl", "content"],
+      "additionalProperties": false
+    },
+
+    "rawControl": {
+      "type": "object",
+      "description": "Raw escape sequence passthrough for advanced/unsupported sequences",
+      "properties": {
+        "ctrl": { "const": "raw" },
+        "sequence": {
+          "type": "string",
+          "description": "Raw ANSI escape sequence (without ESC prefix)"
+        }
+      },
+      "required": ["ctrl", "sequence"],
+      "additionalProperties": false
+    },
+
+    "controlNode": {
+      "description": "ANSI control sequence node",
+      "oneOf": [
+        { "$ref": "#/definitions/cursorControl" },
+        { "$ref": "#/definitions/clearControl" },
+        { "$ref": "#/definitions/scrollControl" },
+        { "$ref": "#/definitions/scrollRegionControl" },
+        { "$ref": "#/definitions/titleControl" },
+        { "$ref": "#/definitions/linkControl" },
+        { "$ref": "#/definitions/altBufferControl" },
+        { "$ref": "#/definitions/resetControl" },
+        { "$ref": "#/definitions/bellControl" },
+        { "$ref": "#/definitions/clipboardControl" },
+        { "$ref": "#/definitions/rawControl" }
+      ]
+    },
+
+    "node": {
+      "description": "Any content node",
+      "oneOf": [
+        { "type": "string" },
+        { "$ref": "#/definitions/textNode" },
+        { "$ref": "#/definitions/spanNode" },
+        { "$ref": "#/definitions/controlNode" }
+      ]
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string", "enum": ["1.0"] },
+    "styles": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/style" },
+      "description": "Named style definitions"
+    },
+    "content": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/node" },
+      "description": "Content nodes to render"
+    }
+  },
+  "required": ["content"],
+  "additionalProperties": false
+}

@@ -1,0 +1,383 @@
+file: "../src/index.js"
+group: inheritance
+suites: [basic_inherit, override, additive, deep, named_inherit, edge_cases]
+---
+# =============================================================================
+# BASIC INHERITANCE
+# =============================================================================
+suite: basic_inherit
+exportName: render
+---
+case: span applies style to plain string child
+in:
+  - content:
+      - style:
+          fg: red
+        children:
+          - "Red text"
+out: "\x1b[31mRed text\x1b[0m"
+---
+case: span applies style to multiple children
+in:
+  - content:
+      - style:
+          bold: true
+        children:
+          - "First "
+          - "Second "
+          - "Third"
+out: "\x1b[1mFirst \x1b[0m\x1b[1mSecond \x1b[0m\x1b[1mThird\x1b[0m"
+---
+case: span with text node child
+in:
+  - content:
+      - style:
+          italic: true
+        children:
+          - text: "Styled"
+out: "\x1b[3mStyled\x1b[0m"
+---
+case: nested span inherits parent
+in:
+  - content:
+      - style:
+          fg: blue
+        children:
+          - children:
+              - "Nested blue"
+out: "\x1b[34mNested blue\x1b[0m"
+---
+# =============================================================================
+# STYLE OVERRIDE
+# =============================================================================
+suite: override
+exportName: render
+---
+case: child overrides parent fg
+in:
+  - content:
+      - style:
+          fg: red
+        children:
+          - text: "Green"
+            style:
+              fg: green
+out: "\x1b[32mGreen\x1b[0m"
+---
+case: child overrides parent bg
+in:
+  - content:
+      - style:
+          bg: blue
+        children:
+          - text: "Yellow bg"
+            style:
+              bg: yellow
+out: "\x1b[43mYellow bg\x1b[0m"
+---
+case: child overrides parent bold
+in:
+  - content:
+      - style:
+          bold: true
+        children:
+          - "Bold "
+          - text: "Not bold"
+            style:
+              bold: false
+out: "\x1b[1mBold \x1b[0mNot bold"
+---
+case: partial override keeps other styles
+in:
+  - content:
+      - style:
+          fg: red
+          bold: true
+        children:
+          - text: "Blue but still bold"
+            style:
+              fg: blue
+out: "\x1b[1;34mBlue but still bold\x1b[0m"
+---
+case: deep override chain
+in:
+  - content:
+      - style:
+          fg: red
+        children:
+          - style:
+              fg: green
+            children:
+              - style:
+                  fg: blue
+                children:
+                  - "Blue"
+out: "\x1b[34mBlue\x1b[0m"
+---
+# =============================================================================
+# ADDITIVE INHERITANCE
+# =============================================================================
+suite: additive
+exportName: render
+---
+case: child adds to parent style
+in:
+  - content:
+      - style:
+          bold: true
+        children:
+          - text: "Bold and italic"
+            style:
+              italic: true
+out: "\x1b[1;3mBold and italic\x1b[0m"
+---
+case: child adds color to parent attrs
+in:
+  - content:
+      - style:
+          bold: true
+          underline: true
+        children:
+          - text: "Colored"
+            style:
+              fg: red
+out: "\x1b[1;4;31mColored\x1b[0m"
+---
+case: child adds bg to parent fg
+in:
+  - content:
+      - style:
+          fg: white
+        children:
+          - text: "With background"
+            style:
+              bg: blue
+out: "\x1b[37;44mWith background\x1b[0m"
+---
+case: multiple levels adding styles
+in:
+  - content:
+      - style:
+          bold: true
+        children:
+          - style:
+              italic: true
+            children:
+              - style:
+                  underline: true
+                children:
+                  - "All three"
+out: "\x1b[1;3;4mAll three\x1b[0m"
+---
+case: nested span adds to parent and child adds more
+in:
+  - content:
+      - style:
+          bold: true
+        children:
+          - style:
+              fg: red
+            children:
+              - text: "Full style"
+                style:
+                  bg: white
+out: "\x1b[1;31;47mFull style\x1b[0m"
+---
+# =============================================================================
+# DEEP NESTING
+# =============================================================================
+suite: deep
+exportName: render
+---
+case: 3 level nesting
+in:
+  - content:
+      - style:
+          bold: true
+        children:
+          - style:
+              fg: red
+            children:
+              - text: "Deep"
+                style:
+                  underline: true
+out: "\x1b[1;4;31mDeep\x1b[0m"
+---
+case: 4 level nesting
+in:
+  - content:
+      - style:
+          fg: red
+        children:
+          - style:
+              bold: true
+            children:
+              - style:
+                  italic: true
+                children:
+                  - text: "Very deep"
+                    style:
+                      underline: true
+out: "\x1b[1;3;4;31mVery deep\x1b[0m"
+---
+case: 5 level nesting
+in:
+  - content:
+      - style:
+          fg: red
+        children:
+          - style:
+              bg: blue
+            children:
+              - style:
+                  bold: true
+                children:
+                  - style:
+                      italic: true
+                    children:
+                      - text: "Deepest"
+                        style:
+                          underline: true
+out: "\x1b[1;3;4;31;44mDeepest\x1b[0m"
+---
+case: deep with mixed node types
+in:
+  - content:
+      - style:
+          bold: true
+        children:
+          - "A "
+          - style:
+              fg: red
+            children:
+              - "B "
+              - text: "C"
+                style:
+                  italic: true
+              - " D"
+          - " E"
+out: "\x1b[1mA \x1b[0m\x1b[1;31mB \x1b[0m\x1b[1;3;31mC\x1b[0m\x1b[1;31m D\x1b[0m\x1b[1m E\x1b[0m"
+---
+# =============================================================================
+# NAMED STYLE INHERITANCE
+# =============================================================================
+suite: named_inherit
+exportName: render
+---
+case: span with named style
+in:
+  - styles:
+      base:
+        fg: blue
+        bold: true
+    content:
+      - style: base
+        children:
+          - "Blue bold text"
+out: "\x1b[1;34mBlue bold text\x1b[0m"
+---
+case: child inherits from named parent
+in:
+  - styles:
+      parent:
+        fg: red
+    content:
+      - style: parent
+        children:
+          - text: "Inherits red, adds bold"
+            style:
+              bold: true
+out: "\x1b[1;31mInherits red, adds bold\x1b[0m"
+---
+case: nested named styles
+in:
+  - styles:
+      outer:
+        bold: true
+      inner:
+        fg: green
+    content:
+      - style: outer
+        children:
+          - style: inner
+            children:
+              - "Bold green"
+out: "\x1b[1;32mBold green\x1b[0m"
+---
+case: named style with inline override
+in:
+  - styles:
+      base:
+        fg: red
+        bold: true
+    content:
+      - style: base
+        children:
+          - text: "Blue instead"
+            style:
+              fg: blue
+out: "\x1b[1;34mBlue instead\x1b[0m"
+---
+# =============================================================================
+# EDGE CASES
+# =============================================================================
+suite: edge_cases
+exportName: render
+---
+case: span with no style
+in:
+  - content:
+      - children:
+          - "Plain"
+out: "Plain"
+---
+case: nested spans with no styles
+in:
+  - content:
+      - children:
+          - children:
+              - children:
+                  - "Still plain"
+out: "Still plain"
+---
+case: empty style object
+in:
+  - content:
+      - style: {}
+        children:
+          - "Plain"
+out: "Plain"
+---
+case: style with only false values
+in:
+  - content:
+      - style:
+          bold: false
+          italic: false
+        children:
+          - "Plain"
+out: "Plain"
+---
+case: inherit then reset with no style
+in:
+  - content:
+      - style:
+          fg: red
+        children:
+          - "Red "
+          - children:
+              - "Still red"
+out: "\x1b[31mRed \x1b[0m\x1b[31mStill red\x1b[0m"
+---
+case: sibling spans don't affect each other
+in:
+  - content:
+      - style:
+          fg: red
+        children:
+          - "Red"
+      - style:
+          fg: blue
+        children:
+          - "Blue"
+out: "\x1b[31mRed\x1b[0m\x1b[34mBlue\x1b[0m"

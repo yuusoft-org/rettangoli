@@ -22,6 +22,11 @@ title: Rettangoli
                     - rtgl-text c="mu-fg": "State and view architecture helpers for reactive frontend apps."
                     - rtgl-view h="1fg":
                     - rtgl-button href="/fe/docs/introduction/introduction/": "Read FE docs"
+                - rtgl-view w="1fg" sm-w="f" h="200" d="v" g="md" bw="xs" br="md" bgc="mu" p="lg":
+                    - rtgl-text s=h4: "rettangoli-ansi-json"
+                    - rtgl-text c="mu-fg": "JSON-to-ANSI renderer for terminal output and future TUI workflows."
+                    - rtgl-view h="1fg":
+                    - rtgl-button href="/ansi-json/docs/introduction/introduction/": "Read AnsiJson docs"
             - rtgl-view d="h" sm-d="v" g="lg" w="f":
                 - rtgl-view w="1fg" sm-w="f" h="200" d="v" g="md" bw="xs" br="md" bgc="mu" p="lg":
                     - rtgl-text s=h4: "rettangoli-sites"
