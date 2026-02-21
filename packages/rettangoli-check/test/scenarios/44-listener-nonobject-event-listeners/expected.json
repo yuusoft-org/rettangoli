@@ -1,0 +1,32 @@
+{
+  "name": "listener non-object eventListeners config",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-LISTENER-009": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-LISTENER-009",
+        "severity": "error",
+        "message": "components/card: invalid eventListeners config on ref 'root'. Expected an object keyed by event type.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 3
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-005"
+  ]
+}

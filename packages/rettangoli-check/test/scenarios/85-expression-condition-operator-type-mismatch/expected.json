@@ -1,0 +1,24 @@
+{
+  "name": "expression condition operator type mismatch",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true,
+    "includeExpression": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-EXPR-004": 1
+    },
+    "warnCodes": {}
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-007"
+  ]
+}

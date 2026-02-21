@@ -1,0 +1,30 @@
+{
+  "name": "cli emits sarif report on stdout",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "--format",
+      "sarif"
+    ]
+  },
+  "expected": {
+    "exitCode": 0,
+    "stderr": "",
+    "stdoutJson": {
+      "version": "2.1.0",
+      "runs": [
+        {
+          "tool": {
+            "driver": {
+              "name": "@rettangoli/check"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
+}

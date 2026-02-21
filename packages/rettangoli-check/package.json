@@ -1,0 +1,46 @@
+{
+  "name": "@rettangoli/check",
+  "version": "0.0.1",
+  "description": "Static contract checker for Rettangoli projects",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./cli": "./src/cli/index.js"
+  },
+  "bin": {
+    "rtgl-check": "./src/cli/bin.js"
+  },
+  "scripts": {
+    "test:scenarios": "node ./test/run-scenarios.js",
+    "test:diff-js-exports": "node ./scripts/differential-js-exports.js",
+    "test:fuzz-template-pipeline": "node ./scripts/fuzz-template-pipeline.js",
+    "test:fuzz-jempl-parser": "node ./scripts/fuzz-jempl-parser.js",
+    "test:jempl-parser-contract": "node ./scripts/test-jempl-parser-contract.js",
+    "test:scope-graph-range-contract": "node ./scripts/test-scope-graph-range-contract.js",
+    "test:fe-frontend-component-identity-contract": "node ./scripts/test-fe-frontend-component-identity-contract.js",
+    "test:fe-frontend-handler-contract": "node ./scripts/test-fe-frontend-handler-contract.js",
+    "test:fe-frontend-lifecycle-contract": "node ./scripts/test-fe-frontend-lifecycle-contract.js",
+    "test:fe-frontend-oxc-contract": "node ./scripts/test-fe-frontend-oxc-contract.js",
+    "test:fe-frontend-schema-normalization-contract": "node ./scripts/test-fe-frontend-schema-normalization-contract.js",
+    "test:semantic-engine-contract": "node ./scripts/test-semantic-engine-contract.js",
+    "test:type-system-contract": "node ./scripts/test-type-system-contract.js",
+    "test:yahtml-parser-snapshots": "node ./scripts/test-yahtml-parser-snapshots.js",
+    "test:yahtml-parser-crash": "node ./scripts/test-yahtml-parser-crash-containment.js",
+    "test:fuzz-yahtml-parser": "node ./scripts/fuzz-yahtml-parser.js",
+    "test:fuzz-fe-contract-combinations": "node ./scripts/fuzz-fe-contract-combinations.js"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "ROADMAP.md"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@rettangoli/fe": "workspace:1.0.0-rc3",
+    "jempl": "0.3.2-rc2",
+    "js-yaml": "^4.1.0",
+    "oxc-parser": "^0.112.0",
+    "yahtml": "0.0.5"
+  }
+}

@@ -1,0 +1,6 @@
+componentName: rtgl-test-cross-file-export-star-typescript-target
+methods:
+  type: object
+  properties:
+    focusInput:
+      type: function

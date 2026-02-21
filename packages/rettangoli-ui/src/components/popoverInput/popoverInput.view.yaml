@@ -23,6 +23,6 @@ template:
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y}:
       - rtgl-view g=md w=240 slot=content bgc=mu br=md:
           - rtgl-text: ${label}
-          - rtgl-input#input w=f placeholder=${placeholder}: null
+          - rtgl-input#input w=f placeholder=${placeholder} ?disabled=${disabled}: null
           - rtgl-view w=f ah=e:
-              - rtgl-button#submit: Submit
+              - rtgl-button#submit ?disabled=${disabled}: Submit

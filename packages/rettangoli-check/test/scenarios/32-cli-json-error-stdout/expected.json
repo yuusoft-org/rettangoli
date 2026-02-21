@@ -1,0 +1,35 @@
+{
+  "name": "cli json format reports failing result on stdout",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "--format",
+      "json"
+    ]
+  },
+  "expected": {
+    "exitCode": 1,
+    "stderr": "",
+    "stdoutJson": {
+      "contractVersion": 1,
+      "ok": false,
+      "warnAsError": false,
+      "summary": {
+        "bySeverity": {
+          "error": 1,
+          "warn": 0
+        }
+      },
+      "diagnostics": [
+        {
+          "code": "RTGL-CONTRACT-001",
+          "severity": "error"
+        }
+      ]
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
+}

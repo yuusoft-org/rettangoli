@@ -1,0 +1,32 @@
+{
+  "name": "jempl control unknown directive",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-JEMPL-003": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-JEMPL-003",
+        "severity": "error",
+        "message": "components/card: Invalid Jempl control directive '$iff isVisible': unknown control keyword.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 2
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-JEMPL-005"
+  ]
+}

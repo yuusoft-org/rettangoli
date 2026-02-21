@@ -1,0 +1,3 @@
+template:
+  - "$for(item in )":
+      rtgl-text: Invalid loop signature

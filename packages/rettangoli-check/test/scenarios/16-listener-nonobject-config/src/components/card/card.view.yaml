@@ -1,0 +1,7 @@
+refs:
+  root:
+    eventListeners:
+      tap: invalid-listener-config
+template:
+  - rtgl-view:
+      - rtgl-text: Listener config should be object

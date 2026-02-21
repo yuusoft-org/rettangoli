@@ -1,0 +1,10 @@
+refs:
+  submit-button:
+    eventListeners:
+      click:
+        handler: handleMissing
+        action: setCount
+        preventDefault: nope
+template:
+  - rtgl-view:
+      - rtgl-text: Invalid ref key should short-circuit listener checks

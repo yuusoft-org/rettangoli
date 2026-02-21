@@ -1,0 +1,7 @@
+refs:
+  root:
+    eventListeners:
+      tap: { handler: handleTap, action: setCount }
+template:
+  - rtgl-view:
+      - rtgl-text: Listener flow mapping line fallback

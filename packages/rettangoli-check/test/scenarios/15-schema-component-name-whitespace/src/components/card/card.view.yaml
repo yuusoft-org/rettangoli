@@ -1,0 +1,3 @@
+template:
+  - rtgl-view:
+      - rtgl-text: Schema whitespace component name

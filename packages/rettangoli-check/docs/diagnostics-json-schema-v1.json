@@ -1,0 +1,399 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "docs/diagnostics-json-schema-v1.json",
+  "title": "Rettangoli Check Diagnostics JSON Report v1",
+  "type": "object",
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "contractVersion",
+    "reportFormat",
+    "diagnosticCatalogVersion",
+    "ok",
+    "componentCount",
+    "registryTagCount",
+    "summary",
+    "warnAsError",
+    "diagnosticCatalog",
+    "diagnostics"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "docs/diagnostics-json-schema-v1.json"
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "contractVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "reportFormat": {
+      "type": "string",
+      "const": "json"
+    },
+    "diagnosticCatalogVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "componentCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "registryTagCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total",
+        "bySeverity",
+        "byCode"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bySeverity": {
+          "type": "object",
+          "required": [
+            "error",
+            "warn"
+          ],
+          "properties": {
+            "error": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "warn": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "byCode": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "code",
+              "count"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "warnAsError": {
+      "type": "boolean"
+    },
+    "diagnosticCatalog": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "version",
+          "code",
+          "family",
+          "title",
+          "description",
+          "defaultSeverity",
+          "namespaceValid",
+          "docsPath",
+          "tags"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "code": {
+            "type": "string"
+          },
+          "family": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "defaultSeverity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warn"
+            ]
+          },
+          "namespaceValid": {
+            "type": "boolean"
+          },
+          "docsPath": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "autofix": {
+      "type": "object",
+      "required": [
+        "mode",
+        "dryRun",
+        "patchOutput",
+        "candidateCount",
+        "appliedCount",
+        "skippedCount",
+        "patches"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "off",
+            "dry-run",
+            "apply"
+          ]
+        },
+        "dryRun": {
+          "type": "boolean"
+        },
+        "patchOutput": {
+          "type": "boolean"
+        },
+        "candidateCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "appliedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skippedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "patches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "code",
+              "filePath",
+              "description",
+              "confidence"
+            ],
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "filePath": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "description": {
+                "type": "string"
+              },
+              "confidence": {
+                "type": "number"
+              },
+              "patch": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "category",
+          "severity",
+          "message",
+          "filePath"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "family": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warn"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "docsPath": {
+            "type": "string"
+          },
+          "namespaceValid": {
+            "type": "boolean"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "filePath": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "column": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "endLine": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "endColumn": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "related": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "filePath"
+              ],
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "filePath": {
+                  "type": "string"
+                },
+                "line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "column": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "endLine": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "endColumn": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "trace": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fix": {
+            "type": "object",
+            "required": [
+              "kind",
+              "safe",
+              "filePath"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "safe": {
+                "type": "boolean"
+              },
+              "confidence": {
+                "type": "number"
+              },
+              "filePath": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "column": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "endLine": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "endColumn": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "pattern": {
+                "type": "string"
+              },
+              "replacement": {
+                "type": "string"
+              },
+              "flags": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

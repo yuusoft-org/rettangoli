@@ -1,0 +1,38 @@
+{
+  "name": "cli autofix dry-run reports candidates in json output",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "--format",
+      "json",
+      "--autofix-dry-run"
+    ]
+  },
+  "expected": {
+    "exitCode": 1,
+    "stderr": "",
+    "stdoutJson": {
+      "schemaVersion": 1,
+      "reportFormat": "json",
+      "ok": false,
+      "autofix": {
+        "mode": "dry-run",
+        "dryRun": true,
+        "patchOutput": false,
+        "candidateCount": 2,
+        "appliedCount": 1,
+        "skippedCount": 1
+      },
+      "summary": {
+        "bySeverity": {
+          "error": 2
+        }
+      }
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-YAHTML-004"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "name": "project schema registry duplicate component merges props",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 2,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-SCHEMA-008": 2
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-SCHEMA-008",
+        "severity": "error",
+        "message": "Duplicate componentName 'rtgl-test-duplicate-merge' found in multiple schema files.",
+        "filePath": "src/components/alpha/alpha.schema.yaml",
+        "line": 1
+      },
+      {
+        "code": "RTGL-CHECK-SCHEMA-008",
+        "severity": "error",
+        "message": "Duplicate componentName 'rtgl-test-duplicate-merge' found in multiple schema files.",
+        "filePath": "src/components/beta/beta.schema.yaml",
+        "line": 1
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-002"
+  ]
+}

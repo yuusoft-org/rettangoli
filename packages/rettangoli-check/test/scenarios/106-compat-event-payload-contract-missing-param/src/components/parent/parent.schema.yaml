@@ -1,0 +1,4 @@
+componentName: rtgl-check-parent-event-payload
+propsSchema:
+  type: object
+  properties: {}

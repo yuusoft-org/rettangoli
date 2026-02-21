@@ -1,0 +1,10 @@
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: handleTap
+      click:
+        action: setCount
+template:
+  - rtgl-button#root: Export star cycle
+styles: {}

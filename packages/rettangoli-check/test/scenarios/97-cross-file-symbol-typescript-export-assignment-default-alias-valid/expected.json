@@ -1,0 +1,22 @@
+{
+  "name": "cross-file symbol typescript export assignment default alias valid",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": true,
+    "errorCount": 0,
+    "warnCount": 0,
+    "errorCodes": {},
+    "warnCodes": {}
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-010",
+    "RTGL-SPEC-SYMBOL-004"
+  ]
+}

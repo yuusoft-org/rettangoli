@@ -1,0 +1,377 @@
+{
+  "description": "malformed attribute token emits structured parse diagnostics",
+  "templateAst": {
+    "type": "Template",
+    "kind": "YahtmlTemplateAst",
+    "nodes": [
+      {
+        "type": "Element",
+        "kind": "YahtmlElementAst",
+        "tagName": "rtgl-button",
+        "selector": "rtgl-button",
+        "rawKey": "rtgl-button =${oops} @click=handleTap",
+        "rawLexeme": "rtgl-button =${oops} @click=handleTap",
+        "range": {
+          "line": 2,
+          "column": 6,
+          "endLine": 2,
+          "endColumn": 42,
+          "offset": 15,
+          "endOffset": 52,
+          "length": 37
+        },
+        "attributes": [
+          {
+            "type": "Attribute",
+            "kind": "YahtmlAttributeAst",
+            "raw": "=${oops}",
+            "rawLexeme": "=${oops}",
+            "bindingName": "",
+            "sourceType": "attr",
+            "name": "",
+            "valueText": "${oops}",
+            "expressions": [
+              "oops"
+            ],
+            "expressionNodes": [
+              {
+                "type": "Expression",
+                "kind": "YahtmlExpressionAst",
+                "expression": "oops",
+                "raw": "${oops}",
+                "rawLexeme": "${oops}",
+                "range": {
+                  "line": 2,
+                  "column": 21,
+                  "endLine": 2,
+                  "endColumn": 24,
+                  "offset": 30,
+                  "endOffset": 34,
+                  "length": 4
+                }
+              }
+            ],
+            "range": {
+              "line": 2,
+              "column": 18,
+              "endLine": 2,
+              "endColumn": 25,
+              "offset": 27,
+              "endOffset": 35,
+              "length": 8
+            }
+          },
+          {
+            "type": "Attribute",
+            "kind": "YahtmlAttributeAst",
+            "raw": "@click=handleTap",
+            "rawLexeme": "@click=handleTap",
+            "bindingName": "@click",
+            "sourceType": "event",
+            "name": "click",
+            "valueText": "handleTap",
+            "expressions": [],
+            "expressionNodes": [],
+            "range": {
+              "line": 2,
+              "column": 27,
+              "endLine": 2,
+              "endColumn": 42,
+              "offset": 36,
+              "endOffset": 52,
+              "length": 16
+            }
+          }
+        ]
+      }
+    ],
+    "cst": {
+      "kind": "YahtmlTemplateCst",
+      "nodes": [
+        {
+          "kind": "YahtmlElementCst",
+          "rawKey": "rtgl-button =${oops} @click=handleTap",
+          "selectorToken": {
+            "kind": "YahtmlSelectorToken",
+            "raw": "rtgl-button",
+            "startOffset": 0,
+            "endOffset": 11,
+            "length": 11,
+            "column": 1,
+            "endColumn": 11
+          },
+          "attributeTokens": [
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "=${oops}",
+              "bindingName": "",
+              "sourceType": "attr",
+              "name": "",
+              "valueText": "${oops}",
+              "expressions": [
+                "oops"
+              ],
+              "expressionNodes": [
+                {
+                  "kind": "YahtmlExpressionToken",
+                  "expression": "oops",
+                  "raw": "${oops}",
+                  "startOffset": 15,
+                  "endOffset": 19,
+                  "length": 4,
+                  "column": 16,
+                  "endColumn": 19
+                }
+              ],
+              "startOffset": 12,
+              "endOffset": 20,
+              "length": 8,
+              "column": 13,
+              "endColumn": 20
+            },
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "@click=handleTap",
+              "bindingName": "@click",
+              "sourceType": "event",
+              "name": "click",
+              "valueText": "handleTap",
+              "expressions": [],
+              "expressionNodes": [],
+              "startOffset": 21,
+              "endOffset": 37,
+              "length": 16,
+              "column": 22,
+              "endColumn": 37
+            }
+          ]
+        }
+      ]
+    },
+    "parseDiagnostics": [
+      {
+        "code": "RTGL-CHECK-YAHTML-PARSE-001",
+        "severity": "error",
+        "line": 2,
+        "column": 18,
+        "endLine": 2,
+        "endColumn": 25,
+        "message": "Invalid YAHTML attribute token '=${oops}'."
+      }
+    ]
+  },
+  "selectorApis": [
+    {
+      "rawKey": "rtgl-button =${oops} @click=handleTap",
+      "tokenStream": {
+        "kind": "YahtmlSelectorTokenStream",
+        "raw": "rtgl-button =${oops} @click=handleTap",
+        "selectorToken": {
+          "kind": "YahtmlSelectorToken",
+          "raw": "rtgl-button",
+          "startOffset": 0,
+          "endOffset": 11,
+          "length": 11,
+          "column": 1,
+          "endColumn": 11
+        },
+        "attributeTokens": [
+          {
+            "kind": "YahtmlAttributeToken",
+            "raw": "=${oops}",
+            "bindingName": "",
+            "sourceType": "attr",
+            "name": "",
+            "valueText": "${oops}",
+            "expressions": [
+              "oops"
+            ],
+            "expressionNodes": [
+              {
+                "kind": "YahtmlExpressionToken",
+                "expression": "oops",
+                "raw": "${oops}",
+                "startOffset": 15,
+                "endOffset": 19,
+                "length": 4,
+                "column": 16,
+                "endColumn": 19
+              }
+            ],
+            "startOffset": 12,
+            "endOffset": 20,
+            "length": 8,
+            "column": 13,
+            "endColumn": 20
+          },
+          {
+            "kind": "YahtmlAttributeToken",
+            "raw": "@click=handleTap",
+            "bindingName": "@click",
+            "sourceType": "event",
+            "name": "click",
+            "valueText": "handleTap",
+            "expressions": [],
+            "expressionNodes": [],
+            "startOffset": 21,
+            "endOffset": 37,
+            "length": 16,
+            "column": 22,
+            "endColumn": 37
+          }
+        ]
+      },
+      "parsedSelector": {
+        "ast": {
+          "type": "Element",
+          "kind": "YahtmlElementAst",
+          "tagName": "rtgl-button",
+          "selector": "rtgl-button",
+          "rawKey": "rtgl-button =${oops} @click=handleTap",
+          "rawLexeme": "rtgl-button =${oops} @click=handleTap",
+          "range": {
+            "line": 2,
+            "column": 6,
+            "endLine": 2,
+            "endColumn": 42,
+            "offset": 15,
+            "endOffset": 52,
+            "length": 37
+          },
+          "attributes": [
+            {
+              "type": "Attribute",
+              "kind": "YahtmlAttributeAst",
+              "raw": "=${oops}",
+              "rawLexeme": "=${oops}",
+              "bindingName": "",
+              "sourceType": "attr",
+              "name": "",
+              "valueText": "${oops}",
+              "expressions": [
+                "oops"
+              ],
+              "expressionNodes": [
+                {
+                  "type": "Expression",
+                  "kind": "YahtmlExpressionAst",
+                  "expression": "oops",
+                  "raw": "${oops}",
+                  "rawLexeme": "${oops}",
+                  "range": {
+                    "line": 2,
+                    "column": 21,
+                    "endLine": 2,
+                    "endColumn": 24,
+                    "offset": 30,
+                    "endOffset": 34,
+                    "length": 4
+                  }
+                }
+              ],
+              "range": {
+                "line": 2,
+                "column": 18,
+                "endLine": 2,
+                "endColumn": 25,
+                "offset": 27,
+                "endOffset": 35,
+                "length": 8
+              }
+            },
+            {
+              "type": "Attribute",
+              "kind": "YahtmlAttributeAst",
+              "raw": "@click=handleTap",
+              "rawLexeme": "@click=handleTap",
+              "bindingName": "@click",
+              "sourceType": "event",
+              "name": "click",
+              "valueText": "handleTap",
+              "expressions": [],
+              "expressionNodes": [],
+              "range": {
+                "line": 2,
+                "column": 27,
+                "endLine": 2,
+                "endColumn": 42,
+                "offset": 36,
+                "endOffset": 52,
+                "length": 16
+              }
+            }
+          ]
+        },
+        "cst": {
+          "kind": "YahtmlElementCst",
+          "rawKey": "rtgl-button =${oops} @click=handleTap",
+          "selectorToken": {
+            "kind": "YahtmlSelectorToken",
+            "raw": "rtgl-button",
+            "startOffset": 0,
+            "endOffset": 11,
+            "length": 11,
+            "column": 1,
+            "endColumn": 11
+          },
+          "attributeTokens": [
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "=${oops}",
+              "bindingName": "",
+              "sourceType": "attr",
+              "name": "",
+              "valueText": "${oops}",
+              "expressions": [
+                "oops"
+              ],
+              "expressionNodes": [
+                {
+                  "kind": "YahtmlExpressionToken",
+                  "expression": "oops",
+                  "raw": "${oops}",
+                  "startOffset": 15,
+                  "endOffset": 19,
+                  "length": 4,
+                  "column": 16,
+                  "endColumn": 19
+                }
+              ],
+              "startOffset": 12,
+              "endOffset": 20,
+              "length": 8,
+              "column": 13,
+              "endColumn": 20
+            },
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "@click=handleTap",
+              "bindingName": "@click",
+              "sourceType": "event",
+              "name": "click",
+              "valueText": "handleTap",
+              "expressions": [],
+              "expressionNodes": [],
+              "startOffset": 21,
+              "endOffset": 37,
+              "length": 16,
+              "column": 22,
+              "endColumn": 37
+            }
+          ]
+        },
+        "diagnostics": [
+          {
+            "code": "RTGL-CHECK-YAHTML-PARSE-001",
+            "severity": "error",
+            "line": 2,
+            "column": 18,
+            "endLine": 2,
+            "endColumn": 25,
+            "message": "Invalid YAHTML attribute token '=${oops}'."
+          }
+        ]
+      }
+    }
+  ]
+}

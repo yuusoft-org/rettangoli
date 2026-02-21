@@ -1,0 +1,357 @@
+{
+  "description": "explicit multiline key form preserves selector and ranges",
+  "templateAst": {
+    "type": "Template",
+    "kind": "YahtmlTemplateAst",
+    "nodes": [
+      {
+        "type": "Element",
+        "kind": "YahtmlElementAst",
+        "tagName": "rtgl-input",
+        "selector": "rtgl-input#name",
+        "rawKey": "rtgl-input#name data-id=input-1 :value=${form.name}",
+        "rawLexeme": "rtgl-input#name data-id=input-1 :value=${form.name}",
+        "range": {
+          "line": 3,
+          "column": 8,
+          "endLine": 3,
+          "endColumn": 58,
+          "offset": 23,
+          "endOffset": 74,
+          "length": 51
+        },
+        "attributes": [
+          {
+            "type": "Attribute",
+            "kind": "YahtmlAttributeAst",
+            "raw": "data-id=input-1",
+            "rawLexeme": "data-id=input-1",
+            "bindingName": "data-id",
+            "sourceType": "attr",
+            "name": "data-id",
+            "valueText": "input-1",
+            "expressions": [],
+            "expressionNodes": [],
+            "range": {
+              "line": 3,
+              "column": 24,
+              "endLine": 3,
+              "endColumn": 38,
+              "offset": 39,
+              "endOffset": 54,
+              "length": 15
+            }
+          },
+          {
+            "type": "Attribute",
+            "kind": "YahtmlAttributeAst",
+            "raw": ":value=${form.name}",
+            "rawLexeme": ":value=${form.name}",
+            "bindingName": ":value",
+            "sourceType": "prop",
+            "name": "value",
+            "valueText": "${form.name}",
+            "expressions": [
+              "form.name"
+            ],
+            "expressionNodes": [
+              {
+                "type": "Expression",
+                "kind": "YahtmlExpressionAst",
+                "expression": "form.name",
+                "raw": "${form.name}",
+                "rawLexeme": "${form.name}",
+                "range": {
+                  "line": 3,
+                  "column": 49,
+                  "endLine": 3,
+                  "endColumn": 57,
+                  "offset": 64,
+                  "endOffset": 73,
+                  "length": 9
+                }
+              }
+            ],
+            "range": {
+              "line": 3,
+              "column": 40,
+              "endLine": 3,
+              "endColumn": 58,
+              "offset": 55,
+              "endOffset": 74,
+              "length": 19
+            }
+          }
+        ]
+      }
+    ],
+    "cst": {
+      "kind": "YahtmlTemplateCst",
+      "nodes": [
+        {
+          "kind": "YahtmlElementCst",
+          "rawKey": "rtgl-input#name data-id=input-1 :value=${form.name}",
+          "selectorToken": {
+            "kind": "YahtmlSelectorToken",
+            "raw": "rtgl-input#name",
+            "startOffset": 0,
+            "endOffset": 15,
+            "length": 15,
+            "column": 1,
+            "endColumn": 15
+          },
+          "attributeTokens": [
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "data-id=input-1",
+              "bindingName": "data-id",
+              "sourceType": "attr",
+              "name": "data-id",
+              "valueText": "input-1",
+              "expressions": [],
+              "expressionNodes": [],
+              "startOffset": 16,
+              "endOffset": 31,
+              "length": 15,
+              "column": 17,
+              "endColumn": 31
+            },
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": ":value=${form.name}",
+              "bindingName": ":value",
+              "sourceType": "prop",
+              "name": "value",
+              "valueText": "${form.name}",
+              "expressions": [
+                "form.name"
+              ],
+              "expressionNodes": [
+                {
+                  "kind": "YahtmlExpressionToken",
+                  "expression": "form.name",
+                  "raw": "${form.name}",
+                  "startOffset": 41,
+                  "endOffset": 50,
+                  "length": 9,
+                  "column": 42,
+                  "endColumn": 50
+                }
+              ],
+              "startOffset": 32,
+              "endOffset": 51,
+              "length": 19,
+              "column": 33,
+              "endColumn": 51
+            }
+          ]
+        }
+      ]
+    },
+    "parseDiagnostics": []
+  },
+  "selectorApis": [
+    {
+      "rawKey": "rtgl-input#name data-id=input-1 :value=${form.name}",
+      "tokenStream": {
+        "kind": "YahtmlSelectorTokenStream",
+        "raw": "rtgl-input#name data-id=input-1 :value=${form.name}",
+        "selectorToken": {
+          "kind": "YahtmlSelectorToken",
+          "raw": "rtgl-input#name",
+          "startOffset": 0,
+          "endOffset": 15,
+          "length": 15,
+          "column": 1,
+          "endColumn": 15
+        },
+        "attributeTokens": [
+          {
+            "kind": "YahtmlAttributeToken",
+            "raw": "data-id=input-1",
+            "bindingName": "data-id",
+            "sourceType": "attr",
+            "name": "data-id",
+            "valueText": "input-1",
+            "expressions": [],
+            "expressionNodes": [],
+            "startOffset": 16,
+            "endOffset": 31,
+            "length": 15,
+            "column": 17,
+            "endColumn": 31
+          },
+          {
+            "kind": "YahtmlAttributeToken",
+            "raw": ":value=${form.name}",
+            "bindingName": ":value",
+            "sourceType": "prop",
+            "name": "value",
+            "valueText": "${form.name}",
+            "expressions": [
+              "form.name"
+            ],
+            "expressionNodes": [
+              {
+                "kind": "YahtmlExpressionToken",
+                "expression": "form.name",
+                "raw": "${form.name}",
+                "startOffset": 41,
+                "endOffset": 50,
+                "length": 9,
+                "column": 42,
+                "endColumn": 50
+              }
+            ],
+            "startOffset": 32,
+            "endOffset": 51,
+            "length": 19,
+            "column": 33,
+            "endColumn": 51
+          }
+        ]
+      },
+      "parsedSelector": {
+        "ast": {
+          "type": "Element",
+          "kind": "YahtmlElementAst",
+          "tagName": "rtgl-input",
+          "selector": "rtgl-input#name",
+          "rawKey": "rtgl-input#name data-id=input-1 :value=${form.name}",
+          "rawLexeme": "rtgl-input#name data-id=input-1 :value=${form.name}",
+          "range": {
+            "line": 3,
+            "column": 8,
+            "endLine": 3,
+            "endColumn": 58,
+            "offset": 23,
+            "endOffset": 74,
+            "length": 51
+          },
+          "attributes": [
+            {
+              "type": "Attribute",
+              "kind": "YahtmlAttributeAst",
+              "raw": "data-id=input-1",
+              "rawLexeme": "data-id=input-1",
+              "bindingName": "data-id",
+              "sourceType": "attr",
+              "name": "data-id",
+              "valueText": "input-1",
+              "expressions": [],
+              "expressionNodes": [],
+              "range": {
+                "line": 3,
+                "column": 24,
+                "endLine": 3,
+                "endColumn": 38,
+                "offset": 39,
+                "endOffset": 54,
+                "length": 15
+              }
+            },
+            {
+              "type": "Attribute",
+              "kind": "YahtmlAttributeAst",
+              "raw": ":value=${form.name}",
+              "rawLexeme": ":value=${form.name}",
+              "bindingName": ":value",
+              "sourceType": "prop",
+              "name": "value",
+              "valueText": "${form.name}",
+              "expressions": [
+                "form.name"
+              ],
+              "expressionNodes": [
+                {
+                  "type": "Expression",
+                  "kind": "YahtmlExpressionAst",
+                  "expression": "form.name",
+                  "raw": "${form.name}",
+                  "rawLexeme": "${form.name}",
+                  "range": {
+                    "line": 3,
+                    "column": 49,
+                    "endLine": 3,
+                    "endColumn": 57,
+                    "offset": 64,
+                    "endOffset": 73,
+                    "length": 9
+                  }
+                }
+              ],
+              "range": {
+                "line": 3,
+                "column": 40,
+                "endLine": 3,
+                "endColumn": 58,
+                "offset": 55,
+                "endOffset": 74,
+                "length": 19
+              }
+            }
+          ]
+        },
+        "cst": {
+          "kind": "YahtmlElementCst",
+          "rawKey": "rtgl-input#name data-id=input-1 :value=${form.name}",
+          "selectorToken": {
+            "kind": "YahtmlSelectorToken",
+            "raw": "rtgl-input#name",
+            "startOffset": 0,
+            "endOffset": 15,
+            "length": 15,
+            "column": 1,
+            "endColumn": 15
+          },
+          "attributeTokens": [
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "data-id=input-1",
+              "bindingName": "data-id",
+              "sourceType": "attr",
+              "name": "data-id",
+              "valueText": "input-1",
+              "expressions": [],
+              "expressionNodes": [],
+              "startOffset": 16,
+              "endOffset": 31,
+              "length": 15,
+              "column": 17,
+              "endColumn": 31
+            },
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": ":value=${form.name}",
+              "bindingName": ":value",
+              "sourceType": "prop",
+              "name": "value",
+              "valueText": "${form.name}",
+              "expressions": [
+                "form.name"
+              ],
+              "expressionNodes": [
+                {
+                  "kind": "YahtmlExpressionToken",
+                  "expression": "form.name",
+                  "raw": "${form.name}",
+                  "startOffset": 41,
+                  "endOffset": 50,
+                  "length": 9,
+                  "column": 42,
+                  "endColumn": 50
+                }
+              ],
+              "startOffset": 32,
+              "endOffset": 51,
+              "length": 19,
+              "column": 33,
+              "endColumn": 51
+            }
+          ]
+        },
+        "diagnostics": []
+      }
+    }
+  ]
+}

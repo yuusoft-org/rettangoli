@@ -1,0 +1,8 @@
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: handleTap
+template:
+  - rtgl-button#root: Default re-export symbol missing
+styles: {}

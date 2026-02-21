@@ -1,0 +1,12 @@
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: handleTap
+        preventDefault: "yes"
+        once: 1
+        debounce: "50"
+        throttle: -2
+template:
+  - rtgl-view:
+      - rtgl-text: Listener options

@@ -1,0 +1,6 @@
+componentName: rtgl-test-compat-parent-prop-type-mismatch
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

@@ -1,0 +1,2 @@
+template:
+  - rtgl-check-child-event-payload @select=handleSelect: null

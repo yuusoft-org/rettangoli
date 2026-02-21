@@ -1,0 +1,113 @@
+#!/usr/bin/env node
+
+import {
+  extractModuleExports,
+  extractModuleExportsRegexLegacy,
+} from "../src/core/parsers.js";
+
+const CASES = 300;
+
+const seededRandom = (seed = 1337) => {
+  let state = seed >>> 0;
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+};
+
+const pick = (rng, values) => {
+  const index = Math.floor(rng() * values.length);
+  return values[index];
+};
+
+const createCaseSource = (rng, extension) => {
+  const nameA = pick(rng, ["alpha", "beta", "gamma", "delta"]);
+  const nameB = pick(rng, ["handleTap", "setCount", "focusInput", "valueChanged"]);
+  const baseList = [
+    `export function ${nameA}() {}`,
+    `export class ${nameA.charAt(0).toUpperCase() + nameA.slice(1)} {}`,
+    `export const ${nameB} = () => {};`,
+    `export const ${nameB}Typed: () => void = () => {};`,
+    `export let ${nameA}Ready!: boolean;`,
+    `const ${nameA}Bag = { ${nameB}: () => {} }; export const { ${nameB} } = ${nameA}Bag;`,
+    `const ${nameA}TypedBag: { ${nameB}: () => void } = { ${nameB}: () => {} }; export const { ${nameB}: ${nameB}Alias }: { ${nameB}: () => void } = ${nameA}TypedBag;`,
+    `const ${nameA}Tuple = [() => {}]; export const [${nameA}Item] = ${nameA}Tuple;`,
+    `const ${nameA}TypedTuple: [() => void] = [() => {}]; export const [${nameA}TypedItem]: [() => void] = ${nameA}TypedTuple;`,
+    `export { ${nameB} as ${nameA}Alias };`,
+    `export * from "./dep-${nameA}.js";`,
+    `export * as ${nameA}Ns from "./dep-${nameA}.js";`,
+    `export { ${nameB} } from "./dep-${nameB}.js";`,
+    `export { default } from "./dep-${nameA}.js";`,
+    `export { ${nameB} as default } from "./dep-${nameB}.js";`,
+    `export default function () {};`,
+  ];
+  const tsOnlyList = [
+    `export enum ${nameA.charAt(0).toUpperCase() + nameA.slice(1)}Kind { Ready = "ready" }`,
+    `export const enum ${nameA.charAt(0).toUpperCase() + nameA.slice(1)}ConstKind { Ready = "ready" }`,
+    `export abstract class ${nameA.charAt(0).toUpperCase() + nameA.slice(1)}Abstract {}`,
+    `export import ${nameA}Alias = ${nameA.charAt(0).toUpperCase() + nameA.slice(1)}Ns.${nameB};`,
+    `const ${nameB}Assigned = () => {}; export = ${nameB}Assigned;`,
+  ];
+  const list = extension === "ts"
+    ? [...baseList, ...tsOnlyList]
+    : baseList;
+
+  const statementCount = 2 + Math.floor(rng() * 4);
+  const statements = [];
+  for (let i = 0; i < statementCount; i += 1) {
+    statements.push(pick(rng, list));
+  }
+  return statements.join("\n");
+};
+
+const normalize = (result) => ({
+  namedExports: [...(result.namedExports || [])].sort(),
+  exportStarSpecifiers: [...(result.exportStarSpecifiers || [])].sort(),
+  namedReExports: [...(result.namedReExports || [])]
+    .map((entry) => ({
+      moduleRequest: entry.moduleRequest,
+      importedName: entry.importedName,
+      exportedName: entry.exportedName,
+    }))
+    .sort((a, b) => (
+      a.moduleRequest.localeCompare(b.moduleRequest)
+      || a.importedName.localeCompare(b.importedName)
+      || a.exportedName.localeCompare(b.exportedName)
+    )),
+});
+
+const main = () => {
+  const rng = seededRandom(20260214);
+  const mismatches = [];
+
+  for (let i = 0; i < CASES; i += 1) {
+    const extension = rng() < 0.5 ? "js" : "ts";
+    const source = createCaseSource(rng, extension);
+    const filePath = `fuzz-case-${i}.${extension}`;
+    const oxc = normalize(extractModuleExports({ sourceCode: source, filePath }));
+    const regex = normalize(extractModuleExportsRegexLegacy({ sourceCode: source, filePath }));
+
+    if (JSON.stringify(oxc) !== JSON.stringify(regex)) {
+      mismatches.push({ index: i, source, oxc, regex });
+      if (mismatches.length >= 20) {
+        break;
+      }
+    }
+  }
+
+  if (mismatches.length > 0) {
+    console.error(`JS export differential mismatches: ${mismatches.length}`);
+    mismatches.forEach((mismatch) => {
+      console.error(`\n[case ${mismatch.index}]`);
+      console.error(mismatch.source);
+      console.error(`oxc=${JSON.stringify(mismatch.oxc)}`);
+      console.error(`regex=${JSON.stringify(mismatch.regex)}`);
+    });
+    process.exitCode = 1;
+    return;
+  }
+
+  console.log(`Differential pass: ${CASES} generated cases (oxc == regex).`);
+};
+
+main();

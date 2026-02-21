@@ -1,0 +1,70 @@
+{
+  "name": "cross-file symbol invalid local named re-export",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 6,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-SYMBOL-001": 1,
+      "RTGL-CHECK-SYMBOL-002": 1,
+      "RTGL-CHECK-SYMBOL-003": 1,
+      "RTGL-CHECK-SYMBOL-007": 3
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-SYMBOL-001",
+        "severity": "error",
+        "message": "components/card: handler 'handleTap' for event 'tap' on ref 'root' is missing in .handlers.js exports.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-002",
+        "severity": "error",
+        "message": "components/card: action 'setCount' for event 'click' on ref 'root' is missing in .store.js exports.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 7
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-003",
+        "severity": "error",
+        "message": "components/card: method 'focusInput' is declared in schema but missing in .methods.js exports.",
+        "filePath": "src/components/card/card.schema.yaml",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-007",
+        "severity": "error",
+        "message": "card.handlers.js: re-export 'handleTap' from './card.handlers.impl.js' does not exist in target module.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 1
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-007",
+        "severity": "error",
+        "message": "card.methods.js: re-export 'focusInput' from './card.methods.impl.js' does not exist in target module.",
+        "filePath": "src/components/card/card.methods.js",
+        "line": 1
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-007",
+        "severity": "error",
+        "message": "card.store.js: re-export 'setCount' from './card.store.impl.js' does not exist in target module.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 1
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-SYMBOL-004"
+  ]
+}

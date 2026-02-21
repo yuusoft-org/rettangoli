@@ -1,0 +1,31 @@
+{
+  "name": "constants yaml requires object root",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-CONSTANTS-001": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-CONSTANTS-001",
+        "severity": "error",
+        "message": "components/card: .constants.yaml must contain a YAML object at the root.",
+        "filePath": "src/components/card/card.constants.yaml"
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-004"
+  ]
+}

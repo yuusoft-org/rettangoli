@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-jempl-control-unknown-directive
+propsSchema:
+  type: object
+  properties:
+    isVisible:
+      type: boolean

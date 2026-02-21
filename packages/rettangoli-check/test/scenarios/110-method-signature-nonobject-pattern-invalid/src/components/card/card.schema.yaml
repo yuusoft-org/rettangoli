@@ -1,0 +1,9 @@
+componentName: rtgl-check-method-pattern-invalid
+propsSchema:
+  type: object
+  properties: {}
+methods:
+  type: object
+  properties:
+    focusInput:
+      type: function

@@ -1,0 +1,37 @@
+{
+  "name": "cli autofix apply mode rewrites and returns clean diagnostics",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "--format",
+      "json",
+      "--autofix"
+    ]
+  },
+  "expected": {
+    "exitCode": 0,
+    "stderr": "",
+    "stdoutJson": {
+      "schemaVersion": 1,
+      "reportFormat": "json",
+      "ok": true,
+      "summary": {
+        "bySeverity": {
+          "error": 0,
+          "warn": 0
+        }
+      },
+      "autofix": {
+        "mode": "apply",
+        "dryRun": false,
+        "patchOutput": false
+      },
+      "diagnostics": []
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-YAHTML-004"
+  ]
+}

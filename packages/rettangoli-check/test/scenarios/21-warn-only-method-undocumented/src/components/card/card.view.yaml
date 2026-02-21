@@ -1,0 +1,4 @@
+template:
+  - rtgl-view p=md g=sm:
+      - rtgl-text: Warn-only component
+styles: {}

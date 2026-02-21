@@ -1,0 +1,4 @@
+componentName: rtgl-test-host-nonobject-props
+propsSchema:
+  type: object
+  properties: {}

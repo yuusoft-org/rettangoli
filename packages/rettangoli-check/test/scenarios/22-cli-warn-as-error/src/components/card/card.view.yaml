@@ -1,0 +1,4 @@
+template:
+  - rtgl-view p=md g=sm:
+      - rtgl-text: CLI warn-as-error
+styles: {}

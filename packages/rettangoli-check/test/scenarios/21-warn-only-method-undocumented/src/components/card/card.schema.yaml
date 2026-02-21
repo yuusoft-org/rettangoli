@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-warn-only
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

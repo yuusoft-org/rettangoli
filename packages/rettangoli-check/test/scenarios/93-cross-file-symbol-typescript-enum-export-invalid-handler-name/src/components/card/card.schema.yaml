@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-ts-enum-handler-name
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

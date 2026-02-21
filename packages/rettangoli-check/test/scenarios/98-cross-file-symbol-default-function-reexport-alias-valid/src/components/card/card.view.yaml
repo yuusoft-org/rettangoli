@@ -1,0 +1,3 @@
+template:
+  - rtgl-view#root: Default function re-export alias valid
+styles: {}

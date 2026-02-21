@@ -3,7 +3,7 @@ propsSchema:
   type: object
   properties:
     open:
-      type: string
+      type: boolean
     x:
       type: string
     'y':

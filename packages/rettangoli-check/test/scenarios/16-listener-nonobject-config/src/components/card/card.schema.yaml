@@ -1,0 +1,6 @@
+componentName: rtgl-test-listener-nonobject-config
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

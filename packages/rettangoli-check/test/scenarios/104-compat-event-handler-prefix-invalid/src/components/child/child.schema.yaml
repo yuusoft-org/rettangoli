@@ -1,0 +1,6 @@
+componentName: rtgl-check-child-handler-prefix
+propsSchema:
+  type: object
+  properties: {}
+events:
+  tap: {}

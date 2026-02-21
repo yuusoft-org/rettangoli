@@ -1,0 +1,4 @@
+template:
+  - rtgl-view:
+      - rtgl-text: Method contract case
+styles: {}

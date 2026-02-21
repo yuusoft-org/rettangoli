@@ -1,0 +1,3 @@
+template:
+  - rtgl-test-child-trim:
+      title: Hello

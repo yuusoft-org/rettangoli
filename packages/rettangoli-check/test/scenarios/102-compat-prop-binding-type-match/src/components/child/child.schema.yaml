@@ -1,0 +1,8 @@
+componentName: rtgl-test-compat-child-prop-type-match
+propsSchema:
+  type: object
+  properties:
+    count:
+      type: number
+  required:
+    - count

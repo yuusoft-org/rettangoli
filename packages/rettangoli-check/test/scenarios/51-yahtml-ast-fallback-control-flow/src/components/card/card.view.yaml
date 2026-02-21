@@ -1,0 +1,3 @@
+template:
+  - "$if isVisible":
+      - rtgl-button banana=ripe: Show

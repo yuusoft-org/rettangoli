@@ -1,0 +1,19 @@
+componentName: rtgl-check-method-payload-missing-key
+propsSchema:
+  type: object
+  properties: {}
+methods:
+  type: object
+  properties:
+    setValues:
+      type: function
+      payload:
+        type: object
+        required:
+          - values
+          - source
+        properties:
+          values:
+            type: object
+          source:
+            type: string

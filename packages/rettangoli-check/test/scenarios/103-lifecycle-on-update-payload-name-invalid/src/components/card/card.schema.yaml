@@ -1,0 +1,4 @@
+componentName: rtgl-check-lifecycle-payload-name
+propsSchema:
+  type: object
+  properties: {}

@@ -1,0 +1,521 @@
+{
+  "description": "quoted selector key with prop/event/boolean bindings",
+  "templateAst": {
+    "type": "Template",
+    "kind": "YahtmlTemplateAst",
+    "nodes": [
+      {
+        "type": "Element",
+        "kind": "YahtmlElementAst",
+        "tagName": "rtgl-button",
+        "selector": "rtgl-button",
+        "rawKey": "rtgl-button :label=${title} @click=handleTap ?disabled=${isDisabled}",
+        "rawLexeme": "rtgl-button :label=${title} @click=handleTap ?disabled=${isDisabled}",
+        "range": {
+          "line": 2,
+          "column": 6,
+          "endLine": 2,
+          "endColumn": 73,
+          "offset": 15,
+          "endOffset": 83,
+          "length": 68
+        },
+        "attributes": [
+          {
+            "type": "Attribute",
+            "kind": "YahtmlAttributeAst",
+            "raw": ":label=${title}",
+            "rawLexeme": ":label=${title}",
+            "bindingName": ":label",
+            "sourceType": "prop",
+            "name": "label",
+            "valueText": "${title}",
+            "expressions": [
+              "title"
+            ],
+            "expressionNodes": [
+              {
+                "type": "Expression",
+                "kind": "YahtmlExpressionAst",
+                "expression": "title",
+                "raw": "${title}",
+                "rawLexeme": "${title}",
+                "range": {
+                  "line": 2,
+                  "column": 27,
+                  "endLine": 2,
+                  "endColumn": 31,
+                  "offset": 36,
+                  "endOffset": 41,
+                  "length": 5
+                }
+              }
+            ],
+            "range": {
+              "line": 2,
+              "column": 18,
+              "endLine": 2,
+              "endColumn": 32,
+              "offset": 27,
+              "endOffset": 42,
+              "length": 15
+            }
+          },
+          {
+            "type": "Attribute",
+            "kind": "YahtmlAttributeAst",
+            "raw": "@click=handleTap",
+            "rawLexeme": "@click=handleTap",
+            "bindingName": "@click",
+            "sourceType": "event",
+            "name": "click",
+            "valueText": "handleTap",
+            "expressions": [],
+            "expressionNodes": [],
+            "range": {
+              "line": 2,
+              "column": 34,
+              "endLine": 2,
+              "endColumn": 49,
+              "offset": 43,
+              "endOffset": 59,
+              "length": 16
+            }
+          },
+          {
+            "type": "Attribute",
+            "kind": "YahtmlAttributeAst",
+            "raw": "?disabled=${isDisabled}",
+            "rawLexeme": "?disabled=${isDisabled}",
+            "bindingName": "?disabled",
+            "sourceType": "boolean-attr",
+            "name": "disabled",
+            "valueText": "${isDisabled}",
+            "expressions": [
+              "isDisabled"
+            ],
+            "expressionNodes": [
+              {
+                "type": "Expression",
+                "kind": "YahtmlExpressionAst",
+                "expression": "isDisabled",
+                "raw": "${isDisabled}",
+                "rawLexeme": "${isDisabled}",
+                "range": {
+                  "line": 2,
+                  "column": 63,
+                  "endLine": 2,
+                  "endColumn": 72,
+                  "offset": 72,
+                  "endOffset": 82,
+                  "length": 10
+                }
+              }
+            ],
+            "range": {
+              "line": 2,
+              "column": 51,
+              "endLine": 2,
+              "endColumn": 73,
+              "offset": 60,
+              "endOffset": 83,
+              "length": 23
+            }
+          }
+        ]
+      }
+    ],
+    "cst": {
+      "kind": "YahtmlTemplateCst",
+      "nodes": [
+        {
+          "kind": "YahtmlElementCst",
+          "rawKey": "rtgl-button :label=${title} @click=handleTap ?disabled=${isDisabled}",
+          "selectorToken": {
+            "kind": "YahtmlSelectorToken",
+            "raw": "rtgl-button",
+            "startOffset": 0,
+            "endOffset": 11,
+            "length": 11,
+            "column": 1,
+            "endColumn": 11
+          },
+          "attributeTokens": [
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": ":label=${title}",
+              "bindingName": ":label",
+              "sourceType": "prop",
+              "name": "label",
+              "valueText": "${title}",
+              "expressions": [
+                "title"
+              ],
+              "expressionNodes": [
+                {
+                  "kind": "YahtmlExpressionToken",
+                  "expression": "title",
+                  "raw": "${title}",
+                  "startOffset": 21,
+                  "endOffset": 26,
+                  "length": 5,
+                  "column": 22,
+                  "endColumn": 26
+                }
+              ],
+              "startOffset": 12,
+              "endOffset": 27,
+              "length": 15,
+              "column": 13,
+              "endColumn": 27
+            },
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "@click=handleTap",
+              "bindingName": "@click",
+              "sourceType": "event",
+              "name": "click",
+              "valueText": "handleTap",
+              "expressions": [],
+              "expressionNodes": [],
+              "startOffset": 28,
+              "endOffset": 44,
+              "length": 16,
+              "column": 29,
+              "endColumn": 44
+            },
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "?disabled=${isDisabled}",
+              "bindingName": "?disabled",
+              "sourceType": "boolean-attr",
+              "name": "disabled",
+              "valueText": "${isDisabled}",
+              "expressions": [
+                "isDisabled"
+              ],
+              "expressionNodes": [
+                {
+                  "kind": "YahtmlExpressionToken",
+                  "expression": "isDisabled",
+                  "raw": "${isDisabled}",
+                  "startOffset": 57,
+                  "endOffset": 67,
+                  "length": 10,
+                  "column": 58,
+                  "endColumn": 67
+                }
+              ],
+              "startOffset": 45,
+              "endOffset": 68,
+              "length": 23,
+              "column": 46,
+              "endColumn": 68
+            }
+          ]
+        }
+      ]
+    },
+    "parseDiagnostics": []
+  },
+  "selectorApis": [
+    {
+      "rawKey": "rtgl-button :label=${title} @click=handleTap ?disabled=${isDisabled}",
+      "tokenStream": {
+        "kind": "YahtmlSelectorTokenStream",
+        "raw": "rtgl-button :label=${title} @click=handleTap ?disabled=${isDisabled}",
+        "selectorToken": {
+          "kind": "YahtmlSelectorToken",
+          "raw": "rtgl-button",
+          "startOffset": 0,
+          "endOffset": 11,
+          "length": 11,
+          "column": 1,
+          "endColumn": 11
+        },
+        "attributeTokens": [
+          {
+            "kind": "YahtmlAttributeToken",
+            "raw": ":label=${title}",
+            "bindingName": ":label",
+            "sourceType": "prop",
+            "name": "label",
+            "valueText": "${title}",
+            "expressions": [
+              "title"
+            ],
+            "expressionNodes": [
+              {
+                "kind": "YahtmlExpressionToken",
+                "expression": "title",
+                "raw": "${title}",
+                "startOffset": 21,
+                "endOffset": 26,
+                "length": 5,
+                "column": 22,
+                "endColumn": 26
+              }
+            ],
+            "startOffset": 12,
+            "endOffset": 27,
+            "length": 15,
+            "column": 13,
+            "endColumn": 27
+          },
+          {
+            "kind": "YahtmlAttributeToken",
+            "raw": "@click=handleTap",
+            "bindingName": "@click",
+            "sourceType": "event",
+            "name": "click",
+            "valueText": "handleTap",
+            "expressions": [],
+            "expressionNodes": [],
+            "startOffset": 28,
+            "endOffset": 44,
+            "length": 16,
+            "column": 29,
+            "endColumn": 44
+          },
+          {
+            "kind": "YahtmlAttributeToken",
+            "raw": "?disabled=${isDisabled}",
+            "bindingName": "?disabled",
+            "sourceType": "boolean-attr",
+            "name": "disabled",
+            "valueText": "${isDisabled}",
+            "expressions": [
+              "isDisabled"
+            ],
+            "expressionNodes": [
+              {
+                "kind": "YahtmlExpressionToken",
+                "expression": "isDisabled",
+                "raw": "${isDisabled}",
+                "startOffset": 57,
+                "endOffset": 67,
+                "length": 10,
+                "column": 58,
+                "endColumn": 67
+              }
+            ],
+            "startOffset": 45,
+            "endOffset": 68,
+            "length": 23,
+            "column": 46,
+            "endColumn": 68
+          }
+        ]
+      },
+      "parsedSelector": {
+        "ast": {
+          "type": "Element",
+          "kind": "YahtmlElementAst",
+          "tagName": "rtgl-button",
+          "selector": "rtgl-button",
+          "rawKey": "rtgl-button :label=${title} @click=handleTap ?disabled=${isDisabled}",
+          "rawLexeme": "rtgl-button :label=${title} @click=handleTap ?disabled=${isDisabled}",
+          "range": {
+            "line": 2,
+            "column": 6,
+            "endLine": 2,
+            "endColumn": 73,
+            "offset": 15,
+            "endOffset": 83,
+            "length": 68
+          },
+          "attributes": [
+            {
+              "type": "Attribute",
+              "kind": "YahtmlAttributeAst",
+              "raw": ":label=${title}",
+              "rawLexeme": ":label=${title}",
+              "bindingName": ":label",
+              "sourceType": "prop",
+              "name": "label",
+              "valueText": "${title}",
+              "expressions": [
+                "title"
+              ],
+              "expressionNodes": [
+                {
+                  "type": "Expression",
+                  "kind": "YahtmlExpressionAst",
+                  "expression": "title",
+                  "raw": "${title}",
+                  "rawLexeme": "${title}",
+                  "range": {
+                    "line": 2,
+                    "column": 27,
+                    "endLine": 2,
+                    "endColumn": 31,
+                    "offset": 36,
+                    "endOffset": 41,
+                    "length": 5
+                  }
+                }
+              ],
+              "range": {
+                "line": 2,
+                "column": 18,
+                "endLine": 2,
+                "endColumn": 32,
+                "offset": 27,
+                "endOffset": 42,
+                "length": 15
+              }
+            },
+            {
+              "type": "Attribute",
+              "kind": "YahtmlAttributeAst",
+              "raw": "@click=handleTap",
+              "rawLexeme": "@click=handleTap",
+              "bindingName": "@click",
+              "sourceType": "event",
+              "name": "click",
+              "valueText": "handleTap",
+              "expressions": [],
+              "expressionNodes": [],
+              "range": {
+                "line": 2,
+                "column": 34,
+                "endLine": 2,
+                "endColumn": 49,
+                "offset": 43,
+                "endOffset": 59,
+                "length": 16
+              }
+            },
+            {
+              "type": "Attribute",
+              "kind": "YahtmlAttributeAst",
+              "raw": "?disabled=${isDisabled}",
+              "rawLexeme": "?disabled=${isDisabled}",
+              "bindingName": "?disabled",
+              "sourceType": "boolean-attr",
+              "name": "disabled",
+              "valueText": "${isDisabled}",
+              "expressions": [
+                "isDisabled"
+              ],
+              "expressionNodes": [
+                {
+                  "type": "Expression",
+                  "kind": "YahtmlExpressionAst",
+                  "expression": "isDisabled",
+                  "raw": "${isDisabled}",
+                  "rawLexeme": "${isDisabled}",
+                  "range": {
+                    "line": 2,
+                    "column": 63,
+                    "endLine": 2,
+                    "endColumn": 72,
+                    "offset": 72,
+                    "endOffset": 82,
+                    "length": 10
+                  }
+                }
+              ],
+              "range": {
+                "line": 2,
+                "column": 51,
+                "endLine": 2,
+                "endColumn": 73,
+                "offset": 60,
+                "endOffset": 83,
+                "length": 23
+              }
+            }
+          ]
+        },
+        "cst": {
+          "kind": "YahtmlElementCst",
+          "rawKey": "rtgl-button :label=${title} @click=handleTap ?disabled=${isDisabled}",
+          "selectorToken": {
+            "kind": "YahtmlSelectorToken",
+            "raw": "rtgl-button",
+            "startOffset": 0,
+            "endOffset": 11,
+            "length": 11,
+            "column": 1,
+            "endColumn": 11
+          },
+          "attributeTokens": [
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": ":label=${title}",
+              "bindingName": ":label",
+              "sourceType": "prop",
+              "name": "label",
+              "valueText": "${title}",
+              "expressions": [
+                "title"
+              ],
+              "expressionNodes": [
+                {
+                  "kind": "YahtmlExpressionToken",
+                  "expression": "title",
+                  "raw": "${title}",
+                  "startOffset": 21,
+                  "endOffset": 26,
+                  "length": 5,
+                  "column": 22,
+                  "endColumn": 26
+                }
+              ],
+              "startOffset": 12,
+              "endOffset": 27,
+              "length": 15,
+              "column": 13,
+              "endColumn": 27
+            },
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "@click=handleTap",
+              "bindingName": "@click",
+              "sourceType": "event",
+              "name": "click",
+              "valueText": "handleTap",
+              "expressions": [],
+              "expressionNodes": [],
+              "startOffset": 28,
+              "endOffset": 44,
+              "length": 16,
+              "column": 29,
+              "endColumn": 44
+            },
+            {
+              "kind": "YahtmlAttributeToken",
+              "raw": "?disabled=${isDisabled}",
+              "bindingName": "?disabled",
+              "sourceType": "boolean-attr",
+              "name": "disabled",
+              "valueText": "${isDisabled}",
+              "expressions": [
+                "isDisabled"
+              ],
+              "expressionNodes": [
+                {
+                  "kind": "YahtmlExpressionToken",
+                  "expression": "isDisabled",
+                  "raw": "${isDisabled}",
+                  "startOffset": 57,
+                  "endOffset": 67,
+                  "length": 10,
+                  "column": 58,
+                  "endColumn": 67
+                }
+              ],
+              "startOffset": 45,
+              "endOffset": 68,
+              "length": 23,
+              "column": 46,
+              "endColumn": 68
+            }
+          ]
+        },
+        "diagnostics": []
+      }
+    }
+  ]
+}

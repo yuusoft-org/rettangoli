@@ -1,0 +1,6 @@
+componentName: rtgl-child
+propsSchema:
+  type: object
+  properties:
+    count:
+      type: number

@@ -1,0 +1,2 @@
+template:
+  - rtgl-check-required-default-child: Missing title allowed via default

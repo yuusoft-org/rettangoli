@@ -1,0 +1,32 @@
+{
+  "name": "schema componentName with surrounding whitespace",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-SCHEMA-003": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-SCHEMA-003",
+        "severity": "error",
+        "message": "components/card: componentName 'rtgl-test-card-schema-whitespace ' must be a valid custom-element tag (kebab-case with at least one '-').",
+        "filePath": "src/components/card/card.schema.yaml",
+        "line": 1
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-002"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "name": "cross-file symbol default-name re-export missing target",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 2,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-SYMBOL-003": 1,
+      "RTGL-CHECK-SYMBOL-006": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-SYMBOL-003",
+        "severity": "error",
+        "message": "components/card: method 'focusInput' is declared in schema but missing in .methods.js exports.",
+        "filePath": "src/components/card/card.schema.yaml",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-SYMBOL-006",
+        "severity": "error",
+        "message": "card.methods.js: unable to resolve re-export target './card.methods.impl.js'. Tried: card.methods.impl.js, card.methods.impl.ts, card.methods.impl.mts, card.methods.impl.cts, card.methods.impl.mjs, card.methods.impl.cjs.",
+        "filePath": "src/components/card/card.methods.js",
+        "line": 1
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-010",
+    "RTGL-SPEC-SYMBOL-004"
+  ]
+}

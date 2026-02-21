@@ -1,0 +1,9 @@
+componentName: rtgl-check-required-default-child
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string
+      default: Untitled
+  required:
+    - title

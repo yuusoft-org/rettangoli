@@ -1,0 +1,40 @@
+{
+  "name": "yahtml bare legacy prop token",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 2,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CONTRACT-003": 1,
+      "RTGL-CHECK-YAHTML-002": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CONTRACT-003",
+        "severity": "error",
+        "message": "components/card: legacy '.prop=' binding is not supported. Use ':prop=' in .view.yaml.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-002",
+        "severity": "error",
+        "message": "components/card: legacy '.value' binding is not supported. Use ':value'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 2
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-YAHTML-004"
+  ]
+}

@@ -1,0 +1,8 @@
+refs:
+  root:
+    eventListeners:
+      tap:
+        handler: handleTap
+        payload: "{ id: currentId }"
+template:
+  - rtgl-text: Listener payload contract scenario

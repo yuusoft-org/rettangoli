@@ -1,0 +1,4 @@
+componentName: rtgl-test-component-identity-folder
+propsSchema:
+  type: object
+  properties: {}

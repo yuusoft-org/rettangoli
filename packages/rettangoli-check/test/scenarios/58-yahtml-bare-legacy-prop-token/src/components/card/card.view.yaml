@@ -1,0 +1,3 @@
+template:
+  - rtgl-input .value: Bad legacy prop token
+styles: {}

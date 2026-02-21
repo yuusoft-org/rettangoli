@@ -1,0 +1,101 @@
+[
+  {
+    "id": "valid-basic-selector",
+    "template": [
+      {
+        "rtgl-view :title=${title}": null
+      }
+    ]
+  },
+  {
+    "id": "valid-nested-if-loop",
+    "template": [
+      {
+        "$if isVisible": [
+          {
+            "$for(item, idx in items)": [
+              {
+                "rtgl-text :value=${item.name}": null
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "valid-unary-binary-condition",
+    "template": [
+      {
+        "$if !isDisabled && isVisible": {
+          "rtgl-view ?hidden=${isDisabled}": null
+        }
+      }
+    ]
+  },
+  {
+    "id": "valid-quoted-selector-and-template",
+    "template": [
+      {
+        "rtgl-text title='a:b' :value=${user.name}": "${user.name}"
+      }
+    ]
+  },
+  {
+    "id": "strict-unknown-directive",
+    "template": [
+      {
+        "$iff isVisible": {
+          "rtgl-text": "${title}"
+        }
+      }
+    ],
+    "strictDiagnosticIncludes": [
+      "unknown control keyword"
+    ]
+  },
+  {
+    "id": "strict-elif-without-if",
+    "template": [
+      {
+        "$elif isVisible": {
+          "rtgl-text": "${title}"
+        }
+      }
+    ],
+    "expectParse": false
+  },
+  {
+    "id": "strict-else-without-if",
+    "template": [
+      {
+        "$else": {
+          "rtgl-text": "${title}"
+        }
+      }
+    ],
+    "expectParse": false
+  },
+  {
+    "id": "strict-invalid-for-signature",
+    "template": [
+      {
+        "$for(item in )": {
+          "rtgl-text": "${title}"
+        }
+      }
+    ],
+    "strictDiagnosticIncludes": [
+      "expected '$for(item[, index] in iterable)' or '$for item[, index] in iterable'"
+    ]
+  },
+  {
+    "id": "parse-invalid-arithmetic-expression",
+    "template": [
+      {
+        "rtgl-text": "${count + 1}"
+      }
+    ],
+    "expectParse": false
+  }
+]

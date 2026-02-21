@@ -1,0 +1,6 @@
+componentName: rtgl-test-cross-file-destructured-export-bindings
+methods:
+  type: object
+  properties:
+    focusInput:
+      type: function

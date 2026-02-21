@@ -29,7 +29,8 @@
   "scripts": {
     "test": "vitest run --reporter=verbose",
     "test:puty": "vitest run puty.spec.js --reporter=verbose",
-    "check:contracts": "rtgl fe check",
+    "check:contracts": "rtgl check --dir src/components",
+    "check:contracts:yahtml": "rtgl check --dir src/components",
     "copy:css": "node copy-css.js",
     "build:dev": "rtgl fe build -d && bun run esbuild-dev.js && npm run copy:css",
     "build": "rtgl fe build && bun run esbuild.js && bun run esbuild-dev.js && npm run copy:css && npm run verify:vt-bundle",

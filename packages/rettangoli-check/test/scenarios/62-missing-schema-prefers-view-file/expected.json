@@ -1,0 +1,31 @@
+{
+  "name": "missing schema prefers view file location",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 1,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CONTRACT-001": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CONTRACT-001",
+        "severity": "error",
+        "message": "components/card: missing required .schema.yaml file.",
+        "filePath": "src/components/card/card.view.yaml"
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-001"
+  ]
+}

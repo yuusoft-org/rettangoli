@@ -1,0 +1,6 @@
+componentName: rtgl-text
+propsSchema:
+  type: object
+  properties:
+    accentColor:
+      type: string

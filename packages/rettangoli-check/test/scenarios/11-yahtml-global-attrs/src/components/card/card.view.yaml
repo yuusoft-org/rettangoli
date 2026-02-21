@@ -1,0 +1,3 @@
+template:
+  - rtgl-button tabindex=0 hidden part=trigger exportparts="icon:button-icon" lang=en dir=ltr draggable=true spellcheck=false translate=no inert contenteditable=true: Save
+styles: {}

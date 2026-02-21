@@ -1,0 +1,3 @@
+template:
+  - rtgl-button itemscope itemType="https://schema.org/Action" itemProp=name itemId=cta itemRef=meta: Save
+styles: {}

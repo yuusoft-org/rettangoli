@@ -1,0 +1,4 @@
+componentName: rtgl-test-card-list-lines-outside-template
+propsSchema:
+  type: object
+  properties: {}

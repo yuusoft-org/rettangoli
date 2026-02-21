@@ -1,0 +1,6 @@
+componentName: rtgl-test-method-default-export-direct
+methods:
+  type: object
+  properties:
+    focusInput:
+      type: function
