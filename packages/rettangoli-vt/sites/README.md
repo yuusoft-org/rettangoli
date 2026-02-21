@@ -13,14 +13,6 @@ Partial URL:
 
 `https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/partials/docs/mobile-nav.yaml`
 
-Schema URL:
-
-`https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/schemas/docs-layout.schema.json`
-
-Starter data file URL:
-
-`https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/data/docs-layout.example.yaml`
-
 `sites.config.yaml` example:
 
 ```yaml
@@ -57,7 +49,6 @@ Optional data:
 Create `data/docsLayout.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://cdn.jsdelivr.net/npm/@rettangoli/vt@latest/sites/schemas/docs-layout.schema.json
 assets:
   stylesheets:
     - https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc14/dist/themes/base.css

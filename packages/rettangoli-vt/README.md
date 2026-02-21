@@ -9,8 +9,6 @@ These are publish-only assets and are not used by VT runtime code.
 
 - Folder: `sites/`
 - Docs template bundle: `sites/templates/docs/documentation.yaml` and `sites/partials/docs/mobile-nav.yaml`
-- Docs schema: `sites/schemas/docs-layout.schema.json`
-- Docs starter data: `sites/data/docs-layout.example.yaml`
 - Usage guide: `sites/README.md`
 
 Published URL pattern (jsDelivr):
