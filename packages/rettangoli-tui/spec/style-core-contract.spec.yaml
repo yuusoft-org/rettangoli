@@ -1,0 +1,35 @@
+file: "./styleCoreHelper.js"
+group: rettangoli-fe-style-core-contract
+---
+suite: style-core-contract
+exportName: runStyleCoreCase
+---
+case: empty style input returns empty string
+in:
+  - scenario: empty_returns_empty_string
+out:
+  css: ""
+---
+case: serializes plain selectors
+in:
+  - scenario: serializes_plain_selectors
+out:
+  css: |-
+    :host {
+      display: contents;
+    }
+
+    button.primary {
+      color: red;
+    }
+---
+case: serializes media rules
+in:
+  - scenario: serializes_media_rules
+out:
+  css: |-
+    @media (min-width: 768px) {
+      button {
+        height: 40px;
+      }
+    }

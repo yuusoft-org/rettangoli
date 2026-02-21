@@ -1,0 +1,48 @@
+---
+title: kanban-interactions
+steps:
+  - action: select
+    testId: kanban-input
+    steps:
+      - action: write
+        value: Deploy
+  - action: select
+    testId: kanban-add
+    steps:
+      - action: click
+  - action: select
+    testId: kanban-input
+    steps:
+      - action: write
+        value: Review
+  - action: select
+    testId: kanban-add
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: move-1
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: move-1
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: move-2
+    steps:
+      - action: click
+  - action: screenshot
+  - action: select
+    testId: del-4
+    steps:
+      - action: click
+  - action: screenshot
+---
+
+<script type="module" src="/static/public/main.js"></script>
+<div style="padding:8px;background:white">
+  <e2e-kanban></e2e-kanban>
+</div>

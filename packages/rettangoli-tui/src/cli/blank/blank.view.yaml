@@ -1,0 +1,5 @@
+refs: {}
+
+template:
+  - rtgl-view w=f h=f p=md:
+    - rtgl-text s=h2: blank

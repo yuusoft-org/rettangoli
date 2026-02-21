@@ -1,0 +1,27 @@
+file: "./runtimeContractHelper.js"
+group: rettangoli-fe-methods-contract
+---
+suite: methods-contract
+exportName: runMethodsCase
+---
+case: method payload defaults to empty object
+in:
+  - scenario: default_payload_object
+out:
+  result: default
+---
+case: methods run with this bound to element instance
+in:
+  - scenario: this_binding
+out:
+  tagName: X-TEST-COMPONENT
+---
+case: methods reject primitive payloads
+in:
+  - scenario: rejects_primitive_payload
+throws: expects payload to be an object
+---
+case: default export method name is not supported
+in:
+  - scenario: rejects_default_named_export
+throws: Invalid method name 'default'

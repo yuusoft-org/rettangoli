@@ -1,0 +1,60 @@
+refs:
+  window:
+    eventListeners:
+      keydown:
+        handler: handleShowcaseKeyDown
+
+template:
+  - rtgl-view d=v g=sm:
+      - rtgl-view d=h g=md:
+          - rtgl-text w=bold: ${title}
+          - rtgl-text: ${modeLabel}
+      - rtgl-divider w=72: null
+      - rtgl-text: "Supported components"
+      - rtgl-text: "- rtgl-view"
+      - rtgl-text: "- rtgl-text"
+      - rtgl-text: "- rtgl-input"
+      - rtgl-text: "- rtgl-list"
+      - rtgl-text: "- rtgl-table"
+      - rtgl-text: "- rtgl-textarea"
+      - rtgl-text: "- rtgl-divider"
+      - rtgl-text: "- rtgl-dialog"
+      - rtgl-divider w=72: null
+      - rtgl-text: "Task editor demo"
+      - rtgl-text: "Task title:"
+      - rtgl-text: ${taskTitle}
+      - rtgl-text: "Title lines: ${taskTitleLineCount}"
+      - rtgl-text: "Content preview:"
+      - rtgl-text: ${taskContentPreview}
+      - rtgl-text: "Content size: ${taskContentLength} chars"
+      - rtgl-divider w=72: null
+      - rtgl-text: "Task list / table demo (${taskCount} items)"
+      - rtgl-text: "Selected task: ${selectedTaskId}"
+      - rtgl-list :items=taskListItems :selectedIndex=selectedTaskIndex w=f: null
+      - rtgl-table :data=taskTableData :selectedIndex=selectedTaskIndex w=f cw=28: null
+      - rtgl-divider w=72: null
+      - rtgl-text: "Divider samples"
+      - rtgl-view d=h g=md:
+          - rtgl-view d=v:
+              - rtgl-text: Left
+              - rtgl-text: column
+              - rtgl-text: A
+          - rtgl-divider o=v h=3: null
+          - rtgl-view d=v:
+              - rtgl-text: Right
+              - rtgl-text: column
+              - rtgl-text: B
+      - rtgl-divider w=72: null
+      - rtgl-text: "Message: ${message}"
+      - rtgl-text: "Last Key: ${lastKey}"
+      - rtgl-text: "Dialog: ${dialogStatus}"
+      - rtgl-dialog open=${titleDialogOpen} title="Edit Task Title" w=66 x=6 y=10:
+          - rtgl-text: "Native multiline editor (no nvim)"
+          - rtgl-textarea label=Title :value=titleDraft :cursorRow=titleCursorRow :cursorCol=titleCursorCol active=true w=60 h=6 placeholder="Write task title": null
+          - rtgl-text: "Ctrl+S save | Esc cancel | Enter newline | Auto-wrap | Arrows"
+      - rtgl-divider w=72: null
+      - rtgl-text: "Controls"
+      - rtgl-text: "q quit | r reset | d open title dialog"
+      - rtgl-text: "t also opens title dialog editor"
+      - rtgl-text: "up/down select task row (list + table highlight)"
+      - rtgl-text: "e open content in $EDITOR/$VISUAL (nvim/vim fallback)"

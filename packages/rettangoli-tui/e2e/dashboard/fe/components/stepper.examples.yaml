@@ -1,0 +1,40 @@
+config: {}
+---
+name: 'step 1'
+viewData:
+  currentStep: 1
+  isStep1: true
+  isStep2: false
+  isStep3: false
+  isStep4: false
+  dots:
+    - { color: "dodgerblue" }
+    - { color: "#ddd" }
+    - { color: "#ddd" }
+    - { color: "#ddd" }
+---
+name: 'step 3'
+viewData:
+  currentStep: 3
+  isStep1: false
+  isStep2: false
+  isStep3: true
+  isStep4: false
+  dots:
+    - { color: "dodgerblue" }
+    - { color: "dodgerblue" }
+    - { color: "dodgerblue" }
+    - { color: "#ddd" }
+---
+name: 'step 4'
+viewData:
+  currentStep: 4
+  isStep1: false
+  isStep2: false
+  isStep3: false
+  isStep4: true
+  dots:
+    - { color: "dodgerblue" }
+    - { color: "dodgerblue" }
+    - { color: "dodgerblue" }
+    - { color: "dodgerblue" }

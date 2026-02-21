@@ -1,0 +1,25 @@
+refs:
+  incrementBtn:
+    eventListeners:
+      click:
+        handler: handleIncrement
+  decrementBtn:
+    eventListeners:
+      click:
+        handler: handleDecrement
+  toggleBtn:
+    eventListeners:
+      click:
+        handler: handleToggle
+
+template:
+  - 'div#root style="display:flex;flex-direction:column;gap:8px;padding:16px;width:220px;font-family:monospace"':
+    - 'div style="display:flex;align-items:flex-end;height:200px;background:#eee;padding:4px"':
+      - 'div#bar data-testid=counter-bar style="width:40px;background:dodgerblue;height:${barHeight}px;min-height:2px"':
+    - 'div style="font-size:11px"': "Count: ${count}"
+    - 'div style="display:flex;gap:4px"':
+      - 'button#decrementBtn data-testid=decrement style="width:40px;height:32px"': "-"
+      - 'button#incrementBtn data-testid=increment style="width:40px;height:32px"': "+"
+    - 'button#toggleBtn data-testid=toggle style="height:32px"': "Toggle"
+    - $if showPanel:
+      - 'div#panel data-testid=panel style="width:80px;height:80px;background:mediumseagreen;border-radius:4px"':

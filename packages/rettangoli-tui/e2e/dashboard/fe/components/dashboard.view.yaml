@@ -1,0 +1,17 @@
+refs:
+  document:
+    eventListeners:
+      keydown:
+        handler: handleDocumentKeydown
+
+template:
+  - 'div#root style="display:flex;flex-direction:column;gap:16px;padding:16px;font-family:monospace"':
+    - 'div style="font-size:14px;font-weight:bold"': "${title}"
+    - 'div style="display:flex;gap:16px;align-items:flex-start"':
+      - e2e-pixel-grid:
+      - 'div style="display:flex;flex-direction:column;gap:16px"':
+        - e2e-stepper:
+        - e2e-kanban:
+    - 'div style="display:flex;gap:8px;align-items:center"':
+      - 'div style="font-size:11px"': "R pressed: ${resetCount}x"
+      - 'div data-testid=reset-indicator style="width:${resetWidth}px;height:12px;background:tomato;border-radius:2px;min-width:2px"':
