@@ -72,17 +72,8 @@ class RettangoliInputElement extends HTMLElement {
         input[type="datetime-local"]::-webkit-calendar-picker-indicator {
           cursor: pointer;
           border-radius: var(--border-radius-sm);
-          opacity: 0.72;
-          padding: 2px;
-        }
-        input[type="date"]:hover::-webkit-calendar-picker-indicator,
-        input[type="time"]:hover::-webkit-calendar-picker-indicator,
-        input[type="datetime-local"]:hover::-webkit-calendar-picker-indicator,
-        input[type="date"]:focus::-webkit-calendar-picker-indicator,
-        input[type="time"]:focus::-webkit-calendar-picker-indicator,
-        input[type="datetime-local"]:focus::-webkit-calendar-picker-indicator {
           opacity: 1;
-          background: var(--muted, transparent);
+          padding: 2px;
         }
         input[type="date"]::-webkit-datetime-edit,
         input[type="time"]::-webkit-datetime-edit,
