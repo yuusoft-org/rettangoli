@@ -73,18 +73,15 @@ sidebar:
           href: /docs/introduction/
 ```
 
-## Rettangoli.dev Shell Templates
+## Rettangoli.dev Shared Assets
 
-These templates mirror `apps/rettangoli.dev/templates/*` so the app can consume
-them via URL imports instead of local template files.
+Rettangoli.dev keeps per-library docs template wrappers locally in
+`apps/rettangoli.dev/templates/` and uses these shared import assets:
 
 Template URLs:
 
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/base.yaml`
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/documentation.yaml`
-- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/fe-documentation.yaml`
-- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/sites-documentation.yaml`
-- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/vt-documentation.yaml`
 
 Partial URLs:
 
@@ -99,9 +96,6 @@ imports:
   templates:
     base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/base.yaml
     documentation: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/documentation.yaml
-    fe-documentation: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/fe-documentation.yaml
-    sites-documentation: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/sites-documentation.yaml
-    vt-documentation: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/vt-documentation.yaml
   partials:
     seo1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/seo1.yaml
     navbar1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/navbar1.yaml
