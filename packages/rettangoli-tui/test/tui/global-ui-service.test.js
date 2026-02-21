@@ -17,7 +17,7 @@ describe("tui global ui service", () => {
     const service = createGlobalTuiService({ requestRender });
     const selectionPromise = service.api.select({
       title: "Choose env",
-      mode: "dialog",
+      size: "md",
       options: [
         { id: "local", label: "Local" },
         { id: "staging", label: "Staging" },

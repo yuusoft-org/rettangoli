@@ -97,7 +97,7 @@ const handleTitleDialogKeyDown = (deps, event, keyName) => {
   }
 };
 
-const openEnvironmentSelector = async (deps, mode) => {
+const openEnvironmentSelector = async (deps, size) => {
   if (!deps.ui || typeof deps.ui.select !== "function") {
     deps.store.setMessage({ value: "Global selector service is unavailable" });
     deps.render();
@@ -110,8 +110,7 @@ const openEnvironmentSelector = async (deps, mode) => {
     const result = await deps.ui.select({
       title: "Select Environment",
       options,
-      mode,
-      size: mode === "dialog" ? "md" : "lg",
+      size,
       selectedIndex: resolveSelectedEnvironmentIndex(currentState),
       hint: "ArrowUp/ArrowDown move, Enter select, Esc cancel",
     });
@@ -177,11 +176,11 @@ export const handleShowcaseKeyDown = (deps, payload) => {
     event?.preventDefault?.();
   } else if (keyName === "s") {
     event?.preventDefault?.();
-    void openEnvironmentSelector(deps, "fullscreen");
+    void openEnvironmentSelector(deps, "f");
     return;
   } else if (keyName === "f") {
     event?.preventDefault?.();
-    void openEnvironmentSelector(deps, "dialog");
+    void openEnvironmentSelector(deps, "md");
     return;
   } else if (keyName === "e") {
     event?.preventDefault?.();

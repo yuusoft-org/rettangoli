@@ -2,7 +2,7 @@ import { ansi } from "../tui/ansi.js";
 
 const ANSI_SEQUENCE_REGEX = /\u001b\[[0-9;]*m/g;
 const YES_VALUES = new Set(["", "1", "true", "yes", "on"]);
-const DIALOG_MODE_TOKENS = new Set(["dialog", "floating", "center", "modal"]);
+const FULLSCREEN_SIZE_TOKENS = new Set(["f", "full", "fullscreen", "100%", "max"]);
 const SIZE_PRESETS = {
   sm: {
     widthRatio: 0.5,
@@ -155,16 +155,11 @@ const resolveTerminalSize = () => {
   };
 };
 
-const resolveSelectorMode = (value) => {
-  const token = String(value || "fullscreen").toLowerCase();
-  if (DIALOG_MODE_TOKENS.has(token)) {
-    return "dialog";
-  }
-  return "fullscreen";
-};
-
 const resolveDialogSize = (value) => {
   const token = String(value || "md").toLowerCase();
+  if (FULLSCREEN_SIZE_TOKENS.has(token)) {
+    return "f";
+  }
   if (SIZE_PRESETS[token]) {
     return token;
   }
@@ -172,7 +167,6 @@ const resolveDialogSize = (value) => {
 };
 
 const resolveDialogFrame = ({
-  mode,
   size,
   optionCount,
   attrs,
@@ -180,7 +174,7 @@ const resolveDialogFrame = ({
   terminalWidth,
   terminalHeight,
 }) => {
-  if (mode === "fullscreen") {
+  if (size === "f") {
     return {
       width: terminalWidth,
       height: terminalHeight,
@@ -241,7 +235,6 @@ const renderSelectorDialog = ({ attrs, props, renderChildren }) => {
 
   const title = String(props.title || attrs.title || "Select Option");
   const options = normalizeOptions(props.options ?? attrs.options);
-  const mode = resolveSelectorMode(props.mode ?? attrs.mode);
   const size = resolveDialogSize(props.size ?? attrs.size);
   const safeSelectedIndex = clamp(
     Number(props.selectedIndex ?? attrs.selectedIndex) || 0,
@@ -259,7 +252,6 @@ const renderSelectorDialog = ({ attrs, props, renderChildren }) => {
 
   const terminalSize = resolveTerminalSize();
   const { width, height, x, y } = resolveDialogFrame({
-    mode,
     size,
     optionCount: options.length,
     attrs,

@@ -112,7 +112,6 @@ export const createGlobalTuiService = ({ requestRender = () => {} } = {}) => {
         queue.push({
           title: String(options.title || "Select Option"),
           options: options.options,
-          mode: options.mode || "fullscreen",
           size: options.size || "md",
           selectedIndex: options.selectedIndex,
           hint: options.hint,
@@ -199,7 +198,6 @@ export const createGlobalTuiService = ({ requestRender = () => {} } = {}) => {
       props: {
         open: true,
         title: activeRequest.title,
-        mode: activeRequest.mode,
         size: activeRequest.size,
         options: activeRequest.options,
         selectedIndex: activeRequest.selectedIndex,
