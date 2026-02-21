@@ -1,0 +1,67 @@
+---
+title: "With Date Time"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '320');
+
+  form.defaultValues = {
+    startDate: '2026-02-14',
+    startTime: '09:30',
+    startAt: '2026-02-14T09:30',
+    remindAt: '2026-02-14T13:45',
+  };
+
+  form.form = {
+    title: 'Schedule',
+    description: 'Temporal field rendering for native controls',
+    fields: [{
+      name: 'startDate',
+      type: 'input-date',
+      label: 'Start Date',
+      min: '2026-01-01',
+      max: '2026-12-31',
+      required: true,
+    }, {
+      name: 'startTime',
+      type: 'input-time',
+      label: 'Start Time',
+      min: '08:00',
+      max: '18:00',
+      step: 60,
+      required: true,
+    }, {
+      name: 'startAt',
+      type: 'input-datetime',
+      label: 'Start At',
+      min: '2026-01-01T08:00',
+      max: '2026-12-31T18:00',
+      step: 60,
+      required: true,
+    }, {
+      name: 'remindAt',
+      type: 'input-datetime',
+      label: 'Reminder',
+      description: 'Readonly disabled state preview',
+      step: 900,
+      disabled: true,
+    }],
+    actions: {
+      buttons: [{
+        id: 'save',
+        variant: 'pr',
+        label: 'Save',
+      }],
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+</script>

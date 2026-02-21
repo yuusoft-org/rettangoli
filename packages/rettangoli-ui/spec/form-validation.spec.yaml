@@ -75,6 +75,102 @@ in:
 out:
   error: null
 ---
+suite: validateField - temporal
+exportName: runValidateFieldCase
+---
+case: input-date valid value passes
+in:
+  - field:
+      name: startDate
+      type: input-date
+    value: "2026-02-14"
+out:
+  error: null
+---
+case: input-date invalid format fails
+in:
+  - field:
+      name: startDate
+      type: input-date
+    value: "2026/02/14"
+out:
+  error: "Invalid date format"
+---
+case: input-date out of range day fails
+in:
+  - field:
+      name: startDate
+      type: input-date
+    value: "2026-02-31"
+out:
+  error: "Invalid date format"
+---
+case: input-date min constraint fails
+in:
+  - field:
+      name: startDate
+      type: input-date
+      min: "2026-02-10"
+    value: "2026-02-09"
+out:
+  error: "Must be on or after 2026-02-10"
+---
+case: input-time valid value passes
+in:
+  - field:
+      name: startTime
+      type: input-time
+    value: "09:30"
+out:
+  error: null
+---
+case: input-time invalid value fails
+in:
+  - field:
+      name: startTime
+      type: input-time
+    value: "24:00"
+out:
+  error: "Invalid time format"
+---
+case: input-time max constraint fails
+in:
+  - field:
+      name: startTime
+      type: input-time
+      max: "18:00"
+    value: "18:30"
+out:
+  error: "Must be on or before 18:00"
+---
+case: input-datetime valid value passes
+in:
+  - field:
+      name: startAt
+      type: input-datetime
+    value: "2026-02-14T09:30"
+out:
+  error: null
+---
+case: input-datetime invalid format fails
+in:
+  - field:
+      name: startAt
+      type: input-datetime
+    value: "2026-02-14 09:30"
+out:
+  error: "Invalid date and time format"
+---
+case: input-datetime min constraint fails
+in:
+  - field:
+      name: startAt
+      type: input-datetime
+      min: "2026-02-14T09:30"
+    value: "2026-02-14T09:00"
+out:
+  error: "Must be on or after 2026-02-14T09:30"
+---
 suite: validateField - minLength
 exportName: runValidateFieldCase
 ---
@@ -417,6 +513,27 @@ case: input-textarea defaults to empty string
 in:
   - field:
       type: input-textarea
+out:
+  value: ""
+---
+case: input-date defaults to empty string
+in:
+  - field:
+      type: input-date
+out:
+  value: ""
+---
+case: input-time defaults to empty string
+in:
+  - field:
+      type: input-time
+out:
+  value: ""
+---
+case: input-datetime defaults to empty string
+in:
+  - field:
+      type: input-datetime
 out:
   value: ""
 ---

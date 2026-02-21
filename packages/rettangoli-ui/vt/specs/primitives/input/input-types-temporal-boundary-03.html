@@ -1,0 +1,34 @@
+---
+title: Input - Type - Native Temporal Boundary Values
+description: Verifies deterministic temporal boundary values including leap day and second precision.
+specs:
+  - Leap day date is rendered as a stable fixed value.
+  - Boundary min and max values remain visually consistent.
+  - Second-level precision renders for time and datetime-local when step is 1.
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-view g="sm" w="460">
+    <rtgl-text s="sm" c="mu-fg">date leap day (valid)</rtgl-text>
+    <rtgl-input type="date" value="2028-02-29" min="2028-01-01" max="2028-12-31"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="460">
+    <rtgl-text s="sm" c="mu-fg">date exact min</rtgl-text>
+    <rtgl-input type="date" value="2028-02-01" min="2028-02-01" max="2028-02-29"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="460">
+    <rtgl-text s="sm" c="mu-fg">date exact max</rtgl-text>
+    <rtgl-input type="date" value="2028-02-29" min="2028-02-01" max="2028-02-29"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="460">
+    <rtgl-text s="sm" c="mu-fg">time with seconds precision</rtgl-text>
+    <rtgl-input type="time" value="17:45:45" min="08:00:30" max="17:45:45" step="1"></rtgl-input>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="460">
+    <rtgl-text s="sm" c="mu-fg">datetime-local with seconds precision</rtgl-text>
+    <rtgl-input type="datetime-local" value="2028-02-29T17:45:45" min="2028-02-29T08:00:30" max="2028-02-29T17:45:45" step="1"></rtgl-input>
+  </rtgl-view>
+</rtgl-view>

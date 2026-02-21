@@ -141,6 +141,135 @@ const DEFAULT_MESSAGES = {
   minLength: (val) => `Must be at least ${val} characters`,
   maxLength: (val) => `Must be at most ${val} characters`,
   pattern: "Invalid format",
+  invalidDate: "Invalid date format",
+  invalidTime: "Invalid time format",
+  invalidDateTime: "Invalid date and time format",
+  minTemporal: (val) => `Must be on or after ${val}`,
+  maxTemporal: (val) => `Must be on or before ${val}`,
+};
+
+const DATE_FIELD_TYPE = "input-date";
+const TIME_FIELD_TYPE = "input-time";
+const DATETIME_FIELD_TYPE = "input-datetime";
+
+const DATE_REGEX = /^(\d{4})-(\d{2})-(\d{2})$/;
+const TIME_REGEX = /^(\d{2}):(\d{2})(?::(\d{2}))?$/;
+const DATETIME_REGEX = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}(?::\d{2})?)$/;
+
+const parseDateParts = (value) => {
+  if (typeof value !== "string") return null;
+  const match = DATE_REGEX.exec(value);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+    return null;
+  }
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    return null;
+  }
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+  const valid = date.getUTCFullYear() === year
+    && date.getUTCMonth() === month - 1
+    && date.getUTCDate() === day;
+  if (!valid) return null;
+
+  return { year, month, day };
+};
+
+const parseTimeParts = (value) => {
+  if (typeof value !== "string") return null;
+  const match = TIME_REGEX.exec(value);
+  if (!match) return null;
+
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  const second = match[3] === undefined ? 0 : Number(match[3]);
+  if (!Number.isInteger(hour) || !Number.isInteger(minute) || !Number.isInteger(second)) {
+    return null;
+  }
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59) {
+    return null;
+  }
+
+  return { hour, minute, second };
+};
+
+const normalizeTimeComparable = (value) => {
+  const parts = parseTimeParts(value);
+  if (!parts) return null;
+  return `${String(parts.hour).padStart(2, "0")}:${String(parts.minute).padStart(2, "0")}:${String(parts.second).padStart(2, "0")}`;
+};
+
+const normalizeDateComparable = (value) => {
+  return parseDateParts(value) ? value : null;
+};
+
+const normalizeDateTimeComparable = (value) => {
+  if (typeof value !== "string") return null;
+  const match = DATETIME_REGEX.exec(value);
+  if (!match) return null;
+
+  const date = normalizeDateComparable(match[1]);
+  const time = normalizeTimeComparable(match[2]);
+  if (!date || !time) return null;
+
+  return `${date}T${time}`;
+};
+
+const getTemporalNormalization = (fieldType) => {
+  if (fieldType === DATE_FIELD_TYPE) {
+    return {
+      normalize: normalizeDateComparable,
+      invalidMessage: DEFAULT_MESSAGES.invalidDate,
+    };
+  }
+  if (fieldType === TIME_FIELD_TYPE) {
+    return {
+      normalize: normalizeTimeComparable,
+      invalidMessage: DEFAULT_MESSAGES.invalidTime,
+    };
+  }
+  if (fieldType === DATETIME_FIELD_TYPE) {
+    return {
+      normalize: normalizeDateTimeComparable,
+      invalidMessage: DEFAULT_MESSAGES.invalidDateTime,
+    };
+  }
+  return null;
+};
+
+const validateTemporalField = (field, value) => {
+  const temporal = getTemporalNormalization(field.type);
+  if (!temporal) return null;
+
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  const comparableValue = temporal.normalize(String(value));
+  if (!comparableValue) {
+    return temporal.invalidMessage;
+  }
+
+  if (field.min !== undefined && field.min !== null && String(field.min) !== "") {
+    const minComparable = temporal.normalize(String(field.min));
+    if (minComparable && comparableValue < minComparable) {
+      return DEFAULT_MESSAGES.minTemporal(String(field.min));
+    }
+  }
+
+  if (field.max !== undefined && field.max !== null && String(field.max) !== "") {
+    const maxComparable = temporal.normalize(String(field.max));
+    if (maxComparable && comparableValue > maxComparable) {
+      return DEFAULT_MESSAGES.maxTemporal(String(field.max));
+    }
+  }
+
+  return null;
 };
 
 export const validateField = (field, value) => {
@@ -161,6 +290,11 @@ export const validateField = (field, value) => {
       }
       return DEFAULT_MESSAGES.required;
     }
+  }
+
+  const temporalError = validateTemporalField(field, value);
+  if (temporalError) {
+    return temporalError;
   }
 
   // Check rules
@@ -254,6 +388,9 @@ export const collectAllDataFields = (fields) => {
 export const getDefaultValue = (field) => {
   switch (field.type) {
     case "input-text":
+    case "input-date":
+    case "input-time":
+    case "input-datetime":
     case "input-textarea":
     case "popover-input":
       return "";

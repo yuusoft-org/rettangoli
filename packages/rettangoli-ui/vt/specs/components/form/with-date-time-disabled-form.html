@@ -1,0 +1,49 @@
+---
+title: "With Date Time Disabled Form"
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '320');
+  form.disabled = true;
+
+  form.defaultValues = {
+    startDate: '2026-07-04',
+    startTime: '10:00',
+    startAt: '2026-07-04T10:00',
+  };
+
+  form.form = {
+    title: 'Disabled Schedule',
+    description: 'All temporal controls should render disabled when form disabled is true',
+    fields: [{
+      name: 'startDate',
+      type: 'input-date',
+      label: 'Start Date',
+    }, {
+      name: 'startTime',
+      type: 'input-time',
+      label: 'Start Time',
+    }, {
+      name: 'startAt',
+      type: 'input-datetime',
+      label: 'Start At',
+    }],
+    actions: {
+      buttons: [{
+        id: 'save',
+        variant: 'pr',
+        label: 'Save',
+      }],
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+</script>

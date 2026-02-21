@@ -1,0 +1,122 @@
+---
+title: "With Date Time Boundary Invalid"
+description: Validate deterministic temporal boundary violations and invalid formats.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 720
+  height: 1180
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '380');
+
+  form.defaultValues = {
+    beforeMinDate: '2028-01-31',
+    afterMaxDate: '2028-03-01',
+    invalidLeapDate: '2027-02-29',
+    beforeMinTime: '08:00:29',
+    afterMaxTime: '17:45:46',
+    invalidTime: '24:00',
+    beforeMinDateTime: '2028-02-29T08:00:29',
+    afterMaxDateTime: '2028-02-29T17:45:46',
+    invalidDateTime: '2028-02-29 12:00',
+  };
+
+  form.form = {
+    title: 'Temporal Boundary Invalid Values',
+    description: 'All fields are deterministic invalid scenarios',
+    fields: [{
+      name: 'beforeMinDate',
+      type: 'input-date',
+      label: 'Date Before Min',
+      min: '2028-02-01',
+      required: true,
+    }, {
+      name: 'afterMaxDate',
+      type: 'input-date',
+      label: 'Date After Max',
+      max: '2028-02-29',
+      required: true,
+    }, {
+      name: 'invalidLeapDate',
+      type: 'input-date',
+      label: 'Invalid Leap Date',
+      required: true,
+    }, {
+      name: 'beforeMinTime',
+      type: 'input-time',
+      label: 'Time Before Min',
+      min: '08:00:30',
+      max: '17:45:45',
+      step: 1,
+      required: true,
+    }, {
+      name: 'afterMaxTime',
+      type: 'input-time',
+      label: 'Time After Max',
+      min: '08:00:30',
+      max: '17:45:45',
+      step: 1,
+      required: true,
+    }, {
+      name: 'invalidTime',
+      type: 'input-time',
+      label: 'Invalid Time',
+      required: true,
+    }, {
+      name: 'beforeMinDateTime',
+      type: 'input-datetime',
+      label: 'DateTime Before Min',
+      min: '2028-02-29T08:00:30',
+      max: '2028-02-29T17:45:45',
+      step: 1,
+      required: true,
+    }, {
+      name: 'afterMaxDateTime',
+      type: 'input-datetime',
+      label: 'DateTime After Max',
+      min: '2028-02-29T08:00:30',
+      max: '2028-02-29T17:45:45',
+      step: 1,
+      required: true,
+    }, {
+      name: 'invalidDateTime',
+      type: 'input-datetime',
+      label: 'Invalid DateTime',
+      required: true,
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Validate',
+        validate: true,
+      }],
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  const setSubmitButtonTestId = () => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    if (btn) {
+      btn.setAttribute('data-testid', 'submit-btn');
+      return;
+    }
+    setTimeout(setSubmitButtonTestId, 0);
+  };
+  setSubmitButtonTestId();
+</script>

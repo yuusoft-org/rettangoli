@@ -1,0 +1,86 @@
+---
+title: "With Date Time Boundary Valid"
+viewport:
+  id: form-compact
+  width: 700
+  height: 1020
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '360');
+
+  form.defaultValues = {
+    leapDate: '2028-02-29',
+    minDate: '2028-02-01',
+    maxDate: '2028-02-29',
+    minTime: '08:00:30',
+    maxTime: '17:45:45',
+    minDateTime: '2028-02-29T08:00:30',
+    maxDateTime: '2028-02-29T17:45:45',
+  };
+
+  form.form = {
+    title: 'Temporal Boundary Valid Values',
+    description: 'Fixed values at leap day and min/max boundaries',
+    fields: [{
+      name: 'leapDate',
+      type: 'input-date',
+      label: 'Leap Date',
+      min: '2028-01-01',
+      max: '2028-12-31',
+    }, {
+      name: 'minDate',
+      type: 'input-date',
+      label: 'Date At Min',
+      min: '2028-02-01',
+      max: '2028-02-29',
+    }, {
+      name: 'maxDate',
+      type: 'input-date',
+      label: 'Date At Max',
+      min: '2028-02-01',
+      max: '2028-02-29',
+    }, {
+      name: 'minTime',
+      type: 'input-time',
+      label: 'Time At Min (seconds)',
+      min: '08:00:30',
+      max: '17:45:45',
+      step: 1,
+    }, {
+      name: 'maxTime',
+      type: 'input-time',
+      label: 'Time At Max (seconds)',
+      min: '08:00:30',
+      max: '17:45:45',
+      step: 1,
+    }, {
+      name: 'minDateTime',
+      type: 'input-datetime',
+      label: 'DateTime At Min',
+      min: '2028-02-29T08:00:30',
+      max: '2028-02-29T17:45:45',
+      step: 1,
+    }, {
+      name: 'maxDateTime',
+      type: 'input-datetime',
+      label: 'DateTime At Max',
+      min: '2028-02-29T08:00:30',
+      max: '2028-02-29T17:45:45',
+      step: 1,
+    }],
+    actions: {
+      buttons: [{
+        id: 'save',
+        variant: 'pr',
+        label: 'Save',
+      }],
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+</script>
