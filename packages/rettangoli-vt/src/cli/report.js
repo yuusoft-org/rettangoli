@@ -2,10 +2,11 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { cp } from "node:fs/promises";
+import { load as loadYaml } from "js-yaml";
 import pixelmatch from "pixelmatch";
 import sharp from "sharp";
-import { readYaml } from "../common.js";
-import { validateVtConfig } from "../validation.js";
+import { extractFrontMatter, readYaml } from "../common.js";
+import { validateFiniteNumber, validateVtConfig } from "../validation.js";
 import { resolveReportOptions } from "./report-options.js";
 import {
   buildAllRelativePaths,
@@ -17,6 +18,7 @@ import {
   filterRelativeScreenshotPathsBySelectors,
   hasSelectors,
 } from "../selector-filter.js";
+import { stripViewportSuffix } from "../viewport.js";
 
 const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
 
@@ -33,6 +35,64 @@ function getAllFiles(dir, fileList = []) {
   });
 
   return fileList;
+}
+
+function normalizePathForLookup(filePath) {
+  return String(filePath)
+    .replace(/\\/g, "/")
+    .replace(/^\.?\//, "");
+}
+
+function toSpecItemKey(relativeSpecPath) {
+  const normalized = normalizePathForLookup(relativeSpecPath);
+  const ext = path.extname(normalized);
+  return normalized.slice(0, normalized.length - ext.length);
+}
+
+function toScreenshotItemKey(relativeScreenshotPath) {
+  const normalized = normalizePathForLookup(relativeScreenshotPath).replace(/\.webp$/i, "");
+  const withoutOrdinal = normalized.replace(/-\d{1,3}$/i, "");
+  return stripViewportSuffix(withoutOrdinal);
+}
+
+function loadFrontMatterDiffThresholdOverrides(specsDir) {
+  const overrides = new Map();
+  if (!fs.existsSync(specsDir)) {
+    return overrides;
+  }
+
+  const specFiles = getAllFiles(specsDir);
+  for (const specFilePath of specFiles) {
+    const fileContent = fs.readFileSync(specFilePath, "utf8");
+    const { frontMatter } = extractFrontMatter(fileContent);
+    if (!frontMatter) {
+      continue;
+    }
+
+    const relativePath = path.relative(specsDir, specFilePath);
+    const frontMatterData = loadYaml(frontMatter);
+    if (
+      frontMatterData === null
+      || frontMatterData === undefined
+      || typeof frontMatterData !== "object"
+      || Array.isArray(frontMatterData)
+    ) {
+      continue;
+    }
+
+    if (frontMatterData.diffThreshold === undefined || frontMatterData.diffThreshold === null) {
+      continue;
+    }
+
+    validateFiniteNumber(
+      frontMatterData.diffThreshold,
+      `${relativePath}: frontMatter.diffThreshold`,
+      { min: 0, max: 100 },
+    );
+    overrides.set(toSpecItemKey(relativePath), frontMatterData.diffThreshold);
+  }
+
+  return overrides;
 }
 
 async function calculateImageHash(imagePath) {
@@ -137,10 +197,19 @@ async function main(options = {}) {
   const templatePath = path.join(libraryTemplatesPath, "report.html");
   const outputPath = path.join(siteOutputPath, "report.html");
   const jsonReportPath = path.join(".rettangoli", "vt", "report.json");
+  const specsDir = path.join(vtPath, "specs");
+
+  let diffThresholdOverridesBySpec = new Map();
+  if (compareMethod === "pixelmatch") {
+    diffThresholdOverridesBySpec = loadFrontMatterDiffThresholdOverrides(specsDir);
+  }
 
   console.log(`Comparison method: ${compareMethod}`);
   if (compareMethod === "pixelmatch") {
     console.log(`  color threshold: ${colorThreshold}, diff threshold: ${diffThreshold}%`);
+    if (diffThresholdOverridesBySpec.size > 0) {
+      console.log(`  frontmatter diff threshold overrides: ${diffThresholdOverridesBySpec.size}`);
+    }
   }
 
   if (!fs.existsSync(originalReferenceDir)) {
@@ -204,6 +273,9 @@ async function main(options = {}) {
       let error = false;
       let similarity = null;
       let diffPixels = null;
+      const itemKey = toScreenshotItemKey(relativePath);
+      const itemDiffThreshold = diffThresholdOverridesBySpec.get(itemKey);
+      const effectiveDiffThreshold = itemDiffThreshold ?? diffThreshold;
 
       if (candidateExists && referenceExists) {
         const diffDirPath = path.dirname(diffPath);
@@ -216,7 +288,7 @@ async function main(options = {}) {
           referencePath,
           compareMethod,
           diffPath,
-          { colorThreshold, diffThreshold },
+          { colorThreshold, diffThreshold: effectiveDiffThreshold },
         );
         if (comparison.error) {
           comparisonErrors.push(
