@@ -1,11 +1,12 @@
 # Rettangoli
-> Rettangoli is a frontend library suite for building, styling, documenting, and visually testing web applications.
+> Rettangoli is a library suite for building frontend and terminal UI applications, documenting them, and running visual tests.
 
 This file is a curated index for LLM-based tools. Prefer linked docs over guessing behavior.
 
 ## Projects
 - **Rettangoli FE**: Schema-driven app layer with component architecture, handlers, store/actions, and view data flow.
 - **Rettangoli UI**: Web component and primitive library with tokenized styling and responsive behavior.
+- **Rettangoli TUI**: Terminal UI runtime with FE-compatible component contracts and native TUI primitives.
 - **Rettangoli VT**: Visual testing runner for capture, compare, reporting, and CI-friendly workflows.
 - **Rettangoli Sites**: Markdown-first documentation/site generator used to build structured docs portals.
 
@@ -14,6 +15,8 @@ This file is a curated index for LLM-based tools. Prefer linked docs over guessi
 - https://rettangoli.dev/fe/docs/introduction/getting-started.md
 - https://rettangoli.dev/ui/docs/introduction/introduction.md
 - https://rettangoli.dev/ui/docs/introduction/getting-started.md
+- https://rettangoli.dev/tui/docs/introduction/introduction.md
+- https://rettangoli.dev/tui/docs/introduction/getting-started.md
 - https://rettangoli.dev/vt/docs/introduction/quickstart.md
 - https://rettangoli.dev/sites/docs/introduction/introduction.md
 - https://rettangoli.dev/sites/docs/introduction/getting-started.md
@@ -43,6 +46,14 @@ This file is a curated index for LLM-based tools. Prefer linked docs over guessi
 - https://rettangoli.dev/ui/docs/components/rtgl-dropdown-menu.md
 - https://rettangoli.dev/ui/docs/components/rtgl-table.md
 
+## TUI (Rettangoli TUI)
+- https://rettangoli.dev/tui/docs/guides/runtime-and-component-model.md
+- https://rettangoli.dev/tui/docs/guides/primitives.md
+- https://rettangoli.dev/tui/docs/guides/dialog-and-textarea.md
+- https://rettangoli.dev/tui/docs/guides/list-and-table.md
+- https://rettangoli.dev/tui/docs/guides/external-editor.md
+- https://rettangoli.dev/tui/docs/guides/interaction-patterns.md
+
 ## VT (Rettangoli VT)
 - https://rettangoli.dev/vt/docs/reference/cli.md
 - https://rettangoli.dev/vt/docs/reference/configuration.md
@@ -59,5 +70,6 @@ This file is a curated index for LLM-based tools. Prefer linked docs over guessi
 
 ## Notes
 - UI docs describe current attribute names and behavior; treat those as source of truth for component usage.
+- TUI docs describe FE-compatible component contracts and terminal-native runtime behavior.
 - VT docs define capture/report workflow, config contract, and step action semantics.
 - FE docs define schema, handlers, state flow, and architecture conventions.

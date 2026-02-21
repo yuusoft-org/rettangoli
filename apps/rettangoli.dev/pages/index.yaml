@@ -33,4 +33,9 @@ title: Rettangoli
                     - rtgl-text c="mu-fg": "Visual testing workflow for snapshots and reports."
                     - rtgl-view h="1fg":
                     - rtgl-button href="/vt/docs/introduction/quickstart/": "Read VT docs"
+                - rtgl-view w="1fg" sm-w="f" h="200" d="v" g="md" bw="xs" br="md" bgc="mu" p="lg":
+                    - rtgl-text s=h4: "rettangoli-tui"
+                    - rtgl-text c="mu-fg": "Terminal UI runtime using Rettangoli FE component contracts."
+                    - rtgl-view h="1fg":
+                    - rtgl-button href="/tui/docs/introduction/introduction/": "Read TUI docs"
     - rtgl-view h=160:
