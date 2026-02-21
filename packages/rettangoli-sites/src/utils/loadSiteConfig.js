@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 
-const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build']);
+const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build', 'imports']);
 const MARKDOWN_BOOLEAN_KEYS = new Set(['html', 'linkify', 'typographer', 'breaks', 'xhtmlOut']);
 const MARKDOWN_STRING_KEYS = new Set(['langPrefix', 'quotes', 'preset']);
 const MARKDOWN_NUMBER_KEYS = new Set(['maxNesting']);
@@ -27,6 +27,8 @@ const ALLOWED_HEADING_ANCHORS_KEYS = new Set([...HEADING_ANCHORS_BOOLEAN_KEYS, .
 const ALLOWED_HEADING_ANCHOR_SLUG_MODES = new Set(['ascii', 'unicode']);
 const BUILD_BOOLEAN_KEYS = new Set(['keepMarkdownFiles']);
 const ALLOWED_BUILD_KEYS = new Set([...BUILD_BOOLEAN_KEYS]);
+const ALLOWED_IMPORT_GROUP_KEYS = new Set(['templates', 'partials']);
+const ALLOWED_IMPORT_PROTOCOLS = new Set(['http:', 'https:']);
 let didWarnLegacyMarkdownKey = false;
 
 function isPlainObject(value) {
@@ -119,6 +121,71 @@ function validateBuildConfig(value, configPath) {
   return { ...value };
 }
 
+function validateImportUrl(url, configPath, groupKey, alias) {
+  if (typeof url !== 'string' || url.trim() === '') {
+    throw new Error(`Invalid imports.${groupKey} value for alias "${alias}" in "${configPath}": expected a non-empty URL string.`);
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error(`Invalid imports.${groupKey} URL for alias "${alias}" in "${configPath}": "${url}" is not a valid URL.`);
+  }
+
+  if (!ALLOWED_IMPORT_PROTOCOLS.has(parsed.protocol)) {
+    throw new Error(
+      `Invalid imports.${groupKey} URL for alias "${alias}" in "${configPath}": protocol "${parsed.protocol}" is not supported. Allowed protocols: http:, https:.`
+    );
+  }
+
+  return parsed.toString();
+}
+
+function validateImportGroup(value, configPath, groupKey) {
+  if (!isPlainObject(value)) {
+    throw new Error(`Invalid imports.${groupKey} in "${configPath}": expected an object of alias-to-URL mappings.`);
+  }
+
+  const normalized = {};
+
+  for (const [rawAlias, rawUrl] of Object.entries(value)) {
+    const alias = String(rawAlias).trim();
+    if (alias === '') {
+      throw new Error(`Invalid imports.${groupKey} in "${configPath}": alias keys must be non-empty.`);
+    }
+    normalized[alias] = validateImportUrl(rawUrl, configPath, groupKey, alias);
+  }
+
+  return normalized;
+}
+
+function validateImportsConfig(value, configPath) {
+  if (!isPlainObject(value)) {
+    throw new Error(`Invalid imports config in "${configPath}": expected an object.`);
+  }
+
+  const normalized = {};
+
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_IMPORT_GROUP_KEYS.has(key)) {
+      throw new Error(
+        `Unsupported imports group "${key}" in "${configPath}". Supported groups: ${Array.from(ALLOWED_IMPORT_GROUP_KEYS).join(', ')}.`
+      );
+    }
+  }
+
+  if (value.templates !== undefined) {
+    normalized.templates = validateImportGroup(value.templates, configPath, 'templates');
+  }
+
+  if (value.partials !== undefined) {
+    normalized.partials = validateImportGroup(value.partials, configPath, 'partials');
+  }
+
+  return normalized;
+}
+
 function validateConfig(rawConfig, configPath) {
   if (rawConfig == null) {
     return {};
@@ -133,7 +200,7 @@ function validateConfig(rawConfig, configPath) {
   for (const key of Object.keys(config)) {
     if (!ALLOWED_TOP_LEVEL_KEYS.has(key)) {
       throw new Error(
-        `Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias), build.`
+        `Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias), build, imports.`
       );
     }
   }
@@ -219,6 +286,10 @@ function validateConfig(rawConfig, configPath) {
 
   if (config.build !== undefined) {
     normalizedConfig.build = validateBuildConfig(config.build, configPath);
+  }
+
+  if (config.imports !== undefined) {
+    normalizedConfig.imports = validateImportsConfig(config.imports, configPath);
   }
 
   return normalizedConfig;

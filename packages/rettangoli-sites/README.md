@@ -69,6 +69,11 @@ markdownit:
     fallback: section
 build:
   keepMarkdownFiles: false
+imports:
+  templates:
+    docs/documentation: https://example.com/templates/docs-documentation.yaml
+  partials:
+    docs/nav: https://example.com/partials/docs-nav.yaml
 ```
 
 In the default starter template, CDN runtime scripts are controlled via `data/site.yaml`:
@@ -86,6 +91,16 @@ Set `build.keepMarkdownFiles: true` to keep source Markdown files in output in a
 Example mappings:
 - `pages/index.md` -> `_site/index.html` and `_site/index.md`
 - `pages/docs/intro.md` -> `_site/docs/intro/index.html` and `_site/docs/intro.md`
+
+`imports` lets you map aliases to remote YAML files (HTTP/HTTPS only). Use aliases in pages/templates:
+- page frontmatter: `template: docs/documentation`
+- template/page content: `$partial: docs/nav`
+
+Imported files are cached on disk under `.rettangoli/sites/imports/{templates|partials}/` (hashed filenames).
+Alias/url/hash mapping is tracked in `.rettangoli/sites/imports/index.yaml`.
+Build is cache-first: if a cached file exists, it is used without a network request.
+
+When an alias exists both remotely and locally, local files under `templates/` and `partials/` override the imported one.
 
 If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it will be copied to `_site/llms.txt`.
 

@@ -1,6 +1,7 @@
 import { convertToHtml } from 'yahtml';
 import { parseAndRender } from 'jempl';
 import path from 'path';
+import { createHash } from 'crypto';
 import yaml from 'js-yaml';
 import matter from 'gray-matter';
 
@@ -39,6 +40,204 @@ function isObject(item) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }
 
+function parseYamlWithContext(content, contextLabel) {
+  try {
+    return yaml.load(content, { schema: yaml.JSON_SCHEMA });
+  } catch (error) {
+    throw new Error(`${contextLabel}: Invalid YAML: ${error.message}`);
+  }
+}
+
+function buildImportCacheHash(url) {
+  return createHash('sha256').update(url).digest('hex');
+}
+
+function buildImportCachePath(rootDir, importGroup, hash) {
+  return path.join(rootDir, '.rettangoli', 'sites', 'imports', importGroup, `${hash}.yaml`);
+}
+
+function buildImportIndexPath(rootDir) {
+  return path.join(rootDir, '.rettangoli', 'sites', 'imports', 'index.yaml');
+}
+
+function toRelativePath(rootDir, absolutePath) {
+  const relativePath = path.relative(rootDir, absolutePath);
+  return relativePath.replace(/\\/g, '/');
+}
+
+function normalizeImportIndex(rawIndex, indexPath) {
+  if (rawIndex == null) {
+    return { version: 1, entries: [] };
+  }
+
+  if (!isObject(rawIndex)) {
+    throw new Error(`Invalid import index "${indexPath}": expected a YAML object.`);
+  }
+
+  if (rawIndex.version !== undefined && rawIndex.version !== 1) {
+    throw new Error(`Unsupported import index version "${rawIndex.version}" in "${indexPath}".`);
+  }
+
+  const rawEntries = rawIndex.entries ?? [];
+  if (!Array.isArray(rawEntries)) {
+    throw new Error(`Invalid import index "${indexPath}": expected "entries" to be an array.`);
+  }
+
+  const entries = rawEntries.map((entry, index) => {
+    if (!isObject(entry)) {
+      throw new Error(`Invalid import index "${indexPath}" at entries[${index}]: expected an object.`);
+    }
+
+    const normalizedEntry = {
+      alias: entry.alias,
+      type: entry.type,
+      url: entry.url,
+      hash: entry.hash,
+      path: entry.path
+    };
+
+    for (const [key, value] of Object.entries(normalizedEntry)) {
+      if (typeof value !== 'string' || value.trim() === '') {
+        throw new Error(`Invalid import index "${indexPath}" at entries[${index}].${key}: expected a non-empty string.`);
+      }
+    }
+
+    return normalizedEntry;
+  });
+
+  return { version: 1, entries };
+}
+
+function readImportIndex(fs, rootDir) {
+  const indexPath = buildImportIndexPath(rootDir);
+  if (!fs.existsSync(indexPath)) {
+    return { version: 1, entries: [] };
+  }
+
+  const indexContent = fs.readFileSync(indexPath, 'utf8');
+  const parsed = parseYamlWithContext(indexContent, `import index "${indexPath}"`);
+  return normalizeImportIndex(parsed, indexPath);
+}
+
+function upsertImportIndexEntry(importIndex, entry) {
+  const existingIndex = importIndex.entries.findIndex((item) => item.type === entry.type && item.alias === entry.alias);
+  if (existingIndex === -1) {
+    importIndex.entries.push(entry);
+    return;
+  }
+  importIndex.entries[existingIndex] = entry;
+}
+
+function writeImportIndex(fs, rootDir, importIndex) {
+  const indexPath = buildImportIndexPath(rootDir);
+  const indexDir = path.dirname(indexPath);
+  if (!fs.existsSync(indexDir)) {
+    fs.mkdirSync(indexDir, { recursive: true });
+  }
+
+  const sortedEntries = [...importIndex.entries].sort((a, b) => {
+    const left = `${a.type}:${a.alias}`;
+    const right = `${b.type}:${b.alias}`;
+    return left.localeCompare(right);
+  });
+
+  const output = {
+    version: 1,
+    entries: sortedEntries
+  };
+  fs.writeFileSync(indexPath, yaml.dump(output, { noRefs: true, lineWidth: -1 }));
+}
+
+function readImportedYamlFromCache(fs, cachePath, aliasLabel) {
+  if (!fs.existsSync(cachePath)) {
+    return null;
+  }
+
+  const content = fs.readFileSync(cachePath, 'utf8');
+  return parseYamlWithContext(content, `${aliasLabel} (cache: ${cachePath})`);
+}
+
+async function fetchRemoteYaml(url, fetchImpl, aliasLabel) {
+  const effectiveFetch = fetchImpl || globalThis.fetch;
+  if (typeof effectiveFetch !== 'function') {
+    throw new Error(`${aliasLabel}: Remote imports require global fetch support (Node.js 18+).`);
+  }
+
+  const response = await effectiveFetch(url);
+  if (!response.ok) {
+    throw new Error(`${aliasLabel}: HTTP ${response.status} ${response.statusText}`.trim());
+  }
+
+  const content = await response.text();
+  const parsed = parseYamlWithContext(content, aliasLabel);
+  return { parsed, content };
+}
+
+function writeImportedYamlCache(fs, cachePath, content) {
+  const cacheDir = path.dirname(cachePath);
+  if (!fs.existsSync(cacheDir)) {
+    fs.mkdirSync(cacheDir, { recursive: true });
+  }
+
+  try {
+    fs.writeFileSync(cachePath, content);
+  } catch (error) {
+    // Non-fatal: build can still proceed with fetched content.
+  }
+}
+
+async function loadImportedAliases({
+  fs,
+  rootDir,
+  importMap,
+  importGroup,
+  typeLabel,
+  fetchImpl,
+  importIndex
+}) {
+  const resolved = {};
+  if (!isObject(importMap)) {
+    return resolved;
+  }
+
+  for (const [alias, url] of Object.entries(importMap)) {
+    const aliasLabel = `imported ${typeLabel} "${alias}" from "${url}"`;
+    const hash = buildImportCacheHash(url);
+    const cachePath = buildImportCachePath(rootDir, importGroup, hash);
+    const relativeCachePath = toRelativePath(rootDir, cachePath);
+
+    const cachedValue = readImportedYamlFromCache(fs, cachePath, aliasLabel);
+    if (cachedValue !== null) {
+      resolved[alias] = cachedValue;
+      upsertImportIndexEntry(importIndex, {
+        alias,
+        type: typeLabel,
+        url,
+        hash,
+        path: relativeCachePath
+      });
+      continue;
+    }
+
+    try {
+      const fetched = await fetchRemoteYaml(url, fetchImpl, aliasLabel);
+      writeImportedYamlCache(fs, cachePath, fetched.content);
+      resolved[alias] = fetched.parsed;
+      upsertImportIndexEntry(importIndex, {
+        alias,
+        type: typeLabel,
+        url,
+        hash,
+        path: relativeCachePath
+      });
+    } catch (error) {
+      throw new Error(`Failed to load ${aliasLabel}: ${error.message}`);
+    }
+  }
+
+  return resolved;
+}
+
 export function createSiteBuilder({
   fs,
   rootDir = '.',
@@ -46,6 +245,8 @@ export function createSiteBuilder({
   md,
   markdown = {},
   keepMarkdownFiles = false,
+  imports = {},
+  fetchImpl,
   functions = {},
   quiet = false,
   isScreenshotMode = false
@@ -79,22 +280,60 @@ export function createSiteBuilder({
       fs.mkdirSync(outputRootDir, { recursive: true });
     }
 
+    const importIndex = readImportIndex(fs, rootDir);
+
+    const importedTemplates = await loadImportedAliases({
+      fs,
+      rootDir,
+      importMap: imports.templates,
+      importGroup: 'templates',
+      typeLabel: 'template',
+      fetchImpl,
+      importIndex
+    });
+    const importedPartials = await loadImportedAliases({
+      fs,
+      rootDir,
+      importMap: imports.partials,
+      importGroup: 'partials',
+      typeLabel: 'partial',
+      fetchImpl,
+      importIndex
+    });
+
+    if (importIndex.entries.length > 0) {
+      writeImportIndex(fs, rootDir, importIndex);
+    }
+
     // Read all partials and create a JSON object
     const partialsDir = path.join(rootDir, 'partials');
-    const partials = {};
+    const partials = { ...importedPartials };
 
-    if (fs.existsSync(partialsDir)) {
-      const files = fs.readdirSync(partialsDir, { withFileTypes: true });
-      files.forEach(file => {
-        if (!file.isFile() || (!file.name.endsWith('.yaml') && !file.name.endsWith('.yml'))) {
+    function readPartialsRecursively(dir, basePath = '') {
+      if (!fs.existsSync(dir)) return;
+
+      const items = fs.readdirSync(dir, { withFileTypes: true });
+      items.forEach(item => {
+        const itemPath = path.join(dir, item.name);
+        if (item.isDirectory()) {
+          const newBasePath = basePath ? `${basePath}/${item.name}` : item.name;
+          readPartialsRecursively(itemPath, newBasePath);
           return;
         }
-        const filePath = path.join(partialsDir, file.name);
-        const fileContent = fs.readFileSync(filePath, 'utf8');
-        const nameWithoutExt = path.basename(file.name, path.extname(file.name));
-        // Convert partial content from YAML string to JSON
-        partials[nameWithoutExt] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
+
+        if (!item.isFile() || (!item.name.endsWith('.yaml') && !item.name.endsWith('.yml'))) {
+          return;
+        }
+
+        const fileContent = fs.readFileSync(itemPath, 'utf8');
+        const nameWithoutExt = path.basename(item.name, path.extname(item.name));
+        const partialKey = basePath ? `${basePath}/${nameWithoutExt}` : nameWithoutExt;
+        partials[partialKey] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
       });
+    }
+
+    if (fs.existsSync(partialsDir)) {
+      readPartialsRecursively(partialsDir);
     }
 
     // Read all data files and create a JSON object
@@ -116,7 +355,7 @@ export function createSiteBuilder({
 
     // Read all templates and create a JSON object
     const templatesDir = path.join(rootDir, 'templates');
-    const templates = {};
+    const templates = { ...importedTemplates };
 
     function readTemplatesRecursively(dir, basePath = '') {
       if (!fs.existsSync(dir)) return;

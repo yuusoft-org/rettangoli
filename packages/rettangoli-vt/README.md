@@ -2,6 +2,19 @@
 
 Visual regression testing for Rettangoli specs using Playwright screenshots.
 
+## Sites Template Publishing
+
+`@rettangoli/vt` also ships URL-importable YAML assets for `@rettangoli/sites`.
+These are publish-only assets and are not used by VT runtime code.
+
+- Folder: `sites/`
+- Docs template bundle: `sites/templates/docs/documentation.yaml` and `sites/partials/docs/mobile-nav.yaml`
+- Usage guide: `sites/README.md`
+
+Published URL pattern (jsDelivr):
+
+`https://cdn.jsdelivr.net/npm/@rettangoli/vt@<version>/sites/templates/docs/documentation.yaml`
+
 ## Commands
 
 - `rtgl vt generate`
