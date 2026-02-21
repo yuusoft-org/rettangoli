@@ -85,7 +85,7 @@ methods:
 
 ### `methods`
 
-- optional JSON-Schema-like object describing public methods exposed by the component element
+- optional JSON-Schema-like object describing public methods exposed by the component instance
 - SHOULD use `type: object` and `properties`
 - each `methods.properties.<methodName>` SHOULD match a named export in `.methods.js`
 - if `methods` is declared, `.methods.js` SHOULD exist

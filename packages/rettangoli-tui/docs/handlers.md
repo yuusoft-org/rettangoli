@@ -39,16 +39,8 @@ Rules:
 - custom dependencies from setup
 
 `deps.refs` contract:
-- map of `refKeyOrId -> DOM element`
-- values are direct elements, not wrapper objects
-
-Example:
-
-```js
-export const handleFocus = (deps) => {
-  deps.refs.submitButton?.focus();
-};
-```
+- map of runtime ref targets
+- in TUI, `window` / `document` refs are the primary event targets
 
 ## 4. Lifecycle Hooks
 
@@ -108,9 +100,9 @@ For `action` listeners (`refs.*.eventListeners.*.action`):
 - render is triggered automatically after action execution
 - `.handlers.js` export is not required for that listener
 
-## 6. Global Browser Events
+## 6. Global Runtime Events
 
-Long-lived browser-level listeners SHOULD be declared in `.view.yaml`:
+Long-lived global listeners SHOULD be declared in `.view.yaml`:
 - `refs.window.eventListeners`
 - `refs.document.eventListeners`
 

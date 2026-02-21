@@ -1,6 +1,6 @@
-# Rettangoli FE Interface Spec Overview
+# Rettangoli TUI Interface Spec Overview
 
-This `docs/` folder is the normative interface spec for `rettangoli-fe`.
+This `docs/` folder is the normative interface spec for `@rettangoli/tui`.
 All rules here are contractual unless explicitly marked as non-normative.
 
 Normative keywords follow RFC 2119 intent:
@@ -16,7 +16,7 @@ Normative keywords follow RFC 2119 intent:
 | `.schema.yaml` (required) | Public component API and docs metadata (`componentName`, `description`, `examples`, `propsSchema`, `events`, `methods`) |
 | `.store.js` | `createInitialState`, selectors, `selectViewData`, actions |
 | `.handlers.js` | Lifecycle hooks, side effects, imperative event handling |
-| `.methods.js` (optional) | Public element methods (named exports only) |
+| `.methods.js` (optional) | Public component-instance methods (named exports only) |
 | `.constants.yaml` (optional) | Static constants injected into runtime context |
 
 ## Cross-File Contracts
@@ -42,7 +42,8 @@ Normative keywords follow RFC 2119 intent:
 
 ### Refs Model
 
-- `deps.refs` is a map of `refKeyOrId -> DOM element` (direct element, not wrapper object).
+- `deps.refs` is a map of runtime refs targets.
+- In TUI runtime, `refs.window` and `refs.document` are guaranteed event targets.
 - Refs key grammar:
 - unprefixed key (`submitButton`) => ID target (default)
 - `#submitButton` => explicit ID target
@@ -62,13 +63,9 @@ Normative keywords follow RFC 2119 intent:
 
 ## Contract Check
 
-Run `rtgl fe check` to enforce:
+Run the package contract check tooling to enforce:
 - required `.schema.yaml` per component
 - forbidden API keys are not present in `.view.yaml` (`elementName`, `viewDataSchema`, `propsSchema`, `events`, `methods`, `attrsSchema`)
-
-Output modes:
-- `rtgl fe check` (default `text`): grouped summary by rule and component, plus detailed lines
-- `rtgl fe check --format json`: machine-readable JSON report for CI tools
 
 ## Conflict Resolution
 

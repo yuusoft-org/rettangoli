@@ -10,7 +10,7 @@ This document defines the normative store contract.
 3. `selectViewData`
 4. actions
 
-Side effects (network, timers, DOM) SHOULD be handled in `.handlers.js`.
+Side effects (network, timers, terminal I/O) SHOULD be handled in `.handlers.js`.
 
 ## 2. Required Export Order
 

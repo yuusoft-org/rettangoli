@@ -4,13 +4,13 @@ This document defines the optional public imperative method contract.
 
 ## 1. Scope
 
-Use `.methods.js` only for methods that callers invoke directly on the component element.
+Use `.methods.js` only for methods that callers invoke directly on the component instance.
 
 ## 2. Export Contract
 
 - Use named exports only.
 - `default` export is not supported.
-- Exported names become callable element methods.
+- Exported names become callable component methods.
 
 ## 3. Method Signature Contract
 
@@ -18,7 +18,7 @@ Method signature:
 
 ```js
 export function methodName(payload = {}) {
-  // `this` is bound to the component element
+  // `this` is bound to the component instance
 }
 ```
 
@@ -26,11 +26,11 @@ Rules:
 - no `deps` argument
 - `payload` defaults to `{}`
 - payload MUST be an object when provided
-- methods execute with `this` bound to the component element
+- methods execute with `this` bound to the component instance
 
 Invocation contract:
-- `element.methodName()`
-- `element.methodName({ ... })`
+- `component.methodName()`
+- `component.methodName({ ... })`
 
 ## 4. Schema Alignment
 
@@ -53,9 +53,11 @@ methods:
 
 ## 5. Runtime Access
 
-Methods can access:
-- DOM through `this`
-- constants through `this.constants`
+Methods can access runtime instance fields, e.g.:
+- `this.constants`
+- `this.store`
+- `this.props`
+- `this.render()`
 
 ## 6. Validation Errors
 
@@ -85,13 +87,8 @@ Invalid because payload must be an object when provided.
 ## 8. Minimal Example
 
 ```js
-export function focusInput(payload = {}) {
-  const { selector = '#emailInput' } = payload;
-  this.querySelector(selector)?.focus();
-}
-
-export function reset(payload = {}) {
-  const eventName = payload.eventName || 'reset-requested';
-  this.dispatchEvent(new CustomEvent(eventName, { bubbles: true }));
+export function resetCounter(payload = {}) {
+  this.store.setCount({ value: payload.value ?? 0 });
+  this.render();
 }
 ```

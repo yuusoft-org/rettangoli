@@ -18,7 +18,7 @@ This document defines the normative view language contract.
 - `attrsSchema`
 
 Define API metadata in `.schema.yaml`.
-`rtgl fe check` and `rtgl fe build` reject forbidden keys.
+contract check/build tooling rejects forbidden keys.
 
 Business logic belongs in `.handlers.js`.
 State logic belongs in `.store.js`.
@@ -74,7 +74,7 @@ Bindings are attached to selector tokens:
 - `?name=value`: boolean attribute toggle
 
 Legacy `.name=value` property syntax is not supported.
-Validation is enforced at framework level (`rtgl fe check` / `rtgl fe build`).
+Validation is enforced at framework level.
 
 ### Component Prop Normalization
 
@@ -222,20 +222,14 @@ Conceptual invocation:
 
 ## 7. Refs Runtime Surface
 
-`deps.refs` maps matched refs directly to DOM elements:
+In TUI runtime, refs guarantee global event targets:
 
 ```js
-const submitButton = deps.refs.submitButton;
-submitButton.focus();
+const win = deps.refs.window;
+const doc = deps.refs.document;
 ```
 
-Class refs use their configured ref key when no ID exists:
-
-```js
-const labelNode = deps.refs[".label"];
-```
-
-`deps.refs.submitButton.elm` is not supported.
+`deps.refs.<key>.elm` wrapper access is not supported.
 
 ## 8. Validation Errors
 
