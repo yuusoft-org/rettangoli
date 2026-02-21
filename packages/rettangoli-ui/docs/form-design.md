@@ -163,6 +163,16 @@ Values are local date-time strings (no timezone offset in the value).
   step: 60
 ```
 
+### Standalone temporal primitives
+
+If you want temporal controls without `rtgl-form`, use:
+
+- `rtgl-input-date` (native `date`)
+- `rtgl-input-time` (native `time`)
+- `rtgl-input-datetime` (native `datetime-local`)
+
+They support the same value/min/max/step/disabled behavior as `rtgl-input`.
+
 #### `input-number`
 
 Value: `number` (`null` when empty)

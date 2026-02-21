@@ -8,6 +8,7 @@
 - `rtgl-sidebar`: added `w` width override so values like `w="f"` are supported.
 - `rtgl-form`: added native temporal field types `input-date`, `input-time`, and `input-datetime` with min/max validation.
 - `rtgl-input`: now supports native `date`, `time`, and `datetime-local` types with additional picker affordance styling.
+- added standalone temporal primitives `rtgl-input-date`, `rtgl-input-time`, and `rtgl-input-datetime`.
 
 ### Breaking Changes
 - Disabled attribute standardized to `disabled` (replaces `dis`) on primitives: `rtgl-button`, `rtgl-input`, `rtgl-input-number`, `rtgl-textarea`, `rtgl-slider`, `rtgl-color-picker`.

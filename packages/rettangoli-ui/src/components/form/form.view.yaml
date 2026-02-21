@@ -57,11 +57,11 @@ template:
                       - $if field.type == "input-text":
                           - rtgl-input#field${field._idx} data-field-name=${field.name} w=f type=${field._inputType} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "input-date":
-                          - rtgl-input#field${field._idx} data-field-name=${field.name} w=f type="date" min=${field.min} max=${field.max} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                          - rtgl-input-date#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "input-time":
-                          - rtgl-input#field${field._idx} data-field-name=${field.name} w=f type="time" min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                          - rtgl-input-time#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "input-datetime":
-                          - rtgl-input#field${field._idx} data-field-name=${field.name} w=f type="datetime-local" min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                          - rtgl-input-datetime#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "input-number":
                           - rtgl-input-number#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "input-textarea":
