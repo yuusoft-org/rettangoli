@@ -39,10 +39,10 @@
     "vite": "^6.3.5"
   },
   "scripts": {
-    "poc": "node examples/poc/run.mjs",
-    "poc:static": "node examples/poc/run.mjs --static",
-    "showcase": "node examples/showcase/run.mjs",
-    "showcase:static": "node examples/showcase/run.mjs --static",
+    "poc": "node examples/poc/run.js",
+    "poc:static": "node examples/poc/run.js --static",
+    "showcase": "node examples/showcase/run.js",
+    "showcase:static": "node examples/showcase/run.js --static",
     "test": "vitest run test/tui --reporter=verbose"
   }
 }
