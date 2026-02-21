@@ -111,6 +111,7 @@ If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it wi
 - Docs template: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs/documentation.yaml`
 - Docs partial: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs/mobile-nav.yaml`
 - Rettangoli.dev shells: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/*.yaml`
+- Rettangoli.dev partials: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/*.yaml`
 - Default scaffold base: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/default/base.yaml`
 
 See `sites/README.md` for full alias examples and required data contract.

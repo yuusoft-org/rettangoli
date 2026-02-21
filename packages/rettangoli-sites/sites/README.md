@@ -86,6 +86,12 @@ Template URLs:
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/sites-documentation.yaml`
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/vt-documentation.yaml`
 
+Partial URLs:
+
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/seo1.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/navbar1.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/mobile-nav1.yaml`
+
 `sites.config.yaml` alias example:
 
 ```yaml
@@ -96,6 +102,10 @@ imports:
     fe-documentation: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/fe-documentation.yaml
     sites-documentation: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/sites-documentation.yaml
     vt-documentation: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/rettangoli-dev/vt-documentation.yaml
+  partials:
+    seo1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/seo1.yaml
+    navbar1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/navbar1.yaml
+    mobile-nav1: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/rettangoli-dev/mobile-nav1.yaml
 ```
 
 ## Default Scaffold Base Template
