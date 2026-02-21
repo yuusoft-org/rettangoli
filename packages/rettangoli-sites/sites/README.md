@@ -9,8 +9,6 @@ These files are distribution assets, not `@rettangoli/sites` runtime source code
   - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/base.yaml`
 - Docs layout template:
   - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs.yaml`
-- Default scaffold template:
-  - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/default-base.yaml`
 
 ## Published Partials
 
