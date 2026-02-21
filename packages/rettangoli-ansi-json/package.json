@@ -1,5 +1,5 @@
 {
-  "name": "rettangoli-ansi-json",
+  "name": "@rettangoli/ansi-json",
   "version": "0.1.0",
   "description": "Rettangoli JSON-to-ANSI renderer for terminal output",
   "type": "module",
