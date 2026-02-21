@@ -36,6 +36,17 @@ Common keys:
 
 Frontmatter is merged with global `data/*.yaml` values for render context.
 
+## Template and partial pattern
+
+Use templates as layout shells, and keep them minimal:
+
+- top-level document structure
+- shared layout containers
+- `content` slot placement
+
+Move variant-specific logic into partials and pass explicit params through `$partial`.
+This is the recommended way to reuse one template across multiple doc sections without cloning template files.
+
 ## Markdown rendering defaults
 
 - Markdown-it renderer is used by default.

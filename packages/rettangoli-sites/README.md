@@ -104,6 +104,23 @@ When an alias exists both remotely and locally, local files under `templates/` a
 
 If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it will be copied to `_site/llms.txt`.
 
+## Template Authoring Pattern
+
+Keep base templates as shells with minimal logic:
+
+- document root (`html`, `head`, `body`)
+- main content slot (`"${content}"`)
+- stable layout containers
+
+Put variant-specific behavior and data wiring in partials instead.
+Partials accept explicit parameters via `$partial`, so they are the preferred place for:
+
+- section-specific navigation data
+- conditional UI branches
+- reusable interactive blocks
+
+This keeps one template reusable across many page variants and avoids duplicated template files.
+
 ## Commands
 
 ```bash
