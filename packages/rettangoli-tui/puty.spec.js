@@ -3,4 +3,4 @@ import { setupTestSuiteFromYaml } from "puty";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
-await setupTestSuiteFromYaml(__dirname);
+await setupTestSuiteFromYaml(path.join(__dirname, "spec"));
