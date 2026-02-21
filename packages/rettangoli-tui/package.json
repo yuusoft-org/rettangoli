@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/tui",
-  "version": "0.1.0-poc.0",
+  "version": "0.0.1",
   "description": "Terminal UI framework using Rettangoli FE contracts",
   "type": "module",
   "main": "./src/index.js",
