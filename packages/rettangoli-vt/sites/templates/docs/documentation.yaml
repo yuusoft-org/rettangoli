@@ -1,6 +1,3 @@
-# Publish-only Sites template asset.
-# Distributed via npm/jsDelivr and consumed by @rettangoli/sites URL imports.
-# Not used by @rettangoli/vt runtime source code.
 - html lang="en":
     - head:
         - meta charset="utf-8":
