@@ -1,0 +1,22 @@
+header:
+  label: Rettangoli AnsiJson Docs
+  href: /
+items:
+  - title: "Introduction"
+    type: groupLabel
+    items:
+      - id: ansi-json-introduction
+        title: "Introduction"
+        href: "/ansi-json/docs/introduction/introduction"
+      - id: ansi-json-getting-started
+        title: "Getting Started"
+        href: "/ansi-json/docs/introduction/getting-started"
+  - title: "Reference"
+    type: groupLabel
+    items:
+      - id: ansi-json-schema
+        title: "JSON Schema"
+        href: "/ansi-json/docs/reference/schema"
+      - id: ansi-json-control-nodes
+        title: "Control Nodes"
+        href: "/ansi-json/docs/reference/control-nodes"

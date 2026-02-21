@@ -1,0 +1,332 @@
+file: "../src/index.js"
+group: cursor
+suites: [position, movement, visibility, state, combined]
+---
+# =============================================================================
+# ABSOLUTE POSITION
+# =============================================================================
+suite: position
+exportName: render
+---
+case: move to 1,1
+in:
+  - content:
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+out: "\x1b[1;1H"
+---
+case: move to 10,20
+in:
+  - content:
+      - ctrl: cursor
+        to:
+          row: 10
+          col: 20
+out: "\x1b[10;20H"
+---
+case: move to large position
+in:
+  - content:
+      - ctrl: cursor
+        to:
+          row: 999
+          col: 999
+out: "\x1b[999;999H"
+---
+case: move to column only
+in:
+  - content:
+      - ctrl: cursor
+        col: 15
+out: "\x1b[15G"
+---
+case: move to column 1
+in:
+  - content:
+      - ctrl: cursor
+        col: 1
+out: "\x1b[1G"
+---
+case: move to column 80
+in:
+  - content:
+      - ctrl: cursor
+        col: 80
+out: "\x1b[80G"
+---
+# =============================================================================
+# RELATIVE MOVEMENT
+# =============================================================================
+suite: movement
+exportName: render
+---
+case: up 1
+in:
+  - content:
+      - ctrl: cursor
+        up: 1
+out: "\x1b[1A"
+---
+case: up 5
+in:
+  - content:
+      - ctrl: cursor
+        up: 5
+out: "\x1b[5A"
+---
+case: up 100
+in:
+  - content:
+      - ctrl: cursor
+        up: 100
+out: "\x1b[100A"
+---
+case: down 1
+in:
+  - content:
+      - ctrl: cursor
+        down: 1
+out: "\x1b[1B"
+---
+case: down 10
+in:
+  - content:
+      - ctrl: cursor
+        down: 10
+out: "\x1b[10B"
+---
+case: right 1
+in:
+  - content:
+      - ctrl: cursor
+        right: 1
+out: "\x1b[1C"
+---
+case: right 20
+in:
+  - content:
+      - ctrl: cursor
+        right: 20
+out: "\x1b[20C"
+---
+case: left 1
+in:
+  - content:
+      - ctrl: cursor
+        left: 1
+out: "\x1b[1D"
+---
+case: left 15
+in:
+  - content:
+      - ctrl: cursor
+        left: 15
+out: "\x1b[15D"
+---
+case: nextLine 1
+in:
+  - content:
+      - ctrl: cursor
+        nextLine: 1
+out: "\x1b[1E"
+---
+case: nextLine 5
+in:
+  - content:
+      - ctrl: cursor
+        nextLine: 5
+out: "\x1b[5E"
+---
+case: prevLine 1
+in:
+  - content:
+      - ctrl: cursor
+        prevLine: 1
+out: "\x1b[1F"
+---
+case: prevLine 3
+in:
+  - content:
+      - ctrl: cursor
+        prevLine: 3
+out: "\x1b[3F"
+---
+# =============================================================================
+# VISIBILITY
+# =============================================================================
+suite: visibility
+exportName: render
+---
+case: show cursor
+in:
+  - content:
+      - ctrl: cursor
+        show: true
+out: "\x1b[?25h"
+---
+case: hide cursor
+in:
+  - content:
+      - ctrl: cursor
+        hide: true
+out: "\x1b[?25l"
+---
+case: show false (no output)
+in:
+  - content:
+      - ctrl: cursor
+        show: false
+out: ""
+---
+case: hide false (no output)
+in:
+  - content:
+      - ctrl: cursor
+        hide: false
+out: ""
+---
+# =============================================================================
+# STATE SAVE/RESTORE
+# =============================================================================
+suite: state
+exportName: render
+---
+case: save cursor
+in:
+  - content:
+      - ctrl: cursor
+        save: true
+out: "\x1b[s"
+---
+case: restore cursor
+in:
+  - content:
+      - ctrl: cursor
+        restore: true
+out: "\x1b[u"
+---
+case: save false (no output)
+in:
+  - content:
+      - ctrl: cursor
+        save: false
+out: ""
+---
+case: restore false (no output)
+in:
+  - content:
+      - ctrl: cursor
+        restore: false
+out: ""
+---
+case: save then restore
+in:
+  - content:
+      - ctrl: cursor
+        save: true
+      - ctrl: cursor
+        restore: true
+out: "\x1b[s\x1b[u"
+---
+# =============================================================================
+# COMBINED OPERATIONS
+# =============================================================================
+suite: combined
+exportName: render
+---
+case: move and hide
+in:
+  - content:
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+        hide: true
+out: "\x1b[1;1H\x1b[?25l"
+---
+case: up and right
+in:
+  - content:
+      - ctrl: cursor
+        up: 5
+        right: 10
+out: "\x1b[5A\x1b[10C"
+---
+case: down left and hide
+in:
+  - content:
+      - ctrl: cursor
+        down: 3
+        left: 2
+        hide: true
+out: "\x1b[3B\x1b[2D\x1b[?25l"
+---
+case: save move restore
+in:
+  - content:
+      - ctrl: cursor
+        save: true
+        to:
+          row: 10
+          col: 10
+out: "\x1b[10;10H\x1b[s"
+---
+case: all movements
+in:
+  - content:
+      - ctrl: cursor
+        up: 1
+        down: 2
+        left: 3
+        right: 4
+out: "\x1b[1A\x1b[2B\x1b[4C\x1b[3D"
+---
+case: position and column
+in:
+  - content:
+      - ctrl: cursor
+        to:
+          row: 5
+          col: 5
+        col: 10
+out: "\x1b[5;5H\x1b[10G"
+---
+case: everything at once
+in:
+  - content:
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+        up: 1
+        down: 1
+        left: 1
+        right: 1
+        nextLine: 1
+        prevLine: 1
+        col: 1
+        show: true
+        save: true
+out: "\x1b[1;1H\x1b[1A\x1b[1B\x1b[1C\x1b[1D\x1b[1E\x1b[1F\x1b[1G\x1b[?25h\x1b[s"
+---
+case: cursor only ctrl (no operations)
+in:
+  - content:
+      - ctrl: cursor
+out: ""
+---
+case: sequence of cursor operations
+in:
+  - content:
+      - ctrl: cursor
+        hide: true
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+      - "Text"
+      - ctrl: cursor
+        show: true
+out: "\x1b[?25l\x1b[1;1HText\x1b[?25h"

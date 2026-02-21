@@ -1,0 +1,376 @@
+file: "../src/index.js"
+group: misc
+suites: [reset, bell, title, link, altbuffer, clipboard, raw]
+---
+# =============================================================================
+# RESET
+# =============================================================================
+suite: reset
+exportName: render
+---
+case: simple reset
+in:
+  - content:
+      - ctrl: reset
+out: "\x1b[0m"
+---
+case: reset after styled text
+in:
+  - content:
+      - text: "Styled"
+        style:
+          bold: true
+          fg: red
+      - ctrl: reset
+      - "Plain"
+out: "\x1b[1;31mStyled\x1b[0m\x1b[0mPlain"
+---
+case: multiple resets
+in:
+  - content:
+      - ctrl: reset
+      - ctrl: reset
+out: "\x1b[0m\x1b[0m"
+---
+# =============================================================================
+# BELL
+# =============================================================================
+suite: bell
+exportName: render
+---
+case: simple bell
+in:
+  - content:
+      - ctrl: bell
+out: "\x07"
+---
+case: bell with text
+in:
+  - content:
+      - "Alert: "
+      - ctrl: bell
+      - "Done"
+out: "Alert: \x07Done"
+---
+case: multiple bells
+in:
+  - content:
+      - ctrl: bell
+      - ctrl: bell
+      - ctrl: bell
+out: "\x07\x07\x07"
+---
+# =============================================================================
+# WINDOW TITLE
+# =============================================================================
+suite: title
+exportName: render
+---
+case: simple title
+in:
+  - content:
+      - ctrl: title
+        text: "My App"
+out: "\x1b]0;My App\x07"
+---
+case: title with spaces
+in:
+  - content:
+      - ctrl: title
+        text: "My Terminal Application"
+out: "\x1b]0;My Terminal Application\x07"
+---
+case: title with special chars
+in:
+  - content:
+      - ctrl: title
+        text: "App [v1.0] - Ready"
+out: "\x1b]0;App [v1.0] - Ready\x07"
+---
+case: title with unicode
+in:
+  - content:
+      - ctrl: title
+        text: "アプリ 🚀"
+out: "\x1b]0;アプリ 🚀\x07"
+---
+case: empty title
+in:
+  - content:
+      - ctrl: title
+        text: ""
+out: "\x1b]0;\x07"
+---
+case: title then content
+in:
+  - content:
+      - ctrl: title
+        text: "App"
+      - "Content"
+out: "\x1b]0;App\x07Content"
+---
+# =============================================================================
+# HYPERLINKS
+# =============================================================================
+suite: link
+exportName: render
+---
+case: simple link
+in:
+  - content:
+      - ctrl: link
+        url: "https://example.com"
+        text: "Click here"
+out: "\x1b]8;;https://example.com\x07Click here\x1b]8;;\x07"
+---
+case: link with path
+in:
+  - content:
+      - ctrl: link
+        url: "https://example.com/path/to/page"
+        text: "Page"
+out: "\x1b]8;;https://example.com/path/to/page\x07Page\x1b]8;;\x07"
+---
+case: link with query
+in:
+  - content:
+      - ctrl: link
+        url: "https://example.com?q=test&a=1"
+        text: "Search"
+out: "\x1b]8;;https://example.com?q=test&a=1\x07Search\x1b]8;;\x07"
+---
+case: file link
+in:
+  - content:
+      - ctrl: link
+        url: "file:///path/to/file.txt"
+        text: "Open file"
+out: "\x1b]8;;file:///path/to/file.txt\x07Open file\x1b]8;;\x07"
+---
+case: link with style
+in:
+  - content:
+      - ctrl: link
+        url: "https://example.com"
+        text: "Styled link"
+        style:
+          fg: cyan
+          underline: true
+out: "\x1b]8;;https://example.com\x07\x1b[4;36mStyled link\x1b[0m\x1b]8;;\x07"
+---
+case: link with bold style
+in:
+  - content:
+      - ctrl: link
+        url: "https://example.com"
+        text: "Bold"
+        style:
+          bold: true
+out: "\x1b]8;;https://example.com\x07\x1b[1mBold\x1b[0m\x1b]8;;\x07"
+---
+case: link with named style
+in:
+  - styles:
+      linkStyle:
+        fg: blue
+        underline: true
+    content:
+      - ctrl: link
+        url: "https://example.com"
+        text: "Named"
+        style: linkStyle
+out: "\x1b]8;;https://example.com\x07\x1b[4;34mNamed\x1b[0m\x1b]8;;\x07"
+---
+case: multiple links
+in:
+  - content:
+      - ctrl: link
+        url: "https://a.com"
+        text: "A"
+      - " | "
+      - ctrl: link
+        url: "https://b.com"
+        text: "B"
+out: "\x1b]8;;https://a.com\x07A\x1b]8;;\x07 | \x1b]8;;https://b.com\x07B\x1b]8;;\x07"
+---
+case: link with empty text
+in:
+  - content:
+      - ctrl: link
+        url: "https://example.com"
+        text: ""
+out: "\x1b]8;;https://example.com\x07\x1b]8;;\x07"
+---
+# =============================================================================
+# ALTERNATE BUFFER
+# =============================================================================
+suite: altbuffer
+exportName: render
+---
+case: enable alt buffer
+in:
+  - content:
+      - ctrl: altBuffer
+        enable: true
+out: "\x1b[?1049h"
+---
+case: disable alt buffer
+in:
+  - content:
+      - ctrl: altBuffer
+        enable: false
+out: "\x1b[?1049l"
+---
+case: enter and exit alt buffer
+in:
+  - content:
+      - ctrl: altBuffer
+        enable: true
+      - "In alt buffer"
+      - ctrl: altBuffer
+        enable: false
+out: "\x1b[?1049hIn alt buffer\x1b[?1049l"
+---
+case: full TUI setup
+in:
+  - content:
+      - ctrl: altBuffer
+        enable: true
+      - ctrl: cursor
+        hide: true
+      - ctrl: clear
+        mode: screen
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+out: "\x1b[?1049h\x1b[?25l\x1b[2J\x1b[1;1H"
+---
+case: full TUI teardown
+in:
+  - content:
+      - ctrl: cursor
+        show: true
+      - ctrl: altBuffer
+        enable: false
+out: "\x1b[?25h\x1b[?1049l"
+---
+# =============================================================================
+# CLIPBOARD
+# =============================================================================
+suite: clipboard
+exportName: render
+---
+case: simple clipboard
+in:
+  - content:
+      - ctrl: clipboard
+        content: "Hello"
+out: "\x1b]52;c;SGVsbG8=\x07"
+---
+case: clipboard with spaces
+in:
+  - content:
+      - ctrl: clipboard
+        content: "Hello World"
+out: "\x1b]52;c;SGVsbG8gV29ybGQ=\x07"
+---
+case: clipboard empty
+in:
+  - content:
+      - ctrl: clipboard
+        content: ""
+out: "\x1b]52;c;\x07"
+---
+case: clipboard special chars
+in:
+  - content:
+      - ctrl: clipboard
+        content: "a=1&b=2"
+out: "\x1b]52;c;YT0xJmI9Mg==\x07"
+---
+case: clipboard target primary
+in:
+  - content:
+      - ctrl: clipboard
+        content: "Primary"
+        target: primary
+out: "\x1b]52;p;UHJpbWFyeQ==\x07"
+---
+case: clipboard target select
+in:
+  - content:
+      - ctrl: clipboard
+        content: "Select"
+        target: select
+out: "\x1b]52;s;U2VsZWN0\x07"
+---
+case: clipboard target clipboard explicit
+in:
+  - content:
+      - ctrl: clipboard
+        content: "Clip"
+        target: clipboard
+out: "\x1b]52;c;Q2xpcA==\x07"
+---
+case: clipboard unicode
+in:
+  - content:
+      - ctrl: clipboard
+        content: "日本語"
+out: "\x1b]52;c;5pel5pys6Kqe\x07"
+---
+# =============================================================================
+# RAW PASSTHROUGH
+# =============================================================================
+suite: raw
+exportName: render
+---
+case: raw cursor position query
+in:
+  - content:
+      - ctrl: raw
+        sequence: "[6n"
+out: "\x1b[6n"
+---
+case: raw custom sequence
+in:
+  - content:
+      - ctrl: raw
+        sequence: "[?12h"
+out: "\x1b[?12h"
+---
+case: raw empty sequence
+in:
+  - content:
+      - ctrl: raw
+        sequence: ""
+out: "\x1b"
+---
+case: raw OSC sequence
+in:
+  - content:
+      - ctrl: raw
+        sequence: "]4;1;rgb:ff/00/00\x07"
+out: "\x1b]4;1;rgb:ff/00/00\x07"
+---
+case: raw with text
+in:
+  - content:
+      - "Before "
+      - ctrl: raw
+        sequence: "[5m"
+      - "Blinking"
+      - ctrl: raw
+        sequence: "[25m"
+      - " After"
+out: "Before \x1b[5mBlinking\x1b[25m After"
+---
+case: multiple raw sequences
+in:
+  - content:
+      - ctrl: raw
+        sequence: "[1m"
+      - ctrl: raw
+        sequence: "[31m"
+out: "\x1b[1m\x1b[31m"

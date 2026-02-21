@@ -1,0 +1,484 @@
+file: "../src/index.js"
+group: colors
+suites: [named, hex, rgb, index256, background, combined]
+---
+# =============================================================================
+# NAMED COLORS (16 standard)
+# =============================================================================
+suite: named
+exportName: render
+---
+case: black
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: black
+out: "\x1b[30mX\x1b[0m"
+---
+case: red
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: red
+out: "\x1b[31mX\x1b[0m"
+---
+case: green
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: green
+out: "\x1b[32mX\x1b[0m"
+---
+case: yellow
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: yellow
+out: "\x1b[33mX\x1b[0m"
+---
+case: blue
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: blue
+out: "\x1b[34mX\x1b[0m"
+---
+case: magenta
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: magenta
+out: "\x1b[35mX\x1b[0m"
+---
+case: cyan
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: cyan
+out: "\x1b[36mX\x1b[0m"
+---
+case: white
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: white
+out: "\x1b[37mX\x1b[0m"
+---
+case: brightBlack
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: brightBlack
+out: "\x1b[90mX\x1b[0m"
+---
+case: brightRed
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: brightRed
+out: "\x1b[91mX\x1b[0m"
+---
+case: brightGreen
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: brightGreen
+out: "\x1b[92mX\x1b[0m"
+---
+case: brightYellow
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: brightYellow
+out: "\x1b[93mX\x1b[0m"
+---
+case: brightBlue
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: brightBlue
+out: "\x1b[94mX\x1b[0m"
+---
+case: brightMagenta
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: brightMagenta
+out: "\x1b[95mX\x1b[0m"
+---
+case: brightCyan
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: brightCyan
+out: "\x1b[96mX\x1b[0m"
+---
+case: brightWhite
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: brightWhite
+out: "\x1b[97mX\x1b[0m"
+---
+case: default foreground
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: default
+out: "\x1b[39mX\x1b[0m"
+---
+case: default background
+in:
+  - content:
+      - text: "X"
+        style:
+          bg: default
+out: "\x1b[49mX\x1b[0m"
+---
+# =============================================================================
+# HEX COLORS
+# =============================================================================
+suite: hex
+exportName: render
+---
+case: pure red
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "#ff0000"
+out: "\x1b[38;2;255;0;0mX\x1b[0m"
+---
+case: pure green
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "#00ff00"
+out: "\x1b[38;2;0;255;0mX\x1b[0m"
+---
+case: pure blue
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "#0000ff"
+out: "\x1b[38;2;0;0;255mX\x1b[0m"
+---
+case: black hex
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "#000000"
+out: "\x1b[38;2;0;0;0mX\x1b[0m"
+---
+case: white hex
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "#ffffff"
+out: "\x1b[38;2;255;255;255mX\x1b[0m"
+---
+case: uppercase hex
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "#AABBCC"
+out: "\x1b[38;2;170;187;204mX\x1b[0m"
+---
+case: mixed case hex
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "#AaBbCc"
+out: "\x1b[38;2;170;187;204mX\x1b[0m"
+---
+case: custom color
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "#ff5500"
+out: "\x1b[38;2;255;85;0mX\x1b[0m"
+---
+case: gray hex
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "#808080"
+out: "\x1b[38;2;128;128;128mX\x1b[0m"
+---
+# =============================================================================
+# RGB COLORS
+# =============================================================================
+suite: rgb
+exportName: render
+---
+case: rgb red
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "rgb(255,0,0)"
+out: "\x1b[38;2;255;0;0mX\x1b[0m"
+---
+case: rgb green
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "rgb(0,255,0)"
+out: "\x1b[38;2;0;255;0mX\x1b[0m"
+---
+case: rgb blue
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "rgb(0,0,255)"
+out: "\x1b[38;2;0;0;255mX\x1b[0m"
+---
+case: rgb with spaces
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "rgb( 100, 150, 200 )"
+out: "\x1b[38;2;100;150;200mX\x1b[0m"
+---
+case: rgb minimal
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "rgb(0,0,0)"
+out: "\x1b[38;2;0;0;0mX\x1b[0m"
+---
+case: rgb maximal
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "rgb(255,255,255)"
+out: "\x1b[38;2;255;255;255mX\x1b[0m"
+---
+case: rgb custom values
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "rgb(128,64,32)"
+out: "\x1b[38;2;128;64;32mX\x1b[0m"
+---
+case: rgb with spaces before values
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "rgb(  1,  2,  3)"
+out: "\x1b[38;2;1;2;3mX\x1b[0m"
+---
+case: rgb with spaces after values
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "rgb(1  ,2  ,3  )"
+out: "\x1b[38;2;1;2;3mX\x1b[0m"
+---
+# =============================================================================
+# 256-COLOR INDEX
+# =============================================================================
+suite: index256
+exportName: render
+---
+case: index 0 (black)
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: 0
+out: "\x1b[38;5;0mX\x1b[0m"
+---
+case: index 1 (red)
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: 1
+out: "\x1b[38;5;1mX\x1b[0m"
+---
+case: index 15 (bright white)
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: 15
+out: "\x1b[38;5;15mX\x1b[0m"
+---
+case: index 16 (start of 216 colors)
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: 16
+out: "\x1b[38;5;16mX\x1b[0m"
+---
+case: index 166 (orange)
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: 166
+out: "\x1b[38;5;166mX\x1b[0m"
+---
+case: index 201 (magenta)
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: 201
+out: "\x1b[38;5;201mX\x1b[0m"
+---
+case: index 231 (white)
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: 231
+out: "\x1b[38;5;231mX\x1b[0m"
+---
+case: index 232 (start of grayscale)
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: 232
+out: "\x1b[38;5;232mX\x1b[0m"
+---
+case: index 255 (brightest gray)
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: 255
+out: "\x1b[38;5;255mX\x1b[0m"
+---
+# =============================================================================
+# BACKGROUND COLORS
+# =============================================================================
+suite: background
+exportName: render
+---
+case: named background
+in:
+  - content:
+      - text: "X"
+        style:
+          bg: red
+out: "\x1b[41mX\x1b[0m"
+---
+case: bright named background
+in:
+  - content:
+      - text: "X"
+        style:
+          bg: brightBlue
+out: "\x1b[104mX\x1b[0m"
+---
+case: hex background
+in:
+  - content:
+      - text: "X"
+        style:
+          bg: "#ff0000"
+out: "\x1b[48;2;255;0;0mX\x1b[0m"
+---
+case: rgb background
+in:
+  - content:
+      - text: "X"
+        style:
+          bg: "rgb(0,255,0)"
+out: "\x1b[48;2;0;255;0mX\x1b[0m"
+---
+case: 256 background
+in:
+  - content:
+      - text: "X"
+        style:
+          bg: 201
+out: "\x1b[48;5;201mX\x1b[0m"
+---
+# =============================================================================
+# COMBINED COLORS
+# =============================================================================
+suite: combined
+exportName: render
+---
+case: fg and bg named
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: white
+          bg: blue
+out: "\x1b[37;44mX\x1b[0m"
+---
+case: fg and bg hex
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "#ffffff"
+          bg: "#000000"
+out: "\x1b[38;2;255;255;255;48;2;0;0;0mX\x1b[0m"
+---
+case: fg named bg hex
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: red
+          bg: "#0000ff"
+out: "\x1b[31;48;2;0;0;255mX\x1b[0m"
+---
+case: fg 256 bg named
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: 166
+          bg: black
+out: "\x1b[38;5;166;40mX\x1b[0m"
+---
+case: fg rgb bg 256
+in:
+  - content:
+      - text: "X"
+        style:
+          fg: "rgb(100,100,100)"
+          bg: 232
+out: "\x1b[38;2;100;100;100;48;5;232mX\x1b[0m"

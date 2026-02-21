@@ -1,0 +1,182 @@
+file: "../src/index.js"
+group: scroll
+suites: [scroll, region, sequences]
+---
+# =============================================================================
+# SCROLL UP/DOWN
+# =============================================================================
+suite: scroll
+exportName: render
+---
+case: scroll up 1
+in:
+  - content:
+      - ctrl: scroll
+        up: 1
+out: "\x1b[1S"
+---
+case: scroll up 5
+in:
+  - content:
+      - ctrl: scroll
+        up: 5
+out: "\x1b[5S"
+---
+case: scroll up 100
+in:
+  - content:
+      - ctrl: scroll
+        up: 100
+out: "\x1b[100S"
+---
+case: scroll down 1
+in:
+  - content:
+      - ctrl: scroll
+        down: 1
+out: "\x1b[1T"
+---
+case: scroll down 10
+in:
+  - content:
+      - ctrl: scroll
+        down: 10
+out: "\x1b[10T"
+---
+case: scroll up and down
+in:
+  - content:
+      - ctrl: scroll
+        up: 3
+        down: 2
+out: "\x1b[3S\x1b[2T"
+---
+case: scroll only ctrl (no direction)
+in:
+  - content:
+      - ctrl: scroll
+out: ""
+---
+# =============================================================================
+# SCROLL REGION
+# =============================================================================
+suite: region
+exportName: render
+---
+case: set region 1 to 10
+in:
+  - content:
+      - ctrl: scrollRegion
+        top: 1
+        bottom: 10
+out: "\x1b[1;10r"
+---
+case: set region 5 to 20
+in:
+  - content:
+      - ctrl: scrollRegion
+        top: 5
+        bottom: 20
+out: "\x1b[5;20r"
+---
+case: set region large
+in:
+  - content:
+      - ctrl: scrollRegion
+        top: 1
+        bottom: 999
+out: "\x1b[1;999r"
+---
+case: reset scroll region
+in:
+  - content:
+      - ctrl: scrollRegion
+        reset: true
+out: "\x1b[r"
+---
+case: reset with top bottom ignored
+in:
+  - content:
+      - ctrl: scrollRegion
+        reset: true
+        top: 5
+        bottom: 10
+out: "\x1b[r"
+---
+case: scrollRegion only ctrl (no params)
+in:
+  - content:
+      - ctrl: scrollRegion
+out: ""
+---
+case: scrollRegion with only top (incomplete)
+in:
+  - content:
+      - ctrl: scrollRegion
+        top: 5
+out: ""
+---
+case: scrollRegion with only bottom (incomplete)
+in:
+  - content:
+      - ctrl: scrollRegion
+        bottom: 10
+out: ""
+---
+# =============================================================================
+# SCROLL SEQUENCES
+# =============================================================================
+suite: sequences
+exportName: render
+---
+case: set region then scroll
+in:
+  - content:
+      - ctrl: scrollRegion
+        top: 5
+        bottom: 15
+      - ctrl: scroll
+        up: 3
+out: "\x1b[5;15r\x1b[3S"
+---
+case: scroll then reset region
+in:
+  - content:
+      - ctrl: scroll
+        down: 5
+      - ctrl: scrollRegion
+        reset: true
+out: "\x1b[5T\x1b[r"
+---
+case: full scroll workflow
+in:
+  - content:
+      - ctrl: scrollRegion
+        top: 2
+        bottom: 20
+      - ctrl: scroll
+        up: 5
+      - ctrl: scrollRegion
+        reset: true
+out: "\x1b[2;20r\x1b[5S\x1b[r"
+---
+case: scroll with text
+in:
+  - content:
+      - ctrl: scroll
+        up: 1
+      - "New line"
+out: "\x1b[1SNew line"
+---
+case: region with cursor and text
+in:
+  - content:
+      - ctrl: scrollRegion
+        top: 5
+        bottom: 10
+      - ctrl: cursor
+        to:
+          row: 5
+          col: 1
+      - "In region"
+out: "\x1b[5;10r\x1b[5;1HIn region"

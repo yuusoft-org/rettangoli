@@ -1,0 +1,41 @@
+{
+  "name": "rettangoli-ansi-json",
+  "version": "0.1.0",
+  "description": "Rettangoli JSON-to-ANSI renderer for terminal output",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "schemas",
+    "README.md",
+    "docs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuusoft-org/rettangoli.git",
+    "directory": "packages/rettangoli-ansi-json"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "test": "vitest run --reporter=verbose",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "rettangoli",
+    "ansi",
+    "terminal",
+    "tui",
+    "cli",
+    "json"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "puty": "^0.1.1",
+    "vitest": "^4.0.15"
+  }
+}
