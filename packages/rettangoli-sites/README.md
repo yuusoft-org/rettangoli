@@ -141,8 +141,8 @@ Binding order:
 - Base template: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/base.yaml`
 - Docs template: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs.yaml`
 - Generic partials: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/{seo,navbar,mobile-nav,docs-sidebar}.yaml`
-- Legacy docs partial (compat): `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs/mobile-nav.yaml`
-- Default scaffold base: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/default/base.yaml`
+- Legacy docs partial (compat, flat path): `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-mobile-nav.yaml`
+- Default scaffold base: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/default-base.yaml`
 
 See `sites/README.md` for full alias examples and required data contract.
 

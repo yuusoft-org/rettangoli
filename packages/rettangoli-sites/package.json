@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/sites",
-  "version": "1.0.0-rc8",
+  "version": "1.0.0-rc9",
   "description": "Generate static sites using Markdown and YAML for docs, blogs, and marketing sites.",
   "author": {
     "name": "Luciano Hanyon Wu",

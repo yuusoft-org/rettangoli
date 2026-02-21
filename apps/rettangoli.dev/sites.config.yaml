@@ -1,12 +1,12 @@
 imports:
   templates:
-    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc8/sites/templates/base.yaml
-    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc8/sites/templates/docs.yaml
+    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc9/sites/templates/base.yaml
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc9/sites/templates/docs.yaml
   partials:
-    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc8/sites/partials/seo.yaml
-    navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc8/sites/partials/navbar.yaml
-    mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc8/sites/partials/mobile-nav.yaml
-    docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc8/sites/partials/docs-sidebar.yaml
+    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc9/sites/partials/seo.yaml
+    navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc9/sites/partials/navbar.yaml
+    mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc9/sites/partials/mobile-nav.yaml
+    docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc9/sites/partials/docs-sidebar.yaml
 
 markdownit:
   html: true

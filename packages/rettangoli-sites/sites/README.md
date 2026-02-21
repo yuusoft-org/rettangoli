@@ -10,7 +10,7 @@ These files are distribution assets, not `@rettangoli/sites` runtime source code
 - Docs layout template:
   - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs.yaml`
 - Default scaffold template:
-  - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/default/base.yaml`
+  - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/default-base.yaml`
 
 ## Published Partials
 
@@ -18,6 +18,7 @@ These files are distribution assets, not `@rettangoli/sites` runtime source code
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/navbar.yaml`
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/mobile-nav.yaml`
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-sidebar.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-mobile-nav.yaml` (legacy compat partial, flat path)
 
 ## Recommended Alias Map
 
@@ -66,5 +67,3 @@ The `docs` template expects:
 - `title`
 
 Use `_bind.docs` to map `docs` from a global data file (for example `data/docs.yaml`).
-
-Legacy `rettangoli-dev/*` assets remain in this package for compatibility, but new integrations should use the generic template/partial URLs above.
