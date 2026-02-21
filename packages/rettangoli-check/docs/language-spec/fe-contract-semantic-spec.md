@@ -90,7 +90,7 @@ For custom-element usage against registry contracts:
 
 1. Export extraction is AST-first via Oxc.
 2. Core analysis paths (`analyzeProject`/model construction) do not route through regex-legacy extraction.
-3. Oxc-vs-regex differential checks remain a separate non-core harness (`scripts/differential-js-exports.mjs`).
+3. Oxc-vs-regex differential checks remain a separate non-core harness (`scripts/differential-js-exports.js`).
 4. Local re-export resolution emits span-rich diagnostics (`RTGL-CHECK-SYMBOL-006/007`) with related locations.
 5. Namespace re-export aliases (`export * as alias from "./module.js"`) are treated as named exports.
 6. Exported destructuring declarations (`export const { a } = obj`, `export const [a] = arr`) contribute named exports for bound identifiers.

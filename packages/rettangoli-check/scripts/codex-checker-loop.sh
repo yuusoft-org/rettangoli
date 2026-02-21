@@ -94,7 +94,7 @@ Current focus for this iteration:
 Important project context:
 - Checker package: packages/rettangoli-check
 - Scenario tests: packages/rettangoli-check/test/scenarios
-- Test runner: packages/rettangoli-check/test/run-scenarios.mjs
+- Test runner: packages/rettangoli-check/test/run-scenarios.js
 - Progress journal (append every iteration): $JOURNAL_FILE
 
 Required end-of-iteration actions:

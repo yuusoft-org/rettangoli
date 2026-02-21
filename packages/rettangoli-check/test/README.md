@@ -152,7 +152,7 @@ JS export differential parity (`oxc` vs `regex-legacy`) is validated separately 
 ## Run
 
 ```bash
-node packages/rettangoli-check/test/run-scenarios.mjs
+node packages/rettangoli-check/test/run-scenarios.js
 ```
 
 Or from package scripts:

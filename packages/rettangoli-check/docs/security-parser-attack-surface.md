@@ -2,9 +2,9 @@
 
 Security gates for parser-facing attack surface:
 
-- `scripts/test-yahtml-parser-crash-containment.mjs`
-- `scripts/fuzz-yahtml-parser.mjs`
-- `scripts/fuzz-jempl-parser.mjs`
+- `scripts/test-yahtml-parser-crash-containment.js`
+- `scripts/fuzz-yahtml-parser.js`
+- `scripts/fuzz-jempl-parser.js`
 
 Coverage focuses on:
 

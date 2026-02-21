@@ -27,6 +27,6 @@ Conformance binding contract:
 
 1. Every scenario `expected.json` must declare non-empty `specRefs`.
 2. Every `specRefs` entry must exist in `spec-index.json`.
-3. `packages/rettangoli-check/test/run-scenarios.mjs` enforces this contract.
+3. `packages/rettangoli-check/test/run-scenarios.js` enforces this contract.
 
 The IDs are stable and intentionally versionable. When semantics change, update the spec doc first, then conformance refs.
