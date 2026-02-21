@@ -69,6 +69,12 @@ markdownit:
     fallback: section
 build:
   keepMarkdownFiles: false
+imports:
+  templates:
+    base: https://example.com/templates/base.yaml
+    docs: https://example.com/templates/docs.yaml
+  partials:
+    docs/nav: https://example.com/partials/docs-nav.yaml
 ```
 
 In the default starter template, CDN runtime scripts are controlled via `data/site.yaml`:
@@ -87,7 +93,74 @@ Example mappings:
 - `pages/index.md` -> `_site/index.html` and `_site/index.md`
 - `pages/docs/intro.md` -> `_site/docs/intro/index.html` and `_site/docs/intro.md`
 
+`imports` lets you map aliases to remote YAML files (HTTP/HTTPS only). Use aliases in pages/templates:
+- page frontmatter: `template: base` or `template: docs`
+- template/page content: `$partial: docs/nav`
+
+Imported files are cached on disk under `.rettangoli/sites/imports/{templates|partials}/` (hashed filenames).
+Alias/url/hash mapping is tracked in `.rettangoli/sites/imports/index.yaml`.
+Build is cache-first: if a cached file exists, it is used without a network request.
+
+When an alias exists both remotely and locally, local files under `templates/` and `partials/` override the imported one.
+
 If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it will be copied to `_site/llms.txt`.
+
+## System Frontmatter
+
+Use `_bind` to map global data keys into page-local variables.
+
+Example:
+
+```yaml
+---
+template: base
+_bind:
+  docs: feDocs
+---
+```
+
+This resolves `docs` from `data/feDocs.yaml` for that page.
+`_bind` is a system property and is not exposed to templates directly.
+
+Rules:
+
+- `_bind` must be an object
+- each `_bind` value must be a non-empty string
+- each `_bind` value must point to an existing `data/*.yaml` key
+- `_bind` is removed from public frontmatter before rendering/collections
+
+Binding order:
+
+1. build page context from `deepMerge(globalData, frontmatterWithoutSystemKeys)`
+2. apply `_bind` aliases on top (alias wins for that key)
+
+## Pre-published Import Assets
+
+`@rettangoli/sites` publishes reusable template/partial YAML assets under `sites/` for URL imports.
+
+- Base template: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/base.yaml`
+- Docs template: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs.yaml`
+- Generic partials: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/{seo,navbar,mobile-nav,docs-sidebar}.yaml`
+- Legacy docs partial (compat, flat path): `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-mobile-nav.yaml`
+
+See `sites/README.md` for full alias examples and required data contract.
+
+## Template Authoring Pattern
+
+Keep base templates as shells with minimal logic:
+
+- document root (`html`, `head`, `body`)
+- main content slot (`"${content}"`)
+- stable layout containers
+
+Put variant-specific behavior and data wiring in partials instead.
+Partials accept explicit parameters via `$partial`, so they are the preferred place for:
+
+- section-specific navigation data
+- conditional UI branches
+- reusable interactive blocks
+
+This keeps one template reusable across many page variants and avoids duplicated template files.
 
 ## Commands
 

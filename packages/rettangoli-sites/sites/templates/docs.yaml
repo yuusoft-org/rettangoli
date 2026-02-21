@@ -1,8 +1,9 @@
 - html lang="en":
     - head:
-        - $partial: seo1
+        - $partial: seo
           page: ${page}
           seo: ${seo}
+          title: ${title}
         - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc13/dist/themes/base.css":
         - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc13/dist/themes/theme-rtgl-slate.css":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
@@ -10,16 +11,19 @@
         - script src="/public/rtgl-icons.js":
 
     - body.dark:
-        - $partial: mobile-nav1
-          headerLabel: ${vtDocs.header.label}
-          headerHref: ${vtDocs.header.href}
-          header: ${vtDocs.header}
-          items: ${vtDocs.items}
+        - $partial: mobile-nav
+          headerLabel: ${docs.header.label}
+          headerHref: ${docs.header.href}
+          header: ${docs.header}
+          items: ${docs.items}
           sidebarId: ${sidebarId}
 
         - rtgl-view bgc="bg" w="f" d=h:
             - 'rtgl-view md-hide pos=fix h=100vh bgc=bg style="left: 0"':
-                - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(vtDocs.header))}" items="${encodeURIComponent(jsonStringify(vtDocs.items))}":
+                - $partial: docs-sidebar
+                  sidebarId: ${sidebarId}
+                  header: ${docs.header}
+                  items: ${docs.items}
             - rtgl-view md-hide xl-show hide w=272:
             - rtgl-view w="1fg" ah=c:
                 - rtgl-view pv="lg" lg-w="100vw" w="720" ph="lg" sv id="content-container":

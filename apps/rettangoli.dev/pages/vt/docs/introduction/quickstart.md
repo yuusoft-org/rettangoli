@@ -1,5 +1,7 @@
 ---
-template: vt-documentation
+template: docs
+_bind:
+  docs: vtDocs
 title: Quickstart
 tags: documentation
 sidebarId: vt-quickstart

@@ -1,6 +1,6 @@
 - html lang="en":
     - head:
-        - $partial: seo1
+        - $partial: seo
           page: ${page}
           seo: ${seo}
           title: ${title}
@@ -13,7 +13,7 @@
     - body.dark:
         - rtgl-view:
             - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
-                - $partial: navbar1
+                - $partial: navbar
                   title: ${site.navbar.title}
                   cta: ${site.navbar.cta}
             - rtgl-view w=f:
@@ -21,4 +21,5 @@
                 - rtgl-view w="f" ah="c":
                     - rtgl-view w=f ph="lg" pb="lg" ah=c:
                         - "${content}"
+
         - script src="/public/mobile-nav.js":

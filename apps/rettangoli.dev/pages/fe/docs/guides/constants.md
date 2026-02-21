@@ -1,5 +1,7 @@
 ---
-template: fe-documentation
+template: docs
+_bind:
+  docs: feDocs
 title: Constants
 tags: documentation
 sidebarId: fe-constants

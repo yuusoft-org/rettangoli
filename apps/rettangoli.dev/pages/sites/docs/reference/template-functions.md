@@ -1,5 +1,7 @@
 ---
-template: sites-documentation
+template: docs
+_bind:
+  docs: sitesDocs
 title: Template Functions
 tags: documentation
 sidebarId: sites-template-functions

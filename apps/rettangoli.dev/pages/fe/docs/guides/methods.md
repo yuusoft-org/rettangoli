@@ -1,5 +1,7 @@
 ---
-template: fe-documentation
+template: docs
+_bind:
+  docs: feDocs
 title: Methods
 tags: documentation
 sidebarId: fe-methods

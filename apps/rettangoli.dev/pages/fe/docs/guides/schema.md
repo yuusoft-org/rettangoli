@@ -1,5 +1,7 @@
 ---
-template: fe-documentation
+template: docs
+_bind:
+  docs: feDocs
 title: Schema
 tags: documentation
 sidebarId: fe-schema

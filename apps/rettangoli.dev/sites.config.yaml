@@ -1,3 +1,13 @@
+imports:
+  templates:
+    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc10/sites/templates/base.yaml
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc10/sites/templates/docs.yaml
+  partials:
+    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc10/sites/partials/seo.yaml
+    navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc10/sites/partials/navbar.yaml
+    mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc10/sites/partials/mobile-nav.yaml
+    docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc10/sites/partials/docs-sidebar.yaml
+
 markdownit:
   html: true
   linkify: true

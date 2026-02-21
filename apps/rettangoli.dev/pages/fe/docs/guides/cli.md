@@ -1,5 +1,7 @@
 ---
-template: fe-documentation
+template: docs
+_bind:
+  docs: feDocs
 title: CLI
 tags: documentation
 sidebarId: fe-cli

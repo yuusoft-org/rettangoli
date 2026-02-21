@@ -1,5 +1,7 @@
 ---
-template: fe-documentation
+template: docs
+_bind:
+  docs: feDocs
 title: Introduction
 tags: documentation
 sidebarId: fe-introduction

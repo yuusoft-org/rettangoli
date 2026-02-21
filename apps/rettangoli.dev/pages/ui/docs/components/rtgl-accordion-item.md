@@ -1,5 +1,7 @@
 ---
-template: documentation
+template: docs
+_bind:
+  docs: docs
 title: Accordion Item
 tags: documentation
 sidebarId: rtgl-accordion-item
