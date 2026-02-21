@@ -1,5 +1,5 @@
 file: "./propsCoreHelper.js"
-group: rettangoli-fe-props-core-contract
+group: rettangoli-tui-props-core-contract
 ---
 suite: props-core-contract
 exportName: runPropsCoreCase

@@ -1,5 +1,5 @@
 file: "./cliContractsHelper.js"
-group: rettangoli-fe-cli-contracts
+group: rettangoli-tui-cli-contracts
 ---
 suite: cli-contracts
 exportName: runCliContracts

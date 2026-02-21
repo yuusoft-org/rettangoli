@@ -1,5 +1,5 @@
 file: "./lifecycleCoreHelper.js"
-group: rettangoli-fe-lifecycle-core-contract
+group: rettangoli-tui-lifecycle-core-contract
 ---
 suite: lifecycle-core-contract
 exportName: runLifecycleCoreCase

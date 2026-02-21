@@ -1,5 +1,5 @@
 file: "./globalListenersCoreHelper.js"
-group: rettangoli-fe-global-listeners-core-contract
+group: rettangoli-tui-global-listeners-core-contract
 ---
 suite: global-listeners-core-contract
 exportName: runGlobalListenersCoreCase

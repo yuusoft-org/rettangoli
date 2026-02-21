@@ -1,5 +1,5 @@
 file: "./styleCoreHelper.js"
-group: rettangoli-fe-style-core-contract
+group: rettangoli-tui-style-core-contract
 ---
 suite: style-core-contract
 exportName: runStyleCoreCase

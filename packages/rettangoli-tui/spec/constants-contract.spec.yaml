@@ -1,5 +1,5 @@
 file: "./runtimeContractHelper.js"
-group: rettangoli-fe-constants-contract
+group: rettangoli-tui-constants-contract
 ---
 suite: constants-contract
 exportName: runConstantsCase

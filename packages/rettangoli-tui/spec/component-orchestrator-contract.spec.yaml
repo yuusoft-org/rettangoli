@@ -1,5 +1,5 @@
 file: "./componentOrchestratorHelper.js"
-group: rettangoli-fe-component-orchestrator-contract
+group: rettangoli-tui-component-orchestrator-contract
 ---
 suite: component-orchestrator-contract
 exportName: runComponentOrchestratorContract

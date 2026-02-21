@@ -1,5 +1,5 @@
 file: "./runtimeContractHelper.js"
-group: rettangoli-fe-handlers-contract
+group: rettangoli-tui-handlers-contract
 ---
 suite: handlers-contract
 exportName: runHandlersCase

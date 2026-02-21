@@ -1,5 +1,5 @@
 file: "./runtimeContractHelper.js"
-group: rettangoli-fe-store-contract
+group: rettangoli-tui-store-contract
 ---
 suite: store-contract
 exportName: runStoreCase

@@ -1,5 +1,5 @@
 file: "../src/core/schema/validateSchemaContract.js"
-group: rettangoli-fe-schema-contract
+group: rettangoli-tui-schema-contract
 ---
 suite: schema-contract
 exportName: validateSchemaContract

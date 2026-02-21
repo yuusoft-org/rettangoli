@@ -116,7 +116,7 @@ export const createVirtualDom = ({
           attrsString = keyString.substring(firstSpaceIndex + 1).trim();
         }
 
-        // Handle web components (tags with hyphens)
+        // Handle component tags (tags with hyphens)
         const tagName = selector.split(/[.#]/)[0];
         const isWebComponent = tagName.includes("-");
 
@@ -162,7 +162,7 @@ export const createVirtualDom = ({
           : [];
         const classNamesForRefs = [...new Set([...selectorClassNames, ...attributeClassNames])];
 
-        // Extract classes and ID from selector (if not a web component)
+        // Extract classes and ID from selector (if not a component tag)
         const classObj = Object.create(null); // Using Object.create(null) to avoid prototype issues
         let elementId = null;
 
@@ -187,7 +187,7 @@ export const createVirtualDom = ({
           childrenOrText = [];
         }
 
-        // Add id to attributes if it exists and it's not a web component
+        // Add id to attributes if it exists and it's not a component tag
         if (elementId && !isWebComponent) {
           attrs.id = elementId;
         }

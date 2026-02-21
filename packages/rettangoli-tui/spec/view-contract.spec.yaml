@@ -1,10 +1,10 @@
 file: "./viewCoreHelper.js"
-group: rettangoli-fe-view-contract
+group: rettangoli-tui-view-contract
 ---
 suite: bindings-contract
 exportName: runBindingsContract
 ---
-case: maps attribute-form kebab-case keys to camelCase props for web components
+case: maps attribute-form kebab-case keys to camelCase props for component tags
 in:
   - attrsString: max-items=10 label=Save
 out:
@@ -26,7 +26,7 @@ out:
   props:
     value: Alice
 ---
-case: maps boolean attribute-form to both attrs and props for web components
+case: maps boolean attribute-form to both attrs and props for component tags
 in:
   - attrsString: ?disabled=isLoading
     viewData:
@@ -37,7 +37,7 @@ out:
   props:
     disabled: true
 ---
-case: keeps empty unquoted attribute values for web components
+case: keeps empty unquoted attribute values for component tags
 in:
   - attrsString: cur=
 out:
@@ -46,7 +46,7 @@ out:
   props:
     cur: ""
 ---
-case: keeps quoted empty attribute values for web components
+case: keeps quoted empty attribute values for component tags
 in:
   - attrsString: label=""
 out:

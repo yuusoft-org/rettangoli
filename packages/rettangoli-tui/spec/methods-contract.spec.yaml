@@ -1,5 +1,5 @@
 file: "./runtimeContractHelper.js"
-group: rettangoli-fe-methods-contract
+group: rettangoli-tui-methods-contract
 ---
 suite: methods-contract
 exportName: runMethodsCase

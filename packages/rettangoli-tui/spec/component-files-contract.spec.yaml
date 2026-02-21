@@ -1,5 +1,5 @@
 file: "./componentFilesContractHelper.js"
-group: rettangoli-fe-component-files-contract
+group: rettangoli-tui-component-files-contract
 ---
 suite: component-files-contract
 exportName: runComponentFilesContract

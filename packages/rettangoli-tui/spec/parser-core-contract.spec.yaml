@@ -1,10 +1,10 @@
 file: "./parserCoreHelper.js"
-group: rettangoli-fe-parser-core-contract
+group: rettangoli-tui-parser-core-contract
 ---
 suite: parser-core-contract
 exportName: runParserCoreContract
 ---
-case: applies injected hook for web component nodes
+case: applies injected hook for component tag nodes
 in:
   - item:
       rtgl-button: Submit
@@ -13,7 +13,7 @@ out:
   hasHook: true
   hasUpdateFn: true
 ---
-case: skips injected hook for non web element nodes
+case: skips injected hook for non-component tag nodes
 in:
   - item:
       div: text

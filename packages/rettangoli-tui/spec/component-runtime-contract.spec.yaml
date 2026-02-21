@@ -1,5 +1,5 @@
 file: "./componentRuntimeHelper.js"
-group: rettangoli-fe-component-runtime-contract
+group: rettangoli-tui-component-runtime-contract
 ---
 suite: component-runtime-contract
 exportName: runComponentRuntimeContract

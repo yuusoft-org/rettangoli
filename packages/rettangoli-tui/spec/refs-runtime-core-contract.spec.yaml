@@ -1,5 +1,5 @@
 file: "./refsRuntimeCoreHelper.js"
-group: rettangoli-fe-refs-runtime-core-contract
+group: rettangoli-tui-refs-runtime-core-contract
 ---
 suite: refs-runtime-core-contract
 exportName: runRefsRuntimeCoreCase

@@ -1,5 +1,5 @@
 file: "./eventsCoreHelper.js"
-group: rettangoli-fe-events-core-contract
+group: rettangoli-tui-events-core-contract
 ---
 suite: events-core-contract
 exportName: runEventsCoreCase
