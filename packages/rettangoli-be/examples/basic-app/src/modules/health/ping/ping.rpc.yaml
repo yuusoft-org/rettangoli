@@ -1,0 +1,38 @@
+method: health.ping
+description: Health check ping method.
+middleware:
+  before: [withRequestId]
+  after: [withLogger]
+paramsSchema:
+  type: object
+  additionalProperties: false
+  properties:
+    echo:
+      type: string
+  required: []
+outputSchema:
+  success:
+    type: object
+    additionalProperties: false
+    properties:
+      ok:
+        type: boolean
+      echo:
+        type: string
+      ts:
+        type: number
+      requestId:
+        type: string
+    required: [ok, ts, requestId]
+  error:
+    type: object
+    additionalProperties: false
+    properties:
+      _error:
+        const: true
+      type:
+        type: string
+      details:
+        type: object
+        additionalProperties: true
+    required: [_error, type]

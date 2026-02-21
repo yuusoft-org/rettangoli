@@ -1,0 +1,19 @@
+refs:
+  window:
+    eventListeners:
+      keydown:
+        handler: handleTerminalKeyDown
+
+template:
+  - rtgl-view d=v g=sm:
+      - rtgl-text w=bold: ${title}
+      - rtgl-text: ${environmentLabel}
+      - rtgl-divider w=44: null
+      - rtgl-text: "Menu: Overview | Jobs | Logs"
+      - rtgl-divider w=44: null
+      - rtgl-text: "Active Users: ${metrics.activeUsers}"
+      - rtgl-text: "Queue Depth: ${metrics.queueDepth}"
+      - rtgl-input label=Search value=${search}: null
+      - rtgl-text: "Tip: press r to refresh"
+      - rtgl-text: "last key: ${lastKey}"
+      - rtgl-text: "controls: r refresh, up/down queue, q quit"

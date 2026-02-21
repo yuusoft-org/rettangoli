@@ -23,6 +23,8 @@ This guide is for future coding agents working in `packages/rettangoli-vt`.
 
 ## Key Architecture Map
 
+- Publish-only Sites assets (not VT runtime code):
+  - `sites/` (templates/partials shipped for `@rettangoli/sites` URL imports)
 - CLI entrypoints:
   - `src/cli/generate.js`
   - `src/cli/report.js`

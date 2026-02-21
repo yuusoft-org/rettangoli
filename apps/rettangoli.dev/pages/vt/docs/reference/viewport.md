@@ -1,5 +1,7 @@
 ---
-template: vt-documentation
+template: docs
+_bind:
+  docs: vtDocs
 title: Viewport
 tags: documentation
 sidebarId: vt-viewport

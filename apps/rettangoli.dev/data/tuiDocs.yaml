@@ -1,0 +1,34 @@
+header:
+  label: Rettangoli TUI Docs
+  href: /
+items:
+  - title: "Introduction"
+    type: groupLabel
+    items:
+      - id: tui-introduction
+        title: "Introduction"
+        href: "/tui/docs/introduction/introduction"
+      - id: tui-getting-started
+        title: "Getting Started"
+        href: "/tui/docs/introduction/getting-started"
+  - title: "Guides"
+    type: groupLabel
+    items:
+      - id: tui-runtime-component-model
+        title: "Runtime & Component Model"
+        href: "/tui/docs/guides/runtime-and-component-model"
+      - id: tui-primitives
+        title: "Primitives"
+        href: "/tui/docs/guides/primitives"
+      - id: tui-dialog-textarea
+        title: "Dialog & Textarea"
+        href: "/tui/docs/guides/dialog-and-textarea"
+      - id: tui-list-table
+        title: "List & Table"
+        href: "/tui/docs/guides/list-and-table"
+      - id: tui-external-editor
+        title: "External Editor"
+        href: "/tui/docs/guides/external-editor"
+      - id: tui-interaction-patterns
+        title: "Interaction Patterns"
+        href: "/tui/docs/guides/interaction-patterns"

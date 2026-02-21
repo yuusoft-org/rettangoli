@@ -4,6 +4,9 @@ import RettangoliText from './primitives/text.js';
 import RettangoliImage from './primitives/image.js';
 import RettangoliSvg from './primitives/svg.js';
 import RettangoliInput from './primitives/input.js';
+import RettangoliInputDate from './primitives/input-date.js';
+import RettangoliInputTime from './primitives/input-time.js';
+import RettangoliInputDateTime from './primitives/input-datetime.js';
 import RettangoliInputNumber from './primitives/input-number.js';
 import RettangoliTextArea from './primitives/textarea.js';
 import RettangoliDialog from './primitives/dialog.js';
@@ -20,6 +23,9 @@ export {
     RettangoliImage,
     RettangoliSvg,
     RettangoliInput,
+    RettangoliInputDate,
+    RettangoliInputTime,
+    RettangoliInputDateTime,
     RettangoliInputNumber,
     RettangoliTextArea,
     RettangoliDialog,

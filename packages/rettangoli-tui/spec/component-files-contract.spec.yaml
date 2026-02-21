@@ -1,0 +1,82 @@
+file: "./componentFilesContractHelper.js"
+group: rettangoli-tui-component-files-contract
+---
+suite: component-files-contract
+exportName: runComponentFilesContract
+---
+case: requires schema file per component
+in:
+  - entries:
+      - category: components
+        component: loginForm
+        fileType: view
+        filePath: /tmp/components/loginForm/loginForm.view.yaml
+        yamlObject:
+          template: []
+out:
+  errorCount: 1
+  codes:
+    - RTGL-CONTRACT-001
+---
+case: rejects forbidden view api keys
+in:
+  - entries:
+      - category: components
+        component: loginForm
+        fileType: view
+        filePath: /tmp/components/loginForm/loginForm.view.yaml
+        yamlObject:
+          elementName: rtgl-login-form
+          template: []
+      - category: components
+        component: loginForm
+        fileType: schema
+        filePath: /tmp/components/loginForm/loginForm.schema.yaml
+        yamlObject:
+          componentName: rtgl-login-form
+out:
+  errorCount: 1
+  codes:
+    - RTGL-CONTRACT-002
+---
+case: passes when schema exists and view has only view concerns
+in:
+  - entries:
+      - category: components
+        component: loginForm
+        fileType: view
+        filePath: /tmp/components/loginForm/loginForm.view.yaml
+        yamlObject:
+          refs: {}
+          template: []
+          styles: {}
+      - category: components
+        component: loginForm
+        fileType: schema
+        filePath: /tmp/components/loginForm/loginForm.schema.yaml
+        yamlObject:
+          componentName: rtgl-login-form
+out:
+  errorCount: 0
+  codes: []
+---
+case: rejects legacy dot property binding in view template
+in:
+  - entries:
+      - category: components
+        component: loginForm
+        fileType: view
+        filePath: /tmp/components/loginForm/loginForm.view.yaml
+        yamlObject:
+          template:
+            - rtgl-input .value=user.name:
+      - category: components
+        component: loginForm
+        fileType: schema
+        filePath: /tmp/components/loginForm/loginForm.schema.yaml
+        yamlObject:
+          componentName: rtgl-login-form
+out:
+  errorCount: 1
+  codes:
+    - RTGL-CONTRACT-003

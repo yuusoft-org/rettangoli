@@ -97,6 +97,82 @@ Value: `string` (`""` when empty)
   required: true
 ```
 
+#### `input-date`
+
+Value: `string` in `YYYY-MM-DD` (`""` when empty)
+
+Native browser date input (`<input type="date">`).
+
+| property | description |
+|---|---|
+| `min` | Minimum allowed value in `YYYY-MM-DD` |
+| `max` | Maximum allowed value in `YYYY-MM-DD` |
+| `placeholder` | Optional hint text (some browsers ignore for native date inputs) |
+
+```yaml
+- name: startDate
+  type: input-date
+  label: Start Date
+  min: "2026-01-01"
+  max: "2026-12-31"
+```
+
+#### `input-time`
+
+Value: `string` in `HH:mm` or `HH:mm:ss` (`""` when empty)
+
+Native browser time input (`<input type="time">`).
+
+| property | description |
+|---|---|
+| `min` | Minimum allowed value in `HH:mm` or `HH:mm:ss` |
+| `max` | Maximum allowed value in `HH:mm` or `HH:mm:ss` |
+| `step` | Step in seconds |
+| `placeholder` | Optional hint text (some browsers ignore for native time inputs) |
+
+```yaml
+- name: startTime
+  type: input-time
+  label: Start Time
+  min: "09:00"
+  max: "18:00"
+  step: 900
+```
+
+#### `input-datetime`
+
+Value: `string` in `YYYY-MM-DDTHH:mm` or `YYYY-MM-DDTHH:mm:ss` (`""` when empty)
+
+Native browser local date-time input (`<input type="datetime-local">`).
+
+Values are local date-time strings (no timezone offset in the value).
+
+| property | description |
+|---|---|
+| `min` | Minimum allowed value in `YYYY-MM-DDTHH:mm` or `YYYY-MM-DDTHH:mm:ss` |
+| `max` | Maximum allowed value in `YYYY-MM-DDTHH:mm` or `YYYY-MM-DDTHH:mm:ss` |
+| `step` | Step in seconds |
+| `placeholder` | Optional hint text (some browsers ignore for native datetime inputs) |
+
+```yaml
+- name: startAt
+  type: input-datetime
+  label: Start At
+  min: "2026-01-01T09:00"
+  max: "2026-12-31T18:00"
+  step: 60
+```
+
+### Standalone temporal primitives
+
+If you want temporal controls without `rtgl-form`, use:
+
+- `rtgl-input-date` (native `date`)
+- `rtgl-input-time` (native `time`)
+- `rtgl-input-datetime` (native `datetime-local`)
+
+They support the same value/min/max/step/disabled behavior as `rtgl-input`.
+
 #### `input-number`
 
 Value: `number` (`null` when empty)
@@ -373,6 +449,14 @@ Built-in presets:
 |---|---|
 | `email` | Valid email address |
 | `url` | Valid URL |
+
+### Built-in temporal validation
+
+Temporal field types (`input-date`, `input-time`, `input-datetime`) are validated by the form runtime:
+
+- empty values are allowed unless `required` is set
+- value format must match the field type
+- if `min`/`max` are provided, the value must be within bounds
 
 ## Actions
 

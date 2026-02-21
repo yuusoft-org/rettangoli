@@ -1,0 +1,131 @@
+file: "../src/index.js"
+group: clear
+suites: [screen, line, sequences]
+---
+# =============================================================================
+# SCREEN CLEARING
+# =============================================================================
+suite: screen
+exportName: render
+---
+case: clear entire screen
+in:
+  - content:
+      - ctrl: clear
+        mode: screen
+out: "\x1b[2J"
+---
+case: clear from cursor to end
+in:
+  - content:
+      - ctrl: clear
+        mode: screenEnd
+out: "\x1b[0J"
+---
+case: clear from cursor to start
+in:
+  - content:
+      - ctrl: clear
+        mode: screenStart
+out: "\x1b[1J"
+---
+case: clear screen and scrollback
+in:
+  - content:
+      - ctrl: clear
+        mode: screenAll
+out: "\x1b[3J"
+---
+# =============================================================================
+# LINE CLEARING
+# =============================================================================
+suite: line
+exportName: render
+---
+case: clear entire line
+in:
+  - content:
+      - ctrl: clear
+        mode: line
+out: "\x1b[2K"
+---
+case: clear from cursor to end of line
+in:
+  - content:
+      - ctrl: clear
+        mode: lineEnd
+out: "\x1b[0K"
+---
+case: clear from cursor to start of line
+in:
+  - content:
+      - ctrl: clear
+        mode: lineStart
+out: "\x1b[1K"
+---
+# =============================================================================
+# CLEAR SEQUENCES
+# =============================================================================
+suite: sequences
+exportName: render
+---
+case: clear then write
+in:
+  - content:
+      - ctrl: clear
+        mode: screen
+      - "Hello"
+out: "\x1b[2JHello"
+---
+case: clear line then write
+in:
+  - content:
+      - ctrl: clear
+        mode: line
+      - "New content"
+out: "\x1b[2KNew content"
+---
+case: position then clear
+in:
+  - content:
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+      - ctrl: clear
+        mode: screen
+out: "\x1b[1;1H\x1b[2J"
+---
+case: multiple clears
+in:
+  - content:
+      - ctrl: clear
+        mode: screen
+      - ctrl: clear
+        mode: screenAll
+out: "\x1b[2J\x1b[3J"
+---
+case: clear with styled text
+in:
+  - content:
+      - ctrl: clear
+        mode: line
+      - text: "Styled"
+        style:
+          bold: true
+          fg: red
+out: "\x1b[2K\x1b[1;31mStyled\x1b[0m"
+---
+case: full screen setup
+in:
+  - content:
+      - ctrl: cursor
+        hide: true
+      - ctrl: clear
+        mode: screen
+      - ctrl: cursor
+        to:
+          row: 1
+          col: 1
+      - "Top left"
+out: "\x1b[?25l\x1b[2J\x1b[1;1HTop left"

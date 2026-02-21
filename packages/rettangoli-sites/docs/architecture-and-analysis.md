@@ -39,10 +39,11 @@ Implemented in `src/createSiteBuilder.js`:
 2. Load partials
 3. Load global data
 4. Load templates recursively
-5. Build collections from page frontmatter tags
-6. Copy static files
-7. Render all pages
-8. Write outputs with route mapping:
+5. Parse page frontmatter and split system keys from public frontmatter
+6. Build collections from public frontmatter tags
+7. Copy static files
+8. Render all pages
+9. Write outputs with route mapping:
    - `index.*` -> `.../index.html`
    - others -> `.../<slug>/index.html`
 
@@ -50,19 +51,48 @@ Implemented in `src/createSiteBuilder.js`:
 
 Per-page render context:
 
-- `deepMerge(globalData, frontmatter)`
+- `deepMerge(globalData, publicFrontmatter)`
+- apply resolved `_bind` aliases as top-level page variables
 - plus:
   - `collections`
   - `page.url`
   - `build.isScreenshotMode` (retained for compatibility)
   - built-in template functions (URI helpers, JSON stringify, date formatters)
 
+### System Frontmatter
+
+Current reserved system field:
+
+- `_bind`
+
+`_bind` maps local page variable names to keys from `data/*.yaml`.
+
+Example:
+
+```yaml
+---
+template: base
+_bind:
+  docs: feDocs
+---
+```
+
+Behavior:
+
+- `docs` in templates resolves to `globalData.feDocs`
+- `_bind` is not exposed to templates
+- `_bind` must be an object
+- `_bind` source keys must exist in global data
+
 ## Config Loading
 
 `loadSiteConfig` supports:
 
 - `sites.config.yaml` or `sites.config.yml` in site root
-- top-level keys: `markdownit` (recommended; `markdown` is legacy alias), `build`
+- top-level keys: `markdownit` (recommended; `markdown` is legacy alias), `build`, `imports`
+- imports keys:
+  - `templates`: alias -> URL map
+  - `partials`: alias -> URL map
 - markdown keys: `preset`, `html`, `xhtmlOut`, `linkify`, `typographer`, `breaks`, `langPrefix`, `quotes`, `maxNesting`, `shiki`, `headingAnchors`
   - `headingAnchors` accepts:
     - boolean (`true`/`false`)

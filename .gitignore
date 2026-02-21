@@ -5,7 +5,10 @@
 /packages/rettangoli-ui/viz/static/public/main.js
 /packages/rettangoli-fe/dist
 /packages/rettangoli-fe/node_modules
+/packages/rettangoli-be/node_modules
+/packages/rettangoli-tui/node_modules
 /packages/rettangoli-fe/.temp
+/packages/rettangoli-tui/.temp
 /packages/rettangoli-fe/viz/static/main.js
 /packages/rettangoli-fe/viz/static/main.js.map
 /packages/rettangoli-fe/viz/static/main.css
@@ -22,3 +25,4 @@
 .claude/
 CLAUDE.md
 .temp
+**/.rtgl-be

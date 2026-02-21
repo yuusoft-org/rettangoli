@@ -1,0 +1,190 @@
+file: "../src/index.js"
+group: basic
+suites: [strings, empty, mixed]
+---
+# =============================================================================
+# STRING RENDERING
+# =============================================================================
+suite: strings
+exportName: render
+---
+case: single plain string
+in:
+  - content: ["Hello"]
+out: "Hello"
+---
+case: multiple plain strings
+in:
+  - content: ["Hello ", "World"]
+out: "Hello World"
+---
+case: string with newline
+in:
+  - content: ["Line1\nLine2"]
+out: "Line1\nLine2"
+---
+case: string with tab
+in:
+  - content: ["Col1\tCol2"]
+out: "Col1\tCol2"
+---
+case: string with unicode
+in:
+  - content: ["Hello 世界 🌍"]
+out: "Hello 世界 🌍"
+---
+case: string with special chars
+in:
+  - content: ["<div>&amp;</div>"]
+out: "<div>&amp;</div>"
+---
+case: very long string
+in:
+  - content: ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
+out: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+---
+case: string with escape-like content
+in:
+  - content: ["[31m not an escape"]
+out: "[31m not an escape"
+---
+# =============================================================================
+# EMPTY CONTENT
+# =============================================================================
+suite: empty
+exportName: render
+---
+case: empty content array
+in:
+  - content: []
+out: ""
+---
+case: empty text string
+in:
+  - content:
+      - text: ""
+out: ""
+---
+case: empty text with style
+in:
+  - content:
+      - text: ""
+        style:
+          bold: true
+out: ""
+---
+case: empty span children
+in:
+  - content:
+      - children: []
+out: ""
+---
+case: empty span with style
+in:
+  - content:
+      - style:
+          fg: red
+        children: []
+out: ""
+---
+case: nested empty spans
+in:
+  - content:
+      - children:
+          - children: []
+out: ""
+---
+case: whitespace only
+in:
+  - content: ["   "]
+out: "   "
+---
+case: whitespace text node
+in:
+  - content:
+      - text: "  \t\n  "
+out: "  \t\n  "
+---
+# =============================================================================
+# MIXED CONTENT
+# =============================================================================
+suite: mixed
+exportName: render
+---
+case: plain and styled
+in:
+  - content:
+      - "Hello "
+      - text: "World"
+        style:
+          bold: true
+out: "Hello \x1b[1mWorld\x1b[0m"
+---
+case: styled and plain
+in:
+  - content:
+      - text: "Hello"
+        style:
+          bold: true
+      - " World"
+out: "\x1b[1mHello\x1b[0m World"
+---
+case: multiple styled nodes
+in:
+  - content:
+      - text: "Red"
+        style:
+          fg: red
+      - " "
+      - text: "Blue"
+        style:
+          fg: blue
+out: "\x1b[31mRed\x1b[0m \x1b[34mBlue\x1b[0m"
+---
+case: text and control mixed
+in:
+  - content:
+      - "Before"
+      - ctrl: reset
+      - "After"
+out: "Before\x1b[0mAfter"
+---
+case: span and text mixed
+in:
+  - content:
+      - style:
+          bold: true
+        children:
+          - "Bold"
+      - " Normal"
+out: "\x1b[1mBold\x1b[0m Normal"
+---
+case: all node types mixed
+in:
+  - content:
+      - "Plain"
+      - text: "Text"
+        style:
+          italic: true
+      - children:
+          - "Span"
+      - ctrl: bell
+out: "Plain\x1b[3mText\x1b[0mSpan\x07"
+---
+case: deeply mixed nesting
+in:
+  - content:
+      - style:
+          bold: true
+        children:
+          - "Start "
+          - text: "Middle"
+            style:
+              fg: red
+          - " "
+          - children:
+              - text: "Nested"
+                style:
+                  underline: true
+          - " End"
+out: "\x1b[1mStart \x1b[0m\x1b[1;31mMiddle\x1b[0m\x1b[1m \x1b[0m\x1b[1;4mNested\x1b[0m\x1b[1m End\x1b[0m"

@@ -1,5 +1,7 @@
 ---
-template: documentation
+template: docs
+_bind:
+  docs: docs
 title: CSS Variables
 tags: documentation
 sidebarId: css-variables

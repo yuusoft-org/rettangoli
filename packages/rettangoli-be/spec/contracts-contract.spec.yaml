@@ -1,0 +1,19 @@
+file: './contractsHelper.js'
+group: rettangoli-be-contracts
+---
+suite: contracts-helper
+exportName: runContractHelpers
+---
+case: recognizes rpc suffix
+in:
+  - filePath: /tmp/modules/health/ping/ping.rpc.yaml
+out:
+  isSupported: true
+  supportedSuffixCount: 3
+---
+case: rejects unsupported suffix
+in:
+  - filePath: /tmp/modules/health/ping/ping.txt
+out:
+  isSupported: false
+  supportedSuffixCount: 3

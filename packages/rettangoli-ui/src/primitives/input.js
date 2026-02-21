@@ -19,6 +19,9 @@ class RettangoliInputElement extends HTMLElement {
   static inputSpecificAttributes = [
     "type",
     "disabled",
+    "min",
+    "max",
+    "step",
     "s",
   ];
 
@@ -58,6 +61,35 @@ class RettangoliInputElement extends HTMLElement {
         input:disabled {
           cursor: not-allowed;
         }
+        input[type="date"],
+        input[type="time"],
+        input[type="datetime-local"] {
+          color: var(--foreground);
+          min-width: 0;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator,
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+          cursor: pointer;
+          border-radius: var(--border-radius-sm);
+          opacity: 1;
+          padding: 2px;
+        }
+        input[type="date"]::-webkit-datetime-edit,
+        input[type="time"]::-webkit-datetime-edit,
+        input[type="datetime-local"]::-webkit-datetime-edit {
+          color: var(--foreground);
+        }
+        input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+        input[type="time"]::-webkit-datetime-edit-fields-wrapper,
+        input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
+          padding: 0;
+        }
+        input[type="date"]::-webkit-date-and-time-value,
+        input[type="time"]::-webkit-date-and-time-value,
+        input[type="datetime-local"]::-webkit-date-and-time-value {
+          text-align: left;
+        }
         ${marginStyles}
         ${cursorStyles}
       `);
@@ -93,6 +125,9 @@ class RettangoliInputElement extends HTMLElement {
       "placeholder",
       "disabled",
       "value",
+      "min",
+      "max",
+      "step",
       "s",
       ...permutateBreakpoints([
         ...inputStyleMapKeys,
@@ -242,10 +277,17 @@ class RettangoliInputElement extends HTMLElement {
 
   _updateInputAttributes() {
     const requestedType = this.getAttribute("type");
-    const type = requestedType === "password" ? "password" : "text";
+    const allowedTypes = new Set(["text", "password", "date", "time", "datetime-local"]);
+    const type = allowedTypes.has(requestedType) ? requestedType : "text";
+    const min = this.getAttribute("min");
+    const max = this.getAttribute("max");
+    const step = this.getAttribute("step");
     const isDisabled = this.hasAttribute('disabled');
 
     this._setOrRemoveInputAttribute("type", type);
+    this._setOrRemoveInputAttribute("min", min);
+    this._setOrRemoveInputAttribute("max", max);
+    this._setOrRemoveInputAttribute("step", step);
 
     if (isDisabled) {
       this._inputElement.setAttribute("disabled", "");

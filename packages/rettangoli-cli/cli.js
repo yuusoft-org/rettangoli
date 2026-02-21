@@ -2,6 +2,7 @@
 
 import { build, check, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { check as checkContracts } from "@rettangoli/check/cli";
+import { build as buildBe, check as checkBe, watch as watchBe } from "@rettangoli/be/cli";
 import { generate, screenshot, report, accept } from "@rettangoli/vt/cli";
 import { buildSite, watchSite, initSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
@@ -257,6 +258,103 @@ feCommand
     options.dirs = config.fe.dirs;
     options.outputDir = config.fe?.examples?.outputDir || "./vt/specs/examples";
     examples(options);
+  });
+
+const beCommand = program.command("be").description("Backend framework");
+
+beCommand
+  .command("build")
+  .description("Build backend method registry and app entry")
+  .option("-s, --setup-path <path>", "Custom setup file path")
+  .option("-m, --middleware-dir <path>", "Custom middleware directory path")
+  .option("-o, --outdir <path>", "Generated output directory")
+  .action((options) => {
+    const config = readConfig();
+
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+
+    if (!config.be?.dirs?.length) {
+      throw new Error("be.dirs not found or empty in config");
+    }
+
+    const missingDirs = config.be.dirs.filter(
+      (dir) => !existsSync(resolve(process.cwd(), dir)),
+    );
+    if (missingDirs.length > 0) {
+      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
+    }
+
+    options.dirs = config.be.dirs;
+    options.middlewareDir = options.middlewareDir || config.be.middlewareDir || "./src/middleware";
+    options.setup = options.setupPath || config.be.setup || "./src/setup.js";
+    options.outdir = options.outdir || config.be.outdir || "./.rtgl-be/generated";
+    options.domainErrors = config.be.domainErrors || {};
+
+    buildBe(options);
+  });
+
+beCommand
+  .command("check")
+  .description("Validate backend RPC contracts")
+  .option("--format <format>", "Output format: text or json", "text")
+  .option("-m, --middleware-dir <path>", "Custom middleware directory path")
+  .action((options) => {
+    const config = readConfig();
+
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+
+    if (!config.be?.dirs?.length) {
+      throw new Error("be.dirs not found or empty in config");
+    }
+
+    const missingDirs = config.be.dirs.filter(
+      (dir) => !existsSync(resolve(process.cwd(), dir)),
+    );
+    if (missingDirs.length > 0) {
+      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
+    }
+
+    options.dirs = config.be.dirs;
+    options.middlewareDir = options.middlewareDir || config.be.middlewareDir || "./src/middleware";
+
+    checkBe(options);
+  });
+
+beCommand
+  .command("watch")
+  .description("Watch backend files and rebuild generated registry")
+  .option("-s, --setup-path <path>", "Custom setup file path")
+  .option("-m, --middleware-dir <path>", "Custom middleware directory path")
+  .option("-o, --outdir <path>", "Generated output directory")
+  .action((options) => {
+    const config = readConfig();
+
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+
+    if (!config.be?.dirs?.length) {
+      throw new Error("be.dirs not found or empty in config");
+    }
+
+    const missingDirs = config.be.dirs.filter(
+      (dir) => !existsSync(resolve(process.cwd(), dir)),
+    );
+    if (missingDirs.length > 0) {
+      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
+    }
+
+    options.dirs = config.be.dirs;
+    options.middlewareDir = options.middlewareDir || config.be.middlewareDir || "./src/middleware";
+    options.setup = options.setupPath || config.be.setup || "./src/setup.js";
+    options.outdir = options.outdir || config.be.outdir || "./.rtgl-be/generated";
+    options.domainErrors = config.be.domainErrors || {};
+
+    watchBe(options);
   });
 
 const vtCommand = program

@@ -1,5 +1,7 @@
 ---
-template: vt-documentation
+template: docs
+_bind:
+  docs: vtDocs
 title: Selectors & Artifacts
 tags: documentation
 sidebarId: vt-selectors-and-artifacts

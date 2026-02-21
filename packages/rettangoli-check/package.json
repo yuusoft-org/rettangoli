@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/check",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Static contract checker for Rettangoli projects",
   "type": "module",
   "main": "./src/index.js",

@@ -1,0 +1,41 @@
+file: './ping.handlers.js'
+group: health-ping
+---
+suite: healthPingMethod
+exportName: healthPingMethod
+---
+case: returns-ok
+in:
+  - payload: {}
+    context:
+      requestId: req-1
+    deps:
+      now: $mock:now
+out:
+  ok: true
+  ts: 1700000000000
+  requestId: req-1
+mocks:
+  now:
+    calls:
+      - in: []
+        out: 1700000000000
+---
+case: echoes-input
+in:
+  - payload:
+      echo: hello
+    context:
+      requestId: req-2
+    deps:
+      now: $mock:now
+out:
+  ok: true
+  echo: hello
+  ts: 1700000000001
+  requestId: req-2
+mocks:
+  now:
+    calls:
+      - in: []
+        out: 1700000000001

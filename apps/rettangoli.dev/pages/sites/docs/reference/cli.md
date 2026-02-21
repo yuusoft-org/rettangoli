@@ -1,5 +1,7 @@
 ---
-template: sites-documentation
+template: docs
+_bind:
+  docs: sitesDocs
 title: CLI
 tags: documentation
 sidebarId: sites-cli

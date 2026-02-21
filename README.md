@@ -22,6 +22,7 @@ bun install
 ### Packages
 - **[rettangoli-cli](./packages/rettangoli-cli/)** - The official command-line interface for the Rettangoli framework
 - **[rettangoli-check](./packages/rettangoli-check/)** - Compiler-grade static analysis and contract checker for Rettangoli language stack
+- **[rettangoli-ansi-json](./packages/rettangoli-ansi-json/)** - JSON-to-ANSI rendering library and foundation for future TUI support
 - **[rettangoli-fe](./packages/rettangoli-fe/)** - Frontend framework with YAML views, state management, and event handlers
 - **[rettangoli-sites](./packages/rettangoli-sites/)** - Static site generator using Markdown and YAML (formerly Sitic)
 - **[rettangoli-ui](./packages/rettangoli-ui/)** - Web component library with primitives and pre-built components
@@ -31,5 +32,5 @@ bun install
 
 To release a new version to npm:
 
-1. Create a GitHub release with the tag format `cli-v*` (e.g., `cli-v1.2.3`)
+1. Create a GitHub release tag for the package you want to publish (`cli-v*` for `rtgl`, `ansi-json-v*` for `rettangoli-ansi-json`)
 2. The release will automatically trigger the npm publish workflow. The actual version will be based on the version number in `package.json`

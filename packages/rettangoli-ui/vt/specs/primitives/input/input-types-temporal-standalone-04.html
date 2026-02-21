@@ -1,0 +1,33 @@
+---
+title: Input - Type - Temporal Standalone Components
+description: Verifies rtgl-input-date/time/datetime standalone components render native temporal controls.
+specs:
+  - Standalone temporal primitives render with deterministic values.
+  - Min, max, and step attributes are applied on wrapper components.
+  - Disabled state matches standard input visual treatment.
+viewport:
+  id: temporal-wide
+  width: 1600
+  height: 900
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-view g="sm" w="440">
+    <rtgl-text s="sm" c="mu-fg">rtgl-input-date</rtgl-text>
+    <rtgl-input-date value="2028-02-29" min="2028-01-01" max="2028-12-31"></rtgl-input-date>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="440">
+    <rtgl-text s="sm" c="mu-fg">rtgl-input-time</rtgl-text>
+    <rtgl-input-time value="17:45:45" min="08:00:30" max="17:45:45" step="1"></rtgl-input-time>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="440">
+    <rtgl-text s="sm" c="mu-fg">rtgl-input-datetime</rtgl-text>
+    <rtgl-input-datetime value="2028-02-29T17:45:45" min="2028-02-29T08:00:30" max="2028-02-29T17:45:45" step="1"></rtgl-input-datetime>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="440">
+    <rtgl-text s="sm" c="mu-fg">rtgl-input-time disabled</rtgl-text>
+    <rtgl-input-time s="sm" value="09:30" step="60" disabled></rtgl-input-time>
+  </rtgl-view>
+</rtgl-view>

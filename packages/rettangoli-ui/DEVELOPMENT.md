@@ -213,6 +213,9 @@ These are valid exceptions to the short-attr rule:
 Canonical `inputType` values are kebab-case only:
 
 - `input-text`
+- `input-date`
+- `input-time`
+- `input-datetime`
 - `input-number`
 - `input-textarea`
 - `select`

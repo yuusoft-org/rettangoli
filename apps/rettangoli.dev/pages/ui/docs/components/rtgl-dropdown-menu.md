@@ -1,5 +1,7 @@
 ---
-template: documentation
+template: docs
+_bind:
+  docs: docs
 title: Dropdown Menu
 tags: documentation
 sidebarId: rtgl-dropdown-menu

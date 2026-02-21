@@ -1,0 +1,81 @@
+---
+title: "With Date Time Validation"
+description: Validate temporal fields and show inline min/max and format errors.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 980
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '360');
+
+  form.defaultValues = {
+    meetingDate: '2026-02-28',
+    meetingTime: '19:30',
+    meetingAt: '2026-03-01T08:30',
+    reminderTime: '24:00',
+  };
+
+  form.form = {
+    title: 'Temporal Validation',
+    description: 'Temporal fields should show clear validation messages',
+    fields: [{
+      name: 'meetingDate',
+      type: 'input-date',
+      label: 'Meeting Date',
+      min: '2026-03-01',
+      required: true,
+    }, {
+      name: 'meetingTime',
+      type: 'input-time',
+      label: 'Meeting Time',
+      max: '18:00',
+      required: true,
+    }, {
+      name: 'meetingAt',
+      type: 'input-datetime',
+      label: 'Meeting DateTime',
+      min: '2026-03-01T09:00',
+      required: true,
+    }, {
+      name: 'reminderTime',
+      type: 'input-time',
+      label: 'Reminder Time',
+      required: true,
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Validate',
+        validate: true,
+      }],
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  const setSubmitButtonTestId = () => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    if (btn) {
+      btn.setAttribute('data-testid', 'submit-btn');
+      return;
+    }
+    setTimeout(setSubmitButtonTestId, 0);
+  };
+  setSubmitButtonTestId();
+</script>

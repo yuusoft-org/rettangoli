@@ -1,5 +1,7 @@
 ---
-template: documentation
+template: docs
+_bind:
+  docs: docs
 title: Text
 tags: documentation
 sidebarId: rtgl-text

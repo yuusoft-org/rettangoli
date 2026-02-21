@@ -1,0 +1,15 @@
+componentName: tui-showcase
+
+description: Interactive showcase for all currently supported rettangoli-tui components
+
+propsSchema:
+  type: object
+  properties:
+    environment:
+      type: string
+
+events: []
+
+methods:
+  type: object
+  properties: {}

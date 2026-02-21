@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createFsFromVolume, Volume } from 'memfs';
+import yaml from 'js-yaml';
 import { createSiteBuilder } from '../src/createSiteBuilder.js';
 
 describe('createSiteBuilder output behavior', () => {
@@ -134,6 +135,67 @@ describe('createSiteBuilder output behavior', () => {
     await expect(build()).rejects.toThrow('Invalid YAML page content in /pages/index.yaml');
   });
 
+  it('resolves frontmatter _bind aliases from global data', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/data/feDocs.yaml': [
+        'header:',
+        '  label: Rettangoli FE Docs'
+      ].join('\n'),
+      '/templates/base.yaml': [
+        '- html:',
+        '    - body:',
+        '        - rtgl-text: ${docs.header.label}',
+      ].join('\n'),
+      '/pages/index.md': [
+        '---',
+        'template: base',
+        '_bind:',
+        '  docs: feDocs',
+        '---',
+        '# Intro'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await build();
+
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('Rettangoli FE Docs');
+  });
+
+  it('throws a clear error when _bind references unknown global data', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/templates/base.yaml': '- html:',
+      '/pages/index.md': [
+        '---',
+        'template: base',
+        '_bind:',
+        '  docs: missingDocs',
+        '---',
+        '# Intro'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await expect(build()).rejects.toThrow('Invalid _bind in /pages/index.md for "docs": global data key "missingDocs" not found.');
+  });
+
   it('ignores non-yaml files in partials directory', async () => {
     const vol = new Volume();
     const memfs = createFsFromVolume(vol);
@@ -235,5 +297,237 @@ describe('createSiteBuilder output behavior', () => {
 
     expect(memfs.existsSync('/_site/docs/intro/index.html')).toBe(true);
     expect(memfs.existsSync('/_site/docs/intro.md')).toBe(false);
+  });
+
+  it('renders pages with URL-imported template and partial aliases', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/index.md': [
+        '---',
+        'template: docs/documentation',
+        'title: Hello',
+        '---',
+        '# Welcome'
+      ].join('\n')
+    });
+
+    const remoteFiles = {
+      'https://example.com/templates/docs-documentation.yaml': [
+        '- html:',
+        '    - body:',
+        '        - $partial: docs/nav',
+        '          title: ${title}',
+        '        - "${content}"'
+      ].join('\n'),
+      'https://example.com/partials/docs-nav.yaml': '- rtgl-text: "Navigation ${title}"'
+    };
+
+    const fetchImpl = vi.fn(async (url) => {
+      const content = remoteFiles[url];
+      if (!content) {
+        return { ok: false, status: 404, statusText: 'Not Found', text: async () => '' };
+      }
+      return { ok: true, status: 200, statusText: 'OK', text: async () => content };
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      imports: {
+        templates: {
+          'docs/documentation': 'https://example.com/templates/docs-documentation.yaml'
+        },
+        partials: {
+          'docs/nav': 'https://example.com/partials/docs-nav.yaml'
+        }
+      },
+      fetchImpl
+    });
+
+    await build();
+
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('Navigation Hello');
+    expect(html).toContain('Welcome');
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(memfs.existsSync('/.rettangoli/sites/imports/templates')).toBe(true);
+    expect(memfs.existsSync('/.rettangoli/sites/imports/partials')).toBe(true);
+    expect(memfs.readdirSync('/.rettangoli/sites/imports/templates').length).toBe(1);
+    expect(memfs.readdirSync('/.rettangoli/sites/imports/partials').length).toBe(1);
+    expect(memfs.existsSync('/.rettangoli/sites/imports/index.yaml')).toBe(true);
+
+    const indexContent = memfs.readFileSync('/.rettangoli/sites/imports/index.yaml', 'utf8');
+    const index = yaml.load(indexContent, { schema: yaml.JSON_SCHEMA });
+    expect(index.version).toBe(1);
+    expect(index.entries).toEqual([
+      {
+        alias: 'docs/nav',
+        type: 'partial',
+        url: 'https://example.com/partials/docs-nav.yaml',
+        hash: expect.any(String),
+        path: expect.stringMatching(/^\.rettangoli\/sites\/imports\/partials\/[a-f0-9]{64}\.yaml$/)
+      },
+      {
+        alias: 'docs/documentation',
+        type: 'template',
+        url: 'https://example.com/templates/docs-documentation.yaml',
+        hash: expect.any(String),
+        path: expect.stringMatching(/^\.rettangoli\/sites\/imports\/templates\/[a-f0-9]{64}\.yaml$/)
+      }
+    ]);
+  });
+
+  it('reuses on-disk import cache for subsequent builds without network calls', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/index.md': [
+        '---',
+        'template: docs/documentation',
+        'title: Cached',
+        '---',
+        'Body'
+      ].join('\n')
+    });
+
+    const firstFetch = vi.fn(async (url) => {
+      if (url === 'https://example.com/templates/docs-documentation.yaml') {
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => [
+            '- html:',
+            '    - body:',
+            '        - $partial: docs/nav',
+            '          title: ${title}',
+            '        - "${content}"'
+          ].join('\n')
+        };
+      }
+
+      if (url === 'https://example.com/partials/docs-nav.yaml') {
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => '- rtgl-text: "Cached ${title}"'
+        };
+      }
+
+      return { ok: false, status: 404, statusText: 'Not Found', text: async () => '' };
+    });
+
+    const firstBuild = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      imports: {
+        templates: {
+          'docs/documentation': 'https://example.com/templates/docs-documentation.yaml'
+        },
+        partials: {
+          'docs/nav': 'https://example.com/partials/docs-nav.yaml'
+        }
+      },
+      fetchImpl: firstFetch
+    });
+
+    await firstBuild();
+    expect(firstFetch).toHaveBeenCalledTimes(2);
+
+    const secondFetch = vi.fn(async () => {
+      throw new Error('network should not be called');
+    });
+
+    const secondBuild = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      imports: {
+        templates: {
+          'docs/documentation': 'https://example.com/templates/docs-documentation.yaml'
+        },
+        partials: {
+          'docs/nav': 'https://example.com/partials/docs-nav.yaml'
+        }
+      },
+      fetchImpl: secondFetch
+    });
+
+    await secondBuild();
+    expect(secondFetch).not.toHaveBeenCalled();
+
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('Cached Cached');
+  });
+
+  it('lets local partial files override URL-imported partial aliases', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/partials/docs/nav.yaml': '- rtgl-text: "Local ${title}"',
+      '/pages/index.md': [
+        '---',
+        'template: docs/documentation',
+        'title: Hello',
+        '---',
+        'Body'
+      ].join('\n')
+    });
+
+    const fetchImpl = vi.fn(async (url) => {
+      if (url === 'https://example.com/templates/docs-documentation.yaml') {
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => [
+            '- html:',
+            '    - body:',
+            '        - $partial: docs/nav',
+            '          title: ${title}',
+            '        - "${content}"'
+          ].join('\n')
+        };
+      }
+
+      if (url === 'https://example.com/partials/docs-nav.yaml') {
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => '- rtgl-text: "Remote ${title}"'
+        };
+      }
+
+      return { ok: false, status: 404, statusText: 'Not Found', text: async () => '' };
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      imports: {
+        templates: {
+          'docs/documentation': 'https://example.com/templates/docs-documentation.yaml'
+        },
+        partials: {
+          'docs/nav': 'https://example.com/partials/docs-nav.yaml'
+        }
+      },
+      fetchImpl
+    });
+
+    await build();
+
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('Local Hello');
+    expect(html).not.toContain('Remote Hello');
   });
 });

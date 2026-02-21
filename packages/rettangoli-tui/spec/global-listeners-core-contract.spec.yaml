@@ -1,0 +1,52 @@
+file: "./globalListenersCoreHelper.js"
+group: rettangoli-tui-global-listeners-core-contract
+---
+suite: global-listeners-core-contract
+exportName: runGlobalListenersCoreCase
+---
+case: dispatches window handler listeners
+in:
+  - scenario: window_handler_dispatch
+out:
+  called: 1
+  source: window
+  hasEvent: true
+---
+case: resolves window handler payload expressions with event context
+in:
+  - scenario: window_handler_expression_resolution
+out:
+  called: 1
+  eventType: resize
+  hasEvent: true
+---
+case: dispatches document action listeners
+in:
+  - scenario: document_action_dispatch
+out:
+  called: 1
+  action: setVisibility
+  hasEvent: true
+---
+case: cleanup detaches global listeners
+in:
+  - scenario: cleanup_detaches_global_listeners
+out:
+  beforeCleanup: 1
+  afterCleanup: 0
+---
+case: once modifier works for global listeners
+in:
+  - scenario: once_runs_once_for_global_target
+out:
+  called: 1
+  firstEventType: resize
+---
+case: cleanup clears pending debounce timers for global listeners
+in:
+  - scenario: cleanup_clears_pending_debounce_timer
+out:
+  calledBeforeCleanup: 0
+  calledAfterCleanup: 0
+  clearCalls: 1
+  hasPendingTimer: false

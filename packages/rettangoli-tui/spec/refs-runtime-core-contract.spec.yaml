@@ -1,0 +1,30 @@
+file: "./refsRuntimeCoreHelper.js"
+group: rettangoli-tui-refs-runtime-core-contract
+---
+suite: refs-runtime-core-contract
+exportName: runRefsRuntimeCoreCase
+---
+case: matches exact and wildcard refs
+in:
+  - scenario: matches_exact_and_wildcard
+out:
+  submitButton: true
+  todo1: true
+  label: true
+  other: false
+---
+case: collects matching ref elements from vnode tree
+in:
+  - scenario: collects_matching_ref_elements
+out:
+  submitName: submitButton
+  todo1Name: todo1
+  todo2Name: todo2
+  labelName: label-node
+  rootExists: false
+---
+case: duplicate ids overwrite previous entries with latest match
+in:
+  - scenario: last_duplicate_id_wins
+out:
+  submitName: second

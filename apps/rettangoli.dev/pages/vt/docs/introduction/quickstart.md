@@ -1,5 +1,7 @@
 ---
-template: vt-documentation
+template: docs
+_bind:
+  docs: vtDocs
 title: Quickstart
 tags: documentation
 sidebarId: vt-quickstart
@@ -14,13 +16,13 @@ Visual testing catches UI regressions that unit tests usually miss. It is especi
 Use the official image so every machine (local and CI) runs the same Playwright + `rtgl` environment:
 
 ```bash
-docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc12
+docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc16
 ```
 
 Set a shell alias so docs and scripts can use plain `rtgl` commands:
 
 ```bash
-alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc12 rtgl'
+alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc16 rtgl'
 ```
 
 The image default working directory is `/workspace`, so `-w /workspace` is not required.

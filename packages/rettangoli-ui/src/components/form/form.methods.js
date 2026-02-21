@@ -10,6 +10,9 @@ import {
 
 const VALUE_FIELD_TYPES = [
   "input-text",
+  "input-date",
+  "input-time",
+  "input-datetime",
   "input-number",
   "input-textarea",
   "color-picker",
@@ -20,6 +23,9 @@ const VALUE_FIELD_TYPES = [
 
 const TEXT_LIKE_FIELD_TYPES = [
   "input-text",
+  "input-date",
+  "input-time",
+  "input-datetime",
   "input-number",
   "input-textarea",
   "popover-input",
