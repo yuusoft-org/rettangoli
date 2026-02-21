@@ -26,3 +26,6 @@
 CLAUDE.md
 .temp
 **/.rtgl-be
+.codex-runs/
+**/.codex-journal.md
+**/.codex-compiler-journal.md
