@@ -35,8 +35,32 @@ const DEFAULT_TASKS = Object.freeze([
     done: false,
   },
 ]);
+const DEFAULT_SELECTOR_OPTIONS = Object.freeze([
+  { id: "demo", label: "Demo environment" },
+  { id: "local", label: "Local development" },
+  { id: "staging", label: "Staging cluster" },
+  { id: "production", label: "Production cluster" },
+]);
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+const normalizeEnvironmentId = (value) => String(value || "local").trim().toLowerCase();
+
+const findOptionIndexById = (options, optionId) => {
+  const safeOptions = Array.isArray(options) ? options : [];
+  if (safeOptions.length === 0) {
+    return 0;
+  }
+
+  const index = safeOptions.findIndex((option) => {
+    return String(option?.id || "").toLowerCase() === String(optionId || "").toLowerCase();
+  });
+
+  return index >= 0 ? index : 0;
+};
+
+const cloneSelectorOptions = () => {
+  return DEFAULT_SELECTOR_OPTIONS.map((option) => ({ ...option }));
+};
 
 const toLines = (value) => {
   const lines = String(value ?? "").split("\n");
@@ -137,8 +161,20 @@ const insertWithAutoWrap = ({ text, index, chunk, wrapColumns }) => {
 };
 
 export const createInitialState = ({ props }) => ({
+  ...(() => {
+    const selectorOptions = cloneSelectorOptions();
+    const environmentId = normalizeEnvironmentId(props.environment || "local");
+    const selectorIndex = findOptionIndexById(selectorOptions, environmentId);
+    const selectedEnvironment = selectorOptions[selectorIndex]?.id || selectorOptions[0]?.id || "demo";
+    return {
+      selectorOptions,
+      selectorIndex,
+      initialEnvironment: selectedEnvironment,
+      selectedEnvironment,
+      modeLabel: `env:${selectedEnvironment}`,
+    };
+  })(),
   title: "Rettangoli TUI Component Showcase",
-  modeLabel: props.environment ? `env:${props.environment}` : "env:local",
   message: "Ready",
   taskTitle: DEFAULT_TASK_TITLE,
   taskContent: DEFAULT_TASK_CONTENT,
@@ -179,6 +215,9 @@ export const selectViewData = ({ state }) => {
     ],
     rows: tasks,
   };
+  const selectorOptions = Array.isArray(state.selectorOptions) ? state.selectorOptions : [];
+  const selectedSelectorIndex = findOptionIndexById(selectorOptions, state.selectedEnvironment);
+  const selectedSelectorOption = selectorOptions[selectedSelectorIndex] || null;
 
   return {
     ...state,
@@ -187,6 +226,9 @@ export const selectViewData = ({ state }) => {
     taskCount: tasks.length,
     selectedTaskIndex: safeSelectedTaskIndex,
     selectedTaskId: tasks[safeSelectedTaskIndex]?.id || "-",
+    selectorOptions,
+    selectorIndex: selectedSelectorIndex,
+    selectorSelectedLabel: selectedSelectorOption?.label || "(none)",
     taskListItems,
     taskTableData,
     taskContentPreview: `${previewLines.join("\n")}${suffix}`,
@@ -275,6 +317,14 @@ export const saveTitleDialog = ({ state }) => {
   state.titleCursorPreferredCol = null;
 };
 
+export const setSelectedEnvironment = ({ state }, payload = {}) => {
+  const options = Array.isArray(state.selectorOptions) ? state.selectorOptions : [];
+  const nextEnvironmentId = normalizeEnvironmentId(payload.id || state.selectedEnvironment);
+  state.selectedEnvironment = nextEnvironmentId;
+  state.selectorIndex = findOptionIndexById(options, nextEnvironmentId);
+  state.modeLabel = state.selectedEnvironment ? `env:${state.selectedEnvironment}` : "env:local";
+};
+
 export const insertTitleLineBreak = ({ state }) => {
   state.titleDraft = insertAtCursor(state.titleDraft, state.titleCursorIndex, "\n");
   state.titleCursorIndex += 1;
@@ -318,12 +368,20 @@ export const moveTitleCursorDown = ({ state }) => {
 };
 
 export const resetDemo = ({ state }) => {
+  const selectorOptions = cloneSelectorOptions();
+  const selectedEnvironment = normalizeEnvironmentId(state.initialEnvironment || "local");
+  const selectorIndex = findOptionIndexById(selectorOptions, selectedEnvironment);
+
   state.message = "Reset";
+  state.modeLabel = `env:${selectedEnvironment}`;
   state.taskTitle = DEFAULT_TASK_TITLE;
   state.taskContent = DEFAULT_TASK_CONTENT;
   state.tasks = DEFAULT_TASKS.map((task) => ({ ...task }));
   state.selectedTaskIndex = 0;
   state.titleDialogOpen = false;
+  state.selectorOptions = selectorOptions;
+  state.selectorIndex = selectorIndex;
+  state.selectedEnvironment = selectedEnvironment;
   state.titleDraft = DEFAULT_TASK_TITLE;
   state.titleCursorIndex = DEFAULT_TASK_TITLE.length;
   state.titleCursorPreferredCol = null;

@@ -52,5 +52,5 @@ await runtime.start({
     environment: "demo",
   },
   quitKeys: ["q"],
-  footer: "[q] quit  [d/t] title dialog  [e] edit content  [up/down] select row",
+  footer: "[q] quit  [s] global full-screen selector  [f] global centered selector  [d/t] title dialog  [e] edit",
 });

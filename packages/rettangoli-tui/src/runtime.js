@@ -1,6 +1,7 @@
 import { createDefaultTuiPrimitives } from "./primitives/index.js";
 import { createKeyboardEvent, splitInputSequences } from "./tui/keyboard.js";
 import { openInExternalEditor } from "./tui/externalEditor.js";
+import { createGlobalTuiService } from "./tui/globalUiService.js";
 import { createTerminalSession } from "./tui/terminalSession.js";
 
 const createRendererComponents = (customComponents = {}) => {
@@ -120,12 +121,24 @@ export const createTuiRuntime = ({
 
     return new Promise((resolve, reject) => {
       let closed = false;
+      let renderCurrentFrame = () => {};
+      const globalUi = createGlobalTuiService({
+        requestRender: () => {
+          renderCurrentFrame();
+        },
+      });
 
       const stop = () => {
         if (closed) {
           return;
         }
         closed = true;
+
+        try {
+          globalUi.api.closeAll();
+        } catch {
+          // noop
+        }
 
         try {
           instance.disconnectedCallback();
@@ -146,8 +159,12 @@ export const createTuiRuntime = ({
         const originalRender = instance.render.bind(instance);
         instance.render = () => {
           const output = originalRender();
-          terminal.render(output);
+          terminal.render(`${output}${globalUi.renderOverlayCommands()}`);
           return output;
+        };
+
+        renderCurrentFrame = () => {
+          terminal.render(`${instance.toString()}${globalUi.renderOverlayCommands()}`);
         };
 
         const openExternalEditor = (options = {}) => {
@@ -162,6 +179,7 @@ export const createTuiRuntime = ({
         instance.deps = {
           ...(instance.deps || {}),
           stop,
+          ui: globalUi.api,
           openExternalEditor,
         };
 
@@ -174,7 +192,9 @@ export const createTuiRuntime = ({
                 target: instance._eventTargets?.window,
               });
 
-              if (instance._eventTargets?.window) {
+              if (globalUi.isActive()) {
+                globalUi.handleKeyEvent(keyEvent);
+              } else if (instance._eventTargets?.window) {
                 instance._eventTargets.window.dispatchEvent(keyEvent);
               }
 
@@ -184,14 +204,14 @@ export const createTuiRuntime = ({
               }
 
               if (keyEvent.ctrlKey && keyEvent.name === "l" && !keyEvent.defaultPrevented) {
-                terminal.render(instance.toString());
+                renderCurrentFrame();
               }
             });
           },
         });
 
         instance.connectedCallback();
-        terminal.render(instance.toString());
+        renderCurrentFrame();
       } catch (error) {
         try {
           terminal.stop();

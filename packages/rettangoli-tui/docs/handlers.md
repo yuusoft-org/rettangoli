@@ -36,11 +36,17 @@ Rules:
 - `constants`
 - `dispatchEvent`
 - `refs`
+- `ui` (interactive runtime global UI services)
 - custom dependencies from setup
 
 `deps.refs` contract:
 - map of runtime ref targets
 - in TUI, `window` / `document` refs are the primary event targets
+
+`deps.ui` contract (interactive runtime):
+- `deps.ui.select(options)` opens a global selector overlay and returns `Promise<{ index, option } | null>`
+- selector captures keyboard while open (`ArrowUp`, `ArrowDown`, `Enter`, `Esc`)
+- `null` result means canceled selection
 
 ## 4. Lifecycle Hooks
 

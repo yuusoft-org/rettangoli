@@ -16,6 +16,20 @@ export const handleBeforeMount = (deps) => {
   deps.store.setMessage({ value: "Interactive showcase ready" });
 };
 
+const resolveSelectedEnvironmentLabel = (state) => {
+  const options = Array.isArray(state?.selectorOptions) ? state.selectorOptions : [];
+  const selectedEnvironment = String(state?.selectedEnvironment || "");
+  const option = options.find((entry) => String(entry?.id || "") === selectedEnvironment);
+  return option?.label || selectedEnvironment;
+};
+
+const resolveSelectedEnvironmentIndex = (state) => {
+  const options = Array.isArray(state?.selectorOptions) ? state.selectorOptions : [];
+  const selectedEnvironment = String(state?.selectedEnvironment || "");
+  const index = options.findIndex((entry) => String(entry?.id || "") === selectedEnvironment);
+  return index >= 0 ? index : 0;
+};
+
 const handleTitleDialogKeyDown = (deps, event, keyName) => {
   if (event?.ctrlKey && keyName === "s") {
     deps.store.saveTitleDialog();
@@ -83,6 +97,52 @@ const handleTitleDialogKeyDown = (deps, event, keyName) => {
   }
 };
 
+const openEnvironmentSelector = async (deps, mode) => {
+  if (!deps.ui || typeof deps.ui.select !== "function") {
+    deps.store.setMessage({ value: "Global selector service is unavailable" });
+    deps.render();
+    return;
+  }
+
+  try {
+    const currentState = deps.store.selectState();
+    const options = Array.isArray(currentState.selectorOptions) ? currentState.selectorOptions : [];
+    const result = await deps.ui.select({
+      title: "Select Environment",
+      options,
+      mode,
+      selectedIndex: resolveSelectedEnvironmentIndex(currentState),
+      hint: "ArrowUp/ArrowDown move, Enter select, Esc cancel",
+      w: 60,
+      h: 12,
+    });
+
+    if (result?.option) {
+      const selectedOptionId = String(
+        result.option?.id
+        || result.option?.value
+        || result.option?.label
+        || "",
+      );
+      if (selectedOptionId) {
+        deps.store.setSelectedEnvironment({ id: selectedOptionId });
+        const nextState = deps.store.selectState();
+        deps.store.setMessage({
+          value: `Selected environment: ${resolveSelectedEnvironmentLabel(nextState)}`,
+        });
+      } else {
+        deps.store.setMessage({ value: "No option selected" });
+      }
+    } else {
+      deps.store.setMessage({ value: "Canceled environment selection" });
+    }
+  } catch (error) {
+    deps.store.setMessage({ value: `Selector service error: ${error?.message || "unknown"}` });
+  }
+
+  deps.render();
+};
+
 export const handleShowcaseKeyDown = (deps, payload) => {
   const event = payload?._event;
   const keyName = resolveKeyName(event);
@@ -116,6 +176,14 @@ export const handleShowcaseKeyDown = (deps, payload) => {
     deps.store.openTitleDialog();
     deps.store.setMessage({ value: "Opened title editor dialog" });
     event?.preventDefault?.();
+  } else if (keyName === "s") {
+    event?.preventDefault?.();
+    void openEnvironmentSelector(deps, "fullscreen");
+    return;
+  } else if (keyName === "f") {
+    event?.preventDefault?.();
+    void openEnvironmentSelector(deps, "dialog");
+    return;
   } else if (keyName === "e") {
     event?.preventDefault?.();
 

@@ -39,6 +39,7 @@ Normative keywords follow RFC 2119 intent:
 - Event-driven handler dispatch injects `_event` into payload.
 - Event-driven action dispatch injects `_event` and `_action` into payload.
 - `_action` is an internal dispatch field; app payloads SHOULD NOT rely on it.
+- In interactive runtime mode, `deps.ui.select(...)` MAY be used for global selector prompts.
 
 ### Refs Model
 
