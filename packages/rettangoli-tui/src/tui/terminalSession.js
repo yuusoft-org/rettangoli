@@ -91,10 +91,15 @@ export const createTerminalSession = ({
         .forEach((row) => dirtyRows.add(row));
     }
 
+    const dirtyRowsList = [...dirtyRows];
+    const maxDirtyRow = dirtyRowsList.length > 0
+      ? Math.max(...dirtyRowsList)
+      : 0;
+    const maxRow = Math.max(maxLineCount, maxDirtyRow);
     let output = "";
 
-    for (let lineIndex = 0; lineIndex < maxLineCount; lineIndex += 1) {
-      const row = lineIndex + 1;
+    for (let row = 1; row <= maxRow; row += 1) {
+      const lineIndex = row - 1;
       const previousLine = lastRenderedLines[lineIndex] || "";
       const nextLine = nextLines[lineIndex] || "";
 

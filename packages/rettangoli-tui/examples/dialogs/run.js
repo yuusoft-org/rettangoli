@@ -6,19 +6,19 @@ import { load as loadYaml } from "js-yaml";
 
 import { createComponent, createTuiRuntime } from "../../src/index.js";
 import { deps } from "./setup.js";
-import * as handlers from "./components/showcase/showcase.handlers.js";
-import * as store from "./components/showcase/showcase.store.js";
+import * as handlers from "./components/dialogPlayground/dialogPlayground.handlers.js";
+import * as store from "./components/dialogPlayground/dialogPlayground.store.js";
 
 const componentDir = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
-  "components/showcase",
+  "components/dialogPlayground",
 );
 
-const schema = loadYaml(readFileSync(path.join(componentDir, "showcase.schema.yaml"), "utf8"));
-const view = loadYaml(readFileSync(path.join(componentDir, "showcase.view.yaml"), "utf8"));
+const schema = loadYaml(readFileSync(path.join(componentDir, "dialogPlayground.schema.yaml"), "utf8"));
+const view = loadYaml(readFileSync(path.join(componentDir, "dialogPlayground.view.yaml"), "utf8"));
 view.template = parse(view.template);
 
-const Showcase = createComponent({
+const DialogPlayground = createComponent({
   schema,
   view,
   handlers,
@@ -29,15 +29,12 @@ const Showcase = createComponent({
 
 const runtime = createTuiRuntime({
   componentRegistry: {
-    [schema.componentName]: Showcase,
+    [schema.componentName]: DialogPlayground,
   },
 });
 
 await runtime.start({
   componentName: schema.componentName,
-  props: {
-    environment: "demo",
-  },
   quitKeys: ["q"],
-  footer: "[q] quit  [s] global full-screen selector  [f] global centered selector  [d/t] title dialog  [e] edit",
+  footer: "[q] quit  [1] info  [2] confirm  [3] single input  [4] single textarea  [5] multi-field form",
 });

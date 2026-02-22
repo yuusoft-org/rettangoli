@@ -10,7 +10,6 @@ const schema = {
     type: "object",
     properties: {
       title: { type: "string" },
-      dialogOpen: { type: "boolean" },
       selectorOpen: { type: "boolean" },
       selectorDialogOpen: { type: "boolean" },
     },
@@ -37,11 +36,6 @@ const view = {
         { "rtgl-table :data=tableData :selectedIndex=1 w=f cw=12": null },
         {
           "rtgl-textarea label=Notes :value=notes w=24 h=3 cursorRow=1 cursorCol=2 active=true": null,
-        },
-        {
-          "rtgl-dialog title=Preview open=${dialogOpen}": [
-            { "rtgl-text": "inside dialog" },
-          ],
         },
         {
           "rtgl-selector-dialog title='Select environment' size=f open=${selectorOpen} :options=selectorOptions :selectedIndex=2": null,
@@ -89,7 +83,6 @@ const store = {
     return {
       ...state,
       title: props.title || "demo",
-      dialogOpen: !!props.dialogOpen,
       selectorOpen: !!props.selectorOpen,
       selectorDialogOpen: !!props.selectorDialogOpen,
     };
@@ -120,7 +113,6 @@ describe("tui runtime", () => {
       componentName: schema.componentName,
       props: {
         title: "Ops",
-        dialogOpen: true,
         selectorOpen: true,
         selectorDialogOpen: true,
       },
@@ -140,8 +132,6 @@ describe("tui runtime", () => {
     expect(output).toContain("\u001b[33m");
     expect(output).toContain("Notes:");
     expect(output).toContain("alpha");
-    expect(output).toContain("Preview");
-    expect(output).toContain("inside dialog");
     expect(output).toContain("Select environment");
     expect(output).toContain("Staging cluster");
     expect(output).toContain("Production cluster");
@@ -176,13 +166,11 @@ describe("tui runtime", () => {
       componentName: schema.componentName,
       props: {
         title: "Ops",
-        dialogOpen: false,
         selectorOpen: false,
         selectorDialogOpen: false,
       },
     });
 
-    expect(output).not.toContain("inside dialog");
     expect(output).not.toContain("Staging cluster");
     expect(output).not.toContain("Rename item");
   });
@@ -210,7 +198,6 @@ describe("tui runtime", () => {
       componentName: schema.componentName,
       props: {
         title: "Ops",
-        dialogOpen: true,
         selectorOpen: true,
         selectorDialogOpen: true,
       },
@@ -220,7 +207,6 @@ describe("tui runtime", () => {
       componentName: schema.componentName,
       props: {
         title: "Ops",
-        dialogOpen: false,
         selectorOpen: false,
         selectorDialogOpen: false,
       },

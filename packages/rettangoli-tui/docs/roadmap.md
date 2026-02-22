@@ -23,7 +23,7 @@ This roadmap is the planning source for `packages/rettangoli-tui`.
 3. `[P0][DONE]` Support native terminal primitives for real workflows
 - `rtgl-view`, `rtgl-text`, `rtgl-input`, `rtgl-textarea`
 - `rtgl-divider` (horizontal + vertical)
-- `rtgl-dialog` floating overlay (non-layout)
+- imperative global dialog service (`deps.ui.dialog`) with form-style payload
 - `rtgl-list` and `rtgl-table` with row highlight support
 
 4. `[P1][DONE]` Reduce flicker in interactive mode

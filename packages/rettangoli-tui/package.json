@@ -40,9 +40,8 @@
   },
   "scripts": {
     "poc": "node examples/poc/run.js",
-    "poc:static": "node examples/poc/run.js --static",
     "showcase": "node examples/showcase/run.js",
-    "showcase:static": "node examples/showcase/run.js --static",
+    "dialogs": "node examples/dialogs/run.js",
     "test": "vitest run test/tui --reporter=verbose"
   }
 }

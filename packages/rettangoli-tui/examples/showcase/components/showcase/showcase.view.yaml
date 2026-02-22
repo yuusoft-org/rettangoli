@@ -18,7 +18,6 @@ template:
       - rtgl-text: "- rtgl-table"
       - rtgl-text: "- rtgl-textarea"
       - rtgl-text: "- rtgl-divider"
-      - rtgl-text: "- rtgl-dialog"
       - rtgl-text: "- rtgl-selector-dialog"
       - rtgl-divider w=72: null
       - rtgl-text: "Task editor demo"
@@ -48,16 +47,11 @@ template:
       - rtgl-divider w=72: null
       - rtgl-text: "Message: ${message}"
       - rtgl-text: "Last Key: ${lastKey}"
-      - rtgl-text: "Dialog: ${dialogStatus}"
-      - rtgl-text: "Selector Service: global (${selectorSelectedLabel})"
-      - rtgl-dialog open=${titleDialogOpen} title="Edit Task Title" w=66 x=6 y=10:
-          - rtgl-text: "Native multiline editor (no nvim)"
-          - rtgl-textarea label=Title :value=titleDraft :cursorRow=titleCursorRow :cursorCol=titleCursorCol active=true w=60 h=6 placeholder="Write task title": null
-          - rtgl-text: "Ctrl+S save | Esc cancel | Enter newline | Auto-wrap | Arrows"
+      - rtgl-text: "Dialog Service: imperative (ui.dialog)"
+      - rtgl-text: "Selected Environment: ${selectorSelectedLabel}"
       - rtgl-divider w=72: null
       - rtgl-text: "Controls"
-      - rtgl-text: "q quit | r reset | d open title dialog | s global full-screen selector | f global centered selector"
-      - rtgl-text: "t also opens title dialog editor"
+      - rtgl-text: "q quit | r reset | d/t open title dialog | s full-screen env dialog | f centered env dialog"
       - rtgl-text: "up/down select task row (list + table highlight)"
-      - rtgl-text: "inside selector: up/down move | enter select | esc cancel"
+      - rtgl-text: "inside dialog: tab focus | up/down edits current field | enter action/newline | esc cancel"
       - rtgl-text: "e open content in $EDITOR/$VISUAL (nvim/vim fallback)"

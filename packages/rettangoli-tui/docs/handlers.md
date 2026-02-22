@@ -44,9 +44,11 @@ Rules:
 - in TUI, `window` / `document` refs are the primary event targets
 
 `deps.ui` contract (interactive runtime):
-- `deps.ui.select(options)` opens a global selector overlay and returns `Promise<{ index, option } | null>`
-- selector captures keyboard while open (`ArrowUp`, `ArrowDown`, `Enter`, `Esc`)
-- `null` result means canceled selection
+- `deps.ui.dialog(options)` opens a global imperative dialog and returns `Promise<result | null>`
+- `options` mirrors `rtgl-form` style payload: `{ form, defaultValues, context, size, w, h, x, y, hint }`
+- `result` shape: `{ actionId, values }` or `{ actionId, values, valid, errors }` (when action has `validate: true`)
+- dialog captures keyboard while open (`Tab`, `Shift+Tab`, arrows, `Enter`, `Esc`, `Ctrl+S`)
+- `null` result means canceled dialog
 
 ## 4. Lifecycle Hooks
 

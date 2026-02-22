@@ -1,4 +1,3 @@
-import renderDialog from "./dialog.js";
 import renderDivider from "./divider.js";
 import renderInput from "./input.js";
 import renderList from "./list.js";
@@ -10,7 +9,6 @@ import renderView from "./view.js";
 
 export const createDefaultTuiPrimitives = () => {
   return {
-    "rtgl-dialog": renderDialog,
     "rtgl-divider": renderDivider,
     "rtgl-input": renderInput,
     "rtgl-list": renderList,

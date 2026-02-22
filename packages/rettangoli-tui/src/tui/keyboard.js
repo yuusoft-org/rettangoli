@@ -9,6 +9,7 @@ const SPECIAL_SEQUENCE_MAP = {
   "\u001b[B": { name: "down", key: "ArrowDown" },
   "\u001b[C": { name: "right", key: "ArrowRight" },
   "\u001b[D": { name: "left", key: "ArrowLeft" },
+  "\u001b[Z": { name: "tab", key: "Tab", shift: true },
 };
 
 const isPrintableCharacter = (value) => {
@@ -35,11 +36,12 @@ const parseCtrlCharacter = (sequence) => {
 
 export const parseKeySequence = (sequence) => {
   if (SPECIAL_SEQUENCE_MAP[sequence]) {
+    const special = SPECIAL_SEQUENCE_MAP[sequence];
     return {
       sequence,
-      shift: false,
+      shift: Boolean(special.shift),
       meta: false,
-      ...SPECIAL_SEQUENCE_MAP[sequence],
+      ...special,
     };
   }
 
@@ -102,7 +104,7 @@ export const splitInputSequences = (chunk = "") => {
     const next = chunk[index + 1];
     const nextNext = chunk[index + 2];
 
-    if (next === "[" && ["A", "B", "C", "D"].includes(nextNext)) {
+    if (next === "[" && ["A", "B", "C", "D", "Z"].includes(nextNext)) {
       sequences.push(chunk.slice(index, index + 3));
       index += 3;
       continue;

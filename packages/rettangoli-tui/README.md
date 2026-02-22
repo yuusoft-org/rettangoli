@@ -17,7 +17,7 @@ import { createComponent, createTuiRuntime } from "@rettangoli/tui";
 
 - `createComponent(componentFiles, deps)` creates a TUI component class using FE contracts.
 - `createTuiRuntime({ componentRegistry })` renders registered components to terminal strings.
-- In interactive mode (`runtime.start(...)`), handlers receive `deps.ui.select(...)` for global selector prompts.
+- In interactive mode (`runtime.start(...)`), handlers receive `deps.ui.dialog(...)` for global imperative dialogs.
 
 ## Default TUI Primitives
 
@@ -30,7 +30,6 @@ Included core primitives:
 - `rtgl-table`
 - `rtgl-textarea`
 - `rtgl-divider`
-- `rtgl-dialog`
 - `rtgl-selector-dialog`
 
 `rtgl-divider` supports:
@@ -53,16 +52,6 @@ Included core primitives:
 - `:selectedIndex=${index}` for highlighted row
 - `w=f` for full terminal width
 
-`rtgl-dialog` supports:
-
-- `open` / `open=true` (show dialog)
-- `title="Dialog title"`
-- `w=56` (dialog width)
-- `x=8` (left indent; floating offset)
-- `y=12` (top row offset)
-
-Dialog renders as a floating overlay layer and does not consume normal layout flow.
-
 `rtgl-selector-dialog` supports:
 
 - `open` / `open=true` (show selector overlay)
@@ -80,34 +69,44 @@ Selector dialog keyboard behavior is handled in component handlers:
 - `Enter`: confirm selected option in store
 - `Esc`: close selector dialog
 
-## Global Selector Service (Recommended)
+## Global Dialog Service (Recommended)
 
-Interactive runtime exposes a global selector service in handlers:
+Interactive runtime exposes a global dialog service in handlers:
 
 ```js
-const result = await deps.ui.select({
-  title: "Select Environment",
-  size: "md", // "f" fullscreen, or "sm" | "md" | "lg" centered dialog
-  options: [
-    { id: "local", label: "Local" },
-    { id: "staging", label: "Staging" },
-    { id: "production", label: "Production" },
-  ],
-  selectedIndex: 0,
-  hint: "ArrowUp/ArrowDown move, Enter select, Esc cancel",
+const result = await deps.ui.dialog({
+  form: {
+    title: "Edit Task",
+    description: "Update fields below",
+    fields: [
+      { name: "title", type: "input-text", label: "Title", required: true },
+      { name: "notes", type: "input-textarea", label: "Notes", rows: 4 },
+    ],
+    actions: {
+      buttons: [
+        { id: "cancel", label: "Cancel", variant: "gh" },
+        { id: "save", label: "Save", variant: "pr", validate: true },
+      ],
+    },
+  },
+  defaultValues: {
+    title: "Ship v1",
+    notes: "",
+  },
+  size: "md",
 });
 
-if (result) {
-  // result = { index, option }
-  console.log(result.option);
+if (result?.actionId === "save") {
+  console.log(result.values);
 }
 ```
 
 Service behavior:
 
-- returns `Promise<{ index, option } | null>`
+- returns `Promise<{ actionId, values } | { actionId, values, valid, errors } | null>`
 - `null` means user canceled (`Esc` or `q`)
-- while open, selector captures input globally (component handlers do not receive keys)
+- while open, dialog captures input globally (component handlers do not receive keys)
+- keyboard: `Tab` / `Shift+Tab` focus, `Enter` action/newline, `Esc` cancel, `Ctrl+S` submit primary action
 
 ## Using `rtgl-selector-dialog` Primitive (Manual)
 
@@ -171,12 +170,6 @@ Interactive controls:
 - `ArrowDown` decrement queue depth
 - `q` quit
 
-For non-interactive environments:
-
-```bash
-bun run poc:static
-```
-
 ## Component Showcase
 
 Run the interactive primitive showcase:
@@ -189,17 +182,24 @@ Showcase controls:
 
 - `q` quit
 - `r` reset demo state
-- `s` open global full-screen selector
-- `f` open global centered selector
+- `s` open full-screen environment dialog
+- `f` open centered environment dialog
 - `d`/`t` open title editor dialog
 - `e` open task content in external editor
 - `ArrowUp` / `ArrowDown` move selected task row
-- inside selector dialog: `ArrowUp` / `ArrowDown` move, `Enter` select, `Esc` cancel
-- inside title dialog: type (auto-wrap), `Enter`, `Backspace`, arrows
-- `Ctrl+S` save title, `Esc` cancel
+- inside dialog: `Tab` / `Shift+Tab` focus, `ArrowUp` / `ArrowDown` edit select/textarea only, `Enter` action/newline, `Ctrl+S` save, `Esc` cancel
 
-Static render:
+## Dialog Playground
 
 ```bash
-bun run showcase:static
+bun run dialogs
 ```
+
+Dialog playground controls:
+
+- `1` info dialog
+- `2` confirm dialog
+- `3` single-line input dialog
+- `4` single multiline input dialog
+- `5` multi-field form dialog
+- `q` quit
