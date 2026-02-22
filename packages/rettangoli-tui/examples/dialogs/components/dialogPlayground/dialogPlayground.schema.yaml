@@ -1,0 +1,13 @@
+componentName: tui-dialog-playground
+
+description: Interactive playground for global imperative dialog flows
+
+propsSchema:
+  type: object
+  properties: {}
+
+events: []
+
+methods:
+  type: object
+  properties: {}

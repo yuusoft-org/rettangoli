@@ -33,19 +33,6 @@ const runtime = createTuiRuntime({
   },
 });
 
-const isStaticMode = process.argv.includes("--static");
-
-if (isStaticMode) {
-  const output = runtime.render({
-    componentName: schema.componentName,
-    props: {
-      environment: "staging",
-    },
-  });
-  console.log(output);
-  process.exit(0);
-}
-
 await runtime.start({
   componentName: schema.componentName,
   props: {

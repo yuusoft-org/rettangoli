@@ -10,7 +10,6 @@ const resolveKeyName = (event) => {
   }
   return String(event.key || "unknown").toLowerCase();
 };
-const TITLE_WRAP_COLUMNS = 56;
 
 export const handleBeforeMount = (deps) => {
   deps.store.setMessage({ value: "Interactive showcase ready" });
@@ -23,83 +22,9 @@ const resolveSelectedEnvironmentLabel = (state) => {
   return option?.label || selectedEnvironment;
 };
 
-const resolveSelectedEnvironmentIndex = (state) => {
-  const options = Array.isArray(state?.selectorOptions) ? state.selectorOptions : [];
-  const selectedEnvironment = String(state?.selectedEnvironment || "");
-  const index = options.findIndex((entry) => String(entry?.id || "") === selectedEnvironment);
-  return index >= 0 ? index : 0;
-};
-
-const handleTitleDialogKeyDown = (deps, event, keyName) => {
-  if (event?.ctrlKey && keyName === "s") {
-    deps.store.saveTitleDialog();
-    deps.store.setMessage({ value: "Saved title from dialog" });
-    event?.preventDefault?.();
-    return;
-  }
-
-  if (keyName === "escape") {
-    deps.store.closeTitleDialog();
-    deps.store.setMessage({ value: "Canceled title edit dialog" });
-    event?.preventDefault?.();
-    return;
-  }
-
-  if (keyName === "enter") {
-    deps.store.insertTitleLineBreak();
-    deps.store.setMessage({ value: "Inserted line break in title draft" });
-    event?.preventDefault?.();
-    return;
-  }
-
-  if (keyName === "backspace") {
-    deps.store.backspaceTitle();
-    deps.store.setMessage({ value: "Deleted title draft character" });
-    event?.preventDefault?.();
-    return;
-  }
-
-  if (keyName === "left") {
-    deps.store.moveTitleCursorLeft();
-    event?.preventDefault?.();
-    return;
-  }
-
-  if (keyName === "right") {
-    deps.store.moveTitleCursorRight();
-    event?.preventDefault?.();
-    return;
-  }
-
-  if (keyName === "up") {
-    deps.store.moveTitleCursorUp();
-    event?.preventDefault?.();
-    return;
-  }
-
-  if (keyName === "down") {
-    deps.store.moveTitleCursorDown();
-    event?.preventDefault?.();
-    return;
-  }
-
-  if (keyName === "tab") {
-    deps.store.appendTitleChar({ char: "  ", wrapColumns: TITLE_WRAP_COLUMNS });
-    deps.store.setMessage({ value: "Inserted spaces" });
-    event?.preventDefault?.();
-    return;
-  }
-
-  if (event?.key && event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
-    deps.store.appendTitleChar({ char: event.key, wrapColumns: TITLE_WRAP_COLUMNS });
-    deps.store.setMessage({ value: `Typed '${event.key}' into title draft` });
-    event?.preventDefault?.();
-  }
-};
-
-const openEnvironmentSelector = async (deps, size) => {
-  if (!deps.ui || typeof deps.ui.select !== "function") {
-    deps.store.setMessage({ value: "Global selector service is unavailable" });
+const openEnvironmentDialog = async (deps, size) => {
+  if (!deps.ui || typeof deps.ui.dialog !== "function") {
+    deps.store.setMessage({ value: "Global dialog service is unavailable" });
     deps.render();
     return;
   }
@@ -107,21 +32,35 @@ const openEnvironmentSelector = async (deps, size) => {
   try {
     const currentState = deps.store.selectState();
     const options = Array.isArray(currentState.selectorOptions) ? currentState.selectorOptions : [];
-    const result = await deps.ui.select({
-      title: "Select Environment",
-      options,
+    const result = await deps.ui.dialog({
+      form: {
+        title: "Select Environment",
+        description: "Choose the active environment for this session.",
+        fields: [
+          {
+            name: "environmentId",
+            type: "select",
+            label: "Environment",
+            options,
+            required: true,
+          },
+        ],
+        actions: {
+          buttons: [
+            { id: "cancel", label: "Cancel", variant: "gh" },
+            { id: "confirm", label: "Select", variant: "pr" },
+          ],
+        },
+      },
+      defaultValues: {
+        environmentId: currentState.selectedEnvironment,
+      },
       size,
-      selectedIndex: resolveSelectedEnvironmentIndex(currentState),
-      hint: "ArrowUp/ArrowDown move, Enter select, Esc cancel",
+      hint: "ArrowUp/ArrowDown choose, Tab focus, Enter or Ctrl+S confirm, Esc cancel",
     });
 
-    if (result?.option) {
-      const selectedOptionId = String(
-        result.option?.id
-        || result.option?.value
-        || result.option?.label
-        || "",
-      );
+    if (result?.actionId === "confirm") {
+      const selectedOptionId = String(result.values?.environmentId || "");
       if (selectedOptionId) {
         deps.store.setSelectedEnvironment({ id: selectedOptionId });
         const nextState = deps.store.selectState();
@@ -132,10 +71,60 @@ const openEnvironmentSelector = async (deps, size) => {
         deps.store.setMessage({ value: "No option selected" });
       }
     } else {
-      deps.store.setMessage({ value: "Canceled environment selection" });
+      deps.store.setMessage({ value: "Canceled environment dialog" });
     }
   } catch (error) {
-    deps.store.setMessage({ value: `Selector service error: ${error?.message || "unknown"}` });
+    deps.store.setMessage({ value: `Dialog service error: ${error?.message || "unknown"}` });
+  }
+
+  deps.render();
+};
+
+const openTitleEditorDialog = async (deps) => {
+  if (!deps.ui || typeof deps.ui.dialog !== "function") {
+    deps.store.setMessage({ value: "Global dialog service is unavailable" });
+    deps.render();
+    return;
+  }
+
+  try {
+    const currentState = deps.store.selectState();
+    const result = await deps.ui.dialog({
+      form: {
+        title: "Edit Task Title",
+        description: "Native multiline editor with form payload.",
+        fields: [
+          {
+            name: "title",
+            type: "input-textarea",
+            label: "Title",
+            rows: 6,
+            placeholder: "Write task title",
+            required: true,
+          },
+        ],
+        actions: {
+          buttons: [
+            { id: "cancel", label: "Cancel", variant: "gh" },
+            { id: "save", label: "Save", variant: "pr", validate: true },
+          ],
+        },
+      },
+      defaultValues: {
+        title: currentState.taskTitle,
+      },
+      size: "lg",
+      hint: "Type to edit, Tab focus, Enter newline, Ctrl+S save, Esc cancel",
+    });
+
+    if (result?.actionId === "save") {
+      deps.store.setTaskTitleFromDialog({ value: result.values?.title || "" });
+      deps.store.setMessage({ value: "Saved title from dialog service" });
+    } else {
+      deps.store.setMessage({ value: "Canceled title edit dialog" });
+    }
+  } catch (error) {
+    deps.store.setMessage({ value: `Dialog service error: ${error?.message || "unknown"}` });
   }
 
   deps.render();
@@ -146,13 +135,6 @@ export const handleShowcaseKeyDown = (deps, payload) => {
   const keyName = resolveKeyName(event);
 
   deps.store.setLastKey({ key: keyName });
-
-  const state = deps.store.selectState();
-  if (state.titleDialogOpen) {
-    handleTitleDialogKeyDown(deps, event, keyName);
-    deps.render();
-    return;
-  }
 
   if (keyName === "up") {
     deps.store.moveTaskSelectionUp();
@@ -167,20 +149,20 @@ export const handleShowcaseKeyDown = (deps, payload) => {
     deps.store.setMessage({ value: "Reset from key r" });
     event?.preventDefault?.();
   } else if (keyName === "d") {
-    deps.store.openTitleDialog();
-    deps.store.setMessage({ value: "Opened title editor dialog" });
     event?.preventDefault?.();
+    void openTitleEditorDialog(deps);
+    return;
   } else if (keyName === "t") {
-    deps.store.openTitleDialog();
-    deps.store.setMessage({ value: "Opened title editor dialog" });
     event?.preventDefault?.();
+    void openTitleEditorDialog(deps);
+    return;
   } else if (keyName === "s") {
     event?.preventDefault?.();
-    void openEnvironmentSelector(deps, "f");
+    void openEnvironmentDialog(deps, "f");
     return;
   } else if (keyName === "f") {
     event?.preventDefault?.();
-    void openEnvironmentSelector(deps, "md");
+    void openEnvironmentDialog(deps, "md");
     return;
   } else if (keyName === "e") {
     event?.preventDefault?.();

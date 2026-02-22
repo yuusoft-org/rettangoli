@@ -1,0 +1,31 @@
+refs:
+  window:
+    eventListeners:
+      keydown:
+        handler: handleDialogPlaygroundKeyDown
+
+template:
+  - rtgl-view d=v g=sm:
+      - rtgl-view d=h g=md:
+          - rtgl-text w=bold: ${title}
+      - rtgl-divider w=72: null
+      - rtgl-text: "Dialog Examples"
+      - rtgl-text: "1) info dialog (title + message)"
+      - rtgl-text: "2) confirm dialog (yes/no)"
+      - rtgl-text: "3) single-line input dialog"
+      - rtgl-text: "4) single multiline input dialog"
+      - rtgl-text: "5) multi-field form dialog"
+      - rtgl-divider w=72: null
+      - rtgl-text: "Global Dialog Navigation"
+      - rtgl-text: "Tab/Shift+Tab focus, Up/Down edit current field, Enter action/newline"
+      - rtgl-text: "Esc cancel, Ctrl+S submit primary action"
+      - rtgl-divider w=72: null
+      - rtgl-text: "Last Result"
+      - rtgl-text: "Last Key: ${lastKey}"
+      - rtgl-text: "Dialog Type: ${lastDialogType}"
+      - rtgl-text: "Action: ${lastAction}"
+      - rtgl-text: "Validation: ${lastValidation}"
+      - rtgl-text: "Values: ${lastValues}"
+      - rtgl-text: "Message: ${message}"
+      - rtgl-divider w=72: null
+      - rtgl-text: "Press q to quit"
