@@ -1,4 +1,4 @@
-import { createRefMatchers } from "@rettangoli/fe/contracts";
+import { createRefMatchers } from "../core/fe-contracts.js";
 import { isObjectRecord } from "./shared.js";
 
 export const collectInvalidRefKeys = (refs) => {

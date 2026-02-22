@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/check",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Static contract checker for Rettangoli projects",
   "type": "module",
   "main": "./src/index.js",
@@ -12,7 +12,9 @@
     "rtgl-check": "./src/cli/bin.js"
   },
   "scripts": {
+    "ci": "npm run test:no-fe-contracts-import && npm run test:scenarios",
     "test:scenarios": "node ./test/run-scenarios.js",
+    "test:no-fe-contracts-import": "node ./scripts/test-no-fe-contracts-import.js",
     "test:diff-js-exports": "node ./scripts/differential-js-exports.js",
     "test:fuzz-template-pipeline": "node ./scripts/fuzz-template-pipeline.js",
     "test:fuzz-jempl-parser": "node ./scripts/fuzz-jempl-parser.js",
@@ -37,7 +39,6 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@rettangoli/fe": "1.0.0-rc3",
     "jempl": "0.3.2-rc2",
     "js-yaml": "^4.1.0",
     "oxc-parser": "^0.112.0",
