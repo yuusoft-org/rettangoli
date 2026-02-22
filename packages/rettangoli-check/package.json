@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/check",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Static contract checker for Rettangoli projects",
   "type": "module",
   "main": "./src/index.js",
@@ -37,7 +37,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@rettangoli/fe": "workspace:1.0.0-rc3",
+    "@rettangoli/fe": "1.0.0-rc3",
     "jempl": "0.3.2-rc2",
     "js-yaml": "^4.1.0",
     "oxc-parser": "^0.112.0",
