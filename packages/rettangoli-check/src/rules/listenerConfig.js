@@ -9,7 +9,7 @@ import { getModelFilePath, getYamlPathLine, isObjectRecord } from "./shared.js";
 import {
   validateElementIdForRefs,
   validateEventConfig as validateFeEventConfig,
-} from "@rettangoli/fe/contracts";
+} from "../core/fe-contracts.js";
 import { parseSync } from "oxc-parser";
 import { parseNamedExportedFunctions } from "../core/exportedFunctions.js";
 const GLOBAL_REF_KEYS = new Set(["window", "document"]);

@@ -1,6 +1,6 @@
 import { load as loadYaml } from "js-yaml";
 import { parseSync } from "oxc-parser";
-import { collectBindingNames as collectFeBindingNames } from "@rettangoli/fe/contracts";
+import { collectBindingNames as collectFeBindingNames } from "./fe-contracts.js";
 import { parse as parseJempl } from "jempl";
 import { parseElementKey as parseYahtmlElementKey } from "yahtml";
 

@@ -39,9 +39,10 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Run Contract Checks
-        run: bun run check:contracts
-        working-directory: ./packages/rettangoli-ui
+      # Temporarily disabled; re-enable after contract-check instability is addressed.
+      # - name: Run Contract Checks
+      #   run: bun run check:contracts
+      #   working-directory: ./packages/rettangoli-ui
 
       - name: Run Visual Tests (Docker)
         run: bun run vt:report

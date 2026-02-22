@@ -37,7 +37,7 @@
     "verify:vt-bundle": "rg -q 'customElements\\.define\\(\"rtgl-button\"' vt/static/public/main.js",
     "prepack": "npm run build",
     "vt:generate": "bun run build:dev && rtgl vt generate",
-    "vt:docker": "bun run build:dev && bash -lc 'IMAGE=\"han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc16\"; docker pull \"$IMAGE\" >/dev/null 2>&1 || IMAGE=\"han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc15\"; docker run --rm --user $(id -u):$(id -g) -v \"$PWD:/app\" -w /app \"$IMAGE\" rtgl vt screenshot'",
+    "vt:docker": "bun run build:dev && bash -lc 'IMAGE=\"han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc27\"; docker pull \"$IMAGE\" >/dev/null 2>&1 || IMAGE=\"han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc26\"; docker run --rm --user $(id -u):$(id -g) -v \"$PWD:/app\" -w /app \"$IMAGE\" rtgl vt screenshot'",
     "vt:report": "bun run vt:docker && rtgl vt report",
     "vt:accept": "rtgl vt accept",
     "serve": "bunx serve .rettangoli/vt/_site"
