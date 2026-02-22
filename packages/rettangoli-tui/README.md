@@ -47,9 +47,15 @@ Included core primitives:
 `rtgl-table` supports:
 
 - `:data=${{ columns, rows }}` (same shape as `@rettangoli/ui` table data)
-- columns: `{ key, label }[]`
+- columns: `{ key, label|header|title, width?, align?, headerAlign?, truncate? }[]`
+- `width`: number (chars), percentage string (`"30%"`), or flex (`"*"` / `"2*"`)
+- `align`: `left|right|center` for body cells
+- `headerAlign`: optional header alignment override (defaults to `align`)
+- `truncate`: `ellipsis` (default) or `clip`
 - rows: object array (supports nested keys like `user.name`)
 - `:selectedIndex=${index}` for highlighted row
+- `variant="boxed"` (default) or `variant="plain"`
+- `showHeader=false` to hide the header row
 - `w=f` for full terminal width
 
 `rtgl-selector-dialog` supports:
@@ -107,6 +113,28 @@ Service behavior:
 - `null` means user canceled (`Esc` or `q`)
 - while open, dialog captures input globally (component handlers do not receive keys)
 - keyboard: `Tab` / `Shift+Tab` focus, `Enter` action/newline, `Esc` cancel, `Ctrl+S` submit primary action
+
+Global selector helper:
+
+```js
+const selected = await deps.ui.selector({
+  title: "Select Environment",
+  options: [
+    { value: "local", label: "Local" },
+    { value: "staging", label: "Staging" },
+    { value: "production", label: "Production" },
+  ],
+  selectedValue: "staging",
+  size: "md",
+});
+
+if (selected) {
+  console.log(selected.value, selected.label, selected.index);
+}
+```
+
+- returns `Promise<{ value, label, raw, index } | null>`
+- implemented as imperative global UI flow, consistent with dialog keyboard controls
 
 ## Using `rtgl-selector-dialog` Primitive (Manual)
 

@@ -805,6 +805,33 @@ const createDialogRequestState = (request) => {
   return requestState;
 };
 
+const createSelectorRequestState = (request) => {
+  const options = normalizeSelectOptions(request.options);
+  const selectedValue = request.selectedValue ?? request.value;
+  const selectedIndex = Number(request.selectedIndex);
+  const selectedByValue = options.findIndex((option) => option.value === String(selectedValue ?? ""));
+  const resolvedIndex = selectedByValue >= 0
+    ? selectedByValue
+    : (Number.isInteger(selectedIndex)
+      ? clamp(selectedIndex, 0, Math.max(0, options.length - 1))
+      : 0);
+
+  return {
+    requestType: "selector",
+    title: String(request.title || "Select Option"),
+    description: String(request.description || request.message || ""),
+    hint: request.hint || "ArrowUp/ArrowDown choose, Enter select, Esc cancel",
+    size: request.size || "md",
+    w: request.w,
+    h: request.h,
+    x: request.x,
+    y: request.y,
+    options,
+    selectedIndex: resolvedIndex,
+    resolve: request.resolve,
+  };
+};
+
 const resolveDialogFrame = ({
   requestState,
   contentLineCount,
@@ -1152,6 +1179,124 @@ const renderDialogOverlay = (requestState) => {
   };
 };
 
+const resolveSelectorFrame = ({
+  requestState,
+  optionCount,
+  terminalWidth,
+  terminalHeight,
+}) => {
+  const size = resolveDialogSize(requestState.size);
+  if (size === "f") {
+    return {
+      width: terminalWidth,
+      height: terminalHeight,
+      x: 1,
+      y: 1,
+    };
+  }
+
+  const maxWidth = Math.max(24, terminalWidth - 2);
+  const maxHeight = Math.max(10, terminalHeight - 2);
+  const preset = SIZE_PRESETS[size] || SIZE_PRESETS.md;
+
+  const widthValue = toNumber(requestState.w);
+  const presetWidth = Math.floor(terminalWidth * preset.widthRatio);
+  const defaultWidth = clamp(
+    presetWidth,
+    Math.min(preset.minWidth, maxWidth),
+    Math.min(preset.maxWidth, maxWidth),
+  );
+  const width = clamp(widthValue ?? defaultWidth, 24, maxWidth);
+
+  const heightValue = toNumber(requestState.h);
+  const autoHeight = clamp(
+    optionCount + 7,
+    10,
+    Math.min(preset.maxHeight, maxHeight),
+  );
+  const height = clamp(heightValue ?? autoHeight, 10, maxHeight);
+
+  const defaultX = Math.max(1, Math.floor((terminalWidth - width) / 2) + 1);
+  const defaultY = Math.max(1, Math.floor((terminalHeight - height) / 2) + 1);
+  const xValue = toNumber(requestState.x);
+  const yValue = toNumber(requestState.y);
+  const x = clamp(xValue ?? defaultX, 1, Math.max(1, terminalWidth - width + 1));
+  const y = clamp(yValue ?? defaultY, 1, Math.max(1, terminalHeight - height + 1));
+
+  return {
+    width,
+    height,
+    x,
+    y,
+  };
+};
+
+const renderSelectorOverlay = (requestState) => {
+  const terminalSize = resolveTerminalSize();
+  const frame = resolveSelectorFrame({
+    requestState,
+    optionCount: requestState.options.length,
+    terminalWidth: terminalSize.width,
+    terminalHeight: terminalSize.height,
+  });
+
+  const width = frame.width;
+  const innerWidth = Math.max(6, width - 4);
+  const optionRows = Math.max(1, frame.height - 7);
+  const options = requestState.options;
+  const safeSelectedIndex = clamp(
+    Number(requestState.selectedIndex) || 0,
+    0,
+    Math.max(0, options.length - 1),
+  );
+
+  const maxStart = Math.max(0, options.length - optionRows);
+  const startIndex = clamp(
+    safeSelectedIndex - Math.floor(optionRows / 2),
+    0,
+    maxStart,
+  );
+
+  const top = `╭${"─".repeat(width - 2)}╮`;
+  const titleLine = `│ ${ansi.bold(pad(truncate(requestState.title, innerWidth), innerWidth))} │`;
+  const hintSource = requestState.description || requestState.hint || "";
+  const hintLine = `│ ${ansi.dim(pad(truncate(hintSource, innerWidth), innerWidth))} │`;
+  const divider = `├${"─".repeat(width - 2)}┤`;
+
+  const optionLines = [];
+  for (let rowIndex = 0; rowIndex < optionRows; rowIndex += 1) {
+    const optionIndex = startIndex + rowIndex;
+    const option = options[optionIndex];
+    if (!option) {
+      optionLines.push(`│ ${" ".repeat(innerWidth)} │`);
+      continue;
+    }
+
+    const prefix = optionIndex === safeSelectedIndex ? "> " : "  ";
+    const text = `${prefix}${String(option.label || option.value || "")}`.replace(/\s*\n+\s*/g, " ");
+    const content = pad(truncate(text, innerWidth), innerWidth);
+    const styled = optionIndex === safeSelectedIndex
+      ? ansi.bgCyan(ansi.fgBlack(content))
+      : content;
+    optionLines.push(`│ ${styled} │`);
+  }
+
+  if (options.length === 0 && optionLines.length > 0) {
+    optionLines[0] = `│ ${ansi.dim(pad("(no options)", innerWidth))} │`;
+  }
+
+  const selectedLabel = options[safeSelectedIndex]?.label || "(none)";
+  const footerLine = `│ ${ansi.dim(pad(truncate(`Selected: ${selectedLabel}`, innerWidth), innerWidth))} │`;
+  const bottom = `╰${"─".repeat(width - 2)}╯`;
+
+  return {
+    __rtglOverlay: true,
+    x: frame.x,
+    y: frame.y,
+    lines: [top, titleLine, hintLine, divider, ...optionLines, divider, footerLine, bottom],
+  };
+};
+
 export const createGlobalTuiService = ({ requestRender = () => {} } = {}) => {
   const queue = [];
   let activeRequest = null;
@@ -1161,7 +1306,10 @@ export const createGlobalTuiService = ({ requestRender = () => {} } = {}) => {
       return;
     }
 
-    activeRequest = createDialogRequestState(queue.shift());
+    const nextRequest = queue.shift();
+    activeRequest = nextRequest?.requestType === "selector"
+      ? createSelectorRequestState(nextRequest)
+      : createDialogRequestState(nextRequest);
     requestRender();
   };
 
@@ -1213,6 +1361,7 @@ export const createGlobalTuiService = ({ requestRender = () => {} } = {}) => {
     dialog: (options = {}) => {
       return new Promise((resolve) => {
         queue.push({
+          requestType: "dialog",
           form: options.form,
           defaultValues: options.defaultValues,
           context: options.context,
@@ -1230,6 +1379,27 @@ export const createGlobalTuiService = ({ requestRender = () => {} } = {}) => {
         openNext();
       });
     },
+    selector: (options = {}) =>
+      new Promise((resolve) => {
+        queue.push({
+          requestType: "selector",
+          title: options.title,
+          description: options.description,
+          message: options.message,
+          hint: options.hint,
+          size: options.size || "md",
+          w: options.w,
+          h: options.h,
+          x: options.x,
+          y: options.y,
+          selectedValue: options.selectedValue,
+          value: options.value,
+          selectedIndex: options.selectedIndex,
+          options: options.options,
+          resolve,
+        });
+        openNext();
+      }),
     closeAll: () => {
       if (activeRequest) {
         resolveActive(null);
@@ -1254,6 +1424,55 @@ export const createGlobalTuiService = ({ requestRender = () => {} } = {}) => {
     }
 
     keyEvent?.preventDefault?.();
+
+    if (activeRequest.requestType === "selector") {
+      if (keyName === "escape" || keyName === "q") {
+        resolveActive(null);
+        return true;
+      }
+
+      if (keyName === "up" || keyName === "left") {
+        if (activeRequest.options.length > 0) {
+          activeRequest.selectedIndex = (
+            activeRequest.selectedIndex - 1 + activeRequest.options.length
+          ) % activeRequest.options.length;
+        }
+        requestRender();
+        return true;
+      }
+
+      if (keyName === "down" || keyName === "right") {
+        if (activeRequest.options.length > 0) {
+          activeRequest.selectedIndex = (
+            activeRequest.selectedIndex + 1
+          ) % activeRequest.options.length;
+        }
+        requestRender();
+        return true;
+      }
+
+      if (keyName === "enter" || (keyEvent?.ctrlKey && keyName === "s")) {
+        const index = clamp(
+          Number(activeRequest.selectedIndex) || 0,
+          0,
+          Math.max(0, activeRequest.options.length - 1),
+        );
+        const selected = activeRequest.options[index];
+        if (!selected) {
+          resolveActive(null);
+          return true;
+        }
+        resolveActive({
+          value: selected.value,
+          label: selected.label,
+          raw: selected.raw,
+          index,
+        });
+        return true;
+      }
+
+      return true;
+    }
 
     if (keyName === "escape" || keyName === "q") {
       resolveActive(null);
@@ -1438,6 +1657,9 @@ export const createGlobalTuiService = ({ requestRender = () => {} } = {}) => {
   const renderOverlayCommands = () => {
     if (!activeRequest) {
       return "";
+    }
+    if (activeRequest.requestType === "selector") {
+      return createOverlayCommands(renderSelectorOverlay(activeRequest));
     }
     return createOverlayCommands(renderDialogOverlay(activeRequest));
   };
