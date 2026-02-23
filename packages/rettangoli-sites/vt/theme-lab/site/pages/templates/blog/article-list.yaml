@@ -1,0 +1,70 @@
+---
+template: blog-article-list
+title: Engineering Blog
+description: Release notes, guides, and implementation details from the Rettangoli team.
+_bind:
+  seo: seo
+posts:
+  - title: Theme Tokens
+    date: 2026-02-20
+    excerpt: Why class-based themes simplify customization for app teams.
+    author: Luciano Wu
+    readingTime: 6 min read
+    href: /templates/blog/reducing-friction/
+    imageSrc: /public/blog-theme.svg
+    imageAlt: Theme class styling post cover
+  - title: Testing Docs Templates with VT Baselines
+    date: 2026-02-18
+    excerpt: Add desktop and mobile VT specs so docs layout regressions are visible.
+    author: Team Rettangoli
+    readingTime: 5 min read
+    href: /docs/getting-started/
+    imageSrc: /public/blog-vt.svg
+    imageAlt: VT docs testing post cover
+  - title: Shipping Reusable Site Partials Across Docs, Blog, and Landing Pages
+    date: 2026-02-16
+    excerpt: Keep top nav and footer as independent imports for all page types.
+    author: Team Rettangoli
+    readingTime: 4 min read
+    href: /templates/landing-features/
+    imageSrc: /public/blog-partials.svg
+    imageAlt: Shared partials post cover
+  - title: Route-Level Layout Contracts
+    date: 2026-02-14
+    excerpt: Define shared contracts once and compose them across templates.
+    author: Product Team
+    readingTime: 8 min read
+    href: /templates/blog/reducing-friction/
+    imageSrc: /public/blog-theme.svg
+    imageAlt: Layout contracts post cover
+  - title: Mobile-First Screenshot Baselines in VT for Team Workflows
+    date: 2026-02-12
+    excerpt: Add mobile references from day one to reduce visual regressions.
+    author: QA Team
+    readingTime: 5 min read
+    href: /docs/getting-started/
+    imageSrc: /public/blog-vt.svg
+    imageAlt: Mobile VT baseline post cover
+  - title: Template Imports vs Local Overrides in Shared Static Site Architecture
+    date: 2026-02-10
+    excerpt: Choose a clear ownership model for reusable external templates.
+    author: Platform Team
+    readingTime: 7 min read
+    href: /templates/landing-features/
+    imageSrc: /public/blog-partials.svg
+    imageAlt: Import overrides post cover
+  - title: Building Stable Design Tokens
+    date: 2026-02-08
+    excerpt: Token decisions that keep contrast and spacing predictable.
+    author: Design Systems
+    readingTime: 9 min read
+    href: /themes/slate-dark/
+    imageSrc: /public/blog-theme.svg
+    imageAlt: Design tokens post cover
+  - title: Release Checklist for Template Packs with Versioning, Coverage, and Delivery Gates
+    date: 2026-02-06
+    excerpt: Validate partials, templates, and references before each publish.
+    author: Release Engineering
+    readingTime: 6 min read
+    href: /docs/getting-started/
+---

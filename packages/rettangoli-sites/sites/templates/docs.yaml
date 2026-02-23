@@ -26,7 +26,7 @@
                   items: ${docs.items}
             - rtgl-view md-hide xl-show hide w=272:
             - rtgl-view w="1fg" ah=c:
-                - rtgl-view pv="lg" lg-w="100vw" w="720" ph="lg" sv id="content-container":
+                - rtgl-view pv="lg" lg-w=f w="720" ph="lg" sv id="content-container":
                     - rtgl-view hide md-show h=56:
                     - rtgl-text s="h1" mb="lg": ${title}
                     - "${content}"

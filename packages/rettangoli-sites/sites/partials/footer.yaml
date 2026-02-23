@@ -1,0 +1,30 @@
+- rtgl-view w=f h=80:
+- rtgl-view w=f bwt=xs bc=bo ah=c mb=lg:
+    - rtgl-view w="1160" xl-w="1024" lg-w=f ph=lg pv=xl g=lg:
+        - rtgl-view md-d=v d=h wrap g=xl w=f av=s:
+            - rtgl-view w="1fg" md-w=f g=sm:
+                - rtgl-text s=lg fw=bold: ${brand.label}
+                - rtgl-text c=mu-fg: ${brand.tagline}
+            - rtgl-view w="1fg" md-w=f md-d=v d=h wrap g=xl ah=e:
+                - $for column in columns:
+                    - rtgl-view w="1fg" md-w=f md-g=xl g=lg:
+                        - rtgl-text s=sm c=mu-fg: ${column.title}
+                        - $for link in column.links:
+                            - $if link.target:
+                                - rtgl-view href="${link.href}" target="${link.target}" d=h av=c cur=p:
+                                    - rtgl-text s=sm h-c=fg h-cur=p: ${link.label}
+                              $else:
+                                - rtgl-view href="${link.href}" d=h av=c cur=p:
+                                    - rtgl-text s=sm h-c=fg h-cur=p: ${link.label}
+        - rtgl-view md-d=v d=h wrap md-g=lg g=md md-av=s av=c w=f:
+            - rtgl-view md-w=f ah=s:
+                - rtgl-text s=sm c=mu-fg: ${copyright}
+            - rtgl-view w=1fg md-hide:
+            - rtgl-view md-d=v d=h wrap md-g=lg g=md md-ah=s ah=e md-w=f:
+                - $for link in legalLinks:
+                    - $if link.target:
+                        - rtgl-view href="${link.href}" target="${link.target}" d=h av=c ah=s md-w=f cur=p:
+                            - rtgl-text s=sm c=mu-fg h-c=fg h-cur=p: ${link.label}
+                      $else:
+                        - rtgl-view href="${link.href}" d=h av=c ah=s md-w=f cur=p:
+                            - rtgl-text s=sm c=mu-fg h-c=fg h-cur=p: ${link.label}

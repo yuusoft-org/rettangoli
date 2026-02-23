@@ -9,7 +9,7 @@
         - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc13/dist/rettangoli-iife-ui.min.js":
     - body class="${themeClass}":
         - rtgl-view w="f" ah="c" pv="lg" ph="lg":
-            - rtgl-view w="f" md-w="100vw" lg-w="1024" w="1160" g="md":
+            - rtgl-view w="1160" xl-w="1024" lg-w=f g="md":
                 - rtgl-view w="f" p="lg" g="sm" bw="xs" bc="bo" bgc="bg":
                     - rtgl-text s="h1": ${title}
                     - rtgl-text c="mu-fg": Verify typography, controls, surfaces, table contrast, and semantic states.

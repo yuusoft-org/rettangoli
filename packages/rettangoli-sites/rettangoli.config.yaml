@@ -5,9 +5,19 @@ vt:
     start: bunx rtgl sites watch --root-dir ./vt/theme-lab/site --output-path _site --reload-mode full --quiet
   compareMethod: md5
   viewport:
-    id: desktop
-    width: 1280
-    height: 900
+    - id: desktop
+      width: 1440
+      height: 900
+    - id: tablet
+      width: 1024
+      height: 1200
+    - id: mobile
+      width: 430
+      height: 932
   sections:
     - title: Themes
       files: themes
+    - title: Docs Template
+      files: docs-template
+    - title: Site Templates
+      files: templates

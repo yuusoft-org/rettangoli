@@ -29,3 +29,6 @@ items:
       - id: sites-themes-and-css
         title: "Themes & CSS"
         href: "/sites/docs/reference/themes-and-css"
+      - id: sites-built-in-templates-and-partials
+        title: "Built-in Templates & Partials"
+        href: "/sites/docs/reference/built-in-templates-and-partials"

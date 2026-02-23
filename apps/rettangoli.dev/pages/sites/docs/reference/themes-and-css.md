@@ -47,4 +47,5 @@ Apply exactly one theme class on `body` (or `html`):
 
 - The bundle is a single CSS file with all classes.
 - Switching theme only requires changing the class name.
-- Templates in `sites/templates/base.yaml` and `sites/templates/docs.yaml` already reference this bundle.
+- Templates in `sites/templates/*.yaml` already reference this bundle.
+- See [Built-in Templates & Partials](/sites/docs/reference/built-in-templates-and-partials) for the full template list.

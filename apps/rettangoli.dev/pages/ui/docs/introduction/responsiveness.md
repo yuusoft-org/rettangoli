@@ -24,15 +24,45 @@ There is no `xs-` breakpoint prefix in Rettangoli UI.
 
 ## Breakpoint Resolution
 
-Breakpoint resolution is deterministic and follows this cascade order:
+Breakpoint resolution is deterministic and uses **downward fallback** (desktop-first).
 
-1. Base (unprefixed) attributes
-2. `xl-` overrides base at `<= 1280px`
-3. `lg-` overrides `xl-`/base at `<= 1024px`
-4. `md-` overrides `lg-`/`xl-`/base at `<= 768px`
-5. `sm-` overrides everything above at `<= 640px`
+Resolution order for each viewport:
 
-If the same attribute is set at multiple breakpoints, the smallest matching breakpoint wins.
+1. Use the current breakpoint value if defined.
+2. If missing, fall back to the next larger breakpoint.
+3. Continue falling back up to `xl-`, then base (unprefixed) value.
+4. Explicit value at a breakpoint always wins over fallback.
+
+Fallback chain by viewport:
+
+- `sm`: `sm-*` -> `md-*` -> `lg-*` -> `xl-*` -> base
+- `md`: `md-*` -> `lg-*` -> `xl-*` -> base
+- `lg`: `lg-*` -> `xl-*` -> base
+- `xl`: `xl-*` -> base
+
+Explicit examples:
+
+```html
+<rtgl-view w="1160" lg-w="1024"></rtgl-view>
+```
+
+- `>1280px`: `w="1160"` (base)
+- `1025px-1280px` (`xl`): `w="1160"` (fallback to base)
+- `<=1024px` (`lg`, `md`, `sm`): `w="1024"` (from `lg-w`)
+
+```html
+<rtgl-view p="xl" md-p="md"></rtgl-view>
+```
+
+- `>768px`: `p="xl"` (base)
+- `<=768px` (`md`, `sm`): `p="md"` (from `md-p`)
+
+```html
+<rtgl-view d="h" xl-d="v"></rtgl-view>
+```
+
+- `>1280px`: `d="h"` (base)
+- `<=1280px` (`xl`, `lg`, `md`, `sm`): `d="v"` (from `xl-d`)
 
 ## Usage
 
@@ -139,15 +169,17 @@ Here are some common examples:
 
 ## Best Practices
 
-1. **Desktop-First Base**: Define unprefixed styles for larger screens, then override them with `xl-`, `lg-`, `md-`, and `sm-`.
+1. **Desktop-First Base**: Define unprefixed styles for larger screens, then override where needed with `xl-`, `lg-`, `md-`, and `sm-`.
 
-2. **Know the Override Rule**: If multiple breakpoints match, the smallest matching prefix wins (`sm` > `md` > `lg` > `xl` > base).
+2. **Rely on Downward Fallback**: Define overrides at larger breakpoints when you want them to apply to smaller ones too.
 
-3. **Consistent Spacing**: Use responsive spacing to create appropriate white space for different screen sizes.
+3. **Know the Override Rule**: Explicit breakpoint values override fallback values at that breakpoint.
 
-4. **Flexible Layouts**: Combine responsive direction with flex-grow values for truly adaptive layouts.
+4. **Consistent Spacing**: Use responsive spacing to create appropriate white space for different screen sizes.
 
-5. **Responsive Visibility**: Use `show` and `hide` with breakpoint prefixes to control visibility. Pair `hide` with `sm-show` (or similar) for “only at this breakpoint” behavior.
+5. **Flexible Layouts**: Combine responsive direction with flex-grow values for truly adaptive layouts.
+
+6. **Responsive Visibility**: Use `show` and `hide` with breakpoint prefixes to control visibility. Pair `hide` with `sm-show` (or similar) for “only at this breakpoint” behavior.
 
 ```html codePreview
 <rtgl-view m="md">

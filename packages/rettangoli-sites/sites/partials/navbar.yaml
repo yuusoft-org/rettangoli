@@ -1,5 +1,5 @@
 - 'rtgl-view data-mobile-autohide="true" bwb=xs w=f ah=c pos=fix bgc=bg':
-    - rtgl-view md-w="100vw" lg-w="768" w="1024" d=h av=c h=64 ph=lg:
+    - rtgl-view md-w=f lg-w="768" w="1024" d=h av=c h=64 ph=lg:
         - rtgl-text: ${title}
         - rtgl-view w=1fg:
         - rtgl-view d=h av=c:

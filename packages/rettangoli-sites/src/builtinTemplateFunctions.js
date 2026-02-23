@@ -25,16 +25,20 @@ function formatDateImpl(value, format = 'YYYYMMDDHHmmss', useUtc = true) {
   }
 
   const read = (localGetter, utcGetter) => (useUtc ? utcGetter.call(date) : localGetter.call(date));
+  const monthIndex = read(date.getMonth, date.getUTCMonth);
+  const day = read(date.getDate, date.getUTCDate);
   const tokens = {
     YYYY: String(read(date.getFullYear, date.getUTCFullYear)),
-    MM: pad2(read(date.getMonth, date.getUTCMonth) + 1),
-    DD: pad2(read(date.getDate, date.getUTCDate)),
+    MMM: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][monthIndex],
+    MM: pad2(monthIndex + 1),
+    DD: pad2(day),
+    D: String(day),
     HH: pad2(read(date.getHours, date.getUTCHours)),
     mm: pad2(read(date.getMinutes, date.getUTCMinutes)),
     ss: pad2(read(date.getSeconds, date.getUTCSeconds)),
   };
 
-  return String(format).replace(/YYYY|MM|DD|HH|mm|ss/g, (token) => tokens[token]);
+  return String(format).replace(/YYYY|MMM|MM|DD|D|HH|mm|ss/g, (token) => tokens[token]);
 }
 
 function jsonStringify(value, space = 0) {
@@ -141,6 +145,32 @@ function sortImpl(value, key, order = 'asc') {
   });
 }
 
+function chunkImpl(value, size = 1, pad = false, fillValue = null) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const parsedSize = Number(size);
+  if (!Number.isFinite(parsedSize) || parsedSize <= 0) {
+    return [];
+  }
+
+  const chunkSize = Math.max(1, Math.trunc(parsedSize));
+  const rows = [];
+  for (let index = 0; index < value.length; index += chunkSize) {
+    rows.push(value.slice(index, index + chunkSize));
+  }
+
+  if (pad && rows.length > 0) {
+    const lastRow = rows[rows.length - 1];
+    while (lastRow.length < chunkSize) {
+      lastRow.push(fillValue);
+    }
+  }
+
+  return rows;
+}
+
 function mdImpl(content) {
   return {
     __html: markdownRenderer.render(String(content ?? '')),
@@ -156,6 +186,7 @@ export const builtinTemplateFunctions = {
   formatDate: formatDateImpl,
   now: (format = 'YYYYMMDDHHmmss', useUtc = true) => formatDateImpl(new Date(), format, useUtc),
   sort: sortImpl,
+  chunk: chunkImpl,
   md: mdImpl,
   toQueryString,
 };

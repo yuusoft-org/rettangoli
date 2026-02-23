@@ -140,7 +140,8 @@ Binding order:
 
 - Base template: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/base.yaml`
 - Docs template: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs.yaml`
-- Generic partials: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/{seo,navbar,mobile-nav,docs-sidebar}.yaml`
+- Landing/blog templates: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/{landing-features,blog-article-list,blog-article}.yaml`
+- Generic partials: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/{seo,navbar,mobile-nav,docs-sidebar,top-navbar,footer}.yaml`
 - Legacy docs partial (compat, flat path): `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-mobile-nav.yaml`
 
 See `sites/README.md` for full alias examples and required data contract.
@@ -189,12 +190,14 @@ Available in YAML templates/pages without extra setup:
 - `formatDate(value, format = "YYYYMMDDHHmmss", useUtc = true)`
 - `now(format = "YYYYMMDDHHmmss", useUtc = true)`
 - `sort(list, key, order = "asc")`
+- `chunk(list, size = 1, pad = false, fillValue = null)`
 - `md(content)`
 - `toQueryString(object)`
 
-`formatDate` tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`, `ss`.
+`formatDate` tokens: `YYYY`, `MMM`, `MM`, `DD`, `D`, `HH`, `mm`, `ss`.
 `decodeURI`/`decodeURIComponent` return the original input when decoding fails.
 `sort` supports `order` as `asc` or `desc` (default: `asc`), accepts dot-path keys (for example `data.date`), and returns a new array.
+`chunk` splits arrays into rows of `size`; with `pad = true`, the last row is padded with `fillValue`.
 `md` returns raw rendered HTML from Markdown for template insertion.
 
 ## Screenshots
