@@ -1,0 +1,7 @@
+---
+template: theme
+title: catppuccin-frappe
+themeClass: catppuccin-frappe
+---
+- rtgl-view hide:
+    - rtgl-text c="mu-fg": Theme verification page for catppuccin-frappe.

@@ -1,0 +1,7 @@
+---
+template: theme
+title: catppuccin-mocha
+themeClass: catppuccin-mocha
+---
+- rtgl-view hide:
+    - rtgl-text c="mu-fg": Theme verification page for catppuccin-mocha.

@@ -1,0 +1,7 @@
+---
+template: theme
+title: catppuccin-macchiato
+themeClass: catppuccin-macchiato
+---
+- rtgl-view hide:
+    - rtgl-text c="mu-fg": Theme verification page for catppuccin-macchiato.
