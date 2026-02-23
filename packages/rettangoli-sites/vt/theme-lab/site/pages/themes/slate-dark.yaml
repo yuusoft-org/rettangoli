@@ -1,0 +1,7 @@
+---
+template: theme
+title: slate-dark
+themeClass: slate-dark
+---
+- rtgl-view hide:
+    - rtgl-text c="mu-fg": Theme verification page for slate-dark.

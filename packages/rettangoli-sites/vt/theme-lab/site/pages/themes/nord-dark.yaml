@@ -1,0 +1,7 @@
+---
+template: theme
+title: nord-dark
+themeClass: nord-dark
+---
+- rtgl-view hide:
+    - rtgl-text c="mu-fg": Theme verification page for nord-dark.

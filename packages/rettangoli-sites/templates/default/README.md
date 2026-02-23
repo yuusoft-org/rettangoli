@@ -242,3 +242,22 @@ Everything in `static/` is copied to `_site/`:
 
 - `static/css/theme.css` → `_site/css/theme.css`
 - `static/images/logo.png` → `_site/images/logo.png`
+
+## Theme Classes
+
+`static/css/theme.css` now includes multiple themes in one file.
+Set exactly one class on `body` (or `html`) to choose the active palette.
+
+Examples:
+- `slate-dark` (default in starter templates)
+- `slate-light`
+- `mono-dark`
+- `mono-light`
+- `catppuccin-mocha`
+- `catppuccin-macchiato`
+- `catppuccin-frappe`
+- `catppuccin-latte`
+- `github-dark`
+- `github-light`
+- `nord-dark`
+- `nord-light`

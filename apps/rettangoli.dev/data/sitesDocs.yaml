@@ -26,3 +26,6 @@ items:
       - id: sites-template-functions
         title: "Template Functions"
         href: "/sites/docs/reference/template-functions"
+      - id: sites-themes-and-css
+        title: "Themes & CSS"
+        href: "/sites/docs/reference/themes-and-css"

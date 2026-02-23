@@ -1,0 +1,13 @@
+vt:
+  path: ./vt
+  url: http://127.0.0.1:3001
+  service:
+    start: bunx rtgl sites watch --root-dir ./vt/theme-lab/site --output-path _site --reload-mode full --quiet
+  compareMethod: md5
+  viewport:
+    id: desktop
+    width: 1280
+    height: 900
+  sections:
+    - title: Themes
+      files: themes

@@ -1,0 +1,7 @@
+---
+template: theme
+title: mono-dark
+themeClass: mono-dark
+---
+- rtgl-view hide:
+    - rtgl-text c="mu-fg": Theme verification page for mono-dark.

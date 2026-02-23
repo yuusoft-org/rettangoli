@@ -1,58 +1,18 @@
-html {
-  margin: 0;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  width: 100%;
-}
-
-html::-webkit-scrollbar {
-  display: none;
-}
-
-body::-webkit-scrollbar {
-  display: none;
-}
-
-* {
-  scrollbar-color: var(--input) transparent;
+/* Rettangoli Sites theme bundle. Apply one class to <body> or <html>. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  height: 100%;
-  width: 100%;
   margin: 0;
-  font-family: var(--font-family-sans);
-  display: flex;
-  flex-direction: column;
-  background-color: var(--background);
+  background: var(--background);
   color: var(--foreground);
-  overscroll-behavior: none;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-a {
-  color: var(--anchor-color);
-  text-decoration: var(--anchor-text-decoration);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
-  text-decoration-color: var(--muted-foreground);
-}
-
-a:hover {
-  color: var(--anchor-color-hover);
-  text-decoration: var(--anchor-text-decoration-hover);
-  text-decoration-color: var(--foreground);
-}
-
-::selection {
-  background-color: var(--accent);
 }
 
 :root {
-  --width-stretch: 100%;
+  color-scheme: light dark;
   --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
   --spacing-xs: 2px;
@@ -61,12 +21,12 @@ a:hover {
   --spacing-lg: 16px;
   --spacing-xl: 32px;
 
-  --border-radius-xs: 1px;
-  --border-radius-sm: 2px;
-  --border-radius-md: 4px;
-  --border-radius-lg: 8px;
-  --border-radius-xl: 16px;
-  --border-radius-f: 50%;
+  --border-radius-xs: 0;
+  --border-radius-sm: 0;
+  --border-radius-md: 0;
+  --border-radius-lg: 0;
+  --border-radius-xl: 0;
+  --border-radius-f: 0;
   --border-radius-full: 9999px;
 
   --border-width-xs: 1px;
@@ -75,17 +35,17 @@ a:hover {
   --border-width-lg: 8px;
   --border-width-xl: 16px;
 
-  --shadow-sm: 0px 2px 6px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
-  --shadow-md: 0px 5px 12px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
-  --shadow-lg: 0px 10px 24px rgba(0, 0, 0, .45), 0px 3px 5px rgba(0, 0, 0, .35), inset 0px .5px 0px rgba(255, 255, 255, .08), inset 0px 0px .5px rgba(255, 255, 255, .35);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
 
   --h1-font-size: 3rem;
-  --h1-font-weight: 600;
+  --h1-font-weight: 800;
   --h1-line-height: 1;
   --h1-letter-spacing: -.025em;
 
   --h2-font-size: 1.875rem;
-  --h2-font-weight: 500;
+  --h2-font-weight: 600;
   --h2-line-height: 2.25rem;
   --h2-letter-spacing: -.025em;
 
@@ -104,18 +64,18 @@ a:hover {
   --lg-line-height: 1.75rem;
   --lg-letter-spacing: normal;
 
-  --md-font-size: 1rem;
-  --md-font-weight: normal;
-  --md-line-height: 1.625rem;
+  --md-font-size: 1.0625rem;
+  --md-font-weight: 400;
+  --md-line-height: 1.5rem;
   --md-letter-spacing: normal;
 
   --sm-font-size: .875rem;
   --sm-font-weight: 400;
-  --sm-line-height: 1.25;
+  --sm-line-height: 1;
   --sm-letter-spacing: normal;
 
   --xs-font-size: .75rem;
-  --xs-font-weight: normal;
+  --xs-font-weight: 400;
   --xs-line-height: 1;
   --xs-letter-spacing: normal;
 
@@ -142,7 +102,6 @@ a:hover {
   --ring: oklch(0.556 0 0);
 }
 
-/* rtgl mono */
 .mono-light {
   --primary: #171717;
   --primary-foreground: #fafafa;
@@ -179,7 +138,6 @@ a:hover {
   --ring: #737373;
 }
 
-/* rtgl slate */
 .slate-light {
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
@@ -216,7 +174,6 @@ a:hover {
   --ring: oklch(0.556 0 0);
 }
 
-/* catppuccin */
 .catppuccin-latte {
   --primary: #1e66f5;
   --primary-foreground: #eff1f5;
@@ -289,7 +246,6 @@ a:hover {
   --ring: #b4befe;
 }
 
-/* common extras */
 .github-light {
   --background: #ffffff;
   --foreground: #1f2328;
@@ -360,82 +316,4 @@ a:hover {
   --border: #4c566a;
   --input: #4c566a;
   --ring: #88c0d0;
-}
-
-
-h1 {
-  font-size: var(--h1-font-size);
-  font-weight: var(--h1-font-weight);
-  line-height: var(--h1-line-height);
-  letter-spacing: var(--h1-letter-spacing);
-  margin-top: 32px;
-  margin-bottom: 16px;
-}
-
-h2 {
-  font-size: var(--h2-font-size);
-  font-weight: var(--h2-font-weight);
-  line-height: var(--h2-line-height);
-  letter-spacing: var(--h2-letter-spacing);
-  margin-top: 32px;
-  margin-bottom: 16px;
-}
-
-h3 {
-  font-size: var(--h3-font-size);
-  font-weight: var(--h3-font-weight);
-  line-height: var(--h3-line-height);
-  letter-spacing: var(--h3-letter-spacing);
-  margin-top: 32px;
-  margin-bottom: 16px;
-}
-
-h4 {
-  font-size: var(--h4-font-size);
-  font-weight: var(--h4-font-weight);
-  line-height: var(--h4-line-height);
-  letter-spacing: var(--h4-letter-spacing);
-  margin-top: 32px;
-  margin-bottom: 16px;
-}
-
-p {
-  font-size: var(--md-font-size);
-  font-weight: var(--md-font-weight);
-  line-height: var(--md-line-height);
-  letter-spacing: var(--md-letter-spacing);
-  margin-top: 0;
-  margin-bottom: 16px;
-}
-
-ul {
-  margin-top: 0;
-  margin-bottom: 16px;
-  margin-left: 4px;
-  padding-left: 16px;
-}
-
-li {
-  margin-bottom: 8px;
-  font-size: var(--md-font-size);
-  font-weight: var(--md-font-weight);
-  line-height: var(--md-line-height);
-  letter-spacing: var(--md-letter-spacing);
-}
-
-blockquote {
-  margin-top: 0;
-  margin-bottom: 16px;
-  margin-left: 0;
-  margin-right: 0;
-  padding-left: 16px;
-  border-left: 2px solid var(--foreground);
-}
-
-blockquote > p {
-  margin-bottom: 0px;
-}
-
-h1[id], h2[id], h3[id], h4[id], h5[id], h6[id] {
-  scroll-margin-top: 80px;
 }

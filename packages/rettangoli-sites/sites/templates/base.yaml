@@ -5,12 +5,12 @@
           seo: ${seo}
           title: ${title}
         - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc13/dist/themes/base.css":
-        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc13/dist/themes/theme-rtgl-slate.css":
+        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/themes/theme-rtgl-themes.css":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
         - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc13/dist/rettangoli-iife-ui.min.js":
         - script src="/public/rtgl-icons.js":
 
-    - body.dark:
+    - body.slate-dark:
         - rtgl-view:
             - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
                 - $partial: navbar

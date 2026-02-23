@@ -18,6 +18,16 @@ These files are distribution assets, not `@rettangoli/sites` runtime source code
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-sidebar.yaml`
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-mobile-nav.yaml` (legacy compat partial, flat path)
 
+## Published Theme Bundle
+
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/themes/theme-rtgl-themes.css`
+
+Apply one class to `body` or `html`, for example:
+- `slate-light`, `slate-dark`
+- `mono-light`, `mono-dark`
+- `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`, `catppuccin-mocha`
+- `github-light`, `github-dark`, `nord-light`, `nord-dark`
+
 ## Recommended Alias Map
 
 ```yaml

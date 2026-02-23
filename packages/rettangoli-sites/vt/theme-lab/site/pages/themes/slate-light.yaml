@@ -1,0 +1,7 @@
+---
+template: theme
+title: slate-light
+themeClass: slate-light
+---
+- rtgl-view hide:
+    - rtgl-text c="mu-fg": Theme verification page for slate-light.
