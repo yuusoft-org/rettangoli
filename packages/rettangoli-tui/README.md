@@ -17,7 +17,7 @@ import { createComponent, createTuiRuntime } from "@rettangoli/tui";
 
 - `createComponent(componentFiles, deps)` creates a TUI component class using FE contracts.
 - `createTuiRuntime({ componentRegistry })` renders registered components to terminal strings.
-- In interactive mode (`runtime.start(...)`), handlers receive `deps.ui.dialog(...)` for global imperative dialogs.
+- In interactive mode (`runtime.start(...)`), handlers receive `deps.ui.dialog(...)` and `deps.ui.selector(...)` for global imperative overlays.
 
 ## Default TUI Primitives
 
@@ -57,6 +57,30 @@ Included core primitives:
 - `variant="boxed"` (default) or `variant="plain"`
 - `showHeader=false` to hide the header row
 - `w=f` for full terminal width
+
+Table alignment recipe (recommended):
+
+```yaml
+- rtgl-table :data=taskTableData :selectedIndex=selectedTaskIndex w=f variant=plain: null
+```
+
+```js
+taskTableData: {
+  variant: "plain",
+  columns: [
+    { key: "title", header: "Title", width: "58%", truncate: "ellipsis" },
+    { key: "status", header: "Status", width: 12, align: "center", headerAlign: "center" },
+    { key: "assignee", header: "Assignee", width: "*", align: "right", truncate: "ellipsis" },
+  ],
+  rows,
+}
+```
+
+Notes:
+
+- use at least one fixed-width column for short tokens (`status`, `priority`)
+- use percentage for dominant text columns (`title`, `description`)
+- use one flex (`*`) column to absorb terminal resize remainder
 
 `rtgl-selector-dialog` supports:
 
@@ -135,6 +159,45 @@ if (selected) {
 
 - returns `Promise<{ value, label, raw, index } | null>`
 - implemented as imperative global UI flow, consistent with dialog keyboard controls
+- keyboard: `ArrowUp/ArrowDown` move, `Enter` or `Ctrl+S` confirm, `Esc` or `q` cancel
+
+Startup project-selector pattern (recommended):
+
+```js
+// handlers.js
+export const handleBeforeMount = (deps) => {
+  void (async () => {
+    deps.store.setStartupSelecting({ value: true });
+    deps.render();
+
+    const selected = await deps.ui.selector({
+      title: "Select Project",
+      options: projectOptions,
+      selectedValue: initialProjectId,
+      size: "md",
+    });
+
+    if (!selected) {
+      deps.stop?.();
+      return;
+    }
+
+    deps.store.setProjectContext({ projectId: selected.value });
+    deps.store.setStartupSelecting({ value: false });
+    deps.render();
+  })();
+};
+```
+
+```yaml
+# view.yaml
+- $if showMainContent:
+    - rtgl-text: ${titleBarLine}
+    - rtgl-text: ${tabsLine}
+    - rtgl-table :data=taskTableData w=f: null
+```
+
+Keep only the selector visible during startup by gating main content with a store flag.
 
 ## Using `rtgl-selector-dialog` Primitive (Manual)
 
@@ -151,6 +214,18 @@ Then implement key handling in your store/handlers for:
 - `ArrowUp` / `ArrowDown`
 - `Enter`
 - `Esc`
+
+Use `deps.ui.selector(...)` when:
+
+- selection should be global and imperative
+- you want standard overlay keyboard behavior without local component state wiring
+- startup flow should block screen rendering until a selection is made
+
+Use `rtgl-selector-dialog` when:
+
+- selection state must live in your component store
+- selector should be part of a larger declarative screen flow
+- you need full local control of keyboard/event handling
 
 For rich multiline input you can either:
 
@@ -182,6 +257,19 @@ import { deps } from "@rettangoli/tui/setup";
 ```
 
 This provides default TUI primitive renderers for common categories (`components`, `pages`, `layouts`).
+
+## Screen Layout Pattern
+
+For dashboard-style full-screen apps, a stable layout is:
+
+1. top bar (`rtgl-text`) for title/project
+2. tab row (`rtgl-text`) for active section
+3. optional filter/sort rows (`rtgl-text`)
+4. main content (`rtgl-table`, `rtgl-list`, or split `rtgl-view`)
+5. spacer rows to push controls to terminal bottom
+6. bottom controls line (`rtgl-text`)
+
+This keeps controls anchored at the last row while body content changes.
 
 ## Proof Of Concept
 
