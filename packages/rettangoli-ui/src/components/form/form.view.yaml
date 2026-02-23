@@ -67,7 +67,7 @@ template:
                       - $if field.type == "input-textarea":
                           - rtgl-textarea#field${field._idx} data-field-name=${field.name} w=f rows=${field.rows} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "select":
-                          - rtgl-select#field${field._idx} data-field-name=${field.name} w=f :options=flatFields[${field._arrIdx}].options ?no-clear=flatFields[${field._arrIdx}].noClear :selectedValue=#{field._selectedValue} :placeholder=#{field.placeholder} ?disabled=${field._disabled}: null
+                          - rtgl-select#field${field._idx} data-field-name=${field.name} w=f :options=flatFields[${field._arrIdx}].options ?no-clear=${field.noClear} :selectedValue=flatFields[${field._arrIdx}]._selectedValue :placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "color-picker":
                           - rtgl-color-picker#field${field._idx} data-field-name=${field.name} ?disabled=${field._disabled}: null
                       - $if field.type == "slider":

@@ -1,0 +1,80 @@
+---
+title: "Select Path Binding - Reset Defaults"
+description: Ensures select selectedValue and placeholder track form updates after defaultValues reset.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: update-select-bindings
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 860
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+  <rtgl-button data-testid="update-select-bindings">Update Select Defaults</rtgl-button>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '360');
+
+  form.defaultValues = {
+    status: 'draft',
+    owner: null,
+  };
+
+  form.form = {
+    title: 'Select Binding Reset',
+    description: 'Select bindings should follow form state after reset',
+    fields: [{
+      name: 'status',
+      type: 'select',
+      label: 'Status',
+      placeholder: 'Choose status',
+      options: [
+        { label: 'Draft', value: 'draft' },
+        { label: 'Published', value: 'published' },
+      ],
+    }, {
+      name: 'owner',
+      type: 'select',
+      label: 'Owner',
+      placeholder: 'Select owner',
+      options: [
+        { label: 'Alice', value: 'alice' },
+        { label: 'Bob', value: 'bob' },
+      ],
+    }],
+    actions: {
+      buttons: [],
+    },
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  document.querySelector('[data-testid="update-select-bindings"]').addEventListener('click', () => {
+    form.form = {
+      ...form.form,
+      fields: form.form.fields.map((field) => {
+        if (field.name === 'status') {
+          return { ...field, placeholder: 'Choose publication status' };
+        }
+        if (field.name === 'owner') {
+          return { ...field, placeholder: 'Choose reviewer' };
+        }
+        return field;
+      }),
+    };
+    form.defaultValues = {
+      status: 'published',
+      owner: null,
+    };
+    form.reset();
+  });
+</script>
