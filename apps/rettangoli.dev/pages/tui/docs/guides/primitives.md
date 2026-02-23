@@ -18,7 +18,7 @@ sidebarId: tui-primitives
 | `rtgl-divider` | Horizontal/vertical line | `w` (horizontal), `o=v` + `h` (vertical), `c` (custom char) |
 | `rtgl-dialog` | Floating overlay | `open`, `title`, `w`, `x`, `y` |
 | `rtgl-list` | Row list with highlight | `:items`, `:selectedIndex`, `w`, `marker`, `n` |
-| `rtgl-table` | Full-width table with row highlight | `:data`, `:selectedIndex`, `w`, `cw`, `highlight` |
+| `rtgl-table` | Full-width table with row highlight | `:data`, `:selectedIndex`, `w`, `variant`, `showHeader`, `highlight` |
 
 ## Example view
 
@@ -39,8 +39,16 @@ template:
 - Primitive names intentionally mirror `rtgl-*` naming from UI/FE ecosystem.
 - TUI primitives render terminal-native output and do not rely on ASCII placeholder layouts.
 
+## Global imperative UI helpers
+
+In interactive mode, handlers can call:
+
+- `deps.ui.dialog(options)` for form/dialog overlays
+- `deps.ui.selector(options)` for global single-choice overlays
+
+Use these when selection/editing should be global and not coupled to component-local dialog state.
+
 ## Next
 
 - [Dialog & Textarea](/tui/docs/guides/dialog-and-textarea)
 - [List & Table](/tui/docs/guides/list-and-table)
-

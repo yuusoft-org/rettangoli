@@ -98,9 +98,41 @@ When started with `runtime.start(...)`, handlers can use:
 
 - `deps.stop()` to end the session
 - `deps.openExternalEditor(options)` to suspend TUI, open editor, then resume
+- `deps.ui.dialog(options)` for imperative global forms/dialogs
+- `deps.ui.selector(options)` for imperative global single-choice selection
+
+## Startup selector-first flow (recommended)
+
+For project-based apps, show a global selector first, then render the dashboard.
+
+```js
+export const handleBeforeMount = (deps) => {
+  void (async () => {
+    deps.store.setStartupSelecting({ value: true });
+    deps.render();
+
+    const selected = await deps.ui.selector({
+      title: "Select Project",
+      options: projectOptions,
+      selectedValue: initialProjectId,
+      size: "md",
+    });
+
+    if (!selected) {
+      deps.stop?.();
+      return;
+    }
+
+    deps.store.setProjectContext({ projectId: selected.value });
+    deps.store.setStartupSelecting({ value: false });
+    deps.render();
+  })();
+};
+```
+
+In the view, gate the main screen so only the selector is visible during startup.
 
 ## Notes
 
 - Browser-only APIs (DOM, Custom Elements rendering, CSS layout) are not used.
 - Rendering is string/line based with ANSI styling and overlay support.
-

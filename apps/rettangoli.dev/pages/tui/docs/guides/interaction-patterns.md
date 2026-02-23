@@ -15,6 +15,7 @@ Recommended defaults:
 - `Enter`: confirm or insert line break (inside editor fields)
 - `Esc`: close dialog or cancel edit
 - `q`: quit current screen/app
+- `Tab` / `Shift+Tab`: cycle focus or tabs when supported
 
 ## Task list + table pattern
 
@@ -24,6 +25,26 @@ Use one `selectedTaskIndex` for both `rtgl-list` and `rtgl-table` so users see a
 - rtgl-list :items=taskListItems :selectedIndex=selectedTaskIndex w=f: null
 - rtgl-table :data=taskTableData :selectedIndex=selectedTaskIndex w=f: null
 ```
+
+## Startup selector-first pattern
+
+Use global imperative selector for the first interaction in project-based apps:
+
+```js
+const selected = await deps.ui.selector({
+  title: "Select Project",
+  options: projectOptions,
+  selectedValue: initialProjectId,
+  size: "md",
+});
+```
+
+Flow:
+
+1. Show selector before rendering main content.
+2. `Esc` cancels (optionally exits app).
+3. `Enter` confirms selection and opens dashboard.
+4. Keep a key (for example `p`) to reopen selector later.
 
 ## Inline title editing pattern
 
@@ -63,3 +84,15 @@ Keep one status message line (for example `Message: ...`) and update it after ev
 
 This gives users immediate confirmation without modal spam.
 
+## Dashboard layout pattern
+
+For dense operational screens, keep a stable vertical structure:
+
+1. title bar
+2. tabs row
+3. filter/sort rows (optional)
+4. main list/table/chat body
+5. spacer rows
+6. controls line at terminal bottom
+
+This prevents controls from jumping while body content changes.
