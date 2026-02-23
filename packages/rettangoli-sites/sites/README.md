@@ -36,6 +36,16 @@ Apply one class to `body` or `html`, for example:
 - `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`, `catppuccin-mocha`
 - `github-light`, `github-dark`, `nord-light`, `nord-dark`
 
+## Published Theme Bundle
+
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/themes/theme-rtgl-themes.css`
+
+Apply one class to `body` or `html`, for example:
+- `slate-light`, `slate-dark`
+- `mono-light`, `mono-dark`
+- `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`, `catppuccin-mocha`
+- `github-light`, `github-dark`, `nord-light`, `nord-dark`
+
 ## Recommended Alias Map
 
 ```yaml
