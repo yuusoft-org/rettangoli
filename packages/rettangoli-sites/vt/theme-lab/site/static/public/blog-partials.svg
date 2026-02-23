@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Shared Partials</title>
+  <desc id="desc">Abstract cover image for shared partials post.</desc>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2b2112"/>
+      <stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <path d="M0 490 C280 370 620 580 1200 420 L1200 630 L0 630 Z" fill="#111827" fill-opacity="0.45"/>
+  <text x="72" y="306" fill="#fff7ed" font-size="74" font-family="system-ui, sans-serif" font-weight="700">Shared Partials</text>
+  <text x="72" y="366" fill="#ffedd5" font-size="34" font-family="system-ui, sans-serif">Compose nav and footer once, reuse everywhere.</text>
+</svg>

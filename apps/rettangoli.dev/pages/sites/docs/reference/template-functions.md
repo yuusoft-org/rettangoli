@@ -21,6 +21,7 @@ Built-in template functions are available in YAML templates/pages with no extra 
 - `jsonStringify(value, space = 0)`
 - `toQueryString(object)`
 - `sort(list, key, order = "asc")`
+- `chunk(list, size = 1, pad = false, fillValue = null)`
 - `md(content)`
 
 ## Date helpers
@@ -31,13 +32,16 @@ Built-in template functions are available in YAML templates/pages with no extra 
 Supported date tokens:
 
 - `YYYY`
+- `MMM`
 - `MM`
 - `DD`
+- `D`
 - `HH`
 - `mm`
 - `ss`
 
 `sort` returns a new array and supports `asc`/`desc` order.
+`chunk` returns an array of arrays for row-based rendering and can pad the final row.
 `md` renders markdown and returns raw HTML content for template insertion.
 
 ## Examples

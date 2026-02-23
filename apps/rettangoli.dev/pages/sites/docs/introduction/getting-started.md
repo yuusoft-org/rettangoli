@@ -86,4 +86,5 @@ build:
 - [CLI](/sites/docs/reference/cli)
 - [Configuration](/sites/docs/reference/configuration)
 - [Themes & CSS](/sites/docs/reference/themes-and-css)
+- [Built-in Templates & Partials](/sites/docs/reference/built-in-templates-and-partials)
 - [Markdown & Frontmatter](/sites/docs/reference/markdown-and-frontmatter)

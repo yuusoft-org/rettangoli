@@ -1,0 +1,16 @@
+header:
+  label: Rettangoli Sites Docs
+  href: /docs/getting-started/
+items:
+  - title: Introduction
+    type: groupLabel
+    items:
+      - id: docs-getting-started
+        title: Getting Started
+        href: /docs/getting-started/
+  - title: Reference
+    type: groupLabel
+    items:
+      - id: docs-configuration
+        title: Configuration
+        href: /docs/reference/configuration/

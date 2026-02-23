@@ -18,7 +18,7 @@ For this release, replace `<version>` with `1.0.0-rc11`.
 Load UI base CSS + Sites theme CSS:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc13/dist/themes/base.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc15/dist/themes/base.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/themes/theme-rtgl-themes.css">
 ```
 
@@ -47,4 +47,5 @@ Apply exactly one theme class on `body` (or `html`):
 
 - The bundle is a single CSS file with all classes.
 - Switching theme only requires changing the class name.
-- Templates in `sites/templates/base.yaml` and `sites/templates/docs.yaml` already reference this bundle.
+- Templates in `sites/templates/*.yaml` already reference this bundle.
+- See [Built-in Templates & Partials](/sites/docs/reference/built-in-templates-and-partials) for the full template list.

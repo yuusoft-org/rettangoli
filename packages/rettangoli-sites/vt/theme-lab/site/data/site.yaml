@@ -1,0 +1,40 @@
+baseUrl: http://127.0.0.1:3001
+navbar:
+  brand:
+    label: Rettangoli
+    href: /
+  items:
+    - label: Docs
+      href: /docs/getting-started/
+    - label: Templates
+      href: /templates/landing-features/
+    - label: Blog
+      href: /templates/blog/article-list/
+  cta:
+    label: Get Started
+    href: /docs/getting-started/
+  github:
+    href: https://github.com/yuusoft-org/rettangoli
+footer:
+  brand:
+    label: Rettangoli
+    tagline: Build static docs, blogs, and landing pages from YAML and Markdown.
+  columns:
+    - title: Product
+      links:
+        - label: Themes
+          href: /themes/slate-dark/
+        - label: Templates
+          href: /templates/landing-features/
+    - title: Resources
+      links:
+        - label: Documentation
+          href: /docs/getting-started/
+        - label: Blog
+          href: /templates/blog/article-list/
+        - label: Terms
+          href: /docs/getting-started/
+        - label: Privacy
+          href: /docs/getting-started/
+  legalLinks: []
+  copyright: © 2026 Rettangoli.

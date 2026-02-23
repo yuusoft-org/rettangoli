@@ -1,0 +1,32 @@
+---
+template: landing-features
+title: Landing Page with Features
+_bind:
+  seo: seo
+landing:
+  title: Build Product Pages Faster
+  subtitle: Ship docs, launch pages, and blogs using reusable Rettangoli Sites templates.
+  actions:
+    - label: Start Building
+      href: /docs/getting-started/
+    - label: Browse Themes
+      href: /themes/slate-dark/
+      variant: se
+  features:
+    - title: File-based authoring
+      description: Keep content in Markdown and YAML and generate static output.
+    - title: Reusable imports
+      description: Load templates and partials from jsDelivr in any project.
+    - title: Visual regression checks
+      description: Validate all templates with VT references before release.
+  metrics:
+    - value: 5 templates
+      label: Available out of the box
+    - value: 2 partials
+      label: Shared layout building blocks
+    - value: 1 command
+      label: Capture screenshots with vt screenshot
+---
+- rtgl-view w=f p=lg bw=xs bc=bo bgc=se g=sm:
+    - rtgl-text s=h3: Why this layout
+    - rtgl-text c=se-fg: Keeps hero, feature cards, and conversion actions in one template.

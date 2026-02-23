@@ -1,6 +1,6 @@
-# Themes VT Lab
+# Sites VT Lab
 
-This folder is a visual lab for validating `@rettangoli/sites` theme classes with `@rettangoli/vt`.
+This folder is a visual lab for validating `@rettangoli/sites` theme classes and built-in templates with `@rettangoli/vt`.
 
 ## Commands
 
@@ -16,6 +16,12 @@ bunx rtgl sites watch --root-dir ./vt/theme-lab/site --output-path _site --reloa
 # Capture theme screenshots (VT starts/stops watch service automatically)
 bunx rtgl vt screenshot --group themes
 
+# Capture docs-template screenshots
+bunx rtgl vt screenshot --group docs-template
+
+# Capture built-in template screenshots
+bunx rtgl vt screenshot --group templates
+
 # Compare/report screenshots
 bunx rtgl vt report --group themes
 ```
@@ -29,3 +35,20 @@ Theme pages under `/themes/<theme-class>/` for:
 - `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`, `catppuccin-mocha`
 - `github-light`, `github-dark`
 - `nord-light`, `nord-dark`
+
+Viewport coverage is configured centrally in `rettangoli.config.yaml` and applies to specs by default:
+
+- `desktop` (`1440x900`)
+- `tablet` (`1024x1200`)
+- `mobile` (`430x932`)
+
+Docs template coverage under `/docs/...` includes:
+
+- default docs layout in all configured viewports
+- mobile menu open state (kept as a mobile-only override)
+
+Built-in template coverage under `/templates/...` includes:
+
+- landing page with features template
+- blog article list template
+- blog article template

@@ -1,18 +1,5 @@
 /* Rettangoli Sites theme bundle. Apply one class to <body> or <html>. */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background: var(--background);
-  color: var(--foreground);
-}
-
 :root {
-  color-scheme: light dark;
   --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
   --spacing-xs: 2px;

@@ -1,0 +1,21 @@
+---
+title: docs-getting-started-mobile-menu-open
+url: /docs/getting-started/
+description: Docs template mobile overlay opened via menu button.
+skipInitialScreenshot: true
+viewport:
+  id: docs-mobile
+  width: 390
+  height: 844
+steps:
+  - action: wait
+    ms: 1000
+  - action: select
+    testId: mobile-menu-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 300
+  - action: screenshot
+---
+<div></div>

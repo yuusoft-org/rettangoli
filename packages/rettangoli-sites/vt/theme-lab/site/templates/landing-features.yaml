@@ -1,0 +1,50 @@
+- html lang="en":
+    - head:
+        - $partial: seo
+          page: ${page}
+          seo: ${seo}
+          title: ${title}
+        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc15/dist/themes/base.css":
+        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/themes/theme-rtgl-themes.css":
+        - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc15/dist/rettangoli-iife-ui.min.js":
+        - script src="/public/rtgl-icons.js":
+
+    - body.slate-dark:
+        - rtgl-view pos=abs edge=t ah=c bgc=bg:
+            - $partial: top-navbar
+              brand: ${site.navbar.brand}
+              items: ${site.navbar.items}
+              cta: ${site.navbar.cta}
+              github: ${site.navbar.github}
+        - rtgl-view w=f ah=c:
+            - rtgl-view h=64:
+            - rtgl-view w="1160" xl-w="1024" lg-w=f ph=lg pt=lg pb=xl g=xl:
+                - rtgl-view g=md:
+                    - rtgl-text s=h1: ${landing.title}
+                    - rtgl-text s=lg c=mu-fg: ${landing.subtitle}
+                    - rtgl-view d=h wrap g=sm:
+                        - $for action in landing.actions:
+                            - $if action.variant:
+                                - rtgl-button v="${action.variant}" href="${action.href}": ${action.label}
+                              $else:
+                                - rtgl-button href="${action.href}": ${action.label}
+
+                - rtgl-view d=h md-d=v g=md w=f:
+                    - $for feature in landing.features:
+                        - rtgl-view w=1fg md-w=f p=lg bgc=se bw=xs bc=bo g=sm:
+                            - rtgl-text s=h4: ${feature.title}
+                            - rtgl-text c=se-fg: ${feature.description}
+
+                - rtgl-view d=h wrap g=md w=f:
+                    - $for metric in landing.metrics:
+                        - rtgl-view w=260 sm-w=f p=md bgc=bg bw=xs bc=bo g=xs:
+                            - rtgl-text s=xl: ${metric.value}
+                            - rtgl-text s=sm c=mu-fg: ${metric.label}
+
+                - "${content}"
+            - $partial: footer
+              brand: ${site.footer.brand}
+              columns: ${site.footer.columns}
+              legalLinks: ${site.footer.legalLinks}
+              copyright: ${site.footer.copyright}

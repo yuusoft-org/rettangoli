@@ -1,0 +1,17 @@
+---
+title: View - Responsive - No Upward Fallback
+description: Verifies smaller breakpoint values do not apply upward to larger ranges.
+viewport:
+  id: xl-range
+  width: 1100
+  height: 420
+specs:
+  - "`lg-*` values do not apply in the `xl` range when `xl-*` is missing."
+  - "Base value remains active in the `xl` range unless explicitly overridden by `xl-*`."
+---
+<rtgl-view w="f" p="md" g="md">
+  <rtgl-text s="sm">At 1100px (`xl` range), `w=\"220\" lg-w=\"120\"` should remain 220.</rtgl-text>
+  <rtgl-view bgc="mu" p="sm" g="sm">
+    <rtgl-view bgc="ac" h="24" w="220" lg-w="120"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>

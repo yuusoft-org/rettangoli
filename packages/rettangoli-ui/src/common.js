@@ -24,9 +24,9 @@ const styleMap = {
   p: "padding",
   ph: "padding-left padding-right",
   pv: "padding-top padding-bottom",
-  g: "gap",
-  gv: "row-gap",
-  gh: "column-gap",
+  g: "gap --rtgl-flex-gap",
+  gv: "row-gap --rtgl-flex-gap",
+  gh: "column-gap --rtgl-flex-gap",
   bw: "border-width",
   bwt: "border-top-width",
   bwr: "border-right-width",
@@ -152,7 +152,7 @@ const endsWithFlexGrowUnit = (inputStr) => {
 };
 
 const dimensionWithUnit = (dimension) => {
-  if (dimension === undefined) {
+  if (dimension === undefined || dimension === null) {
     return;
   }
 
@@ -253,6 +253,8 @@ export {
 export {
   responsiveStyleSizes,
   createResponsiveStyleBuckets,
+  getResponsiveAttribute,
+  hasResponsiveAttribute,
 } from "./common/responsive.js";
 
 export {

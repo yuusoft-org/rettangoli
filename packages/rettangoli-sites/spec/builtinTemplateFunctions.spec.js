@@ -40,8 +40,10 @@ describe('builtin template functions', () => {
         '- p id="json-pretty": "${jsonStringify(site.meta, 2)}"',
         '- p id="date-custom": "${formatDate(\'2024-03-15T13:45:09Z\', \'YYYY/MM/DD HH:mm:ss\')}"',
         '- p id="date-compact": "${formatDate(\'2024-03-15T13:45:09Z\', \'YYYYMMDDHHmmss\')}"',
+        '- p id="date-human": "${formatDate(\'2025-01-05T00:00:00Z\', \'MMM D, YYYY\')}"',
         '- p id="sorted-latest": "${jsonStringify(sort(releases.items, \'publishedAt\', \'desc\'))}"',
         '- p id="sorted-nested-latest": "${jsonStringify(sort(posts.items, \'data.date\', \'desc\'))}"',
+        '- p id="chunked-rows": "${jsonStringify(chunk(releases.items, 2, true))}"',
         '- div id="md-snippet": "${md(\'**Hello**\')}"'
       ].join('\n'),
     });
@@ -59,8 +61,11 @@ describe('builtin template functions', () => {
     expect(html).toContain('&quot;name&quot;: &quot;Rettangoli&quot;');
     expect(html).toContain('2024/03/15 13:45:09');
     expect(html).toContain('20240315134509');
+    expect(html).toContain('Jan 5, 2025');
     expect(html).toContain('<p id="sorted-latest">[{&quot;version&quot;:&quot;1.0.0-rc13&quot;');
     expect(html).toContain('<p id="sorted-nested-latest">[{&quot;data&quot;:{&quot;version&quot;:&quot;post-3&quot;');
+    expect(html).toContain('<p id="chunked-rows">[[{&quot;version&quot;:&quot;1.0.0-rc11&quot;');
+    expect(html).toContain('&quot;version&quot;:&quot;1.0.0-rc12&quot;,&quot;publishedAt&quot;:&quot;2026-02-10T09:00:00Z&quot;},null]]</p>');
     expect(html).toContain('<div id="md-snippet"><p><strong>Hello</strong></p>');
   });
 });

@@ -32,6 +32,9 @@ describe('builtinTemplateFunctions unit', () => {
     expect(
       builtinTemplateFunctions.formatDate('2024-03-15T13:45:09Z', 'YYYYMMDDHHmmss')
     ).toBe('20240315134509');
+    expect(
+      builtinTemplateFunctions.formatDate('2025-01-05T00:00:00Z', 'MMM D, YYYY')
+    ).toBe('Jan 5, 2025');
   });
 
   it('returns empty string for invalid date input', () => {
@@ -79,6 +82,29 @@ describe('builtinTemplateFunctions unit', () => {
       .toEqual(['1.0.0-rc13', '1.0.0-rc12', '1.0.0-rc11']);
     expect(builtinTemplateFunctions.sort(list, 'data.date', 'asc').map((item) => item.data.version))
       .toEqual(['1.0.0-rc11', '1.0.0-rc12', '1.0.0-rc13']);
+  });
+
+  it('chunks arrays into fixed-size rows and can pad the last row', () => {
+    const items = [1, 2, 3, 4, 5];
+
+    expect(builtinTemplateFunctions.chunk(items, 3)).toEqual([
+      [1, 2, 3],
+      [4, 5],
+    ]);
+    expect(builtinTemplateFunctions.chunk(items, 3, true)).toEqual([
+      [1, 2, 3],
+      [4, 5, null],
+    ]);
+    expect(builtinTemplateFunctions.chunk(items, 3, true, '__empty__')).toEqual([
+      [1, 2, 3],
+      [4, 5, '__empty__'],
+    ]);
+  });
+
+  it('returns [] for invalid chunk inputs', () => {
+    expect(builtinTemplateFunctions.chunk(null, 3)).toEqual([]);
+    expect(builtinTemplateFunctions.chunk([1, 2, 3], 0)).toEqual([]);
+    expect(builtinTemplateFunctions.chunk([1, 2, 3], Number.NaN)).toEqual([]);
   });
 
   it('renders markdown to raw html payload', () => {

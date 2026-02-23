@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">VT Docs Testing</title>
+  <desc id="desc">Abstract cover image for VT testing post.</desc>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <rect x="76" y="74" width="330" height="230" rx="18" fill="#0b1220" fill-opacity="0.5"/>
+  <text x="72" y="332" fill="#e2e8f0" font-size="76" font-family="system-ui, sans-serif" font-weight="700">VT Coverage</text>
+  <text x="72" y="392" fill="#cbd5e1" font-size="36" font-family="system-ui, sans-serif">Automated screenshots for docs and templates.</text>
+</svg>

@@ -1,0 +1,10 @@
+- 'rtgl-view data-mobile-autohide="true" hide md-show pos=fix w=f h=56 bgc=bg av=c ph=lg d=h bwb=xs z=10 style="top:0;left:0"':
+    - 'a href="${headerHref}" style="text-decoration:none;display:contents;color:inherit;"':
+        - rtgl-text s=md: ${headerLabel}
+    - rtgl-view w=1fg:
+    - 'rtgl-view id="mobile-menu-btn" data-testid="mobile-menu-btn" cur=pointer aria-label="Open docs navigation" aria-controls="mobile-nav-overlay" aria-expanded="false"':
+        - rtgl-svg id="mobile-menu-icon" data-testid="mobile-menu-icon" wh=24 svg=menu cur=pointer:
+
+- 'rtgl-view id="mobile-nav-overlay" pos=fix w=f bgc=bg z=20 d=v hidden style="top:56px;left:0;height:calc(100vh - 56px)"':
+    - rtgl-view sv w=f h=f:
+        - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(header))}" items="${encodeURIComponent(jsonStringify(items))}" w=f bwr=none hide-header="true":

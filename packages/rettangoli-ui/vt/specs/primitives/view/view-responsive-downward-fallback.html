@@ -1,0 +1,33 @@
+---
+title: View - Responsive - Downward Fallback
+description: Verifies missing breakpoint attributes fall back downward to larger breakpoints.
+viewport:
+  id: sm-fallback
+  width: 620
+  height: 760
+specs:
+  - "`lg-*` values apply on smaller breakpoints when `md-*` and `sm-*` are not set."
+  - "`md-*` values apply on `sm` when `sm-*` is not set."
+  - "Derived alignment behavior uses resolved fallback direction (`md-ah` with `lg-d`)."
+---
+<rtgl-view w="f" p="md" g="md">
+  <rtgl-view bgc="mu" p="sm" g="sm">
+    <rtgl-text s="sm">`w="220" lg-w="120"` at 620px should use 120</rtgl-text>
+    <rtgl-view bgc="ac" h="24" w="220" lg-w="120"></rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view bgc="mu" p="sm" g="sm">
+    <rtgl-text s="sm">`p="lg" md-p="sm"` at 620px should use md fallback</rtgl-text>
+    <rtgl-view bgc="ac" p="lg" md-p="sm">
+      <rtgl-text s="sm">Padding fallback sample</rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view bgc="mu" p="sm" g="sm">
+    <rtgl-text s="sm">`md-ah="e"` should use `lg-d="h"` for alignment mapping</rtgl-text>
+    <rtgl-view w="260" h="96" bgc="de" p="sm" g="sm" lg-d="h" md-ah="e">
+      <rtgl-view wh="24" bgc="pr"></rtgl-view>
+      <rtgl-view wh="24" bgc="se"></rtgl-view>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>

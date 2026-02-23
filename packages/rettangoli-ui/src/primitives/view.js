@@ -9,6 +9,7 @@ import {
   createResponsiveStyleBuckets,
   responsiveStyleSizes,
   applyDimensionToStyleBucket,
+  getResponsiveAttribute,
 } from "../common.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
@@ -119,7 +120,6 @@ class RettangoliViewElement extends HTMLElement {
   updateStyles() {
     // Reset styles for fresh calculation
     this._styles = createResponsiveStyleBuckets();
-    const baseDirection = this.getAttribute("d");
 
     responsiveStyleSizes.forEach((size) => {
       const addSizePrefix = (tag) => {
@@ -173,7 +173,11 @@ class RettangoliViewElement extends HTMLElement {
       const direction = this.getAttribute(addSizePrefix("d"));
       const alignHorizontal = this.getAttribute(addSizePrefix("ah"));
       const alignVertical = this.getAttribute(addSizePrefix("av"));
-      const effectiveDirection = direction ?? baseDirection;
+      const effectiveDirection = getResponsiveAttribute({
+        element: this,
+        size,
+        attr: "d",
+      });
 
 
       if (direction === "h") {
