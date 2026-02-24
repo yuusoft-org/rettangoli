@@ -1,0 +1,21 @@
+---
+title: landing-features-mobile-menu-open
+url: /templates/landing-features/
+description: Landing template mobile navbar overlay opened via hamburger button.
+skipInitialScreenshot: true
+viewport:
+  id: landing-mobile
+  width: 390
+  height: 844
+steps:
+  - action: wait
+    ms: 900
+  - action: select
+    testId: mobile-menu-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 300
+  - action: screenshot
+---
+<div></div>

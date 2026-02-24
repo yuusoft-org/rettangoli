@@ -19,7 +19,8 @@
               cta: ${site.navbar.cta}
               github: ${site.navbar.github}
         - rtgl-view w=f ah=c:
-            - rtgl-view h=64:
+            - rtgl-view md-hide h=64:
+            - rtgl-view hide md-show h=56:
             - rtgl-view d=h g=xl w="1160" xl-w="1024" lg-w=f ph=lg pt=lg pb=xl:
                 - rtgl-view id=content-container w="1fg" g=md:
                     - rtgl-text s=h1 mt=xl mb=sm: ${title}
@@ -34,3 +35,4 @@
               columns: ${site.footer.columns}
               legalLinks: ${site.footer.legalLinks}
               copyright: ${site.footer.copyright}
+        - script src="/public/mobile-nav.js":

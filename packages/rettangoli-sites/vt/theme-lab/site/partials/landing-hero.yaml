@@ -14,7 +14,7 @@
     - $if image:
         - $if image.src:
             - 'rtgl-view w=f mb=xl style="aspect-ratio: 16 / 9"':
-                - rtgl-image w=f h=f of=cov br=md src="${image.src}" alt="${image.alt}":
+                - 'rtgl-image w=f h=f of=cov br=md style="max-width:100%;display:block" src="${image.src}" alt="${image.alt}"':
           $else:
             - 'rtgl-view w=f bw=xs bc=bo bgc=se br=md mb=xl ah=c av=c style="aspect-ratio: 16 / 9"':
                 - rtgl-text c=se-fg: Hero image
