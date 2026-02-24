@@ -46,11 +46,12 @@ imports:
 
 ## Data Contract
 
-Templates that include the shared nav/footer expect:
+Shared fields used by built-in templates:
 
-- `site.navbar.brand` (`label`, `href`)
+- `site.baseUrl`
+- `site.navbar.brand` (`label`, `href`) for top-navbar templates
 - `site.navbar.items[]` (`label`, `href`, optional `target`)
-- `site.navbar.cta` (`label`, `href`)
+- `site.navbar.ctas[]` (or fallback `site.navbar.cta`) with `label`, `href`, optional `variant`, optional `target`
 - `site.navbar.github.href` (optional)
 - `site.footer.brand` (`label`, `tagline`)
 - `site.footer.columns[]` (`title`, `links[]`)
@@ -59,6 +60,12 @@ Templates that include the shared nav/footer expect:
 
 Template-specific fields:
 
-- `landing-features`: `landing.title`, `landing.subtitle`, `landing.actions[]`, `landing.features[]`, `landing.metrics[]`
-- `blog-article-list`: `description`, `posts[]` with optional `imageSrc` and `imageAlt`
-- `blog-article`: `category`, `readingTime`, `description`, `author`, `date`, optional `updatedAt`
+- `base`: `title`, `page.url`, `seo.*`, `site.baseUrl`, `site.navbar.title`
+- `docs`: `title`, `sidebarId`, `docs.header`, `docs.items`, plus `page.url`, `seo.*`, `site.baseUrl`
+- `landing-features`: `landing.title`, `landing.featuresTitle`, optional `landing.subtitle`, `landing.actions[]`, `landing.image`, `landing.featuresSubtitle`, `landing.features[]`, optional `landing.cta`
+- `blog-article-list`: `title`, `description`, `posts[]` (`title`, `date`, `author`, `href`, optional `imageSrc`, `imageAlt`)
+- `blog-article`: `title`, `author`, `date`, optional `category`, `description`, `readingTime`, `updatedAt`
+
+For machine-readable contracts, use:
+
+- [Data Contract Schemas](/sites/docs/reference/data-contract-schemas)
