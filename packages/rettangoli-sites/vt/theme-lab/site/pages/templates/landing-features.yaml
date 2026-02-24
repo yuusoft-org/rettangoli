@@ -7,26 +7,51 @@ landing:
   title: Build Product Pages Faster
   subtitle: Ship docs, launch pages, and blogs using reusable Rettangoli Sites templates.
   actions:
-    - label: Start Building
-      href: /docs/getting-started/
     - label: Browse Themes
       href: /themes/slate-dark/
       variant: se
+    - label: Start Building
+      href: /docs/getting-started/
+      variant: pr
+  image:
+    src: /public/blog-vt.svg
+    alt: Product and documentation workflow preview
+  featuresTitle: Purpose-Built For Creator Workflows
+  featuresSubtitle: Every section pairs visual context with practical guidance and concrete next steps.
   features:
-    - title: File-based authoring
-      description: Keep content in Markdown and YAML and generate static output.
-    - title: Reusable imports
-      description: Load templates and partials from jsDelivr in any project.
-    - title: Visual regression checks
-      description: Validate all templates with VT references before release.
-  metrics:
-    - value: 5 templates
-      label: Available out of the box
-    - value: 2 partials
-      label: Shared layout building blocks
-    - value: 1 command
-      label: Capture screenshots with vt screenshot
+    - title: Define And Publish Your Product Story
+      subtitle: Start with structured blocks so your story is easy to scan and update over time.
+      image:
+        src: /public/blog-theme.svg
+        alt: Product story section preview
+      bullets:
+        - Align headline and supporting narrative around one clear business outcome.
+        - Keep section-level copy concise so visitors reach key actions faster.
+        - Reuse stable content blocks across landing, docs, and blog templates.
+    - title: Build Trust Through Consistent Presentation
+      subtitle: Consistency across pages improves clarity for both first-time and returning visitors.
+      imageRight: true
+      image:
+        src: /public/blog-vt.svg
+        alt: Visual consistency section preview
+      bullets:
+        - Use shared spacing and typography tokens for every major section.
+        - Present features with repeatable structure so comparison is effortless.
+        - Keep CTA language and hierarchy consistent across templates.
+    - title: Scale Updates Without Breaking Layout
+      subtitle: Section-level partials let teams change content quickly with lower regression risk.
+      image:
+        src: /public/blog-partials.svg
+        alt: Reusable partial section preview
+      bullets:
+        - Ship layout improvements once and propagate them across pages.
+        - Validate updates with screenshot checks before publishing.
+        - Keep authoring simple by editing YAML data instead of hardcoded markup.
+  cta:
+    title: Ready To Launch Faster?
+    subtitle: Reuse the same partial-based approach to ship landing, docs, and blog pages with less maintenance.
+    cta:
+      label: Start Building
+      href: /docs/getting-started/
+      variant: pr
 ---
-- rtgl-view w=f p=lg bw=xs bc=bo bgc=se g=sm:
-    - rtgl-text s=h3: Why this layout
-    - rtgl-text c=se-fg: Keeps hero, feature cards, and conversion actions in one template.

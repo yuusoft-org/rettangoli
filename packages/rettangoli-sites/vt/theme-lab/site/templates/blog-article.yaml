@@ -5,7 +5,7 @@
           seo: ${seo}
           title: ${title}
         - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc15/dist/themes/base.css":
-        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/themes/theme-rtgl-themes.css":
+        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/themes/theme-rtgl-themes.css":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
         - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc15/dist/rettangoli-iife-ui.min.js":
         - script src="/public/rtgl-icons.js":
@@ -15,31 +15,24 @@
             - $partial: top-navbar
               brand: ${site.navbar.brand}
               items: ${site.navbar.items}
+              ctas: ${site.navbar.ctas}
               cta: ${site.navbar.cta}
               github: ${site.navbar.github}
         - rtgl-view w=f ah=c:
-            - rtgl-view h=64:
+            - rtgl-view md-hide h=64:
+            - rtgl-view hide md-show h=56:
             - rtgl-view d=h g=xl w="1160" xl-w="1024" lg-w=f ph=lg pt=lg pb=xl:
                 - rtgl-view id=content-container w="1fg" g=md:
-                    - rtgl-view d=h wrap g=sm av=c:
-                        - rtgl-text s=sm c=mu-fg: ${category}
-                        - rtgl-text s=sm c=mu-fg: "."
-                        - rtgl-text s=sm c=mu-fg: ${readingTime}
-                    - rtgl-text s=h1: ${title}
-                    - rtgl-text c=mu-fg: ${description}
-                    - rtgl-view d=h wrap g=sm av=c:
-                        - rtgl-text s=sm c=mu-fg: By ${author}
-                        - rtgl-text s=sm c=mu-fg: "."
-                        - rtgl-text s=sm c=mu-fg: ${formatDate(date, "MMM D, YYYY")}
-                        - $if updatedAt:
-                            - rtgl-text s=sm c=mu-fg: "."
-                            - rtgl-text s=sm c=mu-fg: Updated ${formatDate(updatedAt, "MMM D, YYYY")}
-                    - rtgl-view h=1 bgc=bo w=f:
+                    - rtgl-text s=h1 mt=xl mb=sm: ${title}
+                    - rtgl-text s=sm c=mu-fg: ${author}
+                    - rtgl-text s=sm c=mu-fg: ${date}
+                    - rtgl-view h=1 bgc=mu op=0.5 w=f mt=lg mb=xl:
                     - "${content}"
-                - rtgl-view lg-hide w=280:
-                    - rtgl-page-outline id=page-outline target-id=content-container:
+                - 'rtgl-view lg-hide w=280 style="position: sticky; top: 88px; align-self: flex-start; height: calc(100vh - 88px)"':
+                    - rtgl-page-outline id=page-outline target-id=content-container offset-top=96:
             - $partial: footer
               brand: ${site.footer.brand}
               columns: ${site.footer.columns}
               legalLinks: ${site.footer.legalLinks}
               copyright: ${site.footer.copyright}
+        - script src="/public/mobile-nav.js":

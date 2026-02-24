@@ -210,6 +210,16 @@ Use VT against your generated site:
 2. Add `vt` config in `rettangoli.config.yaml`.
 3. Run `rtgl vt generate`, `rtgl vt report`, and `rtgl vt accept`.
 
+Docker runtime (recommended for stable Playwright/browser versions):
+
+```bash
+IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc27"
+docker pull "$IMAGE"
+docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" rtgl vt screenshot
+docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" rtgl vt report
+docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" rtgl vt accept
+```
+
 Example:
 
 ```yaml

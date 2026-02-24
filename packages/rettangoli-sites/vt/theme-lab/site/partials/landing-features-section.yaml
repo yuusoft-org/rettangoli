@@ -1,0 +1,53 @@
+- rtgl-view w=f g=xl pv=xl:
+    - rtgl-view w=f g=lg ah=c pv=xl:
+        - rtgl-text s=h2 ta=c w=f mb=md: ${title}
+        - $if subtitle:
+            - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${subtitle}
+
+    - $if items:
+        - rtgl-view w=f g=xl pt=xl:
+            - $for feature in items:
+                - $if feature.imageRight:
+                    - rtgl-view d=h md-d=v g=xl w=f av=c pv=xl:
+                        - rtgl-view w=1fg md-w=f g=lg:
+                            - rtgl-text s=h3 mb=sm: ${feature.title}
+                            - $if feature.subtitle:
+                                - rtgl-text s=lg c=mu-fg mb=lg: ${feature.subtitle}
+                            - $if feature.bullets:
+                                - rtgl-view g=md mt=sm:
+                                    - $for bullet in feature.bullets:
+                                        - rtgl-view d=h g=md av=s:
+                                            - rtgl-text c=mu-fg: •
+                                            - rtgl-text c=mu-fg w=1fg: ${bullet}
+                        - rtgl-view w=1fg md-w=f:
+                            - $if feature.image:
+                                - $if feature.image.src:
+                                    - rtgl-image w=f h=360 md-h=280 of=cov br=md src="${feature.image.src}" alt="${feature.image.alt}":
+                                  $else:
+                                    - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                                        - rtgl-text c=se-fg: Feature image
+                              $else:
+                                - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                                    - rtgl-text c=se-fg: Feature image
+                  $else:
+                    - rtgl-view d=h md-d=v g=xl w=f av=c pv=xl:
+                        - rtgl-view w=1fg md-w=f:
+                            - $if feature.image:
+                                - $if feature.image.src:
+                                    - rtgl-image w=f h=360 md-h=280 of=cov br=md src="${feature.image.src}" alt="${feature.image.alt}":
+                                  $else:
+                                    - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                                        - rtgl-text c=se-fg: Feature image
+                              $else:
+                                - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                                    - rtgl-text c=se-fg: Feature image
+                        - rtgl-view w=1fg md-w=f g=lg:
+                            - rtgl-text s=h3 mb=sm: ${feature.title}
+                            - $if feature.subtitle:
+                                - rtgl-text s=lg c=mu-fg mb=lg: ${feature.subtitle}
+                            - $if feature.bullets:
+                                - rtgl-view g=md mt=sm:
+                                    - $for bullet in feature.bullets:
+                                        - rtgl-view d=h g=md av=s:
+                                            - rtgl-text c=mu-fg: •
+                                            - rtgl-text c=mu-fg w=1fg: ${bullet}

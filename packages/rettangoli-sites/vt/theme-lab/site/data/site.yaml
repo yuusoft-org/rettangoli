@@ -10,9 +10,13 @@ navbar:
       href: /templates/landing-features/
     - label: Blog
       href: /templates/blog/article-list/
-  cta:
-    label: Get Started
-    href: /docs/getting-started/
+  ctas:
+    - label: Get Started
+      href: /docs/getting-started/
+      variant: se
+    - label: Start Building
+      href: /templates/landing-features/
+      variant: pr
   github:
     href: https://github.com/yuusoft-org/rettangoli
 footer:

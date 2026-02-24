@@ -26,6 +26,24 @@ bunx rtgl vt screenshot --group templates
 bunx rtgl vt report --group themes
 ```
 
+## Docker Commands
+
+Use Docker for consistent Playwright runtime across local and CI:
+
+```bash
+IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc27"
+docker pull "$IMAGE"
+
+# Capture all sections (themes + docs-template + templates)
+docker run --rm --user $(id -u):$(id -g) -v "$PWD:/workspace" -w /workspace "$IMAGE" rtgl vt screenshot
+
+# Compare and generate report
+docker run --rm --user $(id -u):$(id -g) -v "$PWD:/workspace" -w /workspace "$IMAGE" rtgl vt report
+
+# Accept candidate screenshots to vt/reference
+docker run --rm --user $(id -u):$(id -g) -v "$PWD:/workspace" -w /workspace "$IMAGE" rtgl vt accept
+```
+
 ## What it covers
 
 Theme pages under `/themes/<theme-class>/` for:
