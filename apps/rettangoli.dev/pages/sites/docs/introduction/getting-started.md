@@ -51,7 +51,13 @@ title: Home
 This page is authored in Markdown.
 ```
 
-## 4. Run
+## 4. Understand Template Sources
+
+- `rtgl sites init --template ...` chooses a scaffold template for project creation.
+- Current scaffold template set is `default`.
+- Reusable built-in templates like `landing-features`, `blog-article-list`, and `blog-article` are imported aliases from jsDelivr via `sites.config.yaml` (they are not valid `init --template` values).
+
+## 5. Run
 
 Development watch server:
 
@@ -67,7 +73,7 @@ npm run build
 
 Default output directory is `_site/`.
 
-## 5. Optional config
+## 6. Optional config
 
 Add `sites.config.yaml` when you need markdown/build options:
 

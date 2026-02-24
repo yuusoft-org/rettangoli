@@ -28,6 +28,13 @@ Options:
 
 - `-t, --template <name>` template name (default: `default`)
 
+Important:
+
+- `rtgl sites init --template ...` only selects scaffold templates bundled with the CLI.
+- For current releases, that scaffold set is `default`.
+- Built-in page templates like `landing-features`, `blog-article-list`, and `blog-article` are **import aliases** configured in `sites.config.yaml`, not `init` template names.
+- See [Built-in Templates & Partials](/sites/docs/reference/built-in-templates-and-partials) for import URLs and data contracts.
+
 ## `build`
 
 ```bash
