@@ -32,3 +32,6 @@ items:
       - id: sites-built-in-templates-and-partials
         title: "Built-in Templates & Partials"
         href: "/sites/docs/reference/built-in-templates-and-partials"
+      - id: sites-data-contract-schemas
+        title: "Data Contract Schemas"
+        href: "/sites/docs/reference/data-contract-schemas"

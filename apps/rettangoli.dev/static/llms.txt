@@ -64,9 +64,103 @@ This file is a curated index for LLM-based tools. Prefer linked docs over guessi
 - https://rettangoli.dev/vt/docs/reference/sites-integration.md
 
 ## Sites (Rettangoli Sites)
+- https://rettangoli.dev/sites/docs/introduction/introduction.md
+- https://rettangoli.dev/sites/docs/introduction/getting-started.md
 - https://rettangoli.dev/sites/docs/reference/cli.md
 - https://rettangoli.dev/sites/docs/reference/configuration.md
 - https://rettangoli.dev/sites/docs/reference/markdown-and-frontmatter.md
+- https://rettangoli.dev/sites/docs/reference/template-functions.md
+- https://rettangoli.dev/sites/docs/reference/themes-and-css.md
+- https://rettangoli.dev/sites/docs/reference/built-in-templates-and-partials.md
+- https://rettangoli.dev/sites/docs/reference/data-contract-schemas.md
+
+## Sites Quick Start (No Guessing)
+Use this exact flow.
+
+1. Monorepo docs site (`apps/rettangoli.dev`)
+   - `bun install` (repo root)
+   - `cd apps/rettangoli.dev`
+   - `bun run dev` (watch + serve on `http://localhost:3001`)
+   - `bun run build` (output: `apps/rettangoli.dev/_site`)
+
+2. New standalone site
+   - `bunx rtgl sites init my-site --template default`
+   - `cd my-site`
+   - `bunx rtgl sites watch`
+   - `bunx rtgl sites build`
+
+## Sites Agent Bootstrap (If You Only Receive This File + A Prompt)
+When asked to start a new `rtgl-sites` project, do this exact sequence:
+
+1. Scaffold
+   - `bunx rtgl sites init <project-name> --template default`
+   - `cd <project-name>`
+2. Configure imports in `sites.config.yaml` using the alias map below (all pre-provided templates/partials).
+3. Create/update `data/site.yaml`, `data/seo.yaml`, and page files to match the selected template schema.
+4. Validate page/template data against `data-contract.schema.yaml` (`$defs/template.*` and `$defs/partial.*`).
+5. Run `bunx rtgl sites watch` for development and `bunx rtgl sites build` for production output.
+
+Default output path: `_site/`.
+
+## Sites Templates (Use These, Don’t Invent New Ones First)
+- CLI scaffold template: `default`
+- Templates inside scaffolded `default`: `base`, `post`
+- Built-in import templates:
+  - `base`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/base.yaml`
+  - `docs`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/docs.yaml`
+  - `landing-features`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/landing-features.yaml`
+  - `blog-article-list`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/blog-article-list.yaml`
+  - `blog-article`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/blog-article.yaml`
+- `apps/rettangoli.dev` local templates:
+  - `tui-documentation`: `apps/rettangoli.dev/templates/tui-documentation.yaml`
+  - `ansi-json-documentation`: `apps/rettangoli.dev/templates/ansi-json-documentation.yaml`
+
+## Sites Pre-Provided Partials (Use These)
+- `seo`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/seo.yaml`
+- `navbar`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/navbar.yaml`
+- `mobile-nav`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/mobile-nav.yaml`
+- `docs-sidebar`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/docs-sidebar.yaml`
+- `docs-mobile-nav`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/docs-mobile-nav.yaml`
+- `top-navbar`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/top-navbar.yaml`
+- `landing-hero`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/landing-hero.yaml`
+- `landing-features-section`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/landing-features-section.yaml`
+- `landing-cta`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/landing-cta.yaml`
+- `footer`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/footer.yaml`
+
+## Sites Alias Map (Copy Into `sites.config.yaml`)
+```yaml
+imports:
+  templates:
+    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/base.yaml
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/docs.yaml
+    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/landing-features.yaml
+    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/blog-article-list.yaml
+    blog-article: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/blog-article.yaml
+  partials:
+    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/seo.yaml
+    navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/navbar.yaml
+    mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/mobile-nav.yaml
+    docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/docs-sidebar.yaml
+    docs-mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/docs-mobile-nav.yaml
+    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/top-navbar.yaml
+    landing-hero: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/landing-hero.yaml
+    landing-features-section: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/landing-features-section.yaml
+    landing-cta: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/landing-cta.yaml
+    footer: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/footer.yaml
+```
+
+## Sites Data Schemas
+- Canonical schema file: `packages/rettangoli-sites/sites/schemas/data-contract.schema.yaml`
+- Published schema URL: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/schemas/data-contract.schema.yaml`
+- Docs: `https://rettangoli.dev/sites/docs/reference/data-contract-schemas.md`
+- Use `$defs/template.*` for template data and `$defs/partial.*` for partial data.
+
+## rettangoli.dev Template Routing
+- `apps/rettangoli.dev/pages/index.yaml` -> `template: base`
+- `apps/rettangoli.dev/pages/sites/docs/**` -> `template: docs`
+- `apps/rettangoli.dev/pages/ui/docs/**`, `apps/rettangoli.dev/pages/fe/docs/**`, `apps/rettangoli.dev/pages/vt/docs/**` -> `template: docs`
+- `apps/rettangoli.dev/pages/tui/docs/**` -> `template: tui-documentation`
+- `apps/rettangoli.dev/pages/ansi-json/docs/**` -> `template: ansi-json-documentation`
 
 ## Notes
 - UI docs describe current attribute names and behavior; treat those as source of truth for component usage.

@@ -71,6 +71,21 @@ imports:
     footer: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/footer.yaml
 ```
 
+## JSON Schemas For Template/Partial Data
+
+Canonical schema file in this repo:
+
+- `sites/schemas/data-contract.schema.yaml`
+
+Published URL format:
+
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/schemas/data-contract.schema.yaml`
+
+Use `$defs` for individual contracts:
+
+- Templates: `template.base`, `template.docs`, `template.landingFeatures`, `template.blogArticleList`, `template.blogArticle`
+- Partials: `partial.seo`, `partial.navbar`, `partial.mobileNav`, `partial.docsSidebar`, `partial.docsMobileNav`, `partial.topNavbar`, `partial.landingHero`, `partial.landingFeaturesSection`, `partial.landingCta`, `partial.footer`
+
 ## Frontmatter Examples
 
 Docs page:
