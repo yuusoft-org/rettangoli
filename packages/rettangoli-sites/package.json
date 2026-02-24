@@ -32,7 +32,8 @@
     "vitest": "^4.0.15"
   },
   "scripts": {
-    "test": "vitest run --reporter=verbose"
+    "test": "vitest run --reporter=verbose",
+    "watch:theme-lab": "bunx rtgl sites watch --root-dir ./vt/theme-lab/site --output-path _site --reload-mode full"
   },
   "type": "module",
   "license": "MIT",

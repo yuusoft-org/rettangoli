@@ -24,6 +24,9 @@ These files are distribution assets, not `@rettangoli/sites` runtime source code
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-sidebar.yaml`
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-mobile-nav.yaml` (legacy compat partial, flat path)
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/top-navbar.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/landing-hero.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/landing-features-section.yaml`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/landing-cta.yaml`
 - `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/footer.yaml`
 
 ## Published Theme Bundle
@@ -62,6 +65,9 @@ imports:
     mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/mobile-nav.yaml
     docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-sidebar.yaml
     top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/top-navbar.yaml
+    landing-hero: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/landing-hero.yaml
+    landing-features-section: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/landing-features-section.yaml
+    landing-cta: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/landing-cta.yaml
     footer: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/footer.yaml
 ```
 
@@ -116,7 +122,7 @@ Templates and partials that include a top bar/footer expect:
 
 - `site.navbar.brand` with `label` and `href`
 - `site.navbar.items[]` with `label`, `href`, optional `target`
-- `site.navbar.cta` with `label` and `href`
+- `site.navbar.ctas[]` with `label`, `href`, optional `variant`, optional `target`
 - `site.navbar.github.href` (optional)
 - `site.footer.brand` with `label` and `tagline`
 - `site.footer.columns[]` with `title` and `links[]`
@@ -125,6 +131,6 @@ Templates and partials that include a top bar/footer expect:
 
 Template-specific data:
 
-- `landing-features` uses `landing.title`, `landing.subtitle`, `landing.actions[]`, `landing.features[]`, `landing.metrics[]`
+- `landing-features` uses `landing.title`, `landing.subtitle`, optional `landing.actions[]`, optional `landing.image.{src,alt}`, `landing.featuresTitle`, `landing.featuresSubtitle`, `landing.features[]` (each with `title`, optional `subtitle`, optional `image.{src,alt}`, optional `imageRight`, optional `bullets[]`), and optional `landing.cta` (`title`, optional `subtitle`, optional `svg`, optional `cta.{label,href,variant,newTab}`)
 - `blog-article-list` uses `description` and `posts[]` (`title`, `date`, `excerpt`, `author`, `readingTime`, `href`, optional `imageSrc` and `imageAlt`)
 - `blog-article` uses `category`, `readingTime`, `description`, `author`, `date`, and optional `updatedAt`

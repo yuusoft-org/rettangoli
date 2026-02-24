@@ -1,19 +1,38 @@
-- 'rtgl-view data-mobile-autohide="true" bwb=xs w=f ah=c pos=fix bgc=bg style="top:0;left:0"':
+- 'rtgl-view data-mobile-autohide="true" bwb=xs w=f ah=c pos=fix z=1000 bgc=bg style="top:0;left:0"':
     - rtgl-view w="1160" xl-w="1024" lg-w=f d=h av=c h=64 ph=lg g=lg:
-        - 'a href="${brand.href}" style="text-decoration:none;display:contents;color:inherit;"':
-            - rtgl-text s=lg fw=bold: ${brand.label}
-        - rtgl-view w=1fg:
         - rtgl-view d=h wrap g=lg av=c:
-            - $for item in items:
-                - $if item.target:
-                    - 'a href="${item.href}" target="${item.target}" style="text-decoration:none;display:contents;color:inherit;"':
-                        - rtgl-text c=mu-fg h-c=fg h-cur=p: ${item.label}
-                  $else:
-                    - 'a href="${item.href}" style="text-decoration:none;display:contents;color:inherit;"':
-                        - rtgl-text c=mu-fg h-c=fg h-cur=p: ${item.label}
-        - rtgl-view d=h g=sm av=c:
-            - $if github and github.href:
-                - 'a href="${github.href}" target="_blank" style="text-decoration:none;display:contents;color:inherit;"':
-                    - rtgl-svg.svg-icon wh=20 svg=github:
-            - $if cta and cta.label:
-                - rtgl-button v=se href="${cta.href}": ${cta.label}
+            - rtgl-view href="${brand.href}" cur=p:
+                - rtgl-text s=lg fw=bold: ${brand.label}
+            - rtgl-view d=h wrap g=sm av=c:
+                - $for item in items:
+                    - $if item.target:
+                        - rtgl-button v=lk href="${item.href}" new-tab rel="noopener noreferrer": ${item.label}
+                      $else:
+                        - rtgl-button v=lk href="${item.href}": ${item.label}
+        - rtgl-view w=1fg:
+        - rtgl-view d=h g=lg av=c:
+            - $if github:
+                - $if github.href:
+                    - rtgl-view href="${github.href}" new-tab cur=p:
+                        - rtgl-svg.svg-icon wh=20 svg=github:
+            - $if ctas:
+                - rtgl-view d=h g=lg av=c:
+                    - $for cta in ctas:
+                        - $if cta:
+                            - $if cta.label:
+                                - $if cta.href:
+                                    - $if cta.target:
+                                        - $if cta.variant:
+                                            - rtgl-button v="${cta.variant}" href="${cta.href}" new-tab rel="noopener noreferrer": ${cta.label}
+                                          $else:
+                                            - rtgl-button v=se href="${cta.href}" new-tab rel="noopener noreferrer": ${cta.label}
+                                      $else:
+                                        - $if cta.variant:
+                                            - rtgl-button v="${cta.variant}" href="${cta.href}": ${cta.label}
+                                          $else:
+                                            - rtgl-button v=se href="${cta.href}": ${cta.label}
+              $else:
+                - $if cta:
+                    - $if cta.label:
+                        - $if cta.href:
+                            - rtgl-button v=se href="${cta.href}": ${cta.label}

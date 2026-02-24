@@ -1,0 +1,21 @@
+- rtgl-view w=f g=xl pt=xl:
+    - rtgl-view w=f g=lg ah=c pv=xl:
+        - rtgl-text s=h1 ta=c w=f mb=sm: ${title}
+        - $if subtitle:
+            - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=lg: ${subtitle}
+        - $if actions:
+            - rtgl-view d=h wrap g=md w=f ah=c av=c mt=lg mb=xl:
+                - $for action in actions:
+                    - $if action.variant:
+                        - rtgl-button v="${action.variant}" href="${action.href}": ${action.label}
+                      $else:
+                        - rtgl-button href="${action.href}": ${action.label}
+
+    - $if image:
+        - $if image.src:
+            - 'rtgl-view w=f mb=xl style="aspect-ratio: 16 / 9"':
+                - rtgl-image w=f h=f of=cov br=md src="${image.src}" alt="${image.alt}":
+          $else:
+            - 'rtgl-view w=f bw=xs bc=bo bgc=se br=md mb=xl ah=c av=c style="aspect-ratio: 16 / 9"':
+                - rtgl-text c=se-fg: Hero image
+        - rtgl-view h=xl:

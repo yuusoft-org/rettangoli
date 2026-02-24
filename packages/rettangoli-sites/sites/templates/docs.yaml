@@ -28,7 +28,7 @@
             - rtgl-view w="1fg" ah=c:
                 - rtgl-view pv="lg" lg-w=f w="720" ph="lg" sv id="content-container":
                     - rtgl-view hide md-show h=56:
-                    - rtgl-text s="h1" mb="lg": ${title}
+                    - rtgl-text s="h1" mt="xl" mb="lg": ${title}
                     - "${content}"
                     - rtgl-view h=200:
             - 'rtgl-view xl-hide style="position: fixed; right: 0"':

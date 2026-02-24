@@ -15,6 +15,7 @@
             - $partial: top-navbar
               brand: ${site.navbar.brand}
               items: ${site.navbar.items}
+              ctas: ${site.navbar.ctas}
               cta: ${site.navbar.cta}
               github: ${site.navbar.github}
         - rtgl-view w=f ah=c:
@@ -34,7 +35,7 @@
                                 - rtgl-view d=h g=sm av=c w=f:
                                     - rtgl-text s=sm c=mu-fg: ${post.author}
                                     - rtgl-view w=1fg:
-                                    - rtgl-text s=sm c=mu-fg ta=r: ${formatDate(post.date, "MMM D, YYYY")}
+                                    - rtgl-text s=sm c=mu-fg ta=r: ${formatDate(post.date, "MM/DD/YYYY")}
             - rtgl-view hide lg-show w=f ph=lg pt=lg pb=xl g=lg:
                 - rtgl-view g=lg ah=c av=c w=f md-h=260 h=340:
                     - rtgl-text s=h1 ta=c w=f: ${title}
@@ -50,7 +51,7 @@
                                 - rtgl-view d=h g=sm av=c w=f:
                                     - rtgl-text s=sm c=mu-fg: ${post.author}
                                     - rtgl-view w=1fg:
-                                    - rtgl-text s=sm c=mu-fg ta=r: ${formatDate(post.date, "MMM D, YYYY")}
+                                    - rtgl-text s=sm c=mu-fg ta=r: ${formatDate(post.date, "MM/DD/YYYY")}
             - $partial: footer
               brand: ${site.footer.brand}
               columns: ${site.footer.columns}
