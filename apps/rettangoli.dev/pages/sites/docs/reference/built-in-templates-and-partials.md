@@ -9,7 +9,13 @@ sidebarId: sites-built-in-templates-and-partials
 
 `@rettangoli/sites` publishes reusable templates and partials under `sites/` so projects can import them directly from jsDelivr.
 
-For this release, replace `<version>` with `1.0.0-rc11`.
+For this release, replace `<version>` with `1.0.0-rc12`.
+
+## Init vs Import Templates
+
+- `rtgl sites init --template <name>` uses CLI scaffold templates only.
+- Built-in templates on this page (`landing-features`, `blog-article-list`, `blog-article`, etc.) are imported through `sites.config.yaml`.
+- Do not pass built-in import template names to `rtgl sites init --template`.
 
 ## Built-in Templates
 
@@ -33,15 +39,15 @@ All partial URLs follow:
 ```yaml
 imports:
   templates:
-    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/base.yaml
-    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/docs.yaml
-    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/landing-features.yaml
-    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/blog-article-list.yaml
-    blog-article: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/blog-article.yaml
+    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/base.yaml
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/docs.yaml
+    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/landing-features.yaml
+    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/blog-article-list.yaml
+    blog-article: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/blog-article.yaml
   partials:
-    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/seo.yaml
-    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/top-navbar.yaml
-    footer: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/footer.yaml
+    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/seo.yaml
+    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/top-navbar.yaml
+    footer: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/footer.yaml
 ```
 
 ## Data Contract
