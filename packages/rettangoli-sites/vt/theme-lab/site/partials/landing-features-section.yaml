@@ -5,11 +5,11 @@
             - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${subtitle}
 
     - $if items:
-        - 'rtgl-view w=f g=xl pt=xl style="row-gap: 128px"':
+        - rtgl-view w=f g=xl pt=xl:
             - $for feature in items:
                 - $if feature.imageRight:
-                    - 'rtgl-view d=h md-d=v g=xl w=f av=c pv=xl style="column-gap: 96px; row-gap: 56px"':
-                        - 'rtgl-view w=1fg g=lg style="min-width:0"':
+                    - rtgl-view d=h md-d=v g=xl w=f av=c pv=xl:
+                        - rtgl-view w=1fg md-w=f g=lg:
                             - rtgl-text s=h3 mb=sm: ${feature.title}
                             - $if feature.subtitle:
                                 - rtgl-text s=lg c=mu-fg mb=lg: ${feature.subtitle}
@@ -17,31 +17,31 @@
                                 - rtgl-view g=md mt=sm:
                                     - $for bullet in feature.bullets:
                                         - rtgl-view d=h g=md av=s:
-                                            - 'rtgl-view c=mu-fg style="width:8px;height:8px;min-width:8px;border-radius:999px;background:currentColor;margin-top:0.58em"':
+                                            - rtgl-text c=mu-fg: •
                                             - rtgl-text c=mu-fg w=1fg: ${bullet}
-                        - 'rtgl-view w=1fg style="min-width:0"':
+                        - rtgl-view w=1fg md-w=f:
                             - $if feature.image:
                                 - $if feature.image.src:
-                                    - 'rtgl-image w=f h=360 of=cov br=md style="max-width:100%;display:block" src="${feature.image.src}" alt="${feature.image.alt}"':
+                                    - rtgl-image w=f h=360 md-h=280 of=cov br=md src="${feature.image.src}" alt="${feature.image.alt}":
                                   $else:
-                                    - rtgl-view w=f h=360 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                                    - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
                                         - rtgl-text c=se-fg: Feature image
                               $else:
-                                - rtgl-view w=f h=360 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                                - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
                                     - rtgl-text c=se-fg: Feature image
                   $else:
-                    - 'rtgl-view d=h md-d=v g=xl w=f av=c pv=xl style="column-gap: 96px; row-gap: 56px"':
-                        - 'rtgl-view w=1fg style="min-width:0"':
+                    - rtgl-view d=h md-d=v g=xl w=f av=c pv=xl:
+                        - rtgl-view w=1fg md-w=f:
                             - $if feature.image:
                                 - $if feature.image.src:
-                                    - 'rtgl-image w=f h=360 of=cov br=md style="max-width:100%;display:block" src="${feature.image.src}" alt="${feature.image.alt}"':
+                                    - rtgl-image w=f h=360 md-h=280 of=cov br=md src="${feature.image.src}" alt="${feature.image.alt}":
                                   $else:
-                                    - rtgl-view w=f h=360 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                                    - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
                                         - rtgl-text c=se-fg: Feature image
                               $else:
-                                - rtgl-view w=f h=360 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                                - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
                                     - rtgl-text c=se-fg: Feature image
-                        - 'rtgl-view w=1fg g=lg style="min-width:0"':
+                        - rtgl-view w=1fg md-w=f g=lg:
                             - rtgl-text s=h3 mb=sm: ${feature.title}
                             - $if feature.subtitle:
                                 - rtgl-text s=lg c=mu-fg mb=lg: ${feature.subtitle}
@@ -49,5 +49,5 @@
                                 - rtgl-view g=md mt=sm:
                                     - $for bullet in feature.bullets:
                                         - rtgl-view d=h g=md av=s:
-                                            - 'rtgl-view c=mu-fg style="width:8px;height:8px;min-width:8px;border-radius:999px;background:currentColor;margin-top:0.58em"':
+                                            - rtgl-text c=mu-fg: •
                                             - rtgl-text c=mu-fg w=1fg: ${bullet}

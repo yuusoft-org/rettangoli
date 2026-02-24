@@ -1,4 +1,4 @@
-- 'rtgl-view ah="c" ph="lg" md-w="100vw" lg-w="768" w="1024" pv="xl" style="padding-top: 128px; padding-bottom: 128px"':
+- 'rtgl-view w="f" pv="xl" style="padding-top: 128px; padding-bottom: 128px"':
     - rtgl-view ah="c" p="xl" br="md" bw="sm" w="f":
         - $if svg:
             - rtgl-svg svg="${svg}" wh="48" c="pr" mb="md":

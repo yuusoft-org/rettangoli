@@ -41,9 +41,9 @@ Imports map aliases to remote template and partial files:
 ```yaml
 imports:
   templates:
-    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/docs.yaml
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/docs.yaml
   partials:
-    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/top-navbar.yaml
+    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/top-navbar.yaml
 ```
 
 The build uses cached import files when available. Local files under `templates/` and `partials/` override imported aliases with the same name.

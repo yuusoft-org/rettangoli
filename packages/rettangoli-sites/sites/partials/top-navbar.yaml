@@ -61,7 +61,7 @@
                     - rtgl-svg.svg-icon wh=20 svg=github:
                     - rtgl-text s=md: GitHub
         - $if ctas:
-            - rtgl-view d=v g=sm w=f:
+            - rtgl-view d=v g=lg w=f:
                 - $for cta in ctas:
                     - $if cta:
                         - $if cta.label:

@@ -31,9 +31,9 @@ Use URL imports from jsDelivr for templates and partials.
 ```yaml
 imports:
   templates:
-    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/templates/docs.yaml
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/docs.yaml
   partials:
-    docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/partials/docs-sidebar.yaml
+    docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/docs-sidebar.yaml
 ```
 
 ### Build
