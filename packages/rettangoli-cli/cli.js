@@ -35,6 +35,10 @@ function collectValues(value, previous = []) {
   return [...previous, value];
 }
 
+function parseIntegerOption(value) {
+  return Number.parseInt(value, 10);
+}
+
 const program = new Command();
 
 program
@@ -63,7 +67,7 @@ program
   .option("--no-yahtml", "Disable YAHTML attr/prop validation")
   .option("--expr", "Enable expression scope/type checks")
   .option("--watch", "Watch for file changes and re-run checks")
-  .option("--watch-interval-ms <ms>", "Watch poll interval in milliseconds", parseInt, 800)
+  .option("--watch-interval-ms <ms>", "Watch poll interval in milliseconds", parseIntegerOption, 800)
   .addHelpText(
     "after",
     `
@@ -204,7 +208,7 @@ Examples:
 feCommand
   .command("watch")
   .description("Watch for changes")
-  .option("-p, --port <port>", "The port to use", parseInt, 3001)
+  .option("-p, --port <port>", "The port to use", parseIntegerOption, 3001)
   .option("-s, --setup-path <path>", "Custom setup file path")
   .addHelpText(
     "after",
@@ -364,8 +368,8 @@ const vtCommand = program
 vtCommand
   .command("generate")
   .description("Generate candidate HTML pages only (no screenshots)")
-  .option("--concurrency <number>", "Number of parallel capture workers", parseInt)
-  .option("--timeout <ms>", "Global capture timeout in ms", parseInt)
+  .option("--concurrency <number>", "Number of parallel capture workers", parseIntegerOption)
+  .option("--timeout <ms>", "Global capture timeout in ms", parseIntegerOption)
   .option("--wait-event <name>", "Custom event name to mark page ready (uses event wait strategy)")
   .option("--folder <path>", "Run only specs under folder prefix (repeatable)", collectValues, [])
   .option("--group <section-key>", "Run only one section key from vt.sections (repeatable)", collectValues, [])
@@ -392,8 +396,8 @@ vtCommand
 vtCommand
   .command("screenshot")
   .description("Generate candidate HTML pages and capture screenshots")
-  .option("--concurrency <number>", "Number of parallel capture workers", parseInt)
-  .option("--timeout <ms>", "Global capture timeout in ms", parseInt)
+  .option("--concurrency <number>", "Number of parallel capture workers", parseIntegerOption)
+  .option("--timeout <ms>", "Global capture timeout in ms", parseIntegerOption)
   .option("--wait-event <name>", "Custom event name to mark page ready (uses event wait strategy)")
   .option("--folder <path>", "Run only specs under folder prefix (repeatable)", collectValues, [])
   .option("--group <section-key>", "Run only one section key from vt.sections (repeatable)", collectValues, [])
@@ -491,7 +495,7 @@ sitesCommand
 sitesCommand
   .command("watch")
   .description("Watch and rebuild site on changes")
-  .option("-p, --port <port>", "The port to use", parseInt, 3001)
+  .option("-p, --port <port>", "The port to use", parseIntegerOption, 3001)
   .option("-r, --root-dir <path>", "Path to root directory", ".")
   .option("--rootDir <path>", "Deprecated alias for --root-dir")
   .option("-o, --output-path <path>", "Path to destination directory", "./_site")
