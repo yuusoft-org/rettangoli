@@ -7,6 +7,14 @@ import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 
 const RELOAD_MODES = new Set(['body', 'full']);
 
+function normalizePort(port) {
+  const normalizedPort = Number(port);
+  if (!Number.isInteger(normalizedPort) || normalizedPort < 1 || normalizedPort > 65535) {
+    throw new Error(`Invalid port "${port}". Allowed values: integers from 1 to 65535.`);
+  }
+  return normalizedPort;
+}
+
 export function createClientScript(reloadMode = 'body') {
   const shouldUseBodyReplacement = reloadMode === 'body';
   const reloadSnippet = shouldUseBodyReplacement
@@ -332,6 +340,7 @@ const watchSite = async (options = {}) => {
     quiet = false,
     reloadMode = 'body'
   } = options;
+  const normalizedPort = normalizePort(port);
   const normalizedReloadMode = String(reloadMode).toLowerCase();
   if (!RELOAD_MODES.has(normalizedReloadMode)) {
     throw new Error(`Invalid reload mode "${reloadMode}". Allowed values: body, full.`);
@@ -347,7 +356,7 @@ const watchSite = async (options = {}) => {
   logger.log('Initial build complete');
 
   // Start custom dev server
-  const server = new DevServer(port, path.resolve(rootDir, outputPath), logger, normalizedReloadMode);
+  const server = new DevServer(normalizedPort, path.resolve(rootDir, outputPath), logger, normalizedReloadMode);
   server.start();
 
   // Watch all relevant directories

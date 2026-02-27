@@ -19,6 +19,14 @@ describe('watch reload mode script', () => {
     await expect(watchSite({ reloadMode: 'instant' })).rejects.toThrow('Invalid reload mode');
   });
 
+  it('throws on non-numeric port values', async () => {
+    await expect(watchSite({ port: 'abc' })).rejects.toThrow('Invalid port "abc"');
+  });
+
+  it('throws on out-of-range port values', async () => {
+    await expect(watchSite({ port: 70000 })).rejects.toThrow('Invalid port "70000"');
+  });
+
   it('serves markdown as text instead of download-oriented binary type', () => {
     expect(getContentType('.md')).toBe('text/plain; charset=utf-8');
     expect(getContentType('.txt')).toBe('text/plain; charset=utf-8');
