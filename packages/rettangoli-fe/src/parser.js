@@ -65,6 +65,8 @@ export const createVirtualDom = ({
   function processItems(currentItems, parentPath = "") {
     return currentItems
       .map((item, index) => {
+        const nodePath = parentPath ? `${parentPath}.${index}` : String(index);
+
         // Handle text nodes
         if (typeof item === "string" || typeof item === "number") {
           return String(item);
@@ -86,11 +88,11 @@ export const createVirtualDom = ({
         // Skip numeric keys that might come from array indices
         if (!isNaN(Number(keyString))) {
           if (Array.isArray(value)) {
-            return processItems(value, `${parentPath}.${keyString}`);
+            return processItems(value, nodePath);
           } else if (typeof value === "object" && value !== null) {
             const nestedEntries = Object.entries(value);
             if (nestedEntries.length > 0) {
-              return processItems([value], `${parentPath}.${keyString}`);
+              return processItems([value], nodePath);
             }
           }
           return String(value);
@@ -182,7 +184,7 @@ export const createVirtualDom = ({
         if (typeof value === "string" || typeof value === "number") {
           childrenOrText = String(value);
         } else if (Array.isArray(value)) {
-          childrenOrText = processItems(value, `${parentPath}.${keyString}`);
+          childrenOrText = processItems(value, nodePath);
         } else {
           childrenOrText = [];
         }
@@ -246,17 +248,8 @@ export const createVirtualDom = ({
         if (elementIdForRefs) {
           snabbdomData.key = elementIdForRefs;
         } else if (selector) {
-          // Generate a key based on selector, parent path, and index for list items
-          const itemPath = parentPath
-            ? `${parentPath}.${index}`
-            : String(index);
-          snabbdomData.key = `${selector}-${itemPath}`;
-
-          // Include prop keys in key for better change detection
-          const propKeys = Object.keys(props);
-          if (propKeys.length > 0) {
-            snabbdomData.key += `-p:${propKeys.join(",")}`;
-          }
+          // Generate a key from selector and stable structural path.
+          snabbdomData.key = `${selector}-${nodePath}`;
         }
 
         if (Object.keys(attrs).length > 0) {
