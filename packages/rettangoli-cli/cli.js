@@ -6,7 +6,7 @@ import { build as buildBe, check as checkBe, watch as watchBe } from "@rettangol
 import { generate, screenshot, report, accept } from "@rettangoli/vt/cli";
 import { buildSite, watchSite, initSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
-import { Command } from "commander";
+import { Command, InvalidArgumentError } from "commander";
 import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
 import yaml from "js-yaml";
@@ -36,7 +36,24 @@ function collectValues(value, previous = []) {
 }
 
 function parseIntegerOption(value) {
-  return Number.parseInt(value, 10);
+  if (!/^-?\d+$/.test(String(value))) {
+    throw new InvalidArgumentError(`Expected an integer but received "${value}"`);
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isSafeInteger(parsed)) {
+    throw new InvalidArgumentError(`Expected a safe integer but received "${value}"`);
+  }
+
+  return parsed;
+}
+
+function parsePortOption(value) {
+  const parsed = parseIntegerOption(value);
+  if (parsed < 1 || parsed > 65535) {
+    throw new InvalidArgumentError(`Port must be between 1 and 65535, received "${value}"`);
+  }
+  return parsed;
 }
 
 const program = new Command();
@@ -208,7 +225,7 @@ Examples:
 feCommand
   .command("watch")
   .description("Watch for changes")
-  .option("-p, --port <port>", "The port to use", parseIntegerOption, 3001)
+  .option("-p, --port <port>", "The port to use", parsePortOption, 3001)
   .option("-s, --setup-path <path>", "Custom setup file path")
   .addHelpText(
     "after",
@@ -495,7 +512,7 @@ sitesCommand
 sitesCommand
   .command("watch")
   .description("Watch and rebuild site on changes")
-  .option("-p, --port <port>", "The port to use", parseIntegerOption, 3001)
+  .option("-p, --port <port>", "The port to use", parsePortOption, 3001)
   .option("-r, --root-dir <path>", "Path to root directory", ".")
   .option("--rootDir <path>", "Deprecated alias for --root-dir")
   .option("-o, --output-path <path>", "Path to destination directory", "./_site")
@@ -503,7 +520,7 @@ sitesCommand
   .option("--reload-mode <mode>", "Reload mode: body (hot body replacement) or full (full-page reload)", "body")
   .option("-q, --quiet", "Suppress non-error logs")
   .action(async (options) => {
-    watchSite({
+    await watchSite({
       port: options.port,
       rootDir: options.rootDir,
       outputPath: options.outputPath,
