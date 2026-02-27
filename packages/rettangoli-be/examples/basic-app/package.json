@@ -7,7 +7,7 @@
   "scripts": {
     "check": "node ../../../rettangoli-cli/cli.js be check",
     "build": "node ../../../rettangoli-cli/cli.js be build",
-    "test:handlers": "bunx vitest run puty.spec.js --reporter=verbose",
+    "test:handlers": "bunx vitest run --reporter=verbose --config vitest.config.js",
     "test:e2e": "node ../../../rettangoli-cli/cli.js be build && node --test ./test/e2e/*.e2e.js"
   }
 }
