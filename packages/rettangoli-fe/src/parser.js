@@ -251,12 +251,6 @@ export const createVirtualDom = ({
             ? `${parentPath}.${index}`
             : String(index);
           snabbdomData.key = `${selector}-${itemPath}`;
-
-          // Include prop keys in key for better change detection
-          const propKeys = Object.keys(props);
-          if (propKeys.length > 0) {
-            snabbdomData.key += `-p:${propKeys.join(",")}`;
-          }
         }
 
         if (Object.keys(attrs).length > 0) {
