@@ -36,4 +36,32 @@ describe("virtual dom key stability", () => {
 
     expect(nodes[0].data.key).toBe("stable-id");
   });
+
+  it("keeps descendant key stable when parent key string changes attributes", () => {
+    const first = createVirtualDom({
+      h,
+      items: [
+        {
+          "section .expanded": [{ "child-widget": "" }],
+        },
+      ],
+      refs: {},
+      handlers: {},
+      viewData: {},
+    });
+
+    const second = createVirtualDom({
+      h,
+      items: [
+        {
+          section: [{ "child-widget": "" }],
+        },
+      ],
+      refs: {},
+      handlers: {},
+      viewData: {},
+    });
+
+    expect(first[0].children[0].data.key).toBe(second[0].children[0].data.key);
+  });
 });
