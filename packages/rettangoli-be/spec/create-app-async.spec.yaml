@@ -1,5 +1,5 @@
-file: './runtime-create-app-async-helpers.js'
-group: rettangoli-be-runtime-create-app-async
+file: './create-app-async-helpers.js'
+group: rettangoli-be-create-app-async
 ---
 suite: createAppSuccessWithMiddleware
 exportName: createAppSuccessWithMiddleware

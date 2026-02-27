@@ -1,5 +1,5 @@
-file: './runtime-create-app-from-project-async-helpers.js'
-group: rettangoli-be-runtime-create-app-from-project-async
+file: './create-app-from-project-async-helpers.js'
+group: rettangoli-be-create-app-from-project-async
 ---
 suite: createAppFromProjectDiscoversFiles
 exportName: createAppFromProjectDiscoversFiles
