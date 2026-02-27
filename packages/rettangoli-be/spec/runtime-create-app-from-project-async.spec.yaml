@@ -1,0 +1,24 @@
+file: './runtimeCreateAppFromProjectAsyncHelpers.js'
+group: rettangoli-be-runtime-create-app-from-project-async
+---
+suite: createAppFromProjectDiscoversFiles
+exportName: createAppFromProjectDiscoversFiles
+---
+case: discovers setup and method files directly without user index
+in: []
+out:
+  jsonrpc: '2.0'
+  id: '1'
+  result:
+    ok: true
+    echo: ok
+    requestId: req-auto
+    ts: 1700000000000
+---
+suite: createAppFromProjectSupportsDefaultSetup
+exportName: createAppFromProjectSupportsDefaultSetup
+---
+case: supports default setup export
+in: []
+out:
+  ok: true

@@ -32,7 +32,7 @@
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "puty": "^0.1.1",
+    "puty": "^0.1.2",
     "vitest": "^4.0.15"
   }
 }
