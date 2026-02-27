@@ -37,8 +37,12 @@ src/
 ```bash
 bun run check
 bun run build
+bun run test:handlers
 bun run test:e2e
 ```
+
+`test:handlers` runs per-method puty YAML specs under `src/modules/**/**.spec.yaml`
+(`ping.spec.yaml`, `getProfile.spec.yaml`).
 
 `test:e2e` boots a real HTTP server from the generated `.rtgl-be/generated/app.js`
 and runs end-to-end JSON-RPC requests (success, validation errors, domain errors,

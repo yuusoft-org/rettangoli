@@ -22,7 +22,7 @@
         "js-yaml": "^4.1.0",
       },
       "devDependencies": {
-        "puty": "^0.1.1",
+        "puty": "^0.1.2",
         "vitest": "^4.0.15",
       },
     },
@@ -41,7 +41,7 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "1.0.0-rc27",
+      "version": "1.0.0-rc29",
       "bin": {
         "rtgl": "./cli.js",
       },
@@ -75,7 +75,7 @@
     },
     "packages/rettangoli-sites": {
       "name": "@rettangoli/sites",
-      "version": "1.0.0-rc11",
+      "version": "1.0.0-rc13",
       "dependencies": {
         "gray-matter": "^4.0.3",
         "jempl": "^0.3.1-rc1",
@@ -110,7 +110,7 @@
     },
     "packages/rettangoli-ui": {
       "name": "@rettangoli/ui",
-      "version": "1.0.0-rc14",
+      "version": "1.0.0-rc16",
       "dependencies": {
         "@floating-ui/dom": "^1.6.13",
         "@rettangoli/fe": "workspace:*",
@@ -776,6 +776,8 @@
     "@jridgewell/gen-mapping/@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.0", "", {}, "sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ=="],
 
     "@jridgewell/trace-mapping/@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.0", "", {}, "sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ=="],
+
+    "@rettangoli/be/puty": ["puty@0.1.2", "", { "dependencies": { "js-yaml": "~4.1.0" }, "peerDependencies": { "vitest": ">=1.0.0" } }, "sha512-VNEwqORf0u/LiVdjyHPsIOKWC5z4uNuHhMgYu9WGea6u3YCP4OimQHQfWkw0DB/tE3KuWgPO0dhkM8uH4Yweig=="],
 
     "@rettangoli/sites/jempl": ["jempl@0.3.1-rc1", "", {}, "sha512-LonPrWRdSqs3CBikkNu3ijLv+lS3eAKrLvXLOICrc1Lu8vAxiur7Z1AVGqpS03zntcM2cY9Q1ThXV8YNnf63Mw=="],
 
