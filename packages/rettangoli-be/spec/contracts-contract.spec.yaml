@@ -1,4 +1,4 @@
-file: './contractsHelper.js'
+file: '../test/puty-helpers/contracts-helper.js'
 group: rettangoli-be-contracts
 ---
 suite: contracts-helper

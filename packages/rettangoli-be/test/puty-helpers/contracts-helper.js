@@ -1,7 +1,7 @@
 import {
   isSupportedMethodFile,
   SUPPORTED_METHOD_FILE_SUFFIXES,
-} from '../src/cli/contracts.js';
+} from '../../src/cli/contracts.js';
 
 export const runContractHelpers = ({ filePath }) => {
   return {
