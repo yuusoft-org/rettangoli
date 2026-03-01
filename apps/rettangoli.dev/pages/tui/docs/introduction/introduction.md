@@ -19,7 +19,7 @@ You keep the same mental model, but render to a real terminal instead of the bro
 - Reuse FE component structure and conventions in terminal apps.
 - Build interactive TUIs with declarative YAML views.
 - Keep state updates in store actions and event orchestration in handlers.
-- Use native terminal primitives (`rtgl-dialog`, `rtgl-textarea`, `rtgl-list`, `rtgl-table`) without ASCII hacks.
+- Use native terminal primitives (`rtgl-selector-dialog`, `rtgl-textarea`, `rtgl-list`, `rtgl-table`, `rtgl-image`) without ASCII hacks.
 
 ## Runtime flow
 
@@ -41,9 +41,10 @@ import { createComponent, createTuiRuntime } from "@rettangoli/tui";
 - `rtgl-input`
 - `rtgl-textarea`
 - `rtgl-divider`
-- `rtgl-dialog`
+- `rtgl-selector-dialog`
 - `rtgl-list`
 - `rtgl-table`
+- `rtgl-image`
 
 ## What is different from FE
 
