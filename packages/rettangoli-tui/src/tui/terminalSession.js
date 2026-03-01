@@ -8,6 +8,8 @@ const ANSI = {
 };
 
 const DEFAULT_FOOTER = "[q] quit  [r] refresh";
+const KITTY_DELETE_ALL_COMMAND = "\u001b_Ga=d,d=a,q=2\u001b\\";
+const KITTY_COMMAND_START = "\u001b_G";
 
 export const createTerminalSession = ({
   stdin = process.stdin,
@@ -21,6 +23,7 @@ export const createTerminalSession = ({
   let lastRenderedLines = [];
   let lastOverlayFrame = "";
   let lastOverlayRows = [];
+  let lastHadKittyGraphics = false;
 
   const assertTTY = () => {
     if (!stdin.isTTY || !stdout.isTTY) {
@@ -75,9 +78,29 @@ export const createTerminalSession = ({
     return [...rows];
   };
 
+  const hasKittyGraphics = (value) => {
+    return String(value || "").includes(KITTY_COMMAND_START);
+  };
+
   const renderIncremental = (frame) => {
     const { base, overlay } = splitFrame(frame);
     const nextLines = frameToLines(base);
+    const nextHasKittyGraphics = hasKittyGraphics(base) || hasKittyGraphics(overlay);
+
+    if (nextHasKittyGraphics) {
+      const baseWithFooter = nextLines.join("\n");
+      let output = `${KITTY_DELETE_ALL_COMMAND}${ANSI.clearScreen}${baseWithFooter}`;
+      if (overlay) {
+        output += overlay;
+      }
+      write(output);
+      lastRenderedLines = nextLines;
+      lastOverlayFrame = overlay;
+      lastOverlayRows = parseOverlayRows(overlay);
+      lastHadKittyGraphics = true;
+      return;
+    }
+
     const maxLineCount = Math.max(lastRenderedLines.length, nextLines.length);
     const dirtyRows = new Set();
 
@@ -97,6 +120,10 @@ export const createTerminalSession = ({
       : 0;
     const maxRow = Math.max(maxLineCount, maxDirtyRow);
     let output = "";
+
+    if (lastHadKittyGraphics) {
+      output += KITTY_DELETE_ALL_COMMAND;
+    }
 
     for (let row = 1; row <= maxRow; row += 1) {
       const lineIndex = row - 1;
@@ -119,6 +146,7 @@ export const createTerminalSession = ({
     lastRenderedLines = nextLines;
     lastOverlayFrame = overlay;
     lastOverlayRows = nextOverlayRows;
+    lastHadKittyGraphics = false;
   };
 
   const attachInput = () => {
@@ -186,6 +214,7 @@ export const createTerminalSession = ({
     lastRenderedLines = [];
     lastOverlayFrame = "";
     lastOverlayRows = [];
+    lastHadKittyGraphics = false;
 
     write(`${ANSI.showCursor}${ANSI.leaveAlternateScreen}`);
   };
@@ -208,6 +237,7 @@ export const createTerminalSession = ({
     lastRenderedLines = [];
     lastOverlayFrame = "";
     lastOverlayRows = [];
+    lastHadKittyGraphics = false;
     attachInput();
   };
 

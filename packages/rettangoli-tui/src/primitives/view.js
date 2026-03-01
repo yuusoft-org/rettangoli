@@ -1,8 +1,8 @@
 import { normalizeLines, resolveSpacing } from "./common.js";
 
-const ANSI_SEQUENCE_REGEX = /\u001b\[[0-9;]*m/g;
+const TERMINAL_SEQUENCE_REGEX = /\u001b(?:\[[0-9;?]*[ -/]*[@-~]|_G[\s\S]*?\u001b\\)/g;
 
-const stripAnsi = (value) => String(value || "").replace(ANSI_SEQUENCE_REGEX, "");
+const stripAnsi = (value) => String(value || "").replace(TERMINAL_SEQUENCE_REGEX, "");
 
 const visibleWidth = (value) => stripAnsi(value).length;
 

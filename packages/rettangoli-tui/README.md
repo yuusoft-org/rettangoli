@@ -27,6 +27,7 @@ Included core primitives:
 - `rtgl-text`
 - `rtgl-input`
 - `rtgl-list`
+- `rtgl-image`
 - `rtgl-table`
 - `rtgl-textarea`
 - `rtgl-divider`
@@ -43,6 +44,18 @@ Included core primitives:
 - object items can include `label`/`text` and `done` for checkbox rendering
 - `:selectedIndex=${index}` for highlighted row
 - `w=f` for full terminal width
+
+`rtgl-image` supports:
+
+- Kitty graphics protocol rendering (`protocol=kitty` or auto-detect)
+- `src="path/to/image.png"` for file-based PNG images
+- `:data=${base64Png}` or `data="data:image/png;base64,..."` for inline PNG data
+- `w` / `h` (or `c` / `r`) for image placement size in terminal cells
+- `alt` fallback text when Kitty graphics is unavailable
+- `RETTANGOLI_TUI_FORCE_KITTY=1` to force protocol output
+- `RETTANGOLI_TUI_DISABLE_KITTY=1` to force fallback text
+
+Auto-detection targets Kitty-compatible environments (`kitty`, `ghostty`, and `wezterm`).
 
 `rtgl-table` supports:
 

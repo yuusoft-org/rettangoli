@@ -15,6 +15,7 @@ template:
       - rtgl-text: "- rtgl-text"
       - rtgl-text: "- rtgl-input"
       - rtgl-text: "- rtgl-list"
+      - rtgl-text: "- rtgl-image"
       - rtgl-text: "- rtgl-table"
       - rtgl-text: "- rtgl-textarea"
       - rtgl-text: "- rtgl-divider"
@@ -44,6 +45,10 @@ template:
               - rtgl-text: Right
               - rtgl-text: column
               - rtgl-text: B
+      - rtgl-divider w=72: null
+      - rtgl-text: "Image demo (Kitty protocol)"
+      - rtgl-text: "Source: yuusoft.com/public/img/favicon.png"
+      - rtgl-image :src=showcaseImageSrc w=20 h=10 alt="[image unavailable - terminal does not support kitty graphics]": null
       - rtgl-divider w=72: null
       - rtgl-text: "Message: ${message}"
       - rtgl-text: "Last Key: ${lastKey}"

@@ -1,3 +1,6 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 const DEFAULT_TASK_TITLE = [
   "Refactor renderer",
   "Keep overlay stable",
@@ -41,6 +44,10 @@ const DEFAULT_SELECTOR_OPTIONS = Object.freeze([
   { id: "staging", label: "Staging cluster" },
   { id: "production", label: "Production cluster" },
 ]);
+const SHOWCASE_IMAGE_SRC = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../assets/yuusoft-favicon.png",
+);
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 const normalizeEnvironmentId = (value) => String(value || "local").trim().toLowerCase();
@@ -146,6 +153,7 @@ export const selectViewData = ({ state }) => {
 
   return {
     ...state,
+    showcaseImageSrc: SHOWCASE_IMAGE_SRC,
     taskTitleLineCount: titleLines.length,
     taskCount: tasks.length,
     selectedTaskIndex: safeSelectedTaskIndex,

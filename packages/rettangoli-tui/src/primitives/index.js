@@ -1,4 +1,5 @@
 import renderDivider from "./divider.js";
+import renderImage from "./image.js";
 import renderInput from "./input.js";
 import renderList from "./list.js";
 import renderSelectorDialog from "./selectorDialog.js";
@@ -10,6 +11,7 @@ import renderView from "./view.js";
 export const createDefaultTuiPrimitives = () => {
   return {
     "rtgl-divider": renderDivider,
+    "rtgl-image": renderImage,
     "rtgl-input": renderInput,
     "rtgl-list": renderList,
     "rtgl-selector-dialog": renderSelectorDialog,
