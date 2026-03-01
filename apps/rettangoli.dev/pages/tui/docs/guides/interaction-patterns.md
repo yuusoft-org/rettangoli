@@ -48,11 +48,27 @@ Flow:
 
 ## Inline title editing pattern
 
-Use floating dialog + multiline textarea for title edits:
+Use global dialog service for title edits:
 
-```yaml
-- rtgl-dialog open=${titleDialogOpen} title="Edit Task Title" w=66 x=6 y=10:
-    - rtgl-textarea label=Title :value=titleDraft :cursorRow=titleCursorRow :cursorCol=titleCursorCol active=true w=60 h=6: null
+```js
+const result = await deps.ui.dialog({
+  form: {
+    title: "Edit Task Title",
+    fields: [
+      { name: "title", type: "input-textarea", label: "Title", rows: 6, required: true },
+    ],
+    actions: {
+      buttons: [
+        { id: "cancel", label: "Cancel" },
+        { id: "save", label: "Save", validate: true },
+      ],
+    },
+  },
+  defaultValues: {
+    title: currentTitle,
+  },
+  size: "md",
+});
 ```
 
 User flow:

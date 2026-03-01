@@ -22,12 +22,6 @@ Interactive mode:
 bun run poc
 ```
 
-Static render mode:
-
-```bash
-bun run poc:static
-```
-
 ## 3. Run the component showcase
 
 Interactive mode:
@@ -36,10 +30,10 @@ Interactive mode:
 bun run showcase
 ```
 
-Static mode:
+Dialogs demo:
 
 ```bash
-bun run showcase:static
+bun run dialogs
 ```
 
 ## 4. Create your first TUI component
@@ -101,4 +95,3 @@ await runtime.start({
 - [Runtime & Component Model](/tui/docs/guides/runtime-and-component-model)
 - [Primitives](/tui/docs/guides/primitives)
 - [Dialog & Textarea](/tui/docs/guides/dialog-and-textarea)
-

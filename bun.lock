@@ -93,7 +93,7 @@
     },
     "packages/rettangoli-tui": {
       "name": "@rettangoli/tui",
-      "version": "0.0.1",
+      "version": "0.0.2",
       "dependencies": {
         "esbuild": "^0.25.5",
         "immer": "^10.1.1",

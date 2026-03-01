@@ -16,7 +16,8 @@ sidebarId: tui-primitives
 | `rtgl-input` | Single-line field display | `label`, `value`, `placeholder` |
 | `rtgl-textarea` | Multiline field with cursor | `label`, `value`, `placeholder`, `w`, `h`, `active`, `cursorRow`, `cursorCol` |
 | `rtgl-divider` | Horizontal/vertical line | `w` (horizontal), `o=v` + `h` (vertical), `c` (custom char) |
-| `rtgl-dialog` | Floating overlay | `open`, `title`, `w`, `x`, `y` |
+| `rtgl-image` | Terminal image rendering (kitty protocol) | `src` (PNG), `:data` (base64 PNG), `w`, `h`, `alt` |
+| `rtgl-selector-dialog` | Floating selector overlay | `open`, `title`, `:options`, `:selectedIndex`, `size`, `x`, `y` |
 | `rtgl-list` | Row list with highlight | `:items`, `:selectedIndex`, `w`, `marker`, `n` |
 | `rtgl-table` | Full-width table with row highlight | `:data`, `:selectedIndex`, `w`, `variant`, `showHeader`, `highlight` |
 
@@ -27,10 +28,11 @@ template:
   - rtgl-view d=v g=sm:
       - rtgl-text w=bold: "Tasks"
       - rtgl-divider w=72: null
+      - rtgl-image src="./assets/logo.png" w=16 h=6 alt="[image]": null
       - rtgl-list :items=taskListItems :selectedIndex=selectedTaskIndex w=f: null
       - rtgl-table :data=taskTableData :selectedIndex=selectedTaskIndex w=f cw=28: null
-      - rtgl-dialog open=${titleDialogOpen} title="Edit Task Title" w=66 x=6 y=10:
-          - rtgl-textarea label=Title :value=titleDraft :cursorRow=titleCursorRow :cursorCol=titleCursorCol active=true w=60 h=6: null
+      - rtgl-selector-dialog open=${selectorOpen} size=md title="Pick Environment" :options=selectorOptions :selectedIndex=selectorIndex:
+          - rtgl-text: "ArrowUp/ArrowDown and Enter"
 ```
 
 ## FE parity notes
@@ -38,6 +40,7 @@ template:
 - Component authoring contract remains FE-compatible.
 - Primitive names intentionally mirror `rtgl-*` naming from UI/FE ecosystem.
 - TUI primitives render terminal-native output and do not rely on ASCII placeholder layouts.
+- `rtgl-image` currently supports PNG payloads only.
 
 ## Global imperative UI helpers
 
