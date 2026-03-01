@@ -17,6 +17,7 @@ sidebarId: tui-primitives
 | `rtgl-textarea` | Multiline field with cursor | `label`, `value`, `placeholder`, `w`, `h`, `active`, `cursorRow`, `cursorCol` |
 | `rtgl-divider` | Horizontal/vertical line | `w` (horizontal), `o=v` + `h` (vertical), `c` (custom char) |
 | `rtgl-image` | Terminal image rendering (kitty protocol) | `src` (PNG), `:data` (base64 PNG), `w`, `h`, `alt` |
+| `rtgl-progress-bar` | Progress visualization | `value`, `max`, `percent`, `w`, `label`, `showPercent`, `status`, `color` |
 | `rtgl-selector-dialog` | Floating selector overlay | `open`, `title`, `:options`, `:selectedIndex`, `size`, `x`, `y` |
 | `rtgl-list` | Row list with highlight | `:items`, `:selectedIndex`, `w`, `marker`, `n` |
 | `rtgl-table` | Full-width table with row highlight | `:data`, `:selectedIndex`, `w`, `variant`, `showHeader`, `highlight` |
@@ -29,6 +30,7 @@ template:
       - rtgl-text w=bold: "Tasks"
       - rtgl-divider w=72: null
       - rtgl-image src="./assets/logo.png" w=16 h=6 alt="[image]": null
+      - rtgl-progress-bar label="Build" value=42 max=100 w=24 status=doing: null
       - rtgl-list :items=taskListItems :selectedIndex=selectedTaskIndex w=f: null
       - rtgl-table :data=taskTableData :selectedIndex=selectedTaskIndex w=f cw=28: null
       - rtgl-selector-dialog open=${selectorOpen} size=md title="Pick Environment" :options=selectorOptions :selectedIndex=selectorIndex:
