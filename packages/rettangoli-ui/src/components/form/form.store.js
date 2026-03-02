@@ -120,12 +120,17 @@ export const set = (obj, path, value) => {
   return obj;
 };
 
-const blacklistedAttrs = ["id", "class", "style", "slot", "form", "defaultValues", "disabled"];
+const blacklistedAttrs = ["id", "class", "style", "slot", "form", "defaultValues", "disabled", "context"];
 
 const stringifyAttrs = (props = {}) => {
   return Object.entries(props)
-    .filter(([key]) => !blacklistedAttrs.includes(key))
-    .map(([key, value]) => `${key}=${value}`)
+    .filter(([key, value]) => {
+      if (blacklistedAttrs.includes(key)) return false;
+      if (value === undefined || value === null) return false;
+      if (typeof value === "object" || typeof value === "function") return false;
+      return true;
+    })
+    .map(([key, value]) => `${key}=${String(value)}`)
     .join(" ");
 };
 
