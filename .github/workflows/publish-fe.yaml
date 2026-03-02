@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  publish-ui:
+  publish-fe:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
