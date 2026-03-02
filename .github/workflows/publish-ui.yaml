@@ -29,15 +29,13 @@ jobs:
         run: bun run build
         working-directory: ./packages/rettangoli-ui
 
-      # Setup .npmrc file to publish to npm
-      - uses: actions/setup-node@v3
+      # Setup Node.js for npm Trusted Publisher (OIDC)
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       # Publish to npm
       - name: Publish to npm
-        run: bun publish
+        run: npm publish --provenance
         working-directory: ./packages/rettangoli-ui
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
