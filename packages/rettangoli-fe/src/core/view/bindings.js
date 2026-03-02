@@ -253,9 +253,7 @@ export const parseNodeBindings = ({
 
     if (rawToken.startsWith("?")) {
       const toggleAttrName = rawToken.substring(1);
-      if (!toggleAttrName || !isValidAttributeName(toggleAttrName)) {
-        continue;
-      }
+      assertValidAttributeName(toggleAttrName, "boolean toggle");
       assertSupportedBooleanToggleAttr(toggleAttrName);
       attrs[toggleAttrName] = "";
       if (isWebComponent && toggleAttrName !== "id") {
@@ -265,7 +263,9 @@ export const parseNodeBindings = ({
     }
 
     if (!isValidAttributeName(rawToken)) {
-      continue;
+      throw new Error(
+        `[Parser] Invalid attribute token '${rawToken}' on '${tagName}'.`,
+      );
     }
 
     if (

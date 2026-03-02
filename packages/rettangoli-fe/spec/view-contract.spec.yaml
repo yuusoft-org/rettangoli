@@ -55,16 +55,12 @@ out:
   props:
     label: ""
 ---
-case: ignores invalid bare tokens from object interpolation fragments
+case: rejects invalid bare tokens from object interpolation fragments
 in:
   - attrsString: href=/x [object Object] data-index=0
     tagName: a
     isWebComponent: false
-out:
-  attrs:
-    href: /x
-    data-index: "0"
-  props: {}
+throws: "Invalid attribute token '[object'"
 ---
 case: keeps empty unquoted property-form values as empty string
 in:
