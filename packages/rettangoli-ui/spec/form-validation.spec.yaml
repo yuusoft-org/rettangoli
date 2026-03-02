@@ -759,3 +759,27 @@ in:
 out:
   values:
     "items[0]": "legacy"
+---
+suite: selectViewData container attrs
+exportName: runSelectViewDataCase
+---
+case: excludes context object from container attributes
+in:
+  - props:
+      form: {}
+      context:
+        user:
+          name: Jane
+      data-testid: my-form
+out:
+  containerAttrString: data-testid=my-form
+---
+case: excludes object-valued custom props from container attributes
+in:
+  - props:
+      form: {}
+      meta:
+        foo: bar
+      aria-label: Settings
+out:
+  containerAttrString: aria-label=Settings

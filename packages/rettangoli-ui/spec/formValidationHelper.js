@@ -5,6 +5,7 @@ import {
   flattenFields,
   collectAllDataFields,
   selectFormValues,
+  selectViewData,
   set,
 } from "../src/components/form/form.store.js";
 
@@ -57,4 +58,28 @@ export const runSetPathCase = ({ initial = {}, path, value }) => {
   const result = structuredClone(initial);
   set(result, path, value);
   return { values: result };
+};
+
+export const runSelectViewDataCase = ({ props = {}, state = {} }) => {
+  const nextState = {
+    formValues: {},
+    errors: {},
+    reactiveMode: false,
+    tooltipState: {
+      open: false,
+      x: 0,
+      y: 0,
+      content: "",
+    },
+    ...state,
+  };
+
+  const result = selectViewData({
+    state: nextState,
+    props,
+  });
+
+  return {
+    containerAttrString: result.containerAttrString,
+  };
 };
