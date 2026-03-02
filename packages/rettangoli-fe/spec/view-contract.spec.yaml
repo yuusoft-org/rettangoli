@@ -55,6 +55,17 @@ out:
   props:
     label: ""
 ---
+case: ignores invalid bare tokens from object interpolation fragments
+in:
+  - attrsString: href=/x [object Object] data-index=0
+    tagName: a
+    isWebComponent: false
+out:
+  attrs:
+    href: /x
+    data-index: "0"
+  props: {}
+---
 case: keeps empty unquoted property-form values as empty string
 in:
   - attrsString: :value=

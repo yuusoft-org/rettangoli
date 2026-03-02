@@ -1,6 +1,9 @@
 const PROP_PREFIX = ":";
 
 const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+const ATTRIBUTE_NAME_REGEX = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
+
+const isValidAttributeName = (value) => ATTRIBUTE_NAME_REGEX.test(value);
 
 const lodashGet = (obj, path) => {
   if (!path) return obj;
@@ -73,7 +76,7 @@ export const collectBindingNames = (attrsString = "") => {
   }
 
   const attrAssignmentRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]*))/g;
-  const booleanAttrRegex = /\b(\S+?)(?=\s|$)/g;
+  const booleanAttrRegex = /(\S+?)(?=\s|$)/g;
   const processedAttrs = new Set();
   const bindingNames = [];
   let match;
@@ -97,14 +100,20 @@ export const collectBindingNames = (attrsString = "") => {
 
   let boolMatch;
   while ((boolMatch = booleanAttrRegex.exec(remainingAttrsString)) !== null) {
-    const attrName = boolMatch[1];
-    if (attrName.startsWith(".")) {
+    const rawToken = boolMatch[1];
+    if (rawToken.startsWith(".")) {
+      continue;
+    }
+    const attrName = rawToken.startsWith("?")
+      ? rawToken.substring(1)
+      : rawToken;
+    if (!attrName || !isValidAttributeName(attrName)) {
       continue;
     }
     if (
-      !processedAttrs.has(attrName)
-      && !attrName.startsWith(PROP_PREFIX)
-      && !attrName.includes("=")
+      !processedAttrs.has(rawToken)
+      && !rawToken.startsWith(PROP_PREFIX)
+      && !rawToken.includes("=")
     ) {
       bindingNames.push(attrName);
     }
@@ -146,6 +155,14 @@ export const parseNodeBindings = ({
     props[normalizedPropName] = propValue;
   };
 
+  const assertValidAttributeName = (attrName, sourceLabel) => {
+    if (!isValidAttributeName(attrName)) {
+      throw new Error(
+        `[Parser] Invalid ${sourceLabel} attribute name '${attrName}' on '${tagName}'.`,
+      );
+    }
+  };
+
   if (!attrsString) {
     return { attrs, props };
   }
@@ -180,6 +197,7 @@ export const parseNodeBindings = ({
 
     if (rawBindingName.startsWith("?")) {
       const attrName = rawBindingName.substring(1);
+      assertValidAttributeName(attrName, "boolean toggle");
       const attrValue = rawValue;
       assertSupportedBooleanToggleAttr(attrName);
 
@@ -203,6 +221,7 @@ export const parseNodeBindings = ({
       continue;
     }
 
+    assertValidAttributeName(rawBindingName, "binding");
     attrs[rawBindingName] = rawValue;
     if (isWebComponent && rawBindingName !== "id") {
       setComponentProp(rawBindingName, rawValue, "attribute-form");
@@ -221,21 +240,42 @@ export const parseNodeBindings = ({
     remainingAttrsString = remainingAttrsString.replace(processedMatch, " ");
   });
 
-  const booleanAttrRegex = /\b(\S+?)(?=\s|$)/g;
+  const booleanAttrRegex = /(\S+?)(?=\s|$)/g;
   let boolMatch;
   while ((boolMatch = booleanAttrRegex.exec(remainingAttrsString)) !== null) {
-    const attrName = boolMatch[1];
-    if (attrName.startsWith(".")) {
+    const rawToken = boolMatch[1];
+    if (rawToken.startsWith(".")) {
       continue;
     }
+    if (processedAttrs.has(rawToken) || rawToken.startsWith(PROP_PREFIX) || rawToken.includes("=")) {
+      continue;
+    }
+
+    if (rawToken.startsWith("?")) {
+      const toggleAttrName = rawToken.substring(1);
+      if (!toggleAttrName || !isValidAttributeName(toggleAttrName)) {
+        continue;
+      }
+      assertSupportedBooleanToggleAttr(toggleAttrName);
+      attrs[toggleAttrName] = "";
+      if (isWebComponent && toggleAttrName !== "id") {
+        setComponentProp(toggleAttrName, true, "boolean attribute-form");
+      }
+      continue;
+    }
+
+    if (!isValidAttributeName(rawToken)) {
+      continue;
+    }
+
     if (
-      !processedAttrs.has(attrName)
-      && !attrName.startsWith(PROP_PREFIX)
-      && !attrName.includes("=")
+      !processedAttrs.has(rawToken)
+      && !rawToken.startsWith(PROP_PREFIX)
+      && !rawToken.includes("=")
     ) {
-      attrs[attrName] = "";
-      if (isWebComponent && attrName !== "id") {
-        setComponentProp(attrName, true, "boolean attribute-form");
+      attrs[rawToken] = "";
+      if (isWebComponent && rawToken !== "id") {
+        setComponentProp(rawToken, true, "boolean attribute-form");
       }
     }
   }
