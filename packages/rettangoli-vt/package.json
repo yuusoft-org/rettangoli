@@ -3,6 +3,11 @@
   "version": "1.0.1",
   "description": "Rettangoli Visual Testing",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuusoft-org/rettangoli",
+    "directory": "packages/rettangoli-vt"
+  },
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
