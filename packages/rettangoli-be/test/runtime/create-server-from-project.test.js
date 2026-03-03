@@ -180,4 +180,52 @@ describe('createServerFromProject', () => {
 
     await runtime.close();
   });
+
+  it('handles CORS preflight on rpcPath when be.cors is configured', async () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-server-cors-'));
+    createdDirs.push(rootDir);
+
+    const srcDir = path.join(rootDir, 'src');
+    mkdirSync(srcDir, { recursive: true });
+    writePingMethodFiles({ rootDir });
+
+    writeFileSync(path.join(srcDir, 'setup.js'), [
+      'export const setup = {',
+      '  deps: {',
+      '    health: {},',
+      '  },',
+      '};',
+      '',
+    ].join('\n'));
+
+    writeFileSync(path.join(rootDir, 'rettangoli.config.yaml'), [
+      'be:',
+      '  cors:',
+      '    allowedOrigins: ["http://localhost:3001"]',
+      '    allowCredentials: true',
+      '',
+    ].join('\n'));
+
+    const runtime = await createServerFromProject({
+      cwd: rootDir,
+    });
+
+    await runtime.listen({ host: '127.0.0.1', port: 0 });
+    const address = runtime.server.address();
+    const port = Number(address.port);
+
+    const preflightResponse = await fetch(`http://127.0.0.1:${port}/rpc`, {
+      method: 'OPTIONS',
+      headers: {
+        Origin: 'http://localhost:3001',
+        'Access-Control-Request-Method': 'POST',
+      },
+    });
+
+    expect(preflightResponse.status).toBe(204);
+    expect(preflightResponse.headers.get('access-control-allow-origin')).toBe('http://localhost:3001');
+    expect(preflightResponse.headers.get('access-control-allow-credentials')).toBe('true');
+
+    await runtime.close();
+  });
 });

@@ -36,7 +36,21 @@ be:
   middlewareDir: "./src/middleware"
   setup: "./src/setup.js"
   outdir: "./.rtgl-be/generated"
+  cors:
+    allowedOrigins:
+      - "http://localhost:3001"
+    allowCredentials: true
+    allowMethods:
+      - "POST"
+      - "OPTIONS"
+    allowHeaders:
+      - "Content-Type"
+      - "Authorization"
+    maxAgeSec: 86400
 ```
+
+`be.cors` enables transport-level CORS handling for the RPC endpoint, including
+`OPTIONS` preflight responses.
 
 ## Commands
 

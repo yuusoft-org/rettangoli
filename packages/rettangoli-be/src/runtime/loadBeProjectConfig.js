@@ -10,7 +10,12 @@ const DEFAULT_BE_CONFIG = {
     before: [],
     after: [],
   },
+  cors: undefined,
 };
+
+const DEFAULT_CORS_ALLOW_METHODS = ['POST', 'OPTIONS'];
+const DEFAULT_CORS_ALLOW_HEADERS = ['Content-Type', 'Authorization'];
+const DEFAULT_CORS_MAX_AGE_SEC = 86400;
 
 const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
 
@@ -40,6 +45,91 @@ const normalizeStringList = (value, key) => {
 
     return entry.trim();
   });
+};
+
+const normalizeBoolean = (value, key, fallback) => {
+  if (value === undefined) return fallback;
+  if (typeof value !== 'boolean') {
+    throw new Error(`loadBeProjectConfig: ${key} must be a boolean`);
+  }
+  return value;
+};
+
+const normalizeOptionalInteger = (value, key, fallback) => {
+  if (value === undefined) return fallback;
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error(`loadBeProjectConfig: ${key} must be an integer >= 0`);
+  }
+  return value;
+};
+
+const normalizeRequiredStringList = ({ value, key, transform = (entry) => entry }) => {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error(`loadBeProjectConfig: ${key} must be a non-empty array`);
+  }
+
+  return value.map((entry, index) => {
+    if (typeof entry !== 'string' || !entry.trim()) {
+      throw new Error(`loadBeProjectConfig: ${key}[${index}] must be a non-empty string`);
+    }
+
+    return transform(entry.trim());
+  });
+};
+
+const normalizeOptionalStringList = ({ value, key, fallback = [], transform = (entry) => entry }) => {
+  if (value === undefined) return fallback;
+  if (!Array.isArray(value)) {
+    throw new Error(`loadBeProjectConfig: ${key} must be an array`);
+  }
+
+  return value.map((entry, index) => {
+    if (typeof entry !== 'string' || !entry.trim()) {
+      throw new Error(`loadBeProjectConfig: ${key}[${index}] must be a non-empty string`);
+    }
+
+    return transform(entry.trim());
+  });
+};
+
+const normalizeCorsConfig = (be) => {
+  if (be.cors === undefined) return undefined;
+  if (!isPlainObject(be.cors)) {
+    throw new Error('loadBeProjectConfig: be.cors must be an object');
+  }
+
+  return {
+    allowedOrigins: normalizeRequiredStringList({
+      value: be.cors.allowedOrigins,
+      key: 'be.cors.allowedOrigins',
+    }),
+    allowCredentials: normalizeBoolean(
+      be.cors.allowCredentials,
+      'be.cors.allowCredentials',
+      false,
+    ),
+    allowMethods: normalizeOptionalStringList({
+      value: be.cors.allowMethods,
+      key: 'be.cors.allowMethods',
+      fallback: DEFAULT_CORS_ALLOW_METHODS,
+      transform: (entry) => entry.toUpperCase(),
+    }),
+    allowHeaders: normalizeOptionalStringList({
+      value: be.cors.allowHeaders,
+      key: 'be.cors.allowHeaders',
+      fallback: DEFAULT_CORS_ALLOW_HEADERS,
+    }),
+    exposeHeaders: normalizeOptionalStringList({
+      value: be.cors.exposeHeaders,
+      key: 'be.cors.exposeHeaders',
+      fallback: [],
+    }),
+    maxAgeSec: normalizeOptionalInteger(
+      be.cors.maxAgeSec,
+      'be.cors.maxAgeSec',
+      DEFAULT_CORS_MAX_AGE_SEC,
+    ),
+  };
 };
 
 export const loadBeProjectConfig = ({
@@ -83,6 +173,7 @@ export const loadBeProjectConfig = ({
     port,
     rpcPath,
     globalMiddleware,
+    cors: normalizeCorsConfig(be),
   };
 };
 
