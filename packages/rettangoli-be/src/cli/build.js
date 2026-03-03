@@ -61,7 +61,6 @@ const writeGeneratedRegistry = ({
 const writeGeneratedAppEntry = ({
   outputFile,
   setupPath,
-  domainErrors = {},
 }) => {
   const lines = [
     `import { createApp } from '@rettangoli/be';`,
@@ -78,7 +77,6 @@ const writeGeneratedAppEntry = ({
     '  methodContracts: registry.methodContracts,',
     '  methodHandlers: registry.methodHandlers,',
     '  middlewareModules: registry.middlewareModules,',
-    `  domainErrors: ${JSON.stringify(domainErrors, null, 2)},`,
     '});',
     '',
     'export default app;',
@@ -94,7 +92,6 @@ const buildRettangoliBackend = (options = {}) => {
     middlewareDir = './src/middleware',
     setup = './src/setup.js',
     outdir = './.rtgl-be/generated',
-    domainErrors = {},
   } = options;
 
   const resolvedOutdir = path.resolve(cwd, outdir);
@@ -125,7 +122,6 @@ const buildRettangoliBackend = (options = {}) => {
   writeGeneratedAppEntry({
     outputFile: appEntryPath,
     setupPath: path.resolve(cwd, setup),
-    domainErrors,
   });
 
   console.log(`[Build] Generated backend registry: ${registryPath}`);

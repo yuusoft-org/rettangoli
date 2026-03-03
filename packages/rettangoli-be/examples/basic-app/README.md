@@ -48,5 +48,5 @@ bun run test:e2e
 and runs end-to-end JSON-RPC requests (success, validation errors, domain errors,
 method-not-found, parse errors, and cookie roundtrip).
 
-Domain error code/message mapping is configured in `rettangoli.config.yaml`
-under `be.domainErrors`.
+Domain errors are returned from handlers via `{ _error: true, type, details }`
+and are surfaced by JSON-RPC as domain-error responses.
