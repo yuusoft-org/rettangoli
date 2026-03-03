@@ -41,24 +41,24 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "1.0.0-rc29",
+      "version": "1.0.1",
       "bin": {
         "rtgl": "./cli.js",
       },
       "dependencies": {
-        "@rettangoli/be": "workspace:1.0.0-rc1",
-        "@rettangoli/check": "workspace:*",
-        "@rettangoli/fe": "workspace:1.0.0-rc3",
-        "@rettangoli/sites": "workspace:1.0.0-rc10",
-        "@rettangoli/ui": "workspace:1.0.0-rc14",
-        "@rettangoli/vt": "workspace:1.0.0-rc14",
+        "@rettangoli/be": "1.0.0-rc1",
+        "@rettangoli/check": "0.1.2",
+        "@rettangoli/fe": "1.0.1",
+        "@rettangoli/sites": "1.0.0-rc13",
+        "@rettangoli/ui": "1.0.1",
+        "@rettangoli/vt": "1.0.1",
         "commander": "^14.0.0",
         "js-yaml": "^4.1.0",
       },
     },
     "packages/rettangoli-fe": {
       "name": "@rettangoli/fe",
-      "version": "1.0.0-rc3",
+      "version": "1.0.1",
       "dependencies": {
         "esbuild": "^0.25.5",
         "immer": "^10.1.1",
@@ -110,7 +110,7 @@
     },
     "packages/rettangoli-ui": {
       "name": "@rettangoli/ui",
-      "version": "1.0.0-rc16",
+      "version": "1.0.2",
       "dependencies": {
         "@floating-ui/dom": "^1.6.13",
         "@rettangoli/fe": "workspace:*",
@@ -132,7 +132,7 @@
     },
     "packages/rettangoli-vt": {
       "name": "@rettangoli/vt",
-      "version": "1.0.0-rc15",
+      "version": "1.0.1",
       "dependencies": {
         "commander": "^13.1.0",
         "js-yaml": "^4.1.0",
@@ -779,6 +779,8 @@
 
     "@rettangoli/be/puty": ["puty@0.1.2", "", { "dependencies": { "js-yaml": "~4.1.0" }, "peerDependencies": { "vitest": ">=1.0.0" } }, "sha512-VNEwqORf0u/LiVdjyHPsIOKWC5z4uNuHhMgYu9WGea6u3YCP4OimQHQfWkw0DB/tE3KuWgPO0dhkM8uH4Yweig=="],
 
+    "@rettangoli/fe/puty": ["puty@0.1.2", "", { "dependencies": { "js-yaml": "~4.1.0" }, "peerDependencies": { "vitest": ">=1.0.0" } }, "sha512-VNEwqORf0u/LiVdjyHPsIOKWC5z4uNuHhMgYu9WGea6u3YCP4OimQHQfWkw0DB/tE3KuWgPO0dhkM8uH4Yweig=="],
+
     "@rettangoli/sites/jempl": ["jempl@0.3.1-rc1", "", {}, "sha512-LonPrWRdSqs3CBikkNu3ijLv+lS3eAKrLvXLOICrc1Lu8vAxiur7Z1AVGqpS03zntcM2cY9Q1ThXV8YNnf63Mw=="],
 
     "@rettangoli/sites/puty": ["puty@0.0.4", "", { "dependencies": { "js-yaml": "~4.1.0" } }, "sha512-1CXxgpG97hR/NXhMk0urgi8cZgYo9UeQSCTch9XCF6muZaM5LoffCkKJ9/5Y8duVHfJFSidYUFkWu9fQewi1Pw=="],
@@ -790,6 +792,8 @@
     "@rettangoli/ui/jempl": ["jempl@1.0.0", "", {}, "sha512-tYWOHqlIwev20Z47k8m1FeLM2EVxG91JY3ogMR166hdzUN1KeOGHxDhRj8Wfh0PmYIVWf57LB+fTUT/vOahoUg=="],
 
     "@rettangoli/vt/pixelmatch": ["pixelmatch@7.1.0", "", { "dependencies": { "pngjs": "^7.0.0" }, "bin": { "pixelmatch": "bin/pixelmatch" } }, "sha512-1wrVzJ2STrpmONHKBy228LM1b84msXDUoAzVEl0R8Mz4Ce6EPr+IVtxm8+yvrqLYMHswREkjYFaMxnyGnaY3Ng=="],
+
+    "@rettangoli/vt/puty": ["puty@0.1.2", "", { "dependencies": { "js-yaml": "~4.1.0" }, "peerDependencies": { "vitest": ">=1.0.0" } }, "sha512-VNEwqORf0u/LiVdjyHPsIOKWC5z4uNuHhMgYu9WGea6u3YCP4OimQHQfWkw0DB/tE3KuWgPO0dhkM8uH4Yweig=="],
 
     "color/color-convert": ["color-convert@2.0.1", "", { "dependencies": { "color-name": "~1.1.4" } }, "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ=="],
 
@@ -806,6 +810,8 @@
     "prebuild-install/detect-libc": ["detect-libc@2.0.4", "", {}, "sha512-3UDv+G9CsCKO1WKMGw9fwq/SWJYbI0c5Y7LU1AXYoDdbhE2AHQ6N6Nb34sG8Fj7T5APy8qXDCKuuIHd1BR0tVA=="],
 
     "prebuild-install/tar-fs": ["tar-fs@2.1.3", "", { "dependencies": { "chownr": "^1.1.1", "mkdirp-classic": "^0.5.2", "pump": "^3.0.0", "tar-stream": "^2.1.4" } }, "sha512-090nwYJDmlhwFwEW3QQl+vaNnxsO2yVsd45eTKRBzSzu+hlb1w2K9inVq5b0ngXuLVqQ4ApvsUHHnu/zQNkWAg=="],
+
+    "rtgl/@rettangoli/ui": ["@rettangoli/ui@1.0.1", "", { "dependencies": { "@floating-ui/dom": "^1.6.13", "@rettangoli/fe": "1.0.1", "commander": "^13.1.0", "jempl": "1.0.0", "js-yaml": "^4.1.0", "liquidjs": "^10.21.0", "snabbdom": "^3.6.2" } }, "sha512-6UDpEDefNCZKQhN99LgX82oWtHU46OwqN1kBuMqjmYAMusasS93QyeOq9NmN++6Y66xC8P/5gWMLsAg7hIWbWw=="],
 
     "rtgl/commander": ["commander@14.0.0", "", {}, "sha512-2uM9rYjPvyq39NwLRqaiLtWHyDC1FvryJDa2ATTVims5YAS4PupsEQsDvP14FqhFr0P49CYDugi59xaxJlTXRA=="],
 
@@ -870,5 +876,9 @@
     "looks-same/sharp/semver": ["semver@7.7.2", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA=="],
 
     "prebuild-install/tar-fs/tar-stream": ["tar-stream@2.2.0", "", { "dependencies": { "bl": "^4.0.3", "end-of-stream": "^1.4.1", "fs-constants": "^1.0.0", "inherits": "^2.0.3", "readable-stream": "^3.1.1" } }, "sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ=="],
+
+    "rtgl/@rettangoli/ui/commander": ["commander@13.1.0", "", {}, "sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw=="],
+
+    "rtgl/@rettangoli/ui/jempl": ["jempl@1.0.0", "", {}, "sha512-tYWOHqlIwev20Z47k8m1FeLM2EVxG91JY3ogMR166hdzUN1KeOGHxDhRj8Wfh0PmYIVWf57LB+fTUT/vOahoUg=="],
   }
 }
