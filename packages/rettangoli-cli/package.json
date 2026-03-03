@@ -48,7 +48,7 @@
     "commander": "^14.0.0",
     "js-yaml": "^4.1.0",
     "@rettangoli/check": "0.1.2",
-    "@rettangoli/be": "1.0.0-rc2",
+    "@rettangoli/be": "1.0.2",
     "@rettangoli/fe": "1.0.1",
     "@rettangoli/sites": "1.0.0-rc13",
     "@rettangoli/vt": "1.0.1",
