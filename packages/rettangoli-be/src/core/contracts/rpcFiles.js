@@ -175,7 +175,7 @@ export const buildRpcContractIndex = (entries = []) => {
 };
 
 const validateRpcRequiredKeys = (rpcObject, filePath, errors) => {
-  const requiredKeys = ['method', 'description', 'middleware', 'paramsSchema', 'outputSchema'];
+  const requiredKeys = ['method', 'description', 'middleware', 'paramsSchema', 'resultSchema', 'errorSchema'];
 
   requiredKeys.forEach((key) => {
     if (!Object.prototype.hasOwnProperty.call(rpcObject, key)) {
@@ -242,27 +242,18 @@ const validateSchemaKeys = ({ rpcObject, filePath, errors }) => {
     });
   }
 
-  if (!isPlainObject(rpcObject.outputSchema)) {
+  if (!isPlainObject(rpcObject.resultSchema)) {
     errors.push({
       code: 'RTGL-BE-CONTRACT-015',
-      message: 'RPC outputSchema must be an object with success/error schemas.',
+      message: 'RPC resultSchema must be an object schema.',
       filePath,
     });
-    return;
   }
 
-  if (!isPlainObject(rpcObject.outputSchema.success)) {
+  if (!isPlainObject(rpcObject.errorSchema)) {
     errors.push({
       code: 'RTGL-BE-CONTRACT-016',
-      message: 'RPC outputSchema.success must be an object schema.',
-      filePath,
-    });
-  }
-
-  if (!isPlainObject(rpcObject.outputSchema.error)) {
-    errors.push({
-      code: 'RTGL-BE-CONTRACT-017',
-      message: 'RPC outputSchema.error must be an object schema.',
+      message: 'RPC errorSchema must be an object schema.',
       filePath,
     });
   }

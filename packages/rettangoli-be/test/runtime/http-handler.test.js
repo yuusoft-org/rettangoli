@@ -43,25 +43,23 @@ describe('createHttpHandler', () => {
             properties: {},
             required: [],
           },
-          outputSchema: {
-            success: {
-              type: 'object',
-              additionalProperties: false,
-              properties: {
-                ok: { type: 'boolean' },
-                session: { type: 'string' },
-              },
-              required: ['ok', 'session'],
+          resultSchema: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              ok: { type: 'boolean' },
+              session: { type: 'string' },
             },
-            error: {
-              type: 'object',
-              additionalProperties: false,
-              properties: {
-                _error: { const: true },
-                type: { type: 'string' },
-              },
-              required: ['_error', 'type'],
+            required: ['ok', 'session'],
+          },
+          errorSchema: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              _error: { const: true },
+              type: { type: 'string' },
             },
+            required: ['_error', 'type'],
           },
         },
       },

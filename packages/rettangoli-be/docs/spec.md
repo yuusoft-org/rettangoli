@@ -125,8 +125,8 @@ Mandatory convention:
 - `middleware.before`: ordered middleware names to run before handler
 - `middleware.after`: ordered middleware names to run after handler
 - `paramsSchema`: JSON Schema for incoming payload (`ctx.request.params`)
-- `outputSchema.success`: JSON Schema for success object
-- `outputSchema.error`: JSON Schema for expected business error object (`_error: true`)
+- `resultSchema`: JSON Schema for success object
+- `errorSchema`: JSON Schema for expected business error object (`_error: true`)
 
 ## setup.js Responsibilities (App Composition Root)
 
@@ -320,14 +320,14 @@ Reserved key:
 
 ## RPC Contract Rules (App-Level)
 
-- RPC file must include `method`, `description`, `middleware`, `paramsSchema`, `outputSchema`
+- RPC file must include `method`, `description`, `middleware`, `paramsSchema`, `resultSchema`, `errorSchema`
 - `description` must be a non-empty string
 - `method` must exactly match the method id resolved for that handler folder
-- `paramsSchema`, `outputSchema.success`, and `outputSchema.error` are object schemas in v1
+- `paramsSchema`, `resultSchema`, and `errorSchema` are object schemas in v1
 - default to `additionalProperties: false`
 - compile must fail app startup if any RPC contract is invalid
-- `outputSchema.success` validates success payloads only (objects without `_error: true`)
-- `outputSchema.error` validates expected business error payloads (`_error: true`)
+- `resultSchema` validates success payloads only (objects without `_error: true`)
+- `errorSchema` validates expected business error payloads (`_error: true`)
 
 ## Middleware Rules (App-Level)
 

@@ -2,7 +2,7 @@
 
 import { build, check, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { check as checkContracts } from "@rettangoli/check/cli";
-import { build as buildBe, check as checkBe, watch as watchBe } from "@rettangoli/be/cli";
+import { build as buildBe, check as checkBe, start as startBe, watch as watchBe } from "@rettangoli/be/cli";
 import { generate, screenshot, report, accept } from "@rettangoli/vt/cli";
 import { buildSite, watchSite, initSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
@@ -54,6 +54,19 @@ function parsePortOption(value) {
     throw new InvalidArgumentError(`Port must be between 1 and 65535, received "${value}"`);
   }
   return parsed;
+}
+
+function resolveBeRuntimePaths(config) {
+  const be = config?.be || {};
+  const dirs = Array.isArray(be.dirs) && be.dirs.length > 0 ? be.dirs : ["./src/modules"];
+
+  return {
+    dirs,
+    middlewareDir: be.middlewareDir || "./src/middleware",
+    setup: be.setup || "./src/setup.js",
+    outdir: be.outdir || "./.rtgl-be/generated",
+    domainErrors: be.domainErrors || {},
+  };
 }
 
 const program = new Command();
@@ -296,22 +309,20 @@ beCommand
       throw new Error("rettangoli.config.yaml not found");
     }
 
-    if (!config.be?.dirs?.length) {
-      throw new Error("be.dirs not found or empty in config");
-    }
+    const bePaths = resolveBeRuntimePaths(config);
 
-    const missingDirs = config.be.dirs.filter(
+    const missingDirs = bePaths.dirs.filter(
       (dir) => !existsSync(resolve(process.cwd(), dir)),
     );
     if (missingDirs.length > 0) {
       throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
     }
 
-    options.dirs = config.be.dirs;
-    options.middlewareDir = options.middlewareDir || config.be.middlewareDir || "./src/middleware";
-    options.setup = options.setupPath || config.be.setup || "./src/setup.js";
-    options.outdir = options.outdir || config.be.outdir || "./.rtgl-be/generated";
-    options.domainErrors = config.be.domainErrors || {};
+    options.dirs = bePaths.dirs;
+    options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
+    options.setup = options.setupPath || bePaths.setup;
+    options.outdir = options.outdir || bePaths.outdir;
+    options.domainErrors = bePaths.domainErrors;
 
     buildBe(options);
   });
@@ -328,21 +339,40 @@ beCommand
       throw new Error("rettangoli.config.yaml not found");
     }
 
-    if (!config.be?.dirs?.length) {
-      throw new Error("be.dirs not found or empty in config");
-    }
+    const bePaths = resolveBeRuntimePaths(config);
 
-    const missingDirs = config.be.dirs.filter(
+    const missingDirs = bePaths.dirs.filter(
       (dir) => !existsSync(resolve(process.cwd(), dir)),
     );
     if (missingDirs.length > 0) {
       throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
     }
 
-    options.dirs = config.be.dirs;
-    options.middlewareDir = options.middlewareDir || config.be.middlewareDir || "./src/middleware";
+    options.dirs = bePaths.dirs;
+    options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
 
     checkBe(options);
+  });
+
+beCommand
+  .command("start")
+  .description("Start backend HTTP server")
+  .option("--host <host>", "Override host from config")
+  .option("--port <port>", "Override port from config", parsePortOption)
+  .action(async (options) => {
+    const startOptions = {
+      cwd: process.cwd(),
+    };
+
+    if (options.host) {
+      startOptions.host = options.host;
+    }
+
+    if (options.port !== undefined) {
+      startOptions.port = options.port;
+    }
+
+    await startBe(startOptions);
   });
 
 beCommand
@@ -358,22 +388,20 @@ beCommand
       throw new Error("rettangoli.config.yaml not found");
     }
 
-    if (!config.be?.dirs?.length) {
-      throw new Error("be.dirs not found or empty in config");
-    }
+    const bePaths = resolveBeRuntimePaths(config);
 
-    const missingDirs = config.be.dirs.filter(
+    const missingDirs = bePaths.dirs.filter(
       (dir) => !existsSync(resolve(process.cwd(), dir)),
     );
     if (missingDirs.length > 0) {
       throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
     }
 
-    options.dirs = config.be.dirs;
-    options.middlewareDir = options.middlewareDir || config.be.middlewareDir || "./src/middleware";
-    options.setup = options.setupPath || config.be.setup || "./src/setup.js";
-    options.outdir = options.outdir || config.be.outdir || "./.rtgl-be/generated";
-    options.domainErrors = config.be.domainErrors || {};
+    options.dirs = bePaths.dirs;
+    options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
+    options.setup = options.setupPath || bePaths.setup;
+    options.outdir = options.outdir || bePaths.outdir;
+    options.domainErrors = bePaths.domainErrors;
 
     watchBe(options);
   });
