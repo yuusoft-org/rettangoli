@@ -89,6 +89,7 @@ class RettangoliCheckboxElement extends HTMLElement {
 
   constructor() {
     super();
+    this._isSyncingLabelState = false;
     RettangoliCheckboxElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.adoptedStyleSheets = [RettangoliCheckboxElement.styleSheet];
@@ -270,22 +271,33 @@ class RettangoliCheckboxElement extends HTMLElement {
   }
 
   _updateLabelState() {
-    const fallbackLabel = this.getAttribute("label");
-    this._labelSlotElement.textContent = fallbackLabel ?? "";
-
-    const assignedNodes = this._labelSlotElement.assignedNodes({ flatten: true });
-    const hasAssignedLabel = assignedNodes.some((node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        return node.textContent.trim().length > 0;
+    if (this._isSyncingLabelState) return;
+    this._isSyncingLabelState = true;
+    try {
+      const fallbackLabel = this.getAttribute("label");
+      const fallbackText = fallbackLabel ?? "";
+      if (this._labelSlotElement.textContent !== fallbackText) {
+        this._labelSlotElement.textContent = fallbackText;
       }
-      return node.nodeType === Node.ELEMENT_NODE;
-    });
-    const hasFallbackLabel = typeof fallbackLabel === "string" && fallbackLabel.trim().length > 0;
 
-    if (hasAssignedLabel || hasFallbackLabel) {
-      this.setAttribute("has-label", "");
-    } else {
-      this.removeAttribute("has-label");
+      const assignedNodes = this._labelSlotElement.assignedNodes({ flatten: true });
+      const hasAssignedLabel = assignedNodes.some((node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          return node.textContent.trim().length > 0;
+        }
+        return node.nodeType === Node.ELEMENT_NODE;
+      });
+      const hasFallbackLabel =
+        typeof fallbackLabel === "string" && fallbackLabel.trim().length > 0;
+
+      const shouldHaveLabel = hasAssignedLabel || hasFallbackLabel;
+      if (shouldHaveLabel && !this.hasAttribute("has-label")) {
+        this.setAttribute("has-label", "");
+      } else if (!shouldHaveLabel && this.hasAttribute("has-label")) {
+        this.removeAttribute("has-label");
+      }
+    } finally {
+      this._isSyncingLabelState = false;
     }
   }
 }
