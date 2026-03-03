@@ -126,14 +126,10 @@ export const createApp = ({
   globalMiddlewareBefore = [],
   globalMiddlewareAfter = [],
   middlewareDeps = {},
-  domainErrors = {},
-  allowUnknownDomainErrors = false,
   createRequestId,
   includeInternalErrorDetails = false,
 } = {}) => {
   const normalizedSetup = normalizeSetup(setup);
-  void domainErrors;
-  void allowUnknownDomainErrors;
   const requestIdFactory = withDefaultRequestIdFactory(createRequestId);
   const schemaCompiler = createSchemaCompiler();
 
