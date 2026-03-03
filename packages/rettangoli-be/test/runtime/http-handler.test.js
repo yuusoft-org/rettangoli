@@ -13,6 +13,7 @@ const buildHttpResponseMock = () => {
     setHeader: (name, value) => {
       headers[name] = value;
     },
+    getHeader: (name) => headers[name],
     end: (value) => {
       body = value;
     },
@@ -212,5 +213,67 @@ describe('createHttpHandler', () => {
     expect(response.statusCode).toBe(408);
     expect(payload.error.code).toBe(-32600);
     expect(payload.error.data.reason).toBe('request_timeout');
+  });
+
+  it('handles CORS preflight OPTIONS for allowed origin', async () => {
+    const app = {
+      dispatchWithContext: async () => ({ response: { jsonrpc: '2.0', id: 'x', result: {} } }),
+    };
+
+    const handler = createHttpHandler({
+      app,
+      cors: {
+        allowedOrigins: ['http://localhost:3001'],
+        allowCredentials: true,
+      },
+    });
+    const request = new PassThrough();
+    request.method = 'OPTIONS';
+    request.headers = {
+      origin: 'http://localhost:3001',
+      'access-control-request-method': 'POST',
+    };
+    request.socket = { remoteAddress: '127.0.0.1' };
+    const response = buildHttpResponseMock();
+
+    await handler(request, response);
+
+    expect(response.statusCode).toBe(204);
+    expect(response.headers['Access-Control-Allow-Origin']).toBe('http://localhost:3001');
+    expect(response.headers['Access-Control-Allow-Credentials']).toBe('true');
+  });
+
+  it('rejects CORS origin not in allowlist', async () => {
+    const app = {
+      dispatchWithContext: async () => ({ response: { jsonrpc: '2.0', id: 'x', result: {} } }),
+    };
+
+    const handler = createHttpHandler({
+      app,
+      cors: {
+        allowedOrigins: ['http://localhost:3001'],
+      },
+    });
+    const request = new PassThrough();
+    request.method = 'POST';
+    request.headers = {
+      origin: 'http://localhost:3002',
+      'content-type': 'application/json',
+    };
+    request.socket = { remoteAddress: '127.0.0.1' };
+    const response = buildHttpResponseMock();
+
+    const runPromise = handler(request, response);
+    request.end(JSON.stringify({
+      jsonrpc: '2.0',
+      id: '1',
+      method: 'health.ping',
+      params: {},
+    }));
+    await runPromise;
+
+    const payload = JSON.parse(response.getBody());
+    expect(response.statusCode).toBe(403);
+    expect(payload.error.data.reason).toBe('cors_origin_not_allowed');
   });
 });

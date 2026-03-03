@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/be",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Backend framework for Rettangoli JSON-RPC applications",
   "type": "module",
   "main": "./src/index.js",

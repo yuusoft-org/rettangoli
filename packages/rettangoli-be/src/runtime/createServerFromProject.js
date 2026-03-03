@@ -218,7 +218,10 @@ export const createServerFromProject = async ({
     extensions,
   });
 
-  const rpcHandler = createHttpHandler({ app });
+  const rpcHandler = createHttpHandler({
+    app,
+    cors: beConfig.cors,
+  });
   const httpExtensions = extensions.filter((entry) => entry.type === 'http');
   const wsExtensions = extensions.filter((entry) => entry.type === 'ws');
 
