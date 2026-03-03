@@ -1,74 +1,58 @@
 # `setup.js` Runtime Contract
 
-Status: implemented in runtime (`createServerFromProject`).
+This document defines the authoritative backend runtime contract used by `createServerFromProject`.
 
-## Why This Exists
+## Scope
 
-Current backend usage still has custom runtime boilerplate in app `index.js` and runtime wrapper files.
-This proposal makes `src/setup.js` the single app entry contract for app logic, while server transport settings live in `rettangoli.config.yaml`.
+This contract governs:
+- app composition in `src/setup.js`
+- server/runtime config in `rettangoli.config.yaml`
+- RPC + extension mounting and lifecycle
 
-Goals:
-- Remove app-level direct runtime imports from `@rettangoli/be`.
-- Keep method-level middleware in `*.rpc.yaml`.
-- Define global middleware at app level via config.
-- Support additional behavior (for example `/sync` WebSocket) through constrained extensions.
-- Keep startup and transport ownership inside framework runtime.
-- Keep frontend error handling simple (`error.data.type`), without app-specific numeric error maps.
+## Fixed Project Conventions
 
-Non-goals:
-- No unrestricted custom router API from app code.
-- No direct app control over internal RPC dispatcher implementation.
-
-## Settled Decisions
-
-1. `rpc.routes` is removed.
-2. RPC path is a single config value (`rpcPath`, default `/rpc`).
-3. Global and method middleware are additive.
-4. Duplicate middleware names are not deduped; they run multiple times if configured multiple times.
-5. `healthz`, `readyz`, and `version` are modeled as extensions (built-in framework extensions).
-6. `attachments` naming is replaced with `extensions`.
-7. `setup.js` keeps only `deps` and `extensions`.
-8. Server settings are moved to `rettangoli.config.yaml` under `be`.
-9. Domain error mapping list is removed; framework uses one default domain error code.
-
-## High-Level Model
-
-- App exports one object from `src/setup.js`.
-- Framework reads `setup.js` + `rettangoli.config.yaml`.
-- Framework starts and owns HTTP server lifecycle.
-- Framework mounts RPC endpoint at configured `be.rpcPath`.
-- App can register extra HTTP/WS behavior via `setup.extensions` only.
-
-## Project Discovery Conventions (Fixed)
-
-These paths are conventions, not config:
-- methods directory: `./src/modules`
-- middleware directory: `./src/middleware`
+Runtime discovery uses fixed paths:
+- methods: `./src/modules`
+- middleware: `./src/middleware`
 - setup file: `./src/setup.js`
 
-`rettangoli.config.yaml` does not expose overrides for these paths in this proposal.
+These paths are not configurable through YAML.
 
-## `setup.js` Shape (App Logic Only)
+## `setup.js` Contract
+
+`src/setup.js` MUST export either:
+- named export `setup`, or
+- default export containing the same object shape
+
+Required shape:
 
 ```js
 export const setup = {
   deps: {
+    // domain deps by module name
     health: {},
     user: {},
     project: {},
   },
 
-  extensions: [
-    // custom + built-in extension entries
-  ],
+  // optional; if omitted, built-ins are mounted
+  extensions: [],
 };
 ```
 
-Defaults:
-- `deps` is required.
-- `extensions` defaults to `[]` and framework can inject default built-ins if not explicitly set.
+Rules:
+- `setup` MUST be an object.
+- `setup.deps` MUST be an object.
+- `setup.extensions` is optional.
+- If `setup.extensions` is omitted (`undefined`), runtime mounts default built-ins:
+  - `createHealthExtension()`
+  - `createReadyExtension()`
+  - `createVersionExtension()`
+- If `setup.extensions` is provided (including `[]`), runtime uses that array exactly.
 
-## `rettangoli.config.yaml` Shape (Server + Runtime)
+## `rettangoli.config.yaml` Contract
+
+Runtime reads `be` config from `rettangoli.config.yaml`.
 
 ```yaml
 be:
@@ -83,32 +67,48 @@ be:
       - "logResponse"
 ```
 
-Key names used:
-- `be.rpcPath`
-- `be.globalMiddleware.before`
-- `be.globalMiddleware.after`
+Supported keys:
+- `be.host`: string
+- `be.port`: positive integer
+- `be.rpcPath`: absolute path string (must start with `/`)
+- `be.globalMiddleware.before`: array of middleware names
+- `be.globalMiddleware.after`: array of middleware names
 
-## RPC Endpoint Model
+Environment overrides:
+- `HOST` overrides `be.host`
+- `PORT` overrides `be.port`
 
-- RPC endpoint path is configured by `be.rpcPath`.
-- Method naming remains `moduleName.methodName` from each `*.rpc.yaml` contract.
-- `moduleName` comes from first segment under `src/modules`.
-- `methodName` comes from method folder/file convention (`<action>.handlers.js` + `<action>.rpc.yaml`).
-- Method dispatch is unchanged by setup-level config.
+Defaults when YAML is missing or key is omitted:
+- `host = "0.0.0.0"`
+- `port = 8787`
+- `rpcPath = "/rpc"`
+- `globalMiddleware.before = []`
+- `globalMiddleware.after = []`
 
-## Error Model (Simplified)
+## RPC Model
 
-Transport/protocol errors use standard JSON-RPC codes:
+- RPC endpoint is mounted at `be.rpcPath`.
+- Method ids follow `moduleName.methodName` from files under `src/modules/**`.
+- Per-method contract file keys are:
+  - `method`
+  - `description`
+  - `middleware.before` / `middleware.after`
+  - `paramsSchema`
+  - `resultSchema`
+  - `errorSchema`
+
+## Error Model
+
+JSON-RPC protocol errors:
 - `-32700` parse error
 - `-32600` invalid request
 - `-32601` method not found
 - `-32602` invalid params
 - `-32603` internal error
 
-Domain/business errors use a single default code:
-- `-32000`
-
-Domain error payload shape:
+Domain/business errors:
+- mapped to `-32000`
+- payload shape:
 
 ```json
 {
@@ -127,166 +127,97 @@ Domain error payload shape:
 }
 ```
 
-Frontend contract:
-- Branch on `error.data.type` for business logic.
-- Do not require per-app numeric domain code mapping.
-
-Validation rules:
-- `be.rpcPath` must be a non-empty absolute path.
-- `be.rpcPath` cannot collide with any extension path.
+Client handling contract:
+- branch on `error.data.type`
 
 ## Middleware Model
 
-Method-level middleware:
-- Defined in each method `*.rpc.yaml` (`middleware.before`, `middleware.after`).
+Method middleware is declared in each method `*.rpc.yaml`.
+Global middleware is declared in `be.globalMiddleware.before/after`.
 
-Global middleware:
-- Defined in `rettangoli.config.yaml` via:
-  - `be.globalMiddleware.before`
-  - `be.globalMiddleware.after`
-
-Final execution order:
+Execution order:
 1. global `before`
 2. method `before`
 3. handler
 4. method `after`
 5. global `after`
 
-Duplicate behavior:
-- No dedupe. Same middleware name can run multiple times if listed multiple times.
+Behavior:
+- middleware lists are additive
+- duplicate names are not deduplicated
+- if a `before` middleware short-circuits, downstream chain is skipped
+- `after` chains for entered scopes still execute
 
-Short-circuit behavior:
-- If a `before` middleware returns early (does not call `next`), downstream pipeline is skipped.
-- Any `after` pipeline for scopes that were entered still runs.
-- Practical case: auth failure in method `before` returns domain error; method `after` and global `after` still run.
+## Extension Model
 
-Throw behavior:
-- If downstream throws, entered `after` middleware still runs with error context available (`ctx.error`), then framework maps to JSON-RPC internal/domain output as applicable.
-
-## Extensions (Replaces "Attachments")
-
-`setup.extensions` is the standard extension point for additional behavior.
-
-Extension kinds:
-- `http` extension
-- `ws` extension
-
-### Extension Interface (Proposed)
+`setup.extensions` entries must match this shape:
 
 ```js
 {
   name: "sync",
-  type: "ws",            // "http" | "ws"
+  type: "http" | "ws",
   path: "/sync",
-  methods: ["GET"],      // optional; http only
+  methods: ["GET"], // optional; http only
 
-  // optional lifecycle hooks
   setup: async (ctx) => {},
-  onRequest: async (reqCtx) => {},   // http only
-  onUpgrade: async (wsCtx) => {},    // ws only
+  onRequest: async (reqCtx) => {}, // http only
+  onUpgrade: async (wsCtx) => {},  // ws only
   onShutdown: async (ctx) => {},
 }
 ```
 
-`setup(ctx)` receives read-only framework resources:
-- `config`
-- `deps` (includes `deps.logger`)
+Validation rules:
+- `type` must be `http` or `ws`
+- `path` must be absolute (start with `/`)
+- `methods` is allowed only for `http`
+- extension paths must be unique
+- extension path must not equal `be.rpcPath`
 
-`onRequest(reqCtx)` receives:
-- `req`, `res`, `meta`, `cookies`, `deps`
+HTTP method defaults:
+- if `methods` is omitted for `http`, runtime defaults to `['GET']`
 
-`onUpgrade(wsCtx)` receives:
-- `request`, `socket`, `head`, `meta`, `deps`
+Hook contexts:
+- `setup(ctx)` receives:
+  - `config`
+  - `deps`
+- `onRequest(reqCtx)` receives:
+  - `req`, `res`, `meta`, `cookies`, `deps`
+- `onUpgrade(wsCtx)` receives:
+  - `request`, `socket`, `head`, `meta`, `deps`
+- `onShutdown(ctx)` receives:
+  - `config`, `deps`
 
-Restrictions:
-- Extension `path` cannot collide with `be.rpcPath`.
-- Extension paths must be unique.
-- Extension cannot access internal RPC dispatcher APIs.
+## Built-in Extensions
 
-## Built-in Extensions (`healthz`, `readyz`, `version`)
+Factories are exported from `@rettangoli/be/extensions`:
+- `createHealthExtension`
+- `createReadyExtension`
+- `createVersionExtension`
 
-These are implemented by the framework as built-in extensions.
-
-Model:
-- Built-ins follow the same extension contract.
-- Built-ins are enabled by default unless explicitly disabled/overridden in setup.
-- Built-ins are exposed as factory functions from `@rettangoli/be/extensions`.
-
-Example setup override:
-
-```js
-import {
-  createHealthExtension,
-  createReadyExtension,
-  createVersionExtension,
-} from "@rettangoli/be/extensions";
-
-export const setup = {
-  deps: {
-    health: {},
-    user: {},
-    project: {},
-  },
-  extensions: [
-    createHealthExtension({ path: "/healthz" }),
-    createReadyExtension({ path: "/readyz" }),
-    createVersionExtension({ path: "/version" }),
-
-    {
-      name: "sync",
-      type: "ws",
-      path: "/sync",
-      onUpgrade: async ({ request, socket, head, deps }) => {
-        const logger = deps.logger;
-        // custom ws handling
-      },
-    },
-  ],
-};
-```
-
-This keeps health/readiness/version implementation location clear: framework-owned extension implementations.
+Default payloads:
+- health: `{ "status": "ok" }`
+- ready: `{ "ok": true }`
+- version: `{ "ok": true }`
 
 ## Startup Validation (Fail Fast)
 
-Framework must fail startup when:
-- `setup` export missing or invalid.
-- global middleware names cannot be resolved.
-- `be.rpcPath` is invalid/colliding.
-- extension path conflicts exist.
-- extension interface contract is invalid.
+Runtime startup fails when:
+- setup export is missing/invalid
+- `setup.deps` is missing/invalid
+- middleware references cannot be resolved
+- `be.rpcPath` is invalid
+- extension shape or path constraints are invalid
+- any RPC contract validation fails
 
 ## Lifecycle
 
-- Framework initializes deps and RPC runtime first.
-- Framework initializes extensions.
-- Framework starts HTTP server.
-- On shutdown:
-1. stop accepting new connections
-2. run extension `onShutdown` hooks
-3. close framework/runtime resources
-4. exit
+Startup order:
+1. load config + setup
+2. build RPC app
+3. initialize extensions (`setup` hook)
+4. start HTTP server
 
-## CLI UX Target
-
-Expected commands:
-- `rtgl be check`
-- `rtgl be build`
-- `rtgl be watch`
-- `rtgl be start` (or `rtgl be dev`)
-
-App should not need `src/index.js` for standard startup.
-
-## Migration Plan (RouteVN)
-
-1. Move server options to `rettangoli.config.yaml` (`host`, `port`, `rpcPath`, `globalMiddleware`).
-2. Keep app `setup.js` limited to `deps` and `extensions`.
-3. Add `/sync` using `extensions`.
-4. Remove custom runtime wrapper.
-5. Start service via framework command (`rtgl be start`).
-
-## Remaining Open Questions
-
-1. Should built-in extensions be enabled by default or explicit-only?
-2. Should extension `methods` default to all methods for HTTP extensions, or explicit-only?
-3. Should extension hooks be allowed to write cookies directly, or via framework helper only?
+Shutdown order:
+1. run extension `onShutdown` hooks
+2. close HTTP server
+3. close runtime resources
