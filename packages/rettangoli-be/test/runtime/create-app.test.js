@@ -16,27 +16,25 @@ const healthContract = {
     },
     required: [],
   },
-  outputSchema: {
-    success: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        ok: { type: 'boolean' },
-        echo: { type: 'string' },
-        requestId: { type: 'string' },
-      },
-      required: ['ok', 'requestId'],
+  resultSchema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      ok: { type: 'boolean' },
+      echo: { type: 'string' },
+      requestId: { type: 'string' },
     },
-    error: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        _error: { const: true },
-        type: { type: 'string' },
-        details: { type: 'object', additionalProperties: true },
-      },
-      required: ['_error', 'type'],
+    required: ['ok', 'requestId'],
+  },
+  errorSchema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      _error: { const: true },
+      type: { type: 'string' },
+      details: { type: 'object', additionalProperties: true },
     },
+    required: ['_error', 'type'],
   },
 };
 
@@ -131,7 +129,7 @@ describe('createApp', () => {
     ]);
   });
 
-  it('maps domain _error object to JSON-RPC error', async () => {
+  it('maps domain _error object to JSON-RPC default domain error', async () => {
     const app = createApp({
       setup: {
         port: 3000,
@@ -159,12 +157,6 @@ describe('createApp', () => {
           withAfter: () => (next) => async (ctx) => next(ctx),
         },
       },
-      domainErrors: {
-        AUTH_REQUIRED: {
-          code: -32001,
-          message: 'Authentication required',
-        },
-      },
       createRequestId: () => 'req-2',
     });
 
@@ -181,8 +173,8 @@ describe('createApp', () => {
       jsonrpc: '2.0',
       id: '2',
       error: {
-        code: -32001,
-        message: 'Authentication required',
+        code: -32000,
+        message: 'Domain error',
         data: {
           type: 'AUTH_REQUIRED',
           details: { reason: 'auth_required' },
@@ -191,7 +183,7 @@ describe('createApp', () => {
     });
   });
 
-  it('treats unknown domain error type as internal error by default', async () => {
+  it('maps unknown domain error type to default domain error code', async () => {
     const app = createApp({
       setup: {
         port: 3000,
@@ -231,8 +223,100 @@ describe('createApp', () => {
       },
     });
 
-    expect(response.error.code).toBe(-32603);
-    expect(response.error.message).toBe('Internal error');
+    expect(response.error.code).toBe(-32000);
+    expect(response.error.message).toBe('Domain error');
+    expect(response.error.data.type).toBe('UNDECLARED_DOMAIN_ERROR');
+  });
+
+  it('supports globalMiddlewareBefore/globalMiddlewareAfter execution order', async () => {
+    const trace = [];
+
+    const app = createApp({
+      setup: {
+        deps: {
+          health: {},
+        },
+      },
+      methodContracts: {
+        'health.ping': healthContract,
+      },
+      methodHandlers: {
+        'health.ping': {
+          healthPingMethod: async ({ context }) => {
+            trace.push('handler');
+            return {
+              ok: true,
+              requestId: context.requestId,
+            };
+          },
+        },
+      },
+      middlewareModules: {
+        withBefore: {
+          withBefore: ({ trace }) => (next) => async (ctx) => {
+            trace.push('method-before-pre');
+            const output = await next(ctx);
+            trace.push('method-before-post');
+            return output;
+          },
+        },
+        withAfter: {
+          withAfter: ({ trace }) => (next) => async (ctx) => {
+            trace.push('method-after-pre');
+            const output = await next(ctx);
+            trace.push('method-after-post');
+            return output;
+          },
+        },
+        globalBefore: {
+          globalBefore: ({ trace }) => (next) => async (ctx) => {
+            trace.push('global-before-pre');
+            const output = await next(ctx);
+            trace.push('global-before-post');
+            return output;
+          },
+        },
+        globalAfter: {
+          globalAfter: ({ trace }) => (next) => async (ctx) => {
+            trace.push('global-after-pre');
+            const output = await next(ctx);
+            trace.push('global-after-post');
+            return output;
+          },
+        },
+      },
+      middlewareDeps: {
+        withBefore: { trace },
+        withAfter: { trace },
+        globalBefore: { trace },
+        globalAfter: { trace },
+      },
+      globalMiddlewareBefore: ['globalBefore'],
+      globalMiddlewareAfter: ['globalAfter'],
+      createRequestId: () => 'req-global-1',
+    });
+
+    const response = await app.dispatch({
+      request: {
+        jsonrpc: '2.0',
+        id: 'global-1',
+        method: 'health.ping',
+        params: {},
+      },
+    });
+
+    expect(response.result.ok).toBe(true);
+    expect(trace).toEqual([
+      'global-before-pre',
+      'method-before-pre',
+      'handler',
+      'method-before-post',
+      'method-after-pre',
+      'method-after-post',
+      'global-before-post',
+      'global-after-pre',
+      'global-after-post',
+    ]);
   });
 
   it('returns internal error when output schema validation fails', async () => {

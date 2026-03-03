@@ -121,8 +121,7 @@ paramsSchema:
     echo:
       type: string
   required: []
-outputSchema:
-  success:
+resultSchema:
     type: object
     additionalProperties: false
     properties:
@@ -135,7 +134,7 @@ outputSchema:
       requestId:
         type: string
     required: [ok, ts, requestId]
-  error:
+errorSchema:
     type: object
     additionalProperties: false
     properties:
@@ -245,8 +244,7 @@ paramsSchema:
   additionalProperties: false
   properties: {}
   required: []
-outputSchema:
-  success:
+resultSchema:
     type: object
     additionalProperties: false
     properties:
@@ -257,7 +255,7 @@ outputSchema:
       role:
         type: string
     required: [id, email, role]
-  error:
+errorSchema:
     type: object
     additionalProperties: false
     properties:

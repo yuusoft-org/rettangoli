@@ -80,57 +80,10 @@ const createOutputValidationError = ({ method, target, validationErrors }) => {
   return new Error(`Invalid ${target} output for ${method}: ${details}`);
 };
 
-const normalizeDomainErrors = (domainErrors) => {
-  if (!isPlainObject(domainErrors)) {
-    throw new Error('createApp: domainErrors must be an object');
-  }
-
-  const normalized = {};
-  Object.entries(domainErrors).forEach(([type, value]) => {
-    if (!isPlainObject(value)) {
-      throw new Error(`createApp: domainErrors.${type} must be an object with code/message`);
-    }
-
-    if (!Number.isInteger(value.code)) {
-      throw new Error(`createApp: domainErrors.${type}.code must be an integer`);
-    }
-
-    if (typeof value.message !== 'string' || !value.message.trim()) {
-      throw new Error(`createApp: domainErrors.${type}.message must be a non-empty string`);
-    }
-
-    normalized[type] = {
-      code: value.code,
-      message: value.message,
-    };
-  });
-
-  return normalized;
-};
-
-const createDomainJsonRpcError = ({ domainError, domainErrors, allowUnknownDomainErrors }) => {
-  const mapped = domainErrors[domainError.type];
-  if (!mapped) {
-    if (!allowUnknownDomainErrors) {
-      throw new Error(`Unknown domain error type '${domainError.type}'`);
-    }
-
-    return createJsonRpcError({
-      code: JSON_RPC_ERROR_CODES.DOMAIN_ERROR_DEFAULT,
-      message: domainError.type,
-      data: {
-        type: domainError.type,
-        details: domainError.details,
-      },
-    });
-  }
-
-  const code = mapped.code;
-  const message = mapped.message;
-
+const createDomainJsonRpcError = ({ domainError }) => {
   return createJsonRpcError({
-    code,
-    message,
+    code: JSON_RPC_ERROR_CODES.DOMAIN_ERROR_DEFAULT,
+    message: 'Domain error',
     data: {
       type: domainError.type,
       details: domainError.details,
@@ -170,6 +123,8 @@ export const createApp = ({
   methodHandlers = {},
   middlewareModules = {},
   globalMiddleware = [],
+  globalMiddlewareBefore = [],
+  globalMiddlewareAfter = [],
   middlewareDeps = {},
   domainErrors = {},
   allowUnknownDomainErrors = false,
@@ -177,7 +132,8 @@ export const createApp = ({
   includeInternalErrorDetails = false,
 } = {}) => {
   const normalizedSetup = normalizeSetup(setup);
-  const normalizedDomainErrors = normalizeDomainErrors(domainErrors);
+  void domainErrors;
+  void allowUnknownDomainErrors;
   const requestIdFactory = withDefaultRequestIdFactory(createRequestId);
   const schemaCompiler = createSchemaCompiler();
 
@@ -198,6 +154,18 @@ export const createApp = ({
     list: globalMiddleware,
     middlewareByName,
     label: 'global',
+  });
+
+  const appLevelBeforeMiddleware = normalizeMiddlewareList({
+    list: globalMiddlewareBefore,
+    middlewareByName,
+    label: 'global before',
+  });
+
+  const appLevelAfterMiddleware = normalizeMiddlewareList({
+    list: globalMiddlewareAfter,
+    middlewareByName,
+    label: 'global after',
   });
 
   const methodRuntime = new Map();
@@ -242,13 +210,13 @@ export const createApp = ({
     });
 
     const successValidator = schemaCompiler.compile({
-      schema: rpcContract.outputSchema.success,
-      label: `${method} outputSchema.success`,
+      schema: rpcContract.resultSchema,
+      label: `${method} resultSchema`,
     });
 
     const errorValidator = schemaCompiler.compile({
-      schema: rpcContract.outputSchema.error,
-      label: `${method} outputSchema.error`,
+      schema: rpcContract.errorSchema,
+      label: `${method} errorSchema`,
     });
 
     methodRuntime.set(method, {
@@ -359,13 +327,31 @@ export const createApp = ({
       authUser: context.authUser,
     };
 
-    const runWithAppMiddleware = createMiddlewareChain({
+    const runWithLegacyGlobalMiddleware = createMiddlewareChain({
       middleware: appLevelMiddleware,
       finalHandler: (chainContext) => runMethodHandler(chainContext, runtimeMethod),
     });
 
+    const runWithGlobalBeforeAfter = async () => {
+      const runGlobalBefore = createMiddlewareChain({
+        middleware: appLevelBeforeMiddleware,
+        finalHandler: (chainContext) => runMethodHandler(chainContext, runtimeMethod),
+      });
+
+      const methodOutput = await runGlobalBefore(ctx);
+      const runGlobalAfter = createMiddlewareChain({
+        middleware: appLevelAfterMiddleware,
+        finalHandler: async () => methodOutput,
+      });
+
+      return runGlobalAfter(ctx);
+    };
+
     try {
-      const handlerOutput = await runWithAppMiddleware(ctx);
+      const handlerOutput =
+        appLevelBeforeMiddleware.length > 0 || appLevelAfterMiddleware.length > 0
+          ? await runWithGlobalBeforeAfter()
+          : await runWithLegacyGlobalMiddleware(ctx);
       const isDomainError = isPlainObject(handlerOutput) && handlerOutput._error === true;
 
       if (isDomainError) {
@@ -384,8 +370,6 @@ export const createApp = ({
             id: request.id,
             error: createDomainJsonRpcError({
               domainError: handlerOutput,
-              domainErrors: normalizedDomainErrors,
-              allowUnknownDomainErrors,
             }),
           }),
         };
