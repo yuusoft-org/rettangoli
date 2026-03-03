@@ -290,7 +290,7 @@ Success shape:
 
 Expected business failure shape:
 - return an object with `_error: true`
-- required field: `type` (stable domain error key, example: `AUTH_REQUIRED`)
+- required field: `code` (stable domain error key, example: `AUTH_REQUIRED`)
 - optional field: `details` (domain context)
 
 Example business failure:
@@ -298,7 +298,7 @@ Example business failure:
 ```js
 {
   _error: true,
-  type: 'USER_NOT_FOUND',
+  code: 'USER_NOT_FOUND',
   details: { userId: 'u-404' },
 }
 ```
@@ -308,7 +308,7 @@ Unexpected/system failure:
 - runtime maps thrown errors to internal/server error handling
 
 Runtime mapping responsibility:
-- runtime maps domain `type` values to protocol-specific errors (JSON-RPC `code/message/data`)
+- runtime maps domain `code` values to protocol-specific errors (JSON-RPC `code/message/data`)
 - handlers must not return protocol codes/messages
 
 Reserved key:

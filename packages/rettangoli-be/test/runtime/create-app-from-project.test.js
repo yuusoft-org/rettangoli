@@ -93,9 +93,9 @@ describe('createAppFromProject', () => {
       '    properties:',
       '      _error:',
       '        const: true',
-      '      type:',
+      '      code:',
       '        type: string',
-      '    required: [_error, type]',
+      '    required: [_error, code]',
       '',
     ].join('\n'));
 
@@ -189,9 +189,9 @@ describe('createAppFromProject', () => {
       '    properties:',
       '      _error:',
       '        const: true',
-      '      type:',
+      '      code:',
       '        type: string',
-      '    required: [_error, type]',
+      '    required: [_error, code]',
       '',
     ].join('\n'));
     writeFileSync(path.join(methodDir, 'ping.spec.yaml'), [

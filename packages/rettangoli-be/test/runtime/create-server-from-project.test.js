@@ -37,9 +37,9 @@ const writePingMethodFiles = ({ rootDir }) => {
     '    properties:',
     '      _error:',
     '        const: true',
-    '      type:',
+    '      code:',
     '        type: string',
-    '    required: [_error, type]',
+    '    required: [_error, code]',
     '',
   ].join('\n'));
 

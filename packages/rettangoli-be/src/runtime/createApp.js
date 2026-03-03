@@ -85,7 +85,7 @@ const createDomainJsonRpcError = ({ domainError }) => {
     code: JSON_RPC_ERROR_CODES.DOMAIN_ERROR_DEFAULT,
     message: 'Domain error',
     data: {
-      type: domainError.type,
+      code: domainError.code,
       details: domainError.details,
     },
   });

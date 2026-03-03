@@ -118,7 +118,7 @@ Domain/business errors:
     "code": -32000,
     "message": "Domain error",
     "data": {
-      "type": "AUTH_REQUIRED",
+      "code": "AUTH_REQUIRED",
       "details": {
         "reason": "missing_auth_token"
       }
@@ -128,7 +128,7 @@ Domain/business errors:
 ```
 
 Client handling contract:
-- branch on `error.data.type`
+- branch on `error.data.code`
 
 ## Middleware Model
 

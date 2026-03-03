@@ -55,9 +55,9 @@ describe('be build cli', () => {
       '    properties:',
       '      _error:',
       '        const: true',
-      '      type:',
+      '      code:',
       '        type: string',
-      '    required: [_error, type]',
+      '    required: [_error, code]',
       '',
     ].join('\n'));
     writeFileSync(path.join(srcDir, 'modules', 'health', 'ping', 'ping.spec.yaml'), [

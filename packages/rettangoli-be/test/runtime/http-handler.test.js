@@ -57,9 +57,9 @@ describe('createHttpHandler', () => {
             additionalProperties: false,
             properties: {
               _error: { const: true },
-              type: { type: 'string' },
+              code: { type: 'string' },
             },
-            required: ['_error', 'type'],
+            required: ['_error', 'code'],
           },
         },
       },

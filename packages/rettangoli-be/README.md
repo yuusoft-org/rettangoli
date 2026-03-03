@@ -68,7 +68,7 @@ Expected domain error:
 ```js
 return {
   _error: true,
-  type: 'AUTH_REQUIRED',
+  code: 'AUTH_REQUIRED',
   details: { reason: 'auth_required' },
 };
 ```

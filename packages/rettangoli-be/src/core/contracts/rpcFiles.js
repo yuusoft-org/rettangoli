@@ -256,6 +256,28 @@ const validateSchemaKeys = ({ rpcObject, filePath, errors }) => {
       message: 'RPC errorSchema must be an object schema.',
       filePath,
     });
+    return;
+  }
+
+  if (!Array.isArray(rpcObject.errorSchema.required)
+    || !rpcObject.errorSchema.required.includes('_error')
+    || !rpcObject.errorSchema.required.includes('code')) {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-023',
+      message: "RPC errorSchema.required must include '_error' and 'code'.",
+      filePath,
+    });
+  }
+
+  const errorSchemaProperties = rpcObject.errorSchema.properties;
+  if (!isPlainObject(errorSchemaProperties)
+    || !Object.prototype.hasOwnProperty.call(errorSchemaProperties, '_error')
+    || !Object.prototype.hasOwnProperty.call(errorSchemaProperties, 'code')) {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-024',
+      message: "RPC errorSchema.properties must define '_error' and 'code'.",
+      filePath,
+    });
   }
 };
 

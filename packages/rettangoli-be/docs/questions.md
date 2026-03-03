@@ -26,6 +26,6 @@ This file records decisions that are now locked for v1.
 9. Both `resultSchema` and `errorSchema` are mandatory for every method.
 10. Method-level middleware hooks are declared in RPC files (`middleware.before` and `middleware.after`).
 11. `*.spec.yaml` is the puty test file convention.
-12. Domain error `type` keys are module-level concerns; runtime maps them to JSON-RPC code/message.
+12. Domain error `code` keys are module-level concerns; runtime maps them to JSON-RPC code/message.
 13. Middleware cookie contract uses `ctx.cookies.request/response` JSON objects only (no helper APIs).
 14. Middleware style is mutable (`ctx` in place + `next(ctx)`, no `{ ...ctx }`).

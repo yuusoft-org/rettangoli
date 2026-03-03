@@ -6,7 +6,7 @@ export const userGetProfileMethod = async ({ context, deps }) => {
   if (!context.authUser?.userId) {
     return {
       _error: true,
-      type: 'AUTH_REQUIRED',
+      code: 'AUTH_REQUIRED',
       details: { reason: 'auth_required' },
     };
   }
@@ -16,7 +16,7 @@ export const userGetProfileMethod = async ({ context, deps }) => {
   if (!user) {
     return {
       _error: true,
-      type: 'USER_NOT_FOUND',
+      code: 'USER_NOT_FOUND',
       details: { userId: context.authUser.userId },
     };
   }

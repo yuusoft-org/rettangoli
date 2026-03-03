@@ -31,10 +31,10 @@ const healthContract = {
     additionalProperties: false,
     properties: {
       _error: { const: true },
-      type: { type: 'string' },
+      code: { type: 'string' },
       details: { type: 'object', additionalProperties: true },
     },
-    required: ['_error', 'type'],
+    required: ['_error', 'code'],
   },
 };
 
@@ -144,7 +144,7 @@ describe('createApp', () => {
         'health.ping': {
           healthPingMethod: async () => ({
             _error: true,
-            type: 'AUTH_REQUIRED',
+            code: 'AUTH_REQUIRED',
             details: { reason: 'auth_required' },
           }),
         },
@@ -176,14 +176,14 @@ describe('createApp', () => {
         code: -32000,
         message: 'Domain error',
         data: {
-          type: 'AUTH_REQUIRED',
+          code: 'AUTH_REQUIRED',
           details: { reason: 'auth_required' },
         },
       },
     });
   });
 
-  it('maps unknown domain error type to default domain error code', async () => {
+  it('maps unknown domain error code to default domain error code', async () => {
     const app = createApp({
       setup: {
         port: 3000,
@@ -198,7 +198,7 @@ describe('createApp', () => {
         'health.ping': {
           healthPingMethod: async () => ({
             _error: true,
-            type: 'UNDECLARED_DOMAIN_ERROR',
+            code: 'UNDECLARED_DOMAIN_ERROR',
             details: {},
           }),
         },
@@ -225,7 +225,7 @@ describe('createApp', () => {
 
     expect(response.error.code).toBe(-32000);
     expect(response.error.message).toBe('Domain error');
-    expect(response.error.data.type).toBe('UNDECLARED_DOMAIN_ERROR');
+    expect(response.error.data.code).toBe('UNDECLARED_DOMAIN_ERROR');
   });
 
   it('supports globalMiddlewareBefore/globalMiddlewareAfter execution order', async () => {

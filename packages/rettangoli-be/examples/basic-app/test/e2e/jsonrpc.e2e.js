@@ -143,7 +143,7 @@ test('e2e: user.getProfile without cookie -> mapped domain error', async () => {
     assert.equal(result.status, 200);
     assert.equal(result.json.error.code, -32010);
     assert.equal(result.json.error.message, 'Authentication required');
-    assert.equal(result.json.error.data.type, 'AUTH_REQUIRED');
+    assert.equal(result.json.error.data.code, 'AUTH_REQUIRED');
     assert.deepEqual(result.json.error.data.details, { reason: 'auth_required' });
   });
 });

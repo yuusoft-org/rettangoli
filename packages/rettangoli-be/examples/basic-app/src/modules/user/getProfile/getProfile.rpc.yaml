@@ -30,11 +30,11 @@ errorSchema:
   properties:
     _error:
       const: true
-    type:
+    code:
       type: string
     details:
       type: object
       additionalProperties: true
   required:
     - _error
-    - type
+    - code

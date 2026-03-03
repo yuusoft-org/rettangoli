@@ -145,7 +145,7 @@ errorSchema:
       details:
         type: object
         additionalProperties: true
-    required: [_error, type]
+    required: [_error, code]
 ```
 
 ## src/modules/health/ping/ping.spec.yaml
@@ -206,7 +206,7 @@ export const userGetProfileMethod = async ({ context, deps }) => {
   if (!context.authUser?.userId) {
     return {
       _error: true,
-      type: 'AUTH_REQUIRED',
+      code: 'AUTH_REQUIRED',
       details: { reason: 'auth_required' },
     };
   }
@@ -216,7 +216,7 @@ export const userGetProfileMethod = async ({ context, deps }) => {
   if (!user) {
     return {
       _error: true,
-      type: 'USER_NOT_FOUND',
+      code: 'USER_NOT_FOUND',
       details: { userId: context.authUser.userId },
     };
   }
@@ -229,7 +229,7 @@ export const userGetProfileMethod = async ({ context, deps }) => {
 };
 ```
 
-Runtime maps `{ _error: true, type, details }` to protocol-specific error responses.
+Runtime maps `{ _error: true, code, details }` to protocol-specific error responses.
 
 ## src/modules/user/getProfile/getProfile.rpc.yaml
 
@@ -266,5 +266,5 @@ errorSchema:
       details:
         type: object
         additionalProperties: true
-    required: [_error, type]
+    required: [_error, code]
 ```
