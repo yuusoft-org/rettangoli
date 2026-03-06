@@ -97,6 +97,30 @@ export const runComponentOrchestratorContract = ({
     };
   }
 
+  if (mode === "attributeChanged_disconnected") {
+    const calls = [];
+    const instance = {
+      isConnected: false,
+      handlers: {
+        handleOnUpdate: () => calls.push("handleOnUpdate"),
+      },
+      render: () => calls.push("render"),
+    };
+    runAttributeChangedComponentLifecycle({
+      instance,
+      attributeName: "title",
+      oldValue: "a",
+      newValue: "b",
+      scheduleFrameFn: (fn) => {
+        calls.push("scheduleFrame");
+        fn();
+      },
+    });
+    return {
+      calls,
+    };
+  }
+
   if (mode === "render") {
     const instance = {
       patch: (_oldNode, nextNode) => nextNode,

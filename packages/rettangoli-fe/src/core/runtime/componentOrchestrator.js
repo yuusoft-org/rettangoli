@@ -85,6 +85,13 @@ export const runAttributeChangedComponentLifecycle = ({
     return;
   }
 
+  // Browsers can invoke attributeChangedCallback before connectedCallback.
+  // Rendering or running update handlers in that phase can fail because
+  // runtime wiring (DOM target, transformed handlers, refs) is not ready yet.
+  if (instance.isConnected === false) {
+    return;
+  }
+
   if (instance.handlers?.handleOnUpdate) {
     const runtimeDeps = createRuntimeDepsForInstance({ instance });
     const changes = buildOnUpdateChanges({
