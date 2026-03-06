@@ -43,6 +43,14 @@ export const handleOnUpdate = (deps, payload) => {
     }
   }
 
+  // attributeChangedCallback may fire before connected/render lifecycle.
+  // In that phase refs are still empty and forcing render can trigger
+  // missing-handler warnings in older FE runtimes.
+  const hasMountedRefs = deps.refs && Object.keys(deps.refs).length > 0;
+  if (!hasMountedRefs) {
+    return;
+  }
+
   render();
 }
 
