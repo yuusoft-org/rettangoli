@@ -162,7 +162,7 @@ Border radius variables for consistent corner styling across components.
 Component tokens can alias the scale when a component needs a fixed semantic choice:
 
 ```css
---tag-border-radius: var(--border-radius-f);
+--tag-border-radius: 9999px;
 ```
 
 ## Border Width

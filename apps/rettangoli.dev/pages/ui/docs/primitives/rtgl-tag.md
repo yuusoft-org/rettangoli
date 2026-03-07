@@ -146,4 +146,4 @@ Use `w` when tags need truncation or flexible layout participation.
 - `removable` only adds the trailing remove affordance. It does not remove the element automatically.
 - For truncation, provide `w` or another width-constrained parent.
 - Generic surface styling attrs like `bgc`, `c`, `bc`, `bw`, and `shadow` are intentionally not supported; use the built-in tag variants instead.
-- Border radius is fixed to `--tag-border-radius` (defaults to `--border-radius-f`); `rtgl-tag` does not support consumer radius overrides.
+- Border radius is fixed to `--tag-border-radius` (built-in themes default it to `9999px`); `rtgl-tag` does not support consumer radius overrides.
