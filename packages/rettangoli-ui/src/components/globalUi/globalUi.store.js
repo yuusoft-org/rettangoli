@@ -1,6 +1,19 @@
+const VALID_DIALOG_SIZES = new Set(["sm", "md", "lg", "f"]);
+
+const normalizeObject = (value) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+  return value;
+};
+
+const normalizeDialogSize = (value, fallback = "md") => {
+  return VALID_DIALOG_SIZES.has(value) ? value : fallback;
+};
+
 export const createInitialState = () => Object.freeze({
   isOpen: false,
-  uiType: "dialog", // "dialog" | "dropdown"
+  uiType: "dialog", // "dialog" | "dropdown" | "formDialog"
   config: {
     status: undefined, // undefined | info | warning | error
     title: "",
@@ -14,6 +27,16 @@ export const createInitialState = () => Object.freeze({
     x: 0,
     y: 0,
     place: "bs",
+  },
+  formDialogConfig: {
+    form: null,
+    defaultValues: {},
+    context: {},
+    disabled: false,
+    size: "md",
+    key: 0,
+    onFieldEvent: null,
+    mount: null,
   },
 });
 
@@ -66,6 +89,27 @@ export const setDropdownConfig = ({ state }, options = {}) => {
   state.isOpen = true;
 };
 
+export const setFormDialogConfig = ({ state }, options = {}) => {
+  if (!options.form || typeof options.form !== "object" || Array.isArray(options.form)) {
+    throw new Error("form object is required for showFormDialog");
+  }
+
+  const prevKey = state.formDialogConfig?.key || 0;
+
+  state.formDialogConfig = {
+    form: options.form,
+    defaultValues: normalizeObject(options.defaultValues),
+    context: normalizeObject(options.context),
+    disabled: !!options.disabled,
+    size: normalizeDialogSize(options.size, "md"),
+    key: prevKey + 1,
+    onFieldEvent: typeof options.onFieldEvent === "function" ? options.onFieldEvent : null,
+    mount: typeof options.mount === "function" ? options.mount : null,
+  };
+  state.uiType = "formDialog";
+  state.isOpen = true;
+};
+
 export const closeAll = ({ state }) => {
   state.isOpen = false;
   state.uiType = "dialog"; // Reset to default type
@@ -73,10 +117,14 @@ export const closeAll = ({ state }) => {
 
 export const selectConfig = ({ state }) => state.config;
 export const selectDropdownConfig = ({ state }) => state.dropdownConfig;
+export const selectFormDialogConfig = ({ state }) => state.formDialogConfig;
 export const selectUiType = ({ state }) => state.uiType;
 export const selectIsOpen = ({ state }) => state.isOpen;
 
 export const selectViewData = ({ state }) => {
+  const isDialogOpen = state.isOpen && state.uiType === "dialog";
+  const isFormDialogOpen = state.isOpen && state.uiType === "formDialog";
+
   return {
     isOpen: state.isOpen,
     uiType: state.uiType,
@@ -87,7 +135,20 @@ export const selectViewData = ({ state }) => {
       y: state.dropdownConfig?.y || 0,
       place: state.dropdownConfig?.place || 'bs',
     },
-    isDialogOpen: state.isOpen && state.uiType === 'dialog',
+    formDialogConfig: {
+      form: state.formDialogConfig?.form || { fields: [], actions: { buttons: [] } },
+      defaultValues: state.formDialogConfig?.defaultValues || {},
+      context: state.formDialogConfig?.context || {},
+      disabled: !!state.formDialogConfig?.disabled,
+      size: normalizeDialogSize(state.formDialogConfig?.size, "md"),
+      key: state.formDialogConfig?.key || 0,
+    },
+    isDialogOpen,
+    isFormDialogOpen,
+    isDialogContainerOpen: isDialogOpen || isFormDialogOpen,
     isDropdownOpen: state.isOpen && state.uiType === 'dropdown',
+    dialogSize: isFormDialogOpen
+      ? normalizeDialogSize(state.formDialogConfig?.size, "md")
+      : "sm",
   };
 };

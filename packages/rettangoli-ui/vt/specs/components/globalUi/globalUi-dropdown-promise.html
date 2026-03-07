@@ -32,13 +32,13 @@ title: "Global UI - Dropdown Promise Handling"
   // Application layer creates its own async wrapper
   const globalUI = {
     showAlert: async (options) => {
-      globalUIElement.transformedHandlers.showAlert(options);
+      return globalUIElement.transformedHandlers.handleShowAlert(options);
     },
     showConfirm: async (options) => {
-      return globalUIElement.transformedHandlers.showConfirm(options);
+      return globalUIElement.transformedHandlers.handleShowConfirm(options);
     },
     showDropdownMenu: async (options) => {
-      return globalUIElement.transformedHandlers.showDropdownMenu(options);
+      return globalUIElement.transformedHandlers.handleShowDropdownMenu(options);
     }
   };
 

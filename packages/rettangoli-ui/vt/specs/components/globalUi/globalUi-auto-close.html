@@ -22,13 +22,13 @@ title: "Global UI - Auto-close Loading Test"
   // Application layer creates its own async wrapper
   const globalUI = {
     showAlert: async (options) => {
-      globalUIElement.transformedHandlers.showAlert(options);
+      return globalUIElement.transformedHandlers.handleShowAlert(options);
     },
     showConfirm: async (options) => {
-      return globalUIElement.transformedHandlers.showConfirm(options);
+      return globalUIElement.transformedHandlers.handleShowConfirm(options);
     },
     closeAll: async () => {
-      globalUIElement.transformedHandlers.closeAll();
+      return globalUIElement.transformedHandlers.handleCloseAll();
     }
   };
 

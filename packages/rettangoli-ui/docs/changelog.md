@@ -6,6 +6,8 @@
 - `rtgl-sidebar`: added `hide-header` to hide the header block.
 - `rtgl-sidebar`: supports `bwr` overrides with default `bwr="xs"` so right border can be disabled via `bwr="none"`.
 - `rtgl-sidebar`: added `w` width override so values like `w="f"` are supported.
+- `rtgl-global-ui`: added `showFormDialog({ form, defaultValues?, context?, disabled?, size? })` for embedding `rtgl-form` in the global dialog flow.
+- `rtgl-global-ui`: alert/confirm/dialog close paths now resolve pending promise-based flows on overlay dismiss and `closeAll()`.
 - `rtgl-form`: added native temporal field types `input-date`, `input-time`, and `input-datetime` with min/max validation.
 - `rtgl-input`: now supports native `date`, `time`, and `datetime-local` types with additional picker affordance styling.
 - added standalone temporal primitives `rtgl-input-date`, `rtgl-input-time`, and `rtgl-input-datetime`.

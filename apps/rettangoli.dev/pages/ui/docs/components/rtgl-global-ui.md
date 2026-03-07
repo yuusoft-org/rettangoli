@@ -7,7 +7,7 @@ tags: documentation
 sidebarId: rtgl-global-ui
 ---
 
-A singleton-style global interaction layer for alerts, confirms, and dropdown menus.
+A singleton-style global interaction layer for alerts, confirms, form dialogs, and dropdown menus.
 
 ## Quickstart
 
@@ -21,7 +21,7 @@ Mount once near app root:
   const globalUi = document.getElementById("global-ui");
 
   document.getElementById("show-alert").addEventListener("click", async () => {
-    await globalUi.transformedHandlers.showAlert({
+    await globalUi.transformedHandlers.handleShowAlert({
       title: "Saved",
       message: "Changes were saved successfully.",
       confirmText: "OK",
@@ -36,10 +36,11 @@ Call through `globalUiElement.transformedHandlers`:
 
 | Method | Payload | Result |
 | --- | --- | --- |
-| `showAlert(options)` | `{ message, title?, status?, confirmText? }` | Promise-like async flow (no selection payload) |
-| `showConfirm(options)` | `{ message, title?, status?, confirmText?, cancelText? }` | resolves `true` (confirm) or `false` (cancel) |
-| `showDropdownMenu(options)` | `{ items, x, y, place? }` | resolves `{ index, item }` or `null` |
-| `closeAll()` | none | closes any open global dialog/dropdown |
+| `handleShowAlert(options)` | `{ message, title?, status?, confirmText? }` | resolves when the alert closes |
+| `handleShowConfirm(options)` | `{ message, title?, status?, confirmText?, cancelText? }` | resolves `true` (confirm) or `false` (cancel / dismiss) |
+| `handleShowFormDialog(options)` | `{ form, defaultValues?, context?, disabled?, size? }` | resolves `{ actionId, values }`, `{ actionId, values, valid, errors }`, or `null` on dismiss |
+| `handleShowDropdownMenu(options)` | `{ items, x, y, place? }` | resolves `{ index, item }` or `null` |
+| `handleCloseAll()` | none | closes any open global dialog/dropdown and resolves the pending flow |
 
 ## Dropdown Item Shape
 
@@ -53,5 +54,7 @@ Call through `globalUiElement.transformedHandlers`:
 ### Behavior & precedence
 
 - New global UI calls close any existing open global UI first.
-- `showConfirm` and `showDropdownMenu` are awaitable decision points.
+- `handleShowAlert`, `handleShowConfirm`, `handleShowFormDialog`, and `handleShowDropdownMenu` are awaitable.
+- `handleShowFormDialog` uses the existing `rtgl-form` action payload: `{ actionId, values }` or `{ actionId, values, valid, errors }`.
+- A dismissed confirm resolves `false`. Dismissed alert/form/dropdown flows resolve `null`/empty completion.
 - Keep a single mounted `rtgl-global-ui` instance per page/app shell.
