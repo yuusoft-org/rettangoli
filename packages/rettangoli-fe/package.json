@@ -31,7 +31,6 @@
     "vitest": "^4.0.15"
   },
   "dependencies": {
-    "esbuild": "^0.25.5",
     "immer": "^10.1.1",
     "jempl": "0.3.2-rc2",
     "js-yaml": "^4.1.0",
@@ -40,7 +39,7 @@
     "vite": "^6.3.5"
   },
   "scripts": {
-    "dev": "node watch.js --watch",
+    "dev": "node ../rettangoli-cli/cli.js fe watch",
     "test": "vitest run --reporter=verbose",
     "test:puty": "vitest run puty.spec.js --reporter=verbose",
     "test:vitest": "vitest run test/**/*.test.js --reporter=verbose"

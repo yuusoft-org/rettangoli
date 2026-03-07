@@ -60,7 +60,6 @@
       "name": "@rettangoli/fe",
       "version": "1.0.1",
       "dependencies": {
-        "esbuild": "^0.25.5",
         "immer": "^10.1.1",
         "jempl": "0.3.2-rc2",
         "js-yaml": "^4.1.0",

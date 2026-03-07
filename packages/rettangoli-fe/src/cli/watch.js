@@ -1,100 +1,78 @@
-import { readFileSync, watch } from "node:fs";
 import path from "node:path";
 
-import { load as loadYaml } from "js-yaml";
-import { createServer } from 'vite'
-import { writeViewFile } from './build.js';
-import buildRettangoliFrontend from './build.js';
-import { extractCategoryAndComponent } from '../commonBuild.js';
+import { createServer } from "vite";
 
-// Debounce mechanism to prevent excessive rebuilds
-let rebuildTimeout = null;
-const DEBOUNCE_DELAY = 200; // 200ms delay
+import { createRettangoliFeVitePlugin } from "./vitePlugin.js";
 
+const toPosixPath = (value) => value.split(path.sep).join("/");
 
-const setupWatcher = (directory, options) => {
-  watch(
-    directory,
-    { recursive: true },
-    async (event, filename) => {
-      console.log(`Detected ${event} in ${directory}/${filename}`);
-      if (filename) {
-        try {
-          const changedFilePath = path.join(directory, filename);
-          if (filename.endsWith('.view.yaml')) {
-            const view = loadYaml(readFileSync(changedFilePath, "utf8"));
-            const { category, component } = extractCategoryAndComponent(changedFilePath);
-            await writeViewFile(view, category, component);
-          }
+const resolveServeContext = ({ cwd, outfile }) => {
+  const resolvedOutfile = path.resolve(cwd, outfile);
+  const relativeOutfile = path.relative(cwd, resolvedOutfile);
+  const parts = relativeOutfile.split(path.sep).filter(Boolean);
+  const staticIndex = parts.indexOf("static");
 
-          // Debounce the rebuild
-          if (rebuildTimeout) {
-            clearTimeout(rebuildTimeout);
-          }
+  if (staticIndex >= 0) {
+    const rootParts = parts.slice(0, staticIndex);
+    const root = path.resolve(cwd, ...rootParts);
+    const publicEntryPath = `/${toPosixPath(parts.slice(staticIndex).join(path.sep))}`;
+    return {
+      root,
+      publicEntryPath,
+    };
+  }
 
-          rebuildTimeout = setTimeout(async () => {
-            console.log('Triggering rebuild...');
-            await buildRettangoliFrontend(options);
-          }, DEBOUNCE_DELAY);
+  const outDir = path.dirname(resolvedOutfile);
+  const root = path.dirname(outDir);
+  const publicEntryPath = `/${toPosixPath(path.relative(root, resolvedOutfile))}`;
 
-        } catch (error) {
-          console.error(`Error processing ${filename}:`, error);
-          // Keep the watcher running
-        }
-      }
-    },
-  );
+  return {
+    root,
+    publicEntryPath,
+  };
 };
 
-async function startViteServer(options) {
-  const { port = 3001, outfile = "./vt/static/main.js" } = options;
+const startWatching = async (options = {}) => {
+  const {
+    cwd = process.cwd(),
+    dirs = ["src"],
+    port = 3001,
+    outfile = "./vt/static/main.js",
+    setup = "setup.js",
+  } = options;
 
-  // Extract the directory from outfile path
-  const outDir = path.dirname(outfile);
-  // Go up one level from the JS file directory to serve the site root
-  const root = path.dirname(outDir);
-  console.log('watch root dir:', root)
+  const { root, publicEntryPath } = resolveServeContext({ cwd, outfile });
+
+  console.log("watch root dir:", root);
+  console.log("watch entry path:", publicEntryPath);
+
   try {
     const server = await createServer({
-      // any valid user config options, plus `mode` and `configFile`
-      // configFile: false,
+      configFile: false,
       root,
       server: {
         port,
-        host: '0.0.0.0',
-        allowedHosts: true
+        host: "0.0.0.0",
+        allowedHosts: true,
       },
+      plugins: [
+        createRettangoliFeVitePlugin({
+          cwd,
+          dirs,
+          setup,
+          errorPrefix: "[Watch]",
+          publicEntryPath,
+        }),
+      ],
     });
-    await server.listen();
 
+    await server.listen();
     server.printUrls();
     server.bindCLIShortcuts({ print: true });
   } catch (error) {
     console.error("Error during Vite server startup:", error);
     process.exit(1);
   }
-}
-
-
-const startWatching = async (options) => {
-  const { dirs = ['src'], port = 3001 } = options;
-
-  // Set development mode for all builds in watch mode
-  const watchOptions = {
-    development: true,
-    ...options
-  };
-
-  // Do initial build with all directories
-  console.log('Starting initial build...');
-  await buildRettangoliFrontend(watchOptions);
-  console.log('Initial build complete');
-
-  dirs.forEach(dir => {
-    setupWatcher(dir, watchOptions);
-  });
-
-  startViteServer({ port, outfile: options.outfile });
-}
+};
 
 export default startWatching;

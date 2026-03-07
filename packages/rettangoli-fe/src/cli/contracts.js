@@ -59,7 +59,7 @@ export const validateComponentEntries = ({
   const errors = validateComponentContractIndex(index);
   if (errors.length > 0) {
     throw new Error(
-      `${errorPrefix} Component contract validation failed:\n${formatContractErrors(errors).join("\n")}`,
+      `${errorPrefix} Component contract validation failed:\n${formatContractErrorLines(errors).join("\n")}`,
     );
   }
   return {

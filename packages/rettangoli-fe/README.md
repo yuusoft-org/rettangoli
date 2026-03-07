@@ -8,7 +8,7 @@ A modern frontend framework that uses YAML for view definitions, web components 
 - **📝 YAML Views** - Declarative UI definitions that compile to virtual DOM
 - **🧩 Web Components** - Standards-based component architecture
 - **🔄 Reactive State** - Immer-powered immutable state management
-- **⚡ Fast Development** - Hot reload with Vite integration
+- **⚡ Fast Development** - Auto reload with Vite integration
 - **🎯 Template System** - Jempl templating for dynamic content
 - **🧪 Testing Ready** - Pure functions and dependency injection for easy testing
 
@@ -38,7 +38,7 @@ rtgl fe watch     # Start dev server
 - [RxJS](https://github.com/ReactiveX/rxjs) - Reactive programming
 
 **Build & Development:**
-- [ESBuild](https://esbuild.github.io/) - Fast bundling
+- [Vite](https://vite.dev/) - Dev server and production bundling
 
 **Browser Native:**
 - Web Components - Component encapsulation
@@ -78,7 +78,7 @@ node ../rettangoli-cli/cli.js fe watch
 src/
 ├── cli/
 │   ├── build.js       # Build component bundles
-│   ├── watch.js       # Development server with hot reload
+│   ├── watch.js       # Development server with auto reload
 │   ├── scaffold.js    # Component scaffolding
 │   ├── examples.js    # Generate examples for testing
 │   └── blank/         # Component templates
@@ -88,6 +88,30 @@ src/
 ├── common.js          # Shared utilities
 └── index.js           # Main exports
 ```
+
+## Vite Integration
+
+`@rettangoli/fe` uses Vite directly through the Node API, behind the existing FE CLI commands.
+
+- `rtgl fe build` uses `vite.build()` with a virtual entry module generated from configured component files.
+- `rtgl fe watch` uses `vite.createServer()` and serves the configured `outfile` path via middleware.
+- FE runtime source is generated in memory (virtual module), so no temporary generated JS files are required.
+- Contract validation, YAML parsing, and template parsing still run before code generation.
+
+Current Vite features used by FE:
+
+- Build API (`build`) for production bundles.
+- Dev Server API (`createServer`) for watch mode serving.
+- Custom plugin hooks:
+  - `resolveId` + `load` for the FE virtual entry (`virtual:rettangoli-fe-entry`).
+  - `handleHotUpdate` for FE file change detection.
+  - `configureServer` for full-page reload and serving the configured output entry URL.
+- Rollup output control through Vite (`entryFileNames`, `chunkFileNames`, `assetFileNames`) to preserve CLI `outfile` behavior.
+
+Notes:
+
+- Watch mode currently performs full reloads (not component-level HMR).
+- No dedicated CSS plugin pipeline is enabled in FE at this time.
 
 ## Configuration
 
