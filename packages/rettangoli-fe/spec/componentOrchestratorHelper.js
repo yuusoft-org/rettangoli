@@ -80,6 +80,32 @@ export const runComponentOrchestratorContract = ({
     const calls = [];
     const instance = {
       handlers: {},
+      renderTarget: { id: "target" },
+      render: () => calls.push("render"),
+    };
+    runAttributeChangedComponentLifecycle({
+      instance,
+      attributeName: "title",
+      oldValue: "a",
+      newValue: "b",
+      scheduleFrameFn: (fn) => {
+        calls.push("scheduleFrame");
+        fn();
+      },
+    });
+    return {
+      calls,
+    };
+  }
+
+  if (mode === "attributeChanged_disconnected") {
+    const calls = [];
+    const instance = {
+      isConnected: false,
+      renderTarget: null,
+      handlers: {
+        handleOnUpdate: () => calls.push("handleOnUpdate"),
+      },
       render: () => calls.push("render"),
     };
     runAttributeChangedComponentLifecycle({
