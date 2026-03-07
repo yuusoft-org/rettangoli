@@ -50,7 +50,7 @@
         "@rettangoli/check": "0.1.2",
         "@rettangoli/fe": "1.0.3",
         "@rettangoli/sites": "1.0.0-rc13",
-        "@rettangoli/ui": "1.0.3",
+        "@rettangoli/ui": "1.0.4",
         "@rettangoli/vt": "1.0.1",
         "commander": "^14.0.0",
         "js-yaml": "^4.1.0",
@@ -58,7 +58,7 @@
     },
     "packages/rettangoli-fe": {
       "name": "@rettangoli/fe",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "dependencies": {
         "immer": "^10.1.1",
         "jempl": "0.3.2-rc2",
@@ -109,7 +109,7 @@
     },
     "packages/rettangoli-ui": {
       "name": "@rettangoli/ui",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "dependencies": {
         "@floating-ui/dom": "^1.6.13",
         "@rettangoli/fe": "1.0.3",

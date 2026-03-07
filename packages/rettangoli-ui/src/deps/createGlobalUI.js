@@ -1,6 +1,7 @@
 /**
  * Creates a GlobalUI manager instance for controlling global UI components.
- * Provides methods for showing alerts, confirm dialogs, dropdown menus, and closing all UI components.
+ * Provides methods for showing alerts, confirm dialogs, form dialogs,
+ * dropdown menus, and closing all UI components.
  *
  * @param {HTMLElement} globalUIElement - The globalUI component element
  * @returns {Object} GlobalUI manager instance
@@ -8,6 +9,7 @@
  * @returns {Function} returns.emit - Emit an event to registered listeners
  * @returns {Function} returns.showAlert - Show an alert dialog
  * @returns {Function} returns.showConfirm - Show a confirmation dialog
+ * @returns {Function} returns.showFormDialog - Show a form dialog
  * @returns {Function} returns.showDropdownMenu - Show a dropdown menu
  * @returns {Function} returns.closeAll - General-purpose function to close all currently open UI components
  */
@@ -66,7 +68,7 @@ const createGlobalUI = (globalUIElement) => {
       {
         throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
       }
-      globalUIElement.transformedHandlers.handleShowAlert(options);
+      return globalUIElement.transformedHandlers.handleShowAlert(options);
     },
 
     /**
@@ -88,6 +90,28 @@ const createGlobalUI = (globalUIElement) => {
         throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
       }
       return globalUIElement.transformedHandlers.handleShowConfirm(options);
+    },
+
+    /**
+     * Shows a dialog containing an embedded rtgl-form.
+     *
+     * @param {Object} options - Form dialog configuration options
+     * @param {Object} options.form - rtgl-form schema (required)
+     * @param {Object} [options.defaultValues] - Initial form values
+     * @param {Object} [options.context] - Context used by rtgl-form conditional rendering
+     * @param {boolean} [options.disabled] - Whether the form should be disabled
+     * @param {('sm'|'md'|'lg'|'f')} [options.size] - Dialog size token (default: "md")
+     * @param {Function} [options.onFieldEvent] - Called with `{ detail, formEl }` for form field events
+     * @param {Function} [options.mount] - Called once after the form mounts, useful for slot content
+     * @returns {Promise<Object|null>} Resolves with form-action detail or null on dismiss
+     * @throws {Error} If globalUIElement is not initialized
+     */
+    showFormDialog: async (options) => {
+      if(!globalUIElement)
+      {
+        throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
+      }
+      return globalUIElement.transformedHandlers.handleShowFormDialog(options);
     },
 
     /**

@@ -1,0 +1,124 @@
+---
+title: "Global UI - Form Dialog"
+description: Verifies an rtgl-form schema can render inside the global UI dialog flow.
+specs:
+  - Large dialog size renders schema-driven fields and split actions.
+  - Default values populate text and select controls inside the embedded form.
+  - Successful submit closes the dialog and resolves the helper promise back to the page.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: open-form-dialog
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#formDialog'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 220
+  - action: screenshot
+  - action: wait
+    ms: 120
+  - action: select
+    testId: open-form-dialog-submit
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#formDialog'
+    state: detached
+    timeoutMs: 1500
+  - action: wait
+    ms: 120
+  - action: screenshot
+viewport:
+  id: form-dialog
+  width: 1100
+  height: 900
+---
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="lg" h="100vh" w="f" wrap p="lg">
+  <rtgl-view g="md" w="560">
+    <rtgl-button id="open-form-dialog" data-testid="open-form-dialog">Open Form Dialog</rtgl-button>
+    <rtgl-view p="sm" bgc="mu" br="sm">
+      <rtgl-text id="result" c="mu-fg">No result yet</rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+  const resultEl = document.getElementById('result');
+
+  const tagFormActionButton = (actionId, testId) => {
+    const trySet = () => {
+      const formEl = globalUIElement.shadowRoot?.querySelector('#formDialog');
+      const btn = formEl?.shadowRoot?.querySelector(`[data-action-id="${actionId}"]`);
+      if (btn) {
+        btn.setAttribute('data-testid', testId);
+        return;
+      }
+      setTimeout(trySet, 0);
+    };
+
+    trySet();
+  };
+
+  document.getElementById('open-form-dialog').addEventListener('click', async () => {
+    tagFormActionButton('invite', 'open-form-dialog-submit');
+
+    const result = await globalUIElement.transformedHandlers.handleShowFormDialog({
+      size: 'lg',
+      defaultValues: {
+        name: 'Ada Lovelace',
+        email: 'ada@example.com',
+        role: 'developer',
+      },
+      form: {
+        title: 'Invite Team Member',
+        description: 'Configure access and review the generated defaults.',
+        fields: [{
+          name: 'name',
+          type: 'input-text',
+          label: 'Name',
+          required: true,
+        }, {
+          name: 'email',
+          type: 'input-text',
+          label: 'Email',
+          required: true,
+          rules: [{
+            rule: 'pattern',
+            value: 'email',
+            message: 'Must be a valid email',
+          }],
+        }, {
+          name: 'role',
+          type: 'select',
+          label: 'Role',
+          options: [
+            { label: 'Developer', value: 'developer' },
+            { label: 'Designer', value: 'designer' },
+            { label: 'Manager', value: 'manager' },
+          ],
+        }],
+        actions: {
+          buttons: [{
+            id: 'cancel',
+            variant: 'se',
+            label: 'Cancel',
+            align: 'left',
+          }, {
+            id: 'invite',
+            variant: 'pr',
+            label: 'Invite',
+            validate: true,
+          }],
+        },
+      },
+    });
+
+    resultEl.textContent = result ? `Resolved: ${result.actionId}` : 'dismissed';
+  });
+</script>

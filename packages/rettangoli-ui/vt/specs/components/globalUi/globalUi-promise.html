@@ -22,10 +22,10 @@ title: "Global UI - Promise-based API"
   // Application layer creates its own async wrapper
   const globalUI = {
     showAlert: async (options) => {
-      globalUIElement.transformedHandlers.showAlert(options);
+      return globalUIElement.transformedHandlers.handleShowAlert(options);
     },
     showConfirm: async (options) => {
-      return globalUIElement.transformedHandlers.showConfirm(options);
+      return globalUIElement.transformedHandlers.handleShowConfirm(options);
     }
   };
 

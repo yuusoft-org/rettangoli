@@ -1,33 +1,85 @@
-export const handleDialogClose = (deps, payload) => {
-  const { store, render } = deps;
+const getDismissResult = (store) => {
+  const uiType = store.selectUiType();
 
-  store.closeAll();
-  render();
+  if (uiType === "dropdown" || uiType === "formDialog") {
+    return null;
+  }
+
+  const config = store.selectConfig();
+  if (config.mode === "confirm") {
+    return false;
+  }
+
+  return null;
 };
 
-export const handleConfirm = (deps, payload) => {
-  const { store, render, globalUI } = deps;
+const closeCurrentUi = ({ store, render, globalUI, emitResult = false, result }) => {
+  if (!store.selectIsOpen()) {
+    return;
+  }
 
+  const resolvedResult = result !== undefined ? result : getDismissResult(store);
   store.closeAll();
   render();
-  globalUI.emit('event', true);
+
+  if (emitResult) {
+    globalUI.emit("event", resolvedResult);
+  }
 };
 
-export const handleCancel = (deps, payload) => {
-  const { store, render, globalUI } = deps;
-
-  store.closeAll();
-  render();
-  globalUI.emit('event', false);
+const closeExistingUiBeforeShow = ({ store, render, globalUI }) => {
+  if (store.selectIsOpen()) {
+    closeCurrentUi({ store, render, globalUI, emitResult: true });
+  }
 };
 
-export const handleDropdownClose = (deps, payload) => {
-  const { store, render, globalUI } = deps;
+const scheduleFormDialogMount = (deps, expectedKey) => {
+  setTimeout(() => {
+    const { store, refs } = deps;
 
-  // Always process close events - the framework will handle if it's already closed
-  store.closeAll();
-  render();
-  globalUI.emit('event', null);
+    if (!store.selectIsOpen() || store.selectUiType() !== "formDialog") {
+      return;
+    }
+
+    const formDialogConfig = store.selectFormDialogConfig?.();
+    if (!formDialogConfig || formDialogConfig.key !== expectedKey) {
+      return;
+    }
+
+    if (typeof formDialogConfig.mount !== "function") {
+      return;
+    }
+
+    const formEl = refs.formDialog;
+    if (!formEl) {
+      return;
+    }
+
+    formDialogConfig.mount(formEl);
+  }, 0);
+};
+
+export const handleDialogClose = (deps) => {
+  const { store, render, globalUI } = deps;
+  closeCurrentUi({ store, render, globalUI, emitResult: true });
+};
+
+export const handleConfirm = (deps) => {
+  const { store, render, globalUI } = deps;
+  const config = store.selectConfig();
+  const result = config.mode === "confirm" ? true : null;
+
+  closeCurrentUi({ store, render, globalUI, emitResult: true, result });
+};
+
+export const handleCancel = (deps) => {
+  const { store, render, globalUI } = deps;
+  closeCurrentUi({ store, render, globalUI, emitResult: true, result: false });
+};
+
+export const handleDropdownClose = (deps) => {
+  const { store, render, globalUI } = deps;
+  closeCurrentUi({ store, render, globalUI, emitResult: true, result: null });
 };
 
 export const handleDropdownItemClick = (deps, payload) => {
@@ -35,10 +87,13 @@ export const handleDropdownItemClick = (deps, payload) => {
   const event = payload._event;
   const { index, item } = event.detail;
 
-  // Always process click events - the framework will handle if it's already closed
-  store.closeAll();
-  render();
-  globalUI.emit('event', { index, item });
+  closeCurrentUi({
+    store,
+    render,
+    globalUI,
+    emitResult: true,
+    result: { index, item },
+  });
 };
 
 /**
@@ -53,31 +108,29 @@ export const handleDropdownItemClick = (deps, payload) => {
  * @param {string} [payload.title] - Optional alert title
  * @param {('info'|'warning'|'error')} [payload.status] - Optional status type
  * @param {string} [payload.confirmText] - Text for the confirm button (default: "OK")
- * @returns {void}
+ * @returns {Promise<void>}
  */
 export const handleShowAlert = (deps, payload) => {
-  const { store, render } = deps;
+  const { store, render, globalUI } = deps;
   const options = payload;
 
-  // Close any existing dialog/dropdown menu first
-  if (store.selectIsOpen()) {
-    store.closeAll();
-    render();
-  }
+  closeExistingUiBeforeShow({ store, render, globalUI });
 
   store.setAlertConfig(options);
   render();
+
+  return new Promise((resolve) => {
+    globalUI.once("event", () => {
+      resolve();
+    });
+  });
 };
 
 export const handleShowConfirm = async (deps, payload) => {
   const { store, render, globalUI } = deps;
   const options = payload;
 
-  // Close any existing dialog/dropdown menu first
-  if (store.selectIsOpen()) {
-    store.closeAll();
-    render();
-  }
+  closeExistingUiBeforeShow({ store, render, globalUI });
 
   store.setConfirmConfig(options);
   render();
@@ -111,11 +164,7 @@ export const handleShowDropdownMenu = async (deps, payload) => {
   const { store, render, globalUI } = deps;
   const options = payload;
 
-  // Close any existing dialog/dropdown menu first
-  if (store.selectIsOpen()) {
-    store.closeAll();
-    render();
-  }
+  closeExistingUiBeforeShow({ store, render, globalUI });
 
   store.setDropdownConfig(options);
   render();
@@ -126,6 +175,55 @@ export const handleShowDropdownMenu = async (deps, payload) => {
       resolve(result)
     });
   });
+};
+
+export const handleShowFormDialog = async (deps, payload) => {
+  const { store, render, globalUI } = deps;
+  const options = payload;
+
+  closeExistingUiBeforeShow({ store, render, globalUI });
+
+  store.setFormDialogConfig(options);
+  render();
+
+  const expectedKey = store.selectFormDialogConfig?.().key;
+  scheduleFormDialogMount(deps, expectedKey);
+
+  return new Promise((resolve) => {
+    globalUI.once("event", (result) => {
+      resolve(result);
+    });
+  });
+};
+
+export const handleFormAction = (deps, payload) => {
+  const { store, render, globalUI } = deps;
+  const detail = payload._event?.detail || {};
+
+  if (detail.valid === false) {
+    return;
+  }
+
+  closeCurrentUi({
+    store,
+    render,
+    globalUI,
+    emitResult: true,
+    result: detail,
+  });
+};
+
+export const handleFormFieldEvent = (deps, payload) => {
+  const { store, refs } = deps;
+  const detail = payload._event?.detail || {};
+  const formDialogConfig = store.selectFormDialogConfig?.();
+
+  if (typeof formDialogConfig?.onFieldEvent === "function") {
+    formDialogConfig.onFieldEvent({
+      detail,
+      formEl: refs.formDialog || null,
+    });
+  }
 };
 
 /**
@@ -141,11 +239,6 @@ export const handleShowDropdownMenu = async (deps, payload) => {
  * @returns {void}
  */
 export const handleCloseAll = (deps) => {
-  const { store, render } = deps;
-
-  // Close global UI dialogs/dropdowns
-  if (store.selectIsOpen()) {
-    store.closeAll();
-    render();
-  }
+  const { store, render, globalUI } = deps;
+  closeCurrentUi({ store, render, globalUI, emitResult: true });
 };
