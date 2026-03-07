@@ -398,6 +398,8 @@ export const runHandlersCase = ({ scenario }) => {
       },
     });
     const instance = new TestComponent();
+    instance.isConnected = true;
+    instance.renderTarget = { id: "target" };
     instance.attributeChangedCallback("max-items", "1", "2");
 
     return {

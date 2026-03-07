@@ -37,6 +37,12 @@ out:
     - scheduleFrame
     - render
 ---
+case: attribute change does nothing before component is connected
+in:
+  - mode: attributeChanged_disconnected
+out:
+  calls: []
+---
 case: render lifecycle patches vnode and syncs refs
 in:
   - mode: render
