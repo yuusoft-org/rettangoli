@@ -162,4 +162,4 @@ Use shared surface attrs when you need one-off overrides without adding a new va
 - `rtgl-tag` is not a link or button primitive; use it for metadata display, not primary actions.
 - `removable` only adds the trailing remove affordance. It does not remove the element automatically.
 - For truncation, provide `w` or another width-constrained parent.
-- Border radius is fixed to `--tag-border-radius` (defaults to `--border-radius-full`); `rtgl-tag` does not support consumer radius overrides.
+- Border radius is fixed to `--tag-border-radius` (defaults to `--border-radius-f`); `rtgl-tag` does not support consumer radius overrides.

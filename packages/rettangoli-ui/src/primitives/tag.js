@@ -75,7 +75,7 @@ class RettangoliTagElement extends HTMLElement {
           padding: 0;
           margin: 0;
           border: 0;
-          border-radius: var(--border-radius-full);
+          border-radius: var(--border-radius-f);
           background: transparent;
           color: inherit;
           opacity: 0.76;

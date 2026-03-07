@@ -15,7 +15,7 @@
   --border-radius-xl: 16px;
   --border-radius-f: 50%;
   --border-radius-full: 9999px;
-  --tag-border-radius: var(--border-radius-full);
+  --tag-border-radius: var(--border-radius-f);
 
   --border-width-xs: 1px;
   --border-width-sm: 2px;
