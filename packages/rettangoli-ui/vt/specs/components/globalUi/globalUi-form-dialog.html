@@ -4,7 +4,7 @@ description: Verifies an rtgl-form schema can render inside the global UI dialog
 specs:
   - Large dialog size renders schema-driven fields and split actions.
   - Default values populate text and select controls inside the embedded form.
-  - Global UI keeps the dialog mounted as an overlay-based form flow.
+  - Successful submit closes the dialog and resolves the helper promise back to the page.
 skipInitialScreenshot: true
 steps:
   - action: select
@@ -18,6 +18,19 @@ steps:
   - action: wait
     ms: 220
   - action: screenshot
+  - action: wait
+    ms: 120
+  - action: select
+    testId: open-form-dialog-submit
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#formDialog'
+    state: detached
+    timeoutMs: 1500
+  - action: wait
+    ms: 120
+  - action: screenshot
 viewport:
   id: form-dialog
   width: 1100
@@ -26,9 +39,11 @@ viewport:
 <rtgl-global-ui></rtgl-global-ui>
 
 <rtgl-view g="lg" h="100vh" w="f" wrap p="lg">
-  <rtgl-view d="h" g="md">
+  <rtgl-view g="md" w="560">
     <rtgl-button id="open-form-dialog" data-testid="open-form-dialog">Open Form Dialog</rtgl-button>
-    <rtgl-text id="result" c="mu-fg">No result yet</rtgl-text>
+    <rtgl-view p="sm" bgc="mu" br="sm">
+      <rtgl-text id="result" c="mu-fg">No result yet</rtgl-text>
+    </rtgl-view>
   </rtgl-view>
 </rtgl-view>
 
@@ -36,7 +51,23 @@ viewport:
   const globalUIElement = document.querySelector('rtgl-global-ui');
   const resultEl = document.getElementById('result');
 
+  const tagFormActionButton = (actionId, testId) => {
+    const trySet = () => {
+      const formEl = globalUIElement.shadowRoot?.querySelector('#formDialog');
+      const btn = formEl?.shadowRoot?.querySelector(`[data-action-id="${actionId}"]`);
+      if (btn) {
+        btn.setAttribute('data-testid', testId);
+        return;
+      }
+      setTimeout(trySet, 0);
+    };
+
+    trySet();
+  };
+
   document.getElementById('open-form-dialog').addEventListener('click', async () => {
+    tagFormActionButton('invite', 'open-form-dialog-submit');
+
     const result = await globalUIElement.transformedHandlers.handleShowFormDialog({
       size: 'lg',
       defaultValues: {
@@ -88,6 +119,6 @@ viewport:
       },
     });
 
-    resultEl.textContent = result ? JSON.stringify(result) : 'dismissed';
+    resultEl.textContent = result ? `Resolved: ${result.actionId}` : 'dismissed';
   });
 </script>
