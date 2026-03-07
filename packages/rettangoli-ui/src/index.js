@@ -2,6 +2,7 @@ import RettangoliButton from './primitives/button.js'
 import RettangoliView from './primitives/view.js';
 import RettangoliText from './primitives/text.js';
 import RettangoliImage from './primitives/image.js';
+import RettangoliTag from './primitives/tag.js';
 import RettangoliSvg from './primitives/svg.js';
 import RettangoliInput from './primitives/input.js';
 import RettangoliInputDate from './primitives/input-date.js';
@@ -21,6 +22,7 @@ export {
     RettangoliView,
     RettangoliText,
     RettangoliImage,
+    RettangoliTag,
     RettangoliSvg,
     RettangoliInput,
     RettangoliInputDate,

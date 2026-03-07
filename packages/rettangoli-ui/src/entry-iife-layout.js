@@ -2,6 +2,7 @@ import RettangoliButton from './primitives/button.js'
 import RettangoliView from './primitives/view.js';
 import RettangoliText from './primitives/text.js';
 import RettangoliImage from './primitives/image.js';
+import RettangoliTag from './primitives/tag.js';
 import RettangoliSvg from './primitives/svg.js';
 import RettangoliInput from './primitives/input.js';
 import RettangoliInputDate from './primitives/input-date.js';
@@ -19,6 +20,7 @@ customElements.define("rtgl-button", RettangoliButton({}));
 customElements.define("rtgl-view", RettangoliView({}));
 customElements.define("rtgl-text", RettangoliText({}));
 customElements.define("rtgl-image", RettangoliImage({}));
+customElements.define("rtgl-tag", RettangoliTag({}));
 customElements.define("rtgl-svg", RettangoliSvg({}));
 customElements.define("rtgl-input", RettangoliInput({}));
 customElements.define("rtgl-input-date", RettangoliInputDate({}));

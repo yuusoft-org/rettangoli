@@ -144,6 +144,7 @@ Border radius variables for consistent corner styling across components.
 --border-radius-lg: 8px; /* Large rounding */
 --border-radius-xl: 16px; /* Extra large rounding */
 --border-radius-f: 50%; /* Fully rounded (circles) */
+--border-radius-full: 9999px; /* Pill / fully rounded edges */
 ```
 
 ### Usage Examples
@@ -151,9 +152,18 @@ Border radius variables for consistent corner styling across components.
 .button {
   border-radius: var(--border-radius-md);
 }
+.tag {
+  border-radius: var(--tag-border-radius);
+}
 .avatar {
   border-radius: var(--border-radius-f);
 }
+```
+
+Component tokens can alias the scale when a component needs a fixed semantic choice:
+
+```css
+--tag-border-radius: var(--border-radius-full);
 ```
 
 ## Border Width
