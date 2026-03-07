@@ -1,28 +1,27 @@
 ---
-title: Tag - Icons - Width and Shared Styling
-description: Verifies icon placement, truncation, disabled removable state, and shared surface styling overrides.
+title: Tag - Icons - Width and State
+description: Verifies icon placement, truncation, and disabled removable state across the supported tag variants.
 specs:
   - Prefix and suffix icons inherit tag sizing and color.
   - Width constraints truncate long labels without breaking layout.
-  - Shared surface styling attrs override the base variant cleanly.
+  - Disabled removable tags retain the correct visual state.
 ---
 
 <rtgl-view g="lg" p="lg" wh="f">
   <rtgl-view d="v" g="md" w="720">
     <rtgl-view d="h" g="sm" wrap av="c">
       <rtgl-tag pre="text">Schema</rtgl-tag>
-      <rtgl-tag suf="text" v="ol">Preview</rtgl-tag>
+      <rtgl-tag suf="text" v="se">Preview</rtgl-tag>
       <rtgl-tag pre="text" suf="spinner" v="pr">Building</rtgl-tag>
-      <rtgl-tag removable disabled value="locked" v="se">Locked</rtgl-tag>
+      <rtgl-tag removable disabled value="locked" v="de">Locked</rtgl-tag>
     </rtgl-view>
 
     <rtgl-view d="h" g="sm" wrap av="c">
-      <rtgl-tag w="220" v="ol">
+      <rtgl-tag w="220" v="se">
         This is a longer schema-derived label that should truncate inside the tag.
       </rtgl-tag>
-      <rtgl-tag bgc="fg" c="bg" bc="fg">Inverted</rtgl-tag>
-      <rtgl-tag bgc="ac" c="ac-fg">Accent</rtgl-tag>
-      <rtgl-tag v="gh" bc="bo" bw="sm" shadow="sm">Subtle Raised</rtgl-tag>
+      <rtgl-tag pre="spinner" v="ac">Queued</rtgl-tag>
+      <rtgl-tag suf="text" v="de">Failed</rtgl-tag>
     </rtgl-view>
   </rtgl-view>
 </rtgl-view>

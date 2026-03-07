@@ -17,7 +17,7 @@ Use `rtgl-tag` when you need a compact, semantic surface for short labels:
 <rtgl-view d="h" g="sm" wrap>
   <rtgl-tag>Draft</rtgl-tag>
   <rtgl-tag v="pr">Pro</rtgl-tag>
-  <rtgl-tag v="ol" pre="text">API</rtgl-tag>
+  <rtgl-tag v="se" pre="text">API</rtgl-tag>
   <rtgl-tag removable value="beta">Beta</rtgl-tag>
 </rtgl-view>
 ```
@@ -26,7 +26,7 @@ Use `rtgl-tag` when you need a compact, semantic surface for short labels:
 
 | Name | Attribute | Type | Default |
 | --- | --- | --- | --- |
-| Variant | `v` | `mu`, `pr`, `se`, `ac`, `de`, `ol`, `gh` | `mu` |
+| Variant | `v` | `mu`, `pr`, `se`, `ac`, `de` | `mu` |
 | Size | `s` | `sm`, `md`, `lg` | `md` |
 | Prefix Icon | `pre` | registered svg key | - |
 | Suffix Icon | `suf` | registered svg key | - |
@@ -34,7 +34,6 @@ Use `rtgl-tag` when you need a compact, semantic surface for short labels:
 | Remove Payload | `value` | string | - |
 | Disabled | `disabled` | boolean | - |
 | Width | `w` | number, `%`, `xs`-`xl`, `f`, `1fg`-`12fg`, CSS length/value | - |
-| Shared Surface Styling | `bgc`, `c`, `bc`, `bw`, `shadow` | semantic token / size token | - |
 | Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 
 Responsive breakpoint prefixes are supported for `v`, `s`, shared surface styling, cursor, and margin attributes.
@@ -49,8 +48,6 @@ Use variants to tune emphasis and tone.
 - `se`: secondary filled tag
 - `ac`: accent highlight
 - `de`: destructive/error state
-- `ol`: outline tag
-- `gh`: ghost/minimal tag
 
 ```html codePreview
 <rtgl-view d="h" g="sm" wrap>
@@ -59,8 +56,6 @@ Use variants to tune emphasis and tone.
   <rtgl-tag v="se">Secondary</rtgl-tag>
   <rtgl-tag v="ac">Accent</rtgl-tag>
   <rtgl-tag v="de">Blocked</rtgl-tag>
-  <rtgl-tag v="ol">Outline</rtgl-tag>
-  <rtgl-tag v="gh">Ghost</rtgl-tag>
 </rtgl-view>
 ```
 
@@ -90,7 +85,7 @@ Use `pre` and `suf` for icon-enhanced tags.
 ```html codePreview
 <rtgl-view d="h" g="sm" wrap>
   <rtgl-tag pre="text">Schema</rtgl-tag>
-  <rtgl-tag suf="text" v="ol">Preview</rtgl-tag>
+  <rtgl-tag suf="text" v="se">Preview</rtgl-tag>
   <rtgl-tag pre="text" suf="spinner" v="pr">Building</rtgl-tag>
 </rtgl-view>
 ```
@@ -139,21 +134,9 @@ Use `w` when tags need truncation or flexible layout participation.
 ```html codePreview
 <rtgl-view d="v" g="sm" w="260">
   <rtgl-tag w="f">Full width tag in a constrained column</rtgl-tag>
-  <rtgl-tag w="180" v="ol">
+  <rtgl-tag w="180" v="se">
     This is a longer label that truncates once it reaches the width limit.
   </rtgl-tag>
-</rtgl-view>
-```
-
-## Shared Surface Styling
-
-Use shared surface attrs when you need one-off overrides without adding a new variant.
-
-```html codePreview
-<rtgl-view d="h" g="sm" wrap>
-  <rtgl-tag bgc="fg" c="bg" bc="fg">Inverted</rtgl-tag>
-  <rtgl-tag bgc="ac" c="ac-fg">Accent</rtgl-tag>
-  <rtgl-tag v="gh" bc="bo" bw="sm" shadow="sm">Subtle Raised</rtgl-tag>
 </rtgl-view>
 ```
 
@@ -162,4 +145,5 @@ Use shared surface attrs when you need one-off overrides without adding a new va
 - `rtgl-tag` is not a link or button primitive; use it for metadata display, not primary actions.
 - `removable` only adds the trailing remove affordance. It does not remove the element automatically.
 - For truncation, provide `w` or another width-constrained parent.
+- Generic surface styling attrs like `bgc`, `c`, `bc`, `bw`, and `shadow` are intentionally not supported; use the built-in tag variants instead.
 - Border radius is fixed to `--tag-border-radius` (defaults to `--border-radius-f`); `rtgl-tag` does not support consumer radius overrides.

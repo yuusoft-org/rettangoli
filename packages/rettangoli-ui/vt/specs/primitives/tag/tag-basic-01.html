@@ -1,8 +1,8 @@
 ---
 title: Tag - Basic - Variants and Sizes
-description: Verifies the default, semantic, outline, and ghost tag variants across sizes.
+description: Verifies the supported semantic tag variants across sizes.
 specs:
-  - Variant tokens render distinct filled, outline, and ghost tag treatments.
+  - Variant tokens render the supported semantic tag treatments.
   - Size tokens scale padding, height, typography, and icon affordance spacing.
   - Wrapping multiple tags preserves alignment and spacing.
 ---
@@ -15,8 +15,6 @@ specs:
       <rtgl-tag v="se">Secondary</rtgl-tag>
       <rtgl-tag v="ac">Accent</rtgl-tag>
       <rtgl-tag v="de">Blocked</rtgl-tag>
-      <rtgl-tag v="ol">Outline</rtgl-tag>
-      <rtgl-tag v="gh">Ghost</rtgl-tag>
     </rtgl-view>
 
     <rtgl-view d="h" g="sm" wrap av="c">
@@ -24,7 +22,7 @@ specs:
       <rtgl-tag s="md">Medium</rtgl-tag>
       <rtgl-tag s="lg">Large</rtgl-tag>
       <rtgl-tag s="sm" v="pr">v1.0.4</rtgl-tag>
-      <rtgl-tag s="md" v="ol">Internal</rtgl-tag>
+      <rtgl-tag s="md" v="se">Internal</rtgl-tag>
       <rtgl-tag s="lg" v="ac">Launch Ready</rtgl-tag>
     </rtgl-view>
   </rtgl-view>

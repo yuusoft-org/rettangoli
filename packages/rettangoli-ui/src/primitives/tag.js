@@ -5,8 +5,6 @@ import {
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
-import viewStylesForTarget from "../styles/viewStylesForTarget.js";
-import textColorStylesForTarget from "../styles/textColorStylesForTarget.js";
 import tagSurfaceStyles from "../styles/tagSurfaceStyles.js";
 
 class RettangoliTagElement extends HTMLElement {
@@ -121,11 +119,9 @@ class RettangoliTagElement extends HTMLElement {
         }
 
         ${tagSurfaceStyles}
-        ${viewStylesForTarget(".surface")}
         :host .surface {
           border-radius: var(--tag-border-radius) !important;
         }
-        ${textColorStylesForTarget(".surface")}
         ${marginStyles}
         ${cursorStyles}
       `);

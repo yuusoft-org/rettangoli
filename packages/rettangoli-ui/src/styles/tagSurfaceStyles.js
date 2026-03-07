@@ -65,16 +65,6 @@ const styles = {
       color: var(--destructive-foreground);
       border-color: transparent;
     `,
-    ol: `
-      background-color: transparent;
-      color: var(--foreground);
-      border-color: var(--border);
-    `,
-    gh: `
-      background-color: transparent;
-      color: var(--foreground);
-      border-color: transparent;
-    `,
   },
 };
 
