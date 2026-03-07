@@ -150,7 +150,7 @@ Build the bundle:
 rtgl fe build
 ```
 
-Or start the dev server with automatic rebuilds on file changes:
+Or start the dev server with automatic reloads on file changes:
 
 ```bash
 rtgl fe watch

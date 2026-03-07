@@ -36,17 +36,37 @@ fe:
   outfile: "./dist/bundle.js"
 ```
 
-The build uses esbuild for fast bundling.
+The build uses Vite (`vite.build`) for production bundling.
 
 ## `rtgl fe watch`
 
-Starts a development server that watches for file changes and rebuilds automatically.
+Starts a development server that watches for file changes and reloads automatically.
 
 ```bash
 rtgl fe watch
 ```
 
-Uses Vite under the hood for hot module replacement during development.
+Uses Vite (`vite.createServer`) for dev serving and full reload on FE file changes.
+
+## Vite Integration Details
+
+FE keeps the same CLI interface and integrates Vite internally.
+
+- Virtual entry: FE generates a virtual module (`virtual:rettangoli-fe-entry`) from configured component files.
+- Plugin hooks used:
+  - `resolveId` + `load` to provide generated entry code.
+  - `handleHotUpdate` to invalidate and reload on component/setup file edits.
+  - `configureServer` middleware to serve the configured `outfile` path in watch mode.
+- Output behavior:
+  - Build preserves configured `fe.outfile` as the entry filename.
+  - Additional chunks may be emitted under a `chunks/` folder when splitting is enabled.
+- Validation behavior:
+  - Contract validation and YAML/template parsing run before bundle generation.
+
+Current limitations:
+
+- Watch mode uses full page reload (not component-level HMR).
+- FE does not enable extra Vite CSS plugin configuration.
 
 ## `rtgl fe scaffold`
 
