@@ -32,11 +32,10 @@ Use `rtgl-tag` when you need a compact, semantic surface for short labels:
 | Suffix Icon | `suf` | registered svg key | - |
 | Removable | `removable` | boolean | - |
 | Remove Payload | `value` | string | - |
-| Disabled | `disabled` | boolean | - |
 | Width | `w` | number, `%`, `xs`-`xl`, `f`, `1fg`-`12fg`, CSS length/value | - |
 | Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 
-Responsive breakpoint prefixes are supported for `v`, `s`, shared surface styling, cursor, and margin attributes.
+Responsive breakpoint prefixes are supported for `v`, `s`, cursor, and margin attributes.
 For full breakpoint behavior, see [Responsiveness](/ui/docs/introduction/responsiveness).
 
 ## Variant
@@ -98,14 +97,13 @@ Set `removable` to render a trailing remove affordance. Listen for `remove-click
 
 - The internal remove button dispatches `remove-click`.
 - Event detail is `{ value }`.
-- `disabled` keeps the tag visible but prevents removal.
 
 ```html codePreview
 <rtgl-view d="v" g="sm">
   <rtgl-view d="h" g="sm" wrap id="tag-list">
     <rtgl-tag removable value="draft">Draft</rtgl-tag>
     <rtgl-tag removable value="beta" v="pr">Beta</rtgl-tag>
-    <rtgl-tag removable value="locked" disabled>Locked</rtgl-tag>
+    <rtgl-tag removable value="locked" v="de">Locked</rtgl-tag>
   </rtgl-view>
   <rtgl-text id="tag-result" c="mu-fg">No remove yet</rtgl-text>
 </rtgl-view>

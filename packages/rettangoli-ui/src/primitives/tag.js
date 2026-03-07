@@ -109,15 +109,6 @@ class RettangoliTagElement extends HTMLElement {
           opacity: 1;
         }
 
-        :host([disabled]) .surface {
-          opacity: 0.6;
-        }
-
-        :host([disabled]) .removeButton {
-          cursor: not-allowed;
-          opacity: 0.4;
-        }
-
         ${tagSurfaceStyles}
         :host .surface {
           border-radius: var(--tag-border-radius) !important;
@@ -155,7 +146,7 @@ class RettangoliTagElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "pre", "suf", "removable", "disabled", "w"];
+    return ["key", "pre", "suf", "removable", "w"];
   }
 
   connectedCallback() {
@@ -238,7 +229,6 @@ class RettangoliTagElement extends HTMLElement {
       this._surfaceElement.appendChild(this._removeButton);
     }
 
-    this._removeButton.disabled = this.hasAttribute("disabled");
   }
 
   _updateStructure() {
@@ -264,10 +254,6 @@ class RettangoliTagElement extends HTMLElement {
   _onRemoveClick(event) {
     event.preventDefault();
     event.stopPropagation();
-
-    if (this.hasAttribute("disabled")) {
-      return;
-    }
 
     this.dispatchEvent(
       new CustomEvent("remove-click", {
