@@ -33,4 +33,4 @@ customElements.define("rtgl-dialog", RettangoliDialog({}));
 customElements.define("rtgl-popover", RettangoliPopover({}));
 
 // built from rettangoli cli fe
-import '../.temp/dynamicImport.js'
+import "../.generated/fe-entry.js";

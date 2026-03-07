@@ -6,7 +6,7 @@ import { createRettangoliFeVitePlugin } from "./vitePlugin.js";
 
 const toPosixPath = (value) => value.split(path.sep).join("/");
 
-const resolveServeContext = ({ cwd, outfile }) => {
+export const resolveServeContext = ({ cwd, outfile }) => {
   const resolvedOutfile = path.resolve(cwd, outfile);
   const relativeOutfile = path.relative(cwd, resolvedOutfile);
   const parts = relativeOutfile.split(path.sep).filter(Boolean);
@@ -32,7 +32,7 @@ const resolveServeContext = ({ cwd, outfile }) => {
   };
 };
 
-const startWatching = async (options = {}) => {
+export const createWatchServer = async (options = {}) => {
   const {
     cwd = process.cwd(),
     dirs = ["src"],
@@ -43,32 +43,47 @@ const startWatching = async (options = {}) => {
 
   const { root, publicEntryPath } = resolveServeContext({ cwd, outfile });
 
+  const server = await createServer({
+    configFile: false,
+    root,
+    server: {
+      port,
+      host: "0.0.0.0",
+      allowedHosts: true,
+    },
+    plugins: [
+      createRettangoliFeVitePlugin({
+        cwd,
+        dirs,
+        setup,
+        errorPrefix: "[Watch]",
+        publicEntryPath,
+      }),
+    ],
+  });
+
+  return server;
+};
+
+const startWatching = async (options = {}) => {
+  const {
+    cwd = process.cwd(),
+    outfile = "./vt/static/main.js",
+    enableCliShortcuts = !!process.stdin.isTTY,
+  } = options;
+  const { root, publicEntryPath } = resolveServeContext({ cwd, outfile });
+
   console.log("watch root dir:", root);
   console.log("watch entry path:", publicEntryPath);
 
   try {
-    const server = await createServer({
-      configFile: false,
-      root,
-      server: {
-        port,
-        host: "0.0.0.0",
-        allowedHosts: true,
-      },
-      plugins: [
-        createRettangoliFeVitePlugin({
-          cwd,
-          dirs,
-          setup,
-          errorPrefix: "[Watch]",
-          publicEntryPath,
-        }),
-      ],
-    });
-
+    const server = await createWatchServer(options);
     await server.listen();
     server.printUrls();
-    server.bindCLIShortcuts({ print: true });
+    if (enableCliShortcuts) {
+      server.bindCLIShortcuts({ print: true });
+    }
+    return server;
   } catch (error) {
     console.error("Error during Vite server startup:", error);
     process.exit(1);

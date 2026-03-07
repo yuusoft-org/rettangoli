@@ -39,6 +39,7 @@ const buildRettangoliFrontend = async (options = {}) => {
       emptyOutDir: false,
       minify: development ? false : "esbuild",
       sourcemap: !!development,
+      target: "esnext",
       rollupOptions: {
         input: RETTANGOLI_FE_VIRTUAL_ENTRY_ID,
         output: {
