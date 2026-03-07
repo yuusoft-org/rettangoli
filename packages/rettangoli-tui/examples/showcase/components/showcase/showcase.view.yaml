@@ -16,6 +16,7 @@ template:
       - rtgl-text: "- rtgl-input"
       - rtgl-text: "- rtgl-list"
       - rtgl-text: "- rtgl-image"
+      - rtgl-text: "- rtgl-progress-bar"
       - rtgl-text: "- rtgl-table"
       - rtgl-text: "- rtgl-textarea"
       - rtgl-text: "- rtgl-divider"
@@ -49,6 +50,10 @@ template:
       - rtgl-text: "Image demo (Kitty protocol)"
       - rtgl-text: "Source: yuusoft.com/public/img/favicon.png"
       - rtgl-image :src=showcaseImageSrc w=20 h=10 alt="[image unavailable - terminal does not support kitty graphics]": null
+      - rtgl-divider w=72: null
+      - rtgl-text: "Progress bar demo"
+      - rtgl-progress-bar label="Tasks Done" :value=taskCompletedCount :max=taskCount w=32 status=doing: null
+      - rtgl-progress-bar label="Deploy" percent=78 w=24 color=green: null
       - rtgl-divider w=72: null
       - rtgl-text: "Message: ${message}"
       - rtgl-text: "Last Key: ${lastKey}"

@@ -150,6 +150,7 @@ export const selectViewData = ({ state }) => {
   const selectorOptions = Array.isArray(state.selectorOptions) ? state.selectorOptions : [];
   const selectedSelectorIndex = findOptionIndexById(selectorOptions, state.selectedEnvironment);
   const selectedSelectorOption = selectorOptions[selectedSelectorIndex] || null;
+  const taskCompletedCount = tasks.filter((task) => Boolean(task.done)).length;
 
   return {
     ...state,
@@ -158,6 +159,7 @@ export const selectViewData = ({ state }) => {
     taskCount: tasks.length,
     selectedTaskIndex: safeSelectedTaskIndex,
     selectedTaskId: tasks[safeSelectedTaskIndex]?.id || "-",
+    taskCompletedCount,
     selectorOptions,
     selectorIndex: selectedSelectorIndex,
     selectorSelectedLabel: selectedSelectorOption?.label || "(none)",

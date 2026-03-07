@@ -32,6 +32,7 @@ const view = {
         },
         { "rtgl-text": "users: ${users}" },
         { "rtgl-input label=Search value=${query}": null },
+        { "rtgl-progress-bar label='Users Loaded' :value=users max=20 w=12": null },
         { "rtgl-list :items=items :selectedIndex=1 w=f": null },
         { "rtgl-table :data=tableData :selectedIndex=1 w=f cw=12": null },
         {
@@ -123,6 +124,8 @@ describe("tui runtime", () => {
     expect(output).toContain("│");
     expect(output).toContain("users: 12");
     expect(output).toContain("Search:");
+    expect(output).toContain("Users Loaded");
+    expect(output).toContain("60%");
     expect(output).toContain("• [ ] ship v1");
     expect(output).toContain("• [x] release notes");
     expect(output).toContain("┌");
