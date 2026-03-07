@@ -1,0 +1,55 @@
+---
+title: Tag - Removable - Event and Removal
+description: Verifies removable tags dispatch a remove-click event and can be removed by the host application.
+specs:
+  - Removable tags render a trailing remove affordance.
+  - Clicking remove dispatches `remove-click` with the configured value payload.
+  - The host page can remove the tag and show the resolved result state.
+skipInitialScreenshot: true
+steps:
+  - action: wait
+    ms: 220
+  - action: screenshot
+  - action: select
+    testId: remove-beta-tag
+    steps:
+      - action: click
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+
+<rtgl-view g="lg" p="lg" wh="f">
+  <rtgl-view d="v" g="md" w="520">
+    <rtgl-view id="tag-list" d="h" g="sm" wrap av="c">
+      <rtgl-tag removable value="draft">Draft</rtgl-tag>
+      <rtgl-tag id="beta-tag" removable value="beta" v="pr">Beta</rtgl-tag>
+      <rtgl-tag removable value="ops" v="se">Ops</rtgl-tag>
+    </rtgl-view>
+    <rtgl-view p="sm" bgc="mu" br="sm">
+      <rtgl-text id="tag-result" c="mu-fg">No remove yet</rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const betaTag = document.getElementById('beta-tag');
+  const tagList = document.getElementById('tag-list');
+  const result = document.getElementById('tag-result');
+
+  const setRemoveTestId = () => {
+    const button = betaTag.shadowRoot?.querySelector('.removeButton');
+    if (button) {
+      button.setAttribute('data-testid', 'remove-beta-tag');
+      return;
+    }
+    setTimeout(setRemoveTestId, 0);
+  };
+
+  setRemoveTestId();
+
+  tagList.addEventListener('remove-click', (event) => {
+    result.textContent = `Removed: ${event.detail.value}`;
+    event.target.remove();
+  });
+</script>
