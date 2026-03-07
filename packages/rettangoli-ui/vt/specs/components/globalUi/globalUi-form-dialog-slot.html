@@ -1,0 +1,99 @@
+---
+title: "Global UI - Form Dialog - Slot Mount"
+description: Verifies context, disabled state, and mount(formEl) slot content inside the global form dialog.
+specs:
+  - Compact dialog sizing applies to embedded form rendering.
+  - "`context` values are available to form title templates."
+  - "`mount(formEl)` can inject slotted custom content after the dialog opens."
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: open-form-dialog-slot
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#formDialog'
+    state: attached
+    timeoutMs: 1500
+  - action: waitFor
+    selector: '#formDialog [slot="review-note"]'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 220
+  - action: screenshot
+viewport:
+  id: form-dialog-slot
+  width: 980
+  height: 900
+---
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="lg" h="100vh" w="f" wrap p="lg">
+  <rtgl-button
+    id="open-form-dialog-slot"
+    data-testid="open-form-dialog-slot"
+  >
+    Open Slot Dialog
+  </rtgl-button>
+</rtgl-view>
+
+<script>
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+
+  const mountReviewNote = (formEl) => {
+    if (formEl.querySelector('[slot="review-note"]')) return;
+
+    formEl.innerHTML = `
+      <rtgl-view slot="review-note" p="sm" bc="ac" bw="sm" br="sm" bgc="mu">
+        <rtgl-text s="sm">Requires editorial approval before release.</rtgl-text>
+      </rtgl-view>
+    `;
+  };
+
+  document.getElementById('open-form-dialog-slot').addEventListener('click', () => {
+    void globalUIElement.transformedHandlers.handleShowFormDialog({
+      size: 'sm',
+      disabled: true,
+      defaultValues: {
+        owner: 'Editorial',
+        stage: 'review',
+      },
+      context: {
+        titlePrefix: 'Publish Review',
+      },
+      form: {
+        title: '${titlePrefix} - ${formValues.stage}',
+        description: 'Slot content is mounted after dialog creation.',
+        fields: [{
+          name: 'owner',
+          type: 'input-text',
+          label: 'Owner',
+        }, {
+          name: 'stage',
+          type: 'select',
+          label: 'Stage',
+          options: [
+            { label: 'Draft', value: 'draft' },
+            { label: 'Review', value: 'review' },
+            { label: 'Published', value: 'published' },
+          ],
+          required: true,
+        }, {
+          slot: 'review-note',
+          type: 'slot',
+          label: 'Review Note',
+          description: 'Mounted through the helper hook.',
+        }],
+        actions: {
+          buttons: [{
+            id: 'submit',
+            variant: 'pr',
+            label: 'Submit',
+          }],
+        },
+      },
+      mount: mountReviewNote,
+    });
+  });
+</script>

@@ -1,14 +1,22 @@
 ---
 title: "Global UI - Form Dialog"
 description: Verifies an rtgl-form schema can render inside the global UI dialog flow.
+specs:
+  - Large dialog size renders schema-driven fields and split actions.
+  - Default values populate text and select controls inside the embedded form.
+  - Global UI keeps the dialog mounted as an overlay-based form flow.
 skipInitialScreenshot: true
 steps:
   - action: select
     testId: open-form-dialog
     steps:
       - action: click
+  - action: waitFor
+    selector: '#formDialog'
+    state: attached
+    timeoutMs: 1500
   - action: wait
-    ms: 300
+    ms: 220
   - action: screenshot
 viewport:
   id: form-dialog

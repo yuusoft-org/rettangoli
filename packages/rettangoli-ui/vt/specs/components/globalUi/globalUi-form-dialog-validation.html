@@ -1,0 +1,100 @@
+---
+title: "Global UI - Form Dialog - Validation"
+description: Verifies invalid submit keeps the global form dialog open and renders inline errors.
+specs:
+  - Invalid submit keeps the dialog open instead of resolving the helper promise.
+  - Required and pattern validation errors render inside the embedded form.
+  - Compact dialog sizing still supports action-driven validation flows.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: open-form-dialog-validation
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#formDialog'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 120
+  - action: select
+    testId: validation-submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 220
+  - action: screenshot
+viewport:
+  id: form-dialog-validation
+  width: 980
+  height: 900
+---
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="lg" h="100vh" w="f" wrap p="lg">
+  <rtgl-button
+    id="open-form-dialog-validation"
+    data-testid="open-form-dialog-validation"
+  >
+    Open Validation Dialog
+  </rtgl-button>
+</rtgl-view>
+
+<script>
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+
+  const tagFormActionButton = (actionId, testId) => {
+    const trySet = () => {
+      const formEl = globalUIElement.shadowRoot?.querySelector('#formDialog');
+      const btn = formEl?.shadowRoot?.querySelector(`[data-action-id="${actionId}"]`);
+      if (btn) {
+        btn.setAttribute('data-testid', testId);
+        return;
+      }
+      setTimeout(trySet, 0);
+    };
+
+    trySet();
+  };
+
+  document.getElementById('open-form-dialog-validation').addEventListener('click', () => {
+    tagFormActionButton('submit', 'validation-submit-btn');
+
+    void globalUIElement.transformedHandlers.handleShowFormDialog({
+      size: 'sm',
+      form: {
+        title: 'Validation State',
+        description: 'Submitting empty required fields should keep the dialog open.',
+        fields: [{
+          name: 'name',
+          type: 'input-text',
+          label: 'Name',
+          required: true,
+        }, {
+          name: 'email',
+          type: 'input-text',
+          label: 'Email',
+          required: { message: 'Email is required' },
+          rules: [{
+            rule: 'pattern',
+            value: 'email',
+            message: 'Must be a valid email',
+          }],
+        }, {
+          name: 'age',
+          type: 'input-number',
+          label: 'Age',
+          required: true,
+        }],
+        actions: {
+          buttons: [{
+            id: 'submit',
+            variant: 'pr',
+            label: 'Continue',
+            validate: true,
+          }],
+        },
+      },
+    });
+  });
+</script>
