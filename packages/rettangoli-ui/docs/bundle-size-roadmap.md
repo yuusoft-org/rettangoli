@@ -17,7 +17,7 @@ This document captures the current bundle-size findings for `@rettangoli/ui`, th
   - [`../rettangoli-fe/src/parser.js`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-fe/src/parser.js) only needs `flattenArrays`, but it imported that helper from [`../rettangoli-fe/src/common.js`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-fe/src/common.js), which previously also imported `rxjs`.
 
 - `jempl` was duplicated across package boundaries.
-  - [`package.json`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-ui/package.json) used `jempl@1.0.0`.
+  - [`package.json`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-ui/package.json) now uses `jempl@1.0.1`.
   - [`../rettangoli-fe/package.json`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-fe/package.json) used `jempl@0.3.2-rc2`.
 
 - `@rettangoli/ui` carried direct dependencies that are not used in its source tree.
