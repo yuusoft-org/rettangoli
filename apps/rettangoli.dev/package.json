@@ -1,12 +1,12 @@
 {
   "scripts": {
-    "build": "../../node_modules/.bin/rtgl sites build",
-    "watch": "../../node_modules/.bin/rtgl sites watch",
+    "build": "rtgl sites build",
+    "watch": "rtgl sites watch",
     "dev": "npm run watch",
-    "generate": "../../node_modules/.bin/rtgl vt generate",
+    "generate": "rtgl vt generate",
     "screenshot": "bash -lc 'IMAGE=\"han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc27\"; docker pull \"$IMAGE\" >/dev/null 2>&1 || IMAGE=\"han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc25\"; docker run --rm --user $(id -u):$(id -g) -v \"$PWD:/workspace\" -w /workspace \"$IMAGE\" rtgl vt screenshot'",
-    "report": "../../node_modules/.bin/rtgl vt report",
-    "accept": "../../node_modules/.bin/rtgl vt accept"
+    "report": "rtgl vt report",
+    "accept": "rtgl vt accept"
   },
   "devDependencies": {
     "rtgl": "1.0.0-rc19"
