@@ -196,7 +196,7 @@ Use this workflow:
 Docker image:
 
 ```bash
-IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc27"
+IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.5"
 ```
 
 Dashboard suite:
