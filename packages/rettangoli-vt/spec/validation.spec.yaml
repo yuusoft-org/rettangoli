@@ -245,6 +245,15 @@ in:
             key: Enter
   - specs/page.yaml
 ---
+case: accepts structured select with selector target
+in:
+  - steps:
+      - action: select
+        selector: "#search-input"
+        steps:
+          - action: focus
+  - specs/page.yaml
+---
 case: accepts structured action steps
 in:
   - steps:
@@ -318,14 +327,25 @@ in:
   - specs/page.yaml
 throws: must be one of
 ---
-case: rejects structured select without testId
+case: rejects structured select without target
 in:
   - steps:
       - action: select
         steps:
           - action: click
   - specs/page.yaml
-throws: testId
+throws: exactly one of
+---
+case: rejects structured select with both testId and selector
+in:
+  - steps:
+      - action: select
+        testId: login-email
+        selector: "#login-email"
+        steps:
+          - action: click
+  - specs/page.yaml
+throws: exactly one of
 ---
 case: rejects structured select without nested steps array
 in:

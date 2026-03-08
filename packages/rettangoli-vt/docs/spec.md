@@ -186,7 +186,7 @@ Validation:
 - `waitStrategy=event` requires `waitEvent`.
 - `waitStrategy=selector` requires `waitSelector`.
 - Structured steps require `action`.
-- `action: select` is the only nested/block action and requires `steps`.
+- `action: select` is the only nested/block action, requires `steps`, and accepts exactly one of `testId` or `selector`.
 - `skipInitialScreenshot=true` disables only the immediate pre-step screenshot; explicit `action: screenshot` steps still run.
 
 ## Screenshot Naming Contract
