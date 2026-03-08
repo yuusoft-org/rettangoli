@@ -31,7 +31,7 @@ bunx rtgl vt report --group themes
 Use Docker for consistent Playwright runtime across local and CI:
 
 ```bash
-IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc27"
+IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.5"
 docker pull "$IMAGE"
 
 # Capture all sections (themes + docs-template + templates)
