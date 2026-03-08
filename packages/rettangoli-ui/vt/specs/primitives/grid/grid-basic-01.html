@@ -1,0 +1,35 @@
+---
+title: Grid - Columns - Basic
+description: Verifies `cols` creates equal-width tracks while shared gap and box attrs remain available.
+specs:
+  - Numeric `cols` values create equal-width grid columns.
+  - Shared `g`, `p`, `bgc`, and sizing attrs work on `rtgl-grid`.
+---
+<rtgl-view d="v" g="lg" p="lg" wh="f">
+  <rtgl-grid cols="2" g="md" p="md" bgc="mu" w="280">
+    <rtgl-view bgc="ac" h="36"></rtgl-view>
+    <rtgl-view bgc="pr" h="36"></rtgl-view>
+    <rtgl-view bgc="se" h="36"></rtgl-view>
+    <rtgl-view bgc="de" h="36"></rtgl-view>
+  </rtgl-grid>
+
+  <rtgl-grid cols="3" g="md" p="md" bgc="mu" w="420">
+    <rtgl-view bgc="ac" h="36"></rtgl-view>
+    <rtgl-view bgc="pr" h="36"></rtgl-view>
+    <rtgl-view bgc="se" h="36"></rtgl-view>
+    <rtgl-view bgc="de" h="36"></rtgl-view>
+    <rtgl-view bgc="bo" h="36"></rtgl-view>
+    <rtgl-view bgc="fg" h="36"></rtgl-view>
+  </rtgl-grid>
+
+  <rtgl-grid cols="4" g="sm" p="md" bgc="mu" w="520">
+    <rtgl-view bgc="ac" h="28"></rtgl-view>
+    <rtgl-view bgc="pr" h="28"></rtgl-view>
+    <rtgl-view bgc="se" h="28"></rtgl-view>
+    <rtgl-view bgc="de" h="28"></rtgl-view>
+    <rtgl-view bgc="bo" h="28"></rtgl-view>
+    <rtgl-view bgc="fg" h="28"></rtgl-view>
+    <rtgl-view bgc="ac" h="28"></rtgl-view>
+    <rtgl-view bgc="pr" h="28"></rtgl-view>
+  </rtgl-grid>
+</rtgl-view>

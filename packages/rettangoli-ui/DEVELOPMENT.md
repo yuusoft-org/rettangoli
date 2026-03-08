@@ -258,10 +258,17 @@ detail: {}
 ## Custom Elements (public surface)
 
 Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
-- `rtgl-view`, `rtgl-text`, `rtgl-button`, `rtgl-image`, `rtgl-svg`
+- `rtgl-grid`, `rtgl-view`, `rtgl-text`, `rtgl-button`, `rtgl-image`, `rtgl-svg`
 - `rtgl-input`, `rtgl-input-number`, `rtgl-textarea`
 - `rtgl-slider`, `rtgl-color-picker`
 - `rtgl-dialog`, `rtgl-popover`
+
+### `rtgl-grid`
+
+- use for explicit 2D column layouts
+- `cols` and `sm-cols` / `md-cols` / `lg-cols` / `xl-cols` accept positive integers and render equal-width tracks
+- shared spacing, sizing, border, background, visibility, overflow, and link attrs follow the same conventions as `rtgl-view`
+- flex-only attrs such as `d`, `wrap`, `no-wrap`, `ah`, and `av` do not apply
 
 Components built via `@rettangoli/fe`:
 - `rtgl-select`, `rtgl-dropdown-menu`, `rtgl-tooltip`, `rtgl-popover-input`

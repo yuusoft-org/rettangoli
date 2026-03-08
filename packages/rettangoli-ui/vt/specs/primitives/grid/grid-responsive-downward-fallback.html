@@ -1,0 +1,43 @@
+---
+title: Grid - Responsive - Downward Fallback
+description: Verifies missing breakpoint values fall back from larger breakpoints for `cols`.
+viewport:
+  id: sm-grid-fallback
+  width: 620
+  height: 760
+specs:
+  - "`lg-cols` values apply on smaller breakpoints when `md-cols` and `sm-cols` are not set."
+  - "`md-cols` values apply on `sm` when `sm-cols` is not set."
+  - Breakpoint visibility attrs continue to work with `rtgl-grid`.
+---
+<rtgl-view w="f" p="md" g="md">
+  <rtgl-view bgc="mu" p="sm" g="sm">
+    <rtgl-text s="sm">`cols="4" lg-cols="2"` at 620px should use 2 columns.</rtgl-text>
+    <rtgl-grid cols="4" lg-cols="2" g="sm" w="360">
+      <rtgl-view bgc="ac" h="28"></rtgl-view>
+      <rtgl-view bgc="pr" h="28"></rtgl-view>
+      <rtgl-view bgc="se" h="28"></rtgl-view>
+      <rtgl-view bgc="de" h="28"></rtgl-view>
+    </rtgl-grid>
+  </rtgl-view>
+
+  <rtgl-view bgc="mu" p="sm" g="sm">
+    <rtgl-text s="sm">`cols="4" md-cols="3" lg-cols="2"` at 620px should use 3 columns.</rtgl-text>
+    <rtgl-grid cols="4" md-cols="3" lg-cols="2" g="sm" w="448">
+      <rtgl-view bgc="ac" h="28"></rtgl-view>
+      <rtgl-view bgc="pr" h="28"></rtgl-view>
+      <rtgl-view bgc="se" h="28"></rtgl-view>
+      <rtgl-view bgc="de" h="28"></rtgl-view>
+      <rtgl-view bgc="bo" h="28"></rtgl-view>
+      <rtgl-view bgc="fg" h="28"></rtgl-view>
+    </rtgl-grid>
+  </rtgl-view>
+
+  <rtgl-view bgc="mu" p="sm" g="sm">
+    <rtgl-text s="sm">`hide` + `sm-show` should become visible at 620px.</rtgl-text>
+    <rtgl-grid cols="2" g="sm" hide sm-show w="344">
+      <rtgl-view bgc="ac" h="28"></rtgl-view>
+      <rtgl-view bgc="pr" h="28"></rtgl-view>
+    </rtgl-grid>
+  </rtgl-view>
+</rtgl-view>

@@ -1,0 +1,22 @@
+---
+title: Grid - Responsive - No Upward Fallback
+description: Verifies smaller breakpoint column values do not apply upward to larger ranges.
+viewport:
+  id: xl-grid-range
+  width: 1100
+  height: 420
+specs:
+  - "`lg-cols` values do not apply in the `xl` range when `xl-cols` is missing."
+  - "`cols` remains active unless explicitly overridden by `xl-cols`."
+---
+<rtgl-view w="f" p="md" g="md">
+  <rtgl-text s="sm">At 1100px (`xl` range), `cols="4" lg-cols="2"` should remain 4 columns.</rtgl-text>
+  <rtgl-view bgc="mu" p="sm" g="sm">
+    <rtgl-grid cols="4" lg-cols="2" g="sm" w="520">
+      <rtgl-view bgc="ac" h="28"></rtgl-view>
+      <rtgl-view bgc="pr" h="28"></rtgl-view>
+      <rtgl-view bgc="se" h="28"></rtgl-view>
+      <rtgl-view bgc="de" h="28"></rtgl-view>
+    </rtgl-grid>
+  </rtgl-view>
+</rtgl-view>
