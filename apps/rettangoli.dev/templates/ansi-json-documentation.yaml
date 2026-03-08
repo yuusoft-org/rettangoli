@@ -1,6 +1,6 @@
 - html lang="en":
     - head:
-        - $partial: seo1
+        - $partial: seo
           page: ${page}
           seo: ${seo}
         - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.3/dist/themes/base.css":
@@ -10,7 +10,7 @@
         - script src="/public/rtgl-icons.js":
 
     - body.dark:
-        - $partial: mobile-nav1
+        - $partial: mobile-nav
           headerLabel: ${ansiJsonDocs.header.label}
           headerHref: ${ansiJsonDocs.header.href}
           header: ${ansiJsonDocs.header}
