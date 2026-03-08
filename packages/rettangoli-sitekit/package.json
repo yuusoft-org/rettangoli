@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yuusoft-org/rettangoli.git",
+    "url": "https://github.com/yuusoft-org/rettangoli",
     "directory": "packages/rettangoli-sitekit"
   },
   "bugs": {
