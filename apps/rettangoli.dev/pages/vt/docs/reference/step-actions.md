@@ -25,7 +25,7 @@ steps:
     selector: "[data-testid='login-email']"
 
   - action: select
-    testId: login-email
+    selector: "#login-email"
     steps:
       - action: write
         value: user@example.com
@@ -50,7 +50,10 @@ steps:
 
 ## Select behavior
 
-`action: select` targets `data-testid="<testId>"`.
+`action: select` accepts exactly one of:
+
+- `testId`: targets `data-testid="<testId>"`
+- `selector`: targets the CSS selector directly, for example `#login-submit`
 
 Inside select blocks VT uses:
 
@@ -79,7 +82,7 @@ Inside select blocks VT uses:
 | `rightMouseDown` | - | - | right button down |
 | `rightMouseUp` | - | - | right button up |
 | `scroll` | `deltaX`, `deltaY` | - | mouse wheel |
-| `select` | `testId`, `steps` | - | only nested/block action |
+| `select` | `steps` | `testId` or `selector` | exactly one target required; only nested/block action |
 | `selectOption` | exactly one of `value` / `label` / `index` | - | select block only |
 | `setViewport` | `width`, `height` | - | integer >= 1 |
 | `screenshot` | - | - | additional capture point |
@@ -135,7 +138,7 @@ steps:
 ```yaml
 steps:
   - action: select
-    testId: email-input
+    selector: "#email-input"
     steps:
       - action: blur
 ```
@@ -145,7 +148,7 @@ steps:
 ```yaml
 steps:
   - action: select
-    testId: accept-checkbox
+    selector: "#accept-checkbox"
     steps:
       - action: check
 ```
@@ -155,7 +158,7 @@ steps:
 ```yaml
 steps:
   - action: select
-    testId: search-input
+    selector: "#search-input"
     steps:
       - action: clear
 ```
@@ -194,7 +197,7 @@ steps:
 ```yaml
 steps:
   - action: select
-    testId: username
+    selector: "#username"
     steps:
       - action: focus
 ```
@@ -212,7 +215,7 @@ steps:
 ```yaml
 steps:
   - action: select
-    testId: tooltip-trigger
+    selector: "#tooltip-trigger"
     steps:
       - action: hover
 ```

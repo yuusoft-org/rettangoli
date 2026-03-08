@@ -21,8 +21,9 @@ function createSelectBlockPage({ selectedElement, interactiveCount = 1 }) {
   };
   const page = {
     getByTestId: vi.fn().mockReturnValue(hostElementLocator),
+    locator: vi.fn().mockReturnValue(hostElementLocator),
   };
-  return { page, interactiveLocator };
+  return { page, interactiveLocator, hostElementLocator };
 }
 
 describe("createSteps screenshot command", () => {
@@ -154,6 +155,44 @@ describe("createSteps structured action steps", () => {
     expect(interactiveLocator.click).toHaveBeenCalledTimes(1);
   });
 
+  it("supports structured select with CSS selector targeting", async () => {
+    const click = vi.fn().mockResolvedValue(undefined);
+    const { page, interactiveLocator } = createSelectBlockPage({
+      selectedElement: { click },
+    });
+    const stepsExecutor = createExecutor(page);
+
+    await stepsExecutor.executeStep({
+      action: "select",
+      selector: "#login-submit",
+      steps: [{ action: "click" }],
+    });
+
+    expect(page.locator).toHaveBeenCalledWith("#login-submit");
+    expect(page.getByTestId).not.toHaveBeenCalled();
+    expect(interactiveLocator.click).toHaveBeenCalledTimes(1);
+  });
+
+  it("supports legacy select block with named selector target", async () => {
+    const fill = vi.fn().mockResolvedValue(undefined);
+    const { page, interactiveLocator } = createSelectBlockPage({
+      selectedElement: { fill },
+    });
+    const stepsExecutor = createExecutor(page);
+
+    await stepsExecutor.executeStep({
+      "select selector=#login-email": [
+        {
+          action: "write",
+          value: "user@example.com",
+        },
+      ],
+    });
+
+    expect(page.locator).toHaveBeenCalledWith("#login-email");
+    expect(interactiveLocator.fill).toHaveBeenCalledWith("user@example.com");
+  });
+
   it("supports structured click by coordinates", async () => {
     const page = {
       mouse: {
@@ -208,6 +247,30 @@ describe("createSteps structured action steps", () => {
         state: "ready",
       }),
     ).rejects.toThrow('Structured action "waitFor" has invalid state "ready".');
+  });
+
+  it("throws when structured select target is missing", async () => {
+    const stepsExecutor = createExecutor({});
+
+    await expect(
+      stepsExecutor.executeStep({
+        action: "select",
+        steps: [{ action: "click" }],
+      }),
+    ).rejects.toThrow('Structured action "select" requires exactly one of `testId` or `selector`.');
+  });
+
+  it("throws when structured select defines both testId and selector", async () => {
+    const stepsExecutor = createExecutor({});
+
+    await expect(
+      stepsExecutor.executeStep({
+        action: "select",
+        testId: "login-submit",
+        selector: "#login-submit",
+        steps: [{ action: "click" }],
+      }),
+    ).rejects.toThrow('Structured action "select" requires exactly one of `testId` or `selector`.');
   });
 });
 

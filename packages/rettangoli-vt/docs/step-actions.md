@@ -16,7 +16,7 @@ steps:
     timeoutMs: 5000
 
   - action: select
-    testId: login-email
+    selector: "#login-email"
     steps:
       - action: write
         value: user@example.com
@@ -37,14 +37,17 @@ steps:
 Rules:
 
 - Every structured step must include `action`.
-- `action: select` is the only nested/block action and requires `steps`.
+- `action: select` is the only nested/block action, requires `steps`, and accepts exactly one of `testId` or `selector`.
 - One-line string steps (for example `click 10 20`) are not supported.
 - Unknown keys on structured actions fail validation.
 - VT takes an automatic initial screenshot before steps unless frontmatter sets `skipInitialScreenshot: true`.
 
 ## Select Targeting
 
-`action: select` resolves `data-testid="<testId>"`.
+`action: select` accepts exactly one of:
+
+- `testId`: resolves `data-testid="<testId>"`
+- `selector`: resolves the CSS selector directly, for example `#login-submit`
 
 Target behavior inside select blocks:
 
@@ -226,7 +229,9 @@ Properties:
 Properties:
 
 - `action`: `select`
-- `testId` (required)
+- exactly one of:
+  - `testId` (string)
+  - `selector` (string)
 - `steps` (required): array of nested steps
 
 Example:
@@ -234,7 +239,7 @@ Example:
 ```yaml
 steps:
   - action: select
-    testId: profile-form
+    selector: "#profile-form"
     steps:
       - action: focus
       - action: write

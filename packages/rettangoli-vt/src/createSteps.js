@@ -180,6 +180,27 @@ function requireStructuredString(stepObject, key, actionName) {
   return value;
 }
 
+function resolveStructuredSelectTarget(stepObject, actionName) {
+  const hasTestId = Object.prototype.hasOwnProperty.call(stepObject, "testId");
+  const hasSelector = Object.prototype.hasOwnProperty.call(stepObject, "selector");
+
+  if (hasTestId === hasSelector) {
+    throw new Error(`Structured action "${actionName}" requires exactly one of \`testId\` or \`selector\`.`);
+  }
+
+  if (hasTestId) {
+    return {
+      type: "testId",
+      value: requireStructuredString(stepObject, "testId", actionName),
+    };
+  }
+
+  return {
+    type: "selector",
+    value: requireStructuredString(stepObject, "selector", actionName),
+  };
+}
+
 function requireStructuredNumber(stepObject, key, actionName) {
   const value = stepObject[key];
   if (typeof value !== "number" || !Number.isFinite(value)) {
@@ -224,13 +245,13 @@ function normalizeStructuredActionStep(stepObject) {
   }
 
   if (action === "select") {
-    assertStructuredKeys(stepObject, new Set(["action", "testId", "steps"]), action);
-    const testId = requireStructuredString(stepObject, "testId", action);
+    assertStructuredKeys(stepObject, new Set(["action", "testId", "selector", "steps"]), action);
+    const target = resolveStructuredSelectTarget(stepObject, action);
     if (!Array.isArray(stepObject.steps)) {
       throw new Error('Structured action "select" requires array `steps`.');
     }
     const nestedSteps = stepObject.steps.map((nestedStep) => normalizeStepValue(nestedStep));
-    return { kind: "block", command: "select", args: [testId], nestedSteps };
+    return { kind: "block", command: "select", args: [`${target.type}=${target.value}`], nestedSteps };
   }
 
   if (action === "click" || action === "dblclick" || action === "hover" || action === "rclick") {
@@ -828,22 +849,32 @@ async function assertStructured(page, assertionConfig, selectedElement) {
 }
 
 async function select(page, args) {
-  const testId = args[0];
-  if (!testId) {
-    throw new Error("`select` requires a test id.");
+  const { named, positional } = parseNamedArgs(args);
+  const testId = typeof named.testId === "string" && named.testId.length > 0
+    ? named.testId
+    : positional[0];
+  const selector = typeof named.selector === "string" && named.selector.length > 0
+    ? named.selector
+    : undefined;
+
+  if ((testId ? 1 : 0) + (selector ? 1 : 0) !== 1) {
+    throw new Error("`select` requires exactly one target: `testId` or `selector`.");
   }
-  const hostElementLocator = page.getByTestId(testId);
-  
-  const interactiveElementLocator = hostElementLocator.locator(
-    'input, textarea, button, select, a'
-  ).first();
-  
+
+  const hostElementLocator = selector
+    ? page.locator(selector)
+    : page.getByTestId(testId);
+
+  const interactiveElementLocator = hostElementLocator
+    .locator('input, textarea, button, select, a')
+    .first();
+
   const count = await interactiveElementLocator.count();
-  
+
   if (count > 0) {
     return interactiveElementLocator;
   }
-  
+
   return hostElementLocator;
 }
 

@@ -126,6 +126,7 @@ Step action reference:
 
 - `docs/step-actions.md`
 - canonical format is structured action objects (`- action: ...`); legacy one-line string steps are not supported.
+- `action: select` accepts exactly one of `testId` or `selector` for interaction targeting.
 - `assert` supports `js` deep-equal checks for object/array values.
 
 Screenshot naming:
