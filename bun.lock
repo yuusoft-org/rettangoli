@@ -41,16 +41,16 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "1.0.10",
+      "version": "1.0.8",
       "bin": {
         "rtgl": "cli.js",
       },
       "dependencies": {
         "@rettangoli/be": "1.0.2",
         "@rettangoli/check": "0.1.2",
-        "@rettangoli/fe": "1.0.5",
+        "@rettangoli/fe": "1.0.4",
         "@rettangoli/sites": "1.0.1",
-        "@rettangoli/ui": "1.0.8",
+        "@rettangoli/ui": "1.0.7",
         "@rettangoli/vt": "1.0.2",
         "commander": "^14.0.0",
         "js-yaml": "^4.1.0",
@@ -58,7 +58,7 @@
     },
     "packages/rettangoli-fe": {
       "name": "@rettangoli/fe",
-      "version": "1.0.6",
+      "version": "1.0.4",
       "dependencies": {
         "immer": "^10.1.1",
         "jempl": "1.0.1",
@@ -114,9 +114,9 @@
     },
     "packages/rettangoli-ui": {
       "name": "@rettangoli/ui",
-      "version": "1.0.9",
+      "version": "1.0.7",
       "dependencies": {
-        "@rettangoli/fe": "1.0.6",
+        "@rettangoli/fe": "1.0.4",
         "jempl": "1.0.1",
       },
       "devDependencies": {
