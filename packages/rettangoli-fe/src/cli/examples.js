@@ -3,9 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { load as loadYaml, loadAll } from "js-yaml";
 import { render, parse } from "jempl";
 
-import {
-  flattenArrays,
-} from "../common.js";
+import { flattenArrays } from "../utils/flattenArrays.js";
 import { extractCategoryAndComponent } from "../commonBuild.js";
 import { getAllFiles } from "../commonBuild.js";
 import path, { dirname } from "node:path";

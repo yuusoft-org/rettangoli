@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "rettangoli",
@@ -40,14 +41,14 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "1.0.4",
+      "version": "1.0.8",
       "bin": {
         "rtgl": "./cli.js",
       },
       "dependencies": {
         "@rettangoli/be": "1.0.2",
         "@rettangoli/check": "0.1.2",
-        "@rettangoli/fe": "1.0.3",
+        "@rettangoli/fe": "1.0.4",
         "@rettangoli/sites": "1.0.0-rc13",
         "@rettangoli/ui": "1.0.5",
         "@rettangoli/vt": "1.0.1",
@@ -57,10 +58,10 @@
     },
     "packages/rettangoli-fe": {
       "name": "@rettangoli/fe",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "dependencies": {
         "immer": "^10.1.1",
-        "jempl": "0.3.2-rc2",
+        "jempl": "1.0.0",
         "js-yaml": "^4.1.0",
         "rxjs": "^7.8.2",
         "snabbdom": "^3.6.2",
@@ -73,14 +74,14 @@
     },
     "packages/rettangoli-sitekit": {
       "name": "@rettangoli/sitekit",
-      "version": "1.0.0-rc1",
+      "version": "1.0.1",
       "devDependencies": {
         "serve": "^14.2.6",
       },
     },
     "packages/rettangoli-sites": {
       "name": "@rettangoli/sites",
-      "version": "1.0.0-rc13",
+      "version": "1.0.1",
       "dependencies": {
         "gray-matter": "^4.0.3",
         "jempl": "^0.3.1-rc1",
@@ -117,13 +118,8 @@
       "name": "@rettangoli/ui",
       "version": "1.0.6",
       "dependencies": {
-        "@floating-ui/dom": "^1.6.13",
-        "@rettangoli/fe": "1.0.3",
-        "commander": "^13.1.0",
+        "@rettangoli/fe": "1.0.4",
         "jempl": "1.0.0",
-        "js-yaml": "^4.1.0",
-        "liquidjs": "^10.21.0",
-        "snabbdom": "^3.6.2",
       },
       "devDependencies": {
         "esbuild": "^0.20.0",
@@ -137,7 +133,7 @@
     },
     "packages/rettangoli-vt": {
       "name": "@rettangoli/vt",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "dependencies": {
         "commander": "^13.1.0",
         "js-yaml": "^4.1.0",
@@ -913,6 +909,8 @@
     "@jridgewell/trace-mapping/@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.0", "", {}, "sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ=="],
 
     "@rettangoli/be/puty": ["puty@0.1.2", "", { "dependencies": { "js-yaml": "~4.1.0" }, "peerDependencies": { "vitest": ">=1.0.0" } }, "sha512-VNEwqORf0u/LiVdjyHPsIOKWC5z4uNuHhMgYu9WGea6u3YCP4OimQHQfWkw0DB/tE3KuWgPO0dhkM8uH4Yweig=="],
+
+    "@rettangoli/fe/jempl": ["jempl@1.0.0", "", {}, "sha512-tYWOHqlIwev20Z47k8m1FeLM2EVxG91JY3ogMR166hdzUN1KeOGHxDhRj8Wfh0PmYIVWf57LB+fTUT/vOahoUg=="],
 
     "@rettangoli/fe/puty": ["puty@0.1.2", "", { "dependencies": { "js-yaml": "~4.1.0" }, "peerDependencies": { "vitest": ">=1.0.0" } }, "sha512-VNEwqORf0u/LiVdjyHPsIOKWC5z4uNuHhMgYu9WGea6u3YCP4OimQHQfWkw0DB/tE3KuWgPO0dhkM8uH4Yweig=="],
 

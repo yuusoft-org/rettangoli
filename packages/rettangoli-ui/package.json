@@ -62,12 +62,7 @@
   },
   "homepage": "https://github.com/yuusoft-org/rettangoli#readme",
   "dependencies": {
-    "@floating-ui/dom": "^1.6.13",
-    "@rettangoli/fe": "1.0.3",
-    "commander": "^13.1.0",
-    "jempl": "1.0.0",
-    "js-yaml": "^4.1.0",
-    "liquidjs": "^10.21.0",
-    "snabbdom": "^3.6.2"
+    "@rettangoli/fe": "1.0.4",
+    "jempl": "1.0.0"
   }
 }
