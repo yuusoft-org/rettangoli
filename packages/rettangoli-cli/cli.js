@@ -4,7 +4,7 @@ import { build, check, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { check as checkContracts } from "@rettangoli/check/cli";
 import { build as buildBe, check as checkBe, start as startBe, watch as watchBe } from "@rettangoli/be/cli";
 import { generate, screenshot, report, accept } from "@rettangoli/vt/cli";
-import { buildSite, watchSite, initSite } from "@rettangoli/sites/cli";
+import { buildSite, watchSite, initSite, checkSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
 import { Command, InvalidArgumentError } from "commander";
 import { readFileSync, existsSync } from "fs";
@@ -516,6 +516,40 @@ sitesCommand
       projectName,
       template: options.template,
     });
+  });
+
+sitesCommand
+  .command("check")
+  .description("Validate Rettangoli Sites contracts")
+  .option("--builtins", "Validate published built-in templates, partials, runtime assets, and themes")
+  .option("--site", "Validate the current site root against built-in template contracts")
+  .option("-r, --root-dir <path>", "Site root for --site validation", "./")
+  .option("--rootDir <path>", "Deprecated alias for --root-dir")
+  .option("--format <format>", "Output format: text or json", "text")
+  .addHelpText(
+    "after",
+    `
+
+Examples:
+  $ rtgl sites check
+  $ rtgl sites check --builtins
+  $ rtgl sites check --site --root-dir .
+  $ rtgl sites check --builtins --site
+  $ rtgl sites check --format json
+`,
+  )
+  .action(async (options) => {
+    try {
+      await checkSite({
+        builtins: options.builtins ? true : undefined,
+        site: !!options.site,
+        rootDir: options.rootDir,
+        format: options.format
+      });
+    } catch (error) {
+      console.error(error.message);
+      process.exitCode = 1;
+    }
   });
 
 sitesCommand

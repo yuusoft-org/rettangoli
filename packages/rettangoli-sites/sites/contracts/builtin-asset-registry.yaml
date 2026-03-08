@@ -1,0 +1,356 @@
+schemaVersion: 1
+
+templates:
+  - id: base
+    stability: stable
+    publishedPath: sites/templates/base.yaml
+    schemaRef: '#/$defs/template.base'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - templates/default/templates/base.yaml
+    vtSpecPaths: []
+    dependencies:
+      partials:
+        - seo
+        - navbar
+      runtimeAssets:
+        - rtgl-icons
+        - mobile-nav
+    notes:
+      - Base shell template with minimal navbar layout and content slot.
+      - Coverage is currently indirect through consumer templates rather than dedicated VT specs.
+
+  - id: docs
+    stability: stable
+    publishedPath: sites/templates/docs.yaml
+    schemaRef: '#/$defs/template.docs'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/templates/docs.yaml
+      - vt/theme-lab/site/pages/docs/getting-started.md
+    vtSpecPaths:
+      - vt/specs/docs-template/docs-getting-started.html
+      - vt/specs/docs-template/docs-getting-started-mobile-menu-open.html
+    dependencies:
+      partials:
+        - seo
+        - mobile-nav
+        - docs-sidebar
+      runtimeAssets:
+        - mobile-nav
+        - rtgl-icons
+
+  - id: landing-features
+    stability: stable
+    publishedPath: sites/templates/landing-features.yaml
+    schemaRef: '#/$defs/template.landingFeatures'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/templates/landing-features.yaml
+      - vt/theme-lab/site/pages/templates/landing-features.yaml
+    vtSpecPaths:
+      - vt/specs/templates/landing-features.html
+      - vt/specs/templates/landing-features-mobile-menu-open.html
+    dependencies:
+      partials:
+        - seo
+        - top-navbar
+        - landing-hero
+        - landing-features-section
+        - landing-cta
+        - footer
+      runtimeAssets:
+        - mobile-nav
+        - rtgl-icons
+
+  - id: blog-article-list
+    stability: stable
+    publishedPath: sites/templates/blog-article-list.yaml
+    schemaRef: '#/$defs/template.blogArticleList'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/templates/blog-article-list.yaml
+      - vt/theme-lab/site/pages/templates/blog/article-list.yaml
+    vtSpecPaths:
+      - vt/specs/templates/blog-article-list.html
+    dependencies:
+      partials:
+        - seo
+        - top-navbar
+        - footer
+      runtimeAssets:
+        - mobile-nav
+        - rtgl-icons
+
+  - id: blog-article
+    stability: stable
+    publishedPath: sites/templates/blog-article.yaml
+    schemaRef: '#/$defs/template.blogArticle'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/templates/blog-article.yaml
+      - vt/theme-lab/site/pages/templates/blog/reducing-friction.md
+    vtSpecPaths:
+      - vt/specs/templates/blog-article.html
+    dependencies:
+      partials:
+        - seo
+        - top-navbar
+        - footer
+      runtimeAssets:
+        - mobile-nav
+        - rtgl-icons
+
+partials:
+  - id: seo
+    stability: stable
+    publishedPath: sites/partials/seo.yaml
+    schemaRef: '#/$defs/partial.seo'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/partials/seo.yaml
+    vtSpecPaths: []
+    dependencies:
+      partials: []
+      runtimeAssets: []
+    notes:
+      - Favicon is now opt-in via seo.faviconHref or site.assets.faviconHref.
+
+  - id: navbar
+    stability: stable
+    publishedPath: sites/partials/navbar.yaml
+    schemaRef: '#/$defs/partial.navbar'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/partials/top-navbar.yaml
+    vtSpecPaths: []
+    dependencies:
+      partials: []
+      runtimeAssets:
+        - rtgl-icons
+
+  - id: mobile-nav
+    stability: stable
+    publishedPath: sites/partials/mobile-nav.yaml
+    schemaRef: '#/$defs/partial.mobileNav'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/partials/mobile-nav.yaml
+    vtSpecPaths:
+      - vt/specs/docs-template/docs-getting-started-mobile-menu-open.html
+    dependencies:
+      partials: []
+      runtimeAssets:
+        - mobile-nav
+        - rtgl-icons
+
+  - id: docs-sidebar
+    stability: stable
+    publishedPath: sites/partials/docs-sidebar.yaml
+    schemaRef: '#/$defs/partial.docsSidebar'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/partials/docs-sidebar.yaml
+    vtSpecPaths:
+      - vt/specs/docs-template/docs-getting-started.html
+    dependencies:
+      partials: []
+      runtimeAssets: []
+
+  - id: docs-mobile-nav
+    stability: stable
+    publishedPath: sites/partials/docs-mobile-nav.yaml
+    schemaRef: '#/$defs/partial.docsMobileNav'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - sites/partials/docs-mobile-nav.yaml
+    vtSpecPaths: []
+    dependencies:
+      partials: []
+      runtimeAssets: []
+
+  - id: top-navbar
+    stability: stable
+    publishedPath: sites/partials/top-navbar.yaml
+    schemaRef: '#/$defs/partial.topNavbar'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/partials/top-navbar.yaml
+    vtSpecPaths:
+      - vt/specs/templates/landing-features-mobile-menu-open.html
+    dependencies:
+      partials: []
+      runtimeAssets:
+        - mobile-nav
+        - rtgl-icons
+
+  - id: landing-hero
+    stability: stable
+    publishedPath: sites/partials/landing-hero.yaml
+    schemaRef: '#/$defs/partial.landingHero'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/partials/landing-hero.yaml
+    vtSpecPaths:
+      - vt/specs/templates/landing-features.html
+    dependencies:
+      partials: []
+      runtimeAssets: []
+
+  - id: landing-features-section
+    stability: stable
+    publishedPath: sites/partials/landing-features-section.yaml
+    schemaRef: '#/$defs/partial.landingFeaturesSection'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/partials/landing-features-section.yaml
+    vtSpecPaths:
+      - vt/specs/templates/landing-features.html
+    dependencies:
+      partials: []
+      runtimeAssets: []
+
+  - id: landing-cta
+    stability: stable
+    publishedPath: sites/partials/landing-cta.yaml
+    schemaRef: '#/$defs/partial.landingCta'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/partials/landing-cta.yaml
+    vtSpecPaths:
+      - vt/specs/templates/landing-features.html
+    dependencies:
+      partials: []
+      runtimeAssets: []
+
+  - id: footer
+    stability: stable
+    publishedPath: sites/partials/footer.yaml
+    schemaRef: '#/$defs/partial.footer'
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    examplePaths:
+      - vt/theme-lab/site/partials/footer.yaml
+    vtSpecPaths:
+      - vt/specs/templates/landing-features.html
+      - vt/specs/templates/blog-article-list.html
+      - vt/specs/templates/blog-article.html
+    dependencies:
+      partials: []
+      runtimeAssets: []
+
+runtimeAssets:
+  - id: mobile-nav
+    stability: stable
+    publishedPath: sites/public/mobile-nav.js
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    consumedBy:
+      - docs
+      - landing-features
+      - blog-article-list
+      - blog-article
+      - mobile-nav
+      - top-navbar
+    notes:
+      - Shared mobile overlay and auto-hide behavior for built-in navigation shells.
+
+  - id: rtgl-icons
+    stability: stable
+    publishedPath: sites/public/rtgl-icons.js
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    consumedBy:
+      - base
+      - docs
+      - landing-features
+      - blog-article-list
+      - blog-article
+      - navbar
+      - mobile-nav
+      - top-navbar
+    notes:
+      - Shared icon registry consumed by built-in templates and nav partials.
+
+themeBundles:
+  - id: theme-rtgl-themes
+    stability: stable
+    publishedPath: sites/themes/theme-rtgl-themes.css
+    docsPaths:
+      - README.md
+      - sites/README.md
+      - docs/builtin-assets-contract.md
+    classes:
+      - mono-light
+      - mono-dark
+      - slate-light
+      - slate-dark
+      - catppuccin-latte
+      - catppuccin-frappe
+      - catppuccin-macchiato
+      - catppuccin-mocha
+      - github-light
+      - github-dark
+      - nord-light
+      - nord-dark
+    vtSpecPaths:
+      - vt/specs/themes/mono-light.html
+      - vt/specs/themes/mono-dark.html
+      - vt/specs/themes/slate-light.html
+      - vt/specs/themes/slate-dark.html
+      - vt/specs/themes/catppuccin-latte.html
+      - vt/specs/themes/catppuccin-frappe.html
+      - vt/specs/themes/catppuccin-macchiato.html
+      - vt/specs/themes/catppuccin-mocha.html
+      - vt/specs/themes/github-light.html
+      - vt/specs/themes/github-dark.html
+      - vt/specs/themes/nord-light.html
+      - vt/specs/themes/nord-dark.html

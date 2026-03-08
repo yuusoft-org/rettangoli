@@ -3,6 +3,11 @@
 This folder contains publish-only YAML templates/partials for `@rettangoli/sites` URL imports.
 These files are distribution assets, not `@rettangoli/sites` runtime source code.
 
+The formal registry for all published built-ins lives at:
+
+- `sites/contracts/builtin-asset-registry.yaml`
+- `sites/contracts/builtin-asset-registry.schema.yaml`
+
 ## Published Templates
 
 - Base shell template:
@@ -39,15 +44,12 @@ Apply one class to `body` or `html`, for example:
 - `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`, `catppuccin-mocha`
 - `github-light`, `github-dark`, `nord-light`, `nord-dark`
 
-## Published Theme Bundle
+## Published Runtime Assets
 
-- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/themes/theme-rtgl-themes.css`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/public/mobile-nav.js`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/public/rtgl-icons.js`
 
-Apply one class to `body` or `html`, for example:
-- `slate-light`, `slate-dark`
-- `mono-light`, `mono-dark`
-- `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`, `catppuccin-mocha`
-- `github-light`, `github-dark`, `nord-light`, `nord-dark`
+These are part of the built-in template product surface and are referenced by the published import templates.
 
 ## Recommended Alias Map
 
@@ -76,6 +78,7 @@ imports:
 Canonical schema file in this repo:
 
 - `sites/schemas/data-contract.schema.yaml`
+- `sites/contracts/builtin-asset-registry.schema.yaml`
 
 Published URL format:
 
@@ -85,6 +88,8 @@ Use `$defs` for individual contracts:
 
 - Templates: `template.base`, `template.docs`, `template.landingFeatures`, `template.blogArticleList`, `template.blogArticle`
 - Partials: `partial.seo`, `partial.navbar`, `partial.mobileNav`, `partial.docsSidebar`, `partial.docsMobileNav`, `partial.topNavbar`, `partial.landingHero`, `partial.landingFeaturesSection`, `partial.landingCta`, `partial.footer`
+
+Use the built-in asset registry to discover which assets are stable, which files they depend on, and which VT/example coverage backs them.
 
 ## Frontmatter Examples
 

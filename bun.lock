@@ -1,6 +1,5 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "rettangoli",
@@ -76,6 +75,7 @@
       "name": "@rettangoli/sites",
       "version": "1.0.0-rc13",
       "dependencies": {
+        "ajv": "^8.17.1",
         "gray-matter": "^4.0.3",
         "jempl": "^0.3.1-rc1",
         "js-yaml": "^4.1.0",

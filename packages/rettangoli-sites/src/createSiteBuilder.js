@@ -3,77 +3,17 @@ import { parseAndRender } from 'jempl';
 import path from 'path';
 import { createHash } from 'crypto';
 import yaml from 'js-yaml';
-import matter from 'gray-matter';
 
 import MarkdownIt from 'markdown-it';
 import rtglMarkdown from './rtglMarkdown.js';
 import builtinTemplateFunctions from './builtinTemplateFunctions.js';
-
-const MATTER_OPTIONS = {
-  engines: {
-    yaml: (source) => yaml.load(source, { schema: yaml.JSON_SCHEMA })
-  }
-};
-
-// Deep merge utility function
-function deepMerge(target, source) {
-  const output = { ...target };
-  
-  if (isObject(target) && isObject(source)) {
-    Object.keys(source).forEach(key => {
-      if (isObject(source[key])) {
-        if (!(key in target)) {
-          Object.assign(output, { [key]: source[key] });
-        } else {
-          output[key] = deepMerge(target[key], source[key]);
-        }
-      } else {
-        Object.assign(output, { [key]: source[key] });
-      }
-    });
-  }
-  
-  return output;
-}
-
-function isObject(item) {
-  return item && typeof item === 'object' && !Array.isArray(item);
-}
-
-function splitSystemFrontmatter(frontmatter, globalData, pagePath) {
-  const normalized = isObject(frontmatter) ? { ...frontmatter } : {};
-  const bindConfig = normalized._bind;
-  delete normalized._bind;
-
-  if (bindConfig === undefined) {
-    return { frontmatter: normalized, bindings: {} };
-  }
-
-  if (!isObject(bindConfig)) {
-    throw new Error(`Invalid _bind in ${pagePath}: expected an object mapping local names to global data keys.`);
-  }
-
-  const bindings = {};
-  for (const [rawLocalKey, rawSourceKey] of Object.entries(bindConfig)) {
-    const localKey = String(rawLocalKey).trim();
-    if (localKey === '') {
-      throw new Error(`Invalid _bind in ${pagePath}: local key names must be non-empty.`);
-    }
-
-    if (typeof rawSourceKey !== 'string' || rawSourceKey.trim() === '') {
-      throw new Error(`Invalid _bind in ${pagePath} for "${localKey}": expected a non-empty global data key string.`);
-    }
-
-    const sourceKey = rawSourceKey.trim();
-    if (!Object.prototype.hasOwnProperty.call(globalData, sourceKey)) {
-      throw new Error(`Invalid _bind in ${pagePath} for "${localKey}": global data key "${sourceKey}" not found.`);
-    }
-
-    bindings[localKey] = globalData[sourceKey];
-  }
-
-  return { frontmatter: normalized, bindings };
-}
+import {
+  deepMerge,
+  extractFrontmatterAndContent,
+  isObject,
+  relativePagePathToUrl,
+  splitSystemFrontmatter
+} from './utils/siteRuntime.js';
 
 function parseYamlWithContext(content, contextLabel) {
   try {
@@ -416,22 +356,6 @@ export function createSiteBuilder({
 
     readTemplatesRecursively(templatesDir);
 
-    // Parse frontmatter only when it is truly at the file start.
-    function extractFrontmatterAndContent(pagePath) {
-      const pageFileContent = fs.readFileSync(pagePath, 'utf8');
-      let parsed;
-      try {
-        parsed = matter(pageFileContent, MATTER_OPTIONS);
-      } catch (error) {
-        throw new Error(`Invalid frontmatter in ${pagePath}: ${error.message}`);
-      }
-
-      return {
-        frontmatter: isObject(parsed.data) ? parsed.data : {},
-        content: (parsed.content || '').trim()
-      };
-    }
-
     // Function to scan all pages and build collections
     function buildCollections() {
       const collections = {};
@@ -452,23 +376,11 @@ export function createSiteBuilder({
             scanPages(dir, relativePath);
           } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.yml') || item.name.endsWith('.md'))) {
             // Extract frontmatter and content
-            const { frontmatter, content } = extractFrontmatterAndContent(itemPath);
+            const { frontmatter, content } = extractFrontmatterAndContent(fs, itemPath);
             const { frontmatter: publicFrontmatter } = splitSystemFrontmatter(frontmatter, globalData, itemPath);
 
             // Calculate URL
-            const baseFileName = item.name.replace(/\.(yaml|yml|md)$/, '');
-            let url;
-
-            // Special case: index files remain at root, others become directories
-            if (baseFileName === 'index') {
-              url = basePath ? '/' + basePath.replace(/\\/g, '/') : '/';
-              if (url !== '/') {
-                url = url + '/';
-              }
-            } else {
-              const pagePath = basePath ? path.join(basePath, baseFileName) : baseFileName;
-              url = '/' + pagePath.replace(/\\/g, '/') + '/';
-            }
+            const url = relativePagePathToUrl(relativePath);
 
             // Process tags
             if (publicFrontmatter.tags) {
@@ -506,7 +418,7 @@ export function createSiteBuilder({
     async function processPage(pagePath, outputRelativePath, isMarkdown = false, markdownOutputRelativePath = null) {
       if (!quiet) console.log(`Processing ${pagePath}...`);
 
-      const { frontmatter, content: rawContent } = extractFrontmatterAndContent(pagePath);
+      const { frontmatter, content: rawContent } = extractFrontmatterAndContent(fs, pagePath);
       const { frontmatter: publicFrontmatter, bindings: boundData } = splitSystemFrontmatter(frontmatter, globalData, pagePath);
 
       // Calculate URL for current page
