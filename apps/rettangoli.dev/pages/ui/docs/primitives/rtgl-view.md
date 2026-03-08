@@ -42,6 +42,7 @@ Use the sizing mode that matches your layout intent:
 | Fixed block size | `w="240"` `h="120"` | Numeric values are pixels |
 | Fill available axis | `w="f"` or `h="f"` | Stretch/fill behavior |
 | Split remaining space | `w="1fg"` / `w="2fg"` or `h="1fg"` | Proportional flex-grow |
+| Lock a ratio from one axis | `w="240" ar="16/9"` | `ar` matters when one axis remains auto |
 | Force square/box quickly | `wh="80"` | `wh` overrides both `w` and `h` |
 | Switch by breakpoint | `w="320" sm-w="f"` | Smallest matching breakpoint wins |
 
@@ -71,7 +72,7 @@ Common tokens used in this page:
 | --- | --- | --- | --- |
 | [Link](#link) | `href`, `new-tab`, `rel` | string, boolean | - |
 | [Direction](#direction) | `d` | `h`, `v` | `v` |
-| [Dimensions](#dimensions) | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, `f`, `1fg`-`12fg`, CSS length/value | - |
+| [Dimensions](#dimensions) | `w`, `h`, `wh`, `ar` | number, `%`, `xs`-`xl`, `f`, `1fg`-`12fg`, CSS length/value, CSS aspect-ratio value | - |
 | [Align Horizontal](#align-horizontal) | `ah` | `s`, `c`, `e` | `s` |
 | [Align Vertical](#align-vertical) | `av` | `s`, `c`, `e` | `s` |
 | [Wrap](#wrap) | `wrap`, `no-wrap` | boolean | - |
@@ -123,20 +124,24 @@ Controls the layout direction of the container. Set to `h` for horizontal or `v`
 
 ## Dimensions
 
-Controls the width and height of the container.
+Controls the width, height, and aspect ratio of the container.
 
 - Numeric values are treated as pixels (`w="120"` -> `120px`)
 - `%` values are supported (`w="50%"`)
 - Spacing tokens are supported (`xs`-`xl`)
 - `w="f"` stretches to available width, `h="f"` fills container height
 - `1fg`-`12fg` sets proportional flex-grow
+- `ar` passes through to CSS `aspect-ratio`, so values like `1`, `1.618`, and `16/9` work
 - `wh` overrides both `w` and `h` when provided
 
 ### Behavior & precedence
 
 - `wh` has priority over `w` and `h` at the same breakpoint.
+- `ar` only affects layout when one axis is still auto.
+- If both `w` and `h` are explicit at the same breakpoint, `ar` is effectively ignored.
 - Use `w="1fg"` in horizontal layouts and `h="1fg"` in vertical layouts for predictable proportional growth.
 - `w="f"` and `h="f"` use stretch/fill behavior, not flex-grow behavior.
+- Responsive `sm-ar`/`md-ar`/`lg-ar`/`xl-ar` follow the normal breakpoint precedence.
 
 ### Pixels
 
@@ -173,12 +178,38 @@ Controls the width and height of the container.
 </rtgl-view>
 ```
 
+### Aspect Ratio From Width
+
+```html codePreview
+<rtgl-view d="h" g="md" w="f">
+  <rtgl-view bgc="ac" w="160" ar="1"></rtgl-view>
+  <rtgl-view bgc="mu" w="240" ar="16/9"></rtgl-view>
+</rtgl-view>
+```
+
+### Aspect Ratio From Height
+
+```html codePreview
+<rtgl-view d="h" g="md" w="f" av="c">
+  <rtgl-view bgc="ac" h="96" ar="1"></rtgl-view>
+  <rtgl-view bgc="mu" h="96" ar="4/3"></rtgl-view>
+</rtgl-view>
+```
+
 ### `wh` Priority
 
 ```html codePreview
 <rtgl-view d="h" g="md" w="f">
   <rtgl-view bgc="ac" w="120" h="60"></rtgl-view>
   <rtgl-view bgc="mu" w="120" h="60" wh="80"></rtgl-view>
+</rtgl-view>
+```
+
+### Responsive Aspect Ratio
+
+```html codePreview
+<rtgl-view d="h" g="md" w="f">
+  <rtgl-view bgc="ac" w="240" ar="16/9" sm-w="f" sm-ar="1"></rtgl-view>
 </rtgl-view>
 ```
 

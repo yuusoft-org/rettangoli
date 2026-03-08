@@ -129,4 +129,4 @@ Ready to build something? Head to [Getting Started](/fe/docs/introduction/gettin
 ## Current Limitations
 
 - **No SSR**: Server-side rendering is not currently supported.
-- **No TypeScript**: The runtime is plain JavaScript. JSON Schema in `.schema.yaml` serves as the type contract.
+- **JavaScript runtime**: FE components currently run in plain JavaScript. JSON Schema in `.schema.yaml` serves as the type contract.

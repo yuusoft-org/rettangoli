@@ -262,3 +262,5 @@ export {
   applyDimensionToStyleBucket,
   applyInlineWidthDimension,
 } from "./common/dimensions.js";
+
+export { normalizeAspectRatio } from "./common/aspectRatio.js";

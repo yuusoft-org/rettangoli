@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Improvements
+- `rtgl-view` and `rtgl-image`: added responsive `ar` / `*-ar` support for raw CSS `aspect-ratio` values such as `1`, `1.618`, and `16/9`.
 - added `rtgl-tag`, an inline metadata primitive with variants, icons, truncation, and optional `remove-click` affordance.
 - `rtgl-sidebar`: added `hide-header` to hide the header block.
 - `rtgl-sidebar`: supports `bwr` overrides with default `bwr="xs"` so right border can be disabled via `bwr="none"`.
