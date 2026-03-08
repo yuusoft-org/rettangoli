@@ -1,0 +1,25 @@
+- html lang="en":
+    - head:
+        - $partial: seo
+          page: ${page}
+          seo: ${seo}
+          title: ${title}
+        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.6/dist/themes/base.css":
+        - link rel="stylesheet" href="/public/theme-rtgl-themes.css":
+        - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.6/dist/rettangoli-iife-ui.min.js":
+        - script src="/public/rtgl-icons.js":
+
+    - body.slate-dark:
+        - rtgl-view:
+            - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
+                - $partial: navbar
+                  title: ${site.navbar.title}
+                  cta: ${site.navbar.cta}
+            - rtgl-view w=f:
+                - rtgl-view h="48":
+                - rtgl-view w="f" ah="c":
+                    - rtgl-view w=f ph="lg" pb="lg" ah=c:
+                        - "${content}"
+
+        - script src="/public/mobile-nav.js":

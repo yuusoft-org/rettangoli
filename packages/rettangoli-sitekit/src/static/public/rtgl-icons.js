@@ -1,0 +1,1 @@
+../../../sitekit/public/rtgl-icons.js

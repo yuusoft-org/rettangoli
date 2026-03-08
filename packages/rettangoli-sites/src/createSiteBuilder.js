@@ -192,6 +192,39 @@ function readImportedYamlFromCache(fs, cachePath, aliasLabel) {
   return parseYamlWithContext(content, `${aliasLabel} (cache: ${cachePath})`);
 }
 
+function resolveDirentKind(fs, itemPath, item) {
+  if (item.isDirectory()) {
+    return 'directory';
+  }
+
+  if (item.isFile()) {
+    return 'file';
+  }
+
+  if (typeof item.isSymbolicLink === 'function' && item.isSymbolicLink()) {
+    let stats;
+    try {
+      stats = fs.statSync(itemPath);
+    } catch (error) {
+      throw new Error(`Broken symbolic link at "${itemPath}": ${error.message}`);
+    }
+
+    if (stats.isDirectory()) {
+      return 'directory';
+    }
+
+    if (stats.isFile()) {
+      return 'file';
+    }
+  }
+
+  return null;
+}
+
+function isSchemaSidecarFile(fileName) {
+  return fileName.endsWith('.schema.yaml') || fileName.endsWith('.schema.yml');
+}
+
 async function fetchRemoteYaml(url, fetchImpl, aliasLabel) {
   const effectiveFetch = fetchImpl || globalThis.fetch;
   if (typeof effectiveFetch !== 'function') {
@@ -350,13 +383,18 @@ export function createSiteBuilder({
       const items = fs.readdirSync(dir, { withFileTypes: true });
       items.forEach(item => {
         const itemPath = path.join(dir, item.name);
-        if (item.isDirectory()) {
+        const itemKind = resolveDirentKind(fs, itemPath, item);
+        if (itemKind === 'directory') {
           const newBasePath = basePath ? `${basePath}/${item.name}` : item.name;
           readPartialsRecursively(itemPath, newBasePath);
           return;
         }
 
-        if (!item.isFile() || (!item.name.endsWith('.yaml') && !item.name.endsWith('.yml'))) {
+        if (
+          itemKind !== 'file' ||
+          (!item.name.endsWith('.yaml') && !item.name.endsWith('.yml')) ||
+          isSchemaSidecarFile(item.name)
+        ) {
           return;
         }
 
@@ -399,12 +437,17 @@ export function createSiteBuilder({
 
       items.forEach(item => {
         const itemPath = path.join(dir, item.name);
+        const itemKind = resolveDirentKind(fs, itemPath, item);
 
-        if (item.isDirectory()) {
+        if (itemKind === 'directory') {
           // Recursively read subdirectories
           const newBasePath = basePath ? `${basePath}/${item.name}` : item.name;
           readTemplatesRecursively(itemPath, newBasePath);
-        } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.yml'))) {
+        } else if (
+          itemKind === 'file' &&
+          (item.name.endsWith('.yaml') || item.name.endsWith('.yml')) &&
+          !isSchemaSidecarFile(item.name)
+        ) {
           // Read and convert YAML file
           const fileContent = fs.readFileSync(itemPath, 'utf8');
           const nameWithoutExt = path.basename(item.name, path.extname(item.name));
@@ -446,11 +489,12 @@ export function createSiteBuilder({
         for (const item of items) {
           const itemPath = path.join(fullDir, item.name);
           const relativePath = basePath ? path.join(basePath, item.name) : item.name;
+          const itemKind = resolveDirentKind(fs, itemPath, item);
 
-          if (item.isDirectory()) {
+          if (itemKind === 'directory') {
             // Recursively scan subdirectories
             scanPages(dir, relativePath);
-          } else if (item.isFile() && (item.name.endsWith('.yaml') || item.name.endsWith('.yml') || item.name.endsWith('.md'))) {
+          } else if (itemKind === 'file' && (item.name.endsWith('.yaml') || item.name.endsWith('.yml') || item.name.endsWith('.md'))) {
             // Extract frontmatter and content
             const { frontmatter, content } = extractFrontmatterAndContent(itemPath);
             const { frontmatter: publicFrontmatter } = splitSystemFrontmatter(frontmatter, globalData, itemPath);
@@ -655,11 +699,12 @@ export function createSiteBuilder({
       for (const item of items) {
         const itemPath = path.join(fullDir, item.name);
         const relativePath = basePath ? path.join(basePath, item.name) : item.name;
+        const itemKind = resolveDirentKind(fs, itemPath, item);
 
-        if (item.isDirectory()) {
+        if (itemKind === 'directory') {
           // Recursively process subdirectories
           await processAllPages(dir, relativePath);
-        } else if (item.isFile()) {
+        } else if (itemKind === 'file') {
           if (item.name.endsWith('.yaml') || item.name.endsWith('.yml')) {
             // Process YAML file
             const outputFileName = item.name.replace(/\.(yaml|yml)$/, '.html');

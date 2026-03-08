@@ -1,0 +1,49 @@
+{
+  "name": "@rettangoli/sitekit",
+  "version": "1.0.1",
+  "description": "Curated Rettangoli site themes, templates, partials, and VT coverage.",
+  "author": {
+    "name": "Luciano Hanyon Wu",
+    "email": "han4wluc@yuusoft.com"
+  },
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "sitekit"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuusoft-org/rettangoli.git",
+    "directory": "packages/rettangoli-sitekit"
+  },
+  "bugs": {
+    "url": "https://github.com/yuusoft-org/rettangoli/issues"
+  },
+  "homepage": "https://github.com/yuusoft-org/rettangoli/tree/main/packages/rettangoli-sitekit#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "rettangoli",
+    "sitekit",
+    "static-site",
+    "templates",
+    "themes",
+    "partials",
+    "design-system"
+  ],
+  "scripts": {
+    "build": "bunx rtgl sites build --root-dir ./src --output-path ../_site",
+    "watch": "bunx rtgl sites watch --root-dir ./src --output-path ../_site --reload-mode full",
+    "serve": "serve ./_site -l 4173",
+    "preview": "bun run serve",
+    "build:lab": "bun run build",
+    "watch:lab": "bun run watch",
+    "vt:screenshot": "bunx rtgl vt screenshot",
+    "vt:report": "bunx rtgl vt report",
+    "vt:accept": "bunx rtgl vt accept"
+  },
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/sites",
-  "version": "1.0.0-rc13",
+  "version": "1.0.1",
   "description": "Generate static sites using Markdown and YAML for docs, blogs, and marketing sites.",
   "author": {
     "name": "Luciano Hanyon Wu",
@@ -14,8 +14,7 @@
   "files": [
     "src",
     "components",
-    "templates",
-    "sites"
+    "templates"
   ],
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -32,8 +31,7 @@
     "vitest": "^4.0.15"
   },
   "scripts": {
-    "test": "vitest run --reporter=verbose",
-    "watch:theme-lab": "bunx rtgl sites watch --root-dir ./vt/theme-lab/site --output-path _site --reload-mode full"
+    "test": "vitest run --reporter=verbose"
   },
   "type": "module",
   "license": "MIT",

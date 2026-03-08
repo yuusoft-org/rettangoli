@@ -134,17 +134,14 @@ Binding order:
 1. build page context from `deepMerge(globalData, frontmatterWithoutSystemKeys)`
 2. apply `_bind` aliases on top (alias wins for that key)
 
-## Pre-published Import Assets
+## Reusable Asset Package
 
-`@rettangoli/sites` publishes reusable template/partial YAML assets under `sites/` for URL imports.
+`@rettangoli/sites` is the engine only.
 
-- Base template: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/base.yaml`
-- Docs template: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs.yaml`
-- Landing/blog templates: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/{landing-features,blog-article-list,blog-article}.yaml`
-- Generic partials: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/{seo,navbar,mobile-nav,docs-sidebar,top-navbar,footer}.yaml`
-- Legacy docs partial (compat, flat path): `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/docs-mobile-nav.yaml`
+Reusable themes, templates, partials, helper assets, schemas, and VT coverage now live in `packages/rettangoli-sitekit/` and publish from `@rettangoli/sitekit`.
 
-See `sites/README.md` for full alias examples and required data contract.
+Use `@rettangoli/sitekit` when you want curated importable site assets.
+Keep `@rettangoli/sites` for build/watch/init behavior.
 
 ## Template Authoring Pattern
 
@@ -242,6 +239,8 @@ url: /
 ```
 
 `bun run preview` (or any equivalent local server command) must serve your built site on `vt.url` (for example serving `_site/` on port `4173`).
+
+For a maintained example asset pack and VT lab, see `packages/rettangoli-sitekit/`.
 
 ## Full Architecture And Analysis
 

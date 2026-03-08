@@ -1,7 +1,0 @@
----
-template: theme
-title: github-dark
-themeClass: github-dark
----
-- rtgl-view hide:
-    - rtgl-text c="mu-fg": Theme verification page for github-dark.
