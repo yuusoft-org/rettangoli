@@ -1,4 +1,5 @@
 import RettangoliButton from './primitives/button.js'
+import RettangoliGrid from './primitives/grid.js';
 import RettangoliView from './primitives/view.js';
 import RettangoliText from './primitives/text.js';
 import RettangoliImage from './primitives/image.js';
@@ -19,6 +20,7 @@ import createGlobalUI from './deps/createGlobalUI.js';
 
 export {
     RettangoliButton,
+    RettangoliGrid,
     RettangoliView,
     RettangoliText,
     RettangoliImage,

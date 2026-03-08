@@ -1,0 +1,22 @@
+---
+title: Grid - Odd Children - Trailing Item
+description: Verifies odd child counts leave empty cells in the final row instead of stretching the trailing item.
+specs:
+  - Odd child counts can leave a single trailing item in the final row.
+  - A trailing grid child keeps one track width instead of filling the remaining row.
+  - This behavior is consistent for both fixed-height and aspect-ratio children.
+---
+<rtgl-view d="v" g="lg" p="lg" wh="f">
+  <rtgl-grid cols="2" g="md" p="md" bgc="mu" w="280">
+    <rtgl-view bgc="pr" h="42"></rtgl-view>
+    <rtgl-view bgc="pr" h="42"></rtgl-view>
+    <rtgl-view bgc="pr" h="42"></rtgl-view>
+  </rtgl-grid>
+
+  <rtgl-grid cols="3" g="md" p="md" bgc="mu" w="420">
+    <rtgl-view bgc="pr" ar="4/3"></rtgl-view>
+    <rtgl-view bgc="pr" ar="4/3"></rtgl-view>
+    <rtgl-view bgc="pr" ar="4/3"></rtgl-view>
+    <rtgl-view bgc="pr" ar="4/3"></rtgl-view>
+  </rtgl-grid>
+</rtgl-view>
