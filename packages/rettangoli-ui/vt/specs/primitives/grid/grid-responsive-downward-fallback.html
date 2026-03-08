@@ -9,32 +9,33 @@ specs:
   - "`lg-cols` values apply on smaller breakpoints when `md-cols` and `sm-cols` are not set."
   - "`md-cols` values apply on `sm` when `sm-cols` is not set."
   - Breakpoint visibility attrs continue to work with `rtgl-grid`.
+  - Grid children can use `ar` so row height comes from the resolved column width.
 ---
 <rtgl-view w="f" p="md" g="md">
   <rtgl-view bgc="mu" p="sm" g="sm">
     <rtgl-grid cols="4" lg-cols="2" g="sm" w="360">
-      <rtgl-view bgc="ac" h="28"></rtgl-view>
-      <rtgl-view bgc="pr" h="28"></rtgl-view>
-      <rtgl-view bgc="se" h="28"></rtgl-view>
-      <rtgl-view bgc="de" h="28"></rtgl-view>
+      <rtgl-view bgc="ac" ar="1"></rtgl-view>
+      <rtgl-view bgc="pr" ar="1"></rtgl-view>
+      <rtgl-view bgc="se" ar="1"></rtgl-view>
+      <rtgl-view bgc="de" ar="1"></rtgl-view>
     </rtgl-grid>
   </rtgl-view>
 
   <rtgl-view bgc="mu" p="sm" g="sm">
     <rtgl-grid cols="4" md-cols="3" lg-cols="2" g="sm" w="448">
-      <rtgl-view bgc="ac" h="28"></rtgl-view>
-      <rtgl-view bgc="pr" h="28"></rtgl-view>
-      <rtgl-view bgc="se" h="28"></rtgl-view>
-      <rtgl-view bgc="de" h="28"></rtgl-view>
-      <rtgl-view bgc="bo" h="28"></rtgl-view>
-      <rtgl-view bgc="fg" h="28"></rtgl-view>
+      <rtgl-view bgc="ac" ar="4/3"></rtgl-view>
+      <rtgl-view bgc="pr" ar="4/3"></rtgl-view>
+      <rtgl-view bgc="se" ar="4/3"></rtgl-view>
+      <rtgl-view bgc="de" ar="4/3"></rtgl-view>
+      <rtgl-view bgc="bo" ar="4/3"></rtgl-view>
+      <rtgl-view bgc="fg" ar="4/3"></rtgl-view>
     </rtgl-grid>
   </rtgl-view>
 
   <rtgl-view bgc="mu" p="sm" g="sm">
     <rtgl-grid cols="2" g="sm" hide sm-show w="344">
-      <rtgl-view bgc="ac" h="28"></rtgl-view>
-      <rtgl-view bgc="pr" h="28"></rtgl-view>
+      <rtgl-view bgc="ac" ar="1"></rtgl-view>
+      <rtgl-view bgc="pr" ar="1"></rtgl-view>
     </rtgl-grid>
   </rtgl-view>
 </rtgl-view>
