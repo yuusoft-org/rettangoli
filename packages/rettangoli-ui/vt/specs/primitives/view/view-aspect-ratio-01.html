@@ -1,0 +1,20 @@
+---
+title: View - Aspect Ratio - Axis Derived Layout
+description: Verifies aspect-ratio sizing when only one axis is explicitly provided.
+specs:
+  - "Width plus `ar` derives height for block content."
+  - "Height plus `ar` derives width for block content."
+  - "Fill-width containers can still use `ar` predictably."
+---
+<rtgl-view d="v" g="lg" p="lg" wh="f">
+  <rtgl-view d="h" g="lg" av="s">
+    <rtgl-view bgc="ac" w="160" ar="16/9" br="md"></rtgl-view>
+    <rtgl-view bgc="de" h="90" ar="4/3" br="md"></rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view d="h" g="lg" av="s">
+    <rtgl-view bgc="mu" w="240" p="sm" br="md">
+      <rtgl-view bgc="fg" w="f" ar="2.35" br="sm"></rtgl-view>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>

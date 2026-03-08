@@ -1,0 +1,12 @@
+---
+title: Image - Aspect Ratio - Link Wrapper
+description: Verifies linked images preserve ratio-constrained sizing.
+specs:
+  - "Linked images keep width-driven aspect-ratio sizing."
+  - "Linked images keep height-driven aspect-ratio sizing."
+  - "Wrapper and image sizing remain aligned when `href` is present."
+---
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap av="s">
+  <rtgl-image href="#hero" w="180" ar="21/9" of="cov" src="/public/sample1.jpg" br="lg"></rtgl-image>
+  <rtgl-image href="#portrait" h="120" ar="3/4" of="cov" src="/public/sample1.jpg" br="lg"></rtgl-image>
+</rtgl-view>

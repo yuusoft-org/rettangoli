@@ -10,6 +10,7 @@ import {
   responsiveStyleSizes,
   applyDimensionToStyleBucket,
   getResponsiveAttribute,
+  normalizeAspectRatio,
 } from "../common.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
@@ -78,6 +79,7 @@ class RettangoliViewElement extends HTMLElement {
         "wh",
         "w",
         "h",
+        "ar",
         "hide",
         "show",
         "sh",
@@ -136,6 +138,9 @@ class RettangoliViewElement extends HTMLElement {
       );
       const opacity = this.getAttribute(addSizePrefix("op"));
       const zIndex = this.getAttribute(addSizePrefix("z"));
+      const aspectRatio = normalizeAspectRatio(
+        this.getAttribute(addSizePrefix("ar")),
+      );
 
       if (zIndex !== null) {
         this._styles[size]["z-index"] = zIndex;
@@ -143,6 +148,10 @@ class RettangoliViewElement extends HTMLElement {
 
       if (opacity !== null) {
         this._styles[size].opacity = opacity;
+      }
+
+      if (aspectRatio !== undefined) {
+        this._styles[size]["aspect-ratio"] = aspectRatio;
       }
 
       applyDimensionToStyleBucket({

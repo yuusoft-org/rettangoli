@@ -1,0 +1,15 @@
+---
+title: Image - Aspect Ratio - Width Driven Frames
+description: Verifies aspect-ratio sizing for images when width is set without a fixed height.
+specs:
+  - "Width plus `ar` derives image frame height."
+  - "`of=cov` and `of=con` remain stable inside ratio-constrained frames."
+  - "Decimal aspect-ratio values are accepted."
+---
+<rtgl-view d="v" g="lg" p="lg" wh="f">
+  <rtgl-view d="h" g="lg" av="s" wrap>
+    <rtgl-image w="144" ar="1" src="/public/sample1.jpg" br="md"></rtgl-image>
+    <rtgl-image w="160" ar="16/9" of="cov" src="/public/sample1.jpg" br="md"></rtgl-image>
+    <rtgl-image w="120" ar="0.75" of="con" bgc="mu" src="/public/sample1.jpg" br="md"></rtgl-image>
+  </rtgl-view>
+</rtgl-view>
