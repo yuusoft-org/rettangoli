@@ -1,0 +1,15 @@
+componentName: rtgl-card
+propsSchema:
+  type: object
+  properties:
+    heading:
+      type: string
+    subheading:
+      type: string
+    size:
+      type: string
+      enum: [sm, md, lg]
+events: []
+methods:
+  type: object
+  properties: {}

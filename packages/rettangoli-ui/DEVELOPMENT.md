@@ -205,6 +205,8 @@ These are valid exceptions to the short-attr rule:
 - `scroll-container-id`
 - `offset-top`
 - `title`
+- `heading`
+- `subheading`
 - `content`
 - `overflow`
 
