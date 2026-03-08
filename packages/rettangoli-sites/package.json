@@ -48,6 +48,11 @@
     "admin",
     "dashboard"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuusoft-org/rettangoli",
+    "directory": "packages/rettangoli-sites"
+  },
   "bugs": {
     "url": "https://github.com/yuusoft-org/rettangoli/issues"
   },
