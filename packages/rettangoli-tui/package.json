@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/tui",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Terminal UI framework using Rettangoli FE contracts",
   "type": "module",
   "main": "./src/index.js",
@@ -34,7 +34,6 @@
     "immer": "^10.1.1",
     "jempl": "0.3.2-rc2",
     "js-yaml": "^4.1.0",
-    "rxjs": "^7.8.2",
     "snabbdom": "^3.6.2",
     "vite": "^6.3.5"
   },

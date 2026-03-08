@@ -1,36 +1,3 @@
-import { Subject } from "rxjs";
-
-/**
- * A custom subject that can be used to dispatch actions and subscribe to them
- * You can think of this as a bus for all frontend events and communication
- *
- * Example:
- * const subject = new CustomSubject();
- *
- * const subscription = subject.subscribe(({ action, payload }) => {
- *   // handle action and payload
- * });
- *
- * subject.dispatch("action", { payload: "payload" });
- *
- * subscription.unsubscribe();
- */
-export class CustomSubject {
-  _subject = new Subject();
-  pipe = (...args) => {
-    return this._subject.pipe(...args);
-  };
-  dispatch = (action, payload) => {
-    this._subject.next({
-      action,
-      payload: payload || {},
-    });
-  };
-  dispatchCall = (action, payload) => {
-    return () => this.dispatch(action, payload || {});
-  };
-}
-
 const getQueryParamsObject = () => {
   const queryParams = new URLSearchParams(window.location.search + "");
   const paramsObject = {};

@@ -14,7 +14,7 @@ This document captures the current bundle-size findings for `@rettangoli/ui`, th
   - Docs templates such as [`../rettangoli-sitekit/sitekit/templates/docs.yaml`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-sitekit/sitekit/templates/docs.yaml) need primitives plus a small set of FE-driven widgets such as `rtgl-page-outline`.
 
 - The FE runtime currently pulls in more code than it should on the hot path.
-  - [`../rettangoli-fe/src/parser.js`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-fe/src/parser.js) only needs `flattenArrays`, but it imported that helper from [`../rettangoli-fe/src/common.js`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-fe/src/common.js), which also imports `rxjs`.
+  - [`../rettangoli-fe/src/parser.js`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-fe/src/parser.js) only needs `flattenArrays`, but it imported that helper from [`../rettangoli-fe/src/common.js`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-fe/src/common.js), which previously also imported `rxjs`.
 
 - `jempl` was duplicated across package boundaries.
   - [`package.json`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-ui/package.json) used `jempl@1.0.0`.
@@ -40,7 +40,7 @@ This change set implements the smallest safe improvements before changing the ou
    - Align the FE package to the same `jempl` version used by `@rettangoli/ui`.
 
 3. Audit hot-path runtime dependencies.
-   - `rxjs`: not required on the FE hot path after helper isolation.
+   - `rxjs`: removed from `@rettangoli/fe` after confirming the only remaining usage was the dead `CustomSubject` export in `common.js`.
    - `immer`: still required on the FE hot path because store action execution in [`../rettangoli-fe/src/core/runtime/store.js`](/Users/hanyonwu/Code/yuusoft-org/rettangoli.acess/packages/rettangoli-fe/src/core/runtime/store.js) currently depends on `produce()`.
 
 4. Remove unused direct dependencies from `@rettangoli/ui`.
