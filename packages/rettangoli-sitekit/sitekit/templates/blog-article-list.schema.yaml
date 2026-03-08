@@ -1,0 +1,6 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/blog-article-list.schema.yaml
+title: Rettangoli Sitekit Blog Article List Template Data Contract
+description: Companion schema for sitekit/templates/blog-article-list.yaml.
+allOf:
+  - $ref: ../schemas/data-contract.schema.yaml#/$defs/template.blogArticleList

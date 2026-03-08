@@ -1,1 +1,0 @@
-- rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(header))}" items="${encodeURIComponent(jsonStringify(items))}":

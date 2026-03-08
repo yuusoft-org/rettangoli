@@ -1,0 +1,25 @@
+vt:
+  path: ./vt
+  url: http://127.0.0.1:3001
+  service:
+    start: bunx rtgl sites watch --root-dir ./src --output-path ../_site --reload-mode full --quiet
+  compareMethod: pixelmatch
+  viewport:
+    - id: desktop
+      width: 1440
+      height: 900
+    - id: tablet
+      width: 1024
+      height: 1200
+    - id: mobile
+      width: 430
+      height: 932
+  sections:
+    - title: Overview
+      files: overview
+    - title: Themes
+      files: themes
+    - title: Docs Template
+      files: docs-template
+    - title: Site Templates
+      files: templates

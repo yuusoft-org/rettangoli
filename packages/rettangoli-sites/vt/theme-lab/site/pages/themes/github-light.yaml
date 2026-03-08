@@ -1,7 +1,0 @@
----
-template: theme
-title: github-light
-themeClass: github-light
----
-- rtgl-view hide:
-    - rtgl-text c="mu-fg": Theme verification page for github-light.

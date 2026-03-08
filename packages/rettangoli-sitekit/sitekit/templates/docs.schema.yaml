@@ -1,0 +1,6 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/docs.schema.yaml
+title: Rettangoli Sitekit Docs Template Data Contract
+description: Companion schema for sitekit/templates/docs.yaml.
+allOf:
+  - $ref: ../schemas/data-contract.schema.yaml#/$defs/template.docs

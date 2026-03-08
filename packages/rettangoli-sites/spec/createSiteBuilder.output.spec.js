@@ -217,6 +217,143 @@ describe('createSiteBuilder output behavior', () => {
     expect(html).toContain('<h1>Hello</h1>');
   });
 
+  it('ignores schema sidecar yaml files in partials directory', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/partials/header.yaml': '- h1: Header',
+      '/partials/header.schema.yaml': [
+        '$schema: https://json-schema.org/draft/2020-12/schema',
+        'type: object'
+      ].join('\n'),
+      '/templates/base.yaml': [
+        '- html:',
+        '    - body:',
+        '        - $partial: header'
+      ].join('\n'),
+      '/pages/index.md': [
+        '---',
+        'template: base',
+        '---',
+        '# Hello'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await build();
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('<h1>Header</h1>');
+  });
+
+  it('ignores schema sidecar yaml files in templates directory', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/templates/base.yaml': [
+        '- html:',
+        '    - body:',
+        '        - rtgl-text: ${title}'
+      ].join('\n'),
+      '/templates/base.schema.yaml': [
+        '$schema: https://json-schema.org/draft/2020-12/schema',
+        'type: object'
+      ].join('\n'),
+      '/pages/index.md': [
+        '---',
+        'template: base',
+        'title: Template With Sidecar Schema',
+        '---',
+        '# Hello'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await build();
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('Template With Sidecar Schema');
+  });
+
+  it('loads symlinked template files from the templates directory', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.mkdirSync('/shared/templates', { recursive: true });
+    vol.mkdirSync('/templates', { recursive: true });
+    vol.mkdirSync('/pages', { recursive: true });
+    vol.writeFileSync('/shared/templates/base.yaml', [
+      '- html:',
+      '    - body:',
+      '        - rtgl-text: ${title}'
+    ].join('\n'));
+    vol.symlinkSync('/shared/templates/base.yaml', '/templates/base.yaml');
+    vol.writeFileSync('/pages/index.md', [
+      '---',
+      'template: base',
+      'title: Symlink Template',
+      '---',
+      '# Intro'
+    ].join('\n'));
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await build();
+
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('Symlink Template');
+  });
+
+  it('loads symlinked partial files from the partials directory', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.mkdirSync('/shared/partials', { recursive: true });
+    vol.mkdirSync('/partials', { recursive: true });
+    vol.mkdirSync('/templates', { recursive: true });
+    vol.mkdirSync('/pages', { recursive: true });
+    vol.writeFileSync('/shared/partials/hero.yaml', '- rtgl-text: ${headline}');
+    vol.symlinkSync('/shared/partials/hero.yaml', '/partials/hero.yaml');
+    vol.writeFileSync('/templates/base.yaml', [
+      '- html:',
+      '    - body:',
+      '        - $partial: hero',
+      '          headline: ${title}'
+    ].join('\n'));
+    vol.writeFileSync('/pages/index.md', [
+      '---',
+      'template: base',
+      'title: Symlink Partial',
+      '---',
+      '# Intro'
+    ].join('\n'));
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await build();
+
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('Symlink Partial');
+  });
+
   it('replaces markdown template content placeholder in all occurrences', async () => {
     const vol = new Volume();
     const memfs = createFsFromVolume(vol);
