@@ -1,0 +1,12 @@
+---
+title: View - Aspect Ratio - Responsive Override
+description: Verifies breakpoint-prefixed aspect-ratio attrs override the base ratio.
+specs:
+  - "Base `ar` is applied when present."
+  - "Breakpoint-prefixed `ar` overrides the base value at matching viewport widths."
+  - "Width-driven and height-driven ratio boxes both respond to the override."
+---
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap av="s">
+  <rtgl-view bgc="ac" w="144" ar="1" xl-ar="16/9" br="md"></rtgl-view>
+  <rtgl-view bgc="de" h="96" ar="3/4" xl-ar="3/2" br="md"></rtgl-view>
+</rtgl-view>
