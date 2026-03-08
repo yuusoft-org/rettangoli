@@ -210,7 +210,7 @@ Use VT against your generated site:
 Docker runtime (recommended for stable Playwright/browser versions):
 
 ```bash
-IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc27"
+IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.5"
 docker pull "$IMAGE"
 docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" rtgl vt screenshot
 docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" rtgl vt report

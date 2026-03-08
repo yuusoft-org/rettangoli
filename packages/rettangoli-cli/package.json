@@ -51,7 +51,7 @@
     "@rettangoli/be": "1.0.2",
     "@rettangoli/fe": "1.0.3",
     "@rettangoli/sites": "1.0.0-rc14",
-    "@rettangoli/vt": "1.0.1",
+    "@rettangoli/vt": "1.0.2",
     "@rettangoli/ui": "1.0.5"
   }
 }

@@ -273,11 +273,18 @@ function validateStructuredActionStep(step, stepPath) {
   }
 
   if (action === "select") {
-    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "testId", "steps"]));
+    assertNoUnknownStepKeys(step, stepPath, new Set(["action", "testId", "selector", "steps"]));
     validateOptionalString(step.testId, `${stepPath}.testId`);
+    validateOptionalString(step.selector, `${stepPath}.selector`);
     assert(
-      typeof step.testId === "string" && step.testId.trim().length > 0,
-      `"${stepPath}.testId" is required for action=select.`,
+      (
+        typeof step.testId === "string"
+        && step.testId.trim().length > 0
+      ) !== (
+        typeof step.selector === "string"
+        && step.selector.trim().length > 0
+      ),
+      `"${stepPath}" for action=select requires exactly one of "testId" or "selector".`,
     );
     assert(Array.isArray(step.steps), `"${stepPath}.steps" must be an array for action=select.`);
     step.steps.forEach((nestedStep, nestedIndex) => {

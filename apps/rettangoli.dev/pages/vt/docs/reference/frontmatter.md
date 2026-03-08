@@ -29,7 +29,7 @@ steps:
     type: exists
     selector: "[data-testid='login-email']"
   - action: select
-    testId: login-email
+    selector: "#login-email"
     steps:
       - action: write
         text: user@example.com
@@ -67,7 +67,7 @@ steps:
 
 - each step must include `action`
 - additional keys depend on action type (`waitFor`, `assert`, `select`, `write`, etc.)
-- `select` is the only nested action and requires a `steps` array
+- `select` is the only nested action and requires a `steps` array plus exactly one of `testId` or `selector`
 
 Example:
 
@@ -80,7 +80,7 @@ steps:
     value: "/login"
     match: includes
   - action: select
-    testId: login-email
+    selector: "#login-email"
     steps:
       - action: write
         text: user@example.com
