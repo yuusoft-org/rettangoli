@@ -14,8 +14,8 @@ A media primitive for rendering images with explicit sizing, fit, linking, and v
 Use this pattern for most image surfaces:
 
 - Set `src` and meaningful `alt`.
-- Define an explicit box with `w` + `h` (or `wh`).
-- Use `of="cov"` for card/media surfaces.
+- Define a frame with `w` + `h`, `wh`, or `w` + `ar`.
+- Use `of="cov"` for card/media surfaces and `of="con"` when the full image must remain visible.
 
 ```html codePreview
 <rtgl-view d="h" g="md" w="f">
@@ -38,6 +38,7 @@ Use this pattern for most image surfaces:
 | --- | --- | --- |
 | Natural image size | `src` only | Uses intrinsic image dimensions |
 | Fixed media box | `w="240" h="160"` | Numeric values are pixels |
+| Ratio-constrained media box | `w="240" ar="16/9"` | Pair with `of` for predictable cropping or fitting |
 | Square thumbnail | `wh="96"` | `wh` overrides both `w` and `h` |
 | Fill available width | `w="f"` | Pair with `h` + `of` for predictable crops |
 
@@ -76,7 +77,7 @@ For full behavior details, see [Responsiveness](/ui/docs/introduction/responsive
 | Source | `src` | string | - |
 | Alt Text | `alt` | string | - |
 | Link | `href`, `new-tab`, `rel` | string, boolean | - |
-| Dimensions | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, `f`, CSS length/value | - |
+| Dimensions | `w`, `h`, `wh`, `ar` | number, `%`, `xs`-`xl`, `f`, CSS length/value, CSS aspect-ratio value | - |
 | Object Fit | `of` | `cov`, `con`, `none` | - |
 | Visibility | `hide`, `show` | boolean | - |
 | Opacity | `op` | number (`0`-`1`) | `1` |
@@ -108,7 +109,7 @@ Use `src` to provide the image URL and `alt` for accessibility.
 
 ## Dimensions
 
-Control the rendered image box using `w`, `h`, and `wh`.
+Control the rendered image box using `w`, `h`, `wh`, and `ar`.
 
 ### Behavior & precedence
 
@@ -116,7 +117,9 @@ Control the rendered image box using `w`, `h`, and `wh`.
 - Numeric values are pixels (`w="240"`).
 - `%`, spacing tokens (`xs`-`xl`), and CSS length values are supported.
 - `w="f"` stretches to available width.
+- `ar` passes through to CSS `aspect-ratio`, so values like `1`, `1.618`, and `16/9` work.
 - When only `w` is set, height keeps the image aspect ratio.
+- When `ar` is set, it constrains the rendered image frame rather than changing the bitmap itself.
 
 ### Width, Height, and `wh`
 
@@ -136,6 +139,32 @@ Control the rendered image box using `w`, `h`, and `wh`.
 </rtgl-view>
 ```
 
+### Aspect Ratio Frame
+
+```html codePreview
+<rtgl-view d="h" g="md" w="f">
+  <rtgl-image src="/public/sample1.jpg" alt="Square crop" w="120" ar="1" of="cov" br="md"></rtgl-image>
+  <rtgl-image src="/public/sample1.jpg" alt="Wide card image" w="220" ar="16/9" of="cov" br="md"></rtgl-image>
+</rtgl-view>
+```
+
+### Responsive Aspect Ratio
+
+```html codePreview
+<rtgl-view d="h" g="md" w="f">
+  <rtgl-image
+    src="/public/sample1.jpg"
+    alt="Responsive ratio card"
+    w="260"
+    ar="16/9"
+    sm-w="f"
+    sm-ar="1"
+    of="cov"
+    br="md"
+  ></rtgl-image>
+</rtgl-view>
+```
+
 ## Object Fit
 
 Control how the bitmap is placed inside its box.
@@ -144,6 +173,7 @@ Control how the bitmap is placed inside its box.
 
 - `of` affects how content fits when a box is constrained.
 - For predictable results, pair `of` with explicit `w` and `h` (or `wh`).
+- `w` + `ar` is also a good constrained-box pattern for cards, thumbnails, and banners.
 
 ```html codePreview
 <rtgl-view d="h" g="md">
@@ -186,7 +216,9 @@ Use `href` to make the entire image surface clickable.
     src="/public/sample1.jpg"
     alt="Open internal details"
     href="#details"
-    wh="96"
+    w="160"
+    ar="16/9"
+    of="cov"
     br="md"
   ></rtgl-image>
   <rtgl-image
@@ -195,7 +227,9 @@ Use `href` to make the entire image surface clickable.
     href="https://rettangoli.dev"
     new-tab
     rel="noopener noreferrer"
-    wh="96"
+    w="160"
+    ar="16/9"
+    of="cov"
     br="md"
   ></rtgl-image>
 </rtgl-view>
