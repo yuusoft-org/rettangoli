@@ -11,6 +11,15 @@ const resolveKeyName = (event) => {
   return String(event.key || "unknown").toLowerCase();
 };
 
+const PRIMARY_TAB_ORDER = ["tasks", "channels", "members"];
+const SECTION_TAB_ORDER = ["displays", "audio"];
+
+const cycleTab = (currentValue, order, direction = 1) => {
+  const currentIndex = order.indexOf(String(currentValue || "").trim().toLowerCase());
+  const safeIndex = currentIndex >= 0 ? currentIndex : 0;
+  return order[(safeIndex + direction + order.length) % order.length];
+};
+
 export const handleBeforeMount = (deps) => {
   deps.store.setMessage({ value: "Interactive showcase ready" });
 };
@@ -133,10 +142,35 @@ const openTitleEditorDialog = async (deps) => {
 export const handleShowcaseKeyDown = (deps, payload) => {
   const event = payload?._event;
   const keyName = resolveKeyName(event);
+  const state = deps.store.selectState();
 
   deps.store.setLastKey({ key: keyName });
 
-  if (keyName === "up") {
+  if (keyName === "1") {
+    deps.store.setSelectedPrimaryTab({ id: PRIMARY_TAB_ORDER[0] });
+    deps.store.setMessage({ value: "Selected primary tab: tasks" });
+    event?.preventDefault?.();
+  } else if (keyName === "2") {
+    deps.store.setSelectedPrimaryTab({ id: PRIMARY_TAB_ORDER[1] });
+    deps.store.setMessage({ value: "Selected primary tab: channels" });
+    event?.preventDefault?.();
+  } else if (keyName === "3") {
+    deps.store.setSelectedPrimaryTab({ id: PRIMARY_TAB_ORDER[2] });
+    deps.store.setMessage({ value: "Selected primary tab: members" });
+    event?.preventDefault?.();
+  } else if (keyName === "h" || keyName === "left") {
+    deps.store.setSelectedSectionTab({
+      id: cycleTab(state.selectedSectionTab, SECTION_TAB_ORDER, -1),
+    });
+    deps.store.setMessage({ value: "Selected previous section tab" });
+    event?.preventDefault?.();
+  } else if (keyName === "l" || keyName === "right") {
+    deps.store.setSelectedSectionTab({
+      id: cycleTab(state.selectedSectionTab, SECTION_TAB_ORDER, 1),
+    });
+    deps.store.setMessage({ value: "Selected next section tab" });
+    event?.preventDefault?.();
+  } else if (keyName === "up") {
     deps.store.moveTaskSelectionUp();
     deps.store.setMessage({ value: "Selected previous task" });
     event?.preventDefault?.();

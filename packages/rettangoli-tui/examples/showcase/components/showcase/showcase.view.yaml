@@ -17,9 +17,16 @@ template:
       - rtgl-text: "- rtgl-list"
       - rtgl-text: "- rtgl-image"
       - rtgl-text: "- rtgl-table"
+      - rtgl-text: "- rtgl-tabs"
       - rtgl-text: "- rtgl-textarea"
       - rtgl-text: "- rtgl-divider"
       - rtgl-text: "- rtgl-selector-dialog"
+      - rtgl-divider w=72: null
+      - rtgl-text: "Tabs demo"
+      - rtgl-tabs :items=primaryTabs :selectedTab=selectedPrimaryTab variant=primary w=72: null
+      - rtgl-tabs :items=sectionTabs :selectedTab=selectedSectionTab variant=secondary prefix="Section" w=72: null
+      - rtgl-text: "Selected primary tab: ${selectedPrimaryTab}"
+      - rtgl-text: "Selected section tab: ${selectedSectionTab}"
       - rtgl-divider w=72: null
       - rtgl-text: "Task editor demo"
       - rtgl-text: "Task title:"
@@ -57,6 +64,7 @@ template:
       - rtgl-divider w=72: null
       - rtgl-text: "Controls"
       - rtgl-text: "q quit | r reset | d/t open title dialog | s full-screen env dialog | f centered env dialog"
+      - rtgl-text: "1/2/3 switch primary tabs | h/l switch section tabs"
       - rtgl-text: "up/down select task row (list + table highlight)"
       - rtgl-text: "inside dialog: tab focus | up/down edits current field | enter action/newline | esc cancel"
       - rtgl-text: "e open content in $EDITOR/$VISUAL (nvim/vim fallback)"

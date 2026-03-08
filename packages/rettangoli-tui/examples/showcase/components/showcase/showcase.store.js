@@ -44,6 +44,15 @@ const DEFAULT_SELECTOR_OPTIONS = Object.freeze([
   { id: "staging", label: "Staging cluster" },
   { id: "production", label: "Production cluster" },
 ]);
+const SHOWCASE_PRIMARY_TABS = Object.freeze([
+  { id: "tasks", label: "Tasks", shortLabel: "Tasks" },
+  { id: "channels", label: "Channels", shortLabel: "Chat" },
+  { id: "members", label: "Members", shortLabel: "People" },
+]);
+const SHOWCASE_SECTION_TABS = Object.freeze([
+  { id: "displays", label: "Displays", shortLabel: "Disp" },
+  { id: "audio", label: "Audio", shortLabel: "Audio" },
+]);
 const SHOWCASE_IMAGE_SRC = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../../assets/yuusoft-favicon.png",
@@ -117,6 +126,8 @@ export const createInitialState = ({ props }) => ({
   taskContent: DEFAULT_TASK_CONTENT,
   tasks: DEFAULT_TASKS.map((task) => ({ ...task })),
   selectedTaskIndex: 0,
+  selectedPrimaryTab: "channels",
+  selectedSectionTab: "displays",
   lastKey: "none",
 });
 
@@ -161,6 +172,8 @@ export const selectViewData = ({ state }) => {
     selectorOptions,
     selectorIndex: selectedSelectorIndex,
     selectorSelectedLabel: selectedSelectorOption?.label || "(none)",
+    primaryTabs: SHOWCASE_PRIMARY_TABS,
+    sectionTabs: SHOWCASE_SECTION_TABS,
     taskListItems,
     taskTableData,
     taskContentPreview: `${previewLines.join("\n")}${suffix}`,
@@ -214,6 +227,18 @@ export const setSelectedEnvironment = ({ state }, payload = {}) => {
   state.modeLabel = state.selectedEnvironment ? `env:${state.selectedEnvironment}` : "env:local";
 };
 
+export const setSelectedPrimaryTab = ({ state }, payload = {}) => {
+  const nextTab = String(payload.id || "").trim().toLowerCase();
+  const valid = SHOWCASE_PRIMARY_TABS.some((item) => item.id === nextTab);
+  state.selectedPrimaryTab = valid ? nextTab : SHOWCASE_PRIMARY_TABS[0].id;
+};
+
+export const setSelectedSectionTab = ({ state }, payload = {}) => {
+  const nextTab = String(payload.id || "").trim().toLowerCase();
+  const valid = SHOWCASE_SECTION_TABS.some((item) => item.id === nextTab);
+  state.selectedSectionTab = valid ? nextTab : SHOWCASE_SECTION_TABS[0].id;
+};
+
 export const resetDemo = ({ state }) => {
   const selectorOptions = cloneSelectorOptions();
   const selectedEnvironment = normalizeEnvironmentId(state.initialEnvironment || "local");
@@ -225,6 +250,8 @@ export const resetDemo = ({ state }) => {
   state.taskContent = DEFAULT_TASK_CONTENT;
   state.tasks = DEFAULT_TASKS.map((task) => ({ ...task }));
   state.selectedTaskIndex = 0;
+  state.selectedPrimaryTab = "channels";
+  state.selectedSectionTab = "displays";
   state.selectorOptions = selectorOptions;
   state.selectorIndex = selectorIndex;
   state.selectedEnvironment = selectedEnvironment;

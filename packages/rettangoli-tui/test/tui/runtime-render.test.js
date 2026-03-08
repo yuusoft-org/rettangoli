@@ -23,6 +23,7 @@ const view = {
       "rtgl-view d=v": [
         { "rtgl-text w=bold": "${title}" },
         { "rtgl-divider w=24": null },
+        { "rtgl-tabs :items=tabItems :selectedTab=activeTab variant=primary w=24": null },
         {
           "rtgl-view d=h g=sm": [
             { "rtgl-text": "left" },
@@ -66,6 +67,12 @@ const store = {
       { id: "open", label: "Open settings" },
       { id: "rename", label: "Rename item" },
       { id: "delete", label: "Delete item" },
+    ],
+    activeTab: "channels",
+    tabItems: [
+      { id: "tasks", label: "Tasks" },
+      { id: "channels", label: "Channels" },
+      { id: "members", label: "Members" },
     ],
     tableData: {
       columns: [
@@ -120,6 +127,8 @@ describe("tui runtime", () => {
 
     expect(output).toContain("Ops");
     expect(output).toContain("─");
+    expect(output).toContain("Tasks");
+    expect(output).toContain("Channels");
     expect(output).toContain("│");
     expect(output).toContain("users: 12");
     expect(output).toContain("Search:");

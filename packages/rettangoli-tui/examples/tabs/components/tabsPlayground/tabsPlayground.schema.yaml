@@ -1,0 +1,13 @@
+componentName: tabs-playground
+
+description: Focused tabs primitive demo
+
+propsSchema:
+  type: object
+  properties: {}
+
+events: []
+
+methods:
+  type: object
+  properties: {}

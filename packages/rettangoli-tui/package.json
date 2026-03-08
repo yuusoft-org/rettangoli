@@ -41,6 +41,7 @@
   "scripts": {
     "poc": "node examples/poc/run.js",
     "showcase": "node examples/showcase/run.js",
+    "tabs": "node examples/tabs/run.js",
     "dialogs": "node examples/dialogs/run.js",
     "test": "vitest run test/tui --reporter=verbose"
   }

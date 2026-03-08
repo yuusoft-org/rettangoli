@@ -1,0 +1,28 @@
+refs:
+  window:
+    eventListeners:
+      keydown:
+        handler: handleTabsPlaygroundKeyDown
+
+template:
+  - rtgl-view d=v g=sm:
+      - rtgl-text w=bold: ${title}
+      - rtgl-divider w=72: null
+      - rtgl-text: "Primary tabs"
+      - rtgl-tabs :items=primaryTabs :selectedTab=selectedPrimaryTab variant=primary w=f: null
+      - rtgl-text: "Primary tabs (narrow overflow demo)"
+      - rtgl-tabs :items=primaryTabs :selectedTab=selectedPrimaryTab variant=primary w=28: null
+      - rtgl-divider w=72: null
+      - rtgl-text: "Secondary tabs"
+      - rtgl-tabs :items=sectionTabs :selectedTab=selectedSectionTab variant=secondary prefix="Section" w=f: null
+      - rtgl-divider w=72: null
+      - rtgl-text: "Selected primary tab: ${selectedPrimaryTab}"
+      - rtgl-text: "Selected section tab: ${selectedSectionTab}"
+      - rtgl-text: "Last key: ${lastKey}"
+      - rtgl-text: "Message: ${message}"
+      - rtgl-divider w=72: null
+      - rtgl-text: "Controls"
+      - rtgl-text: "1..5 select primary tab directly"
+      - rtgl-text: "Tab / Shift+Tab cycle primary tab"
+      - rtgl-text: "h/l or left/right switch secondary tab"
+      - rtgl-text: "r reset demo"
