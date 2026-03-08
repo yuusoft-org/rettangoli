@@ -1,0 +1,139 @@
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/contracts/builtin-asset-registry.schema.yaml
+title: Rettangoli Sites Built-in Asset Registry
+description: Machine-readable contract registry for published rettangoli-sites templates, partials, runtime assets, and theme bundles.
+type: object
+additionalProperties: false
+required:
+  - schemaVersion
+  - templates
+  - partials
+  - runtimeAssets
+  - themeBundles
+properties:
+  schemaVersion:
+    type: integer
+    const: 1
+  templates:
+    type: array
+    items:
+      $ref: '#/$defs/publishedAsset'
+  partials:
+    type: array
+    items:
+      $ref: '#/$defs/publishedAsset'
+  runtimeAssets:
+    type: array
+    items:
+      $ref: '#/$defs/runtimeAsset'
+  themeBundles:
+    type: array
+    items:
+      $ref: '#/$defs/themeBundle'
+$defs:
+  nonEmptyString:
+    type: string
+    minLength: 1
+  stability:
+    type: string
+    enum:
+      - stable
+      - experimental
+      - deprecated
+  pathArray:
+    type: array
+    items:
+      $ref: '#/$defs/nonEmptyString'
+  dependencyBlock:
+    type: object
+    additionalProperties: false
+    properties:
+      partials:
+        $ref: '#/$defs/pathArray'
+      runtimeAssets:
+        $ref: '#/$defs/pathArray'
+  publishedAsset:
+    type: object
+    additionalProperties: false
+    required:
+      - id
+      - stability
+      - publishedPath
+      - docsPaths
+      - examplePaths
+      - vtSpecPaths
+      - dependencies
+    properties:
+      id:
+        $ref: '#/$defs/nonEmptyString'
+      stability:
+        $ref: '#/$defs/stability'
+      publishedPath:
+        $ref: '#/$defs/nonEmptyString'
+      schemaRef:
+        $ref: '#/$defs/nonEmptyString'
+      docsPaths:
+        $ref: '#/$defs/pathArray'
+      examplePaths:
+        $ref: '#/$defs/pathArray'
+      vtSpecPaths:
+        $ref: '#/$defs/pathArray'
+      dependencies:
+        $ref: '#/$defs/dependencyBlock'
+      notes:
+        type: array
+        items:
+          type: string
+  runtimeAsset:
+    type: object
+    additionalProperties: false
+    required:
+      - id
+      - stability
+      - publishedPath
+      - docsPaths
+      - consumedBy
+    properties:
+      id:
+        $ref: '#/$defs/nonEmptyString'
+      stability:
+        $ref: '#/$defs/stability'
+      publishedPath:
+        $ref: '#/$defs/nonEmptyString'
+      docsPaths:
+        $ref: '#/$defs/pathArray'
+      consumedBy:
+        $ref: '#/$defs/pathArray'
+      notes:
+        type: array
+        items:
+          type: string
+  themeBundle:
+    type: object
+    additionalProperties: false
+    required:
+      - id
+      - stability
+      - publishedPath
+      - docsPaths
+      - classes
+      - vtSpecPaths
+    properties:
+      id:
+        $ref: '#/$defs/nonEmptyString'
+      stability:
+        $ref: '#/$defs/stability'
+      publishedPath:
+        $ref: '#/$defs/nonEmptyString'
+      docsPaths:
+        $ref: '#/$defs/pathArray'
+      classes:
+        type: array
+        items:
+          type: string
+      vtSpecPaths:
+        $ref: '#/$defs/pathArray'
+      notes:
+        type: array
+        items:
+          type: string

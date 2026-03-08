@@ -14,6 +14,7 @@ Use `rtgl sites` commands through local scripts for version pinning.
 | Command | Purpose |
 | --- | --- |
 | `rtgl sites init <project-name>` | Scaffold a new site from template |
+| `rtgl sites check` | Validate published built-in asset contracts |
 | `rtgl sites build` | Build static output |
 | `rtgl sites watch` | Build, serve, and rebuild on file changes |
 
@@ -50,6 +51,40 @@ Options:
 - `-q, --quiet` suppress non-error logs
 - `--rootDir` legacy alias for `--root-dir`
 - `--outputPath` legacy alias for `--output-path`
+
+## `check`
+
+```bash
+rtgl sites check
+rtgl sites check --builtins
+rtgl sites check --site --root-dir .
+rtgl sites check --builtins --site
+rtgl sites check --format json
+```
+
+Current scope:
+
+- `rtgl sites check` or `rtgl sites check --builtins`
+  - validates the published built-in `@rettangoli/sites` asset contract
+  - checks the registry, published file surface, schema refs, declared dependencies, docs/example/VT references, and hidden dependency regressions already encoded in the package contract layer
+- `rtgl sites check --site --root-dir <path>`
+  - validates consumer pages that use imported built-in templates
+  - reconstructs page data from global data, public frontmatter, `_bind`, collections, and `page.url`
+  - validates that page context against the referenced built-in template schema
+  - skips pages backed by local/custom templates
+
+Options:
+
+- `--builtins` explicit built-in asset validation scope
+- `--site` validate a consumer site root against built-in template contracts
+- `-r, --root-dir <path>` site root for `--site` validation (default: `./`)
+- `--format <format>` `text` (default) or `json`
+- `--rootDir` legacy alias for `--root-dir`
+
+Notes:
+
+- `rtgl sites check` currently defaults to the built-ins check even if `--builtins` is omitted.
+- `--site` validates imported built-ins only; local templates are intentionally skipped.
 
 ## `watch`
 

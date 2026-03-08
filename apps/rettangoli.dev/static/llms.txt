@@ -97,8 +97,10 @@ When asked to start a new `rtgl-sites` project, do this exact sequence:
    - `cd <project-name>`
 2. Configure imports in `sites.config.yaml` using the alias map below (all pre-provided templates/partials).
 3. Create/update `data/site.yaml`, `data/seo.yaml`, and page files to match the selected template schema.
-4. Validate page/template data against `data-contract.schema.yaml` (`$defs/template.*` and `$defs/partial.*`).
-5. Run `bunx rtgl sites watch` for development and `bunx rtgl sites build` for production output.
+4. Run `bunx rtgl sites check` to validate the published built-in asset contract used by the package.
+5. Run `bunx rtgl sites check --site --root-dir .` to validate consumer pages that use imported built-in templates.
+6. Validate page/template data against `data-contract.schema.yaml` (`$defs/template.*` and `$defs/partial.*`).
+7. Run `bunx rtgl sites watch` for development and `bunx rtgl sites build` for production output.
 
 Default output path: `_site/`.
 

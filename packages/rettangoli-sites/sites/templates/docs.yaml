@@ -5,10 +5,10 @@
           seo: ${seo}
           title: ${title}
         - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc15/dist/themes/base.css":
-        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/themes/theme-rtgl-themes.css":
+        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc13/sites/themes/theme-rtgl-themes.css":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
         - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.0-rc15/dist/rettangoli-iife-ui.min.js":
-        - script src="/public/rtgl-icons.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc13/sites/public/rtgl-icons.js":
 
     - body.slate-dark:
         - $partial: mobile-nav
@@ -34,4 +34,4 @@
             - 'rtgl-view xl-hide style="position: fixed; right: 0"':
                 - rtgl-page-outline id="page-outline" target-id="content-container" scroll-container-id="window" offset-top="80":
 
-        - script src="/public/mobile-nav.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc13/sites/public/mobile-nav.js":

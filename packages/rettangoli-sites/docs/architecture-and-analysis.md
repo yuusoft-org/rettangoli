@@ -21,6 +21,18 @@ Screenshot capture is handled by `@rettangoli/vt`, not by `@rettangoli/sites`.
   - `watchSite` (`src/cli/watch.js`)
   - `screenshotCommand` (`src/screenshotRunner.js`) throws a migration error (use VT)
   - `initSite` (`src/cli/init.js`)
+- Built-in asset contract helper:
+  - `readBuiltinAssetRegistry` (`src/contracts/readBuiltinAssetRegistry.js`)
+
+## Built-in Asset Contract Layer
+
+Published templates/partials/themes/runtime helpers are tracked separately from the runtime builder in:
+
+- `sites/contracts/builtin-asset-registry.yaml`
+- `sites/contracts/builtin-asset-registry.schema.yaml`
+- `sites/schemas/data-contract.schema.yaml`
+
+This contract layer exists so built-in assets can scale as stable product surface instead of ad-hoc YAML snippets.
 
 ## Directory Contract
 

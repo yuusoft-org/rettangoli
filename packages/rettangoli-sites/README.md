@@ -4,6 +4,13 @@
 
 It can run directly with `bunx rtgl`, so a site-level `package.json` is optional.
 
+Built-in published templates/partials/themes are governed by a machine-readable registry:
+
+- `sites/contracts/builtin-asset-registry.yaml`
+- `sites/contracts/builtin-asset-registry.schema.yaml`
+
+See `docs/builtin-assets-contract.md` for the production-ready built-in asset rules.
+
 ## Quick Start
 
 ```bash
@@ -146,6 +153,11 @@ Binding order:
 
 See `sites/README.md` for full alias examples and required data contract.
 
+Built-in runtime helpers used by imported templates are also published under `sites/public/`:
+
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/public/mobile-nav.js`
+- `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/public/rtgl-icons.js`
+
 ## Template Authoring Pattern
 
 Keep base templates as shells with minimal logic:
@@ -168,6 +180,9 @@ This keeps one template reusable across many page variants and avoids duplicated
 ```bash
 bunx rtgl sites build
 bunx rtgl sites watch
+bunx rtgl sites check
+bunx rtgl sites check --site --root-dir .
+bunx rtgl sites check --format json
 bunx rtgl sites build --quiet
 bunx rtgl sites watch --quiet
 bunx rtgl sites watch --reload-mode full
@@ -177,6 +192,10 @@ bunx rtgl sites watch --root-dir . --output-path dist --reload-mode full
 
 `--reload-mode body` (default) does fast body replacement; `--reload-mode full` forces full page refresh.
 `--root-dir`/`--output-path` are the preferred option names (`--rootDir`/`--outputPath` remain as legacy aliases).
+`rtgl sites check` defaults to built-in asset validation.
+Use `rtgl sites check --site --root-dir <path>` to validate a consumer site against imported built-in template contracts.
+`--site` only validates pages backed by imported built-ins; local/custom templates are skipped by design.
+Use `--format json` for machine-readable CI output.
 
 ## Built-in Template Functions
 

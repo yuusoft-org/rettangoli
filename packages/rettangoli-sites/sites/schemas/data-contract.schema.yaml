@@ -142,6 +142,8 @@ $defs:
         $ref: '#/$defs/types.nonEmptyString'
       ogType:
         $ref: '#/$defs/types.nonEmptyString'
+      faviconHref:
+        $ref: '#/$defs/types.urlString'
   types.pageModel:
     type: object
     additionalProperties: true
