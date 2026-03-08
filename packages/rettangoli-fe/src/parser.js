@@ -1,6 +1,6 @@
 import { parseAndRender as jemplParseAndRender, render as jemplRender } from "jempl";
 
-import { flattenArrays } from './common.js';
+import { flattenArrays } from "./utils/flattenArrays.js";
 import { parseNodeBindings } from './core/view/bindings.js';
 import {
   createRefMatchers,

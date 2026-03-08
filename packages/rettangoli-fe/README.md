@@ -35,7 +35,6 @@ rtgl fe watch     # Start dev server
 - [Snabbdom](https://github.com/snabbdom/snabbdom) - Virtual DOM
 - [Immer](https://github.com/immerjs/immer) - Immutable state management
 - [Jempl](https://github.com/yuusoft-org/jempl) - Template engine
-- [RxJS](https://github.com/ReactiveX/rxjs) - Reactive programming
 
 **Build & Development:**
 - [Vite](https://vite.dev/) - Dev server and production bundling

@@ -1,36 +1,3 @@
-import { Subject } from "rxjs";
-
-/**
- * A custom subject that can be used to dispatch actions and subscribe to them
- * You can think of this as a bus for all frontend events and communication
- *
- * Example:
- * const subject = new CustomSubject();
- *
- * const subscription = subject.subscribe(({ action, payload }) => {
- *   // handle action and payload
- * });
- *
- * subject.dispatch("action", { payload: "payload" });
- *
- * subscription.unsubscribe();
- */
-export class CustomSubject {
-  _subject = new Subject();
-  pipe = (...args) => {
-    return this._subject.pipe(...args);
-  };
-  dispatch = (action, payload) => {
-    this._subject.next({
-      action,
-      payload: payload || {},
-    });
-  };
-  dispatchCall = (action, payload) => {
-    return () => this.dispatch(action, payload || {});
-  };
-}
-
 const getQueryParamsObject = () => {
   const queryParams = new URLSearchParams(window.location.search + "");
   const paramsObject = {};
@@ -164,34 +131,4 @@ export function createHttpClient(config) {
   return httpClient;
 }
 
-
-
-
-
-
-// Helper function to flatten arrays while preserving object structure
-export const flattenArrays = (items) => {
-  if (!Array.isArray(items)) {
-    return items;
-  }
-
-  return items.reduce((acc, item) => {
-    if (Array.isArray(item)) {
-      // Recursively flatten nested arrays
-      acc.push(...flattenArrays(item));
-    } else {
-      // If it's an object with nested arrays, process those too
-      if (item && typeof item === "object") {
-        const entries = Object.entries(item);
-        if (entries.length > 0) {
-          const [key, value] = entries[0];
-          if (Array.isArray(value)) {
-            item = { [key]: flattenArrays(value) };
-          }
-        }
-      }
-      acc.push(item);
-    }
-    return acc;
-  }, []);
-};
+export { flattenArrays } from "./utils/flattenArrays.js";
