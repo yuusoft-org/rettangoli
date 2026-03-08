@@ -1,18 +1,3 @@
-imports:
-  templates:
-    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/base.yaml
-    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/docs.yaml
-    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/landing-features.yaml
-    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/blog-article-list.yaml
-    blog-article: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/blog-article.yaml
-  partials:
-    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/seo.yaml
-    navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/navbar.yaml
-    mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/mobile-nav.yaml
-    docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/docs-sidebar.yaml
-    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/top-navbar.yaml
-    footer: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/footer.yaml
-
 markdownit:
   html: true
   linkify: true

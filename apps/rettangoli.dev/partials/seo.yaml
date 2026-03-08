@@ -1,0 +1,11 @@
+- meta charset="utf-8":
+- meta name="viewport" content="width=device-width,initial-scale=1":
+- title: "${title}"
+- meta name="description" content="${seo.description}":
+- link rel="canonical" href="${site.baseUrl}${page.url}":
+- link rel="icon" type="image/x-icon" href="/public/favicon.png":
+
+- meta property="og:title" content="${seo.title}":
+- meta property="og:description" content="${seo.description}":
+- meta property="og:site_name" content="${seo.ogSiteName}":
+- meta property="og:type" content="${seo.ogType}":
