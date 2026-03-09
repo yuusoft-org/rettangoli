@@ -11,6 +11,9 @@ items:
       - id: sites-getting-started
         title: "Getting Started"
         href: "/sites/docs/introduction/getting-started"
+      - id: sites-static-and-landing-pages
+        title: "Static & Landing Pages"
+        href: "/sites/docs/introduction/static-and-landing-pages"
   - title: "Reference"
     type: groupLabel
     items:

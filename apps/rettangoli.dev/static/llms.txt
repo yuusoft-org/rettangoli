@@ -20,6 +20,7 @@ This file is a curated index for LLM-based tools. Prefer linked docs over guessi
 - https://rettangoli.dev/vt/docs/introduction/quickstart.md
 - https://rettangoli.dev/sites/docs/introduction/introduction.md
 - https://rettangoli.dev/sites/docs/introduction/getting-started.md
+- https://rettangoli.dev/sites/docs/introduction/static-and-landing-pages.md
 
 ## FE (Rettangoli FE)
 - https://rettangoli.dev/fe/docs/guides/schema.md
@@ -67,6 +68,7 @@ This file is a curated index for LLM-based tools. Prefer linked docs over guessi
 ## Sites (Rettangoli Sites)
 - https://rettangoli.dev/sites/docs/introduction/introduction.md
 - https://rettangoli.dev/sites/docs/introduction/getting-started.md
+- https://rettangoli.dev/sites/docs/introduction/static-and-landing-pages.md
 - https://rettangoli.dev/sites/docs/reference/cli.md
 - https://rettangoli.dev/sites/docs/reference/configuration.md
 - https://rettangoli.dev/sites/docs/reference/markdown-and-frontmatter.md
