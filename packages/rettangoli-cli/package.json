@@ -1,6 +1,6 @@
 {
   "name": "rtgl",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "CLI tool for Rettangoli - A frontend framework and development toolkit",
   "type": "module",
   "bin": {
@@ -52,6 +52,6 @@
     "@rettangoli/fe": "1.0.4",
     "@rettangoli/sites": "1.0.1",
     "@rettangoli/vt": "1.0.2",
-    "@rettangoli/ui": "1.0.7"
+    "@rettangoli/ui": "1.0.8"
   }
 }
