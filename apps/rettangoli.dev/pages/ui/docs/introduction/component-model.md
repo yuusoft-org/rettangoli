@@ -66,7 +66,7 @@ For responsive behavior, see [Responsiveness](/ui/docs/introduction/responsivene
 | --- | --- | --- |
 | `rtgl-accordion-item` | toggled content section | collapsible state, label/content/slot |
 | `rtgl-breadcrumb` | hierarchical navigation | item list, collapse by max items, separator icon, `item-click` |
-| `rtgl-card` | structured content surface | heading/subheading header, size-based shell rhythm, default body slot |
+| `rtgl-card` | structured content surface | `head`/`desc` header, size-based shell rhythm, default body slot |
 | `rtgl-dropdown-menu` | contextual menu overlay | positioned menu, item/label/separator rows, close + item events |
 | `rtgl-form` | schema-driven form workflow | field schema, defaults, actions, `form-input`, `form-change`, `form-action`, `form-field-event` |
 | `rtgl-global-ui` | app-level interaction layer | alert/confirm/dropdown flows with promise-like API |

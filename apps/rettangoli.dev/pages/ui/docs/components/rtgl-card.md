@@ -7,16 +7,16 @@ tags: documentation
 sidebarId: rtgl-card
 ---
 
-A structured content surface with a standardized shell, optional heading/subheading header, and default body slot.
+A structured content surface with a standardized shell, optional head/desc header, and default body slot.
 
 ## Quickstart
 
-Use `heading`, `subheading`, and `size` to keep card rhythm consistent.
+Use `head`, `desc`, and `size` to keep card rhythm consistent.
 
 ```html codePreview
 <rtgl-card
-  heading="Billing settings"
-  subheading="Manage invoices, payment methods, and tax details."
+  head="Billing settings"
+  desc="Manage invoices, payment methods, and tax details."
   size="md"
   w="420">
   <rtgl-view d="v" g="md">
@@ -35,8 +35,8 @@ Use `heading`, `subheading`, and `size` to keep card rhythm consistent.
 
 | Name | Attribute / Property | Type | Default |
 | --- | --- | --- | --- |
-| Heading | `heading` | string | - |
-| Subheading | `subheading` | string | - |
+| Heading | `head` | string | - |
+| Description | `desc` | string | - |
 | Size | `size` | `sm`, `md`, `lg` | `md` |
 | Body Slot | default slot | any content | - |
 
@@ -44,7 +44,7 @@ Use `heading`, `subheading`, and `size` to keep card rhythm consistent.
 
 ### Behavior & precedence
 
-- `heading` and `subheading` render a standardized card header region.
+- `head` and `desc` render a standardized card header region.
 - If both are omitted, the card renders body content only.
 - `size` controls internal card padding, header gap, and header-to-body rhythm.
 - The card shell is fixed in v1; host attrs that would override the shell surface are ignored.
@@ -60,15 +60,15 @@ Use `heading`, `subheading`, and `size` to keep card rhythm consistent.
 
 ```html codePreview
 <rtgl-view d="h" g="lg" wrap w="f">
-  <rtgl-card size="sm" heading="Small" subheading="Compact rhythm." w="240">
+  <rtgl-card size="sm" head="Small" desc="Compact rhythm." w="240">
     <rtgl-text s="sm">Good for denser UI blocks.</rtgl-text>
   </rtgl-card>
 
-  <rtgl-card size="md" heading="Medium" subheading="Balanced default." w="260">
+  <rtgl-card size="md" head="Medium" desc="Balanced default." w="260">
     <rtgl-text s="sm">Good for most settings and summary cards.</rtgl-text>
   </rtgl-card>
 
-  <rtgl-card size="lg" heading="Large" subheading="Roomier hierarchy." w="300">
+  <rtgl-card size="lg" head="Large" desc="Roomier hierarchy." w="300">
     <rtgl-text s="sm">Good for more prominent summaries and content surfaces.</rtgl-text>
   </rtgl-card>
 </rtgl-view>
@@ -81,7 +81,7 @@ The default slot is the card body.
 For predictable spacing inside the body, wrap multiple children in a `rtgl-view` and set `g` there.
 
 ```html codePreview
-<rtgl-card heading="Body wrapper pattern" subheading="Recommended for multi-block content." w="420">
+<rtgl-card head="Body wrapper pattern" desc="Recommended for multi-block content." w="420">
   <rtgl-view d="v" g="md">
     <rtgl-text>
       The card enforces shell spacing and header rhythm. Your body wrapper should own internal content spacing.
@@ -95,6 +95,6 @@ For predictable spacing inside the body, wrap multiple children in a `rtgl-view`
 
 ## Gotchas
 
-- `heading` / `subheading` own the header typography; do not recreate that structure manually unless you intentionally want a body-only card.
+- `head` / `desc` own the header typography; do not recreate that structure manually unless you intentionally want a body-only card.
 - `size` changes the shell rhythm, not just a single padding value.
 - The body slot does not automatically add gap between multiple sibling children; use a wrapper `rtgl-view g="..."` when you need internal body rhythm.

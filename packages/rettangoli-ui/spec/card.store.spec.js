@@ -3,7 +3,7 @@ import { selectViewData } from '../src/components/card/card.store.js';
 
 describe('rtgl-card store', () => {
   it('defaults to the md preset and renders a header when heading exists', () => {
-    const viewData = selectViewData({ props: { heading: 'Billing', subheading: 'Manage invoices.' } });
+    const viewData = selectViewData({ props: { head: 'Billing', desc: 'Manage invoices.' } });
 
     expect(viewData.size).toBe('md');
     expect(viewData.hasHeader).toBe(true);
@@ -20,18 +20,18 @@ describe('rtgl-card store', () => {
     expect(viewData.headingSize).toBe('h4');
   });
 
-  it('omits the header when no heading or subheading is provided', () => {
+  it('omits the header when no head or desc is provided', () => {
     const viewData = selectViewData({ props: {} });
 
     expect(viewData.hasHeader).toBe(false);
-    expect(viewData.heading).toBe('');
-    expect(viewData.subheading).toBe('');
+    expect(viewData.head).toBe('');
+    expect(viewData.desc).toBe('');
   });
 
   it('blocks internal shell attrs while preserving outer layout attrs', () => {
     const viewData = selectViewData({
       props: {
-        heading: 'Card',
+        head: 'Card',
         size: 'lg',
         w: '320',
         mb: 'lg',
@@ -44,7 +44,8 @@ describe('rtgl-card store', () => {
 
     expect(viewData.containerAttrString).toContain('w=320');
     expect(viewData.containerAttrString).toContain('mb=lg');
-    expect(viewData.containerAttrString).not.toContain('heading=');
+    expect(viewData.containerAttrString).not.toContain('head=');
+    expect(viewData.containerAttrString).not.toContain('desc=');
     expect(viewData.containerAttrString).not.toContain('size=');
     expect(viewData.containerAttrString).not.toContain('p=sm');
     expect(viewData.containerAttrString).not.toContain('g=xs');

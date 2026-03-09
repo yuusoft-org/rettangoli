@@ -2,9 +2,9 @@ componentName: rtgl-card
 propsSchema:
   type: object
   properties:
-    heading:
+    head:
       type: string
-    subheading:
+    desc:
       type: string
     size:
       type: string

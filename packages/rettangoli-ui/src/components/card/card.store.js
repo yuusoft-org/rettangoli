@@ -3,8 +3,8 @@ const blacklistedProps = [
   'class',
   'style',
   'slot',
-  'heading',
-  'subheading',
+  'head',
+  'desc',
   'size',
   'd',
   'ah',
@@ -79,9 +79,9 @@ export const selectViewData = ({ props = {} }) => {
     headerAttrString: preset.headerAttrString,
     headingSize: preset.headingSize,
     subheadingSize: preset.subheadingSize,
-    heading: props.heading || '',
-    subheading: props.subheading || '',
-    hasHeader: !!(props.heading || props.subheading),
+    head: props.head || '',
+    desc: props.desc || '',
+    hasHeader: !!(props.head || props.desc),
     size,
   };
 };
