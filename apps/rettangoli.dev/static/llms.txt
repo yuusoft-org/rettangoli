@@ -40,6 +40,7 @@ This file is a curated index for LLM-based tools. Prefer linked docs over guessi
 - https://rettangoli.dev/ui/docs/primitives/rtgl-button.md
 - https://rettangoli.dev/ui/docs/primitives/rtgl-input.md
 - https://rettangoli.dev/ui/docs/primitives/rtgl-text.md
+- https://rettangoli.dev/ui/docs/components/rtgl-card.md
 - https://rettangoli.dev/ui/docs/components/rtgl-form.md
 - https://rettangoli.dev/ui/docs/components/rtgl-select.md
 - https://rettangoli.dev/ui/docs/components/rtgl-popover-input.md

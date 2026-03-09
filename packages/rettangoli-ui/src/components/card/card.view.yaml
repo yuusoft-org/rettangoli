@@ -1,0 +1,18 @@
+styles:
+  :host:
+    display: block
+  slot:
+    display: block
+    min-width: 0
+  .rtgl-card-body:
+    min-width: 0
+template:
+  - 'rtgl-view class="rtgl-card" d=v w=f bgc=bg bw=xs bc=bo br=xl shadow=sm ${cardAttrString} ${containerAttrString}':
+      - $if hasHeader:
+          - 'rtgl-view class="rtgl-card-header" d=v w=f ${headerAttrString}':
+              - $if head:
+                  - rtgl-text class="rtgl-card-heading" s=${headingSize} w=f: ${head}
+              - $if desc:
+                  - rtgl-text class="rtgl-card-desc" s=${subheadingSize} c=mu-fg w=f: ${desc}
+      - div class=rtgl-card-body:
+          - slot: null
