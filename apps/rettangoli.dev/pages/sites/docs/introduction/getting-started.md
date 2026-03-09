@@ -89,6 +89,7 @@ build:
 
 ## Next
 
+- [Static & Landing Pages](/sites/docs/introduction/static-and-landing-pages)
 - [CLI](/sites/docs/reference/cli)
 - [Configuration](/sites/docs/reference/configuration)
 - [Themes & CSS](/sites/docs/reference/themes-and-css)

@@ -47,5 +47,6 @@ my-site/
 ## Next
 
 - [Getting Started](/sites/docs/introduction/getting-started)
+- [Static & Landing Pages](/sites/docs/introduction/static-and-landing-pages)
 - [CLI](/sites/docs/reference/cli)
 - [Configuration](/sites/docs/reference/configuration)

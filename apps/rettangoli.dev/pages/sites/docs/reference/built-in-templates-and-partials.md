@@ -25,6 +25,10 @@ For this release, replace `<version>` with `1.0.0-rc12`.
 - `blog-article-list`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/blog-article-list.yaml`
 - `blog-article`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/blog-article.yaml`
 
+For end-to-end authoring examples, see:
+
+- [Static & Landing Pages](/sites/docs/introduction/static-and-landing-pages)
+
 ## Built-in Partials
 
 - `seo`, `navbar`, `mobile-nav`, `docs-sidebar`, `docs-mobile-nav`
