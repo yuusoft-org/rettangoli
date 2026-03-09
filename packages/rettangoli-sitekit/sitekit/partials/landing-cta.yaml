@@ -1,18 +1,19 @@
 - 'rtgl-view w="f" pv="xl" style="padding-top: 128px; padding-bottom: 128px"':
-    - rtgl-view ah="c" p="xl" br="md" bw="sm" w="f":
-        - $if svg:
-            - rtgl-svg svg="${svg}" wh="48" c="pr" mb="md":
-        - rtgl-text s="h2" mb="md" c="pr" ta="c": ${title}
-        - $if subtitle:
-            - rtgl-text s="lg" c="pr" mb="lg" ta="c": ${subtitle}
-        - $if cta:
-            - $if cta.newTab:
-                - $if cta.variant:
-                    - rtgl-button v="${cta.variant}" href="${cta.href}" new-tab: ${cta.label}
+    - rtgl-card size=lg w=f:
+        - rtgl-view ah=c g=md:
+            - $if svg:
+                - rtgl-svg svg="${svg}" wh="48" c="pr":
+            - rtgl-text s="h2" c="pr" ta="c": ${title}
+            - $if subtitle:
+                - rtgl-text s="lg" c="pr" ta="c": ${subtitle}
+            - $if cta:
+                - $if cta.newTab:
+                    - $if cta.variant:
+                        - rtgl-button v="${cta.variant}" href="${cta.href}" new-tab: ${cta.label}
+                      $else:
+                        - rtgl-button href="${cta.href}" new-tab: ${cta.label}
                   $else:
-                    - rtgl-button href="${cta.href}" new-tab: ${cta.label}
-              $else:
-                - $if cta.variant:
-                    - rtgl-button v="${cta.variant}" href="${cta.href}": ${cta.label}
-                  $else:
-                    - rtgl-button href="${cta.href}": ${cta.label}
+                    - $if cta.variant:
+                        - rtgl-button v="${cta.variant}" href="${cta.href}": ${cta.label}
+                      $else:
+                        - rtgl-button href="${cta.href}": ${cta.label}

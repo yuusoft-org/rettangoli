@@ -9,16 +9,22 @@
             - $for feature in items:
                 - $if feature.imageRight:
                     - rtgl-view d=h md-d=v g=xl w=f av=c pv=xl:
-                        - rtgl-view w=1fg md-w=f g=lg:
-                            - rtgl-text s=h3 mb=sm: ${feature.title}
-                            - $if feature.subtitle:
-                                - rtgl-text s=lg c=mu-fg mb=lg: ${feature.subtitle}
-                            - $if feature.bullets:
-                                - rtgl-view g=md mt=sm:
-                                    - $for bullet in feature.bullets:
-                                        - rtgl-view d=h g=md av=s:
-                                            - rtgl-text c=mu-fg: •
-                                            - rtgl-text c=mu-fg w=1fg: ${bullet}
+                        - $if feature.subtitle:
+                            - rtgl-card size=lg w=1fg md-w=f head="${feature.title}" desc="${feature.subtitle}":
+                                - $if feature.bullets:
+                                    - rtgl-view g=md:
+                                        - $for bullet in feature.bullets:
+                                            - rtgl-view d=h g=md av=s:
+                                                - rtgl-text c=mu-fg: •
+                                                - rtgl-text c=mu-fg w=1fg: ${bullet}
+                          $else:
+                            - rtgl-card size=lg w=1fg md-w=f head="${feature.title}":
+                                - $if feature.bullets:
+                                    - rtgl-view g=md:
+                                        - $for bullet in feature.bullets:
+                                            - rtgl-view d=h g=md av=s:
+                                                - rtgl-text c=mu-fg: •
+                                                - rtgl-text c=mu-fg w=1fg: ${bullet}
                         - rtgl-view w=1fg md-w=f:
                             - $if feature.image:
                                 - $if feature.image.src:
@@ -41,13 +47,19 @@
                               $else:
                                 - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
                                     - rtgl-text c=se-fg: Feature image
-                        - rtgl-view w=1fg md-w=f g=lg:
-                            - rtgl-text s=h3 mb=sm: ${feature.title}
-                            - $if feature.subtitle:
-                                - rtgl-text s=lg c=mu-fg mb=lg: ${feature.subtitle}
-                            - $if feature.bullets:
-                                - rtgl-view g=md mt=sm:
-                                    - $for bullet in feature.bullets:
-                                        - rtgl-view d=h g=md av=s:
-                                            - rtgl-text c=mu-fg: •
-                                            - rtgl-text c=mu-fg w=1fg: ${bullet}
+                        - $if feature.subtitle:
+                            - rtgl-card size=lg w=1fg md-w=f head="${feature.title}" desc="${feature.subtitle}":
+                                - $if feature.bullets:
+                                    - rtgl-view g=md:
+                                        - $for bullet in feature.bullets:
+                                            - rtgl-view d=h g=md av=s:
+                                                - rtgl-text c=mu-fg: •
+                                                - rtgl-text c=mu-fg w=1fg: ${bullet}
+                          $else:
+                            - rtgl-card size=lg w=1fg md-w=f head="${feature.title}":
+                                - $if feature.bullets:
+                                    - rtgl-view g=md:
+                                        - $for bullet in feature.bullets:
+                                            - rtgl-view d=h g=md av=s:
+                                                - rtgl-text c=mu-fg: •
+                                                - rtgl-text c=mu-fg w=1fg: ${bullet}
