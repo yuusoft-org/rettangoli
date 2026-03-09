@@ -4,10 +4,10 @@
           page: ${page}
           seo: ${seo}
           title: ${title}
-        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.7/dist/themes/base.css":
+        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.8/dist/themes/base.css":
         - link rel="stylesheet" href="/public/theme-rtgl-themes.css":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
-        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.7/dist/rettangoli-iife-ui.min.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.8/dist/rettangoli-iife-ui.min.js":
         - script src="/public/rtgl-icons.js":
 
     - body.slate-dark:
@@ -22,60 +22,56 @@
             - rtgl-view md-hide h=64:
             - rtgl-view hide md-show h=56:
             - rtgl-view w="1160" xl-w="1024" lg-w=f ph=lg pt=lg pb=xl g=xl:
-                - rtgl-view w=f p=xl lg-p=lg g=md bw=xs bc=bo bgc=bg:
-                    - rtgl-text s=xs c=mu-fg: SITEKIT PREVIEW
-                    - rtgl-text s=h1 w="800" lg-w=f: ${title}
-                    - rtgl-text c=mu-fg w="760" lg-w=f: ${description}
-                    - rtgl-view d=h wrap g=sm av=c:
-                        - rtgl-button href="/docs/getting-started/": Open Docs
-                        - rtgl-button v=se href="/templates/landing-features/": Browse Templates
-                        - rtgl-button v=gh href="/themes/slate-dark/": Inspect Themes
+                - rtgl-card size=lg w=f:
+                    - rtgl-view g=md:
+                        - rtgl-text s=xs c=mu-fg: SITEKIT PREVIEW
+                        - rtgl-text s=h1 w="800" lg-w=f: ${title}
+                        - rtgl-text c=mu-fg w="760" lg-w=f: ${description}
+                        - rtgl-view d=h wrap g=sm av=c:
+                            - rtgl-button href="/docs/getting-started/": Open Docs
+                            - rtgl-button v=se href="/templates/landing-features/": Browse Templates
+                            - rtgl-button v=gh href="/themes/slate-dark/": Inspect Themes
 
                 - rtgl-grid cols="3" lg-cols="1" g=lg w=f:
-                    - rtgl-view w=f p=lg g=sm bw=xs bc=bo bgc=se:
-                        - rtgl-text s=xs c=mu-fg: DOCS
-                        - rtgl-text s=h4: Setup and configuration routes
-                        - rtgl-text c=mu-fg: Build, watch, serve, and config guidance for the package preview.
-                        - rtgl-text s=sm c=ac: /docs/getting-started/
-                    - rtgl-view w=f p=lg g=sm bw=xs bc=bo bgc=se:
-                        - rtgl-text s=xs c=mu-fg: TEMPLATES
-                        - rtgl-text s=h4: Landing and blog example routes
-                        - rtgl-text c=mu-fg: Review the published template shapes in a real preview site.
-                        - rtgl-text s=sm c=ac: /templates/landing-features/
-                    - rtgl-view w=f p=lg g=sm bw=xs bc=bo bgc=se:
-                        - rtgl-text s=xs c=mu-fg: THEMES
-                        - rtgl-text s=h4: Class-based theme showcase routes
-                        - rtgl-text c=mu-fg: Verify tokens, states, and component contrast across every shipped theme.
-                        - rtgl-text s=sm c=ac: /themes/slate-dark/
+                    - rtgl-card size=md w=f head="Setup and configuration routes" desc="Build, watch, serve, and config guidance for the package preview.":
+                        - rtgl-view g=sm:
+                            - rtgl-text s=xs c=mu-fg: DOCS
+                            - rtgl-text s=sm c=ac: /docs/getting-started/
+                    - rtgl-card size=md w=f head="Landing and blog example routes" desc="Review the published template shapes in a real preview site.":
+                        - rtgl-view g=sm:
+                            - rtgl-text s=xs c=mu-fg: TEMPLATES
+                            - rtgl-text s=sm c=ac: /templates/landing-features/
+                    - rtgl-card size=md w=f head="Class-based theme showcase routes" desc="Verify tokens, states, and component contrast across every shipped theme.":
+                        - rtgl-view g=sm:
+                            - rtgl-text s=xs c=mu-fg: THEMES
+                            - rtgl-text s=sm c=ac: /themes/slate-dark/
 
                 - rtgl-view w=f g=md:
                     - rtgl-text s=h2: Docs
                     - rtgl-text c=mu-fg: Reference routes for local workflow and configuration behavior.
                     - rtgl-grid cols="2" lg-cols="1" g=lg w=f:
                         - $for item in docsPages:
-                            - rtgl-view href="${item.href}" w=f p=lg g=sm bw=xs bc=bo bgc=se cur=p:
-                                - rtgl-text s=h4: ${item.title}
-                                - rtgl-text c=mu-fg: ${item.description}
-                                - rtgl-text s=sm c=ac: ${item.href}
+                            - rtgl-view href="${item.href}" w=f h=f cur=p:
+                                - rtgl-card size=md head="${item.title}" desc="${item.description}" w=f h=f:
+                                    - rtgl-text s=sm c=ac: ${item.href}
 
                 - rtgl-view w=f g=md:
                     - rtgl-text s=h2: Templates
                     - rtgl-text c=mu-fg: Preview routes that exercise the reusable template assets.
                     - rtgl-grid cols="3" lg-cols="2" sm-cols="1" g=lg w=f:
                         - $for item in templatePages:
-                            - rtgl-view href="${item.href}" w=f p=lg g=sm bw=xs bc=bo bgc=se cur=p:
-                                - rtgl-text s=h4: ${item.title}
-                                - rtgl-text c=mu-fg: ${item.description}
-                                - rtgl-text s=sm c=ac: ${item.href}
+                            - rtgl-view href="${item.href}" w=f h=f cur=p:
+                                - rtgl-card size=md head="${item.title}" desc="${item.description}" w=f h=f:
+                                    - rtgl-text s=sm c=ac: ${item.href}
 
                 - rtgl-view w=f g=md:
                     - rtgl-text s=h2: Themes
                     - rtgl-text c=mu-fg: Every theme route uses the same showcase page so visual diffs stay comparable.
                     - rtgl-grid cols="4" xl-cols="3" lg-cols="2" sm-cols="1" g=md w=f:
                         - $for theme in themes:
-                            - rtgl-view href="/themes/${theme.id}/" w=f p=md g=xs bw=xs bc=bo bgc=se cur=p:
-                                - rtgl-text s=sm: ${theme.id}
-                                - rtgl-text s=xs c=mu-fg: /themes/${theme.id}/
+                            - rtgl-view href="/themes/${theme.id}/" w=f h=f cur=p:
+                                - rtgl-card size=sm head="${theme.id}" w=f h=f:
+                                    - rtgl-text s=xs c=mu-fg: /themes/${theme.id}/
             - $partial: footer
               brand: ${site.footer.brand}
               columns: ${site.footer.columns}

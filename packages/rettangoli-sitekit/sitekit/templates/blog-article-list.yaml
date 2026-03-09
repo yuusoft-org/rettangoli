@@ -4,10 +4,10 @@
           page: ${page}
           seo: ${seo}
           title: ${title}
-        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.7/dist/themes/base.css":
+        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.8/dist/themes/base.css":
         - link rel="stylesheet" href="/public/theme-rtgl-themes.css":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
-        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.7/dist/rettangoli-iife-ui.min.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.8/dist/rettangoli-iife-ui.min.js":
         - script src="/public/rtgl-icons.js":
 
     - body.slate-dark:
@@ -28,14 +28,16 @@
 
                 - rtgl-grid cols="3" lg-cols="2" sm-cols="1" g=xl w=f:
                     - $for post in posts:
-                        - rtgl-view href="${post.href}" w=f h=f p=xl bgc=se bw=xs bc=bo g=xl cur=p:
-                            - $if post.imageSrc:
-                                - rtgl-image w=f src="${post.imageSrc}" alt="${post.imageAlt}":
-                            - rtgl-text s=h4 w=f: ${post.title}
-                            - rtgl-view d=h g=sm av=c w=f:
-                                - rtgl-text s=sm c=mu-fg: ${post.author}
-                                - rtgl-view w=1fg:
-                                - rtgl-text s=sm c=mu-fg ta=r: ${formatDate(post.date, "MM/DD/YYYY")}
+                        - rtgl-view href="${post.href}" w=f h=f cur=p:
+                            - rtgl-card size=lg w=f h=f:
+                                - rtgl-view g=lg:
+                                    - $if post.imageSrc:
+                                        - rtgl-image w=f src="${post.imageSrc}" alt="${post.imageAlt}":
+                                    - rtgl-text s=h4 w=f: ${post.title}
+                                    - rtgl-view d=h g=sm av=c w=f:
+                                        - rtgl-text s=sm c=mu-fg: ${post.author}
+                                        - rtgl-view w=1fg:
+                                        - rtgl-text s=sm c=mu-fg ta=r: ${formatDate(post.date, "MM/DD/YYYY")}
             - $partial: footer
               brand: ${site.footer.brand}
               columns: ${site.footer.columns}
