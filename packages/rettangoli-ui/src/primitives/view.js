@@ -19,6 +19,15 @@ import stylesGenerator from "../styles/viewStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
 
+const normalizeRawCssValue = (value) => {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  const normalizedValue = `${value}`.trim();
+  return normalizedValue.length > 0 ? normalizedValue : null;
+};
+
 // Internal implementation without uhtml
 class RettangoliViewElement extends HTMLElement {
   static styleSheet = null;
@@ -80,6 +89,10 @@ class RettangoliViewElement extends HTMLElement {
         "w",
         "h",
         "ar",
+        "bgi",
+        "bgs",
+        "bgp",
+        "bgr",
         "hide",
         "show",
         "sh",
@@ -141,6 +154,18 @@ class RettangoliViewElement extends HTMLElement {
       const aspectRatio = normalizeAspectRatio(
         this.getAttribute(addSizePrefix("ar")),
       );
+      const backgroundImage = normalizeRawCssValue(
+        this.getAttribute(addSizePrefix("bgi")),
+      );
+      const backgroundSize = normalizeRawCssValue(
+        this.getAttribute(addSizePrefix("bgs")),
+      );
+      const backgroundPosition = normalizeRawCssValue(
+        this.getAttribute(addSizePrefix("bgp")),
+      );
+      const backgroundRepeat = normalizeRawCssValue(
+        this.getAttribute(addSizePrefix("bgr")),
+      );
 
       if (zIndex !== null) {
         this._styles[size]["z-index"] = zIndex;
@@ -152,6 +177,22 @@ class RettangoliViewElement extends HTMLElement {
 
       if (aspectRatio !== undefined) {
         this._styles[size]["aspect-ratio"] = aspectRatio;
+      }
+
+      if (backgroundImage !== null) {
+        this._styles[size]["background-image"] = backgroundImage;
+      }
+
+      if (backgroundSize !== null) {
+        this._styles[size]["background-size"] = backgroundSize;
+      }
+
+      if (backgroundPosition !== null) {
+        this._styles[size]["background-position"] = backgroundPosition;
+      }
+
+      if (backgroundRepeat !== null) {
+        this._styles[size]["background-repeat"] = backgroundRepeat;
       }
 
       applyDimensionToStyleBucket({
