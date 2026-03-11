@@ -52,6 +52,7 @@ This is the intentional component surface and what each component is meant to pr
 | --- | --- | --- |
 | `rtgl-accordion-item` | toggled content section | collapsible state, label/content/slot |
 | `rtgl-breadcrumb` | hierarchical navigation path | item list, max collapse, separator icon, `item-click` |
+| `rtgl-card` | content surface container | optional heading/description, size presets, slot body |
 | `rtgl-dropdown-menu` | contextual menu overlay | positioned menu, item/label/separator rows, close + item events |
 | `rtgl-form` | schema-driven form workflow | field schema, default values, action buttons, form/action/extra events |
 | `rtgl-global-ui` | app-level interaction layer | alert/confirm/dropdown flows with promise-like API |
@@ -64,6 +65,7 @@ This is the intentional component surface and what each component is meant to pr
 | `rtgl-table` | tabular data display | column/row model, sortable headers, row click event |
 | `rtgl-tabs` | segmented single selection | tab items, selected tab state, item click event |
 | `rtgl-tooltip` | short contextual hint | controlled open/position/placement/content |
+| `rtgl-waveform` | waveform media visualization | canvas rendering, loading state, width/height sizing |
 
 When adding a new component, document:
 - the unique workflow it serves
