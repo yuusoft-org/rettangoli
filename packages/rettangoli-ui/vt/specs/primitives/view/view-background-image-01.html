@@ -1,0 +1,38 @@
+---
+title: View - Background Image - Raw CSS Passthrough
+description: Verifies background image passthrough attrs on rtgl-view.
+specs:
+  - bgi accepts raw CSS background-image values, including gradients and layered images.
+  - bgs, bgp, and bgr pass through to native CSS sizing, positioning, and repeat behavior.
+  - Background image attrs compose with existing sizing, border, and radius attrs.
+---
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap>
+  <rtgl-view
+    w="160"
+    h="96"
+    br="lg"
+    bgi="linear-gradient(135deg, rgb(15 23 42), rgb(29 78 216))"
+  ></rtgl-view>
+
+  <rtgl-view
+    w="160"
+    h="96"
+    br="lg"
+    bgi="linear-gradient(rgba(15,23,42,.38), rgba(15,23,42,.38)), url('/public/sample1.jpg')"
+    bgs="cover"
+    bgp="center"
+    bgr="no-repeat"
+  ></rtgl-view>
+
+  <rtgl-view
+    w="160"
+    h="96"
+    br="lg"
+    bw="xs"
+    bc="bo"
+    bgi="linear-gradient(45deg, rgba(15,23,42,.14) 25%, transparent 25%, transparent 50%, rgba(15,23,42,.14) 50%, rgba(15,23,42,.14) 75%, transparent 75%, transparent)"
+    bgs="24px 24px"
+    bgp="center"
+    bgr="repeat"
+  ></rtgl-view>
+</rtgl-view>

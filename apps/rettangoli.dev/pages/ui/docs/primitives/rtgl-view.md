@@ -85,6 +85,7 @@ Common tokens used in this page:
 | [Border Radius](#border-radius) | `br` | `xs`, `sm`, `md`, `lg`, `xl`, `f` | - |
 | [Shadow](#shadow) | `shadow` | `sm`, `md`, `lg` | - |
 | [Background Color](#background-color) | `bgc` | `pr`, `se`, `de`, `fg`, `bg`, `mu`, `ac`, `bo` | - |
+| [Background Image](#background-image) | `bgi`, `bgs`, `bgp`, `bgr` | raw CSS `background-image`, `background-size`, `background-position`, `background-repeat` values | - |
 | [Opacity](#opacity) | `op` | number (`0`-`1`) | `1` |
 | [Position](#position) | `pos` | `abs`, `rel`, `fix` | - |
 | [Edge Anchoring](#edge-anchoring) | `edge` | `t | r | b | l | f` | - |
@@ -555,6 +556,67 @@ You can also use predefined color tokens for consistent theming.
   <rtgl-view bgc="se" wh="80"></rtgl-view>
   <rtgl-view bgc="ac" wh="80"></rtgl-view>
 </rtgl-view>
+```
+
+## Background Image
+
+Controls native CSS background image styling on the container.
+
+### Behavior & precedence
+
+- `bgi` maps directly to CSS `background-image`.
+- `bgs` maps directly to CSS `background-size`.
+- `bgp` maps directly to CSS `background-position`.
+- `bgr` maps directly to CSS `background-repeat`.
+- Values are raw CSS passthrough values; Rettangoli does not abbreviate or parse them.
+- `bgc` remains the solid background-color API and can be combined with these attrs.
+- Responsive variants such as `sm-bgi`, `md-bgs`, `lg-bgp`, and `xl-bgr` follow the normal breakpoint precedence.
+- For long layered backgrounds, prefer CSS variables like `bgi="var(--hero-bg)"`.
+
+### Gradient
+
+```html codePreview
+<rtgl-view
+  w="f"
+  h="120"
+  br="lg"
+  bgi="linear-gradient(135deg, rgb(15 23 42), rgb(29 78 216))"
+></rtgl-view>
+```
+
+### Repeating Pattern
+
+```html codePreview
+<rtgl-view
+  w="f"
+  h="120"
+  br="lg"
+  bw="xs"
+  bc="bo"
+  bgi="linear-gradient(45deg, rgba(15,23,42,.14) 25%, transparent 25%, transparent 50%, rgba(15,23,42,.14) 50%, rgba(15,23,42,.14) 75%, transparent 75%, transparent)"
+  bgs="24px 24px"
+  bgp="center"
+  bgr="repeat"
+></rtgl-view>
+```
+
+### Layered Background via CSS Variable
+
+```html
+<rtgl-view
+  bgi="var(--hero-bg)"
+  bgs="cover"
+  bgp="center"
+  bgr="no-repeat"
+></rtgl-view>
+```
+
+```css
+:root {
+  --hero-bg:
+    linear-gradient(rgba(15,23,42,.38), rgba(15,23,42,.38)),
+    url("/images/hero.jpg");
+}
 ```
 
 ## Opacity

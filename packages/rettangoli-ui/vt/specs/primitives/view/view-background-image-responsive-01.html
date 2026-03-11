@@ -1,0 +1,42 @@
+---
+title: View - Background Image - Responsive Overrides
+description: Verifies responsive background image attrs keep base styles on desktop and override them in the xl range.
+viewport:
+  - id: desktop
+    width: 1400
+    height: 420
+  - id: xl-range
+    width: 1100
+    height: 420
+specs:
+  - Breakpoint-prefixed bgi, bgs, bgp, and bgr override base values at matching breakpoints.
+  - Base background values remain active above the xl max-width threshold.
+---
+<rtgl-view d="h" g="lg" p="lg" wh="f" wrap>
+  <rtgl-view
+    w="160"
+    h="96"
+    br="lg"
+    bgi="linear-gradient(180deg, rgb(248 250 252), rgb(226 232 240))"
+    bgs="100% 100%"
+    bgp="left top"
+    bgr="no-repeat"
+    xl-bgi="linear-gradient(rgba(15,23,42,.4), rgba(15,23,42,.4)), url('/public/sample1.jpg')"
+    xl-bgs="cover"
+    xl-bgp="center"
+    xl-bgr="no-repeat"
+  ></rtgl-view>
+
+  <rtgl-view
+    w="160"
+    h="96"
+    br="lg"
+    bw="xs"
+    bc="bo"
+    bgi="linear-gradient(180deg, rgb(254 242 242), rgb(254 226 226))"
+    xl-bgi="linear-gradient(45deg, rgba(15,23,42,.16) 25%, transparent 25%, transparent 50%, rgba(15,23,42,.16) 50%, rgba(15,23,42,.16) 75%, transparent 75%, transparent)"
+    xl-bgs="20px 20px"
+    xl-bgp="center"
+    xl-bgr="repeat"
+  ></rtgl-view>
+</rtgl-view>
