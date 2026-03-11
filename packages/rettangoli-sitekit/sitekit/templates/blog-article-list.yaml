@@ -26,7 +26,7 @@
                     - rtgl-text s=h1 ta=c w=f: ${title}
                     - rtgl-text c=mu-fg mt=md mb=lg ta=c w=f: ${description}
 
-                - rtgl-grid cols="3" lg-cols="2" sm-cols="1" g=xl w=f:
+                - rtgl-grid cols="2" sm-cols="1" g=xl w=f:
                     - $for post in posts:
                         - rtgl-view href="${post.href}" w=f h=f p=xl bgc=se bw=xs bc=bo g=xl cur=p:
                             - $if post.imageSrc:

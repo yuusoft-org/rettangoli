@@ -5,10 +5,10 @@
             - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${subtitle}
 
     - $if items:
-        - rtgl-view w=f g=xl pt=xl:
+        - rtgl-view w=f g=160 lg-g=120 md-g=80 pt=xl:
             - $for feature in items:
                 - $if feature.imageRight:
-                    - rtgl-view d=h md-d=v g=xl w=f av=c pv=xl:
+                    - 'rtgl-view d=h md-d=v g=xl w=f av=c pv=xl style="min-height: 560px"':
                         - rtgl-view w=1fg md-w=f g=lg:
                             - rtgl-text s=h3 mb=sm: ${feature.title}
                             - $if feature.subtitle:
@@ -30,7 +30,7 @@
                                 - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
                                     - rtgl-text c=se-fg: Feature image
                   $else:
-                    - rtgl-view d=h md-d=v g=xl w=f av=c pv=xl:
+                    - 'rtgl-view d=h md-d=v g=xl w=f av=c pv=xl style="min-height: 560px"':
                         - rtgl-view w=1fg md-w=f:
                             - $if feature.image:
                                 - $if feature.image.src:
