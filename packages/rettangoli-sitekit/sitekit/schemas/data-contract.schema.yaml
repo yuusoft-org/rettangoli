@@ -364,6 +364,8 @@ $defs:
         type: array
         items:
           type: string
+      cta:
+        $ref: '#/$defs/types.cta'
   types.landingCtaModel:
     type: object
     additionalProperties: true

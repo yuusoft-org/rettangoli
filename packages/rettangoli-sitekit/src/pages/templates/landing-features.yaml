@@ -65,6 +65,10 @@ landing:
         - Align headline and supporting narrative around one clear business outcome.
         - Keep section-level copy concise so visitors reach key actions faster.
         - Reuse stable content blocks across landing, docs, and blog templates.
+      cta:
+        label: Explore The Theme Preview
+        href: /themes/slate-dark/
+        variant: se
     - title: Build Trust Through Consistent Presentation
       subtitle: Consistency across pages improves clarity for both first-time and returning visitors.
       imageRight: true

@@ -23,6 +23,17 @@
                                             - rtgl-view d=h g=md av=s:
                                                 - rtgl-text c=mu-fg: •
                                                 - rtgl-text c=mu-fg w=1fg: ${bullet}
+                                - $if feature.cta:
+                                    - $if feature.cta.newTab:
+                                        - $if feature.cta.variant:
+                                            - rtgl-button v="${feature.cta.variant}" href="${feature.cta.href}" new-tab mt=lg: ${feature.cta.label}
+                                          $else:
+                                            - rtgl-button href="${feature.cta.href}" new-tab mt=lg: ${feature.cta.label}
+                                      $else:
+                                        - $if feature.cta.variant:
+                                            - rtgl-button v="${feature.cta.variant}" href="${feature.cta.href}" mt=lg: ${feature.cta.label}
+                                          $else:
+                                            - rtgl-button href="${feature.cta.href}" mt=lg: ${feature.cta.label}
                             - rtgl-view w=80 md-hide:
                             - rtgl-view w=1fg md-w=f:
                                 - $if feature.image:
@@ -60,4 +71,15 @@
                                             - rtgl-view d=h g=md av=s:
                                                 - rtgl-text c=mu-fg: •
                                                 - rtgl-text c=mu-fg w=1fg: ${bullet}
+                                - $if feature.cta:
+                                    - $if feature.cta.newTab:
+                                        - $if feature.cta.variant:
+                                            - rtgl-button v="${feature.cta.variant}" href="${feature.cta.href}" new-tab mt=lg: ${feature.cta.label}
+                                          $else:
+                                            - rtgl-button href="${feature.cta.href}" new-tab mt=lg: ${feature.cta.label}
+                                      $else:
+                                        - $if feature.cta.variant:
+                                            - rtgl-button v="${feature.cta.variant}" href="${feature.cta.href}" mt=lg: ${feature.cta.label}
+                                          $else:
+                                            - rtgl-button href="${feature.cta.href}" mt=lg: ${feature.cta.label}
                         - rtgl-view h=120:
