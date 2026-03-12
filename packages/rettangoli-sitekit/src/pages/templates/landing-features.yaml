@@ -36,7 +36,9 @@ landing:
     title: Flexible Highlight Blocks For Demo Pages
     subtitle: Use icon-led cards to explain product value, workflow benefits, or key selling points in a compact reusable section.
     items:
-      - icon: bolt
+      - image:
+          src: /public/logo-exampleco.png
+          alt: Example image badge
         title: Explain Fast Setup In One Scan
         description: Pair a short heading with a concise supporting line so visitors understand the benefit without reading a long section.
       - icon: cluster

@@ -277,11 +277,17 @@ $defs:
     type: object
     additionalProperties: true
     required:
-    - icon
     - title
+    anyOf:
+    - required:
+      - icon
+    - required:
+      - image
     properties:
       icon:
         $ref: '#/$defs/types.nonEmptyString'
+      image:
+        $ref: '#/$defs/types.landingImage'
       title:
         $ref: '#/$defs/types.nonEmptyString'
       description:

@@ -11,7 +11,13 @@
                 - 'article style="display: contents;"':
                     - rtgl-view w=f h=f p=xl g=lg bw=xs bc=bo bgc=se br=md:
                         - rtgl-view wh=52 ah=c av=c bw=xs bc=bo bgc=bg br=md:
-                            - rtgl-svg wh=24 svg="${item.icon}" c=pr:
+                            - $if item.image:
+                                - $if item.image.src:
+                                    - rtgl-image w=28 h=28 of=con src="${item.image.src}" alt="${item.image.alt}":
+                                  $else:
+                                    - rtgl-text s=xs c=mu-fg: Img
+                              $else:
+                                - rtgl-svg wh=24 svg="${item.icon}" c=pr:
                         - rtgl-view g=sm:
                             - rtgl-text s=h4: ${item.title}
                             - $if item.description:
