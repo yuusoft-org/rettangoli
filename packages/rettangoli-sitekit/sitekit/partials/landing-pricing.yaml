@@ -8,57 +8,58 @@
     - $if items:
         - rtgl-grid cols="3" lg-cols="2" sm-cols="1" g=xl w=f:
             - $for item in items:
-                - $if item.size:
-                    - rtgl-card w=f h=f size="${item.size}" head="${item.title}" desc="${item.description}":
-                        - rtgl-view g=lg:
-                            - rtgl-view g=sm:
-                                - rtgl-view d=h wrap g=sm av=e:
-                                    - rtgl-text s=h1: ${item.price}
-                                    - $if item.priceSuffix:
-                                        - rtgl-text c=mu-fg mb=xs: ${item.priceSuffix}
-                                - $if item.priceNote:
-                                    - rtgl-text s=sm c=mu-fg: ${item.priceNote}
-                            - $if item.features:
-                                - rtgl-view g=md:
-                                    - $for feature in item.features:
-                                        - rtgl-view d=h g=md av=s:
-                                            - rtgl-text c=mu-fg: •
-                                            - rtgl-text c=mu-fg w=1fg: ${feature}
-                            - $if item.cta:
-                                - $if item.cta.newTab:
-                                    - $if item.cta.variant:
-                                        - rtgl-button v="${item.cta.variant}" href="${item.cta.href}" new-tab mt=lg: ${item.cta.label}
+                - rtgl-view w=f h=f bgc=mu br=xl p=sm:
+                    - $if item.size:
+                        - rtgl-card w=f h=f size="${item.size}" head="${item.title}" desc="${item.description}":
+                            - rtgl-view g=lg:
+                                - rtgl-view g=sm:
+                                    - rtgl-view d=h wrap g=sm av=e:
+                                        - rtgl-text s=h1: ${item.price}
+                                        - $if item.priceSuffix:
+                                            - rtgl-text c=mu-fg mb=xs: ${item.priceSuffix}
+                                    - $if item.priceNote:
+                                        - rtgl-text s=sm c=mu-fg: ${item.priceNote}
+                                - $if item.features:
+                                    - rtgl-view g=md:
+                                        - $for feature in item.features:
+                                            - rtgl-view d=h g=md av=s:
+                                                - rtgl-text c=mu-fg: •
+                                                - rtgl-text c=mu-fg w=1fg: ${feature}
+                                - $if item.cta:
+                                    - $if item.cta.newTab:
+                                        - $if item.cta.variant:
+                                            - rtgl-button v="${item.cta.variant}" href="${item.cta.href}" new-tab mt=lg: ${item.cta.label}
+                                          $else:
+                                            - rtgl-button href="${item.cta.href}" new-tab mt=lg: ${item.cta.label}
                                       $else:
-                                        - rtgl-button href="${item.cta.href}" new-tab mt=lg: ${item.cta.label}
-                                  $else:
-                                    - $if item.cta.variant:
-                                        - rtgl-button v="${item.cta.variant}" href="${item.cta.href}" mt=lg: ${item.cta.label}
+                                        - $if item.cta.variant:
+                                            - rtgl-button v="${item.cta.variant}" href="${item.cta.href}" mt=lg: ${item.cta.label}
+                                          $else:
+                                            - rtgl-button href="${item.cta.href}" mt=lg: ${item.cta.label}
+                      $else:
+                        - rtgl-card w=f h=f size="lg" head="${item.title}" desc="${item.description}":
+                            - rtgl-view g=lg:
+                                - rtgl-view g=sm:
+                                    - rtgl-view d=h wrap g=sm av=e:
+                                        - rtgl-text s=h1: ${item.price}
+                                        - $if item.priceSuffix:
+                                            - rtgl-text c=mu-fg mb=xs: ${item.priceSuffix}
+                                    - $if item.priceNote:
+                                        - rtgl-text s=sm c=mu-fg: ${item.priceNote}
+                                - $if item.features:
+                                    - rtgl-view g=md:
+                                        - $for feature in item.features:
+                                            - rtgl-view d=h g=md av=s:
+                                                - rtgl-text c=mu-fg: •
+                                                - rtgl-text c=mu-fg w=1fg: ${feature}
+                                - $if item.cta:
+                                    - $if item.cta.newTab:
+                                        - $if item.cta.variant:
+                                            - rtgl-button v="${item.cta.variant}" href="${item.cta.href}" new-tab mt=lg: ${item.cta.label}
+                                          $else:
+                                            - rtgl-button href="${item.cta.href}" new-tab mt=lg: ${item.cta.label}
                                       $else:
-                                        - rtgl-button href="${item.cta.href}" mt=lg: ${item.cta.label}
-                  $else:
-                    - rtgl-card w=f h=f size="lg" head="${item.title}" desc="${item.description}":
-                        - rtgl-view g=lg:
-                            - rtgl-view g=sm:
-                                - rtgl-view d=h wrap g=sm av=e:
-                                    - rtgl-text s=h1: ${item.price}
-                                    - $if item.priceSuffix:
-                                        - rtgl-text c=mu-fg mb=xs: ${item.priceSuffix}
-                                - $if item.priceNote:
-                                    - rtgl-text s=sm c=mu-fg: ${item.priceNote}
-                            - $if item.features:
-                                - rtgl-view g=md:
-                                    - $for feature in item.features:
-                                        - rtgl-view d=h g=md av=s:
-                                            - rtgl-text c=mu-fg: •
-                                            - rtgl-text c=mu-fg w=1fg: ${feature}
-                            - $if item.cta:
-                                - $if item.cta.newTab:
-                                    - $if item.cta.variant:
-                                        - rtgl-button v="${item.cta.variant}" href="${item.cta.href}" new-tab mt=lg: ${item.cta.label}
-                                      $else:
-                                        - rtgl-button href="${item.cta.href}" new-tab mt=lg: ${item.cta.label}
-                                  $else:
-                                    - $if item.cta.variant:
-                                        - rtgl-button v="${item.cta.variant}" href="${item.cta.href}" mt=lg: ${item.cta.label}
-                                      $else:
-                                        - rtgl-button href="${item.cta.href}" mt=lg: ${item.cta.label}
+                                        - $if item.cta.variant:
+                                            - rtgl-button v="${item.cta.variant}" href="${item.cta.href}" mt=lg: ${item.cta.label}
+                                          $else:
+                                            - rtgl-button href="${item.cta.href}" mt=lg: ${item.cta.label}
