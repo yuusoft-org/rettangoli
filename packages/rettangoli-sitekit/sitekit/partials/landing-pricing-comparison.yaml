@@ -8,7 +8,7 @@
     - $if plans:
         - 'div style="overflow-x: auto; width: 100%;"':
             - 'rtgl-view style="min-width: 820px;"':
-                - rtgl-view d=h av=c bgc=bg pv=xs:
+                - rtgl-view d=h w=f av=c bgc=bg pv=xs:
                     - rtgl-view w="300" xl-w="260" lg-w="220" p=lg lg-p=md av=c:
                         - rtgl-text s=sm c=mu-fg: Feature
                     - $for plan in plans:
@@ -16,9 +16,10 @@
                             - rtgl-text s=h4 ta=c w=f: ${plan.title}
                             - $if plan.price:
                                 - rtgl-view g=xs ah=c:
-                                    - rtgl-text s=h3 ta=c w=f: ${plan.price}
-                                    - $if plan.priceSuffix:
-                                        - rtgl-text s=sm c=mu-fg ta=c w=f: ${plan.priceSuffix}
+                                    - rtgl-view d=h wrap g=xs ah=c av=e:
+                                        - rtgl-text s=h3: ${plan.price}
+                                        - $if plan.priceSuffix:
+                                            - rtgl-text s=sm c=mu-fg mb=xs: ${plan.priceSuffix}
                                     - $if plan.note:
                                         - rtgl-text s=sm c=mu-fg ta=c w=f: ${plan.note}
                             - $if plan.cta:
@@ -38,7 +39,7 @@
                 - $for row, rowIndex in rows:
                     - $if rowIndex > 0:
                         - rtgl-view h=1 bgc=bo:
-                    - rtgl-view d=h av=c pv=xs:
+                    - rtgl-view d=h w=f av=c pv=xs:
                         - rtgl-view w="300" xl-w="260" lg-w="220" ph=lg pv=md lg-ph=md lg-pv=md g=xs:
                             - rtgl-text w=f: ${row.label}
                             - $if row.description:
