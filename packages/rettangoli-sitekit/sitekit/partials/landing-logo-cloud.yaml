@@ -5,24 +5,24 @@
                 - rtgl-text s=h3 ta=c w=f: ${title}
                 - $if subtitle:
                     - rtgl-text s=lg c=mu-fg ta=c w=f: ${subtitle}
-        - rtgl-view h="64":
+        - rtgl-view h=xl:
       $else:
         - $if subtitle:
             - 'header style="display: contents;"':
                 - rtgl-view w=f g=lg ah=c:
                     - rtgl-text s=lg c=mu-fg ta=c w=f: ${subtitle}
-            - rtgl-view h="64":
+            - rtgl-view h=xl:
 
     - rtgl-grid cols="3" lg-cols="2" sm-cols="1" g=xl lg-g=lg w=f:
         - $for item in items:
             - rtgl-view w=f ah=c av=c:
                 - $if item.href:
                     - $if item.target:
-                        - 'rtgl-view href="${item.href}" target="${item.target}" d=h av=c ah=c w="220" lg-w="180" sm-w="180" h="80" cur=p':
+                        - 'rtgl-view href="${item.href}" target="${item.target}" d=h av=c ah=c w="220" lg-w="180" sm-w="200" h="80" cur=p':
                             - rtgl-image w=f h=f of=con src="${item.src}" alt="${item.alt}":
                       $else:
-                        - 'rtgl-view href="${item.href}" d=h av=c ah=c w="220" lg-w="180" sm-w="180" h="80" cur=p':
+                        - 'rtgl-view href="${item.href}" d=h av=c ah=c w="220" lg-w="180" sm-w="200" h="80" cur=p':
                             - rtgl-image w=f h=f of=con src="${item.src}" alt="${item.alt}":
                   $else:
-                    - rtgl-view d=h av=c ah=c w="220" lg-w="180" sm-w="180" h="80":
+                    - rtgl-view d=h av=c ah=c w="220" lg-w="180" sm-w="200" h="80":
                         - rtgl-image w=f h=f of=con src="${item.src}" alt="${item.alt}":
