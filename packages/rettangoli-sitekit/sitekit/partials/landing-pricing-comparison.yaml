@@ -14,15 +14,17 @@
                             - rtgl-text s=sm c=mu-fg: Feature
                         - $for plan in plans:
                             - rtgl-view w="1fg" p=lg lg-p=md g=sm ah=c:
-                                - rtgl-text s=h4 ta=c w=f: ${plan.title}
+                                - rtgl-view w=f ah=c:
+                                    - rtgl-text s=h4 ta=c: ${plan.title}
                                 - $if plan.price:
-                                    - rtgl-view g=xs ah=c:
+                                    - rtgl-view w=f g=xs ah=c:
                                         - rtgl-view d=h wrap g=xs ah=c av=e:
                                             - rtgl-text s=h3: ${plan.price}
                                             - $if plan.priceSuffix:
                                                 - rtgl-text s=sm c=mu-fg mb=xs: ${plan.priceSuffix}
                                         - $if plan.note:
-                                            - rtgl-text s=sm c=mu-fg ta=c w=f: ${plan.note}
+                                            - rtgl-view w=f ah=c:
+                                                - rtgl-text s=sm c=mu-fg ta=c: ${plan.note}
                                 - $if plan.cta:
                                     - $if plan.cta.newTab:
                                         - $if plan.cta.variant:
@@ -70,16 +72,17 @@
         - rtgl-view hide md-show w=f g=lg:
             - $for plan, planIndex in plans:
                 - rtgl-view d=v w=f bgc=mu bw=xs bc=bo br=xl shadow=sm p=lg g=lg:
-                    - rtgl-view g=sm:
-                        - rtgl-text s=h3 w=f ta=c: ${plan.title}
+                    - rtgl-view w=f g=sm ah=c:
+                        - rtgl-text s=h3 ta=c: ${plan.title}
                         - $if plan.price:
-                            - rtgl-view g=xs ah=c:
+                            - rtgl-view w=f g=xs ah=c:
                                 - rtgl-view d=h wrap g=xs ah=c av=e:
                                     - rtgl-text s=h2: ${plan.price}
                                     - $if plan.priceSuffix:
                                         - rtgl-text s=sm c=mu-fg mb=xs: ${plan.priceSuffix}
                                 - $if plan.note:
-                                    - rtgl-text s=sm c=mu-fg ta=c w=f: ${plan.note}
+                                    - rtgl-view w=f ah=c:
+                                        - rtgl-text s=sm c=mu-fg ta=c: ${plan.note}
                     - $if plan.cta:
                         - $if plan.cta.newTab:
                             - $if plan.cta.variant:
