@@ -23,6 +23,7 @@
                                             - rtgl-view d=h g=md av=s:
                                                 - rtgl-text c=mu-fg: •
                                                 - rtgl-text c=mu-fg w=1fg: ${bullet}
+                            - rtgl-view w=80 md-hide:
                             - rtgl-view w=1fg md-w=f:
                                 - $if feature.image:
                                     - $if feature.image.src:
@@ -48,6 +49,7 @@
                                   $else:
                                     - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
                                         - rtgl-text c=se-fg: Feature image
+                            - rtgl-view w=80 md-hide:
                             - rtgl-view w=1fg md-w=f g=lg:
                                 - rtgl-text s=h3 mb=sm: ${feature.title}
                                 - $if feature.subtitle:
