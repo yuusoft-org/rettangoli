@@ -12,7 +12,7 @@
                     - rtgl-view w="300" xl-w="260" lg-w="220" p=lg lg-p=md av=c:
                         - rtgl-text s=sm c=mu-fg: Feature
                     - $for plan in plans:
-                        - rtgl-view w="1fg" p=lg lg-p=md g=sm bwl=xs bc=bo ah=c:
+                        - rtgl-view w="1fg" p=lg lg-p=md g=sm ah=c:
                             - rtgl-text s=h4 ta=c w=f: ${plan.title}
                             - $if plan.price:
                                 - rtgl-view g=xs ah=c:
@@ -44,7 +44,7 @@
                             - $if row.description:
                                 - rtgl-text s=sm c=mu-fg w=f: ${row.description}
                         - $for cell in row.cells:
-                            - rtgl-view w="1fg" ph=lg pv=md lg-ph=md lg-pv=md bwl=xs bc=bo ah=c av=c:
+                            - rtgl-view w="1fg" ph=lg pv=md lg-ph=md lg-pv=md ah=c av=c:
                                 - $if cell.label:
                                     - rtgl-text ta=c w=f: ${cell.label}
                                   $else:
