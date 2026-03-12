@@ -7,8 +7,8 @@
 
     - $if plans:
         - 'div style="overflow-x: auto; width: 100%;"':
-            - rtgl-view w="980" xl-w="940" lg-w="900" md-w="860" sm-w="820" bgc=mu bw=xs bc=bo br=xl shadow=sm:
-                - rtgl-view d=h w=f bgc=bg bwb=xs bc=bo:
+            - 'rtgl-view w=f bgc=mu style="min-width: 820px;"':
+                - rtgl-view d=h w=f bgc=bg:
                     - rtgl-view w="300" xl-w="260" lg-w="220" p=lg lg-p=md av=c:
                         - rtgl-text s=sm c=mu-fg: Feature
                     - $for plan in plans:
@@ -33,14 +33,18 @@
                                       $else:
                                         - rtgl-button href="${plan.cta.href}" w=f mt=sm: ${plan.cta.label}
 
-                - $for row in rows:
+                - rtgl-view w=f h=1 bgc=bo:
+
+                - $for row, rowIndex in rows:
+                    - $if rowIndex > 0:
+                        - rtgl-view w=f h=1 bgc=bo:
                     - rtgl-view d=h w=f:
-                        - rtgl-view w="300" xl-w="260" lg-w="220" ph=lg pv=md lg-ph=md lg-pv=md bwb=xs bc=bo g=xs:
+                        - rtgl-view w="300" xl-w="260" lg-w="220" ph=lg pv=md lg-ph=md lg-pv=md g=xs:
                             - rtgl-text w=f: ${row.label}
                             - $if row.description:
                                 - rtgl-text s=sm c=mu-fg w=f: ${row.description}
                         - $for cell in row.cells:
-                            - rtgl-view w="1fg" ph=lg pv=md lg-ph=md lg-pv=md bwl=xs bwb=xs bc=bo ah=c av=c:
+                            - rtgl-view w="1fg" ph=lg pv=md lg-ph=md lg-pv=md bwl=xs bc=bo ah=c av=c:
                                 - $if cell.label:
                                     - rtgl-text ta=c w=f: ${cell.label}
                                   $else:
