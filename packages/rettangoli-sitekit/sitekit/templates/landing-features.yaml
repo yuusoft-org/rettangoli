@@ -4,10 +4,10 @@
           page: ${page}
           seo: ${seo}
           title: ${title}
-        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.7/dist/themes/base.css":
+        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.9/dist/themes/base.css":
         - link rel="stylesheet" href="/public/theme-rtgl-themes.css":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
-        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.7/dist/rettangoli-iife-ui.min.js":
+        - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.9/dist/rettangoli-iife-ui.min.js":
         - script src="/public/rtgl-icons.js":
 
     - body.slate-dark:
@@ -30,6 +30,13 @@
                           subtitle: ${landing.subtitle}
                           actions: ${landing.actions}
                           image: ${landing.image}
+
+                    - $if landing.logoCloud:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-logo-cloud
+                              title: ${landing.logoCloud.title}
+                              subtitle: ${landing.logoCloud.subtitle}
+                              items: ${landing.logoCloud.items}
 
                     - 'section style="display: contents;"':
                         - $partial: landing-features-section

@@ -16,6 +16,22 @@ landing:
   image:
     src: /public/blog-vt.svg
     alt: Product and documentation workflow preview
+  logoCloud:
+    title: Works For Customers, Partners, And Integrations
+    subtitle: Use one reusable logo cloud to show customers, ecosystem partners, featured platforms, or press mentions.
+    items:
+      - src: /public/logo-polaris.png
+        alt: Polaris
+      - src: /public/logo-lattice.png
+        alt: Lattice
+      - src: /public/logo-nimbus.png
+        alt: Nimbus
+      - src: /public/logo-foundry.png
+        alt: Foundry
+      - src: /public/logo-orbit.png
+        alt: Orbit
+      - src: /public/logo-harbor.png
+        alt: Harbor
   featuresTitle: Purpose-Built For Creator Workflows
   featuresSubtitle: Every section pairs visual context with practical guidance and concrete next steps.
   features:
