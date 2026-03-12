@@ -13,7 +13,7 @@
                     - rtgl-text s=lg c=mu-fg ta=c w=f: ${subtitle}
             - rtgl-view h=xl:
 
-    - rtgl-grid cols="3" lg-cols="2" sm-cols="1" g=xl lg-g=lg w=f:
+    - rtgl-grid cols="3" lg-cols="2" sm-cols="1" g=xl w=f:
         - $for item in items:
             - rtgl-view w=f ah=c av=c:
                 - $if item.href:
