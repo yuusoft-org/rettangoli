@@ -103,7 +103,6 @@ landing:
         cta:
           label: Start Small
           href: /docs/getting-started/
-          variant: se
       - title: Team
         description: For product teams shipping updates every week.
         price: $29
@@ -129,7 +128,6 @@ landing:
         cta:
           label: Talk Through Needs
           href: /docs/getting-started/
-          variant: se
   faq:
     title: Common Questions
     subtitle: Use an FAQ section when the page needs short answers to setup, usage, or rollout questions near the bottom.
