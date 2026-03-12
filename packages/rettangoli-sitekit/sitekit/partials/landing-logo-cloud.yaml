@@ -1,15 +1,17 @@
-- rtgl-view w=f g=lg pv=xl:
+- rtgl-view w=f g=xl pv=xl:
     - $if title:
         - 'header style="display: contents;"':
             - rtgl-view w=f g=lg ah=c:
                 - rtgl-text s=h3 ta=c w=f: ${title}
                 - $if subtitle:
                     - rtgl-text s=lg c=mu-fg ta=c w=f: ${subtitle}
+        - rtgl-view h="64":
       $else:
         - $if subtitle:
             - 'header style="display: contents;"':
                 - rtgl-view w=f g=lg ah=c:
                     - rtgl-text s=lg c=mu-fg ta=c w=f: ${subtitle}
+            - rtgl-view h="64":
 
     - rtgl-grid cols="3" lg-cols="2" sm-cols="1" g=xl lg-g=lg w=f:
         - $for item in items:
