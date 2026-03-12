@@ -33,18 +33,18 @@ landing:
       - src: /public/logo-placeholder.png
         alt: Placeholder
   iconFeatures:
-    title: Runtime Blocks For Modern Product Teams
-    subtitle: Combine fast compute, distributed coordination, and region-aware delivery in one section with simple icon-led messaging.
+    title: Flexible Highlight Blocks For Demo Pages
+    subtitle: Use icon-led cards to explain product value, workflow benefits, or key selling points in a compact reusable section.
     items:
       - icon: bolt
-        title: Start Isolated Workloads When Demand Shows Up
-        description: Launch short-lived runtimes for requests, jobs, or experiments without holding idle capacity between spikes.
+        title: Explain Fast Setup In One Scan
+        description: Pair a short heading with a concise supporting line so visitors understand the benefit without reading a long section.
       - icon: cluster
-        title: Keep Stateful Services And Workers In One Model
-        description: Pair application nodes, background processing, and shared infrastructure without adding orchestration layers to every change.
+        title: Group Related Product Benefits
+        description: Present multiple strengths side by side when you want a cleaner summary before longer feature walkthroughs below.
       - icon: globe
-        title: Put Responses Closer To Active Users
-        description: Run in the regions that matter most so latency stays low and the product feels fast by default.
+        title: Reuse The Same Pattern Across Pages
+        description: Swap icons and text to adapt the section for demos, landing pages, release notes, or product overviews.
   featuresTitle: Purpose-Built For Creator Workflows
   featuresSubtitle: Every section pairs visual context with practical guidance and concrete next steps.
   features:
