@@ -1,4 +1,5 @@
 - rtgl-view w=f g=xl pv=xl:
+    - rtgl-view h=80:
     - 'header style="display: contents;"':
         - rtgl-view w=f g=lg ah=c pv=xl:
             - rtgl-text s=h2 ta=c w=f mb=md: ${title}
