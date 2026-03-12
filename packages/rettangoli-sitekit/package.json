@@ -34,7 +34,7 @@
   ],
   "scripts": {
     "build": "bunx rtgl sites build --root-dir ./src --output-path ../_site",
-    "watch": "bunx rtgl sites watch --root-dir ./src --output-path ../_site --reload-mode full",
+    "watch": "bunx rtgl sites watch --root-dir ./src --output-path ../_site --reload-mode full --port 4173",
     "serve": "serve ./_site -l 4173",
     "preview": "bun run serve",
     "build:lab": "bun run build",

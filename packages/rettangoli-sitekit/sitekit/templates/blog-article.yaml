@@ -11,25 +11,31 @@
         - script src="/public/rtgl-icons.js":
 
     - body.slate-dark:
-        - rtgl-view pos=abs edge=t ah=c bgc=bg:
-            - $partial: top-navbar
-              brand: ${site.navbar.brand}
-              items: ${site.navbar.items}
-              ctas: ${site.navbar.ctas}
-              cta: ${site.navbar.cta}
-              github: ${site.navbar.github}
-        - rtgl-view w=f ah=c:
-            - rtgl-view md-hide h=64:
-            - rtgl-view hide md-show h=56:
-            - rtgl-view d=h g=xl w="1160" xl-w="1024" lg-w=f ph=lg pt=lg pb=xl:
-                - rtgl-view id=content-container w="1fg" g=md:
-                    - rtgl-text s=h1 mt=xl mb=sm: ${title}
-                    - rtgl-text s=sm c=mu-fg: ${author}
-                    - rtgl-text s=sm c=mu-fg: ${date}
-                    - rtgl-view h=1 bgc=mu op=0.5 w=f mt=lg mb=xl:
-                    - "${content}"
-                - 'rtgl-view lg-hide w=280 style="position: sticky; top: 88px; align-self: flex-start; height: calc(100vh - 88px)"':
-                    - rtgl-page-outline id=page-outline target-id=content-container offset-top=96:
+        - 'header style="display: contents;"':
+            - rtgl-view pos=abs edge=t ah=c bgc=bg:
+                - $partial: top-navbar
+                  brand: ${site.navbar.brand}
+                  items: ${site.navbar.items}
+                  ctas: ${site.navbar.ctas}
+                  cta: ${site.navbar.cta}
+                  github: ${site.navbar.github}
+        - 'main style="display: contents;"':
+            - rtgl-view w=f ah=c:
+                - rtgl-view md-hide h=64:
+                - rtgl-view hide md-show h=56:
+                - rtgl-view d=h g=xl w="1160" xl-w="1024" lg-w=f ph=lg pt=lg pb=xl:
+                    - 'article style="display: contents;"':
+                        - rtgl-view id=content-container w="1fg" g=md:
+                            - 'header style="display: contents;"':
+                                - rtgl-text s=h1 mt=xl mb=sm: ${title}
+                                - rtgl-text s=sm c=mu-fg: ${author}
+                                - rtgl-text s=sm c=mu-fg: ${date}
+                                - rtgl-view h=1 bgc=mu op=0.5 w=f mt=lg mb=xl:
+                            - "${content}"
+                    - 'aside style="display: contents;"':
+                        - 'rtgl-view lg-hide w=280 style="position: sticky; top: 88px; align-self: flex-start; height: calc(100vh - 88px)"':
+                            - 'nav aria-label="On this page" style="display: contents;"':
+                                - rtgl-page-outline id=page-outline target-id=content-container offset-top=96:
             - $partial: footer
               brand: ${site.footer.brand}
               columns: ${site.footer.columns}

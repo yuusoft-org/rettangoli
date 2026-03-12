@@ -44,10 +44,10 @@ bun run watch
 ```
 
 Open:
-- `http://127.0.0.1:3001/`
-- `http://127.0.0.1:3001/themes/slate-dark/`
-- `http://127.0.0.1:3001/templates/landing-features/`
-- `http://127.0.0.1:3001/templates/blog/article-list/`
+- `http://127.0.0.1:4173/`
+- `http://127.0.0.1:4173/themes/slate-dark/`
+- `http://127.0.0.1:4173/templates/landing-features/`
+- `http://127.0.0.1:4173/templates/blog/article-list/`
 
 Static preview flow:
 

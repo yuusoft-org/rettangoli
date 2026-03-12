@@ -1,1 +1,2 @@
-- rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(header))}" items="${encodeURIComponent(jsonStringify(items))}":
+- 'nav aria-label="Documentation navigation" style="display: contents;"':
+    - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(header))}" items="${encodeURIComponent(jsonStringify(items))}":

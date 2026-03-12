@@ -11,11 +11,13 @@
         - script src="/public/rtgl-icons.js":
 
     - body.slate-dark:
-        - rtgl-view:
-            - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
-                - $partial: navbar
-                  title: ${site.navbar.title}
-                  cta: ${site.navbar.cta}
+        - 'header style="display: contents;"':
+            - rtgl-view:
+                - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":
+                    - $partial: navbar
+                      title: ${site.navbar.title}
+                      cta: ${site.navbar.cta}
+        - 'main style="display: contents;"':
             - rtgl-view w=f:
                 - rtgl-view h="48":
                 - rtgl-view w="f" ah="c":

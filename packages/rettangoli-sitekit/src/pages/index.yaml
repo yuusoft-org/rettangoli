@@ -1,25 +1,21 @@
 ---
 template: preview-index
 title: Rettangoli Sitekit Preview
-description: Browse every local preview route for docs, templates, and themes from one page.
+description: Simple index of local preview routes for docs, templates, and themes.
 _bind:
   site: site
   seo: seo
+  themes: themes
 docsPages:
   - title: Getting Started
-    description: Local watch, build, serve, and VT workflow for this package.
     href: /docs/getting-started/
   - title: Configuration
-    description: Generator config, imports, navbar contract, and common failure modes.
     href: /docs/reference/configuration/
 templatePages:
   - title: Landing Features
-    description: Marketing-style hero, features, and CTA layout using the shared partial stack.
     href: /templates/landing-features/
   - title: Blog Article List
-    description: Responsive `rtgl-grid` card listing for article index pages.
     href: /templates/blog/article-list/
   - title: Blog Article
-    description: Long-form article layout for typography, rhythm, and mobile reading checks.
     href: /templates/blog/reducing-friction/
 ---

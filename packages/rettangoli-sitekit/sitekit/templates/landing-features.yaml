@@ -11,34 +11,39 @@
         - script src="/public/rtgl-icons.js":
 
     - body.slate-dark:
-        - rtgl-view pos=abs edge=t ah=c bgc=bg:
-            - $partial: top-navbar
-              brand: ${site.navbar.brand}
-              items: ${site.navbar.items}
-              ctas: ${site.navbar.ctas}
-              cta: ${site.navbar.cta}
-              github: ${site.navbar.github}
-        - rtgl-view w=f ah=c:
-            - rtgl-view md-hide h=64:
-            - rtgl-view hide md-show h=56:
-            - rtgl-view w="1160" xl-w="1024" lg-w=f ph=lg pt=lg pb=xl g=xl:
-                - $partial: landing-hero
-                  title: ${landing.title}
-                  subtitle: ${landing.subtitle}
-                  actions: ${landing.actions}
-                  image: ${landing.image}
+        - 'header style="display: contents;"':
+            - rtgl-view pos=abs edge=t ah=c bgc=bg:
+                - $partial: top-navbar
+                  brand: ${site.navbar.brand}
+                  items: ${site.navbar.items}
+                  ctas: ${site.navbar.ctas}
+                  cta: ${site.navbar.cta}
+                  github: ${site.navbar.github}
+        - 'main style="display: contents;"':
+            - rtgl-view w=f ah=c:
+                - rtgl-view md-hide h=64:
+                - rtgl-view hide md-show h=56:
+                - rtgl-view w="1160" xl-w="1024" lg-w=f ph=lg pt=lg pb=xl g=xl:
+                    - 'section style="display: contents;"':
+                        - $partial: landing-hero
+                          title: ${landing.title}
+                          subtitle: ${landing.subtitle}
+                          actions: ${landing.actions}
+                          image: ${landing.image}
 
-                - $partial: landing-features-section
-                  title: ${landing.featuresTitle}
-                  subtitle: ${landing.featuresSubtitle}
-                  items: ${landing.features}
+                    - 'section style="display: contents;"':
+                        - $partial: landing-features-section
+                          title: ${landing.featuresTitle}
+                          subtitle: ${landing.featuresSubtitle}
+                          items: ${landing.features}
 
-                - $if landing.cta:
-                    - $partial: landing-cta
-                      svg: ${landing.cta.svg}
-                      title: ${landing.cta.title}
-                      subtitle: ${landing.cta.subtitle}
-                      cta: ${landing.cta.cta}
+                    - $if landing.cta:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-cta
+                              svg: ${landing.cta.svg}
+                              title: ${landing.cta.title}
+                              subtitle: ${landing.cta.subtitle}
+                              cta: ${landing.cta.cta}
             - $partial: footer
               brand: ${site.footer.brand}
               columns: ${site.footer.columns}
