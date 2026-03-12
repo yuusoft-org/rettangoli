@@ -7,7 +7,7 @@
 
     - $if plans:
         - 'div style="overflow-x: auto; width: 100%;"':
-            - 'rtgl-view w=f bgc=mu style="min-width: 820px;"':
+            - 'rtgl-view w=f style="min-width: 820px;"':
                 - rtgl-view d=h w=f bgc=bg:
                     - rtgl-view w="300" xl-w="260" lg-w="220" p=lg lg-p=md av=c:
                         - rtgl-text s=sm c=mu-fg: Feature
