@@ -1,0 +1,78 @@
+---
+template: landing-features
+title: Landing Page with Proof Sections
+_bind:
+  seo: seo
+landing:
+  title: Add Trust Signals Without Leaving The Page
+  subtitle: Use static proof sections when visitors need reassurance, examples, and customer outcomes before they click through.
+  actions:
+    - label: Browse Themes
+      href: /themes/slate-dark/
+      variant: se
+    - label: Start Building
+      href: /docs/getting-started/
+      variant: pr
+  image:
+    src: /public/blog-vt.svg
+    alt: Social proof landing page preview
+  testimonialsGrid:
+    title: Add Social Proof Without A Carousel
+    subtitle: A static quote grid keeps the proof readable, easy to scan, and easy to maintain in source control.
+    items:
+      - quote: Shipping a new announcement page stopped feeling like a custom design sprint every single time.
+        author: Talia Reed
+        role: Content lead
+        company: Example Forge
+        outcome: The team now reuses the same structure across launches and reviews changes faster.
+      - quote: We finally had a landing system that product, marketing, and ops could all edit without confusion.
+        author: Niko Vale
+        role: Product marketer
+        company: Demo Harbor
+        outcome: Shared sections removed most of the back-and-forth around layout decisions.
+      - quote: The preview flow made small spacing fixes obvious before they reached production.
+        author: Mina Hart
+        role: Design systems manager
+        company: Fixture House
+        outcome: Reviews became shorter because the page already looked close to final when it arrived.
+      - quote: We used one kit for launch, docs, and follow-up content instead of maintaining three separate page styles.
+        author: Owen Pike
+        role: Web operations lead
+        company: Sample Works
+        outcome: The team cut repeated build time and kept the whole site more consistent.
+  trustBlock:
+    title: Handle Trust Questions Before They Stall The Deal
+    subtitle: Trust sections are useful when the buyer needs operational reassurance without leaving the landing page for separate documentation.
+    items:
+      - title: Review-friendly content structure
+        description: Reusable sections make it easier for legal, brand, and launch reviewers to inspect the same patterns each time.
+      - title: Stable publishing conventions
+        description: Shared layout tokens reduce surprises when teams add pricing, proof, FAQ, or roadmap content late in the cycle.
+      - title: Clear ownership across teams
+        description: Structured fields help marketing, product, and web teams update the same page without stepping on each other.
+      - title: Lower regression risk
+        description: Screenshot checks and preview review loops make visual changes easier to verify before publishing.
+  caseStudies:
+    title: Show Outcome Stories In More Than One Sentence
+    subtitle: Mini case-study cards give a little more context than testimonials when the page needs proof tied to a concrete workflow change.
+    items:
+      - company: Example Forge
+        challenge: The team needed one repeatable launch page structure for multiple feature drops.
+        outcome: They standardized the page flow from hero through CTA and reused it across releases.
+        metric: Five launches reused the same section set in one quarter.
+      - company: Demo Harbor
+        challenge: Reviews kept stalling because layout and content decisions were mixed together.
+        outcome: Structured sections let reviewers focus on message quality instead of rechecking page scaffolding.
+        metric: Approval time dropped from days to one review cycle.
+      - company: Fixture House
+        challenge: Docs, campaign pages, and proof sections were drifting apart visually.
+        outcome: A shared site kit brought those surfaces back under one consistent content model.
+        metric: Three page types now ship from one reusable pattern library.
+  cta:
+    title: Add Trust Before The Final CTA
+    subtitle: Use quotes, operational reassurance, and short case studies to reduce hesitation on longer landing pages.
+    cta:
+      label: Start Building
+      href: /docs/getting-started/
+      variant: pr
+---

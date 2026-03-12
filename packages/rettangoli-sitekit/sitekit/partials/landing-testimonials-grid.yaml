@@ -1,0 +1,21 @@
+- rtgl-view w=f pv=xl g=xl:
+    - 'header style="display: contents;"':
+        - rtgl-view w=f g=lg ah=c pv=xl:
+            - rtgl-text s=h2 ta=c w=f mb=md: ${title}
+            - $if subtitle:
+                - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${subtitle}
+
+    - $if items:
+        - rtgl-grid cols="2" sm-cols="1" g=xl w=f:
+            - $for item in items:
+                - 'article style="display: contents;"':
+                    - rtgl-view w=f h=f p=xl g=lg bw=xs bc=bo bgc=se br=xl:
+                        - rtgl-text s=lg: "${item.quote}"
+                        - $if item.outcome:
+                            - rtgl-text c=mu-fg: ${item.outcome}
+                        - rtgl-view w=f bwt=xs bc=bo pt=md g=xs:
+                            - rtgl-text fw=bold: ${item.author}
+                            - $if item.role:
+                                - rtgl-text s=sm c=mu-fg: ${item.role}
+                            - $if item.company:
+                                - rtgl-text s=sm c=mu-fg: ${item.company}

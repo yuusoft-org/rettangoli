@@ -31,12 +31,26 @@
                           actions: ${landing.actions}
                           image: ${landing.image}
 
+                    - $if landing.statsBand:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-stats-band
+                              title: ${landing.statsBand.title}
+                              subtitle: ${landing.statsBand.subtitle}
+                              items: ${landing.statsBand.items}
+
                     - $if landing.logoCloud:
                         - 'section style="display: contents;"':
                             - $partial: landing-logo-cloud
                               title: ${landing.logoCloud.title}
                               subtitle: ${landing.logoCloud.subtitle}
                               items: ${landing.logoCloud.items}
+
+                    - $if landing.useCases:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-use-cases
+                              title: ${landing.useCases.title}
+                              subtitle: ${landing.useCases.subtitle}
+                              items: ${landing.useCases.items}
 
                     - $if landing.iconFeatures:
                         - 'section style="display: contents;"':
@@ -45,6 +59,50 @@
                               subtitle: ${landing.iconFeatures.subtitle}
                               items: ${landing.iconFeatures.items}
 
+                    - $if landing.featureMosaic:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-feature-mosaic
+                              title: ${landing.featureMosaic.title}
+                              subtitle: ${landing.featureMosaic.subtitle}
+                              lead: ${landing.featureMosaic.lead}
+                              items: ${landing.featureMosaic.items}
+
+                    - $if landing.integrations:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-integrations
+                              title: ${landing.integrations.title}
+                              subtitle: ${landing.integrations.subtitle}
+                              items: ${landing.integrations.items}
+
+                    - $if landing.howItWorks:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-how-it-works
+                              title: ${landing.howItWorks.title}
+                              subtitle: ${landing.howItWorks.subtitle}
+                              items: ${landing.howItWorks.items}
+
+                    - $if landing.beforeAfter:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-before-after
+                              title: ${landing.beforeAfter.title}
+                              subtitle: ${landing.beforeAfter.subtitle}
+                              before: ${landing.beforeAfter.before}
+                              after: ${landing.beforeAfter.after}
+
+                    - $if landing.testimonialsGrid:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-testimonials-grid
+                              title: ${landing.testimonialsGrid.title}
+                              subtitle: ${landing.testimonialsGrid.subtitle}
+                              items: ${landing.testimonialsGrid.items}
+
+                    - $if landing.trustBlock:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-trust-block
+                              title: ${landing.trustBlock.title}
+                              subtitle: ${landing.trustBlock.subtitle}
+                              items: ${landing.trustBlock.items}
+
                     - $if landing.fullImage:
                         - 'section style="display: contents;"':
                             - $partial: landing-full-image
@@ -52,11 +110,19 @@
                               sectionSubtitle: ${landing.fullImage.subtitle}
                               image: ${landing.fullImage.image}
 
-                    - 'section style="display: contents;"':
-                        - $partial: landing-features-section
-                          title: ${landing.featuresTitle}
-                          subtitle: ${landing.featuresSubtitle}
-                          items: ${landing.features}
+                    - $if landing.features:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-features-section
+                              title: ${landing.featuresTitle}
+                              subtitle: ${landing.featuresSubtitle}
+                              items: ${landing.features}
+
+                    - $if landing.caseStudies:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-case-studies
+                              title: ${landing.caseStudies.title}
+                              subtitle: ${landing.caseStudies.subtitle}
+                              items: ${landing.caseStudies.items}
 
                     - $if landing.pricing:
                         - 'section style="display: contents;"':
@@ -72,6 +138,13 @@
                               subtitle: ${landing.pricingComparison.subtitle}
                               plans: ${landing.pricingComparison.plans}
                               rows: ${landing.pricingComparison.rows}
+
+                    - $if landing.roadmap:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-roadmap
+                              title: ${landing.roadmap.title}
+                              subtitle: ${landing.roadmap.subtitle}
+                              items: ${landing.roadmap.items}
 
                     - $if landing.faq:
                         - 'section style="display: contents;"':

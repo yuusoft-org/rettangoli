@@ -1,0 +1,34 @@
+- rtgl-view w=f pv=xl g=xl:
+    - 'header style="display: contents;"':
+        - rtgl-view w=f g=lg ah=c pv=xl:
+            - rtgl-text s=h2 ta=c w=f mb=md: ${title}
+            - $if subtitle:
+                - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${subtitle}
+
+    - rtgl-grid cols="2" sm-cols="1" g=xl w=f:
+        - 'article style="display: contents;"':
+            - rtgl-view w=f h=f p=xl g=lg bgc=mu bw=xs bc=bo br=xl:
+                - $if before.label:
+                    - rtgl-text s=sm c=mu-fg: ${before.label}
+                - rtgl-text s=h3: ${before.title}
+                - $if before.description:
+                    - rtgl-text c=mu-fg: ${before.description}
+                - $if before.bullets:
+                    - rtgl-view g=md:
+                        - $for bullet in before.bullets:
+                            - rtgl-view d=h g=md av=s:
+                                - rtgl-text c=mu-fg: •
+                                - rtgl-text c=mu-fg w=1fg: ${bullet}
+        - 'article style="display: contents;"':
+            - rtgl-view w=f h=f p=xl g=lg bgc=se bw=xs bc=bo br=xl:
+                - $if after.label:
+                    - rtgl-text s=sm c=mu-fg: ${after.label}
+                - rtgl-text s=h3: ${after.title}
+                - $if after.description:
+                    - rtgl-text c=mu-fg: ${after.description}
+                - $if after.bullets:
+                    - rtgl-view g=md:
+                        - $for bullet in after.bullets:
+                            - rtgl-view d=h g=md av=s:
+                                - rtgl-text c=mu-fg: •
+                                - rtgl-text c=mu-fg w=1fg: ${bullet}

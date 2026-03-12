@@ -16,6 +16,22 @@ landing:
   image:
     src: /public/blog-vt.svg
     alt: Product and documentation workflow preview
+  statsBand:
+    title: Show Concrete Signals Fast
+    subtitle: Use a compact metrics row when a landing page needs immediate proof before the reader reaches deeper sections.
+    items:
+      - value: 42%
+        label: Faster page setup
+        context: Teams reuse stable sections instead of rebuilding launch pages from scratch.
+      - value: "18"
+        label: Reusable page blocks
+        context: One shared kit covers hero, proof, pricing, roadmap, and FAQ content.
+      - value: 7m
+        label: Review loop
+        context: Stakeholders can scan a preview and respond in one short pass.
+      - value: 99.9%
+        label: Publishing confidence
+        context: Repeated layouts reduce last-minute regressions across site updates.
   logoCloud:
     title: Works For Customers, Partners, And Integrations
     subtitle: Use one reusable logo cloud to show customers, ecosystem partners, featured platforms, or press mentions.
@@ -32,27 +48,22 @@ landing:
         alt: FixtureLab
       - src: /public/logo-placeholder.png
         alt: Placeholder
-  iconFeatures:
-    title: Flexible Highlight Blocks For Demo Pages
-    subtitle: Use icon-led cards to explain product value, workflow benefits, or key selling points in a compact reusable section.
+  useCases:
+    title: Adapt The Same Template To Different Teams
+    subtitle: Audience cards help one landing page speak to multiple internal owners without mixing their priorities together.
     items:
-      - image:
-          src: /public/logo-exampleco.png
-          alt: Example image badge
-        title: Explain Fast Setup In One Scan
-        description: Pair a short heading with a concise supporting line so visitors understand the benefit without reading a long section.
-      - icon: cluster
-        title: Group Related Product Benefits
-        description: Present multiple strengths side by side when you want a cleaner summary before longer feature walkthroughs below.
-      - icon: globe
-        title: Reuse The Same Pattern Across Pages
-        description: Swap icons and text to adapt the section for demos, landing pages, release notes, or product overviews.
-  fullImage:
-    title: Show One Large Product Visual
-    subtitle: Use a single full-width image block when one screenshot or illustration should carry the whole section.
-    image:
-      src: /public/blog-vt.svg
-      alt: Full width product showcase preview
+      - eyebrow: Marketing teams
+        title: Launch pages that stay on-brand
+        pain: Campaign teams need new pages fast but cannot afford one-off layouts every release.
+        fit: Reusable sections keep the message consistent while making new launches quicker to assemble.
+      - eyebrow: Product teams
+        title: Feature stories that stay structured
+        pain: Release notes, positioning, and proof points often drift across separate content documents.
+        fit: Shared blocks turn feature messaging into one maintained source instead of multiple rewrites.
+      - eyebrow: Operations teams
+        title: Approval flows that are easier to review
+        pain: Reviewers lose time checking spacing, content placement, and CTA consistency on every page.
+        fit: Repeatable section patterns make visual review faster and lower the chance of missing regressions.
   featuresTitle: Purpose-Built For Creator Workflows
   featuresSubtitle: Every section pairs visual context with practical guidance and concrete next steps.
   features:
@@ -88,112 +99,6 @@ landing:
         - Ship layout improvements once and propagate them across pages.
         - Validate updates with screenshot checks before publishing.
         - Keep authoring simple by editing YAML data instead of hardcoded markup.
-  pricing:
-    title: Compare Plans In A Reusable Grid
-    subtitle: Use surfaced plan cards to summarize pricing before the detailed comparison matrix below.
-    items:
-      - title: Starter
-        description: For small demos and straightforward launch pages.
-        price: Free
-        priceNote: Good for early experiments and single-site projects.
-        features:
-          - One published site
-          - Shared theme support
-          - Reusable landing sections
-        cta:
-          label: Start Small
-          href: /docs/getting-started/
-      - title: Team
-        description: For product teams shipping updates every week.
-        price: $29
-        priceSuffix: /month
-        priceNote: Balanced for active publishing and broader collaboration.
-        size: lg
-        features:
-          - Multiple content surfaces
-          - Shared preview workflow
-          - Flexible CTA and FAQ sections
-        cta:
-          label: Choose Team
-          href: /docs/getting-started/
-          variant: pr
-      - title: Enterprise
-        description: For larger rollouts and custom delivery needs.
-        price: Custom
-        priceNote: Best when teams need tailored governance and rollout support.
-        features:
-          - Custom rollout guidance
-          - Review-ready content structure
-          - Extended implementation support
-        cta:
-          label: Talk Through Needs
-          href: /docs/getting-started/
-  pricingComparison:
-    title: Compare Plan Access At A Glance
-    subtitle: Use a feature matrix when visitors need a quick line-by-line comparison before they choose a plan.
-    plans:
-      - title: Starter
-        price: Free
-        note: Best for first demos
-        cta:
-          label: Start Small
-          href: /docs/getting-started/
-      - title: Team
-        price: $29
-        priceSuffix: /month
-        note: Best for active teams
-        cta:
-          label: Choose Team
-          href: /docs/getting-started/
-          variant: pr
-      - title: Enterprise
-        price: Custom
-        note: Best for tailored rollout support
-        cta:
-          label: Talk Through Needs
-          href: /docs/getting-started/
-    rows:
-      - label: Published sites
-        description: How many public sites can share one account.
-        cells:
-          - label: One
-          - label: Up to five
-          - label: Unlimited
-      - label: Reusable landing sections
-        cells:
-          - included: true
-          - included: true
-          - included: true
-      - label: Docs and blog templates
-        cells:
-          - included: false
-          - included: true
-          - included: true
-      - label: Shared preview workflow
-        cells:
-          - included: false
-          - included: true
-          - included: true
-      - label: Approval and rollout support
-        cells:
-          - included: false
-          - included: false
-          - label: Custom
-      - label: Migration help
-        cells:
-          - included: false
-          - label: Available
-          - label: Included
-  faq:
-    title: Common Questions
-    subtitle: Use an FAQ section when the page needs short answers to setup, usage, or rollout questions near the bottom.
-    items:
-      - question: Can this section work with simple text-only answers?
-        answer: Yes. Each item uses the built-in accordion component with a question label and a short answer body.
-      - question: Do I need custom scripting to use the FAQ section?
-        answer: No. The accordion behavior comes from the standard Rettangoli UI bundle already used by this template.
-      - question: Can teams rewrite the FAQ copy for other page types?
-        answer: Yes. The content is data-driven, so the same section can be reused for demos, product pages, or documentation overviews.
   cta:
     title: Ready To Launch Faster?
     subtitle: Reuse the same partial-based approach to ship landing, docs, and blog pages with less maintenance.

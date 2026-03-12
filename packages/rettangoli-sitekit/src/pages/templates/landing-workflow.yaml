@@ -1,0 +1,99 @@
+---
+template: landing-features
+title: Landing Page with Workflow Sections
+_bind:
+  seo: seo
+landing:
+  title: Explain The Workflow Without Overloading The Hero
+  subtitle: Break longer product stories into reusable sections that show scope, sequence, change, and visual proof.
+  actions:
+    - label: Browse Themes
+      href: /themes/slate-dark/
+      variant: se
+    - label: Start Building
+      href: /docs/getting-started/
+      variant: pr
+  image:
+    src: /public/blog-partials.svg
+    alt: Workflow-focused landing page preview
+  integrations:
+    title: Explain The Workflow Surface Area
+    subtitle: Show grouped capabilities instead of a flat logo list when integrations need context around what they actually unlock.
+    items:
+      - title: Content intake
+        description: Collect requests, briefs, and raw assets in one repeatable handoff.
+        tools:
+          - Brief Box
+          - Intake Lane
+          - Asset Shelf
+      - title: Review and approval
+        description: Give reviewers one clear preview path before the page goes live.
+        tools:
+          - Proof Desk
+          - Checkpoint
+          - Signoff Pad
+      - title: Publishing workflow
+        description: Move approved content into shared sections without rebuilding the page each time.
+        tools:
+          - Launch Queue
+          - Release Desk
+          - Publish Flow
+      - title: Measurement follow-up
+        description: Keep outcomes close to the page system so the next launch starts smarter.
+        tools:
+          - Signal Board
+          - Metric Note
+          - Outcome Log
+  howItWorks:
+    title: Explain The Flow In Four Steps
+    subtitle: A step section works well when the page needs to make the process feel obvious and low-friction.
+    items:
+      - step: "01"
+        title: Pick the section mix
+        description: Start with the parts the page needs, such as proof, pricing, FAQs, and rollout details.
+        note: Keep the first draft narrow so the message stays clear.
+      - step: "02"
+        title: Drop in page-ready copy
+        description: Add structured content to each section instead of rewriting page layout markup by hand.
+        note: Shared fields make updates easier to review later.
+      - step: "03"
+        title: Review the preview
+        description: Check the live page with a browser capture before the content is approved.
+        note: Visual checks catch spacing and hierarchy issues quickly.
+      - step: "04"
+        title: Reuse the pattern again
+        description: Carry the same section set into the next launch, docs page, or campaign variant.
+        note: Repeatable layouts reduce rework over time.
+  beforeAfter:
+    title: Show The Workflow Difference Clearly
+    subtitle: A direct before-and-after comparison helps when the value comes from reducing manual work rather than adding one isolated feature.
+    before:
+      label: Before
+      title: Manual page assembly with inconsistent structure
+      description: Teams rebuild the same commercial sections for every launch and lose time resolving layout drift.
+      bullets:
+        - Copy lives in scattered notes instead of reusable blocks.
+        - Reviewers spend time checking structure instead of message quality.
+        - Each new page risks spacing and hierarchy regressions.
+    after:
+      label: After
+      title: One reusable system for repeatable launch pages
+      description: Shared sections turn the whole page into maintainable content instead of ad hoc markup.
+      bullets:
+        - Teams compose pages from a stable set of production-ready sections.
+        - Reviews focus on message clarity and launch readiness.
+        - The next page starts from a trusted baseline rather than zero.
+  fullImage:
+    title: Show One Large Product Visual
+    subtitle: Use a single full-width image block when one screenshot or illustration should carry the whole section.
+    image:
+      src: /public/blog-vt.svg
+      alt: Full width product showcase preview
+  cta:
+    title: Show The Whole Flow More Clearly
+    subtitle: Reusable workflow sections make longer landing pages easier to follow and easier to update.
+    cta:
+      label: Start Building
+      href: /docs/getting-started/
+      variant: pr
+---
