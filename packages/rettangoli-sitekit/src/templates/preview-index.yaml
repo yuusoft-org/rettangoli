@@ -21,7 +21,7 @@
         - rtgl-view w=f ah=c:
             - rtgl-view md-hide h=64:
             - rtgl-view hide md-show h=56:
-            - rtgl-view w="880" lg-w=f ph=lg pt=xl pb=xl g=xl:
+            - rtgl-view w="1160" xl-w="1024" lg-w=f ph=lg pt=xl pb=xl g=xl:
                 - rtgl-view w=f g=sm:
                     - rtgl-text s=xs c=mu-fg: SITEKIT PREVIEW
                     - rtgl-text s=h1: ${title}
