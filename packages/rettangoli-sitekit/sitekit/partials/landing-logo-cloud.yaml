@@ -18,11 +18,11 @@
             - rtgl-view w=f ah=c av=c:
                 - $if item.href:
                     - $if item.target:
-                        - 'rtgl-view href="${item.href}" target="${item.target}" d=h av=c ah=c w="220" lg-w="180" sm-w="140" h="80" cur=p':
+                        - 'rtgl-view href="${item.href}" target="${item.target}" d=h av=c ah=c w="220" lg-w="180" sm-w="180" h="80" cur=p':
                             - rtgl-image w=f h=f of=con src="${item.src}" alt="${item.alt}":
                       $else:
-                        - 'rtgl-view href="${item.href}" d=h av=c ah=c w="220" lg-w="180" sm-w="140" h="80" cur=p':
+                        - 'rtgl-view href="${item.href}" d=h av=c ah=c w="220" lg-w="180" sm-w="180" h="80" cur=p':
                             - rtgl-image w=f h=f of=con src="${item.src}" alt="${item.alt}":
                   $else:
-                    - rtgl-view d=h av=c ah=c w="220" lg-w="180" sm-w="140" h="80":
+                    - rtgl-view d=h av=c ah=c w="220" lg-w="180" sm-w="180" h="80":
                         - rtgl-image w=f h=f of=con src="${item.src}" alt="${item.alt}":
