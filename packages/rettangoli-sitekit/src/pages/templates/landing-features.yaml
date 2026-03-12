@@ -32,6 +32,27 @@ landing:
         alt: FixtureLab
       - src: /public/logo-placeholder.png
         alt: Placeholder
+  iconFeatures:
+    title: Flexible Highlight Blocks For Demo Pages
+    subtitle: Use icon-led cards to explain product value, workflow benefits, or key selling points in a compact reusable section.
+    items:
+      - image:
+          src: /public/logo-exampleco.png
+          alt: Example image badge
+        title: Explain Fast Setup In One Scan
+        description: Pair a short heading with a concise supporting line so visitors understand the benefit without reading a long section.
+      - icon: cluster
+        title: Group Related Product Benefits
+        description: Present multiple strengths side by side when you want a cleaner summary before longer feature walkthroughs below.
+      - icon: globe
+        title: Reuse The Same Pattern Across Pages
+        description: Swap icons and text to adapt the section for demos, landing pages, release notes, or product overviews.
+  fullImage:
+    title: Show One Large Product Visual
+    subtitle: Use a single full-width image block when one screenshot or illustration should carry the whole section.
+    image:
+      src: /public/blog-vt.svg
+      alt: Full width product showcase preview
   featuresTitle: Purpose-Built For Creator Workflows
   featuresSubtitle: Every section pairs visual context with practical guidance and concrete next steps.
   features:
@@ -44,6 +65,10 @@ landing:
         - Align headline and supporting narrative around one clear business outcome.
         - Keep section-level copy concise so visitors reach key actions faster.
         - Reuse stable content blocks across landing, docs, and blog templates.
+      cta:
+        label: Explore The Theme Preview
+        href: /themes/slate-dark/
+        variant: pr
     - title: Build Trust Through Consistent Presentation
       subtitle: Consistency across pages improves clarity for both first-time and returning visitors.
       imageRight: true
@@ -63,6 +88,16 @@ landing:
         - Ship layout improvements once and propagate them across pages.
         - Validate updates with screenshot checks before publishing.
         - Keep authoring simple by editing YAML data instead of hardcoded markup.
+  faq:
+    title: Common Questions
+    subtitle: Use an FAQ section when the page needs short answers to setup, usage, or rollout questions near the bottom.
+    items:
+      - question: Can this section work with simple text-only answers?
+        answer: Yes. Each item uses the built-in accordion component with a question label and a short answer body.
+      - question: Do I need custom scripting to use the FAQ section?
+        answer: No. The accordion behavior comes from the standard Rettangoli UI bundle already used by this template.
+      - question: Can teams rewrite the FAQ copy for other page types?
+        answer: Yes. The content is data-driven, so the same section can be reused for demos, product pages, or documentation overviews.
   cta:
     title: Ready To Launch Faster?
     subtitle: Reuse the same partial-based approach to ship landing, docs, and blog pages with less maintenance.

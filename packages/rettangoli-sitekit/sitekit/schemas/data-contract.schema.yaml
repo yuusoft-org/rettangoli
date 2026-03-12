@@ -39,6 +39,12 @@ properties:
         $ref: '#/$defs/partial.landingHero'
       landing-logo-cloud:
         $ref: '#/$defs/partial.landingLogoCloud'
+      landing-icon-features:
+        $ref: '#/$defs/partial.landingIconFeatures'
+      landing-full-image:
+        $ref: '#/$defs/partial.landingFullImage'
+      landing-faq:
+        $ref: '#/$defs/partial.landingFaq'
       landing-features-section:
         $ref: '#/$defs/partial.landingFeaturesSection'
       landing-cta:
@@ -269,6 +275,77 @@ $defs:
         type: array
         items:
           $ref: '#/$defs/types.landingLogoItem'
+  types.landingIconFeatureItem:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    anyOf:
+    - required:
+      - icon
+    - required:
+      - image
+    properties:
+      icon:
+        $ref: '#/$defs/types.nonEmptyString'
+      image:
+        $ref: '#/$defs/types.landingImage'
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        type: string
+  types.landingIconFeaturesModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingIconFeatureItem'
+  types.landingFullImageModel:
+    type: object
+    additionalProperties: true
+    required:
+    - image
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      image:
+        $ref: '#/$defs/types.landingImage'
+  types.landingFaqItem:
+    type: object
+    additionalProperties: true
+    required:
+    - question
+    - answer
+    properties:
+      question:
+        $ref: '#/$defs/types.nonEmptyString'
+      answer:
+        $ref: '#/$defs/types.nonEmptyString'
+  types.landingFaqModel:
+    type: object
+    additionalProperties: true
+    required:
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingFaqItem'
   types.landingFeatureItem:
     type: object
     additionalProperties: true
@@ -287,6 +364,8 @@ $defs:
         type: array
         items:
           type: string
+      cta:
+        $ref: '#/$defs/types.cta'
   types.landingCtaModel:
     type: object
     additionalProperties: true
@@ -320,6 +399,12 @@ $defs:
         $ref: '#/$defs/types.landingImage'
       logoCloud:
         $ref: '#/$defs/types.landingLogoCloudModel'
+      iconFeatures:
+        $ref: '#/$defs/types.landingIconFeaturesModel'
+      fullImage:
+        $ref: '#/$defs/types.landingFullImageModel'
+      faq:
+        $ref: '#/$defs/types.landingFaqModel'
       featuresTitle:
         $ref: '#/$defs/types.nonEmptyString'
       featuresSubtitle:
@@ -731,6 +816,34 @@ $defs:
         $ref: '#/$defs/types.landingImage'
   partial.landingLogoCloud:
     $ref: '#/$defs/types.landingLogoCloudModel'
+  partial.landingIconFeatures:
+    $ref: '#/$defs/types.landingIconFeaturesModel'
+  partial.landingFullImage:
+    type: object
+    additionalProperties: true
+    required:
+    - image
+    properties:
+      sectionTitle:
+        $ref: '#/$defs/types.nonEmptyString'
+      sectionSubtitle:
+        type: string
+      image:
+        $ref: '#/$defs/types.landingImage'
+  partial.landingFaq:
+    type: object
+    additionalProperties: true
+    required:
+    - items
+    properties:
+      sectionTitle:
+        $ref: '#/$defs/types.nonEmptyString'
+      sectionSubtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingFaqItem'
   partial.landingFeaturesSection:
     type: object
     additionalProperties: true
