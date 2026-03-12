@@ -788,7 +788,17 @@ $defs:
   partial.landingIconFeatures:
     $ref: '#/$defs/types.landingIconFeaturesModel'
   partial.landingFullImage:
-    $ref: '#/$defs/types.landingFullImageModel'
+    type: object
+    additionalProperties: true
+    required:
+    - image
+    properties:
+      sectionTitle:
+        $ref: '#/$defs/types.nonEmptyString'
+      sectionSubtitle:
+        type: string
+      image:
+        $ref: '#/$defs/types.landingImage'
   partial.landingFeaturesSection:
     type: object
     additionalProperties: true

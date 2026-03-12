@@ -48,6 +48,8 @@ landing:
         title: Reuse The Same Pattern Across Pages
         description: Swap icons and text to adapt the section for demos, landing pages, release notes, or product overviews.
   fullImage:
+    title: Show One Large Product Visual
+    subtitle: Use a single full-width image block when one screenshot or illustration should carry the whole section.
     image:
       src: /public/blog-vt.svg
       alt: Full width product showcase preview

@@ -1,15 +1,15 @@
 - rtgl-view w=f pv=xl:
-    - $if title:
+    - $if sectionTitle:
         - 'header style="display: contents;"':
             - rtgl-view w=f g=lg ah=c pv=xl:
-                - rtgl-text s=h2 ta=c w=f mb=md: ${title}
-                - $if subtitle:
-                    - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${subtitle}
+                - rtgl-text s=h2 ta=c w=f mb=md: ${sectionTitle}
+                - $if sectionSubtitle:
+                    - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${sectionSubtitle}
       $else:
-        - $if subtitle:
+        - $if sectionSubtitle:
             - 'header style="display: contents;"':
                 - rtgl-view w=f g=lg ah=c pv=xl:
-                    - rtgl-text s=lg c=mu-fg ta=c w=f mb=xl: ${subtitle}
+                    - rtgl-text s=lg c=mu-fg ta=c w=f mb=xl: ${sectionSubtitle}
 
     - $if image:
         - $if image.src:
