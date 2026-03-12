@@ -10,7 +10,7 @@
             - $for feature in items:
                 - $if feature.imageRight:
                     - 'section style="display: contents;"':
-                        - rtgl-view h=64:
+                        - rtgl-view h=120:
                         - 'rtgl-view d=h md-d=v g=xl w=f av=c':
                             - rtgl-view w=1fg md-w=f g=lg:
                                 - rtgl-text s=h3 mb=sm: ${feature.title}
@@ -32,10 +32,10 @@
                                   $else:
                                     - rtgl-view w=f h=360 md-h=280 bw=xs bc=bo bgc=se br=md ah=c av=c:
                                         - rtgl-text c=se-fg: Feature image
-                        - rtgl-view h=64:
+                        - rtgl-view h=120:
                   $else:
                     - 'section style="display: contents;"':
-                        - rtgl-view h=64:
+                        - rtgl-view h=120:
                         - 'rtgl-view d=h md-d=v g=xl w=f av=c':
                             - rtgl-view w=1fg md-w=f:
                                 - $if feature.image:
@@ -57,4 +57,4 @@
                                             - rtgl-view d=h g=md av=s:
                                                 - rtgl-text c=mu-fg: •
                                                 - rtgl-text c=mu-fg w=1fg: ${bullet}
-                        - rtgl-view h=64:
+                        - rtgl-view h=120:
