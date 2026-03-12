@@ -38,6 +38,13 @@
                               subtitle: ${landing.logoCloud.subtitle}
                               items: ${landing.logoCloud.items}
 
+                    - $if landing.iconFeatures:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-icon-features
+                              title: ${landing.iconFeatures.title}
+                              subtitle: ${landing.iconFeatures.subtitle}
+                              items: ${landing.iconFeatures.items}
+
                     - 'section style="display: contents;"':
                         - $partial: landing-features-section
                           title: ${landing.featuresTitle}

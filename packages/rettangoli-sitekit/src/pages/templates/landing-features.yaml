@@ -32,6 +32,19 @@ landing:
         alt: FixtureLab
       - src: /public/logo-placeholder.png
         alt: Placeholder
+  iconFeatures:
+    title: Runtime Blocks For Modern Product Teams
+    subtitle: Combine fast compute, distributed coordination, and region-aware delivery in one section with simple icon-led messaging.
+    items:
+      - icon: bolt
+        title: Start Isolated Workloads When Demand Shows Up
+        description: Launch short-lived runtimes for requests, jobs, or experiments without holding idle capacity between spikes.
+      - icon: cluster
+        title: Keep Stateful Services And Workers In One Model
+        description: Pair application nodes, background processing, and shared infrastructure without adding orchestration layers to every change.
+      - icon: globe
+        title: Put Responses Closer To Active Users
+        description: Run in the regions that matter most so latency stays low and the product feels fast by default.
   featuresTitle: Purpose-Built For Creator Workflows
   featuresSubtitle: Every section pairs visual context with practical guidance and concrete next steps.
   features:
