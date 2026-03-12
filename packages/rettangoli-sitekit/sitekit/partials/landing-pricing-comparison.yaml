@@ -1,0 +1,50 @@
+- rtgl-view w=f pv=xl g=xl:
+    - 'header style="display: contents;"':
+        - rtgl-view w=f g=lg ah=c pv=xl:
+            - rtgl-text s=h2 ta=c w=f mb=md: ${title}
+            - $if subtitle:
+                - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${subtitle}
+
+    - $if plans:
+        - 'div style="overflow-x: auto; width: 100%;"':
+            - rtgl-view w="980" xl-w="940" lg-w="900" md-w="860" sm-w="820" bgc=mu bw=xs bc=bo br=xl shadow=sm:
+                - rtgl-view d=h w=f bgc=bg bwb=xs bc=bo:
+                    - rtgl-view w="300" xl-w="260" lg-w="220" p=lg lg-p=md av=c:
+                        - rtgl-text s=sm c=mu-fg: Feature
+                    - $for plan in plans:
+                        - rtgl-view w="1fg" p=lg lg-p=md g=sm bwl=xs bc=bo ah=c:
+                            - rtgl-text s=h4 ta=c w=f: ${plan.title}
+                            - $if plan.price:
+                                - rtgl-view g=xs ah=c:
+                                    - rtgl-text s=h3 ta=c w=f: ${plan.price}
+                                    - $if plan.priceSuffix:
+                                        - rtgl-text s=sm c=mu-fg ta=c w=f: ${plan.priceSuffix}
+                                    - $if plan.note:
+                                        - rtgl-text s=sm c=mu-fg ta=c w=f: ${plan.note}
+                            - $if plan.cta:
+                                - $if plan.cta.newTab:
+                                    - $if plan.cta.variant:
+                                        - rtgl-button v="${plan.cta.variant}" href="${plan.cta.href}" new-tab w=f mt=sm: ${plan.cta.label}
+                                      $else:
+                                        - rtgl-button href="${plan.cta.href}" new-tab w=f mt=sm: ${plan.cta.label}
+                                  $else:
+                                    - $if plan.cta.variant:
+                                        - rtgl-button v="${plan.cta.variant}" href="${plan.cta.href}" w=f mt=sm: ${plan.cta.label}
+                                      $else:
+                                        - rtgl-button href="${plan.cta.href}" w=f mt=sm: ${plan.cta.label}
+
+                - $for row in rows:
+                    - rtgl-view d=h w=f:
+                        - rtgl-view w="300" xl-w="260" lg-w="220" ph=lg pv=md lg-ph=md lg-pv=md bwb=xs bc=bo g=xs:
+                            - rtgl-text w=f: ${row.label}
+                            - $if row.description:
+                                - rtgl-text s=sm c=mu-fg w=f: ${row.description}
+                        - $for cell in row.cells:
+                            - rtgl-view w="1fg" ph=lg pv=md lg-ph=md lg-pv=md bwl=xs bwb=xs bc=bo ah=c av=c:
+                                - $if cell.label:
+                                    - rtgl-text ta=c w=f: ${cell.label}
+                                  $else:
+                                    - $if cell.included:
+                                        - rtgl-text s=sm c=pr-fg ta=c w=f: Included
+                                      $else:
+                                        - rtgl-text s=sm c=mu-fg ta=c w=f: "-"

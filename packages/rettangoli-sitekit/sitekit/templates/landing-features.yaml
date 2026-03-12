@@ -65,6 +65,14 @@
                               subtitle: ${landing.pricing.subtitle}
                               items: ${landing.pricing.items}
 
+                    - $if landing.pricingComparison:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-pricing-comparison
+                              title: ${landing.pricingComparison.title}
+                              subtitle: ${landing.pricingComparison.subtitle}
+                              plans: ${landing.pricingComparison.plans}
+                              rows: ${landing.pricingComparison.rows}
+
                     - $if landing.faq:
                         - 'section style="display: contents;"':
                             - $partial: landing-faq
