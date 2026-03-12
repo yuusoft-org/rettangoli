@@ -1,0 +1,17 @@
+- rtgl-view w=f pv=xl:
+    - $if sectionTitle:
+        - 'header style="display: contents;"':
+            - rtgl-view w=f g=lg ah=c pv=xl:
+                - rtgl-text s=h2 ta=c w=f mb=md: ${sectionTitle}
+                - $if sectionSubtitle:
+                    - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${sectionSubtitle}
+      $else:
+        - $if sectionSubtitle:
+            - 'header style="display: contents;"':
+                - rtgl-view w=f g=lg ah=c pv=xl:
+                    - rtgl-text s=lg c=mu-fg ta=c w=f mb=xl: ${sectionSubtitle}
+
+    - $if items:
+        - rtgl-view w=f g=md:
+            - $for item in items:
+                - rtgl-accordion-item w=f label="${item.question}" content="${item.answer}":

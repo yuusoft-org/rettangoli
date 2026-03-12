@@ -43,6 +43,8 @@ properties:
         $ref: '#/$defs/partial.landingIconFeatures'
       landing-full-image:
         $ref: '#/$defs/partial.landingFullImage'
+      landing-faq:
+        $ref: '#/$defs/partial.landingFaq'
       landing-features-section:
         $ref: '#/$defs/partial.landingFeaturesSection'
       landing-cta:
@@ -319,6 +321,31 @@ $defs:
         type: string
       image:
         $ref: '#/$defs/types.landingImage'
+  types.landingFaqItem:
+    type: object
+    additionalProperties: true
+    required:
+    - question
+    - answer
+    properties:
+      question:
+        $ref: '#/$defs/types.nonEmptyString'
+      answer:
+        $ref: '#/$defs/types.nonEmptyString'
+  types.landingFaqModel:
+    type: object
+    additionalProperties: true
+    required:
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingFaqItem'
   types.landingFeatureItem:
     type: object
     additionalProperties: true
@@ -374,6 +401,8 @@ $defs:
         $ref: '#/$defs/types.landingIconFeaturesModel'
       fullImage:
         $ref: '#/$defs/types.landingFullImageModel'
+      faq:
+        $ref: '#/$defs/types.landingFaqModel'
       featuresTitle:
         $ref: '#/$defs/types.nonEmptyString'
       featuresSubtitle:
@@ -799,6 +828,20 @@ $defs:
         type: string
       image:
         $ref: '#/$defs/types.landingImage'
+  partial.landingFaq:
+    type: object
+    additionalProperties: true
+    required:
+    - items
+    properties:
+      sectionTitle:
+        $ref: '#/$defs/types.nonEmptyString'
+      sectionSubtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingFaqItem'
   partial.landingFeaturesSection:
     type: object
     additionalProperties: true

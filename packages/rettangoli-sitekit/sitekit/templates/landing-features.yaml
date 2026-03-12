@@ -58,6 +58,13 @@
                           subtitle: ${landing.featuresSubtitle}
                           items: ${landing.features}
 
+                    - $if landing.faq:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-faq
+                              sectionTitle: ${landing.faq.title}
+                              sectionSubtitle: ${landing.faq.subtitle}
+                              items: ${landing.faq.items}
+
                     - $if landing.cta:
                         - 'section style="display: contents;"':
                             - $partial: landing-cta
