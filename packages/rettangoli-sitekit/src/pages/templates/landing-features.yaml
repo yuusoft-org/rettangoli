@@ -68,7 +68,7 @@ landing:
       cta:
         label: Explore The Theme Preview
         href: /themes/slate-dark/
-        variant: se
+        variant: pr
     - title: Build Trust Through Consistent Presentation
       subtitle: Consistency across pages improves clarity for both first-time and returning visitors.
       imageRight: true
