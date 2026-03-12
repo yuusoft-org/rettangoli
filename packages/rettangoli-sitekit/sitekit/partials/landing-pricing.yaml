@@ -17,7 +17,7 @@
                                     - $if item.priceSuffix:
                                         - rtgl-text c=mu-fg mb=xs: ${item.priceSuffix}
                                 - $if item.priceNote:
-                                    - rtgl-text c=mu-fg: ${item.priceNote}
+                                    - rtgl-text s=sm c=mu-fg: ${item.priceNote}
                             - $if item.features:
                                 - rtgl-view g=md:
                                     - $for feature in item.features:
@@ -44,7 +44,7 @@
                                     - $if item.priceSuffix:
                                         - rtgl-text c=mu-fg mb=xs: ${item.priceSuffix}
                                 - $if item.priceNote:
-                                    - rtgl-text c=mu-fg: ${item.priceNote}
+                                    - rtgl-text s=sm c=mu-fg: ${item.priceNote}
                             - $if item.features:
                                 - rtgl-view g=md:
                                     - $for feature in item.features:

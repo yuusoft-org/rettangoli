@@ -94,8 +94,7 @@ landing:
     items:
       - title: Starter
         description: For small demos and straightforward launch pages.
-        price: $12
-        priceSuffix: /month
+        price: Free
         priceNote: Good for early experiments and single-site projects.
         features:
           - One published site
