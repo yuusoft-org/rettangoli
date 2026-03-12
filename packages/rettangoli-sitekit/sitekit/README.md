@@ -61,6 +61,7 @@ Current partials:
 - `landing-logo-cloud`
 - `landing-icon-features`
 - `landing-full-image`
+- `landing-pricing`
 - `landing-faq`
 - `landing-features-section`
 - `landing-cta`
@@ -90,7 +91,7 @@ Use the shared contract index only when you need the aggregate `$defs` set for t
 Aggregate `$defs`:
 
 - Templates: `template.base`, `template.docs`, `template.landingFeatures`, `template.blogArticleList`, `template.blogArticle`
-- Partials: `partial.seo`, `partial.navbar`, `partial.mobileNav`, `partial.docsSidebar`, `partial.docsMobileNav`, `partial.topNavbar`, `partial.landingHero`, `partial.landingLogoCloud`, `partial.landingIconFeatures`, `partial.landingFullImage`, `partial.landingFaq`, `partial.landingFeaturesSection`, `partial.landingCta`, `partial.footer`
+- Partials: `partial.seo`, `partial.navbar`, `partial.mobileNav`, `partial.docsSidebar`, `partial.docsMobileNav`, `partial.topNavbar`, `partial.landingHero`, `partial.landingLogoCloud`, `partial.landingIconFeatures`, `partial.landingFullImage`, `partial.landingPricing`, `partial.landingFaq`, `partial.landingFeaturesSection`, `partial.landingCta`, `partial.footer`
 
 ## Recommended Alias Map
 
@@ -112,6 +113,7 @@ imports:
     landing-logo-cloud: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-logo-cloud.yaml
     landing-icon-features: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-icon-features.yaml
     landing-full-image: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-full-image.yaml
+    landing-pricing: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-pricing.yaml
     landing-faq: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-faq.yaml
     landing-features-section: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-features-section.yaml
     landing-cta: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-cta.yaml

@@ -88,6 +88,49 @@ landing:
         - Ship layout improvements once and propagate them across pages.
         - Validate updates with screenshot checks before publishing.
         - Keep authoring simple by editing YAML data instead of hardcoded markup.
+  pricing:
+    title: Compare Plans In A Reusable Grid
+    subtitle: Use `rtgl-card` as the pricing shell and keep the rest of the content data-driven for plan comparison pages.
+    items:
+      - title: Starter
+        description: For small demos and straightforward launch pages.
+        price: $12
+        priceSuffix: /month
+        priceNote: Good for early experiments and single-site projects.
+        features:
+          - One published site
+          - Shared theme support
+          - Reusable landing sections
+        cta:
+          label: Start Small
+          href: /docs/getting-started/
+          variant: se
+      - title: Team
+        description: For product teams shipping updates every week.
+        price: $29
+        priceSuffix: /month
+        priceNote: Balanced for active publishing and broader collaboration.
+        size: lg
+        features:
+          - Multiple content surfaces
+          - Shared preview workflow
+          - Flexible CTA and FAQ sections
+        cta:
+          label: Choose Team
+          href: /docs/getting-started/
+          variant: pr
+      - title: Enterprise
+        description: For larger rollouts and custom delivery needs.
+        price: Custom
+        priceNote: Best when teams need tailored governance and rollout support.
+        features:
+          - Custom rollout guidance
+          - Review-ready content structure
+          - Extended implementation support
+        cta:
+          label: Talk Through Needs
+          href: /docs/getting-started/
+          variant: se
   faq:
     title: Common Questions
     subtitle: Use an FAQ section when the page needs short answers to setup, usage, or rollout questions near the bottom.
