@@ -7,8 +7,8 @@
 
     - $if plans:
         - 'div style="overflow-x: auto; width: 100%;"':
-            - 'rtgl-view w=f style="min-width: 820px;"':
-                - rtgl-view d=h w=f bgc=bg:
+            - 'rtgl-view style="min-width: 820px;"':
+                - rtgl-view d=h av=c bgc=bg pv=xs:
                     - rtgl-view w="300" xl-w="260" lg-w="220" p=lg lg-p=md av=c:
                         - rtgl-text s=sm c=mu-fg: Feature
                     - $for plan in plans:
@@ -33,12 +33,12 @@
                                       $else:
                                         - rtgl-button href="${plan.cta.href}" w=f mt=sm: ${plan.cta.label}
 
-                - rtgl-view w=f h=1 bgc=bo:
+                - rtgl-view h=1 bgc=bo:
 
                 - $for row, rowIndex in rows:
                     - $if rowIndex > 0:
-                        - rtgl-view w=f h=1 bgc=bo:
-                    - rtgl-view d=h w=f:
+                        - rtgl-view h=1 bgc=bo:
+                    - rtgl-view d=h av=c pv=xs:
                         - rtgl-view w="300" xl-w="260" lg-w="220" ph=lg pv=md lg-ph=md lg-pv=md g=xs:
                             - rtgl-text w=f: ${row.label}
                             - $if row.description:
