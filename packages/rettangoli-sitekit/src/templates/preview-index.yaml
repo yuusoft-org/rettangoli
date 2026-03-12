@@ -11,46 +11,52 @@
         - script src="/public/rtgl-icons.js":
 
     - body.slate-dark:
-        - rtgl-view pos=abs edge=t ah=c bgc=bg:
-            - $partial: top-navbar
-              brand: ${site.navbar.brand}
-              items: ${site.navbar.items}
-              ctas: ${site.navbar.ctas}
-              cta: ${site.navbar.cta}
-              github: ${site.navbar.github}
-        - rtgl-view w=f ah=c:
-            - rtgl-view md-hide h=64:
-            - rtgl-view hide md-show h=56:
-            - rtgl-view w="1160" xl-w="1024" lg-w=f ph=lg pt=xl pb=xl g=xl:
-                - rtgl-view w=f g=sm:
-                    - rtgl-text s=xs c=mu-fg: SITEKIT PREVIEW
-                    - rtgl-text s=h1: ${title}
-                    - rtgl-text c=mu-fg w="720" lg-w=f: ${description}
-
-                - rtgl-view w=f g=lg:
-                    - rtgl-view w=f g=sm bwt=xs bc=bo pt=md:
-                        - rtgl-text s=h3: Docs
+        - 'header style="display: contents;"':
+            - rtgl-view pos=abs edge=t ah=c bgc=bg:
+                - $partial: top-navbar
+                  brand: ${site.navbar.brand}
+                  items: ${site.navbar.items}
+                  ctas: ${site.navbar.ctas}
+                  cta: ${site.navbar.cta}
+                  github: ${site.navbar.github}
+        - 'main style="display: contents;"':
+            - rtgl-view w=f ah=c:
+                - rtgl-view md-hide h=64:
+                - rtgl-view hide md-show h=56:
+                - rtgl-view w="1160" xl-w="1024" lg-w=f ph=lg pt=xl pb=xl g=xl:
+                    - 'section style="display: contents;"':
                         - rtgl-view w=f g=sm:
-                            - $for item in docsPages:
-                                - rtgl-view href="${item.href}" d=v g=0 cur=p:
-                                    - rtgl-text h-c=ac h-cur=p: ${item.title}
-                                    - rtgl-text s=sm c=mu-fg: ${item.href}
+                            - rtgl-text s=xs c=mu-fg: SITEKIT PREVIEW
+                            - rtgl-text s=h1: ${title}
+                            - rtgl-text c=mu-fg w="720" lg-w=f: ${description}
 
-                    - rtgl-view w=f g=sm bwt=xs bc=bo pt=md:
-                        - rtgl-text s=h3: Templates
-                        - rtgl-view w=f g=sm:
-                            - $for item in templatePages:
-                                - rtgl-view href="${item.href}" d=v g=0 cur=p:
-                                    - rtgl-text h-c=ac h-cur=p: ${item.title}
-                                    - rtgl-text s=sm c=mu-fg: ${item.href}
+                    - rtgl-view w=f g=lg:
+                        - 'section style="display: contents;"':
+                            - rtgl-view w=f g=sm bwt=xs bc=bo pt=md:
+                                - rtgl-text s=h3: Docs
+                                - rtgl-view w=f g=sm:
+                                    - $for item in docsPages:
+                                        - rtgl-view href="${item.href}" d=v g=0 cur=p:
+                                            - rtgl-text h-c=ac h-cur=p: ${item.title}
+                                            - rtgl-text s=sm c=mu-fg: ${item.href}
 
-                    - rtgl-view w=f g=sm bwt=xs bc=bo pt=md:
-                        - rtgl-text s=h3: Themes
-                        - rtgl-view w=f g=sm:
-                            - $for theme in themes:
-                                - rtgl-view href="/themes/${theme.id}/" d=v g=0 cur=p:
-                                    - rtgl-text h-c=ac h-cur=p: ${theme.id}
-                                    - rtgl-text s=sm c=mu-fg: /themes/${theme.id}/
+                        - 'section style="display: contents;"':
+                            - rtgl-view w=f g=sm bwt=xs bc=bo pt=md:
+                                - rtgl-text s=h3: Templates
+                                - rtgl-view w=f g=sm:
+                                    - $for item in templatePages:
+                                        - rtgl-view href="${item.href}" d=v g=0 cur=p:
+                                            - rtgl-text h-c=ac h-cur=p: ${item.title}
+                                            - rtgl-text s=sm c=mu-fg: ${item.href}
+
+                        - 'section style="display: contents;"':
+                            - rtgl-view w=f g=sm bwt=xs bc=bo pt=md:
+                                - rtgl-text s=h3: Themes
+                                - rtgl-view w=f g=sm:
+                                    - $for theme in themes:
+                                        - rtgl-view href="/themes/${theme.id}/" d=v g=0 cur=p:
+                                            - rtgl-text h-c=ac h-cur=p: ${theme.id}
+                                            - rtgl-text s=sm c=mu-fg: /themes/${theme.id}/
             - $partial: footer
               brand: ${site.footer.brand}
               columns: ${site.footer.columns}
