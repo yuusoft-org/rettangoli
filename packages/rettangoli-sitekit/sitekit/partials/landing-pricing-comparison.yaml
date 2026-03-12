@@ -6,65 +6,66 @@
                 - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${subtitle}
 
     - $if plans:
-        - 'div style="overflow-x: auto; width: 100%;" md-hide':
-            - 'rtgl-view style="min-width: 820px;"':
-                - rtgl-view d=h w=f av=c bgc=bg pv=xs bwb=xs bc=bo:
-                    - rtgl-view w="300" xl-w="260" lg-w="220" p=lg lg-p=md av=c:
-                        - rtgl-text s=sm c=mu-fg: Feature
-                    - $for plan in plans:
-                        - rtgl-view w="1fg" p=lg lg-p=md g=sm ah=c:
-                            - rtgl-text s=h4 ta=c w=f: ${plan.title}
-                            - $if plan.price:
-                                - rtgl-view g=xs ah=c:
-                                    - rtgl-view d=h wrap g=xs ah=c av=e:
-                                        - rtgl-text s=h3: ${plan.price}
-                                        - $if plan.priceSuffix:
-                                            - rtgl-text s=sm c=mu-fg mb=xs: ${plan.priceSuffix}
-                                    - $if plan.note:
-                                        - rtgl-text s=sm c=mu-fg ta=c w=f: ${plan.note}
-                            - $if plan.cta:
-                                - $if plan.cta.newTab:
-                                    - $if plan.cta.variant:
-                                        - rtgl-button v="${plan.cta.variant}" href="${plan.cta.href}" new-tab w=f mt=sm: ${plan.cta.label}
+        - rtgl-view md-hide w=f:
+            - 'div style="overflow-x: auto; width: 100%;"':
+                - 'rtgl-view style="min-width: 820px;"':
+                    - rtgl-view d=h w=f av=c bgc=bg pv=xs bwb=xs bc=bo:
+                        - rtgl-view w="300" xl-w="260" lg-w="220" p=lg lg-p=md av=c:
+                            - rtgl-text s=sm c=mu-fg: Feature
+                        - $for plan in plans:
+                            - rtgl-view w="1fg" p=lg lg-p=md g=sm ah=c:
+                                - rtgl-text s=h4 ta=c w=f: ${plan.title}
+                                - $if plan.price:
+                                    - rtgl-view g=xs ah=c:
+                                        - rtgl-view d=h wrap g=xs ah=c av=e:
+                                            - rtgl-text s=h3: ${plan.price}
+                                            - $if plan.priceSuffix:
+                                                - rtgl-text s=sm c=mu-fg mb=xs: ${plan.priceSuffix}
+                                        - $if plan.note:
+                                            - rtgl-text s=sm c=mu-fg ta=c w=f: ${plan.note}
+                                - $if plan.cta:
+                                    - $if plan.cta.newTab:
+                                        - $if plan.cta.variant:
+                                            - rtgl-button v="${plan.cta.variant}" href="${plan.cta.href}" new-tab w=f mt=sm: ${plan.cta.label}
+                                          $else:
+                                            - rtgl-button href="${plan.cta.href}" new-tab w=f mt=sm: ${plan.cta.label}
                                       $else:
-                                        - rtgl-button href="${plan.cta.href}" new-tab w=f mt=sm: ${plan.cta.label}
-                                  $else:
-                                    - $if plan.cta.variant:
-                                        - rtgl-button v="${plan.cta.variant}" href="${plan.cta.href}" w=f mt=sm: ${plan.cta.label}
-                                      $else:
-                                        - rtgl-button href="${plan.cta.href}" w=f mt=sm: ${plan.cta.label}
+                                        - $if plan.cta.variant:
+                                            - rtgl-button v="${plan.cta.variant}" href="${plan.cta.href}" w=f mt=sm: ${plan.cta.label}
+                                          $else:
+                                            - rtgl-button href="${plan.cta.href}" w=f mt=sm: ${plan.cta.label}
 
-                - $for row, rowIndex in rows:
-                    - $if rowIndex > 0:
-                        - rtgl-view d=h w=f av=c pv=xs bwt=xs bc=bo:
-                            - rtgl-view w="300" xl-w="260" lg-w="220" ph=lg pv=md lg-ph=md lg-pv=md g=xs:
-                                - rtgl-text w=f: ${row.label}
-                                - $if row.description:
-                                    - rtgl-text s=sm c=mu-fg w=f: ${row.description}
-                            - $for cell in row.cells:
-                                - rtgl-view w="1fg" ph=lg pv=md lg-ph=md lg-pv=md ah=c av=c:
-                                    - $if cell.label:
-                                        - rtgl-text ta=c w=f: ${cell.label}
-                                      $else:
-                                        - $if cell.included:
-                                            - rtgl-text s=sm c=fg ta=c w=f: Included
+                    - $for row, rowIndex in rows:
+                        - $if rowIndex > 0:
+                            - rtgl-view d=h w=f av=c pv=xs bwt=xs bc=bo:
+                                - rtgl-view w="300" xl-w="260" lg-w="220" ph=lg pv=md lg-ph=md lg-pv=md g=xs:
+                                    - rtgl-text w=f: ${row.label}
+                                    - $if row.description:
+                                        - rtgl-text s=sm c=mu-fg w=f: ${row.description}
+                                - $for cell in row.cells:
+                                    - rtgl-view w="1fg" ph=lg pv=md lg-ph=md lg-pv=md ah=c av=c:
+                                        - $if cell.label:
+                                            - rtgl-text ta=c w=f: ${cell.label}
                                           $else:
-                                            - rtgl-text s=sm c=mu-fg ta=c w=f: "-"
-                      $else:
-                        - rtgl-view d=h w=f av=c pv=xs:
-                            - rtgl-view w="300" xl-w="260" lg-w="220" ph=lg pv=md lg-ph=md lg-pv=md g=xs:
-                                - rtgl-text w=f: ${row.label}
-                                - $if row.description:
-                                    - rtgl-text s=sm c=mu-fg w=f: ${row.description}
-                            - $for cell in row.cells:
-                                - rtgl-view w="1fg" ph=lg pv=md lg-ph=md lg-pv=md ah=c av=c:
-                                    - $if cell.label:
-                                        - rtgl-text ta=c w=f: ${cell.label}
-                                      $else:
-                                        - $if cell.included:
-                                            - rtgl-text s=sm c=fg ta=c w=f: Included
+                                            - $if cell.included:
+                                                - rtgl-text s=sm c=fg ta=c w=f: Included
+                                              $else:
+                                                - rtgl-text s=sm c=mu-fg ta=c w=f: "-"
+                          $else:
+                            - rtgl-view d=h w=f av=c pv=xs:
+                                - rtgl-view w="300" xl-w="260" lg-w="220" ph=lg pv=md lg-ph=md lg-pv=md g=xs:
+                                    - rtgl-text w=f: ${row.label}
+                                    - $if row.description:
+                                        - rtgl-text s=sm c=mu-fg w=f: ${row.description}
+                                - $for cell in row.cells:
+                                    - rtgl-view w="1fg" ph=lg pv=md lg-ph=md lg-pv=md ah=c av=c:
+                                        - $if cell.label:
+                                            - rtgl-text ta=c w=f: ${cell.label}
                                           $else:
-                                            - rtgl-text s=sm c=mu-fg ta=c w=f: "-"
+                                            - $if cell.included:
+                                                - rtgl-text s=sm c=fg ta=c w=f: Included
+                                              $else:
+                                                - rtgl-text s=sm c=mu-fg ta=c w=f: "-"
 
         - rtgl-view hide md-show w=f g=lg:
             - $for plan, planIndex in plans:
@@ -99,23 +100,27 @@
                                             - rtgl-text s=sm fw=bold w=f: ${row.label}
                                             - $if row.description:
                                                 - rtgl-text s=sm c=mu-fg w=f: ${row.description}
-                                        - $if row.cells[planIndex].label:
-                                            - rtgl-text w=f: ${row.cells[planIndex].label}
-                                          $else:
-                                            - $if row.cells[planIndex].included:
-                                                - rtgl-text s=sm c=fg w=f: Included
-                                              $else:
-                                                - rtgl-text s=sm c=mu-fg w=f: "-"
+                                        - $for cell, cellIndex in row.cells:
+                                            - $if cellIndex == planIndex:
+                                                - $if cell.label:
+                                                    - rtgl-text w=f: ${cell.label}
+                                                  $else:
+                                                    - $if cell.included:
+                                                        - rtgl-text s=sm c=fg w=f: Included
+                                                      $else:
+                                                        - rtgl-text s=sm c=mu-fg w=f: "-"
                                   $else:
                                     - rtgl-view w=f g=sm:
                                         - rtgl-view w=f g=xs:
                                             - rtgl-text s=sm fw=bold w=f: ${row.label}
                                             - $if row.description:
                                                 - rtgl-text s=sm c=mu-fg w=f: ${row.description}
-                                        - $if row.cells[planIndex].label:
-                                            - rtgl-text w=f: ${row.cells[planIndex].label}
-                                          $else:
-                                            - $if row.cells[planIndex].included:
-                                                - rtgl-text s=sm c=fg w=f: Included
-                                              $else:
-                                                - rtgl-text s=sm c=mu-fg w=f: "-"
+                                        - $for cell, cellIndex in row.cells:
+                                            - $if cellIndex == planIndex:
+                                                - $if cell.label:
+                                                    - rtgl-text w=f: ${cell.label}
+                                                  $else:
+                                                    - $if cell.included:
+                                                        - rtgl-text s=sm c=fg w=f: Included
+                                                      $else:
+                                                        - rtgl-text s=sm c=mu-fg w=f: "-"
