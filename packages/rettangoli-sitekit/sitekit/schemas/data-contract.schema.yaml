@@ -43,6 +43,10 @@ properties:
         $ref: '#/$defs/partial.landingIconFeatures'
       landing-full-image:
         $ref: '#/$defs/partial.landingFullImage'
+      landing-pricing:
+        $ref: '#/$defs/partial.landingPricing'
+      landing-pricing-comparison:
+        $ref: '#/$defs/partial.landingPricingComparison'
       landing-faq:
         $ref: '#/$defs/partial.landingFaq'
       landing-features-section:
@@ -321,6 +325,106 @@ $defs:
         type: string
       image:
         $ref: '#/$defs/types.landingImage'
+  types.landingPricingItem:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - price
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        type: string
+      price:
+        $ref: '#/$defs/types.nonEmptyString'
+      priceSuffix:
+        type: string
+      priceNote:
+        type: string
+      size:
+        type: string
+        enum: [sm, md, lg]
+      features:
+        type: array
+        items:
+          type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+  types.landingPricingModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingPricingItem'
+  types.landingPricingComparisonPlan:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      price:
+        $ref: '#/$defs/types.nonEmptyString'
+      priceSuffix:
+        type: string
+      note:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+  types.landingPricingComparisonCell:
+    type: object
+    additionalProperties: true
+    properties:
+      label:
+        type: string
+      included:
+        type: boolean
+  types.landingPricingComparisonRow:
+    type: object
+    additionalProperties: true
+    required:
+    - label
+    - cells
+    properties:
+      label:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        type: string
+      cells:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingPricingComparisonCell'
+  types.landingPricingComparisonModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - plans
+    - rows
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      plans:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingPricingComparisonPlan'
+      rows:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingPricingComparisonRow'
   types.landingFaqItem:
     type: object
     additionalProperties: true
@@ -403,6 +507,10 @@ $defs:
         $ref: '#/$defs/types.landingIconFeaturesModel'
       fullImage:
         $ref: '#/$defs/types.landingFullImageModel'
+      pricing:
+        $ref: '#/$defs/types.landingPricingModel'
+      pricingComparison:
+        $ref: '#/$defs/types.landingPricingComparisonModel'
       faq:
         $ref: '#/$defs/types.landingFaqModel'
       featuresTitle:
@@ -830,6 +938,10 @@ $defs:
         type: string
       image:
         $ref: '#/$defs/types.landingImage'
+  partial.landingPricing:
+    $ref: '#/$defs/types.landingPricingModel'
+  partial.landingPricingComparison:
+    $ref: '#/$defs/types.landingPricingComparisonModel'
   partial.landingFaq:
     type: object
     additionalProperties: true

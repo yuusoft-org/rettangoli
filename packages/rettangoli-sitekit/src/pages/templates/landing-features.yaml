@@ -88,6 +88,102 @@ landing:
         - Ship layout improvements once and propagate them across pages.
         - Validate updates with screenshot checks before publishing.
         - Keep authoring simple by editing YAML data instead of hardcoded markup.
+  pricing:
+    title: Compare Plans In A Reusable Grid
+    subtitle: Use surfaced plan cards to summarize pricing before the detailed comparison matrix below.
+    items:
+      - title: Starter
+        description: For small demos and straightforward launch pages.
+        price: Free
+        priceNote: Good for early experiments and single-site projects.
+        features:
+          - One published site
+          - Shared theme support
+          - Reusable landing sections
+        cta:
+          label: Start Small
+          href: /docs/getting-started/
+      - title: Team
+        description: For product teams shipping updates every week.
+        price: $29
+        priceSuffix: /month
+        priceNote: Balanced for active publishing and broader collaboration.
+        size: lg
+        features:
+          - Multiple content surfaces
+          - Shared preview workflow
+          - Flexible CTA and FAQ sections
+        cta:
+          label: Choose Team
+          href: /docs/getting-started/
+          variant: pr
+      - title: Enterprise
+        description: For larger rollouts and custom delivery needs.
+        price: Custom
+        priceNote: Best when teams need tailored governance and rollout support.
+        features:
+          - Custom rollout guidance
+          - Review-ready content structure
+          - Extended implementation support
+        cta:
+          label: Talk Through Needs
+          href: /docs/getting-started/
+  pricingComparison:
+    title: Compare Plan Access At A Glance
+    subtitle: Use a feature matrix when visitors need a quick line-by-line comparison before they choose a plan.
+    plans:
+      - title: Starter
+        price: Free
+        note: Best for first demos
+        cta:
+          label: Start Small
+          href: /docs/getting-started/
+      - title: Team
+        price: $29
+        priceSuffix: /month
+        note: Best for active teams
+        cta:
+          label: Choose Team
+          href: /docs/getting-started/
+          variant: pr
+      - title: Enterprise
+        price: Custom
+        note: Best for tailored rollout support
+        cta:
+          label: Talk Through Needs
+          href: /docs/getting-started/
+    rows:
+      - label: Published sites
+        description: How many public sites can share one account.
+        cells:
+          - label: One
+          - label: Up to five
+          - label: Unlimited
+      - label: Reusable landing sections
+        cells:
+          - included: true
+          - included: true
+          - included: true
+      - label: Docs and blog templates
+        cells:
+          - included: false
+          - included: true
+          - included: true
+      - label: Shared preview workflow
+        cells:
+          - included: false
+          - included: true
+          - included: true
+      - label: Approval and rollout support
+        cells:
+          - included: false
+          - included: false
+          - label: Custom
+      - label: Migration help
+        cells:
+          - included: false
+          - label: Available
+          - label: Included
   faq:
     title: Common Questions
     subtitle: Use an FAQ section when the page needs short answers to setup, usage, or rollout questions near the bottom.
