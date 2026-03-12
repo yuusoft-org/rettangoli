@@ -45,6 +45,13 @@
                               subtitle: ${landing.iconFeatures.subtitle}
                               items: ${landing.iconFeatures.items}
 
+                    - $if landing.fullImage:
+                        - 'section style="display: contents;"':
+                            - $partial: landing-full-image
+                              title: ${landing.fullImage.title}
+                              subtitle: ${landing.fullImage.subtitle}
+                              image: ${landing.fullImage.image}
+
                     - 'section style="display: contents;"':
                         - $partial: landing-features-section
                           title: ${landing.featuresTitle}

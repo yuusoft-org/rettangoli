@@ -45,6 +45,10 @@ landing:
       - icon: globe
         title: Reuse The Same Pattern Across Pages
         description: Swap icons and text to adapt the section for demos, landing pages, release notes, or product overviews.
+  fullImage:
+    image:
+      src: /public/blog-vt.svg
+      alt: Full width product showcase preview
   featuresTitle: Purpose-Built For Creator Workflows
   featuresSubtitle: Every section pairs visual context with practical guidance and concrete next steps.
   features:

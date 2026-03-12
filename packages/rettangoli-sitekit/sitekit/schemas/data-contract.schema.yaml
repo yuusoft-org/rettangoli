@@ -41,6 +41,8 @@ properties:
         $ref: '#/$defs/partial.landingLogoCloud'
       landing-icon-features:
         $ref: '#/$defs/partial.landingIconFeatures'
+      landing-full-image:
+        $ref: '#/$defs/partial.landingFullImage'
       landing-features-section:
         $ref: '#/$defs/partial.landingFeaturesSection'
       landing-cta:
@@ -299,6 +301,18 @@ $defs:
         type: array
         items:
           $ref: '#/$defs/types.landingIconFeatureItem'
+  types.landingFullImageModel:
+    type: object
+    additionalProperties: true
+    required:
+    - image
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      image:
+        $ref: '#/$defs/types.landingImage'
   types.landingFeatureItem:
     type: object
     additionalProperties: true
@@ -352,6 +366,8 @@ $defs:
         $ref: '#/$defs/types.landingLogoCloudModel'
       iconFeatures:
         $ref: '#/$defs/types.landingIconFeaturesModel'
+      fullImage:
+        $ref: '#/$defs/types.landingFullImageModel'
       featuresTitle:
         $ref: '#/$defs/types.nonEmptyString'
       featuresSubtitle:
@@ -765,6 +781,8 @@ $defs:
     $ref: '#/$defs/types.landingLogoCloudModel'
   partial.landingIconFeatures:
     $ref: '#/$defs/types.landingIconFeaturesModel'
+  partial.landingFullImage:
+    $ref: '#/$defs/types.landingFullImageModel'
   partial.landingFeaturesSection:
     type: object
     additionalProperties: true
