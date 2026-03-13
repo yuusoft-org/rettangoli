@@ -50,7 +50,7 @@ landing:
         alt: Placeholder
   iconFeatures:
     title: Adapt One Card Grid To Teams, Benefits, Or Use Cases
-    subtitle: Use the same compact card section for audience segmentation, short product highlights, or reusable summary blocks.
+    subtitle: Use the same compact card section for audience segmentation, short product highlights, reusable summary blocks, or simple workflow explanations.
     items:
       - image:
           src: /public/logo-exampleco.png
@@ -61,8 +61,8 @@ landing:
         title: Summarize Related Product Strengths
         description: The same layout also works for grouped benefits when the page needs a tighter product overview before longer sections.
       - icon: globe
-        title: Reuse The Pattern Across Page Types
-        description: Swap the card content between team-specific positioning and generic feature highlights without changing the section structure.
+        title: Reuse The Pattern For Short Flows
+        description: Swap the card content between team-specific positioning, highlight summaries, or a small step-by-step workflow without changing the section structure.
   featureMosaic:
     title: Use A More Editorial Layout When The Page Needs Rhythm
     subtitle: A lead block plus supporting cards creates a stronger visual story than a uniform grid when the page needs more pacing.
@@ -120,26 +120,6 @@ landing:
           - Signal Board
           - Metric Note
           - Outcome Log
-  howItWorks:
-    title: Explain The Flow In Four Steps
-    subtitle: A step section works well when the page needs to make the process feel obvious and low-friction.
-    items:
-      - step: "01"
-        title: Pick the section mix
-        description: Start with the parts the page needs, such as proof, pricing, FAQs, and rollout details.
-        note: Keep the first draft narrow so the message stays clear.
-      - step: "02"
-        title: Drop in page-ready copy
-        description: Add structured content to each section instead of rewriting page layout markup by hand.
-        note: Shared fields make updates easier to review later.
-      - step: "03"
-        title: Review the preview
-        description: Check the live page with a browser capture before the content is approved.
-        note: Visual checks catch spacing and hierarchy issues quickly.
-      - step: "04"
-        title: Reuse the pattern again
-        description: Carry the same section set into the next launch, docs page, or campaign variant.
-        note: Repeatable layouts reduce rework over time.
   testimonialsGrid:
     title: Add Social Proof Without A Carousel
     subtitle: A static quote grid keeps the proof readable, easy to scan, and easy to maintain in source control.
