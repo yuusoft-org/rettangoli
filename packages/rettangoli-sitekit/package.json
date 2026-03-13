@@ -41,6 +41,7 @@
     "watch:lab": "bun run watch",
     "vt:screenshot": "bunx rtgl vt screenshot",
     "vt:report": "bunx rtgl vt report",
+    "vt:ci": "bunx rtgl vt screenshot --concurrency 1 --item docs-template/docs-getting-started.html --item overview/home.html --item templates/blog-article-list.html --item templates/blog-article.html --item templates/landing-highlights.html --item templates/landing-pricing.html",
     "vt:accept": "bunx rtgl vt accept"
   },
   "devDependencies": {
