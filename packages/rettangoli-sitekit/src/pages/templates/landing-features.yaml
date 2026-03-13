@@ -64,6 +64,159 @@ landing:
         title: Approval flows that are easier to review
         pain: Reviewers lose time checking spacing, content placement, and CTA consistency on every page.
         fit: Repeatable section patterns make visual review faster and lower the chance of missing regressions.
+  iconFeatures:
+    title: Flexible Highlight Blocks For Demo Pages
+    subtitle: Use icon-led cards to explain product value, workflow benefits, or key selling points in a compact reusable section.
+    items:
+      - image:
+          src: /public/logo-exampleco.png
+          alt: Example image badge
+        title: Explain Fast Setup In One Scan
+        description: Pair a short heading with a concise supporting line so visitors understand the benefit without reading a long section.
+      - icon: cluster
+        title: Group Related Product Benefits
+        description: Present multiple strengths side by side when you want a cleaner summary before longer feature walkthroughs below.
+      - icon: globe
+        title: Reuse The Same Pattern Across Pages
+        description: Swap icons and text to adapt the section for demos, landing pages, release notes, or product overviews.
+  featureMosaic:
+    title: Use A More Editorial Layout When The Page Needs Rhythm
+    subtitle: A lead block plus supporting cards creates a stronger visual story than a uniform grid when the page needs more pacing.
+    lead:
+      title: Anchor The Story With One Bigger Message
+      description: Start with one highlighted message and one strong visual so visitors understand the core proposition before scanning supporting details.
+      image:
+        src: /public/blog-theme.svg
+        alt: Lead feature mosaic preview
+      cta:
+        label: Open Theme Preview
+        href: /themes/slate-dark/
+        variant: pr
+    items:
+      - title: Follow with smaller supporting proofs
+        description: Use short cards to reinforce the main message without turning the section into a wall of text.
+        image:
+          src: /public/blog-partials.svg
+          alt: Supporting card preview one
+      - title: Keep the reading order obvious
+        description: The lead block sets context, and the smaller cards answer the next questions a visitor is likely to have.
+        image:
+          src: /public/blog-vt.svg
+          alt: Supporting card preview two
+      - title: Reuse the pattern for future launches
+        description: Swap copy and imagery while keeping the same visual hierarchy for future campaigns and release pages.
+        image:
+          src: /public/blog-theme.svg
+          alt: Supporting card preview three
+  integrations:
+    title: Explain The Workflow Surface Area
+    subtitle: Show grouped capabilities instead of a flat logo list when integrations need context around what they actually unlock.
+    items:
+      - title: Content intake
+        description: Collect requests, briefs, and raw assets in one repeatable handoff.
+        tools:
+          - Brief Box
+          - Intake Lane
+          - Asset Shelf
+      - title: Review and approval
+        description: Give reviewers one clear preview path before the page goes live.
+        tools:
+          - Proof Desk
+          - Checkpoint
+          - Signoff Pad
+      - title: Publishing workflow
+        description: Move approved content into shared sections without rebuilding the page each time.
+        tools:
+          - Launch Queue
+          - Release Desk
+          - Publish Flow
+      - title: Measurement follow-up
+        description: Keep outcomes close to the page system so the next launch starts smarter.
+        tools:
+          - Signal Board
+          - Metric Note
+          - Outcome Log
+  howItWorks:
+    title: Explain The Flow In Four Steps
+    subtitle: A step section works well when the page needs to make the process feel obvious and low-friction.
+    items:
+      - step: "01"
+        title: Pick the section mix
+        description: Start with the parts the page needs, such as proof, pricing, FAQs, and rollout details.
+        note: Keep the first draft narrow so the message stays clear.
+      - step: "02"
+        title: Drop in page-ready copy
+        description: Add structured content to each section instead of rewriting page layout markup by hand.
+        note: Shared fields make updates easier to review later.
+      - step: "03"
+        title: Review the preview
+        description: Check the live page with a browser capture before the content is approved.
+        note: Visual checks catch spacing and hierarchy issues quickly.
+      - step: "04"
+        title: Reuse the pattern again
+        description: Carry the same section set into the next launch, docs page, or campaign variant.
+        note: Repeatable layouts reduce rework over time.
+  beforeAfter:
+    title: Show The Workflow Difference Clearly
+    subtitle: A direct before-and-after comparison helps when the value comes from reducing manual work rather than adding one isolated feature.
+    before:
+      label: Before
+      title: Manual page assembly with inconsistent structure
+      description: Teams rebuild the same commercial sections for every launch and lose time resolving layout drift.
+      bullets:
+        - Copy lives in scattered notes instead of reusable blocks.
+        - Reviewers spend time checking structure instead of message quality.
+        - Each new page risks spacing and hierarchy regressions.
+    after:
+      label: After
+      title: One reusable system for repeatable launch pages
+      description: Shared sections turn the whole page into maintainable content instead of ad hoc markup.
+      bullets:
+        - Teams compose pages from a stable set of production-ready sections.
+        - Reviews focus on message clarity and launch readiness.
+        - The next page starts from a trusted baseline rather than zero.
+  testimonialsGrid:
+    title: Add Social Proof Without A Carousel
+    subtitle: A static quote grid keeps the proof readable, easy to scan, and easy to maintain in source control.
+    items:
+      - quote: Shipping a new announcement page stopped feeling like a custom design sprint every single time.
+        author: Talia Reed
+        role: Content lead
+        company: Example Forge
+        outcome: The team now reuses the same structure across launches and reviews changes faster.
+      - quote: We finally had a landing system that product, marketing, and ops could all edit without confusion.
+        author: Niko Vale
+        role: Product marketer
+        company: Demo Harbor
+        outcome: Shared sections removed most of the back-and-forth around layout decisions.
+      - quote: The preview flow made small spacing fixes obvious before they reached production.
+        author: Mina Hart
+        role: Design systems manager
+        company: Fixture House
+        outcome: Reviews became shorter because the page already looked close to final when it arrived.
+      - quote: We used one kit for launch, docs, and follow-up content instead of maintaining three separate page styles.
+        author: Owen Pike
+        role: Web operations lead
+        company: Sample Works
+        outcome: The team cut repeated build time and kept the whole site more consistent.
+  trustBlock:
+    title: Handle Trust Questions Before They Stall The Deal
+    subtitle: Trust sections are useful when the buyer needs operational reassurance without leaving the landing page for separate documentation.
+    items:
+      - title: Review-friendly content structure
+        description: Reusable sections make it easier for legal, brand, and launch reviewers to inspect the same patterns each time.
+      - title: Stable publishing conventions
+        description: Shared layout tokens reduce surprises when teams add pricing, proof, FAQ, or roadmap content late in the cycle.
+      - title: Clear ownership across teams
+        description: Structured fields help marketing, product, and web teams update the same page without stepping on each other.
+      - title: Lower regression risk
+        description: Screenshot checks and preview review loops make visual changes easier to verify before publishing.
+  fullImage:
+    title: Show One Large Product Visual
+    subtitle: Use a single full-width image block when one screenshot or illustration should carry the whole section.
+    image:
+      src: /public/blog-vt.svg
+      alt: Full width product showcase preview
   featuresTitle: Purpose-Built For Creator Workflows
   featuresSubtitle: Every section pairs visual context with practical guidance and concrete next steps.
   features:
@@ -99,6 +252,143 @@ landing:
         - Ship layout improvements once and propagate them across pages.
         - Validate updates with screenshot checks before publishing.
         - Keep authoring simple by editing YAML data instead of hardcoded markup.
+  caseStudies:
+    title: Show Outcome Stories In More Than One Sentence
+    subtitle: Mini case-study cards give a little more context than testimonials when the page needs proof tied to a concrete workflow change.
+    items:
+      - company: Example Forge
+        challenge: The team needed one repeatable launch page structure for multiple feature drops.
+        outcome: They standardized the page flow from hero through CTA and reused it across releases.
+        metric: Five launches reused the same section set in one quarter.
+      - company: Demo Harbor
+        challenge: Reviews kept stalling because layout and content decisions were mixed together.
+        outcome: Structured sections let reviewers focus on message quality instead of rechecking page scaffolding.
+        metric: Approval time dropped from days to one review cycle.
+      - company: Fixture House
+        challenge: Docs, campaign pages, and proof sections were drifting apart visually.
+        outcome: A shared site kit brought those surfaces back under one consistent content model.
+        metric: Three page types now ship from one reusable pattern library.
+  pricing:
+    title: Compare Plans In A Reusable Grid
+    subtitle: Use surfaced plan cards to summarize pricing before the detailed comparison matrix below.
+    items:
+      - title: Starter
+        description: For small demos and straightforward launch pages.
+        price: Free
+        priceNote: Good for early experiments and single-site projects.
+        features:
+          - One published site
+          - Shared theme support
+          - Reusable landing sections
+        cta:
+          label: Start Small
+          href: /docs/getting-started/
+          variant: pr
+      - title: Team
+        description: For product teams shipping updates every week.
+        price: $29
+        priceSuffix: /month
+        priceNote: Balanced for active publishing and broader collaboration.
+        size: lg
+        features:
+          - Multiple content surfaces
+          - Shared preview workflow
+          - Flexible CTA and FAQ sections
+        cta:
+          label: Choose Team
+          href: /docs/getting-started/
+          variant: pr
+      - title: Enterprise
+        description: For larger rollouts and custom delivery needs.
+        price: Custom
+        priceNote: Best when teams need tailored governance and rollout support.
+        features:
+          - Custom rollout guidance
+          - Review-ready content structure
+          - Extended implementation support
+        cta:
+          label: Talk Through Needs
+          href: /docs/getting-started/
+  pricingComparison:
+    title: Compare Plan Access At A Glance
+    subtitle: Use a feature matrix when visitors need a quick line-by-line comparison before they choose a plan.
+    plans:
+      - title: Starter
+        price: Free
+        note: Best for first demos
+        cta:
+          label: Start Small
+          href: /docs/getting-started/
+          variant: pr
+      - title: Team
+        price: $29
+        priceSuffix: /month
+        note: Best for active teams
+        cta:
+          label: Choose Team
+          href: /docs/getting-started/
+          variant: pr
+      - title: Enterprise
+        price: Custom
+        note: Best for tailored rollout support
+        cta:
+          label: Talk Through Needs
+          href: /docs/getting-started/
+    rows:
+      - label: Published sites
+        description: How many public sites can share one account.
+        cells:
+          - label: One
+          - label: Up to five
+          - label: Unlimited
+      - label: Reusable landing sections
+        cells:
+          - included: true
+          - included: true
+          - included: true
+      - label: Docs and blog templates
+        cells:
+          - included: false
+          - included: true
+          - included: true
+      - label: Shared preview workflow
+        cells:
+          - included: false
+          - included: true
+          - included: true
+      - label: Approval and rollout support
+        cells:
+          - included: false
+          - included: false
+          - label: Custom
+      - label: Migration help
+        cells:
+          - included: false
+          - label: Available
+          - label: Included
+  roadmap:
+    title: Show What Ships Next
+    subtitle: A roadmap section works well near the bottom of the page when the buyer wants confidence that the product and site system keep moving forward.
+    items:
+      - phase: Now
+        title: Expand the reusable launch-page core
+        description: Ship the shared sections most teams need first, including proof, pricing, FAQs, and rollout support.
+      - phase: Next
+        title: Add more audience-specific section variants
+        description: Introduce patterns that let one page adapt more cleanly to marketing, product, and operations messaging.
+      - phase: Later
+        title: Tighten authoring and review workflows
+        description: Make section-level publishing, previewing, and screenshot validation even easier to repeat across future pages.
+  faq:
+    title: Common Questions
+    subtitle: Use an FAQ section when the page needs short answers to setup, usage, or rollout questions near the bottom.
+    items:
+      - question: Can this section work with simple text-only answers?
+        answer: Yes. Each item uses the built-in accordion component with a question label and a short answer body.
+      - question: Do I need custom scripting to use the FAQ section?
+        answer: No. The accordion behavior comes from the standard Rettangoli UI bundle already used by this template.
+      - question: Can teams rewrite the FAQ copy for other page types?
+        answer: Yes. The content is data-driven, so the same section can be reused for demos, product pages, or documentation overviews.
   cta:
     title: Ready To Launch Faster?
     subtitle: Reuse the same partial-based approach to ship landing, docs, and blog pages with less maintenance.
