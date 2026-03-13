@@ -140,25 +140,6 @@ landing:
         title: Reuse the pattern again
         description: Carry the same section set into the next launch, docs page, or campaign variant.
         note: Repeatable layouts reduce rework over time.
-  beforeAfter:
-    title: Show The Workflow Difference Clearly
-    subtitle: A direct before-and-after comparison helps when the value comes from reducing manual work rather than adding one isolated feature.
-    before:
-      label: Before
-      title: Manual page assembly with inconsistent structure
-      description: Teams rebuild the same commercial sections for every launch and lose time resolving layout drift.
-      bullets:
-        - Copy lives in scattered notes instead of reusable blocks.
-        - Reviewers spend time checking structure instead of message quality.
-        - Each new page risks spacing and hierarchy regressions.
-    after:
-      label: After
-      title: One reusable system for repeatable launch pages
-      description: Shared sections turn the whole page into maintainable content instead of ad hoc markup.
-      bullets:
-        - Teams compose pages from a stable set of production-ready sections.
-        - Reviews focus on message clarity and launch readiness.
-        - The next page starts from a trusted baseline rather than zero.
   testimonialsGrid:
     title: Add Social Proof Without A Carousel
     subtitle: A static quote grid keeps the proof readable, easy to scan, and easy to maintain in source control.
