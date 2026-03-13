@@ -11,7 +11,7 @@
             - rtgl-grid cols="4" lg-cols="2" sm-cols="1" g=xl w=f:
                 - $for item in items:
                     - 'article style="display: contents;"':
-                        - rtgl-view w=f g=md ah=c av=c:
+                        - rtgl-view w=f g=lg ah=c av=c:
                             - rtgl-text s=h1 ta=c: ${item.value}
                             - rtgl-text s=md ta=c: ${item.label}
                             - $if item.context:
