@@ -48,37 +48,21 @@ landing:
         alt: FixtureLab
       - src: /public/logo-placeholder.png
         alt: Placeholder
-  useCases:
-    title: Adapt The Same Template To Different Teams
-    subtitle: Audience cards help one landing page speak to multiple internal owners without mixing their priorities together.
-    items:
-      - eyebrow: Marketing teams
-        title: Launch pages that stay on-brand
-        pain: Campaign teams need new pages fast but cannot afford one-off layouts every release.
-        fit: Reusable sections keep the message consistent while making new launches quicker to assemble.
-      - eyebrow: Product teams
-        title: Feature stories that stay structured
-        pain: Release notes, positioning, and proof points often drift across separate content documents.
-        fit: Shared blocks turn feature messaging into one maintained source instead of multiple rewrites.
-      - eyebrow: Operations teams
-        title: Approval flows that are easier to review
-        pain: Reviewers lose time checking spacing, content placement, and CTA consistency on every page.
-        fit: Repeatable section patterns make visual review faster and lower the chance of missing regressions.
   iconFeatures:
-    title: Flexible Highlight Blocks For Demo Pages
-    subtitle: Use icon-led cards to explain product value, workflow benefits, or key selling points in a compact reusable section.
+    title: Adapt One Card Grid To Teams, Benefits, Or Use Cases
+    subtitle: Use the same compact card section for audience segmentation, short product highlights, or reusable summary blocks.
     items:
       - image:
           src: /public/logo-exampleco.png
           alt: Example image badge
-        title: Explain Fast Setup In One Scan
-        description: Pair a short heading with a concise supporting line so visitors understand the benefit without reading a long section.
+        title: Speak To Different Internal Owners
+        description: Use one card to frame what marketing, product, or operations teams each need from the same page system.
       - icon: cluster
-        title: Group Related Product Benefits
-        description: Present multiple strengths side by side when you want a cleaner summary before longer feature walkthroughs below.
+        title: Summarize Related Product Strengths
+        description: The same layout also works for grouped benefits when the page needs a tighter product overview before longer sections.
       - icon: globe
-        title: Reuse The Same Pattern Across Pages
-        description: Swap icons and text to adapt the section for demos, landing pages, release notes, or product overviews.
+        title: Reuse The Pattern Across Page Types
+        description: Swap the card content between team-specific positioning and generic feature highlights without changing the section structure.
   featureMosaic:
     title: Use A More Editorial Layout When The Page Needs Rhythm
     subtitle: A lead block plus supporting cards creates a stronger visual story than a uniform grid when the page needs more pacing.
@@ -179,38 +163,38 @@ landing:
     title: Add Social Proof Without A Carousel
     subtitle: A static quote grid keeps the proof readable, easy to scan, and easy to maintain in source control.
     items:
-      - quote: Shipping a new announcement page stopped feeling like a custom design sprint every single time.
+      - image:
+          src: /public/blog-theme.svg
+          alt: Example Forge testimonial preview
+        quote: Shipping a new announcement page stopped feeling like a custom design sprint every single time.
         author: Talia Reed
         role: Content lead
         company: Example Forge
         outcome: The team now reuses the same structure across launches and reviews changes faster.
-      - quote: We finally had a landing system that product, marketing, and ops could all edit without confusion.
+      - image:
+          src: /public/blog-vt.svg
+          alt: Demo Harbor testimonial preview
+        quote: We finally had a landing system that product, marketing, and ops could all edit without confusion.
         author: Niko Vale
         role: Product marketer
         company: Demo Harbor
         outcome: Shared sections removed most of the back-and-forth around layout decisions.
-      - quote: The preview flow made small spacing fixes obvious before they reached production.
+      - image:
+          src: /public/blog-partials.svg
+          alt: Fixture House testimonial preview
+        quote: The preview flow made small spacing fixes obvious before they reached production.
         author: Mina Hart
         role: Design systems manager
         company: Fixture House
         outcome: Reviews became shorter because the page already looked close to final when it arrived.
-      - quote: We used one kit for launch, docs, and follow-up content instead of maintaining three separate page styles.
+      - image:
+          src: /public/blog-theme.svg
+          alt: Sample Works testimonial preview
+        quote: We used one kit for launch, docs, and follow-up content instead of maintaining three separate page styles.
         author: Owen Pike
         role: Web operations lead
         company: Sample Works
         outcome: The team cut repeated build time and kept the whole site more consistent.
-  trustBlock:
-    title: Handle Trust Questions Before They Stall The Deal
-    subtitle: Trust sections are useful when the buyer needs operational reassurance without leaving the landing page for separate documentation.
-    items:
-      - title: Review-friendly content structure
-        description: Reusable sections make it easier for legal, brand, and launch reviewers to inspect the same patterns each time.
-      - title: Stable publishing conventions
-        description: Shared layout tokens reduce surprises when teams add pricing, proof, FAQ, or roadmap content late in the cycle.
-      - title: Clear ownership across teams
-        description: Structured fields help marketing, product, and web teams update the same page without stepping on each other.
-      - title: Lower regression risk
-        description: Screenshot checks and preview review loops make visual changes easier to verify before publishing.
   fullImage:
     title: Show One Large Product Visual
     subtitle: Use a single full-width image block when one screenshot or illustration should carry the whole section.
@@ -252,22 +236,6 @@ landing:
         - Ship layout improvements once and propagate them across pages.
         - Validate updates with screenshot checks before publishing.
         - Keep authoring simple by editing YAML data instead of hardcoded markup.
-  caseStudies:
-    title: Show Outcome Stories In More Than One Sentence
-    subtitle: Mini case-study cards give a little more context than testimonials when the page needs proof tied to a concrete workflow change.
-    items:
-      - company: Example Forge
-        challenge: The team needed one repeatable launch page structure for multiple feature drops.
-        outcome: They standardized the page flow from hero through CTA and reused it across releases.
-        metric: Five launches reused the same section set in one quarter.
-      - company: Demo Harbor
-        challenge: Reviews kept stalling because layout and content decisions were mixed together.
-        outcome: Structured sections let reviewers focus on message quality instead of rechecking page scaffolding.
-        metric: Approval time dropped from days to one review cycle.
-      - company: Fixture House
-        challenge: Docs, campaign pages, and proof sections were drifting apart visually.
-        outcome: A shared site kit brought those surfaces back under one consistent content model.
-        metric: Three page types now ship from one reusable pattern library.
   pricing:
     title: Compare Plans In A Reusable Grid
     subtitle: Use surfaced plan cards to summarize pricing before the detailed comparison matrix below.

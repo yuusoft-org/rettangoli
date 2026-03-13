@@ -20,22 +20,34 @@ landing:
     title: Add Social Proof Without A Carousel
     subtitle: A static quote grid keeps the proof readable, easy to scan, and easy to maintain in source control.
     items:
-      - quote: Shipping a new announcement page stopped feeling like a custom design sprint every single time.
+      - image:
+          src: /public/blog-theme.svg
+          alt: Example Forge testimonial preview
+        quote: Shipping a new announcement page stopped feeling like a custom design sprint every single time.
         author: Talia Reed
         role: Content lead
         company: Example Forge
         outcome: The team now reuses the same structure across launches and reviews changes faster.
-      - quote: We finally had a landing system that product, marketing, and ops could all edit without confusion.
+      - image:
+          src: /public/blog-vt.svg
+          alt: Demo Harbor testimonial preview
+        quote: We finally had a landing system that product, marketing, and ops could all edit without confusion.
         author: Niko Vale
         role: Product marketer
         company: Demo Harbor
         outcome: Shared sections removed most of the back-and-forth around layout decisions.
-      - quote: The preview flow made small spacing fixes obvious before they reached production.
+      - image:
+          src: /public/blog-partials.svg
+          alt: Fixture House testimonial preview
+        quote: The preview flow made small spacing fixes obvious before they reached production.
         author: Mina Hart
         role: Design systems manager
         company: Fixture House
         outcome: Reviews became shorter because the page already looked close to final when it arrived.
-      - quote: We used one kit for launch, docs, and follow-up content instead of maintaining three separate page styles.
+      - image:
+          src: /public/blog-theme.svg
+          alt: Sample Works testimonial preview
+        quote: We used one kit for launch, docs, and follow-up content instead of maintaining three separate page styles.
         author: Owen Pike
         role: Web operations lead
         company: Sample Works

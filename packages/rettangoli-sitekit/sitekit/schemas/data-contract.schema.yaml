@@ -584,6 +584,8 @@ $defs:
     - quote
     - author
     properties:
+      image:
+        $ref: '#/$defs/types.landingImage'
       quote:
         $ref: '#/$defs/types.nonEmptyString'
       author:
