@@ -29,11 +29,12 @@ template:
           - rtgl-form#formDialog slot=content :form=formDialogConfig.form :defaultValues=formDialogConfig.defaultValues :context=formDialogConfig.context ?disabled=${formDialogConfig.disabled} key=form-dialog-${formDialogConfig.key}: null
       - $if !isFormDialogOpen:
           - rtgl-view slot=content g=lg p=lg:
-              - rtgl-view d=h g=md:
-                  - rtgl-view d=h ah=c av=c g=md:
-                      - rtgl-view g=md: null
-                      - rtgl-view h=24 av=c:
-                          - rtgl-text s=lg: ${config.title}
+              - rtgl-view g=sm w=f:
+                  - $if config.title:
+                      - rtgl-text s=lg: ${config.title}
+                  - $if config.title:
+                      - rtgl-text c=mu-fg: ${config.message}
+                  - $if !config.title:
                       - rtgl-text: ${config.message}
               - rtgl-view d=h g=md mt=lg w=f ah=e:
                   - $if config.mode == 'confirm':
