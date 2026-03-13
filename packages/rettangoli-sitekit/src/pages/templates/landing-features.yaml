@@ -25,7 +25,6 @@ landing:
         context: Teams reuse stable sections instead of rebuilding launch pages from scratch.
       - value: "18"
         label: Reusable page blocks
-        context: One shared kit covers hero, proof, pricing, roadmap, and FAQ content.
       - value: 7m
         label: Review loop
         context: Stakeholders can scan a preview and respond in one short pass.
@@ -92,34 +91,6 @@ landing:
         image:
           src: /public/blog-theme.svg
           alt: Supporting card preview three
-  integrations:
-    title: Explain The Workflow Surface Area
-    subtitle: Show grouped capabilities instead of a flat logo list when integrations need context around what they actually unlock.
-    items:
-      - title: Content intake
-        description: Collect requests, briefs, and raw assets in one repeatable handoff.
-        tools:
-          - Brief Box
-          - Intake Lane
-          - Asset Shelf
-      - title: Review and approval
-        description: Give reviewers one clear preview path before the page goes live.
-        tools:
-          - Proof Desk
-          - Checkpoint
-          - Signoff Pad
-      - title: Publishing workflow
-        description: Move approved content into shared sections without rebuilding the page each time.
-        tools:
-          - Launch Queue
-          - Release Desk
-          - Publish Flow
-      - title: Measurement follow-up
-        description: Keep outcomes close to the page system so the next launch starts smarter.
-        tools:
-          - Signal Board
-          - Metric Note
-          - Outcome Log
   testimonialsGrid:
     title: Add Social Proof Without A Carousel
     subtitle: A static quote grid keeps the proof readable, easy to scan, and easy to maintain in source control.

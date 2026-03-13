@@ -16,3 +16,4 @@
                             - rtgl-text s=md ta=c: ${item.label}
                             - $if item.context:
                                 - rtgl-text s=sm c=mu-fg ta=c: ${item.context}
+    - rtgl-view h=80:
