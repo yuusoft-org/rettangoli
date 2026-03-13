@@ -45,13 +45,6 @@
                               subtitle: ${landing.logoCloud.subtitle}
                               items: ${landing.logoCloud.items}
 
-                    - $if landing.useCases:
-                        - 'section style="display: contents;"':
-                            - $partial: landing-use-cases
-                              title: ${landing.useCases.title}
-                              subtitle: ${landing.useCases.subtitle}
-                              items: ${landing.useCases.items}
-
                     - $if landing.iconFeatures:
                         - 'section style="display: contents;"':
                             - $partial: landing-icon-features
@@ -67,41 +60,12 @@
                               lead: ${landing.featureMosaic.lead}
                               items: ${landing.featureMosaic.items}
 
-                    - $if landing.integrations:
-                        - 'section style="display: contents;"':
-                            - $partial: landing-integrations
-                              title: ${landing.integrations.title}
-                              subtitle: ${landing.integrations.subtitle}
-                              items: ${landing.integrations.items}
-
-                    - $if landing.howItWorks:
-                        - 'section style="display: contents;"':
-                            - $partial: landing-how-it-works
-                              title: ${landing.howItWorks.title}
-                              subtitle: ${landing.howItWorks.subtitle}
-                              items: ${landing.howItWorks.items}
-
-                    - $if landing.beforeAfter:
-                        - 'section style="display: contents;"':
-                            - $partial: landing-before-after
-                              title: ${landing.beforeAfter.title}
-                              subtitle: ${landing.beforeAfter.subtitle}
-                              before: ${landing.beforeAfter.before}
-                              after: ${landing.beforeAfter.after}
-
                     - $if landing.testimonialsGrid:
                         - 'section style="display: contents;"':
                             - $partial: landing-testimonials-grid
                               title: ${landing.testimonialsGrid.title}
                               subtitle: ${landing.testimonialsGrid.subtitle}
                               items: ${landing.testimonialsGrid.items}
-
-                    - $if landing.trustBlock:
-                        - 'section style="display: contents;"':
-                            - $partial: landing-trust-block
-                              title: ${landing.trustBlock.title}
-                              subtitle: ${landing.trustBlock.subtitle}
-                              items: ${landing.trustBlock.items}
 
                     - $if landing.fullImage:
                         - 'section style="display: contents;"':
@@ -116,13 +80,6 @@
                               title: ${landing.featuresTitle}
                               subtitle: ${landing.featuresSubtitle}
                               items: ${landing.features}
-
-                    - $if landing.caseStudies:
-                        - 'section style="display: contents;"':
-                            - $partial: landing-case-studies
-                              title: ${landing.caseStudies.title}
-                              subtitle: ${landing.caseStudies.subtitle}
-                              items: ${landing.caseStudies.items}
 
                     - $if landing.pricing:
                         - 'section style="display: contents;"':

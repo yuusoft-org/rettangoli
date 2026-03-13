@@ -60,16 +60,10 @@ Current partials:
 - `landing-hero`
 - `landing-stats-band`
 - `landing-logo-cloud`
-- `landing-use-cases`
 - `landing-icon-features`
 - `landing-feature-mosaic`
-- `landing-integrations`
-- `landing-how-it-works`
-- `landing-before-after`
 - `landing-testimonials-grid`
-- `landing-trust-block`
 - `landing-full-image`
-- `landing-case-studies`
 - `landing-pricing`
 - `landing-pricing-comparison`
 - `landing-roadmap`
@@ -106,7 +100,7 @@ Use the shared contract index only when you need the aggregate `$defs` set for t
 Aggregate `$defs`:
 
 - Templates: `template.base`, `template.docs`, `template.landingFeatures`, `template.blogArticleList`, `template.blogArticle`
-- Partials: `partial.seo`, `partial.navbar`, `partial.mobileNav`, `partial.docsSidebar`, `partial.docsMobileNav`, `partial.topNavbar`, `partial.landingHero`, `partial.landingStatsBand`, `partial.landingLogoCloud`, `partial.landingUseCases`, `partial.landingIconFeatures`, `partial.landingFeatureMosaic`, `partial.landingIntegrations`, `partial.landingHowItWorks`, `partial.landingBeforeAfter`, `partial.landingTestimonialsGrid`, `partial.landingTrustBlock`, `partial.landingFullImage`, `partial.landingCaseStudies`, `partial.landingPricing`, `partial.landingPricingComparison`, `partial.landingRoadmap`, `partial.landingFaq`, `partial.landingFeaturesSection`, `partial.landingCta`, `partial.footer`
+- Partials: `partial.seo`, `partial.navbar`, `partial.mobileNav`, `partial.docsSidebar`, `partial.docsMobileNav`, `partial.topNavbar`, `partial.landingHero`, `partial.landingStatsBand`, `partial.landingLogoCloud`, `partial.landingIconFeatures`, `partial.landingFeatureMosaic`, `partial.landingTestimonialsGrid`, `partial.landingFullImage`, `partial.landingPricing`, `partial.landingPricingComparison`, `partial.landingRoadmap`, `partial.landingFaq`, `partial.landingFeaturesSection`, `partial.landingCta`, `partial.footer`
 
 ## Recommended Alias Map
 
@@ -127,16 +121,10 @@ imports:
     landing-hero: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-hero.yaml
     landing-stats-band: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-stats-band.yaml
     landing-logo-cloud: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-logo-cloud.yaml
-    landing-use-cases: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-use-cases.yaml
     landing-icon-features: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-icon-features.yaml
     landing-feature-mosaic: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-feature-mosaic.yaml
-    landing-integrations: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-integrations.yaml
-    landing-how-it-works: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-how-it-works.yaml
-    landing-before-after: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-before-after.yaml
     landing-testimonials-grid: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-testimonials-grid.yaml
-    landing-trust-block: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-trust-block.yaml
     landing-full-image: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-full-image.yaml
-    landing-case-studies: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-case-studies.yaml
     landing-pricing: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-pricing.yaml
     landing-pricing-comparison: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-pricing-comparison.yaml
     landing-roadmap: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-roadmap.yaml
