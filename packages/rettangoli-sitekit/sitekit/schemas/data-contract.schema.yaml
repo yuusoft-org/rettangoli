@@ -37,16 +37,24 @@ properties:
         $ref: '#/$defs/partial.topNavbar'
       landing-hero:
         $ref: '#/$defs/partial.landingHero'
+      landing-stats-band:
+        $ref: '#/$defs/partial.landingStatsBand'
       landing-logo-cloud:
         $ref: '#/$defs/partial.landingLogoCloud'
       landing-icon-features:
         $ref: '#/$defs/partial.landingIconFeatures'
+      landing-feature-mosaic:
+        $ref: '#/$defs/partial.landingFeatureMosaic'
+      landing-testimonials-grid:
+        $ref: '#/$defs/partial.landingTestimonialsGrid'
       landing-full-image:
         $ref: '#/$defs/partial.landingFullImage'
       landing-pricing:
         $ref: '#/$defs/partial.landingPricing'
       landing-pricing-comparison:
         $ref: '#/$defs/partial.landingPricingComparison'
+      landing-roadmap:
+        $ref: '#/$defs/partial.landingRoadmap'
       landing-faq:
         $ref: '#/$defs/partial.landingFaq'
       landing-features-section:
@@ -325,6 +333,33 @@ $defs:
         type: string
       image:
         $ref: '#/$defs/types.landingImage'
+  types.landingStatItem:
+    type: object
+    additionalProperties: true
+    required:
+    - value
+    - label
+    properties:
+      value:
+        $ref: '#/$defs/types.nonEmptyString'
+      label:
+        $ref: '#/$defs/types.nonEmptyString'
+      context:
+        type: string
+  types.landingStatsBandModel:
+    type: object
+    additionalProperties: true
+    required:
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingStatItem'
   types.landingPricingItem:
     type: object
     additionalProperties: true
@@ -366,6 +401,84 @@ $defs:
         type: array
         items:
           $ref: '#/$defs/types.landingPricingItem'
+  types.landingFeatureMosaicLead:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        type: string
+      image:
+        $ref: '#/$defs/types.landingImage'
+      cta:
+        $ref: '#/$defs/types.cta'
+  types.landingFeatureMosaicItem:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        type: string
+      image:
+        $ref: '#/$defs/types.landingImage'
+  types.landingFeatureMosaicModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - lead
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      lead:
+        $ref: '#/$defs/types.landingFeatureMosaicLead'
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingFeatureMosaicItem'
+  types.landingTestimonialItem:
+    type: object
+    additionalProperties: true
+    required:
+    - quote
+    - author
+    properties:
+      image:
+        $ref: '#/$defs/types.landingImage'
+      quote:
+        $ref: '#/$defs/types.nonEmptyString'
+      author:
+        $ref: '#/$defs/types.nonEmptyString'
+      role:
+        type: string
+      company:
+        type: string
+      outcome:
+        type: string
+  types.landingTestimonialsGridModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingTestimonialItem'
   types.landingPricingComparisonPlan:
     type: object
     additionalProperties: true
@@ -425,6 +538,35 @@ $defs:
         type: array
         items:
           $ref: '#/$defs/types.landingPricingComparisonRow'
+  types.landingRoadmapItem:
+    type: object
+    additionalProperties: true
+    required:
+    - phase
+    - title
+    - description
+    properties:
+      phase:
+        $ref: '#/$defs/types.nonEmptyString'
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        $ref: '#/$defs/types.nonEmptyString'
+  types.landingRoadmapModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingRoadmapItem'
   types.landingFaqItem:
     type: object
     additionalProperties: true
@@ -489,7 +631,13 @@ $defs:
     additionalProperties: true
     required:
     - title
-    - featuresTitle
+    anyOf:
+    - not:
+        required:
+        - features
+    - required:
+      - featuresTitle
+      - features
     properties:
       title:
         $ref: '#/$defs/types.nonEmptyString'
@@ -501,16 +649,24 @@ $defs:
           $ref: '#/$defs/types.landingAction'
       image:
         $ref: '#/$defs/types.landingImage'
+      statsBand:
+        $ref: '#/$defs/types.landingStatsBandModel'
       logoCloud:
         $ref: '#/$defs/types.landingLogoCloudModel'
       iconFeatures:
         $ref: '#/$defs/types.landingIconFeaturesModel'
+      featureMosaic:
+        $ref: '#/$defs/types.landingFeatureMosaicModel'
+      testimonialsGrid:
+        $ref: '#/$defs/types.landingTestimonialsGridModel'
       fullImage:
         $ref: '#/$defs/types.landingFullImageModel'
       pricing:
         $ref: '#/$defs/types.landingPricingModel'
       pricingComparison:
         $ref: '#/$defs/types.landingPricingComparisonModel'
+      roadmap:
+        $ref: '#/$defs/types.landingRoadmapModel'
       faq:
         $ref: '#/$defs/types.landingFaqModel'
       featuresTitle:
@@ -922,10 +1078,16 @@ $defs:
           $ref: '#/$defs/types.landingAction'
       image:
         $ref: '#/$defs/types.landingImage'
+  partial.landingStatsBand:
+    $ref: '#/$defs/types.landingStatsBandModel'
   partial.landingLogoCloud:
     $ref: '#/$defs/types.landingLogoCloudModel'
   partial.landingIconFeatures:
     $ref: '#/$defs/types.landingIconFeaturesModel'
+  partial.landingFeatureMosaic:
+    $ref: '#/$defs/types.landingFeatureMosaicModel'
+  partial.landingTestimonialsGrid:
+    $ref: '#/$defs/types.landingTestimonialsGridModel'
   partial.landingFullImage:
     type: object
     additionalProperties: true
@@ -942,6 +1104,8 @@ $defs:
     $ref: '#/$defs/types.landingPricingModel'
   partial.landingPricingComparison:
     $ref: '#/$defs/types.landingPricingComparisonModel'
+  partial.landingRoadmap:
+    $ref: '#/$defs/types.landingRoadmapModel'
   partial.landingFaq:
     type: object
     additionalProperties: true

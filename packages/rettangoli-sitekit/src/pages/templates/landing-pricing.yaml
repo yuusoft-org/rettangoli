@@ -1,0 +1,147 @@
+---
+template: landing-features
+title: Landing Page with Pricing Sections
+_bind:
+  seo: seo
+landing:
+  title: Put Pricing And Decisions On One Page
+  subtitle: Combine plan summaries, detailed comparisons, future roadmap context, and short answers in one reusable conversion sequence.
+  actions:
+    - label: Browse Themes
+      href: /themes/slate-dark/
+      variant: se
+    - label: Start Building
+      href: /docs/getting-started/
+      variant: pr
+  image:
+    src: /public/blog-theme.svg
+    alt: Pricing-focused landing page preview
+  pricing:
+    title: Compare Plans In A Reusable Grid
+    subtitle: Use surfaced plan cards to summarize pricing before the detailed comparison matrix below.
+    items:
+      - title: Starter
+        description: For small demos and straightforward launch pages.
+        price: Free
+        priceNote: Good for early experiments and single-site projects.
+        features:
+          - One published site
+          - Shared theme support
+          - Reusable landing sections
+        cta:
+          label: Start Small
+          href: /docs/getting-started/
+          variant: pr
+      - title: Team
+        description: For product teams shipping updates every week.
+        price: $29
+        priceSuffix: /month
+        priceNote: Balanced for active publishing and broader collaboration.
+        size: lg
+        features:
+          - Multiple content surfaces
+          - Shared preview workflow
+          - Flexible CTA and FAQ sections
+        cta:
+          label: Choose Team
+          href: /docs/getting-started/
+          variant: pr
+      - title: Enterprise
+        description: For larger rollouts and custom delivery needs.
+        price: Custom
+        priceNote: Best when teams need tailored governance and rollout support.
+        features:
+          - Custom rollout guidance
+          - Review-ready content structure
+          - Extended implementation support
+        cta:
+          label: Talk Through Needs
+          href: /docs/getting-started/
+  pricingComparison:
+    title: Compare Plan Access At A Glance
+    subtitle: Use a feature matrix when visitors need a quick line-by-line comparison before they choose a plan.
+    plans:
+      - title: Starter
+        price: Free
+        note: Best for first demos
+        cta:
+          label: Start Small
+          href: /docs/getting-started/
+          variant: pr
+      - title: Team
+        price: $29
+        priceSuffix: /month
+        note: Best for active teams
+        cta:
+          label: Choose Team
+          href: /docs/getting-started/
+          variant: pr
+      - title: Enterprise
+        price: Custom
+        note: Best for tailored rollout support
+        cta:
+          label: Talk Through Needs
+          href: /docs/getting-started/
+    rows:
+      - label: Published sites
+        description: How many public sites can share one account.
+        cells:
+          - label: One
+          - label: Up to five
+          - label: Unlimited
+      - label: Reusable landing sections
+        cells:
+          - included: true
+          - included: true
+          - included: true
+      - label: Docs and blog templates
+        cells:
+          - included: false
+          - included: true
+          - included: true
+      - label: Shared preview workflow
+        cells:
+          - included: false
+          - included: true
+          - included: true
+      - label: Approval and rollout support
+        cells:
+          - included: false
+          - included: false
+          - label: Custom
+      - label: Migration help
+        cells:
+          - included: false
+          - label: Available
+          - label: Included
+  roadmap:
+    title: Show What Ships Next
+    subtitle: A roadmap section works well near the bottom of the page when the buyer wants confidence that the product and site system keep moving forward.
+    items:
+      - phase: Now
+        title: Expand the reusable launch-page core
+        description: Ship the shared sections most teams need first, including proof, pricing, FAQs, and rollout support.
+      - phase: Next
+        title: Add more audience-specific section variants
+        description: Introduce patterns that let one page adapt more cleanly to marketing, product, and operations messaging.
+      - phase: Later
+        title: Tighten authoring and review workflows
+        description: Make section-level publishing, previewing, and screenshot validation even easier to repeat across future pages.
+  faq:
+    title: Common Questions
+    subtitle: Use an FAQ section when the page needs short answers to setup, usage, or rollout questions near the bottom.
+    items:
+      - question: Can this section work with simple text-only answers?
+        answer: Yes. Each item uses the built-in accordion component with a question label and a short answer body.
+      - question: Do I need custom scripting to use the FAQ section?
+        answer: No. The accordion behavior comes from the standard Rettangoli UI bundle already used by this template.
+      - question: Can teams rewrite the FAQ copy for other page types?
+        answer: Yes. The content is data-driven, so the same section can be reused for demos, product pages, or documentation overviews.
+  cta:
+    title: Put The Decision Path In One System
+    subtitle: Reuse the same pricing, comparison, roadmap, and FAQ sections across future conversion pages.
+    cta:
+      label: Start Building
+      href: /docs/getting-started/
+      variant: pr
+---

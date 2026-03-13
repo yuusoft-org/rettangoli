@@ -14,6 +14,10 @@ docsPages:
 templatePages:
   - title: Landing Features
     href: /templates/landing-features/
+  - title: Landing Highlights
+    href: /templates/landing-highlights/
+  - title: Landing Pricing
+    href: /templates/landing-pricing/
   - title: Blog Article List
     href: /templates/blog/article-list/
   - title: Blog Article
