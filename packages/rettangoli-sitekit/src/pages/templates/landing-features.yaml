@@ -22,15 +22,12 @@ landing:
     items:
       - value: 42%
         label: Faster page setup
-        context: Teams reuse stable sections instead of rebuilding launch pages from scratch.
       - value: "18"
         label: Reusable page blocks
       - value: 7m
         label: Review loop
-        context: Stakeholders can scan a preview and respond in one short pass.
       - value: 99.9%
         label: Publishing confidence
-        context: Repeated layouts reduce last-minute regressions across site updates.
   logoCloud:
     title: Works For Customers, Partners, And Integrations
     subtitle: Use one reusable logo cloud to show customers, ecosystem partners, featured platforms, or press mentions.
