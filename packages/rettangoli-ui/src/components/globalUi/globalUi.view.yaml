@@ -32,9 +32,8 @@ template:
               - rtgl-view g=sm w=f:
                   - $if config.title:
                       - rtgl-text s=lg: ${config.title}
-                  - $if config.title:
                       - rtgl-text c=mu-fg: ${config.message}
-                  - $if !config.title:
+                    $else:
                       - rtgl-text: ${config.message}
               - rtgl-view d=h g=md mt=lg w=f ah=e:
                   - $if config.mode == 'confirm':
