@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IMAGE_NAME="playwright-v1.57.0-rtgl-v1.0.5"
+IMAGE_NAME="playwright-v1.57.0-rtgl-v1.0.10"
 REGISTRY="${REGISTRY:-docker.io}"
 REPO="${REPO:-han4wluc/rtgl}"
 BUILDER_NAME="multiplatform-builder"
