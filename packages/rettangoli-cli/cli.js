@@ -3,7 +3,7 @@
 import { build, check, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { check as checkContracts } from "@rettangoli/check/cli";
 import { build as buildBe, check as checkBe, start as startBe, watch as watchBe } from "@rettangoli/be/cli";
-import { generate, screenshot, report, accept } from "@rettangoli/vt/cli";
+import { generate, screenshot, report, accept } from "../rettangoli-vt/src/cli/index.js";
 import { buildSite, watchSite, initSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
 import { Command, InvalidArgumentError } from "commander";

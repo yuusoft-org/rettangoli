@@ -1,11 +1,11 @@
 import fs from "fs";
 import { Liquid } from "liquidjs";
+import { deriveAnchorId } from "../section-page-key.js";
 
 const engine = new Liquid();
 
-engine.registerFilter("slug", (value) => {
-  if (typeof value !== "string") return "";
-  return value.toLowerCase().replace(/\s+/g, "-");
+engine.registerFilter("slug", (value, fallbackValue) => {
+  return deriveAnchorId(value, fallbackValue);
 });
 
 export async function renderHtmlReport({ results, templatePath, outputPath }) {

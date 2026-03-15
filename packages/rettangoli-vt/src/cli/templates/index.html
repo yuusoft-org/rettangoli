@@ -60,8 +60,8 @@
         {% for file in files %}
         <rtgl-view w="f">
           <a style="display: contents; text-decoration: none; color: inherit;"
-            href="#{{ file.frontMatter.title | slug }}">
-            <rtgl-text id="{{ file.frontMatter.title | slug }}" s="h3">{{ file.frontMatter.title | default: file.path
+            href="#{{ file.anchorId }}">
+            <rtgl-text id="{{ file.anchorId }}" s="h3">{{ file.frontMatter.title | default: file.path
               }}</rtgl-text>
           </a>
 
