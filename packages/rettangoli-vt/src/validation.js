@@ -136,7 +136,7 @@ function assertDerivableSectionPageKey(sectionLike, path) {
   const pageKey = deriveSectionPageKey(sectionLike);
   assert(
     pageKey.length > 0,
-    `"${path}" must contain at least one letter or number.`,
+    `"${path}" must produce a page key from title or files.`,
   );
 }
 
@@ -169,14 +169,14 @@ function validateSection(section, index) {
 
       assert(typeof item.title === "string" && item.title.trim().length > 0, `"${itemPath}.title" is required.`);
       assert(typeof item.files === "string" && item.files.trim().length > 0, `"${itemPath}.files" is required.`);
-      assertDerivableSectionPageKey(item, `${itemPath}.title`);
+      assertDerivableSectionPageKey(item, itemPath);
     });
     return;
   }
 
   validateOptionalString(section.files, `${sectionPath}.files`);
   assert(typeof section.files === "string" && section.files.trim().length > 0, `"${sectionPath}.files" is required.`);
-  assertDerivableSectionPageKey(section, `${sectionPath}.title`);
+  assertDerivableSectionPageKey(section, sectionPath);
 }
 
 function collectSectionPageKeys(vtConfig) {
