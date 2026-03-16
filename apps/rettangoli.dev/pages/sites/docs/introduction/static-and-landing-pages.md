@@ -7,11 +7,12 @@ tags: documentation
 sidebarId: sites-static-and-landing-pages
 ---
 
-Use `rtgl sites` in three distinct ways:
+Use `rtgl sites` in four distinct ways:
 
 1. simple static pages backed by a local base template
 2. landing pages backed by built-in imported templates
-3. custom landing pages backed by your own local template
+3. collection pages backed by built-in imported templates
+4. custom landing pages backed by your own local template
 
 That split keeps the authoring model predictable.
 
@@ -21,6 +22,7 @@ That split keeps the authoring model predictable.
 | --- | --- |
 | About, contact, legal, company pages | local `base` template + Markdown page |
 | Product homepage or launch page using a shared pattern | built-in imported landing template |
+| Editorial archive, resource library, changelog, or blog index | built-in imported collection template |
 | Product homepage with custom layout structure | local landing template + YAML page data |
 
 Use Markdown when the page is mostly prose.
@@ -81,7 +83,7 @@ Use this when you want a production-ready landing structure without building the
 ```yaml
 imports:
   templates:
-    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.1/sites/templates/landing-features.yaml
+    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/landing-features.yaml
 ```
 
 `data/site.yaml`
@@ -164,7 +166,61 @@ Use this pattern when:
 Important:
 
 - `rtgl sites init --template ...` is for scaffold templates only
-- built-in landing templates are imported through `sites.config.yaml`
+- built-in landing templates are imported through `sites.config.yaml` from `@rettangoli/sitekit`
+
+## Built-in collection page pattern
+
+Use this when you want an editorial archive, resource library, changelog page, or blog index without building the collection layout yourself.
+
+`sites.config.yaml`
+
+```yaml
+imports:
+  templates:
+    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article-list.yaml
+```
+
+`pages/notes.yaml`
+
+```yaml
+---
+template: blog-article-list
+title: Product Notes
+description: Releases, architecture notes, and implementation details.
+sections:
+  - layout: featured-list
+    title: Editorial Picks
+    lead:
+      title: The Release That Simplified Theme Imports
+      href: /notes/theme-imports/
+      excerpt: Why the sitekit split made template imports easier to reason about.
+      imageSrc: /public/theme-imports.png
+      imageAlt: Theme imports article cover
+  - layout: card-grid
+    title: Latest Notes
+    items:
+      - title: Smoke Checks for VT
+        href: /notes/vt-smoke-checks/
+        excerpt: Keep screenshot coverage focused on representative pages.
+      - title: Shared Docs Navigation
+        href: /notes/shared-docs-navigation/
+        excerpt: Reuse the same shell across docs and editorial pages.
+---
+```
+
+Use this pattern when:
+
+- the page is a collection of entries rather than a single landing flow
+- you want section-level layout control without creating a local template
+- you want the same template to work for blog posts, notes, resources, or updates
+
+The current `blog-article-list` template supports top-level `sections[]` with five layouts:
+
+- `featured-list`
+- `card-grid`
+- `compact-list`
+- `split-columns`
+- `grouped-list`
 
 ## Custom landing page pattern
 

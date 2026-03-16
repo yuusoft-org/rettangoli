@@ -3,7 +3,7 @@
 
 Website and user facing documentation for Rettangoli.
 
-This website is built with @rettangoli/sites
+This website is built with `rtgl sites` and imports its shared site assets from `@rettangoli/sitekit`.
 
 ## Development
 

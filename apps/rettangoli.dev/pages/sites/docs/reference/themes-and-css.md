@@ -7,11 +7,11 @@ tags: documentation
 sidebarId: sites-themes-and-css
 ---
 
-`@rettangoli/sites` ships a publishable theme bundle at:
+`@rettangoli/sitekit` ships a publishable theme bundle at:
 
-`https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/themes/theme-rtgl-themes.css`
+`https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/themes/theme-rtgl-themes.css`
 
-For this release, replace `<version>` with `1.0.0-rc11`.
+For this release, replace `<version>` with `1.0.3`.
 
 ## Usage
 
@@ -19,7 +19,7 @@ Load UI base CSS + Sites theme CSS:
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.3/dist/themes/base.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc11/sites/themes/theme-rtgl-themes.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/themes/theme-rtgl-themes.css">
 ```
 
 Apply exactly one theme class on `body` (or `html`):
@@ -38,8 +38,6 @@ Apply exactly one theme class on `body` (or `html`):
 - `catppuccin-frappe`
 - `catppuccin-macchiato`
 - `catppuccin-mocha`
-- `github-light`
-- `github-dark`
 - `nord-light`
 - `nord-dark`
 
@@ -47,5 +45,5 @@ Apply exactly one theme class on `body` (or `html`):
 
 - The bundle is a single CSS file with all classes.
 - Switching theme only requires changing the class name.
-- Templates in `sites/templates/*.yaml` already reference this bundle.
+- Templates in `sitekit/templates/*.yaml` already reference this bundle.
 - See [Built-in Templates & Partials](/sites/docs/reference/built-in-templates-and-partials) for the full template list.

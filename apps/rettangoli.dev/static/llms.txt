@@ -109,54 +109,60 @@ Default output path: `_site/`.
 - CLI scaffold template: `default`
 - Templates inside scaffolded `default`: `base`, `post`
 - `rtgl sites init --template <name>` supports scaffold templates only (currently `default`).
-- Built-in templates below are import aliases for `sites.config.yaml` and should not be passed to `rtgl sites init --template`.
+- Built-in templates below are import aliases for `sites.config.yaml` from `@rettangoli/sitekit` and should not be passed to `rtgl sites init --template`.
 - Built-in import templates:
-  - `base`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/base.yaml`
-  - `docs`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/docs.yaml`
-  - `landing-features`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/landing-features.yaml`
-  - `blog-article-list`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/blog-article-list.yaml`
-  - `blog-article`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/blog-article.yaml`
+  - `base`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/base.yaml`
+  - `docs`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/docs.yaml`
+  - `landing-features`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/landing-features.yaml`
+  - `blog-article-list`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article-list.yaml`
+  - `blog-article`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article.yaml`
 - `apps/rettangoli.dev` local templates:
   - `tui-documentation`: `apps/rettangoli.dev/templates/tui-documentation.yaml`
   - `ansi-json-documentation`: `apps/rettangoli.dev/templates/ansi-json-documentation.yaml`
 
 ## Sites Pre-Provided Partials (Use These)
-- `seo`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/seo.yaml`
-- `navbar`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/navbar.yaml`
-- `mobile-nav`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/mobile-nav.yaml`
-- `docs-sidebar`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/docs-sidebar.yaml`
-- `docs-mobile-nav`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/docs-mobile-nav.yaml`
-- `top-navbar`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/top-navbar.yaml`
-- `landing-hero`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/landing-hero.yaml`
-- `landing-features-section`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/landing-features-section.yaml`
-- `landing-cta`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/landing-cta.yaml`
-- `footer`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/footer.yaml`
+- `seo`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/seo.yaml`
+- `navbar`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/navbar.yaml`
+- `mobile-nav`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/mobile-nav.yaml`
+- `docs-sidebar`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/docs-sidebar.yaml`
+- `docs-mobile-nav`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/docs-mobile-nav.yaml`
+- `top-navbar`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/top-navbar.yaml`
+- `collection-section-header`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/collection-section-header.yaml`
+- `collection-section-card-grid`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/collection-section-card-grid.yaml`
+- `collection-section-featured-list`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/collection-section-featured-list.yaml`
+- `collection-section-compact-list`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/collection-section-compact-list.yaml`
+- `collection-section-split-columns`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/collection-section-split-columns.yaml`
+- `collection-section-grouped-list`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/collection-section-grouped-list.yaml`
+- `landing-hero`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/landing-hero.yaml`
+- `landing-features-section`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/landing-features-section.yaml`
+- `landing-cta`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/landing-cta.yaml`
+- `footer`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/footer.yaml`
 
 ## Sites Alias Map (Copy Into `sites.config.yaml`)
 ```yaml
 imports:
   templates:
-    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/base.yaml
-    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/docs.yaml
-    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/landing-features.yaml
-    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/blog-article-list.yaml
-    blog-article: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/blog-article.yaml
+    base: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/base.yaml
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/docs.yaml
+    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/landing-features.yaml
+    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article-list.yaml
+    blog-article: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article.yaml
   partials:
-    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/seo.yaml
-    navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/navbar.yaml
-    mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/mobile-nav.yaml
-    docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/docs-sidebar.yaml
-    docs-mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/docs-mobile-nav.yaml
-    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/top-navbar.yaml
-    landing-hero: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/landing-hero.yaml
-    landing-features-section: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/landing-features-section.yaml
-    landing-cta: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/landing-cta.yaml
-    footer: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/footer.yaml
+    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/seo.yaml
+    navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/navbar.yaml
+    mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/mobile-nav.yaml
+    docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/docs-sidebar.yaml
+    docs-mobile-nav: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/docs-mobile-nav.yaml
+    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/top-navbar.yaml
+    landing-hero: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/landing-hero.yaml
+    landing-features-section: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/landing-features-section.yaml
+    landing-cta: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/landing-cta.yaml
+    footer: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/footer.yaml
 ```
 
 ## Sites Data Schemas
-- Canonical schema file: `packages/rettangoli-sites/sites/schemas/data-contract.schema.yaml`
-- Published schema URL: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/schemas/data-contract.schema.yaml`
+- Canonical schema file: `packages/rettangoli-sitekit/sitekit/schemas/data-contract.schema.yaml`
+- Published schema URL: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/schemas/data-contract.schema.yaml`
 - Docs: `https://rettangoli.dev/sites/docs/reference/data-contract-schemas.md`
 - Use `$defs/template.*` for template data and `$defs/partial.*` for partial data.
 

@@ -55,7 +55,7 @@ This page is authored in Markdown.
 
 - `rtgl sites init --template ...` chooses a scaffold template for project creation.
 - Current scaffold template set is `default`.
-- Reusable built-in templates like `landing-features`, `blog-article-list`, and `blog-article` are imported aliases from jsDelivr via `sites.config.yaml` (they are not valid `init --template` values).
+- Reusable built-in templates like `landing-features`, `blog-article-list`, and `blog-article` are imported aliases from `@rettangoli/sitekit` via `sites.config.yaml` (they are not valid `init --template` values).
 
 ## 5. Run
 
