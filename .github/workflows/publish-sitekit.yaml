@@ -27,8 +27,8 @@ jobs:
         run: bun run build
         working-directory: ./packages/rettangoli-sitekit
 
-      - name: Run VT Smoke Checks
-        run: bun run vt:ci
+      - name: Run VT Smoke Checks (Docker)
+        run: bun run vt:ci:docker
         working-directory: ./packages/rettangoli-sitekit
 
       - uses: actions/setup-node@v4
