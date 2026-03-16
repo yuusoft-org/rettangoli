@@ -35,6 +35,18 @@ properties:
         $ref: '#/$defs/partial.docsMobileNav'
       top-navbar:
         $ref: '#/$defs/partial.topNavbar'
+      collection-section-header:
+        $ref: '#/$defs/partial.collectionSectionHeader'
+      collection-section-card-grid:
+        $ref: '#/$defs/partial.collectionSectionCardGrid'
+      collection-section-featured-list:
+        $ref: '#/$defs/partial.collectionSectionFeaturedList'
+      collection-section-compact-list:
+        $ref: '#/$defs/partial.collectionSectionCompactList'
+      collection-section-split-columns:
+        $ref: '#/$defs/partial.collectionSectionSplitColumns'
+      collection-section-grouped-list:
+        $ref: '#/$defs/partial.collectionSectionGroupedList'
       landing-hero:
         $ref: '#/$defs/partial.landingHero'
       landing-stats-band:
@@ -679,6 +691,190 @@ $defs:
           $ref: '#/$defs/types.landingFeatureItem'
       cta:
         $ref: '#/$defs/types.landingCtaModel'
+  types.collectionItem:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - href
+    properties:
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      href:
+        $ref: '#/$defs/types.urlString'
+      excerpt:
+        type: string
+      description:
+        type: string
+      author:
+        type: string
+      date:
+        type: string
+      readingTime:
+        type: string
+      imageSrc:
+        $ref: '#/$defs/types.urlString'
+      imageAlt:
+        type: string
+  types.collectionSectionHeader:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    properties:
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+  types.collectionSectionCardGrid:
+    type: object
+    additionalProperties: true
+    required:
+    - layout
+    - title
+    - items
+    properties:
+      layout:
+        type: string
+        enum: [card-grid]
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionItem'
+  types.collectionSectionFeaturedList:
+    type: object
+    additionalProperties: true
+    required:
+    - layout
+    - title
+    anyOf:
+    - required:
+      - lead
+    - required:
+      - items
+    properties:
+      layout:
+        type: string
+        enum: [featured-list]
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+      lead:
+        $ref: '#/$defs/types.collectionItem'
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionItem'
+  types.collectionSectionCompactList:
+    type: object
+    additionalProperties: true
+    required:
+    - layout
+    - title
+    - items
+    properties:
+      layout:
+        type: string
+        enum: [compact-list]
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionItem'
+  types.collectionSectionSplitColumns:
+    type: object
+    additionalProperties: true
+    required:
+    - layout
+    - title
+    - items
+    properties:
+      layout:
+        type: string
+        enum: [split-columns]
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionItem'
+  types.collectionGroup:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionItem'
+  types.collectionSectionGroupedList:
+    type: object
+    additionalProperties: true
+    required:
+    - layout
+    - title
+    - groups
+    properties:
+      layout:
+        type: string
+        enum: [grouped-list]
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+      groups:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionGroup'
+  types.collectionSection:
+    oneOf:
+    - $ref: '#/$defs/types.collectionSectionCardGrid'
+    - $ref: '#/$defs/types.collectionSectionFeaturedList'
+    - $ref: '#/$defs/types.collectionSectionCompactList'
+    - $ref: '#/$defs/types.collectionSectionSplitColumns'
+    - $ref: '#/$defs/types.collectionSectionGroupedList'
   types.postModel:
     type: object
     additionalProperties: true
@@ -824,10 +1020,14 @@ $defs:
     required:
     - title
     - description
-    - posts
     - page
     - seo
     - site
+    anyOf:
+    - required:
+      - posts
+    - required:
+      - sections
     properties:
       title:
         $ref: '#/$defs/types.nonEmptyString'
@@ -836,7 +1036,11 @@ $defs:
       posts:
         type: array
         items:
-          $ref: '#/$defs/types.postModel'
+          $ref: '#/$defs/types.collectionItem'
+      sections:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionSection'
       page:
         $ref: '#/$defs/types.pageModel'
       seo:
@@ -1062,6 +1266,18 @@ $defs:
         properties:
           href:
             $ref: '#/$defs/types.urlString'
+  partial.collectionSectionHeader:
+    $ref: '#/$defs/types.collectionSectionHeader'
+  partial.collectionSectionCardGrid:
+    $ref: '#/$defs/types.collectionSectionCardGrid'
+  partial.collectionSectionFeaturedList:
+    $ref: '#/$defs/types.collectionSectionFeaturedList'
+  partial.collectionSectionCompactList:
+    $ref: '#/$defs/types.collectionSectionCompactList'
+  partial.collectionSectionSplitColumns:
+    $ref: '#/$defs/types.collectionSectionSplitColumns'
+  partial.collectionSectionGroupedList:
+    $ref: '#/$defs/types.collectionSectionGroupedList'
   partial.landingHero:
     type: object
     additionalProperties: true

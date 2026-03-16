@@ -30,6 +30,14 @@ Current templates:
 - `blog-article-list`
 - `blog-article`
 
+`blog-article-list` now supports top-level `sections[]` with five built-in layouts:
+
+- `featured-list`
+- `card-grid`
+- `compact-list`
+- `split-columns`
+- `grouped-list`
+
 Each published template has a companion schema file next to it with the same base name:
 
 - `sitekit/templates/base.yaml`
@@ -57,6 +65,12 @@ Current partials:
 - `docs-sidebar`
 - `docs-mobile-nav`
 - `top-navbar`
+- `collection-section-header`
+- `collection-section-card-grid`
+- `collection-section-featured-list`
+- `collection-section-compact-list`
+- `collection-section-split-columns`
+- `collection-section-grouped-list`
 - `landing-hero`
 - `landing-stats-band`
 - `landing-logo-cloud`

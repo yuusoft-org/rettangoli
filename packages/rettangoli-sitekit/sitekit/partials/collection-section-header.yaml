@@ -1,0 +1,18 @@
+- 'header style="display: contents;"':
+    - rtgl-view w=f g=lg ah=c pv=xl:
+        - $if eyebrow:
+            - rtgl-text s=sm c=mu-fg ta=c w=f: ${eyebrow}
+        - rtgl-text s=h2 ta=c w=f: ${title}
+        - $if subtitle:
+            - rtgl-text s=lg c=mu-fg ta=c w=f: ${subtitle}
+        - $if cta:
+            - $if cta.newTab:
+                - $if cta.variant:
+                    - rtgl-button v="${cta.variant}" href="${cta.href}" new-tab mt=sm: ${cta.label}
+                  $else:
+                    - rtgl-button href="${cta.href}" new-tab mt=sm: ${cta.label}
+              $else:
+                - $if cta.variant:
+                    - rtgl-button v="${cta.variant}" href="${cta.href}" mt=sm: ${cta.label}
+                  $else:
+                    - rtgl-button href="${cta.href}" mt=sm: ${cta.label}
