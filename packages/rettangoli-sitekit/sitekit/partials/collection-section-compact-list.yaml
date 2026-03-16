@@ -1,0 +1,31 @@
+- rtgl-view w=f g=xl pv=xl:
+    - $partial: collection-section-header
+      eyebrow: ${eyebrow}
+      title: ${title}
+      subtitle: ${subtitle}
+      cta: ${cta}
+
+    - $if items:
+        - rtgl-view w=f g=lg:
+            - $for item in items:
+                - 'article style="display: contents;"':
+                    - rtgl-view href="${item.href}" d=h md-d=v w=f g=lg p=lg bw=xs bc=bo br=xl cur=p:
+                        - rtgl-view w=1fg md-w=f g=sm:
+                            - $if item.eyebrow:
+                                - rtgl-text s=sm c=mu-fg: ${item.eyebrow}
+                            - rtgl-text s=h4 w=f: ${item.title}
+                            - $if item.excerpt:
+                                - rtgl-text c=mu-fg w=f: ${item.excerpt}
+                              $else:
+                                - $if item.description:
+                                    - rtgl-text c=mu-fg w=f: ${item.description}
+                            - rtgl-view d=h g=md av=c w=f:
+                                - $if item.author:
+                                    - rtgl-text s=sm c=mu-fg: ${item.author}
+                                - $if item.date:
+                                    - rtgl-text s=sm c=mu-fg: ${formatDate(item.date, "MMM D, YYYY")}
+                                - $if item.readingTime:
+                                    - rtgl-text s=sm c=mu-fg: ${item.readingTime}
+                        - $if item.imageSrc:
+                            - rtgl-view w=220 lg-w=180 md-w=f:
+                                - rtgl-image w=f h=140 md-h=220 of=cov br=md src="${item.imageSrc}" alt="${item.imageAlt}":

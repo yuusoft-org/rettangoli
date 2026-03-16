@@ -1,0 +1,60 @@
+- rtgl-view w=f g=xl pv=xl:
+    - $partial: collection-section-header
+      eyebrow: ${eyebrow}
+      title: ${title}
+      subtitle: ${subtitle}
+      cta: ${cta}
+
+    - $if lead:
+        - 'article style="display: contents;"':
+            - rtgl-view href="${lead.href}" d=h md-d=v w=f g=xl p=xl bgc=se bw=xs bc=bo br=xl cur=p:
+                - rtgl-view w=1fg md-w=f g=lg:
+                    - $if lead.eyebrow:
+                        - rtgl-text s=sm c=mu-fg: ${lead.eyebrow}
+                    - rtgl-text s=h2 w=f: ${lead.title}
+                    - $if lead.excerpt:
+                        - rtgl-text s=lg c=mu-fg w=f: ${lead.excerpt}
+                      $else:
+                        - $if lead.description:
+                            - rtgl-text s=lg c=mu-fg w=f: ${lead.description}
+                    - rtgl-view d=h g=md av=c w=f:
+                        - $if lead.author:
+                            - rtgl-text s=sm c=mu-fg: ${lead.author}
+                        - $if lead.date:
+                            - rtgl-text s=sm c=mu-fg: ${formatDate(lead.date, "MMM D, YYYY")}
+                        - $if lead.readingTime:
+                            - rtgl-text s=sm c=mu-fg: ${lead.readingTime}
+                - rtgl-view w=1fg md-w=f:
+                    - $if lead.imageSrc:
+                        - rtgl-image w=f h=320 md-h=260 of=cov br=md src="${lead.imageSrc}" alt="${lead.imageAlt}":
+                      $else:
+                        - rtgl-view w=f h=320 md-h=260 bw=xs bc=bo bgc=bg br=md ah=c av=c:
+                            - rtgl-text c=mu-fg: Lead image
+
+    - $if items:
+        - rtgl-view w=f g=lg:
+            - $for item in items:
+                - 'article style="display: contents;"':
+                    - rtgl-view href="${item.href}" d=h md-d=v w=f g=lg p=lg bw=xs bc=bo br=xl cur=p:
+                        - rtgl-view w=240 lg-w=220 md-w=f:
+                            - $if item.imageSrc:
+                                - rtgl-image w=f h=160 md-h=220 of=cov br=md src="${item.imageSrc}" alt="${item.imageAlt}":
+                              $else:
+                                - rtgl-view w=f h=160 md-h=220 bw=xs bc=bo bgc=bg br=md ah=c av=c:
+                                    - rtgl-text c=mu-fg: Preview image
+                        - rtgl-view w=1fg md-w=f g=sm:
+                            - $if item.eyebrow:
+                                - rtgl-text s=sm c=mu-fg: ${item.eyebrow}
+                            - rtgl-text s=h4 w=f: ${item.title}
+                            - $if item.excerpt:
+                                - rtgl-text c=mu-fg w=f: ${item.excerpt}
+                              $else:
+                                - $if item.description:
+                                    - rtgl-text c=mu-fg w=f: ${item.description}
+                            - rtgl-view d=h g=md av=c w=f:
+                                - $if item.author:
+                                    - rtgl-text s=sm c=mu-fg: ${item.author}
+                                - $if item.date:
+                                    - rtgl-text s=sm c=mu-fg: ${formatDate(item.date, "MMM D, YYYY")}
+                                - $if item.readingTime:
+                                    - rtgl-text s=sm c=mu-fg: ${item.readingTime}
