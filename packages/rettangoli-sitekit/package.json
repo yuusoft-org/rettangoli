@@ -40,7 +40,9 @@
     "build:lab": "bun run build",
     "watch:lab": "bun run watch",
     "vt:screenshot": "bunx rtgl vt screenshot",
+    "vt:ci:docker": "bash -lc 'IMAGE=\"han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.5\"; docker pull \"$IMAGE\" >/dev/null 2>&1 || IMAGE=\"han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc27\"; docker run --rm --user $(id -u):$(id -g) -v \"$PWD/../..:/workspace\" -w /workspace/packages/rettangoli-sitekit \"$IMAGE\" node /workspace/packages/rettangoli-cli/cli.js vt screenshot --concurrency 1 --item docs-template/docs-getting-started.html --item overview/home.html --item templates/blog-article-list.html --item templates/blog-article.html --item templates/landing-highlights.html --item templates/landing-pricing.html'",
     "vt:report": "bunx rtgl vt report",
+    "vt:ci": "bunx rtgl vt screenshot --concurrency 1 --item docs-template/docs-getting-started.html --item overview/home.html --item templates/blog-article-list.html --item templates/blog-article.html --item templates/landing-highlights.html --item templates/landing-pricing.html",
     "vt:accept": "bunx rtgl vt accept"
   },
   "devDependencies": {

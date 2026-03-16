@@ -70,8 +70,11 @@ bunx rtgl vt screenshot --group themes
 bunx rtgl vt screenshot --group docs-template
 bunx rtgl vt screenshot --group templates
 bunx rtgl vt report --group templates
+bun run vt:ci
 bunx rtgl vt accept
 ```
+
+`bun run vt:ci` runs the stable VT screenshot smoke subset used by CI/CD.
 
 ## Local Structure
 
@@ -87,6 +90,7 @@ The scripts hide the generator flags so local usage stays short:
 - `bun run watch`
 - `bun run build`
 - `bun run serve`
+- `bun run vt:ci`
 
 ## Consumer Runtime Contract
 
