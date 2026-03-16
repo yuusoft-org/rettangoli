@@ -56,6 +56,9 @@ items:
       - id: rtgl-slider
         title: "Slider"
         href: "/ui/docs/primitives/rtgl-slider"
+      - id: rtgl-carousel
+        title: "Carousel"
+        href: "/ui/docs/primitives/rtgl-carousel"
       - id: rtgl-popover
         title: "Popover"
         href: "/ui/docs/primitives/rtgl-popover"

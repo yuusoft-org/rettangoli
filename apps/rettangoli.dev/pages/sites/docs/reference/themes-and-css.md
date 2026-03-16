@@ -18,7 +18,7 @@ For this release, replace `<version>` with `1.0.3`.
 Load UI base CSS + Sites theme CSS:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.3/dist/themes/base.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.11/dist/themes/base.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/themes/theme-rtgl-themes.css">
 ```
 
