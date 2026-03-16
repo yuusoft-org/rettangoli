@@ -11,15 +11,15 @@ sidebarId: sites-themes-and-css
 
 `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/themes/theme-rtgl-themes.css`
 
-For this release, replace `<version>` with `1.0.3`.
+Replace `<version>` with your published `@rettangoli/sitekit` version.
 
 ## Usage
 
 Load UI base CSS + Sites theme CSS:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.11/dist/themes/base.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/themes/theme-rtgl-themes.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@<ui-version>/dist/themes/base.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/themes/theme-rtgl-themes.css">
 ```
 
 Apply exactly one theme class on `body` (or `html`):

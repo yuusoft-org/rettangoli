@@ -83,7 +83,7 @@ Use this when you want a production-ready landing structure without building the
 ```yaml
 imports:
   templates:
-    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/landing-features.yaml
+    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/landing-features.yaml
 ```
 
 `data/site.yaml`
@@ -177,7 +177,7 @@ Use this when you want an editorial archive, resource library, changelog page, o
 ```yaml
 imports:
   templates:
-    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article-list.yaml
+    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/blog-article-list.yaml
 ```
 
 `pages/notes.yaml`
@@ -221,6 +221,16 @@ The current `blog-article-list` template supports top-level `sections[]` with fi
 - `compact-list`
 - `split-columns`
 - `grouped-list`
+
+## Sitekit example routes
+
+These live in the sitekit preview package and are good starting points for copy/paste:
+
+- `/templates/landing-features/` (`landing-features` template)
+- `/templates/landing-highlights/` (`landing-features` with compact highlight composition)
+- `/templates/landing-pricing/` (`landing-features` with pricing and comparison variants)
+- `/templates/blog/article-list/` (`blog-article-list` with all layouts)
+- `/templates/blog/reducing-friction/` (`blog-article` template with long-form markdown)
 
 ## Custom landing page pattern
 

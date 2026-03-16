@@ -86,6 +86,16 @@ Current partials:
 - `landing-cta`
 - `footer`
 
+## Example Pages
+
+These routes are available in the local `@rettangoli/sitekit` preview and show real-world composition patterns you can copy:
+
+- `/templates/landing-features/` (general landing composition)
+- `/templates/landing-highlights/` (feature/spotlight style layout)
+- `/templates/landing-pricing/` (pricing sections and comparison matrix)
+- `/templates/blog/article-list/` (all supported collection layouts)
+- `/templates/blog/reducing-friction/` (article template with long-form content)
+
 ## Runtime Helpers
 
 Copy these files into the consuming site's `static/public/`:
