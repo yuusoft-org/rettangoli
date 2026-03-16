@@ -1,0 +1,42 @@
+---
+title: Carousel - Peek - Centered First Slide
+description: Verifies the carousel primitive can show peeking cards using ratio-based slide width tokens while keeping the first slide centered on initial render.
+specs:
+  - '`sw="4/5fb"` leaves a visible preview of the next slide.'
+  - '`sna="center"` centers the active slide in the viewport.'
+  - 'The viewport pads both edges so the first and last slides can rest centered instead of flush left or right.'
+  - 'Built-in arrow controls continue to work with partial-width slides.'
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-text s="h4">Peek carousel</rtgl-text>
+  <rtgl-text c="mu-fg" w="720">
+    This is the more editorial landing-page variant. You can still drag it, but the next card remains visible to invite interaction.
+  </rtgl-text>
+
+  <rtgl-carousel id="carousel-peek" sw="4/5fb" sna="center" spi="lg" g="lg">
+    <rtgl-view bgc="bg" bc="bo" bw="xs" br="xl" overflow="hidden">
+      <rtgl-view h="152" bgi="url('/public/sample1.jpg')" bgs="cover" bgp="center"></rtgl-view>
+      <rtgl-view d="v" g="sm" p="lg">
+        <rtgl-text s="h4">Editorial card</rtgl-text>
+        <rtgl-text c="mu-fg">A peeking layout works better for cards, testimonials, and case-study strips than full hero slides.</rtgl-text>
+      </rtgl-view>
+    </rtgl-view>
+
+    <rtgl-view bgc="bg" bc="bo" bw="xs" br="xl" overflow="hidden">
+      <rtgl-view h="152" bgc="ac" d="v" ah="c" av="c">
+        <rtgl-text s="h3" c="ac-fg">42%</rtgl-text>
+        <rtgl-text c="ac-fg">Conversion lift</rtgl-text>
+      </rtgl-view>
+      <rtgl-view d="v" g="sm" p="lg">
+        <rtgl-text s="h4">Metric highlight</rtgl-text>
+        <rtgl-text c="mu-fg">The primitive computes ratio-based slide widths with the same `fb` mental model used elsewhere in the package.</rtgl-text>
+      </rtgl-view>
+    </rtgl-view>
+
+    <rtgl-view bgc="fg" br="xl" p="lg" d="v" g="sm">
+      <rtgl-text s="sm" c="bg">Customer quote</rtgl-text>
+      <rtgl-text s="h4" c="bg">“This should feel smooth on desktop, not just on touch.”</rtgl-text>
+      <rtgl-text c="bo">That requirement is exactly why this moved out of `rtgl-view` and into a dedicated interaction primitive.</rtgl-text>
+    </rtgl-view>
+  </rtgl-carousel>
+</rtgl-view>

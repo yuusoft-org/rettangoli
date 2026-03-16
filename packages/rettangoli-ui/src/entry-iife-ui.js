@@ -1,4 +1,5 @@
 import RettangoliButton from './primitives/button.js'
+import RettangoliCarousel from './primitives/carousel.js';
 import RettangoliGrid from './primitives/grid.js';
 import RettangoliView from './primitives/view.js';
 import RettangoliText from './primitives/text.js';
@@ -18,6 +19,7 @@ import RettangoliDialog from './primitives/dialog.js';
 import RettangoliPopover from './primitives/popover.js';
 
 customElements.define("rtgl-button", RettangoliButton({}));
+customElements.define("rtgl-carousel", RettangoliCarousel({}));
 customElements.define("rtgl-grid", RettangoliGrid({}));
 customElements.define("rtgl-view", RettangoliView({}));
 customElements.define("rtgl-text", RettangoliText({}));

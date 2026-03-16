@@ -260,10 +260,46 @@ detail: {}
 ## Custom Elements (public surface)
 
 Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
-- `rtgl-grid`, `rtgl-view`, `rtgl-text`, `rtgl-button`, `rtgl-image`, `rtgl-svg`
+- `rtgl-carousel`, `rtgl-grid`, `rtgl-view`, `rtgl-text`, `rtgl-button`, `rtgl-image`, `rtgl-svg`
 - `rtgl-input`, `rtgl-input-number`, `rtgl-textarea`
 - `rtgl-slider`, `rtgl-color-picker`
 - `rtgl-dialog`, `rtgl-popover`
+
+### `rtgl-carousel`
+
+- use for slotted horizontal slide navigation with built-in interaction behavior
+- direct child elements are treated as slides and receive managed width + snap positioning
+- public attrs:
+  - `index` for the active slide index
+  - `sw` for slide width (`1/1fb`, `4/5fb`, `320`, `80%`, and similar)
+  - `sna` for slide snap alignment (`start`, `center`, `end`); `center` also adds edge padding so the first and last slides can rest centered
+  - `snap` to enable or disable scroll snapping (`true` by default, set `snap="false"` for free scroll)
+  - `g` for inter-slide gap
+  - `spi` for `scroll-padding-inline`
+  - `sbh` for scroll behavior
+  - `nav` controls previous/next arrow visibility; arrows are shown by default, set `nav="false"` to hide them
+  - boolean `pager` to show pager dots when you explicitly want them
+- public methods:
+  - `goTo(index)`
+  - `next()`
+  - `prev()`
+- public property:
+  - `snap` boolean for enabling or disabling scroll snap behavior
+- emits `index-change` with `detail.index`
+- pointer drag is built in for desktop mouse interaction; touch and trackpad continue to use native scrolling
+- use a wrapper `rtgl-view` when you need surrounding padding, headings, or surface styling
+
+### `rtgl-view`
+
+- use for 1D layout, flex composition, scrolling surfaces, and generic containers
+- raw CSS passthrough attrs with responsive variants include:
+  - `ar` for `aspect-ratio`
+  - `bgi`, `bgs`, `bgp`, `bgr` for background image styling
+  - `sst`, `sna`, `sns` for scroll snap behavior
+  - `sbh` for `scroll-behavior`
+  - `spi` for `scroll-padding-inline`
+  - `stg` for `scroll-target-group`
+- prefer these attrs over ad-hoc inline style when the property is part of the shared primitive surface
 
 ### `rtgl-grid`
 

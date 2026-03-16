@@ -1,0 +1,41 @@
+---
+title: Carousel - Basic - Default Arrows
+description: Verifies the dedicated carousel primitive renders built-in arrow controls by default without requiring pager UI.
+specs:
+  - 'Previous and next arrow buttons render out of the box.'
+  - 'Pager dots remain opt-in instead of showing by default.'
+  - 'Snapping is enabled by default.'
+  - 'Slides are full width by default and the first slide starts active.'
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-text s="h4">Basic carousel primitive</rtgl-text>
+  <rtgl-text c="mu-fg" w="720">
+    This example uses the new primitive directly. It owns smooth scrolling, drag, active index tracking, built-in arrow controls, and keeps snapping enabled by default.
+  </rtgl-text>
+
+  <rtgl-carousel id="carousel-basic" g="lg">
+    <rtgl-view bgc="fg" br="xl" p="xl" h="260" d="v" g="sm">
+      <rtgl-text s="sm" c="ac">Slide 1</rtgl-text>
+      <rtgl-text s="h2" c="bg">Dedicated primitive, not a view hack.</rtgl-text>
+      <rtgl-text c="bo" w="520">
+        Use this when you need actual carousel behavior such as smooth navigation and drag scrolling.
+      </rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view bgc="ac" br="xl" p="xl" h="260" d="v" g="sm">
+      <rtgl-text s="sm" c="ac-fg">Slide 2</rtgl-text>
+      <rtgl-text s="h2" c="ac-fg">Arrow controls are built in.</rtgl-text>
+      <rtgl-text c="ac-fg" w="520">
+        This keeps the example small and gives you a stable primitive API instead of repeated page-level scripts.
+      </rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view bgc="bg" bc="bo" bw="xs" br="xl" p="xl" h="260" d="v" g="sm">
+      <rtgl-text s="sm" c="pr">Slide 3</rtgl-text>
+      <rtgl-text s="h2">It still composes with normal Rettangoli content.</rtgl-text>
+      <rtgl-text c="mu-fg" w="520">
+        Each slide can contain any slotted layout; the carousel primitive only owns the interaction and slide positioning.
+      </rtgl-text>
+    </rtgl-view>
+  </rtgl-carousel>
+</rtgl-view>

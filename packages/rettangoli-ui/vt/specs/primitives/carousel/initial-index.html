@@ -1,0 +1,34 @@
+---
+title: Carousel - Initial Index - Second Slide
+description: Verifies the primitive can start from a non-zero slide index while keeping the nav state synchronized.
+specs:
+  - '`index="1"` starts the carousel on the second slide.'
+  - 'Previous and next arrow disabled states reflect the current index.'
+  - 'The pager dots still work when explicitly enabled.'
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-text s="h4">Initial index</rtgl-text>
+  <rtgl-text c="mu-fg" w="720">
+    This case starts on slide two so you can verify the primitive reflects the current index into both the controls and the slotted content state.
+  </rtgl-text>
+
+  <rtgl-carousel id="carousel-index" pager index="1" g="lg">
+    <rtgl-view bgc="bg" bc="bo" bw="xs" br="xl" p="xl" h="220" d="v" g="sm">
+      <rtgl-text s="sm" c="mu-fg">Slide 1</rtgl-text>
+      <rtgl-text s="h3">First slide</rtgl-text>
+      <rtgl-text c="mu-fg">This slide should not be active on first render.</rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view bgc="ac" br="xl" p="xl" h="220" d="v" g="sm">
+      <rtgl-text s="sm" c="ac-fg">Slide 2</rtgl-text>
+      <rtgl-text s="h3" c="ac-fg">Second slide starts active.</rtgl-text>
+      <rtgl-text c="ac-fg">Use the `index` attribute when the page should open on a featured item.</rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view bgc="fg" br="xl" p="xl" h="220" d="v" g="sm">
+      <rtgl-text s="sm" c="bg">Slide 3</rtgl-text>
+      <rtgl-text s="h3" c="bg">Third slide</rtgl-text>
+      <rtgl-text c="bo">The primitive clamps out-of-range indices and keeps the active controls in sync.</rtgl-text>
+    </rtgl-view>
+  </rtgl-carousel>
+</rtgl-view>
