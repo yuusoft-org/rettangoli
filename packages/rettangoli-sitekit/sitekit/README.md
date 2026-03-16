@@ -30,6 +30,14 @@ Current templates:
 - `blog-article-list`
 - `blog-article`
 
+`blog-article-list` now supports top-level `sections[]` with five built-in layouts:
+
+- `featured-list`
+- `card-grid`
+- `compact-list`
+- `split-columns`
+- `grouped-list`
+
 Each published template has a companion schema file next to it with the same base name:
 
 - `sitekit/templates/base.yaml`
@@ -57,7 +65,23 @@ Current partials:
 - `docs-sidebar`
 - `docs-mobile-nav`
 - `top-navbar`
+- `collection-section-header`
+- `collection-section-card-grid`
+- `collection-section-featured-list`
+- `collection-section-compact-list`
+- `collection-section-split-columns`
+- `collection-section-grouped-list`
 - `landing-hero`
+- `landing-stats-band`
+- `landing-logo-cloud`
+- `landing-icon-features`
+- `landing-feature-mosaic`
+- `landing-testimonials-grid`
+- `landing-full-image`
+- `landing-pricing`
+- `landing-pricing-comparison`
+- `landing-roadmap`
+- `landing-faq`
 - `landing-features-section`
 - `landing-cta`
 - `footer`
@@ -69,6 +93,10 @@ Copy these files into the consuming site's `static/public/`:
 - `sitekit/themes/theme-rtgl-themes.css` -> `static/public/theme-rtgl-themes.css`
 - `sitekit/public/mobile-nav.js` -> `static/public/mobile-nav.js`
 - `sitekit/public/rtgl-icons.js` -> `static/public/rtgl-icons.js`
+
+## Planning
+
+- `sitekit/landing-section-backlog.md`
 
 ## Schemas
 
@@ -86,7 +114,7 @@ Use the shared contract index only when you need the aggregate `$defs` set for t
 Aggregate `$defs`:
 
 - Templates: `template.base`, `template.docs`, `template.landingFeatures`, `template.blogArticleList`, `template.blogArticle`
-- Partials: `partial.seo`, `partial.navbar`, `partial.mobileNav`, `partial.docsSidebar`, `partial.docsMobileNav`, `partial.topNavbar`, `partial.landingHero`, `partial.landingFeaturesSection`, `partial.landingCta`, `partial.footer`
+- Partials: `partial.seo`, `partial.navbar`, `partial.mobileNav`, `partial.docsSidebar`, `partial.docsMobileNav`, `partial.topNavbar`, `partial.landingHero`, `partial.landingStatsBand`, `partial.landingLogoCloud`, `partial.landingIconFeatures`, `partial.landingFeatureMosaic`, `partial.landingTestimonialsGrid`, `partial.landingFullImage`, `partial.landingPricing`, `partial.landingPricingComparison`, `partial.landingRoadmap`, `partial.landingFaq`, `partial.landingFeaturesSection`, `partial.landingCta`, `partial.footer`
 
 ## Recommended Alias Map
 
@@ -105,6 +133,16 @@ imports:
     docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/docs-sidebar.yaml
     top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/top-navbar.yaml
     landing-hero: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-hero.yaml
+    landing-stats-band: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-stats-band.yaml
+    landing-logo-cloud: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-logo-cloud.yaml
+    landing-icon-features: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-icon-features.yaml
+    landing-feature-mosaic: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-feature-mosaic.yaml
+    landing-testimonials-grid: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-testimonials-grid.yaml
+    landing-full-image: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-full-image.yaml
+    landing-pricing: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-pricing.yaml
+    landing-pricing-comparison: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-pricing-comparison.yaml
+    landing-roadmap: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-roadmap.yaml
+    landing-faq: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-faq.yaml
     landing-features-section: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-features-section.yaml
     landing-cta: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-cta.yaml
     footer: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/footer.yaml

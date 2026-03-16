@@ -1,5 +1,36 @@
 ---
 title: "Global UI - Basic"
+diffThreshold: 2
+description: Verifies basic alert and confirm dialogs render with the expected stacked content layout.
+specs:
+  - Initial baseline keeps the unopened trigger page.
+  - Alert dialogs render title above message.
+  - Confirm dialogs render title above message with both actions visible.
+steps:
+  - action: customEvent
+    name: vt:open-alert
+  - action: waitFor
+    selector: '#confirmButton'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 200
+  - action: screenshot
+  - action: customEvent
+    name: vt:close-alert
+  - action: waitFor
+    selector: '#confirmButton'
+    state: hidden
+    timeoutMs: 1500
+  - action: customEvent
+    name: vt:open-confirm
+  - action: waitFor
+    selector: '#cancelButton'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 200
+  - action: screenshot
 ---
 <!-- Global UI element must be present before main.js loads -->
 <rtgl-global-ui></rtgl-global-ui>
@@ -79,5 +110,17 @@ title: "Global UI - Basic"
       message: 'An error has occurred. Please try again.'
     });
     resultEl.textContent = 'Error alert closed';
+  });
+
+  window.addEventListener('vt:open-alert', () => {
+    document.getElementById('alert-btn').click();
+  });
+
+  window.addEventListener('vt:close-alert', () => {
+    void globalUIElement.transformedHandlers.handleCloseAll();
+  });
+
+  window.addEventListener('vt:open-confirm', () => {
+    document.getElementById('confirm-btn').click();
   });
 </script>

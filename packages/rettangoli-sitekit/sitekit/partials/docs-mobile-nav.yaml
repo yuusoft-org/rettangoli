@@ -4,4 +4,5 @@
             - 'a href="${docsLayout.sidebar.header.href}" style="text-decoration:none;display:contents;color:inherit;"':
                 - rtgl-text s=md: ${docsLayout.sidebar.header.label}
         - rtgl-view h=56:
-        - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(docsLayout.sidebar.header))}" items="${encodeURIComponent(jsonStringify(docsLayout.sidebar.items))}" w=f:
+        - 'nav aria-label="Documentation navigation" style="display: contents;"':
+            - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(docsLayout.sidebar.header))}" items="${encodeURIComponent(jsonStringify(docsLayout.sidebar.items))}" w=f:

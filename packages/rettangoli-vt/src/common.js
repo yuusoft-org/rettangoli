@@ -15,7 +15,7 @@ import path from "path";
 import { validateFiniteNumber, validateFrontMatter } from "./validation.js";
 import { createCaptureTasks } from "./capture/spec-loader.js";
 import { runCaptureScheduler } from "./capture/capture-scheduler.js";
-import { deriveSectionPageKey } from "./section-page-key.js";
+import { deriveAnchorId, deriveSectionPageKey } from "./section-page-key.js";
 
 const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
 
@@ -44,10 +44,9 @@ async function readYaml(filePath) {
   }
 }
 
-// Add custom filter to convert string to lowercase and replace spaces with hyphens
-engine.registerFilter("slug", (value) => {
-  if (typeof value !== "string") return "";
-  return value.toLowerCase().replace(/\s+/g, "-");
+// Add custom filter to derive slug-safe ids for URLs and anchors.
+engine.registerFilter("slug", (value, fallbackValue) => {
+  return deriveAnchorId(value, fallbackValue);
 });
 
 // Add custom filter to remove file extension
@@ -416,13 +415,18 @@ function generateOverview(data, templatePath, outputPath, configData) {
       try {
         renderedContent = engine.parseAndRenderSync(templateContent, {
           ...configData,
-          files: data.filter((file) => {
-            const filePath = path.normalize(file.path);
-            const sectionPath = path.normalize(section.files);
-            // Check if file is in the folder or any subfolder
-            const fileDir = path.dirname(filePath);
-            return fileDir === sectionPath || fileDir.startsWith(sectionPath + path.sep);
-          }),
+          files: data
+            .filter((file) => {
+              const filePath = path.normalize(file.path);
+              const sectionPath = path.normalize(section.files);
+              // Check if file is in the folder or any subfolder
+              const fileDir = path.dirname(filePath);
+              return fileDir === sectionPath || fileDir.startsWith(sectionPath + path.sep);
+            })
+            .map((file) => ({
+              ...file,
+              anchorId: deriveAnchorId(file.frontMatter?.title, removeExtension(file.path)),
+            })),
           currentSection: section,
           sidebarItems: encodeURIComponent(JSON.stringify(sidebarItems)),
         });

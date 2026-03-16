@@ -46,6 +46,41 @@ describe("renderHtmlReport", () => {
     expect(html).toContain("candidate/button-02.webp");
   });
 
+  it("normalizes slug ids with fallback values", async () => {
+    tempDir = createTempDir();
+    const templatePath = join(tempDir, "report.html.liquid");
+    const outputPath = join(tempDir, "report.html");
+
+    writeFileSync(
+      templatePath,
+      [
+        "{% for file in files %}",
+        "<div id=\"{{ file.title | slug: file.fallback }}\">{{ file.title }}</div>",
+        "<div id=\"{{ file.emptyTitle | slug: file.fallback }}\">fallback</div>",
+        "{% endfor %}",
+      ].join(""),
+      "utf8",
+    );
+
+    vi.spyOn(console, "log").mockImplementation(() => {});
+
+    await renderHtmlReport({
+      results: [
+        {
+          title: "Release Notes / v2.0",
+          emptyTitle: "!!!",
+          fallback: "specs/forms/advanced",
+        },
+      ],
+      templatePath,
+      outputPath,
+    });
+
+    const html = readFileSync(outputPath, "utf8");
+    expect(html).toContain("id=\"release-notes-v2-0\"");
+    expect(html).toContain("id=\"specs-forms-advanced\"");
+  });
+
   it("wraps render errors with a clear message", async () => {
     tempDir = createTempDir();
     const outputPath = join(tempDir, "report.html");

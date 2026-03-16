@@ -1,8 +1,8 @@
 vt:
   path: ./vt
-  url: http://127.0.0.1:3001
+  url: http://127.0.0.1:4173
   service:
-    start: bunx rtgl sites watch --root-dir ./src --output-path ../_site --reload-mode full --quiet
+    start: bunx rtgl sites watch --root-dir ./src --output-path ../_site --reload-mode full --quiet --port 4173
   compareMethod: pixelmatch
   viewport:
     - id: desktop

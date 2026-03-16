@@ -40,6 +40,29 @@ out:
         - title: Forms advanced!
           files: forms
 ---
+case: accepts free-form section and item titles when files can derive page keys
+in:
+  - path: ./vt
+    sections:
+      - title: "!!!"
+        files: components
+      - type: groupLabel
+        title: Group label
+        items:
+          - title: "@@@"
+            files: forms/advanced
+  - rettangoli.config.yaml
+out:
+  path: ./vt
+  sections:
+    - title: "!!!"
+      files: components
+    - type: groupLabel
+      title: Group label
+      items:
+        - title: "@@@"
+          files: forms/advanced
+---
 case: requires sections to be a non-empty array
 in:
   - path: ./vt

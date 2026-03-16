@@ -1,5 +1,5 @@
 - 'rtgl-view w="f" pv="xl" style="padding-top: 128px; padding-bottom: 128px"':
-    - rtgl-view ah="c" p="xl" br="md" bw="sm" w="f":
+    - rtgl-view ah="c" p="xl" br="md" bw="xs" w="f":
         - $if svg:
             - rtgl-svg svg="${svg}" wh="48" c="pr" mb="md":
         - rtgl-text s="h2" mb="md" c="pr" ta="c": ${title}

@@ -35,8 +35,40 @@ properties:
         $ref: '#/$defs/partial.docsMobileNav'
       top-navbar:
         $ref: '#/$defs/partial.topNavbar'
+      collection-section-header:
+        $ref: '#/$defs/partial.collectionSectionHeader'
+      collection-section-card-grid:
+        $ref: '#/$defs/partial.collectionSectionCardGrid'
+      collection-section-featured-list:
+        $ref: '#/$defs/partial.collectionSectionFeaturedList'
+      collection-section-compact-list:
+        $ref: '#/$defs/partial.collectionSectionCompactList'
+      collection-section-split-columns:
+        $ref: '#/$defs/partial.collectionSectionSplitColumns'
+      collection-section-grouped-list:
+        $ref: '#/$defs/partial.collectionSectionGroupedList'
       landing-hero:
         $ref: '#/$defs/partial.landingHero'
+      landing-stats-band:
+        $ref: '#/$defs/partial.landingStatsBand'
+      landing-logo-cloud:
+        $ref: '#/$defs/partial.landingLogoCloud'
+      landing-icon-features:
+        $ref: '#/$defs/partial.landingIconFeatures'
+      landing-feature-mosaic:
+        $ref: '#/$defs/partial.landingFeatureMosaic'
+      landing-testimonials-grid:
+        $ref: '#/$defs/partial.landingTestimonialsGrid'
+      landing-full-image:
+        $ref: '#/$defs/partial.landingFullImage'
+      landing-pricing:
+        $ref: '#/$defs/partial.landingPricing'
+      landing-pricing-comparison:
+        $ref: '#/$defs/partial.landingPricingComparison'
+      landing-roadmap:
+        $ref: '#/$defs/partial.landingRoadmap'
+      landing-faq:
+        $ref: '#/$defs/partial.landingFaq'
       landing-features-section:
         $ref: '#/$defs/partial.landingFeaturesSection'
       landing-cta:
@@ -238,6 +270,340 @@ $defs:
         $ref: '#/$defs/types.urlString'
       alt:
         type: string
+  types.landingLogoItem:
+    type: object
+    additionalProperties: true
+    required:
+    - src
+    - alt
+    properties:
+      src:
+        $ref: '#/$defs/types.urlString'
+      alt:
+        $ref: '#/$defs/types.nonEmptyString'
+      href:
+        $ref: '#/$defs/types.urlString'
+      target:
+        $ref: '#/$defs/types.nonEmptyString'
+  types.landingLogoCloudModel:
+    type: object
+    additionalProperties: true
+    required:
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingLogoItem'
+  types.landingIconFeatureItem:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    anyOf:
+    - required:
+      - icon
+    - required:
+      - image
+    properties:
+      icon:
+        $ref: '#/$defs/types.nonEmptyString'
+      image:
+        $ref: '#/$defs/types.landingImage'
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        type: string
+  types.landingIconFeaturesModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingIconFeatureItem'
+  types.landingFullImageModel:
+    type: object
+    additionalProperties: true
+    required:
+    - image
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      image:
+        $ref: '#/$defs/types.landingImage'
+  types.landingStatItem:
+    type: object
+    additionalProperties: true
+    required:
+    - value
+    - label
+    properties:
+      value:
+        $ref: '#/$defs/types.nonEmptyString'
+      label:
+        $ref: '#/$defs/types.nonEmptyString'
+      context:
+        type: string
+  types.landingStatsBandModel:
+    type: object
+    additionalProperties: true
+    required:
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingStatItem'
+  types.landingPricingItem:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - price
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        type: string
+      price:
+        $ref: '#/$defs/types.nonEmptyString'
+      priceSuffix:
+        type: string
+      priceNote:
+        type: string
+      size:
+        type: string
+        enum: [sm, md, lg]
+      features:
+        type: array
+        items:
+          type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+  types.landingPricingModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingPricingItem'
+  types.landingFeatureMosaicLead:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        type: string
+      image:
+        $ref: '#/$defs/types.landingImage'
+      cta:
+        $ref: '#/$defs/types.cta'
+  types.landingFeatureMosaicItem:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        type: string
+      image:
+        $ref: '#/$defs/types.landingImage'
+  types.landingFeatureMosaicModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - lead
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      lead:
+        $ref: '#/$defs/types.landingFeatureMosaicLead'
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingFeatureMosaicItem'
+  types.landingTestimonialItem:
+    type: object
+    additionalProperties: true
+    required:
+    - quote
+    - author
+    properties:
+      image:
+        $ref: '#/$defs/types.landingImage'
+      quote:
+        $ref: '#/$defs/types.nonEmptyString'
+      author:
+        $ref: '#/$defs/types.nonEmptyString'
+      role:
+        type: string
+      company:
+        type: string
+      outcome:
+        type: string
+  types.landingTestimonialsGridModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingTestimonialItem'
+  types.landingPricingComparisonPlan:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      price:
+        $ref: '#/$defs/types.nonEmptyString'
+      priceSuffix:
+        type: string
+      note:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+  types.landingPricingComparisonCell:
+    type: object
+    additionalProperties: true
+    properties:
+      label:
+        type: string
+      included:
+        type: boolean
+  types.landingPricingComparisonRow:
+    type: object
+    additionalProperties: true
+    required:
+    - label
+    - cells
+    properties:
+      label:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        type: string
+      cells:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingPricingComparisonCell'
+  types.landingPricingComparisonModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - plans
+    - rows
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      plans:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingPricingComparisonPlan'
+      rows:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingPricingComparisonRow'
+  types.landingRoadmapItem:
+    type: object
+    additionalProperties: true
+    required:
+    - phase
+    - title
+    - description
+    properties:
+      phase:
+        $ref: '#/$defs/types.nonEmptyString'
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      description:
+        $ref: '#/$defs/types.nonEmptyString'
+  types.landingRoadmapModel:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingRoadmapItem'
+  types.landingFaqItem:
+    type: object
+    additionalProperties: true
+    required:
+    - question
+    - answer
+    properties:
+      question:
+        $ref: '#/$defs/types.nonEmptyString'
+      answer:
+        $ref: '#/$defs/types.nonEmptyString'
+  types.landingFaqModel:
+    type: object
+    additionalProperties: true
+    required:
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingFaqItem'
   types.landingFeatureItem:
     type: object
     additionalProperties: true
@@ -256,6 +622,8 @@ $defs:
         type: array
         items:
           type: string
+      cta:
+        $ref: '#/$defs/types.cta'
   types.landingCtaModel:
     type: object
     additionalProperties: true
@@ -275,7 +643,13 @@ $defs:
     additionalProperties: true
     required:
     - title
-    - featuresTitle
+    anyOf:
+    - not:
+        required:
+        - features
+    - required:
+      - featuresTitle
+      - features
     properties:
       title:
         $ref: '#/$defs/types.nonEmptyString'
@@ -287,6 +661,26 @@ $defs:
           $ref: '#/$defs/types.landingAction'
       image:
         $ref: '#/$defs/types.landingImage'
+      statsBand:
+        $ref: '#/$defs/types.landingStatsBandModel'
+      logoCloud:
+        $ref: '#/$defs/types.landingLogoCloudModel'
+      iconFeatures:
+        $ref: '#/$defs/types.landingIconFeaturesModel'
+      featureMosaic:
+        $ref: '#/$defs/types.landingFeatureMosaicModel'
+      testimonialsGrid:
+        $ref: '#/$defs/types.landingTestimonialsGridModel'
+      fullImage:
+        $ref: '#/$defs/types.landingFullImageModel'
+      pricing:
+        $ref: '#/$defs/types.landingPricingModel'
+      pricingComparison:
+        $ref: '#/$defs/types.landingPricingComparisonModel'
+      roadmap:
+        $ref: '#/$defs/types.landingRoadmapModel'
+      faq:
+        $ref: '#/$defs/types.landingFaqModel'
       featuresTitle:
         $ref: '#/$defs/types.nonEmptyString'
       featuresSubtitle:
@@ -297,6 +691,190 @@ $defs:
           $ref: '#/$defs/types.landingFeatureItem'
       cta:
         $ref: '#/$defs/types.landingCtaModel'
+  types.collectionItem:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - href
+    properties:
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      href:
+        $ref: '#/$defs/types.urlString'
+      excerpt:
+        type: string
+      description:
+        type: string
+      author:
+        type: string
+      date:
+        type: string
+      readingTime:
+        type: string
+      imageSrc:
+        $ref: '#/$defs/types.urlString'
+      imageAlt:
+        type: string
+  types.collectionSectionHeader:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    properties:
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+  types.collectionSectionCardGrid:
+    type: object
+    additionalProperties: true
+    required:
+    - layout
+    - title
+    - items
+    properties:
+      layout:
+        type: string
+        enum: [card-grid]
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionItem'
+  types.collectionSectionFeaturedList:
+    type: object
+    additionalProperties: true
+    required:
+    - layout
+    - title
+    anyOf:
+    - required:
+      - lead
+    - required:
+      - items
+    properties:
+      layout:
+        type: string
+        enum: [featured-list]
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+      lead:
+        $ref: '#/$defs/types.collectionItem'
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionItem'
+  types.collectionSectionCompactList:
+    type: object
+    additionalProperties: true
+    required:
+    - layout
+    - title
+    - items
+    properties:
+      layout:
+        type: string
+        enum: [compact-list]
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionItem'
+  types.collectionSectionSplitColumns:
+    type: object
+    additionalProperties: true
+    required:
+    - layout
+    - title
+    - items
+    properties:
+      layout:
+        type: string
+        enum: [split-columns]
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionItem'
+  types.collectionGroup:
+    type: object
+    additionalProperties: true
+    required:
+    - title
+    - items
+    properties:
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionItem'
+  types.collectionSectionGroupedList:
+    type: object
+    additionalProperties: true
+    required:
+    - layout
+    - title
+    - groups
+    properties:
+      layout:
+        type: string
+        enum: [grouped-list]
+      eyebrow:
+        type: string
+      title:
+        $ref: '#/$defs/types.nonEmptyString'
+      subtitle:
+        type: string
+      cta:
+        $ref: '#/$defs/types.cta'
+      groups:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionGroup'
+  types.collectionSection:
+    oneOf:
+    - $ref: '#/$defs/types.collectionSectionCardGrid'
+    - $ref: '#/$defs/types.collectionSectionFeaturedList'
+    - $ref: '#/$defs/types.collectionSectionCompactList'
+    - $ref: '#/$defs/types.collectionSectionSplitColumns'
+    - $ref: '#/$defs/types.collectionSectionGroupedList'
   types.postModel:
     type: object
     additionalProperties: true
@@ -442,10 +1020,14 @@ $defs:
     required:
     - title
     - description
-    - posts
     - page
     - seo
     - site
+    anyOf:
+    - required:
+      - posts
+    - required:
+      - sections
     properties:
       title:
         $ref: '#/$defs/types.nonEmptyString'
@@ -454,7 +1036,11 @@ $defs:
       posts:
         type: array
         items:
-          $ref: '#/$defs/types.postModel'
+          $ref: '#/$defs/types.collectionItem'
+      sections:
+        type: array
+        items:
+          $ref: '#/$defs/types.collectionSection'
       page:
         $ref: '#/$defs/types.pageModel'
       seo:
@@ -680,6 +1266,18 @@ $defs:
         properties:
           href:
             $ref: '#/$defs/types.urlString'
+  partial.collectionSectionHeader:
+    $ref: '#/$defs/types.collectionSectionHeader'
+  partial.collectionSectionCardGrid:
+    $ref: '#/$defs/types.collectionSectionCardGrid'
+  partial.collectionSectionFeaturedList:
+    $ref: '#/$defs/types.collectionSectionFeaturedList'
+  partial.collectionSectionCompactList:
+    $ref: '#/$defs/types.collectionSectionCompactList'
+  partial.collectionSectionSplitColumns:
+    $ref: '#/$defs/types.collectionSectionSplitColumns'
+  partial.collectionSectionGroupedList:
+    $ref: '#/$defs/types.collectionSectionGroupedList'
   partial.landingHero:
     type: object
     additionalProperties: true
@@ -696,6 +1294,48 @@ $defs:
           $ref: '#/$defs/types.landingAction'
       image:
         $ref: '#/$defs/types.landingImage'
+  partial.landingStatsBand:
+    $ref: '#/$defs/types.landingStatsBandModel'
+  partial.landingLogoCloud:
+    $ref: '#/$defs/types.landingLogoCloudModel'
+  partial.landingIconFeatures:
+    $ref: '#/$defs/types.landingIconFeaturesModel'
+  partial.landingFeatureMosaic:
+    $ref: '#/$defs/types.landingFeatureMosaicModel'
+  partial.landingTestimonialsGrid:
+    $ref: '#/$defs/types.landingTestimonialsGridModel'
+  partial.landingFullImage:
+    type: object
+    additionalProperties: true
+    required:
+    - image
+    properties:
+      sectionTitle:
+        $ref: '#/$defs/types.nonEmptyString'
+      sectionSubtitle:
+        type: string
+      image:
+        $ref: '#/$defs/types.landingImage'
+  partial.landingPricing:
+    $ref: '#/$defs/types.landingPricingModel'
+  partial.landingPricingComparison:
+    $ref: '#/$defs/types.landingPricingComparisonModel'
+  partial.landingRoadmap:
+    $ref: '#/$defs/types.landingRoadmapModel'
+  partial.landingFaq:
+    type: object
+    additionalProperties: true
+    required:
+    - items
+    properties:
+      sectionTitle:
+        $ref: '#/$defs/types.nonEmptyString'
+      sectionSubtitle:
+        type: string
+      items:
+        type: array
+        items:
+          $ref: '#/$defs/types.landingFaqItem'
   partial.landingFeaturesSection:
     type: object
     additionalProperties: true

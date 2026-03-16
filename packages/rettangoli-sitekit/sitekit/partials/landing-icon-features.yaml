@@ -1,0 +1,26 @@
+- rtgl-view w=f g=xl pv=xl:
+    - rtgl-view h=80:
+    - 'header style="display: contents;"':
+        - rtgl-view w=f g=lg ah=c pv=xl:
+            - rtgl-text s=h2 ta=c w=f mb=md: ${title}
+            - $if subtitle:
+                - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${subtitle}
+
+    - $if items:
+        - rtgl-grid cols="3" lg-cols="2" sm-cols="1" g=xl w=f:
+            - $for item in items:
+                - 'article style="display: contents;"':
+                    - rtgl-view w=f h=f p=xl g=lg bw=xs bc=bo bgc=se br=md:
+                        - rtgl-view wh=52 ah=c av=c bw=xs bc=bo bgc=bg br=md:
+                            - $if item.image:
+                                - $if item.image.src:
+                                    - rtgl-image w=28 h=28 of=con src="${item.image.src}" alt="${item.image.alt}":
+                                  $else:
+                                    - rtgl-text s=xs c=mu-fg: Img
+                              $else:
+                                - rtgl-svg wh=24 svg="${item.icon}" c=pr:
+                        - rtgl-view g=sm:
+                            - rtgl-text s=h4: ${item.title}
+                            - $if item.description:
+                                - rtgl-text c=mu-fg: ${item.description}
+    - rtgl-view h=80:

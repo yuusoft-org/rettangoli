@@ -1,0 +1,55 @@
+- rtgl-view w=f pv=xl g=xl:
+    - 'header style="display: contents;"':
+        - rtgl-view w=f g=lg ah=c pv=xl:
+            - rtgl-text s=h2 ta=c w=f mb=md: ${title}
+            - $if subtitle:
+                - rtgl-text s=lg c=mu-fg ta=c w=f mt=sm mb=xl: ${subtitle}
+
+    - $if lead:
+        - 'article style="display: contents;"':
+            - rtgl-view d=h md-d=v w=f g=xl p=xl bgc=se bw=xs bc=bo br=xl:
+                - rtgl-view w=1fg md-w=f g=lg:
+                    - rtgl-text s=sm c=mu-fg: Lead block
+                    - rtgl-text s=h3: ${lead.title}
+                    - $if lead.description:
+                        - rtgl-text c=mu-fg: ${lead.description}
+                    - $if lead.cta:
+                        - $if lead.cta.newTab:
+                            - $if lead.cta.variant:
+                                - rtgl-button v="${lead.cta.variant}" href="${lead.cta.href}" new-tab mt=lg: ${lead.cta.label}
+                              $else:
+                                - rtgl-button href="${lead.cta.href}" new-tab mt=lg: ${lead.cta.label}
+                          $else:
+                            - $if lead.cta.variant:
+                                - rtgl-button v="${lead.cta.variant}" href="${lead.cta.href}" mt=lg: ${lead.cta.label}
+                              $else:
+                                - rtgl-button href="${lead.cta.href}" mt=lg: ${lead.cta.label}
+                - rtgl-view w=1fg md-w=f:
+                    - $if lead.image:
+                        - $if lead.image.src:
+                            - rtgl-image w=f h=320 md-h=260 of=cov br=md src="${lead.image.src}" alt="${lead.image.alt}":
+                          $else:
+                            - rtgl-view w=f h=320 md-h=260 bw=xs bc=bo bgc=bg br=md ah=c av=c:
+                                - rtgl-text c=mu-fg: Lead image
+                      $else:
+                        - rtgl-view w=f h=320 md-h=260 bw=xs bc=bo bgc=bg br=md ah=c av=c:
+                            - rtgl-text c=mu-fg: Lead image
+
+    - $if items:
+        - rtgl-grid cols="3" lg-cols="2" sm-cols="1" g=xl w=f:
+            - $for item in items:
+                - 'article style="display: contents;"':
+                    - rtgl-view w=f h=f p=xl g=lg bw=xs bc=bo br=xl:
+                        - $if item.image:
+                            - $if item.image.src:
+                                - rtgl-image w=f h=200 of=cov br=md src="${item.image.src}" alt="${item.image.alt}":
+                              $else:
+                                - rtgl-view w=f h=200 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                                    - rtgl-text c=se-fg: Mosaic image
+                          $else:
+                            - rtgl-view w=f h=200 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                                - rtgl-text c=se-fg: Mosaic image
+                        - rtgl-view g=sm:
+                            - rtgl-text s=h4: ${item.title}
+                            - $if item.description:
+                                - rtgl-text c=mu-fg: ${item.description}
