@@ -7,23 +7,25 @@ tags: documentation
 sidebarId: sites-built-in-templates-and-partials
 ---
 
-`@rettangoli/sites` publishes reusable templates and partials under `sites/` so projects can import them directly from jsDelivr.
+`@rettangoli/sitekit` publishes reusable templates, partials, schemas, and theme assets under `sitekit/` so projects can import them directly from jsDelivr.
 
-For this release, replace `<version>` with `1.0.0-rc12`.
+For this release, replace `<version>` with `1.0.3`.
 
 ## Init vs Import Templates
 
 - `rtgl sites init --template <name>` uses CLI scaffold templates only.
-- Built-in templates on this page (`landing-features`, `blog-article-list`, `blog-article`, etc.) are imported through `sites.config.yaml`.
+- Built-in templates on this page (`landing-features`, `blog-article-list`, `blog-article`, etc.) are imported through `sites.config.yaml` from `@rettangoli/sitekit`.
 - Do not pass built-in import template names to `rtgl sites init --template`.
 
 ## Built-in Templates
 
-- `base`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/base.yaml`
-- `docs`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/docs.yaml`
-- `landing-features`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/landing-features.yaml`
-- `blog-article-list`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/blog-article-list.yaml`
-- `blog-article`: `https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/templates/blog-article.yaml`
+- `base`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/base.yaml`
+- `docs`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/docs.yaml`
+- `landing-features`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/landing-features.yaml`
+- `blog-article-list`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/blog-article-list.yaml`
+- `blog-article`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/blog-article.yaml`
+
+`landing-highlights` and `landing-pricing` are preview routes in the sitekit demo, not separate import template names. The publishable landing template remains `landing-features`, with additional landing partials for composing variants.
 
 For end-to-end authoring examples, see:
 
@@ -31,27 +33,54 @@ For end-to-end authoring examples, see:
 
 ## Built-in Partials
 
+Core shell partials:
+
 - `seo`, `navbar`, `mobile-nav`, `docs-sidebar`, `docs-mobile-nav`
 - `top-navbar`, `footer`
 
+Collection partials:
+
+- `collection-section-header`
+- `collection-section-card-grid`
+- `collection-section-featured-list`
+- `collection-section-compact-list`
+- `collection-section-split-columns`
+- `collection-section-grouped-list`
+
+Landing partials:
+
+- `landing-hero`
+- `landing-stats-band`
+- `landing-logo-cloud`
+- `landing-icon-features`
+- `landing-feature-mosaic`
+- `landing-testimonials-grid`
+- `landing-full-image`
+- `landing-pricing`
+- `landing-pricing-comparison`
+- `landing-roadmap`
+- `landing-faq`
+- `landing-features-section`
+- `landing-cta`
+
 All partial URLs follow:
 
-`https://cdn.jsdelivr.net/npm/@rettangoli/sites@<version>/sites/partials/<name>.yaml`
+`https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/<name>.yaml`
 
 ## Import Aliases
 
 ```yaml
 imports:
   templates:
-    base: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/base.yaml
-    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/docs.yaml
-    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/landing-features.yaml
-    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/blog-article-list.yaml
-    blog-article: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/templates/blog-article.yaml
+    base: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/base.yaml
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/docs.yaml
+    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/landing-features.yaml
+    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article-list.yaml
+    blog-article: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article.yaml
   partials:
-    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/seo.yaml
-    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/top-navbar.yaml
-    footer: https://cdn.jsdelivr.net/npm/@rettangoli/sites@1.0.0-rc12/sites/partials/footer.yaml
+    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/seo.yaml
+    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/top-navbar.yaml
+    footer: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/footer.yaml
 ```
 
 ## Data Contract
@@ -73,7 +102,9 @@ Template-specific fields:
 - `base`: `title`, `page.url`, `seo.*`, `site.baseUrl`, `site.navbar.title`
 - `docs`: `title`, `sidebarId`, `docs.header`, `docs.items`, plus `page.url`, `seo.*`, `site.baseUrl`
 - `landing-features`: `landing.title`, `landing.featuresTitle`, optional `landing.subtitle`, `landing.actions[]`, `landing.image`, `landing.featuresSubtitle`, `landing.features[]`, optional `landing.cta`
-- `blog-article-list`: `title`, `description`, `posts[]` (`title`, `date`, `author`, `href`, optional `imageSrc`, `imageAlt`)
+- `blog-article-list`: `title`, `description`, plus either legacy `posts[]` or new `sections[]`
+- `blog-article-list.sections[]`: `layout`, `title`, optional `eyebrow`, optional `subtitle`, optional `cta`, plus `items[]` or `groups[]` depending on layout
+- `blog-article-list` layouts: `featured-list`, `card-grid`, `compact-list`, `split-columns`, `grouped-list`
 - `blog-article`: `title`, `author`, `date`, optional `category`, `description`, `readingTime`, `updatedAt`
 
 For machine-readable contracts, use:
