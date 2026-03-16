@@ -59,7 +59,7 @@ Validate a section-based `blog-article-list` page:
 
 ```yaml
 {
-  "$schema": "https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/schemas/data-contract.schema.yaml#/$defs/template.blogArticleList",
+  "$schema": "https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/schemas/data-contract.schema.yaml#/$defs/template.blogArticleList",
   "title": "Product Notes",
   "description": "Release notes and architecture updates.",
   "page": { "url": "/notes/" },

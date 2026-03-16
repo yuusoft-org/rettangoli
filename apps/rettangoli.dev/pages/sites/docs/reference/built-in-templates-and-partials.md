@@ -9,7 +9,7 @@ sidebarId: sites-built-in-templates-and-partials
 
 `@rettangoli/sitekit` publishes reusable templates, partials, schemas, and theme assets under `sitekit/` so projects can import them directly from jsDelivr.
 
-For this release, replace `<version>` with `1.0.3`.
+Replace `<version>` with your published `@rettangoli/sitekit` version.
 
 ## Init vs Import Templates
 
@@ -30,6 +30,14 @@ For this release, replace `<version>` with `1.0.3`.
 For end-to-end authoring examples, see:
 
 - [Static & Landing Pages](/sites/docs/introduction/static-and-landing-pages)
+
+## Example Routes In Demo
+
+- `/templates/landing-features/` (`landing-features` template with all major landing partials)
+- `/templates/landing-highlights/` (`landing-features` template with `iconFeatures` and `featureMosaic`)
+- `/templates/landing-pricing/` (`landing-features` template with pricing-focused sections)
+- `/templates/blog/article-list/` (`blog-article-list` template with all supported `sections[]` layouts)
+- `/templates/blog/reducing-friction/` (`blog-article` template with long-form article copy)
 
 ## Built-in Partials
 
@@ -72,15 +80,15 @@ All partial URLs follow:
 ```yaml
 imports:
   templates:
-    base: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/base.yaml
-    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/docs.yaml
-    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/landing-features.yaml
-    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article-list.yaml
-    blog-article: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article.yaml
+    base: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/base.yaml
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/docs.yaml
+    landing-features: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/landing-features.yaml
+    blog-article-list: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/blog-article-list.yaml
+    blog-article: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/blog-article.yaml
   partials:
-    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/seo.yaml
-    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/top-navbar.yaml
-    footer: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/footer.yaml
+    seo: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/seo.yaml
+    top-navbar: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/top-navbar.yaml
+    footer: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/footer.yaml
 ```
 
 ## Data Contract
@@ -101,7 +109,7 @@ Template-specific fields:
 
 - `base`: `title`, `page.url`, `seo.*`, `site.baseUrl`, `site.navbar.title`
 - `docs`: `title`, `sidebarId`, `docs.header`, `docs.items`, plus `page.url`, `seo.*`, `site.baseUrl`
-- `landing-features`: `landing.title`, `landing.featuresTitle`, optional `landing.subtitle`, `landing.actions[]`, `landing.image`, `landing.featuresSubtitle`, `landing.features[]`, optional `landing.cta`
+- `landing-features`: `landing.title`, `landing.featuresTitle`, optional `landing.subtitle`, `landing.actions[]`, `landing.image`, `landing.statsBand`, `landing.logoCloud`, `landing.iconFeatures`, `landing.featureMosaic`, `landing.testimonialsGrid`, `landing.fullImage`, `landing.pricing`, `landing.pricingComparison`, `landing.roadmap`, `landing.faq`, `landing.featuresSubtitle`, `landing.features[]`, optional `landing.cta`
 - `blog-article-list`: `title`, `description`, plus either legacy `posts[]` or new `sections[]`
 - `blog-article-list.sections[]`: `layout`, `title`, optional `eyebrow`, optional `subtitle`, optional `cta`, plus `items[]` or `groups[]` depending on layout
 - `blog-article-list` layouts: `featured-list`, `card-grid`, `compact-list`, `split-columns`, `grouped-list`
