@@ -3,8 +3,10 @@
 ## Unreleased
 
 ### Improvements
+- added `rtgl-carousel`, a dedicated slotted carousel primitive with exact smooth scrolling, desktop mouse drag, native touch/trackpad scrolling, built-in arrow controls by default, opt-in pager dots, `snap="false"` support for free-scroll rails, and centered edge padding when `sna="center"` so the first and last slides can rest centered.
 - `rtgl-view` and `rtgl-image`: added responsive `ar` / `*-ar` support for raw CSS `aspect-ratio` values such as `1`, `1.618`, and `16/9`.
 - `rtgl-view`: added raw CSS passthrough background attrs `bgi`, `bgs`, `bgp`, and `bgr` with responsive variants.
+- `rtgl-view`: added responsive scroll and carousel passthrough attrs `sst`, `sna`, `sns`, `sbh`, `spi`, and `stg` for `scroll-snap-type`, `scroll-snap-align`, `scroll-snap-stop`, `scroll-behavior`, `scroll-padding-inline`, and `scroll-target-group`.
 - added `rtgl-tag`, an inline metadata primitive with variants, icons, truncation, and optional `remove-click` affordance.
 - `rtgl-sidebar`: added `hide-header` to hide the header block.
 - `rtgl-sidebar`: supports `bwr` overrides with default `bwr="xs"` so right border can be disabled via `bwr="none"`.

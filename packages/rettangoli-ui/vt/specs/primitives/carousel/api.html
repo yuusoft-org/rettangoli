@@ -1,0 +1,80 @@
+---
+title: Carousel - API - External Controls
+description: Verifies the carousel primitive can be driven by external controls through its public methods and index-change event.
+specs:
+  - '`goTo(index)`, `next()`, and `prev()` are callable from surrounding page code.'
+  - '`index-change` can synchronize external UI such as labels or custom pagers.'
+  - 'Set `nav="false"` when the surrounding layout owns all arrow controls.'
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-text s="h4">External controls</rtgl-text>
+  <rtgl-text c="mu-fg" w="720">
+    The primitive owns drag and scroll math, but page-level UI can still drive it through a small public API.
+  </rtgl-text>
+
+  <rtgl-view d="h" g="sm" wrap>
+    <rtgl-button id="carousel-api-prev" v="ol">Prev</rtgl-button>
+    <rtgl-button id="carousel-api-slide-1" v="ol">1</rtgl-button>
+    <rtgl-button id="carousel-api-slide-2" v="ol">2</rtgl-button>
+    <rtgl-button id="carousel-api-slide-3" v="ol">3</rtgl-button>
+    <rtgl-button id="carousel-api-next" v="ol">Next</rtgl-button>
+  </rtgl-view>
+
+  <rtgl-text id="carousel-api-status" c="mu-fg">Active slide: 1</rtgl-text>
+
+  <rtgl-carousel id="carousel-api" nav="false" sw="4/5fb" sna="center" spi="lg" g="lg">
+    <rtgl-view bgc="bg" bc="bo" bw="xs" br="xl" p="xl" h="220" d="v" g="sm">
+      <rtgl-text s="sm" c="mu-fg">Slide 1</rtgl-text>
+      <rtgl-text s="h3">Custom controls stay outside.</rtgl-text>
+      <rtgl-text c="mu-fg">Use this when the surrounding layout wants bespoke arrows, counters, or CTA placement.</rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view bgc="ac" br="xl" p="xl" h="220" d="v" g="sm">
+      <rtgl-text s="sm" c="ac-fg">Slide 2</rtgl-text>
+      <rtgl-text s="h3" c="ac-fg">Methods stay simple.</rtgl-text>
+      <rtgl-text c="ac-fg">The surface area is intentionally small: `prev()`, `next()`, `goTo(index)`, and the `index` attribute.</rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view bgc="fg" br="xl" p="xl" h="220" d="v" g="sm">
+      <rtgl-text s="sm" c="bg">Slide 3</rtgl-text>
+      <rtgl-text s="h3" c="bg">State stays synchronized.</rtgl-text>
+      <rtgl-text c="bo">The primitive emits `index-change` whenever the active slide changes from buttons, drag, touch, or code.</rtgl-text>
+    </rtgl-view>
+  </rtgl-carousel>
+</rtgl-view>
+
+<script>
+  const carousel = document.getElementById("carousel-api");
+  const status = document.getElementById("carousel-api-status");
+  const prevButton = document.getElementById("carousel-api-prev");
+  const nextButton = document.getElementById("carousel-api-next");
+  const slideButtons = [
+    document.getElementById("carousel-api-slide-1"),
+    document.getElementById("carousel-api-slide-2"),
+    document.getElementById("carousel-api-slide-3"),
+  ];
+
+  const syncStatus = (index) => {
+    status.textContent = `Active slide: ${index + 1}`;
+  };
+
+  prevButton.addEventListener("click", () => {
+    carousel.prev();
+  });
+
+  nextButton.addEventListener("click", () => {
+    carousel.next();
+  });
+
+  slideButtons.forEach((button, index) => {
+    button.addEventListener("click", () => {
+      carousel.goTo(index);
+    });
+  });
+
+  carousel.addEventListener("index-change", (event) => {
+    syncStatus(event.detail.index);
+  });
+
+  syncStatus(carousel.index ?? 0);
+</script>

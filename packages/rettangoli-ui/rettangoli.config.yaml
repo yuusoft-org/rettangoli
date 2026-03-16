@@ -27,6 +27,9 @@ vt:
     - title: "Primitives"
       type: "groupLabel"
       items:
+        - title: "Carousel"
+          files: "primitives/carousel"
+          description: "rtgl-carousel slotted slide navigation, built-in controls, and interaction visual tests"
         - title: "View"
           files: "primitives/view"
           description: "rtgl-view layout, sizing, spacing, positioning, and visibility visual tests"

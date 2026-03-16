@@ -1,0 +1,89 @@
+---
+title: View - Scroll Snap - Peek Cards
+description: Verifies a card carousel layout using center snapping and partial-width slides.
+specs:
+  - '`w="4/5fb"` leaves a peek of the next card visible.'
+  - '`scroll-snap-align: center` centers cards on snap instead of pinning to the start edge.'
+  - 'The layout remains primitive-only; the extra behavior is pure CSS.'
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-view d="v" g="xs">
+    <rtgl-text s="h4">Peek carousel</rtgl-text>
+    <rtgl-text c="mu-fg" w="760">
+      This is a better fit when you want a landing page to hint that more content exists off-screen.
+    </rtgl-text>
+  </rtgl-view>
+
+  <rtgl-view bgc="mu" bw="xs" bc="bo" br="xl" p="lg">
+    <rtgl-view
+      d="h"
+      sh
+      g="lg"
+      sst="x mandatory"
+      spi="lg"
+      sbh="smooth"
+    >
+      <rtgl-view
+        w="4/5fb"
+        bgc="bg"
+        bw="xs"
+        bc="bo"
+        br="xl"
+        overflow="hidden"
+        sna="center"
+        sns="always"
+      >
+        <rtgl-view h="144" bgi="url('/public/sample1.jpg')" bgs="cover" bgp="center"></rtgl-view>
+        <rtgl-view d="v" g="sm" p="lg">
+          <rtgl-text s="h4">Editorial card</rtgl-text>
+          <rtgl-text c="mu-fg">
+            A partial-width slide reads more like a content rail than a traditional app carousel.
+          </rtgl-text>
+        </rtgl-view>
+      </rtgl-view>
+
+      <rtgl-view
+        w="4/5fb"
+        bgc="bg"
+        bw="xs"
+        bc="bo"
+        br="xl"
+        overflow="hidden"
+        sna="center"
+        sns="always"
+      >
+        <rtgl-view h="144" bgc="ac" d="v" ah="c" av="c">
+          <rtgl-text s="h3" c="ac-fg">42%</rtgl-text>
+          <rtgl-text c="ac-fg">Higher engagement</rtgl-text>
+        </rtgl-view>
+        <rtgl-view d="v" g="sm" p="lg">
+          <rtgl-text s="h4">Stat highlight</rtgl-text>
+          <rtgl-text c="mu-fg">
+            The browser still handles momentum and accessibility, so the pattern stays cheap to maintain.
+          </rtgl-text>
+        </rtgl-view>
+      </rtgl-view>
+
+      <rtgl-view
+        w="4/5fb"
+        bgc="bg"
+        bw="xs"
+        bc="bo"
+        br="xl"
+        overflow="hidden"
+        sna="center"
+        sns="always"
+      >
+        <rtgl-view h="144" bgc="fg" d="v" ah="c" av="c">
+          <rtgl-text s="h4" c="bg">Customer quote</rtgl-text>
+        </rtgl-view>
+        <rtgl-view d="v" g="sm" p="lg">
+          <rtgl-text s="h4">Testimonial card</rtgl-text>
+          <rtgl-text c="mu-fg">
+            Center snapping usually feels better for cards and testimonials than start snapping.
+          </rtgl-text>
+        </rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>

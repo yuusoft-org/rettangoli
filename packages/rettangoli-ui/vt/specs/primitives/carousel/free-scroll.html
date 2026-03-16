@@ -1,0 +1,41 @@
+---
+title: Carousel - Free Scroll - Snap Disabled
+description: Verifies the carousel primitive can disable scroll snapping while keeping drag and button navigation available.
+specs:
+  - '`snap="false"` disables native post-scroll snapping.'
+  - 'Mouse drag and trackpad scrolling can stop between slides.'
+  - 'Built-in arrow controls still scroll to the target slide.'
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-text s="h4">Free-scroll carousel</rtgl-text>
+  <rtgl-text c="mu-fg" w="720">
+    Use this when the strip should feel more like a rail than a locked carousel. Dragging and wheel scrolling can stop between cards.
+  </rtgl-text>
+
+  <rtgl-carousel
+    id="carousel-free-scroll"
+    snap="false"
+    sw="4/5fb"
+    sna="center"
+    spi="lg"
+    g="lg"
+  >
+    <rtgl-view bgc="bg" bc="bo" bw="xs" br="xl" p="xl" h="220" d="v" g="sm">
+      <rtgl-text s="sm" c="mu-fg">Slide 1</rtgl-text>
+      <rtgl-text s="h3">Snap disabled.</rtgl-text>
+      <rtgl-text c="mu-fg">Release the drag anywhere and the strip stays where you left it.</rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view bgc="ac" br="xl" p="xl" h="220" d="v" g="sm">
+      <rtgl-text s="sm" c="ac-fg">Slide 2</rtgl-text>
+      <rtgl-text s="h3" c="ac-fg">Arrow controls still target slides.</rtgl-text>
+      <rtgl-text c="ac-fg">The built-in left and right controls still scroll intentionally to each item.</rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view bgc="fg" br="xl" p="xl" h="220" d="v" g="sm">
+      <rtgl-text s="sm" c="bg">Slide 3</rtgl-text>
+      <rtgl-text s="h3" c="bg">More rail-like behavior.</rtgl-text>
+      <rtgl-text c="bo">This is useful for landing-page content strips where partial positions can still feel natural.</rtgl-text>
+    </rtgl-view>
+  </rtgl-carousel>
+</rtgl-view>

@@ -1,0 +1,92 @@
+---
+title: View - Scroll Snap - Responsive Landing Strip
+description: Verifies a landing-page strip can peek on desktop and collapse to full-width slides on smaller viewports.
+viewport:
+  - id: desktop
+    width: 1400
+    height: 760
+  - id: mobile
+    width: 420
+    height: 840
+specs:
+  - 'Desktop uses wider partial-width slides to preview the next item.'
+  - 'Smaller viewports promote slides to `1/1fb` so each panel reads as a full card.'
+  - 'The same primitive structure scales across breakpoints.'
+---
+<rtgl-view d="v" g="lg" p="lg" wh="f">
+  <rtgl-view d="v" g="xs">
+    <rtgl-text s="h4">Responsive marketing strip</rtgl-text>
+    <rtgl-text c="mu-fg" w="760">
+      On desktop the layout peeks the next card; on smaller screens the cards become full-width slides.
+    </rtgl-text>
+  </rtgl-view>
+
+  <rtgl-view bgc="fg" br="xl" p="xl" d="v" g="lg">
+    <rtgl-view d="v" g="xs">
+      <rtgl-text s="h2" c="bg">Built from `rtgl-view` plus native scroll snap.</rtgl-text>
+      <rtgl-text c="bo" w="720">
+        No carousel runtime is needed for this first version. The browser owns the scrolling; Rettangoli owns the composition.
+      </rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view
+      d="h"
+      sh
+      g="lg"
+      sst="x mandatory"
+      spi="lg"
+      sbh="smooth"
+    >
+      <rtgl-view
+        w="2/3fb"
+        md-w="4/5fb"
+        sm-w="1/1fb"
+        p="lg"
+        d="v"
+        g="sm"
+        bgc="bg"
+        br="xl"
+        sna="center"
+        sns="always"
+      >
+        <rtgl-text s="sm" c="ac">Faster iteration</rtgl-text>
+        <rtgl-text s="h3">Keep the public API small until the pattern hardens.</rtgl-text>
+        <rtgl-text c="mu-fg">This is usually the right tradeoff for landing pages and editorial surfaces.</rtgl-text>
+      </rtgl-view>
+
+      <rtgl-view
+        w="2/3fb"
+        md-w="4/5fb"
+        sm-w="1/1fb"
+        p="lg"
+        d="v"
+        g="sm"
+        bgc="ac"
+        br="xl"
+        sna="center"
+        sns="always"
+      >
+        <rtgl-text s="sm" c="ac-fg">Better defaults</rtgl-text>
+        <rtgl-text s="h3" c="ac-fg">Use center snapping when the next card should remain visible.</rtgl-text>
+        <rtgl-text c="ac-fg">Use start snapping when the slide should feel like a full hero panel.</rtgl-text>
+      </rtgl-view>
+
+      <rtgl-view
+        w="2/3fb"
+        md-w="4/5fb"
+        sm-w="1/1fb"
+        p="lg"
+        d="v"
+        g="sm"
+        bgc="bg"
+        br="xl"
+        sna="center"
+        sns="always"
+      >
+        <rtgl-text s="sm" c="pr">Low maintenance</rtgl-text>
+        <rtgl-text s="h3">Later, formalize only the CSS you keep reusing.</rtgl-text>
+        <rtgl-text c="mu-fg">That usually means `snap`, `snap-align`, and maybe `snap-stop` attrs on the primitive layer.</rtgl-text>
+      </rtgl-view>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
