@@ -382,7 +382,6 @@ Temporary VT skips (as of 2026-02-11):
 - `vt/specs/components/sidebar/basic-5.html`
 - `vt/specs/components/sidebar/basic-6.html`
 - `vt/specs/components/sidebar/basic-7.html`
-- `vt/specs/components/sidebar/many-items-scroll.html`
 - These specs currently set `skipScreenshot: true` due intermittent CI rendering drift. Remove the skip once stabilized.
 - `vt/specs/components/tooltip/basic.html` currently omits the final step screenshot due intermittent CI tooltip wrapping drift.
 
