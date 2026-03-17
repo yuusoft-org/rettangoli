@@ -295,12 +295,10 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - `sh` enables horizontal overflow with `overflow-x: auto`
 - `sv` enables vertical overflow with `overflow-y: auto`
 - `sh` / `sv` scrolling surfaces reserve gutter space with `scrollbar-gutter: stable`
+- `hsb` hides scrollbars for the active scroll surface and removes the reserved gutter
 - raw CSS passthrough attrs with responsive variants include:
   - `ar` for `aspect-ratio`
   - `bgi`, `bgs`, `bgp`, `bgr` for background image styling
-  - `sbh` for `scroll-behavior`
-  - `spi` for `scroll-padding-inline`
-  - `stg` for `scroll-target-group`
 - prefer these attrs over ad-hoc inline style when the property is part of the shared primitive surface
 
 ### `rtgl-grid`

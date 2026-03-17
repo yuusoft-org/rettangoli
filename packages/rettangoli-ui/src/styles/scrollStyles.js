@@ -48,5 +48,37 @@ export default css`
     overflow: hidden;
     flex-wrap: nowrap;
 }
+:host([hsb])::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+@media only screen and (max-width: 1280px) {
+    :host([xl-hsb])::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+}
+
+@media only screen and (max-width: 1024px) {
+    :host([lg-hsb])::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    :host([md-hsb])::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+}
+
+@media only screen and (max-width: 640px) {
+    :host([sm-hsb])::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+}
 
 `

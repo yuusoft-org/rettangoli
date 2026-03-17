@@ -1,9 +1,9 @@
 ---
-title: "Many Items (Manual Scroll Check)"
-description: "Manual verification page for sidebar internal scrolling with a fixed header."
+title: "Many Items"
+description: "Verifies the sidebar layout with a long item list using an internal vertical scroll surface."
 specs:
-  - "Use mouse wheel/trackpad inside sidebar: item list should scroll."
-  - "Header (logo + label) should stay fixed at top."
+  - "Sidebar renders many items with `sv` on the internal list container."
+  - "Header and item list remain visually coherent in the full-height layout."
 ---
 <rtgl-view g="lg" h="100vh" w="f" wrap>
   <rtgl-sidebar id="sidebar"></rtgl-sidebar>
