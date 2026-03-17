@@ -298,7 +298,6 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - raw CSS passthrough attrs with responsive variants include:
   - `ar` for `aspect-ratio`
   - `bgi`, `bgs`, `bgp`, `bgr` for background image styling
-  - `sst`, `sna`, `sns` for scroll snap behavior
   - `sbh` for `scroll-behavior`
   - `spi` for `scroll-padding-inline`
   - `stg` for `scroll-target-group`

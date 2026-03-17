@@ -102,9 +102,6 @@ class RettangoliViewElement extends HTMLElement {
         "bgs",
         "bgp",
         "bgr",
-        "sst",
-        "sna",
-        "sns",
         "sbh",
         "spi",
         "stg",
@@ -181,15 +178,6 @@ class RettangoliViewElement extends HTMLElement {
       const backgroundRepeat = normalizeRawCssValue(
         this.getAttribute(addSizePrefix("bgr")),
       );
-      const scrollSnapType = normalizeRawCssValue(
-        this.getAttribute(addSizePrefix("sst")),
-      );
-      const scrollSnapAlign = normalizeRawCssValue(
-        this.getAttribute(addSizePrefix("sna")),
-      );
-      const scrollSnapStop = normalizeRawCssValue(
-        this.getAttribute(addSizePrefix("sns")),
-      );
       const scrollBehavior = normalizeRawCssValue(
         this.getAttribute(addSizePrefix("sbh")),
       );
@@ -226,18 +214,6 @@ class RettangoliViewElement extends HTMLElement {
 
       if (backgroundRepeat !== null) {
         this._styles[size]["background-repeat"] = backgroundRepeat;
-      }
-
-      if (scrollSnapType !== null) {
-        this._styles[size]["scroll-snap-type"] = scrollSnapType;
-      }
-
-      if (scrollSnapAlign !== null) {
-        this._styles[size]["scroll-snap-align"] = scrollSnapAlign;
-      }
-
-      if (scrollSnapStop !== null) {
-        this._styles[size]["scroll-snap-stop"] = scrollSnapStop;
       }
 
       if (scrollBehavior !== null) {
