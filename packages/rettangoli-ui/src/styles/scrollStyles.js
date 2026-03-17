@@ -3,17 +3,17 @@ import { css } from '../common.js'
 
 export default css`
 :host([sh]:not([sv])) {
-    overflow-x: scroll;
+    overflow-x: auto;
     flex-wrap: nowrap;
     min-width: 0;
 }
 :host([sv]:not([sh])) {
-    overflow-y: scroll;
+    overflow-y: auto;
     flex-wrap: nowrap;
     min-height: 0;
 }
 :host([sh][sv]) {
-    overflow: scroll;
+    overflow: auto;
     flex-wrap: nowrap;
     min-height: 0;
     min-width: 0;
@@ -21,6 +21,7 @@ export default css`
 :host([sh]),
 :host([sv]) {
     -ms-overflow-style: auto;
+    scrollbar-gutter: stable;
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb, var(--muted-foreground)) var(--scrollbar-track, transparent);
 }

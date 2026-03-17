@@ -292,10 +292,12 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 ### `rtgl-view`
 
 - use for 1D layout, flex composition, scrolling surfaces, and generic containers
+- `sh` enables horizontal overflow with `overflow-x: auto`
+- `sv` enables vertical overflow with `overflow-y: auto`
+- `sh` / `sv` scrolling surfaces reserve gutter space with `scrollbar-gutter: stable`
 - raw CSS passthrough attrs with responsive variants include:
   - `ar` for `aspect-ratio`
   - `bgi`, `bgs`, `bgp`, `bgr` for background image styling
-  - `sst`, `sna`, `sns` for scroll snap behavior
   - `sbh` for `scroll-behavior`
   - `spi` for `scroll-padding-inline`
   - `stg` for `scroll-target-group`
@@ -305,7 +307,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 
 - use for explicit 2D column layouts
 - `cols` and `sm-cols` / `md-cols` / `lg-cols` / `xl-cols` accept positive integers and render equal-width tracks
-- shared spacing, sizing, border, background, visibility, overflow, and link attrs follow the same conventions as `rtgl-view`
+- shared spacing, sizing, border, background, visibility, overflow, and link attrs follow the same conventions as `rtgl-view`, including `sh` / `sv` using auto overflow with stable gutter reservation
 - flex-only attrs such as `d`, `wrap`, `no-wrap`, `ah`, and `av` do not apply
 
 Components built via `@rettangoli/fe`:
