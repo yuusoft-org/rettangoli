@@ -184,11 +184,14 @@ class RettangoliGridElement extends HTMLElement {
       const overflow = this.getAttribute(addSizePrefix("overflow"));
 
       if (scrollHorizontal && scrollVertical) {
-        this._styles[size].overflow = "scroll";
+        this._styles[size].overflow = "auto";
+        this._styles[size]["scrollbar-gutter"] = "stable";
       } else if (scrollHorizontal) {
-        this._styles[size]["overflow-x"] = "scroll";
+        this._styles[size]["overflow-x"] = "auto";
+        this._styles[size]["scrollbar-gutter"] = "stable";
       } else if (scrollVertical) {
-        this._styles[size]["overflow-y"] = "scroll";
+        this._styles[size]["overflow-y"] = "auto";
+        this._styles[size]["scrollbar-gutter"] = "stable";
       }
 
       if (overflow === "hidden") {
