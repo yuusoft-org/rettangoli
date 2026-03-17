@@ -28,15 +28,6 @@ const normalizeRawCssValue = (value) => {
   return normalizedValue.length > 0 ? normalizedValue : null;
 };
 
-const normalizeDimensionOrRawCssValue = (value) => {
-  const normalizedValue = normalizeRawCssValue(value);
-  if (normalizedValue === null) {
-    return null;
-  }
-
-  return dimensionWithUnit(normalizedValue);
-};
-
 // Internal implementation without uhtml
 class RettangoliViewElement extends HTMLElement {
   static styleSheet = null;
@@ -102,9 +93,6 @@ class RettangoliViewElement extends HTMLElement {
         "bgs",
         "bgp",
         "bgr",
-        "sbh",
-        "spi",
-        "stg",
         "hsb",
         "hide",
         "show",
@@ -179,15 +167,6 @@ class RettangoliViewElement extends HTMLElement {
       const backgroundRepeat = normalizeRawCssValue(
         this.getAttribute(addSizePrefix("bgr")),
       );
-      const scrollBehavior = normalizeRawCssValue(
-        this.getAttribute(addSizePrefix("sbh")),
-      );
-      const scrollPaddingInline = normalizeDimensionOrRawCssValue(
-        this.getAttribute(addSizePrefix("spi")),
-      );
-      const scrollTargetGroup = normalizeRawCssValue(
-        this.getAttribute(addSizePrefix("stg")),
-      );
 
       if (zIndex !== null) {
         this._styles[size]["z-index"] = zIndex;
@@ -215,18 +194,6 @@ class RettangoliViewElement extends HTMLElement {
 
       if (backgroundRepeat !== null) {
         this._styles[size]["background-repeat"] = backgroundRepeat;
-      }
-
-      if (scrollBehavior !== null) {
-        this._styles[size]["scroll-behavior"] = scrollBehavior;
-      }
-
-      if (scrollPaddingInline !== null) {
-        this._styles[size]["scroll-padding-inline"] = scrollPaddingInline;
-      }
-
-      if (scrollTargetGroup !== null) {
-        this._styles[size]["scroll-target-group"] = scrollTargetGroup;
       }
 
       applyDimensionToStyleBucket({

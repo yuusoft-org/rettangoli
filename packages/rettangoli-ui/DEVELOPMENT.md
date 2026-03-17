@@ -299,9 +299,6 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - raw CSS passthrough attrs with responsive variants include:
   - `ar` for `aspect-ratio`
   - `bgi`, `bgs`, `bgp`, `bgr` for background image styling
-  - `sbh` for `scroll-behavior`
-  - `spi` for `scroll-padding-inline`
-  - `stg` for `scroll-target-group`
 - prefer these attrs over ad-hoc inline style when the property is part of the shared primitive surface
 
 ### `rtgl-grid`
