@@ -105,6 +105,7 @@ class RettangoliViewElement extends HTMLElement {
         "sbh",
         "spi",
         "stg",
+        "hsb",
         "hide",
         "show",
         "sh",
@@ -335,6 +336,7 @@ class RettangoliViewElement extends HTMLElement {
       // Handle scroll properties
       const scrollHorizontal = this.hasAttribute(addSizePrefix("sh"));
       const scrollVertical = this.hasAttribute(addSizePrefix("sv"));
+      const hideScrollbar = this.hasAttribute(addSizePrefix("hsb"));
       const overflow = this.getAttribute(addSizePrefix("overflow"));
 
       if (scrollHorizontal && scrollVertical) {
@@ -354,6 +356,12 @@ class RettangoliViewElement extends HTMLElement {
       if (overflow === "hidden") {
         this._styles[size]["overflow"] = "hidden";
         this._styles[size]["flex-wrap"] = "nowrap";
+      }
+
+      if (hideScrollbar) {
+        this._styles[size]["-ms-overflow-style"] = "none";
+        this._styles[size]["scrollbar-gutter"] = "auto";
+        this._styles[size]["scrollbar-width"] = "none";
       }
     });
 

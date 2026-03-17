@@ -141,6 +141,7 @@ export const selectViewData = ({ props }) => {
   const headerWidth = itemWidth;
 
   const ah = mode === 'shrunk-lg' || mode === 'shrunk-md' ? 'c' : '';
+  const listAttrString = mode === 'full' ? 'sv' : 'sv hsb';
 
   return {
     containerAttrString,
@@ -163,6 +164,7 @@ export const selectViewData = ({ props }) => {
     headerWidth,
     selectedItemId,
     ah,
+    listAttrString,
     showHeader,
     rightBorderWidth,
   };
