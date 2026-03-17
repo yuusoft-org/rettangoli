@@ -75,7 +75,7 @@ template:
                                     - rtgl-text s=lg: ${header.label}
                               $else:
                                 - rtgl-text s=lg: ${header.label}
-      - rtgl-view w=f h=1fg sv ph=${headerPadding} pb=lg g=xs ah=${ah}:
+      - rtgl-view w=f h=1fg ph=${headerPadding} pb=lg g=xs ah=${ah}:
           - $for item, i in items:
               - $if item.type == "groupLabel":
                   - $if showGroupLabels:
