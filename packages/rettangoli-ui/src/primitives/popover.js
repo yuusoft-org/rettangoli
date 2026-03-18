@@ -60,6 +60,15 @@ class RettangoliPopoverElement extends HTMLElement {
           min-width: 200px;
           max-width: 400px;
         }
+
+        :host([plain]) slot[name="content"] {
+          background-color: transparent;
+          border: none;
+          border-radius: 0;
+          padding: 0;
+          min-width: 0;
+          max-width: none;
+        }
       `);
     }
   }
@@ -126,7 +135,7 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["open", "x", "y", "place", "no-overlay"];
+    return ["open", "x", "y", "place", "no-overlay", "plain"];
   }
 
   connectedCallback() {
@@ -155,7 +164,7 @@ class RettangoliPopoverElement extends HTMLElement {
       }
     } else if ((name === 'x' || name === 'y' || name === 'place') && this._isOpen) {
       this._updatePosition();
-    } else if (name === 'no-overlay' && oldValue !== newValue && this._isOpen) {
+    } else if ((name === 'no-overlay' || name === 'plain') && oldValue !== newValue && this._isOpen) {
       this._hide();
       this._show();
     }
