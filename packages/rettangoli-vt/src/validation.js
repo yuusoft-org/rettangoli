@@ -112,7 +112,6 @@ const LEGACY_CAPTURE_FIELDS = {
   waitSelector: true,
   waitStrategy: true,
   workerCount: true,
-  isolationMode: true,
   navigationTimeout: true,
   readyTimeout: true,
   screenshotTimeout: true,
@@ -557,6 +556,7 @@ export function validateVtConfig(vtConfig, sourcePath = "rettangoli.config.yaml"
   validateOptionalNumber(vtConfig.concurrency, "vt.concurrency", { integer: true, min: 1 });
   validateOptionalNumber(vtConfig.timeout, "vt.timeout", { integer: true, min: 1 });
   validateOptionalString(vtConfig.waitEvent, "vt.waitEvent");
+  validateOptionalEnum(vtConfig.isolationMode, "vt.isolationMode", ["fast", "strict"]);
   normalizeViewportField(vtConfig.viewport, "vt.viewport");
   validateOptionalNumber(vtConfig.colorThreshold, "vt.colorThreshold", { min: 0, max: 1 });
   validateOptionalNumber(vtConfig.diffThreshold, "vt.diffThreshold", { min: 0, max: 100 });

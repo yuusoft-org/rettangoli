@@ -1,6 +1,6 @@
 # Rettangoli VT Spec
 
-Last updated: 2026-02-10
+Last updated: 2026-03-25
 
 This document defines the public contract for `rtgl vt`.
 
@@ -30,6 +30,7 @@ vt:
   concurrency: 4
   timeout: 30000
   waitEvent: vt:ready
+  isolationMode: strict
   viewport:
     id: desktop
     width: 1280
@@ -50,6 +51,7 @@ Rules:
 - `vt.concurrency` optional integer >= 1.
 - `vt.timeout` optional integer >= 1 (ms).
 - `vt.waitEvent` optional non-empty string.
+- `vt.isolationMode` optional `fast` or `strict`. Default: `fast`.
 - `vt.viewport` optional object or array of objects.
 - each viewport object requires `id`, `width`, `height`.
 - viewport `id` values must be unique case-insensitively within an array.
@@ -99,6 +101,7 @@ Supported options:
 - `--concurrency <number>`
 - `--timeout <ms>`
 - `--wait-event <name>`
+- `--isolation <fast|strict>`
 - `--folder <path>` (repeatable)
 - `--group <section-key>` (repeatable)
 - `--item <spec-path>` (repeatable)
@@ -111,6 +114,8 @@ Screenshot behavior:
 - Takes an immediate initial screenshot before running `steps` unless `frontmatter.skipInitialScreenshot=true`.
 - when `vt.service.start` exists, starts service, waits for `vt.url`, then stops service after capture.
 - when `vt.service` is omitted and `vt.url` is set, VT captures against the already running service.
+- isolation defaults to `fast`.
+- `strict` uses a fresh browser context per capture task and is recommended for IndexedDB-backed app state or direct app-route capture.
 - Fails if unresolved capture failures remain.
 
 Wait strategy precedence:

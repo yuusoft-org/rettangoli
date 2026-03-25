@@ -83,4 +83,24 @@ describe("buildCaptureOptions", () => {
       { id: "mobile", width: 390, height: 844 },
     ]);
   });
+
+  it("passes isolation mode through to capture options", () => {
+    const resolvedOptions = resolveGenerateOptions(
+      {
+        isolation: "strict",
+      },
+      {
+        path: "./vt",
+      },
+    );
+
+    const captureOptions = buildCaptureOptions({
+      filesToScreenshot: [{ path: "components/basic.html", frontMatter: {} }],
+      port: 3001,
+      candidatePath: ".rettangoli/vt/_site/candidate",
+      resolvedOptions,
+    });
+
+    expect(captureOptions.isolationMode).toBe("strict");
+  });
 });

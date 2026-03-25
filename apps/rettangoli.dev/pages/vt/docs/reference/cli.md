@@ -12,7 +12,7 @@ VT commands are exposed through `rtgl vt`.
 Recommended runtime is the official Docker image (for consistent local/CI behavior). You can map it to a shell alias and keep using the same `rtgl` commands:
 
 ```bash
-alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.11 rtgl'
+alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.12 rtgl'
 ```
 
 The image default working directory is `/workspace`.
@@ -65,18 +65,21 @@ Options:
 | `--concurrency <number>` | integer | Number of parallel capture workers |
 | `--timeout <ms>` | integer | Global timeout used for navigation/ready/screenshot |
 | `--wait-event <name>` | string | Wait for a custom browser event before capture |
+| `--isolation <fast|strict>` | string | Capture isolation mode. `strict` uses a fresh browser context per spec |
 | `--folder <path>` | repeatable string | Scope to specs under a folder prefix |
 | `--group <section-key>` | repeatable string | Scope to one or more section keys from `vt.sections` |
 | `--item <spec-path>` | repeatable string | Scope to one or more spec paths under `vt/specs` |
 | `--headed` | boolean | Run browser in headed mode (debugging) |
 
 If `vt.service.start` is configured, `screenshot` manages the service lifecycle automatically.
+Use `--isolation strict` for real app routes or apps that persist test state in IndexedDB.
 
 Examples:
 
 ```bash
 rtgl vt screenshot
 rtgl vt screenshot --concurrency 4 --timeout 45000
+rtgl vt screenshot --isolation strict
 rtgl vt screenshot --wait-event app:ready
 rtgl vt screenshot --folder components/forms --group pages --item components/forms/login
 rtgl vt screenshot --headed

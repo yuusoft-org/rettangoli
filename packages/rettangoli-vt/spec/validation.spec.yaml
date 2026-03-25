@@ -108,6 +108,7 @@ in:
     concurrency: 4
     timeout: 45000
     waitEvent: app:ready
+    isolationMode: strict
     sections:
       - title: Pages
         files: pages
@@ -117,9 +118,20 @@ out:
   concurrency: 4
   timeout: 45000
   waitEvent: app:ready
+  isolationMode: strict
   sections:
     - title: Pages
       files: pages
+---
+case: rejects invalid isolation mode
+in:
+  - path: ./vt
+    isolationMode: shared
+    sections:
+      - title: Pages
+        files: pages
+  - rettangoli.config.yaml
+throws: vt.isolationMode
 ---
 case: accepts minimal managed service config
 in:

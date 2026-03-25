@@ -16,13 +16,13 @@ Visual testing catches UI regressions that unit tests usually miss. It is especi
 Use the official image so every machine (local and CI) runs the same Playwright + `rtgl` environment:
 
 ```bash
-docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.11
+docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.12
 ```
 
 Set a shell alias so docs and scripts can use plain `rtgl` commands:
 
 ```bash
-alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.11 rtgl'
+alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.12 rtgl'
 ```
 
 The image default working directory is `/workspace`, so `-w /workspace` is not required.
@@ -147,6 +147,7 @@ Use this managed preview service:
 ```yaml
 vt:
   path: ./vt
+  isolationMode: strict
   url: http://127.0.0.1:4173
   service:
     start: npm run watch
@@ -156,6 +157,7 @@ vt:
 ```
 
 `vt.service.start` starts/stops the preview command automatically during `npm run screenshot`.
+`isolationMode: strict` is recommended when those screenshots hit real app routes or app state is stored in IndexedDB.
 For full setup details, see [Sites Integration](/vt/docs/reference/sites-integration).
 
 ## Next
