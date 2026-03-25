@@ -56,6 +56,13 @@ function parsePortOption(value) {
   return parsed;
 }
 
+function parseIsolationOption(value) {
+  if (value === "fast" || value === "strict") {
+    return value;
+  }
+  throw new InvalidArgumentError(`Isolation must be "fast" or "strict", received "${value}"`);
+}
+
 function resolveBeRuntimePaths(config) {
   const be = config?.be || {};
   const dirs = Array.isArray(be.dirs) && be.dirs.length > 0 ? be.dirs : ["./src/modules"];
@@ -444,6 +451,7 @@ vtCommand
   .option("--concurrency <number>", "Number of parallel capture workers", parseIntegerOption)
   .option("--timeout <ms>", "Global capture timeout in ms", parseIntegerOption)
   .option("--wait-event <name>", "Custom event name to mark page ready (uses event wait strategy)")
+  .option("--isolation <mode>", "Isolation mode: fast or strict", parseIsolationOption)
   .option("--folder <path>", "Run only specs under folder prefix (repeatable)", collectValues, [])
   .option("--group <section-key>", "Run only one section key from vt.sections (repeatable)", collectValues, [])
   .option("--item <spec-path>", "Run only one spec path relative to vt/specs (repeatable)", collectValues, [])

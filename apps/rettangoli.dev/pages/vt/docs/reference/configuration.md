@@ -24,6 +24,7 @@ vt:
   concurrency: 4
   timeout: 30000
   waitEvent: app:ready
+  isolationMode: strict
   viewport:
     - id: desktop
       width: 1280
@@ -57,6 +58,7 @@ vt:
 | `concurrency` | integer (`>=1`) | Default capture workers |
 | `timeout` | integer (`>=1`) | Global timeout in milliseconds |
 | `waitEvent` | string | Default custom event for readiness |
+| `isolationMode` | `fast` or `strict` | Screenshot isolation mode. Default: `fast` |
 | `viewport` | object or array | Default viewport(s) for capture |
 | `sections` | array (required) | Sidebar structure and grouping for VT pages |
 
@@ -76,6 +78,12 @@ vt:
 - Each group item requires `title` and `files`.
 - Section keys (`title` and `items[].title`) must use only letters, numbers, `-`, `_`.
 - Section keys must be unique case-insensitively.
+
+## `isolationMode` rules
+
+- `fast` is the default and reuses browser context state between capture tasks after a lightweight reset.
+- `strict` creates a fresh browser context per capture task.
+- Prefer `strict` for real app routes and apps that persist state in IndexedDB.
 
 ## Internal fields to avoid
 

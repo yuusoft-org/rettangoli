@@ -11,6 +11,7 @@ export function resolveGenerateOptions(options = {}, configData = {}) {
     concurrency: cliConcurrency,
     timeout: cliTimeout,
     waitEvent: cliWaitEvent,
+    isolation: cliIsolation,
     folder: cliFolder,
     group: cliGroup,
     item: cliItem,
@@ -20,6 +21,7 @@ export function resolveGenerateOptions(options = {}, configData = {}) {
 
   const waitEvent = cliWaitEvent ?? configData.waitEvent;
   const timeout = cliTimeout ?? configData.timeout ?? 30000;
+  const isolationMode = cliIsolation ?? configData.isolationMode ?? "fast";
   const selectors = normalizeSelectors({
     folder: cliFolder,
     group: cliGroup,
@@ -52,7 +54,7 @@ export function resolveGenerateOptions(options = {}, configData = {}) {
     screenshotWaitTime: 0,
     waitStrategy: waitEvent ? "event" : "load",
     workerCount: cliConcurrency ?? configData.concurrency ?? undefined, // adaptive worker planning
-    isolationMode: "fast",
+    isolationMode,
     navigationTimeout: timeout,
     readyTimeout: timeout,
     screenshotTimeout: timeout,
@@ -83,6 +85,11 @@ export function resolveGenerateOptions(options = {}, configData = {}) {
     if (typeof resolvedOptions.waitEvent !== "string" || resolvedOptions.waitEvent.trim().length === 0) {
       throw new Error(`Invalid waitEvent: expected a non-empty string, got ${typeof resolvedOptions.waitEvent}.`);
     }
+  }
+  if (!["fast", "strict"].includes(resolvedOptions.isolationMode)) {
+    throw new Error(
+      `Invalid isolation: expected "fast" or "strict", got "${resolvedOptions.isolationMode}".`,
+    );
   }
   if (resolvedOptions.configUrl !== undefined && resolvedOptions.configUrl !== null) {
     if (typeof resolvedOptions.configUrl !== "string" || resolvedOptions.configUrl.trim().length === 0) {

@@ -147,6 +147,7 @@ Use this managed preview service:
 ```yaml
 vt:
   path: ./vt
+  isolationMode: strict
   url: http://127.0.0.1:4173
   service:
     start: npm run watch
@@ -156,6 +157,7 @@ vt:
 ```
 
 `vt.service.start` starts/stops the preview command automatically during `npm run screenshot`.
+`isolationMode: strict` is recommended when those screenshots hit real app routes or app state is stored in IndexedDB.
 For full setup details, see [Sites Integration](/vt/docs/reference/sites-integration).
 
 ## Next

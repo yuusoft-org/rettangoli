@@ -21,6 +21,7 @@ Behavior split:
 - `--concurrency <number>`
 - `--timeout <ms>`
 - `--wait-event <name>`
+- `--isolation <fast|strict>`
 - `--folder <path>` (repeatable)
 - `--group <section-key>` (repeatable)
 - `--item <spec-path>` (repeatable)
@@ -69,7 +70,7 @@ rtgl vt report --group components-basic
 rtgl vt report --item components/forms/login
 ```
 
-Everything else in capture is internal and intentionally not user-configurable.
+Other capture tuning remains internal and intentionally not user-configurable.
 
 ## Config
 
@@ -85,6 +86,7 @@ vt:
   concurrency: 4
   timeout: 30000
   waitEvent: vt:ready
+  isolationMode: strict
   viewport:
     id: desktop
     width: 1280
@@ -99,6 +101,8 @@ Notes:
 - `vt.sections` is required.
 - `vt.service` is optional. When set, VT starts the command before capture, waits for `vt.url`, then stops it after capture.
 - when `vt.service` is omitted and `vt.url` is set, VT expects that URL to already be running.
+- `vt.isolationMode` is optional: `fast` or `strict`. Default is `fast`.
+- `strict` uses a fresh browser context per captured spec and is recommended for real app routes or IndexedDB-backed state.
 - Section page keys are derived as `kebab-case(title)` for flat sections and group `items[].title`.
 - Derived section page keys must be unique case-insensitively.
 - `vt.viewport` supports object or array; each viewport requires `id`, `width`, `height`.

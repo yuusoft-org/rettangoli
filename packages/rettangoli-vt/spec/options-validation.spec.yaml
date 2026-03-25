@@ -44,6 +44,7 @@ in:
     concurrency: 6
     timeout: 15000
     waitEvent: cli:ready
+    isolation: strict
     headless: false
     url: http://localhost:9000/render
   - path: ./vt-config
@@ -52,6 +53,7 @@ in:
     concurrency: 2
     timeout: 50000
     waitEvent: config:ready
+    isolationMode: fast
     url: https://example.com/config
 out:
   vtPath: ./vt-cli
@@ -67,10 +69,34 @@ out:
   screenshotWaitTime: 0
   waitStrategy: event
   workerCount: 6
-  isolationMode: fast
+  isolationMode: strict
   navigationTimeout: 15000
   readyTimeout: 15000
   screenshotTimeout: 15000
+  maxRetries: 1
+  recycleEvery: 25
+  metricsPath: .rettangoli/vt/metrics.json
+---
+case: carries isolation mode from config when cli does not override it
+in:
+  - {}
+  - path: ./vt
+    isolationMode: strict
+out:
+  vtPath: ./vt
+  skipScreenshots: false
+  port: 3001
+  headless: true
+  selectors:
+    folders: []
+    groups: []
+    items: []
+  screenshotWaitTime: 0
+  waitStrategy: load
+  isolationMode: strict
+  navigationTimeout: 30000
+  readyTimeout: 30000
+  screenshotTimeout: 30000
   maxRetries: 1
   recycleEvery: 25
   metricsPath: .rettangoli/vt/metrics.json
@@ -80,6 +106,12 @@ in:
   - url: ""
   - {}
 throws: Invalid url
+---
+case: rejects invalid isolation
+in:
+  - isolation: shared
+  - {}
+throws: Invalid isolation
 ---
 case: rejects invalid concurrency
 in:
