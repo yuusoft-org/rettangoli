@@ -15,7 +15,7 @@ Implemented now:
 - package + CLI entrypoint (`@rettangoli/check`, `rtgl check`)
 - discovery and component grouping
 - model building for YAML/JS contracts
-- FE parity checks (schema required, forbidden view keys, legacy `.prop=` binding)
+- FE parity checks (schema required, forbidden view keys, unsupported property binding syntax)
 - schema/constants checks
 - listener config checks
 - strict handler naming checks (`handle*` only)
@@ -112,7 +112,7 @@ Current baseline is clean in strict mode:
 
 - required `.schema.yaml` per component
 - forbidden metadata keys inside `.view.yaml`
-- legacy `.prop=` syntax detection
+- unsupported property binding syntax detection
 
 That baseline is good, but many contract violations are still caught late (during build, runtime, or manually).
 

@@ -13,7 +13,7 @@ This spec defines FE schema/contract semantics enforced by current checker rules
 
 1. Every component requires `.schema.yaml` (`RTGL-CONTRACT-001`).
 2. `.view.yaml` forbids API metadata keys (`elementName`, `viewDataSchema`, `propsSchema`, `events`, `methods`, `attrsSchema`) with `RTGL-CONTRACT-002`.
-3. Legacy `.prop=` style is rejected (`RTGL-CONTRACT-003`).
+3. Unsupported property binding source syntax is rejected (`RTGL-CONTRACT-003`), including legacy `.prop=` and non-interpolated `:prop=value` forms.
 
 ## RTGL-SPEC-FE-002: Schema component identity and shape
 

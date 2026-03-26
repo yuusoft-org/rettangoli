@@ -34,8 +34,11 @@ actions:
 
 ## Component Props
 
-```html
-<rtgl-form .form=${schema} .defaultValues=${values} ?disabled=${true}></rtgl-form>
+```js
+const form = document.querySelector("rtgl-form");
+form.form = schema;
+form.defaultValues = values;
+form.disabled = true;
 ```
 
 | prop | type | description |

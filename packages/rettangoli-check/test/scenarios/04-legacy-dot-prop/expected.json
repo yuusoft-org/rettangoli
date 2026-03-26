@@ -18,7 +18,7 @@
       {
         "code": "RTGL-CONTRACT-003",
         "severity": "error",
-        "message": "components/card: legacy '.prop=' binding is not supported. Use ':prop=' in .view.yaml.",
+        "message": "components/card: legacy property binding syntax is not supported. Use ':prop=${value}' in .view.yaml.",
         "filePath": "src/components/card/card.view.yaml",
         "line": 2
       }

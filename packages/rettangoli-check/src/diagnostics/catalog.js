@@ -30,7 +30,7 @@ const CATALOG_VERSION = 1;
 const CODE_OVERRIDES = {
   "RTGL-CONTRACT-003": {
     title: "Legacy dot-prop binding",
-    description: "Legacy '.prop=' template bindings are unsupported and should be converted to ':prop='.",
+    description: "Legacy property binding syntax is unsupported; property bindings must use ':prop=${...}' in source templates.",
     tags: ["autofix-safe", "template"],
   },
   "RTGL-CHECK-YAHTML-002": {
