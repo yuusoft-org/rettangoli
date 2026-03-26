@@ -48,7 +48,7 @@
       "dependencies": {
         "@rettangoli/be": "1.0.2",
         "@rettangoli/check": "0.1.2",
-        "@rettangoli/fe": "1.0.4",
+        "@rettangoli/fe": "1.1.0",
         "@rettangoli/sites": "1.0.1",
         "@rettangoli/ui": "1.0.11",
         "@rettangoli/vt": "1.0.4",
@@ -58,7 +58,7 @@
     },
     "packages/rettangoli-fe": {
       "name": "@rettangoli/fe",
-      "version": "1.0.4",
+      "version": "1.1.0",
       "dependencies": {
         "immer": "^10.1.1",
         "jempl": "1.0.1",
@@ -116,7 +116,7 @@
       "name": "@rettangoli/ui",
       "version": "1.0.13",
       "dependencies": {
-        "@rettangoli/fe": "1.0.4",
+        "@rettangoli/fe": "1.1.0",
         "jempl": "1.0.1",
       },
       "devDependencies": {
@@ -946,7 +946,7 @@
 
     "rtgl/@rettangoli/be": ["@rettangoli/be@1.0.2", "", { "dependencies": { "ajv": "^8.17.1", "chokidar": "^4.0.3", "js-yaml": "^4.1.0" } }, "sha512-hjzXT02gZOlET/ncZINdyt2z6QxQgVt4/F25azPocY1L+X9VPUo8EdMEuHZyHYwhd2dbZzWQmW9NC2GCKFm9+w=="],
 
-    "rtgl/@rettangoli/ui": ["@rettangoli/ui@1.0.11", "", { "dependencies": { "@rettangoli/fe": "1.0.4", "jempl": "1.0.1" } }, "sha512-wwdCxRbmf7vpfEmTKfnMZcC8ApeXsJY47vS6fddo+FKsEXpXiYcIlwJJJR6p2naZCQME9V29hbVMGHkzsBRuMQ=="],
+    "rtgl/@rettangoli/ui": ["@rettangoli/ui@1.0.11", "", { "dependencies": { "@rettangoli/fe": "1.1.0", "jempl": "1.0.1" } }, "sha512-wwdCxRbmf7vpfEmTKfnMZcC8ApeXsJY47vS6fddo+FKsEXpXiYcIlwJJJR6p2naZCQME9V29hbVMGHkzsBRuMQ=="],
 
     "rtgl/commander": ["commander@14.0.0", "", {}, "sha512-2uM9rYjPvyq39NwLRqaiLtWHyDC1FvryJDa2ATTVims5YAS4PupsEQsDvP14FqhFr0P49CYDugi59xaxJlTXRA=="],
 

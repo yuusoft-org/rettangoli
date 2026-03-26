@@ -70,7 +70,7 @@ template:
 
 Bindings are attached to selector tokens:
 - `name=value`: attribute-form binding
-- `:name=value`: property-form binding
+- `:name=${expr}`: property-form binding
 - `?name=value`: boolean attribute toggle
 
 Legacy `.name=value` property syntax is not supported.
@@ -80,9 +80,15 @@ Validation is enforced at framework level (`rtgl fe check` / `rtgl fe build`).
 
 For component tags (tag contains `-`):
 - `name=value` maps to component `props`.
-- `:name=value` maps to component `props`.
+- `:name=${expr}` maps to component `props`.
 - Attribute-form names are normalized from kebab-case to camelCase.
-- `name=value` and `:name=value` for the same normalized key on one node is invalid.
+- `name=value` and `:name=${expr}` for the same normalized key on one node is invalid.
+
+Property-form bindings in source templates must use interpolation syntax:
+- `:value=${user.name}`
+- `:items=${todoItems}`
+
+Legacy source forms such as `:value=user.name` and `:value=#{user.name}` are not supported.
 
 Precedence when both property and attribute exist at runtime:
 - property value first

@@ -120,8 +120,7 @@ describe("parser event modifiers", () => {
   });
 
   it("throttles event callbacks", () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(0);
+    const nowSpy = vi.spyOn(Date, "now");
 
     const handler = vi.fn();
     const click = buildClickListener({
@@ -129,19 +128,20 @@ describe("parser event modifiers", () => {
       handlers: { handleSubmit: handler },
     });
 
+    nowSpy.mockReturnValue(0);
     click(createEvent());
     click(createEvent());
     expect(handler).toHaveBeenCalledTimes(1);
 
-    vi.advanceTimersByTime(50);
+    nowSpy.mockReturnValue(50);
     click(createEvent());
     expect(handler).toHaveBeenCalledTimes(1);
 
-    vi.advanceTimersByTime(51);
+    nowSpy.mockReturnValue(101);
     click(createEvent());
     expect(handler).toHaveBeenCalledTimes(2);
 
-    vi.useRealTimers();
+    nowSpy.mockRestore();
   });
 
   it("injects _action and _event when dispatching store action listeners", () => {

@@ -24,7 +24,7 @@ Normative keywords follow RFC 2119 intent:
 ### Input Model (`props` only)
 
 - Components expose a single input surface: `props`.
-- Attribute-form (`name=value`) and property-form (`:name=value`) both target `props` for component nodes.
+- Attribute-form (`name=value`) and property-form (`:name=${expr}`) both target `props` for component nodes.
 - Attribute-form kebab-case names are normalized to camelCase (`max-items` -> `maxItems`).
 - A component node `MUST NOT` define both forms for the same normalized prop key.
 - Runtime read precedence is property value first, then attribute fallback.

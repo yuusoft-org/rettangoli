@@ -1,3 +1,5 @@
+import { findUnsupportedTemplatePropertyBindingSyntax } from "../view/templatePropertyBindings.js";
+
 export const FORBIDDEN_VIEW_KEYS = Object.freeze([
   "elementName",
   "viewDataSchema",
@@ -6,24 +8,6 @@ export const FORBIDDEN_VIEW_KEYS = Object.freeze([
   "methods",
   "attrsSchema",
 ]);
-
-const LEGACY_PROP_BINDING_REGEX = /(^|\s)\.[A-Za-z_][A-Za-z0-9_-]*\s*=/;
-
-const hasLegacyDotPropBinding = (node) => {
-  if (Array.isArray(node)) {
-    return node.some((item) => hasLegacyDotPropBinding(item));
-  }
-  if (!node || typeof node !== "object") {
-    return false;
-  }
-
-  return Object.entries(node).some(([key, value]) => {
-    if (LEGACY_PROP_BINDING_REGEX.test(key)) {
-      return true;
-    }
-    return hasLegacyDotPropBinding(value);
-  });
-};
 
 export const buildComponentContractIndex = (entries = []) => {
   const index = {};
@@ -99,10 +83,10 @@ export const validateComponentContractIndex = (index = {}) => {
         });
       });
 
-      if (hasLegacyDotPropBinding(viewYaml.template)) {
+      if (findUnsupportedTemplatePropertyBindingSyntax(viewYaml.template)) {
         errors.push({
           code: "RTGL-CONTRACT-003",
-          message: `${componentLabel}: legacy '.prop=' binding is not supported. Use ':prop=' in .view.yaml.`,
+          message: `${componentLabel}: legacy property binding syntax is not supported. Use ':prop=\${value}' in .view.yaml.`,
           filePath: viewFilePath || representativeFile,
         });
       }

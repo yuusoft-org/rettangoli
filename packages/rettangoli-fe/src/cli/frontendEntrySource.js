@@ -113,6 +113,10 @@ export const generateFrontendEntrySource = ({
     } else if (YAML_FILE_TYPES.has(fileType)) {
       const yamlObject = readYamlObject(filePath);
 
+      if (fileType === "view" || fileType === "schema") {
+        componentContractEntry.yamlObject = structuredClone(yamlObject);
+      }
+
       if (fileType === "view") {
         try {
           yamlObject.template = parseTemplate(yamlObject.template);
@@ -125,10 +129,6 @@ export const generateFrontendEntrySource = ({
 
       if (fileType === "constants") {
         validateConstantsRoot({ filePath, yamlObject, errorPrefix });
-      }
-
-      if (fileType === "view" || fileType === "schema") {
-        componentContractEntry.yamlObject = yamlObject;
       }
 
       declarationLines.push(

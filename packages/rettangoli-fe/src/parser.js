@@ -2,6 +2,7 @@ import { parseAndRender as jemplParseAndRender, render as jemplRender } from "je
 
 import { flattenArrays } from "./utils/flattenArrays.js";
 import { parseNodeBindings } from './core/view/bindings.js';
+import { ensureNormalizedTemplatePropertyBindings } from "./core/view/templatePropertyBindings.js";
 import {
   createRefMatchers,
   resolveBestRefMatcher,
@@ -20,6 +21,7 @@ export const parseView = ({
   handlers,
   createComponentUpdateHook,
 }) => {
+  ensureNormalizedTemplatePropertyBindings(template);
   const result = jemplRender(template, viewData, {});
 
   // Flatten the array carefully to maintain structure
