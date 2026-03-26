@@ -69,7 +69,7 @@ Bindings are attached to selector tokens:
 | Syntax | Type | Purpose |
 | --- | --- | --- |
 | `name=value` | Attribute | Sets an HTML attribute |
-| `:name=value` | Property | Sets a JavaScript property |
+| `:name=${expr}` | Property | Sets a JavaScript property |
 | `?name=value` | Boolean | Toggles a boolean attribute |
 
 ### Attribute Bindings
@@ -81,7 +81,7 @@ template:
 
 ### Property Bindings
 
-Property bindings use the `:` prefix. For web components (tags containing `-`), both attribute and property forms target the component's props:
+Property bindings use the `:` prefix and must use `${...}` in source templates. For web components (tags containing `-`), both attribute and property forms target the component's props:
 
 ```yaml
 template:
@@ -108,9 +108,11 @@ template:
 
 For component tags (tags containing `-`):
 
-- `name=value` and `:name=value` both target component props
+- `name=value` and `:name=${expr}` both target component props
 - Kebab-case attribute names are normalized to camelCase (`max-items` becomes `maxItems`)
 - Defining both forms for the same normalized key on one node is invalid
+
+Legacy source forms such as `:value=user.name` and `:value=#{user.name}` are not supported.
 
 ## Control Flow
 

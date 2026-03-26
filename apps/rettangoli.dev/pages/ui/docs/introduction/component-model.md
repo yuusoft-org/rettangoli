@@ -43,7 +43,7 @@ Rettangoli favors consistency over one-off convenience.
 
 - attrs map to props (`selected-value` -> `selectedValue`)
 - direct property value takes precedence over attr fallback
-- do not bind the same prop using both `name=value` and `:name=value` on one node
+- do not bind the same prop using both `name=value` and `:name=${expr}` on one node
 - prefer props for data/state, attrs for layout/styling
 - keep established shorthand attrs where they already exist (`w`, `h`, `wh`, `m*`, `op`, and similar)
 - keep descriptive attrs explicit in kebab-case when clarity is better (`new-tab`, `no-wrap`, `ellipsis`, `shadow`)

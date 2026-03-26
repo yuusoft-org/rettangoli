@@ -149,7 +149,7 @@ export const parseNodeBindings = ({
     }
     if (Object.prototype.hasOwnProperty.call(props, normalizedPropName)) {
       throw new Error(
-        `[Parser] Duplicate prop binding '${normalizedPropName}' on '${tagName}'. Use only one of 'name=value' or ':name=value'.`,
+        `[Parser] Duplicate prop binding '${normalizedPropName}' on '${tagName}'. Use only one of 'name=value' or ':name=\${expr}'.`,
       );
     }
     props[normalizedPropName] = propValue;

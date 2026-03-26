@@ -142,9 +142,9 @@ These rules are also mandatory and apply to every primitive/component API change
 ### Props and attributes
 
 - components expose `props` only (no separate attrs API surface)
-- both `name=value` and `:name=value` feed `props` on component nodes
+- both `name=value` and `:name=${expr}` feed `props` on component nodes
 - attribute kebab-case normalizes to camelCase (`max-items` -> `maxItems`)
-- `name=value` and `:name=value` for the same prop on one node is invalid
+- `name=value` and `:name=${expr}` for the same prop on one node is invalid
 - runtime read precedence is direct property value first, then attribute fallback
 
 ### Attribute values

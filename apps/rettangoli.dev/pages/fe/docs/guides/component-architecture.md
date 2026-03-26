@@ -93,7 +93,7 @@ todo-item/
 
 Components expose a single input surface: **props**.
 
-- Attribute-form (`name=value`) and property-form (`:name=value`) both target props.
+- Attribute-form (`name=value`) and property-form (`:name=${expr}`) both target props.
 - Kebab-case attribute names are normalized to camelCase (`max-items` becomes `maxItems`).
 - A node must not define both forms for the same normalized key.
 - At runtime, property value takes precedence over attribute fallback.

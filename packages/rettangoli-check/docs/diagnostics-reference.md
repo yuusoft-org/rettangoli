@@ -47,11 +47,11 @@ Default family and severity are inferred from code prefixes:
 
 ### RTGL-CONTRACT-003
 
-Legacy `.prop=` template bindings are unsupported. Recommended safe mechanical conversion: `.prop=` -> `:prop=`.
+Legacy property binding source syntax is unsupported. Use `:prop=${...}` in `.view.yaml`. For legacy `.prop=${expr}` bindings, the safe mechanical conversion is `.prop=${expr}` -> `:prop=${expr}`.
 
 ### RTGL-CHECK-YAHTML-002
 
-Legacy YAHTML `.prop` bindings are unsupported. Recommended safe mechanical conversion: `.prop=` -> `:prop=`.
+Legacy YAHTML `.prop` bindings are unsupported. Convert `.prop=${expr}` to `:prop=${expr}` and wrap bare property values in `${...}` when needed.
 
 ## Docs Link Contract
 
