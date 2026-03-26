@@ -41,7 +41,7 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "1.0.12",
+      "version": "1.0.13",
       "bin": {
         "rtgl": "cli.js",
       },
