@@ -143,9 +143,14 @@ export const handleAfterMount = (deps) => {
 };
 
 export const handleOnUpdate = (deps, payload) => {
-  const { newProps } = payload;
+  const { oldProps, newProps } = payload;
   const { store, render, refs } = deps;
   const formDisabled = !!newProps?.disabled;
+  const keyChanged = oldProps?.key !== newProps?.key;
+
+  if (keyChanged) {
+    initFormValues(store, newProps);
+  }
 
   const state = store.getState();
   pruneHiddenValues({ state, props: newProps });
