@@ -491,9 +491,7 @@ export const selectViewData = ({ state, props }) => {
   const flatFields = flattenFields(fields);
 
   // Enrich each field with computed properties
-  flatFields.forEach((field, arrIdx) => {
-    field._arrIdx = arrIdx;
-
+  flatFields.forEach((field) => {
     if (field._isSection) return;
 
     const isData = isDataField(field);

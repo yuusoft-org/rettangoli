@@ -32,7 +32,7 @@ class RettangoliDialogElement extends HTMLElement {
           background-color: rgba(0, 0, 0, 0.5);
         }
 
-        slot[name="content"] {
+        ::slotted([slot="content"]) {
           background-color: var(--background) !important;
           display: block;
           padding: var(--spacing-lg);
@@ -40,28 +40,34 @@ class RettangoliDialogElement extends HTMLElement {
           border-radius: var(--border-radius-md);
           margin-left: var(--spacing-lg);
           margin-right: var(--spacing-lg);
-          width: fit-content;
+          width: var(--rtgl-dialog-content-width, var(--rtgl-dialog-size-width, fit-content));
           max-width: calc(100vw - 2 * var(--spacing-lg));
           /* Default margins will be set dynamically via JavaScript for adaptive centering */
           margin-top: 40px;
           margin-bottom: 40px;
+          opacity: 0;
+          transform: scale(0.95);
+          will-change: opacity, transform;
         }
 
         /* Size attribute styles */
-        :host([s="sm"]) slot[name="content"] {
-          width: 33vw;
+        :host([s="sm"]) {
+          --rtgl-dialog-size-width: 33vw;
         }
 
-        :host([s="md"]) slot[name="content"] {
-          width: 50vw;
+        :host([s="md"]) {
+          --rtgl-dialog-size-width: 50vw;
         }
 
-        :host([s="lg"]) slot[name="content"] {
-          width: 80vw;
+        :host([s="lg"]) {
+          --rtgl-dialog-size-width: 80vw;
         }
 
-        :host([s="f"]) slot[name="content"] {
-          width: 100vw;
+        :host([s="f"]) {
+          --rtgl-dialog-size-width: 100vw;
+        }
+
+        :host([s="f"]) ::slotted([slot="content"]) {
           margin-left: 0;
           margin-right: 0;
         }
@@ -77,12 +83,14 @@ class RettangoliDialogElement extends HTMLElement {
           }
         }
 
-        dialog[open] slot[name="content"] {
+        :host([data-dialog-ready]) ::slotted([slot="content"]) {
+          opacity: 1;
+          transform: scale(1);
           animation: dialog-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @media (prefers-reduced-motion: reduce) {
-          dialog[open] slot[name="content"] {
+          :host([data-dialog-ready]) ::slotted([slot="content"]) {
             animation: none;
           }
         }
@@ -205,15 +213,16 @@ class RettangoliDialogElement extends HTMLElement {
   _updateWidth() {
     const width = this.getAttribute('w');
     if (width) {
-      this._dialogElement.style.width = width;
+      this.style.setProperty('--rtgl-dialog-content-width', width);
     } else {
-      this._dialogElement.style.width = '';
+      this.style.removeProperty('--rtgl-dialog-content-width');
     }
   }
 
   // Internal methods
   _showModal() {
     if (!this._dialogElement.open) {
+      this.removeAttribute("data-dialog-ready");
       // Create and append slot for content only if it doesn't exist
       if (!this._slotElement) {
         this._slotElement = document.createElement('slot');
@@ -236,21 +245,24 @@ class RettangoliDialogElement extends HTMLElement {
   _hideModal() {
     if (this._dialogElement.open) {
       this._stopAdaptiveObservers();
+      const contentElement = this._getAssignedContentElement();
       this._dialogElement.close();
 
       // Remove slot to unmount content
       if (this._slotElement) {
         this._slotElement.removeEventListener('slotchange', this._onSlotChange);
-        // Reset any inline styles applied for adaptive centering
-        this._slotElement.style.marginTop = '';
-        this._slotElement.style.marginBottom = '';
-        
         this._dialogElement.removeChild(this._slotElement);
         this._slotElement = null;
       }
 
+      if (contentElement) {
+        contentElement.style.marginTop = '';
+        contentElement.style.marginBottom = '';
+      }
+
       // Reset dialog height
       this._dialogElement.style.height = '';
+      this.removeAttribute("data-dialog-ready");
 
       // Don't emit any event when programmatically closed via attribute
     }
@@ -319,9 +331,14 @@ class RettangoliDialogElement extends HTMLElement {
 
     this._observeAssignedContent();
     const contentElement = this._getAssignedContentElement();
-    const contentHeight = contentElement
-      ? Math.round(contentElement.getBoundingClientRect().height)
-      : 0;
+    if (!contentElement) {
+      if (this._layoutRetryCount < MAX_LAYOUT_RETRIES) {
+        this._layoutRetryCount += 1;
+        this._scheduleAdaptiveCentering();
+      }
+      return;
+    }
+    const contentHeight = Math.round(contentElement.getBoundingClientRect().height);
 
     if (contentHeight <= 0) {
       if (this._layoutRetryCount < MAX_LAYOUT_RETRIES) {
@@ -335,17 +352,19 @@ class RettangoliDialogElement extends HTMLElement {
     const viewportHeight = window.innerHeight;
 
     if (contentHeight >= viewportHeight - (2 * MIN_MARGIN_PX)) {
-      this._slotElement.style.marginTop = `${MIN_MARGIN_PX}px`;
-      this._slotElement.style.marginBottom = `${MIN_MARGIN_PX}px`;
+      contentElement.style.marginTop = `${MIN_MARGIN_PX}px`;
+      contentElement.style.marginBottom = `${MIN_MARGIN_PX}px`;
       this._dialogElement.style.height = '100vh';
+      this.setAttribute("data-dialog-ready", "");
       return;
     }
 
     const totalMargin = viewportHeight - contentHeight;
     const margin = Math.floor(totalMargin / 2);
-    this._slotElement.style.marginTop = `${margin}px`;
-    this._slotElement.style.marginBottom = `${margin}px`;
+    contentElement.style.marginTop = `${margin}px`;
+    contentElement.style.marginBottom = `${margin}px`;
     this._dialogElement.style.height = 'auto';
+    this.setAttribute("data-dialog-ready", "");
   }
 
 
