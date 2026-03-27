@@ -7,7 +7,7 @@ import {
   cleanupEventRateLimitState,
   syncRefIds,
 } from "./componentRuntime.js";
-import { buildOnUpdateChanges } from "./lifecycle.js";
+import { buildOnPropUpdateChanges, buildOnUpdateChanges } from "./lifecycle.js";
 import { normalizeAttributeValue, toCamelCase } from "./props.js";
 
 export const createRuntimeDepsForInstance = ({ instance }) => {
@@ -102,6 +102,39 @@ export const runAttributeChangedComponentLifecycle = ({
       propsSchemaKeys: instance._propsSchemaKeys,
       toCamelCase,
       normalizeAttributeValue,
+    });
+    instance.handlers.handleOnUpdate(runtimeDeps, changes);
+    return;
+  }
+
+  scheduleFrameFn(() => {
+    instance.render();
+  });
+};
+
+export const runPropChangedComponentLifecycle = ({
+  instance,
+  propName,
+  oldValue,
+  newValue,
+  scheduleFrameFn,
+}) => {
+  if (oldValue === newValue || !instance.render) {
+    return;
+  }
+
+  if (instance.isConnected === false || !instance.renderTarget) {
+    return;
+  }
+
+  if (instance.handlers?.handleOnUpdate) {
+    const runtimeDeps = createRuntimeDepsForInstance({ instance });
+    const changes = buildOnPropUpdateChanges({
+      propName,
+      oldValue,
+      newValue,
+      deps: runtimeDeps,
+      propsSchemaKeys: instance._propsSchemaKeys,
     });
     instance.handlers.handleOnUpdate(runtimeDeps, changes);
     return;

@@ -7,9 +7,10 @@ import {
   runAttributeChangedComponentLifecycle,
   runConnectedComponentLifecycle,
   runDisconnectedComponentLifecycle,
+  runPropChangedComponentLifecycle,
   runRenderComponentLifecycle,
 } from "../core/runtime/componentOrchestrator.js";
-import { createPropsProxy, toKebabCase } from "../core/runtime/props.js";
+import { createPropsProxy, installReactiveProps, toKebabCase } from "../core/runtime/props.js";
 import {
   buildObservedAttributes,
 } from "../core/runtime/componentRuntime.js";
@@ -120,6 +121,19 @@ export const createWebComponentClass = ({
         fileConstants: constants,
       });
       this.propsSchema = propsSchema;
+      installReactiveProps({
+        source: this,
+        allowedKeys: propsSchemaKeys,
+        onPropChange: ({ propName, oldValue, newValue }) => {
+          runPropChangedComponentLifecycle({
+            instance: this,
+            propName,
+            oldValue,
+            newValue,
+            scheduleFrameFn: scheduleFrame,
+          });
+        },
+      });
       this.props = propsSchema
         ? createPropsProxy(this, propsSchemaKeys)
         : {};

@@ -122,3 +122,42 @@ export const buildOnUpdateChanges = ({
     newProps,
   };
 };
+
+export const buildOnPropUpdateChanges = ({
+  propName,
+  oldValue,
+  newValue,
+  deps,
+  propsSchemaKeys,
+}) => {
+  const newProps = {};
+
+  propsSchemaKeys.forEach((propKey) => {
+    const propValue = deps.props[propKey];
+    if (propValue !== undefined) {
+      newProps[propKey] = propValue;
+    }
+  });
+
+  const oldProps = {
+    ...newProps,
+  };
+
+  if (oldValue === undefined) {
+    delete oldProps[propName];
+  } else {
+    oldProps[propName] = oldValue;
+  }
+
+  if (newValue === undefined) {
+    delete newProps[propName];
+  } else {
+    newProps[propName] = newValue;
+  }
+
+  return {
+    changedProp: propName,
+    oldProps,
+    newProps,
+  };
+};

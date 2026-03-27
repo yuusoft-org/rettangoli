@@ -28,6 +28,81 @@ export const readPropFallbackFromAttributes = (source, propName) => {
   return undefined;
 };
 
+const REACTIVE_PROP_VALUES = Symbol("rtglReactivePropValues");
+
+const ensureReactivePropValues = (source) => {
+  if (!Object.prototype.hasOwnProperty.call(source, REACTIVE_PROP_VALUES)) {
+    Object.defineProperty(source, REACTIVE_PROP_VALUES, {
+      value: Object.create(null),
+      enumerable: false,
+      configurable: false,
+      writable: false,
+    });
+  }
+
+  return source[REACTIVE_PROP_VALUES];
+};
+
+export const installReactiveProps = ({
+  source,
+  allowedKeys = [],
+  onPropChange,
+}) => {
+  const reactiveValues = ensureReactivePropValues(source);
+
+  allowedKeys.forEach((propName) => {
+    if (typeof propName !== "string" || propName.length === 0) {
+      return;
+    }
+
+    const presetValue = Object.prototype.hasOwnProperty.call(source, propName)
+      ? source[propName]
+      : undefined;
+    const hadPresetValue = Object.prototype.hasOwnProperty.call(source, propName);
+
+    if (hadPresetValue) {
+      delete source[propName];
+    }
+
+    Object.defineProperty(source, propName, {
+      configurable: true,
+      enumerable: true,
+      get() {
+        if (Object.prototype.hasOwnProperty.call(reactiveValues, propName)) {
+          return reactiveValues[propName];
+        }
+
+        return readPropFallbackFromAttributes(source, propName);
+      },
+      set(value) {
+        const oldValue = Object.prototype.hasOwnProperty.call(reactiveValues, propName)
+          ? reactiveValues[propName]
+          : readPropFallbackFromAttributes(source, propName);
+
+        if (value === undefined) {
+          delete reactiveValues[propName];
+        } else {
+          reactiveValues[propName] = value;
+        }
+
+        if (oldValue === value) {
+          return;
+        }
+
+        onPropChange?.({
+          propName,
+          oldValue,
+          newValue: value,
+        });
+      },
+    });
+
+    if (hadPresetValue) {
+      reactiveValues[propName] = presetValue;
+    }
+  });
+};
+
 export const createPropsProxy = (source, allowedKeys) => {
   const allowed = new Set(allowedKeys);
   return new Proxy(

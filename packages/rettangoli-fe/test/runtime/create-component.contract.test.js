@@ -1,9 +1,11 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { parse } from "jempl";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 let createComponent;
 let restoreGlobals;
 let globalWindowTarget;
 let globalDocumentTarget;
+const template = parse([{ div: "" }]);
 
 const createEventTarget = () => {
   const target = new EventTarget();
@@ -22,18 +24,75 @@ const createEventTarget = () => {
   return target;
 };
 
-const createFakeNode = (tagName = "div") => {
-  return {
+const linkSiblings = (children) => {
+  children.forEach((child, index) => {
+    child.previousSibling = children[index - 1] || null;
+    child.nextSibling = children[index + 1] || null;
+  });
+};
+
+const createFakeNode = (tagName = "div", nodeType = 1) => {
+  const node = {
     tagName,
+    nodeType,
+    __attrs: new Map(),
     children: [],
+    childNodes: [],
     style: { cssText: "" },
     parentNode: null,
+    previousSibling: null,
+    nextSibling: null,
+    textContent: "",
+    setAttribute(name, value) {
+      this.__attrs.set(name, String(value));
+    },
+    getAttribute(name) {
+      if (!this.__attrs.has(name)) {
+        return null;
+      }
+      return this.__attrs.get(name);
+    },
+    removeAttribute(name) {
+      this.__attrs.delete(name);
+    },
     appendChild(child) {
       child.parentNode = this;
       this.children.push(child);
+      this.childNodes = this.children;
+      linkSiblings(this.children);
       return child;
     },
+    insertBefore(child, referenceNode) {
+      child.parentNode = this;
+      const index = referenceNode ? this.children.indexOf(referenceNode) : -1;
+      if (index === -1) {
+        this.children.push(child);
+      } else {
+        this.children.splice(index, 0, child);
+      }
+      this.childNodes = this.children;
+      linkSiblings(this.children);
+      return child;
+    },
+    removeChild(child) {
+      const index = this.children.indexOf(child);
+      if (index !== -1) {
+        this.children.splice(index, 1);
+        child.parentNode = null;
+      }
+      this.childNodes = this.children;
+      linkSiblings(this.children);
+      return child;
+    },
+    get firstChild() {
+      return this.children[0] || null;
+    },
+    get lastChild() {
+      return this.children[this.children.length - 1] || null;
+    },
   };
+
+  return node;
 };
 
 const installHTMLElementStubs = () => {
@@ -50,7 +109,13 @@ const installHTMLElementStubs = () => {
     constructor() {
       this.__attrs = new Map();
       this.children = [];
+      this.childNodes = this.children;
       this.style = {};
+      this.parentNode = null;
+      this.previousSibling = null;
+      this.nextSibling = null;
+      this.nodeType = 1;
+      this.tagName = "X-TEST-COMPONENT";
     }
 
     setAttribute(name, value) {
@@ -75,11 +140,13 @@ const installHTMLElementStubs = () => {
     appendChild(child) {
       child.parentNode = this;
       this.children.push(child);
+      this.childNodes = this.children;
+      linkSiblings(this.children);
       return child;
     }
 
     attachShadow() {
-      const root = createFakeNode("shadow-root");
+      const root = createFakeNode("shadow-root", 11);
       root.adoptedStyleSheets = [];
       return root;
     }
@@ -102,6 +169,22 @@ const installHTMLElementStubs = () => {
   globalWindowTarget = createEventTarget();
   globalDocumentTarget = createEventTarget();
   globalDocumentTarget.createElement = (tagName) => createFakeNode(tagName);
+  globalDocumentTarget.createElementNS = (_namespace, tagName) => createFakeNode(tagName);
+  globalDocumentTarget.createDocumentFragment = () => createFakeNode("#document-fragment", 11);
+  globalDocumentTarget.createTextNode = (text) => ({
+    nodeType: 3,
+    textContent: String(text),
+    parentNode: null,
+    previousSibling: null,
+    nextSibling: null,
+  });
+  globalDocumentTarget.createComment = (text) => ({
+    nodeType: 8,
+    textContent: String(text),
+    parentNode: null,
+    previousSibling: null,
+    nextSibling: null,
+  });
   globalThis.window = globalWindowTarget;
   globalThis.document = globalDocumentTarget;
 
@@ -115,10 +198,15 @@ const installHTMLElementStubs = () => {
   };
 };
 
-const createComponentClass = ({ methods = {}, store = {}, propsSchema = {} } = {}) => {
+const createComponentClass = ({
+  handlers = {},
+  methods = {},
+  store = {},
+  propsSchema = {},
+} = {}) => {
   return createComponent(
     {
-      handlers: {},
+      handlers,
       methods,
       constants: {},
       schema: {
@@ -133,7 +221,7 @@ const createComponentClass = ({ methods = {}, store = {}, propsSchema = {} } = {
         },
       },
       view: {
-        template: [{ div: "" }],
+        template,
         refs: {},
         styles: {},
       },
@@ -257,6 +345,41 @@ describe("createComponent runtime contracts", () => {
     expect(instance.props.submitLabel).toBe("Save");
   });
 
+  it("re-renders when a schema property is assigned after mount", () => {
+    const TestComponent = createComponentClass();
+    const instance = new TestComponent();
+
+    instance.connectedCallback();
+
+    const renderSpy = vi.spyOn(instance, "render");
+
+    instance.value = "updated";
+
+    expect(renderSpy).toHaveBeenCalledTimes(1);
+    expect(instance.props.value).toBe("updated");
+  });
+
+  it("routes post-mount property writes through handleOnUpdate", () => {
+    const handleOnUpdate = vi.fn();
+    const TestComponent = createComponentClass({
+      handlers: {
+        handleOnUpdate,
+      },
+    });
+    const instance = new TestComponent();
+
+    instance.connectedCallback();
+
+    instance.value = "updated";
+
+    expect(handleOnUpdate).toHaveBeenCalledTimes(1);
+    expect(handleOnUpdate.mock.calls[0][1]).toEqual({
+      changedProp: "value",
+      oldProps: {},
+      newProps: { value: "updated" },
+    });
+  });
+
   it("uses schema propsSchema when view propsSchema is absent", () => {
     const TestComponent = createComponent(
       {
@@ -274,7 +397,7 @@ describe("createComponent runtime contracts", () => {
         },
         view: {
           elementName: "x-schema-props",
-          template: [{ div: "" }],
+          template,
           refs: {},
           styles: {},
         },
@@ -315,7 +438,7 @@ describe("createComponent runtime contracts", () => {
               title: {},
             },
           },
-          template: [{ div: "" }],
+          template,
           refs: {},
           styles: {},
         },
@@ -379,7 +502,7 @@ describe("createComponent runtime contracts", () => {
             type: "object",
             properties: {},
           },
-          template: [{ div: "" }],
+          template,
           refs: {},
           styles: {},
         },
