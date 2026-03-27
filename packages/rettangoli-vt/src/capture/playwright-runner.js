@@ -56,15 +56,11 @@ export class PlaywrightRunner {
     this.envVarPrefix = envVarPrefix;
     this.envVars = collectEnvVars(this.envVarPrefix);
     this.sharedContext = null;
-    this.sharedPage = null;
-    this.sharedRegisteredReadyEvents = new Set();
   }
 
   async initialize() {
     if (this.isolationMode === "fast") {
       this.sharedContext = await this.createContext();
-      this.sharedPage = await this.sharedContext.newPage();
-      await this.configurePage(this.sharedPage);
     }
   }
 
@@ -72,8 +68,6 @@ export class PlaywrightRunner {
     if (this.sharedContext) {
       await this.sharedContext.close();
       this.sharedContext = null;
-      this.sharedPage = null;
-      this.sharedRegisteredReadyEvents.clear();
     }
   }
 
@@ -83,8 +77,6 @@ export class PlaywrightRunner {
     }
     await this.dispose();
     this.sharedContext = await this.createContext();
-    this.sharedPage = await this.sharedContext.newPage();
-    await this.configurePage(this.sharedPage);
   }
 
   async createContext() {
@@ -138,32 +130,13 @@ export class PlaywrightRunner {
     });
   }
 
-  async acquireSession() {
-    if (this.isolationMode === "strict") {
-      const context = await this.createContext();
-      const page = await context.newPage();
-      await this.configurePage(page);
-      return {
-        page,
-        resetSession: async () => 0,
-        registeredReadyEvents: new Set(),
-        cleanup: async () => {
-          await context.close();
-        },
-      };
+  async clearOriginRuntimeState(page) {
+    if (!page || page.isClosed()) {
+      return;
     }
 
-    if (!this.sharedContext) {
-      this.sharedContext = await this.createContext();
-    }
-    if (!this.sharedPage || this.sharedPage.isClosed()) {
-      this.sharedPage = await this.sharedContext.newPage();
-      await this.configurePage(this.sharedPage);
-    }
-    const resetSession = async () => {
-      const resetStart = nowMs();
-      // Clear origin-scoped runtime state before switching away.
-      await this.sharedPage.evaluate(async () => {
+    try {
+      await page.evaluate(async () => {
         try {
           localStorage.clear();
         } catch {}
@@ -183,18 +156,48 @@ export class PlaywrightRunner {
           }
         } catch {}
       });
-      await this.sharedPage.goto("about:blank", { waitUntil: "domcontentloaded" });
+    } catch {}
+  }
+
+  async acquireSession() {
+    if (this.isolationMode === "strict") {
+      const context = await this.createContext();
+      const page = await context.newPage();
+      await this.configurePage(page);
+      return {
+        page,
+        resetSession: async () => 0,
+        registeredReadyEvents: new Set(),
+        cleanup: async () => {
+          await context.close();
+        },
+      };
+    }
+
+    if (!this.sharedContext) {
+      this.sharedContext = await this.createContext();
+    }
+
+    const page = await this.sharedContext.newPage();
+    await this.configurePage(page);
+
+    const resetSession = async () => {
+      const resetStart = nowMs();
       await this.sharedContext.clearCookies();
       await this.sharedContext.clearPermissions();
-      await this.configurePage(this.sharedPage);
       return nowMs() - resetStart;
     };
 
     return {
-      page: this.sharedPage,
+      page,
       resetSession,
-      registeredReadyEvents: this.sharedRegisteredReadyEvents,
-      cleanup: async () => {},
+      registeredReadyEvents: new Set(),
+      cleanup: async () => {
+        await this.clearOriginRuntimeState(page);
+        if (!page.isClosed()) {
+          await page.close();
+        }
+      },
     };
   }
 

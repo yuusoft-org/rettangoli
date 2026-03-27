@@ -109,3 +109,65 @@ describe("PlaywrightRunner initial screenshot behavior", () => {
     expect(cleanup).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("PlaywrightRunner fast isolation sessions", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("uses a fresh page per task while reusing the shared context", async () => {
+    const pageA = {
+      isClosed: vi.fn().mockReturnValue(false),
+      close: vi.fn().mockResolvedValue(undefined),
+      evaluate: vi.fn().mockResolvedValue(undefined),
+    };
+    const pageB = {
+      isClosed: vi.fn().mockReturnValue(false),
+      close: vi.fn().mockResolvedValue(undefined),
+      evaluate: vi.fn().mockResolvedValue(undefined),
+    };
+    const context = {
+      newPage: vi.fn()
+        .mockResolvedValueOnce(pageA)
+        .mockResolvedValueOnce(pageB),
+      clearCookies: vi.fn().mockResolvedValue(undefined),
+      clearPermissions: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const runner = new PlaywrightRunner({
+      workerId: 1,
+      browser: {},
+      screenshotsDir: ".rettangoli/vt/_site/candidate",
+      isolationMode: "fast",
+      screenshotWaitTime: 0,
+      waitStrategy: "networkidle",
+      navigationTimeout: 1000,
+      readyTimeout: 1000,
+      screenshotTimeout: 1000,
+    });
+
+    runner.createContext = vi.fn().mockResolvedValue(context);
+    runner.configurePage = vi.fn().mockResolvedValue(undefined);
+
+    await runner.initialize();
+
+    const sessionA = await runner.acquireSession();
+    await sessionA.resetSession();
+    await sessionA.cleanup();
+
+    const sessionB = await runner.acquireSession();
+    await sessionB.resetSession();
+    await sessionB.cleanup();
+
+    expect(runner.createContext).toHaveBeenCalledTimes(1);
+    expect(context.newPage).toHaveBeenCalledTimes(2);
+    expect(sessionA.page).toBe(pageA);
+    expect(sessionB.page).toBe(pageB);
+    expect(sessionA.page).not.toBe(sessionB.page);
+    expect(pageA.close).toHaveBeenCalledTimes(1);
+    expect(pageB.close).toHaveBeenCalledTimes(1);
+    expect(context.clearCookies).toHaveBeenCalledTimes(2);
+    expect(context.clearPermissions).toHaveBeenCalledTimes(2);
+    expect(sessionA.registeredReadyEvents).not.toBe(sessionB.registeredReadyEvents);
+  });
+});
