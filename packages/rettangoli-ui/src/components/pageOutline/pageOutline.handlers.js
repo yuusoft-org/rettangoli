@@ -1,11 +1,32 @@
+const getHeadingElements = (contentContainer) => {
+  const headings = contentContainer.querySelectorAll(
+    "h1[id], h2[id], h3[id], h4[id], rtgl-text[id]"
+  );
+  return Array.from(headings);
+};
 
+const buildItems = (headingElements) => {
+  return headingElements.map((heading) => {
+    let level = 1;
+    const tagName = heading.tagName.toLowerCase();
 
-/**
- * 
- * @param {*} headingElements 
- * @param {*} offsetTop 
- * @param {*} deps 
- */
+    if (tagName === "h1") level = 1;
+    else if (tagName === "h2") level = 2;
+    else if (tagName === "h3") level = 3;
+    else if (tagName === "h4") level = 4;
+    else if (tagName === "rtgl-text") {
+      level = parseInt(heading.getAttribute("data-level") || "1", 10);
+    }
+
+    return {
+      id: heading.id,
+      href: `#${heading.id}`,
+      title: heading.textContent,
+      level
+    };
+  });
+};
+
 const updateToLatestCurrentId = (headingElements, offsetTop, deps) => {
   const { store, render } = deps;
 
@@ -45,45 +66,51 @@ const updateToLatestCurrentId = (headingElements, offsetTop, deps) => {
 
 const startListening = (contentContainer, scrollContainer, offsetTop, deps) => {
   const { store, render } = deps;
-  
-  // Extract headings
-  const headings = contentContainer.querySelectorAll("h1[id], h2[id], h3[id], h4[id], rtgl-text[id]");
-  const headingElements = Array.from(headings);
-  
-  const items = headingElements.map((heading) => {
-    let level = 1;
-    const tagName = heading.tagName.toLowerCase();
-    
-    if (tagName === 'h1') level = 1;
-    else if (tagName === 'h2') level = 2;
-    else if (tagName === 'h3') level = 3;
-    else if (tagName === 'h4') level = 4;
-    else if (tagName === 'rtgl-text') {
-      // For rtgl-text, check if it has a data-level attribute or default to 1
-      level = parseInt(heading.getAttribute('data-level') || '1', 10);
-    }
-    
-    return {
-      id: heading.id,
-      href: `#${heading.id}`,
-      title: heading.textContent,
-      level: level
-    };
-  });
-  
-  store.setItems({ items });
-  updateToLatestCurrentId(headingElements, offsetTop, deps);
-  render();
+  let rafId = null;
 
-  const boundCheckCurrentHeading = updateToLatestCurrentId.bind(this, headingElements, offsetTop, deps);
-  
-  // Add scroll listener to the scroll container
-  scrollContainer.addEventListener("scroll", boundCheckCurrentHeading, {
+  const syncOutline = () => {
+    rafId = null;
+    const headingElements = getHeadingElements(contentContainer);
+    store.setItems({ items: buildItems(headingElements) });
+    updateToLatestCurrentId(headingElements, offsetTop, deps);
+    render();
+  };
+
+  const scheduleSyncOutline = () => {
+    if (rafId !== null) {
+      return;
+    }
+    rafId = requestAnimationFrame(syncOutline);
+  };
+
+  const handleScroll = () => {
+    updateToLatestCurrentId(getHeadingElements(contentContainer), offsetTop, deps);
+  };
+
+  scheduleSyncOutline();
+
+  scrollContainer.addEventListener("scroll", handleScroll, {
     passive: true,
   });
 
+  const observer = new MutationObserver(() => {
+    scheduleSyncOutline();
+  });
+
+  observer.observe(contentContainer, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["id", "data-level"]
+  });
+
   return () => {
-    scrollContainer.removeEventListener("scroll", boundCheckCurrentHeading);
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+    }
+    observer.disconnect();
+    scrollContainer.removeEventListener("scroll", handleScroll);
   }
 };
 
