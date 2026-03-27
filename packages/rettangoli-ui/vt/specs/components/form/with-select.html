@@ -1,5 +1,32 @@
 ---
 title: "With Select"
+description: Verifies embedded form selects preserve options, selected defaults, and visible popover content.
+specs:
+  - Country select opens from inside `rtgl-form`.
+  - Open list still renders the seeded country options.
+  - Defaulted role select keeps the `viewer` selection.
+steps:
+  - action: select
+    testId: country-select-trigger
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#form rtgl-select[data-field-name="country"] rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#form rtgl-select[data-field-name="country"] #option0'
+    value: United States
+    match: includes
+  - action: assert
+    type: text
+    selector: '#form rtgl-select[data-field-name="role"] [data-testid="select-button"]'
+    value: Viewer
+    match: includes
+  - action: wait
+    ms: 120
+  - action: screenshot
 viewport:
   id: form-compact
   width: 700
@@ -103,4 +130,15 @@ viewport:
   });
 
   document.getElementById('container').appendChild(form);
+
+  const tagFormSelect = () => {
+    const countrySelect = form.shadowRoot?.querySelector('rtgl-select[data-field-name="country"]');
+    if (countrySelect) {
+      countrySelect.setAttribute('data-testid', 'country-select-trigger');
+      return;
+    }
+    setTimeout(tagFormSelect, 0);
+  };
+
+  tagFormSelect();
 </script>
