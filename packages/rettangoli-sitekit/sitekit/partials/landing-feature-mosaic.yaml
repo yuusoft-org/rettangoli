@@ -8,7 +8,7 @@
     - $if lead:
         - 'article style="display: contents;"':
             - rtgl-view d=h md-d=v w=f g=xl p=xl bgc=se bw=xs bc=bo br=xl:
-                - rtgl-view w=1fg md-w=f g=lg:
+                - rtgl-view w=1fg stretch md-w=f g=lg:
                     - rtgl-text s=sm c=mu-fg: Lead block
                     - rtgl-text s=h3: ${lead.title}
                     - $if lead.description:
@@ -24,7 +24,7 @@
                                 - rtgl-button v="${lead.cta.variant}" href="${lead.cta.href}" mt=lg: ${lead.cta.label}
                               $else:
                                 - rtgl-button href="${lead.cta.href}" mt=lg: ${lead.cta.label}
-                - rtgl-view w=1fg md-w=f:
+                - rtgl-view w=1fg stretch md-w=f:
                     - $if lead.image:
                         - $if lead.image.src:
                             - rtgl-image w=f h=320 md-h=260 of=cov br=md src="${lead.image.src}" alt="${lead.image.alt}":

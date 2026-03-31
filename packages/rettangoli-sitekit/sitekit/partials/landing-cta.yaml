@@ -2,9 +2,9 @@
     - rtgl-view ah="c" p="xl" br="md" bw="xs" w="f":
         - $if svg:
             - rtgl-svg svg="${svg}" wh="48" c="pr" mb="md":
-        - rtgl-text s="h2" mb="md" c="pr" ta="c": ${title}
+        - rtgl-text s="h2" mb="md" ta="c": ${title}
         - $if subtitle:
-            - rtgl-text s="lg" c="pr" mb="lg" ta="c": ${subtitle}
+            - rtgl-text s="lg" c="mu-fg" mb="lg" ta="c": ${subtitle}
         - $if cta:
             - $if cta.newTab:
                 - $if cta.variant:
