@@ -1,0 +1,33 @@
+---
+title: View - Stretch - Equal Height Cards
+description: Verifies that the `stretch` attribute makes children equal height in a horizontal layout.
+specs:
+  - Children with `stretch` and `w="1fg"` match the tallest sibling's height.
+  - Without `stretch`, children size to their own content height.
+---
+
+<rtgl-view g="lg" p="lg" w="f">
+  <rtgl-view d="h" g="lg" w="f">
+    <rtgl-view w="1fg" stretch bgc="se" bw="xs" bc="bo" br="md" p="lg" g="sm">
+      <rtgl-text fw="bold">Short content</rtgl-text>
+      <rtgl-text>One line.</rtgl-text>
+    </rtgl-view>
+    <rtgl-view w="1fg" stretch bgc="se" bw="xs" bc="bo" br="md" p="lg" g="sm">
+      <rtgl-text fw="bold">Longer content</rtgl-text>
+      <rtgl-text>This card has multiple lines of content that make it taller than its sibling.</rtgl-text>
+      <rtgl-text>Both cards should be equal height.</rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view d="h" g="lg" w="f">
+    <rtgl-view w="1fg" bgc="se" bw="xs" bc="bo" br="md" p="lg" g="sm">
+      <rtgl-text fw="bold">No stretch</rtgl-text>
+      <rtgl-text>One line.</rtgl-text>
+    </rtgl-view>
+    <rtgl-view w="1fg" bgc="se" bw="xs" bc="bo" br="md" p="lg" g="sm">
+      <rtgl-text fw="bold">No stretch</rtgl-text>
+      <rtgl-text>This card has multiple lines of content that make it taller.</rtgl-text>
+      <rtgl-text>Without stretch, the sibling is shorter.</rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
