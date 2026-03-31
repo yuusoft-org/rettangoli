@@ -13,8 +13,8 @@
 
     - $if image:
         - $if image.src:
-            - rtgl-image w=f h=520 lg-h=420 md-h=280 of=cov br=md mb=xl src="${image.src}" alt="${image.alt}":
+            - rtgl-image w=f ar="16/9" of=cov br=md mb=xl src="${image.src}" alt="${image.alt}":
           $else:
-            - rtgl-view w=f h=520 lg-h=420 md-h=280 bw=xs bc=bo bgc=se br=md mb=xl ah=c av=c:
+            - rtgl-view w=f ar="16/9" bw=xs bc=bo bgc=se br=md mb=xl ah=c av=c:
                 - rtgl-text c=se-fg: Hero image
         - rtgl-view h=xl:

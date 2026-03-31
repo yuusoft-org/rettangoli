@@ -17,7 +17,7 @@
                         - 'article style="display: contents;"':
                             - rtgl-view href="${group.items[0].href}" w=f h="420" lg-h="400" md-h="380" g=lg pb=lg cur=p:
                                 - $if group.items[0].imageSrc:
-                                    - rtgl-image w=f h=260 lg-h=240 of=cov br=lg src="${group.items[0].imageSrc}" alt="${group.items[0].imageAlt}":
+                                    - rtgl-image w=f ar="3/2" of=cov br=lg src="${group.items[0].imageSrc}" alt="${group.items[0].imageAlt}":
                                 - rtgl-view g=sm w=f h=1fg:
                                     - $if group.items[0].eyebrow:
                                         - rtgl-text s=sm c=mu-fg: ${group.items[0].eyebrow}
@@ -34,7 +34,7 @@
                                     - rtgl-view href="${item.href}" d=h md-d=v w=f h="176" md-h="260" g=md pv=sm cur=p:
                                         - $if item.imageSrc:
                                             - rtgl-view w=120 md-w=f:
-                                                - rtgl-image w=f h=88 md-h=180 of=cov br=md src="${item.imageSrc}" alt="${item.imageAlt}":
+                                                - rtgl-image w=f ar="4/3" of=cov br=md src="${item.imageSrc}" alt="${item.imageAlt}":
                                         - rtgl-view w=1fg md-w=f g=xs h=1fg:
                                             - $if item.eyebrow:
                                                 - rtgl-text s=sm c=mu-fg: ${item.eyebrow}

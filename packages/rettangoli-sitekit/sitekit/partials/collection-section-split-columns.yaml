@@ -13,7 +13,7 @@
                         - 'article style="display: contents;"':
                             - $if item.imageSrc:
                                 - rtgl-view href="${item.href}" w=f h="500" lg-h="480" md-h="440" g=lg p=lg bw=xs bc=bo br=xl bgc=se cur=p:
-                                    - rtgl-image w=f h=280 lg-h=240 md-h=220 of=cov br=lg src="${item.imageSrc}" alt="${item.imageAlt}":
+                                    - rtgl-image w=f ar="3/2" of=cov br=lg src="${item.imageSrc}" alt="${item.imageAlt}":
                                     - rtgl-view g=sm w=f h=1fg:
                                         - $if item.eyebrow:
                                             - rtgl-text s=sm c=mu-fg: ${item.eyebrow}

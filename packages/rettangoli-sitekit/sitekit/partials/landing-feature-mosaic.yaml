@@ -27,12 +27,12 @@
                 - rtgl-view w=1fg stretch md-w=f:
                     - $if lead.image:
                         - $if lead.image.src:
-                            - rtgl-image w=f h=320 md-h=260 of=cov br=md src="${lead.image.src}" alt="${lead.image.alt}":
+                            - rtgl-image w=f ar="16/9" of=cov br=md src="${lead.image.src}" alt="${lead.image.alt}":
                           $else:
-                            - rtgl-view w=f h=320 md-h=260 bw=xs bc=bo bgc=bg br=md ah=c av=c:
+                            - rtgl-view w=f ar="16/9" bw=xs bc=bo bgc=bg br=md ah=c av=c:
                                 - rtgl-text c=mu-fg: Lead image
                       $else:
-                        - rtgl-view w=f h=320 md-h=260 bw=xs bc=bo bgc=bg br=md ah=c av=c:
+                        - rtgl-view w=f ar="16/9" bw=xs bc=bo bgc=bg br=md ah=c av=c:
                             - rtgl-text c=mu-fg: Lead image
 
     - $if items:
@@ -42,12 +42,12 @@
                     - rtgl-view w=f h=f p=xl g=lg bw=xs bc=bo br=xl:
                         - $if item.image:
                             - $if item.image.src:
-                                - rtgl-image w=f h=200 of=cov br=md src="${item.image.src}" alt="${item.image.alt}":
+                                - rtgl-image w=f ar="3/2" of=cov br=md src="${item.image.src}" alt="${item.image.alt}":
                               $else:
-                                - rtgl-view w=f h=200 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                                - rtgl-view w=f ar="3/2" bw=xs bc=bo bgc=se br=md ah=c av=c:
                                     - rtgl-text c=se-fg: Mosaic image
                           $else:
-                            - rtgl-view w=f h=200 bw=xs bc=bo bgc=se br=md ah=c av=c:
+                            - rtgl-view w=f ar="3/2" bw=xs bc=bo bgc=se br=md ah=c av=c:
                                 - rtgl-text c=se-fg: Mosaic image
                         - rtgl-view g=sm:
                             - rtgl-text s=h4: ${item.title}

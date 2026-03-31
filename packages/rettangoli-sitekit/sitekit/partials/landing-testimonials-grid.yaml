@@ -12,7 +12,7 @@
                     - rtgl-view w=f h=f p=xl g=lg bw=xs bc=bo bgc=se br=xl:
                         - $if item.image:
                             - $if item.image.src:
-                                - rtgl-image w=f h=220 md-h=180 of=cov br=md src="${item.image.src}" alt="${item.image.alt}":
+                                - rtgl-image w=f ar="3/2" of=cov br=md src="${item.image.src}" alt="${item.image.alt}":
                         - rtgl-text s=lg: "${item.quote}"
                         - $if item.outcome:
                             - rtgl-text c=mu-fg: ${item.outcome}
