@@ -11,9 +11,9 @@
                 - 'article style="display: contents;"':
                     - rtgl-view href="${item.href}" w=f h="500" lg-h="480" md-h="460" p=xl g=lg bgc=se bw=xs bc=bo br=xl cur=p:
                         - $if item.imageSrc:
-                            - rtgl-image w=f h=224 lg-h=212 of=cov br=md src="${item.imageSrc}" alt="${item.imageAlt}":
+                            - rtgl-image w=f ar="3/2" of=cov br=md src="${item.imageSrc}" alt="${item.imageAlt}":
                           $else:
-                            - rtgl-view w=f h=224 lg-h=212 bw=xs bc=bo bgc=bg br=md ah=c av=c:
+                            - rtgl-view w=f ar="3/2" bw=xs bc=bo bgc=bg br=md ah=c av=c:
                                 - rtgl-text c=mu-fg: Collection image
                         - rtgl-view g=md w=f h=1fg:
                             - $if item.eyebrow:
