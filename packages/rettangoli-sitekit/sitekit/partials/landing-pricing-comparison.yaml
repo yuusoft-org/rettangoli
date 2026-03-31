@@ -13,7 +13,7 @@
                         - rtgl-view w="300" xl-w="260" lg-w="220" p=lg lg-p=md av=c:
                             - rtgl-text s=sm c=mu-fg: Feature
                         - $for plan in plans:
-                            - rtgl-view w="1fg" p=lg lg-p=md g=sm ah=c:
+                            - rtgl-view w="1fg" stretch p=lg lg-p=md g=sm ah=c:
                                 - rtgl-view w=f ah=c:
                                     - rtgl-text s=h4 ta=c: ${plan.title}
                                 - $if plan.price:

@@ -36,7 +36,7 @@ landing:
     subtitle: A lead block plus supporting cards creates a stronger visual story than a uniform grid when the page needs more pacing.
     lead:
       title: Anchor The Story With One Bigger Message
-      description: Start with one highlighted message and one strong visual so visitors understand the core proposition before scanning supporting details.
+      description: Start with one highlighted message and one strong visual so visitors understand the core proposition before scanning supporting details. The lead block stretches to match the image height, ensuring a clean two-column editorial layout even when text and visuals differ in length.
       image:
         src: /public/blog-theme.svg
         alt: Lead feature mosaic preview
