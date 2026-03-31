@@ -75,6 +75,7 @@ Common tokens used in this page:
 | [Dimensions](#dimensions) | `w`, `h`, `wh`, `ar` | number, `%`, `xs`-`xl`, `f`, `1fg`-`12fg`, CSS length/value, CSS aspect-ratio value | - |
 | [Align Horizontal](#align-horizontal) | `ah` | `s`, `c`, `e` | `s` |
 | [Align Vertical](#align-vertical) | `av` | `s`, `c`, `e` | `s` |
+| [Stretch](#stretch) | `stretch` | boolean | - |
 | [Wrap](#wrap) | `wrap`, `no-wrap` | boolean | - |
 | [Overflow](#overflow) | `sv`, `sh`, `overflow` | boolean, `hidden` | - |
 | [Padding](#padding) | `p`, `pt`, `pr`, `pb`, `pl`, `pv`, `ph` | `xs`, `sm`, `md`, `lg`, `xl` | - |
@@ -322,6 +323,48 @@ Controls vertical alignment of child elements.
 <rtgl-view d="h" g="md">
   <rtgl-view bgc="ac" wh="80" ah="c" av="c">
     <rtgl-view bgc="ac" wh="24"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+```
+
+## Stretch
+
+Makes the element stretch to fill the cross-axis of its flex container. In a horizontal parent (`d="h"`), children with `stretch` will match the tallest sibling's height. In a vertical parent, they will match the widest sibling's width.
+
+### Behavior & precedence
+
+- `stretch` sets `align-self: stretch`, overriding the parent's `align-items` for this element.
+- Works in both horizontal and vertical parent directions.
+- Responsive variants (`sm-stretch`, `md-stretch`, `lg-stretch`, `xl-stretch`) are supported.
+
+### Equal-Height Cards
+
+```html codePreview
+<rtgl-view d="h" g="lg" w="f">
+  <rtgl-view w="1fg" stretch bgc="se" bw="xs" bc="bo" br="md" p="lg" g="sm">
+    <rtgl-text fw="bold">Short content</rtgl-text>
+    <rtgl-text>One line.</rtgl-text>
+  </rtgl-view>
+  <rtgl-view w="1fg" stretch bgc="se" bw="xs" bc="bo" br="md" p="lg" g="sm">
+    <rtgl-text fw="bold">Longer content</rtgl-text>
+    <rtgl-text>This card has multiple lines of content that make it taller than its sibling.</rtgl-text>
+    <rtgl-text>The sibling card should match this height.</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+```
+
+### Without Stretch (Default)
+
+```html codePreview
+<rtgl-view d="h" g="lg" w="f">
+  <rtgl-view w="1fg" bgc="se" bw="xs" bc="bo" br="md" p="lg" g="sm">
+    <rtgl-text fw="bold">Short content</rtgl-text>
+    <rtgl-text>One line.</rtgl-text>
+  </rtgl-view>
+  <rtgl-view w="1fg" bgc="se" bw="xs" bc="bo" br="md" p="lg" g="sm">
+    <rtgl-text fw="bold">Longer content</rtgl-text>
+    <rtgl-text>This card has multiple lines of content that make it taller than its sibling.</rtgl-text>
+    <rtgl-text>Without stretch, the sibling does not match this height.</rtgl-text>
   </rtgl-view>
 </rtgl-view>
 ```

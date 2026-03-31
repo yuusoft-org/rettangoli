@@ -104,7 +104,8 @@ class RettangoliViewElement extends HTMLElement {
         "av",
         "wrap",
         "no-wrap",
-        "overflow"
+        "overflow",
+        "stretch"
       ]),
     ];
   }
@@ -298,6 +299,11 @@ class RettangoliViewElement extends HTMLElement {
       }
       if (isNoWrap) {
         this._styles[size]["flex-wrap"] = "nowrap";
+      }
+
+      // Handle stretch
+      if (this.hasAttribute(addSizePrefix("stretch"))) {
+        this._styles[size]["align-self"] = "stretch";
       }
 
       // Handle scroll properties
