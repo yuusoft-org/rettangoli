@@ -192,7 +192,7 @@ Example implementation shape:
 ```js
 const bodyEl = document.createElement(options.component);
 
-for (const [key, value] of Object.entries(options.props || {})) {
+for (const [key, value] of Object.entries(options.props ?? {})) {
   bodyEl[key] = value;
 }
 ```

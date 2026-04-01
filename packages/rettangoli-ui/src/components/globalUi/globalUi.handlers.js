@@ -121,7 +121,7 @@ const scheduleComponentDialogMount = (deps, expectedKey) => {
     try {
       const bodyEl = document.createElement(componentDialogConfig.component);
 
-      Object.entries(componentDialogConfig.props || {}).forEach(([key, value]) => {
+      Object.entries(componentDialogConfig.props ?? {}).forEach(([key, value]) => {
         bodyEl[key] = value;
       });
 
@@ -270,7 +270,7 @@ export const handleShowComponentDialog = async (deps, payload) => {
 
 export const handleFormAction = (deps, payload) => {
   const { store, render, globalUI, refs } = deps;
-  const detail = payload._event?.detail || {};
+  const detail = payload._event?.detail ?? {};
 
   if (detail.valid === false) {
     return;
@@ -288,13 +288,13 @@ export const handleFormAction = (deps, payload) => {
 
 export const handleFormFieldEvent = (deps, payload) => {
   const { store, refs } = deps;
-  const detail = payload._event?.detail || {};
+  const detail = payload._event?.detail ?? {};
   const formDialogConfig = store.selectFormDialogConfig?.();
 
   if (typeof formDialogConfig?.onFieldEvent === "function") {
     formDialogConfig.onFieldEvent({
       detail,
-      formEl: refs.formDialog || null,
+      formEl: refs.formDialog ?? null,
     });
   }
 };
@@ -347,7 +347,7 @@ export const handleComponentDialogAction = async (deps, payload) => {
     const body = refs.componentDialogBody;
     if (!body || typeof body.validate !== "function" || typeof body.getValues !== "function") {
       throw new Error(
-        `component dialog body '${componentDialogConfig?.component || "unknown"}' must implement validate() and getValues()`,
+        `component dialog body '${componentDialogConfig?.component ?? "unknown"}' must implement validate() and getValues()`,
       );
     }
 

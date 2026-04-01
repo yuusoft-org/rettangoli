@@ -54,12 +54,12 @@ const normalizeComponentDialogActions = (value) => {
     return {
       ...button,
       _globalIdx: index,
-      variant: button.variant || (button.role === "confirm" ? "pr" : "se"),
-      align: button.align || (button.role === "cancel" ? "left" : "right"),
+      variant: button.variant ?? (button.role === "confirm" ? "pr" : "se"),
+      align: button.align ?? (button.role === "cancel" ? "left" : "right"),
       validate: button.role === "confirm" ? !!button.validate : false,
       _disabled: !!button.disabled,
-      pre: button.pre || "",
-      suf: button.suf || "",
+      pre: button.pre ?? "",
+      suf: button.suf ?? "",
     };
   });
 
@@ -117,10 +117,10 @@ export const setAlertConfig = ({ state }, options = {}) => {
   }
 
   state.config = {
-    status: options.status || undefined,
-    title: options.title || "",
+    status: options.status ?? undefined,
+    title: options.title ?? "",
     message: options.message,
-    confirmText: options.confirmText || "OK",
+    confirmText: options.confirmText ?? "OK",
     cancelText: "",
     mode: "alert",
   };
@@ -134,11 +134,11 @@ export const setConfirmConfig = ({ state }, options = {}) => {
   }
 
   state.config = {
-    status: options.status || undefined,
-    title: options.title || "",
+    status: options.status ?? undefined,
+    title: options.title ?? "",
     message: options.message,
-    confirmText: options.confirmText || "Yes",
-    cancelText: options.cancelText || "Cancel",
+    confirmText: options.confirmText ?? "Yes",
+    cancelText: options.cancelText ?? "Cancel",
     mode: "confirm",
   };
   state.uiType = "dialog";
@@ -152,9 +152,9 @@ export const setDropdownConfig = ({ state }, options = {}) => {
 
   state.dropdownConfig = {
     items: options.items,
-    x: options.x || 0,
-    y: options.y || 0,
-    place: options.place || "bs",
+    x: options.x ?? 0,
+    y: options.y ?? 0,
+    place: options.place ?? "bs",
   };
   state.uiType = "dropdown";
   state.isOpen = true;
@@ -165,7 +165,7 @@ export const setFormDialogConfig = ({ state }, options = {}) => {
     throw new Error("form object is required for showFormDialog");
   }
 
-  const prevKey = state.formDialogConfig?.key || 0;
+  const prevKey = state.formDialogConfig?.key ?? 0;
 
   state.formDialogConfig = {
     form: options.form,
@@ -186,7 +186,7 @@ export const setComponentDialogConfig = ({ state }, options = {}) => {
     throw new Error("component tag name is required for showComponentDialog");
   }
 
-  const prevKey = state.componentDialogConfig?.key || 0;
+  const prevKey = state.componentDialogConfig?.key ?? 0;
 
   state.componentDialogConfig = {
     title: typeof options.title === "string" ? options.title : "",
@@ -217,34 +217,34 @@ export const selectViewData = ({ state }) => {
   const isDialogOpen = state.isOpen && state.uiType === "dialog";
   const isFormDialogOpen = state.isOpen && state.uiType === "formDialog";
   const isComponentDialogOpen = state.isOpen && state.uiType === "componentDialog";
-  const componentDialogConfig = state.componentDialogConfig || createDefaultComponentDialogConfig();
+  const componentDialogConfig = state.componentDialogConfig ?? createDefaultComponentDialogConfig();
 
   return {
     isOpen: state.isOpen,
     uiType: state.uiType,
     config: state.config,
     dropdownConfig: {
-      items: state.dropdownConfig?.items || [],
-      x: state.dropdownConfig?.x || 0,
-      y: state.dropdownConfig?.y || 0,
-      place: state.dropdownConfig?.place || 'bs',
+      items: state.dropdownConfig?.items ?? [],
+      x: state.dropdownConfig?.x ?? 0,
+      y: state.dropdownConfig?.y ?? 0,
+      place: state.dropdownConfig?.place ?? "bs",
     },
     formDialogConfig: {
-      form: state.formDialogConfig?.form || { fields: [], actions: { buttons: [] } },
-      defaultValues: state.formDialogConfig?.defaultValues || {},
-      context: state.formDialogConfig?.context || {},
+      form: state.formDialogConfig?.form ?? { fields: [], actions: { buttons: [] } },
+      defaultValues: state.formDialogConfig?.defaultValues ?? {},
+      context: state.formDialogConfig?.context ?? {},
       disabled: !!state.formDialogConfig?.disabled,
       size: normalizeDialogSize(state.formDialogConfig?.size, "md"),
-      key: state.formDialogConfig?.key || 0,
+      key: state.formDialogConfig?.key ?? 0,
     },
     componentDialogConfig: {
-      title: componentDialogConfig.title || "",
-      description: componentDialogConfig.description || "",
+      title: componentDialogConfig.title ?? "",
+      description: componentDialogConfig.description ?? "",
       size: normalizeDialogSize(componentDialogConfig.size, "md"),
-      component: componentDialogConfig.component || "",
-      props: componentDialogConfig.props || {},
-      actions: componentDialogConfig.actions || normalizeComponentDialogActions(),
-      key: componentDialogConfig.key || 0,
+      component: componentDialogConfig.component ?? "",
+      props: componentDialogConfig.props ?? {},
+      actions: componentDialogConfig.actions ?? normalizeComponentDialogActions(),
+      key: componentDialogConfig.key ?? 0,
     },
     isDialogOpen,
     isFormDialogOpen,

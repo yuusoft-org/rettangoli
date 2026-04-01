@@ -51,8 +51,8 @@ viewport:
   class VTComponentDialogBody extends HTMLElement {
     connectedCallback() {
       this.values = {
-        name: this.defaultValues?.name || 'Untitled',
-        direction: this.direction || 'horizontal',
+        name: this.defaultValues?.name ?? 'Untitled',
+        direction: this.direction ?? 'horizontal',
         imageIds: ['hero-1', 'hero-2'],
       };
       this.render();

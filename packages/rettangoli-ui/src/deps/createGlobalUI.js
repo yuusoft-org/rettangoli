@@ -36,7 +36,7 @@ const createGlobalUI = (globalUIElement) => {
       }
       listeners[event].push(onceCallback);
       return () => {
-        listeners[event] = (listeners[event] || []).filter(cb => cb !== onceCallback);
+        listeners[event] = (listeners[event] ?? []).filter(cb => cb !== onceCallback);
       };
     },
 
