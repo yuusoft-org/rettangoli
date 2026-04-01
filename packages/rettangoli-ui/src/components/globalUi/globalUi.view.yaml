@@ -11,6 +11,10 @@ refs:
     eventListeners:
       click:
         handler: handleCancel
+  componentDialogAction*:
+    eventListeners:
+      click:
+        handler: handleComponentDialogAction
   formDialog:
     eventListeners:
       form-action:
@@ -27,7 +31,24 @@ template:
   - rtgl-dialog#dialog ?open=${isDialogContainerOpen} s=${dialogSize}:
       - $if isFormDialogOpen:
           - rtgl-form#formDialog slot=content :form=${formDialogConfig.form} :defaultValues=${formDialogConfig.defaultValues} :context=${formDialogConfig.context} ?disabled=${formDialogConfig.disabled} key=form-dialog-${formDialogConfig.key}: null
-      - $if !isFormDialogOpen:
+      - $if isComponentDialogOpen:
+          - rtgl-view slot=content g=lg p=lg:
+              - $if componentDialogConfig.title || componentDialogConfig.description:
+                  - rtgl-view g=sm w=f:
+                      - $if componentDialogConfig.title:
+                          - rtgl-text s=lg: ${componentDialogConfig.title}
+                      - $if componentDialogConfig.description:
+                          - rtgl-text c=mu-fg: ${componentDialogConfig.description}
+              - rtgl-view#componentDialogBodyHost w=f key=component-dialog-body-${componentDialogConfig.key}: null
+              - $if componentDialogConfig.actions.buttons.length > 0:
+                  - rtgl-view d=h w=f g=sm:
+                      - rtgl-view d=h g=sm:
+                          - $for button, i in componentDialogConfig.actions._leftButtons:
+                              - rtgl-button#componentDialogAction${button._globalIdx} data-action-id=${button.id} data-action-index=${button._globalIdx} v=${button.variant} ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
+                      - rtgl-view d=h g=sm ah=e w=1fg:
+                          - $for button, i in componentDialogConfig.actions._rightButtons:
+                              - rtgl-button#componentDialogAction${button._globalIdx} data-action-id=${button.id} data-action-index=${button._globalIdx} v=${button.variant} ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
+      - $if !isFormDialogOpen && !isComponentDialogOpen:
           - rtgl-view slot=content g=lg p=lg:
               - rtgl-view g=sm w=f:
                   - $if config.title:

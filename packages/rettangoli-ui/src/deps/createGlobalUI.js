@@ -10,6 +10,7 @@
  * @returns {Function} returns.showAlert - Show an alert dialog
  * @returns {Function} returns.showConfirm - Show a confirmation dialog
  * @returns {Function} returns.showFormDialog - Show a form dialog
+ * @returns {Function} returns.showComponentDialog - Show a component dialog
  * @returns {Function} returns.showDropdownMenu - Show a dropdown menu
  * @returns {Function} returns.closeAll - General-purpose function to close all currently open UI components
  */
@@ -23,7 +24,7 @@ const createGlobalUI = (globalUIElement) => {
      *
      * @param {string} event - The event name to listen for
      * @param {Function} callback - The callback function to execute
-     * @returns {void}
+     * @returns {Function} Unsubscribe function
      */
     once: (event, callback) => {
       if (!listeners[event]) {
@@ -34,6 +35,9 @@ const createGlobalUI = (globalUIElement) => {
         listeners[event] = listeners[event].filter(cb => cb !== onceCallback);
       }
       listeners[event].push(onceCallback);
+      return () => {
+        listeners[event] = (listeners[event] || []).filter(cb => cb !== onceCallback);
+      };
     },
 
     /**
@@ -45,7 +49,7 @@ const createGlobalUI = (globalUIElement) => {
      */
     emit: (event, ...args) => {
       if (listeners[event]) {
-        listeners[event].forEach(callback => {
+        [...listeners[event]].forEach(callback => {
           callback(...args);
         });
       }
@@ -112,6 +116,27 @@ const createGlobalUI = (globalUIElement) => {
         throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
       }
       return globalUIElement.transformedHandlers.handleShowFormDialog(options);
+    },
+
+    /**
+     * Shows a dialog containing a custom component body.
+     *
+     * @param {Object} options - Component dialog configuration options
+     * @param {string} options.component - Custom element tag name (required)
+     * @param {Object} [options.props] - Initial props assigned onto the body component
+     * @param {string} [options.title] - Optional dialog title
+     * @param {string} [options.description] - Optional dialog description
+     * @param {('sm'|'md'|'lg'|'f')} [options.size] - Dialog size token (default: "md")
+     * @param {Object} [options.actions] - Footer action configuration
+     * @returns {Promise<Object|null>} Resolves with `{ actionId, values? }` or null on dismiss
+     * @throws {Error} If globalUIElement is not initialized
+     */
+    showComponentDialog: async (options) => {
+      if(!globalUIElement)
+      {
+        throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
+      }
+      return globalUIElement.transformedHandlers.handleShowComponentDialog(options);
     },
 
     /**
