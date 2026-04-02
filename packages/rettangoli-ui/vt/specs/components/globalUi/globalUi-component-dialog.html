@@ -1,0 +1,138 @@
+---
+title: "Global UI - Component Dialog"
+description: Verifies a custom component body can render inside the global UI dialog shell and resolve through shell-owned actions.
+specs:
+  - Component dialog renders shell title, description, and a custom body component.
+  - Initial props are assigned onto the body component before mount.
+  - Confirm resolves `{ actionId, values }` and closes the dialog.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: open-component-dialog
+    steps:
+      - action: click
+  - action: waitFor
+    selector: 'vt-component-dialog-body'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 180
+  - action: screenshot
+  - action: select
+    testId: component-dialog-create
+    steps:
+      - action: click
+  - action: waitFor
+    selector: 'vt-component-dialog-body'
+    state: detached
+    timeoutMs: 1500
+  - action: wait
+    ms: 120
+  - action: screenshot
+viewport:
+  id: component-dialog
+  width: 1100
+  height: 900
+---
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="lg" h="100vh" w="f" wrap p="lg">
+  <rtgl-view g="md" w="560">
+    <rtgl-button id="open-component-dialog" data-testid="open-component-dialog">
+      Open Component Dialog
+    </rtgl-button>
+    <rtgl-view p="sm" bgc="mu" br="sm">
+      <rtgl-text id="result" c="mu-fg">No result yet</rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  class VTComponentDialogBody extends HTMLElement {
+    connectedCallback() {
+      this.values = {
+        name: this.defaultValues?.name ?? 'Untitled',
+        direction: this.direction ?? 'horizontal',
+        imageIds: ['hero-1', 'hero-2'],
+      };
+      this.render();
+    }
+
+    validate() {
+      return { valid: true };
+    }
+
+    getValues() {
+      return this.values;
+    }
+
+    render() {
+      this.innerHTML = `
+        <rtgl-view g="sm" w="f" data-testid="component-dialog-body-shell">
+          <rtgl-text s="sm">Direction: ${this.values.direction}</rtgl-text>
+          <rtgl-text s="sm">Name: ${this.values.name}</rtgl-text>
+          <rtgl-view h="80" bc="bo" bw="xs" br="md" ah="c" av="c" bgc="mu">
+            <rtgl-text c="mu-fg">Custom slider preview slots</rtgl-text>
+          </rtgl-view>
+        </rtgl-view>
+      `;
+    }
+  }
+
+  customElements.define('vt-component-dialog-body', VTComponentDialogBody);
+
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+  const resultEl = document.getElementById('result');
+
+  const tagActionButton = (actionId, testId) => {
+    const trySet = () => {
+      const btn = globalUIElement.shadowRoot?.querySelector(`[data-action-id="${actionId}"]`);
+      if (btn) {
+        btn.setAttribute('data-testid', testId);
+        return;
+      }
+      setTimeout(trySet, 0);
+    };
+
+    trySet();
+  };
+
+  document.getElementById('open-component-dialog').addEventListener('click', async () => {
+    tagActionButton('create', 'component-dialog-create');
+
+    const result = await globalUIElement.transformedHandlers.handleShowComponentDialog({
+      component: 'vt-component-dialog-body',
+      title: 'Create Slider',
+      description: 'Choose images and configure the slider.',
+      size: 'md',
+      props: {
+        direction: 'horizontal',
+        defaultValues: {
+          name: 'Hero Slider',
+        },
+      },
+      actions: {
+        buttons: [{
+          id: 'cancel',
+          label: 'Cancel',
+          variant: 'se',
+          align: 'left',
+          role: 'cancel',
+        }, {
+          id: 'create',
+          label: 'Create',
+          variant: 'pr',
+          role: 'confirm',
+          validate: true,
+        }],
+      },
+    });
+
+    if (!result) {
+      resultEl.textContent = 'dismissed';
+      return;
+    }
+
+    resultEl.textContent = `Resolved: ${result.actionId} -> ${result.values.name} / ${result.values.direction}`;
+  });
+</script>
