@@ -133,6 +133,15 @@ const scheduleComponentDialogMount = (deps, expectedKey) => {
   }, 0);
 };
 
+const isActiveComponentDialog = (store, expectedKey) => {
+  if (!store.selectIsOpen() || store.selectUiType() !== "componentDialog") {
+    return false;
+  }
+
+  const componentDialogConfig = store.selectComponentDialogConfig?.();
+  return componentDialogConfig?.key === expectedKey;
+};
+
 export const handleDialogClose = (deps) => {
   const { store, render, globalUI, refs } = deps;
   closeCurrentUi({ store, render, globalUI, refs, emitResult: true });
@@ -321,6 +330,7 @@ export const handleComponentDialogAction = async (deps, payload) => {
   const event = payload._event;
   const actionIndex = Number(event?.currentTarget?.dataset?.actionIndex);
   const componentDialogConfig = store.selectComponentDialogConfig?.();
+  const componentDialogKey = componentDialogConfig?.key;
   const button = Number.isInteger(actionIndex)
     ? componentDialogConfig?.actions?.buttons?.[actionIndex]
     : null;
@@ -353,6 +363,10 @@ export const handleComponentDialogAction = async (deps, payload) => {
 
     if (button.validate) {
       const validation = await body.validate();
+      if (!isActiveComponentDialog(store, componentDialogKey)) {
+        return;
+      }
+
       if (!validation || typeof validation !== "object" || typeof validation.valid !== "boolean") {
         throw new Error("component dialog body validate() must return { valid, errors? }");
       }
@@ -362,6 +376,9 @@ export const handleComponentDialogAction = async (deps, payload) => {
     }
 
     const values = await body.getValues();
+    if (!isActiveComponentDialog(store, componentDialogKey)) {
+      return;
+    }
 
     closeCurrentUi({
       store,
@@ -375,6 +392,10 @@ export const handleComponentDialogAction = async (deps, payload) => {
       },
     });
   } catch (error) {
+    if (!isActiveComponentDialog(store, componentDialogKey)) {
+      return;
+    }
+
     rejectCurrentUi({ store, render, globalUI, refs, error });
   }
 };

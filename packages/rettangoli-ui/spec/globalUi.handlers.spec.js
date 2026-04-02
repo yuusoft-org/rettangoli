@@ -2,12 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import createGlobalUI from "../src/deps/createGlobalUI.js";
 import {
+  handleConfirm,
   handleComponentDialogAction,
+  handleShowAlert,
   handleShowComponentDialog,
 } from "../src/components/globalUi/globalUi.handlers.js";
 import {
   closeAll,
   createInitialState,
+  setAlertConfig,
   setComponentDialogConfig,
 } from "../src/components/globalUi/globalUi.store.js";
 
@@ -20,6 +23,7 @@ const createStore = () => {
     selectIsOpen: () => state.isOpen,
     selectUiType: () => state.uiType,
     selectComponentDialogConfig: () => state.componentDialogConfig,
+    setAlertConfig: (payload) => setAlertConfig({ state }, payload),
     setComponentDialogConfig: (payload) => setComponentDialogConfig({ state }, payload),
     closeAll: () => closeAll({ state }),
   };
@@ -49,6 +53,18 @@ const createDeps = (bodyEl) => {
     refs,
     createElement,
   };
+};
+
+const createDeferred = () => {
+  let resolve;
+  let reject;
+
+  const promise = new Promise((nextResolve, nextReject) => {
+    resolve = nextResolve;
+    reject = nextReject;
+  });
+
+  return { promise, resolve, reject };
 };
 
 describe("rtgl-global-ui component dialog handlers", () => {
@@ -205,5 +221,129 @@ describe("rtgl-global-ui component dialog handlers", () => {
 
     await expect(promise).rejects.toThrow("boom");
     expect(deps.store.getState().isOpen).toBe(false);
+  });
+
+  it("ignores late success from a dismissed component dialog action", async () => {
+    const deferred = createDeferred();
+    const bodyElA = {
+      getValues: vi.fn().mockReturnValue(deferred.promise),
+      validate: vi.fn(),
+    };
+    const deps = createDeps(bodyElA);
+
+    const promiseA = handleShowComponentDialog(deps, {
+      component: "vt-component-dialog-body-a",
+      actions: {
+        buttons: [{
+          id: "create",
+          label: "Create",
+          role: "confirm",
+        }],
+      },
+    });
+
+    await vi.runAllTimersAsync();
+
+    const actionPromiseA = handleComponentDialogAction(deps, {
+      _event: {
+        currentTarget: {
+          dataset: {
+            actionIndex: "0",
+          },
+        },
+      },
+    });
+
+    const bodyElB = {};
+    deps.createElement.mockImplementation(() => bodyElB);
+
+    const promiseB = handleShowComponentDialog(deps, {
+      component: "vt-component-dialog-body-b",
+    });
+
+    await vi.runAllTimersAsync();
+    await expect(promiseA).resolves.toBeNull();
+
+    let settledB = false;
+    promiseB.finally(() => {
+      settledB = true;
+    });
+
+    deferred.resolve({ name: "late result" });
+    await actionPromiseA;
+    await Promise.resolve();
+
+    expect(deps.store.getState().isOpen).toBe(true);
+    expect(deps.store.getState().uiType).toBe("componentDialog");
+    expect(deps.refs.componentDialogBody).toBe(bodyElB);
+    expect(settledB).toBe(false);
+
+    await handleComponentDialogAction(deps, {
+      _event: {
+        currentTarget: {
+          dataset: {
+            actionIndex: "0",
+          },
+        },
+      },
+    });
+
+    await expect(promiseB).resolves.toEqual({
+      actionId: "cancel",
+    });
+  });
+
+  it("ignores late failure from a dismissed component dialog action", async () => {
+    const deferred = createDeferred();
+    const bodyEl = {
+      getValues: vi.fn().mockReturnValue(deferred.promise),
+      validate: vi.fn(),
+    };
+    const deps = createDeps(bodyEl);
+
+    const promiseA = handleShowComponentDialog(deps, {
+      component: "vt-component-dialog-body",
+      actions: {
+        buttons: [{
+          id: "create",
+          label: "Create",
+          role: "confirm",
+        }],
+      },
+    });
+
+    await vi.runAllTimersAsync();
+
+    const actionPromiseA = handleComponentDialogAction(deps, {
+      _event: {
+        currentTarget: {
+          dataset: {
+            actionIndex: "0",
+          },
+        },
+      },
+    });
+
+    const alertPromise = handleShowAlert(deps, {
+      message: "Replacement alert",
+    });
+
+    await expect(promiseA).resolves.toBeNull();
+
+    let alertSettled = false;
+    alertPromise.finally(() => {
+      alertSettled = true;
+    });
+
+    deferred.reject(new Error("late boom"));
+    await actionPromiseA;
+    await Promise.resolve();
+
+    expect(deps.store.getState().isOpen).toBe(true);
+    expect(deps.store.getState().uiType).toBe("dialog");
+    expect(alertSettled).toBe(false);
+
+    handleConfirm(deps);
+    await expect(alertPromise).resolves.toBeNull();
   });
 });
