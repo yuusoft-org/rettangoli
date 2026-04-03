@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Improvements
+- `rtgl-select`: tightened dropdown menu spacing and typography, flattened option row corners, and allowed popover content padding overrides so select menus can be styled more precisely without changing every popover.
 - `rtgl-form`: fixed embedded `select` field bindings so option arrays and default selections reach child `rtgl-select` instances again, and added VT coverage that opens the select list before screenshot capture.
 - added `rtgl-carousel`, a dedicated slotted carousel primitive with exact smooth scrolling, desktop mouse drag, native touch/trackpad scrolling, built-in arrow controls by default, opt-in pager dots, `snap="false"` support for free-scroll rails, and centered edge padding when `sna="center"` so the first and last slides can rest centered.
 - `rtgl-view` and `rtgl-image`: added responsive `ar` / `*-ar` support for raw CSS `aspect-ratio` values such as `1`, `1.618`, and `16/9`.
