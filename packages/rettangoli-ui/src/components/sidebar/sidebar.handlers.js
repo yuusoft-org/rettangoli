@@ -58,7 +58,7 @@ export const handleItemMouseEnter = (deps, payload) => {
   }
 
   const rect = event.currentTarget.getBoundingClientRect();
-  const content = item.tooltip || item.title;
+  const content = item.tooltip || item.label || item.title;
 
   if (!content) {
     return;

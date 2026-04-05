@@ -41,8 +41,11 @@ propsSchema:
       items:
         type: object
         properties:
+          label:
+            type: string
           title:
             type: string
+            description: Deprecated item text field. Use label instead.
           slug:
             type: string
           type:

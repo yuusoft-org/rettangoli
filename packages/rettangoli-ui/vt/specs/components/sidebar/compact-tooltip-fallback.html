@@ -1,6 +1,6 @@
 ---
 title: "Compact sidebar tooltip fallback and close"
-description: Verifies compact sidebar items fall back to title text for tooltips and close when hover leaves the item.
+description: Verifies compact sidebar items fall back to label first, then deprecated title text, and close when hover leaves the item.
 viewport:
   id: desktop
   width: 900
@@ -8,6 +8,19 @@ viewport:
 steps:
   - action: wait
     ms: 200
+  - action: select
+    testId: compact-sidebar-home
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: '#tooltip-open-indicator[data-open="true"]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#tooltip-open-indicator'
+    value: Home
+    match: includes
   - action: select
     testId: compact-sidebar-music
     steps:
@@ -55,8 +68,8 @@ steps:
 
   sidebar.items = [
     { id: "home", title: "Home", icon: "home", testId: "compact-sidebar-home" },
-    { id: "music", title: "Music", icon: "music", testId: "compact-sidebar-music" },
-    { id: "settings", title: "Settings", icon: "gear", testId: "compact-sidebar-settings" },
+    { id: "music", label: "Music", icon: "music", testId: "compact-sidebar-music" },
+    { id: "settings", label: "Settings", icon: "gear", testId: "compact-sidebar-settings" },
   ];
   sidebar.render();
 

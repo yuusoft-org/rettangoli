@@ -57,17 +57,29 @@ const resolveSidebarWidth = (value, mode) => {
   return mode === 'full' ? 272 : 64;
 };
 
+const resolveItemLabel = (item = {}) => {
+  if (item.label !== undefined && item.label !== null) {
+    return item.label;
+  }
+  if (item.title !== undefined && item.title !== null) {
+    return item.title;
+  }
+  return '';
+};
+
 function flattenItems(items, selectedItemId = null) {
   let result = [];
 
   for (const item of items) {
     const itemId = item.id || item.href || item.path;
     const isSelected = selectedItemId === itemId;
+    const label = resolveItemLabel(item);
 
     // Add the parent item if it's not just a group label
     result.push({
       id: itemId,
-      title: item.title,
+      label,
+      title: item.title ?? label,
       href: item.href,
       type: item.type || 'item',
       icon: item.icon,
@@ -85,10 +97,12 @@ function flattenItems(items, selectedItemId = null) {
       for (const subItem of item.items) {
         const subItemId = subItem.id || subItem.href || subItem.path;
         const isSubSelected = selectedItemId === subItemId;
+        const label = resolveItemLabel(subItem);
 
         result.push({
           id: subItemId,
-          title: subItem.title,
+          label,
+          title: subItem.title ?? label,
           href: subItem.href,
           type: subItem.type || 'item',
           icon: subItem.icon,

@@ -27,10 +27,10 @@ A navigation sidebar component with header, grouped items, and selectable states
     },
   };
   sidebar.items = [
-    { id: "home", title: "Home", icon: "home" },
-    { id: "about", title: "About", icon: "info" },
-    { type: "groupLabel", title: "Admin" },
-    { id: "settings", title: "Settings", icon: "settings" },
+    { id: "home", label: "Home", icon: "home" },
+    { id: "about", label: "About", icon: "info" },
+    { type: "groupLabel", label: "Admin" },
+    { id: "settings", label: "Settings", icon: "settings" },
   ];
   sidebar.render();
 </script>
@@ -54,7 +54,8 @@ A navigation sidebar component with header, grouped items, and selectable states
 - `image: { src, width, height, alt, href?, path? }`
 
 ### Item Shape
-- `id`, `title`, `icon`, `href`, `path`, `type`, `tooltip`, `testId`
+- `id`, `label`, `icon`, `href`, `path`, `type`, `tooltip`, `testId`
+- `title` is deprecated and still supported as a fallback for `label`
 - `type: "groupLabel"` for section labels
 - `items: [...]` for nested item flattening
 
@@ -74,5 +75,5 @@ A navigation sidebar component with header, grouped items, and selectable states
 - `w` overrides computed width (for example `w="f"` fills the parent width).
 - `bwr` controls right border width (`bwr="none"` hides the border).
 - `hide-header` hides the header block.
-- `show-compact-tooltip` enables hover tooltips for compact modes and uses `item.tooltip` or falls back to `item.title`.
+- `show-compact-tooltip` enables hover tooltips for compact modes and uses `item.tooltip`, then `item.label`, then deprecated `item.title`.
 - `href` navigates directly; `path` emits events for app-level routing.

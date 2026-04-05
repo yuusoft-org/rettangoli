@@ -84,23 +84,23 @@ template:
               - $if item.type == "groupLabel":
                   - $if showGroupLabels:
                       - rtgl-view mt=md h=32 av=c ph=md:
-                          - rtgl-text s=xs c=mu-fg: ${item.title}
+                          - rtgl-text s=xs c=mu-fg: ${item.label}
                     $else:
                       - rtgl-view mt=md h=1 bgc=mu: null
                 $else:
-                  - rtgl-view#item${i} data-item-id=${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=pointer data-testid=${item.testId} aria-label="${item.title}":
+                  - rtgl-view#item${i} data-item-id=${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=pointer data-testid=${item.testId} aria-label="${item.label}":
                       - $if item.icon:
                           - $if showLabels:
                               - rtgl-view d=h ah=${itemContentAlign} g=sm:
                                   - rtgl-svg wh=16 svg=${item.icon} c=fg: null
-                                  - rtgl-text s=sm: ${item.title}
+                                  - rtgl-text s=sm: ${item.label}
                             $else:
                               - rtgl-svg wh=${iconSize} svg=${item.icon} c=fg: null
                         $else:
                           - $if showLabels:
-                              - rtgl-text s=sm: ${item.title}
+                              - rtgl-text s=sm: ${item.label}
                             $else:
                               - rtgl-view wh=${iconSize} br=f bgc=mu av=c ah=c:
-                                  - rtgl-text s=${firstLetterSize} c=fg: ${item.title.charAt(0).toUpperCase()}
+                                  - rtgl-text s=${firstLetterSize} c=fg: ${item.label.charAt(0).toUpperCase()}
       - $if enableCompactTooltip:
           - rtgl-tooltip#tooltip s="md" ?open=${tooltipState.open} x=${tooltipState.x} y=${tooltipState.y} place=${tooltipState.place} content="${tooltipState.content}": null
