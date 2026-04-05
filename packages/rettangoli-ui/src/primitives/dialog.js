@@ -229,7 +229,10 @@ class RettangoliDialogElement extends HTMLElement {
 
       window.addEventListener("resize", this._onWindowResize);
       this._observeAssignedContent();
-      this._scheduleAdaptiveCentering({ resetRetries: true });
+      this._layoutRetryCount = 0;
+      // Apply the first centering pass before paint so the enter animation
+      // starts from the final position instead of jumping after mount.
+      this._applyAdaptiveCentering();
     }
   }
 
