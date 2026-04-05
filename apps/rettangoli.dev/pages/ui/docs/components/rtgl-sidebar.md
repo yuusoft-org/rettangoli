@@ -57,6 +57,8 @@ A navigation sidebar component with header, grouped items, and selectable states
 - `id`, `label`, `icon`, `href`, `path`, `type`, `tooltip`, `testId`
 - `title` is deprecated and still supported as a fallback for `label`
 - `type: "groupLabel"` for section labels
+- `type: "divider"` for a horizontal separator line
+- `type: "spacer"` for a flexible spacer that pushes following rows to the bottom
 - `items: [...]` for nested item flattening
 
 ## Events
@@ -76,4 +78,7 @@ A navigation sidebar component with header, grouped items, and selectable states
 - `bwr` controls right border width (`bwr="none"` hides the border).
 - `hide-header` hides the header block.
 - `show-compact-tooltip` enables hover tooltips for compact modes and uses `item.tooltip`, then `item.label`, then deprecated `item.title`.
+- `type: "divider"` inserts a non-interactive rule into the list flow.
+- `type: "spacer"` consumes remaining vertical space so following rows sit at the bottom when the sidebar has extra height.
+- `divider` and `spacer` work in both full and compact sidebar modes.
 - `href` navigates directly; `path` emits events for app-level routing.

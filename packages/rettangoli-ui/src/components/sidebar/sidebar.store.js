@@ -72,10 +72,10 @@ function flattenItems(items, selectedItemId = null) {
 
   for (const item of items) {
     const itemId = item.id || item.href || item.path;
-    const isSelected = selectedItemId === itemId;
+    const isSelected = itemId !== undefined && itemId !== null && selectedItemId === itemId;
     const label = resolveItemLabel(item);
 
-    // Add the parent item if it's not just a group label
+    // Normalize all sidebar rows to a single shape so the view can branch on type.
     result.push({
       id: itemId,
       label,
@@ -96,7 +96,7 @@ function flattenItems(items, selectedItemId = null) {
     if (item.items && Array.isArray(item.items)) {
       for (const subItem of item.items) {
         const subItemId = subItem.id || subItem.href || subItem.path;
-        const isSubSelected = selectedItemId === subItemId;
+        const isSubSelected = subItemId !== undefined && subItemId !== null && selectedItemId === subItemId;
         const label = resolveItemLabel(subItem);
 
         result.push({
@@ -171,7 +171,7 @@ export const selectViewData = ({ state, props }) => {
   const headerWidth = itemWidth;
 
   const ah = mode === 'shrunk-lg' || mode === 'shrunk-md' ? 'c' : '';
-  const listAttrString = mode === 'full' ? 'sv' : 'sv hsb';
+  const listAttrString = mode === 'full' ? 'd=v sv' : 'd=v sv hsb';
 
   return {
     containerAttrString,

@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Improvements
+- `rtgl-sidebar`: added `type: "divider"` rows for horizontal separators and `type: "spacer"` rows for pushing trailing actions to the bottom of the sidebar.
 - `rtgl-tooltip`: added tooltip size presets via `s="sm|md|lg"` and removed the fixed minimum width so content can size more naturally.
 - `rtgl-sidebar`: added optional compact-mode hover tooltips and now prefers item `label` while still supporting deprecated `title` as a fallback.
 - `rtgl-select`: tightened dropdown menu spacing and typography, flattened option row corners, and allowed popover content padding overrides so select menus can be styled more precisely without changing every popover.

@@ -1,0 +1,43 @@
+---
+title: "Divider and spacer compact"
+description: "Verifies divider and spacer rows also work in compact sidebar mode."
+viewport:
+  id: desktop
+  width: 900
+  height: 700
+steps:
+  - action: wait
+    ms: 120
+  - action: screenshot
+---
+<rtgl-view g="lg" h="100vh" w="100vw" p="lg">
+  <rtgl-sidebar id="sidebar" mode="shrunk-lg" h="540"></rtgl-sidebar>
+</rtgl-view>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+
+  sidebar.header = {
+    label: "Workspace",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Workspace",
+    },
+  };
+
+  sidebar.selectedItemId = "settings";
+  sidebar.items = [
+    { id: "home", label: "Home", icon: "home" },
+    { id: "search", label: "Search", icon: "search" },
+    { type: "divider" },
+    { id: "music", label: "Music", icon: "music" },
+    { type: "spacer" },
+    { type: "divider" },
+    { id: "settings", label: "Settings", icon: "gear" },
+    { id: "privacy", label: "Privacy" },
+  ];
+
+  sidebar.render();
+</script>
