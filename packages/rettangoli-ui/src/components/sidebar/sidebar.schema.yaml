@@ -50,6 +50,7 @@ propsSchema:
             type: string
           type:
             type: string
+            description: Item row type. Supports item, groupLabel, divider, and spacer.
           tooltip:
             type: string
           items:
