@@ -1,0 +1,24 @@
+---
+title: Tooltip - Z Index
+description: Verifies tooltips render above overlapping high-z page content.
+steps:
+  - action: wait
+    ms: 120
+viewport:
+  id: desktop
+  width: 900
+  height: 700
+---
+<rtgl-view h="100vh" w="100vw" p="lg">
+  <div
+    style="position: fixed; left: 470px; top: 220px; width: 220px; height: 120px; background: rgba(220, 38, 38, 0.4); border: 1px solid rgba(220, 38, 38, 0.7); border-radius: 12px; z-index: 1500;"
+  ></div>
+  <rtgl-tooltip
+    open
+    s="md"
+    content="Tooltip should stay above overlapping content."
+    x="490"
+    y="240"
+    place="bs"
+  ></rtgl-tooltip>
+</rtgl-view>

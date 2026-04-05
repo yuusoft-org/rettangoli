@@ -6,6 +6,8 @@
 - `rtgl-sidebar`: added `type: "divider"` rows for horizontal separators and `type: "spacer"` rows for pushing trailing actions to the bottom of the sidebar.
 - `rtgl-tooltip`: added tooltip size presets via `s="sm|md|lg"` and removed the fixed minimum width so content can size more naturally.
 - `rtgl-sidebar`: added optional compact-mode hover tooltips and now prefers item `label` while still supporting deprecated `title` as a fallback.
+- `rtgl-sidebar`: compact tooltip toggle now uses `tooltip`, with deprecated `showCompactTooltip` / `show-compact-tooltip` aliasing retained for compatibility.
+- `rtgl-popover`: overlay layering now uses a higher fixed z-index so tooltips and popovers are less likely to render behind app content.
 - `rtgl-select`: tightened dropdown menu spacing and typography, flattened option row corners, and allowed popover content padding overrides so select menus can be styled more precisely without changing every popover.
 - `rtgl-form`: fixed embedded `select` field bindings so option arrays and default selections reach child `rtgl-select` instances again, and added VT coverage that opens the select list before screenshot capture.
 - added `rtgl-carousel`, a dedicated slotted carousel primitive with exact smooth scrolling, desktop mouse drag, native touch/trackpad scrolling, built-in arrow controls by default, opt-in pager dots, `snap="false"` support for free-scroll rails, and centered edge padding when `sna="center"` so the first and last slides can rest centered.

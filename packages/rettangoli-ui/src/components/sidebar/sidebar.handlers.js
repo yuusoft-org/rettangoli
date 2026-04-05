@@ -1,3 +1,25 @@
+const parseBooleanProp = (value) => {
+  if (value === true) {
+    return true;
+  }
+  if (value === false || value === undefined || value === null) {
+    return false;
+  }
+  if (typeof value === 'string') {
+    const normalizedValue = value.trim().toLowerCase();
+    return normalizedValue === '' || normalizedValue === 'true';
+  }
+  return false;
+};
+
+const resolveCompactTooltipEnabled = (props = {}) => {
+  if (props.tooltip !== undefined && props.tooltip !== null) {
+    return parseBooleanProp(props.tooltip);
+  }
+
+  return parseBooleanProp(props.showCompactTooltip);
+};
+
 export const handleHeaderClick = (deps, payload) => {
   const { store, dispatchEvent } = deps;
   const event = payload._event;
@@ -41,9 +63,7 @@ export const handleItemClick = (deps, payload) => {
 
 export const handleItemMouseEnter = (deps, payload) => {
   const { props, store, render } = deps;
-  const showCompactTooltip = props.showCompactTooltip === true ||
-    props.showCompactTooltip === '' ||
-    props.showCompactTooltip === 'true';
+  const showCompactTooltip = resolveCompactTooltipEnabled(props);
 
   if (!showCompactTooltip || (props.mode || 'full') === 'full') {
     return;

@@ -8,7 +8,7 @@ export const createInitialState = () => Object.freeze({
   },
 });
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode', 'hideHeader', 'showCompactTooltip', 'w', 'bwr'];
+const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode', 'hideHeader', 'tooltip', 'showCompactTooltip', 'w', 'bwr'];
 
 const stringifyAttrs = (props = {}) => {
   return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
@@ -48,6 +48,14 @@ const parseBooleanProp = (value) => {
     return normalizedValue === '' || normalizedValue === 'true';
   }
   return false;
+};
+
+const resolveCompactTooltipEnabled = (props = {}) => {
+  if (props.tooltip !== undefined && props.tooltip !== null) {
+    return parseBooleanProp(props.tooltip);
+  }
+
+  return parseBooleanProp(props.showCompactTooltip);
 };
 
 const resolveSidebarWidth = (value, mode) => {
@@ -142,7 +150,7 @@ export const selectViewData = ({ state, props }) => {
   const items = resolvedItems ? flattenItems(resolvedItems, selectedItemId) : [];
 
   const showHeader = !parseBooleanProp(props.hideHeader);
-  const showCompactTooltip = parseBooleanProp(props.showCompactTooltip);
+  const showCompactTooltip = resolveCompactTooltipEnabled(props);
   const rightBorderWidth = props.bwr || 'xs';
   // Computed values based on mode
   const sidebarWidth = resolveSidebarWidth(props.w, mode);

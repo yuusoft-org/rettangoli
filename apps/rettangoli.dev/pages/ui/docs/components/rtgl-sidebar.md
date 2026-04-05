@@ -45,7 +45,7 @@ A navigation sidebar component with header, grouped items, and selectable states
 | Width Override | `w` | string | mode-based width |
 | Right Border Width | `bwr` | string | `xs` |
 | Hide Header | `hide-header` / `hideHeader` | boolean | `false` |
-| Compact Tooltip | `show-compact-tooltip` / `showCompactTooltip` | boolean | `false` |
+| Compact Tooltip | `tooltip` | boolean | `false` |
 | Header | `header` (property) | object | `{}` |
 | Items | `items` (property) | array | `[]` |
 
@@ -60,6 +60,7 @@ A navigation sidebar component with header, grouped items, and selectable states
 - `type: "divider"` for a horizontal separator line
 - `type: "spacer"` for a flexible spacer that pushes following rows to the bottom
 - `items: [...]` for nested item flattening
+- `show-compact-tooltip` / `showCompactTooltip` is deprecated and still supported as an alias for `tooltip`
 
 ## Events
 
@@ -77,7 +78,8 @@ A navigation sidebar component with header, grouped items, and selectable states
 - `w` overrides computed width (for example `w="f"` fills the parent width).
 - `bwr` controls right border width (`bwr="none"` hides the border).
 - `hide-header` hides the header block.
-- `show-compact-tooltip` enables hover tooltips for compact modes and uses `item.tooltip`, then `item.label`, then deprecated `item.title`.
+- `tooltip` enables hover tooltips for compact modes and uses `item.tooltip`, then `item.label`, then deprecated `item.title`.
+- `show-compact-tooltip` / `showCompactTooltip` remains supported as a deprecated alias.
 - `type: "divider"` inserts a non-interactive rule into the list flow.
 - `type: "spacer"` consumes remaining vertical space so following rows sit at the bottom when the sidebar has extra height.
 - `divider` and `spacer` work in both full and compact sidebar modes.
