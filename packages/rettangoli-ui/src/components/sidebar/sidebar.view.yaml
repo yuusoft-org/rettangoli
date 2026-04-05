@@ -82,7 +82,8 @@ template:
       - rtgl-view w=f h=1fg ph=${headerPadding} pb=lg g=xs ah=${ah} ${listAttrString}:
           - $for item, i in items:
               - $if item.type == "divider":
-                  - rtgl-view h=1 w=f mv=xs bgc=mu: null
+                  - rtgl-view w=f pv=md:
+                      - rtgl-view h=1 w=f bgc=mu: null
                 $elif item.type == "spacer":
                   - rtgl-view h=1fg w=f: null
                 $elif item.type == "groupLabel":
