@@ -7,9 +7,13 @@ propsSchema:
     hideHeader:
       type: boolean
       default: false
+    tooltip:
+      type: boolean
+      default: false
     showCompactTooltip:
       type: boolean
       default: false
+      description: Deprecated alias for tooltip. Use tooltip instead.
     w:
       type: string
     bwr:

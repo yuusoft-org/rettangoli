@@ -25,6 +25,7 @@ class RettangoliPopoverElement extends HTMLElement {
           left: 0;
           width: 100vw;
           height: 100vh;
+          z-index: 2000;
           /* Prevent dialog from being focused */
           pointer-events: none;
         }
@@ -37,7 +38,7 @@ class RettangoliPopoverElement extends HTMLElement {
 
         .popover-container {
           position: fixed;
-          z-index: 1000;
+          z-index: inherit;
           outline: none;
           pointer-events: auto;
         }
