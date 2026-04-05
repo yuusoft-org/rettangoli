@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Improvements
+- `rtgl-dialog`: fixed the open animation so adaptive centering is applied before the first paint, preventing the dialog from jumping from a top-biased position into the centered final state.
 - `rtgl-sidebar`: added `type: "divider"` rows for horizontal separators and `type: "spacer"` rows for pushing trailing actions to the bottom of the sidebar.
 - `rtgl-tooltip`: added tooltip size presets via `s="sm|md|lg"` and removed the fixed minimum width so content can size more naturally.
 - `rtgl-sidebar`: added optional compact-mode hover tooltips and now prefers item `label` while still supporting deprecated `title` as a fallback.
