@@ -1,0 +1,17 @@
+---
+title: Tooltip - Sizes
+description: Verifies tooltip size presets render increasing spacing and content width.
+steps:
+  - action: wait
+    ms: 120
+  - action: screenshot
+viewport:
+  id: desktop
+  width: 900
+  height: 760
+---
+<rtgl-view g="lg" h="100vh" w="100vw" p="lg">
+  <rtgl-tooltip open s="sm" content="Small tooltip preset" x="450" y="120" place="bs"></rtgl-tooltip>
+  <rtgl-tooltip open s="md" content="Medium tooltip preset with a little more breathing room" x="450" y="300" place="bs"></rtgl-tooltip>
+  <rtgl-tooltip open s="lg" content="Large tooltip preset with larger text and a wider content area for longer contextual hints" x="450" y="500" place="bs"></rtgl-tooltip>
+</rtgl-view>

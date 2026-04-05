@@ -1,0 +1,100 @@
+---
+title: "Compact sidebar tooltip fallback and close"
+description: Verifies compact sidebar items fall back to label first, then deprecated title text, and close when hover leaves the item.
+viewport:
+  id: desktop
+  width: 900
+  height: 700
+steps:
+  - action: wait
+    ms: 200
+  - action: select
+    testId: compact-sidebar-home
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: '#tooltip-open-indicator[data-open="true"]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#tooltip-open-indicator'
+    value: Home
+    match: includes
+  - action: select
+    testId: compact-sidebar-music
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: '#tooltip-open-indicator[data-open="true"]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#tooltip-open-indicator'
+    value: Music
+    match: includes
+  - action: select
+    testId: compact-sidebar-outside
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: '#tooltip-open-indicator[data-open="false"]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: exists
+    selector: '#tooltip-open-indicator[data-open="false"]'
+  - action: screenshot
+---
+<rtgl-view g="lg" h="100vh" w="100vw" p="lg">
+  <div id="tooltip-open-indicator" data-open="false" style="position: fixed; width: 1px; height: 1px; overflow: hidden; opacity: 0;">closed</div>
+  <rtgl-sidebar id="sidebar" mode="shrunk" showCompactTooltip></rtgl-sidebar>
+  <div data-testid="compact-sidebar-outside" style="position: fixed; left: 520px; top: 220px; width: 180px; height: 180px; background: rgba(0, 0, 0, 0.001);"></div>
+</rtgl-view>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+
+  sidebar.header = {
+    label: "Navigation",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Logo",
+    },
+  };
+
+  sidebar.items = [
+    { id: "home", title: "Home", icon: "home", testId: "compact-sidebar-home" },
+    { id: "music", label: "Music", icon: "music", testId: "compact-sidebar-music" },
+    { id: "settings", label: "Settings", icon: "gear", testId: "compact-sidebar-settings" },
+  ];
+  sidebar.render();
+
+  const indicator = document.getElementById('tooltip-open-indicator');
+
+  const connectTooltipObserver = () => {
+    const tooltip = sidebar.shadowRoot?.querySelector('#tooltip');
+    if (!tooltip) {
+      requestAnimationFrame(connectTooltipObserver);
+      return;
+    }
+
+    const syncIndicator = () => {
+      indicator.setAttribute('data-open', tooltip.hasAttribute('open') ? 'true' : 'false');
+      indicator.textContent = tooltip.getAttribute('content') || '';
+    };
+
+    syncIndicator();
+
+    const observer = new MutationObserver(syncIndicator);
+    observer.observe(tooltip, {
+      attributes: true,
+      attributeFilter: ['open', 'content'],
+    });
+  };
+
+  requestAnimationFrame(connectTooltipObserver);
+</script>

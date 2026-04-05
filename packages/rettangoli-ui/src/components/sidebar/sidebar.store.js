@@ -1,6 +1,14 @@
-export const createInitialState = () => Object.freeze({});
+export const createInitialState = () => Object.freeze({
+  tooltipState: {
+    open: false,
+    x: 0,
+    y: 0,
+    place: 'r',
+    content: '',
+  },
+});
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode', 'hideHeader', 'w', 'bwr'];
+const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode', 'hideHeader', 'showCompactTooltip', 'w', 'bwr'];
 
 const stringifyAttrs = (props = {}) => {
   return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
@@ -49,20 +57,35 @@ const resolveSidebarWidth = (value, mode) => {
   return mode === 'full' ? 272 : 64;
 };
 
+const resolveItemLabel = (item = {}) => {
+  if (item.label !== undefined && item.label !== null) {
+    return item.label;
+  }
+  if (item.title !== undefined && item.title !== null) {
+    return item.title;
+  }
+  return '';
+};
+
 function flattenItems(items, selectedItemId = null) {
   let result = [];
 
   for (const item of items) {
     const itemId = item.id || item.href || item.path;
     const isSelected = selectedItemId === itemId;
+    const label = resolveItemLabel(item);
 
     // Add the parent item if it's not just a group label
     result.push({
       id: itemId,
-      title: item.title,
+      label,
+      title: item.title ?? label,
       href: item.href,
       type: item.type || 'item',
       icon: item.icon,
+      testId: item.testId,
+      tooltip: item.tooltip,
+      path: item.path,
       hrefAttr: item.href ? `href=${item.href}` : '',
       isSelected,
       itemBgc: isSelected ? 'ac' : 'bg',
@@ -74,13 +97,18 @@ function flattenItems(items, selectedItemId = null) {
       for (const subItem of item.items) {
         const subItemId = subItem.id || subItem.href || subItem.path;
         const isSubSelected = selectedItemId === subItemId;
+        const label = resolveItemLabel(subItem);
 
         result.push({
           id: subItemId,
-          title: subItem.title,
+          label,
+          title: subItem.title ?? label,
           href: subItem.href,
           type: subItem.type || 'item',
           icon: subItem.icon,
+          testId: subItem.testId,
+          tooltip: subItem.tooltip,
+          path: subItem.path,
           hrefAttr: subItem.href ? `href=${subItem.href}` : '',
           isSelected: isSubSelected,
           itemBgc: isSubSelected ? 'ac' : 'bg',
@@ -93,7 +121,7 @@ function flattenItems(items, selectedItemId = null) {
   return result;
 }
 
-export const selectViewData = ({ props }) => {
+export const selectViewData = ({ state, props }) => {
   const resolvedHeader = parseMaybeEncodedJson(props.header) || props.header;
   const resolvedItems = parseMaybeEncodedJson(props.items) || props.items;
   const selectedItemId = props.selectedItemId;
@@ -114,6 +142,7 @@ export const selectViewData = ({ props }) => {
   const items = resolvedItems ? flattenItems(resolvedItems, selectedItemId) : [];
 
   const showHeader = !parseBooleanProp(props.hideHeader);
+  const showCompactTooltip = parseBooleanProp(props.showCompactTooltip);
   const rightBorderWidth = props.bwr || 'xs';
   // Computed values based on mode
   const sidebarWidth = resolveSidebarWidth(props.w, mode);
@@ -126,6 +155,7 @@ export const selectViewData = ({ props }) => {
   const firstLetterSize = mode === 'shrunk-lg' ? 'md' : 'sm';
   const showLabels = mode === 'full';
   const showGroupLabels = mode === 'full';
+  const enableCompactTooltip = showCompactTooltip && !showLabels;
 
   // For items with icons in full mode, we need left alignment within the container
   // but the container itself should use flex-start alignment
@@ -166,7 +196,15 @@ export const selectViewData = ({ props }) => {
     ah,
     listAttrString,
     showHeader,
+    enableCompactTooltip,
     rightBorderWidth,
+    tooltipState: state.tooltipState || {
+      open: false,
+      x: 0,
+      y: 0,
+      place: 'r',
+      content: '',
+    },
   };
 }
 
@@ -188,4 +226,22 @@ export const selectItem = ({ props }, id) => {
 
 export const setState = ({ state }) => {
   // State management if needed
+};
+
+export const showTooltip = ({ state }, payload = {}) => {
+  const { x, y, place = 'r', content = '' } = payload;
+  state.tooltipState = {
+    open: true,
+    x,
+    y,
+    place,
+    content,
+  };
+};
+
+export const hideTooltip = ({ state }) => {
+  state.tooltipState = {
+    ...state.tooltipState,
+    open: false,
+  };
 };

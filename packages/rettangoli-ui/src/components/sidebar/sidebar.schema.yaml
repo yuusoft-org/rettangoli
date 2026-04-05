@@ -7,6 +7,9 @@ propsSchema:
     hideHeader:
       type: boolean
       default: false
+    showCompactTooltip:
+      type: boolean
+      default: false
     w:
       type: string
     bwr:
@@ -38,11 +41,16 @@ propsSchema:
       items:
         type: object
         properties:
+          label:
+            type: string
           title:
             type: string
+            description: Deprecated item text field. Use label instead.
           slug:
             type: string
           type:
+            type: string
+          tooltip:
             type: string
           items:
             type: array
