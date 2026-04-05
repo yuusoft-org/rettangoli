@@ -40,6 +40,7 @@ A lightweight floating hint component for short contextual help.
 | Position X | `x` | number | `0` |
 | Position Y | `y` | number | `0` |
 | Place | `place` | popover place token (`t`, `ts`, `te`, `r`, `rs`, `re`, `b`, `bs`, `be`, `l`, `ls`, `le`) | `t` |
+| Size | `s` | `sm`, `md`, `lg` | `sm` |
 | Content | `content` | string | `""` |
 
 ## Behavior
@@ -49,3 +50,4 @@ A lightweight floating hint component for short contextual help.
 - Controlled by `open`.
 - Uses explicit `x`/`y` positioning.
 - `place` controls orientation relative to anchor point.
+- `s` controls tooltip padding, text scale, and max width presets.

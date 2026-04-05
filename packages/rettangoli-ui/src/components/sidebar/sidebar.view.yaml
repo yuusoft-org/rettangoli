@@ -15,6 +15,10 @@ refs:
     eventListeners:
       click:
         handler: handleItemClick
+      mouseenter:
+        handler: handleItemMouseEnter
+      mouseleave:
+        handler: handleItemMouseLeave
 anchors:
   - - $if header.image && header.image.src:
         - $if header.image.href:
@@ -84,7 +88,7 @@ template:
                     $else:
                       - rtgl-view mt=md h=1 bgc=mu: null
                 $else:
-                  - rtgl-view#item${i} data-item-id=${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=pointer data-testid=${item.testId}:
+                  - rtgl-view#item${i} data-item-id=${item.id} ${item.hrefAttr} h=${itemHeight} av=c ${itemAlignAttr} ph=${itemPadding} w=${itemWidth} h-bgc=${item.itemHoverBgc} br=lg bgc=${item.itemBgc} cur=pointer data-testid=${item.testId} aria-label="${item.title}":
                       - $if item.icon:
                           - $if showLabels:
                               - rtgl-view d=h ah=${itemContentAlign} g=sm:
@@ -98,3 +102,5 @@ template:
                             $else:
                               - rtgl-view wh=${iconSize} br=f bgc=mu av=c ah=c:
                                   - rtgl-text s=${firstLetterSize} c=fg: ${item.title.charAt(0).toUpperCase()}
+      - $if enableCompactTooltip:
+          - rtgl-tooltip#tooltip s="md" ?open=${tooltipState.open} x=${tooltipState.x} y=${tooltipState.y} place=${tooltipState.place} content="${tooltipState.content}": null

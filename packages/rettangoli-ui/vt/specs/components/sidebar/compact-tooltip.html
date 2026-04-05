@@ -1,0 +1,79 @@
+---
+title: "Compact sidebar tooltip on hover"
+description: Verifies compact sidebar items show a right-side tooltip when the feature is enabled.
+viewport:
+  id: desktop
+  width: 900
+  height: 700
+steps:
+  - action: wait
+    ms: 200
+  - action: select
+    testId: compact-sidebar-search
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: '#tooltip-open-indicator[data-open="true"]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: exists
+    selector: '#tooltip-open-indicator[data-open="true"]'
+  - action: assert
+    type: text
+    selector: '#tooltip-open-indicator'
+    value: Find content
+    match: includes
+  - action: screenshot
+---
+<rtgl-view g="lg" h="100vh" w="100vw" p="lg">
+  <div id="tooltip-open-indicator" data-open="false" style="position: fixed; width: 1px; height: 1px; overflow: hidden; opacity: 0;">closed</div>
+  <rtgl-sidebar id="sidebar" mode="shrunk-lg" showCompactTooltip></rtgl-sidebar>
+</rtgl-view>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+
+  sidebar.header = {
+    label: "Navigation",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Logo",
+    },
+  };
+
+  sidebar.items = [
+    { id: "home", title: "Home", icon: "home", testId: "compact-sidebar-home" },
+    { id: "search", title: "Search", icon: "search", tooltip: "Find content", testId: "compact-sidebar-search" },
+    { id: "music", title: "Music", icon: "music", testId: "compact-sidebar-music" },
+    { id: "settings", title: "Settings", icon: "gear", testId: "compact-sidebar-settings" },
+  ];
+  sidebar.render();
+
+  const indicator = document.getElementById('tooltip-open-indicator');
+
+  const connectTooltipObserver = () => {
+    const tooltip = sidebar.shadowRoot?.querySelector('#tooltip');
+    if (!tooltip) {
+      requestAnimationFrame(connectTooltipObserver);
+      return;
+    }
+
+    const syncIndicator = () => {
+      indicator.setAttribute('data-open', tooltip.hasAttribute('open') ? 'true' : 'false');
+      indicator.textContent = tooltip.getAttribute('content') || '';
+    };
+
+    syncIndicator();
+
+    const observer = new MutationObserver(syncIndicator);
+    observer.observe(tooltip, {
+      attributes: true,
+      attributeFilter: ['open', 'content'],
+    });
+  };
+
+  requestAnimationFrame(connectTooltipObserver);
+</script>

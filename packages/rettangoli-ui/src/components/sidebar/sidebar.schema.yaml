@@ -7,6 +7,9 @@ propsSchema:
     hideHeader:
       type: boolean
       default: false
+    showCompactTooltip:
+      type: boolean
+      default: false
     w:
       type: string
     bwr:
@@ -43,6 +46,8 @@ propsSchema:
           slug:
             type: string
           type:
+            type: string
+          tooltip:
             type: string
           items:
             type: array

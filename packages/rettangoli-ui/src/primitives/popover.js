@@ -57,8 +57,8 @@ class RettangoliPopoverElement extends HTMLElement {
           border: 1px solid var(--border);
           border-radius: var(--rtgl-popover-content-border-radius, var(--border-radius-md));
           padding: var(--rtgl-popover-content-padding, var(--spacing-md));
-          min-width: 200px;
-          max-width: 400px;
+          min-width: var(--rtgl-popover-content-min-width, 200px);
+          max-width: var(--rtgl-popover-content-max-width, 400px);
         }
       `);
     }
