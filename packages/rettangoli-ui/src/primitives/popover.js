@@ -2,18 +2,6 @@ import { css } from "../common.js";
 
 const CONTENT_WRAPPER_ATTR = "data-rtgl-popover-content";
 const DEFAULT_CONTENT_STYLE = "min-width: 200px; max-width: 400px; box-sizing: border-box;";
-const CONTENT_ATTRS = [
-  "content-w",
-  "content-h",
-  "content-wh",
-  "content-g",
-  "content-sv",
-  "content-p",
-  "content-ph",
-  "content-pv",
-  "content-bgc",
-  "content-style",
-];
 
 class RettangoliPopoverElement extends HTMLElement {
   static styleSheet = null;
@@ -124,15 +112,6 @@ class RettangoliPopoverElement extends HTMLElement {
     // Store reference for content slot
     this._slotElement = null;
     this._contentWrapper = null;
-    this._isSyncingContent = false;
-
-    this._mutationObserver = new MutationObserver((mutations) => {
-      if (this._isSyncingContent) return;
-
-      if (mutations.some((mutation) => mutation.type === "childList")) {
-        this._syncContentWrapper();
-      }
-    });
 
     // Track if we're open
     this._isOpen = false;
@@ -146,13 +125,24 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["open", "x", "y", "place", "no-overlay", ...CONTENT_ATTRS];
+    return [
+      "open",
+      "x",
+      "y",
+      "place",
+      "no-overlay",
+      "content-w",
+      "content-h",
+      "content-wh",
+      "content-g",
+      "content-sv",
+      "content-pv",
+      "content-bgc",
+      "content-style",
+    ];
   }
 
   connectedCallback() {
-    this._mutationObserver.observe(this, {
-      childList: true,
-    });
     this._syncContentWrapper({ reposition: false });
 
     // Check initial open attribute
@@ -162,8 +152,6 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this._mutationObserver.disconnect();
-
     // Clean up dialog if it's open
     if (this._isOpen && this._dialogElement.open) {
       this._dialogElement.close();
@@ -185,7 +173,7 @@ class RettangoliPopoverElement extends HTMLElement {
     } else if (name === 'no-overlay' && oldValue !== newValue && this._isOpen) {
       this._hide();
       this._show();
-    } else if (CONTENT_ATTRS.includes(name)) {
+    } else if (name.startsWith("content-")) {
       this._syncContentWrapper();
     }
   }
@@ -225,72 +213,52 @@ class RettangoliPopoverElement extends HTMLElement {
 
   _syncContentWrapperAttributes() {
     const wrapper = this._ensureContentWrapper();
-    const width = this.getAttribute("content-w");
-    const height = this.getAttribute("content-h");
-    const size = this.getAttribute("content-wh");
-    const gap = this.getAttribute("content-g");
-    const scrollVertical = this.getAttribute("content-sv");
-    const background = this.getAttribute("content-bgc") || "bg";
+    const attrs = [
+      ["content-w", "w"],
+      ["content-h", "h"],
+      ["content-wh", "wh"],
+      ["content-g", "g"],
+      ["content-sv", "sv"],
+    ];
 
-    if (width === null) wrapper.removeAttribute("w");
-    else wrapper.setAttribute("w", width);
+    for (const [sourceAttr, targetAttr] of attrs) {
+      const value = this.getAttribute(sourceAttr);
 
-    if (height === null) wrapper.removeAttribute("h");
-    else wrapper.setAttribute("h", height);
-
-    if (size === null) wrapper.removeAttribute("wh");
-    else wrapper.setAttribute("wh", size);
-
-    if (gap === null) wrapper.removeAttribute("g");
-    else wrapper.setAttribute("g", gap);
-
-    if (scrollVertical === null) wrapper.removeAttribute("sv");
-    else wrapper.setAttribute("sv", scrollVertical);
-
-    wrapper.setAttribute("bgc", background);
-
-    if (this.hasAttribute("content-p")) {
-      wrapper.setAttribute("p", this.getAttribute("content-p"));
-      wrapper.removeAttribute("ph");
-      wrapper.removeAttribute("pv");
-    } else {
-      wrapper.removeAttribute("p");
-      wrapper.setAttribute("ph", this.getAttribute("content-ph") || "md");
-      wrapper.setAttribute("pv", this.getAttribute("content-pv") || "md");
+      if (value === null) {
+        wrapper.removeAttribute(targetAttr);
+      } else {
+        wrapper.setAttribute(targetAttr, value);
+      }
     }
+
+    wrapper.setAttribute("bgc", this.getAttribute("content-bgc") || "bg");
+    wrapper.setAttribute("ph", "md");
+    wrapper.setAttribute("pv", this.getAttribute("content-pv") || "md");
 
     const contentStyle = this.getAttribute("content-style");
     wrapper.setAttribute("style", contentStyle ? `${DEFAULT_CONTENT_STYLE} ${contentStyle}` : DEFAULT_CONTENT_STYLE);
   }
 
   _syncContentWrapper({ reposition = true } = {}) {
-    if (this._isSyncingContent) return;
+    const wrapper = this._ensureContentWrapper();
+    const nodesToWrap = Array.from(this.childNodes).filter((node) => node !== wrapper && !this._isIgnorableTextNode(node));
 
-    this._isSyncingContent = true;
-
-    try {
-      const wrapper = this._ensureContentWrapper();
-      const nodesToWrap = Array.from(this.childNodes).filter((node) => node !== wrapper && !this._isIgnorableTextNode(node));
-
-      for (const node of nodesToWrap) {
-        if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute("slot") === "content") {
-          node.removeAttribute("slot");
-        }
-
-        wrapper.appendChild(node);
+    for (const node of nodesToWrap) {
+      if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute("slot") === "content") {
+        node.removeAttribute("slot");
       }
 
-      this._syncContentWrapperAttributes();
+      wrapper.appendChild(node);
+    }
 
-      const hasContent = Array.from(wrapper.childNodes).some((node) => !this._isIgnorableTextNode(node));
+    this._syncContentWrapperAttributes();
 
-      if (hasContent) {
-        wrapper.setAttribute("slot", "content");
-      } else {
-        wrapper.removeAttribute("slot");
-      }
-    } finally {
-      this._isSyncingContent = false;
+    const hasContent = Array.from(wrapper.childNodes).some((node) => !this._isIgnorableTextNode(node));
+
+    if (hasContent) {
+      wrapper.setAttribute("slot", "content");
+    } else {
+      wrapper.removeAttribute("slot");
     }
 
     if (reposition && this._isOpen) {
@@ -359,6 +327,7 @@ class RettangoliPopoverElement extends HTMLElement {
     // Calculate position based on place
     // We'll position after the popover is rendered to get its dimensions
     requestAnimationFrame(() => {
+      this._syncContentWrapper({ reposition: false });
       const rect = this._popoverContainer.getBoundingClientRect();
       const { left, top } = this._calculatePosition(x, y, rect.width, rect.height, place);
 
