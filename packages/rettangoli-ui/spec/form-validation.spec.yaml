@@ -558,6 +558,13 @@ in:
 out:
   value: null
 ---
+case: segmented-control defaults to null
+in:
+  - field:
+      type: segmented-control
+out:
+  value: null
+---
 case: checkbox defaults to false
 in:
   - field:

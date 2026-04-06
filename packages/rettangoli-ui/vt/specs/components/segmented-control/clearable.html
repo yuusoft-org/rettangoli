@@ -1,0 +1,45 @@
+---
+title: Segmented Control - Clearable Behavior
+description: Verifies clicking the active segment clears by default and stays selected when `no-clear` is enabled.
+specs:
+  - The clearable control deselects when the active segment is clicked.
+  - The `no-clear` control keeps the active segment selected after the same interaction.
+  - Post-click visuals distinguish the two behaviors in one frame.
+skipInitialScreenshot: true
+steps:
+  - action: customEvent
+    name: vt:toggle-segmented-controls
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+<rtgl-view g="lg" p="lg" w="520">
+  <rtgl-segmented-control id="clearable" w="f"></rtgl-segmented-control>
+  <rtgl-segmented-control id="sticky" w="f" no-clear></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  const options = [
+    { value: 'left', label: 'Left', testId: 'left-option' },
+    { value: 'center', label: 'Center', testId: 'center-option' },
+    { value: 'right', label: 'Right', testId: 'right-option' },
+  ];
+
+  const clearable = document.getElementById('clearable');
+  clearable.selectedValue = 'center';
+  clearable.options = options;
+  clearable.render();
+
+  const sticky = document.getElementById('sticky');
+  sticky.selectedValue = 'center';
+  sticky.options = options;
+  sticky.render();
+
+  window.addEventListener('vt:toggle-segmented-controls', () => {
+    const clearableSelected = clearable.shadowRoot?.querySelector('#option1');
+    const stickySelected = sticky.shadowRoot?.querySelector('#option1');
+
+    clearableSelected?.click();
+    stickySelected?.click();
+  });
+</script>

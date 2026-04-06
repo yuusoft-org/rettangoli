@@ -1,0 +1,30 @@
+---
+title: Segmented Control - Add Option
+description: Verifies the optional add-action segment renders inline with standard options.
+specs:
+  - Add option appears as a trailing segment in the same bordered group.
+  - Default and custom add labels both render.
+  - Existing options retain equal-width segmented layout beside the add action.
+---
+<rtgl-view g="lg" p="lg" w="520">
+  <rtgl-segmented-control id="control-default" w="f"></rtgl-segmented-control>
+  <rtgl-segmented-control id="control-custom" w="f"></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  const baseOptions = [
+    { value: 'a', label: 'Alpha' },
+    { value: 'b', label: 'Beta' },
+    { value: 'c', label: 'Gamma' },
+  ];
+
+  const controlDefault = document.getElementById('control-default');
+  controlDefault.options = baseOptions;
+  controlDefault.addOption = {};
+  controlDefault.render();
+
+  const controlCustom = document.getElementById('control-custom');
+  controlCustom.options = baseOptions;
+  controlCustom.addOption = { label: 'Add tag' };
+  controlCustom.render();
+</script>

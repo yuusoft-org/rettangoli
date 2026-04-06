@@ -1,0 +1,33 @@
+---
+title: Segmented Control - Undefined Value
+description: Verifies `undefined` can be a real option value without being confused with the empty state.
+specs:
+  - "An option with `value: undefined` can be selected by interaction."
+  - "Selecting the undefined-valued segment applies the active styling to that segment."
+  - "Empty state and undefined-valued options are treated distinctly."
+skipInitialScreenshot: true
+steps:
+  - action: customEvent
+    name: vt:select-undefined-segment
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+<rtgl-view g="lg" p="lg" w="420">
+  <rtgl-segmented-control id="control" w="f"></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  const control = document.getElementById('control');
+  control.options = [
+    { value: undefined, label: 'None' },
+    { value: 'draft', label: 'Draft' },
+    { value: 'published', label: 'Published' },
+  ];
+  control.render();
+
+  window.addEventListener('vt:select-undefined-segment', () => {
+    const target = control.shadowRoot?.querySelector('#option0');
+    target?.click();
+  });
+</script>
