@@ -133,8 +133,9 @@ viewport:
 
   const tagFormSelect = () => {
     const countrySelect = form.shadowRoot?.querySelector('rtgl-select[data-field-name="country"]');
-    if (countrySelect) {
-      countrySelect.setAttribute('data-testid', 'country-select-trigger');
+    const countryTrigger = countrySelect?.shadowRoot?.querySelector('[data-testid="select-button"]');
+    if (countryTrigger) {
+      countryTrigger.setAttribute('data-testid', 'country-select-trigger');
       return;
     }
     setTimeout(tagFormSelect, 0);
