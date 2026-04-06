@@ -1,0 +1,52 @@
+---
+title: "With Segmented Control"
+description: Verifies embedded form segmented controls preserve seeded defaults and inline grouped layout.
+specs:
+  - A form field can render `segmented-control` options inline.
+  - Default values preselect the matching segment.
+  - Secondary segmented fields can render with no initial selection.
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '360');
+
+  form.defaultValues = {
+    role: 'viewer',
+  };
+
+  form.form = {
+    title: 'Access Settings',
+    description: 'Configure inline option groups for this user.',
+    fields: [{
+      name: 'role',
+      type: 'segmented-control',
+      label: 'Role',
+      description: 'Choose the default role.',
+      clearable: false,
+      options: [
+        { label: 'Admin', value: 'admin' },
+        { label: 'Editor', value: 'editor' },
+        { label: 'Viewer', value: 'viewer' },
+      ],
+    }, {
+      name: 'priority',
+      type: 'segmented-control',
+      label: 'Priority',
+      description: 'Optional triage level.',
+      options: [
+        { label: 'Low', value: 'low' },
+        { label: 'Medium', value: 'medium' },
+        { label: 'High', value: 'high' },
+      ],
+    }],
+    actions: {
+      buttons: [],
+    },
+  };
+
+  document.getElementById('container').appendChild(form);
+</script>

@@ -1,0 +1,22 @@
+---
+title: Segmented Control - Basic
+description: Verifies a grouped single-choice control renders connected segments with an active selection.
+specs:
+  - Three options render in one horizontal segmented row.
+  - The selected option uses active background and foreground styling.
+  - Shared outer and inner borders remain continuous.
+---
+<rtgl-view g="lg" p="lg" w="400">
+  <rtgl-segmented-control id="control" w="f"></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  const control = document.getElementById('control');
+  control.selectedValue = 'editor';
+  control.options = [
+    { value: 'admin', label: 'Admin' },
+    { value: 'editor', label: 'Editor' },
+    { value: 'viewer', label: 'Viewer' },
+  ];
+  control.render();
+</script>

@@ -1,0 +1,30 @@
+---
+title: Segmented Control - Disabled
+description: Verifies disabled segmented controls preserve selection styling while preventing interaction affordances.
+specs:
+  - Enabled and disabled controls share the same grouped layout.
+  - The disabled control keeps its selected value visible.
+  - Disabled segments use non-interactive cursor styling.
+---
+<rtgl-view g="lg" p="lg" w="400">
+  <rtgl-segmented-control id="enabled" w="f"></rtgl-segmented-control>
+  <rtgl-segmented-control id="disabled" w="f" disabled></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  const options = [
+    { value: 'low', label: 'Low' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'high', label: 'High' },
+  ];
+
+  const enabled = document.getElementById('enabled');
+  enabled.selectedValue = 'medium';
+  enabled.options = options;
+  enabled.render();
+
+  const disabled = document.getElementById('disabled');
+  disabled.selectedValue = 'medium';
+  disabled.options = options;
+  disabled.render();
+</script>

@@ -402,6 +402,7 @@ export const getDefaultValue = (field) => {
     case "input-number":
       return null;
     case "select":
+    case "segmented-control":
       return null;
     case "checkbox":
       return false;
@@ -506,7 +507,7 @@ export const selectViewData = ({ state, props }) => {
       field._inputType = field.inputType || "text";
     }
 
-    if (field.type === "select") {
+    if (field.type === "select" || field.type === "segmented-control") {
       const val = get(state.formValues, field.name);
       field._selectedValue = val !== undefined ? val : null;
       field.placeholder = field.placeholder || "";

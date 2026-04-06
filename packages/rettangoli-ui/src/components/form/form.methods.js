@@ -58,7 +58,7 @@ const syncFieldValueAttribute = ({ ref, fieldType, value, forceRefresh = false }
   ref.setAttribute("value", String(value));
 };
 
-const syncSelectFieldState = ({ ref, value }) => {
+const syncChoiceFieldState = ({ ref, value }) => {
   if (!ref) return;
   if (!ref?.store?.updateSelectedValue) return;
   ref.store.updateSelectedValue({ value });
@@ -89,16 +89,18 @@ const resolveRenderRoot = (instance) => {
   return instance?.shadow;
 };
 
-const syncSelectRefsFromValues = ({ root, values = {} }) => {
+const syncChoiceRefsFromValues = ({ root, values = {} }) => {
   if (!root || typeof root.querySelectorAll !== "function") return;
 
-  const selectRefs = root.querySelectorAll("rtgl-select[data-field-name]");
-  selectRefs.forEach((ref) => {
+  const choiceRefs = root.querySelectorAll(
+    "rtgl-select[data-field-name], rtgl-segmented-control[data-field-name]",
+  );
+  choiceRefs.forEach((ref) => {
     const fieldName = ref.dataset?.fieldName;
     if (!fieldName) return;
 
     const value = get(values, fieldName);
-    syncSelectFieldState({ ref, value });
+    syncChoiceFieldState({ ref, value });
   });
 };
 
@@ -141,7 +143,7 @@ export const setValues = function (payload = {}) {
       });
 
       if (typeof ref?.tagName === "string" && ref.tagName.toUpperCase() === "RTGL-SELECT") {
-        syncSelectFieldState({ ref, value });
+        syncChoiceFieldState({ ref, value });
       }
 
       if (field.type === "checkbox") {
@@ -155,7 +157,7 @@ export const setValues = function (payload = {}) {
   this.render();
   const syncSelects = () => {
     const nextState = this.store.getState();
-    syncSelectRefsFromValues({
+    syncChoiceRefsFromValues({
       root: resolveRenderRoot(this),
       values: nextState.formValues,
     });

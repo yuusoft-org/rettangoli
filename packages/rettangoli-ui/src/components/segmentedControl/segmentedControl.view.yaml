@@ -1,0 +1,29 @@
+refs:
+  option*:
+    eventListeners:
+      click:
+        handler: handleOptionClick
+      keydown:
+        handler: handleOptionKeyDown
+      mouseenter:
+        handler: handleOptionMouseEnter
+      mouseleave:
+        handler: handleOptionMouseLeave
+  optionAdd:
+    eventListeners:
+      click:
+        handler: handleAddOptionClick
+      keydown:
+        handler: handleAddOptionKeyDown
+      mouseenter:
+        handler: handleAddOptionMouseEnter
+      mouseleave:
+        handler: handleAddOptionMouseLeave
+template:
+  - 'rtgl-view d=h bw=xs bc=bo br=md bgc=bg overflow=hidden ${containerAttrString} role="group" aria-label=${ariaLabel}':
+      - $for option, i in options:
+          - 'rtgl-view#option${i} d=h av=c ah=c w=1fg ph=lg pv=md cur=${option.cursor} bgc=${option.bgc} bwl=${option.borderLeftWidth} bc=bo data-testid=${option.testId} role="button" tabindex=${option.tabIndex} aria-pressed=${option.isSelected} aria-disabled=${isDisabled}':
+              - rtgl-text s=sm c=${option.textColor} ta=c: ${option.label}
+      - $if showAddOption:
+          - 'rtgl-view#optionAdd d=h av=c ah=c w=1fg ph=lg pv=md cur=pointer bgc=${addOptionBgc} bwl=${addOptionBorderLeftWidth} bc=bo data-testid="segmented-control-add-option" role="button" tabindex=0':
+              - rtgl-text s=sm c=ac ta=c: ${addOptionLabel}

@@ -1,0 +1,22 @@
+---
+title: Segmented Control - Object Value
+description: Verifies selected object values resolve by deep equality rather than reference identity.
+specs:
+  - Object-valued options render as regular segments.
+  - A matching object literal preselects the correct segment.
+  - Selection resolution does not require referential equality.
+---
+<rtgl-view g="lg" p="lg" w="420">
+  <rtgl-segmented-control id="control" w="f"></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  const control = document.getElementById('control');
+  control.selectedValue = { x: 0.5, y: 0.5 };
+  control.options = [
+    { value: { x: 0, y: 0 }, label: 'Top Left' },
+    { value: { x: 0.5, y: 0.5 }, label: 'Center' },
+    { value: { x: 1, y: 1 }, label: 'Bottom Right' },
+  ];
+  control.render();
+</script>
