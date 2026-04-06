@@ -15,7 +15,7 @@ styles:
     color: inherit
 template:
   - rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place}:
-      - rtgl-view w=${w} h=${h} sv g=xs slot=content bgc=mu br=md:
+      - rtgl-view w=${w} h=${h} sv g=xs slot=content bgc=bg pv=sm:
           - $for item, i in items:
               - $if item.isLabel:
                   - rtgl-view w=f ph=lg pv=md:

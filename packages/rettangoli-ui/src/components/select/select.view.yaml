@@ -3,6 +3,8 @@ refs:
     eventListeners:
       click:
         handler: handleButtonClick
+      keydown:
+        handler: handleButtonKeyDown
   clearButton:
     eventListeners:
       click:
@@ -28,14 +30,14 @@ refs:
       mouseleave:
         handler: handleAddOptionMouseLeave
 template:
-  - rtgl-button#selectButton v=ol ${containerAttrString} ?disabled=${isDisabled} data-testid="select-button":
+  - 'rtgl-view#selectButton style="display: inline-flex;" d=h av=c h=32 ph=md bw=xs bc=bo h-bc=${selectButtonHoverBorderColor} br=md bgc=bg cur=${selectButtonCursor} ${containerAttrString} data-testid="select-button" role="button" tabindex=${selectButtonTabIndex} aria-disabled=${isDisabled}':
       - rtgl-view d=h av=c ah=s w=f:
           - rtgl-text w=1fg ta=s c=${selectedLabelColor} ellipsis: ${selectedLabel}
           - $if showClear:
               - rtgl-svg#clearButton ml=md svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
           - rtgl-svg ml=md svg=chevronDown wh=16 c=mu-fg: null
-  - 'rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs style="--rtgl-popover-content-padding: var(--spacing-sm) 0"':
-      - rtgl-view wh=300 g=xs slot=content bgc=mu sv=true:
+  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs:
+      - rtgl-view wh=300 g=xs slot=content bgc=bg sv=true pv=sm:
           - $for option, i in options:
               - rtgl-view#option${i} w=f ph=lg pv=md cur=pointer bgc=${option.bgc} data-testid=${option.testId}:
                   - rtgl-text s=sm: ${option.label}

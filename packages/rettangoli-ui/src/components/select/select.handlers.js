@@ -41,10 +41,7 @@ export const handleButtonClick = (deps, payload) => {
   event.stopPropagation();
 
   const button = refs.selectButton;
-
-  // Get first child's bounding rectangle (since button has display: contents)
-  const firstChild = button.firstElementChild;
-  const rect = firstChild ? firstChild.getBoundingClientRect() : button.getBoundingClientRect();
+  const rect = button.getBoundingClientRect();
 
   // Find the index of the currently selected option
   const storeSelectedValue = store.selectSelectedValue();
@@ -63,6 +60,16 @@ export const handleButtonClick = (deps, payload) => {
     selectedIndex
   })
   render();
+}
+
+export const handleButtonKeyDown = (deps, payload) => {
+  const event = payload._event;
+  if (event.key !== "Enter" && event.key !== " ") {
+    return;
+  }
+
+  event.preventDefault();
+  handleButtonClick(deps, payload);
 }
 
 export const handleClickOptionsPopoverOverlay = (deps) => {

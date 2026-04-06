@@ -148,6 +148,10 @@ class RettangoliButtonElement extends HTMLElement {
           background-color: var(--accent);
         }
 
+        :host([v="ol"]) .surface:active {
+          background-color: var(--accent);
+        }
+
         :host([v="gh"]) .surface:hover {
           background-color: var(--accent);
         }
