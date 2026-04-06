@@ -2,6 +2,18 @@ import { css } from "../common.js";
 
 const CONTENT_WRAPPER_ATTR = "data-rtgl-popover-content";
 const DEFAULT_CONTENT_STYLE = "min-width: 200px; max-width: 400px; box-sizing: border-box;";
+const CONTENT_ATTRS = [
+  "content-w",
+  "content-h",
+  "content-wh",
+  "content-g",
+  "content-sv",
+  "content-p",
+  "content-ph",
+  "content-pv",
+  "content-bgc",
+  "content-style",
+];
 
 class RettangoliPopoverElement extends HTMLElement {
   static styleSheet = null;
@@ -117,12 +129,7 @@ class RettangoliPopoverElement extends HTMLElement {
     this._mutationObserver = new MutationObserver((mutations) => {
       if (this._isSyncingContent) return;
 
-      const shouldSync = mutations.some((mutation) => {
-        if (mutation.type === "childList") return true;
-        return mutation.type === "attributes" && mutation.attributeName?.startsWith("content-");
-      });
-
-      if (shouldSync) {
+      if (mutations.some((mutation) => mutation.type === "childList")) {
         this._syncContentWrapper();
       }
     });
@@ -139,13 +146,12 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["open", "x", "y", "place", "no-overlay"];
+    return ["open", "x", "y", "place", "no-overlay", ...CONTENT_ATTRS];
   }
 
   connectedCallback() {
     this._mutationObserver.observe(this, {
       childList: true,
-      attributes: true,
     });
     this._syncContentWrapper({ reposition: false });
 
@@ -179,6 +185,8 @@ class RettangoliPopoverElement extends HTMLElement {
     } else if (name === 'no-overlay' && oldValue !== newValue && this._isOpen) {
       this._hide();
       this._show();
+    } else if (CONTENT_ATTRS.includes(name)) {
+      this._syncContentWrapper();
     }
   }
 
@@ -199,6 +207,13 @@ class RettangoliPopoverElement extends HTMLElement {
       this._contentWrapper = document.createElement("rtgl-view");
       this._contentWrapper.setAttribute(CONTENT_WRAPPER_ATTR, "");
       this._contentWrapper.setAttribute("part", "content");
+      this._contentWrapper.setAttribute("bgc", "bg");
+      this._contentWrapper.setAttribute("bw", "xs");
+      this._contentWrapper.setAttribute("bc", "bo");
+      this._contentWrapper.setAttribute("br", "md");
+      this._contentWrapper.setAttribute("ph", "md");
+      this._contentWrapper.setAttribute("pv", "md");
+      this._contentWrapper.setAttribute("style", DEFAULT_CONTENT_STYLE);
     }
 
     if (this._contentWrapper.parentNode !== this) {
@@ -208,38 +223,40 @@ class RettangoliPopoverElement extends HTMLElement {
     return this._contentWrapper;
   }
 
-  _setContentWrapperAttr(wrapper, name, value, fallback = null) {
-    const resolvedValue = value ?? fallback;
-
-    if (resolvedValue === null) {
-      wrapper.removeAttribute(name);
-      return;
-    }
-
-    wrapper.setAttribute(name, resolvedValue);
-  }
-
   _syncContentWrapperAttributes() {
     const wrapper = this._ensureContentWrapper();
+    const width = this.getAttribute("content-w");
+    const height = this.getAttribute("content-h");
+    const size = this.getAttribute("content-wh");
+    const gap = this.getAttribute("content-g");
+    const scrollVertical = this.getAttribute("content-sv");
+    const background = this.getAttribute("content-bgc") || "bg";
 
-    this._setContentWrapperAttr(wrapper, "w", this.getAttribute("content-w"));
-    this._setContentWrapperAttr(wrapper, "h", this.getAttribute("content-h"));
-    this._setContentWrapperAttr(wrapper, "wh", this.getAttribute("content-wh"));
-    this._setContentWrapperAttr(wrapper, "g", this.getAttribute("content-g"));
-    this._setContentWrapperAttr(wrapper, "sv", this.getAttribute("content-sv"));
-    this._setContentWrapperAttr(wrapper, "bgc", this.getAttribute("content-bgc"), "bg");
-    this._setContentWrapperAttr(wrapper, "bw", this.getAttribute("content-bw"), "xs");
-    this._setContentWrapperAttr(wrapper, "bc", this.getAttribute("content-bc"), "bo");
-    this._setContentWrapperAttr(wrapper, "br", this.getAttribute("content-br"), "md");
+    if (width === null) wrapper.removeAttribute("w");
+    else wrapper.setAttribute("w", width);
+
+    if (height === null) wrapper.removeAttribute("h");
+    else wrapper.setAttribute("h", height);
+
+    if (size === null) wrapper.removeAttribute("wh");
+    else wrapper.setAttribute("wh", size);
+
+    if (gap === null) wrapper.removeAttribute("g");
+    else wrapper.setAttribute("g", gap);
+
+    if (scrollVertical === null) wrapper.removeAttribute("sv");
+    else wrapper.setAttribute("sv", scrollVertical);
+
+    wrapper.setAttribute("bgc", background);
 
     if (this.hasAttribute("content-p")) {
-      this._setContentWrapperAttr(wrapper, "p", this.getAttribute("content-p"));
+      wrapper.setAttribute("p", this.getAttribute("content-p"));
       wrapper.removeAttribute("ph");
       wrapper.removeAttribute("pv");
     } else {
       wrapper.removeAttribute("p");
-      this._setContentWrapperAttr(wrapper, "ph", this.getAttribute("content-ph"), "md");
-      this._setContentWrapperAttr(wrapper, "pv", this.getAttribute("content-pv"), "md");
+      wrapper.setAttribute("ph", this.getAttribute("content-ph") || "md");
+      wrapper.setAttribute("pv", this.getAttribute("content-pv") || "md");
     }
 
     const contentStyle = this.getAttribute("content-style");
