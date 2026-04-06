@@ -1,5 +1,8 @@
 import { css } from "../common.js";
 
+const CONTENT_WRAPPER_ATTR = "data-rtgl-popover-content";
+const DEFAULT_CONTENT_STYLE = "min-width: 200px; max-width: 400px; box-sizing: border-box;";
+
 class RettangoliPopoverElement extends HTMLElement {
   static styleSheet = null;
 
@@ -55,17 +58,6 @@ class RettangoliPopoverElement extends HTMLElement {
         slot[name="content"] {
           display: contents;
         }
-
-        ::slotted([slot="content"]) {
-          display: block;
-          box-sizing: border-box;
-          background-color: var(--background);
-          border: 1px solid var(--border);
-          border-radius: var(--border-radius-md);
-          padding: var(--spacing-md);
-          min-width: 200px;
-          max-width: 400px;
-        }
       `);
     }
   }
@@ -119,6 +111,7 @@ class RettangoliPopoverElement extends HTMLElement {
 
     // Store reference for content slot
     this._slotElement = null;
+    this._contentWrapper = null;
 
     // Track if we're open
     this._isOpen = false;
@@ -132,10 +125,26 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["open", "x", "y", "place", "no-overlay"];
+    return [
+      "open",
+      "x",
+      "y",
+      "place",
+      "no-overlay",
+      "content-w",
+      "content-h",
+      "content-wh",
+      "content-g",
+      "content-sv",
+      "content-pv",
+      "content-bgc",
+      "content-style",
+    ];
   }
 
   connectedCallback() {
+    this._syncContentWrapper({ reposition: false });
+
     // Check initial open attribute
     if (this.hasAttribute('open')) {
       this._show();
@@ -164,11 +173,103 @@ class RettangoliPopoverElement extends HTMLElement {
     } else if (name === 'no-overlay' && oldValue !== newValue && this._isOpen) {
       this._hide();
       this._show();
+    } else if (name.startsWith("content-")) {
+      this._syncContentWrapper();
+    }
+  }
+
+  _isIgnorableTextNode(node) {
+    return node?.nodeType === Node.TEXT_NODE && node.textContent?.trim() === "";
+  }
+
+  _ensureContentWrapper() {
+    if (this._contentWrapper?.parentNode === this) {
+      return this._contentWrapper;
+    }
+
+    const existingWrapper = Array.from(this.children).find((child) => child.hasAttribute(CONTENT_WRAPPER_ATTR));
+
+    if (existingWrapper) {
+      this._contentWrapper = existingWrapper;
+    } else {
+      this._contentWrapper = document.createElement("rtgl-view");
+      this._contentWrapper.setAttribute(CONTENT_WRAPPER_ATTR, "");
+      this._contentWrapper.setAttribute("part", "content");
+      this._contentWrapper.setAttribute("bgc", "bg");
+      this._contentWrapper.setAttribute("bw", "xs");
+      this._contentWrapper.setAttribute("bc", "bo");
+      this._contentWrapper.setAttribute("br", "md");
+      this._contentWrapper.setAttribute("ph", "md");
+      this._contentWrapper.setAttribute("pv", "md");
+      this._contentWrapper.setAttribute("style", DEFAULT_CONTENT_STYLE);
+    }
+
+    if (this._contentWrapper.parentNode !== this) {
+      this.appendChild(this._contentWrapper);
+    }
+
+    return this._contentWrapper;
+  }
+
+  _syncContentWrapperAttributes() {
+    const wrapper = this._ensureContentWrapper();
+    const attrs = [
+      ["content-w", "w"],
+      ["content-h", "h"],
+      ["content-wh", "wh"],
+      ["content-g", "g"],
+      ["content-sv", "sv"],
+    ];
+
+    for (const [sourceAttr, targetAttr] of attrs) {
+      const value = this.getAttribute(sourceAttr);
+
+      if (value === null) {
+        wrapper.removeAttribute(targetAttr);
+      } else {
+        wrapper.setAttribute(targetAttr, value);
+      }
+    }
+
+    wrapper.setAttribute("bgc", this.getAttribute("content-bgc") || "bg");
+    wrapper.setAttribute("ph", "md");
+    wrapper.setAttribute("pv", this.getAttribute("content-pv") || "md");
+
+    const contentStyle = this.getAttribute("content-style");
+    wrapper.setAttribute("style", contentStyle ? `${DEFAULT_CONTENT_STYLE} ${contentStyle}` : DEFAULT_CONTENT_STYLE);
+  }
+
+  _syncContentWrapper({ reposition = true } = {}) {
+    const wrapper = this._ensureContentWrapper();
+    const nodesToWrap = Array.from(this.childNodes).filter((node) => node !== wrapper && !this._isIgnorableTextNode(node));
+
+    for (const node of nodesToWrap) {
+      if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute("slot") === "content") {
+        node.removeAttribute("slot");
+      }
+
+      wrapper.appendChild(node);
+    }
+
+    this._syncContentWrapperAttributes();
+
+    const hasContent = Array.from(wrapper.childNodes).some((node) => !this._isIgnorableTextNode(node));
+
+    if (hasContent) {
+      wrapper.setAttribute("slot", "content");
+    } else {
+      wrapper.removeAttribute("slot");
+    }
+
+    if (reposition && this._isOpen) {
+      this._updatePosition();
     }
   }
 
   _show() {
     if (!this._isOpen) {
+      this._syncContentWrapper({ reposition: false });
+
       // Create and append slot for content only if it doesn't exist
       if (!this._slotElement) {
         this._slotElement = document.createElement('slot');
@@ -226,6 +327,7 @@ class RettangoliPopoverElement extends HTMLElement {
     // Calculate position based on place
     // We'll position after the popover is rendered to get its dimensions
     requestAnimationFrame(() => {
+      this._syncContentWrapper({ reposition: false });
       const rect = this._popoverContainer.getBoundingClientRect();
       const { left, top } = this._calculatePosition(x, y, rect.width, rect.height, place);
 
@@ -312,6 +414,10 @@ class RettangoliPopoverElement extends HTMLElement {
   // Expose popover container for advanced usage
   get popover() {
     return this._popoverContainer;
+  }
+
+  get content() {
+    return this._contentWrapper;
   }
 }
 

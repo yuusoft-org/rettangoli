@@ -22,12 +22,10 @@ steps:
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-button id="button" data-testid="open-popover">Open Popover</rtgl-button>
-  <rtgl-popover id="popover">
-    <rtgl-view slot="content" g="md">
-      <rtgl-text s="lg">Popover Content</rtgl-text>
-      <rtgl-text c="mu">This is a basic popover example.</rtgl-text>
-      <rtgl-button id="close-button" variant="secondary">Close</rtgl-button>
-    </rtgl-view>
+  <rtgl-popover id="popover" content-g="md">
+    <rtgl-text s="lg">Popover Content</rtgl-text>
+    <rtgl-text c="mu">This is a basic popover example.</rtgl-text>
+    <rtgl-button id="close-button" variant="secondary">Close</rtgl-button>
   </rtgl-popover>
 </rtgl-view>
 
