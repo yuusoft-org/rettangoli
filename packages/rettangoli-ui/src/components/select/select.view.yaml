@@ -36,12 +36,11 @@ template:
           - $if showClear:
               - rtgl-svg#clearButton ml=md svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
           - rtgl-svg ml=md svg=chevronDown wh=16 c=mu-fg: null
-  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs:
-      - rtgl-view wh=300 g=xs slot=content bgc=bg sv=true pv=sm:
-          - $for option, i in options:
-              - rtgl-view#option${i} w=f ph=lg pv=md cur=pointer bgc=${option.bgc} data-testid=${option.testId}:
-                  - rtgl-text s=sm: ${option.label}
-          - $if showAddOption:
-              - rtgl-view w=f bw=xs bc=mu bwt=sm: null
-              - rtgl-view#optionAdd w=f ph=lg pv=md cur=pointer bgc=${addOptionBgc} data-testid="select-add-option":
-                  - rtgl-text s=sm c=ac: ${addOptionLabel}
+  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs content-wh=300 content-g=xs content-sv=true content-pv=sm:
+      - $for option, i in options:
+          - rtgl-view#option${i} w=f ph=lg pv=md cur=pointer bgc=${option.bgc} data-testid=${option.testId}:
+              - rtgl-text s=sm: ${option.label}
+      - $if showAddOption:
+          - rtgl-view w=f bw=xs bc=mu bwt=sm: null
+          - rtgl-view#optionAdd w=f ph=lg pv=md cur=pointer bgc=${addOptionBgc} data-testid="select-add-option":
+              - rtgl-text s=sm c=ac: ${addOptionLabel}

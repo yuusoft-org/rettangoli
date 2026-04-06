@@ -14,25 +14,24 @@ styles:
     text-decoration: none
     color: inherit
 template:
-  - rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place}:
-      - rtgl-view w=${w} h=${h} sv=true g=xs slot=content bgc=bg pv=sm:
-          - $for item, i in items:
-              - $if item.isLabel:
-                  - rtgl-view w=f p=md:
-                      - rtgl-text s=sm c=mu-fg: ${item.label}
-                $elif item.isItem && item.isDisabled:
-                  - rtgl-view w=f p=md bgc=${item.bgc}:
+  - rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place} content-w=${w} content-h=${h} content-sv=true content-g=xs content-pv=sm:
+      - $for item, i in items:
+          - $if item.isLabel:
+              - rtgl-view w=f p=md:
+                  - rtgl-text s=sm c=mu-fg: ${item.label}
+            $elif item.isItem && item.isDisabled:
+              - rtgl-view w=f p=md bgc=${item.bgc}:
+                  - rtgl-text s=sm c=${item.c}: ${item.label}
+            $elif item.isItem && item.hasHref && item.linkExtraAttrs:
+              - a#option${i} href=${item.href} ${item.linkExtraAttrs} data-index=${item.index} data-testid=${item.testId}:
+                  - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
                       - rtgl-text s=sm c=${item.c}: ${item.label}
-                $elif item.isItem && item.hasHref && item.linkExtraAttrs:
-                  - a#option${i} href=${item.href} ${item.linkExtraAttrs} data-index=${item.index} data-testid=${item.testId}:
-                      - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
-                          - rtgl-text s=sm c=${item.c}: ${item.label}
-                $elif item.isItem && item.hasHref:
-                  - a#option${i} href=${item.href} data-index=${item.index} data-testid=${item.testId}:
-                      - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
-                          - rtgl-text s=sm c=${item.c}: ${item.label}
-                $elif item.isItem:
-                  - rtgl-view#option${i} w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc} data-index=${item.index} data-testid=${item.testId}:
+            $elif item.isItem && item.hasHref:
+              - a#option${i} href=${item.href} data-index=${item.index} data-testid=${item.testId}:
+                  - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
                       - rtgl-text s=sm c=${item.c}: ${item.label}
-                $elif item.isSeparator:
-                  - rtgl-view w=f h=1 bgc=mu mv=sm: null
+            $elif item.isItem:
+              - rtgl-view#option${i} w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc} data-index=${item.index} data-testid=${item.testId}:
+                  - rtgl-text s=sm c=${item.c}: ${item.label}
+            $elif item.isSeparator:
+              - rtgl-view w=f h=1 bgc=mu mv=sm: null

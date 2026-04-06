@@ -1,5 +1,8 @@
 import { css } from "../common.js";
 
+const CONTENT_WRAPPER_ATTR = "data-rtgl-popover-content";
+const DEFAULT_CONTENT_STYLE = "min-width: 200px; max-width: 400px; box-sizing: border-box;";
+
 class RettangoliPopoverElement extends HTMLElement {
   static styleSheet = null;
 
@@ -55,17 +58,6 @@ class RettangoliPopoverElement extends HTMLElement {
         slot[name="content"] {
           display: contents;
         }
-
-        ::slotted([slot="content"]) {
-          display: block;
-          box-sizing: border-box;
-          background-color: var(--background);
-          border: 1px solid var(--border);
-          border-radius: var(--border-radius-md);
-          padding: var(--spacing-md);
-          min-width: 200px;
-          max-width: 400px;
-        }
       `);
     }
   }
@@ -119,6 +111,21 @@ class RettangoliPopoverElement extends HTMLElement {
 
     // Store reference for content slot
     this._slotElement = null;
+    this._contentWrapper = null;
+    this._isSyncingContent = false;
+
+    this._mutationObserver = new MutationObserver((mutations) => {
+      if (this._isSyncingContent) return;
+
+      const shouldSync = mutations.some((mutation) => {
+        if (mutation.type === "childList") return true;
+        return mutation.type === "attributes" && mutation.attributeName?.startsWith("content-");
+      });
+
+      if (shouldSync) {
+        this._syncContentWrapper();
+      }
+    });
 
     // Track if we're open
     this._isOpen = false;
@@ -136,6 +143,12 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this._mutationObserver.observe(this, {
+      childList: true,
+      attributes: true,
+    });
+    this._syncContentWrapper({ reposition: false });
+
     // Check initial open attribute
     if (this.hasAttribute('open')) {
       this._show();
@@ -143,6 +156,8 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._mutationObserver.disconnect();
+
     // Clean up dialog if it's open
     if (this._isOpen && this._dialogElement.open) {
       this._dialogElement.close();
@@ -167,8 +182,109 @@ class RettangoliPopoverElement extends HTMLElement {
     }
   }
 
+  _isIgnorableTextNode(node) {
+    return node?.nodeType === Node.TEXT_NODE && node.textContent?.trim() === "";
+  }
+
+  _ensureContentWrapper() {
+    if (this._contentWrapper?.parentNode === this) {
+      return this._contentWrapper;
+    }
+
+    const existingWrapper = Array.from(this.children).find((child) => child.hasAttribute(CONTENT_WRAPPER_ATTR));
+
+    if (existingWrapper) {
+      this._contentWrapper = existingWrapper;
+    } else {
+      this._contentWrapper = document.createElement("rtgl-view");
+      this._contentWrapper.setAttribute(CONTENT_WRAPPER_ATTR, "");
+      this._contentWrapper.setAttribute("part", "content");
+    }
+
+    if (this._contentWrapper.parentNode !== this) {
+      this.appendChild(this._contentWrapper);
+    }
+
+    return this._contentWrapper;
+  }
+
+  _setContentWrapperAttr(wrapper, name, value, fallback = null) {
+    const resolvedValue = value ?? fallback;
+
+    if (resolvedValue === null) {
+      wrapper.removeAttribute(name);
+      return;
+    }
+
+    wrapper.setAttribute(name, resolvedValue);
+  }
+
+  _syncContentWrapperAttributes() {
+    const wrapper = this._ensureContentWrapper();
+
+    this._setContentWrapperAttr(wrapper, "w", this.getAttribute("content-w"));
+    this._setContentWrapperAttr(wrapper, "h", this.getAttribute("content-h"));
+    this._setContentWrapperAttr(wrapper, "wh", this.getAttribute("content-wh"));
+    this._setContentWrapperAttr(wrapper, "g", this.getAttribute("content-g"));
+    this._setContentWrapperAttr(wrapper, "sv", this.getAttribute("content-sv"));
+    this._setContentWrapperAttr(wrapper, "bgc", this.getAttribute("content-bgc"), "bg");
+    this._setContentWrapperAttr(wrapper, "bw", this.getAttribute("content-bw"), "xs");
+    this._setContentWrapperAttr(wrapper, "bc", this.getAttribute("content-bc"), "bo");
+    this._setContentWrapperAttr(wrapper, "br", this.getAttribute("content-br"), "md");
+
+    if (this.hasAttribute("content-p")) {
+      this._setContentWrapperAttr(wrapper, "p", this.getAttribute("content-p"));
+      wrapper.removeAttribute("ph");
+      wrapper.removeAttribute("pv");
+    } else {
+      wrapper.removeAttribute("p");
+      this._setContentWrapperAttr(wrapper, "ph", this.getAttribute("content-ph"), "md");
+      this._setContentWrapperAttr(wrapper, "pv", this.getAttribute("content-pv"), "md");
+    }
+
+    const contentStyle = this.getAttribute("content-style");
+    wrapper.setAttribute("style", contentStyle ? `${DEFAULT_CONTENT_STYLE} ${contentStyle}` : DEFAULT_CONTENT_STYLE);
+  }
+
+  _syncContentWrapper({ reposition = true } = {}) {
+    if (this._isSyncingContent) return;
+
+    this._isSyncingContent = true;
+
+    try {
+      const wrapper = this._ensureContentWrapper();
+      const nodesToWrap = Array.from(this.childNodes).filter((node) => node !== wrapper && !this._isIgnorableTextNode(node));
+
+      for (const node of nodesToWrap) {
+        if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute("slot") === "content") {
+          node.removeAttribute("slot");
+        }
+
+        wrapper.appendChild(node);
+      }
+
+      this._syncContentWrapperAttributes();
+
+      const hasContent = Array.from(wrapper.childNodes).some((node) => !this._isIgnorableTextNode(node));
+
+      if (hasContent) {
+        wrapper.setAttribute("slot", "content");
+      } else {
+        wrapper.removeAttribute("slot");
+      }
+    } finally {
+      this._isSyncingContent = false;
+    }
+
+    if (reposition && this._isOpen) {
+      this._updatePosition();
+    }
+  }
+
   _show() {
     if (!this._isOpen) {
+      this._syncContentWrapper({ reposition: false });
+
       // Create and append slot for content only if it doesn't exist
       if (!this._slotElement) {
         this._slotElement = document.createElement('slot');
@@ -312,6 +428,10 @@ class RettangoliPopoverElement extends HTMLElement {
   // Expose popover container for advanced usage
   get popover() {
     return this._popoverContainer;
+  }
+
+  get content() {
+    return this._contentWrapper;
   }
 }
 
