@@ -145,7 +145,19 @@ class RettangoliButtonElement extends HTMLElement {
         }
 
         :host([v="ol"]) .surface:hover {
-          background-color: var(--accent);
+          background-color: var(--rtgl-button-outline-hover-background, var(--accent));
+          border-color: var(--rtgl-button-outline-hover-border-color, var(--border));
+        }
+
+        :host([v="ol"]) .surface:active {
+          background-color: var(
+            --rtgl-button-outline-active-background,
+            var(--rtgl-button-outline-hover-background, var(--accent))
+          );
+          border-color: var(
+            --rtgl-button-outline-active-border-color,
+            var(--rtgl-button-outline-hover-border-color, var(--border))
+          );
         }
 
         :host([v="gh"]) .surface:hover {

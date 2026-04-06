@@ -1,0 +1,133 @@
+---
+title: Popover - Form - Mixed Fields
+description: Verifies a primitive popover can host an embedded `rtgl-form` with multiple field types and actions.
+specs:
+  - Trigger button opens a right-start popover with a lazily mounted form.
+  - Embedded form renders mixed controls inside the shared popover surface.
+  - Seeded values remain visible for select, checkbox, color, and slider fields.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: open-popover-form
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#popover[open][positioned]'
+    state: attached
+    timeoutMs: 1500
+  - action: waitFor
+    selector: '#form rtgl-select[data-field-name="role"] [data-testid="select-button"]'
+    state: visible
+    timeoutMs: 1500
+  - action: assert
+    type: text
+    selector: '#form rtgl-select[data-field-name="role"] [data-testid="select-button"]'
+    value: Editor
+    match: includes
+  - action: wait
+    ms: 180
+  - action: screenshot
+viewport:
+  id: popover-form-wide
+  width: 1400
+  height: 1100
+---
+<rtgl-view g="lg" p="xl" w="100vw" h="100vh" ah="s" av="s">
+  <rtgl-button id="button" data-testid="open-popover-form">Open Popover Form</rtgl-button>
+  <rtgl-popover
+    id="popover"
+    place="rs"
+    style="--rtgl-popover-content-padding: 0; --rtgl-popover-content-max-width: 420px;"
+  >
+  </rtgl-popover>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const popover = document.getElementById('popover');
+
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('slot', 'content');
+  form.setAttribute('w', '360');
+
+  form.defaultValues = {
+    displayName: 'Ada Lovelace',
+    role: 'editor',
+    accentColor: '#ff6b6b',
+    notifications: true,
+    reviewScore: 70,
+  };
+
+  form.form = {
+    title: 'Profile settings',
+    description: 'Adjust the content and workflow defaults used by this popover.',
+    fields: [{
+      name: 'displayName',
+      type: 'input-text',
+      label: 'Display name',
+      description: 'Shown at the top of review cards.',
+      placeholder: 'Enter a name',
+    }, {
+      name: 'role',
+      type: 'select',
+      label: 'Role',
+      description: 'Controls moderation tools and publishing rights.',
+      clearable: false,
+      options: [
+        { label: 'Admin', value: 'admin' },
+        { label: 'Editor', value: 'editor' },
+        { label: 'Viewer', value: 'viewer' },
+      ],
+    }, {
+      name: 'accentColor',
+      type: 'color-picker',
+      label: 'Accent color',
+      description: 'Used for highlights in the popover preview.',
+    }, {
+      name: 'notifications',
+      type: 'checkbox',
+      label: 'Notifications',
+      content: 'Email me weekly release notes',
+    }, {
+      name: 'reviewScore',
+      type: 'slider-with-input',
+      label: 'Review score',
+      description: 'Internal confidence threshold before auto-publishing.',
+      min: 0,
+      max: 100,
+      step: 5,
+    }],
+    actions: {
+      buttons: [{
+        id: 'cancel',
+        variant: 'se',
+        label: 'Cancel',
+      }, {
+        id: 'save',
+        variant: 'pr',
+        label: 'Save changes',
+      }],
+    },
+  };
+
+  form.addEventListener('form-action', () => {
+    popover.removeAttribute('open');
+  });
+
+  button.addEventListener('click', () => {
+    const rect = button.getBoundingClientRect();
+
+    if (!form.parentNode) {
+      popover.appendChild(form);
+    }
+
+    popover.setAttribute('x', String(Math.round(rect.right + 12)));
+    popover.setAttribute('y', String(Math.round(rect.top)));
+    popover.setAttribute('open', '');
+  });
+
+  popover.addEventListener('close', () => {
+    popover.removeAttribute('open');
+  });
+</script>

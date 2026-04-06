@@ -54,7 +54,7 @@ class RettangoliPopoverElement extends HTMLElement {
 
         slot[name="content"] {
           display: block;
-          background-color: var(--muted);
+          background-color: var(--background);
           border: 1px solid var(--border);
           border-radius: var(--rtgl-popover-content-border-radius, var(--border-radius-md));
           padding: var(--rtgl-popover-content-padding, var(--spacing-md));
