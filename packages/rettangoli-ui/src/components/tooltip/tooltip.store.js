@@ -35,6 +35,6 @@ export const selectViewData = ({ props }) => {
     textSize: preset.textSize,
     paddingX: preset.paddingX,
     paddingY: preset.paddingY,
-    contentStyle: `padding: 0; min-width: 0; max-width: ${preset.maxWidth};`,
+    contentStyle: `padding: 0; min-width: 0; max-width: ${preset.maxWidth}; background-color: var(--muted);`,
   };
 }
