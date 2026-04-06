@@ -14,8 +14,8 @@ styles:
     text-decoration: none
     color: inherit
 template:
-  - 'rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place} style="--rtgl-popover-content-padding: var(--spacing-sm) 0"':
-      - rtgl-view w=${w} h=${h} sv g=xs slot=content bgc=bg:
+  - rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place}:
+      - 'rtgl-view w=${w} h=${h} sv g=xs slot=content bgc=bg style="padding: var(--spacing-sm) 0"':
           - $for item, i in items:
               - $if item.isLabel:
                   - rtgl-view w=f ph=lg pv=md:

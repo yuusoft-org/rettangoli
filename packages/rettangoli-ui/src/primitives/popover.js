@@ -53,13 +53,18 @@ class RettangoliPopoverElement extends HTMLElement {
         }
 
         slot[name="content"] {
+          display: contents;
+        }
+
+        ::slotted([slot="content"]) {
           display: block;
+          box-sizing: border-box;
           background-color: var(--background);
           border: 1px solid var(--border);
-          border-radius: var(--rtgl-popover-content-border-radius, var(--border-radius-md));
-          padding: var(--rtgl-popover-content-padding, var(--spacing-md));
-          min-width: var(--rtgl-popover-content-min-width, 200px);
-          max-width: var(--rtgl-popover-content-max-width, 400px);
+          border-radius: var(--border-radius-md);
+          padding: var(--spacing-md);
+          min-width: 200px;
+          max-width: 400px;
         }
       `);
     }

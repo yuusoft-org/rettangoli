@@ -35,6 +35,6 @@ export const selectViewData = ({ props }) => {
     textSize: preset.textSize,
     paddingX: preset.paddingX,
     paddingY: preset.paddingY,
-    popoverStyle: `--rtgl-popover-content-padding: 0; --rtgl-popover-content-min-width: 0; --rtgl-popover-content-max-width: ${preset.maxWidth}`,
+    contentStyle: `padding: 0; min-width: 0; max-width: ${preset.maxWidth};`,
   };
 }

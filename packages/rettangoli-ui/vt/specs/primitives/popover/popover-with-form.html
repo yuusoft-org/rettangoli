@@ -34,12 +34,7 @@ viewport:
 ---
 <rtgl-view g="lg" p="xl" w="100vw" h="100vh" ah="s" av="s">
   <rtgl-button id="button" data-testid="open-popover-form">Open Popover Form</rtgl-button>
-  <rtgl-popover
-    id="popover"
-    place="rs"
-    style="--rtgl-popover-content-padding: 0; --rtgl-popover-content-max-width: 420px;"
-  >
-  </rtgl-popover>
+  <rtgl-popover id="popover" place="rs"></rtgl-popover>
 </rtgl-view>
 
 <script>
@@ -50,6 +45,8 @@ viewport:
   form.id = 'form';
   form.setAttribute('slot', 'content');
   form.setAttribute('w', '360');
+  form.style.padding = '0';
+  form.style.maxWidth = '420px';
 
   form.defaultValues = {
     displayName: 'Ada Lovelace',
