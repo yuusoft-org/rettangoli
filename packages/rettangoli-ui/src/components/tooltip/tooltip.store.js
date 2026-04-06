@@ -4,20 +4,17 @@ export const createInitialState = () => Object.freeze({
 const sizePresets = {
   sm: {
     textSize: 'sm',
-    paddingX: 'md',
-    paddingY: 'sm',
+    padding: 'md',
     maxWidth: 'min(320px, calc(100vw - 16px))',
   },
   md: {
     textSize: 'sm',
-    paddingX: 'lg',
-    paddingY: 'md',
+    padding: 'md',
     maxWidth: 'min(360px, calc(100vw - 16px))',
   },
   lg: {
     textSize: 'md',
-    paddingX: 'lg',
-    paddingY: 'md',
+    padding: 'lg',
     maxWidth: 'min(420px, calc(100vw - 16px))',
   },
 };
@@ -33,8 +30,7 @@ export const selectViewData = ({ props }) => {
     place: props.place || 't',
     content: props.content || '',
     textSize: preset.textSize,
-    paddingX: preset.paddingX,
-    paddingY: preset.paddingY,
-    contentStyle: `padding: 0; min-width: 0; max-width: ${preset.maxWidth};`,
+    padding: preset.padding,
+    contentStyle: `padding: 0; min-width: 0; max-width: ${preset.maxWidth}; background-color: var(--muted);`,
   };
 }
