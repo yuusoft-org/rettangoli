@@ -35,4 +35,4 @@ template:
                   - rtgl-view#option${i} w=f h-bgc=${item.hoverBgc} ph=lg pv=md cur=pointer bgc=${item.bgc} data-index=${item.index} data-testid=${item.testId}:
                       - rtgl-text s=sm c=${item.c}: ${item.label}
                 $elif item.isSeparator:
-                  - rtgl-view w=f h=1 bgc=mu: null
+                  - rtgl-view w=f h=1 bgc=mu mv=sm: null
