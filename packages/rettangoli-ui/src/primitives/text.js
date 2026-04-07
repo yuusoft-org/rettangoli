@@ -82,10 +82,14 @@ class RettangoliTextElement extends HTMLElement {
       this.style.overflow = "hidden";
       this.style.textOverflow = "ellipsis";
       this.style.whiteSpace = "nowrap";
+      this.style.overflowWrap = "";
+      this.style.wordBreak = "";
     } else {
       this.style.overflow = "";
       this.style.textOverflow = "";
       this.style.whiteSpace = "";
+      this.style.overflowWrap = "anywhere";
+      this.style.wordBreak = "break-word";
     }
 
     // Allow shrinking in flex layouts so ellipsis and wrapping constraints work predictably.

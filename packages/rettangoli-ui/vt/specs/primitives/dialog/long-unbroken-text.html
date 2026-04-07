@@ -1,0 +1,34 @@
+---
+title: Dialog - Long Unbroken Text
+description: Shows how dialog content renders a very long single token without spaces.
+specs:
+  - Dialog opens with a constrained content column for easier wrap inspection.
+  - A single long token renders inside the dialog body without CSS word-break overrides.
+  - Screenshot captures the current newline or overflow behavior.
+skipInitialScreenshot: true
+viewport:
+  id: wrap-check
+  width: 900
+  height: 720
+steps:
+  - action: waitFor
+    selector: '#dialog[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#long-token'
+    value: longunbrokendialogcontentwithoutspaceslongunbrokendialogcontentwithoutspaces
+  - action: wait
+    ms: 220
+  - action: screenshot
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-dialog id="dialog" open s="sm">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Long unbroken text</rtgl-text>
+      <rtgl-text c="mu">This sample uses one very long string with no spaces so the dialog shows its natural line-breaking behavior.</rtgl-text>
+      <rtgl-text id="long-token">longunbrokendialogcontentwithoutspaceslongunbrokendialogcontentwithoutspaceslongunbrokendialogcontentwithoutspaceslongunbrokendialogcontentwithoutspaceslongunbrokendialogcontentwithoutspaces</rtgl-text>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
