@@ -195,7 +195,7 @@ class RettangoliPopoverElement extends HTMLElement {
       this._contentWrapper = document.createElement("rtgl-view");
       this._contentWrapper.setAttribute(CONTENT_WRAPPER_ATTR, "");
       this._contentWrapper.setAttribute("part", "content");
-      this._contentWrapper.setAttribute("bgc", "bg");
+      this._contentWrapper.setAttribute("bgc", "su");
       this._contentWrapper.setAttribute("bw", "xs");
       this._contentWrapper.setAttribute("bc", "bo");
       this._contentWrapper.setAttribute("br", "md");
@@ -231,7 +231,7 @@ class RettangoliPopoverElement extends HTMLElement {
       }
     }
 
-    wrapper.setAttribute("bgc", this.getAttribute("content-bgc") || "bg");
+    wrapper.setAttribute("bgc", this.getAttribute("content-bgc") || "su");
     wrapper.setAttribute("ph", "sm");
     wrapper.setAttribute("pv", this.getAttribute("content-pv") || "sm");
 

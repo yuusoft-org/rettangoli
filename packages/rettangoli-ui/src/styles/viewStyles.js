@@ -26,6 +26,9 @@ const styles = {
     bg: `
     background-color: var(--background);
     `,
+    su: `
+    background-color: var(--surface);
+    `,
     mu: `
     background-color: var(--muted);
     `,
@@ -98,6 +101,7 @@ const styles = {
     de: "--destructive",
     fg: "--foreground",
     bg: "--background",
+    su: "--surface",
     mu: "--muted",
     ac: "--accent",
     bo: "--border",

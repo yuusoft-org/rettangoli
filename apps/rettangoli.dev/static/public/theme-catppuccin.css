@@ -76,6 +76,7 @@
   --destructive-foreground: #eff1f5;
 
   --background: #eff1f5;
+  --surface: #eceff4;
   --foreground: #4c4f69;
   --muted: #e6e9ef;
   --muted-foreground: #6c6f85;
@@ -94,6 +95,7 @@
 .dark {
   /* Catppuccin Mocha */
   --background: #1e1e2e;
+  --surface: #252536;
   --foreground: #cdd6f4;
   --primary: #89b4fa;
   --primary-foreground: #1e1e2e;

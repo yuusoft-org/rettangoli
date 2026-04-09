@@ -75,6 +75,7 @@
   --destructive-foreground: oklch(0.145 0 0);
 
   --background: oklch(1 0 0);
+  --surface: oklch(0.985 0 0);
   --foreground: oklch(0.145 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
@@ -92,6 +93,7 @@
 
 .dark {
   --background: rgb(29 29 29);
+  --surface: rgb(36 36 36);
   --foreground: rgb(242 242 242);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.305 0 0);

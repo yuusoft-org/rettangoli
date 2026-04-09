@@ -75,6 +75,7 @@
   --destructive-foreground: #fcf3f3;
 
   --background: #fff;
+  --surface: #fafafa;
   --foreground: #0a0a0a;
   --muted: #f5f5f5;
   --muted-foreground: #737373;
@@ -92,6 +93,7 @@
 
 .dark {
   --background: #0a0a0a;
+  --surface: #141414;
   --foreground: #fafafa;
   --primary: #e5e5e5;
   --primary-foreground: #171717;

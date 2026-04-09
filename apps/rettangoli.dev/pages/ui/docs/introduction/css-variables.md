@@ -56,15 +56,17 @@ Used for secondary actions, less prominent UI elements.
 ### Surface Colors
 ```css
 --background: oklch(1 0 0); /* pure white */
+--surface: oklch(0.985 0 0); /* subtle raised surface */
 --foreground: oklch(0.145 0 0); /* very dark gray */
 
 .dark {
   --background: rgb(29 29 29); /* dark gray */
+  --surface: rgb(36 36 36); /* raised dark surface */
   --foreground: rgb(242 242 242); /* light gray */
 }
 ```
 
-Main background and text colors for the application surface.
+Main background and text colors for the application surface. `--surface` sits between `--background` and `--muted`, and is intended for floating containers such as popovers and select triggers.
 
 ### Interactive States
 ```css

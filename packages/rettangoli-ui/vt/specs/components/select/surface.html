@@ -1,0 +1,47 @@
+---
+title: Select Surface
+description: Verifies the select trigger and default popover container use the surface token.
+specs:
+  - Closed select triggers stay visually distinct from both `bg` and `mu` parent surfaces.
+  - The opened options popover inherits the default `su` surface from `rtgl-popover`.
+steps:
+  - action: select
+    selector: '#select-surface [data-testid="select-button"]'
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#select-surface rtgl-popover[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: screenshot
+---
+
+<rtgl-view d="h" g="xl" p="xl" wh="f" wrap>
+  <rtgl-view g="md" p="lg" bgc="bg" bw="xs" bc="bo" br="lg">
+    <rtgl-text s="sm">Select on background</rtgl-text>
+    <rtgl-select id="select-surface" w="260"></rtgl-select>
+  </rtgl-view>
+
+  <rtgl-view g="md" p="lg" bgc="mu" bw="xs" bc="bo" br="lg">
+    <rtgl-text s="sm">Select on muted</rtgl-text>
+    <rtgl-select id="select-surface-muted" w="260"></rtgl-select>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const options = [
+    { value: "alpha", label: "Alpha option" },
+    { value: "beta", label: "Beta option" },
+    { value: "gamma", label: "Gamma option" },
+  ];
+
+  const selectSurface = document.getElementById("select-surface");
+  selectSurface.placeholder = "Choose an option";
+  selectSurface.options = options;
+  selectSurface.render();
+
+  const selectSurfaceMuted = document.getElementById("select-surface-muted");
+  selectSurfaceMuted.selectedValue = "beta";
+  selectSurfaceMuted.options = options;
+  selectSurfaceMuted.render();
+</script>
