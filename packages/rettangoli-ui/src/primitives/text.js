@@ -58,7 +58,7 @@ class RettangoliTextElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "w", "ellipsis", "href", "new-tab", "rel"];
+    return ["key", "w", "ellipsis", "href", "new-tab", "rel", "break-long-tokens"];
   }
 
   connectedCallback() {
@@ -77,6 +77,7 @@ class RettangoliTextElement extends HTMLElement {
   _updateStyling() {
     const width = dimensionWithUnit(this.getAttribute("w"));
     const ellipsis = this.hasAttribute("ellipsis");
+    const breakLongTokens = this.hasAttribute("break-long-tokens");
 
     if (ellipsis) {
       this.style.overflow = "hidden";
@@ -88,8 +89,8 @@ class RettangoliTextElement extends HTMLElement {
       this.style.overflow = "";
       this.style.textOverflow = "";
       this.style.whiteSpace = "";
-      this.style.overflowWrap = "anywhere";
-      this.style.wordBreak = "break-word";
+      this.style.overflowWrap = breakLongTokens ? "anywhere" : "";
+      this.style.wordBreak = breakLongTokens ? "break-word" : "";
     }
 
     // Allow shrinking in flex layouts so ellipsis and wrapping constraints work predictably.

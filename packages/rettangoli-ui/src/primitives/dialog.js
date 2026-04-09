@@ -106,12 +106,19 @@ class RettangoliDialogElement extends HTMLElement {
     this._adaptiveFrameId = null;
     this._layoutRetryCount = 0;
     this._observedContentElement = null;
+    this._managedLongTokenTextElements = new Set();
+    this._contentMutationObserver = typeof MutationObserver !== "undefined"
+      ? new MutationObserver(() => {
+        this._syncLongTokenWrapping();
+      })
+      : null;
     this._resizeObserver = typeof ResizeObserver !== "undefined"
       ? new ResizeObserver(() => {
         this._scheduleAdaptiveCentering();
       })
       : null;
     this._onSlotChange = () => {
+      this._syncLongTokenWrapping();
       this._observeAssignedContent();
       this._scheduleAdaptiveCentering({ resetRetries: true });
     };
@@ -175,6 +182,7 @@ class RettangoliDialogElement extends HTMLElement {
 
   disconnectedCallback() {
     this._isConnected = false;
+    this._clearManagedLongTokenWrapping();
     this._stopAdaptiveObservers();
     if (this._slotElement) {
       this._slotElement.removeEventListener('slotchange', this._onSlotChange);
@@ -211,6 +219,58 @@ class RettangoliDialogElement extends HTMLElement {
     }
   }
 
+  _clearManagedLongTokenWrapping() {
+    for (const textElement of this._managedLongTokenTextElements) {
+      if (textElement?.isConnected) {
+        textElement.removeAttribute("break-long-tokens");
+      }
+    }
+    this._managedLongTokenTextElements.clear();
+  }
+
+  _collectTextElements(node, collected) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+      return;
+    }
+
+    if (node.localName === "rtgl-text") {
+      collected.push(node);
+    }
+
+    for (const child of node.children) {
+      this._collectTextElements(child, collected);
+    }
+
+    if (node.shadowRoot) {
+      for (const child of node.shadowRoot.children) {
+        this._collectTextElements(child, collected);
+      }
+    }
+  }
+
+  _syncLongTokenWrapping() {
+    this._clearManagedLongTokenWrapping();
+
+    if (!this._slotElement) {
+      return;
+    }
+
+    const assignedNodes = this._slotElement.assignedNodes({ flatten: true });
+    const textElements = [];
+
+    for (const node of assignedNodes) {
+      this._collectTextElements(node, textElements);
+    }
+
+    for (const textElement of textElements) {
+      if (textElement.hasAttribute("ellipsis") || textElement.hasAttribute("break-long-tokens")) {
+        continue;
+      }
+      textElement.setAttribute("break-long-tokens", "");
+      this._managedLongTokenTextElements.add(textElement);
+    }
+  }
+
   // Internal methods
   _showModal() {
     if (!this._dialogElement.open) {
@@ -228,6 +288,7 @@ class RettangoliDialogElement extends HTMLElement {
       this._dialogElement.scrollTop = 0;
 
       window.addEventListener("resize", this._onWindowResize);
+      this._syncLongTokenWrapping();
       this._observeAssignedContent();
       this._layoutRetryCount = 0;
       // Apply the first centering pass before paint so the enter animation
@@ -238,6 +299,7 @@ class RettangoliDialogElement extends HTMLElement {
 
   _hideModal() {
     if (this._dialogElement.open) {
+      this._clearManagedLongTokenWrapping();
       this._stopAdaptiveObservers();
       this._dialogElement.close();
 
@@ -269,6 +331,9 @@ class RettangoliDialogElement extends HTMLElement {
     if (this._resizeObserver && this._observedContentElement) {
       this._resizeObserver.unobserve(this._observedContentElement);
     }
+    if (this._contentMutationObserver) {
+      this._contentMutationObserver.disconnect();
+    }
     this._observedContentElement = null;
   }
 
@@ -281,7 +346,7 @@ class RettangoliDialogElement extends HTMLElement {
   }
 
   _observeAssignedContent() {
-    if (!this._resizeObserver) {
+    if (!this._resizeObserver && !this._contentMutationObserver) {
       return;
     }
     const nextContentElement = this._getAssignedContentElement();
@@ -289,11 +354,25 @@ class RettangoliDialogElement extends HTMLElement {
       return;
     }
     if (this._observedContentElement) {
-      this._resizeObserver.unobserve(this._observedContentElement);
+      if (this._resizeObserver) {
+        this._resizeObserver.unobserve(this._observedContentElement);
+      }
+      if (this._contentMutationObserver) {
+        this._contentMutationObserver.disconnect();
+      }
     }
     this._observedContentElement = nextContentElement;
     if (this._observedContentElement) {
-      this._resizeObserver.observe(this._observedContentElement);
+      if (this._resizeObserver) {
+        this._resizeObserver.observe(this._observedContentElement);
+      }
+      if (this._contentMutationObserver) {
+        this._contentMutationObserver.observe(this._observedContentElement, {
+          childList: true,
+          subtree: true,
+        });
+      }
+      this._syncLongTokenWrapping();
     }
   }
 

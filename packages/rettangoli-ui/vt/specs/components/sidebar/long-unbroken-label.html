@@ -1,0 +1,24 @@
+---
+title: "Long Unbroken Label"
+description: "Verifies fixed-height sidebar rows keep long unbroken labels on a single line."
+specs:
+  - "Sidebar item rows remain visually separated when labels contain a long token."
+  - "Long unbroken labels should not wrap into neighboring rows."
+---
+<rtgl-view h="100vh" w="f" p="lg">
+  <rtgl-view w="280" h="320" bw="xs" bc="bo" bgc="mu">
+    <rtgl-sidebar id="sidebarLongToken" hide-header bwr="none" w="f" h="f"></rtgl-sidebar>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const sidebarLongToken = document.getElementById("sidebarLongToken");
+
+  sidebarLongToken.items = [
+    { id: "home", title: "Home", icon: "home" },
+    { id: "long-token", title: "superlongsidebarlabelwithoutspacesthatshouldstayononerow" },
+    { id: "settings", title: "Settings", icon: "gear" },
+  ];
+
+  sidebarLongToken.render();
+</script>
