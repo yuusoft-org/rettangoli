@@ -17,9 +17,15 @@ propsSchema:
               - separator
           id:
             type: string
+          icon:
+            type: string
           path:
             type: string
           href:
+            type: string
+          shortcut:
+            type: string
+          suffixText:
             type: string
           disabled:
             type: boolean
