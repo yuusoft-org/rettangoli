@@ -14,9 +14,29 @@ class RettangoliSvgElement extends HTMLElement {
       RettangoliSvgElement.styleSheet = new CSSStyleSheet();
       RettangoliSvgElement.styleSheet.replaceSync(css`
         :host {
+          display: contents;
           color: var(--foreground);
           flex-shrink: 0;
         }
+
+        svg {
+          display: inline-block;
+          width: inherit;
+          height: inherit;
+          min-width: inherit;
+          min-height: inherit;
+          max-width: inherit;
+          max-height: inherit;
+          margin-top: inherit;
+          margin-right: inherit;
+          margin-bottom: inherit;
+          margin-left: inherit;
+          color: inherit;
+          cursor: inherit;
+          flex-shrink: inherit;
+          box-sizing: border-box;
+        }
+
         ${textColorStyles}
         ${paddingSvgStyles}
         ${marginStyles}
@@ -70,6 +90,11 @@ class RettangoliSvgElement extends HTMLElement {
     } else {
       this.style.height = "";
     }
+  }
+
+  getBoundingClientRect() {
+    const svgElement = this.shadow.querySelector("svg");
+    return svgElement ? svgElement.getBoundingClientRect() : super.getBoundingClientRect();
   }
 
   _render() {

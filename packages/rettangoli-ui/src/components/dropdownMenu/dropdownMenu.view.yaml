@@ -13,6 +13,10 @@ styles:
     width: 100%
     text-decoration: none
     color: inherit
+  .icon-placeholder:
+    width: 16px
+    height: 16px
+    flex-shrink: 0
 template:
   - rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place} content-w=${w} content-h=${h} content-sv=true content-g=xs content-pv=sm:
       - $for item, i in items:
@@ -21,17 +25,53 @@ template:
                   - rtgl-text s=sm c=mu-fg: ${item.label}
             $elif item.isItem && item.isDisabled:
               - rtgl-view w=f p=md bgc=${item.bgc}:
-                  - rtgl-text s=sm c=${item.c}: ${item.label}
+                  - rtgl-view d=h av=c w=f g=md:
+                      - rtgl-view d=h av=c g=md w=1fg:
+                          - $if item.hasIconSlot:
+                              - $if item.hasIcon:
+                                  - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
+                                $else:
+                                  - div class=icon-placeholder aria-hidden="true": null
+                          - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
+                      - $if item.hasRightText:
+                          - rtgl-text s=sm c=${item.rightTextColor} ta=e: ${item.rightText}
             $elif item.isItem && item.hasHref && item.linkExtraAttrs:
               - a#option${i} href=${item.href} ${item.linkExtraAttrs} data-index=${item.index} data-testid=${item.testId}:
                   - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
-                      - rtgl-text s=sm c=${item.c}: ${item.label}
+                      - rtgl-view d=h av=c w=f g=md:
+                          - rtgl-view d=h av=c g=md w=1fg:
+                              - $if item.hasIconSlot:
+                                  - $if item.hasIcon:
+                                      - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
+                                    $else:
+                                      - div class=icon-placeholder aria-hidden="true": null
+                              - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
+                          - $if item.hasRightText:
+                              - rtgl-text s=sm c=${item.rightTextColor} ta=e: ${item.rightText}
             $elif item.isItem && item.hasHref:
               - a#option${i} href=${item.href} data-index=${item.index} data-testid=${item.testId}:
                   - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
-                      - rtgl-text s=sm c=${item.c}: ${item.label}
+                      - rtgl-view d=h av=c w=f g=md:
+                          - rtgl-view d=h av=c g=md w=1fg:
+                              - $if item.hasIconSlot:
+                                  - $if item.hasIcon:
+                                      - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
+                                    $else:
+                                      - div class=icon-placeholder aria-hidden="true": null
+                              - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
+                          - $if item.hasRightText:
+                              - rtgl-text s=sm c=${item.rightTextColor} ta=e: ${item.rightText}
             $elif item.isItem:
               - rtgl-view#option${i} w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc} data-index=${item.index} data-testid=${item.testId}:
-                  - rtgl-text s=sm c=${item.c}: ${item.label}
+                  - rtgl-view d=h av=c w=f g=md:
+                      - rtgl-view d=h av=c g=md w=1fg:
+                          - $if item.hasIconSlot:
+                              - $if item.hasIcon:
+                                  - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
+                                $else:
+                                  - div class=icon-placeholder aria-hidden="true": null
+                          - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
+                      - $if item.hasRightText:
+                          - rtgl-text s=sm c=${item.rightTextColor} ta=e: ${item.rightText}
             $elif item.isSeparator:
               - rtgl-view w=f h=1 bgc=mu mv=sm: null

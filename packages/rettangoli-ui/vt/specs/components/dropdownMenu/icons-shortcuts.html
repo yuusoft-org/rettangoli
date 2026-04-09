@@ -1,0 +1,60 @@
+---
+title: "Icons And Shortcuts"
+---
+<rtgl-view g="lg" h="100vh" w="100vw" wrap>
+  <rtgl-dropdown-menu id="dropdown-menu"></rtgl-dropdown-menu>
+</rtgl-view>
+
+<script>
+  const dropdownMenu = document.getElementById('dropdown-menu');
+
+  dropdownMenu.setAttribute('w', '320');
+  dropdownMenu.items = [
+    {
+      label: 'File',
+      type: 'label',
+    },
+    {
+      id: 'new-file',
+      label: 'New File',
+      icon: 'plus',
+      shortcut: 'Cmd+N',
+    },
+    {
+      id: 'open-file',
+      label: 'Open File',
+      icon: 'text',
+      shortcut: 'Cmd+O',
+    },
+    {
+      id: 'quick-export',
+      label: 'Quick Export',
+      icon: '',
+      rightText: 'Shift+Cmd+E',
+    },
+    {
+      type: 'separator',
+    },
+    {
+      label: 'Playback',
+      type: 'label',
+    },
+    {
+      id: 'play-preview',
+      label: 'Play Preview',
+      icon: 'play',
+      rightText: 'Space',
+    },
+    {
+      id: 'delete-asset',
+      label: 'Delete Asset',
+      icon: 'x',
+      shortcut: 'Del',
+      disabled: true,
+    },
+  ];
+
+  dropdownMenu.setAttribute('open', '');
+  dropdownMenu.setAttribute('x', '20');
+  dropdownMenu.setAttribute('y', '20');
+</script>

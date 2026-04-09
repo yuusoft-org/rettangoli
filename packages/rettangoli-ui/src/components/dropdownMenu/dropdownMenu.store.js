@@ -12,9 +12,16 @@ const normalizeItems = (items) => {
     const isItem = type === 'item';
     const isDisabled = !!item.disabled;
     const isInteractive = isItem && !isDisabled;
+    const hasIconSlot = Object.prototype.hasOwnProperty.call(item, 'icon');
+    const icon = typeof item.icon === 'string' && item.icon.length > 0 ? item.icon : '';
+    const rightTextValue = typeof item.shortcut === 'string' && item.shortcut.length > 0
+      ? item.shortcut
+      : (typeof item.rightText === 'string' && item.rightText.length > 0 ? item.rightText : '');
     const c = isDisabled ? 'mu-fg' : 'fg';
     const bgc = isDisabled ? 'mu' : '';
     const hoverBgc = isDisabled ? '' : 'ac';
+    const iconColor = c;
+    const rightTextColor = 'mu-fg';
     const hasHref = typeof item.href === 'string' && item.href.length > 0;
     const relValue = item.rel || (item.newTab ? 'noopener noreferrer' : '');
     const linkExtraAttrs = [
@@ -31,11 +38,18 @@ const normalizeItems = (items) => {
       isItem,
       isDisabled,
       isInteractive,
+      hasIconSlot,
+      icon,
+      hasIcon: icon.length > 0,
+      rightText: rightTextValue,
+      hasRightText: rightTextValue.length > 0,
       hasHref,
       linkExtraAttrs,
       c,
       bgc,
       hoverBgc,
+      iconColor,
+      rightTextColor,
     };
   });
 };
