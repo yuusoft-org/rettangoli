@@ -14,14 +14,14 @@ const normalizeItems = (items) => {
     const isInteractive = isItem && !isDisabled;
     const hasIconSlot = Object.prototype.hasOwnProperty.call(item, 'icon');
     const icon = typeof item.icon === 'string' && item.icon.length > 0 ? item.icon : '';
-    const rightTextValue = typeof item.shortcut === 'string' && item.shortcut.length > 0
+    const suffixTextValue = typeof item.shortcut === 'string' && item.shortcut.length > 0
       ? item.shortcut
-      : (typeof item.rightText === 'string' && item.rightText.length > 0 ? item.rightText : '');
+      : (typeof item.suffixText === 'string' && item.suffixText.length > 0 ? item.suffixText : '');
     const c = isDisabled ? 'mu-fg' : 'fg';
     const bgc = isDisabled ? 'mu' : '';
     const hoverBgc = isDisabled ? '' : 'ac';
     const iconColor = c;
-    const rightTextColor = 'mu-fg';
+    const suffixTextColor = 'mu-fg';
     const hasHref = typeof item.href === 'string' && item.href.length > 0;
     const relValue = item.rel || (item.newTab ? 'noopener noreferrer' : '');
     const linkExtraAttrs = [
@@ -41,15 +41,15 @@ const normalizeItems = (items) => {
       hasIconSlot,
       icon,
       hasIcon: icon.length > 0,
-      rightText: rightTextValue,
-      hasRightText: rightTextValue.length > 0,
+      suffixText: suffixTextValue,
+      hasSuffixText: suffixTextValue.length > 0,
       hasHref,
       linkExtraAttrs,
       c,
       bgc,
       hoverBgc,
       iconColor,
-      rightTextColor,
+      suffixTextColor,
     };
   });
 };
