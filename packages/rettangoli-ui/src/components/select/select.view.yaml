@@ -30,7 +30,7 @@ refs:
       mouseleave:
         handler: handleAddOptionMouseLeave
 template:
-  - 'rtgl-view#selectButton style="display: inline-flex;" d=h av=c h=32 ph=md bw=xs bc=bo h-bc=${selectButtonHoverBorderColor} br=md bgc=bg cur=${selectButtonCursor} ${containerAttrString} data-testid="select-button" role="button" tabindex=${selectButtonTabIndex} aria-disabled=${isDisabled}':
+  - 'rtgl-view#selectButton style="display: inline-flex;" d=h av=c h=32 ph=md bw=xs bc=bo h-bc=${selectButtonHoverBorderColor} br=md bgc=su cur=${selectButtonCursor} ${containerAttrString} data-testid="select-button" role="button" tabindex=${selectButtonTabIndex} aria-disabled=${isDisabled}':
       - rtgl-view d=h av=c ah=s w=f:
           - rtgl-text w=1fg ta=s c=${selectedLabelColor} ellipsis: ${selectedLabel}
           - $if showClear:
