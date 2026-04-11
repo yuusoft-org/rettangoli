@@ -29,6 +29,51 @@ export const readPropFallbackFromAttributes = (source, propName) => {
 };
 
 const REACTIVE_PROP_VALUES = Symbol("rtglReactivePropValues");
+const NATIVE_HOST_STYLE = Symbol("rtglNativeHostStyle");
+
+const findPrototypePropertyDescriptor = (source, propName) => {
+  let current = Object.getPrototypeOf(source);
+
+  while (current) {
+    const descriptor = Object.getOwnPropertyDescriptor(current, propName);
+    if (descriptor) {
+      return descriptor;
+    }
+    current = Object.getPrototypeOf(current);
+  }
+
+  return undefined;
+};
+
+export const getNativeHostStyle = (source) => {
+  if (!source || typeof source !== "object") {
+    return undefined;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(source, NATIVE_HOST_STYLE)) {
+    return source[NATIVE_HOST_STYLE];
+  }
+
+  const styleDescriptor = findPrototypePropertyDescriptor(source, "style");
+  let nativeStyle;
+
+  if (typeof styleDescriptor?.get === "function") {
+    nativeStyle = styleDescriptor.get.call(source);
+  } else if (source.style && typeof source.style === "object") {
+    nativeStyle = source.style;
+  }
+
+  if (nativeStyle && typeof nativeStyle === "object") {
+    Object.defineProperty(source, NATIVE_HOST_STYLE, {
+      value: nativeStyle,
+      enumerable: false,
+      configurable: false,
+      writable: false,
+    });
+  }
+
+  return nativeStyle;
+};
 
 const ensureReactivePropValues = (source) => {
   if (!Object.prototype.hasOwnProperty.call(source, REACTIVE_PROP_VALUES)) {
@@ -49,6 +94,10 @@ export const installReactiveProps = ({
   onPropChange,
 }) => {
   const reactiveValues = ensureReactivePropValues(source);
+
+  if (allowedKeys.includes("style")) {
+    getNativeHostStyle(source);
+  }
 
   allowedKeys.forEach((propName) => {
     if (typeof propName !== "string" || propName.length === 0) {

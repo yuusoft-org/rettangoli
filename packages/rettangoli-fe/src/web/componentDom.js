@@ -1,3 +1,5 @@
+import { getNativeHostStyle } from "../core/runtime/props.js";
+
 const COMMON_LINK_STYLE_TEXT = `
   a, a:link, a:visited, a:hover, a:active {
     display: contents;
@@ -98,7 +100,10 @@ export const initializeComponentDom = ({
   if (renderTarget.parentNode !== shadow) {
     shadow.appendChild(renderTarget);
   }
-  host.style.display = "contents";
+  const hostStyle = getNativeHostStyle(host);
+  if (hostStyle && typeof hostStyle === "object") {
+    hostStyle.display = "contents";
+  }
 
   return {
     shadow,
