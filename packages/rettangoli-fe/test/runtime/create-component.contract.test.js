@@ -359,6 +359,24 @@ describe("createComponent runtime contracts", () => {
     expect(instance.props.value).toBe("updated");
   });
 
+  it("keeps native host style available when a prop is named style", () => {
+    const TestComponent = createComponentClass({
+      propsSchema: {
+        style: {},
+      },
+    });
+    const instance = new TestComponent();
+    const propStyle = Object.freeze({
+      variant: "waveform",
+    });
+
+    instance.style = propStyle;
+
+    expect(() => instance.connectedCallback()).not.toThrow();
+    expect(instance.props.style).toBe(propStyle);
+    expect(instance.renderTarget.parentNode).toBe(instance.shadow);
+  });
+
   it("reuses the existing shadow root when the element reconnects", () => {
     const TestComponent = createComponentClass();
     const instance = new TestComponent();
