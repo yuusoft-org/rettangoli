@@ -95,8 +95,8 @@ export const initializeComponentDom = ({
     }
   }
 
-  if (!renderTarget.parentNode) {
-    host.appendChild(renderTarget);
+  if (renderTarget.parentNode !== shadow) {
+    shadow.appendChild(renderTarget);
   }
   host.style.display = "contents";
 

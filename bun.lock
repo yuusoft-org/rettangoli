@@ -41,24 +41,24 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "1.0.13",
+      "version": "1.1.1",
       "bin": {
         "rtgl": "cli.js",
       },
       "dependencies": {
         "@rettangoli/be": "1.0.2",
         "@rettangoli/check": "0.1.2",
-        "@rettangoli/fe": "1.1.0",
+        "@rettangoli/fe": "1.1.2",
         "@rettangoli/sites": "1.0.1",
         "@rettangoli/ui": "1.0.11",
-        "@rettangoli/vt": "1.0.4",
+        "@rettangoli/vt": "1.0.5",
         "commander": "^14.0.0",
         "js-yaml": "^4.1.0",
       },
     },
     "packages/rettangoli-fe": {
       "name": "@rettangoli/fe",
-      "version": "1.1.0",
+      "version": "1.1.2",
       "dependencies": {
         "immer": "^10.1.1",
         "jempl": "1.0.1",
@@ -73,7 +73,7 @@
     },
     "packages/rettangoli-sitekit": {
       "name": "@rettangoli/sitekit",
-      "version": "1.0.3",
+      "version": "1.0.5",
       "devDependencies": {
         "serve": "^14.2.6",
       },
@@ -114,9 +114,9 @@
     },
     "packages/rettangoli-ui": {
       "name": "@rettangoli/ui",
-      "version": "1.0.13",
+      "version": "1.4.0",
       "dependencies": {
-        "@rettangoli/fe": "1.1.0",
+        "@rettangoli/fe": "1.1.1",
         "jempl": "1.0.1",
       },
       "devDependencies": {
@@ -131,7 +131,7 @@
     },
     "packages/rettangoli-vt": {
       "name": "@rettangoli/vt",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "dependencies": {
         "commander": "^13.1.0",
         "js-yaml": "^4.1.0",
@@ -911,6 +911,8 @@
     "@rettangoli/sites/yahtml": ["yahtml@0.0.4", "", {}, "sha512-9QuyogoLkvpq1ETyiETeHtcFVqUUI0pl3RjgfJ8mlpeAvkP8f1risDDJ0s9rZ8H8TwAA9hegw3mzr2eTsdRT3g=="],
 
     "@rettangoli/tui/puty": ["puty@0.1.2", "", { "dependencies": { "js-yaml": "~4.1.0" }, "peerDependencies": { "vitest": ">=1.0.0" } }, "sha512-VNEwqORf0u/LiVdjyHPsIOKWC5z4uNuHhMgYu9WGea6u3YCP4OimQHQfWkw0DB/tE3KuWgPO0dhkM8uH4Yweig=="],
+
+    "@rettangoli/ui/@rettangoli/fe": ["@rettangoli/fe@1.1.1", "", { "dependencies": { "immer": "^10.1.1", "jempl": "1.0.1", "js-yaml": "^4.1.0", "snabbdom": "^3.6.2", "vite": "^6.3.5" } }, "sha512-EW5+b2zz7//sO0MYN4PVVGjbkvm6fI2GObqK5NjpBR0anO3ihYCJeIOzF9gEfa3g9VRQMgSZDg2QNuGC614i9Q=="],
 
     "@rettangoli/ui/esbuild": ["esbuild@0.20.2", "", { "optionalDependencies": { "@esbuild/aix-ppc64": "0.20.2", "@esbuild/android-arm": "0.20.2", "@esbuild/android-arm64": "0.20.2", "@esbuild/android-x64": "0.20.2", "@esbuild/darwin-arm64": "0.20.2", "@esbuild/darwin-x64": "0.20.2", "@esbuild/freebsd-arm64": "0.20.2", "@esbuild/freebsd-x64": "0.20.2", "@esbuild/linux-arm": "0.20.2", "@esbuild/linux-arm64": "0.20.2", "@esbuild/linux-ia32": "0.20.2", "@esbuild/linux-loong64": "0.20.2", "@esbuild/linux-mips64el": "0.20.2", "@esbuild/linux-ppc64": "0.20.2", "@esbuild/linux-riscv64": "0.20.2", "@esbuild/linux-s390x": "0.20.2", "@esbuild/linux-x64": "0.20.2", "@esbuild/netbsd-x64": "0.20.2", "@esbuild/openbsd-x64": "0.20.2", "@esbuild/sunos-x64": "0.20.2", "@esbuild/win32-arm64": "0.20.2", "@esbuild/win32-ia32": "0.20.2", "@esbuild/win32-x64": "0.20.2" }, "bin": { "esbuild": "bin/esbuild" } }, "sha512-WdOOppmUNU+IbZ0PaDiTst80zjnrOkyJNHoKupIcVyU8Lvla3Ugx94VzkQ32Ijqd7UhHJy75gNWDMUekcrSJ6g=="],
 
