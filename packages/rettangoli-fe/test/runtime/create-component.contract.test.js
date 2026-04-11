@@ -359,6 +359,32 @@ describe("createComponent runtime contracts", () => {
     expect(instance.props.value).toBe("updated");
   });
 
+  it("reuses the existing shadow root when the element reconnects", () => {
+    const TestComponent = createComponentClass();
+    const instance = new TestComponent();
+    const originalAttachShadow = instance.attachShadow.bind(instance);
+    const attachShadowSpy = vi.fn((options) => {
+      if (instance.shadowRoot) {
+        throw new Error("attachShadow called twice");
+      }
+
+      const shadow = originalAttachShadow(options);
+      instance.shadowRoot = shadow;
+      return shadow;
+    });
+
+    instance.attachShadow = attachShadowSpy;
+
+    expect(() => {
+      instance.connectedCallback();
+      instance.disconnectedCallback();
+      instance.connectedCallback();
+    }).not.toThrow();
+
+    expect(attachShadowSpy).toHaveBeenCalledTimes(1);
+    expect(instance.renderTarget.parentNode).toBe(instance.shadowRoot);
+  });
+
   it("routes post-mount property writes through handleOnUpdate", () => {
     const handleOnUpdate = vi.fn();
     const TestComponent = createComponentClass({
