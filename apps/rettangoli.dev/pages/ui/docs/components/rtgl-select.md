@@ -66,7 +66,7 @@ Use `options` as data source and listen to `value-change`.
 | --- | --- | --- | --- |
 | Placeholder | `placeholder` | string | `Select an option` |
 | Selected Value | `selected-value` / `selectedValue` | any | - |
-| Options | `options` (property) | `{ label: string, value: any, icon?: string, shortcut?: string, suffixText?: string, testId?: string }[]` | `[]` |
+| Options | `options` (property) | `{ type?: "item" \| "section" \| "separator", label?: string, value?: any, icon?: string, shortcut?: string, suffixText?: string, testId?: string }[]` | `[]` |
 | No Clear | `no-clear` | boolean | off |
 | Add Option | `addOption` (property) | `{ label?: string }` | - |
 | Disabled | `disabled` | boolean | `false` |
@@ -86,7 +86,10 @@ Define selectable entries through the `options` property.
 
 ### Behavior & precedence
 
-- Each option should include `label` and `value`.
+- `type: "item"` is the default row type.
+- Item rows should include `label` and `value`.
+- `type: "section"` renders a non-selectable header row.
+- `type: "separator"` renders a non-selectable divider row.
 - `value` can be primitive or object.
 - `icon` renders a leading icon in the menu and selected trigger.
 - `shortcut` renders right-side trailing text and takes precedence over `suffixText`.
@@ -113,8 +116,11 @@ Define selectable entries through the `options` property.
 <script>
   const select = document.getElementById("command-select");
   select.options = [
+    { type: "section", label: "Clipboard" },
     { value: "copy", label: "Copy", icon: "text", shortcut: "Cmd+C" },
     { value: "paste", label: "Paste", icon: "threeDots", shortcut: "Cmd+V" },
+    { type: "separator" },
+    { type: "section", label: "Inspector" },
     { value: "info", label: "Details", icon: "info", suffixText: "Beta" },
   ];
   select.selectedValue = "copy";

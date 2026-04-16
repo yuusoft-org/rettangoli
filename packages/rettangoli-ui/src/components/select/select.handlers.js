@@ -1,10 +1,22 @@
 import { deepEqual } from '../../common.js';
 
+const getOptionType = (option = {}) => {
+  if (option.type === 'section') {
+    return 'section';
+  }
+
+  if (option.type === 'separator') {
+    return 'separator';
+  }
+
+  return 'item';
+};
+
 export const handleBeforeMount = (deps) => {
   const { store, props, render } = deps;
 
   if (props.selectedValue !== null && props.selectedValue !== undefined && props.options) {
-    const selectedOption = props.options.find(opt => deepEqual(opt.value, props.selectedValue));
+    const selectedOption = props.options.find((opt) => getOptionType(opt) === 'item' && deepEqual(opt.value, props.selectedValue));
     if (selectedOption) {
       store.updateSelectedValue({
         value: selectedOption?.value
@@ -48,7 +60,7 @@ export const handleButtonClick = (deps, payload) => {
   const currentValue = storeSelectedValue !== null ? storeSelectedValue : props.selectedValue;
   let selectedIndex = null;
   if (currentValue !== null && currentValue !== undefined && props.options) {
-    selectedIndex = props.options.findIndex(opt => deepEqual(opt.value, currentValue));
+    selectedIndex = props.options.findIndex((opt) => getOptionType(opt) === 'item' && deepEqual(opt.value, currentValue));
     if (selectedIndex === -1) selectedIndex = null;
   }
 
@@ -87,6 +99,9 @@ export const handleOptionClick = (deps, payload) => {
   const index = Number(id);
 
   const option = props.options[id];
+  if (getOptionType(option) !== 'item') {
+    return;
+  }
 
   // Update internal state
   store.updateSelectedValue({ value: option?.value });
