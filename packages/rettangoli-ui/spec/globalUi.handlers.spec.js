@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { bindStore } from "../../rettangoli-fe/src/core/runtime/store.js";
 import createGlobalUI from "../src/deps/createGlobalUI.js";
 import {
   handleCloseAll,
@@ -18,6 +19,7 @@ import {
   setAlertConfig,
   setComponentDialogConfig,
 } from "../src/components/globalUi/globalUi.store.js";
+import * as globalUiStore from "../src/components/globalUi/globalUi.store.js";
 
 const createStore = () => {
   const state = structuredClone(createInitialState());
@@ -358,6 +360,37 @@ describe("rtgl-global-ui component dialog handlers", () => {
 });
 
 describe("rtgl-global-ui toast handlers", () => {
+  it("works with the Immer-backed runtime store used by the browser", async () => {
+    vi.useFakeTimers();
+    const store = bindStore(globalUiStore, {}, {});
+    const render = vi.fn();
+    const globalUI = createGlobalUI();
+
+    expect(() => {
+      handleShowToast({
+        store,
+        render,
+        globalUI,
+        refs: {},
+      }, {
+        message: "Runtime toast",
+      });
+    }).not.toThrow();
+
+    expect(store.selectToasts()).toEqual([
+      {
+        id: "toast-1",
+        message: "Runtime toast",
+      },
+    ]);
+
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(store.selectToasts()).toEqual([]);
+    expect(render).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
+  });
+
   it("adds a toast immediately and removes it after 3 seconds", async () => {
     vi.useFakeTimers();
     const deps = createDeps({});

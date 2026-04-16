@@ -1,26 +1,105 @@
 ---
 title: "Global UI - Toast"
 diffThreshold: 2
-description: Verifies top-centered toast rendering and stacked layout for multiple messages.
+description: Verifies the toast lifecycle from idle, to stacked messages, to independent expiry, to automatic clearing.
 specs:
+  - The baseline state is an idle toast harness before any message is shown.
   - Toasts render in a fixed top-center stack.
   - Multiple toasts keep creation order while visible together.
+  - Older toasts expire before newer ones when shown at different times.
+  - The final state reports that the toast stack cleared automatically.
 steps:
-  - action: customEvent
-    name: vt:show-toasts
+  - action: assert
+    type: text
+    selector: "#stack-status"
+    value: "Ready to trigger the toast lifecycle"
+    match: includes
+  - action: assert
+    type: js
+    fn: vtToast.startLifecycle
+    value: started
   - action: wait
-    ms: 200
+    ms: 1900
+  - action: assert
+    type: js
+    fn: vtToast.getMessages
+    value:
+      - "1. Copied to clipboard."
+      - "2. Theme updated successfully."
+      - "3. Background build started."
+  - action: assert
+    type: text
+    selector: "#stack-status"
+    value: "3 active toasts"
+    match: includes
+  - action: assert
+    type: text
+    selector: "#lifecycle-log"
+    value: "Lifecycle log: three toasts are now visible."
+    match: includes
+  - action: screenshot
+  - action: wait
+    ms: 1400
+  - action: assert
+    type: js
+    fn: vtToast.getMessages
+    value:
+      - "2. Theme updated successfully."
+      - "3. Background build started."
+  - action: assert
+    type: text
+    selector: "#stack-status"
+    value: "2 active toasts"
+    match: includes
+  - action: screenshot
+  - action: wait
+    ms: 1900
+  - action: assert
+    type: js
+    fn: vtToast.getMessages
+    value: []
+  - action: assert
+    type: text
+    selector: "#stack-status"
+    value: "No active toasts"
+    match: includes
+  - action: assert
+    type: text
+    selector: "#lifecycle-log"
+    value: "Lifecycle log: all toasts cleared automatically."
+    match: includes
   - action: screenshot
 ---
 <rtgl-global-ui></rtgl-global-ui>
 
-<rtgl-view g="lg" h="100vh" w="f" p="lg">
-  <rtgl-text>Toast visual test surface</rtgl-text>
-  <rtgl-text c="mu-fg">The screenshots should capture the active top-center toast stack.</rtgl-text>
+<rtgl-view g="lg" h="100vh" w="f" p="lg" bgc="ca">
+  <rtgl-view g="lg" w="f" h="1fg" bgc="su" bc="bo" bw="xs" br="lg" p="xl">
+    <rtgl-view w="f">
+      <rtgl-text s="lg">Toast stack lifecycle</rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view g="sm">
+      <rtgl-text>Three messages are shown 800ms apart.</rtgl-text>
+      <rtgl-text c="mu-fg">The second capture should show that the oldest toast expired while newer ones remain visible.</rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view g="sm" bgc="we" bc="bo" bw="xs" br="md" p="lg">
+      <rtgl-text id="stack-status">Ready to trigger the toast lifecycle.</rtgl-text>
+      <rtgl-text id="lifecycle-log">Lifecycle log: idle, waiting for the VT trigger.</rtgl-text>
+      <rtgl-text c="mu-fg">Timeline: idle -> 3 toasts visible -> oldest toast removed -> stack fully cleared.</rtgl-text>
+    </rtgl-view>
+
+    <rtgl-view bgc="we" bc="bo" bw="xs" br="md" p="lg">
+      <rtgl-text>Underlying page content remains in place while the toast layer floats above it.</rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
 </rtgl-view>
 
 <script>
   const globalUIElement = document.querySelector('rtgl-global-ui');
+  const stackStatus = document.getElementById('stack-status');
+  const lifecycleLog = document.getElementById('lifecycle-log');
+  let sequenceStarted = false;
 
   const globalUI = {
     showToast: (options) => {
@@ -28,9 +107,63 @@ steps:
     },
   };
 
-  window.addEventListener('vt:show-toasts', () => {
-    globalUI.showToast({ message: 'Copied to clipboard.' });
-    globalUI.showToast({ message: 'Theme updated successfully.' });
-    globalUI.showToast({ message: 'Background build started.' });
-  });
+  const getMessages = () => Array.from(
+    (globalUIElement.shadowRoot ?? globalUIElement).querySelectorAll('.toast-message'),
+    (node) => node.textContent.trim(),
+  );
+
+  const syncStatus = () => {
+    const messages = getMessages();
+
+    if (messages.length === 0) {
+      stackStatus.textContent = sequenceStarted
+        ? 'No active toasts'
+        : 'Ready to trigger the toast lifecycle.';
+      return;
+    }
+
+    stackStatus.textContent = `${messages.length} active toasts: ${messages.join(' | ')}`;
+  };
+
+  window.vtToast = {
+    getMessages,
+    startLifecycle: () => {
+      if (sequenceStarted) {
+        return 'already-started';
+      }
+
+      if (!globalUIElement.transformedHandlers?.handleShowToast) {
+        setTimeout(runSequence, 50);
+        return 'started';
+      }
+
+      runSequence();
+      return 'started';
+    },
+  };
+
+  setInterval(() => {
+    syncStatus();
+  }, 50);
+
+  syncStatus();
+
+  const runSequence = () => {
+    sequenceStarted = true;
+    lifecycleLog.textContent = 'Lifecycle log: toast sequence started.';
+    globalUI.showToast({ message: '1. Copied to clipboard.' });
+    setTimeout(() => {
+      globalUI.showToast({ message: '2. Theme updated successfully.' });
+    }, 800);
+    setTimeout(() => {
+      globalUI.showToast({ message: '3. Background build started.' });
+      lifecycleLog.textContent = 'Lifecycle log: three toasts are now visible.';
+    }, 1600);
+    setTimeout(() => {
+      lifecycleLog.textContent = 'Lifecycle log: the oldest toast expired, newer toasts remain.';
+    }, 3100);
+    setTimeout(() => {
+      lifecycleLog.textContent = 'Lifecycle log: all toasts cleared automatically.';
+    }, 5200);
+  };
 </script>

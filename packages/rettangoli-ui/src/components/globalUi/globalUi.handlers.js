@@ -271,9 +271,16 @@ export const handleShowConfirm = async (deps, payload) => {
 
 export const handleShowToast = (deps, payload) => {
   const { store, render, globalUI } = deps;
-  const toastId = store.addToast(payload);
-
+  store.addToast(payload);
   render();
+
+  const toasts = store.selectToasts?.() ?? [];
+  const toastId = toasts[toasts.length - 1]?.id;
+
+  if (!toastId) {
+    return;
+  }
+
   scheduleToastRemoval({ store, render, globalUI }, toastId);
 };
 

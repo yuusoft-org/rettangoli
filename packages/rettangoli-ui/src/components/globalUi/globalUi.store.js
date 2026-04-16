@@ -216,8 +216,6 @@ export const addToast = ({ state }, options = {}) => {
 
   state.nextToastId = nextToastId;
   state.toasts = [...(state.toasts ?? []), toast];
-
-  return toast.id;
 };
 
 export const removeToast = ({ state }, options = {}) => {
