@@ -1,0 +1,34 @@
+---
+title: Empty Options Open
+description: Verifies an empty select still opens its popover shell.
+specs:
+  - Clicking an empty select still opens its popover.
+  - The empty menu surface renders without any option rows.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    selector: '#empty-select [data-testid="select-button"]'
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#empty-select rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: wait
+    ms: 120
+  - action: screenshot
+---
+
+<rtgl-view d="h" g="xl" p="xl" wh="f" wrap>
+  <rtgl-view g="md" p="lg" bgc="bg" bw="xs" bc="bo" br="lg">
+    <rtgl-text s="sm">Empty select</rtgl-text>
+    <rtgl-select id="empty-select" w="260"></rtgl-select>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const emptySelect = document.getElementById("empty-select");
+  emptySelect.placeholder = "Choose an option";
+  emptySelect.options = [];
+  emptySelect.render();
+</script>

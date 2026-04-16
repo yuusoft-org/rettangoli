@@ -13,6 +13,12 @@ propsSchema:
             type: string
           value:
             type: any
+          icon:
+            type: string
+          shortcut:
+            type: string
+          suffixText:
+            type: string
           testId:
             type: string
     selectedValue:

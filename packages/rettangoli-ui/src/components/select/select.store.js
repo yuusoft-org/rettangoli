@@ -24,6 +24,45 @@ const stringifyProps = (props = {}) => {
     .join(" ");
 };
 
+const hasOwnProp = (object, key) => Object.prototype.hasOwnProperty.call(object || {}, key);
+
+const getOptionIcon = (option = {}) => {
+  return typeof option.icon === 'string' && option.icon.length > 0 ? option.icon : '';
+};
+
+const getOptionSuffixText = (option = {}) => {
+  if (typeof option.shortcut === 'string' && option.shortcut.length > 0) {
+    return option.shortcut;
+  }
+
+  if (typeof option.suffixText === 'string' && option.suffixText.length > 0) {
+    return option.suffixText;
+  }
+
+  return '';
+};
+
+const normalizeOption = (option = {}, index, currentValue, hoveredOptionId, hasIconColumn) => {
+  const isSelected = deepEqual(option.value, currentValue);
+  const isHovered = hoveredOptionId === index;
+  const icon = getOptionIcon(option);
+  const suffixText = getOptionSuffixText(option);
+
+  return {
+    ...option,
+    isSelected,
+    bgc: isHovered ? 'ac' : (isSelected ? 'mu' : ''),
+    hasIconSlot: hasIconColumn,
+    icon,
+    hasIcon: icon.length > 0,
+    iconColor: 'fg',
+    c: 'fg',
+    suffixText,
+    hasSuffixText: suffixText.length > 0,
+    suffixTextColor: 'mu-fg',
+  };
+};
+
 export const createInitialState = () => Object.freeze({
   isOpen: false,
   position: {
@@ -49,22 +88,17 @@ export const selectViewData = ({ state, props }) => {
   let isPlaceholderLabel = true;
 
   const options = props.options || [];
-  const selectedOption = options.find(opt => deepEqual(opt.value, currentValue));
+  const selectedOption = options.find((opt) => deepEqual(opt.value, currentValue));
   if (selectedOption) {
     displayLabel = selectedOption.label;
     isPlaceholderLabel = false;
   }
 
-  // Map options to include isSelected flag and computed background color
+  const hasIconColumn = options.some((option) => hasOwnProp(option, 'icon'));
   const optionsWithSelection = options.map((option, index) => {
-    const isSelected = deepEqual(option.value, currentValue);
-    const isHovered = state.hoveredOptionId === index;
-    return {
-      ...option,
-      isSelected,
-      bgc: isHovered ? 'ac' : (isSelected ? 'mu' : '')
-    };
+    return normalizeOption(option, index, currentValue, state.hoveredOptionId, hasIconColumn);
   });
+  const selectedOptionView = optionsWithSelection.find((option) => option.isSelected);
 
   return {
     containerAttrString,
@@ -75,6 +109,12 @@ export const selectViewData = ({ state, props }) => {
     selectedValue: currentValue,
     selectedLabel: displayLabel,
     selectedLabelColor: isPlaceholderLabel ? "mu-fg" : "fg",
+    selectedIcon: selectedOptionView?.icon || "",
+    hasSelectedIcon: !!selectedOptionView?.hasIcon,
+    selectedIconColor: isPlaceholderLabel ? "mu-fg" : "fg",
+    selectedSuffixText: selectedOptionView?.suffixText || "",
+    hasSelectedSuffixText: !!selectedOptionView?.hasSuffixText,
+    selectedSuffixTextColor: "mu-fg",
     selectButtonCursor: isDisabled ? "not-allowed" : "pointer",
     selectButtonHoverBorderColor: isDisabled ? "bo" : "ac",
     selectButtonTabIndex: isDisabled ? -1 : 0,

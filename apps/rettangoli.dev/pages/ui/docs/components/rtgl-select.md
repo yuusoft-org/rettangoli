@@ -66,7 +66,7 @@ Use `options` as data source and listen to `value-change`.
 | --- | --- | --- | --- |
 | Placeholder | `placeholder` | string | `Select an option` |
 | Selected Value | `selected-value` / `selectedValue` | any | - |
-| Options | `options` (property) | `{ label: string, value: any, testId?: string }[]` | `[]` |
+| Options | `options` (property) | `{ label: string, value: any, icon?: string, shortcut?: string, suffixText?: string, testId?: string }[]` | `[]` |
 | No Clear | `no-clear` | boolean | off |
 | Add Option | `addOption` (property) | `{ label?: string }` | - |
 | Disabled | `disabled` | boolean | `false` |
@@ -88,6 +88,9 @@ Define selectable entries through the `options` property.
 
 - Each option should include `label` and `value`.
 - `value` can be primitive or object.
+- `icon` renders a leading icon in the menu and selected trigger.
+- `shortcut` renders right-side trailing text and takes precedence over `suffixText`.
+- `suffixText` renders right-side trailing text when `shortcut` is not provided.
 - `testId` is optional and useful for testing.
 
 ```html codePreview
@@ -104,6 +107,21 @@ Define selectable entries through the `options` property.
 </script>
 ```
 
+```html codePreview
+<rtgl-select id="command-select" placeholder="Choose command"></rtgl-select>
+
+<script>
+  const select = document.getElementById("command-select");
+  select.options = [
+    { value: "copy", label: "Copy", icon: "text", shortcut: "Cmd+C" },
+    { value: "paste", label: "Paste", icon: "threeDots", shortcut: "Cmd+V" },
+    { value: "info", label: "Details", icon: "info", suffixText: "Beta" },
+  ];
+  select.selectedValue = "copy";
+  select.render();
+</script>
+```
+
 ## Selected Value
 
 Set initial/current selection via `selectedValue` or `selected-value`.
@@ -111,6 +129,7 @@ Set initial/current selection via `selectedValue` or `selected-value`.
 ### Behavior & precedence
 
 - If `selectedValue` matches an option, that label is shown.
+- Matching options also surface their `icon` and trailing text in the trigger.
 - If it does not match, placeholder label is shown.
 - Clearing emits `value-change` with `value: undefined`.
 
