@@ -1,0 +1,37 @@
+---
+title: "Global UI - Toast Auto-close"
+diffThreshold: 2
+description: Verifies toast messages disappear automatically after the default 3 second timeout.
+specs:
+  - A toast is visible shortly after it is shown.
+  - The toast stack is empty after the default timeout elapses.
+steps:
+  - action: customEvent
+    name: vt:show-toast
+  - action: wait
+    ms: 200
+  - action: screenshot
+  - action: wait
+    ms: 3200
+  - action: screenshot
+---
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="lg" h="100vh" w="f" p="lg">
+  <rtgl-text>Toast auto-close visual test surface</rtgl-text>
+  <rtgl-text c="mu-fg">The second screenshot should show no remaining toast.</rtgl-text>
+</rtgl-view>
+
+<script>
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+
+  const globalUI = {
+    showToast: (options) => {
+      globalUIElement.transformedHandlers.handleShowToast(options);
+    },
+  };
+
+  window.addEventListener('vt:show-toast', () => {
+    globalUI.showToast({ message: 'This toast should disappear automatically.' });
+  });
+</script>

@@ -28,7 +28,20 @@ refs:
         handler: handleDropdownClose
       item-click:
         handler: handleDropdownItemClick
+styles:
+  .toast-layer:
+    pointer-events: none
+  .toast-card:
+    pointer-events: auto
+    width: fit-content
+    max-width: min(480px, calc(100vw - 2 * var(--spacing-md)))
+  .toast-message:
+    overflow-wrap: anywhere
 template:
+  - rtgl-view class=toast-layer pos=fix edge=t z=2100 w=f ah=c g=sm p=md:
+      - $for toast, i in toasts:
+          - rtgl-view class=toast-card key=toast-${toast.id} bgc=su bc=bo bw=xs br=md shadow=md ph=md pv=sm:
+              - rtgl-text class=toast-message: ${toast.message}
   - rtgl-dialog#dialog ?open=${isDialogContainerOpen} s=${dialogSize}:
       - $if isFormDialogOpen:
           - rtgl-form#formDialog slot=content :form=${formDialogConfig.form} :defaultValues=${formDialogConfig.defaultValues} :context=${formDialogConfig.context} ?disabled=${formDialogConfig.disabled} key=form-dialog-${formDialogConfig.key}: null

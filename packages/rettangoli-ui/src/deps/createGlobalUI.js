@@ -1,7 +1,7 @@
 /**
  * Creates a GlobalUI manager instance for controlling global UI components.
  * Provides methods for showing alerts, confirm dialogs, form dialogs,
- * dropdown menus, and closing all UI components.
+ * dropdown menus, toasts, and closing all UI components.
  *
  * @param {HTMLElement} globalUIElement - The globalUI component element
  * @returns {Object} GlobalUI manager instance
@@ -12,6 +12,7 @@
  * @returns {Function} returns.showFormDialog - Show a form dialog
  * @returns {Function} returns.showComponentDialog - Show a component dialog
  * @returns {Function} returns.showDropdownMenu - Show a dropdown menu
+ * @returns {Function} returns.showToast - Show a temporary toast message
  * @returns {Function} returns.closeAll - General-purpose function to close all currently open UI components
  */
 const createGlobalUI = (globalUIElement) => {
@@ -162,8 +163,25 @@ const createGlobalUI = (globalUIElement) => {
     },
 
     /**
+     * Shows a top-centered toast message that auto-dismisses after 3 seconds.
+     *
+     * @param {Object} options - Toast configuration options
+     * @param {string} options.message - The toast message (required)
+     * @returns {void}
+     * @throws {Error} If globalUIElement is not initialized
+     */
+    showToast: (options) => {
+      if(!globalUIElement)
+      {
+        throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
+      }
+      globalUIElement.transformedHandlers.handleShowToast(options);
+    },
+
+    /**
      * General-purpose function to close all currently open UI components.
-     * This includes dialogs, popovers, tooltips, selects, dropdown menus, and any other floating UI elements.
+     * This includes dialogs, dropdown menus, toasts, and any other floating UI elements
+     * managed by rtgl-global-ui.
      * Useful for programmatically cleaning up the entire UI surface.
      *
      * @returns {Promise<void>} Promise that resolves when all UI components are closed

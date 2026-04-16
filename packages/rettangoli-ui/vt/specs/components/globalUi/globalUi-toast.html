@@ -1,0 +1,36 @@
+---
+title: "Global UI - Toast"
+diffThreshold: 2
+description: Verifies top-centered toast rendering and stacked layout for multiple messages.
+specs:
+  - Toasts render in a fixed top-center stack.
+  - Multiple toasts keep creation order while visible together.
+steps:
+  - action: customEvent
+    name: vt:show-toasts
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="lg" h="100vh" w="f" p="lg">
+  <rtgl-text>Toast visual test surface</rtgl-text>
+  <rtgl-text c="mu-fg">The screenshots should capture the active top-center toast stack.</rtgl-text>
+</rtgl-view>
+
+<script>
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+
+  const globalUI = {
+    showToast: (options) => {
+      globalUIElement.transformedHandlers.handleShowToast(options);
+    },
+  };
+
+  window.addEventListener('vt:show-toasts', () => {
+    globalUI.showToast({ message: 'Copied to clipboard.' });
+    globalUI.showToast({ message: 'Theme updated successfully.' });
+    globalUI.showToast({ message: 'Background build started.' });
+  });
+</script>

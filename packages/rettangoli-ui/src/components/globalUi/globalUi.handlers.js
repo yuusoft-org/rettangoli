@@ -1,3 +1,6 @@
+const TOAST_DURATION_MS = 3000;
+const toastTimeoutsByGlobalUI = new WeakMap();
+
 const clearComponentDialogBody = (refs) => {
   if (!refs) {
     return;
@@ -72,6 +75,54 @@ const createUiPromise = (globalUI, { rejectOnError = false } = {}) => {
       });
     }
   });
+};
+
+const getToastTimeouts = (globalUI) => {
+  let timeouts = toastTimeoutsByGlobalUI.get(globalUI);
+
+  if (!timeouts) {
+    timeouts = new Map();
+    toastTimeoutsByGlobalUI.set(globalUI, timeouts);
+  }
+
+  return timeouts;
+};
+
+const clearToastTimeout = (globalUI, toastId) => {
+  const timeouts = toastTimeoutsByGlobalUI.get(globalUI);
+  const timeoutId = timeouts?.get(toastId);
+
+  if (timeoutId !== undefined) {
+    clearTimeout(timeoutId);
+    timeouts.delete(toastId);
+  }
+};
+
+const clearAllToastTimeouts = (globalUI) => {
+  const timeouts = toastTimeoutsByGlobalUI.get(globalUI);
+
+  if (!timeouts) {
+    return;
+  }
+
+  for (const timeoutId of timeouts.values()) {
+    clearTimeout(timeoutId);
+  }
+
+  timeouts.clear();
+};
+
+const scheduleToastRemoval = ({ store, render, globalUI }, toastId) => {
+  clearToastTimeout(globalUI, toastId);
+
+  const timeouts = getToastTimeouts(globalUI);
+  const timeoutId = setTimeout(() => {
+    timeouts.delete(toastId);
+    store.removeToast({ id: toastId });
+    render();
+  }, TOAST_DURATION_MS);
+
+  timeouts.set(toastId, timeoutId);
 };
 
 const scheduleFormDialogMount = (deps, expectedKey) => {
@@ -218,6 +269,14 @@ export const handleShowConfirm = async (deps, payload) => {
   return createUiPromise(globalUI);
 };
 
+export const handleShowToast = (deps, payload) => {
+  const { store, render, globalUI } = deps;
+  const toastId = store.addToast(payload);
+
+  render();
+  scheduleToastRemoval({ store, render, globalUI }, toastId);
+};
+
 /**
  * Shows a dropdown menu at the specified position with the given items.
  * Closes any existing dialog or dropdown menu before showing the dropdown menu.
@@ -322,7 +381,21 @@ export const handleFormFieldEvent = (deps, payload) => {
  */
 export const handleCloseAll = (deps) => {
   const { store, render, globalUI, refs } = deps;
-  closeCurrentUi({ store, render, globalUI, refs, emitResult: true });
+  clearAllToastTimeouts(globalUI);
+  const hasToasts = (store.selectToasts?.().length ?? 0) > 0;
+
+  if (hasToasts) {
+    store.clearToasts();
+  }
+
+  if (store.selectIsOpen()) {
+    closeCurrentUi({ store, render, globalUI, refs, emitResult: true });
+    return;
+  }
+
+  if (hasToasts) {
+    render();
+  }
 };
 
 export const handleComponentDialogAction = async (deps, payload) => {

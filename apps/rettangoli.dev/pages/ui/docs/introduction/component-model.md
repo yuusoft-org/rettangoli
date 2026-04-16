@@ -69,7 +69,7 @@ For responsive behavior, see [Responsiveness](/ui/docs/introduction/responsivene
 | `rtgl-card` | structured content surface | `head`/`desc` header, size-based shell rhythm, default body slot |
 | `rtgl-dropdown-menu` | contextual menu overlay | positioned menu, item/label/separator rows, close + item events |
 | `rtgl-form` | schema-driven form workflow | field schema, defaults, actions, `form-input`, `form-change`, `form-action`, `form-field-event` |
-| `rtgl-global-ui` | app-level interaction layer | alert/confirm/dropdown flows with promise-like API |
+| `rtgl-global-ui` | app-level interaction layer | alert/confirm/dropdown flows plus fire-and-forget toasts |
 | `rtgl-navbar` | top navigation shell | configurable start area, right slot, start click event |
 | `rtgl-page-outline` | document section tracking | target and scroll container linkage, active offset |
 | `rtgl-popover-input` | inline popover editing | popover value editing, value events |
