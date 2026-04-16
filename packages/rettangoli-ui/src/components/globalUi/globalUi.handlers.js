@@ -1,4 +1,5 @@
 const TOAST_DURATION_MS = 3000;
+const TOAST_EXIT_DURATION_MS = 180;
 const toastTimeoutsByGlobalUI = new WeakMap();
 
 const clearComponentDialogBody = (refs) => {
@@ -90,10 +91,11 @@ const getToastTimeouts = (globalUI) => {
 
 const clearToastTimeout = (globalUI, toastId) => {
   const timeouts = toastTimeoutsByGlobalUI.get(globalUI);
-  const timeoutId = timeouts?.get(toastId);
+  const timeoutIds = timeouts?.get(toastId);
 
-  if (timeoutId !== undefined) {
-    clearTimeout(timeoutId);
+  if (timeoutIds) {
+    clearTimeout(timeoutIds.exitTimerId);
+    clearTimeout(timeoutIds.removeTimerId);
     timeouts.delete(toastId);
   }
 };
@@ -105,8 +107,9 @@ const clearAllToastTimeouts = (globalUI) => {
     return;
   }
 
-  for (const timeoutId of timeouts.values()) {
-    clearTimeout(timeoutId);
+  for (const timeoutIds of timeouts.values()) {
+    clearTimeout(timeoutIds.exitTimerId);
+    clearTimeout(timeoutIds.removeTimerId);
   }
 
   timeouts.clear();
@@ -116,13 +119,21 @@ const scheduleToastRemoval = ({ store, render, globalUI }, toastId) => {
   clearToastTimeout(globalUI, toastId);
 
   const timeouts = getToastTimeouts(globalUI);
-  const timeoutId = setTimeout(() => {
+  const exitTimerId = setTimeout(() => {
+    store.setToastPhase?.({ id: toastId, phase: "exiting" });
+    render();
+  }, Math.max(0, TOAST_DURATION_MS - TOAST_EXIT_DURATION_MS));
+
+  const removeTimerId = setTimeout(() => {
     timeouts.delete(toastId);
     store.removeToast({ id: toastId });
     render();
   }, TOAST_DURATION_MS);
 
-  timeouts.set(toastId, timeoutId);
+  timeouts.set(toastId, {
+    exitTimerId,
+    removeTimerId,
+  });
 };
 
 const scheduleFormDialogMount = (deps, expectedKey) => {

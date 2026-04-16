@@ -16,6 +16,7 @@ import {
   closeAll,
   createInitialState,
   removeToast,
+  setToastPhase,
   setAlertConfig,
   setComponentDialogConfig,
 } from "../src/components/globalUi/globalUi.store.js";
@@ -33,6 +34,7 @@ const createStore = () => {
     selectComponentDialogConfig: () => state.componentDialogConfig,
     addToast: (payload) => addToast({ state }, payload),
     removeToast: (payload) => removeToast({ state }, payload),
+    setToastPhase: (payload) => setToastPhase({ state }, payload),
     clearToasts: () => clearToasts({ state }),
     setAlertConfig: (payload) => setAlertConfig({ state }, payload),
     setComponentDialogConfig: (payload) => setComponentDialogConfig({ state }, payload),
@@ -382,12 +384,13 @@ describe("rtgl-global-ui toast handlers", () => {
         id: "toast-1",
         message: "Runtime toast",
         size: "sm",
+        phase: "active",
       },
     ]);
 
     await vi.advanceTimersByTimeAsync(3000);
     expect(store.selectToasts()).toEqual([]);
-    expect(render).toHaveBeenCalledTimes(2);
+    expect(render).toHaveBeenCalledTimes(3);
 
     vi.useRealTimers();
   });
@@ -405,16 +408,34 @@ describe("rtgl-global-ui toast handlers", () => {
         id: "toast-1",
         message: "Copied to clipboard.",
         size: "sm",
+        phase: "active",
       },
     ]);
     expect(deps.render).toHaveBeenCalledTimes(1);
 
-    await vi.advanceTimersByTimeAsync(2999);
-    expect(deps.store.getState().toasts).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(2819);
+    expect(deps.store.getState().toasts).toEqual([
+      {
+        id: "toast-1",
+        message: "Copied to clipboard.",
+        size: "sm",
+        phase: "active",
+      },
+    ]);
 
     await vi.advanceTimersByTimeAsync(1);
+    expect(deps.store.getState().toasts).toEqual([
+      {
+        id: "toast-1",
+        message: "Copied to clipboard.",
+        size: "sm",
+        phase: "exiting",
+      },
+    ]);
+
+    await vi.advanceTimersByTimeAsync(180);
     expect(deps.store.getState().toasts).toEqual([]);
-    expect(deps.render).toHaveBeenCalledTimes(2);
+    expect(deps.render).toHaveBeenCalledTimes(3);
 
     vi.useRealTimers();
   });
@@ -471,16 +492,19 @@ describe("rtgl-global-ui toast handlers", () => {
         id: "toast-1",
         message: "Wide toast",
         size: "lg",
+        phase: "active",
       },
       {
         id: "toast-2",
         message: "Alias toast",
         size: "md",
+        phase: "active",
       },
       {
         id: "toast-3",
         message: "Fallback toast",
         size: "sm",
+        phase: "active",
       },
     ]);
 

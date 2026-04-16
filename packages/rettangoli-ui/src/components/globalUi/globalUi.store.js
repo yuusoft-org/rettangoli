@@ -1,5 +1,6 @@
 const VALID_DIALOG_SIZES = new Set(["sm", "md", "lg", "f"]);
 const VALID_TOAST_SIZES = new Set(["sm", "md", "lg"]);
+const VALID_TOAST_PHASES = new Set(["active", "exiting"]);
 const VALID_COMPONENT_DIALOG_ROLES = new Set(["confirm", "cancel"]);
 
 const DEFAULT_COMPONENT_DIALOG_BUTTONS = Object.freeze([
@@ -32,6 +33,10 @@ const normalizeDialogSize = (value, fallback = "md") => {
 
 const normalizeToastSize = (value, fallback = "sm") => {
   return VALID_TOAST_SIZES.has(value) ? value : fallback;
+};
+
+const normalizeToastPhase = (value, fallback = "active") => {
+  return VALID_TOAST_PHASES.has(value) ? value : fallback;
 };
 
 const normalizeComponentDialogActions = (value) => {
@@ -218,6 +223,7 @@ export const addToast = ({ state }, options = {}) => {
     id: `toast-${nextToastId}`,
     message: options.message,
     size: normalizeToastSize(options.size ?? options.s, "sm"),
+    phase: "active",
   };
 
   state.nextToastId = nextToastId;
@@ -230,6 +236,23 @@ export const removeToast = ({ state }, options = {}) => {
   }
 
   state.toasts = (state.toasts ?? []).filter((toast) => toast.id !== options.id);
+};
+
+export const setToastPhase = ({ state }, options = {}) => {
+  if (typeof options.id !== "string" || options.id.length === 0) {
+    return;
+  }
+
+  state.toasts = (state.toasts ?? []).map((toast) => {
+    if (toast.id !== options.id) {
+      return toast;
+    }
+
+    return {
+      ...toast,
+      phase: normalizeToastPhase(options.phase, "active"),
+    };
+  });
 };
 
 export const clearToasts = ({ state }) => {
@@ -286,6 +309,7 @@ export const selectViewData = ({ state }) => {
       ? state.toasts.map((toast) => ({
           ...toast,
           size: normalizeToastSize(toast.size, "sm"),
+          phase: normalizeToastPhase(toast.phase, "active"),
         }))
       : [],
     isDialogOpen,

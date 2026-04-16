@@ -1,9 +1,9 @@
 ---
 title: "Global UI - Toast"
 diffThreshold: 2
-description: Verifies the fixed-width centered toast surface and stacked lifecycle from a single trigger button.
+description: Verifies the fixed-width centered toast surface, independent toast triggers, and stacked lifecycle.
 specs:
-  - A single trigger button can start the toast sequence.
+  - Each toast trigger button shows only its own toast.
   - Longer toast content wraps within the fixed-width toast surface.
   - Toasts render in a fixed top-center stack.
   - Multiple toasts keep creation order while visible together.
@@ -11,7 +11,7 @@ specs:
 skipInitialScreenshot: true
 steps:
   - action: select
-    testId: show-toast-button
+    testId: show-toast-long
     steps:
       - action: click
   - action: wait
@@ -23,7 +23,19 @@ steps:
       - "This toast intentionally uses a longer message so the fixed-width surface wraps to a second line."
   - action: screenshot
   - action: wait
-    ms: 1650
+    ms: 700
+  - action: select
+    testId: show-toast-medium
+    steps:
+      - action: click
+  - action: wait
+    ms: 700
+  - action: select
+    testId: show-toast-short
+    steps:
+      - action: click
+  - action: wait
+    ms: 250
   - action: assert
     type: js
     fn: vtToast.getMessages
@@ -33,7 +45,7 @@ steps:
       - "Background sync queued."
   - action: screenshot
   - action: wait
-    ms: 1400
+    ms: 1200
   - action: assert
     type: js
     fn: vtToast.getMessages
@@ -45,12 +57,15 @@ steps:
 <rtgl-global-ui></rtgl-global-ui>
 
 <rtgl-view h="100vh" w="100vw" ah="c" av="c" bgc="ca">
-  <rtgl-button id="show-toast-button" data-testid="show-toast-button">Show Toast</rtgl-button>
+  <rtgl-view d="h" g="md" wrap ah="c">
+    <rtgl-button id="show-toast-long" data-testid="show-toast-long">Show Long Toast</rtgl-button>
+    <rtgl-button id="show-toast-medium" data-testid="show-toast-medium">Show Medium Toast</rtgl-button>
+    <rtgl-button id="show-toast-short" data-testid="show-toast-short">Show Short Toast</rtgl-button>
+  </rtgl-view>
 </rtgl-view>
 
 <script>
   const globalUIElement = document.querySelector('rtgl-global-ui');
-  let sequenceStarted = false;
 
   const globalUI = {
     showToast: (options) => {
@@ -65,35 +80,32 @@ steps:
 
   window.vtToast = {
     getMessages,
-    showSequence: () => {
-      if (sequenceStarted) {
-        return 'already-started';
-      }
-
+    showToast: (options) => {
       if (!globalUIElement.transformedHandlers?.handleShowToast) {
-        setTimeout(runSequence, 50);
-        return 'started';
+        setTimeout(() => {
+          globalUI.showToast(options);
+        }, 50);
+        return 'queued';
       }
 
-      runSequence();
-      return 'started';
+      globalUI.showToast(options);
+      return 'shown';
     },
   };
 
-  document.getElementById('show-toast-button').addEventListener('click', () => {
-    window.vtToast.showSequence();
-  });
-
-  const runSequence = () => {
-    sequenceStarted = true;
-    globalUI.showToast({
+  document.getElementById('show-toast-long').addEventListener('click', () => {
+    window.vtToast.showToast({
       message: 'This toast intentionally uses a longer message so the fixed-width surface wraps to a second line.',
     });
-    setTimeout(() => {
-      globalUI.showToast({ message: 'Theme updated successfully.' });
-    }, 800);
-    setTimeout(() => {
-      globalUI.showToast({ message: 'Background sync queued.' });
-    }, 1600);
-  };
+  });
+  document.getElementById('show-toast-medium').addEventListener('click', () => {
+    window.vtToast.showToast({
+      message: 'Theme updated successfully.',
+    });
+  });
+  document.getElementById('show-toast-short').addEventListener('click', () => {
+    window.vtToast.showToast({
+      message: 'Background sync queued.',
+    });
+  });
 </script>
