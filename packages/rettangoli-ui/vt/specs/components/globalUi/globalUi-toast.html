@@ -1,0 +1,111 @@
+---
+title: "Global UI - Toast"
+diffThreshold: 2
+description: Verifies the fixed-width centered toast surface, independent toast triggers, and stacked lifecycle.
+specs:
+  - Each toast trigger button shows only its own toast.
+  - Longer toast content wraps within the fixed-width toast surface.
+  - Toasts render in a fixed top-center stack.
+  - Multiple toasts keep creation order while visible together.
+  - Older toasts expire before newer ones when shown at different times.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: show-toast-long
+    steps:
+      - action: click
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    fn: vtToast.getMessages
+    value:
+      - "This toast intentionally uses a longer message so the fixed-width surface wraps to a second line."
+  - action: screenshot
+  - action: wait
+    ms: 700
+  - action: select
+    testId: show-toast-medium
+    steps:
+      - action: click
+  - action: wait
+    ms: 700
+  - action: select
+    testId: show-toast-short
+    steps:
+      - action: click
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    fn: vtToast.getMessages
+    value:
+      - "This toast intentionally uses a longer message so the fixed-width surface wraps to a second line."
+      - "Theme updated successfully."
+      - "Background sync queued."
+  - action: screenshot
+  - action: wait
+    ms: 1200
+  - action: assert
+    type: js
+    fn: vtToast.getMessages
+    value:
+      - "Theme updated successfully."
+      - "Background sync queued."
+  - action: screenshot
+---
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view h="100vh" w="100vw" ah="c" av="c" bgc="ca">
+  <rtgl-view d="h" g="md" wrap ah="c">
+    <rtgl-button id="show-toast-long" data-testid="show-toast-long">Show Long Toast</rtgl-button>
+    <rtgl-button id="show-toast-medium" data-testid="show-toast-medium">Show Medium Toast</rtgl-button>
+    <rtgl-button id="show-toast-short" data-testid="show-toast-short">Show Short Toast</rtgl-button>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+
+  const globalUI = {
+    showToast: (options) => {
+      globalUIElement.transformedHandlers.handleShowToast(options);
+    },
+  };
+
+  const getMessages = () => Array.from(
+    (globalUIElement.shadowRoot ?? globalUIElement).querySelectorAll('.toast-message'),
+    (node) => node.textContent.trim(),
+  );
+
+  window.vtToast = {
+    getMessages,
+    showToast: (options) => {
+      if (!globalUIElement.transformedHandlers?.handleShowToast) {
+        setTimeout(() => {
+          globalUI.showToast(options);
+        }, 50);
+        return 'queued';
+      }
+
+      globalUI.showToast(options);
+      return 'shown';
+    },
+  };
+
+  document.getElementById('show-toast-long').addEventListener('click', () => {
+    window.vtToast.showToast({
+      message: 'This toast intentionally uses a longer message so the fixed-width surface wraps to a second line.',
+    });
+  });
+  document.getElementById('show-toast-medium').addEventListener('click', () => {
+    window.vtToast.showToast({
+      message: 'Theme updated successfully.',
+    });
+  });
+  document.getElementById('show-toast-short').addEventListener('click', () => {
+    window.vtToast.showToast({
+      message: 'Background sync queued.',
+    });
+  });
+</script>

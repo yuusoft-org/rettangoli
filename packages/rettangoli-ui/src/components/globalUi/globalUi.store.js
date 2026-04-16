@@ -1,4 +1,6 @@
 const VALID_DIALOG_SIZES = new Set(["sm", "md", "lg", "f"]);
+const VALID_TOAST_SIZES = new Set(["sm", "md", "lg"]);
+const VALID_TOAST_PHASES = new Set(["active", "exiting"]);
 const VALID_COMPONENT_DIALOG_ROLES = new Set(["confirm", "cancel"]);
 
 const DEFAULT_COMPONENT_DIALOG_BUTTONS = Object.freeze([
@@ -27,6 +29,14 @@ const normalizeObject = (value) => {
 
 const normalizeDialogSize = (value, fallback = "md") => {
   return VALID_DIALOG_SIZES.has(value) ? value : fallback;
+};
+
+const normalizeToastSize = (value, fallback = "sm") => {
+  return VALID_TOAST_SIZES.has(value) ? value : fallback;
+};
+
+const normalizeToastPhase = (value, fallback = "active") => {
+  return VALID_TOAST_PHASES.has(value) ? value : fallback;
 };
 
 const normalizeComponentDialogActions = (value) => {
@@ -84,6 +94,8 @@ const createDefaultComponentDialogConfig = () => ({
 export const createInitialState = () => Object.freeze({
   isOpen: false,
   uiType: "dialog", // "dialog" | "dropdown" | "formDialog" | "componentDialog"
+  nextToastId: 0,
+  toasts: [],
   config: {
     status: undefined, // undefined | info | warning | error
     title: "",
@@ -201,6 +213,52 @@ export const setComponentDialogConfig = ({ state }, options = {}) => {
   state.isOpen = true;
 };
 
+export const addToast = ({ state }, options = {}) => {
+  if (typeof options.message !== "string" || options.message.length === 0) {
+    throw new Error("message is required for showToast");
+  }
+
+  const nextToastId = (state.nextToastId ?? 0) + 1;
+  const toast = {
+    id: `toast-${nextToastId}`,
+    message: options.message,
+    size: normalizeToastSize(options.size ?? options.s, "sm"),
+    phase: "active",
+  };
+
+  state.nextToastId = nextToastId;
+  state.toasts = [...(state.toasts ?? []), toast];
+};
+
+export const removeToast = ({ state }, options = {}) => {
+  if (typeof options.id !== "string" || options.id.length === 0) {
+    return;
+  }
+
+  state.toasts = (state.toasts ?? []).filter((toast) => toast.id !== options.id);
+};
+
+export const setToastPhase = ({ state }, options = {}) => {
+  if (typeof options.id !== "string" || options.id.length === 0) {
+    return;
+  }
+
+  state.toasts = (state.toasts ?? []).map((toast) => {
+    if (toast.id !== options.id) {
+      return toast;
+    }
+
+    return {
+      ...toast,
+      phase: normalizeToastPhase(options.phase, "active"),
+    };
+  });
+};
+
+export const clearToasts = ({ state }) => {
+  state.toasts = [];
+};
+
 export const closeAll = ({ state }) => {
   state.isOpen = false;
   state.uiType = "dialog"; // Reset to default type
@@ -212,6 +270,7 @@ export const selectFormDialogConfig = ({ state }) => state.formDialogConfig;
 export const selectComponentDialogConfig = ({ state }) => state.componentDialogConfig;
 export const selectUiType = ({ state }) => state.uiType;
 export const selectIsOpen = ({ state }) => state.isOpen;
+export const selectToasts = ({ state }) => state.toasts ?? [];
 
 export const selectViewData = ({ state }) => {
   const isDialogOpen = state.isOpen && state.uiType === "dialog";
@@ -246,6 +305,13 @@ export const selectViewData = ({ state }) => {
       actions: componentDialogConfig.actions ?? normalizeComponentDialogActions(),
       key: componentDialogConfig.key ?? 0,
     },
+    toasts: Array.isArray(state.toasts)
+      ? state.toasts.map((toast) => ({
+          ...toast,
+          size: normalizeToastSize(toast.size, "sm"),
+          phase: normalizeToastPhase(toast.phase, "active"),
+        }))
+      : [],
     isDialogOpen,
     isFormDialogOpen,
     isComponentDialogOpen,

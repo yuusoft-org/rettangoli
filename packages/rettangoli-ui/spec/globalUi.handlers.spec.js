@@ -1,18 +1,26 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { bindStore } from "../../rettangoli-fe/src/core/runtime/store.js";
 import createGlobalUI from "../src/deps/createGlobalUI.js";
 import {
+  handleCloseAll,
   handleConfirm,
   handleComponentDialogAction,
   handleShowAlert,
   handleShowComponentDialog,
+  handleShowToast,
 } from "../src/components/globalUi/globalUi.handlers.js";
 import {
+  addToast,
+  clearToasts,
   closeAll,
   createInitialState,
+  removeToast,
+  setToastPhase,
   setAlertConfig,
   setComponentDialogConfig,
 } from "../src/components/globalUi/globalUi.store.js";
+import * as globalUiStore from "../src/components/globalUi/globalUi.store.js";
 
 const createStore = () => {
   const state = structuredClone(createInitialState());
@@ -22,7 +30,12 @@ const createStore = () => {
     selectConfig: () => state.config,
     selectIsOpen: () => state.isOpen,
     selectUiType: () => state.uiType,
+    selectToasts: () => state.toasts,
     selectComponentDialogConfig: () => state.componentDialogConfig,
+    addToast: (payload) => addToast({ state }, payload),
+    removeToast: (payload) => removeToast({ state }, payload),
+    setToastPhase: (payload) => setToastPhase({ state }, payload),
+    clearToasts: () => clearToasts({ state }),
     setAlertConfig: (payload) => setAlertConfig({ state }, payload),
     setComponentDialogConfig: (payload) => setComponentDialogConfig({ state }, payload),
     closeAll: () => closeAll({ state }),
@@ -345,5 +358,197 @@ describe("rtgl-global-ui component dialog handlers", () => {
 
     handleConfirm(deps);
     await expect(alertPromise).resolves.toBeNull();
+  });
+});
+
+describe("rtgl-global-ui toast handlers", () => {
+  it("works with the Immer-backed runtime store used by the browser", async () => {
+    vi.useFakeTimers();
+    const store = bindStore(globalUiStore, {}, {});
+    const render = vi.fn();
+    const globalUI = createGlobalUI();
+
+    expect(() => {
+      handleShowToast({
+        store,
+        render,
+        globalUI,
+        refs: {},
+      }, {
+        message: "Runtime toast",
+      });
+    }).not.toThrow();
+
+    expect(store.selectToasts()).toEqual([
+      {
+        id: "toast-1",
+        message: "Runtime toast",
+        size: "sm",
+        phase: "active",
+      },
+    ]);
+
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(store.selectToasts()).toEqual([]);
+    expect(render).toHaveBeenCalledTimes(3);
+
+    vi.useRealTimers();
+  });
+
+  it("adds a toast immediately and removes it after 3 seconds", async () => {
+    vi.useFakeTimers();
+    const deps = createDeps({});
+
+    handleShowToast(deps, {
+      message: "Copied to clipboard.",
+    });
+
+    expect(deps.store.getState().toasts).toEqual([
+      {
+        id: "toast-1",
+        message: "Copied to clipboard.",
+        size: "sm",
+        phase: "active",
+      },
+    ]);
+    expect(deps.render).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(2819);
+    expect(deps.store.getState().toasts).toEqual([
+      {
+        id: "toast-1",
+        message: "Copied to clipboard.",
+        size: "sm",
+        phase: "active",
+      },
+    ]);
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(deps.store.getState().toasts).toEqual([
+      {
+        id: "toast-1",
+        message: "Copied to clipboard.",
+        size: "sm",
+        phase: "exiting",
+      },
+    ]);
+
+    await vi.advanceTimersByTimeAsync(180);
+    expect(deps.store.getState().toasts).toEqual([]);
+    expect(deps.render).toHaveBeenCalledTimes(3);
+
+    vi.useRealTimers();
+  });
+
+  it("expires multiple toasts independently based on creation time", async () => {
+    vi.useFakeTimers();
+    const deps = createDeps({});
+
+    handleShowToast(deps, { message: "First toast" });
+    await vi.advanceTimersByTimeAsync(1000);
+    handleShowToast(deps, { message: "Second toast" });
+
+    expect(deps.store.getState().toasts.map((toast) => toast.message)).toEqual([
+      "First toast",
+      "Second toast",
+    ]);
+
+    await vi.advanceTimersByTimeAsync(1999);
+    expect(deps.store.getState().toasts.map((toast) => toast.message)).toEqual([
+      "First toast",
+      "Second toast",
+    ]);
+
+    await vi.advanceTimersByTimeAsync(1);
+    expect(deps.store.getState().toasts.map((toast) => toast.message)).toEqual([
+      "Second toast",
+    ]);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(deps.store.getState().toasts).toEqual([]);
+
+    vi.useRealTimers();
+  });
+
+  it("stores supported toast size presets and falls back to sm", async () => {
+    vi.useFakeTimers();
+    const deps = createDeps({});
+
+    handleShowToast(deps, {
+      message: "Wide toast",
+      size: "lg",
+    });
+    handleShowToast(deps, {
+      message: "Alias toast",
+      s: "md",
+    });
+    handleShowToast(deps, {
+      message: "Fallback toast",
+      size: "xl",
+    });
+
+    expect(deps.store.getState().toasts).toEqual([
+      {
+        id: "toast-1",
+        message: "Wide toast",
+        size: "lg",
+        phase: "active",
+      },
+      {
+        id: "toast-2",
+        message: "Alias toast",
+        size: "md",
+        phase: "active",
+      },
+      {
+        id: "toast-3",
+        message: "Fallback toast",
+        size: "sm",
+        phase: "active",
+      },
+    ]);
+
+    handleCloseAll(deps);
+    await vi.runAllTimersAsync();
+    vi.useRealTimers();
+  });
+
+  it("clears visible toasts and pending timers when closeAll runs", async () => {
+    vi.useFakeTimers();
+    const deps = createDeps({});
+
+    handleShowToast(deps, { message: "Queued toast" });
+    handleShowToast(deps, { message: "Another toast" });
+
+    expect(deps.store.getState().toasts).toHaveLength(2);
+
+    handleCloseAll(deps);
+    expect(deps.store.getState().toasts).toEqual([]);
+
+    await vi.runAllTimersAsync();
+    expect(deps.store.getState().toasts).toEqual([]);
+
+    vi.useRealTimers();
+  });
+});
+
+describe("createGlobalUI toast API", () => {
+  it("delegates showToast to the global UI element handlers", () => {
+    const handleShowToastSpy = vi.fn();
+    const globalUI = createGlobalUI({
+      transformedHandlers: {
+        handleShowToast: handleShowToastSpy,
+      },
+    });
+
+    globalUI.showToast({
+      message: "Saved.",
+      size: "lg",
+    });
+
+    expect(handleShowToastSpy).toHaveBeenCalledWith({
+      message: "Saved.",
+      size: "lg",
+    });
   });
 });

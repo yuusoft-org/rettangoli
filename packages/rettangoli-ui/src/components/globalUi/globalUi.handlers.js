@@ -1,3 +1,7 @@
+const TOAST_DURATION_MS = 3000;
+const TOAST_EXIT_DURATION_MS = 180;
+const toastTimeoutsByGlobalUI = new WeakMap();
+
 const clearComponentDialogBody = (refs) => {
   if (!refs) {
     return;
@@ -71,6 +75,64 @@ const createUiPromise = (globalUI, { rejectOnError = false } = {}) => {
         reject(error);
       });
     }
+  });
+};
+
+const getToastTimeouts = (globalUI) => {
+  let timeouts = toastTimeoutsByGlobalUI.get(globalUI);
+
+  if (!timeouts) {
+    timeouts = new Map();
+    toastTimeoutsByGlobalUI.set(globalUI, timeouts);
+  }
+
+  return timeouts;
+};
+
+const clearToastTimeout = (globalUI, toastId) => {
+  const timeouts = toastTimeoutsByGlobalUI.get(globalUI);
+  const timeoutIds = timeouts?.get(toastId);
+
+  if (timeoutIds) {
+    clearTimeout(timeoutIds.exitTimerId);
+    clearTimeout(timeoutIds.removeTimerId);
+    timeouts.delete(toastId);
+  }
+};
+
+const clearAllToastTimeouts = (globalUI) => {
+  const timeouts = toastTimeoutsByGlobalUI.get(globalUI);
+
+  if (!timeouts) {
+    return;
+  }
+
+  for (const timeoutIds of timeouts.values()) {
+    clearTimeout(timeoutIds.exitTimerId);
+    clearTimeout(timeoutIds.removeTimerId);
+  }
+
+  timeouts.clear();
+};
+
+const scheduleToastRemoval = ({ store, render, globalUI }, toastId) => {
+  clearToastTimeout(globalUI, toastId);
+
+  const timeouts = getToastTimeouts(globalUI);
+  const exitTimerId = setTimeout(() => {
+    store.setToastPhase?.({ id: toastId, phase: "exiting" });
+    render();
+  }, Math.max(0, TOAST_DURATION_MS - TOAST_EXIT_DURATION_MS));
+
+  const removeTimerId = setTimeout(() => {
+    timeouts.delete(toastId);
+    store.removeToast({ id: toastId });
+    render();
+  }, TOAST_DURATION_MS);
+
+  timeouts.set(toastId, {
+    exitTimerId,
+    removeTimerId,
   });
 };
 
@@ -218,6 +280,21 @@ export const handleShowConfirm = async (deps, payload) => {
   return createUiPromise(globalUI);
 };
 
+export const handleShowToast = (deps, payload) => {
+  const { store, render, globalUI } = deps;
+  store.addToast(payload);
+  render();
+
+  const toasts = store.selectToasts?.() ?? [];
+  const toastId = toasts[toasts.length - 1]?.id;
+
+  if (!toastId) {
+    return;
+  }
+
+  scheduleToastRemoval({ store, render, globalUI }, toastId);
+};
+
 /**
  * Shows a dropdown menu at the specified position with the given items.
  * Closes any existing dialog or dropdown menu before showing the dropdown menu.
@@ -322,7 +399,21 @@ export const handleFormFieldEvent = (deps, payload) => {
  */
 export const handleCloseAll = (deps) => {
   const { store, render, globalUI, refs } = deps;
-  closeCurrentUi({ store, render, globalUI, refs, emitResult: true });
+  clearAllToastTimeouts(globalUI);
+  const hasToasts = (store.selectToasts?.().length ?? 0) > 0;
+
+  if (hasToasts) {
+    store.clearToasts();
+  }
+
+  if (store.selectIsOpen()) {
+    closeCurrentUi({ store, render, globalUI, refs, emitResult: true });
+    return;
+  }
+
+  if (hasToasts) {
+    render();
+  }
 };
 
 export const handleComponentDialogAction = async (deps, payload) => {
