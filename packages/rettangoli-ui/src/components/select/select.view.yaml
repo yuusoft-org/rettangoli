@@ -48,17 +48,23 @@ template:
           - rtgl-svg svg=chevronDown wh=16 c=mu-fg: null
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs content-wh=300 content-g=xs content-sv=true content-pv=sm:
       - $for option, i in options:
-          - rtgl-view#option${i} w=f ph=lg pv=md cur=pointer bgc=${option.bgc} data-testid=${option.testId}:
-              - rtgl-view d=h av=c w=f g=md:
-                  - rtgl-view d=h av=c g=md w=1fg:
-                      - $if option.hasIconSlot:
-                          - $if option.hasIcon:
-                              - rtgl-svg wh=16 svg=${option.icon} c=${option.iconColor}: null
-                            $else:
-                              - div class=icon-placeholder aria-hidden="true": null
-                      - rtgl-text s=sm c=${option.c} w=1fg ellipsis: ${option.label}
-                  - $if option.hasSuffixText:
-                      - rtgl-text s=xs c=${option.suffixTextColor} ta=e: ${option.suffixText}
+          - $if option.isSection:
+              - rtgl-view w=f p=md:
+                  - rtgl-text s=xs c=mu-fg: ${option.label}
+            $elif option.isItem:
+              - rtgl-view#option${option.index} w=f ph=lg pv=md cur=pointer bgc=${option.bgc} data-testid=${option.testId}:
+                  - rtgl-view d=h av=c w=f g=md:
+                      - rtgl-view d=h av=c g=md w=1fg:
+                          - $if option.hasIconSlot:
+                              - $if option.hasIcon:
+                                  - rtgl-svg wh=16 svg=${option.icon} c=${option.iconColor}: null
+                                $else:
+                                  - div class=icon-placeholder aria-hidden="true": null
+                          - rtgl-text s=sm c=${option.c} w=1fg ellipsis: ${option.label}
+                      - $if option.hasSuffixText:
+                          - rtgl-text s=xs c=${option.suffixTextColor} ta=e: ${option.suffixText}
+            $elif option.isSeparator:
+              - rtgl-view w=f h=1 bgc=mu mv=sm: null
       - $if showAddOption:
           - rtgl-view w=f bw=xs bc=mu bwt=sm: null
           - rtgl-view#optionAdd w=f ph=lg pv=md cur=pointer bgc=${addOptionBgc} data-testid="select-add-option":

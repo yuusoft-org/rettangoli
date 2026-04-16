@@ -25,6 +25,18 @@ const stringifyProps = (props = {}) => {
 };
 
 const hasOwnProp = (object, key) => Object.prototype.hasOwnProperty.call(object || {}, key);
+const getOptionType = (option = {}) => {
+  if (option.type === 'section') {
+    return 'section';
+  }
+
+  if (option.type === 'separator') {
+    return 'separator';
+  }
+
+  return 'item';
+};
+const isSelectableOption = (option = {}) => getOptionType(option) === 'item';
 
 const getOptionIcon = (option = {}) => {
   return typeof option.icon === 'string' && option.icon.length > 0 ? option.icon : '';
@@ -43,6 +55,33 @@ const getOptionSuffixText = (option = {}) => {
 };
 
 const normalizeOption = (option = {}, index, currentValue, hoveredOptionId, hasIconColumn) => {
+  const type = getOptionType(option);
+  const isSection = type === 'section';
+  const isSeparator = type === 'separator';
+  const isItem = type === 'item';
+
+  if (isSection) {
+    return {
+      ...option,
+      index,
+      type,
+      isSection,
+      isSeparator,
+      isItem,
+    };
+  }
+
+  if (isSeparator) {
+    return {
+      ...option,
+      index,
+      type,
+      isSection,
+      isSeparator,
+      isItem,
+    };
+  }
+
   const isSelected = deepEqual(option.value, currentValue);
   const isHovered = hoveredOptionId === index;
   const icon = getOptionIcon(option);
@@ -50,6 +89,11 @@ const normalizeOption = (option = {}, index, currentValue, hoveredOptionId, hasI
 
   return {
     ...option,
+    index,
+    type,
+    isSection,
+    isSeparator,
+    isItem,
     isSelected,
     bgc: isHovered ? 'ac' : (isSelected ? 'mu' : ''),
     hasIconSlot: hasIconColumn,
@@ -88,17 +132,17 @@ export const selectViewData = ({ state, props }) => {
   let isPlaceholderLabel = true;
 
   const options = props.options || [];
-  const selectedOption = options.find((opt) => deepEqual(opt.value, currentValue));
+  const selectedOption = options.find((opt) => isSelectableOption(opt) && deepEqual(opt.value, currentValue));
   if (selectedOption) {
     displayLabel = selectedOption.label;
     isPlaceholderLabel = false;
   }
 
-  const hasIconColumn = options.some((option) => hasOwnProp(option, 'icon'));
+  const hasIconColumn = options.some((option) => isSelectableOption(option) && hasOwnProp(option, 'icon'));
   const optionsWithSelection = options.map((option, index) => {
     return normalizeOption(option, index, currentValue, state.hoveredOptionId, hasIconColumn);
   });
-  const selectedOptionView = optionsWithSelection.find((option) => option.isSelected);
+  const selectedOptionView = optionsWithSelection.find((option) => option.isItem && option.isSelected);
 
   return {
     containerAttrString,

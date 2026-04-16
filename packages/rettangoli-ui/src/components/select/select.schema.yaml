@@ -9,6 +9,12 @@ propsSchema:
       items:
         type: object
         properties:
+          type:
+            type: string
+            enum:
+              - section
+              - item
+              - separator
           label:
             type: string
           value:

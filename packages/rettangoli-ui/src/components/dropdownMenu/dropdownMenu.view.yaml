@@ -20,7 +20,7 @@ styles:
 template:
   - rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place} content-w=${w} content-h=${h} content-sv=true content-g=xs content-pv=sm:
       - $for item, i in items:
-          - $if item.isLabel:
+          - $if item.isSection:
               - rtgl-view w=f p=md:
                   - rtgl-text s=xs c=mu-fg: ${item.label}
             $elif item.isItem && item.isDisabled:

@@ -103,6 +103,75 @@ Use `w` to set a fixed width.
 - `read-only-text`
 - `slot`
 
+## Sections
+
+Use `type: "section"` to group related fields under a labeled block. Section rows are display-only; the nested `fields` still participate in normal form values, validation, and events.
+
+```html codePreview
+<rtgl-view id="section-form-container"></rtgl-view>
+
+<script>
+  const form = document.createElement("rtgl-form");
+  form.setAttribute("w", "420");
+
+  form.defaultValues = {
+    profile: { firstName: "Ada", lastName: "Lovelace" },
+    workspace: { role: "developer", access: "full" },
+  };
+
+  form.form = {
+    title: "Team Member Setup",
+    description: "Sections let you break larger forms into readable groups.",
+    fields: [
+      {
+        type: "section",
+        label: "Profile",
+        description: "Basic identity details",
+        fields: [
+          { name: "profile.firstName", type: "input-text", label: "First Name", required: true },
+          { name: "profile.lastName", type: "input-text", label: "Last Name", required: true },
+        ],
+      },
+      {
+        type: "section",
+        label: "Workspace Access",
+        description: "Nested selects work the same inside sections.",
+        fields: [
+          {
+            name: "workspace.role",
+            type: "select",
+            label: "Role",
+            options: [
+              { type: "section", label: "Build" },
+              { label: "Developer", value: "developer", icon: "text", shortcut: "Code" },
+              { label: "Designer", value: "designer", icon: "info", suffixText: "UI" },
+              { type: "separator" },
+              { type: "section", label: "Operations" },
+              { label: "Manager", value: "manager", icon: "threeDots", suffixText: "Ops" },
+            ],
+          },
+          {
+            name: "workspace.access",
+            type: "select",
+            label: "Access",
+            options: [
+              { type: "section", label: "Permissions" },
+              { label: "Full Access", value: "full" },
+              { label: "Limited Access", value: "limited" },
+            ],
+          },
+        ],
+      },
+    ],
+    actions: {
+      buttons: [{ id: "save", label: "Save", variant: "pr", validate: true }],
+    },
+  };
+
+  document.getElementById("section-form-container").appendChild(form);
+</script>
+```
+
 ## Events
 
 | Event | Detail | Description |

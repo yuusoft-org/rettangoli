@@ -1,9 +1,9 @@
 ---
-title: Select Icons And Suffix
-description: Verifies select menus render icons and trailing text in both the trigger and open list.
+title: Select Sections, Icons And Suffix
+description: Verifies select menus render flat section rows, separators, icons, and trailing text in both the trigger and open list.
 specs:
   - The selected trigger shows the option icon and shortcut text.
-  - The open menu keeps a reserved icon column and trailing metadata for all options.
+  - The open menu renders flat section rows and separators alongside option metadata.
 skipInitialScreenshot: true
 steps:
   - action: select
@@ -29,8 +29,11 @@ steps:
 <script>
   const select = document.getElementById("icon-select");
   select.options = [
+    { type: "section", label: "Clipboard" },
     { value: "copy", label: "Copy", icon: "text", shortcut: "Cmd+C" },
     { value: "paste", label: "Paste", icon: "threeDots", shortcut: "Cmd+V" },
+    { type: "separator" },
+    { type: "section", label: "Inspector" },
     { value: "details", label: "Details", icon: "info", suffixText: "Beta" },
   ];
   select.selectedValue = "copy";

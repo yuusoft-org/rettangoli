@@ -12,9 +12,10 @@ propsSchema:
           type:
             type: string
             enum:
-              - label
+              - section
               - item
               - separator
+              - label
           id:
             type: string
           icon:

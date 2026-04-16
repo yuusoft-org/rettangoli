@@ -28,7 +28,7 @@ A contextual floating menu for labels, actions, and separators.
 
   document.getElementById("open-menu").addEventListener("click", (e) => {
     menu.items = [
-      { label: "Section", type: "label" },
+      { label: "Section", type: "section" },
       { id: "settings", label: "Settings", path: "/settings" },
       { id: "profile", label: "Profile", href: "/profile" },
       { type: "separator" },
@@ -59,11 +59,14 @@ A contextual floating menu for labels, actions, and separators.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `label` | string | required for `label` and `item` rows |
-| `type` | `label` \| `item` \| `separator` | defaults to `item` |
+| `label` | string | required for `section` and `item` rows |
+| `type` | `section` \| `item` \| `separator` | defaults to `item`; legacy `label` is still accepted as an alias for `section` |
 | `id` | string | optional identity |
+| `icon` | string | optional leading icon for `item` rows |
 | `path` | string | app/router navigation intent |
 | `href` | string | native link navigation |
+| `shortcut` | string | right-side trailing text for `item` rows; takes precedence over `suffixText` |
+| `suffixText` | string | right-side trailing text when `shortcut` is not provided |
 | `disabled` | boolean | disabled item, not interactive |
 | `newTab` | boolean | opens `href` in a new tab |
 | `rel` | string | link rel (for `href`) |
@@ -80,8 +83,9 @@ A contextual floating menu for labels, actions, and separators.
 
 ### Behavior & precedence
 
-- `type="label"` and `type="separator"` are non-interactive.
+- `type="section"` and `type="separator"` are non-interactive.
 - `type="item"` is interactive unless `disabled` is true.
+- Legacy `type="label"` is still accepted and behaves like `type="section"`.
 - Interaction precedence is `href` > `path` > event-only item.
 - `id` is identity only and does not control clickability.
 - If `newTab` is true and `rel` is omitted, `rel="noopener noreferrer"` is applied.
@@ -93,7 +97,7 @@ A contextual floating menu for labels, actions, and separators.
   const menu2 = document.getElementById("menu2");
 
   menu2.items = [
-    { label: "Navigation", type: "label" },
+    { label: "Navigation", type: "section" },
     { id: "docs", label: "Docs", href: "/docs", newTab: true, rel: "noopener" },
     { id: "settings", label: "Settings", path: "/settings" },
     { id: "danger", label: "Delete", disabled: true },

@@ -44,4 +44,26 @@ describe('rtgl-select store', () => {
     expect(viewData.hasSelectedSuffixText).toBe(false);
     expect(viewData.options[0].suffixText).toBe('A');
   });
+
+  it('supports flat section and separator rows without breaking item selection', () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        selectedValue: undefined,
+        options: [
+          { type: 'section', label: 'Common' },
+          { value: undefined, label: 'None' },
+          { type: 'separator' },
+          { value: 'advanced', label: 'Advanced', icon: 'info', suffixText: 'Beta' },
+        ],
+      },
+    });
+
+    expect(viewData.selectedLabel).toBe('None');
+    expect(viewData.options[0].isSection).toBe(true);
+    expect(viewData.options[1].isItem).toBe(true);
+    expect(viewData.options[1].isSelected).toBe(true);
+    expect(viewData.options[2].isSeparator).toBe(true);
+    expect(viewData.options[3].hasIconSlot).toBe(true);
+  });
 });

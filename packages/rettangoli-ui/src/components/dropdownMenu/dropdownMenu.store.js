@@ -3,12 +3,23 @@ export const createInitialState = () => Object.freeze({
 });
 
 const escapeAttrValue = (value) => `${value}`.replace(/"/g, '&quot;');
+const getItemType = (item = {}) => {
+  if (item.type === 'section' || item.type === 'label') {
+    return 'section';
+  }
+
+  if (item.type === 'separator') {
+    return 'separator';
+  }
+
+  return 'item';
+};
 
 const normalizeItems = (items) => {
   return items.map((item, index) => {
-    const type = item.type || 'item';
+    const type = getItemType(item);
     const isSeparator = type === 'separator';
-    const isLabel = type === 'label';
+    const isSection = type === 'section';
     const isItem = type === 'item';
     const isDisabled = !!item.disabled;
     const isInteractive = isItem && !isDisabled;
@@ -34,7 +45,7 @@ const normalizeItems = (items) => {
       index,
       type,
       isSeparator,
-      isLabel,
+      isSection,
       isItem,
       isDisabled,
       isInteractive,
