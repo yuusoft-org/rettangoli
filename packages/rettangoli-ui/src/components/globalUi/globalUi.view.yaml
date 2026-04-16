@@ -38,22 +38,35 @@ styles:
     max-width: calc(100vw - 2 * var(--spacing-lg))
     opacity: 1
     transform: translateY(0) scale(1)
-    animation: toast-in 220ms cubic-bezier(0.16, 1, 0.3, 1)
     transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1)
     will-change: opacity, transform
+  .toast-card-top:
+    animation: toast-in-top 220ms cubic-bezier(0.16, 1, 0.3, 1)
+  .toast-card-bottom:
+    animation: toast-in-bottom 220ms cubic-bezier(0.16, 1, 0.3, 1)
   .toast-card-md:
     width: 50vw
   .toast-card-lg:
     width: 80vw
-  .toast-card-exiting:
+  .toast-card-top.toast-card-exiting:
     opacity: 0
     transform: translateY(calc(var(--spacing-sm) * -0.5)) scale(0.98)
+  .toast-card-bottom.toast-card-exiting:
+    opacity: 0
+    transform: translateY(calc(var(--spacing-sm) * 0.5)) scale(0.98)
   .toast-message:
     overflow-wrap: anywhere
-  '@keyframes toast-in':
+  '@keyframes toast-in-top':
     from:
       opacity: 0
       transform: translateY(calc(var(--spacing-sm) * -1)) scale(0.96)
+    to:
+      opacity: 1
+      transform: translateY(0) scale(1)
+  '@keyframes toast-in-bottom':
+    from:
+      opacity: 0
+      transform: translateY(var(--spacing-sm)) scale(0.96)
     to:
       opacity: 1
       transform: translateY(0) scale(1)
@@ -62,10 +75,16 @@ styles:
       animation: none
       transition: none
 template:
-  - rtgl-view class=toast-layer pos=fix edge=t z=2100 w=f ah=c g=sm p=md:
-      - $for toast, i in toasts:
-          - 'rtgl-view class="toast-card toast-card-${toast.size} toast-card-${toast.phase}" key=toast-${toast.id} bgc=su bc=bo bw=xs br=md shadow=md ph=lg pv=md':
-              - rtgl-text class=toast-message ta=c w=f: ${toast.message}
+  - $if topToasts.length > 0:
+      - rtgl-view class="toast-layer toast-layer-top" pos=fix edge=t z=2100 w=f ah=c g=sm ph=md pt=xl:
+          - $for toast, i in topToasts:
+              - 'rtgl-view class="toast-card toast-card-top toast-card-${toast.size} toast-card-${toast.phase}" key=toast-${toast.id} bgc=su bc=bo bw=xs br=md shadow=md ph=xl pv=lg':
+                  - rtgl-text class=toast-message ta=c w=f: ${toast.message}
+  - $if bottomToasts.length > 0:
+      - rtgl-view class="toast-layer toast-layer-bottom" pos=fix edge=b z=2100 w=f ah=c g=sm ph=md pb=xl:
+          - $for toast, i in bottomToasts:
+              - 'rtgl-view class="toast-card toast-card-bottom toast-card-${toast.size} toast-card-${toast.phase}" key=toast-${toast.id} bgc=su bc=bo bw=xs br=md shadow=md ph=xl pv=lg':
+                  - rtgl-text class=toast-message ta=c w=f: ${toast.message}
   - rtgl-dialog#dialog ?open=${isDialogContainerOpen} s=${dialogSize}:
       - $if isFormDialogOpen:
           - rtgl-form#formDialog slot=content :form=${formDialogConfig.form} :defaultValues=${formDialogConfig.defaultValues} :context=${formDialogConfig.context} ?disabled=${formDialogConfig.disabled} key=form-dialog-${formDialogConfig.key}: null

@@ -40,7 +40,7 @@ Call through `globalUiElement.transformedHandlers`:
 | `handleShowConfirm(options)` | `{ message, title?, status?, confirmText?, cancelText? }` | resolves `true` (confirm) or `false` (cancel / dismiss) |
 | `handleShowFormDialog(options)` | `{ form, defaultValues?, context?, disabled?, size?, onFieldEvent?, mount? }` | resolves `{ actionId, values }`, `{ actionId, values, valid, errors }`, or `null` on dismiss |
 | `handleShowDropdownMenu(options)` | `{ items, x, y, place? }` | resolves `{ index, item }` or `null` |
-| `handleShowToast(options)` | `{ message }` | fire-and-forget top-center toast that auto-dismisses after 3 seconds |
+| `handleShowToast(options)` | `{ message, size?, position? }` | fire-and-forget toast that auto-dismisses after 3 seconds |
 | `handleCloseAll()` | none | closes any open global dialog/dropdown, clears visible toasts, and resolves the pending flow |
 
 ## Form Dialog
@@ -124,7 +124,7 @@ Call through `globalUiElement.transformedHandlers`:
 
 ## Toast
 
-`handleShowToast({ message })` renders a top-centered toast and removes it automatically after 3 seconds.
+`handleShowToast({ message, size?, position? })` renders a toast and removes it automatically after 3 seconds.
 
 ```html codePreview
 <rtgl-global-ui id="global-ui"></rtgl-global-ui>
@@ -136,6 +136,7 @@ Call through `globalUiElement.transformedHandlers`:
   document.getElementById("copy-button").addEventListener("click", () => {
     globalUi.transformedHandlers.handleShowToast({
       message: "Link copied to clipboard.",
+      position: "bottom",
     });
   });
 </script>
@@ -147,7 +148,8 @@ Call through `globalUiElement.transformedHandlers`:
 
 - New global UI calls close any existing open global UI first.
 - `handleShowAlert`, `handleShowConfirm`, `handleShowFormDialog`, and `handleShowDropdownMenu` are awaitable.
-- `handleShowToast({ message })` is non-blocking, stacks multiple messages, and auto-dismisses after 3 seconds.
+- `handleShowToast({ message, size?, position? })` is non-blocking, stacks multiple messages, and auto-dismisses after 3 seconds.
+- Toast `position` accepts `top` or `bottom` and defaults to `top`.
 - `handleShowFormDialog` uses the existing `rtgl-form` action payload: `{ actionId, values }` or `{ actionId, values, valid, errors }`.
 - A validating form action only resolves when validation passes. Invalid submit keeps the dialog open and shows inline errors.
 - Use `mount(formEl)` for slotted/custom content and `onFieldEvent({ detail, formEl })` for image-picker or custom field workflows.

@@ -384,6 +384,7 @@ describe("rtgl-global-ui toast handlers", () => {
         id: "toast-1",
         message: "Runtime toast",
         size: "sm",
+        position: "top",
         phase: "active",
       },
     ]);
@@ -408,6 +409,7 @@ describe("rtgl-global-ui toast handlers", () => {
         id: "toast-1",
         message: "Copied to clipboard.",
         size: "sm",
+        position: "top",
         phase: "active",
       },
     ]);
@@ -419,6 +421,7 @@ describe("rtgl-global-ui toast handlers", () => {
         id: "toast-1",
         message: "Copied to clipboard.",
         size: "sm",
+        position: "top",
         phase: "active",
       },
     ]);
@@ -429,6 +432,7 @@ describe("rtgl-global-ui toast handlers", () => {
         id: "toast-1",
         message: "Copied to clipboard.",
         size: "sm",
+        position: "top",
         phase: "exiting",
       },
     ]);
@@ -470,13 +474,14 @@ describe("rtgl-global-ui toast handlers", () => {
     vi.useRealTimers();
   });
 
-  it("stores supported toast size presets and falls back to sm", async () => {
+  it("stores supported toast size and position presets with sensible fallbacks", async () => {
     vi.useFakeTimers();
     const deps = createDeps({});
 
     handleShowToast(deps, {
       message: "Wide toast",
       size: "lg",
+      position: "bottom",
     });
     handleShowToast(deps, {
       message: "Alias toast",
@@ -485,6 +490,7 @@ describe("rtgl-global-ui toast handlers", () => {
     handleShowToast(deps, {
       message: "Fallback toast",
       size: "xl",
+      position: "sideways",
     });
 
     expect(deps.store.getState().toasts).toEqual([
@@ -492,18 +498,21 @@ describe("rtgl-global-ui toast handlers", () => {
         id: "toast-1",
         message: "Wide toast",
         size: "lg",
+        position: "bottom",
         phase: "active",
       },
       {
         id: "toast-2",
         message: "Alias toast",
         size: "md",
+        position: "top",
         phase: "active",
       },
       {
         id: "toast-3",
         message: "Fallback toast",
         size: "sm",
+        position: "top",
         phase: "active",
       },
     ]);
@@ -544,11 +553,13 @@ describe("createGlobalUI toast API", () => {
     globalUI.showToast({
       message: "Saved.",
       size: "lg",
+      position: "bottom",
     });
 
     expect(handleShowToastSpy).toHaveBeenCalledWith({
       message: "Saved.",
       size: "lg",
+      position: "bottom",
     });
   });
 });

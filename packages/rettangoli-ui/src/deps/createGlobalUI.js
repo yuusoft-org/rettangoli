@@ -163,11 +163,12 @@ const createGlobalUI = (globalUIElement) => {
     },
 
     /**
-     * Shows a top-centered toast message that auto-dismisses after 3 seconds.
+     * Shows a toast message that auto-dismisses after 3 seconds.
      *
      * @param {Object} options - Toast configuration options
      * @param {string} options.message - The toast message (required)
      * @param {('sm'|'md'|'lg')} [options.size] - Toast width preset matching dialog sizing (default: "sm")
+     * @param {('top'|'bottom')} [options.position] - Vertical viewport placement (default: "top")
      * @returns {void}
      * @throws {Error} If globalUIElement is not initialized
      */

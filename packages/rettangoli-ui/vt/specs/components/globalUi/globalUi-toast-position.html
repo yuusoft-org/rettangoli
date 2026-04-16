@@ -1,0 +1,79 @@
+---
+title: "Global UI - Toast Position"
+diffThreshold: 2
+description: Verifies top and bottom toast stacks render independently.
+specs:
+  - Top-positioned toasts stay in the top stack.
+  - Bottom-positioned toasts render in a separate bottom stack.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: show-toast-top
+    steps:
+      - action: click
+  - action: wait
+    ms: 250
+  - action: select
+    testId: show-toast-bottom
+    steps:
+      - action: click
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    fn: vtToast.getTopMessages
+    value:
+      - "Top stack toast."
+  - action: assert
+    type: js
+    fn: vtToast.getBottomMessages
+    value:
+      - "Bottom stack toast."
+  - action: screenshot
+---
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view h="100vh" w="100vw" ah="c" av="c" bgc="ca">
+  <rtgl-view d="h" g="md" wrap ah="c">
+    <rtgl-button id="show-toast-top" data-testid="show-toast-top">Show Top Toast</rtgl-button>
+    <rtgl-button id="show-toast-bottom" data-testid="show-toast-bottom">Show Bottom Toast</rtgl-button>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+
+  const getMessages = (selector) => Array.from(
+    (globalUIElement.shadowRoot ?? globalUIElement).querySelectorAll(selector),
+    (node) => node.textContent.trim(),
+  );
+
+  window.vtToast = {
+    showToast: (options) => {
+      if (!globalUIElement.transformedHandlers?.handleShowToast) {
+        setTimeout(() => {
+          window.vtToast.showToast(options);
+        }, 50);
+        return 'queued';
+      }
+
+      globalUIElement.transformedHandlers.handleShowToast(options);
+      return 'shown';
+    },
+    getTopMessages: () => getMessages('.toast-layer-top .toast-message'),
+    getBottomMessages: () => getMessages('.toast-layer-bottom .toast-message'),
+  };
+
+  document.getElementById('show-toast-top').addEventListener('click', () => {
+    window.vtToast.showToast({
+      message: 'Top stack toast.',
+    });
+  });
+
+  document.getElementById('show-toast-bottom').addEventListener('click', () => {
+    window.vtToast.showToast({
+      message: 'Bottom stack toast.',
+      position: 'bottom',
+    });
+  });
+</script>
