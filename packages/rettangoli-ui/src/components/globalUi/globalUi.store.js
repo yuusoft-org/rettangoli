@@ -1,6 +1,7 @@
 const VALID_DIALOG_SIZES = new Set(["sm", "md", "lg", "f"]);
 const VALID_TOAST_SIZES = new Set(["sm", "md", "lg"]);
 const VALID_TOAST_PHASES = new Set(["active", "exiting"]);
+const VALID_TOAST_POSITIONS = new Set(["top", "bottom"]);
 const VALID_COMPONENT_DIALOG_ROLES = new Set(["confirm", "cancel"]);
 
 const DEFAULT_COMPONENT_DIALOG_BUTTONS = Object.freeze([
@@ -37,6 +38,10 @@ const normalizeToastSize = (value, fallback = "sm") => {
 
 const normalizeToastPhase = (value, fallback = "active") => {
   return VALID_TOAST_PHASES.has(value) ? value : fallback;
+};
+
+const normalizeToastPosition = (value, fallback = "top") => {
+  return VALID_TOAST_POSITIONS.has(value) ? value : fallback;
 };
 
 const normalizeComponentDialogActions = (value) => {
@@ -223,6 +228,7 @@ export const addToast = ({ state }, options = {}) => {
     id: `toast-${nextToastId}`,
     message: options.message,
     size: normalizeToastSize(options.size ?? options.s, "sm"),
+    position: normalizeToastPosition(options.position, "top"),
     phase: "active",
   };
 
@@ -277,6 +283,14 @@ export const selectViewData = ({ state }) => {
   const isFormDialogOpen = state.isOpen && state.uiType === "formDialog";
   const isComponentDialogOpen = state.isOpen && state.uiType === "componentDialog";
   const componentDialogConfig = state.componentDialogConfig ?? createDefaultComponentDialogConfig();
+  const normalizedToasts = Array.isArray(state.toasts)
+    ? state.toasts.map((toast) => ({
+        ...toast,
+        size: normalizeToastSize(toast.size, "sm"),
+        position: normalizeToastPosition(toast.position, "top"),
+        phase: normalizeToastPhase(toast.phase, "active"),
+      }))
+    : [];
 
   return {
     isOpen: state.isOpen,
@@ -305,13 +319,9 @@ export const selectViewData = ({ state }) => {
       actions: componentDialogConfig.actions ?? normalizeComponentDialogActions(),
       key: componentDialogConfig.key ?? 0,
     },
-    toasts: Array.isArray(state.toasts)
-      ? state.toasts.map((toast) => ({
-          ...toast,
-          size: normalizeToastSize(toast.size, "sm"),
-          phase: normalizeToastPhase(toast.phase, "active"),
-        }))
-      : [],
+    toasts: normalizedToasts,
+    topToasts: normalizedToasts.filter((toast) => toast.position === "top"),
+    bottomToasts: normalizedToasts.filter((toast) => toast.position === "bottom"),
     isDialogOpen,
     isFormDialogOpen,
     isComponentDialogOpen,
