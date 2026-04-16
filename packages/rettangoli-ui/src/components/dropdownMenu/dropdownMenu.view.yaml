@@ -22,7 +22,7 @@ template:
       - $for item, i in items:
           - $if item.isLabel:
               - rtgl-view w=f p=md:
-                  - rtgl-text s=sm c=mu-fg: ${item.label}
+                  - rtgl-text s=xs c=mu-fg: ${item.label}
             $elif item.isItem && item.isDisabled:
               - rtgl-view w=f p=md bgc=${item.bgc}:
                   - rtgl-view d=h av=c w=f g=md:
@@ -34,7 +34,7 @@ template:
                                   - div class=icon-placeholder aria-hidden="true": null
                           - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
                       - $if item.hasSuffixText:
-                          - rtgl-text s=sm c=${item.suffixTextColor} ta=e: ${item.suffixText}
+                          - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
             $elif item.isItem && item.hasHref && item.linkExtraAttrs:
               - a#option${i} href=${item.href} ${item.linkExtraAttrs} data-index=${item.index} data-testid=${item.testId}:
                   - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
@@ -47,7 +47,7 @@ template:
                                       - div class=icon-placeholder aria-hidden="true": null
                               - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
                           - $if item.hasSuffixText:
-                              - rtgl-text s=sm c=${item.suffixTextColor} ta=e: ${item.suffixText}
+                              - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
             $elif item.isItem && item.hasHref:
               - a#option${i} href=${item.href} data-index=${item.index} data-testid=${item.testId}:
                   - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
@@ -60,7 +60,7 @@ template:
                                       - div class=icon-placeholder aria-hidden="true": null
                               - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
                           - $if item.hasSuffixText:
-                              - rtgl-text s=sm c=${item.suffixTextColor} ta=e: ${item.suffixText}
+                              - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
             $elif item.isItem:
               - rtgl-view#option${i} w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc} data-index=${item.index} data-testid=${item.testId}:
                   - rtgl-view d=h av=c w=f g=md:
@@ -72,6 +72,6 @@ template:
                                   - div class=icon-placeholder aria-hidden="true": null
                           - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
                       - $if item.hasSuffixText:
-                          - rtgl-text s=sm c=${item.suffixTextColor} ta=e: ${item.suffixText}
+                          - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
             $elif item.isSeparator:
               - rtgl-view w=f h=1 bgc=mu mv=sm: null

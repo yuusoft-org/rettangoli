@@ -1,0 +1,38 @@
+---
+title: Select Icons And Suffix
+description: Verifies select menus render icons and trailing text in both the trigger and open list.
+specs:
+  - The selected trigger shows the option icon and shortcut text.
+  - The open menu keeps a reserved icon column and trailing metadata for all options.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    selector: '#icon-select [data-testid="select-button"]'
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#icon-select rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: wait
+    ms: 120
+  - action: screenshot
+---
+
+<rtgl-view d="h" g="xl" p="xl" wh="f" wrap>
+  <rtgl-view g="md" p="lg" bgc="bg" bw="xs" bc="bo" br="lg">
+    <rtgl-text s="sm">Select with icon metadata</rtgl-text>
+    <rtgl-select id="icon-select" w="320"></rtgl-select>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const select = document.getElementById("icon-select");
+  select.options = [
+    { value: "copy", label: "Copy", icon: "text", shortcut: "Cmd+C" },
+    { value: "paste", label: "Paste", icon: "threeDots", shortcut: "Cmd+V" },
+    { value: "details", label: "Details", icon: "info", suffixText: "Beta" },
+  ];
+  select.selectedValue = "copy";
+  select.render();
+</script>

@@ -255,7 +255,9 @@ class RettangoliPopoverElement extends HTMLElement {
 
     const hasContent = Array.from(wrapper.childNodes).some((node) => !this._isIgnorableTextNode(node));
 
-    if (hasContent) {
+    // Keep the content wrapper slotted while open so callers can intentionally
+    // show an empty popover shell, such as an empty select menu.
+    if (hasContent || this.hasAttribute("open")) {
       wrapper.setAttribute("slot", "content");
     } else {
       wrapper.removeAttribute("slot");

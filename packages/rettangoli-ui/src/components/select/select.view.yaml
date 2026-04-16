@@ -29,17 +29,36 @@ refs:
         handler: handleAddOptionMouseEnter
       mouseleave:
         handler: handleAddOptionMouseLeave
+styles:
+  .icon-placeholder:
+    width: 16px
+    height: 16px
+    flex-shrink: 0
 template:
   - 'rtgl-view#selectButton style="display: inline-flex;" d=h av=c h=32 ph=md bw=xs bc=bo h-bc=${selectButtonHoverBorderColor} br=md bgc=su cur=${selectButtonCursor} ${containerAttrString} data-testid="select-button" role="button" tabindex=${selectButtonTabIndex} aria-disabled=${isDisabled}':
-      - rtgl-view d=h av=c ah=s w=f:
-          - rtgl-text w=1fg ta=s c=${selectedLabelColor} ellipsis: ${selectedLabel}
+      - rtgl-view d=h av=c ah=s w=f g=md:
+          - rtgl-view d=h av=c g=md w=1fg:
+              - $if hasSelectedIcon:
+                  - rtgl-svg svg=${selectedIcon} wh=16 c=${selectedIconColor}: null
+              - rtgl-text w=1fg ta=s c=${selectedLabelColor} ellipsis: ${selectedLabel}
+          - $if hasSelectedSuffixText:
+              - rtgl-text s=xs c=${selectedSuffixTextColor} ta=e: ${selectedSuffixText}
           - $if showClear:
-              - rtgl-svg#clearButton ml=md svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
-          - rtgl-svg ml=md svg=chevronDown wh=16 c=mu-fg: null
+              - rtgl-svg#clearButton svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
+          - rtgl-svg svg=chevronDown wh=16 c=mu-fg: null
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs content-wh=300 content-g=xs content-sv=true content-pv=sm:
       - $for option, i in options:
           - rtgl-view#option${i} w=f ph=lg pv=md cur=pointer bgc=${option.bgc} data-testid=${option.testId}:
-              - rtgl-text s=sm: ${option.label}
+              - rtgl-view d=h av=c w=f g=md:
+                  - rtgl-view d=h av=c g=md w=1fg:
+                      - $if option.hasIconSlot:
+                          - $if option.hasIcon:
+                              - rtgl-svg wh=16 svg=${option.icon} c=${option.iconColor}: null
+                            $else:
+                              - div class=icon-placeholder aria-hidden="true": null
+                      - rtgl-text s=sm c=${option.c} w=1fg ellipsis: ${option.label}
+                  - $if option.hasSuffixText:
+                      - rtgl-text s=xs c=${option.suffixTextColor} ta=e: ${option.suffixText}
       - $if showAddOption:
           - rtgl-view w=f bw=xs bc=mu bwt=sm: null
           - rtgl-view#optionAdd w=f ph=lg pv=md cur=pointer bgc=${addOptionBgc} data-testid="select-add-option":
