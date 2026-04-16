@@ -1,0 +1,118 @@
+---
+title: "With Section Select Metadata"
+description: Verifies sectioned forms preserve embedded select section rows, separators, icons, and trailing text.
+specs:
+  - Form section labels remain visible around nested fields.
+  - Embedded select trigger preserves the selected icon and shortcut text.
+  - Open select menus render flat section rows and separators inside `rtgl-form`.
+steps:
+  - action: assert
+    type: text
+    selector: '[data-testid="workspace-role-trigger"]'
+    value: Cmd+C
+    match: includes
+  - action: select
+    testId: workspace-role-trigger
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '[data-testid="workspace-role-popover"][open]'
+    state: attached
+    timeoutMs: 1200
+  - action: wait
+    ms: 120
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    profile: {
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+    },
+    workspace: {
+      role: 'copy',
+      access: 'full',
+    },
+  };
+
+  form.form = {
+    title: 'Team Member Setup',
+    description: 'Sections let you group fields while preserving select metadata.',
+    fields: [{
+      type: 'section',
+      label: 'Profile',
+      description: 'Basic identity details',
+      fields: [{
+        name: 'profile.firstName',
+        type: 'input-text',
+        label: 'First Name',
+        required: true,
+      }, {
+        name: 'profile.lastName',
+        type: 'input-text',
+        label: 'Last Name',
+        required: true,
+      }],
+    }, {
+      type: 'section',
+      label: 'Workspace Access',
+      description: 'Nested selects use the same flat section-row API.',
+      fields: [{
+        name: 'workspace.role',
+        type: 'select',
+        label: 'Role',
+        options: [
+          { type: 'section', label: 'Clipboard' },
+          { value: 'copy', label: 'Copy', icon: 'text', shortcut: 'Cmd+C' },
+          { value: 'paste', label: 'Paste', icon: 'threeDots', shortcut: 'Cmd+V' },
+          { type: 'separator' },
+          { type: 'section', label: 'Inspector' },
+          { value: 'details', label: 'Details', icon: 'info', suffixText: 'Beta' },
+        ],
+      }, {
+        name: 'workspace.access',
+        type: 'select',
+        label: 'Access',
+        options: [
+          { label: 'Full Access', value: 'full' },
+          { label: 'Limited Access', value: 'limited' },
+        ],
+      }],
+    }],
+    actions: {
+      buttons: [{
+        id: 'save',
+        variant: 'pr',
+        label: 'Save',
+      }],
+    },
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  const tagFormSelect = () => {
+    const roleSelect = form.shadowRoot?.querySelector('#field4');
+    const roleTrigger = roleSelect?.shadowRoot?.querySelector('[data-testid="select-button"]');
+    const rolePopover = roleSelect?.shadowRoot?.querySelector('rtgl-popover');
+    if (roleSelect && roleTrigger && rolePopover) {
+      roleSelect.setAttribute('data-testid', 'workspace-role-select');
+      roleTrigger.setAttribute('data-testid', 'workspace-role-trigger');
+      rolePopover.setAttribute('data-testid', 'workspace-role-popover');
+      return;
+    }
+    setTimeout(tagFormSelect, 0);
+  };
+
+  tagFormSelect();
+</script>
