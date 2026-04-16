@@ -1,4 +1,5 @@
 const VALID_DIALOG_SIZES = new Set(["sm", "md", "lg", "f"]);
+const VALID_TOAST_SIZES = new Set(["sm", "md", "lg"]);
 const VALID_COMPONENT_DIALOG_ROLES = new Set(["confirm", "cancel"]);
 
 const DEFAULT_COMPONENT_DIALOG_BUTTONS = Object.freeze([
@@ -27,6 +28,10 @@ const normalizeObject = (value) => {
 
 const normalizeDialogSize = (value, fallback = "md") => {
   return VALID_DIALOG_SIZES.has(value) ? value : fallback;
+};
+
+const normalizeToastSize = (value, fallback = "sm") => {
+  return VALID_TOAST_SIZES.has(value) ? value : fallback;
 };
 
 const normalizeComponentDialogActions = (value) => {
@@ -212,6 +217,7 @@ export const addToast = ({ state }, options = {}) => {
   const toast = {
     id: `toast-${nextToastId}`,
     message: options.message,
+    size: normalizeToastSize(options.size ?? options.s, "sm"),
   };
 
   state.nextToastId = nextToastId;
@@ -276,7 +282,12 @@ export const selectViewData = ({ state }) => {
       actions: componentDialogConfig.actions ?? normalizeComponentDialogActions(),
       key: componentDialogConfig.key ?? 0,
     },
-    toasts: Array.isArray(state.toasts) ? state.toasts : [],
+    toasts: Array.isArray(state.toasts)
+      ? state.toasts.map((toast) => ({
+          ...toast,
+          size: normalizeToastSize(toast.size, "sm"),
+        }))
+      : [],
     isDialogOpen,
     isFormDialogOpen,
     isComponentDialogOpen,

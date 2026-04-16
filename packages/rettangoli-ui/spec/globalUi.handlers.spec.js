@@ -381,6 +381,7 @@ describe("rtgl-global-ui toast handlers", () => {
       {
         id: "toast-1",
         message: "Runtime toast",
+        size: "sm",
       },
     ]);
 
@@ -403,6 +404,7 @@ describe("rtgl-global-ui toast handlers", () => {
       {
         id: "toast-1",
         message: "Copied to clipboard.",
+        size: "sm",
       },
     ]);
     expect(deps.render).toHaveBeenCalledTimes(1);
@@ -447,6 +449,46 @@ describe("rtgl-global-ui toast handlers", () => {
     vi.useRealTimers();
   });
 
+  it("stores supported toast size presets and falls back to sm", async () => {
+    vi.useFakeTimers();
+    const deps = createDeps({});
+
+    handleShowToast(deps, {
+      message: "Wide toast",
+      size: "lg",
+    });
+    handleShowToast(deps, {
+      message: "Alias toast",
+      s: "md",
+    });
+    handleShowToast(deps, {
+      message: "Fallback toast",
+      size: "xl",
+    });
+
+    expect(deps.store.getState().toasts).toEqual([
+      {
+        id: "toast-1",
+        message: "Wide toast",
+        size: "lg",
+      },
+      {
+        id: "toast-2",
+        message: "Alias toast",
+        size: "md",
+      },
+      {
+        id: "toast-3",
+        message: "Fallback toast",
+        size: "sm",
+      },
+    ]);
+
+    handleCloseAll(deps);
+    await vi.runAllTimersAsync();
+    vi.useRealTimers();
+  });
+
   it("clears visible toasts and pending timers when closeAll runs", async () => {
     vi.useFakeTimers();
     const deps = createDeps({});
@@ -477,10 +519,12 @@ describe("createGlobalUI toast API", () => {
 
     globalUI.showToast({
       message: "Saved.",
+      size: "lg",
     });
 
     expect(handleShowToastSpy).toHaveBeenCalledWith({
       message: "Saved.",
+      size: "lg",
     });
   });
 });

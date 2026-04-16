@@ -167,6 +167,7 @@ const createGlobalUI = (globalUIElement) => {
      *
      * @param {Object} options - Toast configuration options
      * @param {string} options.message - The toast message (required)
+     * @param {('sm'|'md'|'lg')} [options.size] - Toast width preset matching dialog sizing (default: "sm")
      * @returns {void}
      * @throws {Error} If globalUIElement is not initialized
      */
