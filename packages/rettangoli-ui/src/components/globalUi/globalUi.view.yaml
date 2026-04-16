@@ -76,12 +76,12 @@ styles:
       transition: none
 template:
   - $if topToasts.length > 0:
-      - rtgl-view class="toast-layer toast-layer-top" pos=fix edge=t z=2100 w=f ah=c g=sm p=md:
+      - rtgl-view class="toast-layer toast-layer-top" pos=fix edge=t z=2100 w=f ah=c g=sm ph=md pt=xl:
           - $for toast, i in topToasts:
               - 'rtgl-view class="toast-card toast-card-top toast-card-${toast.size} toast-card-${toast.phase}" key=toast-${toast.id} bgc=su bc=bo bw=xs br=md shadow=md ph=xl pv=lg':
                   - rtgl-text class=toast-message ta=c w=f: ${toast.message}
   - $if bottomToasts.length > 0:
-      - rtgl-view class="toast-layer toast-layer-bottom" pos=fix edge=b z=2100 w=f ah=c g=sm p=md:
+      - rtgl-view class="toast-layer toast-layer-bottom" pos=fix edge=b z=2100 w=f ah=c g=sm ph=md pb=xl:
           - $for toast, i in bottomToasts:
               - 'rtgl-view class="toast-card toast-card-bottom toast-card-${toast.size} toast-card-${toast.phase}" key=toast-${toast.id} bgc=su bc=bo bw=xs br=md shadow=md ph=xl pv=lg':
                   - rtgl-text class=toast-message ta=c w=f: ${toast.message}
