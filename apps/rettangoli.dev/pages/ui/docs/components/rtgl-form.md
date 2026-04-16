@@ -142,8 +142,11 @@ Use `type: "section"` to group related fields under a labeled block. Section row
             type: "select",
             label: "Role",
             options: [
+              { type: "section", label: "Build" },
               { label: "Developer", value: "developer", icon: "text", shortcut: "Code" },
               { label: "Designer", value: "designer", icon: "info", suffixText: "UI" },
+              { type: "separator" },
+              { type: "section", label: "Operations" },
               { label: "Manager", value: "manager", icon: "threeDots", suffixText: "Ops" },
             ],
           },
@@ -152,6 +155,7 @@ Use `type: "section"` to group related fields under a labeled block. Section row
             type: "select",
             label: "Access",
             options: [
+              { type: "section", label: "Permissions" },
               { label: "Full Access", value: "full" },
               { label: "Limited Access", value: "limited" },
             ],
