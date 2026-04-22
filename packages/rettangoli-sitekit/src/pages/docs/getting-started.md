@@ -34,6 +34,9 @@ imports:
     docs: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/docs.yaml
   partials:
     docs-sidebar: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/docs-sidebar.yaml
+data:
+  themeCssHref: /public/theme.css
+  themeBodyClass: dark
 ```
 
 ### Build
@@ -54,6 +57,9 @@ themeCssHref: /public/theme.css
 themeBodyClass: dark
 ---
 ```
+
+If the same theme applies across the whole site, keep those values in `sites.config.yaml data` instead of creating one-line files under `data/`.
+That pattern requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
 ## Validate
 

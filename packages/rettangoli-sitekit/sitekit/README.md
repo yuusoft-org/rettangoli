@@ -158,6 +158,9 @@ imports:
     landing-features-section: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-features-section.yaml
     landing-cta: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-cta.yaml
     footer: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/footer.yaml
+data:
+  themeCssHref: /public/theme.css
+  themeBodyClass: dark
 ```
 
 ## Theme Overrides
@@ -177,9 +180,21 @@ themeBodyClass: dark
 ---
 ```
 
+For site-wide overrides, prefer inline config data over one-file-per-value globals:
+
+```yaml
+imports:
+  templates:
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/docs.yaml
+data:
+  themeCssHref: /public/theme.css
+  themeBodyClass: dark
+```
+
 Compatibility:
 
-- use `rtgl >= 1.1.3` or `@rettangoli/sites >= 1.0.2`
+- per-page `themeCssHref` / `themeBodyClass` frontmatter works with `rtgl >= 1.1.3` or `@rettangoli/sites >= 1.0.2`
+- site-wide `sites.config.yaml data` overrides require `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`
 - these templates rely on the built-in `default()` helper added in that renderer release
 
 ## Data Contracts

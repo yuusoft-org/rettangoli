@@ -267,6 +267,46 @@ describe('loadSiteConfig', () => {
     });
   });
 
+  it('loads inline global data from sites.config.yaml', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'data:',
+          '  themeCssHref: /public/theme.css',
+          '  themeBodyClass: dark',
+          '  site:',
+          '    title: RouteVN'
+        ].join('\n')
+      );
+
+      const config = await loadSiteConfig(tempDir);
+      expect(config).toEqual({
+        data: {
+          themeCssHref: '/public/theme.css',
+          themeBodyClass: 'dark',
+          site: {
+            title: 'RouteVN'
+          }
+        }
+      });
+    });
+  });
+
+  it('throws on invalid top-level data config', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'data:',
+          '  - dark'
+        ].join('\n')
+      );
+
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Invalid data config');
+    });
+  });
+
   it('throws on unsupported imports group', async () => {
     await withTempDir(async (tempDir) => {
       fs.writeFileSync(

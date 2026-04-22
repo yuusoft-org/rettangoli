@@ -733,4 +733,60 @@ describe('createSiteBuilder output behavior', () => {
     expect(customHtml).toContain('href="/public/custom-theme.css"');
     expect(customHtml).toContain('<body class="nord-dark">');
   });
+
+  it('applies inline site data to imported template defaults', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/index.md': [
+        '---',
+        'template: docs',
+        'title: Inline Theme',
+        '---',
+        'Body'
+      ].join('\n')
+    });
+
+    const remoteFiles = {
+      'https://example.com/templates/docs.yaml': [
+        '- html:',
+        '    - head:',
+        '        - link rel="stylesheet" href="${default(themeCssHref, \'/public/theme-rtgl-themes.css\')}":',
+        '    - body class="${default(themeBodyClass, \'slate-dark\')}":',
+        '        - h1: ${title}',
+        '        - "${content}"'
+      ].join('\n')
+    };
+
+    const fetchImpl = vi.fn(async (url) => {
+      const content = remoteFiles[url];
+      if (!content) {
+        return { ok: false, status: 404, statusText: 'Not Found', text: async () => '' };
+      }
+      return { ok: true, status: 200, statusText: 'OK', text: async () => content };
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      data: {
+        themeCssHref: '/public/theme.css',
+        themeBodyClass: 'dark'
+      },
+      imports: {
+        templates: {
+          docs: 'https://example.com/templates/docs.yaml'
+        }
+      },
+      fetchImpl
+    });
+
+    await build();
+
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('href="/public/theme.css"');
+    expect(html).toContain('<body class="dark">');
+  });
 });

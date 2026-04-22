@@ -314,6 +314,7 @@ export function createSiteBuilder({
   markdown = {},
   keepMarkdownFiles = false,
   imports = {},
+  data = {},
   fetchImpl,
   functions = {},
   quiet = false,
@@ -409,9 +410,13 @@ export function createSiteBuilder({
       readPartialsRecursively(partialsDir);
     }
 
+    if (!isObject(data)) {
+      throw new Error('Invalid site data: expected an object.');
+    }
+
     // Read all data files and create a JSON object
     const dataDir = path.join(rootDir, 'data');
-    const globalData = {};
+    const fileData = {};
 
     if (fs.existsSync(dataDir)) {
       const files = fs.readdirSync(dataDir);
@@ -421,10 +426,12 @@ export function createSiteBuilder({
           const fileContent = fs.readFileSync(filePath, 'utf8');
           const nameWithoutExt = path.basename(file, path.extname(file));
           // Load YAML content and store under filename key
-          globalData[nameWithoutExt] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
+          fileData[nameWithoutExt] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
         }
       });
     }
+
+    const globalData = deepMerge(fileData, data);
 
     // Read all templates and create a JSON object
     const templatesDir = path.join(rootDir, 'templates');
