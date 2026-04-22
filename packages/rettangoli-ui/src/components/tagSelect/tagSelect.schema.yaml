@@ -31,6 +31,12 @@ propsSchema:
       type: array
       items:
         type: any
+    draftSelectedValues:
+      type: array
+      items:
+        type: any
+    open:
+      type: boolean
     onChange:
       type: function
     addOption:
@@ -44,6 +50,8 @@ propsSchema:
       type: string
 events:
   value-change: {}
+  draft-value-change: {}
+  open-change: {}
   add-option-click: {}
 methods:
   type: object

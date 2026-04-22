@@ -7,7 +7,9 @@ const blacklistedProps = [
   "slot",
   "placeholder",
   "options",
+  "open",
   "selectedValues",
+  "draftSelectedValues",
   "onChange",
   "addOption",
   "disabled",
@@ -272,7 +274,7 @@ export const updateSelectedValues = ({ state }, payload = {}) => {
   const values = normalizeSelectedValues(payload.values);
   state.selectedValues = values;
   state.hasSelectedValues = true;
-  if (payload.syncDraft || !state.isOpen) {
+  if ((payload.syncDraft || !state.isOpen) && !payload.preserveDraft) {
     state.draftSelectedValues = [...values];
   }
 };
