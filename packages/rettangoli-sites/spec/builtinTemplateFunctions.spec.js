@@ -44,7 +44,9 @@ describe('builtin template functions', () => {
         '- p id="sorted-latest": "${jsonStringify(sort(releases.items, \'publishedAt\', \'desc\'))}"',
         '- p id="sorted-nested-latest": "${jsonStringify(sort(posts.items, \'data.date\', \'desc\'))}"',
         '- p id="chunked-rows": "${jsonStringify(chunk(releases.items, 2, true))}"',
-        '- div id="md-snippet": "${md(\'**Hello**\')}"'
+        '- div id="md-snippet": "${md(\'**Hello**\')}"',
+        '- p id="default-empty": "${default(\'\', \'fallback value\')}"',
+        '- p id="default-zero": "${default(0, 10)}"'
       ].join('\n'),
     });
 
@@ -67,5 +69,7 @@ describe('builtin template functions', () => {
     expect(html).toContain('<p id="chunked-rows">[[{&quot;version&quot;:&quot;1.0.0-rc11&quot;');
     expect(html).toContain('&quot;version&quot;:&quot;1.0.0-rc12&quot;,&quot;publishedAt&quot;:&quot;2026-02-10T09:00:00Z&quot;},null]]</p>');
     expect(html).toContain('<div id="md-snippet"><p><strong>Hello</strong></p>');
+    expect(html).toContain('<p id="default-empty">fallback value</p>');
+    expect(html).toContain('<p id="default-zero">0</p>');
   });
 });

@@ -915,6 +915,10 @@ $defs:
         $ref: '#/$defs/types.pageModel'
       seo:
         $ref: '#/$defs/types.seoModel'
+      themeCssHref:
+        $ref: '#/$defs/types.urlString'
+      themeBodyClass:
+        $ref: '#/$defs/types.nonEmptyString'
       site:
         type: object
         additionalProperties: true
@@ -951,6 +955,10 @@ $defs:
         $ref: '#/$defs/types.pageModel'
       seo:
         $ref: '#/$defs/types.seoModel'
+      themeCssHref:
+        $ref: '#/$defs/types.urlString'
+      themeBodyClass:
+        $ref: '#/$defs/types.nonEmptyString'
       site:
         $ref: '#/$defs/types.siteModel'
       docs:
@@ -973,6 +981,10 @@ $defs:
         $ref: '#/$defs/types.pageModel'
       seo:
         $ref: '#/$defs/types.seoModel'
+      themeCssHref:
+        $ref: '#/$defs/types.urlString'
+      themeBodyClass:
+        $ref: '#/$defs/types.nonEmptyString'
       site:
         type: object
         additionalProperties: true
@@ -1045,6 +1057,10 @@ $defs:
         $ref: '#/$defs/types.pageModel'
       seo:
         $ref: '#/$defs/types.seoModel'
+      themeCssHref:
+        $ref: '#/$defs/types.urlString'
+      themeBodyClass:
+        $ref: '#/$defs/types.nonEmptyString'
       site:
         type: object
         additionalProperties: true
@@ -1113,6 +1129,10 @@ $defs:
         $ref: '#/$defs/types.pageModel'
       seo:
         $ref: '#/$defs/types.seoModel'
+      themeCssHref:
+        $ref: '#/$defs/types.urlString'
+      themeBodyClass:
+        $ref: '#/$defs/types.nonEmptyString'
       site:
         type: object
         additionalProperties: true

@@ -5,12 +5,12 @@
           seo: ${seo}
           title: ${title}
         - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.19/dist/themes/base.css":
-        - link rel="stylesheet" href="/public/theme-rtgl-themes.css":
+        - link rel="stylesheet" href="${default(themeCssHref, '/public/theme-rtgl-themes.css')}":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
         - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.19/dist/rettangoli-iife-ui.min.js":
         - script src="/public/rtgl-icons.js":
 
-    - body.slate-dark:
+    - body class="${default(themeBodyClass, 'slate-dark')}":
         - 'header style="display: contents;"':
             - rtgl-view:
                 - rtgl-view pos="abs" edge="t" ah="c" bgc="bg":

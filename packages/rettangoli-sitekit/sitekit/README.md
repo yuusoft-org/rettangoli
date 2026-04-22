@@ -15,6 +15,8 @@ Apply one theme class to `body` or `html`, for example:
 - `catppuccin-latte`, `catppuccin-frappe`, `catppuccin-macchiato`, `catppuccin-mocha`
 - `nord-light`, `nord-dark`
 
+Published templates default to `/public/theme-rtgl-themes.css` and `slate-dark`, but consumers can override them with optional `themeCssHref` and `themeBodyClass` template data fields.
+
 ## Templates
 
 Published path pattern:
@@ -157,6 +159,28 @@ imports:
     landing-cta: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/landing-cta.yaml
     footer: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/partials/footer.yaml
 ```
+
+## Theme Overrides
+
+Built-in templates keep the `@rettangoli/ui` base stylesheet and accept these optional fields:
+
+- `themeCssHref`: custom theme stylesheet path or URL
+- `themeBodyClass`: custom class applied to `<body>`
+
+Example:
+
+```yaml
+---
+template: docs
+themeCssHref: /public/theme.css
+themeBodyClass: dark
+---
+```
+
+Compatibility:
+
+- use `rtgl >= 1.1.3` or `@rettangoli/sites >= 1.0.2`
+- these templates rely on the built-in `default()` helper added in that renderer release
 
 ## Data Contracts
 

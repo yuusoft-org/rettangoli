@@ -667,4 +667,70 @@ describe('createSiteBuilder output behavior', () => {
     expect(html).toContain('Local Hello');
     expect(html).not.toContain('Remote Hello');
   });
+
+  it('lets URL-imported templates use default() for theme overrides', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/default.md': [
+        '---',
+        'template: docs',
+        'title: Default Theme',
+        '---',
+        'Default body'
+      ].join('\n'),
+      '/pages/custom.md': [
+        '---',
+        'template: docs',
+        'title: Custom Theme',
+        'themeCssHref: /public/custom-theme.css',
+        'themeBodyClass: nord-dark',
+        '---',
+        'Custom body'
+      ].join('\n')
+    });
+
+    const remoteFiles = {
+      'https://example.com/templates/docs.yaml': [
+        '- html:',
+        '    - head:',
+        '        - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.0.19/dist/themes/base.css":',
+        '        - link rel="stylesheet" href="${default(themeCssHref, \'/public/theme-rtgl-themes.css\')}":',
+        '    - body class="${default(themeBodyClass, \'slate-dark\')}":',
+        '        - h1: ${title}',
+        '        - "${content}"'
+      ].join('\n')
+    };
+
+    const fetchImpl = vi.fn(async (url) => {
+      const content = remoteFiles[url];
+      if (!content) {
+        return { ok: false, status: 404, statusText: 'Not Found', text: async () => '' };
+      }
+      return { ok: true, status: 200, statusText: 'OK', text: async () => content };
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      imports: {
+        templates: {
+          docs: 'https://example.com/templates/docs.yaml'
+        }
+      },
+      fetchImpl
+    });
+
+    await build();
+
+    const defaultHtml = memfs.readFileSync('/_site/default/index.html', 'utf8');
+    expect(defaultHtml).toContain('href="/public/theme-rtgl-themes.css"');
+    expect(defaultHtml).toContain('<body class="slate-dark">');
+
+    const customHtml = memfs.readFileSync('/_site/custom/index.html', 'utf8');
+    expect(customHtml).toContain('href="/public/custom-theme.css"');
+    expect(customHtml).toContain('<body class="nord-dark">');
+  });
 });

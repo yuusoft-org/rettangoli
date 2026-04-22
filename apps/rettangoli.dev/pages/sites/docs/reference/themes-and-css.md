@@ -28,6 +28,16 @@ Apply exactly one theme class on `body` (or `html`):
 <body class="slate-dark">
 ```
 
+Imported built-in templates default to this bundle and `slate-dark`, but you can override those values with `themeCssHref` and `themeBodyClass`:
+
+```yaml
+---
+template: docs
+themeCssHref: /public/theme.css
+themeBodyClass: dark
+---
+```
+
 ## Available Classes
 
 - `mono-light`
@@ -45,5 +55,5 @@ Apply exactly one theme class on `body` (or `html`):
 
 - The bundle is a single CSS file with all classes.
 - Switching theme only requires changing the class name.
-- Templates in `sitekit/templates/*.yaml` already reference this bundle.
+- Templates in `sitekit/templates/*.yaml` already reference this bundle by default.
 - See [Built-in Templates & Partials](/sites/docs/reference/built-in-templates-and-partials) for the full template list.

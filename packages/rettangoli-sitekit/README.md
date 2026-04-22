@@ -107,6 +107,7 @@ Copy them from:
 - `sitekit/public/rtgl-icons.js`
 
 UI runtime assets still come from `@rettangoli/ui` CDN inside the templates.
+Built-in templates default to `/public/theme-rtgl-themes.css` and `slate-dark`, and can be overridden per page with `themeCssHref` and `themeBodyClass`.
 
 ## Published Asset Index
 

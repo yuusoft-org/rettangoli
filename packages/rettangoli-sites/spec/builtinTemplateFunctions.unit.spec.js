@@ -112,4 +112,13 @@ describe('builtinTemplateFunctions unit', () => {
       __html: '<p><strong>hello</strong></p>\n',
     });
   });
+
+  it('returns fallback values only for nullish or empty-string inputs', () => {
+    expect(builtinTemplateFunctions.default(undefined, 'fallback')).toBe('fallback');
+    expect(builtinTemplateFunctions.default(null, 'fallback')).toBe('fallback');
+    expect(builtinTemplateFunctions.default('', 'fallback')).toBe('fallback');
+    expect(builtinTemplateFunctions.default(false, 'fallback')).toBe(false);
+    expect(builtinTemplateFunctions.default(0, 'fallback')).toBe(0);
+    expect(builtinTemplateFunctions.default('value', 'fallback')).toBe('value');
+  });
 });

@@ -48,6 +48,20 @@ imports:
 
 The build uses cached import files when available. Local files under `templates/` and `partials/` override imported aliases with the same name.
 
+## Template Theme Overrides
+
+Imported built-in templates also accept optional frontmatter fields for theming:
+
+```yaml
+---
+template: docs
+themeCssHref: /public/theme.css
+themeBodyClass: dark
+---
+```
+
+This keeps the built-in Sitekit layout while letting the project supply its own theme stylesheet and body class.
+
 ## Navbar Contract
 
 For top-navbar rendering in built-in templates:
