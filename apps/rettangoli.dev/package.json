@@ -9,6 +9,6 @@
     "accept": "rtgl vt accept"
   },
   "devDependencies": {
-    "rtgl": "1.0.8"
+    "rtgl": "1.1.3"
   }
 }

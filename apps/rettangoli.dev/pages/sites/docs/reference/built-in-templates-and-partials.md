@@ -129,6 +129,8 @@ themeBodyClass: dark
 ---
 ```
 
+Use `rtgl >= 1.1.3` or `@rettangoli/sites >= 1.0.2` with these fields. The published templates rely on the built-in `default()` helper added in that renderer release.
+
 For machine-readable contracts, use:
 
 - [Data Contract Schemas](/sites/docs/reference/data-contract-schemas)

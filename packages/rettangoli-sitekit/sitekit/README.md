@@ -177,6 +177,11 @@ themeBodyClass: dark
 ---
 ```
 
+Compatibility:
+
+- use `rtgl >= 1.1.3` or `@rettangoli/sites >= 1.0.2`
+- these templates rely on the built-in `default()` helper added in that renderer release
+
 ## Data Contracts
 
 For template consumers, use the schema file next to the template.
