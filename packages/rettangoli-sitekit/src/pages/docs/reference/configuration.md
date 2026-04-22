@@ -58,7 +58,8 @@ data:
   themeBodyClass: dark
 ```
 
-This is the preferred way to set Sitekit theme defaults for a whole site without creating one-line files under `data/`.
+This is the right place for small Sitekit theme defaults for a whole site without creating one-line files under `data/`.
+If the same key exists in `data/*.yaml`, the file data wins.
 Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
 ## Template Theme Overrides
@@ -74,7 +75,7 @@ themeBodyClass: dark
 ```
 
 This keeps the built-in Sitekit layout while letting the project supply its own theme stylesheet and body class.
-If the same override should apply to every page, prefer `sites.config.yaml data` instead of repeating frontmatter or adding scalar data files.
+If the same override should apply to every page, use `sites.config.yaml data` instead of repeating frontmatter or adding scalar data files.
 
 ## Navbar Contract
 

@@ -59,6 +59,7 @@ themeBodyClass: dark
 ```
 
 If the same theme applies across the whole site, keep those values in `sites.config.yaml data` instead of creating one-line files under `data/`.
+If the same key also exists in `data/*.yaml`, the file data wins.
 That pattern requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
 ## Validate

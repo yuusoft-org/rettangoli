@@ -434,7 +434,7 @@ export function createSiteBuilder({
       });
     }
 
-    const globalData = deepMerge(fileData, data);
+    const globalData = deepMerge(data, fileData);
 
     // Read all templates and create a JSON object
     const templatesDir = path.join(rootDir, 'templates');

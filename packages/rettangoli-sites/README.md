@@ -101,7 +101,7 @@ Example mappings:
 - template/page content: `$partial: docs/nav`
 
 Use top-level `data` in `sites.config.yaml` for small global values that do not deserve their own `data/*.yaml` file.
-`data/*.yaml` and `sites.config.yaml data` are merged, with inline config data winning on conflicts.
+`sites.config.yaml data` and `data/*.yaml` are merged, with `data/*.yaml` winning on conflicts.
 Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
 Imported files are cached on disk under `.rettangoli/sites/imports/{templates|partials}/` (hashed filenames).

@@ -97,7 +97,7 @@ Example:
 ## `data`
 
 Use top-level `data` for small global values that do not deserve their own `data/*.yaml` file.
-Inline config data and `data/*.yaml` are merged, with config values winning on conflicts.
+Inline config data and `data/*.yaml` are merged, with `data/*.yaml` winning on conflicts.
 Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
 ## JS config support

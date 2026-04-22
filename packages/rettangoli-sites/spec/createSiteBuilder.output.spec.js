@@ -790,13 +790,13 @@ describe('createSiteBuilder output behavior', () => {
     expect(html).toContain('<body class="dark">');
   });
 
-  it('replaces scalar file data with inline config objects on key conflicts', async () => {
+  it('prefers file data over inline config on key conflicts', async () => {
     const vol = new Volume();
     const memfs = createFsFromVolume(vol);
 
     vol.fromJSON({
       '/data/site.yaml': 'RouteVN\n',
-      '/pages/index.yaml': '- p: ${site.title}'
+      '/pages/index.yaml': '- p: ${site}'
     });
 
     const build = createSiteBuilder({

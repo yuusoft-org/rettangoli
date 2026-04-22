@@ -180,7 +180,7 @@ themeBodyClass: dark
 ---
 ```
 
-For site-wide overrides, prefer inline config data over one-file-per-value globals:
+For site-wide overrides, use inline config data instead of one-file-per-value globals:
 
 ```yaml
 imports:
@@ -195,6 +195,7 @@ Compatibility:
 
 - per-page `themeCssHref` / `themeBodyClass` frontmatter works with `rtgl >= 1.1.3` or `@rettangoli/sites >= 1.0.2`
 - site-wide `sites.config.yaml data` overrides require `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`
+- when the same key exists in `data/*.yaml`, the file data wins over `sites.config.yaml data`
 - these templates rely on the built-in `default()` helper added in that renderer release
 
 ## Data Contracts
