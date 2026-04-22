@@ -42,6 +42,19 @@ Use `rtgl sites build` for production output.
 
 Generated HTML and copied assets are written to the package-level `_site/` directory.
 
+### Theme Overrides
+
+Built-in templates default to `/public/theme-rtgl-themes.css` and `slate-dark`.
+Override them per page when you want to keep a project-local theme file:
+
+```yaml
+---
+template: docs
+themeCssHref: /public/theme.css
+themeBodyClass: dark
+---
+```
+
 ## Validate
 
 Capture and compare with `rtgl vt screenshot` and `rtgl vt report`.

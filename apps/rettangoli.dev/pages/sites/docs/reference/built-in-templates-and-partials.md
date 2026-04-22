@@ -96,6 +96,8 @@ imports:
 Shared fields used by built-in templates:
 
 - `site.baseUrl`
+- optional `themeCssHref` for a custom theme stylesheet path or URL
+- optional `themeBodyClass` for the `<body>` theme class
 - `site.navbar.brand` (`label`, `href`) for top-navbar templates
 - `site.navbar.items[]` (`label`, `href`, optional `target`)
 - `site.navbar.ctas[]` (or fallback `site.navbar.cta`) with `label`, `href`, optional `variant`, optional `target`
@@ -114,6 +116,18 @@ Template-specific fields:
 - `blog-article-list.sections[]`: `layout`, `title`, optional `eyebrow`, optional `subtitle`, optional `cta`, plus `items[]` or `groups[]` depending on layout
 - `blog-article-list` layouts: `featured-list`, `card-grid`, `compact-list`, `split-columns`, `grouped-list`
 - `blog-article`: `title`, `author`, `date`, optional `category`, `description`, `readingTime`, `updatedAt`
+
+### Theme Override Example
+
+Built-in templates keep the `@rettangoli/ui` base stylesheet and default to `/public/theme-rtgl-themes.css` plus `slate-dark`. Override those defaults in page frontmatter when needed:
+
+```yaml
+---
+template: docs
+themeCssHref: /public/theme.css
+themeBodyClass: dark
+---
+```
 
 For machine-readable contracts, use:
 

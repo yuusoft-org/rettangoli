@@ -101,6 +101,7 @@ Validate a section-based `blog-article-list` page:
 ## Scope Notes
 
 - Schemas define required and common optional keys used by built-in templates and partials.
+- Built-in template schemas now include optional `themeCssHref` and `themeBodyClass` override fields.
 - Extra keys are allowed for project-specific data.
 - Keep template/partial updates and schema updates in the same PR.
 

@@ -177,6 +177,10 @@ function mdImpl(content) {
   };
 }
 
+function defaultImpl(value, fallbackValue = '') {
+  return value == null || value === '' ? fallbackValue : value;
+}
+
 export const builtinTemplateFunctions = {
   encodeURI: (value) => encodeURI(String(value ?? '')),
   encodeURIComponent: (value) => encodeURIComponent(String(value ?? '')),
@@ -188,6 +192,7 @@ export const builtinTemplateFunctions = {
   sort: sortImpl,
   chunk: chunkImpl,
   md: mdImpl,
+  default: defaultImpl,
   toQueryString,
 };
 
