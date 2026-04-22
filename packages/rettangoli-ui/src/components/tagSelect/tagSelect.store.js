@@ -68,26 +68,6 @@ const sameValueArray = (left = [], right = []) => {
   return left.every((value, index) => deepEqual(value, right[index]));
 };
 
-const stringifyKeyPart = (value) => {
-  if (value === undefined) {
-    return "undefined";
-  }
-
-  if (value === null) {
-    return "null";
-  }
-
-  if (typeof value === "string") {
-    return value;
-  }
-
-  try {
-    return JSON.stringify(value);
-  } catch {
-    return String(value);
-  }
-};
-
 const isSelectedValue = (selectedValues = [], candidate) => {
   return selectedValues.some((value) => deepEqual(value, candidate));
 };
@@ -131,37 +111,6 @@ const buildTagStyle = ({ isSelected = true, isAddChip = false } = {}) => {
   }
 
   return `${baseStyle.join("; ")};`;
-};
-
-const buildPopoverSignature = (options = []) => {
-  if (!Array.isArray(options) || options.length === 0) {
-    return "empty";
-  }
-
-  return options.map((option, index) => {
-    const type = getOptionType(option);
-
-    if (type === "section") {
-      return `section:${index}:${option.label || ""}`;
-    }
-
-    if (type === "separator") {
-      return `separator:${index}`;
-    }
-
-    return `item:${index}:${option.label || ""}:${stringifyKeyPart(option.value)}`;
-  }).join("|");
-};
-
-const buildPopoverKey = (options = []) => {
-  const signature = buildPopoverSignature(options);
-  let hash = 0;
-
-  for (let index = 0; index < signature.length; index += 1) {
-    hash = ((hash << 5) - hash + signature.charCodeAt(index)) >>> 0;
-  }
-
-  return `tagSelectPopover${hash}`;
 };
 
 const normalizeOption = ({
@@ -227,7 +176,8 @@ export const selectViewData = ({ state, props }) => {
   const isDisabled = !!props.disabled;
   const currentValues = getCurrentValues({ state, props });
   const draftValues = getDraftValues({ state, props });
-  const options = Array.isArray(props.options) ? props.options : [];
+  const shouldResolveOptions = state.isOpen || currentValues.length > 0;
+  const options = shouldResolveOptions && Array.isArray(props.options) ? props.options : [];
   const hasIconColumn = options.some((option) => isSelectableOption(option) && hasOwnProp(option, "icon"));
   const normalizedOptions = options.map((option, index) =>
     normalizeOption({
@@ -254,6 +204,19 @@ export const selectViewData = ({ state, props }) => {
 
   const hasSelectableOptions = normalizedOptions.some((option) => option.isItem);
   const hasDraftChanges = !sameValueArray(currentValues, draftValues);
+  const triggerTags = selectedTags.length > 0
+    ? selectedTags.map((tag) => ({
+      ...tag,
+      tagStyle: buildTagStyle({ isSelected: true }),
+    }))
+    : [{
+      value: undefined,
+      selectionIndex: "",
+      label: props.placeholder || "Add tag",
+      icon: "",
+      testId: "",
+      tagStyle: buildTagStyle({ isAddChip: true }),
+    }];
 
   return {
     containerAttrString,
@@ -262,12 +225,8 @@ export const selectViewData = ({ state, props }) => {
     position: state.position,
     options: normalizedOptions,
     hasSelectableOptions,
-    popoverKey: buildPopoverKey(options),
     placeholder: props.placeholder || "Add tag",
-    selectedTags,
-    hasSelectedTags: selectedTags.length > 0,
-    triggerTagStyle: buildTagStyle({ isSelected: true }),
-    placeholderTagStyle: buildTagStyle({ isAddChip: true }),
+    triggerTags,
     triggerCursor: isDisabled ? "not-allowed" : "pointer",
     triggerTabIndex: isDisabled ? -1 : 0,
     showAddOption: true,
@@ -303,6 +262,10 @@ export const openOptionsPopover = ({ state }, payload = {}) => {
 export const closeOptionsPopover = ({ state }) => {
   state.isOpen = false;
   state.draftSelectedValues = [];
+};
+
+export const updateDraftSelectedValues = ({ state }, payload = {}) => {
+  state.draftSelectedValues = normalizeSelectedValues(payload.values);
 };
 
 export const updateSelectedValues = ({ state }, payload = {}) => {

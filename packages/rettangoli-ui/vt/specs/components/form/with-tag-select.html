@@ -1,11 +1,12 @@
 ---
-title: "With Wrapped Tag Select Add Event And Refresh"
-description: Verifies embedded form tag-select fields wrap preselected tags, expose add-tag requests, refresh the open popover after host-side option changes, and emit updated values.
+title: "With Wrapped Tag Select Add Event And Draft"
+description: Verifies embedded form tag-select fields wrap preselected tags, expose add-tag requests, keep the open popover mounted after host-side option changes, and emit updated values only after submit.
 specs:
   - Preselected tags wrap inside `rtgl-form`.
   - Tag select opens from inside `rtgl-form`.
   - The popover add-tag button emits an event the host can handle.
-  - The host can add a new option and call `refreshPopover()` on the field instance while the popover is open.
+  - The host can add a new option and call `appendDraftSelectedValue()` on the field instance while the popover is open.
+  - Updating `options` while open keeps the same popover instance mounted.
   - Clicking chips in the popover only updates draft state.
   - Clicking submit commits the tag array.
   - "`form-change` receives the updated tag array."
@@ -27,10 +28,11 @@ steps:
     selector: '#add-result'
     value: '1'
     match: equals
-  - action: select
-    testId: add-platform
-    steps:
-      - action: click
+  - action: assert
+    type: text
+    selector: '#stability-result'
+    value: 'true'
+    match: equals
   - action: select
     testId: add-backend
     steps:
@@ -58,12 +60,14 @@ viewport:
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
   <rtgl-view id="form-frame" d="v" w="280"></rtgl-view>
   <div id="add-result" hidden></div>
+  <div id="stability-result" hidden></div>
   <div id="result" hidden></div>
 </rtgl-view>
 
 <script>
   const form = document.createElement('rtgl-form');
   const addResult = document.getElementById('add-result');
+  const stabilityResult = document.getElementById('stability-result');
   const result = document.getElementById('result');
   let addClicks = 0;
   const tagOptions = [
@@ -120,8 +124,11 @@ viewport:
     }
     const tagSelect = form.shadowRoot?.querySelector('rtgl-tag-select[data-field-name="tags"]');
     if (tagSelect) {
+      const beforePopover = tagSelect.shadowRoot?.querySelector('rtgl-popover');
       tagSelect.options = [...tagOptions];
-      tagSelect.refreshPopover();
+      tagSelect.appendDraftSelectedValue({ value: 'platform' });
+      const afterPopover = tagSelect.shadowRoot?.querySelector('rtgl-popover');
+      stabilityResult.textContent = String(!!beforePopover && beforePopover === afterPopover && afterPopover.hasAttribute('open'));
     }
   });
 

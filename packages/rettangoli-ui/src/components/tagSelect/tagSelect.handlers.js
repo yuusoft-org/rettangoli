@@ -75,7 +75,11 @@ export const handleOnUpdate = (deps, payload) => {
   }
 
   if (oldProps.options !== newProps.options) {
-    shouldRender = true;
+    const hasCurrentValues = resolveCurrentValues({ store, props: newProps }).length > 0;
+
+    if (store.getState().isOpen || hasCurrentValues) {
+      shouldRender = true;
+    }
   }
 
   if (shouldRender) {
