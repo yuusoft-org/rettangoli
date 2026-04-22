@@ -74,6 +74,7 @@ For responsive behavior, see [Responsiveness](/ui/docs/introduction/responsivene
 | `rtgl-page-outline` | document section tracking | target and scroll container linkage, active offset |
 | `rtgl-popover-input` | inline popover editing | popover value editing, value events |
 | `rtgl-select` | single-choice select | options, selected value, `no-clear`, add-option action |
+| `rtgl-tag-select` | multi-tag select | select-shaped options, selected array value, add popover, right-click delete |
 | `rtgl-sidebar` | sidebar navigation | header plus grouped items, selected state, item/header events |
 | `rtgl-slider-input` | numeric dual control | synchronized slider + number input, min/max/step |
 | `rtgl-table` | tabular data display | column/row model, header sort event, row click event |

@@ -93,6 +93,7 @@ Use `w` to set a fixed width.
 - `input-number`
 - `input-textarea`
 - `select`
+- `tag-select`
 - `color-picker`
 - `slider`
 - `slider-with-input`

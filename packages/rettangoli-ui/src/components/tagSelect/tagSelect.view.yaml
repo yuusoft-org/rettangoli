@@ -1,0 +1,61 @@
+refs:
+  trigger:
+    eventListeners:
+      click:
+        handler: handleTriggerClick
+      keydown:
+        handler: handleTriggerKeyDown
+  popover:
+    eventListeners:
+      close:
+        handler: handlePopoverClose
+  option*:
+    eventListeners:
+      click:
+        handler: handleOptionClick
+      keydown:
+        handler: handleOptionKeyDown
+  submitButton:
+    eventListeners:
+      click:
+        handler: handleSubmitClick
+  addOptionButton:
+    eventListeners:
+      click:
+        handler: handleAddOptionClick
+styles:
+  .icon-placeholder:
+    width: 16px
+    height: 16px
+    flex-shrink: 0
+template:
+  - 'rtgl-view#trigger d=h av=c g=sm cur=${triggerCursor} ${containerAttrString} data-testid="tag-select-trigger" role="button" tabindex=${triggerTabIndex} aria-disabled=${isDisabled} style="min-height: 24px;"':
+      - rtgl-view d=h av=c wrap g=sm w=1fg:
+          - $if !hasSelectedTags:
+              - 'rtgl-tag v=mu style="${placeholderTagStyle}"':
+                  ${placeholder}
+          - $for tag, i in selectedTags:
+              - 'rtgl-tag#tag${tag.selectionIndex} data-selection-index=${tag.selectionIndex} pre=${tag.icon} data-testid=${tag.testId} v=mu style="${triggerTagStyle}"':
+                  ${tag.label}
+  - 'div#${popoverKey} style="display: contents;"':
+      - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=bs content-w=${position.w} content-g=sm content-sv=true content-pv=sm:
+          - $if !hasSelectableOptions:
+              - rtgl-text s=sm c=mu-fg: No tags available
+          - rtgl-view d=h wrap g=sm w=f:
+              - $for option, i in options:
+                  - $if option.isSection:
+                      - rtgl-view w=f pt=xs:
+                          - rtgl-text s=xs c=mu-fg: ${option.label}
+                    $elif option.isItem:
+                      - 'rtgl-view#option${option.index} cur=${option.cursor} data-testid=${option.testId} role="button" tabindex=0 aria-pressed=${option.isSelected}':
+                          - 'rtgl-tag v=mu pre=${option.icon} style="${option.tagStyle}"':
+                              ${option.label}
+                    $elif option.isSeparator:
+                      - rtgl-view w=f h=1 bgc=mu my=xs: null
+              - $if showAddOption:
+                  - rtgl-button#addOptionButton v=gh s=sm pre=plus data-testid="tag-select-add-option":
+                      ${addOptionLabel}
+          - rtgl-view d=h av=c g=sm w=f pt=sm:
+              - rtgl-view w=1fg: null
+              - rtgl-button#submitButton v=pr s=sm data-testid="tag-select-submit" ?disabled=${submitDisabled}:
+                  ${submitLabel}

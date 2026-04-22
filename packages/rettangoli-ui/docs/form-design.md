@@ -237,6 +237,33 @@ Value: `string` (the selected option's `value`) or `null` when cleared. Option v
       value: editor
 ```
 
+#### `tag-select`
+
+Value: `array` of selected option values (`[]` when empty)
+
+Uses the same `options` row contract as `select`.
+
+| property | description |
+|---|---|
+| `placeholder` | Placeholder text when no tags are selected |
+| `options` | Array of `{ label, value }`, plus optional `section` / `separator` rows using the same shape as `select` |
+
+```yaml
+- name: tags
+  type: tag-select
+  label: Tags
+  placeholder: Add tags
+  options:
+    - label: Bug
+      value: bug
+    - label: Docs
+      value: docs
+    - label: Feature
+      value: feature
+```
+
+Clicking the field opens a popover of available tags to add. Right-clicking an existing selected tag opens a delete action. `required: true` treats an empty array as missing.
+
 #### `color-picker`
 
 Value: hex string (e.g. `"#3b82f6"`)
