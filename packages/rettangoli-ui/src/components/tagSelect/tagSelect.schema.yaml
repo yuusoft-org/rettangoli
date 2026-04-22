@@ -48,4 +48,21 @@ events:
 methods:
   type: object
   properties:
-    refreshPopover: {}
+    refreshPopover:
+      description: Recomputes the open popover position and rerenders the current options and draft values.
+      params:
+        - values
+        - keepOpen
+      returns: void
+    setDraftSelectedValues:
+      description: Replaces the draft-only selection without committing `selectedValues`; optionally reopens the popover around the trigger when `keepOpen` is true.
+      params:
+        - values
+        - keepOpen
+      returns: void
+    appendDraftSelectedValue:
+      description: Adds a value to the draft-only selection without committing `selectedValues`; optionally reopens the popover around the trigger when `keepOpen` is true.
+      params:
+        - value
+        - keepOpen
+      returns: void

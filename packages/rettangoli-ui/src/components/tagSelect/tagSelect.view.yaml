@@ -31,13 +31,10 @@ styles:
 template:
   - 'rtgl-view#trigger d=h av=c g=sm cur=${triggerCursor} ${containerAttrString} data-testid="tag-select-trigger" role="button" tabindex=${triggerTabIndex} aria-disabled=${isDisabled} style="min-height: 24px;"':
       - rtgl-view d=h av=c wrap g=sm w=1fg:
-          - $if !hasSelectedTags:
-              - 'rtgl-tag v=mu style="${placeholderTagStyle}"':
-                  ${placeholder}
-          - $for tag, i in selectedTags:
-              - 'rtgl-tag#tag${tag.selectionIndex} data-selection-index=${tag.selectionIndex} pre=${tag.icon} data-testid=${tag.testId} v=mu style="${triggerTagStyle}"':
+          - $for tag, i in triggerTags:
+              - 'rtgl-tag data-selection-index=${tag.selectionIndex} pre=${tag.icon} data-testid=${tag.testId} v=mu style="${tag.tagStyle}"':
                   ${tag.label}
-  - 'div#${popoverKey} style="display: contents;"':
+  - $if isOpen:
       - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=bs content-w=${position.w} content-g=sm content-sv=true content-ph=md content-pv=md:
           - $if !hasSelectableOptions:
               - rtgl-text s=sm c=mu-fg: No tags available

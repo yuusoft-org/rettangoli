@@ -1,11 +1,12 @@
 ---
-title: Tag Select - Empty Create Refresh And Save
-description: Verifies an empty tag select opens, allows host-managed tag creation, refreshes the open popover, and commits the first selection on submit.
+title: Tag Select - Empty Create Draft Save
+description: Verifies an empty tag select opens, allows host-managed tag creation, keeps the open popover mounted while draft-selecting the new option, and commits only on submit.
 specs:
   - An empty tag select shows only its placeholder trigger.
   - Clicking the trigger opens the popover even when there are no options yet.
   - Clicking the add-tag button emits a host-handled event without committing immediately.
-  - The host can add the first option and call `refreshPopover()` to show it in the open popover.
+  - The host can add the first option and call `appendDraftSelectedValue()` to keep it selected in the existing draft.
+  - Updating `options` while open keeps the same popover instance mounted.
   - Clicking submit commits the new single-tag array.
 steps:
   - action: select
@@ -25,10 +26,11 @@ steps:
     selector: '#add-result'
     value: '1'
     match: equals
-  - action: select
-    testId: add-platform
-    steps:
-      - action: click
+  - action: assert
+    type: text
+    selector: '#stability-result'
+    value: 'true'
+    match: equals
   - action: assert
     type: text
     selector: '#result'
@@ -55,6 +57,7 @@ viewport:
   <rtgl-view d="v" g="md" w="280">
     <rtgl-tag-select id="empty-tag-select" w="f" placeholder="Add first tag"></rtgl-tag-select>
     <div id="add-result" hidden></div>
+    <div id="stability-result" hidden></div>
     <div id="result" hidden></div>
   </rtgl-view>
 </rtgl-view>
@@ -62,6 +65,7 @@ viewport:
 <script>
   const tagSelect = document.getElementById('empty-tag-select');
   const addResult = document.getElementById('add-result');
+  const stabilityResult = document.getElementById('stability-result');
   const result = document.getElementById('result');
   const options = [];
   let addClicks = 0;
@@ -74,12 +78,15 @@ viewport:
   result.textContent = JSON.stringify(tagSelect.selectedValues);
 
   tagSelect.addEventListener('add-option-click', () => {
+    const beforePopover = tagSelect.shadowRoot?.querySelector('rtgl-popover');
     addClicks += 1;
     addResult.textContent = String(addClicks);
     if (!options.some((option) => option.value === 'platform')) {
       options.push({ value: 'platform', label: 'Platform', testId: 'add-platform' });
     }
-    tagSelect.refreshPopover();
+    tagSelect.appendDraftSelectedValue({ value: 'platform' });
+    const afterPopover = tagSelect.shadowRoot?.querySelector('rtgl-popover');
+    stabilityResult.textContent = String(!!beforePopover && beforePopover === afterPopover && afterPopover.hasAttribute('open'));
   });
 
   tagSelect.addEventListener('value-change', (event) => {
