@@ -38,7 +38,7 @@ template:
               - 'rtgl-tag#tag${tag.selectionIndex} data-selection-index=${tag.selectionIndex} pre=${tag.icon} data-testid=${tag.testId} v=mu style="${triggerTagStyle}"':
                   ${tag.label}
   - 'div#${popoverKey} style="display: contents;"':
-      - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=bs content-w=${position.w} content-g=sm content-sv=true content-pv=sm:
+      - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=bs content-w=${position.w} content-g=sm content-sv=true content-ph=md content-pv=md:
           - $if !hasSelectableOptions:
               - rtgl-text s=sm c=mu-fg: No tags available
           - rtgl-view d=h wrap g=sm w=f:
