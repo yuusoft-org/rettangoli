@@ -48,7 +48,7 @@ template:
                           - 'rtgl-tag v=mu pre=${option.icon} style="${option.tagStyle}"':
                               ${option.label}
                     $elif option.isSeparator:
-                      - rtgl-view w=f h=1 bgc=mu my=xs: null
+                      - rtgl-view w=f h=1 bgc=mu mv=xs: null
               - $if showAddOption:
                   - rtgl-button#addOptionButton v=gh s=sm pre=plus data-testid="tag-select-add-option":
                       ${addOptionLabel}
