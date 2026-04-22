@@ -17,22 +17,25 @@ const MATTER_OPTIONS = {
 
 // Deep merge utility function
 function deepMerge(target, source) {
-  const output = { ...target };
-  
-  if (isObject(target) && isObject(source)) {
-    Object.keys(source).forEach(key => {
-      if (isObject(source[key])) {
-        if (!(key in target)) {
-          Object.assign(output, { [key]: source[key] });
-        } else {
-          output[key] = deepMerge(target[key], source[key]);
-        }
-      } else {
-        Object.assign(output, { [key]: source[key] });
-      }
-    });
+  if (!isObject(source)) {
+    return source;
   }
-  
+
+  if (!isObject(target)) {
+    return { ...source };
+  }
+
+  const output = { ...target };
+
+  Object.keys(source).forEach(key => {
+    if (isObject(source[key]) && isObject(target[key])) {
+      output[key] = deepMerge(target[key], source[key]);
+      return;
+    }
+
+    Object.assign(output, { [key]: source[key] });
+  });
+
   return output;
 }
 

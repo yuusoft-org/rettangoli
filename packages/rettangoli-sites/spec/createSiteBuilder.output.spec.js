@@ -789,4 +789,30 @@ describe('createSiteBuilder output behavior', () => {
     expect(html).toContain('href="/public/theme.css"');
     expect(html).toContain('<body class="dark">');
   });
+
+  it('replaces scalar file data with inline config objects on key conflicts', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/data/site.yaml': 'RouteVN\n',
+      '/pages/index.yaml': '- p: ${site.title}'
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      data: {
+        site: {
+          title: 'RouteVN'
+        }
+      }
+    });
+
+    await build();
+
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('<p>RouteVN</p>');
+  });
 });
