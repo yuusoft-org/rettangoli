@@ -1,0 +1,73 @@
+---
+title: Tag Select - Disabled
+description: Verifies disabled tag-select triggers remain non-interactive while enabled ones still open normally.
+specs:
+  - A disabled tag-select exposes a disabled trigger and no open popover.
+  - Clicking an enabled tag-select still opens its popover.
+steps:
+  - action: assert
+    type: js
+    fn: getDisabledTagSelectState
+    value:
+      ariaDisabled: 'true'
+      popoverOpenCount: 0
+  - action: select
+    selector: '#enabled-tag-select [data-testid="tag-select-trigger"]'
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#enabled-tag-select rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: js
+    fn: getDisabledTagSelectState
+    value:
+      ariaDisabled: 'true'
+      popoverOpenCount: 0
+  - action: wait
+    ms: 120
+  - action: screenshot
+viewport:
+  id: component-wide
+  width: 860
+  height: 520
+---
+<rtgl-view d="h" g="xl" p="xl" wh="f" wrap>
+  <rtgl-view d="v" g="md" w="280">
+    <rtgl-text s="sm" c="mu-fg">Enabled</rtgl-text>
+    <rtgl-tag-select id="enabled-tag-select" w="f"></rtgl-tag-select>
+  </rtgl-view>
+
+  <rtgl-view d="v" g="md" w="280">
+    <rtgl-text s="sm" c="mu-fg">Disabled</rtgl-text>
+    <rtgl-tag-select id="disabled-tag-select" w="f" disabled></rtgl-tag-select>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const options = [
+    { value: 'bug', label: 'Bug' },
+    { value: 'docs', label: 'Docs' },
+    { value: 'backend', label: 'Backend' },
+    { value: 'qa', label: 'QA' },
+  ];
+
+  const enabledTagSelect = document.getElementById('enabled-tag-select');
+  enabledTagSelect.options = options;
+  enabledTagSelect.selectedValues = ['bug', 'docs', 'backend'];
+
+  const disabledTagSelect = document.getElementById('disabled-tag-select');
+  disabledTagSelect.options = options;
+  disabledTagSelect.selectedValues = ['bug', 'docs', 'backend'];
+
+  window.getDisabledTagSelectState = () => {
+    const root = disabledTagSelect.shadowRoot ?? disabledTagSelect;
+    const trigger = root.querySelector('[data-testid="tag-select-trigger"]');
+
+    return {
+      ariaDisabled: trigger?.getAttribute('aria-disabled') ?? null,
+      popoverOpenCount: root.querySelectorAll('rtgl-popover[open]').length,
+    };
+  };
+</script>

@@ -1,0 +1,73 @@
+---
+title: Tag Select - Object Values
+description: Verifies object-valued options match selected values by deep equality and only commit after submit.
+specs:
+  - Selected chips render from object values that are structurally equal but not the same reference.
+  - Draft toggling works for object-valued options.
+  - Saving emits the updated array of object values.
+steps:
+  - action: select
+    testId: tag-select-trigger
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#object-tag-select rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: select
+    testId: add-platform
+    steps:
+      - action: click
+  - action: select
+    testId: add-docs
+    steps:
+      - action: click
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '[{"kind":"bug","id":1},{"kind":"docs","id":2}]'
+    match: equals
+  - action: select
+    testId: tag-select-submit
+    steps:
+      - action: click
+  - action: wait
+    ms: 120
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '[{"kind":"bug","id":1},{"kind":"platform","id":3}]'
+    match: equals
+  - action: screenshot
+viewport:
+  id: component-compact
+  width: 700
+  height: 520
+---
+<rtgl-view g="lg" p="lg" wh="f">
+  <rtgl-view d="v" g="md" w="320">
+    <rtgl-tag-select id="object-tag-select" w="f"></rtgl-tag-select>
+    <div id="result" hidden></div>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const tagSelect = document.getElementById('object-tag-select');
+  const result = document.getElementById('result');
+
+  tagSelect.options = [
+    { value: { kind: 'bug', id: 1 }, label: 'Bug', testId: 'add-bug' },
+    { value: { kind: 'docs', id: 2 }, label: 'Docs', testId: 'add-docs' },
+    { value: { kind: 'platform', id: 3 }, label: 'Platform', testId: 'add-platform' },
+  ];
+  tagSelect.selectedValues = [
+    { kind: 'bug', id: 1 },
+    { kind: 'docs', id: 2 },
+  ];
+
+  result.textContent = JSON.stringify(tagSelect.selectedValues);
+
+  tagSelect.addEventListener('value-change', (event) => {
+    result.textContent = JSON.stringify(event.detail.value);
+  });
+</script>

@@ -71,6 +71,14 @@ const updateFieldAttributes = ({
         }
       }
 
+      if (field.type === "tag-select" && ref.store?.updateSelectedValues) {
+        const value = get(formValues, field.name);
+        ref.store.updateSelectedValues({ values: Array.isArray(value) ? value : [] });
+        if (typeof ref.render === "function") {
+          ref.render();
+        }
+      }
+
       if (field.type === "checkbox") {
         const value = get(formValues, field.name);
         if (value) {

@@ -1,0 +1,101 @@
+---
+title: Tag Select - Wrapped Tags Draft Submit Add And Refresh
+description: Verifies selected tags wrap across lines, the popover can request host-side tag creation, refresh in place, and commit values only after submit.
+specs:
+  - Preselected tags wrap when they exceed the trigger width.
+  - Clicking the trigger opens the add popover.
+  - Clicking the add-tag button emits a host-handled event without closing the popover.
+  - The host can mutate options in place and call `refreshPopover()` to show the new tag immediately.
+  - Clicking chips in the popover toggles draft selection without committing immediately.
+  - Clicking submit commits the updated tag array.
+steps:
+  - action: select
+    testId: tag-select-trigger
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#tag-select rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: select
+    testId: tag-select-add-option
+    steps:
+      - action: click
+  - action: assert
+    type: text
+    selector: '#add-result'
+    value: '1'
+    match: equals
+  - action: select
+    testId: add-platform
+    steps:
+      - action: click
+  - action: select
+    testId: add-backend
+    steps:
+      - action: click
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '["bug","docs","backend","qa"]'
+    match: includes
+  - action: select
+    testId: tag-select-submit
+    steps:
+      - action: click
+  - action: wait
+    ms: 120
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '["bug","docs","qa","platform"]'
+    match: includes
+  - action: screenshot
+viewport:
+  id: component-compact
+  width: 640
+  height: 520
+---
+<rtgl-view g="lg" p="lg" wh="f">
+  <rtgl-view d="v" g="md" w="280">
+    <rtgl-tag-select id="tag-select" w="f"></rtgl-tag-select>
+    <div id="add-result" hidden></div>
+    <div id="result" hidden></div>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const tagSelect = document.getElementById('tag-select');
+  const addResult = document.getElementById('add-result');
+  const result = document.getElementById('result');
+  let addClicks = 0;
+  const options = [
+    { value: 'bug', label: 'Bug', testId: 'add-bug' },
+    { value: 'docs', label: 'Docs', testId: 'add-docs' },
+    { value: 'feature', label: 'Feature', testId: 'add-feature' },
+    { value: 'backend', label: 'Backend', testId: 'add-backend' },
+    { value: 'qa', label: 'QA', testId: 'add-qa' },
+    { value: 'urgent', label: 'Urgent', testId: 'add-urgent' },
+    { value: 'accessibility', label: 'Accessibility', testId: 'add-accessibility' },
+  ];
+
+  tagSelect.options = options;
+  tagSelect.addOption = { label: 'Add tag' };
+  tagSelect.selectedValues = ['bug', 'docs', 'backend', 'qa'];
+
+  addResult.textContent = String(addClicks);
+  result.textContent = JSON.stringify(tagSelect.selectedValues);
+
+  tagSelect.addEventListener('add-option-click', () => {
+    addClicks += 1;
+    addResult.textContent = String(addClicks);
+    if (!options.some((option) => option.value === 'platform')) {
+      options.push({ value: 'platform', label: 'Platform', testId: 'add-platform' });
+    }
+    tagSelect.refreshPopover();
+  });
+
+  tagSelect.addEventListener('value-change', (event) => {
+    result.textContent = JSON.stringify(event.detail.value);
+  });
+</script>

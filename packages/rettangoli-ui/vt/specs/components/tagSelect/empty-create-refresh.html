@@ -1,0 +1,88 @@
+---
+title: Tag Select - Empty Create Refresh And Save
+description: Verifies an empty tag select opens, allows host-managed tag creation, refreshes the open popover, and commits the first selection on submit.
+specs:
+  - An empty tag select shows only its placeholder trigger.
+  - Clicking the trigger opens the popover even when there are no options yet.
+  - Clicking the add-tag button emits a host-handled event without committing immediately.
+  - The host can add the first option and call `refreshPopover()` to show it in the open popover.
+  - Clicking submit commits the new single-tag array.
+steps:
+  - action: select
+    testId: tag-select-trigger
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#empty-tag-select rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: select
+    testId: tag-select-add-option
+    steps:
+      - action: click
+  - action: assert
+    type: text
+    selector: '#add-result'
+    value: '1'
+    match: equals
+  - action: select
+    testId: add-platform
+    steps:
+      - action: click
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '[]'
+    match: equals
+  - action: select
+    testId: tag-select-submit
+    steps:
+      - action: click
+  - action: wait
+    ms: 120
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '["platform"]'
+    match: equals
+  - action: screenshot
+viewport:
+  id: component-compact
+  width: 640
+  height: 520
+---
+<rtgl-view g="lg" p="lg" wh="f">
+  <rtgl-view d="v" g="md" w="280">
+    <rtgl-tag-select id="empty-tag-select" w="f" placeholder="Add first tag"></rtgl-tag-select>
+    <div id="add-result" hidden></div>
+    <div id="result" hidden></div>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const tagSelect = document.getElementById('empty-tag-select');
+  const addResult = document.getElementById('add-result');
+  const result = document.getElementById('result');
+  const options = [];
+  let addClicks = 0;
+
+  tagSelect.options = options;
+  tagSelect.addOption = { label: 'Create first tag' };
+  tagSelect.selectedValues = [];
+
+  addResult.textContent = String(addClicks);
+  result.textContent = JSON.stringify(tagSelect.selectedValues);
+
+  tagSelect.addEventListener('add-option-click', () => {
+    addClicks += 1;
+    addResult.textContent = String(addClicks);
+    if (!options.some((option) => option.value === 'platform')) {
+      options.push({ value: 'platform', label: 'Platform', testId: 'add-platform' });
+    }
+    tagSelect.refreshPopover();
+  });
+
+  tagSelect.addEventListener('value-change', (event) => {
+    result.textContent = JSON.stringify(event.detail.value);
+  });
+</script>

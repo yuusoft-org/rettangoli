@@ -284,6 +284,7 @@ export const validateField = (field, value) => {
       value === undefined ||
       value === null ||
       value === "" ||
+      (Array.isArray(value) && value.length === 0) ||
       (typeof value === "boolean" && value === false);
     // For numbers, 0 is a valid value
     const isEmptyNumber = field.type === "input-number" && value === null;
@@ -404,6 +405,8 @@ export const getDefaultValue = (field) => {
     case "select":
     case "segmented-control":
       return null;
+    case "tag-select":
+      return [];
     case "checkbox":
       return false;
     case "color-picker":
@@ -507,9 +510,10 @@ export const selectViewData = ({ state, props }) => {
       field._inputType = field.inputType || "text";
     }
 
-    if (field.type === "select" || field.type === "segmented-control") {
+    if (field.type === "select" || field.type === "tag-select" || field.type === "segmented-control") {
       const val = get(state.formValues, field.name);
       field._selectedValue = val !== undefined ? val : null;
+      field._selectedValues = Array.isArray(val) ? val : [];
       field.placeholder = field.placeholder || "";
       // clearable defaults to true; noClear is the inverse
       field.noClear = field.clearable === false;

@@ -1,0 +1,51 @@
+componentName: rtgl-tag-select
+propsSchema:
+  type: object
+  properties:
+    placeholder:
+      type: string
+    options:
+      type: array
+      items:
+        type: object
+        properties:
+          type:
+            type: string
+            enum:
+              - section
+              - item
+              - separator
+          label:
+            type: string
+          value:
+            type: any
+          icon:
+            type: string
+          shortcut:
+            type: string
+          suffixText:
+            type: string
+          testId:
+            type: string
+    selectedValues:
+      type: array
+      items:
+        type: any
+    onChange:
+      type: function
+    addOption:
+      type: object
+      properties:
+        label:
+          type: string
+    disabled:
+      type: boolean
+    w:
+      type: string
+events:
+  value-change: {}
+  add-option-click: {}
+methods:
+  type: object
+  properties:
+    refreshPopover: {}

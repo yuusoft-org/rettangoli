@@ -1,0 +1,135 @@
+---
+title: "With Wrapped Tag Select Add Event And Refresh"
+description: Verifies embedded form tag-select fields wrap preselected tags, expose add-tag requests, refresh the open popover after host-side option changes, and emit updated values.
+specs:
+  - Preselected tags wrap inside `rtgl-form`.
+  - Tag select opens from inside `rtgl-form`.
+  - The popover add-tag button emits an event the host can handle.
+  - The host can add a new option and call `refreshPopover()` on the field instance while the popover is open.
+  - Clicking chips in the popover only updates draft state.
+  - Clicking submit commits the tag array.
+  - "`form-change` receives the updated tag array."
+steps:
+  - action: select
+    selector: '#form [data-testid="tag-select-trigger"]'
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#form rtgl-tag-select[data-field-name="tags"] rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: select
+    testId: tag-select-add-option
+    steps:
+      - action: click
+  - action: assert
+    type: text
+    selector: '#add-result'
+    value: '1'
+    match: equals
+  - action: select
+    testId: add-platform
+    steps:
+      - action: click
+  - action: select
+    testId: add-backend
+    steps:
+      - action: click
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '["bug","docs","backend","qa"]'
+    match: includes
+  - action: select
+    testId: tag-select-submit
+    steps:
+      - action: click
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '["bug","docs","qa","platform"]'
+    match: includes
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 820
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+  <rtgl-view id="form-frame" d="v" w="280"></rtgl-view>
+  <div id="add-result" hidden></div>
+  <div id="result" hidden></div>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  const addResult = document.getElementById('add-result');
+  const result = document.getElementById('result');
+  let addClicks = 0;
+  const tagOptions = [
+    { label: 'Bug', value: 'bug', testId: 'add-bug' },
+    { label: 'Docs', value: 'docs', testId: 'add-docs' },
+    { label: 'Feature', value: 'feature', testId: 'add-feature' },
+    { label: 'Backend', value: 'backend', testId: 'add-backend' },
+    { label: 'QA', value: 'qa', testId: 'add-qa' },
+    { label: 'Urgent', value: 'urgent', testId: 'add-urgent' },
+    { label: 'Accessibility', value: 'accessibility', testId: 'add-accessibility' },
+  ];
+  form.id = 'form';
+  form.setAttribute('w', 'f');
+
+  form.defaultValues = {
+    tags: ['bug', 'docs', 'backend', 'qa'],
+  };
+
+  form.form = {
+    title: 'Issue Labels',
+    description: 'Assign tags to the current issue',
+    fields: [{
+      name: 'title',
+      type: 'input-text',
+      label: 'Title',
+      placeholder: 'Issue title',
+    }, {
+      name: 'tags',
+      type: 'tag-select',
+      label: 'Tags',
+      placeholder: 'Add tags',
+      addOption: {
+        label: 'Add tag',
+      },
+      options: tagOptions,
+    }],
+    actions: {
+      buttons: [{
+        id: 'save',
+        label: 'Save',
+        variant: 'pr',
+      }],
+    },
+  };
+
+  addResult.textContent = String(addClicks);
+  result.textContent = JSON.stringify(form.defaultValues.tags);
+
+  form.addEventListener('add-option-click', () => {
+    addClicks += 1;
+    addResult.textContent = String(addClicks);
+    if (!tagOptions.some((option) => option.value === 'platform')) {
+      tagOptions.push({ label: 'Platform', value: 'platform', testId: 'add-platform' });
+    }
+    const tagSelect = form.shadowRoot?.querySelector('rtgl-tag-select[data-field-name="tags"]');
+    if (tagSelect) {
+      tagSelect.options = [...tagOptions];
+      tagSelect.refreshPopover();
+    }
+  });
+
+  form.addEventListener('form-change', (event) => {
+    if (event.detail.name === 'tags') {
+      result.textContent = JSON.stringify(event.detail.values.tags || []);
+    }
+  });
+
+  document.getElementById('form-frame').appendChild(form);
+</script>

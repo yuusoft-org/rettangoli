@@ -92,6 +92,9 @@ items:
       - id: rtgl-select
         title: "Select"
         href: "/ui/docs/components/rtgl-select"
+      - id: rtgl-tag-select
+        title: "Tag Select"
+        href: "/ui/docs/components/rtgl-tag-select"
       - id: rtgl-sidebar
         title: "Sidebar"
         href: "/ui/docs/components/rtgl-sidebar"
