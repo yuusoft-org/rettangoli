@@ -26,9 +26,9 @@ describe("rtgl-tag-select store", () => {
       },
     });
 
-    expect(viewData.hasSelectedTags).toBe(true);
-    expect(viewData.selectedTags.map((tag) => tag.label)).toEqual(["Feature", "Bug"]);
-    expect(viewData.selectedTags[1].icon).toBe("info");
+    expect(viewData.triggerTags.map((tag) => tag.label)).toEqual(["Feature", "Bug"]);
+    expect(viewData.triggerTags[1].icon).toBe("info");
+    expect(viewData.triggerTags[0].tagStyle).toContain("--muted-foreground: var(--foreground)");
     expect(viewData.options[0].isSection).toBe(true);
     expect(viewData.options[1].isSelected).toBe(true);
     expect(viewData.options[1].tagStyle).toContain("--muted-foreground: var(--foreground)");
@@ -50,11 +50,12 @@ describe("rtgl-tag-select store", () => {
       },
     });
 
-    expect(initialView.hasSelectedTags).toBe(false);
+    expect(initialView.triggerTags).toHaveLength(1);
+    expect(initialView.triggerTags[0].label).toBe("Assign tags");
     expect(initialView.placeholder).toBe("Assign tags");
     expect(initialView.showAddOption).toBe(true);
     expect(initialView.addOptionLabel).toBe("Add tag");
-    expect(initialView.placeholderTagStyle).toContain("--muted:");
+    expect(initialView.triggerTags[0].tagStyle).toContain("--muted:");
 
     const defaultAddChipView = selectViewData({
       state: createInitialState(),
@@ -77,10 +78,9 @@ describe("rtgl-tag-select store", () => {
       },
     });
 
-    expect(viewWithFallback.selectedTags).toHaveLength(1);
-    expect(viewWithFallback.selectedTags[0].label).toBe("custom");
-    expect(viewWithFallback.triggerTagStyle).toContain("--muted-foreground: var(--foreground)");
-    expect(viewWithFallback.placeholderTagStyle).toContain("--muted:");
+    expect(viewWithFallback.triggerTags).toHaveLength(1);
+    expect(viewWithFallback.triggerTags[0].label).toBe("custom");
+    expect(viewWithFallback.triggerTags[0].tagStyle).toContain("--muted-foreground: var(--foreground)");
     expect(viewWithFallback.placeholder).toBe("Add tag");
     expect(viewWithFallback.addOptionLabel).toBe("Create tag");
   });
