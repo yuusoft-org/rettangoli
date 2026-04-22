@@ -17,22 +17,25 @@ const MATTER_OPTIONS = {
 
 // Deep merge utility function
 function deepMerge(target, source) {
-  const output = { ...target };
-  
-  if (isObject(target) && isObject(source)) {
-    Object.keys(source).forEach(key => {
-      if (isObject(source[key])) {
-        if (!(key in target)) {
-          Object.assign(output, { [key]: source[key] });
-        } else {
-          output[key] = deepMerge(target[key], source[key]);
-        }
-      } else {
-        Object.assign(output, { [key]: source[key] });
-      }
-    });
+  if (!isObject(source)) {
+    return source;
   }
-  
+
+  if (!isObject(target)) {
+    return { ...source };
+  }
+
+  const output = { ...target };
+
+  Object.keys(source).forEach(key => {
+    if (isObject(source[key]) && isObject(target[key])) {
+      output[key] = deepMerge(target[key], source[key]);
+      return;
+    }
+
+    Object.assign(output, { [key]: source[key] });
+  });
+
   return output;
 }
 
@@ -314,6 +317,7 @@ export function createSiteBuilder({
   markdown = {},
   keepMarkdownFiles = false,
   imports = {},
+  data = {},
   fetchImpl,
   functions = {},
   quiet = false,
@@ -409,9 +413,13 @@ export function createSiteBuilder({
       readPartialsRecursively(partialsDir);
     }
 
+    if (!isObject(data)) {
+      throw new Error('Invalid site data: expected an object.');
+    }
+
     // Read all data files and create a JSON object
     const dataDir = path.join(rootDir, 'data');
-    const globalData = {};
+    const fileData = {};
 
     if (fs.existsSync(dataDir)) {
       const files = fs.readdirSync(dataDir);
@@ -421,10 +429,12 @@ export function createSiteBuilder({
           const fileContent = fs.readFileSync(filePath, 'utf8');
           const nameWithoutExt = path.basename(file, path.extname(file));
           // Load YAML content and store under filename key
-          globalData[nameWithoutExt] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
+          fileData[nameWithoutExt] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
         }
       });
     }
+
+    const globalData = deepMerge(data, fileData);
 
     // Read all templates and create a JSON object
     const templatesDir = path.join(rootDir, 'templates');

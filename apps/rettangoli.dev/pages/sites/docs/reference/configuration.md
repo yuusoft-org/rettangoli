@@ -16,6 +16,8 @@ Configure Sites with `sites.config.yaml` or `sites.config.yml` in project root.
 | `markdownit` | object | Recommended key for markdown config |
 | `markdown` | object | Legacy alias for `markdownit` |
 | `build` | object | Build-specific options |
+| `imports` | object | Remote template and partial alias maps |
+| `data` | object | Inline global data for small site-wide values |
 
 Use only one of `markdownit` or `markdown`.
 
@@ -44,6 +46,12 @@ markdownit:
     fallback: section
 build:
   keepMarkdownFiles: false
+imports:
+  templates:
+    docs: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/docs.yaml
+data:
+  themeCssHref: /public/theme.css
+  themeBodyClass: dark
 ```
 
 ## `markdownit.shiki`
@@ -85,6 +93,12 @@ Example:
 - `pages/docs/intro.md` ->
   - `_site/docs/intro/index.html`
   - `_site/docs/intro.md`
+
+## `data`
+
+Use top-level `data` for small global values that do not deserve their own `data/*.yaml` file.
+Inline config data and `data/*.yaml` are merged, with `data/*.yaml` winning on conflicts.
+Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
 ## JS config support
 

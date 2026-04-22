@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 
-const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build', 'imports']);
+const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build', 'imports', 'data']);
 const MARKDOWN_BOOLEAN_KEYS = new Set(['html', 'linkify', 'typographer', 'breaks', 'xhtmlOut']);
 const MARKDOWN_STRING_KEYS = new Set(['langPrefix', 'quotes', 'preset']);
 const MARKDOWN_NUMBER_KEYS = new Set(['maxNesting']);
@@ -121,6 +121,25 @@ function validateBuildConfig(value, configPath) {
   return { ...value };
 }
 
+function validateDataConfig(value, configPath) {
+  if (!isPlainObject(value)) {
+    throw new Error(`Invalid data config in "${configPath}": expected an object.`);
+  }
+
+  const normalized = {};
+
+  for (const [rawKey, rawValue] of Object.entries(value)) {
+    const key = String(rawKey).trim();
+    if (key === '') {
+      throw new Error(`Invalid data config in "${configPath}": keys must be non-empty.`);
+    }
+
+    normalized[key] = rawValue;
+  }
+
+  return normalized;
+}
+
 function validateImportUrl(url, configPath, groupKey, alias) {
   if (typeof url !== 'string' || url.trim() === '') {
     throw new Error(`Invalid imports.${groupKey} value for alias "${alias}" in "${configPath}": expected a non-empty URL string.`);
@@ -200,7 +219,7 @@ function validateConfig(rawConfig, configPath) {
   for (const key of Object.keys(config)) {
     if (!ALLOWED_TOP_LEVEL_KEYS.has(key)) {
       throw new Error(
-        `Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias), build, imports.`
+        `Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias), build, imports, data.`
       );
     }
   }
@@ -290,6 +309,10 @@ function validateConfig(rawConfig, configPath) {
 
   if (config.imports !== undefined) {
     normalizedConfig.imports = validateImportsConfig(config.imports, configPath);
+  }
+
+  if (config.data !== undefined) {
+    normalizedConfig.data = validateDataConfig(config.data, configPath);
   }
 
   return normalizedConfig;

@@ -38,6 +38,17 @@ themeBodyClass: dark
 ---
 ```
 
+For a site-wide override, keep those values in `sites.config.yaml` instead of creating one-line data files:
+
+```yaml
+data:
+  themeCssHref: /public/theme.css
+  themeBodyClass: dark
+```
+
+If the same key also exists in `data/*.yaml`, the file data wins.
+This site-wide config path requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
+
 ## Available Classes
 
 - `mono-light`

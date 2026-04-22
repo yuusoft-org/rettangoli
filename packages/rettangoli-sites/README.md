@@ -33,7 +33,7 @@ my-site/
 - YAML pages rendered through `jempl` + `yahtml`
 - Markdown pages rendered through `markdown-it` + Shiki (default `rtglMarkdown`)
 - Frontmatter (`template`, `tags`, arbitrary page metadata)
-- Global data (`data/*.yaml`) merged with page frontmatter
+- Global data from `data/*.yaml` and optional inline `sites.config.yaml data`
 - Collections built from page tags
 - `$if`, `$for`, `$partial`, template functions
 - Static file copying from `static/` to `_site/`
@@ -75,6 +75,9 @@ imports:
     docs: https://example.com/templates/docs.yaml
   partials:
     docs/nav: https://example.com/partials/docs-nav.yaml
+data:
+  themeCssHref: /public/theme.css
+  themeBodyClass: dark
 ```
 
 In the default starter template, CDN runtime scripts are controlled via `data/site.yaml`:
@@ -96,6 +99,10 @@ Example mappings:
 `imports` lets you map aliases to remote YAML files (HTTP/HTTPS only). Use aliases in pages/templates:
 - page frontmatter: `template: base` or `template: docs`
 - template/page content: `$partial: docs/nav`
+
+Use top-level `data` in `sites.config.yaml` for small global values that do not deserve their own `data/*.yaml` file.
+`sites.config.yaml data` and `data/*.yaml` are merged, with `data/*.yaml` winning on conflicts.
+Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
 Imported files are cached on disk under `.rettangoli/sites/imports/{templates|partials}/` (hashed filenames).
 Alias/url/hash mapping is tracked in `.rettangoli/sites/imports/index.yaml`.

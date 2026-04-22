@@ -130,6 +130,7 @@ themeBodyClass: dark
 ```
 
 Use `rtgl >= 1.1.3` or `@rettangoli/sites >= 1.0.2` with these fields. The published templates rely on the built-in `default()` helper added in that renderer release.
+For site-wide defaults via `sites.config.yaml data`, use `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
 For machine-readable contracts, use:
 

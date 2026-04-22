@@ -48,6 +48,20 @@ imports:
 
 The build uses cached import files when available. Local files under `templates/` and `partials/` override imported aliases with the same name.
 
+## Inline Data
+
+Use top-level `data` in `sites.config.yaml` for small global values:
+
+```yaml
+data:
+  themeCssHref: /public/theme.css
+  themeBodyClass: dark
+```
+
+This is the right place for small Sitekit theme defaults for a whole site without creating one-line files under `data/`.
+If the same key exists in `data/*.yaml`, the file data wins.
+Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
+
 ## Template Theme Overrides
 
 Imported built-in templates also accept optional frontmatter fields for theming:
@@ -61,6 +75,7 @@ themeBodyClass: dark
 ```
 
 This keeps the built-in Sitekit layout while letting the project supply its own theme stylesheet and body class.
+If the same override should apply to every page, use `sites.config.yaml data` instead of repeating frontmatter or adding scalar data files.
 
 ## Navbar Contract
 
