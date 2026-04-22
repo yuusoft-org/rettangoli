@@ -136,6 +136,7 @@ class RettangoliPopoverElement extends HTMLElement {
       "content-wh",
       "content-g",
       "content-sv",
+      "content-ph",
       "content-pv",
       "content-bgc",
       "content-style",
@@ -232,7 +233,7 @@ class RettangoliPopoverElement extends HTMLElement {
     }
 
     wrapper.setAttribute("bgc", this.getAttribute("content-bgc") || "su");
-    wrapper.setAttribute("ph", "sm");
+    wrapper.setAttribute("ph", this.getAttribute("content-ph") || "sm");
     wrapper.setAttribute("pv", this.getAttribute("content-pv") || "sm");
 
     const contentStyle = this.getAttribute("content-style");
