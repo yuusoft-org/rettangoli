@@ -84,4 +84,22 @@ describe("rtgl-tag-select store", () => {
     expect(viewWithFallback.placeholder).toBe("Add tag");
     expect(viewWithFallback.addOptionLabel).toBe("Create tag");
   });
+
+  it("keeps save enabled even when the draft selection matches the committed values", () => {
+    const viewData = selectViewData({
+      state: {
+        ...createInitialState(),
+        isOpen: true,
+        hasSelectedValues: true,
+        selectedValues: ["bug"],
+        draftSelectedValues: ["bug"],
+      },
+      props: {
+        options: [{ value: "bug", label: "Bug" }],
+      },
+    });
+
+    expect(viewData.hasDraftChanges).toBe(false);
+    expect(viewData.submitDisabled).toBe(false);
+  });
 });

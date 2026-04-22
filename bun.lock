@@ -114,7 +114,7 @@
     },
     "packages/rettangoli-ui": {
       "name": "@rettangoli/ui",
-      "version": "1.7.0",
+      "version": "1.7.1",
       "dependencies": {
         "@rettangoli/fe": "1.1.3",
         "jempl": "1.0.1",

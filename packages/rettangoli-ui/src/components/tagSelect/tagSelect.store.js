@@ -273,7 +273,7 @@ export const selectViewData = ({ state, props }) => {
     showAddOption: true,
     addOptionLabel: props.addOption?.label || "Add tag",
     hasDraftChanges,
-    submitDisabled: isDisabled || !hasDraftChanges,
+    submitDisabled: isDisabled,
     submitLabel: "Save",
   };
 };
