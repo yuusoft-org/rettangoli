@@ -97,6 +97,20 @@ const emitOpenChange = ({ dispatchEvent, open }) => {
   );
 };
 
+const openControlledPopover = ({ store, props, refs } = {}) => {
+  const position = resolvePopoverPosition(refs?.trigger);
+  if (!position) {
+    return false;
+  }
+
+  store.openOptionsPopover({
+    position,
+    values: resolveDraftValues({ store, props }),
+  });
+
+  return true;
+};
+
 export const handleBeforeMount = (deps) => {
   const { store, props, render, refs } = deps;
   let shouldRender = false;
@@ -117,19 +131,32 @@ export const handleBeforeMount = (deps) => {
     shouldRender = true;
   }
 
-  if (props.open === true) {
-    const position = resolvePopoverPosition(refs?.trigger);
-    if (position) {
-      store.openOptionsPopover({
-        position,
-        values: resolveDraftValues({ store, props }),
-      });
-      shouldRender = true;
-    }
+  if (props.open === true && !props.disabled && openControlledPopover(deps)) {
+    shouldRender = true;
   }
 
   if (shouldRender) {
     render();
+  }
+};
+
+export const handleAfterMount = (deps) => {
+  const { props, render, store, dispatchEvent } = deps;
+
+  if (props.disabled) {
+    if (props.open === true) {
+      emitOpenChange({
+        dispatchEvent,
+        open: false,
+      });
+    }
+    return;
+  }
+
+  if (props.open === true && !store.getState().isOpen) {
+    if (openControlledPopover(deps)) {
+      render();
+    }
   }
 };
 
@@ -139,7 +166,14 @@ export const handleOnUpdate = (deps, payload) => {
   let shouldRender = false;
 
   if (!!newProps?.disabled && !oldProps?.disabled) {
+    const wasOpen = store.getState().isOpen;
     store.closeOptionsPopover({});
+    if (wasOpen) {
+      emitOpenChange({
+        dispatchEvent: deps.dispatchEvent,
+        open: false,
+      });
+    }
     shouldRender = true;
   }
 
@@ -163,12 +197,18 @@ export const handleOnUpdate = (deps, payload) => {
 
   if (oldProps.open !== newProps.open && newProps.open !== undefined) {
     if (newProps.open) {
-      const position = resolvePopoverPosition(refs?.trigger);
-      if (position) {
-        store.openOptionsPopover({
-          position,
-          values: resolveDraftValues({ store, props: newProps }),
+      if (newProps.disabled) {
+        emitOpenChange({
+          dispatchEvent: deps.dispatchEvent,
+          open: false,
         });
+      } else if (
+        openControlledPopover({
+          store,
+          props: newProps,
+          refs,
+        })
+      ) {
         shouldRender = true;
       }
     } else {
