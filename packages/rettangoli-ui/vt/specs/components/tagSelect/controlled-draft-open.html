@@ -1,0 +1,119 @@
+---
+title: Tag Select - Controlled Draft And Open
+description: Verifies host-controlled `draftSelectedValues` and `open` keep a newly created option selected in the popover without committing the value until submit.
+specs:
+  - Clicking the trigger emits `open-change` and the host can keep the popover open by reflecting `open`.
+  - Clicking add option lets the host append a new option and update `draftSelectedValues` without changing `selectedValues`.
+  - Updating `options` and `draftSelectedValues` while open keeps the same popover instance mounted.
+  - Clicking submit commits the draft values through `value-change`.
+steps:
+  - action: select
+    testId: tag-select-trigger
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#controlled-tag-select rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: select
+    testId: tag-select-add-option
+    steps:
+      - action: click
+  - action: assert
+    type: text
+    selector: '#add-result'
+    value: '1'
+    match: equals
+  - action: assert
+    type: text
+    selector: '#stability-result'
+    value: 'true'
+    match: equals
+  - action: assert
+    type: text
+    selector: '#draft-result'
+    value: '["bug","platform"]'
+    match: equals
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '["bug"]'
+    match: equals
+  - action: select
+    testId: tag-select-submit
+    steps:
+      - action: click
+  - action: wait
+    ms: 120
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '["bug","platform"]'
+    match: equals
+  - action: screenshot
+viewport:
+  id: component-compact
+  width: 640
+  height: 520
+---
+<rtgl-view g="lg" p="lg" wh="f">
+  <rtgl-view d="v" g="md" w="280">
+    <rtgl-tag-select id="controlled-tag-select" w="f"></rtgl-tag-select>
+    <div id="add-result" hidden></div>
+    <div id="stability-result" hidden></div>
+    <div id="draft-result" hidden></div>
+    <div id="result" hidden></div>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const tagSelect = document.getElementById('controlled-tag-select');
+  const addResult = document.getElementById('add-result');
+  const stabilityResult = document.getElementById('stability-result');
+  const draftResult = document.getElementById('draft-result');
+  const result = document.getElementById('result');
+  let addClicks = 0;
+  const options = [
+    { value: 'bug', label: 'Bug', testId: 'add-bug' },
+    { value: 'docs', label: 'Docs', testId: 'add-docs' },
+  ];
+
+  tagSelect.options = options;
+  tagSelect.addOption = { label: 'Add tag' };
+  tagSelect.selectedValues = ['bug'];
+  tagSelect.draftSelectedValues = ['bug'];
+  tagSelect.open = false;
+
+  addResult.textContent = String(addClicks);
+  draftResult.textContent = JSON.stringify(tagSelect.draftSelectedValues);
+  result.textContent = JSON.stringify(tagSelect.selectedValues);
+
+  tagSelect.addEventListener('open-change', (event) => {
+    tagSelect.open = event.detail.open;
+  });
+
+  tagSelect.addEventListener('draft-value-change', (event) => {
+    tagSelect.draftSelectedValues = event.detail.value;
+    draftResult.textContent = JSON.stringify(event.detail.value);
+  });
+
+  tagSelect.addEventListener('add-option-click', () => {
+    const beforePopover = tagSelect.shadowRoot?.querySelector('rtgl-popover');
+    addClicks += 1;
+    addResult.textContent = String(addClicks);
+    if (!options.some((option) => option.value === 'platform')) {
+      options.push({ value: 'platform', label: 'Platform', testId: 'add-platform' });
+      tagSelect.options = [...options];
+    }
+    tagSelect.draftSelectedValues = ['bug', 'platform'];
+    draftResult.textContent = JSON.stringify(tagSelect.draftSelectedValues);
+    const afterPopover = tagSelect.shadowRoot?.querySelector('rtgl-popover');
+    stabilityResult.textContent = String(!!beforePopover && beforePopover === afterPopover && afterPopover.hasAttribute('open'));
+  });
+
+  tagSelect.addEventListener('value-change', (event) => {
+    tagSelect.selectedValues = event.detail.value;
+    tagSelect.draftSelectedValues = event.detail.value;
+    result.textContent = JSON.stringify(event.detail.value);
+  });
+</script>
