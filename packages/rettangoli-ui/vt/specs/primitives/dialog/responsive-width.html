@@ -1,10 +1,10 @@
 ---
 title: Dialog - Responsive Width
-description: Verifies breakpoint-prefixed width expands compact dialogs on mobile viewports.
+description: Verifies compact dialog size presets expand automatically on mobile viewports.
 specs:
-  - "`md-w=f` applies at mobile viewport sizes through the shared responsive breakpoint model."
+  - "`s=sm` applies a compact desktop width and expands automatically on mobile viewport sizes."
   - "The native dialog fills the viewport while the content surface keeps normal side gutters."
-  - "Size presets still provide the desktop width behavior outside the breakpoint override."
+  - "Size presets still provide the desktop width behavior outside the mobile breakpoint."
 skipInitialScreenshot: true
 viewport:
   id: mobile
@@ -24,7 +24,7 @@ steps:
   - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
-  <rtgl-dialog id="dialog-responsive" open s="sm" md-w="f">
+  <rtgl-dialog id="dialog-responsive" open s="sm">
     <rtgl-view slot="content" g="md">
       <rtgl-text s="lg">Responsive Width Dialog</rtgl-text>
       <rtgl-text c="mu">This compact dialog should expand close to the phone viewport width.</rtgl-text>

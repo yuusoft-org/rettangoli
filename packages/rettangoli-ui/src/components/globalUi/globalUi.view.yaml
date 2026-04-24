@@ -85,7 +85,7 @@ template:
           - $for toast, i in bottomToasts:
               - 'rtgl-view class="toast-card toast-card-bottom toast-card-${toast.size} toast-card-${toast.phase}" key=toast-${toast.id} bgc=su bc=bo bw=xs br=md shadow=md ph=xl pv=lg':
                   - rtgl-text class=toast-message ta=c w=f: ${toast.message}
-  - rtgl-dialog#dialog ?open=${isDialogContainerOpen} s=${dialogSize} md-w=f:
+  - rtgl-dialog#dialog ?open=${isDialogContainerOpen} s=${dialogSize}:
       - $if isFormDialogOpen:
           - rtgl-form#formDialog slot=content :form=${formDialogConfig.form} :defaultValues=${formDialogConfig.defaultValues} :context=${formDialogConfig.context} ?disabled=${formDialogConfig.disabled} key=form-dialog-${formDialogConfig.key}: null
       - $if isComponentDialogOpen:

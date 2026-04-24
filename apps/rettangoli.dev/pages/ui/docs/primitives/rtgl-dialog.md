@@ -48,7 +48,7 @@ Use `open` as the source of truth and close by removing `open`.
 | --- | --- | --- | --- |
 | Open | `open` | boolean | - |
 | Size | `s` | `sm`, `md`, `lg`, `f` | content-based |
-| Width Override | `w`, `sm-w`, `md-w`, `lg-w`, `xl-w` | CSS width value (`600px`, `70vw`, `f`, etc.) | - |
+| Width Override | `w` | CSS width value (`600px`, `70vw`, etc.) | - |
 
 ## Events
 
@@ -93,7 +93,7 @@ Use `open` as the source of truth and close by removing `open`.
 
 ## Size
 
-Use `s` to choose a standard dialog width profile.
+Use `s` to choose a standard dialog width profile. On `md` and smaller viewports, `sm`, `md`, and `lg` dialogs automatically expand near full viewport width.
 
 ```html codePreview
 <rtgl-view d="h" g="sm" wrap>
@@ -142,19 +142,17 @@ Use `s` to choose a standard dialog width profile.
 
 ## Width Override
 
-Use `w` when you need explicit width control. Width supports the same responsive breakpoint prefixes as other sizing attrs.
+Use `w` when you need explicit width control.
 
 ### Behavior & precedence
 
 - `w` applies an explicit width override.
-- `sm-w`, `md-w`, `lg-w`, and `xl-w` follow the normal responsive breakpoint rules.
 - `s` applies size presets.
 - If both are set, treat `w` as the explicit override you are opting into.
-- Use `md-w="f"` when a desktop-sized dialog should expand close to full width on tablet and phone viewports.
 
 ```html codePreview
 <rtgl-button id="open-width">Open Custom Width</rtgl-button>
-<rtgl-dialog id="dialog-width" w="640px" md-w="f">
+<rtgl-dialog id="dialog-width" w="640px">
   <rtgl-view slot="content" d="v" g="md">
     <rtgl-text s="h4">Custom Width</rtgl-text>
     <rtgl-text c="mu">This dialog uses explicit width.</rtgl-text>
