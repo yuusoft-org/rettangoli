@@ -2,42 +2,99 @@
 title: Dialog - Responsive Width
 description: Verifies compact dialog size presets expand automatically on mobile viewports.
 specs:
-  - "`s=sm` applies a compact desktop width and expands automatically on mobile viewport sizes."
+  - "`s=sm`, `s=md`, and `s=lg` apply desktop widths and expand automatically on mobile viewport sizes."
   - "The native dialog fills the viewport while the content surface keeps normal side gutters."
   - "Size presets still provide the desktop width behavior outside the mobile breakpoint."
 skipInitialScreenshot: true
 viewport:
-  id: mobile
-  width: 390
-  height: 844
+  - id: mobile-small
+    width: 320
+    height: 568
+  - id: mobile
+    width: 390
+    height: 844
+  - id: mobile-large
+    width: 430
+    height: 932
 steps:
+  - action: customEvent
+    name: vt:open-responsive-sm
   - action: waitFor
-    selector: '#dialog-responsive[open]'
+    selector: '#dialog-responsive-sm[open]'
     state: visible
     timeoutMs: 1200
   - action: wait
     ms: 350
   - action: assert
     type: text
-    selector: '#result-responsive'
+    selector: '#result-responsive-sm'
+    value: PASS
+  - action: screenshot
+  - action: customEvent
+    name: vt:open-responsive-md
+  - action: waitFor
+    selector: '#dialog-responsive-md[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: assert
+    type: text
+    selector: '#result-responsive-md'
+    value: PASS
+  - action: screenshot
+  - action: customEvent
+    name: vt:open-responsive-lg
+  - action: waitFor
+    selector: '#dialog-responsive-lg[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: assert
+    type: text
+    selector: '#result-responsive-lg'
     value: PASS
   - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
-  <rtgl-dialog id="dialog-responsive" open s="sm">
+  <rtgl-dialog id="dialog-responsive-sm" s="sm">
     <rtgl-view slot="content" g="md">
-      <rtgl-text s="lg">Responsive Width Dialog</rtgl-text>
-      <rtgl-text c="mu">This compact dialog should expand close to the phone viewport width.</rtgl-text>
-      <pre id="result-responsive" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+      <rtgl-text s="lg">Responsive Small Dialog</rtgl-text>
+      <rtgl-text c="mu">The small preset should expand close to the phone viewport width.</rtgl-text>
+      <pre id="result-responsive-sm" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+    </rtgl-view>
+  </rtgl-dialog>
+
+  <rtgl-dialog id="dialog-responsive-md" s="md">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Responsive Medium Dialog</rtgl-text>
+      <rtgl-text c="mu">The medium preset should expand close to the phone viewport width.</rtgl-text>
+      <pre id="result-responsive-md" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+    </rtgl-view>
+  </rtgl-dialog>
+
+  <rtgl-dialog id="dialog-responsive-lg" s="lg">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Responsive Large Dialog</rtgl-text>
+      <rtgl-text c="mu">The large preset should expand close to the phone viewport width.</rtgl-text>
+      <pre id="result-responsive-lg" style="margin: 0; font: 12px/1.4 monospace;"></pre>
     </rtgl-view>
   </rtgl-dialog>
 </rtgl-view>
 
 <script>
-  const dialog = document.getElementById("dialog-responsive");
-  const result = document.getElementById("result-responsive");
+  const sizes = ["sm", "md", "lg"];
+  const dialogs = Object.fromEntries(
+    sizes.map((size) => [size, document.getElementById(`dialog-responsive-${size}`)]),
+  );
+  const results = Object.fromEntries(
+    sizes.map((size) => [size, document.getElementById(`result-responsive-${size}`)]),
+  );
 
-  const updateResult = () => {
+  const updateResult = (size) => {
+    const dialog = dialogs[size];
+    const result = results[size];
     const nativeDialog = dialog.shadowRoot.querySelector("dialog");
     const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
     const viewportWidth = Math.round(window.innerWidth);
@@ -48,9 +105,24 @@ steps:
     result.textContent = `${pass ? "PASS" : "FAIL"} dialog=${dialogWidth}px content=${contentWidth}px viewport=${viewportWidth}px`;
   };
 
-  setTimeout(updateResult, 250);
+  const openDialog = (size) => {
+    for (const dialog of Object.values(dialogs)) {
+      dialog.removeAttribute("open");
+    }
 
-  dialog.addEventListener("close", () => {
-    dialog.removeAttribute("open");
-  });
+    dialogs[size].setAttribute("open", "");
+    setTimeout(() => updateResult(size), 250);
+  };
+
+  for (const size of sizes) {
+    const dialog = dialogs[size];
+
+    dialog.addEventListener("close", () => {
+      dialog.removeAttribute("open");
+    });
+
+    window.addEventListener(`vt:open-responsive-${size}`, () => {
+      openDialog(size);
+    });
+  }
 </script>
