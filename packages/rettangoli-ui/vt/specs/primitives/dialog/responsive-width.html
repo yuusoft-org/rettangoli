@@ -1,0 +1,56 @@
+---
+title: Dialog - Responsive Width
+description: Verifies breakpoint-prefixed width expands compact dialogs on mobile viewports.
+specs:
+  - "`md-w=f` applies at mobile viewport sizes through the shared responsive breakpoint model."
+  - "The native dialog fills the viewport while the content surface keeps normal side gutters."
+  - "Size presets still provide the desktop width behavior outside the breakpoint override."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: '#dialog-responsive[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: assert
+    type: text
+    selector: '#result-responsive'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-dialog id="dialog-responsive" open s="sm" md-w="f">
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Responsive Width Dialog</rtgl-text>
+      <rtgl-text c="mu">This compact dialog should expand close to the phone viewport width.</rtgl-text>
+      <pre id="result-responsive" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const dialog = document.getElementById("dialog-responsive");
+  const result = document.getElementById("result-responsive");
+
+  const updateResult = () => {
+    const nativeDialog = dialog.shadowRoot.querySelector("dialog");
+    const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
+    const viewportWidth = Math.round(window.innerWidth);
+    const dialogWidth = Math.round(nativeDialog.getBoundingClientRect().width);
+    const contentWidth = Math.round(contentSlot.getBoundingClientRect().width);
+    const pass = dialogWidth >= viewportWidth - 8 && contentWidth >= viewportWidth - 40;
+
+    result.textContent = `${pass ? "PASS" : "FAIL"} dialog=${dialogWidth}px content=${contentWidth}px viewport=${viewportWidth}px`;
+  };
+
+  setTimeout(updateResult, 250);
+
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>

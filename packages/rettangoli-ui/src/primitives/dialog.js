@@ -1,4 +1,13 @@
-import { css } from "../common.js";
+import {
+  css,
+  dimensionWithUnit,
+  convertObjectToCssString,
+  permutateBreakpoints,
+  createResponsiveStyleBuckets,
+  responsiveStyleSizes,
+  applyDimensionToStyleBucket,
+  mediaQueries,
+} from "../common.js";
 
 const MIN_MARGIN_PX = 40;
 const MAX_LAYOUT_RETRIES = 6;
@@ -66,6 +75,54 @@ class RettangoliDialogElement extends HTMLElement {
           margin-right: 0;
         }
 
+        :host([w]) slot[name="content"] {
+          box-sizing: border-box;
+          width: calc(100% - 2 * var(--spacing-lg));
+          max-width: calc(100% - 2 * var(--spacing-lg));
+          margin-left: var(--spacing-lg);
+          margin-right: var(--spacing-lg);
+        }
+
+        ${mediaQueries.xl} {
+          :host([xl-w]) slot[name="content"] {
+            box-sizing: border-box;
+            width: calc(100% - 2 * var(--spacing-lg));
+            max-width: calc(100% - 2 * var(--spacing-lg));
+            margin-left: var(--spacing-lg);
+            margin-right: var(--spacing-lg);
+          }
+        }
+
+        ${mediaQueries.lg} {
+          :host([lg-w]) slot[name="content"] {
+            box-sizing: border-box;
+            width: calc(100% - 2 * var(--spacing-lg));
+            max-width: calc(100% - 2 * var(--spacing-lg));
+            margin-left: var(--spacing-lg);
+            margin-right: var(--spacing-lg);
+          }
+        }
+
+        ${mediaQueries.md} {
+          :host([md-w]) slot[name="content"] {
+            box-sizing: border-box;
+            width: calc(100% - 2 * var(--spacing-lg));
+            max-width: calc(100% - 2 * var(--spacing-lg));
+            margin-left: var(--spacing-lg);
+            margin-right: var(--spacing-lg);
+          }
+        }
+
+        ${mediaQueries.sm} {
+          :host([sm-w]) slot[name="content"] {
+            box-sizing: border-box;
+            width: calc(100% - 2 * var(--spacing-lg));
+            max-width: calc(100% - 2 * var(--spacing-lg));
+            margin-left: var(--spacing-lg);
+            margin-right: var(--spacing-lg);
+          }
+        }
+
         @keyframes dialog-in {
           from {
             opacity: 0;
@@ -97,11 +154,15 @@ class RettangoliDialogElement extends HTMLElement {
     this.shadow.adoptedStyleSheets = [RettangoliDialogElement.styleSheet];
 
     // Create dialog element
+    this._styleElement = document.createElement("style");
     this._dialogElement = document.createElement('dialog');
+    this.shadow.appendChild(this._styleElement);
     this.shadow.appendChild(this._dialogElement);
 
     // Store reference for content slot
     this._slotElement = null;
+    this._styles = createResponsiveStyleBuckets();
+    this._lastStyleString = "";
     this._isConnected = false;
     this._adaptiveFrameId = null;
     this._layoutRetryCount = 0;
@@ -168,7 +229,11 @@ class RettangoliDialogElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["open", "w", "s"];
+    return [
+      "open",
+      "s",
+      ...permutateBreakpoints(["w"]),
+    ];
   }
 
   connectedCallback() {
@@ -199,23 +264,38 @@ class RettangoliDialogElement extends HTMLElement {
       } else if (newValue === null && this._dialogElement.open) {
         this._hideModal();
       }
-    } else if (name === 'w') {
-      this._updateWidth();
     } else if (name === 's') {
-      // Size is handled via CSS :host() selectors
+      // Size is handled via CSS :host() selectors.
+      this._scheduleAdaptiveCentering({ resetRetries: true });
+    } else {
+      this._updateDialog();
     }
   }
 
   _updateDialog() {
-    this._updateWidth();
-  }
+    this._styles = createResponsiveStyleBuckets();
 
-  _updateWidth() {
-    const width = this.getAttribute('w');
-    if (width) {
-      this._dialogElement.style.width = width;
-    } else {
-      this._dialogElement.style.width = '';
+    responsiveStyleSizes.forEach((size) => {
+      const attrName = `${size === "default" ? "" : `${size}-`}w`;
+      const width = dimensionWithUnit(this.getAttribute(attrName));
+
+      applyDimensionToStyleBucket({
+        styleBucket: this._styles[size],
+        axis: "width",
+        dimension: width,
+        fillValue: "100vw",
+        lockBounds: false,
+      });
+    });
+
+    const newStyleString = convertObjectToCssString(this._styles, "dialog");
+    if (newStyleString !== this._lastStyleString) {
+      this._styleElement.textContent = newStyleString;
+      this._lastStyleString = newStyleString;
+    }
+
+    if (this._dialogElement.open) {
+      this._scheduleAdaptiveCentering({ resetRetries: true });
     }
   }
 
