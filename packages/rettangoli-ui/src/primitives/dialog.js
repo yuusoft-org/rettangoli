@@ -67,9 +67,9 @@ class RettangoliDialogElement extends HTMLElement {
         }
 
         ${mediaQueries.md} {
-          :host([s="sm"]) slot[name="content"],
-          :host([s="md"]) slot[name="content"],
-          :host([s="lg"]) slot[name="content"] {
+          :host(:not([w])[s="sm"]) slot[name="content"],
+          :host(:not([w])[s="md"]) slot[name="content"],
+          :host(:not([w])[s="lg"]) slot[name="content"] {
             box-sizing: border-box;
             width: calc(100vw - 2 * var(--spacing-lg));
             max-width: calc(100vw - 2 * var(--spacing-lg));

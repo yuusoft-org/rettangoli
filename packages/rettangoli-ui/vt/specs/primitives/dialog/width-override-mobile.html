@@ -1,0 +1,58 @@
+---
+title: Dialog - Width - Mobile Explicit Override
+description: Verifies explicit width still wins over mobile size preset expansion.
+specs:
+  - Dialog uses explicit `w=360px` while `s=lg` is also provided.
+  - Mobile size preset expansion does not apply when `w` is present.
+  - Runtime measurement validates the native dialog width remains near the explicit width.
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: '#dialog-width-mobile[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: assert
+    type: text
+    selector: '#result-width-mobile'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-dialog id="dialog-width-mobile" open s="lg" w="360px">
+    <rtgl-view slot="content" d="v" g="md">
+      <rtgl-text s="lg">Mobile Width Override</rtgl-text>
+      <rtgl-text c="mu">Explicit width should not be replaced by the mobile preset width.</rtgl-text>
+      <pre id="result-width-mobile" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const dialog = document.getElementById("dialog-width-mobile");
+  const result = document.getElementById("result-width-mobile");
+
+  const updateResult = () => {
+    const nativeDialog = dialog.shadowRoot.querySelector("dialog");
+    const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
+    const viewportWidth = Math.round(window.innerWidth);
+    const dialogWidth = Math.round(nativeDialog.getBoundingClientRect().width);
+    const contentWidth = Math.round(contentSlot.getBoundingClientRect().width);
+    const explicitWidthWins = Math.abs(dialogWidth - 360) <= 8;
+    const contentDidNotExpandToPresetFill = contentWidth < viewportWidth - 40;
+    const pass = explicitWidthWins && contentDidNotExpandToPresetFill;
+
+    result.textContent = `${pass ? "PASS" : "FAIL"} dialog=${dialogWidth}px content=${contentWidth}px viewport=${viewportWidth}px`;
+  };
+
+  setTimeout(updateResult, 250);
+
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>
