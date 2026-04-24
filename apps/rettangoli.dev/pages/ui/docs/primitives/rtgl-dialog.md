@@ -93,7 +93,7 @@ Use `open` as the source of truth and close by removing `open`.
 
 ## Size
 
-Use `s` to choose a standard dialog width profile.
+Use `s` to choose a standard dialog width profile. On `md` and smaller viewports, `sm`, `md`, and `lg` dialogs automatically expand near full viewport width.
 
 ```html codePreview
 <rtgl-view d="h" g="sm" wrap>

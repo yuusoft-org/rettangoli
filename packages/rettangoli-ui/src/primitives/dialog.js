@@ -1,4 +1,4 @@
-import { css } from "../common.js";
+import { css, mediaQueries } from "../common.js";
 
 const MIN_MARGIN_PX = 40;
 const MAX_LAYOUT_RETRIES = 6;
@@ -64,6 +64,16 @@ class RettangoliDialogElement extends HTMLElement {
           width: 100vw;
           margin-left: 0;
           margin-right: 0;
+        }
+
+        ${mediaQueries.md} {
+          :host(:not([w])[s="sm"]) slot[name="content"],
+          :host(:not([w])[s="md"]) slot[name="content"],
+          :host(:not([w])[s="lg"]) slot[name="content"] {
+            box-sizing: border-box;
+            width: calc(100vw - 2 * var(--spacing-lg));
+            max-width: calc(100vw - 2 * var(--spacing-lg));
+          }
         }
 
         @keyframes dialog-in {
@@ -199,10 +209,11 @@ class RettangoliDialogElement extends HTMLElement {
       } else if (newValue === null && this._dialogElement.open) {
         this._hideModal();
       }
+    } else if (name === 's') {
+      // Size is handled via CSS :host() selectors.
+      this._scheduleAdaptiveCentering({ resetRetries: true });
     } else if (name === 'w') {
       this._updateWidth();
-    } else if (name === 's') {
-      // Size is handled via CSS :host() selectors
     }
   }
 
