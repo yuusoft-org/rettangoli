@@ -1,0 +1,104 @@
+---
+title: Options Update While Open
+description: Verifies an open select menu re-renders when its options prop is replaced.
+diffThreshold: 0.75
+specs:
+  - The select opens with two options.
+  - Replacing options with four items while open updates the rendered option rows.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    selector: '#dynamic-select [data-testid="select-button"]'
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dynamic-select rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: waitFor
+    selector: '#dynamic-select rtgl-popover[positioned]'
+    state: attached
+    timeoutMs: 1200
+  - action: wait
+    ms: 120
+  - action: assert
+    type: js
+    fn: dynamicSelect.getVisibleOptionCount
+    value: 2
+  - action: assert
+    type: js
+    fn: dynamicSelect.getVisibleOptionLabels
+    value:
+      - Option 1
+      - Option 2
+  - action: screenshot
+  - action: customEvent
+    name: update-select-options
+  - action: wait
+    ms: 120
+  - action: waitFor
+    selector: '#dynamic-select rtgl-popover[positioned]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: js
+    fn: dynamicSelect.getVisibleOptionCount
+    value: 4
+  - action: assert
+    type: js
+    fn: dynamicSelect.getVisibleOptionLabels
+    value:
+      - Option 1
+      - Option 2
+      - Option 3
+      - Option 4
+  - action: screenshot
+viewport:
+  id: component-compact
+  width: 640
+  height: 420
+---
+
+<rtgl-view d="h" g="xl" p="xl" wh="f" wrap>
+  <rtgl-view g="md" p="lg" bgc="bg" bw="xs" bc="bo" br="lg">
+    <rtgl-text s="sm">Dynamic select</rtgl-text>
+    <rtgl-select id="dynamic-select" w="280"></rtgl-select>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const select = document.getElementById("dynamic-select");
+
+  const initialOptions = [
+    { value: "1", label: "Option 1" },
+    { value: "2", label: "Option 2" },
+  ];
+
+  const updatedOptions = [
+    { value: "1", label: "Option 1" },
+    { value: "2", label: "Option 2" },
+    { value: "3", label: "Option 3" },
+    { value: "4", label: "Option 4" },
+  ];
+
+  const getVisibleOptions = () => {
+    const popover = select.shadowRoot?.querySelector("rtgl-popover");
+    return [...popover?.content?.querySelectorAll('[id^="option"]') ?? []];
+  };
+
+  window.dynamicSelect = {
+    getVisibleOptionCount() {
+      return getVisibleOptions().length;
+    },
+    getVisibleOptionLabels() {
+      return getVisibleOptions().map((option) => option.textContent.trim());
+    },
+  };
+
+  window.addEventListener("update-select-options", () => {
+    select.options = updatedOptions;
+  });
+
+  select.options = initialOptions;
+  select.render();
+</script>

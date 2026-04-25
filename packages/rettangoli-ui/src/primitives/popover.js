@@ -422,6 +422,10 @@ class RettangoliPopoverElement extends HTMLElement {
   get content() {
     return this._contentWrapper;
   }
+
+  refreshContent() {
+    this._syncContentWrapper();
+  }
 }
 
 // Export factory function to maintain API compatibility
