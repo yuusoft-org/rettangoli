@@ -1,0 +1,65 @@
+---
+title: Popover - Dynamic Content Reposition
+description: Verifies an open popover reclamps when its rendered content grows near the viewport edge.
+specs:
+  - Popover opens near the lower-right viewport edge.
+  - Content growth while open triggers a fresh position calculation.
+  - Final popover bounds remain inside the viewport padding.
+steps:
+  - action: waitFor
+    selector: '#popover[open][positioned]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 220
+  - action: assert
+    type: js
+    fn: popoverDynamicContentRepositionOk
+    value: true
+  - action: screenshot
+viewport:
+  id: mobile
+  width: 320
+  height: 480
+---
+<rtgl-view wh="f" p="lg" g="md">
+  <rtgl-text s="lg">Dynamic popover content</rtgl-text>
+  <rtgl-text c="mu-fg">The popover should stay inside the viewport after the inner content expands.</rtgl-text>
+
+  <rtgl-popover id="popover" x="300" y="300" place="bs" content-ph="sm" content-pv="sm">
+    <div id="dynamic-content" style="width: 80px; height: 72px; background: var(--accent); color: var(--accent-foreground); padding: 8px; box-sizing: border-box;">
+      Initial
+    </div>
+  </rtgl-popover>
+</rtgl-view>
+
+<script>
+  const popover = document.getElementById('popover');
+  const dynamicContent = document.getElementById('dynamic-content');
+
+  requestAnimationFrame(() => {
+    popover.setAttribute('open', '');
+  });
+
+  setTimeout(() => {
+    dynamicContent.style.width = '260px';
+    dynamicContent.textContent = 'Expanded content remains inside viewport';
+  }, 80);
+
+  window.popoverDynamicContentRepositionOk = () => {
+    const container = popover.shadowRoot?.querySelector('.popover-container');
+    if (!container || !popover.hasAttribute('positioned')) {
+      return false;
+    }
+
+    const rect = container.getBoundingClientRect();
+    const padding = 8;
+    const tolerance = 1;
+
+    return rect.left >= padding - tolerance
+      && rect.top >= padding - tolerance
+      && rect.right <= window.innerWidth - padding + tolerance
+      && rect.bottom <= window.innerHeight - padding + tolerance
+      && rect.width > 240;
+  };
+</script>

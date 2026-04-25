@@ -14,8 +14,8 @@ steps:
     steps:
       - action: click
   - action: waitFor
-    selector: '#no-add-tag-select rtgl-popover[open]'
-    state: attached
+    selector: '#no-add-tag-select rtgl-popover[open][positioned]'
+    state: visible
     timeoutMs: 1200
   - action: assert
     type: js

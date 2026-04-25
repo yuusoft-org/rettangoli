@@ -1,4 +1,5 @@
 import { css } from "../common.js";
+import { calculatePopoverPosition } from "../common/popover.js";
 
 const CONTENT_WRAPPER_ATTR = "data-rtgl-popover-content";
 const DEFAULT_CONTENT_STYLE = "min-width: 200px; max-width: 400px; box-sizing: border-box;";
@@ -115,6 +116,18 @@ class RettangoliPopoverElement extends HTMLElement {
 
     // Track if we're open
     this._isOpen = false;
+    this._positionFrameId = null;
+    this._revealFrameId = null;
+    this._positionVersion = 0;
+    this._isObservingResize = false;
+    this._observedContentWrapper = null;
+    this._resizeObserver = typeof ResizeObserver === "function"
+      ? new ResizeObserver(() => {
+          if (this._isOpen) {
+            this._schedulePositionUpdate();
+          }
+        })
+      : null;
   }
 
   _emitClose() {
@@ -153,6 +166,9 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._cancelScheduledPositionUpdate();
+    this._stopResizeObserver();
+
     // Clean up dialog if it's open
     if (this._isOpen && this._dialogElement.open) {
       this._dialogElement.close();
@@ -170,7 +186,7 @@ class RettangoliPopoverElement extends HTMLElement {
         this._hide();
       }
     } else if ((name === 'x' || name === 'y' || name === 'place') && this._isOpen) {
-      this._updatePosition();
+      this._schedulePositionUpdate();
     } else if (name === 'no-overlay' && oldValue !== newValue && this._isOpen) {
       this._hide();
       this._show();
@@ -265,7 +281,7 @@ class RettangoliPopoverElement extends HTMLElement {
     }
 
     if (reposition && this._isOpen) {
-      this._updatePosition();
+      this._schedulePositionUpdate();
     }
   }
 
@@ -281,6 +297,7 @@ class RettangoliPopoverElement extends HTMLElement {
       }
 
       this._isOpen = true;
+      this._startResizeObserver();
 
       // Show the dialog using setTimeout to ensure it's in the DOM
       if (!this._dialogElement.open) {
@@ -292,19 +309,20 @@ class RettangoliPopoverElement extends HTMLElement {
               this._dialogElement.showModal();
             }
           }
-        }, 0);
-      }
 
-      // Update position after dialog is shown
-      requestAnimationFrame(() => {
-        this._updatePosition();
-      });
+          this._schedulePositionUpdate();
+        }, 0);
+      } else {
+        this._schedulePositionUpdate();
+      }
     }
   }
 
   _hide() {
     if (this._isOpen) {
       this._isOpen = false;
+      this._cancelScheduledPositionUpdate();
+      this._stopResizeObserver();
 
       // Close the dialog
       if (this._dialogElement.open) {
@@ -319,18 +337,83 @@ class RettangoliPopoverElement extends HTMLElement {
     }
   }
 
-  _updatePosition() {
-    const x = parseFloat(this.getAttribute('x') || '0');
-    const y = parseFloat(this.getAttribute('y') || '0');
-    const place = this.getAttribute('place') || 'bs';
+  _startResizeObserver() {
+    if (!this._resizeObserver) {
+      return;
+    }
+
+    if (!this._isObservingResize) {
+      this._resizeObserver.observe(this._popoverContainer);
+      this._isObservingResize = true;
+    }
+
+    if (this._contentWrapper && this._observedContentWrapper !== this._contentWrapper) {
+      if (this._observedContentWrapper) {
+        this._resizeObserver.unobserve(this._observedContentWrapper);
+      }
+
+      this._resizeObserver.observe(this._contentWrapper);
+      this._observedContentWrapper = this._contentWrapper;
+    }
+  }
+
+  _stopResizeObserver() {
+    this._resizeObserver?.disconnect();
+    this._isObservingResize = false;
+    this._observedContentWrapper = null;
+  }
+
+  _cancelScheduledPositionUpdate() {
+    if (this._positionFrameId !== null) {
+      cancelAnimationFrame(this._positionFrameId);
+      this._positionFrameId = null;
+    }
+
+    if (this._revealFrameId !== null) {
+      cancelAnimationFrame(this._revealFrameId);
+      this._revealFrameId = null;
+    }
+
+    this._positionVersion += 1;
+    this.removeAttribute('positioned');
+  }
+
+  _readCoordinateAttr(name) {
+    const value = parseFloat(this.getAttribute(name) || '0');
+    return Number.isFinite(value) ? value : 0;
+  }
+
+  _schedulePositionUpdate() {
+    if (!this._isOpen) {
+      return;
+    }
 
     // Remove positioned attribute to hide during repositioning
     this.removeAttribute('positioned');
+    this._positionVersion += 1;
 
-    // Calculate position based on place
-    // We'll position after the popover is rendered to get its dimensions
-    requestAnimationFrame(() => {
+    if (this._positionFrameId !== null) {
+      return;
+    }
+
+    this._positionFrameId = requestAnimationFrame(() => {
+      this._positionFrameId = null;
+
+      if (!this._isOpen) {
+        return;
+      }
+
+      if (!this._dialogElement.open) {
+        this._schedulePositionUpdate();
+        return;
+      }
+
       this._syncContentWrapper({ reposition: false });
+      this._startResizeObserver();
+
+      const x = this._readCoordinateAttr('x');
+      const y = this._readCoordinateAttr('y');
+      const place = this.getAttribute('place') || 'bs';
       const rect = this._popoverContainer.getBoundingClientRect();
       const { left, top } = this._calculatePosition(x, y, rect.width, rect.height, place);
 
@@ -339,78 +422,27 @@ class RettangoliPopoverElement extends HTMLElement {
       this._popoverContainer.style.top = `${top}px`;
 
       // Then make visible in next frame to prevent flicker
-      requestAnimationFrame(() => {
-        this.setAttribute('positioned', '');
+      const revealVersion = this._positionVersion;
+      this._revealFrameId = requestAnimationFrame(() => {
+        this._revealFrameId = null;
+
+        if (this._isOpen && this._positionVersion === revealVersion) {
+          this.setAttribute('positioned', '');
+        }
       });
     });
   }
 
   _calculatePosition(x, y, width, height, place) {
-    const offset = 8; // Small offset from the cursor
-    let left = x;
-    let top = y;
-
-    switch (place) {
-      case 't':
-        left = x - width / 2;
-        top = y - height - offset;
-        break;
-      case 'ts':
-        left = x;
-        top = y - height - offset;
-        break;
-      case 'te':
-        left = x - width;
-        top = y - height - offset;
-        break;
-      case 'r':
-        left = x + offset;
-        top = y - height / 2;
-        break;
-      case 'rs':
-        left = x + offset;
-        top = y;
-        break;
-      case 're':
-        left = x + offset;
-        top = y - height;
-        break;
-      case 'b':
-        left = x - width / 2;
-        top = y + offset;
-        break;
-      case 'bs':
-        left = x;
-        top = y + offset;
-        break;
-      case 'be':
-        left = x - width;
-        top = y + offset;
-        break;
-      case 'l':
-        left = x - width - offset;
-        top = y - height / 2;
-        break;
-      case 'ls':
-        left = x - width - offset;
-        top = y;
-        break;
-      case 'le':
-        left = x - width - offset;
-        top = y - height;
-        break;
-      default:
-        left = x;
-        top = y + offset;
-        break;
-    }
-
-    // Ensure popover stays within viewport
-    const padding = 8;
-    left = Math.max(padding, Math.min(left, window.innerWidth - width - padding));
-    top = Math.max(padding, Math.min(top, window.innerHeight - height - padding));
-
-    return { left, top };
+    return calculatePopoverPosition({
+      x,
+      y,
+      width,
+      height,
+      place,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+    });
   }
 
 
