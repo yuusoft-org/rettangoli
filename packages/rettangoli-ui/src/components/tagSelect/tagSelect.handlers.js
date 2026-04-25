@@ -341,7 +341,7 @@ export const handleSubmitClick = (deps, payload) => {
 
 export const handleAddOptionClick = (deps, payload) => {
   const { props, dispatchEvent } = deps;
-  if (props.disabled) return;
+  if (props.disabled || props.noAdd) return;
 
   const event = payload._event;
   event.stopPropagation();

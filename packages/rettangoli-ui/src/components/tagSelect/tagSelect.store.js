@@ -12,6 +12,7 @@ const blacklistedProps = [
   "draftSelectedValues",
   "onChange",
   "addOption",
+  "noAdd",
   "disabled",
 ];
 
@@ -231,7 +232,7 @@ export const selectViewData = ({ state, props }) => {
     triggerTags,
     triggerCursor: isDisabled ? "not-allowed" : "pointer",
     triggerTabIndex: isDisabled ? -1 : 0,
-    showAddOption: true,
+    showAddOption: !isDisabled && !props.noAdd,
     addOptionLabel: props.addOption?.label || "Add tag",
     hasDraftChanges,
     submitDisabled: isDisabled,
