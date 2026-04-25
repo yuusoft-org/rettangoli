@@ -28,8 +28,9 @@ export const handleBeforeMount = (deps) => {
 
 export const handleOnUpdate = (deps, payload) => {
   const { oldProps, newProps } = payload;
-  const { store, render } = deps;
+  const { store, render, refs } = deps;
   let shouldRender = false;
+  let shouldRefreshPopover = false;
 
   if (!!newProps?.disabled && !oldProps?.disabled) {
     store.closeOptionsPopover({});
@@ -41,8 +42,17 @@ export const handleOnUpdate = (deps, payload) => {
     shouldRender = true;
   }
 
+  if (oldProps.options !== newProps.options) {
+    shouldRender = true;
+    shouldRefreshPopover = true;
+  }
+
   if (shouldRender) {
     render();
+
+    if (shouldRefreshPopover && store.selectState?.().isOpen) {
+      refs?.popover?.refreshContent?.();
+    }
   }
 }
 
