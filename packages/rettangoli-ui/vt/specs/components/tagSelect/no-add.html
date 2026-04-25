@@ -5,6 +5,7 @@ skipInitialScreenshot: true
 specs:
   - A tag select with `no-add` opens its popover without rendering the add-tag button.
   - Setting `addOption` does not override `no-add`.
+  - The open no-add popover has a screenshot reference.
   - Clicking chips still updates draft state without committing immediately.
   - Clicking submit commits the selected tag array.
 steps:
@@ -23,6 +24,7 @@ steps:
       addButtonCount: 0
       openPopoverCount: 1
       addClicks: 0
+  - action: screenshot
   - action: select
     testId: add-docs
     steps:
