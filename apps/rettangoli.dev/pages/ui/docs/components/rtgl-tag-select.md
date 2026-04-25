@@ -52,6 +52,7 @@ A controlled multi-tag picker that reuses the same option shape as `rtgl-select`
 | Selected Values | `selected-values` / `selectedValues` | any[] | `[]` |
 | Options | `options` (property) | `{ type?: "item" \| "section" \| "separator", label?: string, value?: any, icon?: string, shortcut?: string, suffixText?: string, testId?: string }[]` | `[]` |
 | Add Option | `addOption` (property) | `{ label?: string }` | `{ label: "Add tag" }` visual default |
+| No Add | `no-add` / `noAdd` | boolean | `false` |
 | Disabled | `disabled` | boolean | `false` |
 | Width | `w` | number, `%`, `xs`-`xl`, `f`, CSS length/value | content-based |
 
@@ -74,6 +75,7 @@ A controlled multi-tag picker that reuses the same option shape as `rtgl-select`
 - When no tags are selected, the trigger shows a placeholder chip using the `placeholder` text.
 - The popover shows all available options as chips, including selected and unselected tags.
 - The popover chip list ends with a low-chrome `Add tag` button that emits `add-option-click` for host-managed tag creation.
+- Set `no-add` / `noAdd` to hide the popover `Add tag` button when tag creation is not allowed.
 - Click chips in the popover to toggle draft selection on or off.
 - Draft changes are applied only when you click the popover submit button.
 - Clicking `Add tag` does not commit draft changes or close the popover.
@@ -122,6 +124,7 @@ If the host owns tag creation while the picker is rendered inside `rtgl-form`, u
   type: tag-select
   label: Tags
   placeholder: Add tag
+  noAdd: true
   options:
     - value: bug
       label: Bug

@@ -44,6 +44,8 @@ propsSchema:
       properties:
         label:
           type: string
+    noAdd:
+      type: boolean
     disabled:
       type: boolean
     w:

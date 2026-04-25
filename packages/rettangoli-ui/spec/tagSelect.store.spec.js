@@ -102,4 +102,22 @@ describe("rtgl-tag-select store", () => {
     expect(viewData.hasDraftChanges).toBe(false);
     expect(viewData.submitDisabled).toBe(false);
   });
+
+  it("hides the popover add action when noAdd is enabled", () => {
+    const viewData = selectViewData({
+      state: {
+        ...createInitialState(),
+        isOpen: true,
+      },
+      props: {
+        noAdd: true,
+        addOption: { label: "Create tag" },
+        options: [{ value: "bug", label: "Bug" }],
+      },
+    });
+
+    expect(viewData.showAddOption).toBe(false);
+    expect(viewData.addOptionLabel).toBe("Create tag");
+    expect(viewData.containerAttrString).not.toContain("noAdd");
+  });
 });

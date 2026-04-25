@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   handleAfterMount,
+  handleAddOptionClick,
   handleOnUpdate,
   handleOptionClick,
   handleSubmitClick,
@@ -284,5 +285,25 @@ describe("rtgl-tag-select handlers", () => {
     expect(store.getState().isOpen).toBe(false);
     expect(store.getState().selectedValues).toEqual(["bug", "platform"]);
     expect(render).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not emit add-option-click when add is disabled", () => {
+    const dispatchEvent = vi.fn();
+
+    handleAddOptionClick(
+      {
+        props: {
+          noAdd: true,
+        },
+        dispatchEvent,
+      },
+      {
+        _event: {
+          stopPropagation: vi.fn(),
+        },
+      },
+    );
+
+    expect(dispatchEvent).not.toHaveBeenCalled();
   });
 });

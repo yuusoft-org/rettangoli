@@ -1,0 +1,91 @@
+---
+title: Tag Select - No Add
+description: Verifies `no-add` hides the popover add-tag action while preserving normal draft selection and submit behavior.
+skipInitialScreenshot: true
+specs:
+  - A tag select with `no-add` opens its popover without rendering the add-tag button.
+  - Setting `addOption` does not override `no-add`.
+  - Clicking chips still updates draft state without committing immediately.
+  - Clicking submit commits the selected tag array.
+steps:
+  - action: select
+    testId: tag-select-trigger
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#no-add-tag-select rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: js
+    fn: getNoAddTagSelectState
+    value:
+      addButtonCount: 0
+      openPopoverCount: 1
+      addClicks: 0
+  - action: select
+    testId: add-docs
+    steps:
+      - action: click
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '["bug"]'
+    match: equals
+  - action: select
+    testId: tag-select-submit
+    steps:
+      - action: click
+  - action: wait
+    ms: 120
+  - action: assert
+    type: text
+    selector: '#result'
+    value: '["bug","docs"]'
+    match: equals
+viewport:
+  id: component-compact
+  width: 640
+  height: 520
+---
+<rtgl-view g="lg" p="lg" wh="f">
+  <rtgl-view d="v" g="md" w="280">
+    <rtgl-tag-select id="no-add-tag-select" w="f" no-add></rtgl-tag-select>
+    <div id="result" hidden></div>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const tagSelect = document.getElementById('no-add-tag-select');
+  const result = document.getElementById('result');
+  let addClicks = 0;
+
+  tagSelect.options = [
+    { value: 'bug', label: 'Bug', testId: 'add-bug' },
+    { value: 'docs', label: 'Docs', testId: 'add-docs' },
+    { value: 'backend', label: 'Backend', testId: 'add-backend' },
+    { value: 'qa', label: 'QA', testId: 'add-qa' },
+  ];
+  tagSelect.addOption = { label: 'Add tag' };
+  tagSelect.selectedValues = ['bug'];
+
+  result.textContent = JSON.stringify(tagSelect.selectedValues);
+
+  tagSelect.addEventListener('add-option-click', () => {
+    addClicks += 1;
+  });
+
+  tagSelect.addEventListener('value-change', (event) => {
+    result.textContent = JSON.stringify(event.detail.value);
+  });
+
+  window.getNoAddTagSelectState = () => {
+    const root = tagSelect.shadowRoot ?? tagSelect;
+
+    return {
+      addButtonCount: root.querySelectorAll('[data-testid="tag-select-add-option"]').length,
+      openPopoverCount: root.querySelectorAll('rtgl-popover[open]').length,
+      addClicks,
+    };
+  };
+</script>
