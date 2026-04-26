@@ -1,0 +1,114 @@
+---
+title: Items Update While Open
+description: Verifies showDropdownMenu refreshes an existing open dropdown with the new items.
+diffThreshold: 0.75
+specs:
+  - The dropdown opens with two items.
+  - Calling showDropdownMenu again while it is open updates the rendered rows to the new four-item menu.
+skipInitialScreenshot: true
+steps:
+  - action: customEvent
+    name: open-dropdown-initial
+  - action: waitFor
+    selector: 'rtgl-global-ui rtgl-dropdown-menu rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1500
+  - action: waitFor
+    selector: 'rtgl-global-ui rtgl-dropdown-menu rtgl-popover[positioned]'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 120
+  - action: assert
+    type: js
+    fn: dropdownUpdate.getVisibleItemCount
+    value: 2
+  - action: assert
+    type: js
+    fn: dropdownUpdate.getVisibleItemLabels
+    value:
+      - Copy
+      - Paste
+  - action: screenshot
+  - action: customEvent
+    name: open-dropdown-updated
+  - action: wait
+    ms: 120
+  - action: waitFor
+    selector: 'rtgl-global-ui rtgl-dropdown-menu rtgl-popover[positioned]'
+    state: attached
+    timeoutMs: 1500
+  - action: assert
+    type: js
+    fn: dropdownUpdate.getVisibleItemCount
+    value: 4
+  - action: assert
+    type: js
+    fn: dropdownUpdate.getVisibleItemLabels
+    value:
+      - Copy
+      - Paste
+      - Rename
+      - Delete
+  - action: screenshot
+viewport:
+  id: component-compact
+  width: 640
+  height: 420
+---
+
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view g="md" p="xl" wh="f">
+  <rtgl-text s="sm">Dynamic dropdown menu</rtgl-text>
+</rtgl-view>
+
+<script>
+  const globalUIElement = document.querySelector("rtgl-global-ui");
+  const initialItems = [
+    { id: "copy", label: "Copy" },
+    { id: "paste", label: "Paste" },
+  ];
+  const updatedItems = [
+    { id: "copy", label: "Copy" },
+    { id: "paste", label: "Paste" },
+    { id: "rename", label: "Rename" },
+    { id: "delete", label: "Delete" },
+  ];
+
+  const showDropdown = (items) => {
+    void globalUIElement.transformedHandlers.handleShowDropdownMenu({
+      items,
+      x: 40,
+      y: 48,
+      place: "bs",
+    });
+  };
+
+  const getDropdownMenu = () => {
+    return globalUIElement.shadowRoot?.querySelector("rtgl-dropdown-menu");
+  };
+
+  const getVisibleItems = () => {
+    const dropdownMenu = getDropdownMenu();
+    const popover = dropdownMenu?.shadowRoot?.querySelector("rtgl-popover");
+    return [...popover?.content?.querySelectorAll('[id^="option"]') ?? []];
+  };
+
+  window.dropdownUpdate = {
+    getVisibleItemCount() {
+      return getVisibleItems().length;
+    },
+    getVisibleItemLabels() {
+      return getVisibleItems().map((item) => item.textContent.trim());
+    },
+  };
+
+  window.addEventListener("open-dropdown-initial", () => {
+    showDropdown(initialItems);
+  });
+
+  window.addEventListener("open-dropdown-updated", () => {
+    showDropdown(updatedItems);
+  });
+</script>

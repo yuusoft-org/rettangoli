@@ -11,6 +11,18 @@ const getItemType = (item = {}) => {
   return 'item';
 };
 
+export const handleOnUpdate = (deps, payload) => {
+  const { render, refs } = deps;
+  const { oldProps = {}, newProps = {} } = payload;
+  const shouldRefreshPopover = oldProps.items !== newProps.items && !!newProps.open;
+
+  render();
+
+  if (shouldRefreshPopover) {
+    refs?.popover?.refreshContent?.();
+  }
+}
+
 export const handleClosePopover = (deps, payload) => {
   const { dispatchEvent } = deps;
   dispatchEvent(new CustomEvent('close'));
