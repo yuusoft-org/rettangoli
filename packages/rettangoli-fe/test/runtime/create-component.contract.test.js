@@ -2,6 +2,7 @@ import { parse } from "jempl";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 let createComponent;
+let createI18nRuntime;
 let restoreGlobals;
 let globalWindowTarget;
 let globalDocumentTarget;
@@ -203,6 +204,7 @@ const createComponentClass = ({
   methods = {},
   store = {},
   propsSchema = {},
+  deps = {},
 } = {}) => {
   return createComponent(
     {
@@ -241,13 +243,14 @@ const createComponentClass = ({
       },
 
     },
-    {},
+    deps,
   );
 };
 
 beforeAll(async () => {
   restoreGlobals = installHTMLElementStubs();
   ({ default: createComponent } = await import("../../src/createComponent.js"));
+  ({ createI18nRuntime } = await import("../../src/core/runtime/i18n.js"));
 });
 
 afterAll(() => {
@@ -634,5 +637,67 @@ describe("createComponent runtime contracts", () => {
     instance.disconnectedCallback();
     expect(globalWindowTarget.listenerCount("resize")).toBe(0);
     expect(globalDocumentTarget.listenerCount("visibilitychange")).toBe(0);
+  });
+
+  it("injects i18n into view data and store context", async () => {
+    const i18nRuntime = createI18nRuntime({
+      defaultLocale: "en",
+      fallbackLocale: "en",
+      locales: ["en", "vi"],
+      urls: {
+        vi: "/i18n/vi.json",
+      },
+      initialCatalogs: {
+        en: {
+          common: {
+            title: "Hello",
+          },
+        },
+      },
+      fetchFn: async () => ({
+        ok: true,
+        json: async () => ({
+          common: {
+            title: "Xin chao",
+          },
+        }),
+      }),
+    });
+
+    const TestComponent = createComponentClass({
+      deps: {
+        __rtglI18nRuntime: i18nRuntime,
+        locale: i18nRuntime.locale,
+      },
+      store: {
+        selectViewData: ({ i18n, locale }) => ({
+          titleFromStore: i18n.common.title,
+          localeFromStore: locale.current(),
+        }),
+      },
+    });
+
+    const instance = new TestComponent();
+    expect(instance.viewData).toMatchObject({
+      titleFromStore: "Hello",
+      localeFromStore: "en",
+      i18n: {
+        common: {
+          title: "Hello",
+        },
+      },
+    });
+
+    await i18nRuntime.set("vi");
+
+    expect(instance.viewData).toMatchObject({
+      titleFromStore: "Xin chao",
+      localeFromStore: "vi",
+      i18n: {
+        common: {
+          title: "Xin chao",
+        },
+      },
+    });
   });
 });

@@ -6,6 +6,7 @@ import {
   formatContractErrors as formatContractErrorLines,
   validateComponentContractIndex,
 } from "../core/contracts/componentFiles.js";
+import { analyzeI18nBuildContext } from "./i18nBuild.js";
 
 export const SUPPORTED_COMPONENT_FILE_SUFFIXES = Object.freeze([
   ".store.js",
@@ -54,9 +55,10 @@ export const collectComponentContractEntriesFromDirs = (dirs = []) => {
 export const validateComponentEntries = ({
   entries = [],
   errorPrefix = "[Check]",
+  i18nContext = { enabled: false },
 }) => {
   const index = buildComponentContractIndex(entries);
-  const errors = validateComponentContractIndex(index);
+  const errors = validateComponentContractIndex(index, { i18nContext });
   if (errors.length > 0) {
     throw new Error(
       `${errorPrefix} Component contract validation failed:\n${formatContractErrorLines(errors).join("\n")}`,
@@ -71,9 +73,14 @@ export const validateComponentEntries = ({
 export const validateComponentDirs = ({
   dirs = [],
   errorPrefix = "[Check]",
+  i18nContext = { enabled: false },
 }) => {
   const entries = collectComponentContractEntriesFromDirs(dirs);
-  const validationResult = validateComponentEntries({ entries, errorPrefix });
+  const validationResult = validateComponentEntries({
+    entries,
+    errorPrefix,
+    i18nContext,
+  });
   return {
     entries,
     ...validationResult,
@@ -131,9 +138,16 @@ export const formatContractFailureReport = ({
   ].join("\n");
 };
 
-export const analyzeComponentEntries = ({ entries = [] }) => {
+export const analyzeComponentEntries = ({
+  entries = [],
+  i18nContext = { enabled: false },
+  i18nErrors = [],
+}) => {
   const index = buildComponentContractIndex(entries);
-  const errors = validateComponentContractIndex(index);
+  const errors = [
+    ...i18nErrors,
+    ...validateComponentContractIndex(index, { i18nContext }),
+  ];
   const summary = summarizeContractErrors(errors);
   return {
     entries,
@@ -143,7 +157,19 @@ export const analyzeComponentEntries = ({ entries = [] }) => {
   };
 };
 
-export const analyzeComponentDirs = ({ dirs = [] }) => {
+export const analyzeComponentDirs = ({
+  dirs = [],
+  cwd = process.cwd(),
+  i18n = null,
+}) => {
   const entries = collectComponentContractEntriesFromDirs(dirs);
-  return analyzeComponentEntries({ entries });
+  const { context: i18nContext, errors: i18nErrors } = analyzeI18nBuildContext({
+    cwd,
+    i18n,
+  });
+  return analyzeComponentEntries({
+    entries,
+    i18nContext,
+    i18nErrors,
+  });
 };

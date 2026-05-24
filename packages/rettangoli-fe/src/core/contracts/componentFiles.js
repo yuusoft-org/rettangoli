@@ -1,4 +1,5 @@
 import { findUnsupportedTemplatePropertyBindingSyntax } from "../view/templatePropertyBindings.js";
+import { validateViewI18nReferences } from "../i18n/viewReferences.js";
 
 export const FORBIDDEN_VIEW_KEYS = Object.freeze([
   "elementName",
@@ -51,7 +52,8 @@ export const buildComponentContractIndex = (entries = []) => {
   return index;
 };
 
-export const validateComponentContractIndex = (index = {}) => {
+export const validateComponentContractIndex = (index = {}, options = {}) => {
+  const { i18nContext = { enabled: false } } = options;
   const errors = [];
 
   Object.entries(index).forEach(([category, components]) => {
@@ -90,6 +92,13 @@ export const validateComponentContractIndex = (index = {}) => {
           filePath: viewFilePath || representativeFile,
         });
       }
+
+      errors.push(...validateViewI18nReferences({
+        viewYaml,
+        componentLabel,
+        filePath: viewFilePath || representativeFile,
+        i18nContext,
+      }));
     });
   });
 

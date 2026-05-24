@@ -6,6 +6,7 @@ import {
   RETTANGOLI_FE_VIRTUAL_ENTRY_ID,
   createRettangoliFeVitePlugin,
 } from "./vitePlugin.js";
+import { emitI18nAssets, loadI18nBuildContext } from "./i18nBuild.js";
 
 const buildRettangoliFrontend = async (options = {}) => {
   console.log("running build with options", options);
@@ -16,12 +17,18 @@ const buildRettangoliFrontend = async (options = {}) => {
     outfile = "./vt/static/main.js",
     setup = "setup.js",
     development = false,
+    i18n = null,
   } = options;
 
   const resolvedOutfile = path.resolve(cwd, outfile);
   const outDir = path.dirname(resolvedOutfile);
   const outFileName = path.basename(resolvedOutfile);
   const relativeOutDir = path.relative(cwd, outDir) || ".";
+  const i18nContext = loadI18nBuildContext({
+    cwd,
+    i18n,
+    errorPrefix: "[Build]",
+  });
 
   await viteBuild({
     configFile: false,
@@ -31,6 +38,7 @@ const buildRettangoliFrontend = async (options = {}) => {
         cwd,
         dirs,
         setup,
+        i18n,
         errorPrefix: "[Build]",
       }),
     ],
@@ -51,6 +59,8 @@ const buildRettangoliFrontend = async (options = {}) => {
       },
     },
   });
+
+  emitI18nAssets({ outDir, i18nContext });
 
   console.log(`Build complete. Output file: ${resolvedOutfile}`);
 };

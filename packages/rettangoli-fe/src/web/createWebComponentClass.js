@@ -52,6 +52,8 @@ export const createWebComponentClass = ({
     _globalListenersCleanup;
     _oldVNode;
     deps;
+    i18nRuntime;
+    _i18nUnsubscribe;
     _propsSchemaKeys = [];
     cssText;
 
@@ -64,7 +66,10 @@ export const createWebComponentClass = ({
       if (this.store.selectViewData) {
         data = this.store.selectViewData();
       }
-      return data;
+      return {
+        ...data,
+        i18n: this.i18nRuntime?.getMessages?.() || {},
+      };
     }
 
     connectedCallback() {
@@ -74,6 +79,11 @@ export const createWebComponentClass = ({
       });
       this.shadow = dom.shadow;
       this.renderTarget = dom.renderTarget;
+      if (this.i18nRuntime?.subscribe && !this._i18nUnsubscribe) {
+        this._i18nUnsubscribe = this.i18nRuntime.subscribe(() => {
+          this.render();
+        });
+      }
       runConnectedComponentLifecycle({
         instance: this,
         parseAndRenderFn: parseAndRender,
@@ -82,6 +92,10 @@ export const createWebComponentClass = ({
     }
 
     disconnectedCallback() {
+      if (this._i18nUnsubscribe) {
+        this._i18nUnsubscribe();
+        this._i18nUnsubscribe = undefined;
+      }
       runDisconnectedComponentLifecycle({
         instance: this,
         clearTimerFn: clearTimeout,
@@ -140,7 +154,11 @@ export const createWebComponentClass = ({
       this._propsSchemaKeys = propsSchemaKeys;
       this.elementName = elementName;
       this.styles = styles;
-      this.store = bindStore(store, this.props, this.constants);
+      this.i18nRuntime = deps?.__rtglI18nRuntime;
+      this.store = bindStore(store, this.props, this.constants, {
+        getI18n: () => this.i18nRuntime?.getMessages?.() || {},
+        locale: this.i18nRuntime?.locale,
+      });
       this.template = template;
       this.handlers = handlers;
       this.methods = methods;
@@ -148,12 +166,20 @@ export const createWebComponentClass = ({
       this.patch = patch;
       this.deps = {
         ...deps,
+        locale: this.i18nRuntime?.locale || deps?.locale,
         store: this.store,
         render: this.render,
         handlers,
         props: this.props,
         constants: this.constants,
       };
+      if (this.i18nRuntime) {
+        Object.defineProperty(this.deps, "i18n", {
+          enumerable: true,
+          configurable: true,
+          get: () => this.i18nRuntime.getMessages(),
+        });
+      }
       bindMethods(this, this.methods);
       // Keep the Snabbdom helper off public prop names (e.g. schema prop "h").
       this._snabbdomH = h;

@@ -1,0 +1,64 @@
+---
+title: i18n-interactions
+skipInitialScreenshot: true
+diffThreshold: 0.05
+viewport:
+  id: panel
+  width: 420
+  height: 220
+steps:
+  - action: select
+    testId: set-vi
+    steps:
+      - action: click
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: __rtglI18nTest.getCurrentLocale
+    value: "Ngon ngu: vi"
+  - action: assert
+    type: js
+    fn: __rtglI18nTest.getTitle
+    value: Quoc te hoa
+  - action: screenshot
+  - action: select
+    testId: set-en
+    steps:
+      - action: click
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: __rtglI18nTest.getCurrentLocale
+    value: "Locale: en"
+  - action: assert
+    type: js
+    fn: __rtglI18nTest.getTitle
+    value: Internationalization
+  - action: screenshot
+---
+
+<script type="module" src="/static/public/main.js"></script>
+<style>
+  html,
+  body {
+    margin: 0;
+    background: white;
+  }
+</style>
+<script>
+  window.__rtglI18nTest = {
+    getTitle() {
+      const host = document.querySelector("e2e-i18n-panel");
+      return host?.shadowRoot?.querySelector("[data-testid='title']")?.textContent || "";
+    },
+    getCurrentLocale() {
+      const host = document.querySelector("e2e-i18n-panel");
+      return host?.shadowRoot?.querySelector("[data-testid='current-locale']")?.textContent || "";
+    },
+  };
+</script>
+<div style="padding:8px;background:white;min-height:204px">
+  <e2e-i18n-panel></e2e-i18n-panel>
+</div>

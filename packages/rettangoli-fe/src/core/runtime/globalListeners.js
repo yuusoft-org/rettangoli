@@ -21,6 +21,7 @@ export const attachGlobalRefListeners = ({
     document: globalThis.document,
   },
   parseAndRenderFn,
+  getPayloadContext,
   timing = {
     nowFn: Date.now,
     setTimeoutFn: setTimeout,
@@ -54,6 +55,7 @@ export const attachGlobalRefListeners = ({
         stateKey,
         fallbackCurrentTarget: target,
         parseAndRenderFn,
+        getPayloadContext,
         nowFn: timing.nowFn,
         setTimeoutFn: timing.setTimeoutFn,
         clearTimeoutFn: timing.clearTimeoutFn,
