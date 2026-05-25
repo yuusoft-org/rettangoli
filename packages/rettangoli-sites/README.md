@@ -37,6 +37,7 @@ my-site/
 - Collections built from page tags
 - `$if`, `$for`, `$partial`, template functions
 - Static file copying from `static/` to `_site/`
+- Default sitemap generation when `data.site.baseUrl` is configured
 - Watch mode with local dev server + websocket reload
 
 ## Site Config
@@ -131,7 +132,7 @@ Duplicate page URLs are rejected after normalization.
 
 ## Sitemap
 
-Add `sitemap` to `sites.config.yaml` to write a sitemap during build. `siteUrl` can be set directly under `sitemap`, or Sites will use `data.site.baseUrl`.
+Sites writes `_site/sitemap.xml` by default when `data.site.baseUrl` is configured. Use `sitemap` in `sites.config.yaml` to customize output, or set `sitemap: false` to disable it.
 
 ```yaml
 data:
@@ -152,6 +153,7 @@ sitemap:
     /private/: false
 ```
 
+If you do not use `data.site.baseUrl`, set `sitemap.siteUrl` instead.
 Generated entries use normalized page URLs, including page frontmatter `url` overrides.
 Use page frontmatter for per-page control:
 

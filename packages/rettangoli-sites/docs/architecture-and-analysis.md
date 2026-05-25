@@ -106,7 +106,9 @@ Behavior:
 - build keys:
   - `keepMarkdownFiles` (boolean): when true, copy source Markdown into output in addition to generated HTML; pages with custom `url` copy to the custom URL path
 - sitemap keys:
+  - default behavior: generate `sitemap.xml` when `data.site.baseUrl` is configured
   - `siteUrl` (string): absolute base URL; falls back to `data.site.baseUrl`
+  - `enabled` (boolean): set `false` to disable sitemap output
   - `outputPath` (string): relative sitemap output path, default `sitemap.xml`
   - `defaults` (object): default `changefreq`, `priority`, and `lastmod`
   - `exclude` (array): exact URLs or prefix patterns ending in `*`

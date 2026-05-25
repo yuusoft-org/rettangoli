@@ -13,23 +13,50 @@ async function withTempDir(fn) {
   }
 }
 
-function writeFixtureSite(rootDir) {
+function writeFixtureSite(rootDir, { baseUrl = 'https://example.com', sitemapConfig = true } = {}) {
   fs.mkdirSync(path.join(rootDir, 'pages'), { recursive: true });
-  fs.writeFileSync(
-    path.join(rootDir, 'sites.config.yaml'),
-    [
-      'data:',
-      '  site:',
-      '    baseUrl: https://example.com',
-      'sitemap:',
-      '  defaults:',
-      '    changefreq: weekly'
-    ].join('\n')
-  );
+  const configLines = [];
+  if (baseUrl) {
+    configLines.push('data:', '  site:', `    baseUrl: ${baseUrl}`);
+  }
+  if (sitemapConfig) {
+    configLines.push('sitemap:', '  defaults:', '    changefreq: weekly');
+  }
+  if (configLines.length > 0) {
+    fs.writeFileSync(path.join(rootDir, 'sites.config.yaml'), configLines.join('\n'));
+  }
   fs.writeFileSync(path.join(rootDir, 'pages', 'index.md'), '# Home');
 }
 
 describe('buildSite', () => {
+  it('generates a default sitemap when data.site.baseUrl is configured', async () => {
+    await withTempDir(async (tempDir) => {
+      writeFixtureSite(tempDir, { sitemapConfig: false });
+
+      await buildSite({
+        rootDir: tempDir,
+        quiet: true
+      });
+
+      const sitemapXml = fs.readFileSync(path.join(tempDir, '_site', 'sitemap.xml'), 'utf8');
+      expect(sitemapXml).toContain('<loc>https://example.com/</loc>');
+    });
+  });
+
+  it('skips default sitemap output when no base URL is configured', async () => {
+    await withTempDir(async (tempDir) => {
+      writeFixtureSite(tempDir, { baseUrl: null, sitemapConfig: false });
+
+      await buildSite({
+        rootDir: tempDir,
+        quiet: true
+      });
+
+      expect(fs.existsSync(path.join(tempDir, '_site', 'index.html'))).toBe(true);
+      expect(fs.existsSync(path.join(tempDir, '_site', 'sitemap.xml'))).toBe(false);
+    });
+  });
+
   it('falls back to configured sitemap when options.sitemap is undefined', async () => {
     await withTempDir(async (tempDir) => {
       writeFixtureSite(tempDir);

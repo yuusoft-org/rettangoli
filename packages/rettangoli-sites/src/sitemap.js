@@ -312,13 +312,16 @@ export function normalizeSitemapConfig(value, configPath = 'sitemap config') {
   return normalized;
 }
 
-function resolveSitemapSiteUrl(sitemap, globalData) {
+function resolveSitemapSiteUrl(sitemap, globalData, { required = true } = {}) {
   if (sitemap.siteUrl) {
     return sitemap.siteUrl;
   }
 
   const baseUrl = globalData?.site?.baseUrl;
   if (baseUrl === undefined) {
+    if (!required) {
+      return null;
+    }
     throw new Error('Sitemap generation requires sitemap.siteUrl or data.site.baseUrl.');
   }
 
@@ -392,16 +395,22 @@ function buildUrlEntryXml(entry) {
 }
 
 export function buildSitemapXml({ pageEntries, sitemap, globalData }) {
-  if (!sitemap || sitemap.enabled === false) {
+  if (sitemap === false || sitemap?.enabled === false) {
     return null;
   }
 
-  const normalizedSitemap = normalizeSitemapConfig(sitemap);
+  const hasExplicitSitemapConfig = sitemap !== undefined && sitemap !== null;
+  const normalizedSitemap = normalizeSitemapConfig(hasExplicitSitemapConfig ? sitemap : true);
   if (normalizedSitemap.enabled === false) {
     return null;
   }
 
-  const siteUrl = resolveSitemapSiteUrl(normalizedSitemap, globalData);
+  const siteUrl = resolveSitemapSiteUrl(normalizedSitemap, globalData, {
+    required: hasExplicitSitemapConfig
+  });
+  if (siteUrl === null) {
+    return null;
+  }
   const excludePatterns = normalizedSitemap.exclude || [];
   const defaultOptions = normalizedSitemap.defaults || {};
   const pageOptions = normalizedSitemap.pages || {};

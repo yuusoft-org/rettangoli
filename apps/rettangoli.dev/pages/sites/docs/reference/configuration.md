@@ -115,7 +115,7 @@ Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
 ## `sitemap`
 
-When `sitemap` is present and not `false`, Sites writes a sitemap during build. Set `sitemap.siteUrl`, or define `data.site.baseUrl`; the value must be an absolute `http` or `https` URL.
+Sites writes a sitemap by default when `data.site.baseUrl` is configured. Use `sitemap` to customize output, or set `sitemap: false` to disable it. If you do not use `data.site.baseUrl`, set `sitemap.siteUrl`; the value must be an absolute `http` or `https` URL.
 
 ```yaml
 sitemap:

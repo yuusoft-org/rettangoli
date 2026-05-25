@@ -7,22 +7,29 @@ tags: documentation
 sidebarId: sites-sitemap
 ---
 
-Sites can generate `sitemap.xml` from the same normalized page URLs it uses for HTML output.
+Sites generates `sitemap.xml` from the same normalized page URLs it uses for HTML output.
 
-## Enable Sitemap Output
+## Default Output
 
-Add a `sitemap` block to `sites.config.yaml`. Set `sitemap.siteUrl`, or provide `data.site.baseUrl`.
+Set `data.site.baseUrl` and Sites writes `_site/sitemap.xml` by default.
 
 ```yaml
 data:
   site:
     baseUrl: https://example.com
+```
+
+## Custom Defaults
+
+Use `sitemap` to customize the default output.
+
+```yaml
 sitemap:
   defaults:
     changefreq: weekly
 ```
 
-This writes `_site/sitemap.xml`.
+If you do not use `data.site.baseUrl`, set `sitemap.siteUrl` instead.
 
 ## Full Config
 
@@ -51,6 +58,12 @@ sitemap:
 | `defaults` | object | Default `changefreq`, `priority`, and `lastmod` for every page |
 | `exclude` | array | Exact URLs or prefix patterns ending in `*` |
 | `pages` | object | Per-page URL overrides, or `false` to exclude a page |
+
+To disable sitemap output entirely:
+
+```yaml
+sitemap: false
+```
 
 ## Page Frontmatter
 
