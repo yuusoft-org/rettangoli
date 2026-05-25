@@ -228,6 +228,124 @@ function isSchemaSidecarFile(fileName) {
   return fileName.endsWith('.schema.yaml') || fileName.endsWith('.schema.yml');
 }
 
+function hasPageExtension(fileName) {
+  return fileName.endsWith('.yaml') || fileName.endsWith('.yml') || fileName.endsWith('.md');
+}
+
+function hasOwn(object, key) {
+  return Object.prototype.hasOwnProperty.call(object, key);
+}
+
+function normalizeRelativeUrlPath(relativePath) {
+  return relativePath.replace(/\\/g, '/');
+}
+
+function derivePageUrlFromRelativePath(relativePath) {
+  const normalizedPath = normalizeRelativeUrlPath(relativePath);
+  const pathWithoutExtension = normalizedPath.replace(/\.(yaml|yml|md)$/, '');
+  const pageName = path.posix.basename(pathWithoutExtension);
+
+  if (pageName === 'index') {
+    const dirName = path.posix.dirname(pathWithoutExtension);
+    return dirName === '.' ? '/' : `/${dirName}/`;
+  }
+
+  return `/${pathWithoutExtension}/`;
+}
+
+function normalizePageUrlOverride(rawUrl, pagePath) {
+  if (typeof rawUrl !== 'string') {
+    throw new Error(`Invalid url in ${pagePath}: expected a string.`);
+  }
+
+  const trimmedUrl = rawUrl.trim();
+  if (trimmedUrl === '') {
+    throw new Error(`Invalid url in ${pagePath}: expected a non-empty string.`);
+  }
+
+  if (/[\u0000-\u001F\u007F]/u.test(trimmedUrl)) {
+    throw new Error(`Invalid url in ${pagePath}: must not contain control characters.`);
+  }
+
+  if (/\s/u.test(trimmedUrl)) {
+    throw new Error(`Invalid url in ${pagePath}: must not contain whitespace.`);
+  }
+
+  if (/^[A-Za-z][A-Za-z0-9+.-]*:/u.test(trimmedUrl) || trimmedUrl.startsWith('//')) {
+    throw new Error(`Invalid url in ${pagePath}: expected a site-relative URL path.`);
+  }
+
+  if (trimmedUrl.includes('\\')) {
+    throw new Error(`Invalid url in ${pagePath}: must use forward slashes.`);
+  }
+
+  if (trimmedUrl.includes('?') || trimmedUrl.includes('#')) {
+    throw new Error(`Invalid url in ${pagePath}: must not include query strings or fragments.`);
+  }
+
+  const withLeadingSlash = trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`;
+  const collapsedUrl = withLeadingSlash.replace(/\/+/g, '/');
+  const pathWithoutSlashes = collapsedUrl.replace(/^\/+|\/+$/g, '');
+
+  if (pathWithoutSlashes === '') {
+    return '/';
+  }
+
+  const segments = pathWithoutSlashes.split('/');
+  for (const segment of segments) {
+    let decodedSegment;
+    try {
+      decodedSegment = decodeURIComponent(segment);
+    } catch (error) {
+      throw new Error(`Invalid url in ${pagePath}: contains invalid URL encoding.`);
+    }
+
+    if (decodedSegment === '.' || decodedSegment === '..') {
+      throw new Error(`Invalid url in ${pagePath}: must not contain "." or ".." segments.`);
+    }
+
+    if (decodedSegment.includes('/') || decodedSegment.includes('\\')) {
+      throw new Error(`Invalid url in ${pagePath}: must not include encoded slashes or backslashes.`);
+    }
+
+    if (/[\u0000-\u001F\u007F]/u.test(decodedSegment)) {
+      throw new Error(`Invalid url in ${pagePath}: must not contain control characters.`);
+    }
+
+    if (/\s/u.test(decodedSegment)) {
+      throw new Error(`Invalid url in ${pagePath}: must not contain whitespace.`);
+    }
+  }
+
+  return `/${segments.join('/')}/`;
+}
+
+function resolvePageUrl(publicFrontmatter, relativePath, pagePath) {
+  if (hasOwn(publicFrontmatter, 'url')) {
+    return normalizePageUrlOverride(publicFrontmatter.url, pagePath);
+  }
+
+  return derivePageUrlFromRelativePath(relativePath);
+}
+
+function htmlOutputRelativePathFromUrl(url) {
+  if (url === '/') {
+    return 'index.html';
+  }
+
+  return `${url.slice(1, -1)}/index.html`;
+}
+
+function markdownOutputRelativePathFromUrl(url) {
+  if (url === '/') {
+    return 'index.md';
+  }
+
+  const segments = url.slice(1, -1).split('/');
+  const fileName = `${segments.pop()}.md`;
+  return [...segments, fileName].join('/');
+}
+
 async function fetchRemoteYaml(url, fetchImpl, aliasLabel) {
   const effectiveFetch = fetchImpl || globalThis.fetch;
   if (typeof effectiveFetch !== 'function') {
@@ -485,12 +603,11 @@ export function createSiteBuilder({
       };
     }
 
-    // Function to scan all pages and build collections
-    function buildCollections() {
-      const collections = {};
+    function collectPageEntries() {
+      const pageEntries = [];
       const pagesDir = path.join(rootDir, 'pages');
 
-      function scanPages(dir, basePath = '') {
+      function scanPages(basePath = '') {
         const fullDir = path.join(pagesDir, basePath);
         if (!fs.existsSync(fullDir)) return;
 
@@ -502,82 +619,122 @@ export function createSiteBuilder({
           const itemKind = resolveDirentKind(fs, itemPath, item);
 
           if (itemKind === 'directory') {
-            // Recursively scan subdirectories
-            scanPages(dir, relativePath);
-          } else if (itemKind === 'file' && (item.name.endsWith('.yaml') || item.name.endsWith('.yml') || item.name.endsWith('.md'))) {
-            // Extract frontmatter and content
+            scanPages(relativePath);
+          } else if (itemKind === 'file' && hasPageExtension(item.name)) {
             const { frontmatter, content } = extractFrontmatterAndContent(itemPath);
-            const { frontmatter: publicFrontmatter } = splitSystemFrontmatter(frontmatter, globalData, itemPath);
+            const { frontmatter: publicFrontmatter, bindings } = splitSystemFrontmatter(frontmatter, globalData, itemPath);
+            const hasCustomUrl = hasOwn(publicFrontmatter, 'url');
+            const url = resolvePageUrl(publicFrontmatter, relativePath, itemPath);
+            const exposedFrontmatter = hasCustomUrl
+              ? { ...publicFrontmatter, url }
+              : publicFrontmatter;
 
-            // Calculate URL
-            const baseFileName = item.name.replace(/\.(yaml|yml|md)$/, '');
-            let url;
-
-            // Special case: index files remain at root, others become directories
-            if (baseFileName === 'index') {
-              url = basePath ? '/' + basePath.replace(/\\/g, '/') : '/';
-              if (url !== '/') {
-                url = url + '/';
-              }
-            } else {
-              const pagePath = basePath ? path.join(basePath, baseFileName) : baseFileName;
-              url = '/' + pagePath.replace(/\\/g, '/') + '/';
-            }
-
-            // Process tags
-            if (publicFrontmatter.tags) {
-              // Normalize tags to array
-              const tags = Array.isArray(publicFrontmatter.tags) ? publicFrontmatter.tags : [publicFrontmatter.tags];
-
-              // Add to collections
-              tags.forEach(tag => {
-                if (typeof tag === 'string' && tag.trim()) {
-                  const trimmedTag = tag.trim();
-                  if (!collections[trimmedTag]) {
-                    collections[trimmedTag] = [];
-                  }
-                  collections[trimmedTag].push({
-                    data: publicFrontmatter,
-                    url: url,
-                    content: content
-                  });
-                }
-              });
-            }
+            pageEntries.push({
+              pagePath: itemPath,
+              relativePath: normalizeRelativeUrlPath(relativePath),
+              isMarkdown: item.name.endsWith('.md'),
+              content,
+              frontmatter: exposedFrontmatter,
+              bindings,
+              url,
+              hasCustomUrl
+            });
           }
         }
       }
 
-      scanPages('');
+      scanPages();
+      return pageEntries;
+    }
+
+    function assertUniquePageUrls(pageEntries) {
+      const seen = new Map();
+
+      for (const entry of pageEntries) {
+        const existingEntry = seen.get(entry.url);
+        if (existingEntry) {
+          throw new Error(`Duplicate page URL "${entry.url}" in ${entry.pagePath}; already used by ${existingEntry.pagePath}.`);
+        }
+        seen.set(entry.url, entry);
+      }
+    }
+
+    function assertUniqueMarkdownOutputPaths(pageEntries) {
+      if (!keepMarkdownFiles) {
+        return;
+      }
+
+      const seen = new Map();
+      for (const entry of pageEntries) {
+        if (!entry.isMarkdown) {
+          continue;
+        }
+
+        const markdownOutputRelativePath = entry.hasCustomUrl
+          ? markdownOutputRelativePathFromUrl(entry.url)
+          : entry.relativePath;
+        const existingEntry = seen.get(markdownOutputRelativePath);
+        if (existingEntry) {
+          throw new Error(`Duplicate markdown output path "${markdownOutputRelativePath}" in ${entry.pagePath}; already used by ${existingEntry.pagePath}.`);
+        }
+        seen.set(markdownOutputRelativePath, entry);
+      }
+    }
+
+    // Function to scan all pages and build collections
+    function buildCollections(pageEntries) {
+      const collections = {};
+
+      for (const entry of pageEntries) {
+        const publicFrontmatter = entry.frontmatter;
+
+        // Process tags
+        if (publicFrontmatter.tags) {
+          // Normalize tags to array
+          const tags = Array.isArray(publicFrontmatter.tags) ? publicFrontmatter.tags : [publicFrontmatter.tags];
+
+          // Add to collections
+          tags.forEach(tag => {
+            if (typeof tag === 'string' && tag.trim()) {
+              const trimmedTag = tag.trim();
+              if (!collections[trimmedTag]) {
+                collections[trimmedTag] = [];
+              }
+              collections[trimmedTag].push({
+                data: publicFrontmatter,
+                url: entry.url,
+                content: entry.content
+              });
+            }
+          });
+        }
+      }
+
       return collections;
     }
 
+    const pageEntries = collectPageEntries();
+    assertUniquePageUrls(pageEntries);
+    assertUniqueMarkdownOutputPaths(pageEntries);
+
     // Build collections in first pass
     if (!quiet) console.log('Building collections...');
-    const collections = buildCollections();
+    const collections = buildCollections(pageEntries);
 
     // Function to process a single page file
-    async function processPage(pagePath, outputRelativePath, isMarkdown = false, markdownOutputRelativePath = null) {
+    async function processPage(pageEntry) {
+      const {
+        pagePath,
+        content: rawContent,
+        frontmatter: publicFrontmatter,
+        bindings: boundData,
+        isMarkdown,
+        url,
+        hasCustomUrl,
+        relativePath
+      } = pageEntry;
+
       if (!quiet) console.log(`Processing ${pagePath}...`);
-
-      const { frontmatter, content: rawContent } = extractFrontmatterAndContent(pagePath);
-      const { frontmatter: publicFrontmatter, bindings: boundData } = splitSystemFrontmatter(frontmatter, globalData, pagePath);
-
-      // Calculate URL for current page
-      let url;
-      const fileName = path.basename(outputRelativePath, '.html');
-      const basePath = path.dirname(outputRelativePath);
-
-      // Special case: index files remain at root, others become directories
-      if (fileName === 'index') {
-        url = basePath && basePath !== '.' ? '/' + basePath.replace(/\\/g, '/') : '/';
-        if (url !== '/') {
-          url = url + '/';
-        }
-      } else {
-        const pagePath = basePath && basePath !== '.' ? path.join(basePath, fileName) : fileName;
-        url = '/' + pagePath.replace(/\\/g, '/') + '/';
-      }
 
       // Deep merge global data with frontmatter and collections for the page context
       const pageData = deepMerge(globalData, publicFrontmatter);
@@ -648,35 +805,9 @@ export function createSiteBuilder({
         htmlString = convertToHtml(resultArray);
       }
 
-      // Create output directory and file path for new index.html structure
-      const pageFileName = path.basename(outputRelativePath, '.html');
-      const dirPath = path.dirname(outputRelativePath);
-
-      let outputPath, outputDir;
-
-      // Special case: index files remain as index.html, others become directory/index.html
-      if (pageFileName === 'index') {
-        if (dirPath && dirPath !== '.') {
-          // Nested index file: pages/blog/index.yaml -> _site/blog/index.html
-          outputPath = path.join(outputRootDir, dirPath, 'index.html');
-          outputDir = path.join(outputRootDir, dirPath);
-        } else {
-          // Root index file: pages/index.yaml -> _site/index.html
-          outputPath = path.join(outputRootDir, 'index.html');
-          outputDir = path.join(outputRootDir);
-        }
-      } else {
-        // Regular file: pages/test.yaml -> _site/test/index.html
-        if (dirPath && dirPath !== '.') {
-          // Nested regular file: pages/blog/post.yaml -> _site/blog/post/index.html
-          outputPath = path.join(outputRootDir, dirPath, pageFileName, 'index.html');
-          outputDir = path.join(outputRootDir, dirPath, pageFileName);
-        } else {
-          // Root level regular file: pages/test.yaml -> _site/test/index.html
-          outputPath = path.join(outputRootDir, pageFileName, 'index.html');
-          outputDir = path.join(outputRootDir, pageFileName);
-        }
-      }
+      const outputRelativePath = htmlOutputRelativePathFromUrl(url);
+      const outputPath = path.join(outputRootDir, ...outputRelativePath.split('/'));
+      const outputDir = path.dirname(outputPath);
 
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
@@ -686,8 +817,11 @@ export function createSiteBuilder({
       fs.writeFileSync(outputPath, htmlString);
       if (!quiet) console.log(`  -> Written to ${outputPath}`);
 
-      if (isMarkdown && keepMarkdownFiles && typeof markdownOutputRelativePath === 'string') {
-        const markdownOutputPath = path.join(outputRootDir, markdownOutputRelativePath);
+      if (isMarkdown && keepMarkdownFiles) {
+        const markdownOutputRelativePath = hasCustomUrl
+          ? markdownOutputRelativePathFromUrl(url)
+          : relativePath;
+        const markdownOutputPath = path.join(outputRootDir, ...markdownOutputRelativePath.split('/'));
         const markdownOutputDir = path.dirname(markdownOutputPath);
         if (!fs.existsSync(markdownOutputDir)) {
           fs.mkdirSync(markdownOutputDir, { recursive: true });
@@ -697,37 +831,9 @@ export function createSiteBuilder({
       }
     }
 
-    // Process all YAML and Markdown files in pages directory recursively
-    async function processAllPages(dir, basePath = '') {
-      const pagesDir = path.join(rootDir, 'pages');
-      const fullDir = path.join(pagesDir, basePath);
-
-      if (!fs.existsSync(fullDir)) return;
-
-      const items = fs.readdirSync(fullDir, { withFileTypes: true });
-
-      for (const item of items) {
-        const itemPath = path.join(fullDir, item.name);
-        const relativePath = basePath ? path.join(basePath, item.name) : item.name;
-        const itemKind = resolveDirentKind(fs, itemPath, item);
-
-        if (itemKind === 'directory') {
-          // Recursively process subdirectories
-          await processAllPages(dir, relativePath);
-        } else if (itemKind === 'file') {
-          if (item.name.endsWith('.yaml') || item.name.endsWith('.yml')) {
-            // Process YAML file
-            const outputFileName = item.name.replace(/\.(yaml|yml)$/, '.html');
-            const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
-            await processPage(itemPath, outputRelativePath, false);
-          } else if (item.name.endsWith('.md')) {
-            // Process Markdown file
-            const outputFileName = item.name.replace('.md', '.html');
-            const outputRelativePath = basePath ? path.join(basePath, outputFileName) : outputFileName;
-            await processPage(itemPath, outputRelativePath, true, relativePath);
-          }
-          // Ignore other file types
-        }
+    async function processAllPages() {
+      for (const pageEntry of pageEntries) {
+        await processPage(pageEntry);
       }
     }
 
@@ -784,7 +890,7 @@ export function createSiteBuilder({
     copyStaticFiles();
 
     // Process all pages (can overwrite static files)
-    await processAllPages('');
+    await processAllPages();
 
     if (!quiet) console.log('Build complete!');
   };
