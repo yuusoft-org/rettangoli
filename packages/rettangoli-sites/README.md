@@ -76,8 +76,20 @@ imports:
   partials:
     docs/nav: https://example.com/partials/docs-nav.yaml
 data:
+  site:
+    baseUrl: https://example.com
   themeCssHref: /public/theme.css
   themeBodyClass: dark
+sitemap:
+  outputPath: sitemap.xml
+  defaults:
+    changefreq: weekly
+    priority: 0.5
+  exclude:
+    - /drafts/*
+  pages:
+    /:
+      priority: 1
 ```
 
 In the default starter template, CDN runtime scripts are controlled via `data/site.yaml`:
@@ -116,6 +128,44 @@ url: /company/
 `url` is normalized to a site-relative clean URL with a leading and trailing slash, so `company` becomes `/company/`.
 External URLs, query strings, fragments, whitespace, and `.` / `..` path segments are rejected.
 Duplicate page URLs are rejected after normalization.
+
+## Sitemap
+
+Add `sitemap` to `sites.config.yaml` to write a sitemap during build. `siteUrl` can be set directly under `sitemap`, or Sites will use `data.site.baseUrl`.
+
+```yaml
+data:
+  site:
+    baseUrl: https://example.com
+sitemap:
+  outputPath: sitemap.xml
+  defaults:
+    changefreq: weekly
+    priority: 0.5
+  exclude:
+    - /drafts/*
+  pages:
+    /:
+      priority: 1
+      changefreq: daily
+      lastmod: "2026-05-25"
+    /private/: false
+```
+
+Generated entries use normalized page URLs, including page frontmatter `url` overrides.
+Use page frontmatter for per-page control:
+
+```md
+---
+sitemap:
+  changefreq: monthly
+  priority: 0.8
+  lastmod: "2026-05-25"
+---
+```
+
+Set `sitemap: false` in page frontmatter to exclude one page.
+`sitemap.exclude` accepts exact page URLs and prefix patterns ending in `*`, such as `/drafts/*`.
 
 `imports` lets you map aliases to remote YAML files (HTTP/HTTPS only). Use aliases in pages/templates:
 - page frontmatter: `template: base` or `template: docs`

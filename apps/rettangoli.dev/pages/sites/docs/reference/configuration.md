@@ -18,6 +18,7 @@ Configure Sites with `sites.config.yaml` or `sites.config.yml` in project root.
 | `build` | object | Build-specific options |
 | `imports` | object | Remote template and partial alias maps |
 | `data` | object | Inline global data for small site-wide values |
+| `sitemap` | object or boolean | Generate `sitemap.xml` from built page URLs |
 
 Use only one of `markdownit` or `markdown`.
 
@@ -50,8 +51,20 @@ imports:
   templates:
     docs: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/docs.yaml
 data:
+  site:
+    baseUrl: https://example.com
   themeCssHref: /public/theme.css
   themeBodyClass: dark
+sitemap:
+  outputPath: sitemap.xml
+  defaults:
+    changefreq: weekly
+    priority: 0.5
+  exclude:
+    - /drafts/*
+  pages:
+    /:
+      priority: 1
 ```
 
 ## `markdownit.shiki`
@@ -99,6 +112,44 @@ Example:
 Use top-level `data` for small global values that do not deserve their own `data/*.yaml` file.
 Inline config data and `data/*.yaml` are merged, with `data/*.yaml` winning on conflicts.
 Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
+
+## `sitemap`
+
+When `sitemap` is present and not `false`, Sites writes a sitemap during build. Set `sitemap.siteUrl`, or define `data.site.baseUrl`; the value must be an absolute `http` or `https` URL.
+
+```yaml
+sitemap:
+  siteUrl: https://example.com
+  outputPath: sitemap.xml
+  defaults:
+    changefreq: weekly
+    priority: 0.5
+  exclude:
+    - /drafts/*
+  pages:
+    /:
+      priority: 1
+      changefreq: daily
+      lastmod: "2026-05-25"
+    /private/: false
+```
+
+Page URLs are the normalized Sites URLs, including frontmatter `url` overrides. `exclude` accepts exact URLs and prefix patterns ending in `*`.
+
+Per-page frontmatter can override sitemap values:
+
+```md
+---
+sitemap:
+  changefreq: monthly
+  priority: 0.8
+  lastmod: "2026-05-25"
+---
+```
+
+Set `sitemap: false` in page frontmatter to exclude that page.
+
+For the full interface, see [Sitemap](/sites/docs/reference/sitemap).
 
 ## JS config support
 

@@ -49,12 +49,16 @@ export async function runTest(fixturePath) {
   const md = rtglMarkdown(MarkdownIt);
 
   let keepMarkdownFiles = false;
+  let configData = {};
+  let sitemap;
   const configPath = memfs.existsSync('/sites.config.yaml')
     ? '/sites.config.yaml'
     : (memfs.existsSync('/sites.config.yml') ? '/sites.config.yml' : null);
   if (configPath) {
     const parsedConfig = yaml.load(memfs.readFileSync(configPath, 'utf8'), { schema: yaml.JSON_SCHEMA }) || {};
     keepMarkdownFiles = parsedConfig?.build?.keepMarkdownFiles === true;
+    configData = parsedConfig?.data || {};
+    sitemap = parsedConfig?.sitemap;
   }
   
   // Check if this is a fixture that needs custom functions
@@ -109,6 +113,8 @@ export async function runTest(fixturePath) {
     rootDir: '/',
     md,
     keepMarkdownFiles,
+    data: configData,
+    sitemap,
     functions: functions
   });
   await build();

@@ -94,7 +94,7 @@ Behavior:
 `loadSiteConfig` supports:
 
 - `sites.config.yaml` or `sites.config.yml` in site root
-- top-level keys: `markdownit` (recommended; `markdown` is legacy alias), `build`, `imports`
+- top-level keys: `markdownit` (recommended; `markdown` is legacy alias), `build`, `imports`, `data`, `sitemap`
 - imports keys:
   - `templates`: alias -> URL map
   - `partials`: alias -> URL map
@@ -105,6 +105,12 @@ Behavior:
 - shiki keys: `enabled`, `theme`
 - build keys:
   - `keepMarkdownFiles` (boolean): when true, copy source Markdown into output in addition to generated HTML; pages with custom `url` copy to the custom URL path
+- sitemap keys:
+  - `siteUrl` (string): absolute base URL; falls back to `data.site.baseUrl`
+  - `outputPath` (string): relative sitemap output path, default `sitemap.xml`
+  - `defaults` (object): default `changefreq`, `priority`, and `lastmod`
+  - `exclude` (array): exact URLs or prefix patterns ending in `*`
+  - `pages` (object): per-URL overrides or `false` to exclude
 
 ## Watch Mode
 

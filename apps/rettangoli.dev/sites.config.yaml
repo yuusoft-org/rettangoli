@@ -31,3 +31,7 @@ markdownit:
     fallback: section
 build:
   keepMarkdownFiles: true
+
+sitemap:
+  defaults:
+    changefreq: weekly
