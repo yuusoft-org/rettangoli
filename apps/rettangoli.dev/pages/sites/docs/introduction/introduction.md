@@ -44,6 +44,17 @@ my-site/
 - `pages/about.*` -> `_site/about/index.html`
 - `pages/docs/intro.*` -> `_site/docs/intro/index.html`
 
+Set `url` in page frontmatter to override the file-path route:
+
+```md
+---
+title: Company
+url: /company/
+---
+```
+
+Custom URLs are normalized to site-relative clean URLs. For example, `url: company` becomes `/company/` and writes `_site/company/index.html`.
+
 ## Next
 
 - [Getting Started](/sites/docs/introduction/getting-started)

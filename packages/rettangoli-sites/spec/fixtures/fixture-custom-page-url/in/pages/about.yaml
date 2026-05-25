@@ -1,0 +1,6 @@
+---
+title: Company
+template: base
+url: company
+---
+- p: "Company body at ${page.url}"

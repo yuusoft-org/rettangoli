@@ -32,7 +32,7 @@ my-site/
 
 - YAML pages rendered through `jempl` + `yahtml`
 - Markdown pages rendered through `markdown-it` + Shiki (default `rtglMarkdown`)
-- Frontmatter (`template`, `tags`, arbitrary page metadata)
+- Frontmatter (`template`, `url`, `tags`, arbitrary page metadata)
 - Global data from `data/*.yaml` and optional inline `sites.config.yaml data`
 - Collections built from page tags
 - `$if`, `$for`, `$partial`, template functions
@@ -95,6 +95,27 @@ Set `build.keepMarkdownFiles: true` to keep source Markdown files in output in a
 Example mappings:
 - `pages/index.md` -> `_site/index.html` and `_site/index.md`
 - `pages/docs/intro.md` -> `_site/docs/intro/index.html` and `_site/docs/intro.md`
+
+For Markdown pages with a custom `url`, the copied `.md` file follows the custom URL path.
+For example, `url: /guides/start/` writes `_site/guides/start/index.html` and `_site/guides/start.md`.
+
+Pages use their file path as the URL by default:
+- `pages/index.*` -> `/`
+- `pages/about.*` -> `/about/`
+- `pages/docs/intro.*` -> `/docs/intro/`
+
+Set `url` in page frontmatter to override that path:
+
+```md
+---
+title: Company
+url: /company/
+---
+```
+
+`url` is normalized to a site-relative clean URL with a leading and trailing slash, so `company` becomes `/company/`.
+External URLs, query strings, fragments, whitespace, and `.` / `..` path segments are rejected.
+Duplicate page URLs are rejected after normalization.
 
 `imports` lets you map aliases to remote YAML files (HTTP/HTTPS only). Use aliases in pages/templates:
 - page frontmatter: `template: base` or `template: docs`

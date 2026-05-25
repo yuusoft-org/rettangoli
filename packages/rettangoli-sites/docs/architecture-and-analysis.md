@@ -46,6 +46,7 @@ Implemented in `src/createSiteBuilder.js`:
 9. Write outputs with route mapping:
    - `index.*` -> `.../index.html`
    - others -> `.../<slug>/index.html`
+   - page frontmatter `url` overrides the file-derived route
 
 ## Render Context
 
@@ -64,6 +65,10 @@ Per-page render context:
 Current reserved system field:
 
 - `_bind`
+
+Current reserved routing field:
+
+- `url`
 
 `_bind` maps local page variable names to keys from `data/*.yaml`.
 
@@ -99,7 +104,7 @@ Behavior:
     - object with `enabled`, `slugMode` (`ascii`/`unicode`), `wrap`, `fallback`
 - shiki keys: `enabled`, `theme`
 - build keys:
-  - `keepMarkdownFiles` (boolean): when true, copy original `pages/**/*.md` into output in addition to generated HTML
+  - `keepMarkdownFiles` (boolean): when true, copy source Markdown into output in addition to generated HTML; pages with custom `url` copy to the custom URL path
 
 ## Watch Mode
 

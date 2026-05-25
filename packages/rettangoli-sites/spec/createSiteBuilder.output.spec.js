@@ -47,6 +47,249 @@ describe('createSiteBuilder output behavior', () => {
     expect(memfs.existsSync('/dist/index.html')).toBe(true);
   });
 
+  it('uses frontmatter url to override output paths and page.url', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/templates/base.yaml': [
+        '- html:',
+        '    - body:',
+        '        - p: "Page ${page.url}"',
+        '        - p: "Frontmatter ${url}"'
+      ].join('\n'),
+      '/pages/about.yaml': [
+        '---',
+        'template: base',
+        'url: company',
+        '---',
+        '- h1: About'
+      ].join('\n'),
+      '/pages/docs/source.md': [
+        '---',
+        'template: base',
+        'url: /guides//start',
+        '---',
+        '# Start'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await build();
+
+    expect(memfs.existsSync('/_site/company/index.html')).toBe(true);
+    expect(memfs.existsSync('/_site/about/index.html')).toBe(false);
+    expect(memfs.existsSync('/_site/guides/start/index.html')).toBe(true);
+    expect(memfs.existsSync('/_site/docs/source/index.html')).toBe(false);
+
+    const html = memfs.readFileSync('/_site/company/index.html', 'utf8');
+    expect(html).toContain('<p>Page /company/</p>');
+    expect(html).toContain('<p>Frontmatter /company/</p>');
+  });
+
+  it('allows frontmatter url to move a non-index page to the root route', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/home.md': [
+        '---',
+        'url: /',
+        '---',
+        '# Home'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await build();
+
+    expect(memfs.existsSync('/_site/index.html')).toBe(true);
+    expect(memfs.existsSync('/_site/home/index.html')).toBe(false);
+    expect(memfs.readFileSync('/_site/index.html', 'utf8')).toContain('<h1 id="home">Home</h1>');
+  });
+
+  it('uses custom page URLs in collections', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/templates/list.yaml': [
+        '- html:',
+        '    - body:',
+        '        - ul:',
+        '            - $for post in collections.post:',
+        '                li:',
+        '                  - \'a href="${post.url}" data-frontmatter-url="${post.data.url}"\':',
+        '                      - ${post.data.title}'
+      ].join('\n'),
+      '/pages/index.yaml': [
+        '---',
+        'template: list',
+        '---',
+        '- h1: Posts'
+      ].join('\n'),
+      '/pages/posts/original.md': [
+        '---',
+        'title: Renamed Post',
+        'tags: post',
+        'url: /news/renamed',
+        '---',
+        '# Renamed'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await build();
+
+    const html = memfs.readFileSync('/_site/index.html', 'utf8');
+    expect(html).toContain('href="/news/renamed/"');
+    expect(html).toContain('data-frontmatter-url="/news/renamed/"');
+    expect(memfs.existsSync('/_site/news/renamed/index.html')).toBe(true);
+  });
+
+  it('copies markdown files to the custom URL path when keepMarkdownFiles is enabled', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/docs/source.md': [
+        '---',
+        'url: /guides/start',
+        '---',
+        '# Start'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      keepMarkdownFiles: true
+    });
+
+    await build();
+
+    expect(memfs.existsSync('/_site/guides/start/index.html')).toBe(true);
+    expect(memfs.existsSync('/_site/guides/start.md')).toBe(true);
+    expect(memfs.existsSync('/_site/docs/source.md')).toBe(false);
+  });
+
+  it('rejects duplicate page URLs after normalization', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/about.md': '# About',
+      '/pages/team.md': [
+        '---',
+        'url: /about',
+        '---',
+        '# Team'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await expect(build()).rejects.toThrow('Duplicate page URL "/about/"');
+  });
+
+  it('rejects duplicate path-derived page URLs', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/docs.md': '# Docs',
+      '/pages/docs/index.md': '# Docs Index'
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await expect(build()).rejects.toThrow('Duplicate page URL "/docs/"');
+  });
+
+  it('rejects duplicate markdown copy targets when keepMarkdownFiles is enabled', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/docs/index.md': '# Docs',
+      '/pages/other.md': [
+        '---',
+        'url: /docs/index',
+        '---',
+        '# Other'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      keepMarkdownFiles: true
+    });
+
+    await expect(build()).rejects.toThrow('Duplicate markdown output path "docs/index.md"');
+  });
+
+  it.each([
+    ['number', 'url: 42', 'expected a string'],
+    ['empty string', 'url: ""', 'expected a non-empty string'],
+    ['absolute URL', 'url: https://example.com/docs', 'site-relative URL path'],
+    ['protocol-relative URL', 'url: //example.com/docs', 'site-relative URL path'],
+    ['query string', 'url: /docs?preview=true', 'query strings or fragments'],
+    ['fragment', 'url: /docs#intro', 'query strings or fragments'],
+    ['dot segment', 'url: /docs/../admin', '"." or ".." segments'],
+    ['encoded dot segment', 'url: /docs/%2e%2e/admin', '"." or ".." segments'],
+    ['encoded slash', 'url: /docs%2Fadmin', 'encoded slashes or backslashes'],
+    ['bad encoding', 'url: /docs/%zz', 'invalid URL encoding'],
+    ['whitespace', 'url: /hello world', 'must not contain whitespace'],
+    ['leading whitespace', 'url: " /docs"', 'must not contain whitespace'],
+    ['trailing whitespace', 'url: "/docs "', 'must not contain whitespace']
+  ])('rejects invalid custom page url: %s', async (caseName, urlLine, expectedMessage) => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/index.md': [
+        '---',
+        urlLine,
+        '---',
+        '# Broken'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true
+    });
+
+    await expect(build(), caseName).rejects.toThrow(expectedMessage);
+  });
+
   it('refuses to clean when outputPath resolves to rootDir', async () => {
     const vol = new Volume();
     const memfs = createFsFromVolume(vol);

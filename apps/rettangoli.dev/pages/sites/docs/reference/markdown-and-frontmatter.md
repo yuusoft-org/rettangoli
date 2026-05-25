@@ -34,12 +34,17 @@ This content is markdown.
 Common keys:
 
 - `template`: template name from `templates/*.yaml`
+- `url`: optional custom site-relative page URL, such as `/company/`
 - `title`: page title (also available to templates)
 - `tags`: used for collections
 - `_bind`: system mapping of local variable names to global `data/*.yaml` keys
 - Any additional custom keys used by your templates
 
 Frontmatter is merged with global `data/*.yaml` values for render context.
+
+When `url` is omitted, the page URL is derived from the file path. For example, `pages/docs/intro.md` becomes `/docs/intro/`.
+When `url` is present, it is normalized with a leading and trailing slash and exposed as both `${url}` and `${page.url}`.
+External URLs, query strings, fragments, whitespace, and `.` / `..` path segments are invalid.
 
 ## `_bind` (system field)
 
@@ -100,4 +105,4 @@ build:
   keepMarkdownFiles: true
 ```
 
-This keeps the original `.md` files in `_site/` alongside generated HTML.
+This keeps `.md` files in `_site/` alongside generated HTML. If a Markdown page has a custom `url`, the copied `.md` file follows the custom URL path.

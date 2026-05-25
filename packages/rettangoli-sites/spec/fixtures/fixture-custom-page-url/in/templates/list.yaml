@@ -1,0 +1,8 @@
+- html:
+    - body:
+        - h1: "${title}"
+        - ul:
+            - $for item in collections.post:
+                li:
+                  - 'a href="${item.url}" data-url="${item.data.url}"':
+                      - ${item.data.title}
