@@ -22,7 +22,6 @@ export const buildSite = async (options = {}) => {
     quiet = false,
     isScreenshotMode = false
   } = options;
-  const hasSitemapOption = Object.prototype.hasOwnProperty.call(options, 'sitemap');
 
   const config = await loadSiteConfig(rootDir);
 
@@ -35,7 +34,7 @@ export const buildSite = async (options = {}) => {
     keepMarkdownFiles: config.build?.keepMarkdownFiles === true,
     imports: config.imports || {},
     data: config.data || {},
-    sitemap: hasSitemapOption ? sitemap : config.sitemap,
+    sitemap: sitemap === undefined ? config.sitemap : sitemap,
     functions: functions || {},
     quiet,
     isScreenshotMode
