@@ -1,0 +1,6 @@
+i18nPanel:
+  title: "Internationalization"
+  body: "The current language is English."
+  currentLocale: "Locale"
+  switchToEnglish: "English"
+  switchToVietnamese: "Vietnamese"

@@ -2,7 +2,7 @@ import path from "node:path";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   RETTANGOLI_FE_VIRTUAL_ENTRY_ID,
@@ -26,6 +26,14 @@ const createFixtureProject = () => {
   );
 
   return rootDir;
+};
+
+const addI18nFiles = (rootDir) => {
+  const i18nDir = path.join(rootDir, "src", "i18n");
+  mkdirSync(i18nDir, { recursive: true });
+  writeFileSync(path.join(i18nDir, "en.yaml"), "common:\n  title: \"Hello\"\n");
+  writeFileSync(path.join(i18nDir, "vi.yaml"), "common:\n  title: \"Xin chao\"\n");
+  return i18nDir;
 };
 
 describe("vite plugin", () => {
@@ -72,5 +80,46 @@ describe("vite plugin", () => {
 
     const source = plugin.load(`\0${RETTANGOLI_FE_VIRTUAL_ENTRY_ID}`);
     expect(source).toContain("/@fs");
+  });
+
+  it("registers i18n source files with the Vite watcher", () => {
+    const rootDir = createFixtureProject();
+    const i18nDir = addI18nFiles(rootDir);
+    createdDirs.push(rootDir);
+
+    const plugin = createRettangoliFeVitePlugin({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      i18n: {
+        dir: "src/i18n",
+        defaultLocale: "en",
+        fallbackLocale: "en",
+        locales: ["en", "vi"],
+      },
+      errorPrefix: "[Watch]",
+    });
+
+    const server = {
+      watcher: {
+        add: vi.fn(),
+        on: vi.fn(),
+      },
+      moduleGraph: {
+        getModuleById: vi.fn(),
+      },
+      ws: {
+        send: vi.fn(),
+      },
+    };
+
+    plugin.configureServer(server);
+
+    expect(server.watcher.add).toHaveBeenCalledTimes(1);
+    expect(server.watcher.add.mock.calls[0][0]).toEqual([
+      i18nDir,
+      path.join(i18nDir, "en.yaml"),
+      path.join(i18nDir, "vi.yaml"),
+    ]);
   });
 });

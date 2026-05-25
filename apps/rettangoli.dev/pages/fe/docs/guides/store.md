@@ -30,6 +30,8 @@ All store functions receive a context object. The available fields depend on the
 | Actions | `state`, `props`, `constants` |
 
 `props` uses the unified input model: kebab-case attribute names are normalized to camelCase.
+When i18n is enabled, selectors, `selectViewData`, and actions also receive
+`i18n` and `locale`.
 
 ## `createInitialState`
 

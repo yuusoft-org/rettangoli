@@ -46,6 +46,7 @@ export const runConnectedComponentLifecycle = ({
     refs: instance.refs,
     handlers: instance.transformedHandlers,
     parseAndRenderFn,
+    getPayloadContext: () => instance.viewData,
   });
 
   renderFn();

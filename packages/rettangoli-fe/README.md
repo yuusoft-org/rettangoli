@@ -26,6 +26,7 @@ rtgl fe watch     # Start dev server
 - **[Schema System](./docs/schema.md)** - Component API and metadata
 - **[Store Management](./docs/store.md)** - State patterns
 - **[Event Handlers](./docs/handlers.md)** - Event handling
+- **[Internationalization](./docs/i18n.md)** - Locale files, view usage, and locale switching
 
 ## Architecture
 
@@ -123,6 +124,13 @@ fe:
     - "./src/pages"
   setup: "setup.js"
   outfile: "./dist/bundle.js"
+  i18n:
+    dir: "./src/i18n"
+    defaultLocale: "en"
+    fallbackLocale: "en"
+    locales:
+      - "en"
+      - "vi"
   examples:
     outputDir: "./vt/specs/examples"
 ```

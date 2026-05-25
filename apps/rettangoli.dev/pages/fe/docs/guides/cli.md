@@ -156,6 +156,13 @@ fe:
     - "./src/pages"
   setup: "setup.js"
   outfile: "./dist/bundle.js"
+  i18n:
+    dir: "./src/i18n"
+    defaultLocale: "en"
+    fallbackLocale: "en"
+    locales:
+      - "en"
+      - "vi"
   examples:
     outputDir: "./vt/specs/examples"
 ```
@@ -165,6 +172,10 @@ fe:
 | `dirs` | Directories to scan for component files |
 | `setup` | Setup script that exports custom dependencies |
 | `outfile` | Output path for the bundled JavaScript |
+| `i18n.dir` | Directory containing locale YAML files |
+| `i18n.defaultLocale` | Initial locale used by the runtime |
+| `i18n.fallbackLocale` | Locale used if another locale cannot be loaded |
+| `i18n.locales` | Supported locale codes |
 | `examples.outputDir` | Output directory for generated example specs |
 
 ## Setup File

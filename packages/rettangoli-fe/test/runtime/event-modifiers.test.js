@@ -9,6 +9,7 @@ const buildClickListener = ({
   handlers = {},
   selector = "button#submitButton",
   refKey = "submitButton",
+  viewData = {},
 }) => {
   const refs = {
     [refKey]: {
@@ -23,7 +24,7 @@ const buildClickListener = ({
     items: [{ [selector]: "Submit" }],
     refs,
     handlers,
-    viewData: {},
+    viewData,
   });
 
   return nodes[0]?.data?.on?.click;
@@ -189,6 +190,37 @@ describe("parser event modifiers", () => {
     expect(handler).toHaveBeenCalledTimes(1);
     expect(handler).toHaveBeenCalledWith({
       eventType: "click",
+      _event: event,
+    });
+  });
+
+  it("resolves handler payload expressions with i18n view data", () => {
+    const handler = vi.fn();
+    const click = buildClickListener({
+      eventConfig: {
+        handler: "handleSubmit",
+        payload: {
+          label: "${i18n.common.saveButton}",
+        },
+      },
+      handlers: {
+        handleSubmit: handler,
+      },
+      viewData: {
+        i18n: {
+          common: {
+            saveButton: "Save",
+          },
+        },
+      },
+    });
+
+    const event = createEvent();
+    click(event);
+
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(handler).toHaveBeenCalledWith({
+      label: "Save",
       _event: event,
     });
   });

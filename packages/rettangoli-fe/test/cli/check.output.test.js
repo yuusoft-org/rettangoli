@@ -74,4 +74,29 @@ describe("check cli output modes", () => {
     expect(payload.summary.total).toBe(1);
     expect(payload.summary.byCode[0].code).toBe("RTGL-CONTRACT-001");
   });
+
+  it("reports i18n view usage without fe.i18n config", () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), "rtgl-fe-check-i18n-"));
+    createdDirs.push(rootDir);
+    writeComponentFiles({
+      rootDir,
+      includeSchema: true,
+      viewYaml: [
+        "template:",
+        "  - div: ${i18n.common.title}",
+        "",
+      ].join("\n"),
+    });
+
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    check({
+      cwd: rootDir,
+      dirs: ["components"],
+      format: "json",
+    });
+
+    expect(process.exitCode).toBe(1);
+    const payload = JSON.parse(logSpy.mock.calls[0][0]);
+    expect(payload.summary.byCode[0].code).toBe("RTGL-I18N-002");
+  });
 });

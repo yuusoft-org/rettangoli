@@ -227,6 +227,7 @@ export const createVirtualDom = ({
                     eventRateLimitState,
                     stateKey,
                     parseAndRenderFn: jemplParseAndRender,
+                    getPayloadContext: () => viewData,
                     onMissingHandler: (missingHandlerName) => {
                       console.warn(
                         `[Parser] Handler '${missingHandlerName}' for refKey '${bestMatchRefKey}' (matching '${matchIdentity}') is referenced but not found in available handlers.`,

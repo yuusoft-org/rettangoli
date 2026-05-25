@@ -5,13 +5,26 @@ export const createRuntimeDeps = ({
   store,
   render,
 }) => {
-  return {
+  const runtimeDeps = {
     ...baseDeps,
     refs,
     dispatchEvent,
     store,
     render,
   };
+
+  if (baseDeps?.__rtglI18nRuntime) {
+    Object.defineProperty(runtimeDeps, "i18n", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        return baseDeps.__rtglI18nRuntime.getMessages();
+      },
+    });
+    runtimeDeps.locale = baseDeps.__rtglI18nRuntime.locale;
+  }
+
+  return runtimeDeps;
 };
 
 export const createStoreActionDispatcher = ({

@@ -95,6 +95,53 @@ describe("frontend entry source generator", () => {
     expect(source).toContain(`from "/@fs${storePath}";`);
   });
 
+  it("generates i18n runtime setup when configured", () => {
+    const rootDir = createFixtureProject({
+      viewSource: [
+        "template:",
+        "  - 'div#root': ${i18n.common.title}",
+        "",
+      ].join("\n"),
+    });
+    createdDirs.push(rootDir);
+    const i18nDir = path.join(rootDir, "src", "i18n");
+    mkdirSync(i18nDir, { recursive: true });
+    writeFileSync(
+      path.join(i18nDir, "en.yaml"),
+      [
+        "common:",
+        '  title: "Hello"',
+        "",
+      ].join("\n"),
+    );
+    writeFileSync(
+      path.join(i18nDir, "vi.yaml"),
+      [
+        "common:",
+        '  title: "Xin chao"',
+        "",
+      ].join("\n"),
+    );
+
+    const source = generateFrontendEntrySource({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      command: "build",
+      i18n: {
+        dir: "src/i18n",
+        defaultLocale: "en",
+        fallbackLocale: "en",
+        locales: ["en", "vi"],
+      },
+    });
+
+    expect(source).toContain("createComponent, createI18nRuntime");
+    expect(source).toContain("await __rtglI18nRuntime.ready();");
+    expect(source).toContain("./i18n/en.json");
+    expect(source).toContain("__rtglFrameworkDeps");
+  });
+
   it("uses provided error prefix for invalid constants root", () => {
     const rootDir = createFixtureProject({
       constantsSource: "- bad\n",

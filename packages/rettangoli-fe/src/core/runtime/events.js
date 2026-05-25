@@ -16,6 +16,7 @@ export const createEventDispatchCallback = ({
   handlers,
   onMissingHandler,
   parseAndRenderFn,
+  getPayloadContext,
 }) => {
   const getPayload = (event) => {
     const payloadTemplate = (
@@ -28,7 +29,11 @@ export const createEventDispatchCallback = ({
     if (typeof parseAndRenderFn !== "function") {
       return payloadTemplate;
     }
+    const payloadContext = typeof getPayloadContext === "function"
+      ? getPayloadContext()
+      : {};
     return parseAndRenderFn(payloadTemplate, {
+      ...(payloadContext && typeof payloadContext === "object" ? payloadContext : {}),
       _event: event,
     });
   };
@@ -162,6 +167,7 @@ export const createConfiguredEventListener = ({
   stateKey,
   fallbackCurrentTarget = null,
   parseAndRenderFn,
+  getPayloadContext,
   onMissingHandler,
   nowFn = Date.now,
   setTimeoutFn = setTimeout,
@@ -178,6 +184,7 @@ export const createConfiguredEventListener = ({
     handlers,
     onMissingHandler,
     parseAndRenderFn,
+    getPayloadContext,
   });
   if (!callback) {
     return null;

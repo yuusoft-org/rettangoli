@@ -1,0 +1,18 @@
+refs:
+  englishButton:
+    eventListeners:
+      click:
+        handler: handleSetEnglish
+  vietnameseButton:
+    eventListeners:
+      click:
+        handler: handleSetVietnamese
+
+template:
+  - 'div#root style="width:320px;padding:16px;background:white;border:1px solid #ddd;font-family:Arial,sans-serif;display:flex;flex-direction:column;gap:12px"':
+    - 'h1 data-testid=title style="font-size:20px;line-height:24px;margin:0;color:#222"': ${i18n.i18nPanel.title}
+    - 'p data-testid=body style="font-size:14px;line-height:20px;margin:0;color:#444"': ${i18n.i18nPanel.body}
+    - 'div data-testid=current-locale style="font-size:12px;color:#666"': "${i18n.i18nPanel.currentLocale}: ${currentLocale}"
+    - 'div style="display:flex;gap:8px"':
+      - 'button#englishButton data-testid=set-en style="height:32px;padding:0 12px;border:1px solid #999;background:#f5f5f5;cursor:pointer"': ${i18n.i18nPanel.switchToEnglish}
+      - 'button#vietnameseButton data-testid=set-vi style="height:32px;padding:0 12px;border:1px solid #999;background:#f5f5f5;cursor:pointer"': ${i18n.i18nPanel.switchToVietnamese}

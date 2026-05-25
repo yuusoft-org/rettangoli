@@ -36,6 +36,8 @@ Rules:
 - `constants`
 - `dispatchEvent`
 - `refs`
+- `i18n` when i18n is enabled
+- `locale` when i18n is enabled
 - custom dependencies from setup
 
 `deps.refs` contract:

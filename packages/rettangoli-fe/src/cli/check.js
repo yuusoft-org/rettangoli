@@ -9,11 +9,16 @@ const checkRettangoliFrontend = (options = {}) => {
     cwd = process.cwd(),
     dirs = ["./example"],
     format = "text",
+    i18n = null,
   } = options;
   const outputFormat = format === "json" ? "json" : "text";
 
   const resolvedDirs = dirs.map((dir) => path.resolve(cwd, dir));
-  const { errors, summary, index } = analyzeComponentDirs({ dirs: resolvedDirs });
+  const { errors, summary, index } = analyzeComponentDirs({
+    dirs: resolvedDirs,
+    cwd,
+    i18n,
+  });
 
   if (errors.length > 0) {
     if (outputFormat === "json") {
