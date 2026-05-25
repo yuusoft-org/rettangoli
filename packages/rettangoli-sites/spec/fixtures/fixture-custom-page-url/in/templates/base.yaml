@@ -1,0 +1,6 @@
+- html:
+    - body:
+        - h1: "${title}"
+        - p: "Page URL ${page.url}"
+        - p: "Frontmatter URL ${url}"
+        - main: "${content}"

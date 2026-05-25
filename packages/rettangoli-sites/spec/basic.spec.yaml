@@ -85,6 +85,11 @@ in:
   - fixtures/fixture-page-url
 out: true
 ---
+case: fixture-custom-page-url - Custom page URL frontmatter
+in:
+  - fixtures/fixture-custom-page-url
+out: true
+---
 case: fixture-markdown-frontmatter - Markdown frontmatter access
 in:
   - fixtures/fixture-markdown-frontmatter
