@@ -258,32 +258,31 @@ function normalizePageUrlOverride(rawUrl, pagePath) {
     throw new Error(`Invalid url in ${pagePath}: expected a string.`);
   }
 
-  const trimmedUrl = rawUrl.trim();
-  if (trimmedUrl === '') {
+  if (rawUrl === '') {
     throw new Error(`Invalid url in ${pagePath}: expected a non-empty string.`);
   }
 
-  if (/[\u0000-\u001F\u007F]/u.test(trimmedUrl)) {
+  if (/[\u0000-\u001F\u007F]/u.test(rawUrl)) {
     throw new Error(`Invalid url in ${pagePath}: must not contain control characters.`);
   }
 
-  if (/\s/u.test(trimmedUrl)) {
+  if (/\s/u.test(rawUrl)) {
     throw new Error(`Invalid url in ${pagePath}: must not contain whitespace.`);
   }
 
-  if (/^[A-Za-z][A-Za-z0-9+.-]*:/u.test(trimmedUrl) || trimmedUrl.startsWith('//')) {
+  if (/^[A-Za-z][A-Za-z0-9+.-]*:/u.test(rawUrl) || rawUrl.startsWith('//')) {
     throw new Error(`Invalid url in ${pagePath}: expected a site-relative URL path.`);
   }
 
-  if (trimmedUrl.includes('\\')) {
+  if (rawUrl.includes('\\')) {
     throw new Error(`Invalid url in ${pagePath}: must use forward slashes.`);
   }
 
-  if (trimmedUrl.includes('?') || trimmedUrl.includes('#')) {
+  if (rawUrl.includes('?') || rawUrl.includes('#')) {
     throw new Error(`Invalid url in ${pagePath}: must not include query strings or fragments.`);
   }
 
-  const withLeadingSlash = trimmedUrl.startsWith('/') ? trimmedUrl : `/${trimmedUrl}`;
+  const withLeadingSlash = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
   const collapsedUrl = withLeadingSlash.replace(/\/+/g, '/');
   const pathWithoutSlashes = collapsedUrl.replace(/^\/+|\/+$/g, '');
 

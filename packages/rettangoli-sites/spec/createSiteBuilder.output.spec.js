@@ -265,7 +265,9 @@ describe('createSiteBuilder output behavior', () => {
     ['encoded dot segment', 'url: /docs/%2e%2e/admin', '"." or ".." segments'],
     ['encoded slash', 'url: /docs%2Fadmin', 'encoded slashes or backslashes'],
     ['bad encoding', 'url: /docs/%zz', 'invalid URL encoding'],
-    ['whitespace', 'url: /hello world', 'must not contain whitespace']
+    ['whitespace', 'url: /hello world', 'must not contain whitespace'],
+    ['leading whitespace', 'url: " /docs"', 'must not contain whitespace'],
+    ['trailing whitespace', 'url: "/docs "', 'must not contain whitespace']
   ])('rejects invalid custom page url: %s', async (caseName, urlLine, expectedMessage) => {
     const vol = new Volume();
     const memfs = createFsFromVolume(vol);
