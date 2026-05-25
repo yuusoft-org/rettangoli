@@ -171,6 +171,7 @@ Examples:
 
     // Pass dirs, setup, and outfile from config
     options.dirs = config.fe.dirs;
+    options.i18n = config.fe.i18n || null;
     // Use setup-path if provided, otherwise use config setup
     options.setup = options.setupPath || config.fe.setup || "setup.js";
 
@@ -214,6 +215,7 @@ Examples:
     }
 
     options.dirs = config.fe.dirs;
+    options.i18n = config.fe.i18n || null;
     check(options);
   });
 
@@ -280,6 +282,7 @@ Examples:
 
     // Pass dirs, setup, and outfile from config
     options.dirs = config.fe.dirs;
+    options.i18n = config.fe.i18n || null;
     // Use setup-path if provided, otherwise use config setup
     options.setup = options.setupPath || config.fe.setup || "setup.js";
 

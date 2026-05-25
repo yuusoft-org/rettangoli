@@ -38,6 +38,9 @@ items:
       - id: fe-constants
         title: "Constants"
         href: "/fe/docs/guides/constants"
+      - id: fe-i18n
+        title: "Internationalization"
+        href: "/fe/docs/guides/i18n"
       - id: fe-cli
         title: "CLI"
         href: "/fe/docs/guides/cli"

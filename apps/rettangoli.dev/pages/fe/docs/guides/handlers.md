@@ -33,6 +33,8 @@ export const handlerName = (deps, payload = {}) => {
 | `constants` | Static constants from `.constants.yaml` and setup |
 | `dispatchEvent` | Function to dispatch custom DOM events |
 | `refs` | Map of `refKeyOrId` to DOM elements |
+| `i18n` | Current locale messages when i18n is enabled |
+| `locale` | Locale service when i18n is enabled |
 | Custom deps | Any dependencies provided via `setup.js` |
 
 ### Using `refs`

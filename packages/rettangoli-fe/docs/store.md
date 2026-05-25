@@ -25,6 +25,7 @@ Store files MUST keep this order:
 Context by export type:
 - `createInitialState(ctx)`: `ctx` includes `props`, `constants`
 - selectors/actions/selectViewData: `ctx` includes `state`, `props`, `constants`
+- when i18n is enabled, selectors/actions/selectViewData also include `i18n`, `locale`
 
 `props` already includes the unified input model:
 - attribute-form fallback is available

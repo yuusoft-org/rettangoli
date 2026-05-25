@@ -19,6 +19,9 @@ Normative keywords follow RFC 2119 intent:
 | `.methods.js` (optional) | Public element methods (named exports only) |
 | `.constants.yaml` (optional) | Static constants injected into runtime context |
 
+i18n locale files are project-level files, not component files. See
+`i18n.md` for the `src/i18n/<locale>.yaml` contract.
+
 ## Cross-File Contracts
 
 ### Input Model (`props` only)
@@ -59,6 +62,7 @@ Normative keywords follow RFC 2119 intent:
 - `schema.md`: component API metadata contract
 - `methods.md`: optional public imperative method contract
 - `constants.md`: optional constants contract
+- `i18n.md`: internationalization config, locale files, view usage, and locale switching
 
 ## Contract Check
 

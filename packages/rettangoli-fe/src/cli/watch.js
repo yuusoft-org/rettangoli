@@ -39,6 +39,7 @@ export const createWatchServer = async (options = {}) => {
     port = 3001,
     outfile = "./vt/static/main.js",
     setup = "setup.js",
+    i18n = null,
   } = options;
 
   const { root, publicEntryPath } = resolveServeContext({ cwd, outfile });
@@ -56,6 +57,7 @@ export const createWatchServer = async (options = {}) => {
         cwd,
         dirs,
         setup,
+        i18n,
         errorPrefix: "[Watch]",
         publicEntryPath,
       }),

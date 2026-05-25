@@ -9,6 +9,10 @@ import {
   isSupportedComponentFile,
   validateComponentEntries,
 } from "./contracts.js";
+import {
+  buildI18nAssets,
+  loadI18nBuildContext,
+} from "./i18nBuild.js";
 
 const MODULE_FILE_TYPES = new Set(["handlers", "store", "methods"]);
 const YAML_FILE_TYPES = new Set(["view", "constants", "schema"]);
@@ -65,15 +69,52 @@ const createComponentImportLines = ({ componentMatrix, categories }) => {
   return lines.join("\n");
 };
 
+const createI18nRuntimeSource = ({ i18nContext }) => {
+  if (!i18nContext.enabled) {
+    return "const __rtglFrameworkDeps = {};";
+  }
+
+  const assets = buildI18nAssets({ i18nContext });
+  const urlEntries = assets
+    .map((asset) => {
+      return `  ${JSON.stringify(asset.locale)}: new URL(/* @vite-ignore */ ${JSON.stringify(`./${asset.relativeFileName}`)}, import.meta.url).href,`;
+    })
+    .join("\n");
+
+  const initialCatalogs = {};
+  initialCatalogs[i18nContext.defaultLocale] =
+    i18nContext.catalogs[i18nContext.defaultLocale];
+  initialCatalogs[i18nContext.fallbackLocale] =
+    i18nContext.catalogs[i18nContext.fallbackLocale];
+
+  return `
+const __rtglI18nRuntime = createI18nRuntime({
+  defaultLocale: ${JSON.stringify(i18nContext.defaultLocale)},
+  fallbackLocale: ${JSON.stringify(i18nContext.fallbackLocale)},
+  locales: ${JSON.stringify(i18nContext.locales)},
+  urls: {
+${urlEntries}
+  },
+  initialCatalogs: ${JSON.stringify(initialCatalogs)},
+});
+await __rtglI18nRuntime.ready();
+const __rtglFrameworkDeps = {
+  __rtglI18nRuntime,
+  locale: __rtglI18nRuntime.locale,
+};`.trim();
+};
+
 export const generateFrontendEntrySource = ({
   cwd = process.cwd(),
   dirs = ["./example"],
   setup = "setup.js",
   command = "build",
+  i18n = null,
   errorPrefix = "[Build]",
 } = {}) => {
   const resolvedDirs = dirs.map((dir) => path.resolve(cwd, dir));
   const resolvedSetup = path.resolve(cwd, setup);
+  const i18nContext = loadI18nBuildContext({ cwd, i18n, errorPrefix });
   const allFiles = getAllFiles(resolvedDirs)
     .filter((filePath) => isSupportedComponentFile(filePath))
     .sort((a, b) => a.localeCompare(b));
@@ -143,6 +184,7 @@ export const generateFrontendEntrySource = ({
   validateComponentEntries({
     entries: componentContractEntries,
     errorPrefix,
+    i18nContext,
   });
 
   const setupImportPath = toImportPath({
@@ -153,18 +195,28 @@ export const generateFrontendEntrySource = ({
     componentMatrix,
     categories: Object.keys(componentMatrix).sort(),
   });
+  const feImports = i18nContext.enabled
+    ? "createComponent, createI18nRuntime"
+    : "createComponent";
+  const i18nRuntimeSource = createI18nRuntimeSource({ i18nContext });
 
   return `
 ${declarationLines.join("\n")}
-import { createComponent } from "@rettangoli/fe";
+import { ${feImports} } from "@rettangoli/fe";
 import { deps } from ${JSON.stringify(setupImportPath)};
 
 ${categoryLines}
 
+${i18nRuntimeSource}
+
 Object.keys(imports).forEach((category) => {
   Object.keys(imports[category]).forEach((component) => {
     const componentConfig = imports[category][component];
-    const webComponent = createComponent({ ...componentConfig }, deps[category]);
+    const categoryDeps = {
+      ...((deps && deps[category]) || {}),
+      ...__rtglFrameworkDeps,
+    };
+    const webComponent = createComponent({ ...componentConfig }, categoryDeps);
     const elementName = componentConfig.schema?.componentName;
     if (!elementName) {
       throw new Error(

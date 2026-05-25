@@ -27,6 +27,7 @@ const tempParentDir = path.join(packageRootDir, ".tmp-tests");
 const createFixtureProject = ({
   setupSource = "export const deps = { components: {} };\n",
   staleBundleSource = null,
+  includeI18n = false,
 } = {}) => {
   mkdirSync(tempParentDir, { recursive: true });
 
@@ -47,7 +48,9 @@ const createFixtureProject = ({
   );
   writeFileSync(
     path.join(componentDir, "counter.view.yaml"),
-    "template:\n  - 'div#root':\n",
+    includeI18n
+      ? "template:\n  - 'div#root': ${i18n.common.title}\n"
+      : "template:\n  - 'div#root':\n",
   );
   writeFileSync(
     path.join(componentDir, "counter.store.js"),
@@ -56,6 +59,19 @@ const createFixtureProject = ({
 
   if (staleBundleSource !== null) {
     writeFileSync(path.join(outputDir, "main.js"), staleBundleSource);
+  }
+
+  if (includeI18n) {
+    const i18nDir = path.join(rootDir, "src", "i18n");
+    mkdirSync(i18nDir, { recursive: true });
+    writeFileSync(
+      path.join(i18nDir, "en.yaml"),
+      "common:\n  title: \"Hello\"\n",
+    );
+    writeFileSync(
+      path.join(i18nDir, "vi.yaml"),
+      "common:\n  title: \"Xin chao\"\n",
+    );
   }
 
   return rootDir;
@@ -183,6 +199,31 @@ describe("vite runtime integration", () => {
     ).toBe(true);
   });
 
+  it("builds i18n JSON assets next to the configured bundle", async () => {
+    const rootDir = createFixtureProject({ includeI18n: true });
+    createdDirs.push(rootDir);
+
+    await build({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      outfile: "vt/static/public/main.js",
+      i18n: {
+        dir: "src/i18n",
+        defaultLocale: "en",
+        fallbackLocale: "en",
+        locales: ["en", "vi"],
+      },
+    });
+
+    const enJsonPath = path.join(rootDir, "vt", "static", "public", "i18n", "en.json");
+    const viJsonPath = path.join(rootDir, "vt", "static", "public", "i18n", "vi.json");
+
+    expect(existsSync(enJsonPath)).toBe(true);
+    expect(JSON.parse(readFileSync(enJsonPath, "utf8")).common.title).toBe("Hello");
+    expect(JSON.parse(readFileSync(viJsonPath, "utf8")).common.title).toBe("Xin chao");
+  });
+
   it("serves generated entry code instead of a stale on-disk bundle", async () => {
     const rootDir = createFixtureProject({
       staleBundleSource: "window.__STALE_FE_BUNDLE__ = true;\n",
@@ -207,5 +248,33 @@ describe("vite runtime integration", () => {
     expect(response.body).toContain("x-counter");
     expect(response.body).toContain("customElements.define");
     expect(response.body).not.toContain("__STALE_FE_BUNDLE__");
+  });
+
+  it("serves i18n JSON assets in watch mode", async () => {
+    const rootDir = createFixtureProject({ includeI18n: true });
+    createdDirs.push(rootDir);
+
+    const server = await createWatchServer({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      outfile: "vt/static/public/main.js",
+      i18n: {
+        dir: "src/i18n",
+        defaultLocale: "en",
+        fallbackLocale: "en",
+        locales: ["en", "vi"],
+      },
+    });
+    servers.push(server);
+
+    const response = await requestFromMiddleware(
+      server,
+      "/static/public/i18n/vi.json",
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    expect(JSON.parse(response.body).common.title).toBe("Xin chao");
   });
 });

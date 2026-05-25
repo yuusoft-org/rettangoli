@@ -2,6 +2,11 @@ fe:
   dirs: ["fe/components"]
   setup: "fe/setup.js"
   outfile: "vt/static/public/main.js"
+  i18n:
+    dir: "fe/i18n"
+    defaultLocale: "en"
+    fallbackLocale: "en"
+    locales: ["en", "vi"]
 
 vt:
   path: "vt"
@@ -17,3 +22,6 @@ vt:
     - title: "Composed"
       files: "components/composed"
       description: "Composed page integration tests"
+    - title: "I18n"
+      files: "components/i18n"
+      description: "Internationalization runtime tests"
