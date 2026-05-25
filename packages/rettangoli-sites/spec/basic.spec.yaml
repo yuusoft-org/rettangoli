@@ -104,3 +104,8 @@ case: fixture-raw-html - Raw HTML output from functions
 in:
   - fixtures/fixture-raw-html
 out: true
+---
+case: fixture-sitemap - Sitemap generation
+in:
+  - fixtures/fixture-sitemap
+out: true

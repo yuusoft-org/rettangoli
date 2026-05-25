@@ -118,6 +118,96 @@ describe('createSiteBuilder output behavior', () => {
     expect(memfs.readFileSync('/_site/index.html', 'utf8')).toContain('<h1 id="home">Home</h1>');
   });
 
+  it('writes a configurable sitemap from generated page URLs', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/index.md': '# Home',
+      '/pages/about.md': [
+        '---',
+        'sitemap:',
+        '  changefreq: daily',
+        '  priority: 0.9',
+        '---',
+        '# About'
+      ].join('\n'),
+      '/pages/drafts/one.md': '# Draft',
+      '/pages/private.md': '# Private',
+      '/pages/hidden.md': [
+        '---',
+        'sitemap: false',
+        '---',
+        '# Hidden'
+      ].join('\n')
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      data: {
+        site: {
+          baseUrl: 'https://example.com/docs/'
+        }
+      },
+      sitemap: {
+        outputPath: 'seo/sitemap.xml',
+        defaults: {
+          changefreq: 'weekly',
+          priority: 0.5
+        },
+        exclude: ['/drafts/*'],
+        pages: {
+          '/about/': {
+            lastmod: '2026-05-25',
+            priority: 0.8
+          },
+          '/private/': false
+        }
+      }
+    });
+
+    await build();
+
+    expect(memfs.existsSync('/_site/seo/sitemap.xml')).toBe(true);
+    expect(memfs.readFileSync('/_site/seo/sitemap.xml', 'utf8')).toBe([
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      '  <url>',
+      '    <loc>https://example.com/docs/</loc>',
+      '    <changefreq>weekly</changefreq>',
+      '    <priority>0.5</priority>',
+      '  </url>',
+      '  <url>',
+      '    <loc>https://example.com/docs/about/</loc>',
+      '    <lastmod>2026-05-25</lastmod>',
+      '    <changefreq>daily</changefreq>',
+      '    <priority>0.9</priority>',
+      '  </url>',
+      '</urlset>',
+      ''
+    ].join('\n'));
+  });
+
+  it('requires a sitemap base URL when sitemap generation is enabled', async () => {
+    const vol = new Volume();
+    const memfs = createFsFromVolume(vol);
+
+    vol.fromJSON({
+      '/pages/index.md': '# Home'
+    });
+
+    const build = createSiteBuilder({
+      fs: memfs,
+      rootDir: '/',
+      quiet: true,
+      sitemap: true
+    });
+
+    await expect(build()).rejects.toThrow('Sitemap generation requires sitemap.siteUrl or data.site.baseUrl');
+  });
+
   it('uses custom page URLs in collections', async () => {
     const vol = new Volume();
     const memfs = createFsFromVolume(vol);

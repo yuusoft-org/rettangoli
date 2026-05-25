@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
+import { normalizeSitemapConfig } from '../sitemap.js';
 
-const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build', 'imports', 'data']);
+const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build', 'imports', 'data', 'sitemap']);
 const MARKDOWN_BOOLEAN_KEYS = new Set(['html', 'linkify', 'typographer', 'breaks', 'xhtmlOut']);
 const MARKDOWN_STRING_KEYS = new Set(['langPrefix', 'quotes', 'preset']);
 const MARKDOWN_NUMBER_KEYS = new Set(['maxNesting']);
@@ -219,7 +220,7 @@ function validateConfig(rawConfig, configPath) {
   for (const key of Object.keys(config)) {
     if (!ALLOWED_TOP_LEVEL_KEYS.has(key)) {
       throw new Error(
-        `Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias), build, imports, data.`
+        `Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias), build, imports, data, sitemap.`
       );
     }
   }
@@ -313,6 +314,10 @@ function validateConfig(rawConfig, configPath) {
 
   if (config.data !== undefined) {
     normalizedConfig.data = validateDataConfig(config.data, configPath);
+  }
+
+  if (config.sitemap !== undefined) {
+    normalizedConfig.sitemap = normalizeSitemapConfig(config.sitemap, configPath);
   }
 
   return normalizedConfig;

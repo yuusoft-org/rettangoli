@@ -8,6 +8,7 @@ import { loadSiteConfig } from '../utils/loadSiteConfig.js';
  * @param {string} options.rootDir - Root directory of the site (defaults to cwd)
  * @param {string} options.outputPath - Output directory path (relative to rootDir by default)
  * @param {Object} options.md - Optional markdown renderer
+ * @param {Object|boolean} options.sitemap - Optional sitemap generation config
  * @param {boolean} options.quiet - Suppress build output logs
  * @param {boolean} options.isScreenshotMode - Optional build flag exposed to templates via build.isScreenshotMode
  */
@@ -17,6 +18,7 @@ export const buildSite = async (options = {}) => {
     outputPath = '_site',
     md,
     functions,
+    sitemap,
     quiet = false,
     isScreenshotMode = false
   } = options;
@@ -32,6 +34,7 @@ export const buildSite = async (options = {}) => {
     keepMarkdownFiles: config.build?.keepMarkdownFiles === true,
     imports: config.imports || {},
     data: config.data || {},
+    sitemap: sitemap === undefined ? config.sitemap : sitemap,
     functions: functions || {},
     quiet,
     isScreenshotMode

@@ -23,6 +23,9 @@ items:
       - id: sites-configuration
         title: "Configuration"
         href: "/sites/docs/reference/configuration"
+      - id: sites-sitemap
+        title: "Sitemap"
+        href: "/sites/docs/reference/sitemap"
       - id: sites-markdown-and-frontmatter
         title: "Markdown & Frontmatter"
         href: "/sites/docs/reference/markdown-and-frontmatter"

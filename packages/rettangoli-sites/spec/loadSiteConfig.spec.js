@@ -307,6 +307,69 @@ describe('loadSiteConfig', () => {
     });
   });
 
+  it('loads sitemap config from sites.config.yaml', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'sitemap:',
+          '  siteUrl: https://example.com/docs/',
+          '  outputPath: seo/sitemap.xml',
+          '  defaults:',
+          '    changefreq: weekly',
+          '    priority: 0.5',
+          '  exclude:',
+          '    - /drafts/*',
+          '  pages:',
+          '    /:',
+          '      priority: 1',
+          '      changefreq: daily',
+          '      lastmod: "2026-05-25"',
+          '    /private/: false'
+        ].join('\n')
+      );
+
+      const config = await loadSiteConfig(tempDir);
+      expect(config).toEqual({
+        sitemap: {
+          enabled: true,
+          siteUrl: 'https://example.com/docs',
+          outputPath: 'seo/sitemap.xml',
+          defaults: {
+            changefreq: 'weekly',
+            priority: 0.5
+          },
+          exclude: ['/drafts/*'],
+          pages: {
+            '/': {
+              priority: 1,
+              changefreq: 'daily',
+              lastmod: '2026-05-25'
+            },
+            '/private/': {
+              exclude: true
+            }
+          }
+        }
+      });
+    });
+  });
+
+  it('throws on invalid sitemap changefreq', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'sitemap:',
+          '  defaults:',
+          '    changefreq: sometimes'
+        ].join('\n')
+      );
+
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Invalid sitemap.defaults');
+    });
+  });
+
   it('throws on unsupported imports group', async () => {
     await withTempDir(async (tempDir) => {
       fs.writeFileSync(

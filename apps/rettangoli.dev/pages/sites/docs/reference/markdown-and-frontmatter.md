@@ -35,6 +35,7 @@ Common keys:
 
 - `template`: template name from `templates/*.yaml`
 - `url`: optional custom site-relative page URL, such as `/company/`
+- `sitemap`: optional sitemap overrides, or `false` to exclude the page
 - `title`: page title (also available to templates)
 - `tags`: used for collections
 - `_bind`: system mapping of local variable names to global `data/*.yaml` keys
@@ -45,6 +46,23 @@ Frontmatter is merged with global `data/*.yaml` values for render context.
 When `url` is omitted, the page URL is derived from the file path. For example, `pages/docs/intro.md` becomes `/docs/intro/`.
 When `url` is present, it is normalized with a leading and trailing slash and exposed as both `${url}` and `${page.url}`.
 External URLs, query strings, fragments, whitespace, and `.` / `..` path segments are invalid.
+
+## `sitemap`
+
+Use `sitemap` in frontmatter when one page needs different sitemap metadata from the site defaults.
+
+```yaml
+---
+sitemap:
+  changefreq: monthly
+  priority: 0.8
+  lastmod: "2026-05-25"
+---
+```
+
+Use `sitemap: false` to exclude a page from generated sitemap output.
+
+See [Sitemap](/sites/docs/reference/sitemap) for the full config interface.
 
 ## `_bind` (system field)
 

@@ -8,6 +8,7 @@ import matter from 'gray-matter';
 import MarkdownIt from 'markdown-it';
 import rtglMarkdown from './rtglMarkdown.js';
 import builtinTemplateFunctions from './builtinTemplateFunctions.js';
+import { buildSitemapXml, resolveSitemapOutputPath } from './sitemap.js';
 
 const MATTER_OPTIONS = {
   engines: {
@@ -435,6 +436,7 @@ export function createSiteBuilder({
   keepMarkdownFiles = false,
   imports = {},
   data = {},
+  sitemap,
   fetchImpl,
   functions = {},
   quiet = false,
@@ -836,6 +838,24 @@ export function createSiteBuilder({
       }
     }
 
+    function writeSitemap() {
+      const sitemapXml = buildSitemapXml({ pageEntries, sitemap, globalData });
+      if (sitemapXml === null) {
+        return;
+      }
+
+      const sitemapOutputRelativePath = resolveSitemapOutputPath(sitemap);
+      const sitemapOutputPath = path.join(outputRootDir, ...sitemapOutputRelativePath.split('/'));
+      const sitemapOutputDir = path.dirname(sitemapOutputPath);
+
+      if (!fs.existsSync(sitemapOutputDir)) {
+        fs.mkdirSync(sitemapOutputDir, { recursive: true });
+      }
+
+      fs.writeFileSync(sitemapOutputPath, sitemapXml);
+      if (!quiet) console.log(`  -> Written sitemap to ${sitemapOutputPath}`);
+    }
+
     // Function to copy static files recursively
     function copyStaticFiles() {
       const staticDir = path.join(rootDir, 'static');
@@ -890,6 +910,9 @@ export function createSiteBuilder({
 
     // Process all pages (can overwrite static files)
     await processAllPages();
+
+    // Generate sitemap after pages so it can overwrite static files if configured.
+    writeSitemap();
 
     if (!quiet) console.log('Build complete!');
   };

@@ -1,0 +1,16 @@
+data:
+  site:
+    baseUrl: https://example.com/docs/
+sitemap:
+  defaults:
+    changefreq: weekly
+    priority: 0.5
+  exclude:
+    - /drafts/*
+  pages:
+    /:
+      changefreq: daily
+      priority: 1
+    /about/:
+      lastmod: "2026-05-25"
+    /private/: false

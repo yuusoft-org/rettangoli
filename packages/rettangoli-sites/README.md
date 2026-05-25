@@ -37,6 +37,7 @@ my-site/
 - Collections built from page tags
 - `$if`, `$for`, `$partial`, template functions
 - Static file copying from `static/` to `_site/`
+- Default sitemap generation when `data.site.baseUrl` is configured
 - Watch mode with local dev server + websocket reload
 
 ## Site Config
@@ -76,8 +77,20 @@ imports:
   partials:
     docs/nav: https://example.com/partials/docs-nav.yaml
 data:
+  site:
+    baseUrl: https://example.com
   themeCssHref: /public/theme.css
   themeBodyClass: dark
+sitemap:
+  outputPath: sitemap.xml
+  defaults:
+    changefreq: weekly
+    priority: 0.5
+  exclude:
+    - /drafts/*
+  pages:
+    /:
+      priority: 1
 ```
 
 In the default starter template, CDN runtime scripts are controlled via `data/site.yaml`:
@@ -116,6 +129,45 @@ url: /company/
 `url` is normalized to a site-relative clean URL with a leading and trailing slash, so `company` becomes `/company/`.
 External URLs, query strings, fragments, whitespace, and `.` / `..` path segments are rejected.
 Duplicate page URLs are rejected after normalization.
+
+## Sitemap
+
+Sites writes `_site/sitemap.xml` by default when `data.site.baseUrl` is configured. Use `sitemap` in `sites.config.yaml` to customize output, or set `sitemap: false` to disable it.
+
+```yaml
+data:
+  site:
+    baseUrl: https://example.com
+sitemap:
+  outputPath: sitemap.xml
+  defaults:
+    changefreq: weekly
+    priority: 0.5
+  exclude:
+    - /drafts/*
+  pages:
+    /:
+      priority: 1
+      changefreq: daily
+      lastmod: "2026-05-25"
+    /private/: false
+```
+
+If you do not use `data.site.baseUrl`, set `sitemap.siteUrl` instead.
+Generated entries use normalized page URLs, including page frontmatter `url` overrides.
+Use page frontmatter for per-page control:
+
+```md
+---
+sitemap:
+  changefreq: monthly
+  priority: 0.8
+  lastmod: "2026-05-25"
+---
+```
+
+Set `sitemap: false` in page frontmatter to exclude one page.
+`sitemap.exclude` accepts exact page URLs and prefix patterns ending in `*`, such as `/drafts/*`.
 
 `imports` lets you map aliases to remote YAML files (HTTP/HTTPS only). Use aliases in pages/templates:
 - page frontmatter: `template: base` or `template: docs`
