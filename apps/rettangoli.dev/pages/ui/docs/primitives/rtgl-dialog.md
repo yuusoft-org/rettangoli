@@ -51,7 +51,6 @@ Use `open` as the source of truth and close by removing `open`.
 | Width Override | `w` | CSS width value (`600px`, `70vw`, etc.) | - |
 | Layout | `layout`, `sm-layout`, `md-layout`, `lg-layout`, `xl-layout` | `centered`, `fixed` | `centered` |
 | Close Button | `close-button` | boolean | - |
-| Close Label | `close-label` | string | `Close dialog` |
 
 ## Events
 
@@ -145,7 +144,7 @@ Use `s` to choose a standard dialog width profile. On `md` and smaller viewports
 
 ## Close Button
 
-Add `close-button` when the dialog should render a built-in top-right close control. The button emits the same `close` request event as backdrop and escape close intent.
+Add `close-button` when the dialog should render a built-in top-right X icon button. The button emits the same `close` request event as backdrop and escape close intent.
 
 ```html codePreview
 <rtgl-button id="open-close-button">Open With Close Button</rtgl-button>
@@ -164,6 +163,51 @@ Add `close-button` when the dialog should render a built-in top-right close cont
     });
     dialogCloseButton.addEventListener("close", () => {
       dialogCloseButton.removeAttribute("open");
+    });
+  })();
+</script>
+```
+
+## Fixed Footer Pattern
+
+For mobile fixed dialogs with a bottom submit action, make the slotted content a relative, clipped shell. Put the scrollable body inside that shell, then anchor the footer with `pos="abs"` and `edge="b"`.
+
+```html codePreview
+<rtgl-button id="open-fixed-submit">Open Fixed Submit Dialog</rtgl-button>
+<rtgl-dialog id="dialog-fixed-submit" s="lg" md-layout="fixed" close-button>
+  <rtgl-view
+    slot="content"
+    pos="rel"
+    h="f"
+    overflow="hidden"
+    style="padding-bottom: 88px;"
+  >
+    <rtgl-view id="fixed-submit-body" d="v" g="md" h="f" sv>
+      <rtgl-text s="h4">Review Details</rtgl-text>
+      <rtgl-text c="mu">Only this body scrolls while the bottom action stays pinned.</rtgl-text>
+      <rtgl-view d="v" g="sm">
+        <rtgl-text>Billing contact</rtgl-text>
+        <rtgl-text>Plan configuration</rtgl-text>
+        <rtgl-text>Usage limits</rtgl-text>
+        <rtgl-text>Invoice notes</rtgl-text>
+        <rtgl-text>Team permissions</rtgl-text>
+        <rtgl-text>Notification rules</rtgl-text>
+      </rtgl-view>
+    </rtgl-view>
+    <rtgl-view pos="abs" edge="b" bgc="bg" bc="bo" bwt="xs" p="lg">
+      <rtgl-button w="f">Submit</rtgl-button>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  (() => {
+    const dialogFixedSubmit = document.getElementById("dialog-fixed-submit");
+    document.getElementById("open-fixed-submit").addEventListener("click", () => {
+      dialogFixedSubmit.setAttribute("open", "");
+    });
+    dialogFixedSubmit.addEventListener("close", () => {
+      dialogFixedSubmit.removeAttribute("open");
     });
   })();
 </script>

@@ -3,7 +3,8 @@ title: Dialog - Close Button
 diffThreshold: 4
 description: Verifies the built-in top-right close button renders and emits close requests.
 specs:
-  - "`close-button` renders an opt-in top-right X control."
+  - "`close-button` renders an opt-in top-right X icon button."
+  - "The close button has no visible text label."
   - "The close control is positioned inside the dialog content surface."
   - "Clicking the close control emits the normal dialog close request."
 skipInitialScreenshot: true
@@ -62,13 +63,15 @@ steps:
       buttonRect.height === 32;
     const positionedTop = Math.abs(buttonRect.top - (slotRect.top + 8)) <= 3;
     const positionedRight = Math.abs(buttonRect.right - (slotRect.right - 8)) <= 3;
-    const labelled = closeButton.getAttribute("aria-label") === "Close dialog";
-    const pass = visible && positionedTop && positionedRight && labelled;
+    const iconOnly = closeButton.textContent.trim() === "";
+    const labelledForA11y = closeButton.getAttribute("aria-label") === "Close dialog";
+    const pass = visible && positionedTop && positionedRight && iconOnly && labelledForA11y;
 
     result.textContent = [
       pass ? "PASS" : "FAIL",
       `button=${Math.round(buttonRect.left)},${Math.round(buttonRect.top)},${Math.round(buttonRect.right)},${Math.round(buttonRect.bottom)}`,
       `slot=${Math.round(slotRect.left)},${Math.round(slotRect.top)},${Math.round(slotRect.right)},${Math.round(slotRect.bottom)}`,
+      `text=${JSON.stringify(closeButton.textContent.trim())}`,
     ].join(" ");
   };
 

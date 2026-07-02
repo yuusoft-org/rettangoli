@@ -319,7 +319,6 @@ class RettangoliDialogElement extends HTMLElement {
       "w",
       "s",
       "close-button",
-      "close-label",
       ...permutateBreakpoints(["layout"]),
     ];
   }
@@ -357,7 +356,7 @@ class RettangoliDialogElement extends HTMLElement {
       this._scheduleAdaptiveCentering({ resetRetries: true });
     } else if (name === 'w') {
       this._updateWidth();
-    } else if (name === 'close-button' || name === 'close-label') {
+    } else if (name === 'close-button') {
       this._updateCloseButton();
       this._updateCloseButtonPosition();
     }
@@ -381,10 +380,7 @@ class RettangoliDialogElement extends HTMLElement {
     if (!this._closeButtonElement) {
       return;
     }
-    this._closeButtonElement.setAttribute(
-      "aria-label",
-      this.getAttribute("close-label") || "Close dialog",
-    );
+    this._closeButtonElement.setAttribute("aria-label", "Close dialog");
     this._closeButtonElement.hidden = !this.hasAttribute("close-button");
   }
 
