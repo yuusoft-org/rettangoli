@@ -49,6 +49,7 @@ Use `open` as the source of truth and close by removing `open`.
 | Open | `open` | boolean | - |
 | Size | `s` | `sm`, `md`, `lg`, `f` | content-based |
 | Width Override | `w` | CSS width value (`600px`, `70vw`, etc.) | - |
+| Layout | `layout`, `sm-layout`, `md-layout`, `lg-layout`, `xl-layout` | `centered`, `fixed` | `centered` |
 
 ## Events
 
@@ -171,6 +172,36 @@ Use `w` when you need explicit width control.
     });
     dialogWidth.addEventListener("close", () => {
       dialogWidth.removeAttribute("open");
+    });
+  })();
+</script>
+```
+
+## Responsive Layout
+
+Use `layout` and breakpoint-prefixed layout attrs to change dialog layout responsively. `centered` is the default adaptive centered dialog. `fixed` locks the dialog shell to the viewport and scrolls the content surface internally.
+
+```html codePreview
+<rtgl-button id="open-fixed-mobile">Open Fixed Mobile Dialog</rtgl-button>
+<rtgl-dialog id="dialog-fixed-mobile" s="lg" md-layout="fixed">
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-text s="h4">Fixed on Mobile</rtgl-text>
+    <rtgl-text c="mu">On md and smaller screens, the dialog fills the viewport and this content scrolls internally.</rtgl-text>
+    <rtgl-button v="ol" id="close-fixed-mobile">Close</rtgl-button>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  (() => {
+    const dialogFixedMobile = document.getElementById("dialog-fixed-mobile");
+    document.getElementById("open-fixed-mobile").addEventListener("click", () => {
+      dialogFixedMobile.setAttribute("open", "");
+    });
+    document.getElementById("close-fixed-mobile").addEventListener("click", () => {
+      dialogFixedMobile.removeAttribute("open");
+    });
+    dialogFixedMobile.addEventListener("close", () => {
+      dialogFixedMobile.removeAttribute("open");
     });
   })();
 </script>

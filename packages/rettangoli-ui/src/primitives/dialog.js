@@ -1,7 +1,50 @@
-import { css, mediaQueries } from "../common.js";
+import {
+  css,
+  mediaQueries,
+  getResponsiveAttribute,
+  permutateBreakpoints,
+} from "../common.js";
 
 const MIN_MARGIN_PX = 40;
 const MAX_LAYOUT_RETRIES = 6;
+const RESPONSIVE_LAYOUT_SIZES = ["sm", "md", "lg", "xl"];
+const FIXED_LAYOUT_QUERY_SELECTORS = [
+  ':host([layout="fixed"])',
+  ':host([xl-layout="fixed"])',
+  ':host([lg-layout="fixed"])',
+  ':host([md-layout="fixed"])',
+  ':host([sm-layout="fixed"])',
+];
+
+const mediaQueryCondition = (mediaQuery) => mediaQuery.replace(/^@media\s+/, "");
+const fixedLayoutStyle = (selector) => css`
+  ${selector} dialog {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  ${selector} slot[name="content"] {
+    box-sizing: border-box;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100vh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    border-radius: 0;
+    padding-top: max(var(--spacing-lg), env(safe-area-inset-top));
+    padding-bottom: max(var(--spacing-lg), env(safe-area-inset-bottom));
+  }
+`;
 
 class RettangoliDialogElement extends HTMLElement {
   static styleSheet = null;
@@ -96,6 +139,24 @@ class RettangoliDialogElement extends HTMLElement {
             animation: none;
           }
         }
+
+        ${fixedLayoutStyle(FIXED_LAYOUT_QUERY_SELECTORS[0])}
+
+        ${mediaQueries.xl} {
+          ${fixedLayoutStyle(FIXED_LAYOUT_QUERY_SELECTORS[1])}
+        }
+
+        ${mediaQueries.lg} {
+          ${fixedLayoutStyle(FIXED_LAYOUT_QUERY_SELECTORS[2])}
+        }
+
+        ${mediaQueries.md} {
+          ${fixedLayoutStyle(FIXED_LAYOUT_QUERY_SELECTORS[3])}
+        }
+
+        ${mediaQueries.sm} {
+          ${fixedLayoutStyle(FIXED_LAYOUT_QUERY_SELECTORS[4])}
+        }
       `);
     }
   }
@@ -178,7 +239,7 @@ class RettangoliDialogElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["open", "w", "s"];
+    return ["open", "w", "s", ...permutateBreakpoints(["layout"])];
   }
 
   connectedCallback() {
@@ -209,7 +270,7 @@ class RettangoliDialogElement extends HTMLElement {
       } else if (newValue === null && this._dialogElement.open) {
         this._hideModal();
       }
-    } else if (name === 's') {
+    } else if (name === 's' || name.endsWith('layout')) {
       // Size is handled via CSS :host() selectors.
       this._scheduleAdaptiveCentering({ resetRetries: true });
     } else if (name === 'w') {
@@ -405,8 +466,43 @@ class RettangoliDialogElement extends HTMLElement {
     });
   }
 
+  _getActiveResponsiveSize() {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return "default";
+    }
+
+    for (const size of RESPONSIVE_LAYOUT_SIZES) {
+      const query = mediaQueries[size];
+      if (query && window.matchMedia(mediaQueryCondition(query)).matches) {
+        return size;
+      }
+    }
+
+    return "default";
+  }
+
+  _getActiveLayout() {
+    return getResponsiveAttribute({
+      element: this,
+      size: this._getActiveResponsiveSize(),
+      attr: "layout",
+    }) || "centered";
+  }
+
+  _isFixedLayoutActive() {
+    return this._getActiveLayout() === "fixed";
+  }
+
   _applyAdaptiveCentering() {
     if (!this._slotElement || !this._dialogElement.open) {
+      return;
+    }
+
+    if (this._isFixedLayoutActive()) {
+      this._slotElement.style.marginTop = '';
+      this._slotElement.style.marginBottom = '';
+      this._dialogElement.style.height = '';
+      this._layoutRetryCount = 0;
       return;
     }
 
