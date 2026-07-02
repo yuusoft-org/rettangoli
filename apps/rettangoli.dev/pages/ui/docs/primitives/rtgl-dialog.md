@@ -144,7 +144,7 @@ Use `s` to choose a standard dialog width profile. On `md` and smaller viewports
 
 ## Close Button
 
-Add `close-button` when the dialog should render a built-in top-right X icon button. The button emits the same `close` request event as backdrop and escape close intent.
+Add `close-button` when the dialog should render a built-in top-right X icon button. The button is absolutely positioned over the dialog surface and does not reserve or change content padding. It emits the same `close` request event as backdrop and escape close intent.
 
 ```html codePreview
 <rtgl-button id="open-close-button">Open With Close Button</rtgl-button>

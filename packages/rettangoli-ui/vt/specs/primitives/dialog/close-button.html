@@ -4,6 +4,8 @@ diffThreshold: 4
 description: Verifies the built-in top-right close button renders and emits close requests.
 specs:
   - "`close-button` renders an opt-in top-right X icon button."
+  - "The close button is absolute overlay chrome and does not change content padding."
+  - "The close button has no visible border in its resting state."
   - "The close button has no visible text label."
   - "The close control is positioned inside the dialog content surface."
   - "Clicking the close control emits the normal dialog close request."
@@ -40,7 +42,7 @@ steps:
     <rtgl-view slot="content" d="v" g="md">
       <rtgl-text s="lg">Dialog With Close Button</rtgl-text>
       <rtgl-text c="mu">The built-in close control should sit in the top-right corner of the dialog surface.</rtgl-text>
-      <rtgl-text c="mu">The content keeps enough right padding so the close control does not cover the text.</rtgl-text>
+      <rtgl-text c="mu">The content padding should stay unchanged when close-button is enabled.</rtgl-text>
     </rtgl-view>
   </rtgl-dialog>
 </rtgl-view>
@@ -55,6 +57,7 @@ steps:
     const closeButton = dialog.shadowRoot.querySelector(".close-button");
     const slotRect = contentSlot.getBoundingClientRect();
     const buttonRect = closeButton.getBoundingClientRect();
+    const contentSlotStyle = getComputedStyle(contentSlot);
     const closeButtonStyle = getComputedStyle(closeButton);
     const visible =
       !closeButton.hidden &&
@@ -65,13 +68,34 @@ steps:
     const positionedRight = Math.abs(buttonRect.right - (slotRect.right - 8)) <= 3;
     const iconOnly = closeButton.textContent.trim() === "";
     const labelledForA11y = closeButton.getAttribute("aria-label") === "Close dialog";
-    const pass = visible && positionedTop && positionedRight && iconOnly && labelledForA11y;
+    const absoluteOverlay = closeButtonStyle.position === "absolute";
+    const noReservedPadding = contentSlotStyle.paddingRight === contentSlotStyle.paddingLeft;
+    const noVisibleBorder =
+      closeButtonStyle.borderTopWidth === "0px" &&
+      closeButtonStyle.borderRightWidth === "0px" &&
+      closeButtonStyle.borderBottomWidth === "0px" &&
+      closeButtonStyle.borderLeftWidth === "0px" &&
+      closeButtonStyle.outlineStyle === "none" &&
+      closeButtonStyle.boxShadow === "none";
+    const notInitiallyFocused = !closeButton.matches(":focus-visible");
+    const pass =
+      visible &&
+      positionedTop &&
+      positionedRight &&
+      iconOnly &&
+      labelledForA11y &&
+      absoluteOverlay &&
+      noReservedPadding &&
+      noVisibleBorder &&
+      notInitiallyFocused;
 
     result.textContent = [
       pass ? "PASS" : "FAIL",
       `button=${Math.round(buttonRect.left)},${Math.round(buttonRect.top)},${Math.round(buttonRect.right)},${Math.round(buttonRect.bottom)}`,
       `slot=${Math.round(slotRect.left)},${Math.round(slotRect.top)},${Math.round(slotRect.right)},${Math.round(slotRect.bottom)}`,
       `text=${JSON.stringify(closeButton.textContent.trim())}`,
+      `padding=${contentSlotStyle.paddingLeft}/${contentSlotStyle.paddingRight}`,
+      `border=${closeButtonStyle.borderTopWidth}/${closeButtonStyle.outlineStyle}/${closeButtonStyle.boxShadow}`,
     ].join(" ");
   };
 

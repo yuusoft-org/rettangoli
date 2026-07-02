@@ -93,15 +93,13 @@ class RettangoliDialogElement extends HTMLElement {
           margin-bottom: 40px;
         }
 
-        :host([close-button]) slot[name="content"] {
-          padding-right: calc(var(--spacing-lg) + ${CLOSE_BUTTON_SIZE_PX}px);
-        }
-
         .close-button {
           align-items: center;
+          appearance: none;
           background: transparent;
-          border: 0;
+          border: none;
           border-radius: var(--border-radius-sm);
+          box-shadow: none;
           color: var(--muted-foreground);
           cursor: pointer;
           display: none;
@@ -113,6 +111,7 @@ class RettangoliDialogElement extends HTMLElement {
           top: var(--rtgl-dialog-close-top, ${CLOSE_BUTTON_OFFSET_PX}px);
           width: ${CLOSE_BUTTON_SIZE_PX}px;
           z-index: 1;
+          -webkit-appearance: none;
         }
 
         :host([close-button]) .close-button {
@@ -129,8 +128,9 @@ class RettangoliDialogElement extends HTMLElement {
         }
 
         .close-button:focus-visible {
-          outline: 2px solid var(--ring);
-          outline-offset: 2px;
+          background: var(--accent);
+          color: var(--foreground);
+          outline: none;
         }
 
         .close-button::before,
@@ -235,6 +235,7 @@ class RettangoliDialogElement extends HTMLElement {
 
     // Create dialog element
     this._dialogElement = document.createElement('dialog');
+    this._dialogElement.tabIndex = -1;
     this.shadow.appendChild(this._dialogElement);
 
     // Store reference for content slot
@@ -461,6 +462,9 @@ class RettangoliDialogElement extends HTMLElement {
       this._updateCloseButton();
 
       this._dialogElement.showModal();
+      if (this.hasAttribute("close-button") && !this.querySelector("[autofocus]")) {
+        this._dialogElement.focus({ preventScroll: true });
+      }
 
       // Reset scroll position
       this._dialogElement.scrollTop = 0;
