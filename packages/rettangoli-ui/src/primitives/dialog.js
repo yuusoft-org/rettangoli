@@ -8,6 +8,8 @@ import {
 const MIN_MARGIN_PX = 40;
 const MAX_LAYOUT_RETRIES = 6;
 const RESPONSIVE_LAYOUT_SIZES = ["sm", "md", "lg", "xl"];
+const CLOSE_BUTTON_SIZE_PX = 32;
+const CLOSE_BUTTON_OFFSET_PX = 8;
 const FIXED_LAYOUT_QUERY_SELECTORS = [
   ':host([layout="fixed"])',
   ':host([xl-layout="fixed"])',
@@ -58,6 +60,7 @@ class RettangoliDialogElement extends HTMLElement {
         }
 
         dialog {
+          position: relative;
           padding: 0;
           border: none;
           background: transparent;
@@ -88,6 +91,64 @@ class RettangoliDialogElement extends HTMLElement {
           /* Default margins will be set dynamically via JavaScript for adaptive centering */
           margin-top: 40px;
           margin-bottom: 40px;
+        }
+
+        :host([close-button]) slot[name="content"] {
+          padding-right: calc(var(--spacing-lg) + ${CLOSE_BUTTON_SIZE_PX}px);
+        }
+
+        .close-button {
+          align-items: center;
+          background: transparent;
+          border: 0;
+          border-radius: var(--border-radius-sm);
+          color: var(--muted-foreground);
+          cursor: pointer;
+          display: none;
+          height: ${CLOSE_BUTTON_SIZE_PX}px;
+          justify-content: center;
+          left: var(--rtgl-dialog-close-left, auto);
+          padding: 0;
+          position: absolute;
+          top: var(--rtgl-dialog-close-top, ${CLOSE_BUTTON_OFFSET_PX}px);
+          width: ${CLOSE_BUTTON_SIZE_PX}px;
+          z-index: 1;
+        }
+
+        :host([close-button]) .close-button {
+          display: flex;
+        }
+
+        .close-button[hidden] {
+          display: none;
+        }
+
+        .close-button:hover {
+          background: var(--accent);
+          color: var(--foreground);
+        }
+
+        .close-button:focus-visible {
+          outline: 2px solid var(--ring);
+          outline-offset: 2px;
+        }
+
+        .close-button::before,
+        .close-button::after {
+          background: currentColor;
+          border-radius: 999px;
+          content: "";
+          height: 16px;
+          position: absolute;
+          width: 2px;
+        }
+
+        .close-button::before {
+          transform: rotate(45deg);
+        }
+
+        .close-button::after {
+          transform: rotate(-45deg);
         }
 
         /* Size attribute styles */
@@ -134,8 +195,13 @@ class RettangoliDialogElement extends HTMLElement {
           animation: dialog-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
         }
 
+        dialog[open] .close-button {
+          animation: dialog-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
         @media (prefers-reduced-motion: reduce) {
-          dialog[open] slot[name="content"] {
+          dialog[open] slot[name="content"],
+          dialog[open] .close-button {
             animation: none;
           }
         }
@@ -173,6 +239,7 @@ class RettangoliDialogElement extends HTMLElement {
 
     // Store reference for content slot
     this._slotElement = null;
+    this._closeButtonElement = null;
     this._isConnected = false;
     this._adaptiveFrameId = null;
     this._layoutRetryCount = 0;
@@ -195,6 +262,14 @@ class RettangoliDialogElement extends HTMLElement {
     };
     this._onWindowResize = () => {
       this._scheduleAdaptiveCentering({ resetRetries: true });
+    };
+    this._onDialogScroll = () => {
+      this._updateCloseButtonPosition();
+    };
+    this._onCloseButtonClick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this._attemptClose();
     };
 
     // Track if mouse down occurred inside dialog content
@@ -239,7 +314,14 @@ class RettangoliDialogElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["open", "w", "s", ...permutateBreakpoints(["layout"])];
+    return [
+      "open",
+      "w",
+      "s",
+      "close-button",
+      "close-label",
+      ...permutateBreakpoints(["layout"]),
+    ];
   }
 
   connectedCallback() {
@@ -275,11 +357,15 @@ class RettangoliDialogElement extends HTMLElement {
       this._scheduleAdaptiveCentering({ resetRetries: true });
     } else if (name === 'w') {
       this._updateWidth();
+    } else if (name === 'close-button' || name === 'close-label') {
+      this._updateCloseButton();
+      this._updateCloseButtonPosition();
     }
   }
 
   _updateDialog() {
     this._updateWidth();
+    this._updateCloseButton();
   }
 
   _updateWidth() {
@@ -289,6 +375,25 @@ class RettangoliDialogElement extends HTMLElement {
     } else {
       this._dialogElement.style.width = '';
     }
+  }
+
+  _updateCloseButton() {
+    if (!this._closeButtonElement) {
+      return;
+    }
+    this._closeButtonElement.setAttribute(
+      "aria-label",
+      this.getAttribute("close-label") || "Close dialog",
+    );
+    this._closeButtonElement.hidden = !this.hasAttribute("close-button");
+  }
+
+  _createCloseButtonElement() {
+    const closeButtonElement = document.createElement("button");
+    closeButtonElement.type = "button";
+    closeButtonElement.className = "close-button";
+    closeButtonElement.addEventListener("click", this._onCloseButtonClick);
+    return closeButtonElement;
   }
 
   _clearManagedLongTokenWrapping() {
@@ -353,6 +458,11 @@ class RettangoliDialogElement extends HTMLElement {
         this._slotElement.addEventListener('slotchange', this._onSlotChange);
         this._dialogElement.appendChild(this._slotElement);
       }
+      if (!this._closeButtonElement) {
+        this._closeButtonElement = this._createCloseButtonElement();
+        this._dialogElement.appendChild(this._closeButtonElement);
+      }
+      this._updateCloseButton();
 
       this._dialogElement.showModal();
 
@@ -360,6 +470,7 @@ class RettangoliDialogElement extends HTMLElement {
       this._dialogElement.scrollTop = 0;
 
       window.addEventListener("resize", this._onWindowResize);
+      this._dialogElement.addEventListener("scroll", this._onDialogScroll, { passive: true });
       this._syncLongTokenWrapping();
       this._observeAssignedContent();
       this._layoutRetryCount = 0;
@@ -385,9 +496,16 @@ class RettangoliDialogElement extends HTMLElement {
         this._dialogElement.removeChild(this._slotElement);
         this._slotElement = null;
       }
+      if (this._closeButtonElement) {
+        this._closeButtonElement.removeEventListener("click", this._onCloseButtonClick);
+        this._dialogElement.removeChild(this._closeButtonElement);
+        this._closeButtonElement = null;
+      }
 
       // Reset dialog height
       this._dialogElement.style.height = '';
+      this._dialogElement.style.removeProperty("--rtgl-dialog-close-top");
+      this._dialogElement.style.removeProperty("--rtgl-dialog-close-left");
 
       // Don't emit any event when programmatically closed via attribute
     }
@@ -400,6 +518,7 @@ class RettangoliDialogElement extends HTMLElement {
     }
     this._layoutRetryCount = 0;
     window.removeEventListener("resize", this._onWindowResize);
+    this._dialogElement.removeEventListener("scroll", this._onDialogScroll);
     if (this._resizeObserver && this._observedContentElement) {
       this._resizeObserver.unobserve(this._observedContentElement);
     }
@@ -493,6 +612,22 @@ class RettangoliDialogElement extends HTMLElement {
     return this._getActiveLayout() === "fixed";
   }
 
+  _updateCloseButtonPosition() {
+    if (!this._slotElement || !this._closeButtonElement || !this._dialogElement.open) {
+      return;
+    }
+
+    const slotWidth = Math.round(this._slotElement.getBoundingClientRect().width);
+    const top = Math.max(0, Math.round(this._slotElement.offsetTop) + CLOSE_BUTTON_OFFSET_PX);
+    const left = Math.max(
+      0,
+      Math.round(this._slotElement.offsetLeft) + slotWidth - CLOSE_BUTTON_SIZE_PX - CLOSE_BUTTON_OFFSET_PX,
+    );
+
+    this._dialogElement.style.setProperty("--rtgl-dialog-close-top", `${top}px`);
+    this._dialogElement.style.setProperty("--rtgl-dialog-close-left", `${left}px`);
+  }
+
   _applyAdaptiveCentering() {
     if (!this._slotElement || !this._dialogElement.open) {
       return;
@@ -502,6 +637,7 @@ class RettangoliDialogElement extends HTMLElement {
       this._slotElement.style.marginTop = '';
       this._slotElement.style.marginBottom = '';
       this._dialogElement.style.height = '';
+      this._updateCloseButtonPosition();
       this._layoutRetryCount = 0;
       return;
     }
@@ -527,6 +663,7 @@ class RettangoliDialogElement extends HTMLElement {
       this._slotElement.style.marginTop = `${MIN_MARGIN_PX}px`;
       this._slotElement.style.marginBottom = `${MIN_MARGIN_PX}px`;
       this._dialogElement.style.height = '100vh';
+      this._updateCloseButtonPosition();
       return;
     }
 
@@ -535,6 +672,7 @@ class RettangoliDialogElement extends HTMLElement {
     this._slotElement.style.marginTop = `${margin}px`;
     this._slotElement.style.marginBottom = `${margin}px`;
     this._dialogElement.style.height = 'auto';
+    this._updateCloseButtonPosition();
   }
 
 

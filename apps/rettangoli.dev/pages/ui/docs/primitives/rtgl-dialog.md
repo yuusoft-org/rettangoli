@@ -50,6 +50,8 @@ Use `open` as the source of truth and close by removing `open`.
 | Size | `s` | `sm`, `md`, `lg`, `f` | content-based |
 | Width Override | `w` | CSS width value (`600px`, `70vw`, etc.) | - |
 | Layout | `layout`, `sm-layout`, `md-layout`, `lg-layout`, `xl-layout` | `centered`, `fixed` | `centered` |
+| Close Button | `close-button` | boolean | - |
+| Close Label | `close-label` | string | `Close dialog` |
 
 ## Events
 
@@ -137,6 +139,32 @@ Use `s` to choose a standard dialog width profile. On `md` and smaller viewports
         dialog.removeAttribute("open");
       });
     }
+  })();
+</script>
+```
+
+## Close Button
+
+Add `close-button` when the dialog should render a built-in top-right close control. The button emits the same `close` request event as backdrop and escape close intent.
+
+```html codePreview
+<rtgl-button id="open-close-button">Open With Close Button</rtgl-button>
+<rtgl-dialog id="dialog-close-button" s="md" close-button>
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-text s="h4">Closable Dialog</rtgl-text>
+    <rtgl-text c="mu">The top-right control requests close without owning state.</rtgl-text>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  (() => {
+    const dialogCloseButton = document.getElementById("dialog-close-button");
+    document.getElementById("open-close-button").addEventListener("click", () => {
+      dialogCloseButton.setAttribute("open", "");
+    });
+    dialogCloseButton.addEventListener("close", () => {
+      dialogCloseButton.removeAttribute("open");
+    });
   })();
 </script>
 ```
