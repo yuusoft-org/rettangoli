@@ -223,6 +223,10 @@ class RettangoliDialogElement extends HTMLElement {
         ${mediaQueries.sm} {
           ${fixedLayoutStyle(FIXED_LAYOUT_QUERY_SELECTORS[4])}
         }
+
+        :host([no-padding]) slot[name="content"] {
+          padding: 0;
+        }
       `);
     }
   }
