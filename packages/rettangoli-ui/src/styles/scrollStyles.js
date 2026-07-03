@@ -21,7 +21,7 @@ export default css`
 :host([sh]),
 :host([sv]) {
     -ms-overflow-style: auto;
-    scrollbar-gutter: stable;
+    scrollbar-gutter: stable both-edges;
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-thumb, var(--muted-foreground)) var(--scrollbar-track, transparent);
 }
