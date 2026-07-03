@@ -254,7 +254,7 @@ Use `w` when you need explicit width control.
 
 Use `layout` and breakpoint-prefixed layout attrs to change dialog layout responsively. `centered` is the default adaptive centered dialog. `fixed` locks the dialog shell to the viewport and scrolls the content surface internally.
 
-Add `no-padding` when the slotted content should own all spacing. This is useful for fixed mobile dialogs that render a full-height shell, custom safe-area handling, or pinned internal footers.
+Add `no-padding` when the slotted content should own all spacing. It removes dialog-owned padding and left/right content margins. This is useful for fixed mobile dialogs that render a full-height shell, custom safe-area handling, or pinned internal footers.
 
 ```html codePreview
 <rtgl-button id="open-fixed-mobile">Open Fixed Mobile Dialog</rtgl-button>

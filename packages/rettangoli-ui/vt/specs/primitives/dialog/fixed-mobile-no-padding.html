@@ -1,9 +1,10 @@
 ---
 title: Dialog - Fixed Mobile No Padding
 diffThreshold: 4
-description: Verifies fixed mobile dialogs can disable the built-in content-slot padding.
+description: Verifies fixed mobile dialogs can disable built-in content-slot spacing.
 specs:
   - "`no-padding` removes the dialog-owned content-slot padding."
+  - "`no-padding` removes the dialog-owned left and right content-slot margins."
   - "`md-layout=fixed` still locks the dialog and content surface to the mobile viewport."
   - "Consumer content can own its own spacing inside the slotted shell."
 skipInitialScreenshot: true
@@ -66,6 +67,9 @@ steps:
       slotStyle.paddingRight === "0px" &&
       slotStyle.paddingBottom === "0px" &&
       slotStyle.paddingLeft === "0px";
+    const slotHorizontalMarginZero =
+      slotStyle.marginLeft === "0px" &&
+      slotStyle.marginRight === "0px";
     const shellOwnsPadding =
       shellStyle.paddingTop !== "0px" &&
       shellStyle.paddingRight !== "0px" &&
@@ -77,11 +81,17 @@ steps:
     const slotFillsViewport =
       Math.abs(Math.round(slotRect.width) - viewportWidth) <= 2 &&
       Math.abs(Math.round(slotRect.height) - viewportHeight) <= 2;
-    const pass = slotPaddingZero && shellOwnsPadding && dialogFillsViewport && slotFillsViewport;
+    const pass =
+      slotPaddingZero &&
+      slotHorizontalMarginZero &&
+      shellOwnsPadding &&
+      dialogFillsViewport &&
+      slotFillsViewport;
 
     result.textContent = [
       pass ? "PASS" : "FAIL",
       `slotPadding=${slotStyle.paddingTop}/${slotStyle.paddingRight}/${slotStyle.paddingBottom}/${slotStyle.paddingLeft}`,
+      `slotMargin=${slotStyle.marginLeft}/${slotStyle.marginRight}`,
       `shellPadding=${shellStyle.paddingTop}/${shellStyle.paddingRight}/${shellStyle.paddingBottom}/${shellStyle.paddingLeft}`,
       `dialog=${Math.round(dialogRect.width)}x${Math.round(dialogRect.height)}`,
       `slot=${Math.round(slotRect.width)}x${Math.round(slotRect.height)}`,

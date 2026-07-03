@@ -225,6 +225,9 @@ class RettangoliDialogElement extends HTMLElement {
         }
 
         :host([no-padding]) slot[name="content"] {
+          margin-left: 0;
+          margin-right: 0;
+          max-width: 100vw;
           padding: 0;
         }
       `);
