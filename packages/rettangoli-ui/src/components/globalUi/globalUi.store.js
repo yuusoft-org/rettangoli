@@ -3,6 +3,22 @@ const VALID_TOAST_SIZES = new Set(["sm", "md", "lg"]);
 const VALID_TOAST_PHASES = new Set(["active", "exiting"]);
 const VALID_TOAST_POSITIONS = new Set(["top", "bottom"]);
 const VALID_COMPONENT_DIALOG_ROLES = new Set(["confirm", "cancel"]);
+const DROPDOWN_POPOVER_ATTR_PROPS = [
+  ["overlay", "overlay"],
+  ["noOverlay", "no-overlay"],
+  ["smPlace", "sm-place"],
+  ["mdPlace", "md-place"],
+  ["lgPlace", "lg-place"],
+  ["xlPlace", "xl-place"],
+  ["smOverlay", "sm-overlay"],
+  ["mdOverlay", "md-overlay"],
+  ["lgOverlay", "lg-overlay"],
+  ["xlOverlay", "xl-overlay"],
+  ["smNoOverlay", "sm-no-overlay"],
+  ["mdNoOverlay", "md-no-overlay"],
+  ["lgNoOverlay", "lg-no-overlay"],
+  ["xlNoOverlay", "xl-no-overlay"],
+];
 
 const DEFAULT_COMPONENT_DIALOG_BUTTONS = Object.freeze([
   {
@@ -26,6 +42,43 @@ const normalizeObject = (value) => {
     return {};
   }
   return value;
+};
+
+const escapeAttrValue = (value) => `${value}`.replace(/"/g, '&quot;');
+
+const readResponsiveOptionValue = (source = {}, propName, attrName) => {
+  if (source[propName] !== undefined) {
+    return source[propName];
+  }
+
+  return source[attrName];
+};
+
+const collectDropdownPopoverOptions = (source = {}) => {
+  return DROPDOWN_POPOVER_ATTR_PROPS.reduce((acc, [propName, attrName]) => {
+    const value = readResponsiveOptionValue(source, propName, attrName);
+
+    if (value !== undefined && value !== null) {
+      acc[propName] = value;
+    }
+
+    return acc;
+  }, {});
+};
+
+const stringifyDropdownPopoverAttrs = (source = {}) => {
+  return DROPDOWN_POPOVER_ATTR_PROPS
+    .filter(([propName]) => source[propName] !== undefined && source[propName] !== null)
+    .map(([propName, attrName]) => {
+      const value = source[propName];
+
+      if (value === true) {
+        return attrName;
+      }
+
+      return `${attrName}="${escapeAttrValue(value)}"`;
+    })
+    .join(" ");
 };
 
 const normalizeDialogSize = (value, fallback = "md") => {
@@ -172,6 +225,7 @@ export const setDropdownConfig = ({ state }, options = {}) => {
     x: options.x ?? 0,
     y: options.y ?? 0,
     place: options.place ?? "bs",
+    ...collectDropdownPopoverOptions(options),
   };
   state.uiType = "dropdown";
   state.isOpen = true;
@@ -301,6 +355,7 @@ export const selectViewData = ({ state }) => {
       x: state.dropdownConfig?.x ?? 0,
       y: state.dropdownConfig?.y ?? 0,
       place: state.dropdownConfig?.place ?? "bs",
+      popoverAttrString: stringifyDropdownPopoverAttrs(state.dropdownConfig),
     },
     formDialogConfig: {
       form: state.formDialogConfig?.form ?? { fields: [], actions: { buttons: [] } },

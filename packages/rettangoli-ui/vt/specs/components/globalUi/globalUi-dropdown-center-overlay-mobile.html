@@ -1,0 +1,99 @@
+---
+title: Global UI - Dropdown Center Overlay Mobile
+diffThreshold: 4
+description: Verifies global UI dropdown menus can use centered mobile placement with a dialog-style overlay.
+specs:
+  - "`showDropdownMenu` passes responsive placement options to `rtgl-dropdown-menu`."
+  - "`md-place=center` centers the internal popover on mobile."
+  - "`md-overlay` applies a dim dialog-style backdrop behind the global dropdown menu."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: 'rtgl-global-ui rtgl-dropdown-menu rtgl-popover[open][positioned]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:verify-global-dropdown-center-overlay
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-global-dropdown-center-overlay'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-global-ui></rtgl-global-ui>
+
+<rtgl-view h="100vh" w="100vw" p="lg" g="md" bgc="su">
+  <rtgl-text s="lg">Global UI page</rtgl-text>
+  <rtgl-text c="mu">The global dropdown menu should dim this content on mobile.</rtgl-text>
+  <rtgl-button>Background action</rtgl-button>
+  <pre id="result-global-dropdown-center-overlay" style="position: absolute; left: -9999px;"></pre>
+</rtgl-view>
+
+<script>
+  const globalUIElement = document.querySelector("rtgl-global-ui");
+  const result = document.getElementById("result-global-dropdown-center-overlay");
+
+  setTimeout(() => {
+    globalUIElement.transformedHandlers.handleShowDropdownMenu({
+      items: [
+        { type: "label", label: "Global menu" },
+        { id: "copy", label: "Copy link", suffixText: "C" },
+        { id: "share", label: "Share" },
+        { id: "pin", label: "Pin to sidebar" },
+      ],
+      x: 24,
+      y: 24,
+      place: "bs",
+      mdPlace: "center",
+      mdOverlay: true,
+    });
+  }, 0);
+
+  const verifyGlobalDropdownCenterOverlay = () => {
+    const dropdownMenu = globalUIElement.shadowRoot.querySelector("rtgl-dropdown-menu");
+    const popover = dropdownMenu?.shadowRoot.querySelector("rtgl-popover");
+    const dialog = popover?.shadowRoot.querySelector("dialog");
+    const container = popover?.shadowRoot.querySelector(".popover-container");
+    const rect = container?.getBoundingClientRect();
+
+    if (!dropdownMenu || !popover || !dialog || !container || !rect) {
+      result.textContent = "FAIL missing-elements";
+      return;
+    }
+
+    const viewportWidth = Math.round(window.innerWidth);
+    const viewportHeight = Math.round(window.innerHeight);
+    const expectedLeft = Math.round((viewportWidth - rect.width) / 2);
+    const expectedTop = Math.round((viewportHeight - rect.height) / 2);
+    const backdropColor = getComputedStyle(dialog, "::backdrop").backgroundColor;
+    const activePlace = popover.getAttribute("data-rtgl-active-place");
+    const isCentered =
+      Math.abs(Math.round(rect.left) - expectedLeft) <= 2 &&
+      Math.abs(Math.round(rect.top) - expectedTop) <= 2;
+    const hasOverlay =
+      popover.getAttribute("data-rtgl-active-overlay") === "true" &&
+      backdropColor !== "rgba(0, 0, 0, 0)" &&
+      backdropColor !== "transparent";
+    const pass = activePlace === "center" && isCentered && hasOverlay && dialog.open;
+
+    result.textContent = [
+      pass ? "PASS" : "FAIL",
+      `activePlace=${activePlace}`,
+      `rect=${Math.round(rect.left)},${Math.round(rect.top)},${Math.round(rect.width)}x${Math.round(rect.height)}`,
+      `expected=${expectedLeft},${expectedTop}`,
+      `overlay=${popover.getAttribute("data-rtgl-active-overlay")}`,
+      `backdrop=${backdropColor}`,
+    ].join(" ");
+  };
+
+  setTimeout(verifyGlobalDropdownCenterOverlay, 300);
+  window.addEventListener("vt:verify-global-dropdown-center-overlay", verifyGlobalDropdownCenterOverlay);
+</script>

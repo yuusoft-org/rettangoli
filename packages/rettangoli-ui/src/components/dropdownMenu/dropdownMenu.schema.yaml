@@ -44,6 +44,34 @@ propsSchema:
       type: string
     place:
       type: string
+    overlay:
+      type: boolean
+    no-overlay:
+      type: boolean
+    sm-place:
+      type: string
+    md-place:
+      type: string
+    lg-place:
+      type: string
+    xl-place:
+      type: string
+    sm-overlay:
+      type: boolean
+    md-overlay:
+      type: boolean
+    lg-overlay:
+      type: boolean
+    xl-overlay:
+      type: boolean
+    sm-no-overlay:
+      type: boolean
+    md-no-overlay:
+      type: boolean
+    lg-no-overlay:
+      type: boolean
+    xl-no-overlay:
+      type: boolean
     w:
       type: string
     h:

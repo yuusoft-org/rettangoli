@@ -1,0 +1,99 @@
+---
+title: Dropdown Menu - Center Overlay Mobile
+diffThreshold: 4
+description: Verifies a dropdown menu can render as a centered overlay menu at mobile breakpoints.
+specs:
+  - "`md-place=center` is passed through to the internal popover."
+  - "`md-overlay` applies a dim dialog-style backdrop behind the menu."
+  - "The menu remains centered and constrained within the mobile viewport."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: '#dropdown-menu rtgl-popover[open][positioned]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:verify-centered-overlay-menu
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-centered-overlay-menu'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-view h="100vh" w="100vw" p="lg" g="md" bgc="su">
+  <rtgl-text s="lg">Project Actions</rtgl-text>
+  <rtgl-text c="mu">The centered mobile menu should dim this page content.</rtgl-text>
+  <rtgl-button>Background action</rtgl-button>
+</rtgl-view>
+
+<rtgl-dropdown-menu
+  id="dropdown-menu"
+  open
+  x="24"
+  y="24"
+  place="bs"
+  md-place="center"
+  md-overlay
+  w="320"
+  h="320"
+></rtgl-dropdown-menu>
+
+<pre id="result-centered-overlay-menu" style="position: absolute; left: -9999px;"></pre>
+
+<script>
+  const dropdownMenu = document.getElementById("dropdown-menu");
+  const result = document.getElementById("result-centered-overlay-menu");
+
+  dropdownMenu.items = [
+    { type: "label", label: "Mobile menu" },
+    { id: "new", label: "New task", suffixText: "N" },
+    { id: "assign", label: "Assign owner" },
+    { id: "archive", label: "Archive project" },
+    { type: "separator" },
+    { id: "delete", label: "Delete", disabled: true },
+  ];
+
+  const verifyCenteredOverlayMenu = () => {
+    const popover = dropdownMenu.shadowRoot.querySelector("rtgl-popover");
+    const dialog = popover.shadowRoot.querySelector("dialog");
+    const container = popover.shadowRoot.querySelector(".popover-container");
+    const rect = container.getBoundingClientRect();
+    const viewportWidth = Math.round(window.innerWidth);
+    const viewportHeight = Math.round(window.innerHeight);
+    const expectedLeft = Math.round((viewportWidth - rect.width) / 2);
+    const expectedTop = Math.round((viewportHeight - rect.height) / 2);
+    const backdropColor = getComputedStyle(dialog, "::backdrop").backgroundColor;
+    const activePlace = popover.getAttribute("data-rtgl-active-place");
+    const isCentered =
+      Math.abs(Math.round(rect.left) - expectedLeft) <= 2 &&
+      Math.abs(Math.round(rect.top) - expectedTop) <= 2;
+    const hasOverlay =
+      popover.getAttribute("data-rtgl-active-overlay") === "true" &&
+      backdropColor !== "rgba(0, 0, 0, 0)" &&
+      backdropColor !== "transparent";
+    const pass = activePlace === "center" && isCentered && hasOverlay && dialog.open;
+
+    result.textContent = [
+      pass ? "PASS" : "FAIL",
+      `activePlace=${activePlace}`,
+      `rect=${Math.round(rect.left)},${Math.round(rect.top)},${Math.round(rect.width)}x${Math.round(rect.height)}`,
+      `expected=${expectedLeft},${expectedTop}`,
+      `overlay=${popover.getAttribute("data-rtgl-active-overlay")}`,
+      `backdrop=${backdropColor}`,
+    ].join(" ");
+  };
+
+  setTimeout(verifyCenteredOverlayMenu, 250);
+  window.addEventListener("vt:verify-centered-overlay-menu", verifyCenteredOverlayMenu);
+  dropdownMenu.addEventListener("close", () => {
+    dropdownMenu.removeAttribute("open");
+  });
+</script>

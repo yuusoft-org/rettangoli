@@ -3,6 +3,38 @@ export const createInitialState = () => Object.freeze({
 });
 
 const escapeAttrValue = (value) => `${value}`.replace(/"/g, '&quot;');
+const POPOVER_ATTR_PROPS = [
+  ["overlay", "overlay"],
+  ["noOverlay", "no-overlay"],
+  ["smPlace", "sm-place"],
+  ["mdPlace", "md-place"],
+  ["lgPlace", "lg-place"],
+  ["xlPlace", "xl-place"],
+  ["smOverlay", "sm-overlay"],
+  ["mdOverlay", "md-overlay"],
+  ["lgOverlay", "lg-overlay"],
+  ["xlOverlay", "xl-overlay"],
+  ["smNoOverlay", "sm-no-overlay"],
+  ["mdNoOverlay", "md-no-overlay"],
+  ["lgNoOverlay", "lg-no-overlay"],
+  ["xlNoOverlay", "xl-no-overlay"],
+];
+
+const stringifyPopoverAttrs = (props = {}) => {
+  return POPOVER_ATTR_PROPS
+    .filter(([propName]) => props[propName] !== undefined && props[propName] !== null)
+    .map(([propName, attrName]) => {
+      const value = props[propName];
+
+      if (value === true) {
+        return attrName;
+      }
+
+      return `${attrName}="${escapeAttrValue(value)}"`;
+    })
+    .join(" ");
+};
+
 const getItemType = (item = {}) => {
   if (item.type === 'section' || item.type === 'label') {
     return 'section';
@@ -76,5 +108,6 @@ export const selectViewData = ({ props }) => {
     w: props.w || '300',
     h: props.h || '300',
     place: props.place || 'bs',
+    popoverAttrString: stringifyPopoverAttrs(props),
   };
 }
