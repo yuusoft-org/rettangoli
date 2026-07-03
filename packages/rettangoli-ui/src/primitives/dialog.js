@@ -10,13 +10,8 @@ const MAX_LAYOUT_RETRIES = 6;
 const RESPONSIVE_LAYOUT_SIZES = ["sm", "md", "lg", "xl"];
 const CLOSE_BUTTON_SIZE_PX = 32;
 const CLOSE_BUTTON_OFFSET_PX = 8;
-const FIXED_LAYOUT_QUERY_SELECTORS = [
-  ':host([layout="fixed"])',
-  ':host([xl-layout="fixed"])',
-  ':host([lg-layout="fixed"])',
-  ':host([md-layout="fixed"])',
-  ':host([sm-layout="fixed"])',
-];
+const ACTIVE_LAYOUT_ATTR = "data-rtgl-active-layout";
+const FIXED_LAYOUT_SELECTOR = `:host([${ACTIVE_LAYOUT_ATTR}="fixed"])`;
 
 const mediaQueryCondition = (mediaQuery) => mediaQuery.replace(/^@media\s+/, "");
 const fixedLayoutStyle = (selector) => css`
@@ -206,23 +201,7 @@ class RettangoliDialogElement extends HTMLElement {
           }
         }
 
-        ${fixedLayoutStyle(FIXED_LAYOUT_QUERY_SELECTORS[0])}
-
-        ${mediaQueries.xl} {
-          ${fixedLayoutStyle(FIXED_LAYOUT_QUERY_SELECTORS[1])}
-        }
-
-        ${mediaQueries.lg} {
-          ${fixedLayoutStyle(FIXED_LAYOUT_QUERY_SELECTORS[2])}
-        }
-
-        ${mediaQueries.md} {
-          ${fixedLayoutStyle(FIXED_LAYOUT_QUERY_SELECTORS[3])}
-        }
-
-        ${mediaQueries.sm} {
-          ${fixedLayoutStyle(FIXED_LAYOUT_QUERY_SELECTORS[4])}
-        }
+        ${fixedLayoutStyle(FIXED_LAYOUT_SELECTOR)}
 
         :host([no-padding]) slot[name="content"] {
           margin-left: 0;
@@ -269,6 +248,7 @@ class RettangoliDialogElement extends HTMLElement {
       this._scheduleAdaptiveCentering({ resetRetries: true });
     };
     this._onWindowResize = () => {
+      this._updateActiveLayoutAttribute();
       this._scheduleAdaptiveCentering({ resetRetries: true });
     };
     this._onDialogScroll = () => {
@@ -361,6 +341,7 @@ class RettangoliDialogElement extends HTMLElement {
       }
     } else if (name === 's' || name.endsWith('layout')) {
       // Size is handled via CSS :host() selectors.
+      this._updateActiveLayoutAttribute();
       this._scheduleAdaptiveCentering({ resetRetries: true });
     } else if (name === 'w') {
       this._updateWidth();
@@ -373,6 +354,7 @@ class RettangoliDialogElement extends HTMLElement {
   _updateDialog() {
     this._updateWidth();
     this._updateCloseButton();
+    this._updateActiveLayoutAttribute();
   }
 
   _updateWidth() {
@@ -468,8 +450,9 @@ class RettangoliDialogElement extends HTMLElement {
       }
       this._updateCloseButton();
 
+      this._updateActiveLayoutAttribute();
       this._dialogElement.showModal();
-      if (this.hasAttribute("close-button") && !this.querySelector("[autofocus]")) {
+      if (this.shadow.activeElement === this._closeButtonElement) {
         this._dialogElement.focus({ preventScroll: true });
       }
 
@@ -616,7 +599,19 @@ class RettangoliDialogElement extends HTMLElement {
   }
 
   _isFixedLayoutActive() {
-    return this._getActiveLayout() === "fixed";
+    return this._updateActiveLayoutAttribute() === "fixed";
+  }
+
+  _updateActiveLayoutAttribute() {
+    const activeLayout = this._getActiveLayout();
+    if (activeLayout === "fixed") {
+      if (this.getAttribute(ACTIVE_LAYOUT_ATTR) !== "fixed") {
+        this.setAttribute(ACTIVE_LAYOUT_ATTR, "fixed");
+      }
+    } else if (this.hasAttribute(ACTIVE_LAYOUT_ATTR)) {
+      this.removeAttribute(ACTIVE_LAYOUT_ATTR);
+    }
+    return activeLayout;
   }
 
   _updateCloseButtonPosition() {
