@@ -61,6 +61,11 @@ export const calculatePopoverPosition = ({
       left = x - width - offset;
       top = y - height;
       break;
+    case "center":
+    case "c":
+      left = (viewportWidth - width) / 2;
+      top = (viewportHeight - height) / 2;
+      break;
     default:
       left = x;
       top = y + offset;

@@ -18,7 +18,7 @@ styles:
     height: 16px
     flex-shrink: 0
 template:
-  - rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place} content-w=${w} content-h=${h} content-sv=true content-g=xs content-pv=sm:
+  - 'rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place} ${popoverAttrString} content-w=${w} content-h=${h} content-sv=true content-g=xs content-pv=sm':
       - $for item, i in items:
           - $if item.isSection:
               - rtgl-view w=f p=md:

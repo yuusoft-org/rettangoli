@@ -149,6 +149,9 @@ const createGlobalUI = (globalUIElement) => {
      * @param {number} options.x - X coordinate position (required)
      * @param {number} options.y - Y coordinate position (required)
      * @param {string} [options.place] - Dropdown menu place token (default: "bs")
+     * @param {string} [options.mdPlace] - Responsive place token, for example "center" on mobile
+     * @param {boolean} [options.overlay] - Whether to show a dialog-style dim overlay
+     * @param {boolean} [options.mdOverlay] - Responsive overlay flag for mobile breakpoints
      * @returns {Promise<Object|null>} Promise that resolves with clicked item info or null if closed without selection
      * @returns {Object} [result.index] - Index of the clicked item
      * @returns {Object} [result.item] - The clicked item object

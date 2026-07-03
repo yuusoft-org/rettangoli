@@ -1,0 +1,134 @@
+---
+title: Dialog - Layout - Fixed Mobile Action Footer
+diffThreshold: 4
+description: Verifies a fixed mobile dialog can use an absolutely positioned bottom action footer with an internally scrolling body.
+specs:
+  - "`md-layout=fixed` keeps the dialog shell locked to the viewport."
+  - "The consumer content shell uses `pos=rel` with an absolute bottom footer."
+  - "The body scrolls internally while the submit action stays pinned at the bottom."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: '#dialog-fixed-action[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:verify-fixed-action-footer
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-fixed-action'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-dialog id="dialog-fixed-action" open s="lg" md-layout="fixed" close-button>
+  <rtgl-view
+    id="fixed-action-shell"
+    slot="content"
+    pos="rel"
+    h="f"
+    overflow="hidden"
+    style="padding-bottom: 88px;"
+  >
+    <rtgl-view id="fixed-action-body" d="v" g="md" h="f" sv>
+      <rtgl-view d="v" g="sm">
+        <rtgl-text s="lg">Confirm Subscription</rtgl-text>
+        <rtgl-text c="mu">The body scrolls independently while the submit action remains anchored.</rtgl-text>
+      </rtgl-view>
+      <pre id="result-fixed-action" style="position: absolute; left: -9999px;"></pre>
+      <rtgl-view id="fixed-action-long-content" d="v" g="md"></rtgl-view>
+    </rtgl-view>
+    <rtgl-view id="fixed-action-footer" pos="abs" edge="b" bgc="bg" bc="bo" bwt="xs" p="lg" z="2">
+      <rtgl-button id="fixed-action-submit" w="f">Submit</rtgl-button>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const dialog = document.getElementById("dialog-fixed-action");
+  const result = document.getElementById("result-fixed-action");
+  const shell = document.getElementById("fixed-action-shell");
+  const body = document.getElementById("fixed-action-body");
+  const footer = document.getElementById("fixed-action-footer");
+  const submit = document.getElementById("fixed-action-submit");
+  const longContent = document.getElementById("fixed-action-long-content");
+
+  longContent.innerHTML = Array.from({ length: 22 }, (_, index) => `
+    <rtgl-view d="v" g="xs" bgc="${index % 2 === 0 ? "su" : "mu"}" p="md" br="sm">
+      <rtgl-text s="md">Review item ${index + 1}</rtgl-text>
+      <rtgl-text c="mu">This row verifies the body has enough content to scroll without moving the action footer.</rtgl-text>
+    </rtgl-view>
+  `).join("");
+
+  const verifyFixedActionFooter = () => {
+    const nativeDialog = dialog.shadowRoot.querySelector("dialog");
+    const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
+    const footerBeforeScroll = footer.getBoundingClientRect();
+
+    body.scrollTop = 260;
+
+    requestAnimationFrame(() => {
+      const viewportWidth = Math.round(window.innerWidth);
+      const viewportHeight = Math.round(window.innerHeight);
+      const dialogRect = nativeDialog.getBoundingClientRect();
+      const slotRect = contentSlot.getBoundingClientRect();
+      const shellRect = shell.getBoundingClientRect();
+      const bodyRect = body.getBoundingClientRect();
+      const footerRect = footer.getBoundingClientRect();
+      const submitRect = submit.getBoundingClientRect();
+      const pageDoesNotScroll =
+        window.scrollY === 0 &&
+        document.scrollingElement.scrollHeight <= window.innerHeight + 2;
+      const dialogFillsViewport =
+        Math.abs(Math.round(dialogRect.width) - viewportWidth) <= 2 &&
+        Math.abs(Math.round(dialogRect.height) - viewportHeight) <= 2;
+      const slotIsFixed =
+        Math.abs(Math.round(slotRect.width) - viewportWidth) <= 2 &&
+        Math.abs(Math.round(slotRect.height) - viewportHeight) <= 2 &&
+        contentSlot.scrollTop === 0;
+      const bodyScrolls =
+        body.scrollHeight > body.clientHeight + 80 &&
+        body.scrollTop > 0 &&
+        bodyRect.bottom <= shellRect.bottom + 2;
+      const footerPinned =
+        Math.abs(footerRect.bottom - shellRect.bottom) <= 2 &&
+        Math.abs(footerRect.left - shellRect.left) <= 2 &&
+        Math.abs(footerRect.right - shellRect.right) <= 2 &&
+        Math.abs(footerRect.bottom - footerBeforeScroll.bottom) <= 2;
+      const submitVisible =
+        submitRect.width > 240 &&
+        submitRect.height >= 32 &&
+        submitRect.bottom <= shellRect.bottom - 12;
+      const pass =
+        pageDoesNotScroll &&
+        dialogFillsViewport &&
+        slotIsFixed &&
+        bodyScrolls &&
+        footerPinned &&
+        submitVisible;
+
+      result.textContent = [
+        pass ? "PASS" : "FAIL",
+        `dialog=${Math.round(dialogRect.width)}x${Math.round(dialogRect.height)}`,
+        `slot=${Math.round(slotRect.width)}x${Math.round(slotRect.height)}`,
+        `bodyScroll=${body.scrollTop}/${body.scrollHeight}`,
+        `footerBottom=${Math.round(footerRect.bottom)}`,
+        `shellBottom=${Math.round(shellRect.bottom)}`,
+      ].join(" ");
+    });
+  };
+
+  setTimeout(verifyFixedActionFooter, 250);
+
+  window.addEventListener("vt:verify-fixed-action-footer", verifyFixedActionFooter);
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>

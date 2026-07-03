@@ -1,0 +1,83 @@
+---
+title: Dialog - Close Button Focus
+diffThreshold: 4
+description: Verifies close-button dialogs preserve focus selected during native showModal.
+specs:
+  - "A close-button dialog does not move focus away from a normal focusable field."
+  - "Focus selected during the native showModal call remains in content."
+  - "The dialog element is not force-focused over focusable content."
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '#dialog-close-focus[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:verify-close-focus
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-close-focus'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-dialog id="dialog-close-focus" s="sm" close-button>
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-text s="lg">Close Button Focus</rtgl-text>
+    <rtgl-text c="mu">Opening should keep focus in the first editable field.</rtgl-text>
+    <input
+      id="close-focus-input"
+      value="Editable field"
+      style="box-sizing: border-box; width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--border-radius-sm); background: var(--background); color: var(--foreground);"
+    />
+    <pre id="result-close-focus" style="position: absolute; left: -9999px;"></pre>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const dialog = document.getElementById("dialog-close-focus");
+  const input = document.getElementById("close-focus-input");
+  const result = document.getElementById("result-close-focus");
+  const nativeDialog = dialog.dialog;
+  const originalShowModal = HTMLDialogElement.prototype.showModal;
+
+  HTMLDialogElement.prototype.showModal = function patchedShowModal(...args) {
+    const returnValue = originalShowModal.apply(this, args);
+
+    if (this === nativeDialog) {
+      input.focus({ preventScroll: true });
+    }
+
+    return returnValue;
+  };
+
+  const verifyCloseFocus = () => {
+    const closeButton = dialog.shadowRoot.querySelector(".close-button");
+    const activeElement = document.activeElement;
+    const shadowActiveElement = dialog.shadowRoot.activeElement;
+    const inputHasFocus = activeElement === input;
+    const closeButtonDoesNotHaveFocus = shadowActiveElement !== closeButton;
+    const nativeDialogDoesNotHaveFocus = shadowActiveElement !== nativeDialog;
+    const pass = inputHasFocus && closeButtonDoesNotHaveFocus && nativeDialogDoesNotHaveFocus;
+
+    result.textContent = [
+      pass ? "PASS" : "FAIL",
+      `documentActive=${activeElement?.id || activeElement?.localName || "none"}`,
+      `shadowActive=${shadowActiveElement?.className || shadowActiveElement?.localName || "none"}`,
+    ].join(" ");
+  };
+
+  requestAnimationFrame(() => {
+    dialog.setAttribute("open", "");
+  });
+
+  setTimeout(verifyCloseFocus, 250);
+
+  window.addEventListener("vt:verify-close-focus", verifyCloseFocus);
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>

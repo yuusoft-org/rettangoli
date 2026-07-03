@@ -1,0 +1,108 @@
+---
+title: Dialog - Fixed Mobile No Padding
+diffThreshold: 4
+description: Verifies fixed mobile dialogs can disable built-in content-slot spacing.
+specs:
+  - "`no-padding` removes the dialog-owned content-slot padding."
+  - "`no-padding` removes the dialog-owned left and right content-slot margins."
+  - "`md-layout=fixed` still locks the dialog and content surface to the mobile viewport."
+  - "Consumer content can own its own spacing inside the slotted shell."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: '#dialog-fixed-no-padding[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:verify-fixed-no-padding
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-fixed-no-padding'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-dialog id="dialog-fixed-no-padding" open s="lg" md-layout="fixed" no-padding>
+  <rtgl-view id="fixed-no-padding-shell" slot="content" d="v" g="md" wh="f" p="lg">
+    <rtgl-view d="v" g="sm">
+      <rtgl-text s="lg">Fixed Mobile Dialog Without Slot Padding</rtgl-text>
+      <rtgl-text c="mu">The slotted shell owns the spacing instead of the dialog content slot.</rtgl-text>
+      <pre id="result-fixed-no-padding" style="position: absolute; left: -9999px;"></pre>
+    </rtgl-view>
+    <rtgl-view id="fixed-no-padding-long-content" d="v" g="md"></rtgl-view>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const dialog = document.getElementById("dialog-fixed-no-padding");
+  const result = document.getElementById("result-fixed-no-padding");
+  const shell = document.getElementById("fixed-no-padding-shell");
+  const longContent = document.getElementById("fixed-no-padding-long-content");
+
+  longContent.innerHTML = Array.from({ length: 16 }, (_, index) => `
+    <rtgl-view d="v" g="xs" bgc="${index % 2 === 0 ? "su" : "mu"}" p="md" br="sm">
+      <rtgl-text s="md">Content block ${index + 1}</rtgl-text>
+      <rtgl-text c="mu">This block keeps the fixed mobile content surface scrollable.</rtgl-text>
+    </rtgl-view>
+  `).join("");
+
+  const verifyFixedNoPadding = () => {
+    const nativeDialog = dialog.shadowRoot.querySelector("dialog");
+    const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
+    const viewportWidth = Math.round(window.innerWidth);
+    const viewportHeight = Math.round(window.innerHeight);
+    const dialogRect = nativeDialog.getBoundingClientRect();
+    const slotRect = contentSlot.getBoundingClientRect();
+    const slotStyle = getComputedStyle(contentSlot);
+    const shellStyle = getComputedStyle(shell);
+    const slotPaddingZero =
+      slotStyle.paddingTop === "0px" &&
+      slotStyle.paddingRight === "0px" &&
+      slotStyle.paddingBottom === "0px" &&
+      slotStyle.paddingLeft === "0px";
+    const slotHorizontalMarginZero =
+      slotStyle.marginLeft === "0px" &&
+      slotStyle.marginRight === "0px";
+    const shellOwnsPadding =
+      shellStyle.paddingTop !== "0px" &&
+      shellStyle.paddingRight !== "0px" &&
+      shellStyle.paddingBottom !== "0px" &&
+      shellStyle.paddingLeft !== "0px";
+    const dialogFillsViewport =
+      Math.abs(Math.round(dialogRect.width) - viewportWidth) <= 2 &&
+      Math.abs(Math.round(dialogRect.height) - viewportHeight) <= 2;
+    const slotFillsViewport =
+      Math.abs(Math.round(slotRect.width) - viewportWidth) <= 2 &&
+      Math.abs(Math.round(slotRect.height) - viewportHeight) <= 2;
+    const pass =
+      slotPaddingZero &&
+      slotHorizontalMarginZero &&
+      shellOwnsPadding &&
+      dialogFillsViewport &&
+      slotFillsViewport;
+
+    result.textContent = [
+      pass ? "PASS" : "FAIL",
+      `slotPadding=${slotStyle.paddingTop}/${slotStyle.paddingRight}/${slotStyle.paddingBottom}/${slotStyle.paddingLeft}`,
+      `slotMargin=${slotStyle.marginLeft}/${slotStyle.marginRight}`,
+      `shellPadding=${shellStyle.paddingTop}/${shellStyle.paddingRight}/${shellStyle.paddingBottom}/${shellStyle.paddingLeft}`,
+      `dialog=${Math.round(dialogRect.width)}x${Math.round(dialogRect.height)}`,
+      `slot=${Math.round(slotRect.width)}x${Math.round(slotRect.height)}`,
+      `viewport=${viewportWidth}x${viewportHeight}`,
+    ].join(" ");
+  };
+
+  setTimeout(verifyFixedNoPadding, 250);
+
+  window.addEventListener("vt:verify-fixed-no-padding", verifyFixedNoPadding);
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>

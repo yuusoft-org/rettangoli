@@ -1,0 +1,113 @@
+---
+title: Dialog - Close Button
+diffThreshold: 4
+description: Verifies the built-in top-right close button renders and emits close requests.
+specs:
+  - "`close-button` renders an opt-in top-right X icon button."
+  - "The close button is absolute overlay chrome and does not change content padding."
+  - "The close button has no visible border in its resting state."
+  - "The close button has no visible text label."
+  - "The close control is positioned inside the dialog content surface."
+  - "Clicking the close control emits the normal dialog close request."
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '#dialog-close-button[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:verify-close-button
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-close-button'
+    value: PASS
+  - action: screenshot
+  - action: customEvent
+    name: vt:click-close-button
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#closed-close-button'
+    value: CLOSED
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <pre id="result-close-button" style="position: absolute; left: -9999px;"></pre>
+  <pre id="closed-close-button" style="position: absolute; left: -9999px;"></pre>
+  <rtgl-dialog id="dialog-close-button" open s="md" close-button>
+    <rtgl-view slot="content" d="v" g="md">
+      <rtgl-text s="lg">Dialog With Close Button</rtgl-text>
+      <rtgl-text c="mu">The built-in close control should sit in the top-right corner of the dialog surface.</rtgl-text>
+      <rtgl-text c="mu">The content padding should stay unchanged when close-button is enabled.</rtgl-text>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const dialog = document.getElementById("dialog-close-button");
+  const result = document.getElementById("result-close-button");
+  const closedResult = document.getElementById("closed-close-button");
+
+  const verifyCloseButton = () => {
+    const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
+    const closeButton = dialog.shadowRoot.querySelector(".close-button");
+    const slotRect = contentSlot.getBoundingClientRect();
+    const buttonRect = closeButton.getBoundingClientRect();
+    const contentSlotStyle = getComputedStyle(contentSlot);
+    const closeButtonStyle = getComputedStyle(closeButton);
+    const visible =
+      !closeButton.hidden &&
+      closeButtonStyle.display !== "none" &&
+      buttonRect.width === 32 &&
+      buttonRect.height === 32;
+    const positionedTop = Math.abs(buttonRect.top - (slotRect.top + 8)) <= 3;
+    const positionedRight = Math.abs(buttonRect.right - (slotRect.right - 8)) <= 3;
+    const iconOnly = closeButton.textContent.trim() === "";
+    const labelledForA11y = closeButton.getAttribute("aria-label") === "Close dialog";
+    const absoluteOverlay = closeButtonStyle.position === "absolute";
+    const noReservedPadding = contentSlotStyle.paddingRight === contentSlotStyle.paddingLeft;
+    const noVisibleBorder =
+      closeButtonStyle.borderTopWidth === "0px" &&
+      closeButtonStyle.borderRightWidth === "0px" &&
+      closeButtonStyle.borderBottomWidth === "0px" &&
+      closeButtonStyle.borderLeftWidth === "0px" &&
+      closeButtonStyle.outlineStyle === "none" &&
+      closeButtonStyle.boxShadow === "none";
+    const notInitiallyFocused = !closeButton.matches(":focus-visible");
+    const pass =
+      visible &&
+      positionedTop &&
+      positionedRight &&
+      iconOnly &&
+      labelledForA11y &&
+      absoluteOverlay &&
+      noReservedPadding &&
+      noVisibleBorder &&
+      notInitiallyFocused;
+
+    result.textContent = [
+      pass ? "PASS" : "FAIL",
+      `button=${Math.round(buttonRect.left)},${Math.round(buttonRect.top)},${Math.round(buttonRect.right)},${Math.round(buttonRect.bottom)}`,
+      `slot=${Math.round(slotRect.left)},${Math.round(slotRect.top)},${Math.round(slotRect.right)},${Math.round(slotRect.bottom)}`,
+      `text=${JSON.stringify(closeButton.textContent.trim())}`,
+      `padding=${contentSlotStyle.paddingLeft}/${contentSlotStyle.paddingRight}`,
+      `border=${closeButtonStyle.borderTopWidth}/${closeButtonStyle.outlineStyle}/${closeButtonStyle.boxShadow}`,
+    ].join(" ");
+  };
+
+  window.addEventListener("vt:verify-close-button", verifyCloseButton);
+  window.addEventListener("vt:click-close-button", () => {
+    dialog.shadowRoot.querySelector(".close-button").click();
+  });
+
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+    closedResult.textContent = "CLOSED";
+  });
+
+  setTimeout(verifyCloseButton, 250);
+</script>

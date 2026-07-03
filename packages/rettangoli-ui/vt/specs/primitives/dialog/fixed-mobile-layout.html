@@ -1,0 +1,104 @@
+---
+title: Dialog - Layout - Fixed Mobile
+diffThreshold: 4
+description: Verifies `md-layout=fixed` locks the mobile dialog shell while content scrolls internally.
+specs:
+  - "`md-layout=fixed` applies at mobile viewport sizes without app-side viewport checks."
+  - "The native dialog fills the viewport and does not own vertical scrolling."
+  - "The content surface fills the viewport width and exposes internal vertical scrolling."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: '#dialog-fixed[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:verify-fixed-mobile-dialog
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-fixed'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-dialog id="dialog-fixed" open s="lg" md-layout="fixed">
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-view d="v" g="sm">
+      <rtgl-text s="lg">Fixed Mobile Dialog</rtgl-text>
+      <rtgl-text c="mu">The dialog shell should stay fixed while this content surface scrolls internally.</rtgl-text>
+      <pre id="result-fixed" style="margin: 0; font: 12px/1.4 monospace;"></pre>
+    </rtgl-view>
+    <rtgl-view id="fixed-mobile-long-content" d="v" g="md"></rtgl-view>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const dialog = document.getElementById("dialog-fixed");
+  const result = document.getElementById("result-fixed");
+  const longContent = document.getElementById("fixed-mobile-long-content");
+
+  longContent.innerHTML = Array.from({ length: 18 }, (_, index) => `
+    <rtgl-view d="v" g="xs">
+      <rtgl-text s="md">Section ${index + 1}</rtgl-text>
+      <rtgl-text c="mu">Scrollable content row ${index + 1} stays inside the fixed mobile dialog surface.</rtgl-text>
+    </rtgl-view>
+  `).join("");
+
+  const verifyFixedMobileDialog = () => {
+    const nativeDialog = dialog.shadowRoot.querySelector("dialog");
+    const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
+
+    contentSlot.scrollTop = 180;
+
+    requestAnimationFrame(() => {
+      const viewportWidth = Math.round(window.innerWidth);
+      const viewportHeight = Math.round(window.innerHeight);
+      const dialogRect = nativeDialog.getBoundingClientRect();
+      const slotRect = contentSlot.getBoundingClientRect();
+      const dialogStyle = getComputedStyle(nativeDialog);
+      const slotStyle = getComputedStyle(contentSlot);
+      const dialogFillsViewport =
+        Math.abs(Math.round(dialogRect.width) - viewportWidth) <= 2 &&
+        Math.abs(Math.round(dialogRect.height) - viewportHeight) <= 2 &&
+        Math.abs(Math.round(dialogRect.top)) <= 2 &&
+        Math.abs(Math.round(dialogRect.left)) <= 2;
+      const slotFillsViewport =
+        Math.abs(Math.round(slotRect.width) - viewportWidth) <= 2 &&
+        Math.abs(Math.round(slotRect.height) - viewportHeight) <= 2 &&
+        Math.abs(Math.round(slotRect.top)) <= 2 &&
+        Math.abs(Math.round(slotRect.left)) <= 2;
+      const nativeDoesNotScroll =
+        dialogStyle.overflowY === "hidden" &&
+        nativeDialog.scrollHeight <= nativeDialog.clientHeight + 2 &&
+        nativeDialog.scrollTop === 0;
+      const contentScrolls =
+        (slotStyle.overflowY === "auto" || slotStyle.overflowY === "scroll") &&
+        contentSlot.scrollHeight > contentSlot.clientHeight + 40 &&
+        contentSlot.scrollTop > 0;
+      const pass = dialogFillsViewport && slotFillsViewport && nativeDoesNotScroll && contentScrolls;
+
+      result.textContent = [
+        pass ? "PASS" : "FAIL",
+        `dialog=${Math.round(dialogRect.width)}x${Math.round(dialogRect.height)}`,
+        `slot=${Math.round(slotRect.width)}x${Math.round(slotRect.height)}`,
+        `viewport=${viewportWidth}x${viewportHeight}`,
+        `nativeScroll=${nativeDialog.scrollTop}/${nativeDialog.scrollHeight}`,
+        `slotScroll=${contentSlot.scrollTop}/${contentSlot.scrollHeight}`,
+      ].join(" ");
+    });
+  };
+
+  setTimeout(verifyFixedMobileDialog, 250);
+
+  window.addEventListener("vt:verify-fixed-mobile-dialog", verifyFixedMobileDialog);
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>

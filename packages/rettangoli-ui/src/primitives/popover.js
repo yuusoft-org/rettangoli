@@ -1,8 +1,34 @@
-import { css } from "../common.js";
+import {
+  css,
+  mediaQueries,
+  getResponsiveAttribute,
+  permutateBreakpoints,
+} from "../common.js";
 import { calculatePopoverPosition } from "../common/popover.js";
 
 const CONTENT_WRAPPER_ATTR = "data-rtgl-popover-content";
 const DEFAULT_CONTENT_STYLE = "min-width: 200px; max-width: 400px; box-sizing: border-box;";
+const ACTIVE_OVERLAY_ATTR = "data-rtgl-active-overlay";
+const ACTIVE_PLACE_ATTR = "data-rtgl-active-place";
+const RESPONSIVE_POPOVER_SIZES = ["sm", "md", "lg", "xl"];
+const mediaQueryCondition = (mediaQuery) => mediaQuery.replace(/^@media\s+/, "");
+
+const parseResponsiveBooleanValue = (value, fallback = false) => {
+  if (value === null || value === undefined) {
+    return fallback;
+  }
+
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  const normalized = `${value}`.trim().toLowerCase();
+  if (["false", "0", "no", "off"].includes(normalized)) {
+    return false;
+  }
+
+  return true;
+};
 
 class RettangoliPopoverElement extends HTMLElement {
   static styleSheet = null;
@@ -38,6 +64,10 @@ class RettangoliPopoverElement extends HTMLElement {
           background-color: transparent;
           /* Allow backdrop to receive clicks */
           pointer-events: auto;
+        }
+
+        :host([${ACTIVE_OVERLAY_ATTR}="true"]) dialog::backdrop {
+          background-color: rgba(0, 0, 0, 0.5);
         }
 
         .popover-container {
@@ -120,7 +150,13 @@ class RettangoliPopoverElement extends HTMLElement {
     this._revealFrameId = null;
     this._positionVersion = 0;
     this._isObservingResize = false;
+    this._isModalOpen = false;
     this._observedContentWrapper = null;
+    this._onWindowResize = () => {
+      this._updateActiveStateAttributes();
+      this._syncDialogMode();
+      this._schedulePositionUpdate();
+    };
     this._resizeObserver = typeof ResizeObserver === "function"
       ? new ResizeObserver(() => {
           if (this._isOpen) {
@@ -142,8 +178,11 @@ class RettangoliPopoverElement extends HTMLElement {
       "open",
       "x",
       "y",
-      "place",
-      "no-overlay",
+      ...permutateBreakpoints([
+        "place",
+        "overlay",
+        "no-overlay",
+      ]),
       "content-w",
       "content-h",
       "content-wh",
@@ -158,6 +197,7 @@ class RettangoliPopoverElement extends HTMLElement {
 
   connectedCallback() {
     this._syncContentWrapper({ reposition: false });
+    this._updateActiveStateAttributes();
 
     // Check initial open attribute
     if (this.hasAttribute('open')) {
@@ -168,11 +208,13 @@ class RettangoliPopoverElement extends HTMLElement {
   disconnectedCallback() {
     this._cancelScheduledPositionUpdate();
     this._stopResizeObserver();
+    window.removeEventListener("resize", this._onWindowResize);
 
     // Clean up dialog if it's open
     if (this._isOpen && this._dialogElement.open) {
       this._dialogElement.close();
     }
+    this._isModalOpen = false;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -185,14 +227,111 @@ class RettangoliPopoverElement extends HTMLElement {
       } else if (newValue === null && this._isOpen) {
         this._hide();
       }
-    } else if ((name === 'x' || name === 'y' || name === 'place') && this._isOpen) {
-      this._schedulePositionUpdate();
-    } else if (name === 'no-overlay' && oldValue !== newValue && this._isOpen) {
-      this._hide();
-      this._show();
+    } else if (name === 'x' || name === 'y' || name.endsWith('place')) {
+      this._updateActiveStateAttributes();
+      if (this._isOpen) {
+        this._schedulePositionUpdate();
+      }
+    } else if (name.endsWith('overlay')) {
+      this._updateActiveStateAttributes();
+      if (this._isOpen) {
+        this._syncDialogMode();
+        this._schedulePositionUpdate();
+      }
     } else if (name.startsWith("content-")) {
       this._syncContentWrapper();
     }
+  }
+
+  _getActiveResponsiveSize() {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return "default";
+    }
+
+    for (const size of RESPONSIVE_POPOVER_SIZES) {
+      const query = mediaQueries[size];
+      if (query && window.matchMedia(mediaQueryCondition(query)).matches) {
+        return size;
+      }
+    }
+
+    return "default";
+  }
+
+  _getActiveResponsiveAttribute(attr) {
+    return getResponsiveAttribute({
+      element: this,
+      size: this._getActiveResponsiveSize(),
+      attr,
+    });
+  }
+
+  _getActivePlace() {
+    return this._getActiveResponsiveAttribute("place") || "bs";
+  }
+
+  _isOverlayActive() {
+    return parseResponsiveBooleanValue(
+      this._getActiveResponsiveAttribute("overlay"),
+      false,
+    );
+  }
+
+  _isNoOverlayActive() {
+    return parseResponsiveBooleanValue(
+      this._getActiveResponsiveAttribute("no-overlay"),
+      false,
+    );
+  }
+
+  _shouldUseModalDialog() {
+    return this._isOverlayActive() || !this._isNoOverlayActive();
+  }
+
+  _updateActiveStateAttributes() {
+    const activePlace = this._getActivePlace();
+    const overlayActive = this._isOverlayActive();
+
+    if (this.getAttribute(ACTIVE_PLACE_ATTR) !== activePlace) {
+      this.setAttribute(ACTIVE_PLACE_ATTR, activePlace);
+    }
+
+    if (overlayActive) {
+      if (this.getAttribute(ACTIVE_OVERLAY_ATTR) !== "true") {
+        this.setAttribute(ACTIVE_OVERLAY_ATTR, "true");
+      }
+    } else if (this.hasAttribute(ACTIVE_OVERLAY_ATTR)) {
+      this.removeAttribute(ACTIVE_OVERLAY_ATTR);
+    }
+  }
+
+  _openDialogElement() {
+    if (this._dialogElement.open) {
+      return;
+    }
+
+    if (this._shouldUseModalDialog()) {
+      this._dialogElement.showModal();
+      this._isModalOpen = true;
+    } else {
+      this._dialogElement.show();
+      this._isModalOpen = false;
+    }
+  }
+
+  _syncDialogMode() {
+    if (!this._isOpen || !this._dialogElement.open) {
+      return;
+    }
+
+    const shouldUseModal = this._shouldUseModalDialog();
+    if (shouldUseModal === this._isModalOpen) {
+      return;
+    }
+
+    this._dialogElement.close();
+    this._isModalOpen = false;
+    this._openDialogElement();
   }
 
   _isIgnorableTextNode(node) {
@@ -288,6 +427,7 @@ class RettangoliPopoverElement extends HTMLElement {
   _show() {
     if (!this._isOpen) {
       this._syncContentWrapper({ reposition: false });
+      this._updateActiveStateAttributes();
 
       // Create and append slot for content only if it doesn't exist
       if (!this._slotElement) {
@@ -298,16 +438,13 @@ class RettangoliPopoverElement extends HTMLElement {
 
       this._isOpen = true;
       this._startResizeObserver();
+      window.addEventListener("resize", this._onWindowResize);
 
       // Show the dialog using setTimeout to ensure it's in the DOM
       if (!this._dialogElement.open) {
         setTimeout(() => {
-          if (this._dialogElement && !this._dialogElement.open) {
-            if (this.hasAttribute('no-overlay')) {
-              this._dialogElement.show();
-            } else {
-              this._dialogElement.showModal();
-            }
+          if (this._isOpen && this._dialogElement && !this._dialogElement.open) {
+            this._openDialogElement();
           }
 
           this._schedulePositionUpdate();
@@ -323,11 +460,13 @@ class RettangoliPopoverElement extends HTMLElement {
       this._isOpen = false;
       this._cancelScheduledPositionUpdate();
       this._stopResizeObserver();
+      window.removeEventListener("resize", this._onWindowResize);
 
       // Close the dialog
       if (this._dialogElement.open) {
         this._dialogElement.close();
       }
+      this._isModalOpen = false;
 
       // Remove slot to unmount content
       if (this._slotElement) {
@@ -413,7 +552,8 @@ class RettangoliPopoverElement extends HTMLElement {
 
       const x = this._readCoordinateAttr('x');
       const y = this._readCoordinateAttr('y');
-      const place = this.getAttribute('place') || 'bs';
+      const place = this._getActivePlace();
+      this._updateActiveStateAttributes();
       const rect = this._popoverContainer.getBoundingClientRect();
       const { left, top } = this._calculatePosition(x, y, rect.width, rect.height, place);
 

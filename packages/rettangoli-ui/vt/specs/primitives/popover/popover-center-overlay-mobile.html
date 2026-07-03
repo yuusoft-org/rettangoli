@@ -1,0 +1,94 @@
+---
+title: Popover - Center Overlay Mobile
+diffThreshold: 4
+description: Verifies a popover can switch to centered placement with a dialog-style overlay at mobile breakpoints.
+specs:
+  - "`md-place=center` overrides an anchored default placement on mobile."
+  - "`md-overlay` applies a dim dialog-style backdrop behind the popover."
+  - "The centered popover remains inside the mobile viewport."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: '#popover[open][positioned]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:verify-centered-overlay-popover
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-centered-overlay-popover'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-view h="100vh" w="100vw" p="lg" g="md" bgc="su">
+  <rtgl-text s="lg">Page Content</rtgl-text>
+  <rtgl-text c="mu">This content should sit behind the popover overlay.</rtgl-text>
+  <rtgl-button>Background action</rtgl-button>
+</rtgl-view>
+
+<rtgl-popover
+  id="popover"
+  open
+  x="24"
+  y="24"
+  place="bs"
+  md-place="center"
+  md-overlay
+  content-w="320"
+  content-g="md"
+  content-ph="lg"
+  content-pv="lg"
+>
+  <rtgl-text s="lg">Centered Popover</rtgl-text>
+  <rtgl-text c="mu">Mobile placement should use a centered modal-style surface.</rtgl-text>
+  <rtgl-button v="pr" w="f">Continue</rtgl-button>
+  <pre id="result-centered-overlay-popover" style="position: absolute; left: -9999px;"></pre>
+</rtgl-popover>
+
+<script>
+  const popover = document.getElementById("popover");
+  const result = document.getElementById("result-centered-overlay-popover");
+
+  const verifyCenteredOverlayPopover = () => {
+    const dialog = popover.shadowRoot.querySelector("dialog");
+    const container = popover.shadowRoot.querySelector(".popover-container");
+    const rect = container.getBoundingClientRect();
+    const viewportWidth = Math.round(window.innerWidth);
+    const viewportHeight = Math.round(window.innerHeight);
+    const expectedLeft = Math.round((viewportWidth - rect.width) / 2);
+    const expectedTop = Math.round((viewportHeight - rect.height) / 2);
+    const backdropColor = getComputedStyle(dialog, "::backdrop").backgroundColor;
+    const isCentered =
+      Math.abs(Math.round(rect.left) - expectedLeft) <= 2 &&
+      Math.abs(Math.round(rect.top) - expectedTop) <= 2;
+    const hasOverlay =
+      popover.getAttribute("data-rtgl-active-overlay") === "true" &&
+      backdropColor !== "rgba(0, 0, 0, 0)" &&
+      backdropColor !== "transparent";
+    const activePlace = popover.getAttribute("data-rtgl-active-place");
+    const pass = activePlace === "center" && isCentered && hasOverlay && dialog.open;
+
+    result.textContent = [
+      pass ? "PASS" : "FAIL",
+      `activePlace=${activePlace}`,
+      `rect=${Math.round(rect.left)},${Math.round(rect.top)},${Math.round(rect.width)}x${Math.round(rect.height)}`,
+      `expected=${expectedLeft},${expectedTop}`,
+      `overlay=${popover.getAttribute("data-rtgl-active-overlay")}`,
+      `backdrop=${backdropColor}`,
+    ].join(" ");
+  };
+
+  setTimeout(verifyCenteredOverlayPopover, 250);
+  window.addEventListener("vt:verify-centered-overlay-popover", verifyCenteredOverlayPopover);
+  popover.addEventListener("close", () => {
+    popover.removeAttribute("open");
+  });
+</script>

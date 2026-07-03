@@ -1,0 +1,71 @@
+---
+title: "Global UI - Toast Mobile Width"
+diffThreshold: 2
+description: Verifies toast size presets expand to the available mobile viewport width.
+specs:
+  - Toasts nearly fill the mobile viewport width.
+  - Mobile toast width disregards the `sm`, `md`, and `lg` size presets.
+  - Toast text remains wrapped inside the toast surface.
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: customEvent
+    name: vt:show-mobile-toasts
+  - action: wait
+    ms: 250
+  - action: assert
+    type: text
+    selector: '#result-toast-mobile'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-global-ui></rtgl-global-ui>
+
+<pre id="result-toast-mobile" style="position: absolute; left: -9999px;"></pre>
+
+<rtgl-view h="100vh" w="100vw" ah="c" av="c" bgc="ca">
+  <rtgl-text c="mu">Mobile toast width regression check</rtgl-text>
+</rtgl-view>
+
+<script>
+  const globalUIElement = document.querySelector('rtgl-global-ui');
+  const result = document.getElementById('result-toast-mobile');
+
+  const showToast = (options) => {
+    globalUIElement.transformedHandlers.handleShowToast(options);
+  };
+
+  const verifyToastWidths = () => {
+    const cards = Array.from(
+      (globalUIElement.shadowRoot ?? globalUIElement).querySelectorAll('.toast-card'),
+    );
+    const viewportWidth = Math.round(window.innerWidth);
+    const widths = cards.map((card) => Math.round(card.getBoundingClientRect().width));
+    const expectedMinWidth = viewportWidth - 40;
+    const expectedMaxWidth = viewportWidth;
+    const pass =
+      cards.length === 3 &&
+      widths.every((width) => width >= expectedMinWidth && width <= expectedMaxWidth);
+
+    result.textContent = pass ? "PASS" : `FAIL widths=${widths.join(",")} viewport=${viewportWidth}`;
+  };
+
+  window.addEventListener('vt:show-mobile-toasts', () => {
+    showToast({
+      size: 'sm',
+      message: 'Small preset toast should still use the mobile near-full-width surface.',
+    });
+    showToast({
+      size: 'md',
+      message: 'Medium preset toast should match the same mobile width.',
+    });
+    showToast({
+      size: 'lg',
+      message: 'Large preset toast should not exceed the same mobile width.',
+    });
+    setTimeout(verifyToastWidths, 150);
+  });
+</script>

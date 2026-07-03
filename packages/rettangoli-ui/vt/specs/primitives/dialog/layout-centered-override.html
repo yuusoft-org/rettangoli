@@ -1,0 +1,77 @@
+---
+title: Dialog - Layout - Centered Override
+diffThreshold: 4
+description: Verifies smaller breakpoints can override a fixed dialog layout back to centered.
+specs:
+  - "`md-layout=centered` overrides a larger `layout=fixed` value on mobile."
+  - "The fixed viewport slot styles do not remain active when the resolved layout is centered."
+  - "The content surface keeps adaptive centered margins instead of filling the viewport height."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: '#dialog-centered-override[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:verify-centered-override
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-centered-override'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-dialog id="dialog-centered-override" open s="sm" layout="fixed" md-layout="centered">
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-text s="lg">Centered Mobile Override</rtgl-text>
+    <rtgl-text c="mu">The mobile breakpoint opts back into the adaptive centered layout.</rtgl-text>
+    <pre id="result-centered-override" style="position: absolute; left: -9999px;"></pre>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const dialog = document.getElementById("dialog-centered-override");
+  const result = document.getElementById("result-centered-override");
+
+  const verifyCenteredOverride = () => {
+    const nativeDialog = dialog.shadowRoot.querySelector("dialog");
+    const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
+    const viewportHeight = Math.round(window.innerHeight);
+    const slotRect = contentSlot.getBoundingClientRect();
+    const dialogStyle = getComputedStyle(nativeDialog);
+    const slotStyle = getComputedStyle(contentSlot);
+    const activeLayoutMarker = dialog.getAttribute("data-rtgl-active-layout");
+    const centeredIsActive = activeLayoutMarker !== "fixed";
+    const nativeIsNotFixed = dialogStyle.overflowY !== "hidden";
+    const slotIsNotFixed =
+      Math.round(slotRect.height) < viewportHeight - 120 &&
+      Math.round(slotRect.top) > 40 &&
+      slotStyle.marginTop !== "0px" &&
+      slotStyle.overflowY !== "auto";
+    const pass = centeredIsActive && nativeIsNotFixed && slotIsNotFixed;
+
+    result.textContent = [
+      pass ? "PASS" : "FAIL",
+      `active=${activeLayoutMarker ?? "centered"}`,
+      `slot=${Math.round(slotRect.top)},${Math.round(slotRect.height)}`,
+      `slotMargin=${slotStyle.marginTop}/${slotStyle.marginBottom}`,
+      `dialogOverflow=${dialogStyle.overflowY}`,
+      `slotOverflow=${slotStyle.overflowY}`,
+      `viewport=${viewportHeight}`,
+    ].join(" ");
+  };
+
+  setTimeout(verifyCenteredOverride, 250);
+
+  window.addEventListener("vt:verify-centered-override", verifyCenteredOverride);
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>
