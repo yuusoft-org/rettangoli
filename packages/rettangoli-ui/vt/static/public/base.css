@@ -93,7 +93,6 @@ html {
   height: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
-  scrollbar-gutter: stable both-edges;
   overflow-y: auto;
 }
 
