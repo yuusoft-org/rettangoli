@@ -27,8 +27,8 @@ export default css`
 }
 :host([sh])::-webkit-scrollbar,
 :host([sv])::-webkit-scrollbar {
-    width: var(--scrollbar-size, 6px);
-    height: var(--scrollbar-size, 6px);
+    width: var(--scrollbar-size, var(--spacing-sm));
+    height: var(--scrollbar-size, var(--spacing-sm));
     background: var(--scrollbar-track, transparent);
 }
 :host([sh])::-webkit-scrollbar-track,

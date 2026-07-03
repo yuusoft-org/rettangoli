@@ -55,7 +55,7 @@ table {
 
 :root {
   --width-stretch: 100%;
-  --scrollbar-size: 6px;
+  --scrollbar-size: var(--spacing-sm);
   --scrollbar-track: transparent;
   --scrollbar-thumb: var(--muted-foreground);
   --scrollbar-thumb-hover: var(--ring);
@@ -113,7 +113,7 @@ body {
 html::-webkit-scrollbar,
 body::-webkit-scrollbar,
 ::-webkit-scrollbar {
-  width: 4px !important;
+  width: var(--scrollbar-size, var(--spacing-sm)) !important;
   background: transparent !important;
 }
 
