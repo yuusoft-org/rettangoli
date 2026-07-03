@@ -296,7 +296,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - use for 1D layout, flex composition, scrolling surfaces, and generic containers
 - `sh` enables horizontal overflow with `overflow-x: auto`
 - `sv` enables vertical overflow with `overflow-y: auto`
-- `sh` / `sv` scrolling surfaces reserve gutter space with `scrollbar-gutter: stable`
+- `sh` / `sv` scrolling surfaces reserve symmetric gutter space with `scrollbar-gutter: stable both-edges`
 - `hsb` hides scrollbars for the active scroll surface and removes the reserved gutter
 - raw CSS passthrough attrs with responsive variants include:
   - `ar` for `aspect-ratio`
@@ -406,6 +406,8 @@ Reference files for VT examples:
 - `vt/static/public/theme-rtgl-slate.css`
 - `vt/static/public/theme-rtgl-mono.css`
 - `vt/static/public/theme-catppuccin.css`
+
+`base.css` reserves symmetric root viewport gutter space with `scrollbar-gutter: stable both-edges` so page scrollbars do not shift centered app layouts.
 
 ## Suggested Change Flow
 
