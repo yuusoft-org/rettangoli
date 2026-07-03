@@ -74,6 +74,9 @@ styles:
     .toast-card:
       animation: none
       transition: none
+  '@media only screen and (max-width: 768px)':
+    .toast-card:
+      width: calc(100vw - 2 * var(--spacing-lg))
 template:
   - $if topToasts.length > 0:
       - rtgl-view class="toast-layer toast-layer-top" pos=fix edge=t z=2100 w=f ah=c g=sm ph=md pt=xl:
