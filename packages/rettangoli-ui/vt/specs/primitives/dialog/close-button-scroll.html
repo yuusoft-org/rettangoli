@@ -1,0 +1,102 @@
+---
+title: Dialog - Close Button - Scrolled Centered
+diffThreshold: 4
+description: Verifies the built-in close button remains visible when a centered dialog scrolls.
+specs:
+  - "A long centered dialog uses the native dialog as its scroll container."
+  - "The built-in close button remains visible after the native dialog scrolls."
+  - "The close control stays aligned to the top-right of the dialog content surface."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: '#dialog-close-button-scroll[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:verify-close-button-scroll
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-close-button-scroll'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-dialog id="dialog-close-button-scroll" open s="lg" close-button>
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-view d="v" g="xs">
+      <rtgl-text s="lg">Scrolled Close Button</rtgl-text>
+      <rtgl-text c="mu">The native dialog scrolls while the generated close control stays available.</rtgl-text>
+      <pre id="result-close-button-scroll" style="position: absolute; left: -9999px;"></pre>
+    </rtgl-view>
+    <rtgl-view id="close-button-scroll-long-content" d="v" g="md"></rtgl-view>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const dialog = document.getElementById("dialog-close-button-scroll");
+  const result = document.getElementById("result-close-button-scroll");
+  const longContent = document.getElementById("close-button-scroll-long-content");
+
+  longContent.innerHTML = Array.from({ length: 18 }, (_, index) => `
+    <rtgl-view d="v" g="xs">
+      <rtgl-text s="md">Scrollable Section ${index + 1}</rtgl-text>
+      <rtgl-text c="mu">This row keeps the centered dialog tall enough for native scrolling.</rtgl-text>
+    </rtgl-view>
+  `).join("");
+
+  const verifyCloseButtonScroll = () => {
+    const nativeDialog = dialog.shadowRoot.querySelector("dialog");
+    const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
+    const closeButton = dialog.shadowRoot.querySelector(".close-button");
+
+    nativeDialog.scrollTop = 260;
+
+    requestAnimationFrame(() => {
+      const viewportHeight = Math.round(window.innerHeight);
+      const dialogRect = nativeDialog.getBoundingClientRect();
+      const slotRect = contentSlot.getBoundingClientRect();
+      const buttonRect = closeButton.getBoundingClientRect();
+      const scrollsNatively =
+        nativeDialog.scrollHeight > nativeDialog.clientHeight + 40 &&
+        nativeDialog.scrollTop > 0 &&
+        contentSlot.scrollTop === 0;
+      const buttonVisible =
+        !closeButton.hidden &&
+        buttonRect.top >= dialogRect.top &&
+        buttonRect.bottom <= viewportHeight &&
+        buttonRect.width === 32 &&
+        buttonRect.height === 32;
+      const buttonHeldNearDialogTop =
+        buttonRect.top >= dialogRect.top + 40 &&
+        buttonRect.top <= dialogRect.top + 64;
+      const buttonAlignedRight = Math.abs(buttonRect.right - (slotRect.right - 8)) <= 3;
+      const pass =
+        scrollsNatively &&
+        buttonVisible &&
+        buttonHeldNearDialogTop &&
+        buttonAlignedRight;
+
+      result.textContent = [
+        pass ? "PASS" : "FAIL",
+        `button=${Math.round(buttonRect.left)},${Math.round(buttonRect.top)},${Math.round(buttonRect.right)},${Math.round(buttonRect.bottom)}`,
+        `slot=${Math.round(slotRect.left)},${Math.round(slotRect.top)},${Math.round(slotRect.right)},${Math.round(slotRect.bottom)}`,
+        `dialog=${Math.round(dialogRect.top)},${Math.round(dialogRect.bottom)}`,
+        `scroll=${nativeDialog.scrollTop}/${nativeDialog.scrollHeight}`,
+      ].join(" ");
+    });
+  };
+
+  setTimeout(verifyCloseButtonScroll, 250);
+
+  window.addEventListener("vt:verify-close-button-scroll", verifyCloseButtonScroll);
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>

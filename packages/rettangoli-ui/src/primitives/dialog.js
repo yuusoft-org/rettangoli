@@ -620,10 +620,19 @@ class RettangoliDialogElement extends HTMLElement {
     }
 
     const slotWidth = Math.round(this._slotElement.getBoundingClientRect().width);
-    const top = Math.max(0, Math.round(this._slotElement.offsetTop) + CLOSE_BUTTON_OFFSET_PX);
+    const scrollTop = Math.round(this._dialogElement.scrollTop);
+    const scrollLeft = Math.round(this._dialogElement.scrollLeft);
+    const top = Math.max(
+      0,
+      Math.round(this._slotElement.offsetTop) + scrollTop + CLOSE_BUTTON_OFFSET_PX,
+    );
     const left = Math.max(
       0,
-      Math.round(this._slotElement.offsetLeft) + slotWidth - CLOSE_BUTTON_SIZE_PX - CLOSE_BUTTON_OFFSET_PX,
+      Math.round(this._slotElement.offsetLeft) +
+        scrollLeft +
+        slotWidth -
+        CLOSE_BUTTON_SIZE_PX -
+        CLOSE_BUTTON_OFFSET_PX,
     );
 
     this._dialogElement.style.setProperty("--rtgl-dialog-close-top", `${top}px`);
