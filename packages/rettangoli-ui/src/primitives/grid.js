@@ -185,13 +185,13 @@ class RettangoliGridElement extends HTMLElement {
 
       if (scrollHorizontal && scrollVertical) {
         this._styles[size].overflow = "auto";
-        this._styles[size]["scrollbar-gutter"] = "stable both-edges";
+        this._styles[size]["scrollbar-gutter"] = "stable";
       } else if (scrollHorizontal) {
         this._styles[size]["overflow-x"] = "auto";
-        this._styles[size]["scrollbar-gutter"] = "stable both-edges";
+        this._styles[size]["scrollbar-gutter"] = "stable";
       } else if (scrollVertical) {
         this._styles[size]["overflow-y"] = "auto";
-        this._styles[size]["scrollbar-gutter"] = "stable both-edges";
+        this._styles[size]["scrollbar-gutter"] = "stable";
       }
 
       if (overflow === "hidden") {
