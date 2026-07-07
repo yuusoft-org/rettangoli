@@ -106,49 +106,39 @@ export const healthPingMethod = async ({ payload, context, deps }) => {
 };
 ```
 
-## src/modules/health/ping/ping.rpc.yaml
+## src/modules/health/ping/ping.contract.yaml
 
 ```yaml
+schemaVersion: rettangoli.contract/v1
 method: health.ping
 description: Health check ping method.
 middleware:
   before: [withRequestId]
   after: [withLogger]
-paramsSchema:
+params:
   type: object
   additionalProperties: false
   properties:
     echo:
       type: string
   required: []
-resultSchema:
-    type: object
-    additionalProperties: false
-    properties:
-      ok:
-        type: boolean
-      echo:
-        type: string
-      ts:
-        type: number
-      requestId:
-        type: string
-    required: [ok, ts, requestId]
-errorSchema:
-    type: object
-    additionalProperties: false
-    properties:
-      _error:
-        const: true
-      type:
-        type: string
-      details:
-        type: object
-        additionalProperties: true
-    required: [_error, type]
+result:
+  type: object
+  additionalProperties: false
+  properties:
+    ok:
+      type: boolean
+    echo:
+      type: string
+    ts:
+      type: number
+    requestId:
+      type: string
+  required: [ok, ts, requestId]
+errors: {}
 ```
 
-## src/modules/health/ping/ping.spec.yaml
+## src/modules/health/ping/ping.examples.yaml
 
 ```yaml
 file: './ping.handlers.js'
@@ -158,6 +148,8 @@ suite: healthPingMethod
 exportName: healthPingMethod
 ---
 case: returns-ok
+proves:
+  result: success
 in:
   - payload: {}
     context:
@@ -175,6 +167,8 @@ mocks:
         out: 1700000000000
 ---
 case: echoes-input
+proves:
+  result: success
 in:
   - payload:
       echo: hello
@@ -206,7 +200,7 @@ export const userGetProfileMethod = async ({ context, deps }) => {
   if (!context.authUser?.userId) {
     return {
       _error: true,
-      type: 'AUTH_REQUIRED',
+      code: 'AUTH_REQUIRED',
       details: { reason: 'auth_required' },
     };
   }
@@ -216,7 +210,7 @@ export const userGetProfileMethod = async ({ context, deps }) => {
   if (!user) {
     return {
       _error: true,
-      type: 'USER_NOT_FOUND',
+      code: 'USER_NOT_FOUND',
       details: { userId: context.authUser.userId },
     };
   }
@@ -229,42 +223,50 @@ export const userGetProfileMethod = async ({ context, deps }) => {
 };
 ```
 
-Runtime maps `{ _error: true, type, details }` to protocol-specific error responses.
+Runtime maps `{ _error: true, code, details }` to protocol-specific error responses.
 
-## src/modules/user/getProfile/getProfile.rpc.yaml
+## src/modules/user/getProfile/getProfile.contract.yaml
 
 ```yaml
+schemaVersion: rettangoli.contract/v1
 method: user.getProfile
 description: Return the authenticated user profile.
 middleware:
   before: [withAuthUser]
   after: [withLogger]
-paramsSchema:
+params:
   type: object
   additionalProperties: false
   properties: {}
   required: []
-resultSchema:
-    type: object
-    additionalProperties: false
-    properties:
-      id:
-        type: string
-      email:
-        type: string
-      role:
-        type: string
-    required: [id, email, role]
-errorSchema:
-    type: object
-    additionalProperties: false
-    properties:
-      _error:
-        const: true
-      type:
-        type: string
-      details:
-        type: object
-        additionalProperties: true
-    required: [_error, type]
+result:
+  type: object
+  additionalProperties: false
+  properties:
+    id:
+      type: string
+    email:
+      type: string
+    role:
+      type: string
+  required: [id, email, role]
+errors:
+  AUTH_REQUIRED:
+    description: Authentication is required.
+    details:
+      type: object
+      additionalProperties: false
+      properties:
+        reason:
+          const: auth_required
+      required: [reason]
+  USER_NOT_FOUND:
+    description: Authenticated user was not found.
+    details:
+      type: object
+      additionalProperties: false
+      properties:
+        userId:
+          type: string
+      required: [userId]
 ```

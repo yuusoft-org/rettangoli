@@ -90,12 +90,13 @@ Defaults when YAML is missing or key is omitted:
 - RPC endpoint is mounted at `be.rpcPath`.
 - Method ids follow `moduleName.methodName` from files under `src/modules/**`.
 - Per-method contract file keys are:
+  - `schemaVersion`
   - `method`
   - `description`
   - `middleware.before` / `middleware.after`
-  - `paramsSchema`
-  - `resultSchema`
-  - `errorSchema`
+  - `params`
+  - `result`
+  - `errors`
 
 ## Error Model
 
@@ -118,7 +119,7 @@ Domain/business errors:
     "code": -32000,
     "message": "Domain error",
     "data": {
-      "type": "AUTH_REQUIRED",
+      "code": "AUTH_REQUIRED",
       "details": {
         "reason": "missing_auth_token"
       }
@@ -128,11 +129,11 @@ Domain/business errors:
 ```
 
 Client handling contract:
-- branch on `error.data.type`
+- branch on `error.data.code`
 
 ## Middleware Model
 
-Method middleware is declared in each method `*.rpc.yaml`.
+Method middleware is declared in each method `*.contract.yaml`.
 Global middleware is declared in `be.globalMiddleware.before/after`.
 
 Execution order:

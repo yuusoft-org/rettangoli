@@ -2,7 +2,6 @@
 
 import { build, check, scaffold, watch, examples } from "@rettangoli/fe/cli";
 import { check as checkContracts } from "@rettangoli/check/cli";
-import { build as buildBe, check as checkBe, start as startBe, watch as watchBe } from "@rettangoli/be/cli";
 import { generate, screenshot, report, accept } from "@rettangoli/vt/cli";
 import { buildSite, watchSite, initSite } from "@rettangoli/sites/cli";
 import { buildSvg } from "@rettangoli/ui/cli";
@@ -14,6 +13,31 @@ import yaml from "js-yaml";
 const packageJson = JSON.parse(
   readFileSync(new URL("./package.json", import.meta.url)),
 );
+
+const localBeCliUrl = new URL("../rettangoli-be/src/cli/index.js", import.meta.url);
+const beCli = existsSync(localBeCliUrl)
+  ? await import(localBeCliUrl)
+  : await import("@rettangoli/be/cli");
+
+const {
+  build: buildBe,
+  check: checkBe,
+  manifest: manifestBe,
+  start: startBe,
+  test: testBe,
+  verify: verifyBe,
+  watch: watchBe,
+} = beCli;
+
+function requireBeCommand(handler, name) {
+  if (typeof handler !== "function") {
+    throw new Error(
+      `@rettangoli/be/cli does not export '${name}'. Reinstall @rettangoli/be at the version required by rettangoli-cli.`,
+    );
+  }
+
+  return handler;
+}
 
 // Function to read config file
 function readConfig() {
@@ -341,6 +365,7 @@ beCommand
   .command("check")
   .description("Validate backend RPC contracts")
   .option("--format <format>", "Output format: text or json", "text")
+  .option("--method <method>", "Validate one backend method id")
   .option("-m, --middleware-dir <path>", "Custom middleware directory path")
   .action((options) => {
     const config = readConfig();
@@ -362,6 +387,85 @@ beCommand
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
 
     checkBe(options);
+  });
+
+beCommand
+  .command("manifest")
+  .description("Print deterministic backend API manifest")
+  .option("--json", "Output JSON")
+  .option("-m, --middleware-dir <path>", "Custom middleware directory path")
+  .option("-o, --output <path>", "Write manifest JSON to a file")
+  .action((options) => {
+    const config = readConfig();
+
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+
+    const bePaths = resolveBeRuntimePaths(config);
+
+    options.dirs = bePaths.dirs;
+    options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
+
+    requireBeCommand(manifestBe, "manifest")(options);
+  });
+
+beCommand
+  .command("test")
+  .description("Run backend executable examples")
+  .option("--format <format>", "Output format: text or json", "text")
+  .option("--json", "Output JSON")
+  .option("--method <method>", "Run examples for one backend method id")
+  .option("-m, --middleware-dir <path>", "Custom middleware directory path")
+  .option("--config <path>", "Vitest config path", "./vitest.config.js")
+  .option("--package-manager <name>", "Package manager for running Vitest: npm, pnpm, yarn, bun")
+  .option("--runner <command>", "Executable used to run Vitest")
+  .action((options) => {
+    const config = readConfig();
+
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+
+    const bePaths = resolveBeRuntimePaths(config);
+
+    options.dirs = bePaths.dirs;
+    options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
+    options.executable = options.runner;
+    if (options.json) options.format = "json";
+
+    requireBeCommand(testBe, "test")(options);
+  });
+
+beCommand
+  .command("verify")
+  .description("Run backend check, build, manifest, and examples")
+  .option("--format <format>", "Output format: text or json", "text")
+  .option("--json", "Output JSON")
+  .option("--method <method>", "Verify one backend method id")
+  .option("-s, --setup-path <path>", "Custom setup file path")
+  .option("-m, --middleware-dir <path>", "Custom middleware directory path")
+  .option("-o, --outdir <path>", "Generated output directory")
+  .option("--test-config <path>", "Vitest config path", "./vitest.config.js")
+  .option("--package-manager <name>", "Package manager for running Vitest: npm, pnpm, yarn, bun")
+  .option("--runner <command>", "Executable used to run Vitest")
+  .action((options) => {
+    const config = readConfig();
+
+    if (!config) {
+      throw new Error("rettangoli.config.yaml not found");
+    }
+
+    const bePaths = resolveBeRuntimePaths(config);
+
+    options.dirs = bePaths.dirs;
+    options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
+    options.setup = options.setupPath || bePaths.setup;
+    options.outdir = options.outdir || bePaths.outdir;
+    options.executable = options.runner;
+    if (options.json) options.format = "json";
+
+    requireBeCommand(verifyBe, "verify")(options);
   });
 
 beCommand

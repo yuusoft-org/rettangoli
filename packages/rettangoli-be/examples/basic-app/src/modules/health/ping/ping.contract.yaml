@@ -1,3 +1,4 @@
+schemaVersion: rettangoli.contract/v1
 method: health.ping
 description: Health check ping method.
 middleware:
@@ -5,14 +6,14 @@ middleware:
     - withRequestId
   after:
     - withLogger
-paramsSchema:
+params:
   type: object
   additionalProperties: false
   properties:
     echo:
       type: string
   required: []
-resultSchema:
+result:
   type: object
   additionalProperties: false
   properties:
@@ -28,17 +29,4 @@ resultSchema:
     - ok
     - ts
     - requestId
-errorSchema:
-  type: object
-  additionalProperties: false
-  properties:
-    _error:
-      const: true
-    type:
-      type: string
-    details:
-      type: object
-      additionalProperties: true
-  required:
-    - _error
-    - type
+errors: {}

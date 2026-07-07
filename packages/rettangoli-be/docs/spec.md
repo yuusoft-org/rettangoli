@@ -1,5 +1,10 @@
 # rettangoli-be Application Spec (v1 Draft)
 
+Superseded by `application-specification.md`.
+
+This file is historical. It may still mention obsolete keys such as
+`paramsSchema`, `resultSchema`, `errorSchema`, and domain error `type`.
+
 This spec defines **application code structure** for users building backend apps with rettangoli-be.
 
 It does **not** define internal framework implementation files.
@@ -13,7 +18,7 @@ It does **not** define internal framework implementation files.
 - Dependency injection via one `src/setup.js` object.
 - API contract: JSON-RPC 2.0.
 - Method contract: JSON Schema for `params` and `output` (success + error).
-- Method tests: puty `*.spec.yaml` files.
+- Method tests: puty `*.examples.yaml` files.
 - Fail fast at startup and request runtime.
 
 ## Canonical Application Structure
@@ -37,13 +42,13 @@ It does **not** define internal framework implementation files.
       health/
         ping/
           ping.handlers.js
-          ping.rpc.yaml
-          ping.spec.yaml
+          ping.contract.yaml
+          ping.examples.yaml
       user/
         getProfile/
           getProfile.handlers.js
-          getProfile.rpc.yaml
-          getProfile.spec.yaml
+          getProfile.contract.yaml
+          getProfile.examples.yaml
 ```
 
 ## Ownership Boundaries
@@ -96,30 +101,30 @@ Rules:
 
 For each RPC method, user creates three files:
 - `<action>/<action>.handlers.js`
-- `<action>/<action>.rpc.yaml`
-- `<action>/<action>.spec.yaml` (puty tests)
+- `<action>/<action>.contract.yaml`
+- `<action>/<action>.examples.yaml` (puty tests)
 
 Example set:
 - `ping/ping.handlers.js`
-- `ping/ping.rpc.yaml`
-- `ping/ping.spec.yaml`
+- `ping/ping.contract.yaml`
+- `ping/ping.examples.yaml`
 
 Method naming format:
 - `<domain>.<action>`
 
 Mandatory convention:
 - each `*.handlers.js` file exports one async method handler function directly
-- exactly one RPC method contract per `*.rpc.yaml` file
-- exactly one method test suite per `*.spec.yaml` file
+- exactly one RPC method contract per `*.contract.yaml` file
+- exactly one method test suite per `*.examples.yaml` file
 - no multi-method handler files
 - no multi-method RPC files
 - no handler factory wrapper layer
-- `*.spec.yaml` follows puty multi-document format:
+- `*.examples.yaml` follows puty multi-document format:
   1. config doc: `file`, `group`
   2. suite doc: `suite`, `exportName`
   3. case docs: `case`, `in`, optional `out`, optional `throws`, optional `mocks`
 
-`*.rpc.yaml` required keys:
+`*.contract.yaml` required keys:
 - `method`: method id (example: `user.getProfile`)
 - `description`: human-readable method purpose
 - `middleware.before`: ordered middleware names to run before handler
@@ -194,7 +199,7 @@ Rules:
 
 Method middleware order for one method call:
 1. app global middleware `pre`
-2. method `middleware.before` `pre` (from `*.rpc.yaml`)
+2. method `middleware.before` `pre` (from `*.contract.yaml`)
 3. handler
 4. method `middleware.after` `post`
 5. app global middleware `post`

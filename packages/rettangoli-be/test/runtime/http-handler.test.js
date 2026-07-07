@@ -32,19 +32,20 @@ describe('createHttpHandler', () => {
       },
       methodContracts: {
         'health.ping': {
+          schemaVersion: 'rettangoli.contract/v1',
           method: 'health.ping',
           description: 'ping',
           middleware: {
             before: ['withCookie'],
             after: [],
           },
-          paramsSchema: {
+          params: {
             type: 'object',
             additionalProperties: false,
             properties: {},
             required: [],
           },
-          resultSchema: {
+          result: {
             type: 'object',
             additionalProperties: false,
             properties: {
@@ -53,15 +54,7 @@ describe('createHttpHandler', () => {
             },
             required: ['ok', 'session'],
           },
-          errorSchema: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-              _error: { const: true },
-              type: { type: 'string' },
-            },
-            required: ['_error', 'type'],
-          },
+          errors: {},
         },
       },
       methodHandlers: {

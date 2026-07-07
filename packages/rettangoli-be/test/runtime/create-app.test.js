@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/runtime/createApp.js';
 
 const healthContract = {
+  schemaVersion: 'rettangoli.contract/v1',
   method: 'health.ping',
   description: 'health ping',
   middleware: {
     before: ['withBefore'],
     after: ['withAfter'],
   },
-  paramsSchema: {
+  params: {
     type: 'object',
     additionalProperties: false,
     properties: {
@@ -16,7 +17,7 @@ const healthContract = {
     },
     required: [],
   },
-  resultSchema: {
+  result: {
     type: 'object',
     additionalProperties: false,
     properties: {
@@ -26,15 +27,18 @@ const healthContract = {
     },
     required: ['ok', 'requestId'],
   },
-  errorSchema: {
-    type: 'object',
-    additionalProperties: false,
-    properties: {
-      _error: { const: true },
-      type: { type: 'string' },
-      details: { type: 'object', additionalProperties: true },
+  errors: {
+    AUTH_REQUIRED: {
+      description: 'Authentication is required.',
+      details: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          reason: { const: 'auth_required' },
+        },
+        required: ['reason'],
+      },
     },
-    required: ['_error', 'type'],
   },
 };
 
@@ -144,7 +148,7 @@ describe('createApp', () => {
         'health.ping': {
           healthPingMethod: async () => ({
             _error: true,
-            type: 'AUTH_REQUIRED',
+            code: 'AUTH_REQUIRED',
             details: { reason: 'auth_required' },
           }),
         },
@@ -176,14 +180,63 @@ describe('createApp', () => {
         code: -32000,
         message: 'Domain error',
         data: {
-          type: 'AUTH_REQUIRED',
+          code: 'AUTH_REQUIRED',
           details: { reason: 'auth_required' },
         },
       },
     });
   });
 
-  it('maps unknown domain error type to default domain error code', async () => {
+  it('allows catalog errors without details when no details schema is declared', async () => {
+    const app = createApp({
+      setup: {
+        deps: {
+          health: {},
+        },
+      },
+      methodContracts: {
+        'health.ping': {
+          ...healthContract,
+          errors: {
+            PLAIN_ERROR: {
+              description: 'Plain domain error.',
+            },
+          },
+        },
+      },
+      methodHandlers: {
+        'health.ping': {
+          healthPingMethod: async () => ({
+            _error: true,
+            code: 'PLAIN_ERROR',
+          }),
+        },
+      },
+      middlewareModules: {
+        withBefore: {
+          withBefore: () => (next) => async (ctx) => next(ctx),
+        },
+        withAfter: {
+          withAfter: () => (next) => async (ctx) => next(ctx),
+        },
+      },
+      createRequestId: () => 'req-plain-error',
+    });
+
+    const response = await app.dispatch({
+      request: {
+        jsonrpc: '2.0',
+        id: 'plain-error',
+        method: 'health.ping',
+        params: {},
+      },
+    });
+
+    expect(response.error.code).toBe(-32000);
+    expect(response.error.data.code).toBe('PLAIN_ERROR');
+  });
+
+  it('rejects undeclared domain error code as invalid handler output', async () => {
     const app = createApp({
       setup: {
         port: 3000,
@@ -198,7 +251,7 @@ describe('createApp', () => {
         'health.ping': {
           healthPingMethod: async () => ({
             _error: true,
-            type: 'UNDECLARED_DOMAIN_ERROR',
+            code: 'UNDECLARED_DOMAIN_ERROR',
             details: {},
           }),
         },
@@ -212,6 +265,7 @@ describe('createApp', () => {
         },
       },
       createRequestId: () => 'req-unknown-domain',
+      includeInternalErrorDetails: true,
     });
 
     const response = await app.dispatch({
@@ -223,9 +277,9 @@ describe('createApp', () => {
       },
     });
 
-    expect(response.error.code).toBe(-32000);
-    expect(response.error.message).toBe('Domain error');
-    expect(response.error.data.type).toBe('UNDECLARED_DOMAIN_ERROR');
+    expect(response.error.code).toBe(-32603);
+    expect(response.error.message).toBe('Internal error');
+    expect(response.error.data.message).toContain('Invalid error output for health.ping');
   });
 
   it('supports globalMiddlewareBefore/globalMiddlewareAfter execution order', async () => {

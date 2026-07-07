@@ -5,6 +5,8 @@ suite: userGetProfileMethod
 exportName: userGetProfileMethod
 ---
 case: returns-profile
+proves:
+  result: success
 in:
   - payload: {}
     context:
@@ -28,6 +30,8 @@ mocks:
           role: user
 ---
 case: requires-auth
+proves:
+  error: AUTH_REQUIRED
 in:
   - payload: {}
     context: {}
@@ -36,7 +40,7 @@ in:
         findById: $mock:findById
 out:
   _error: true
-  type: AUTH_REQUIRED
+  code: AUTH_REQUIRED
   details:
     reason: auth_required
 mocks:
@@ -44,6 +48,8 @@ mocks:
     fn: true
 ---
 case: returns-user-not-found-error
+proves:
+  error: USER_NOT_FOUND
 in:
   - payload: {}
     context:
@@ -54,7 +60,7 @@ in:
         findById: $mock:findById
 out:
   _error: true
-  type: USER_NOT_FOUND
+  code: USER_NOT_FOUND
   details:
     userId: u-404
 mocks:

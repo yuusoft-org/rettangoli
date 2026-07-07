@@ -5,6 +5,8 @@ suite: healthPingMethod
 exportName: healthPingMethod
 ---
 case: returns-ok
+proves:
+  result: success
 in:
   - payload: {}
     context:
@@ -22,6 +24,8 @@ mocks:
         out: 1700000000000
 ---
 case: echoes-input
+proves:
+  result: success
 in:
   - payload:
       echo: hello
