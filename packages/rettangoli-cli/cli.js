@@ -376,13 +376,6 @@ beCommand
 
     const bePaths = resolveBeRuntimePaths(config);
 
-    const missingDirs = bePaths.dirs.filter(
-      (dir) => !existsSync(resolve(process.cwd(), dir)),
-    );
-    if (missingDirs.length > 0) {
-      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
-    }
-
     options.dirs = bePaths.dirs;
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
 
@@ -393,6 +386,7 @@ beCommand
   .command("manifest")
   .description("Print deterministic backend API manifest")
   .option("--json", "Output JSON")
+  .option("--method <method>", "Print manifest for one backend method id")
   .option("-m, --middleware-dir <path>", "Custom middleware directory path")
   .option("-o, --output <path>", "Write manifest JSON to a file")
   .action((options) => {

@@ -2,9 +2,19 @@ import path from 'node:path';
 import { existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { analyzeBackendContracts } from './contractScope.js';
+import {
+  createBackendCommands,
+  createNextAction,
+  createScope,
+  findCommand,
+  normalizeDiagnostic,
+  normalizeDiagnostics,
+  toPosixRelativePath,
+} from './agentLoop.js';
 
-const toPosixRelativePath = (cwd, filePath) => {
-  return path.relative(cwd, filePath).replaceAll(path.sep, '/');
+const toOutputTail = (value, maxLength = 4000) => {
+  const text = String(value ?? '');
+  return text.length > maxLength ? text.slice(-maxLength) : text;
 };
 
 const createPackageRunner = ({ executable, packageManager, env = process.env } = {}) => {
@@ -59,32 +69,83 @@ export const runBackendTests = (options = {}) => {
     middlewareDir,
     method,
   });
+  const methods = method
+    ? analysis.contracts.map((contract) => contract.method)
+    : analysis.allContracts.map((contract) => contract.method);
+  const scope = createScope({ method, methods });
+  const commands = createBackendCommands({
+    method,
+    middlewareDir,
+    config,
+    executable,
+    packageManager,
+  });
+  const testCommand = findCommand(commands, 'test');
 
   if (!analysis.ok) {
+    const diagnostics = normalizeDiagnostics({
+      cwd,
+      errors: analysis.errors,
+      phase: 'contracts',
+      method,
+      command: findCommand(commands, 'check'),
+    });
+
     return {
+      schemaVersion: 'rettangoli.test/v1',
       ok: false,
       prefix: '[Test]',
       method,
+      scope,
       phase: 'contracts',
+      commands,
       summary: analysis.summary,
       errors: analysis.errors,
+      diagnostics,
+      nextAction: createNextAction({
+        ok: false,
+        failedPhase: 'contracts',
+        diagnostics,
+        commands,
+      }),
     };
   }
 
   const files = analysis.contracts.map((contract) => toPosixRelativePath(cwd, contract.examplesPath));
   if (files.length === 0) {
+    const error = {
+      code: 'RTGL-BE-TEST-001',
+      message: method
+        ? `No backend examples found for method '${method}'.`
+        : 'No backend examples found to test.',
+    };
+    const diagnostics = [
+      normalizeDiagnostic({
+        cwd,
+        error,
+        phase: 'examples',
+        method,
+        command: testCommand,
+      }),
+    ];
+
     return {
+      schemaVersion: 'rettangoli.test/v1',
       ok: false,
       prefix: '[Test]',
       method,
+      scope,
       phase: 'examples',
+      commands,
       files,
-      error: {
-        code: 'RTGL-BE-TEST-001',
-        message: method
-          ? `No backend examples found for method '${method}'.`
-          : 'No backend examples found to test.',
-      },
+      error,
+      diagnostics,
+      nextAction: createNextAction({
+        ok: false,
+        failedPhase: 'examples',
+        diagnostics,
+        commands,
+      }),
     };
   }
 
@@ -104,20 +165,53 @@ export const runBackendTests = (options = {}) => {
     stdio: captureOutput ? 'pipe' : 'inherit',
   });
   const exitCode = typeof result.status === 'number' ? result.status : 1;
+  const ok = exitCode === 0;
+  const stdout = result.stdout ?? '';
+  const stderr = result.stderr ?? '';
+  const failureDiagnostic = ok ? undefined : normalizeDiagnostic({
+    cwd,
+    error: {
+      code: 'RTGL-BE-TEST-002',
+      message: `Backend examples failed with exit code ${exitCode}.`,
+      filePath: files.length === 1 ? files[0] : undefined,
+    },
+    phase: 'test',
+    method,
+    command: testCommand,
+    extra: {
+      files,
+      outputTail: {
+        stdout: toOutputTail(stdout),
+        stderr: toOutputTail(stderr),
+      },
+    },
+  });
+  const diagnostics = failureDiagnostic ? [failureDiagnostic] : [];
 
   return {
-    ok: exitCode === 0,
+    schemaVersion: 'rettangoli.test/v1',
+    ok,
     prefix: '[Test]',
     method,
+    scope,
     phase: 'test',
+    commands,
     files,
     command: {
       executable: runner.executable,
       args,
+      argv: [runner.executable, ...args],
     },
     exitCode,
-    stdout: captureOutput && includeOutput ? result.stdout ?? '' : undefined,
-    stderr: captureOutput && includeOutput ? result.stderr ?? '' : undefined,
+    diagnostics,
+    nextAction: createNextAction({
+      ok,
+      failedPhase: ok ? undefined : 'test',
+      diagnostics,
+      commands,
+    }),
+    stdout: captureOutput && includeOutput ? stdout : undefined,
+    stderr: captureOutput && includeOutput ? stderr : undefined,
   };
 };
 

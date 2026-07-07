@@ -6,6 +6,14 @@ import {
   stringifyStableJson,
 } from './manifest.js';
 import { runBackendTests } from './test.js';
+import {
+  collectSourceFilesFromManifest,
+  createBackendCommands,
+  createNextAction,
+  createScope,
+  findCommand,
+  normalizeDiagnostic,
+} from './agentLoop.js';
 
 const hashJson = (value) => {
   const hash = createHash('sha256');
@@ -20,6 +28,23 @@ const createStepFailure = (name, error) => ({
     message: error.message,
   },
 });
+
+const createSteps = ({ check, buildResult, manifestResult, test }) => {
+  return [
+    { id: 'check', ok: check.ok },
+    { id: 'build', ok: buildResult?.ok === true, skipped: buildResult === undefined },
+    { id: 'manifest', ok: manifestResult?.ok === true, skipped: manifestResult === undefined },
+    { id: 'test', ok: test?.ok === true, skipped: test === undefined },
+  ];
+};
+
+const findFailedPhase = ({ steps, test }) => {
+  const failedStep = steps.find((step) => !step.skipped && !step.ok);
+  if (failedStep?.id === 'test' && test?.phase && test.phase !== 'contracts') {
+    return test.phase;
+  }
+  return failedStep?.id;
+};
 
 export const runBackendVerify = (options = {}) => {
   const {
@@ -42,13 +67,46 @@ export const runBackendVerify = (options = {}) => {
     middlewareDir,
     method,
   };
+  const commands = createBackendCommands({
+    method,
+    middlewareDir,
+    setup,
+    outdir,
+    testConfig,
+    executable,
+    packageManager,
+  });
   const check = runBackendCheck(sharedOptions);
+  const checkMethods = method
+    ? check.scope.methods
+    : check.scope.methods;
 
   if (!check.ok) {
+    const steps = createSteps({ check });
+    const failedPhase = findFailedPhase({ steps });
+    const diagnostics = check.diagnostics ?? [];
+    const ok = false;
+
     return {
       schemaVersion: 'rettangoli.verify/v1',
-      ok: false,
+      ok,
+      scope: createScope({ method, methods: checkMethods }),
       method,
+      failedPhase,
+      steps,
+      commands,
+      files: {
+        owned: [...new Set(diagnostics.map((diagnostic) => diagnostic.filePath).filter(Boolean))].sort(),
+        write: [],
+      },
+      diagnostics,
+      nextAction: createNextAction({
+        ok,
+        failedPhase,
+        diagnostics,
+        commands,
+        final: true,
+      }),
       check,
       build: undefined,
       manifest: undefined,
@@ -88,18 +146,21 @@ export const runBackendVerify = (options = {}) => {
   }
 
   let manifestResult;
+  let manifestValue;
   try {
-    const value = createBackendManifest({
+    manifestValue = createBackendManifest({
       cwd,
       dirs,
       middlewareDir,
       method,
     });
+    const scopeHash = hashJson(manifestValue);
     manifestResult = {
       ok: true,
-      hash: hashJson(value),
-      methodCount: Object.keys(value.methods).length,
-      methods: Object.keys(value.methods).sort(),
+      hash: scopeHash,
+      scopeHash,
+      methodCount: Object.keys(manifestValue.methods).length,
+      methods: Object.keys(manifestValue.methods).sort(),
     };
   } catch (error) {
     manifestResult = createStepFailure('manifest', error);
@@ -115,11 +176,67 @@ export const runBackendVerify = (options = {}) => {
     packageManager,
     env,
   });
+  const steps = createSteps({ check, buildResult, manifestResult, test });
+  const failedPhase = findFailedPhase({ steps, test });
+  const diagnostics = [
+    ...(check.diagnostics ?? []),
+    ...(buildResult.ok ? [] : [
+      normalizeDiagnostic({
+        cwd,
+        error: {
+          code: 'RTGL-BE-BUILD-001',
+          message: buildResult.error?.message ?? 'Backend build failed.',
+        },
+        phase: 'build',
+        method,
+        command: findCommand(commands, 'verify'),
+      }),
+    ]),
+    ...(manifestResult.ok ? [] : [
+      normalizeDiagnostic({
+        cwd,
+        error: {
+          code: 'RTGL-BE-MANIFEST-001',
+          message: manifestResult.error?.message ?? 'Backend manifest failed.',
+        },
+        phase: 'manifest',
+        method,
+        command: findCommand(commands, 'manifest'),
+      }),
+    ]),
+    ...(test.diagnostics ?? []),
+  ];
+  const ok = check.ok && buildResult.ok && manifestResult.ok && test.ok;
+  const ownedFiles = manifestValue
+    ? collectSourceFilesFromManifest(manifestValue)
+    : [...new Set(diagnostics.map((diagnostic) => diagnostic.filePath).filter(Boolean))].sort();
+  const writeFiles = method
+    ? []
+    : [
+      buildResult.registryPath,
+      buildResult.appEntryPath,
+    ].filter(Boolean);
 
   return {
     schemaVersion: 'rettangoli.verify/v1',
-    ok: check.ok && buildResult.ok && manifestResult.ok && test.ok,
+    ok,
+    scope: createScope({ method, methods: manifestResult.methods ?? checkMethods }),
     method,
+    failedPhase,
+    steps,
+    commands,
+    files: {
+      owned: ownedFiles,
+      write: writeFiles,
+    },
+    diagnostics,
+    nextAction: createNextAction({
+      ok,
+      failedPhase,
+      diagnostics,
+      commands,
+      final: true,
+    }),
     check,
     build: buildResult,
     manifest: manifestResult,
