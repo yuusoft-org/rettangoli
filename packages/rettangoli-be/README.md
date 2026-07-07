@@ -77,10 +77,11 @@ rtgl be watch
 This keeps wiring in the framework so users do not maintain index/registry files.
 
 `rtgl be manifest` prints deterministic JSON for contracts, examples, handlers,
-hashes, schemas, error catalogs, and example coverage.
+hashes, schemas, error catalogs, proof cases, and example coverage.
 
 `rtgl be verify --json` runs the closed loop: check, build, manifest hash, and
-executable examples.
+executable examples. JSON output includes scope, failed phase, affected files,
+rerun argv, diagnostics, and the next action for agent iteration.
 
 ## Handler outcome contract
 

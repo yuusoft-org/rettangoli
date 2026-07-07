@@ -359,6 +359,16 @@ const validateExamplesAgainstContract = ({
   const caseDocuments = documents.filter((doc) => isPlainObject(doc) && Object.prototype.hasOwnProperty.call(doc, 'case'));
   const ajv = createAjv();
 
+  if (caseDocuments.length === 0) {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-038',
+      method: rpcObject.method,
+      message: `Method '${rpcObject.method}' examples file must contain at least one case document.`,
+      filePath: examplesFilePath,
+    });
+    return;
+  }
+
   const paramsValidator = compileSchemaForCheck({
     ajv,
     schema: resolveParamsSchema(rpcObject),
@@ -382,23 +392,53 @@ const validateExamplesAgainstContract = ({
 
   const errorCatalog = resolveErrorCatalog(rpcObject) ?? {};
   const provedErrorCodes = new Set();
+  let provedSuccessCount = 0;
+
+  const pushExampleError = ({ code, message, caseName }) => {
+    errors.push({
+      code,
+      method: rpcObject.method,
+      case: caseName,
+      message,
+      filePath: examplesFilePath,
+    });
+  };
 
   caseDocuments.forEach((caseDoc) => {
     const caseName = typeof caseDoc.case === 'string' ? caseDoc.case : '<unnamed>';
-    const input = Array.isArray(caseDoc.in) ? caseDoc.in[0] : undefined;
-    const payload = isPlainObject(input) && Object.prototype.hasOwnProperty.call(input, 'payload')
-      ? input.payload
-      : {};
+    const hasValidInput = Array.isArray(caseDoc.in)
+      && caseDoc.in.length === 1
+      && isPlainObject(caseDoc.in[0]);
+    if (!hasValidInput) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-039',
+        caseName,
+        message: `Example '${caseName}' must call the handler with exactly one object argument in 'in'.`,
+      });
+      return;
+    }
+
+    const input = caseDoc.in[0];
+    const payload = Object.prototype.hasOwnProperty.call(input, 'payload') ? input.payload : {};
 
     if (!paramsValidator(payload)) {
-      errors.push({
+      pushExampleError({
         code: 'RTGL-BE-CONTRACT-027',
+        caseName,
         message: `Example '${caseName}' payload does not match params schema: ${formatAjvErrors(paramsValidator.errors)}`,
-        filePath: examplesFilePath,
       });
     }
 
     if (Object.prototype.hasOwnProperty.call(caseDoc, 'throws')) {
+      return;
+    }
+
+    if (caseDoc.proves?.result !== undefined && caseDoc.proves?.error !== undefined) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-040',
+        caseName,
+        message: `Example '${caseName}' must not include both proves.result and proves.error.`,
+      });
       return;
     }
 
@@ -407,39 +447,43 @@ const validateExamplesAgainstContract = ({
 
     if (!isDomainError) {
       if (!resultValidator(output)) {
-        errors.push({
+        pushExampleError({
           code: 'RTGL-BE-CONTRACT-028',
+          caseName,
           message: `Example '${caseName}' output does not match result schema: ${formatAjvErrors(resultValidator.errors)}`,
-          filePath: examplesFilePath,
         });
       }
 
-      if (caseDoc.proves?.result !== undefined && caseDoc.proves.result !== 'success') {
-        errors.push({
+      if (caseDoc.proves?.result !== 'success') {
+        pushExampleError({
           code: 'RTGL-BE-CONTRACT-029',
-          message: `Example '${caseName}' proves.result must be 'success' when provided.`,
-          filePath: examplesFilePath,
+          caseName,
+          message: caseDoc.proves?.result === undefined
+            ? `Example '${caseName}' success output must include proves.result: success.`
+            : `Example '${caseName}' proves.result must be 'success'.`,
         });
+      } else {
+        provedSuccessCount += 1;
       }
       return;
     }
 
     const errorCode = output.code;
     if (typeof errorCode !== 'string' || !errorCode.trim()) {
-      errors.push({
+      pushExampleError({
         code: 'RTGL-BE-CONTRACT-030',
+        caseName,
         message: `Example '${caseName}' domain error output must include code.`,
-        filePath: examplesFilePath,
       });
       return;
     }
 
     const errorEntry = errorCatalog[errorCode];
     if (!isPlainObject(errorEntry)) {
-      errors.push({
+      pushExampleError({
         code: 'RTGL-BE-CONTRACT-031',
+        caseName,
         message: `Example '${caseName}' uses undeclared error code '${errorCode}'.`,
-        filePath: examplesFilePath,
       });
       return;
     }
@@ -453,28 +497,41 @@ const validateExamplesAgainstContract = ({
       label: `${rpcObject.method} error ${errorCode}`,
     });
     if (errorValidator && !errorValidator(output)) {
-      errors.push({
+      pushExampleError({
         code: 'RTGL-BE-CONTRACT-033',
+        caseName,
         message: `Example '${caseName}' output does not match error '${errorCode}': ${formatAjvErrors(errorValidator.errors)}`,
-        filePath: examplesFilePath,
       });
     }
 
-    if (caseDoc.proves?.error !== undefined && caseDoc.proves.error !== errorCode) {
-      errors.push({
+    if (caseDoc.proves?.error !== errorCode) {
+      pushExampleError({
         code: 'RTGL-BE-CONTRACT-034',
-        message: `Example '${caseName}' proves.error '${caseDoc.proves.error}' does not match output code '${errorCode}'.`,
-        filePath: examplesFilePath,
+        caseName,
+        message: caseDoc.proves?.error === undefined
+          ? `Example '${caseName}' domain error output must include proves.error: ${errorCode}.`
+          : `Example '${caseName}' proves.error '${caseDoc.proves.error}' does not match output code '${errorCode}'.`,
       });
+      return;
     }
 
     provedErrorCodes.add(errorCode);
   });
 
+  if (provedSuccessCount === 0) {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-037',
+      method: rpcObject.method,
+      message: `Method '${rpcObject.method}' must have at least one example with proves.result: success.`,
+      filePath: examplesFilePath,
+    });
+  }
+
   Object.keys(errorCatalog).forEach((errorCode) => {
     if (!provedErrorCodes.has(errorCode)) {
       errors.push({
         code: 'RTGL-BE-CONTRACT-035',
+        method: rpcObject.method,
         message: `Declared error '${errorCode}' must have at least one proving example.`,
         filePath: examplesFilePath,
       });

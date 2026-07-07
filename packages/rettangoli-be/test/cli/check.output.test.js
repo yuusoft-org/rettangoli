@@ -179,6 +179,11 @@ describe('be check cli output', () => {
     expect(parsed.ok).toBe(true);
     expect(parsed.method).toBe('health.ping');
     expect(parsed.methodCount).toBe(1);
+    expect(parsed.nextAction).toEqual({
+      kind: 'verify',
+      message: 'Phase passed. Run full backend verification before stopping.',
+      argv: ['rtgl', 'be', 'verify', '--method', 'health.ping', '--json'],
+    });
   });
 
   it('keeps duplicate middleware errors when scoped method references that middleware', () => {
@@ -276,6 +281,14 @@ describe('be check cli output', () => {
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
       '---',
+      'case: ok',
+      'proves:',
+      '  result: success',
+      'in:',
+      '  - payload: {}',
+      'out:',
+      '  ok: true',
+      '---',
       'case: invariant-failure',
       'in:',
       '  - payload: {}',
@@ -297,6 +310,268 @@ describe('be check cli output', () => {
     expect(logSpy.mock.calls.map((entry) => entry[0]).join('\n')).toContain(
       '[Check] RPC contracts passed for 1 method(s).',
     );
+  });
+
+  it('requires a success proof example', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-success-proof-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      "file: './ping.handlers.js'",
+      'group: ping',
+      '---',
+      'suite: healthPingMethod',
+      'exportName: healthPingMethod',
+      '---',
+      'case: ok',
+      'in:',
+      '  - payload: {}',
+      'out:',
+      '  ok: true',
+      '',
+    ].join('\n'));
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    check({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+      format: 'json',
+    });
+
+    expect(process.exitCode).toBe(1);
+    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-029');
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-037');
+    expect(parsed.diagnostics[0].method).toBe('health.ping');
+    expect(parsed.diagnostics[0].ruleId).toBe('RTGL-BE-CONTRACT-029');
+    expect(parsed.diagnostics[0].rerun.argv).toEqual(['rtgl', 'be', 'check', '--format', 'json']);
+  });
+
+  it('requires explicit error proof for declared domain errors', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-error-proof-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const contractPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.contract.yaml');
+    writeFileSync(contractPath, [
+      'schemaVersion: rettangoli.contract/v1',
+      'method: health.ping',
+      'description: ping',
+      'middleware:',
+      '  before: []',
+      '  after: []',
+      'params:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties: {}',
+      '  required: []',
+      'result:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties:',
+      '    ok:',
+      '      type: boolean',
+      '  required: [ok]',
+      'errors:',
+      '  AUTH_REQUIRED:',
+      '    description: Authentication is required.',
+      '',
+    ].join('\n'));
+
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      "file: './ping.handlers.js'",
+      'group: ping',
+      '---',
+      'suite: healthPingMethod',
+      'exportName: healthPingMethod',
+      '---',
+      'case: ok',
+      'proves:',
+      '  result: success',
+      'in:',
+      '  - payload: {}',
+      'out:',
+      '  ok: true',
+      '---',
+      'case: requires-auth',
+      'in:',
+      '  - payload: {}',
+      'out:',
+      '  _error: true',
+      '  code: AUTH_REQUIRED',
+      '',
+    ].join('\n'));
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    check({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+      format: 'json',
+    });
+
+    expect(process.exitCode).toBe(1);
+    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-034');
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-035');
+  });
+
+  it('rejects examples that claim result and error proof at the same time', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-conflicting-proof-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const contractPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.contract.yaml');
+    writeFileSync(contractPath, [
+      'schemaVersion: rettangoli.contract/v1',
+      'method: health.ping',
+      'description: ping',
+      'middleware:',
+      '  before: []',
+      '  after: []',
+      'params:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties: {}',
+      '  required: []',
+      'result:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties:',
+      '    ok:',
+      '      type: boolean',
+      '  required: [ok]',
+      'errors:',
+      '  AUTH_REQUIRED:',
+      '    description: Authentication is required.',
+      '',
+    ].join('\n'));
+
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      "file: './ping.handlers.js'",
+      'group: ping',
+      '---',
+      'suite: healthPingMethod',
+      'exportName: healthPingMethod',
+      '---',
+      'case: ok',
+      'proves:',
+      '  result: success',
+      'in:',
+      '  - payload: {}',
+      'out:',
+      '  ok: true',
+      '---',
+      'case: conflicted-auth',
+      'proves:',
+      '  result: success',
+      '  error: AUTH_REQUIRED',
+      'in:',
+      '  - payload: {}',
+      'out:',
+      '  _error: true',
+      '  code: AUTH_REQUIRED',
+      '',
+    ].join('\n'));
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    check({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+      format: 'json',
+    });
+
+    expect(process.exitCode).toBe(1);
+    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-040');
+    expect(parsed.diagnostics.find((diagnostic) => diagnostic.ruleId === 'RTGL-BE-CONTRACT-040')).toEqual(
+      expect.objectContaining({
+        method: 'health.ping',
+        case: 'conflicted-auth',
+      }),
+    );
+  });
+
+  it('validates executable input shape before treating examples as proof', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-input-shape-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      "file: './ping.handlers.js'",
+      'group: ping',
+      '---',
+      'suite: healthPingMethod',
+      'exportName: healthPingMethod',
+      '---',
+      'case: bad-call-shape',
+      'proves:',
+      '  result: success',
+      'in:',
+      '  - 123',
+      'out:',
+      '  ok: true',
+      '',
+    ].join('\n'));
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    check({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+      format: 'json',
+    });
+
+    expect(process.exitCode).toBe(1);
+    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-039');
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-037');
+    expect(parsed.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-CONTRACT-039',
+      method: 'health.ping',
+      case: 'bad-call-shape',
+    }));
+  });
+
+  it('requires at least one case document in examples', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-empty-examples-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      "file: './ping.handlers.js'",
+      'group: ping',
+      '---',
+      'suite: healthPingMethod',
+      'exportName: healthPingMethod',
+      '',
+    ].join('\n'));
+
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    check({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+      format: 'json',
+    });
+
+    expect(process.exitCode).toBe(1);
+    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    expect(parsed.errors.map((error) => error.code)).toEqual(['RTGL-BE-CONTRACT-038']);
+    expect(parsed.diagnostics[0].fix).toContain('case document');
   });
 
   it('validates the provided example payload value', () => {

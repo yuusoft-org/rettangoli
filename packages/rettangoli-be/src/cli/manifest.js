@@ -3,6 +3,11 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { formatContractFailureReport } from './contracts.js';
 import { analyzeBackendContracts } from './contractScope.js';
+import { runBackendCheck } from './check.js';
+import {
+  createBackendCommands,
+  createNextAction,
+} from './agentLoop.js';
 
 const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
 
@@ -57,32 +62,77 @@ const hashFile = (filePath) => {
   return `sha256:${hash.digest('hex')}`;
 };
 
-const summarizeExamples = (methodEntry) => {
+const summarizeExamples = (methodEntry, rpc) => {
   const summary = {
     success: 0,
     errors: {},
+    cases: [],
   };
 
   const documents = methodEntry.examplesDocuments[0]?.documents ?? [];
   documents
     .filter((doc) => isPlainObject(doc) && Object.prototype.hasOwnProperty.call(doc, 'case'))
     .forEach((caseDoc) => {
+      const caseName = typeof caseDoc.case === 'string' ? caseDoc.case : '<unnamed>';
       if (Object.prototype.hasOwnProperty.call(caseDoc, 'throws')) {
+        summary.cases.push({
+          case: caseName,
+          proves: {
+            kind: 'throws',
+          },
+        });
         return;
       }
 
-      const output = caseDoc.out;
-
-      if (isPlainObject(output) && output._error === true) {
-        const errorCode = output.code;
-        if (typeof errorCode === 'string' && errorCode.trim()) {
-          summary.errors[errorCode] = (summary.errors[errorCode] ?? 0) + 1;
-        }
+      if (caseDoc.proves?.result === 'success') {
+        summary.success += 1;
+        summary.cases.push({
+          case: caseName,
+          proves: {
+            kind: 'result',
+            target: 'success',
+          },
+        });
         return;
       }
 
-      summary.success += 1;
+      if (typeof caseDoc.proves?.error === 'string' && caseDoc.proves.error.trim()) {
+        const errorCode = caseDoc.proves.error;
+        summary.errors[errorCode] = (summary.errors[errorCode] ?? 0) + 1;
+        summary.cases.push({
+          case: caseName,
+          proves: {
+            kind: 'error',
+            target: errorCode,
+          },
+        });
+        return;
+      }
+
+      summary.cases.push({
+        case: caseName,
+        proves: {
+          kind: 'none',
+        },
+      });
     });
+
+  const declaredErrors = Object.keys(rpc.errors ?? {}).sort();
+  const provenErrors = Object.keys(summary.errors).sort();
+  const missingErrors = declaredErrors.filter((errorCode) => !provenErrors.includes(errorCode));
+
+  summary.coverage = {
+    ok: summary.success > 0 && missingErrors.length === 0,
+    success: {
+      proved: summary.success > 0,
+      count: summary.success,
+    },
+    errors: {
+      declared: declaredErrors,
+      proved: provenErrors,
+      missing: missingErrors,
+    },
+  };
 
   return summary;
 };
@@ -131,6 +181,9 @@ export const createBackendManifest = ({
     const rpc = contract.rpc;
 
     methods[contract.method] = {
+      domain: contract.domain,
+      action: contract.action,
+      setupDependencyPath: `setup.deps.${contract.domain}`,
       source: {
         contract: toPosixRelativePath(cwd, contract.contractPath),
         examples: toPosixRelativePath(cwd, contract.examplesPath),
@@ -149,7 +202,7 @@ export const createBackendManifest = ({
       params: rpc.params,
       result: rpc.result,
       errors: rpc.errors ?? {},
-      examples: summarizeExamples(methodEntry),
+      examples: summarizeExamples(methodEntry, rpc),
     };
   });
 
@@ -168,6 +221,42 @@ export const createBackendManifest = ({
 };
 
 const manifestRettangoliBackend = (options = {}) => {
+  const outputFormat = options.format === 'json' || options.json ? 'json' : 'text';
+  const check = runBackendCheck(options);
+
+  if (!check.ok) {
+    const commands = createBackendCommands({
+      method: options.method,
+      middlewareDir: options.middlewareDir,
+    });
+    const result = {
+      schemaVersion: 'rettangoli.manifest/v1',
+      ok: false,
+      phase: 'contracts',
+      scope: check.scope,
+      summary: check.summary,
+      errors: check.errors,
+      diagnostics: check.diagnostics,
+      nextAction: createNextAction({
+        ok: false,
+        failedPhase: 'contracts',
+        diagnostics: check.diagnostics,
+        commands,
+      }),
+    };
+
+    if (outputFormat === 'json') {
+      process.stdout.write(stringifyStableJson(result));
+      process.exitCode = 1;
+      return result;
+    }
+
+    throw new Error(formatContractFailureReport({
+      errorPrefix: '[Manifest]',
+      errors: check.errors,
+    }));
+  }
+
   const manifest = createBackendManifest(options);
   const json = stringifyStableJson(manifest);
 

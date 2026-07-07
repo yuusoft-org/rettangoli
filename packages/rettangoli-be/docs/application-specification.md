@@ -368,17 +368,21 @@ out: {}
 Rules:
 
 - `case` MUST be stable and descriptive.
-- `proves.result: success` marks a success example.
-- `proves.error: <ERROR_CODE>` marks an expected domain error example.
+- success examples MUST include `proves.result: success`.
+- expected domain error examples MUST include `proves.error: <ERROR_CODE>`.
+- examples MUST NOT include both `proves.result` and `proves.error`.
 - `in` MUST call the handler with one argument: `{ payload, context, deps }`.
 - `out` MUST match success output or expected domain error output.
 - `throws` MAY be used only for unexpected failures and invariants.
 - `mocks` SHOULD be used for dependency calls.
 
-Each method SHOULD include spec cases for:
+Each method MUST include spec cases for:
 
 - one successful result;
 - each expected domain error code;
+
+Each method SHOULD also include cases for:
+
 - important validation/business branches;
 - dependency edge cases that affect contract behavior.
 
@@ -664,6 +668,15 @@ Target behavior:
 - generated changes have dry-run output;
 - progress and failures are machine-readable;
 - compatibility failures are deterministic.
+
+Agent-facing JSON output MUST include enough information to close the loop:
+
+- the verification scope;
+- the failed phase;
+- stable rule ids;
+- affected files;
+- exact rerun argv;
+- a next action object.
 
 ## Migration Notes
 

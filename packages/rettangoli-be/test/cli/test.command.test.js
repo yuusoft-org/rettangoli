@@ -79,6 +79,51 @@ const writeBrokenMethod = (rootDir) => {
   ].join('\n'));
 };
 
+const writeProfileMethod = (rootDir) => {
+  const methodDir = path.join(rootDir, 'src', 'modules', 'user', 'profile');
+  mkdirSync(methodDir, { recursive: true });
+
+  writeFileSync(path.join(methodDir, 'profile.handlers.js'), 'export const userProfileMethod = async () => ({ ok: true });\n');
+  writeFileSync(path.join(methodDir, 'profile.contract.yaml'), [
+    'schemaVersion: rettangoli.contract/v1',
+    'method: user.profile',
+    'description: profile',
+    'middleware:',
+    '  before: []',
+    '  after: []',
+    'params:',
+    '  type: object',
+    '  additionalProperties: false',
+    '  properties: {}',
+    '  required: []',
+    'result:',
+    '  type: object',
+    '  additionalProperties: false',
+    '  properties:',
+    '    ok:',
+    '      type: boolean',
+    '  required: [ok]',
+    'errors: {}',
+    '',
+  ].join('\n'));
+  writeFileSync(path.join(methodDir, 'profile.examples.yaml'), [
+    "file: './profile.handlers.js'",
+    'group: profile',
+    '---',
+    'suite: userProfileMethod',
+    'exportName: userProfileMethod',
+    '---',
+    'case: ok',
+    'proves:',
+    '  result: success',
+    'in:',
+    '  - payload: {}',
+    'out:',
+    '  ok: true',
+    '',
+  ].join('\n'));
+};
+
 describe('be test command', () => {
   const createdDirs = [];
 
@@ -110,6 +155,11 @@ describe('be test command', () => {
 
     expect(result.ok).toBe(true);
     expect(result.files).toEqual(['src/modules/health/ping/ping.examples.yaml']);
+    expect(result.nextAction).toEqual({
+      kind: 'verify',
+      message: 'Phase passed. Run full backend verification before stopping.',
+      argv: ['rtgl', 'be', 'verify', '--method', 'health.ping', '--json'],
+    });
     expect(runCommand).toHaveBeenCalledWith(
       'npm',
       [
@@ -156,6 +206,62 @@ describe('be test command', () => {
     expect(result.command.args[0]).toBe('vitest');
   });
 
+  it('preserves CLI overrides in agent rerun commands', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-overrides-'));
+    createdDirs.push(rootDir);
+    writeMethod(rootDir);
+
+    const runCommand = vi.fn(() => ({
+      status: 0,
+      stdout: 'ok',
+      stderr: '',
+    }));
+
+    const result = runBackendTests({
+      cwd: rootDir,
+      method: 'health.ping',
+      middlewareDir: './src/custom-middleware',
+      config: './vitest.custom.js',
+      executable: 'custom-runner',
+      packageManager: 'pnpm',
+      format: 'json',
+      runCommand,
+    });
+
+    expect(result.commands.find((command) => command.id === 'test').argv).toEqual([
+      'rtgl',
+      'be',
+      'test',
+      '--method',
+      'health.ping',
+      '--middleware-dir',
+      './src/custom-middleware',
+      '--config',
+      './vitest.custom.js',
+      '--runner',
+      'custom-runner',
+      '--package-manager',
+      'pnpm',
+      '--json',
+    ]);
+    expect(result.nextAction.argv).toEqual([
+      'rtgl',
+      'be',
+      'verify',
+      '--method',
+      'health.ping',
+      '--middleware-dir',
+      './src/custom-middleware',
+      '--test-config',
+      './vitest.custom.js',
+      '--runner',
+      'custom-runner',
+      '--package-manager',
+      'pnpm',
+      '--json',
+    ]);
+  });
+
   it('ignores unrelated contract errors when a method is selected', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-scoped-'));
     createdDirs.push(rootDir);
@@ -180,6 +286,35 @@ describe('be test command', () => {
     expect(runCommand).toHaveBeenCalledOnce();
   });
 
+  it('reports all candidate files for project-scoped test failures', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-project-fail-'));
+    createdDirs.push(rootDir);
+    writeMethod(rootDir);
+    writeProfileMethod(rootDir);
+
+    const runCommand = vi.fn(() => ({
+      status: 1,
+      stdout: 'later file failed',
+      stderr: '',
+    }));
+
+    const result = runBackendTests({
+      cwd: rootDir,
+      format: 'json',
+      env: {},
+      runCommand,
+    });
+
+    const files = [
+      'src/modules/health/ping/ping.examples.yaml',
+      'src/modules/user/profile/profile.examples.yaml',
+    ];
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics[0].filePath).toBeUndefined();
+    expect(result.diagnostics[0].files).toEqual(files);
+    expect(result.nextAction.files).toEqual(files);
+  });
+
   it('does not run Vitest when no backend examples are found', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-empty-'));
     createdDirs.push(rootDir);
@@ -201,6 +336,13 @@ describe('be test command', () => {
     expect(result.phase).toBe('examples');
     expect(result.files).toEqual([]);
     expect(result.error.code).toBe('RTGL-BE-TEST-001');
+    expect(result.commands.find((command) => command.id === 'test').argv).toEqual([
+      'rtgl',
+      'be',
+      'test',
+      '--json',
+    ]);
+    expect(result.nextAction.argv).toEqual(['rtgl', 'be', 'test', '--json']);
     expect(runCommand).not.toHaveBeenCalled();
   });
 });

@@ -263,6 +263,7 @@ The framework proves:
 - success outputs match the result schema;
 - error outputs match the named error catalog;
 - error details match the error details schema;
+- every method has at least one explicit success proof;
 - every public error has at least one example;
 - mocks match declared dependency interactions when relevant;
 - examples can run repeatedly with deterministic results.
