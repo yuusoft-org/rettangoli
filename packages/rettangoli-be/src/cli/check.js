@@ -1,36 +1,30 @@
-import { collectResolvedMethodContracts } from '../core/contracts/rpcFiles.js';
-import { analyzeRpcDirs, formatContractFailureReport } from './contracts.js';
-import { resolveContractDirs } from './contracts.js';
+import { formatContractFailureReport } from './contracts.js';
+import { analyzeBackendContracts } from './contractScope.js';
+
+export const runBackendCheck = (options = {}) => {
+  const analysis = analyzeBackendContracts(options);
+
+  return {
+    ok: analysis.ok,
+    prefix: '[Check]',
+    method: analysis.method,
+    methodCount: options.method ? analysis.contracts.length : analysis.allContracts.length,
+    summary: analysis.summary,
+    errors: analysis.errors,
+  };
+};
 
 const checkRettangoliBackend = (options = {}) => {
-  const {
-    cwd = process.cwd(),
-    dirs = ['./src/modules'],
-    middlewareDir = './src/middleware',
-    format = 'text',
-  } = options;
+  const outputFormat = options.format === 'json' ? 'json' : 'text';
+  const result = runBackendCheck(options);
 
-  const outputFormat = format === 'json' ? 'json' : 'text';
-  const { methodDirs, middlewareDirs } = resolveContractDirs({
-    cwd,
-    dirs,
-    middlewareDir,
-  });
-
-  const analysis = analyzeRpcDirs({ methodDirs, middlewareDirs });
-
-  if (analysis.errors.length > 0) {
+  if (!result.ok) {
     if (outputFormat === 'json') {
-      console.log(JSON.stringify({
-        ok: false,
-        prefix: '[Check]',
-        summary: analysis.summary,
-        errors: analysis.errors,
-      }, null, 2));
+      console.log(JSON.stringify(result, null, 2));
     } else {
       console.error(formatContractFailureReport({
         errorPrefix: '[Check]',
-        errors: analysis.errors,
+        errors: result.errors,
       }));
     }
 
@@ -38,19 +32,13 @@ const checkRettangoliBackend = (options = {}) => {
     return;
   }
 
-  const methodCount = collectResolvedMethodContracts({ index: analysis.index }).length;
-
   if (outputFormat === 'json') {
-    console.log(JSON.stringify({
-      ok: true,
-      prefix: '[Check]',
-      methodCount,
-      summary: analysis.summary,
-    }, null, 2));
+    console.log(JSON.stringify(result, null, 2));
     return;
   }
 
-  console.log(`[Check] RPC contracts passed for ${methodCount} method(s).`);
+  const suffix = result.method ? ` for ${result.method}` : ` for ${result.methodCount} method(s)`;
+  console.log(`[Check] RPC contracts passed${suffix}.`);
 };
 
 export default checkRettangoliBackend;

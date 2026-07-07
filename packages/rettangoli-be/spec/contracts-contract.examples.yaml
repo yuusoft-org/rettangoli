@@ -4,9 +4,9 @@ group: rettangoli-be-contracts
 suite: contracts-helper
 exportName: runContractHelpers
 ---
-case: recognizes rpc suffix
+case: recognizes contract suffix
 in:
-  - filePath: /tmp/modules/health/ping/ping.rpc.yaml
+  - filePath: /tmp/modules/health/ping/ping.contract.yaml
 out:
   isSupported: true
   supportedSuffixCount: 3

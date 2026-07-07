@@ -80,12 +80,55 @@ const createOutputValidationError = ({ method, target, validationErrors }) => {
   return new Error(`Invalid ${target} output for ${method}: ${details}`);
 };
 
+const createErrorSchemaFromCatalog = (errors = {}) => {
+  const entries = Object.entries(errors);
+  if (entries.length === 0) {
+    return false;
+  }
+
+  return {
+    oneOf: entries.map(([code, entry]) => {
+      const hasDetailsSchema = isPlainObject(entry?.details);
+      const properties = {
+        _error: { const: true },
+        code: { const: code },
+      };
+      const required = ['_error', 'code'];
+
+      if (hasDetailsSchema) {
+        properties.details = entry.details;
+        required.push('details');
+      }
+
+      return {
+        type: 'object',
+        additionalProperties: false,
+        properties,
+        required,
+      };
+    }),
+  };
+};
+
+const normalizeRpcContract = (rpcContract) => {
+  const paramsSchema = rpcContract.params;
+  const resultSchema = rpcContract.result;
+  const errorSchema = createErrorSchemaFromCatalog(rpcContract.errors ?? {});
+
+  return {
+    ...rpcContract,
+    paramsSchema,
+    resultSchema,
+    errorSchema,
+  };
+};
+
 const createDomainJsonRpcError = ({ domainError }) => {
   return createJsonRpcError({
     code: JSON_RPC_ERROR_CODES.DOMAIN_ERROR_DEFAULT,
     message: 'Domain error',
     data: {
-      type: domainError.type,
+      code: domainError.code,
       details: domainError.details,
     },
   });
@@ -166,7 +209,11 @@ export const createApp = ({
 
   const methodRuntime = new Map();
 
-  Object.entries(methodContracts).forEach(([method, rpcContract]) => {
+  Object.entries(methodContracts).forEach(([method, rawRpcContract]) => {
+    const rpcContract = isPlainObject(rawRpcContract)
+      ? normalizeRpcContract(rawRpcContract)
+      : rawRpcContract;
+
     if (!isPlainObject(rpcContract)) {
       throw new Error(`createApp: contract for '${method}' must be an object`);
     }
@@ -202,17 +249,17 @@ export const createApp = ({
 
     const paramsValidator = schemaCompiler.compile({
       schema: rpcContract.paramsSchema,
-      label: `${method} paramsSchema`,
+      label: `${method} params`,
     });
 
     const successValidator = schemaCompiler.compile({
       schema: rpcContract.resultSchema,
-      label: `${method} resultSchema`,
+      label: `${method} result`,
     });
 
     const errorValidator = schemaCompiler.compile({
       schema: rpcContract.errorSchema,
-      label: `${method} errorSchema`,
+      label: `${method} errors`,
     });
 
     methodRuntime.set(method, {

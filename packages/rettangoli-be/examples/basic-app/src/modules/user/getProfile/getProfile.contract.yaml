@@ -1,0 +1,48 @@
+schemaVersion: rettangoli.contract/v1
+method: user.getProfile
+description: Return the authenticated user profile.
+middleware:
+  before:
+    - withAuthUser
+  after:
+    - withLogger
+params:
+  type: object
+  additionalProperties: false
+  properties: {}
+  required: []
+result:
+  type: object
+  additionalProperties: false
+  properties:
+    id:
+      type: string
+    email:
+      type: string
+    role:
+      type: string
+  required:
+    - id
+    - email
+    - role
+errors:
+  AUTH_REQUIRED:
+    description: Authentication is required.
+    details:
+      type: object
+      additionalProperties: false
+      properties:
+        reason:
+          const: auth_required
+      required:
+        - reason
+  USER_NOT_FOUND:
+    description: Authenticated user was not found.
+    details:
+      type: object
+      additionalProperties: false
+      properties:
+        userId:
+          type: string
+      required:
+        - userId

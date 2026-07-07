@@ -92,6 +92,7 @@ const buildRettangoliBackend = (options = {}) => {
     middlewareDir = './src/middleware',
     setup = './src/setup.js',
     outdir = './.rtgl-be/generated',
+    silent = false,
   } = options;
 
   const resolvedOutdir = path.resolve(cwd, outdir);
@@ -124,8 +125,10 @@ const buildRettangoliBackend = (options = {}) => {
     setupPath: path.resolve(cwd, setup),
   });
 
-  console.log(`[Build] Generated backend registry: ${registryPath}`);
-  console.log(`[Build] Generated backend app entry: ${appEntryPath}`);
+  if (!silent) {
+    console.log(`[Build] Generated backend registry: ${registryPath}`);
+    console.log(`[Build] Generated backend app entry: ${appEntryPath}`);
+  }
 
   return {
     registryPath,

@@ -7,8 +7,8 @@ Backend framework for Rettangoli JSON-RPC applications.
 - App code lives in method folders under `src/modules/<domain>/<action>/`.
 - Each method folder has:
   - `<action>.handlers.js`
-  - `<action>.rpc.yaml`
-  - `<action>.spec.yaml`
+  - `<action>.contract.yaml`
+  - `<action>.examples.yaml`
 - `src/setup.js` exports only `{ port, deps }`.
 - No user `src/index.js` or module aggregator files.
 
@@ -25,6 +25,10 @@ Backend framework for Rettangoli JSON-RPC applications.
 
 - `build`
 - `check`
+- `manifest`
+- `test`
+- `verify`
+- `start`
 - `watch`
 
 ## Config (`rettangoli.config.yaml`)
@@ -59,6 +63,9 @@ With `rtgl`:
 ```bash
 rtgl be check
 rtgl be build
+rtgl be manifest
+rtgl be test --method user.getProfile
+rtgl be verify --json
 rtgl be watch
 ```
 
@@ -68,6 +75,12 @@ rtgl be watch
 - `.rtgl-be/generated/app.js` (ready-to-use `createApp(...)` entry)
 
 This keeps wiring in the framework so users do not maintain index/registry files.
+
+`rtgl be manifest` prints deterministic JSON for contracts, examples, handlers,
+hashes, schemas, error catalogs, and example coverage.
+
+`rtgl be verify --json` runs the closed loop: check, build, manifest hash, and
+executable examples.
 
 ## Handler outcome contract
 
@@ -82,7 +95,7 @@ Expected domain error:
 ```js
 return {
   _error: true,
-  type: 'AUTH_REQUIRED',
+  code: 'AUTH_REQUIRED',
   details: { reason: 'auth_required' },
 };
 ```
@@ -99,6 +112,6 @@ Unexpected/system failures should `throw`; runtime maps thrown errors to JSON-RP
 
 Application design docs are in `docs/`:
 
-- `docs/spec.md`
+- `docs/framework-constitution.md`
+- `docs/application-specification.md`
 - `docs/templates.md`
-- `docs/questions.md`

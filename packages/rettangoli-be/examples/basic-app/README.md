@@ -12,8 +12,8 @@ What it demonstrates:
 - DI boundary with DAO/services in `deps/`
 - middleware cookie handling via `ctx.cookies` JSON objects
 - per-method folders in `modules/` (no `module.js` aggregators)
-- per-method RPC contract files (`*.rpc.yaml`) for params/middleware/output
-- per-method puty specs via `*.spec.yaml` (multi-document puty format)
+- per-method RPC contract files (`*.contract.yaml`) for params/middleware/output
+- per-method puty specs via `*.examples.yaml` (multi-document puty format)
 
 ## Structure
 
@@ -30,23 +30,26 @@ src/
 1. Is the `deps` boundary clear enough for DAO/services?
 2. Are per-method folders ergonomic for scaling domains?
 3. Are RPC files expressive enough for request/output contracts and method middleware hooks?
-4. Is the new `*.spec.yaml` format sufficient for puty tests?
+4. Is the new `*.examples.yaml` format sufficient for puty tests?
 
 ## Local commands
 
 ```bash
 bun run check
 bun run build
+bun run manifest
+bun run verify
 bun run test:handlers
+bun run test:method
 bun run test:e2e
 ```
 
-`test:handlers` runs per-method puty YAML specs under `src/modules/**/**.spec.yaml`
-(`ping.spec.yaml`, `getProfile.spec.yaml`).
+`test:handlers` runs per-method puty YAML specs under `src/modules/**/**.examples.yaml`
+(`ping.examples.yaml`, `getProfile.examples.yaml`).
 
 `test:e2e` boots a real HTTP server from the generated `.rtgl-be/generated/app.js`
 and runs end-to-end JSON-RPC requests (success, validation errors, domain errors,
 method-not-found, parse errors, and cookie roundtrip).
 
-Domain errors are returned from handlers via `{ _error: true, type, details }`
+Domain errors are returned from handlers via `{ _error: true, code, details }`
 and are surfaced by JSON-RPC as domain-error responses.
