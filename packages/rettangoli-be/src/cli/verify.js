@@ -21,6 +21,7 @@ import {
   normalizeDiagnostic,
   toPosixRelativePath,
 } from './agentLoop.js';
+import { resolveBackendProjectOptions } from './projectOptions.js';
 
 const hashJson = (value) => {
   const hash = createHash('sha256');
@@ -113,10 +114,10 @@ const createDiscoveryRoots = ({ dirs, middlewareDir, migrationsDir }) => {
   ].filter(Boolean))].sort();
 };
 
-const createProjectInputFiles = ({ cwd, setup, testConfig }) => {
+const createProjectInputFiles = ({ cwd, setup, testConfig, configPath }) => {
   return [...new Set([
     'package.json',
-    'rettangoli.config.yaml',
+    configPath,
     setup,
     testConfig,
   ].filter(Boolean)
@@ -134,6 +135,7 @@ const existingGeneratedInputFiles = ({ cwd, outdir }) => {
 };
 
 export const runBackendVerify = async (options = {}) => {
+  options = resolveBackendProjectOptions(options);
   const {
     cwd = process.cwd(),
     dirs = ['./src/modules'],
@@ -141,6 +143,8 @@ export const runBackendVerify = async (options = {}) => {
     method,
     setup = './src/setup.js',
     outdir = './.rtgl-be/generated',
+    configPath = 'rettangoli.config.yaml',
+    projectConfig,
     testConfig = './vitest.config.js',
     runCommand,
     executable,
@@ -151,6 +155,7 @@ export const runBackendVerify = async (options = {}) => {
     migrationsDir = './migrations',
     failOnWarnings = false,
     runDbReplay,
+    globalMiddleware = [],
     globalMiddlewareBefore = [],
     globalMiddlewareAfter = [],
   } = options;
@@ -160,6 +165,8 @@ export const runBackendVerify = async (options = {}) => {
     dirs,
     middlewareDir,
     method,
+    configPath,
+    projectConfig,
   };
   const commands = createBackendCommands({
     dirs,
@@ -168,6 +175,10 @@ export const runBackendVerify = async (options = {}) => {
     setup,
     outdir,
     migrationsDir,
+    configPath,
+    globalMiddleware,
+    globalMiddlewareBefore,
+    globalMiddlewareAfter,
     testConfig,
     executable,
     packageManager,
@@ -180,7 +191,12 @@ export const runBackendVerify = async (options = {}) => {
     : check.scope.methods;
   const discoveryRoots = createDiscoveryRoots({ dirs, middlewareDir, migrationsDir });
   const projectInputFiles = [
-    ...createProjectInputFiles({ cwd, setup, testConfig }),
+    ...createProjectInputFiles({
+      cwd,
+      setup,
+      testConfig,
+      configPath,
+    }),
     ...existingGeneratedInputFiles({ cwd, outdir }),
   ];
 
@@ -251,6 +267,11 @@ export const runBackendVerify = async (options = {}) => {
         middlewareDir,
         setup,
         outdir,
+        configPath,
+        projectConfig,
+        globalMiddleware,
+        globalMiddlewareBefore,
+        globalMiddlewareAfter,
         dryRun: true,
         silent: true,
       });
@@ -283,6 +304,8 @@ export const runBackendVerify = async (options = {}) => {
       method,
       outdir,
       migrationsDir,
+      configPath,
+      projectConfig,
     });
     const scopeHash = hashJson(manifestValue);
     manifestResult = {
@@ -301,6 +324,7 @@ export const runBackendVerify = async (options = {}) => {
     : await runBackendAppCheck({
         ...sharedOptions,
         setup,
+        globalMiddleware,
         globalMiddlewareBefore,
         globalMiddlewareAfter,
       });
@@ -310,6 +334,8 @@ export const runBackendVerify = async (options = {}) => {
     : runBackendDbCheck({
       cwd,
       migrationsDir,
+      configPath,
+      projectConfig,
       failOnWarnings,
       runReplay: runDbReplay,
     });
@@ -317,6 +343,9 @@ export const runBackendVerify = async (options = {}) => {
   const test = runBackendTests({
     ...sharedOptions,
     setup,
+    configPath,
+    projectConfig,
+    globalMiddleware,
     globalMiddlewareBefore,
     globalMiddlewareAfter,
     config: testConfig,

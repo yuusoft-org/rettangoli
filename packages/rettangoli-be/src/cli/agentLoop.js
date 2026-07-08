@@ -63,6 +63,10 @@ export const createBackendCommands = ({
   setup,
   outdir,
   migrationsDir,
+  configPath,
+  globalMiddleware = [],
+  globalMiddlewareBefore = [],
+  globalMiddlewareAfter = [],
   config,
   testConfig,
   executable,
@@ -103,31 +107,61 @@ export const createBackendCommands = ({
   const appArgs = [...dirArgs, ...methodArgs, ...middlewareArgs];
   appendOption(appArgs, '--setup-path', setup, './src/setup.js');
 
+  const context = {};
+  if (typeof configPath === 'string' && configPath && configPath !== 'rettangoli.config.yaml') {
+    context.configPath = configPath;
+  }
+
+  const runtime = {};
+  if (Array.isArray(globalMiddleware) && globalMiddleware.length > 0) {
+    runtime.globalMiddleware = globalMiddleware;
+  }
+  if (Array.isArray(globalMiddlewareBefore) && globalMiddlewareBefore.length > 0) {
+    runtime.globalMiddlewareBefore = globalMiddlewareBefore;
+  }
+  if (Array.isArray(globalMiddlewareAfter) && globalMiddlewareAfter.length > 0) {
+    runtime.globalMiddlewareAfter = globalMiddlewareAfter;
+  }
+  if (Object.keys(runtime).length > 0) {
+    context.runtime = runtime;
+  }
+
+  const withContext = (command) => {
+    if (Object.keys(context).length === 0) {
+      return command;
+    }
+
+    return {
+      ...command,
+      context,
+    };
+  };
+
   return [
-    {
+    withContext({
       id: 'check',
       argv: [...commandPrefix, 'check', ...dirArgs, ...methodArgs, ...middlewareArgs, '--format', 'json'],
-    },
-    {
+    }),
+    withContext({
       id: 'manifest',
       argv: [...commandPrefix, 'manifest', ...manifestArgs, '--json'],
-    },
-    {
+    }),
+    withContext({
       id: 'test',
       argv: [...commandPrefix, 'test', ...testArgs, '--json'],
-    },
-    {
+    }),
+    withContext({
       id: 'db',
       argv: [...commandPrefix, 'db', 'check', ...dbArgs, '--json'],
-    },
-    {
+    }),
+    withContext({
       id: 'app',
       argv: [...commandPrefix, 'app', 'check', ...appArgs, '--json'],
-    },
-    {
+    }),
+    withContext({
       id: 'verify',
       argv: [...commandPrefix, 'verify', ...verifyArgs, '--json'],
-    },
+    }),
   ];
 };
 
@@ -179,6 +213,7 @@ const createFixHint = (ruleId) => {
     'RTGL-BE-DB-001': 'Rename duplicate migration files so every migration id is unique.',
     'RTGL-BE-DB-002': 'Review the destructive migration statement and make the migration policy explicit.',
     'RTGL-BE-DB-003': 'Fix the SQL in the failing migration file and rerun db check.',
+    'RTGL-BE-RUNNER-001': 'Fix the local test runner environment or configure --package-manager/--runner.',
     'RTGL-BE-APP-001': 'Create the configured setup file or pass --setup-path.',
     'RTGL-BE-APP-002': 'Fix the setup file import error.',
     'RTGL-BE-APP-003': 'Export setup or default from the setup file.',
@@ -213,7 +248,7 @@ export const normalizeDiagnostic = ({
     schemaVersion: DIAGNOSTIC_SCHEMA_VERSION,
     ruleId,
     code: ruleId,
-    severity: 'error',
+    severity: error?.severity ?? 'error',
     phase,
     method: error?.method ?? method,
     filePath,
@@ -251,37 +286,54 @@ export const createNextAction = ({
   final = false,
 } = {}) => {
   const verifyCommand = findCommand(commands, 'verify');
-
-  if (ok) {
-    if (!final) {
-      return {
-        kind: 'verify',
-        message: 'Phase passed. Run full backend verification before stopping.',
-        argv: verifyCommand?.argv,
-      };
-    }
-
-    if (verifyCommand?.argv?.includes('--method')) {
-      return {
-        kind: 'verify',
-        message: 'Method verification passed. Run project verification before stopping.',
-        argv: removeOptionWithValue(verifyCommand.argv, '--method'),
-      };
+  const attachCommandContext = (action, command) => {
+    if (!command?.context) {
+      return action;
     }
 
     return {
+      ...action,
+      context: command.context,
+    };
+  };
+
+  if (ok) {
+    if (!final) {
+      return attachCommandContext({
+        kind: 'verify',
+        message: 'Phase passed. Run full backend verification before stopping.',
+        argv: verifyCommand?.argv,
+      }, verifyCommand);
+    }
+
+    if (verifyCommand?.argv?.includes('--method')) {
+      return attachCommandContext({
+        kind: 'verify',
+        message: 'Method verification passed. Run project verification before stopping.',
+        argv: removeOptionWithValue(verifyCommand.argv, '--method'),
+      }, verifyCommand);
+    }
+
+    return attachCommandContext({
       kind: 'done',
       message: 'Verification passed.',
       argv: verifyCommand?.argv,
-    };
+    }, verifyCommand);
   }
 
   const phaseCommandId = failedPhase === 'contracts'
     ? 'check'
     : failedPhase === 'examples'
       ? 'test'
+      : failedPhase === 'runner'
+        ? 'test'
       : failedPhase;
-  const command = findCommand(commands, phaseCommandId) ?? verifyCommand;
+  const diagnosticCommands = diagnostics
+    .map((diagnostic) => diagnostic.rerun)
+    .filter(Boolean);
+  const diagnosticCommandIds = [...new Set(diagnosticCommands.map((commandEntry) => commandEntry.id))];
+  const diagnosticCommand = diagnosticCommandIds.length === 1 ? diagnosticCommands[0] : undefined;
+  const command = diagnosticCommand ?? findCommand(commands, phaseCommandId) ?? verifyCommand;
   const ruleIds = [...new Set(diagnostics.map((diagnostic) => diagnostic.ruleId).filter(Boolean))].sort();
   const targets = [...new Set(
     diagnostics.flatMap((diagnostic) => [
@@ -289,8 +341,12 @@ export const createNextAction = ({
       ...asArray(diagnostic.files),
     ].filter(Boolean)),
   )].sort();
-  const target = failedPhase === 'test'
+  const target = command?.id === 'app'
+    ? 'runtime-app'
+    : failedPhase === 'test'
     ? 'examples-or-handler'
+    : failedPhase === 'runner'
+      ? 'test-runner'
     : failedPhase === 'build'
       ? 'backend-build'
       : failedPhase === 'db'
@@ -299,14 +355,14 @@ export const createNextAction = ({
           ? 'runtime-app'
           : 'contract-package';
 
-  return {
+  return attachCommandContext({
     kind: 'fix',
     phase: failedPhase,
     target,
     ruleIds,
     files: targets,
     argv: command?.argv,
-  };
+  }, command);
 };
 
 export const collectSourceFilesFromManifest = (manifest) => {

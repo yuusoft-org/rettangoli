@@ -6,21 +6,22 @@ import {
   formatContractFailureReport,
 } from '../core/contracts/rpcFiles.js';
 import { createApp } from './createApp.js';
+import { resolveSetupExport, resolveSetupValue } from './setup.js';
 
 const importModuleFromPath = async (filePath) => {
   const fileUrl = pathToFileURL(filePath).href;
   return import(fileUrl);
 };
 
-const loadSetup = async (setupPath) => {
+const loadSetup = async (setupPath, { cwd } = {}) => {
   const setupModule = await importModuleFromPath(setupPath);
+  const setupExport = resolveSetupExport(setupModule);
 
-  if (setupModule.setup) {
-    return setupModule.setup;
-  }
-
-  if (setupModule.default) {
-    return setupModule.default;
+  if (setupExport !== undefined) {
+    return resolveSetupValue(setupExport, {
+      cwd,
+      mode: 'runtime',
+    });
   }
 
   throw new Error(`createAppFromProject: setup export not found in ${setupPath}`);
@@ -101,6 +102,7 @@ export const createAppFromProject = async ({
   middlewareDeps = {},
   createRequestId,
   includeInternalErrorDetails = false,
+  setup,
 } = {}) => {
   const resolvedMethodDirs = methodDirs.map((dir) => path.resolve(cwd, dir));
   const resolvedMiddlewareDirs = middlewareDirs.map((dir) => path.resolve(cwd, dir));
@@ -153,7 +155,7 @@ export const createAppFromProject = async ({
     }));
   }
 
-  const setup = await loadSetup(resolvedSetupPath);
+  const resolvedSetup = setup ?? await loadSetup(resolvedSetupPath, { cwd });
 
   const methodContracts = {};
   const methodHandlers = {};
@@ -173,7 +175,7 @@ export const createAppFromProject = async ({
   }
 
   return createApp({
-    setup,
+    setup: resolvedSetup,
     methodContracts,
     methodHandlers,
     middlewareModules,

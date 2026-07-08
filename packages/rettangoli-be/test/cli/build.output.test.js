@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import build from '../../src/cli/build.js';
 import {
@@ -92,7 +93,8 @@ describe('be build cli', () => {
     expect(existsSync(out.appEntryPath)).toBe(true);
 
     const appEntry = readFileSync(out.appEntryPath, 'utf8');
-    expect(appEntry).toContain('setupModule.setup ?? setupModule.default');
+    expect(appEntry).toContain('setupModule.setup ?? setupModule.createSetup ?? setupModule.default');
+    expect(appEntry).toContain("await setupExport({ cwd: process.cwd(), env: process.env, mode: 'generated' })");
   });
 
   it('creates a deterministic dry-run build plan without writing files', () => {
@@ -161,5 +163,104 @@ describe('be build cli', () => {
     build({ cwd: rootDir, silent: true });
     const currentFreshness = checkBackendBuildPlanFreshness(plan);
     expect(currentFreshness.ok).toBe(true);
+  });
+
+  it('generates an app entry with config global middleware parity', async () => {
+    const rootDir = mkdtempSync(path.join(process.cwd(), '.tmp-rtgl-be-build-runtime-'));
+    createdDirs.push(rootDir);
+
+    const srcDir = path.join(rootDir, 'src');
+    mkdirSync(path.join(srcDir, 'modules', 'health', 'ping'), { recursive: true });
+    mkdirSync(path.join(srcDir, 'middleware'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'rettangoli.config.yaml'), [
+      'be:',
+      '  globalMiddleware:',
+      '    before: [withAuth]',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(srcDir, 'setup.js'), 'export const setup = { deps: { health: {} } };\n');
+    writeFileSync(path.join(srcDir, 'middleware', 'withAuth.js'), [
+      'export const withAuth = () => (next) => async (ctx) => {',
+      "  ctx.authUser = { userId: 'u-1' };",
+      '  return next(ctx);',
+      '};',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(srcDir, 'modules', 'health', 'ping', 'ping.handlers.js'), [
+      'export const healthPingMethod = async ({ context }) => ({',
+      '  ok: true,',
+      '  authUser: context.authUser.userId,',
+      '});',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(srcDir, 'modules', 'health', 'ping', 'ping.contract.yaml'), [
+      'schemaVersion: rettangoli.contract/v1',
+      'method: health.ping',
+      'description: ping',
+      'middleware:',
+      '  before: []',
+      '  after: []',
+      'params:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties: {}',
+      '  required: []',
+      'result:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties:',
+      '    ok:',
+      '      type: boolean',
+      '    authUser:',
+      '      type: string',
+      '  required: [ok, authUser]',
+      'errors: {}',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(srcDir, 'modules', 'health', 'ping', 'ping.examples.yaml'), [
+      'schemaVersion: rettangoli.examples/v1',
+      "file: './ping.handlers.js'",
+      'group: health-ping',
+      '---',
+      'suite: healthPingMethod',
+      'exportName: healthPingMethod',
+      '---',
+      'case: ok',
+      'proves:',
+      '  result: success',
+      'request:',
+      '  id: ok',
+      '  params: {}',
+      'out:',
+      '  result:',
+      '    ok: true',
+      '    authUser: u-1',
+      '',
+    ].join('\n'));
+
+    const out = build({ cwd: rootDir, silent: true });
+
+    const appEntry = readFileSync(out.appEntryPath, 'utf8');
+    expect(appEntry).toContain('globalMiddlewareBefore: ["withAuth"]');
+    expect(out.inputSourcePaths).toContain('rettangoli.config.yaml');
+
+    const appModule = await import(`${pathToFileURL(out.appEntryPath).href}?t=${Date.now()}`);
+    const { response } = await appModule.app.dispatchWithContext({
+      request: {
+        jsonrpc: '2.0',
+        id: 'auth',
+        method: 'health.ping',
+        params: {},
+      },
+    });
+
+    expect(response).toEqual({
+      jsonrpc: '2.0',
+      id: 'auth',
+      result: {
+        ok: true,
+        authUser: 'u-1',
+      },
+    });
   });
 });

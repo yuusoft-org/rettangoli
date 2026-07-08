@@ -15,13 +15,6 @@ const toPosixRelativePath = (cwd, filePath) => {
   return path.relative(cwd, filePath).replaceAll(path.sep, '/');
 };
 
-const toKebab = (value) => {
-  return String(value)
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
-    .replace(/[_\s.]+/g, '-')
-    .toLowerCase();
-};
-
 const toPascal = (value) => {
   return String(value)
     .split(/[-_.\s]+/)
@@ -59,39 +52,26 @@ const parseMethodId = (methodId) => {
 };
 
 const createContractContent = ({ domain, action, method }) => [
-  'schemaVersion: rettangoli.contract/v1',
-  `method: ${method}`,
-  `description: ${toKebab(domain)} ${toKebab(action)}`,
-  'middleware:',
-  '  before: []',
-  '  after: []',
+  `id: ${method}`,
   'params:',
-  '  type: object',
-  '  additionalProperties: false',
-  '  properties: {}',
-  '  required: []',
+  '  schema:',
+  '    type: object',
+  '    additionalProperties: false',
+  '    properties: {}',
+  '    required: []',
   'result:',
-  '  type: object',
-  '  additionalProperties: false',
-  '  properties:',
-  '    ok:',
-  '      type: boolean',
-  '  required: [ok]',
-  'errors: {}',
+  '  schema:',
+  '    type: object',
+  '    additionalProperties: false',
+  '    properties:',
+  '      ok:',
+  '        type: boolean',
+  '    required: [ok]',
   '',
 ].join('\n');
 
-const createExamplesContent = ({ domain, action, exportName }) => [
-  'schemaVersion: rettangoli.examples/v1',
-  `file: './${action}.handlers.js'`,
-  `group: ${toKebab(domain)}-${toKebab(action)}`,
-  '---',
-  `suite: ${exportName}`,
-  `exportName: ${exportName}`,
-  '---',
+const createExamplesContent = () => [
   'case: ok',
-  'proves:',
-  '  result: success',
   'request:',
   '  id: ok',
   '  params: {}',
@@ -160,7 +140,7 @@ export const createMethodScaffoldPlan = ({
       cwd,
       filePath: path.join(methodDir, `${parsed.action}.examples.yaml`),
       kind: 'examples',
-      content: createExamplesContent({ ...parsed, exportName }),
+      content: createExamplesContent(),
     }),
     createScaffoldTarget({
       cwd,

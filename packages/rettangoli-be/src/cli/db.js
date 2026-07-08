@@ -6,6 +6,13 @@ import { spawnSync } from 'node:child_process';
 import { getAllFiles } from '../commonBuild.js';
 import { stringifyStableJson } from './json.js';
 import { createCliResult } from './results.js';
+import {
+  createBackendCommands,
+  createNextAction,
+  findCommand,
+  normalizeDiagnostic,
+} from './agentLoop.js';
+import { resolveBackendProjectOptions } from './projectOptions.js';
 
 const toPosixRelativePath = (cwd, filePath) => {
   return path.relative(cwd, filePath).replaceAll(path.sep, '/');
@@ -79,7 +86,12 @@ export const collectBackendMigrationFacts = ({
 
 const quoteSqliteDotPath = (filePath) => `"${filePath.replaceAll('"', '""')}"`;
 
-const replayMigrations = ({ migrations, sqliteExecutable, timeoutMs = SQLITE_REPLAY_TIMEOUT_MS }) => {
+const replayMigrations = ({
+  migrations,
+  sqliteExecutable,
+  timeoutMs = SQLITE_REPLAY_TIMEOUT_MS,
+  runCommand = spawnSync,
+}) => {
   const tempDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-db-'));
   const dbPath = path.join(tempDir, 'check.sqlite');
   const stdoutParts = [];
@@ -96,13 +108,17 @@ const replayMigrations = ({ migrations, sqliteExecutable, timeoutMs = SQLITE_REP
       writeFileSync(replayPath, replaySql);
 
       const input = `.read ${quoteSqliteDotPath(replayPath)}\n.quit\n`;
-      const result = spawnSync(sqliteExecutable, ['-batch', dbPath], {
+      const result = runCommand(sqliteExecutable, ['-batch', dbPath], {
         input,
         encoding: 'utf8',
         timeout: timeoutMs,
       });
+      const hasProcessError = !!result.error;
+      const processError = hasProcessError && (result.status === 0 || typeof result.status !== 'number')
+        ? result.error.message
+        : undefined;
       const stderr = [
-        result.error?.message,
+        processError,
         result.stderr,
       ].filter(Boolean).join('\n');
 
@@ -113,10 +129,13 @@ const replayMigrations = ({ migrations, sqliteExecutable, timeoutMs = SQLITE_REP
         stderrParts.push(stderr);
       }
 
-      if (result.status !== 0) {
+      if (hasProcessError || result.status !== 0) {
+        const exitCode = hasProcessError && (result.status === 0 || typeof result.status !== 'number')
+          ? 1
+          : result.status;
         return {
           ok: false,
-          exitCode: result.status,
+          exitCode,
           signal: result.signal,
           timedOut: result.error?.code === 'ETIMEDOUT',
           stdout: stdoutParts.join('\n'),
@@ -141,6 +160,7 @@ const replayMigrations = ({ migrations, sqliteExecutable, timeoutMs = SQLITE_REP
 };
 
 export const runBackendDbCheck = (options = {}) => {
+  options = resolveBackendProjectOptions(options);
   const {
     cwd = process.cwd(),
     migrationsDir = './migrations',
@@ -148,14 +168,21 @@ export const runBackendDbCheck = (options = {}) => {
     replayTimeoutMs = SQLITE_REPLAY_TIMEOUT_MS,
     failOnWarnings = false,
     runReplay = replayMigrations,
+    replayCommand = spawnSync,
   } = options;
+  const commands = createBackendCommands({
+    configPath: options.configPath,
+    migrationsDir,
+    failOnWarnings,
+  });
+  const dbCommand = findCommand(commands, 'db');
   const migrations = findMigrations({ cwd, migrationsDir });
-  const diagnostics = [];
+  const rawDiagnostics = [];
   const seenIds = new Map();
 
   migrations.forEach((migration) => {
     if (seenIds.has(migration.id)) {
-      diagnostics.push(createDiagnostic({
+      rawDiagnostics.push(createDiagnostic({
         ruleId: 'RTGL-BE-DB-001',
         filePath: migration.path,
         migrationId: migration.id,
@@ -166,7 +193,7 @@ export const runBackendDbCheck = (options = {}) => {
     }
 
     if (migration.destructive) {
-      diagnostics.push(createDiagnostic({
+      rawDiagnostics.push(createDiagnostic({
         ruleId: 'RTGL-BE-DB-002',
         severity: 'warning',
         filePath: migration.path,
@@ -182,7 +209,7 @@ export const runBackendDbCheck = (options = {}) => {
     reason: migrations.length === 0 ? 'no migrations' : undefined,
   };
 
-  const hasBlockingDiagnostics = diagnostics.some((diagnostic) => diagnostic.severity === 'error');
+  const hasBlockingDiagnostics = rawDiagnostics.some((diagnostic) => diagnostic.severity === 'error');
   if (migrations.length > 0 && hasBlockingDiagnostics) {
     replay = {
       ok: false,
@@ -190,11 +217,16 @@ export const runBackendDbCheck = (options = {}) => {
       reason: 'blocked by migration diagnostics',
     };
   } else if (migrations.length > 0) {
-    replay = runReplay({ migrations, sqliteExecutable, timeoutMs: replayTimeoutMs });
+    replay = runReplay({
+      migrations,
+      sqliteExecutable,
+      timeoutMs: replayTimeoutMs,
+      runCommand: replayCommand,
+    });
     if (!replay.ok) {
       const detail = String(replay.stderr || replay.stdout || '').trim()
         || `sqlite3 exited with ${replay.exitCode ?? replay.signal ?? 'unknown status'}.`;
-      diagnostics.push(createDiagnostic({
+      rawDiagnostics.push(createDiagnostic({
         ruleId: 'RTGL-BE-DB-003',
         filePath: replay.migrationPath ?? migrations[0]?.path,
         migrationId: replay.migrationId ?? migrations[0]?.id,
@@ -203,13 +235,24 @@ export const runBackendDbCheck = (options = {}) => {
     }
   }
 
+  const diagnostics = rawDiagnostics.map((diagnostic) => normalizeDiagnostic({
+    cwd,
+    error: diagnostic,
+    phase: 'db',
+    command: dbCommand,
+    extra: {
+      migrationId: diagnostic.migrationId,
+    },
+  }));
   const errorCount = diagnostics.filter((diagnostic) => diagnostic.severity === 'error').length;
   const warningCount = diagnostics.filter((diagnostic) => diagnostic.severity === 'warning').length;
+  const ok = errorCount === 0 && (!failOnWarnings || warningCount === 0);
 
   return createCliResult({
     command: 'db check',
     artifactSchemaVersion: 'rettangoli.dbCheck/v1',
-    ok: errorCount === 0 && (!failOnWarnings || warningCount === 0),
+    ok,
+    commands,
     migrationsDir,
     migrationCount: migrations.length,
     errorCount,
@@ -225,6 +268,12 @@ export const runBackendDbCheck = (options = {}) => {
       reason: replay.reason,
     },
     diagnostics,
+    nextAction: createNextAction({
+      ok,
+      failedPhase: ok ? undefined : 'db',
+      diagnostics,
+      commands,
+    }),
   });
 };
 

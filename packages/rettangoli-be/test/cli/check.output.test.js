@@ -211,6 +211,111 @@ describe('be check cli output', () => {
     );
   });
 
+  it('accepts minimal contracts and headerless examples', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-minimal-'));
+    createdDirs.push(rootDir);
+    const methodDir = path.join(rootDir, 'src', 'modules', 'health', 'ping');
+    mkdirSync(methodDir, { recursive: true });
+    writeFileSync(path.join(methodDir, 'ping.handlers.js'), [
+      'export const healthPingMethod = async ({ payload }) => {',
+      '  if (payload.fail) return { _error: true, code: "UNAVAILABLE", details: { reason: "down" } };',
+      '  return { ok: true };',
+      '};',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(methodDir, 'ping.contract.yaml'), [
+      'id: health.ping',
+      'params:',
+      '  schema:',
+      '    type: object',
+      '    additionalProperties: false',
+      '    properties:',
+      '      fail:',
+      '        type: boolean',
+      '    required: []',
+      'result:',
+      '  schema:',
+      '    type: object',
+      '    additionalProperties: false',
+      '    properties:',
+      '      ok:',
+      '        type: boolean',
+      '    required: [ok]',
+      'errors:',
+      '  UNAVAILABLE:',
+      '    description: dependency is down',
+      '    details:',
+      '      type: object',
+      '      additionalProperties: false',
+      '      properties:',
+      '        reason:',
+      '          const: down',
+      '      required: [reason]',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
+      'case: ok',
+      'request:',
+      '  id: ok',
+      '  meta:',
+      '    tenantId: acme',
+      '  params: {}',
+      'out:',
+      '  result:',
+      '    ok: true',
+      '---',
+      'case: unavailable',
+      'request:',
+      '  id: unavailable',
+      '  params:',
+      '    fail: true',
+      'throws: UNAVAILABLE',
+      '',
+    ].join('\n'));
+
+    const result = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.methodCount).toBe(1);
+  });
+
+  it('rejects conflicting example meta aliases', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-meta-conflict-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      ...exampleHeader(),
+      '---',
+      'case: ok',
+      'request:',
+      '  id: ok',
+      '  meta:',
+      '    tenantId: request',
+      '  params: {}',
+      'meta:',
+      '  tenantId: top',
+      'out:',
+      '  result:',
+      '    ok: true',
+      '',
+    ].join('\n'));
+
+    const result = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.errors[0].code).toBe('RTGL-BE-CONTRACT-050');
+    expect(result.errors[0].message).toContain('top-level meta and request.meta');
+  });
+
   it('checks one method in json format', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-method-'));
     createdDirs.push(rootDir);
@@ -339,7 +444,7 @@ describe('be check cli output', () => {
     expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-048');
   });
 
-  it('requires a success proof example', () => {
+  it('infers success proof from result examples', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-success-proof-'));
     createdDirs.push(rootDir);
     writeMethodFiles({ rootDir, includeSpec: true });
@@ -351,25 +456,16 @@ describe('be check cli output', () => {
       '',
     ].join('\n'));
 
-    const stdoutSpy = captureStdout();
-
-    check({
+    const result = runBackendCheck({
       cwd: rootDir,
       dirs: ['./src/modules'],
       middlewareDir: './src/middleware',
-      format: 'json',
     });
 
-    expect(process.exitCode).toBe(1);
-    const parsed = parseStdoutJson(stdoutSpy);
-    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-029');
-    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-037');
-    expect(parsed.diagnostics[0].method).toBe('health.ping');
-    expect(parsed.diagnostics[0].ruleId).toBe('RTGL-BE-CONTRACT-029');
-    expect(parsed.diagnostics[0].rerun.argv).toEqual(['rtgl', 'be', 'check', '--format', 'json']);
+    expect(result.ok).toBe(true);
   });
 
-  it('requires explicit error proof for declared domain errors', () => {
+  it('infers error proof from domain error examples', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-error-proof-'));
     createdDirs.push(rootDir);
     writeMethodFiles({ rootDir, includeSpec: true });
@@ -408,19 +504,13 @@ describe('be check cli output', () => {
       '',
     ].join('\n'));
 
-    const stdoutSpy = captureStdout();
-
-    check({
+    const result = runBackendCheck({
       cwd: rootDir,
       dirs: ['./src/modules'],
       middlewareDir: './src/middleware',
-      format: 'json',
     });
 
-    expect(process.exitCode).toBe(1);
-    const parsed = parseStdoutJson(stdoutSpy);
-    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-034');
-    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-035');
+    expect(result.ok).toBe(true);
   });
 
   it('rejects examples that claim result and error proof at the same time', () => {
@@ -999,6 +1089,68 @@ describe('be check cli output', () => {
       './backend/methods',
       '--method',
       'health.ping',
+      '--json',
+    ]);
+  });
+
+  it('loads configured method dirs for package-level checks', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-config-dir-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({
+      rootDir,
+      includeSpec: true,
+      modulesDir: 'backend/methods',
+    });
+    writeFileSync(path.join(rootDir, 'rettangoli.config.yaml'), [
+      'be:',
+      '  dirs: [./backend/methods]',
+      '',
+    ].join('\n'));
+
+    const result = runBackendCheck({
+      cwd: rootDir,
+      format: 'json',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.methodCount).toBe(1);
+    expect(result.scope).toEqual({
+      type: 'project',
+      methods: ['health.ping'],
+      provesProject: true,
+    });
+    expect(result.nextAction.argv).toEqual([
+      'rtgl',
+      'be',
+      'verify',
+      '--dir',
+      './backend/methods',
+      '--json',
+    ]);
+  });
+
+  it('normalizes singular dir option for package-level checks', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-singular-dir-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({
+      rootDir,
+      includeSpec: true,
+      modulesDir: 'backend/methods',
+    });
+
+    const result = runBackendCheck({
+      cwd: rootDir,
+      dir: './backend/methods',
+      format: 'json',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.nextAction.argv).toEqual([
+      'rtgl',
+      'be',
+      'verify',
+      '--dir',
+      './backend/methods',
       '--json',
     ]);
   });

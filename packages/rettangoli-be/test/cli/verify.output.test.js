@@ -162,6 +162,106 @@ describe('be verify output', () => {
     expect(runCommand).toHaveBeenCalledOnce();
   });
 
+  it('loads custom project config for package-level verification', async () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-verify-config-'));
+    createdDirs.push(rootDir);
+    writeProject(rootDir, { modulesDir: 'backend/methods' });
+    mkdirSync(path.join(rootDir, 'backend', 'middleware'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'backend', 'setup.js'), 'export const setup = { deps: { health: {} } };\n');
+    writeFileSync(path.join(rootDir, 'backend', 'middleware', 'withAuth.js'), [
+      'export const withAuth = () => (next) => async (ctx) => next(ctx);',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(rootDir, 'vitest.custom.js'), 'export default {};\n');
+    writeFileSync(path.join(rootDir, 'custom-be.yaml'), [
+      'be:',
+      '  dirs: [./backend/methods]',
+      '  middlewareDir: ./backend/middleware',
+      '  setup: ./backend/setup.js',
+      '  outdir: ./backend/generated',
+      '  migrationsDir: ./database/sql',
+      '  globalMiddleware:',
+      '    before: [withAuth]',
+      '',
+    ].join('\n'));
+
+    const runCommand = vi.fn(() => ({
+      status: 0,
+      stdout: '',
+      stderr: '',
+    }));
+
+    const result = await runBackendVerify({
+      cwd: rootDir,
+      configPath: './custom-be.yaml',
+      testConfig: './vitest.custom.js',
+      env: {},
+      runCommand,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.commands.find((command) => command.id === 'check').argv).toEqual([
+      'rtgl',
+      'be',
+      'check',
+      '--dir',
+      './backend/methods',
+      '--middleware-dir',
+      './backend/middleware',
+      '--format',
+      'json',
+    ]);
+    expect(result.commands.find((command) => command.id === 'verify').argv).toEqual([
+      'rtgl',
+      'be',
+      'verify',
+      '--dir',
+      './backend/methods',
+      '--middleware-dir',
+      './backend/middleware',
+      '--setup-path',
+      './backend/setup.js',
+      '--outdir',
+      './backend/generated',
+      '--migrations-dir',
+      './database/sql',
+      '--test-config',
+      './vitest.custom.js',
+      '--json',
+    ]);
+    expect(result.commands.find((command) => command.id === 'verify').context).toEqual({
+      configPath: './custom-be.yaml',
+      runtime: {
+        globalMiddlewareBefore: ['withAuth'],
+      },
+    });
+    expect(result.nextAction.context).toEqual({
+      configPath: './custom-be.yaml',
+      runtime: {
+        globalMiddlewareBefore: ['withAuth'],
+      },
+    });
+    expect(result.files.shared).toEqual(expect.arrayContaining([
+      'backend/setup.js',
+      'custom-be.yaml',
+      'vitest.custom.js',
+    ]));
+    expect(result.build.plan.outdir).toBe('backend/generated');
+    expect(result.build.plan.targets[0].inputSourcePaths).toContain('custom-be.yaml');
+    expect(result.app.files).toContain('backend/middleware/withAuth.js');
+    expect(result.db.migrationsDir).toBe('./database/sql');
+    expect(result.test.files).toEqual(['backend/methods/health/ping/ping.examples.yaml']);
+    expect(JSON.parse(runCommand.mock.calls[0][2].env.RTGL_BE_EXAMPLES_RUNTIME)).toEqual({
+      cwd: rootDir,
+      methodDirs: ['./backend/methods'],
+      middlewareDirs: ['./backend/middleware'],
+      setupPath: './backend/setup.js',
+      globalMiddleware: [],
+      globalMiddlewareBefore: ['withAuth'],
+      globalMiddlewareAfter: [],
+    });
+  });
+
   it('keeps method-scoped verify isolated from unrelated broken methods', async () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-verify-scoped-'));
     createdDirs.push(rootDir);
@@ -449,6 +549,16 @@ describe('be verify output', () => {
     const result = await runBackendVerify({
       cwd: rootDir,
       runCommand,
+      runDbReplay: () => ({
+        ok: false,
+        exitCode: 1,
+        signal: null,
+        timedOut: false,
+        stdout: '',
+        stderr: 'Parse error near line 3: incomplete input',
+        migrationId: '002_bad',
+        migrationPath: 'migrations/002_bad.sql',
+      }),
     });
 
     expect(result.ok).toBe(false);
@@ -537,7 +647,7 @@ describe('be verify output', () => {
       '  params: {}',
       'out:',
       '  result:',
-      '    ok: true',
+      '    wrong: true',
       '',
     ].join('\n'));
 
@@ -558,7 +668,7 @@ describe('be verify output', () => {
     expect(result.failedPhase).toBe('check');
     expect(result.build).toBeUndefined();
     expect(result.test).toBeUndefined();
-    expect(result.diagnostics.map((diagnostic) => diagnostic.ruleId)).toContain('RTGL-BE-CONTRACT-029');
+    expect(result.diagnostics.map((diagnostic) => diagnostic.ruleId)).toContain('RTGL-BE-CONTRACT-028');
     expect(result.diagnostics[0].filePath).toBe('src/modules/health/ping/ping.examples.yaml');
     expect(result.nextAction.argv).toEqual([
       'rtgl',
@@ -590,7 +700,7 @@ describe('be verify output', () => {
       '  params: {}',
       'out:',
       '  result:',
-      '    ok: true',
+      '    wrong: true',
       '',
     ].join('\n'));
 

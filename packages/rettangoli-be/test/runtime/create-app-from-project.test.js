@@ -226,6 +226,88 @@ describe('createAppFromProject', () => {
     expect(response.result.ok).toBe(true);
   });
 
+  it('supports async setup factory exports', async () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-app-setup-factory-'));
+    createdDirs.push(rootDir);
+
+    const srcDir = path.join(rootDir, 'src');
+    mkdirSync(srcDir, { recursive: true });
+
+    writeFileSync(path.join(srcDir, 'setup.js'), [
+      'export const createSetup = async ({ cwd, mode }) => ({',
+      '  deps: {',
+      '    health: {',
+      '      cwd,',
+      '      mode,',
+      '    },',
+      '  },',
+      '});',
+      '',
+    ].join('\n'));
+
+    const methodDir = path.join(srcDir, 'modules', 'health', 'ping');
+    mkdirSync(methodDir, { recursive: true });
+
+    writeFileSync(path.join(methodDir, 'ping.handlers.js'), [
+      'export const healthPingMethod = async ({ deps }) => ({',
+      '  ok: true,',
+      '  cwd: deps.cwd,',
+      '  mode: deps.mode,',
+      '});',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(methodDir, 'ping.contract.yaml'), [
+      'id: health.ping',
+      'result:',
+      '  schema:',
+      '    type: object',
+      '    additionalProperties: false',
+      '    properties:',
+      '      ok:',
+      '        type: boolean',
+      '      cwd:',
+      '        type: string',
+      '      mode:',
+      '        type: string',
+      '    required: [ok, cwd, mode]',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
+      'case: ok',
+      'request:',
+      '  id: ok',
+      '  params: {}',
+      'out:',
+      '  result:',
+      '    ok: true',
+      `    cwd: ${rootDir}`,
+      '    mode: runtime',
+      '',
+    ].join('\n'));
+
+    const app = await createAppFromProject({
+      cwd: rootDir,
+      methodDirs: ['./src/modules'],
+      middlewareDirs: ['./src/middleware'],
+      setupPath: './src/setup.js',
+    });
+
+    const response = await app.dispatch({
+      request: {
+        jsonrpc: '2.0',
+        id: '1',
+        method: 'health.ping',
+        params: {},
+      },
+    });
+
+    expect(response.result).toEqual({
+      ok: true,
+      cwd: rootDir,
+      mode: 'runtime',
+    });
+  });
+
   it('scopes runtime construction to one method', async () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-app-scoped-'));
     createdDirs.push(rootDir);

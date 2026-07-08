@@ -11,6 +11,7 @@ import {
 import { stringifyStableJson } from './json.js';
 import { createCliResult } from './results.js';
 import { collectBackendMigrationFacts } from './db.js';
+import { resolveBackendProjectOptions } from './projectOptions.js';
 
 export { stringifyStableJson } from './json.js';
 
@@ -187,14 +188,16 @@ const createProtocolPolicy = () => ({
   },
 });
 
-export const createBackendManifest = ({
-  cwd = process.cwd(),
-  dirs = ['./src/modules'],
-  middlewareDir = './src/middleware',
-  method,
-  migrationsDir = './migrations',
-  outdir = './.rtgl-be/generated',
-} = {}) => {
+export const createBackendManifest = (inputOptions = {}) => {
+  const options = resolveBackendProjectOptions(inputOptions);
+  const {
+    cwd,
+    dirs,
+    middlewareDir,
+    method,
+    migrationsDir,
+    outdir,
+  } = options;
   const analysis = analyzeBackendContracts({
     cwd,
     dirs,

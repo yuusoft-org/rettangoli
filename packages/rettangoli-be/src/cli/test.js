@@ -13,6 +13,7 @@ import {
 } from './agentLoop.js';
 import { stringifyStableJson } from './json.js';
 import { createCliResult } from './results.js';
+import { resolveBackendProjectOptions } from './projectOptions.js';
 
 const toOutputTail = (value, maxLength = 4000) => {
   const text = String(value ?? '');
@@ -32,6 +33,17 @@ const toProcessOutputText = (value) => {
 };
 
 const inferAppFailureFromOutput = ({ cwd, output, method, setup }) => {
+  const runtimeContractMatch = output.match(/\b(RTGL-BE-CONTRACT-\d{3})\s+(.+?)\s+\[([^\]]+)\]/);
+  if (runtimeContractMatch) {
+    const [, code, message, filePath] = runtimeContractMatch;
+    return {
+      code,
+      method,
+      message: `Runtime contract validation failed: ${message}`,
+      filePath,
+    };
+  }
+
   const setupPath = path.resolve(cwd, setup);
   const missingDomainMatch = output.match(/createApp: missing setup\.deps\.([A-Za-z0-9_]+) object required by method '([^']+)'/);
   if (missingDomainMatch) {
@@ -63,6 +75,25 @@ const inferAppFailureFromOutput = ({ cwd, output, method, setup }) => {
   }
 
   return undefined;
+};
+
+const createRunnerFailure = ({ result, runner, args }) => {
+  if (!result.error) {
+    return undefined;
+  }
+
+  return {
+    code: 'RTGL-BE-RUNNER-001',
+    message: `Backend example runner failed: ${result.error.message}`,
+    runner: {
+      executable: runner.executable,
+      args,
+      argv: [runner.executable, ...args],
+      status: result.status,
+      signal: result.signal,
+      errorCode: result.error.code,
+    },
+  };
 };
 
 const createPackageRunner = ({ executable, packageManager, env = process.env } = {}) => {
@@ -97,12 +128,14 @@ const createPackageRunner = ({ executable, packageManager, env = process.env } =
 };
 
 export const runBackendTests = (options = {}) => {
+  options = resolveBackendProjectOptions(options);
   const {
     cwd = process.cwd(),
     dirs = ['./src/modules'],
     middlewareDir = './src/middleware',
     method,
     setup = './src/setup.js',
+    configPath,
     globalMiddleware = [],
     globalMiddlewareBefore = [],
     globalMiddlewareAfter = [],
@@ -130,6 +163,10 @@ export const runBackendTests = (options = {}) => {
     method,
     middlewareDir,
     setup,
+    configPath,
+    globalMiddleware,
+    globalMiddlewareBefore,
+    globalMiddlewareAfter,
     config,
     executable,
     packageManager,
@@ -213,9 +250,9 @@ export const runBackendTests = (options = {}) => {
   }
 
   const vitestArgs = ['vitest', 'run', ...files, '--reporter', reporter];
-  const configPath = path.resolve(cwd, config);
+  const resolvedTestConfigPath = path.resolve(cwd, config);
 
-  if (config && !existsSync(configPath)) {
+  if (config && !existsSync(resolvedTestConfigPath)) {
     const diagnostic = normalizeDiagnostic({
       cwd,
       error: {
@@ -278,9 +315,17 @@ export const runBackendTests = (options = {}) => {
     env: childEnv,
     encoding: 'utf8',
     stdio: captureOutput ? 'pipe' : 'inherit',
-  });
-  const exitCode = result.error ? 1 : typeof result.status === 'number' ? result.status : 1;
-  const ok = !result.error && exitCode === 0;
+  }) ?? {
+    status: 1,
+    stdout: '',
+    stderr: '',
+    error: new Error('Backend example runner did not return a process result.'),
+  };
+  const runnerFailure = createRunnerFailure({ result, runner, args });
+  const exitCode = runnerFailure
+    ? (typeof result.status === 'number' && result.status !== 0 ? result.status : 1)
+    : (typeof result.status === 'number' ? result.status : 1);
+  const ok = !runnerFailure && exitCode === 0;
   const stdout = toProcessOutputText(result.stdout ?? result.output?.[1]);
   const stderr = [
     toProcessOutputText(result.stderr ?? result.output?.[2]),
@@ -293,23 +338,25 @@ export const runBackendTests = (options = {}) => {
     method,
     setup,
   });
-  const failurePhase = appFailure ? 'app' : 'test';
-  const failureCommand = appFailure ? findCommand(commands, 'app') : testCommand;
+  const failureError = runnerFailure ?? appFailure ?? {
+    code: 'RTGL-BE-TEST-002',
+    message: result.error?.message
+      ? `Backend examples failed with exit code ${exitCode}: ${result.error.message}`
+      : `Backend examples failed with exit code ${exitCode}.`,
+    filePath: files.length === 1 ? files[0] : undefined,
+  };
+  const failurePhase = runnerFailure ? 'runner' : appFailure ? 'app' : 'test';
+  const failureCommand = runnerFailure ? testCommand : appFailure ? findCommand(commands, 'app') : testCommand;
   const failureDiagnostic = ok ? undefined : normalizeDiagnostic({
     cwd,
-    error: appFailure ?? {
-      code: 'RTGL-BE-TEST-002',
-      message: result.error?.message
-        ? `Backend examples failed with exit code ${exitCode}: ${result.error.message}`
-        : `Backend examples failed with exit code ${exitCode}.`,
-      filePath: files.length === 1 ? files[0] : undefined,
-    },
+    error: failureError,
     phase: failurePhase,
     method,
     command: failureCommand,
     extra: {
-      files: relatedFiles,
-      executedFiles: files,
+      files: runnerFailure ? [] : relatedFiles,
+      executedFiles: runnerFailure ? [] : files,
+      runner: runnerFailure?.runner,
       outputTail: {
         stdout: toOutputTail(stdout),
         stderr: toOutputTail(stderr),

@@ -4,6 +4,20 @@ import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 import { runBackendDbCheck } from '../../src/cli/db.js';
 
+const replayOk = () => ({
+  status: 0,
+  stdout: '',
+  stderr: '',
+  signal: null,
+});
+
+const replaySqlError = (message = 'Parse error: incomplete input') => () => ({
+  status: 1,
+  stdout: '',
+  stderr: message,
+  signal: null,
+});
+
 describe('be db check command', () => {
   const createdDirs = [];
 
@@ -34,7 +48,10 @@ describe('be db check command', () => {
       '',
     ].join('\n'));
 
-    const result = runBackendDbCheck({ cwd: rootDir });
+    const result = runBackendDbCheck({
+      cwd: rootDir,
+      replayCommand: replayOk,
+    });
 
     expect(result.schemaVersion).toBe('rettangoli.cliResult/v1');
     expect(result.artifactSchemaVersion).toBe('rettangoli.dbCheck/v1');
@@ -56,7 +73,20 @@ describe('be db check command', () => {
     expect(result.ok).toBe(false);
     expect(result.diagnostics[0]).toEqual(expect.objectContaining({
       ruleId: 'RTGL-BE-DB-001',
+      file: { path: 'migrations/nested/001_init.sql' },
+      filePath: 'migrations/nested/001_init.sql',
       migrationId: '001_init',
+      fix: 'Rename duplicate migration files so every migration id is unique.',
+      rerun: expect.objectContaining({
+        id: 'db',
+        argv: ['rtgl', 'be', 'db', 'check', '--json'],
+      }),
+    }));
+    expect(result.nextAction).toEqual(expect.objectContaining({
+      phase: 'db',
+      target: 'database-migrations',
+      files: ['migrations/nested/001_init.sql'],
+      argv: ['rtgl', 'be', 'db', 'check', '--json'],
     }));
     expect(result.replay).toEqual(expect.objectContaining({
       ok: false,
@@ -75,6 +105,7 @@ describe('be db check command', () => {
     const result = runBackendDbCheck({
       cwd: rootDir,
       replayTimeoutMs: 1000,
+      replayCommand: replaySqlError('Parse error near line 3: incomplete input'),
     });
     const elapsedMs = Date.now() - startedAt;
 
@@ -86,6 +117,7 @@ describe('be db check command', () => {
       migrationId: '001_bad',
     }));
     expect(result.diagnostics[0].message).toMatch(/incomplete input/i);
+    expect(result.diagnostics[0].message).not.toContain('spawnSync sqlite3 EPERM');
   });
 
   it('points replay failures at the failing migration file', () => {
@@ -95,13 +127,61 @@ describe('be db check command', () => {
     writeFileSync(path.join(rootDir, 'migrations', '001_ok.sql'), 'CREATE TABLE users (id TEXT PRIMARY KEY);\n');
     writeFileSync(path.join(rootDir, 'migrations', '002_bad.sql'), 'CREATE TABLE broken (\n');
 
-    const result = runBackendDbCheck({ cwd: rootDir });
+    let replayCount = 0;
+    const result = runBackendDbCheck({
+      cwd: rootDir,
+      replayCommand: () => {
+        replayCount += 1;
+        return replayCount === 1
+          ? replayOk()
+          : replaySqlError('Parse error near line 3: incomplete input')();
+      },
+    });
 
     expect(result.ok).toBe(false);
     expect(result.diagnostics[0]).toEqual(expect.objectContaining({
       ruleId: 'RTGL-BE-DB-003',
       filePath: 'migrations/002_bad.sql',
       migrationId: '002_bad',
+    }));
+    expect(result.diagnostics[0].message).not.toContain('spawnSync sqlite3 EPERM');
+  });
+
+  it('fails replay when sqlite spawn reports an error with status zero', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-db-spawn-error-status-zero-'));
+    createdDirs.push(rootDir);
+    mkdirSync(path.join(rootDir, 'migrations'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'migrations', '001_ok.sql'), 'CREATE TABLE users (id TEXT PRIMARY KEY);\n');
+
+    const result = runBackendDbCheck({
+      cwd: rootDir,
+      replayCommand: () => ({
+        status: 0,
+        stdout: '',
+        stderr: '',
+        signal: null,
+        error: Object.assign(new Error('spawnSync sqlite3 EPERM'), {
+          code: 'EPERM',
+        }),
+      }),
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.replay).toEqual(expect.objectContaining({
+      ok: false,
+      exitCode: 1,
+      timedOut: false,
+    }));
+    expect(result.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-DB-003',
+      filePath: 'migrations/001_ok.sql',
+      migrationId: '001_ok',
+    }));
+    expect(result.diagnostics[0].message).toContain('spawnSync sqlite3 EPERM');
+    expect(result.nextAction).toEqual(expect.objectContaining({
+      phase: 'db',
+      target: 'database-migrations',
+      argv: ['rtgl', 'be', 'db', 'check', '--json'],
     }));
   });
 
@@ -115,16 +195,71 @@ describe('be db check command', () => {
       '',
     ].join('\n'));
 
-    const defaultResult = runBackendDbCheck({ cwd: rootDir });
+    const defaultResult = runBackendDbCheck({
+      cwd: rootDir,
+      replayCommand: replayOk,
+    });
     const strictResult = runBackendDbCheck({
       cwd: rootDir,
       failOnWarnings: true,
+      replayCommand: replayOk,
     });
 
     expect(defaultResult.ok).toBe(true);
     expect(defaultResult.warningCount).toBe(1);
     expect(defaultResult.errorCount).toBe(0);
+    expect(defaultResult.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-DB-002',
+      severity: 'warning',
+      file: { path: 'migrations/001_drop.sql' },
+      fix: 'Review the destructive migration statement and make the migration policy explicit.',
+    }));
     expect(strictResult.ok).toBe(false);
     expect(strictResult.failOnWarnings).toBe(true);
+    expect(strictResult.nextAction).toEqual(expect.objectContaining({
+      phase: 'db',
+      target: 'database-migrations',
+      files: ['migrations/001_drop.sql'],
+      argv: ['rtgl', 'be', 'db', 'check', '--fail-on-warnings', '--json'],
+    }));
+  });
+
+  it('loads configured migrations dir for package-level db checks', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-db-config-dir-'));
+    createdDirs.push(rootDir);
+    mkdirSync(path.join(rootDir, 'database', 'sql'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'rettangoli.config.yaml'), [
+      'be:',
+      '  migrationsDir: ./database/sql',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(rootDir, 'database', 'sql', '001_init.sql'), 'CREATE TABLE users (id TEXT PRIMARY KEY);\n');
+
+    const result = runBackendDbCheck({
+      cwd: rootDir,
+      runReplay: () => ({
+        ok: true,
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        stdout: '',
+        stderr: '',
+      }),
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.migrationsDir).toBe('./database/sql');
+    expect(result.migrations.map((migration) => migration.path)).toEqual([
+      'database/sql/001_init.sql',
+    ]);
+    expect(result.commands.find((command) => command.id === 'db').argv).toEqual([
+      'rtgl',
+      'be',
+      'db',
+      'check',
+      '--migrations-dir',
+      './database/sql',
+      '--json',
+    ]);
   });
 });
