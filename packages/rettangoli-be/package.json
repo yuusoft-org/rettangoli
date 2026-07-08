@@ -26,8 +26,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test": "vitest run test/ spec/ --reporter=verbose --config vitest.config.js",
-    "test:puty": "vitest run spec/ --reporter=verbose --config vitest.config.js"
+    "test": "vitest run test/ spec/ --reporter=verbose --config vitest.config.js"
   },
   "dependencies": {
     "ajv": "^8.17.1",
@@ -35,7 +34,6 @@
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "puty": "^0.1.2",
     "vitest": "^4.0.15"
   }
 }

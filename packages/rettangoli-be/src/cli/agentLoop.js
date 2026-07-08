@@ -160,7 +160,7 @@ const createFixHint = (ruleId) => {
     'RTGL-BE-CONTRACT-045': 'Move domain error fields into the errors catalog and error examples.',
     'RTGL-BE-CONTRACT-046': 'Fix the examples config document.',
     'RTGL-BE-CONTRACT-047': 'Point the examples file at the local method handler file.',
-    'RTGL-BE-CONTRACT-048': 'Set examples mode to handler or rpc.',
+    'RTGL-BE-CONTRACT-048': 'Remove the examples mode field; contract examples always run through JSON-RPC runtime.',
     'RTGL-BE-CONTRACT-049': 'Fix the examples suite document.',
     'RTGL-BE-CONTRACT-050': 'Add a JSON-RPC request object to the RPC example.',
     'RTGL-BE-CONTRACT-051': 'Set request.method to the contract method id.',

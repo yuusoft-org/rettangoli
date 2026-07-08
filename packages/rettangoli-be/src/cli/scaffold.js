@@ -80,11 +80,10 @@ const createContractContent = ({ domain, action, method }) => [
   '',
 ].join('\n');
 
-const createExamplesContent = ({ domain, action, exportName }) => [
+const createExamplesContent = ({ domain, action, method, exportName }) => [
   'schemaVersion: rettangoli.examples/v1',
   `file: './${action}.handlers.js'`,
   `group: ${toKebab(domain)}-${toKebab(action)}`,
-  'mode: handler',
   '---',
   `suite: ${exportName}`,
   `exportName: ${exportName}`,
@@ -92,10 +91,16 @@ const createExamplesContent = ({ domain, action, exportName }) => [
   'case: ok',
   'proves:',
   '  result: success',
-  'in:',
-  '  - payload: {}',
+  'request:',
+  "  jsonrpc: '2.0'",
+  '  id: ok',
+  `  method: ${method}`,
+  '  params: {}',
   'out:',
-  '  ok: true',
+  "  jsonrpc: '2.0'",
+  '  id: ok',
+  '  result:',
+  '    ok: true',
   '',
 ].join('\n');
 

@@ -1,7 +1,6 @@
 schemaVersion: rettangoli.examples/v1
 file: './ping.handlers.js'
 group: health-ping-rpc
-mode: rpc
 runtime:
   cwd: ./test/fixtures/rpc-example-app
 ---

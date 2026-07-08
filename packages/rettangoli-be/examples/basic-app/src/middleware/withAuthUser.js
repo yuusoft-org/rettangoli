@@ -1,5 +1,9 @@
 export const withAuthUser = () => {
   return (next) => async (ctx) => {
+    if (ctx.authUser) {
+      return next(ctx);
+    }
+
     const token = ctx.cookies?.request?.session;
 
     if (!token) {

@@ -103,9 +103,8 @@ then instantiates the generated app model without serving traffic.
 `rtgl be compat --from --to --json` compares two manifests and classifies API
 changes as safe, risky, or breaking.
 
-`rtgl be test` executes `*.examples.yaml`. `mode: handler` proves handler contract
-behavior; `mode: rpc` proves JSON-RPC request/response behavior through the app
-runtime.
+`rtgl be test` executes `*.examples.yaml` as JSON-RPC runtime examples through
+the app model. There is no examples mode switch.
 
 ## Minimal Project Bootstrap
 
@@ -122,22 +121,20 @@ A runnable backend app needs app-local test tooling:
     "@rettangoli/be": "^1.1.0"
   },
   "devDependencies": {
-    "puty": "^0.1.2",
     "vitest": "^4.0.15"
   }
 }
 ```
 
 Use the package `vitest.config.js` shape from `examples/basic-app` so
-`*.examples.yaml` files execute through Puty and Rettangoli RPC examples:
+`*.examples.yaml` files execute through the Rettangoli runtime:
 
 ```js
 import { defineConfig } from 'vitest/config';
-import { putyPlugin } from 'puty/vitest';
 import { rettangoliExamplesPlugin } from '@rettangoli/be/testing';
 
 export default defineConfig({
-  plugins: [putyPlugin(), rettangoliExamplesPlugin()],
+  plugins: [rettangoliExamplesPlugin()],
 });
 ```
 

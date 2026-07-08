@@ -484,11 +484,11 @@ const validateExamplesHeader = ({
     });
   }
 
-  if (configDocument.mode !== 'handler' && configDocument.mode !== 'rpc') {
+  if (Object.prototype.hasOwnProperty.call(configDocument, 'mode')) {
     errors.push({
       code: 'RTGL-BE-CONTRACT-048',
       method,
-      message: 'Examples mode must be handler or rpc.',
+      message: 'Examples mode is no longer supported. Contract examples always run through the JSON-RPC runtime.',
       filePath: examplesFilePath,
       jsonPointer: '/documents/0/mode',
     });
@@ -574,7 +574,6 @@ const validateExamplesAgainstContract = ({
 
   const examplesFilePath = methodEntry.examplesDocuments[0].filePath;
   const documents = methodEntry.examplesDocuments[0].documents;
-  const mode = documents[0]?.mode ?? 'handler';
   const caseDocuments = documents.filter((doc) => isPlainObject(doc) && Object.prototype.hasOwnProperty.call(doc, 'case'));
   const ajv = createAjv();
 
@@ -624,34 +623,10 @@ const validateExamplesAgainstContract = ({
     });
   };
 
-  const validateHandlerCase = (caseDoc) => {
+  const validateRpcCase = (caseDoc) => {
     const caseName = typeof caseDoc.case === 'string' ? caseDoc.case : '<unnamed>';
-    const hasValidInput = Array.isArray(caseDoc.in)
-      && caseDoc.in.length === 1
-      && isPlainObject(caseDoc.in[0]);
-    if (!hasValidInput) {
-      pushExampleError({
-        code: 'RTGL-BE-CONTRACT-039',
-        caseName,
-        message: `Example '${caseName}' must call the handler with exactly one object argument in 'in'.`,
-      });
-      return;
-    }
-
-    const input = caseDoc.in[0];
-    const payload = Object.prototype.hasOwnProperty.call(input, 'payload') ? input.payload : {};
-
-    if (!paramsValidator(payload)) {
-      pushExampleError({
-        code: 'RTGL-BE-CONTRACT-027',
-        caseName,
-        message: `Example '${caseName}' payload does not match params schema: ${formatAjvErrors(paramsValidator.errors)}`,
-      });
-    }
-
-    if (Object.prototype.hasOwnProperty.call(caseDoc, 'throws')) {
-      return;
-    }
+    const input = Array.isArray(caseDoc.in) && isPlainObject(caseDoc.in[0]) ? caseDoc.in[0] : {};
+    const request = caseDoc.request ?? input.request;
 
     if (caseDoc.proves?.result !== undefined && caseDoc.proves?.error !== undefined) {
       pushExampleError({
@@ -661,87 +636,6 @@ const validateExamplesAgainstContract = ({
       });
       return;
     }
-
-    const output = caseDoc.out;
-    const isDomainError = isPlainObject(output) && output._error === true;
-
-    if (!isDomainError) {
-      if (!resultValidator(output)) {
-        pushExampleError({
-          code: 'RTGL-BE-CONTRACT-028',
-          caseName,
-          message: `Example '${caseName}' output does not match result schema: ${formatAjvErrors(resultValidator.errors)}`,
-        });
-      }
-
-      if (caseDoc.proves?.result !== 'success') {
-        pushExampleError({
-          code: 'RTGL-BE-CONTRACT-029',
-          caseName,
-          message: caseDoc.proves?.result === undefined
-            ? `Example '${caseName}' success output must include proves.result: success.`
-            : `Example '${caseName}' proves.result must be 'success'.`,
-        });
-      } else {
-        provedSuccessCount += 1;
-      }
-      return;
-    }
-
-    const errorCode = output.code;
-    if (typeof errorCode !== 'string' || !errorCode.trim()) {
-      pushExampleError({
-        code: 'RTGL-BE-CONTRACT-030',
-        caseName,
-        message: `Example '${caseName}' domain error output must include code.`,
-      });
-      return;
-    }
-
-    const errorEntry = errorCatalog[errorCode];
-    if (!isPlainObject(errorEntry)) {
-      pushExampleError({
-        code: 'RTGL-BE-CONTRACT-031',
-        caseName,
-        message: `Example '${caseName}' uses undeclared error code '${errorCode}'.`,
-      });
-      return;
-    }
-
-    const errorValidator = compileSchemaForCheck({
-      ajv,
-      schema: createErrorSchemaFromCatalogEntry({ code: errorCode, entry: errorEntry }),
-      filePath: rpcFilePath,
-      errors,
-      code: 'RTGL-BE-CONTRACT-032',
-      label: `${rpcObject.method} error ${errorCode}`,
-    });
-    if (errorValidator && !errorValidator(output)) {
-      pushExampleError({
-        code: 'RTGL-BE-CONTRACT-033',
-        caseName,
-        message: `Example '${caseName}' output does not match error '${errorCode}': ${formatAjvErrors(errorValidator.errors)}`,
-      });
-    }
-
-    if (caseDoc.proves?.error !== errorCode) {
-      pushExampleError({
-        code: 'RTGL-BE-CONTRACT-034',
-        caseName,
-        message: caseDoc.proves?.error === undefined
-          ? `Example '${caseName}' domain error output must include proves.error: ${errorCode}.`
-          : `Example '${caseName}' proves.error '${caseDoc.proves.error}' does not match output code '${errorCode}'.`,
-      });
-      return;
-    }
-
-    provedErrorCodes.add(errorCode);
-  };
-
-  const validateRpcCase = (caseDoc) => {
-    const caseName = typeof caseDoc.case === 'string' ? caseDoc.case : '<unnamed>';
-    const input = Array.isArray(caseDoc.in) && isPlainObject(caseDoc.in[0]) ? caseDoc.in[0] : {};
-    const request = caseDoc.request ?? input.request;
 
     if (!isPlainObject(request)) {
       pushExampleError({
@@ -974,12 +868,7 @@ const validateExamplesAgainstContract = ({
   };
 
   caseDocuments.forEach((caseDoc) => {
-    if (mode === 'rpc') {
-      validateRpcCase(caseDoc);
-      return;
-    }
-
-    validateHandlerCase(caseDoc);
+    validateRpcCase(caseDoc);
   });
 
   if (provedSuccessCount === 0) {

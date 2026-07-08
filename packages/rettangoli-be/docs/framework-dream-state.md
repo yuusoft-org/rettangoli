@@ -211,7 +211,6 @@ Examples are contract tests, not just implementation tests.
 schemaVersion: rettangoli.examples/v1
 file: './getProfile.handlers.js'
 group: user-get-profile
-mode: handler
 ---
 suite: userGetProfileMethod
 exportName: userGetProfileMethod
@@ -219,62 +218,52 @@ exportName: userGetProfileMethod
 case: returns-profile
 proves:
   result: success
-in:
-  - payload: {}
-    context:
-      authUser:
-        userId: u-1
-    deps:
-      userDao:
-        findById: $mock:findById
+request:
+  jsonrpc: '2.0'
+  id: profile-ok
+  method: user.getProfile
+  params: {}
+context:
+  authUser:
+    userId: u-1
 out:
-  id: u-1
-  email: demo@example.com
-  role: user
-mocks:
-  findById:
-    calls:
-      - in:
-          - userId: u-1
-        out:
-          id: u-1
-          email: demo@example.com
-          role: user
+  jsonrpc: '2.0'
+  id: profile-ok
+  result:
+    id: u-1
+    email: demo@example.com
+    role: user
 ---
 case: requires-auth
 proves:
   error: AUTH_REQUIRED
-in:
-  - payload: {}
-    context: {}
-    deps:
-      userDao:
-        findById: $mock:findById
+request:
+  jsonrpc: '2.0'
+  id: profile-auth
+  method: user.getProfile
+  params: {}
 out:
-  _error: true
-  code: AUTH_REQUIRED
-  details:
-    reason: auth_required
+  jsonrpc: '2.0'
+  id: profile-auth
+  error:
+    code: -32000
+    message: Domain error
+    data:
+      code: AUTH_REQUIRED
+      details:
+        reason: auth_required
 ```
 
 The framework proves:
 
-- example payloads match the params schema;
-- success outputs match the result schema;
-- error outputs match the named error catalog;
+- request params match the params schema;
+- success response results match the result schema;
+- error response data matches the named error catalog;
 - error details match the error details schema;
 - every method has at least one explicit success proof;
 - every public error has at least one example;
-- mocks match declared dependency interactions when relevant;
+- examples run through the JSON-RPC app runtime;
 - examples can run repeatedly with deterministic results.
-
-Examples can run in two modes:
-
-- `handler`: direct handler call with `{ payload, context, deps }`;
-- `rpc`: full JSON-RPC dispatch through the framework.
-
-Handler mode is the default for fast method work. RPC mode is used for transport,
-middleware, cookie, auth, and lifecycle behavior.
 
 ## Handler File
 

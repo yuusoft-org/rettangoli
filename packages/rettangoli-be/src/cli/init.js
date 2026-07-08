@@ -42,7 +42,6 @@ const createPackageJson = () => `${JSON.stringify({
     '@rettangoli/be': '^1.1.0',
   },
   devDependencies: {
-    puty: '^0.1.2',
     vitest: '^4.0.15',
   },
 }, null, 2)}\n`;
@@ -60,11 +59,10 @@ const createConfigYaml = ({ dirs }) => [
 
 const createVitestConfig = () => [
   "import { defineConfig } from 'vitest/config';",
-  "import { putyPlugin } from 'puty/vitest';",
   "import { rettangoliExamplesPlugin } from '@rettangoli/be/testing';",
   '',
   'export default defineConfig({',
-  '  plugins: [putyPlugin(), rettangoliExamplesPlugin()],',
+  '  plugins: [rettangoliExamplesPlugin()],',
   '});',
   '',
 ].join('\n');

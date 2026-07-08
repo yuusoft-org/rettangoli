@@ -2,7 +2,6 @@ import path from 'node:path';
 import { readFileSync } from 'node:fs';
 import { loadAll as loadAllYaml } from 'js-yaml';
 import { describe, expect, it } from 'vitest';
-import { setupTestSuiteFromYaml } from 'puty';
 import { createAppFromProject } from '../runtime/createAppFromProject.js';
 
 const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
@@ -11,6 +10,12 @@ const readExampleDocuments = (yamlDir, yamlFile) => {
   const documents = [];
   const content = readFileSync(path.join(yamlDir, yamlFile), 'utf8');
   loadAllYaml(content, (doc) => documents.push(doc ?? {}));
+  return documents;
+};
+
+const parseExampleDocumentsFromSource = (source) => {
+  const documents = [];
+  loadAllYaml(source, (doc) => documents.push(doc ?? {}));
   return documents;
 };
 
@@ -35,6 +40,15 @@ const parseRuntimeEnvOptions = () => {
     return isPlainObject(parsed) ? parsed : {};
   } catch {
     return {};
+  }
+};
+
+const isRettangoliExamplesSource = (source) => {
+  try {
+    const documents = parseExampleDocumentsFromSource(source);
+    return documents[0]?.schemaVersion === 'rettangoli.examples/v1';
+  } catch {
+    return false;
   }
 };
 
@@ -85,19 +99,17 @@ const setupRpcExamplesFromYaml = async (yamlDir, yamlFile, options = {}) => {
 
 export const setupRettangoliExamplesFromYaml = async (yamlDir, yamlFile, options = {}) => {
   const documents = readExampleDocuments(yamlDir, yamlFile);
-  const mode = documents[0]?.mode ?? 'handler';
+  const configDocument = documents[0] ?? {};
 
-  if (mode === 'handler') {
-    await setupTestSuiteFromYaml(yamlDir, yamlFile);
-    return;
+  if (configDocument?.schemaVersion !== 'rettangoli.examples/v1') {
+    throw new Error(`Rettangoli examples must use schemaVersion rettangoli.examples/v1 in ${yamlFile}`);
   }
 
-  if (mode === 'rpc') {
-    await setupRpcExamplesFromYaml(yamlDir, yamlFile, options);
-    return;
+  if (Object.prototype.hasOwnProperty.call(configDocument, 'mode')) {
+    throw new Error(`Rettangoli examples mode is no longer supported in ${yamlFile}`);
   }
 
-  throw new Error(`Unsupported Rettangoli examples mode '${mode}' in ${yamlFile}`);
+  await setupRpcExamplesFromYaml(yamlDir, yamlFile, options);
 };
 
 export const rettangoliExamplesPlugin = (options = {}) => ({
@@ -106,13 +118,18 @@ export const rettangoliExamplesPlugin = (options = {}) => ({
     return {
       test: {
         include: [
+          '**/*.{test,spec}.?(c|m)[jt]s?(x)',
           '**/*.examples.{yaml,yml}',
         ],
       },
     };
   },
-  transform(_code, id) {
+  transform(code, id) {
     if (!/\.examples\.(yaml|yml)$/.test(id)) {
+      return null;
+    }
+
+    if (!isRettangoliExamplesSource(code)) {
       return null;
     }
 

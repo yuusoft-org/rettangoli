@@ -41,7 +41,7 @@ domain error `code`.
 - **Contract package**: all files that define and prove one method.
 - **Handler**: JavaScript function implementing one method.
 - **Contract**: `<action>.contract.yaml`.
-- **Executable examples**: `<action>.examples.yaml` puty test file.
+- **Executable examples**: `<action>.examples.yaml` runtime contract example file.
 
 ## Project Layout
 
@@ -265,9 +265,11 @@ VALIDATION_ERROR
 
 ## Spec YAML Tests
 
-Each `<action>.examples.yaml` MUST be a puty multi-document YAML file.
+Each `<action>.examples.yaml` MUST be a multi-document YAML file.
 
 It is part of the contract package. It is not just an implementation test.
+Examples always run through the JSON-RPC app runtime. There is no examples
+`mode` field.
 
 Required structure:
 
@@ -275,7 +277,6 @@ Required structure:
 schemaVersion: rettangoli.examples/v1
 file: './getProfile.handlers.js'
 group: user-get-profile
-mode: handler
 ---
 suite: userGetProfileMethod
 exportName: userGetProfileMethod
@@ -283,45 +284,40 @@ exportName: userGetProfileMethod
 case: returns-profile
 proves:
   result: success
-in:
-  - payload: {}
-    context:
-      authUser:
-        userId: u-1
-    deps:
-      userDao:
-        findById: $mock:findById
+request:
+  jsonrpc: '2.0'
+  id: profile-ok
+  method: user.getProfile
+  params: {}
+context:
+  authUser:
+    userId: u-1
 out:
-  id: u-1
-  email: demo@example.com
-  role: user
-mocks:
-  findById:
-    calls:
-      - in:
-          - userId: u-1
-        out:
-          id: u-1
-          email: demo@example.com
-          role: user
+  jsonrpc: '2.0'
+  id: profile-ok
+  result:
+    id: u-1
+    email: demo@example.com
+    role: user
 ---
 case: requires-auth
 proves:
   error: AUTH_REQUIRED
-in:
-  - payload: {}
-    context: {}
-    deps:
-      userDao:
-        findById: $mock:findById
+request:
+  jsonrpc: '2.0'
+  id: profile-auth
+  method: user.getProfile
+  params: {}
 out:
-  _error: true
-  code: AUTH_REQUIRED
-  details:
-    reason: auth_required
-mocks:
-  findById:
-    fn: true
+  jsonrpc: '2.0'
+  id: profile-auth
+  error:
+    code: -32000
+    message: Domain error
+    data:
+      code: AUTH_REQUIRED
+      details:
+        reason: auth_required
 ```
 
 ### Config Document
@@ -332,7 +328,6 @@ The first YAML document MUST contain:
 schemaVersion: rettangoli.examples/v1
 file: './<action>.handlers.js'
 group: <domain-kebab>-<action-kebab>
-mode: handler
 ```
 
 Rules:
@@ -340,9 +335,7 @@ Rules:
 - `schemaVersion` MUST be `rettangoli.examples/v1`.
 - `file` MUST point to the handler file in the same method folder.
 - `group` SHOULD be stable and readable.
-- `mode` MUST be `handler` or `rpc`.
-- `handler` examples call the method handler directly.
-- `rpc` examples dispatch a JSON-RPC request through the app runtime.
+- `mode` MUST NOT be present.
 
 ### Suite Document
 
@@ -366,11 +359,18 @@ Each remaining document MUST contain:
 case: descriptive-case-name
 proves:
   result: success
-in:
-  - payload: {}
-    context: {}
-    deps: {}
-out: {}
+request:
+  jsonrpc: '2.0'
+  id: stable-request-id
+  method: domain.action
+  params: {}
+context: {}
+meta: {}
+cookies: {}
+out:
+  jsonrpc: '2.0'
+  id: stable-request-id
+  result: {}
 ```
 
 Rules:
@@ -379,36 +379,11 @@ Rules:
 - success examples MUST include `proves.result: success`.
 - expected domain error examples MUST include `proves.error: <ERROR_CODE>`.
 - examples MUST NOT include both `proves.result` and `proves.error`.
-- `in` MUST call the handler with one argument: `{ payload, context, deps }`.
-- `out` MUST match success output or expected domain error output.
-- `throws` MAY be used only for unexpected failures and invariants.
-- `mocks` SHOULD be used for dependency calls.
+- `request` MUST be a JSON-RPC request object.
+- `out` MUST be the expected JSON-RPC response envelope.
+- `request`, `context`, `meta`, and `cookies` SHOULD be deterministic.
 
-For `mode: rpc`, each case MUST provide a JSON-RPC request and the expected
-JSON-RPC response envelope:
-
-```yaml
-case: returns-profile-over-rpc
-proves:
-  result: success
-request:
-  jsonrpc: '2.0'
-  id: req-1
-  method: user.getProfile
-  params: {}
-context:
-  authUser:
-    userId: u-1
-out:
-  jsonrpc: '2.0'
-  id: req-1
-  result:
-    id: u-1
-    email: demo@example.com
-    role: user
-```
-
-RPC examples MAY also put `request`, `context`, `meta`, or `cookies` under
+Examples MAY also put `request`, `context`, `meta`, or `cookies` under
 `in[0]`; top-level case fields take precedence.
 
 Runtime rules:
