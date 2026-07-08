@@ -3,6 +3,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import { load as loadYaml } from 'js-yaml';
 
 const DEFAULT_BE_CONFIG = {
+  dirs: ['./src/modules'],
+  middlewareDir: './src/middleware',
+  setup: './src/setup.js',
+  outdir: './.rtgl-be/generated',
+  migrationsDir: './migrations',
   host: '0.0.0.0',
   port: 8787,
   rpcPath: '/rpc',
@@ -27,6 +32,16 @@ const normalizePath = (value, key) => {
 
   if (!normalized.startsWith('/')) {
     throw new Error(`loadBeProjectConfig: ${key} must start with "/"`);
+  }
+
+  return normalized;
+};
+
+const normalizeProjectPath = (value, key, fallback) => {
+  if (value === undefined) return fallback;
+  const normalized = typeof value === 'string' ? value.trim() : '';
+  if (!normalized) {
+    throw new Error(`loadBeProjectConfig: ${key} must be a non-empty string`);
   }
 
   return normalized;
@@ -162,6 +177,24 @@ export const loadBeProjectConfig = ({
     ? DEFAULT_BE_CONFIG.rpcPath
     : normalizePath(be.rpcPath, 'be.rpcPath');
 
+  const dirs = normalizeOptionalStringList({
+    value: be.dirs,
+    key: 'be.dirs',
+    fallback: DEFAULT_BE_CONFIG.dirs,
+  });
+  const middlewareDir = normalizeProjectPath(
+    be.middlewareDir,
+    'be.middlewareDir',
+    DEFAULT_BE_CONFIG.middlewareDir,
+  );
+  const setup = normalizeProjectPath(be.setup, 'be.setup', DEFAULT_BE_CONFIG.setup);
+  const outdir = normalizeProjectPath(be.outdir, 'be.outdir', DEFAULT_BE_CONFIG.outdir);
+  const migrationsDir = normalizeProjectPath(
+    be.migrationsDir,
+    'be.migrationsDir',
+    DEFAULT_BE_CONFIG.migrationsDir,
+  );
+
   const globalMiddlewareRaw = isPlainObject(be.globalMiddleware) ? be.globalMiddleware : {};
   const globalMiddleware = {
     before: normalizeStringList(globalMiddlewareRaw.before, 'be.globalMiddleware.before'),
@@ -169,6 +202,11 @@ export const loadBeProjectConfig = ({
   };
 
   return {
+    dirs,
+    middlewareDir,
+    setup,
+    outdir,
+    migrationsDir,
     host,
     port,
     rpcPath,

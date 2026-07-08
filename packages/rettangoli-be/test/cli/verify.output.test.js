@@ -57,13 +57,9 @@ const writeProject = (rootDir, { modulesDir = 'src/modules' } = {}) => {
     'proves:',
     '  result: success',
     'request:',
-    "  jsonrpc: '2.0'",
     '  id: ok',
-    '  method: health.ping',
     '  params: {}',
     'out:',
-    "  jsonrpc: '2.0'",
-    '  id: ok',
     '  result:',
     '    ok: true',
     '',
@@ -263,6 +259,41 @@ describe('be verify output', () => {
     expect(result.ok).toBe(true);
     expect(result.app.skipped).toBe(true);
     expect(result.nextAction.kind).toBe('verify');
+  });
+
+  it('points method-scoped setup dependency failures at app check', async () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-verify-scoped-setup-deps-'));
+    createdDirs.push(rootDir);
+    writeProject(rootDir);
+
+    const runCommand = vi.fn(() => ({
+      status: 1,
+      stdout: '',
+      stderr: "Error: createApp: missing setup.deps.health object required by method 'health.ping'",
+    }));
+
+    const result = await runBackendVerify({
+      cwd: rootDir,
+      method: 'health.ping',
+      env: {},
+      runCommand,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.failedPhase).toBe('app');
+    expect(result.test.phase).toBe('app');
+    expect(result.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-APP-006',
+      phase: 'app',
+      method: 'health.ping',
+      filePath: 'src/setup.js',
+    }));
+    expect(result.nextAction).toEqual(expect.objectContaining({
+      kind: 'fix',
+      phase: 'app',
+      target: 'runtime-app',
+      argv: ['rtgl', 'be', 'app', 'check', '--method', 'health.ping', '--json'],
+    }));
   });
 
   it('validates global middleware during project verification', async () => {
@@ -502,13 +533,9 @@ describe('be verify output', () => {
       '---',
       'case: ok',
       'request:',
-      "  jsonrpc: '2.0'",
       '  id: ok',
-      '  method: health.ping',
       '  params: {}',
       'out:',
-      "  jsonrpc: '2.0'",
-      '  id: ok',
       '  result:',
       '    ok: true',
       '',
@@ -559,13 +586,9 @@ describe('be verify output', () => {
       '---',
       'case: ok',
       'request:',
-      "  jsonrpc: '2.0'",
       '  id: ok',
-      '  method: health.ping',
       '  params: {}',
       'out:',
-      "  jsonrpc: '2.0'",
-      '  id: ok',
       '  result:',
       '    ok: true',
       '',

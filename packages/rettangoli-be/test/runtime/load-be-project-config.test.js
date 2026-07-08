@@ -44,6 +44,34 @@ describe('loadBeProjectConfig (cors)', () => {
     });
   });
 
+  it('loads backend path config from rettangoli.config.yaml', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-path-config-'));
+    createdDirs.push(rootDir);
+
+    writeFileSync(path.join(rootDir, 'rettangoli.config.yaml'), [
+      'be:',
+      '  dirs:',
+      '    - ./backend/methods',
+      '  middlewareDir: ./backend/middleware',
+      '  setup: ./backend/setup.js',
+      '  outdir: ./generated/backend',
+      '  migrationsDir: ./db/migrations',
+      '',
+    ].join('\n'));
+
+    const config = loadBeProjectConfig({
+      cwd: rootDir,
+    });
+
+    expect(config).toEqual(expect.objectContaining({
+      dirs: ['./backend/methods'],
+      middlewareDir: './backend/middleware',
+      setup: './backend/setup.js',
+      outdir: './generated/backend',
+      migrationsDir: './db/migrations',
+    }));
+  });
+
   it('throws for invalid cors.allowedOrigins', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-cors-invalid-'));
     createdDirs.push(rootDir);

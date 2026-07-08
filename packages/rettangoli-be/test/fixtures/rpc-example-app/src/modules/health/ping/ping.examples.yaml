@@ -11,16 +11,12 @@ case: returns-json-rpc-result
 proves:
   result: success
 request:
-  jsonrpc: '2.0'
   id: req-1
-  method: health.ping
   params:
     echo: hello
 context:
   requestId: req-runtime
 out:
-  jsonrpc: '2.0'
-  id: req-1
   result:
     ok: true
     echo: hello

@@ -219,16 +219,12 @@ case: returns-profile
 proves:
   result: success
 request:
-  jsonrpc: '2.0'
   id: profile-ok
-  method: user.getProfile
   params: {}
 context:
   authUser:
     userId: u-1
 out:
-  jsonrpc: '2.0'
-  id: profile-ok
   result:
     id: u-1
     email: demo@example.com
@@ -238,13 +234,9 @@ case: requires-auth
 proves:
   error: AUTH_REQUIRED
 request:
-  jsonrpc: '2.0'
   id: profile-auth
-  method: user.getProfile
   params: {}
 out:
-  jsonrpc: '2.0'
-  id: profile-auth
   error:
     code: -32000
     message: Domain error
@@ -263,6 +255,7 @@ The framework proves:
 - every method has at least one explicit success proof;
 - every public error has at least one example;
 - examples run through the JSON-RPC app runtime;
+- examples omit JSON-RPC protocol boilerplate unless a case needs to test it;
 - examples can run repeatedly with deterministic results.
 
 ## Handler File

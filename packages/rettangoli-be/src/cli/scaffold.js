@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { stringifyStableJson } from './json.js';
 import { normalizeContractDirs } from './contracts.js';
+import { createCliResult } from './results.js';
 
 const hashContent = (content) => {
   const hash = createHash('sha256');
@@ -80,7 +81,7 @@ const createContractContent = ({ domain, action, method }) => [
   '',
 ].join('\n');
 
-const createExamplesContent = ({ domain, action, method, exportName }) => [
+const createExamplesContent = ({ domain, action, exportName }) => [
   'schemaVersion: rettangoli.examples/v1',
   `file: './${action}.handlers.js'`,
   `group: ${toKebab(domain)}-${toKebab(action)}`,
@@ -92,13 +93,9 @@ const createExamplesContent = ({ domain, action, method, exportName }) => [
   'proves:',
   '  result: success',
   'request:',
-  "  jsonrpc: '2.0'",
   '  id: ok',
-  `  method: ${method}`,
   '  params: {}',
   'out:',
-  "  jsonrpc: '2.0'",
-  '  id: ok',
   '  result:',
   '    ok: true',
   '',
@@ -212,12 +209,42 @@ export const applyMethodScaffoldPlan = (plan) => {
 };
 
 const scaffoldRettangoliBackend = (options = {}) => {
-  const plan = createMethodScaffoldPlan(options);
   const dryRun = options.dryRun || options.check;
   const outputFormat = options.format === 'json' || options.json ? 'json' : 'text';
+  let plan;
 
-  if (!dryRun && plan.ok) {
-    applyMethodScaffoldPlan(plan);
+  try {
+    plan = createMethodScaffoldPlan(options);
+
+    if (!dryRun && plan.ok) {
+      applyMethodScaffoldPlan(plan);
+    }
+  } catch (error) {
+    const result = createCliResult({
+      command: 'scaffold',
+      artifactSchemaVersion: 'rettangoli.scaffoldPlan/v1',
+      ok: false,
+      method: options.method ?? options.methodId,
+      diagnostics: [
+        {
+          schemaVersion: 'rettangoli.diagnostic/v1',
+          ruleId: 'RTGL-BE-SCAFFOLD-001',
+          code: 'RTGL-BE-SCAFFOLD-001',
+          severity: 'error',
+          phase: 'scaffold',
+          message: error.message,
+        },
+      ],
+    });
+
+    if (outputFormat === 'json') {
+      process.stdout.write(stringifyStableJson(result));
+    } else {
+      console.error(`[Scaffold] Method scaffold failed: ${error.message}`);
+    }
+
+    process.exitCode = 1;
+    return result;
   }
 
   if (outputFormat === 'json') {
@@ -225,6 +252,9 @@ const scaffoldRettangoliBackend = (options = {}) => {
       ...plan,
       _private: undefined,
     }));
+  } else if (!plan.ok) {
+    const action = dryRun ? 'plan' : 'create';
+    console.error(`[Scaffold] Failed to ${action} method package for ${plan.method}: ${plan.conflicts.length} conflict(s).`);
   } else if (dryRun) {
     console.log(`[Scaffold] Planned method package for ${plan.method}.`);
   } else {

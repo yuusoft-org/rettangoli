@@ -285,16 +285,12 @@ case: returns-profile
 proves:
   result: success
 request:
-  jsonrpc: '2.0'
   id: profile-ok
-  method: user.getProfile
   params: {}
 context:
   authUser:
     userId: u-1
 out:
-  jsonrpc: '2.0'
-  id: profile-ok
   result:
     id: u-1
     email: demo@example.com
@@ -304,13 +300,9 @@ case: requires-auth
 proves:
   error: AUTH_REQUIRED
 request:
-  jsonrpc: '2.0'
   id: profile-auth
-  method: user.getProfile
   params: {}
 out:
-  jsonrpc: '2.0'
-  id: profile-auth
   error:
     code: -32000
     message: Domain error
@@ -360,16 +352,12 @@ case: descriptive-case-name
 proves:
   result: success
 request:
-  jsonrpc: '2.0'
   id: stable-request-id
-  method: domain.action
   params: {}
 context: {}
 meta: {}
 cookies: {}
 out:
-  jsonrpc: '2.0'
-  id: stable-request-id
   result: {}
 ```
 
@@ -379,8 +367,11 @@ Rules:
 - success examples MUST include `proves.result: success`.
 - expected domain error examples MUST include `proves.error: <ERROR_CODE>`.
 - examples MUST NOT include both `proves.result` and `proves.error`.
-- `request` MUST be a JSON-RPC request object.
-- `out` MUST be the expected JSON-RPC response envelope.
+- `request` is the effective JSON-RPC request after defaults are applied.
+- `out` is the expected JSON-RPC response envelope after defaults are applied.
+- defaults: `request.jsonrpc: "2.0"`, `request.method: <contract method id>`,
+  `request.params: {}`, `out.jsonrpc: "2.0"`, and `out.id: request.id`.
+- explicit protocol fields are allowed but MUST match the defaults.
 - `request`, `context`, `meta`, and `cookies` SHOULD be deterministic.
 
 Examples MAY also put `request`, `context`, `meta`, or `cookies` under
@@ -388,7 +379,7 @@ Examples MAY also put `request`, `context`, `meta`, or `cookies` under
 
 Runtime rules:
 
-- `request.method` MUST equal the contract method id.
+- effective `request.method` MUST equal the contract method id.
 - `request.params` MUST validate against the params schema.
 - success `out.result` MUST validate against the result schema.
 - domain error `out.error.data.code` MUST exist in the contract error catalog.

@@ -1,10 +1,16 @@
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
-import { loadAll as loadAllYaml } from 'js-yaml';
+import { load as loadYaml, loadAll as loadAllYaml } from 'js-yaml';
 import { describe, expect, it } from 'vitest';
 import { createAppFromProject } from '../runtime/createAppFromProject.js';
+import { stringifyStableJson } from '../cli/json.js';
 
 const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
+const JSON_RPC_VERSION = '2.0';
+
+const hasOwn = (object, key) => {
+  return isPlainObject(object) && Object.prototype.hasOwnProperty.call(object, key);
+};
 
 const readExampleDocuments = (yamlDir, yamlFile) => {
   const documents = [];
@@ -19,14 +25,96 @@ const parseExampleDocumentsFromSource = (source) => {
   return documents;
 };
 
-const createRpcDispatchInput = (caseDoc) => {
+const resolveExampleMethod = ({ yamlDir, configDocument, runtimeOptions }) => {
+  if (typeof runtimeOptions.method === 'string' && runtimeOptions.method) {
+    return runtimeOptions.method;
+  }
+
+  if (typeof configDocument.file !== 'string' || !configDocument.file.endsWith('.handlers.js')) {
+    return undefined;
+  }
+
+  const contractPath = path.resolve(
+    yamlDir,
+    configDocument.file.replace(/\.handlers\.js$/, '.contract.yaml'),
+  );
+
+  try {
+    const contractDocument = loadYaml(readFileSync(contractPath, 'utf8')) ?? {};
+    return typeof contractDocument.method === 'string' && contractDocument.method
+      ? contractDocument.method
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const normalizeExampleRequest = ({ request, method }) => {
+  if (!isPlainObject(request)) {
+    return request;
+  }
+
+  const normalizedRequest = { ...request };
+  if (!hasOwn(normalizedRequest, 'jsonrpc')) {
+    normalizedRequest.jsonrpc = JSON_RPC_VERSION;
+  }
+  if (!hasOwn(normalizedRequest, 'method') && method) {
+    normalizedRequest.method = method;
+  }
+  return normalizedRequest;
+};
+
+const normalizeExpectedResponse = ({ response, request }) => {
+  if (!isPlainObject(response)) {
+    return response;
+  }
+
+  const normalizedResponse = { ...response };
+  if (!hasOwn(normalizedResponse, 'jsonrpc')) {
+    normalizedResponse.jsonrpc = JSON_RPC_VERSION;
+  }
+  if (!hasOwn(normalizedResponse, 'id') && hasOwn(request, 'id')) {
+    normalizedResponse.id = request.id;
+  }
+  return normalizedResponse;
+};
+
+const createRpcDispatchInput = ({ caseDoc, method }) => {
   const input = Array.isArray(caseDoc.in) && isPlainObject(caseDoc.in[0]) ? caseDoc.in[0] : {};
-  return {
+  const request = normalizeExampleRequest({
     request: caseDoc.request ?? input.request,
+    method,
+  });
+  return {
+    request,
     meta: caseDoc.meta ?? input.meta,
     cookies: caseDoc.cookies ?? input.cookies,
     context: caseDoc.context ?? input.context,
   };
+};
+
+export const createResponseMismatchMessage = ({ caseDoc, expectedResponse, actualResponse, assertionMessage }) => [
+  `Rettangoli example '${caseDoc.case}' response mismatch.`,
+  'Expected response:',
+  stringifyStableJson(expectedResponse).trimEnd(),
+  'Actual response:',
+  stringifyStableJson(actualResponse).trimEnd(),
+  '',
+  assertionMessage,
+].join('\n');
+
+const assertResponseMatches = ({ caseDoc, expectedResponse, actualResponse }) => {
+  try {
+    expect(actualResponse).toEqual(expectedResponse);
+  } catch (error) {
+    error.message = createResponseMismatchMessage({
+      caseDoc,
+      expectedResponse,
+      actualResponse,
+      assertionMessage: error.message,
+    });
+    throw error;
+  }
 };
 
 const parseRuntimeEnvOptions = () => {
@@ -74,6 +162,7 @@ const setupRpcExamplesFromYaml = async (yamlDir, yamlFile, options = {}) => {
   const caseDocuments = documents
     .filter((doc) => isPlainObject(doc) && Object.prototype.hasOwnProperty.call(doc, 'case'));
   const runtimeOptions = resolveRuntimeOptions({ configDocument, options });
+  const method = resolveExampleMethod({ yamlDir, configDocument, runtimeOptions });
   let appPromise;
   const getApp = () => {
     appPromise ??= createAppFromProject({
@@ -94,8 +183,17 @@ const setupRpcExamplesFromYaml = async (yamlDir, yamlFile, options = {}) => {
     caseDocuments.forEach((caseDoc) => {
       it(caseDoc.case, async () => {
         const app = await getApp();
-        const { response } = await app.dispatchWithContext(createRpcDispatchInput(caseDoc));
-        expect(response).toEqual(caseDoc.out);
+        const dispatchInput = createRpcDispatchInput({ caseDoc, method });
+        const expectedResponse = normalizeExpectedResponse({
+          response: caseDoc.out,
+          request: dispatchInput.request,
+        });
+        const { response } = await app.dispatchWithContext(dispatchInput);
+        assertResponseMatches({
+          caseDoc,
+          expectedResponse,
+          actualResponse: response,
+        });
       });
     });
   });

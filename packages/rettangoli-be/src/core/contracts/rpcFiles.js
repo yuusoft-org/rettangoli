@@ -561,6 +561,11 @@ const createErrorSchemaFromCatalogEntry = ({ code, entry }) => {
 };
 
 const JSON_RPC_DOMAIN_ERROR_CODE = -32000;
+const JSON_RPC_VERSION = '2.0';
+
+const hasOwn = (object, key) => {
+  return isPlainObject(object) && Object.prototype.hasOwnProperty.call(object, key);
+};
 
 const validateExamplesAgainstContract = ({
   methodEntry,
@@ -646,7 +651,8 @@ const validateExamplesAgainstContract = ({
       return;
     }
 
-    if (request.method !== rpcObject.method) {
+    const requestMethod = hasOwn(request, 'method') ? request.method : rpcObject.method;
+    if (requestMethod !== rpcObject.method) {
       pushExampleError({
         code: 'RTGL-BE-CONTRACT-051',
         caseName,
@@ -655,11 +661,12 @@ const validateExamplesAgainstContract = ({
       return;
     }
 
-    if (request.jsonrpc !== '2.0') {
+    const requestJsonrpc = hasOwn(request, 'jsonrpc') ? request.jsonrpc : JSON_RPC_VERSION;
+    if (requestJsonrpc !== JSON_RPC_VERSION) {
       pushExampleError({
         code: 'RTGL-BE-CONTRACT-050',
         caseName,
-        message: `RPC example '${caseName}' request.jsonrpc must be '2.0'.`,
+        message: `RPC example '${caseName}' request.jsonrpc must be '${JSON_RPC_VERSION}'.`,
       });
       return;
     }
@@ -692,15 +699,16 @@ const validateExamplesAgainstContract = ({
       return;
     }
 
-    if (output.jsonrpc !== '2.0') {
+    const outputJsonrpc = hasOwn(output, 'jsonrpc') ? output.jsonrpc : JSON_RPC_VERSION;
+    if (outputJsonrpc !== JSON_RPC_VERSION) {
       pushExampleError({
         code: 'RTGL-BE-CONTRACT-052',
         caseName,
-        message: `RPC example '${caseName}' response.jsonrpc must be '2.0'.`,
+        message: `RPC example '${caseName}' response.jsonrpc must be '${JSON_RPC_VERSION}'.`,
       });
     }
 
-    if (output.id !== request.id) {
+    if (hasOwn(output, 'id') && output.id !== request.id) {
       pushExampleError({
         code: 'RTGL-BE-CONTRACT-052',
         caseName,

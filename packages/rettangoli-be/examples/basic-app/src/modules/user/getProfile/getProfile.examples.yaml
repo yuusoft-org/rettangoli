@@ -11,16 +11,12 @@ case: returns-profile
 proves:
   result: success
 request:
-  jsonrpc: '2.0'
   id: profile-ok
-  method: user.getProfile
   params: {}
 context:
   authUser:
     userId: u-1
 out:
-  jsonrpc: '2.0'
-  id: profile-ok
   result:
     id: u-1
     email: demo@example.com
@@ -30,13 +26,9 @@ case: requires-auth
 proves:
   error: AUTH_REQUIRED
 request:
-  jsonrpc: '2.0'
   id: profile-auth
-  method: user.getProfile
   params: {}
 out:
-  jsonrpc: '2.0'
-  id: profile-auth
   error:
     code: -32000
     message: Domain error
@@ -49,16 +41,12 @@ case: returns-user-not-found-error
 proves:
   error: USER_NOT_FOUND
 request:
-  jsonrpc: '2.0'
   id: profile-missing
-  method: user.getProfile
   params: {}
 context:
   authUser:
     userId: u-404
 out:
-  jsonrpc: '2.0'
-  id: profile-missing
   error:
     code: -32000
     message: Domain error

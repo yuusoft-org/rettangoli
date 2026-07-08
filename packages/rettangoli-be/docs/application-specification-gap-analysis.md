@@ -132,13 +132,9 @@ proves:
   error: AUTH_REQUIRED
 in:
   - request:
-      jsonrpc: '2.0'
       id: auth
-      method: user.getProfile
       params: {}
 out:
-  jsonrpc: '2.0'
-  id: auth
   error:
     code: -32000
     message: Domain error
