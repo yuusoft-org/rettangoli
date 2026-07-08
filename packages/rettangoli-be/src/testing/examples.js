@@ -74,22 +74,26 @@ const setupRpcExamplesFromYaml = async (yamlDir, yamlFile, options = {}) => {
   const caseDocuments = documents
     .filter((doc) => isPlainObject(doc) && Object.prototype.hasOwnProperty.call(doc, 'case'));
   const runtimeOptions = resolveRuntimeOptions({ configDocument, options });
-  const appPromise = createAppFromProject({
-    cwd: runtimeOptions.cwd,
-    methodDirs: runtimeOptions.methodDirs,
-    middlewareDirs: runtimeOptions.middlewareDirs,
-    setupPath: runtimeOptions.setupPath,
-    method: runtimeOptions.method,
-    globalMiddleware: runtimeOptions.globalMiddleware,
-    globalMiddlewareBefore: runtimeOptions.globalMiddlewareBefore,
-    globalMiddlewareAfter: runtimeOptions.globalMiddlewareAfter,
-  });
+  let appPromise;
+  const getApp = () => {
+    appPromise ??= createAppFromProject({
+      cwd: runtimeOptions.cwd,
+      methodDirs: runtimeOptions.methodDirs,
+      middlewareDirs: runtimeOptions.middlewareDirs,
+      setupPath: runtimeOptions.setupPath,
+      method: runtimeOptions.method,
+      globalMiddleware: runtimeOptions.globalMiddleware,
+      globalMiddlewareBefore: runtimeOptions.globalMiddlewareBefore,
+      globalMiddlewareAfter: runtimeOptions.globalMiddlewareAfter,
+    });
+    return appPromise;
+  };
   const suiteName = suiteDocument.suite || configDocument.group || yamlFile;
 
   describe(suiteName, () => {
     caseDocuments.forEach((caseDoc) => {
       it(caseDoc.case, async () => {
-        const app = await appPromise;
+        const app = await getApp();
         const { response } = await app.dispatchWithContext(createRpcDispatchInput(caseDoc));
         expect(response).toEqual(caseDoc.out);
       });

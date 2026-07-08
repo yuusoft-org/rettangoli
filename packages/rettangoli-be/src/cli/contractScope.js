@@ -44,7 +44,12 @@ const parseDuplicateMiddlewareName = (error) => {
   return String(error.message || '').match(/Duplicate middleware name '([^']+)'/)?.[1];
 };
 
-export const filterErrorsForMethod = ({ errors, methodEntry, method }) => {
+export const filterErrorsForMethod = ({
+  errors,
+  methodEntry,
+  method,
+  extraMiddlewareNames = [],
+}) => {
   if (!methodEntry) {
     return [
       ...errors.filter((error) => String(error.message || '').includes(method)),
@@ -65,10 +70,14 @@ export const filterErrorsForMethod = ({ errors, methodEntry, method }) => {
     ...methodEntry.files.spec,
   ]);
   const methodMiddlewareNames = collectMethodMiddlewareNames(methodEntry);
+  const scopedMiddlewareNames = new Set([
+    ...methodMiddlewareNames,
+    ...(Array.isArray(extraMiddlewareNames) ? extraMiddlewareNames : []),
+  ]);
 
   return errors.filter((error) => {
     const duplicateMiddlewareName = parseDuplicateMiddlewareName(error);
-    if (duplicateMiddlewareName && methodMiddlewareNames.has(duplicateMiddlewareName)) {
+    if (duplicateMiddlewareName && scopedMiddlewareNames.has(duplicateMiddlewareName)) {
       return true;
     }
 
@@ -95,6 +104,7 @@ export const analyzeBackendContracts = ({
   dirs = ['./src/modules'],
   middlewareDir = './src/middleware',
   method,
+  extraMiddlewareNames = [],
 } = {}) => {
   const { methodDirs, middlewareDirs } = resolveContractDirs({
     cwd,
@@ -107,7 +117,12 @@ export const analyzeBackendContracts = ({
     ? findMethodEntry({ index: analysis.index, method })
     : undefined;
   const errors = method
-    ? filterErrorsForMethod({ errors: analysis.errors, methodEntry, method })
+    ? filterErrorsForMethod({
+      errors: analysis.errors,
+      methodEntry,
+      method,
+      extraMiddlewareNames,
+    })
     : analysis.errors;
   const contracts = method
     ? allContracts.filter((contract) => contract.method === method)

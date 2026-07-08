@@ -149,11 +149,16 @@ export const runBackendAppCheck = async (options = {}) => {
     setup,
   });
   const command = findCommand(commands, 'app');
+  const globalMiddlewareNames = collectGlobalMiddlewareNames({
+    globalMiddlewareBefore,
+    globalMiddlewareAfter,
+  });
   const analysis = analyzeBackendContracts({
     cwd,
     dirs,
     middlewareDir,
     method,
+    extraMiddlewareNames: [...globalMiddlewareNames],
   });
   const methods = method
     ? analysis.contracts.map((contract) => contract.method)
@@ -277,10 +282,6 @@ export const runBackendAppCheck = async (options = {}) => {
   const methodHandlers = {};
   const middlewareModules = {};
   const referencedMiddlewareNames = collectReferencedMiddlewareNames(analysis.contracts);
-  const globalMiddlewareNames = collectGlobalMiddlewareNames({
-    globalMiddlewareBefore,
-    globalMiddlewareAfter,
-  });
   const referencedMiddlewareEntries = analysis.middlewareEntries
     .filter((entry) => referencedMiddlewareNames.has(entry.middlewareName));
   const scopedMiddlewareNames = new Set([

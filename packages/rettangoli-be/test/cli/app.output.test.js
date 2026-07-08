@@ -265,6 +265,29 @@ describe('be app check command', () => {
     }));
   });
 
+  it('keeps duplicate global middleware errors in method scope', async () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-app-check-method-duplicate-global-middleware-'));
+    createdDirs.push(rootDir);
+    writeMethod(rootDir);
+    mkdirSync(path.join(rootDir, 'src', 'middleware', 'nested'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'src', 'middleware', 'globalBefore.js'), 'export const globalBefore = () => (next) => (ctx) => next(ctx);\n');
+    writeFileSync(path.join(rootDir, 'src', 'middleware', 'nested', 'globalBefore.js'), 'export const globalBefore = () => (next) => (ctx) => next(ctx);\n');
+
+    const result = await runBackendAppCheck({
+      cwd: rootDir,
+      method: 'health.ping',
+      globalMiddlewareBefore: ['globalBefore'],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.phase).toBe('contracts');
+    expect(result.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-CONTRACT-021',
+      phase: 'contracts',
+      filePath: 'src/middleware/nested/globalBefore.js',
+    }));
+  });
+
   it('points middleware factory exceptions at the middleware file', async () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-app-check-middleware-throw-'));
     createdDirs.push(rootDir);
