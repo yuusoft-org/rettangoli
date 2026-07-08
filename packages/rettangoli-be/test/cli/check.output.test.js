@@ -16,7 +16,6 @@ const exampleHeader = ({ group = 'ping', suite = 'healthPingMethod', exportName 
 const successExample = ({
   caseName = 'ok',
   id = 'req-1',
-  method = 'health.ping',
   includeProof = true,
   params = '{}',
   result = ['    ok: true'],
@@ -28,13 +27,9 @@ const successExample = ({
     '  result: success',
   ] : []),
   'request:',
-  "  jsonrpc: '2.0'",
   `  id: ${id}`,
-  `  method: ${method}`,
   `  params: ${params}`,
   'out:',
-  "  jsonrpc: '2.0'",
-  `  id: ${id}`,
   '  result:',
   ...result,
 ];
@@ -42,7 +37,6 @@ const successExample = ({
 const domainErrorExample = ({
   caseName = 'requires-auth',
   id = 'req-error',
-  method = 'health.ping',
   errorCode = 'AUTH_REQUIRED',
   includeProof = true,
   details = [],
@@ -55,13 +49,9 @@ const domainErrorExample = ({
     `  error: ${errorCode}`,
   ] : []),
   'request:',
-  "  jsonrpc: '2.0'",
   `  id: ${id}`,
-  `  method: ${method}`,
   '  params: {}',
   'out:',
-  "  jsonrpc: '2.0'",
-  `  id: ${id}`,
   '  error:',
   '    code: -32000',
   `    message: ${message}`,
@@ -474,13 +464,9 @@ describe('be check cli output', () => {
       '  result: success',
       '  error: AUTH_REQUIRED',
       'request:',
-      "  jsonrpc: '2.0'",
       '  id: req-conflict',
-      '  method: health.ping',
       '  params: {}',
       'out:',
-      "  jsonrpc: '2.0'",
-      '  id: req-conflict',
       '  error:',
       '    code: -32000',
       '    message: Domain error',
@@ -523,8 +509,6 @@ describe('be check cli output', () => {
       '  result: success',
       'request: 123',
       'out:',
-      "  jsonrpc: '2.0'",
-      '  id: req-bad',
       '  result:',
       '    ok: true',
       '',
@@ -587,13 +571,9 @@ describe('be check cli output', () => {
       '---',
       'case: invalid-payload',
       'request:',
-      "  jsonrpc: '2.0'",
       '  id: req-invalid',
-      '  method: health.ping',
       '  params: 123',
       'out:',
-      "  jsonrpc: '2.0'",
-      '  id: req-invalid',
       '  result:',
       '    ok: true',
       '',
@@ -635,6 +615,52 @@ describe('be check cli output', () => {
     expect(result.ok).toBe(true);
   });
 
+  it('rejects explicit JSON-RPC request fields that disagree with the contract', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-rpc-invalid-request-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      ...exampleHeader({ suite: 'healthPingRpc' }),
+      '---',
+      'case: bad-jsonrpc',
+      'proves:',
+      '  result: success',
+      'request:',
+      "  jsonrpc: '1.0'",
+      '  id: req-1',
+      '  params: {}',
+      'out:',
+      '  result:',
+      '    ok: true',
+      '---',
+      'case: bad-method',
+      'proves:',
+      '  result: success',
+      'request:',
+      '  id: req-2',
+      '  method: health.other',
+      '  params: {}',
+      'out:',
+      '  result:',
+      '    ok: true',
+      '',
+    ].join('\n'));
+
+    const result = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-050');
+    expect(result.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-051');
+    expect(result.errors.map((error) => error.message).join('\n')).toContain("request.jsonrpc must be '2.0'");
+    expect(result.errors.map((error) => error.message).join('\n')).toContain("request.method must be 'health.ping'");
+  });
+
   it('rejects examples with invalid JSON-RPC response envelopes', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-rpc-invalid-envelope-'));
     createdDirs.push(rootDir);
@@ -648,11 +674,10 @@ describe('be check cli output', () => {
       'proves:',
       '  result: success',
       'request:',
-      "  jsonrpc: '2.0'",
       '  id: req-1',
-      '  method: health.ping',
       '  params: {}',
       'out:',
+      "  jsonrpc: '1.0'",
       '  id: different-id',
       '  extra: unsupported',
       '  result:',
@@ -719,13 +744,9 @@ describe('be check cli output', () => {
       'proves:',
       '  error: HEALTH_DOWN',
       'request:',
-      "  jsonrpc: '2.0'",
       '  id: req-2',
-      '  method: health.ping',
       '  params: {}',
       'out:',
-      "  jsonrpc: '2.0'",
-      '  id: req-2',
       '  error:',
       '    code: -32000',
       '    message: Wrong message',
@@ -868,13 +889,9 @@ describe('be check cli output', () => {
       'proves:',
       '  result: success',
       'request:',
-      "  jsonrpc: '2.0'",
       '  id: ok',
-      '  method: health.ping',
       '  params: {}',
       'out:',
-      "  jsonrpc: '2.0'",
-      '  id: ok',
       '  result:',
       '    ok: true',
       '',

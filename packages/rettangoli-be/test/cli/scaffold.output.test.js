@@ -49,6 +49,10 @@ describe('be scaffold command', () => {
     expect(readFileSync(path.join(rootDir, 'src', 'modules', 'user', 'getProfile', 'getProfile.handlers.js'), 'utf8')).toContain(
       'export const userGetProfileMethod = () =>',
     );
+    const examples = readFileSync(path.join(rootDir, 'src', 'modules', 'user', 'getProfile', 'getProfile.examples.yaml'), 'utf8');
+    expect(examples).toContain('request:\n  id: ok\n  params: {}');
+    expect(examples).not.toContain('jsonrpc');
+    expect(examples).not.toContain('method: user.getProfile');
     const check = runBackendCheck({
       cwd: rootDir,
       method: 'user.getProfile',

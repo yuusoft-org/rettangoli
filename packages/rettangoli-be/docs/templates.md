@@ -152,15 +152,11 @@ case: returns-ok
 proves:
   result: success
 request:
-  jsonrpc: '2.0'
   id: health-ok
-  method: health.ping
   params: {}
 context:
   requestId: req-1
 out:
-  jsonrpc: '2.0'
-  id: health-ok
   result:
     ok: true
     ts: 1700000000000
@@ -170,16 +166,12 @@ case: echoes-input
 proves:
   result: success
 request:
-  jsonrpc: '2.0'
   id: health-echo
-  method: health.ping
   params:
     echo: hello
 context:
   requestId: req-2
 out:
-  jsonrpc: '2.0'
-  id: health-echo
   result:
     ok: true
     echo: hello
