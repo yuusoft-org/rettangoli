@@ -7,6 +7,8 @@ import {
   findCommand,
   normalizeDiagnostics,
 } from './agentLoop.js';
+import { stringifyStableJson } from './json.js';
+import { createCliResult } from './results.js';
 
 export const runBackendCheck = (options = {}) => {
   const analysis = analyzeBackendContracts(options);
@@ -25,8 +27,9 @@ export const runBackendCheck = (options = {}) => {
     command: findCommand(commands, 'check'),
   });
 
-  return {
-    schemaVersion: 'rettangoli.check/v1',
+  return createCliResult({
+    command: 'check',
+    artifactSchemaVersion: 'rettangoli.check/v1',
     ok: analysis.ok,
     prefix: '[Check]',
     method: analysis.method,
@@ -41,7 +44,7 @@ export const runBackendCheck = (options = {}) => {
       diagnostics,
       commands,
     }),
-  };
+  });
 };
 
 const checkRettangoliBackend = (options = {}) => {
@@ -50,7 +53,7 @@ const checkRettangoliBackend = (options = {}) => {
 
   if (!result.ok) {
     if (outputFormat === 'json') {
-      console.log(JSON.stringify(result, null, 2));
+      process.stdout.write(stringifyStableJson(result));
     } else {
       console.error(formatContractFailureReport({
         errorPrefix: '[Check]',
@@ -59,16 +62,17 @@ const checkRettangoliBackend = (options = {}) => {
     }
 
     process.exitCode = 1;
-    return;
+    return result;
   }
 
   if (outputFormat === 'json') {
-    console.log(JSON.stringify(result, null, 2));
-    return;
+    process.stdout.write(stringifyStableJson(result));
+    return result;
   }
 
   const suffix = result.method ? ` for ${result.method}` : ` for ${result.methodCount} method(s)`;
   console.log(`[Check] RPC contracts passed${suffix}.`);
+  return result;
 };
 
 export default checkRettangoliBackend;

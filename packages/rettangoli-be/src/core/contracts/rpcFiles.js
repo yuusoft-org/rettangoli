@@ -20,6 +20,10 @@ const findSupportedMethodSuffix = (fileName = '') => {
   return SUPPORTED_METHOD_FILE_SUFFIXES.find((suffix) => fileName.endsWith(suffix));
 };
 
+const isPotentialMethodFile = (filePath = '') => {
+  return /\.(js|ya?ml)$/.test(filePath);
+};
+
 const isPlainObject = (value) => {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 };
@@ -76,6 +80,31 @@ export const isSupportedMethodFile = (filePath = '') => {
 export const collectMethodContractEntriesFromFiles = (allFiles = []) => {
   const entries = [];
   const collectionErrors = [];
+
+  allFiles
+    .filter((filePath) => isPotentialMethodFile(filePath) && !isSupportedMethodFile(filePath))
+    .forEach((filePath) => {
+      const normalized = path.normalize(filePath);
+      const parts = normalized.split(path.sep);
+      const modulesIndex = parts.lastIndexOf('modules');
+
+      if (modulesIndex === -1 || parts.length !== modulesIndex + 4) {
+        return;
+      }
+
+      const action = parts[modulesIndex + 2];
+      const fileName = parts[modulesIndex + 3];
+      if (!fileName.startsWith(`${action}.`)) {
+        return;
+      }
+
+      collectionErrors.push({
+        code: 'RTGL-BE-CONTRACT-041',
+        method: `${parts[modulesIndex + 1]}.${action}`,
+        message: `Unsupported method package file '${fileName}'. Expected ${SUPPORTED_METHOD_FILE_SUFFIXES.join(', ')}.`,
+        filePath,
+      });
+    });
 
   allFiles
     .filter((filePath) => isSupportedMethodFile(filePath))
@@ -285,19 +314,65 @@ const validateMiddlewareConfig = ({ rpcObject, filePath, middlewareNames, errors
 };
 
 const validateSchemaKeys = ({ rpcObject, filePath, errors }) => {
-  if (!isPlainObject(resolveParamsSchema(rpcObject))) {
+  const paramsSchema = resolveParamsSchema(rpcObject);
+  const resultSchema = resolveResultSchema(rpcObject);
+
+  if (!isPlainObject(paramsSchema)) {
     errors.push({
       code: 'RTGL-BE-CONTRACT-014',
       message: 'RPC params must be an object schema.',
       filePath,
     });
+  } else if (paramsSchema.type !== 'object') {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-042',
+      method: rpcObject.method,
+      message: 'RPC params schema must declare top-level type: object.',
+      filePath,
+      jsonPointer: '/params/type',
+    });
   }
 
-  if (!isPlainObject(resolveResultSchema(rpcObject))) {
+  if (!isPlainObject(resultSchema)) {
     errors.push({
       code: 'RTGL-BE-CONTRACT-015',
       message: 'RPC result must be an object schema.',
       filePath,
+    });
+  } else {
+    if (resultSchema.type !== 'object') {
+      errors.push({
+        code: 'RTGL-BE-CONTRACT-043',
+        method: rpcObject.method,
+        message: 'RPC result schema must declare top-level type: object.',
+        filePath,
+        jsonPointer: '/result/type',
+      });
+    }
+
+    const resultProperties = isPlainObject(resultSchema.properties) ? resultSchema.properties : {};
+    ['jsonrpc', 'error'].forEach((protocolField) => {
+      if (Object.prototype.hasOwnProperty.call(resultProperties, protocolField)) {
+        errors.push({
+          code: 'RTGL-BE-CONTRACT-044',
+          method: rpcObject.method,
+          message: `RPC result schema must not expose JSON-RPC protocol field '${protocolField}'.`,
+          filePath,
+          jsonPointer: `/result/properties/${protocolField}`,
+        });
+      }
+    });
+
+    ['_error', 'code'].forEach((errorField) => {
+      if (Object.prototype.hasOwnProperty.call(resultProperties, errorField)) {
+        errors.push({
+          code: 'RTGL-BE-CONTRACT-045',
+          method: rpcObject.method,
+          message: `RPC success result schema must not expose domain error field '${errorField}'.`,
+          filePath,
+          jsonPointer: `/result/properties/${errorField}`,
+        });
+      }
     });
   }
 
@@ -306,6 +381,105 @@ const validateSchemaKeys = ({ rpcObject, filePath, errors }) => {
       code: 'RTGL-BE-CONTRACT-016',
       message: 'RPC errors must be an object catalog.',
       filePath,
+    });
+  }
+};
+
+const validateExamplesHeader = ({
+  methodEntry,
+  rpcObject,
+  errors,
+}) => {
+  if (methodEntry.examplesDocuments.length !== 1) {
+    return;
+  }
+
+  const examplesFilePath = methodEntry.examplesDocuments[0].filePath;
+  const documents = methodEntry.examplesDocuments[0].documents;
+  const configDocument = documents[0];
+  const suiteDocument = documents[1];
+  const method = rpcObject.method;
+  const expectedHandlerFile = `./${methodEntry.action}.handlers.js`;
+
+  if (!isPlainObject(configDocument)) {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-046',
+      method,
+      message: 'Examples config document must be a YAML object.',
+      filePath: examplesFilePath,
+      jsonPointer: '/documents/0',
+    });
+    return;
+  }
+
+  if (configDocument.schemaVersion !== 'rettangoli.examples/v1') {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-046',
+      method,
+      message: 'Examples schemaVersion must be rettangoli.examples/v1.',
+      filePath: examplesFilePath,
+      jsonPointer: '/documents/0/schemaVersion',
+    });
+  }
+
+  if (configDocument.file !== expectedHandlerFile) {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-047',
+      method,
+      message: `Examples file must point to local handler '${expectedHandlerFile}'.`,
+      filePath: examplesFilePath,
+      jsonPointer: '/documents/0/file',
+    });
+  }
+
+  if (typeof configDocument.group !== 'string' || !configDocument.group.trim()) {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-046',
+      method,
+      message: 'Examples group must be a non-empty string.',
+      filePath: examplesFilePath,
+      jsonPointer: '/documents/0/group',
+    });
+  }
+
+  if (configDocument.mode !== 'handler') {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-048',
+      method,
+      message: 'Examples mode must be handler.',
+      filePath: examplesFilePath,
+      jsonPointer: '/documents/0/mode',
+    });
+  }
+
+  if (!isPlainObject(suiteDocument)) {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-049',
+      method,
+      message: 'Examples suite document must be a YAML object.',
+      filePath: examplesFilePath,
+      jsonPointer: '/documents/1',
+    });
+    return;
+  }
+
+  if (typeof suiteDocument.suite !== 'string' || !suiteDocument.suite.trim()) {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-049',
+      method,
+      message: 'Examples suite must be a non-empty string.',
+      filePath: examplesFilePath,
+      jsonPointer: '/documents/1/suite',
+    });
+  }
+
+  if (typeof suiteDocument.exportName !== 'string' || !suiteDocument.exportName.trim()) {
+    errors.push({
+      code: 'RTGL-BE-CONTRACT-049',
+      method,
+      message: 'Examples exportName must be a non-empty string.',
+      filePath: examplesFilePath,
+      jsonPointer: '/documents/1/exportName',
     });
   }
 };
@@ -647,6 +821,11 @@ export const validateRpcContractIndex = ({
 
     validateMiddlewareConfig({ rpcObject, filePath, middlewareNames, errors });
     validateSchemaKeys({ rpcObject, filePath, errors });
+    validateExamplesHeader({
+      methodEntry,
+      rpcObject,
+      errors,
+    });
     validateExamplesAgainstContract({
       methodEntry,
       rpcObject,
@@ -684,7 +863,7 @@ export const summarizeContractErrors = (errors = []) => {
     byCode[code] = (byCode[code] || 0) + 1;
 
     const methodMatch = String(error?.message || '').match(/^([^:]+\/[^:]+):/);
-    const methodLabel = methodMatch ? methodMatch[1] : 'unknown';
+    const methodLabel = error?.method || (methodMatch ? methodMatch[1].replace('/', '.') : 'unknown');
     byMethod[methodLabel] = (byMethod[methodLabel] || 0) + 1;
   });
 

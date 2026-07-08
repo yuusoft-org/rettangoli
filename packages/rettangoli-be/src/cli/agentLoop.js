@@ -1,6 +1,7 @@
 import path from 'node:path';
 
 const asArray = (value) => Array.isArray(value) ? value : [];
+const DIAGNOSTIC_SCHEMA_VERSION = 'rettangoli.diagnostic/v1';
 
 export const toPosixRelativePath = (cwd, filePath) => {
   if (typeof filePath !== 'string' || !filePath) {
@@ -84,6 +85,15 @@ export const findCommand = (commands, id) => {
 
 const createFixHint = (ruleId) => {
   const hints = {
+    'RTGL-BE-CONTRACT-041': 'Rename or remove the unsupported method package file.',
+    'RTGL-BE-CONTRACT-042': 'Set params.type to object.',
+    'RTGL-BE-CONTRACT-043': 'Set result.type to object.',
+    'RTGL-BE-CONTRACT-044': 'Remove JSON-RPC protocol fields from the result schema.',
+    'RTGL-BE-CONTRACT-045': 'Move domain error fields into the errors catalog and error examples.',
+    'RTGL-BE-CONTRACT-046': 'Fix the examples config document.',
+    'RTGL-BE-CONTRACT-047': 'Point the examples file at the local method handler file.',
+    'RTGL-BE-CONTRACT-048': 'Set examples mode to handler.',
+    'RTGL-BE-CONTRACT-049': 'Fix the examples suite document.',
     'RTGL-BE-CONTRACT-005': 'Create exactly one .examples.yaml file next to the method contract.',
     'RTGL-BE-CONTRACT-027': 'Edit the example payload so it matches the params schema.',
     'RTGL-BE-CONTRACT-029': 'Mark the success example with proves.result: success.',
@@ -114,6 +124,7 @@ export const normalizeDiagnostic = ({
   const filePath = toPosixRelativePath(cwd, error?.filePath);
 
   return {
+    schemaVersion: DIAGNOSTIC_SCHEMA_VERSION,
     ruleId,
     code: ruleId,
     severity: 'error',
@@ -121,6 +132,7 @@ export const normalizeDiagnostic = ({
     method: error?.method ?? method,
     filePath,
     file: filePath ? { path: filePath } : undefined,
+    jsonPointer: error?.jsonPointer,
     case: error?.case,
     message: error?.message || 'Unknown error.',
     fix: createFixHint(ruleId),
@@ -203,6 +215,11 @@ export const collectSourceFilesFromManifest = (manifest) => {
   const files = [];
 
   Object.values(manifest?.methods ?? {}).forEach((method) => {
+    if (Array.isArray(method.files?.owned)) {
+      files.push(...method.files.owned);
+      return;
+    }
+
     Object.values(method.source ?? {}).forEach((filePath) => {
       if (typeof filePath === 'string' && filePath) {
         files.push(filePath);

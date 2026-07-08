@@ -53,8 +53,10 @@ const writeProject = (rootDir) => {
   ].join('\n'));
 
   writeFileSync(path.join(methodDir, 'getProfile.examples.yaml'), [
+    'schemaVersion: rettangoli.examples/v1',
     "file: './getProfile.handlers.js'",
     'group: user-get-profile',
+    'mode: handler',
     '---',
     'suite: userGetProfileMethod',
     'exportName: userGetProfileMethod',
@@ -104,6 +106,24 @@ describe('be manifest cli output', () => {
     });
     expect(Object.keys(manifest.methods)).toEqual(['user.getProfile']);
     expect(manifest.methods['user.getProfile'].domain).toBe('user');
+    expect(manifest.protocol.request.mode).toBe('single');
+    expect(manifest.generatedTargets.map((target) => target.kind)).toEqual(['registry', 'app']);
+    expect(manifest.database).toEqual({
+      schemaVersion: 'rettangoli.dbMigrations/v1',
+      migrationsDir: './migrations',
+      migrationCount: 0,
+      migrations: [],
+    });
+    expect(manifest.methods['user.getProfile'].methodFolder).toBe('src/modules/user/getProfile');
+    expect(manifest.methods['user.getProfile'].packageHash).toMatch(/^sha256:/);
+    expect(manifest.methods['user.getProfile'].files).toEqual({
+      owned: [
+        'src/modules/user/getProfile/getProfile.contract.yaml',
+        'src/modules/user/getProfile/getProfile.examples.yaml',
+        'src/modules/user/getProfile/getProfile.handlers.js',
+      ],
+      shared: [],
+    });
     expect(manifest.methods['user.getProfile'].setupDependencyPath).toBe('setup.deps.user');
     expect(manifest.methods['user.getProfile'].source).toEqual({
       contract: 'src/modules/user/getProfile/getProfile.contract.yaml',
@@ -144,5 +164,43 @@ describe('be manifest cli output', () => {
     });
     expect(manifest.methods['user.getProfile'].hashes.contract).toMatch(/^sha256:/);
     expect(stringifyStableJson(manifest)).toBe(stringifyStableJson(manifest));
+  });
+
+  it('keeps manifest deterministic when migrations are invalid SQL', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-manifest-db-'));
+    createdDirs.push(rootDir);
+    writeProject(rootDir);
+    mkdirSync(path.join(rootDir, 'database'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'database', '001_bad.sql'), 'CREATE TABLE broken (\n');
+
+    const manifest = createBackendManifest({
+      cwd: rootDir,
+      migrationsDir: './database',
+      outdir: './generated/backend',
+    });
+
+    expect(manifest.generatedTargets).toEqual([
+      {
+        kind: 'registry',
+        path: 'generated/backend/registry.js',
+      },
+      {
+        kind: 'app',
+        path: 'generated/backend/app.js',
+      },
+    ]);
+    expect(manifest.database).toEqual({
+      schemaVersion: 'rettangoli.dbMigrations/v1',
+      migrationsDir: './database',
+      migrationCount: 1,
+      migrations: [
+        {
+          id: '001_bad',
+          path: 'database/001_bad.sql',
+          checksum: expect.stringMatching(/^sha256:/),
+          destructive: false,
+        },
+      ],
+    });
   });
 });

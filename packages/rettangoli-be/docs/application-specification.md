@@ -272,8 +272,10 @@ It is part of the contract package. It is not just an implementation test.
 Required structure:
 
 ```yaml
+schemaVersion: rettangoli.examples/v1
 file: './getProfile.handlers.js'
 group: user-get-profile
+mode: handler
 ---
 suite: userGetProfileMethod
 exportName: userGetProfileMethod
@@ -327,14 +329,18 @@ mocks:
 The first YAML document MUST contain:
 
 ```yaml
+schemaVersion: rettangoli.examples/v1
 file: './<action>.handlers.js'
 group: <domain-kebab>-<action-kebab>
+mode: handler
 ```
 
 Rules:
 
+- `schemaVersion` MUST be `rettangoli.examples/v1`.
 - `file` MUST point to the handler file in the same method folder.
 - `group` SHOULD be stable and readable.
+- `mode` MUST be `handler` until RPC-mode examples are implemented.
 
 ### Suite Document
 

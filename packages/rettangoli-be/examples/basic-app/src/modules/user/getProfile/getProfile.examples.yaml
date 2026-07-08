@@ -1,5 +1,7 @@
+schemaVersion: rettangoli.examples/v1
 file: './getProfile.handlers.js'
 group: user-get-profile
+mode: handler
 ---
 suite: userGetProfileMethod
 exportName: userGetProfileMethod
