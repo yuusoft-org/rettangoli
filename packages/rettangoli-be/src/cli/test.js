@@ -68,6 +68,10 @@ export const runBackendTests = (options = {}) => {
     dirs = ['./src/modules'],
     middlewareDir = './src/middleware',
     method,
+    setup = './src/setup.js',
+    globalMiddleware = [],
+    globalMiddlewareBefore = [],
+    globalMiddlewareAfter = [],
     config = './vitest.config.js',
     reporter = 'verbose',
     runCommand = spawnSync,
@@ -91,6 +95,7 @@ export const runBackendTests = (options = {}) => {
     dirs,
     method,
     middlewareDir,
+    setup,
     config,
     executable,
     packageManager,
@@ -128,6 +133,13 @@ export const runBackendTests = (options = {}) => {
   }
 
   const files = analysis.contracts.map((contract) => toPosixRelativePath(cwd, contract.examplesPath));
+  const relatedFiles = [...new Set(
+    analysis.contracts.flatMap((contract) => [
+      contract.examplesPath,
+      contract.contractPath,
+      contract.handlerPath,
+    ].map((filePath) => toPosixRelativePath(cwd, filePath))),
+  )].filter(Boolean).sort();
   if (files.length === 0) {
     const error = {
       code: 'RTGL-BE-TEST-001',
@@ -169,20 +181,72 @@ export const runBackendTests = (options = {}) => {
   const vitestArgs = ['vitest', 'run', ...files, '--reporter', reporter];
   const configPath = path.resolve(cwd, config);
 
-  if (config && existsSync(configPath)) {
+  if (config && !existsSync(configPath)) {
+    const diagnostic = normalizeDiagnostic({
+      cwd,
+      error: {
+        code: 'RTGL-BE-TEST-003',
+        message: `Vitest config not found: ${config}`,
+        filePath: config,
+      },
+      phase: 'test',
+      method,
+      command: testCommand,
+      extra: {
+        files: relatedFiles,
+      },
+    });
+
+    return createCliResult({
+      command: 'test',
+      artifactSchemaVersion: 'rettangoli.test/v1',
+      ok: false,
+      prefix: '[Test]',
+      method,
+      scope,
+      phase: 'test',
+      commands,
+      files,
+      config,
+      diagnostics: [diagnostic],
+      nextAction: createNextAction({
+        ok: false,
+        failedPhase: 'test',
+        diagnostics: [diagnostic],
+        commands,
+      }),
+    });
+  }
+
+  if (config) {
     vitestArgs.push('--config', config);
   }
 
   const runner = createPackageRunner({ executable, packageManager, env });
   const args = [...runner.argsPrefix, ...vitestArgs];
   const captureOutput = options.format === 'json';
+  const childEnv = {
+    ...process.env,
+    ...env,
+    RTGL_BE_EXAMPLES_RUNTIME: JSON.stringify({
+      cwd,
+      method,
+      methodDirs: dirs,
+      middlewareDirs: [middlewareDir],
+      setupPath: setup,
+      globalMiddleware,
+      globalMiddlewareBefore,
+      globalMiddlewareAfter,
+    }),
+  };
   const result = runCommand(runner.executable, args, {
     cwd,
+    env: childEnv,
     encoding: 'utf8',
     stdio: captureOutput ? 'pipe' : 'inherit',
   });
-  const exitCode = typeof result.status === 'number' ? result.status : 1;
-  const ok = exitCode === 0;
+  const exitCode = result.error ? 1 : typeof result.status === 'number' ? result.status : 1;
+  const ok = !result.error && exitCode === 0;
   const stdout = toProcessOutputText(result.stdout ?? result.output?.[1]);
   const stderr = [
     toProcessOutputText(result.stderr ?? result.output?.[2]),
@@ -201,7 +265,8 @@ export const runBackendTests = (options = {}) => {
     method,
     command: testCommand,
     extra: {
-      files,
+      files: relatedFiles,
+      executedFiles: files,
       outputTail: {
         stdout: toOutputTail(stdout),
         stderr: toOutputTail(stderr),
@@ -220,7 +285,7 @@ export const runBackendTests = (options = {}) => {
     phase: 'test',
     commands,
     files,
-    command: {
+    runner: {
       executable: runner.executable,
       args,
       argv: [runner.executable, ...args],

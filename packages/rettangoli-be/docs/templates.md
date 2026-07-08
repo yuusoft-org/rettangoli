@@ -144,7 +144,6 @@ errors: {}
 schemaVersion: rettangoli.examples/v1
 file: './ping.handlers.js'
 group: health-ping
-mode: handler
 ---
 suite: healthPingMethod
 exportName: healthPingMethod
@@ -152,42 +151,40 @@ exportName: healthPingMethod
 case: returns-ok
 proves:
   result: success
-in:
-  - payload: {}
-    context:
-      requestId: req-1
-    deps:
-      now: $mock:now
-out:
-  ok: true
-  ts: 1700000000000
+request:
+  jsonrpc: '2.0'
+  id: health-ok
+  method: health.ping
+  params: {}
+context:
   requestId: req-1
-mocks:
-  now:
-    calls:
-      - in: []
-        out: 1700000000000
+out:
+  jsonrpc: '2.0'
+  id: health-ok
+  result:
+    ok: true
+    ts: 1700000000000
+    requestId: req-1
 ---
 case: echoes-input
 proves:
   result: success
-in:
-  - payload:
-      echo: hello
-    context:
-      requestId: req-2
-    deps:
-      now: $mock:now
-out:
-  ok: true
-  echo: hello
-  ts: 1700000000001
+request:
+  jsonrpc: '2.0'
+  id: health-echo
+  method: health.ping
+  params:
+    echo: hello
+context:
   requestId: req-2
-mocks:
-  now:
-    calls:
-      - in: []
-        out: 1700000000001
+out:
+  jsonrpc: '2.0'
+  id: health-echo
+  result:
+    ok: true
+    echo: hello
+    ts: 1700000000000
+    requestId: req-2
 ```
 
 ## src/modules/user/getProfile/getProfile.handlers.js

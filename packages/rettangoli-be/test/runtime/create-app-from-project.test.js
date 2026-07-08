@@ -96,7 +96,6 @@ describe('createAppFromProject', () => {
       'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: health-ping',
-      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -104,12 +103,18 @@ describe('createAppFromProject', () => {
       'case: ok',
       'proves:',
       '  result: success',
-      'in:',
-      '  - payload: {}',
+      'request:',
+      "  jsonrpc: '2.0'",
+      '  id: ok',
+      '  method: health.ping',
+      '  params: {}',
       'out:',
-      '  ok: true',
-      '  requestId: req-auto',
-      '  ts: 1700000000000',
+      "  jsonrpc: '2.0'",
+      '  id: ok',
+      '  result:',
+      '    ok: true',
+      '    requestId: req-auto',
+      '    ts: 1700000000000',
       '',
     ].join('\n'));
 
@@ -190,7 +195,6 @@ describe('createAppFromProject', () => {
       'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: health-ping',
-      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -198,10 +202,16 @@ describe('createAppFromProject', () => {
       'case: ok',
       'proves:',
       '  result: success',
-      'in:',
-      '  - payload: {}',
+      'request:',
+      "  jsonrpc: '2.0'",
+      '  id: ok',
+      '  method: health.ping',
+      '  params: {}',
       'out:',
-      '  ok: true',
+      "  jsonrpc: '2.0'",
+      '  id: ok',
+      '  result:',
+      '    ok: true',
       '',
     ].join('\n'));
 
@@ -222,5 +232,182 @@ describe('createAppFromProject', () => {
     });
 
     expect(response.result.ok).toBe(true);
+  });
+
+  it('scopes runtime construction to one method', async () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-app-scoped-'));
+    createdDirs.push(rootDir);
+
+    const srcDir = path.join(rootDir, 'src');
+    mkdirSync(srcDir, { recursive: true });
+    writeFileSync(path.join(srcDir, 'setup.js'), 'export const setup = { deps: { health: {} } };\n');
+
+    const methodDir = path.join(srcDir, 'modules', 'health', 'ping');
+    mkdirSync(methodDir, { recursive: true });
+    writeFileSync(path.join(methodDir, 'ping.handlers.js'), 'export const healthPingMethod = async () => ({ ok: true });\n');
+    writeFileSync(path.join(methodDir, 'ping.contract.yaml'), [
+      'schemaVersion: rettangoli.contract/v1',
+      'method: health.ping',
+      'description: Health ping',
+      'middleware:',
+      '  before: []',
+      '  after: []',
+      'params:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties: {}',
+      '  required: []',
+      'result:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties:',
+      '    ok:',
+      '      type: boolean',
+      '  required: [ok]',
+      'errors: {}',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
+      'schemaVersion: rettangoli.examples/v1',
+      "file: './ping.handlers.js'",
+      'group: health-ping',
+      '---',
+      'suite: healthPingMethod',
+      'exportName: healthPingMethod',
+      '---',
+      'case: ok',
+      'proves:',
+      '  result: success',
+      'request:',
+      "  jsonrpc: '2.0'",
+      '  id: ok',
+      '  method: health.ping',
+      '  params: {}',
+      'out:',
+      "  jsonrpc: '2.0'",
+      '  id: ok',
+      '  result:',
+      '    ok: true',
+      '',
+    ].join('\n'));
+
+    const brokenDir = path.join(srcDir, 'modules', 'user', 'broken');
+    mkdirSync(brokenDir, { recursive: true });
+    writeFileSync(path.join(brokenDir, 'broken.handlers.js'), 'export const userBrokenMethod = async () => ({ ok: true });\n');
+    writeFileSync(path.join(brokenDir, 'broken.contract.yaml'), [
+      'schemaVersion: rettangoli.contract/v1',
+      'method: user.broken',
+      'description: Broken user method',
+      'middleware:',
+      '  before: []',
+      '  after: []',
+      'params:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties: {}',
+      '  required: []',
+      'result:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties:',
+      '    ok:',
+      '      type: boolean',
+      '  required: [ok]',
+      'errors: {}',
+      '',
+    ].join('\n'));
+
+    await expect(createAppFromProject({
+      cwd: rootDir,
+      methodDirs: ['./src/modules'],
+      middlewareDirs: ['./src/middleware'],
+    })).rejects.toThrow('RTGL-BE-CONTRACT-005');
+
+    const app = await createAppFromProject({
+      cwd: rootDir,
+      method: 'health.ping',
+      methodDirs: ['./src/modules'],
+      middlewareDirs: ['./src/middleware'],
+    });
+    const response = await app.dispatch({
+      request: {
+        jsonrpc: '2.0',
+        id: '1',
+        method: 'health.ping',
+        params: {},
+      },
+    });
+
+    expect(response.result.ok).toBe(true);
+  });
+
+  it('keeps duplicate middleware errors when scoped runtime references that middleware', async () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-app-scoped-duplicate-mw-'));
+    createdDirs.push(rootDir);
+
+    const srcDir = path.join(rootDir, 'src');
+    mkdirSync(srcDir, { recursive: true });
+    writeFileSync(path.join(srcDir, 'setup.js'), 'export const setup = { deps: { health: {} } };\n');
+
+    const middlewareDir = path.join(srcDir, 'middleware');
+    mkdirSync(path.join(middlewareDir, 'nested'), { recursive: true });
+    writeFileSync(path.join(middlewareDir, 'withDup.js'), 'export const withDup = () => (next) => (ctx) => next(ctx);\n');
+    writeFileSync(path.join(middlewareDir, 'nested', 'withDup.js'), 'export const withDup = () => (next) => (ctx) => next(ctx);\n');
+
+    const methodDir = path.join(srcDir, 'modules', 'health', 'ping');
+    mkdirSync(methodDir, { recursive: true });
+    writeFileSync(path.join(methodDir, 'ping.handlers.js'), 'export const healthPingMethod = async () => ({ ok: true });\n');
+    writeFileSync(path.join(methodDir, 'ping.contract.yaml'), [
+      'schemaVersion: rettangoli.contract/v1',
+      'method: health.ping',
+      'description: Health ping',
+      'middleware:',
+      '  before: [withDup]',
+      '  after: []',
+      'params:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties: {}',
+      '  required: []',
+      'result:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties:',
+      '    ok:',
+      '      type: boolean',
+      '  required: [ok]',
+      'errors: {}',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
+      'schemaVersion: rettangoli.examples/v1',
+      "file: './ping.handlers.js'",
+      'group: health-ping',
+      '---',
+      'suite: healthPingMethod',
+      'exportName: healthPingMethod',
+      '---',
+      'case: ok',
+      'proves:',
+      '  result: success',
+      'request:',
+      "  jsonrpc: '2.0'",
+      '  id: ok',
+      '  method: health.ping',
+      '  params: {}',
+      'out:',
+      "  jsonrpc: '2.0'",
+      '  id: ok',
+      '  result:',
+      '    ok: true',
+      '',
+    ].join('\n'));
+
+    await expect(createAppFromProject({
+      cwd: rootDir,
+      method: 'health.ping',
+      methodDirs: ['./src/modules'],
+      middlewareDirs: ['./src/middleware'],
+    })).rejects.toThrow('RTGL-BE-CONTRACT-021');
   });
 });

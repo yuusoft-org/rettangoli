@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import path from 'node:path';
+import { existsSync } from 'node:fs';
 import build from './build.js';
 import { runBackendCheck } from './check.js';
 import {
@@ -9,6 +11,7 @@ import { runBackendTests } from './test.js';
 import { createCliResult } from './results.js';
 import { writeBackendVerifyEvidence } from './agentWorkflow.js';
 import { runBackendDbCheck } from './db.js';
+import { runBackendAppCheck } from './app.js';
 import {
   collectSourceFilesFromManifest,
   createBackendCommands,
@@ -16,6 +19,7 @@ import {
   createScope,
   findCommand,
   normalizeDiagnostic,
+  toPosixRelativePath,
 } from './agentLoop.js';
 
 const hashJson = (value) => {
@@ -52,11 +56,28 @@ const createSkippedDbCheck = ({ method, migrationsDir }) => createCliResult({
   diagnostics: [],
 });
 
-const createSteps = ({ check, buildResult, manifestResult, db, test }) => {
+const createSkippedAppCheck = ({ method, setup }) => createCliResult({
+  command: 'app check',
+  artifactSchemaVersion: 'rettangoli.appCheck/v1',
+  ok: true,
+  skipped: true,
+  reason: 'method-scoped verify does not prove project runtime app instantiation',
+  scope: {
+    type: 'method',
+    methods: [method],
+    provesProject: false,
+  },
+  method,
+  setup,
+  diagnostics: [],
+});
+
+const createSteps = ({ check, buildResult, manifestResult, app, db, test }) => {
   return [
     { id: 'check', ok: check.ok },
     { id: 'build', ok: buildResult?.ok === true, skipped: buildResult === undefined },
     { id: 'manifest', ok: manifestResult?.ok === true, skipped: manifestResult === undefined },
+    { id: 'app', ok: app?.ok === true, skipped: app === undefined || app.skipped === true },
     { id: 'db', ok: db?.ok === true, skipped: db === undefined || db.skipped === true },
     { id: 'test', ok: test?.ok === true, skipped: test === undefined },
   ];
@@ -70,7 +91,49 @@ const findFailedPhase = ({ steps, test }) => {
   return failedStep?.id;
 };
 
-export const runBackendVerify = (options = {}) => {
+const diagnosticsForFailedPhase = ({ diagnostics = [], failedPhase }) => {
+  if (!failedPhase) {
+    return diagnostics;
+  }
+
+  const aliases = {
+    check: ['check', 'contracts'],
+    examples: ['examples'],
+  };
+  const phaseNames = aliases[failedPhase] ?? [failedPhase];
+  const filtered = diagnostics.filter((diagnostic) => phaseNames.includes(diagnostic.phase));
+  return filtered.length > 0 ? filtered : diagnostics;
+};
+
+const createDiscoveryRoots = ({ dirs, middlewareDir, migrationsDir }) => {
+  return [...new Set([
+    ...dirs,
+    middlewareDir,
+    migrationsDir,
+  ].filter(Boolean))].sort();
+};
+
+const createProjectInputFiles = ({ cwd, setup, testConfig }) => {
+  return [...new Set([
+    'package.json',
+    'rettangoli.config.yaml',
+    setup,
+    testConfig,
+  ].filter(Boolean)
+    .map((filePath) => toPosixRelativePath(cwd, path.resolve(cwd, filePath))))].sort();
+};
+
+const existingGeneratedInputFiles = ({ cwd, outdir }) => {
+  return [
+    path.join(outdir, 'registry.js'),
+    path.join(outdir, 'app.js'),
+  ]
+    .map((filePath) => path.resolve(cwd, filePath))
+    .filter((filePath) => existsSync(filePath))
+    .map((filePath) => toPosixRelativePath(cwd, filePath));
+};
+
+export const runBackendVerify = async (options = {}) => {
   const {
     cwd = process.cwd(),
     dirs = ['./src/modules'],
@@ -86,6 +149,10 @@ export const runBackendVerify = (options = {}) => {
     evidence,
     taskId = evidence,
     migrationsDir = './migrations',
+    failOnWarnings = false,
+    runDbReplay,
+    globalMiddlewareBefore = [],
+    globalMiddlewareAfter = [],
   } = options;
 
   const sharedOptions = {
@@ -104,16 +171,24 @@ export const runBackendVerify = (options = {}) => {
     testConfig,
     executable,
     packageManager,
+    evidence: taskId,
+    failOnWarnings,
   });
   const check = runBackendCheck(sharedOptions);
   const checkMethods = method
     ? check.scope.methods
     : check.scope.methods;
+  const discoveryRoots = createDiscoveryRoots({ dirs, middlewareDir, migrationsDir });
+  const projectInputFiles = [
+    ...createProjectInputFiles({ cwd, setup, testConfig }),
+    ...existingGeneratedInputFiles({ cwd, outdir }),
+  ];
 
   if (!check.ok) {
     const steps = createSteps({ check });
     const failedPhase = findFailedPhase({ steps });
     const diagnostics = check.diagnostics ?? [];
+    const nextActionDiagnostics = diagnosticsForFailedPhase({ diagnostics, failedPhase });
     const ok = false;
 
     let result = createCliResult({
@@ -127,19 +202,22 @@ export const runBackendVerify = (options = {}) => {
       commands,
       files: {
         owned: [...new Set(diagnostics.map((diagnostic) => diagnostic.filePath).filter(Boolean))].sort(),
+        shared: [...new Set(projectInputFiles)].sort(),
+        discover: discoveryRoots,
         write: [],
       },
       diagnostics,
       nextAction: createNextAction({
         ok,
         failedPhase,
-        diagnostics,
+        diagnostics: nextActionDiagnostics,
         commands,
         final: true,
       }),
       check,
       build: undefined,
       manifest: undefined,
+      app: undefined,
       db: undefined,
       test: undefined,
     });
@@ -218,15 +296,29 @@ export const runBackendVerify = (options = {}) => {
     manifestResult = createStepFailure('manifest', error);
   }
 
+  const app = method
+    ? createSkippedAppCheck({ method, setup })
+    : await runBackendAppCheck({
+        ...sharedOptions,
+        setup,
+        globalMiddlewareBefore,
+        globalMiddlewareAfter,
+      });
+
   const db = method
     ? createSkippedDbCheck({ method, migrationsDir })
     : runBackendDbCheck({
-        cwd,
-        migrationsDir,
-      });
+      cwd,
+      migrationsDir,
+      failOnWarnings,
+      runReplay: runDbReplay,
+    });
 
   const test = runBackendTests({
     ...sharedOptions,
+    setup,
+    globalMiddlewareBefore,
+    globalMiddlewareAfter,
     config: testConfig,
     format: 'json',
     includeOutput: false,
@@ -235,7 +327,7 @@ export const runBackendVerify = (options = {}) => {
     packageManager,
     env,
   });
-  const steps = createSteps({ check, buildResult, manifestResult, db, test });
+  const steps = createSteps({ check, buildResult, manifestResult, app, db, test });
   const failedPhase = findFailedPhase({ steps, test });
   const diagnostics = [
     ...(check.diagnostics ?? []),
@@ -263,10 +355,12 @@ export const runBackendVerify = (options = {}) => {
         command: findCommand(commands, 'manifest'),
       }),
     ]),
+    ...(app.diagnostics ?? []),
     ...(db.diagnostics ?? []),
     ...(test.diagnostics ?? []),
   ];
-  const ok = check.ok && buildResult.ok && manifestResult.ok && db.ok && test.ok;
+  const ok = check.ok && buildResult.ok && manifestResult.ok && app.ok && db.ok && test.ok;
+  const nextActionDiagnostics = diagnosticsForFailedPhase({ diagnostics, failedPhase });
   const diagnosticFiles = diagnostics
     .map((diagnostic) => diagnostic.filePath)
     .filter(Boolean);
@@ -279,6 +373,11 @@ export const runBackendVerify = (options = {}) => {
     : (buildResult.plan?.targets ?? [])
       .map((target) => target.path)
       .filter(Boolean);
+  const sharedFiles = [
+    ...projectInputFiles,
+    ...(app.files ?? []),
+    ...(db.migrations ?? []).map((migration) => migration.path),
+  ].filter(Boolean);
 
   let result = createCliResult({
     command: 'verify',
@@ -291,19 +390,22 @@ export const runBackendVerify = (options = {}) => {
     commands,
     files: {
       owned: [...new Set(ownedFiles)].sort(),
+      shared: [...new Set(sharedFiles)].sort(),
+      discover: discoveryRoots,
       write: writeFiles,
     },
     diagnostics,
     nextAction: createNextAction({
       ok,
       failedPhase,
-      diagnostics,
+      diagnostics: nextActionDiagnostics,
       commands,
       final: true,
     }),
     check,
     build: buildResult,
     manifest: manifestResult,
+    app,
     db,
     test,
   });
@@ -321,9 +423,9 @@ export const runBackendVerify = (options = {}) => {
   return result;
 };
 
-const verifyRettangoliBackend = (options = {}) => {
+const verifyRettangoliBackend = async (options = {}) => {
   const outputFormat = options.format === 'json' ? 'json' : 'text';
-  const result = runBackendVerify(options);
+  const result = await runBackendVerify(options);
 
   if (outputFormat === 'json') {
     process.stdout.write(stringifyStableJson(result));

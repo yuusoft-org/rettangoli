@@ -1,8 +1,74 @@
 import path from 'node:path';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import check, { runBackendCheck } from '../../src/cli/check.js';
+
+const exampleHeader = ({ group = 'ping', suite = 'healthPingMethod', exportName = 'healthPingMethod' } = {}) => [
+  'schemaVersion: rettangoli.examples/v1',
+  "file: './ping.handlers.js'",
+  `group: ${group}`,
+  '---',
+  `suite: ${suite}`,
+  `exportName: ${exportName}`,
+];
+
+const successExample = ({
+  caseName = 'ok',
+  id = 'req-1',
+  method = 'health.ping',
+  includeProof = true,
+  params = '{}',
+  result = ['    ok: true'],
+} = {}) => [
+  '---',
+  `case: ${caseName}`,
+  ...(includeProof ? [
+    'proves:',
+    '  result: success',
+  ] : []),
+  'request:',
+  "  jsonrpc: '2.0'",
+  `  id: ${id}`,
+  `  method: ${method}`,
+  `  params: ${params}`,
+  'out:',
+  "  jsonrpc: '2.0'",
+  `  id: ${id}`,
+  '  result:',
+  ...result,
+];
+
+const domainErrorExample = ({
+  caseName = 'requires-auth',
+  id = 'req-error',
+  method = 'health.ping',
+  errorCode = 'AUTH_REQUIRED',
+  includeProof = true,
+  details = [],
+  message = 'Domain error',
+} = {}) => [
+  '---',
+  `case: ${caseName}`,
+  ...(includeProof ? [
+    'proves:',
+    `  error: ${errorCode}`,
+  ] : []),
+  'request:',
+  "  jsonrpc: '2.0'",
+  `  id: ${id}`,
+  `  method: ${method}`,
+  '  params: {}',
+  'out:',
+  "  jsonrpc: '2.0'",
+  `  id: ${id}`,
+  '  error:',
+  '    code: -32000',
+  `    message: ${message}`,
+  '    data:',
+  `      code: ${errorCode}`,
+  ...details,
+];
 
 const writeMethodFiles = ({ rootDir, includeSpec = true, modulesDir = 'src/modules' }) => {
   const methodDir = path.join(rootDir, modulesDir, 'health', 'ping');
@@ -34,21 +100,8 @@ const writeMethodFiles = ({ rootDir, includeSpec = true, modulesDir = 'src/modul
 
   if (includeSpec) {
     writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
-      'schemaVersion: rettangoli.examples/v1',
-      "file: './ping.handlers.js'",
-      'group: ping',
-      'mode: handler',
-      '---',
-      'suite: healthPingMethod',
-      'exportName: healthPingMethod',
-      '---',
-      'case: ok',
-      'proves:',
-      '  result: success',
-      'in:',
-      '  - payload: {}',
-      'out:',
-      '  ok: true',
+      ...exampleHeader(),
+      ...successExample(),
       '',
     ].join('\n'));
   }
@@ -244,22 +297,8 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
-      'schemaVersion: rettangoli.examples/v1',
-      "file: './ping.handlers.js'",
-      'group: ping',
-      'mode: handler',
-      '---',
-      'suite: healthPingMethod',
-      'exportName: healthPingMethod',
-      '---',
-      'case: requires-auth',
-      'proves:',
-      '  error: AUTH_REQUIRED',
-      'in:',
-      '  - payload: {}',
-      'out:',
-      '  _error: true',
-      '  code: AUTH_REQUIRED',
+      ...exampleHeader(),
+      ...domainErrorExample(),
       '',
     ].join('\n'));
 
@@ -278,8 +317,8 @@ describe('be check cli output', () => {
     expect(printed).toContain("uses undeclared error code 'AUTH_REQUIRED'");
   });
 
-  it('allows throws examples without validating a missing out value', () => {
-    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-throws-'));
+  it('rejects the removed examples mode field', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-mode-'));
     createdDirs.push(rootDir);
     writeMethodFiles({ rootDir, includeSpec: true });
 
@@ -288,40 +327,26 @@ describe('be check cli output', () => {
       'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: ping',
-      'mode: handler',
+      'mode: rpc',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
-      '---',
-      'case: ok',
-      'proves:',
-      '  result: success',
-      'in:',
-      '  - payload: {}',
-      'out:',
-      '  ok: true',
-      '---',
-      'case: invariant-failure',
-      'in:',
-      '  - payload: {}',
-      'throws:',
-      '  message: invariant failed',
+      ...successExample(),
       '',
     ].join('\n'));
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const stdoutSpy = captureStdout();
 
     check({
       cwd: rootDir,
       dirs: ['./src/modules'],
       middlewareDir: './src/middleware',
-      format: 'text',
+      format: 'json',
     });
 
-    expect(process.exitCode).not.toBe(1);
-    expect(logSpy.mock.calls.map((entry) => entry[0]).join('\n')).toContain(
-      '[Check] RPC contracts passed for 1 method(s).',
-    );
+    expect(process.exitCode).toBe(1);
+    const parsed = parseStdoutJson(stdoutSpy);
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-048');
   });
 
   it('requires a success proof example', () => {
@@ -331,19 +356,8 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
-      'schemaVersion: rettangoli.examples/v1',
-      "file: './ping.handlers.js'",
-      'group: ping',
-      'mode: handler',
-      '---',
-      'suite: healthPingMethod',
-      'exportName: healthPingMethod',
-      '---',
-      'case: ok',
-      'in:',
-      '  - payload: {}',
-      'out:',
-      '  ok: true',
+      ...exampleHeader(),
+      ...successExample({ includeProof: false }),
       '',
     ].join('\n'));
 
@@ -398,28 +412,9 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
-      'schemaVersion: rettangoli.examples/v1',
-      "file: './ping.handlers.js'",
-      'group: ping',
-      'mode: handler',
-      '---',
-      'suite: healthPingMethod',
-      'exportName: healthPingMethod',
-      '---',
-      'case: ok',
-      'proves:',
-      '  result: success',
-      'in:',
-      '  - payload: {}',
-      'out:',
-      '  ok: true',
-      '---',
-      'case: requires-auth',
-      'in:',
-      '  - payload: {}',
-      'out:',
-      '  _error: true',
-      '  code: AUTH_REQUIRED',
+      ...exampleHeader(),
+      ...successExample(),
+      ...domainErrorExample({ includeProof: false }),
       '',
     ].join('\n'));
 
@@ -471,31 +466,26 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
-      'schemaVersion: rettangoli.examples/v1',
-      "file: './ping.handlers.js'",
-      'group: ping',
-      'mode: handler',
-      '---',
-      'suite: healthPingMethod',
-      'exportName: healthPingMethod',
-      '---',
-      'case: ok',
-      'proves:',
-      '  result: success',
-      'in:',
-      '  - payload: {}',
-      'out:',
-      '  ok: true',
+      ...exampleHeader(),
+      ...successExample(),
       '---',
       'case: conflicted-auth',
       'proves:',
       '  result: success',
       '  error: AUTH_REQUIRED',
-      'in:',
-      '  - payload: {}',
+      'request:',
+      "  jsonrpc: '2.0'",
+      '  id: req-conflict',
+      '  method: health.ping',
+      '  params: {}',
       'out:',
-      '  _error: true',
-      '  code: AUTH_REQUIRED',
+      "  jsonrpc: '2.0'",
+      '  id: req-conflict',
+      '  error:',
+      '    code: -32000',
+      '    message: Domain error',
+      '    data:',
+      '      code: AUTH_REQUIRED',
       '',
     ].join('\n'));
 
@@ -519,28 +509,24 @@ describe('be check cli output', () => {
     );
   });
 
-  it('validates executable input shape before treating examples as proof', () => {
+  it('validates executable request shape before treating examples as proof', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-input-shape-'));
     createdDirs.push(rootDir);
     writeMethodFiles({ rootDir, includeSpec: true });
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
-      'schemaVersion: rettangoli.examples/v1',
-      "file: './ping.handlers.js'",
-      'group: ping',
-      'mode: handler',
-      '---',
-      'suite: healthPingMethod',
-      'exportName: healthPingMethod',
+      ...exampleHeader(),
       '---',
       'case: bad-call-shape',
       'proves:',
       '  result: success',
-      'in:',
-      '  - 123',
+      'request: 123',
       'out:',
-      '  ok: true',
+      "  jsonrpc: '2.0'",
+      '  id: req-bad',
+      '  result:',
+      '    ok: true',
       '',
     ].join('\n'));
 
@@ -555,10 +541,10 @@ describe('be check cli output', () => {
 
     expect(process.exitCode).toBe(1);
     const parsed = parseStdoutJson(stdoutSpy);
-    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-039');
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-050');
     expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-037');
     expect(parsed.diagnostics[0]).toEqual(expect.objectContaining({
-      ruleId: 'RTGL-BE-CONTRACT-039',
+      ruleId: 'RTGL-BE-CONTRACT-050',
       method: 'health.ping',
       case: 'bad-call-shape',
     }));
@@ -571,13 +557,7 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
-      'schemaVersion: rettangoli.examples/v1',
-      "file: './ping.handlers.js'",
-      'group: ping',
-      'mode: handler',
-      '---',
-      'suite: healthPingMethod',
-      'exportName: healthPingMethod',
+      ...exampleHeader(),
       '',
     ].join('\n'));
 
@@ -603,19 +583,19 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
-      'schemaVersion: rettangoli.examples/v1',
-      "file: './ping.handlers.js'",
-      'group: ping',
-      'mode: handler',
-      '---',
-      'suite: healthPingMethod',
-      'exportName: healthPingMethod',
+      ...exampleHeader(),
       '---',
       'case: invalid-payload',
-      'in:',
-      '  - payload: 123',
+      'request:',
+      "  jsonrpc: '2.0'",
+      '  id: req-invalid',
+      '  method: health.ping',
+      '  params: 123',
       'out:',
-      '  ok: true',
+      "  jsonrpc: '2.0'",
+      '  id: req-invalid',
+      '  result:',
+      '    ok: true',
       '',
     ].join('\n'));
 
@@ -631,7 +611,179 @@ describe('be check cli output', () => {
     expect(process.exitCode).toBe(1);
     const printed = errorSpy.mock.calls.map((entry) => entry[0]).join('\n');
     expect(printed).toContain('RTGL-BE-CONTRACT-027');
-    expect(printed).toContain("Example 'invalid-payload' payload does not match params schema");
+    expect(printed).toContain("RPC example 'invalid-payload' params do not match params schema");
+  });
+
+  it('accepts examples that prove the JSON-RPC response envelope', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-rpc-examples-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      ...exampleHeader({ suite: 'healthPingRpc' }),
+      ...successExample(),
+      '',
+    ].join('\n'));
+
+    const result = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+    });
+
+    expect(result.ok).toBe(true);
+  });
+
+  it('rejects examples with invalid JSON-RPC response envelopes', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-rpc-invalid-envelope-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      ...exampleHeader({ suite: 'healthPingRpc' }),
+      '---',
+      'case: ok',
+      'proves:',
+      '  result: success',
+      'request:',
+      "  jsonrpc: '2.0'",
+      '  id: req-1',
+      '  method: health.ping',
+      '  params: {}',
+      'out:',
+      '  id: different-id',
+      '  extra: unsupported',
+      '  result:',
+      '    ok: true',
+      '',
+    ].join('\n'));
+
+    const result = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-052');
+    expect(result.errors.map((error) => error.message).join('\n')).toContain('response.jsonrpc must be');
+    expect(result.errors.map((error) => error.message).join('\n')).toContain('response.id must match request.id');
+    expect(result.errors.map((error) => error.message).join('\n')).toContain('response contains unsupported field');
+  });
+
+  it('validates domain error envelopes and details', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-rpc-error-envelope-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const contractPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.contract.yaml');
+    writeFileSync(contractPath, [
+      'schemaVersion: rettangoli.contract/v1',
+      'method: health.ping',
+      'description: ping',
+      'middleware:',
+      '  before: []',
+      '  after: []',
+      'params:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties: {}',
+      '  required: []',
+      'result:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties:',
+      '    ok:',
+      '      type: boolean',
+      '  required: [ok]',
+      'errors:',
+      '  HEALTH_DOWN:',
+      '    message: Health is down',
+      '    details:',
+      '      type: object',
+      '      additionalProperties: false',
+      '      properties:',
+      '        reason:',
+      '          type: string',
+      '      required: [reason]',
+      '',
+    ].join('\n'));
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      ...exampleHeader({ suite: 'healthPingRpc' }),
+      ...successExample(),
+      '---',
+      'case: down',
+      'proves:',
+      '  error: HEALTH_DOWN',
+      'request:',
+      "  jsonrpc: '2.0'",
+      '  id: req-2',
+      '  method: health.ping',
+      '  params: {}',
+      'out:',
+      "  jsonrpc: '2.0'",
+      '  id: req-2',
+      '  error:',
+      '    code: -32000',
+      '    message: Wrong message',
+      '    data:',
+      '      code: HEALTH_DOWN',
+      '      details:',
+      '        reason: unavailable',
+      '',
+    ].join('\n'));
+
+    const wrongMessageResult = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+    });
+    expect(wrongMessageResult.ok).toBe(false);
+    expect(wrongMessageResult.errors.map((error) => error.message).join('\n')).toContain('error.message: Domain error');
+
+    writeFileSync(examplesPath, readFileSync(examplesPath, 'utf8').replace('    message: Wrong message', '    message: Domain error'));
+    const fixedMessageResult = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+    });
+    expect(fixedMessageResult.ok).toBe(true);
+
+    writeFileSync(examplesPath, readFileSync(examplesPath, 'utf8').replace('        reason: unavailable', [
+      '        reason: unavailable',
+      '      extra: unsupported',
+    ].join('\n')));
+    const extraDataResult = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+    });
+    expect(extraDataResult.ok).toBe(false);
+    expect(extraDataResult.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-052');
+
+    writeFileSync(examplesPath, readFileSync(examplesPath, 'utf8').replace([
+      '        reason: unavailable',
+      '      extra: unsupported',
+    ].join('\n'), '        reason: unavailable'));
+    const validResult = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+    });
+    expect(validResult.ok).toBe(true);
+
+    writeFileSync(examplesPath, readFileSync(examplesPath, 'utf8').replace('        reason: unavailable', '        reason: 123'));
+    const invalidResult = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+    });
+    expect(invalidResult.ok).toBe(false);
+    expect(invalidResult.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-033');
+
   });
 
   it('reports missing method directory as contract error', () => {
@@ -707,7 +859,7 @@ describe('be check cli output', () => {
       'schemaVersion: wrong/v1',
       "file: '../other.handlers.js'",
       'group: ping',
-      'mode: rpc',
+      'mode: transport',
       '---',
       'suite: ""',
       'exportName: ""',
@@ -715,10 +867,16 @@ describe('be check cli output', () => {
       'case: ok',
       'proves:',
       '  result: success',
-      'in:',
-      '  - payload: {}',
+      'request:',
+      "  jsonrpc: '2.0'",
+      '  id: ok',
+      '  method: health.ping',
+      '  params: {}',
       'out:',
-      '  ok: true',
+      "  jsonrpc: '2.0'",
+      '  id: ok',
+      '  result:',
+      '    ok: true',
       '',
     ].join('\n'));
 

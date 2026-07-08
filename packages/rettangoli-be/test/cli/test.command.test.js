@@ -36,7 +36,6 @@ const writeMethod = (rootDir) => {
     'schemaVersion: rettangoli.examples/v1',
     "file: './ping.handlers.js'",
     'group: ping',
-    'mode: handler',
     '---',
     'suite: healthPingMethod',
     'exportName: healthPingMethod',
@@ -44,10 +43,16 @@ const writeMethod = (rootDir) => {
     'case: ok',
     'proves:',
     '  result: success',
-    'in:',
-    '  - payload: {}',
+    'request:',
+    "  jsonrpc: '2.0'",
+    '  id: ok',
+    '  method: health.ping',
+    '  params: {}',
     'out:',
-    '  ok: true',
+    "  jsonrpc: '2.0'",
+    '  id: ok',
+    '  result:',
+    '    ok: true',
     '',
   ].join('\n'));
 };
@@ -112,7 +117,6 @@ const writeProfileMethod = (rootDir) => {
     'schemaVersion: rettangoli.examples/v1',
     "file: './profile.handlers.js'",
     'group: profile',
-    'mode: handler',
     '---',
     'suite: userProfileMethod',
     'exportName: userProfileMethod',
@@ -120,10 +124,16 @@ const writeProfileMethod = (rootDir) => {
     'case: ok',
     'proves:',
     '  result: success',
-    'in:',
-    '  - payload: {}',
+    'request:',
+    "  jsonrpc: '2.0'",
+    '  id: ok',
+    '  method: user.profile',
+    '  params: {}',
     'out:',
-    '  ok: true',
+    "  jsonrpc: '2.0'",
+    '  id: ok',
+    '  result:',
+    '    ok: true',
     '',
   ].join('\n'));
 };
@@ -182,6 +192,16 @@ describe('be test command', () => {
         stdio: 'pipe',
       }),
     );
+    expect(JSON.parse(runCommand.mock.calls[0][2].env.RTGL_BE_EXAMPLES_RUNTIME)).toEqual({
+      cwd: rootDir,
+      method: 'health.ping',
+      methodDirs: ['./src/modules'],
+      middlewareDirs: ['./src/middleware'],
+      setupPath: './src/setup.js',
+      globalMiddleware: [],
+      globalMiddlewareBefore: [],
+      globalMiddlewareAfter: [],
+    });
   });
 
   it('follows caller package manager when resolving the Vitest runner', () => {
@@ -206,14 +226,16 @@ describe('be test command', () => {
     });
 
     expect(result.ok).toBe(true);
-    expect(result.command.executable).toBe('bunx');
-    expect(result.command.args[0]).toBe('vitest');
+    expect(result.command).toBe('test');
+    expect(result.runner.executable).toBe('bunx');
+    expect(result.runner.args[0]).toBe('vitest');
   });
 
   it('preserves CLI overrides in agent rerun commands', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-overrides-'));
     createdDirs.push(rootDir);
     writeMethod(rootDir);
+    writeFileSync(path.join(rootDir, 'vitest.custom.js'), 'export default {};\n');
 
     const runCommand = vi.fn(() => ({
       status: 0,
@@ -225,6 +247,9 @@ describe('be test command', () => {
       cwd: rootDir,
       method: 'health.ping',
       middlewareDir: './src/custom-middleware',
+      setup: './src/custom-setup.js',
+      globalMiddlewareBefore: ['globalBefore'],
+      globalMiddlewareAfter: ['globalAfter'],
       config: './vitest.custom.js',
       executable: 'custom-runner',
       packageManager: 'pnpm',
@@ -240,6 +265,8 @@ describe('be test command', () => {
       'health.ping',
       '--middleware-dir',
       './src/custom-middleware',
+      '--setup-path',
+      './src/custom-setup.js',
       '--config',
       './vitest.custom.js',
       '--runner',
@@ -256,6 +283,8 @@ describe('be test command', () => {
       'health.ping',
       '--middleware-dir',
       './src/custom-middleware',
+      '--setup-path',
+      './src/custom-setup.js',
       '--test-config',
       './vitest.custom.js',
       '--runner',
@@ -264,6 +293,16 @@ describe('be test command', () => {
       'pnpm',
       '--json',
     ]);
+    expect(JSON.parse(runCommand.mock.calls[0][2].env.RTGL_BE_EXAMPLES_RUNTIME)).toEqual({
+      cwd: rootDir,
+      method: 'health.ping',
+      methodDirs: ['./src/modules'],
+      middlewareDirs: ['./src/custom-middleware'],
+      setupPath: './src/custom-setup.js',
+      globalMiddleware: [],
+      globalMiddlewareBefore: ['globalBefore'],
+      globalMiddlewareAfter: ['globalAfter'],
+    });
   });
 
   it('ignores unrelated contract errors when a method is selected', () => {
@@ -309,14 +348,55 @@ describe('be test command', () => {
       runCommand,
     });
 
-    const files = [
+    const executedFiles = [
       'src/modules/health/ping/ping.examples.yaml',
       'src/modules/user/profile/profile.examples.yaml',
     ];
+    const candidateFiles = [
+      'src/modules/health/ping/ping.contract.yaml',
+      'src/modules/health/ping/ping.examples.yaml',
+      'src/modules/health/ping/ping.handlers.js',
+      'src/modules/user/profile/profile.contract.yaml',
+      'src/modules/user/profile/profile.examples.yaml',
+      'src/modules/user/profile/profile.handlers.js',
+    ];
     expect(result.ok).toBe(false);
     expect(result.diagnostics[0].filePath).toBeUndefined();
-    expect(result.diagnostics[0].files).toEqual(files);
-    expect(result.nextAction.files).toEqual(files);
+    expect(result.diagnostics[0].files).toEqual(candidateFiles);
+    expect(result.diagnostics[0].executedFiles).toEqual(executedFiles);
+    expect(result.nextAction.files).toEqual(candidateFiles);
+  });
+
+  it('fails when the configured Vitest config is missing', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-missing-config-'));
+    createdDirs.push(rootDir);
+    writeMethod(rootDir);
+
+    const runCommand = vi.fn(() => ({
+      status: 0,
+      stdout: 'ok',
+      stderr: '',
+    }));
+
+    const result = runBackendTests({
+      cwd: rootDir,
+      config: './vitest.missing.js',
+      format: 'json',
+      runCommand,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-TEST-003',
+      filePath: './vitest.missing.js',
+    }));
+    expect(result.nextAction.files).toEqual([
+      './vitest.missing.js',
+      'src/modules/health/ping/ping.contract.yaml',
+      'src/modules/health/ping/ping.examples.yaml',
+      'src/modules/health/ping/ping.handlers.js',
+    ]);
+    expect(runCommand).not.toHaveBeenCalled();
   });
 
   it('includes runner spawn errors in test diagnostics', () => {
@@ -329,7 +409,7 @@ describe('be test command', () => {
       format: 'json',
       executable: 'custom-runner',
       runCommand: vi.fn(() => ({
-        status: null,
+        status: 0,
         stdout: '',
         stderr: '',
         error: new Error('spawn custom-runner ENOENT'),

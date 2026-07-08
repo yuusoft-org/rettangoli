@@ -3,9 +3,12 @@ import * as cli from '../../src/cli/index.js';
 
 describe('be cli exports', () => {
   it('exports expected command handlers', () => {
+    expect(typeof cli.app).toBe('function');
     expect(typeof cli.build).toBe('function');
     expect(typeof cli.check).toBe('function');
+    expect(typeof cli.compat).toBe('function');
     expect(typeof cli.db).toBe('function');
+    expect(typeof cli.init).toBe('function');
     expect(typeof cli.manifest).toBe('function');
     expect(typeof cli.resume).toBe('function');
     expect(typeof cli.scaffold).toBe('function');

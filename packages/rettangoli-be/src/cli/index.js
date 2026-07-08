@@ -1,6 +1,9 @@
+export { default as app } from './app.js';
 export { default as build } from './build.js';
 export { default as check } from './check.js';
+export { default as compat } from './compat.js';
 export { default as db } from './db.js';
+export { default as init } from './init.js';
 export { default as manifest } from './manifest.js';
 export { default as resume } from './resume.js';
 export { default as scaffold } from './scaffold.js';

@@ -9,7 +9,7 @@
     "build": "node ./scripts/be-cli.js build",
     "manifest": "node ./scripts/be-cli.js manifest",
     "verify": "node ./scripts/be-cli.js verify --json",
-    "test:handlers": "bunx vitest run --reporter=verbose --config vitest.config.js",
+    "test:examples": "bunx vitest run --reporter=verbose --config vitest.config.js",
     "test:method": "node ./scripts/be-cli.js test --method health.ping",
     "test:e2e": "node ./scripts/be-cli.js build && node --test ./test/e2e/*.e2e.js"
   }

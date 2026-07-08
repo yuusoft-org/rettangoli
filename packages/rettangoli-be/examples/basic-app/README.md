@@ -13,7 +13,7 @@ What it demonstrates:
 - middleware cookie handling via `ctx.cookies` JSON objects
 - per-method folders in `modules/` (no `module.js` aggregators)
 - per-method RPC contract files (`*.contract.yaml`) for params/middleware/output
-- per-method puty specs via `*.examples.yaml` (multi-document puty format)
+- per-method runtime examples via `*.examples.yaml`
 
 ## Structure
 
@@ -30,7 +30,7 @@ src/
 1. Is the `deps` boundary clear enough for DAO/services?
 2. Are per-method folders ergonomic for scaling domains?
 3. Are RPC files expressive enough for request/output contracts and method middleware hooks?
-4. Is the new `*.examples.yaml` format sufficient for puty tests?
+4. Is the new `*.examples.yaml` format sufficient for runtime contract examples?
 
 ## Local commands
 
@@ -39,12 +39,12 @@ bun run check
 bun run build
 bun run manifest
 bun run verify
-bun run test:handlers
+bun run test:examples
 bun run test:method
 bun run test:e2e
 ```
 
-`test:handlers` runs per-method puty YAML specs under `src/modules/**/**.examples.yaml`
+`test:examples` runs per-method runtime examples under `src/modules/**/**.examples.yaml`
 (`ping.examples.yaml`, `getProfile.examples.yaml`).
 
 `test:e2e` boots a real HTTP server from the generated `.rtgl-be/generated/app.js`

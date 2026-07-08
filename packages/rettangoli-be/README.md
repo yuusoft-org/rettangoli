@@ -25,7 +25,10 @@ Backend framework for Rettangoli JSON-RPC applications.
 
 - `build`
 - `check`
+- `app`
+- `compat`
 - `db`
+- `init`
 - `manifest`
 - `resume`
 - `scaffold`
@@ -64,12 +67,15 @@ be:
 With `rtgl`:
 
 ```bash
+rtgl be init --dry-run --json
 rtgl be scaffold user.getProfile --json
 rtgl be check
+rtgl be app check --json
 rtgl be db check --json
 rtgl be build
 rtgl be build --dry-run --json
 rtgl be manifest
+rtgl be compat --from previous-manifest.json --to current-manifest.json --json
 rtgl be test --method user.getProfile
 rtgl be verify --json
 rtgl be resume <taskId> --json
@@ -87,12 +93,18 @@ This keeps wiring in the framework so users do not maintain index/registry files
 hashes, schemas, error catalogs, proof cases, and example coverage.
 
 `rtgl be verify --json` runs the closed loop: check, dry-run build plan,
-manifest hash, SQLite migration check for project scope, and executable handler
-examples. JSON output includes scope, failed phase, affected files, rerun argv,
-diagnostics, and the next action for agent iteration.
+manifest hash, app/runtime boot check, SQLite migration check for project scope,
+and executable examples. JSON output includes scope, failed phase, affected files,
+rerun argv, diagnostics, and the next action for agent iteration.
 
-`rtgl be test` executes handler examples. It proves handler contract behavior;
-middleware/runtime behavior should be covered by generated-app or HTTP tests.
+`rtgl be app check --json` imports setup, handlers, and referenced middleware,
+then instantiates the generated app model without serving traffic.
+
+`rtgl be compat --from --to --json` compares two manifests and classifies API
+changes as safe, risky, or breaking.
+
+`rtgl be test` executes `*.examples.yaml` as JSON-RPC runtime examples through
+the app model. There is no examples mode switch.
 
 ## Minimal Project Bootstrap
 
@@ -106,17 +118,25 @@ A runnable backend app needs app-local test tooling:
     "be:verify": "rtgl be verify --json"
   },
   "dependencies": {
-    "@rettangoli/be": "^1.0.3"
+    "@rettangoli/be": "^1.1.0"
   },
   "devDependencies": {
-    "puty": "^0.1.2",
     "vitest": "^4.0.15"
   }
 }
 ```
 
 Use the package `vitest.config.js` shape from `examples/basic-app` so
-`*.examples.yaml` files execute through Puty.
+`*.examples.yaml` files execute through the Rettangoli runtime:
+
+```js
+import { defineConfig } from 'vitest/config';
+import { rettangoliExamplesPlugin } from '@rettangoli/be/testing';
+
+export default defineConfig({
+  plugins: [rettangoliExamplesPlugin()],
+});
+```
 
 Minimum setup:
 

@@ -122,9 +122,7 @@ In the ideal spec, `errors` is the authoritative domain error catalog. A generat
 
 ## 3. Spec YAML Tests
 
-Current `.examples.yaml` is described as puty handler tests.
-
-Ideal `.examples.yaml` should be executable contract examples.
+Current `.examples.yaml` should be executable runtime contract examples.
 
 Each case should declare which contract branch it proves:
 
@@ -133,27 +131,32 @@ case: requires-auth
 proves:
   error: AUTH_REQUIRED
 in:
-  - payload: {}
-    context: {}
-    deps:
-      userDao:
-        findById: $mock:findById
+  - request:
+      jsonrpc: '2.0'
+      id: auth
+      method: user.getProfile
+      params: {}
 out:
-  _error: true
-  code: AUTH_REQUIRED
-  details:
-    reason: auth_required
+  jsonrpc: '2.0'
+  id: auth
+  error:
+    code: -32000
+    message: Domain error
+    data:
+      code: AUTH_REQUIRED
+      details:
+        reason: auth_required
 ```
 
 Ideal checker rules:
 
-- every `in[0].payload` validates against `paramsSchema`;
-- every success `out` validates against `resultSchema`;
-- every error `out.code` exists in `errors`;
-- every error `out.details` validates against that error's `detailsSchema`;
+- every request `params` validates against `paramsSchema`;
+- every success `out.result` validates against `resultSchema`;
+- every error `out.error.data.code` exists in `errors`;
+- every error `out.error.data.details` validates against that error's `detailsSchema`;
 - every error in `errors` has at least one proving spec case;
 - every public example can run as a test;
-- mocks prove expected dependency interactions when relevant.
+- deterministic runtime setup proves expected dependency behavior when relevant.
 
 This makes tests part of the contract, not just implementation verification.
 

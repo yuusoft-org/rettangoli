@@ -1,0 +1,27 @@
+schemaVersion: rettangoli.examples/v1
+file: './ping.handlers.js'
+group: health-ping-rpc
+runtime:
+  cwd: ./test/fixtures/rpc-example-app
+---
+suite: healthPingRpc
+exportName: healthPingMethod
+---
+case: returns-json-rpc-result
+proves:
+  result: success
+request:
+  jsonrpc: '2.0'
+  id: req-1
+  method: health.ping
+  params:
+    echo: hello
+context:
+  requestId: req-runtime
+out:
+  jsonrpc: '2.0'
+  id: req-1
+  result:
+    ok: true
+    echo: hello
+    requestId: req-runtime

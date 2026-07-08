@@ -1,13 +1,15 @@
 {
   "name": "@rettangoli/be",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Backend framework for Rettangoli JSON-RPC applications",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
     "./cli": "./src/cli/index.js",
-    "./extensions": "./src/extensions/index.js"
+    "./extensions": "./src/extensions/index.js",
+    "./runtime/loadBeProjectConfig": "./src/runtime/loadBeProjectConfig.js",
+    "./testing": "./src/testing/index.js"
   },
   "files": [
     "src",
@@ -24,8 +26,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test": "vitest run test/ spec/ --reporter=verbose --config vitest.config.js",
-    "test:puty": "vitest run spec/ --reporter=verbose --config vitest.config.js"
+    "test": "vitest run test/ spec/ --reporter=verbose --config vitest.config.js"
   },
   "dependencies": {
     "ajv": "^8.17.1",
@@ -33,7 +34,6 @@
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "puty": "^0.1.2",
     "vitest": "^4.0.15"
   }
 }

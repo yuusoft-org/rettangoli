@@ -18,7 +18,7 @@ It does **not** define internal framework implementation files.
 - Dependency injection via one `src/setup.js` object.
 - API contract: JSON-RPC 2.0.
 - Method contract: JSON Schema for `params` and `output` (success + error).
-- Method tests: puty `*.examples.yaml` files.
+- Method tests: runtime `*.examples.yaml` files.
 - Fail fast at startup and request runtime.
 
 ## Canonical Application Structure
@@ -102,7 +102,7 @@ Rules:
 For each RPC method, user creates three files:
 - `<action>/<action>.handlers.js`
 - `<action>/<action>.contract.yaml`
-- `<action>/<action>.examples.yaml` (puty tests)
+- `<action>/<action>.examples.yaml` (runtime contract examples)
 
 Example set:
 - `ping/ping.handlers.js`
@@ -115,14 +115,14 @@ Method naming format:
 Mandatory convention:
 - each `*.handlers.js` file exports one async method handler function directly
 - exactly one RPC method contract per `*.contract.yaml` file
-- exactly one method test suite per `*.examples.yaml` file
+- exactly one runtime example suite per `*.examples.yaml` file
 - no multi-method handler files
 - no multi-method RPC files
 - no handler factory wrapper layer
-- `*.examples.yaml` follows puty multi-document format:
+- `*.examples.yaml` follows a multi-document runtime example format:
   1. config doc: `file`, `group`
   2. suite doc: `suite`, `exportName`
-  3. case docs: `case`, `in`, optional `out`, optional `throws`, optional `mocks`
+  3. case docs: `case`, `proves`, `request`, optional `context`/`meta`/`cookies`, `out`
 
 `*.contract.yaml` required keys:
 - `method`: method id (example: `user.getProfile`)
