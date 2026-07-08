@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
@@ -36,11 +36,19 @@ describe('be scaffold command', () => {
       'src/modules/user/getProfile/getProfile.handlers.js',
     ]);
     expect(plan.targets[0].hash).toMatch(/^sha256:/);
+    expect(plan.setupRequirement).toEqual({
+      path: 'src/setup.js',
+      dependencyPath: 'setup.deps.user',
+      message: 'Ensure setup.deps.user exists before importing the generated app.',
+    });
     expect(existsSync(path.join(rootDir, 'src', 'modules', 'user', 'getProfile'))).toBe(false);
 
     applyMethodScaffoldPlan(plan);
 
     expect(existsSync(path.join(rootDir, 'src', 'modules', 'user', 'getProfile', 'getProfile.contract.yaml'))).toBe(true);
+    expect(readFileSync(path.join(rootDir, 'src', 'modules', 'user', 'getProfile', 'getProfile.handlers.js'), 'utf8')).toContain(
+      'export const userGetProfileMethod = () =>',
+    );
     const check = runBackendCheck({
       cwd: rootDir,
       method: 'user.getProfile',
@@ -79,5 +87,34 @@ describe('be scaffold command', () => {
       cwd: rootDir,
       methodId: 'user.get/Profile',
     })).toThrow(/invalid/i);
+  });
+
+  it('accepts one configured dirs entry and preserves it in verify argv', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-scaffold-custom-dir-'));
+    createdDirs.push(rootDir);
+
+    const plan = createMethodScaffoldPlan({
+      cwd: rootDir,
+      methodId: 'billing.createInvoice',
+      dirs: ['./backend/methods'],
+    });
+
+    expect(plan.methodFolder).toBe('backend/methods/billing/createInvoice');
+    expect(plan.verify.argv).toEqual([
+      'rtgl',
+      'be',
+      'verify',
+      '--dir',
+      './backend/methods',
+      '--method',
+      'billing.createInvoice',
+      '--json',
+    ]);
+
+    expect(() => createMethodScaffoldPlan({
+      cwd: rootDir,
+      methodId: 'billing.createInvoice',
+      dirs: ['./backend/methods', './other'],
+    })).toThrow(/exactly one method directory/);
   });
 });

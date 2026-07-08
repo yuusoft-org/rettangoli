@@ -2,6 +2,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { stringifyStableJson } from './json.js';
+import { normalizeContractDirs } from './contracts.js';
 
 const hashContent = (content) => {
   const hash = createHash('sha256');
@@ -99,7 +100,7 @@ const createExamplesContent = ({ domain, action, exportName }) => [
 ].join('\n');
 
 const createHandlerContent = ({ exportName }) => [
-  `export const ${exportName} = async () => ({`,
+  `export const ${exportName} = () => ({`,
   '  ok: true,',
   '});',
   '',
@@ -120,6 +121,17 @@ const stripContent = (target) => {
   return publicTarget;
 };
 
+const createVerifyArgv = ({ method, dirs }) => {
+  const argv = ['rtgl', 'be', 'verify'];
+  if (!(dirs.length === 1 && dirs[0] === './src/modules')) {
+    dirs.forEach((dir) => {
+      argv.push('--dir', dir);
+    });
+  }
+  argv.push('--method', method, '--json');
+  return argv;
+};
+
 export const createMethodScaffoldPlan = ({
   cwd = process.cwd(),
   method,
@@ -127,7 +139,12 @@ export const createMethodScaffoldPlan = ({
   dirs = './src/modules',
 } = {}) => {
   const parsed = parseMethodId(methodId);
-  const modulesDir = path.resolve(cwd, dirs);
+  const methodDirs = normalizeContractDirs(dirs);
+  if (methodDirs.length !== 1) {
+    throw new Error('Method scaffold requires exactly one method directory.');
+  }
+
+  const modulesDir = path.resolve(cwd, methodDirs[0]);
   const methodDir = path.join(modulesDir, parsed.domain, parsed.action);
   const exportName = `${toCamel(parsed.domain)}${toPascal(parsed.action)}Method`;
   const targets = [
@@ -162,8 +179,13 @@ export const createMethodScaffoldPlan = ({
     exportName,
     conflicts,
     targets: targets.map(stripContent),
+    setupRequirement: {
+      path: 'src/setup.js',
+      dependencyPath: `setup.deps.${parsed.domain}`,
+      message: `Ensure setup.deps.${parsed.domain} exists before importing the generated app.`,
+    },
     verify: {
-      argv: ['rtgl', 'be', 'verify', '--method', parsed.method, '--json'],
+      argv: createVerifyArgv({ method: parsed.method, dirs: methodDirs }),
     },
     _private: {
       targets,

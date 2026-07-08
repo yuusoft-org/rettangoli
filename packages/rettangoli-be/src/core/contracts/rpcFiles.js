@@ -40,8 +40,33 @@ const formatAjvErrors = (errors = []) => {
     .join('; ');
 };
 
-const parseMethodFileMeta = (filePath = '') => {
+const pathContains = (parentPath, childPath) => {
+  const relative = path.relative(parentPath, childPath);
+  return relative === '' || (!!relative && !relative.startsWith('..') && !path.isAbsolute(relative));
+};
+
+const parseMethodFileLayout = (filePath = '', methodDirs = []) => {
   const normalized = path.normalize(filePath);
+  const absoluteFilePath = path.resolve(filePath);
+  const owningMethodDir = methodDirs
+    .map((methodDir) => path.resolve(methodDir))
+    .find((methodDir) => pathContains(methodDir, absoluteFilePath));
+
+  if (owningMethodDir) {
+    const parts = path.relative(owningMethodDir, absoluteFilePath).split(path.sep);
+    if (parts.length !== 3) {
+      return { ok: false, reason: 'invalid-layout' };
+    }
+
+    const [domain, action, fileName] = parts;
+    return {
+      ok: true,
+      domain,
+      action,
+      fileName,
+    };
+  }
+
   const parts = normalized.split(path.sep);
   const modulesIndex = parts.lastIndexOf('modules');
 
@@ -52,10 +77,31 @@ const parseMethodFileMeta = (filePath = '') => {
   const domain = parts[modulesIndex + 1];
   const action = parts[modulesIndex + 2];
   const fileName = parts[modulesIndex + 3];
+
+  return {
+    ok: true,
+    domain,
+    action,
+    fileName,
+  };
+};
+
+const parseMethodFileMeta = (filePath = '', methodDirs = []) => {
+  const layout = parseMethodFileLayout(filePath, methodDirs);
+
+  if (!layout.ok) {
+    return layout;
+  }
+
+  const { domain, action, fileName } = layout;
   const suffix = findSupportedMethodSuffix(fileName);
 
   if (!suffix) {
-    return { ok: false, reason: 'unsupported-suffix' };
+    return {
+      ...layout,
+      reason: 'unsupported-suffix',
+      ok: false,
+    };
   }
 
   const fileType = METHOD_FILE_KIND_BY_SUFFIX[suffix];
@@ -77,30 +123,26 @@ export const isSupportedMethodFile = (filePath = '') => {
   return SUPPORTED_METHOD_FILE_SUFFIXES.some((suffix) => filePath.endsWith(suffix));
 };
 
-export const collectMethodContractEntriesFromFiles = (allFiles = []) => {
+export const collectMethodContractEntriesFromFiles = (allFiles = [], { methodDirs = [] } = {}) => {
   const entries = [];
   const collectionErrors = [];
 
   allFiles
     .filter((filePath) => isPotentialMethodFile(filePath) && !isSupportedMethodFile(filePath))
     .forEach((filePath) => {
-      const normalized = path.normalize(filePath);
-      const parts = normalized.split(path.sep);
-      const modulesIndex = parts.lastIndexOf('modules');
-
-      if (modulesIndex === -1 || parts.length !== modulesIndex + 4) {
+      const layout = parseMethodFileLayout(filePath, methodDirs);
+      if (!layout.ok) {
         return;
       }
 
-      const action = parts[modulesIndex + 2];
-      const fileName = parts[modulesIndex + 3];
+      const { domain, action, fileName } = layout;
       if (!fileName.startsWith(`${action}.`)) {
         return;
       }
 
       collectionErrors.push({
         code: 'RTGL-BE-CONTRACT-041',
-        method: `${parts[modulesIndex + 1]}.${action}`,
+        method: `${domain}.${action}`,
         message: `Unsupported method package file '${fileName}'. Expected ${SUPPORTED_METHOD_FILE_SUFFIXES.join(', ')}.`,
         filePath,
       });
@@ -109,12 +151,12 @@ export const collectMethodContractEntriesFromFiles = (allFiles = []) => {
   allFiles
     .filter((filePath) => isSupportedMethodFile(filePath))
     .forEach((filePath) => {
-      const parsed = parseMethodFileMeta(filePath);
+      const parsed = parseMethodFileMeta(filePath, methodDirs);
 
       if (!parsed.ok) {
         collectionErrors.push({
           code: 'RTGL-BE-CONTRACT-001',
-          message: `Invalid method file layout under modules/: ${filePath}`,
+          message: `Invalid method file layout under configured method dirs: ${filePath}`,
           filePath,
         });
         return;
@@ -167,7 +209,7 @@ export const collectMethodContractEntriesFromDirs = (dirs = []) => {
   const existingDirs = dirs.filter((dirPath) => existsSync(dirPath));
   const missingDirs = dirs.filter((dirPath) => !existsSync(dirPath));
   const allFiles = getAllFiles(existingDirs);
-  const result = collectMethodContractEntriesFromFiles(allFiles);
+  const result = collectMethodContractEntriesFromFiles(allFiles, { methodDirs: existingDirs });
 
   missingDirs.forEach((missingDir) => {
     result.collectionErrors.push({

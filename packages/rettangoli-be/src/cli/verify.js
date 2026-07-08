@@ -95,10 +95,12 @@ export const runBackendVerify = (options = {}) => {
     method,
   };
   const commands = createBackendCommands({
+    dirs,
     method,
     middlewareDir,
     setup,
     outdir,
+    migrationsDir,
     testConfig,
     executable,
     packageManager,
@@ -178,6 +180,7 @@ export const runBackendVerify = (options = {}) => {
         ok: true,
         scope: 'project',
         generated: false,
+        dryRun: true,
         plan: {
           schemaVersion: output.schemaVersion,
           outdir: output.outdir,
@@ -264,9 +267,13 @@ export const runBackendVerify = (options = {}) => {
     ...(test.diagnostics ?? []),
   ];
   const ok = check.ok && buildResult.ok && manifestResult.ok && db.ok && test.ok;
-  const ownedFiles = manifestValue
-    ? collectSourceFilesFromManifest(manifestValue)
-    : [...new Set(diagnostics.map((diagnostic) => diagnostic.filePath).filter(Boolean))].sort();
+  const diagnosticFiles = diagnostics
+    .map((diagnostic) => diagnostic.filePath)
+    .filter(Boolean);
+  const ownedFiles = [
+    ...(manifestValue ? collectSourceFilesFromManifest(manifestValue) : []),
+    ...diagnosticFiles,
+  ].filter(Boolean);
   const writeFiles = method
     ? []
     : (buildResult.plan?.targets ?? [])
@@ -283,7 +290,7 @@ export const runBackendVerify = (options = {}) => {
     steps,
     commands,
     files: {
-      owned: ownedFiles,
+      owned: [...new Set(ownedFiles)].sort(),
       write: writeFiles,
     },
     diagnostics,

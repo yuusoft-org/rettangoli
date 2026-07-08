@@ -9,7 +9,7 @@ import {
 } from '../../src/cli/agentWorkflow.js';
 import { createBackendManifest } from '../../src/cli/manifest.js';
 
-const writeProject = (rootDir) => {
+const writeProject = (rootDir, { modulesDir = 'src/modules' } = {}) => {
   const srcDir = path.join(rootDir, 'src');
   mkdirSync(srcDir, { recursive: true });
   writeFileSync(path.join(srcDir, 'setup.js'), [
@@ -20,7 +20,7 @@ const writeProject = (rootDir) => {
   ].join('\n'));
   writeFileSync(path.join(rootDir, 'vitest.config.js'), 'export default {};\n');
 
-  const methodDir = path.join(srcDir, 'modules', 'health', 'ping');
+  const methodDir = path.join(rootDir, modulesDir, 'health', 'ping');
   mkdirSync(methodDir, { recursive: true });
   writeFileSync(path.join(methodDir, 'ping.handlers.js'), 'export const healthPingMethod = async () => ({ ok: true });\n');
   writeFileSync(path.join(methodDir, 'ping.contract.yaml'), [
@@ -217,7 +217,7 @@ describe('be verify output', () => {
   it('preserves CLI overrides in verify rerun commands', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-verify-overrides-'));
     createdDirs.push(rootDir);
-    writeProject(rootDir);
+    writeProject(rootDir, { modulesDir: 'backend/methods' });
 
     const runCommand = vi.fn(() => ({
       status: 0,
@@ -228,9 +228,11 @@ describe('be verify output', () => {
     const result = runBackendVerify({
       cwd: rootDir,
       method: 'health.ping',
+      dirs: ['./backend/methods'],
       middlewareDir: './src/custom-middleware',
       setup: './src/custom-setup.js',
       outdir: './custom-generated',
+      migrationsDir: './database/sql',
       testConfig: './vitest.custom.js',
       executable: 'custom-runner',
       packageManager: 'pnpm',
@@ -242,6 +244,8 @@ describe('be verify output', () => {
       'rtgl',
       'be',
       'check',
+      '--dir',
+      './backend/methods',
       '--method',
       'health.ping',
       '--middleware-dir',
@@ -253,6 +257,8 @@ describe('be verify output', () => {
       'rtgl',
       'be',
       'test',
+      '--dir',
+      './backend/methods',
       '--method',
       'health.ping',
       '--middleware-dir',
@@ -269,6 +275,8 @@ describe('be verify output', () => {
       'rtgl',
       'be',
       'verify',
+      '--dir',
+      './backend/methods',
       '--method',
       'health.ping',
       '--middleware-dir',
@@ -277,6 +285,8 @@ describe('be verify output', () => {
       './src/custom-setup.js',
       '--outdir',
       './custom-generated',
+      '--migrations-dir',
+      './database/sql',
       '--test-config',
       './vitest.custom.js',
       '--runner',
@@ -285,6 +295,40 @@ describe('be verify output', () => {
       'pnpm',
       '--json',
     ]);
+  });
+
+  it('points db verify failures at migration files and db rerun commands', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-verify-db-fail-'));
+    createdDirs.push(rootDir);
+    writeProject(rootDir);
+    mkdirSync(path.join(rootDir, 'migrations'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'migrations', '001_ok.sql'), 'CREATE TABLE users (id TEXT PRIMARY KEY);\n');
+    writeFileSync(path.join(rootDir, 'migrations', '002_bad.sql'), 'CREATE TABLE broken (\n');
+
+    const runCommand = vi.fn(() => ({
+      status: 0,
+      stdout: '',
+      stderr: '',
+    }));
+
+    const result = runBackendVerify({
+      cwd: rootDir,
+      runCommand,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.failedPhase).toBe('db');
+    expect(result.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-DB-003',
+      filePath: 'migrations/002_bad.sql',
+    }));
+    expect(result.files.owned).toContain('migrations/002_bad.sql');
+    expect(result.nextAction).toEqual(expect.objectContaining({
+      kind: 'fix',
+      phase: 'db',
+      target: 'database-migrations',
+      argv: ['rtgl', 'be', 'db', 'check', '--json'],
+    }));
   });
 
   it('returns agent-ready check failure details', () => {

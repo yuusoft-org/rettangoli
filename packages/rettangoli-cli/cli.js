@@ -22,7 +22,10 @@ const beCli = existsSync(localBeCliUrl)
 const {
   build: buildBe,
   check: checkBe,
+  db: dbBe,
   manifest: manifestBe,
+  resume: resumeBe,
+  scaffold: scaffoldBe,
   start: startBe,
   test: testBe,
   verify: verifyBe,
@@ -96,6 +99,7 @@ function resolveBeRuntimePaths(config) {
     middlewareDir: be.middlewareDir || "./src/middleware",
     setup: be.setup || "./src/setup.js",
     outdir: be.outdir || "./.rtgl-be/generated",
+    migrationsDir: be.migrationsDir || "./migrations",
     domainErrors: be.domainErrors || {},
   };
 }
@@ -333,9 +337,13 @@ const beCommand = program.command("be").description("Backend framework");
 beCommand
   .command("build")
   .description("Build backend method registry and app entry")
+  .option("--dir <path>", "Backend method directory to scan (repeatable)", collectValues, [])
   .option("-s, --setup-path <path>", "Custom setup file path")
   .option("-m, --middleware-dir <path>", "Custom middleware directory path")
   .option("-o, --outdir <path>", "Generated output directory")
+  .option("--dry-run", "Print the deterministic build plan without writing files")
+  .option("--check", "Check whether generated files are fresh")
+  .option("--json", "Output JSON")
   .action((options) => {
     const config = readConfig();
 
@@ -345,18 +353,20 @@ beCommand
 
     const bePaths = resolveBeRuntimePaths(config);
 
-    const missingDirs = bePaths.dirs.filter(
+    const selectedDirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
+    const missingDirs = selectedDirs.filter(
       (dir) => !existsSync(resolve(process.cwd(), dir)),
     );
     if (missingDirs.length > 0) {
       throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
     }
 
-    options.dirs = bePaths.dirs;
+    options.dirs = selectedDirs;
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
     options.setup = options.setupPath || bePaths.setup;
     options.outdir = options.outdir || bePaths.outdir;
     options.domainErrors = bePaths.domainErrors;
+    if (options.json) options.format = "json";
 
     buildBe(options);
   });
@@ -365,6 +375,8 @@ beCommand
   .command("check")
   .description("Validate backend RPC contracts")
   .option("--format <format>", "Output format: text or json", "text")
+  .option("--json", "Output JSON")
+  .option("--dir <path>", "Backend method directory to scan (repeatable)", collectValues, [])
   .option("--method <method>", "Validate one backend method id")
   .option("-m, --middleware-dir <path>", "Custom middleware directory path")
   .action((options) => {
@@ -376,8 +388,9 @@ beCommand
 
     const bePaths = resolveBeRuntimePaths(config);
 
-    options.dirs = bePaths.dirs;
+    options.dirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
+    if (options.json) options.format = "json";
 
     checkBe(options);
   });
@@ -386,8 +399,11 @@ beCommand
   .command("manifest")
   .description("Print deterministic backend API manifest")
   .option("--json", "Output JSON")
+  .option("--dir <path>", "Backend method directory to scan (repeatable)", collectValues, [])
   .option("--method <method>", "Print manifest for one backend method id")
   .option("-m, --middleware-dir <path>", "Custom middleware directory path")
+  .option("--outdir <path>", "Generated output directory used for target facts")
+  .option("--migrations-dir <path>", "SQLite migrations directory")
   .option("-o, --output <path>", "Write manifest JSON to a file")
   .action((options) => {
     const config = readConfig();
@@ -398,8 +414,10 @@ beCommand
 
     const bePaths = resolveBeRuntimePaths(config);
 
-    options.dirs = bePaths.dirs;
+    options.dirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
+    options.outdir = options.outdir || bePaths.outdir;
+    options.migrationsDir = options.migrationsDir || bePaths.migrationsDir;
 
     requireBeCommand(manifestBe, "manifest")(options);
   });
@@ -409,9 +427,11 @@ beCommand
   .description("Run backend executable examples")
   .option("--format <format>", "Output format: text or json", "text")
   .option("--json", "Output JSON")
+  .option("--dir <path>", "Backend method directory to scan (repeatable)", collectValues, [])
   .option("--method <method>", "Run examples for one backend method id")
   .option("-m, --middleware-dir <path>", "Custom middleware directory path")
   .option("--config <path>", "Vitest config path", "./vitest.config.js")
+  .option("--test-config <path>", "Alias for --config")
   .option("--package-manager <name>", "Package manager for running Vitest: npm, pnpm, yarn, bun")
   .option("--runner <command>", "Executable used to run Vitest")
   .action((options) => {
@@ -423,8 +443,9 @@ beCommand
 
     const bePaths = resolveBeRuntimePaths(config);
 
-    options.dirs = bePaths.dirs;
+    options.dirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
+    options.config = options.testConfig || options.config;
     options.executable = options.runner;
     if (options.json) options.format = "json";
 
@@ -436,10 +457,15 @@ beCommand
   .description("Run backend check, build, manifest, and examples")
   .option("--format <format>", "Output format: text or json", "text")
   .option("--json", "Output JSON")
+  .option("--dir <path>", "Backend method directory to scan (repeatable)", collectValues, [])
   .option("--method <method>", "Verify one backend method id")
   .option("-s, --setup-path <path>", "Custom setup file path")
   .option("-m, --middleware-dir <path>", "Custom middleware directory path")
   .option("-o, --outdir <path>", "Generated output directory")
+  .option("--migrations-dir <path>", "SQLite migrations directory")
+  .option("--evidence <taskId>", "Write verification evidence under .rtgl-be/evidence")
+  .option("--task-id <taskId>", "Task id for verification evidence")
+  .option("--config <path>", "Alias for --test-config")
   .option("--test-config <path>", "Vitest config path", "./vitest.config.js")
   .option("--package-manager <name>", "Package manager for running Vitest: npm, pnpm, yarn, bun")
   .option("--runner <command>", "Executable used to run Vitest")
@@ -452,14 +478,63 @@ beCommand
 
     const bePaths = resolveBeRuntimePaths(config);
 
-    options.dirs = bePaths.dirs;
+    options.dirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
     options.setup = options.setupPath || bePaths.setup;
     options.outdir = options.outdir || bePaths.outdir;
+    options.migrationsDir = options.migrationsDir || bePaths.migrationsDir;
+    options.testConfig = options.config || options.testConfig;
     options.executable = options.runner;
     if (options.json) options.format = "json";
 
     requireBeCommand(verifyBe, "verify")(options);
+  });
+
+beCommand
+  .command("scaffold [methodId]")
+  .description("Scaffold a backend method package")
+  .option("--method <method>", "Backend method id, e.g. user.getProfile")
+  .option("--dir <path>", "Backend method directory to create under")
+  .option("--dry-run", "Print the scaffold plan without writing files")
+  .option("--check", "Alias for --dry-run")
+  .option("--json", "Output JSON")
+  .action((methodId, options) => {
+    const config = readConfig();
+    const bePaths = resolveBeRuntimePaths(config);
+
+    options.methodId = options.method || methodId;
+    options.dirs = options.dir || bePaths.dirs[0] || "./src/modules";
+    if (options.json) options.format = "json";
+    requireBeCommand(scaffoldBe, "scaffold")(options);
+  });
+
+const beDbCommand = beCommand.command("db").description("SQLite backend database checks");
+
+beDbCommand
+  .command("check")
+  .description("Validate and replay SQLite migrations")
+  .option("--json", "Output JSON")
+  .option("--migrations-dir <path>", "SQLite migrations directory")
+  .option("--fail-on-warnings", "Return non-zero when warnings are present")
+  .action((options) => {
+    const config = readConfig();
+    const bePaths = resolveBeRuntimePaths(config);
+
+    options.migrationsDir = options.migrationsDir || bePaths.migrationsDir;
+    options.failOnWarnings = !!options.failOnWarnings;
+    if (options.json) options.format = "json";
+
+    requireBeCommand(dbBe, "db")(options);
+  });
+
+beCommand
+  .command("resume <taskId>")
+  .description("Resume a backend verification task anchor")
+  .option("--json", "Output JSON")
+  .action((taskId, options) => {
+    options.taskId = taskId;
+    if (options.json) options.format = "json";
+    requireBeCommand(resumeBe, "resume")(options);
   });
 
 beCommand
