@@ -13,6 +13,18 @@ import {
   validateRpcDirs,
 } from '../core/contracts/rpcFiles.js';
 
+export const normalizeContractDirs = (dirs = ['./src/modules']) => {
+  if (Array.isArray(dirs)) {
+    return dirs;
+  }
+
+  if (typeof dirs === 'string' && dirs) {
+    return [dirs];
+  }
+
+  return [];
+};
+
 export {
   analyzeRpcDirs,
   collectMethodContractEntriesFromDirs,
@@ -32,8 +44,10 @@ export const resolveContractDirs = ({
   dirs = ['./src/modules'],
   middlewareDir = './src/middleware',
 }) => {
+  const normalizedDirs = normalizeContractDirs(dirs);
+
   return {
-    methodDirs: dirs.map((dir) => path.resolve(cwd, dir)),
+    methodDirs: normalizedDirs.map((dir) => path.resolve(cwd, dir)),
     middlewareDirs: [path.resolve(cwd, middlewareDir)],
   };
 };

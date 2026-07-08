@@ -2,10 +2,10 @@ import path from 'node:path';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import check from '../../src/cli/check.js';
+import check, { runBackendCheck } from '../../src/cli/check.js';
 
-const writeMethodFiles = ({ rootDir, includeSpec = true }) => {
-  const methodDir = path.join(rootDir, 'src', 'modules', 'health', 'ping');
+const writeMethodFiles = ({ rootDir, includeSpec = true, modulesDir = 'src/modules' }) => {
+  const methodDir = path.join(rootDir, modulesDir, 'health', 'ping');
   mkdirSync(methodDir, { recursive: true });
 
   writeFileSync(path.join(methodDir, 'ping.handlers.js'), 'export const healthPingMethod = async () => ({ ok: true });\n');
@@ -758,5 +758,39 @@ describe('be check cli output', () => {
     expect(process.exitCode).toBe(1);
     const parsed = parseStdoutJson(stdoutSpy);
     expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-041');
+  });
+
+  it('discovers methods relative to configured method dirs without requiring a modules path segment', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-custom-dir-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({
+      rootDir,
+      includeSpec: true,
+      modulesDir: 'backend/methods',
+    });
+
+    const result = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./backend/methods'],
+      method: 'health.ping',
+      format: 'json',
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.scope).toEqual({
+      type: 'method',
+      methods: ['health.ping'],
+      provesProject: false,
+    });
+    expect(result.nextAction.argv).toEqual([
+      'rtgl',
+      'be',
+      'verify',
+      '--dir',
+      './backend/methods',
+      '--method',
+      'health.ping',
+      '--json',
+    ]);
   });
 });

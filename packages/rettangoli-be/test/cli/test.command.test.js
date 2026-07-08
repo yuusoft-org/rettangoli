@@ -319,6 +319,28 @@ describe('be test command', () => {
     expect(result.nextAction.files).toEqual(files);
   });
 
+  it('includes runner spawn errors in test diagnostics', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-spawn-error-'));
+    createdDirs.push(rootDir);
+    writeMethod(rootDir);
+
+    const result = runBackendTests({
+      cwd: rootDir,
+      format: 'json',
+      executable: 'custom-runner',
+      runCommand: vi.fn(() => ({
+        status: null,
+        stdout: '',
+        stderr: '',
+        error: new Error('spawn custom-runner ENOENT'),
+      })),
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics[0].message).toContain('spawn custom-runner ENOENT');
+    expect(result.diagnostics[0].outputTail.stderr).toContain('spawn custom-runner ENOENT');
+  });
+
   it('does not run Vitest when no backend examples are found', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-empty-'));
     createdDirs.push(rootDir);

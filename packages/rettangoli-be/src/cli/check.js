@@ -16,6 +16,7 @@ export const runBackendCheck = (options = {}) => {
     ? analysis.contracts.map((contract) => contract.method)
     : analysis.allContracts.map((contract) => contract.method);
   const commands = createBackendCommands({
+    dirs: options.dirs,
     method: options.method,
     middlewareDir: options.middlewareDir,
   });

@@ -58,6 +58,11 @@ describe('be db check command', () => {
       ruleId: 'RTGL-BE-DB-001',
       migrationId: '001_init',
     }));
+    expect(result.replay).toEqual(expect.objectContaining({
+      ok: false,
+      skipped: true,
+      reason: 'blocked by migration diagnostics',
+    }));
   });
 
   it('reports incomplete SQL replay failures without timing out', () => {
@@ -81,5 +86,45 @@ describe('be db check command', () => {
       migrationId: '001_bad',
     }));
     expect(result.diagnostics[0].message).toMatch(/incomplete input/i);
+  });
+
+  it('points replay failures at the failing migration file', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-db-bad-second-'));
+    createdDirs.push(rootDir);
+    mkdirSync(path.join(rootDir, 'migrations'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'migrations', '001_ok.sql'), 'CREATE TABLE users (id TEXT PRIMARY KEY);\n');
+    writeFileSync(path.join(rootDir, 'migrations', '002_bad.sql'), 'CREATE TABLE broken (\n');
+
+    const result = runBackendDbCheck({ cwd: rootDir });
+
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-DB-003',
+      filePath: 'migrations/002_bad.sql',
+      migrationId: '002_bad',
+    }));
+  });
+
+  it('reports destructive migration warnings and can fail on warnings', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-db-warning-'));
+    createdDirs.push(rootDir);
+    mkdirSync(path.join(rootDir, 'migrations'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'migrations', '001_drop.sql'), [
+      'CREATE TABLE old_users (id TEXT PRIMARY KEY);',
+      'DROP TABLE old_users;',
+      '',
+    ].join('\n'));
+
+    const defaultResult = runBackendDbCheck({ cwd: rootDir });
+    const strictResult = runBackendDbCheck({
+      cwd: rootDir,
+      failOnWarnings: true,
+    });
+
+    expect(defaultResult.ok).toBe(true);
+    expect(defaultResult.warningCount).toBe(1);
+    expect(defaultResult.errorCount).toBe(0);
+    expect(strictResult.ok).toBe(false);
+    expect(strictResult.failOnWarnings).toBe(true);
   });
 });

@@ -318,8 +318,11 @@ const manifestRettangoliBackend = (options = {}) => {
 
   if (!check.ok) {
     const commands = createBackendCommands({
+      dirs: options.dirs,
       method: options.method,
       middlewareDir: options.middlewareDir,
+      outdir: options.outdir,
+      migrationsDir: options.migrationsDir,
     });
     const result = createCliResult({
       command: 'manifest',

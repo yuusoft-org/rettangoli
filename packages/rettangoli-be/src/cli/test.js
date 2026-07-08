@@ -19,6 +19,18 @@ const toOutputTail = (value, maxLength = 4000) => {
   return text.length > maxLength ? text.slice(-maxLength) : text;
 };
 
+const toProcessOutputText = (value) => {
+  if (value === undefined || value === null) {
+    return '';
+  }
+
+  if (Buffer.isBuffer(value)) {
+    return value.toString('utf8');
+  }
+
+  return String(value);
+};
+
 const createPackageRunner = ({ executable, packageManager, env = process.env } = {}) => {
   if (executable) {
     return {
@@ -76,6 +88,7 @@ export const runBackendTests = (options = {}) => {
     : analysis.allContracts.map((contract) => contract.method);
   const scope = createScope({ method, methods });
   const commands = createBackendCommands({
+    dirs,
     method,
     middlewareDir,
     config,
@@ -170,13 +183,18 @@ export const runBackendTests = (options = {}) => {
   });
   const exitCode = typeof result.status === 'number' ? result.status : 1;
   const ok = exitCode === 0;
-  const stdout = result.stdout ?? '';
-  const stderr = result.stderr ?? '';
+  const stdout = toProcessOutputText(result.stdout ?? result.output?.[1]);
+  const stderr = [
+    toProcessOutputText(result.stderr ?? result.output?.[2]),
+    result.error?.message,
+  ].filter(Boolean).join('\n');
   const failureDiagnostic = ok ? undefined : normalizeDiagnostic({
     cwd,
     error: {
       code: 'RTGL-BE-TEST-002',
-      message: `Backend examples failed with exit code ${exitCode}.`,
+      message: result.error?.message
+        ? `Backend examples failed with exit code ${exitCode}: ${result.error.message}`
+        : `Backend examples failed with exit code ${exitCode}.`,
       filePath: files.length === 1 ? files[0] : undefined,
     },
     phase: 'test',

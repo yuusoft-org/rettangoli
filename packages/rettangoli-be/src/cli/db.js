@@ -82,36 +82,58 @@ const quoteSqliteDotPath = (filePath) => `"${filePath.replaceAll('"', '""')}"`;
 const replayMigrations = ({ migrations, sqliteExecutable, timeoutMs = SQLITE_REPLAY_TIMEOUT_MS }) => {
   const tempDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-db-'));
   const dbPath = path.join(tempDir, 'check.sqlite');
-  const replayPath = path.join(tempDir, 'replay.sql');
+  const stdoutParts = [];
+  const stderrParts = [];
 
   try {
-    const replaySql = `${[
-      'PRAGMA foreign_keys = ON;',
-      ...migrations.map((migration) => [
+    for (const migration of migrations) {
+      const replayPath = path.join(tempDir, `${migration.id}.sql`);
+      const replaySql = `${[
+        'PRAGMA foreign_keys = ON;',
         `-- ${migration.id}`,
         migration.content,
-      ].join('\n')),
-    ].join('\n')}\n`;
-    writeFileSync(replayPath, replaySql);
+      ].join('\n')}\n`;
+      writeFileSync(replayPath, replaySql);
 
-    const input = `.read ${quoteSqliteDotPath(replayPath)}\n.quit\n`;
-    const result = spawnSync(sqliteExecutable, ['-batch', dbPath], {
-      input,
-      encoding: 'utf8',
-      timeout: timeoutMs,
-    });
-    const stderr = [
-      result.error?.message,
-      result.stderr,
-    ].filter(Boolean).join('\n');
+      const input = `.read ${quoteSqliteDotPath(replayPath)}\n.quit\n`;
+      const result = spawnSync(sqliteExecutable, ['-batch', dbPath], {
+        input,
+        encoding: 'utf8',
+        timeout: timeoutMs,
+      });
+      const stderr = [
+        result.error?.message,
+        result.stderr,
+      ].filter(Boolean).join('\n');
+
+      if (result.stdout) {
+        stdoutParts.push(result.stdout);
+      }
+      if (stderr) {
+        stderrParts.push(stderr);
+      }
+
+      if (result.status !== 0) {
+        return {
+          ok: false,
+          exitCode: result.status,
+          signal: result.signal,
+          timedOut: result.error?.code === 'ETIMEDOUT',
+          stdout: stdoutParts.join('\n'),
+          stderr,
+          migrationId: migration.id,
+          migrationPath: migration.path,
+        };
+      }
+    }
 
     return {
-      ok: result.status === 0,
-      exitCode: result.status,
-      signal: result.signal,
-      timedOut: result.error?.code === 'ETIMEDOUT',
-      stdout: result.stdout,
-      stderr,
+      ok: true,
+      exitCode: 0,
+      signal: null,
+      timedOut: false,
+      stdout: stdoutParts.join('\n'),
+      stderr: stderrParts.join('\n'),
     };
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
@@ -124,6 +146,7 @@ export const runBackendDbCheck = (options = {}) => {
     migrationsDir = './migrations',
     sqliteExecutable = 'sqlite3',
     replayTimeoutMs = SQLITE_REPLAY_TIMEOUT_MS,
+    failOnWarnings = false,
     runReplay = replayMigrations,
   } = options;
   const migrations = findMigrations({ cwd, migrationsDir });
@@ -156,28 +179,42 @@ export const runBackendDbCheck = (options = {}) => {
   let replay = {
     ok: migrations.length === 0,
     skipped: migrations.length === 0,
+    reason: migrations.length === 0 ? 'no migrations' : undefined,
   };
 
-  if (migrations.length > 0 && !diagnostics.some((diagnostic) => diagnostic.severity === 'error')) {
+  const hasBlockingDiagnostics = diagnostics.some((diagnostic) => diagnostic.severity === 'error');
+  if (migrations.length > 0 && hasBlockingDiagnostics) {
+    replay = {
+      ok: false,
+      skipped: true,
+      reason: 'blocked by migration diagnostics',
+    };
+  } else if (migrations.length > 0) {
     replay = runReplay({ migrations, sqliteExecutable, timeoutMs: replayTimeoutMs });
     if (!replay.ok) {
       const detail = String(replay.stderr || replay.stdout || '').trim()
         || `sqlite3 exited with ${replay.exitCode ?? replay.signal ?? 'unknown status'}.`;
       diagnostics.push(createDiagnostic({
         ruleId: 'RTGL-BE-DB-003',
-        filePath: migrations[0]?.path,
-        migrationId: migrations[0]?.id,
+        filePath: replay.migrationPath ?? migrations[0]?.path,
+        migrationId: replay.migrationId ?? migrations[0]?.id,
         message: `SQLite migration replay failed: ${detail}`,
       }));
     }
   }
 
+  const errorCount = diagnostics.filter((diagnostic) => diagnostic.severity === 'error').length;
+  const warningCount = diagnostics.filter((diagnostic) => diagnostic.severity === 'warning').length;
+
   return createCliResult({
     command: 'db check',
     artifactSchemaVersion: 'rettangoli.dbCheck/v1',
-    ok: !diagnostics.some((diagnostic) => diagnostic.severity === 'error'),
+    ok: errorCount === 0 && (!failOnWarnings || warningCount === 0),
     migrationsDir,
     migrationCount: migrations.length,
+    errorCount,
+    warningCount,
+    failOnWarnings,
     migrations: migrations.map(stripMigrationContent),
     replay: {
       ok: replay.ok,
@@ -185,6 +222,7 @@ export const runBackendDbCheck = (options = {}) => {
       exitCode: replay.exitCode,
       signal: replay.signal,
       timedOut: replay.timedOut === true,
+      reason: replay.reason,
     },
     diagnostics,
   });
