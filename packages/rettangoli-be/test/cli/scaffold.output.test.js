@@ -1,10 +1,11 @@
 import path from 'node:path';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   applyMethodScaffoldPlan,
   createMethodScaffoldPlan,
+  default as scaffold,
 } from '../../src/cli/scaffold.js';
 import { runBackendCheck } from '../../src/cli/check.js';
 
@@ -12,6 +13,8 @@ describe('be scaffold command', () => {
   const createdDirs = [];
 
   afterEach(() => {
+    vi.restoreAllMocks();
+    process.exitCode = undefined;
     createdDirs.forEach((dirPath) => {
       rmSync(dirPath, { recursive: true, force: true });
     });
@@ -76,6 +79,55 @@ describe('be scaffold command', () => {
 
     expect(secondPlan.ok).toBe(false);
     expect(secondPlan.conflicts).toContain('src/modules/health/ping/ping.contract.yaml');
+  });
+
+  it('reports conflicts in text output without claiming success', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-scaffold-conflict-text-'));
+    createdDirs.push(rootDir);
+    const plan = createMethodScaffoldPlan({
+      cwd: rootDir,
+      methodId: 'health.ping',
+    });
+    applyMethodScaffoldPlan(plan);
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = scaffold({
+      cwd: rootDir,
+      method: 'health.ping',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(errorSpy).toHaveBeenCalledWith('[Scaffold] Failed to create method package for health.ping: 3 conflict(s).');
+    expect(logSpy).not.toHaveBeenCalledWith('[Scaffold] Created method package for health.ping.');
+    expect(process.exitCode).toBe(1);
+  });
+
+  it('returns structured JSON diagnostics for invalid scaffold input', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-scaffold-invalid-json-'));
+    createdDirs.push(rootDir);
+    let output = '';
+    vi.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
+      output += String(chunk);
+      return true;
+    });
+
+    const result = scaffold({
+      cwd: rootDir,
+      method: '../bad',
+      dryRun: true,
+      format: 'json',
+    });
+    const parsed = JSON.parse(output);
+
+    expect(result.ok).toBe(false);
+    expect(parsed.ok).toBe(false);
+    expect(parsed.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-SCAFFOLD-001',
+      phase: 'scaffold',
+    }));
+    expect(parsed.diagnostics[0].message).toContain('Method id must use');
+    expect(process.exitCode).toBe(1);
   });
 
   it('rejects unsafe method id path segments', () => {

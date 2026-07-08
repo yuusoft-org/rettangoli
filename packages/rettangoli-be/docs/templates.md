@@ -140,6 +140,9 @@ errors: {}
 
 ## src/modules/health/ping/ping.examples.yaml
 
+These examples omit defaulted JSON-RPC protocol fields; see
+`application-specification.md` for the defaulting rules.
+
 ```yaml
 schemaVersion: rettangoli.examples/v1
 file: './ping.handlers.js'

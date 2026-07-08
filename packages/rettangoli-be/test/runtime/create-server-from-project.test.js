@@ -226,4 +226,140 @@ describe('createServerFromProject', () => {
 
     await runtime.close();
   });
+
+  it('uses configured method, middleware, setup, and global middleware paths', async () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-server-custom-paths-'));
+    createdDirs.push(rootDir);
+
+    const methodDir = path.join(rootDir, 'backend', 'methods', 'health', 'ping');
+    const middlewareDir = path.join(rootDir, 'backend', 'middleware');
+    mkdirSync(methodDir, { recursive: true });
+    mkdirSync(middlewareDir, { recursive: true });
+
+    writeFileSync(path.join(rootDir, 'rettangoli.config.yaml'), [
+      'be:',
+      '  dirs:',
+      '    - ./backend/methods',
+      '  middlewareDir: ./backend/middleware',
+      '  setup: ./backend/setup.js',
+      '  globalMiddleware:',
+      '    before: [withGlobal]',
+      '',
+    ].join('\n'));
+
+    mkdirSync(path.join(rootDir, 'backend'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'backend', 'setup.js'), [
+      'export const setup = {',
+      '  deps: {',
+      '    health: {',
+      "      setupValue: 'custom-setup',",
+      '    },',
+      '  },',
+      '};',
+      '',
+    ].join('\n'));
+
+    writeFileSync(path.join(middlewareDir, 'withGlobal.js'), [
+      'export const withGlobal = () => (next) => async (ctx) => {',
+      "  ctx.globalValue = 'global-before';",
+      '  return next(ctx);',
+      '};',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(middlewareDir, 'withLocal.js'), [
+      'export const withLocal = () => (next) => async (ctx) => {',
+      "  ctx.localValue = 'method-before';",
+      '  return next(ctx);',
+      '};',
+      '',
+    ].join('\n'));
+
+    writeFileSync(path.join(methodDir, 'ping.handlers.js'), [
+      'export const healthPingMethod = async ({ context, deps }) => ({',
+      '  ok: true,',
+      '  setupValue: deps.setupValue,',
+      '  globalValue: context.globalValue,',
+      '  localValue: context.localValue,',
+      '});',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(methodDir, 'ping.contract.yaml'), [
+      'schemaVersion: rettangoli.contract/v1',
+      'method: health.ping',
+      'description: ping',
+      'middleware:',
+      '  before: [withLocal]',
+      '  after: []',
+      'params:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties: {}',
+      '  required: []',
+      'result:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties:',
+      '    ok:',
+      '      type: boolean',
+      '    setupValue:',
+      '      type: string',
+      '    globalValue:',
+      '      type: string',
+      '    localValue:',
+      '      type: string',
+      '  required: [ok, setupValue, globalValue, localValue]',
+      'errors: {}',
+      '',
+    ].join('\n'));
+    writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
+      'schemaVersion: rettangoli.examples/v1',
+      "file: './ping.handlers.js'",
+      'group: ping',
+      '---',
+      'suite: healthPingMethod',
+      'exportName: healthPingMethod',
+      '---',
+      'case: ok',
+      'proves:',
+      '  result: success',
+      'request:',
+      '  id: ok',
+      '  params: {}',
+      'out:',
+      '  result:',
+      '    ok: true',
+      '    setupValue: custom-setup',
+      '    globalValue: global-before',
+      '    localValue: method-before',
+      '',
+    ].join('\n'));
+
+    const runtime = await createServerFromProject({
+      cwd: rootDir,
+    });
+
+    await runtime.listen({ host: '127.0.0.1', port: 0 });
+    const address = runtime.server.address();
+    const port = Number(address.port);
+
+    const rpcResponse = await fetch(`http://127.0.0.1:${port}/rpc`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'custom-paths',
+        method: 'health.ping',
+        params: {},
+      }),
+    });
+    const rpcPayload = await rpcResponse.json();
+    expect(rpcPayload.result).toEqual({
+      ok: true,
+      setupValue: 'custom-setup',
+      globalValue: 'global-before',
+      localValue: 'method-before',
+    });
+
+    await runtime.close();
+  });
 });

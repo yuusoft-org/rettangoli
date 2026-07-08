@@ -615,6 +615,40 @@ describe('be check cli output', () => {
     expect(result.ok).toBe(true);
   });
 
+  it('accepts explicit JSON-RPC request and response fields when they match defaults', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-rpc-explicit-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      ...exampleHeader({ suite: 'healthPingRpc' }),
+      '---',
+      'case: explicit-ok',
+      'proves:',
+      '  result: success',
+      'request:',
+      "  jsonrpc: '2.0'",
+      '  id: req-1',
+      '  method: health.ping',
+      '  params: {}',
+      'out:',
+      "  jsonrpc: '2.0'",
+      '  id: req-1',
+      '  result:',
+      '    ok: true',
+      '',
+    ].join('\n'));
+
+    const result = runBackendCheck({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+    });
+
+    expect(result.ok).toBe(true);
+  });
+
   it('rejects explicit JSON-RPC request fields that disagree with the contract', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-rpc-invalid-request-'));
     createdDirs.push(rootDir);

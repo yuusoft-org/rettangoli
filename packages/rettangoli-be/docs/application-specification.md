@@ -367,13 +367,11 @@ Rules:
 - success examples MUST include `proves.result: success`.
 - expected domain error examples MUST include `proves.error: <ERROR_CODE>`.
 - examples MUST NOT include both `proves.result` and `proves.error`.
-- `request` MUST be a JSON-RPC request object.
-- `out` MUST be the expected JSON-RPC response envelope.
-- `request.jsonrpc` defaults to `2.0`.
-- `request.method` defaults to the contract method id.
-- `out.jsonrpc` defaults to `2.0`.
-- `out.id` defaults to `request.id`.
-- explicit protocol fields are allowed but MUST match these defaults.
+- `request` is the effective JSON-RPC request after defaults are applied.
+- `out` is the expected JSON-RPC response envelope after defaults are applied.
+- defaults: `request.jsonrpc: "2.0"`, `request.method: <contract method id>`,
+  `request.params: {}`, `out.jsonrpc: "2.0"`, and `out.id: request.id`.
+- explicit protocol fields are allowed but MUST match the defaults.
 - `request`, `context`, `meta`, and `cookies` SHOULD be deterministic.
 
 Examples MAY also put `request`, `context`, `meta`, or `cookies` under

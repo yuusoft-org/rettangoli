@@ -31,6 +31,40 @@ const toProcessOutputText = (value) => {
   return String(value);
 };
 
+const inferAppFailureFromOutput = ({ cwd, output, method, setup }) => {
+  const setupPath = path.resolve(cwd, setup);
+  const missingDomainMatch = output.match(/createApp: missing setup\.deps\.([A-Za-z0-9_]+) object required by method '([^']+)'/);
+  if (missingDomainMatch) {
+    const [, domain, failedMethod] = missingDomainMatch;
+    return {
+      code: 'RTGL-BE-APP-006',
+      method: failedMethod || method,
+      message: `Missing setup.deps.${domain} object required by method '${failedMethod || method}'.`,
+      filePath: setupPath,
+    };
+  }
+
+  if (output.includes('createApp: setup.deps object is required')) {
+    return {
+      code: 'RTGL-BE-APP-005',
+      method,
+      message: 'Setup export must include setup.deps object.',
+      filePath: setupPath,
+    };
+  }
+
+  if (output.includes('createAppFromProject: setup export not found')) {
+    return {
+      code: 'RTGL-BE-APP-003',
+      method,
+      message: 'Setup file must export setup or default.',
+      filePath: setupPath,
+    };
+  }
+
+  return undefined;
+};
+
 const createPackageRunner = ({ executable, packageManager, env = process.env } = {}) => {
   if (executable) {
     return {
@@ -252,18 +286,27 @@ export const runBackendTests = (options = {}) => {
     toProcessOutputText(result.stderr ?? result.output?.[2]),
     result.error?.message,
   ].filter(Boolean).join('\n');
+  const outputText = [stdout, stderr].filter(Boolean).join('\n');
+  const appFailure = ok ? undefined : inferAppFailureFromOutput({
+    cwd,
+    output: outputText,
+    method,
+    setup,
+  });
+  const failurePhase = appFailure ? 'app' : 'test';
+  const failureCommand = appFailure ? findCommand(commands, 'app') : testCommand;
   const failureDiagnostic = ok ? undefined : normalizeDiagnostic({
     cwd,
-    error: {
+    error: appFailure ?? {
       code: 'RTGL-BE-TEST-002',
       message: result.error?.message
         ? `Backend examples failed with exit code ${exitCode}: ${result.error.message}`
         : `Backend examples failed with exit code ${exitCode}.`,
       filePath: files.length === 1 ? files[0] : undefined,
     },
-    phase: 'test',
+    phase: failurePhase,
     method,
-    command: testCommand,
+    command: failureCommand,
     extra: {
       files: relatedFiles,
       executedFiles: files,
@@ -282,7 +325,7 @@ export const runBackendTests = (options = {}) => {
     prefix: '[Test]',
     method,
     scope,
-    phase: 'test',
+    phase: ok ? 'test' : failurePhase,
     commands,
     files,
     runner: {
@@ -294,7 +337,7 @@ export const runBackendTests = (options = {}) => {
     diagnostics,
     nextAction: createNextAction({
       ok,
-      failedPhase: ok ? undefined : 'test',
+      failedPhase: ok ? undefined : failurePhase,
       diagnostics,
       commands,
     }),

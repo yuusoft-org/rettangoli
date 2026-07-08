@@ -198,14 +198,14 @@ export const createServerFromProject = async ({
   const beConfig = loadBeProjectConfig({ cwd, configPath });
   const app = await createAppFromProject({
     cwd,
-    methodDirs: ['./src/modules'],
-    middlewareDirs: ['./src/middleware'],
-    setupPath: './src/setup.js',
+    methodDirs: beConfig.dirs,
+    middlewareDirs: [beConfig.middlewareDir],
+    setupPath: beConfig.setup,
     globalMiddlewareBefore: beConfig.globalMiddleware.before,
     globalMiddlewareAfter: beConfig.globalMiddleware.after,
   });
 
-  const setupPath = path.resolve(cwd, './src/setup.js');
+  const setupPath = path.resolve(cwd, beConfig.setup);
   const setup = await loadSetup(setupPath);
   if (!isPlainObject(setup) || !isPlainObject(setup.deps)) {
     throw new Error('createServerFromProject: setup.deps is required');
