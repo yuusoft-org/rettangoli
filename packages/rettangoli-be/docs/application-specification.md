@@ -340,7 +340,9 @@ Rules:
 - `schemaVersion` MUST be `rettangoli.examples/v1`.
 - `file` MUST point to the handler file in the same method folder.
 - `group` SHOULD be stable and readable.
-- `mode` MUST be `handler` until RPC-mode examples are implemented.
+- `mode` MUST be `handler` or `rpc`.
+- `handler` examples call the method handler directly.
+- `rpc` examples dispatch a JSON-RPC request through the app runtime.
 
 ### Suite Document
 
@@ -381,6 +383,40 @@ Rules:
 - `out` MUST match success output or expected domain error output.
 - `throws` MAY be used only for unexpected failures and invariants.
 - `mocks` SHOULD be used for dependency calls.
+
+For `mode: rpc`, each case MUST provide a JSON-RPC request and the expected
+JSON-RPC response envelope:
+
+```yaml
+case: returns-profile-over-rpc
+proves:
+  result: success
+request:
+  jsonrpc: '2.0'
+  id: req-1
+  method: user.getProfile
+  params: {}
+context:
+  authUser:
+    userId: u-1
+out:
+  jsonrpc: '2.0'
+  id: req-1
+  result:
+    id: u-1
+    email: demo@example.com
+    role: user
+```
+
+RPC examples MAY also put `request`, `context`, `meta`, or `cookies` under
+`in[0]`; top-level case fields take precedence.
+
+Runtime rules:
+
+- `request.method` MUST equal the contract method id.
+- `request.params` MUST validate against the params schema.
+- success `out.result` MUST validate against the result schema.
+- domain error `out.error.data.code` MUST exist in the contract error catalog.
 
 Each method MUST include spec cases for:
 
@@ -659,8 +695,10 @@ A method contract package is the default agent work unit.
 Agents should be able to run:
 
 ```bash
+rtgl be init --dry-run --json
 rtgl be check
 rtgl be check --method user.getProfile --format json
+rtgl be app check --json
 rtgl be test --method user.getProfile
 rtgl be manifest
 rtgl be verify --json

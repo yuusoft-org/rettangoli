@@ -206,14 +206,16 @@ describe('be test command', () => {
     });
 
     expect(result.ok).toBe(true);
-    expect(result.command.executable).toBe('bunx');
-    expect(result.command.args[0]).toBe('vitest');
+    expect(result.command).toBe('test');
+    expect(result.runner.executable).toBe('bunx');
+    expect(result.runner.args[0]).toBe('vitest');
   });
 
   it('preserves CLI overrides in agent rerun commands', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-overrides-'));
     createdDirs.push(rootDir);
     writeMethod(rootDir);
+    writeFileSync(path.join(rootDir, 'vitest.custom.js'), 'export default {};\n');
 
     const runCommand = vi.fn(() => ({
       status: 0,
@@ -309,14 +311,55 @@ describe('be test command', () => {
       runCommand,
     });
 
-    const files = [
+    const executedFiles = [
       'src/modules/health/ping/ping.examples.yaml',
       'src/modules/user/profile/profile.examples.yaml',
     ];
+    const candidateFiles = [
+      'src/modules/health/ping/ping.contract.yaml',
+      'src/modules/health/ping/ping.examples.yaml',
+      'src/modules/health/ping/ping.handlers.js',
+      'src/modules/user/profile/profile.contract.yaml',
+      'src/modules/user/profile/profile.examples.yaml',
+      'src/modules/user/profile/profile.handlers.js',
+    ];
     expect(result.ok).toBe(false);
     expect(result.diagnostics[0].filePath).toBeUndefined();
-    expect(result.diagnostics[0].files).toEqual(files);
-    expect(result.nextAction.files).toEqual(files);
+    expect(result.diagnostics[0].files).toEqual(candidateFiles);
+    expect(result.diagnostics[0].executedFiles).toEqual(executedFiles);
+    expect(result.nextAction.files).toEqual(candidateFiles);
+  });
+
+  it('fails when the configured Vitest config is missing', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-missing-config-'));
+    createdDirs.push(rootDir);
+    writeMethod(rootDir);
+
+    const runCommand = vi.fn(() => ({
+      status: 0,
+      stdout: 'ok',
+      stderr: '',
+    }));
+
+    const result = runBackendTests({
+      cwd: rootDir,
+      config: './vitest.missing.js',
+      format: 'json',
+      runCommand,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-TEST-003',
+      filePath: './vitest.missing.js',
+    }));
+    expect(result.nextAction.files).toEqual([
+      './vitest.missing.js',
+      'src/modules/health/ping/ping.contract.yaml',
+      'src/modules/health/ping/ping.examples.yaml',
+      'src/modules/health/ping/ping.handlers.js',
+    ]);
+    expect(runCommand).not.toHaveBeenCalled();
   });
 
   it('includes runner spawn errors in test diagnostics', () => {
@@ -329,7 +372,7 @@ describe('be test command', () => {
       format: 'json',
       executable: 'custom-runner',
       runCommand: vi.fn(() => ({
-        status: null,
+        status: 0,
         stdout: '',
         stderr: '',
         error: new Error('spawn custom-runner ENOENT'),

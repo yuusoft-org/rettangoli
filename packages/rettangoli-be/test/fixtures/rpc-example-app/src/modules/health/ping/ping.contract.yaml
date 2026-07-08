@@ -1,0 +1,25 @@
+schemaVersion: rettangoli.contract/v1
+method: health.ping
+description: ping
+middleware:
+  before: []
+  after: []
+params:
+  type: object
+  additionalProperties: false
+  properties:
+    echo:
+      type: string
+  required: [echo]
+result:
+  type: object
+  additionalProperties: false
+  properties:
+    ok:
+      type: boolean
+    echo:
+      type: string
+    requestId:
+      type: string
+  required: [ok, echo, requestId]
+errors: {}

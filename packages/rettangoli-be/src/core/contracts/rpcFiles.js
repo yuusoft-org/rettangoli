@@ -484,11 +484,11 @@ const validateExamplesHeader = ({
     });
   }
 
-  if (configDocument.mode !== 'handler') {
+  if (configDocument.mode !== 'handler' && configDocument.mode !== 'rpc') {
     errors.push({
       code: 'RTGL-BE-CONTRACT-048',
       method,
-      message: 'Examples mode must be handler.',
+      message: 'Examples mode must be handler or rpc.',
       filePath: examplesFilePath,
       jsonPointer: '/documents/0/mode',
     });
@@ -560,6 +560,8 @@ const createErrorSchemaFromCatalogEntry = ({ code, entry }) => {
   };
 };
 
+const JSON_RPC_DOMAIN_ERROR_CODE = -32000;
+
 const validateExamplesAgainstContract = ({
   methodEntry,
   rpcObject,
@@ -572,6 +574,7 @@ const validateExamplesAgainstContract = ({
 
   const examplesFilePath = methodEntry.examplesDocuments[0].filePath;
   const documents = methodEntry.examplesDocuments[0].documents;
+  const mode = documents[0]?.mode ?? 'handler';
   const caseDocuments = documents.filter((doc) => isPlainObject(doc) && Object.prototype.hasOwnProperty.call(doc, 'case'));
   const ajv = createAjv();
 
@@ -606,7 +609,8 @@ const validateExamplesAgainstContract = ({
     return;
   }
 
-  const errorCatalog = resolveErrorCatalog(rpcObject) ?? {};
+  const resolvedErrorCatalog = resolveErrorCatalog(rpcObject);
+  const errorCatalog = isPlainObject(resolvedErrorCatalog) ? resolvedErrorCatalog : {};
   const provedErrorCodes = new Set();
   let provedSuccessCount = 0;
 
@@ -620,7 +624,7 @@ const validateExamplesAgainstContract = ({
     });
   };
 
-  caseDocuments.forEach((caseDoc) => {
+  const validateHandlerCase = (caseDoc) => {
     const caseName = typeof caseDoc.case === 'string' ? caseDoc.case : '<unnamed>';
     const hasValidInput = Array.isArray(caseDoc.in)
       && caseDoc.in.length === 1
@@ -732,6 +736,250 @@ const validateExamplesAgainstContract = ({
     }
 
     provedErrorCodes.add(errorCode);
+  };
+
+  const validateRpcCase = (caseDoc) => {
+    const caseName = typeof caseDoc.case === 'string' ? caseDoc.case : '<unnamed>';
+    const input = Array.isArray(caseDoc.in) && isPlainObject(caseDoc.in[0]) ? caseDoc.in[0] : {};
+    const request = caseDoc.request ?? input.request;
+
+    if (!isPlainObject(request)) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-050',
+        caseName,
+        message: `RPC example '${caseName}' must include a request object.`,
+      });
+      return;
+    }
+
+    if (request.method !== rpcObject.method) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-051',
+        caseName,
+        message: `RPC example '${caseName}' request.method must be '${rpcObject.method}'.`,
+      });
+      return;
+    }
+
+    if (request.jsonrpc !== '2.0') {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-050',
+        caseName,
+        message: `RPC example '${caseName}' request.jsonrpc must be '2.0'.`,
+      });
+      return;
+    }
+
+    if (typeof request.id !== 'string' && typeof request.id !== 'number') {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-050',
+        caseName,
+        message: `RPC example '${caseName}' request.id must be a string or number.`,
+      });
+      return;
+    }
+
+    const payload = Object.prototype.hasOwnProperty.call(request, 'params') ? request.params : {};
+    if (!paramsValidator(payload)) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-027',
+        caseName,
+        message: `RPC example '${caseName}' params do not match params schema: ${formatAjvErrors(paramsValidator.errors)}`,
+      });
+    }
+
+    const output = caseDoc.out;
+    if (!isPlainObject(output)) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-052',
+        caseName,
+        message: `RPC example '${caseName}' must include an output JSON-RPC response object.`,
+      });
+      return;
+    }
+
+    if (output.jsonrpc !== '2.0') {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-052',
+        caseName,
+        message: `RPC example '${caseName}' response.jsonrpc must be '2.0'.`,
+      });
+    }
+
+    if (output.id !== request.id) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-052',
+        caseName,
+        message: `RPC example '${caseName}' response.id must match request.id.`,
+      });
+    }
+
+    const hasResult = Object.prototype.hasOwnProperty.call(output, 'result');
+    const hasError = Object.prototype.hasOwnProperty.call(output, 'error');
+    if (hasResult && hasError) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-052',
+        caseName,
+        message: `RPC example '${caseName}' response must not include both result and error.`,
+      });
+      return;
+    }
+
+    if (!hasResult && !hasError) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-052',
+        caseName,
+        message: `RPC example '${caseName}' response must include result or error.`,
+      });
+      return;
+    }
+
+    const allowedResponseKeys = hasResult
+      ? ['id', 'jsonrpc', 'result']
+      : ['error', 'id', 'jsonrpc'];
+    const extraResponseKeys = Object.keys(output)
+      .filter((key) => !allowedResponseKeys.includes(key))
+      .sort();
+    if (extraResponseKeys.length > 0) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-052',
+        caseName,
+        message: `RPC example '${caseName}' response contains unsupported field(s): ${extraResponseKeys.join(', ')}.`,
+      });
+    }
+
+    if (hasResult) {
+      if (!resultValidator(output.result)) {
+        pushExampleError({
+          code: 'RTGL-BE-CONTRACT-028',
+          caseName,
+          message: `RPC example '${caseName}' result does not match result schema: ${formatAjvErrors(resultValidator.errors)}`,
+        });
+      }
+
+      if (caseDoc.proves?.result !== 'success') {
+        pushExampleError({
+          code: 'RTGL-BE-CONTRACT-029',
+          caseName,
+          message: caseDoc.proves?.result === undefined
+            ? `RPC example '${caseName}' success output must include proves.result: success.`
+            : `RPC example '${caseName}' proves.result must be 'success'.`,
+        });
+      } else {
+        provedSuccessCount += 1;
+      }
+      return;
+    }
+
+    if (!isPlainObject(output.error)) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-052',
+        caseName,
+        message: `RPC example '${caseName}' error response must include an error object.`,
+      });
+      return;
+    }
+
+    if (output.error.code !== JSON_RPC_DOMAIN_ERROR_CODE) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-052',
+        caseName,
+        message: `RPC example '${caseName}' domain error response must use JSON-RPC error code ${JSON_RPC_DOMAIN_ERROR_CODE}.`,
+      });
+    }
+
+    if (output.error.message !== 'Domain error') {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-052',
+        caseName,
+        message: `RPC example '${caseName}' domain error response must include error.message: Domain error.`,
+      });
+    }
+
+    if (!isPlainObject(output.error.data)) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-030',
+        caseName,
+        message: `RPC example '${caseName}' domain error response must include error.data object.`,
+      });
+      return;
+    }
+
+    const dataKeys = Object.keys(output.error.data).sort();
+    const allowedDataKeys = ['code', 'details'];
+    const extraDataKeys = dataKeys.filter((key) => !allowedDataKeys.includes(key));
+    if (extraDataKeys.length > 0) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-052',
+        caseName,
+        message: `RPC example '${caseName}' error.data contains unsupported field(s): ${extraDataKeys.join(', ')}.`,
+      });
+    }
+
+    const errorCode = output.error.data.code;
+    if (typeof errorCode !== 'string' || !errorCode.trim()) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-030',
+        caseName,
+        message: `RPC example '${caseName}' domain error response must include error.data.code.`,
+      });
+      return;
+    }
+
+    const errorEntry = errorCatalog[errorCode];
+    if (!isPlainObject(errorEntry)) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-031',
+        caseName,
+        message: `RPC example '${caseName}' uses undeclared error code '${errorCode}'.`,
+      });
+      return;
+    }
+
+    const errorValidator = compileSchemaForCheck({
+      ajv,
+      schema: createErrorSchemaFromCatalogEntry({ code: errorCode, entry: errorEntry }),
+      filePath: rpcFilePath,
+      errors,
+      code: 'RTGL-BE-CONTRACT-032',
+      label: `${rpcObject.method} error ${errorCode}`,
+    });
+    const domainErrorOutput = {
+      _error: true,
+      code: errorCode,
+    };
+    if (Object.prototype.hasOwnProperty.call(output.error.data, 'details')) {
+      domainErrorOutput.details = output.error.data.details;
+    }
+    if (errorValidator && !errorValidator(domainErrorOutput)) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-033',
+        caseName,
+        message: `RPC example '${caseName}' output does not match error '${errorCode}': ${formatAjvErrors(errorValidator.errors)}`,
+      });
+    }
+
+    if (caseDoc.proves?.error !== errorCode) {
+      pushExampleError({
+        code: 'RTGL-BE-CONTRACT-034',
+        caseName,
+        message: caseDoc.proves?.error === undefined
+          ? `RPC example '${caseName}' domain error output must include proves.error: ${errorCode}.`
+          : `RPC example '${caseName}' proves.error '${caseDoc.proves.error}' does not match output code '${errorCode}'.`,
+      });
+      return;
+    }
+
+    provedErrorCodes.add(errorCode);
+  };
+
+  caseDocuments.forEach((caseDoc) => {
+    if (mode === 'rpc') {
+      validateRpcCase(caseDoc);
+      return;
+    }
+
+    validateHandlerCase(caseDoc);
   });
 
   if (provedSuccessCount === 0) {

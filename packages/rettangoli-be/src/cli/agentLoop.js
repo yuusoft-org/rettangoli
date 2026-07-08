@@ -49,6 +49,12 @@ const appendRepeatedOption = (args, flag, values = [], defaultValues = []) => {
   });
 };
 
+const appendBooleanOption = (args, flag, enabled) => {
+  if (enabled) {
+    args.push(flag);
+  }
+};
+
 export const createBackendCommands = ({
   commandPrefix = ['rtgl', 'be'],
   dirs = ['./src/modules'],
@@ -61,6 +67,9 @@ export const createBackendCommands = ({
   testConfig,
   executable,
   packageManager,
+  evidence,
+  taskId,
+  failOnWarnings = false,
 } = {}) => {
   const methodArgs = method ? ['--method', method] : [];
   const dirArgs = [];
@@ -84,9 +93,14 @@ export const createBackendCommands = ({
   appendOption(verifyArgs, '--test-config', testConfig ?? config, './vitest.config.js');
   appendOption(verifyArgs, '--runner', executable);
   appendOption(verifyArgs, '--package-manager', packageManager);
+  appendBooleanOption(verifyArgs, '--fail-on-warnings', failOnWarnings);
+  appendOption(verifyArgs, '--evidence', taskId ?? evidence);
 
   const dbArgs = [];
   appendOption(dbArgs, '--migrations-dir', migrationsDir, './migrations');
+  appendBooleanOption(dbArgs, '--fail-on-warnings', failOnWarnings);
+  const appArgs = [...dirArgs, ...methodArgs, ...middlewareArgs];
+  appendOption(appArgs, '--setup-path', setup, './src/setup.js');
 
   return [
     {
@@ -106,6 +120,10 @@ export const createBackendCommands = ({
       argv: [...commandPrefix, 'db', 'check', ...dbArgs, '--json'],
     },
     {
+      id: 'app',
+      argv: [...commandPrefix, 'app', 'check', ...appArgs, '--json'],
+    },
+    {
       id: 'verify',
       argv: [...commandPrefix, 'verify', ...verifyArgs, '--json'],
     },
@@ -114,6 +132,18 @@ export const createBackendCommands = ({
 
 export const findCommand = (commands, id) => {
   return commands.find((command) => command.id === id);
+};
+
+const removeOptionWithValue = (argv = [], flag) => {
+  const next = [];
+  for (let index = 0; index < argv.length; index += 1) {
+    if (argv[index] === flag) {
+      index += 1;
+      continue;
+    }
+    next.push(argv[index]);
+  }
+  return next;
 };
 
 const createFixHint = (ruleId) => {
@@ -129,8 +159,11 @@ const createFixHint = (ruleId) => {
     'RTGL-BE-CONTRACT-045': 'Move domain error fields into the errors catalog and error examples.',
     'RTGL-BE-CONTRACT-046': 'Fix the examples config document.',
     'RTGL-BE-CONTRACT-047': 'Point the examples file at the local method handler file.',
-    'RTGL-BE-CONTRACT-048': 'Set examples mode to handler.',
+    'RTGL-BE-CONTRACT-048': 'Set examples mode to handler or rpc.',
     'RTGL-BE-CONTRACT-049': 'Fix the examples suite document.',
+    'RTGL-BE-CONTRACT-050': 'Add a JSON-RPC request object to the RPC example.',
+    'RTGL-BE-CONTRACT-051': 'Set request.method to the contract method id.',
+    'RTGL-BE-CONTRACT-052': 'Set out to the expected JSON-RPC response envelope.',
     'RTGL-BE-CONTRACT-005': 'Create exactly one .examples.yaml file next to the method contract.',
     'RTGL-BE-CONTRACT-027': 'Edit the example payload so it matches the params schema.',
     'RTGL-BE-CONTRACT-029': 'Mark the success example with proves.result: success.',
@@ -145,8 +178,20 @@ const createFixHint = (ruleId) => {
     'RTGL-BE-DB-001': 'Rename duplicate migration files so every migration id is unique.',
     'RTGL-BE-DB-002': 'Review the destructive migration statement and make the migration policy explicit.',
     'RTGL-BE-DB-003': 'Fix the SQL in the failing migration file and rerun db check.',
+    'RTGL-BE-APP-001': 'Create the configured setup file or pass --setup-path.',
+    'RTGL-BE-APP-002': 'Fix the setup file import error.',
+    'RTGL-BE-APP-003': 'Export setup or default from the setup file.',
+    'RTGL-BE-APP-004': 'Make the setup export an object.',
+    'RTGL-BE-APP-005': 'Add setup.deps as an object.',
+    'RTGL-BE-APP-006': 'Add the missing setup.deps.<domain> object.',
+    'RTGL-BE-APP-007': 'Fix the method handler import.',
+    'RTGL-BE-APP-008': 'Fix the referenced middleware import.',
+    'RTGL-BE-APP-009': 'Fix app setup, handlers, or middleware so createApp can instantiate.',
+    'RTGL-BE-APP-010': 'Export exactly one handler function from the method handler file.',
+    'RTGL-BE-APP-011': 'Export a middleware factory that returns a middleware function.',
     'RTGL-BE-TEST-001': 'Add a .examples.yaml file with at least one proving case.',
     'RTGL-BE-TEST-002': 'Fix the failing executable example, handler, or test dependency.',
+    'RTGL-BE-TEST-003': 'Create the configured Vitest config file or pass --config.',
   };
 
   return hints[ruleId];
@@ -217,9 +262,9 @@ export const createNextAction = ({
 
     if (verifyCommand?.argv?.includes('--method')) {
       return {
-        kind: 'done',
-        message: 'Method verification passed. This does not prove project-wide database migrations; run project verify before stopping.',
-        argv: verifyCommand?.argv,
+        kind: 'verify',
+        message: 'Method verification passed. Run project verification before stopping.',
+        argv: removeOptionWithValue(verifyCommand.argv, '--method'),
       };
     }
 
@@ -249,7 +294,9 @@ export const createNextAction = ({
       ? 'backend-build'
       : failedPhase === 'db'
         ? 'database-migrations'
-        : 'contract-package';
+        : failedPhase === 'app'
+          ? 'runtime-app'
+          : 'contract-package';
 
   return {
     kind: 'fix',

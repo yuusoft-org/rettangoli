@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { getAllFiles } from '../commonBuild.js';
 import { stringifyStableJson } from './json.js';
 
 const toPosixRelativePath = (cwd, filePath) => {
@@ -12,7 +13,7 @@ const toPosixRelativePath = (cwd, filePath) => {
 
 const hashFile = (filePath) => {
   if (!existsSync(filePath)) {
-    return undefined;
+    return 'missing';
   }
 
   const hash = createHash('sha256');
@@ -39,19 +40,50 @@ const collectAnchorFiles = (result) => {
   ].filter(Boolean).sort();
 };
 
+const collectDiscoveryFiles = ({ cwd, roots = [] } = {}) => {
+  const absoluteRoots = roots
+    .filter((root) => typeof root === 'string' && root)
+    .map((root) => path.resolve(cwd, root))
+    .filter((root) => existsSync(root));
+
+  if (absoluteRoots.length === 0) {
+    return [];
+  }
+
+  return getAllFiles(absoluteRoots)
+    .map((filePath) => toPosixRelativePath(cwd, filePath))
+    .sort();
+};
+
 const evidenceStatus = (step) => {
+  if (step === undefined) {
+    return 'skipped';
+  }
+
   if (step?.skipped) {
     return 'skipped';
   }
   return step?.ok ? 'passed' : 'failed';
 };
 
+const skippedStepEvidence = (name) => ({
+  ok: true,
+  skipped: true,
+  name,
+  reason: 'step was not run',
+});
+
 export const createBackendTaskAnchor = ({
   cwd = process.cwd(),
   taskId,
   result,
 } = {}) => {
-  const files = collectAnchorFiles(result);
+  const discoveryRoots = [...new Set(result.files?.discover ?? [])].sort();
+  const discoveryFiles = collectDiscoveryFiles({ cwd, roots: discoveryRoots });
+  const files = [...new Set([
+    ...collectAnchorFiles(result),
+    ...discoveryFiles,
+  ])].sort();
   return {
     schemaVersion: 'rettangoli.taskAnchor/v1',
     taskId,
@@ -61,6 +93,10 @@ export const createBackendTaskAnchor = ({
     failedPhase: result.failedPhase,
     commands: result.commands,
     nextAction: result.nextAction,
+    discovery: {
+      roots: discoveryRoots,
+      files: discoveryFiles,
+    },
     hashes: {
       result: hashJson(result),
       files: Object.fromEntries(files.map((filePath) => [
@@ -88,6 +124,7 @@ export const writeBackendVerifyEvidence = ({
     check: path.join(evidenceDir, 'check.json'),
     build: path.join(evidenceDir, 'build.json'),
     manifest: path.join(evidenceDir, 'manifest.json'),
+    app: path.join(evidenceDir, 'app.json'),
     db: path.join(evidenceDir, 'db.json'),
     test: path.join(evidenceDir, 'test.json'),
     task: path.join(taskDir, `${taskId}.json`),
@@ -107,6 +144,11 @@ export const writeBackendVerifyEvidence = ({
       id: 'manifest-current',
       status: evidenceStatus(result.manifest),
       evidence: toPosixRelativePath(cwd, paths.manifest),
+    },
+    {
+      id: 'app-runtime-valid',
+      status: evidenceStatus(result.app),
+      evidence: toPosixRelativePath(cwd, paths.app),
     },
     {
       id: 'sqlite-migrations-valid',
@@ -142,10 +184,11 @@ export const writeBackendVerifyEvidence = ({
   });
 
   writeJson(paths.check, result.check ?? {});
-  writeJson(paths.build, result.build ?? {});
-  writeJson(paths.manifest, manifest ?? result.manifest ?? {});
-  writeJson(paths.db, result.db ?? {});
-  writeJson(paths.test, result.test ?? {});
+  writeJson(paths.build, result.build ?? skippedStepEvidence('build'));
+  writeJson(paths.manifest, manifest ?? result.manifest ?? skippedStepEvidence('manifest'));
+  writeJson(paths.app, result.app ?? skippedStepEvidence('app'));
+  writeJson(paths.db, result.db ?? skippedStepEvidence('db'));
+  writeJson(paths.test, result.test ?? skippedStepEvidence('test'));
   writeJson(paths.verify, resultWithEvidence);
   writeJson(paths.task, anchor);
 
@@ -212,10 +255,21 @@ export const runBackendResume = ({ cwd = process.cwd(), taskId } = {}) => {
   }
 
   const anchor = JSON.parse(readFileSync(taskPath, 'utf8'));
-  const changedFiles = Object.entries(anchor.hashes?.files ?? {})
+  const knownChangedFiles = Object.entries(anchor.hashes?.files ?? {})
     .filter(([filePath, expectedHash]) => hashFile(path.resolve(cwd, filePath)) !== expectedHash)
     .map(([filePath]) => filePath)
     .sort();
+  const expectedDiscoveryFiles = new Set(anchor.discovery?.files ?? []);
+  const currentDiscoveryFiles = collectDiscoveryFiles({
+    cwd,
+    roots: anchor.discovery?.roots ?? [],
+  });
+  const addedDiscoveryFiles = currentDiscoveryFiles
+    .filter((filePath) => !expectedDiscoveryFiles.has(filePath));
+  const changedFiles = [...new Set([
+    ...knownChangedFiles,
+    ...addedDiscoveryFiles,
+  ])].sort();
 
   return {
     schemaVersion: 'rettangoli.resume/v1',

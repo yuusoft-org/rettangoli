@@ -45,7 +45,12 @@ const buildMiddlewareRegistry = ({ middlewareModules = {}, middlewareDeps = {} }
 
   Object.keys(middlewareModules).forEach((name) => {
     const factory = resolveMiddlewareFactory({ middlewareModules, name });
-    const middleware = factory(middlewareDeps[name] ?? {});
+    let middleware;
+    try {
+      middleware = factory(middlewareDeps[name] ?? {});
+    } catch (error) {
+      throw new Error(`createApp: middleware factory '${name}' failed: ${error.message}`);
+    }
 
     if (typeof middleware !== 'function') {
       throw new Error(`createApp: middleware factory '${name}' must return a middleware function`);

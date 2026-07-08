@@ -20,9 +20,12 @@ const beCli = existsSync(localBeCliUrl)
   : await import("@rettangoli/be/cli");
 
 const {
+  app: appBe,
   build: buildBe,
   check: checkBe,
+  compat: compatBe,
   db: dbBe,
+  init: initBe,
   manifest: manifestBe,
   resume: resumeBe,
   scaffold: scaffoldBe,
@@ -31,6 +34,11 @@ const {
   verify: verifyBe,
   watch: watchBe,
 } = beCli;
+const localBeRuntimeConfigUrl = new URL("../rettangoli-be/src/runtime/loadBeProjectConfig.js", import.meta.url);
+const beRuntimeConfig = existsSync(localBeRuntimeConfigUrl)
+  ? await import(localBeRuntimeConfigUrl)
+  : await import("@rettangoli/be/runtime/loadBeProjectConfig");
+const { loadBeProjectConfig: loadBeRuntimeConfig } = beRuntimeConfig;
 
 function requireBeCommand(handler, name) {
   if (typeof handler !== "function") {
@@ -93,6 +101,7 @@ function parseIsolationOption(value) {
 function resolveBeRuntimePaths(config) {
   const be = config?.be || {};
   const dirs = Array.isArray(be.dirs) && be.dirs.length > 0 ? be.dirs : ["./src/modules"];
+  const runtimeConfig = loadBeRuntimeConfig({ cwd: process.cwd() });
 
   return {
     dirs,
@@ -101,7 +110,94 @@ function resolveBeRuntimePaths(config) {
     outdir: be.outdir || "./.rtgl-be/generated",
     migrationsDir: be.migrationsDir || "./migrations",
     domainErrors: be.domainErrors || {},
+    globalMiddleware: runtimeConfig.globalMiddleware,
   };
+}
+
+function wantsJsonOutput(options) {
+  return options?.json === true || options?.format === "json";
+}
+
+function writeBeCliError({ command, options, ruleId = "RTGL-BE-CLI-001", message }) {
+  if (!wantsJsonOutput(options)) {
+    throw new Error(message);
+  }
+
+  console.log(JSON.stringify({
+    schemaVersion: "rettangoli.cliResult/v1",
+    command,
+    artifactSchemaVersion: "rettangoli.cliError/v1",
+    ok: false,
+    diagnostics: [
+      {
+        schemaVersion: "rettangoli.diagnostic/v1",
+        ruleId,
+        code: ruleId,
+        severity: "error",
+        phase: "cli",
+        message,
+      },
+    ],
+  }, null, 2));
+  process.exitCode = 1;
+  return null;
+}
+
+function requireBeConfig(command, options) {
+  let config;
+  try {
+    config = readConfig();
+  } catch (error) {
+    return writeBeCliError({
+      command,
+      options,
+      ruleId: "RTGL-BE-CLI-003",
+      message: error.message,
+    });
+  }
+
+  if (config) {
+    return config;
+  }
+
+  return writeBeCliError({
+    command,
+    options,
+    message: "rettangoli.config.yaml not found",
+  });
+}
+
+function readOptionalBeConfig(command, options) {
+  try {
+    return {
+      ok: true,
+      config: readConfig(),
+    };
+  } catch (error) {
+    writeBeCliError({
+      command,
+      options,
+      ruleId: "RTGL-BE-CLI-003",
+      message: error.message,
+    });
+    return {
+      ok: false,
+      config: null,
+    };
+  }
+}
+
+function resolveBeRuntimePathsOrReport(command, options, config) {
+  try {
+    return resolveBeRuntimePaths(config);
+  } catch (error) {
+    return writeBeCliError({
+      command,
+      options,
+      ruleId: "RTGL-BE-CLI-003",
+      message: error.message,
+    });
+  }
 }
 
 const program = new Command();
@@ -335,6 +431,20 @@ feCommand
 const beCommand = program.command("be").description("Backend framework");
 
 beCommand
+  .command("init")
+  .description("Initialize a minimal backend app")
+  .option("--method <method>", "Initial method id", "health.ping")
+  .option("--dir <path>", "Backend method directory to create under")
+  .option("--dry-run", "Print the init plan without writing files")
+  .option("--check", "Alias for --dry-run")
+  .option("--json", "Output JSON")
+  .action((options) => {
+    options.dirs = options.dir || "./src/modules";
+    if (options.json) options.format = "json";
+    requireBeCommand(initBe, "init")(options);
+  });
+
+beCommand
   .command("build")
   .description("Build backend method registry and app entry")
   .option("--dir <path>", "Backend method directory to scan (repeatable)", collectValues, [])
@@ -345,20 +455,24 @@ beCommand
   .option("--check", "Check whether generated files are fresh")
   .option("--json", "Output JSON")
   .action((options) => {
-    const config = readConfig();
+    const config = requireBeConfig("be build", options);
+    if (!config) return;
 
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
-
-    const bePaths = resolveBeRuntimePaths(config);
+    const bePaths = resolveBeRuntimePathsOrReport("be build", options, config);
+    if (!bePaths) return;
 
     const selectedDirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
     const missingDirs = selectedDirs.filter(
       (dir) => !existsSync(resolve(process.cwd(), dir)),
     );
     if (missingDirs.length > 0) {
-      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
+      writeBeCliError({
+        command: "be build",
+        options,
+        ruleId: "RTGL-BE-CLI-004",
+        message: `Directories do not exist: ${missingDirs.join(", ")}`,
+      });
+      return;
     }
 
     options.dirs = selectedDirs;
@@ -380,13 +494,11 @@ beCommand
   .option("--method <method>", "Validate one backend method id")
   .option("-m, --middleware-dir <path>", "Custom middleware directory path")
   .action((options) => {
-    const config = readConfig();
+    const config = requireBeConfig("be check", options);
+    if (!config) return;
 
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
-
-    const bePaths = resolveBeRuntimePaths(config);
+    const bePaths = resolveBeRuntimePathsOrReport("be check", options, config);
+    if (!bePaths) return;
 
     options.dirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
@@ -406,13 +518,11 @@ beCommand
   .option("--migrations-dir <path>", "SQLite migrations directory")
   .option("-o, --output <path>", "Write manifest JSON to a file")
   .action((options) => {
-    const config = readConfig();
+    const config = requireBeConfig("be manifest", options);
+    if (!config) return;
 
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
-
-    const bePaths = resolveBeRuntimePaths(config);
+    const bePaths = resolveBeRuntimePathsOrReport("be manifest", options, config);
+    if (!bePaths) return;
 
     options.dirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
@@ -420,6 +530,26 @@ beCommand
     options.migrationsDir = options.migrationsDir || bePaths.migrationsDir;
 
     requireBeCommand(manifestBe, "manifest")(options);
+  });
+
+beCommand
+  .command("compat")
+  .description("Compare two backend manifests for API compatibility")
+  .option("--from <path>", "Previous manifest JSON")
+  .option("--to <path>", "Current manifest JSON")
+  .option("--json", "Output JSON")
+  .action((options) => {
+    if (options.json) options.format = "json";
+    if (!options.from || !options.to) {
+      writeBeCliError({
+        command: "be compat",
+        options,
+        ruleId: "RTGL-BE-CLI-002",
+        message: "be compat requires --from and --to manifest JSON files.",
+      });
+      return;
+    }
+    requireBeCommand(compatBe, "compat")(options);
   });
 
 beCommand
@@ -435,13 +565,11 @@ beCommand
   .option("--package-manager <name>", "Package manager for running Vitest: npm, pnpm, yarn, bun")
   .option("--runner <command>", "Executable used to run Vitest")
   .action((options) => {
-    const config = readConfig();
+    const config = requireBeConfig("be test", options);
+    if (!config) return;
 
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
-
-    const bePaths = resolveBeRuntimePaths(config);
+    const bePaths = resolveBeRuntimePathsOrReport("be test", options, config);
+    if (!bePaths) return;
 
     options.dirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
@@ -463,31 +591,59 @@ beCommand
   .option("-m, --middleware-dir <path>", "Custom middleware directory path")
   .option("-o, --outdir <path>", "Generated output directory")
   .option("--migrations-dir <path>", "SQLite migrations directory")
+  .option("--fail-on-warnings", "Return non-zero when warnings are present")
   .option("--evidence <taskId>", "Write verification evidence under .rtgl-be/evidence")
   .option("--task-id <taskId>", "Task id for verification evidence")
   .option("--config <path>", "Alias for --test-config")
   .option("--test-config <path>", "Vitest config path", "./vitest.config.js")
   .option("--package-manager <name>", "Package manager for running Vitest: npm, pnpm, yarn, bun")
   .option("--runner <command>", "Executable used to run Vitest")
-  .action((options) => {
-    const config = readConfig();
+  .action(async (options) => {
+    const config = requireBeConfig("be verify", options);
+    if (!config) return;
 
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
-
-    const bePaths = resolveBeRuntimePaths(config);
+    const bePaths = resolveBeRuntimePathsOrReport("be verify", options, config);
+    if (!bePaths) return;
 
     options.dirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
     options.setup = options.setupPath || bePaths.setup;
     options.outdir = options.outdir || bePaths.outdir;
     options.migrationsDir = options.migrationsDir || bePaths.migrationsDir;
+    options.failOnWarnings = !!options.failOnWarnings;
+    options.globalMiddlewareBefore = bePaths.globalMiddleware.before;
+    options.globalMiddlewareAfter = bePaths.globalMiddleware.after;
     options.testConfig = options.config || options.testConfig;
     options.executable = options.runner;
     if (options.json) options.format = "json";
 
-    requireBeCommand(verifyBe, "verify")(options);
+    await requireBeCommand(verifyBe, "verify")(options);
+  });
+
+const beAppCommand = beCommand.command("app").description("Backend app runtime checks");
+
+beAppCommand
+  .command("check")
+  .description("Import setup, handlers, middleware, and instantiate the backend app")
+  .option("--json", "Output JSON")
+  .option("--dir <path>", "Backend method directory to scan (repeatable)", collectValues, [])
+  .option("--method <method>", "Check one backend method id")
+  .option("-s, --setup-path <path>", "Custom setup file path")
+  .option("-m, --middleware-dir <path>", "Custom middleware directory path")
+  .action(async (options) => {
+    const config = requireBeConfig("be app check", options);
+    if (!config) return;
+    const bePaths = resolveBeRuntimePathsOrReport("be app check", options, config);
+    if (!bePaths) return;
+
+    options.dirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
+    options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
+    options.setup = options.setupPath || bePaths.setup;
+    options.globalMiddlewareBefore = bePaths.globalMiddleware.before;
+    options.globalMiddlewareAfter = bePaths.globalMiddleware.after;
+    if (options.json) options.format = "json";
+
+    await requireBeCommand(appBe, "app")(options);
   });
 
 beCommand
@@ -499,8 +655,10 @@ beCommand
   .option("--check", "Alias for --dry-run")
   .option("--json", "Output JSON")
   .action((methodId, options) => {
-    const config = readConfig();
-    const bePaths = resolveBeRuntimePaths(config);
+    const configResult = readOptionalBeConfig("be scaffold", options);
+    if (!configResult.ok) return;
+    const bePaths = resolveBeRuntimePathsOrReport("be scaffold", options, configResult.config);
+    if (!bePaths) return;
 
     options.methodId = options.method || methodId;
     options.dirs = options.dir || bePaths.dirs[0] || "./src/modules";
@@ -517,8 +675,10 @@ beDbCommand
   .option("--migrations-dir <path>", "SQLite migrations directory")
   .option("--fail-on-warnings", "Return non-zero when warnings are present")
   .action((options) => {
-    const config = readConfig();
-    const bePaths = resolveBeRuntimePaths(config);
+    const configResult = readOptionalBeConfig("be db check", options);
+    if (!configResult.ok) return;
+    const bePaths = resolveBeRuntimePathsOrReport("be db check", options, configResult.config);
+    if (!bePaths) return;
 
     options.migrationsDir = options.migrationsDir || bePaths.migrationsDir;
     options.failOnWarnings = !!options.failOnWarnings;
