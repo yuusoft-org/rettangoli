@@ -3,10 +3,12 @@ import { readFileSync } from 'node:fs';
 import { load as loadYaml, loadAll as loadAllYaml } from 'js-yaml';
 import { describe, expect, it } from 'vitest';
 import { createAppFromProject } from '../runtime/createAppFromProject.js';
+import { loadBeProjectConfig } from '../runtime/loadBeProjectConfig.js';
 import { stringifyStableJson } from '../cli/json.js';
 
 const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
 const JSON_RPC_VERSION = '2.0';
+const JSON_RPC_DOMAIN_ERROR_CODE = -32000;
 
 const hasOwn = (object, key) => {
   return isPlainObject(object) && Object.prototype.hasOwnProperty.call(object, key);
@@ -17,6 +19,44 @@ const readExampleDocuments = (yamlDir, yamlFile) => {
   const content = readFileSync(path.join(yamlDir, yamlFile), 'utf8');
   loadAllYaml(content, (doc) => documents.push(doc ?? {}));
   return documents;
+};
+
+const isExampleCaseDocument = (document) => {
+  return isPlainObject(document) && hasOwn(document, 'case');
+};
+
+const isExamplesConfigDocument = (document) => {
+  return isPlainObject(document)
+    && !isExampleCaseDocument(document)
+    && (
+      hasOwn(document, 'schemaVersion')
+      || hasOwn(document, 'file')
+      || hasOwn(document, 'group')
+      || hasOwn(document, 'runtime')
+      || hasOwn(document, 'mode')
+    );
+};
+
+const isExamplesSuiteDocument = (document) => {
+  return isPlainObject(document)
+    && !isExampleCaseDocument(document)
+    && (
+      hasOwn(document, 'suite')
+      || hasOwn(document, 'exportName')
+    );
+};
+
+const resolveExamplesDocuments = (documents = []) => {
+  const configDocument = isExamplesConfigDocument(documents[0]) ? documents[0] : {};
+  const suiteIndex = configDocument === documents[0] ? 1 : 0;
+  const suiteDocument = isExamplesSuiteDocument(documents[suiteIndex]) ? documents[suiteIndex] : {};
+  const caseDocuments = documents.filter(isExampleCaseDocument);
+
+  return {
+    configDocument,
+    suiteDocument,
+    caseDocuments,
+  };
 };
 
 const parseExampleDocumentsFromSource = (source) => {
@@ -30,19 +70,20 @@ const resolveExampleMethod = ({ yamlDir, configDocument, runtimeOptions }) => {
     return runtimeOptions.method;
   }
 
-  if (typeof configDocument.file !== 'string' || !configDocument.file.endsWith('.handlers.js')) {
-    return undefined;
-  }
+  const handlerFile = typeof configDocument.file === 'string' && configDocument.file.endsWith('.handlers.js')
+    ? configDocument.file
+    : `./${path.basename(yamlDir)}.handlers.js`;
 
   const contractPath = path.resolve(
     yamlDir,
-    configDocument.file.replace(/\.handlers\.js$/, '.contract.yaml'),
+    handlerFile.replace(/\.handlers\.js$/, '.contract.yaml'),
   );
 
   try {
     const contractDocument = loadYaml(readFileSync(contractPath, 'utf8')) ?? {};
-    return typeof contractDocument.method === 'string' && contractDocument.method
-      ? contractDocument.method
+    const method = contractDocument.method ?? contractDocument.id;
+    return typeof method === 'string' && method
+      ? method
       : undefined;
   } catch {
     return undefined;
@@ -81,16 +122,64 @@ const normalizeExpectedResponse = ({ response, request }) => {
 
 const createRpcDispatchInput = ({ caseDoc, method }) => {
   const input = Array.isArray(caseDoc.in) && isPlainObject(caseDoc.in[0]) ? caseDoc.in[0] : {};
+  const rawRequest = caseDoc.request ?? input.request;
+  const requestMeta = isPlainObject(rawRequest) && hasOwn(rawRequest, 'meta')
+    ? rawRequest.meta
+    : undefined;
+  const requestCookies = isPlainObject(rawRequest) && hasOwn(rawRequest, 'cookies')
+    ? rawRequest.cookies
+    : undefined;
+  const requestContext = isPlainObject(rawRequest) && hasOwn(rawRequest, 'context')
+    ? rawRequest.context
+    : undefined;
+  if (hasOwn(caseDoc, 'meta') && requestMeta !== undefined) {
+    throw new Error(`Rettangoli example '${caseDoc.case}' must not include both top-level meta and request.meta.`);
+  }
+  const requestWithoutRuntime = isPlainObject(rawRequest)
+    ? Object.fromEntries(
+      Object.entries(rawRequest)
+        .filter(([key]) => !['meta', 'cookies', 'context'].includes(key)),
+    )
+    : rawRequest;
   const request = normalizeExampleRequest({
-    request: caseDoc.request ?? input.request,
+    request: requestWithoutRuntime,
     method,
   });
   return {
     request,
-    meta: caseDoc.meta ?? input.meta,
-    cookies: caseDoc.cookies ?? input.cookies,
-    context: caseDoc.context ?? input.context,
+    meta: caseDoc.meta ?? requestMeta ?? input.meta,
+    cookies: caseDoc.cookies ?? requestCookies ?? input.cookies,
+    context: caseDoc.context ?? requestContext ?? input.context,
   };
+};
+
+const assertThrowsMatches = ({ caseDoc, request, actualResponse }) => {
+  const expectedCode = caseDoc.throws;
+  try {
+    expect(actualResponse?.jsonrpc).toBe(JSON_RPC_VERSION);
+    expect(actualResponse?.id).toBe(hasOwn(request, 'id') ? request.id : null);
+    expect(actualResponse?.error?.code).toBe(JSON_RPC_DOMAIN_ERROR_CODE);
+    expect(actualResponse?.error?.message).toBe('Domain error');
+    expect(actualResponse?.error?.data?.code).toBe(expectedCode);
+  } catch (error) {
+    error.message = createResponseMismatchMessage({
+      caseDoc,
+      expectedResponse: {
+        jsonrpc: JSON_RPC_VERSION,
+        id: hasOwn(request, 'id') ? request.id : null,
+        error: {
+          code: JSON_RPC_DOMAIN_ERROR_CODE,
+          message: 'Domain error',
+          data: {
+            code: expectedCode,
+          },
+        },
+      },
+      actualResponse,
+      assertionMessage: error.message,
+    });
+    throw error;
+  }
 };
 
 export const createResponseMismatchMessage = ({ caseDoc, expectedResponse, actualResponse, assertionMessage }) => [
@@ -134,7 +223,8 @@ const parseRuntimeEnvOptions = () => {
 const isRettangoliExamplesSource = (source) => {
   try {
     const documents = parseExampleDocumentsFromSource(source);
-    return documents[0]?.schemaVersion === 'rettangoli.examples/v1';
+    return documents[0]?.schemaVersion === 'rettangoli.examples/v1'
+      || documents.some(isExampleCaseDocument);
   } catch {
     return false;
   }
@@ -143,24 +233,35 @@ const isRettangoliExamplesSource = (source) => {
 const resolveRuntimeOptions = ({ configDocument, options }) => {
   const runtime = isPlainObject(configDocument.runtime) ? configDocument.runtime : {};
   const envOptions = parseRuntimeEnvOptions();
+  const cwd = runtime.cwd
+    ? path.resolve(process.cwd(), runtime.cwd)
+    : envOptions.cwd ?? options.cwd ?? process.cwd();
+  const projectConfig = loadBeProjectConfig({ cwd });
   return {
-    cwd: runtime.cwd ? path.resolve(process.cwd(), runtime.cwd) : envOptions.cwd ?? options.cwd ?? process.cwd(),
-    methodDirs: runtime.methodDirs ?? envOptions.methodDirs ?? options.methodDirs ?? ['./src/modules'],
-    middlewareDirs: runtime.middlewareDirs ?? envOptions.middlewareDirs ?? options.middlewareDirs ?? ['./src/middleware'],
-    setupPath: runtime.setupPath ?? envOptions.setupPath ?? options.setupPath ?? './src/setup.js',
+    cwd,
+    methodDirs: runtime.methodDirs ?? envOptions.methodDirs ?? options.methodDirs ?? projectConfig.dirs,
+    middlewareDirs: runtime.middlewareDirs ?? envOptions.middlewareDirs ?? options.middlewareDirs ?? [projectConfig.middlewareDir],
+    setupPath: runtime.setupPath ?? envOptions.setupPath ?? options.setupPath ?? projectConfig.setup,
     method: runtime.method ?? envOptions.method ?? options.method,
     globalMiddleware: runtime.globalMiddleware ?? envOptions.globalMiddleware ?? options.globalMiddleware ?? [],
-    globalMiddlewareBefore: runtime.globalMiddlewareBefore ?? envOptions.globalMiddlewareBefore ?? options.globalMiddlewareBefore ?? [],
-    globalMiddlewareAfter: runtime.globalMiddlewareAfter ?? envOptions.globalMiddlewareAfter ?? options.globalMiddlewareAfter ?? [],
+    globalMiddlewareBefore: runtime.globalMiddlewareBefore
+      ?? envOptions.globalMiddlewareBefore
+      ?? options.globalMiddlewareBefore
+      ?? projectConfig.globalMiddleware.before,
+    globalMiddlewareAfter: runtime.globalMiddlewareAfter
+      ?? envOptions.globalMiddlewareAfter
+      ?? options.globalMiddlewareAfter
+      ?? projectConfig.globalMiddleware.after,
   };
 };
 
 const setupRpcExamplesFromYaml = async (yamlDir, yamlFile, options = {}) => {
   const documents = readExampleDocuments(yamlDir, yamlFile);
-  const configDocument = documents[0] ?? {};
-  const suiteDocument = documents[1] ?? {};
-  const caseDocuments = documents
-    .filter((doc) => isPlainObject(doc) && Object.prototype.hasOwnProperty.call(doc, 'case'));
+  const {
+    configDocument,
+    suiteDocument,
+    caseDocuments,
+  } = resolveExamplesDocuments(documents);
   const runtimeOptions = resolveRuntimeOptions({ configDocument, options });
   const method = resolveExampleMethod({ yamlDir, configDocument, runtimeOptions });
   let appPromise;
@@ -174,6 +275,7 @@ const setupRpcExamplesFromYaml = async (yamlDir, yamlFile, options = {}) => {
       globalMiddleware: runtimeOptions.globalMiddleware,
       globalMiddlewareBefore: runtimeOptions.globalMiddlewareBefore,
       globalMiddlewareAfter: runtimeOptions.globalMiddlewareAfter,
+      includeInternalErrorDetails: true,
     });
     return appPromise;
   };
@@ -189,6 +291,15 @@ const setupRpcExamplesFromYaml = async (yamlDir, yamlFile, options = {}) => {
           request: dispatchInput.request,
         });
         const { response } = await app.dispatchWithContext(dispatchInput);
+        if (!isPlainObject(caseDoc.out) && typeof caseDoc.throws === 'string' && caseDoc.throws.trim()) {
+          assertThrowsMatches({
+            caseDoc,
+            request: dispatchInput.request,
+            actualResponse: response,
+          });
+          return;
+        }
+
         assertResponseMatches({
           caseDoc,
           expectedResponse,
@@ -201,9 +312,9 @@ const setupRpcExamplesFromYaml = async (yamlDir, yamlFile, options = {}) => {
 
 export const setupRettangoliExamplesFromYaml = async (yamlDir, yamlFile, options = {}) => {
   const documents = readExampleDocuments(yamlDir, yamlFile);
-  const configDocument = documents[0] ?? {};
+  const { configDocument } = resolveExamplesDocuments(documents);
 
-  if (configDocument?.schemaVersion !== 'rettangoli.examples/v1') {
+  if (hasOwn(configDocument, 'schemaVersion') && configDocument.schemaVersion !== 'rettangoli.examples/v1') {
     throw new Error(`Rettangoli examples must use schemaVersion rettangoli.examples/v1 in ${yamlFile}`);
   }
 

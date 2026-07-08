@@ -241,6 +241,25 @@ describe('be app check command', () => {
     }));
   });
 
+  it('validates legacy global middleware', async () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-app-check-legacy-global-middleware-'));
+    createdDirs.push(rootDir);
+    writeMethod(rootDir);
+    mkdirSync(path.join(rootDir, 'src', 'middleware'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'src', 'middleware', 'globalLegacy.js'), 'export const globalLegacy = () => "not middleware";\n');
+
+    const result = await runBackendAppCheck({
+      cwd: rootDir,
+      globalMiddleware: ['globalLegacy'],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-APP-011',
+      filePath: 'src/middleware/globalLegacy.js',
+    }));
+  });
+
   it('validates configured global middleware in method scope', async () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-app-check-method-global-middleware-'));
     createdDirs.push(rootDir);
@@ -281,6 +300,67 @@ describe('be app check command', () => {
       ruleId: 'RTGL-BE-CONTRACT-021',
       phase: 'contracts',
       filePath: 'src/middleware/nested/globalBefore.js',
+    }));
+    expect(result.nextAction).toEqual(expect.objectContaining({
+      phase: 'contracts',
+      target: 'runtime-app',
+      argv: [
+        'rtgl',
+        'be',
+        'app',
+        'check',
+        '--method',
+        'health.ping',
+        '--json',
+      ],
+    }));
+  });
+
+  it('keeps ordinary contract failures on the check rerun surface when globals exist', async () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-app-check-contract-with-global-'));
+    createdDirs.push(rootDir);
+    writeMethod(rootDir);
+    mkdirSync(path.join(rootDir, 'src', 'middleware'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'src', 'middleware', 'globalBefore.js'), 'export const globalBefore = () => (next) => (ctx) => next(ctx);\n');
+    writeFileSync(path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.contract.yaml'), [
+      'schemaVersion: rettangoli.contract/v1',
+      'method: health.other',
+      'description: ping',
+      'middleware:',
+      '  before: []',
+      '  after: []',
+      'params:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties: {}',
+      '  required: []',
+      'result:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties:',
+      '    ok:',
+      '      type: boolean',
+      '  required: [ok]',
+      'errors: {}',
+      '',
+    ].join('\n'));
+
+    const result = await runBackendAppCheck({
+      cwd: rootDir,
+      globalMiddlewareBefore: ['globalBefore'],
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics[0].ruleId).toBe('RTGL-BE-CONTRACT-019');
+    expect(result.nextAction).toEqual(expect.objectContaining({
+      phase: 'contracts',
+      target: 'contract-package',
+      argv: ['rtgl', 'be', 'check', '--format', 'json'],
+      context: {
+        runtime: {
+          globalMiddlewareBefore: ['globalBefore'],
+        },
+      },
     }));
   });
 

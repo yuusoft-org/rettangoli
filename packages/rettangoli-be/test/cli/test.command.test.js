@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runBackendTests } from '../../src/cli/test.js';
 
-const writeMethod = (rootDir) => {
-  const methodDir = path.join(rootDir, 'src', 'modules', 'health', 'ping');
+const writeMethod = (rootDir, { modulesDir = 'src/modules' } = {}) => {
+  const methodDir = path.join(rootDir, modulesDir, 'health', 'ping');
   mkdirSync(methodDir, { recursive: true });
 
   writeFileSync(path.join(rootDir, 'vitest.config.js'), 'export default {};\n');
@@ -196,6 +196,50 @@ describe('be test command', () => {
     });
   });
 
+  it('loads configured method dirs for package-level tests', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-config-dir-'));
+    createdDirs.push(rootDir);
+    writeMethod(rootDir, { modulesDir: 'backend/methods' });
+    writeFileSync(path.join(rootDir, 'rettangoli.config.yaml'), [
+      'be:',
+      '  dirs: [./backend/methods]',
+      '',
+    ].join('\n'));
+
+    const runCommand = vi.fn(() => ({
+      status: 0,
+      stdout: 'ok',
+      stderr: '',
+    }));
+
+    const result = runBackendTests({
+      cwd: rootDir,
+      format: 'json',
+      env: {},
+      runCommand,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.files).toEqual(['backend/methods/health/ping/ping.examples.yaml']);
+    expect(result.commands.find((command) => command.id === 'test').argv).toEqual([
+      'rtgl',
+      'be',
+      'test',
+      '--dir',
+      './backend/methods',
+      '--json',
+    ]);
+    expect(JSON.parse(runCommand.mock.calls[0][2].env.RTGL_BE_EXAMPLES_RUNTIME)).toEqual({
+      cwd: rootDir,
+      methodDirs: ['./backend/methods'],
+      middlewareDirs: ['./src/middleware'],
+      setupPath: './src/setup.js',
+      globalMiddleware: [],
+      globalMiddlewareBefore: [],
+      globalMiddlewareAfter: [],
+    });
+  });
+
   it('follows caller package manager when resolving the Vitest runner', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-runner-'));
     createdDirs.push(rootDir);
@@ -267,6 +311,12 @@ describe('be test command', () => {
       'pnpm',
       '--json',
     ]);
+    expect(result.commands.find((command) => command.id === 'test').context).toEqual({
+      runtime: {
+        globalMiddlewareBefore: ['globalBefore'],
+        globalMiddlewareAfter: ['globalAfter'],
+      },
+    });
     expect(result.nextAction.argv).toEqual([
       'rtgl',
       'be',
@@ -285,6 +335,12 @@ describe('be test command', () => {
       'pnpm',
       '--json',
     ]);
+    expect(result.nextAction.context).toEqual({
+      runtime: {
+        globalMiddlewareBefore: ['globalBefore'],
+        globalMiddlewareAfter: ['globalAfter'],
+      },
+    });
     expect(JSON.parse(runCommand.mock.calls[0][2].env.RTGL_BE_EXAMPLES_RUNTIME)).toEqual({
       cwd: rootDir,
       method: 'health.ping',
@@ -401,16 +457,125 @@ describe('be test command', () => {
       format: 'json',
       executable: 'custom-runner',
       runCommand: vi.fn(() => ({
-        status: 0,
+        status: null,
         stdout: '',
         stderr: '',
-        error: new Error('spawn custom-runner ENOENT'),
+        error: Object.assign(new Error('spawn custom-runner ENOENT'), {
+          code: 'ENOENT',
+        }),
       })),
     });
 
     expect(result.ok).toBe(false);
+    expect(result.exitCode).toBe(1);
+    expect(result.phase).toBe('runner');
+    expect(result.diagnostics[0].ruleId).toBe('RTGL-BE-RUNNER-001');
+    expect(result.diagnostics[0].phase).toBe('runner');
     expect(result.diagnostics[0].message).toContain('spawn custom-runner ENOENT');
     expect(result.diagnostics[0].outputTail.stderr).toContain('spawn custom-runner ENOENT');
+    expect(result.diagnostics[0].runner.errorCode).toBe('ENOENT');
+    expect(result.diagnostics[0].files).toEqual([]);
+    expect(result.diagnostics[0].executedFiles).toEqual([]);
+    expect(result.nextAction).toEqual(expect.objectContaining({
+      phase: 'runner',
+      target: 'test-runner',
+      files: [],
+      argv: [
+        'rtgl',
+        'be',
+        'test',
+        '--runner',
+        'custom-runner',
+        '--json',
+      ],
+    }));
+  });
+
+  it('fails runner process errors even when spawn reports status zero', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-runner-warning-'));
+    createdDirs.push(rootDir);
+    writeMethod(rootDir);
+
+    const result = runBackendTests({
+      cwd: rootDir,
+      format: 'json',
+      env: {},
+      runCommand: vi.fn(() => ({
+        status: 0,
+        stdout: 'ok',
+        stderr: '',
+        error: Object.assign(new Error('spawnSync npm EPERM'), {
+          code: 'EPERM',
+        }),
+      })),
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.exitCode).toBe(1);
+    expect(result.phase).toBe('runner');
+    expect(result.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-RUNNER-001',
+      phase: 'runner',
+      message: 'Backend example runner failed: spawnSync npm EPERM',
+    }));
+    expect(result.diagnostics[0].runner).toEqual(expect.objectContaining({
+      executable: 'npm',
+      errorCode: 'EPERM',
+      status: 0,
+    }));
+    expect(result.nextAction).toEqual(expect.objectContaining({
+      phase: 'runner',
+      target: 'test-runner',
+    }));
+  });
+
+  it('routes runtime contract failures from examples to app check', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-test-runtime-contract-fail-'));
+    createdDirs.push(rootDir);
+    writeMethod(rootDir);
+
+    const result = runBackendTests({
+      cwd: rootDir,
+      method: 'health.ping',
+      format: 'json',
+      runCommand: vi.fn(() => ({
+        status: 1,
+        stdout: '',
+        stderr: [
+          '[Runtime] RPC contract validation failed: 1 issue(s)',
+          'Details:',
+          "RTGL-BE-CONTRACT-021 Duplicate middleware name 'globalAuth' found. [src/middleware/globalAuth.js]",
+          '',
+        ].join('\n'),
+      })),
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.phase).toBe('app');
+    expect(result.diagnostics[0]).toEqual(expect.objectContaining({
+      ruleId: 'RTGL-BE-CONTRACT-021',
+      phase: 'app',
+      filePath: 'src/middleware/globalAuth.js',
+    }));
+    expect(result.nextAction).toEqual(expect.objectContaining({
+      phase: 'app',
+      target: 'runtime-app',
+      files: [
+        'src/middleware/globalAuth.js',
+        'src/modules/health/ping/ping.contract.yaml',
+        'src/modules/health/ping/ping.examples.yaml',
+        'src/modules/health/ping/ping.handlers.js',
+      ],
+      argv: [
+        'rtgl',
+        'be',
+        'app',
+        'check',
+        '--method',
+        'health.ping',
+        '--json',
+      ],
+    }));
   });
 
   it('does not run Vitest when no backend examples are found', () => {

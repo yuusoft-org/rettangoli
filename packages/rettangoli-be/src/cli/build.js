@@ -7,6 +7,7 @@ import {
 } from '../core/contracts/rpcFiles.js';
 import { resolveContractDirs } from './contracts.js';
 import { stringifyStableJson } from './json.js';
+import { resolveBackendProjectOptions } from './projectOptions.js';
 
 const toPosixRelativeImport = (fromFilePath, toFilePath) => {
   const relativePath = path.relative(path.dirname(fromFilePath), toFilePath).replaceAll(path.sep, '/');
@@ -77,22 +78,31 @@ const createGeneratedRegistryContent = ({
 const createGeneratedAppEntryContent = ({
   outputFile,
   setupPath,
+  globalMiddleware = [],
+  globalMiddlewareBefore = [],
+  globalMiddlewareAfter = [],
 }) => {
   const lines = [
     `import { createApp } from '@rettangoli/be';`,
     `import registry from './registry.js';`,
     `import * as setupModule from '${toPosixRelativeImport(outputFile, setupPath)}';`,
     '',
-    'const setup = setupModule.setup ?? setupModule.default;',
-    'if (!setup) {',
-    "  throw new Error('Generated app: setup export not found. Export setup or default from setup.js');",
+    'const setupExport = setupModule.setup ?? setupModule.createSetup ?? setupModule.default;',
+    'if (!setupExport) {',
+    "  throw new Error('Generated app: setup export not found. Export setup, createSetup, or default from setup.js');",
     '}',
+    "const setup = typeof setupExport === 'function'",
+    "  ? await setupExport({ cwd: process.cwd(), env: process.env, mode: 'generated' })",
+    '  : setupExport;',
     '',
     'export const app = createApp({',
     '  setup,',
     '  methodContracts: registry.methodContracts,',
     '  methodHandlers: registry.methodHandlers,',
     '  middlewareModules: registry.middlewareModules,',
+    `  globalMiddleware: ${JSON.stringify(globalMiddleware)},`,
+    `  globalMiddlewareBefore: ${JSON.stringify(globalMiddlewareBefore)},`,
+    `  globalMiddlewareAfter: ${JSON.stringify(globalMiddlewareAfter)},`,
     '});',
     '',
     'export default app;',
@@ -128,15 +138,21 @@ const stripBuildPlanPrivate = (plan) => {
 };
 
 export const createBackendBuildPlan = (options = {}) => {
+  options = resolveBackendProjectOptions(options);
   const {
     cwd = process.cwd(),
     dirs = ['./src/modules'],
     middlewareDir = './src/middleware',
     setup = './src/setup.js',
     outdir = './.rtgl-be/generated',
+    globalMiddleware = [],
+    globalMiddlewareBefore = [],
+    globalMiddlewareAfter = [],
+    configPath,
   } = options;
 
   const resolvedOutdir = path.resolve(cwd, outdir);
+  const resolvedConfigPath = path.resolve(cwd, configPath ?? 'rettangoli.config.yaml');
   const { methodDirs, middlewareDirs } = resolveContractDirs({
     cwd,
     dirs,
@@ -160,6 +176,7 @@ export const createBackendBuildPlan = (options = {}) => {
     ]),
     ...analysis.middlewareEntries.map((entry) => entry.filePath),
     path.resolve(cwd, setup),
+    ...(existsSync(resolvedConfigPath) ? [resolvedConfigPath] : []),
   ].map((filePath) => toPosixRelativePath(cwd, filePath)).sort();
   const registryContent = createGeneratedRegistryContent({
     outputFile: registryPath,
@@ -169,6 +186,9 @@ export const createBackendBuildPlan = (options = {}) => {
   const appEntryContent = createGeneratedAppEntryContent({
     outputFile: appEntryPath,
     setupPath: path.resolve(cwd, setup),
+    globalMiddleware,
+    globalMiddlewareBefore,
+    globalMiddlewareAfter,
   });
   const privateTargets = [
     createTarget({

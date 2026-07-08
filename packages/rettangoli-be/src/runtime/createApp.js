@@ -12,6 +12,10 @@ import { resolveSingleFunctionExport } from './resolveExports.js';
 
 const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
 
+const hasOwn = (object, key) => {
+  return isPlainObject(object) && Object.prototype.hasOwnProperty.call(object, key);
+};
+
 const normalizeSetup = (setup) => {
   if (!isPlainObject(setup)) {
     throw new Error('createApp: setup object is required');
@@ -115,13 +119,52 @@ const createErrorSchemaFromCatalog = (errors = {}) => {
   };
 };
 
+const resolveSchemaContainer = (value) => {
+  if (isPlainObject(value) && isPlainObject(value.schema)) {
+    return value.schema;
+  }
+
+  return value;
+};
+
+const createEmptyParamsSchema = () => ({
+  type: 'object',
+  additionalProperties: false,
+  properties: {},
+  required: [],
+});
+
+const normalizeRpcMiddleware = (middleware) => {
+  if (middleware === undefined) {
+    return {
+      before: [],
+      after: [],
+    };
+  }
+
+  if (!isPlainObject(middleware)) {
+    return middleware;
+  }
+
+  return {
+    ...middleware,
+    before: hasOwn(middleware, 'before') ? middleware.before : [],
+    after: hasOwn(middleware, 'after') ? middleware.after : [],
+  };
+};
+
 const normalizeRpcContract = (rpcContract) => {
-  const paramsSchema = rpcContract.params;
-  const resultSchema = rpcContract.result;
-  const errorSchema = createErrorSchemaFromCatalog(rpcContract.errors ?? {});
+  const paramsSchema = resolveSchemaContainer(rpcContract.params) ?? createEmptyParamsSchema();
+  const resultSchema = resolveSchemaContainer(rpcContract.result);
+  const errors = rpcContract.errors ?? {};
+  const errorSchema = createErrorSchemaFromCatalog(errors);
 
   return {
     ...rpcContract,
+    params: paramsSchema,
+    result: resultSchema,
+    errors,
+    middleware: normalizeRpcMiddleware(rpcContract.middleware),
     paramsSchema,
     resultSchema,
     errorSchema,

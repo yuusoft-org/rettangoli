@@ -6,6 +6,7 @@ import { createReadyExtension } from '../extensions/createReadyExtension.js';
 import { createVersionExtension } from '../extensions/createVersionExtension.js';
 import { createAppFromProject } from './createAppFromProject.js';
 import { loadBeProjectConfig } from './loadBeProjectConfig.js';
+import { resolveSetupExport, resolveSetupValue } from './setup.js';
 import { createHttpHandler } from '../transport/http/createHttpHandler.js';
 import { parseCookieHeader, serializeResponseCookies } from '../transport/http/cookies.js';
 
@@ -16,15 +17,15 @@ const importModuleFromPath = async (filePath) => {
   return import(fileUrl);
 };
 
-const loadSetup = async (setupPath) => {
+const loadSetup = async (setupPath, { cwd } = {}) => {
   const setupModule = await importModuleFromPath(setupPath);
+  const setupExport = resolveSetupExport(setupModule);
 
-  if (setupModule.setup) {
-    return setupModule.setup;
-  }
-
-  if (setupModule.default) {
-    return setupModule.default;
+  if (setupExport !== undefined) {
+    return resolveSetupValue(setupExport, {
+      cwd,
+      mode: 'server',
+    });
   }
 
   throw new Error(`createServerFromProject: setup export not found in ${setupPath}`);
@@ -196,17 +197,18 @@ export const createServerFromProject = async ({
   configPath = 'rettangoli.config.yaml',
 } = {}) => {
   const beConfig = loadBeProjectConfig({ cwd, configPath });
+  const setupPath = path.resolve(cwd, beConfig.setup);
+  const setup = await loadSetup(setupPath, { cwd });
   const app = await createAppFromProject({
     cwd,
     methodDirs: beConfig.dirs,
     middlewareDirs: [beConfig.middlewareDir],
     setupPath: beConfig.setup,
+    setup,
     globalMiddlewareBefore: beConfig.globalMiddleware.before,
     globalMiddlewareAfter: beConfig.globalMiddleware.after,
   });
 
-  const setupPath = path.resolve(cwd, beConfig.setup);
-  const setup = await loadSetup(setupPath);
   if (!isPlainObject(setup) || !isPlainObject(setup.deps)) {
     throw new Error('createServerFromProject: setup.deps is required');
   }

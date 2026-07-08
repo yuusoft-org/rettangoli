@@ -9,8 +9,10 @@ import {
 } from './agentLoop.js';
 import { stringifyStableJson } from './json.js';
 import { createCliResult } from './results.js';
+import { resolveBackendProjectOptions } from './projectOptions.js';
 
 export const runBackendCheck = (options = {}) => {
+  options = resolveBackendProjectOptions(options);
   const analysis = analyzeBackendContracts(options);
   const methods = options.method
     ? analysis.contracts.map((contract) => contract.method)
@@ -19,6 +21,7 @@ export const runBackendCheck = (options = {}) => {
     dirs: options.dirs,
     method: options.method,
     middlewareDir: options.middlewareDir,
+    configPath: options.configPath,
   });
   const diagnostics = normalizeDiagnostics({
     cwd: options.cwd ?? process.cwd(),

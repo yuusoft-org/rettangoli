@@ -8,13 +8,14 @@ import {
   createScope,
   findCommand,
   normalizeDiagnostic,
-  normalizeDiagnostics,
   toPosixRelativePath,
 } from './agentLoop.js';
 import { createApp } from '../runtime/createApp.js';
 import { resolveSingleFunctionExport } from '../runtime/resolveExports.js';
 import { createCliResult } from './results.js';
 import { stringifyStableJson } from './json.js';
+import { resolveBackendProjectOptions } from './projectOptions.js';
+import { resolveSetupExport, resolveSetupValue } from '../runtime/setup.js';
 
 const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
 
@@ -32,18 +33,6 @@ const createAppDiagnostic = ({ cwd, error, method, command }) => normalizeDiagno
   command,
 });
 
-const resolveSetupExport = (setupModule) => {
-  if (Object.prototype.hasOwnProperty.call(setupModule, 'setup')) {
-    return setupModule.setup;
-  }
-
-  if (Object.prototype.hasOwnProperty.call(setupModule, 'default')) {
-    return setupModule.default;
-  }
-
-  return undefined;
-};
-
 const collectReferencedMiddlewareNames = (contracts = []) => {
   return new Set(contracts.flatMap((contract) => [
     ...(Array.isArray(contract.rpc?.middleware?.before) ? contract.rpc.middleware.before : []),
@@ -51,11 +40,29 @@ const collectReferencedMiddlewareNames = (contracts = []) => {
   ]));
 };
 
-const collectGlobalMiddlewareNames = ({ globalMiddlewareBefore = [], globalMiddlewareAfter = [] } = {}) => {
+const collectGlobalMiddlewareNames = ({
+  globalMiddleware = [],
+  globalMiddlewareBefore = [],
+  globalMiddlewareAfter = [],
+} = {}) => {
   return new Set([
+    ...(Array.isArray(globalMiddleware) ? globalMiddleware : []),
     ...(Array.isArray(globalMiddlewareBefore) ? globalMiddlewareBefore : []),
     ...(Array.isArray(globalMiddlewareAfter) ? globalMiddlewareAfter : []),
   ]);
+};
+
+const parseDuplicateMiddlewareName = (error) => {
+  if (error?.code !== 'RTGL-BE-CONTRACT-021') {
+    return undefined;
+  }
+
+  return String(error.message || '').match(/Duplicate middleware name '([^']+)'/)?.[1];
+};
+
+const isGlobalMiddlewareContractError = ({ error, globalMiddlewareNames }) => {
+  const duplicateMiddlewareName = parseDuplicateMiddlewareName(error);
+  return !!duplicateMiddlewareName && globalMiddlewareNames.has(duplicateMiddlewareName);
 };
 
 const validateHandlerExport = ({ cwd, contract, moduleObject, diagnostics, command }) => {
@@ -133,12 +140,15 @@ const createInstantiationDiagnostic = ({ cwd, error, method, command, setupPath,
 };
 
 export const runBackendAppCheck = async (options = {}) => {
+  options = resolveBackendProjectOptions(options);
   const {
     cwd = process.cwd(),
     dirs = ['./src/modules'],
     middlewareDir = './src/middleware',
     setup = './src/setup.js',
+    configPath,
     method,
+    globalMiddleware = [],
     globalMiddlewareBefore = [],
     globalMiddlewareAfter = [],
   } = options;
@@ -147,9 +157,14 @@ export const runBackendAppCheck = async (options = {}) => {
     method,
     middlewareDir,
     setup,
+    configPath,
+    globalMiddleware,
+    globalMiddlewareBefore,
+    globalMiddlewareAfter,
   });
   const command = findCommand(commands, 'app');
   const globalMiddlewareNames = collectGlobalMiddlewareNames({
+    globalMiddleware,
     globalMiddlewareBefore,
     globalMiddlewareAfter,
   });
@@ -166,13 +181,16 @@ export const runBackendAppCheck = async (options = {}) => {
   const scope = createScope({ method, methods });
 
   if (!analysis.ok) {
-    const diagnostics = normalizeDiagnostics({
+    const checkCommand = findCommand(commands, 'check');
+    const diagnostics = analysis.errors.map((error) => normalizeDiagnostic({
       cwd,
-      errors: analysis.errors,
+      error,
       phase: 'contracts',
       method,
-      command: findCommand(commands, 'check'),
-    });
+      command: isGlobalMiddlewareContractError({ error, globalMiddlewareNames })
+        ? command
+        : checkCommand,
+    }));
 
     return createCliResult({
       command: 'app check',
@@ -210,7 +228,13 @@ export const runBackendAppCheck = async (options = {}) => {
   } else {
     try {
       const setupModule = await importModuleFromPath(setupPath);
-      setupValue = resolveSetupExport(setupModule);
+      const setupExport = resolveSetupExport(setupModule);
+      setupValue = setupExport === undefined
+        ? undefined
+        : await resolveSetupValue(setupExport, {
+          cwd,
+          mode: 'check',
+        });
     } catch (error) {
       diagnostics.push(createAppDiagnostic({
         cwd,
@@ -232,7 +256,7 @@ export const runBackendAppCheck = async (options = {}) => {
       command,
       error: {
         code: 'RTGL-BE-APP-003',
-        message: 'Setup file must export setup or default.',
+        message: 'Setup file must export setup, createSetup, or default.',
         filePath: setupPath,
       },
     }));
@@ -243,7 +267,7 @@ export const runBackendAppCheck = async (options = {}) => {
       command,
       error: {
         code: 'RTGL-BE-APP-004',
-        message: 'Setup export must be an object.',
+        message: 'Setup export must be an object or a factory returning an object.',
         filePath: setupPath,
       },
     }));
@@ -350,6 +374,7 @@ export const runBackendAppCheck = async (options = {}) => {
         methodContracts,
         methodHandlers,
         middlewareModules,
+        globalMiddleware,
         globalMiddlewareBefore,
         globalMiddlewareAfter,
       });
