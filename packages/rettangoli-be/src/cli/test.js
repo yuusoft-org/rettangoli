@@ -68,6 +68,10 @@ export const runBackendTests = (options = {}) => {
     dirs = ['./src/modules'],
     middlewareDir = './src/middleware',
     method,
+    setup = './src/setup.js',
+    globalMiddleware = [],
+    globalMiddlewareBefore = [],
+    globalMiddlewareAfter = [],
     config = './vitest.config.js',
     reporter = 'verbose',
     runCommand = spawnSync,
@@ -91,6 +95,7 @@ export const runBackendTests = (options = {}) => {
     dirs,
     method,
     middlewareDir,
+    setup,
     config,
     executable,
     packageManager,
@@ -220,8 +225,23 @@ export const runBackendTests = (options = {}) => {
   const runner = createPackageRunner({ executable, packageManager, env });
   const args = [...runner.argsPrefix, ...vitestArgs];
   const captureOutput = options.format === 'json';
+  const childEnv = {
+    ...process.env,
+    ...env,
+    RTGL_BE_EXAMPLES_RUNTIME: JSON.stringify({
+      cwd,
+      method,
+      methodDirs: dirs,
+      middlewareDirs: [middlewareDir],
+      setupPath: setup,
+      globalMiddleware,
+      globalMiddlewareBefore,
+      globalMiddlewareAfter,
+    }),
+  };
   const result = runCommand(runner.executable, args, {
     cwd,
+    env: childEnv,
     encoding: 'utf8',
     stdio: captureOutput ? 'pipe' : 'inherit',
   });

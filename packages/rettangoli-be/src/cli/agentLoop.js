@@ -78,6 +78,7 @@ export const createBackendCommands = ({
   appendOption(middlewareArgs, '--middleware-dir', middlewareDir, './src/middleware');
 
   const testArgs = [...dirArgs, ...methodArgs, ...middlewareArgs];
+  appendOption(testArgs, '--setup-path', setup, './src/setup.js');
   appendOption(testArgs, '--config', config ?? testConfig, './vitest.config.js');
   appendOption(testArgs, '--runner', executable);
   appendOption(testArgs, '--package-manager', packageManager);

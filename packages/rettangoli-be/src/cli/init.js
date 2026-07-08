@@ -225,6 +225,8 @@ const initRettangoliBackend = (options = {}) => {
     }));
   } else if (dryRun) {
     console.log(`[Init] Planned backend app with ${plan.targets.length} file(s).`);
+  } else if (!plan.ok) {
+    console.error(`[Init] Backend app init failed: ${plan.conflicts.length} conflict(s).`);
   } else {
     console.log(`[Init] Created backend app.`);
   }

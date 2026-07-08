@@ -345,6 +345,8 @@ describe('be verify output', () => {
       'health.ping',
       '--middleware-dir',
       './src/custom-middleware',
+      '--setup-path',
+      './src/custom-setup.js',
       '--config',
       './vitest.custom.js',
       '--runner',

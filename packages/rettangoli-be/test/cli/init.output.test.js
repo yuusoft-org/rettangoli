@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -88,6 +88,23 @@ describe('be init command', () => {
       ruleId: 'RTGL-BE-INIT-001',
       phase: 'init',
     }));
+    expect(process.exitCode).toBe(1);
+  });
+
+  it('reports init conflicts in text output', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-init-conflict-'));
+    createdDirs.push(rootDir);
+    writeFileSync(path.join(rootDir, 'package.json'), '{}\n');
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const result = initRettangoliBackend({
+      cwd: rootDir,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(errorSpy).toHaveBeenCalledWith('[Init] Backend app init failed: 1 conflict(s).');
+    expect(logSpy).not.toHaveBeenCalledWith('[Init] Created backend app.');
     expect(process.exitCode).toBe(1);
   });
 });

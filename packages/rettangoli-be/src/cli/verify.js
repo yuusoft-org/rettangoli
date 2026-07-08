@@ -316,6 +316,9 @@ export const runBackendVerify = async (options = {}) => {
 
   const test = runBackendTests({
     ...sharedOptions,
+    setup,
+    globalMiddlewareBefore,
+    globalMiddlewareAfter,
     config: testConfig,
     format: 'json',
     includeOutput: false,

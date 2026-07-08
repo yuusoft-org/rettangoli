@@ -182,6 +182,16 @@ describe('be test command', () => {
         stdio: 'pipe',
       }),
     );
+    expect(JSON.parse(runCommand.mock.calls[0][2].env.RTGL_BE_EXAMPLES_RUNTIME)).toEqual({
+      cwd: rootDir,
+      method: 'health.ping',
+      methodDirs: ['./src/modules'],
+      middlewareDirs: ['./src/middleware'],
+      setupPath: './src/setup.js',
+      globalMiddleware: [],
+      globalMiddlewareBefore: [],
+      globalMiddlewareAfter: [],
+    });
   });
 
   it('follows caller package manager when resolving the Vitest runner', () => {
@@ -227,6 +237,9 @@ describe('be test command', () => {
       cwd: rootDir,
       method: 'health.ping',
       middlewareDir: './src/custom-middleware',
+      setup: './src/custom-setup.js',
+      globalMiddlewareBefore: ['globalBefore'],
+      globalMiddlewareAfter: ['globalAfter'],
       config: './vitest.custom.js',
       executable: 'custom-runner',
       packageManager: 'pnpm',
@@ -242,6 +255,8 @@ describe('be test command', () => {
       'health.ping',
       '--middleware-dir',
       './src/custom-middleware',
+      '--setup-path',
+      './src/custom-setup.js',
       '--config',
       './vitest.custom.js',
       '--runner',
@@ -258,6 +273,8 @@ describe('be test command', () => {
       'health.ping',
       '--middleware-dir',
       './src/custom-middleware',
+      '--setup-path',
+      './src/custom-setup.js',
       '--test-config',
       './vitest.custom.js',
       '--runner',
@@ -266,6 +283,16 @@ describe('be test command', () => {
       'pnpm',
       '--json',
     ]);
+    expect(JSON.parse(runCommand.mock.calls[0][2].env.RTGL_BE_EXAMPLES_RUNTIME)).toEqual({
+      cwd: rootDir,
+      method: 'health.ping',
+      methodDirs: ['./src/modules'],
+      middlewareDirs: ['./src/custom-middleware'],
+      setupPath: './src/custom-setup.js',
+      globalMiddleware: [],
+      globalMiddlewareBefore: ['globalBefore'],
+      globalMiddlewareAfter: ['globalAfter'],
+    });
   });
 
   it('ignores unrelated contract errors when a method is selected', () => {

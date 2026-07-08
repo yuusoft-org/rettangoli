@@ -24,13 +24,32 @@ const createRpcDispatchInput = (caseDoc) => {
   };
 };
 
+const parseRuntimeEnvOptions = () => {
+  const raw = process.env.RTGL_BE_EXAMPLES_RUNTIME;
+  if (!raw) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return isPlainObject(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
 const resolveRuntimeOptions = ({ configDocument, options }) => {
   const runtime = isPlainObject(configDocument.runtime) ? configDocument.runtime : {};
+  const envOptions = parseRuntimeEnvOptions();
   return {
-    cwd: runtime.cwd ? path.resolve(process.cwd(), runtime.cwd) : options.cwd ?? process.cwd(),
-    methodDirs: runtime.methodDirs ?? options.methodDirs ?? ['./src/modules'],
-    middlewareDirs: runtime.middlewareDirs ?? options.middlewareDirs ?? ['./src/middleware'],
-    setupPath: runtime.setupPath ?? options.setupPath ?? './src/setup.js',
+    cwd: runtime.cwd ? path.resolve(process.cwd(), runtime.cwd) : envOptions.cwd ?? options.cwd ?? process.cwd(),
+    methodDirs: runtime.methodDirs ?? envOptions.methodDirs ?? options.methodDirs ?? ['./src/modules'],
+    middlewareDirs: runtime.middlewareDirs ?? envOptions.middlewareDirs ?? options.middlewareDirs ?? ['./src/middleware'],
+    setupPath: runtime.setupPath ?? envOptions.setupPath ?? options.setupPath ?? './src/setup.js',
+    method: runtime.method ?? envOptions.method ?? options.method,
+    globalMiddleware: runtime.globalMiddleware ?? envOptions.globalMiddleware ?? options.globalMiddleware ?? [],
+    globalMiddlewareBefore: runtime.globalMiddlewareBefore ?? envOptions.globalMiddlewareBefore ?? options.globalMiddlewareBefore ?? [],
+    globalMiddlewareAfter: runtime.globalMiddlewareAfter ?? envOptions.globalMiddlewareAfter ?? options.globalMiddlewareAfter ?? [],
   };
 };
 
@@ -46,6 +65,10 @@ const setupRpcExamplesFromYaml = async (yamlDir, yamlFile, options = {}) => {
     methodDirs: runtimeOptions.methodDirs,
     middlewareDirs: runtimeOptions.middlewareDirs,
     setupPath: runtimeOptions.setupPath,
+    method: runtimeOptions.method,
+    globalMiddleware: runtimeOptions.globalMiddleware,
+    globalMiddlewareBefore: runtimeOptions.globalMiddlewareBefore,
+    globalMiddlewareAfter: runtimeOptions.globalMiddlewareAfter,
   });
   const suiteName = suiteDocument.suite || configDocument.group || yamlFile;
 

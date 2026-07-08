@@ -559,6 +559,7 @@ beCommand
   .option("--json", "Output JSON")
   .option("--dir <path>", "Backend method directory to scan (repeatable)", collectValues, [])
   .option("--method <method>", "Run examples for one backend method id")
+  .option("-s, --setup-path <path>", "Custom setup file path")
   .option("-m, --middleware-dir <path>", "Custom middleware directory path")
   .option("--config <path>", "Vitest config path", "./vitest.config.js")
   .option("--test-config <path>", "Alias for --config")
@@ -573,6 +574,9 @@ beCommand
 
     options.dirs = options.dir.length > 0 ? options.dir : bePaths.dirs;
     options.middlewareDir = options.middlewareDir || bePaths.middlewareDir;
+    options.setup = options.setupPath || bePaths.setup;
+    options.globalMiddlewareBefore = bePaths.globalMiddleware.before;
+    options.globalMiddlewareAfter = bePaths.globalMiddleware.after;
     options.config = options.testConfig || options.config;
     options.executable = options.runner;
     if (options.json) options.format = "json";
