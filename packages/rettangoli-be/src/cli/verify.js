@@ -3,9 +3,12 @@ import build from './build.js';
 import { runBackendCheck } from './check.js';
 import {
   createBackendManifest,
-  stringifyStableJson,
 } from './manifest.js';
+import { stringifyStableJson } from './json.js';
 import { runBackendTests } from './test.js';
+import { createCliResult } from './results.js';
+import { writeBackendVerifyEvidence } from './agentWorkflow.js';
+import { runBackendDbCheck } from './db.js';
 import {
   collectSourceFilesFromManifest,
   createBackendCommands,
@@ -29,11 +32,32 @@ const createStepFailure = (name, error) => ({
   },
 });
 
-const createSteps = ({ check, buildResult, manifestResult, test }) => {
+const createSkippedDbCheck = ({ method, migrationsDir }) => createCliResult({
+  command: 'db check',
+  artifactSchemaVersion: 'rettangoli.dbCheck/v1',
+  ok: true,
+  skipped: true,
+  reason: 'method-scoped verify does not prove project-wide SQLite migrations',
+  scope: {
+    type: 'method',
+    methods: [method],
+    provesProject: false,
+  },
+  method,
+  migrationsDir,
+  replay: {
+    ok: true,
+    skipped: true,
+  },
+  diagnostics: [],
+});
+
+const createSteps = ({ check, buildResult, manifestResult, db, test }) => {
   return [
     { id: 'check', ok: check.ok },
     { id: 'build', ok: buildResult?.ok === true, skipped: buildResult === undefined },
     { id: 'manifest', ok: manifestResult?.ok === true, skipped: manifestResult === undefined },
+    { id: 'db', ok: db?.ok === true, skipped: db === undefined || db.skipped === true },
     { id: 'test', ok: test?.ok === true, skipped: test === undefined },
   ];
 };
@@ -59,6 +83,9 @@ export const runBackendVerify = (options = {}) => {
     executable,
     packageManager,
     env,
+    evidence,
+    taskId = evidence,
+    migrationsDir = './migrations',
   } = options;
 
   const sharedOptions = {
@@ -87,8 +114,9 @@ export const runBackendVerify = (options = {}) => {
     const diagnostics = check.diagnostics ?? [];
     const ok = false;
 
-    return {
-      schemaVersion: 'rettangoli.verify/v1',
+    let result = createCliResult({
+      command: 'verify',
+      artifactSchemaVersion: 'rettangoli.verify/v1',
       ok,
       scope: createScope({ method, methods: checkMethods }),
       method,
@@ -110,8 +138,20 @@ export const runBackendVerify = (options = {}) => {
       check,
       build: undefined,
       manifest: undefined,
+      db: undefined,
       test: undefined,
-    };
+    });
+
+    const evidenceResult = writeBackendVerifyEvidence({
+      cwd,
+      taskId,
+      result,
+    });
+    if (evidenceResult) {
+      result = evidenceResult.result;
+    }
+
+    return result;
   }
 
   let buildResult;
@@ -131,11 +171,18 @@ export const runBackendVerify = (options = {}) => {
         middlewareDir,
         setup,
         outdir,
+        dryRun: true,
         silent: true,
       });
       buildResult = {
         ok: true,
         scope: 'project',
+        generated: false,
+        plan: {
+          schemaVersion: output.schemaVersion,
+          outdir: output.outdir,
+          targets: output.targets,
+        },
         registryPath: output.registryPath,
         appEntryPath: output.appEntryPath,
         methodCount: output.methodCount,
@@ -153,6 +200,8 @@ export const runBackendVerify = (options = {}) => {
       dirs,
       middlewareDir,
       method,
+      outdir,
+      migrationsDir,
     });
     const scopeHash = hashJson(manifestValue);
     manifestResult = {
@@ -166,6 +215,13 @@ export const runBackendVerify = (options = {}) => {
     manifestResult = createStepFailure('manifest', error);
   }
 
+  const db = method
+    ? createSkippedDbCheck({ method, migrationsDir })
+    : runBackendDbCheck({
+        cwd,
+        migrationsDir,
+      });
+
   const test = runBackendTests({
     ...sharedOptions,
     config: testConfig,
@@ -176,7 +232,7 @@ export const runBackendVerify = (options = {}) => {
     packageManager,
     env,
   });
-  const steps = createSteps({ check, buildResult, manifestResult, test });
+  const steps = createSteps({ check, buildResult, manifestResult, db, test });
   const failedPhase = findFailedPhase({ steps, test });
   const diagnostics = [
     ...(check.diagnostics ?? []),
@@ -204,21 +260,22 @@ export const runBackendVerify = (options = {}) => {
         command: findCommand(commands, 'manifest'),
       }),
     ]),
+    ...(db.diagnostics ?? []),
     ...(test.diagnostics ?? []),
   ];
-  const ok = check.ok && buildResult.ok && manifestResult.ok && test.ok;
+  const ok = check.ok && buildResult.ok && manifestResult.ok && db.ok && test.ok;
   const ownedFiles = manifestValue
     ? collectSourceFilesFromManifest(manifestValue)
     : [...new Set(diagnostics.map((diagnostic) => diagnostic.filePath).filter(Boolean))].sort();
   const writeFiles = method
     ? []
-    : [
-      buildResult.registryPath,
-      buildResult.appEntryPath,
-    ].filter(Boolean);
+    : (buildResult.plan?.targets ?? [])
+      .map((target) => target.path)
+      .filter(Boolean);
 
-  return {
-    schemaVersion: 'rettangoli.verify/v1',
+  let result = createCliResult({
+    command: 'verify',
+    artifactSchemaVersion: 'rettangoli.verify/v1',
     ok,
     scope: createScope({ method, methods: manifestResult.methods ?? checkMethods }),
     method,
@@ -240,8 +297,21 @@ export const runBackendVerify = (options = {}) => {
     check,
     build: buildResult,
     manifest: manifestResult,
+    db,
     test,
-  };
+  });
+
+  const evidenceResult = writeBackendVerifyEvidence({
+    cwd,
+    taskId,
+    result,
+    manifest: manifestValue,
+  });
+  if (evidenceResult) {
+    result = evidenceResult.result;
+  }
+
+  return result;
 };
 
 const verifyRettangoliBackend = (options = {}) => {

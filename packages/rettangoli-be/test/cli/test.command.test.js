@@ -33,8 +33,10 @@ const writeMethod = (rootDir) => {
     '',
   ].join('\n'));
   writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
+    'schemaVersion: rettangoli.examples/v1',
     "file: './ping.handlers.js'",
     'group: ping',
+    'mode: handler',
     '---',
     'suite: healthPingMethod',
     'exportName: healthPingMethod',
@@ -107,8 +109,10 @@ const writeProfileMethod = (rootDir) => {
     '',
   ].join('\n'));
   writeFileSync(path.join(methodDir, 'profile.examples.yaml'), [
+    'schemaVersion: rettangoli.examples/v1',
     "file: './profile.handlers.js'",
     'group: profile',
+    'mode: handler',
     '---',
     'suite: userProfileMethod',
     'exportName: userProfileMethod',

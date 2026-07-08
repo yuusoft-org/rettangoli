@@ -1,8 +1,13 @@
 import path from 'node:path';
-import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runBackendVerify } from '../../src/cli/verify.js';
+import {
+  resolveAffectedMethods,
+  runBackendResume,
+} from '../../src/cli/agentWorkflow.js';
+import { createBackendManifest } from '../../src/cli/manifest.js';
 
 const writeProject = (rootDir) => {
   const srcDir = path.join(rootDir, 'src');
@@ -41,8 +46,10 @@ const writeProject = (rootDir) => {
     '',
   ].join('\n'));
   writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
+    'schemaVersion: rettangoli.examples/v1',
     "file: './ping.handlers.js'",
     'group: ping',
+    'mode: handler',
     '---',
     'suite: healthPingMethod',
     'exportName: healthPingMethod',
@@ -112,7 +119,8 @@ describe('be verify output', () => {
       runCommand,
     });
 
-    expect(result.schemaVersion).toBe('rettangoli.verify/v1');
+    expect(result.schemaVersion).toBe('rettangoli.cliResult/v1');
+    expect(result.artifactSchemaVersion).toBe('rettangoli.verify/v1');
     expect(result.ok).toBe(true);
     expect(result.scope).toEqual({
       type: 'project',
@@ -124,6 +132,7 @@ describe('be verify output', () => {
       { id: 'check', ok: true },
       { id: 'build', ok: true, skipped: false },
       { id: 'manifest', ok: true, skipped: false },
+      { id: 'db', ok: true, skipped: false },
       { id: 'test', ok: true, skipped: false },
     ]);
     expect(result.commands.find((command) => command.id === 'verify').argv).toEqual([
@@ -140,9 +149,12 @@ describe('be verify output', () => {
     expect(result.nextAction.kind).toBe('done');
     expect(result.check.ok).toBe(true);
     expect(result.build.scope).toBe('project');
+    expect(result.build.generated).toBe(false);
+    expect(result.build.plan.schemaVersion).toBe('rettangoli.buildPlan/v1');
     expect(result.manifest.hash).toMatch(/^sha256:/);
+    expect(result.db.artifactSchemaVersion).toBe('rettangoli.dbCheck/v1');
     expect(result.test.files).toEqual(['src/modules/health/ping/ping.examples.yaml']);
-    expect(existsSync(path.join(rootDir, '.rtgl-be', 'generated', 'registry.js'))).toBe(true);
+    expect(existsSync(path.join(rootDir, '.rtgl-be', 'generated', 'registry.js'))).toBe(false);
     expect(runCommand).toHaveBeenCalledOnce();
   });
 
@@ -151,6 +163,8 @@ describe('be verify output', () => {
     createdDirs.push(rootDir);
     writeProject(rootDir);
     writeBrokenMethod(rootDir);
+    mkdirSync(path.join(rootDir, 'migrations'), { recursive: true });
+    writeFileSync(path.join(rootDir, 'migrations', '001_bad.sql'), 'CREATE TABLE broken (\n');
 
     const runCommand = vi.fn(() => ({
       status: 0,
@@ -186,6 +200,16 @@ describe('be verify output', () => {
       generated: false,
       methodCount: 1,
     });
+    expect(result.steps.find((step) => step.id === 'db')).toEqual({
+      id: 'db',
+      ok: true,
+      skipped: true,
+    });
+    expect(result.db).toEqual(expect.objectContaining({
+      ok: true,
+      skipped: true,
+      reason: 'method-scoped verify does not prove project-wide SQLite migrations',
+    }));
     expect(result.manifest.methods).toEqual(['health.ping']);
     expect(result.test.files).toEqual(['src/modules/health/ping/ping.examples.yaml']);
   });
@@ -269,8 +293,10 @@ describe('be verify output', () => {
     writeProject(rootDir);
 
     writeFileSync(path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml'), [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -367,5 +393,53 @@ describe('be verify output', () => {
       stdout: 'stdout failure details',
       stderr: 'stderr failure details',
     });
+  });
+
+  it('writes verification evidence and resumes from a task anchor', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-verify-evidence-'));
+    createdDirs.push(rootDir);
+    writeProject(rootDir);
+
+    const runCommand = vi.fn(() => ({
+      status: 0,
+      stdout: '',
+      stderr: '',
+    }));
+
+    const result = runBackendVerify({
+      cwd: rootDir,
+      evidence: 'task-health-ping',
+      runCommand,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.evidence.schemaVersion).toBe('rettangoli.verifyEvidence/v1');
+    expect(existsSync(path.join(rootDir, '.rtgl-be', 'evidence', 'task-health-ping', 'verify.json'))).toBe(true);
+    expect(existsSync(path.join(rootDir, '.rtgl-be', 'tasks', 'task-health-ping.json'))).toBe(true);
+
+    const resume = runBackendResume({
+      cwd: rootDir,
+      taskId: 'task-health-ping',
+    });
+    expect(resume.ok).toBe(true);
+
+    const verifyJson = JSON.parse(readFileSync(path.join(rootDir, '.rtgl-be', 'evidence', 'task-health-ping', 'verify.json'), 'utf8'));
+    expect(verifyJson.doneCriteria.map((criterion) => criterion.id)).toContain('contracts-valid');
+    expect(verifyJson.doneCriteria.map((criterion) => criterion.id)).toContain('sqlite-migrations-valid');
+  });
+
+  it('resolves affected methods from owned and shared manifest files', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-affected-'));
+    createdDirs.push(rootDir);
+    writeProject(rootDir);
+
+    const manifest = createBackendManifest({ cwd: rootDir });
+    const affected = resolveAffectedMethods({
+      manifest,
+      filePaths: ['src/modules/health/ping/ping.contract.yaml'],
+    });
+
+    expect(affected.scope).toBe('method');
+    expect(affected.methods).toEqual(['health.ping']);
   });
 });

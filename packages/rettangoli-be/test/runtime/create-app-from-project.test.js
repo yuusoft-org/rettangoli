@@ -93,8 +93,10 @@ describe('createAppFromProject', () => {
     ].join('\n'));
 
     writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: health-ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -185,8 +187,10 @@ describe('createAppFromProject', () => {
       '',
     ].join('\n'));
     writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: health-ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',

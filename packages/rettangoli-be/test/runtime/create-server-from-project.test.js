@@ -37,8 +37,10 @@ const writePingMethodFiles = ({ rootDir }) => {
   ].join('\n'));
 
   writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
+    'schemaVersion: rettangoli.examples/v1',
     "file: './ping.handlers.js'",
     'group: ping',
+    'mode: handler',
     '---',
     'suite: healthPingMethod',
     'exportName: healthPingMethod',

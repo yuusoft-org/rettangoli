@@ -11,6 +11,8 @@ import {
   normalizeDiagnostics,
   toPosixRelativePath,
 } from './agentLoop.js';
+import { stringifyStableJson } from './json.js';
+import { createCliResult } from './results.js';
 
 const toOutputTail = (value, maxLength = 4000) => {
   const text = String(value ?? '');
@@ -91,8 +93,9 @@ export const runBackendTests = (options = {}) => {
       command: findCommand(commands, 'check'),
     });
 
-    return {
-      schemaVersion: 'rettangoli.test/v1',
+    return createCliResult({
+      command: 'test',
+      artifactSchemaVersion: 'rettangoli.test/v1',
       ok: false,
       prefix: '[Test]',
       method,
@@ -108,7 +111,7 @@ export const runBackendTests = (options = {}) => {
         diagnostics,
         commands,
       }),
-    };
+    });
   }
 
   const files = analysis.contracts.map((contract) => toPosixRelativePath(cwd, contract.examplesPath));
@@ -129,8 +132,9 @@ export const runBackendTests = (options = {}) => {
       }),
     ];
 
-    return {
-      schemaVersion: 'rettangoli.test/v1',
+    return createCliResult({
+      command: 'test',
+      artifactSchemaVersion: 'rettangoli.test/v1',
       ok: false,
       prefix: '[Test]',
       method,
@@ -146,7 +150,7 @@ export const runBackendTests = (options = {}) => {
         diagnostics,
         commands,
       }),
-    };
+    });
   }
 
   const vitestArgs = ['vitest', 'run', ...files, '--reporter', reporter];
@@ -188,8 +192,9 @@ export const runBackendTests = (options = {}) => {
   });
   const diagnostics = failureDiagnostic ? [failureDiagnostic] : [];
 
-  return {
-    schemaVersion: 'rettangoli.test/v1',
+  return createCliResult({
+    command: 'test',
+    artifactSchemaVersion: 'rettangoli.test/v1',
     ok,
     prefix: '[Test]',
     method,
@@ -212,7 +217,7 @@ export const runBackendTests = (options = {}) => {
     }),
     stdout: captureOutput && includeOutput ? stdout : undefined,
     stderr: captureOutput && includeOutput ? stderr : undefined,
-  };
+  });
 };
 
 const testRettangoliBackend = (options = {}) => {
@@ -223,7 +228,7 @@ const testRettangoliBackend = (options = {}) => {
   });
 
   if (outputFormat === 'json') {
-    console.log(JSON.stringify(result, null, 2));
+    process.stdout.write(stringifyStableJson(result));
   } else if (result.ok) {
     const suffix = result.method ? ` for ${result.method}` : '';
     console.log(`[Test] Backend examples passed${suffix}.`);

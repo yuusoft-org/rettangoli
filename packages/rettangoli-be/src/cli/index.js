@@ -1,6 +1,9 @@
 export { default as build } from './build.js';
 export { default as check } from './check.js';
+export { default as db } from './db.js';
 export { default as manifest } from './manifest.js';
+export { default as resume } from './resume.js';
+export { default as scaffold } from './scaffold.js';
 export { default as start } from './start.js';
 export { default as test } from './test.js';
 export { default as verify } from './verify.js';

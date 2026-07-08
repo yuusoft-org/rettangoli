@@ -34,8 +34,10 @@ const writeMethodFiles = ({ rootDir, includeSpec = true }) => {
 
   if (includeSpec) {
     writeFileSync(path.join(methodDir, 'ping.examples.yaml'), [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -86,6 +88,12 @@ const writeMethodReferencingDuplicateMiddleware = (rootDir) => {
   ].join('\n'));
 };
 
+const captureStdout = () => vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+const parseStdoutJson = (stdoutSpy) => JSON.parse(
+  stdoutSpy.mock.calls.map(([chunk]) => String(chunk)).join(''),
+);
+
 describe('be check cli output', () => {
   const createdDirs = [];
   const originalExitCode = process.exitCode;
@@ -124,7 +132,7 @@ describe('be check cli output', () => {
     createdDirs.push(rootDir);
     writeMethodFiles({ rootDir, includeSpec: false });
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const stdoutSpy = captureStdout();
 
     check({
       cwd: rootDir,
@@ -134,7 +142,7 @@ describe('be check cli output', () => {
     });
 
     expect(process.exitCode).toBe(1);
-    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    const parsed = parseStdoutJson(stdoutSpy);
     expect(parsed.ok).toBe(false);
     expect(parsed.summary.total).toBe(1);
     expect(parsed.summary.byCode[0].code).toBe('RTGL-BE-CONTRACT-005');
@@ -165,7 +173,7 @@ describe('be check cli output', () => {
     createdDirs.push(rootDir);
     writeMethodFiles({ rootDir, includeSpec: true });
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const stdoutSpy = captureStdout();
 
     check({
       cwd: rootDir,
@@ -175,7 +183,7 @@ describe('be check cli output', () => {
       format: 'json',
     });
 
-    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    const parsed = parseStdoutJson(stdoutSpy);
     expect(parsed.ok).toBe(true);
     expect(parsed.method).toBe('health.ping');
     expect(parsed.methodCount).toBe(1);
@@ -192,7 +200,7 @@ describe('be check cli output', () => {
     writeMethodReferencingDuplicateMiddleware(rootDir);
     writeDuplicateMiddleware(rootDir);
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const stdoutSpy = captureStdout();
 
     check({
       cwd: rootDir,
@@ -203,7 +211,7 @@ describe('be check cli output', () => {
     });
 
     expect(process.exitCode).toBe(1);
-    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    const parsed = parseStdoutJson(stdoutSpy);
     expect(parsed.ok).toBe(false);
     expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-021');
   });
@@ -213,7 +221,7 @@ describe('be check cli output', () => {
     createdDirs.push(rootDir);
     writeMethodFiles({ rootDir, includeSpec: true });
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const stdoutSpy = captureStdout();
 
     check({
       cwd: rootDir,
@@ -224,7 +232,7 @@ describe('be check cli output', () => {
     });
 
     expect(process.exitCode).toBe(1);
-    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    const parsed = parseStdoutJson(stdoutSpy);
     expect(parsed.ok).toBe(false);
     expect(parsed.errors[0].code).toBe('RTGL-BE-CONTRACT-036');
   });
@@ -236,8 +244,10 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -275,8 +285,10 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -319,8 +331,10 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -333,7 +347,7 @@ describe('be check cli output', () => {
       '',
     ].join('\n'));
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const stdoutSpy = captureStdout();
 
     check({
       cwd: rootDir,
@@ -343,7 +357,7 @@ describe('be check cli output', () => {
     });
 
     expect(process.exitCode).toBe(1);
-    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    const parsed = parseStdoutJson(stdoutSpy);
     expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-029');
     expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-037');
     expect(parsed.diagnostics[0].method).toBe('health.ping');
@@ -384,8 +398,10 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -407,7 +423,7 @@ describe('be check cli output', () => {
       '',
     ].join('\n'));
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const stdoutSpy = captureStdout();
 
     check({
       cwd: rootDir,
@@ -417,7 +433,7 @@ describe('be check cli output', () => {
     });
 
     expect(process.exitCode).toBe(1);
-    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    const parsed = parseStdoutJson(stdoutSpy);
     expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-034');
     expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-035');
   });
@@ -455,8 +471,10 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -481,7 +499,7 @@ describe('be check cli output', () => {
       '',
     ].join('\n'));
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const stdoutSpy = captureStdout();
 
     check({
       cwd: rootDir,
@@ -491,7 +509,7 @@ describe('be check cli output', () => {
     });
 
     expect(process.exitCode).toBe(1);
-    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    const parsed = parseStdoutJson(stdoutSpy);
     expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-040');
     expect(parsed.diagnostics.find((diagnostic) => diagnostic.ruleId === 'RTGL-BE-CONTRACT-040')).toEqual(
       expect.objectContaining({
@@ -508,8 +526,10 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -524,7 +544,7 @@ describe('be check cli output', () => {
       '',
     ].join('\n'));
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const stdoutSpy = captureStdout();
 
     check({
       cwd: rootDir,
@@ -534,7 +554,7 @@ describe('be check cli output', () => {
     });
 
     expect(process.exitCode).toBe(1);
-    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    const parsed = parseStdoutJson(stdoutSpy);
     expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-039');
     expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-037');
     expect(parsed.diagnostics[0]).toEqual(expect.objectContaining({
@@ -551,15 +571,17 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
       '',
     ].join('\n'));
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const stdoutSpy = captureStdout();
 
     check({
       cwd: rootDir,
@@ -569,7 +591,7 @@ describe('be check cli output', () => {
     });
 
     expect(process.exitCode).toBe(1);
-    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    const parsed = parseStdoutJson(stdoutSpy);
     expect(parsed.errors.map((error) => error.code)).toEqual(['RTGL-BE-CONTRACT-038']);
     expect(parsed.diagnostics[0].fix).toContain('case document');
   });
@@ -581,8 +603,10 @@ describe('be check cli output', () => {
 
     const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
     writeFileSync(examplesPath, [
+      'schemaVersion: rettangoli.examples/v1',
       "file: './ping.handlers.js'",
       'group: ping',
+      'mode: handler',
       '---',
       'suite: healthPingMethod',
       'exportName: healthPingMethod',
@@ -614,7 +638,7 @@ describe('be check cli output', () => {
     const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-missing-dir-'));
     createdDirs.push(rootDir);
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const stdoutSpy = captureStdout();
 
     check({
       cwd: rootDir,
@@ -623,7 +647,116 @@ describe('be check cli output', () => {
     });
 
     expect(process.exitCode).toBe(1);
-    const parsed = JSON.parse(logSpy.mock.calls[0][0]);
+    const parsed = parseStdoutJson(stdoutSpy);
     expect(parsed.summary.byCode[0].code).toBe('RTGL-BE-CONTRACT-022');
+  });
+
+  it('rejects non-object params and result schemas', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-schema-shape-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const contractPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.contract.yaml');
+    writeFileSync(contractPath, [
+      'schemaVersion: rettangoli.contract/v1',
+      'method: health.ping',
+      'description: ping',
+      'middleware:',
+      '  before: []',
+      '  after: []',
+      'params:',
+      '  type: array',
+      '  items:',
+      '    type: string',
+      'result:',
+      '  type: object',
+      '  additionalProperties: false',
+      '  properties:',
+      '    error:',
+      '      type: string',
+      '    _error:',
+      '      type: boolean',
+      '  required: []',
+      'errors: {}',
+      '',
+    ].join('\n'));
+
+    const stdoutSpy = captureStdout();
+
+    check({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+      format: 'json',
+    });
+
+    expect(process.exitCode).toBe(1);
+    const parsed = parseStdoutJson(stdoutSpy);
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-042');
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-044');
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-045');
+  });
+
+  it('rejects invalid examples headers', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-examples-header-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+
+    const examplesPath = path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.examples.yaml');
+    writeFileSync(examplesPath, [
+      'schemaVersion: wrong/v1',
+      "file: '../other.handlers.js'",
+      'group: ping',
+      'mode: rpc',
+      '---',
+      'suite: ""',
+      'exportName: ""',
+      '---',
+      'case: ok',
+      'proves:',
+      '  result: success',
+      'in:',
+      '  - payload: {}',
+      'out:',
+      '  ok: true',
+      '',
+    ].join('\n'));
+
+    const stdoutSpy = captureStdout();
+
+    check({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+      format: 'json',
+    });
+
+    expect(process.exitCode).toBe(1);
+    const parsed = parseStdoutJson(stdoutSpy);
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-046');
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-047');
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-048');
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-049');
+    expect(parsed.diagnostics[0].schemaVersion).toBe('rettangoli.diagnostic/v1');
+  });
+
+  it('reports unsupported method package files', () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), 'rtgl-be-check-bad-method-file-'));
+    createdDirs.push(rootDir);
+    writeMethodFiles({ rootDir, includeSpec: true });
+    writeFileSync(path.join(rootDir, 'src', 'modules', 'health', 'ping', 'ping.rpc.yaml'), 'method: health.ping\n');
+
+    const stdoutSpy = captureStdout();
+
+    check({
+      cwd: rootDir,
+      dirs: ['./src/modules'],
+      middlewareDir: './src/middleware',
+      format: 'json',
+    });
+
+    expect(process.exitCode).toBe(1);
+    const parsed = parseStdoutJson(stdoutSpy);
+    expect(parsed.errors.map((error) => error.code)).toContain('RTGL-BE-CONTRACT-041');
   });
 });

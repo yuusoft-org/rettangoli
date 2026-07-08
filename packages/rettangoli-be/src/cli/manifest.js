@@ -8,28 +8,13 @@ import {
   createBackendCommands,
   createNextAction,
 } from './agentLoop.js';
+import { stringifyStableJson } from './json.js';
+import { createCliResult } from './results.js';
+import { collectBackendMigrationFacts } from './db.js';
+
+export { stringifyStableJson } from './json.js';
 
 const isPlainObject = (value) => !!value && typeof value === 'object' && !Array.isArray(value);
-
-const normalizeForStableJson = (value) => {
-  if (Array.isArray(value)) {
-    return value.map((entry) => normalizeForStableJson(entry));
-  }
-
-  if (!isPlainObject(value)) {
-    return value;
-  }
-
-  return Object.fromEntries(
-    Object.keys(value)
-      .sort()
-      .map((key) => [key, normalizeForStableJson(value[key])]),
-  );
-};
-
-export const stringifyStableJson = (value) => {
-  return `${JSON.stringify(normalizeForStableJson(value), null, 2)}\n`;
-};
 
 const readJsonFile = (filePath) => {
   try {
@@ -59,6 +44,12 @@ const toPosixRelativePath = (cwd, filePath) => {
 const hashFile = (filePath) => {
   const hash = createHash('sha256');
   hash.update(readFileSync(filePath));
+  return `sha256:${hash.digest('hex')}`;
+};
+
+const hashStableValue = (value) => {
+  const hash = createHash('sha256');
+  hash.update(stringifyStableJson(value));
   return `sha256:${hash.digest('hex')}`;
 };
 
@@ -150,11 +141,59 @@ const buildMethodEntryByMethod = (index) => {
   return methodEntryByMethod;
 };
 
+const buildMiddlewareEntryByName = (middlewareEntries = []) => {
+  return new Map(middlewareEntries.map((entry) => [entry.middlewareName, entry]));
+};
+
+const createMiddlewareFacts = ({ cwd, middlewareEntryByName, names = [], phase }) => {
+  return names.map((name) => {
+    const entry = middlewareEntryByName.get(name);
+    return {
+      name,
+      phase,
+      path: entry ? toPosixRelativePath(cwd, entry.filePath) : undefined,
+      hash: entry ? hashFile(entry.filePath) : undefined,
+    };
+  });
+};
+
+const createProtocolPolicy = () => ({
+  jsonrpc: '2.0',
+  request: {
+    mode: 'single',
+    batch: false,
+    notifications: false,
+    params: {
+      type: 'object',
+      positional: false,
+    },
+    id: {
+      types: ['string', 'number'],
+      null: false,
+    },
+  },
+  errors: {
+    standard: {
+      parseError: -32700,
+      invalidRequest: -32600,
+      methodNotFound: -32601,
+      invalidParams: -32602,
+      internalError: -32603,
+    },
+    domain: {
+      jsonRpcCode: -32000,
+      source: 'contract.errors',
+    },
+  },
+});
+
 export const createBackendManifest = ({
   cwd = process.cwd(),
   dirs = ['./src/modules'],
   middlewareDir = './src/middleware',
   method,
+  migrationsDir = './migrations',
+  outdir = './.rtgl-be/generated',
 } = {}) => {
   const analysis = analyzeBackendContracts({
     cwd,
@@ -174,30 +213,71 @@ export const createBackendManifest = ({
   const appPackage = readAppPackage(cwd);
   const contracts = analysis.contracts;
   const methodEntryByMethod = buildMethodEntryByMethod(analysis.index);
+  const middlewareEntryByName = buildMiddlewareEntryByName(analysis.middlewareEntries);
+  const database = collectBackendMigrationFacts({ cwd, migrationsDir });
+  const resolvedOutdir = path.resolve(cwd, outdir);
   const methods = {};
 
   contracts.forEach((contract) => {
     const methodEntry = methodEntryByMethod.get(contract.method);
     const rpc = contract.rpc;
+    const source = {
+      contract: toPosixRelativePath(cwd, contract.contractPath),
+      examples: toPosixRelativePath(cwd, contract.examplesPath),
+      handler: toPosixRelativePath(cwd, contract.handlerPath),
+    };
+    const hashes = {
+      contract: hashFile(contract.contractPath),
+      examples: hashFile(contract.examplesPath),
+      handler: hashFile(contract.handlerPath),
+    };
+    const beforeMiddleware = createMiddlewareFacts({
+      cwd,
+      middlewareEntryByName,
+      names: rpc.middleware?.before ?? [],
+      phase: 'before',
+    });
+    const afterMiddleware = createMiddlewareFacts({
+      cwd,
+      middlewareEntryByName,
+      names: rpc.middleware?.after ?? [],
+      phase: 'after',
+    });
+    const sharedFiles = [
+      ...beforeMiddleware,
+      ...afterMiddleware,
+    ].map((entry) => entry.path).filter(Boolean);
+    const methodFolder = toPosixRelativePath(cwd, path.dirname(contract.contractPath));
+    const packageHash = hashStableValue({
+      method: contract.method,
+      source,
+      hashes,
+      middleware: {
+        before: beforeMiddleware,
+        after: afterMiddleware,
+      },
+    });
 
     methods[contract.method] = {
       domain: contract.domain,
       action: contract.action,
+      methodFolder,
+      packageHash,
       setupDependencyPath: `setup.deps.${contract.domain}`,
-      source: {
-        contract: toPosixRelativePath(cwd, contract.contractPath),
-        examples: toPosixRelativePath(cwd, contract.examplesPath),
-        handler: toPosixRelativePath(cwd, contract.handlerPath),
+      source,
+      files: {
+        owned: Object.values(source).sort(),
+        shared: [...new Set(sharedFiles)].sort(),
       },
-      hashes: {
-        contract: hashFile(contract.contractPath),
-        examples: hashFile(contract.examplesPath),
-        handler: hashFile(contract.handlerPath),
-      },
+      hashes,
       description: rpc.description,
       middleware: {
         before: rpc.middleware?.before ?? [],
         after: rpc.middleware?.after ?? [],
+      },
+      middlewareFacts: {
+        before: beforeMiddleware,
+        after: afterMiddleware,
       },
       params: rpc.params,
       result: rpc.result,
@@ -212,10 +292,22 @@ export const createBackendManifest = ({
       name: frameworkPackage.name ?? '@rettangoli/be',
       version: frameworkPackage.version ?? '0.0.0',
     },
+    protocol: createProtocolPolicy(),
     app: {
       name: appPackage.name,
       version: appPackage.version,
     },
+    generatedTargets: [
+      {
+        kind: 'registry',
+        path: toPosixRelativePath(cwd, path.join(resolvedOutdir, 'registry.js')),
+      },
+      {
+        kind: 'app',
+        path: toPosixRelativePath(cwd, path.join(resolvedOutdir, 'app.js')),
+      },
+    ],
+    database,
     methods,
   };
 };
@@ -229,8 +321,9 @@ const manifestRettangoliBackend = (options = {}) => {
       method: options.method,
       middlewareDir: options.middlewareDir,
     });
-    const result = {
-      schemaVersion: 'rettangoli.manifest/v1',
+    const result = createCliResult({
+      command: 'manifest',
+      artifactSchemaVersion: 'rettangoli.manifest/v1',
       ok: false,
       phase: 'contracts',
       scope: check.scope,
@@ -243,7 +336,7 @@ const manifestRettangoliBackend = (options = {}) => {
         diagnostics: check.diagnostics,
         commands,
       }),
-    };
+    });
 
     if (outputFormat === 'json') {
       process.stdout.write(stringifyStableJson(result));
