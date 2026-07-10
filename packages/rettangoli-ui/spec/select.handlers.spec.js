@@ -82,7 +82,7 @@ describe("rtgl-select handlers", () => {
     );
   });
 
-  it("updates search query and refreshes popover content on search input", () => {
+  it("updates search query without resyncing popover content on search input", () => {
     const render = vi.fn();
     const refreshContent = vi.fn();
     const setSearchQuery = vi.fn();
@@ -113,10 +113,7 @@ describe("rtgl-select handlers", () => {
     expect(stopPropagation).toHaveBeenCalledTimes(1);
     expect(setSearchQuery).toHaveBeenCalledWith({ query: "admin" });
     expect(render).toHaveBeenCalledTimes(1);
-    expect(refreshContent).toHaveBeenCalledTimes(1);
-    expect(render.mock.invocationCallOrder[0]).toBeLessThan(
-      refreshContent.mock.invocationCallOrder[0],
-    );
+    expect(refreshContent).not.toHaveBeenCalled();
   });
 
   it("closes the popover when Escape is pressed in the search input", () => {

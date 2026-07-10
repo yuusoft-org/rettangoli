@@ -163,13 +163,14 @@ export const handleClickOptionsPopoverOverlay = (deps) => {
 }
 
 export const handleSearchInput = (deps, payload) => {
-  const { store, render, refs } = deps;
+  const { store, render } = deps;
   const event = payload._event;
 
   event.stopPropagation();
   store.setSearchQuery({ query: getEventValue(event) });
   render();
-  refreshOpenPopover(refs);
+  // The popover observes size changes itself. Resyncing here re-slots the
+  // active search field and causes Chromium to drop focus while typing.
 };
 
 export const handleSearchKeyDown = (deps, payload) => {

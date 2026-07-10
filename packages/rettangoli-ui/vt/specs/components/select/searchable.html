@@ -3,6 +3,7 @@ title: Searchable Select
 description: Verifies searchable selects focus the search field, filter option labels, preserve section context, and render a custom empty state.
 specs:
   - Opening a searchable select focuses its search input and renders all options.
+  - The search input keeps focus while typing a multi-character query.
   - Typing a query filters option rows while preserving the matching section heading.
   - A query without matches renders the configured empty-search label.
 skipInitialScreenshot: true
@@ -34,13 +35,28 @@ steps:
       - Frontend Engineer
       - Backend Engineer
   - action: screenshot
-  - action: select
-    selector: '#searchable-select rtgl-input#searchInput'
-    steps:
-      - action: write
-        value: front
+  - action: keypress
+    key: f
+  - action: wait
+    ms: 80
+  - action: assert
+    type: js
+    fn: searchableSelect.isSearchFocused
+    value: true
+  - action: keypress
+    key: r
+  - action: keypress
+    key: o
+  - action: keypress
+    key: n
+  - action: keypress
+    key: t
   - action: wait
     ms: 120
+  - action: assert
+    type: js
+    fn: searchableSelect.isSearchFocused
+    value: true
   - action: assert
     type: js
     fn: searchableSelect.getSearchState
