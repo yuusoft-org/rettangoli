@@ -9,6 +9,14 @@ refs:
     eventListeners:
       click:
         handler: handleClearClick
+  searchInput:
+    eventListeners:
+      value-input:
+        handler: handleSearchInput
+        stopPropagation: true
+      keydown:
+        handler: handleSearchKeyDown
+        stopPropagation: true
   popover:
     eventListeners:
       close:
@@ -47,6 +55,8 @@ template:
               - rtgl-svg#clearButton svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
           - rtgl-svg svg=chevronDown wh=16 c=mu-fg: null
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs content-wh=300 content-g=xs content-sv=true content-pv=sm:
+      - $if showSearch:
+          - rtgl-input#searchInput w=f s=sm value=${searchQuery} placeholder=${searchPlaceholder}: null
       - $for option, i in options:
           - $if option.isSection:
               - rtgl-view w=f p=md:
@@ -65,6 +75,9 @@ template:
                           - rtgl-text s=xs c=${option.suffixTextColor} ta=e: ${option.suffixText}
             $elif option.isSeparator:
               - rtgl-view w=f h=1 bgc=mu mv=sm: null
+      - $if showEmptySearch:
+          - rtgl-view w=f ph=lg pv=md:
+              - rtgl-text s=sm c=mu-fg: ${emptySearchLabel}
       - $if showAddOption:
           - rtgl-view w=f bw=xs bc=mu bwt=sm: null
           - rtgl-view#optionAdd w=f ph=lg pv=md cur=pointer bgc=${addOptionBgc} data-testid="select-add-option":
