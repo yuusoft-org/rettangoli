@@ -1,0 +1,147 @@
+---
+title: Searchable Select
+description: Verifies searchable selects focus the search field, filter option labels, preserve section context, and render a custom empty state.
+specs:
+  - Opening a searchable select focuses its search input and renders all options.
+  - Typing a query filters option rows while preserving the matching section heading.
+  - A query without matches renders the configured empty-search label.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: select-button
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#searchable-select rtgl-popover[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: waitFor
+    selector: '#searchable-select rtgl-input#searchInput input'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 120
+  - action: assert
+    type: js
+    fn: searchableSelect.isSearchFocused
+    value: true
+  - action: assert
+    type: js
+    fn: searchableSelect.getVisibleOptionLabels
+    value:
+      - Designer
+      - Researcher
+      - Frontend Engineer
+      - Backend Engineer
+  - action: screenshot
+  - action: select
+    selector: '#searchable-select rtgl-input#searchInput'
+    steps:
+      - action: write
+        value: front
+  - action: wait
+    ms: 120
+  - action: assert
+    type: js
+    fn: searchableSelect.getSearchState
+    value:
+      inputValue: front
+      searchQuery: front
+      viewLabels:
+        - Frontend Engineer
+  - action: assert
+    type: js
+    fn: searchableSelect.getVisibleOptionLabels
+    value:
+      - Frontend Engineer
+  - action: assert
+    type: js
+    fn: searchableSelect.getVisibleSectionLabels
+    value:
+      - Engineering
+  - action: screenshot
+  - action: select
+    selector: '#searchable-select rtgl-input#searchInput'
+    steps:
+      - action: write
+        value: finance
+  - action: wait
+    ms: 120
+  - action: assert
+    type: js
+    fn: searchableSelect.getVisibleOptionLabels
+    value: []
+  - action: assert
+    type: js
+    fn: searchableSelect.getEmptySearchLabel
+    value: No roles found
+  - action: screenshot
+viewport:
+  id: component-compact
+  width: 640
+  height: 520
+---
+
+<rtgl-view d="h" g="xl" p="xl" wh="f" wrap>
+  <rtgl-view g="md" p="lg" bgc="bg" bw="xs" bc="bo" br="lg">
+    <rtgl-text s="sm">Searchable role select</rtgl-text>
+    <rtgl-select
+      id="searchable-select"
+      w="320"
+      searchable
+      search-placeholder="Search roles"
+      empty-search-label="No roles found"
+    ></rtgl-select>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const select = document.getElementById("searchable-select");
+
+  select.options = [
+    { type: "section", label: "Product" },
+    { value: "designer", label: "Designer" },
+    { value: "researcher", label: "Researcher" },
+    { type: "separator" },
+    { type: "section", label: "Engineering" },
+    { value: "frontend", label: "Frontend Engineer" },
+    { value: "backend", label: "Backend Engineer" },
+  ];
+  select.render();
+
+  const getPopover = () => select.shadowRoot?.querySelector("rtgl-popover");
+  const getSearchInput = () => select.shadowRoot?.querySelector("rtgl-input#searchInput");
+
+  window.searchableSelect = {
+    isSearchFocused() {
+      const searchInput = getSearchInput();
+      return searchInput?.shadowRoot?.activeElement?.tagName === "INPUT";
+    },
+    getSearchState() {
+      const searchInput = getSearchInput();
+      return {
+        inputValue: searchInput?.value ?? "",
+        searchQuery: select.store.getState().searchQuery,
+        viewLabels: select.viewData.options
+          .filter((option) => option.isItem)
+          .map((option) => option.label),
+      };
+    },
+    getVisibleOptionLabels() {
+      return [...getPopover()?.content?.querySelectorAll('[id^="option"]') ?? []]
+        .filter((option) => !option.hasAttribute("hide"))
+        .map((option) => option.textContent.trim());
+    },
+    getVisibleSectionLabels() {
+      return [...getPopover()?.content?.querySelectorAll("rtgl-view[p=md] > rtgl-text") ?? []]
+        .filter((section) => !section.parentElement.hasAttribute("hide"))
+        .map((section) => section.textContent.trim());
+    },
+    getEmptySearchLabel() {
+      const emptyLabel = [...getPopover()?.content?.querySelectorAll("rtgl-text") ?? []]
+        .find((text) => text.textContent.trim() === "No roles found"
+          && !text.parentElement.hasAttribute("hide"));
+      return emptyLabel?.textContent.trim() ?? "";
+    },
+  };
+</script>

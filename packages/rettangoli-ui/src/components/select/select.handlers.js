@@ -29,6 +29,21 @@ const focusSearchInput = (refs = {}) => {
   }
 };
 
+const focusSearchInputWhenReady = (refs = {}, remainingAttempts = 10) => {
+  const popover = refs.popover;
+
+  if (!popover?.hasAttribute?.("open")) {
+    return;
+  }
+
+  if (popover.hasAttribute("positioned") || remainingAttempts === 0) {
+    focusSearchInput(refs);
+    return;
+  }
+
+  setTimeout(() => focusSearchInputWhenReady(refs, remainingAttempts - 1), 16);
+};
+
 const refreshOpenPopover = (refs = {}) => {
   refs?.popover?.refreshContent?.();
 };
@@ -127,7 +142,7 @@ export const handleButtonClick = (deps, payload) => {
   render();
 
   if (props.searchable) {
-    setTimeout(() => focusSearchInput(refs), 0);
+    focusSearchInputWhenReady(refs);
   }
 }
 

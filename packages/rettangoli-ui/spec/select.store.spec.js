@@ -85,6 +85,14 @@ describe('rtgl-select store', () => {
 
     expect(viewData.options.map((option) => option.label)).toEqual(['Apple']);
     expect(viewData.options[0].index).toBe(1);
+    expect(viewData.renderOptions.map((option) => ({
+      label: option.label,
+      isSearchHidden: option.isSearchHidden,
+    }))).toEqual([
+      { label: 'Banana', isSearchHidden: true },
+      { label: 'Apple', isSearchHidden: false },
+      { label: 'Orange', isSearchHidden: true },
+    ]);
     expect(viewData.showEmptySearch).toBe(false);
   });
 
@@ -162,7 +170,9 @@ describe('rtgl-select store', () => {
     });
 
     expect(viewData.options).toEqual([]);
+    expect(viewData.renderOptions.every((option) => option.isSearchHidden)).toBe(true);
     expect(viewData.showEmptySearch).toBe(true);
+    expect(viewData.hideEmptySearch).toBe(false);
     expect(viewData.emptySearchLabel).toBe('Nothing found');
   });
 });

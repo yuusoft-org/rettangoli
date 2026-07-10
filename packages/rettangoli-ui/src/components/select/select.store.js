@@ -261,13 +261,20 @@ export const selectViewData = ({ state, props }) => {
     options,
     props.searchable ? state.searchQuery : "",
   );
-  const optionsWithSelection = visibleOptionEntries.map(({ option, index }) => {
-    return normalizeOption(option, index, currentValue, state.hoveredOptionId, hasIconColumn);
+  const visibleOptionIndexes = new Set(visibleOptionEntries.map(({ index }) => index));
+  const renderOptions = options.map((option, index) => {
+    return {
+      ...normalizeOption(option, index, currentValue, state.hoveredOptionId, hasIconColumn),
+      isSearchHidden: !visibleOptionIndexes.has(index),
+    };
   });
+  const optionsWithSelection = renderOptions.filter((option) => !option.isSearchHidden);
   const selectedOptionIcon = getOptionIcon(selectedOption);
   const selectedOptionSuffixText = getOptionSuffixText(selectedOption);
-  const normalizedSearchQuery = props.searchable ? state.searchQuery : "";
+  const searchQuery = props.searchable ? state.searchQuery : "";
+  const hasSearchQuery = normalizeSearchQuery(searchQuery).length > 0;
   const hasVisibleSelectableOptions = optionsWithSelection.some((option) => option.isItem);
+  const showEmptySearch = !!props.searchable && hasSearchQuery && !hasVisibleSelectableOptions;
 
   return {
     containerAttrString,
@@ -275,6 +282,7 @@ export const selectViewData = ({ state, props }) => {
     isOpen: state.isOpen,
     position: state.position,
     options: optionsWithSelection,
+    renderOptions,
     selectedValue: currentValue,
     selectedLabel: displayLabel,
     selectedLabelColor: isPlaceholderLabel ? "mu-fg" : "fg",
@@ -293,9 +301,10 @@ export const selectViewData = ({ state, props }) => {
     addOptionLabel: props.addOption?.label ? `+ ${props.addOption.label}` : "+ Add",
     addOptionBgc: state.hoveredAddOption ? "ac" : "",
     showSearch: !isDisabled && !!props.searchable,
-    searchQuery: normalizedSearchQuery,
+    searchQuery,
     searchPlaceholder: props.searchPlaceholder || "Search options",
-    showEmptySearch: !!props.searchable && normalizedSearchQuery.length > 0 && !hasVisibleSelectableOptions,
+    showEmptySearch,
+    hideEmptySearch: !showEmptySearch,
     emptySearchLabel: props.emptySearchLabel || "No matching options",
   };
 };
