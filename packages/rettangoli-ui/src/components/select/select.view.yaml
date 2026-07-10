@@ -54,9 +54,10 @@ template:
           - $if showClear:
               - rtgl-svg#clearButton svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
           - rtgl-svg svg=chevronDown wh=16 c=mu-fg: null
-  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs content-wh=300 content-g=xs content-sv=true content-pv=sm:
+  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs content-wh=300 content-g=xs content-sv=true ?content-hsb=${showSearch} content-pv=sm:
       - $if showSearch:
-          - 'rtgl-input#searchInput w=f s=sm value=${searchQuery} placeholder="${searchPlaceholder}"': null
+          - rtgl-view w=f mb=xs:
+              - 'rtgl-input#searchInput w=f s=sm value=${searchQuery} placeholder="${searchPlaceholder}"': null
       - $for option, i in renderOptions:
           - $if option.isSection:
               - rtgl-view w=f p=md ?hide=${option.isSearchHidden}:
