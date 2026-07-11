@@ -9,6 +9,14 @@ refs:
     eventListeners:
       click:
         handler: handleClearClick
+  searchInput:
+    eventListeners:
+      value-input:
+        handler: handleSearchInput
+        stopPropagation: true
+      keydown:
+        handler: handleSearchKeyDown
+        stopPropagation: true
   popover:
     eventListeners:
       close:
@@ -46,13 +54,16 @@ template:
           - $if showClear:
               - rtgl-svg#clearButton svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
           - rtgl-svg svg=chevronDown wh=16 c=mu-fg: null
-  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs content-wh=300 content-g=xs content-sv=true content-pv=sm:
-      - $for option, i in options:
+  - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs content-wh=300 content-g=xs content-sv=true ?content-hsb=${showSearch} content-pv=sm:
+      - $if showSearch:
+          - rtgl-view w=f mt=md mh=md mb=xs:
+              - 'rtgl-input#searchInput w=f s=sm value=${searchQuery} placeholder="${searchPlaceholder}"': null
+      - $for option, i in renderOptions:
           - $if option.isSection:
-              - rtgl-view w=f p=md:
+              - rtgl-view w=f p=md ?hide=${option.isSearchHidden}:
                   - rtgl-text s=xs c=mu-fg: ${option.label}
             $elif option.isItem:
-              - rtgl-view#option${option.index} w=f ph=lg pv=md cur=pointer bgc=${option.bgc} data-testid=${option.testId}:
+              - rtgl-view#option${option.index} w=f ph=lg pv=md cur=pointer bgc=${option.bgc} data-testid=${option.testId} ?hide=${option.isSearchHidden}:
                   - rtgl-view d=h av=c w=f g=md:
                       - rtgl-view d=h av=c g=md w=1fg:
                           - $if option.hasIconSlot:
@@ -64,7 +75,10 @@ template:
                       - $if option.hasSuffixText:
                           - rtgl-text s=xs c=${option.suffixTextColor} ta=e: ${option.suffixText}
             $elif option.isSeparator:
-              - rtgl-view w=f h=1 bgc=mu mv=sm: null
+              - rtgl-view w=f h=1 bgc=mu mv=sm ?hide=${option.isSearchHidden}: null
+      - $if showSearch:
+          - rtgl-view w=f ph=lg pv=md ?hide=${hideEmptySearch}:
+              - rtgl-text s=sm c=mu-fg: ${emptySearchLabel}
       - $if showAddOption:
           - rtgl-view w=f bw=xs bc=mu bwt=sm: null
           - rtgl-view#optionAdd w=f ph=lg pv=md cur=pointer bgc=${addOptionBgc} data-testid="select-add-option":

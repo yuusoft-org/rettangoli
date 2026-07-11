@@ -40,6 +40,12 @@ propsSchema:
           type: string
     disabled:
       type: boolean
+    searchable:
+      type: boolean
+    searchPlaceholder:
+      type: string
+    emptySearchLabel:
+      type: string
     w:
       type: string
 events:

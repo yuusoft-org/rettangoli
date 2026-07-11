@@ -15,6 +15,9 @@ const blacklistedProps = [
   "noClear",
   "addOption",
   "disabled",
+  "searchable",
+  "searchPlaceholder",
+  "emptySearchLabel",
 ];
 
 const stringifyProps = (props = {}) => {
@@ -52,6 +55,120 @@ const getOptionSuffixText = (option = {}) => {
   }
 
   return '';
+};
+
+const normalizeSearchQuery = (query) => {
+  if (query === undefined || query === null) {
+    return "";
+  }
+
+  return String(query).trim().toLowerCase();
+};
+
+const optionLabelMatches = (option = {}, query = "") => {
+  if (!query) {
+    return true;
+  }
+
+  return String(option.label ?? "").toLowerCase().includes(query);
+};
+
+const collectOptionGroups = (options = []) => {
+  const groups = [];
+  let currentGroup = {
+    section: null,
+    entries: [],
+  };
+
+  options.forEach((option, index) => {
+    const entry = {
+      option,
+      index,
+      type: getOptionType(option),
+    };
+
+    if (entry.type === "section") {
+      if (currentGroup.section || currentGroup.entries.length > 0) {
+        groups.push(currentGroup);
+      }
+
+      currentGroup = {
+        section: entry,
+        entries: [],
+      };
+      return;
+    }
+
+    currentGroup.entries.push(entry);
+  });
+
+  if (currentGroup.section || currentGroup.entries.length > 0) {
+    groups.push(currentGroup);
+  }
+
+  return groups;
+};
+
+const filterOptionEntriesBySearch = (options = [], rawQuery = "") => {
+  const query = normalizeSearchQuery(rawQuery);
+
+  if (!query) {
+    return options.map((option, index) => ({
+      option,
+      index,
+    }));
+  }
+
+  return collectOptionGroups(options).flatMap((group) => {
+    const sectionMatches = group.section ? optionLabelMatches(group.section.option, query) : false;
+    const itemVisibility = group.entries.map((entry) => {
+      if (entry.type !== "item") {
+        return false;
+      }
+
+      return sectionMatches || optionLabelMatches(entry.option, query);
+    });
+    const hasVisibleItem = itemVisibility.some(Boolean);
+
+    if (!sectionMatches && !hasVisibleItem) {
+      return [];
+    }
+
+    const visibleEntries = [];
+
+    if (group.section) {
+      visibleEntries.push(group.section);
+    }
+
+    group.entries.forEach((entry, entryIndex) => {
+      if (entry.type === "item") {
+        if (itemVisibility[entryIndex]) {
+          visibleEntries.push(entry);
+        }
+        return;
+      }
+
+      if (entry.type !== "separator") {
+        return;
+      }
+
+      const hasVisibleItemBefore = itemVisibility
+        .slice(0, entryIndex)
+        .some(Boolean);
+      const hasVisibleItemAfter = itemVisibility
+        .slice(entryIndex + 1)
+        .some(Boolean);
+
+      if (hasVisibleItemBefore && hasVisibleItemAfter) {
+        visibleEntries.push(entry);
+      }
+    });
+
+    return visibleEntries.map(({ option, index }) => ({
+      option,
+      index,
+    }));
+  });
 };
 
 const normalizeOption = (option = {}, index, currentValue, hoveredOptionId, hasIconColumn) => {
@@ -116,6 +233,7 @@ export const createInitialState = () => Object.freeze({
   selectedValue: null,
   hoveredOptionId: null,
   hoveredAddOption: false,
+  searchQuery: "",
 });
 
 export const selectViewData = ({ state, props }) => {
@@ -139,10 +257,24 @@ export const selectViewData = ({ state, props }) => {
   }
 
   const hasIconColumn = options.some((option) => isSelectableOption(option) && hasOwnProp(option, 'icon'));
-  const optionsWithSelection = options.map((option, index) => {
-    return normalizeOption(option, index, currentValue, state.hoveredOptionId, hasIconColumn);
+  const visibleOptionEntries = filterOptionEntriesBySearch(
+    options,
+    props.searchable ? state.searchQuery : "",
+  );
+  const visibleOptionIndexes = new Set(visibleOptionEntries.map(({ index }) => index));
+  const renderOptions = options.map((option, index) => {
+    return {
+      ...normalizeOption(option, index, currentValue, state.hoveredOptionId, hasIconColumn),
+      isSearchHidden: !visibleOptionIndexes.has(index),
+    };
   });
-  const selectedOptionView = optionsWithSelection.find((option) => option.isItem && option.isSelected);
+  const optionsWithSelection = renderOptions.filter((option) => !option.isSearchHidden);
+  const selectedOptionIcon = getOptionIcon(selectedOption);
+  const selectedOptionSuffixText = getOptionSuffixText(selectedOption);
+  const searchQuery = props.searchable ? state.searchQuery : "";
+  const hasSearchQuery = normalizeSearchQuery(searchQuery).length > 0;
+  const hasVisibleSelectableOptions = optionsWithSelection.some((option) => option.isItem);
+  const showEmptySearch = !!props.searchable && hasSearchQuery && !hasVisibleSelectableOptions;
 
   return {
     containerAttrString,
@@ -150,14 +282,15 @@ export const selectViewData = ({ state, props }) => {
     isOpen: state.isOpen,
     position: state.position,
     options: optionsWithSelection,
+    renderOptions,
     selectedValue: currentValue,
     selectedLabel: displayLabel,
     selectedLabelColor: isPlaceholderLabel ? "mu-fg" : "fg",
-    selectedIcon: selectedOptionView?.icon || "",
-    hasSelectedIcon: !!selectedOptionView?.hasIcon,
+    selectedIcon: selectedOptionIcon,
+    hasSelectedIcon: selectedOptionIcon.length > 0,
     selectedIconColor: isPlaceholderLabel ? "mu-fg" : "fg",
-    selectedSuffixText: selectedOptionView?.suffixText || "",
-    hasSelectedSuffixText: !!selectedOptionView?.hasSuffixText,
+    selectedSuffixText: selectedOptionSuffixText,
+    hasSelectedSuffixText: selectedOptionSuffixText.length > 0,
     selectedSuffixTextColor: "mu-fg",
     selectButtonCursor: isDisabled ? "not-allowed" : "pointer",
     selectButtonHoverBorderColor: isDisabled ? "bo" : "ac",
@@ -167,6 +300,12 @@ export const selectViewData = ({ state, props }) => {
     showAddOption: !isDisabled && !!props.addOption,
     addOptionLabel: props.addOption?.label ? `+ ${props.addOption.label}` : "+ Add",
     addOptionBgc: state.hoveredAddOption ? "ac" : "",
+    showSearch: !isDisabled && !!props.searchable,
+    searchQuery,
+    searchPlaceholder: props.searchPlaceholder || "Search options",
+    showEmptySearch,
+    hideEmptySearch: !showEmptySearch,
+    emptySearchLabel: props.emptySearchLabel || "No matching options",
   };
 };
 
@@ -182,6 +321,7 @@ export const openOptionsPopover = ({ state }, payload = {}) => {
   const { position, selectedIndex } = payload;
   state.position = position;
   state.isOpen = true;
+  state.searchQuery = "";
   // Set hoveredOptionId to the selected option's index if available
   if (selectedIndex !== undefined && selectedIndex !== null) {
     state.hoveredOptionId = selectedIndex;
@@ -190,11 +330,13 @@ export const openOptionsPopover = ({ state }, payload = {}) => {
 
 export const closeOptionsPopover = ({ state }) => {
   state.isOpen = false;
+  state.searchQuery = "";
 };
 
 export const updateSelectedValue = ({ state }, payload = {}) => {
   state.selectedValue = payload.value;
   state.isOpen = false;
+  state.searchQuery = "";
 };
 
 export const resetSelection = ({ state }) => {
@@ -215,4 +357,11 @@ export const clearSelectedValue = ({ state }) => {
 
 export const setHoveredAddOption = ({ state }, payload = {}) => {
   state.hoveredAddOption = !!payload.isHovered;
+};
+
+export const setSearchQuery = ({ state }, payload = {}) => {
+  state.searchQuery = payload.query === undefined || payload.query === null
+    ? ""
+    : String(payload.query);
+  state.hoveredOptionId = null;
 };

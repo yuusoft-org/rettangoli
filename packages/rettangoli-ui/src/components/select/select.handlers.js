@@ -12,6 +12,50 @@ const getOptionType = (option = {}) => {
   return 'item';
 };
 
+const focusSearchInput = (refs = {}) => {
+  const input = refs.searchInput;
+
+  if (!input) {
+    return;
+  }
+
+  if (typeof input.focus === "function") {
+    input.focus();
+  }
+
+  const innerInput = input.shadowRoot?.querySelector("input, textarea");
+  if (innerInput && typeof innerInput.focus === "function") {
+    innerInput.focus();
+  }
+};
+
+const focusSearchInputWhenReady = (refs = {}, remainingAttempts = 10) => {
+  const popover = refs.popover;
+
+  if (!popover?.hasAttribute?.("open")) {
+    return;
+  }
+
+  if (popover.hasAttribute("positioned") || remainingAttempts === 0) {
+    focusSearchInput(refs);
+    return;
+  }
+
+  setTimeout(() => focusSearchInputWhenReady(refs, remainingAttempts - 1), 16);
+};
+
+const refreshOpenPopover = (refs = {}) => {
+  refs?.popover?.refreshContent?.();
+};
+
+const getEventValue = (event = {}) => {
+  if (event.detail && Object.prototype.hasOwnProperty.call(event.detail, "value")) {
+    return event.detail.value;
+  }
+
+  return event.currentTarget?.value ?? "";
+};
+
 export const handleBeforeMount = (deps) => {
   const { store, props, render } = deps;
 
@@ -47,11 +91,25 @@ export const handleOnUpdate = (deps, payload) => {
     shouldRefreshPopover = true;
   }
 
+  if (oldProps.searchable !== newProps.searchable) {
+    store.setSearchQuery?.({ query: "" });
+    shouldRender = true;
+    shouldRefreshPopover = true;
+  }
+
+  if (
+    oldProps.searchPlaceholder !== newProps.searchPlaceholder
+    || oldProps.emptySearchLabel !== newProps.emptySearchLabel
+  ) {
+    shouldRender = true;
+    shouldRefreshPopover = true;
+  }
+
   if (shouldRender) {
     render();
 
     if (shouldRefreshPopover && store.selectState?.().isOpen) {
-      refs?.popover?.refreshContent?.();
+      refreshOpenPopover(refs);
     }
   }
 }
@@ -82,6 +140,10 @@ export const handleButtonClick = (deps, payload) => {
     selectedIndex
   })
   render();
+
+  if (props.searchable) {
+    focusSearchInputWhenReady(refs);
+  }
 }
 
 export const handleButtonKeyDown = (deps, payload) => {
@@ -99,6 +161,32 @@ export const handleClickOptionsPopoverOverlay = (deps) => {
   store.closeOptionsPopover({});
   render();
 }
+
+export const handleSearchInput = (deps, payload) => {
+  const { store, render } = deps;
+  const event = payload._event;
+
+  event.stopPropagation();
+  store.setSearchQuery({ query: getEventValue(event) });
+  render();
+  // The popover observes size changes itself. Resyncing here re-slots the
+  // active search field and causes Chromium to drop focus while typing.
+};
+
+export const handleSearchKeyDown = (deps, payload) => {
+  const { store, render } = deps;
+  const event = payload._event;
+
+  event.stopPropagation();
+
+  if (event.key !== "Escape") {
+    return;
+  }
+
+  event.preventDefault();
+  store.closeOptionsPopover({});
+  render();
+};
 
 export const handleOptionClick = (deps, payload) => {
   const { render, dispatchEvent, props, store } = deps;

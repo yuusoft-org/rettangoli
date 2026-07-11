@@ -67,7 +67,7 @@ template:
                       - $if field.type == "input-textarea":
                           - rtgl-textarea#field${field._idx} data-field-name=${field.name} w=f rows=${field.rows} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "select":
-                          - rtgl-select#field${field._idx} data-field-name=${field.name} w=f :options=${field.options} ?no-clear=${field.noClear} :selectedValue=${field._selectedValue} :placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                          - rtgl-select#field${field._idx} data-field-name=${field.name} w=f :options=${field.options} ?no-clear=${field.noClear} :selectedValue=${field._selectedValue} :placeholder=${field.placeholder} ?disabled=${field._disabled} ?searchable=${field.searchable} :searchPlaceholder=${field.searchPlaceholder} :emptySearchLabel=${field.emptySearchLabel}: null
                       - $if field.type == "tag-select":
                           - rtgl-tag-select#field${field._idx} data-field-name=${field.name} w=f :options=${field.options} :selectedValues=${field._selectedValues} :placeholder=${field.placeholder} :addOption=${field.addOption} ?no-add=${field.noAdd} ?disabled=${field._disabled}: null
                       - $if field.type == "segmented-control":

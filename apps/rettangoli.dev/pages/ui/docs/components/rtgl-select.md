@@ -60,6 +60,13 @@ Use `options` as data source and listen to `value-change`.
 | Standard select menu | omit `addOption` |
 | Add action row at bottom | set `addOption` property |
 
+### Choose Search Behavior
+
+| Intent | Recommended |
+| --- | --- |
+| Small option list | omit `searchable` |
+| Filter long option lists by label | `searchable` |
+
 ## API
 
 | Name | Attribute / Property | Type | Default |
@@ -70,6 +77,9 @@ Use `options` as data source and listen to `value-change`.
 | No Clear | `no-clear` | boolean | off |
 | Add Option | `addOption` (property) | `{ label?: string }` | - |
 | Disabled | `disabled` | boolean | `false` |
+| Searchable | `searchable` | boolean | `false` |
+| Search Placeholder | `search-placeholder` / `searchPlaceholder` | string | `Search options` |
+| Empty Search Label | `empty-search-label` / `emptySearchLabel` | string | `No matching options` |
 | Trigger Width | `w` | number, `%`, `xs`-`xl`, `f`, CSS length/value | content-based |
 | Trigger Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 
@@ -95,6 +105,7 @@ Define selectable entries through the `options` property.
 - `shortcut` renders right-side trailing text and takes precedence over `suffixText`.
 - `suffixText` renders right-side trailing text when `shortcut` is not provided.
 - `testId` is optional and useful for testing.
+- When `searchable` is enabled, the popover filters item rows by case-insensitive label match.
 
 ```html codePreview
 <rtgl-select id="position-select" placeholder="Select position"></rtgl-select>
@@ -124,6 +135,28 @@ Define selectable entries through the `options` property.
     { value: "info", label: "Details", icon: "info", suffixText: "Beta" },
   ];
   select.selectedValue = "copy";
+  select.render();
+</script>
+```
+
+## Searchable
+
+Use `searchable` for longer option lists. Search filters by option `label`; selected trigger display still resolves from the full `options` list.
+
+```html codePreview
+<rtgl-select id="searchable-role" searchable search-placeholder="Search roles"></rtgl-select>
+
+<script>
+  const select = document.getElementById("searchable-role");
+  select.options = [
+    { type: "section", label: "Product" },
+    { value: "designer", label: "Designer" },
+    { value: "researcher", label: "Researcher" },
+    { type: "separator" },
+    { type: "section", label: "Engineering" },
+    { value: "frontend", label: "Frontend Engineer" },
+    { value: "backend", label: "Backend Engineer" },
+  ];
   select.render();
 </script>
 ```
@@ -229,6 +262,25 @@ Use `disabled` to make the select non-interactive.
   select.selectedValue = "2";
   select.render();
 </script>
+```
+
+## Form Field
+
+`rtgl-form` passes search props through to select fields.
+
+```yaml
+- name: role
+  type: select
+  label: Role
+  searchable: true
+  searchPlaceholder: Search roles
+  options:
+    - label: Admin
+      value: admin
+    - label: Editor
+      value: editor
+    - label: Viewer
+      value: viewer
 ```
 
 ## Events Example
