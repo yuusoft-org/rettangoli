@@ -57,7 +57,7 @@ const styles = {
       color: var(--primary-foreground);
     `,
     ol: `
-      background-color: transparent;
+      background-color: var(--background);
       color: var(--foreground);
       border-width: 1px;
     `,
