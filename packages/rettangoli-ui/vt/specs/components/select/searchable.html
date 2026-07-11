@@ -3,7 +3,7 @@ title: Searchable Select
 description: Verifies searchable selects focus the search field, filter option labels, preserve section context, and render a custom empty state.
 specs:
   - Opening a searchable select focuses its search input and renders all options.
-  - The search input has increased top and symmetric horizontal insets aligned with section text.
+  - The search input has 12px top and horizontal insets aligned with section text.
   - The search input keeps focus while typing a multi-character query.
   - Typing a query filters option rows while preserving the matching section heading.
   - A query without matches renders the configured empty-search label.
@@ -31,7 +31,7 @@ steps:
     type: js
     fn: searchableSelect.getSearchInsets
     value:
-      top: 8
+      top: 12
       bottom: 4
       left: 12
       right: 12
