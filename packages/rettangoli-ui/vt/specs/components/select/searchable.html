@@ -3,7 +3,7 @@ title: Searchable Select
 description: Verifies searchable selects focus the search field, filter option labels, preserve section context, and render a custom empty state.
 specs:
   - Opening a searchable select focuses its search input and renders all options.
-  - The search input has equal vertical and horizontal insets.
+  - The search input has increased top and symmetric horizontal insets aligned with section text.
   - The search input keeps focus while typing a multi-character query.
   - Typing a query filters option rows while preserving the matching section heading.
   - A query without matches renders the configured empty-search label.
@@ -31,10 +31,11 @@ steps:
     type: js
     fn: searchableSelect.getSearchInsets
     value:
-      top: 4
+      top: 8
       bottom: 4
-      left: 4
-      right: 4
+      left: 12
+      right: 12
+      sectionTextAlignment: 0
   - action: assert
     type: js
     fn: searchableSelect.getVisibleOptionLabels
@@ -149,8 +150,10 @@ viewport:
       const searchRow = searchInput?.parentElement;
       const nextRow = searchRow?.nextElementSibling;
       const content = popover?.content;
+      const sectionRow = [...content?.querySelectorAll("rtgl-view[p=md]") ?? []]
+        .find((row) => !row.hasAttribute("hide"));
 
-      if (!input || !nextRow || !content) {
+      if (!input || !nextRow || !content || !sectionRow) {
         return null;
       }
 
@@ -161,12 +164,15 @@ viewport:
       const borderTop = parseFloat(contentStyle.borderTopWidth) || 0;
       const borderRight = parseFloat(contentStyle.borderRightWidth) || 0;
       const borderLeft = parseFloat(contentStyle.borderLeftWidth) || 0;
+      const sectionTextLeft = sectionRow.getBoundingClientRect().left
+        + (parseFloat(getComputedStyle(sectionRow).paddingLeft) || 0);
 
       return {
         top: Math.round(inputRect.top - contentRect.top - borderTop),
         bottom: Math.round(nextRowRect.top - inputRect.bottom),
         left: Math.round(inputRect.left - contentRect.left - borderLeft),
         right: Math.round(contentRect.right - borderRight - inputRect.right),
+        sectionTextAlignment: Math.round(inputRect.left - sectionTextLeft),
       };
     },
     getSearchState() {

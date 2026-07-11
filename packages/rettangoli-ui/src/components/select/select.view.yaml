@@ -56,7 +56,7 @@ template:
           - rtgl-svg svg=chevronDown wh=16 c=mu-fg: null
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs content-wh=300 content-g=xs content-sv=true ?content-hsb=${showSearch} content-pv=sm:
       - $if showSearch:
-          - rtgl-view w=f mb=xs:
+          - rtgl-view w=f mt=sm mh=md mb=xs:
               - 'rtgl-input#searchInput w=f s=sm value=${searchQuery} placeholder="${searchPlaceholder}"': null
       - $for option, i in renderOptions:
           - $if option.isSection:
