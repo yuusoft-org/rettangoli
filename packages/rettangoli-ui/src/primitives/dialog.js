@@ -12,6 +12,17 @@ const CLOSE_BUTTON_SIZE_PX = 32;
 const CLOSE_BUTTON_OFFSET_PX = 8;
 const ACTIVE_LAYOUT_ATTR = "data-rtgl-active-layout";
 const FIXED_LAYOUT_SELECTOR = `:host([${ACTIVE_LAYOUT_ATTR}="fixed"])`;
+const TABBABLE_SELECTOR = [
+  "a[href]",
+  "area[href]",
+  "button:not([disabled])",
+  "input:not([disabled]):not([type='hidden'])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "iframe",
+  "[contenteditable='true']",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",");
 
 const mediaQueryCondition = (mediaQuery) => mediaQuery.replace(/^@media\s+/, "");
 const fixedLayoutStyle = (selector) => css`
@@ -209,6 +220,21 @@ class RettangoliDialogElement extends HTMLElement {
           max-width: 100vw;
           padding: 0;
         }
+
+        :host([bare]) dialog::backdrop {
+          background-color: transparent;
+        }
+
+        :host([bare]) slot[name="content"] {
+          animation: none;
+          background-color: transparent !important;
+          border: none;
+          border-radius: 0;
+          margin-left: 0;
+          margin-right: 0;
+          max-width: 100vw;
+          padding: 0;
+        }
       `);
     }
   }
@@ -254,6 +280,9 @@ class RettangoliDialogElement extends HTMLElement {
     this._onDialogScroll = () => {
       this._updateCloseButtonPosition();
     };
+    this._onDialogKeyDown = (event) => {
+      this._containTabFocus(event);
+    };
     this._onCloseButtonClick = (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -292,6 +321,7 @@ class RettangoliDialogElement extends HTMLElement {
       e.preventDefault();
       this._attemptClose();
     });
+    this._dialogElement.addEventListener('keydown', this._onDialogKeyDown);
   }
 
   _attemptClose() {
@@ -380,6 +410,95 @@ class RettangoliDialogElement extends HTMLElement {
     closeButtonElement.className = "close-button";
     closeButtonElement.addEventListener("click", this._onCloseButtonClick);
     return closeButtonElement;
+  }
+
+  _isTabbableElement(element) {
+    if (!element.matches?.(TABBABLE_SELECTOR) || element.tabIndex < 0) {
+      return false;
+    }
+
+    const style = getComputedStyle(element);
+    return (
+      element.getClientRects().length > 0 &&
+      style.display !== "none" &&
+      style.visibility !== "hidden"
+    );
+  }
+
+  _collectTabbableElements(node, elements) {
+    if (node instanceof HTMLSlotElement) {
+      const assignedElements = node.assignedElements({ flatten: true });
+      const children = assignedElements.length > 0
+        ? assignedElements
+        : [...node.children];
+      for (const child of children) {
+        this._collectTabbableElements(child, elements);
+      }
+      return;
+    }
+
+    if (node instanceof Element && this._isTabbableElement(node)) {
+      elements.push(node);
+    }
+
+    const childRoot = node.shadowRoot ?? node;
+    for (const child of childRoot.children ?? []) {
+      this._collectTabbableElements(child, elements);
+    }
+  }
+
+  _getTabbableElements() {
+    const elements = [];
+    if (this._slotElement) {
+      this._collectTabbableElements(this._slotElement, elements);
+    }
+    if (this._closeButtonElement && !this._closeButtonElement.hidden) {
+      elements.push(this._closeButtonElement);
+    }
+    return elements;
+  }
+
+  _getDeepActiveElement() {
+    let activeElement = document.activeElement;
+    while (activeElement?.shadowRoot?.activeElement) {
+      activeElement = activeElement.shadowRoot.activeElement;
+    }
+    return activeElement;
+  }
+
+  _containTabFocus(event) {
+    if (
+      event.key !== "Tab" ||
+      event.defaultPrevented ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey
+    ) {
+      return;
+    }
+
+    const tabbableElements = this._getTabbableElements();
+    if (tabbableElements.length === 0) {
+      event.preventDefault();
+      this._dialogElement.focus({ preventScroll: true });
+      return;
+    }
+
+    const activeElement = this._getDeepActiveElement();
+    const firstElement = tabbableElements[0];
+    const lastElement = tabbableElements[tabbableElements.length - 1];
+    const movingBeforeFirst = event.shiftKey && (
+      activeElement === firstElement || activeElement === this._dialogElement
+    );
+    const movingAfterLast = !event.shiftKey && activeElement === lastElement;
+
+    if (!movingBeforeFirst && !movingAfterLast) {
+      return;
+    }
+
+    event.preventDefault();
+    const nextElement = movingBeforeFirst ? lastElement : firstElement;
+    nextElement.focus({ preventScroll: true });
   }
 
   _clearManagedLongTokenWrapping() {

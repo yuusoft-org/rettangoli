@@ -51,6 +51,7 @@ Use `open` as the source of truth and close by removing `open`.
 | Width Override | `w` | CSS width value (`600px`, `70vw`, etc.) | - |
 | Layout | `layout`, `sm-layout`, `md-layout`, `lg-layout`, `xl-layout` | `centered`, `fixed` | `centered` |
 | No Padding | `no-padding` | boolean | - |
+| Bare | `bare` | boolean | - |
 | Close Button | `close-button` | boolean | - |
 
 ## Events
@@ -68,6 +69,7 @@ Use `open` as the source of truth and close by removing `open`.
 - Add `open` to show.
 - Remove `open` to hide.
 - `close` event is a close request; dialog visibility still follows `open`.
+- `Tab` and `Shift+Tab` wrap through focusable slotted content, including controls inside open shadow roots, without moving focus back to the page.
 
 ```html codePreview
 <rtgl-button id="open-state">Open</rtgl-button>
@@ -277,6 +279,48 @@ Add `no-padding` when the slotted content should own all spacing. It removes dia
     });
     dialogFixedMobile.addEventListener("close", () => {
       dialogFixedMobile.removeAttribute("open");
+    });
+  })();
+</script>
+```
+
+## Bare Modal Shell
+
+Add `bare` when the slotted content should own the complete visual surface. It keeps the native modal behavior, including focus containment, document inertness, and escape close requests, while making the backdrop and content slot transparent and removing dialog-owned padding, borders, radius, horizontal margins, and content animation.
+
+Combine `bare` with `layout="fixed"` for custom viewport-level layouts such as side panels. The consumer remains responsible for rendering its own dismiss target, backdrop treatment, surface, and internal scrolling.
+
+```html codePreview
+<rtgl-button id="open-bare-shell">Open Bare Shell</rtgl-button>
+<rtgl-dialog id="dialog-bare-shell" layout="fixed" bare>
+  <rtgl-view slot="content" pos="rel" wh="f">
+    <rtgl-view pos="abs" edge="f" style="background: rgba(0, 0, 0, 0.12);"></rtgl-view>
+    <rtgl-view
+      pos="abs"
+      bgc="bg"
+      p="lg"
+      style="left: 32px; top: 32px; bottom: 32px; width: min(420px, calc(100vw - 64px)); box-sizing: border-box;"
+    >
+      <rtgl-view d="v" g="md">
+        <rtgl-text s="h4">Consumer-owned modal surface</rtgl-text>
+        <rtgl-text c="mu">The native dialog owns modality while this slotted content owns every visual layer.</rtgl-text>
+        <rtgl-button v="ol" id="close-bare-shell">Close</rtgl-button>
+      </rtgl-view>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  (() => {
+    const dialogBareShell = document.getElementById("dialog-bare-shell");
+    document.getElementById("open-bare-shell").addEventListener("click", () => {
+      dialogBareShell.setAttribute("open", "");
+    });
+    document.getElementById("close-bare-shell").addEventListener("click", () => {
+      dialogBareShell.removeAttribute("open");
+    });
+    dialogBareShell.addEventListener("close", () => {
+      dialogBareShell.removeAttribute("open");
     });
   })();
 </script>

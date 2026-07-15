@@ -1,0 +1,134 @@
+---
+title: Dialog - Bare Fixed Shell
+diffThreshold: 4
+description: Verifies bare dialogs preserve native modality while consumers own viewport-level visuals.
+specs:
+  - "`bare` makes the native backdrop and content slot transparent."
+  - "`bare` removes dialog-owned padding, border, radius, horizontal margins, and content animation."
+  - "`layout=fixed` keeps the native dialog and content slot locked to the viewport."
+  - "Slotted content can render a bounded side panel without dimming the rest of the viewport."
+skipInitialScreenshot: true
+viewport:
+  id: desktop
+  width: 1280
+  height: 720
+steps:
+  - action: waitFor
+    selector: '#dialog-bare-fixed[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 220
+  - action: assert
+    type: js
+    fn: bareFixedShell.getState
+    value:
+      dialogFillsViewport: true
+      slotFillsViewport: true
+      backdropTransparent: true
+      slotTransparent: true
+      slotBare: true
+      contentAnimationDisabled: true
+      sidePanelBounded: true
+  - action: screenshot
+---
+<rtgl-view d="h" wh="f">
+  <rtgl-view d="v" g="md" p="xl" w="50vw" bgc="su">
+    <rtgl-text s="h3">Editor workspace</rtgl-text>
+    <rtgl-text c="mu">The consumer dims only this side of the application.</rtgl-text>
+    <rtgl-view d="v" g="sm" mt="xl">
+      <rtgl-view bgc="bg" p="md" br="sm"><rtgl-text>Scene line 1</rtgl-text></rtgl-view>
+      <rtgl-view bgc="bg" p="md" br="sm"><rtgl-text>Scene line 2</rtgl-text></rtgl-view>
+      <rtgl-view bgc="bg" p="md" br="sm"><rtgl-text>Scene line 3</rtgl-text></rtgl-view>
+    </rtgl-view>
+  </rtgl-view>
+  <rtgl-view d="v" g="md" p="xl" w="50vw" bgc="bg">
+    <rtgl-text s="h3">Presentation preview</rtgl-text>
+    <rtgl-view w="f" h="1fg" bgc="mu" br="md" ah="c" av="c">
+      <rtgl-text c="mu">Preview remains visible</rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<rtgl-dialog id="dialog-bare-fixed" open layout="fixed" bare>
+  <rtgl-view id="custom-shell" slot="content" pos="rel" wh="f">
+    <rtgl-view
+      id="custom-dim"
+      pos="abs"
+      style="left: 64px; top: 0; bottom: 0; width: 50vw; background: rgba(0, 0, 0, 0.42); pointer-events: none;"
+    ></rtgl-view>
+    <rtgl-view
+      id="custom-panel"
+      pos="abs"
+      d="v"
+      g="md"
+      bgc="bg"
+      bw="xs"
+      bc="bo"
+      br="md"
+      p="lg"
+      style="left: 96px; top: 32px; bottom: 32px; width: calc(50vw - 64px); box-sizing: border-box; box-shadow: 8px 0 24px rgba(15, 23, 42, 0.10);"
+    >
+      <rtgl-text s="h3">Command line</rtgl-text>
+      <rtgl-text c="mu">This surface and the bounded dim layer are entirely consumer-owned.</rtgl-text>
+      <rtgl-view d="v" g="sm" mt="lg">
+        <rtgl-button v="ol">Background</rtgl-button>
+        <rtgl-button v="ol">Dialogue</rtgl-button>
+        <rtgl-button v="ol">Character</rtgl-button>
+      </rtgl-view>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const dialog = document.getElementById("dialog-bare-fixed");
+  const customPanel = document.getElementById("custom-panel");
+
+  window.bareFixedShell = {
+    getState() {
+      const nativeDialog = dialog.shadowRoot.querySelector("dialog");
+      const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
+      const viewportWidth = Math.round(window.innerWidth);
+      const viewportHeight = Math.round(window.innerHeight);
+      const dialogRect = nativeDialog.getBoundingClientRect();
+      const slotRect = contentSlot.getBoundingClientRect();
+      const panelRect = customPanel.getBoundingClientRect();
+      const slotStyle = getComputedStyle(contentSlot);
+      const backdropStyle = getComputedStyle(nativeDialog, "::backdrop");
+
+      return {
+        dialogFillsViewport:
+          Math.abs(Math.round(dialogRect.width) - viewportWidth) <= 2 &&
+          Math.abs(Math.round(dialogRect.height) - viewportHeight) <= 2 &&
+          Math.abs(Math.round(dialogRect.top)) <= 2 &&
+          Math.abs(Math.round(dialogRect.left)) <= 2,
+        slotFillsViewport:
+          Math.abs(Math.round(slotRect.width) - viewportWidth) <= 2 &&
+          Math.abs(Math.round(slotRect.height) - viewportHeight) <= 2 &&
+          Math.abs(Math.round(slotRect.top)) <= 2 &&
+          Math.abs(Math.round(slotRect.left)) <= 2,
+        backdropTransparent: backdropStyle.backgroundColor === "rgba(0, 0, 0, 0)",
+        slotTransparent: slotStyle.backgroundColor === "rgba(0, 0, 0, 0)",
+        slotBare:
+          slotStyle.borderTopWidth === "0px" &&
+          slotStyle.borderRadius === "0px" &&
+          slotStyle.paddingTop === "0px" &&
+          slotStyle.paddingRight === "0px" &&
+          slotStyle.paddingBottom === "0px" &&
+          slotStyle.paddingLeft === "0px" &&
+          slotStyle.marginLeft === "0px" &&
+          slotStyle.marginRight === "0px",
+        contentAnimationDisabled: slotStyle.animationName === "none",
+        sidePanelBounded:
+          Math.abs(Math.round(panelRect.left) - 96) <= 2 &&
+          Math.abs(Math.round(panelRect.right) - (viewportWidth / 2 + 32)) <= 2 &&
+          Math.abs(Math.round(panelRect.top) - 32) <= 2 &&
+          Math.abs(Math.round(panelRect.bottom) - (viewportHeight - 32)) <= 2,
+      };
+    },
+  };
+
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>
