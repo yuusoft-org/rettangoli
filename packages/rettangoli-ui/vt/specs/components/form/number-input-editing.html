@@ -4,6 +4,7 @@ description: A form number field remains editable through empty and decimal typi
 specs:
   - Deleting the complete number leaves the field empty and stores null.
   - Typing a decimal one key at a time preserves the caret and stores the decimal value.
+  - An incomplete exponent does not emit null or NaN, and a completed exponent stores its number.
 skipInitialScreenshot: true
 steps:
   - action: select
@@ -20,6 +21,7 @@ steps:
     value:
       inputValue: ""
       formValue: null
+      badInput: false
   - action: select
     testId: number-editing-field
     steps:
@@ -38,6 +40,38 @@ steps:
     value:
       inputValue: "12.5"
       formValue: 12.5
+      badInput: false
+  - action: select
+    testId: number-editing-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: Control+A
+      - action: keypress
+        key: "1"
+      - action: keypress
+        key: "e"
+  - action: assert
+    type: js
+    fn: numberInputEditing.getExponentState
+    value:
+      inputValue: ""
+      formValue: 1
+      badInput: true
+      lastInputValue: 1
+  - action: select
+    testId: number-editing-field
+    steps:
+      - action: keypress
+        key: "2"
+      - action: blur
+  - action: assert
+    type: js
+    fn: numberInputEditing.getState
+    value:
+      inputValue: "100"
+      formValue: 100
+      badInput: false
   - action: screenshot
 viewport:
   id: form-compact
@@ -73,9 +107,15 @@ viewport:
 
   const getNumberField = () => form.shadowRoot?.querySelector('[data-field-name="amount"]');
   const getNativeInput = () => getNumberField()?.shadowRoot?.querySelector('input');
+  const inputValues = [];
   const getState = () => ({
     inputValue: getNativeInput()?.value ?? null,
     formValue: form.getValues().amount,
+    badInput: getNativeInput()?.validity.badInput ?? false,
+  });
+  const getExponentState = () => ({
+    ...getState(),
+    lastInputValue: inputValues.at(-1),
   });
 
   const updateStatus = () => {
@@ -85,10 +125,13 @@ viewport:
       : `Editing state: ${inputValue} (${formValue})`;
   };
 
-  form.addEventListener('form-input', updateStatus);
+  form.addEventListener('form-input', (event) => {
+    inputValues.push(event.detail.value);
+    updateStatus();
+  });
   form.addEventListener('form-change', updateStatus);
 
-  window.numberInputEditing = { getState };
+  window.numberInputEditing = { getState, getExponentState };
 
   const exposeNumberField = () => {
     const field = getNumberField();

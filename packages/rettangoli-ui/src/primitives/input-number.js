@@ -126,6 +126,13 @@ class RettangoliInputNumberElement extends HTMLElement {
   _emitValueEvent = (eventName, { commit = false } = {}) => {
     const inputValue = this._inputElement.value;
     if (inputValue.trim() === "") {
+      // Native number inputs expose incomplete values such as `1e` as an
+      // empty string with badInput=true. Keep the last valid form value until
+      // the editor becomes either a complete number or a genuine empty state.
+      if (this._inputElement.validity.badInput) {
+        return;
+      }
+
       this.dispatchEvent(new CustomEvent(eventName, {
         detail: {
           value: null,
