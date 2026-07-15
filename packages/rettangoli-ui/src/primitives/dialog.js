@@ -12,6 +12,13 @@ const CLOSE_BUTTON_SIZE_PX = 32;
 const CLOSE_BUTTON_OFFSET_PX = 8;
 const ACTIVE_LAYOUT_ATTR = "data-rtgl-active-layout";
 const FIXED_LAYOUT_SELECTOR = `:host([${ACTIVE_LAYOUT_ATTR}="fixed"])`;
+const NATIVE_TEMPORAL_INPUT_TYPES = new Set([
+  "date",
+  "datetime-local",
+  "month",
+  "time",
+  "week",
+]);
 
 const mediaQueryCondition = (mediaQuery) => mediaQuery.replace(/^@media\s+/, "");
 const fixedLayoutStyle = (selector) => css`
@@ -209,6 +216,21 @@ class RettangoliDialogElement extends HTMLElement {
           max-width: 100vw;
           padding: 0;
         }
+
+        :host([bare]) dialog::backdrop {
+          background-color: transparent;
+        }
+
+        :host([bare]) slot[name="content"] {
+          animation: none;
+          background-color: transparent !important;
+          border: none;
+          border-radius: 0;
+          margin-left: 0;
+          margin-right: 0;
+          max-width: 100vw;
+          padding: 0;
+        }
       `);
     }
   }
@@ -254,6 +276,9 @@ class RettangoliDialogElement extends HTMLElement {
     this._onDialogScroll = () => {
       this._updateCloseButtonPosition();
     };
+    this._onDialogKeyDown = (event) => {
+      this._containTabFocus(event);
+    };
     this._onCloseButtonClick = (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -292,6 +317,7 @@ class RettangoliDialogElement extends HTMLElement {
       e.preventDefault();
       this._attemptClose();
     });
+    this._dialogElement.addEventListener('keydown', this._onDialogKeyDown);
   }
 
   _attemptClose() {
@@ -380,6 +406,330 @@ class RettangoliDialogElement extends HTMLElement {
     closeButtonElement.className = "close-button";
     closeButtonElement.addEventListener("click", this._onCloseButtonClick);
     return closeButtonElement;
+  }
+
+  _isTabbableElement(element) {
+    if (!this._isTabbableElementIgnoringRadioGroup(element)) {
+      return false;
+    }
+
+    return !(
+      element instanceof HTMLInputElement &&
+      element.type === "radio" &&
+      !this._isTabbableRadio(element)
+    );
+  }
+
+  _getComposedParent(element) {
+    if (element.assignedSlot) {
+      return element.assignedSlot;
+    }
+    if (element.parentElement) {
+      return element.parentElement;
+    }
+
+    const root = element.getRootNode?.();
+    return root instanceof ShadowRoot ? root.host : null;
+  }
+
+  _hasInertComposedAncestor(element) {
+    let currentElement = element;
+    while (currentElement) {
+      if (currentElement instanceof HTMLElement && currentElement.inert) {
+        return true;
+      }
+      currentElement = this._getComposedParent(currentElement);
+    }
+    return false;
+  }
+
+  _isEditingHost(element) {
+    if (!(element instanceof HTMLElement) || !element.isContentEditable) {
+      return false;
+    }
+
+    const parent = this._getComposedParent(element);
+    return !(parent instanceof HTMLElement && parent.isContentEditable);
+  }
+
+  _getSequentialTabIndex(element) {
+    if (typeof element.tabIndex === "number" && element.tabIndex >= 0) {
+      return element.tabIndex;
+    }
+    if (!element.hasAttribute("tabindex") && this._isEditingHost(element)) {
+      return 0;
+    }
+    return null;
+  }
+
+  _isHiddenByClosedDetails(element) {
+    let currentElement = element;
+    let parent = this._getComposedParent(currentElement);
+
+    while (parent) {
+      if (parent instanceof HTMLDetailsElement && !parent.open) {
+        const summary = [...parent.children]
+          .find((child) => child instanceof HTMLElement && child.localName === "summary");
+        if (currentElement !== summary) {
+          return true;
+        }
+      }
+      currentElement = parent;
+      parent = this._getComposedParent(currentElement);
+    }
+    return false;
+  }
+
+  _isInsideDialog(element) {
+    let currentElement = element;
+    while (currentElement) {
+      if (currentElement === this._dialogElement) {
+        return true;
+      }
+      currentElement = this._getComposedParent(currentElement);
+    }
+    return false;
+  }
+
+  _isTabbableRadio(radioElement) {
+    if (!radioElement.name) {
+      return true;
+    }
+
+    const root = radioElement.getRootNode();
+    const radioGroup = [...root.querySelectorAll("input[type='radio']")]
+      .filter((candidate) => (
+        candidate.name === radioElement.name &&
+        candidate.form === radioElement.form &&
+        this._isInsideDialog(candidate) &&
+        this._isTabbableElementIgnoringRadioGroup(candidate)
+      ));
+    const checkedRadio = radioGroup.find((candidate) => candidate.checked);
+    return radioElement === (checkedRadio ?? radioGroup[0]);
+  }
+
+  _isTabbableElementIgnoringRadioGroup(element) {
+    if (
+      !(element instanceof Element) ||
+      this._getSequentialTabIndex(element) === null ||
+      element.matches(":disabled") ||
+      (element instanceof HTMLInputElement && element.type === "hidden") ||
+      this._hasInertComposedAncestor(element) ||
+      this._isHiddenByClosedDetails(element)
+    ) {
+      return false;
+    }
+
+    const style = getComputedStyle(element);
+    const isCssVisible = (
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      style.visibility !== "collapse"
+    );
+    if (element instanceof HTMLAreaElement) {
+      return isCssVisible && this._hasVisibleAssociatedImage(element);
+    }
+
+    return (
+      element.getClientRects().length > 0 &&
+      isCssVisible
+    );
+  }
+
+  _hasVisibleAssociatedImage(areaElement) {
+    const mapElement = areaElement.closest("map[name]");
+    if (!(mapElement instanceof HTMLMapElement) || !mapElement.name) {
+      return false;
+    }
+
+    const root = mapElement.getRootNode();
+    if (!(root instanceof Document || root instanceof ShadowRoot)) {
+      return false;
+    }
+
+    return [...root.querySelectorAll("img[usemap]")].some((imageElement) => {
+      const useMap = imageElement.getAttribute("usemap")?.trim();
+      if (
+        useMap !== `#${mapElement.name}` ||
+        this._hasInertComposedAncestor(imageElement) ||
+        this._isHiddenByClosedDetails(imageElement)
+      ) {
+        return false;
+      }
+
+      const style = getComputedStyle(imageElement);
+      return (
+        imageElement.getClientRects().length > 0 &&
+        style.display !== "none" &&
+        style.visibility !== "hidden" &&
+        style.visibility !== "collapse"
+      );
+    });
+  }
+
+  _appendTabScope(scopeParent, children, items) {
+    const hasTabIndex = scopeParent.hasAttribute("tabindex");
+    if (hasTabIndex && scopeParent.tabIndex < 0) {
+      return;
+    }
+
+    const childItems = [];
+    this._collectTabOrderItems(children, childItems);
+    const elements = [];
+    if (this._isTabbableElement(scopeParent)) {
+      elements.push(scopeParent);
+    }
+    elements.push(...this._sortTabOrderItems(childItems));
+
+    if (elements.length > 0) {
+      items.push({
+        tabIndex: hasTabIndex ? scopeParent.tabIndex : 0,
+        elements,
+      });
+    }
+  }
+
+  _collectTabOrderItems(nodes, items) {
+    for (const node of nodes) {
+      if (!(node instanceof Element)) {
+        continue;
+      }
+
+      if (node instanceof HTMLSlotElement) {
+        const assignedElements = node.assignedElements();
+        const children = assignedElements.length > 0
+          ? assignedElements
+          : [...node.children];
+        this._appendTabScope(node, children, items);
+        continue;
+      }
+
+      if (node.shadowRoot) {
+        this._appendTabScope(node, [...node.shadowRoot.children], items);
+        continue;
+      }
+
+      if (this._isTabbableElement(node)) {
+        items.push({
+          tabIndex: this._getSequentialTabIndex(node),
+          elements: [node],
+        });
+      }
+      this._collectTabOrderItems(node.children, items);
+    }
+  }
+
+  _sortTabOrderItems(items) {
+    const positiveItems = items
+      .map((item, documentOrder) => ({ ...item, documentOrder }))
+      .filter((item) => item.tabIndex > 0)
+      .sort((left, right) => (
+        left.tabIndex - right.tabIndex ||
+        left.documentOrder - right.documentOrder
+      ));
+    const regularItems = items.filter((item) => item.tabIndex === 0);
+    return [...positiveItems, ...regularItems]
+      .flatMap((item) => item.elements);
+  }
+
+  _getTabbableElements() {
+    const items = [];
+    this._collectTabOrderItems(this._dialogElement.children, items);
+    return this._sortTabOrderItems(items);
+  }
+
+  _getDeepActiveElement() {
+    let activeElement = document.activeElement;
+    while (activeElement?.shadowRoot?.activeElement) {
+      activeElement = activeElement.shadowRoot.activeElement;
+    }
+    return activeElement;
+  }
+
+  _hasNativeInternalTabSequence(element) {
+    return (
+      element instanceof HTMLInputElement &&
+      NATIVE_TEMPORAL_INPUT_TYPES.has(element.type)
+    );
+  }
+
+  _deferNativeTabContainment(movingBeforeFirst) {
+    setTimeout(() => {
+      if (!this._dialogElement.matches(":modal")) {
+        return;
+      }
+
+      const activeElement = this._getDeepActiveElement();
+      if (activeElement && this._isInsideDialog(activeElement)) {
+        return;
+      }
+
+      const tabbableElements = this._getTabbableElements();
+      const nextElement = movingBeforeFirst
+        ? tabbableElements[tabbableElements.length - 1]
+        : tabbableElements[0];
+      if (nextElement) {
+        nextElement.focus({ preventScroll: true });
+      } else {
+        this._dialogElement.focus({ preventScroll: true });
+      }
+    }, 0);
+  }
+
+  _containTabFocus(event) {
+    if (
+      event.key !== "Tab" ||
+      event.defaultPrevented ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      !this._isTabEventOwnedByDialog(event)
+    ) {
+      return;
+    }
+
+    const tabbableElements = this._getTabbableElements();
+    if (tabbableElements.length === 0) {
+      event.preventDefault();
+      this._dialogElement.focus({ preventScroll: true });
+      return;
+    }
+
+    const activeElement = this._getDeepActiveElement();
+    const firstElement = tabbableElements[0];
+    const lastElement = tabbableElements[tabbableElements.length - 1];
+    const movingBeforeFirst = event.shiftKey && (
+      activeElement === firstElement || activeElement === this._dialogElement
+    );
+    const movingAfterLast = !event.shiftKey && activeElement === lastElement;
+
+    if (!movingBeforeFirst && !movingAfterLast) {
+      return;
+    }
+
+    if (this._hasNativeInternalTabSequence(activeElement)) {
+      this._deferNativeTabContainment(movingBeforeFirst);
+      return;
+    }
+
+    event.preventDefault();
+    const nextElement = movingBeforeFirst ? lastElement : firstElement;
+    nextElement.focus({ preventScroll: true });
+  }
+
+  _isTabEventOwnedByDialog(event) {
+    for (const node of event.composedPath()) {
+      if (!(node instanceof HTMLDialogElement)) {
+        continue;
+      }
+      if (node === this._dialogElement) {
+        return true;
+      }
+      if (node.matches(":modal")) {
+        return false;
+      }
+    }
+    return false;
   }
 
   _clearManagedLongTokenWrapping() {

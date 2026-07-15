@@ -1,0 +1,115 @@
+---
+title: Dialog - Bare Native Modal Behavior
+description: Verifies bare mode retains the native dialog focus and close contract.
+specs:
+  - "Opening a bare dialog moves focus into its slotted content."
+  - "Programmatic focus cannot escape to inert content behind the native modal."
+  - "Sequential keyboard focus remains inside the dialog."
+  - "Escape emits one controlled close request."
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: open-bare-modal
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog-bare-modal[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 120
+  - action: assert
+    type: js
+    fn: bareNativeModal.focusIsInside
+    value: true
+  - action: assert
+    type: js
+    fn: bareNativeModal.outsideFocusIsBlocked
+    value: true
+  - action: keypress
+    key: Tab
+  - action: assert
+    type: js
+    fn: bareNativeModal.focusIsInside
+    value: true
+  - action: keypress
+    key: Tab
+  - action: assert
+    type: js
+    fn: bareNativeModal.focusIsInside
+    value: true
+  - action: keypress
+    key: Shift+Tab
+  - action: assert
+    type: js
+    fn: bareNativeModal.focusIsInside
+    value: true
+  - action: keypress
+    key: Escape
+  - action: waitFor
+    selector: '#dialog-bare-modal[open]'
+    state: hidden
+    timeoutMs: 1200
+  - action: assert
+    type: js
+    fn: bareNativeModal.getCloseCount
+    value: 1
+---
+<rtgl-view d="v" g="lg" p="xl" wh="f">
+  <rtgl-text s="h3">Application content</rtgl-text>
+  <input id="outside-input" value="Editor remains behind the modal" />
+  <rtgl-button data-testid="open-bare-modal">Open Bare Modal</rtgl-button>
+</rtgl-view>
+
+<rtgl-dialog id="dialog-bare-modal" layout="fixed" bare>
+  <rtgl-view slot="content" pos="rel" wh="f">
+    <rtgl-view pos="abs" edge="f" style="background: rgba(0, 0, 0, 0.18);"></rtgl-view>
+    <rtgl-view
+      pos="abs"
+      d="v"
+      g="md"
+      bgc="bg"
+      bw="xs"
+      bc="bo"
+      br="md"
+      p="lg"
+      style="left: 50%; top: 50%; width: 360px; box-sizing: border-box; transform: translate(-50%, -50%);"
+    >
+      <rtgl-text s="h3">Native modal focus</rtgl-text>
+      <rtgl-input id="dialog-first-input" value="First focus target"></rtgl-input>
+      <rtgl-button id="dialog-second-button" v="ol">Second focus target</rtgl-button>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const openButton = document.querySelector('[data-testid="open-bare-modal"]');
+  const outsideInput = document.getElementById("outside-input");
+  const dialog = document.getElementById("dialog-bare-modal");
+  let closeCount = 0;
+
+  const focusIsInside = () => {
+    const activeElement = document.activeElement;
+    return dialog.contains(activeElement) || dialog.shadowRoot.activeElement === dialog.dialog;
+  };
+
+  openButton.addEventListener("click", () => {
+    dialog.setAttribute("open", "");
+  });
+
+  dialog.addEventListener("close", () => {
+    closeCount += 1;
+    dialog.removeAttribute("open");
+  });
+
+  window.bareNativeModal = {
+    focusIsInside,
+    outsideFocusIsBlocked() {
+      outsideInput.focus();
+      return document.activeElement !== outsideInput && focusIsInside();
+    },
+    getCloseCount() {
+      return closeCount;
+    },
+  };
+</script>

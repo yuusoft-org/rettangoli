@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Improvements
+- `rtgl-dialog`: added `bare` mode for consumer-owned modal visuals while preserving native modality, focus containment, and close requests.
+- `rtgl-dialog`: keeps sequential keyboard focus inside the modal across slotted and open-shadow content instead of allowing focus to fall back to the page body at a tab boundary.
 - `rtgl-dialog`: fixed the open animation so adaptive centering is applied before the first paint, preventing the dialog from jumping from a top-biased position into the centered final state.
 - `rtgl-sidebar`: added `type: "divider"` rows for horizontal separators and `type: "spacer"` rows for pushing trailing actions to the bottom of the sidebar.
 - `rtgl-tooltip`: added tooltip size presets via `s="sm|md|lg"` and removed the fixed minimum width so content can size more naturally.
