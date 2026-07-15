@@ -12,17 +12,6 @@ const CLOSE_BUTTON_SIZE_PX = 32;
 const CLOSE_BUTTON_OFFSET_PX = 8;
 const ACTIVE_LAYOUT_ATTR = "data-rtgl-active-layout";
 const FIXED_LAYOUT_SELECTOR = `:host([${ACTIVE_LAYOUT_ATTR}="fixed"])`;
-const TABBABLE_SELECTOR = [
-  "a[href]",
-  "area[href]",
-  "button:not([disabled])",
-  "input:not([disabled]):not([type='hidden'])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  "iframe",
-  "[contenteditable='true']",
-  "[tabindex]:not([tabindex='-1'])",
-].join(",");
 
 const mediaQueryCondition = (mediaQuery) => mediaQuery.replace(/^@media\s+/, "");
 const fixedLayoutStyle = (selector) => css`
@@ -413,7 +402,114 @@ class RettangoliDialogElement extends HTMLElement {
   }
 
   _isTabbableElement(element) {
-    if (!element.matches?.(TABBABLE_SELECTOR) || element.tabIndex < 0) {
+    if (!this._isTabbableElementIgnoringRadioGroup(element)) {
+      return false;
+    }
+
+    return !(
+      element instanceof HTMLInputElement &&
+      element.type === "radio" &&
+      !this._isTabbableRadio(element)
+    );
+  }
+
+  _getComposedParent(element) {
+    if (element.assignedSlot) {
+      return element.assignedSlot;
+    }
+    if (element.parentElement) {
+      return element.parentElement;
+    }
+
+    const root = element.getRootNode?.();
+    return root instanceof ShadowRoot ? root.host : null;
+  }
+
+  _hasInertComposedAncestor(element) {
+    let currentElement = element;
+    while (currentElement) {
+      if (currentElement instanceof HTMLElement && currentElement.inert) {
+        return true;
+      }
+      currentElement = this._getComposedParent(currentElement);
+    }
+    return false;
+  }
+
+  _isEditingHost(element) {
+    if (!(element instanceof HTMLElement) || !element.isContentEditable) {
+      return false;
+    }
+
+    const parent = this._getComposedParent(element);
+    return !(parent instanceof HTMLElement && parent.isContentEditable);
+  }
+
+  _getSequentialTabIndex(element) {
+    if (typeof element.tabIndex === "number" && element.tabIndex >= 0) {
+      return element.tabIndex;
+    }
+    if (!element.hasAttribute("tabindex") && this._isEditingHost(element)) {
+      return 0;
+    }
+    return null;
+  }
+
+  _isHiddenByClosedDetails(element) {
+    let currentElement = element;
+    let parent = this._getComposedParent(currentElement);
+
+    while (parent) {
+      if (parent instanceof HTMLDetailsElement && !parent.open) {
+        const summary = [...parent.children]
+          .find((child) => child instanceof HTMLElement && child.localName === "summary");
+        if (currentElement !== summary) {
+          return true;
+        }
+      }
+      currentElement = parent;
+      parent = this._getComposedParent(currentElement);
+    }
+    return false;
+  }
+
+  _isInsideDialog(element) {
+    let currentElement = element;
+    while (currentElement) {
+      if (currentElement === this._dialogElement) {
+        return true;
+      }
+      currentElement = this._getComposedParent(currentElement);
+    }
+    return false;
+  }
+
+  _isTabbableRadio(radioElement) {
+    if (!radioElement.name) {
+      return true;
+    }
+
+    const root = radioElement.getRootNode();
+    const radioGroup = [...root.querySelectorAll("input[type='radio']")]
+      .filter((candidate) => (
+        candidate.name === radioElement.name &&
+        candidate.form === radioElement.form &&
+        this._isInsideDialog(candidate) &&
+        this._isTabbableElementIgnoringRadioGroup(candidate)
+      ));
+    const checkedRadio = radioGroup.find((candidate) => candidate.checked);
+    return radioElement === (checkedRadio ?? radioGroup[0]);
+  }
+
+  _isTabbableElementIgnoringRadioGroup(element) {
+    if (
+      !(element instanceof Element) ||
+      this._getSequentialTabIndex(element) === null ||
+      element.matches(":disabled") ||
+      (element instanceof HTMLInputElement && element.type === "hidden") ||
+      this._hasInertComposedAncestor(element) ||
+      this._isHiddenByClosedDetails(element)
+    ) {
       return false;
     }
 
@@ -421,41 +517,80 @@ class RettangoliDialogElement extends HTMLElement {
     return (
       element.getClientRects().length > 0 &&
       style.display !== "none" &&
-      style.visibility !== "hidden"
+      style.visibility !== "hidden" &&
+      style.visibility !== "collapse"
     );
   }
 
-  _collectTabbableElements(node, elements) {
-    if (node instanceof HTMLSlotElement) {
-      const assignedElements = node.assignedElements({ flatten: true });
-      const children = assignedElements.length > 0
-        ? assignedElements
-        : [...node.children];
-      for (const child of children) {
-        this._collectTabbableElements(child, elements);
-      }
+  _appendTabScope(scopeParent, children, items) {
+    const hasTabIndex = scopeParent.hasAttribute("tabindex");
+    if (hasTabIndex && scopeParent.tabIndex < 0) {
       return;
     }
 
-    if (node instanceof Element && this._isTabbableElement(node)) {
-      elements.push(node);
+    const childItems = [];
+    this._collectTabOrderItems(children, childItems);
+    const elements = [];
+    if (this._isTabbableElement(scopeParent)) {
+      elements.push(scopeParent);
     }
+    elements.push(...this._sortTabOrderItems(childItems));
 
-    const childRoot = node.shadowRoot ?? node;
-    for (const child of childRoot.children ?? []) {
-      this._collectTabbableElements(child, elements);
+    if (elements.length > 0) {
+      items.push({
+        tabIndex: hasTabIndex ? scopeParent.tabIndex : 0,
+        elements,
+      });
     }
   }
 
+  _collectTabOrderItems(nodes, items) {
+    for (const node of nodes) {
+      if (!(node instanceof Element)) {
+        continue;
+      }
+
+      if (node instanceof HTMLSlotElement) {
+        const assignedElements = node.assignedElements();
+        const children = assignedElements.length > 0
+          ? assignedElements
+          : [...node.children];
+        this._appendTabScope(node, children, items);
+        continue;
+      }
+
+      if (node.shadowRoot) {
+        this._appendTabScope(node, [...node.shadowRoot.children], items);
+        continue;
+      }
+
+      if (this._isTabbableElement(node)) {
+        items.push({
+          tabIndex: this._getSequentialTabIndex(node),
+          elements: [node],
+        });
+      }
+      this._collectTabOrderItems(node.children, items);
+    }
+  }
+
+  _sortTabOrderItems(items) {
+    const positiveItems = items
+      .map((item, documentOrder) => ({ ...item, documentOrder }))
+      .filter((item) => item.tabIndex > 0)
+      .sort((left, right) => (
+        left.tabIndex - right.tabIndex ||
+        left.documentOrder - right.documentOrder
+      ));
+    const regularItems = items.filter((item) => item.tabIndex === 0);
+    return [...positiveItems, ...regularItems]
+      .flatMap((item) => item.elements);
+  }
+
   _getTabbableElements() {
-    const elements = [];
-    if (this._slotElement) {
-      this._collectTabbableElements(this._slotElement, elements);
-    }
-    if (this._closeButtonElement && !this._closeButtonElement.hidden) {
-      elements.push(this._closeButtonElement);
-    }
-    return elements;
+    const items = [];
+    this._collectTabOrderItems(this._dialogElement.children, items);
+    return this._sortTabOrderItems(items);
   }
 
   _getDeepActiveElement() {
@@ -472,7 +607,8 @@ class RettangoliDialogElement extends HTMLElement {
       event.defaultPrevented ||
       event.altKey ||
       event.ctrlKey ||
-      event.metaKey
+      event.metaKey ||
+      !this._isTabEventOwnedByDialog(event)
     ) {
       return;
     }
@@ -499,6 +635,21 @@ class RettangoliDialogElement extends HTMLElement {
     event.preventDefault();
     const nextElement = movingBeforeFirst ? lastElement : firstElement;
     nextElement.focus({ preventScroll: true });
+  }
+
+  _isTabEventOwnedByDialog(event) {
+    for (const node of event.composedPath()) {
+      if (!(node instanceof HTMLDialogElement)) {
+        continue;
+      }
+      if (node === this._dialogElement) {
+        return true;
+      }
+      if (node.matches(":modal")) {
+        return false;
+      }
+    }
+    return false;
   }
 
   _clearManagedLongTokenWrapping() {

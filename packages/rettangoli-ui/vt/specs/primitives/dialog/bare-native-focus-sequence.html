@@ -1,0 +1,147 @@
+---
+title: Dialog - Bare Native Focus Sequence
+description: Verifies the bare dialog focus trap follows native tab order and defers to nested modals.
+specs:
+  - "Positive tabindex values are ordered before regular controls within their shadow focus scope."
+  - "Disabled, inert, and non-selected radio controls are excluded from the tab sequence."
+  - "Summary and plaintext-only editable controls participate in sequential focus navigation."
+  - "A composed Tab event from a nested modal is left to that topmost modal."
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: open-focus-sequence
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog-focus-sequence[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.getCandidateIds
+    value:
+      - positive-one
+      - positive-two
+      - selected-radio
+      - details-summary
+      - editable
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.focusFirst
+    value: positive-one
+  - action: keypress
+    key: Shift+Tab
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.getActiveId
+    value: editable
+  - action: keypress
+    key: Tab
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.getActiveId
+    value: positive-one
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.openNestedModal
+    value: inner-last
+  - action: keypress
+    key: Tab
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.nestedTabWasAllowed
+    value: true
+---
+<rtgl-button data-testid="open-focus-sequence">Open focus sequence</rtgl-button>
+
+<rtgl-dialog id="dialog-focus-sequence" bare layout="fixed">
+  <div slot="content">
+    <button id="positive-two" type="button" tabindex="2">Positive two</button>
+    <button id="positive-one" type="button" tabindex="1">Positive one</button>
+
+    <fieldset disabled>
+      <button id="disabled-control" type="button">Disabled control</button>
+    </fieldset>
+
+    <div inert>
+      <button id="inert-control" type="button">Inert control</button>
+    </div>
+
+    <input id="unselected-radio" type="radio" name="focus-choice" />
+    <input id="selected-radio" type="radio" name="focus-choice" checked />
+
+    <details>
+      <summary id="details-summary">Details summary</summary>
+      <button id="closed-details-control" type="button">Closed details control</button>
+    </details>
+
+    <div id="editable" contenteditable="plaintext-only"></div>
+
+    <focus-sequence-modal id="nested-focus-modal">
+      <button id="inner-first" type="button">Inner first</button>
+      <button id="inner-last" type="button">Inner last</button>
+    </focus-sequence-modal>
+  </div>
+</rtgl-dialog>
+
+<script>
+  class FocusSequenceModalElement extends HTMLElement {
+    constructor() {
+      super();
+      const shadow = this.attachShadow({ mode: "open" });
+      this.dialog = document.createElement("dialog");
+      this.dialog.appendChild(document.createElement("slot"));
+      shadow.appendChild(this.dialog);
+    }
+
+    showModal() {
+      this.dialog.showModal();
+    }
+  }
+
+  customElements.define("focus-sequence-modal", FocusSequenceModalElement);
+
+  const openButton = document.querySelector('[data-testid="open-focus-sequence"]');
+  const dialog = document.getElementById("dialog-focus-sequence");
+  const nestedModal = document.getElementById("nested-focus-modal");
+  let nestedTabDefaultPrevented = null;
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Tab" && event.composedPath().includes(nestedModal.dialog)) {
+      nestedTabDefaultPrevented = event.defaultPrevented;
+    }
+  });
+
+  const getDeepActiveElement = () => {
+    let activeElement = document.activeElement;
+    while (activeElement?.shadowRoot?.activeElement) {
+      activeElement = activeElement.shadowRoot.activeElement;
+    }
+    return activeElement;
+  };
+
+  openButton.addEventListener("click", () => {
+    dialog.setAttribute("open", "");
+  });
+
+  window.bareNativeFocusSequence = {
+    getCandidateIds() {
+      return dialog._getTabbableElements().map((element) => element.id);
+    },
+    getActiveId() {
+      return getDeepActiveElement()?.id;
+    },
+    focusFirst() {
+      document.getElementById("positive-one").focus();
+      return getDeepActiveElement()?.id;
+    },
+    openNestedModal() {
+      nestedModal.showModal();
+      document.getElementById("inner-last").focus();
+      return getDeepActiveElement()?.id;
+    },
+    nestedTabWasAllowed() {
+      return nestedTabDefaultPrevented === false;
+    },
+  };
+</script>
