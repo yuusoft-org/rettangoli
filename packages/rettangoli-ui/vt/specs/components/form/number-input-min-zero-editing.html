@@ -1,0 +1,188 @@
+---
+title: "Number Input Editing - Zero to One"
+description: A form number field bounded from zero to one remains editable and clamps only when committed.
+specs:
+  - A zero-to-one number can be completely deleted and stores null.
+  - A leading decimal can be entered one key at a time and commits as 0.5.
+  - A below-minimum number remains editable during input and clamps to zero on blur.
+  - An above-maximum number remains editable during input and clamps to one on blur.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: min-zero-number-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: Control+A
+      - action: keypress
+        key: Backspace
+  - action: assert
+    type: js
+    fn: minZeroNumberEditing.getState
+    value:
+      inputValue: ""
+      formValue: null
+      min: "0"
+      max: "1"
+      badInput: false
+      rangeUnderflow: false
+      rangeOverflow: false
+  - action: select
+    testId: min-zero-number-field
+    steps:
+      - action: keypress
+        key: "."
+      - action: keypress
+        key: "5"
+      - action: blur
+  - action: assert
+    type: js
+    fn: minZeroNumberEditing.getState
+    value:
+      inputValue: "0.5"
+      formValue: 0.5
+      min: "0"
+      max: "1"
+      badInput: false
+      rangeUnderflow: false
+      rangeOverflow: false
+  - action: select
+    testId: min-zero-number-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: Control+A
+      - action: keypress
+        key: "-"
+      - action: keypress
+        key: "2"
+  - action: assert
+    type: js
+    fn: minZeroNumberEditing.getState
+    value:
+      inputValue: "-2"
+      formValue: -2
+      min: "0"
+      max: "1"
+      badInput: false
+      rangeUnderflow: true
+      rangeOverflow: false
+  - action: select
+    testId: min-zero-number-field
+    steps:
+      - action: blur
+  - action: assert
+    type: js
+    fn: minZeroNumberEditing.getState
+    value:
+      inputValue: "0"
+      formValue: 0
+      min: "0"
+      max: "1"
+      badInput: false
+      rangeUnderflow: false
+      rangeOverflow: false
+  - action: select
+    testId: min-zero-number-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: Control+A
+      - action: keypress
+        key: "2"
+  - action: assert
+    type: js
+    fn: minZeroNumberEditing.getState
+    value:
+      inputValue: "2"
+      formValue: 2
+      min: "0"
+      max: "1"
+      badInput: false
+      rangeUnderflow: false
+      rangeOverflow: true
+  - action: select
+    testId: min-zero-number-field
+    steps:
+      - action: blur
+  - action: assert
+    type: js
+    fn: minZeroNumberEditing.getState
+    value:
+      inputValue: "1"
+      formValue: 1
+      min: "0"
+      max: "1"
+      badInput: false
+      rangeUnderflow: false
+      rangeOverflow: false
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 520
+---
+<rtgl-view id="container" h="100vh" w="100vw">
+  <rtgl-view g="md" w="360">
+    <rtgl-text id="editing-status" c="mu-fg">Editing state: 0.5</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '360');
+  form.defaultValues = { amount: 0.5 };
+  form.form = {
+    title: 'Zero-to-one number field',
+    description: 'The value can be cleared, entered as a decimal, and clamped on commit.',
+    fields: [{
+      name: 'amount',
+      type: 'input-number',
+      label: 'Amount',
+      min: 0,
+      max: 1,
+      step: 0.1,
+    }],
+    actions: { buttons: [] },
+  };
+
+  const container = document.getElementById('container');
+  const content = container.querySelector('rtgl-view');
+  content.prepend(form);
+
+  const getNumberField = () => form.shadowRoot?.querySelector('[data-field-name="amount"]');
+  const getNativeInput = () => getNumberField()?.shadowRoot?.querySelector('input');
+  const getState = () => ({
+    inputValue: getNativeInput()?.value ?? null,
+    formValue: form.getValues().amount,
+    min: getNativeInput()?.getAttribute('min') ?? null,
+    max: getNativeInput()?.getAttribute('max') ?? null,
+    badInput: getNativeInput()?.validity.badInput ?? false,
+    rangeUnderflow: getNativeInput()?.validity.rangeUnderflow ?? false,
+    rangeOverflow: getNativeInput()?.validity.rangeOverflow ?? false,
+  });
+
+  const updateStatus = () => {
+    const { inputValue, formValue } = getState();
+    document.getElementById('editing-status').textContent = inputValue === ''
+      ? 'Editing state: empty (null)'
+      : `Editing state: ${inputValue} (${formValue})`;
+  };
+
+  form.addEventListener('form-input', updateStatus);
+  form.addEventListener('form-change', updateStatus);
+
+  window.minZeroNumberEditing = { getState };
+
+  const exposeNumberField = () => {
+    const field = getNumberField();
+    if (!field) {
+      setTimeout(exposeNumberField, 0);
+      return;
+    }
+    field.setAttribute('data-testid', 'min-zero-number-field');
+    updateStatus();
+  };
+  exposeNumberField();
+</script>
