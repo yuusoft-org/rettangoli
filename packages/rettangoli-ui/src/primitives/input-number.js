@@ -123,9 +123,16 @@ class RettangoliInputNumberElement extends HTMLElement {
     this._inputElement.focus();
   }
 
-  _emitValueEvent = (eventName) => {
+  _emitValueEvent = (eventName, { commit = false } = {}) => {
     const inputValue = this._inputElement.value;
     if (inputValue.trim() === "") {
+      // Native number inputs expose incomplete values such as `1e` as an
+      // empty string with badInput=true. Keep the last valid form value until
+      // the editor becomes either a complete number or a genuine empty state.
+      if (this._inputElement.validity.badInput) {
+        return;
+      }
+
       this.dispatchEvent(new CustomEvent(eventName, {
         detail: {
           value: null,
@@ -135,16 +142,24 @@ class RettangoliInputNumberElement extends HTMLElement {
       return;
     }
 
-    let numericValue = parseFloat(inputValue);
+    const numericValue = this._inputElement.valueAsNumber;
 
     // Only process if the value is a valid number (not NaN)
-    if (!isNaN(numericValue)) {
-      numericValue = this._clampValueToBounds(numericValue);
-      this._inputElement.value = numericValue.toString();
+    if (!Number.isNaN(numericValue)) {
+      const nextValue = commit
+        ? this._clampValueToBounds(numericValue)
+        : numericValue;
+
+      // Preserve native editing states (for example a trailing decimal) while
+      // typing. Rewriting the value on every input event resets the caret and
+      // makes decimal entry and deletion unreliable.
+      if (commit) {
+        this._inputElement.value = nextValue.toString();
+      }
 
       this.dispatchEvent(new CustomEvent(eventName, {
         detail: {
-          value: numericValue,
+          value: nextValue,
         },
         bubbles: true,
       }));
@@ -156,7 +171,7 @@ class RettangoliInputNumberElement extends HTMLElement {
   };
 
   _onChange = () => {
-    this._emitValueEvent('value-change');
+    this._emitValueEvent('value-change', { commit: true });
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
