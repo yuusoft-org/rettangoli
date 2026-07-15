@@ -28,6 +28,7 @@ Included core primitives:
 - `rtgl-input`
 - `rtgl-list`
 - `rtgl-image`
+- `rtgl-progress-bar`
 - `rtgl-table`
 - `rtgl-textarea`
 - `rtgl-divider`
@@ -56,6 +57,16 @@ Included core primitives:
 - `RETTANGOLI_TUI_DISABLE_KITTY=1` to force fallback text
 
 Auto-detection targets Kitty-compatible environments (`kitty`, `ghostty`, and `wezterm`).
+
+`rtgl-progress-bar` supports:
+
+- `value` + `max` (or `total`) to compute percentage
+- explicit `percent` / `p` override
+- `w` for bar width in terminal cells
+- optional `label`
+- `showPercent=false` to hide trailing percent text
+- `status` (`todo`, `doing`, `done`) or `color` (`green`, `yellow`, `cyan`, `blue`, `magenta`, `gray`)
+- optional `fill` / `empty` characters
 
 `rtgl-table` supports:
 
