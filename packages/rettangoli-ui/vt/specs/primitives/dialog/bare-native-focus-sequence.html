@@ -5,6 +5,8 @@ specs:
   - "Positive tabindex values are ordered before regular controls within their shadow focus scope."
   - "Disabled, inert, and non-selected radio controls are excluded from the tab sequence."
   - "Summary and plaintext-only editable controls participate in sequential focus navigation."
+  - "Image-map areas associated with a visible image remain in the tab sequence without their own CSS box."
+  - "Native temporal controls finish their internal tab sequence before dialog containment wraps focus."
   - "A composed Tab event from a nested modal is left to that topmost modal."
 skipInitialScreenshot: true
 steps:
@@ -25,6 +27,8 @@ steps:
       - selected-radio
       - details-summary
       - editable
+      - before-image-map
+      - image-map-area
   - action: assert
     type: js
     fn: bareNativeFocusSequence.focusFirst
@@ -34,13 +38,23 @@ steps:
   - action: assert
     type: js
     fn: bareNativeFocusSequence.getActiveId
-    value: editable
+    value: image-map-area
   - action: keypress
     key: Tab
   - action: assert
     type: js
     fn: bareNativeFocusSequence.getActiveId
     value: positive-one
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.focusBeforeImageMap
+    value: before-image-map
+  - action: keypress
+    key: Tab
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.getActiveId
+    value: image-map-area
   - action: assert
     type: js
     fn: bareNativeFocusSequence.openNestedModal
@@ -51,6 +65,32 @@ steps:
     type: js
     fn: bareNativeFocusSequence.nestedTabWasAllowed
     value: true
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.openTemporalDialog
+    value: temporal-last
+  - action: keypress
+    key: Tab
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.temporalTabWasAllowed
+    value: true
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.getActiveId
+    value: temporal-last
+  - action: keypress
+    key: Tab
+  - action: keypress
+    key: Tab
+  - action: keypress
+    key: Tab
+  - action: wait
+    ms: 25
+  - action: assert
+    type: js
+    fn: bareNativeFocusSequence.getActiveId
+    value: temporal-first
 ---
 <rtgl-button data-testid="open-focus-sequence">Open focus sequence</rtgl-button>
 
@@ -77,10 +117,35 @@ steps:
 
     <div id="editable" contenteditable="plaintext-only"></div>
 
+    <button id="before-image-map" type="button">Before image map</button>
+    <img
+      src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+      width="20"
+      height="20"
+      usemap="#focus-map"
+      alt="Focus map"
+    />
+    <map name="focus-map">
+      <area
+        id="image-map-area"
+        href="#area-target"
+        shape="rect"
+        coords="0,0,20,20"
+        alt="Image-map target"
+      />
+    </map>
+
     <focus-sequence-modal id="nested-focus-modal">
       <button id="inner-first" type="button">Inner first</button>
       <button id="inner-last" type="button">Inner last</button>
     </focus-sequence-modal>
+  </div>
+</rtgl-dialog>
+
+<rtgl-dialog id="dialog-temporal-sequence" bare layout="fixed">
+  <div slot="content">
+    <button id="temporal-first" type="button">Temporal first</button>
+    <input id="temporal-last" type="date" aria-label="Date" />
   </div>
 </rtgl-dialog>
 
@@ -104,11 +169,21 @@ steps:
   const openButton = document.querySelector('[data-testid="open-focus-sequence"]');
   const dialog = document.getElementById("dialog-focus-sequence");
   const nestedModal = document.getElementById("nested-focus-modal");
+  const imageMapArea = document.getElementById("image-map-area");
+  const temporalDialog = document.getElementById("dialog-temporal-sequence");
+  const temporalInput = document.getElementById("temporal-last");
   let nestedTabDefaultPrevented = null;
+  let temporalTabDefaultPrevented = null;
+
+  // Model engines where a natively focusable area does not expose a CSS box.
+  imageMapArea.getClientRects = () => [];
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Tab" && event.composedPath().includes(nestedModal.dialog)) {
       nestedTabDefaultPrevented = event.defaultPrevented;
+    }
+    if (event.key === "Tab" && event.composedPath().includes(temporalInput)) {
+      temporalTabDefaultPrevented = event.defaultPrevented;
     }
   });
 
@@ -135,6 +210,10 @@ steps:
       document.getElementById("positive-one").focus();
       return getDeepActiveElement()?.id;
     },
+    focusBeforeImageMap() {
+      document.getElementById("before-image-map").focus();
+      return getDeepActiveElement()?.id;
+    },
     openNestedModal() {
       nestedModal.showModal();
       document.getElementById("inner-last").focus();
@@ -142,6 +221,16 @@ steps:
     },
     nestedTabWasAllowed() {
       return nestedTabDefaultPrevented === false;
+    },
+    openTemporalDialog() {
+      nestedModal.dialog.close();
+      dialog.removeAttribute("open");
+      temporalDialog.setAttribute("open", "");
+      temporalInput.focus();
+      return getDeepActiveElement()?.id;
+    },
+    temporalTabWasAllowed() {
+      return temporalTabDefaultPrevented === false;
     },
   };
 </script>

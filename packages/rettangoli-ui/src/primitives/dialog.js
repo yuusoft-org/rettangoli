@@ -12,6 +12,13 @@ const CLOSE_BUTTON_SIZE_PX = 32;
 const CLOSE_BUTTON_OFFSET_PX = 8;
 const ACTIVE_LAYOUT_ATTR = "data-rtgl-active-layout";
 const FIXED_LAYOUT_SELECTOR = `:host([${ACTIVE_LAYOUT_ATTR}="fixed"])`;
+const NATIVE_TEMPORAL_INPUT_TYPES = new Set([
+  "date",
+  "datetime-local",
+  "month",
+  "time",
+  "week",
+]);
 
 const mediaQueryCondition = (mediaQuery) => mediaQuery.replace(/^@media\s+/, "");
 const fixedLayoutStyle = (selector) => css`
@@ -514,12 +521,50 @@ class RettangoliDialogElement extends HTMLElement {
     }
 
     const style = getComputedStyle(element);
-    return (
-      element.getClientRects().length > 0 &&
+    const isCssVisible = (
       style.display !== "none" &&
       style.visibility !== "hidden" &&
       style.visibility !== "collapse"
     );
+    if (element instanceof HTMLAreaElement) {
+      return isCssVisible && this._hasVisibleAssociatedImage(element);
+    }
+
+    return (
+      element.getClientRects().length > 0 &&
+      isCssVisible
+    );
+  }
+
+  _hasVisibleAssociatedImage(areaElement) {
+    const mapElement = areaElement.closest("map[name]");
+    if (!(mapElement instanceof HTMLMapElement) || !mapElement.name) {
+      return false;
+    }
+
+    const root = mapElement.getRootNode();
+    if (!(root instanceof Document || root instanceof ShadowRoot)) {
+      return false;
+    }
+
+    return [...root.querySelectorAll("img[usemap]")].some((imageElement) => {
+      const useMap = imageElement.getAttribute("usemap")?.trim();
+      if (
+        useMap !== `#${mapElement.name}` ||
+        this._hasInertComposedAncestor(imageElement) ||
+        this._isHiddenByClosedDetails(imageElement)
+      ) {
+        return false;
+      }
+
+      const style = getComputedStyle(imageElement);
+      return (
+        imageElement.getClientRects().length > 0 &&
+        style.display !== "none" &&
+        style.visibility !== "hidden" &&
+        style.visibility !== "collapse"
+      );
+    });
   }
 
   _appendTabScope(scopeParent, children, items) {
@@ -601,6 +646,36 @@ class RettangoliDialogElement extends HTMLElement {
     return activeElement;
   }
 
+  _hasNativeInternalTabSequence(element) {
+    return (
+      element instanceof HTMLInputElement &&
+      NATIVE_TEMPORAL_INPUT_TYPES.has(element.type)
+    );
+  }
+
+  _deferNativeTabContainment(movingBeforeFirst) {
+    setTimeout(() => {
+      if (!this._dialogElement.matches(":modal")) {
+        return;
+      }
+
+      const activeElement = this._getDeepActiveElement();
+      if (activeElement && this._isInsideDialog(activeElement)) {
+        return;
+      }
+
+      const tabbableElements = this._getTabbableElements();
+      const nextElement = movingBeforeFirst
+        ? tabbableElements[tabbableElements.length - 1]
+        : tabbableElements[0];
+      if (nextElement) {
+        nextElement.focus({ preventScroll: true });
+      } else {
+        this._dialogElement.focus({ preventScroll: true });
+      }
+    }, 0);
+  }
+
   _containTabFocus(event) {
     if (
       event.key !== "Tab" ||
@@ -629,6 +704,11 @@ class RettangoliDialogElement extends HTMLElement {
     const movingAfterLast = !event.shiftKey && activeElement === lastElement;
 
     if (!movingBeforeFirst && !movingAfterLast) {
+      return;
+    }
+
+    if (this._hasNativeInternalTabSequence(activeElement)) {
+      this._deferNativeTabContainment(movingBeforeFirst);
       return;
     }
 
