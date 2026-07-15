@@ -1,0 +1,103 @@
+---
+title: "Number Input Editing"
+description: A form number field remains editable through empty and decimal typing states.
+specs:
+  - Deleting the complete number leaves the field empty and stores null.
+  - Typing a decimal one key at a time preserves the caret and stores the decimal value.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: number-editing-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: Control+A
+      - action: keypress
+        key: Backspace
+  - action: assert
+    type: js
+    fn: numberInputEditing.getState
+    value:
+      inputValue: ""
+      formValue: null
+  - action: select
+    testId: number-editing-field
+    steps:
+      - action: keypress
+        key: "1"
+      - action: keypress
+        key: "2"
+      - action: keypress
+        key: "."
+      - action: keypress
+        key: "5"
+      - action: blur
+  - action: assert
+    type: js
+    fn: numberInputEditing.getState
+    value:
+      inputValue: "12.5"
+      formValue: 12.5
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 520
+---
+<rtgl-view id="container" h="100vh" w="100vw">
+  <rtgl-view g="md" w="360">
+    <rtgl-text id="editing-status" c="mu-fg">Editing state: 42</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '360');
+  form.defaultValues = { amount: 42 };
+  form.form = {
+    title: 'Editable number field',
+    description: 'The value can be cleared and replaced with a decimal.',
+    fields: [{
+      name: 'amount',
+      type: 'input-number',
+      label: 'Amount',
+      step: 0.1,
+    }],
+    actions: { buttons: [] },
+  };
+
+  const container = document.getElementById('container');
+  const content = container.querySelector('rtgl-view');
+  content.prepend(form);
+
+  const getNumberField = () => form.shadowRoot?.querySelector('[data-field-name="amount"]');
+  const getNativeInput = () => getNumberField()?.shadowRoot?.querySelector('input');
+  const getState = () => ({
+    inputValue: getNativeInput()?.value ?? null,
+    formValue: form.getValues().amount,
+  });
+
+  const updateStatus = () => {
+    const { inputValue, formValue } = getState();
+    document.getElementById('editing-status').textContent = inputValue === ''
+      ? 'Editing state: empty (null)'
+      : `Editing state: ${inputValue} (${formValue})`;
+  };
+
+  form.addEventListener('form-input', updateStatus);
+  form.addEventListener('form-change', updateStatus);
+
+  window.numberInputEditing = { getState };
+
+  const exposeNumberField = () => {
+    const field = getNumberField();
+    if (!field) {
+      setTimeout(exposeNumberField, 0);
+      return;
+    }
+    field.setAttribute('data-testid', 'number-editing-field');
+    updateStatus();
+  };
+  exposeNumberField();
+</script>
