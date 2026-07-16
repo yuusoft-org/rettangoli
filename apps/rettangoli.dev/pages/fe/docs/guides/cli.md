@@ -36,7 +36,7 @@ fe:
   outfile: "./dist/bundle.js"
 ```
 
-The build uses Vite (`vite.build`) for production bundling.
+The build uses Vite 8 (`vite.build`) with Rolldown and Oxc for production bundling and minification.
 
 ## `rtgl fe watch`
 
@@ -46,7 +46,7 @@ Starts a development server that watches for file changes and reloads automatica
 rtgl fe watch
 ```
 
-Uses Vite (`vite.createServer`) for dev serving and full reload on FE file changes.
+Uses Vite (`vite.createServer`) for dev serving and full reload on FE file changes. Component directories, the setup module, and i18n sources are watched explicitly, including when they are outside the served static root.
 
 ## Vite Integration Details
 
@@ -57,11 +57,14 @@ FE keeps the same CLI interface and integrates Vite internally.
   - `resolveId` + `load` to provide generated entry code.
   - `handleHotUpdate` to invalidate and reload on component/setup file edits.
   - `configureServer` middleware to serve the configured `outfile` path in watch mode.
+- Startup behavior:
+  - Watch mode warms and validates the virtual entry before reporting the server as ready.
 - Output behavior:
   - Build preserves configured `fe.outfile` as the entry filename.
   - Additional chunks may be emitted under a `chunks/` folder when splitting is enabled.
 - Validation behavior:
   - Contract validation and YAML/template parsing run before bundle generation.
+  - Watched YAML changes invalidate the virtual entry before the browser reloads.
 
 Current limitations:
 

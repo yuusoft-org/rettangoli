@@ -1,10 +1,5 @@
 #!/usr/bin/env node
 
-import { build, check, scaffold, watch, examples } from "@rettangoli/fe/cli";
-import { check as checkContracts } from "@rettangoli/check/cli";
-import { generate, screenshot, report, accept } from "@rettangoli/vt/cli";
-import { buildSite, watchSite, initSite } from "@rettangoli/sites/cli";
-import { buildSvg } from "@rettangoli/ui/cli";
 import { Command, InvalidArgumentError } from "commander";
 import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
@@ -14,31 +9,80 @@ const packageJson = JSON.parse(
   readFileSync(new URL("./package.json", import.meta.url)),
 );
 
-const localBeCliUrl = new URL("../rettangoli-be/src/cli/index.js", import.meta.url);
-const beCli = existsSync(localBeCliUrl)
-  ? await import(localBeCliUrl)
-  : await import("@rettangoli/be/cli");
+const requestedCommand = process.argv[2];
 
-const {
-  app: appBe,
-  build: buildBe,
-  check: checkBe,
-  compat: compatBe,
-  db: dbBe,
-  init: initBe,
-  manifest: manifestBe,
-  resume: resumeBe,
-  scaffold: scaffoldBe,
-  start: startBe,
-  test: testBe,
-  verify: verifyBe,
-  watch: watchBe,
-} = beCli;
-const localBeRuntimeConfigUrl = new URL("../rettangoli-be/src/runtime/loadBeProjectConfig.js", import.meta.url);
-const beRuntimeConfig = existsSync(localBeRuntimeConfigUrl)
-  ? await import(localBeRuntimeConfigUrl)
-  : await import("@rettangoli/be/runtime/loadBeProjectConfig");
-const { loadBeProjectConfig: loadBeRuntimeConfig } = beRuntimeConfig;
+let build;
+let check;
+let scaffold;
+let watch;
+let examples;
+let checkContracts;
+let generate;
+let screenshot;
+let report;
+let accept;
+let buildSite;
+let watchSite;
+let initSite;
+let buildSvg;
+let appBe;
+let buildBe;
+let checkBe;
+let compatBe;
+let dbBe;
+let initBe;
+let manifestBe;
+let resumeBe;
+let scaffoldBe;
+let startBe;
+let testBe;
+let verifyBe;
+let watchBe;
+let loadBeRuntimeConfig;
+
+if (requestedCommand === "fe") {
+  ({ build, check, scaffold, watch, examples } = await import(
+    "@rettangoli/fe/cli",
+  ));
+} else if (requestedCommand === "check") {
+  ({ check: checkContracts } = await import("@rettangoli/check/cli"));
+} else if (requestedCommand === "vt") {
+  ({ generate, screenshot, report, accept } = await import("@rettangoli/vt/cli"));
+} else if (requestedCommand === "sites") {
+  ({ buildSite, watchSite, initSite } = await import("@rettangoli/sites/cli"));
+} else if (requestedCommand === "ui") {
+  ({ buildSvg } = await import("@rettangoli/ui/cli"));
+} else if (requestedCommand === "be") {
+  const localBeCliUrl = new URL("../rettangoli-be/src/cli/index.js", import.meta.url);
+  const beCli = existsSync(localBeCliUrl)
+    ? await import(localBeCliUrl)
+    : await import("@rettangoli/be/cli");
+
+  ({
+    app: appBe,
+    build: buildBe,
+    check: checkBe,
+    compat: compatBe,
+    db: dbBe,
+    init: initBe,
+    manifest: manifestBe,
+    resume: resumeBe,
+    scaffold: scaffoldBe,
+    start: startBe,
+    test: testBe,
+    verify: verifyBe,
+    watch: watchBe,
+  } = beCli);
+
+  const localBeRuntimeConfigUrl = new URL(
+    "../rettangoli-be/src/runtime/loadBeProjectConfig.js",
+    import.meta.url,
+  );
+  const beRuntimeConfig = existsSync(localBeRuntimeConfigUrl)
+    ? await import(localBeRuntimeConfigUrl)
+    : await import("@rettangoli/be/runtime/loadBeProjectConfig");
+  ({ loadBeProjectConfig: loadBeRuntimeConfig } = beRuntimeConfig);
+}
 
 function requireBeCommand(handler, name) {
   if (typeof handler !== "function") {
@@ -274,7 +318,7 @@ Examples:
   $ rettangoli fe build --setup-path src/setup.web.js
 `,
   )
-  .action((options) => {
+  .action(async (options) => {
     const config = readConfig();
 
     if (!config) {
@@ -304,7 +348,7 @@ Examples:
       options.outfile = config.fe.outfile;
     }
 
-    build(options);
+    await build(options);
   });
 
 feCommand
@@ -385,7 +429,7 @@ Examples:
   $ rettangoli fe watch --setup-path src/setup.web.js
 `,
   )
-  .action((options) => {
+  .action(async (options) => {
     const config = readConfig();
 
     if (!config) {
@@ -415,7 +459,7 @@ Examples:
       options.outfile = config.fe.outfile;
     }
 
-    watch(options);
+    await watch(options);
   });
 
 feCommand

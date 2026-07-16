@@ -2,7 +2,10 @@ import path from "node:path";
 
 import { createServer } from "vite";
 
-import { createRettangoliFeVitePlugin } from "./vitePlugin.js";
+import {
+  RETTANGOLI_FE_VIRTUAL_ENTRY_ID,
+  createRettangoliFeVitePlugin,
+} from "./vitePlugin.js";
 
 const toPosixPath = (value) => value.split(path.sep).join("/");
 
@@ -45,10 +48,12 @@ export const createWatchServer = async (options = {}) => {
   const { root, publicEntryPath } = resolveServeContext({ cwd, outfile });
 
   const server = await createServer({
+    clearScreen: false,
     configFile: false,
     root,
     server: {
       port,
+      strictPort: true,
       host: "0.0.0.0",
       allowedHosts: true,
     },
@@ -75,12 +80,13 @@ const startWatching = async (options = {}) => {
   } = options;
   const { root, publicEntryPath } = resolveServeContext({ cwd, outfile });
 
-  console.log("watch root dir:", root);
-  console.log("watch entry path:", publicEntryPath);
+  console.log(`[Watch] Root: ${root}`);
+  console.log(`[Watch] Entry: ${publicEntryPath}`);
 
   try {
     const server = await createWatchServer(options);
     await server.listen();
+    await server.transformRequest(RETTANGOLI_FE_VIRTUAL_ENTRY_ID);
     server.printUrls();
     if (enableCliShortcuts) {
       server.bindCLIShortcuts({ print: true });
