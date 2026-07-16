@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/fe",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Frontend framework for building reactive web components",
   "type": "module",
   "main": "./src/index.js",
@@ -22,6 +22,9 @@
     "directory": "packages/rettangoli-fe"
   },
   "license": "MIT",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "exports": {
     ".": "./src/index.js",
     "./cli": "./src/cli/index.js",
@@ -36,7 +39,7 @@
     "jempl": "1.0.1",
     "js-yaml": "^4.1.0",
     "snabbdom": "^3.6.2",
-    "vite": "^6.3.5"
+    "vite": "^8.1.4"
   },
   "scripts": {
     "dev": "node ../rettangoli-cli/cli.js fe watch",

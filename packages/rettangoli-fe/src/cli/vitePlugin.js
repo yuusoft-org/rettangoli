@@ -1,5 +1,6 @@
 import path from "node:path";
 
+import { getAllFiles } from "../commonBuild.js";
 import { isSupportedComponentFile } from "./contracts.js";
 import { generateFrontendEntrySource } from "./frontendEntrySource.js";
 import {
@@ -54,6 +55,24 @@ export const createRettangoliFeVitePlugin = ({
 
   let currentCommand = "build";
   let devServer = null;
+
+  const getComponentFilePaths = () => {
+    return getAllFiles(resolvedDirs)
+      .filter((filePath) => isSupportedComponentFile(filePath));
+  };
+
+  const getEntryWatchPaths = ({ includeDirectories = false } = {}) => {
+    const i18nWatchPaths = includeDirectories
+      ? getI18nWatchPaths({ i18nContext })
+      : Object.values(i18nContext.localeFiles || {});
+
+    return [
+      ...(includeDirectories ? resolvedDirs : []),
+      resolvedSetup,
+      ...getComponentFilePaths(),
+      ...i18nWatchPaths,
+    ];
+  };
 
   const isTrackedFilePath = (value) => {
     const filePath = path.resolve(value);
@@ -110,6 +129,13 @@ export const createRettangoliFeVitePlugin = ({
       if (id !== RESOLVED_VIRTUAL_ENTRY_ID) {
         return null;
       }
+
+      for (const filePath of getEntryWatchPaths()) {
+        if (typeof this.addWatchFile === "function") {
+          this.addWatchFile(filePath);
+        }
+      }
+
       return generateFrontendEntrySource({
         cwd,
         dirs,
@@ -121,10 +147,7 @@ export const createRettangoliFeVitePlugin = ({
     },
     configureServer(server) {
       devServer = server;
-      const i18nWatchPaths = getI18nWatchPaths({ i18nContext });
-      if (i18nWatchPaths.length > 0) {
-        server.watcher.add(i18nWatchPaths);
-      }
+      server.watcher.add(getEntryWatchPaths({ includeDirectories: true }));
 
       const serveI18nAsset = (req, res, next) => {
         if (!i18nContext.enabled || !normalizedPublicEntryPath) {

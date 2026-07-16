@@ -1,4 +1,5 @@
 import path from "node:path";
+import { performance } from "node:perf_hooks";
 
 import { build as viteBuild } from "vite";
 
@@ -9,8 +10,6 @@ import {
 import { emitI18nAssets, loadI18nBuildContext } from "./i18nBuild.js";
 
 const buildRettangoliFrontend = async (options = {}) => {
-  console.log("running build with options", options);
-
   const {
     cwd = process.cwd(),
     dirs = ["./example"],
@@ -29,9 +28,14 @@ const buildRettangoliFrontend = async (options = {}) => {
     i18n,
     errorPrefix: "[Build]",
   });
+  const startedAt = performance.now();
+
+  console.log(`[Build] Building ${resolvedOutfile}...`);
 
   await viteBuild({
     configFile: false,
+    clearScreen: false,
+    logLevel: "warn",
     root: cwd,
     plugins: [
       createRettangoliFeVitePlugin({
@@ -45,10 +49,11 @@ const buildRettangoliFrontend = async (options = {}) => {
     build: {
       outDir: relativeOutDir,
       emptyOutDir: false,
-      minify: development ? false : "esbuild",
-      sourcemap: !!development,
+      minify: development ? false : "oxc",
+      sourcemap: false,
       target: "esnext",
-      rollupOptions: {
+      reportCompressedSize: false,
+      rolldownOptions: {
         input: RETTANGOLI_FE_VIRTUAL_ENTRY_ID,
         output: {
           format: "es",
@@ -62,7 +67,8 @@ const buildRettangoliFrontend = async (options = {}) => {
 
   emitI18nAssets({ outDir, i18nContext });
 
-  console.log(`Build complete. Output file: ${resolvedOutfile}`);
+  const durationMs = Math.round(performance.now() - startedAt);
+  console.log(`[Build] Complete in ${durationMs}ms.`);
 };
 
 export default buildRettangoliFrontend;

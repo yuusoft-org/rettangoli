@@ -88,6 +88,9 @@ const requestFromMiddleware = async (server, url) =>
     };
     const res = {
       statusCode: 200,
+      getHeader(name) {
+        return headers.get(String(name).toLowerCase());
+      },
       setHeader(name, value) {
         headers.set(String(name).toLowerCase(), value);
       },
@@ -248,6 +251,42 @@ describe("vite runtime integration", () => {
     expect(response.body).toContain("x-counter");
     expect(response.body).toContain("customElements.define");
     expect(response.body).not.toContain("__STALE_FE_BUNDLE__");
+  });
+
+  it("refreshes the generated entry when an outside-root YAML source changes", async () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    const server = await createWatchServer({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      outfile: "vt/static/public/main.js",
+    });
+    servers.push(server);
+
+    const entryUrl = "/static/public/main.js";
+    const initialResponse = await requestFromMiddleware(server, entryUrl);
+    expect(initialResponse.body).not.toContain("Updated by watcher");
+
+    writeFileSync(
+      path.join(rootDir, "components", "counter", "counter.view.yaml"),
+      "template:\n  - 'div#root': Updated by watcher\n",
+    );
+
+    const plugin = server.config.plugins.find(
+      (candidate) => candidate.name === "rettangoli-fe",
+    );
+    plugin.handleHotUpdate({
+      file: path.join(rootDir, "components", "counter", "counter.view.yaml"),
+    });
+
+    const updatedResponse = await requestFromMiddleware(server, entryUrl);
+    if (updatedResponse.statusCode !== 200) {
+      throw new Error(updatedResponse.body);
+    }
+    expect(updatedResponse.statusCode).toBe(200);
+    expect(updatedResponse.body).toContain("Updated by watcher");
   });
 
   it("serves i18n JSON assets in watch mode", async () => {

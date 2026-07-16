@@ -38,7 +38,7 @@ rtgl fe watch     # Start dev server
 - [Jempl](https://github.com/yuusoft-org/jempl) - Template engine
 
 **Build & Development:**
-- [Vite](https://vite.dev/) - Dev server and production bundling
+- [Vite 8](https://vite.dev/) - Rolldown-powered production bundling and dev server
 
 **Browser Native:**
 - Web Components - Component encapsulation
@@ -47,7 +47,7 @@ rtgl fe watch     # Start dev server
 
 ### Prerequisites
 
-- Node.js 18+ or Bun
+- Node.js 20.19+, Node.js 22.12+, or Bun
 - A `rettangoli.config.yaml` file in your project root
 
 ### Setup
@@ -93,10 +93,11 @@ src/
 
 `@rettangoli/fe` uses Vite directly through the Node API, behind the existing FE CLI commands.
 
-- `rtgl fe build` uses `vite.build()` with a virtual entry module generated from configured component files.
-- `rtgl fe watch` uses `vite.createServer()` and serves the configured `outfile` path via middleware.
+- `rtgl fe build` uses Vite 8's Rolldown-powered `vite.build()` with a virtual entry module generated from configured component files.
+- `rtgl fe watch` uses `vite.createServer()`, warms the virtual entry during startup, and serves the configured `outfile` path via middleware.
 - FE runtime source is generated in memory (virtual module), so no temporary generated JS files are required.
 - Contract validation, YAML parsing, and template parsing still run before code generation.
+- Component directories, setup files, and locale files are registered explicitly so watch mode also sees sources outside the served static root.
 
 Current Vite features used by FE:
 
@@ -106,7 +107,7 @@ Current Vite features used by FE:
   - `resolveId` + `load` for the FE virtual entry (`virtual:rettangoli-fe-entry`).
   - `handleHotUpdate` for FE file change detection.
   - `configureServer` for full-page reload and serving the configured output entry URL.
-- Rollup output control through Vite (`entryFileNames`, `chunkFileNames`, `assetFileNames`) to preserve CLI `outfile` behavior.
+- Rolldown output control through Vite (`entryFileNames`, `chunkFileNames`, `assetFileNames`) to preserve CLI `outfile` behavior.
 
 Notes:
 

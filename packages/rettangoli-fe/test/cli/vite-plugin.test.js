@@ -82,7 +82,7 @@ describe("vite plugin", () => {
     expect(source).toContain("/@fs");
   });
 
-  it("registers i18n source files with the Vite watcher", () => {
+  it("registers component, setup, and i18n sources with the Vite watcher", () => {
     const rootDir = createFixtureProject();
     const i18nDir = addI18nFiles(rootDir);
     createdDirs.push(rootDir);
@@ -116,10 +116,28 @@ describe("vite plugin", () => {
     plugin.configureServer(server);
 
     expect(server.watcher.add).toHaveBeenCalledTimes(1);
-    expect(server.watcher.add.mock.calls[0][0]).toEqual([
-      i18nDir,
-      path.join(i18nDir, "en.yaml"),
-      path.join(i18nDir, "vi.yaml"),
-    ]);
+    expect(server.watcher.add.mock.calls[0][0]).toEqual(
+      expect.arrayContaining([
+        path.join(rootDir, "components"),
+        path.join(rootDir, "setup.js"),
+        path.join(rootDir, "components", "counter", "counter.schema.yaml"),
+        path.join(rootDir, "components", "counter", "counter.view.yaml"),
+        path.join(rootDir, "components", "counter", "counter.store.js"),
+        i18nDir,
+        path.join(i18nDir, "en.yaml"),
+        path.join(i18nDir, "vi.yaml"),
+      ]),
+    );
+
+    const watcherHandlers = Object.fromEntries(server.watcher.on.mock.calls);
+    watcherHandlers.add(
+      path.join(rootDir, "components", "newComponent", "newComponent.view.yaml"),
+    );
+    watcherHandlers.unlink(
+      path.join(rootDir, "components", "counter", "counter.view.yaml"),
+    );
+
+    expect(server.ws.send).toHaveBeenCalledTimes(2);
+    expect(server.ws.send).toHaveBeenLastCalledWith({ type: "full-reload" });
   });
 });
