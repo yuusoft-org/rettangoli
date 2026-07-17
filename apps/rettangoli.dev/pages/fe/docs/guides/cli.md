@@ -48,6 +48,18 @@ rtgl fe watch
 
 Uses Vite (`vite.createServer`) for dev serving and full reload on FE file changes. Component directories, the setup module, and i18n sources are watched explicitly, including when they are outside the served static root.
 
+Use `fe.publicDir` to serve a directory of static assets at `/` without Vite
+transformations:
+
+```yaml
+fe:
+  publicDir: "./static"
+```
+
+The equivalent CLI option is `rtgl fe watch --public-dir ./static`. Relative
+paths are resolved from the project root. This is useful when binary assets use
+extensionless filenames that Vite would otherwise treat as JavaScript modules.
+
 ## Vite Integration Details
 
 FE keeps the same CLI interface and integrates Vite internally.
@@ -159,6 +171,7 @@ fe:
     - "./src/pages"
   setup: "setup.js"
   outfile: "./dist/bundle.js"
+  publicDir: "./static"
   i18n:
     dir: "./src/i18n"
     defaultLocale: "en"
@@ -175,6 +188,7 @@ fe:
 | `dirs` | Directories to scan for component files |
 | `setup` | Setup script that exports custom dependencies |
 | `outfile` | Output path for the bundled JavaScript |
+| `publicDir` | Optional directory served at `/` without transformations in watch mode |
 | `i18n.dir` | Directory containing locale YAML files |
 | `i18n.defaultLocale` | Initial locale used by the runtime |
 | `i18n.fallbackLocale` | Locale used if another locale cannot be loaded |

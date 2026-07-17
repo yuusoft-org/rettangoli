@@ -1,4 +1,5 @@
 import path from "node:path";
+import { Writable } from "node:stream";
 import { fileURLToPath } from "node:url";
 import {
   existsSync,
@@ -80,27 +81,40 @@ const createFixtureProject = ({
 const requestFromMiddleware = async (server, url) =>
   await new Promise((resolve, reject) => {
     const headers = new Map();
+    const chunks = [];
     const req = {
       url,
       originalUrl: url,
       method: "GET",
       headers: {},
     };
-    const res = {
-      statusCode: 200,
-      getHeader(name) {
-        return headers.get(String(name).toLowerCase());
+    const res = new Writable({
+      write(chunk, _encoding, callback) {
+        chunks.push(Buffer.from(chunk));
+        callback();
       },
-      setHeader(name, value) {
-        headers.set(String(name).toLowerCase(), value);
-      },
-      end(body = "") {
+      final(callback) {
+        const rawBody = Buffer.concat(chunks);
         resolve({
-          statusCode: this.statusCode,
+          statusCode: res.statusCode,
           headers,
-          body: String(body),
+          body: String(rawBody),
+          rawBody,
         });
+        callback();
       },
+    });
+    res.statusCode = 200;
+    res.getHeader = (name) => headers.get(String(name).toLowerCase());
+    res.setHeader = (name, value) => {
+      headers.set(String(name).toLowerCase(), value);
+    };
+    res.writeHead = (statusCode, responseHeaders = {}) => {
+      res.statusCode = statusCode;
+      Object.entries(responseHeaders).forEach(([name, value]) => {
+        res.setHeader(name, value);
+      });
+      return res;
     };
 
     server.middlewares.handle(req, res, (error) => {
@@ -113,6 +127,7 @@ const requestFromMiddleware = async (server, url) =>
         statusCode: res.statusCode,
         headers,
         body: "",
+        rawBody: Buffer.alloc(0),
       });
     });
   });
@@ -251,6 +266,41 @@ describe("vite runtime integration", () => {
     expect(response.body).toContain("x-counter");
     expect(response.body).toContain("customElements.define");
     expect(response.body).not.toContain("__STALE_FE_BUNDLE__");
+  });
+
+  it("serves extensionless files from the configured public directory without transforming them", async () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    const publicFilePath = path.join(
+      rootDir,
+      "static",
+      "templates",
+      "default",
+      "files",
+      "font-file-id",
+    );
+    const publicFileBytes = Buffer.from([0, 1, 0, 0, 255]);
+    mkdirSync(path.dirname(publicFilePath), { recursive: true });
+    writeFileSync(publicFilePath, publicFileBytes);
+
+    const server = await createWatchServer({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      outfile: "vt/static/public/main.js",
+      publicDir: "static",
+    });
+    servers.push(server);
+
+    const response = await requestFromMiddleware(
+      server,
+      "/templates/default/files/font-file-id",
+    );
+
+    expect(response.statusCode).toBe(200);
+    expect(response.rawBody).toEqual(publicFileBytes);
+    expect(response.body).not.toContain("export default");
   });
 
   it("refreshes the generated entry when an outside-root YAML source changes", async () => {

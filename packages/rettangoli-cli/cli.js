@@ -417,6 +417,10 @@ feCommand
   .description("Watch for changes")
   .option("-p, --port <port>", "The port to use", parsePortOption, 3001)
   .option("-s, --setup-path <path>", "Custom setup file path")
+  .option(
+    "--public-dir <path>",
+    "Directory to serve as untransformed static assets",
+  )
   .addHelpText(
     "after",
     `
@@ -427,6 +431,7 @@ Examples:
   $ rettangoli fe watch -p 4000
   $ rettangoli fe watch -s src/setup.tauri.js
   $ rettangoli fe watch --setup-path src/setup.web.js
+  $ rettangoli fe watch --public-dir static
 `,
   )
   .action(async (options) => {
@@ -457,6 +462,9 @@ Examples:
     // Use config outfile if not specified via CLI option
     if (!options.outfile && config.fe.outfile) {
       options.outfile = config.fe.outfile;
+    }
+    if (options.publicDir === undefined && config.fe.publicDir !== undefined) {
+      options.publicDir = config.fe.publicDir;
     }
 
     await watch(options);

@@ -43,13 +43,17 @@ export const createWatchServer = async (options = {}) => {
     outfile = "./vt/static/main.js",
     setup = "setup.js",
     i18n = null,
+    publicDir,
   } = options;
 
   const { root, publicEntryPath } = resolveServeContext({ cwd, outfile });
+  const resolvedPublicDir =
+    typeof publicDir === "string" ? path.resolve(cwd, publicDir) : publicDir;
 
   const server = await createServer({
     clearScreen: false,
     configFile: false,
+    publicDir: resolvedPublicDir,
     root,
     server: {
       port,

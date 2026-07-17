@@ -95,6 +95,7 @@ src/
 
 - `rtgl fe build` uses Vite 8's Rolldown-powered `vite.build()` with a virtual entry module generated from configured component files.
 - `rtgl fe watch` uses `vite.createServer()`, warms the virtual entry during startup, and serves the configured `outfile` path via middleware.
+- Watch projects can configure `fe.publicDir` to serve static assets from the project root without Vite transformations.
 - FE runtime source is generated in memory (virtual module), so no temporary generated JS files are required.
 - Contract validation, YAML parsing, and template parsing still run before code generation.
 - Component directories, setup files, and locale files are registered explicitly so watch mode also sees sources outside the served static root.
@@ -125,6 +126,7 @@ fe:
     - "./src/pages"
   setup: "setup.js"
   outfile: "./dist/bundle.js"
+  publicDir: "./static"
   i18n:
     dir: "./src/i18n"
     defaultLocale: "en"
@@ -135,6 +137,10 @@ fe:
   examples:
     outputDir: "./vt/specs/examples"
 ```
+
+`publicDir` is optional and only affects `rtgl fe watch`. Its files are served
+at `/` without Vite transformations. This is useful for extensionless or other
+binary assets that must retain their source filenames.
 
 ## Setup Contract
 
