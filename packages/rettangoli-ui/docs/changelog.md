@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Improvements
+- `rtgl-form`: rejects unsafe, bracket-style, and reserved field paths without mutating prototypes; preserves invalid-path errors during reactive validation; and keeps conditional value pruning safe with frozen store state.
 - `rtgl-dialog`: added `bare` mode for consumer-owned modal visuals while preserving native modality, focus containment, and close requests.
 - `rtgl-dialog`: keeps sequential keyboard focus inside the modal across slotted and open-shadow content instead of allowing focus to fall back to the page body at a tab boundary.
 - `rtgl-dialog`: fixed the open animation so adaptive centering is applied before the first paint, preventing the dialog from jumping from a top-biased position into the centered final state.
