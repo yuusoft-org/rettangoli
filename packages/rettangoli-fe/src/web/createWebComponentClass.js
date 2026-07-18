@@ -15,7 +15,10 @@ import {
   buildObservedAttributes,
 } from "../core/runtime/componentRuntime.js";
 import { initializeComponentDom } from "./componentDom.js";
-import { createWebComponentUpdateHook } from "./componentUpdateHook.js";
+import {
+  createWebComponentUpdateHook,
+  RETTANGOLI_COMPONENT_MARKER,
+} from "./componentUpdateHook.js";
 import { scheduleFrame } from "./scheduler.js";
 
 export const createWebComponentClass = ({
@@ -34,6 +37,7 @@ export const createWebComponentClass = ({
   deps,
 }) => {
   class BaseComponent extends HTMLElement {
+    [RETTANGOLI_COMPONENT_MARKER] = true;
     elementName;
     styles;
     _snabbdomH;

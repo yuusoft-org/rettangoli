@@ -1,5 +1,6 @@
 import { parse } from "jempl";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { RETTANGOLI_COMPONENT_MARKER } from "../../src/web/componentUpdateHook.js";
 
 let createComponent;
 let createI18nRuntime;
@@ -258,6 +259,12 @@ afterAll(() => {
 });
 
 describe("createComponent runtime contracts", () => {
+  it("brands instances for framework-owned child update hooks", () => {
+    const TestComponent = createComponentClass();
+
+    expect(new TestComponent()[RETTANGOLI_COMPONENT_MARKER]).toBe(true);
+  });
+
   it("binds named methods with payload defaulting to object", () => {
     const TestComponent = createComponentClass({
       methods: {
