@@ -121,6 +121,46 @@ describe("rtgl-tag-select handlers", () => {
     expect(render).toHaveBeenCalledTimes(1);
   });
 
+  it("preserves an uncontrolled draft when only options changed", () => {
+    const selectedValues = ["bug"];
+    const options = [
+      { value: "bug", label: "Bug" },
+      { value: "platform", label: "Platform" },
+    ];
+    const store = createStore({
+      isOpen: true,
+      hasSelectedValues: true,
+      selectedValues: ["bug"],
+      draftSelectedValues: ["bug", "platform"],
+    });
+    const render = vi.fn();
+
+    handleOnUpdate(
+      {
+        store,
+        render,
+        refs: {},
+      },
+      {
+        oldProps: {
+          options: [{ value: "bug", label: "Bug" }],
+          selectedValues,
+        },
+        newProps: {
+          options,
+          selectedValues,
+        },
+      },
+    );
+
+    expect(store.getState().selectedValues).toEqual(["bug"]);
+    expect(store.getState().draftSelectedValues).toEqual([
+      "bug",
+      "platform",
+    ]);
+    expect(render).toHaveBeenCalledTimes(1);
+  });
+
   it("emits open-change when an open tag select becomes disabled", () => {
     const store = createStore({
       isOpen: true,

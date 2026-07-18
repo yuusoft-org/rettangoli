@@ -96,6 +96,12 @@ Payload shape:
 }
 ```
 
+Props that did not change preserve their reference identity between `oldProps`
+and `newProps`. When a JSON-data object or array is mutated in place, the
+changed prop in `oldProps` contains its value from the previous render.
+Non-JSON values such as `BigInt`, functions, and circular objects are supported
+and compared with `Object.is` rather than cloned.
+
 ## 5. Event Handlers from `.view.yaml`
 
 `refs.*.eventListeners.*.handler` resolves to a handler export in `.handlers.js`.
