@@ -97,10 +97,16 @@ Payload shape:
 ```
 
 Props that did not change preserve their reference identity between `oldProps`
-and `newProps`. When a JSON-data object or array is mutated in place, the
-changed prop in `oldProps` contains its value from the previous render.
-Non-JSON values such as `BigInt`, functions, and circular objects are supported
-and compared with `Object.is` rather than cloned.
+and `newProps`. When a plain JSON-data object or array is mutated in place, the
+changed prop in `oldProps` contains its value from the previous render. Opaque
+values such as `BigInt`, functions, circular objects, `Date`, `Map`, `Set`,
+`RegExp`, `ArrayBuffer`, and class instances are supported and compared with
+`Object.is` rather than cloned. Replacing an opaque value's reference triggers
+an update; mutating it in place does not.
+
+Multiple parent updates before the next scheduled frame are coalesced into one
+child update. Its payload contains the props from before the first update and
+the latest props available when that frame runs.
 
 ## 5. Event Handlers from `.view.yaml`
 

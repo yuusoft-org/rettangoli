@@ -48,7 +48,9 @@ export const createWatchServer = async (options = {}) => {
 
   const { root, publicEntryPath } = resolveServeContext({ cwd, outfile });
   const resolvedPublicDir =
-    typeof publicDir === "string" ? path.resolve(cwd, publicDir) : publicDir;
+    typeof publicDir === "string" && publicDir.length > 0
+      ? path.resolve(cwd, publicDir)
+      : publicDir;
 
   const server = await createServer({
     clearScreen: false,

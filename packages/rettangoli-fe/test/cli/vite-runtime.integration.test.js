@@ -303,6 +303,33 @@ describe("vite runtime integration", () => {
     expect(response.body).not.toContain("export default");
   });
 
+  it.each([
+    ["an empty string", ""],
+    ["false", false],
+  ])("keeps public serving disabled for %s", async (_label, publicDir) => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    const privateFilePath = path.join(rootDir, ".git", "config");
+    mkdirSync(path.dirname(privateFilePath), { recursive: true });
+    writeFileSync(privateFilePath, "PRIVATE_PROJECT_CONFIGURATION\n");
+
+    const server = await createWatchServer({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      outfile: "vt/static/public/main.js",
+      publicDir,
+    });
+    servers.push(server);
+
+    const response = await requestFromMiddleware(server, "/.git/config");
+
+    expect(server.config.publicDir).toBe("");
+    expect(response.statusCode).toBe(404);
+    expect(response.body).not.toContain("PRIVATE_PROJECT_CONFIGURATION");
+  });
+
   it("refreshes the generated entry when an outside-root YAML source changes", async () => {
     const rootDir = createFixtureProject();
     createdDirs.push(rootDir);

@@ -5,11 +5,100 @@ export const RETTANGOLI_COMPONENT_MARKER = Symbol.for(
 );
 
 const propsSnapshots = new WeakMap();
+const pendingUpdates = new WeakMap();
 
 const createReferenceSnapshot = (value) => ({
   value,
   hasStructuralSnapshot: false,
 });
+
+const hasUnsupportedToJSONOrPrototypeCycle = (value) => {
+  const visited = new Set();
+  let current = value;
+
+  while (current !== null) {
+    if (visited.has(current)) return true;
+    visited.add(current);
+
+    const descriptor = Object.getOwnPropertyDescriptor(current, "toJSON");
+    if (descriptor) {
+      if (!("value" in descriptor)) return true;
+      return typeof descriptor.value === "function";
+    }
+    current = Object.getPrototypeOf(current);
+  }
+
+  return false;
+};
+
+const isJsonData = (value, ancestors = new Set()) => {
+  if (value === null) return true;
+
+  const valueType = typeof value;
+  if (valueType === "string" || valueType === "boolean") return true;
+  if (valueType === "number") {
+    return Number.isFinite(value) && !Object.is(value, -0);
+  }
+  if (valueType !== "object") return false;
+
+  if (ancestors.has(value)) return false;
+
+  const isArray = Array.isArray(value);
+  const prototype = Object.getPrototypeOf(value);
+  if (
+    (isArray && prototype !== Array.prototype) ||
+    (!isArray && prototype !== Object.prototype && prototype !== null)
+  ) {
+    return false;
+  }
+
+  if (hasUnsupportedToJSONOrPrototypeCycle(value)) return false;
+
+  ancestors.add(value);
+  try {
+    if (isArray) {
+      const ownKeys = Reflect.ownKeys(value);
+      if (ownKeys.length !== value.length + 1 || !ownKeys.includes("length")) {
+        return false;
+      }
+
+      for (let index = 0; index < value.length; index += 1) {
+        const descriptor = Object.getOwnPropertyDescriptor(
+          value,
+          String(index),
+        );
+        if (
+          !descriptor ||
+          !("value" in descriptor) ||
+          !descriptor.enumerable ||
+          !isJsonData(descriptor.value, ancestors)
+        ) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    for (const key of Reflect.ownKeys(value)) {
+      if (typeof key !== "string") return false;
+
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (
+        !descriptor ||
+        !("value" in descriptor) ||
+        !descriptor.enumerable ||
+        !isJsonData(descriptor.value, ancestors)
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  } finally {
+    ancestors.delete(value);
+  }
+};
 
 const createPropSnapshot = (value) => {
   if (value === null || typeof value !== "object") {
@@ -17,6 +106,10 @@ const createPropSnapshot = (value) => {
   }
 
   try {
+    if (!isJsonData(value)) {
+      return createReferenceSnapshot(value);
+    }
+
     // Keep the live value for identity and a separate old value only for
     // detecting and reporting same-reference JSON-data mutations.
     const serialized = JSON.stringify(value);
@@ -72,6 +165,7 @@ const defineProp = (target, key, value) => {
 const hasDriftedFromSnapshot = (entry) => {
   if (!entry.hasStructuralSnapshot) return false;
   try {
+    if (!isJsonData(entry.value)) return true;
     return JSON.stringify(entry.value) !== entry.serialized;
   } catch {
     return true;
@@ -118,6 +212,48 @@ const storePropsSnapshot = (element, props = {}) => {
   return snapshot;
 };
 
+const runPendingUpdate = (element, pendingUpdate) => {
+  if (pendingUpdates.get(element) !== pendingUpdate) return;
+
+  pendingUpdates.delete(element);
+
+  // Prop values remain live references between the parent render and this
+  // frame. Refresh the latest snapshot so the stored baseline matches the
+  // value the child is about to render.
+  pendingUpdate.nextSnapshot = createPropsSnapshot(pendingUpdate.newProps);
+  propsSnapshots.set(element, pendingUpdate.nextSnapshot);
+  const nextSnapshot = pendingUpdate.nextSnapshot;
+  const changedPropKeys = getChangedPropKeys(
+    pendingUpdate.previousSnapshot,
+    nextSnapshot,
+  );
+
+  if (changedPropKeys.length === 0) {
+    element.removeAttribute("isDirty");
+    return;
+  }
+
+  const previousProps = createOldProps(pendingUpdate.previousSnapshot);
+
+  element.render();
+  element.removeAttribute("isDirty");
+
+  if (element.handlers && element.handlers.handleOnUpdate) {
+    const deps = {
+      ...element.deps,
+      store: element.store,
+      render: element.render.bind(element),
+      handlers: element.handlers,
+      dispatchEvent: element.dispatchEvent.bind(element),
+      refs: element.refIds || {},
+    };
+    element.handlers.handleOnUpdate(deps, {
+      oldProps: previousProps,
+      newProps: pendingUpdate.newProps,
+    });
+  }
+};
+
 export const createWebComponentUpdateHook = ({
   scheduleFrameFn = scheduleFrame,
 } = {}) => {
@@ -138,38 +274,36 @@ export const createWebComponentUpdateHook = ({
 
       const oldProps = oldVnode.data?.props || {};
       const newProps = vnode.data?.props || {};
+      const pendingUpdate = pendingUpdates.get(element);
+
+      if (pendingUpdate) {
+        pendingUpdate.newProps = newProps;
+        pendingUpdate.nextSnapshot = createPropsSnapshot(newProps);
+        return;
+      }
+
       const previousSnapshot =
         propsSnapshots.get(element) || createPropsSnapshot(oldProps);
-      const nextSnapshot = storePropsSnapshot(element, newProps);
+      const nextSnapshot = createPropsSnapshot(newProps);
       const changedPropKeys = getChangedPropKeys(
         previousSnapshot,
         nextSnapshot,
       );
       if (changedPropKeys.length === 0) {
+        propsSnapshots.set(element, nextSnapshot);
         return;
       }
 
-      const previousProps = createOldProps(previousSnapshot);
+      const nextPendingUpdate = {
+        previousSnapshot,
+        newProps,
+        nextSnapshot,
+      };
+      pendingUpdates.set(element, nextPendingUpdate);
 
       element.setAttribute("isDirty", "true");
       scheduleFrameFn(() => {
-        element.render();
-        element.removeAttribute("isDirty");
-
-        if (element.handlers && element.handlers.handleOnUpdate) {
-          const deps = {
-            ...element.deps,
-            store: element.store,
-            render: element.render.bind(element),
-            handlers: element.handlers,
-            dispatchEvent: element.dispatchEvent.bind(element),
-            refs: element.refIds || {},
-          };
-          element.handlers.handleOnUpdate(deps, {
-            oldProps: previousProps,
-            newProps,
-          });
-        }
+        runPendingUpdate(element, nextPendingUpdate);
       });
     },
   };

@@ -135,6 +135,119 @@ describe("createWebComponentUpdateHook", () => {
     expect(payload.newProps.options).toHaveLength(4);
   });
 
+  it("coalesces queued mutations using the earliest old and latest new props", () => {
+    const callbacks = [];
+    const scheduleFrame = vi.fn((callback) => callbacks.push(callback));
+    const updateHook = createWebComponentUpdateHook({
+      scheduleFrameFn: scheduleFrame,
+    });
+    const element = createManagedElement();
+    const options = [{ value: "one" }];
+    const firstVnode = {
+      data: { props: { options, phase: "initial" } },
+      elm: element,
+    };
+    updateHook.insert(firstVnode);
+
+    options.push({ value: "two" });
+    const secondVnode = {
+      data: { props: { options, phase: "middle" } },
+      elm: element,
+    };
+    updateHook.update(firstVnode, secondVnode);
+
+    options.push({ value: "three" });
+    const thirdVnode = {
+      data: { props: { options, phase: "latest" } },
+      elm: element,
+    };
+    updateHook.update(secondVnode, thirdVnode);
+
+    expect(scheduleFrame).toHaveBeenCalledTimes(1);
+    expect(element.render).not.toHaveBeenCalled();
+    expect(element.handlers.handleOnUpdate).not.toHaveBeenCalled();
+
+    callbacks.shift()();
+
+    expect(element.render).toHaveBeenCalledTimes(1);
+    expect(element.handlers.handleOnUpdate).toHaveBeenCalledTimes(1);
+    const firstPayload = element.handlers.handleOnUpdate.mock.calls[0][1];
+    expect(firstPayload.oldProps.options).toEqual([{ value: "one" }]);
+    expect(firstPayload.oldProps.phase).toBe("initial");
+    expect(firstPayload.newProps).toBe(thirdVnode.data.props);
+    expect(firstPayload.newProps.options).toEqual([
+      { value: "one" },
+      { value: "two" },
+      { value: "three" },
+    ]);
+    expect(firstPayload.newProps.phase).toBe("latest");
+
+    options.push({ value: "four" });
+    const fourthVnode = {
+      data: { props: { options, phase: "latest" } },
+      elm: element,
+    };
+    updateHook.update(thirdVnode, fourthVnode);
+    callbacks.shift()();
+
+    expect(scheduleFrame).toHaveBeenCalledTimes(2);
+    expect(element.render).toHaveBeenCalledTimes(2);
+    expect(element.handlers.handleOnUpdate).toHaveBeenCalledTimes(2);
+    const secondPayload = element.handlers.handleOnUpdate.mock.calls[1][1];
+    expect(secondPayload.oldProps.options).toEqual([
+      { value: "one" },
+      { value: "two" },
+      { value: "three" },
+    ]);
+    expect(secondPayload.newProps.options).toHaveLength(4);
+  });
+
+  it("refreshes the rendered baseline from live props when the frame runs", () => {
+    const callbacks = [];
+    const scheduleFrame = vi.fn((callback) => callbacks.push(callback));
+    const updateHook = createWebComponentUpdateHook({
+      scheduleFrameFn: scheduleFrame,
+    });
+    const element = createManagedElement();
+    const options = [{ value: "one" }];
+    const firstVnode = {
+      data: { props: { options } },
+      elm: element,
+    };
+    updateHook.insert(firstVnode);
+
+    options.push({ value: "two" });
+    const secondVnode = {
+      data: { props: { options } },
+      elm: element,
+    };
+    updateHook.update(firstVnode, secondVnode);
+
+    // This mutation happens after the final parent hook but before its frame.
+    options.push({ value: "three" });
+    callbacks.shift()();
+
+    expect(
+      element.handlers.handleOnUpdate.mock.calls[0][1].newProps.options,
+    ).toHaveLength(3);
+
+    options.push({ value: "four" });
+    const thirdVnode = {
+      data: { props: { options } },
+      elm: element,
+    };
+    updateHook.update(secondVnode, thirdVnode);
+    callbacks.shift()();
+
+    expect(
+      element.handlers.handleOnUpdate.mock.calls[1][1].oldProps.options,
+    ).toEqual([
+      { value: "one" },
+      { value: "two" },
+      { value: "three" },
+    ]);
+  });
+
   it("preserves references for props unchanged by an in-place mutation", () => {
     const scheduleFrame = vi.fn((callback) => callback());
     const updateHook = createWebComponentUpdateHook({
@@ -295,6 +408,184 @@ describe("createWebComponentUpdateHook", () => {
     expect(payload.newProps.context).toBe(context);
     expect(payload.oldProps.disabled).toBe(false);
     expect(payload.newProps.disabled).toBe(true);
+  });
+
+  it("bounds stateful Proxy prototype walks and treats cycles as opaque", () => {
+    let prototypeReads = 0;
+    let context;
+    context = new Proxy(
+      {},
+      {
+        getPrototypeOf() {
+          prototypeReads += 1;
+          if (prototypeReads > 2) {
+            throw new Error("prototype walk was not bounded");
+          }
+          return prototypeReads === 1 ? Object.prototype : context;
+        },
+      },
+    );
+
+    const callbacks = [];
+    const scheduleFrame = vi.fn((callback) => callbacks.push(callback));
+    const updateHook = createWebComponentUpdateHook({
+      scheduleFrameFn: scheduleFrame,
+    });
+    const element = createManagedElement();
+    const oldVnode = {
+      data: { props: { context, disabled: false } },
+      elm: element,
+    };
+
+    updateHook.insert(oldVnode);
+    expect(prototypeReads).toBe(2);
+
+    prototypeReads = 0;
+    updateHook.update(oldVnode, {
+      data: { props: { context, disabled: true } },
+      elm: element,
+    });
+
+    expect(prototypeReads).toBe(2);
+
+    prototypeReads = 0;
+    callbacks.shift()();
+    expect(prototypeReads).toBe(2);
+
+    const payload = element.handlers.handleOnUpdate.mock.calls[0][1];
+    expect(payload.oldProps.context).toBe(context);
+    expect(payload.newProps.context).toBe(context);
+  });
+
+  it("compares Map props by reference", () => {
+    const scheduleFrame = vi.fn((callback) => callback());
+    const updateHook = createWebComponentUpdateHook({
+      scheduleFrameFn: scheduleFrame,
+    });
+    const element = createManagedElement();
+    const oldContext = new Map([["projectId", "project-1"]]);
+    const newContext = new Map([["projectId", "project-1"]]);
+    const oldVnode = {
+      data: { props: { context: oldContext } },
+      elm: element,
+    };
+    updateHook.insert(oldVnode);
+
+    updateHook.update(oldVnode, {
+      data: { props: { context: newContext } },
+      elm: element,
+    });
+
+    expect(scheduleFrame).toHaveBeenCalledTimes(1);
+    const payload = element.handlers.handleOnUpdate.mock.calls[0][1];
+    expect(payload.oldProps.context).toBe(oldContext);
+    expect(payload.newProps.context).toBe(newContext);
+    expect(payload.oldProps.context).toBeInstanceOf(Map);
+    expect(payload.newProps.context).toBeInstanceOf(Map);
+  });
+
+  it("preserves custom class instances and their prototypes", () => {
+    class Context {
+      constructor(projectId) {
+        this.projectId = projectId;
+      }
+
+      readProjectId() {
+        return this.projectId;
+      }
+    }
+
+    const scheduleFrame = vi.fn((callback) => callback());
+    const updateHook = createWebComponentUpdateHook({
+      scheduleFrameFn: scheduleFrame,
+    });
+    const element = createManagedElement();
+    const oldContext = new Context("project-1");
+    const newContext = new Context("project-1");
+    const oldVnode = {
+      data: { props: { context: oldContext } },
+      elm: element,
+    };
+    updateHook.insert(oldVnode);
+
+    updateHook.update(oldVnode, {
+      data: { props: { context: newContext } },
+      elm: element,
+    });
+
+    const payload = element.handlers.handleOnUpdate.mock.calls[0][1];
+    expect(payload.oldProps.context).toBe(oldContext);
+    expect(payload.newProps.context).toBe(newContext);
+    expect(payload.oldProps.context).toBeInstanceOf(Context);
+    expect(payload.oldProps.context.readProjectId()).toBe("project-1");
+  });
+
+  it("does not clone a same-reference class instance after it mutates", () => {
+    class Context {
+      constructor(projectId) {
+        this.projectId = projectId;
+      }
+
+      readProjectId() {
+        return this.projectId;
+      }
+    }
+
+    const scheduleFrame = vi.fn((callback) => callback());
+    const updateHook = createWebComponentUpdateHook({
+      scheduleFrameFn: scheduleFrame,
+    });
+    const element = createManagedElement();
+    const context = new Context("project-1");
+    const oldVnode = {
+      data: { props: { context, disabled: false } },
+      elm: element,
+    };
+    updateHook.insert(oldVnode);
+
+    context.projectId = "project-2";
+    updateHook.update(oldVnode, {
+      data: { props: { context, disabled: true } },
+      elm: element,
+    });
+
+    const payload = element.handlers.handleOnUpdate.mock.calls[0][1];
+    expect(payload.oldProps.context).toBe(context);
+    expect(payload.newProps.context).toBe(context);
+    expect(payload.oldProps.context).toBeInstanceOf(Context);
+    expect(payload.oldProps.context.readProjectId()).toBe("project-2");
+  });
+
+  it("treats a plain record containing an opaque value as reference data", () => {
+    class Model {
+      constructor(value) {
+        this.value = value;
+      }
+    }
+
+    const scheduleFrame = vi.fn((callback) => callback());
+    const updateHook = createWebComponentUpdateHook({
+      scheduleFrameFn: scheduleFrame,
+    });
+    const element = createManagedElement();
+    const oldContext = { model: new Model("same") };
+    const newContext = { model: new Model("same") };
+    const oldVnode = {
+      data: { props: { context: oldContext } },
+      elm: element,
+    };
+    updateHook.insert(oldVnode);
+
+    updateHook.update(oldVnode, {
+      data: { props: { context: newContext } },
+      elm: element,
+    });
+
+    expect(scheduleFrame).toHaveBeenCalledTimes(1);
+    const payload = element.handlers.handleOnUpdate.mock.calls[0][1];
+    expect(payload.oldProps.context).toBe(oldContext);
+    expect(payload.newProps.context).toBe(newContext);
+    expect(payload.oldProps.context.model).toBeInstanceOf(Model);
   });
 
   it("preserves opaque prop identities when another prop changes", () => {
