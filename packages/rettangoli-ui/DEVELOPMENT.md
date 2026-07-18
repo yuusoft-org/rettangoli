@@ -232,6 +232,15 @@ Canonical `inputType` values are kebab-case only:
 - `read-only-text`
 - `slot`
 
+### Form field paths
+
+- every data field name must be a non-empty string
+- dotted field paths are supported for nested values (`user.email`)
+- path traversal uses own properties only
+- bracket notation is not supported
+- `__proto__`, `constructor`, and `prototype` are reserved and rejected in any path segment
+- legacy flat dotted defaults are normalized to nested values when written
+
 ## Events: Naming and Payloads
 
 ### Naming rules
