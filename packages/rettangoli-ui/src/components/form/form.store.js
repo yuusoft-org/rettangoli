@@ -21,6 +21,63 @@ const isObjectLike = (value) => value !== null && typeof value === "object";
 const isPlainObject = (value) => isObjectLike(value) && !Array.isArray(value);
 const isPathLike = (path) => typeof path === "string" && path.includes(".");
 const hasBracketPathToken = (path) => typeof path === "string" && /[\[\]]/.test(path);
+const unsafePathSegments = new Set(["__proto__", "constructor", "prototype"]);
+const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
+
+const parseSafePath = (path) => {
+  if (
+    typeof path !== "string" ||
+    path.length === 0 ||
+    hasBracketPathToken(path)
+  ) {
+    return null;
+  }
+
+  const keys = path.split(".").filter((key) => key !== "");
+  if (keys.length === 0 || keys.some((key) => unsafePathSegments.has(key))) {
+    return null;
+  }
+
+  return keys;
+};
+
+const defineOwnValue = (obj, key, value) => {
+  Object.defineProperty(obj, key, {
+    configurable: true,
+    enumerable: true,
+    value,
+    writable: true,
+  });
+};
+
+const findInheritedDescriptor = (obj, key) => {
+  let prototype = Object.getPrototypeOf(obj);
+  while (prototype) {
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+    if (descriptor) return descriptor;
+    prototype = Object.getPrototypeOf(prototype);
+  }
+  return null;
+};
+
+const setOwnValue = (obj, key, value) => {
+  const ownDescriptor = Object.getOwnPropertyDescriptor(obj, key);
+  const inheritedDescriptor = ownDescriptor
+    ? null
+    : findInheritedDescriptor(obj, key);
+  const descriptor = ownDescriptor || inheritedDescriptor;
+  const assignmentCouldBeIntercepted =
+    descriptor &&
+    (!Object.prototype.hasOwnProperty.call(descriptor, "value") ||
+      descriptor.writable === false);
+
+  if (assignmentCouldBeIntercepted) {
+    defineOwnValue(obj, key, value);
+    return;
+  }
+
+  obj[key] = value;
+};
 
 function pickByPaths(obj, paths) {
   const result = {};
@@ -73,14 +130,14 @@ function normalizeWhenDirectives(form) {
 
 // Nested property access utilities
 export const get = (obj, path, defaultValue = undefined) => {
-  if (!path) return defaultValue;
   if (!isObjectLike(obj)) return defaultValue;
-  if (hasBracketPathToken(path)) return defaultValue;
-  const keys = path.split(".").filter((key) => key !== "");
+  const keys = parseSafePath(path);
+  if (!keys) return defaultValue;
+
   let current = obj;
   for (const key of keys) {
-    if (current === null || current === undefined || !(key in current)) {
-      if (Object.prototype.hasOwnProperty.call(obj, path)) {
+    if (!isObjectLike(current) || !hasOwn(current, key)) {
+      if (hasOwn(obj, path)) {
         return obj[path];
       }
       return defaultValue;
@@ -91,32 +148,26 @@ export const get = (obj, path, defaultValue = undefined) => {
 };
 
 export const set = (obj, path, value) => {
-  if (!isObjectLike(obj) || typeof path !== "string" || path.length === 0) {
+  if (!isObjectLike(obj)) {
     return obj;
   }
-  if (hasBracketPathToken(path)) {
-    return obj;
-  }
-  const keys = path.split(".").filter((key) => key !== "");
-  if (keys.length === 0) {
-    return obj;
-  }
-  if (isPathLike(path) && Object.prototype.hasOwnProperty.call(obj, path)) {
+
+  const keys = parseSafePath(path);
+  if (!keys) return obj;
+
+  if (isPathLike(path) && hasOwn(obj, path)) {
     delete obj[path];
   }
+
   let current = obj;
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i];
-    if (
-      !(key in current) ||
-      typeof current[key] !== "object" ||
-      current[key] === null
-    ) {
-      current[key] = {};
+    if (!hasOwn(current, key) || !isObjectLike(current[key])) {
+      setOwnValue(current, key, {});
     }
     current = current[key];
   }
-  current[keys[keys.length - 1]] = value;
+  setOwnValue(current, keys[keys.length - 1], value);
   return obj;
 };
 
@@ -357,11 +408,20 @@ export const validateForm = (fields, formValues) => {
   const errors = {};
   const dataFields = collectAllDataFields(fields);
 
-  for (const field of dataFields) {
+  for (const [index, field] of dataFields.entries()) {
+    if (!parseSafePath(field.name)) {
+      const errorKey =
+        typeof field.name === "string" && field.name.length > 0
+          ? field.name
+          : `$invalidFieldPath:${index}`;
+      defineOwnValue(errors, errorKey, "Invalid form field path");
+      continue;
+    }
+
     const value = get(formValues, field.name);
     const error = validateField(field, value);
     if (error) {
-      errors[field.name] = error;
+      defineOwnValue(errors, field.name, error);
     }
   }
 
@@ -502,7 +562,9 @@ export const selectViewData = ({ state, props }) => {
     field._disabled = formDisabled || !!field.disabled;
 
     if (isData && field.name) {
-      field._error = state.errors[field.name] || null;
+      field._error = hasOwn(state.errors, field.name)
+        ? state.errors[field.name]
+        : null;
     }
 
     // Type-specific computed props
@@ -619,12 +681,13 @@ export const resetFormValues = ({ state }, payload = {}) => {
 };
 
 export const setErrors = ({ state }, payload = {}) => {
-  state.errors = payload.errors || {};
+  const errors = isPlainObject(payload.errors) ? payload.errors : {};
+  state.errors = Object.fromEntries(Object.entries(errors));
 };
 
 export const clearFieldError = ({ state }, payload = {}) => {
   const { name } = payload;
-  if (name && state.errors[name]) {
+  if (name && hasOwn(state.errors, name)) {
     delete state.errors[name];
   }
 };

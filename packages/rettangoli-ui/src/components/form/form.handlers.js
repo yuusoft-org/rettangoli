@@ -5,8 +5,6 @@ import {
   selectFormValues,
   collectAllDataFields,
   getDefaultValue,
-  pruneHiddenValues,
-  validateField,
   validateForm,
 } from "./form.store.js";
 
@@ -160,8 +158,8 @@ export const handleOnUpdate = (deps, payload) => {
     initFormValues(store, newProps);
   }
 
+  store.pruneHiddenValues();
   const state = store.getState();
-  pruneHiddenValues({ state, props: newProps });
   const form = selectForm({ state, props: newProps });
   updateFieldAttributes({
     form,
@@ -184,7 +182,6 @@ export const handleValueInput = (deps, payload) => {
   store.setFormFieldValue({ name, value });
 
   const state = store.getState();
-  pruneHiddenValues({ state, props });
   const form = selectForm({ state, props });
   const dataFields = collectAllDataFields(form.fields || []);
   const field = dataFields.find((f) => f.name === name);
@@ -198,7 +195,10 @@ export const handleValueInput = (deps, payload) => {
   // Reactive validation
   if (state.reactiveMode) {
     if (field) {
-      const error = validateField(field, value);
+      const { errors } = validateForm([field], state.formValues);
+      const error = Object.prototype.hasOwnProperty.call(errors, name)
+        ? errors[name]
+        : null;
       if (error) {
         store.setErrors({ errors: { ...state.errors, [name]: error } });
       } else {
@@ -234,7 +234,6 @@ export const handleValueChange = (deps, payload) => {
   store.setFormFieldValue({ name, value });
 
   const state = store.getState();
-  pruneHiddenValues({ state, props });
   const form = selectForm({ state, props });
   const dataFields = collectAllDataFields(form.fields || []);
   const field = dataFields.find((f) => f.name === name);
@@ -248,7 +247,10 @@ export const handleValueChange = (deps, payload) => {
   // Reactive validation
   if (state.reactiveMode) {
     if (field) {
-      const error = validateField(field, value);
+      const { errors } = validateForm([field], state.formValues);
+      const error = Object.prototype.hasOwnProperty.call(errors, name)
+        ? errors[name]
+        : null;
       if (error) {
         store.setErrors({ errors: { ...state.errors, [name]: error } });
       } else {
