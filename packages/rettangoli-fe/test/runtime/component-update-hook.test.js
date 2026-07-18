@@ -202,6 +202,52 @@ describe("createWebComponentUpdateHook", () => {
     expect(secondPayload.newProps.options).toHaveLength(4);
   });
 
+  it("defers snapshotting queued props until the scheduled frame", () => {
+    const callbacks = [];
+    const scheduleFrame = vi.fn((callback) => callbacks.push(callback));
+    const updateHook = createWebComponentUpdateHook({
+      scheduleFrameFn: scheduleFrame,
+    });
+    const element = createManagedElement();
+    const firstVnode = {
+      data: { props: { phase: "initial" } },
+      elm: element,
+    };
+    updateHook.insert(firstVnode);
+
+    const secondVnode = {
+      data: { props: { phase: "middle" } },
+      elm: element,
+    };
+    updateHook.update(firstVnode, secondVnode);
+
+    let prototypeReads = 0;
+    const latestContext = new Proxy(
+      { projectId: "project-1" },
+      {
+        getPrototypeOf(target) {
+          prototypeReads += 1;
+          return Reflect.getPrototypeOf(target);
+        },
+      },
+    );
+    const latestVnode = {
+      data: { props: { context: latestContext, phase: "latest" } },
+      elm: element,
+    };
+    updateHook.update(secondVnode, latestVnode);
+
+    expect(scheduleFrame).toHaveBeenCalledTimes(1);
+    expect(prototypeReads).toBe(0);
+
+    callbacks.shift()();
+
+    expect(prototypeReads).toBeGreaterThan(0);
+    expect(element.handlers.handleOnUpdate.mock.calls[0][1].newProps).toBe(
+      latestVnode.data.props,
+    );
+  });
+
   it("refreshes the rendered baseline from live props when the frame runs", () => {
     const callbacks = [];
     const scheduleFrame = vi.fn((callback) => callbacks.push(callback));

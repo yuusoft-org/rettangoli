@@ -220,9 +220,8 @@ const runPendingUpdate = (element, pendingUpdate) => {
   // Prop values remain live references between the parent render and this
   // frame. Refresh the latest snapshot so the stored baseline matches the
   // value the child is about to render.
-  pendingUpdate.nextSnapshot = createPropsSnapshot(pendingUpdate.newProps);
-  propsSnapshots.set(element, pendingUpdate.nextSnapshot);
-  const nextSnapshot = pendingUpdate.nextSnapshot;
+  const nextSnapshot = createPropsSnapshot(pendingUpdate.newProps);
+  propsSnapshots.set(element, nextSnapshot);
   const changedPropKeys = getChangedPropKeys(
     pendingUpdate.previousSnapshot,
     nextSnapshot,
@@ -278,7 +277,6 @@ export const createWebComponentUpdateHook = ({
 
       if (pendingUpdate) {
         pendingUpdate.newProps = newProps;
-        pendingUpdate.nextSnapshot = createPropsSnapshot(newProps);
         return;
       }
 
@@ -297,7 +295,6 @@ export const createWebComponentUpdateHook = ({
       const nextPendingUpdate = {
         previousSnapshot,
         newProps,
-        nextSnapshot,
       };
       pendingUpdates.set(element, nextPendingUpdate);
 
