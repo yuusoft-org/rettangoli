@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { refreshPopover } from "../src/components/tagSelect/tagSelect.methods.js";
+import { refreshPopover } from "../src/components/tag-select/tag-select.methods.js";
 
 describe("rtgl-tag-select methods", () => {
   it("re-renders when called while closed", () => {

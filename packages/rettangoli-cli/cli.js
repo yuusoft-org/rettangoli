@@ -1,9 +1,15 @@
 #!/usr/bin/env node
 
-import { Command, InvalidArgumentError } from "commander";
+import { Command } from "commander";
 import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
-import yaml from "js-yaml";
+import { readConfig } from "./src/config.js";
+import {
+  collectValues,
+  parseIntegerOption,
+  parseIsolationOption,
+  parsePortOption,
+} from "./src/options.js";
 
 const packageJson = JSON.parse(
   readFileSync(new URL("./package.json", import.meta.url)),
@@ -92,54 +98,6 @@ function requireBeCommand(handler, name) {
   }
 
   return handler;
-}
-
-// Function to read config file
-function readConfig() {
-  const configPath = resolve(process.cwd(), "rettangoli.config.yaml");
-
-  if (!existsSync(configPath)) {
-    return null;
-  }
-
-  try {
-    const configContent = readFileSync(configPath, "utf8");
-    return yaml.load(configContent);
-  } catch (error) {
-    throw new Error(`Error reading config file "${configPath}": ${error.message}`);
-  }
-}
-
-function collectValues(value, previous = []) {
-  return [...previous, value];
-}
-
-function parseIntegerOption(value) {
-  if (!/^-?\d+$/.test(String(value))) {
-    throw new InvalidArgumentError(`Expected an integer but received "${value}"`);
-  }
-
-  const parsed = Number.parseInt(value, 10);
-  if (!Number.isSafeInteger(parsed)) {
-    throw new InvalidArgumentError(`Expected a safe integer but received "${value}"`);
-  }
-
-  return parsed;
-}
-
-function parsePortOption(value) {
-  const parsed = parseIntegerOption(value);
-  if (parsed < 1 || parsed > 65535) {
-    throw new InvalidArgumentError(`Port must be between 1 and 65535, received "${value}"`);
-  }
-  return parsed;
-}
-
-function parseIsolationOption(value) {
-  if (value === "fast" || value === "strict") {
-    return value;
-  }
-  throw new InvalidArgumentError(`Isolation must be "fast" or "strict", received "${value}"`);
 }
 
 function resolveBeRuntimePaths(config) {

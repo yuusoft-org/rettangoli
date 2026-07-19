@@ -6,7 +6,7 @@ import {
   handleOnUpdate,
   handleOptionClick,
   handleSubmitClick,
-} from "../src/components/tagSelect/tagSelect.handlers.js";
+} from "../src/components/tag-select/tag-select.handlers.js";
 import {
   commitDraftSelectedValues,
   closeOptionsPopover,
@@ -18,7 +18,7 @@ import {
   toggleDraftSelectedValue,
   updateDraftSelectedValues,
   updateSelectedValues,
-} from "../src/components/tagSelect/tagSelect.store.js";
+} from "../src/components/tag-select/tag-select.store.js";
 
 const createStore = (overrides = {}) => {
   const state = {

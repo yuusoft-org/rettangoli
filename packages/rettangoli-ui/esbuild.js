@@ -1,17 +1,36 @@
 import esbuild from "esbuild";
 
-for (const mode of ["iife-ui", "iife-layout"]) {
+const builds = [
+  {
+    name: "esm",
+    entryPoint: "src/index.js",
+    format: "esm",
+  },
+  {
+    name: "iife-ui",
+    entryPoint: "src/entry-iife-ui.js",
+    format: "iife",
+  },
+  {
+    name: "iife-layout",
+    entryPoint: "src/entry-iife-layout.js",
+    format: "iife",
+  },
+];
+
+for (const build of builds) {
   try {
     await esbuild.build({
       bundle: true,
       minify: true,
       sourcemap: false,
-      format: mode === "esm" ? "esm" : "iife",
-      globalName: "rettangoli",
-      outfile: `./dist/rettangoli-${mode}.min.js`,
-      entryPoints: [`src/entry-${mode}.js`],
+      platform: "browser",
+      format: build.format,
+      ...(build.format === "iife" ? { globalName: "rettangoli" } : {}),
+      outfile: `./dist/rettangoli-${build.name}.min.js`,
+      entryPoints: [build.entryPoint],
     });
-    console.log(`${mode} build successful`);
+    console.log(`${build.name} build successful`);
   } catch (error) {
     console.error(error);
     process.exit(1);

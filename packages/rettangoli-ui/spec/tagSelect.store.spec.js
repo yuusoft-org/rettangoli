@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   createInitialState,
   selectViewData,
-} from "../src/components/tagSelect/tagSelect.store.js";
+} from "../src/components/tag-select/tag-select.store.js";
 
 describe("rtgl-tag-select store", () => {
   it("renders committed trigger tags separately from draft popover selection state", () => {

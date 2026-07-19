@@ -1,0 +1,41 @@
+name: Publish package @rettangoli/check to npm
+
+on:
+  push:
+    tags:
+      - "check-v*"
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Checker Tests
+        run: bun run ci
+        working-directory: ./packages/rettangoli-check
+
+      - name: Smoke Test Packed Checker
+        run: bun run test:package
+        working-directory: ./packages/rettangoli-check
+
+      - name: Publish to npm
+        run: npm publish --provenance
+        working-directory: ./packages/rettangoli-check

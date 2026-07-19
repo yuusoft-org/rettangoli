@@ -7,6 +7,7 @@ on:
       - ".github/workflows/ci-ui.yaml"
       - "package.json"
       - "bun.lock"
+      - "packages/rettangoli-check/**"
       - "packages/rettangoli-cli/**"
       - "packages/rettangoli-fe/**"
       - "packages/rettangoli-ui/**"
@@ -16,6 +17,7 @@ on:
       - ".github/workflows/ci-ui.yaml"
       - "package.json"
       - "bun.lock"
+      - "packages/rettangoli-check/**"
       - "packages/rettangoli-cli/**"
       - "packages/rettangoli-fe/**"
       - "packages/rettangoli-ui/**"
@@ -26,6 +28,77 @@ permissions:
   contents: read
 
 jobs:
+  fe-browser-tests:
+    name: FE Browser Tests (${{ matrix.suite }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - dashboard
+          - interactions
+    env:
+      VT_IMAGE: han4wluc/rtgl@sha256:85769959d834eaf984210f4b2f1f7de07677e81578c98d86680ba116c03a7d45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+
+      - name: Cache Bun Downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ runner.arch }}-1.3.5-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-${{ runner.arch }}-1.3.5-
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build FE E2E Bundle
+        run: node ../../../rettangoli-cli/cli.js fe build
+        working-directory: ./packages/rettangoli-fe/e2e/${{ matrix.suite }}
+
+      - name: Pull Playwright Image
+        run: docker pull "$VT_IMAGE"
+
+      - name: Capture FE Browser Screenshots
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --workdir "/workspace/packages/rettangoli-fe/e2e/${{ matrix.suite }}" \
+            "$VT_IMAGE" \
+            node /workspace/packages/rettangoli-cli/cli.js vt screenshot \
+              --concurrency 1 \
+              --timeout 180000
+
+      - name: Compare FE Browser Screenshots
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --workdir "/workspace/packages/rettangoli-fe/e2e/${{ matrix.suite }}" \
+            "$VT_IMAGE" \
+            node /workspace/packages/rettangoli-cli/cli.js vt report
+
+      - name: Upload FE VT Artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fe-vt-${{ matrix.suite }}-${{ github.run_number }}
+          path: packages/rettangoli-fe/e2e/${{ matrix.suite }}/.rettangoli/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
+
   visual-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -36,6 +109,10 @@ jobs:
         with:
           bun-version: 1.3.5
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
@@ -43,10 +120,41 @@ jobs:
         run: bun run test
         working-directory: ./packages/rettangoli-fe
 
-      # Temporarily disabled; re-enable after contract-check instability is addressed.
-      # - name: Run Contract Checks
-      #   run: bun run check:contracts
-      #   working-directory: ./packages/rettangoli-ui
+      - name: Run UI Tests
+        run: bun run test
+        working-directory: ./packages/rettangoli-ui
+
+      - name: Run CLI Tests
+        run: bun run test
+        working-directory: ./packages/rettangoli-cli
+
+      - name: Run VT Tests
+        run: bun run test
+        working-directory: ./packages/rettangoli-vt
+
+      - name: Smoke Test FE Package
+        run: bun run test:package
+        working-directory: ./packages/rettangoli-fe
+
+      - name: Smoke Test Checker Package
+        run: bun run test:package
+        working-directory: ./packages/rettangoli-check
+
+      - name: Smoke Test CLI Package
+        run: bun run test:package
+        working-directory: ./packages/rettangoli-cli
+
+      - name: Smoke Test UI Package
+        run: bun run test:package
+        working-directory: ./packages/rettangoli-ui
+
+      - name: Run Checker Tests
+        run: bun run ci
+        working-directory: ./packages/rettangoli-check
+
+      - name: Run UI Contract Checks
+        run: bun run check:contracts
+        working-directory: ./packages/rettangoli-ui
 
       - name: Run Visual Tests (Docker)
         run: bun run vt:report
