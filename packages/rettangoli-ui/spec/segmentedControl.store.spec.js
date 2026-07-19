@@ -5,6 +5,118 @@ import {
 } from "../src/components/segmented-control/segmented-control.store.js";
 
 describe("rtgl-segmented-control store", () => {
+  it("uses the compact size preset when s is sm", () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: { s: "sm", w: "f", options: [] },
+    });
+
+    expect(viewData).toMatchObject({
+      size: "sm",
+      containerSizeAttrString: "h=24",
+      optionSizeAttrString: "h=f w=1fg ph=md",
+      textSize: "xs",
+      iconSize: 14,
+      containerAttrString: "w=f",
+    });
+  });
+
+  it("uses the medium preset by default and for unsupported sizes", () => {
+    for (const s of [undefined, "xl", "constructor", "__proto__"]) {
+      const viewData = selectViewData({
+        state: createInitialState(),
+        props: { s, options: [] },
+      });
+
+      expect(viewData).toMatchObject({
+        size: "md",
+        containerSizeAttrString: "",
+        optionSizeAttrString: "w=1fg ph=lg pv=md",
+        textSize: "sm",
+        iconSize: 16,
+      });
+    }
+  });
+
+  it("uses the large size preset when s is lg", () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: { s: "lg", options: [] },
+    });
+
+    expect(viewData).toMatchObject({
+      size: "lg",
+      containerSizeAttrString: "h=40",
+      optionSizeAttrString: "h=f w=1fg ph=xl",
+      textSize: "md",
+      iconSize: 22,
+    });
+  });
+
+  it("makes each segment square at the selected control size", () => {
+    const smallViewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        s: "sm",
+        sq: true,
+        w: "f",
+        options: [{ value: "left" }, { value: "center" }, { value: "right" }],
+      },
+    });
+    const mediumViewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        sq: true,
+        options: [{ value: "left" }, { value: "right" }],
+      },
+    });
+    const largeViewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        s: "lg",
+        sq: true,
+        options: [{ value: "left" }, { value: "right" }],
+      },
+    });
+
+    expect(smallViewData).toMatchObject({
+      isSquare: true,
+      containerAttrString: "",
+      containerSizeAttrString: "h=24 w=72",
+      optionSizeAttrString: "h=f w=1fg",
+    });
+    expect(mediumViewData).toMatchObject({
+      isSquare: true,
+      containerSizeAttrString: "h=32 w=64",
+      optionSizeAttrString: "h=f w=1fg",
+    });
+    expect(largeViewData).toMatchObject({
+      isSquare: true,
+      containerSizeAttrString: "h=40 w=80",
+      optionSizeAttrString: "h=f w=1fg",
+    });
+  });
+
+  it("keeps the add action square and exposes its label accessibly", () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        sq: true,
+        addOption: { label: "New view" },
+        options: [{ value: "list" }, { value: "grid" }],
+      },
+    });
+
+    expect(viewData).toMatchObject({
+      isSquare: true,
+      showAddOption: true,
+      containerSizeAttrString: "h=32 w=96",
+      optionSizeAttrString: "h=f w=1fg",
+      addOptionLabel: "+ New view",
+      addOptionAriaLabel: "New view",
+    });
+  });
+
   it("normalizes svg-only options and their accessible labels", () => {
     const viewData = selectViewData({
       state: createInitialState(),

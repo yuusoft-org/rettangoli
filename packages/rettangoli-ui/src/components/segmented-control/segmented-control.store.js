@@ -12,11 +12,41 @@ const blacklistedProps = [
   "noClear",
   "addOption",
   "disabled",
+  "s",
+  "sq",
 ];
 
-const stringifyProps = (props = {}) => {
+const sizePresets = {
+  sm: {
+    controlHeight: 24,
+    containerSizeAttrString: "h=24",
+    optionSizeAttrString: "h=f w=1fg ph=md",
+    textSize: "xs",
+    iconSize: 14,
+  },
+  md: {
+    controlHeight: 32,
+    containerSizeAttrString: "",
+    optionSizeAttrString: "w=1fg ph=lg pv=md",
+    textSize: "sm",
+    iconSize: 16,
+  },
+  lg: {
+    controlHeight: 40,
+    containerSizeAttrString: "h=40",
+    optionSizeAttrString: "h=f w=1fg ph=xl",
+    textSize: "md",
+    iconSize: 22,
+  },
+};
+
+const stringifyProps = (props = {}, additionalBlacklistedProps = []) => {
   return Object.entries(props)
-    .filter(([key]) => !blacklistedProps.includes(key))
+    .filter(
+      ([key]) =>
+        !blacklistedProps.includes(key) &&
+        !additionalBlacklistedProps.includes(key),
+    )
     .map(([key, value]) => `${key}=${value}`)
     .join(" ");
 };
@@ -30,15 +60,30 @@ export const createInitialState = () =>
   });
 
 export const selectViewData = ({ state, props }) => {
-  const containerAttrString = stringifyProps(props);
+  const isSquare = !!props.sq;
+  const containerAttrString = stringifyProps(props, isSquare ? ["w"] : []);
+  const size = Object.prototype.hasOwnProperty.call(sizePresets, props.s)
+    ? props.s
+    : "md";
+  const sizePreset = sizePresets[size];
   const isDisabled = !!props.disabled;
   const hasControlledValue = Object.prototype.hasOwnProperty.call(
     props || {},
     "selectedValue",
   );
-  const currentValue = hasControlledValue ? props.selectedValue : state.selectedValue;
+  const currentValue = hasControlledValue
+    ? props.selectedValue
+    : state.selectedValue;
   const hasCurrentValue = hasControlledValue ? true : !!state.hasSelectedValue;
   const options = props.options || [];
+  const showAddOption = !isDisabled && !!props.addOption;
+  const squareOptionCount = options.length + (showAddOption ? 1 : 0);
+  const containerSizeAttrString = isSquare
+    ? `h=${sizePreset.controlHeight} w=${sizePreset.controlHeight * squareOptionCount}`
+    : sizePreset.containerSizeAttrString;
+  const optionSizeAttrString = isSquare
+    ? "h=f w=1fg"
+    : sizePreset.optionSizeAttrString;
 
   const optionsWithSelection = options.map((option, index) => {
     const isSelected = hasCurrentValue && deepEqual(option.value, currentValue);
@@ -51,7 +96,7 @@ export const selectViewData = ({ state, props }) => {
       hasSvg,
       accessibleLabel,
       isSelected,
-      bgc: isSelected ? "ac" : (isHovered && !isDisabled ? "mu" : ""),
+      bgc: isSelected ? "ac" : isHovered && !isDisabled ? "mu" : "",
       textColor: isSelected ? "ac-fg" : "fg",
       borderLeftWidth: index === 0 ? "none" : "xs",
       cursor: isDisabled ? "not-allowed" : "pointer",
@@ -61,13 +106,22 @@ export const selectViewData = ({ state, props }) => {
 
   return {
     containerAttrString,
+    size,
+    isSquare,
+    containerSizeAttrString,
+    optionSizeAttrString,
+    textSize: sizePreset.textSize,
+    iconSize: sizePreset.iconSize,
     isDisabled,
     options: optionsWithSelection,
     selectedValue: currentValue,
     hasSelectedValue: hasCurrentValue,
     ariaLabel: props.placeholder || "Segmented control",
-    showAddOption: !isDisabled && !!props.addOption,
-    addOptionLabel: props.addOption?.label ? `+ ${props.addOption.label}` : "+ Add",
+    showAddOption,
+    addOptionLabel: props.addOption?.label
+      ? `+ ${props.addOption.label}`
+      : "+ Add",
+    addOptionAriaLabel: props.addOption?.label || "Add",
     addOptionBgc: state.hoveredAddOption ? "mu" : "",
     addOptionBorderLeftWidth: options.length === 0 ? "none" : "xs",
   };

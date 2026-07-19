@@ -43,6 +43,8 @@ Set `options` as a property and listen to `value-change`.
 | No Clear       | `no-clear`                         | boolean                                                                               | off                 |
 | Add Option     | `addOption` (property)             | `{ label?: string }`                                                                  | -                   |
 | Disabled       | `disabled`                         | boolean                                                                               | `false`             |
+| Size           | `s`                                | `sm`, `md`, `lg`                                                                      | `md`                |
+| Square         | `sq`                               | boolean                                                                               | off                 |
 | Width          | `w`                                | number, `%`, `xs`-`xl`, `f`, CSS length/value                                         | content-based       |
 
 ## Events
@@ -51,6 +53,58 @@ Set `options` as a property and listen to `value-change`.
 | ------------------ | ------------------------------- | -------------------------------------------- |
 | `value-change`     | `{ value, label, index, item }` | Fires when selection changes or is cleared   |
 | `add-option-click` | `{}`                            | Fires when the add-option segment is clicked |
+
+## Sizes
+
+Use `s="sm"` for a compact 24px-high control or `s="lg"` for a 40px-high control. The default `s="md"` control is 32px high. Text, icons, and horizontal padding scale with the selected size.
+
+```html codePreview
+<rtgl-view d="h" av="c" g="lg" wrap>
+  <rtgl-segmented-control id="size-md" w="240"></rtgl-segmented-control>
+  <rtgl-segmented-control id="size-sm" s="sm" w="200"></rtgl-segmented-control>
+  <rtgl-segmented-control id="size-lg" s="lg" w="280"></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  for (const id of ["size-md", "size-sm", "size-lg"]) {
+    const control = document.getElementById(id);
+    control.options = [
+      { value: "left", label: "Left" },
+      { value: "center", label: "Center" },
+      { value: "right", label: "Right" },
+    ];
+    control.selectedValue = "center";
+    control.render();
+  }
+</script>
+```
+
+### Square Icon Segments
+
+Add `sq` to make every segment square, matching `rtgl-button` naming. Square segments are 24px with `s="sm"`, 32px with the default `s="md"`, and 40px with `s="lg"`. This mode is intended for icon-only options and sizes the group from its option count, so `w` is ignored.
+
+When `addOption` is enabled in square mode, its segment renders a `plus` icon and uses the configured add-option label as its accessible name.
+
+```html codePreview
+<rtgl-view d="h" av="c" g="lg">
+  <rtgl-segmented-control id="square-md" sq></rtgl-segmented-control>
+  <rtgl-segmented-control id="square-sm" s="sm" sq></rtgl-segmented-control>
+  <rtgl-segmented-control id="square-lg" s="lg" sq></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  for (const id of ["square-md", "square-sm", "square-lg"]) {
+    const control = document.getElementById(id);
+    control.options = [
+      { value: "text", svg: "text", ariaLabel: "Text alignment" },
+      { value: "music", svg: "music", ariaLabel: "Music alignment" },
+      { value: "play", svg: "play", ariaLabel: "Playback alignment" },
+    ];
+    control.selectedValue = "music";
+    control.render();
+  }
+</script>
+```
 
 ## Icon-Only Options
 

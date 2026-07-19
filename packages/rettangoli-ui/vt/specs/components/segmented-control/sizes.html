@@ -1,0 +1,76 @@
+---
+title: Segmented Control - Sizes
+description: Verifies the default and compact segmented-control size presets for text and SVG options.
+diffThreshold: 0.05
+specs:
+  - The default control is 32px high with small text and 16px icons.
+  - The small control is 24px high with extra-small text and 14px icons.
+  - The large control is 40px high with medium text and 22px icons.
+  - Selected backgrounds fill the full inner height at every size.
+  - Square mode renders 24px, 32px, or 40px icon-only segments based on the selected size.
+  - A square add action uses a plus icon and remains within its square segment.
+  - Segment borders and selected styling remain continuous at every size.
+---
+
+<rtgl-view g="lg" p="lg" w="320">
+  <rtgl-segmented-control id="text-default" w="f"></rtgl-segmented-control>
+  <rtgl-segmented-control id="text-small" s="sm" w="f"></rtgl-segmented-control>
+  <rtgl-segmented-control id="text-large" s="lg" w="f"></rtgl-segmented-control>
+  <rtgl-segmented-control
+    id="svg-small"
+    s="sm"
+    w="240"
+  ></rtgl-segmented-control>
+  <rtgl-view d="h" av="c" g="lg">
+    <rtgl-segmented-control id="svg-square-default" sq></rtgl-segmented-control>
+    <rtgl-segmented-control
+      id="svg-square-small"
+      s="sm"
+      sq
+    ></rtgl-segmented-control>
+    <rtgl-segmented-control
+      id="svg-square-large"
+      s="lg"
+      sq
+    ></rtgl-segmented-control>
+    <rtgl-segmented-control id="svg-square-add" sq></rtgl-segmented-control>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const textOptions = [
+    { value: "left", label: "Left" },
+    { value: "center", label: "Center" },
+    { value: "right", label: "Right" },
+  ];
+
+  for (const id of ["text-default", "text-small", "text-large"]) {
+    const control = document.getElementById(id);
+    control.options = textOptions;
+    control.selectedValue = "center";
+    control.render();
+  }
+
+  const svgOptions = [
+    { value: "text", svg: "text", ariaLabel: "Text mode" },
+    { value: "music", svg: "music", ariaLabel: "Music mode" },
+    { value: "play", svg: "play", ariaLabel: "Playback mode" },
+  ];
+
+  for (const id of [
+    "svg-small",
+    "svg-square-default",
+    "svg-square-small",
+    "svg-square-large",
+    "svg-square-add",
+  ]) {
+    const control = document.getElementById(id);
+    control.options = svgOptions;
+    control.selectedValue = "music";
+    control.render();
+  }
+
+  const squareAddControl = document.getElementById("svg-square-add");
+  squareAddControl.addOption = { label: "New view" };
+  squareAddControl.render();
+</script>

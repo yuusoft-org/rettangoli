@@ -47,7 +47,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@rettangoli/ui": "1.11.0",
+    "@rettangoli/ui": "1.11.1",
     "jempl": "0.3.2-rc2",
     "js-yaml": "^4.1.0",
     "oxc-parser": "^0.112.0",

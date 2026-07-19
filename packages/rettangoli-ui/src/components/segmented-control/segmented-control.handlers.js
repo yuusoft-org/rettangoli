@@ -18,9 +18,9 @@ export const handleBeforeMount = (deps) => {
   const { store, props, render } = deps;
 
   if (
-    props.selectedValue !== null
-    && props.selectedValue !== undefined
-    && props.options
+    props.selectedValue !== null &&
+    props.selectedValue !== undefined &&
+    props.options
   ) {
     const selectedOption = props.options.find((opt) =>
       deepEqual(opt.value, props.selectedValue),
@@ -44,6 +44,10 @@ export const handleOnUpdate = (deps, payload) => {
     shouldRender = true;
   }
 
+  if (oldProps.s !== newProps.s || oldProps.sq !== newProps.sq) {
+    shouldRender = true;
+  }
+
   if (shouldRender) {
     render();
   }
@@ -64,7 +68,9 @@ export const handleOptionClick = (deps, payload) => {
     "selectedValue",
   );
   const currentValue = store.selectSelectedValue();
-  const hasCurrentValue = hasControlledValue ? true : store.selectHasSelectedValue();
+  const hasCurrentValue = hasControlledValue
+    ? true
+    : store.selectHasSelectedValue();
   const isSelected = option
     ? hasCurrentValue && deepEqual(option.value, currentValue)
     : false;
