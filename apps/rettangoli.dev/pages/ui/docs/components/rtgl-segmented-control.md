@@ -83,6 +83,8 @@ Use `s="sm"` for a compact 24px-high control or `s="lg"` for a 40px-high control
 
 Add `sq` to make every segment square, matching `rtgl-button` naming. Square segments are 24px with `s="sm"`, 32px with the default `s="md"`, and 40px with `s="lg"`. This mode is intended for icon-only options and sizes the group from its option count, so `w` is ignored.
 
+When `addOption` is enabled in square mode, its segment renders a `plus` icon and uses the configured add-option label as its accessible name.
+
 ```html codePreview
 <rtgl-view d="h" av="c" g="lg">
   <rtgl-segmented-control id="square-md" sq></rtgl-segmented-control>

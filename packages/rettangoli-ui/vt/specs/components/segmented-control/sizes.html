@@ -1,12 +1,14 @@
 ---
 title: Segmented Control - Sizes
 description: Verifies the default and compact segmented-control size presets for text and SVG options.
+diffThreshold: 0.05
 specs:
   - The default control is 32px high with small text and 16px icons.
   - The small control is 24px high with extra-small text and 14px icons.
   - The large control is 40px high with medium text and 22px icons.
   - Selected backgrounds fill the full inner height at every size.
   - Square mode renders 24px, 32px, or 40px icon-only segments based on the selected size.
+  - A square add action uses a plus icon and remains within its square segment.
   - Segment borders and selected styling remain continuous at every size.
 ---
 
@@ -31,6 +33,7 @@ specs:
       s="lg"
       sq
     ></rtgl-segmented-control>
+    <rtgl-segmented-control id="svg-square-add" sq></rtgl-segmented-control>
   </rtgl-view>
 </rtgl-view>
 
@@ -59,10 +62,15 @@ specs:
     "svg-square-default",
     "svg-square-small",
     "svg-square-large",
+    "svg-square-add",
   ]) {
     const control = document.getElementById(id);
     control.options = svgOptions;
     control.selectedValue = "music";
     control.render();
   }
+
+  const squareAddControl = document.getElementById("svg-square-add");
+  squareAddControl.addOption = { label: "New view" };
+  squareAddControl.render();
 </script>

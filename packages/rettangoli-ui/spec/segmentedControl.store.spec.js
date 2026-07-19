@@ -22,7 +22,7 @@ describe("rtgl-segmented-control store", () => {
   });
 
   it("uses the medium preset by default and for unsupported sizes", () => {
-    for (const s of [undefined, "xl"]) {
+    for (const s of [undefined, "xl", "constructor", "__proto__"]) {
       const viewData = selectViewData({
         state: createInitialState(),
         props: { s, options: [] },
@@ -94,6 +94,26 @@ describe("rtgl-segmented-control store", () => {
       isSquare: true,
       containerSizeAttrString: "h=40 w=80",
       optionSizeAttrString: "h=f w=1fg",
+    });
+  });
+
+  it("keeps the add action square and exposes its label accessibly", () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        sq: true,
+        addOption: { label: "New view" },
+        options: [{ value: "list" }, { value: "grid" }],
+      },
+    });
+
+    expect(viewData).toMatchObject({
+      isSquare: true,
+      showAddOption: true,
+      containerSizeAttrString: "h=32 w=96",
+      optionSizeAttrString: "h=f w=1fg",
+      addOptionLabel: "+ New view",
+      addOptionAriaLabel: "New view",
     });
   });
 

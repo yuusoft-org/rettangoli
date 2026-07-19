@@ -62,7 +62,9 @@ export const createInitialState = () =>
 export const selectViewData = ({ state, props }) => {
   const isSquare = !!props.sq;
   const containerAttrString = stringifyProps(props, isSquare ? ["w"] : []);
-  const size = sizePresets[props.s] ? props.s : "md";
+  const size = Object.prototype.hasOwnProperty.call(sizePresets, props.s)
+    ? props.s
+    : "md";
   const sizePreset = sizePresets[size];
   const isDisabled = !!props.disabled;
   const hasControlledValue = Object.prototype.hasOwnProperty.call(
@@ -119,6 +121,7 @@ export const selectViewData = ({ state, props }) => {
     addOptionLabel: props.addOption?.label
       ? `+ ${props.addOption.label}`
       : "+ Add",
+    addOptionAriaLabel: props.addOption?.label || "Add",
     addOptionBgc: state.hoveredAddOption ? "mu" : "",
     addOptionBorderLeftWidth: options.length === 0 ? "none" : "xs",
   };

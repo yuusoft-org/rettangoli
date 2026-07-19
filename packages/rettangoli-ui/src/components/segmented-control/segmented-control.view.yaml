@@ -28,5 +28,8 @@ template:
                 $else:
                   - rtgl-text s=${textSize} c=${option.textColor} ta=c: ${option.label}
       - $if showAddOption:
-          - 'rtgl-view#optionAdd d=h av=c ah=c ${optionSizeAttrString} cur=pointer bgc=${addOptionBgc} bwl=${addOptionBorderLeftWidth} bc=bo data-testid="segmented-control-add-option" role="button" tabindex=0':
-              - rtgl-text s=${textSize} c=ac ta=c: ${addOptionLabel}
+          - 'rtgl-view#optionAdd d=h av=c ah=c ${optionSizeAttrString} cur=pointer bgc=${addOptionBgc} bwl=${addOptionBorderLeftWidth} bc=bo data-testid="segmented-control-add-option" role="button" tabindex=0 aria-label="${addOptionAriaLabel}"':
+              - $if isSquare:
+                  - rtgl-svg svg=plus wh=${iconSize} c=ac aria-hidden=true: null
+                $else:
+                  - rtgl-text s=${textSize} c=ac ta=c: ${addOptionLabel}
