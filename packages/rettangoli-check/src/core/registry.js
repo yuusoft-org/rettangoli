@@ -1,5 +1,6 @@
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { load as loadYaml } from "js-yaml";
 import { parseSync } from "oxc-parser";
@@ -713,6 +714,61 @@ const resolveBundledUiDir = () => {
   return path.resolve(currentDir, "../../../rettangoli-ui");
 };
 
+const isUiSourceDir = (candidate) => {
+  if (!candidate) {
+    return false;
+  }
+
+  const packageJsonPath = path.join(candidate, "package.json");
+  const componentsDir = path.join(candidate, "src", "components");
+  const entryPath = path.join(candidate, "src", "entry-iife-ui.js");
+  if (!existsSync(packageJsonPath) || !existsSync(componentsDir) || !existsSync(entryPath)) {
+    return false;
+  }
+
+  try {
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+    return packageJson?.name === "@rettangoli/ui";
+  } catch {
+    return false;
+  }
+};
+
+const findUiPackageDir = (resolvedEntryPath) => {
+  let currentDir = path.dirname(resolvedEntryPath);
+  const filesystemRoot = path.parse(currentDir).root;
+
+  while (currentDir !== filesystemRoot) {
+    if (isUiSourceDir(currentDir)) {
+      return currentDir;
+    }
+    currentDir = path.dirname(currentDir);
+  }
+
+  return null;
+};
+
+const resolveInstalledUiDir = (baseDir) => {
+  try {
+    const require = createRequire(path.join(path.resolve(baseDir), "package.json"));
+    return findUiPackageDir(require.resolve("@rettangoli/ui"));
+  } catch {
+    return null;
+  }
+};
+
+export const resolveUiSourceDir = ({ workspaceRoot = process.cwd() } = {}) => {
+  const candidates = [
+    path.resolve(workspaceRoot),
+    path.resolve(workspaceRoot, "packages", "rettangoli-ui"),
+    resolveBundledUiDir(),
+    resolveInstalledUiDir(workspaceRoot),
+    resolveInstalledUiDir(path.dirname(fileURLToPath(import.meta.url))),
+  ];
+
+  return [...new Set(candidates.filter(Boolean))].find(isUiSourceDir) || null;
+};
+
 const collectPrimitiveContractsFromEntries = async ({ uiDir, globalStyleAttrs }) => {
   const result = new Map();
   const entryNames = ["entry-iife-ui.js", "entry-iife-layout.js"];
@@ -729,12 +785,7 @@ const collectPrimitiveContractsFromEntries = async ({ uiDir, globalStyleAttrs })
 };
 
 export const buildUiRegistry = async ({ workspaceRoot = process.cwd() } = {}) => {
-  const uiCandidates = [
-    path.resolve(workspaceRoot, "packages", "rettangoli-ui"),
-    resolveBundledUiDir(),
-  ];
-
-  const uiDir = uiCandidates.find((candidate) => existsSync(candidate));
+  const uiDir = resolveUiSourceDir({ workspaceRoot });
   if (!uiDir) {
     return new Map();
   }

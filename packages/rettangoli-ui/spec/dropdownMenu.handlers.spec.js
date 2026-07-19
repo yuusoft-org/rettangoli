@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { handleOnUpdate } from "../src/components/dropdownMenu/dropdownMenu.handlers.js";
+import { handleOnUpdate } from "../src/components/dropdown-menu/dropdown-menu.handlers.js";
 
 describe("rtgl-dropdown-menu handlers", () => {
   it("re-renders when items are replaced", () => {

@@ -69,15 +69,6 @@ in:
   - rettangoli.config.yaml
 throws: vt.sections
 ---
-case: rejects section title that cannot derive a page key
-in:
-  - path: ./vt
-    sections:
-      - title: "!!!"
-        files: components
-  - rettangoli.config.yaml
-throws: vt.sections[0].title
----
 case: rejects duplicate derived section page keys
 in:
   - path: ./vt

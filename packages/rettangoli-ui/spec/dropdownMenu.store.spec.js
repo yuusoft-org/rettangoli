@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { selectViewData } from '../src/components/dropdownMenu/dropdownMenu.store.js';
+import { selectViewData } from '../src/components/dropdown-menu/dropdown-menu.store.js';
 
 describe('rtgl-dropdown-menu store', () => {
   it('normalizes section rows and keeps label as a backward-compatible alias', () => {

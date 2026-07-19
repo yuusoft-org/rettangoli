@@ -9,7 +9,7 @@ import {
   handleShowAlert,
   handleShowComponentDialog,
   handleShowToast,
-} from "../src/components/globalUi/globalUi.handlers.js";
+} from "../src/components/global-ui/global-ui.handlers.js";
 import {
   addToast,
   clearToasts,
@@ -19,8 +19,8 @@ import {
   setToastPhase,
   setAlertConfig,
   setComponentDialogConfig,
-} from "../src/components/globalUi/globalUi.store.js";
-import * as globalUiStore from "../src/components/globalUi/globalUi.store.js";
+} from "../src/components/global-ui/global-ui.store.js";
+import * as globalUiStore from "../src/components/global-ui/global-ui.store.js";
 
 const createStore = () => {
   const state = structuredClone(createInitialState());

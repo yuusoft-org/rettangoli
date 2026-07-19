@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/check",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Static contract checker for Rettangoli projects",
   "type": "module",
   "main": "./src/index.js",
@@ -12,7 +12,8 @@
     "rtgl-check": "./src/cli/bin.js"
   },
   "scripts": {
-    "ci": "npm run test:no-fe-contracts-import && npm run test:scenarios",
+    "ci": "npm run test:no-fe-contracts-import && npm run test:ui-registry-resolution-contract && npm run test:scenarios",
+    "test:package": "node ./scripts/package-smoke-test.js",
     "test:scenarios": "node ./test/run-scenarios.js",
     "test:no-fe-contracts-import": "node ./scripts/test-no-fe-contracts-import.js",
     "test:diff-js-exports": "node ./scripts/differential-js-exports.js",
@@ -20,6 +21,7 @@
     "test:fuzz-jempl-parser": "node ./scripts/fuzz-jempl-parser.js",
     "test:jempl-parser-contract": "node ./scripts/test-jempl-parser-contract.js",
     "test:scope-graph-range-contract": "node ./scripts/test-scope-graph-range-contract.js",
+    "test:ui-registry-resolution-contract": "node ./scripts/test-ui-registry-resolution-contract.js",
     "test:fe-frontend-component-identity-contract": "node ./scripts/test-fe-frontend-component-identity-contract.js",
     "test:fe-frontend-handler-contract": "node ./scripts/test-fe-frontend-handler-contract.js",
     "test:fe-frontend-lifecycle-contract": "node ./scripts/test-fe-frontend-lifecycle-contract.js",
@@ -35,10 +37,12 @@
   "files": [
     "src",
     "README.md",
-    "ROADMAP.md"
+    "ROADMAP.md",
+    "LICENSE"
   ],
   "license": "MIT",
   "dependencies": {
+    "@rettangoli/ui": "1.10.2",
     "jempl": "0.3.2-rc2",
     "js-yaml": "^4.1.0",
     "oxc-parser": "^0.112.0",

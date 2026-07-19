@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/fe",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Frontend framework for building reactive web components",
   "type": "module",
   "main": "./src/index.js",
@@ -44,6 +44,7 @@
   "scripts": {
     "dev": "node ../rettangoli-cli/cli.js fe watch",
     "test": "vitest run --reporter=verbose",
+    "test:package": "node test/package-smoke-test.js",
     "test:puty": "vitest run puty.spec.js --reporter=verbose",
     "test:vitest": "vitest run test/**/*.test.js --reporter=verbose"
   }

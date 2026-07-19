@@ -1,8 +1,8 @@
 {
   "name": "@rettangoli/ui",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "description": "A UI component library for building web interfaces.",
-  "main": "dist/rettangoli-esm.min.js",
+  "main": "./src/index.js",
   "type": "module",
   "files": [
     "dist",
@@ -11,10 +11,10 @@
   "exports": {
     ".": "./src/index.js",
     "./cli": "./src/cli/index.js",
-    "./themes/base.css": "./dist/themes/base.css",
-    "./themes/theme-catppuccin.css": "./dist/themes/theme-catppuccin.css",
-    "./themes/theme-rtgl-mono.css": "./dist/themes/theme-rtgl-mono.css",
-    "./themes/theme-rtgl-slate.css": "./dist/themes/theme-rtgl-slate.css"
+    "./themes/base.css": "./src/themes/base.css",
+    "./themes/theme-catppuccin.css": "./src/themes/theme-catppuccin.css",
+    "./themes/theme-rtgl-mono.css": "./src/themes/theme-rtgl-mono.css",
+    "./themes/theme-rtgl-slate.css": "./src/themes/theme-rtgl-slate.css"
   },
   "module": "./src/index.js",
   "repository": {
@@ -30,6 +30,7 @@
   "scripts": {
     "test": "vitest run --reporter=verbose",
     "test:puty": "vitest run puty.spec.js --reporter=verbose",
+    "test:package": "node scripts/package-smoke-test.js",
     "check:contracts": "rtgl check --dir src/components",
     "check:contracts:yahtml": "rtgl check --dir src/components",
     "copy:css": "node copy-css.js",
@@ -37,7 +38,7 @@
     "build": "rtgl fe build -o ./.generated/fe-entry.js && bun run esbuild.js && bun run esbuild-dev.js && npm run copy:css",
     "prepack": "npm run build",
     "vt:generate": "bun run build:dev && rtgl vt generate",
-    "vt:docker": "bun run build:dev && bash -lc 'IMAGE=\"han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0\"; docker pull \"$IMAGE\" >/dev/null 2>&1; docker run --rm --user $(id -u):$(id -g) -v \"$PWD:/app\" -w /app \"$IMAGE\" rtgl vt screenshot'",
+    "vt:docker": "bun run build:dev && bash -lc 'IMAGE=\"han4wluc/rtgl@sha256:85769959d834eaf984210f4b2f1f7de07677e81578c98d86680ba116c03a7d45\"; docker pull \"$IMAGE\" >/dev/null 2>&1; docker run --rm --user $(id -u):$(id -g) -v \"$PWD/../..:/workspace\" -w /workspace/packages/rettangoli-ui \"$IMAGE\" node /workspace/packages/rettangoli-cli/cli.js vt screenshot'",
     "vt:report": "bun run vt:docker && rtgl vt report",
     "vt:accept": "rtgl vt accept",
     "serve": "bunx serve .rettangoli/vt/_site"
@@ -62,7 +63,7 @@
   },
   "homepage": "https://github.com/yuusoft-org/rettangoli#readme",
   "dependencies": {
-    "@rettangoli/fe": "1.2.0",
+    "@rettangoli/fe": "1.2.3",
     "jempl": "1.0.1"
   }
 }
