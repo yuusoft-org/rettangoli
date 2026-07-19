@@ -22,7 +22,7 @@ export const paintCell = ({ state }, payload = {}) => {
   }
 };
 
-export const selectColor = ({ state }, payload = {}) => {
+export const setColor = ({ state }, payload = {}) => {
   const { color } = payload;
   if (color) state.selectedColor = color;
 };

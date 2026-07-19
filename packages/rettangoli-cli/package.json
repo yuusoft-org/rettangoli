@@ -53,7 +53,7 @@
     "@rettangoli/be": "2.0.0",
     "@rettangoli/fe": "1.2.3",
     "@rettangoli/sites": "1.2.0",
-    "@rettangoli/vt": "1.0.5",
+    "@rettangoli/vt": "1.0.6",
     "@rettangoli/ui": "1.11.0"
   }
 }

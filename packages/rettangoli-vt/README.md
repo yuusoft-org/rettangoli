@@ -141,6 +141,12 @@ Screenshot naming:
 - Then `-02`, `-03`, up to `-99`.
 - When viewport id is configured, filenames include `--<viewportId>` before ordinal (for example `pages/home--mobile-01.webp`).
 
+Default template behavior:
+
+- The built-in template loads `/public/main.js` exactly once as an ES module.
+- Put the bundle at `vt/static/public/main.js`, or use a custom template when the page has a different entry point or script format.
+- An uncaught page exception fails the screenshot task instead of silently producing a candidate image.
+
 ## Docker
 
 A pre-built Docker image with `rtgl` and Playwright browsers is available:
@@ -169,21 +175,24 @@ Supports `linux/amd64` and `linux/arm64`.
 Run unit tests:
 
 ```bash
-bun test
+bun run test
 ```
 
 Default unit run behavior:
 
-- `bun test` skips the real-browser smoke tests in `spec/e2e-smoke.spec.js` unless `VT_E2E=1`.
+- `bun run test` skips the real-browser smoke tests in `spec/e2e-smoke.spec.js` unless `VT_E2E=1`.
 - Skipped smoke tests are:
   - `runs generate, accept, and report with real screenshots`
   - `supports waitEvent readiness with real browser screenshots`
+  - `loads the default main bundle once as an ES module`
+  - `completes the final drain when the page replaces timer globals`
+  - `fails capture on an uncaught page error`
   - `supports managed service lifecycle with vt.service.start and vt.url`
 
 Run real-browser smoke:
 
 ```bash
-VT_E2E=1 bun test spec/e2e-smoke.spec.js
+VT_E2E=1 bun run test -- spec/e2e-smoke.spec.js
 ```
 
 Run Docker E2E tests (requires Docker daemon running):

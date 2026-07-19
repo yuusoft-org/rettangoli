@@ -1,9 +1,16 @@
 import { existsSync, mkdirSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
+import {
+  clearTimeout as clearNodeTimeout,
+  setTimeout as setNodeTimeout,
+} from "node:timers";
 import sharp from "sharp";
 import { createSteps } from "../createSteps.js";
 import { formatScreenshotOrdinal } from "./screenshot-naming.js";
 import { DEFAULT_VIEWPORT } from "../viewport.js";
+
+const PAGE_TASK_DRAIN_KEY = "__rtglVtDrainPageTasks";
+const MAX_PAGE_TASK_DRAIN_TIMEOUT_MS = 5000;
 
 function nowMs() {
   return performance.now();
@@ -23,6 +30,42 @@ function collectEnvVars(prefix) {
     }
   }
   return envVars;
+}
+
+function createPageError(error) {
+  const message = error && typeof error.message === "string"
+    ? error.message
+    : String(error);
+  return new Error(`Uncaught page error: ${message}`, { cause: error });
+}
+
+class PageTaskDrainTimeoutError extends Error {
+  constructor(timeoutMs) {
+    super(`Page task drain timed out after ${timeoutMs}ms.`);
+    this.name = "PageTaskDrainTimeoutError";
+  }
+}
+
+async function drainPageTasks(page, timeoutMs) {
+  let timeoutId;
+  try {
+    await Promise.race([
+      page.evaluate((drainKey) => {
+        const drain = globalThis[drainKey];
+        if (typeof drain !== "function") {
+          throw new Error("Native page task drain is unavailable.");
+        }
+        return drain();
+      }, PAGE_TASK_DRAIN_KEY),
+      new Promise((_, reject) => {
+        timeoutId = setNodeTimeout(() => {
+          reject(new PageTaskDrainTimeoutError(timeoutMs));
+        }, timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearNodeTimeout(timeoutId);
+  }
 }
 
 export class PlaywrightRunner {
@@ -53,6 +96,10 @@ export class PlaywrightRunner {
     this.navigationTimeout = navigationTimeout;
     this.readyTimeout = readyTimeout;
     this.screenshotTimeout = screenshotTimeout;
+    this.pageTaskDrainTimeout = Math.min(
+      readyTimeout,
+      MAX_PAGE_TASK_DRAIN_TIMEOUT_MS,
+    );
     this.envVarPrefix = envVarPrefix;
     this.envVars = collectEnvVars(this.envVarPrefix);
     this.sharedContext = null;
@@ -81,7 +128,18 @@ export class PlaywrightRunner {
 
   async createContext() {
     const context = await this.browser.newContext();
-    await context.addInitScript(() => {
+    await context.addInitScript((drainKey) => {
+      const NativePromise = globalThis.Promise;
+      const nativeSetTimeout = globalThis.setTimeout.bind(globalThis);
+      Object.defineProperty(globalThis, drainKey, {
+        configurable: false,
+        enumerable: false,
+        writable: false,
+        value: () => new NativePromise((resolve) => {
+          nativeSetTimeout(resolve, 0);
+        }),
+      });
+
       const styleId = "__rtgl_vt_rendering_style";
       const styleContent = `
         * {
@@ -107,7 +165,7 @@ export class PlaywrightRunner {
       } else {
         installStyle();
       }
-    });
+    }, PAGE_TASK_DRAIN_KEY);
     if (Object.keys(this.envVars).length > 0) {
       await context.addInitScript((vars) => {
         Object.assign(window, vars);
@@ -192,8 +250,10 @@ export class PlaywrightRunner {
       page,
       resetSession,
       registeredReadyEvents: new Set(),
-      cleanup: async () => {
-        await this.clearOriginRuntimeState(page);
+      cleanup: async ({ skipRuntimeState = false } = {}) => {
+        if (!skipRuntimeState) {
+          await this.clearOriginRuntimeState(page);
+        }
         if (!page.isClosed()) {
           await page.close();
         }
@@ -331,6 +391,17 @@ export class PlaywrightRunner {
     const sessionMs = nowMs() - sessionStart;
     const { page, resetSession, registeredReadyEvents } = session;
 
+    let pageError = null;
+    const handlePageError = (error) => {
+      pageError ??= createPageError(error);
+    };
+    const throwIfPageError = () => {
+      if (pageError) {
+        throw pageError;
+      }
+    };
+    page.on("pageerror", handlePageError);
+
     let strategy = task.waitStrategy || this.waitStrategy;
     let resetMs = 0;
     let navigationMs = 0;
@@ -340,12 +411,16 @@ export class PlaywrightRunner {
     let stepsMs = 0;
     let screenshotCount = 0;
     let screenshotIndex = 0;
+    let skipRuntimeState = false;
 
     const wrappedScreenshot = async (activePage, basePath = task.baseName) => {
+      throwIfPageError();
       screenshotIndex += 1;
       const suffix = formatScreenshotOrdinal(screenshotIndex);
       screenshotCount += 1;
-      return this.takeAndSaveScreenshot(activePage, basePath, suffix);
+      const screenshotPath = await this.takeAndSaveScreenshot(activePage, basePath, suffix);
+      throwIfPageError();
+      return screenshotPath;
     };
 
     try {
@@ -355,12 +430,14 @@ export class PlaywrightRunner {
       strategy = readyState.strategy;
       navigationMs = readyState.navigationMs;
       readyMs = readyState.readyMs;
+      throwIfPageError();
 
       const settleStart = nowMs();
       if (this.screenshotWaitTime > 0) {
         await page.waitForTimeout(this.screenshotWaitTime);
       }
       settleMs = nowMs() - settleStart;
+      throwIfPageError();
 
       if (!task.frontMatter?.skipInitialScreenshot) {
         const firstScreenshotStart = nowMs();
@@ -376,8 +453,14 @@ export class PlaywrightRunner {
       });
       for (const step of task.steps) {
         await stepsExecutor.executeStep(step);
+        throwIfPageError();
       }
       stepsMs = nowMs() - stepsStart;
+
+      // Use a native timer captured before application scripts run, then keep
+      // the driver-side wait bounded in case the page cannot complete the drain.
+      await drainPageTasks(page, this.pageTaskDrainTimeout);
+      throwIfPageError();
 
       const totalMs = nowMs() - overallStart;
       return {
@@ -397,12 +480,15 @@ export class PlaywrightRunner {
         },
       };
     } catch (error) {
+      skipRuntimeState = error instanceof PageTaskDrainTimeoutError;
+      const taskError = pageError ?? error;
       throw new Error(
-        `Worker ${this.workerId} failed "${task.path}": ${error.message}`,
-        { cause: error },
+        `Worker ${this.workerId} failed "${task.path}": ${taskError.message}`,
+        { cause: taskError },
       );
     } finally {
-      await session.cleanup();
+      page.off("pageerror", handlePageError);
+      await session.cleanup({ skipRuntimeState });
     }
   }
 }
