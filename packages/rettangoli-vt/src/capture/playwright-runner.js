@@ -25,6 +25,13 @@ function collectEnvVars(prefix) {
   return envVars;
 }
 
+function createPageError(error) {
+  const message = error && typeof error.message === "string"
+    ? error.message
+    : String(error);
+  return new Error(`Uncaught page error: ${message}`, { cause: error });
+}
+
 export class PlaywrightRunner {
   constructor(options) {
     const {
@@ -331,6 +338,17 @@ export class PlaywrightRunner {
     const sessionMs = nowMs() - sessionStart;
     const { page, resetSession, registeredReadyEvents } = session;
 
+    let pageError = null;
+    const handlePageError = (error) => {
+      pageError ??= createPageError(error);
+    };
+    const throwIfPageError = () => {
+      if (pageError) {
+        throw pageError;
+      }
+    };
+    page.on("pageerror", handlePageError);
+
     let strategy = task.waitStrategy || this.waitStrategy;
     let resetMs = 0;
     let navigationMs = 0;
@@ -342,10 +360,13 @@ export class PlaywrightRunner {
     let screenshotIndex = 0;
 
     const wrappedScreenshot = async (activePage, basePath = task.baseName) => {
+      throwIfPageError();
       screenshotIndex += 1;
       const suffix = formatScreenshotOrdinal(screenshotIndex);
       screenshotCount += 1;
-      return this.takeAndSaveScreenshot(activePage, basePath, suffix);
+      const screenshotPath = await this.takeAndSaveScreenshot(activePage, basePath, suffix);
+      throwIfPageError();
+      return screenshotPath;
     };
 
     try {
@@ -355,12 +376,14 @@ export class PlaywrightRunner {
       strategy = readyState.strategy;
       navigationMs = readyState.navigationMs;
       readyMs = readyState.readyMs;
+      throwIfPageError();
 
       const settleStart = nowMs();
       if (this.screenshotWaitTime > 0) {
         await page.waitForTimeout(this.screenshotWaitTime);
       }
       settleMs = nowMs() - settleStart;
+      throwIfPageError();
 
       if (!task.frontMatter?.skipInitialScreenshot) {
         const firstScreenshotStart = nowMs();
@@ -376,8 +399,14 @@ export class PlaywrightRunner {
       });
       for (const step of task.steps) {
         await stepsExecutor.executeStep(step);
+        throwIfPageError();
       }
       stepsMs = nowMs() - stepsStart;
+
+      // Let errors triggered by the final action cross the Playwright protocol
+      // boundary before declaring the task successful.
+      await page.waitForTimeout(0);
+      throwIfPageError();
 
       const totalMs = nowMs() - overallStart;
       return {
@@ -397,11 +426,13 @@ export class PlaywrightRunner {
         },
       };
     } catch (error) {
+      const taskError = pageError ?? error;
       throw new Error(
-        `Worker ${this.workerId} failed "${task.path}": ${error.message}`,
-        { cause: error },
+        `Worker ${this.workerId} failed "${task.path}": ${taskError.message}`,
+        { cause: taskError },
       );
     } finally {
+      page.off("pageerror", handlePageError);
       await session.cleanup();
     }
   }

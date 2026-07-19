@@ -4,6 +4,7 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -45,14 +46,23 @@ function run(command, args, options = {}) {
 }
 
 function packPackage(directory) {
-  const output = run(
+  const existingTarballs = new Set(
+    readdirSync(temporaryDirectory).filter((entry) => entry.endsWith(".tgz")),
+  );
+  run(
     npmCommand,
     ["pack", "--silent", "--pack-destination", temporaryDirectory],
     { cwd: directory },
   );
-  const match = output.match(/(?:^|\r?\n)([^\r\n]+\.tgz)\s*$/);
-  assert.ok(match, `npm pack did not report a tarball:\n${output}`);
-  return join(temporaryDirectory, match[1]);
+  const newTarballs = readdirSync(temporaryDirectory).filter(
+    (entry) => entry.endsWith(".tgz") && !existingTarballs.has(entry),
+  );
+  assert.equal(
+    newTarballs.length,
+    1,
+    `npm pack did not create exactly one tarball for ${directory}`,
+  );
+  return join(temporaryDirectory, newTarballs[0]);
 }
 
 try {
@@ -60,6 +70,7 @@ try {
     "rettangoli-fe",
     "rettangoli-ui",
     "rettangoli-check",
+    "rettangoli-vt",
     "rettangoli-cli",
   ].map((name) => join(workspaceDirectory, "packages", name));
   const tarballPaths = packageDirectories.map(packPackage);
@@ -112,6 +123,7 @@ try {
     "@rettangoli/check",
     "@rettangoli/fe",
     "@rettangoli/ui",
+    "@rettangoli/vt",
   ]) {
     const installedDependencyJson = JSON.parse(
       readFileSync(

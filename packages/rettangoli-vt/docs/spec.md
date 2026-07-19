@@ -1,6 +1,6 @@
 # Rettangoli VT Spec
 
-Last updated: 2026-03-25
+Last updated: 2026-07-19
 
 This document defines the public contract for `rtgl vt`.
 
@@ -116,6 +116,9 @@ Screenshot behavior:
 - when `vt.service` is omitted and `vt.url` is set, VT captures against the already running service.
 - isolation defaults to `fast`.
 - `strict` uses a fresh browser context per capture task and is recommended for IndexedDB-backed app state or direct app-route capture.
+- the built-in template loads `vt/static/public/main.js` exactly once as an ES module at `/public/main.js`.
+- custom templates own their script entry points and formats.
+- an uncaught page exception is a capture failure; VT does not silently accept a screenshot from an errored page.
 - Fails if unresolved capture failures remain.
 
 Wait strategy precedence:

@@ -2,6 +2,7 @@ import {
   existsSync,
   mkdtempSync,
   mkdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -232,6 +233,85 @@ title: event_ready_component
       "basic-01.webp",
     );
     expect(existsSync(candidateScreenshotPath)).toBe(true);
+  }, 180000);
+
+  it("loads the default main bundle once as an ES module", async () => {
+    originalCwd = process.cwd();
+    tempRoot = createTempProjectRoot();
+    process.chdir(tempRoot);
+
+    writeFixture(
+      tempRoot,
+      `---
+title: default_module_bundle
+waitStrategy: selector
+waitSelector: "[data-module-ready='true']"
+---
+<div id="module-status" style="width:360px;height:220px;padding:24px;background:#5f3dc4;color:#fff;font:700 42px Arial;">
+  Module Ready
+</div>
+`,
+    );
+
+    const publicDir = join(tempRoot, "vt", "static", "public");
+    mkdirSync(publicDir, { recursive: true });
+    writeFileSync(
+      join(publicDir, "main.js"),
+      `globalThis.__vtModuleExecutions = (globalThis.__vtModuleExecutions || 0) + 1;
+if (globalThis.__vtModuleExecutions !== 1) {
+  throw new Error("default main bundle executed more than once");
+}
+const moduleUrl = new URL("./main.js", import.meta.url);
+await Promise.resolve();
+document.querySelector("#module-status").dataset.moduleReady = String(
+  moduleUrl.pathname.endsWith("/public/main.js"),
+);
+`,
+      "utf8",
+    );
+
+    const port = await getAvailablePort();
+    await generate({
+      vtPath: "./vt",
+      port,
+    });
+
+    const candidateHtmlPath = join(
+      tempRoot,
+      ".rettangoli",
+      "vt",
+      "_site",
+      "candidate",
+      "components",
+      "basic.html",
+    );
+    const candidateHtml = readFileSync(candidateHtmlPath, "utf8");
+    expect(candidateHtml.match(/\/public\/main\.js/g)).toHaveLength(1);
+    expect(candidateHtml).toContain('<script type="module" src="/public/main.js"></script>');
+  }, 180000);
+
+  it("fails capture on an uncaught page error", async () => {
+    originalCwd = process.cwd();
+    tempRoot = createTempProjectRoot();
+    process.chdir(tempRoot);
+
+    writeFixture(
+      tempRoot,
+      `---
+title: page_error
+---
+<script>
+  throw new Error("fixture page exploded");
+</script>
+<div>Unreachable fixture</div>
+`,
+    );
+
+    const port = await getAvailablePort();
+    await expect(generate({
+      vtPath: "./vt",
+      port,
+    })).rejects.toThrow("Uncaught page error: fixture page exploded");
   }, 180000);
 
   it("supports managed service lifecycle with vt.service.start and vt.url", async () => {

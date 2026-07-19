@@ -11,7 +11,7 @@ export const handleSelectColor = (deps, payload) => {
   const { _event: event } = payload;
   const color = event.currentTarget.dataset.swatchColor;
   if (color) {
-    deps.store.selectColor({ color });
+    deps.store.setColor({ color });
     deps.render();
   }
 };
