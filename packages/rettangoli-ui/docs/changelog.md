@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Improvements
+- `rtgl-segmented-control`: added icon-only options using registered `svg` keys and accessible `ariaLabel` names while preserving label-only options.
 - `rtgl-form`: rejects unsafe, bracket-style, and reserved field paths without mutating prototypes; preserves invalid-path errors during reactive validation; and keeps conditional value pruning safe with frozen store state.
 - `rtgl-dialog`: added `bare` mode for consumer-owned modal visuals while preserving native modality, focus containment, and close requests.
 - `rtgl-dialog`: keeps sequential keyboard focus inside the modal across slotted and open-shadow content instead of allowing focus to fall back to the page body at a tab boundary.

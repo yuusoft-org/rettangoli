@@ -11,6 +11,10 @@ propsSchema:
         properties:
           label:
             type: string
+          svg:
+            type: string
+          ariaLabel:
+            type: string
           value:
             type: any
           testId:
