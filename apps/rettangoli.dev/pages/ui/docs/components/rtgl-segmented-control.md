@@ -44,6 +44,7 @@ Set `options` as a property and listen to `value-change`.
 | Add Option     | `addOption` (property)             | `{ label?: string }`                                                                  | -                   |
 | Disabled       | `disabled`                         | boolean                                                                               | `false`             |
 | Size           | `s`                                | `sm`, `md`                                                                            | `md`                |
+| Square         | `sq`                               | boolean                                                                               | off                 |
 | Width          | `w`                                | number, `%`, `xs`-`xl`, `f`, CSS length/value                                         | content-based       |
 
 ## Events
@@ -72,6 +73,30 @@ Use `s="sm"` for a compact 24px-high control. It uses smaller text, icons, and h
       { value: "right", label: "Right" },
     ];
     control.selectedValue = "center";
+    control.render();
+  }
+</script>
+```
+
+### Square Icon Segments
+
+Add `sq` to make every segment square, matching `rtgl-button` naming. Square segments are 32px with the default `s="md"` and 24px with `s="sm"`. This mode is intended for icon-only options and sizes the group from its option count, so `w` is ignored.
+
+```html codePreview
+<rtgl-view d="h" av="c" g="lg">
+  <rtgl-segmented-control id="square-md" sq></rtgl-segmented-control>
+  <rtgl-segmented-control id="square-sm" s="sm" sq></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  for (const id of ["square-md", "square-sm"]) {
+    const control = document.getElementById(id);
+    control.options = [
+      { value: "text", svg: "text", ariaLabel: "Text alignment" },
+      { value: "music", svg: "music", ariaLabel: "Music alignment" },
+      { value: "play", svg: "play", ariaLabel: "Playback alignment" },
+    ];
+    control.selectedValue = "music";
     control.render();
   }
 </script>

@@ -14,7 +14,7 @@ describe("rtgl-segmented-control store", () => {
     expect(viewData).toMatchObject({
       size: "sm",
       containerSizeAttrString: "h=24",
-      optionSizeAttrString: "ph=md",
+      optionSizeAttrString: "h=f w=1fg ph=md",
       textSize: "xs",
       iconSize: 14,
       containerAttrString: "w=f",
@@ -31,11 +31,42 @@ describe("rtgl-segmented-control store", () => {
       expect(viewData).toMatchObject({
         size: "md",
         containerSizeAttrString: "",
-        optionSizeAttrString: "ph=lg pv=md",
+        optionSizeAttrString: "w=1fg ph=lg pv=md",
         textSize: "sm",
         iconSize: 16,
       });
     }
+  });
+
+  it("makes each segment square at the selected control size", () => {
+    const smallViewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        s: "sm",
+        sq: true,
+        w: "f",
+        options: [{ value: "left" }, { value: "center" }, { value: "right" }],
+      },
+    });
+    const mediumViewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        sq: true,
+        options: [{ value: "left" }, { value: "right" }],
+      },
+    });
+
+    expect(smallViewData).toMatchObject({
+      isSquare: true,
+      containerAttrString: "",
+      containerSizeAttrString: "h=24 w=72",
+      optionSizeAttrString: "h=f w=1fg",
+    });
+    expect(mediumViewData).toMatchObject({
+      isSquare: true,
+      containerSizeAttrString: "h=32 w=64",
+      optionSizeAttrString: "h=f w=1fg",
+    });
   });
 
   it("normalizes svg-only options and their accessible labels", () => {

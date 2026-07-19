@@ -35,6 +35,8 @@ propsSchema:
     s:
       type: string
       enum: [sm, md]
+    sq:
+      type: boolean
     w:
       type: string
 events:
