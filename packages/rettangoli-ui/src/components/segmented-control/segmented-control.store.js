@@ -43,9 +43,13 @@ export const selectViewData = ({ state, props }) => {
   const optionsWithSelection = options.map((option, index) => {
     const isSelected = hasCurrentValue && deepEqual(option.value, currentValue);
     const isHovered = state.hoveredOptionId === index;
+    const hasSvg = typeof option.svg === "string" && option.svg.length > 0;
+    const accessibleLabel = option.ariaLabel || option.label || "";
 
     return {
       ...option,
+      hasSvg,
+      accessibleLabel,
       isSelected,
       bgc: isSelected ? "ac" : (isHovered && !isDisabled ? "mu" : ""),
       textColor: isSelected ? "ac-fg" : "fg",
