@@ -96,6 +96,15 @@ try {
       "utf8",
     ),
   );
+  assert.deepEqual(
+    installedPackageJson.repository,
+    {
+      type: "git",
+      url: "https://github.com/yuusoft-org/rettangoli",
+      directory: "packages/rettangoli-check",
+    },
+    "the published package must declare repository metadata for npm provenance",
+  );
   assert.ok(
     existsSync(path.join(installedPackageDirectory, "LICENSE")),
     "the published package must include its license",
