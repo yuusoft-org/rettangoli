@@ -9,7 +9,8 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const packageDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const workspaceDir = resolve(packageDir, "../..");
@@ -72,6 +73,50 @@ function packPackage(directory) {
 }
 
 try {
+  const workspacePackageJson = JSON.parse(
+    readFileSync(join(packageDir, "package.json"), "utf8"),
+  );
+  const sourceEntry = "./src/index.js";
+  assert.equal(workspacePackageJson.main, sourceEntry);
+  assert.equal(workspacePackageJson.module, sourceEntry);
+  const workspaceRequire = createRequire(join(workspaceDir, "package.json"));
+  const sourceExports = new Map([
+    [".", sourceEntry],
+    ["./cli", "./src/cli/index.js"],
+    ["./themes/base.css", "./src/themes/base.css"],
+    ["./themes/theme-catppuccin.css", "./src/themes/theme-catppuccin.css"],
+    ["./themes/theme-rtgl-mono.css", "./src/themes/theme-rtgl-mono.css"],
+    ["./themes/theme-rtgl-slate.css", "./src/themes/theme-rtgl-slate.css"],
+  ]);
+  const resolvedWorkspaceExports = new Map();
+
+  for (const [subpath, target] of sourceExports) {
+    assert.equal(workspacePackageJson.exports[subpath], target);
+    assert.ok(
+      target.startsWith("./src/") && existsSync(join(packageDir, target)),
+      `workspace export must target a checked-in source file: ${target}`,
+    );
+    const specifier =
+      subpath === "." ? "@rettangoli/ui" : `@rettangoli/ui/${subpath.slice(2)}`;
+    const resolvedTarget = workspaceRequire.resolve(specifier);
+    assert.equal(
+      resolvedTarget,
+      join(packageDir, target),
+      `workspace package resolution must use source for ${specifier}`,
+    );
+    resolvedWorkspaceExports.set(subpath, resolvedTarget);
+  }
+
+  globalThis.HTMLElement = class {};
+  const workspaceUi = await import(
+    pathToFileURL(resolvedWorkspaceExports.get(".")),
+  );
+  const workspaceCli = await import(
+    pathToFileURL(resolvedWorkspaceExports.get("./cli")),
+  );
+  assert.equal(typeof workspaceUi.RettangoliView, "function");
+  assert.equal(typeof workspaceCli.buildSvg, "function");
+
   const feTarballPath = packPackage(
     join(workspaceDir, "packages", "rettangoli-fe"),
   );
@@ -113,10 +158,11 @@ try {
     existsSync(join(installedPackageDir, "LICENSE")),
     "the published package must include its license",
   );
-  const expectedModuleEntry = "./dist/rettangoli-esm.min.js";
-  assert.equal(installedPackageJson.main, expectedModuleEntry);
-  assert.equal(installedPackageJson.module, expectedModuleEntry);
-  assert.equal(installedPackageJson.exports["."], expectedModuleEntry);
+  assert.equal(installedPackageJson.main, sourceEntry);
+  assert.equal(installedPackageJson.module, sourceEntry);
+  for (const [subpath, target] of sourceExports) {
+    assert.equal(installedPackageJson.exports[subpath], target);
+  }
 
   const installedFePackageJson = JSON.parse(
     readFileSync(
@@ -156,6 +202,17 @@ try {
     );
   }
 
+  for (const target of [...sourceExports.values()].filter((value) =>
+    value.endsWith(".css"),
+  )) {
+    const distTarget = target.replace("./src/themes/", "./dist/themes/");
+    assert.equal(
+      readFileSync(join(installedPackageDir, target), "utf8"),
+      readFileSync(join(installedPackageDir, distTarget), "utf8"),
+      `published source and built theme must match: ${target}`,
+    );
+  }
+
   const smokeModulePath = join(temporaryDir, "smoke.mjs");
   writeFileSync(
     smokeModulePath,
@@ -166,6 +223,9 @@ try {
       globalThis.HTMLElement = class {};
 
       const ui = await import("@rettangoli/ui");
+      const bundledUi = await import(
+        "./node_modules/@rettangoli/ui/dist/rettangoli-esm.min.js"
+      );
       const cli = await import("@rettangoli/ui/cli");
       const require = createRequire(import.meta.url);
 
@@ -173,9 +233,10 @@ try {
       assert.equal(typeof ui.RettangoliView, "function");
       assert.equal(typeof ui.createGlobalUI, "function");
       assert.equal(typeof cli.buildSvg, "function");
+      assert.deepEqual(Object.keys(bundledUi).sort(), Object.keys(ui).sort());
       assert.match(
         require.resolve("@rettangoli/ui"),
-        /rettangoli-esm\\.min\\.js$/,
+        /src\\/index\\.js$/,
       );
       assert.match(
         require.resolve("@rettangoli/ui/themes/base.css"),

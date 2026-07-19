@@ -2,21 +2,21 @@
   "name": "@rettangoli/ui",
   "version": "1.10.2",
   "description": "A UI component library for building web interfaces.",
-  "main": "./dist/rettangoli-esm.min.js",
+  "main": "./src/index.js",
   "type": "module",
   "files": [
     "dist",
     "src"
   ],
   "exports": {
-    ".": "./dist/rettangoli-esm.min.js",
+    ".": "./src/index.js",
     "./cli": "./src/cli/index.js",
-    "./themes/base.css": "./dist/themes/base.css",
-    "./themes/theme-catppuccin.css": "./dist/themes/theme-catppuccin.css",
-    "./themes/theme-rtgl-mono.css": "./dist/themes/theme-rtgl-mono.css",
-    "./themes/theme-rtgl-slate.css": "./dist/themes/theme-rtgl-slate.css"
+    "./themes/base.css": "./src/themes/base.css",
+    "./themes/theme-catppuccin.css": "./src/themes/theme-catppuccin.css",
+    "./themes/theme-rtgl-mono.css": "./src/themes/theme-rtgl-mono.css",
+    "./themes/theme-rtgl-slate.css": "./src/themes/theme-rtgl-slate.css"
   },
-  "module": "./dist/rettangoli-esm.min.js",
+  "module": "./src/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/yuusoft-org/rettangoli",
