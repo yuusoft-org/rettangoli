@@ -34,7 +34,7 @@ propsSchema:
       type: boolean
     s:
       type: string
-      enum: [sm, md]
+      enum: [sm, md, lg]
     sq:
       type: boolean
     w:

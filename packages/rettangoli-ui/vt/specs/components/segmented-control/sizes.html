@@ -4,14 +4,16 @@ description: Verifies the default and compact segmented-control size presets for
 specs:
   - The default control is 32px high with small text and 16px icons.
   - The small control is 24px high with extra-small text and 14px icons.
-  - Selected backgrounds fill the full inner height at both sizes.
-  - Square mode renders 32px or 24px icon-only segments based on the selected size.
-  - Segment borders and selected styling remain continuous at both sizes.
+  - The large control is 40px high with medium text and 22px icons.
+  - Selected backgrounds fill the full inner height at every size.
+  - Square mode renders 24px, 32px, or 40px icon-only segments based on the selected size.
+  - Segment borders and selected styling remain continuous at every size.
 ---
 
 <rtgl-view g="lg" p="lg" w="320">
   <rtgl-segmented-control id="text-default" w="f"></rtgl-segmented-control>
   <rtgl-segmented-control id="text-small" s="sm" w="f"></rtgl-segmented-control>
+  <rtgl-segmented-control id="text-large" s="lg" w="f"></rtgl-segmented-control>
   <rtgl-segmented-control
     id="svg-small"
     s="sm"
@@ -24,6 +26,11 @@ specs:
       s="sm"
       sq
     ></rtgl-segmented-control>
+    <rtgl-segmented-control
+      id="svg-square-large"
+      s="lg"
+      sq
+    ></rtgl-segmented-control>
   </rtgl-view>
 </rtgl-view>
 
@@ -34,7 +41,7 @@ specs:
     { value: "right", label: "Right" },
   ];
 
-  for (const id of ["text-default", "text-small"]) {
+  for (const id of ["text-default", "text-small", "text-large"]) {
     const control = document.getElementById(id);
     control.options = textOptions;
     control.selectedValue = "center";
@@ -47,7 +54,12 @@ specs:
     { value: "play", svg: "play", ariaLabel: "Playback mode" },
   ];
 
-  for (const id of ["svg-small", "svg-square-default", "svg-square-small"]) {
+  for (const id of [
+    "svg-small",
+    "svg-square-default",
+    "svg-square-small",
+    "svg-square-large",
+  ]) {
     const control = document.getElementById(id);
     control.options = svgOptions;
     control.selectedValue = "music";

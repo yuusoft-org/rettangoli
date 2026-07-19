@@ -31,6 +31,13 @@ const sizePresets = {
     textSize: "sm",
     iconSize: 16,
   },
+  lg: {
+    controlHeight: 40,
+    containerSizeAttrString: "h=40",
+    optionSizeAttrString: "h=f w=1fg ph=xl",
+    textSize: "md",
+    iconSize: 22,
+  },
 };
 
 const stringifyProps = (props = {}, additionalBlacklistedProps = []) => {

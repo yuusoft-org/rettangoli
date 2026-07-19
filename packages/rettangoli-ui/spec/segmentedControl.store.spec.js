@@ -22,7 +22,7 @@ describe("rtgl-segmented-control store", () => {
   });
 
   it("uses the medium preset by default and for unsupported sizes", () => {
-    for (const s of [undefined, "lg"]) {
+    for (const s of [undefined, "xl"]) {
       const viewData = selectViewData({
         state: createInitialState(),
         props: { s, options: [] },
@@ -36,6 +36,21 @@ describe("rtgl-segmented-control store", () => {
         iconSize: 16,
       });
     }
+  });
+
+  it("uses the large size preset when s is lg", () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: { s: "lg", options: [] },
+    });
+
+    expect(viewData).toMatchObject({
+      size: "lg",
+      containerSizeAttrString: "h=40",
+      optionSizeAttrString: "h=f w=1fg ph=xl",
+      textSize: "md",
+      iconSize: 22,
+    });
   });
 
   it("makes each segment square at the selected control size", () => {
@@ -55,6 +70,14 @@ describe("rtgl-segmented-control store", () => {
         options: [{ value: "left" }, { value: "right" }],
       },
     });
+    const largeViewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        s: "lg",
+        sq: true,
+        options: [{ value: "left" }, { value: "right" }],
+      },
+    });
 
     expect(smallViewData).toMatchObject({
       isSquare: true,
@@ -65,6 +88,11 @@ describe("rtgl-segmented-control store", () => {
     expect(mediumViewData).toMatchObject({
       isSquare: true,
       containerSizeAttrString: "h=32 w=64",
+      optionSizeAttrString: "h=f w=1fg",
+    });
+    expect(largeViewData).toMatchObject({
+      isSquare: true,
+      containerSizeAttrString: "h=40 w=80",
       optionSizeAttrString: "h=f w=1fg",
     });
   });
