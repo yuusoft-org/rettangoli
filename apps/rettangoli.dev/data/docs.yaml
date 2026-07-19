@@ -92,6 +92,9 @@ items:
       - id: rtgl-select
         title: "Select"
         href: "/ui/docs/components/rtgl-select"
+      - id: rtgl-segmented-control
+        title: "Segmented Control"
+        href: "/ui/docs/components/rtgl-segmented-control"
       - id: rtgl-tag-select
         title: "Tag Select"
         href: "/ui/docs/components/rtgl-tag-select"

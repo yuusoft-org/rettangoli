@@ -60,6 +60,7 @@ This is the intentional component surface and what each component is meant to pr
 | `rtgl-page-outline` | page section tracking | target and scroll containers, active section offset |
 | `rtgl-popover-input` | inline edit with popover | value editing in popover, value input/change events |
 | `rtgl-select` | single-choice selection | options, selected value, no-clear mode, add-option action |
+| `rtgl-segmented-control` | inline single-choice selection | text or icon-only options, selected value, no-clear mode, add-option action |
 | `rtgl-tag-select` | multi-tag selection | select-shaped options, selected value array, add popover, right-click delete |
 | `rtgl-sidebar` | app/sidebar navigation | header plus grouped items, selected item state, item/header events |
 | `rtgl-slider-input` | synchronized numeric control | linked slider + number input, min/max/step, value events |
@@ -320,7 +321,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - flex-only attrs such as `d`, `wrap`, `no-wrap`, `ah`, and `av` do not apply
 
 Components built via `@rettangoli/fe`:
-- `rtgl-select`, `rtgl-tag-select`, `rtgl-dropdown-menu`, `rtgl-tooltip`, `rtgl-popover-input`
+- `rtgl-select`, `rtgl-segmented-control`, `rtgl-tag-select`, `rtgl-dropdown-menu`, `rtgl-tooltip`, `rtgl-popover-input`
 - `rtgl-form`, `rtgl-slider-input`, `rtgl-table`
 - `rtgl-tabs`, `rtgl-sidebar`, `rtgl-navbar`, `rtgl-breadcrumb`
 - `rtgl-accordion-item`, `rtgl-page-outline`, `rtgl-waveform`, `rtgl-global-ui`

@@ -1,0 +1,23 @@
+---
+title: Segmented Control - SVG Options
+description: Verifies icon-only segments render registered SVG keys with accessible names and selected styling.
+specs:
+  - SVG options render without visible text labels.
+  - The selected SVG uses active foreground and background colors.
+  - Each icon-only segment exposes an accessible label.
+---
+
+<rtgl-view g="lg" p="lg" w="240">
+  <rtgl-segmented-control id="control" w="f"></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  const control = document.getElementById("control");
+  control.selectedValue = "music";
+  control.options = [
+    { value: "text", svg: "text", ariaLabel: "Text mode" },
+    { value: "music", svg: "music", ariaLabel: "Music mode" },
+    { value: "play", svg: "play", ariaLabel: "Playback mode" },
+  ];
+  control.render();
+</script>
