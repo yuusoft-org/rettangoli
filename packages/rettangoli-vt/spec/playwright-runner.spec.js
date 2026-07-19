@@ -9,7 +9,7 @@ function createPageMock() {
   return page;
 }
 
-function createRunnerHarness() {
+function createRunnerHarness(options = {}) {
   const page = createPageMock();
   const resetSession = vi.fn().mockResolvedValue(0);
   const cleanup = vi.fn().mockResolvedValue(undefined);
@@ -24,6 +24,7 @@ function createRunnerHarness() {
     navigationTimeout: 1000,
     readyTimeout: 1000,
     screenshotTimeout: 1000,
+    ...options,
   });
 
   runner.acquireSession = vi.fn().mockResolvedValue({
@@ -78,7 +79,7 @@ describe("PlaywrightRunner initial screenshot behavior", () => {
     expect(result.screenshotCount).toBe(1);
     expect(result.timings.initialScreenshotMs).toBeGreaterThanOrEqual(0);
     expect(page.listenerCount("pageerror")).toBe(0);
-    expect(cleanup).toHaveBeenCalledTimes(1);
+    expect(cleanup).toHaveBeenCalledWith({ skipRuntimeState: false });
   });
 
   it("skips the initial screenshot when frontMatter.skipInitialScreenshot is true", async () => {
@@ -196,6 +197,22 @@ describe("PlaywrightRunner page error handling", () => {
     expect(cleanup).toHaveBeenCalledTimes(1);
   });
 
+  it("bounds the final page-task drain outside the page", async () => {
+    const { runner, page, cleanup } = createRunnerHarness({
+      readyTimeout: 10,
+    });
+    page.evaluate.mockReturnValue(new Promise(() => {}));
+
+    await expect(runner.runTask(createTask({
+      frontMatter: {
+        skipInitialScreenshot: true,
+      },
+    }), 1)).rejects.toThrow("Page task drain timed out after 10ms");
+
+    expect(page.listenerCount("pageerror")).toBe(0);
+    expect(cleanup).toHaveBeenCalledWith({ skipRuntimeState: true });
+  });
+
   it("does not carry a page error into the next task", async () => {
     const { runner, page: firstPage } = createRunnerHarness();
     const secondPage = createPageMock();
@@ -285,7 +302,7 @@ describe("PlaywrightRunner fast isolation sessions", () => {
 
     const sessionA = await runner.acquireSession();
     await sessionA.resetSession();
-    await sessionA.cleanup();
+    await sessionA.cleanup({ skipRuntimeState: true });
 
     const sessionB = await runner.acquireSession();
     await sessionB.resetSession();
@@ -298,6 +315,8 @@ describe("PlaywrightRunner fast isolation sessions", () => {
     expect(sessionA.page).not.toBe(sessionB.page);
     expect(pageA.close).toHaveBeenCalledTimes(1);
     expect(pageB.close).toHaveBeenCalledTimes(1);
+    expect(pageA.evaluate).not.toHaveBeenCalled();
+    expect(pageB.evaluate).toHaveBeenCalledTimes(1);
     expect(context.clearCookies).toHaveBeenCalledTimes(2);
     expect(context.clearPermissions).toHaveBeenCalledTimes(2);
     expect(sessionA.registeredReadyEvents).not.toBe(sessionB.registeredReadyEvents);

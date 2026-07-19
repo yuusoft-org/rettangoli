@@ -290,6 +290,34 @@ document.querySelector("#module-status").dataset.moduleReady = String(
     expect(candidateHtml).toContain('<script type="module" src="/public/main.js"></script>');
   }, 180000);
 
+  it("completes the final drain when the page replaces timer globals", async () => {
+    originalCwd = process.cwd();
+    tempRoot = createTempProjectRoot();
+    process.chdir(tempRoot);
+
+    writeFixture(
+      tempRoot,
+      `---
+title: patched_timer_drain
+waitStrategy: load
+skipInitialScreenshot: true
+---
+<script>
+  const nativeTimer = globalThis.setTimeout.bind(globalThis);
+  globalThis.setTimeout = () => 0;
+  nativeTimer(() => globalThis.location.reload(), 1000);
+</script>
+<div>Patched timer fixture</div>
+`,
+    );
+
+    const port = await getAvailablePort();
+    await expect(generate({
+      vtPath: "./vt",
+      port,
+    })).resolves.toBeUndefined();
+  }, 180000);
+
   it("fails capture on an uncaught page error scheduled by the final action", async () => {
     originalCwd = process.cwd();
     tempRoot = createTempProjectRoot();
@@ -306,7 +334,7 @@ steps:
     steps:
       - action: click
 ---
-<button data-testid="schedule-error" onclick="setTimeout(() => { throw new Error('fixture page exploded'); }, 0)">
+<button data-testid="schedule-error" onclick="const nativeTimer = globalThis.setTimeout; globalThis.setTimeout = () => 0; nativeTimer(() => { throw new Error('fixture page exploded'); }, 0)">
   Schedule error
 </button>
 `,

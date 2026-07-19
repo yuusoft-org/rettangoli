@@ -185,6 +185,7 @@ Default unit run behavior:
   - `runs generate, accept, and report with real screenshots`
   - `supports waitEvent readiness with real browser screenshots`
   - `loads the default main bundle once as an ES module`
+  - `completes the final drain when the page replaces timer globals`
   - `fails capture on an uncaught page error`
   - `supports managed service lifecycle with vt.service.start and vt.url`
 
