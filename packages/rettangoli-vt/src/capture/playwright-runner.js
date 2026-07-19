@@ -403,9 +403,11 @@ export class PlaywrightRunner {
       }
       stepsMs = nowMs() - stepsStart;
 
-      // Let errors triggered by the final action cross the Playwright protocol
-      // boundary before declaring the task successful.
-      await page.waitForTimeout(0);
+      // Run a timer task in the page so zero-delay work scheduled by the final
+      // action, and its pageerror event, arrive before the listener is detached.
+      await page.evaluate(() => new Promise((resolve) => {
+        globalThis.setTimeout(resolve, 0);
+      }));
       throwIfPageError();
 
       const totalMs = nowMs() - overallStart;

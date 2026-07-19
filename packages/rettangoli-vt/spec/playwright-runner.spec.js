@@ -4,6 +4,7 @@ import { PlaywrightRunner } from "../src/capture/playwright-runner.js";
 
 function createPageMock() {
   const page = new EventEmitter();
+  page.evaluate = vi.fn().mockResolvedValue(undefined);
   page.waitForTimeout = vi.fn().mockResolvedValue(undefined);
   return page;
 }
@@ -165,6 +166,32 @@ describe("PlaywrightRunner page error handling", () => {
       steps: [{ action: "wait", ms: 1 }],
     }), 1)).rejects.toThrow("Uncaught page error: late failure");
 
+    expect(page.listenerCount("pageerror")).toBe(0);
+    expect(cleanup).toHaveBeenCalledTimes(1);
+  });
+
+  it("drains page tasks before detaching the final page-error listener", async () => {
+    const { runner, page, cleanup } = createRunnerHarness();
+    let finalActionScheduledError = false;
+    page.waitForTimeout.mockImplementation(async (milliseconds) => {
+      if (milliseconds === 1) {
+        finalActionScheduledError = true;
+      }
+    });
+    page.evaluate.mockImplementation(async () => {
+      if (finalActionScheduledError) {
+        page.emit("pageerror", new Error("deferred final failure"));
+      }
+    });
+
+    await expect(runner.runTask(createTask({
+      frontMatter: {
+        skipInitialScreenshot: true,
+      },
+      steps: [{ action: "wait", ms: 1 }],
+    }), 1)).rejects.toThrow("Uncaught page error: deferred final failure");
+
+    expect(page.evaluate).toHaveBeenCalledTimes(1);
     expect(page.listenerCount("pageerror")).toBe(0);
     expect(cleanup).toHaveBeenCalledTimes(1);
   });

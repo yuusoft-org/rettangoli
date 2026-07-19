@@ -290,7 +290,7 @@ document.querySelector("#module-status").dataset.moduleReady = String(
     expect(candidateHtml).toContain('<script type="module" src="/public/main.js"></script>');
   }, 180000);
 
-  it("fails capture on an uncaught page error", async () => {
+  it("fails capture on an uncaught page error scheduled by the final action", async () => {
     originalCwd = process.cwd();
     tempRoot = createTempProjectRoot();
     process.chdir(tempRoot);
@@ -299,11 +299,16 @@ document.querySelector("#module-status").dataset.moduleReady = String(
       tempRoot,
       `---
 title: page_error
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: schedule-error
+    steps:
+      - action: click
 ---
-<script>
-  throw new Error("fixture page exploded");
-</script>
-<div>Unreachable fixture</div>
+<button data-testid="schedule-error" onclick="setTimeout(() => { throw new Error('fixture page exploded'); }, 0)">
+  Schedule error
+</button>
 `,
     );
 
