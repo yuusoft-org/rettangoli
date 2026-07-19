@@ -43,6 +43,7 @@ Set `options` as a property and listen to `value-change`.
 | No Clear       | `no-clear`                         | boolean                                                                               | off                 |
 | Add Option     | `addOption` (property)             | `{ label?: string }`                                                                  | -                   |
 | Disabled       | `disabled`                         | boolean                                                                               | `false`             |
+| Size           | `s`                                | `sm`, `md`                                                                            | `md`                |
 | Width          | `w`                                | number, `%`, `xs`-`xl`, `f`, CSS length/value                                         | content-based       |
 
 ## Events
@@ -51,6 +52,30 @@ Set `options` as a property and listen to `value-change`.
 | ------------------ | ------------------------------- | -------------------------------------------- |
 | `value-change`     | `{ value, label, index, item }` | Fires when selection changes or is cleared   |
 | `add-option-click` | `{}`                            | Fires when the add-option segment is clicked |
+
+## Sizes
+
+Use `s="sm"` for a compact 24px-high control. It uses smaller text, icons, and horizontal padding. The default `s="md"` control is 32px high.
+
+```html codePreview
+<rtgl-view d="h" av="c" g="lg">
+  <rtgl-segmented-control id="size-md" w="240"></rtgl-segmented-control>
+  <rtgl-segmented-control id="size-sm" s="sm" w="200"></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  for (const id of ["size-md", "size-sm"]) {
+    const control = document.getElementById(id);
+    control.options = [
+      { value: "left", label: "Left" },
+      { value: "center", label: "Center" },
+      { value: "right", label: "Right" },
+    ];
+    control.selectedValue = "center";
+    control.render();
+  }
+</script>
+```
 
 ## Icon-Only Options
 

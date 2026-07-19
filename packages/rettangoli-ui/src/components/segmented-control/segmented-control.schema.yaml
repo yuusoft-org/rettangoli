@@ -32,6 +32,9 @@ propsSchema:
           type: string
     disabled:
       type: boolean
+    s:
+      type: string
+      enum: [sm, md]
     w:
       type: string
 events:

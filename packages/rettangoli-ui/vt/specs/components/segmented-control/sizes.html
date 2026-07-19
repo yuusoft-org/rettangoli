@@ -1,0 +1,42 @@
+---
+title: Segmented Control - Sizes
+description: Verifies the default and compact segmented-control size presets for text and SVG options.
+specs:
+  - The default control is 32px high with small text and 16px icons.
+  - The small control is 24px high with extra-small text and 14px icons.
+  - Segment borders and selected styling remain continuous at both sizes.
+---
+
+<rtgl-view g="lg" p="lg" w="320">
+  <rtgl-segmented-control id="text-default" w="f"></rtgl-segmented-control>
+  <rtgl-segmented-control id="text-small" s="sm" w="f"></rtgl-segmented-control>
+  <rtgl-segmented-control
+    id="svg-small"
+    s="sm"
+    w="240"
+  ></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  const textOptions = [
+    { value: "left", label: "Left" },
+    { value: "center", label: "Center" },
+    { value: "right", label: "Right" },
+  ];
+
+  for (const id of ["text-default", "text-small"]) {
+    const control = document.getElementById(id);
+    control.options = textOptions;
+    control.selectedValue = "center";
+    control.render();
+  }
+
+  const svgSmall = document.getElementById("svg-small");
+  svgSmall.options = [
+    { value: "text", svg: "text", ariaLabel: "Text mode" },
+    { value: "music", svg: "music", ariaLabel: "Music mode" },
+    { value: "play", svg: "play", ariaLabel: "Playback mode" },
+  ];
+  svgSmall.selectedValue = "music";
+  svgSmall.render();
+</script>

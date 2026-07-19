@@ -5,6 +5,39 @@ import {
 } from "../src/components/segmented-control/segmented-control.store.js";
 
 describe("rtgl-segmented-control store", () => {
+  it("uses the compact size preset when s is sm", () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: { s: "sm", w: "f", options: [] },
+    });
+
+    expect(viewData).toMatchObject({
+      size: "sm",
+      containerSizeAttrString: "h=24",
+      optionSizeAttrString: "ph=md",
+      textSize: "xs",
+      iconSize: 14,
+      containerAttrString: "w=f",
+    });
+  });
+
+  it("uses the medium preset by default and for unsupported sizes", () => {
+    for (const s of [undefined, "lg"]) {
+      const viewData = selectViewData({
+        state: createInitialState(),
+        props: { s, options: [] },
+      });
+
+      expect(viewData).toMatchObject({
+        size: "md",
+        containerSizeAttrString: "",
+        optionSizeAttrString: "ph=lg pv=md",
+        textSize: "sm",
+        iconSize: 16,
+      });
+    }
+  });
+
   it("normalizes svg-only options and their accessible labels", () => {
     const viewData = selectViewData({
       state: createInitialState(),

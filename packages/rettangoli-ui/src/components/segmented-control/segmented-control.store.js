@@ -12,7 +12,23 @@ const blacklistedProps = [
   "noClear",
   "addOption",
   "disabled",
+  "s",
 ];
+
+const sizePresets = {
+  sm: {
+    containerSizeAttrString: "h=24",
+    optionSizeAttrString: "ph=md",
+    textSize: "xs",
+    iconSize: 14,
+  },
+  md: {
+    containerSizeAttrString: "",
+    optionSizeAttrString: "ph=lg pv=md",
+    textSize: "sm",
+    iconSize: 16,
+  },
+};
 
 const stringifyProps = (props = {}) => {
   return Object.entries(props)
@@ -31,12 +47,16 @@ export const createInitialState = () =>
 
 export const selectViewData = ({ state, props }) => {
   const containerAttrString = stringifyProps(props);
+  const size = sizePresets[props.s] ? props.s : "md";
+  const sizePreset = sizePresets[size];
   const isDisabled = !!props.disabled;
   const hasControlledValue = Object.prototype.hasOwnProperty.call(
     props || {},
     "selectedValue",
   );
-  const currentValue = hasControlledValue ? props.selectedValue : state.selectedValue;
+  const currentValue = hasControlledValue
+    ? props.selectedValue
+    : state.selectedValue;
   const hasCurrentValue = hasControlledValue ? true : !!state.hasSelectedValue;
   const options = props.options || [];
 
@@ -51,7 +71,7 @@ export const selectViewData = ({ state, props }) => {
       hasSvg,
       accessibleLabel,
       isSelected,
-      bgc: isSelected ? "ac" : (isHovered && !isDisabled ? "mu" : ""),
+      bgc: isSelected ? "ac" : isHovered && !isDisabled ? "mu" : "",
       textColor: isSelected ? "ac-fg" : "fg",
       borderLeftWidth: index === 0 ? "none" : "xs",
       cursor: isDisabled ? "not-allowed" : "pointer",
@@ -61,13 +81,20 @@ export const selectViewData = ({ state, props }) => {
 
   return {
     containerAttrString,
+    size,
+    containerSizeAttrString: sizePreset.containerSizeAttrString,
+    optionSizeAttrString: sizePreset.optionSizeAttrString,
+    textSize: sizePreset.textSize,
+    iconSize: sizePreset.iconSize,
     isDisabled,
     options: optionsWithSelection,
     selectedValue: currentValue,
     hasSelectedValue: hasCurrentValue,
     ariaLabel: props.placeholder || "Segmented control",
     showAddOption: !isDisabled && !!props.addOption,
-    addOptionLabel: props.addOption?.label ? `+ ${props.addOption.label}` : "+ Add",
+    addOptionLabel: props.addOption?.label
+      ? `+ ${props.addOption.label}`
+      : "+ Add",
     addOptionBgc: state.hoveredAddOption ? "mu" : "",
     addOptionBorderLeftWidth: options.length === 0 ? "none" : "xs",
   };
