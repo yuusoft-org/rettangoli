@@ -1,8 +1,13 @@
 {
   "name": "@rettangoli/check",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Static contract checker for Rettangoli projects",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuusoft-org/rettangoli",
+    "directory": "packages/rettangoli-check"
+  },
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
