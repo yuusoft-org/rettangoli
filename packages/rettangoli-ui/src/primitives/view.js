@@ -10,6 +10,7 @@ import {
   responsiveStyleSizes,
   applyDimensionToStyleBucket,
   getResponsiveAttribute,
+  hasResponsiveAttribute,
   normalizeAspectRatio,
 } from "../common.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
@@ -18,6 +19,10 @@ import scrollStyle from "../styles/scrollStyles.js";
 import stylesGenerator from "../styles/viewStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
+import {
+  OverlayScrollbarController,
+  overlayScrollbarStyles,
+} from "../common/overlayScrollbar.js";
 
 const normalizeRawCssValue = (value) => {
   if (value === undefined || value === null) {
@@ -52,6 +57,7 @@ class RettangoliViewElement extends HTMLElement {
 
 
         ${scrollStyle}
+        ${overlayScrollbarStyles}
         ${flexDirectionStyles}
         ${marginStyles}
         ${cursorStyles}
@@ -74,6 +80,11 @@ class RettangoliViewElement extends HTMLElement {
     this._linkElement = null;
 
     this.shadow.appendChild(this._styleElement);
+    this._scrollbarController = new OverlayScrollbarController({
+      host: this,
+      shadowRoot: this.shadow,
+      slotElement: this._slotElement,
+    });
     this._updateDOM();
   }
 
@@ -93,7 +104,6 @@ class RettangoliViewElement extends HTMLElement {
         "bgs",
         "bgp",
         "bgr",
-        "hsb",
         "hide",
         "show",
         "sh",
@@ -132,6 +142,11 @@ class RettangoliViewElement extends HTMLElement {
   connectedCallback() {
     // Force update styles when connected to ensure responsive attributes are processed
     this.updateStyles();
+    this._scrollbarController.connect();
+  }
+
+  disconnectedCallback() {
+    this._scrollbarController.disconnect();
   }
 
   updateStyles() {
@@ -307,35 +322,51 @@ class RettangoliViewElement extends HTMLElement {
       }
 
       // Handle scroll properties
-      const scrollHorizontal = this.hasAttribute(addSizePrefix("sh"));
-      const scrollVertical = this.hasAttribute(addSizePrefix("sv"));
-      const hideScrollbar = this.hasAttribute(addSizePrefix("hsb"));
-      const overflow = this.getAttribute(addSizePrefix("overflow"));
+      const scrollHorizontal = hasResponsiveAttribute({
+        element: this,
+        size,
+        attr: "sh",
+      });
+      const scrollVertical = hasResponsiveAttribute({
+        element: this,
+        size,
+        attr: "sv",
+      });
+      const overflow = getResponsiveAttribute({
+        element: this,
+        size,
+        attr: "overflow",
+      });
 
       if (scrollHorizontal && scrollVertical) {
         this._styles[size]["overflow"] = "auto";
-        this._styles[size]["scrollbar-gutter"] = "stable";
+        this._styles[size]["scrollbar-gutter"] = "auto";
+        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "1";
+        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "1";
         this._styles[size]["flex-wrap"] = "nowrap";
       } else if (scrollHorizontal) {
         this._styles[size]["overflow-x"] = "auto";
-        this._styles[size]["scrollbar-gutter"] = "stable";
+        this._styles[size]["overflow-y"] = "hidden";
+        this._styles[size]["scrollbar-gutter"] = "auto";
+        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "1";
+        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "0";
         this._styles[size]["flex-wrap"] = "nowrap";
       } else if (scrollVertical) {
+        this._styles[size]["overflow-x"] = "hidden";
         this._styles[size]["overflow-y"] = "auto";
-        this._styles[size]["scrollbar-gutter"] = "stable";
+        this._styles[size]["scrollbar-gutter"] = "auto";
+        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "0";
+        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "1";
         this._styles[size]["flex-wrap"] = "nowrap";
       }
 
       if (overflow === "hidden") {
         this._styles[size]["overflow"] = "hidden";
+        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "0";
+        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "0";
         this._styles[size]["flex-wrap"] = "nowrap";
       }
 
-      if (hideScrollbar) {
-        this._styles[size]["-ms-overflow-style"] = "none";
-        this._styles[size]["scrollbar-gutter"] = "auto";
-        this._styles[size]["scrollbar-width"] = "none";
-      }
     });
 
     // Update styles only if changed
@@ -344,7 +375,8 @@ class RettangoliViewElement extends HTMLElement {
       this._styleElement.textContent = newStyleString;
       this._lastStyleString = newStyleString;
     }
-    
+
+    this._scrollbarController.refresh();
   }
   
   attributeChangedCallback(name, oldValue, newValue) {

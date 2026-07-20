@@ -1,0 +1,279 @@
+---
+title: View - Scrollbar - Transformed Smooth
+description: Verifies overlay geometry and thumb dragging remain exact under scale transforms and smooth scrolling.
+waitStrategy: selector
+waitSelector: "#transformed-scroller[data-scroll-ready]"
+skipInitialScreenshot: true
+specs:
+  - Track geometry is calculated in local CSS pixels when the host and an ancestor are scaled.
+  - Changing only an ancestor transform keeps both tracks aligned without a resize notification.
+  - Pointer coordinates are normalized while dragging a transformed thumb.
+  - "Thumb dragging bypasses `scroll-behavior: smooth` and stops synchronously on release."
+steps:
+  - action: setViewport
+    width: 900
+    height: 650
+  - action: assert
+    type: js
+    fn: getTransformedScrollbarState
+    value:
+      expectedScale: true
+      verticalAligned: true
+      horizontalAligned: true
+      cornerDisjoint: true
+      localTrackLengths: true
+  - action: customEvent
+    name: set-ancestor-scale
+    detail:
+      scaleX: "0.625"
+      scaleY: "0.75"
+  - action: wait
+    ms: 50
+  - action: assert
+    type: js
+    fn: getTransformedScrollbarState
+    value:
+      expectedScale: true
+      verticalAligned: true
+      horizontalAligned: true
+      cornerDisjoint: true
+      localTrackLengths: true
+  - action: select
+    selector: "#transformed-scroller"
+    steps:
+      - action: hover
+  - action: wait
+    ms: 20
+  - action: select
+    selector: "#transformed-scroller [data-rtgl-scrollbar-thumb='vertical']"
+    steps:
+      - action: hover
+  - action: mouseDown
+  - action: wait
+    ms: 20
+  - action: assert
+    type: js
+    fn: getTransformedDragState
+    value:
+      smoothConfigured: true
+      dragging: true
+      moveObserved: false
+      scrollSynchronous: false
+      thumbSynchronous: false
+  - action: move
+    x: 220
+    y: 140
+  - action: wait
+    ms: 20
+  - action: assert
+    type: js
+    fn: getTransformedDragState
+    value:
+      smoothConfigured: true
+      dragging: true
+      moveObserved: true
+      scrollSynchronous: true
+      thumbSynchronous: true
+  - action: mouseUp
+  - action: wait
+    ms: 20
+  - action: assert
+    type: js
+    fn: getTransformedDragState
+    value:
+      smoothConfigured: true
+      dragging: false
+      moveObserved: true
+      scrollSynchronous: true
+      thumbSynchronous: true
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: getReleasedScrollState
+    value:
+      releaseObserved: true
+      stoppedAfterRelease: true
+---
+<style>
+  #transform-stage {
+    position: relative;
+    width: 820px;
+    height: 560px;
+  }
+
+  #scale-shell {
+    position: absolute;
+    top: 60px;
+    left: 60px;
+    width: 320px;
+    height: 220px;
+    transform: scale(1.25, 1.5);
+    transform-origin: top left;
+  }
+
+  #transformed-scroller {
+    transform: scale(1.2, 0.8);
+    transform-origin: top left;
+    scroll-behavior: smooth;
+  }
+
+  #oversized-content {
+    flex: 0 0 auto;
+    width: 720px;
+    height: 640px;
+    background:
+      linear-gradient(90deg, var(--accent) 0 50%, var(--muted) 50% 100%);
+  }
+</style>
+
+<div id="transform-stage">
+  <div id="scale-shell">
+    <rtgl-view
+      id="transformed-scroller"
+      aria-label="Transformed smooth scrollbar example"
+      w="320"
+      h="220"
+      sh
+      sv
+      bgc="su"
+      bc="bo"
+      bw="xs">
+      <div id="oversized-content"></div>
+    </rtgl-view>
+  </div>
+</div>
+
+<script>
+  const closeEnough = (left, right, tolerance = 0.8) =>
+    Math.abs(left - right) <= tolerance;
+  const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+  customElements.whenDefined('rtgl-view').then(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const shell = document.getElementById('scale-shell');
+      const scroller = document.getElementById('transformed-scroller');
+      const shadow = scroller.shadowRoot;
+      const verticalTrack = shadow.querySelector(
+        '[data-rtgl-scrollbar-track="vertical"]',
+      );
+      const horizontalTrack = shadow.querySelector(
+        '[data-rtgl-scrollbar-track="horizontal"]',
+      );
+      const verticalThumb = shadow.querySelector(
+        '[data-rtgl-scrollbar-thumb="vertical"]',
+      );
+      let expectedScaleX = 1.5;
+      let expectedScaleY = 1.2;
+      let grabOffset = 0;
+      let moveObserved = false;
+      let scrollSynchronous = false;
+      let thumbSynchronous = false;
+      let releasedScrollTop = null;
+
+      // The VT runner emulates reduced motion, so override it only for this path.
+      scroller.style.setProperty('scroll-behavior', 'smooth', 'important');
+      scroller.scrollTo({ behavior: 'instant', left: 0, top: 0 });
+
+      window.addEventListener('set-ancestor-scale', (event) => {
+        const scaleX = Number(event.detail.scaleX);
+        const scaleY = Number(event.detail.scaleY);
+        shell.style.transform = `scale(${scaleX}, ${scaleY})`;
+        expectedScaleX = scaleX * 1.2;
+        expectedScaleY = scaleY * 0.8;
+      });
+
+      window.getTransformedScrollbarState = () => {
+        const hostRect = scroller.getBoundingClientRect();
+        const verticalRect = verticalTrack.getBoundingClientRect();
+        const horizontalRect = horizontalTrack.getBoundingClientRect();
+        const scaleX = hostRect.width / scroller.offsetWidth;
+        const scaleY = hostRect.height / scroller.offsetHeight;
+        const viewportLeft = hostRect.left + scroller.clientLeft * scaleX;
+        const viewportTop = hostRect.top + scroller.clientTop * scaleY;
+        const viewportRight = viewportLeft + scroller.clientWidth * scaleX;
+        const viewportBottom = viewportTop + scroller.clientHeight * scaleY;
+
+        return {
+          expectedScale:
+            closeEnough(scaleX, expectedScaleX, 0.01) &&
+            closeEnough(scaleY, expectedScaleY, 0.01),
+          verticalAligned:
+            closeEnough(verticalRect.top, viewportTop) &&
+            closeEnough(verticalRect.right, viewportRight),
+          horizontalAligned:
+            closeEnough(horizontalRect.left, viewportLeft) &&
+            closeEnough(horizontalRect.bottom, viewportBottom),
+          cornerDisjoint:
+            closeEnough(verticalRect.bottom, horizontalRect.top) &&
+            closeEnough(horizontalRect.right, verticalRect.left),
+          localTrackLengths:
+            closeEnough(
+              verticalRect.height / scaleY,
+              scroller.clientHeight - horizontalTrack.offsetHeight,
+            ) &&
+            closeEnough(
+              horizontalRect.width / scaleX,
+              scroller.clientWidth - verticalTrack.offsetWidth,
+            ),
+        };
+      };
+
+      verticalTrack.addEventListener('pointerdown', (event) => {
+        const trackRect = verticalTrack.getBoundingClientRect();
+        const thumbRect = verticalThumb.getBoundingClientRect();
+        const scaleY = trackRect.height / verticalTrack.offsetHeight;
+        grabOffset = (event.clientY - thumbRect.top) / scaleY;
+      });
+
+      verticalTrack.addEventListener('pointermove', (event) => {
+        if (event.buttons === 0) {
+          return;
+        }
+
+        moveObserved = true;
+        const trackRect = verticalTrack.getBoundingClientRect();
+        const thumbRect = verticalThumb.getBoundingClientRect();
+        const scaleY = trackRect.height / verticalTrack.offsetHeight;
+        const maxThumbOffset =
+          verticalTrack.offsetHeight - verticalThumb.offsetHeight;
+        const thumbOffset = clamp(
+          (event.clientY - trackRect.top) / scaleY - grabOffset,
+          0,
+          maxThumbOffset,
+        );
+        const maxScrollOffset = scroller.scrollHeight - scroller.clientHeight;
+        const expectedScrollTop = maxThumbOffset === 0
+          ? 0
+          : (thumbOffset / maxThumbOffset) * maxScrollOffset;
+        const actualThumbOffset = (thumbRect.top - trackRect.top) / scaleY;
+
+        scrollSynchronous = closeEnough(scroller.scrollTop, expectedScrollTop);
+        thumbSynchronous = closeEnough(actualThumbOffset, thumbOffset);
+      });
+
+      verticalTrack.addEventListener('pointerup', () => {
+        releasedScrollTop = scroller.scrollTop;
+      });
+
+      window.getTransformedDragState = () => ({
+        smoothConfigured: getComputedStyle(scroller).scrollBehavior === 'smooth',
+        dragging:
+          scroller.hasAttribute('data-rtgl-scrollbar-dragging') &&
+          verticalTrack.hasAttribute('data-dragging'),
+        moveObserved,
+        scrollSynchronous,
+        thumbSynchronous,
+      });
+
+      window.getReleasedScrollState = () => ({
+        releaseObserved: releasedScrollTop !== null,
+        stoppedAfterRelease:
+          releasedScrollTop !== null &&
+          closeEnough(scroller.scrollTop, releasedScrollTop),
+      });
+
+      scroller.setAttribute('data-scroll-ready', '');
+    }));
+  });
+</script>

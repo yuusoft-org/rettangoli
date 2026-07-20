@@ -1,0 +1,143 @@
+---
+title: Grid - Scrollbar - Bidirectional Overlay
+description: Verifies responsive grid axes compose into the same zero-gutter overlay without consuming an auto-placement cell.
+waitStrategy: selector
+waitSelector: "#grid-scroller[data-scroll-ready]"
+skipInitialScreenshot: true
+specs:
+  - Grid scroll surfaces use the same sole overlay scrollbar behavior as `rtgl-view`.
+  - The overlay layer is out of flow and does not consume or shift a grid cell.
+  - Both thin tracks reserve zero gutter, have no arrow controls, and overlay the scrollport.
+  - Both tracks are hidden while idle and visible while the grid host is hovered.
+  - A base `sh` axis remains active when `sm-sv` becomes active after a viewport transition.
+steps:
+  - action: setViewport
+    width: 620
+    height: 720
+  - action: wait
+    ms: 100
+  - action: move
+    x: 1
+    y: 1
+  - action: wait
+    ms: 50
+  - action: assert
+    type: js
+    fn: getGridScrollbarState
+    value:
+      hovered: false
+      bothOverlays: true
+      overlaysHidden: true
+      zeroGutter: true
+      gridPlacementPreserved: true
+      thinThumbs: true
+      noArrowControls: true
+  - action: screenshot
+  - action: select
+    selector: "#grid-scroller"
+    steps:
+      - action: hover
+  - action: wait
+    ms: 50
+  - action: assert
+    type: js
+    fn: getGridScrollbarState
+    value:
+      hovered: true
+      bothOverlays: true
+      overlaysHidden: false
+      zeroGutter: true
+      gridPlacementPreserved: true
+      thinThumbs: true
+      noArrowControls: true
+  - action: screenshot
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-text s="h4">Grid overlay scrollbars</rtgl-text>
+  <rtgl-text c="mu-fg">The overlay lives outside grid flow, so Cell 01 remains in the first column.</rtgl-text>
+
+  <rtgl-grid
+    id="grid-scroller"
+    aria-label="Bidirectional grid scrollbar example"
+    cols="repeat(3, 180px)"
+    w="420"
+    h="240"
+    sh
+    sm-sv
+    bgc="mu"
+    bc="bo"
+    bw="xs"
+    br="md"
+    p="sm"
+    g="md">
+    <rtgl-view id="grid-cell-1" h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 01</rtgl-text></rtgl-view>
+    <rtgl-view id="grid-cell-2" h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 02</rtgl-text></rtgl-view>
+    <rtgl-view id="grid-cell-3" h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 03</rtgl-text></rtgl-view>
+    <rtgl-view id="grid-cell-4" h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 04</rtgl-text></rtgl-view>
+    <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 05</rtgl-text></rtgl-view>
+    <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 06</rtgl-text></rtgl-view>
+    <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 07</rtgl-text></rtgl-view>
+    <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 08</rtgl-text></rtgl-view>
+    <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 09</rtgl-text></rtgl-view>
+    <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 10</rtgl-text></rtgl-view>
+    <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 11</rtgl-text></rtgl-view>
+    <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 12</rtgl-text></rtgl-view>
+  </rtgl-grid>
+</rtgl-view>
+
+<script>
+  const closeEnough = (left, right) => Math.abs(left - right) <= 0.75;
+
+  Promise.all([
+    customElements.whenDefined('rtgl-view'),
+    customElements.whenDefined('rtgl-grid'),
+  ]).then(() => {
+    requestAnimationFrame(() => {
+      const scroller = document.getElementById('grid-scroller');
+      scroller.scrollLeft = Math.round((scroller.scrollWidth - scroller.clientWidth) / 3);
+      scroller.scrollTop = Math.round((scroller.scrollHeight - scroller.clientHeight) / 3);
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        window.getGridScrollbarState = () => {
+          const shadow = scroller.shadowRoot;
+          const verticalTrack = shadow.querySelector('[data-rtgl-scrollbar-track="vertical"]');
+          const horizontalTrack = shadow.querySelector('[data-rtgl-scrollbar-track="horizontal"]');
+          const verticalThumb = shadow.querySelector('[data-rtgl-scrollbar-thumb="vertical"]');
+          const horizontalThumb = shadow.querySelector('[data-rtgl-scrollbar-thumb="horizontal"]');
+          const verticalStyle = getComputedStyle(verticalTrack);
+          const horizontalStyle = getComputedStyle(horizontalTrack);
+          const hostStyle = getComputedStyle(scroller);
+          const borderWidth = parseFloat(hostStyle.borderLeftWidth) + parseFloat(hostStyle.borderRightWidth);
+          const borderHeight = parseFloat(hostStyle.borderTopWidth) + parseFloat(hostStyle.borderBottomWidth);
+          const cell1 = document.getElementById('grid-cell-1');
+          const cell2 = document.getElementById('grid-cell-2');
+          const cell4 = document.getElementById('grid-cell-4');
+
+          return {
+            hovered: scroller.matches(':hover'),
+            bothOverlays:
+              verticalTrack.hasAttribute('data-visible') &&
+              horizontalTrack.hasAttribute('data-visible'),
+            overlaysHidden:
+              verticalStyle.opacity === '0' &&
+              horizontalStyle.opacity === '0',
+            zeroGutter:
+              closeEnough(scroller.offsetWidth - scroller.clientWidth, borderWidth) &&
+              closeEnough(scroller.offsetHeight - scroller.clientHeight, borderHeight),
+            gridPlacementPreserved:
+              cell1.offsetLeft < cell2.offsetLeft &&
+              closeEnough(cell1.offsetTop, cell2.offsetTop) &&
+              closeEnough(cell1.offsetLeft, cell4.offsetLeft) &&
+              cell4.offsetTop > cell1.offsetTop,
+            thinThumbs:
+              verticalThumb.getBoundingClientRect().width <= 4 &&
+              horizontalThumb.getBoundingClientRect().height <= 4,
+            noArrowControls: shadow.querySelectorAll('button, [data-rtgl-scrollbar-button]').length === 0,
+          };
+        };
+
+        scroller.setAttribute('data-scroll-ready', '');
+      }));
+    });
+  });
+</script>

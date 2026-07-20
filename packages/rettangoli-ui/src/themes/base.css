@@ -55,10 +55,10 @@ table {
 
 :root {
   --width-stretch: 100%;
-  --scrollbar-size: var(--spacing-sm);
+  --scrollbar-size: 4px;
   --scrollbar-track: transparent;
   --scrollbar-thumb: var(--muted-foreground);
-  --scrollbar-thumb-hover: var(--ring);
+  --scrollbar-thumb-hover: var(--scrollbar-thumb);
 }
 
 @supports (width: -webkit-fill-available) {
@@ -91,14 +91,10 @@ table {
 /* Shared presentation rules that consume theme tokens. */
 html {
   height: auto;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
   overflow-y: auto;
 }
 
 body {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
   font-family: var(--font-family-sans);
   font-size: var(--md-font-size);
   font-weight: var(--md-font-weight);

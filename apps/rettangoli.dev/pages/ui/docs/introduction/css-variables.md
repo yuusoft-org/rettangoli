@@ -180,6 +180,19 @@ Border width variables for consistent stroke weights.
 --border-width-xl: 16px; /* Extra thick borders */
 ```
 
+## Scrollbars
+
+Every `rtgl-view` and `rtgl-grid` with `sh` or `sv` uses the same overlay scrollbar tokens. The overlay is hidden at rest, appears on mouse hover, and never reserves layout space.
+
+```css
+--scrollbar-size: 4px; /* Visible track and thumb thickness */
+--scrollbar-track: transparent; /* Thin track color */
+--scrollbar-thumb: var(--muted-foreground); /* Default thumb color */
+--scrollbar-thumb-hover: var(--scrollbar-thumb); /* Hovered or dragged thumb color */
+```
+
+Override these variables on `:root`, a theme scope, or an individual scroll surface. The transparent pointer target around the visible thumb remains larger than `--scrollbar-size`, so making the visual thinner does not make it equally difficult to drag.
+
 ## Shadows
 
 Shadow variables for depth and elevation effects.

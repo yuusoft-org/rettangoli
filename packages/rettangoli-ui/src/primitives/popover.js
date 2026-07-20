@@ -188,7 +188,6 @@ class RettangoliPopoverElement extends HTMLElement {
       "content-wh",
       "content-g",
       "content-sv",
-      "content-hsb",
       "content-ph",
       "content-pv",
       "content-bgc",
@@ -376,7 +375,6 @@ class RettangoliPopoverElement extends HTMLElement {
       ["content-wh", "wh"],
       ["content-g", "g"],
       ["content-sv", "sv"],
-      ["content-hsb", "hsb"],
     ];
 
     for (const [sourceAttr, targetAttr] of attrs) {

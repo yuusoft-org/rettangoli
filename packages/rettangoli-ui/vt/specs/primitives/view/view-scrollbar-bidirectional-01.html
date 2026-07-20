@@ -1,0 +1,331 @@
+---
+title: View - Scrollbar - Bidirectional
+description: Verifies base and responsive axes compose into thin bidirectional overlays without gutters, arrows, or overlap.
+waitStrategy: selector
+waitSelector: "#bidirectional-scroller[data-scroll-ready]"
+skipInitialScreenshot: true
+specs:
+  - The `rtgl-view` host remains the native scroller on both axes.
+  - Browser-painted scrollbars are fully hidden and reserve no gutter.
+  - Thin custom tracks overlay the content and meet at an empty corner without overlapping.
+  - Both overlays are hidden while idle and visible on host hover.
+  - Native bidirectional wheel scrolling updates both thumbs and emits host scroll events.
+  - Hovering and scrolling preserve scrollport and content geometry.
+  - A base `sh` axis remains active when `sm-sv` becomes active after a viewport transition.
+  - Pointer-captured thumb dragging advances the scroll offset, cleans up its state, and does not leak gesture events to ancestors.
+  - Inherited RTL changes reposition both tracks.
+steps:
+  - action: setViewport
+    width: 620
+    height: 720
+  - action: wait
+    ms: 100
+  - action: move
+    x: 1
+    y: 1
+  - action: wait
+    ms: 50
+  - action: assert
+    type: js
+    fn: getBidirectionalScrollbarState
+    value:
+      hovered: false
+      nativeScrollbarHidden: true
+      bothOverlays: true
+      overlaysHidden: true
+      zeroGutter: true
+      positioningContext: true
+      overlaysScrollport: true
+      cornerDisjoint: true
+      thinThumbs: true
+      noArrowControls: true
+      geometryStable: true
+      bothPositioned: true
+      bothAdvanced: false
+      bothThumbsAdvanced: false
+      scrollEventObserved: false
+  - action: screenshot
+  - action: select
+    selector: "#bidirectional-scroller"
+    steps:
+      - action: hover
+  - action: wait
+    ms: 50
+  - action: assert
+    type: js
+    fn: getBidirectionalScrollbarState
+    value:
+      hovered: true
+      nativeScrollbarHidden: true
+      bothOverlays: true
+      overlaysHidden: false
+      zeroGutter: true
+      positioningContext: true
+      overlaysScrollport: true
+      cornerDisjoint: true
+      thinThumbs: true
+      noArrowControls: true
+      geometryStable: true
+      bothPositioned: true
+      bothAdvanced: false
+      bothThumbsAdvanced: false
+      scrollEventObserved: false
+  - action: screenshot
+  - action: scroll
+    deltaX: 48
+    deltaY: 48
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: getBidirectionalScrollbarState
+    value:
+      hovered: true
+      nativeScrollbarHidden: true
+      bothOverlays: true
+      overlaysHidden: false
+      zeroGutter: true
+      positioningContext: true
+      overlaysScrollport: true
+      cornerDisjoint: true
+      thinThumbs: true
+      noArrowControls: true
+      geometryStable: true
+      bothPositioned: true
+      bothAdvanced: true
+      bothThumbsAdvanced: true
+      scrollEventObserved: true
+  - action: screenshot
+  - action: select
+    selector: "#bidirectional-scroller [data-rtgl-scrollbar-thumb='vertical']"
+    steps:
+      - action: hover
+  - action: mouseDown
+  - action: wait
+    ms: 20
+  - action: assert
+    type: js
+    fn: getScrollbarDragState
+    value:
+      dragging: true
+      dragMoveObserved: false
+      ancestorGestureEvents: 0
+  - action: move
+    x: 438
+    y: 280
+  - action: wait
+    ms: 50
+  - action: assert
+    type: js
+    fn: getScrollbarDragState
+    value:
+      dragging: true
+      dragMoveObserved: true
+      ancestorGestureEvents: 0
+  - action: screenshot
+  - action: mouseUp
+  - action: wait
+    ms: 20
+  - action: assert
+    type: js
+    fn: getScrollbarDragState
+    value:
+      dragging: false
+      dragMoveObserved: true
+      ancestorGestureEvents: 0
+  - action: customEvent
+    name: set-scrollbar-direction
+    detail:
+      direction: rtl
+  - action: move
+    x: 200
+    y: 200
+  - action: wait
+    ms: 50
+  - action: assert
+    type: js
+    fn: getScrollbarDirectionState
+    value:
+      rtl: true
+      verticalAtInlineEnd: true
+      horizontalAvoidsVertical: true
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-text s="h4">Bidirectional overlay scrollbars</rtgl-text>
+  <rtgl-text c="mu-fg">Both axes begin one-third across their ranges, with surface edge padding behind the theme-owned thumbs.</rtgl-text>
+
+  <rtgl-view id="gesture-parent">
+    <rtgl-view
+      id="bidirectional-scroller"
+      aria-label="Bidirectional scrollbar example"
+      w="420"
+      h="260"
+      sh
+      sm-sv
+      bgc="su"
+      bc="bo"
+      bw="xs"
+      br="md"
+      p="sm">
+      <rtgl-grid cols="4" w="720" g="md" p="lg" bgc="se">
+        <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 01</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 02</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 03</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 04</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 05</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 06</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 07</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 08</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 09</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 10</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 11</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 12</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 13</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 14</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="mu" br="md" p="md"><rtgl-text>Cell 15</rtgl-text></rtgl-view>
+        <rtgl-view h="96" bgc="ac" br="md" p="md"><rtgl-text>Cell 16</rtgl-text></rtgl-view>
+      </rtgl-grid>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const closeEnough = (left, right) => Math.abs(left - right) <= 0.75;
+  const snapshotScrollGeometry = (element) => ({
+    clientWidth: element.clientWidth,
+    clientHeight: element.clientHeight,
+    offsetWidth: element.offsetWidth,
+    offsetHeight: element.offsetHeight,
+    scrollWidth: element.scrollWidth,
+    scrollHeight: element.scrollHeight,
+  });
+
+  Promise.all([
+    customElements.whenDefined('rtgl-view'),
+    customElements.whenDefined('rtgl-grid'),
+  ]).then(() => {
+    requestAnimationFrame(() => {
+      const scroller = document.getElementById('bidirectional-scroller');
+      const gestureParent = document.getElementById('gesture-parent');
+      let ancestorGestureEvents = 0;
+      let dragMoveObserved = false;
+      gestureParent.addEventListener('pointerdown', () => { ancestorGestureEvents += 1; });
+      gestureParent.addEventListener('pointermove', (event) => {
+        if (event.buttons !== 0) {
+          ancestorGestureEvents += 1;
+        }
+      });
+      gestureParent.addEventListener('pointerup', () => { ancestorGestureEvents += 1; });
+      window.addEventListener('set-scrollbar-direction', (event) => {
+        gestureParent.setAttribute('dir', event.detail.direction);
+      });
+      scroller.scrollLeft = Math.round((scroller.scrollWidth - scroller.clientWidth) / 3);
+      scroller.scrollTop = Math.round((scroller.scrollHeight - scroller.clientHeight) / 3);
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const shadow = scroller.shadowRoot;
+        const verticalTrack = shadow.querySelector('[data-rtgl-scrollbar-track="vertical"]');
+        const horizontalTrack = shadow.querySelector('[data-rtgl-scrollbar-track="horizontal"]');
+        const verticalThumb = shadow.querySelector('[data-rtgl-scrollbar-thumb="vertical"]');
+        const horizontalThumb = shadow.querySelector('[data-rtgl-scrollbar-thumb="horizontal"]');
+        const initialGeometry = snapshotScrollGeometry(scroller);
+        const initialScrollLeft = scroller.scrollLeft;
+        const initialScrollTop = scroller.scrollTop;
+        const initialVerticalThumbTop = verticalThumb.getBoundingClientRect().top;
+        const initialHorizontalThumbLeft = horizontalThumb.getBoundingClientRect().left;
+        let scrollEventCount = 0;
+        scroller.addEventListener('scroll', () => { scrollEventCount += 1; });
+        verticalTrack.addEventListener('pointermove', (event) => {
+          if (event.buttons !== 0) {
+            dragMoveObserved = true;
+          }
+        });
+
+        window.getBidirectionalScrollbarState = () => {
+          const hostRect = scroller.getBoundingClientRect();
+          const verticalTrackRect = verticalTrack.getBoundingClientRect();
+          const horizontalTrackRect = horizontalTrack.getBoundingClientRect();
+          const verticalThumbRect = verticalThumb.getBoundingClientRect();
+          const horizontalThumbRect = horizontalThumb.getBoundingClientRect();
+          const hostStyle = getComputedStyle(scroller);
+          const verticalStyle = getComputedStyle(verticalTrack);
+          const horizontalStyle = getComputedStyle(horizontalTrack);
+          const borderWidth = parseFloat(hostStyle.borderLeftWidth) + parseFloat(hostStyle.borderRightWidth);
+          const borderHeight = parseFloat(hostStyle.borderTopWidth) + parseFloat(hostStyle.borderBottomWidth);
+          const viewportLeft = hostRect.left + scroller.clientLeft;
+          const viewportTop = hostRect.top + scroller.clientTop;
+          const viewportRight = viewportLeft + scroller.clientWidth;
+          const viewportBottom = viewportTop + scroller.clientHeight;
+
+          return {
+            hovered: scroller.matches(':hover'),
+            nativeScrollbarHidden: hostStyle.scrollbarWidth === 'none',
+            bothOverlays:
+              verticalTrack.hasAttribute('data-visible') &&
+              horizontalTrack.hasAttribute('data-visible'),
+            overlaysHidden:
+              verticalStyle.opacity === '0' &&
+              horizontalStyle.opacity === '0' &&
+              verticalStyle.pointerEvents === 'none' &&
+              horizontalStyle.pointerEvents === 'none',
+            zeroGutter:
+              closeEnough(scroller.offsetWidth - scroller.clientWidth, borderWidth) &&
+              closeEnough(scroller.offsetHeight - scroller.clientHeight, borderHeight),
+            positioningContext: hostStyle.position === 'relative',
+            overlaysScrollport:
+              closeEnough(verticalTrackRect.top, viewportTop) &&
+              closeEnough(verticalTrackRect.right, viewportRight) &&
+              closeEnough(horizontalTrackRect.left, viewportLeft) &&
+              closeEnough(horizontalTrackRect.bottom, viewportBottom),
+            cornerDisjoint:
+              closeEnough(verticalTrackRect.bottom, horizontalTrackRect.top) &&
+              closeEnough(horizontalTrackRect.right, verticalTrackRect.left),
+            thinThumbs:
+              verticalThumbRect.width <= 4 &&
+              horizontalThumbRect.height <= 4 &&
+              verticalThumbRect.width < verticalTrackRect.width &&
+              horizontalThumbRect.height < horizontalTrackRect.height,
+            noArrowControls: shadow.querySelectorAll('button, [data-rtgl-scrollbar-button]').length === 0,
+            geometryStable: Object.entries(initialGeometry).every(
+              ([key, value]) => snapshotScrollGeometry(scroller)[key] === value,
+            ),
+            bothPositioned: scroller.scrollLeft > 0 && scroller.scrollTop > 0,
+            bothAdvanced:
+              scroller.scrollLeft > initialScrollLeft &&
+              scroller.scrollTop > initialScrollTop,
+            bothThumbsAdvanced:
+              verticalThumbRect.top > initialVerticalThumbTop &&
+              horizontalThumbRect.left > initialHorizontalThumbLeft,
+            scrollEventObserved: scrollEventCount > 0,
+          };
+        };
+
+        window.getScrollbarDragState = () => ({
+          dragging:
+            scroller.hasAttribute('data-rtgl-scrollbar-dragging') &&
+            verticalTrack.hasAttribute('data-dragging'),
+          dragMoveObserved,
+          ancestorGestureEvents,
+        });
+
+        window.getScrollbarDirectionState = () => {
+          const hostRect = scroller.getBoundingClientRect();
+          const verticalTrackRect = verticalTrack.getBoundingClientRect();
+          const horizontalTrackRect = horizontalTrack.getBoundingClientRect();
+          const viewportLeft = hostRect.left + scroller.clientLeft;
+
+          return {
+            rtl: getComputedStyle(scroller).direction === 'rtl',
+            verticalAtInlineEnd: closeEnough(verticalTrackRect.left, viewportLeft),
+            horizontalAvoidsVertical: closeEnough(
+              horizontalTrackRect.left,
+              verticalTrackRect.right,
+            ),
+          };
+        };
+
+        scroller.setAttribute('data-scroll-ready', '');
+      }));
+    });
+  });
+</script>

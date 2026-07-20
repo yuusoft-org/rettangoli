@@ -1,0 +1,441 @@
+---
+title: View - Scrollbar - Vertical
+description: Verifies the sole vertical scrollbar is a thin, arrowless overlay over the native host scroller.
+waitStrategy: selector
+waitSelector: "#vertical-scroller[data-scroll-ready]"
+skipInitialScreenshot: true
+specs:
+  - The `rtgl-view` host remains the native scroll container.
+  - The browser-painted scrollbar is hidden and reserves no gutter.
+  - The thin custom thumb overlays the scrollport, sits 2px inside its outer edge, and has no arrow controls.
+  - The overlay is hidden while idle and visible only while the host is hovered or dragged.
+  - Native wheel scrolling emits a host scroll event and updates the thumb.
+  - Hovering and scrolling do not change layout geometry.
+  - Non-scroll views stay overlay-free, and CSS-driven overflow keeps its browser scrollbar.
+  - The same theme-owned scrollbar thumb is exercised on background, surface, accent, and muted scroll surfaces.
+steps:
+  - action: move
+    x: 1
+    y: 1
+  - action: wait
+    ms: 50
+  - action: assert
+    type: js
+    fn: getVerticalScrollbarState
+    value:
+      hovered: false
+      nativeScrollbarHidden: true
+      onlyVerticalOverlay: true
+      overlayHidden: true
+      zeroGutter: true
+      overlaysScrollport: true
+      twoPixelVisualInset: true
+      overlayScrollbarVisual: true
+      thinThumb: true
+      noArrowControls: true
+      oppositeAxisClipped: true
+      cssDrivenScrollbarPreserved: true
+      lazyNonScroller: true
+      geometryStable: true
+      scrollPositioned: true
+      scrollAdvanced: false
+      thumbAdvanced: false
+      scrollEventObserved: false
+  - action: screenshot
+  - action: select
+    selector: "#vertical-scroller"
+    steps:
+      - action: hover
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getVerticalScrollbarState
+    value:
+      hovered: true
+      nativeScrollbarHidden: true
+      onlyVerticalOverlay: true
+      overlayHidden: false
+      zeroGutter: true
+      overlaysScrollport: true
+      twoPixelVisualInset: true
+      overlayScrollbarVisual: true
+      thinThumb: true
+      noArrowControls: true
+      oppositeAxisClipped: true
+      cssDrivenScrollbarPreserved: true
+      lazyNonScroller: true
+      geometryStable: true
+      scrollPositioned: true
+      scrollAdvanced: false
+      thumbAdvanced: false
+      scrollEventObserved: false
+  - action: screenshot
+  - action: move
+    x: 430
+    y: 200
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getVerticalSurfaceState
+    value:
+      hoveredSurface: su
+      onlyHoveredOverlayVisible: true
+      usesExpectedSurfaceColors: true
+      thumbsUseScrollbarToken: true
+      overlayScrollbarVisual: true
+      zeroGutter: true
+  - action: screenshot
+  - action: move
+    x: 715
+    y: 200
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getVerticalSurfaceState
+    value:
+      hoveredSurface: ac
+      onlyHoveredOverlayVisible: true
+      usesExpectedSurfaceColors: true
+      thumbsUseScrollbarToken: true
+      overlayScrollbarVisual: true
+      zeroGutter: true
+  - action: screenshot
+  - action: move
+    x: 1000
+    y: 200
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getVerticalSurfaceState
+    value:
+      hoveredSurface: mu
+      onlyHoveredOverlayVisible: true
+      usesExpectedSurfaceColors: true
+      thumbsUseScrollbarToken: true
+      overlayScrollbarVisual: true
+      zeroGutter: true
+  - action: screenshot
+  - action: move
+    x: 150
+    y: 200
+  - action: wait
+    ms: 150
+  - action: scroll
+    deltaX: 0
+    deltaY: 64
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: getVerticalScrollbarState
+    value:
+      hovered: true
+      nativeScrollbarHidden: true
+      onlyVerticalOverlay: true
+      overlayHidden: false
+      zeroGutter: true
+      overlaysScrollport: true
+      twoPixelVisualInset: true
+      overlayScrollbarVisual: true
+      thinThumb: true
+      noArrowControls: true
+      oppositeAxisClipped: true
+      cssDrivenScrollbarPreserved: true
+      lazyNonScroller: true
+      geometryStable: true
+      scrollPositioned: true
+      scrollAdvanced: true
+      thumbAdvanced: true
+      scrollEventObserved: true
+  - action: screenshot
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-text s="h4">Vertical overlay scrollbar</rtgl-text>
+  <rtgl-text c="mu-fg">The same scrollbar thumb is shown on four common theme surfaces at the same scroll position.</rtgl-text>
+
+  <rtgl-view d="h" g="lg">
+    <rtgl-view d="v" g="sm">
+      <rtgl-text c="mu-fg">Background (bg)</rtgl-text>
+      <rtgl-view
+        id="vertical-scroller"
+        aria-label="Vertical scrollbar on background surface"
+        w="260"
+        h="220"
+        sv
+        bgc="bg"
+        bc="bo"
+        bw="xs"
+        br="md"
+        p="md"
+        g="sm">
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 01</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 02</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 03</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 04</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 05</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 06</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 07</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 08</rtgl-text></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+
+    <rtgl-view d="v" g="sm">
+      <rtgl-text c="mu-fg">Surface (su)</rtgl-text>
+      <rtgl-view
+        id="vertical-scroller-su"
+        aria-label="Vertical scrollbar on surface color"
+        w="260"
+        h="220"
+        sv
+        bgc="su"
+        bc="bo"
+        bw="xs"
+        br="md"
+        p="md"
+        g="sm">
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 01</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 02</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 03</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 04</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 05</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 06</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 07</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 08</rtgl-text></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+
+    <rtgl-view d="v" g="sm">
+      <rtgl-text c="mu-fg">Accent (ac)</rtgl-text>
+      <rtgl-view
+        id="vertical-scroller-ac"
+        aria-label="Vertical scrollbar on accent surface"
+        w="260"
+        h="220"
+        sv
+        bgc="ac"
+        bc="bo"
+        bw="xs"
+        br="md"
+        p="md"
+        g="sm">
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 01</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 02</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 03</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 04</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 05</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 06</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 07</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 08</rtgl-text></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+
+    <rtgl-view d="v" g="sm">
+      <rtgl-text c="mu-fg">Muted (mu)</rtgl-text>
+      <rtgl-view
+        id="vertical-scroller-mu"
+        aria-label="Vertical scrollbar on muted surface"
+        w="260"
+        h="220"
+        sv
+        bgc="mu"
+        bc="bo"
+        bw="xs"
+        br="md"
+        p="md"
+        g="sm">
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 01</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 02</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 03</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 04</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 05</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 06</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 07</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 08</rtgl-text></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const closeEnough = (left, right) => Math.abs(left - right) <= 0.75;
+  const snapshotScrollGeometry = (element) => ({
+    clientWidth: element.clientWidth,
+    clientHeight: element.clientHeight,
+    offsetWidth: element.offsetWidth,
+    offsetHeight: element.offsetHeight,
+    scrollWidth: element.scrollWidth,
+    scrollHeight: element.scrollHeight,
+  });
+
+  customElements.whenDefined('rtgl-view').then(() => {
+    requestAnimationFrame(() => {
+      const scroller = document.getElementById('vertical-scroller');
+      const surfaceScrollers = {
+        bg: scroller,
+        su: document.getElementById('vertical-scroller-su'),
+        ac: document.getElementById('vertical-scroller-ac'),
+        mu: document.getElementById('vertical-scroller-mu'),
+      };
+      const createColorProbe = (variableName) => {
+        const probe = document.createElement('div');
+        probe.style.cssText = `position: fixed; left: -10000px; top: 0; background: var(${variableName})`;
+        document.body.appendChild(probe);
+        return probe;
+      };
+      const scrollbarColorProbe = createColorProbe('--scrollbar-thumb');
+      const surfaceColorProbes = {
+        bg: createColorProbe('--background'),
+        su: createColorProbe('--surface'),
+        ac: createColorProbe('--accent'),
+        mu: createColorProbe('--muted'),
+      };
+      const nonScroller = document.querySelector('rtgl-view');
+      const cssScroller = document.createElement('rtgl-view');
+      const cssScrollerContent = document.createElement('div');
+      cssScroller.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 80px; height: 40px; overflow: auto';
+      cssScrollerContent.style.cssText = 'flex: none; min-width: 160px; width: 160px; min-height: 80px; height: 80px';
+      cssScroller.appendChild(cssScrollerContent);
+      document.body.appendChild(cssScroller);
+      Object.values(surfaceScrollers).forEach((surfaceScroller) => {
+        surfaceScroller.scrollTop = Math.round(
+          (surfaceScroller.scrollHeight - surfaceScroller.clientHeight) / 3,
+        );
+      });
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const surfaceParts = Object.fromEntries(
+          Object.entries(surfaceScrollers).map(([name, host]) => {
+            const shadow = host.shadowRoot;
+            return [name, {
+              host,
+              shadow,
+              verticalTrack: shadow.querySelector('[data-rtgl-scrollbar-track="vertical"]'),
+              horizontalTrack: shadow.querySelector('[data-rtgl-scrollbar-track="horizontal"]'),
+              verticalThumb: shadow.querySelector('[data-rtgl-scrollbar-thumb="vertical"]'),
+            }];
+          }),
+        );
+        const {
+          shadow,
+          verticalTrack,
+          horizontalTrack,
+          verticalThumb,
+        } = surfaceParts.bg;
+        const initialGeometry = snapshotScrollGeometry(scroller);
+        const initialScrollTop = scroller.scrollTop;
+        const initialThumbTop = verticalThumb.getBoundingClientRect().top;
+        let scrollEventCount = 0;
+        scroller.addEventListener('scroll', () => { scrollEventCount += 1; });
+
+        window.getVerticalScrollbarState = () => {
+          const hostRect = scroller.getBoundingClientRect();
+          const trackRect = verticalTrack.getBoundingClientRect();
+          const thumbRect = verticalThumb.getBoundingClientRect();
+          const hostStyle = getComputedStyle(scroller);
+          const trackStyle = getComputedStyle(verticalTrack);
+          const thumbStyle = getComputedStyle(verticalThumb);
+          const borderWidth = parseFloat(hostStyle.borderLeftWidth) + parseFloat(hostStyle.borderRightWidth);
+          const borderHeight = parseFloat(hostStyle.borderTopWidth) + parseFloat(hostStyle.borderBottomWidth);
+          const viewportTop = hostRect.top + scroller.clientTop;
+          const viewportRight = hostRect.left + scroller.clientLeft + scroller.clientWidth;
+          const viewportBottom = viewportTop + scroller.clientHeight;
+
+          return {
+            hovered: scroller.matches(':hover'),
+            nativeScrollbarHidden: hostStyle.scrollbarWidth === 'none',
+            onlyVerticalOverlay:
+              verticalTrack.hasAttribute('data-visible') &&
+              !horizontalTrack.hasAttribute('data-visible'),
+            overlayHidden: trackStyle.opacity === '0' && trackStyle.pointerEvents === 'none',
+            zeroGutter:
+              closeEnough(scroller.offsetWidth - scroller.clientWidth, borderWidth) &&
+              closeEnough(scroller.offsetHeight - scroller.clientHeight, borderHeight),
+            overlaysScrollport:
+              closeEnough(trackRect.top, viewportTop) &&
+              closeEnough(trackRect.right, viewportRight) &&
+              closeEnough(trackRect.bottom, viewportBottom),
+            twoPixelVisualInset: closeEnough(viewportRight - thumbRect.right, 2),
+            overlayScrollbarVisual:
+              closeEnough(thumbRect.width, 4) &&
+              thumbStyle.borderRadius === '10px' &&
+              closeEnough(parseFloat(thumbStyle.opacity), 0.6),
+            thinThumb: thumbRect.width <= 4 && thumbRect.width < trackRect.width,
+            noArrowControls: shadow.querySelectorAll('button, [data-rtgl-scrollbar-button]').length === 0,
+            oppositeAxisClipped: hostStyle.overflowX === 'hidden',
+            cssDrivenScrollbarPreserved:
+              cssScroller.scrollHeight > cssScroller.clientHeight &&
+              getComputedStyle(cssScroller).scrollbarWidth !== 'none' &&
+              !cssScroller.shadowRoot.querySelector('[data-rtgl-scrollbar-layer]'),
+            lazyNonScroller: !nonScroller.shadowRoot.querySelector('[data-rtgl-scrollbar-layer]'),
+            geometryStable: Object.entries(initialGeometry).every(
+              ([key, value]) => snapshotScrollGeometry(scroller)[key] === value,
+            ),
+            scrollPositioned: scroller.scrollTop > 0,
+            scrollAdvanced: scroller.scrollTop > initialScrollTop,
+            thumbAdvanced: thumbRect.top > initialThumbTop,
+            scrollEventObserved: scrollEventCount > 0,
+          };
+        };
+
+        window.getVerticalSurfaceState = () => {
+          const hoveredSurface = Object.entries(surfaceParts).find(
+            ([, { host }]) => host.matches(':hover'),
+          )?.[0] || null;
+          const scrollbarColor = getComputedStyle(scrollbarColorProbe).backgroundColor;
+
+          return {
+            hoveredSurface,
+            onlyHoveredOverlayVisible: Object.entries(surfaceParts).every(
+              ([name, { verticalTrack: surfaceVerticalTrack, horizontalTrack: surfaceHorizontalTrack }]) => {
+                const trackStyle = getComputedStyle(surfaceVerticalTrack);
+                const shouldBeVisible = name === hoveredSurface;
+                const visibilityMatches = shouldBeVisible
+                  ? trackStyle.opacity !== '0' && trackStyle.pointerEvents !== 'none'
+                  : trackStyle.opacity === '0' && trackStyle.pointerEvents === 'none';
+                return surfaceVerticalTrack.hasAttribute('data-visible') &&
+                  !surfaceHorizontalTrack.hasAttribute('data-visible') &&
+                  visibilityMatches;
+              },
+            ),
+            usesExpectedSurfaceColors: Object.entries(surfaceParts).every(
+              ([name, { host }]) =>
+                getComputedStyle(host).backgroundColor ===
+                getComputedStyle(surfaceColorProbes[name]).backgroundColor,
+            ),
+            thumbsUseScrollbarToken: Object.values(surfaceParts).every(
+              ({ verticalThumb: surfaceThumb }) =>
+                getComputedStyle(surfaceThumb).backgroundColor === scrollbarColor,
+            ),
+            overlayScrollbarVisual: Object.values(surfaceParts).every(
+              ({ verticalThumb: surfaceThumb }) => {
+                const thumbRect = surfaceThumb.getBoundingClientRect();
+                const thumbStyle = getComputedStyle(surfaceThumb);
+                return closeEnough(thumbRect.width, 4) &&
+                  thumbStyle.borderRadius === '10px' &&
+                  closeEnough(parseFloat(thumbStyle.opacity), 0.6);
+              },
+            ),
+            zeroGutter: Object.values(surfaceParts).every(
+              ({ host, verticalTrack: surfaceTrack, verticalThumb: surfaceThumb }) => {
+                const hostStyle = getComputedStyle(host);
+                const borderWidth = parseFloat(hostStyle.borderLeftWidth) + parseFloat(hostStyle.borderRightWidth);
+                const borderHeight = parseFloat(hostStyle.borderTopWidth) + parseFloat(hostStyle.borderBottomWidth);
+                return closeEnough(host.offsetWidth - host.clientWidth, borderWidth) &&
+                  closeEnough(host.offsetHeight - host.clientHeight, borderHeight) &&
+                  surfaceThumb.getBoundingClientRect().width < surfaceTrack.getBoundingClientRect().width;
+              },
+            ),
+          };
+        };
+
+        Object.values(surfaceScrollers).forEach((surfaceScroller) => {
+          surfaceScroller.setAttribute('data-scroll-ready', '');
+        });
+      }));
+    });
+  });
+</script>

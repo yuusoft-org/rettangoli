@@ -397,6 +397,13 @@ Use `sv` for vertical scroll, `sh` for horizontal scroll, or `overflow="hidden"`
 
 - `sh` + `sv` enables scrolling in both directions.
 - `sh` enables horizontal scrolling; `sv` enables vertical scrolling.
+- A single-axis flag clips the opposite axis so an unrepresented second scrollbar cannot appear.
+- Every `sh` / `sv` surface automatically uses Rettangoli's thin overlay scrollbar; there is no separate opt-in scrollbar mode.
+- The browser-painted rail is hidden completely. The arrowless Rettangoli track and thumb sit over the scrollport and reserve no layout gutter.
+- A scrolling surface establishes a positioning context for the overlay when `pos` is otherwise unset, so absolutely positioned children resolve against the scrolling host. Explicit responsive `pos` values still control the host's own positioning mode.
+- The overlay is hidden at rest, appears while a mouse pointer hovers the view, and remains visible while its thumb is being dragged.
+- Wheel, touch, keyboard, programmatic scrolling, `scrollTop` / `scrollLeft`, and host `scroll` events remain browser-native.
+- Colors and visible thickness come from the shared scrollbar CSS variables; views do not hard-code scrollbar colors.
 - `overflow="hidden"` clips content and takes precedence over scroll flags.
 - Scroll/clip modes can keep items on one line in horizontal layouts.
 
