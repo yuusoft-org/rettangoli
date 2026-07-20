@@ -4,7 +4,7 @@
 
 ### Improvements
 
-- `rtgl-view` and `rtgl-grid`: all `sh` / `sv` surfaces now keep native scrolling mechanics while using Rettangoli's sole thin overlay visual. The browser-painted rail is hidden; the arrowless overlay reserves no gutter, stays hidden at rest, appears on mouse hover, supports thumb dragging under scale transforms and `scroll-behavior: smooth`, and honors `hsb` as always hidden.
+- `rtgl-view` and `rtgl-grid`: all `sh` / `sv` surfaces now keep native scrolling mechanics while using Rettangoli's sole thin overlay visual. The browser-painted rail is hidden; the arrowless overlay reserves no gutter, stays hidden at rest, appears on mouse hover, and supports thumb dragging under scale transforms and `scroll-behavior: smooth`.
 - `rtgl-segmented-control`: added reactive `s="sm|md|lg"` size presets at 24px, 32px, and 40px plus `sq` for square segments and icon-only square add actions; the default remains `s="md"`.
 - `rtgl-segmented-control`: added icon-only options using registered `svg` keys and accessible `ariaLabel` names while preserving label-only options.
 - `rtgl-segmented-control`: added optional per-item `tooltip` text that appears when an option is hovered.
@@ -39,6 +39,7 @@
 
 ### Breaking Changes
 
+- Removed `hsb`, its responsive variants, and `rtgl-popover`'s `content-hsb` passthrough. Every `sh` / `sv` surface now uses the same hover-revealed overlay scrollbar behavior.
 - `rtgl-view` and `rtgl-grid` scrolling surfaces now establish a positioning context for their overlay scrollbar when `pos` is otherwise unset; absolutely positioned children therefore resolve against the scrolling host. Explicit responsive `pos` values continue to control the host's own positioning mode.
 - Disabled attribute standardized to `disabled` (replaces `dis`) on primitives: `rtgl-button`, `rtgl-input`, `rtgl-input-number`, `rtgl-textarea`, `rtgl-slider`, `rtgl-color-picker`.
 - Event names standardized to kebab-case with action suffixes:

@@ -314,7 +314,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - the overlay layer must remain out of flex/grid flow, reserve zero gutter, contain no arrow controls, and leave host scroll/client dimensions unchanged
 - scrolling hosts establish a positioning context for the overlay when `pos` is otherwise unset; preserve explicit responsive `pos` values for the host's own positioning mode and document that absolutely positioned children resolve against the host
 - tracks are thin, hidden at rest, shown on host mouse hover, and kept visible during pointer-captured thumb dragging
-- `hsb` is the explicit always-hidden overlay mode and takes precedence over hover styling
+- there is no always-hidden or alternate scrollbar mode; every `sh` / `sv` surface uses the same hover-revealed overlay
 - use the existing scrollbar tokens for all paint and thickness; never add fixture-specific component colors
 - controller lifecycle must clean up scroll/load/resize/slot listeners, observers, animation frames, and pointer capture on disconnect
 - create the overlay DOM and observers lazily only for hosts that declare `sh` / `sv` (including responsive variants); do not suppress browser paint for unrelated CSS-driven overflow
@@ -327,7 +327,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 
 - use for explicit 2D column layouts
 - `cols` and `sm-cols` / `md-cols` / `lg-cols` / `xl-cols` accept positive integers and render equal-width tracks
-- shared spacing, sizing, border, background, visibility, overflow, and link attrs follow the same conventions as `rtgl-view`; `sh`, `sv`, responsive variants, and `hsb` use the same overlay-scrollbar contract
+- shared spacing, sizing, border, background, visibility, overflow, and link attrs follow the same conventions as `rtgl-view`; `sh`, `sv`, and their responsive variants use the same overlay-scrollbar contract
 - flex-only attrs such as `d`, `wrap`, `no-wrap`, `ah`, and `av` do not apply
 
 Components built via `@rettangoli/fe`:

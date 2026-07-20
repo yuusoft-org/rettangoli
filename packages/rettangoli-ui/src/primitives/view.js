@@ -104,7 +104,6 @@ class RettangoliViewElement extends HTMLElement {
         "bgs",
         "bgp",
         "bgr",
-        "hsb",
         "hide",
         "show",
         "sh",
@@ -333,11 +332,6 @@ class RettangoliViewElement extends HTMLElement {
         size,
         attr: "sv",
       });
-      const hideScrollbar = hasResponsiveAttribute({
-        element: this,
-        size,
-        attr: "hsb",
-      });
       const overflow = getResponsiveAttribute({
         element: this,
         size,
@@ -373,9 +367,6 @@ class RettangoliViewElement extends HTMLElement {
         this._styles[size]["flex-wrap"] = "nowrap";
       }
 
-      if (hideScrollbar) {
-        this._styles[size]["--rtgl-scrollbar-hidden"] = "1";
-      }
     });
 
     // Update styles only if changed

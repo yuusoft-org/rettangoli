@@ -56,7 +56,6 @@ export const overlayScrollbarStyles = `
   :host {
     --rtgl-scrollbar-x-enabled: 0;
     --rtgl-scrollbar-y-enabled: 0;
-    --rtgl-scrollbar-hidden: 0;
   }
 
   :host([sh]),
@@ -561,14 +560,13 @@ export class OverlayScrollbarController {
     const style = getComputedStyle(this.host);
     const horizontalConfigured = isEnabledFlag(style, "--rtgl-scrollbar-x-enabled");
     const verticalConfigured = isEnabledFlag(style, "--rtgl-scrollbar-y-enabled");
-    const scrollbarHidden = isEnabledFlag(style, "--rtgl-scrollbar-hidden");
     const clientWidth = this.host.clientWidth;
     const clientHeight = this.host.clientHeight;
     const scrollWidth = this.host.scrollWidth;
     const scrollHeight = this.host.scrollHeight;
-    const horizontalVisible = !scrollbarHidden && horizontalConfigured &&
+    const horizontalVisible = horizontalConfigured &&
       scrollWidth - clientWidth > SCROLL_EPSILON;
-    const verticalVisible = !scrollbarHidden && verticalConfigured &&
+    const verticalVisible = verticalConfigured &&
       scrollHeight - clientHeight > SCROLL_EPSILON;
 
     if (this._dragState) {

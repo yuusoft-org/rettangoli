@@ -105,7 +105,6 @@ class RettangoliGridElement extends HTMLElement {
         "show",
         "sh",
         "sv",
-        "hsb",
         "z",
         "overflow",
       ]),
@@ -207,11 +206,6 @@ class RettangoliGridElement extends HTMLElement {
         size,
         attr: "sv",
       });
-      const hideScrollbar = hasResponsiveAttribute({
-        element: this,
-        size,
-        attr: "hsb",
-      });
       const overflow = getResponsiveAttribute({
         element: this,
         size,
@@ -243,9 +237,6 @@ class RettangoliGridElement extends HTMLElement {
         this._styles[size]["--rtgl-scrollbar-y-enabled"] = "0";
       }
 
-      if (hideScrollbar) {
-        this._styles[size]["--rtgl-scrollbar-hidden"] = "1";
-      }
     });
 
     const newStyleString = convertObjectToCssString(this._styles);

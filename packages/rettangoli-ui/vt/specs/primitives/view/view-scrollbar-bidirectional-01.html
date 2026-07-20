@@ -13,7 +13,7 @@ specs:
   - Hovering and scrolling preserve scrollport and content geometry.
   - A base `sh` axis remains active when `sm-sv` becomes active after a viewport transition.
   - Pointer-captured thumb dragging advances the scroll offset, cleans up its state, and does not leak gesture events to ancestors.
-  - Inherited RTL changes reposition both tracks, and responsive `hsb` changes hide only the overlay visuals.
+  - Inherited RTL changes reposition both tracks.
 steps:
   - action: setViewport
     width: 620
@@ -149,32 +149,6 @@ steps:
       rtl: true
       verticalAtInlineEnd: true
       horizontalAvoidsVertical: true
-  - action: customEvent
-    name: set-scrollbar-hidden
-    detail:
-      enabled: true
-  - action: wait
-    ms: 50
-  - action: assert
-    type: js
-    fn: getScrollbarHiddenState
-    value:
-      hidden: true
-      overlaysVisible: false
-      nativeScrollingRetained: true
-  - action: customEvent
-    name: set-scrollbar-hidden
-    detail:
-      enabled: false
-  - action: wait
-    ms: 50
-  - action: assert
-    type: js
-    fn: getScrollbarHiddenState
-    value:
-      hidden: false
-      overlaysVisible: true
-      nativeScrollingRetained: true
 ---
 <rtgl-view d="v" g="md" p="lg" wh="f">
   <rtgl-text s="h4">Bidirectional overlay scrollbars</rtgl-text>
@@ -244,9 +218,6 @@ steps:
       gestureParent.addEventListener('pointerup', () => { ancestorGestureEvents += 1; });
       window.addEventListener('set-scrollbar-direction', (event) => {
         gestureParent.setAttribute('dir', event.detail.direction);
-      });
-      window.addEventListener('set-scrollbar-hidden', (event) => {
-        scroller.toggleAttribute('hsb', event.detail.enabled === 'true');
       });
       scroller.scrollLeft = Math.round((scroller.scrollWidth - scroller.clientWidth) / 3);
       scroller.scrollTop = Math.round((scroller.scrollHeight - scroller.clientHeight) / 3);
@@ -352,17 +323,6 @@ steps:
             ),
           };
         };
-
-        window.getScrollbarHiddenState = () => ({
-          hidden: getComputedStyle(scroller)
-            .getPropertyValue('--rtgl-scrollbar-hidden').trim() === '1',
-          overlaysVisible:
-            verticalTrack.hasAttribute('data-visible') &&
-            horizontalTrack.hasAttribute('data-visible'),
-          nativeScrollingRetained:
-            scroller.scrollWidth > scroller.clientWidth &&
-            scroller.scrollHeight > scroller.clientHeight,
-        });
 
         scroller.setAttribute('data-scroll-ready', '');
       }));

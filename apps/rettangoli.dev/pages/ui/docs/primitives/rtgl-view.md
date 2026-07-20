@@ -77,7 +77,7 @@ Common tokens used in this page:
 | [Align Vertical](#align-vertical) | `av` | `s`, `c`, `e` | `s` |
 | [Stretch](#stretch) | `stretch` | boolean | - |
 | [Wrap](#wrap) | `wrap`, `no-wrap` | boolean | - |
-| [Overflow](#overflow) | `sv`, `sh`, `hsb`, `overflow` | boolean, `hidden` | - |
+| [Overflow](#overflow) | `sv`, `sh`, `overflow` | boolean, `hidden` | - |
 | [Padding](#padding) | `p`, `pt`, `pr`, `pb`, `pl`, `pv`, `ph` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 | [Margin](#margin) | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 | [Gap](#gap) | `g`, `gh`, `gv` | `xs`, `sm`, `md`, `lg`, `xl` | - |
@@ -403,7 +403,6 @@ Use `sv` for vertical scroll, `sh` for horizontal scroll, or `overflow="hidden"`
 - A scrolling surface establishes a positioning context for the overlay when `pos` is otherwise unset, so absolutely positioned children resolve against the scrolling host. Explicit responsive `pos` values still control the host's own positioning mode.
 - The overlay is hidden at rest, appears while a mouse pointer hovers the view, and remains visible while its thumb is being dragged.
 - Wheel, touch, keyboard, programmatic scrolling, `scrollTop` / `scrollLeft`, and host `scroll` events remain browser-native.
-- `hsb` keeps the overlay hidden even while the surface is hovered.
 - Colors and visible thickness come from the shared scrollbar CSS variables; views do not hard-code scrollbar colors.
 - `overflow="hidden"` clips content and takes precedence over scroll flags.
 - Scroll/clip modes can keep items on one line in horizontal layouts.

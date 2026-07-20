@@ -179,7 +179,7 @@ export const selectViewData = ({ state, props }) => {
   const headerWidth = itemWidth;
 
   const ah = mode === 'shrunk-lg' || mode === 'shrunk-md' ? 'c' : '';
-  const listAttrString = mode === 'full' ? 'd=v sv' : 'd=v sv hsb';
+  const listAttrString = 'd=v sv';
 
   return {
     containerAttrString,
