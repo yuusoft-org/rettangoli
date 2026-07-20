@@ -1,0 +1,85 @@
+---
+title: Segmented Control - Option Tooltip
+description: Verifies an option tooltip opens when its segment is hovered.
+viewport:
+  id: desktop
+  width: 900
+  height: 700
+specs:
+  - Hovering an option with tooltip text opens a tooltip above that segment.
+  - The tooltip renders the hovered option's configured content.
+steps:
+  - action: wait
+    ms: 200
+  - action: select
+    testId: segmented-control-music
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: '#tooltip-open-indicator[data-open="true"]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: exists
+    selector: '#tooltip-open-indicator[data-open="true"]'
+  - action: assert
+    type: text
+    selector: '#tooltip-open-indicator'
+    value: 'Show "music" mode'
+    match: includes
+  - action: screenshot
+---
+<rtgl-view h="100vh" w="100vw" ah="c" av="c">
+  <div id="tooltip-open-indicator" data-open="false" style="position: fixed; width: 1px; height: 1px; overflow: hidden; opacity: 0;">closed</div>
+  <rtgl-segmented-control id="control" sq></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  const control = document.getElementById("control");
+  control.selectedValue = "list";
+  control.options = [
+    {
+      value: "list",
+      svg: "text",
+      ariaLabel: "List view",
+      tooltip: "List view",
+      testId: "segmented-control-list",
+    },
+    {
+      value: "music",
+      svg: "music",
+      ariaLabel: "Music mode",
+      tooltip: 'Show "music" mode',
+      testId: "segmented-control-music",
+    },
+  ];
+  control.render();
+
+  const indicator = document.getElementById("tooltip-open-indicator");
+
+  const connectTooltipObserver = () => {
+    const tooltip = control.shadowRoot?.querySelector("#tooltip");
+    if (!tooltip) {
+      requestAnimationFrame(connectTooltipObserver);
+      return;
+    }
+
+    const syncIndicator = () => {
+      indicator.setAttribute(
+        "data-open",
+        tooltip.hasAttribute("open") ? "true" : "false",
+      );
+      indicator.textContent = tooltip.content || "";
+    };
+
+    syncIndicator();
+
+    const observer = new MutationObserver(syncIndicator);
+    observer.observe(tooltip, {
+      attributes: true,
+      attributeFilter: ["open"],
+    });
+  };
+
+  requestAnimationFrame(connectTooltipObserver);
+</script>

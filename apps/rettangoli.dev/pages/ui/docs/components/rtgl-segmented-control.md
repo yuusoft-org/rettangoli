@@ -37,7 +37,7 @@ Set `options` as a property and listen to `value-change`.
 
 | Name           | Attribute / Property               | Type                                                                                  | Default             |
 | -------------- | ---------------------------------- | ------------------------------------------------------------------------------------- | ------------------- |
-| Options        | `options` (property)               | `{ value: any, label?: string, svg?: string, ariaLabel?: string, testId?: string }[]` | `[]`                |
+| Options        | `options` (property)               | `{ value: any, label?: string, svg?: string, ariaLabel?: string, tooltip?: string, testId?: string }[]` | `[]`                |
 | Selected Value | `selected-value` / `selectedValue` | any                                                                                   | -                   |
 | Group Label    | `placeholder`                      | string                                                                                | `Segmented control` |
 | No Clear       | `no-clear`                         | boolean                                                                               | off                 |
@@ -110,7 +110,7 @@ When `addOption` is enabled in square mode, its segment renders a `plus` icon an
 
 Set `svg` to a registered `rtgl-svg` key. When `svg` is present, the segment renders the icon instead of `label` text.
 
-Use `ariaLabel` to give each icon-only segment an accessible name. If `ariaLabel` is omitted, `label` is used as the accessible-name fallback. Neither field creates a visual hover tooltip.
+Use `ariaLabel` to give each icon-only segment an accessible name. If `ariaLabel` is omitted, `label` is used as the accessible-name fallback. Set `tooltip` when the segment also needs a visual hint on hover.
 
 ```html codePreview
 <rtgl-segmented-control id="mode-control" w="240"></rtgl-segmented-control>
@@ -118,14 +118,33 @@ Use `ariaLabel` to give each icon-only segment an accessible name. If `ariaLabel
 <script>
   const control = document.getElementById("mode-control");
   control.options = [
-    { value: "text", svg: "text", ariaLabel: "Text mode" },
-    { value: "music", svg: "music", ariaLabel: "Music mode" },
-    { value: "play", svg: "play", ariaLabel: "Playback mode" },
+    {
+      value: "text",
+      svg: "text",
+      ariaLabel: "Text mode",
+      tooltip: "Text mode",
+    },
+    {
+      value: "music",
+      svg: "music",
+      ariaLabel: "Music mode",
+      tooltip: "Music mode",
+    },
+    {
+      value: "play",
+      svg: "play",
+      ariaLabel: "Playback mode",
+      tooltip: "Playback mode",
+    },
   ];
   control.selectedValue = "music";
   control.render();
 </script>
 ```
+
+## Option Tooltips
+
+Add `tooltip` to any option to show that text above the segment while it is hovered. Options without `tooltip` keep the normal hover styling without opening a tooltip.
 
 ## Selection Behavior
 

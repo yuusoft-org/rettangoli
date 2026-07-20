@@ -57,6 +57,13 @@ export const createInitialState = () =>
     hasSelectedValue: false,
     hoveredOptionId: null,
     hoveredAddOption: false,
+    tooltipState: {
+      open: false,
+      x: 0,
+      y: 0,
+      place: "t",
+      content: "",
+    },
   });
 
 export const selectViewData = ({ state, props }) => {
@@ -117,6 +124,17 @@ export const selectViewData = ({ state, props }) => {
     selectedValue: currentValue,
     hasSelectedValue: hasCurrentValue,
     ariaLabel: props.placeholder || "Segmented control",
+    hasTooltips: options.some(
+      (option) =>
+        typeof option.tooltip === "string" && option.tooltip.length > 0,
+    ),
+    tooltipState: state.tooltipState || {
+      open: false,
+      x: 0,
+      y: 0,
+      place: "t",
+      content: "",
+    },
     showAddOption,
     addOptionLabel: props.addOption?.label
       ? `+ ${props.addOption.label}`
@@ -159,4 +177,22 @@ export const clearHoveredOption = ({ state }) => {
 
 export const setHoveredAddOption = ({ state }, payload = {}) => {
   state.hoveredAddOption = !!payload.isHovered;
+};
+
+export const showTooltip = ({ state }, payload = {}) => {
+  const { x, y, place = "t", content = "" } = payload;
+  state.tooltipState = {
+    open: true,
+    x,
+    y,
+    place,
+    content,
+  };
+};
+
+export const hideTooltip = ({ state }) => {
+  state.tooltipState = {
+    ...state.tooltipState,
+    open: false,
+  };
 };
