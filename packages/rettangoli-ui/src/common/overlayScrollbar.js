@@ -6,6 +6,11 @@ const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
 const roundCssPixel = (value) => Math.round(value * 1000) / 1000;
 
+const getAxisScale = (visualSize, layoutSize) => {
+  const scale = layoutSize > 0 ? visualSize / layoutSize : 1;
+  return Number.isFinite(scale) && scale > 0 ? scale : 1;
+};
+
 const isEnabledFlag = (style, name) => {
   return style.getPropertyValue(name).trim() === "1";
 };
@@ -619,13 +624,17 @@ export class OverlayScrollbarController {
     measurements.direction = direction;
     const hostRect = this.host.getBoundingClientRect();
     const frameRect = this.frame.getBoundingClientRect();
-    const viewportLeft = hostRect.left + this.host.clientLeft;
-    const viewportTop = hostRect.top + this.host.clientTop;
+    const scaleX = getAxisScale(frameRect.width, this.frame.offsetWidth);
+    const scaleY = getAxisScale(frameRect.height, this.frame.offsetHeight);
+    const viewportLeft = (hostRect.left - frameRect.left) / scaleX +
+      this.host.clientLeft;
+    const viewportTop = (hostRect.top - frameRect.top) / scaleY +
+      this.host.clientTop;
     const verticalHitSize = verticalVisible
-      ? this.vertical.track.getBoundingClientRect().width
+      ? this.vertical.track.getBoundingClientRect().width / scaleX
       : 0;
     const horizontalHitSize = horizontalVisible
-      ? this.horizontal.track.getBoundingClientRect().height
+      ? this.horizontal.track.getBoundingClientRect().height / scaleY
       : 0;
 
     if (verticalVisible) {
@@ -637,11 +646,11 @@ export class OverlayScrollbarController {
         trackSize,
       });
 
-      this.vertical.track.style.top = `${roundCssPixel(viewportTop - frameRect.top)}px`;
+      this.vertical.track.style.top = `${roundCssPixel(viewportTop)}px`;
       this.vertical.track.style.left = `${roundCssPixel(
-        (direction === "rtl"
-          ? viewportLeft
-          : viewportLeft + clientWidth - verticalHitSize) - frameRect.left,
+        viewportLeft + (direction === "rtl"
+          ? 0
+          : clientWidth - verticalHitSize),
       )}px`;
       this.vertical.track.style.height = `${roundCssPixel(trackSize)}px`;
       this.vertical.thumb.style.height = `${roundCssPixel(metrics.thumbSize)}px`;
@@ -670,10 +679,10 @@ export class OverlayScrollbarController {
       });
 
       this.horizontal.track.style.top = `${roundCssPixel(
-        viewportTop + clientHeight - horizontalHitSize - frameRect.top,
+        viewportTop + clientHeight - horizontalHitSize,
       )}px`;
       this.horizontal.track.style.left = `${roundCssPixel(
-        viewportLeft + (direction === "rtl" ? verticalHitSize : 0) - frameRect.left,
+        viewportLeft + (direction === "rtl" ? verticalHitSize : 0),
       )}px`;
       this.horizontal.track.style.width = `${roundCssPixel(trackSize)}px`;
       this.horizontal.thumb.style.width = `${roundCssPixel(metrics.thumbSize)}px`;
@@ -713,6 +722,10 @@ export class OverlayScrollbarController {
     const thumbRect = thumb.getBoundingClientRect();
     const pointerPosition = axis === "vertical" ? event.clientY : event.clientX;
     const thumbStart = axis === "vertical" ? thumbRect.top : thumbRect.left;
+    const visualTrackSize = axis === "vertical"
+      ? trackRect.height
+      : trackRect.width;
+    const axisScale = getAxisScale(visualTrackSize, geometry.trackSize);
     const pointerOnThumb = event.composedPath().includes(thumb);
 
     track.setPointerCapture(event.pointerId);
@@ -721,11 +734,10 @@ export class OverlayScrollbarController {
     this._dragState = {
       axis,
       grabOffset: pointerOnThumb
-        ? pointerPosition - thumbStart
+        ? (pointerPosition - thumbStart) / axisScale
         : geometry.thumbSize / 2,
       pointerId: event.pointerId,
       track,
-      trackStart: axis === "vertical" ? trackRect.top : trackRect.left,
     };
     this._applyDrag(pointerPosition);
   }
@@ -773,14 +785,21 @@ export class OverlayScrollbarController {
   }
 
   _applyDrag(pointerPosition) {
-    const { axis, grabOffset, trackStart } = this._dragState;
+    const { axis, grabOffset, track } = this._dragState;
     const geometry = this._axisGeometry[axis];
     if (!geometry) {
       return;
     }
 
+    const trackRect = track.getBoundingClientRect();
+    const trackStart = axis === "vertical" ? trackRect.top : trackRect.left;
+    const visualTrackSize = axis === "vertical"
+      ? trackRect.height
+      : trackRect.width;
+    const axisScale = getAxisScale(visualTrackSize, geometry.trackSize);
+
     const thumbOffset = clamp(
-      pointerPosition - trackStart - grabOffset,
+      (pointerPosition - trackStart) / axisScale - grabOffset,
       0,
       geometry.maxThumbOffset,
     );
@@ -789,11 +808,14 @@ export class OverlayScrollbarController {
       : (thumbOffset / geometry.maxThumbOffset) * geometry.maxScrollOffset;
 
     if (axis === "vertical") {
-      this.host.scrollTop = scrollOffset;
+      this.host.scrollTo({ behavior: "instant", top: scrollOffset });
     } else if (this._measurements.direction === "rtl") {
-      this.host.scrollLeft = scrollOffset - geometry.maxScrollOffset;
+      this.host.scrollTo({
+        behavior: "instant",
+        left: scrollOffset - geometry.maxScrollOffset,
+      });
     } else {
-      this.host.scrollLeft = scrollOffset;
+      this.host.scrollTo({ behavior: "instant", left: scrollOffset });
     }
 
     this._updateGeometry();

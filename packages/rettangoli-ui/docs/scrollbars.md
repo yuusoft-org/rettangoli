@@ -30,7 +30,8 @@ Before measuring content, the controller collapses the overlay so it cannot infl
 4. derives thumb length from `viewport / content` with a minimum hit-friendly length;
 5. derives thumb position from the host's native scroll offset;
 6. observes host/content resize, light-DOM mutation, slot changes, loads, and viewport changes;
-7. writes directly to the host's native scroll offset while a thumb is dragged.
+7. converts transformed viewport measurements and pointer coordinates back to the host's local CSS-pixel space;
+8. uses an instant native `scrollTo()` while a thumb is dragged so author-defined smooth scrolling cannot lag behind the captured pointer.
 
 The overlay layer sits above the optional link overlay, but only visible tracks receive pointer events. Wheel, touch, and keyboard input continue to target the native host scroller.
 
@@ -42,7 +43,7 @@ This architecture follows the production pattern used by [Radix Scroll Area](htt
 
 ## Verification
 
-Automated VT coverage must include vertical, horizontal, bidirectional, responsive axis composition, and grid cases. Assert idle/hover visibility, zero gutter after subtracting borders, thin visible thumbs, no arrow elements, out-of-flow grid/flex geometry, scroll-event delivery, native wheel/programmatic scrolling, thumb synchronization, pointer-drag cleanup and event isolation, inherited RTL updates, and responsive `hsb` changes. Also verify that a view without `sh` / `sv` creates no overlay and does not have its browser scrollbar suppressed.
+Automated VT coverage must include vertical, horizontal, bidirectional, responsive axis composition, transformed geometry, smooth-scroll thumb dragging, and grid cases. Assert idle/hover visibility, zero gutter after subtracting borders, thin visible thumbs, no arrow elements, out-of-flow grid/flex geometry, scroll-event delivery, native wheel/programmatic scrolling, thumb synchronization, pointer-drag cleanup and event isolation, inherited RTL updates, transform-only scale changes, immediate dragging with `scroll-behavior: smooth`, and responsive `hsb` changes. Also verify that a view without `sh` / `sv` creates no overlay and does not have its browser scrollbar suppressed.
 
 Run:
 
