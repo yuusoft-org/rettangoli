@@ -19,6 +19,10 @@ steps:
     selector: '#tooltip-open-indicator[data-open="true"]'
     state: attached
     timeoutMs: 1200
+  - action: waitFor
+    selector: '#control #tooltip #popover[positioned]'
+    state: attached
+    timeoutMs: 1200
   - action: assert
     type: exists
     selector: '#tooltip-open-indicator[data-open="true"]'
