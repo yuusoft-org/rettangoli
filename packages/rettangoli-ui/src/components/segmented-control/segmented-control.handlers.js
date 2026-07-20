@@ -126,16 +126,31 @@ export const handleOptionKeyDown = (deps, payload) => {
 };
 
 export const handleOptionMouseEnter = (deps, payload) => {
-  const { store, render } = deps;
+  const { props, store, render } = deps;
   const event = payload._event;
   const id = parseInt(event.currentTarget.id.slice("option".length), 10);
+  const option = props.options?.[id];
   store.setHoveredOption({ optionId: id });
+
+  if (typeof option?.tooltip === "string" && option.tooltip.length > 0) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    store.showTooltip({
+      x: rect.left + rect.width / 2,
+      y: rect.top - 2,
+      place: "t",
+      content: option.tooltip,
+    });
+  } else {
+    store.hideTooltip({});
+  }
+
   render();
 };
 
 export const handleOptionMouseLeave = (deps) => {
   const { store, render } = deps;
   store.clearHoveredOption({});
+  store.hideTooltip({});
   render();
 };
 

@@ -33,3 +33,5 @@ template:
                   - rtgl-svg svg=plus wh=${iconSize} c=ac aria-hidden=true: null
                 $else:
                   - rtgl-text s=${textSize} c=ac ta=c: ${addOptionLabel}
+      - $if hasTooltips:
+          - rtgl-tooltip#tooltip ?open=${tooltipState.open} x=${tooltipState.x} y=${tooltipState.y} place=${tooltipState.place} content="${tooltipState.content}": null

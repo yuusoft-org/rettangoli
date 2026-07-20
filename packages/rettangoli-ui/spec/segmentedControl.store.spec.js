@@ -178,4 +178,51 @@ describe("rtgl-segmented-control store", () => {
       accessibleLabel: "Preview mode",
     });
   });
+
+  it("exposes tooltip view state when an option has tooltip content", () => {
+    const state = {
+      ...createInitialState(),
+      tooltipState: {
+        open: true,
+        x: 120,
+        y: 40,
+        place: "t",
+        content: "Preview the result",
+      },
+    };
+    const viewData = selectViewData({
+      state,
+      props: {
+        options: [
+          {
+            value: "preview",
+            svg: "play",
+            ariaLabel: "Preview mode",
+            tooltip: "Preview the result",
+          },
+        ],
+      },
+    });
+
+    expect(viewData.hasTooltips).toBe(true);
+    expect(viewData.tooltipState).toEqual(state.tooltipState);
+  });
+
+  it("does not render a tooltip host for empty tooltip content", () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        options: [
+          { value: "plain", label: "Plain" },
+          { value: "empty", label: "Empty", tooltip: "" },
+        ],
+      },
+    });
+
+    expect(viewData.hasTooltips).toBe(false);
+    expect(viewData.tooltipState).toMatchObject({
+      open: false,
+      content: "",
+    });
+  });
 });
