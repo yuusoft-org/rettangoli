@@ -9,12 +9,18 @@ import {
   createResponsiveStyleBuckets,
   responsiveStyleSizes,
   applyDimensionToStyleBucket,
+  getResponsiveAttribute,
+  hasResponsiveAttribute,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import scrollStyle from "../styles/scrollStyles.js";
 import stylesGenerator from "../styles/viewStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
+import {
+  OverlayScrollbarController,
+  overlayScrollbarStyles,
+} from "../common/overlayScrollbar.js";
 
 const resolveGridTemplateColumns = (cols) => {
   if (cols == null) {
@@ -54,6 +60,7 @@ class RettangoliGridElement extends HTMLElement {
         }
 
         ${scrollStyle}
+        ${overlayScrollbarStyles}
         ${marginStyles}
         ${cursorStyles}
         ${stylesGenerator}
@@ -74,6 +81,11 @@ class RettangoliGridElement extends HTMLElement {
     this._linkElement = null;
 
     this.shadow.appendChild(this._styleElement);
+    this._scrollbarController = new OverlayScrollbarController({
+      host: this,
+      shadowRoot: this.shadow,
+      slotElement: this._slotElement,
+    });
     this._updateDOM();
   }
 
@@ -93,6 +105,7 @@ class RettangoliGridElement extends HTMLElement {
         "show",
         "sh",
         "sv",
+        "hsb",
         "z",
         "overflow",
       ]),
@@ -120,6 +133,11 @@ class RettangoliGridElement extends HTMLElement {
 
   connectedCallback() {
     this.updateStyles();
+    this._scrollbarController.connect();
+  }
+
+  disconnectedCallback() {
+    this._scrollbarController.disconnect();
   }
 
   updateStyles() {
@@ -179,23 +197,54 @@ class RettangoliGridElement extends HTMLElement {
         this._styles[size].display = "grid";
       }
 
-      const scrollHorizontal = this.hasAttribute(addSizePrefix("sh"));
-      const scrollVertical = this.hasAttribute(addSizePrefix("sv"));
-      const overflow = this.getAttribute(addSizePrefix("overflow"));
+      const scrollHorizontal = hasResponsiveAttribute({
+        element: this,
+        size,
+        attr: "sh",
+      });
+      const scrollVertical = hasResponsiveAttribute({
+        element: this,
+        size,
+        attr: "sv",
+      });
+      const hideScrollbar = hasResponsiveAttribute({
+        element: this,
+        size,
+        attr: "hsb",
+      });
+      const overflow = getResponsiveAttribute({
+        element: this,
+        size,
+        attr: "overflow",
+      });
 
       if (scrollHorizontal && scrollVertical) {
         this._styles[size].overflow = "auto";
-        this._styles[size]["scrollbar-gutter"] = "stable";
+        this._styles[size]["scrollbar-gutter"] = "auto";
+        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "1";
+        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "1";
       } else if (scrollHorizontal) {
         this._styles[size]["overflow-x"] = "auto";
-        this._styles[size]["scrollbar-gutter"] = "stable";
+        this._styles[size]["overflow-y"] = "hidden";
+        this._styles[size]["scrollbar-gutter"] = "auto";
+        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "1";
+        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "0";
       } else if (scrollVertical) {
+        this._styles[size]["overflow-x"] = "hidden";
         this._styles[size]["overflow-y"] = "auto";
-        this._styles[size]["scrollbar-gutter"] = "stable";
+        this._styles[size]["scrollbar-gutter"] = "auto";
+        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "0";
+        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "1";
       }
 
       if (overflow === "hidden") {
         this._styles[size].overflow = "hidden";
+        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "0";
+        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "0";
+      }
+
+      if (hideScrollbar) {
+        this._styles[size]["--rtgl-scrollbar-hidden"] = "1";
       }
     });
 
@@ -204,6 +253,8 @@ class RettangoliGridElement extends HTMLElement {
       this._styleElement.textContent = newStyleString;
       this._lastStyleString = newStyleString;
     }
+
+    this._scrollbarController.refresh();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {

@@ -306,8 +306,18 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - use for 1D layout, flex composition, scrolling surfaces, and generic containers
 - `sh` enables horizontal overflow with `overflow-x: auto`
 - `sv` enables vertical overflow with `overflow-y: auto`
-- `sh` / `sv` scrolling surfaces reserve gutter space with `scrollbar-gutter: stable`
-- `hsb` hides scrollbars for the active scroll surface and removes the reserved gutter
+- a single-axis flag clips the opposite axis; use both flags when both axes must scroll
+- `sh` / `sv` keep the custom-element host as the actual native overflow scroller; do not move scrolling into an internal viewport or proxy `scrollTop`, `scrollLeft`, methods, dimensions, or events
+- every scrolling surface uses the shared shadow-DOM overlay track/thumb automatically; there is no native-visible or opt-in scrollbar mode
+- hide the complete browser-painted rail with `scrollbar-width: none` and the whole-scrollbar WebKit fallback; never style its individual native subparts
+- use a 4px painted track/thumb inset 2px from the outer scrollport edge, with a 10px radius and 60% / 70% / 80% normal, hover, and active opacity; retain the larger edge-aligned transparent pointer target and never let these visuals affect layout
+- the overlay layer must remain out of flex/grid flow, reserve zero gutter, contain no arrow controls, and leave host scroll/client dimensions unchanged
+- scrolling hosts establish a positioning context for the overlay when `pos` is otherwise unset; preserve explicit responsive `pos` values for the host's own positioning mode and document that absolutely positioned children resolve against the host
+- tracks are thin, hidden at rest, shown on host mouse hover, and kept visible during pointer-captured thumb dragging
+- `hsb` is the explicit always-hidden overlay mode and takes precedence over hover styling
+- use the existing scrollbar tokens for all paint and thickness; never add fixture-specific component colors
+- controller lifecycle must clean up scroll/load/resize/slot listeners, observers, animation frames, and pointer capture on disconnect
+- create the overlay DOM and observers lazily only for hosts that declare `sh` / `sv` (including responsive variants); do not suppress browser paint for unrelated CSS-driven overflow
 - raw CSS passthrough attrs with responsive variants include:
   - `ar` for `aspect-ratio`
   - `bgi`, `bgs`, `bgp`, `bgr` for background image styling
@@ -317,7 +327,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 
 - use for explicit 2D column layouts
 - `cols` and `sm-cols` / `md-cols` / `lg-cols` / `xl-cols` accept positive integers and render equal-width tracks
-- shared spacing, sizing, border, background, visibility, overflow, and link attrs follow the same conventions as `rtgl-view`, including `sh` / `sv` using auto overflow with stable gutter reservation
+- shared spacing, sizing, border, background, visibility, overflow, and link attrs follow the same conventions as `rtgl-view`; `sh`, `sv`, responsive variants, and `hsb` use the same overlay-scrollbar contract
 - flex-only attrs such as `d`, `wrap`, `no-wrap`, `ah`, and `av` do not apply
 
 Components built via `@rettangoli/fe`:

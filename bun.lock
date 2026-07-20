@@ -32,7 +32,7 @@
         "rtgl-check": "./src/cli/bin.js",
       },
       "dependencies": {
-        "@rettangoli/ui": "1.12.0",
+        "@rettangoli/ui": "1.13.0",
         "jempl": "0.3.2-rc2",
         "js-yaml": "^4.1.0",
         "oxc-parser": "^0.112.0",
@@ -50,7 +50,7 @@
         "@rettangoli/check": "0.1.4",
         "@rettangoli/fe": "1.2.3",
         "@rettangoli/sites": "1.2.0",
-        "@rettangoli/ui": "1.12.0",
+        "@rettangoli/ui": "1.13.0",
         "@rettangoli/vt": "1.0.6",
         "commander": "^14.0.0",
         "js-yaml": "^4.1.0",
@@ -114,7 +114,7 @@
     },
     "packages/rettangoli-ui": {
       "name": "@rettangoli/ui",
-      "version": "1.12.0",
+      "version": "1.13.0",
       "dependencies": {
         "@rettangoli/fe": "1.2.3",
         "jempl": "1.0.1",
