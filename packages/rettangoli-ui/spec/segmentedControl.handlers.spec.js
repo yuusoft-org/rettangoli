@@ -45,7 +45,11 @@ describe("rtgl-segmented-control handlers", () => {
         props: {
           options: [
             { value: "list", label: "List" },
-            { value: "grid", svg: "grid", tooltip: "Grid view" },
+            {
+              value: "grid",
+              svg: "grid",
+              tooltip: 'Show "grid" view',
+            },
           ],
         },
         render,
@@ -70,7 +74,7 @@ describe("rtgl-segmented-control handlers", () => {
       x: 120,
       y: 48,
       place: "t",
-      content: "Grid view",
+      content: 'Show "grid" view',
     });
     expect(store.hideTooltip).not.toHaveBeenCalled();
     expect(render).toHaveBeenCalledTimes(1);

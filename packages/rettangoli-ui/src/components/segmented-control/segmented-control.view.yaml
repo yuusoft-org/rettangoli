@@ -34,4 +34,4 @@ template:
                 $else:
                   - rtgl-text s=${textSize} c=ac ta=c: ${addOptionLabel}
       - $if hasTooltips:
-          - rtgl-tooltip#tooltip ?open=${tooltipState.open} x=${tooltipState.x} y=${tooltipState.y} place=${tooltipState.place} content="${tooltipState.content}": null
+          - rtgl-tooltip#tooltip ?open=${tooltipState.open} x=${tooltipState.x} y=${tooltipState.y} place=${tooltipState.place} :content=${tooltipState.content}: null
