@@ -312,6 +312,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - hide the complete browser-painted rail with `scrollbar-width: none` and the whole-scrollbar WebKit fallback; never style its individual native subparts
 - use a 4px painted track/thumb inset 2px from the outer scrollport edge, with a 10px radius and 60% / 70% / 80% normal, hover, and active opacity; retain the larger edge-aligned transparent pointer target and never let these visuals affect layout
 - the overlay layer must remain out of flex/grid flow, reserve zero gutter, contain no arrow controls, and leave host scroll/client dimensions unchanged
+- the overlay layer must paint and receive pointer input above positioned/slotted user content at every authored `z-index`; isolate that priority inside the scrolling host so neighboring and browser top-layer UI remain above the scroll surface according to the host's own stacking order
 - scrolling hosts establish a positioning context for the overlay when `pos` is otherwise unset; preserve explicit responsive `pos` values for the host's own positioning mode and document that absolutely positioned children resolve against the host
 - tracks are thin, hidden at rest, shown on host mouse hover, and kept visible during pointer-captured thumb dragging
 - there is no always-hidden or alternate scrollbar mode; every `sh` / `sv` surface uses the same hover-revealed overlay

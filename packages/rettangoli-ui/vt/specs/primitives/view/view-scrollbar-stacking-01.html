@@ -1,0 +1,141 @@
+---
+title: View - Scrollbar - Stacking
+description: Verifies overlay scrollbars paint and receive pointer input above maximum-z-index user content.
+waitStrategy: selector
+waitSelector: "#stacking-scroller[data-scroll-ready]"
+skipInitialScreenshot: true
+specs:
+  - The scrollbar layer paints above positioned light-DOM content at the browser's maximum z-index.
+  - Visible thumbs win hit testing and pointer input where user content overlaps both scrollbar tracks.
+  - Starting a thumb drag does not leak pointer input to the overlapping user layer.
+steps:
+  - action: move
+    x: 1
+    y: 1
+  - action: select
+    selector: "#stacking-scroller"
+    steps:
+      - action: hover
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getScrollbarStackingState
+    value:
+      hovered: true
+      bothOverlaysVisible: true
+      userContentAtMaximumZIndex: true
+      scrollbarLayerAtMaximumZIndex: true
+      stackingPriorityContained: true
+      verticalAboveUserContent: true
+      horizontalAboveUserContent: true
+  - action: screenshot
+  - action: select
+    selector: "#stacking-scroller [data-rtgl-scrollbar-thumb='vertical']"
+    steps:
+      - action: hover
+  - action: mouseDown
+  - action: wait
+    ms: 20
+  - action: assert
+    type: js
+    fn: getScrollbarStackingDragState
+    value:
+      dragging: true
+      userPointerDowns: 0
+  - action: mouseUp
+  - action: wait
+    ms: 20
+  - action: assert
+    type: js
+    fn: getScrollbarStackingDragState
+    value:
+      dragging: false
+      userPointerDowns: 0
+---
+<style>
+  #stacking-scroller::part(scrollbar-layer) {
+    z-index: -1 !important;
+  }
+</style>
+
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-text s="h4">Scrollbar stacking</rtgl-text>
+  <rtgl-text c="mu-fg">Both overlay thumbs remain visible and interactive above a maximum-z-index user layer.</rtgl-text>
+
+  <rtgl-view
+    id="stacking-scroller"
+    aria-label="Scrollbar stacking example"
+    w="420"
+    h="260"
+    sh
+    sv
+    bgc="bg"
+    bc="bo"
+    bw="xs"
+    br="md"
+    style="isolation: auto !important;">
+    <div
+      id="oversized-content"
+      style="box-sizing: border-box; flex: 0 0 auto; width: 760px; height: 560px; padding: 24px; background: var(--surface);">
+      Oversized scroll content
+    </div>
+    <div
+      id="maximum-z-user-layer"
+      style="position: absolute; inset: 0; z-index: 999999999999 !important; display: grid; place-items: center; pointer-events: auto; background: var(--accent); color: var(--accent-foreground);">
+      Maximum-z-index user content
+    </div>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  Promise.all([
+    customElements.whenDefined('rtgl-text'),
+    customElements.whenDefined('rtgl-view'),
+  ]).then(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const scroller = document.getElementById('stacking-scroller');
+      const userLayer = document.getElementById('maximum-z-user-layer');
+      const shadow = scroller.shadowRoot;
+      const scrollbarLayer = shadow.querySelector('[data-rtgl-scrollbar-layer]');
+      const verticalTrack = shadow.querySelector('[data-rtgl-scrollbar-track="vertical"]');
+      const horizontalTrack = shadow.querySelector('[data-rtgl-scrollbar-track="horizontal"]');
+      const verticalThumb = shadow.querySelector('[data-rtgl-scrollbar-thumb="vertical"]');
+      const horizontalThumb = shadow.querySelector('[data-rtgl-scrollbar-thumb="horizontal"]');
+      let userPointerDowns = 0;
+
+      userLayer.addEventListener('pointerdown', () => { userPointerDowns += 1; });
+
+      const topElementAtCenter = (element) => {
+        const rect = element.getBoundingClientRect();
+        return shadow.elementFromPoint(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+        );
+      };
+
+      window.getScrollbarStackingState = () => ({
+        hovered: scroller.matches(':hover'),
+        bothOverlaysVisible:
+          getComputedStyle(verticalTrack).opacity === '1' &&
+          getComputedStyle(horizontalTrack).opacity === '1' &&
+          getComputedStyle(verticalTrack).pointerEvents === 'auto' &&
+          getComputedStyle(horizontalTrack).pointerEvents === 'auto',
+        userContentAtMaximumZIndex: getComputedStyle(userLayer).zIndex === '2147483647',
+        scrollbarLayerAtMaximumZIndex: getComputedStyle(scrollbarLayer).zIndex === '2147483647',
+        stackingPriorityContained: getComputedStyle(scroller).isolation === 'isolate',
+        verticalAboveUserContent: topElementAtCenter(verticalThumb) === verticalThumb,
+        horizontalAboveUserContent: topElementAtCenter(horizontalThumb) === horizontalThumb,
+      });
+
+      window.getScrollbarStackingDragState = () => ({
+        dragging:
+          scroller.hasAttribute('data-rtgl-scrollbar-dragging') &&
+          verticalTrack.hasAttribute('data-dragging'),
+        userPointerDowns,
+      });
+
+      scroller.setAttribute('data-scroll-ready', '');
+    }));
+  });
+</script>

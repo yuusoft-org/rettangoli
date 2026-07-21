@@ -13,6 +13,7 @@
 - Render only enabled axes that genuinely overflow.
 - A single effective axis clips the opposite axis. Base and responsive flags compose independently, so `sh sm-sv` enables both axes at the `sm` breakpoint.
 - Overlay the scrollport with zero layout gutter and no arrow controls.
+- Keep the overlay above positioned/slotted content at every authored `z-index`, so content cannot cover the thumb or intercept its pointer input. Isolate that stacking priority inside the scrolling host so it cannot outrank neighboring UI; browser top-layer UI such as modal dialogs remains above the scroll surface.
 - Use a 4px painted track/thumb inset 2px from the outer scrollport edge with a 10px radius and 60% / 70% / 80% normal, hover, and active opacity. Keep it inside a larger edge-aligned transparent pointer target. These visual dimensions must not become content padding or a layout gutter.
 - Keep overlays hidden at rest, reveal them on host mouse hover, and keep them visible during pointer-captured dragging.
 - Use `--scrollbar-size`, `--scrollbar-track`, `--scrollbar-thumb`, and `--scrollbar-thumb-hover`; do not hard-code component or test colors.
@@ -32,7 +33,7 @@ Before measuring content, the controller collapses the overlay so it cannot infl
 7. converts transformed viewport measurements and pointer coordinates back to the host's local CSS-pixel space;
 8. uses an instant native `scrollTo()` while a thumb is dragged so author-defined smooth scrolling cannot lag behind the captured pointer.
 
-The overlay layer sits above the optional link overlay, but only visible tracks receive pointer events. Wheel, touch, and keyboard input continue to target the native host scroller.
+The scrolling host establishes an isolated stacking context. Inside it, the overlay layer follows the slot in shadow paint order and uses the browser's maximum CSS stacking priority. Authored values above that priority clamp to the same maximum, so the later-painted overlay remains above slotted content without the internal priority escaping above neighboring UI. It also sits above the optional link overlay, but only visible tracks receive pointer events. Wheel, touch, and keyboard input continue to target the native host scroller.
 
 ## Why CSS Alone Is Not Used
 
@@ -42,7 +43,7 @@ This architecture follows the production pattern used by [Radix Scroll Area](htt
 
 ## Verification
 
-Automated VT coverage must include vertical, horizontal, bidirectional, responsive axis composition, transformed geometry, smooth-scroll thumb dragging, and grid cases. Assert idle/hover visibility, zero gutter after subtracting borders, thin visible thumbs, no arrow elements, out-of-flow grid/flex geometry, scroll-event delivery, native wheel/programmatic scrolling, thumb synchronization, pointer-drag cleanup and event isolation, inherited RTL updates, transform-only scale changes, and immediate dragging with `scroll-behavior: smooth`. Also verify that a view without `sh` / `sv` creates no overlay and does not have its browser scrollbar suppressed.
+Automated VT coverage must include vertical, horizontal, bidirectional, responsive axis composition, transformed geometry, smooth-scroll thumb dragging, maximum-`z-index` slotted content, and grid cases. Assert idle/hover visibility, zero gutter after subtracting borders, thin visible thumbs, no arrow elements, out-of-flow grid/flex geometry, scroll-event delivery, native wheel/programmatic scrolling, thumb synchronization, topmost paint/hit testing, pointer-drag cleanup and event isolation, inherited RTL updates, transform-only scale changes, and immediate dragging with `scroll-behavior: smooth`. Also verify that a view without `sh` / `sv` creates no overlay and does not have its browser scrollbar suppressed.
 
 Run:
 

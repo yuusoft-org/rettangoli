@@ -1,6 +1,10 @@
 const SCROLL_EPSILON = 1;
 const MIN_THUMB_SIZE = 24;
 const SCROLL_ATTRIBUTE_PATTERN = /^(?:(?:sm|md|lg|xl)-)?(?:sh|sv)$/;
+// Browsers clamp larger authored z-index values to this signed 32-bit maximum.
+// The shadow layer follows the slot in paint order, so an equal maximum keeps
+// the scrollbar above even maximum-priority slotted content.
+const OVERLAY_SCROLLBAR_Z_INDEX = 2147483647;
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -74,6 +78,7 @@ export const overlayScrollbarStyles = `
 
   :host([sh]),
   :host([sv]) {
+    isolation: isolate !important;
     position: relative;
   }
 
@@ -94,6 +99,7 @@ export const overlayScrollbarStyles = `
 
     :host([xl-sh]),
     :host([xl-sv]) {
+      isolation: isolate !important;
       position: relative;
     }
   }
@@ -115,6 +121,7 @@ export const overlayScrollbarStyles = `
 
     :host([lg-sh]),
     :host([lg-sv]) {
+      isolation: isolate !important;
       position: relative;
     }
   }
@@ -136,6 +143,7 @@ export const overlayScrollbarStyles = `
 
     :host([md-sh]),
     :host([md-sv]) {
+      isolation: isolate !important;
       position: relative;
     }
   }
@@ -157,6 +165,7 @@ export const overlayScrollbarStyles = `
 
     :host([sm-sh]),
     :host([sm-sv]) {
+      isolation: isolate !important;
       position: relative;
     }
   }
@@ -166,7 +175,7 @@ export const overlayScrollbarStyles = `
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 2;
+    z-index: ${OVERLAY_SCROLLBAR_Z_INDEX} !important;
     pointer-events: none;
   }
 
