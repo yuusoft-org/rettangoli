@@ -19,7 +19,10 @@ export const resolveWatchEntryId = ({ cwd, watchEntry }) =>
     ? toViteFsPath(path.resolve(cwd, watchEntry))
     : RETTANGOLI_FE_VIRTUAL_ENTRY_ID;
 
-export const resolveServeContext = ({ cwd, outfile }) => {
+export const resolveServeContext = ({
+  cwd,
+  outfile = "./vt/static/main.js",
+}) => {
   const resolvedOutfile = path.resolve(cwd, outfile);
   const relativeOutfile = path.relative(cwd, resolvedOutfile);
   const parts = relativeOutfile.split(path.sep).filter(Boolean);

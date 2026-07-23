@@ -10,7 +10,7 @@ const packageDir = path.resolve(
 );
 
 describe("UI VT watch integration", () => {
-  it("loads the FE HMR entry as a module from the generated-site public path", () => {
+  it("keeps static registration blocking and configures the watch HMR entry", () => {
     const template = readFileSync(
       path.join(packageDir, "vt", "templates", "default.html"),
       "utf8",
@@ -24,7 +24,8 @@ describe("UI VT watch integration", () => {
       "utf8",
     );
 
-    expect(template).toContain(
+    expect(template).toContain('<script src="/public/main.js"></script>');
+    expect(template).not.toContain(
       '<script type="module" src="/public/main.js"></script>',
     );
     expect(config).toMatch(/^\s+outfile: "vt\/static\/public\/main\.js"/m);

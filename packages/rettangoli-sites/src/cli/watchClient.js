@@ -569,6 +569,12 @@ function runWatchClient({
   };
 
   const isExecutableScript = (script) => {
+    if (
+      script.hasAttribute('data-rtgl-watch-entry') ||
+      script.hasAttribute('data-rtgl-watch-pending-script')
+    ) {
+      return true;
+    }
     const type = (script.getAttribute('type') || '').trim().toLowerCase();
     return type === '' ||
       type === 'module' ||

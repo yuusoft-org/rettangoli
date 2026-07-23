@@ -41,8 +41,31 @@ const RESOLVED_WATCH_BOUNDARY_ID =
 const WATCH_CLIENT_PATH = "/__rettangoli_vt_watch_client__.js";
 const WATCH_CLIENT_TAG =
   `<script type="module" data-rtgl-watch-client src="${WATCH_CLIENT_PATH}"></script>`;
+const WATCH_ENTRY_ATTRIBUTE = "data-rtgl-watch-entry";
+const WATCH_PENDING_SCRIPT_ATTRIBUTE = "data-rtgl-watch-pending-script";
+const WATCH_ORIGINAL_TYPE_ATTRIBUTE = "data-rtgl-watch-original-type";
+const WATCH_HAD_TYPE_ATTRIBUTE = "data-rtgl-watch-had-type";
+const WATCH_INERT_SCRIPT_TYPE = "application/x-rettangoli-watch-pending";
 const WATCHABLE_SPEC_PATTERN = /\.(?:html?|ya?ml)$/i;
 const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
+const JAVASCRIPT_MIME_TYPE_ESSENCES = new Set([
+  "application/ecmascript",
+  "application/javascript",
+  "application/x-ecmascript",
+  "application/x-javascript",
+  "text/ecmascript",
+  "text/javascript",
+  "text/javascript1.0",
+  "text/javascript1.1",
+  "text/javascript1.2",
+  "text/javascript1.3",
+  "text/javascript1.4",
+  "text/javascript1.5",
+  "text/jscript",
+  "text/livescript",
+  "text/x-ecmascript",
+  "text/x-javascript",
+]);
 const quietGenerationLogger = {
   error() {},
   log() {},
@@ -67,6 +90,314 @@ const getRequestPathname = (requestUrl) => {
     return null;
   }
 };
+
+const getNodeAttributes = (node) =>
+  new Map(node.attrs?.map(({ name, value }) => [name, value]) || []);
+
+const getMimeTypeEssence = (value) =>
+  value.split(";", 1)[0].trim().toLowerCase();
+
+const isReplayableScript = (node) => {
+  const attributes = getNodeAttributes(node);
+  const type = (attributes.get("type") || "").trim().toLowerCase();
+  return (
+    type === "" ||
+    type === "module" ||
+    JAVASCRIPT_MIME_TYPE_ESSENCES.has(getMimeTypeEssence(type))
+  );
+};
+
+const collectActiveHtmlScripts = (document) => {
+  const scripts = [];
+  const nodes = [document];
+
+  while (nodes.length > 0) {
+    const node = nodes.pop();
+    if (
+      node.namespaceURI === HTML_NAMESPACE &&
+      node.tagName === "script" &&
+      node.sourceCodeLocation?.startTag
+    ) {
+      scripts.push(node);
+    }
+    if (
+      node.namespaceURI === HTML_NAMESPACE &&
+      node.tagName === "template"
+    ) {
+      continue;
+    }
+    if (node.childNodes) nodes.push(...node.childNodes);
+  }
+
+  return scripts.sort(
+    (left, right) =>
+      left.sourceCodeLocation.startTag.startOffset -
+      right.sourceCodeLocation.startTag.startOffset,
+  );
+};
+
+const findActiveHtmlBaseHref = (document) => {
+  const bases = [];
+  const nodes = [document];
+
+  while (nodes.length > 0) {
+    const node = nodes.pop();
+    if (
+      node.namespaceURI === HTML_NAMESPACE &&
+      node.tagName === "base" &&
+      node.sourceCodeLocation?.startTag
+    ) {
+      const attributes = getNodeAttributes(node);
+      if (attributes.has("href")) bases.push(node);
+    }
+    if (
+      node.namespaceURI === HTML_NAMESPACE &&
+      node.tagName === "template"
+    ) {
+      continue;
+    }
+    if (node.childNodes) nodes.push(...node.childNodes);
+  }
+
+  bases.sort(
+    (left, right) =>
+      left.sourceCodeLocation.startTag.startOffset -
+      right.sourceCodeLocation.startTag.startOffset,
+  );
+  return bases.length > 0
+    ? getNodeAttributes(bases[0]).get("href")
+    : null;
+};
+
+const escapeHtmlAttribute = (value) =>
+  String(value).replaceAll("&", "&amp;").replaceAll('"', "&quot;");
+
+const markWatchScript = ({
+  edits,
+  html,
+  markerAttribute,
+  script,
+}) => {
+  const attributes = getNodeAttributes(script);
+  const startTagLocation = script.sourceCodeLocation.startTag;
+  const typeLocation = script.sourceCodeLocation.attrs?.type;
+  const originalType = attributes.get("type") || "";
+  const insertionOffset =
+    html[startTagLocation.endOffset - 2] === "/"
+      ? startTagLocation.endOffset - 2
+      : startTagLocation.endOffset - 1;
+
+  if (typeLocation) {
+    edits.push({
+      end: typeLocation.endOffset,
+      start: typeLocation.startOffset,
+      text: "",
+    });
+  }
+
+  edits.push({
+    end: insertionOffset,
+    start: insertionOffset,
+    text:
+      ` type="${WATCH_INERT_SCRIPT_TYPE}" ${markerAttribute}` +
+      ` ${WATCH_ORIGINAL_TYPE_ATTRIBUTE}="${escapeHtmlAttribute(originalType)}"` +
+      (typeLocation ? ` ${WATCH_HAD_TYPE_ATTRIBUTE}` : ""),
+  });
+};
+
+const rewriteWatchScripts = ({
+  documentUrl = "http://rettangoli.local/",
+  html,
+  publicEntryPath,
+}) => {
+  const document = parse(html, { sourceCodeLocationInfo: true });
+  const scripts = collectActiveHtmlScripts(document);
+  const resolvedDocumentUrl = new URL(
+    documentUrl,
+    "http://rettangoli.local/",
+  );
+  const baseHref = findActiveHtmlBaseHref(document);
+  let scriptBaseUrl = resolvedDocumentUrl;
+  if (baseHref !== null) {
+    try {
+      scriptBaseUrl = new URL(baseHref, resolvedDocumentUrl);
+    } catch {
+      // Match browser behavior by ignoring an invalid document base URL.
+    }
+  }
+  const entryUrl = new URL(publicEntryPath, resolvedDocumentUrl.origin);
+  const entryIndex = scripts.findIndex((script) => {
+    const attributes = getNodeAttributes(script);
+    if (!isReplayableScript(script) || !attributes.has("src")) return false;
+    try {
+      const scriptUrl = new URL(attributes.get("src"), scriptBaseUrl);
+      return (
+        scriptUrl.origin === entryUrl.origin &&
+        scriptUrl.pathname === entryUrl.pathname
+      );
+    } catch {
+      return false;
+    }
+  });
+
+  if (entryIndex < 0) return html;
+
+  const edits = [];
+  markWatchScript({
+    edits,
+    html,
+    markerAttribute: WATCH_ENTRY_ATTRIBUTE,
+    script: scripts[entryIndex],
+  });
+
+  for (const script of scripts.slice(entryIndex + 1)) {
+    const attributes = getNodeAttributes(script);
+    if (
+      attributes.has("data-rtgl-watch-client") ||
+      !isReplayableScript(script)
+    ) {
+      continue;
+    }
+    markWatchScript({
+      edits,
+      html,
+      markerAttribute: WATCH_PENDING_SCRIPT_ATTRIBUTE,
+      script,
+    });
+  }
+
+  return edits
+    .sort((left, right) => right.start - left.start)
+    .reduce(
+      (result, edit) =>
+        result.slice(0, edit.start) + edit.text + result.slice(edit.end),
+      html,
+    );
+};
+
+const createWatchEntryBootstrapSource = () => `
+const __rtglWatchEntry = document.querySelector(
+  "script[${WATCH_ENTRY_ATTRIBUTE}][src]",
+);
+if (__rtglWatchEntry) {
+  try {
+    await import(/* @vite-ignore */ __rtglWatchEntry.src);
+  } catch (__rtglError) {
+    console.error("[VT Watch] Failed to load the watch entry.", __rtglError);
+  }
+}
+
+const __rtglReplayScript = (__rtglSource) => new Promise(
+  (__rtglResolve, __rtglReject) => {
+    const __rtglOriginalType =
+      __rtglSource.getAttribute("${WATCH_ORIGINAL_TYPE_ATTRIBUTE}") || "";
+    if (
+      __rtglSource.hasAttribute("nomodule") &&
+      __rtglOriginalType.trim().toLowerCase() !== "module"
+    ) {
+      __rtglResolve();
+      return;
+    }
+
+    const __rtglParent = __rtglSource.parentNode;
+    if (!__rtglParent) {
+      __rtglResolve();
+      return;
+    }
+    const __rtglNextSibling = __rtglSource.nextSibling;
+    const __rtglScript = document.createElement("script");
+    for (const __rtglAttribute of __rtglSource.attributes) {
+      if (
+        __rtglAttribute.name === "type" ||
+        __rtglAttribute.name === "${WATCH_PENDING_SCRIPT_ATTRIBUTE}" ||
+        __rtglAttribute.name === "${WATCH_ORIGINAL_TYPE_ATTRIBUTE}" ||
+        __rtglAttribute.name === "${WATCH_HAD_TYPE_ATTRIBUTE}"
+      ) {
+        continue;
+      }
+      __rtglScript.setAttributeNS(
+        __rtglAttribute.namespaceURI,
+        __rtglAttribute.name,
+        __rtglAttribute.value,
+      );
+    }
+
+    if (__rtglSource.hasAttribute("${WATCH_HAD_TYPE_ATTRIBUTE}")) {
+      __rtglScript.setAttribute("type", __rtglOriginalType);
+    }
+    __rtglScript.textContent = __rtglSource.textContent;
+    if (!__rtglSource.hasAttribute("async")) {
+      __rtglScript.async = false;
+    }
+
+    const __rtglRestoreSource = () => {
+      if (__rtglScript.parentNode) {
+        __rtglScript.replaceWith(__rtglSource);
+        return;
+      }
+      if (
+        !__rtglSource.parentNode &&
+        __rtglParent.isConnected
+      ) {
+        __rtglParent.insertBefore(
+          __rtglSource,
+          __rtglNextSibling?.parentNode === __rtglParent
+            ? __rtglNextSibling
+            : null,
+        );
+      }
+    };
+
+    const __rtglIsInlineModule =
+      !__rtglSource.hasAttribute("src") &&
+      __rtglOriginalType.trim().toLowerCase() === "module";
+    if (__rtglIsInlineModule) {
+      // Chromium executes a prepared inline module after it is detached, but
+      // fires neither load nor error on the dynamically inserted script.
+      __rtglSource.replaceWith(__rtglScript);
+      __rtglRestoreSource();
+      __rtglResolve();
+      return;
+    }
+
+    const __rtglWaitForLoad = __rtglSource.hasAttribute("src");
+    if (__rtglWaitForLoad) {
+      __rtglScript.addEventListener("load", () => {
+        __rtglRestoreSource();
+        __rtglResolve();
+      }, { once: true });
+      __rtglScript.addEventListener("error", () => {
+        const __rtglSourceName =
+          __rtglSource.getAttribute("src") || "inline module";
+        __rtglRestoreSource();
+        __rtglReject(
+          new Error(
+            "[VT Watch] Failed to replay script: " + __rtglSourceName,
+          ),
+        );
+      }, { once: true });
+      __rtglSource.replaceWith(__rtglScript);
+      return;
+    }
+
+    __rtglSource.replaceWith(__rtglScript);
+    __rtglRestoreSource();
+    __rtglResolve();
+  },
+);
+
+for (
+  const __rtglPendingScript of document.querySelectorAll(
+    "script[${WATCH_PENDING_SCRIPT_ATTRIBUTE}]",
+  )
+) {
+  try {
+    await __rtglReplayScript(__rtglPendingScript);
+  } catch (__rtglError) {
+    console.error(__rtglError);
+  }
+}
+`.trim();
 
 const isWithinDirectory = ({ filePath, directoryPath }) => {
   const relativePath = path.relative(directoryPath, filePath);
@@ -155,6 +486,29 @@ const injectWatchClient = (html) => {
     WATCH_CLIENT_TAG +
     html.slice(structure.insertionIndex);
 };
+
+const getWatchDocumentUrl = (request) => {
+  const protocol = request.socket?.encrypted ? "https:" : "http:";
+  const host =
+    typeof request.headers?.host === "string" && request.headers.host.length > 0
+      ? request.headers.host
+      : "rettangoli.local";
+  try {
+    return new URL(request.url || "/", `${protocol}//${host}`).href;
+  } catch {
+    return new URL(
+      request.url || "/",
+      "http://rettangoli.local/",
+    ).href;
+  }
+};
+
+const prepareWatchHtml = ({ documentUrl, html, publicEntryPath }) =>
+  injectWatchClient(rewriteWatchScripts({
+    documentUrl,
+    html,
+    publicEntryPath,
+  }));
 
 const getContentType = (filePath) => {
   const extension = path.extname(filePath).toLowerCase();
@@ -831,6 +1185,7 @@ export const createRettangoliVtWatchPlugin = ({
       if (id === RESOLVED_WATCH_CLIENT_ID) {
         return [
           `import ${JSON.stringify(RETTANGOLI_VT_WATCH_BOUNDARY_ID)};`,
+          createWatchEntryBootstrapSource(),
           createWatchClientModuleSource({
             eventName,
             reloadMode: "body",
@@ -917,7 +1272,11 @@ export const createRettangoliVtWatchPlugin = ({
             for await (const chunk of createReadStream(filePath)) {
               chunks.push(chunk);
             }
-            response.end(injectWatchClient(Buffer.concat(chunks).toString("utf8")));
+            response.end(prepareWatchHtml({
+              documentUrl: getWatchDocumentUrl(request),
+              html: Buffer.concat(chunks).toString("utf8"),
+              publicEntryPath: normalizedPublicEntryPath,
+            }));
             return;
           }
           await pipeline(createReadStream(filePath), response);

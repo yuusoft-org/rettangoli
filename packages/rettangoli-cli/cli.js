@@ -21,6 +21,7 @@ let build;
 let check;
 let scaffold;
 let watch;
+let resolveFeServeContext;
 let examples;
 let checkContracts;
 let generate;
@@ -47,7 +48,14 @@ let watchBe;
 let loadBeRuntimeConfig;
 
 if (requestedCommand === "fe") {
-  ({ build, check, scaffold, watch, examples } = await import(
+  ({
+    build,
+    check,
+    scaffold,
+    watch,
+    resolveServeContext: resolveFeServeContext,
+    examples,
+  } = await import(
     "@rettangoli/fe/cli",
   ));
 } else if (requestedCommand === "check") {
@@ -448,6 +456,10 @@ Examples:
         ...(options.vitePlugins || []),
         createRettangoliVtWatchPlugin({
           cwd: process.cwd(),
+          publicEntryPath: resolveFeServeContext({
+            cwd: process.cwd(),
+            outfile: options.outfile,
+          }).publicEntryPath,
           createWatchClientModuleSource: createViteWatchClientModuleSource,
         }),
       ];

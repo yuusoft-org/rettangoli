@@ -1097,6 +1097,49 @@ describe('watch body morph behavior', () => {
     dom.window.close();
   });
 
+  it('treats deferred VT watch scripts as executable reload boundaries', async () => {
+    const pendingScriptAttributes =
+      'type="application/x-rettangoli-watch-pending" ' +
+      'data-rtgl-watch-pending-script ' +
+      'data-rtgl-watch-original-type=""';
+    const { dom, send } = createWatchDom({
+      initialHead: `
+        <script
+          src="/public/main.js"
+          type="application/x-rettangoli-watch-pending"
+          data-rtgl-watch-entry
+          data-rtgl-watch-original-type=""
+        ></script>
+      `,
+      initialBody:
+        `<script ${pendingScriptAttributes}>globalThis.version = 1;</script>` +
+        '<p id="copy">Before</p>',
+      nextHtml: `<!doctype html><html><head>
+        <script
+          src="/public/main.js"
+          type="application/x-rettangoli-watch-pending"
+          data-rtgl-watch-entry
+          data-rtgl-watch-original-type=""
+        ></script>
+      </head><body>
+        <script ${pendingScriptAttributes}>globalThis.version = 2;</script>
+        <p id="copy">After</p>
+      </body></html>`,
+    });
+    const reloadReasons = [];
+    dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+      reloadReasons.push(event.detail.reason);
+      event.preventDefault();
+    });
+
+    send();
+    await waitForUpdate();
+
+    expect(reloadReasons).toEqual(['script-change']);
+    expect(dom.window.document.querySelector('#copy').textContent).toBe('Before');
+    dom.window.close();
+  });
+
   it.each(JAVASCRIPT_MIME_TYPE_ESSENCES)(
     'treats the JavaScript MIME essence %s as executable',
     async (type) => {

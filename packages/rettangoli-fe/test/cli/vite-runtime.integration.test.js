@@ -175,6 +175,17 @@ describe("vite runtime integration", () => {
     });
   });
 
+  it("derives serve context from the default outfile", () => {
+    const context = resolveServeContext({
+      cwd: "/repo/app",
+    });
+
+    expect(context).toEqual({
+      root: path.resolve("/repo/app", "vt"),
+      publicEntryPath: "/main.js",
+    });
+  });
+
   it("resolves an optional project watch entry as a Vite file URL", () => {
     expect(resolveWatchEntryId({
       cwd: "/repo/app",

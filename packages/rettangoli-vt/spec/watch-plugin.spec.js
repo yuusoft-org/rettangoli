@@ -638,6 +638,108 @@ describe("VT watch Vite plugin", () => {
     );
   });
 
+  it("boots the watch entry before replaying later executable scripts", async () => {
+    const { cwd } = await createProject();
+    await writeFile(
+      path.join(cwd, "vt", "templates", "default.html"),
+      `<!doctype html><html><head>
+<base href="/assets/">
+<script>globalThis.beforeEntry = true;</script>
+<script src="https://cdn.example/assets/app.js"></script>
+<script src="app.js"></script>
+</head><body>
+<main>{{ content }}</main>
+<script>globalThis.replayOrder = ["classic"];</script>
+<script type="text/javascript; charset=utf-8">globalThis.replayOrder.push("mime");</script>
+<script src="after.js"></script>
+<script nomodule src="legacy.js"></script>
+<script type="module">globalThis.replayOrder.push("module");</script>
+<script type="module" src="missing.js"></script>
+<script type="application/json">{"inert":true}</script>
+<template><script>globalThis.templateScript = true;</script></template>
+</body></html>`,
+    );
+    const { middlewares, server } = createMockServer();
+    const plugin = createRettangoliVtWatchPlugin({
+      cwd,
+      publicEntryPath: "/assets/app.js",
+      createWatchClientModuleSource: () =>
+        "globalThis.__WATCH_CLIENT_STARTED__ = true;",
+    });
+    await plugin.configureServer(server);
+
+    const response = await requestHtml(
+      middlewares[0],
+      "/candidate/primitives/view/view-scrollbar-vertical-01",
+    );
+
+    expect(response.body).toContain(
+      '<script src="app.js" type="application/x-rettangoli-watch-pending" data-rtgl-watch-entry data-rtgl-watch-original-type="">',
+    );
+    expect(response.body).toContain(
+      '<script src="https://cdn.example/assets/app.js"></script>',
+    );
+    expect(response.body.match(/data-rtgl-watch-entry/g)).toHaveLength(1);
+    expect(response.body).toContain(
+      '<script type="application/x-rettangoli-watch-pending" data-rtgl-watch-pending-script data-rtgl-watch-original-type="">globalThis.replayOrder = ["classic"];</script>',
+    );
+    expect(response.body).toContain(
+      '<script  type="application/x-rettangoli-watch-pending" data-rtgl-watch-pending-script data-rtgl-watch-original-type="text/javascript; charset=utf-8" data-rtgl-watch-had-type>globalThis.replayOrder.push("mime");</script>',
+    );
+    expect(response.body).toContain(
+      '<script src="after.js" type="application/x-rettangoli-watch-pending" data-rtgl-watch-pending-script data-rtgl-watch-original-type="">',
+    );
+    expect(response.body).toContain(
+      '<script nomodule src="legacy.js" type="application/x-rettangoli-watch-pending" data-rtgl-watch-pending-script data-rtgl-watch-original-type="">',
+    );
+    expect(response.body).toContain(
+      '<script  type="application/x-rettangoli-watch-pending" data-rtgl-watch-pending-script data-rtgl-watch-original-type="module" data-rtgl-watch-had-type>globalThis.replayOrder.push("module");</script>',
+    );
+    expect(response.body).toContain(
+      '<script  src="missing.js" type="application/x-rettangoli-watch-pending" data-rtgl-watch-pending-script data-rtgl-watch-original-type="module" data-rtgl-watch-had-type>',
+    );
+    expect(response.body).toContain(
+      '<script type="application/json">{"inert":true}</script>',
+    );
+    expect(response.body).toContain(
+      '<template><script>globalThis.templateScript = true;</script></template>',
+    );
+    expect(response.body).toContain(
+      "<script>globalThis.beforeEntry = true;</script>",
+    );
+
+    const clientId = plugin.resolveId(
+      "/__rettangoli_vt_watch_client__.js",
+    );
+    const clientSource = plugin.load(clientId);
+    expect(clientSource).toContain(
+      "await import(/* @vite-ignore */ __rtglWatchEntry.src);",
+    );
+    expect(clientSource).toContain(
+      "[VT Watch] Failed to load the watch entry.",
+    );
+    expect(clientSource).toContain(
+      '__rtglSource.hasAttribute("nomodule")',
+    );
+    expect(clientSource).toContain(
+      "__rtglSource.replaceWith(__rtglScript);",
+    );
+    expect(clientSource).toContain(
+      "if (__rtglIsInlineModule) {",
+    );
+    expect(clientSource).toContain(
+      '"script[data-rtgl-watch-pending-script]"',
+    );
+    expect(clientSource).toContain(
+      "console.error(__rtglError);",
+    );
+    expect(clientSource).toContain(
+      "globalThis.__WATCH_CLIENT_STARTED__ = true;",
+    );
+    expect(clientSource.indexOf("await __rtglReplayScript"))
+      .toBeLessThan(clientSource.indexOf("__WATCH_CLIENT_STARTED__"));
+  });
+
   it("injects an active client before unterminated or frameset content", async () => {
     const { cwd } = await createProject();
     const { middlewares, server } = createMockServer();
