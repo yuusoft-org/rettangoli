@@ -34,6 +34,10 @@ try {
     const registry = await buildUiRegistry({ workspaceRoot });
     assert.ok(registry.has("rtgl-form"), "UI schema components should be registered");
     assert.ok(registry.has("rtgl-view"), "UI primitives should be registered");
+    assert.ok(
+      registry.has("rtgl-checkbox"),
+      "primitives registered through the shared production module should be registered",
+    );
   }
 } finally {
   rmSync(sandboxRoot, { recursive: true, force: true });

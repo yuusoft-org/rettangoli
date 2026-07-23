@@ -771,7 +771,11 @@ export const resolveUiSourceDir = ({ workspaceRoot = process.cwd() } = {}) => {
 
 const collectPrimitiveContractsFromEntries = async ({ uiDir, globalStyleAttrs }) => {
   const result = new Map();
-  const entryNames = ["entry-iife-ui.js", "entry-iife-layout.js"];
+  const entryNames = [
+    "entry-iife-ui.js",
+    "entry-iife-layout.js",
+    "registerPrimitives.js",
+  ];
 
   for (const entryName of entryNames) {
     const primitiveContracts = await getPrimitiveContractsFromEntry({
