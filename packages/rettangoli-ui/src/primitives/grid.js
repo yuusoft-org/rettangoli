@@ -20,7 +20,9 @@ import anchorStyles from "../styles/anchorStyles.js";
 import {
   OverlayScrollbarController,
   overlayScrollbarStyles,
+  prepareOverlayScrollbarControllerHotUpdate,
 } from "../common/overlayScrollbar.js";
+import { HOT_PRIMITIVE_PREPARE } from "../hotPrimitiveContract.js";
 
 const resolveGridTemplateColumns = (cols) => {
   if (cols == null) {
@@ -41,6 +43,16 @@ const resolveGridTemplateColumns = (cols) => {
 
 class RettangoliGridElement extends HTMLElement {
   static styleSheet = null;
+
+  static [HOT_PRIMITIVE_PREPARE]({ instance }) {
+    return prepareOverlayScrollbarControllerHotUpdate({
+      Controller: OverlayScrollbarController,
+      instance,
+      refreshInstance: () => {
+        instance.updateStyles();
+      },
+    });
+  }
 
   static initializeStyleSheet() {
     if (!RettangoliGridElement.styleSheet) {

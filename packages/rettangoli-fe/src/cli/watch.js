@@ -9,6 +9,16 @@ import {
 
 const toPosixPath = (value) => value.split(path.sep).join("/");
 
+const toViteFsPath = (value) => {
+  const normalized = toPosixPath(path.resolve(value));
+  return normalized.startsWith("/") ? `/@fs${normalized}` : `/@fs/${normalized}`;
+};
+
+export const resolveWatchEntryId = ({ cwd, watchEntry }) =>
+  typeof watchEntry === "string" && watchEntry.length > 0
+    ? toViteFsPath(path.resolve(cwd, watchEntry))
+    : RETTANGOLI_FE_VIRTUAL_ENTRY_ID;
+
 export const resolveServeContext = ({ cwd, outfile }) => {
   const resolvedOutfile = path.resolve(cwd, outfile);
   const relativeOutfile = path.relative(cwd, resolvedOutfile);
@@ -18,7 +28,7 @@ export const resolveServeContext = ({ cwd, outfile }) => {
   if (staticIndex >= 0) {
     const rootParts = parts.slice(0, staticIndex);
     const root = path.resolve(cwd, ...rootParts);
-    const publicEntryPath = `/${toPosixPath(parts.slice(staticIndex).join(path.sep))}`;
+    const publicEntryPath = `/${toPosixPath(parts.slice(staticIndex + 1).join(path.sep))}`;
     return {
       root,
       publicEntryPath,
@@ -44,6 +54,8 @@ export const createWatchServer = async (options = {}) => {
     setup = "setup.js",
     i18n = null,
     publicDir,
+    watchEntry,
+    vitePlugins = [],
   } = options;
 
   const { root, publicEntryPath } = resolveServeContext({ cwd, outfile });
@@ -51,6 +63,7 @@ export const createWatchServer = async (options = {}) => {
     typeof publicDir === "string" && publicDir.length > 0
       ? path.resolve(cwd, publicDir)
       : publicDir;
+  const servedEntryId = resolveWatchEntryId({ cwd, watchEntry });
 
   const server = await createServer({
     clearScreen: false,
@@ -71,7 +84,9 @@ export const createWatchServer = async (options = {}) => {
         i18n,
         errorPrefix: "[Watch]",
         publicEntryPath,
+        servedEntryId,
       }),
+      ...vitePlugins,
     ],
   });
 
@@ -82,17 +97,22 @@ const startWatching = async (options = {}) => {
   const {
     cwd = process.cwd(),
     outfile = "./vt/static/main.js",
+    watchEntry,
     enableCliShortcuts = !!process.stdin.isTTY,
   } = options;
   const { root, publicEntryPath } = resolveServeContext({ cwd, outfile });
+  const servedEntryId = resolveWatchEntryId({ cwd, watchEntry });
 
   console.log(`[Watch] Root: ${root}`);
   console.log(`[Watch] Entry: ${publicEntryPath}`);
+  if (watchEntry) {
+    console.log(`[Watch] Source: ${path.resolve(cwd, watchEntry)}`);
+  }
 
   try {
     const server = await createWatchServer(options);
     await server.listen();
-    await server.transformRequest(RETTANGOLI_FE_VIRTUAL_ENTRY_ID);
+    await server.transformRequest(servedEntryId);
     server.printUrls();
     if (enableCliShortcuts) {
       server.bindCLIShortcuts({ print: true });

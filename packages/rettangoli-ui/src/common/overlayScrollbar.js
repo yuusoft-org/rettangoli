@@ -828,3 +828,93 @@ export class OverlayScrollbarController {
     this._updateGeometry();
   }
 }
+
+export const prepareOverlayScrollbarControllerHotUpdate = ({
+  Controller = OverlayScrollbarController,
+  instance,
+  refreshInstance,
+}) => {
+  const previousController = instance?._scrollbarController;
+  if (!previousController) {
+    return null;
+  }
+
+  const nextController = new Controller({
+    host: instance,
+    shadowRoot: instance.shadow,
+    slotElement: instance._slotElement,
+  });
+  const wasConnected = instance.isConnected;
+  const previousLayer = previousController.layer;
+  const previousLayerParent = previousLayer?.parentNode || null;
+  const previousLayerNextSibling = previousLayer?.nextSibling || null;
+  const scrollLeft = instance.scrollLeft;
+  const scrollTop = instance.scrollTop;
+  const refreshState = {
+    lastStyleString: instance._lastStyleString,
+    styleElementText: instance._styleElement?.textContent,
+    styles: instance._styles,
+  };
+  let committed = false;
+
+  const restoreScroll = () => {
+    if (typeof instance.scrollTo === "function") {
+      instance.scrollTo({
+        behavior: "instant",
+        left: scrollLeft,
+        top: scrollTop,
+      });
+      return;
+    }
+    instance.scrollLeft = scrollLeft;
+    instance.scrollTop = scrollTop;
+  };
+
+  const restoreRefreshState = () => {
+    instance._styles = refreshState.styles;
+    instance._lastStyleString = refreshState.lastStyleString;
+    if (instance._styleElement && refreshState.styleElementText !== undefined) {
+      instance._styleElement.textContent = refreshState.styleElementText;
+    }
+  };
+
+  return {
+    commit() {
+      previousController.disconnect();
+      previousLayer?.remove();
+      instance._scrollbarController = nextController;
+      committed = true;
+
+      if (wasConnected) {
+        nextController.connect();
+      }
+      refreshInstance?.();
+      restoreScroll();
+      nextController.refresh();
+    },
+    rollback() {
+      if (!committed) {
+        return;
+      }
+
+      nextController.disconnect();
+      nextController.layer?.remove();
+      instance._scrollbarController = previousController;
+
+      if (previousLayer && previousLayerParent) {
+        previousLayerParent.insertBefore(
+          previousLayer,
+          previousLayerNextSibling?.parentNode === previousLayerParent
+            ? previousLayerNextSibling
+            : null,
+        );
+      }
+      if (wasConnected) {
+        previousController.connect();
+      }
+      restoreRefreshState();
+      restoreScroll();
+      previousController.refresh();
+    },
+  };
+};

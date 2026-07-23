@@ -25,6 +25,7 @@ export const createI18nRuntime = ({
   const catalogs = new Map(Object.entries(initialCatalogs || {}));
   const listeners = new Set();
   let currentLocale = defaultLocale || fallbackLocale || availableLocales[0] || null;
+  let catalogGeneration = 0;
   let localeRequestVersion = 0;
 
   const assertKnownLocale = (locale) => {
@@ -62,18 +63,50 @@ export const createI18nRuntime = ({
       throw new Error("[i18n] fetch is not available for lazy locale loading.");
     }
 
+    const requestCatalogGeneration = catalogGeneration;
     const response = await fetchFn(url);
     if (!response?.ok) {
       throw new Error(`[i18n] Failed to load locale "${locale}" from ${url}.`);
     }
 
     const catalog = await response.json();
+    if (requestCatalogGeneration !== catalogGeneration) {
+      return catalogs.get(locale) || catalog;
+    }
     catalogs.set(locale, catalog);
     return catalog;
   };
 
   const activateLocale = (locale) => {
     currentLocale = locale;
+    notify();
+    return getMessages();
+  };
+
+  const replaceCatalogs = (nextCatalogs = {}) => {
+    if (
+      !nextCatalogs ||
+      typeof nextCatalogs !== "object" ||
+      Array.isArray(nextCatalogs)
+    ) {
+      throw new Error("[i18n] replaceCatalogs expects an object keyed by locale.");
+    }
+
+    const entries = Object.entries(nextCatalogs);
+    entries.forEach(([locale, catalog]) => {
+      assertKnownLocale(locale);
+      if (!catalog || typeof catalog !== "object" || Array.isArray(catalog)) {
+        throw new Error(
+          `[i18n] Catalog for locale "${locale}" must be an object.`,
+        );
+      }
+    });
+
+    entries.forEach(([locale, catalog]) => {
+      catalogs.set(locale, catalog);
+    });
+    catalogGeneration += 1;
+    localeRequestVersion += 1;
     notify();
     return getMessages();
   };
@@ -137,6 +170,7 @@ export const createI18nRuntime = ({
     current,
     load,
     ready,
+    replaceCatalogs,
     set,
     subscribe,
   };
@@ -149,6 +183,7 @@ export const createI18nRuntime = ({
     locale: localeService,
     localeService,
     ready,
+    replaceCatalogs,
     set,
     subscribe,
   };

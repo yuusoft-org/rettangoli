@@ -252,7 +252,20 @@ bunx rtgl sites build --root-dir . --output-path dist
 bunx rtgl sites watch --root-dir . --output-path dist --reload-mode full
 ```
 
-`--reload-mode body` (default) does fast body replacement; `--reload-mode full` forces full page refresh.
+`--reload-mode body` (default) morphs generated HTML into the current document. It
+reuses elements keyed by `data-rtgl-key`, `data-key`, or `id` (and compatible
+unkeyed elements by position), so unchanged custom elements keep their runtime
+state. Focus, text selection, uncontrolled form values, and window/nested scroll
+positions are restored after the morph. Add `data-rtgl-preserve` to an element
+whose attributes and children are entirely managed by client-side code. The
+marker also protects client-created `<head>` elements (such as runtime styles,
+metadata, or stylesheet links) from head synchronization and asset refreshes;
+add it before the injected watch client initializes.
+
+Static stylesheets and images refresh in place. A changed JavaScript/WebAssembly
+asset or a changed executable `<script>` in generated HTML safely falls back to a
+full reload so the browser never continues with stale code. `--reload-mode full`
+forces a full page refresh for every change.
 `--root-dir`/`--output-path` are the preferred option names (`--rootDir`/`--outputPath` remain as legacy aliases).
 
 ## Built-in Template Functions

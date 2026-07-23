@@ -3,11 +3,30 @@ import paddingSvgStyles from "../styles/paddingSvgStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import textColorStyles from "../styles/textColorStyles.js";
+import { HOT_PRIMITIVE_PREPARE_STATIC } from "../hotPrimitiveContract.js";
 
 // Internal implementation without uhtml
 class RettangoliSvgElement extends HTMLElement {
   static styleSheet = null;
   static _icons = {};
+
+  static [HOT_PRIMITIVE_PREPARE_STATIC]({ previousClass }) {
+    const previousIcons = previousClass._icons;
+    const nextIcons = RettangoliSvgElement._icons;
+    let committed = false;
+
+    return {
+      commit() {
+        RettangoliSvgElement._icons = previousIcons;
+        committed = true;
+      },
+      rollback() {
+        if (committed) {
+          RettangoliSvgElement._icons = nextIcons;
+        }
+      },
+    };
+  }
 
   static initializeStyleSheet() {
     if (!RettangoliSvgElement.styleSheet) {

@@ -1,11 +1,14 @@
 import fs, { watch, existsSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import http from 'node:http';
 import path from 'node:path';
 import { WebSocketServer } from 'ws';
 import { buildSite } from './build.js';
 import { loadSiteConfig } from '../utils/loadSiteConfig.js';
+import { createWatchClientScript } from './watchClient.js';
 
 const RELOAD_MODES = new Set(['body', 'full']);
+const LIVE_ASSET_PATTERN = /\.(?:avif|bmp|css|gif|ico|jpe?g|png|svg|webp)$/i;
 
 function normalizePort(port) {
   const normalizedPort = Number(port);
@@ -15,51 +18,52 @@ function normalizePort(port) {
   return normalizedPort;
 }
 
-export function createClientScript(reloadMode = 'body') {
-  const shouldUseBodyReplacement = reloadMode === 'body';
-  const reloadSnippet = shouldUseBodyReplacement
-    ? `
-      // Fetch the current page's HTML
-      fetch(window.location.href)
-        .then(response => response.text())
-        .then(html => {
-          // Parse the new HTML
-          const parser = new DOMParser();
-          const newDoc = parser.parseFromString(html, 'text/html');
+export function createClientScript(
+  reloadMode = 'body',
+  initialRevision = 0,
+  initialSessionId = null,
+) {
+  return createWatchClientScript(reloadMode, initialRevision, initialSessionId);
+}
 
-          // Replace entire body content
-          document.body.innerHTML = newDoc.body.innerHTML;
-        })
-        .catch(err => {
-          console.error('Hot reload failed:', err);
-          // Fallback to full reload
-          window.location.reload();
-        });
-    `
-    : `
-      window.location.reload();
-    `;
+export function classifyWatchChanges(changes = []) {
+  const normalizedChanges = Array.from(changes);
+  if (normalizedChanges.length === 0) return { updateKind: 'html', paths: [] };
 
-  return `
-<script>
-(function() {
-  const wsProtocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
-  const ws = new WebSocket(wsProtocol + location.host);
+  const hasScriptChange = normalizedChanges.some((change) =>
+    /\.(?:[cm]?js|wasm)$/i.test(change.relativePath || ''),
+  );
+  if (hasScriptChange) return { updateKind: 'full', paths: [] };
 
-  ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
+  const hasUnsupportedStaticAssetChange = normalizedChanges.some((change) => {
+    if (change.scope !== 'static') return false;
+    const relativePath = change.relativePath || '';
+    return !/\.html?$/i.test(relativePath) &&
+      !LIVE_ASSET_PATTERN.test(relativePath);
+  });
+  if (hasUnsupportedStaticAssetChange) {
+    return { updateKind: 'full', paths: [] };
+  }
 
-    if (data.type === 'reload-current') {
-      ${reloadSnippet}
-    }
+  const hasHtmlSourceChange = normalizedChanges.some((change) => {
+    if (change.scope !== 'static') return true;
+    return /\.html?$/i.test(change.relativePath || '');
+  });
+
+  const assetPaths = [...new Set(normalizedChanges
+    .filter((change) =>
+      change.scope === 'static' &&
+      LIVE_ASSET_PATTERN.test(change.relativePath || ''),
+    )
+    .map((change) => change.publicPath)
+    .filter(Boolean))].sort();
+
+  if (hasHtmlSourceChange) return { updateKind: 'html', paths: assetPaths };
+
+  return {
+    updateKind: 'assets',
+    paths: assetPaths,
   };
-
-  ws.onclose = () => {
-    setTimeout(() => location.reload(), 1000);
-  };
-})();
-</script>
-`;
 }
 
 export function getContentType(ext) {
@@ -95,12 +99,21 @@ function createLogger(quiet = false) {
 }
 
 class DevServer {
-  constructor(port = 3001, siteDir = '_site', logger = createLogger(false), reloadMode = 'body') {
+  constructor(
+    port = 3001,
+    siteDir = '_site',
+    logger = createLogger(false),
+    reloadMode = 'body',
+    sessionId = randomUUID(),
+  ) {
     this.port = port;
     this.clients = new Set();
     this.siteDir = siteDir;
     this.logger = logger;
-    this.clientScript = createClientScript(reloadMode);
+    this.reloadMode = reloadMode;
+    this.sessionId = sessionId;
+    this.revision = 0;
+    this.fullReloadRevision = 0;
   }
 
   start() {
@@ -114,6 +127,13 @@ class DevServer {
 
     this.wss.on('connection', (ws) => {
       this.clients.add(ws);
+
+      ws.send(JSON.stringify({
+        type: 'watch-state',
+        sessionId: this.sessionId,
+        revision: this.revision,
+        fullReloadRevision: this.fullReloadRevision,
+      }));
 
       ws.on('close', () => {
         this.clients.delete(ws);
@@ -198,13 +218,18 @@ class DevServer {
       // Inject client script into HTML files
       if (ext === '.html') {
         content = content.toString();
+        const clientScript = createClientScript(
+          this.reloadMode,
+          this.revision,
+          this.sessionId,
+        );
         // Inject before </body> or </html> or at the end
         if (content.includes('</body>')) {
-          content = content.replace('</body>', this.clientScript + '</body>');
+          content = content.replace('</body>', clientScript + '</body>');
         } else if (content.includes('</html>')) {
-          content = content.replace('</html>', this.clientScript + '</html>');
+          content = content.replace('</html>', clientScript + '</html>');
         } else {
-          content = content + this.clientScript;
+          content = content + clientScript;
         }
       }
 
@@ -221,10 +246,16 @@ class DevServer {
     }
   }
 
-  reloadAll() {
-    // Send a simple reload command to all clients
+  reloadAll({ updateKind = 'html', paths = [] } = {}) {
+    this.revision += 1;
+    if (updateKind === 'full') this.fullReloadRevision = this.revision;
+
     const message = JSON.stringify({
-      type: 'reload-current'
+      type: 'reload-current',
+      sessionId: this.sessionId,
+      updateKind,
+      paths,
+      revision: this.revision,
     });
 
     let sentCount = 0;
@@ -244,27 +275,8 @@ class DevServer {
 }
 
 // File watcher setup
-const setupWatcher = (directory, options, server, logger) => {
-  let debounceTimer = null;
+const setupWatcher = (directory, options, scheduleChange, logger) => {
   const outputRootDir = path.resolve(options.rootDir, options.outputPath || '_site');
-
-  const processChanges = async () => {
-    logger.log('Rebuilding site...');
-    try {
-      await buildSite({
-        rootDir: options.rootDir,
-        outputPath: options.outputPath,
-        quiet: true
-      });
-      logger.log('Rebuild complete');
-
-      // Just reload all clients - they'll reload their current page
-      server.reloadAll();
-
-    } catch (error) {
-      logger.error('Error during rebuild:', error);
-    }
-  };
 
   watch(
     directory,
@@ -283,18 +295,18 @@ const setupWatcher = (directory, options, server, logger) => {
 
         logger.log(`Detected ${event} in ${filename}`);
 
-        if (debounceTimer) {
-          clearTimeout(debounceTimer);
-        }
-
-        debounceTimer = setTimeout(processChanges, 10);
+        const relativePath = String(filename).replace(/\\/g, '/');
+        scheduleChange({
+          scope: options.scope,
+          relativePath,
+          publicPath: options.scope === 'static' ? `/${relativePath}` : null,
+        });
       }
     },
   );
 };
 
-const setupConfigWatcher = (rootDir, options, server) => {
-  let debounceTimer = null;
+const setupConfigWatcher = (rootDir, options, scheduleChange) => {
   const logger = createLogger(options.quiet);
 
   watch(rootDir, { recursive: false }, async (event, filename) => {
@@ -310,25 +322,49 @@ const setupConfigWatcher = (rootDir, options, server) => {
 
     logger.log(`Detected ${event} in ${baseName}`);
 
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-    }
-
-    debounceTimer = setTimeout(async () => {
-      logger.log('Rebuilding site...');
-      try {
-        await buildSite({
-          rootDir: options.rootDir,
-          outputPath: options.outputPath,
-          quiet: true
-        });
-        logger.log('Rebuild complete');
-        server.reloadAll();
-      } catch (error) {
-        logger.error('Error during rebuild:', error);
-      }
-    }, 10);
+    scheduleChange({
+      scope: 'config',
+      relativePath: baseName,
+      publicPath: null,
+    });
   });
+};
+
+const createRebuildScheduler = ({ rootDir, outputPath, server, logger }) => {
+  let debounceTimer = null;
+  let isBuilding = false;
+  const pendingChanges = new Map();
+
+  const flushChanges = async () => {
+    if (isBuilding) return;
+    isBuilding = true;
+    try {
+      while (pendingChanges.size > 0) {
+        const changes = [...pendingChanges.values()];
+        pendingChanges.clear();
+        logger.log('Rebuilding site...');
+        try {
+          await buildSite({ rootDir, outputPath, quiet: true });
+          logger.log('Rebuild complete');
+          server.reloadAll(classifyWatchChanges(changes));
+        } catch (error) {
+          logger.error('Error during rebuild:', error);
+        }
+      }
+    } finally {
+      isBuilding = false;
+    }
+  };
+
+  return (change) => {
+    const key = `${change.scope}:${change.relativePath}`;
+    pendingChanges.set(key, change);
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      debounceTimer = null;
+      flushChanges();
+    }, 10);
+  };
 };
 
 // Main watch function
@@ -358,6 +394,12 @@ const watchSite = async (options = {}) => {
   // Start custom dev server
   const server = new DevServer(normalizedPort, path.resolve(rootDir, outputPath), logger, normalizedReloadMode);
   server.start();
+  const scheduleChange = createRebuildScheduler({
+    rootDir,
+    outputPath,
+    server,
+    logger,
+  });
 
   // Watch all relevant directories
   const dirsToWatch = ['data', 'templates', 'partials', 'pages', 'static'];
@@ -368,13 +410,14 @@ const watchSite = async (options = {}) => {
       logger.log(`Watching: ${dir}/`);
       setupWatcher(dirPath, {
         rootDir,
-        outputPath
-      }, server, logger);
+        outputPath,
+        scope: dir,
+      }, scheduleChange, logger);
     }
   });
 
   logger.log('Watching: sites.config.yaml');
-  setupConfigWatcher(rootDir, { rootDir, outputPath, quiet }, server);
+  setupConfigWatcher(rootDir, { rootDir, outputPath, quiet }, scheduleChange);
 
   // Handle process termination
   process.on('SIGINT', async () => {

@@ -96,6 +96,7 @@ src/
 - `rtgl fe build` uses Vite 8's Rolldown-powered `vite.build()` with a virtual entry module generated from configured component files.
 - `rtgl fe watch` uses `vite.createServer()`, warms the virtual entry during startup, and serves the configured `outfile` path via middleware.
 - Watch projects can configure `fe.publicDir` to serve static assets from the project root without Vite transformations.
+- `fe.watchEntry` can provide a project bootstrap module at the configured `outfile` URL. The module can register framework primitives and import `virtual:rettangoli-fe-entry` for Rettangoli component HMR.
 - FE runtime source is generated in memory (virtual module), so no temporary generated JS files are required.
 - Contract validation, YAML parsing, and template parsing still run before code generation.
 - Component directories, setup files, and locale files are registered explicitly so watch mode also sees sources outside the served static root.
@@ -107,12 +108,19 @@ Current Vite features used by FE:
 - Custom plugin hooks:
   - `resolveId` + `load` for the FE virtual entry (`virtual:rettangoli-fe-entry`).
   - `handleHotUpdate` for FE file change detection.
-  - `configureServer` for full-page reload and serving the configured output entry URL.
+  - `configureServer` for reload fallbacks and serving the configured output entry URL.
 - Rolldown output control through Vite (`entryFileNames`, `chunkFileNames`, `assetFileNames`) to preserve CLI `outfile` behavior.
 
 Notes:
 
-- Watch mode currently performs full reloads (not component-level HMR).
+- Watch mode preserves component instances and store state while applying compatible
+  `.view.yaml`, `.constants.yaml`, `.handlers.js`, `.methods.js`, `.store.js`, and
+  `.schema.yaml` edits through HMR. Locale YAML edits replace the development
+  catalogs while retaining the selected locale and existing subscriptions.
+- Changes to setup and component file additions or removals perform a full reload
+  because they can change registration or project topology. An update rejected by
+  the runtime as incompatible, including a component-name or observed-prop change,
+  also falls back to a full reload.
 - No dedicated CSS plugin pipeline is enabled in FE at this time.
 
 ## Configuration
@@ -127,6 +135,7 @@ fe:
   setup: "setup.js"
   outfile: "./dist/bundle.js"
   publicDir: "./static"
+  watchEntry: "./src/watch.js"
   i18n:
     dir: "./src/i18n"
     defaultLocale: "en"
@@ -141,6 +150,11 @@ fe:
 `publicDir` is optional and only affects `rtgl fe watch`. Its files are served
 at `/` without Vite transformations. This is useful for extensionless or other
 binary assets that must retain their source filenames.
+
+`watchEntry` is also watch-only. When present, that module is transformed and
+served at the `outfile` URL instead of serving the FE virtual entry directly.
+Import `virtual:rettangoli-fe-entry` from it to retain component HMR while adding
+project bootstrap code such as primitive custom-element registration.
 
 ## Setup Contract
 

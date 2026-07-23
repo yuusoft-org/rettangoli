@@ -6,9 +6,8 @@ import { h } from "snabbdom/build/h.js";
 
 const patch = createWebPatch();
 
-const createComponent = (
+export const resolveComponentDefinition = (
   { handlers, methods, constants, schema, view, store },
-  deps,
 ) => {
   if (!view) {
     throw new Error("view is not defined");
@@ -32,7 +31,7 @@ const createComponent = (
     ? [...new Set(Object.keys(propsSchema.properties).map((propKey) => toCamelCase(propKey)))]
     : [];
 
-  return createWebComponentClass({
+  return {
     elementName,
     propsSchema,
     propsSchemaKeys,
@@ -43,9 +42,22 @@ const createComponent = (
     methods,
     constants,
     store,
+  };
+};
+
+const createComponent = (
+  componentConfig,
+  deps,
+  { hotRecord = null } = {},
+) => {
+  const definition = resolveComponentDefinition(componentConfig);
+
+  return createWebComponentClass({
+    ...definition,
     patch,
     h,
     deps,
+    hotRecord,
   });
 };
 

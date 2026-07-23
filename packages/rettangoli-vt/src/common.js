@@ -114,6 +114,7 @@ function ensureDirectoryExists(dirPath) {
  */
 async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
   try {
+    const logger = templateConfig.logger || console;
     const defaultTemplateContent = readFileSync(templatePath, "utf8");
     ensureDirectoryExists(outputDir);
 
@@ -156,7 +157,7 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
       const outputPath = join(outputDir, convertToHtmlExtension(relativePath));
       ensureDirectoryExists(dirname(outputPath));
       writeFileSync(outputPath, renderedContent, "utf8");
-      console.log(`Generated: ${outputPath}`);
+      logger.log(`Generated: ${outputPath}`);
 
       processedFiles.push({
         path: relativePath,
@@ -168,7 +169,7 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
       });
     }
 
-    console.log(`Successfully generated ${processedFiles.length} files`);
+    logger.log(`Successfully generated ${processedFiles.length} files`);
     return processedFiles;
   } catch (error) {
     throw new Error(`Error generating HTML: ${error.message}`, { cause: error });
@@ -364,7 +365,13 @@ async function takeScreenshots(options) {
 /**
  * Generate overview HTML from template and data
  */
-function generateOverview(data, templatePath, outputPath, configData) {
+function generateOverview(
+  data,
+  templatePath,
+  outputPath,
+  configData,
+  { logger = console, throwOnRenderError = false } = {},
+) {
   try {
     // Read template
     const templateContent = readFileSync(templatePath, "utf8");
@@ -431,7 +438,13 @@ function generateOverview(data, templatePath, outputPath, configData) {
           sidebarItems: encodeURIComponent(JSON.stringify(sidebarItems)),
         });
       } catch (error) {
-        console.error(`Error rendering overview template:`, error);
+        if (throwOnRenderError) {
+          throw new Error(
+            `Error rendering overview template for "${section.title}": ${error.message}`,
+            { cause: error },
+          );
+        }
+        logger.error(`Error rendering overview template:`, error);
         renderedContent = `<html><body><h1>Error rendering overview template</h1><p>${error.message}</p></body></html>`;
       }
 
@@ -441,10 +454,10 @@ function generateOverview(data, templatePath, outputPath, configData) {
       );
       // Save file
       writeFileSync(finalOutputPath, renderedContent, "utf8");
-      console.log(`Generated overview: ${finalOutputPath}`);
+      logger.log(`Generated overview: ${finalOutputPath}`);
     });
   } catch (error) {
-    console.error("Error generating overview HTML:", error);
+    logger.error("Error generating overview HTML:", error);
     throw error;
   }
 }

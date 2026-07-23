@@ -16,6 +16,7 @@ import build from "../../src/cli/build.js";
 import {
   createWatchServer,
   resolveServeContext,
+  resolveWatchEntryId,
 } from "../../src/cli/watch.js";
 
 const packageRootDir = path.resolve(
@@ -158,7 +159,7 @@ describe("vite runtime integration", () => {
 
     expect(context).toEqual({
       root: path.resolve("/repo/app", "vt"),
-      publicEntryPath: "/static/public/main.js",
+      publicEntryPath: "/public/main.js",
     });
   });
 
@@ -172,6 +173,16 @@ describe("vite runtime integration", () => {
       root: path.resolve("/repo/app"),
       publicEntryPath: "/dist/bundle.js",
     });
+  });
+
+  it("resolves an optional project watch entry as a Vite file URL", () => {
+    expect(resolveWatchEntryId({
+      cwd: "/repo/app",
+      watchEntry: "src/watch.js",
+    })).toBe("/@fs/repo/app/src/watch.js");
+    expect(resolveWatchEntryId({ cwd: "/repo/app" })).toBe(
+      "virtual:rettangoli-fe-entry",
+    );
   });
 
   it("builds the configured outfile without legacy temp artifacts", async () => {
@@ -258,14 +269,63 @@ describe("vite runtime integration", () => {
 
     const response = await requestFromMiddleware(
       server,
-      "/static/public/main.js",
+      "/public/main.js",
     );
 
     expect(response.statusCode).toBe(200);
     expect(response.headers.get("content-type")).toContain("application/javascript");
     expect(response.body).toContain("x-counter");
-    expect(response.body).toContain("customElements.define");
+    expect(response.body).toContain("defineOrUpdateComponent");
+    expect(response.body).toContain("import.meta.hot.accept");
     expect(response.body).not.toContain("__STALE_FE_BUNDLE__");
+  });
+
+  it("serves generated VT pages and overrides their copied bundle with the HMR entry", async () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+    const generatedSiteDir = path.join(rootDir, ".rettangoli", "vt", "_site");
+    const candidateDir = path.join(generatedSiteDir, "candidate");
+    const copiedBundlePath = path.join(generatedSiteDir, "public", "main.js");
+    mkdirSync(candidateDir, { recursive: true });
+    mkdirSync(path.dirname(copiedBundlePath), { recursive: true });
+    writeFileSync(
+      path.join(candidateDir, "counter.html"),
+      '<script type="module" src="/public/main.js"></script>\n<x-counter></x-counter>\n',
+    );
+    writeFileSync(copiedBundlePath, "window.__STALE_COPIED_BUNDLE__ = true;\n");
+    writeFileSync(
+      path.join(rootDir, "watch-entry.js"),
+      [
+        "globalThis.__WATCH_ENTRY_PROBE__ = true;",
+        'import "virtual:rettangoli-fe-entry";',
+        "",
+      ].join("\n"),
+    );
+
+    const server = await createWatchServer({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      outfile: "vt/static/public/main.js",
+      publicDir: ".rettangoli/vt/_site",
+      watchEntry: "watch-entry.js",
+    });
+    servers.push(server);
+
+    const pageResponse = await requestFromMiddleware(
+      server,
+      "/candidate/counter.html",
+    );
+    const entryResponse = await requestFromMiddleware(server, "/public/main.js");
+
+    expect(pageResponse.statusCode).toBe(200);
+    expect(pageResponse.body).toContain(
+      '<script type="module" src="/public/main.js"></script>',
+    );
+    expect(entryResponse.statusCode).toBe(200);
+    expect(entryResponse.body).toContain("__WATCH_ENTRY_PROBE__");
+    expect(entryResponse.body).toContain("virtual:rettangoli-fe-entry");
+    expect(entryResponse.body).not.toContain("__STALE_COPIED_BUNDLE__");
   });
 
   it("serves extensionless files from the configured public directory without transforming them", async () => {
@@ -342,7 +402,7 @@ describe("vite runtime integration", () => {
     });
     servers.push(server);
 
-    const entryUrl = "/static/public/main.js";
+    const entryUrl = "/public/main.js";
     const initialResponse = await requestFromMiddleware(server, entryUrl);
     expect(initialResponse.body).not.toContain("Updated by watcher");
 
@@ -386,7 +446,7 @@ describe("vite runtime integration", () => {
 
     const response = await requestFromMiddleware(
       server,
-      "/static/public/i18n/vi.json",
+      "/public/i18n/vi.json",
     );
 
     expect(response.statusCode).toBe(200);

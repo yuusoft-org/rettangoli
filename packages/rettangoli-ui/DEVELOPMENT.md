@@ -414,6 +414,35 @@ bun run serve
 
 Then open `http://localhost:3000/view`.
 
+For state-preserving component and VT development, run the UI watcher:
+
+```bash
+bun run watch
+```
+
+Open a candidate page on the watcher URL, for example
+`http://localhost:3001/candidate/components/accordion-item/basic.html`.
+Compatible edits to FE-driven components under `src/components/`, especially
+their YAHTML (`.view.yaml`) files, update existing component instances without
+replacing their stores or surrounding page state. The watcher also regenerates
+edits under `vt/specs/` and `vt/templates/` and morphs the current generated
+HTML in place. Custom-element/store identity, uncontrolled form values, focus,
+selection, and page or nested scroll positions are retained. A generation
+error keeps the last valid candidate and displays the error in the browser;
+fixing the source applies the next valid update. Primitive modules under
+`src/primitives/` and their transitive style/helper modules also update through
+stable custom-element registrations. Existing primitive hosts, light DOM,
+focus, form state, and scroll positions remain in place; `rtgl-view` and
+`rtgl-grid` replace their stylesheet and overlay-scrollbar controller on the
+same host without leaving an old controller or layer behind.
+
+Primitive HMR deliberately reloads the document when a browser-captured
+custom-element contract changes: observed attributes, base-element family,
+form association, constructor-owned listeners/state, or shadow/state schema.
+Compilation or update errors keep the last working implementation so a later
+valid edit can recover. Production bundles continue to register the primitive
+classes directly and do not include the development shell behavior.
+
 ## Theme / CSS
 
 Load CSS in two steps:

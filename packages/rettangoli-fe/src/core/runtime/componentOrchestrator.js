@@ -10,14 +10,31 @@ import {
 import { buildOnPropUpdateChanges, buildOnUpdateChanges } from "./lifecycle.js";
 import { normalizeAttributeValue, toCamelCase } from "./props.js";
 
+const syncRuntimeDeps = (target, source) => {
+  Reflect.ownKeys(target).forEach((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(target, key);
+    if (descriptor?.configurable) {
+      delete target[key];
+    }
+  });
+  Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
+  return target;
+};
+
 export const createRuntimeDepsForInstance = ({ instance }) => {
-  return createComponentRuntimeDeps({
+  const nextRuntimeDeps = createComponentRuntimeDeps({
     baseDeps: instance.deps,
     refs: instance.refIds,
     dispatchEvent: instance.dispatchEvent.bind(instance),
     store: instance.store,
     render: instance.render.bind(instance),
   });
+
+  if (!instance._runtimeDeps) {
+    instance._runtimeDeps = nextRuntimeDeps;
+    return instance._runtimeDeps;
+  }
+  return syncRuntimeDeps(instance._runtimeDeps, nextRuntimeDeps);
 };
 
 export const runConnectedComponentLifecycle = ({
@@ -73,6 +90,41 @@ export const runDisconnectedComponentLifecycle = ({
     transformedHandlers: instance.transformedHandlers,
     clearTimerFn,
   });
+};
+
+export const runHotUpdatedComponentLifecycle = ({
+  instance,
+  parseAndRenderFn,
+  clearTimerFn = clearTimeout,
+  createTransformedHandlersFn = createTransformedHandlers,
+  attachGlobalRefListenersFn = attachGlobalRefListeners,
+}) => {
+  if (instance._globalListenersCleanup) {
+    instance._globalListenersCleanup();
+    instance._globalListenersCleanup = undefined;
+  }
+
+  cleanupEventRateLimitState({
+    transformedHandlers: instance.transformedHandlers,
+    clearTimerFn,
+  });
+
+  const runtimeDeps = createRuntimeDepsForInstance({ instance });
+  instance.transformedHandlers = createTransformedHandlersFn({
+    handlers: instance.handlers,
+    deps: runtimeDeps,
+    parseAndRenderFn,
+  });
+
+  instance._globalListenersCleanup = attachGlobalRefListenersFn({
+    refs: instance.refs,
+    handlers: instance.transformedHandlers,
+    parseAndRenderFn,
+    getPayloadContext: () => instance.viewData,
+  });
+
+  instance.render();
+  return runtimeDeps;
 };
 
 export const runAttributeChangedComponentLifecycle = ({
