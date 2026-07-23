@@ -12,6 +12,7 @@ import path from "node:path";
 import { parse } from "parse5";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "vite";
+import { WebSocket } from "ws";
 
 import { getContentType } from "../src/common.js";
 import {
