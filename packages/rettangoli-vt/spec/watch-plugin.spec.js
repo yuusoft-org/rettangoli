@@ -938,7 +938,9 @@ describe("VT watch Vite plugin", () => {
 
     await writeFile(specPath, "<rtgl-view id=\"subject\">Live</rtgl-view>");
     watcher.emit("change", specPath);
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await waitFor(() => server.ws.send.mock.calls.some(
+      ([message]) => message.data?.type === "reload-current",
+    ));
 
     expect(server.ws.send).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -980,7 +982,9 @@ describe("VT watch Vite plugin", () => {
       "change",
       path.join(cwd, "vt", "templates", "default.html"),
     );
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    await waitFor(() => server.ws.send.mock.calls.some(
+      ([message]) => message.data?.type === "watch-error",
+    ));
     stateListener({}, stateClient);
     expect(stateClient.send).toHaveBeenLastCalledWith(
       "rettangoli:vt-watch",
