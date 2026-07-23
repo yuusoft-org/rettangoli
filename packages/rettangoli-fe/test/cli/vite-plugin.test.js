@@ -80,6 +80,248 @@ describe("vite plugin", () => {
 
     const source = plugin.load(`\0${RETTANGOLI_FE_VIRTUAL_ENTRY_ID}`);
     expect(source).toContain("/@fs");
+    expect(source).toContain("defineOrUpdateComponent");
+    expect(source).toContain("import.meta.hot.accept(");
+  });
+
+  it("returns the virtual entry as an HMR boundary for compatible component changes", () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    const plugin = createRettangoliFeVitePlugin({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      errorPrefix: "[Watch]",
+    });
+    const virtualEntryModule = { id: `\0${RETTANGOLI_FE_VIRTUAL_ENTRY_ID}` };
+    const changedModule = { id: "counter.store.js" };
+    const server = {
+      watcher: {
+        add: vi.fn(),
+        on: vi.fn(),
+      },
+      moduleGraph: {
+        getModuleById: vi.fn(() => virtualEntryModule),
+        invalidateModule: vi.fn(),
+      },
+      ws: {
+        send: vi.fn(),
+      },
+    };
+    plugin.configureServer(server);
+
+    const timestamp = 1234;
+    const modules = plugin.handleHotUpdate({
+      file: path.join(rootDir, "components", "counter", "counter.store.js"),
+      modules: [changedModule],
+      timestamp,
+    });
+
+    expect(modules).toEqual([changedModule, virtualEntryModule]);
+    expect(server.moduleGraph.invalidateModule).toHaveBeenCalledWith(
+      virtualEntryModule,
+      expect.any(Set),
+      timestamp,
+      true,
+    );
+    expect(server.ws.send).not.toHaveBeenCalled();
+  });
+
+  it("routes schema changes through the runtime HMR compatibility gate", () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    const plugin = createRettangoliFeVitePlugin({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      errorPrefix: "[Watch]",
+    });
+    const virtualEntryModule = { id: `\0${RETTANGOLI_FE_VIRTUAL_ENTRY_ID}` };
+    const server = {
+      watcher: {
+        add: vi.fn(),
+        on: vi.fn(),
+      },
+      moduleGraph: {
+        getModuleById: vi.fn(() => virtualEntryModule),
+        invalidateModule: vi.fn(),
+      },
+      ws: {
+        send: vi.fn(),
+      },
+    };
+    plugin.configureServer(server);
+
+    const modules = plugin.handleHotUpdate({
+      file: path.join(
+        rootDir,
+        "components",
+        "counter",
+        "counter.schema.yaml",
+      ),
+      modules: [],
+      timestamp: 3456,
+    });
+
+    expect(modules).toEqual([virtualEntryModule]);
+    expect(server.ws.send).not.toHaveBeenCalled();
+  });
+
+  it("leaves imported helper changes to ordinary Vite HMR propagation", () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    const plugin = createRettangoliFeVitePlugin({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      errorPrefix: "[Watch]",
+    });
+    const server = {
+      watcher: {
+        add: vi.fn(),
+        on: vi.fn(),
+      },
+      moduleGraph: {
+        getModuleById: vi.fn(),
+        invalidateModule: vi.fn(),
+      },
+      ws: {
+        send: vi.fn(),
+      },
+    };
+    plugin.configureServer(server);
+
+    const changedModule = { id: "counter.helper.js" };
+    expect(plugin.handleHotUpdate({
+      file: path.join(rootDir, "components", "counter", "counter.helper.js"),
+      modules: [changedModule],
+      timestamp: 2345,
+    })).toBeUndefined();
+    expect(server.moduleGraph.invalidateModule).not.toHaveBeenCalled();
+    expect(server.ws.send).not.toHaveBeenCalled();
+  });
+
+  it("performs a full reload when an untracked helper is imported by setup", () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    const plugin = createRettangoliFeVitePlugin({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      errorPrefix: "[Watch]",
+    });
+    const setupModule = {
+      id: path.join(rootDir, "setup.js"),
+      importers: new Set(),
+    };
+    const helperModule = {
+      id: path.join(rootDir, "setup-helper.js"),
+      importers: new Set([setupModule]),
+    };
+    const server = {
+      watcher: {
+        add: vi.fn(),
+        on: vi.fn(),
+      },
+      moduleGraph: {
+        getModuleById: vi.fn(),
+        getModulesByFile: vi.fn(() => new Set([helperModule])),
+        invalidateModule: vi.fn(),
+      },
+      ws: {
+        send: vi.fn(),
+      },
+    };
+    plugin.configureServer(server);
+
+    expect(plugin.handleHotUpdate({
+      file: path.join(rootDir, "setup-helper.js"),
+      modules: [],
+      timestamp: 3456,
+    })).toEqual([]);
+    expect(server.moduleGraph.getModulesByFile).toHaveBeenCalledWith(
+      path.join(rootDir, "setup-helper.js"),
+    );
+    expect(server.ws.send).toHaveBeenCalledWith({ type: "full-reload" });
+  });
+
+  it("performs a full reload for setup changes", () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    const plugin = createRettangoliFeVitePlugin({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      errorPrefix: "[Watch]",
+    });
+    const virtualEntryModule = { id: `\0${RETTANGOLI_FE_VIRTUAL_ENTRY_ID}` };
+    const server = {
+      watcher: {
+        add: vi.fn(),
+        on: vi.fn(),
+      },
+      moduleGraph: {
+        getModuleById: vi.fn(() => virtualEntryModule),
+        invalidateModule: vi.fn(),
+      },
+      ws: {
+        send: vi.fn(),
+      },
+    };
+    plugin.configureServer(server);
+
+    expect(plugin.handleHotUpdate({
+      file: path.join(rootDir, "setup.js"),
+      modules: [],
+      timestamp: 4321,
+    })).toEqual([]);
+    expect(server.ws.send).toHaveBeenCalledWith({ type: "full-reload" });
+  });
+
+  it("routes i18n source changes through the virtual entry HMR boundary", () => {
+    const rootDir = createFixtureProject();
+    const i18nDir = addI18nFiles(rootDir);
+    createdDirs.push(rootDir);
+
+    const plugin = createRettangoliFeVitePlugin({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      i18n: {
+        dir: "src/i18n",
+        defaultLocale: "en",
+        fallbackLocale: "en",
+        locales: ["en", "vi"],
+      },
+      errorPrefix: "[Watch]",
+    });
+    const virtualEntryModule = { id: `\0${RETTANGOLI_FE_VIRTUAL_ENTRY_ID}` };
+    const server = {
+      watcher: {
+        add: vi.fn(),
+        on: vi.fn(),
+      },
+      moduleGraph: {
+        getModuleById: vi.fn(() => virtualEntryModule),
+        invalidateModule: vi.fn(),
+      },
+      ws: {
+        send: vi.fn(),
+      },
+    };
+    plugin.configureServer(server);
+
+    expect(plugin.handleHotUpdate({
+      file: path.join(i18nDir, "vi.yaml"),
+      modules: [],
+      timestamp: 4321,
+    })).toEqual([virtualEntryModule]);
+    expect(server.ws.send).not.toHaveBeenCalled();
   });
 
   it("registers component, setup, and i18n sources with the Vite watcher", () => {

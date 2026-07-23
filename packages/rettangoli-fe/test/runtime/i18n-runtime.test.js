@@ -183,4 +183,87 @@ describe("i18n runtime", () => {
     expect(runtime.current()).toBe("vi");
     expect(runtime.getMessages().common.saveButton).toBe("Luu");
   });
+
+  it("replaces dev catalogs atomically without replacing runtime state", async () => {
+    const listener = vi.fn();
+    const runtime = createI18nRuntime({
+      defaultLocale: "en",
+      fallbackLocale: "en",
+      locales: ["en", "vi"],
+      initialCatalogs: {
+        en: { common: { saveButton: "Save" } },
+        vi: { common: { saveButton: "Luu" } },
+      },
+    });
+    const runtimeIdentity = runtime;
+    const localeServiceIdentity = runtime.locale;
+    runtime.subscribe(listener);
+    await runtime.set("vi");
+    listener.mockClear();
+
+    const messages = runtime.replaceCatalogs({
+      en: { common: { saveButton: "Save now" } },
+      vi: { common: { saveButton: "Luu ngay" } },
+    });
+
+    expect(runtime).toBe(runtimeIdentity);
+    expect(runtime.locale).toBe(localeServiceIdentity);
+    expect(runtime.current()).toBe("vi");
+    expect(messages.common.saveButton).toBe("Luu ngay");
+    expect(runtime.getMessages()).toBe(messages);
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith("vi");
+    expect(runtime.locale.replaceCatalogs).toBe(runtime.replaceCatalogs);
+
+    expect(() =>
+      runtime.replaceCatalogs({
+        en: { common: { saveButton: "Must not commit" } },
+        unknown: { common: { saveButton: "Unknown" } },
+      }),
+    ).toThrow('Unknown locale "unknown"');
+    expect(runtime.getMessages().common.saveButton).toBe("Luu ngay");
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not let an older lazy request overwrite or activate hot catalogs", async () => {
+    let resolveFetch;
+    const listener = vi.fn();
+    const fetchFn = vi.fn(
+      () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        }),
+    );
+    const runtime = createI18nRuntime({
+      defaultLocale: "en",
+      fallbackLocale: "en",
+      locales: ["en", "vi"],
+      urls: { vi: "/i18n/vi.json" },
+      initialCatalogs: {
+        en: { common: { saveButton: "Save" } },
+      },
+      fetchFn,
+    });
+    runtime.subscribe(listener);
+
+    const pendingLocaleChange = runtime.set("vi");
+    runtime.replaceCatalogs({
+      en: { common: { saveButton: "Save hot" } },
+      vi: { common: { saveButton: "Luu hot" } },
+    });
+    resolveFetch({
+      ok: true,
+      json: async () => ({ common: { saveButton: "Stale response" } }),
+    });
+    await pendingLocaleChange;
+
+    expect(runtime.current()).toBe("en");
+    expect(runtime.getMessages().common.saveButton).toBe("Save hot");
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    await runtime.set("vi");
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(runtime.current()).toBe("vi");
+    expect(runtime.getMessages().common.saveButton).toBe("Luu hot");
+  });
 });

@@ -124,6 +124,7 @@ class RettangoliTextAreaElement extends HTMLElement {
 
   connectedCallback() {
     this._updateTextareaAttributes();
+    this.updateStyles();
   }
 
   // Public methods to proxy focus and select to internal textarea
@@ -172,6 +173,10 @@ class RettangoliTextAreaElement extends HTMLElement {
       return;
     }
 
+    this.updateStyles();
+  }
+
+  updateStyles() {
     // Reset styles for fresh calculation
     this._styles = {
       default: {},

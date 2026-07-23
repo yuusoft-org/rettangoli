@@ -21,6 +21,7 @@ let build;
 let check;
 let scaffold;
 let watch;
+let resolveFeServeContext;
 let examples;
 let checkContracts;
 let generate;
@@ -47,7 +48,14 @@ let watchBe;
 let loadBeRuntimeConfig;
 
 if (requestedCommand === "fe") {
-  ({ build, check, scaffold, watch, examples } = await import(
+  ({
+    build,
+    check,
+    scaffold,
+    watch,
+    resolveServeContext: resolveFeServeContext,
+    examples,
+  } = await import(
     "@rettangoli/fe/cli",
   ));
 } else if (requestedCommand === "check") {
@@ -379,6 +387,10 @@ feCommand
     "--public-dir <path>",
     "Directory to serve as untransformed static assets",
   )
+  .option(
+    "--watch-entry <path>",
+    "Project module served at the configured outfile URL in watch mode",
+  )
   .addHelpText(
     "after",
     `
@@ -390,6 +402,7 @@ Examples:
   $ rettangoli fe watch -s src/setup.tauri.js
   $ rettangoli fe watch --setup-path src/setup.web.js
   $ rettangoli fe watch --public-dir static
+  $ rettangoli fe watch --watch-entry src/watch.js
 `,
   )
   .action(async (options) => {
@@ -423,6 +436,33 @@ Examples:
     }
     if (options.publicDir === undefined && config.fe.publicDir !== undefined) {
       options.publicDir = config.fe.publicDir;
+    }
+    if (options.watchEntry === undefined && config.fe.watchEntry !== undefined) {
+      options.watchEntry = config.fe.watchEntry;
+    }
+    if (config.fe.watchVt === true) {
+      const [
+        { createRettangoliVtWatchPlugin },
+        { createViteWatchClientModuleSource },
+      ] = await Promise.all([
+        import("@rettangoli/vt/cli"),
+        import("@rettangoli/sites/watch-client"),
+      ]);
+
+      // Generated VT HTML is served by the VT plugin so Vite never observes it
+      // as public HTML and cannot turn an in-place morph into a full reload.
+      options.publicDir = false;
+      options.vitePlugins = [
+        ...(options.vitePlugins || []),
+        createRettangoliVtWatchPlugin({
+          cwd: process.cwd(),
+          publicEntryPath: resolveFeServeContext({
+            cwd: process.cwd(),
+            outfile: options.outfile,
+          }).publicEntryPath,
+          createWatchClientModuleSource: createViteWatchClientModuleSource,
+        }),
+      ];
     }
 
     await watch(options);
@@ -903,7 +943,7 @@ sitesCommand
   .option("--rootDir <path>", "Deprecated alias for --root-dir")
   .option("-o, --output-path <path>", "Path to destination directory", "./_site")
   .option("--outputPath <path>", "Deprecated alias for --output-path")
-  .option("--reload-mode <mode>", "Reload mode: body (hot body replacement) or full (full-page reload)", "body")
+  .option("--reload-mode <mode>", "Reload mode: body (state-preserving DOM morph) or full (full-page reload)", "body")
   .option("-q, --quiet", "Suppress non-error logs")
   .action(async (options) => {
     await watchSite({

@@ -121,9 +121,13 @@ Behavior:
 - builds initially
 - serves `_site` via HTTP + WebSocket
 - injects client reload script into HTML responses
-- supports reload modes: `body` (default body replacement) or `full` (full page refresh)
+- supports reload modes: `body` (default keyed DOM morph with UI-state restoration) or `full` (full page refresh)
 - watches `data`, `templates`, `partials`, `pages`, and `static`
 - rebuilds and broadcasts reload events on changes
+- live-replaces same-origin top-level stylesheets for CSS edits (including
+  imports owned by those stylesheets); images, icons, fonts, executable assets,
+  static removals, inline imports, and untraceable CSS dependencies use a
+  no-cache full reload
 
 ## Screenshots With VT
 
@@ -183,4 +187,7 @@ url: /
 ## Current Gaps
 
 1. Heading anchor options are configurable but remain global-only (no per-page overrides).
-2. No CSS/DOM preservation strategy exists for stateful client widgets during body replacement mode (users must use `--reload-mode full` when needed).
+2. Body-mode HTML updates preserve stable custom-element/DOM identity and common
+   interaction state. Executable script changes and static assets other than
+   traceable stylesheets deliberately use a full reload; arbitrary JavaScript
+   module state is outside the Sites morph boundary.

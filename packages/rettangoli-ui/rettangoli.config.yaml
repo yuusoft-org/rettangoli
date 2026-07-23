@@ -11,6 +11,8 @@ fe:
   dirs: ["src/components"] # directories that contain components
   setup: "src/setup.js" # path to setup.js file
   outfile: "vt/static/public/main.js" # output this is separate from rettangoli file
+  watchVt: true # regenerate and state-preservingly morph VT specs/templates
+  watchEntry: "src/entry-watch.js" # primitives plus the FE virtual HMR entry
   #  watchPort: 3001
 
 # all sites configuration

@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/vt",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "Rettangoli Visual Testing",
   "type": "module",
   "repository": {
@@ -23,6 +23,7 @@
     "commander": "^13.1.0",
     "js-yaml": "^4.1.0",
     "liquidjs": "^10.21.0",
+    "parse5": "^7.3.0",
     "pixelmatch": "^7.1.0",
     "playwright": "1.57.0",
     "sharp": "^0.34.5",
@@ -30,6 +31,8 @@
   },
   "devDependencies": {
     "puty": "^0.1.1",
-    "vitest": "^4.0.15"
+    "vite": "^8.1.4",
+    "vitest": "^4.0.15",
+    "ws": "^8.18.0"
   }
 }

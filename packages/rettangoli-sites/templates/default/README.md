@@ -13,7 +13,14 @@ bunx rtgl sites watch --reload-mode full
 bunx rtgl sites build --root-dir . --output-path dist
 ```
 
-`--reload-mode body` (default) does body replacement; `--reload-mode full` does full page refresh.
+`--reload-mode body` (default) applies state-preserving keyed DOM updates;
+`--reload-mode full` does a full page refresh. Use `data-rtgl-key`, `data-key`, or
+`id` for stable identity when elements move, and `data-rtgl-preserve` for DOM
+subtrees owned entirely by client-side code. The same marker protects
+client-created `<head>` styles, metadata, and links when it is present before
+the watch client initializes. Stylesheet edits refresh in place when the watcher
+can reach a same-origin stylesheet link. Images, icons, fonts, other static
+assets, removals, and executable script changes use a no-cache full reload.
 Preferred CLI flags are `--root-dir` and `--output-path` (`--rootDir`/`--outputPath` are legacy aliases).
 
 ## Project Structure

@@ -22,7 +22,9 @@ import anchorStyles from "../styles/anchorStyles.js";
 import {
   OverlayScrollbarController,
   overlayScrollbarStyles,
+  prepareOverlayScrollbarControllerHotUpdate,
 } from "../common/overlayScrollbar.js";
+import { HOT_PRIMITIVE_PREPARE } from "../hotPrimitiveContract.js";
 
 const normalizeRawCssValue = (value) => {
   if (value === undefined || value === null) {
@@ -36,6 +38,16 @@ const normalizeRawCssValue = (value) => {
 // Internal implementation without uhtml
 class RettangoliViewElement extends HTMLElement {
   static styleSheet = null;
+
+  static [HOT_PRIMITIVE_PREPARE]({ instance }) {
+    return prepareOverlayScrollbarControllerHotUpdate({
+      Controller: OverlayScrollbarController,
+      instance,
+      refreshInstance: () => {
+        instance.updateStyles();
+      },
+    });
+  }
 
   static initializeStyleSheet() {
     if (!RettangoliViewElement.styleSheet) {

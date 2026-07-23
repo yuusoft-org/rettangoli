@@ -29,6 +29,19 @@ const normalizePublicEntryPath = (value) => {
   return normalized.startsWith("/") ? normalized : `/${normalized}`;
 };
 
+const resolveModuleFilePath = (module) => {
+  const value = module?.file || module?.id;
+  if (typeof value !== "string" || value.startsWith("\0")) {
+    return null;
+  }
+
+  const cleanValue = value.split(/[?#]/, 1)[0];
+  const filePath = cleanValue.startsWith("/@fs/")
+    ? cleanValue.slice("/@fs".length)
+    : cleanValue;
+  return path.isAbsolute(filePath) ? path.resolve(filePath) : null;
+};
+
 const getI18nWatchPaths = ({ i18nContext }) => {
   if (!i18nContext?.enabled) {
     return [];
@@ -47,6 +60,7 @@ export const createRettangoliFeVitePlugin = ({
   i18n = null,
   errorPrefix = "[Build]",
   publicEntryPath = null,
+  servedEntryId = RETTANGOLI_FE_VIRTUAL_ENTRY_ID,
 } = {}) => {
   const resolvedDirs = dirs.map((directory) => path.resolve(cwd, directory));
   const resolvedSetup = path.resolve(cwd, setup);
@@ -93,24 +107,63 @@ export const createRettangoliFeVitePlugin = ({
     );
   };
 
-  const invalidateVirtualEntry = () => {
+  const invalidateVirtualEntry = ({ timestamp } = {}) => {
     if (!devServer) {
-      return;
+      return null;
     }
     const module = devServer.moduleGraph.getModuleById(
       RESOLVED_VIRTUAL_ENTRY_ID,
     );
     if (module) {
-      devServer.moduleGraph.invalidateModule(module);
+      devServer.moduleGraph.invalidateModule(
+        module,
+        new Set(),
+        timestamp,
+        true,
+      );
     }
+    return module || null;
   };
 
-  const triggerFullReload = () => {
+  const triggerFullReload = ({ timestamp } = {}) => {
     if (!devServer) {
       return;
     }
-    invalidateVirtualEntry();
+    invalidateVirtualEntry({ timestamp });
     devServer.ws.send({ type: "full-reload" });
+  };
+
+  const requiresFullReload = (filePath) => {
+    const resolvedFilePath = path.resolve(filePath);
+    return resolvedFilePath === resolvedSetup;
+  };
+
+  const reachesSetupModule = (context) => {
+    const pending = [...(context.modules || [])];
+    const graphModules = devServer?.moduleGraph?.getModulesByFile?.(
+      path.resolve(context.file),
+    );
+    if (graphModules) {
+      pending.push(...graphModules);
+    }
+
+    const visited = new Set();
+    while (pending.length > 0) {
+      const module = pending.pop();
+      if (!module || visited.has(module)) {
+        continue;
+      }
+      visited.add(module);
+
+      if (resolveModuleFilePath(module) === resolvedSetup) {
+        return true;
+      }
+      if (module.importers && typeof module.importers[Symbol.iterator] === "function") {
+        pending.push(...module.importers);
+      }
+    }
+
+    return false;
   };
 
   return {
@@ -214,14 +267,14 @@ export const createRettangoliFeVitePlugin = ({
 
           try {
             const transformed = await server.transformRequest(
-              RETTANGOLI_FE_VIRTUAL_ENTRY_ID,
+              servedEntryId,
             );
 
             if (!transformed) {
               res.statusCode = 500;
               res.setHeader("Content-Type", "text/plain; charset=utf-8");
               res.end(
-                `Failed to transform ${RETTANGOLI_FE_VIRTUAL_ENTRY_ID}.`,
+                `Failed to transform ${servedEntryId}.`,
               );
               return;
             }
@@ -239,11 +292,22 @@ export const createRettangoliFeVitePlugin = ({
       }
     },
     handleHotUpdate(context) {
+      if (requiresFullReload(context.file) || reachesSetupModule(context)) {
+        triggerFullReload({ timestamp: context.timestamp });
+        return [];
+      }
+
       if (!isTrackedFilePath(context.file)) {
         return;
       }
-      triggerFullReload();
-      return [];
+
+      const virtualEntryModule = invalidateVirtualEntry({
+        timestamp: context.timestamp,
+      });
+      return [
+        ...(context.modules || []),
+        ...(virtualEntryModule ? [virtualEntryModule] : []),
+      ].filter((module, index, modules) => modules.indexOf(module) === index);
     },
   };
 };

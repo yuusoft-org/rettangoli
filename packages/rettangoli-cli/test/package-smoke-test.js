@@ -68,6 +68,7 @@ function packPackage(directory) {
 try {
   const packageDirectories = [
     "rettangoli-fe",
+    "rettangoli-sites",
     "rettangoli-ui",
     "rettangoli-check",
     "rettangoli-vt",
@@ -122,6 +123,7 @@ try {
   for (const dependencyName of [
     "@rettangoli/check",
     "@rettangoli/fe",
+    "@rettangoli/sites",
     "@rettangoli/ui",
     "@rettangoli/vt",
   ]) {
@@ -156,6 +158,21 @@ try {
       `${command} should load its packaged dependency and print help`,
     );
   }
+
+  run(
+    process.execPath,
+    [
+      "--input-type=module",
+      "--eval",
+      `
+        const watchClient = await import("@rettangoli/sites/watch-client");
+        if (typeof watchClient.createViteWatchClientModuleSource !== "function") {
+          throw new Error("@rettangoli/sites/watch-client export is missing");
+        }
+      `,
+    ],
+    { cwd: temporaryDirectory },
+  );
 
   const componentDirectory = join(
     temporaryDirectory,
