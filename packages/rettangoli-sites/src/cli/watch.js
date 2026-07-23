@@ -8,7 +8,7 @@ import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 import { createWatchClientScript } from './watchClient.js';
 
 const RELOAD_MODES = new Set(['body', 'full']);
-const LIVE_ASSET_PATTERN = /\.(?:avif|bmp|css|gif|ico|jpe?g|png|svg|webp)$/i;
+const LIVE_ASSET_PATTERN = /\.css$/i;
 
 function normalizePort(port) {
   const normalizedPort = Number(port);
@@ -38,8 +38,11 @@ export function classifyWatchChanges(changes = []) {
   const hasUnsupportedStaticAssetChange = normalizedChanges.some((change) => {
     if (change.scope !== 'static') return false;
     const relativePath = change.relativePath || '';
-    return !/\.html?$/i.test(relativePath) &&
-      !LIVE_ASSET_PATTERN.test(relativePath);
+    return change.removed === true ||
+      (
+        !/\.html?$/i.test(relativePath) &&
+        !LIVE_ASSET_PATTERN.test(relativePath)
+      );
   });
   if (hasUnsupportedStaticAssetChange) {
     return { updateKind: 'full', paths: [] };
@@ -66,23 +69,56 @@ export function classifyWatchChanges(changes = []) {
   };
 }
 
+export function finalizeWatchChanges(changes = []) {
+  return Array.from(changes, (change) =>
+    change.scope === 'static' && change.sourcePath
+      ? {
+          ...change,
+          removed: !existsSync(change.sourcePath),
+        }
+      : change,
+  );
+}
+
 export function getContentType(ext) {
   const types = {
     '.html': 'text/html; charset=utf-8',
     '.css': 'text/css; charset=utf-8',
     '.js': 'application/javascript; charset=utf-8',
+    '.cjs': 'application/javascript; charset=utf-8',
+    '.mjs': 'application/javascript; charset=utf-8',
+    '.wasm': 'application/wasm',
     '.json': 'application/json; charset=utf-8',
+    '.map': 'application/json; charset=utf-8',
+    '.webmanifest': 'application/manifest+json',
     '.txt': 'text/plain; charset=utf-8',
     '.md': 'text/plain; charset=utf-8',
+    '.avif': 'image/avif',
+    '.bmp': 'image/bmp',
     '.png': 'image/png',
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
     '.gif': 'image/gif',
     '.svg': 'image/svg+xml',
     '.ico': 'image/x-icon',
-    '.webp': 'image/webp'
+    '.webp': 'image/webp',
+    '.otf': 'font/otf',
+    '.ttf': 'font/ttf',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
   };
   return types[ext] || 'application/octet-stream';
+}
+
+export function getWatchResponseHeaders(ext) {
+  const headers = {
+    'Cache-Control': 'no-store',
+    'Content-Type': getContentType(ext),
+  };
+  if (ext === '.md' || ext === '.txt') {
+    headers['Content-Disposition'] = 'inline';
+  }
+  return headers;
 }
 
 function createLogger(quiet = false) {
@@ -210,7 +246,6 @@ class DevServer {
 
   serveFile(filePath, res) {
     const ext = path.extname(filePath);
-    const contentType = getContentType(ext);
 
     try {
       let content = fs.readFileSync(filePath);
@@ -233,10 +268,7 @@ class DevServer {
         }
       }
 
-      const headers = { 'Content-Type': contentType };
-      if (ext === '.md' || ext === '.txt') {
-        headers['Content-Disposition'] = 'inline';
-      }
+      const headers = getWatchResponseHeaders(ext);
       res.writeHead(200, headers);
       res.end(content);
     } catch (err) {
@@ -300,6 +332,7 @@ const setupWatcher = (directory, options, scheduleChange, logger) => {
           scope: options.scope,
           relativePath,
           publicPath: options.scope === 'static' ? `/${relativePath}` : null,
+          sourcePath: changedPath,
         });
       }
     },
@@ -346,7 +379,8 @@ const createRebuildScheduler = ({ rootDir, outputPath, server, logger }) => {
         try {
           await buildSite({ rootDir, outputPath, quiet: true });
           logger.log('Rebuild complete');
-          server.reloadAll(classifyWatchChanges(changes));
+          const finalizedChanges = finalizeWatchChanges(changes);
+          server.reloadAll(classifyWatchChanges(finalizedChanges));
         } catch (error) {
           logger.error('Error during rebuild:', error);
         }

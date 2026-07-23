@@ -9,6 +9,7 @@ function runWatchClient({
   const KEY_ATTRIBUTES = ['data-rtgl-key', 'data-key', 'id'];
   const ASSET_CACHE_KEY = '__rtgl_watch_asset';
   const HTML_CACHE_KEY = '__rtgl_watch';
+  const PENDING_LINK_REFRESH_ATTRIBUTE = 'data-rtgl-watch-asset-pending';
 
   const requestFullReload = (reason) => {
     const event = new CustomEvent('rettangoli:watch-full-reload', {
@@ -478,10 +479,21 @@ function runWatchClient({
         return false;
       }
 
-      syncHead(nextDocument);
+      const interruptedRefreshes = syncHead(nextDocument);
       morphBody(nextDocument.body);
-      if (assetPaths.length > 0 || refreshAllAssets) {
-        refreshAssets(assetPaths, { refreshAll: refreshAllAssets });
+      const interruptedAssetPaths = interruptedRefreshes
+        .filter(({ link, path }) =>
+          link.isConnected && normalizeAssetPath(link.href) === path,
+        )
+        .map(({ path }) => path);
+      const pathsToRefresh = [
+        ...new Set([
+          ...assetPaths,
+          ...interruptedAssetPaths,
+        ]),
+      ];
+      if (pathsToRefresh.length > 0 || refreshAllAssets) {
+        refreshAssets(pathsToRefresh, { refreshAll: refreshAllAssets });
       }
       window.dispatchEvent(new CustomEvent('rettangoli:watch-html-update'));
       needsHtmlSync = false;
@@ -538,11 +550,56 @@ function runWatchClient({
       type.endsWith('/javascript');
   };
 
-  const collectScripts = (root) => {
-    const scripts = Array.from(root.querySelectorAll('script'));
-    for (const template of root.querySelectorAll('template')) {
-      scripts.push(...collectScripts(template.content));
-    }
+  const collectScripts = (root, parentPath = []) => {
+    const scripts = [];
+    const childElements = Array.from(root.children || [])
+      .filter((element) => !isWatchClientNode(element));
+    const unkeyedSiblingOrdinals = new Map();
+    let executableScriptOrdinal = 0;
+
+    const childDescriptors = childElements.map((element) => {
+      const namespace = element.namespaceURI || '';
+      const siblingKind = `${namespace}:${element.localName}`;
+      const key = getNodeKey(element);
+      const unkeyedOrdinal = unkeyedSiblingOrdinals.get(siblingKind) || 0;
+      if (!key) {
+        unkeyedSiblingOrdinals.set(siblingKind, unkeyedOrdinal + 1);
+      }
+      return [
+        namespace,
+        element.localName,
+        key,
+        key ? null : unkeyedOrdinal,
+      ];
+    });
+
+    childElements.forEach((element, index) => {
+      const path = [...parentPath, childDescriptors[index]];
+
+      if (element.localName === 'script' && isExecutableScript(element)) {
+        scripts.push({
+          path: [
+            ...parentPath,
+            [
+              '#executable-script',
+              executableScriptOrdinal,
+              '#previous-element',
+              childDescriptors[index - 1] || null,
+              '#next-element',
+              childDescriptors[index + 1] || null,
+            ],
+          ],
+          script: element,
+        });
+        executableScriptOrdinal += 1;
+      }
+      if (element.localName === 'template') {
+        scripts.push(...collectScripts(element.content, [...path, '#content']));
+      } else if (element.localName !== 'script') {
+        scripts.push(...collectScripts(element, path));
+      }
+    });
+
     return scripts;
   };
 
@@ -590,15 +647,15 @@ function runWatchClient({
   };
 
   const scriptSignature = (root) => {
-    const scripts = collectScripts(root)
-      .filter((script) => !isWatchClientNode(script) && isExecutableScript(script));
+    const scripts = collectScripts(root);
     if (scripts.length === 0) return '';
     const sourceDocument = root.nodeType === 9 ? root : root.ownerDocument;
     return JSON.stringify({
       baseUrl: getDocumentBaseUrl(sourceDocument),
-      scripts: scripts.map((script) => ({
+      scripts: scripts.map(({ path, script }) => ({
         attributes: getScriptAttributes(script),
         effectiveSrc: getEffectiveScriptSrc(script),
+        path,
         text: script.textContent,
       })),
     });
@@ -613,6 +670,19 @@ function runWatchClient({
       !(element.localName === 'script' && isExecutableScript(element)),
     ),
   );
+  const pendingLinkRefreshes = new Map();
+  let assetRefreshSequence = 0;
+
+  const cancelPendingLinkRefreshes = () => {
+    const interruptedRefreshes = [];
+    for (const [link, { replacement }] of pendingLinkRefreshes) {
+      const path = normalizeAssetPath(link.href);
+      if (path) interruptedRefreshes.push({ link, path });
+      replacement.remove();
+    }
+    pendingLinkRefreshes.clear();
+    return interruptedRefreshes;
+  };
 
   const getHeadKey = (element) => {
     const explicitKey = getNodeKey(element);
@@ -630,6 +700,7 @@ function runWatchClient({
   };
 
   const syncHead = (nextDocument) => {
+    const interruptedRefreshes = cancelPendingLinkRefreshes();
     const nextHeadElements = Array.from(nextDocument.head.children).filter((element) =>
       element.localName !== 'title' &&
       !isInPreservedSubtree(element) &&
@@ -673,11 +744,15 @@ function runWatchClient({
     for (const element of unusedCurrent) element.remove();
     managedHeadElements = nextManaged;
     if (nextDocument.title !== document.title) document.title = nextDocument.title;
+    return interruptedRefreshes;
   };
 
   const refreshAssets = (rawPaths, { refreshAll = false } = {}) => {
     const paths = new Set(
       (rawPaths || []).map(normalizeAssetPath).filter(Boolean),
+    );
+    const hasStylesheetChange = [...paths].some((assetPath) =>
+      /\.css$/i.test(new URL(assetPath).pathname),
     );
     const shouldRefresh = (value) => {
       if (!isSameOriginAsset(value)) return false;
@@ -685,30 +760,81 @@ function runWatchClient({
     };
     const cacheBust = (value) => {
       const url = new URL(value, window.location.href);
-      url.searchParams.set(ASSET_CACHE_KEY, String(Date.now()));
+      url.searchParams.set(
+        ASSET_CACHE_KEY,
+        `${Date.now()}-${++assetRefreshSequence}`,
+      );
       return url.href;
     };
 
-    for (const link of document.querySelectorAll(
+    const refreshableLinks = Array.from(document.querySelectorAll(
       'link[rel~="stylesheet"][href], link[rel~="icon"][href]',
-    )) {
-      if (isInPreservedSubtree(link)) continue;
-      if (!shouldRefresh(link.href)) continue;
+    )).filter((link) =>
+      !isInPreservedSubtree(link) &&
+      !link.hasAttribute(PENDING_LINK_REFRESH_ATTRIBUTE),
+    );
+    const refreshableStylesheets = refreshableLinks.filter((link) =>
+      link.relList.contains('stylesheet') && isSameOriginAsset(link.href),
+    );
+    const hasInlineStylesheetImport = Array.from(
+      document.querySelectorAll('style'),
+    ).some((style) =>
+      !isInPreservedSubtree(style) && /@import\b/i.test(style.textContent),
+    );
+    if (
+      (
+        hasStylesheetChange &&
+        refreshableStylesheets.length === 0
+      ) ||
+      (
+        (hasStylesheetChange || refreshAll) &&
+        hasInlineStylesheetImport
+      )
+    ) {
+      requestFullReload('stylesheet-unreachable');
+      return false;
+    }
+
+    for (const link of refreshableLinks) {
+      const refreshForStylesheetDependency =
+        hasStylesheetChange &&
+        link.relList.contains('stylesheet') &&
+        isSameOriginAsset(link.href);
+      if (!refreshForStylesheetDependency && !shouldRefresh(link.href)) continue;
+
+      const previousRefresh = pendingLinkRefreshes.get(link);
+      if (previousRefresh) {
+        pendingLinkRefreshes.delete(link);
+        previousRefresh.replacement.remove();
+      }
+
       const replacement = link.cloneNode(true);
+      replacement.setAttribute(PENDING_LINK_REFRESH_ATTRIBUTE, '');
       replacement.href = cacheBust(link.href);
-      replacement.addEventListener('load', () => link.remove(), { once: true });
-      replacement.addEventListener('error', () => {
-        replacement.remove();
-        if (managedHeadElements.has(replacement)) {
-          managedHeadElements.delete(replacement);
-          managedHeadElements.add(link);
+      const refresh = { replacement };
+      pendingLinkRefreshes.set(link, refresh);
+      replacement.addEventListener('load', () => {
+        if (pendingLinkRefreshes.get(link) !== refresh) {
+          replacement.remove();
+          return;
         }
+        pendingLinkRefreshes.delete(link);
+        replacement.removeAttribute(PENDING_LINK_REFRESH_ATTRIBUTE);
+        if (managedHeadElements.has(link)) {
+          managedHeadElements.delete(link);
+          managedHeadElements.add(replacement);
+        }
+        link.remove();
+      }, { once: true });
+      replacement.addEventListener('error', () => {
+        if (pendingLinkRefreshes.get(link) !== refresh) {
+          replacement.remove();
+          return;
+        }
+        pendingLinkRefreshes.delete(link);
+        replacement.remove();
       }, { once: true });
       link.after(replacement);
-      if (managedHeadElements.has(link)) {
-        managedHeadElements.delete(link);
-        managedHeadElements.add(replacement);
-      }
     }
 
     const assetAttributes = [
@@ -750,6 +876,7 @@ function runWatchClient({
     window.dispatchEvent(new CustomEvent('rettangoli:watch-asset-update', {
       detail: { paths: [...(rawPaths || [])], refreshAll },
     }));
+    return true;
   };
 
   const normalizeRevision = (value) =>

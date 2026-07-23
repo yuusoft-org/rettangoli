@@ -171,6 +171,219 @@ describe("hot primitive registry", () => {
     expect(calls).toEqual(["connect-v1", "disconnect-v1", "connect-v2"]);
   });
 
+  it("refreshes styles on connected instances after forwarding new methods", () => {
+    const { customElementsRegistry, registry } = createRegistry();
+
+    class StyledElementV1 extends FakeHTMLElement {
+      constructor() {
+        super();
+        this._controlElement = {
+          focused: false,
+          selectionEnd: 0,
+          selectionStart: 0,
+          value: "initial",
+        };
+        this._lastStyleString = "";
+        this._styleElement = { textContent: "" };
+        this._styles = {};
+      }
+
+      updateStyles() {
+        this._styles = { version: "v1" };
+        this._lastStyleString = "v1";
+        this._styleElement.textContent = "color: red";
+      }
+    }
+
+    expectUpdated(registry.defineOrUpdate({
+      definitions: [
+        { elementClass: StyledElementV1, tagName: "rtgl-styled" },
+      ],
+    }));
+    const instance = new (customElementsRegistry.get("rtgl-styled"))();
+    instance.isConnected = true;
+    instance.updateStyles();
+    const controlElement = instance._controlElement;
+    Object.assign(controlElement, {
+      focused: true,
+      selectionEnd: 12,
+      selectionStart: 3,
+      value: "unsaved draft",
+    });
+
+    class StyledElementV2 extends FakeHTMLElement {
+      constructor() {
+        super();
+        this._controlElement = {
+          focused: false,
+          selectionEnd: 0,
+          selectionStart: 0,
+          value: "initial",
+        };
+        this._lastStyleString = "";
+        this._styleElement = { textContent: "" };
+        this._styles = {};
+      }
+
+      updateStyles() {
+        this._styles = { version: "v2" };
+        this._lastStyleString = "v2";
+        this._styleElement.textContent = "color: blue";
+      }
+    }
+
+    expectUpdated(registry.defineOrUpdate({
+      definitions: [
+        { elementClass: StyledElementV2, tagName: "rtgl-styled" },
+      ],
+    }));
+
+    expect(instance._styles).toEqual({ version: "v2" });
+    expect(instance._lastStyleString).toBe("v2");
+    expect(instance._styleElement.textContent).toBe("color: blue");
+    expect(instance._controlElement).toBe(controlElement);
+    expect(instance._controlElement).toEqual({
+      focused: true,
+      selectionEnd: 12,
+      selectionStart: 3,
+      value: "unsaved draft",
+    });
+  });
+
+  it("defers refresh while disconnected and uses new styles on reconnect", () => {
+    const { customElementsRegistry, registry } = createRegistry();
+
+    class StyledElementV1 extends FakeHTMLElement {
+      constructor() {
+        super();
+        this._lastStyleString = "";
+        this._styleElement = { textContent: "" };
+        this._styles = {};
+      }
+
+      connectedCallback() {
+        this.updateStyles();
+      }
+
+      updateStyles() {
+        this._lastStyleString = "v1";
+        this._styleElement.textContent = "color: red";
+      }
+    }
+
+    expectUpdated(registry.defineOrUpdate({
+      definitions: [
+        { elementClass: StyledElementV1, tagName: "rtgl-disconnected-style" },
+      ],
+    }));
+    const instance = new (
+      customElementsRegistry.get("rtgl-disconnected-style")
+    )();
+    instance.updateStyles();
+
+    class StyledElementV2 extends FakeHTMLElement {
+      constructor() {
+        super();
+        this._lastStyleString = "";
+        this._styleElement = { textContent: "" };
+        this._styles = {};
+      }
+
+      connectedCallback() {
+        this.updateStyles();
+      }
+
+      updateStyles() {
+        this._lastStyleString = "v2";
+        this._styleElement.textContent = "color: blue";
+      }
+    }
+
+    expectUpdated(registry.defineOrUpdate({
+      definitions: [
+        { elementClass: StyledElementV2, tagName: "rtgl-disconnected-style" },
+      ],
+    }));
+    expect(instance._lastStyleString).toBe("v1");
+    expect(instance._styleElement.textContent).toBe("color: red");
+
+    instance.isConnected = true;
+    instance.connectedCallback();
+    expect(instance._lastStyleString).toBe("v2");
+    expect(instance._styleElement.textContent).toBe("color: blue");
+  });
+
+  it("rolls back an automatic style refresh when a later migration fails", () => {
+    const { customElementsRegistry, registry } = createRegistry();
+
+    class StyledElementV1 extends FakeHTMLElement {
+      constructor() {
+        super();
+        this._lastStyleString = "";
+        this._styleElement = { textContent: "" };
+        this._styles = {};
+      }
+
+      updateStyles() {
+        this._styles = { version: "v1" };
+        this._lastStyleString = "v1";
+        this._styleElement.textContent = "color: red";
+      }
+    }
+    class LaterElementV1 extends FakeHTMLElement {}
+
+    expectUpdated(registry.defineOrUpdate({
+      definitions: [
+        { elementClass: StyledElementV1, tagName: "rtgl-style-rollback" },
+        { elementClass: LaterElementV1, tagName: "rtgl-later-rollback" },
+      ],
+    }));
+    const instance = new (
+      customElementsRegistry.get("rtgl-style-rollback")
+    )();
+    new (customElementsRegistry.get("rtgl-later-rollback"))();
+    instance.isConnected = true;
+    instance.updateStyles();
+    const previousStyles = instance._styles;
+
+    class StyledElementV2 extends FakeHTMLElement {
+      constructor() {
+        super();
+        this._lastStyleString = "";
+        this._styleElement = { textContent: "" };
+        this._styles = {};
+      }
+
+      updateStyles() {
+        this._styles = { version: "v2" };
+        this._lastStyleString = "v2";
+        this._styleElement.textContent = "color: blue";
+      }
+    }
+    class LaterElementV2 extends FakeHTMLElement {
+      static [HOT_PRIMITIVE_PREPARE]() {
+        return {
+          commit() {
+            throw new Error("broken later migration");
+          },
+        };
+      }
+    }
+
+    expect(registry.defineOrUpdate({
+      definitions: [
+        { elementClass: StyledElementV2, tagName: "rtgl-style-rollback" },
+        { elementClass: LaterElementV2, tagName: "rtgl-later-rollback" },
+      ],
+    })).toMatchObject({ status: "error" });
+
+    expect(instance._styles).toBe(previousStyles);
+    expect(instance._lastStyleString).toBe("v1");
+    expect(instance._styleElement.textContent).toBe("color: red");
+    expect(instance.updateStyles()).toBeUndefined();
+    expect(instance._lastStyleString).toBe("v1");
+  });
+
   it("forwards static APIs and preserves explicitly migrated static state", () => {
     const { customElementsRegistry, registry } = createRegistry();
 

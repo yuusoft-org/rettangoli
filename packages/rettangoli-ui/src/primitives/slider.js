@@ -166,6 +166,10 @@ class RettangoliSliderElement extends HTMLElement {
       return;
     }
 
+    this.updateStyles();
+  }
+
+  updateStyles() {
     // Reset styles for fresh calculation
     this._styles = {
       default: {},
@@ -271,6 +275,7 @@ class RettangoliSliderElement extends HTMLElement {
 
   connectedCallback() {
     this._updateInputAttributes();
+    this.updateStyles();
   }
 }
 

@@ -49,7 +49,7 @@ const createProject = async () => {
   );
   await writeFile(
     path.join(cwd, "vt", "templates", "index.html"),
-    "<!doctype html><html><body>{{ currentSection.title }}</body></html>",
+    "<!doctype html><html><body>{{ currentSection.title }}{% for file in files %}<h2>{{ file.frontMatter.title | default: file.path }}</h2><div>{{ file.contentShiki }}</div>{% endfor %}</body></html>",
   );
   const specPath = path.join(
     cwd,
@@ -83,7 +83,7 @@ afterEach(async () => {
 });
 
 describe("VT watch generation", () => {
-  it("generates from a clean start and atomically updates only a changed spec", async () => {
+  it("generates from a clean start and atomically updates a changed candidate", async () => {
     const { cwd, specPath } = await createProject();
     const outputDir = path.join(cwd, ".rettangoli", "vt", "_site");
     await rm(outputDir, { force: true, recursive: true });
@@ -105,6 +105,71 @@ describe("VT watch generation", () => {
     expect(await readFile(candidatePath, "utf8")).toContain("After");
   });
 
+  it("atomically refreshes affected overview front matter and highlighted source", async () => {
+    const { cwd, specPath } = await createProject();
+    const overviewPath = path.join(
+      cwd,
+      ".rettangoli",
+      "vt",
+      "_site",
+      "view.html",
+    );
+    await writeFile(
+      specPath,
+      `---
+title: Before title
+description: Before description
+---
+<rtgl-view>Before source</rtgl-view>`,
+    );
+    await writeFile(
+      path.join(
+        cwd,
+        "vt",
+        "specs",
+        "primitives",
+        "view",
+        "sibling.html",
+      ),
+      `---
+title: Sibling title
+---
+<rtgl-view>Sibling source</rtgl-view>`,
+    );
+    await writeFile(
+      path.join(cwd, "vt", "templates", "index.html"),
+      "<!doctype html><html><body>{% for file in files %}<h2>{{ file.frontMatter.title }}</h2><p>{{ file.frontMatter.description }}</p><div>{{ file.contentShiki }}</div>{% endfor %}</body></html>",
+    );
+    await generateVtWatchSite({ cwd });
+
+    const previousOverview = await readFile(overviewPath, "utf8");
+    expect(previousOverview).toContain("Before title");
+    expect(previousOverview).toContain("Before description");
+    expect(previousOverview).toContain("Before source");
+    expect(previousOverview).toContain("Sibling title");
+    expect(previousOverview).toContain("Sibling source");
+
+    await writeFile(
+      specPath,
+      `---
+title: After title
+description: After description
+---
+<rtgl-view>After source</rtgl-view>`,
+    );
+    const result = await generateVtWatchSpec({ cwd, filePath: specPath });
+
+    expect(result.overviewPaths).toEqual([overviewPath]);
+    const nextOverview = await readFile(overviewPath, "utf8");
+    expect(nextOverview).toContain("After title");
+    expect(nextOverview).toContain("After description");
+    expect(nextOverview).toContain("After source");
+    expect(nextOverview).toContain("Sibling title");
+    expect(nextOverview).toContain("Sibling source");
+    expect(nextOverview).not.toContain("Before title");
+    expect(nextOverview).not.toContain("Before source");
+  });
+
   it("retains the last valid site when a spec or template cannot render", async () => {
     const { cwd, specPath } = await createProject();
     await generateVtWatchSite({ cwd });
@@ -119,6 +184,14 @@ describe("VT watch generation", () => {
       "view-scrollbar-vertical-01.html",
     );
     const previousCandidate = await readFile(candidatePath, "utf8");
+    const overviewPath = path.join(
+      cwd,
+      ".rettangoli",
+      "vt",
+      "_site",
+      "view.html",
+    );
+    const previousOverview = await readFile(overviewPath, "utf8");
     const invalidTemplate = path.join(
       cwd,
       "vt",
@@ -130,6 +203,7 @@ describe("VT watch generation", () => {
     await expect(generateVtWatchSpec({ cwd, filePath: specPath }))
       .rejects.toThrow();
     expect(await readFile(candidatePath, "utf8")).toBe(previousCandidate);
+    expect(await readFile(overviewPath, "utf8")).toBe(previousOverview);
 
     await expect(generateVtWatchSite({ cwd })).rejects.toThrow();
     expect(await readFile(candidatePath, "utf8")).toBe(previousCandidate);
@@ -142,10 +216,20 @@ describe("VT watch generation", () => {
       path.join(cwd, "vt", "templates", "index.html"),
       "{% if %}invalid{% endif %}",
     );
+    await writeFile(
+      specPath,
+      "<rtgl-view id=\"subject\">Must not commit</rtgl-view>",
+    );
+    await expect(generateVtWatchSpec({ cwd, filePath: specPath }))
+      .rejects.toThrow(/overview template/);
+    expect(await readFile(candidatePath, "utf8")).toBe(previousCandidate);
+    expect(await readFile(overviewPath, "utf8")).toBe(previousOverview);
+
     await expect(generateVtWatchSite({ cwd })).rejects.toThrow(
       /overview template/,
     );
     expect(await readFile(candidatePath, "utf8")).toBe(previousCandidate);
+    expect(await readFile(overviewPath, "utf8")).toBe(previousOverview);
   });
 
   it("preserves non-HTML candidate artifacts during a transactional full generation", async () => {
@@ -190,6 +274,14 @@ describe("VT watch generation", () => {
       "view-scrollbar-vertical-01.html",
     );
     const previousFirstCandidate = await readFile(firstCandidatePath, "utf8");
+    const overviewPath = path.join(
+      cwd,
+      ".rettangoli",
+      "vt",
+      "_site",
+      "view.html",
+    );
+    const previousOverview = await readFile(overviewPath, "utf8");
 
     await writeFile(specPath, "<rtgl-view>First after</rtgl-view>");
     await writeFile(
@@ -203,6 +295,7 @@ describe("VT watch generation", () => {
     })).rejects.toThrow();
     expect(await readFile(firstCandidatePath, "utf8"))
       .toBe(previousFirstCandidate);
+    expect(await readFile(overviewPath, "utf8")).toBe(previousOverview);
   });
 });
 
@@ -407,6 +500,12 @@ describe("VT watch Vite plugin", () => {
     expect(server.ws.send.mock.calls.some(
       ([message]) => message.type === "full-reload",
     )).toBe(false);
+    expect(
+      await readFile(
+        path.join(cwd, ".rettangoli", "vt", "_site", "view.html"),
+        "utf8",
+      ),
+    ).toContain("Live");
 
     const stateListener = server.ws.on.mock.calls.find(
       ([eventName]) => eventName === "rettangoli:vt-watch:state-request",

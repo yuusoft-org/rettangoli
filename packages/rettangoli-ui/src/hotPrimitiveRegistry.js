@@ -619,10 +619,52 @@ const makeStylesheetOperation = ({ instance, previousClass, nextClass }) => {
   };
 };
 
+const makeStyleRefreshOperation = ({
+  instance,
+  nextClass,
+  HTMLElementClass,
+}) => {
+  if (!instance.isConnected) {
+    return null;
+  }
+
+  const updateStyles = findPrototypeDescriptor(
+    nextClass,
+    "updateStyles",
+    HTMLElementClass,
+  );
+  if (typeof updateStyles?.value !== "function") {
+    return null;
+  }
+
+  const previousState = {
+    lastStyleString: instance._lastStyleString,
+    styleElementText: instance._styleElement?.textContent,
+    styles: instance._styles,
+  };
+
+  return {
+    commit() {
+      Reflect.apply(updateStyles.value, instance, []);
+    },
+    rollback() {
+      instance._styles = previousState.styles;
+      instance._lastStyleString = previousState.lastStyleString;
+      if (
+        instance._styleElement &&
+        previousState.styleElementText !== undefined
+      ) {
+        instance._styleElement.textContent = previousState.styleElementText;
+      }
+    },
+  };
+};
+
 const prepareInstanceOperations = ({
   instance,
   previousClass,
   nextClass,
+  HTMLElementClass,
 }) => {
   const operations = [];
   const stylesheetOperation = makeStylesheetOperation({
@@ -642,6 +684,15 @@ const prepareInstanceOperations = ({
     });
     if (operation) {
       operations.push(operation);
+    }
+  } else {
+    const refreshOperation = makeStyleRefreshOperation({
+      HTMLElementClass,
+      instance,
+      nextClass,
+    });
+    if (refreshOperation) {
+      operations.push(refreshOperation);
     }
   }
 
@@ -812,6 +863,7 @@ export const createHotPrimitiveRegistry = ({
         }
         for (const instance of getLiveInstances(record)) {
           operations.push(...prepareInstanceOperations({
+            HTMLElementClass,
             instance,
             nextClass: elementClass,
             previousClass: record.currentClass,

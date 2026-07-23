@@ -770,6 +770,205 @@ describe('watch body morph behavior', () => {
     dom.window.close();
   });
 
+  it('replaces a pending stylesheet refresh instead of accumulating active clones', async () => {
+    const { dom, send } = createWatchDom({
+      initialBody: '<p>Page state</p>',
+      initialHead: '<link rel="stylesheet" href="/theme.css">',
+      nextHtml: '<html><head><link rel="stylesheet" href="/theme.css"></head><body><p>Page state</p></body></html>',
+    });
+    const original = dom.window.document.querySelector('link[rel="stylesheet"]');
+
+    send('assets', ['/theme.css'], 1);
+    await waitForUpdate();
+    const firstPending = dom.window.document.querySelector(
+      'link[data-rtgl-watch-asset-pending]',
+    );
+    const firstRefreshUrl = firstPending.href;
+
+    send('assets', ['/theme.css'], 2);
+    await waitForUpdate();
+    const linksAfterSecondUpdate = Array.from(
+      dom.window.document.querySelectorAll('link[rel="stylesheet"]'),
+    );
+    const secondPending = dom.window.document.querySelector(
+      'link[data-rtgl-watch-asset-pending]',
+    );
+
+    expect(linksAfterSecondUpdate).toHaveLength(2);
+    expect(linksAfterSecondUpdate).toContain(original);
+    expect(firstPending.isConnected).toBe(false);
+    expect(secondPending).not.toBe(firstPending);
+    expect(secondPending.href).not.toBe(firstRefreshUrl);
+
+    secondPending.dispatchEvent(new dom.window.Event('load'));
+
+    expect(original.isConnected).toBe(false);
+    expect(secondPending.isConnected).toBe(true);
+    expect(secondPending.hasAttribute('data-rtgl-watch-asset-pending')).toBe(false);
+    expect(dom.window.document.querySelectorAll('link[rel="stylesheet"]'))
+      .toHaveLength(1);
+
+    send('assets', ['/theme.css'], 3);
+    await waitForUpdate();
+    const failedPending = dom.window.document.querySelector(
+      'link[data-rtgl-watch-asset-pending]',
+    );
+    failedPending.dispatchEvent(new dom.window.Event('error'));
+
+    expect(failedPending.isConnected).toBe(false);
+    expect(secondPending.isConnected).toBe(true);
+    expect(dom.window.document.querySelectorAll('link[rel="stylesheet"]'))
+      .toHaveLength(1);
+    dom.window.close();
+  });
+
+  it('restarts a pending stylesheet refresh after an unrelated HTML morph', async () => {
+    const { dom, send } = createWatchDom({
+      initialBody: '<p id="copy">Before</p>',
+      initialHead: '<link rel="stylesheet" href="/theme.css">',
+      nextHtml: `<html>
+        <head><link rel="stylesheet" href="/theme.css"></head>
+        <body><p id="copy">After</p></body>
+      </html>`,
+    });
+
+    send('assets', ['/theme.css'], 1);
+    await waitForUpdate();
+    const interruptedPending = dom.window.document.querySelector(
+      'link[data-rtgl-watch-asset-pending]',
+    );
+
+    send('html', [], 2);
+    await waitForUpdate();
+    const restartedPending = dom.window.document.querySelector(
+      'link[data-rtgl-watch-asset-pending]',
+    );
+
+    expect(dom.window.document.querySelector('#copy').textContent).toBe('After');
+    expect(interruptedPending.isConnected).toBe(false);
+    expect(restartedPending).not.toBe(interruptedPending);
+    expect(restartedPending).not.toBeNull();
+    expect(dom.window.document.querySelectorAll('link[rel="stylesheet"]'))
+      .toHaveLength(2);
+
+    restartedPending.dispatchEvent(new dom.window.Event('load'));
+
+    const activeStylesheets = dom.window.document.querySelectorAll(
+      'link[rel="stylesheet"]',
+    );
+    expect(activeStylesheets).toHaveLength(1);
+    expect(activeStylesheets[0]).toBe(restartedPending);
+    expect(activeStylesheets[0].hasAttribute('data-rtgl-watch-asset-pending'))
+      .toBe(false);
+    expect(new URL(activeStylesheets[0].href).pathname).toBe('/theme.css');
+    dom.window.close();
+  });
+
+  it('does not restart a pending body stylesheet that the HTML morph removes', async () => {
+    const { dom, send } = createWatchDom({
+      initialBody: `
+        <link rel="stylesheet" href="/body-only.css">
+        <p id="copy">Before</p>
+      `,
+      nextHtml: '<html><head></head><body><p id="copy">After</p></body></html>',
+    });
+    const reloadReasons = [];
+    dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+      reloadReasons.push(event.detail.reason);
+      event.preventDefault();
+    });
+
+    send('assets', ['/body-only.css'], 1);
+    await waitForUpdate();
+    const interruptedPending = dom.window.document.querySelector(
+      'link[data-rtgl-watch-asset-pending]',
+    );
+
+    send('html', [], 2);
+    await waitForUpdate();
+
+    expect(interruptedPending.isConnected).toBe(false);
+    expect(dom.window.document.querySelector('#copy').textContent).toBe('After');
+    expect(dom.window.document.querySelectorAll('link[rel="stylesheet"]'))
+      .toHaveLength(0);
+    expect(reloadReasons).toEqual([]);
+    dom.window.close();
+  });
+
+  it('refreshes every same-origin top-level stylesheet for a changed imported CSS file', async () => {
+    const { dom, send } = createWatchDom({
+      initialBody: '<p>Page</p>',
+      initialHead: `
+        <link rel="stylesheet" href="/base.css">
+        <link rel="stylesheet" href="/theme.css">
+        <link rel="stylesheet" href="https://cdn.example/external.css">
+      `,
+      nextHtml: '<html><head></head><body></body></html>',
+    });
+
+    send('assets', ['/components/button.css'], 1);
+    await waitForUpdate();
+
+    const pending = Array.from(dom.window.document.querySelectorAll(
+      'link[data-rtgl-watch-asset-pending]',
+    ));
+    expect(pending).toHaveLength(2);
+    expect(pending.map((link) => new URL(link.href).pathname).sort())
+      .toEqual(['/base.css', '/theme.css']);
+    expect(dom.window.document.querySelectorAll(
+      'link[href^="https://cdn.example/external.css"]',
+    )).toHaveLength(1);
+    dom.window.close();
+  });
+
+  it('falls back to a full reload for an inline CSS import even with an unrelated link', async () => {
+    const { dom, send } = createWatchDom({
+      initialBody: '<p id="copy">Before</p>',
+      initialHead: `
+        <link rel="stylesheet" href="/unrelated.css">
+        <style>@import url("/components/button.css");</style>
+      `,
+      nextHtml: '<html><head></head><body><p id="copy">After</p></body></html>',
+    });
+    const reloadReasons = [];
+    dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+      reloadReasons.push(event.detail.reason);
+      event.preventDefault();
+    });
+
+    send('assets', ['/components/button.css'], 1);
+    await waitForUpdate();
+
+    expect(reloadReasons).toEqual(['stylesheet-unreachable']);
+    expect(dom.window.document.querySelector('#copy').textContent).toBe('Before');
+    expect(dom.window.document.querySelector(
+      'link[data-rtgl-watch-asset-pending]',
+    )).toBeNull();
+    dom.window.close();
+  });
+
+  it('falls back to a full reload for an inline CSS import after reconnecting', async () => {
+    const { dom, handshake } = createWatchDom({
+      initialBody: '<p id="copy">Before</p>',
+      initialHead: '<style>@import url("/theme.css");</style>',
+      nextHtml: `<html>
+        <head><style>@import url("/theme.css");</style></head>
+        <body><p id="copy">After</p></body>
+      </html>`,
+    });
+    const reloadReasons = [];
+    dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+      reloadReasons.push(event.detail.reason);
+      event.preventDefault();
+    });
+
+    await handshake({ revision: 1 });
+
+    expect(reloadReasons).toEqual(['stylesheet-unreachable']);
+    expect(dom.window.fetch).toHaveBeenCalledTimes(1);
+    dom.window.close();
+  });
+
   it('cache-busts only the changed responsive-image candidate', async () => {
     const { dom, send } = createWatchDom({
       initialBody: '<img id="hero" srcset="/hero.webp 1x, /hero@2x.webp 2x">',
@@ -802,6 +1001,113 @@ describe('watch body morph behavior', () => {
 
     expect(reloadReasons).toEqual(['script-change']);
     expect(dom.window.document.querySelector('#copy').textContent).toBe('Before');
+    dom.window.close();
+  });
+
+  it('requests a full reload when an unchanged executable script moves to another container', async () => {
+    const { dom, send } = createWatchDom({
+      initialHead: '<script type="module" src="/app.js"></script>',
+      initialBody: '<main id="copy">Before</main>',
+      nextHtml: `<html><head></head><body>
+        <main id="copy">After</main>
+        <script type="module" src="/app.js"></script>
+      </body></html>`,
+    });
+    const reloadReasons = [];
+    dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+      reloadReasons.push(event.detail.reason);
+      event.preventDefault();
+    });
+
+    send();
+    await waitForUpdate();
+
+    expect(reloadReasons).toEqual(['script-change']);
+    expect(dom.window.document.querySelector('#copy').textContent).toBe('Before');
+    expect(dom.window.document.head.querySelector('script[src="/app.js"]'))
+      .not.toBeNull();
+    expect(dom.window.document.body.querySelector('script[src="/app.js"]'))
+      .toBeNull();
+    dom.window.close();
+  });
+
+  it('requests a full reload when a script moves across ordinary siblings in one container', async () => {
+    const { dom, send } = createWatchDom({
+      initialBody: `
+        <script type="module" src="/app.js"></script>
+        <main id="copy">Before</main>
+      `,
+      nextHtml: `<html><head></head><body>
+        <main id="copy">After</main>
+        <script type="module" src="/app.js"></script>
+      </body></html>`,
+    });
+    const reloadReasons = [];
+    dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+      reloadReasons.push(event.detail.reason);
+      event.preventDefault();
+    });
+
+    send();
+    await waitForUpdate();
+
+    expect(reloadReasons).toEqual(['script-change']);
+    expect(dom.window.document.querySelector('#copy').textContent).toBe('Before');
+    dom.window.close();
+  });
+
+  it('requests a full reload when a script moves together with its following sibling', async () => {
+    const { dom, send } = createWatchDom({
+      initialBody: `
+        <script type="module" src="/app.js"></script>
+        <main id="copy">Before</main>
+        <footer id="footer">Footer</footer>
+      `,
+      nextHtml: `<html><head></head><body>
+        <footer id="footer">Footer</footer>
+        <script type="module" src="/app.js"></script>
+        <main id="copy">After</main>
+      </body></html>`,
+    });
+    const reloadReasons = [];
+    dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+      reloadReasons.push(event.detail.reason);
+      event.preventDefault();
+    });
+
+    send();
+    await waitForUpdate();
+
+    expect(reloadReasons).toEqual(['script-change']);
+    expect(dom.window.document.querySelector('#copy').textContent).toBe('Before');
+    dom.window.close();
+  });
+
+  it('keeps morphing when ordinary markup is inserted before an unmoved body script', async () => {
+    const { dom, send } = createWatchDom({
+      initialBody: `
+        <p id="copy">Before</p>
+        <script type="module" src="/app.js"></script>
+      `,
+      nextHtml: `<html><head></head><body>
+        <section id="new-content">New content</section>
+        <p id="copy">After</p>
+        <script type="module" src="/app.js"></script>
+      </body></html>`,
+    });
+    const reloadReasons = [];
+    dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+      reloadReasons.push(event.detail.reason);
+      event.preventDefault();
+    });
+
+    send();
+    await waitForUpdate();
+
+    expect(reloadReasons).toEqual([]);
+    expect(dom.window.document.querySelector('#copy').textContent).toBe('After');
+    expect(dom.window.document.querySelector('#new-content').textContent)
+      .toBe('New content');
     dom.window.close();
   });
 

@@ -22,6 +22,7 @@ import {
   generateOverview,
   readYaml,
 } from "../common.js";
+import { deriveSectionPageKey } from "../section-page-key.js";
 import { validateVtConfig } from "../validation.js";
 
 const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
@@ -168,6 +169,108 @@ const copyNonHtmlArtifacts = async (sourceDir, destinationDir) => {
   }
 };
 
+const flattenSections = (sections = []) =>
+  sections.flatMap((section) =>
+    section.type === "groupLabel" && Array.isArray(section.items)
+      ? section.items
+      : section.files
+        ? [section]
+        : []
+  );
+
+const isSpecInSection = (relativePath, section) => {
+  const fileDirectory = path.normalize(path.dirname(relativePath));
+  const sectionPath = path.normalize(section.files);
+  return (
+    fileDirectory === sectionPath ||
+    fileDirectory.startsWith(sectionPath + path.sep)
+  );
+};
+
+const getAffectedSections = ({ configData, specs }) => {
+  const affectedPageKeys = new Set();
+  return flattenSections(configData.sections).filter((section) => {
+    const isAffected = specs.some(({ relativePath }) =>
+      isSpecInSection(relativePath, section)
+    );
+    if (!isAffected) return false;
+
+    const pageKey = deriveSectionPageKey(section);
+    if (affectedPageKeys.has(pageKey)) return false;
+    affectedPageKeys.add(pageKey);
+    return true;
+  });
+};
+
+const collectFiles = async (directoryPath) => {
+  if (!existsSync(directoryPath)) return [];
+
+  const files = [];
+  const entries = await readdir(directoryPath, { withFileTypes: true });
+  for (const entry of entries) {
+    const entryPath = path.join(directoryPath, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...await collectFiles(entryPath));
+    } else {
+      files.push(entryPath);
+    }
+  }
+  return files;
+};
+
+const commitStagedOutputs = async (outputs) => {
+  const uniqueOutputs = [
+    ...new Map(outputs.map((output) => [output.outputPath, output])).values(),
+  ];
+  const commits = [];
+
+  try {
+    for (const { outputPath, stagedOutputPath } of uniqueOutputs) {
+      const token = randomUUID();
+      const temporaryOutputPath = `${outputPath}.watch-${token}.tmp`;
+      const backupOutputPath = `${outputPath}.watch-${token}.backup`;
+      await mkdir(path.dirname(outputPath), { recursive: true });
+      await copyFile(stagedOutputPath, temporaryOutputPath);
+      commits.push({
+        backedUp: false,
+        backupOutputPath,
+        committed: false,
+        hadPrevious: existsSync(outputPath),
+        outputPath,
+        temporaryOutputPath,
+      });
+    }
+
+    for (const commit of commits) {
+      if (commit.hadPrevious) {
+        await rename(commit.outputPath, commit.backupOutputPath);
+        commit.backedUp = true;
+      }
+    }
+    for (const commit of commits) {
+      await rename(commit.temporaryOutputPath, commit.outputPath);
+      commit.committed = true;
+    }
+  } catch (error) {
+    for (const commit of commits) {
+      if (commit.committed && existsSync(commit.outputPath)) {
+        await rm(commit.outputPath, { force: true });
+      }
+    }
+    for (const commit of commits) {
+      if (commit.backedUp && existsSync(commit.backupOutputPath)) {
+        await rename(commit.backupOutputPath, commit.outputPath);
+      }
+    }
+    throw error;
+  } finally {
+    await Promise.all(commits.flatMap((commit) => [
+      rm(commit.backupOutputPath, { force: true }),
+      rm(commit.temporaryOutputPath, { force: true }),
+    ]));
+  }
+};
+
 const createFullStage = async (context) => {
   await mkdir(path.dirname(context.outputDir), { recursive: true });
   const stagePath = await mkdtemp(
@@ -286,12 +389,23 @@ export const generateVtWatchSpecs = async ({
     .filter(({ relativePath }) => WATCHABLE_SPEC_PATTERN.test(relativePath));
 
   if (specs.length === 0) {
-    return { ...context, outputPaths: [] };
+    return { ...context, outputPaths: [], overviewPaths: [] };
   }
+  const affectedSections = getAffectedSections({
+    configData: context.configData,
+    specs,
+  });
+  const overviewPaths = affectedSections.map((section) =>
+    path.join(
+      context.outputDir,
+      `${deriveSectionPageKey(section)}.html`,
+    )
+  );
   if (specs.some(({ resolvedFilePath }) => !existsSync(resolvedFilePath))) {
     return {
       ...(await generateVtWatchSite({ cwd, outputDir })),
       outputPaths: specs.map(({ outputPath }) => outputPath),
+      overviewPaths,
     };
   }
 
@@ -304,18 +418,39 @@ export const generateVtWatchSpecs = async ({
   );
 
   try {
-    for (const spec of specs) {
+    const sourceFiles = new Map(
+      specs.map((spec) => [spec.resolvedFilePath, spec.resolvedFilePath]),
+    );
+    if (affectedSections.length > 0) {
+      for (const sourceFilePath of await collectFiles(context.specsPath)) {
+        const relativePath = path.relative(
+          context.specsPath,
+          sourceFilePath,
+        );
+        if (affectedSections.some((section) =>
+          isSpecInSection(relativePath, section)
+        )) {
+          sourceFiles.set(sourceFilePath, sourceFilePath);
+        }
+      }
+    }
+
+    for (const sourceFilePath of sourceFiles.values()) {
+      const relativePath = path.relative(
+        context.specsPath,
+        sourceFilePath,
+      );
       const stagedSpecPath = path.join(
         stagePath,
         "specs",
-        spec.relativePath,
+        relativePath,
       );
       await mkdir(path.dirname(stagedSpecPath), { recursive: true });
-      await copyFile(spec.resolvedFilePath, stagedSpecPath);
+      await copyFile(sourceFilePath, stagedSpecPath);
     }
 
     const stagedCandidatePath = path.join(stagePath, "candidate");
-    await generateHtml(
+    const generatedFiles = await generateHtml(
       path.join(stagePath, "specs"),
       context.defaultTemplatePath,
       stagedCandidatePath,
@@ -325,62 +460,40 @@ export const generateVtWatchSpecs = async ({
         vtPath: context.vtPath,
       },
     );
+    if (affectedSections.length > 0) {
+      generateOverview(
+        generatedFiles,
+        context.indexTemplatePath,
+        path.join(stagePath, "index.html"),
+        context.configData,
+        {
+          logger: quietGenerationLogger,
+          throwOnRenderError: true,
+        },
+      );
+    }
 
-    const commits = [];
-    try {
-      for (const spec of specs) {
-        const stagedOutputPath = path.join(
+    await commitStagedOutputs([
+      ...specs.map((spec) => ({
+        outputPath: spec.outputPath,
+        stagedOutputPath: path.join(
           stagedCandidatePath,
           convertToHtmlExtension(spec.relativePath),
-        );
-        const token = randomUUID();
-        const temporaryOutputPath = `${spec.outputPath}.watch-${token}.tmp`;
-        const backupOutputPath = `${spec.outputPath}.watch-${token}.backup`;
-        await mkdir(path.dirname(spec.outputPath), { recursive: true });
-        await copyFile(stagedOutputPath, temporaryOutputPath);
-        const hadPrevious = existsSync(spec.outputPath);
-        commits.push({
-          backedUp: false,
-          backupOutputPath,
-          committed: false,
-          hadPrevious,
-          outputPath: spec.outputPath,
-          temporaryOutputPath,
-        });
-      }
-
-      for (const commit of commits) {
-        if (commit.hadPrevious) {
-          await rename(commit.outputPath, commit.backupOutputPath);
-          commit.backedUp = true;
-        }
-      }
-      for (const commit of commits) {
-        await rename(commit.temporaryOutputPath, commit.outputPath);
-        commit.committed = true;
-      }
-    } catch (error) {
-      for (const commit of commits) {
-        if (commit.committed && existsSync(commit.outputPath)) {
-          await rm(commit.outputPath, { force: true });
-        }
-      }
-      for (const commit of commits) {
-        if (commit.backedUp && existsSync(commit.backupOutputPath)) {
-          await rename(commit.backupOutputPath, commit.outputPath);
-        }
-      }
-      throw error;
-    } finally {
-      await Promise.all(commits.flatMap((commit) => [
-        rm(commit.backupOutputPath, { force: true }),
-        rm(commit.temporaryOutputPath, { force: true }),
-      ]));
-    }
+        ),
+      })),
+      ...affectedSections.map((section) => {
+        const fileName = `${deriveSectionPageKey(section)}.html`;
+        return {
+          outputPath: path.join(context.outputDir, fileName),
+          stagedOutputPath: path.join(stagePath, fileName),
+        };
+      }),
+    ]);
 
     return {
       ...context,
       outputPaths: specs.map(({ outputPath }) => outputPath),
+      overviewPaths,
     };
   } finally {
     await rm(stagePath, { force: true, recursive: true });

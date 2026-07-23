@@ -18,8 +18,9 @@ bunx rtgl sites build --root-dir . --output-path dist
 `id` for stable identity when elements move, and `data-rtgl-preserve` for DOM
 subtrees owned entirely by client-side code. The same marker protects
 client-created `<head>` styles, metadata, and links when it is present before
-the watch client initializes. Executable script changes always fall back to a
-full reload so new code is executed.
+the watch client initializes. Stylesheet edits refresh in place when the watcher
+can reach a same-origin stylesheet link. Images, icons, fonts, other static
+assets, removals, and executable script changes use a no-cache full reload.
 Preferred CLI flags are `--root-dir` and `--output-path` (`--rootDir`/`--outputPath` are legacy aliases).
 
 ## Project Structure

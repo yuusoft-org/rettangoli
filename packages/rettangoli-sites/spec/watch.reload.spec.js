@@ -1,8 +1,14 @@
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 import watchSite, {
   classifyWatchChanges,
   createClientScript,
+  finalizeWatchChanges,
   getContentType,
+  getWatchResponseHeaders,
 } from '../src/cli/watch.js';
 
 describe('watch reload mode script', () => {
@@ -45,15 +51,74 @@ describe('watch reload mode script', () => {
     ])).toEqual({ updateKind: 'html', paths: [] });
   });
 
-  it('classifies styles and images as live-refreshable assets', () => {
+  it('classifies stylesheets as live-refreshable assets', () => {
     expect(classifyWatchChanges([
       { scope: 'static', relativePath: 'public/theme.css', publicPath: '/public/theme.css' },
-      { scope: 'static', relativePath: 'images/hero.webp', publicPath: '/images/hero.webp' },
       { scope: 'static', relativePath: 'public/theme.css', publicPath: '/public/theme.css' },
     ])).toEqual({
       updateKind: 'assets',
-      paths: ['/images/hero.webp', '/public/theme.css'],
+      paths: ['/public/theme.css'],
     });
+  });
+
+  it('uses a no-cache full reload for images that may only be referenced from CSS', () => {
+    expect(classifyWatchChanges([
+      { scope: 'static', relativePath: 'images/hero.webp', publicPath: '/images/hero.webp' },
+    ])).toEqual({ updateKind: 'full', paths: [] });
+    expect(classifyWatchChanges([
+      { scope: 'pages', relativePath: 'index.yaml', publicPath: null },
+      { scope: 'static', relativePath: 'images/background.svg', publicPath: '/images/background.svg' },
+    ])).toEqual({ updateKind: 'full', paths: [] });
+    expect(classifyWatchChanges([
+      { scope: 'static', relativePath: 'public/favicon.ico', publicPath: '/public/favicon.ico' },
+    ])).toEqual({ updateKind: 'full', paths: [] });
+  });
+
+  it('uses a full reload when a stylesheet or document icon was removed', () => {
+    expect(classifyWatchChanges([
+      {
+        scope: 'static',
+        relativePath: 'public/theme.css',
+        publicPath: '/public/theme.css',
+        removed: true,
+      },
+    ])).toEqual({ updateKind: 'full', paths: [] });
+    expect(classifyWatchChanges([
+      {
+        scope: 'static',
+        relativePath: 'public/favicon.ico',
+        publicPath: '/public/favicon.ico',
+        removed: true,
+      },
+    ])).toEqual({ updateKind: 'full', paths: [] });
+  });
+
+  it('finalizes deletion state after the build and clears it when an atomic save restores the path', async () => {
+    const directory = await mkdtemp(
+      path.join(os.tmpdir(), 'rettangoli-sites-watch-'),
+    );
+    const sourcePath = path.join(directory, 'theme.css');
+    const change = {
+      scope: 'static',
+      relativePath: 'theme.css',
+      publicPath: '/theme.css',
+      sourcePath,
+    };
+
+    try {
+      expect(finalizeWatchChanges([change])[0].removed).toBe(true);
+
+      await writeFile(sourcePath, 'body { color: red; }');
+      expect(finalizeWatchChanges([change])[0].removed).toBe(false);
+
+      await rm(sourcePath);
+      expect(finalizeWatchChanges([change])[0].removed).toBe(true);
+
+      await writeFile(sourcePath, 'body { color: blue; }');
+      expect(finalizeWatchChanges([change])[0].removed).toBe(false);
+    } finally {
+      await rm(directory, { force: true, recursive: true });
+    }
   });
 
   it('uses a full reload for static assets the client cannot safely refresh', () => {
@@ -91,5 +156,21 @@ describe('watch reload mode script', () => {
   it('serves markdown as text instead of download-oriented binary type', () => {
     expect(getContentType('.md')).toBe('text/plain; charset=utf-8');
     expect(getContentType('.txt')).toBe('text/plain; charset=utf-8');
+  });
+
+  it('serves watch assets with no-store so a safe reload cannot reuse stale images', () => {
+    expect(getWatchResponseHeaders('.webp')).toEqual({
+      'Cache-Control': 'no-store',
+      'Content-Type': 'image/webp',
+    });
+    expect(getWatchResponseHeaders('.avif')).toEqual({
+      'Cache-Control': 'no-store',
+      'Content-Type': 'image/avif',
+    });
+    expect(getWatchResponseHeaders('.md')).toEqual({
+      'Cache-Control': 'no-store',
+      'Content-Disposition': 'inline',
+      'Content-Type': 'text/plain; charset=utf-8',
+    });
   });
 });

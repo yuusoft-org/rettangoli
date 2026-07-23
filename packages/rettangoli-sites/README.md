@@ -262,10 +262,13 @@ marker also protects client-created `<head>` elements (such as runtime styles,
 metadata, or stylesheet links) from head synchronization and asset refreshes;
 add it before the injected watch client initializes.
 
-Static stylesheets and images refresh in place. A changed JavaScript/WebAssembly
-asset or a changed executable `<script>` in generated HTML safely falls back to a
-full reload so the browser never continues with stale code. `--reload-mode full`
-forces a full page refresh for every change.
+Stylesheet edits refresh in place. The watcher replaces every same-origin
+top-level stylesheet so imports owned by those stylesheets are refreshed too.
+Inline `@import` rules and pages without a refreshable same-origin stylesheet
+safely reload instead. Images, icons, fonts, JavaScript/WebAssembly, other static
+assets, static-file removals, and changed or moved executable `<script>` elements
+use a no-cache full reload so the browser never continues with stale resources
+or code. `--reload-mode full` forces a full page refresh for every change.
 `--root-dir`/`--output-path` are the preferred option names (`--rootDir`/`--outputPath` remain as legacy aliases).
 
 ## Built-in Template Functions
