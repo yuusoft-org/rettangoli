@@ -236,7 +236,9 @@ function getContentType(filePath) {
   const contentTypes = {
     ".html": "text/html",
     ".css": "text/css",
+    ".cjs": "application/javascript",
     ".js": "application/javascript",
+    ".mjs": "application/javascript",
     ".json": "application/json",
     ".png": "image/png",
     ".jpg": "image/jpeg",
@@ -470,5 +472,6 @@ export {
   startWebServer,
   takeScreenshots,
   generateOverview,
+  getContentType,
   readYaml,
 };

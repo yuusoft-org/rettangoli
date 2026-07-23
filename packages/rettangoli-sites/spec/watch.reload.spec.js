@@ -2,10 +2,11 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import watchSite, {
   classifyWatchChanges,
   createClientScript,
+  createRebuildScheduler,
   finalizeWatchChanges,
   getContentType,
   getWatchResponseHeaders,
@@ -138,6 +139,59 @@ describe('watch reload mode script', () => {
     ])).toEqual({
       updateKind: 'html',
       paths: ['/public/theme.css'],
+    });
+  });
+
+  it('retains a failed script change until the next successful rebuild', async () => {
+    const build = vi.fn()
+      .mockRejectedValueOnce(new Error('Malformed page source'))
+      .mockResolvedValueOnce(undefined);
+    const server = { reloadAll: vi.fn() };
+    const logger = {
+      log: vi.fn(),
+      error: vi.fn(),
+    };
+    const scheduleChange = createRebuildScheduler({
+      rootDir: '/site',
+      outputPath: '_site',
+      server,
+      logger,
+      build,
+    });
+
+    scheduleChange({
+      scope: 'static',
+      relativePath: 'assets/app.js',
+      publicPath: '/assets/app.js',
+      sourcePath: '/site/static/assets/app.js',
+    });
+    scheduleChange({
+      scope: 'pages',
+      relativePath: 'index.yaml',
+      publicPath: null,
+      sourcePath: '/site/pages/index.yaml',
+    });
+
+    await vi.waitFor(() => {
+      expect(logger.error).toHaveBeenCalledOnce();
+    });
+    expect(build).toHaveBeenCalledOnce();
+    expect(server.reloadAll).not.toHaveBeenCalled();
+
+    scheduleChange({
+      scope: 'pages',
+      relativePath: 'index.yaml',
+      publicPath: null,
+      sourcePath: '/site/pages/index.yaml',
+    });
+
+    await vi.waitFor(() => {
+      expect(server.reloadAll).toHaveBeenCalledOnce();
+    });
+    expect(build).toHaveBeenCalledTimes(2);
+    expect(server.reloadAll).toHaveBeenCalledWith({
+      updateKind: 'full',
+      paths: [],
     });
   });
 

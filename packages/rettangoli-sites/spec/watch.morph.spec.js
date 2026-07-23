@@ -8,6 +8,24 @@ const waitForUpdate = () => new Promise((resolve) => setTimeout(resolve, 20));
 const withDefaultDoctype = (html) => /^\s*<!doctype\s/i.test(html)
   ? html
   : `<!doctype html>${html}`;
+const JAVASCRIPT_MIME_TYPE_ESSENCES = [
+  'application/ecmascript',
+  'application/javascript',
+  'application/x-ecmascript',
+  'application/x-javascript',
+  'text/ecmascript',
+  'text/javascript',
+  'text/javascript1.0',
+  'text/javascript1.1',
+  'text/javascript1.2',
+  'text/javascript1.3',
+  'text/javascript1.4',
+  'text/javascript1.5',
+  'text/jscript',
+  'text/livescript',
+  'text/x-ecmascript',
+  'text/x-javascript',
+];
 
 function createWatchDom({
   initialBody,
@@ -414,6 +432,58 @@ describe('watch body morph behavior', () => {
     expect(runtimeHeadNode.isConnected).toBe(true);
     expect(document.querySelectorAll('[data-rtgl-watch-client]')).toHaveLength(1);
 
+    dom.window.close();
+  });
+
+  it('uses moveBefore when available for a keyed custom element moved between parents', async () => {
+    const { dom, send } = createWatchDom({
+      initialBody: '<section id="left"><stateful-box data-rtgl-key="mover"></stateful-box></section><section id="right"></section>',
+      nextHtml: '<html><head></head><body><section id="left"></section><section id="right"><stateful-box data-rtgl-key="mover" data-version="after"></stateful-box></section></body></html>',
+    });
+    const { document } = dom.window;
+    const component = document.querySelector('stateful-box');
+    const destination = document.querySelector('#right');
+    const nativeInsertBefore = destination.insertBefore.bind(destination);
+    destination.moveBefore = vi.fn((node, referenceNode) => {
+      nativeInsertBefore(node, referenceNode);
+    });
+    component.runtimeState = { count: 7 };
+
+    send();
+    await waitForUpdate();
+
+    expect(destination.moveBefore).toHaveBeenCalledOnce();
+    expect(destination.moveBefore).toHaveBeenCalledWith(component, null);
+    expect(document.querySelector('stateful-box')).toBe(component);
+    expect(component.parentNode).toBe(destination);
+    expect(component.dataset.version).toBe('after');
+    expect(component.runtimeState).toEqual({ count: 7 });
+    dom.window.close();
+  });
+
+  it('falls back to insertBefore when moveBefore rejects a keyed move', async () => {
+    const { dom, send } = createWatchDom({
+      initialBody: '<section id="left"><stateful-box data-rtgl-key="mover"></stateful-box></section><section id="right"></section>',
+      nextHtml: '<html><head></head><body><section id="left"></section><section id="right"><stateful-box data-rtgl-key="mover"></stateful-box></section></body></html>',
+    });
+    const { document } = dom.window;
+    const component = document.querySelector('stateful-box');
+    const destination = document.querySelector('#right');
+    const insertBefore = vi.spyOn(destination, 'insertBefore');
+    destination.moveBefore = vi.fn(() => {
+      throw new dom.window.DOMException(
+        'Incompatible connectivity',
+        'HierarchyRequestError',
+      );
+    });
+
+    send();
+    await waitForUpdate();
+
+    expect(destination.moveBefore).toHaveBeenCalledOnce();
+    expect(insertBefore).toHaveBeenCalledWith(component, null);
+    expect(document.querySelector('stateful-box')).toBe(component);
+    expect(component.parentNode).toBe(destination);
     dom.window.close();
   });
 
@@ -985,6 +1055,29 @@ describe('watch body morph behavior', () => {
     dom.window.close();
   });
 
+  it('preserves data URL commas while refreshing srcset candidates after reconnecting', async () => {
+    const dataUrl = 'data:image/svg+xml,%3Csvg%3E,%3C/svg%3E';
+    const srcset = `${dataUrl} 1x, /hero.png 2x`;
+    const { dom, handshake } = createWatchDom({
+      initialBody: `<img id="hero" srcset="${srcset}">`,
+      nextHtml: `<html><head></head><body><img id="hero" srcset="${srcset}"></body></html>`,
+    });
+
+    await handshake({ revision: 1 });
+
+    const nextSrcset = dom.window.document.querySelector('#hero')
+      .getAttribute('srcset');
+    expect(nextSrcset.startsWith(`${dataUrl} 1x, `)).toBe(true);
+    expect(nextSrcset).toContain(
+      'http://localhost:3001/hero.png?__rtgl_watch_asset=',
+    );
+    expect(nextSrcset).not.toContain(
+      'http://localhost:3001/%3Csvg%3E,%3C/svg%3E',
+    );
+    expect(dom.window.fetch).toHaveBeenCalledTimes(1);
+    dom.window.close();
+  });
+
   it('requests a full reload instead of morphing changed executable scripts', async () => {
     const { dom, send } = createWatchDom({
       initialBody: '<p id="copy">Before</p>',
@@ -1003,6 +1096,30 @@ describe('watch body morph behavior', () => {
     expect(dom.window.document.querySelector('#copy').textContent).toBe('Before');
     dom.window.close();
   });
+
+  it.each(JAVASCRIPT_MIME_TYPE_ESSENCES)(
+    'treats the JavaScript MIME essence %s as executable',
+    async (type) => {
+      const { dom, send } = createWatchDom({
+        initialHead: `<script type="${type}">/* before */</script>`,
+        initialBody: '<p id="copy">Before</p>',
+        nextHtml: `<html><head><script type="${type}">/* after */</script></head><body><p id="copy">After</p></body></html>`,
+      });
+      const reloadReasons = [];
+      dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+        reloadReasons.push(event.detail.reason);
+        event.preventDefault();
+      });
+
+      send();
+      await waitForUpdate();
+
+      expect(reloadReasons).toEqual(['script-change']);
+      expect(dom.window.document.querySelector('#copy').textContent)
+        .toBe('Before');
+      dom.window.close();
+    },
+  );
 
   it('requests a full reload when an unchanged executable script moves to another container', async () => {
     const { dom, send } = createWatchDom({

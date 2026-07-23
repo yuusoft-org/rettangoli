@@ -9,9 +9,11 @@ import {
 import os from "node:os";
 import path from "node:path";
 
+import { parse } from "parse5";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createServer } from "vite";
 
+import { getContentType } from "../src/common.js";
 import {
   createRettangoliVtWatchPlugin,
   generateVtWatchSite,
@@ -20,6 +22,79 @@ import {
 } from "../src/cli/watch-plugin.js";
 
 const createdDirectories = [];
+const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
+const WATCH_CLIENT_PATH = "/__rettangoli_vt_watch_client__.js";
+const WATCH_CLIENT_TAG =
+  `<script type="module" data-rtgl-watch-client src="${WATCH_CLIENT_PATH}"></script>`;
+
+const findActiveWatchClients = (html) => {
+  const document = parse(html);
+  const clients = [];
+  const nodes = [document];
+  while (nodes.length > 0) {
+    const node = nodes.pop();
+    const attributes = new Map(
+      node.attrs?.map(({ name, value }) => [name, value]) || [],
+    );
+    if (
+      node.namespaceURI === HTML_NAMESPACE &&
+      node.tagName === "script" &&
+      attributes.has("data-rtgl-watch-client") &&
+      attributes.get("type")?.trim().toLowerCase() === "module" &&
+      attributes.get("src") === WATCH_CLIENT_PATH
+    ) {
+      clients.push(node);
+    }
+    if (node.childNodes) nodes.push(...node.childNodes);
+  }
+  return clients;
+};
+
+const waitFor = async (predicate, timeout = 2_000) => {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    if (predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  throw new Error("Timed out waiting for the expected watch event.");
+};
+
+const createMockServer = () => {
+  const watcher = new EventEmitter();
+  watcher.add = vi.fn();
+  const middlewares = [];
+  const server = {
+    middlewares: {
+      use: (middleware) => middlewares.push(middleware),
+    },
+    moduleGraph: {
+      getModuleById: vi.fn(),
+    },
+    watcher,
+    ws: {
+      on: vi.fn(),
+      send: vi.fn(),
+    },
+  };
+  return { middlewares, server, watcher };
+};
+
+const requestHtml = async (middleware, url) => {
+  const response = {
+    body: "",
+    headers: {},
+    end(value = "") {
+      this.body += value;
+    },
+    setHeader(name, value) {
+      this.headers[name.toLowerCase()] = value;
+    },
+  };
+  const next = vi.fn();
+  await middleware({ method: "GET", url }, response, next);
+  expect(next).not.toHaveBeenCalled();
+  return response;
+};
 
 const createProject = async () => {
   const cwd = await mkdtemp(path.join(os.tmpdir(), "rettangoli-vt-watch-"));
@@ -308,9 +383,21 @@ describe("VT watch Vite plugin", () => {
       path.join(cwd, "vt", "static", "public", "fonts"),
       { recursive: true },
     );
+    await mkdir(
+      path.join(cwd, "vt", "static", "public", "modules"),
+      { recursive: true },
+    );
     await writeFile(
       path.join(cwd, "vt", "static", "public", "fonts", "watch.ttf"),
       "font",
+    );
+    await writeFile(
+      path.join(cwd, "vt", "static", "public", "modules", "app.mjs"),
+      "export const format = 'module';",
+    );
+    await writeFile(
+      path.join(cwd, "vt", "static", "public", "modules", "app.cjs"),
+      "globalThis.format = 'commonjs-extension';",
     );
 
     const plugin = createRettangoliVtWatchPlugin({
@@ -347,6 +434,15 @@ describe("VT watch Vite plugin", () => {
       );
       const fontResponse = await fetch(`${origin}/public/fonts/watch.ttf`);
       expect(fontResponse.headers.get("content-type")).toBe("font/ttf");
+      for (const fileName of ["app.mjs", "app.cjs"]) {
+        const scriptResponse = await fetch(
+          `${origin}/public/modules/${fileName}`,
+        );
+        expect(scriptResponse.status).toBe(200);
+        expect(scriptResponse.headers.get("content-type")).toBe(
+          "application/javascript; charset=utf-8",
+        );
+      }
 
       await server.transformRequest("/__rettangoli_vt_watch_client__.js");
       await server.transformRequest("virtual:rettangoli-vt-watch-boundary");
@@ -416,6 +512,260 @@ describe("VT watch Vite plugin", () => {
       await server.close();
     }
   }, 15_000);
+
+  it("distinguishes an actual watch script from marker text", async () => {
+    const { cwd } = await createProject();
+    await writeFile(
+      path.join(cwd, "vt", "templates", "default.html"),
+      `<!doctype html><html><body>
+<!-- data-rtgl-watch-client is documentation, not a script -->
+<script>globalThis.marker = "data-rtgl-watch-client";</script>
+<main>{{ content }}</main>
+</body></html>`,
+    );
+    const { middlewares, server } = createMockServer();
+    const plugin = createRettangoliVtWatchPlugin({
+      cwd,
+      createWatchClientModuleSource: () => "",
+    });
+    await plugin.configureServer(server);
+
+    const response = await requestHtml(
+      middlewares[0],
+      "/candidate/primitives/view/view-scrollbar-vertical-01",
+    );
+    const clientTags = response.body.match(
+      /<script\b[^>]*\bdata-rtgl-watch-client(?:\s|=|>)[^>]*>/gi,
+    ) || [];
+    expect(clientTags).toHaveLength(1);
+    expect(clientTags[0]).toContain(
+      'src="/__rettangoli_vt_watch_client__.js"',
+    );
+
+    const candidatePath = path.join(
+      cwd,
+      ".rettangoli",
+      "vt",
+      "_site",
+      "candidate",
+      "primitives",
+      "view",
+      "view-scrollbar-vertical-01.html",
+    );
+    await writeFile(
+      candidatePath,
+      `<!doctype html><html><body>
+<script type="module" data-rtgl-watch-client src="/__rettangoli_vt_watch_client__.js"></script>
+</body></html>`,
+    );
+    const deduplicatedResponse = await requestHtml(
+      middlewares[0],
+      "/candidate/primitives/view/view-scrollbar-vertical-01",
+    );
+    expect(deduplicatedResponse.body.match(
+      /<script\b[^>]*\bdata-rtgl-watch-client(?:\s|=|>)[^>]*>/gi,
+    )).toHaveLength(1);
+  });
+
+  it("ignores unrelated and inert marker scripts when deduplicating", async () => {
+    const { cwd } = await createProject();
+    const { middlewares, server } = createMockServer();
+    const plugin = createRettangoliVtWatchPlugin({
+      cwd,
+      createWatchClientModuleSource: () => "",
+    });
+    await plugin.configureServer(server);
+    const candidatePath = path.join(
+      cwd,
+      ".rettangoli",
+      "vt",
+      "_site",
+      "candidate",
+      "primitives",
+      "view",
+      "view-scrollbar-vertical-01.html",
+    );
+    const unrelatedScripts = [
+      '<script data-rtgl-watch-client>globalThis.notTheClient = true;</script>',
+      '<script type="module" data-rtgl-watch-client src="/wrong-client.js"></script>',
+      `<script type="text/plain" data-rtgl-watch-client src="${WATCH_CLIENT_PATH}"></script>`,
+      `<svg><script type="module" data-rtgl-watch-client src="${WATCH_CLIENT_PATH}"></script></svg>`,
+      `<template><script type="module" data-rtgl-watch-client src="${WATCH_CLIENT_PATH}"></script></template>`,
+    ];
+
+    for (const unrelatedScript of unrelatedScripts) {
+      await writeFile(
+        candidatePath,
+        `<!doctype html><html><body>${unrelatedScript}</body></html>`,
+      );
+      const response = await requestHtml(
+        middlewares[0],
+        "/candidate/primitives/view/view-scrollbar-vertical-01",
+      );
+      expect(findActiveWatchClients(response.body)).toHaveLength(1);
+    }
+  });
+
+  it("injects at the structural body boundary after comment and script lookalikes", async () => {
+    const { cwd } = await createProject();
+    await writeFile(
+      path.join(cwd, "vt", "templates", "default.html"),
+      `<!doctype html><html><body>
+<!-- A misleading </body> in a comment. -->
+<script>globalThis.closingTagExample = "</body>";</script>
+<main id="real-content">{{ content }}</main>
+</body></html>`,
+    );
+    const { middlewares, server } = createMockServer();
+    const plugin = createRettangoliVtWatchPlugin({
+      cwd,
+      createWatchClientModuleSource: () => "",
+    });
+    await plugin.configureServer(server);
+
+    const response = await requestHtml(
+      middlewares[0],
+      "/candidate/primitives/view/view-scrollbar-vertical-01",
+    );
+    const clientIndex = response.body.indexOf(
+      "<script type=\"module\" data-rtgl-watch-client",
+    );
+    expect(clientIndex).toBeGreaterThan(response.body.indexOf("</main>"));
+    expect(clientIndex).toBeLessThan(response.body.lastIndexOf("</body>"));
+    expect(response.body).toContain(
+      '<script>globalThis.closingTagExample = "</body>";</script>',
+    );
+  });
+
+  it("injects an active client before unterminated or frameset content", async () => {
+    const { cwd } = await createProject();
+    const { middlewares, server } = createMockServer();
+    const plugin = createRettangoliVtWatchPlugin({
+      cwd,
+      createWatchClientModuleSource: () => "",
+    });
+    await plugin.configureServer(server);
+    const candidatePath = path.join(
+      cwd,
+      ".rettangoli",
+      "vt",
+      "_site",
+      "candidate",
+      "primitives",
+      "view",
+      "view-scrollbar-vertical-01.html",
+    );
+    const malformedDocuments = [
+      "<!doctype html><html><body><!-- unterminated",
+      "<!doctype html><html><body><script>unterminated",
+      "<!doctype html><html><body><style>unterminated",
+      "<!doctype html><html><body><template><p>unterminated",
+      "<!doctype html><!-- unterminated",
+      "<!doctype html",
+      '<!DOCTYPE html PUBLIC "unterminated',
+      "<!doctype html><html><head><title>Frames</title></head><frameset><frame src=\"about:blank\"></frameset></html>",
+    ];
+
+    for (const malformedDocument of malformedDocuments) {
+      await writeFile(candidatePath, malformedDocument);
+      const response = await requestHtml(
+        middlewares[0],
+        "/candidate/primitives/view/view-scrollbar-vertical-01",
+      );
+      expect(findActiveWatchClients(response.body)).toHaveLength(1);
+      expect(response.body.replace(WATCH_CLIENT_TAG, ""))
+        .toBe(malformedDocument);
+    }
+  });
+
+  it("retries the complete failed spec batch after one source is fixed", async () => {
+    const { cwd, specPath } = await createProject();
+    const cardDirectory = path.join(
+      cwd,
+      "vt",
+      "specs",
+      "primitives",
+      "card",
+    );
+    const cardSpecPath = path.join(cardDirectory, "card.html");
+    await mkdir(cardDirectory, { recursive: true });
+    await writeFile(
+      path.join(cwd, "rettangoli.config.yaml"),
+      `vt:
+  path: vt
+  skipScreenshots: true
+  sections:
+    - title: View
+      files: primitives/view
+    - title: Card
+      files: primitives/card
+`,
+    );
+    await writeFile(cardSpecPath, "<rtgl-card>Card before</rtgl-card>");
+
+    const { server, watcher } = createMockServer();
+    const plugin = createRettangoliVtWatchPlugin({
+      cwd,
+      debounceMs: 5,
+      createWatchClientModuleSource: () => "",
+      logger: {
+        error: vi.fn(),
+        log: vi.fn(),
+      },
+    });
+    await plugin.configureServer(server);
+
+    const viewCandidatePath = path.join(
+      cwd,
+      ".rettangoli",
+      "vt",
+      "_site",
+      "candidate",
+      "primitives",
+      "view",
+      "view-scrollbar-vertical-01.html",
+    );
+    const cardCandidatePath = path.join(
+      cwd,
+      ".rettangoli",
+      "vt",
+      "_site",
+      "candidate",
+      "primitives",
+      "card",
+      "card.html",
+    );
+    await writeFile(specPath, "<rtgl-view>View after</rtgl-view>");
+    await writeFile(
+      cardSpecPath,
+      "---\ntitle: [unterminated\n---\n<rtgl-card>Invalid</rtgl-card>",
+    );
+    watcher.emit("change", specPath);
+    watcher.emit("change", cardSpecPath);
+
+    await waitFor(() => server.ws.send.mock.calls.some(
+      ([message]) => message.data?.type === "watch-error",
+    ));
+    expect(await readFile(viewCandidatePath, "utf8")).toContain("Before");
+    expect(await readFile(cardCandidatePath, "utf8")).toContain("Card before");
+
+    server.ws.send.mockClear();
+    await writeFile(cardSpecPath, "<rtgl-card>Card after</rtgl-card>");
+    watcher.emit("change", cardSpecPath);
+    await waitFor(() => server.ws.send.mock.calls.some(
+      ([message]) => message.data?.type === "reload-current",
+    ));
+
+    expect(await readFile(viewCandidatePath, "utf8")).toContain("View after");
+    expect(await readFile(cardCandidatePath, "utf8")).toContain("Card after");
+    const update = server.ws.send.mock.calls
+      .map(([message]) => message)
+      .find((message) => message.data?.type === "reload-current");
+    expect(update.data.paths).toEqual(expect.arrayContaining([
+      "specs/primitives/view/view-scrollbar-vertical-01.html",
+      "specs/primitives/card/card.html",
+    ]));
+  });
 
   it("serves clean candidate URLs, injects the client, and suppresses HTML full reloads", async () => {
     const { cwd, specPath } = await createProject();
@@ -586,5 +936,10 @@ describe("VT watch Vite plugin", () => {
     }
 
     expect(next).toHaveBeenCalledTimes(3);
+  });
+
+  it("maps JavaScript module extensions in the non-watch VT server", () => {
+    expect(getContentType("/assets/app.mjs")).toBe("application/javascript");
+    expect(getContentType("/assets/app.cjs")).toBe("application/javascript");
   });
 });

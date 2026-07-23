@@ -10,6 +10,24 @@ function runWatchClient({
   const ASSET_CACHE_KEY = '__rtgl_watch_asset';
   const HTML_CACHE_KEY = '__rtgl_watch';
   const PENDING_LINK_REFRESH_ATTRIBUTE = 'data-rtgl-watch-asset-pending';
+  const JAVASCRIPT_MIME_TYPE_ESSENCES = new Set([
+    'application/ecmascript',
+    'application/javascript',
+    'application/x-ecmascript',
+    'application/x-javascript',
+    'text/ecmascript',
+    'text/javascript',
+    'text/javascript1.0',
+    'text/javascript1.1',
+    'text/javascript1.2',
+    'text/javascript1.3',
+    'text/javascript1.4',
+    'text/javascript1.5',
+    'text/jscript',
+    'text/livescript',
+    'text/x-ecmascript',
+    'text/x-javascript',
+  ]);
 
   const requestFullReload = (reason) => {
     const event = new CustomEvent('rettangoli:watch-full-reload', {
@@ -94,6 +112,18 @@ function runWatchClient({
       candidate = candidate.nextSibling;
     }
     return candidate;
+  };
+
+  const moveNodeBefore = (parent, node, referenceNode) => {
+    if (typeof parent.moveBefore === 'function') {
+      try {
+        parent.moveBefore(node, referenceNode);
+        return;
+      } catch {
+        // moveBefore requires compatible document-connectivity states.
+      }
+    }
+    parent.insertBefore(node, referenceNode);
   };
 
   const captureUserState = (root) => {
@@ -399,7 +429,7 @@ function runWatchClient({
         }
 
         if (target.parentNode !== currentParent || target !== cursor) {
-          currentParent.insertBefore(target, cursor);
+          moveNodeBefore(currentParent, target, cursor);
         }
         usedNodes.add(target);
         morphNode(target, nextChild);
@@ -544,10 +574,7 @@ function runWatchClient({
       type === 'module' ||
       type === 'importmap' ||
       type === 'speculationrules' ||
-      type === 'text/javascript' ||
-      type === 'application/javascript' ||
-      type.endsWith('/ecmascript') ||
-      type.endsWith('/javascript');
+      JAVASCRIPT_MIME_TYPE_ESSENCES.has(type);
   };
 
   const collectScripts = (root, parentPath = []) => {
@@ -766,6 +793,67 @@ function runWatchClient({
       );
       return url.href;
     };
+    const rewriteSrcset = (value) => {
+      const isAsciiWhitespace = (character) =>
+        character === '\t' ||
+        character === '\n' ||
+        character === '\f' ||
+        character === '\r' ||
+        character === ' ';
+      let position = 0;
+      let copiedUntil = 0;
+      let nextValue = '';
+      let changed = false;
+
+      while (position < value.length) {
+        while (
+          position < value.length &&
+          (isAsciiWhitespace(value[position]) || value[position] === ',')
+        ) {
+          position += 1;
+        }
+        if (position >= value.length) break;
+
+        const urlStart = position;
+        while (
+          position < value.length &&
+          !isAsciiWhitespace(value[position])
+        ) {
+          position += 1;
+        }
+
+        let urlEnd = position;
+        while (urlEnd > urlStart && value[urlEnd - 1] === ',') {
+          urlEnd -= 1;
+        }
+
+        const url = value.slice(urlStart, urlEnd);
+        if (url && shouldRefresh(url)) {
+          nextValue += value.slice(copiedUntil, urlStart);
+          nextValue += cacheBust(url);
+          copiedUntil = urlEnd;
+          changed = true;
+        }
+
+        if (urlEnd !== position) continue;
+
+        let inParentheses = false;
+        while (position < value.length) {
+          const character = value[position];
+          position += 1;
+          if (character === '(') {
+            inParentheses = true;
+          } else if (character === ')') {
+            inParentheses = false;
+          } else if (character === ',' && !inParentheses) {
+            break;
+          }
+        }
+      }
+
+      if (!changed) return null;
+      return nextValue + value.slice(copiedUntil);
+    };
 
     const refreshableLinks = Array.from(document.querySelectorAll(
       'link[rel~="stylesheet"][href], link[rel~="icon"][href]',
@@ -862,15 +950,8 @@ function runWatchClient({
     for (const element of document.querySelectorAll('img[srcset], source[srcset]')) {
       if (isInPreservedSubtree(element)) continue;
       const value = element.getAttribute('srcset');
-      let changed = false;
-      const nextValue = value.split(',').map((rawCandidate) => {
-        const candidate = rawCandidate.trim();
-        const match = candidate.match(/^(\S+)([\s\S]*)$/);
-        if (!match || !shouldRefresh(match[1])) return candidate;
-        changed = true;
-        return `${cacheBust(match[1])}${match[2]}`;
-      }).join(', ');
-      if (changed) element.setAttribute('srcset', nextValue);
+      const nextValue = rewriteSrcset(value);
+      if (nextValue !== null) element.setAttribute('srcset', nextValue);
     }
 
     window.dispatchEvent(new CustomEvent('rettangoli:watch-asset-update', {

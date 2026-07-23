@@ -363,25 +363,41 @@ const setupConfigWatcher = (rootDir, options, scheduleChange) => {
   });
 };
 
-const createRebuildScheduler = ({ rootDir, outputPath, server, logger }) => {
+export const createRebuildScheduler = ({
+  rootDir,
+  outputPath,
+  server,
+  logger,
+  build = buildSite,
+}) => {
   let debounceTimer = null;
   let isBuilding = false;
   const pendingChanges = new Map();
+  const failedChanges = new Map();
 
   const flushChanges = async () => {
     if (isBuilding) return;
     isBuilding = true;
     try {
       while (pendingChanges.size > 0) {
-        const changes = [...pendingChanges.values()];
+        const attemptedChanges = new Map(failedChanges);
+        for (const [key, change] of pendingChanges) {
+          attemptedChanges.set(key, change);
+        }
+        const changes = [...attemptedChanges.values()];
         pendingChanges.clear();
         logger.log('Rebuilding site...');
         try {
-          await buildSite({ rootDir, outputPath, quiet: true });
+          await build({ rootDir, outputPath, quiet: true });
+          failedChanges.clear();
           logger.log('Rebuild complete');
           const finalizedChanges = finalizeWatchChanges(changes);
           server.reloadAll(classifyWatchChanges(finalizedChanges));
         } catch (error) {
+          failedChanges.clear();
+          for (const [key, change] of attemptedChanges) {
+            failedChanges.set(key, change);
+          }
           logger.error('Error during rebuild:', error);
         }
       }

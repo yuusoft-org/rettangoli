@@ -17,6 +17,8 @@ import {
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 
+import { parse } from "parse5";
+
 import {
   generateHtml,
   generateOverview,
@@ -40,6 +42,7 @@ const WATCH_CLIENT_PATH = "/__rettangoli_vt_watch_client__.js";
 const WATCH_CLIENT_TAG =
   `<script type="module" data-rtgl-watch-client src="${WATCH_CLIENT_PATH}"></script>`;
 const WATCHABLE_SPEC_PATTERN = /\.(?:html?|ya?ml)$/i;
+const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
 const quietGenerationLogger = {
   error() {},
   log() {},
@@ -78,15 +81,79 @@ const convertToHtmlExtension = (filePath) =>
     ? filePath
     : filePath.replace(/\.[^/.]+$/, "") + ".html";
 
+const inspectHtmlStructure = (html) => {
+  const document = parse(html, { sourceCodeLocationInfo: true });
+  let body = null;
+  let doctype = null;
+  let head = null;
+  let htmlElement = null;
+  const nodes = [document];
+
+  while (nodes.length > 0) {
+    const node = nodes.pop();
+    const attributes = new Map(
+      node.attrs?.map(({ name, value }) => [name, value]) || [],
+    );
+    if (
+      node.namespaceURI === HTML_NAMESPACE &&
+      node.tagName === "script" &&
+      attributes.has("data-rtgl-watch-client") &&
+      attributes.get("type")?.trim().toLowerCase() === "module" &&
+      attributes.get("src") === WATCH_CLIENT_PATH
+    ) {
+      return { hasWatchClient: true };
+    }
+    if (node.namespaceURI === HTML_NAMESPACE) {
+      if (node.tagName === "body") {
+        body = node;
+      } else if (node.tagName === "head") {
+        head = node;
+      } else if (node.tagName === "html") {
+        htmlElement = node;
+      }
+    } else if (node.nodeName === "#documentType") {
+      doctype = node;
+    }
+    if (node.childNodes) nodes.push(...node.childNodes);
+  }
+
+  const bodyCloseIndex =
+    body?.sourceCodeLocation?.endTag?.startOffset ?? null;
+  const htmlCloseIndex =
+    htmlElement?.sourceCodeLocation?.endTag?.startOffset ?? null;
+  const bodyStartIndex =
+    body?.sourceCodeLocation?.startTag?.endOffset ?? null;
+  const headStartIndex =
+    head?.sourceCodeLocation?.startTag?.endOffset ?? null;
+  const htmlStartIndex =
+    htmlElement?.sourceCodeLocation?.startTag?.endOffset ?? null;
+  const parsedDoctypeEndIndex =
+    doctype?.sourceCodeLocation?.endOffset ?? null;
+  const doctypeEndIndex =
+    parsedDoctypeEndIndex !== null &&
+    html[parsedDoctypeEndIndex - 1] === ">"
+      ? parsedDoctypeEndIndex
+      : null;
+
+  return {
+    hasWatchClient: false,
+    insertionIndex:
+      bodyCloseIndex ??
+      (body === null ? null : htmlCloseIndex) ??
+      bodyStartIndex ??
+      headStartIndex ??
+      htmlStartIndex ??
+      doctypeEndIndex ??
+      0,
+  };
+};
+
 const injectWatchClient = (html) => {
-  if (html.includes("data-rtgl-watch-client")) return html;
-  if (/<\/body\s*>/i.test(html)) {
-    return html.replace(/<\/body\s*>/i, `${WATCH_CLIENT_TAG}</body>`);
-  }
-  if (/<\/html\s*>/i.test(html)) {
-    return html.replace(/<\/html\s*>/i, `${WATCH_CLIENT_TAG}</html>`);
-  }
-  return `${html}\n${WATCH_CLIENT_TAG}\n`;
+  const structure = inspectHtmlStructure(html);
+  if (structure.hasWatchClient) return html;
+  return html.slice(0, structure.insertionIndex) +
+    WATCH_CLIENT_TAG +
+    html.slice(structure.insertionIndex);
 };
 
 const getContentType = (filePath) => {
@@ -100,9 +167,11 @@ const getContentType = (filePath) => {
     ".ico": "image/x-icon",
     ".jpeg": "image/jpeg",
     ".jpg": "image/jpeg",
+    ".cjs": "application/javascript; charset=utf-8",
     ".js": "application/javascript; charset=utf-8",
     ".json": "application/json; charset=utf-8",
     ".map": "application/json; charset=utf-8",
+    ".mjs": "application/javascript; charset=utf-8",
     ".otf": "font/otf",
     ".png": "image/png",
     ".svg": "image/svg+xml",
@@ -596,6 +665,7 @@ export const createRettangoliVtWatchPlugin = ({
   let currentError = null;
   let debounceTimer = null;
   let isGenerating = false;
+  let flushRequested = false;
   const pendingChanges = new Map();
 
   const send = (data) => {
@@ -630,8 +700,25 @@ export const createRettangoliVtWatchPlugin = ({
     });
   };
 
+  const enqueueChange = (change) => {
+    const key = `${change.scope}:${change.relativePath}`;
+    const previousChange = pendingChanges.get(key);
+    pendingChanges.set(key, {
+      ...change,
+      event:
+        change.event === "change" &&
+        previousChange &&
+        previousChange.event !== "change"
+          ? previousChange.event
+          : change.event,
+    });
+  };
+
   const flushChanges = async () => {
-    if (isGenerating) return;
+    if (isGenerating) {
+      flushRequested = true;
+      return;
+    }
     isGenerating = true;
     try {
       while (pendingChanges.size > 0) {
@@ -664,26 +751,25 @@ export const createRettangoliVtWatchPlugin = ({
             `[VT Watch] Updated ${changes.length} source file(s).`,
           );
         } catch (error) {
+          const newerChanges = [...pendingChanges.values()];
+          pendingChanges.clear();
+          for (const change of changes) enqueueChange(change);
+          for (const change of newerChanges) enqueueChange(change);
           sendError(error);
+          break;
         }
       }
     } finally {
       isGenerating = false;
+      if (flushRequested) {
+        flushRequested = false;
+        void flushChanges();
+      }
     }
   };
 
   const scheduleChange = (change) => {
-    const key = `${change.scope}:${change.relativePath}`;
-    const previousChange = pendingChanges.get(key);
-    pendingChanges.set(key, {
-      ...change,
-      event:
-        change.event === "change" &&
-        previousChange &&
-        previousChange.event !== "change"
-          ? previousChange.event
-          : change.event,
-    });
+    enqueueChange(change);
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       debounceTimer = null;
