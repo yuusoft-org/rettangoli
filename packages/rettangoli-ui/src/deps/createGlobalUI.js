@@ -1,4 +1,23 @@
 /**
+ * @typedef {Object} GlobalUIDropdownItem
+ * @property {string} [label] - Visible item or section label
+ * @property {('section'|'item'|'separator'|'label')} [type] - Row type; defaults to `item`
+ * @property {string} [id] - Optional item identity
+ * @property {string} [href] - Native link destination
+ * @property {string} [path] - Application/router destination
+ * @property {boolean} [disabled] - Whether the item is disabled
+ * @property {GlobalUIDropdownItem[]} [items] - Nested submenu items. A non-empty array takes
+ * precedence over the item's navigation or leaf action.
+ */
+
+/**
+ * @typedef {Object} GlobalUIDropdownResult
+ * @property {number} index - Selected leaf's index in its immediate menu
+ * @property {number[]} indexPath - Root-to-leaf indexes locating the selected item
+ * @property {GlobalUIDropdownItem} item - Selected leaf item
+ */
+
+/**
  * Creates a GlobalUI manager instance for controlling global UI components.
  * Provides methods for showing alerts, confirm dialogs, form dialogs,
  * dropdown menus, toasts, and closing all UI components.
@@ -142,19 +161,20 @@ const createGlobalUI = (globalUIElement) => {
 
     /**
      * Shows a dropdown menu at the specified position with the given items.
-     * The dropdown can contain various item types including labels, items, and separators.
+     * The dropdown can contain sections, items, separators, and recursively nested submenus.
      *
      * @param {Object} options - Dropdown menu configuration options
-     * @param {Array<Object>} options.items - Array of dropdown menu items (required)
+     * @param {GlobalUIDropdownItem[]} options.items - Recursive array of dropdown menu items (required)
      * @param {number} options.x - X coordinate position (required)
      * @param {number} options.y - Y coordinate position (required)
      * @param {string} [options.place] - Dropdown menu place token (default: "bs")
+     * @param {('ltr'|'rtl')} [options.dir] - Optional explicit menu direction
+     * @param {string} [options.ariaLabel] - Accessible name for the root menu and dialog
      * @param {string} [options.mdPlace] - Responsive place token, for example "center" on mobile
      * @param {boolean} [options.overlay] - Whether to show a dialog-style dim overlay
      * @param {boolean} [options.mdOverlay] - Responsive overlay flag for mobile breakpoints
-     * @returns {Promise<Object|null>} Promise that resolves with clicked item info or null if closed without selection
-     * @returns {Object} [result.index] - Index of the clicked item
-     * @returns {Object} [result.item] - The clicked item object
+     * @returns {Promise<GlobalUIDropdownResult|null>} Promise that resolves with the selected
+     * leaf's index, root-to-leaf index path, and item, or null if closed without selection
      * @throws {Error} If globalUIElement is not initialized
      */
     showDropdownMenu: async (options) => {

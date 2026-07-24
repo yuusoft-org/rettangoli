@@ -18,6 +18,8 @@ const DROPDOWN_POPOVER_ATTR_PROPS = [
   ["mdNoOverlay", "md-no-overlay"],
   ["lgNoOverlay", "lg-no-overlay"],
   ["xlNoOverlay", "xl-no-overlay"],
+  ["dir", "dir"],
+  ["ariaLabel", "aria-label"],
 ];
 
 const DEFAULT_COMPONENT_DIALOG_BUTTONS = Object.freeze([
