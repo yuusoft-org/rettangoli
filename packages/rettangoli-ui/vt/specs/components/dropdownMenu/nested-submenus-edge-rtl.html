@@ -25,8 +25,10 @@ steps:
   - action: screenshot
   - action: customEvent
     name: vt:open-rtl-with-keyboard
-  - action: wait
-    ms: 120
+  - action: waitFor
+    selector: '#rtl-result[data-status="complete"]'
+    state: attached
+    timeoutMs: 3000
   - action: assert
     type: text
     selector: '#rtl-result'
@@ -82,13 +84,37 @@ viewport:
   edgeMenu.items = nestedItems;
   rtlMenu.items = nestedItems;
 
-  window.addEventListener("vt:open-rtl-with-keyboard", () => {
+  const waitForCondition = (getValue, timeoutMs = 1000) => {
+    const deadline = performance.now() + timeoutMs;
+
+    return new Promise((resolve) => {
+      const check = () => {
+        const value = getValue();
+        if (value || performance.now() >= deadline) {
+          resolve(value || null);
+          return;
+        }
+        requestAnimationFrame(check);
+      };
+
+      check();
+    });
+  };
+
+  window.addEventListener("vt:open-rtl-with-keyboard", async () => {
     edgeMenu.removeAttribute("open");
     rtlMenu.setAttribute("open", "");
+    result.textContent = "WAITING";
+    result.removeAttribute("data-status");
 
-    setTimeout(() => {
-      const hostRoot = rtlMenu.shadowRoot;
-      const trigger = hostRoot.querySelector('[data-index-path="0"]');
+    const hostRoot = rtlMenu.shadowRoot;
+    const trigger = await waitForCondition(() => (
+      hostRoot.querySelector('rtgl-popover[positioned]')
+      && hostRoot.querySelector('[data-index-path="0"]')
+    ));
+
+    let passed = !!trigger;
+    if (trigger) {
       trigger.focus();
       trigger.dispatchEvent(new KeyboardEvent("keydown", {
         key: "ArrowLeft",
@@ -96,33 +122,35 @@ viewport:
         composed: true,
       }));
 
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const child = hostRoot.querySelector('[data-index-path="0.0"]');
-          const panel = hostRoot.querySelector('[data-depth="1"]');
-          const openedCorrectly =
-            child === hostRoot.activeElement &&
-            panel?.dataset.side === "left" &&
-            panel?.dataset.positioned === "true";
-
-          child?.dispatchEvent(new KeyboardEvent("keydown", {
-            key: "ArrowRight",
-            bubbles: true,
-            composed: true,
-          }));
-
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              result.textContent =
-                openedCorrectly &&
-                trigger === hostRoot.activeElement &&
-                !hostRoot.querySelector('[data-depth="1"]')
-                  ? "PASS"
-                  : "FAIL";
-            });
-          });
-        });
+      const opened = await waitForCondition(() => {
+        const child = hostRoot.querySelector('[data-index-path="0.0"]');
+        const panel = hostRoot.querySelector('[data-depth="1"]');
+        return (
+          child === hostRoot.activeElement
+          && panel?.dataset.side === "left"
+          && panel?.dataset.positioned === "true"
+        )
+          ? { child }
+          : null;
       });
-    }, 40);
+
+      passed = passed && !!opened;
+      if (opened) {
+        opened.child.dispatchEvent(new KeyboardEvent("keydown", {
+          key: "ArrowRight",
+          bubbles: true,
+          composed: true,
+        }));
+
+        const closed = await waitForCondition(() => (
+          trigger === hostRoot.activeElement
+          && !hostRoot.querySelector('[data-depth="1"]')
+        ));
+        passed = passed && !!closed;
+      }
+    }
+
+    result.textContent = passed ? "PASS" : "FAIL";
+    result.setAttribute("data-status", "complete");
   });
 </script>

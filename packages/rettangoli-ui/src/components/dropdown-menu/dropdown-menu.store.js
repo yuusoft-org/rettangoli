@@ -168,7 +168,6 @@ const createPanels = ({ items, state, props }) => {
     ? state.activeIndexByDepth
     : [];
   const panelWidth = normalizePanelWidth(props.w);
-  const menuLabel = escapeAttrValue(props.ariaLabel || "Menu");
   let currentItems = items;
   let parentIndexPath = [];
   let depth = 0;
@@ -187,7 +186,7 @@ const createPanels = ({ items, state, props }) => {
       ? `optionD${depth - 1}I${parentIndexPath[parentIndexPath.length - 1]}`
       : "";
     const panelAttrString = isRoot
-      ? `w=f g=xs role="menu" aria-label="${menuLabel}" aria-orientation="vertical"`
+      ? 'w=f g=xs role="menu" aria-orientation="vertical"'
       : [
           'slot="floating"',
           'class="submenu-panel"',
@@ -214,6 +213,7 @@ const createPanels = ({ items, state, props }) => {
       panelId: `menuPanelD${depth}`,
       parentIndexPath,
       parentIndexPathString: parentIndexPath.join("."),
+      menuLabel: isRoot ? props.ariaLabel || "Menu" : null,
       panelAttrString,
       items: normalizeItems({
         items: currentItems,

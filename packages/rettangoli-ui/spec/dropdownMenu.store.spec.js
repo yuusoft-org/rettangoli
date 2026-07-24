@@ -156,4 +156,18 @@ describe('rtgl-dropdown-menu store', () => {
     });
     expect(viewData.items[2].tabIndex).toBe('-1');
   });
+
+  it('keeps quote-containing accessible labels as unescaped binding values', () => {
+    const ariaLabel = 'Project "Save As"';
+    const viewData = selectViewData({
+      props: {
+        ariaLabel,
+        items: [{ id: 'save-as', label: 'Save as' }],
+      },
+    });
+
+    expect(viewData.menuLabel).toBe(ariaLabel);
+    expect(viewData.panels[0].menuLabel).toBe(ariaLabel);
+    expect(viewData.panels[0].panelAttrString).not.toContain('aria-label');
+  });
 });

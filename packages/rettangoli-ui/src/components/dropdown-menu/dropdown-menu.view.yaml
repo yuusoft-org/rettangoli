@@ -76,9 +76,9 @@ styles:
     margin-left: 2px
     margin-right: 5px
 template:
-  - 'rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place} aria-label="${menuLabel}" ${popoverAttrString} content-w=${w} content-h=${h} content-sv=true content-g=xs content-pv=sm':
+  - 'rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place} :aria-label=${menuLabel} ${popoverAttrString} content-w=${w} content-h=${h} content-sv=true content-g=xs content-pv=sm':
       - $for panel, panelIndex in panels:
-          - 'rtgl-view#${panel.panelId} ${panel.panelAttrString} tabindex="-1" data-depth=${panel.depth} data-parent-index-path=${panel.parentIndexPathString}':
+          - 'rtgl-view#${panel.panelId} ${panel.panelAttrString} :aria-label=${panel.menuLabel} tabindex="-1" data-depth=${panel.depth} data-parent-index-path=${panel.parentIndexPathString}':
               - $for item, i in panel.items:
                   - $if item.isSection:
                       - rtgl-view w=f p=md role=presentation aria-hidden="true":
