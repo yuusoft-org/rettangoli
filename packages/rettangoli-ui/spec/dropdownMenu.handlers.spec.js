@@ -4,8 +4,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   handleClickMenuItem,
+  handleDocumentPointerMove,
   handleMenuItemKeyDown,
   handleMenuItemPointerEnter,
+  handleMenuItemPointerLeave,
+  handleMenuPanelScroll,
   handleMenuPanelPointerEnter,
   handleMenuPanelPointerLeave,
   handleOnUpdate,
@@ -330,6 +333,66 @@ describe("rtgl-dropdown-menu handlers", () => {
     expect(disabledItem.focus).toHaveBeenCalledTimes(1);
   });
 
+  it("hides an open submenu while its trigger is outside the owning scrollport", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    store.state.openIndexPath = [0];
+    const popover = document.createElement("div");
+    const scrollport = document.createElement("div");
+    const trigger = createItemTarget([0]);
+    const panel = document.createElement("div");
+    let triggerTop = 140;
+    Object.defineProperty(popover, "content", { value: scrollport });
+    popover.append(scrollport);
+    document.body.append(popover);
+
+    scrollport.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      right: 200,
+      bottom: 100,
+      width: 200,
+      height: 100,
+    });
+    trigger.getBoundingClientRect = () => ({
+      left: 20,
+      top: triggerTop,
+      right: 120,
+      bottom: triggerTop + 30,
+      width: 100,
+      height: 30,
+    });
+    panel.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      right: 120,
+      bottom: 100,
+      width: 120,
+      height: 100,
+    });
+    panel.dataset.positioned = "true";
+
+    const deps = {
+      props: { open: true },
+      refs: {
+        popover,
+        optionD0I0: trigger,
+        menuPanelD1: panel,
+      },
+      store,
+    };
+
+    handleMenuPanelScroll(deps);
+    await vi.runAllTimersAsync();
+    expect(panel.dataset.positioned).toBeUndefined();
+
+    triggerTop = 40;
+    handleMenuPanelScroll(deps);
+    await vi.runAllTimersAsync();
+    expect(panel.dataset.positioned).toBe("true");
+    popover.remove();
+  });
+
   it("closes the deepest submenu on Escape before closing the root", async () => {
     vi.useFakeTimers();
     const store = createStore();
@@ -494,5 +557,79 @@ describe("rtgl-dropdown-menu handlers", () => {
 
     expect(store.closeSubmenusFromDepth).not.toHaveBeenCalled();
     expect(store.state.openIndexPath).toEqual([0, 0]);
+  });
+
+  it("keeps the shallower close when pointer grace is abandoned", () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    store.state.openIndexPath = [0, 0];
+    const parentTrigger = createItemTarget([0]);
+    const childTrigger = createItemTarget([0, 0]);
+    const leavingPanel = document.createElement("div");
+    const childPanel = document.createElement("div");
+    leavingPanel.dataset.depth = "1";
+    childPanel.dataset.side = "right";
+    childTrigger.getBoundingClientRect = () => ({
+      left: 20,
+      top: 20,
+      right: 120,
+      bottom: 50,
+      width: 100,
+      height: 30,
+    });
+    childPanel.getBoundingClientRect = () => ({
+      left: 125,
+      top: 15,
+      right: 245,
+      bottom: 150,
+      width: 120,
+      height: 135,
+    });
+    const deps = {
+      props: {
+        open: true,
+        items: [{
+          label: "Export",
+          items: [{
+            label: "Advanced",
+            items: [{ label: "PDF" }],
+          }],
+        }],
+      },
+      refs: {
+        popover: { isConnected: true },
+        optionD0I0: parentTrigger,
+        menuPanelD2: childPanel,
+      },
+      render: vi.fn(),
+      store,
+    };
+
+    handleMenuPanelPointerLeave(deps, {
+      _event: {
+        currentTarget: leavingPanel,
+        relatedTarget: null,
+        pointerType: "mouse",
+      },
+    });
+    handleMenuItemPointerLeave(deps, {
+      _event: {
+        currentTarget: childTrigger,
+        relatedTarget: null,
+        pointerType: "mouse",
+        clientX: 120,
+        clientY: 45,
+      },
+    });
+    handleDocumentPointerMove(deps, {
+      _event: {
+        clientX: 500,
+        clientY: 500,
+      },
+    });
+
+    expect(store.closeSubmenusFromDepth).toHaveBeenCalledTimes(1);
+    expect(store.closeSubmenusFromDepth).toHaveBeenCalledWith({ depth: 0 });
+    expect(store.state.openIndexPath).toEqual([]);
   });
 });

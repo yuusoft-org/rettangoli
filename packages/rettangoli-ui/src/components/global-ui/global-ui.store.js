@@ -19,7 +19,6 @@ const DROPDOWN_POPOVER_ATTR_PROPS = [
   ["lgNoOverlay", "lg-no-overlay"],
   ["xlNoOverlay", "xl-no-overlay"],
   ["dir", "dir"],
-  ["ariaLabel", "aria-label"],
 ];
 
 const DEFAULT_COMPONENT_DIALOG_BUTTONS = Object.freeze([
@@ -227,6 +226,7 @@ export const setDropdownConfig = ({ state }, options = {}) => {
     x: options.x ?? 0,
     y: options.y ?? 0,
     place: options.place ?? "bs",
+    ariaLabel: options.ariaLabel ?? options["aria-label"] ?? "Menu",
     ...collectDropdownPopoverOptions(options),
   };
   state.uiType = "dropdown";
@@ -357,6 +357,7 @@ export const selectViewData = ({ state }) => {
       x: state.dropdownConfig?.x ?? 0,
       y: state.dropdownConfig?.y ?? 0,
       place: state.dropdownConfig?.place ?? "bs",
+      ariaLabel: state.dropdownConfig?.ariaLabel ?? "Menu",
       popoverAttrString: stringifyDropdownPopoverAttrs(state.dropdownConfig),
     },
     formDialogConfig: {

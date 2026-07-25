@@ -46,11 +46,6 @@ propsSchema:
       type: string
     h:
       type: string
-    dir:
-      type: string
-      enum:
-        - ltr
-        - rtl
     aria-label:
       type: string
   $defs:

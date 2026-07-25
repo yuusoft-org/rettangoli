@@ -20,6 +20,8 @@ import {
   setToastPhase,
   setAlertConfig,
   setComponentDialogConfig,
+  setDropdownConfig,
+  selectViewData,
 } from "../src/components/global-ui/global-ui.store.js";
 import * as globalUiStore from "../src/components/global-ui/global-ui.store.js";
 
@@ -162,6 +164,22 @@ describe("rtgl-global-ui dropdown handlers", () => {
       index: undefined,
       item,
     });
+  });
+});
+
+describe("rtgl-global-ui dropdown store", () => {
+  it("keeps arbitrary accessible labels out of raw attribute interpolation", () => {
+    const state = structuredClone(createInitialState());
+
+    setDropdownConfig({ state }, {
+      items: [],
+      ariaLabel: 'Project "Save As"',
+      dir: "rtl",
+    });
+
+    const viewData = selectViewData({ state });
+    expect(viewData.dropdownConfig.ariaLabel).toBe('Project "Save As"');
+    expect(viewData.dropdownConfig.popoverAttrString).toBe('dir="rtl"');
   });
 });
 

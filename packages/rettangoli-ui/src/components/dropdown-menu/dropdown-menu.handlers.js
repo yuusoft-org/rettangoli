@@ -154,6 +154,28 @@ const isPointInRect = (point, rect) => {
     && point.y <= rect.bottom;
 };
 
+const doRectsIntersect = (firstRect, secondRect) => {
+  return !!firstRect
+    && !!secondRect
+    && firstRect.right > secondRect.left
+    && firstRect.left < secondRect.right
+    && firstRect.bottom > secondRect.top
+    && firstRect.top < secondRect.bottom;
+};
+
+const setSubmenuPositioned = (panel, isPositioned) => {
+  if (!panel?.dataset) {
+    return;
+  }
+
+  if (isPositioned) {
+    panel.dataset.positioned = "true";
+    return;
+  }
+
+  delete panel.dataset.positioned;
+};
+
 const ensureRootScrollListener = (deps) => {
   const runtime = getRuntime(deps);
   const scrollElement = deps?.refs?.popover?.content;
@@ -189,6 +211,7 @@ const positionSubmenus = (deps) => {
     || globalThis.document?.documentElement?.clientHeight
     || 0;
   const direction = getDirection(deps);
+  let isAncestorBranchVisible = true;
 
   openIndexPath.forEach((parentIndex, parentDepth) => {
     const trigger = refs[`optionD${parentDepth}I${parentIndex}`];
@@ -200,10 +223,26 @@ const positionSubmenus = (deps) => {
       || viewportWidth <= 0
       || viewportHeight <= 0
     ) {
+      setSubmenuPositioned(panel, false);
+      isAncestorBranchVisible = false;
       return;
     }
 
     const anchorRect = trigger.getBoundingClientRect();
+    const scrollport = parentDepth === 0
+      ? refs.popover?.content
+      : refs[`menuPanelD${parentDepth}`];
+    const scrollportRect = scrollport?.getBoundingClientRect?.();
+
+    if (
+      !isAncestorBranchVisible
+      || (scrollportRect && !doRectsIntersect(anchorRect, scrollportRect))
+    ) {
+      setSubmenuPositioned(panel, false);
+      isAncestorBranchVisible = false;
+      return;
+    }
+
     const panelRect = panel.getBoundingClientRect();
     const position = calculateSubmenuPosition({
       anchorRect,
@@ -219,7 +258,7 @@ const positionSubmenus = (deps) => {
     panel.style.left = `${Math.round(position.left)}px`;
     panel.style.top = `${Math.round(position.top)}px`;
     panel.dataset.side = position.side;
-    panel.dataset.positioned = "true";
+    setSubmenuPositioned(panel, true);
   });
 };
 
@@ -298,6 +337,30 @@ const closeSubmenusFromDepth = (deps, depth, { render = true } = {}) => {
   }
 
   return true;
+};
+
+const scheduleSubmenuClose = (
+  deps,
+  runtime,
+  depth,
+  { clearGraceOnFire = false } = {},
+) => {
+  const scheduledDepth = runtime.closeDepth === null
+    ? depth
+    : Math.min(runtime.closeDepth, depth);
+
+  cancelTimer(runtime, "closeTimer");
+  runtime.closeDepth = scheduledDepth;
+  runtime.closeTimer = setTimeout(() => {
+    runtime.closeTimer = null;
+    runtime.closeDepth = null;
+    if (clearGraceOnFire) {
+      runtime.grace = null;
+    }
+    if (deps.props?.open && deps.refs?.popover?.isConnected !== false) {
+      closeSubmenusFromDepth(deps, scheduledDepth);
+    }
+  }, SUBMENU_CLOSE_DELAY);
 };
 
 const openSubmenu = (deps, indexPath, { focusChild = false } = {}) => {
@@ -572,16 +635,7 @@ export const handleMenuItemPointerLeave = (deps, payload) => {
       buffer: 5,
     }),
   };
-  cancelTimer(runtime, "closeTimer");
-  runtime.closeDepth = depth;
-  runtime.closeTimer = setTimeout(() => {
-    runtime.closeTimer = null;
-    runtime.closeDepth = null;
-    runtime.grace = null;
-    if (deps.props?.open && deps.refs?.popover?.isConnected !== false) {
-      closeSubmenusFromDepth(deps, depth);
-    }
-  }, SUBMENU_CLOSE_DELAY);
+  scheduleSubmenuClose(deps, runtime, depth, { clearGraceOnFire: true });
 };
 
 export const handleMenuPanelPointerEnter = (deps, payload) => {
@@ -617,15 +671,7 @@ export const handleMenuPanelPointerLeave = (deps, payload) => {
   }
 
   const runtime = getRuntime(deps);
-  cancelTimer(runtime, "closeTimer");
-  runtime.closeDepth = depth - 1;
-  runtime.closeTimer = setTimeout(() => {
-    runtime.closeTimer = null;
-    runtime.closeDepth = null;
-    if (deps.props?.open && deps.refs?.popover?.isConnected !== false) {
-      closeSubmenusFromDepth(deps, depth - 1);
-    }
-  }, SUBMENU_CLOSE_DELAY);
+  scheduleSubmenuClose(deps, runtime, depth - 1);
 };
 
 export const handleDocumentPointerMove = (deps, payload) => {
@@ -644,7 +690,9 @@ export const handleDocumentPointerMove = (deps, payload) => {
     return;
   }
 
-  const { depth } = runtime.grace;
+  const depth = runtime.closeDepth === null
+    ? runtime.grace.depth
+    : Math.min(runtime.grace.depth, runtime.closeDepth);
   clearGrace(runtime);
   closeSubmenusFromDepth(deps, depth);
 };
