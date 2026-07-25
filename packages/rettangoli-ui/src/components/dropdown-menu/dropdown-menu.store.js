@@ -97,8 +97,9 @@ const normalizeItems = ({
       ? item.shortcut
       : (typeof item.suffixText === "string" && item.suffixText.length > 0 ? item.suffixText : "");
     const isActive = isItem && index === activeIndex;
+    const isSubmenuOpen = hasSubmenu && openIndex === index;
     const c = isDisabled ? "mu-fg" : "fg";
-    const bgc = isDisabled ? "mu" : (isActive ? "ac" : "");
+    const bgc = isDisabled ? "mu" : (isActive ? (isSubmenuOpen ? "mu" : "ac") : "");
     const hoverBgc = isDisabled ? "" : "ac";
     const iconColor = c;
     const suffixTextColor = "mu-fg";
@@ -135,7 +136,7 @@ const normalizeItems = ({
       isActive,
       tabIndex: isActive ? "0" : "-1",
       hasSubmenu,
-      isSubmenuOpen: hasSubmenu && openIndex === index,
+      isSubmenuOpen,
       hasIconSlot,
       icon,
       hasIcon: icon.length > 0,

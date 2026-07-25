@@ -562,6 +562,7 @@ export const handleMenuItemPointerEnter = (deps, payload) => {
   const state = deps.store.getState();
   let shouldRender = state.activeIndexByDepth?.[depth] !== index;
   deps.store.setActiveIndex({ depth, index });
+  scheduleFocus(deps, indexPath);
 
   if (!item.disabled && Array.isArray(item.items) && item.items.length > 0) {
     if (state.openIndexPath?.[depth] === index) {

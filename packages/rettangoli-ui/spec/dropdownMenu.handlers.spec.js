@@ -333,6 +333,41 @@ describe("rtgl-dropdown-menu handlers", () => {
     expect(disabledItem.focus).toHaveBeenCalledTimes(1);
   });
 
+  it("moves roving focus to the item under the mouse", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    const hoveredItem = createItemTarget([1]);
+    hoveredItem.focus = vi.fn();
+    const deps = {
+      props: {
+        open: true,
+        items: [
+          { label: "Copy" },
+          { label: "Paste" },
+        ],
+      },
+      refs: {
+        popover: { isConnected: true },
+        optionD0I1: hoveredItem,
+      },
+      render: vi.fn(),
+      store,
+    };
+
+    handleMenuItemPointerEnter(deps, {
+      _event: {
+        currentTarget: hoveredItem,
+        pointerType: "mouse",
+        clientX: 20,
+        clientY: 20,
+      },
+    });
+    await vi.runAllTimersAsync();
+
+    expect(store.setActiveIndex).toHaveBeenCalledWith({ depth: 0, index: 1 });
+    expect(hoveredItem.focus).toHaveBeenCalledTimes(1);
+  });
+
   it("hides an open submenu while its trigger is outside the owning scrollport", async () => {
     vi.useFakeTimers();
     const store = createStore();

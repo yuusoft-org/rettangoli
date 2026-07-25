@@ -58,6 +58,7 @@ describe('rtgl-dropdown-menu store', () => {
 
     expect(viewData.panels).toHaveLength(3);
     expect(viewData.panels[0].items[1]).toMatchObject({
+      bgc: 'mu',
       hasSubmenu: true,
       hasHref: false,
       indexPath: [1],
@@ -65,11 +66,15 @@ describe('rtgl-dropdown-menu store', () => {
       optionId: 'optionD0I1',
     });
     expect(viewData.panels[1].items[1]).toMatchObject({
+      bgc: 'mu',
       indexPath: [1, 1],
       isSubmenuOpen: true,
       childPanelId: 'menuPanelD2',
     });
-    expect(viewData.panels[2].items[0].indexPath).toEqual([1, 1, 0]);
+    expect(viewData.panels[2].items[0]).toMatchObject({
+      bgc: 'ac',
+      indexPath: [1, 1, 0],
+    });
     expect(viewData.panels[1].panelAttrString).toContain('slot="floating"');
   });
 

@@ -46,9 +46,9 @@ styles:
     color: inherit
   .menu-item:
     outline: none
-  .menu-item:focus-visible:
-    outline: 2px solid var(--foreground)
-    outline-offset: -2px
+  '.menu-item:focus-visible:not(:hover)':
+    outline: 1px solid var(--ring)
+    outline-offset: -1px
   .icon-placeholder:
     width: 16px
     height: 16px
