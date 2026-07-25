@@ -99,7 +99,9 @@ const normalizeItems = ({
     const isActive = isItem && index === activeIndex;
     const isSubmenuOpen = hasSubmenu && openIndex === index;
     const c = isDisabled ? "mu-fg" : "fg";
-    const bgc = isDisabled ? "mu" : (isActive ? (isSubmenuOpen ? "mu" : "ac") : "");
+    const bgc = isDisabled
+      ? (isActive ? "ac" : "mu")
+      : (isActive ? (isSubmenuOpen ? "mu" : "ac") : "");
     const hoverBgc = isDisabled ? "" : "ac";
     const iconColor = c;
     const suffixTextColor = "mu-fg";

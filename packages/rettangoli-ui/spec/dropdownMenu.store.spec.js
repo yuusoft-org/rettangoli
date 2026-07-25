@@ -154,6 +154,7 @@ describe('rtgl-dropdown-menu store', () => {
     });
 
     expect(viewData.items[1]).toMatchObject({
+      bgc: 'ac',
       isDisabled: true,
       isActive: true,
       tabIndex: '0',

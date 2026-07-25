@@ -83,6 +83,22 @@ const resetTransientRuntime = (deps, { resetInitialFocus = false } = {}) => {
   }
 };
 
+const disposeRuntime = (deps) => {
+  const runtime = getRuntime(deps);
+  resetTransientRuntime(deps, { resetInitialFocus: true });
+
+  if (runtime.rootScrollElement && runtime.rootScrollListener) {
+    runtime.rootScrollElement.removeEventListener("scroll", runtime.rootScrollListener);
+  }
+  runtime.rootScrollElement = null;
+  runtime.rootScrollListener = null;
+
+  const key = deps?.store;
+  if (key && (typeof key === "object" || typeof key === "function")) {
+    runtimeByStore.delete(key);
+  }
+};
+
 const requestFrame = (callback) => {
   if (typeof requestAnimationFrame === "function") {
     return requestAnimationFrame(callback);
@@ -107,6 +123,59 @@ const parseIndexPath = (element) => {
   }
 
   return [];
+};
+
+const getDeepActiveElement = (root) => {
+  let activeElement = root?.activeElement;
+  const visitedElements = new Set();
+
+  while (
+    activeElement?.shadowRoot?.activeElement
+    && !visitedElements.has(activeElement)
+  ) {
+    visitedElements.add(activeElement);
+    activeElement = activeElement.shadowRoot.activeElement;
+  }
+
+  return activeElement;
+};
+
+const getFocusedIndexPath = (deps) => {
+  const componentRoot = deps?.refs?.popover?.getRootNode?.()
+    || globalThis.document;
+  let activeElement = getDeepActiveElement(componentRoot);
+  const visitedElements = new Set();
+
+  while (activeElement && !visitedElements.has(activeElement)) {
+    visitedElements.add(activeElement);
+    const menuItem = activeElement.closest?.("[data-index-path]");
+    const indexPath = parseIndexPath(menuItem || activeElement);
+    if (indexPath.length > 0) {
+      return indexPath;
+    }
+
+    activeElement = activeElement.getRootNode?.()?.host;
+  }
+
+  return [];
+};
+
+const getRestoreFocusIndexPath = (deps, depth, openIndexPath) => {
+  const focusedIndexPath = getFocusedIndexPath(deps);
+  const parentIndexPath = openIndexPath.slice(0, depth + 1);
+
+  if (
+    focusedIndexPath.length <= depth + 1
+    || parentIndexPath.length !== depth + 1
+  ) {
+    return undefined;
+  }
+
+  const isFocusedInClosingBranch = parentIndexPath.every(
+    (index, pathDepth) => focusedIndexPath[pathDepth] === index,
+  );
+
+  return isFocusedInClosingBranch ? parentIndexPath : undefined;
 };
 
 const getPanelItems = (items, parentIndexPath = []) => {
@@ -327,13 +396,18 @@ const closeSubmenusFromDepth = (deps, depth, { render = true } = {}) => {
     return false;
   }
 
+  const restoreFocusIndexPath = render
+    ? getRestoreFocusIndexPath(deps, depth, openIndexPath)
+    : undefined;
   deps.store.closeSubmenusFromDepth({ depth });
   const runtime = getRuntime(deps);
   clearGrace(runtime);
   clearTypeaheadFromDepth(runtime, depth + 1);
 
   if (render) {
-    renderInteraction(deps);
+    renderInteraction(deps, {
+      focusIndexPath: restoreFocusIndexPath,
+    });
   }
 
   return true;
@@ -410,6 +484,12 @@ const dispatchItemClick = (deps, event, indexPath, item) => {
       trigger: event.type,
     },
   }));
+};
+
+export const handleBeforeMount = (deps) => {
+  return () => {
+    disposeRuntime(deps);
+  };
 };
 
 export const handleOnUpdate = (deps, payload) => {

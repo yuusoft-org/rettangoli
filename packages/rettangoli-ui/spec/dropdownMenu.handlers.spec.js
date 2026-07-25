@@ -3,6 +3,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  handleBeforeMount,
   handleClickMenuItem,
   handleDocumentPointerMove,
   handleMenuItemKeyDown,
@@ -554,6 +555,87 @@ describe("rtgl-dropdown-menu handlers", () => {
 
     expect(store.openSubmenu).not.toHaveBeenCalled();
     expect(store.state.openIndexPath).toEqual([]);
+  });
+
+  it("cancels delayed submenu work when the component disconnects", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    const deps = {
+      props: {
+        open: true,
+        items: [
+          { label: "Export", items: [{ label: "PNG" }] },
+        ],
+      },
+      refs: {
+        popover: { isConnected: true },
+      },
+      render: vi.fn(),
+      store,
+    };
+    const cleanup = handleBeforeMount(deps);
+
+    handleMenuItemPointerEnter(deps, {
+      _event: {
+        currentTarget: createItemTarget([0]),
+        pointerType: "mouse",
+        clientX: 20,
+        clientY: 20,
+      },
+    });
+    cleanup();
+    await vi.runAllTimersAsync();
+
+    expect(store.openSubmenu).not.toHaveBeenCalled();
+    expect(store.state.openIndexPath).toEqual([]);
+  });
+
+  it("restores the parent trigger when pointer-close removes focused submenu content", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    store.state.openIndexPath = [0];
+    store.state.activeIndexByDepth = [0, 0];
+    const host = document.createElement("div");
+    const root = host.attachShadow({ mode: "open" });
+    const popover = document.createElement("div");
+    const parentTrigger = createItemTarget([0]);
+    const childPanel = document.createElement("div");
+    const childItem = createItemTarget([0, 0]);
+    childPanel.dataset.depth = "1";
+    childPanel.append(childItem);
+    root.append(popover, parentTrigger, childPanel);
+    document.body.append(host);
+    const parentFocus = vi.spyOn(parentTrigger, "focus");
+    childItem.focus();
+
+    const deps = {
+      props: {
+        open: true,
+        items: [{
+          label: "Export",
+          items: [{ label: "PNG" }],
+        }],
+      },
+      refs: {
+        popover,
+        optionD0I0: parentTrigger,
+      },
+      render: vi.fn(),
+      store,
+    };
+
+    handleMenuPanelPointerLeave(deps, {
+      _event: {
+        currentTarget: childPanel,
+        relatedTarget: null,
+        pointerType: "mouse",
+      },
+    });
+    await vi.runAllTimersAsync();
+
+    expect(store.state.openIndexPath).toEqual([]);
+    expect(parentFocus).toHaveBeenCalledTimes(1);
+    host.remove();
   });
 
   it("cancels a pending ancestor close when a descendant panel is entered", async () => {
