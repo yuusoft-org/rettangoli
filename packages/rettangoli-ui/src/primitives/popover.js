@@ -89,6 +89,26 @@ class RettangoliPopoverElement extends HTMLElement {
         slot[name="content"] {
           display: contents;
         }
+
+        .content-layer {
+          position: relative;
+          z-index: 0;
+        }
+
+        .floating-layer {
+          position: fixed;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
+        }
+
+        slot[name="floating"] {
+          display: contents;
+        }
+
+        slot[name="floating"]::slotted(*) {
+          pointer-events: auto;
+        }
       `);
     }
   }
@@ -140,12 +160,28 @@ class RettangoliPopoverElement extends HTMLElement {
     this._popoverContainer.className = 'popover-container';
     this._dialogElement.appendChild(this._popoverContainer);
 
+    // Bound ordinary content to its own lower stacking context so floating
+    // panels always paint above it, regardless of descendant z-index values.
+    this._contentLayer = document.createElement('div');
+    this._contentLayer.className = 'content-layer';
+    this._popoverContainer.appendChild(this._contentLayer);
+
+    // Keep floating content in the same dialog/top layer while allowing it to
+    // paint independently above the scrolling content surface.
+    this._floatingLayer = document.createElement('div');
+    this._floatingLayer.className = 'floating-layer';
+    this._floatingSlotElement = document.createElement('slot');
+    this._floatingSlotElement.setAttribute('name', 'floating');
+    this._floatingLayer.appendChild(this._floatingSlotElement);
+    this._popoverContainer.appendChild(this._floatingLayer);
+
     // Store reference for content slot
     this._slotElement = null;
     this._contentWrapper = null;
 
     // Track if we're open
     this._isOpen = false;
+    this._showTimerId = null;
     this._positionFrameId = null;
     this._revealFrameId = null;
     this._positionVersion = 0;
@@ -192,10 +228,12 @@ class RettangoliPopoverElement extends HTMLElement {
       "content-pv",
       "content-bgc",
       "content-style",
+      "aria-label",
     ];
   }
 
   connectedCallback() {
+    this._syncDialogLabel();
     this._syncContentWrapper({ reposition: false });
     this._updateActiveStateAttributes();
 
@@ -206,19 +244,28 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._cancelDeferredShow();
     this._cancelScheduledPositionUpdate();
     this._stopResizeObserver();
     window.removeEventListener("resize", this._onWindowResize);
+    this._isOpen = false;
 
     // Clean up dialog if it's open
-    if (this._isOpen && this._dialogElement.open) {
+    if (this._dialogElement.open) {
       this._dialogElement.close();
     }
     this._isModalOpen = false;
+
+    if (this._slotElement?.parentNode === this._contentLayer) {
+      this._contentLayer.removeChild(this._slotElement);
+    }
+    this._slotElement = null;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'open') {
+    if (name === 'aria-label') {
+      this._syncDialogLabel();
+    } else if (name === 'open') {
       if (newValue !== null && !this._isOpen) {
         // Only show if element is connected to DOM
         if (this.isConnected) {
@@ -240,6 +287,16 @@ class RettangoliPopoverElement extends HTMLElement {
       }
     } else if (name.startsWith("content-")) {
       this._syncContentWrapper();
+    }
+  }
+
+  _syncDialogLabel() {
+    const ariaLabel = this.getAttribute("aria-label");
+
+    if (ariaLabel) {
+      this._dialogElement.setAttribute("aria-label", ariaLabel);
+    } else {
+      this._dialogElement.removeAttribute("aria-label");
     }
   }
 
@@ -338,6 +395,10 @@ class RettangoliPopoverElement extends HTMLElement {
     return node?.nodeType === Node.TEXT_NODE && node.textContent?.trim() === "";
   }
 
+  _isFloatingNode(node) {
+    return node?.nodeType === Node.ELEMENT_NODE && node.getAttribute("slot") === "floating";
+  }
+
   _ensureContentWrapper() {
     if (this._contentWrapper?.parentNode === this) {
       return this._contentWrapper;
@@ -397,7 +458,9 @@ class RettangoliPopoverElement extends HTMLElement {
 
   _syncContentWrapper({ reposition = true } = {}) {
     const wrapper = this._ensureContentWrapper();
-    const nodesToWrap = Array.from(this.childNodes).filter((node) => node !== wrapper && !this._isIgnorableTextNode(node));
+    const nodesToWrap = Array.from(this.childNodes).filter((node) => {
+      return node !== wrapper && !this._isIgnorableTextNode(node) && !this._isFloatingNode(node);
+    });
 
     for (const node of nodesToWrap) {
       if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute("slot") === "content") {
@@ -433,7 +496,7 @@ class RettangoliPopoverElement extends HTMLElement {
       if (!this._slotElement) {
         this._slotElement = document.createElement('slot');
         this._slotElement.setAttribute('name', 'content');
-        this._popoverContainer.appendChild(this._slotElement);
+        this._contentLayer.appendChild(this._slotElement);
       }
 
       this._isOpen = true;
@@ -442,12 +505,22 @@ class RettangoliPopoverElement extends HTMLElement {
 
       // Show the dialog using setTimeout to ensure it's in the DOM
       if (!this._dialogElement.open) {
-        setTimeout(() => {
-          if (this._isOpen && this._dialogElement && !this._dialogElement.open) {
+        this._cancelDeferredShow();
+        this._showTimerId = setTimeout(() => {
+          this._showTimerId = null;
+
+          if (
+            this._isOpen
+            && this.isConnected
+            && this._dialogElement
+            && !this._dialogElement.open
+          ) {
             this._openDialogElement();
           }
 
-          this._schedulePositionUpdate();
+          if (this._isOpen && this.isConnected) {
+            this._schedulePositionUpdate();
+          }
         }, 0);
       } else {
         this._schedulePositionUpdate();
@@ -456,6 +529,8 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   _hide() {
+    this._cancelDeferredShow();
+
     if (this._isOpen) {
       this._isOpen = false;
       this._cancelScheduledPositionUpdate();
@@ -470,9 +545,18 @@ class RettangoliPopoverElement extends HTMLElement {
 
       // Remove slot to unmount content
       if (this._slotElement) {
-        this._popoverContainer.removeChild(this._slotElement);
+        if (this._slotElement.parentNode === this._contentLayer) {
+          this._contentLayer.removeChild(this._slotElement);
+        }
         this._slotElement = null;
       }
+    }
+  }
+
+  _cancelDeferredShow() {
+    if (this._showTimerId !== null) {
+      clearTimeout(this._showTimerId);
+      this._showTimerId = null;
     }
   }
 
@@ -568,6 +652,15 @@ class RettangoliPopoverElement extends HTMLElement {
 
         if (this._isOpen && this._positionVersion === revealVersion) {
           this.setAttribute('positioned', '');
+          this.dispatchEvent(new CustomEvent('positioned', {
+            detail: {
+              left,
+              top,
+              place,
+            },
+            bubbles: true,
+            composed: true,
+          }));
         }
       });
     });

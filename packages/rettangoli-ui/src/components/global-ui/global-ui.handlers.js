@@ -231,6 +231,14 @@ export const handleDropdownItemClick = (deps, payload) => {
   const { store, render, globalUI, refs } = deps;
   const event = payload._event;
   const { index, item } = event.detail;
+  const indexPath = Array.isArray(event.detail.indexPath)
+    ? event.detail.indexPath
+    : (Number.isFinite(index) ? [index] : undefined);
+  const result = { index, item };
+
+  if (indexPath) {
+    result.indexPath = indexPath;
+  }
 
   closeCurrentUi({
     store,
@@ -238,7 +246,7 @@ export const handleDropdownItemClick = (deps, payload) => {
     globalUI,
     refs,
     emitResult: true,
-    result: { index, item },
+    result,
   });
 };
 
@@ -304,16 +312,16 @@ export const handleShowToast = (deps, payload) => {
  * @param {Function} deps.render - Function to trigger re-rendering
  * @param {Object} deps.globalUI - The globalUI event emitter
  * @param {Object} payload - Dropdown menu configuration options
- * @param {Array<Object>} payload.items - Array of dropdown menu items (required)
+ * @param {Array<Object>} payload.items - Recursive array of dropdown menu items (required)
  * @param {number} payload.x - X coordinate position (required)
  * @param {number} payload.y - Y coordinate position (required)
  * @param {string} [payload.place] - Dropdown menu place token (default: "bs")
  * @param {string} [payload.mdPlace] - Responsive place token, for example "center" on mobile
  * @param {boolean} [payload.overlay] - Whether to show a dialog-style dim overlay
  * @param {boolean} [payload.mdOverlay] - Responsive overlay flag for mobile breakpoints
- * @returns {Promise<Object|null>} Promise that resolves with clicked item info or null if closed without selection
- * @returns {Object} [result.index] - Index of the clicked item
- * @returns {Object} [result.item] - The clicked item object
+ * @returns {Promise<{index: number, indexPath: number[], item: Object}|null>} Promise that
+ * resolves with the selected leaf's index, root-to-leaf index path, and item, or null when
+ * closed without selection
  */
 export const handleShowDropdownMenu = async (deps, payload) => {
   const { store, render, globalUI, refs } = deps;

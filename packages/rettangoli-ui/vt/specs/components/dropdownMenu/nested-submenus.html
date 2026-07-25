@@ -1,0 +1,108 @@
+---
+title: Nested Submenus
+description: Verifies pointer-opened, multi-level dropdown menus share one top layer and emit a full index path.
+diffThreshold: 0.75
+specs:
+  - Hovering a submenu trigger opens its child panel on the inline-end side.
+  - A third-level menu can remain open while the pointer crosses the gap between panels.
+  - Submenu triggers show a directional chevron and do not behave as links.
+  - Clicking a nested leaf emits its complete index path.
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '#dropdown-menu rtgl-popover[open][positioned]'
+    state: attached
+    timeoutMs: 1500
+  - action: select
+    selector: '#dropdown-menu [data-index-path="1"]'
+    steps:
+      - action: hover
+  - action: wait
+    ms: 180
+  - action: waitFor
+    selector: '#dropdown-menu [data-depth="1"][data-positioned="true"]'
+    state: visible
+    timeoutMs: 1200
+  - action: select
+    selector: '#dropdown-menu [data-index-path="1.2"]'
+    steps:
+      - action: hover
+  - action: wait
+    ms: 180
+  - action: waitFor
+    selector: '#dropdown-menu [data-depth="2"][data-positioned="true"]'
+    state: visible
+    timeoutMs: 1200
+  - action: select
+    selector: '#dropdown-menu [data-index-path="1.2.0"]'
+    steps:
+      - action: hover
+  - action: wait
+    ms: 400
+  - action: waitFor
+    selector: '#dropdown-menu [data-depth="2"][data-positioned="true"]'
+    state: visible
+    timeoutMs: 1200
+  - action: screenshot
+  - action: select
+    selector: '#dropdown-menu [data-index-path="1.2.1"]'
+    steps:
+      - action: click
+  - action: assert
+    type: text
+    selector: '#selection'
+    value: "Selected indexPath: 1.2.1"
+viewport:
+  id: component-wide
+  width: 960
+  height: 640
+---
+
+<rtgl-view wh="f" p="xl" bgc="bg" g="lg">
+  <rtgl-text s="lg">Workspace</rtgl-text>
+  <rtgl-text id="selection" c="mu-fg">Selected indexPath: none</rtgl-text>
+</rtgl-view>
+
+<rtgl-dropdown-menu
+  id="dropdown-menu"
+  aria-label='Project "Save As"'
+  open
+  x="72"
+  y="88"
+  place="bs"
+  w="240"
+  h="300"
+></rtgl-dropdown-menu>
+
+<script>
+  const dropdownMenu = document.getElementById("dropdown-menu");
+  const selection = document.getElementById("selection");
+
+  dropdownMenu.items = [
+    { type: "section", label: "Project" },
+    {
+      id: "share",
+      label: "Share",
+      items: [
+        { id: "copy-link", label: "Copy link", shortcut: "C" },
+        { id: "email", label: "Email" },
+        {
+          id: "more",
+          label: "More",
+          items: [
+            { id: "slack", label: "Slack" },
+            { id: "messages", label: "Messages" },
+            { id: "airdrop", label: "AirDrop", disabled: true },
+          ],
+        },
+      ],
+    },
+    { id: "duplicate", label: "Duplicate", shortcut: "Cmd+D" },
+    { type: "separator" },
+    { id: "archive", label: "Archive" },
+  ];
+
+  dropdownMenu.addEventListener("item-click", (event) => {
+    selection.textContent = `Selected indexPath: ${event.detail.indexPath.join(".")}`;
+  });
+</script>

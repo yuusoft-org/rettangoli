@@ -1,6 +1,67 @@
-import { describe, expect, it, vi } from "vitest";
+// @vitest-environment jsdom
 
-import { handleOnUpdate } from "../src/components/dropdown-menu/dropdown-menu.handlers.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import {
+  handleBeforeMount,
+  handleClickMenuItem,
+  handleDocumentPointerMove,
+  handleMenuItemKeyDown,
+  handleMenuItemPointerEnter,
+  handleMenuItemPointerLeave,
+  handleMenuPanelScroll,
+  handleMenuPanelPointerEnter,
+  handleMenuPanelPointerLeave,
+  handleOnUpdate,
+  handlePopoverPositioned,
+} from "../src/components/dropdown-menu/dropdown-menu.handlers.js";
+
+afterEach(() => {
+  vi.clearAllTimers();
+  vi.useRealTimers();
+});
+
+const createStore = () => {
+  const state = {
+    openIndexPath: [],
+    activeIndexByDepth: [],
+  };
+
+  return {
+    state,
+    getState: () => state,
+    resetInteraction: vi.fn(() => {
+      state.openIndexPath = [];
+      state.activeIndexByDepth = [];
+    }),
+    setActiveIndex: vi.fn(({ depth, index }) => {
+      if (state.openIndexPath[depth] !== index) {
+        state.openIndexPath = state.openIndexPath.slice(0, depth);
+      }
+      state.activeIndexByDepth = state.activeIndexByDepth.slice(0, depth + 1);
+      state.activeIndexByDepth[depth] = index;
+    }),
+    openSubmenu: vi.fn(({ depth, index, childActiveIndex }) => {
+      state.openIndexPath = state.openIndexPath.slice(0, depth);
+      state.openIndexPath[depth] = index;
+      state.activeIndexByDepth[depth] = index;
+      state.activeIndexByDepth[depth + 1] = childActiveIndex;
+    }),
+    closeSubmenusFromDepth: vi.fn(({ depth }) => {
+      state.openIndexPath = state.openIndexPath.slice(0, depth);
+      state.activeIndexByDepth = state.activeIndexByDepth.slice(0, depth + 1);
+    }),
+  };
+};
+
+const createItemTarget = (indexPath) => {
+  const target = document.createElement("button");
+  target.dataset.indexPath = indexPath.join(".");
+  target.dataset.depth = `${indexPath.length - 1}`;
+  target.dataset.index = `${indexPath[indexPath.length - 1]}`;
+  target.click = vi.fn();
+  return target;
+};
 
 describe("rtgl-dropdown-menu handlers", () => {
   it("re-renders when items are replaced", () => {
@@ -106,5 +167,586 @@ describe("rtgl-dropdown-menu handlers", () => {
 
     expect(render).toHaveBeenCalledTimes(1);
     expect(refreshContent).not.toHaveBeenCalled();
+  });
+
+  it("opens a submenu trigger instead of dispatching or following its href", () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    const dispatchEvent = vi.fn();
+    const render = vi.fn();
+    const currentTarget = createItemTarget([1]);
+    const preventDefault = vi.fn();
+
+    handleClickMenuItem(
+      {
+        dispatchEvent,
+        props: {
+          items: [
+            { id: "copy", label: "Copy" },
+            {
+              id: "export",
+              label: "Export",
+              href: "/ignored",
+              items: [{ id: "png", label: "PNG" }],
+            },
+          ],
+        },
+        refs: {},
+        render,
+        store,
+      },
+      {
+        _event: {
+          currentTarget,
+          pointerType: "mouse",
+          preventDefault,
+          type: "click",
+        },
+      },
+    );
+
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(store.openSubmenu).toHaveBeenCalledWith({
+      depth: 0,
+      index: 1,
+      childActiveIndex: 0,
+    });
+    expect(dispatchEvent).not.toHaveBeenCalled();
+    expect(render).toHaveBeenCalledTimes(1);
+  });
+
+  it("dispatches local index and full indexPath for a nested leaf", () => {
+    const store = createStore();
+    const dispatchEvent = vi.fn();
+    const currentTarget = createItemTarget([1, 2, 0]);
+    const leaf = { id: "png", label: "PNG", path: "/export/png" };
+    const preventDefault = vi.fn();
+
+    handleClickMenuItem(
+      {
+        dispatchEvent,
+        props: {
+          items: [
+            { label: "Other" },
+            {
+              label: "Export",
+              items: [
+                { label: "Simple" },
+                { label: "Other" },
+                { label: "Advanced", items: [leaf] },
+              ],
+            },
+          ],
+        },
+        store,
+      },
+      {
+        _event: {
+          currentTarget,
+          preventDefault,
+          type: "click",
+        },
+      },
+    );
+
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(dispatchEvent).toHaveBeenCalledTimes(1);
+    expect(dispatchEvent.mock.calls[0][0].detail).toMatchObject({
+      index: 0,
+      indexPath: [1, 2, 0],
+      item: leaf,
+      id: "png",
+      path: "/export/png",
+      trigger: "click",
+    });
+  });
+
+  it("uses the logical forward arrow to open and focus a child", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    const render = vi.fn();
+    const parent = createItemTarget([0]);
+    const child = document.createElement("button");
+    child.focus = vi.fn();
+    const preventDefault = vi.fn();
+
+    handleMenuItemKeyDown(
+      {
+        dispatchEvent: vi.fn(),
+        props: {
+          dir: "rtl",
+          items: [
+            {
+              label: "Export",
+              items: [{ label: "PNG" }],
+            },
+          ],
+        },
+        refs: {
+          optionD1I0: child,
+        },
+        render,
+        store,
+      },
+      {
+        _event: {
+          currentTarget: parent,
+          key: "ArrowLeft",
+          preventDefault,
+        },
+      },
+    );
+
+    await vi.runAllTimersAsync();
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(store.openSubmenu).toHaveBeenCalled();
+    expect(child.focus).toHaveBeenCalledTimes(1);
+  });
+
+  it("focuses the first menu item once after the popover is positioned", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    const disabledItem = document.createElement("button");
+    disabledItem.focus = vi.fn();
+    const deps = {
+      props: {
+        open: true,
+        items: [
+          { type: "section", label: "Actions" },
+          { label: "Unavailable", disabled: true },
+          { label: "Available" },
+        ],
+      },
+      refs: {
+        popover: { isConnected: true },
+        optionD0I1: disabledItem,
+      },
+      render: vi.fn(),
+      store,
+    };
+
+    handlePopoverPositioned(deps);
+    handlePopoverPositioned(deps);
+    await vi.runAllTimersAsync();
+
+    expect(store.setActiveIndex).toHaveBeenCalledTimes(1);
+    expect(store.setActiveIndex).toHaveBeenCalledWith({ depth: 0, index: 1 });
+    expect(disabledItem.focus).toHaveBeenCalledTimes(1);
+  });
+
+  it("moves roving focus to the item under the mouse", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    const hoveredItem = createItemTarget([1]);
+    hoveredItem.focus = vi.fn();
+    const deps = {
+      props: {
+        open: true,
+        items: [
+          { label: "Copy" },
+          { label: "Paste" },
+        ],
+      },
+      refs: {
+        popover: { isConnected: true },
+        optionD0I1: hoveredItem,
+      },
+      render: vi.fn(),
+      store,
+    };
+
+    handleMenuItemPointerEnter(deps, {
+      _event: {
+        currentTarget: hoveredItem,
+        pointerType: "mouse",
+        clientX: 20,
+        clientY: 20,
+      },
+    });
+    await vi.runAllTimersAsync();
+
+    expect(store.setActiveIndex).toHaveBeenCalledWith({ depth: 0, index: 1 });
+    expect(hoveredItem.focus).toHaveBeenCalledTimes(1);
+  });
+
+  it("hides an open submenu while its trigger is outside the owning scrollport", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    store.state.openIndexPath = [0];
+    const popover = document.createElement("div");
+    const scrollport = document.createElement("div");
+    const trigger = createItemTarget([0]);
+    const panel = document.createElement("div");
+    let triggerTop = 140;
+    Object.defineProperty(popover, "content", { value: scrollport });
+    popover.append(scrollport);
+    document.body.append(popover);
+
+    scrollport.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      right: 200,
+      bottom: 100,
+      width: 200,
+      height: 100,
+    });
+    trigger.getBoundingClientRect = () => ({
+      left: 20,
+      top: triggerTop,
+      right: 120,
+      bottom: triggerTop + 30,
+      width: 100,
+      height: 30,
+    });
+    panel.getBoundingClientRect = () => ({
+      left: 0,
+      top: 0,
+      right: 120,
+      bottom: 100,
+      width: 120,
+      height: 100,
+    });
+    panel.dataset.positioned = "true";
+
+    const deps = {
+      props: { open: true },
+      refs: {
+        popover,
+        optionD0I0: trigger,
+        menuPanelD1: panel,
+      },
+      store,
+    };
+
+    handleMenuPanelScroll(deps);
+    await vi.runAllTimersAsync();
+    expect(panel.dataset.positioned).toBeUndefined();
+
+    triggerTop = 40;
+    handleMenuPanelScroll(deps);
+    await vi.runAllTimersAsync();
+    expect(panel.dataset.positioned).toBe("true");
+    popover.remove();
+  });
+
+  it("closes the deepest submenu on Escape before closing the root", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    store.state.openIndexPath = [0];
+    store.state.activeIndexByDepth = [0, 0];
+    const child = createItemTarget([0, 0]);
+    const parent = createItemTarget([0]);
+    parent.focus = vi.fn();
+    const dispatchEvent = vi.fn();
+    const deps = {
+      dispatchEvent,
+      props: {
+        open: true,
+        items: [
+          {
+            label: "Export",
+            items: [{ label: "PNG" }],
+          },
+        ],
+      },
+      refs: {
+        optionD0I0: parent,
+      },
+      render: vi.fn(),
+      store,
+    };
+    const firstEvent = {
+      currentTarget: child,
+      key: "Escape",
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+    };
+
+    handleMenuItemKeyDown(deps, { _event: firstEvent });
+    await vi.runAllTimersAsync();
+
+    expect(store.state.openIndexPath).toEqual([]);
+    expect(parent.focus).toHaveBeenCalledTimes(1);
+    expect(dispatchEvent).not.toHaveBeenCalled();
+
+    handleMenuItemKeyDown(deps, {
+      _event: {
+        currentTarget: parent,
+        key: "Escape",
+        preventDefault: vi.fn(),
+        stopPropagation: vi.fn(),
+      },
+    });
+    expect(dispatchEvent.mock.calls[0][0].type).toBe("close");
+  });
+
+  it("closes a sibling submenu when keyboard focus moves away from its trigger", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    store.state.openIndexPath = [0];
+    store.state.activeIndexByDepth = [0, 0];
+    const parent = createItemTarget([0]);
+    const sibling = document.createElement("button");
+    sibling.focus = vi.fn();
+
+    handleMenuItemKeyDown(
+      {
+        dispatchEvent: vi.fn(),
+        props: {
+          open: true,
+          items: [
+            { label: "Export", items: [{ label: "PNG" }] },
+            { label: "Print" },
+          ],
+        },
+        refs: {
+          optionD0I1: sibling,
+        },
+        render: vi.fn(),
+        store,
+      },
+      {
+        _event: {
+          currentTarget: parent,
+          key: "ArrowDown",
+          preventDefault: vi.fn(),
+        },
+      },
+    );
+    await vi.runAllTimersAsync();
+
+    expect(store.state.openIndexPath).toEqual([]);
+    expect(sibling.focus).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancels a delayed hover open when the controlled menu closes", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    const props = {
+      open: true,
+      items: [
+        { label: "Export", items: [{ label: "PNG" }] },
+      ],
+    };
+    const deps = {
+      props,
+      refs: {
+        popover: { isConnected: true },
+      },
+      render: vi.fn(),
+      store,
+    };
+
+    handleMenuItemPointerEnter(deps, {
+      _event: {
+        currentTarget: createItemTarget([0]),
+        pointerType: "mouse",
+        clientX: 20,
+        clientY: 20,
+      },
+    });
+
+    props.open = false;
+    handleOnUpdate(deps, {
+      oldProps: { open: true, items: props.items },
+      newProps: { open: false, items: props.items },
+    });
+    await vi.runAllTimersAsync();
+
+    expect(store.openSubmenu).not.toHaveBeenCalled();
+    expect(store.state.openIndexPath).toEqual([]);
+  });
+
+  it("cancels delayed submenu work when the component disconnects", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    const deps = {
+      props: {
+        open: true,
+        items: [
+          { label: "Export", items: [{ label: "PNG" }] },
+        ],
+      },
+      refs: {
+        popover: { isConnected: true },
+      },
+      render: vi.fn(),
+      store,
+    };
+    const cleanup = handleBeforeMount(deps);
+
+    handleMenuItemPointerEnter(deps, {
+      _event: {
+        currentTarget: createItemTarget([0]),
+        pointerType: "mouse",
+        clientX: 20,
+        clientY: 20,
+      },
+    });
+    cleanup();
+    await vi.runAllTimersAsync();
+
+    expect(store.openSubmenu).not.toHaveBeenCalled();
+    expect(store.state.openIndexPath).toEqual([]);
+  });
+
+  it("restores the parent trigger when pointer-close removes focused submenu content", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    store.state.openIndexPath = [0];
+    store.state.activeIndexByDepth = [0, 0];
+    const host = document.createElement("div");
+    const root = host.attachShadow({ mode: "open" });
+    const popover = document.createElement("div");
+    const parentTrigger = createItemTarget([0]);
+    const childPanel = document.createElement("div");
+    const childItem = createItemTarget([0, 0]);
+    childPanel.dataset.depth = "1";
+    childPanel.append(childItem);
+    root.append(popover, parentTrigger, childPanel);
+    document.body.append(host);
+    const parentFocus = vi.spyOn(parentTrigger, "focus");
+    childItem.focus();
+
+    const deps = {
+      props: {
+        open: true,
+        items: [{
+          label: "Export",
+          items: [{ label: "PNG" }],
+        }],
+      },
+      refs: {
+        popover,
+        optionD0I0: parentTrigger,
+      },
+      render: vi.fn(),
+      store,
+    };
+
+    handleMenuPanelPointerLeave(deps, {
+      _event: {
+        currentTarget: childPanel,
+        relatedTarget: null,
+        pointerType: "mouse",
+      },
+    });
+    await vi.runAllTimersAsync();
+
+    expect(store.state.openIndexPath).toEqual([]);
+    expect(parentFocus).toHaveBeenCalledTimes(1);
+    host.remove();
+  });
+
+  it("cancels a pending ancestor close when a descendant panel is entered", async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    store.state.openIndexPath = [0, 0];
+    const parentTrigger = document.createElement("button");
+    const leavingPanel = document.createElement("div");
+    leavingPanel.dataset.depth = "1";
+    const descendantPanel = document.createElement("div");
+    descendantPanel.dataset.depth = "2";
+    const deps = {
+      props: { open: true },
+      refs: {
+        popover: { isConnected: true },
+        optionD0I0: parentTrigger,
+      },
+      render: vi.fn(),
+      store,
+    };
+
+    handleMenuPanelPointerLeave(deps, {
+      _event: {
+        currentTarget: leavingPanel,
+        relatedTarget: null,
+        pointerType: "mouse",
+      },
+    });
+    handleMenuPanelPointerEnter(deps, {
+      _event: {
+        currentTarget: descendantPanel,
+        pointerType: "mouse",
+      },
+    });
+    await vi.runAllTimersAsync();
+
+    expect(store.closeSubmenusFromDepth).not.toHaveBeenCalled();
+    expect(store.state.openIndexPath).toEqual([0, 0]);
+  });
+
+  it("keeps the shallower close when pointer grace is abandoned", () => {
+    vi.useFakeTimers();
+    const store = createStore();
+    store.state.openIndexPath = [0, 0];
+    const parentTrigger = createItemTarget([0]);
+    const childTrigger = createItemTarget([0, 0]);
+    const leavingPanel = document.createElement("div");
+    const childPanel = document.createElement("div");
+    leavingPanel.dataset.depth = "1";
+    childPanel.dataset.side = "right";
+    childTrigger.getBoundingClientRect = () => ({
+      left: 20,
+      top: 20,
+      right: 120,
+      bottom: 50,
+      width: 100,
+      height: 30,
+    });
+    childPanel.getBoundingClientRect = () => ({
+      left: 125,
+      top: 15,
+      right: 245,
+      bottom: 150,
+      width: 120,
+      height: 135,
+    });
+    const deps = {
+      props: {
+        open: true,
+        items: [{
+          label: "Export",
+          items: [{
+            label: "Advanced",
+            items: [{ label: "PDF" }],
+          }],
+        }],
+      },
+      refs: {
+        popover: { isConnected: true },
+        optionD0I0: parentTrigger,
+        menuPanelD2: childPanel,
+      },
+      render: vi.fn(),
+      store,
+    };
+
+    handleMenuPanelPointerLeave(deps, {
+      _event: {
+        currentTarget: leavingPanel,
+        relatedTarget: null,
+        pointerType: "mouse",
+      },
+    });
+    handleMenuItemPointerLeave(deps, {
+      _event: {
+        currentTarget: childTrigger,
+        relatedTarget: null,
+        pointerType: "mouse",
+        clientX: 120,
+        clientY: 45,
+      },
+    });
+    handleDocumentPointerMove(deps, {
+      _event: {
+        clientX: 500,
+        clientY: 500,
+      },
+    });
+
+    expect(store.closeSubmenusFromDepth).toHaveBeenCalledTimes(1);
+    expect(store.closeSubmenusFromDepth).toHaveBeenCalledWith({ depth: 0 });
+    expect(store.state.openIndexPath).toEqual([]);
   });
 });

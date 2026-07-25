@@ -6,6 +6,7 @@ import {
   handleCloseAll,
   handleConfirm,
   handleComponentDialogAction,
+  handleDropdownItemClick,
   handleShowAlert,
   handleShowComponentDialog,
   handleShowToast,
@@ -19,6 +20,8 @@ import {
   setToastPhase,
   setAlertConfig,
   setComponentDialogConfig,
+  setDropdownConfig,
+  selectViewData,
 } from "../src/components/global-ui/global-ui.store.js";
 import * as globalUiStore from "../src/components/global-ui/global-ui.store.js";
 
@@ -79,6 +82,106 @@ const createDeferred = () => {
 
   return { promise, resolve, reject };
 };
+
+const createOpenDropdownDeps = () => {
+  const globalUI = createGlobalUI();
+
+  return {
+    store: {
+      selectIsOpen: () => true,
+      closeAll: vi.fn(),
+    },
+    render: vi.fn(),
+    globalUI,
+    refs: {},
+  };
+};
+
+describe("rtgl-global-ui dropdown handlers", () => {
+  it("propagates the nested index path while retaining index and item", () => {
+    const deps = createOpenDropdownDeps();
+    const listener = vi.fn();
+    const item = { id: "export-pdf", label: "PDF" };
+    deps.globalUI.once("event", listener);
+
+    handleDropdownItemClick(deps, {
+      _event: {
+        detail: {
+          index: 1,
+          indexPath: [2, 0, 1],
+          item,
+        },
+      },
+    });
+
+    expect(listener).toHaveBeenCalledWith({
+      index: 1,
+      indexPath: [2, 0, 1],
+      item,
+    });
+    expect(deps.store.closeAll).toHaveBeenCalledTimes(1);
+    expect(deps.render).toHaveBeenCalledTimes(1);
+  });
+
+  it("normalizes a legacy flat item event to a one-entry index path", () => {
+    const deps = createOpenDropdownDeps();
+    const listener = vi.fn();
+    const item = { id: "rename", label: "Rename" };
+    deps.globalUI.once("event", listener);
+
+    handleDropdownItemClick(deps, {
+      _event: {
+        detail: {
+          index: 3,
+          item,
+        },
+      },
+    });
+
+    expect(listener).toHaveBeenCalledWith({
+      index: 3,
+      indexPath: [3],
+      item,
+    });
+  });
+
+  it("does not synthesize an invalid legacy index path", () => {
+    const deps = createOpenDropdownDeps();
+    const listener = vi.fn();
+    const item = { id: "unknown", label: "Unknown" };
+    deps.globalUI.once("event", listener);
+
+    handleDropdownItemClick(deps, {
+      _event: {
+        detail: {
+          index: undefined,
+          item,
+        },
+      },
+    });
+
+    expect(listener).toHaveBeenCalledWith({
+      index: undefined,
+      item,
+    });
+  });
+});
+
+describe("rtgl-global-ui dropdown store", () => {
+  it("keeps arbitrary accessible labels out of raw attribute interpolation", () => {
+    const state = structuredClone(createInitialState());
+
+    setDropdownConfig({ state }, {
+      items: [],
+      ariaLabel: 'Project "Save As"',
+      dir: "rtl",
+    });
+
+    const viewData = selectViewData({ state });
+    expect(viewData.dropdownConfig.ariaLabel).toBe('Project "Save As"');
+    expect(viewData.dropdownConfig.popoverAttrString).toBe('dir="rtl"');
+  });
+});
 
 describe("rtgl-global-ui component dialog handlers", () => {
   let originalDocument;

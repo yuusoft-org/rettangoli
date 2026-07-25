@@ -3,75 +3,145 @@ refs:
     eventListeners:
       close:
         handler: handleClosePopover
+      positioned:
+        handler: handlePopoverPositioned
   option*:
     eventListeners:
       click:
         handler: handleClickMenuItem
+      keydown:
+        handler: handleMenuItemKeyDown
+      pointerenter:
+        handler: handleMenuItemPointerEnter
+      pointerleave:
+        handler: handleMenuItemPointerLeave
+      focus:
+        handler: handleMenuItemFocus
+  menuPanel*:
+    eventListeners:
+      keydown:
+        handler: handleMenuPanelKeyDown
+        targetOnly: true
+      pointerenter:
+        handler: handleMenuPanelPointerEnter
+      pointerleave:
+        handler: handleMenuPanelPointerLeave
+      scroll:
+        handler: handleMenuPanelScroll
+  window:
+    eventListeners:
+      resize:
+        handler: handleViewportChange
+      scroll:
+        handler: handleViewportChange
+  document:
+    eventListeners:
+      pointermove:
+        handler: handleDocumentPointerMove
 styles:
   a:
     display: block
     width: 100%
     text-decoration: none
     color: inherit
+  .menu-item:
+    outline: none
   .icon-placeholder:
     width: 16px
     height: 16px
     flex-shrink: 0
+  .submenu-panel:
+    left: 0
+    top: 0
+    visibility: hidden
+    pointer-events: auto
+  '.submenu-panel[data-positioned="true"]':
+    visibility: visible
+  .submenu-arrow:
+    width: 7px
+    height: 7px
+    flex-shrink: 0
+    box-sizing: border-box
+    border-top: 1.5px solid currentColor
+    border-right: 1.5px solid currentColor
+    color: var(--muted-foreground)
+    transform: rotate(45deg)
+    margin-left: 5px
+    margin-right: 2px
+  .submenu-arrow:dir(rtl):
+    transform: rotate(225deg)
+    margin-left: 2px
+    margin-right: 5px
 template:
-  - 'rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place} ${popoverAttrString} content-w=${w} content-h=${h} content-sv=true content-g=xs content-pv=sm':
-      - $for item, i in items:
-          - $if item.isSection:
-              - rtgl-view w=f p=md:
-                  - rtgl-text s=xs c=mu-fg: ${item.label}
-            $elif item.isItem && item.isDisabled:
-              - rtgl-view w=f p=md bgc=${item.bgc}:
-                  - rtgl-view d=h av=c w=f g=md:
-                      - rtgl-view d=h av=c g=md w=1fg:
-                          - $if item.hasIconSlot:
-                              - $if item.hasIcon:
-                                  - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
-                                $else:
-                                  - div class=icon-placeholder aria-hidden="true": null
-                          - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
-                      - $if item.hasSuffixText:
-                          - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
-            $elif item.isItem && item.hasHref && item.linkExtraAttrs:
-              - a#option${i} href=${item.href} ${item.linkExtraAttrs} data-index=${item.index} data-testid=${item.testId}:
-                  - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
-                      - rtgl-view d=h av=c w=f g=md:
-                          - rtgl-view d=h av=c g=md w=1fg:
-                              - $if item.hasIconSlot:
-                                  - $if item.hasIcon:
-                                      - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
-                                    $else:
-                                      - div class=icon-placeholder aria-hidden="true": null
-                              - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
-                          - $if item.hasSuffixText:
-                              - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
-            $elif item.isItem && item.hasHref:
-              - a#option${i} href=${item.href} data-index=${item.index} data-testid=${item.testId}:
-                  - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
-                      - rtgl-view d=h av=c w=f g=md:
-                          - rtgl-view d=h av=c g=md w=1fg:
-                              - $if item.hasIconSlot:
-                                  - $if item.hasIcon:
-                                      - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
-                                    $else:
-                                      - div class=icon-placeholder aria-hidden="true": null
-                              - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
-                          - $if item.hasSuffixText:
-                              - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
-            $elif item.isItem:
-              - rtgl-view#option${i} w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc} data-index=${item.index} data-testid=${item.testId}:
-                  - rtgl-view d=h av=c w=f g=md:
-                      - rtgl-view d=h av=c g=md w=1fg:
-                          - $if item.hasIconSlot:
-                              - $if item.hasIcon:
-                                  - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
-                                $else:
-                                  - div class=icon-placeholder aria-hidden="true": null
-                          - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
-                      - $if item.hasSuffixText:
-                          - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
-            $elif item.isSeparator:
-              - rtgl-view w=f h=1 bgc=mu mv=sm: null
+  - 'rtgl-popover#popover ?open=${open} x=${x} y=${y} place=${place} :aria-label=${menuLabel} ${popoverAttrString} content-w=${w} content-h=${h} content-sv=true content-g=xs content-pv=sm':
+      - $for panel, panelIndex in panels:
+          - 'rtgl-view#${panel.panelId} ${panel.panelAttrString} :aria-label=${panel.menuLabel} tabindex="-1" data-depth=${panel.depth} data-parent-index-path=${panel.parentIndexPathString}':
+              - $for item, i in panel.items:
+                  - $if item.isSection:
+                      - rtgl-view w=f p=md role=presentation aria-hidden="true":
+                          - rtgl-text s=xs c=mu-fg: ${item.label}
+                    $elif item.isItem && item.isDisabled:
+                      - 'rtgl-view#${item.optionId} class="menu-item" w=f p=md bgc=${item.bgc} role="menuitem" tabindex=${item.tabIndex} aria-disabled="true" ${item.submenuAriaAttrs} data-index=${item.index} data-depth=${item.depth} data-index-path=${item.indexPathString}':
+                          - rtgl-view d=h av=c w=f g=md:
+                              - rtgl-view d=h av=c g=md w=1fg:
+                                  - $if item.hasIconSlot:
+                                      - $if item.hasIcon:
+                                          - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
+                                        $else:
+                                          - div class=icon-placeholder aria-hidden="true": null
+                                  - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
+                              - $if item.hasSubmenu:
+                                  - span class="submenu-arrow" aria-hidden="true": null
+                                $elif item.hasSuffixText:
+                                  - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
+                    $elif item.isItem && item.hasSubmenu:
+                      - 'rtgl-view#${item.optionId} class="menu-item" w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc} data-index=${item.index} data-depth=${item.depth} data-index-path=${item.indexPathString} data-testid=${item.testId} role="menuitem" tabindex=${item.tabIndex} aria-haspopup="menu" aria-expanded=${item.isSubmenuOpen} aria-controls=${item.childPanelId}':
+                          - rtgl-view d=h av=c w=f g=md:
+                              - rtgl-view d=h av=c g=md w=1fg:
+                                  - $if item.hasIconSlot:
+                                      - $if item.hasIcon:
+                                          - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
+                                        $else:
+                                          - div class=icon-placeholder aria-hidden="true": null
+                                  - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
+                              - span class="submenu-arrow" aria-hidden="true": null
+                    $elif item.isItem && item.hasHref && item.linkExtraAttrs:
+                      - 'a#${item.optionId} class="menu-item" href=${item.href} ${item.linkExtraAttrs} data-index=${item.index} data-depth=${item.depth} data-index-path=${item.indexPathString} data-testid=${item.testId} role="menuitem" tabindex=${item.tabIndex}':
+                          - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
+                              - rtgl-view d=h av=c w=f g=md:
+                                  - rtgl-view d=h av=c g=md w=1fg:
+                                      - $if item.hasIconSlot:
+                                          - $if item.hasIcon:
+                                              - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
+                                            $else:
+                                              - div class=icon-placeholder aria-hidden="true": null
+                                      - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
+                                  - $if item.hasSuffixText:
+                                      - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
+                    $elif item.isItem && item.hasHref:
+                      - 'a#${item.optionId} class="menu-item" href=${item.href} data-index=${item.index} data-depth=${item.depth} data-index-path=${item.indexPathString} data-testid=${item.testId} role="menuitem" tabindex=${item.tabIndex}':
+                          - rtgl-view w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc}:
+                              - rtgl-view d=h av=c w=f g=md:
+                                  - rtgl-view d=h av=c g=md w=1fg:
+                                      - $if item.hasIconSlot:
+                                          - $if item.hasIcon:
+                                              - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
+                                            $else:
+                                              - div class=icon-placeholder aria-hidden="true": null
+                                      - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
+                                  - $if item.hasSuffixText:
+                                      - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
+                    $elif item.isItem:
+                      - 'rtgl-view#${item.optionId} class="menu-item" w=f h-bgc=${item.hoverBgc} p=md cur=pointer bgc=${item.bgc} data-index=${item.index} data-depth=${item.depth} data-index-path=${item.indexPathString} data-testid=${item.testId} role="menuitem" tabindex=${item.tabIndex}':
+                          - rtgl-view d=h av=c w=f g=md:
+                              - rtgl-view d=h av=c g=md w=1fg:
+                                  - $if item.hasIconSlot:
+                                      - $if item.hasIcon:
+                                          - rtgl-svg wh=16 svg=${item.icon} c=${item.iconColor}: null
+                                        $else:
+                                          - div class=icon-placeholder aria-hidden="true": null
+                                  - rtgl-text s=sm c=${item.c} w=1fg ellipsis: ${item.label}
+                              - $if item.hasSuffixText:
+                                  - rtgl-text s=xs c=${item.suffixTextColor} ta=e: ${item.suffixText}
+                    $elif item.isSeparator:
+                      - rtgl-view w=f h=1 bgc=mu mv=sm role=separator: null

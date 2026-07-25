@@ -5,37 +5,7 @@ propsSchema:
     items:
       type: array
       items:
-        type: object
-        properties:
-          label:
-            type: string
-          type:
-            type: string
-            enum:
-              - section
-              - item
-              - separator
-              - label
-          id:
-            type: string
-          icon:
-            type: string
-          path:
-            type: string
-          href:
-            type: string
-          shortcut:
-            type: string
-          suffixText:
-            type: string
-          disabled:
-            type: boolean
-          newTab:
-            type: boolean
-          rel:
-            type: string
-          testId:
-            type: string
+        $ref: '#/$defs/menuItem'
     open:
       type: boolean
     x:
@@ -76,6 +46,45 @@ propsSchema:
       type: string
     h:
       type: string
+    aria-label:
+      type: string
+  $defs:
+    menuItem:
+      type: object
+      properties:
+        label:
+          type: string
+        type:
+          type: string
+          enum:
+            - section
+            - item
+            - separator
+            - label
+        id:
+          type: string
+        icon:
+          type: string
+        path:
+          type: string
+        href:
+          type: string
+        shortcut:
+          type: string
+        suffixText:
+          type: string
+        disabled:
+          type: boolean
+        newTab:
+          type: boolean
+        rel:
+          type: string
+        testId:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/$defs/menuItem'
 events:
   close:
     type: object
@@ -84,6 +93,10 @@ events:
     properties:
       index:
         type: number
+      indexPath:
+        type: array
+        items:
+          type: number
       item:
         type: object
       id:

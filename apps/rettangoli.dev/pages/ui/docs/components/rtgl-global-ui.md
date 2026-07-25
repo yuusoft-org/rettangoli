@@ -39,7 +39,7 @@ Call through `globalUiElement.transformedHandlers`:
 | `handleShowAlert(options)` | `{ message, title?, status?, confirmText? }` | resolves when the alert closes |
 | `handleShowConfirm(options)` | `{ message, title?, status?, confirmText?, cancelText? }` | resolves `true` (confirm) or `false` (cancel / dismiss) |
 | `handleShowFormDialog(options)` | `{ form, defaultValues?, context?, disabled?, size?, onFieldEvent?, mount? }` | resolves `{ actionId, values }`, `{ actionId, values, valid, errors }`, or `null` on dismiss |
-| `handleShowDropdownMenu(options)` | `{ items, x, y, place? }` | resolves `{ index, item }` or `null` |
+| `handleShowDropdownMenu(options)` | `{ items, x, y, place?, dir?, ariaLabel? }` | resolves `{ index, indexPath, item }` or `null` |
 | `handleShowToast(options)` | `{ message, size?, position? }` | fire-and-forget toast that auto-dismisses after 3 seconds |
 | `handleCloseAll()` | none | closes any open global dialog/dropdown, clears visible toasts, and resolves the pending flow |
 
@@ -117,10 +117,62 @@ Call through `globalUiElement.transformedHandlers`:
 
 ## Dropdown Item Shape
 
-`showDropdownMenu({ items })` accepts:
-- `{ type: "label", label: string }`
-- `{ type: "item", label: string }`
-- `{ type: "separator" }`
+`handleShowDropdownMenu({ items })` accepts the same recursive item model as
+`rtgl-dropdown-menu`. A non-empty `items` array on an enabled item makes it a
+submenu trigger and takes precedence over its `href`, `path`, or leaf action.
+
+```js
+const result = await globalUi.transformedHandlers.handleShowDropdownMenu({
+  x: event.clientX,
+  y: event.clientY,
+  items: [
+    { type: "section", label: "Actions" },
+    { id: "rename", label: "Rename" },
+    {
+      id: "export",
+      label: "Export",
+      items: [
+        { id: "export-pdf", label: "PDF" },
+        {
+          id: "export-image",
+          label: "Image",
+          items: [
+            { id: "export-png", label: "PNG" },
+            { id: "export-webp", label: "WebP" },
+          ],
+        },
+      ],
+    },
+    { type: "separator" },
+    { id: "help", label: "Help", href: "/help" },
+  ],
+});
+
+if (result) {
+  const { index, indexPath, item } = result;
+  console.log({ index, indexPath, item });
+}
+```
+
+The supported row shapes are:
+
+- Section: `{ type: "section", label: string }`. Legacy `type: "label"` remains
+  an alias.
+- Separator: `{ type: "separator" }`.
+- Leaf item: `{ type?: "item", label: string, href?, path?, disabled?, ... }`.
+- Submenu trigger: `{ type?: "item", label: string, items: DropdownItem[] }`.
+
+For a selection, `item` is the selected leaf, `index` is its index in the
+immediate menu, and `indexPath` contains the root-to-leaf indexes. A legacy flat
+selection at index `2` therefore resolves with both `index: 2` and
+`indexPath: [2]`.
+
+Nested menus support Up/Down, Home/End, printable-character typeahead,
+Enter/Space, and direction-aware submenu arrows. Disabled rows remain
+keyboard-focusable but cannot be activated. Escape closes the deepest submenu
+first, then the root; Tab closes the complete dropdown and continues normal
+focus navigation. Pass `dir: "rtl"` to set an explicit direction and
+`ariaLabel` to name the root menu and dialog.
 
 ## Toast
 
@@ -151,6 +203,8 @@ Call through `globalUiElement.transformedHandlers`:
 - `handleShowToast({ message, size?, position? })` is non-blocking, stacks multiple messages, and auto-dismisses after 3 seconds.
 - Toast `position` accepts `top` or `bottom` and defaults to `top`.
 - `handleShowFormDialog` uses the existing `rtgl-form` action payload: `{ actionId, values }` or `{ actionId, values, valid, errors }`.
+- `handleShowDropdownMenu` resolves only after a leaf selection. Submenu
+  triggers open their child menu instead of resolving the promise.
 - A validating form action only resolves when validation passes. Invalid submit keeps the dialog open and shows inline errors.
 - Use `mount(formEl)` for slotted/custom content and `onFieldEvent({ detail, formEl })` for image-picker or custom field workflows.
 - A dismissed confirm resolves `false`. Dismissed alert/form/dropdown flows resolve `null`/empty completion.

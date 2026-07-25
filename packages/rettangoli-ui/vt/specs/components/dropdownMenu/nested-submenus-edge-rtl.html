@@ -1,0 +1,156 @@
+---
+title: Nested Submenus - Edge And RTL
+description: Verifies submenu collision flipping and mirrored RTL keyboard navigation.
+diffThreshold: 0.75
+specs:
+  - An LTR submenu near the right viewport edge flips to the physical left.
+  - In RTL, ArrowLeft opens a submenu and ArrowRight returns to its parent.
+  - Submenu panels remain clamped inside the viewport.
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '#edge-menu rtgl-popover[open][positioned]'
+    state: attached
+    timeoutMs: 1500
+  - action: select
+    selector: '#edge-menu [data-index-path="0"]'
+    steps:
+      - action: hover
+  - action: wait
+    ms: 180
+  - action: waitFor
+    selector: '#edge-menu [data-depth="1"][data-side="left"][data-positioned="true"]'
+    state: visible
+    timeoutMs: 1200
+  - action: screenshot
+  - action: customEvent
+    name: vt:open-rtl-with-keyboard
+  - action: waitFor
+    selector: '#rtl-result[data-status="complete"]'
+    state: attached
+    timeoutMs: 3000
+  - action: assert
+    type: text
+    selector: '#rtl-result'
+    value: PASS
+  - action: screenshot
+viewport:
+  id: component-wide
+  width: 960
+  height: 640
+---
+
+<rtgl-view wh="f" p="xl" bgc="bg" g="lg">
+  <rtgl-text s="lg">Collision and RTL behavior</rtgl-text>
+  <rtgl-text id="rtl-result" c="mu-fg">WAITING</rtgl-text>
+</rtgl-view>
+
+<rtgl-dropdown-menu
+  id="edge-menu"
+  open
+  x="900"
+  y="72"
+  place="bs"
+  w="220"
+  h="240"
+></rtgl-dropdown-menu>
+
+<rtgl-dropdown-menu
+  id="rtl-menu"
+  x="420"
+  y="350"
+  place="bs"
+  w="220"
+  h="220"
+></rtgl-dropdown-menu>
+
+<script>
+  const nestedItems = [
+    {
+      id: "export",
+      label: "Export",
+      items: [
+        { id: "png", label: "PNG" },
+        { id: "svg", label: "SVG" },
+      ],
+    },
+    { id: "print", label: "Print" },
+  ];
+
+  const edgeMenu = document.getElementById("edge-menu");
+  const rtlMenu = document.getElementById("rtl-menu");
+  const result = document.getElementById("rtl-result");
+  edgeMenu.items = nestedItems;
+  rtlMenu.dir = "rtl";
+  rtlMenu.items = nestedItems;
+
+  const waitForCondition = (getValue, timeoutMs = 1000) => {
+    const deadline = performance.now() + timeoutMs;
+
+    return new Promise((resolve) => {
+      const check = () => {
+        const value = getValue();
+        if (value || performance.now() >= deadline) {
+          resolve(value || null);
+          return;
+        }
+        requestAnimationFrame(check);
+      };
+
+      check();
+    });
+  };
+
+  window.addEventListener("vt:open-rtl-with-keyboard", async () => {
+    edgeMenu.removeAttribute("open");
+    rtlMenu.setAttribute("open", "");
+    result.textContent = "WAITING";
+    result.removeAttribute("data-status");
+
+    const hostRoot = rtlMenu.shadowRoot;
+    const trigger = await waitForCondition(() => (
+      hostRoot.querySelector('rtgl-popover[positioned]')
+      && hostRoot.querySelector('[data-index-path="0"]')
+    ));
+
+    let passed = !!trigger;
+    if (trigger) {
+      trigger.focus();
+      trigger.dispatchEvent(new KeyboardEvent("keydown", {
+        key: "ArrowLeft",
+        bubbles: true,
+        composed: true,
+      }));
+
+      const opened = await waitForCondition(() => {
+        const child = hostRoot.querySelector('[data-index-path="0.0"]');
+        const panel = hostRoot.querySelector('[data-depth="1"]');
+        return (
+          child === hostRoot.activeElement
+          && panel?.dataset.side === "left"
+          && panel?.dataset.positioned === "true"
+        )
+          ? { child }
+          : null;
+      });
+
+      passed = passed && !!opened;
+      if (opened) {
+        opened.child.dispatchEvent(new KeyboardEvent("keydown", {
+          key: "ArrowRight",
+          bubbles: true,
+          composed: true,
+        }));
+
+        const closed = await waitForCondition(() => (
+          trigger === hostRoot.activeElement
+          && !hostRoot.querySelector('[data-depth="1"]')
+        ));
+        passed = passed && !!closed;
+      }
+    }
+
+    result.textContent = passed ? "PASS" : "FAIL";
+    result.setAttribute("data-status", "complete");
+  });
+</script>
