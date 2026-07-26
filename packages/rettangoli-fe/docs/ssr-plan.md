@@ -53,10 +53,22 @@ Two decisions from §10.0 were resolved during implementation:
   Only 2 of 113 lines touch `window`.
 - **§5.6 template normalization → do not change the code.** The reviewed claim
   that the pass is not idempotent is correct, but the build inlines the *raw*
-  AST and normalization runs once per template object at runtime, so there is no
-  live bug. Relaxing the validator would loosen authoring semantics for no gain.
-  The constraint is now captured in `test/runtime/template-normalization.test.js`
-  so nobody attempts the build-time move.
+  AST and normalization runs once per template object at runtime, so there is
+  no live bug.
+
+  Two fixes were attempted and both rejected on evidence. Relaxing the
+  validator to accept the normalized form would loosen authoring semantics.
+  And a friendlier "this template is already normalized" error turns out to be
+  impossible: `:value=title` is simultaneously what the normalizer produces
+  **and** legitimate legacy author syntax that the framework deliberately
+  rejects (`loop-property-binding.test.js`, "rejects legacy property-form
+  source syntax"). The two are byte-identical, so any special-casing would
+  mislead the far more common case. That attempt broke an existing test, which
+  is how it was caught.
+
+  The constraint is captured in `test/runtime/template-normalization.test.js`,
+  including a test asserting the two cases produce the *same* message, so the
+  reason it cannot be improved is recorded rather than rediscovered.
 
 **Decision B (`rtgl-popover`) remains open** and only blocks Part B stage B4.
 

@@ -53,6 +53,34 @@ describe("template property-binding normalization", () => {
     );
   });
 
+  it("is indistinguishable from legacy author syntax, which is why the message cannot be improved", () => {
+    // `:value=title` is BOTH what the normalizer produces AND legitimate legacy
+    // syntax that the framework deliberately rejects (see
+    // loop-property-binding.test.js "rejects legacy property-form source
+    // syntax"). The two are byte-identical, so a friendlier "already
+    // normalized" message would mislead the far more common case of an author
+    // using the legacy form. Left as-is deliberately.
+    const authored = parse([{ "my-item :value=title": null }]);
+    const normalizedClone = (() => {
+      const t = parse([{ "my-item :value=${title}": null }]);
+      ensureNormalizedTemplatePropertyBindings(t);
+      return JSON.parse(JSON.stringify(t));
+    })();
+
+    const messageFor = (template) => {
+      try {
+        ensureNormalizedTemplatePropertyBindings(template);
+        return null;
+      } catch (error) {
+        return error.message;
+      }
+    };
+
+    expect(messageFor(authored)).toBe(messageFor(normalizedClone));
+  });
+
+
+
   it("accepts a freshly parsed template every time", () => {
     for (let i = 0; i < 3; i += 1) {
       const template = parse([{ "x-child :value=${title}": null }]);
