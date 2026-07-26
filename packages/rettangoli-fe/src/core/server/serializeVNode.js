@@ -37,8 +37,62 @@ const VOID_ELEMENTS = new Set([
  * `textarea` and `title` are ESCAPABLE raw text: they DO process character
  * references, so they stay on the normal escaping path and are deliberately
  * absent from this set.
+ *
+ * CRITICAL: this applies only in the HTML namespace. See FOREIGN_ROOTS.
  */
 const RAW_TEXT_ELEMENTS = new Set(["script", "style"]);
+
+/**
+ * Foreign content changes what "raw text" means, and getting this wrong is an
+ * XSS.
+ *
+ * `<style>` and `<script>` are RAWTEXT *only* in the HTML namespace. Inside
+ * `<svg>` or `<math>` the tokenizer stays in data state, so emitting content
+ * verbatim there injects live markup:
+ *
+ *   <svg><style>a::after{content:'<img src=x onerror=…>'}</style></svg>
+ *
+ * re-parses with a real <img> hoisted out of the svg, and the handler runs.
+ * Verified in Chromium.
+ *
+ * Namespace cannot be read off the vnode: snabbdom's `addNS` only stamps
+ * `data.ns` for sels starting with `svg`, so MathML carries nothing. It has to
+ * be tracked structurally as we descend.
+ */
+const FOREIGN_ROOTS = new Set(["svg", "math"]);
+
+/**
+ * Points where foreign content switches back to the HTML namespace, so
+ * `svg > foreignObject > style` correctly regains raw-text semantics.
+ *
+ * MathML's `annotation-xml` is also an integration point, but only when its
+ * `encoding` is text/html or application/xhtml+xml — handled below.
+ */
+const HTML_INTEGRATION_POINTS = new Set([
+  // SVG
+  "foreignobject", "desc", "title",
+  // MathML text integration points
+  "mi", "mo", "mn", "ms", "mtext",
+]);
+
+const HTML_ENCODINGS = new Set(["text/html", "application/xhtml+xml"]);
+
+/**
+ * Given the current namespace state and a tag, what namespace do children sit in?
+ *
+ * Tags are lowercased for lookup only — the emitted tag keeps its original case,
+ * which matters for SVG's camelCase elements (`foreignObject`, `clipPath`).
+ */
+const childIsForeign = (rawTag, isForeign, data) => {
+  const tag = rawTag.toLowerCase();
+  if (!isForeign) return FOREIGN_ROOTS.has(tag);
+  if (HTML_INTEGRATION_POINTS.has(tag)) return false;
+  if (tag === "annotation-xml") {
+    const encoding = String(data?.attrs?.encoding ?? "").toLowerCase();
+    return !HTML_ENCODINGS.has(encoding);
+  }
+  return true;
+};
 
 /** Mirrors the framework's own attribute-name validation. */
 const ATTRIBUTE_NAME = /^[a-zA-Z_:][-a-zA-Z0-9_:.]*$/;
@@ -71,19 +125,45 @@ const rawTextOrThrow = (tag, content) => {
       `[serializeVNode] <${tag}> content contains a closing "</${tag}" sequence and cannot be safely serialized.`,
     );
   }
+  // `<!--` inside a <script> moves the tokenizer into script-data-escaped
+  // state, where a later `</script>` no longer closes the element — the rest
+  // of the document is silently swallowed as script text. Not code execution,
+  // but total content loss, and invisible until someone views the page.
+  if (tag === "script" && text.includes("<!--")) {
+    throw new Error(
+      '[serializeVNode] <script> content contains "<!--", which changes the tokenizer state ' +
+        "so the element no longer closes at </script>. Refusing to serialize.",
+    );
+  }
   return text;
 };
 
 /**
- * Comments are also raw: `--` cannot appear inside, and a comment may not end
- * with `-`. Rather than silently mangle, refuse — a comment is never
- * user-facing content in this dialect, so an offending one is a bug.
+ * Comment text is raw and cannot be escaped, so anything that could terminate
+ * the comment early must be refused.
+ *
+ * Per the HTML spec the text must not start with `>` or `->`, must not contain
+ * `--` or `<!--`, and must not end with `-`. The `>` cases are the dangerous
+ * ones and are easy to miss: `<!-->x-->` parses as an EMPTY comment followed by
+ * `x-->` as live markup — verified in Chromium, where a payload of
+ * `><img src=x onerror=...>` creates a real element and runs the handler.
+ *
+ * Refusing rather than sanitizing is deliberate: a comment is never
+ * user-facing content in this dialect, so an offending one is a bug worth
+ * surfacing.
  */
 const commentOrThrow = (content) => {
   const text = String(content ?? "");
-  if (text.includes("--") || text.endsWith("-")) {
+  const invalid =
+    text.startsWith(">") ||
+    text.startsWith("->") ||
+    text.includes("--") ||
+    text.includes("<!") ||
+    text.endsWith("-");
+  if (invalid) {
     throw new Error(
-      "[serializeVNode] comment content may not contain `--` or end with `-`.",
+      "[serializeVNode] comment content may not start with `>` or `->`, " +
+        "contain `--` or `<!`, or end with `-` — any of these terminate the comment early.",
     );
   }
   return text;
@@ -108,7 +188,10 @@ const classObjectToString = (klass) => {
 /** parseView emits bare tags; tolerate snabbdom's `tag#id.cls` form defensively. */
 const tagFromSel = (sel) => String(sel).split(/[.#]/)[0] || "div";
 
-const buildAttributes = (data = {}) => {
+const buildAttributes = (rawData) => {
+  // A default parameter only applies to `undefined`, so an explicit `data: null`
+  // would crash here with an unattributable TypeError.
+  const data = rawData || {};
   const out = [];
   const attrs = { ...(data.attrs || {}) };
 
@@ -151,7 +234,14 @@ const buildAttributes = (data = {}) => {
  *   component — or `null`/`undefined` to serialize normally.
  * @returns {string}
  */
-export const serializeVNode = (vnode, options = {}) => {
+export const serializeVNode = (vnode, options = {}) =>
+  serializeNode(vnode, options, false);
+
+/**
+ * @param {boolean} isForeign  true when this node sits inside <svg>/<math>,
+ *   where <style>/<script> are NOT raw text.
+ */
+const serializeNode = (vnode, options, isForeign) => {
   if (vnode === null || vnode === undefined) return "";
 
   // Text vnode: snabbdom leaves `sel` undefined and puts the string in `text`.
@@ -166,22 +256,30 @@ export const serializeVNode = (vnode, options = {}) => {
   const tag = tagFromSel(vnode.sel);
   const attributes = buildAttributes(vnode.data);
 
-  if (VOID_ELEMENTS.has(tag)) {
+  if (VOID_ELEMENTS.has(tag.toLowerCase())) {
     return `<${tag}${attributes}>`;
   }
+
+  const lowerTag = tag.toLowerCase();
+  const childForeign = childIsForeign(tag, isForeign, vnode.data);
+  // Raw text only applies in the HTML namespace. In foreign content the parser
+  // reads <style>/<script> content as markup, so it must be escaped instead.
+  const isRawText = RAW_TEXT_ELEMENTS.has(lowerTag) && !isForeign;
 
   const substituted = options.renderChildren ? options.renderChildren(vnode) : null;
 
   let inner = "";
   if (substituted !== null && substituted !== undefined) {
     inner = substituted;
-  } else if (RAW_TEXT_ELEMENTS.has(tag)) {
+  } else if (isRawText) {
     const raw = Array.isArray(vnode.children) && vnode.children.length > 0
       ? vnode.children.map((child) => child?.text ?? "").join("")
       : (vnode.text ?? "");
-    inner = rawTextOrThrow(tag, raw);
+    inner = rawTextOrThrow(lowerTag, raw);
   } else if (Array.isArray(vnode.children) && vnode.children.length > 0) {
-    inner = vnode.children.map((child) => serializeVNode(child, options)).join("");
+    inner = vnode.children
+      .map((child) => serializeNode(child, options, childForeign))
+      .join("");
   } else if (vnode.text !== undefined && vnode.text !== null) {
     // h(tag, data, "string") puts the text on the element vnode itself.
     inner = escapeText(vnode.text);
@@ -189,5 +287,3 @@ export const serializeVNode = (vnode, options = {}) => {
 
   return `<${tag}${attributes}>${inner}</${tag}>`;
 };
-
-export default serializeVNode;

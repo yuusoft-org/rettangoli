@@ -55,10 +55,92 @@ describe("serializeVNode: raw text elements", () => {
       .toThrow(/cannot be safely serialized/);
   });
 
+  it("refuses <script> content containing `<!--`, which prevents the tag closing", () => {
+    // `<!--` moves the tokenizer into script-data-escaped state, so a later
+    // </script> no longer closes the element and the rest of the document is
+    // swallowed as script text. Confirmed in parse5, jsdom and Chromium.
+    expect(() => serializeVNode(h("script", {}, ['{"a":"<!--<script>"}'])))
+      .toThrow(/changes the tokenizer state/);
+  });
+
   it("still escapes textarea and title, which ARE escapable raw text", () => {
     expect(serializeVNode(h("textarea", {}, ["<b>&</b>"])))
       .toBe("<textarea>&lt;b&gt;&amp;&lt;/b&gt;</textarea>");
     expect(serializeVNode(h("title", {}, ["a < b"]))).toBe("<title>a &lt; b</title>");
+  });
+});
+
+describe("serializeVNode: foreign content (SVG / MathML)", () => {
+  // <style>/<script> are RAWTEXT only in the HTML namespace. Inside <svg> or
+  // <math> the tokenizer stays in data state, so emitting verbatim there
+  // injects live markup -- reproduced as a working XSS in Chromium during
+  // review. Namespace cannot be read off the vnode (snabbdom only stamps
+  // data.ns for svg), so it is tracked structurally.
+  const css = "a::after{content:'<img src=x onerror=alert(1)>'}";
+
+  it("escapes <style> inside <svg> instead of emitting it raw", () => {
+    const html = serializeVNode(h("svg", {}, [h("style", {}, [css])]));
+    expect(html).toContain("&lt;img");
+    expect(html).not.toContain("<img");
+  });
+
+  it("escapes <style> inside <math>, which carries no data.ns at all", () => {
+    const html = serializeVNode(h("math", {}, [h("style", {}, [css])]));
+    expect(html).toContain("&lt;img");
+    expect(html).not.toContain("<img");
+  });
+
+  it("keeps raw-text semantics in the HTML namespace", () => {
+    expect(serializeVNode(h("style", {}, [css]))).toContain("<img");
+  });
+
+  it.each(["foreignObject", "desc", "title"])(
+    "restores HTML raw text inside svg > %s",
+    (integrationPoint) => {
+      const html = serializeVNode(
+        h("svg", {}, [h(integrationPoint, {}, [h("style", {}, [css])])]),
+      );
+      expect(html).toContain("<img");
+      expect(html).not.toContain("&lt;img");
+    },
+  );
+
+  it.each(["mi", "mo", "mn", "ms", "mtext"])(
+    "restores HTML raw text inside math > %s",
+    (integrationPoint) => {
+      const html = serializeVNode(
+        h("math", {}, [h(integrationPoint, {}, [h("style", {}, [css])])]),
+      );
+      expect(html).toContain("<img");
+    },
+  );
+
+  it("stays foreign through a non-integration element", () => {
+    const html = serializeVNode(h("svg", {}, [h("g", {}, [h("style", {}, [css])])]));
+    expect(html).toContain("&lt;img");
+  });
+
+  it("honours annotation-xml encoding", () => {
+    const htmlEncoded = serializeVNode(
+      h("math", {}, [
+        h("annotation-xml", { attrs: { encoding: "text/html" } }, [h("style", {}, [css])]),
+      ]),
+    );
+    expect(htmlEncoded).toContain("<img");
+
+    const foreignEncoded = serializeVNode(
+      h("math", {}, [
+        h("annotation-xml", { attrs: { encoding: "application/mathml+xml" } }, [
+          h("style", {}, [css]),
+        ]),
+      ]),
+    );
+    expect(foreignEncoded).toContain("&lt;img");
+  });
+
+  it("preserves the original tag case for camelCase SVG elements", () => {
+    expect(serializeVNode(h("svg", {}, [h("foreignObject", {}, ["x"])])))
+      .toBe("<svg><foreignObject>x</foreignObject></svg>");
   });
 });
 
@@ -68,9 +150,18 @@ describe("serializeVNode: comments", () => {
   });
 
   it("refuses comment content that would terminate the comment early", () => {
-    expect(() => serializeVNode({ sel: "!", text: "a--><img onerror=alert(1)>" }))
-      .toThrow(/may not contain/);
-    expect(() => serializeVNode({ sel: "!", text: "trailing-" })).toThrow(/may not contain/);
+    // Each of these terminates the comment early; the `>` cases were an XSS
+    // hole found in review and reproduced in Chromium.
+    for (const hostile of [
+      "a--><img onerror=alert(1)>",   // contains --
+      "trailing-",                     // ends with -
+      "><img src=x onerror=alert(1)>", // comment-start state: > closes it
+      "-><img src=x onerror=alert(1)>",// comment-start-dash state
+      "<!-- nested",
+    ]) {
+      expect(() => serializeVNode({ sel: "!", text: hostile }), hostile)
+        .toThrow(/terminate the comment early/);
+    }
   });
 });
 
@@ -170,6 +261,13 @@ describe("serializeVNode: element shapes", () => {
   it("returns an empty string for null/undefined", () => {
     expect(serializeVNode(null)).toBe("");
     expect(serializeVNode(undefined)).toBe("");
+  });
+
+  it("tolerates an explicit `data: null` without crashing", () => {
+    // A default parameter only applies to `undefined`, so this previously
+    // threw a bare, unattributable TypeError.
+    expect(serializeVNode({ sel: "div", data: null, children: [] })).toBe("<div></div>");
+    expect(serializeVNode({ sel: "div", data: null, text: "x" })).toBe("<div>x</div>");
   });
 
   it("lets a caller substitute children via renderChildren", () => {

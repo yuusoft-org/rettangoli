@@ -52,5 +52,3 @@ export const resolveComponentDefinition = (
     store,
   };
 };
-
-export default resolveComponentDefinition;

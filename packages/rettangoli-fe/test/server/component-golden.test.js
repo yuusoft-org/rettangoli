@@ -91,10 +91,14 @@ const assertGolden = (name, html) => {
   const file = path.join(GOLDEN_DIR, `${name}.html`);
   const actual = `${pretty(html)}\n`;
 
-  if (UPDATE || !existsSync(file)) {
+  if (UPDATE) {
     writeFileSync(file, actual);
     return;
   }
+  // Deliberately NOT auto-writing when the file is missing: a deleted or
+  // never-committed golden would then silently regenerate and report green,
+  // which is the failure mode goldens exist to prevent.
+  expect(existsSync(file), `missing golden ${name}.html — run with UPDATE_GOLDENS=1`).toBe(true);
   expect(actual, `golden mismatch for ${name}`).toBe(readFileSync(file, "utf8"));
 };
 
@@ -129,11 +133,30 @@ describe("HTML goldens for real components", () => {
     expect(html).toContain('data-testid="panel"');
   });
 
-  it("renders itemList, exercising $for over store data", async () => {
+  it("renders itemList empty state", async () => {
     const component = await loadComponent("interactions", "itemList");
     const html = renderToHtml(component);
     assertGolden("itemList-initial", html);
-    expect(html.startsWith("<div")).toBe(true);
+    // items: [] means the $else branch -- assert we are really in it.
+    expect(html).toContain('data-testid="empty"');
+  });
+
+  it("renders itemList WITH items, actually exercising $for", async () => {
+    const component = await loadComponent("interactions", "itemList");
+    const html = renderToHtml(component, {
+      mutate: (store) => {
+        store.addItem({ name: "alpha" });
+        store.addItem({ name: "beta" });
+        store.addItem({ name: "gamma" });
+      },
+    });
+    assertGolden("itemList-populated", html);
+
+    // The empty branch is gone and every item was iterated.
+    expect(html).not.toContain('data-testid="empty"');
+    for (const label of ["alpha", "beta", "gamma"]) {
+      expect(html, `$for should have emitted "${label}"`).toContain(label);
+    }
   });
 
   it("produces byte-identical output across repeated renders", async () => {
@@ -144,10 +167,21 @@ describe("HTML goldens for real components", () => {
   });
 
   it("never leaks props, listeners or hooks into the markup", async () => {
-    const component = await loadComponent("interactions", "counter");
-    const html = renderToHtml(component);
+    // The fixtures render with props/on/hook all empty, so asserting their
+    // absence there proves nothing. Build a vnode that genuinely carries all
+    // three, so removing the serializer's guards makes this fail.
+    const { h } = await import("snabbdom/build/h.js");
+    const vnode = h("x-child", {
+      attrs: { keep: "yes" },
+      props: { payload: { deep: true }, cb: () => {}, when: new Date(0) },
+      on: { click: () => {} },
+      hook: { insert: () => {} },
+    });
+
+    const html = serializeVNode(vnode);
+    expect(html).toBe('<x-child keep="yes"></x-child>');
     expect(html).not.toContain("[object Object]");
-    expect(html).not.toContain("function");
-    expect(html).not.toMatch(/\son[a-z]+="/);
+    expect(html).not.toMatch(/\son[a-z]+=/);
+    expect(html).not.toContain("payload");
   });
 });

@@ -25,16 +25,10 @@ describe("node environment", () => {
 
   it("imports the server entry without a DOM", async () => {
     const mod = await import("../../src/server/index.js");
+    expect(typeof mod.renderView).toBe("function");
     expect(typeof mod.serializeVNode).toBe("function");
-    expect(typeof mod.parseView).toBe("function");
     expect(typeof mod.bindStore).toBe("function");
     expect(typeof mod.resolveComponentDefinition).toBe("function");
-    expect(typeof mod.yamlToCss).toBe("function");
-  });
-
-  it("imports the parser entry without a DOM", async () => {
-    const mod = await import("../../src/parser.js");
-    expect(typeof mod.parseView).toBe("function");
   });
 
   it("imports the web binding without a DOM (constructing still needs one)", async () => {
@@ -75,8 +69,7 @@ describe("package exports map", () => {
   // a consumer bind a different jempl version than it hoisted.
   it.each([
     ["@rettangoli/fe", ["createComponent"]],
-    ["@rettangoli/fe/server", ["serializeVNode", "parseView", "bindStore"]],
-    ["@rettangoli/fe/parser", ["parseView"]],
+    ["@rettangoli/fe/server", ["renderView", "serializeVNode", "bindStore"]],
     ["@rettangoli/fe/contracts", []],
   ])("resolves %s", async (specifier, expectedExports) => {
     const mod = await import(specifier);
@@ -103,44 +96,38 @@ describe("package exports map", () => {
 });
 
 describe("end to end: a component renders to HTML in bare Node", () => {
-  it("runs store -> parseView -> serializeVNode with no DOM", async () => {
-    const { serializeVNode, parseView, bindStore } = await import("../../src/server/index.js");
-    const { h } = await import("snabbdom/build/h.js");
-    const jemplParse = (await import("jempl/src/parse/index.js")).default;
+  it("renders a component with ONLY what ./server exports — no extra deps", async () => {
+    // The point of renderView: a consumer needs neither snabbdom's `h` nor
+    // jempl's parser, both of which live behind deep internal paths.
+    const { renderView, bindStore } = await import("../../src/server/index.js");
 
-    const template = jemplParse([
-      { "div.card": [{ "h1#title": "${name}" }, { p: "count=${count}" }] },
-    ]);
     const store = {
       createInitialState: () => ({ count: 3 }),
       selectViewData: ({ state, props }) => ({ name: props.name, count: state.count }),
     };
-
     const bound = bindStore(store, { name: "Ada" }, {}, {});
-    const vdom = parseView({
-      h,
-      template,
+
+    const html = renderView({
+      template: [{ "div.card": [{ "h1#title": "${name}" }, { p: "count=${count}" }] }],
       viewData: bound.selectViewData(),
-      refs: {},
-      handlers: {},
     });
 
-    expect(serializeVNode(vdom)).toBe(
+    expect(html).toBe(
       '<div style="display: contents"><div class="card"><h1 id="title">Ada</h1><p>count=3</p></div></div>',
     );
   });
 
-  it("is deterministic across repeated renders", async () => {
-    const { serializeVNode, parseView } = await import("../../src/server/index.js");
-    const { h } = await import("snabbdom/build/h.js");
+  it("accepts an already-parsed jempl AST, as produced at build time", async () => {
+    const { renderView } = await import("../../src/server/index.js");
     const jemplParse = (await import("jempl/src/parse/index.js")).default;
+    expect(renderView({ template: jemplParse([{ p: "${x}" }]), viewData: { x: "ok" } }))
+      .toBe('<div style="display: contents"><p>ok</p></div>');
+  });
 
-    const render = () => {
-      const template = jemplParse([{ "div#root": ["${a}", { span: "${b}" }] }]);
-      return serializeVNode(
-        parseView({ h, template, viewData: { a: "x", b: "y" }, refs: {}, handlers: {} }),
-      );
-    };
+  it("is deterministic across repeated renders", async () => {
+    const { renderView } = await import("../../src/server/index.js");
+    const render = () =>
+      renderView({ template: [{ "div#root": ["${a}", { span: "${b}" }] }], viewData: { a: "x", b: "y" } });
     expect(render()).toBe(render());
   });
 });
