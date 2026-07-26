@@ -28,7 +28,9 @@
   "exports": {
     ".": "./src/index.js",
     "./cli": "./src/cli/index.js",
-    "./contracts": "./src/contracts/index.js"
+    "./contracts": "./src/contracts/index.js",
+    "./server": "./src/server/index.js",
+    "./parser": "./src/parser.js"
   },
   "devDependencies": {
     "puty": "^0.1.1",
@@ -46,6 +48,7 @@
     "test": "vitest run --reporter=verbose",
     "test:package": "node test/package-smoke-test.js",
     "test:puty": "vitest run puty.spec.js --reporter=verbose",
-    "test:vitest": "vitest run test/**/*.test.js --reporter=verbose"
+    "test:vitest": "vitest run test/**/*.test.js --reporter=verbose",
+    "test:browser": "node test/web/style-module.browser.mjs"
   }
 }

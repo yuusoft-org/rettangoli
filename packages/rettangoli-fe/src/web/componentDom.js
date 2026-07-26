@@ -41,24 +41,54 @@ const markRenderTarget = (node) => {
   }
 };
 
+/**
+ * Elements that must never be adopted as the render target.
+ *
+ * The positional fallback below exists for shadow roots created before render
+ * targets were marked. But a shadow root legitimately contains other things —
+ * a `<style>`, a `<link>`, a `<slot>` — and adopting one of those is silently
+ * destructive: it is given `display: contents`, then snabbdom replaces it on
+ * the first patch (its `sel` cannot match the parser's `div` root), leaving
+ * `instance.renderTarget` pointing at a detached node.
+ *
+ * Reachable today on the hot-update path, and guaranteed the moment a shadow
+ * root carries server-rendered styles.
+ */
+const NON_ADOPTABLE_TAGS = new Set(["STYLE", "LINK", "SLOT", "TEMPLATE", "SCRIPT"]);
+
+const isAdoptableRenderTarget = (node) => {
+  if (!node || typeof node !== "object") return false;
+  const tagName = typeof node.tagName === "string" ? node.tagName.toUpperCase() : "";
+  return !NON_ADOPTABLE_TAGS.has(tagName);
+};
+
 const findExistingRenderTarget = (shadow) => {
   if (!shadow || typeof shadow !== "object") {
     return undefined;
   }
 
   if (typeof shadow.querySelector === "function") {
-    return shadow.querySelector(`[${RENDER_TARGET_ATTR}]`) ?? shadow.firstElementChild;
+    const marked = shadow.querySelector(`[${RENDER_TARGET_ATTR}]`);
+    if (marked) return marked;
+    const first = shadow.firstElementChild;
+    return isAdoptableRenderTarget(first) ? first : undefined;
   }
 
   if (Array.isArray(shadow.childNodes)) {
-    return shadow.childNodes.find(hasRenderTargetAttr) ?? shadow.childNodes[0];
+    const marked = shadow.childNodes.find(hasRenderTargetAttr);
+    if (marked) return marked;
+    return isAdoptableRenderTarget(shadow.childNodes[0]) ? shadow.childNodes[0] : undefined;
   }
 
   if (Array.isArray(shadow.children)) {
-    return shadow.children.find(hasRenderTargetAttr) ?? shadow.children[0];
+    const marked = shadow.children.find(hasRenderTargetAttr);
+    if (marked) return marked;
+    return isAdoptableRenderTarget(shadow.children[0]) ? shadow.children[0] : undefined;
   }
 
-  return shadow.firstElementChild;
+  return isAdoptableRenderTarget(shadow.firstElementChild)
+    ? shadow.firstElementChild
+    : undefined;
 };
 
 export const initializeComponentDom = ({
@@ -91,7 +121,12 @@ export const initializeComponentDom = ({
     markRenderTarget(renderTarget);
     shadow.appendChild(renderTarget);
   } else {
-    renderTarget.style.cssText = "display: contents;";
+    // Set the property rather than clobbering cssText: an adopted render
+    // target may legitimately carry inline styles (including ones the server
+    // emitted), and overwriting the whole declaration block discards them.
+    if (renderTarget.style && renderTarget.style.display !== "contents") {
+      renderTarget.style.display = "contents";
+    }
     if (!hasRenderTargetAttr(renderTarget)) {
       markRenderTarget(renderTarget);
     }

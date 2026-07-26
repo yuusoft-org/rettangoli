@@ -29,3 +29,6 @@ CLAUDE.md
 .codex-runs/
 **/.codex-journal.md
 **/.codex-compiler-journal.md
+
+# vitest temp dirs created by fe cli integration tests
+**/.tmp-tests/
