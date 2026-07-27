@@ -97,6 +97,21 @@ const childIsForeign = (rawTag, isForeign, data) => {
 /** Mirrors the framework's own attribute-name validation. */
 const ATTRIBUTE_NAME = /^[a-zA-Z_:][-a-zA-Z0-9_:.]*$/;
 
+/**
+ * Tag names are grammar, not data, and were the one thing here emitted without
+ * validation — attribute names, raw text and comments are all already checked.
+ *
+ * It is reachable: an interpolated element key (`{ "${tag}": ... }`) puts view
+ * data straight into the sel, and `parseView` yields e.g. `sel: "div><img"`,
+ * which breaks out of the tag and injects live markup.
+ *
+ * The browser has always been safe here by accident — `document.createElement`
+ * rejects the same string with InvalidCharacterError — so without this the
+ * server path would be strictly weaker than the client it mirrors. Throwing
+ * keeps the two in agreement.
+ */
+const TAG_NAME = /^[a-zA-Z][a-zA-Z0-9:-]*$/;
+
 const escapeText = (value) =>
   String(value)
     .replace(/&/g, "&amp;")
@@ -254,6 +269,12 @@ const serializeNode = (vnode, options, isForeign) => {
   }
 
   const tag = tagFromSel(vnode.sel);
+  if (!TAG_NAME.test(tag)) {
+    throw new Error(
+      `[serializeVNode] refusing to emit invalid tag name ${JSON.stringify(tag)} ` +
+        "— it would break out of the tag and inject markup.",
+    );
+  }
   const attributes = buildAttributes(vnode.data);
 
   if (VOID_ELEMENTS.has(tag.toLowerCase())) {

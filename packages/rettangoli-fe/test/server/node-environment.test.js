@@ -124,6 +124,19 @@ describe("end to end: a component renders to HTML in bare Node", () => {
       .toBe('<div style="display: contents"><p>ok</p></div>');
   });
 
+  it("refuses view data that would inject markup through an interpolated tag", async () => {
+    // `{ "${tag}": ... }` puts view data straight into the sel: parseView
+    // yields `sel: "div><img"`, which previously serialized to real elements.
+    // Verified in Chromium before the fix — the onerror handler fired.
+    const { renderView } = await import("../../src/server/index.js");
+    expect(() =>
+      renderView({
+        template: [{ "${tag}": "hi" }],
+        viewData: { tag: "div><img src=x onerror=alert(1)" },
+      }),
+    ).toThrow(/invalid tag name/);
+  });
+
   it("is deterministic across repeated renders", async () => {
     const { renderView } = await import("../../src/server/index.js");
     const render = () =>

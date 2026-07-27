@@ -144,6 +144,28 @@ describe("serializeVNode: foreign content (SVG / MathML)", () => {
   });
 });
 
+describe("serializeVNode: tag names", () => {
+  // Attribute names were validated from the start; tag names were not, which
+  // made this the one way left to break out of a tag. The browser rejects the
+  // same string via document.createElement (InvalidCharacterError), so without
+  // the guard the server path was strictly weaker than the client it mirrors.
+  it("refuses a tag name that would break out of the tag", () => {
+    expect(() => serializeVNode(h("div><img src=x onerror=alert(1)", {}, ["x"])))
+      .toThrow(/invalid tag name/);
+    expect(() => serializeVNode(h("div onload=alert(1)", {}, ["x"])))
+      .toThrow(/invalid tag name/);
+  });
+
+  it("still accepts the tag shapes the framework really emits", () => {
+    // Plain, custom element, camelCase SVG, and snabbdom's tag#id.class form.
+    expect(serializeVNode(h("div"))).toBe("<div></div>");
+    expect(serializeVNode(h("rtgl-view"))).toBe("<rtgl-view></rtgl-view>");
+    expect(serializeVNode(h("svg", {}, [h("foreignObject")])))
+      .toBe("<svg><foreignObject></foreignObject></svg>");
+    expect(serializeVNode(h("div#root.card"))).toBe("<div></div>");
+  });
+});
+
 describe("serializeVNode: comments", () => {
   it("emits comment vnodes", () => {
     expect(serializeVNode({ sel: "!", text: " sep " })).toBe("<!-- sep -->");

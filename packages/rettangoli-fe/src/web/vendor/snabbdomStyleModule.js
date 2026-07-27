@@ -40,10 +40,13 @@
  * Making the patch lazy does NOT help — the failure is module evaluation, not
  * invocation.
  *
- * THE DELTA vs upstream is exactly two lines: `raf` is resolved lazily and
- * reads `globalThis.window` instead of a bare `window`. Everything else is a
- * byte-faithful copy so runtime behaviour — including the `delayed` / `remove`
- * / `destroy` transition hooks — is unchanged in a browser.
+ * THE DELTA vs upstream is the `raf` binding alone: it resolves lazily and
+ * reads `globalThis.window` instead of a bare `window`. The rest is
+ * SEMANTICALLY faithful but reformatted to this repo's style (brace placement,
+ * single-line ifs), so runtime behaviour — including the `delayed` / `remove`
+ * / `destroy` transition hooks — is unchanged in a browser. It is not a
+ * byte-for-byte copy; `test/web/style-module.test.js` compares the normalised
+ * body against the installed snabbdom rather than the raw text.
  *
  * Keep this in sync if snabbdom is upgraded. `test/web/style-module.test.js`
  * pins the observable behaviour.
@@ -173,5 +176,3 @@ export const styleModule = {
   destroy: applyDestroyStyle,
   remove: applyRemoveStyle,
 };
-
-export default styleModule;

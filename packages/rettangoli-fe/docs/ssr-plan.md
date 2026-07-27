@@ -565,7 +565,10 @@ violate is worth more than a contract with more slots.
 
 ### 5.6 [A] Exports, tooling, and three latent bugs — small
 
-- `"./server"` and `"./parser"` entries in the exports map. This also removes a
+- A `"./server"` entry in the exports map. (Shipped as `./server` only: a
+  separate `./parser` entry was dropped, because `renderView` supplies snabbdom's
+  `h` and jempl's parser itself and callers no longer need the raw `parseView`.)
+  This also removes a
   live hazard: `tests/support/renderView.js` reaches into
   `node_modules/@rettangoli/fe/node_modules/jempl` by path, binding a
   different jempl version than the app hoists — the test helper can compile

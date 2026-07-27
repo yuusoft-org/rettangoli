@@ -180,9 +180,12 @@ describe("vendored copy vs upstream snabbdom", () => {
     );
 
     // Compare the mechanical body: everything from nextFrame onward, with
-    // comments and whitespace normalised away.
+    // comments and whitespace normalised away. Starting at `nextFrame` rather
+    // than `updateStyle` deliberately covers nextFrame/setNextFrame — the lines
+    // adjacent to the modified `raf`, and so the likeliest place for a careless
+    // re-vendor to drift.
     const body = (source) => {
-      const start = source.indexOf("function updateStyle");
+      const start = source.indexOf("const nextFrame");
       const end = source.indexOf("export const styleModule");
       return source
         .slice(start, end)
