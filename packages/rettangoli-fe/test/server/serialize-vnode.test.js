@@ -65,12 +65,28 @@ describe("serializeVNode: raw text elements", () => {
       .toThrow(/cannot be safely serialized/);
   });
 
-  it("refuses <script> content containing `<!--`, which prevents the tag closing", () => {
-    // `<!--` moves the tokenizer into script-data-escaped state, so a later
-    // </script> no longer closes the element and the rest of the document is
-    // swallowed as script text. Confirmed in parse5, jsdom and Chromium.
+  it.each([
+    ["style", "</stylesheet>"],
+    ["script", "</scripture>"],
+    ["style", "</ style>"],
+  ])("allows <%s> text that only resembles an end tag", (tag, text) => {
+    expect(serializeVNode(h(tag, {}, [text]))).toBe(`<${tag}>${text}</${tag}>`);
+  });
+
+  it("allows harmless script comment markers and escaped-state round trips", () => {
+    for (const text of [
+      "<!-- legacy wrapper -->",
+      'const marker = "<!--";',
+      "<!--<script></script>-->",
+    ]) {
+      expect(serializeVNode(h("script", {}, [text])))
+        .toBe(`<script>${text}</script>`);
+    }
+  });
+
+  it("refuses script text left in the double-escaped state", () => {
     expect(() => serializeVNode(h("script", {}, ['{"a":"<!--<script>"}'])))
-      .toThrow(/changes the tokenizer state/);
+      .toThrow(/script-data-double-escaped state/);
   });
 
   it("still escapes textarea and title, which ARE escapable raw text", () => {
@@ -323,6 +339,38 @@ describe("serializeVNode: attribute encoding", () => {
       .toBe('<div style="display: contents; margin-top: 4px; --x: 1"></div>');
   });
 
+  it("rejects style values that can escape into another declaration", () => {
+    expect(() => serializeVNode(
+      h("div", { style: { color: "red; background-image: url(https://example.test/x)" } }),
+    )).toThrow(/top-level semicolon/);
+    expect(() => serializeVNode(
+      h("div", { style: { "--theme": "red; background: black" } }),
+    )).toThrow(/top-level semicolon/);
+  });
+
+  it("allows semicolons isolated inside CSS strings and functions", () => {
+    expect(serializeVNode(h("div", {
+      style: {
+        content: '"a;b"',
+        "--asset": 'url("data:image/svg+xml;a")',
+      },
+    }))).toBe(
+      '<div style="content: &quot;a;b&quot;; --asset: url(&quot;data:image/svg+xml;a&quot;)"></div>',
+    );
+  });
+
+  it("rejects property names and values that cannot form one isolated declaration", () => {
+    expect(() => serializeVNode(
+      h("div", { style: { "color; background": "red" } }),
+    )).toThrow(/invalid CSS property name/);
+    expect(() => serializeVNode(
+      h("div", { style: { color: "var(--broken" } }),
+    )).toThrow(/unbalanced CSS blocks/);
+    expect(() => serializeVNode(
+      h("div", { style: { color: "red !important" } }),
+    )).toThrow(/priority marker/);
+  });
+
   it("drops snabbdom's transition sub-objects from style", () => {
     expect(serializeVNode(
       h("div", { style: { color: "red", delayed: { opacity: "1" }, remove: { opacity: "0" }, destroy: { opacity: "0" } } }),
@@ -344,6 +392,15 @@ describe("serializeVNode: element shapes", () => {
   it("does not close void elements", () => {
     expect(serializeVNode(h("img", { attrs: { src: "/a.png" } }))).toBe('<img src="/a.png">');
     expect(serializeVNode(h("br"))).toBe("<br>");
+  });
+
+  it("closes HTML void-element names in foreign namespaces", () => {
+    expect(serializeVNode(
+      h("svg", {}, [h("input"), h("circle")]),
+    )).toBe("<svg><input></input><circle></circle></svg>");
+    expect(serializeVNode(
+      h("math", {}, [h("input"), h("mi", {}, ["x"])]),
+    )).toBe("<math><input></input><mi>x</mi></math>");
   });
 
   it("serializes nested children in document order", () => {

@@ -3,6 +3,7 @@ import { parseAndRender as jemplParseAndRender, render as jemplRender } from "je
 import { flattenArrays } from "./utils/flattenArrays.js";
 import { parseNodeBindings } from './core/view/bindings.js';
 import { ensureNormalizedTemplatePropertyBindings } from "./core/view/templatePropertyBindings.js";
+import { applyVNodeNamespaces } from "./core/view/namespaces.js";
 import {
   createRefMatchers,
   resolveBestRefMatcher,
@@ -39,7 +40,7 @@ export const parseView = ({
   });
 
   const vdom = h("div", { style: { display: "contents" } }, childNodes);
-  return vdom;
+  return applyVNodeNamespaces(vdom);
 };
 
 /**

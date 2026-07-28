@@ -24,6 +24,12 @@
  *  - `data.on`, `data.hook` — live closures.
  */
 
+import {
+  HTML_NAMESPACE,
+  namespaceFromHtml,
+  namespaceForChild,
+} from "../view/namespaces.js";
+
 const VOID_ELEMENTS = new Set([
   "area", "base", "br", "col", "embed", "hr", "img", "input",
   "link", "meta", "param", "source", "track", "wbr",
@@ -58,91 +64,10 @@ const RAW_TEXT_ELEMENTS = new Set([
  * re-parses with a real <img> hoisted out of the svg, and the handler runs.
  * Verified in Chromium.
  *
- * Namespace cannot be read off the vnode: snabbdom's `addNS` only stamps
- * `data.ns` for sels starting with `svg`, so MathML carries nothing. It has to
- * be tracked structurally as we descend.
+ * Public callers can supply vnodes that have not gone through rettangoli's
+ * namespace normalization, so serialization still tracks namespace
+ * structurally rather than trusting `data.ns`.
  */
-const HTML_NAMESPACE = "html";
-const SVG_NAMESPACE = "svg";
-const MATHML_NAMESPACE = "mathml";
-
-/**
- * SVG and MathML have different HTML integration points. Combining these sets
- * is unsafe: for example, `title` is an integration point in SVG but not in
- * MathML, while `mi` is one in MathML but not SVG.
- */
-const SVG_HTML_INTEGRATION_POINTS = new Set(["foreignobject", "desc", "title"]);
-const MATHML_TEXT_INTEGRATION_POINTS = new Set(["mi", "mo", "mn", "ms", "mtext"]);
-const MATHML_TEXT_INTEGRATION_EXCEPTIONS = new Set(["mglyph", "malignmark"]);
-
-const HTML_ENCODINGS = new Set(["text/html", "application/xhtml+xml"]);
-
-/**
- * Resolves an element token processed in the HTML namespace. HTML parsing
- * enters foreign content only for SVG and MathML roots.
- */
-const namespaceFromHtml = (rawTag) => {
-  const tag = rawTag.toLowerCase();
-  if (tag === "svg") return SVG_NAMESPACE;
-  if (tag === "math") return MATHML_NAMESPACE;
-  return HTML_NAMESPACE;
-};
-
-const getAttribute = (data, expectedName) => {
-  const entry = Object.entries(data?.attrs || {}).find(
-    ([name]) => name.toLowerCase() === expectedName,
-  );
-  return entry?.[1];
-};
-
-/**
- * Resolves one child at a time because MathML text integration points keep
- * immediate `mglyph` and `malignmark` children in MathML while processing
- * their other children as HTML.
- *
- * Tags are lowercased for lookup only — the emitted tag keeps its original case,
- * which matters for SVG's camelCase elements (`foreignObject`, `clipPath`).
- */
-const namespaceForChild = ({
-  parentNamespace,
-  parentTag: rawParentTag,
-  parentData,
-  childTag: rawChildTag,
-}) => {
-  const parentTag = rawParentTag.toLowerCase();
-  const childTag = rawChildTag.toLowerCase();
-
-  if (parentNamespace === HTML_NAMESPACE) {
-    return namespaceFromHtml(childTag);
-  }
-
-  if (parentNamespace === SVG_NAMESPACE) {
-    return SVG_HTML_INTEGRATION_POINTS.has(parentTag)
-      ? namespaceFromHtml(childTag)
-      : SVG_NAMESPACE;
-  }
-
-  if (MATHML_TEXT_INTEGRATION_POINTS.has(parentTag)) {
-    return MATHML_TEXT_INTEGRATION_EXCEPTIONS.has(childTag)
-      ? MATHML_NAMESPACE
-      : namespaceFromHtml(childTag);
-  }
-
-  if (parentTag === "annotation-xml") {
-    // The HTML parser handles this start tag as SVG even when annotation-xml
-    // is not an HTML integration point (that is, regardless of encoding).
-    if (childTag === "svg") {
-      return SVG_NAMESPACE;
-    }
-    const encoding = String(getAttribute(parentData, "encoding") ?? "").toLowerCase();
-    if (HTML_ENCODINGS.has(encoding)) {
-      return namespaceFromHtml(childTag);
-    }
-  }
-
-  return MATHML_NAMESPACE;
-};
-
 /** Mirrors the framework's own attribute-name validation. */
 const ATTRIBUTE_NAME = /^[a-zA-Z_:][-a-zA-Z0-9_:.]*$/;
 
@@ -177,27 +102,93 @@ const escapeAttribute = (value) =>
 const toKebab = (key) =>
   key.startsWith("--") ? key : key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 
+const RAW_TEXT_END_TAG_DELIMITER = /[\t\n\f\r />]/;
+
+const hasDelimitedSequence = (text, offset, sequence) => {
+  if (text.slice(offset, offset + sequence.length).toLowerCase() !== sequence) {
+    return false;
+  }
+  const delimiter = text[offset + sequence.length];
+  return delimiter !== undefined && RAW_TEXT_END_TAG_DELIMITER.test(delimiter);
+};
+
+const throwRawTextEndTag = (tag) => {
+  throw new Error(
+    `[serializeVNode] <${tag}> content contains an actual closing </${tag}> tag ` +
+      "and cannot be safely serialized.",
+  );
+};
+
+/**
+ * Script data has two comment-like escaped modes. A closing </script> remains
+ * active in the ordinary escaped mode, but only exits the double-escaped mode.
+ * Track those transitions so harmless `<!--` markers remain legal while a
+ * synthetic closing tag that would be swallowed is rejected.
+ */
+const scriptTextOrThrow = (text) => {
+  let state = "data";
+
+  for (let index = 0; index < text.length;) {
+    if (state !== "double-escaped" && hasDelimitedSequence(text, index, "</script")) {
+      throwRawTextEndTag("script");
+    }
+
+    if (state === "data") {
+      if (text.startsWith("<!--", index)) {
+        state = "escaped";
+        index += 4;
+      } else {
+        index += 1;
+      }
+      continue;
+    }
+
+    if (state === "escaped") {
+      if (text.startsWith("-->", index)) {
+        state = "data";
+        index += 3;
+      } else if (hasDelimitedSequence(text, index, "<script")) {
+        state = "double-escaped";
+        index += 7;
+      } else {
+        index += 1;
+      }
+      continue;
+    }
+
+    if (text.startsWith("-->", index)) {
+      state = "data";
+      index += 3;
+    } else if (hasDelimitedSequence(text, index, "</script")) {
+      state = "escaped";
+      index += 8;
+    } else {
+      index += 1;
+    }
+  }
+
+  if (state === "double-escaped") {
+    throw new Error(
+      "[serializeVNode] <script> content ends in the script-data-double-escaped state, " +
+        "which would swallow the generated closing </script> tag.",
+    );
+  }
+};
+
 /**
  * Raw text cannot be escaped, so the only defence against content closing its
- * own element is to refuse it. Anything producing `</style` or `</script` here
- * is either a bug or an injection attempt.
+ * own element is to refuse actual matching end tags. Near-matches such as
+ * `</stylesheet>` remain ordinary text.
  */
 const rawTextOrThrow = (tag, content) => {
   const text = String(content ?? "");
-  if (new RegExp(`</\\s*${tag}`, "i").test(text)) {
-    throw new Error(
-      `[serializeVNode] <${tag}> content contains a closing "</${tag}" sequence and cannot be safely serialized.`,
-    );
-  }
-  // `<!--` inside a <script> moves the tokenizer into script-data-escaped
-  // state, where a later `</script>` no longer closes the element — the rest
-  // of the document is silently swallowed as script text. Not code execution,
-  // but total content loss, and invisible until someone views the page.
-  if (tag === "script" && text.includes("<!--")) {
-    throw new Error(
-      '[serializeVNode] <script> content contains "<!--", which changes the tokenizer state ' +
-        "so the element no longer closes at </script>. Refusing to serialize.",
-    );
+  if (tag === "script") {
+    scriptTextOrThrow(text);
+  } else {
+    const closingTag = new RegExp(`</${tag}(?=[\\t\\n\\f\\r />])`, "i");
+    if (closingTag.test(text)) {
+      throwRawTextEndTag(tag);
+    }
   }
   return text;
 };
@@ -233,6 +224,94 @@ const commentOrThrow = (content) => {
   return text;
 };
 
+const CSS_PROPERTY_NAME = /^(?:--[-_a-zA-Z0-9]+|-?[_a-zA-Z][-_a-zA-Z0-9]*)$/;
+const CSS_BLOCK_END = {
+  "(": ")",
+  "[": "]",
+  "{": "}",
+};
+
+const cssDeclarationOrThrow = (rawProperty, rawValue) => {
+  const property = toKebab(rawProperty);
+  const value = String(rawValue);
+  const blocks = [];
+  let quote = null;
+  let inComment = false;
+
+  const invalid = (reason) => {
+    throw new Error(
+      `[serializeVNode] style property ${JSON.stringify(property)} ${reason}; ` +
+        "it cannot be safely isolated as one CSS declaration.",
+    );
+  };
+
+  if (!CSS_PROPERTY_NAME.test(property)) {
+    invalid("has an invalid CSS property name");
+  }
+
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    const next = value[index + 1];
+
+    if (inComment) {
+      if (char === "*" && next === "/") {
+        inComment = false;
+        index += 1;
+      }
+      continue;
+    }
+
+    if (quote !== null) {
+      if (char === "\\") {
+        if (next === undefined) invalid("ends with an incomplete CSS escape");
+        index += 1;
+      } else if (char === quote) {
+        quote = null;
+      } else if (char === "\n" || char === "\r" || char === "\f") {
+        invalid("contains an unescaped line break in a CSS string");
+      }
+      continue;
+    }
+
+    if (char === "/" && next === "*") {
+      inComment = true;
+      index += 1;
+      continue;
+    }
+    if (char === "'" || char === '"') {
+      quote = char;
+      continue;
+    }
+    if (char === "\\") {
+      if (next === undefined) invalid("ends with an incomplete CSS escape");
+      index += 1;
+      continue;
+    }
+    if (Object.prototype.hasOwnProperty.call(CSS_BLOCK_END, char)) {
+      blocks.push(CSS_BLOCK_END[char]);
+      continue;
+    }
+    if (char === ")" || char === "]" || char === "}") {
+      if (blocks.pop() !== char) invalid("contains unbalanced CSS blocks");
+      continue;
+    }
+    if (blocks.length === 0 && char === ";") {
+      invalid("contains a top-level semicolon");
+    }
+    // CSSStyleDeclaration property assignment does not accept a priority in
+    // the value, while reparsing an HTML style attribute does.
+    if (blocks.length === 0 && char === "!") {
+      invalid("contains a top-level priority marker");
+    }
+  }
+
+  if (inComment) invalid("contains an unterminated CSS comment");
+  if (quote !== null) invalid("contains an unterminated CSS string");
+  if (blocks.length > 0) invalid("contains unbalanced CSS blocks");
+
+  return `${property}: ${value}`;
+};
+
 const styleObjectToString = (style) => {
   if (!style || typeof style !== "object") return "";
   return Object.entries(style)
@@ -240,7 +319,7 @@ const styleObjectToString = (style) => {
     // behaviour, not declarations.
     .filter(([key]) => key !== "delayed" && key !== "remove" && key !== "destroy")
     .filter(([, value]) => value !== undefined && value !== null && value !== "")
-    .map(([key, value]) => `${toKebab(key)}: ${value}`)
+    .map(([key, value]) => cssDeclarationOrThrow(key, value))
     .join("; ");
 };
 
@@ -372,7 +451,7 @@ const serializeNode = (vnode, options, namespace) => {
   }
   const attributes = buildAttributes(vnode.data, selector);
 
-  if (VOID_ELEMENTS.has(lowerTag)) {
+  if (namespace === HTML_NAMESPACE && VOID_ELEMENTS.has(lowerTag)) {
     return `<${tag}${attributes}>`;
   }
 
