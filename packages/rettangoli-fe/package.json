@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/fe",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Frontend framework for building reactive web components",
   "type": "module",
   "main": "./src/index.js",
@@ -28,7 +28,8 @@
   "exports": {
     ".": "./src/index.js",
     "./cli": "./src/cli/index.js",
-    "./contracts": "./src/contracts/index.js"
+    "./contracts": "./src/contracts/index.js",
+    "./server": "./src/server/index.js"
   },
   "devDependencies": {
     "puty": "^0.1.1",
@@ -46,6 +47,7 @@
     "test": "vitest run --reporter=verbose",
     "test:package": "node test/package-smoke-test.js",
     "test:puty": "vitest run puty.spec.js --reporter=verbose",
-    "test:vitest": "vitest run test/**/*.test.js --reporter=verbose"
+    "test:vitest": "vitest run test/**/*.test.js --reporter=verbose",
+    "test:browser": "node test/web/style-module.browser.mjs"
   }
 }

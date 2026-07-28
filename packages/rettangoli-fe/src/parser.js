@@ -3,6 +3,7 @@ import { parseAndRender as jemplParseAndRender, render as jemplRender } from "je
 import { flattenArrays } from "./utils/flattenArrays.js";
 import { parseNodeBindings } from './core/view/bindings.js';
 import { ensureNormalizedTemplatePropertyBindings } from "./core/view/templatePropertyBindings.js";
+import { applyVNodeNamespaces } from "./core/view/namespaces.js";
 import {
   createRefMatchers,
   resolveBestRefMatcher,
@@ -20,6 +21,7 @@ export const parseView = ({
   refs,
   handlers,
   createComponentUpdateHook,
+  wireEventListeners = true,
 }) => {
   ensureNormalizedTemplatePropertyBindings(template);
   const result = jemplRender(template, viewData, {});
@@ -34,10 +36,11 @@ export const parseView = ({
     handlers,
     viewData,
     createComponentUpdateHook,
+    wireEventListeners,
   });
 
   const vdom = h("div", { style: { display: "contents" } }, childNodes);
-  return vdom;
+  return applyVNodeNamespaces(vdom);
 };
 
 /**
@@ -47,6 +50,7 @@ export const parseView = ({
  * @param {Object} params.refs
  * @param {Object} params.handlers
  * @param {Object} params.viewData
+ * @param {boolean} params.wireEventListeners
  * @returns
  */
 export const createVirtualDom = ({
@@ -56,6 +60,7 @@ export const createVirtualDom = ({
   handlers = {},
   viewData = {},
   createComponentUpdateHook,
+  wireEventListeners = true,
 }) => {
   if (!Array.isArray(items)) {
     throw new Error("[Parser] Input to createVirtualDom must be an array, got " + typeof items);
@@ -209,7 +214,7 @@ export const createVirtualDom = ({
             refMatchers,
           });
 
-          if (bestMatchRef) {
+          if (bestMatchRef && wireEventListeners) {
             const bestMatchRefKey = bestMatchRef.refKey;
             const matchIdentity = bestMatchRef.matchedValue || elementIdForRefs || bestMatchRefKey;
 

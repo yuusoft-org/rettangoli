@@ -114,11 +114,17 @@ try {
       import assert from "node:assert/strict";
       import { createRequire } from "node:module";
 
-      globalThis.window = {};
+      // Deliberately NO \`globalThis.window\` stub. This file used to declare one,
+      // which silently hid the fact that the package could not be imported in a
+      // real Node process. The whole point of the smoke test is to import the
+      // PACKED artifact exactly as a Node consumer would.
+      assert.equal(typeof globalThis.window, "undefined");
+      assert.equal(typeof globalThis.document, "undefined");
 
       const fe = await import("@rettangoli/fe");
       const contracts = await import("@rettangoli/fe/contracts");
       const cli = await import("@rettangoli/fe/cli");
+      const server = await import("@rettangoli/fe/server");
       const require = createRequire(import.meta.url);
 
       assert.equal(typeof fe.createComponent, "function");
@@ -126,9 +132,19 @@ try {
       assert.equal(typeof contracts.validateSchemaContract, "function");
       assert.equal(typeof cli.build, "function");
       assert.equal(typeof cli.watch, "function");
+      assert.equal(typeof server.renderView, "function");
+      assert.equal(typeof server.serializeVNode, "function");
+      assert.equal(typeof server.bindStore, "function");
       assert.match(require.resolve("@rettangoli/fe"), /src\\/index\\.js$/);
       assert.match(require.resolve("@rettangoli/fe/contracts"), /contracts\\/index\\.js$/);
       assert.match(require.resolve("@rettangoli/fe/cli"), /cli\\/index\\.js$/);
+      assert.match(require.resolve("@rettangoli/fe/server"), /server\\/index\\.js$/);
+
+      // End to end through the packed files, not the source tree.
+      assert.equal(
+        server.renderView({ template: [{ "p.x": "\${msg}" }], viewData: { msg: "ok" } }),
+        '<div style="display: contents"><p class="x">ok</p></div>',
+      );
     `,
   );
   run(process.execPath, [smokeModulePath], { cwd: temporaryDirectory });
