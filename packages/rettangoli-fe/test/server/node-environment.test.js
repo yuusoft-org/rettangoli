@@ -124,6 +124,28 @@ describe("end to end: a component renders to HTML in bare Node", () => {
       .toBe('<div style="display: contents"><p>ok</p></div>');
   });
 
+  it("renders refs with action listeners without constructing client event closures", async () => {
+    const { renderView } = await import("../../src/server/index.js");
+    expect(renderView({
+      template: [{ "button#saveButton": "Save" }],
+      refs: {
+        saveButton: {
+          eventListeners: {
+            click: { action: "save" },
+          },
+        },
+      },
+    })).toBe(
+      '<div style="display: contents"><button id="saveButton">Save</button></div>',
+    );
+  });
+
+  it("matches client precedence when selector and authored classes coexist", async () => {
+    const { renderView } = await import("../../src/server/index.js");
+    expect(renderView({ template: [{ "div.foo class=bar": "x" }] }))
+      .toBe('<div style="display: contents"><div class="bar">x</div></div>');
+  });
+
   it("refuses view data that would inject markup through an interpolated tag", async () => {
     // `{ "${tag}": ... }` puts view data straight into the sel: parseView
     // yields `sel: "div><img"`, which previously serialized to real elements.
@@ -135,6 +157,16 @@ describe("end to end: a component renders to HTML in bare Node", () => {
         viewData: { tag: "div><img src=x onerror=alert(1)" },
       }),
     ).toThrow(/invalid tag name/);
+  });
+
+  it("refuses an interpolated plaintext tag that would swallow the response", async () => {
+    const { renderView } = await import("../../src/server/index.js");
+    expect(() =>
+      renderView({
+        template: [{ "${tag}": "unsafe" }],
+        viewData: { tag: "plaintext" },
+      }),
+    ).toThrow(/HTML tokenizer never recognizes its closing tag/);
   });
 
   it("is deterministic across repeated renders", async () => {

@@ -48,10 +48,20 @@ describe("serializeVNode: raw text elements", () => {
       .toBe("<script>if (a < b) {}</script>");
   });
 
+  it.each(["iframe", "xmp", "noembed", "noframes"])(
+    "emits <%s> content verbatim",
+    (tag) => {
+      expect(serializeVNode(h(tag, {}, ["a < b"])))
+        .toBe(`<${tag}>a < b</${tag}>`);
+    },
+  );
+
   it("refuses raw-text content that would close its own element", () => {
     expect(() => serializeVNode(h("style", {}, ["x{}</style><img onerror=alert(1)>"])))
       .toThrow(/cannot be safely serialized/);
     expect(() => serializeVNode(h("script", {}, ["</script><img onerror=alert(1)>"])))
+      .toThrow(/cannot be safely serialized/);
+    expect(() => serializeVNode(h("iframe", {}, ["</iframe><img onerror=alert(1)>"])))
       .toThrow(/cannot be safely serialized/);
   });
 
@@ -115,6 +125,37 @@ describe("serializeVNode: foreign content (SVG / MathML)", () => {
     },
   );
 
+  it.each([
+    ["math", "foreignObject"],
+    ["math", "desc"],
+    ["math", "title"],
+    ["svg", "mi"],
+    ["svg", "mo"],
+    ["svg", "mn"],
+    ["svg", "ms"],
+    ["svg", "mtext"],
+  ])(
+    "does not apply another namespace's integration rule to %s > %s",
+    (foreignRoot, integrationPoint) => {
+      const html = serializeVNode(
+        h(foreignRoot, {}, [h(integrationPoint, {}, [h("style", {}, [css])])]),
+      );
+      expect(html).toContain("&lt;img");
+      expect(html).not.toContain("<img");
+    },
+  );
+
+  it.each(["mglyph", "malignmark"])(
+    "keeps math > mi > %s and its descendants in MathML",
+    (exception) => {
+      const html = serializeVNode(
+        h("math", {}, [h("mi", {}, [h(exception, {}, [h("style", {}, [css])])])]),
+      );
+      expect(html).toContain("&lt;img");
+      expect(html).not.toContain("<img");
+    },
+  );
+
   it("stays foreign through a non-integration element", () => {
     const html = serializeVNode(h("svg", {}, [h("g", {}, [h("style", {}, [css])])]));
     expect(html).toContain("&lt;img");
@@ -138,6 +179,25 @@ describe("serializeVNode: foreign content (SVG / MathML)", () => {
     expect(foreignEncoded).toContain("&lt;img");
   });
 
+  it("enters SVG for annotation-xml > svg regardless of encoding", () => {
+    for (const attrs of [
+      {},
+      { encoding: "application/mathml+xml" },
+    ]) {
+      const html = serializeVNode(
+        h("math", {}, [
+          h("annotation-xml", { attrs }, [
+            h("svg", {}, [
+              h("foreignObject", {}, [h("style", {}, [css])]),
+            ]),
+          ]),
+        ]),
+      );
+      expect(html).toContain("<img");
+      expect(html).not.toContain("&lt;img");
+    }
+  });
+
   it("preserves the original tag case for camelCase SVG elements", () => {
     expect(serializeVNode(h("svg", {}, [h("foreignObject", {}, ["x"])])))
       .toBe("<svg><foreignObject>x</foreignObject></svg>");
@@ -156,13 +216,22 @@ describe("serializeVNode: tag names", () => {
       .toThrow(/invalid tag name/);
   });
 
+  it.each(["plaintext", "PLAINTEXT"])(
+    "refuses unclosable HTML <%s>",
+    (tag) => {
+      expect(() => serializeVNode(h(tag, {}, ["swallows the document"])))
+        .toThrow(/HTML tokenizer never recognizes its closing tag/);
+    },
+  );
+
   it("still accepts the tag shapes the framework really emits", () => {
     // Plain, custom element, camelCase SVG, and snabbdom's tag#id.class form.
     expect(serializeVNode(h("div"))).toBe("<div></div>");
     expect(serializeVNode(h("rtgl-view"))).toBe("<rtgl-view></rtgl-view>");
     expect(serializeVNode(h("svg", {}, [h("foreignObject")])))
       .toBe("<svg><foreignObject></foreignObject></svg>");
-    expect(serializeVNode(h("div#root.card"))).toBe("<div></div>");
+    expect(serializeVNode(h("div#root.card")))
+      .toBe('<div id="root" class="card"></div>');
   });
 });
 
@@ -235,12 +304,18 @@ describe("serializeVNode: attribute encoding", () => {
       .toBe('<div d="keep"></div>');
   });
 
-  it("merges data.class and an authored class into ONE class attribute", () => {
+  it("lets an authored class replace data.class, matching module order", () => {
     const html = serializeVNode(
       h("div", { attrs: { class: "authored" }, class: { alpha: true, beta: false } }),
     );
-    expect(html).toBe('<div class="authored alpha"></div>');
+    expect(html).toBe('<div class="authored"></div>');
     expect(html.match(/class=/g)).toHaveLength(1);
+  });
+
+  it("applies data.class changes to selector-derived classes", () => {
+    expect(serializeVNode(
+      h("div.base.remove", { class: { remove: false, added: true } }),
+    )).toBe('<div class="base added"></div>');
   });
 
   it("renders style objects as kebab-case css and preserves custom properties", () => {

@@ -38,9 +38,12 @@ const VOID_ELEMENTS = new Set([
  * references, so they stay on the normal escaping path and are deliberately
  * absent from this set.
  *
- * CRITICAL: this applies only in the HTML namespace. See FOREIGN_ROOTS.
+ * CRITICAL: this applies only in the HTML namespace. See namespace tracking
+ * below.
  */
-const RAW_TEXT_ELEMENTS = new Set(["script", "style"]);
+const RAW_TEXT_ELEMENTS = new Set([
+  "iframe", "noembed", "noframes", "script", "style", "xmp",
+]);
 
 /**
  * Foreign content changes what "raw text" means, and getting this wrong is an
@@ -59,39 +62,85 @@ const RAW_TEXT_ELEMENTS = new Set(["script", "style"]);
  * `data.ns` for sels starting with `svg`, so MathML carries nothing. It has to
  * be tracked structurally as we descend.
  */
-const FOREIGN_ROOTS = new Set(["svg", "math"]);
+const HTML_NAMESPACE = "html";
+const SVG_NAMESPACE = "svg";
+const MATHML_NAMESPACE = "mathml";
 
 /**
- * Points where foreign content switches back to the HTML namespace, so
- * `svg > foreignObject > style` correctly regains raw-text semantics.
- *
- * MathML's `annotation-xml` is also an integration point, but only when its
- * `encoding` is text/html or application/xhtml+xml — handled below.
+ * SVG and MathML have different HTML integration points. Combining these sets
+ * is unsafe: for example, `title` is an integration point in SVG but not in
+ * MathML, while `mi` is one in MathML but not SVG.
  */
-const HTML_INTEGRATION_POINTS = new Set([
-  // SVG
-  "foreignobject", "desc", "title",
-  // MathML text integration points
-  "mi", "mo", "mn", "ms", "mtext",
-]);
+const SVG_HTML_INTEGRATION_POINTS = new Set(["foreignobject", "desc", "title"]);
+const MATHML_TEXT_INTEGRATION_POINTS = new Set(["mi", "mo", "mn", "ms", "mtext"]);
+const MATHML_TEXT_INTEGRATION_EXCEPTIONS = new Set(["mglyph", "malignmark"]);
 
 const HTML_ENCODINGS = new Set(["text/html", "application/xhtml+xml"]);
 
 /**
- * Given the current namespace state and a tag, what namespace do children sit in?
+ * Resolves an element token processed in the HTML namespace. HTML parsing
+ * enters foreign content only for SVG and MathML roots.
+ */
+const namespaceFromHtml = (rawTag) => {
+  const tag = rawTag.toLowerCase();
+  if (tag === "svg") return SVG_NAMESPACE;
+  if (tag === "math") return MATHML_NAMESPACE;
+  return HTML_NAMESPACE;
+};
+
+const getAttribute = (data, expectedName) => {
+  const entry = Object.entries(data?.attrs || {}).find(
+    ([name]) => name.toLowerCase() === expectedName,
+  );
+  return entry?.[1];
+};
+
+/**
+ * Resolves one child at a time because MathML text integration points keep
+ * immediate `mglyph` and `malignmark` children in MathML while processing
+ * their other children as HTML.
  *
  * Tags are lowercased for lookup only — the emitted tag keeps its original case,
  * which matters for SVG's camelCase elements (`foreignObject`, `clipPath`).
  */
-const childIsForeign = (rawTag, isForeign, data) => {
-  const tag = rawTag.toLowerCase();
-  if (!isForeign) return FOREIGN_ROOTS.has(tag);
-  if (HTML_INTEGRATION_POINTS.has(tag)) return false;
-  if (tag === "annotation-xml") {
-    const encoding = String(data?.attrs?.encoding ?? "").toLowerCase();
-    return !HTML_ENCODINGS.has(encoding);
+const namespaceForChild = ({
+  parentNamespace,
+  parentTag: rawParentTag,
+  parentData,
+  childTag: rawChildTag,
+}) => {
+  const parentTag = rawParentTag.toLowerCase();
+  const childTag = rawChildTag.toLowerCase();
+
+  if (parentNamespace === HTML_NAMESPACE) {
+    return namespaceFromHtml(childTag);
   }
-  return true;
+
+  if (parentNamespace === SVG_NAMESPACE) {
+    return SVG_HTML_INTEGRATION_POINTS.has(parentTag)
+      ? namespaceFromHtml(childTag)
+      : SVG_NAMESPACE;
+  }
+
+  if (MATHML_TEXT_INTEGRATION_POINTS.has(parentTag)) {
+    return MATHML_TEXT_INTEGRATION_EXCEPTIONS.has(childTag)
+      ? MATHML_NAMESPACE
+      : namespaceFromHtml(childTag);
+  }
+
+  if (parentTag === "annotation-xml") {
+    // The HTML parser handles this start tag as SVG even when annotation-xml
+    // is not an HTML integration point (that is, regardless of encoding).
+    if (childTag === "svg") {
+      return SVG_NAMESPACE;
+    }
+    const encoding = String(getAttribute(parentData, "encoding") ?? "").toLowerCase();
+    if (HTML_ENCODINGS.has(encoding)) {
+      return namespaceFromHtml(childTag);
+    }
+  }
+
+  return MATHML_NAMESPACE;
 };
 
 /** Mirrors the framework's own attribute-name validation. */
@@ -195,27 +244,60 @@ const styleObjectToString = (style) => {
     .join("; ");
 };
 
-const classObjectToString = (klass) => {
-  if (!klass || typeof klass !== "object") return "";
-  return Object.keys(klass).filter((key) => klass[key]).join(" ");
+/**
+ * Mirrors snabbdom's selector parsing in `createElm`. `parseView` emits bare
+ * tags, but `serializeVNode` is public and also accepts standard
+ * `tag#id.class` vnodes.
+ */
+const parseSelector = (rawSelector) => {
+  const selector = String(rawSelector);
+  const hashIndex = selector.indexOf("#");
+  const dotIndex = selector.indexOf(".", hashIndex);
+  const hash = hashIndex > 0 ? hashIndex : selector.length;
+  const dot = dotIndex > 0 ? dotIndex : selector.length;
+  const tag = hashIndex !== -1 || dotIndex !== -1
+    ? selector.slice(0, Math.min(hash, dot))
+    : selector;
+
+  return {
+    tag: tag || "div",
+    id: hash < dot ? selector.slice(hash + 1, dot) : null,
+    classes: dotIndex > 0
+      ? selector.slice(dot + 1).split(".").filter(Boolean)
+      : [],
+  };
 };
 
-/** parseView emits bare tags; tolerate snabbdom's `tag#id.cls` form defensively. */
-const tagFromSel = (sel) => String(sel).split(/[.#]/)[0] || "div";
-
-const buildAttributes = (rawData) => {
+const buildAttributes = (rawData, selector) => {
   // A default parameter only applies to `undefined`, so an explicit `data: null`
   // would crash here with an unattributable TypeError.
   const data = rawData || {};
   const out = [];
   const attrs = { ...(data.attrs || {}) };
 
-  // data.class (selector-derived) and an authored class attribute can both be
-  // present; emitting two `class=` attributes would have the parser silently
-  // drop one.
-  const selectorClasses = classObjectToString(data.class);
-  if (selectorClasses) {
-    attrs.class = attrs.class ? `${attrs.class} ${selectorClasses}` : selectorClasses;
+  if (
+    selector.id !== null
+    && !Object.prototype.hasOwnProperty.call(attrs, "id")
+  ) {
+    attrs.id = selector.id;
+  }
+
+  // Snabbdom creates selector classes first, runs classModule, then runs
+  // attributesModule. Consequently an authored attrs.class replaces every
+  // selector/module class rather than merging with it.
+  if (!Object.prototype.hasOwnProperty.call(attrs, "class")) {
+    const classes = new Set(selector.classes);
+    for (const [name, enabled] of Object.entries(data.class || {})) {
+      if (enabled) {
+        classes.add(name);
+      } else {
+        classes.delete(name);
+      }
+    }
+    const classValue = [...classes].join(" ");
+    if (classValue) {
+      attrs.class = classValue;
+    }
   }
 
   // data.style is an object; attrs.style is already a string.
@@ -250,13 +332,18 @@ const buildAttributes = (rawData) => {
  * @returns {string}
  */
 export const serializeVNode = (vnode, options = {}) =>
-  serializeNode(vnode, options, false);
+  serializeNode(
+    vnode,
+    options,
+    vnode?.sel !== undefined && vnode.sel !== "!"
+      ? namespaceFromHtml(parseSelector(vnode.sel).tag)
+      : HTML_NAMESPACE,
+  );
 
 /**
- * @param {boolean} isForeign  true when this node sits inside <svg>/<math>,
- *   where <style>/<script> are NOT raw text.
+ * @param {"html"|"svg"|"mathml"} namespace  the namespace of this element.
  */
-const serializeNode = (vnode, options, isForeign) => {
+const serializeNode = (vnode, options, namespace) => {
   if (vnode === null || vnode === undefined) return "";
 
   // Text vnode: snabbdom leaves `sel` undefined and puts the string in `text`.
@@ -268,24 +355,30 @@ const serializeNode = (vnode, options, isForeign) => {
     return `<!--${commentOrThrow(vnode.text)}-->`;
   }
 
-  const tag = tagFromSel(vnode.sel);
+  const selector = parseSelector(vnode.sel);
+  const tag = selector.tag;
   if (!TAG_NAME.test(tag)) {
     throw new Error(
       `[serializeVNode] refusing to emit invalid tag name ${JSON.stringify(tag)} ` +
         "— it would break out of the tag and inject markup.",
     );
   }
-  const attributes = buildAttributes(vnode.data);
+  const lowerTag = tag.toLowerCase();
+  if (namespace === HTML_NAMESPACE && lowerTag === "plaintext") {
+    throw new Error(
+      "[serializeVNode] refusing to emit <plaintext> in the HTML namespace " +
+        "because the HTML tokenizer never recognizes its closing tag.",
+    );
+  }
+  const attributes = buildAttributes(vnode.data, selector);
 
-  if (VOID_ELEMENTS.has(tag.toLowerCase())) {
+  if (VOID_ELEMENTS.has(lowerTag)) {
     return `<${tag}${attributes}>`;
   }
 
-  const lowerTag = tag.toLowerCase();
-  const childForeign = childIsForeign(tag, isForeign, vnode.data);
   // Raw text only applies in the HTML namespace. In foreign content the parser
   // reads <style>/<script> content as markup, so it must be escaped instead.
-  const isRawText = RAW_TEXT_ELEMENTS.has(lowerTag) && !isForeign;
+  const isRawText = RAW_TEXT_ELEMENTS.has(lowerTag) && namespace === HTML_NAMESPACE;
 
   const substituted = options.renderChildren ? options.renderChildren(vnode) : null;
 
@@ -299,7 +392,17 @@ const serializeNode = (vnode, options, isForeign) => {
     inner = rawTextOrThrow(lowerTag, raw);
   } else if (Array.isArray(vnode.children) && vnode.children.length > 0) {
     inner = vnode.children
-      .map((child) => serializeNode(child, options, childForeign))
+      .map((child) => {
+        const childNamespace = child?.sel !== undefined && child.sel !== "!"
+          ? namespaceForChild({
+            parentNamespace: namespace,
+            parentTag: tag,
+            parentData: vnode.data,
+            childTag: parseSelector(child.sel).tag,
+          })
+          : namespace;
+        return serializeNode(child, options, childNamespace);
+      })
       .join("");
   } else if (vnode.text !== undefined && vnode.text !== null) {
     // h(tag, data, "string") puts the text on the element vnode itself.

@@ -20,6 +20,7 @@ export const parseView = ({
   refs,
   handlers,
   createComponentUpdateHook,
+  wireEventListeners = true,
 }) => {
   ensureNormalizedTemplatePropertyBindings(template);
   const result = jemplRender(template, viewData, {});
@@ -34,6 +35,7 @@ export const parseView = ({
     handlers,
     viewData,
     createComponentUpdateHook,
+    wireEventListeners,
   });
 
   const vdom = h("div", { style: { display: "contents" } }, childNodes);
@@ -47,6 +49,7 @@ export const parseView = ({
  * @param {Object} params.refs
  * @param {Object} params.handlers
  * @param {Object} params.viewData
+ * @param {boolean} params.wireEventListeners
  * @returns
  */
 export const createVirtualDom = ({
@@ -56,6 +59,7 @@ export const createVirtualDom = ({
   handlers = {},
   viewData = {},
   createComponentUpdateHook,
+  wireEventListeners = true,
 }) => {
   if (!Array.isArray(items)) {
     throw new Error("[Parser] Input to createVirtualDom must be an array, got " + typeof items);
@@ -209,7 +213,7 @@ export const createVirtualDom = ({
             refMatchers,
           });
 
-          if (bestMatchRef) {
+          if (bestMatchRef && wireEventListeners) {
             const bestMatchRefKey = bestMatchRef.refKey;
             const matchIdentity = bestMatchRef.matchedValue || elementIdForRefs || bestMatchRefKey;
 

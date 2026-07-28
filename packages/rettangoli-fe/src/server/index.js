@@ -57,8 +57,9 @@ export const renderView = ({ template, viewData = {}, refs = {}, renderChildren 
     template: ast,
     viewData,
     refs,
-    // Handlers are never invoked server-side; refs still resolve for ids.
-    handlers: {},
+    // Event closures are client-only. Skipping their construction also avoids
+    // requiring a store-action dispatcher that can never run on the server.
+    wireEventListeners: false,
   });
 
   return serializeVNode(vnode, renderChildren ? { renderChildren } : undefined);
