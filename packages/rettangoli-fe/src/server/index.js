@@ -5,13 +5,8 @@
  * in a plain Node process — for HTML golden tests, static analysis over real
  * rendered output, or a server renderer.
  *
- * This is Part A of the SSR plan (packages/rettangoli-fe/docs/ssr-plan.md, also
- * on GitHub): the pieces needed to render a component's markup outside a
- * browser. It deliberately does NOT include a recursive component renderer or
- * any hydration support — those are Part B and a separate decision.
- *
- * Child components serialize as empty custom-element tags, so this renders one
- * component's own template rather than a whole tree.
+ * This includes Parts A and B1 of the SSR plan: one-view serialization plus a
+ * recursive component renderer. Hydration remains deliberately out of scope.
  */
 
 import { parse as parseTemplate } from "jempl";
@@ -23,6 +18,7 @@ import { serializeVNode } from "../core/server/serializeVNode.js";
 export { serializeVNode } from "../core/server/serializeVNode.js";
 export { resolveComponentDefinition } from "../core/component/resolveComponentDefinition.js";
 export { bindStore } from "../core/runtime/store.js";
+export { renderComponent, renderDocument } from "./renderer.js";
 
 /**
  * Renders a component's template to an HTML string.

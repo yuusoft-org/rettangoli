@@ -39,11 +39,12 @@ This roadmap is the planning source for `packages/rettangoli-fe`.
 - Continue aligning `overview.md`, `view.md`, `store.md`, `handlers.md`, `schema.md`, `methods.md`, `constants.md`.
 - Add concise invalid/valid examples when contracts evolve.
 
-6. `[P1]` End-to-end testing via `@rettangoli/vt` on examples
+6. `[P1][DONE]` End-to-end testing via `@rettangoli/vt` on FE fixtures
 - **Motivation:** Unit and contract tests verify internal correctness but cannot catch real-browser regressions (rendering, event timing, lifecycle, interactions). We should not rely on users to report bugs that automated E2E can catch first.
 - **Approach:** Use `@rettangoli/vt` (which already uses Playwright) to run visual + interaction tests against `examples/`. Write VT specs with steps (click, write, keypress, select, wait, screenshot) to exercise real component behavior, then assert screenshot output matches reference via pixelmatch.
 - **No new framework needed** — leverage existing VT infrastructure instead of building a standalone Playwright E2E suite from scratch.
-- **Test location:** VT specs live in each example's `vt/specs/` directory (e.g. `examples/example1/vt/specs/`).
+- **Test location:** VT specs live under each FE E2E fixture's `vt/specs/`
+  directory (for example, `e2e/interactions/vt/specs/`).
 - **Scenarios to cover via VT specs:**
   - Component renders correctly in real browser (initial state screenshot)
   - Props/attributes produce expected visual output (multiple viewData variants in `.examples.yaml`)
@@ -54,10 +55,18 @@ This roadmap is the planning source for `packages/rettangoli-fe`.
   - Edge cases: empty state, error state, boundary values
 - **Workflow:**
   1. `rtgl fe build` in the example project
-  2. `rtgl vt generate` to capture candidate screenshots
+  2. `rtgl vt screenshot` to capture candidate screenshots
   3. `rtgl vt report` to compare against reference — fails on mismatch
   4. `rtgl vt accept` to update baselines when changes are intentional
-- **CI integration:** run `rtgl vt generate && rtgl vt report` on examples as part of PR checks
+- **CI integration:** run `rtgl vt screenshot && rtgl vt report` on the FE E2E
+  fixtures as part of PR checks
+- **Completed coverage:**
+  - 8 VT interaction specs across the `dashboard` and `interactions` FE
+    examples
+  - click, write, keyboard, wait, state-transition, control-flow, i18n, and
+    composed parent/child scenarios with screenshot assertions
+  - a `ci-ui.yaml` matrix that builds both examples, captures and reports via
+    the pinned VT browser image, and uploads failure artifacts
 
 ## Backlog
 

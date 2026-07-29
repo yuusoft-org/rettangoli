@@ -41,6 +41,7 @@ export const resolveComponentDefinition = (
 
   return {
     elementName,
+    ssr: resolvedSchema.ssr !== false,
     propsSchema,
     propsSchemaKeys,
     template,

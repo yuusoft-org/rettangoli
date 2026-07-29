@@ -133,6 +133,8 @@ try {
       assert.equal(typeof cli.build, "function");
       assert.equal(typeof cli.watch, "function");
       assert.equal(typeof server.renderView, "function");
+      assert.equal(typeof server.renderComponent, "function");
+      assert.equal(typeof server.renderDocument, "function");
       assert.equal(typeof server.serializeVNode, "function");
       assert.equal(typeof server.bindStore, "function");
       assert.match(require.resolve("@rettangoli/fe"), /src\\/index\\.js$/);
@@ -144,6 +146,28 @@ try {
       assert.equal(
         server.renderView({ template: [{ "p.x": "\${msg}" }], viewData: { msg: "ok" } }),
         '<div style="display: contents"><p class="x">ok</p></div>',
+      );
+
+      const componentConfig = {
+        schema: {
+          componentName: "x-smoke",
+          propsSchema: { type: "object", properties: { message: {} } },
+        },
+        view: { template: [{ p: "\${message}" }], refs: {}, styles: {} },
+        store: {
+          selectViewData: ({ props }) => ({ message: props.message }),
+        },
+      };
+      const rendered = server.renderComponent({
+        component: "x-smoke",
+        components: [componentConfig],
+        props: { message: "recursive ok" },
+      });
+      assert.match(rendered.html, /shadowrootmode="open"/);
+      assert.match(rendered.html, /<p>recursive ok<\\/p>/);
+      assert.match(
+        server.renderDocument({ ...rendered, title: "Smoke" }),
+        /^<!doctype html><html><head>/,
       );
     `,
   );
