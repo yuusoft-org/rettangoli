@@ -179,6 +179,52 @@ describe("recursive server renderer", () => {
     expect(html).toContain("<p>From attribute</p>");
   });
 
+  it("normalizes root attribute fallbacks to their DOM values", () => {
+    const root = defineComponent({
+      name: "x-root",
+      props: { count: {}, disabled: {}, enabled: {} },
+      store: {
+        selectViewData: ({ props }) => ({
+          snapshot: [
+            `${typeof props.count}:${props.count}`,
+            `${typeof props.disabled}:${props.disabled}`,
+            `${typeof props.enabled}:${props.enabled}`,
+          ].join("|"),
+        }),
+      },
+      template: [{ p: "${snapshot}" }],
+    });
+
+    const { html } = renderComponent({
+      component: "x-root",
+      components: [root],
+      attributes: { count: 0, disabled: false, enabled: true },
+    });
+
+    expect(html).toContain(
+      "<p>string:0|undefined:undefined|boolean:true</p>",
+    );
+  });
+
+  it("preserves text light-DOM content when recursing into a child", () => {
+    const child = defineComponent({
+      name: "x-child",
+      template: [{ slot: "" }],
+    });
+    const root = defineComponent({
+      name: "x-root",
+      template: [{ "x-child": "Hello from light DOM" }],
+    });
+
+    const { html } = renderComponent({
+      component: "x-root",
+      components: [root, child],
+    });
+
+    expect(html).toContain("<slot></slot>");
+    expect(html).toContain("</template>Hello from light DOM</x-child>");
+  });
+
   it("only resolves component tags in the HTML namespace", () => {
     const root = defineComponent({
       name: "x-root",

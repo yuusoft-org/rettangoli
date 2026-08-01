@@ -103,12 +103,30 @@ const setHydrateAttribute = (vnode, enabled) => {
 };
 
 const readAttributeProp = (attrs, propName) => {
-  if (hasOwn(attrs, propName)) {
-    return attrs[propName] === "" ? true : attrs[propName];
+  const read = (name) => {
+    if (!hasOwn(attrs, name)) {
+      return { present: false };
+    }
+
+    const value = attrs[name];
+    if (value === false || value === null || value === undefined) {
+      return { present: false };
+    }
+    if (value === true || value === "") {
+      return { present: true, value: true };
+    }
+    return { present: true, value: String(value) };
+  };
+
+  const direct = read(propName);
+  if (direct.present) {
+    return direct.value;
   }
+
   const kebabName = toKebabCase(propName);
-  if (hasOwn(attrs, kebabName)) {
-    return attrs[kebabName] === "" ? true : attrs[kebabName];
+  const kebab = read(kebabName);
+  if (kebab.present) {
+    return kebab.value;
   }
   return undefined;
 };
@@ -190,6 +208,16 @@ const serializeChildren = (children, options) => {
   return children.map((child) => serializeVNode(child, options)).join("");
 };
 
+const serializeLightDom = (vnode, options) => {
+  if (Array.isArray(vnode.children) && vnode.children.length > 0) {
+    return serializeChildren(vnode.children, options);
+  }
+  if (vnode.text !== undefined && vnode.text !== null) {
+    return serializeVNode({ text: vnode.text }, options);
+  }
+  return "";
+};
+
 /**
  * Renders a registered component tree to nested declarative shadow roots.
  *
@@ -233,7 +261,7 @@ export const renderComponent = ({
       const substitution = substitutions.get(vnode);
       return substitution.shadowRoot
         + (substitution.preserveLightDom
-          ? serializeChildren(vnode.children, serializerOptions)
+          ? serializeLightDom(vnode, serializerOptions)
           : "");
     },
   };
