@@ -1,18 +1,5 @@
 import { getNativeHostStyle } from "../core/runtime/props.js";
-
-const COMMON_LINK_STYLE_TEXT = `
-  a, a:link, a:visited, a:hover, a:active {
-    display: contents;
-    color: inherit;
-    text-decoration: none;
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    font: inherit;
-    cursor: pointer;
-  }
-`;
+import { COMMON_COMPONENT_STYLE_TEXT } from "../core/style/commonComponentStyles.js";
 
 const RENDER_TARGET_ATTR = "data-rtgl-render-target";
 const RENDER_TARGET_FLAG = "__rtglRenderTarget";
@@ -101,7 +88,7 @@ export const initializeComponentDom = ({
   const shadow = existingShadow ?? host.attachShadow({ mode: "open" });
 
   const commonStyleSheet = createStyleSheet();
-  commonStyleSheet.replaceSync(COMMON_LINK_STYLE_TEXT);
+  commonStyleSheet.replaceSync(COMMON_COMPONENT_STYLE_TEXT);
 
   const adoptedStyleSheets = [commonStyleSheet];
 

@@ -24,6 +24,20 @@ in:
         type: object
 throws: attrsSchema is not supported
 ---
+case: accepts boolean ssr opt-out
+in:
+  - schema:
+      componentName: todo-item
+      ssr: false
+out: true
+---
+case: rejects non-boolean ssr opt-out
+in:
+  - schema:
+      componentName: todo-item
+      ssr: "false"
+throws: ssr must be a boolean
+---
 case: validates declared methods against exported method names
 in:
   - schema:

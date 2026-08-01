@@ -1,6 +1,7 @@
 # SSR for @rettangoli/fe — implementation plan
 
-Status: proposal, backed by a working prototype.
+Status: Parts A and B1 implemented; B2–B4 remain a proposal backed by a
+working prototype.
 Scope: framework-level (`@rettangoli/fe`).
 
 The prototype and its test suite live outside this repo, in the app used to
@@ -17,8 +18,11 @@ than as part of the design.
 
 ## 0. Status
 
-**Part A is implemented and merged into `packages/rettangoli-fe`.** Part B is
-unstarted and remains a separate decision.
+**Part A is implemented and merged into `packages/rettangoli-fe`. Stage B1 is
+also implemented:** the Node-safe entry now resolves a caller-supplied
+component registry, runs each component store, recursively renders registered
+child tags, and emits nested declarative shadow roots. Hydration and consumer
+adoption (B2–B4) remain separate decisions.
 
 What shipped:
 
@@ -26,17 +30,19 @@ What shipped:
 |---|---|
 | `src/web/vendor/snabbdomStyleModule.js` | vendored from snabbdom 3.6.2; two lines changed so `raf` resolves lazily |
 | `src/core/component/resolveComponentDefinition.js` | moved out of `createComponent.js`, off the patch's import graph |
-| `src/core/server/serializeVNode.js` | vnode → HTML, ~190 lines |
+| `src/core/server/serializeVNode.js` | namespace-aware vnode → HTML serializer |
 | `src/server/index.js` | the Node-safe entry |
+| `src/server/renderer.js` | recursive renderer + document wrapper (B1) |
+| `src/core/style/commonComponentStyles.js` | shared web/server shadow-root styles |
 | `src/web/componentDom.js` | render-target adoption hardened; inline styles no longer clobbered |
-| `package.json` | `./server` and `./parser` exports |
+| `package.json` | Node-safe `./server` export |
 
-Verification: **302 tests** in `@rettangoli/fe` (up from 237), **8/8** browser
-checks against real Chromium, package smoke test (pack → install → import), and
-`@rettangoli/ui` builds and passes its 260 tests against the modified
-framework. Full monorepo run matches the pre-change baseline exactly — the same
-four pre-existing failures in `rettangoli-be` / `rettangoli-tui` /
-`rettangoli-cli`, none touched by this work.
+Current verification: **378 tests** in `@rettangoli/fe`, including five HTML
+goldens, recursive parent/child output, deterministic cycle/depth failures, and
+schema-level `ssr: false` coverage. The package smoke test packs, installs, and
+imports the public server surface in bare Node. FE browser coverage now has
+eight VT specs across the `dashboard` and `interactions` examples in the
+`ci-ui.yaml` matrix.
 
 The headline result:
 
@@ -89,20 +95,15 @@ Node, gives the project HTML golden tests it currently has none of, and fixes
 three latent bugs.
 
 **Project B — SSR itself.**
-Recursive renderer, hydration, registration order, telemetry, parity gates.
-Larger, and a genuine product bet with an ongoing maintenance cost, because
-hydration mismatches fail silently rather than loudly.
+The recursive renderer (B1) now exists. Hydration, registration order,
+telemetry, parity gates, and app adoption remain. Those later stages are the
+genuine product bet with an ongoing maintenance cost, because hydration
+mismatches fail silently rather than loudly.
 
-**Recommendation: do A now, decide B separately.** A is finishing something
-already in progress — `src/core/**` is already pure and all DOM already lives
-in `src/web/`; the separation is simply unfinished, undone by one module-scope
-line. If B never happens, none of A is wasted. If B does happen, A is what
-makes it assembly rather than invention.
-
-**The trap to avoid** is doing B first. Writing the server renderer as a second
-copy of the component construction sequence, before extracting the shared core,
-makes the framework harder to maintain rather than better. Order matters more
-than scope here.
+The original sequencing recommendation was followed: A shipped before B1, so
+the renderer reuses the extracted definition/store/parser/serializer path
+instead of maintaining a second component-construction implementation. The
+remaining separate decision is whether to take on B2 and its parity gate.
 
 Sections below are tagged **[A]** or **[B]** accordingly.
 
@@ -531,6 +532,32 @@ Requirements, each verified by test:
 Resolves tag → component, runs the store, calls `parseView`, recurses into
 child components, emits per-component declarative shadow roots.
 
+**Implemented.** `renderComponent` takes a root tag and an explicit
+`components` registry. Registry values may be raw component configs, resolved
+definitions, or `{ componentConfig, deps }` registrations; arrays, objects,
+and Maps are accepted. No process-global registry or request state is used.
+
+The implementation mirrors the browser's first-render inputs:
+
+- schema-declared props only, including attribute fallback
+- setup/component constants through `resolveConstants`
+- `createInitialState` and `selectViewData` through `bindStore`
+- current i18n messages and locale service
+
+Registered child tags recurse. Unregistered custom elements remain ordinary
+markup. `ssr: false` emits a bare host without a shadow root or hydrate marker.
+Cycles report the complete tag path, and `maxDepth` (default 100) bounds
+acyclic recursion. Both failures throw deterministic errors so callers can
+choose their shell fallback explicitly.
+
+Each rendered component emits the shared shadow styles, its `.view.yaml`
+styles, and a marked `data-rtgl-render-target` inside
+`<template shadowrootmode="open">`. `renderDocument` wraps trusted renderer
+markup in a complete document while escaping title and document attributes.
+
+Still deliberately absent: DOM adoption, hydrating patch behavior,
+registration ordering, telemetry, or any other B2 behavior.
+
 ### 5.3 [B] A hydrating first patch — **required**
 
 Four things, not one. The line budget below covers the first only.
@@ -638,21 +665,19 @@ framework's contract stays at four inputs.
 Consistency here is not testable by inspection: a hydration mismatch is not an
 error. It re-renders and looks correct. The suite has to be the gate.
 
-Existing in the prototype's `ssr-poc/tests/` — 37 unit tests (1.4 s) plus 8
-browser checks. These should move into this package as the framework work
-lands:
+The prototype started with 37 unit tests plus 8 browser checks. Framework-side
+A/B1 coverage has now moved into this package: serializer cases, five HTML
+goldens (including nested parent/child shadow roots), Node/package smoke tests,
+schema opt-out coverage, repeated-render determinism, and stable cycle/depth
+failures.
 
-**`serialize.test.js` (20)** — escaping, raw-text elements, boolean attributes,
-props never emitted, class/style merging, void elements, injection cases.
+The remaining groups belong to B2/B4:
 
-**`invariants.test.js` (12)** — byte-identical output across repeated renders
-and under a shifted `Date.now`; every store imports and runs in bare Node; no
-`Math.random`/`Date.now` in any `selectViewData`; unique component names; zero
-render failures; one render target per shadow root; no `[object Object]`;
-balanced tags.
-
-**`ssr-hazards.test.js` (5)** — static scan for browser globals in the
-first-render path, with an allowlist so it fails on *new* offenders.
+- static first-render hazard scans for browser globals and
+  `Math.random`/`Date.now`, with an allowlist so new offenders fail loudly
+- consumer-wide invariants over every store/component, beyond the framework
+  fixtures now covered here
+- the rebuilt browser hydration/adoption parity gate below
 
 This catches what execution tests cannot. `globalThis.window?.innerWidth ?? FALLBACK`
 does not throw in Node — it silently returns a different value than the client.
@@ -696,40 +721,49 @@ The entire application integration:
 ```js
 import { renderComponent, renderDocument } from "@rettangoli/fe/server";
 
+// The build/prerender integration supplies the same component configs used by
+// the browser bundle. Raw configs, resolved definitions, and
+// { componentConfig, deps } registrations are accepted.
+import { components } from "./server-components.js";
+import { i18nRuntime } from "./server-i18n.js";
+
 const handler = async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
-  const env = {
-    platform: "web",
-    locale: url.searchParams.get("locale") ?? "en",
-    theme: "dark",
-    route: url.pathname,
-    query: Object.fromEntries(url.searchParams),
-  };
-
-  const { html, head } = await renderComponent({ component: "rvn-app", props: {}, env });
+  const { html, head } = renderComponent({
+    component: "rvn-app",
+    components,
+    i18nRuntime,
+    props: {
+      route: url.pathname,
+      query: Object.fromEntries(url.searchParams),
+    },
+  });
 
   res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-  res.end(renderDocument({ html, head, env, title: "Projects" }));
+  res.end(renderDocument({
+    html,
+    head,
+    lang: i18nRuntime.current(),
+    title: "Projects",
+  }));
 };
 ```
 
 No jsdom, no DOM shim, no headless browser, no per-request global state — safe
-to call concurrently. Measured: **~12 ms warm** (min 10.3, max 17.3 over 8
+to call concurrently. The prototype measured **~12 ms warm** (min 10.3, max 17.3 over 8
 requests), 7.7 KB out.
 
-`env` here is a **transport shape for the request**, not a new store input —
-§5.7 still forbids an ambient bag reaching stores. Its values land as follows:
-
-- `locale` — the one value the framework already threads into the store context
-- `platform`, `theme` — build-time constants, not per-request
-- `route`, `query` — passed to the **root component as props**, per §4.1
-
-Whatever the server passes here, the client must be given the same values.
+There is no `env` or `isSsr` input. Route/query values belong in declared root
+props, per §4.1. Platform/theme remain build-time or CSS concerns. Locale and
+messages come from the existing i18n runtime contract. Whatever the server
+passes as props/constants/i18n must also be present on the client's first
+render.
 
 The same `renderComponent` call serves build-time prerendering, so "static now,
-server later" stays one code path. A render failure should fall back to the
-plain `<rvn-app></rvn-app>` shell — degrading to what ships today, never taking
-the page down.
+server later" stays one code path. `renderComponent` surfaces contract,
+cycle, depth, and serialization errors; the consumer boundary should catch
+those and fall back to the plain `<rvn-app></rvn-app>` shell — degrading to
+what ships today, never taking the page down.
 
 ---
 
@@ -737,33 +771,32 @@ the page down.
 
 Each stage ships alone and is independently valuable.
 
-### Part A — framework hygiene (do this regardless)
+### Part A — framework hygiene (done)
 
-**Stage A1 — core/binding split (§5.0).** Move `resolveComponentDefinition`
-into `core/`, make the patch lazy, extract the construction sequence, thread
-the existing `componentDom` factories through. Plus the three latent bugs in
-§5.6.
+**Stage A1 — core/binding split (§5.0) — done.** `resolveComponentDefinition`
+lives in `core/`; the guarded vendored snabbdom style module keeps imports
+Node-safe; web-only construction lives behind the web binding.
 
 Exit: `node -e "import('@rettangoli/fe')"` succeeds. That one result unblocks
 every Node-side tool.
 
-**Stage A2 — serializer + exports (§5.1, §5.6).** Ship the vnode→HTML
-serializer with its unit suite, and add the `./server` / `./parser` export
-entries.
+**Stage A2 — serializer + exports (§5.1, §5.6) — done.** The vnode→HTML
+serializer, unit suite, `./server` entry, and HTML goldens are shipped. A
+separate `./parser` export was intentionally unnecessary because `renderView`
+owns the parser/helper dependencies.
 
-Exit: components render to HTML in bare Node, and the project has **HTML golden
-tests** — against 1,301 `.webp` pixel references and zero `.html` goldens
-today. Ships as a minor version bump of `@rettangoli/fe`, republished through
-`rtgl`.
+Exit met: components render to HTML in bare Node and the project has five
+readable `.html` goldens alongside its pixel references.
 
 **Stop here if SSR is not wanted.** Nothing above is wasted, no consumer
 changes, no ongoing maintenance commitment.
 
-### Part B — SSR (a separate decision)
+### Part B — SSR (B1 done; B2–B4 remain separate decisions)
 
-**Stage B1 — recursive renderer (§5.2).** Resolve tag → component, run the
-store, recurse, emit nested declarative shadow roots. Still no consumer
-changes; the output is testable on its own.
+**Stage B1 — recursive renderer (§5.2) — done.** Resolves tag → component, runs
+the store, recurses, emits nested declarative shadow roots, supports
+declarative opt-out, and guards cycles/depth. There are still no consumer
+changes; the output is covered by HTML goldens.
 
 **Stage B2 — hydration + ordering (§5.3–5.5).** Hydrating patch, topological
 registration, `defer-hydration`, `__rtglSsr` telemetry, parity gate in CI. This
@@ -875,33 +908,22 @@ the client.
 
 ## 10. Decisions
 
-### 10.0 Still open — blocking the start of work
+### 10.0 Still open
 
-Surfaced by the 26 Jul review. Everything else in this document is settled.
-
-**A. How to make the package importable in Node** (§5.0). Vendor snabbdom's
-style module — 113 lines, 2 of which touch `window`, verified working and keeps
-the API synchronous — or keep `.` browser-only and expose Node solely via
-`./server` / `./parser`. Blocks stage A1.
-
-**B. `rtgl-popover`** (§5.7, §9.1). Fix it in `@rettangoli/ui`, or accept CSR
+**`rtgl-popover`** (§5.7, §9.1). Fix it in `@rettangoli/ui`, or accept CSR
 fallback on the 13+ views containing one. Blocks stage B4, not earlier.
 
-**C. Accept that Part A is larger than first stated** (§5.0). HMR landed after
-the plan's evidence was gathered; the construction sequence now exists twice and
-both paths must move together. A is still worth doing — it is no longer
-"small".
+The former Node-import and Part-A-sizing decisions are resolved. The guarded
+vendored style module shipped, and both cold/HMR paths were kept behind the
+shared core contracts.
 
 ### 10.1 Settled
 
 Recorded so they are not relitigated.
 
-**0. Project A ships regardless; Project B is a separate decision.** See §1.1.
-A is finishing a separation the framework already began and is justified by
-Node-importability and HTML golden tests alone. B is a product bet with an
-ongoing maintenance cost. Do A first — writing the server renderer before
-extracting the core is the one sequencing mistake that makes the framework
-worse rather than better.
+**0. A shipped before B1; B2 remains a separate decision.** See §1.1. The
+sequencing constraint was satisfied. Hydration is where silent mismatch risk
+and the ongoing parity-gate commitment begin.
 
 **1. Time-to-interactive is out of scope.** This project delivers a correct
 first paint, not a faster boot. TTI work (bundle size, boot sequencing,

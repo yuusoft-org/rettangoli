@@ -11,6 +11,13 @@ export const validateSchemaContract = ({ schema, methodExports = [] }) => {
     throw new Error("attrsSchema is not supported.");
   }
 
+  if (
+    Object.prototype.hasOwnProperty.call(schema, "ssr")
+    && typeof schema.ssr !== "boolean"
+  ) {
+    throw new Error("ssr must be a boolean.");
+  }
+
   if (Object.prototype.hasOwnProperty.call(schema, "methods")) {
     const methodsSchema = schema.methods;
 

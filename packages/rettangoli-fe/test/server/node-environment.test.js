@@ -26,6 +26,8 @@ describe("node environment", () => {
   it("imports the server entry without a DOM", async () => {
     const mod = await import("../../src/server/index.js");
     expect(typeof mod.renderView).toBe("function");
+    expect(typeof mod.renderComponent).toBe("function");
+    expect(typeof mod.renderDocument).toBe("function");
     expect(typeof mod.serializeVNode).toBe("function");
     expect(typeof mod.bindStore).toBe("function");
     expect(typeof mod.resolveComponentDefinition).toBe("function");
@@ -69,7 +71,10 @@ describe("package exports map", () => {
   // a consumer bind a different jempl version than it hoisted.
   it.each([
     ["@rettangoli/fe", ["createComponent"]],
-    ["@rettangoli/fe/server", ["renderView", "serializeVNode", "bindStore"]],
+    [
+      "@rettangoli/fe/server",
+      ["renderView", "renderComponent", "renderDocument", "serializeVNode", "bindStore"],
+    ],
     ["@rettangoli/fe/contracts", []],
   ])("resolves %s", async (specifier, expectedExports) => {
     const mod = await import(specifier);

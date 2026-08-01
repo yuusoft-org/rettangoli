@@ -14,6 +14,7 @@ Supported fields:
 - `propsSchema` (optional)
 - `events` (optional)
 - `methods` (optional)
+- `ssr` (optional boolean; defaults to `true`)
 
 `attrsSchema` is not supported.
 
@@ -90,11 +91,21 @@ methods:
 - each `methods.properties.<methodName>` SHOULD match a named export in `.methods.js`
 - if `methods` is declared, `.methods.js` SHOULD exist
 
+### `ssr`
+
+- optional boolean, default `true`
+- set to `false` for components that cannot produce deterministic server markup
+- the server renderer emits an opted-out component as a bare host without a
+  declarative shadow root or `data-rtgl-hydrate` marker
+- use this for genuinely client-only surfaces such as canvas, WebGL, or editor
+  mounts; it is not an imperative `isSsr` runtime branch
+
 ## 4. Validation Errors
 
 Runtime validation errors:
 - `componentName is required.`
 - `attrsSchema is not supported.`
+- `ssr must be a boolean.`
 - `methods must be an object schema with a properties map.`
 - `methods.type must be 'object'.`
 - `methods.properties must be an object keyed by method name.`
