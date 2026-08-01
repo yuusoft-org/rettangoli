@@ -49,14 +49,9 @@ class RettangoliTextElement extends HTMLElement {
     super();
     RettangoliTextElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this._managedStyleSheet = new CSSStyleSheet();
-    this._managedStyleSheet.replaceSync(":host {}");
-    this._managedStyle = this._managedStyleSheet.cssRules[0].style;
-    this.shadow.adoptedStyleSheets = [
-      RettangoliTextElement.styleSheet,
-      this._managedStyleSheet,
-    ];
-    
+    this.shadow.adoptedStyleSheets = [RettangoliTextElement.styleSheet];
+    this._isApplyingManagedStyle = false;
+
     // Create initial DOM structure
     this._slotElement = document.createElement('slot');
     this._linkElement = null;
@@ -64,7 +59,16 @@ class RettangoliTextElement extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ["key", "w", "ellipsis", "href", "new-tab", "rel", "break-long-tokens"];
+    return [
+      "key",
+      "w",
+      "ellipsis",
+      "href",
+      "new-tab",
+      "rel",
+      "break-long-tokens",
+      "style",
+    ];
   }
 
   connectedCallback() {
@@ -73,38 +77,62 @@ class RettangoliTextElement extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
+    if (this._isApplyingManagedStyle) {
+      return;
+    }
+
     if (name === "href" || name === "new-tab" || name === "rel") {
       this._updateDOM();
+    } else if (name === "style") {
+      // Renderers may replace the complete consumer-owned style attribute.
+      // Reapply only active managed declarations without claiming unrelated styles.
+      this._updateStyling({ restoreOnly: true });
     } else {
       this._updateStyling();
     }
   }
 
-  _updateStyling() {
+  _updateStyling({ restoreOnly = false } = {}) {
     const width = dimensionWithUnit(this.getAttribute("w"));
     const ellipsis = this.hasAttribute("ellipsis");
     const breakLongTokens = this.hasAttribute("break-long-tokens");
 
-    if (ellipsis) {
-      this._managedStyle.overflow = "hidden";
-      this._managedStyle.textOverflow = "ellipsis";
-      this._managedStyle.whiteSpace = "nowrap";
-      this._managedStyle.overflowWrap = "";
-      this._managedStyle.wordBreak = "";
-    } else {
-      this._managedStyle.overflow = "";
-      this._managedStyle.textOverflow = "";
-      this._managedStyle.whiteSpace = "";
-      this._managedStyle.overflowWrap = breakLongTokens ? "anywhere" : "";
-      this._managedStyle.wordBreak = breakLongTokens ? "break-word" : "";
+    if (restoreOnly && width === undefined && !ellipsis && !breakLongTokens) {
+      return;
     }
 
-    // Allow shrinking in flex layouts so ellipsis and wrapping constraints work predictably.
-    applyInlineWidthDimension({
-      style: this._managedStyle,
-      width,
-      flexMinWidth: "0",
-    });
+    this._isApplyingManagedStyle = true;
+    try {
+      if (ellipsis) {
+        this.style.overflow = "hidden";
+        this.style.textOverflow = "ellipsis";
+        this.style.whiteSpace = "nowrap";
+        this.style.overflowWrap = "";
+        this.style.wordBreak = "";
+      } else if (restoreOnly) {
+        if (breakLongTokens) {
+          this.style.overflowWrap = "anywhere";
+          this.style.wordBreak = "break-word";
+        }
+      } else {
+        this.style.overflow = "";
+        this.style.textOverflow = "";
+        this.style.whiteSpace = "";
+        this.style.overflowWrap = breakLongTokens ? "anywhere" : "";
+        this.style.wordBreak = breakLongTokens ? "break-word" : "";
+      }
+
+      if (!restoreOnly || width !== undefined) {
+        // Allow shrinking in flex layouts so ellipsis and wrapping constraints work predictably.
+        applyInlineWidthDimension({
+          style: this.style,
+          width,
+          flexMinWidth: "0",
+        });
+      }
+    } finally {
+      this._isApplyingManagedStyle = false;
+    }
   }
 
   _updateDOM() {

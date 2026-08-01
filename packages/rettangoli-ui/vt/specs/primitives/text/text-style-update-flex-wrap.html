@@ -2,9 +2,9 @@
 title: Text - Style Update - Flex And Wrapping
 description: Verifies consumer inline-style replacements preserve text flex sizing and long-token wrapping.
 specs:
-  - A `w=1fg` text keeps filling the available row space after its host style is replaced.
-  - Ellipsis remains active on the flexible text without forcing the fixed sibling out of the row.
-  - A constrained `break-long-tokens` text keeps its width and wraps an unbroken token after its host style is replaced.
+  - A `w=1fg` text keeps filling the available row space after its host style is replaced and overrides outer flex CSS.
+  - Ellipsis remains active on the flexible text without forcing the fixed sibling out of the row despite conflicting outer overflow rules.
+  - A constrained `break-long-tokens` text overrides outer width and wrapping CSS after its host style is replaced.
 skipInitialScreenshot: true
 steps:
   - action: customEvent
@@ -35,6 +35,22 @@ viewport:
   width: 640
   height: 420
 ---
+
+<style>
+  #flex-style-target {
+    flex: 0 0 auto;
+    min-width: 420px;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  #wrap-style-target {
+    width: 100%;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+</style>
 
 <rtgl-view d="v" g="xl" p="xl" wh="f">
   <rtgl-view d="v" g="sm">

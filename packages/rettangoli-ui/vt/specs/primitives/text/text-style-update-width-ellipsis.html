@@ -3,8 +3,8 @@ title: Text - Style Update - Width And Ellipsis
 description: Verifies consumer inline-style replacements do not clear text width or truncation styles.
 specs:
   - Replacing the host style at runtime applies the new consumer padding and border.
-  - The managed `w=220` width remains active after the style replacement.
-  - Ellipsis continues to constrain the long label to one line.
+  - The managed `w=220` width remains active after the style replacement and overrides outer host CSS.
+  - Ellipsis continues to constrain the long label to one line despite conflicting outer overflow and white-space rules.
 skipInitialScreenshot: true
 steps:
   - action: customEvent
@@ -27,6 +27,15 @@ viewport:
   width: 640
   height: 360
 ---
+
+<style>
+  #fixed-style-target {
+    width: 100%;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+</style>
 
 <rtgl-view d="v" g="lg" p="xl" wh="f">
   <rtgl-text s="h4">Width and ellipsis after style replacement</rtgl-text>

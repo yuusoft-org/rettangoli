@@ -15,13 +15,8 @@ import createText from "../src/primitives/text.js";
 const TEST_TAG = "rtgl-text-primitive-test";
 
 class CSSStyleSheetStub {
-  constructor() {
-    this.cssRules = [];
-  }
-
   replaceSync(cssText) {
     this.cssText = cssText;
-    this.cssRules = cssText === ":host {}" ? [{ style: {} }] : [];
   }
 }
 
@@ -35,6 +30,11 @@ beforeAll(() => {
 
 afterEach(() => {
   document.body.replaceChildren();
+  document.head
+    .querySelectorAll("[data-text-primitive-test]")
+    .forEach((element) => {
+      element.remove();
+    });
 });
 
 afterAll(() => {
@@ -47,13 +47,43 @@ describe("rtgl-text primitive", () => {
     text.setAttribute("w", "65");
     document.body.appendChild(text);
 
-    expect(text._managedStyle.width).toBe("65px");
-    expect(text.style.width).toBe("");
+    expect(text.style.width).toBe("65px");
 
     text.setAttribute("style", "padding-top: 4px;");
 
     expect(text.style.paddingTop).toBe("4px");
-    expect(text.style.width).toBe("");
-    expect(text._managedStyle.width).toBe("65px");
+    expect(text.style.width).toBe("65px");
+  });
+
+  it("keeps managed attributes above outer host styles", () => {
+    const outerStyle = document.createElement("style");
+    outerStyle.dataset.textPrimitiveTest = "";
+    outerStyle.textContent = `
+      ${TEST_TAG} {
+        width: 100%;
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
+      }
+    `;
+    document.head.appendChild(outerStyle);
+
+    const text = document.createElement(TEST_TAG);
+    text.setAttribute("w", "65");
+    text.setAttribute("ellipsis", "");
+    document.body.appendChild(text);
+
+    text.setAttribute("style", "padding-top: 4px;");
+
+    expect(text.style.width).toBe("65px");
+    expect(text.style.overflow).toBe("hidden");
+    expect(text.style.textOverflow).toBe("ellipsis");
+    expect(text.style.whiteSpace).toBe("nowrap");
+
+    const computedStyle = getComputedStyle(text);
+    expect(computedStyle.width).toBe("65px");
+    expect(computedStyle.overflow).toBe("hidden");
+    expect(computedStyle.textOverflow).toBe("ellipsis");
+    expect(computedStyle.whiteSpace).toBe("nowrap");
   });
 });
