@@ -4,6 +4,7 @@
 
 ### Improvements
 
+- `rtgl-text`: runtime-managed width, flex, truncation, and wrapping declarations now restore themselves after consumer-owned inline `style` replacement while retaining their existing precedence over outer host CSS.
 - `rtgl-dropdown-menu` and `rtgl-global-ui`: added arbitrary-depth nested submenus with directional placement, RTL-aware keyboard controls, pointer-grace navigation, roving focus, and full `indexPath` selection details.
 - UI watch mode now hot-updates compatible component YAHTML, runtime modules, primitives, and VT specs/templates while retaining custom-element/store identity, form state, focus, selection, and scroll. Invalid generations keep the last working page until the source is fixed; incompatible browser contracts and executable scripts still reload safely.
 - `rtgl-view` and `rtgl-grid`: all `sh` / `sv` surfaces now keep native scrolling mechanics while using Rettangoli's sole thin overlay visual. The browser-painted rail is hidden; the arrowless overlay reserves no gutter, stays hidden at rest, appears on mouse hover, paints above positioned user content, and supports thumb dragging under scale transforms and `scroll-behavior: smooth`.

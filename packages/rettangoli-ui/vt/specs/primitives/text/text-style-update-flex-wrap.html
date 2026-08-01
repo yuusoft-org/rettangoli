@@ -1,0 +1,113 @@
+---
+title: Text - Style Update - Flex And Wrapping
+description: Verifies consumer inline-style replacements preserve text flex sizing and long-token wrapping.
+specs:
+  - A `w=1fg` text keeps filling the available row space after its host style is replaced and overrides outer flex CSS.
+  - Ellipsis remains active on the flexible text without forcing the fixed sibling out of the row despite conflicting outer overflow rules.
+  - A constrained `break-long-tokens` text overrides outer width and wrapping CSS after its host style is replaced.
+skipInitialScreenshot: true
+steps:
+  - action: customEvent
+    name: vt:update-flex-wrap-text-style
+  - action: wait
+    ms: 80
+  - action: assert
+    type: js
+    fn: textFlexWrapStyleUpdate.getFlexState
+    value:
+      flexGrow: 1
+      flexBasis: 0%
+      minWidth: 0px
+      textOverflow: ellipsis
+      whiteSpace: nowrap
+      paddingTop: 6
+  - action: assert
+    type: js
+    fn: textFlexWrapStyleUpdate.getWrapState
+    value:
+      width: 180
+      overflowWrap: anywhere
+      wordBreak: break-word
+      paddingTop: 8
+  - action: screenshot
+viewport:
+  id: text-compact
+  width: 640
+  height: 420
+---
+
+<style>
+  #flex-style-target {
+    flex: 0 0 auto;
+    min-width: 420px;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+
+  #wrap-style-target {
+    width: 100%;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+</style>
+
+<rtgl-view d="v" g="xl" p="xl" wh="f">
+  <rtgl-view d="v" g="sm">
+    <rtgl-text s="h4">Flexible ellipsis</rtgl-text>
+    <rtgl-view d="h" g="md" p="lg" bgc="bg" bw="xs" bc="bo" br="lg" w="500">
+      <rtgl-text id="flex-style-target" w="1fg" ellipsis>
+        A flexible title with enough content to require truncation after the style update
+      </rtgl-text>
+      <rtgl-text w="120" ta="e" c="mu-fg">Fixed sibling</rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view d="v" g="sm">
+    <rtgl-text s="h4">Long-token wrapping</rtgl-text>
+    <rtgl-view p="lg" bgc="bg" bw="xs" bc="bo" br="lg" w="500">
+      <rtgl-text id="wrap-style-target" w="180" break-long-tokens>
+        account_identifier_with_a_deliberately_unbroken_value_0123456789
+      </rtgl-text>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const flexStyleTarget = document.getElementById("flex-style-target");
+  const wrapStyleTarget = document.getElementById("wrap-style-target");
+
+  window.textFlexWrapStyleUpdate = {
+    getFlexState() {
+      const style = getComputedStyle(flexStyleTarget);
+      return {
+        flexGrow: Number(style.flexGrow),
+        flexBasis: style.flexBasis,
+        minWidth: style.minWidth,
+        textOverflow: style.textOverflow,
+        whiteSpace: style.whiteSpace,
+        paddingTop: Math.round(Number.parseFloat(style.paddingTop)),
+      };
+    },
+    getWrapState() {
+      const style = getComputedStyle(wrapStyleTarget);
+      return {
+        width: Math.round(Number.parseFloat(style.width)),
+        overflowWrap: style.overflowWrap,
+        wordBreak: style.wordBreak,
+        paddingTop: Math.round(Number.parseFloat(style.paddingTop)),
+      };
+    },
+  };
+
+  window.addEventListener("vt:update-flex-wrap-text-style", () => {
+    flexStyleTarget.setAttribute(
+      "style",
+      "padding: 6px 8px; background: var(--accent); color: var(--accent-foreground);",
+    );
+    wrapStyleTarget.setAttribute(
+      "style",
+      "padding: 8px; border-left: 4px solid var(--accent); background: var(--muted);",
+    );
+  });
+</script>
