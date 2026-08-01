@@ -49,7 +49,13 @@ class RettangoliTextElement extends HTMLElement {
     super();
     RettangoliTextElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliTextElement.styleSheet];
+    this._managedStyleSheet = new CSSStyleSheet();
+    this._managedStyleSheet.replaceSync(":host {}");
+    this._managedStyle = this._managedStyleSheet.cssRules[0].style;
+    this.shadow.adoptedStyleSheets = [
+      RettangoliTextElement.styleSheet,
+      this._managedStyleSheet,
+    ];
     
     // Create initial DOM structure
     this._slotElement = document.createElement('slot');
@@ -80,22 +86,22 @@ class RettangoliTextElement extends HTMLElement {
     const breakLongTokens = this.hasAttribute("break-long-tokens");
 
     if (ellipsis) {
-      this.style.overflow = "hidden";
-      this.style.textOverflow = "ellipsis";
-      this.style.whiteSpace = "nowrap";
-      this.style.overflowWrap = "";
-      this.style.wordBreak = "";
+      this._managedStyle.overflow = "hidden";
+      this._managedStyle.textOverflow = "ellipsis";
+      this._managedStyle.whiteSpace = "nowrap";
+      this._managedStyle.overflowWrap = "";
+      this._managedStyle.wordBreak = "";
     } else {
-      this.style.overflow = "";
-      this.style.textOverflow = "";
-      this.style.whiteSpace = "";
-      this.style.overflowWrap = breakLongTokens ? "anywhere" : "";
-      this.style.wordBreak = breakLongTokens ? "break-word" : "";
+      this._managedStyle.overflow = "";
+      this._managedStyle.textOverflow = "";
+      this._managedStyle.whiteSpace = "";
+      this._managedStyle.overflowWrap = breakLongTokens ? "anywhere" : "";
+      this._managedStyle.wordBreak = breakLongTokens ? "break-word" : "";
     }
 
     // Allow shrinking in flex layouts so ellipsis and wrapping constraints work predictably.
     applyInlineWidthDimension({
-      style: this.style,
+      style: this._managedStyle,
       width,
       flexMinWidth: "0",
     });
