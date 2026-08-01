@@ -1,0 +1,68 @@
+---
+title: Text - Style Update - Width And Ellipsis
+description: Verifies consumer inline-style replacements do not clear text width or truncation styles.
+specs:
+  - Replacing the host style at runtime applies the new consumer padding and border.
+  - The managed `w=220` width remains active after the style replacement.
+  - Ellipsis continues to constrain the long label to one line.
+skipInitialScreenshot: true
+steps:
+  - action: customEvent
+    name: vt:update-fixed-text-style
+  - action: wait
+    ms: 80
+  - action: assert
+    type: js
+    fn: textFixedStyleUpdate.getState
+    value:
+      width: 220
+      overflow: hidden
+      textOverflow: ellipsis
+      whiteSpace: nowrap
+      paddingTop: 8
+      paddingLeft: 12
+  - action: screenshot
+viewport:
+  id: text-compact
+  width: 640
+  height: 360
+---
+
+<rtgl-view d="v" g="lg" p="xl" wh="f">
+  <rtgl-text s="h4">Width and ellipsis after style replacement</rtgl-text>
+  <rtgl-text c="mu-fg">
+    The highlighted text keeps its primitive-owned sizing while accepting new consumer styles.
+  </rtgl-text>
+
+  <rtgl-view d="v" g="sm" p="lg" bgc="bg" bw="xs" bc="bo" br="lg" w="420">
+    <rtgl-text s="sm" c="mu-fg">Updated text</rtgl-text>
+    <rtgl-text id="fixed-style-target" w="220" ellipsis>
+      A deliberately long account name that must remain truncated after the style attribute changes
+    </rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const fixedStyleTarget = document.getElementById("fixed-style-target");
+
+  window.textFixedStyleUpdate = {
+    getState() {
+      const style = getComputedStyle(fixedStyleTarget);
+      return {
+        width: Math.round(Number.parseFloat(style.width)),
+        overflow: style.overflow,
+        textOverflow: style.textOverflow,
+        whiteSpace: style.whiteSpace,
+        paddingTop: Math.round(Number.parseFloat(style.paddingTop)),
+        paddingLeft: Math.round(Number.parseFloat(style.paddingLeft)),
+      };
+    },
+  };
+
+  window.addEventListener("vt:update-fixed-text-style", () => {
+    fixedStyleTarget.setAttribute(
+      "style",
+      "padding: 8px 12px; border-left: 4px solid var(--accent); background: var(--muted);",
+    );
+  });
+</script>
