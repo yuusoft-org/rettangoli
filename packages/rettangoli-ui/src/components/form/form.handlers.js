@@ -24,6 +24,7 @@ const updateFieldAttributes = ({
   formValues = {},
   refs,
   formDisabled = false,
+  forceValueRefresh = false,
 }) => {
   const fields = form.fields || [];
   let idx = 0;
@@ -45,9 +46,14 @@ const updateFieldAttributes = ({
 
       const disabled = formDisabled || !!field.disabled;
 
-      if (["input-text", "input-date", "input-time", "input-datetime", "input-number", "input-textarea", "color-picker", "slider", "slider-with-input", "popover-input"].includes(field.type)) {
+      if (["input-text", "input-date", "input-time", "input-datetime", "input-duration", "input-number", "input-textarea", "color-picker", "slider", "slider-with-input", "popover-input"].includes(field.type)) {
         const value = get(formValues, field.name);
-        if (value === undefined || value === null) {
+        if (field.type === "input-duration" && forceValueRefresh) {
+          // Duration edits live inside the primitive, so force an observed
+          // attribute transition even when the reset value is unchanged or null.
+          ref.removeAttribute("value");
+          ref.setAttribute("value", value === undefined || value === null ? "" : String(value));
+        } else if (value === undefined || value === null) {
           ref.removeAttribute("value");
         } else {
           ref.setAttribute("value", String(value));
@@ -86,7 +92,7 @@ const updateFieldAttributes = ({
         }
       }
 
-      if (["input-text", "input-date", "input-time", "input-datetime", "input-number", "input-textarea", "popover-input"].includes(field.type) && field.placeholder) {
+      if (["input-text", "input-date", "input-time", "input-datetime", "input-duration", "input-number", "input-textarea", "popover-input"].includes(field.type) && field.placeholder) {
         const current = ref.getAttribute("placeholder");
         if (current !== field.placeholder) {
           if (field.placeholder === undefined || field.placeholder === null) {
@@ -166,6 +172,7 @@ export const handleOnUpdate = (deps, payload) => {
     formValues: state.formValues,
     refs,
     formDisabled,
+    forceValueRefresh: keyChanged,
   });
   render();
 };

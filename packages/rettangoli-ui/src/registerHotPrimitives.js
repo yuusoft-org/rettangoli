@@ -10,6 +10,7 @@ import RettangoliInput from "./primitives/input.js";
 import RettangoliInputDate from "./primitives/input-date.js";
 import RettangoliInputTime from "./primitives/input-time.js";
 import RettangoliInputDateTime from "./primitives/input-datetime.js";
+import RettangoliInputDuration from "./primitives/input-duration.js";
 import RettangoliInputNumber from "./primitives/input-number.js";
 import RettangoliTextArea from "./primitives/textarea.js";
 import RettangoliColorPicker from "./primitives/colorPicker.js";
@@ -32,6 +33,7 @@ const primitiveTagNames = [
   "rtgl-input-date",
   "rtgl-input-time",
   "rtgl-input-datetime",
+  "rtgl-input-duration",
   "rtgl-input-number",
   "rtgl-textarea",
   "rtgl-color-picker",
@@ -54,6 +56,7 @@ let currentPrimitiveFactories = [
   RettangoliInputDate,
   RettangoliInputTime,
   RettangoliInputDateTime,
+  RettangoliInputDuration,
   RettangoliInputNumber,
   RettangoliTextArea,
   RettangoliColorPicker,
@@ -76,6 +79,7 @@ const primitiveModulePaths = [
   "./primitives/input-date.js",
   "./primitives/input-time.js",
   "./primitives/input-datetime.js",
+  "./primitives/input-duration.js",
   "./primitives/input-number.js",
   "./primitives/textarea.js",
   "./primitives/colorPicker.js",
@@ -190,6 +194,7 @@ if (import.meta.hot) {
       "./primitives/input-date.js",
       "./primitives/input-time.js",
       "./primitives/input-datetime.js",
+      "./primitives/input-duration.js",
       "./primitives/input-number.js",
       "./primitives/textarea.js",
       "./primitives/colorPicker.js",

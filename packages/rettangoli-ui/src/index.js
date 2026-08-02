@@ -10,6 +10,7 @@ import RettangoliInput from './primitives/input.js';
 import RettangoliInputDate from './primitives/input-date.js';
 import RettangoliInputTime from './primitives/input-time.js';
 import RettangoliInputDateTime from './primitives/input-datetime.js';
+import RettangoliInputDuration from './primitives/input-duration.js';
 import RettangoliInputNumber from './primitives/input-number.js';
 import RettangoliTextArea from './primitives/textarea.js';
 import RettangoliDialog from './primitives/dialog.js';
@@ -32,6 +33,7 @@ export {
     RettangoliInputDate,
     RettangoliInputTime,
     RettangoliInputDateTime,
+    RettangoliInputDuration,
     RettangoliInputNumber,
     RettangoliTextArea,
     RettangoliDialog,

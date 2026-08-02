@@ -91,6 +91,7 @@ Recommended first split:
   - `rtgl-input`
   - `rtgl-input-date`
   - `rtgl-input-time`
+  - `rtgl-input-duration`
   - `rtgl-input-datetime`
   - `rtgl-input-number`
   - `rtgl-textarea`

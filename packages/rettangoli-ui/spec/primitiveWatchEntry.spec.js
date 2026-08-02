@@ -39,6 +39,7 @@ describe("primitive watch entry", () => {
     expect(registration).toContain('"./primitives/grid.js"');
     expect(registration).toContain('"./primitives/input.js"');
     expect(registration).toContain('"./primitives/input-date.js"');
+    expect(registration).toContain('"./primitives/input-duration.js"');
     expect(view).toContain('from "../common/overlayScrollbar.js"');
     expect(grid).toContain('from "../common/overlayScrollbar.js"');
     expect(view).toContain("prepareOverlayScrollbarControllerHotUpdate");

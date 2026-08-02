@@ -1,0 +1,140 @@
+---
+title: Input Duration - Formatting and Editing
+description: Verifies millisecond-backed duration formatting, normalization, invalid edit recovery, and keyboard stepping.
+specs:
+  - A 190000 millisecond value renders as 3:10.
+  - A one-digit seconds segment normalizes on commit without disturbing typing.
+  - Invalid duration text restores the last committed value.
+  - Arrow keys use the configured millisecond step and emit numeric values.
+skipInitialScreenshot: true
+steps:
+  - action: assert
+    type: js
+    fn: durationPrimitiveVt.getState
+    value:
+      displayValue: "3:10"
+      value: 190000
+      inputCount: 0
+      changeCount: 0
+      lastInputValue: null
+      lastChangeValue: null
+  - action: select
+    testId: duration-primitive-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: Control+A
+      - action: keypress
+        key: "4"
+      - action: keypress
+        key: ":"
+      - action: keypress
+        key: "5"
+      - action: blur
+  - action: assert
+    type: js
+    fn: durationPrimitiveVt.getState
+    value:
+      displayValue: "4:05"
+      value: 245000
+      inputCount: 1
+      changeCount: 1
+      lastInputValue: 245000
+      lastChangeValue: 245000
+  - action: select
+    testId: duration-primitive-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: Control+A
+      - action: keypress
+        key: "4"
+      - action: keypress
+        key: ":"
+      - action: keypress
+        key: "7"
+      - action: keypress
+        key: "5"
+      - action: blur
+  - action: assert
+    type: js
+    fn: durationPrimitiveVt.getState
+    value:
+      displayValue: "4:05"
+      value: 245000
+      inputCount: 2
+      changeCount: 2
+      lastInputValue: 247000
+      lastChangeValue: 245000
+  - action: select
+    testId: duration-primitive-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: ArrowUp
+  - action: assert
+    type: js
+    fn: durationPrimitiveVt.getState
+    value:
+      displayValue: "4:10"
+      value: 250000
+      inputCount: 3
+      changeCount: 3
+      lastInputValue: 250000
+      lastChangeValue: 250000
+  - action: screenshot
+viewport:
+  id: input-compact
+  width: 520
+  height: 300
+---
+<rtgl-view g="lg" p="lg" wh="f">
+  <rtgl-view g="sm" w="320">
+    <rtgl-text s="lg">Duration</rtgl-text>
+    <rtgl-text c="mu-fg" s="sm">Enter minutes and seconds. The stored value is milliseconds.</rtgl-text>
+    <rtgl-input-duration
+      id="duration-field"
+      data-testid="duration-primitive-field"
+      value="190000"
+      min="0"
+      max="3600000"
+      step="5000"
+      w="f"
+    ></rtgl-input-duration>
+    <rtgl-text id="duration-status" c="mu-fg" s="sm"></rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const durationField = document.getElementById('duration-field');
+  const nativeInput = durationField.shadowRoot.querySelector('input');
+  const inputValues = [];
+  const changeValues = [];
+
+  const getState = () => ({
+    displayValue: nativeInput.value,
+    value: durationField.value,
+    inputCount: inputValues.length,
+    changeCount: changeValues.length,
+    lastInputValue: inputValues.at(-1) ?? null,
+    lastChangeValue: changeValues.at(-1) ?? null,
+  });
+
+  const updateStatus = () => {
+    const state = getState();
+    document.getElementById('duration-status').textContent =
+      `Display ${state.displayValue} · Value ${state.value} ms`;
+  };
+
+  durationField.addEventListener('value-input', (event) => {
+    inputValues.push(event.detail.value);
+    updateStatus();
+  });
+  durationField.addEventListener('value-change', (event) => {
+    changeValues.push(event.detail.value);
+    updateStatus();
+  });
+
+  window.durationPrimitiveVt = { getState };
+  updateStatus();
+</script>

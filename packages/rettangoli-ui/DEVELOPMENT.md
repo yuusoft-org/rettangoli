@@ -220,6 +220,7 @@ Canonical `inputType` values are kebab-case only:
 - `input-date`
 - `input-time`
 - `input-datetime`
+- `input-duration`
 - `input-number`
 - `input-textarea`
 - `select`
@@ -273,7 +274,7 @@ detail: {}
 
 Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - `rtgl-carousel`, `rtgl-grid`, `rtgl-view`, `rtgl-text`, `rtgl-button`, `rtgl-image`, `rtgl-svg`
-- `rtgl-input`, `rtgl-input-number`, `rtgl-textarea`
+- `rtgl-input`, `rtgl-input-duration`, `rtgl-input-number`, `rtgl-textarea`
 - `rtgl-slider`, `rtgl-color-picker`
 - `rtgl-dialog`, `rtgl-popover`
 

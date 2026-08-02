@@ -24,6 +24,27 @@ const createConditionalFormProps = () => ({
 });
 
 describe("rtgl-form bound store integration", () => {
+  it("provides the duration placeholder default without overriding an explicit value", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "elapsedMs", type: "input-duration" },
+          {
+            name: "remainingMs",
+            type: "input-duration",
+            placeholder: "hh:mm:ss",
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const fields = store.selectViewData().flatFields;
+
+    expect(fields[0]._placeholder).toBe("m:ss");
+    expect(fields[1]._placeholder).toBe("hh:mm:ss");
+  });
+
   it("rejects unsafe paths through bound form write actions", () => {
     const pollutionKey = "__rtglBoundFormPollutionProbe";
     const props = {

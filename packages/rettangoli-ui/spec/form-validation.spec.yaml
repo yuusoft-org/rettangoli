@@ -171,6 +171,75 @@ in:
 out:
   error: "Must be on or after 2026-02-14T09:30"
 ---
+suite: validateField - duration
+exportName: runValidateFieldCase
+---
+case: input-duration valid millisecond value passes
+in:
+  - field:
+      name: durationMs
+      type: input-duration
+    value: 190000
+out:
+  error: null
+---
+case: required input-duration with zero passes
+in:
+  - field:
+      name: durationMs
+      type: input-duration
+      required: true
+    value: 0
+out:
+  error: null
+---
+case: input-duration rejects string values
+in:
+  - field:
+      name: durationMs
+      type: input-duration
+    value: "190000"
+out:
+  error: "Invalid duration"
+---
+case: input-duration rejects negative values
+in:
+  - field:
+      name: durationMs
+      type: input-duration
+    value: -1
+out:
+  error: "Invalid duration"
+---
+case: input-duration rejects fractional milliseconds
+in:
+  - field:
+      name: durationMs
+      type: input-duration
+    value: 190000.5
+out:
+  error: "Invalid duration"
+---
+case: input-duration min constraint fails with formatted message
+in:
+  - field:
+      name: durationMs
+      type: input-duration
+      min: 60000
+    value: 30000
+out:
+  error: "Must be at least 1:00"
+---
+case: input-duration max constraint fails with formatted message
+in:
+  - field:
+      name: durationMs
+      type: input-duration
+      max: 300000
+    value: 301000
+out:
+  error: "Must be at most 5:00"
+---
 suite: validateField - minLength
 exportName: runValidateFieldCase
 ---
@@ -548,6 +617,13 @@ case: input-number defaults to null
 in:
   - field:
       type: input-number
+out:
+  value: null
+---
+case: input-duration defaults to null
+in:
+  - field:
+      type: input-duration
 out:
   value: null
 ---
