@@ -613,6 +613,10 @@ export const selectViewData = ({ state, props }) => {
       field._inputType = field.inputType || "text";
     }
 
+    if (field.type === "input-duration") {
+      field._placeholder = field.placeholder ?? "m:ss";
+    }
+
     if (field.type === "select" || field.type === "tag-select" || field.type === "segmented-control") {
       const val = get(state.formValues, field.name);
       field._selectedValue = val !== undefined ? val : null;

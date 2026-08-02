@@ -19,6 +19,10 @@ steps:
       changeCount: 0
       lastInputValue: null
       lastChangeValue: null
+  - action: assert
+    type: js
+    fn: durationFormVt.getPlaceholder
+    value: "m:ss"
   - action: select
     testId: duration-form-field
     steps:
@@ -152,6 +156,7 @@ viewport:
 
   const getDurationField = () => form.shadowRoot?.querySelector('[data-field-name="durationMs"]');
   const getNativeInput = () => getDurationField()?.shadowRoot?.querySelector('input');
+  const getPlaceholder = () => getNativeInput()?.placeholder ?? null;
   const inputValues = [];
   const changeValues = [];
 
@@ -195,7 +200,12 @@ viewport:
     return { displayValue, formValue };
   };
 
-  window.durationFormVt = { getState, resetWithEmptyDefault, validateEmpty };
+  window.durationFormVt = {
+    getPlaceholder,
+    getState,
+    resetWithEmptyDefault,
+    validateEmpty,
+  };
 
   const exposeDurationField = () => {
     const field = getDurationField();
