@@ -6,6 +6,7 @@ specs:
   - Form input and change payloads contain numeric milliseconds.
   - Invalid text restores the last committed form value.
   - Clearing the field stores null and participates in required validation.
+  - Changing the form key clears an edited field when its new default is null.
 skipInitialScreenshot: true
 steps:
   - action: assert
@@ -93,6 +94,27 @@ steps:
       valid: false
       error: This field is required
   - action: screenshot
+  - action: select
+    testId: duration-form-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: Control+A
+      - action: keypress
+        key: "2"
+      - action: keypress
+        key: ":"
+      - action: keypress
+        key: "0"
+      - action: keypress
+        key: "0"
+      - action: blur
+  - action: assert
+    type: js
+    fn: durationFormVt.resetWithEmptyDefault
+    value:
+      displayValue: ""
+      formValue: null
 viewport:
   id: form-compact
   width: 700
@@ -166,7 +188,14 @@ viewport:
     };
   };
 
-  window.durationFormVt = { getState, validateEmpty };
+  const resetWithEmptyDefault = () => {
+    form.defaultValues = {};
+    form.setAttribute('key', 'duration-form-reset');
+    const { displayValue, formValue } = getState();
+    return { displayValue, formValue };
+  };
+
+  window.durationFormVt = { getState, resetWithEmptyDefault, validateEmpty };
 
   const exposeDurationField = () => {
     const field = getDurationField();

@@ -24,6 +24,7 @@ const updateFieldAttributes = ({
   formValues = {},
   refs,
   formDisabled = false,
+  forceValueRefresh = false,
 }) => {
   const fields = form.fields || [];
   let idx = 0;
@@ -47,7 +48,12 @@ const updateFieldAttributes = ({
 
       if (["input-text", "input-date", "input-time", "input-datetime", "input-duration", "input-number", "input-textarea", "color-picker", "slider", "slider-with-input", "popover-input"].includes(field.type)) {
         const value = get(formValues, field.name);
-        if (value === undefined || value === null) {
+        if (field.type === "input-duration" && forceValueRefresh) {
+          // Duration edits live inside the primitive, so force an observed
+          // attribute transition even when the reset value is unchanged or null.
+          ref.removeAttribute("value");
+          ref.setAttribute("value", value === undefined || value === null ? "" : String(value));
+        } else if (value === undefined || value === null) {
           ref.removeAttribute("value");
         } else {
           ref.setAttribute("value", String(value));
@@ -166,6 +172,7 @@ export const handleOnUpdate = (deps, payload) => {
     formValues: state.formValues,
     refs,
     formDisabled,
+    forceValueRefresh: keyChanged,
   });
   render();
 };

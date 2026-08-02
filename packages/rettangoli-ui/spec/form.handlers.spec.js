@@ -77,6 +77,49 @@ describe("rtgl-form handlers", () => {
     expect(render).toHaveBeenCalledTimes(1);
   });
 
+  it("clears an edited empty-default duration field when the form key changes", () => {
+    const durationForm = {
+      fields: [{ name: "durationMs", type: "input-duration" }],
+      actions: { buttons: [] },
+    };
+    const oldProps = { key: "timer-1", form: durationForm };
+    const newProps = { key: "timer-2", form: durationForm };
+    const store = createStore({
+      props: newProps,
+      formValues: { durationMs: 190000 },
+    });
+    let displayedValue = 190000;
+    let valueAttribute;
+    const durationRef = {
+      removeAttribute: vi.fn((name) => {
+        if (name === "value" && valueAttribute !== undefined) {
+          valueAttribute = undefined;
+          displayedValue = null;
+        }
+      }),
+      setAttribute: vi.fn((name, value) => {
+        if (name === "value" && valueAttribute !== value) {
+          valueAttribute = value;
+          displayedValue = value === "" ? null : Number(value);
+        }
+      }),
+    };
+
+    handleOnUpdate(
+      {
+        store,
+        render: vi.fn(),
+        refs: { field0: durationRef },
+      },
+      { oldProps, newProps },
+    );
+
+    expect(store.getState().formValues).toEqual({ durationMs: null });
+    expect(displayedValue).toBeNull();
+    expect(durationRef.removeAttribute).toHaveBeenCalledWith("value");
+    expect(durationRef.setAttribute).toHaveBeenCalledWith("value", "");
+  });
+
   it("does not re-seed form values when only defaultValues changes", () => {
     const oldProps = {
       key: "section-form-1",
