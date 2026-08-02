@@ -1,0 +1,181 @@
+---
+title: Form Duration Input Editing
+description: Verifies input-duration defaults, numeric form events, invalid edit recovery, required validation, and error rendering.
+specs:
+  - Millisecond defaults render as a readable duration.
+  - Form input and change payloads contain numeric milliseconds.
+  - Invalid text restores the last committed form value.
+  - Clearing the field stores null and participates in required validation.
+skipInitialScreenshot: true
+steps:
+  - action: assert
+    type: js
+    fn: durationFormVt.getState
+    value:
+      displayValue: "3:10"
+      formValue: 190000
+      inputCount: 0
+      changeCount: 0
+      lastInputValue: null
+      lastChangeValue: null
+  - action: select
+    testId: duration-form-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: Control+A
+      - action: keypress
+        key: "4"
+      - action: keypress
+        key: ":"
+      - action: keypress
+        key: "5"
+      - action: blur
+  - action: assert
+    type: js
+    fn: durationFormVt.getState
+    value:
+      displayValue: "4:05"
+      formValue: 245000
+      inputCount: 1
+      changeCount: 1
+      lastInputValue: 245000
+      lastChangeValue: 245000
+  - action: select
+    testId: duration-form-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: Control+A
+      - action: keypress
+        key: "4"
+      - action: keypress
+        key: ":"
+      - action: keypress
+        key: "7"
+      - action: keypress
+        key: "5"
+      - action: blur
+  - action: assert
+    type: js
+    fn: durationFormVt.getState
+    value:
+      displayValue: "4:05"
+      formValue: 245000
+      inputCount: 2
+      changeCount: 2
+      lastInputValue: 247000
+      lastChangeValue: 245000
+  - action: screenshot
+  - action: select
+    testId: duration-form-field
+    steps:
+      - action: focus
+      - action: keypress
+        key: Control+A
+      - action: keypress
+        key: Backspace
+      - action: blur
+  - action: assert
+    type: js
+    fn: durationFormVt.getState
+    value:
+      displayValue: ""
+      formValue: null
+      inputCount: 3
+      changeCount: 3
+      lastInputValue: null
+      lastChangeValue: null
+  - action: assert
+    type: js
+    fn: durationFormVt.validateEmpty
+    value:
+      valid: false
+      error: This field is required
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 520
+---
+<rtgl-view id="container" h="100vh" w="100vw">
+  <rtgl-view g="md" w="380">
+    <rtgl-text id="duration-form-status" c="mu-fg" s="sm"></rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '380');
+  form.defaultValues = { durationMs: 190000 };
+  form.form = {
+    title: 'Clip duration',
+    description: 'Durations are edited as minutes and seconds and stored as milliseconds.',
+    fields: [{
+      name: 'durationMs',
+      type: 'input-duration',
+      label: 'Duration',
+      description: 'Use m:ss or h:mm:ss.',
+      min: 0,
+      max: 3600000,
+      step: 1000,
+      required: true,
+    }],
+    actions: { buttons: [] },
+  };
+
+  const content = document.getElementById('container').querySelector('rtgl-view');
+  content.prepend(form);
+
+  const getDurationField = () => form.shadowRoot?.querySelector('[data-field-name="durationMs"]');
+  const getNativeInput = () => getDurationField()?.shadowRoot?.querySelector('input');
+  const inputValues = [];
+  const changeValues = [];
+
+  const getState = () => ({
+    displayValue: getNativeInput()?.value ?? null,
+    formValue: form.getValues().durationMs,
+    inputCount: inputValues.length,
+    changeCount: changeValues.length,
+    lastInputValue: inputValues.at(-1) ?? null,
+    lastChangeValue: changeValues.at(-1) ?? null,
+  });
+
+  const updateStatus = () => {
+    const { displayValue, formValue } = getState();
+    document.getElementById('duration-form-status').textContent = displayValue === ''
+      ? 'Duration: empty (null)'
+      : `Duration: ${displayValue} (${formValue} ms)`;
+  };
+
+  form.addEventListener('form-input', (event) => {
+    inputValues.push(event.detail.value);
+    updateStatus();
+  });
+  form.addEventListener('form-change', (event) => {
+    changeValues.push(event.detail.value);
+    updateStatus();
+  });
+
+  const validateEmpty = () => {
+    const result = form.validate();
+    return {
+      valid: result.valid,
+      error: result.errors.durationMs,
+    };
+  };
+
+  window.durationFormVt = { getState, validateEmpty };
+
+  const exposeDurationField = () => {
+    const field = getDurationField();
+    if (!field) {
+      setTimeout(exposeDurationField, 0);
+      return;
+    }
+    field.setAttribute('data-testid', 'duration-form-field');
+    updateStatus();
+  };
+  exposeDurationField();
+</script>

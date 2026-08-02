@@ -62,6 +62,8 @@ template:
                           - rtgl-input-time#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "input-datetime":
                           - rtgl-input-datetime#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                      - $if field.type == "input-duration":
+                          - rtgl-input-duration#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "input-number":
                           - rtgl-input-number#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                       - $if field.type == "input-textarea":

@@ -142,6 +142,36 @@ Native browser time input (`<input type="time">`).
   step: 900
 ```
 
+#### `input-duration`
+
+Value: non-negative integer milliseconds (`null` when empty)
+
+Duration editor for elapsed time. It accepts `m:ss` and `h:mm:ss`; one-digit
+seconds are normalized on commit (`3:1` becomes `3:01`). Millisecond fractions
+with up to three digits are preserved when provided (`3:10.25` is `190250`).
+
+| property | description |
+|---|---|
+| `min` | Minimum duration in milliseconds |
+| `max` | Maximum duration in milliseconds |
+| `step` | Arrow-key increment in milliseconds (default `1000`) |
+| `placeholder` | Optional hint text (default `m:ss`) |
+
+```yaml
+- name: durationMs
+  type: input-duration
+  label: Duration
+  min: 0
+  max: 3600000
+  step: 1000
+```
+
+```js
+form.defaultValues = {
+  durationMs: 190000, // displays as 3:10
+};
+```
+
 #### `input-datetime`
 
 Value: `string` in `YYYY-MM-DDTHH:mm` or `YYYY-MM-DDTHH:mm:ss` (`""` when empty)
@@ -173,8 +203,11 @@ If you want temporal controls without `rtgl-form`, use:
 - `rtgl-input-date` (native `date`)
 - `rtgl-input-time` (native `time`)
 - `rtgl-input-datetime` (native `datetime-local`)
+- `rtgl-input-duration` (elapsed duration backed by milliseconds)
 
-They support the same value/min/max/step/disabled behavior as `rtgl-input`.
+The native temporal primitives support the same value/min/max/step/disabled
+behavior as `rtgl-input`. `rtgl-input-duration` uses numeric millisecond attrs
+and emits numeric millisecond values through `value-input` and `value-change`.
 
 #### `input-number`
 
@@ -487,6 +520,12 @@ Temporal field types (`input-date`, `input-time`, `input-datetime`) are validate
 - empty values are allowed unless `required` is set
 - value format must match the field type
 - if `min`/`max` are provided, the value must be within bounds
+
+### Built-in duration validation
+
+`input-duration` values are validated as non-negative safe integer
+milliseconds. Empty values are allowed unless `required` is set, and numeric
+`min` / `max` constraints produce messages formatted as readable durations.
 
 ## Actions
 
@@ -816,6 +855,7 @@ Validation checks `required` fields and `rules`. The consumer can also call `val
 |---|---|---|
 | `input-text` | every keystroke | blur / Enter |
 | `input-number` | every keystroke | blur / Enter |
+| `input-duration` | every complete duration while typing | blur / Enter / Arrow key |
 | `input-textarea` | every keystroke | blur |
 | `slider` | every drag tick | mouse release |
 | `slider-with-input` | every drag tick / keystroke | mouse release / blur |
@@ -901,6 +941,7 @@ Contract tests in `spec/` directory with YAML cases and JS helper functions. Eac
 - `reset()` clears validation errors
 - Empty `input-text` → `""`
 - Empty `input-number` → `null`
+- Empty `input-duration` → `null`
 - Empty `select` → `null`
 - `checkbox` → `boolean`
 - `color-picker` → hex string

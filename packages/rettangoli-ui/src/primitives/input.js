@@ -154,22 +154,21 @@ class RettangoliInputElement extends HTMLElement {
     this._inputElement.focus();
   }
 
-  _onInput = () => {
-    this.dispatchEvent(new CustomEvent('value-input', {
+  _emitValueEvent(eventName) {
+    this.dispatchEvent(new CustomEvent(eventName, {
       detail: {
         value: this._inputElement.value,
       },
       bubbles: true,
     }));
+  }
+
+  _onInput = () => {
+    this._emitValueEvent('value-input');
   };
 
   _onChange = () => {
-    this.dispatchEvent(new CustomEvent('value-change', {
-      detail: {
-        value: this._inputElement.value,
-      },
-      bubbles: true,
-    }));
+    this._emitValueEvent('value-change', { commit: true });
   };
 
   attributeChangedCallback(name, oldValue, newValue) {

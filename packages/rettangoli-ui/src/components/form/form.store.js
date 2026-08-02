@@ -1,4 +1,8 @@
 import { parseAndRender } from "jempl";
+import {
+  formatDurationMilliseconds,
+  normalizeDurationMilliseconds,
+} from "../../common/duration.js";
 
 const encode = (input) => {
   function escapeHtml(text) {
@@ -200,13 +204,17 @@ const DEFAULT_MESSAGES = {
   invalidDate: "Invalid date format",
   invalidTime: "Invalid time format",
   invalidDateTime: "Invalid date and time format",
+  invalidDuration: "Invalid duration",
   minTemporal: (val) => `Must be on or after ${val}`,
   maxTemporal: (val) => `Must be on or before ${val}`,
+  minDuration: (val) => `Must be at least ${formatDurationMilliseconds(val)}`,
+  maxDuration: (val) => `Must be at most ${formatDurationMilliseconds(val)}`,
 };
 
 const DATE_FIELD_TYPE = "input-date";
 const TIME_FIELD_TYPE = "input-time";
 const DATETIME_FIELD_TYPE = "input-datetime";
+const DURATION_FIELD_TYPE = "input-duration";
 
 const DATE_REGEX = /^(\d{4})-(\d{2})-(\d{2})$/;
 const TIME_REGEX = /^(\d{2}):(\d{2})(?::(\d{2}))?$/;
@@ -328,6 +336,33 @@ const validateTemporalField = (field, value) => {
   return null;
 };
 
+const validateDurationField = (field, value) => {
+  if (field.type !== DURATION_FIELD_TYPE) return null;
+
+  if (value === undefined || value === null || value === "") {
+    return null;
+  }
+
+  if (
+    typeof value !== "number" ||
+    normalizeDurationMilliseconds(value) === null
+  ) {
+    return DEFAULT_MESSAGES.invalidDuration;
+  }
+
+  const min = normalizeDurationMilliseconds(field.min);
+  if (min !== null && value < min) {
+    return DEFAULT_MESSAGES.minDuration(min);
+  }
+
+  const max = normalizeDurationMilliseconds(field.max);
+  if (max !== null && value > max) {
+    return DEFAULT_MESSAGES.maxDuration(max);
+  }
+
+  return null;
+};
+
 export const validateField = (field, value) => {
   // Check required
   if (field.required) {
@@ -352,6 +387,11 @@ export const validateField = (field, value) => {
   const temporalError = validateTemporalField(field, value);
   if (temporalError) {
     return temporalError;
+  }
+
+  const durationError = validateDurationField(field, value);
+  if (durationError) {
+    return durationError;
   }
 
   // Check rules
@@ -461,6 +501,7 @@ export const getDefaultValue = (field) => {
     case "popover-input":
       return "";
     case "input-number":
+    case "input-duration":
       return null;
     case "select":
     case "segmented-control":
