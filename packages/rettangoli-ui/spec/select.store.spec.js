@@ -18,9 +18,9 @@ describe('rtgl-select store', () => {
     expect(viewData.selectedIcon).toBe('text');
     expect(viewData.hasSelectedSuffixText).toBe(true);
     expect(viewData.selectedSuffixText).toBe('Cmd+C');
-    expect(viewData.options[0].hasIconSlot).toBe(true);
+    expect(viewData.options[0].hasLeadingVisualSlot).toBe(true);
     expect(viewData.options[0].hasIcon).toBe(true);
-    expect(viewData.options[1].hasIconSlot).toBe(true);
+    expect(viewData.options[1].hasLeadingVisualSlot).toBe(true);
     expect(viewData.options[1].hasIcon).toBe(false);
     expect(viewData.options[1].hasSuffixText).toBe(true);
     expect(viewData.options[1].suffixText).toBe('Beta');
@@ -64,7 +64,139 @@ describe('rtgl-select store', () => {
     expect(viewData.options[1].isItem).toBe(true);
     expect(viewData.options[1].isSelected).toBe(true);
     expect(viewData.options[2].isSeparator).toBe(true);
-    expect(viewData.options[3].hasIconSlot).toBe(true);
+    expect(viewData.options[3].hasLeadingVisualSlot).toBe(true);
+  });
+
+  it('normalizes image defaults and prefers images over icons in the trigger and options', () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        selectedValue: 'ada',
+        options: [
+          {
+            value: 'ada',
+            label: 'Ada',
+            imageSrc: '/avatars/ada.svg',
+            icon: 'info',
+          },
+          { value: 'grace', label: 'Grace', icon: 'text' },
+          { value: 'linus', label: 'Linus' },
+        ],
+      },
+    });
+
+    expect(viewData).toMatchObject({
+      selectedImageSrc: '/avatars/ada.svg',
+      hasSelectedImage: true,
+      hasSelectedIcon: false,
+      imageSize: 20,
+      imageBorderRadius: 'sm',
+      imageBorderColor: '',
+      imageHasBorder: false,
+      imageFit: 'cov',
+    });
+    expect(viewData.options[0]).toMatchObject({
+      hasLeadingVisualSlot: true,
+      leadingVisualSize: 20,
+      imageSrc: '/avatars/ada.svg',
+      hasImage: true,
+      hasIcon: false,
+    });
+    expect(viewData.options[1]).toMatchObject({
+      hasLeadingVisualSlot: true,
+      leadingVisualSize: 20,
+      hasImage: false,
+      hasIcon: true,
+    });
+    expect(viewData.options[2]).toMatchObject({
+      hasLeadingVisualSlot: true,
+      leadingVisualSize: 20,
+      hasImage: false,
+      hasIcon: false,
+    });
+  });
+
+  it('applies one custom image style to every image slot', () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        selectedValue: 'ada',
+        image: {
+          size: 24,
+          borderRadius: 'full',
+          borderColor: 'bo',
+          fit: 'contain',
+        },
+        options: [
+          { value: 'ada', label: 'Ada', imageSrc: '/avatars/ada.svg' },
+          { value: 'grace', label: 'Grace', imageSrc: '/avatars/grace.svg' },
+        ],
+      },
+    });
+
+    expect(viewData).toMatchObject({
+      imageSize: 24,
+      imageBorderRadius: 'f',
+      imageBorderColor: 'bo',
+      imageHasBorder: true,
+      imageFit: 'con',
+    });
+    expect(viewData.options.every((option) => option.leadingVisualSize === 24)).toBe(true);
+    expect(viewData.containerAttrString).not.toContain('[object Object]');
+    expect(viewData.containerAttrString).not.toContain('image=');
+  });
+
+  it('caps image size at 28px so images stay inside the fixed-height trigger', () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        selectedValue: 'ada',
+        image: { size: 40 },
+        options: [
+          { value: 'ada', label: 'Ada', imageSrc: '/avatars/ada.svg' },
+          { value: 'grace', label: 'Grace' },
+        ],
+      },
+    });
+
+    expect(viewData.imageSize).toBe(28);
+    expect(viewData.options[0].leadingVisualSize).toBe(28);
+    expect(viewData.options[1].leadingVisualSize).toBe(28);
+  });
+
+  it('falls back safely for empty sources and invalid image configuration', () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        selectedValue: 'blank',
+        image: {
+          size: 0,
+          borderRadius: 'circle',
+          borderColor: 'not-a-token',
+          fit: 'stretch',
+        },
+        options: [
+          { value: 'blank', label: 'Blank', imageSrc: '   ', icon: 'info' },
+          { value: 'image', label: 'Image', imageSrc: '/avatars/ada.svg' },
+        ],
+      },
+    });
+
+    expect(viewData).toMatchObject({
+      hasSelectedImage: false,
+      hasSelectedIcon: true,
+      imageSize: 20,
+      imageBorderRadius: 'sm',
+      imageBorderColor: '',
+      imageHasBorder: false,
+      imageFit: 'cov',
+    });
+    expect(viewData.options[0]).toMatchObject({
+      imageSrc: '',
+      hasImage: false,
+      hasIcon: true,
+      leadingVisualSize: 20,
+    });
   });
 
   it('filters searchable options by label while preserving original option indexes', () => {
@@ -106,7 +238,13 @@ describe('rtgl-select store', () => {
         searchable: true,
         selectedValue: 'copy',
         options: [
-          { value: 'copy', label: 'Copy', icon: 'text', shortcut: 'Cmd+C' },
+          {
+            value: 'copy',
+            label: 'Copy',
+            imageSrc: '/avatars/copy.svg',
+            icon: 'text',
+            shortcut: 'Cmd+C',
+          },
           { value: 'paste', label: 'Paste' },
         ],
       },
@@ -114,8 +252,9 @@ describe('rtgl-select store', () => {
 
     expect(viewData.options.map((option) => option.label)).toEqual(['Paste']);
     expect(viewData.selectedLabel).toBe('Copy');
-    expect(viewData.hasSelectedIcon).toBe(true);
-    expect(viewData.selectedIcon).toBe('text');
+    expect(viewData.hasSelectedImage).toBe(true);
+    expect(viewData.selectedImageSrc).toBe('/avatars/copy.svg');
+    expect(viewData.hasSelectedIcon).toBe(false);
     expect(viewData.hasSelectedSuffixText).toBe(true);
     expect(viewData.selectedSuffixText).toBe('Cmd+C');
   });

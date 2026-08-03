@@ -254,7 +254,8 @@ Value: `string` (the selected option's `value`) or `null` when cleared. Option v
 | property | description |
 |---|---|
 | `placeholder` | Placeholder text when no option is selected |
-| `options` | Array of `{ label, value }`. `value` must be a string. |
+| `options` | Array of `{ label, value, imageSrc? }`. `value` must be a string. `imageSrc` renders a decorative image before the option and selected text. |
+| `image` | Shared image styling object: `{ size?, borderRadius?, borderColor?, fit? }`. Defaults: `size: 20`, `borderRadius: "sm"`, no border, and `fit: "cover"`. `size` must be positive and is capped at 28px to fit the fixed-height trigger. `borderRadius` supports `xs`, `sm`, `md`, `lg`, `xl`, and `full`; `fit` supports `cover` and `contain`. |
 | `clearable` | Boolean. Allow clearing the selection. Default: `true`. |
 
 ```yaml
@@ -263,12 +264,21 @@ Value: `string` (the selected option's `value`) or `null` when cleared. Option v
   label: Role
   placeholder: Select a role
   clearable: false
+  image:
+    size: 24
+    borderRadius: full
+    borderColor: bo
+    fit: cover
   options:
     - label: Admin
       value: admin
+      imageSrc: /avatars/admin.webp
     - label: Editor
       value: editor
+      imageSrc: /avatars/editor.webp
 ```
+
+The `image` object applies uniformly to every option image and to the selected trigger image. If an option has both `imageSrc` and `icon`, the image is rendered. When any option has an image, the menu reserves the same image-width leading column for every item so labels remain aligned.
 
 #### `tag-select`
 

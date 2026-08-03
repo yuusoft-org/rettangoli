@@ -24,6 +24,30 @@ const createConditionalFormProps = () => ({
 });
 
 describe("rtgl-form bound store integration", () => {
+  it("preserves select image options and their shared image configuration", () => {
+    const image = {
+      size: 24,
+      borderRadius: "full",
+      borderColor: "bo",
+      fit: "cover",
+    };
+    const options = [
+      { label: "Ada", value: "ada", imageSrc: "/avatars/ada.svg" },
+      { label: "Grace", value: "grace", imageSrc: "/avatars/grace.svg" },
+    ];
+    const store = bindStore(formStore, {
+      form: {
+        fields: [{ name: "person", type: "select", image, options }],
+      },
+    }, {});
+
+    const field = store.selectViewData().flatFields[0];
+
+    expect(field.image).toEqual(image);
+    expect(field.options).toEqual(options);
+    expect(field.options[0].imageSrc).toBe("/avatars/ada.svg");
+  });
+
   it("provides the duration placeholder default without overriding an explicit value", () => {
     const props = {
       form: {

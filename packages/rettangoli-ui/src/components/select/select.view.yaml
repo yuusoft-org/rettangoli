@@ -38,15 +38,18 @@ refs:
       mouseleave:
         handler: handleAddOptionMouseLeave
 styles:
-  .icon-placeholder:
-    width: 16px
-    height: 16px
+  .leading-visual:
     flex-shrink: 0
 template:
   - 'rtgl-view#selectButton style="display: inline-flex;" d=h av=c h=32 ph=md bw=xs bc=bo h-bc=${selectButtonHoverBorderColor} br=md bgc=su cur=${selectButtonCursor} ${containerAttrString} data-testid="select-button" role="button" tabindex=${selectButtonTabIndex} aria-disabled=${isDisabled}':
       - rtgl-view d=h av=c ah=s w=f g=md:
           - rtgl-view d=h av=c g=md w=1fg:
-              - $if hasSelectedIcon:
+              - $if hasSelectedImage:
+                  - $if imageHasBorder:
+                      - rtgl-image src=${selectedImageSrc} alt="" wh=${imageSize} br=${imageBorderRadius} bw=xs bc=${imageBorderColor} of=${imageFit}: null
+                    $else:
+                      - rtgl-image src=${selectedImageSrc} alt="" wh=${imageSize} br=${imageBorderRadius} of=${imageFit}: null
+                $elif hasSelectedIcon:
                   - rtgl-svg svg=${selectedIcon} wh=16 c=${selectedIconColor}: null
               - rtgl-text w=1fg ta=s c=${selectedLabelColor} ellipsis: ${selectedLabel}
           - $if hasSelectedSuffixText:
@@ -66,11 +69,15 @@ template:
               - rtgl-view#option${option.index} w=f ph=lg pv=md cur=pointer bgc=${option.bgc} data-testid=${option.testId} ?hide=${option.isSearchHidden}:
                   - rtgl-view d=h av=c w=f g=md:
                       - rtgl-view d=h av=c g=md w=1fg:
-                          - $if option.hasIconSlot:
-                              - $if option.hasIcon:
-                                  - rtgl-svg wh=16 svg=${option.icon} c=${option.iconColor}: null
-                                $else:
-                                  - div class=icon-placeholder aria-hidden="true": null
+                          - $if option.hasLeadingVisualSlot:
+                              - rtgl-view class=leading-visual d=h av=c ah=c wh=${option.leadingVisualSize} aria-hidden="true":
+                                  - $if option.hasImage:
+                                      - $if imageHasBorder:
+                                          - rtgl-image src=${option.imageSrc} alt="" wh=${imageSize} br=${imageBorderRadius} bw=xs bc=${imageBorderColor} of=${imageFit}: null
+                                        $else:
+                                          - rtgl-image src=${option.imageSrc} alt="" wh=${imageSize} br=${imageBorderRadius} of=${imageFit}: null
+                                    $elif option.hasIcon:
+                                      - rtgl-svg wh=16 svg=${option.icon} c=${option.iconColor}: null
                           - rtgl-text s=sm c=${option.c} w=1fg ellipsis: ${option.label}
                       - $if option.hasSuffixText:
                           - rtgl-text s=xs c=${option.suffixTextColor} ta=e: ${option.suffixText}
