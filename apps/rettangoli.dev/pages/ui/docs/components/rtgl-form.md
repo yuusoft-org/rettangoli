@@ -126,8 +126,14 @@ Use `type: "section"` to group related fields under a labeled block. Section row
     fields: [
       {
         type: "section",
+        id: "profile",
         label: "Profile",
         description: "Basic identity details",
+        action: {
+          id: "add",
+          icon: "plus",
+          label: "Add profile field",
+        },
         fields: [
           { name: "profile.firstName", type: "input-text", label: "First Name", required: true },
           { name: "profile.lastName", type: "input-text", label: "Last Name", required: true },
@@ -173,6 +179,31 @@ Use `type: "section"` to group related fields under a labeled block. Section row
 </script>
 ```
 
+Sections may expose one icon action at the right edge of their header. Give
+both the section and action stable `id` values. `action.icon` defaults to
+`plus`, `action.label` provides the accessible name, and `action.disabled`
+disables the trigger.
+
+The form owns the trigger but leaves its behavior to the consumer:
+
+```js
+form.addEventListener("form-section-action", async (event) => {
+  const { sectionId, actionId, position } = event.detail;
+  if (sectionId !== "profile" || actionId !== "add") return;
+
+  await appService.showDropdownMenu({
+    items,
+    x: position.x,
+    y: position.y,
+    place: "bs",
+  });
+});
+```
+
+`position` and `anchorRect` are viewport-coordinate snapshots from the action
+button. Use `position` for a menu directly below the button, or `anchorRect`
+when custom placement needs the full bounds.
+
 ## Events
 
 | Event | Detail | Description |
@@ -180,6 +211,7 @@ Use `type: "section"` to group related fields under a labeled block. Section row
 | `form-input` | `{ name, value, values }` | Live value changes (typing/dragging). |
 | `form-change` | `{ name, value, values }` | Committed value changes (blur/select/toggle/release). |
 | `form-field-event` | `{ name, event, values }` | Field-specific interactions (for example image `click`/`contextmenu`). |
+| `form-section-action` | `{ sectionId, actionId, values, position, anchorRect }` | Section header action clicks with viewport anchor geometry. |
 | `form-action` | `{ actionId, values }` or `{ actionId, values, valid, errors }` | Action button clicks; includes validation result when `validate: true`. |
 
 All events bubble.
@@ -203,7 +235,7 @@ form.reset();
 ## Custom Logic
 
 - Form schema is data-only (JSON/YAML serializable). Avoid embedding JavaScript functions in schema definitions.
-- Use event listeners (`form-input`, `form-change`, `form-action`, `form-field-event`) for custom behavior.
+- Use event listeners (`form-input`, `form-change`, `form-action`, `form-field-event`, `form-section-action`) for custom behavior.
 - Use form methods (`setValues`, `validate`, `reset`) for imperative workflows.
 - For conditional fields, use `$when` expressions (or jempl `$if` forms). Hidden fields are excluded from emitted `values`.
 
@@ -356,4 +388,4 @@ form.reset();
 - `defaultValues` seeds internal state on mount.
 - Field `name` paths support dot notation (`user.email`) for nested objects; bracket array paths (`items[0]`) are not supported.
 - Updating `defaultValues` alone does not change current values until `reset()` is called.
-- Enter key submits first action button (except within textarea).
+- Enter key submits the first footer action button except within textareas and section action buttons.

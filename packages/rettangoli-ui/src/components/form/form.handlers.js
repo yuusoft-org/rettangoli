@@ -32,6 +32,15 @@ const updateFieldAttributes = ({
   const walk = (fieldList) => {
     for (const field of fieldList) {
       if (field.type === "section") {
+        const actionRef = refs[`sectionAction${idx}`];
+        if (actionRef) {
+          const disabled = formDisabled || !!field.action?.disabled;
+          if (disabled) {
+            actionRef.setAttribute("disabled", "");
+          } else {
+            actionRef.removeAttribute("disabled");
+          }
+        }
         idx++;
         if (Array.isArray(field.fields)) {
           walk(field.fields);
@@ -328,6 +337,45 @@ export const handleActionClick = (deps, payload) => {
   }
 };
 
+export const handleSectionActionClick = (deps, payload) => {
+  const { store, dispatchEvent, props } = deps;
+  const event = payload._event;
+  const { sectionId, sectionActionId: actionId } = event.currentTarget.dataset;
+  if (
+    !sectionId ||
+    !actionId ||
+    event.currentTarget.hasAttribute("disabled")
+  ) {
+    return;
+  }
+
+  const rect = event.currentTarget.getBoundingClientRect();
+  const anchorRect = {
+    left: rect.left,
+    top: rect.top,
+    right: rect.right,
+    bottom: rect.bottom,
+    width: rect.width,
+    height: rect.height,
+  };
+
+  dispatchEvent(
+    new CustomEvent("form-section-action", {
+      bubbles: true,
+      detail: {
+        sectionId,
+        actionId,
+        values: selectFormValues({ state: store.getState(), props }),
+        position: {
+          x: rect.left,
+          y: rect.bottom,
+        },
+        anchorRect,
+      },
+    }),
+  );
+};
+
 export const handleImageClick = (deps, payload) => {
   const event = payload._event;
   if (event.type === "contextmenu") {
@@ -351,6 +399,10 @@ export const handleImageClick = (deps, payload) => {
 export const handleKeyDown = (deps, payload) => {
   const { store, dispatchEvent, render, props } = deps;
   const event = payload._event;
+
+  if (event.target.dataset?.sectionActionId) {
+    return;
+  }
 
   if (event.key === "Enter" && !event.shiftKey) {
     const target = event.target;

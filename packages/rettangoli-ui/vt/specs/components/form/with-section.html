@@ -21,8 +21,14 @@ viewport:
     description: 'Fill out all sections',
     fields: [{
       type: 'section',
+      id: 'personal-information',
       label: 'Personal Information',
       description: 'Basic details about you',
+      action: {
+        id: 'add',
+        icon: 'plus',
+        label: 'Add personal information field',
+      },
       fields: [{
         name: 'firstName',
         type: 'input-text',
@@ -80,6 +86,10 @@ viewport:
 
   form.addEventListener('form-action', (e) => {
     console.log('form-action', e.detail);
+  });
+
+  form.addEventListener('form-section-action', (e) => {
+    console.log('form-section-action', e.detail);
   });
 
   document.getElementById('container').appendChild(form);

@@ -422,12 +422,19 @@ Value: `boolean`
 
 | property | description |
 |---|---|
+| `id` | Stable section identifier; required when `action` is present |
+| `action` | Optional right-aligned icon action with `id`, `icon`, `label`, and optional `disabled` |
 | `fields` | Nested fields (same contract as top-level `fields`) |
 
 ```yaml
 - type: section
+  id: profile
   label: Profile
   description: Basic profile fields
+  action:
+    id: add
+    icon: plus
+    label: Add profile field
   fields:
     - name: firstName
       type: input-text
@@ -440,6 +447,11 @@ Value: `boolean`
 ```
 
 Sections can nest.
+
+Clicking a section action emits `form-section-action` with the stable section
+and action ids, current visible values, and serializable viewport geometry:
+`{ sectionId, actionId, values, position: { x, y }, anchorRect }`. The parent
+owns the action behavior and can pass `position` directly to a dropdown API.
 
 #### `read-only-text`
 
@@ -819,7 +831,8 @@ actions:
 1. `form-input`: `{ name, value, values }`
 2. `form-change`: `{ name, value, values }`
 3. `form-field-event`: `{ name, event, values }`
-4. `form-action`: `{ actionId, values }`
+4. `form-section-action`: `{ sectionId, actionId, values, position, anchorRect }`
+5. `form-action`: `{ actionId, values }`
 
 All events bubble.
 
@@ -964,6 +977,7 @@ Contract tests in `spec/` directory with YAML cases and JS helper functions. Eac
 - `form-action` without `validate` carries `{ actionId, values }`
 - `form-action` with `validate: true` carries `{ actionId, values, valid, errors }`
 - `form-field-event` carries `{ name, event, values }`
+- `form-section-action` carries section/action ids, visible values, and viewport anchor geometry
 - Discrete inputs (`select`, `checkbox`) do not fire `form-input`
 - `image` does not fire `form-input` or `form-change`
 
@@ -988,7 +1002,7 @@ VT specs in `vt/specs/components/form/` as HTML files with optional step-based i
 - `with-slider-with-input.html` — slider paired with number input
 - `with-image.html` — image with placeholder text, image with URL
 - `with-popover-input.html` — popover input field
-- `with-section.html` — section grouping with label and nested fields
+- `with-section.html` — section grouping with label, header action, and nested fields
 - `with-read-only-text.html` — read-only text display
 - `with-slot.html` — slotted custom content
 - `with-tooltip.html` — tooltip info icon on hover
