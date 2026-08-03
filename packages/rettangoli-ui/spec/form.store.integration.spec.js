@@ -164,6 +164,91 @@ describe("rtgl-form bound store integration", () => {
     });
   });
 
+  it("removes an unmatched direct $if/$elif field chain completely", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "contentType", type: "input-text" },
+          {
+            '$if contentType == "text"': {
+              name: "content",
+              type: "input-text",
+            },
+            '$elif contentType == "image"': {
+              name: "image",
+              type: "image",
+            },
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({
+      defaultValues: { contentType: "video" },
+    });
+
+    const form = store.selectForm();
+
+    expect(form.fields).toHaveLength(1);
+    expect(form.fields[0]).toMatchObject({
+      name: "contentType",
+      _idx: 0,
+      _layoutIdx: 0,
+    });
+    expect(
+      formStore.validateForm(form.fields, store.getState().formValues),
+    ).toEqual({
+      valid: true,
+      errors: {},
+    });
+  });
+
+  it("preserves $for field wrappers and gives every rendered field a unique stable index", () => {
+    const props = {
+      context: {
+        fieldDefinitions: [
+          { name: "email", label: "Email" },
+          { name: "phone", label: "Phone" },
+        ],
+      },
+      form: {
+        fields: [
+          {
+            "$for definition in fieldDefinitions": {
+              name: "${definition.name}",
+              type: "input-text",
+              label: "${definition.label}",
+            },
+          },
+          { name: "notes", type: "input-text" },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const initialFields = store.selectViewData().flatFields;
+    const initialNotesIndex = initialFields[2]._idx;
+
+    expect(initialFields.map((field) => field.name)).toEqual([
+      "email",
+      "phone",
+      "notes",
+    ]);
+    expect(new Set(initialFields.map((field) => field._idx))).toHaveLength(3);
+
+    props.context.fieldDefinitions.push({ name: "website", label: "Website" });
+
+    const nextFields = store.selectViewData().flatFields;
+    expect(nextFields.map((field) => field.name)).toEqual([
+      "email",
+      "phone",
+      "website",
+      "notes",
+    ]);
+    expect(new Set(nextFields.map((field) => field._idx))).toHaveLength(4);
+    expect(nextFields[3]._idx).toBe(initialNotesIndex);
+  });
+
   it("provides the duration placeholder default without overriding an explicit value", () => {
     const props = {
       form: {

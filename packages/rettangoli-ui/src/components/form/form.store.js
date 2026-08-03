@@ -102,34 +102,107 @@ function normalizeWhenDirectives(form) {
 
   let nextFieldIdx = 0;
   let nextLayoutIdx = 0;
-  const normalizeField = (field) => {
+  let nextLoopIdx = 0;
+
+  const isConditionalDirective = (key) => {
+    return (
+      key.startsWith("$if ") ||
+      /^\$if#\w+\s/.test(key) ||
+      key.startsWith("$elif ") ||
+      /^\$elif#\w+\s/.test(key) ||
+      key === "$else" ||
+      key === "$else:" ||
+      /^\$else#\w+:?$/.test(key)
+    );
+  };
+
+  const createInternalIndex = ({ kind, index, loopScopes }) => {
+    if (loopScopes.length === 0) return index;
+    const loopPath = loopScopes
+      .map(({ loopIdx, indexVar }) => `loop${loopIdx}-\${${indexVar}}`)
+      .join("-");
+    return `__rtgl-${loopPath}-${kind}${index}`;
+  };
+
+  const normalizeDirectiveValue = (value, loopScopes) => {
+    if (Array.isArray(value)) {
+      return value.map((item) => normalizeField(item, loopScopes));
+    }
+    return normalizeField(value, loopScopes);
+  };
+
+  const normalizeLoopDirective = (key, value, loopScopes) => {
+    const loopIdx = nextLoopIdx;
+    nextLoopIdx++;
+    const loopExpression = key.substring(5).trim();
+    const loopMatch = loopExpression.match(/^(.+?)\s+in\s+(.+)$/);
+    if (!loopMatch) {
+      return { [key]: value };
+    }
+
+    const variables = loopMatch[1].split(",").map((part) => part.trim());
+    const itemVar = variables[0];
+    const indexVar = variables[1] || `__rtglFormLoopIndex${loopIdx}`;
+    const normalizedKey = variables[1]
+      ? key
+      : `$for ${itemVar}, ${indexVar} in ${loopMatch[2]}`;
+    const nextLoopScopes = [...loopScopes, { loopIdx, indexVar }];
+
+    return {
+      [normalizedKey]: normalizeDirectiveValue(value, nextLoopScopes),
+    };
+  };
+
+  const normalizeField = (field, loopScopes = []) => {
     if (!isPlainObject(field)) {
       return field;
     }
 
     const fieldEntries = Object.entries(field);
     if (
-      fieldEntries.length === 1 &&
-      fieldEntries[0][0].startsWith("$if ") &&
-      isPlainObject(fieldEntries[0][1])
+      fieldEntries.length > 0 &&
+      fieldEntries.every(([key]) => isConditionalDirective(key))
     ) {
-      return {
-        [fieldEntries[0][0]]: normalizeField(fieldEntries[0][1]),
-      };
+      return Object.fromEntries(
+        fieldEntries.map(([key, value]) => [
+          key,
+          normalizeDirectiveValue(value, loopScopes),
+        ]),
+      );
+    }
+
+    if (fieldEntries.length === 1 && fieldEntries[0][0].startsWith("$for ")) {
+      return normalizeLoopDirective(
+        fieldEntries[0][0],
+        fieldEntries[0][1],
+        loopScopes,
+      );
     }
 
     const { $when, ...rest } = field;
+    const layoutIdx = nextLayoutIdx;
+    nextLayoutIdx++;
     const normalizedField = {
       ...rest,
-      _layoutIdx: nextLayoutIdx,
+      _layoutIdx: createInternalIndex({
+        kind: "layout",
+        index: layoutIdx,
+        loopScopes,
+      }),
     };
-    nextLayoutIdx++;
     if (field.type !== "row") {
-      normalizedField._idx = nextFieldIdx;
+      const fieldIdx = nextFieldIdx;
       nextFieldIdx++;
+      normalizedField._idx = createInternalIndex({
+        kind: "field",
+        index: fieldIdx,
+        loopScopes,
+      });
     }
     if (Array.isArray(rest.fields)) {
-      normalizedField.fields = rest.fields.map(normalizeField);
+      normalizedField.fields = rest.fields.map((nestedField) =>
+        normalizeField(nestedField, loopScopes),
+      );
     }
 
     if (typeof $when === "string" && $when.trim().length > 0) {
@@ -140,7 +213,8 @@ function normalizeWhenDirectives(form) {
 
     return normalizedField;
   };
-  const normalizeFields = (fields = []) => fields.map(normalizeField);
+  const normalizeFields = (fields = []) =>
+    fields.map((field) => normalizeField(field));
 
   return {
     ...form,
