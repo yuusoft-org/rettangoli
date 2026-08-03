@@ -127,6 +127,36 @@ describe("rtgl-form bound store integration", () => {
     });
   });
 
+  it("reserves header space for unlabeled fields beside labeled row fields", () => {
+    const props = {
+      form: {
+        fields: [
+          {
+            type: "row",
+            fields: [
+              {
+                name: "extra",
+                type: "input-text",
+                label: "Extra Detail",
+              },
+              {
+                name: "showExtra",
+                type: "checkbox",
+                content: "Show extra detail",
+              },
+            ],
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const fields = store.selectViewData().fieldLayout[0].fields;
+
+    expect(fields[0]._reserveHeaderSpace).toBe(false);
+    expect(fields[1]._reserveHeaderSpace).toBe(true);
+  });
+
   it("preserves direct $if fields without creating empty layout items", () => {
     const props = {
       form: {

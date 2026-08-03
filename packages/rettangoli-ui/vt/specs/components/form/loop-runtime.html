@@ -1,6 +1,7 @@
 ---
 title: "Loop Fields Runtime"
 description: Loop-generated fields mount with ref-safe IDs and conditional row edits stay synchronized after replacement.
+diffThreshold: 0.05
 specs:
   - Fields expanded by $for and $each mount with unique camelCase-safe field and layout IDs.
   - Nested loops remain unique when both levels reuse the same index variable name.
@@ -47,6 +48,7 @@ steps:
       extraVisible: true
       showExtraStored: true
       checkboxChecked: true
+      rowControlsAligned: true
       uniqueFieldIds: true
       refSafeFieldIds: true
   - action: screenshot
@@ -208,11 +210,19 @@ viewport:
     getConditionalState() {
       const fieldIds = getFieldIds();
       const checkbox = getField("showExtra");
+      const extra = getField("extra");
+      const extraControl = extra.shadowRoot.querySelector("input");
+      const checkboxControl = checkbox.shadowRoot.querySelector("input");
       return {
         fieldCount: getFieldElements().length,
         extraVisible: getField("extra") !== null,
         showExtraStored: form.getValues().showExtra,
         checkboxChecked: checkbox.checked,
+        rowControlsAligned:
+          Math.abs(
+            extraControl.getBoundingClientRect().top -
+              checkboxControl.getBoundingClientRect().top,
+          ) <= 1,
         uniqueFieldIds: isUnique(fieldIds),
         refSafeFieldIds: fieldIds.every(isRefSafe),
       };

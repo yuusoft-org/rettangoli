@@ -53,6 +53,8 @@ template:
                   - rtgl-grid#layoutItem${item._layoutIdx} cols=${item._columns} g=lg w=f:
                       - $for field, fieldIndex in item.fields:
                           - rtgl-view g=md w=f:
+                              - $if field._reserveHeaderSpace:
+                                  - rtgl-view h=24: null
                               - $if field.label || field.description:
                                   - rtgl-view g=sm:
                                       - rtgl-view d=h g=md av=c:

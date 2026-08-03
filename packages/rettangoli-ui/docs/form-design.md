@@ -478,6 +478,8 @@ continue to use the full form width.
 
 Rows can be used inside sections. Conditional fields are evaluated before
 layout; when only one row field is visible, it expands to the full row width.
+When labeled and unlabeled fields share a row, unlabeled controls align with
+the labeled controls instead of occupying the label line.
 
 #### `read-only-text`
 
