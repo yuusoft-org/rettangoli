@@ -45,6 +45,7 @@ propsSchema:
       properties:
         size:
           type: number
+          maximum: 28
         borderRadius:
           type: string
           enum:

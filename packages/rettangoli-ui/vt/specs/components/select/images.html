@@ -4,7 +4,7 @@ description: Verifies globally styled option images render in selected triggers 
 specs:
   - Image options render to the left of selected and menu labels.
   - One select-level image object controls size, radius, border color, and fit for every image.
-  - Replacing the image object updates both the trigger and an already-open menu.
+  - Replacing the image object updates both the trigger and an already-open menu, with oversized images capped at 28px.
   - Images take precedence over icons, while icon-only and empty rows retain an aligned leading column.
   - Omitted image styling uses 20px, small-radius, borderless, cover defaults.
 skipInitialScreenshot: true
@@ -196,7 +196,7 @@ viewport:
 
   window.addEventListener("update-select-image-style", () => {
     customSelect.image = {
-      size: 28,
+      size: 40,
       borderRadius: "xl",
       borderColor: "ac",
       fit: "cover",

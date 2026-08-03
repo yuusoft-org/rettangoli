@@ -72,12 +72,16 @@ const imageBorderColorTokens = new Set([
   'bo',
   'tr',
 ]);
+const maxImageSize = 28;
 
 const normalizeImageConfig = (image = {}) => {
   const source = image && typeof image === 'object' ? image : {};
-  const size = typeof source.size === 'number' && Number.isFinite(source.size) && source.size > 0
+  const requestedSize = typeof source.size === 'number'
+    && Number.isFinite(source.size)
+    && source.size > 0
     ? source.size
     : 20;
+  const size = Math.min(requestedSize, maxImageSize);
   const borderRadius = imageBorderRadiusTokens.get(source.borderRadius) || 'sm';
   const borderColor = imageBorderColorTokens.has(source.borderColor) ? source.borderColor : '';
   const fit = source.fit === 'contain' ? 'con' : 'cov';

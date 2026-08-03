@@ -146,6 +146,24 @@ describe('rtgl-select store', () => {
     expect(viewData.containerAttrString).not.toContain('image=');
   });
 
+  it('caps image size at 28px so images stay inside the fixed-height trigger', () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: {
+        selectedValue: 'ada',
+        image: { size: 40 },
+        options: [
+          { value: 'ada', label: 'Ada', imageSrc: '/avatars/ada.svg' },
+          { value: 'grace', label: 'Grace' },
+        ],
+      },
+    });
+
+    expect(viewData.imageSize).toBe(28);
+    expect(viewData.options[0].leadingVisualSize).toBe(28);
+    expect(viewData.options[1].leadingVisualSize).toBe(28);
+  });
+
   it('falls back safely for empty sources and invalid image configuration', () => {
     const viewData = selectViewData({
       state: createInitialState(),

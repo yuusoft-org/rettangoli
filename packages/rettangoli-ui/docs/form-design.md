@@ -255,7 +255,7 @@ Value: `string` (the selected option's `value`) or `null` when cleared. Option v
 |---|---|
 | `placeholder` | Placeholder text when no option is selected |
 | `options` | Array of `{ label, value, imageSrc? }`. `value` must be a string. `imageSrc` renders a decorative image before the option and selected text. |
-| `image` | Shared image styling object: `{ size?, borderRadius?, borderColor?, fit? }`. Defaults: `size: 20`, `borderRadius: "sm"`, no border, and `fit: "cover"`. `borderRadius` supports `xs`, `sm`, `md`, `lg`, `xl`, and `full`; `fit` supports `cover` and `contain`. |
+| `image` | Shared image styling object: `{ size?, borderRadius?, borderColor?, fit? }`. Defaults: `size: 20`, `borderRadius: "sm"`, no border, and `fit: "cover"`. `size` must be positive and is capped at 28px to fit the fixed-height trigger. `borderRadius` supports `xs`, `sm`, `md`, `lg`, `xl`, and `full`; `fit` supports `cover` and `contain`. |
 | `clearable` | Boolean. Allow clearing the selection. Default: `true`. |
 
 ```yaml
