@@ -5,6 +5,7 @@ import { createServer } from "vite";
 import {
   RETTANGOLI_FE_VIRTUAL_ENTRY_ID,
   createRettangoliFeVitePlugin,
+  resolveTransformEntryId,
 } from "./vitePlugin.js";
 
 const toPosixPath = (value) => value.split(path.sep).join("/");
@@ -105,6 +106,10 @@ const startWatching = async (options = {}) => {
   } = options;
   const { root, publicEntryPath } = resolveServeContext({ cwd, outfile });
   const servedEntryId = resolveWatchEntryId({ cwd, watchEntry });
+  const transformEntryId = resolveTransformEntryId({
+    publicEntryPath,
+    servedEntryId,
+  });
 
   console.log(`[Watch] Root: ${root}`);
   console.log(`[Watch] Entry: ${publicEntryPath}`);
@@ -115,7 +120,7 @@ const startWatching = async (options = {}) => {
   try {
     const server = await createWatchServer(options);
     await server.listen();
-    await server.transformRequest(servedEntryId);
+    await server.transformRequest(transformEntryId);
     server.printUrls();
     if (enableCliShortcuts) {
       server.bindCLIShortcuts({ print: true });

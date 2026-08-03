@@ -29,6 +29,14 @@ const normalizePublicEntryPath = (value) => {
   return normalized.startsWith("/") ? normalized : `/${normalized}`;
 };
 
+export const resolveTransformEntryId = ({ publicEntryPath, servedEntryId }) => {
+  const normalizedPublicEntryPath = normalizePublicEntryPath(publicEntryPath);
+  return servedEntryId === RETTANGOLI_FE_VIRTUAL_ENTRY_ID &&
+    normalizedPublicEntryPath
+    ? normalizedPublicEntryPath
+    : servedEntryId;
+};
+
 const resolveModuleFilePath = (module) => {
   const value = module?.file || module?.id;
   if (typeof value !== "string" || value.startsWith("\0")) {
@@ -65,6 +73,13 @@ export const createRettangoliFeVitePlugin = ({
   const resolvedDirs = dirs.map((directory) => path.resolve(cwd, directory));
   const resolvedSetup = path.resolve(cwd, setup);
   const normalizedPublicEntryPath = normalizePublicEntryPath(publicEntryPath);
+  const transformEntryId = resolveTransformEntryId({
+    publicEntryPath: normalizedPublicEntryPath,
+    servedEntryId,
+  });
+  const resolvesPublicEntryToVirtualModule =
+    servedEntryId === RETTANGOLI_FE_VIRTUAL_ENTRY_ID &&
+    transformEntryId === normalizedPublicEntryPath;
   const i18nContext = loadI18nBuildContext({ cwd, i18n, errorPrefix });
 
   let currentCommand = "build";
@@ -173,7 +188,10 @@ export const createRettangoliFeVitePlugin = ({
       currentCommand = config.command;
     },
     resolveId(id) {
-      if (id === RETTANGOLI_FE_VIRTUAL_ENTRY_ID) {
+      if (
+        id === RETTANGOLI_FE_VIRTUAL_ENTRY_ID ||
+        (resolvesPublicEntryToVirtualModule && id === transformEntryId)
+      ) {
         return RESOLVED_VIRTUAL_ENTRY_ID;
       }
       return null;
@@ -267,14 +285,14 @@ export const createRettangoliFeVitePlugin = ({
 
           try {
             const transformed = await server.transformRequest(
-              servedEntryId,
+              transformEntryId,
             );
 
             if (!transformed) {
               res.statusCode = 500;
               res.setHeader("Content-Type", "text/plain; charset=utf-8");
               res.end(
-                `Failed to transform ${servedEntryId}.`,
+                `Failed to transform ${transformEntryId}.`,
               );
               return;
             }
