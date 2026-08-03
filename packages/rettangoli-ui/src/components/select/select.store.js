@@ -12,6 +12,7 @@ const blacklistedProps = [
   "selectedValue",
   "onChange",
   "options",
+  "image",
   "noClear",
   "addOption",
   "disabled",
@@ -43,6 +44,55 @@ const isSelectableOption = (option = {}) => getOptionType(option) === 'item';
 
 const getOptionIcon = (option = {}) => {
   return typeof option.icon === 'string' && option.icon.length > 0 ? option.icon : '';
+};
+
+const getOptionImageSrc = (option = {}) => {
+  return typeof option.imageSrc === 'string' && option.imageSrc.trim().length > 0
+    ? option.imageSrc
+    : '';
+};
+
+const imageBorderRadiusTokens = new Map([
+  ['xs', 'xs'],
+  ['sm', 'sm'],
+  ['md', 'md'],
+  ['lg', 'lg'],
+  ['xl', 'xl'],
+  ['full', 'f'],
+]);
+const imageBorderColorTokens = new Set([
+  'pr',
+  'se',
+  'de',
+  'fg',
+  'bg',
+  'su',
+  'mu',
+  'ac',
+  'bo',
+  'tr',
+]);
+const maxImageSize = 28;
+
+const normalizeImageConfig = (image = {}) => {
+  const source = image && typeof image === 'object' ? image : {};
+  const requestedSize = typeof source.size === 'number'
+    && Number.isFinite(source.size)
+    && source.size > 0
+    ? source.size
+    : 20;
+  const size = Math.min(requestedSize, maxImageSize);
+  const borderRadius = imageBorderRadiusTokens.get(source.borderRadius) || 'sm';
+  const borderColor = imageBorderColorTokens.has(source.borderColor) ? source.borderColor : '';
+  const fit = source.fit === 'contain' ? 'con' : 'cov';
+
+  return {
+    imageSize: size,
+    imageBorderRadius: borderRadius,
+    imageBorderColor: borderColor,
+    imageHasBorder: borderColor.length > 0,
+    imageFit: fit,
+  };
 };
 
 const getOptionSuffixText = (option = {}) => {
@@ -171,7 +221,14 @@ const filterOptionEntriesBySearch = (options = [], rawQuery = "") => {
   });
 };
 
-const normalizeOption = (option = {}, index, currentValue, hoveredOptionId, hasIconColumn) => {
+const normalizeOption = (
+  option = {},
+  index,
+  currentValue,
+  hoveredOptionId,
+  hasLeadingVisualColumn,
+  leadingVisualSize,
+) => {
   const type = getOptionType(option);
   const isSection = type === 'section';
   const isSeparator = type === 'separator';
@@ -201,6 +258,7 @@ const normalizeOption = (option = {}, index, currentValue, hoveredOptionId, hasI
 
   const isSelected = deepEqual(option.value, currentValue);
   const isHovered = hoveredOptionId === index;
+  const imageSrc = getOptionImageSrc(option);
   const icon = getOptionIcon(option);
   const suffixText = getOptionSuffixText(option);
 
@@ -213,9 +271,12 @@ const normalizeOption = (option = {}, index, currentValue, hoveredOptionId, hasI
     isItem,
     isSelected,
     bgc: isHovered ? 'ac' : (isSelected ? 'mu' : ''),
-    hasIconSlot: hasIconColumn,
+    hasLeadingVisualSlot: hasLeadingVisualColumn,
+    leadingVisualSize,
+    imageSrc,
+    hasImage: imageSrc.length > 0,
     icon,
-    hasIcon: icon.length > 0,
+    hasIcon: imageSrc.length === 0 && icon.length > 0,
     iconColor: 'fg',
     c: 'fg',
     suffixText,
@@ -256,7 +317,13 @@ export const selectViewData = ({ state, props }) => {
     isPlaceholderLabel = false;
   }
 
+  const imageConfig = normalizeImageConfig(props.image);
+  const hasImageColumn = options.some((option) => (
+    isSelectableOption(option) && getOptionImageSrc(option).length > 0
+  ));
   const hasIconColumn = options.some((option) => isSelectableOption(option) && hasOwnProp(option, 'icon'));
+  const hasLeadingVisualColumn = hasImageColumn || hasIconColumn;
+  const leadingVisualSize = hasImageColumn ? imageConfig.imageSize : 16;
   const visibleOptionEntries = filterOptionEntriesBySearch(
     options,
     props.searchable ? state.searchQuery : "",
@@ -264,11 +331,19 @@ export const selectViewData = ({ state, props }) => {
   const visibleOptionIndexes = new Set(visibleOptionEntries.map(({ index }) => index));
   const renderOptions = options.map((option, index) => {
     return {
-      ...normalizeOption(option, index, currentValue, state.hoveredOptionId, hasIconColumn),
+      ...normalizeOption(
+        option,
+        index,
+        currentValue,
+        state.hoveredOptionId,
+        hasLeadingVisualColumn,
+        leadingVisualSize,
+      ),
       isSearchHidden: !visibleOptionIndexes.has(index),
     };
   });
   const optionsWithSelection = renderOptions.filter((option) => !option.isSearchHidden);
+  const selectedOptionImageSrc = getOptionImageSrc(selectedOption);
   const selectedOptionIcon = getOptionIcon(selectedOption);
   const selectedOptionSuffixText = getOptionSuffixText(selectedOption);
   const searchQuery = props.searchable ? state.searchQuery : "";
@@ -286,8 +361,10 @@ export const selectViewData = ({ state, props }) => {
     selectedValue: currentValue,
     selectedLabel: displayLabel,
     selectedLabelColor: isPlaceholderLabel ? "mu-fg" : "fg",
+    selectedImageSrc: selectedOptionImageSrc,
+    hasSelectedImage: selectedOptionImageSrc.length > 0,
     selectedIcon: selectedOptionIcon,
-    hasSelectedIcon: selectedOptionIcon.length > 0,
+    hasSelectedIcon: selectedOptionImageSrc.length === 0 && selectedOptionIcon.length > 0,
     selectedIconColor: isPlaceholderLabel ? "mu-fg" : "fg",
     selectedSuffixText: selectedOptionSuffixText,
     hasSelectedSuffixText: selectedOptionSuffixText.length > 0,
@@ -306,6 +383,7 @@ export const selectViewData = ({ state, props }) => {
     showEmptySearch,
     hideEmptySearch: !showEmptySearch,
     emptySearchLabel: props.emptySearchLabel || "No matching options",
+    ...imageConfig,
   };
 };
 

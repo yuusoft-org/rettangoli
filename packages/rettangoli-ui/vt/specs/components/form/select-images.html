@@ -1,0 +1,142 @@
+---
+title: Form Select Images
+description: Verifies rtgl-form forwards option images and shared styling into embedded selects without changing selection behavior.
+specs:
+  - The defaulted form value renders its image in the embedded select trigger.
+  - The form forwards one shared image configuration to the trigger and option list.
+  - Selecting another image option updates both form values and the trigger image.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: person-select-trigger
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '[data-testid="person-select-popover"][open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 160
+  - action: assert
+    type: js
+    fn: formSelectImages.inspectOpen
+    value:
+      value: ada
+      triggerSrc: /public/avatar-ada.svg
+      triggerSize: "24"
+      triggerRadius: f
+      triggerBorderColor: ac
+      triggerFit: cov
+      optionSources:
+        - /public/avatar-ada.svg
+        - /public/avatar-grace.svg
+      allDecorative: true
+  - action: screenshot
+  - action: select
+    testId: person-grace
+    steps:
+      - action: click
+  - action: wait
+    ms: 120
+  - action: assert
+    type: js
+    fn: formSelectImages.inspectSelected
+    value:
+      value: grace
+      triggerText: Grace Hopper
+      triggerSrc: /public/avatar-grace.svg
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 620
+---
+
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap></rtgl-view>
+
+<script>
+  const form = document.createElement("rtgl-form");
+  form.id = "form";
+  form.setAttribute("w", "380");
+  form.defaultValues = { person: "ada" };
+  form.form = {
+    title: "Assign Reviewer",
+    description: "Select a reviewer with a visual identity.",
+    fields: [{
+      name: "person",
+      type: "select",
+      label: "Reviewer",
+      image: {
+        size: 24,
+        borderRadius: "full",
+        borderColor: "ac",
+        fit: "cover",
+      },
+      options: [
+        {
+          label: "Ada Lovelace",
+          value: "ada",
+          imageSrc: "/public/avatar-ada.svg",
+          testId: "person-ada",
+        },
+        {
+          label: "Grace Hopper",
+          value: "grace",
+          imageSrc: "/public/avatar-grace.svg",
+          testId: "person-grace",
+        },
+      ],
+    }],
+    actions: { buttons: [] },
+  };
+  document.getElementById("container").appendChild(form);
+
+  const getSelect = () => form.shadowRoot?.querySelector('rtgl-select[data-field-name="person"]');
+  const getTrigger = () => getSelect()?.shadowRoot?.querySelector(
+    '[data-testid="person-select-trigger"], [data-testid="select-button"]',
+  );
+  const getTriggerImage = () => getTrigger()?.querySelector("rtgl-image");
+
+  const tagSelect = () => {
+    const select = getSelect();
+    const trigger = getTrigger();
+    const popover = select?.shadowRoot?.querySelector("rtgl-popover");
+    if (!select || !trigger || !popover) {
+      setTimeout(tagSelect, 0);
+      return;
+    }
+    trigger.setAttribute("data-testid", "person-select-trigger");
+    popover.setAttribute("data-testid", "person-select-popover");
+  };
+  tagSelect();
+
+  window.formSelectImages = {
+    inspectOpen() {
+      const select = getSelect();
+      const triggerImage = getTriggerImage();
+      const optionImages = [...select?.shadowRoot
+        ?.querySelector("rtgl-popover")?.content?.querySelectorAll("rtgl-image") ?? []];
+      return {
+        value: form.getValues().person,
+        triggerSrc: triggerImage?.getAttribute("src") ?? "",
+        triggerSize: triggerImage?.getAttribute("wh") ?? "",
+        triggerRadius: triggerImage?.getAttribute("br") ?? "",
+        triggerBorderColor: triggerImage?.getAttribute("bc") ?? "",
+        triggerFit: triggerImage?.getAttribute("of") ?? "",
+        optionSources: optionImages.map((image) => image.getAttribute("src")),
+        allDecorative: [triggerImage, ...optionImages].every((image) => (
+          image?.getAttribute("alt") === ""
+          && image?.shadowRoot?.querySelector("img")?.getAttribute("alt") === ""
+        )),
+      };
+    },
+    inspectSelected() {
+      const trigger = getTrigger();
+      return {
+        value: form.getValues().person,
+        triggerText: trigger?.textContent.trim() ?? "",
+        triggerSrc: getTriggerImage()?.getAttribute("src") ?? "",
+      };
+    },
+  };
+</script>

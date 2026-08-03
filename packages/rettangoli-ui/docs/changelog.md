@@ -5,6 +5,7 @@
 ### Improvements
 
 - `rtgl-form`: added layout-only `row` fields for grouping sibling fields into equal-width columns, including rows nested inside sections and conditional row fields.
+- `rtgl-select` and form `select` fields now support per-option `imageSrc` images with one shared `image` configuration for size, radius, border color, and fit; selected triggers and aligned mixed-content menus use the same styling.
 - added `rtgl-input-duration` and the `rtgl-form` `input-duration` field type for editing `m:ss` / `h:mm:ss` durations while storing and emitting integer milliseconds.
 - `rtgl-text`: runtime-managed width, flex, truncation, and wrapping declarations now restore themselves after consumer-owned inline `style` replacement while retaining their existing precedence over outer host CSS.
 - `rtgl-dropdown-menu` and `rtgl-global-ui`: added arbitrary-depth nested submenus with directional placement, RTL-aware keyboard controls, pointer-grace navigation, roving focus, and full `indexPath` selection details.
