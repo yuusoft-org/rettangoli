@@ -7,6 +7,10 @@ refs:
     eventListeners:
       click:
         handler: handleActionClick
+  sectionAction*:
+    eventListeners:
+      click:
+        handler: handleSectionActionClick
   tooltipIcon*:
     eventListeners:
       mouseenter:
@@ -36,9 +40,13 @@ template:
           - $for field, i in flatFields:
               - $if field._isSection:
                   - rtgl-view g=md w=f:
-                      - rtgl-view g=sm:
-                          - $if field.label:
-                              - rtgl-text s=md: ${field.label}
+                      - rtgl-view g=sm w=f:
+                          - rtgl-view d=h av=c w=f g=sm:
+                              - rtgl-view w=1fg:
+                                  - $if field.label:
+                                      - rtgl-text s=md: ${field.label}
+                              - $if field._action:
+                                  - 'rtgl-button#sectionAction${field._idx} data-section-id=${field.id} data-section-action-id=${field._action.id} v=gh s=sm sq pre=${field._action.icon} :ariaLabel=${field._action.label} ?disabled=${field._action._disabled}': null
                           - $if field.description:
                               - rtgl-text s=sm c=mu-fg: ${field.description}
               - $if !field._isSection:
