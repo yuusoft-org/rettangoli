@@ -10,7 +10,7 @@ import {
   writeFileSync,
 } from "node:fs";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import build from "../../src/cli/build.js";
 import {
@@ -288,7 +288,29 @@ describe("vite runtime integration", () => {
     expect(response.body).toContain("x-counter");
     expect(response.body).toContain("defineOrUpdateComponent");
     expect(response.body).toContain("import.meta.hot.accept");
+    expect(response.body).toContain(
+      '__vite__createHotContext("/public/main.js")',
+    );
     expect(response.body).not.toContain("__STALE_FE_BUNDLE__");
+
+    const publicEntryModule =
+      server.moduleGraph.urlToModuleMap.get("/public/main.js");
+    expect(publicEntryModule?.id).toBe("\0virtual:rettangoli-fe-entry");
+    expect(
+      server.moduleGraph.urlToModuleMap.get("virtual:rettangoli-fe-entry"),
+    ).toBeUndefined();
+
+    const send = vi.spyOn(server.environments.client.hot, "send");
+    publicEntryModule.lastHMRTimestamp = 1234;
+    publicEntryModule.lastHMRInvalidationReceived = false;
+    server.environments.client.invalidateModule({
+      path: "/public/main.js",
+      message: "component requires a reload",
+      firstInvalidatedBy: "/public/main.js",
+    });
+    expect(send).toHaveBeenCalledWith(
+      expect.objectContaining({ type: "full-reload" }),
+    );
   });
 
   it("serves generated VT pages and overrides their copied bundle with the HMR entry", async () => {

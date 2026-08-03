@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   RETTANGOLI_FE_VIRTUAL_ENTRY_ID,
   createRettangoliFeVitePlugin,
+  resolveTransformEntryId,
 } from "../../src/cli/vitePlugin.js";
 
 const createFixtureProject = () => {
@@ -63,6 +64,54 @@ describe("vite plugin", () => {
     const source = plugin.load(resolved);
     expect(source).toContain("import { createComponent } from \"@rettangoli/fe\";");
     expect(source).toContain("customElements.define(elementName, webComponent);");
+  });
+
+  it("resolves the public watch entry to the virtual module", () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    const publicEntryPath = "/public/main.js";
+    const plugin = createRettangoliFeVitePlugin({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      publicEntryPath,
+      errorPrefix: "[Watch]",
+    });
+
+    expect(
+      resolveTransformEntryId({
+        publicEntryPath,
+        servedEntryId: RETTANGOLI_FE_VIRTUAL_ENTRY_ID,
+      }),
+    ).toBe(publicEntryPath);
+    expect(plugin.resolveId(publicEntryPath)).toBe(
+      `\0${RETTANGOLI_FE_VIRTUAL_ENTRY_ID}`,
+    );
+  });
+
+  it("preserves an explicit watch entry as the transformed module", () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    const publicEntryPath = "/public/main.js";
+    const servedEntryId = "/@fs/repo/watch-entry.js";
+    const plugin = createRettangoliFeVitePlugin({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      publicEntryPath,
+      servedEntryId,
+      errorPrefix: "[Watch]",
+    });
+
+    expect(
+      resolveTransformEntryId({
+        publicEntryPath,
+        servedEntryId,
+      }),
+    ).toBe(servedEntryId);
+    expect(plugin.resolveId(publicEntryPath)).toBeNull();
   });
 
   it("switches to /@fs imports in serve mode", () => {
