@@ -58,6 +58,13 @@ A schema-driven form component that composes Rettangoli input primitives.
 | Initial Values | `defaultValues` (property) | object | `{}` |
 | Disabled | `disabled` | boolean | `false` |
 | Template Context | `context` (property) | object | - |
+| Padding | `p` | `none \| xs \| sm \| md \| lg \| xl` | `md` |
+
+Use `p="none"` when the surrounding layout already provides the desired inset:
+
+```html
+<rtgl-form p="none"></rtgl-form>
+```
 
 ## Width
 

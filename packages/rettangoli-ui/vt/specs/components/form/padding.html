@@ -1,0 +1,101 @@
+---
+title: Form Padding
+description: Verifies the default form inset, padding-free forms, and reactive padding updates.
+specs:
+  - Forms retain medium content padding by default.
+  - Setting `p="none"` removes all internal form padding.
+  - Updating `p` after mount immediately applies the requested spacing token.
+skipInitialScreenshot: true
+steps:
+  - action: assert
+    type: js
+    fn: formPaddingVt.inspect
+    value:
+      defaultAttribute: md
+      defaultPadding: 8px
+      configurableAttribute: none
+      configurablePadding: 0px
+  - action: screenshot
+  - action: customEvent
+    name: expand-form-padding
+  - action: wait
+    ms: 80
+  - action: assert
+    type: js
+    fn: formPaddingVt.inspect
+    value:
+      defaultAttribute: md
+      defaultPadding: 8px
+      configurableAttribute: xl
+      configurablePadding: 32px
+  - action: screenshot
+viewport:
+  id: form-wide
+  width: 900
+  height: 560
+---
+<rtgl-view d="h" g="xl" p="xl" wh="f" wrap>
+  <rtgl-view g="sm" w="360">
+    <rtgl-text s="sm" c="mu-fg">Default padding (p=md)</rtgl-text>
+    <rtgl-view id="default-mount" w="f" bw="xs" bc="bo" br="lg"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view g="sm" w="360">
+    <rtgl-text id="configurable-label" s="sm" c="mu-fg">No padding (p=none)</rtgl-text>
+    <rtgl-view id="configurable-mount" w="f" bw="xs" bc="bo" br="lg"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const createForm = (id) => {
+    const form = document.createElement('rtgl-form');
+    form.id = id;
+    form.setAttribute('w', 'f');
+    form.defaultValues = { name: 'Ada Lovelace' };
+    form.form = {
+      title: 'Speaker details',
+      description: 'Edit the public speaker profile',
+      fields: [{
+        name: 'name',
+        type: 'input-text',
+        label: 'Name',
+      }],
+      actions: {
+        buttons: [{ id: 'save', label: 'Save', variant: 'pr' }],
+      },
+    };
+    return form;
+  };
+
+  const defaultForm = createForm('default-form');
+  const configurableForm = createForm('configurable-form');
+  configurableForm.setAttribute('p', 'none');
+
+  document.getElementById('default-mount').appendChild(defaultForm);
+  document.getElementById('configurable-mount').appendChild(configurableForm);
+
+  const inspectContainer = (form) => {
+    const container = form.shadowRoot?.querySelector('#formContainer');
+    return {
+      attribute: container?.getAttribute('p') ?? '',
+      padding: container ? getComputedStyle(container).padding : '',
+    };
+  };
+
+  window.addEventListener('expand-form-padding', () => {
+    configurableForm.p = 'xl';
+    document.getElementById('configurable-label').textContent = 'Expanded padding (p=xl)';
+  });
+
+  window.formPaddingVt = {
+    inspect() {
+      const defaultState = inspectContainer(defaultForm);
+      const configurableState = inspectContainer(configurableForm);
+      return {
+        defaultAttribute: defaultState.attribute,
+        defaultPadding: defaultState.padding,
+        configurableAttribute: configurableState.attribute,
+        configurablePadding: configurableState.padding,
+      };
+    },
+  };
+</script>

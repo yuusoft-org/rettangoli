@@ -42,7 +42,7 @@ styles:
   .form-field-control:
     grid-row: 2
 template:
-  - rtgl-view#formContainer w=f p=md g=lg ${containerAttrString}:
+  - rtgl-view#formContainer w=f p=${containerPadding} g=lg ${containerAttrString}:
       - rtgl-view g=sm w=f:
           - $if title:
               - rtgl-text s=lg: ${title}

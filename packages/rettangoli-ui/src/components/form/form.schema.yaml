@@ -10,6 +10,10 @@ propsSchema:
       type: object
     disabled:
       type: boolean
+    p:
+      type: string
+      enum: [none, xs, sm, md, lg, xl]
+      default: md
 events:
   form-input: {}
   form-change: {}

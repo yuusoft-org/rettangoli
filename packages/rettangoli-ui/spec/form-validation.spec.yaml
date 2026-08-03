@@ -934,6 +934,7 @@ in:
       data-testid: my-form
 out:
   containerAttrString: data-testid=my-form
+  containerPadding: md
 ---
 case: excludes object-valued custom props from container attributes
 in:
@@ -944,3 +945,23 @@ in:
       aria-label: Settings
 out:
   containerAttrString: aria-label=Settings
+  containerPadding: md
+---
+case: uses padding prop without forwarding a duplicate attribute
+in:
+  - props:
+      form: {}
+      p: none
+      data-testid: flush-form
+out:
+  containerAttrString: data-testid=flush-form
+  containerPadding: none
+---
+case: falls back to medium padding for unsupported values
+in:
+  - props:
+      form: {}
+      p: huge
+out:
+  containerAttrString: ""
+  containerPadding: md
