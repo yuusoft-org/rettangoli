@@ -6,6 +6,7 @@ specs:
   - Fields expanded by $for and $each mount with unique camelCase-safe field and layout IDs.
   - Nested loops remain unique when both levels reuse the same index variable name.
   - An edited checkbox stays synchronized when revealing a preceding conditional field replaces its element.
+  - Row controls align below the tallest sibling header, including wrapped descriptions.
 steps:
   - action: assert
     type: js
@@ -142,7 +143,8 @@ viewport:
           {
             name: "extra",
             type: "input-text",
-            label: "Extra Detail",
+            label: "Extra detail for this generated contact record",
+            description: "Add any supporting context that should stay with this generated contact record.",
             $when: "formValues.showExtra",
           },
           {

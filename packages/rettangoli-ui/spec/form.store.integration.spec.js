@@ -127,7 +127,7 @@ describe("rtgl-form bound store integration", () => {
     });
   });
 
-  it("reserves header space for unlabeled fields beside labeled row fields", () => {
+  it("aligns row headers only when a row contains header content", () => {
     const props = {
       form: {
         fields: [
@@ -146,15 +146,22 @@ describe("rtgl-form bound store integration", () => {
               },
             ],
           },
+          {
+            type: "row",
+            fields: [
+              { name: "first", type: "checkbox", content: "First" },
+              { name: "second", type: "checkbox", content: "Second" },
+            ],
+          },
         ],
       },
     };
     const store = bindStore(formStore, props, {});
 
-    const fields = store.selectViewData().fieldLayout[0].fields;
+    const fieldLayout = store.selectViewData().fieldLayout;
 
-    expect(fields[0]._reserveHeaderSpace).toBe(false);
-    expect(fields[1]._reserveHeaderSpace).toBe(true);
+    expect(fieldLayout[0]._alignFieldHeaders).toBe(true);
+    expect(fieldLayout[1]._alignFieldHeaders).toBe(false);
   });
 
   it("preserves direct $if fields without creating empty layout items", () => {

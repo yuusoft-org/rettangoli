@@ -173,9 +173,11 @@ viewport:
 
   const getField = (name) =>
     form.shadowRoot.querySelector(`[data-field-name="${name}"]`);
+  const getFieldContainer = (name) =>
+    getField(name).closest(".form-field");
   const getFieldWidth = (name) =>
-    Math.round(getField(name).parentElement.getBoundingClientRect().width);
-  const getFieldGrid = (name) => getField(name).parentElement.parentElement;
+    Math.round(getFieldContainer(name).getBoundingClientRect().width);
+  const getFieldGrid = (name) => getFieldContainer(name).parentElement;
   const widthsMatch = (left, right) => Math.abs(left - right) <= 1;
 
   const tagSaveButton = () => {

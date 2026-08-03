@@ -670,7 +670,7 @@ const buildFieldLayoutItems = (fields) => {
     }
 
     if (field.type === "row") {
-      let rowFields = [];
+      const rowFields = [];
       for (const childField of field.fields || []) {
         rowFields.push({
           ...childField,
@@ -679,18 +679,12 @@ const buildFieldLayoutItems = (fields) => {
       }
 
       if (rowFields.length > 0) {
-        const hasFieldHeader = rowFields.some(
-          (rowField) => rowField.label || rowField.description,
-        );
-        if (hasFieldHeader) {
-          rowFields = rowFields.map((rowField) => ({
-            ...rowField,
-            _reserveHeaderSpace: !rowField.label && !rowField.description,
-          }));
-        }
         items.push({
           _isSection: false,
           _isRow: true,
+          _alignFieldHeaders: rowFields.some(
+            (rowField) => rowField.label || rowField.description,
+          ),
           _layoutIdx: field._layoutIdx,
           _columns: rowFields.length,
           fields: rowFields,
