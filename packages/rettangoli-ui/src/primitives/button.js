@@ -210,6 +210,19 @@ class RettangoliButtonElement extends HTMLElement {
     this._onWindowResize = this._onWindowResize.bind(this);
   }
 
+  get ariaLabel() {
+    return this.getAttribute("aria-label");
+  }
+
+  set ariaLabel(value) {
+    if (value === undefined || value === null || value === "") {
+      this.removeAttribute("aria-label");
+      return;
+    }
+
+    this.setAttribute("aria-label", String(value));
+  }
+
   static get observedAttributes() {
     return [
       "key",

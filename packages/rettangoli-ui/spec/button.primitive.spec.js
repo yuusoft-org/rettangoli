@@ -51,4 +51,22 @@ describe("rtgl-button primitive", () => {
     button.removeAttribute("aria-label");
     expect(nativeButton.hasAttribute("aria-label")).toBe(false);
   });
+
+  it("reflects property-bound accessible labels without interpreting selector-shaped text", () => {
+    const button = document.createElement(TEST_TAG);
+    const label = 'Project "Save As" data-injected="true';
+
+    button.ariaLabel = label;
+    document.body.appendChild(button);
+
+    expect(button.getAttribute("aria-label")).toBe(label);
+    expect(button.hasAttribute("data-injected")).toBe(false);
+    expect(button.shadowRoot.querySelector("button").getAttribute("aria-label"))
+      .toBe(label);
+
+    button.ariaLabel = null;
+    expect(button.hasAttribute("aria-label")).toBe(false);
+    expect(button.shadowRoot.querySelector("button").hasAttribute("aria-label"))
+      .toBe(false);
+  });
 });

@@ -46,7 +46,7 @@ template:
                                   - $if field.label:
                                       - rtgl-text s=md: ${field.label}
                               - $if field._action:
-                                  - 'rtgl-button#sectionAction${field._idx} data-section-id=${field.id} data-section-action-id=${field._action.id} v=gh s=sm sq pre=${field._action.icon} aria-label="${field._action.label}" ?disabled=${field._action._disabled}': null
+                                  - 'rtgl-button#sectionAction${field._idx} data-section-id=${field.id} data-section-action-id=${field._action.id} v=gh s=sm sq pre=${field._action.icon} :ariaLabel=${field._action.label} ?disabled=${field._action._disabled}': null
                           - $if field.description:
                               - rtgl-text s=sm c=mu-fg: ${field.description}
               - $if !field._isSection:
