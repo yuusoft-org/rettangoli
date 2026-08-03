@@ -1,0 +1,233 @@
+---
+title: "Loop Fields Runtime"
+description: Loop-generated fields mount with ref-safe IDs and conditional row edits stay synchronized after replacement.
+diffThreshold: 0.05
+specs:
+  - Fields expanded by $for and $each mount with unique camelCase-safe field and layout IDs.
+  - Nested loops remain unique when both levels reuse the same index variable name.
+  - An edited checkbox stays synchronized when revealing a preceding conditional field replaces its element.
+  - Row controls align below the tallest sibling header, including wrapped descriptions.
+steps:
+  - action: assert
+    type: js
+    fn: loopRuntime.getInitialState
+    value:
+      fieldCount: 9
+      fieldNames:
+        - email
+        - phone
+        - city
+        - country
+        - primaryEmail
+        - primaryPhone
+        - secondaryEmail
+        - secondaryPhone
+        - showExtra
+      uniqueFieldIds: true
+      uniqueLayoutIds: true
+      refSafeFieldIds: true
+      refSafeLayoutIds: true
+      displayedValues:
+        email: ada@example.com
+        phone: "+44 20 7946 0958"
+        city: London
+        country: United Kingdom
+        primaryEmail: primary@example.com
+        primaryPhone: "+44 20 7000 0001"
+        secondaryEmail: secondary@example.com
+        secondaryPhone: "+44 20 7000 0002"
+  - action: screenshot
+  - action: customEvent
+    name: vt:show-extra
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: loopRuntime.getConditionalState
+    value:
+      fieldCount: 10
+      extraVisible: true
+      showExtraStored: true
+      checkboxChecked: true
+      rowControlsAligned: true
+      uniqueFieldIds: true
+      refSafeFieldIds: true
+  - action: screenshot
+viewport:
+  id: form-tall
+  width: 760
+  height: 1200
+---
+
+<rtgl-view id="container" h="100vh" w="100vw"> </rtgl-view>
+
+<script>
+  const form = document.createElement("rtgl-form");
+  form.id = "form";
+  form.setAttribute("w", "520");
+
+  form.context = {
+    forFields: [
+      { name: "email", label: "Email" },
+      { name: "phone", label: "Phone" },
+    ],
+    eachFields: [
+      { name: "city", label: "City" },
+      { name: "country", label: "Country" },
+    ],
+    groups: [
+      {
+        label: "Primary Contact",
+        fields: [
+          { name: "primaryEmail", label: "Email" },
+          { name: "primaryPhone", label: "Phone" },
+        ],
+      },
+      {
+        label: "Secondary Contact",
+        fields: [
+          { name: "secondaryEmail", label: "Email" },
+          { name: "secondaryPhone", label: "Phone" },
+        ],
+      },
+    ],
+  };
+
+  form.defaultValues = {
+    email: "ada@example.com",
+    phone: "+44 20 7946 0958",
+    city: "London",
+    country: "United Kingdom",
+    primaryEmail: "primary@example.com",
+    primaryPhone: "+44 20 7000 0001",
+    secondaryEmail: "secondary@example.com",
+    secondaryPhone: "+44 20 7000 0002",
+    showExtra: false,
+  };
+
+  form.form = {
+    title: "Generated Contact Fields",
+    description: "Loop directives and conditional rows render together.",
+    fields: [
+      {
+        "$for definition in forFields": {
+          name: "${definition.name}",
+          type: "input-text",
+          label: "${definition.label}",
+        },
+      },
+      {
+        $each: "definition in eachFields",
+        name: "${definition.name}",
+        type: "input-text",
+        label: "${definition.label}",
+      },
+      {
+        "$for group, i in groups": {
+          type: "section",
+          label: "${group.label}",
+          fields: [
+            {
+              "$for definition, i in group.fields": {
+                name: "${definition.name}",
+                type: "input-text",
+                label: "${definition.label}",
+              },
+            },
+          ],
+        },
+      },
+      {
+        type: "row",
+        fields: [
+          {
+            name: "extra",
+            type: "input-text",
+            label: "Extra detail for this generated contact record",
+            description: "Add any supporting context that should stay with this generated contact record.",
+            $when: "formValues.showExtra",
+          },
+          {
+            name: "showExtra",
+            type: "checkbox",
+            content: "Show extra detail",
+          },
+        ],
+      },
+    ],
+    actions: { buttons: [] },
+  };
+
+  document.getElementById("container").appendChild(form);
+
+  const getField = (name) =>
+    form.shadowRoot.querySelector(`[data-field-name="${name}"]`);
+  const getFieldElements = () => [
+    ...form.shadowRoot.querySelectorAll("[data-field-name]"),
+  ];
+  const getFieldIds = () => getFieldElements().map((field) => field.id);
+  const getLayoutIds = () =>
+    [...form.shadowRoot.querySelectorAll('[id^="layoutItem"]')].map(
+      (item) => item.id,
+    );
+  const isRefSafe = (id) => /^[a-z][a-zA-Z0-9]*$/.test(id);
+  const isUnique = (values) => new Set(values).size === values.length;
+
+  window.addEventListener("vt:show-extra", () => {
+    getField("showExtra").dispatchEvent(
+      new CustomEvent("value-change", {
+        bubbles: true,
+        detail: { value: true },
+      }),
+    );
+  });
+
+  window.loopRuntime = {
+    getInitialState() {
+      const fieldElements = getFieldElements();
+      const fieldIds = getFieldIds();
+      const layoutIds = getLayoutIds();
+      const displayedNames = [
+        "email",
+        "phone",
+        "city",
+        "country",
+        "primaryEmail",
+        "primaryPhone",
+        "secondaryEmail",
+        "secondaryPhone",
+      ];
+      return {
+        fieldCount: fieldElements.length,
+        fieldNames: fieldElements.map((field) => field.dataset.fieldName),
+        uniqueFieldIds: isUnique(fieldIds),
+        uniqueLayoutIds: isUnique(layoutIds),
+        refSafeFieldIds: fieldIds.every(isRefSafe),
+        refSafeLayoutIds: layoutIds.every(isRefSafe),
+        displayedValues: Object.fromEntries(
+          displayedNames.map((name) => [name, getField(name).value]),
+        ),
+      };
+    },
+    getConditionalState() {
+      const fieldIds = getFieldIds();
+      const checkbox = getField("showExtra");
+      const extra = getField("extra");
+      const extraControl = extra.shadowRoot.querySelector("input");
+      const checkboxControl = checkbox.shadowRoot.querySelector("input");
+      return {
+        fieldCount: getFieldElements().length,
+        extraVisible: getField("extra") !== null,
+        showExtraStored: form.getValues().showExtra,
+        checkboxChecked: checkbox.checked,
+        rowControlsAligned:
+          Math.abs(
+            extraControl.getBoundingClientRect().top -
+              checkboxControl.getBoundingClientRect().top,
+          ) <= 1,
+        uniqueFieldIds: isUnique(fieldIds),
+        refSafeFieldIds: fieldIds.every(isRefSafe),
+      };
+    },
+  };
+</script>

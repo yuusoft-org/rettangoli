@@ -22,8 +22,24 @@ steps:
   - action: assert
     type: exists
     selector: '#form'
+  - action: assert
+    type: js
+    fn: withForm.getState
+    value:
+      fieldNames:
+        - name
+        - email
+        - favoriteColor
+        - experience
+      actionIds:
+        - cancel
+        - submit
   - action: wait
-    ms: 260
+    ms: 350
+  - action: customEvent
+    name: vt:stabilize-form-dialog
+  - action: wait
+    ms: 100
   - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
@@ -51,30 +67,26 @@ steps:
     title: 'User Registration',
     description: 'Please fill out your information',
     fields: [{
-      id: 'name',
-      fieldName: 'name',
-      inputType: 'input-text',
+      name: 'name',
+      type: 'input-text',
       label: 'Full Name',
       description: 'Enter your full name',
       placeholder: 'John Doe'
     }, {
-      id: 'email',
-      fieldName: 'email',
-      inputType: 'input-text',
+      name: 'email',
+      type: 'input-text',
       label: 'Email Address',
       description: 'Enter your email address',
       placeholder: 'john@example.com'
     }, {
-      id: 'favoriteColor',
-      fieldName: 'favoriteColor',
-      inputType: 'color-picker',
+      name: 'favoriteColor',
+      type: 'color-picker',
       label: 'Favorite Color',
       description: 'Pick your favorite color',
       value: '#3498db'
     }, {
-      id: 'experience',
-      fieldName: 'experience',
-      inputType: 'slider',
+      name: 'experience',
+      type: 'slider',
       label: 'Years of Experience',
       description: 'How many years of experience do you have?',
       min: 0,
@@ -85,38 +97,56 @@ steps:
     actions: {
       buttons: [{
         id: 'cancel',
-        content: 'Cancel',
+        label: 'Cancel',
       }, {
         id: 'submit',
         variant: 'pr',
-        content: 'Register',
+        label: 'Register',
       }],
     }
   };
 
-  form.addEventListener('action-click', (e) => {
+  form.addEventListener('form-action', (e) => {
     console.log('Form action:', e.detail);
     if (e.detail.actionId === 'cancel') {
       dialog.removeAttribute('open');
     } else if (e.detail.actionId === 'submit') {
-      console.log('Form submitted with values:', e.detail.formValues);
+      console.log('Form submitted with values:', e.detail.values);
       dialog.removeAttribute('open');
     }
   });
 
-  button.addEventListener('click', () => {
-    // First open the dialog to create the slot
-    dialog.setAttribute('open', '');
+  window.withForm = {
+    getState() {
+      return {
+        fieldNames: [...form.shadowRoot.querySelectorAll('[data-field-name]')]
+          .map((field) => field.dataset.fieldName),
+        actionIds: [...form.shadowRoot.querySelectorAll('[data-action-id]')]
+          .map((button) => button.dataset.actionId),
+      };
+    },
+  };
 
-    // Then append and render the form
+  button.addEventListener('click', () => {
     if (!form.parentNode) {
       dialog.appendChild(form);
       form.render();
     }
+
+    dialog.setAttribute('open', '');
   });
 
   // Listen for dialog close events (overlay click or ESC key)
   dialog.addEventListener('close', () => {
     dialog.removeAttribute('open');
+  });
+
+  window.addEventListener('vt:stabilize-form-dialog', () => {
+    window.dispatchEvent(new Event('resize'));
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        dialog.dialog.scrollTop = 0;
+      });
+    });
   });
 </script>

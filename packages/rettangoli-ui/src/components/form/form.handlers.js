@@ -22,17 +22,17 @@ const syncInteractiveFieldAttribute = ({ field, target, value }) => {
 const updateFieldAttributes = ({
   form,
   formValues = {},
-  refs,
+  refs = {},
   formDisabled = false,
   forceValueRefresh = false,
+  skipFieldRef,
 }) => {
   const fields = form.fields || [];
-  let idx = 0;
 
   const walk = (fieldList) => {
     for (const field of fieldList) {
       if (field.type === "section") {
-        const actionRef = refs[`sectionAction${idx}`];
+        const actionRef = refs[`sectionAction${field._idx}`];
         if (actionRef) {
           const disabled = formDisabled || !!field.action?.disabled;
           if (disabled) {
@@ -41,17 +41,23 @@ const updateFieldAttributes = ({
             actionRef.removeAttribute("disabled");
           }
         }
-        idx++;
         if (Array.isArray(field.fields)) {
           walk(field.fields);
         }
         continue;
       }
 
-      const ref = refs[`field${idx}`];
-      idx++;
+      if (field.type === "row") {
+        if (Array.isArray(field.fields)) {
+          walk(field.fields);
+        }
+        continue;
+      }
+
+      const ref = refs[`field${field._idx}`];
 
       if (!ref) continue;
+      if (ref === skipFieldRef) continue;
 
       const disabled = formDisabled || !!field.disabled;
 
@@ -152,7 +158,8 @@ export const handleBeforeMount = (deps) => {
 
 export const handleAfterMount = (deps) => {
   const { props, refs, render } = deps;
-  const state = deps.store.getState();
+  const { store } = deps;
+  const state = store.getState();
   const form = selectForm({ state, props });
   updateFieldAttributes({
     form,
@@ -161,6 +168,13 @@ export const handleAfterMount = (deps) => {
     formDisabled: !!props?.disabled,
   });
   render();
+  const nextState = store.getState();
+  updateFieldAttributes({
+    form: selectForm({ state: nextState, props }),
+    formValues: nextState.formValues,
+    refs,
+    formDisabled: !!props?.disabled,
+  });
 };
 
 export const handleOnUpdate = (deps, payload) => {
@@ -184,10 +198,18 @@ export const handleOnUpdate = (deps, payload) => {
     forceValueRefresh: keyChanged,
   });
   render();
+  const nextState = store.getState();
+  updateFieldAttributes({
+    form: selectForm({ state: nextState, props: newProps }),
+    formValues: nextState.formValues,
+    refs,
+    formDisabled,
+    forceValueRefresh: keyChanged,
+  });
 };
 
 export const handleValueInput = (deps, payload) => {
-  const { store, dispatchEvent, render, props } = deps;
+  const { store, dispatchEvent, render, props, refs } = deps;
   const event = payload._event;
   const name = event.currentTarget.dataset.fieldName;
   if (!name || !event.detail || !Object.prototype.hasOwnProperty.call(event.detail, "value")) {
@@ -225,6 +247,14 @@ export const handleValueInput = (deps, payload) => {
 
   // Keep conditional fields and jempl-rendered content in sync while typing.
   render();
+  const nextState = store.getState();
+  updateFieldAttributes({
+    form: selectForm({ state: nextState, props }),
+    formValues: nextState.formValues,
+    refs,
+    formDisabled: !!props?.disabled,
+    skipFieldRef: event.currentTarget,
+  });
 
   dispatchEvent(
     new CustomEvent("form-input", {
@@ -239,7 +269,7 @@ export const handleValueInput = (deps, payload) => {
 };
 
 export const handleValueChange = (deps, payload) => {
-  const { store, dispatchEvent, render, props } = deps;
+  const { store, dispatchEvent, render, props, refs } = deps;
   const event = payload._event;
   const name = event.currentTarget.dataset.fieldName;
   if (!name || !event.detail || !Object.prototype.hasOwnProperty.call(event.detail, "value")) {
@@ -277,6 +307,14 @@ export const handleValueChange = (deps, payload) => {
 
   // Re-render on committed changes so controlled child components stay synchronized.
   render();
+  const nextState = store.getState();
+  updateFieldAttributes({
+    form: selectForm({ state: nextState, props }),
+    formValues: nextState.formValues,
+    refs,
+    formDisabled: !!props?.disabled,
+    skipFieldRef: event.currentTarget,
+  });
 
   dispatchEvent(
     new CustomEvent("form-change", {

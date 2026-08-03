@@ -161,6 +161,192 @@ describe("rtgl-form handlers", () => {
     });
   });
 
+  it("synchronizes field refs nested inside a row", () => {
+    const rowForm = {
+      fields: [
+        {
+          type: "row",
+          fields: [
+            { name: "firstName", type: "input-text" },
+            { name: "lastName", type: "input-text" },
+          ],
+        },
+      ],
+      actions: { buttons: [] },
+    };
+    const props = { key: "profile", form: rowForm };
+    const store = createStore({
+      props,
+      formValues: {
+        firstName: "Ada",
+        lastName: "Lovelace",
+      },
+    });
+    const firstNameRef = createRef();
+    const lastNameRef = createRef();
+
+    handleOnUpdate(
+      {
+        store,
+        render: vi.fn(),
+        refs: {
+          field0: firstNameRef,
+          field1: lastNameRef,
+        },
+      },
+      {
+        oldProps: props,
+        newProps: props,
+      },
+    );
+
+    expect(firstNameRef.setAttribute).toHaveBeenCalledWith("value", "Ada");
+    expect(lastNameRef.setAttribute).toHaveBeenCalledWith("value", "Lovelace");
+  });
+
+  it.each([
+    ["input", handleValueInput],
+    ["change", handleValueChange],
+  ])(
+    "restores visible values after a conditional row re-renders on %s",
+    (_label, handler) => {
+      const props = {
+        form: {
+          fields: [
+            {
+              type: "row",
+              fields: [
+                { name: "firstName", type: "input-text" },
+                {
+                  name: "lastName",
+                  type: "input-text",
+                  $when: "formValues.includeLastName",
+                },
+              ],
+            },
+            { name: "includeLastName", type: "checkbox" },
+            { name: "city", type: "input-text" },
+            { name: "email", type: "input-text" },
+          ],
+        },
+      };
+      const store = createStore({
+        props,
+        formValues: {
+          firstName: "Ada",
+          lastName: "Lovelace",
+          includeLastName: true,
+          city: "London",
+          email: "ada@example.com",
+        },
+      });
+      const nextCityRef = createRef();
+      const nextEmailRef = createRef();
+      const refs = {
+        field0: createRef(),
+        field1: createRef(),
+        field2: createRef(),
+        field3: createRef(),
+        field4: createRef(),
+      };
+      const render = vi.fn(() => {
+        delete refs.field1;
+        refs.field3 = nextCityRef;
+        refs.field4 = nextEmailRef;
+      });
+
+      handler(
+        {
+          store,
+          dispatchEvent: vi.fn(),
+          render,
+          props,
+          refs,
+        },
+        {
+          _event: {
+            currentTarget: {
+              dataset: { fieldName: "includeLastName" },
+              removeAttribute: vi.fn(),
+              setAttribute: vi.fn(),
+            },
+            detail: { value: false },
+          },
+        },
+      );
+
+      expect(store.getState().formValues).toEqual({
+        firstName: "Ada",
+        includeLastName: false,
+        city: "London",
+        email: "ada@example.com",
+      });
+      expect(nextCityRef.setAttribute).toHaveBeenCalledWith("value", "London");
+      expect(nextEmailRef.setAttribute).toHaveBeenCalledWith(
+        "value",
+        "ada@example.com",
+      );
+    },
+  );
+
+  it.each([
+    ["input", handleValueInput],
+    ["change", handleValueChange],
+  ])(
+    "synchronizes the edited field when a conditional row render replaces it on %s",
+    (_label, handler) => {
+      const props = {
+        form: {
+          fields: [
+            {
+              type: "row",
+              fields: [
+                {
+                  name: "extra",
+                  type: "input-text",
+                  $when: "formValues.showExtra",
+                },
+                { name: "showExtra", type: "checkbox" },
+              ],
+            },
+          ],
+        },
+      };
+      const store = createStore({
+        props,
+        formValues: { showExtra: false },
+      });
+      const currentTarget = {
+        ...createRef(),
+        dataset: { fieldName: "showExtra" },
+      };
+      const replacementRef = createRef();
+      const refs = { field1: currentTarget };
+      const render = vi.fn(() => {
+        refs.field1 = replacementRef;
+      });
+
+      handler(
+        {
+          store,
+          dispatchEvent: vi.fn(),
+          render,
+          props,
+          refs,
+        },
+        {
+          _event: {
+            currentTarget,
+            detail: { value: true },
+          },
+        },
+      );
+
+      expect(store.getState().formValues.showExtra).toBe(true);
+      expect(replacementRef.setAttribute).toHaveBeenCalledWith("checked", "");
+    },
+  );
+
   it("prunes newly hidden fields through the live bound props", () => {
     const oldForm = {
       fields: [

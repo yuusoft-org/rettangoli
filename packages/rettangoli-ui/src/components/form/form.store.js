@@ -100,37 +100,127 @@ function normalizeWhenDirectives(form) {
     return form;
   }
 
-  const normalizeFields = (fields = []) =>
-    fields.map((field) => {
-      if (!isPlainObject(field)) {
-        return field;
-      }
+  let nextFieldIdx = 0;
+  let nextLayoutIdx = 0;
 
-      if (typeof field.$when === "string" && field.$when.trim().length > 0) {
-        const { $when, ...rest } = field;
-        const normalizedField = Array.isArray(rest.fields)
-          ? { ...rest, fields: normalizeFields(rest.fields) }
-          : rest;
-        return {
-          [`$if ${$when}`]: normalizedField,
-        };
-      }
+  const isConditionalDirective = (key) => {
+    return (
+      key.startsWith("$if ") ||
+      /^\$if#\w+\s/.test(key) ||
+      key.startsWith("$elif ") ||
+      /^\$elif#\w+\s/.test(key) ||
+      key === "$else" ||
+      key === "$else:" ||
+      /^\$else#\w+:?$/.test(key)
+    );
+  };
 
-      if (Array.isArray(field.fields)) {
-        return {
-          ...field,
-          fields: normalizeFields(field.fields),
-        };
-      }
+  const normalizeDirectiveValue = (value) => {
+    if (Array.isArray(value)) {
+      return value.map((item) => normalizeField(item));
+    }
+    return normalizeField(value);
+  };
 
+  const normalizeField = (field) => {
+    if (!isPlainObject(field)) {
       return field;
-    });
+    }
+
+    const fieldEntries = Object.entries(field);
+    if (
+      (fieldEntries.length === 1 &&
+        /^\$for(?::\w+)?\s/.test(fieldEntries[0][0])) ||
+      hasOwn(field, "$each")
+    ) {
+      return field;
+    }
+
+    if (
+      fieldEntries.length > 0 &&
+      fieldEntries.every(([key]) => isConditionalDirective(key))
+    ) {
+      return Object.fromEntries(
+        fieldEntries.map(([key, value]) => [
+          key,
+          normalizeDirectiveValue(value),
+        ]),
+      );
+    }
+
+    const { $when, ...rest } = field;
+    const layoutIdx = nextLayoutIdx;
+    nextLayoutIdx++;
+    const normalizedField = {
+      ...rest,
+      _layoutIdx: layoutIdx,
+    };
+    if (field.type !== "row") {
+      const fieldIdx = nextFieldIdx;
+      nextFieldIdx++;
+      normalizedField._idx = fieldIdx;
+    }
+    if (Array.isArray(rest.fields)) {
+      normalizedField.fields = rest.fields.map((nestedField) =>
+        normalizeField(nestedField),
+      );
+    }
+
+    if (typeof $when === "string" && $when.trim().length > 0) {
+      return {
+        [`$if ${$when}`]: normalizedField,
+      };
+    }
+
+    return normalizedField;
+  };
+  const normalizeFields = (fields = []) =>
+    fields.map((field) => normalizeField(field));
 
   return {
     ...form,
     fields: normalizeFields(form.fields),
   };
 }
+
+const createRenderedIndex = (kind, path) => {
+  const pathToken = path.map((index) => `Item${index}`).join("");
+  return `dynamic${kind}${pathToken}`;
+};
+
+const assignRenderedFieldIndexes = (form) => {
+  if (!isPlainObject(form) || !Array.isArray(form.fields)) {
+    return form;
+  }
+
+  const assignFields = (fields, parentPath = []) =>
+    fields.map((field, index) => {
+      const path = [...parentPath, index];
+      if (Array.isArray(field)) {
+        return assignFields(field, path);
+      }
+      if (!isPlainObject(field)) {
+        return field;
+      }
+
+      const indexedField = { ...field };
+      if (!hasOwn(indexedField, "_layoutIdx")) {
+        indexedField._layoutIdx = createRenderedIndex("Layout", path);
+      }
+      if (field.type !== "row" && !hasOwn(indexedField, "_idx")) {
+        indexedField._idx = createRenderedIndex("Field", path);
+      }
+      if (Array.isArray(field.fields)) {
+        indexedField.fields = assignFields(field.fields, path);
+      }
+      return indexedField;
+    });
+
+  return {
+    ...form,
+    fields: assignFields(form.fields),
+  };
+};
 
 // Nested property access utilities
 export const get = (obj, path, defaultValue = undefined) => {
@@ -478,7 +568,12 @@ export const validateForm = (fields, formValues) => {
 
 // --- Field helpers ---
 
-const DISPLAY_TYPES = ["section", "read-only-text", "slot"];
+const FIELD_CONTAINER_TYPES = ["section", "row"];
+const DISPLAY_TYPES = [...FIELD_CONTAINER_TYPES, "read-only-text", "slot"];
+
+const isFieldContainer = (field) => {
+  return FIELD_CONTAINER_TYPES.includes(field.type);
+};
 
 export const isDataField = (field) => {
   return !DISPLAY_TYPES.includes(field.type);
@@ -487,7 +582,7 @@ export const isDataField = (field) => {
 export const collectAllDataFields = (fields) => {
   const result = [];
   for (const field of fields) {
-    if (field.type === "section" && Array.isArray(field.fields)) {
+    if (isFieldContainer(field) && Array.isArray(field.fields)) {
       result.push(...collectAllDataFields(field.fields));
     } else if (isDataField(field)) {
       result.push(field);
@@ -544,6 +639,12 @@ export const flattenFields = (fields, startIdx = 0) => {
         result.push(...nested);
         idx += nested.length;
       }
+    } else if (field.type === "row") {
+      if (Array.isArray(field.fields)) {
+        const nested = flattenFields(field.fields, idx);
+        result.push(...nested);
+        idx += nested.length;
+      }
     } else {
       result.push({
         ...field,
@@ -555,6 +656,63 @@ export const flattenFields = (fields, startIdx = 0) => {
   }
 
   return result;
+};
+
+const buildFieldLayoutItems = (fields) => {
+  const items = [];
+
+  for (const field of fields) {
+    if (field.type === "section") {
+      items.push({
+        ...field,
+        _isSection: true,
+      });
+
+      if (Array.isArray(field.fields)) {
+        items.push(...buildFieldLayoutItems(field.fields));
+      }
+      continue;
+    }
+
+    if (field.type === "row") {
+      const rowFields = [];
+      for (const childField of field.fields || []) {
+        rowFields.push({
+          ...childField,
+          _isSection: false,
+        });
+      }
+
+      if (rowFields.length > 0) {
+        items.push({
+          _isSection: false,
+          _isRow: true,
+          _alignFieldHeaders: rowFields.some(
+            (rowField) => rowField.label || rowField.description,
+          ),
+          _layoutIdx: field._layoutIdx,
+          _columns: rowFields.length,
+          fields: rowFields,
+        });
+      }
+      continue;
+    }
+
+    items.push({
+      _isSection: false,
+      _isRow: false,
+      _layoutIdx: field._layoutIdx,
+      _columns: 1,
+      fields: [
+        {
+          ...field,
+          _isSection: false,
+        },
+      ],
+    });
+  }
+
+  return items;
 };
 
 // --- Store ---
@@ -585,10 +743,11 @@ export const selectForm = ({ state, props }) => {
     formValues: stateFormValues,
   };
 
-  if (Object.keys(mergedContext).length > 0) {
-    return parseAndRender(normalizedForm, mergedContext);
-  }
-  return normalizedForm;
+  const renderedForm =
+    Object.keys(mergedContext).length > 0
+      ? parseAndRender(normalizedForm, mergedContext)
+      : normalizedForm;
+  return assignRenderedFieldIndexes(renderedForm);
 };
 
 export const selectViewData = ({ state, props }) => {
@@ -598,8 +757,10 @@ export const selectViewData = ({ state, props }) => {
   const fields = form.fields || [];
   const formDisabled = !!props?.disabled;
 
-  // Flatten fields for template iteration
-  const flatFields = flattenFields(fields);
+  const fieldLayout = buildFieldLayoutItems(fields);
+  const flatFields = fieldLayout.flatMap((item) =>
+    item._isSection ? [item] : item.fields,
+  );
 
   // Enrich each field with computed properties
   flatFields.forEach((field) => {
@@ -693,6 +854,7 @@ export const selectViewData = ({ state, props }) => {
     containerPadding,
     title: form?.title || "",
     description: form?.description || "",
+    fieldLayout,
     flatFields,
     actions: actionsData,
     formValues: state.formValues,

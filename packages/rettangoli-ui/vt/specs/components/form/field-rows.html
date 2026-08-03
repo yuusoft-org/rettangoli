@@ -1,0 +1,243 @@
+---
+title: "Field Rows"
+description: Rows group form fields into equal-width columns without changing their value or validation behavior.
+specs:
+  - Row fields use equal-width grid tracks while standalone fields retain the full form width.
+  - Rows work inside sections and preserve nested field values.
+  - When a conditional row field is hidden, the remaining visible field expands to the full row width.
+  - Required validation errors render inside individual row columns.
+steps:
+  - action: assert
+    type: js
+    fn: fieldRows.getInitialLayout
+    value:
+      firstRowColumns: "2"
+      addressRowColumns: "2"
+      equalNameWidths: true
+      equalAddressWidths: true
+      standaloneIsWider: true
+  - action: assert
+    type: js
+    fn: fieldRows.getInitialValues
+    value:
+      profile:
+        firstName: Ada
+        lastName: Lovelace
+      includeLastName: true
+      address:
+        city: London
+        postalCode: ""
+      email: ada@example.com
+  - action: customEvent
+    name: vt:hide-last-name
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: fieldRows.getCollapsedLayout
+    value:
+      nameRowColumns: "1"
+      firstNameMatchesStandalone: true
+      lastNameVisible: false
+      firstNameValue: Ada
+      cityValue: London
+      emailValue: ada@example.com
+  - action: assert
+    type: js
+    fn: fieldRows.getCollapsedValues
+    value:
+      profile:
+        firstName: Ada
+      includeLastName: false
+      address:
+        city: London
+        postalCode: ""
+      email: ada@example.com
+  - action: screenshot
+  - action: select
+    testId: save-profile
+    steps:
+      - action: click
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: fieldRows.getValidationState
+    value:
+      valid: false
+      postalCodeError: This field is required
+      visibleErrorCount: 1
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 760
+  height: 900
+---
+
+<rtgl-view id="container" h="100vh" w="100vw"> </rtgl-view>
+
+<script>
+  const form = document.createElement("rtgl-form");
+  form.id = "form";
+  form.setAttribute("w", "520");
+
+  form.defaultValues = {
+    profile: {
+      firstName: "Ada",
+      lastName: "Lovelace",
+    },
+    includeLastName: true,
+    address: {
+      city: "London",
+      postalCode: "",
+    },
+    email: "ada@example.com",
+  };
+
+  form.form = {
+    title: "Profile Details",
+    description: "Related fields share equal-width rows.",
+    fields: [
+      {
+        type: "section",
+        label: "Name",
+        description: "This row is nested inside a section.",
+        fields: [
+          {
+            type: "row",
+            fields: [
+              {
+                name: "profile.firstName",
+                type: "input-text",
+                label: "First Name",
+                required: true,
+              },
+              {
+                name: "profile.lastName",
+                type: "input-text",
+                label: "Last Name",
+                required: true,
+                $when: "formValues.includeLastName",
+              },
+            ],
+          },
+          {
+            name: "includeLastName",
+            type: "checkbox",
+            content: "Include last name",
+          },
+        ],
+      },
+      {
+        type: "row",
+        fields: [
+          {
+            name: "address.city",
+            type: "input-text",
+            label: "City",
+            required: true,
+          },
+          {
+            name: "address.postalCode",
+            type: "input-text",
+            label: "Postal Code",
+            required: true,
+          },
+        ],
+      },
+      {
+        name: "email",
+        type: "input-text",
+        label: "Email",
+        required: true,
+      },
+    ],
+    actions: {
+      buttons: [
+        {
+          id: "save",
+          label: "Save Profile",
+          variant: "pr",
+          validate: true,
+        },
+      ],
+    },
+  };
+
+  let lastValidation = null;
+  form.addEventListener("form-action", (event) => {
+    lastValidation = event.detail;
+  });
+
+  document.getElementById("container").appendChild(form);
+
+  const getField = (name) =>
+    form.shadowRoot.querySelector(`[data-field-name="${name}"]`);
+  const getFieldContainer = (name) =>
+    getField(name).closest(".form-field");
+  const getFieldWidth = (name) =>
+    Math.round(getFieldContainer(name).getBoundingClientRect().width);
+  const getFieldGrid = (name) => getFieldContainer(name).parentElement;
+  const widthsMatch = (left, right) => Math.abs(left - right) <= 1;
+
+  const tagSaveButton = () => {
+    const button = form.shadowRoot?.querySelector('[data-action-id="save"]');
+    if (!button) {
+      setTimeout(tagSaveButton, 0);
+      return;
+    }
+    button.setAttribute("data-testid", "save-profile");
+  };
+  tagSaveButton();
+
+  window.addEventListener("vt:hide-last-name", () => {
+    form.setValues({ includeLastName: false });
+  });
+
+  window.fieldRows = {
+    getInitialLayout() {
+      const firstNameWidth = getFieldWidth("profile.firstName");
+      const lastNameWidth = getFieldWidth("profile.lastName");
+      const cityWidth = getFieldWidth("address.city");
+      const postalCodeWidth = getFieldWidth("address.postalCode");
+      const emailWidth = getFieldWidth("email");
+      return {
+        firstRowColumns: getFieldGrid("profile.firstName").getAttribute("cols"),
+        addressRowColumns: getFieldGrid("address.city").getAttribute("cols"),
+        equalNameWidths: widthsMatch(firstNameWidth, lastNameWidth),
+        equalAddressWidths: widthsMatch(cityWidth, postalCodeWidth),
+        standaloneIsWider: emailWidth > firstNameWidth * 1.8,
+      };
+    },
+    getInitialValues() {
+      return form.getValues();
+    },
+    getCollapsedLayout() {
+      const firstNameWidth = getFieldWidth("profile.firstName");
+      const emailWidth = getFieldWidth("email");
+      return {
+        nameRowColumns: getFieldGrid("profile.firstName").getAttribute("cols"),
+        firstNameMatchesStandalone: widthsMatch(firstNameWidth, emailWidth),
+        lastNameVisible: getField("profile.lastName") !== null,
+        firstNameValue: getField("profile.firstName").value,
+        cityValue: getField("address.city").value,
+        emailValue: getField("email").value,
+      };
+    },
+    getCollapsedValues() {
+      return form.getValues();
+    },
+    getValidationState() {
+      const errorTexts = [
+        ...form.shadowRoot.querySelectorAll('rtgl-text[c="de"]'),
+      ]
+        .map((element) => element.textContent.trim())
+        .filter(Boolean);
+      return {
+        valid: lastValidation?.valid,
+        postalCodeError: lastValidation?.errors?.["address.postalCode"],
+        visibleErrorCount: errorTexts.length,
+      };
+    },
+  };
+</script>
