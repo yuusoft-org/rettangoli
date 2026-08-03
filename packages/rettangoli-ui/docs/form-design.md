@@ -1003,6 +1003,7 @@ VT specs in `vt/specs/components/form/` as HTML files with optional step-based i
 - `with-image.html` — image with placeholder text, image with URL
 - `with-popover-input.html` — popover input field
 - `with-section.html` — section grouping with label, header action, and nested fields
+- `section-actions.html` — enabled/disabled section header actions and emitted action metadata
 - `with-read-only-text.html` — read-only text display
 - `with-slot.html` — slotted custom content
 - `with-tooltip.html` — tooltip info icon on hover
