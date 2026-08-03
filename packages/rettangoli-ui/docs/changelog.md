@@ -4,6 +4,7 @@
 
 ### Improvements
 
+- `rtgl-form`: added reactive `p="none|xs|sm|md|lg|xl"` content padding, with `md` retained as the default and `none` providing a flush layout.
 - `rtgl-form`: sections can expose an accessible right-aligned icon action that emits `form-section-action` with current values and viewport anchor geometry for parent-owned actions or dropdown menus.
 - `rtgl-select` and form `select` fields now support per-option `imageSrc` images with one shared `image` configuration for size, radius, border color, and fit; selected triggers and aligned mixed-content menus use the same styling.
 - added `rtgl-input-duration` and the `rtgl-form` `input-duration` field type for editing `m:ss` / `h:mm:ss` durations while storing and emitting integer milliseconds.

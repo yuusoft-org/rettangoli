@@ -1,5 +1,10 @@
 import { generateCSS, spacing } from "../common.js";
 
+const padding = {
+  none: "0",
+  ...spacing,
+};
+
 const borderWidth = {
   none: "0",
   xs: "--border-width-xs",
@@ -80,13 +85,13 @@ const styles = {
     md: "--shadow-md",
     lg: "--shadow-lg",
   },
-  pt: spacing,
-  pr: spacing,
-  pb:spacing,
-  pl: spacing,
-  p: spacing,
-  ph: spacing,
-  pv: spacing,
+  pt: padding,
+  pr: padding,
+  pb: padding,
+  pl: padding,
+  p: padding,
+  ph: padding,
+  pv: padding,
   g: spacing,
   gv: spacing,
   gh: spacing,

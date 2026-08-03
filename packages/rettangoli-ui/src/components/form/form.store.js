@@ -175,7 +175,12 @@ export const set = (obj, path, value) => {
   return obj;
 };
 
-const blacklistedAttrs = ["id", "class", "style", "slot", "form", "defaultValues", "disabled", "context"];
+const formPaddingValues = new Set(["none", "xs", "sm", "md", "lg", "xl"]);
+
+const normalizeFormPadding = (value) =>
+  formPaddingValues.has(value) ? value : "md";
+
+const blacklistedAttrs = ["id", "class", "style", "slot", "form", "defaultValues", "disabled", "context", "p"];
 
 const stringifyAttrs = (props = {}) => {
   return Object.entries(props)
@@ -588,6 +593,7 @@ export const selectForm = ({ state, props }) => {
 
 export const selectViewData = ({ state, props }) => {
   const containerAttrString = stringifyAttrs(props);
+  const containerPadding = normalizeFormPadding(props?.p);
   const form = selectForm({ state, props });
   const fields = form.fields || [];
   const formDisabled = !!props?.disabled;
@@ -684,6 +690,7 @@ export const selectViewData = ({ state, props }) => {
 
   return {
     containerAttrString,
+    containerPadding,
     title: form?.title || "",
     description: form?.description || "",
     flatFields,

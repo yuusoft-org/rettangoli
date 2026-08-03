@@ -39,6 +39,7 @@ const form = document.querySelector("rtgl-form");
 form.form = schema;
 form.defaultValues = values;
 form.disabled = true;
+form.p = "none";
 ```
 
 | prop | type | description |
@@ -46,6 +47,7 @@ form.disabled = true;
 | `form` | object | The form schema (this spec). |
 | `defaultValues` | object | Initial form state. Read on mount and on `reset()`. To apply new defaults after mount, update `defaultValues` then call `reset()`. |
 | `disabled` | boolean | Disable the entire form. All fields and buttons become non-interactive. |
+| `p` | `none \| xs \| sm \| md \| lg \| xl` | Padding around the form contents. Defaults to `md`; use `none` for a flush layout. |
 
 `defaultValues` keeps the schema reusable — the same form definition works for both "create" and "edit" flows.
 
@@ -1002,6 +1004,7 @@ VT specs in `vt/specs/components/form/` as HTML files with optional step-based i
 - `with-slider-with-input.html` — slider paired with number input
 - `with-image.html` — image with placeholder text, image with URL
 - `with-popover-input.html` — popover input field
+- `padding.html` — default, padding-free, and reactively updated form padding
 - `with-section.html` — section grouping with label, header action, and nested fields
 - `section-actions.html` — enabled/disabled section header actions and emitted action metadata
 - `with-read-only-text.html` — read-only text display
