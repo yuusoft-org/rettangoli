@@ -24,6 +24,367 @@ const createConditionalFormProps = () => ({
 });
 
 describe("rtgl-form bound store integration", () => {
+  it("groups row fields into equal columns and standalone fields into full-width rows", () => {
+    const props = {
+      form: {
+        fields: [
+          {
+            type: "section",
+            label: "Profile",
+            fields: [
+              {
+                type: "row",
+                fields: [
+                  { name: "firstName", type: "input-text" },
+                  { name: "lastName", type: "input-text" },
+                ],
+              },
+              { name: "email", type: "input-text" },
+            ],
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const viewData = store.selectViewData();
+
+    expect(viewData.fieldLayout).toHaveLength(3);
+    expect(viewData.fieldLayout[0]).toMatchObject({
+      _isSection: true,
+      _idx: 0,
+      label: "Profile",
+    });
+    expect(viewData.fieldLayout[1]).toMatchObject({
+      _isSection: false,
+      _isRow: true,
+      _columns: 2,
+    });
+    expect(
+      viewData.fieldLayout[1].fields.map(({ name, _idx }) => ({ name, _idx })),
+    ).toEqual([
+      { name: "firstName", _idx: 1 },
+      { name: "lastName", _idx: 2 },
+    ]);
+    expect(viewData.fieldLayout[2]).toMatchObject({
+      _isSection: false,
+      _isRow: false,
+      _columns: 1,
+    });
+    expect(viewData.fieldLayout[2].fields[0]).toMatchObject({
+      name: "email",
+      _idx: 3,
+    });
+  });
+
+  it("expands the remaining visible field when a row sibling is conditional", () => {
+    const props = {
+      form: {
+        fields: [
+          {
+            type: "row",
+            fields: [
+              { name: "firstName", type: "input-text" },
+              {
+                name: "lastName",
+                type: "input-text",
+                $when: 'formValues.mode == "full"',
+              },
+            ],
+          },
+          { name: "mode", type: "input-text" },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({
+      defaultValues: {
+        firstName: "Ada",
+        lastName: "Lovelace",
+        mode: "short",
+      },
+    });
+
+    const viewData = store.selectViewData();
+
+    expect(viewData.fieldLayout[0]).toMatchObject({
+      _isRow: true,
+      _layoutIdx: 0,
+      _columns: 1,
+    });
+    expect(viewData.fieldLayout[0].fields.map((field) => field.name)).toEqual([
+      "firstName",
+    ]);
+    expect(viewData.fieldLayout[0].fields[0]._idx).toBe(0);
+    expect(viewData.fieldLayout[1].fields[0]).toMatchObject({
+      name: "mode",
+      _idx: 2,
+    });
+    expect(viewData.fieldLayout[1]._layoutIdx).toBe(3);
+    expect(store.selectFormValues()).toEqual({
+      firstName: "Ada",
+      mode: "short",
+    });
+  });
+
+  it("aligns row headers only when a row contains header content", () => {
+    const props = {
+      form: {
+        fields: [
+          {
+            type: "row",
+            fields: [
+              {
+                name: "extra",
+                type: "input-text",
+                label: "Extra Detail",
+              },
+              {
+                name: "showExtra",
+                type: "checkbox",
+                content: "Show extra detail",
+              },
+            ],
+          },
+          {
+            type: "row",
+            fields: [
+              { name: "first", type: "checkbox", content: "First" },
+              { name: "second", type: "checkbox", content: "Second" },
+            ],
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const fieldLayout = store.selectViewData().fieldLayout;
+
+    expect(fieldLayout[0]._alignFieldHeaders).toBe(true);
+    expect(fieldLayout[1]._alignFieldHeaders).toBe(false);
+  });
+
+  it("preserves direct $if fields without creating empty layout items", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "contentType", type: "input-text" },
+          {
+            '$if contentType == "custom"': {
+              name: "content",
+              type: "input-text",
+            },
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({
+      defaultValues: { contentType: "dialogue.content" },
+    });
+
+    expect(store.selectViewData().fieldLayout).toHaveLength(1);
+    expect(store.selectViewData().fieldLayout[0].fields[0]).toMatchObject({
+      name: "contentType",
+      _idx: 0,
+      _layoutIdx: 0,
+    });
+
+    store.setFormFieldValue({ name: "contentType", value: "custom" });
+
+    const visibleLayout = store.selectViewData().fieldLayout;
+    expect(visibleLayout).toHaveLength(2);
+    expect(visibleLayout[1].fields[0]).toMatchObject({
+      name: "content",
+      _idx: 1,
+      _layoutIdx: 1,
+    });
+  });
+
+  it("removes an unmatched direct $if/$elif field chain completely", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "contentType", type: "input-text" },
+          {
+            '$if contentType == "text"': {
+              name: "content",
+              type: "input-text",
+            },
+            '$elif contentType == "image"': {
+              name: "image",
+              type: "image",
+            },
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({
+      defaultValues: { contentType: "video" },
+    });
+
+    const form = store.selectForm();
+
+    expect(form.fields).toHaveLength(1);
+    expect(form.fields[0]).toMatchObject({
+      name: "contentType",
+      _idx: 0,
+      _layoutIdx: 0,
+    });
+    expect(
+      formStore.validateForm(form.fields, store.getState().formValues),
+    ).toEqual({
+      valid: true,
+      errors: {},
+    });
+  });
+
+  it("preserves $for field wrappers and gives every rendered field a unique stable index", () => {
+    const props = {
+      context: {
+        fieldDefinitions: [
+          { name: "email", label: "Email" },
+          { name: "phone", label: "Phone" },
+        ],
+      },
+      form: {
+        fields: [
+          {
+            "$for definition in fieldDefinitions": {
+              name: "${definition.name}",
+              type: "input-text",
+              label: "${definition.label}",
+            },
+          },
+          { name: "notes", type: "input-text" },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const initialFields = store.selectViewData().flatFields;
+    const initialNotesIndex = initialFields[2]._idx;
+
+    expect(initialFields.map((field) => field.name)).toEqual([
+      "email",
+      "phone",
+      "notes",
+    ]);
+    expect(new Set(initialFields.map((field) => field._idx))).toHaveLength(3);
+    expect(
+      initialFields.every((field) =>
+        /^[a-z][a-zA-Z0-9]*$/.test(`field${field._idx}`),
+      ),
+    ).toBe(true);
+
+    props.context.fieldDefinitions.push({ name: "website", label: "Website" });
+
+    const nextFields = store.selectViewData().flatFields;
+    expect(nextFields.map((field) => field.name)).toEqual([
+      "email",
+      "phone",
+      "website",
+      "notes",
+    ]);
+    expect(new Set(nextFields.map((field) => field._idx))).toHaveLength(4);
+    expect(nextFields[3]._idx).toBe(initialNotesIndex);
+  });
+
+  it("assigns unique ref-safe indices to fields expanded with $each", () => {
+    const props = {
+      context: {
+        fieldDefinitions: [
+          { name: "city", label: "City" },
+          { name: "country", label: "Country" },
+        ],
+      },
+      form: {
+        fields: [
+          {
+            $each: "definition in fieldDefinitions",
+            name: "${definition.name}",
+            type: "input-text",
+            label: "${definition.label}",
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const fields = store.selectViewData().flatFields;
+
+    expect(fields.map((field) => field.name)).toEqual(["city", "country"]);
+    expect(new Set(fields.map((field) => field._idx))).toHaveLength(2);
+    expect(
+      fields.every((field) => /^[a-z][a-zA-Z0-9]*$/.test(`field${field._idx}`)),
+    ).toBe(true);
+  });
+
+  it("keeps nested loop indices unique when index variable names are reused", () => {
+    const props = {
+      context: {
+        groups: [
+          {
+            label: "Primary",
+            fields: [
+              { name: "primaryEmail", label: "Email" },
+              { name: "primaryPhone", label: "Phone" },
+            ],
+          },
+          {
+            label: "Secondary",
+            fields: [
+              { name: "secondaryEmail", label: "Email" },
+              { name: "secondaryPhone", label: "Phone" },
+            ],
+          },
+        ],
+      },
+      form: {
+        fields: [
+          {
+            "$for group, i in groups": {
+              type: "section",
+              label: "${group.label}",
+              fields: [
+                {
+                  "$for definition, i in group.fields": {
+                    name: "${definition.name}",
+                    type: "input-text",
+                    label: "${definition.label}",
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const form = store.selectForm();
+    const fields = formStore.collectAllDataFields(form.fields);
+    const allFields = form.fields.flatMap((field) => [
+      field,
+      ...(field.fields || []),
+    ]);
+
+    expect(fields.map((field) => field.name)).toEqual([
+      "primaryEmail",
+      "primaryPhone",
+      "secondaryEmail",
+      "secondaryPhone",
+    ]);
+    expect(new Set(fields.map((field) => field._idx))).toHaveLength(4);
+    expect(new Set(allFields.map((field) => field._layoutIdx))).toHaveLength(6);
+    expect(
+      allFields.every((field) =>
+        /^[a-z][a-zA-Z0-9]*$/.test(`layoutItem${field._layoutIdx}`),
+      ),
+    ).toBe(true);
+  });
+
   it("preserves select image options and their shared image configuration", () => {
     const image = {
       size: 24,
@@ -35,11 +396,15 @@ describe("rtgl-form bound store integration", () => {
       { label: "Ada", value: "ada", imageSrc: "/avatars/ada.svg" },
       { label: "Grace", value: "grace", imageSrc: "/avatars/grace.svg" },
     ];
-    const store = bindStore(formStore, {
-      form: {
-        fields: [{ name: "person", type: "select", image, options }],
+    const store = bindStore(
+      formStore,
+      {
+        form: {
+          fields: [{ name: "person", type: "select", image, options }],
+        },
       },
-    }, {});
+      {},
+    );
 
     const field = store.selectViewData().flatFields[0];
 

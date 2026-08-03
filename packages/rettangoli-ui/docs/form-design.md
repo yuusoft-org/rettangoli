@@ -68,7 +68,7 @@ Data types additionally have:
 | `required` | no | `true` or `{ message: "custom message" }`. |
 | `disabled` | no | Boolean. |
 
-Display types (`section`, `read-only-text`, `slot`) have no `name` and produce no values. They are never included in event payloads.
+Display and layout types (`section`, `row`, `read-only-text`, `slot`) have no `name` and produce no values. They are never included in event payloads.
 
 ## Field Types
 
@@ -452,6 +452,34 @@ Clicking a section action emits `form-section-action` with the stable section
 and action ids, current visible values, and serializable viewport geometry:
 `{ sectionId, actionId, values, position: { x, y }, anchorRect }`. The parent
 owns the action behavior and can pass `position` directly to a dropdown API.
+
+#### `row`
+
+Groups fields into equal-width columns. A row is a layout-only field: it has no
+`name` and produces no value of its own. Standalone fields before or after it
+continue to use the full form width.
+
+| property | description |
+|---|---|
+| `fields` | Fields rendered in the row. Each visible field receives an equal share of the available width. |
+
+```yaml
+- type: row
+  fields:
+    - name: firstName
+      type: input-text
+      label: First Name
+      required: true
+    - name: lastName
+      type: input-text
+      label: Last Name
+      required: true
+```
+
+Rows can be used inside sections. Conditional fields are evaluated before
+layout; when only one row field is visible, it expands to the full row width.
+When labeled and unlabeled fields share a row, unlabeled controls align with
+the labeled controls instead of occupying the label line.
 
 #### `read-only-text`
 

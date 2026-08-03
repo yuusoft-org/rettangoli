@@ -568,6 +568,25 @@ out:
   errors:
     firstName: "This field is required"
 ---
+case: fields inside row are validated
+in:
+  - fields:
+      - type: row
+        fields:
+          - name: firstName
+            type: input-text
+            required: true
+          - name: lastName
+            type: input-text
+            required: true
+    formValues:
+      firstName: "Ada"
+      lastName: ""
+out:
+  valid: false
+  errors:
+    lastName: "This field is required"
+---
 suite: getDefaultValue
 exportName: runGetDefaultValueCase
 ---
@@ -738,6 +757,33 @@ out:
       _isSection: false
       _idx: 3
 ---
+case: row is transparent while its fields retain sequential indices
+in:
+  - fields:
+      - type: row
+        fields:
+          - name: firstName
+            type: input-text
+          - name: lastName
+            type: input-text
+      - name: email
+        type: input-text
+out:
+  count: 3
+  fields:
+    - type: input-text
+      name: firstName
+      _isSection: false
+      _idx: 0
+    - type: input-text
+      name: lastName
+      _isSection: false
+      _idx: 1
+    - type: input-text
+      name: email
+      _isSection: false
+      _idx: 2
+---
 case: empty fields returns empty
 in:
   - fields: []
@@ -756,8 +802,12 @@ in:
       - type: section
         label: Info
         fields:
-          - name: email
-            type: input-text
+          - type: row
+            fields:
+              - name: email
+                type: input-text
+              - name: phone
+                type: input-text
       - type: read-only-text
         content: hello
       - type: slot
@@ -768,6 +818,7 @@ out:
   names:
     - name
     - email
+    - phone
     - age
 ---
 case: empty fields returns empty
@@ -818,6 +869,33 @@ in:
 out:
   values:
     mode: basic
+---
+case: conditional hidden row field is excluded from selected values
+in:
+  - form:
+      fields:
+        - name: mode
+          type: select
+          options:
+            - label: Basic
+              value: basic
+            - label: Advanced
+              value: advanced
+        - type: row
+          fields:
+            - name: visible
+              type: input-text
+            - name: secret
+              type: input-text
+              $when: formValues.mode == "advanced"
+    formValues:
+      mode: basic
+      visible: "kept"
+      secret: "should-not-be-exposed"
+out:
+  values:
+    mode: basic
+    visible: "kept"
 ---
 suite: set path normalization
 exportName: runSetPathCase
