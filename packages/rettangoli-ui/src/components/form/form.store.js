@@ -102,7 +102,6 @@ function normalizeWhenDirectives(form) {
 
   let nextFieldIdx = 0;
   let nextLayoutIdx = 0;
-  let nextLoopIdx = 0;
 
   const isConditionalDirective = (key) => {
     return (
@@ -116,49 +115,27 @@ function normalizeWhenDirectives(form) {
     );
   };
 
-  const createInternalIndex = ({ kind, index, loopScopes }) => {
-    if (loopScopes.length === 0) return index;
-    const loopPath = loopScopes
-      .map(({ loopIdx, indexVar }) => `loop${loopIdx}-\${${indexVar}}`)
-      .join("-");
-    return `__rtgl-${loopPath}-${kind}${index}`;
-  };
-
-  const normalizeDirectiveValue = (value, loopScopes) => {
+  const normalizeDirectiveValue = (value) => {
     if (Array.isArray(value)) {
-      return value.map((item) => normalizeField(item, loopScopes));
+      return value.map((item) => normalizeField(item));
     }
-    return normalizeField(value, loopScopes);
+    return normalizeField(value);
   };
 
-  const normalizeLoopDirective = (key, value, loopScopes) => {
-    const loopIdx = nextLoopIdx;
-    nextLoopIdx++;
-    const loopExpression = key.substring(5).trim();
-    const loopMatch = loopExpression.match(/^(.+?)\s+in\s+(.+)$/);
-    if (!loopMatch) {
-      return { [key]: value };
-    }
-
-    const variables = loopMatch[1].split(",").map((part) => part.trim());
-    const itemVar = variables[0];
-    const indexVar = variables[1] || `__rtglFormLoopIndex${loopIdx}`;
-    const normalizedKey = variables[1]
-      ? key
-      : `$for ${itemVar}, ${indexVar} in ${loopMatch[2]}`;
-    const nextLoopScopes = [...loopScopes, { loopIdx, indexVar }];
-
-    return {
-      [normalizedKey]: normalizeDirectiveValue(value, nextLoopScopes),
-    };
-  };
-
-  const normalizeField = (field, loopScopes = []) => {
+  const normalizeField = (field) => {
     if (!isPlainObject(field)) {
       return field;
     }
 
     const fieldEntries = Object.entries(field);
+    if (
+      (fieldEntries.length === 1 &&
+        /^\$for(?::\w+)?\s/.test(fieldEntries[0][0])) ||
+      hasOwn(field, "$each")
+    ) {
+      return field;
+    }
+
     if (
       fieldEntries.length > 0 &&
       fieldEntries.every(([key]) => isConditionalDirective(key))
@@ -166,16 +143,8 @@ function normalizeWhenDirectives(form) {
       return Object.fromEntries(
         fieldEntries.map(([key, value]) => [
           key,
-          normalizeDirectiveValue(value, loopScopes),
+          normalizeDirectiveValue(value),
         ]),
-      );
-    }
-
-    if (fieldEntries.length === 1 && fieldEntries[0][0].startsWith("$for ")) {
-      return normalizeLoopDirective(
-        fieldEntries[0][0],
-        fieldEntries[0][1],
-        loopScopes,
       );
     }
 
@@ -184,24 +153,16 @@ function normalizeWhenDirectives(form) {
     nextLayoutIdx++;
     const normalizedField = {
       ...rest,
-      _layoutIdx: createInternalIndex({
-        kind: "layout",
-        index: layoutIdx,
-        loopScopes,
-      }),
+      _layoutIdx: layoutIdx,
     };
     if (field.type !== "row") {
       const fieldIdx = nextFieldIdx;
       nextFieldIdx++;
-      normalizedField._idx = createInternalIndex({
-        kind: "field",
-        index: fieldIdx,
-        loopScopes,
-      });
+      normalizedField._idx = fieldIdx;
     }
     if (Array.isArray(rest.fields)) {
       normalizedField.fields = rest.fields.map((nestedField) =>
-        normalizeField(nestedField, loopScopes),
+        normalizeField(nestedField),
       );
     }
 
@@ -221,6 +182,45 @@ function normalizeWhenDirectives(form) {
     fields: normalizeFields(form.fields),
   };
 }
+
+const createRenderedIndex = (kind, path) => {
+  const pathToken = path.map((index) => `Item${index}`).join("");
+  return `dynamic${kind}${pathToken}`;
+};
+
+const assignRenderedFieldIndexes = (form) => {
+  if (!isPlainObject(form) || !Array.isArray(form.fields)) {
+    return form;
+  }
+
+  const assignFields = (fields, parentPath = []) =>
+    fields.map((field, index) => {
+      const path = [...parentPath, index];
+      if (Array.isArray(field)) {
+        return assignFields(field, path);
+      }
+      if (!isPlainObject(field)) {
+        return field;
+      }
+
+      const indexedField = { ...field };
+      if (!hasOwn(indexedField, "_layoutIdx")) {
+        indexedField._layoutIdx = createRenderedIndex("Layout", path);
+      }
+      if (field.type !== "row" && !hasOwn(indexedField, "_idx")) {
+        indexedField._idx = createRenderedIndex("Field", path);
+      }
+      if (Array.isArray(field.fields)) {
+        indexedField.fields = assignFields(field.fields, path);
+      }
+      return indexedField;
+    });
+
+  return {
+    ...form,
+    fields: assignFields(form.fields),
+  };
+};
 
 // Nested property access utilities
 export const get = (obj, path, defaultValue = undefined) => {
@@ -735,10 +735,11 @@ export const selectForm = ({ state, props }) => {
     formValues: stateFormValues,
   };
 
-  if (Object.keys(mergedContext).length > 0) {
-    return parseAndRender(normalizedForm, mergedContext);
-  }
-  return normalizedForm;
+  const renderedForm =
+    Object.keys(mergedContext).length > 0
+      ? parseAndRender(normalizedForm, mergedContext)
+      : normalizedForm;
+  return assignRenderedFieldIndexes(renderedForm);
 };
 
 export const selectViewData = ({ state, props }) => {

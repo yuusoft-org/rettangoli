@@ -235,6 +235,11 @@ describe("rtgl-form bound store integration", () => {
       "notes",
     ]);
     expect(new Set(initialFields.map((field) => field._idx))).toHaveLength(3);
+    expect(
+      initialFields.every((field) =>
+        /^[a-z][a-zA-Z0-9]*$/.test(`field${field._idx}`),
+      ),
+    ).toBe(true);
 
     props.context.fieldDefinitions.push({ name: "website", label: "Website" });
 
@@ -249,6 +254,100 @@ describe("rtgl-form bound store integration", () => {
     expect(nextFields[3]._idx).toBe(initialNotesIndex);
   });
 
+  it("assigns unique ref-safe indices to fields expanded with $each", () => {
+    const props = {
+      context: {
+        fieldDefinitions: [
+          { name: "city", label: "City" },
+          { name: "country", label: "Country" },
+        ],
+      },
+      form: {
+        fields: [
+          {
+            $each: "definition in fieldDefinitions",
+            name: "${definition.name}",
+            type: "input-text",
+            label: "${definition.label}",
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const fields = store.selectViewData().flatFields;
+
+    expect(fields.map((field) => field.name)).toEqual(["city", "country"]);
+    expect(new Set(fields.map((field) => field._idx))).toHaveLength(2);
+    expect(
+      fields.every((field) => /^[a-z][a-zA-Z0-9]*$/.test(`field${field._idx}`)),
+    ).toBe(true);
+  });
+
+  it("keeps nested loop indices unique when index variable names are reused", () => {
+    const props = {
+      context: {
+        groups: [
+          {
+            label: "Primary",
+            fields: [
+              { name: "primaryEmail", label: "Email" },
+              { name: "primaryPhone", label: "Phone" },
+            ],
+          },
+          {
+            label: "Secondary",
+            fields: [
+              { name: "secondaryEmail", label: "Email" },
+              { name: "secondaryPhone", label: "Phone" },
+            ],
+          },
+        ],
+      },
+      form: {
+        fields: [
+          {
+            "$for group, i in groups": {
+              type: "section",
+              label: "${group.label}",
+              fields: [
+                {
+                  "$for definition, i in group.fields": {
+                    name: "${definition.name}",
+                    type: "input-text",
+                    label: "${definition.label}",
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const form = store.selectForm();
+    const fields = formStore.collectAllDataFields(form.fields);
+    const allFields = form.fields.flatMap((field) => [
+      field,
+      ...(field.fields || []),
+    ]);
+
+    expect(fields.map((field) => field.name)).toEqual([
+      "primaryEmail",
+      "primaryPhone",
+      "secondaryEmail",
+      "secondaryPhone",
+    ]);
+    expect(new Set(fields.map((field) => field._idx))).toHaveLength(4);
+    expect(new Set(allFields.map((field) => field._layoutIdx))).toHaveLength(6);
+    expect(
+      allFields.every((field) =>
+        /^[a-z][a-zA-Z0-9]*$/.test(`layoutItem${field._layoutIdx}`),
+      ),
+    ).toBe(true);
+  });
+
   it("preserves select image options and their shared image configuration", () => {
     const image = {
       size: 24,
@@ -260,11 +359,15 @@ describe("rtgl-form bound store integration", () => {
       { label: "Ada", value: "ada", imageSrc: "/avatars/ada.svg" },
       { label: "Grace", value: "grace", imageSrc: "/avatars/grace.svg" },
     ];
-    const store = bindStore(formStore, {
-      form: {
-        fields: [{ name: "person", type: "select", image, options }],
+    const store = bindStore(
+      formStore,
+      {
+        form: {
+          fields: [{ name: "person", type: "select", image, options }],
+        },
       },
-    }, {});
+      {},
+    );
 
     const field = store.selectViewData().flatFields[0];
 

@@ -287,6 +287,64 @@ describe("rtgl-form handlers", () => {
     },
   );
 
+  it.each([
+    ["input", handleValueInput],
+    ["change", handleValueChange],
+  ])(
+    "synchronizes the edited field when a conditional row render replaces it on %s",
+    (_label, handler) => {
+      const props = {
+        form: {
+          fields: [
+            {
+              type: "row",
+              fields: [
+                {
+                  name: "extra",
+                  type: "input-text",
+                  $when: "formValues.showExtra",
+                },
+                { name: "showExtra", type: "checkbox" },
+              ],
+            },
+          ],
+        },
+      };
+      const store = createStore({
+        props,
+        formValues: { showExtra: false },
+      });
+      const currentTarget = {
+        ...createRef(),
+        dataset: { fieldName: "showExtra" },
+      };
+      const replacementRef = createRef();
+      const refs = { field1: currentTarget };
+      const render = vi.fn(() => {
+        refs.field1 = replacementRef;
+      });
+
+      handler(
+        {
+          store,
+          dispatchEvent: vi.fn(),
+          render,
+          props,
+          refs,
+        },
+        {
+          _event: {
+            currentTarget,
+            detail: { value: true },
+          },
+        },
+      );
+
+      expect(store.getState().formValues.showExtra).toBe(true);
+      expect(replacementRef.setAttribute).toHaveBeenCalledWith("checked", "");
+    },
+  );
+
   it("prunes newly hidden fields through the live bound props", () => {
     const oldForm = {
       fields: [

@@ -25,7 +25,7 @@ const updateFieldAttributes = ({
   refs = {},
   formDisabled = false,
   forceValueRefresh = false,
-  skipFieldName,
+  skipFieldRef,
 }) => {
   const fields = form.fields || [];
 
@@ -45,11 +45,10 @@ const updateFieldAttributes = ({
         continue;
       }
 
-      if (field.name === skipFieldName) continue;
-
       const ref = refs[`field${field._idx}`];
 
       if (!ref) continue;
+      if (ref === skipFieldRef) continue;
 
       const disabled = formDisabled || !!field.disabled;
 
@@ -245,7 +244,7 @@ export const handleValueInput = (deps, payload) => {
     formValues: nextState.formValues,
     refs,
     formDisabled: !!props?.disabled,
-    skipFieldName: name,
+    skipFieldRef: event.currentTarget,
   });
 
   dispatchEvent(
@@ -305,7 +304,7 @@ export const handleValueChange = (deps, payload) => {
     formValues: nextState.formValues,
     refs,
     formDisabled: !!props?.disabled,
-    skipFieldName: name,
+    skipFieldRef: event.currentTarget,
   });
 
   dispatchEvent(
