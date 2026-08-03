@@ -100,31 +100,47 @@ function normalizeWhenDirectives(form) {
     return form;
   }
 
-  const normalizeFields = (fields = []) =>
-    fields.map((field) => {
-      if (!isPlainObject(field)) {
-        return field;
-      }
-
-      if (typeof field.$when === "string" && field.$when.trim().length > 0) {
-        const { $when, ...rest } = field;
-        const normalizedField = Array.isArray(rest.fields)
-          ? { ...rest, fields: normalizeFields(rest.fields) }
-          : rest;
-        return {
-          [`$if ${$when}`]: normalizedField,
-        };
-      }
-
-      if (Array.isArray(field.fields)) {
-        return {
-          ...field,
-          fields: normalizeFields(field.fields),
-        };
-      }
-
+  let nextFieldIdx = 0;
+  let nextLayoutIdx = 0;
+  const normalizeField = (field) => {
+    if (!isPlainObject(field)) {
       return field;
-    });
+    }
+
+    const fieldEntries = Object.entries(field);
+    if (
+      fieldEntries.length === 1 &&
+      fieldEntries[0][0].startsWith("$if ") &&
+      isPlainObject(fieldEntries[0][1])
+    ) {
+      return {
+        [fieldEntries[0][0]]: normalizeField(fieldEntries[0][1]),
+      };
+    }
+
+    const { $when, ...rest } = field;
+    const normalizedField = {
+      ...rest,
+      _layoutIdx: nextLayoutIdx,
+    };
+    nextLayoutIdx++;
+    if (field.type !== "row") {
+      normalizedField._idx = nextFieldIdx;
+      nextFieldIdx++;
+    }
+    if (Array.isArray(rest.fields)) {
+      normalizedField.fields = rest.fields.map(normalizeField);
+    }
+
+    if (typeof $when === "string" && $when.trim().length > 0) {
+      return {
+        [`$if ${$when}`]: normalizedField,
+      };
+    }
+
+    return normalizedField;
+  };
+  const normalizeFields = (fields = []) => fields.map(normalizeField);
 
   return {
     ...form,
@@ -473,7 +489,12 @@ export const validateForm = (fields, formValues) => {
 
 // --- Field helpers ---
 
-const DISPLAY_TYPES = ["section", "read-only-text", "slot"];
+const FIELD_CONTAINER_TYPES = ["section", "row"];
+const DISPLAY_TYPES = [...FIELD_CONTAINER_TYPES, "read-only-text", "slot"];
+
+const isFieldContainer = (field) => {
+  return FIELD_CONTAINER_TYPES.includes(field.type);
+};
 
 export const isDataField = (field) => {
   return !DISPLAY_TYPES.includes(field.type);
@@ -482,7 +503,7 @@ export const isDataField = (field) => {
 export const collectAllDataFields = (fields) => {
   const result = [];
   for (const field of fields) {
-    if (field.type === "section" && Array.isArray(field.fields)) {
+    if (isFieldContainer(field) && Array.isArray(field.fields)) {
       result.push(...collectAllDataFields(field.fields));
     } else if (isDataField(field)) {
       result.push(field);
@@ -539,6 +560,12 @@ export const flattenFields = (fields, startIdx = 0) => {
         result.push(...nested);
         idx += nested.length;
       }
+    } else if (field.type === "row") {
+      if (Array.isArray(field.fields)) {
+        const nested = flattenFields(field.fields, idx);
+        result.push(...nested);
+        idx += nested.length;
+      }
     } else {
       result.push({
         ...field,
@@ -550,6 +577,60 @@ export const flattenFields = (fields, startIdx = 0) => {
   }
 
   return result;
+};
+
+const buildFieldLayoutItems = (fields) => {
+  const items = [];
+
+  for (const field of fields) {
+    if (field.type === "section") {
+      items.push({
+        ...field,
+        _isSection: true,
+      });
+
+      if (Array.isArray(field.fields)) {
+        items.push(...buildFieldLayoutItems(field.fields));
+      }
+      continue;
+    }
+
+    if (field.type === "row") {
+      const rowFields = [];
+      for (const childField of field.fields || []) {
+        rowFields.push({
+          ...childField,
+          _isSection: false,
+        });
+      }
+
+      if (rowFields.length > 0) {
+        items.push({
+          _isSection: false,
+          _isRow: true,
+          _layoutIdx: field._layoutIdx,
+          _columns: rowFields.length,
+          fields: rowFields,
+        });
+      }
+      continue;
+    }
+
+    items.push({
+      _isSection: false,
+      _isRow: false,
+      _layoutIdx: field._layoutIdx,
+      _columns: 1,
+      fields: [
+        {
+          ...field,
+          _isSection: false,
+        },
+      ],
+    });
+  }
+
+  return items;
 };
 
 // --- Store ---
@@ -592,8 +673,10 @@ export const selectViewData = ({ state, props }) => {
   const fields = form.fields || [];
   const formDisabled = !!props?.disabled;
 
-  // Flatten fields for template iteration
-  const flatFields = flattenFields(fields);
+  const fieldLayout = buildFieldLayoutItems(fields);
+  const flatFields = fieldLayout.flatMap((item) =>
+    item._isSection ? [item] : item.fields,
+  );
 
   // Enrich each field with computed properties
   flatFields.forEach((field) => {
@@ -676,6 +759,7 @@ export const selectViewData = ({ state, props }) => {
     containerAttrString,
     title: form?.title || "",
     description: form?.description || "",
+    fieldLayout,
     flatFields,
     actions: actionsData,
     formValues: state.formValues,

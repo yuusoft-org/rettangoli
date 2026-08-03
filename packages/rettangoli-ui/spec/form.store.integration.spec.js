@@ -24,6 +24,146 @@ const createConditionalFormProps = () => ({
 });
 
 describe("rtgl-form bound store integration", () => {
+  it("groups row fields into equal columns and standalone fields into full-width rows", () => {
+    const props = {
+      form: {
+        fields: [
+          {
+            type: "section",
+            label: "Profile",
+            fields: [
+              {
+                type: "row",
+                fields: [
+                  { name: "firstName", type: "input-text" },
+                  { name: "lastName", type: "input-text" },
+                ],
+              },
+              { name: "email", type: "input-text" },
+            ],
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const viewData = store.selectViewData();
+
+    expect(viewData.fieldLayout).toHaveLength(3);
+    expect(viewData.fieldLayout[0]).toMatchObject({
+      _isSection: true,
+      _idx: 0,
+      label: "Profile",
+    });
+    expect(viewData.fieldLayout[1]).toMatchObject({
+      _isSection: false,
+      _isRow: true,
+      _columns: 2,
+    });
+    expect(
+      viewData.fieldLayout[1].fields.map(({ name, _idx }) => ({ name, _idx })),
+    ).toEqual([
+      { name: "firstName", _idx: 1 },
+      { name: "lastName", _idx: 2 },
+    ]);
+    expect(viewData.fieldLayout[2]).toMatchObject({
+      _isSection: false,
+      _isRow: false,
+      _columns: 1,
+    });
+    expect(viewData.fieldLayout[2].fields[0]).toMatchObject({
+      name: "email",
+      _idx: 3,
+    });
+  });
+
+  it("expands the remaining visible field when a row sibling is conditional", () => {
+    const props = {
+      form: {
+        fields: [
+          {
+            type: "row",
+            fields: [
+              { name: "firstName", type: "input-text" },
+              {
+                name: "lastName",
+                type: "input-text",
+                $when: 'formValues.mode == "full"',
+              },
+            ],
+          },
+          { name: "mode", type: "input-text" },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({
+      defaultValues: {
+        firstName: "Ada",
+        lastName: "Lovelace",
+        mode: "short",
+      },
+    });
+
+    const viewData = store.selectViewData();
+
+    expect(viewData.fieldLayout[0]).toMatchObject({
+      _isRow: true,
+      _layoutIdx: 0,
+      _columns: 1,
+    });
+    expect(viewData.fieldLayout[0].fields.map((field) => field.name)).toEqual([
+      "firstName",
+    ]);
+    expect(viewData.fieldLayout[0].fields[0]._idx).toBe(0);
+    expect(viewData.fieldLayout[1].fields[0]).toMatchObject({
+      name: "mode",
+      _idx: 2,
+    });
+    expect(viewData.fieldLayout[1]._layoutIdx).toBe(3);
+    expect(store.selectFormValues()).toEqual({
+      firstName: "Ada",
+      mode: "short",
+    });
+  });
+
+  it("preserves direct $if fields without creating empty layout items", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "contentType", type: "input-text" },
+          {
+            '$if contentType == "custom"': {
+              name: "content",
+              type: "input-text",
+            },
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({
+      defaultValues: { contentType: "dialogue.content" },
+    });
+
+    expect(store.selectViewData().fieldLayout).toHaveLength(1);
+    expect(store.selectViewData().fieldLayout[0].fields[0]).toMatchObject({
+      name: "contentType",
+      _idx: 0,
+      _layoutIdx: 0,
+    });
+
+    store.setFormFieldValue({ name: "contentType", value: "custom" });
+
+    const visibleLayout = store.selectViewData().fieldLayout;
+    expect(visibleLayout).toHaveLength(2);
+    expect(visibleLayout[1].fields[0]).toMatchObject({
+      name: "content",
+      _idx: 1,
+      _layoutIdx: 1,
+    });
+  });
+
   it("provides the duration placeholder default without overriding an explicit value", () => {
     const props = {
       form: {
