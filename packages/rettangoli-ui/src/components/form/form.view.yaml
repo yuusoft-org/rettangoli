@@ -7,6 +7,10 @@ refs:
     eventListeners:
       click:
         handler: handleActionClick
+  sectionAction*:
+    eventListeners:
+      click:
+        handler: handleSectionActionClick
   tooltipIcon*:
     eventListeners:
       mouseenter:
@@ -36,9 +40,13 @@ template:
           - $for item, i in fieldLayout:
               - $if item._isSection:
                   - rtgl-view#layoutItem${item._layoutIdx} g=md w=f:
-                      - rtgl-view g=sm:
-                          - $if item.label:
-                              - rtgl-text s=md: ${item.label}
+                      - rtgl-view g=sm w=f:
+                          - rtgl-view d=h av=c w=f g=sm:
+                              - rtgl-view w=1fg:
+                                  - $if item.label:
+                                      - rtgl-text s=md: ${item.label}
+                              - $if item._action:
+                                  - 'rtgl-button#sectionAction${item._idx} data-section-id=${item.id} data-section-action-id=${item._action.id} v=gh s=sm sq pre=${item._action.icon} :ariaLabel=${item._action.label} ?disabled=${item._action._disabled}': null
                           - $if item.description:
                               - rtgl-text s=sm c=mu-fg: ${item.description}
                 $else:

@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import { bindStore } from "../../rettangoli-fe/src/core/runtime/store.js";
 import {
+  handleKeyDown,
   handleOnUpdate,
+  handleSectionActionClick,
   handleValueChange,
   handleValueInput,
 } from "../src/components/form/form.handlers.js";
@@ -535,4 +537,126 @@ describe("rtgl-form handlers", () => {
       });
     },
   );
+
+  it("emits section actions with current values and anchor geometry", () => {
+    const props = {
+      form: {
+        fields: [
+          {
+            type: "section",
+            id: "speaker",
+            action: {
+              id: "add",
+              icon: "plus",
+              label: "Add speaker",
+            },
+            fields: [
+              { name: "speaker.name", type: "input-text" },
+            ],
+          },
+        ],
+      },
+    };
+    const store = createStore({
+      props,
+      formValues: { speaker: { name: "Ada" } },
+    });
+    const dispatchEvent = vi.fn();
+    const rect = {
+      left: 120,
+      top: 40,
+      right: 144,
+      bottom: 64,
+      width: 24,
+      height: 24,
+    };
+
+    handleSectionActionClick(
+      { store, dispatchEvent, props },
+      {
+        _event: {
+          currentTarget: {
+            dataset: {
+              sectionId: "speaker",
+              sectionActionId: "add",
+            },
+            getBoundingClientRect: () => rect,
+            hasAttribute: () => false,
+          },
+        },
+      },
+    );
+
+    expect(dispatchEvent).toHaveBeenCalledTimes(1);
+    const dispatchedEvent = dispatchEvent.mock.calls[0][0];
+    expect(dispatchedEvent.type).toBe("form-section-action");
+    expect(dispatchedEvent.bubbles).toBe(true);
+    expect(dispatchedEvent.detail).toEqual({
+      sectionId: "speaker",
+      actionId: "add",
+      values: { speaker: { name: "Ada" } },
+      position: { x: 120, y: 64 },
+      anchorRect: rect,
+    });
+  });
+
+  it("does not emit disabled section actions", () => {
+    const props = { form: { fields: [] } };
+    const store = createStore({ props });
+    const dispatchEvent = vi.fn();
+
+    handleSectionActionClick(
+      { store, dispatchEvent, props },
+      {
+        _event: {
+          currentTarget: {
+            dataset: {
+              sectionId: "speaker",
+              sectionActionId: "add",
+            },
+            hasAttribute: (name) => name === "disabled",
+          },
+        },
+      },
+    );
+
+    expect(dispatchEvent).not.toHaveBeenCalled();
+  });
+
+  it("lets section action buttons handle Enter without submitting the form", () => {
+    const props = {
+      form: {
+        fields: [],
+        actions: {
+          buttons: [{ id: "save", label: "Save" }],
+        },
+      },
+    };
+    const store = createStore({ props });
+    const dispatchEvent = vi.fn();
+    const preventDefault = vi.fn();
+
+    handleKeyDown(
+      {
+        store,
+        dispatchEvent,
+        render: vi.fn(),
+        props,
+      },
+      {
+        _event: {
+          key: "Enter",
+          shiftKey: false,
+          target: {
+            tagName: "RTGL-BUTTON",
+            dataset: { sectionActionId: "add" },
+          },
+          preventDefault,
+        },
+      },
+    );
+
+    expect(preventDefault).not.toHaveBeenCalled();
+    expect(dispatchEvent).not.toHaveBeenCalled();
+  });
 });

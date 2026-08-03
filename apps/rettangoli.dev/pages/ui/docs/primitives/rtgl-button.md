@@ -57,6 +57,7 @@ For full behavior details, see [Responsiveness](/ui/docs/introduction/responsive
 | Prefix Icon | `pre` | registered svg key | - |
 | Suffix Icon | `suf` | registered svg key | - |
 | Square Mode | `sq` | boolean | - |
+| Accessible Label | `aria-label` | string | - |
 | Disabled | `disabled` | boolean | - |
 | Link | `href`, `new-tab`, `rel` | string, boolean | - |
 | Width | `w` | number, `%`, `xs`-`xl`, `f`, CSS length/value | - |
@@ -124,12 +125,13 @@ Use `sq` for icon-only square buttons.
 - `sq` produces square dimensions based on `s`.
 - When `sq` is set, `w` is ignored.
 - Pair `sq` with `pre` for a visible icon.
+- Give icon-only buttons an `aria-label`.
 
 ```html codePreview
 <rtgl-view d="h" g="md">
-  <rtgl-button sq pre="text"></rtgl-button>
-  <rtgl-button sq pre="text" s="sm"></rtgl-button>
-  <rtgl-button sq pre="text" s="lg"></rtgl-button>
+  <rtgl-button sq pre="text" aria-label="Text tools"></rtgl-button>
+  <rtgl-button sq pre="text" s="sm" aria-label="Small text tools"></rtgl-button>
+  <rtgl-button sq pre="text" s="lg" aria-label="Large text tools"></rtgl-button>
 </rtgl-view>
 ```
 

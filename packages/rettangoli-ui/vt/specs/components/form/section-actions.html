@@ -1,0 +1,149 @@
+---
+title: Form Section Actions
+description: Verifies section header actions render accessibly, expose disabled state, and emit their section metadata.
+specs:
+  - Enabled and disabled section actions remain aligned with their section headings.
+  - Accessible labels containing quotes are preserved without creating injected attributes.
+  - Clicking an enabled action emits section and action ids with the current form values.
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '[data-testid="enabled-section-action"]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: js
+    fn: sectionActionsVt.inspectActions
+    value:
+      actionCount: 2
+      enabledLabel: 'Project "Save As" data-injected="true'
+      enabledDisabled: false
+      enabledHasInjectedAttribute: false
+      disabledLabel: Add archived speaker
+      disabledDisabled: true
+  - action: screenshot
+  - action: select
+    testId: enabled-section-action
+    steps:
+      - action: click
+  - action: assert
+    type: js
+    fn: sectionActionsVt.inspectEvent
+    value:
+      eventCount: 1
+      sectionId: speakers
+      actionId: add
+      speakerName: Ada Lovelace
+      hasFinitePosition: true
+      hasPositiveAnchorSize: true
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 720
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+  <rtgl-view id="demo" g="md" w="400">
+    <rtgl-text id="event-status" c="mu-fg" s="sm">Section action event: none</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+  form.defaultValues = {
+    speakerName: 'Ada Lovelace',
+    archivedSpeaker: 'Grace Hopper',
+  };
+  form.form = {
+    title: 'Conference speakers',
+    description: 'Manage active and archived speakers',
+    fields: [{
+      type: 'section',
+      id: 'speakers',
+      label: 'Speakers',
+      description: 'People presenting at this event',
+      action: {
+        id: 'add',
+        icon: 'plus',
+        label: 'Project "Save As" data-injected="true',
+      },
+      fields: [{
+        name: 'speakerName',
+        type: 'input-text',
+        label: 'Primary speaker',
+      }],
+    }, {
+      type: 'section',
+      id: 'archived-speakers',
+      label: 'Archived speakers',
+      description: 'Read-only speaker history',
+      action: {
+        id: 'add',
+        icon: 'plus',
+        label: 'Add archived speaker',
+        disabled: true,
+      },
+      fields: [{
+        name: 'archivedSpeaker',
+        type: 'input-text',
+        label: 'Archived speaker',
+        disabled: true,
+      }],
+    }],
+  };
+
+  let eventCount = 0;
+  let lastEvent = null;
+
+  form.addEventListener('form-section-action', (event) => {
+    eventCount += 1;
+    lastEvent = event.detail;
+    document.getElementById('event-status').textContent =
+      `Section action event: ${event.detail.sectionId}/${event.detail.actionId}`;
+  });
+
+  document.getElementById('demo').appendChild(form);
+
+  const tagActionButtons = () => {
+    const actions = form.shadowRoot?.querySelectorAll('[data-section-action-id]');
+    if (actions?.length === 2) {
+      actions[0].setAttribute('data-testid', 'enabled-section-action');
+      actions[1].setAttribute('data-testid', 'disabled-section-action');
+      return;
+    }
+    setTimeout(tagActionButtons, 0);
+  };
+
+  tagActionButtons();
+
+  window.sectionActionsVt = {
+    inspectActions() {
+      const actions = form.shadowRoot?.querySelectorAll('[data-section-action-id]') ?? [];
+      const enabledAction = actions[0];
+      const disabledAction = actions[1];
+
+      return {
+        actionCount: actions.length,
+        enabledLabel: enabledAction?.getAttribute('aria-label') ?? '',
+        enabledDisabled: enabledAction?.hasAttribute('disabled') ?? false,
+        enabledHasInjectedAttribute: enabledAction?.hasAttribute('data-injected') ?? false,
+        disabledLabel: disabledAction?.getAttribute('aria-label') ?? '',
+        disabledDisabled: disabledAction?.hasAttribute('disabled') ?? false,
+      };
+    },
+    inspectEvent() {
+      return {
+        eventCount,
+        sectionId: lastEvent?.sectionId ?? '',
+        actionId: lastEvent?.actionId ?? '',
+        speakerName: lastEvent?.values?.speakerName ?? '',
+        hasFinitePosition: Number.isFinite(lastEvent?.position?.x)
+          && Number.isFinite(lastEvent?.position?.y),
+        hasPositiveAnchorSize: lastEvent?.anchorRect?.width > 0
+          && lastEvent?.anchorRect?.height > 0,
+      };
+    },
+  };
+</script>

@@ -755,7 +755,17 @@ export const selectViewData = ({ state, props }) => {
 
   // Enrich each field with computed properties
   flatFields.forEach((field) => {
-    if (field._isSection) return;
+    if (field._isSection) {
+      if (field.action) {
+        field._action = {
+          ...field.action,
+          icon: field.action.icon ?? "plus",
+          label: field.action.label ?? "Section action",
+          _disabled: formDisabled || !!field.action.disabled,
+        };
+      }
+      return;
+    }
 
     const isData = isDataField(field);
     field._disabled = formDisabled || !!field.disabled;

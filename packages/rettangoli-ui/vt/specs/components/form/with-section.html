@@ -1,6 +1,18 @@
 ---
 title: "With Section"
 diffThreshold: 0.35
+specs:
+  - Section action labels containing quotes remain accessible and cannot inject attributes.
+steps:
+  - action: wait
+    ms: 80
+  - action: assert
+    type: js
+    fn: sectionActionTest.inspectLabel
+    value:
+      hostLabel: 'Project "Save As" data-injected="true'
+      nativeLabel: 'Project "Save As" data-injected="true'
+      hasInjectedAttribute: false
 viewport:
   id: form-compact
   width: 700
@@ -21,8 +33,14 @@ viewport:
     description: 'Fill out all sections',
     fields: [{
       type: 'section',
+      id: 'personal-information',
       label: 'Personal Information',
       description: 'Basic details about you',
+      action: {
+        id: 'add',
+        icon: 'plus',
+        label: 'Project "Save As" data-injected="true',
+      },
       fields: [{
         name: 'firstName',
         type: 'input-text',
@@ -82,5 +100,20 @@ viewport:
     console.log('form-action', e.detail);
   });
 
+  form.addEventListener('form-section-action', (e) => {
+    console.log('form-section-action', e.detail);
+  });
+
   document.getElementById('container').appendChild(form);
+
+  window.sectionActionTest = {
+    inspectLabel() {
+      const action = form.shadowRoot?.querySelector('[id^="sectionAction"]');
+      return {
+        hostLabel: action?.getAttribute('aria-label') ?? '',
+        nativeLabel: action?.shadowRoot?.querySelector('button')?.getAttribute('aria-label') ?? '',
+        hasInjectedAttribute: action?.hasAttribute('data-injected') ?? false,
+      };
+    },
+  };
 </script>

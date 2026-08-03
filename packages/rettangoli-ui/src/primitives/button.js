@@ -210,6 +210,19 @@ class RettangoliButtonElement extends HTMLElement {
     this._onWindowResize = this._onWindowResize.bind(this);
   }
 
+  get ariaLabel() {
+    return this.getAttribute("aria-label");
+  }
+
+  set ariaLabel(value) {
+    if (value === undefined || value === null || value === "") {
+      this.removeAttribute("aria-label");
+      return;
+    }
+
+    this.setAttribute("aria-label", String(value));
+  }
+
   static get observedAttributes() {
     return [
       "key",
@@ -219,6 +232,7 @@ class RettangoliButtonElement extends HTMLElement {
       "w",
       "pre",
       "suf",
+      "aria-label",
       "disabled",
       "v",
       "s",
@@ -276,6 +290,7 @@ class RettangoliButtonElement extends HTMLElement {
     const href = this.getAttribute("href");
     const newTab = this.hasAttribute("new-tab");
     const rel = this.getAttribute("rel");
+    const ariaLabel = this.getAttribute("aria-label");
 
     const shouldUseAnchor = href && !isDisabled;
     const requiredTag = shouldUseAnchor ? "a" : "button";
@@ -318,6 +333,12 @@ class RettangoliButtonElement extends HTMLElement {
       } else {
         this._surfaceElement.removeAttribute("disabled");
       }
+    }
+
+    if (ariaLabel) {
+      this._surfaceElement.setAttribute("aria-label", ariaLabel);
+    } else {
+      this._surfaceElement.removeAttribute("aria-label");
     }
 
     this.shadow.appendChild(this._surfaceElement);
