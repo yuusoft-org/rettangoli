@@ -1,0 +1,205 @@
+---
+title: Select Option Images
+description: Verifies globally styled option images render in selected triggers and aligned mixed-content menu rows.
+specs:
+  - Image options render to the left of selected and menu labels.
+  - One select-level image object controls size, radius, border color, and fit for every image.
+  - Replacing the image object updates both the trigger and an already-open menu.
+  - Images take precedence over icons, while icon-only and empty rows retain an aligned leading column.
+  - Omitted image styling uses 20px, small-radius, borderless, cover defaults.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    selector: '#custom-image-select [data-testid="select-button"]'
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#custom-image-select rtgl-popover[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 160
+  - action: assert
+    type: js
+    fn: selectImages.inspect
+    value:
+      defaultTrigger:
+        src: /public/avatar-grace.svg
+        alt: ""
+        innerAlt: ""
+        size: "20"
+        radius: sm
+        fit: cov
+        hasBorder: false
+      customTrigger:
+        src: /public/avatar-ada.svg
+        alt: ""
+        innerAlt: ""
+        size: "24"
+        radius: f
+        fit: con
+        hasBorder: true
+        borderColor: bo
+      menuKinds:
+        - image
+        - icon
+        - empty
+      menuSlotWidths:
+        - 24
+        - 24
+        - 24
+      labelLeftDeltas:
+        - 0
+        - 0
+        - 0
+      imageWinsOverIcon: true
+  - action: screenshot
+  - action: customEvent
+    name: update-select-image-style
+  - action: wait
+    ms: 160
+  - action: assert
+    type: js
+    fn: selectImages.inspectUpdatedStyle
+    value:
+      trigger:
+        size: "28"
+        radius: xl
+        fit: cov
+        borderColor: ac
+      optionImage:
+        size: "28"
+        radius: xl
+        fit: cov
+        borderColor: ac
+      menuSlotWidths:
+        - 28
+        - 28
+        - 28
+      labelLeftDeltas:
+        - 0
+        - 0
+        - 0
+  - action: screenshot
+viewport:
+  id: component-compact
+  width: 720
+  height: 520
+---
+
+<rtgl-view d="h" g="xl" p="xl" wh="f" wrap>
+  <rtgl-view g="md" p="lg" bgc="bg" bw="xs" bc="bo" br="lg">
+    <rtgl-text s="sm">Default image styling</rtgl-text>
+    <rtgl-select id="default-image-select" w="280"></rtgl-select>
+  </rtgl-view>
+  <rtgl-view g="md" p="lg" bgc="bg" bw="xs" bc="bo" br="lg">
+    <rtgl-text s="sm">Custom image styling and mixed rows</rtgl-text>
+    <rtgl-select id="custom-image-select" w="320"></rtgl-select>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const defaultSelect = document.getElementById("default-image-select");
+  defaultSelect.options = [
+    { value: "grace", label: "Grace Hopper", imageSrc: "/public/avatar-grace.svg" },
+    { value: "ada", label: "Ada Lovelace", imageSrc: "/public/avatar-ada.svg" },
+  ];
+  defaultSelect.selectedValue = "grace";
+  defaultSelect.render();
+
+  const customSelect = document.getElementById("custom-image-select");
+  customSelect.image = {
+    size: 24,
+    borderRadius: "full",
+    borderColor: "bo",
+    fit: "contain",
+  };
+  customSelect.options = [
+    {
+      value: "ada",
+      label: "Ada Lovelace",
+      imageSrc: "/public/avatar-ada.svg",
+      icon: "info",
+      testId: "ada-option",
+    },
+    { value: "grace", label: "Grace Hopper", icon: "info", testId: "grace-option" },
+    { value: "linus", label: "Linus Torvalds", testId: "linus-option" },
+  ];
+  customSelect.selectedValue = "ada";
+  customSelect.render();
+
+  const imageDetails = (image) => ({
+    src: image?.getAttribute("src") ?? "",
+    alt: image?.getAttribute("alt") ?? null,
+    innerAlt: image?.shadowRoot?.querySelector("img")?.getAttribute("alt") ?? null,
+    size: image?.getAttribute("wh") ?? "",
+    radius: image?.getAttribute("br") ?? "",
+    fit: image?.getAttribute("of") ?? "",
+    hasBorder: image?.hasAttribute("bw") ?? false,
+    ...(image?.hasAttribute("bc") ? { borderColor: image.getAttribute("bc") } : {}),
+  });
+
+  window.selectImages = {
+    inspect() {
+      const defaultTriggerImage = defaultSelect.shadowRoot
+        ?.querySelector('[data-testid="select-button"] rtgl-image');
+      const customTriggerImage = customSelect.shadowRoot
+        ?.querySelector('[data-testid="select-button"] rtgl-image');
+      const popover = customSelect.shadowRoot?.querySelector("rtgl-popover");
+      const rows = ["ada-option", "grace-option", "linus-option"]
+        .map((testId) => popover?.content?.querySelector(`[data-testid="${testId}"]`));
+      const slots = rows.map((row) => row?.querySelector(".leading-visual"));
+      const labelLefts = rows.map((row) => Math.round(
+        row?.querySelector(".leading-visual + rtgl-text")?.getBoundingClientRect().left ?? 0,
+      ));
+      const firstLabelLeft = labelLefts[0] ?? 0;
+
+      return {
+        defaultTrigger: imageDetails(defaultTriggerImage),
+        customTrigger: imageDetails(customTriggerImage),
+        menuKinds: slots.map((slot) => (
+          slot?.querySelector("rtgl-image") ? "image" :
+            (slot?.querySelector("rtgl-svg") ? "icon" : "empty")
+        )),
+        menuSlotWidths: slots.map((slot) => Math.round(slot?.getBoundingClientRect().width ?? 0)),
+        labelLeftDeltas: labelLefts.map((left) => left - firstLabelLeft),
+        imageWinsOverIcon: !!slots[0]?.querySelector("rtgl-image")
+          && !slots[0]?.querySelector("rtgl-svg"),
+      };
+    },
+    inspectUpdatedStyle() {
+      const triggerImage = customSelect.shadowRoot
+        ?.querySelector('[data-testid="select-button"] rtgl-image');
+      const popover = customSelect.shadowRoot?.querySelector("rtgl-popover");
+      const rows = ["ada-option", "grace-option", "linus-option"]
+        .map((testId) => popover?.content?.querySelector(`[data-testid="${testId}"]`));
+      const slots = rows.map((row) => row?.querySelector(".leading-visual"));
+      const labelLefts = rows.map((row) => Math.round(
+        row?.querySelector(".leading-visual + rtgl-text")?.getBoundingClientRect().left ?? 0,
+      ));
+      const firstLabelLeft = labelLefts[0] ?? 0;
+      const summarizeStyle = (image) => ({
+        size: image?.getAttribute("wh") ?? "",
+        radius: image?.getAttribute("br") ?? "",
+        fit: image?.getAttribute("of") ?? "",
+        borderColor: image?.getAttribute("bc") ?? "",
+      });
+
+      return {
+        trigger: summarizeStyle(triggerImage),
+        optionImage: summarizeStyle(slots[0]?.querySelector("rtgl-image")),
+        menuSlotWidths: slots.map((slot) => Math.round(slot?.getBoundingClientRect().width ?? 0)),
+        labelLeftDeltas: labelLefts.map((left) => left - firstLabelLeft),
+      };
+    },
+  };
+
+  window.addEventListener("update-select-image-style", () => {
+    customSelect.image = {
+      size: 28,
+      borderRadius: "xl",
+      borderColor: "ac",
+      fit: "cover",
+    };
+  });
+</script>

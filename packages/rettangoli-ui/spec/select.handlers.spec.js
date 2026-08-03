@@ -82,6 +82,46 @@ describe("rtgl-select handlers", () => {
     );
   });
 
+  it("re-renders the trigger and refreshes an open popover when image styling changes", () => {
+    const render = vi.fn();
+    const refreshContent = vi.fn();
+
+    handleOnUpdate(
+      {
+        store: {
+          closeOptionsPopover: vi.fn(),
+          updateSelectedValue: vi.fn(),
+          selectState: () => ({ isOpen: true }),
+        },
+        refs: {
+          popover: {
+            refreshContent,
+          },
+        },
+        render,
+      },
+      {
+        oldProps: {
+          image: { size: 20, borderRadius: "sm", fit: "cover" },
+        },
+        newProps: {
+          image: {
+            size: 28,
+            borderRadius: "xl",
+            borderColor: "ac",
+            fit: "contain",
+          },
+        },
+      },
+    );
+
+    expect(render).toHaveBeenCalledTimes(1);
+    expect(refreshContent).toHaveBeenCalledTimes(1);
+    expect(render.mock.invocationCallOrder[0]).toBeLessThan(
+      refreshContent.mock.invocationCallOrder[0],
+    );
+  });
+
   it("updates search query without resyncing popover content on search input", () => {
     const render = vi.fn();
     const refreshContent = vi.fn();

@@ -21,6 +21,8 @@ propsSchema:
             type: any
           icon:
             type: string
+          imageSrc:
+            type: string
           shortcut:
             type: string
           suffixText:
@@ -38,6 +40,38 @@ propsSchema:
       properties:
         label:
           type: string
+    image:
+      type: object
+      properties:
+        size:
+          type: number
+        borderRadius:
+          type: string
+          enum:
+            - xs
+            - sm
+            - md
+            - lg
+            - xl
+            - full
+        borderColor:
+          type: string
+          enum:
+            - pr
+            - se
+            - de
+            - fg
+            - bg
+            - su
+            - mu
+            - ac
+            - bo
+            - tr
+        fit:
+          type: string
+          enum:
+            - cover
+            - contain
     disabled:
       type: boolean
     searchable:

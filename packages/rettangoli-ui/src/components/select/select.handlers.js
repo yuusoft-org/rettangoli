@@ -91,6 +91,11 @@ export const handleOnUpdate = (deps, payload) => {
     shouldRefreshPopover = true;
   }
 
+  if (oldProps.image !== newProps.image) {
+    shouldRender = true;
+    shouldRefreshPopover = true;
+  }
+
   if (oldProps.searchable !== newProps.searchable) {
     store.setSearchQuery?.({ query: "" });
     shouldRender = true;
