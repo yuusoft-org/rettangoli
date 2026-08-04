@@ -1,0 +1,116 @@
+---
+title: Form Section Separators
+description: Verifies automatic section separators and field-level overrides.
+specs:
+  - The first visible form item has no automatic separator.
+  - Later sections have separators by default.
+  - A section-level separator boolean can force or hide a separator.
+skipInitialScreenshot: true
+steps:
+  - action: wait
+    ms: 80
+  - action: assert
+    type: js
+    fn: sectionSeparatorsVt.inspect
+    value:
+      separatorCount: 2
+      automaticSeparator: true
+      forcedSeparator: true
+      hiddenSeparator: false
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 820
+---
+
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap> </rtgl-view>
+
+<script>
+  const form = document.createElement("rtgl-form");
+  form.id = "form";
+  form.setAttribute("w", "400");
+  form.form = {
+    title: "Project settings",
+    description: "Automatic and overridden section separators",
+    fields: [
+      {
+        type: "section",
+        id: "general",
+        label: "General",
+        description: "The first item has no separator",
+        fields: [
+          {
+            name: "projectName",
+            type: "input-text",
+            label: "Project name",
+          },
+        ],
+      },
+      {
+        type: "section",
+        id: "access",
+        label: "Access",
+        description: "Later sections are separated automatically",
+        fields: [
+          {
+            name: "visibility",
+            type: "select",
+            label: "Visibility",
+            options: [
+              { label: "Private", value: "private" },
+              { label: "Public", value: "public" },
+            ],
+          },
+        ],
+      },
+      {
+        type: "section",
+        id: "advanced",
+        label: "Advanced",
+        description: "This section opts out of its separator",
+        separator: false,
+        fields: [
+          {
+            name: "slug",
+            type: "input-text",
+            label: "Slug",
+          },
+        ],
+      },
+      {
+        type: "section",
+        id: "forced",
+        label: "Forced separator",
+        description: "An explicit true value forces the separator",
+        separator: true,
+        fields: [],
+      },
+    ],
+  };
+
+  document.getElementById("container").appendChild(form);
+
+  window.sectionSeparatorsVt = {
+    inspect() {
+      const root = form.shadowRoot;
+      const sections =
+        root?.querySelectorAll('[data-form-section="true"]') ?? [];
+
+      return {
+        separatorCount:
+          root?.querySelectorAll('[data-form-section-separator="true"]')
+            .length ?? 0,
+        automaticSeparator: Boolean(
+          sections[1]?.querySelector("[data-form-section-separator]"),
+        ),
+        forcedSeparator: Boolean(
+          sections[3]?.querySelector("[data-form-section-separator]"),
+        ),
+        hiddenSeparator: Boolean(
+          sections[2]?.querySelector("[data-form-section-separator]"),
+        ),
+      };
+    },
+  };
+</script>

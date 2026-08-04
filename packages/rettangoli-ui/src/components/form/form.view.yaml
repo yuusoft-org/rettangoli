@@ -52,7 +52,9 @@ template:
       - rtgl-view g=lg w=f:
           - $for item, i in fieldLayout:
               - $if item._isSection:
-                  - rtgl-view#layoutItem${item._layoutIdx} g=md w=f:
+                  - rtgl-view#layoutItem${item._layoutIdx} data-form-section=true g=md w=f:
+                      - $if item._showSeparator:
+                          - rtgl-view data-form-section-separator=true w=f bwt=xs bc=bo: null
                       - rtgl-view g=sm w=f:
                           - rtgl-view d=h av=c w=f g=sm:
                               - rtgl-view w=1fg:
