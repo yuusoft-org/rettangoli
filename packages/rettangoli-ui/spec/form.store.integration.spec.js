@@ -114,6 +114,101 @@ describe("rtgl-form bound store integration", () => {
     },
   );
 
+  it.each([
+    [undefined, "md", "md-cols=1"],
+    ["sm", "sm", "sm-cols=1"],
+    ["md", "md", "md-cols=1"],
+    ["lg", "lg", "lg-cols=1"],
+    ["xl", "xl", "xl-cols=1"],
+    ["none", "none", ""],
+    ["unsupported", "md", "md-cols=1"],
+    ['lg cols=4 aria-label="unsafe"', "md", "md-cols=1"],
+  ])(
+    "normalizes form rowStackAt=%s to %s",
+    (rowStackAt, expectedStackAt, expectedAttrs) => {
+      const form = {
+        fields: [
+          {
+            type: "row",
+            fields: [
+              { name: "firstName", type: "input-text" },
+              { name: "lastName", type: "input-text" },
+            ],
+          },
+        ],
+      };
+      if (rowStackAt !== undefined) {
+        form.rowStackAt = rowStackAt;
+      }
+
+      const store = bindStore(formStore, { form }, {});
+
+      expect(store.selectViewData().fieldLayout[0]).toMatchObject({
+        _columns: 2,
+        _stackAt: expectedStackAt,
+        _responsiveColumnAttrs: expectedAttrs,
+      });
+    },
+  );
+
+  it("applies the form rowStackAt through sections while preserving row overrides", () => {
+    const store = bindStore(
+      formStore,
+      {
+        form: {
+          rowStackAt: "lg",
+          fields: [
+            {
+              type: "section",
+              label: "Profile",
+              fields: [
+                {
+                  type: "row",
+                  fields: [
+                    { name: "firstName", type: "input-text" },
+                    { name: "lastName", type: "input-text" },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "row",
+              stackAt: "sm",
+              fields: [
+                { name: "city", type: "input-text" },
+                { name: "country", type: "input-text" },
+              ],
+            },
+            {
+              type: "row",
+              stackAt: "unsupported",
+              fields: [
+                { name: "phone", type: "input-text" },
+                { name: "email", type: "input-text" },
+              ],
+            },
+          ],
+        },
+      },
+      {},
+    );
+
+    const rows = store
+      .selectViewData()
+      .fieldLayout.filter((item) => item._isRow);
+
+    expect(
+      rows.map(({ _stackAt, _responsiveColumnAttrs }) => ({
+        stackAt: _stackAt,
+        attrs: _responsiveColumnAttrs,
+      })),
+    ).toEqual([
+      { stackAt: "lg", attrs: "lg-cols=1" },
+      { stackAt: "sm", attrs: "sm-cols=1" },
+      { stackAt: "lg", attrs: "lg-cols=1" },
+    ]);
+  });
+
   it("shows section separators by default except on the first visible form item", () => {
     const props = {
       form: {

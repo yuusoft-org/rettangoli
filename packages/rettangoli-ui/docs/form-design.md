@@ -19,6 +19,7 @@ even if both values are strings.
 version: 1
 title: User Profile
 description: Edit user information
+rowStackAt: md
 fields: []
 actions:
   buttons:
@@ -470,7 +471,7 @@ continue to use the full form width.
 | property | description |
 |---|---|
 | `fields` | Fields rendered in the row. Each visible field receives an equal share of the available width. |
-| `stackAt` | Viewport breakpoint at or below which fields stack into one column: `sm`, `md`, `lg`, `xl`, or `none`. Defaults to `md`. |
+| `stackAt` | Viewport breakpoint at or below which fields stack into one column: `sm`, `md`, `lg`, `xl`, or `none`. Defaults to the form's `rowStackAt`, then `md`. |
 
 ```yaml
 - type: row
@@ -494,9 +495,25 @@ that alignment track is removed so unlabeled controls do not retain empty
 header space.
 
 Rows use Rettangoli's viewport breakpoints. By default, a row keeps equal-width
-columns above `768px` and stacks into one column at `768px` and below. Set
-`stackAt` to `sm` (`640px`), `lg` (`1024px`), or `xl` (`1280px`) to change the
-threshold. Set `stackAt: none` to keep columns at every viewport width.
+columns above `768px` and stacks into one column at `768px` and below. Set the
+form-level `rowStackAt` to change that default for every row, including rows
+inside sections:
+
+```yaml
+rowStackAt: lg
+fields:
+  - type: row
+    fields:
+      - name: firstName
+        type: input-text
+      - name: lastName
+        type: input-text
+```
+
+Supported values are `sm` (`640px`), `md` (`768px`), `lg` (`1024px`), `xl`
+(`1280px`), and `none`. A row-level `stackAt` overrides `rowStackAt` for that
+row. Set either value to `none` to keep the affected rows in columns at every
+viewport width.
 
 #### `read-only-text`
 
@@ -1058,7 +1075,8 @@ VT specs in `vt/specs/components/form/` as HTML files with optional step-based i
 - `mixed-inputs.html` — all field types together
 - `mixed-inputs-with-defaults.html` — all types with defaultValues
 - `field-rows.html` — equal-width row controls, conditional fields, and `stackAt: none`
-- `responsive-field-rows.html` — default and explicit row stacking across `sm`, `md`, `lg`, `xl`, and `none`
+- `responsive-field-rows-default.html` — omitted `rowStackAt` / `stackAt` behavior immediately above and at the default `md` boundary
+- `responsive-field-rows.html` — form-level `rowStackAt` inheritance and row overrides across `sm`, `md`, `lg`, `xl`, and `none`
 
 #### Rendering — actions layout
 
