@@ -37,6 +37,15 @@ afterAll(() => {
 });
 
 describe("rtgl-input primitive", () => {
+  it("includes padding and borders within full-width sizing", () => {
+    const input = document.createElement(TEST_TAG);
+    document.body.appendChild(input);
+
+    expect(input.shadowRoot.adoptedStyleSheets[0].cssText).toContain(
+      "box-sizing: border-box;",
+    );
+  });
+
   it("preserves value-input and value-change event semantics", () => {
     const input = document.createElement(TEST_TAG);
     const inputValues = [];

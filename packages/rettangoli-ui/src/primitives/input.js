@@ -34,6 +34,7 @@ class RettangoliInputElement extends HTMLElement {
         }
         input {
           background-color: var(--background);
+          box-sizing: border-box;
           font-size: var(--sm-font-size);
           font-weight: var(--sm-font-weight);
           line-height: var(--sm-line-height);

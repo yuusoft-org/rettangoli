@@ -4,6 +4,7 @@
 
 ### Improvements
 
+- `rtgl-form`: fixed row fields so input, select, and segmented-control content stretches across the full column width without input padding overflowing its bounds.
 - `rtgl-form`: added reactive `p="none|xs|sm|md|lg|xl"` content padding, with `md` retained as the default and `none` providing a flush layout.
 - `rtgl-form`: added layout-only `row` fields for grouping sibling fields into equal-width columns, including rows nested inside sections and conditional row fields.
 - `rtgl-form`: sections can expose an accessible right-aligned icon action that emits `form-section-action` with current values and viewport anchor geometry for parent-owned actions or dropdown menus.

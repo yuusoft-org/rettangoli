@@ -36,6 +36,7 @@ styles:
   '.form-field[data-align-field-headers="true"]':
     display: grid
     grid-row: span 2
+    grid-template-columns: minmax(0, 1fr)
     grid-template-rows: subgrid
   .form-field-header:
     grid-row: 1
