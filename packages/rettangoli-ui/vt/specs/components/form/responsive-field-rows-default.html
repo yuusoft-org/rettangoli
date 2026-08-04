@@ -1,0 +1,139 @@
+---
+title: "Responsive Field Rows Default"
+description: Form rows retain the md stacking default when no responsive configuration is provided.
+specs:
+  - Omitting form rowStackAt and row stackAt keeps rows horizontal above 768px.
+  - The same unconfigured rows stack at the default md boundary of 768px.
+  - Root and section-nested rows share the default behavior.
+  - Mixed labeled and unlabeled controls align horizontally and drop the empty header track when stacked.
+  - Controls fill their columns and retain source order in both layouts.
+skipInitialScreenshot: true
+steps:
+  - action: assert
+    type: js
+    fn: defaultResponsiveFieldRows.getLayoutState
+    value:
+      configurationIsOmitted: true
+      controlsFillColumns: true
+      defaultMdAttributeApplied: true
+      headerAlignmentMatchesLayout: true
+      rowsMatchDefaultMdBreakpoint: true
+      sourceOrderPreserved: true
+  - action: screenshot
+viewport:
+  - id: above-md
+    width: 769
+    height: 720
+  - id: md-boundary
+    width: 768
+    height: 720
+---
+
+<rtgl-view id="container" w="100vw" h="100vh" ah="c"></rtgl-view>
+
+<script>
+  const rows = [
+    { key: "root", label: "Root Row" },
+    { key: "nested", label: "Section Row" },
+  ];
+
+  const createRow = ({ key, label }) => ({
+    type: "row",
+    fields: [
+      {
+        name: `${key}Left`,
+        type: "input-text",
+        label: `${label} · First`,
+      },
+      {
+        name: `${key}Right`,
+        type: "input-text",
+      },
+    ],
+  });
+
+  const rootRow = createRow(rows[0]);
+  const nestedRow = createRow(rows[1]);
+
+  const formDefinition = {
+    title: "Default Responsive Rows",
+    description: "No rowStackAt or stackAt values are configured.",
+    fields: [
+      rootRow,
+      {
+        type: "section",
+        label: "Nested Fields",
+        fields: [nestedRow],
+      },
+    ],
+  };
+
+  const form = document.createElement("rtgl-form");
+  form.id = "default-responsive-form";
+  form.setAttribute("w", "580");
+  form.defaultValues = Object.fromEntries(
+    rows.flatMap(({ key }) => [
+      [`${key}Left`, "Left value"],
+      [`${key}Right`, "Right value"],
+    ]),
+  );
+  form.form = formDefinition;
+
+  document.getElementById("container").appendChild(form);
+
+  const getField = (name) =>
+    form.shadowRoot.querySelector(`[data-field-name="${name}"]`);
+  const getFieldContainer = (name) => getField(name).closest(".form-field");
+  const getGrid = (key) => getFieldContainer(`${key}Left`).parentElement;
+  const getRenderedInput = (name) => getField(name).shadowRoot.querySelector("input");
+  const widthsMatch = (left, right) => Math.abs(left - right) <= 1;
+  const getRenderedColumnCount = (grid) =>
+    getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length;
+
+  window.defaultResponsiveFieldRows = {
+    getLayoutState() {
+      const expectedColumnCount = window.innerWidth <= 768 ? 1 : 2;
+
+      return {
+        configurationIsOmitted:
+          !Object.hasOwn(formDefinition, "rowStackAt")
+          && [rootRow, nestedRow].every((row) => !Object.hasOwn(row, "stackAt")),
+        controlsFillColumns: rows.every(({ key }) =>
+          [`${key}Left`, `${key}Right`].every((name) =>
+            widthsMatch(
+              getRenderedInput(name).getBoundingClientRect().width,
+              getFieldContainer(name).getBoundingClientRect().width,
+            ),
+          ),
+        ),
+        defaultMdAttributeApplied: rows.every(({ key }) => {
+          const grid = getGrid(key);
+          return grid.getAttribute("md-cols") === "1"
+            && ["sm", "lg", "xl"].every(
+              (breakpoint) => !grid.hasAttribute(`${breakpoint}-cols`),
+            );
+        }),
+        headerAlignmentMatchesLayout: rows.every(({ key }) => {
+          const leftInput = getRenderedInput(`${key}Left`).getBoundingClientRect();
+          const rightField = getFieldContainer(`${key}Right`);
+          const rightInput = getRenderedInput(`${key}Right`).getBoundingClientRect();
+
+          if (expectedColumnCount === 2) {
+            return Math.abs(leftInput.top - rightInput.top) <= 1;
+          }
+
+          return getComputedStyle(rightField).display === "flex"
+            && Math.abs(rightField.getBoundingClientRect().top - rightInput.top) <= 1;
+        }),
+        rowsMatchDefaultMdBreakpoint: rows.every(
+          ({ key }) => getRenderedColumnCount(getGrid(key)) === expectedColumnCount,
+        ),
+        sourceOrderPreserved: rows.every(({ key }) => {
+          const leftRect = getFieldContainer(`${key}Left`).getBoundingClientRect();
+          const rightRect = getFieldContainer(`${key}Right`).getBoundingClientRect();
+          return rightRect.top > leftRect.top || rightRect.left > leftRect.left;
+        }),
+      };
+    },
+  };
+</script>

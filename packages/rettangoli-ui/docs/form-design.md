@@ -1075,6 +1075,7 @@ VT specs in `vt/specs/components/form/` as HTML files with optional step-based i
 - `mixed-inputs.html` — all field types together
 - `mixed-inputs-with-defaults.html` — all types with defaultValues
 - `field-rows.html` — equal-width row controls, conditional fields, and `stackAt: none`
+- `responsive-field-rows-default.html` — omitted `rowStackAt` / `stackAt` behavior immediately above and at the default `md` boundary
 - `responsive-field-rows.html` — form-level `rowStackAt` inheritance and row overrides across `sm`, `md`, `lg`, `xl`, and `none`
 
 #### Rendering — actions layout
