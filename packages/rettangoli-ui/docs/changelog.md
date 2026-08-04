@@ -4,6 +4,7 @@
 
 ### Improvements
 
+- `rtgl-dialog`: added reactive `p="none"` as its padding-free interface.
 - `rtgl-form`: added form-level `rowStackAt: sm|md|lg|xl|none` so every row can share one responsive stacking default while retaining per-row `stackAt` overrides.
 - `rtgl-form`: row fields now stack into one column at the `md` viewport breakpoint by default, with per-row `stackAt: sm|md|lg|xl|none` overrides; mixed labeled and unlabeled fields drop their alignment track after stacking.
 - `rtgl-form`: fixed row fields so input, select, and segmented-control content stretches across the full column width without input padding overflowing its bounds.

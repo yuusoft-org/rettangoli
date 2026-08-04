@@ -210,7 +210,7 @@ class RettangoliDialogElement extends HTMLElement {
 
         ${fixedLayoutStyle(FIXED_LAYOUT_SELECTOR)}
 
-        :host([no-padding]) slot[name="content"] {
+        :host([p="none"]) slot[name="content"] {
           margin-left: 0;
           margin-right: 0;
           max-width: 100vw;
@@ -332,6 +332,7 @@ class RettangoliDialogElement extends HTMLElement {
       "open",
       "w",
       "s",
+      "p",
       "close-button",
       ...permutateBreakpoints(["layout"]),
     ];
@@ -365,8 +366,12 @@ class RettangoliDialogElement extends HTMLElement {
       } else if (newValue === null && this._dialogElement.open) {
         this._hideModal();
       }
-    } else if (name === 's' || name.endsWith('layout')) {
-      // Size is handled via CSS :host() selectors.
+    } else if (
+      name === 's' ||
+      name === 'p' ||
+      name.endsWith('layout')
+    ) {
+      // Size, padding, and layout are handled via CSS :host() selectors.
       this._updateActiveLayoutAttribute();
       this._scheduleAdaptiveCentering({ resetRetries: true });
     } else if (name === 'w') {

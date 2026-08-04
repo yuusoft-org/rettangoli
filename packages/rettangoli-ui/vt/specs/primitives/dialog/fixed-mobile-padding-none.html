@@ -1,10 +1,11 @@
 ---
-title: Dialog - Fixed Mobile No Padding
+title: Dialog - Fixed Mobile Padding None
 diffThreshold: 4
-description: Verifies fixed mobile dialogs can disable built-in content-slot spacing.
+description: Verifies fixed mobile dialogs can disable built-in content-slot spacing with the consistent padding API.
 specs:
-  - "`no-padding` removes the dialog-owned content-slot padding."
-  - "`no-padding` removes the dialog-owned left and right content-slot margins."
+  - "`p=none` removes the dialog-owned content-slot padding."
+  - "`p=none` removes the dialog-owned left and right content-slot margins."
+  - "Removing and restoring `p=none` reactively updates the dialog-owned padding."
   - "`md-layout=fixed` still locks the dialog and content surface to the mobile viewport."
   - "Consumer content can own its own spacing inside the slotted shell."
 skipInitialScreenshot: true
@@ -14,37 +15,54 @@ viewport:
   height: 844
 steps:
   - action: waitFor
-    selector: '#dialog-fixed-no-padding[open]'
+    selector: '#dialog-fixed-padding-none[open]'
     state: visible
     timeoutMs: 1200
   - action: wait
     ms: 350
   - action: customEvent
-    name: vt:verify-fixed-no-padding
+    name: vt:verify-fixed-padding-none
   - action: wait
     ms: 150
   - action: assert
     type: text
-    selector: '#result-fixed-no-padding'
+    selector: '#result-fixed-padding-none'
+    value: PASS
+  - action: customEvent
+    name: vt:use-default-padding
+  - action: customEvent
+    name: vt:verify-fixed-padding-none
+  - action: assert
+    type: text
+    selector: '#result-fixed-padding-none'
+    value: PASS
+  - action: customEvent
+    name: vt:use-padding-none
+  - action: customEvent
+    name: vt:verify-fixed-padding-none
+  - action: assert
+    type: text
+    selector: '#result-fixed-padding-none'
     value: PASS
   - action: screenshot
 ---
-<rtgl-dialog id="dialog-fixed-no-padding" open s="lg" md-layout="fixed" no-padding>
-  <rtgl-view id="fixed-no-padding-shell" slot="content" d="v" g="md" wh="f" p="lg">
+<rtgl-dialog id="dialog-fixed-padding-none" open s="lg" md-layout="fixed" p="none">
+  <rtgl-view id="fixed-padding-none-shell" slot="content" d="v" g="md" wh="f" p="lg">
     <rtgl-view d="v" g="sm">
       <rtgl-text s="lg">Fixed Mobile Dialog Without Slot Padding</rtgl-text>
       <rtgl-text c="mu">The slotted shell owns the spacing instead of the dialog content slot.</rtgl-text>
-      <pre id="result-fixed-no-padding" style="position: absolute; left: -9999px;"></pre>
+      <pre id="result-fixed-padding-none" style="position: absolute; left: -9999px;"></pre>
     </rtgl-view>
-    <rtgl-view id="fixed-no-padding-long-content" d="v" g="md"></rtgl-view>
+    <rtgl-view id="fixed-padding-none-long-content" d="v" g="md"></rtgl-view>
   </rtgl-view>
 </rtgl-dialog>
 
 <script>
-  const dialog = document.getElementById("dialog-fixed-no-padding");
-  const result = document.getElementById("result-fixed-no-padding");
-  const shell = document.getElementById("fixed-no-padding-shell");
-  const longContent = document.getElementById("fixed-no-padding-long-content");
+  const dialog = document.getElementById("dialog-fixed-padding-none");
+  const result = document.getElementById("result-fixed-padding-none");
+  const shell = document.getElementById("fixed-padding-none-shell");
+  const longContent = document.getElementById("fixed-padding-none-long-content");
+  let expectPaddingNone = true;
 
   longContent.innerHTML = Array.from({ length: 16 }, (_, index) => `
     <rtgl-view d="v" g="xs" bgc="${index % 2 === 0 ? "su" : "mu"}" p="md" br="sm">
@@ -53,7 +71,7 @@ steps:
     </rtgl-view>
   `).join("");
 
-  const verifyFixedNoPadding = () => {
+  const verifyFixedPaddingNone = () => {
     const nativeDialog = dialog.shadowRoot.querySelector("dialog");
     const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
     const viewportWidth = Math.round(window.innerWidth);
@@ -62,11 +80,19 @@ steps:
     const slotRect = contentSlot.getBoundingClientRect();
     const slotStyle = getComputedStyle(contentSlot);
     const shellStyle = getComputedStyle(shell);
-    const slotPaddingZero =
+    const slotPaddingIsZero =
       slotStyle.paddingTop === "0px" &&
       slotStyle.paddingRight === "0px" &&
       slotStyle.paddingBottom === "0px" &&
       slotStyle.paddingLeft === "0px";
+    const slotPaddingIsPresent =
+      slotStyle.paddingTop !== "0px" &&
+      slotStyle.paddingRight !== "0px" &&
+      slotStyle.paddingBottom !== "0px" &&
+      slotStyle.paddingLeft !== "0px";
+    const slotPaddingMatches = expectPaddingNone
+      ? slotPaddingIsZero
+      : slotPaddingIsPresent;
     const slotHorizontalMarginZero =
       slotStyle.marginLeft === "0px" &&
       slotStyle.marginRight === "0px";
@@ -75,6 +101,9 @@ steps:
       shellStyle.paddingRight !== "0px" &&
       shellStyle.paddingBottom !== "0px" &&
       shellStyle.paddingLeft !== "0px";
+    const usesExpectedPaddingMode = expectPaddingNone
+      ? dialog.getAttribute("p") === "none"
+      : !dialog.hasAttribute("p");
     const dialogFillsViewport =
       Math.abs(Math.round(dialogRect.width) - viewportWidth) <= 2 &&
       Math.abs(Math.round(dialogRect.height) - viewportHeight) <= 2;
@@ -82,9 +111,10 @@ steps:
       Math.abs(Math.round(slotRect.width) - viewportWidth) <= 2 &&
       Math.abs(Math.round(slotRect.height) - viewportHeight) <= 2;
     const pass =
-      slotPaddingZero &&
+      slotPaddingMatches &&
       slotHorizontalMarginZero &&
       shellOwnsPadding &&
+      usesExpectedPaddingMode &&
       dialogFillsViewport &&
       slotFillsViewport;
 
@@ -99,9 +129,17 @@ steps:
     ].join(" ");
   };
 
-  setTimeout(verifyFixedNoPadding, 250);
+  setTimeout(verifyFixedPaddingNone, 250);
 
-  window.addEventListener("vt:verify-fixed-no-padding", verifyFixedNoPadding);
+  window.addEventListener("vt:verify-fixed-padding-none", verifyFixedPaddingNone);
+  window.addEventListener("vt:use-default-padding", () => {
+    expectPaddingNone = false;
+    dialog.removeAttribute("p");
+  });
+  window.addEventListener("vt:use-padding-none", () => {
+    expectPaddingNone = true;
+    dialog.setAttribute("p", "none");
+  });
   dialog.addEventListener("close", () => {
     dialog.removeAttribute("open");
   });
