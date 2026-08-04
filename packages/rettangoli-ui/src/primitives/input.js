@@ -46,6 +46,9 @@ class RettangoliInputElement extends HTMLElement {
           color: var(--foreground);
           outline: none;
         }
+        :host([data-form-row="true"]) input {
+          box-sizing: border-box;
+        }
         :host([s="sm"]) input {
           font-size: var(--xs-font-size);
           font-weight: var(--xs-font-weight);

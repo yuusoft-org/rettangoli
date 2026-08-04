@@ -4,7 +4,19 @@ description: Verifies supported input size variants and their visual differences
 specs:
   - Default size uses baseline control height and typography.
   - Small size uses compact height and typography scale.
+  - Widthless inputs retain their intrinsic content-box dimensions.
   - Layout alignment stays consistent across both variants.
+steps:
+  - action: assert
+    type: js
+    fn: inputSizeVt.inspect
+    value:
+      regular:
+        height: 36
+        boxSizing: content-box
+      small:
+        height: 28
+        boxSizing: content-box
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-view g="sm" w="f">
@@ -16,3 +28,23 @@ specs:
     <rtgl-input s="sm" placeholder="Small input"></rtgl-input>
   </rtgl-view>
 </rtgl-view>
+
+<script>
+  window.inputSizeVt = {
+    inspect() {
+      const [regular, small] = [...document.querySelectorAll('rtgl-input')]
+        .map((host) => host.shadowRoot.querySelector('input'));
+      const inspectInput = (input) => {
+        const rect = input.getBoundingClientRect();
+        return {
+          height: rect.height,
+          boxSizing: getComputedStyle(input).boxSizing,
+        };
+      };
+      return {
+        regular: inspectInput(regular),
+        small: inspectInput(small),
+      };
+    },
+  };
+</script>

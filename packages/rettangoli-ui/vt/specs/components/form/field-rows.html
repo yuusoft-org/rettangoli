@@ -3,6 +3,7 @@ title: "Field Rows"
 description: Rows group form fields into equal-width columns without changing their value or validation behavior.
 specs:
   - Row fields use equal-width grid tracks while standalone fields retain the full form width.
+  - Input, select, and segmented-control fields stretch to the full width of their row columns.
   - Rows work inside sections and preserve nested field values.
   - When a conditional row field is hidden, the remaining visible field expands to the full row width.
   - Required validation errors render inside individual row columns.
@@ -16,6 +17,10 @@ steps:
       equalNameWidths: true
       equalAddressWidths: true
       standaloneIsWider: true
+      firstNameInputFillsColumn: true
+      firstNameInputBoxSizing: border-box
+      roleSelectFillsColumn: true
+      persistControlFillsColumn: true
   - action: assert
     type: js
     fn: fieldRows.getInitialValues
@@ -24,6 +29,8 @@ steps:
         firstName: Ada
         lastName: Lovelace
       includeLastName: true
+      role: author
+      persistSpeaker: false
       address:
         city: London
         postalCode: ""
@@ -49,6 +56,8 @@ steps:
       profile:
         firstName: Ada
       includeLastName: false
+      role: author
+      persistSpeaker: false
       address:
         city: London
         postalCode: ""
@@ -87,6 +96,8 @@ viewport:
       lastName: "Lovelace",
     },
     includeLastName: true,
+    role: "author",
+    persistSpeaker: false,
     address: {
       city: "London",
       postalCode: "",
@@ -125,6 +136,30 @@ viewport:
             name: "includeLastName",
             type: "checkbox",
             content: "Include last name",
+          },
+        ],
+      },
+      {
+        type: "row",
+        fields: [
+          {
+            name: "role",
+            type: "select",
+            label: "Role",
+            options: [
+              { value: "author", label: "Author" },
+              { value: "editor", label: "Editor" },
+            ],
+          },
+          {
+            name: "persistSpeaker",
+            type: "segmented-control",
+            label: "Persist Speaker",
+            noClear: true,
+            options: [
+              { value: false, label: "No" },
+              { value: true, label: "Yes" },
+            ],
           },
         ],
       },
@@ -177,8 +212,22 @@ viewport:
     getField(name).closest(".form-field");
   const getFieldWidth = (name) =>
     Math.round(getFieldContainer(name).getBoundingClientRect().width);
+  const getRenderedControl = (name) => {
+    const field = getField(name);
+    if (field.matches("rtgl-select")) {
+      return field.shadowRoot.querySelector("#selectButton");
+    }
+    if (field.matches("rtgl-segmented-control")) {
+      return field.shadowRoot.querySelector('[role="group"]');
+    }
+    return field.shadowRoot.querySelector("input");
+  };
+  const getControlWidth = (name) =>
+    Math.round(getRenderedControl(name).getBoundingClientRect().width);
   const getFieldGrid = (name) => getFieldContainer(name).parentElement;
   const widthsMatch = (left, right) => Math.abs(left - right) <= 1;
+  const controlFillsColumn = (name) =>
+    widthsMatch(getControlWidth(name), getFieldWidth(name));
 
   const tagSaveButton = () => {
     const button = form.shadowRoot?.querySelector('[data-action-id="save"]');
@@ -207,6 +256,12 @@ viewport:
         equalNameWidths: widthsMatch(firstNameWidth, lastNameWidth),
         equalAddressWidths: widthsMatch(cityWidth, postalCodeWidth),
         standaloneIsWider: emailWidth > firstNameWidth * 1.8,
+        firstNameInputFillsColumn: controlFillsColumn("profile.firstName"),
+        firstNameInputBoxSizing: getComputedStyle(
+          getRenderedControl("profile.firstName"),
+        ).boxSizing,
+        roleSelectFillsColumn: controlFillsColumn("role"),
+        persistControlFillsColumn: controlFillsColumn("persistSpeaker"),
       };
     },
     getInitialValues() {

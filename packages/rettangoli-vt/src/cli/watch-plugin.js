@@ -1226,7 +1226,7 @@ export const createRettangoliVtWatchPlugin = ({
               message: currentError,
             }
           : {
-              type: "reload-current",
+              type: "watch-state",
               updateKind: "html",
               revision,
             });

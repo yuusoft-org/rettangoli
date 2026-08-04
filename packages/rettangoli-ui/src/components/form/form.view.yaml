@@ -33,9 +33,10 @@ styles:
   'rtgl-grid[data-align-field-headers="true"]':
     grid-template-rows: auto auto
     row-gap: var(--spacing-md)
-  '.form-field[data-align-field-headers="true"]':
+  '.form-field[data-form-row="true"][data-align-field-headers="true"]':
     display: grid
     grid-row: span 2
+    grid-template-columns: minmax(0, 1fr)
     grid-template-rows: subgrid
   .form-field-header:
     grid-row: 1
@@ -64,7 +65,7 @@ template:
                 $else:
                   - rtgl-grid#layoutItem${item._layoutIdx} cols=${item._columns} g=lg w=f data-align-field-headers=${item._alignFieldHeaders}:
                       - $for field, fieldIndex in item.fields:
-                          - rtgl-view class=form-field g=md w=f data-align-field-headers=${item._alignFieldHeaders}:
+                          - rtgl-view class=form-field g=md w=f data-form-row=${item._isRow} data-align-field-headers=${item._alignFieldHeaders}:
                               - $if field.label || field.description:
                                   - rtgl-view class=form-field-header g=sm:
                                       - rtgl-view d=h g=md av=c:
@@ -78,7 +79,7 @@ template:
                                           - rtgl-text s=sm c=mu-fg: ${field.description}
                               - rtgl-view class=form-field-control g=md w=f:
                                   - $if field.type == "input-text":
-                                      - rtgl-input#field${field._idx} data-field-name=${field.name} w=f type=${field._inputType} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                                      - rtgl-input#field${field._idx} data-field-name=${field.name} data-form-row=${item._isRow} w=f type=${field._inputType} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                                   - $if field.type == "input-date":
                                       - rtgl-input-date#field${field._idx} data-field-name=${field.name} w=f min=${field.min} max=${field.max} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                                   - $if field.type == "input-time":

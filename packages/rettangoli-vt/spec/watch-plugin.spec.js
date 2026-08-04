@@ -967,10 +967,13 @@ describe("VT watch Vite plugin", () => {
     )?.[1];
     const stateClient = { send: vi.fn() };
     stateListener({}, stateClient);
+    // A handshake reports state without morphing away DOM created by a spec's
+    // replayed setup script.
     expect(stateClient.send).toHaveBeenLastCalledWith(
       "rettangoli:vt-watch",
       expect.objectContaining({
-        type: "reload-current",
+        revision: 1,
+        type: "watch-state",
       }),
     );
 
