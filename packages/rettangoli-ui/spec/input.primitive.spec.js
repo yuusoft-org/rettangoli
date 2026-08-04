@@ -37,12 +37,30 @@ afterAll(() => {
 });
 
 describe("rtgl-input primitive", () => {
-  it("includes padding and borders within full-width sizing", () => {
+  it("uses border-box only while a width is managed", () => {
     const input = document.createElement(TEST_TAG);
     document.body.appendChild(input);
+    const responsiveStyles = input.shadowRoot.querySelector("style");
 
-    expect(input.shadowRoot.adoptedStyleSheets[0].cssText).toContain(
+    expect(input.shadowRoot.adoptedStyleSheets[0].cssText).not.toContain(
       "box-sizing: border-box;",
+    );
+    expect(responsiveStyles.textContent).not.toContain("box-sizing");
+
+    input.setAttribute("w", "f");
+    expect(responsiveStyles.textContent).toContain(
+      "box-sizing: border-box !important;",
+    );
+
+    input.removeAttribute("w");
+    expect(responsiveStyles.textContent).not.toContain("box-sizing");
+
+    input.setAttribute("sm-w", "f");
+    expect(responsiveStyles.textContent).toContain(
+      "@media only screen and (max-width: 640px)",
+    );
+    expect(responsiveStyles.textContent).toContain(
+      "box-sizing: border-box !important;",
     );
   });
 

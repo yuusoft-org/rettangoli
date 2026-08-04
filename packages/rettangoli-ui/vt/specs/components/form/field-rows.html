@@ -18,6 +18,7 @@ steps:
       equalAddressWidths: true
       standaloneIsWider: true
       firstNameInputFillsColumn: true
+      firstNameInputBoxSizing: border-box
       roleSelectFillsColumn: true
       persistControlFillsColumn: true
   - action: assert
@@ -256,6 +257,9 @@ viewport:
         equalAddressWidths: widthsMatch(cityWidth, postalCodeWidth),
         standaloneIsWider: emailWidth > firstNameWidth * 1.8,
         firstNameInputFillsColumn: controlFillsColumn("profile.firstName"),
+        firstNameInputBoxSizing: getComputedStyle(
+          getRenderedControl("profile.firstName"),
+        ).boxSizing,
         roleSelectFillsColumn: controlFillsColumn("role"),
         persistControlFillsColumn: controlFillsColumn("persistSpeaker"),
       };
