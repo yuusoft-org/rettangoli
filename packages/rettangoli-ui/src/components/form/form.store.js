@@ -271,8 +271,8 @@ const rowStackAtValues = new Set(["none", "sm", "md", "lg", "xl"]);
 const normalizeFormPadding = (value) =>
   formPaddingValues.has(value) ? value : "md";
 
-const normalizeRowStackAt = (value) =>
-  rowStackAtValues.has(value) ? value : "md";
+const normalizeRowStackAt = (value, fallback = "md") =>
+  rowStackAtValues.has(value) ? value : fallback;
 
 const getResponsiveColumnAttrs = (stackAt) =>
   stackAt === "none" ? "" : `${stackAt}-cols=1`;
@@ -665,7 +665,7 @@ export const flattenFields = (fields, startIdx = 0) => {
   return result;
 };
 
-const buildFieldLayoutItems = (fields) => {
+const buildFieldLayoutItems = (fields, defaultRowStackAt = "md") => {
   const items = [];
 
   for (const field of fields) {
@@ -676,7 +676,7 @@ const buildFieldLayoutItems = (fields) => {
       });
 
       if (Array.isArray(field.fields)) {
-        items.push(...buildFieldLayoutItems(field.fields));
+        items.push(...buildFieldLayoutItems(field.fields, defaultRowStackAt));
       }
       continue;
     }
@@ -691,7 +691,10 @@ const buildFieldLayoutItems = (fields) => {
       }
 
       if (rowFields.length > 0) {
-        const stackAt = normalizeRowStackAt(field.stackAt);
+        const stackAt = normalizeRowStackAt(
+          field.stackAt,
+          defaultRowStackAt,
+        );
         items.push({
           _isSection: false,
           _isRow: true,
@@ -767,8 +770,9 @@ export const selectViewData = ({ state, props }) => {
   const form = selectForm({ state, props });
   const fields = form.fields || [];
   const formDisabled = !!props?.disabled;
+  const defaultRowStackAt = normalizeRowStackAt(form.rowStackAt);
 
-  const fieldLayout = buildFieldLayoutItems(fields);
+  const fieldLayout = buildFieldLayoutItems(fields, defaultRowStackAt);
   fieldLayout.forEach((item, layoutIndex) => {
     if (!item._isSection) return;
 

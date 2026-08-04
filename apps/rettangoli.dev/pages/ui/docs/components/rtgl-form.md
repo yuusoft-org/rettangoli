@@ -108,6 +108,7 @@ Use `w` to set a fixed width.
 - `popover-input`
 - `checkbox`
 - `section`
+- `row`
 - `read-only-text`
 - `slot`
 
@@ -224,6 +225,38 @@ form.addEventListener("form-section-action", async (event) => {
 `position` and `anchorRect` are viewport-coordinate snapshots from the action
 button. Use `position` for a menu directly below the button, or `anchorRect`
 when custom placement needs the full bounds.
+
+## Responsive Rows
+
+Use a layout-only `row` field to give its visible fields equal-width columns.
+Rows stack into one column at `md` (`768px`) by default. Set `rowStackAt` on
+the form schema to change that default for every row:
+
+```js
+form.form = {
+  rowStackAt: "lg",
+  fields: [
+    {
+      type: "row",
+      fields: [
+        { name: "firstName", type: "input-text", label: "First Name" },
+        { name: "lastName", type: "input-text", label: "Last Name" },
+      ],
+    },
+  ],
+};
+```
+
+Supported values are `sm`, `md`, `lg`, `xl`, and `none`. A row can provide
+its own `stackAt` value to override the form default:
+
+```js
+{
+  type: "row",
+  stackAt: "sm",
+  fields: [/* ... */],
+}
+```
 
 ## Events
 
