@@ -191,6 +191,20 @@ both the section and action stable `id` values. `action.icon` defaults to
 `plus`, `action.label` provides the accessible name, and `action.disabled`
 disables the trigger.
 
+Sections are separated automatically. A section has no top separator when it
+is the first visible form item; otherwise it has one by default. Set the
+field-level `separator` property to `false` to hide a separator or to `true` to
+force one, including on the first item.
+
+```js
+{
+  type: "section",
+  label: "Advanced",
+  separator: false,
+  fields: [/* ... */],
+}
+```
+
 The form owns the trigger but leaves its behavior to the consumer:
 
 ```js

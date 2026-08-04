@@ -6,6 +6,7 @@
 
 - `rtgl-form`: fixed row fields so input, select, and segmented-control content stretches across the full column width without input padding overflowing its bounds.
 - `rtgl-form`: added reactive `p="none|xs|sm|md|lg|xl"` content padding, with `md` retained as the default and `none` providing a flush layout.
+- `rtgl-form`: sections now show a top separator by default unless they are the first visible form item, with a field-level `separator` boolean to override either result.
 - `rtgl-form`: added layout-only `row` fields for grouping sibling fields into equal-width columns, including rows nested inside sections and conditional row fields.
 - `rtgl-form`: sections can expose an accessible right-aligned icon action that emits `form-section-action` with current values and viewport anchor geometry for parent-owned actions or dropdown menus.
 - `rtgl-select` and form `select` fields now support per-option `imageSrc` images with one shared `image` configuration for size, radius, border color, and fit; selected triggers and aligned mixed-content menus use the same styling.

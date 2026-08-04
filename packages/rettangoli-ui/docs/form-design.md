@@ -426,6 +426,7 @@ Value: `boolean`
 |---|---|
 | `id` | Stable section identifier; required when `action` is present |
 | `action` | Optional right-aligned icon action with `id`, `icon`, `label`, and optional `disabled` |
+| `separator` | Optional boolean override. By default, a separator appears above the section unless it is the first visible form item. Set `false` to hide it or `true` to force it. |
 | `fields` | Nested fields (same contract as top-level `fields`) |
 
 ```yaml
@@ -449,6 +450,11 @@ Value: `boolean`
 ```
 
 Sections can nest.
+
+Section separators are automatic. A section rendered as the first visible form
+item has no separator; later sections have one, including a section preceded by
+an ordinary field or row. The field-level `separator` boolean overrides that
+default for an individual section.
 
 Clicking a section action emits `form-section-action` with the stable section
 and action ids, current visible values, and serializable viewport geometry:
@@ -1035,6 +1041,7 @@ VT specs in `vt/specs/components/form/` as HTML files with optional step-based i
 - `padding.html` — default, padding-free, and reactively updated form padding
 - `with-section.html` — section grouping with label, header action, and nested fields
 - `section-actions.html` — enabled/disabled section header actions and emitted action metadata
+- `section-separators.html` — automatic section separators and field-level overrides
 - `with-read-only-text.html` — read-only text display
 - `with-slot.html` — slotted custom content
 - `with-tooltip.html` — tooltip info icon on hover
