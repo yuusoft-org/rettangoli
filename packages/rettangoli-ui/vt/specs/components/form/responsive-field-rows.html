@@ -1,0 +1,166 @@
+---
+title: "Responsive Field Rows"
+description: Form rows stack into one column at their configured viewport breakpoint.
+specs:
+  - Rows default to stacking at the md breakpoint (768px and below).
+  - Explicit sm, md, lg, and xl thresholds stack at and below their inclusive viewport boundary.
+  - stackAt none keeps a row in two columns at every tested viewport width.
+  - Responsive rows retain equal-width controls and their source order.
+  - Mixed labeled and unlabeled controls align horizontally, then drop the empty header track when stacked.
+skipInitialScreenshot: true
+steps:
+  - action: assert
+    type: js
+    fn: responsiveFieldRows.getLayoutState
+    value:
+      allRowsMatchConfiguredBreakpoint: true
+      allControlsFillColumns: true
+      defaultUsesMd: true
+      mixedHeadersAlignWhenHorizontal: true
+      noneHasNoResponsiveOverride: true
+      sourceOrderPreserved: true
+      stackedRowsDropHeaderAlignment: true
+  - action: screenshot
+viewport:
+  - id: above-xl
+    width: 1281
+    height: 1180
+  - id: xl-boundary
+    width: 1280
+    height: 1180
+  - id: lg-boundary
+    width: 1024
+    height: 1180
+  - id: md-boundary
+    width: 768
+    height: 1180
+  - id: sm-boundary
+    width: 640
+    height: 1180
+---
+
+<rtgl-view id="container" w="100vw" h="100vh" ah="c"></rtgl-view>
+
+<script>
+  const breakpointWidths = {
+    sm: 640,
+    md: 768,
+    lg: 1024,
+    xl: 1280,
+  };
+
+  const rows = [
+    { key: "default", label: "Default (md)", stackAt: undefined },
+    { key: "sm", label: "Small", stackAt: "sm" },
+    { key: "md", label: "Medium", stackAt: "md" },
+    { key: "lg", label: "Large", stackAt: "lg" },
+    { key: "xl", label: "Extra Large", stackAt: "xl" },
+    { key: "none", label: "Never Stack", stackAt: "none" },
+  ];
+
+  const form = document.createElement("rtgl-form");
+  form.id = "responsive-form";
+  form.setAttribute("w", "580");
+  form.defaultValues = Object.fromEntries(
+    rows.flatMap(({ key }) => [
+      [`${key}Left`, "Left value"],
+      [`${key}Right`, "Right value"],
+    ]),
+  );
+  form.form = {
+    title: "Responsive Rows",
+    description: "Each row stacks at its configured viewport breakpoint.",
+    fields: rows.map(({ key, label, stackAt }) => {
+      const row = {
+        type: "row",
+        fields: [
+          {
+            name: `${key}Left`,
+            type: "input-text",
+            label: `${label} · First`,
+          },
+          {
+            name: `${key}Right`,
+            type: "input-text",
+          },
+        ],
+      };
+      if (stackAt !== undefined) {
+        row.stackAt = stackAt;
+      }
+      return row;
+    }),
+  };
+
+  document.getElementById("container").appendChild(form);
+
+  const getField = (name) =>
+    form.shadowRoot.querySelector(`[data-field-name="${name}"]`);
+  const getFieldContainer = (name) => getField(name).closest(".form-field");
+  const getGrid = (key) => getFieldContainer(`${key}Left`).parentElement;
+  const getRenderedInput = (name) => getField(name).shadowRoot.querySelector("input");
+  const widthsMatch = (left, right) => Math.abs(left - right) <= 1;
+  const getRenderedColumnCount = (grid) =>
+    getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length;
+
+  window.responsiveFieldRows = {
+    getLayoutState() {
+      const actualColumnCounts = Object.fromEntries(
+        rows.map(({ key }) => [key, getRenderedColumnCount(getGrid(key))]),
+      );
+      const expectedColumnCounts = Object.fromEntries(
+        rows.map(({ key, stackAt }) => {
+          const effectiveStackAt = stackAt ?? "md";
+          const shouldStack = effectiveStackAt !== "none"
+            && window.innerWidth <= breakpointWidths[effectiveStackAt];
+          return [key, shouldStack ? 1 : 2];
+        }),
+      );
+      const allControlsFillColumns = rows.every(({ key }) =>
+        [`${key}Left`, `${key}Right`].every((name) =>
+          widthsMatch(
+            getRenderedInput(name).getBoundingClientRect().width,
+            getFieldContainer(name).getBoundingClientRect().width,
+          ),
+        ),
+      );
+      const sourceOrderPreserved = rows.every(({ key }) => {
+        const leftRect = getFieldContainer(`${key}Left`).getBoundingClientRect();
+        const rightRect = getFieldContainer(`${key}Right`).getBoundingClientRect();
+        return rightRect.top > leftRect.top || rightRect.left > leftRect.left;
+      });
+      const mixedHeadersAlignWhenHorizontal = rows.every(({ key }) => {
+        if (expectedColumnCounts[key] === 1) return true;
+        const leftInput = getRenderedInput(`${key}Left`).getBoundingClientRect();
+        const rightInput = getRenderedInput(`${key}Right`).getBoundingClientRect();
+        return Math.abs(leftInput.top - rightInput.top) <= 1;
+      });
+      const stackedRowsDropHeaderAlignment = rows.every(({ key }) => {
+        if (expectedColumnCounts[key] !== 1) return true;
+        const rightField = getFieldContainer(`${key}Right`);
+        const rightInput = getRenderedInput(`${key}Right`);
+        return getComputedStyle(rightField).display === "flex"
+          && Math.abs(
+            rightField.getBoundingClientRect().top
+              - rightInput.getBoundingClientRect().top,
+          ) <= 1;
+      });
+      const defaultGrid = getGrid("default");
+      const noneGrid = getGrid("none");
+
+      return {
+        allRowsMatchConfiguredBreakpoint: rows.every(
+          ({ key }) => actualColumnCounts[key] === expectedColumnCounts[key],
+        ),
+        allControlsFillColumns,
+        defaultUsesMd: defaultGrid.getAttribute("md-cols") === "1",
+        mixedHeadersAlignWhenHorizontal,
+        noneHasNoResponsiveOverride: ["sm", "md", "lg", "xl"].every(
+          (breakpoint) => !noneGrid.hasAttribute(`${breakpoint}-cols`),
+        ),
+        sourceOrderPreserved,
+        stackedRowsDropHeaderAlignment,
+      };
+    },
+  };
+</script>

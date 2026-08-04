@@ -60,6 +60,8 @@ describe("rtgl-form bound store integration", () => {
       _isSection: false,
       _isRow: true,
       _columns: 2,
+      _stackAt: "md",
+      _responsiveColumnAttrs: "md-cols=1",
     });
     expect(
       viewData.fieldLayout[1].fields.map(({ name, _idx }) => ({ name, _idx })),
@@ -71,12 +73,46 @@ describe("rtgl-form bound store integration", () => {
       _isSection: false,
       _isRow: false,
       _columns: 1,
+      _responsiveColumnAttrs: "",
     });
     expect(viewData.fieldLayout[2].fields[0]).toMatchObject({
       name: "email",
       _idx: 3,
     });
   });
+
+  it.each([
+    [undefined, "md", "md-cols=1"],
+    ["sm", "sm", "sm-cols=1"],
+    ["md", "md", "md-cols=1"],
+    ["lg", "lg", "lg-cols=1"],
+    ["xl", "xl", "xl-cols=1"],
+    ["none", "none", ""],
+    ["unsupported", "md", "md-cols=1"],
+    ['md cols=4 aria-label="unsafe"', "md", "md-cols=1"],
+  ])(
+    "normalizes row stackAt=%s to %s",
+    (stackAt, expectedStackAt, expectedAttrs) => {
+      const row = {
+        type: "row",
+        fields: [
+          { name: "firstName", type: "input-text" },
+          { name: "lastName", type: "input-text" },
+        ],
+      };
+      if (stackAt !== undefined) {
+        row.stackAt = stackAt;
+      }
+
+      const store = bindStore(formStore, { form: { fields: [row] } }, {});
+
+      expect(store.selectViewData().fieldLayout[0]).toMatchObject({
+        _columns: 2,
+        _stackAt: expectedStackAt,
+        _responsiveColumnAttrs: expectedAttrs,
+      });
+    },
+  );
 
   it("shows section separators by default except on the first visible form item", () => {
     const props = {
