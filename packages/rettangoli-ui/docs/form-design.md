@@ -464,9 +464,11 @@ continue to use the full form width.
 | property | description |
 |---|---|
 | `fields` | Fields rendered in the row. Each visible field receives an equal share of the available width. |
+| `stackAt` | Viewport breakpoint at or below which fields stack into one column: `sm`, `md`, `lg`, `xl`, or `none`. Defaults to `md`. |
 
 ```yaml
 - type: row
+  stackAt: md
   fields:
     - name: firstName
       type: input-text
@@ -482,6 +484,11 @@ Rows can be used inside sections. Conditional fields are evaluated before
 layout; when only one row field is visible, it expands to the full row width.
 When labeled and unlabeled fields share a row, unlabeled controls align with
 the labeled controls instead of occupying the label line.
+
+Rows use Rettangoli's viewport breakpoints. By default, a row keeps equal-width
+columns above `768px` and stacks into one column at `768px` and below. Set
+`stackAt` to `sm` (`640px`), `lg` (`1024px`), or `xl` (`1280px`) to change the
+threshold. Set `stackAt: none` to keep columns at every viewport width.
 
 #### `read-only-text`
 
@@ -1041,6 +1048,8 @@ VT specs in `vt/specs/components/form/` as HTML files with optional step-based i
 - `with-description.html` — field descriptions below labels
 - `mixed-inputs.html` — all field types together
 - `mixed-inputs-with-defaults.html` — all types with defaultValues
+- `field-rows.html` — equal-width row controls, conditional fields, and `stackAt: none`
+- `responsive-field-rows.html` — default and explicit row stacking across `sm`, `md`, `lg`, `xl`, and `none`
 
 #### Rendering — actions layout
 

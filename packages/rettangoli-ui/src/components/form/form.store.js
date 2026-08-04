@@ -266,9 +266,16 @@ export const set = (obj, path, value) => {
 };
 
 const formPaddingValues = new Set(["none", "xs", "sm", "md", "lg", "xl"]);
+const rowStackAtValues = new Set(["none", "sm", "md", "lg", "xl"]);
 
 const normalizeFormPadding = (value) =>
   formPaddingValues.has(value) ? value : "md";
+
+const normalizeRowStackAt = (value) =>
+  rowStackAtValues.has(value) ? value : "md";
+
+const getResponsiveColumnAttrs = (stackAt) =>
+  stackAt === "none" ? "" : `${stackAt}-cols=1`;
 
 const blacklistedAttrs = ["id", "class", "style", "slot", "form", "defaultValues", "disabled", "context", "p"];
 
@@ -684,6 +691,7 @@ const buildFieldLayoutItems = (fields) => {
       }
 
       if (rowFields.length > 0) {
+        const stackAt = normalizeRowStackAt(field.stackAt);
         items.push({
           _isSection: false,
           _isRow: true,
@@ -692,6 +700,8 @@ const buildFieldLayoutItems = (fields) => {
           ),
           _layoutIdx: field._layoutIdx,
           _columns: rowFields.length,
+          _stackAt: stackAt,
+          _responsiveColumnAttrs: getResponsiveColumnAttrs(stackAt),
           fields: rowFields,
         });
       }
@@ -703,6 +713,7 @@ const buildFieldLayoutItems = (fields) => {
       _isRow: false,
       _layoutIdx: field._layoutIdx,
       _columns: 1,
+      _responsiveColumnAttrs: "",
       fields: [
         {
           ...field,

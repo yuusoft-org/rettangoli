@@ -63,7 +63,7 @@ template:
                           - $if item.description:
                               - rtgl-text s=sm c=mu-fg: ${item.description}
                 $else:
-                  - rtgl-grid#layoutItem${item._layoutIdx} cols=${item._columns} g=lg w=f data-align-field-headers=${item._alignFieldHeaders}:
+                  - rtgl-grid#layoutItem${item._layoutIdx} cols=${item._columns} ${item._responsiveColumnAttrs} g=lg w=f data-align-field-headers=${item._alignFieldHeaders}:
                       - $for field, fieldIndex in item.fields:
                           - rtgl-view class=form-field g=md w=f data-form-row=${item._isRow} data-align-field-headers=${item._alignFieldHeaders}:
                               - $if field.label || field.description:
