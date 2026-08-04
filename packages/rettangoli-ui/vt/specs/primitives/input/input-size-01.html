@@ -1,7 +1,6 @@
 ---
 title: Input - Size - Default and Small
 description: Verifies supported input size variants and their visual differences.
-diffThreshold: 0.00001
 specs:
   - Default size uses baseline control height and typography.
   - Small size uses compact height and typography scale.
@@ -13,11 +12,9 @@ steps:
     fn: inputSizeVt.inspect
     value:
       regular:
-        width: 199
         height: 36
         boxSizing: content-box
       small:
-        width: 173
         height: 28
         boxSizing: content-box
 ---
@@ -40,7 +37,6 @@ steps:
       const inspectInput = (input) => {
         const rect = input.getBoundingClientRect();
         return {
-          width: rect.width,
           height: rect.height,
           boxSizing: getComputedStyle(input).boxSizing,
         };

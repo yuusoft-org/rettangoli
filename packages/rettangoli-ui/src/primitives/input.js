@@ -46,6 +46,9 @@ class RettangoliInputElement extends HTMLElement {
           color: var(--foreground);
           outline: none;
         }
+        :host([data-form-row="true"]) input {
+          box-sizing: border-box;
+        }
         :host([s="sm"]) input {
           font-size: var(--xs-font-size);
           font-weight: var(--xs-font-weight);
@@ -210,10 +213,9 @@ class RettangoliInputElement extends HTMLElement {
       };
 
       const wh = this.getAttribute(addSizePrefix("wh"));
-      const widthAttribute = wh === null
-        ? this.getAttribute(addSizePrefix("w"))
-        : wh;
-      const width = dimensionWithUnit(widthAttribute);
+      const width = dimensionWithUnit(
+        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
+      );
       const height = dimensionWithUnit(
         wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
       );
@@ -226,10 +228,6 @@ class RettangoliInputElement extends HTMLElement {
 
       if (opacity !== null) {
         this._styles[size].opacity = opacity;
-      }
-
-      if (widthAttribute !== null) {
-        this._styles[size]["box-sizing"] = "border-box";
       }
 
       applyDimensionToStyleBucket({

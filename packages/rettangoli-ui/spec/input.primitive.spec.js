@@ -37,31 +37,21 @@ afterAll(() => {
 });
 
 describe("rtgl-input primitive", () => {
-  it("uses border-box only while a width is managed", () => {
+  it("reserves border-box sizing for form-row inputs", () => {
     const input = document.createElement(TEST_TAG);
     document.body.appendChild(input);
     const responsiveStyles = input.shadowRoot.querySelector("style");
 
-    expect(input.shadowRoot.adoptedStyleSheets[0].cssText).not.toContain(
+    expect(input.shadowRoot.adoptedStyleSheets[0].cssText).toContain(
+      ':host([data-form-row="true"]) input',
+    );
+    expect(input.shadowRoot.adoptedStyleSheets[0].cssText).toContain(
       "box-sizing: border-box;",
     );
     expect(responsiveStyles.textContent).not.toContain("box-sizing");
 
     input.setAttribute("w", "f");
-    expect(responsiveStyles.textContent).toContain(
-      "box-sizing: border-box !important;",
-    );
-
-    input.removeAttribute("w");
     expect(responsiveStyles.textContent).not.toContain("box-sizing");
-
-    input.setAttribute("sm-w", "f");
-    expect(responsiveStyles.textContent).toContain(
-      "@media only screen and (max-width: 640px)",
-    );
-    expect(responsiveStyles.textContent).toContain(
-      "box-sizing: border-box !important;",
-    );
   });
 
   it("preserves value-input and value-change event semantics", () => {
