@@ -53,6 +53,7 @@ describe("rtgl-form bound store integration", () => {
     expect(viewData.fieldLayout[0]).toMatchObject({
       _isSection: true,
       _idx: 0,
+      _showSeparator: false,
       label: "Profile",
     });
     expect(viewData.fieldLayout[1]).toMatchObject({
@@ -112,6 +113,88 @@ describe("rtgl-form bound store integration", () => {
       });
     },
   );
+
+  it("shows section separators by default except on the first visible form item", () => {
+    const props = {
+      form: {
+        fields: [
+          {
+            name: "hiddenLead",
+            type: "input-text",
+            $when: "showLead",
+          },
+          {
+            type: "section",
+            label: "Profile",
+            fields: [{ name: "name", type: "input-text" }],
+          },
+          {
+            type: "section",
+            label: "Access",
+            fields: [{ name: "role", type: "input-text" }],
+          },
+        ],
+      },
+      context: { showLead: false },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const withoutLead = store.selectViewData().fieldLayout;
+    expect(withoutLead[0]).toMatchObject({
+      _isSection: true,
+      label: "Profile",
+      _showSeparator: false,
+    });
+    expect(withoutLead[2]).toMatchObject({
+      _isSection: true,
+      label: "Access",
+      _showSeparator: true,
+    });
+
+    props.context.showLead = true;
+
+    const withLead = store.selectViewData().fieldLayout;
+    expect(withLead[1]).toMatchObject({
+      _isSection: true,
+      label: "Profile",
+      _showSeparator: true,
+    });
+  });
+
+  it("lets each section override its automatic separator", () => {
+    const store = bindStore(
+      formStore,
+      {
+        form: {
+          fields: [
+            {
+              type: "section",
+              label: "Forced first separator",
+              separator: true,
+              fields: [],
+            },
+            {
+              type: "section",
+              label: "Hidden later separator",
+              separator: false,
+              fields: [],
+            },
+          ],
+        },
+      },
+      {},
+    );
+
+    expect(
+      store.selectViewData().fieldLayout.map((section) => ({
+        label: section.label,
+        showSeparator: section._showSeparator,
+      })),
+    ).toEqual([
+      { label: "Forced first separator", showSeparator: true },
+      { label: "Hidden later separator", showSeparator: false },
+    ]);
+  });
 
   it("expands the remaining visible field when a row sibling is conditional", () => {
     const props = {

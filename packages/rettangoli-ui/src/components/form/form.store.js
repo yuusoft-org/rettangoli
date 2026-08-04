@@ -769,6 +769,12 @@ export const selectViewData = ({ state, props }) => {
   const formDisabled = !!props?.disabled;
 
   const fieldLayout = buildFieldLayoutItems(fields);
+  fieldLayout.forEach((item, layoutIndex) => {
+    if (!item._isSection) return;
+
+    item._showSeparator =
+      typeof item.separator === "boolean" ? item.separator : layoutIndex > 0;
+  });
   const flatFields = fieldLayout.flatMap((item) =>
     item._isSection ? [item] : item.fields,
   );

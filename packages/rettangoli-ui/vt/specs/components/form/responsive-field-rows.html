@@ -6,6 +6,7 @@ specs:
   - Explicit sm, md, lg, and xl thresholds stack at and below their inclusive viewport boundary.
   - stackAt none keeps a row in two columns at every tested viewport width.
   - Responsive rows retain equal-width controls and their source order.
+  - Mixed labeled and unlabeled controls align horizontally, then drop the empty header track when stacked.
 skipInitialScreenshot: true
 steps:
   - action: assert
@@ -15,8 +16,10 @@ steps:
       allRowsMatchConfiguredBreakpoint: true
       allControlsFillColumns: true
       defaultUsesMd: true
+      mixedHeadersAlignWhenHorizontal: true
       noneHasNoResponsiveOverride: true
       sourceOrderPreserved: true
+      stackedRowsDropHeaderAlignment: true
   - action: screenshot
 viewport:
   - id: above-xl
@@ -79,7 +82,6 @@ viewport:
           {
             name: `${key}Right`,
             type: "input-text",
-            label: `${label} · Second`,
           },
         ],
       };
@@ -127,6 +129,22 @@ viewport:
         const rightRect = getFieldContainer(`${key}Right`).getBoundingClientRect();
         return rightRect.top > leftRect.top || rightRect.left > leftRect.left;
       });
+      const mixedHeadersAlignWhenHorizontal = rows.every(({ key }) => {
+        if (expectedColumnCounts[key] === 1) return true;
+        const leftInput = getRenderedInput(`${key}Left`).getBoundingClientRect();
+        const rightInput = getRenderedInput(`${key}Right`).getBoundingClientRect();
+        return Math.abs(leftInput.top - rightInput.top) <= 1;
+      });
+      const stackedRowsDropHeaderAlignment = rows.every(({ key }) => {
+        if (expectedColumnCounts[key] !== 1) return true;
+        const rightField = getFieldContainer(`${key}Right`);
+        const rightInput = getRenderedInput(`${key}Right`);
+        return getComputedStyle(rightField).display === "flex"
+          && Math.abs(
+            rightField.getBoundingClientRect().top
+              - rightInput.getBoundingClientRect().top,
+          ) <= 1;
+      });
       const defaultGrid = getGrid("default");
       const noneGrid = getGrid("none");
 
@@ -136,10 +154,12 @@ viewport:
         ),
         allControlsFillColumns,
         defaultUsesMd: defaultGrid.getAttribute("md-cols") === "1",
+        mixedHeadersAlignWhenHorizontal,
         noneHasNoResponsiveOverride: ["sm", "md", "lg", "xl"].every(
           (breakpoint) => !noneGrid.hasAttribute(`${breakpoint}-cols`),
         ),
         sourceOrderPreserved,
+        stackedRowsDropHeaderAlignment,
       };
     },
   };

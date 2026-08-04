@@ -38,6 +38,42 @@ styles:
     grid-row: span 2
     grid-template-columns: minmax(0, 1fr)
     grid-template-rows: subgrid
+  '@media only screen and (max-width: 640px)':
+    'rtgl-grid[sm-cols="1"][data-align-field-headers="true"]':
+      grid-template-rows: none
+      row-gap: var(--spacing-lg)
+    'rtgl-grid[sm-cols="1"] > .form-field[data-form-row="true"][data-align-field-headers="true"]':
+      display: flex
+      grid-row: auto
+      grid-template-columns: none
+      grid-template-rows: none
+  '@media only screen and (max-width: 768px)':
+    'rtgl-grid[md-cols="1"][data-align-field-headers="true"]':
+      grid-template-rows: none
+      row-gap: var(--spacing-lg)
+    'rtgl-grid[md-cols="1"] > .form-field[data-form-row="true"][data-align-field-headers="true"]':
+      display: flex
+      grid-row: auto
+      grid-template-columns: none
+      grid-template-rows: none
+  '@media only screen and (max-width: 1024px)':
+    'rtgl-grid[lg-cols="1"][data-align-field-headers="true"]':
+      grid-template-rows: none
+      row-gap: var(--spacing-lg)
+    'rtgl-grid[lg-cols="1"] > .form-field[data-form-row="true"][data-align-field-headers="true"]':
+      display: flex
+      grid-row: auto
+      grid-template-columns: none
+      grid-template-rows: none
+  '@media only screen and (max-width: 1280px)':
+    'rtgl-grid[xl-cols="1"][data-align-field-headers="true"]':
+      grid-template-rows: none
+      row-gap: var(--spacing-lg)
+    'rtgl-grid[xl-cols="1"] > .form-field[data-form-row="true"][data-align-field-headers="true"]':
+      display: flex
+      grid-row: auto
+      grid-template-columns: none
+      grid-template-rows: none
   .form-field-header:
     grid-row: 1
   .form-field-control:
@@ -52,7 +88,9 @@ template:
       - rtgl-view g=lg w=f:
           - $for item, i in fieldLayout:
               - $if item._isSection:
-                  - rtgl-view#layoutItem${item._layoutIdx} g=md w=f:
+                  - rtgl-view#layoutItem${item._layoutIdx} data-form-section=true g=md w=f:
+                      - $if item._showSeparator:
+                          - rtgl-view data-form-section-separator=true w=f bwt=xs bc=bo: null
                       - rtgl-view g=sm w=f:
                           - rtgl-view d=h av=c w=f g=sm:
                               - rtgl-view w=1fg:
