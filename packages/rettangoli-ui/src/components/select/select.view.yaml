@@ -38,6 +38,8 @@ refs:
       mouseleave:
         handler: handleAddOptionMouseLeave
 styles:
+  '#selectButton':
+    outline: none
   .leading-visual:
     flex-shrink: 0
 template:
