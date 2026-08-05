@@ -267,6 +267,11 @@ export const set = (obj, path, value) => {
 
 const formPaddingValues = new Set(["none", "xs", "sm", "md", "lg", "xl"]);
 const rowStackAtValues = new Set(["none", "sm", "md", "lg", "xl"]);
+const focusGutterFieldTypes = new Set([
+  "slider",
+  "slider-with-input",
+  "checkbox",
+]);
 
 const normalizeFormPadding = (value) =>
   formPaddingValues.has(value) ? value : "md";
@@ -799,6 +804,7 @@ export const selectViewData = ({ state, props }) => {
 
     const isData = isDataField(field);
     field._disabled = formDisabled || !!field.disabled;
+    field._focusGutter = focusGutterFieldTypes.has(field.type);
 
     if (isData && field.name) {
       field._error = hasOwn(state.errors, field.name)

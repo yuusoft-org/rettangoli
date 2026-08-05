@@ -78,6 +78,8 @@ styles:
     grid-row: 1
   .form-field-control:
     grid-row: 2
+  '#formContainer[p="none"] .form-field-control[data-focus-gutter="true"]':
+    padding: var(--spacing-sm)
 template:
   - rtgl-view#formContainer w=f p=${containerPadding} g=lg ${containerAttrString}:
       - rtgl-view g=sm w=f:
@@ -115,7 +117,7 @@ template:
                                               - rtgl-svg#tooltipIcon${field._idx} data-field-name=${field.name} svg="info" wh=16 c=mu-fg cur=help ml=xs: null
                                       - $if field.description:
                                           - rtgl-text s=sm c=mu-fg: ${field.description}
-                              - rtgl-view class=form-field-control g=md w=f:
+                              - rtgl-view class=form-field-control data-focus-gutter=${field._focusGutter} g=md w=f:
                                   - $if field.type == "input-text":
                                       - rtgl-input#field${field._idx} data-field-name=${field.name} data-form-row=${item._isRow} w=f type=${field._inputType} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                                   - $if field.type == "input-date":
