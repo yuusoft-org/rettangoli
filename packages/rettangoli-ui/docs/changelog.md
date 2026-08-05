@@ -5,7 +5,7 @@
 ### Improvements
 
 - `rtgl-form`: padding-free forms now reserve a positive focus gutter around slider and checkbox controls so their focus rings remain visible inside clipped containers.
-- `rtgl-select`: removed the browser-native focus outline from the trigger, including selects rendered inside `rtgl-form`.
+- `rtgl-select`: replaced the browser-native trigger outline with a theme-aware inset focus ring that remains visible inside clipped containers, including selects rendered inside `rtgl-form`.
 - `rtgl-dialog`: added reactive `p="none"` as its padding-free interface.
 - `rtgl-form`: added form-level `rowStackAt: sm|md|lg|xl|none` so every row can share one responsive stacking default while retaining per-row `stackAt` overrides.
 - `rtgl-form`: row fields now stack into one column at the `md` viewport breakpoint by default, with per-row `stackAt: sm|md|lg|xl|none` overrides; mixed labeled and unlabeled fields drop their alignment track after stacking.
