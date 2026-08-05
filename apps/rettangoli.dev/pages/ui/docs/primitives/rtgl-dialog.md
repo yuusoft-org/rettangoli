@@ -50,7 +50,7 @@ Use `open` as the source of truth and close by removing `open`.
 | Size | `s` | `sm`, `md`, `lg`, `f` | content-based |
 | Width Override | `w` | CSS width value (`600px`, `70vw`, etc.) | - |
 | Layout | `layout`, `sm-layout`, `md-layout`, `lg-layout`, `xl-layout` | `centered`, `fixed` | `centered` |
-| No Padding | `no-padding` | boolean | - |
+| Padding | `p` | `none` | padded |
 | Bare | `bare` | boolean | - |
 | Close Button | `close-button` | boolean | - |
 
@@ -256,11 +256,11 @@ Use `w` when you need explicit width control.
 
 Use `layout` and breakpoint-prefixed layout attrs to change dialog layout responsively. `centered` is the default adaptive centered dialog. `fixed` locks the dialog shell to the viewport and scrolls the content surface internally.
 
-Add `no-padding` when the slotted content should own all spacing. It removes dialog-owned padding and left/right content margins. This is useful for fixed mobile dialogs that render a full-height shell, custom safe-area handling, or pinned internal footers.
+Set `p="none"` when the slotted content should own all spacing. It removes dialog-owned padding and left/right content margins. This is useful for fixed mobile dialogs that render a full-height shell, custom safe-area handling, or pinned internal footers.
 
 ```html codePreview
 <rtgl-button id="open-fixed-mobile">Open Fixed Mobile Dialog</rtgl-button>
-<rtgl-dialog id="dialog-fixed-mobile" s="lg" md-layout="fixed" no-padding>
+<rtgl-dialog id="dialog-fixed-mobile" s="lg" md-layout="fixed" p="none">
   <rtgl-view slot="content" d="v" g="md" p="lg" wh="f">
     <rtgl-text s="h4">Fixed on Mobile</rtgl-text>
     <rtgl-text c="mu">On md and smaller screens, the dialog fills the viewport and this content scrolls internally.</rtgl-text>
