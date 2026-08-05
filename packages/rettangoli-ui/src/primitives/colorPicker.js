@@ -38,7 +38,8 @@ class RettangoliColorPickerElement extends HTMLElement {
           border-color: var(--foreground);
         }
         input[type="color"]:focus-visible {
-          box-shadow: var(--focus-ring-shadow);
+          outline: var(--focus-ring-outline, none);
+          box-shadow: inset 0 0 0 2px var(--ring);
         }
         input[type="color"]:disabled {
           cursor: not-allowed;

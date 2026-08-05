@@ -132,8 +132,8 @@ class RettangoliDialogElement extends HTMLElement {
         .close-button:focus-visible {
           background: var(--accent);
           color: var(--foreground);
-          outline: none;
-          box-shadow: var(--focus-ring-shadow);
+          outline: var(--focus-ring-outline, none);
+          box-shadow: inset 0 0 0 2px var(--ring);
         }
 
         .close-button::before,

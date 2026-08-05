@@ -54,7 +54,8 @@ class RettangoliSliderElement extends HTMLElement {
           transform: scale(1.1);
         }
         input[type="range"]:focus-visible {
-          box-shadow: var(--focus-ring-shadow);
+          outline: var(--focus-ring-outline, none);
+          box-shadow: inset 0 0 0 2px var(--ring);
         }
         input[type="range"]:disabled {
           cursor: not-allowed;

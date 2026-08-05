@@ -1,0 +1,86 @@
+---
+title: Tag Select Option Focus Ring
+description: Verifies a keyboard-focused tag option paints the shared ring on its foreground tag surface using the active descendant theme.
+specs:
+  - A keyboard-focused tag option has a visible inset ring on the tag surface.
+  - The ring resolves the dark theme's descendant `--ring` value at paint time.
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '#tag-select [data-testid="tag-select-trigger"]'
+    state: visible
+    timeoutMs: 1200
+  - action: keypress
+    key: Tab
+  - action: keypress
+    key: Enter
+  - action: waitFor
+    selector: '#tag-select rtgl-popover[open][positioned]'
+    state: visible
+    timeoutMs: 1200
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:record-option-focus
+  - action: assert
+    type: js
+    fn: tagOptionFocusVt.getState
+    value:
+      focused: true
+      focusVisible: true
+      hasForegroundInsetRing: true
+      usesDarkThemeRing: true
+  - action: assert
+    type: text
+    selector: '#focus-status'
+    value: PASS
+    match: includes
+  - action: screenshot
+viewport:
+  id: option-focus
+  width: 640
+  height: 420
+---
+<rtgl-view g="lg" p="xl" wh="f">
+  <rtgl-view g="md" w="300">
+    <rtgl-text s="lg">Focused tag option</rtgl-text>
+    <rtgl-tag-select id="tag-select" w="f" no-add></rtgl-tag-select>
+    <rtgl-text id="focus-status" s="sm" c="mu-fg">Waiting for keyboard focus</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const tagSelect = document.getElementById('tag-select');
+  const focusStatus = document.getElementById('focus-status');
+
+  tagSelect.options = [
+    { value: 'bug', label: 'Bug', testId: 'focus-bug' },
+    { value: 'docs', label: 'Docs', testId: 'focus-docs' },
+    { value: 'backend', label: 'Backend', testId: 'focus-backend' },
+  ];
+  tagSelect.selectedValues = [];
+
+  let state = null;
+  window.tagOptionFocusVt = {
+    getState: () => state,
+  };
+
+  window.addEventListener('vt:record-option-focus', () => {
+    const option = tagSelect.shadowRoot.querySelector('[data-testid="focus-bug"]');
+    const tag = option.querySelector('rtgl-tag');
+    const surface = tag.shadowRoot.querySelector('[part="surface"]');
+    const surfaceStyle = getComputedStyle(surface);
+
+    state = {
+      focused: option.matches(':focus'),
+      focusVisible: option.matches(':focus-visible'),
+      hasForegroundInsetRing: surfaceStyle.boxShadow !== 'none'
+        && surfaceStyle.boxShadow.includes('inset'),
+      usesDarkThemeRing: surfaceStyle.boxShadow.includes('rgb(115, 115, 115)'),
+    };
+
+    focusStatus.textContent = Object.values(state).every(Boolean)
+      ? 'PASS — focused option ring is visible on the tag surface'
+      : `FAIL — ${JSON.stringify(state)}`;
+  });
+</script>

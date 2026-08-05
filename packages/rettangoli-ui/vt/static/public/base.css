@@ -59,7 +59,6 @@ table {
   --scrollbar-track: transparent;
   --scrollbar-thumb: var(--muted-foreground);
   --scrollbar-thumb-hover: var(--scrollbar-thumb);
-  --focus-ring-shadow: inset 0 0 0 2px var(--ring);
 }
 
 :where(
@@ -72,8 +71,14 @@ table {
   [contenteditable="true"],
   [tabindex]:not([tabindex="-1"])
 ):focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring-shadow);
+  outline: var(--focus-ring-outline, none);
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
+
+@media (forced-colors: active) {
+  :root {
+    --focus-ring-outline: 2px solid Highlight;
+  }
 }
 
 @supports (width: -webkit-fill-available) {
