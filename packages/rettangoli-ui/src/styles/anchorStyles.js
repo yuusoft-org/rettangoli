@@ -10,4 +10,9 @@ export default css`
     margin: 0;
     font: inherit;
   }
+
+  a:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring-shadow);
+  }
 `;

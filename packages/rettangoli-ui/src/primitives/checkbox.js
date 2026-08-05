@@ -73,9 +73,9 @@ class RettangoliCheckboxElement extends HTMLElement {
         input[type="checkbox"]:hover {
           border-color: var(--foreground);
         }
-        input[type="checkbox"]:focus {
-          outline: 2px solid var(--ring);
-          outline-offset: 2px;
+        input[type="checkbox"]:focus-visible {
+          outline: none;
+          box-shadow: var(--focus-ring-shadow);
         }
         input[type="checkbox"]:disabled {
           cursor: not-allowed;

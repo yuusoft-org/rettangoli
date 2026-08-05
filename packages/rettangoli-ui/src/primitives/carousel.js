@@ -217,11 +217,14 @@ class RettangoliCarouselElement extends HTMLElement {
 
         #prev-button:hover:not(:disabled),
         #next-button:hover:not(:disabled),
-        #pager button:hover:not(:disabled),
+        #pager button:hover:not(:disabled) {
+          box-shadow: var(--shadow-sm);
+        }
+
         #prev-button:focus-visible,
         #next-button:focus-visible,
         #pager button:focus-visible {
-          box-shadow: var(--shadow-sm);
+          box-shadow: var(--focus-ring-shadow);
           outline: none;
         }
 

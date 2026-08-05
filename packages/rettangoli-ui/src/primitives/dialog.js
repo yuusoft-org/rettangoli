@@ -133,6 +133,7 @@ class RettangoliDialogElement extends HTMLElement {
           background: var(--accent);
           color: var(--foreground);
           outline: none;
+          box-shadow: var(--focus-ring-shadow);
         }
 
         .close-button::before,

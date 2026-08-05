@@ -53,9 +53,8 @@ class RettangoliSliderElement extends HTMLElement {
         input[type="range"]:hover::-moz-range-thumb {
           transform: scale(1.1);
         }
-        input[type="range"]:focus {
-          outline: 2px solid var(--ring);
-          outline-offset: 2px;
+        input[type="range"]:focus-visible {
+          box-shadow: var(--focus-ring-shadow);
         }
         input[type="range"]:disabled {
           cursor: not-allowed;

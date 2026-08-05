@@ -24,6 +24,9 @@ refs:
       click:
         handler: handleAddOptionClick
 styles:
+  '[role="button"]:focus-visible':
+    outline: none
+    box-shadow: var(--focus-ring-shadow)
   .icon-placeholder:
     width: 16px
     height: 16px

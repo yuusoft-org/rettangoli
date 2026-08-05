@@ -59,6 +59,21 @@ table {
   --scrollbar-track: transparent;
   --scrollbar-thumb: var(--muted-foreground);
   --scrollbar-thumb-hover: var(--scrollbar-thumb);
+  --focus-ring-shadow: inset 0 0 0 2px var(--ring);
+}
+
+:where(
+  a[href],
+  button,
+  input:not([type="hidden"]),
+  textarea,
+  select,
+  summary,
+  [contenteditable="true"],
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-shadow);
 }
 
 @supports (width: -webkit-fill-available) {

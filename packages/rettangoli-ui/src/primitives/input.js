@@ -61,6 +61,9 @@ class RettangoliInputElement extends HTMLElement {
         input:focus {
           border-color: var(--foreground);
         }
+        input:focus-visible {
+          box-shadow: var(--focus-ring-shadow);
+        }
         input:disabled {
           cursor: not-allowed;
         }

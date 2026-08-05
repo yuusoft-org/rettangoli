@@ -46,6 +46,7 @@ class RettangoliButtonElement extends HTMLElement {
           background-color: var(--primary);
           color: var(--primary-foreground);
           text-decoration: none;
+          outline: none;
         }
 
         a.surface,
@@ -81,6 +82,10 @@ class RettangoliButtonElement extends HTMLElement {
             var(--primary) 85%,
             white 15%
           );
+        }
+
+        .surface:focus-visible {
+          box-shadow: var(--focus-ring-shadow);
         }
 
         :host([disabled]) .surface {

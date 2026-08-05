@@ -1,59 +1,61 @@
 ---
-title: Form Padding-None Focus Rings
-description: Verifies external focus rings remain fully visible in padding-free forms inside clipped containers.
+title: Form Padding-None Inset Focus Rings
+description: Verifies custom inset focus rings remain fully visible without adding control padding to padding-free forms inside clipped containers.
 specs:
-  - A padding-free form reserves a positive focus gutter for slider controls.
-  - The slider-with-input focus ring remains visible inside clipped overflow.
-  - Checkbox focus rings receive the same clipping protection.
+  - A padding-free form keeps slider controls flush while showing an inset focus ring.
+  - The slider-with-input inset focus ring remains visible inside clipped overflow.
+  - Checkbox focus rings receive the same clipping-safe treatment without a form-specific gutter.
 skipInitialScreenshot: true
 steps:
   - action: waitFor
     selector: '#focus-form rtgl-slider[data-field-name="level"] input[type="range"]'
     state: visible
     timeoutMs: 1200
-  - action: select
-    selector: '#focus-form rtgl-slider[data-field-name="level"] input[type="range"]'
-    steps:
-      - action: focus
+  - action: keypress
+    key: Tab
   - action: customEvent
     name: vt:inspect-slider-focus
   - action: assert
     type: js
-    fn: formFocusGutterVt.getState
+    fn: formInsetFocusVt.getState
     value:
       fieldName: level
       focused: true
-      controlPadding: 4px
+      focusVisible: true
+      controlPadding: 0px
+      hasInsetRing: true
       ringWithinShell: true
   - action: screenshot
-  - action: select
-    selector: '#focus-form rtgl-slider-input[data-field-name="volume"] rtgl-slider input[type="range"]'
-    steps:
-      - action: focus
+  - action: keypress
+    key: Tab
   - action: customEvent
     name: vt:inspect-slider-input-focus
   - action: assert
     type: js
-    fn: formFocusGutterVt.getState
+    fn: formInsetFocusVt.getState
     value:
       fieldName: volume
       focused: true
-      controlPadding: 4px
+      focusVisible: true
+      controlPadding: 0px
+      hasInsetRing: true
       ringWithinShell: true
   - action: screenshot
-  - action: select
-    selector: '#focus-form rtgl-checkbox[data-field-name="enabled"] input[type="checkbox"]'
-    steps:
-      - action: focus
+  - action: keypress
+    key: Tab
+  - action: keypress
+    key: Tab
   - action: customEvent
     name: vt:inspect-checkbox-focus
   - action: assert
     type: js
-    fn: formFocusGutterVt.getState
+    fn: formInsetFocusVt.getState
     value:
       fieldName: enabled
       focused: true
-      controlPadding: 4px
+      focusVisible: true
+      controlPadding: 0px
+      hasInsetRing: true
       ringWithinShell: true
   - action: screenshot
 viewport:
@@ -125,28 +127,29 @@ viewport:
   const ringFitsInsideShell = (input) => {
     const inputRect = input.getBoundingClientRect();
     const shellRect = shell.getBoundingClientRect();
-    const style = getComputedStyle(input);
-    const ringExtent = parseFloat(style.outlineWidth)
-      + parseFloat(style.outlineOffset);
     const tolerance = 0.5;
-    return inputRect.left - ringExtent >= shellRect.left - tolerance
-      && inputRect.right + ringExtent <= shellRect.right + tolerance
-      && inputRect.top - ringExtent >= shellRect.top - tolerance
-      && inputRect.bottom + ringExtent <= shellRect.bottom + tolerance;
+    return inputRect.left >= shellRect.left - tolerance
+      && inputRect.right <= shellRect.right + tolerance
+      && inputRect.top >= shellRect.top - tolerance
+      && inputRect.bottom <= shellRect.bottom + tolerance;
   };
 
   let state = null;
   const inspect = (fieldName, input) => {
+    const style = getComputedStyle(input);
     state = {
       fieldName,
       focused: input.matches(':focus'),
+      focusVisible: input.matches(':focus-visible'),
       controlPadding: getComputedStyle(findControl(fieldName)).padding,
+      hasInsetRing: style.boxShadow !== 'none'
+        && style.boxShadow.includes('inset'),
       ringWithinShell: ringFitsInsideShell(input),
     };
     status.textContent = `PASS — ${fieldName} focus ring is fully visible`;
   };
 
-  window.formFocusGutterVt = {
+  window.formInsetFocusVt = {
     getState: () => state,
   };
 
