@@ -24,6 +24,11 @@ refs:
       click:
         handler: handleAddOptionClick
 styles:
+  '[role="button"]:focus-visible':
+    outline: var(--focus-ring-outline, none)
+    box-shadow: inset 0 0 0 2px var(--ring)
+  '[role="button"]:focus-visible > rtgl-tag::part(surface)':
+    box-shadow: inset 0 0 0 2px var(--ring)
   .icon-placeholder:
     width: 16px
     height: 16px

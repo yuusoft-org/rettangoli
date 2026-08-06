@@ -1,0 +1,150 @@
+---
+title: Select Custom Focus Ring
+description: Verifies keyboard-focused select triggers replace the browser-native outline with a visible inset ring, both standalone and inside rtgl-form.
+specs:
+  - A keyboard-focused standalone `rtgl-select` trigger has a custom inset focus ring.
+  - A keyboard-focused `rtgl-form` select trigger has the same custom inset focus ring.
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '#standalone-select [data-testid="select-button"]'
+    state: visible
+    timeoutMs: 1200
+  - action: waitFor
+    selector: '#focus-form rtgl-select[data-field-name="role"] [data-testid="select-button"]'
+    state: visible
+    timeoutMs: 1200
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:record-standalone-focus
+  - action: assert
+    type: js
+    fn: selectFocusVt.getStandaloneState
+    value:
+      focused: true
+      focusVisible: true
+      outlineStyle: none
+      outlineWidth: 0px
+      hasInsetRing: true
+  - action: assert
+    type: text
+    selector: '#standalone-status'
+    value: PASS
+    match: includes
+  - action: screenshot
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:record-form-focus
+  - action: assert
+    type: js
+    fn: selectFocusVt.getFormState
+    value:
+      focused: true
+      focusVisible: true
+      outlineStyle: none
+      outlineWidth: 0px
+      hasInsetRing: true
+  - action: assert
+    type: text
+    selector: '#form-status'
+    value: PASS
+    match: includes
+  - action: screenshot
+viewport:
+  id: focus-outline
+  width: 760
+  height: 520
+---
+<rtgl-view g="xl" p="xl" wh="f">
+  <rtgl-view g="md" w="320">
+    <rtgl-text s="lg">Standalone select</rtgl-text>
+    <rtgl-select id="standalone-select" w="f"></rtgl-select>
+    <rtgl-text id="standalone-status" s="sm" c="mu-fg">Waiting for focus</rtgl-text>
+  </rtgl-view>
+
+  <rtgl-view g="md" w="320">
+    <rtgl-text s="lg">Select inside form</rtgl-text>
+    <rtgl-form id="focus-form" w="f"></rtgl-form>
+    <rtgl-text id="form-status" s="sm" c="mu-fg">Waiting for focus</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const standaloneSelect = document.getElementById('standalone-select');
+  const focusForm = document.getElementById('focus-form');
+  const standaloneStatus = document.getElementById('standalone-status');
+  const formStatus = document.getElementById('form-status');
+
+  const options = [
+    { label: 'Administrator', value: 'admin' },
+    { label: 'Editor', value: 'editor' },
+    { label: 'Viewer', value: 'viewer' },
+  ];
+
+  standaloneSelect.options = options;
+  standaloneSelect.selectedValue = 'editor';
+  standaloneSelect.render();
+
+  focusForm.defaultValues = { role: 'viewer' };
+  focusForm.form = {
+    fields: [{
+      name: 'role',
+      type: 'select',
+      label: 'Role',
+      description: 'This select is rendered by rtgl-form.',
+      options,
+    }],
+  };
+  focusForm.render();
+
+  const getStandaloneTrigger = () => standaloneSelect.shadowRoot
+    ?.querySelector('[data-testid="select-button"]');
+  const getFormTrigger = () => focusForm.shadowRoot
+    ?.querySelector('rtgl-select[data-field-name="role"]')
+    ?.shadowRoot
+    ?.querySelector('[data-testid="select-button"]');
+
+  const readFocusState = (trigger) => {
+    const style = getComputedStyle(trigger);
+    return {
+      focused: trigger.matches(':focus'),
+      focusVisible: trigger.matches(':focus-visible'),
+      outlineStyle: style.outlineStyle,
+      outlineWidth: style.outlineWidth,
+      hasInsetRing: style.boxShadow !== 'none'
+        && style.boxShadow.includes('inset'),
+    };
+  };
+
+  let standaloneState = null;
+  let formState = null;
+
+  window.selectFocusVt = {
+    getStandaloneState: () => standaloneState,
+    getFormState: () => formState,
+  };
+
+  window.addEventListener('vt:record-standalone-focus', () => {
+    standaloneState = readFocusState(getStandaloneTrigger());
+    standaloneStatus.textContent = standaloneState.focused
+      && standaloneState.focusVisible
+      && standaloneState.outlineStyle === 'none'
+      && standaloneState.outlineWidth === '0px'
+      && standaloneState.hasInsetRing
+      ? 'PASS — keyboard focus has a custom inset ring'
+      : `FAIL — ${JSON.stringify(standaloneState)}`;
+  });
+
+  window.addEventListener('vt:record-form-focus', () => {
+    formState = readFocusState(getFormTrigger());
+    formStatus.textContent = formState.focused
+      && formState.focusVisible
+      && formState.outlineStyle === 'none'
+      && formState.outlineWidth === '0px'
+      && formState.hasInsetRing
+      ? 'PASS — keyboard focus has a custom inset ring'
+      : `FAIL — ${JSON.stringify(formState)}`;
+  });
+</script>

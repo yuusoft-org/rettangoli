@@ -12,6 +12,11 @@ export const overlayLinkStyles = `
     bottom: 0;
     z-index: 1;
   }
+
+  :host([href]) a:focus-visible {
+    outline: var(--focus-ring-outline, none);
+    box-shadow: inset 0 0 0 2px var(--ring);
+  }
 `;
 
 export const applyLinkAttributes = ({ linkElement, href, newTab, rel }) => {

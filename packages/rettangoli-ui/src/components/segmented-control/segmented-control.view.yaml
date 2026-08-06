@@ -19,6 +19,10 @@ refs:
         handler: handleAddOptionMouseEnter
       mouseleave:
         handler: handleAddOptionMouseLeave
+styles:
+  '[role="button"]:focus-visible':
+    outline: var(--focus-ring-outline, none)
+    box-shadow: inset 0 0 0 2px var(--ring)
 template:
   - 'rtgl-view d=h ${containerSizeAttrString} bw=xs bc=bo br=md bgc=bg overflow=hidden ${containerAttrString} role="group" aria-label=${ariaLabel}':
       - $for option, i in options:

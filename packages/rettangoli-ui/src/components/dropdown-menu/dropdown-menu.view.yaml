@@ -46,6 +46,11 @@ styles:
     color: inherit
   .menu-item:
     outline: none
+  '.menu-item:focus-visible':
+    outline: var(--focus-ring-outline, none)
+    box-shadow: inset 0 0 0 2px var(--ring)
+  'a.menu-item:focus-visible > rtgl-view':
+    box-shadow: inset 0 0 0 2px var(--ring)
   .icon-placeholder:
     width: 16px
     height: 16px

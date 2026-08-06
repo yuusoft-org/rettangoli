@@ -1,0 +1,165 @@
+---
+title: Form Padding-None Inset Focus Rings
+description: Verifies custom inset focus rings remain fully visible without adding control padding to padding-free forms inside clipped containers.
+specs:
+  - A padding-free form keeps slider controls flush while showing an inset focus ring.
+  - The slider-with-input inset focus ring remains visible inside clipped overflow.
+  - Checkbox focus rings receive the same clipping-safe treatment without a form-specific gutter.
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '#focus-form rtgl-slider[data-field-name="level"] input[type="range"]'
+    state: visible
+    timeoutMs: 1200
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:inspect-slider-focus
+  - action: assert
+    type: js
+    fn: formInsetFocusVt.getState
+    value:
+      fieldName: level
+      focused: true
+      focusVisible: true
+      controlPadding: 0px
+      hasInsetRing: true
+      ringWithinShell: true
+  - action: screenshot
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:inspect-slider-input-focus
+  - action: assert
+    type: js
+    fn: formInsetFocusVt.getState
+    value:
+      fieldName: volume
+      focused: true
+      focusVisible: true
+      controlPadding: 0px
+      hasInsetRing: true
+      ringWithinShell: true
+  - action: screenshot
+  - action: keypress
+    key: Tab
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:inspect-checkbox-focus
+  - action: assert
+    type: js
+    fn: formInsetFocusVt.getState
+    value:
+      fieldName: enabled
+      focused: true
+      focusVisible: true
+      controlPadding: 0px
+      hasInsetRing: true
+      ringWithinShell: true
+  - action: screenshot
+viewport:
+  id: form-focus
+  width: 620
+  height: 560
+---
+<rtgl-view p="xl" wh="f">
+  <rtgl-view g="sm" w="380">
+    <rtgl-text s="sm" c="mu-fg">Borderless form with p=none inside clipped overflow</rtgl-text>
+    <rtgl-view id="focus-shell" w="f" bgc="su" overflow="hidden">
+      <rtgl-form id="focus-form" p="none" w="f"></rtgl-form>
+    </rtgl-view>
+    <rtgl-text id="focus-status" s="xs" c="mu-fg">Waiting for focus</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const form = document.getElementById('focus-form');
+  const shell = document.getElementById('focus-shell');
+  const status = document.getElementById('focus-status');
+
+  form.defaultValues = {
+    level: 35,
+    volume: 65,
+    enabled: true,
+  };
+  form.form = {
+    fields: [{
+      name: 'level',
+      type: 'slider',
+      label: 'Level',
+      min: 0,
+      max: 100,
+      step: 1,
+    }, {
+      name: 'volume',
+      type: 'slider-with-input',
+      label: 'Volume',
+      min: 0,
+      max: 100,
+      step: 1,
+    }, {
+      name: 'enabled',
+      type: 'checkbox',
+      label: 'Enabled',
+      content: 'Enable this feature',
+    }],
+  };
+  form.render();
+
+  const findControl = (fieldName) => form.shadowRoot
+    ?.querySelector(`[data-field-name="${fieldName}"]`)
+    ?.closest('.form-field-control');
+
+  const findSliderInput = (fieldName) => {
+    const field = form.shadowRoot?.querySelector(`[data-field-name="${fieldName}"]`);
+    const slider = field.matches('rtgl-slider')
+      ? field
+      : field.shadowRoot?.querySelector('rtgl-slider');
+    return slider.shadowRoot?.querySelector('input[type="range"]');
+  };
+
+  const findCheckboxInput = () => form.shadowRoot
+    ?.querySelector('rtgl-checkbox[data-field-name="enabled"]')
+    ?.shadowRoot
+    ?.querySelector('input[type="checkbox"]');
+
+  const ringFitsInsideShell = (input) => {
+    const inputRect = input.getBoundingClientRect();
+    const shellRect = shell.getBoundingClientRect();
+    const tolerance = 0.5;
+    return inputRect.left >= shellRect.left - tolerance
+      && inputRect.right <= shellRect.right + tolerance
+      && inputRect.top >= shellRect.top - tolerance
+      && inputRect.bottom <= shellRect.bottom + tolerance;
+  };
+
+  let state = null;
+  const inspect = (fieldName, input) => {
+    const style = getComputedStyle(input);
+    state = {
+      fieldName,
+      focused: input.matches(':focus'),
+      focusVisible: input.matches(':focus-visible'),
+      controlPadding: getComputedStyle(findControl(fieldName)).padding,
+      hasInsetRing: style.boxShadow !== 'none'
+        && style.boxShadow.includes('inset'),
+      ringWithinShell: ringFitsInsideShell(input),
+    };
+    status.textContent = `PASS — ${fieldName} focus ring is fully visible`;
+  };
+
+  window.formInsetFocusVt = {
+    getState: () => state,
+  };
+
+  window.addEventListener('vt:inspect-slider-focus', () => {
+    inspect('level', findSliderInput('level'));
+  });
+  window.addEventListener('vt:inspect-slider-input-focus', () => {
+    inspect('volume', findSliderInput('volume'));
+  });
+  window.addEventListener('vt:inspect-checkbox-focus', () => {
+    inspect('enabled', findCheckboxInput());
+  });
+</script>

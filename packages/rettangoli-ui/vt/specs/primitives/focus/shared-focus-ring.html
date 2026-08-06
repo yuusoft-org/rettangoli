@@ -1,0 +1,239 @@
+---
+title: Shared Custom Focus Ring
+description: Verifies keyboard-focusable primitives use the same clipping-safe inset focus treatment.
+specs:
+  - Button and link-button surfaces use the shared custom focus ring.
+  - Text, number, textarea, and color inputs use the shared custom focus ring.
+  - Checkbox and slider inputs use the shared custom focus ring without an external outline.
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '#button-control button'
+    state: visible
+    timeoutMs: 1200
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:record-focus
+  - action: assert
+    type: js
+    fn: sharedFocusRingVt.getState
+    value:
+      control: button
+      focused: true
+      focusVisible: true
+      outlineStyle: none
+      outlineWidth: 0px
+      hasInsetRing: true
+  - action: screenshot
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:record-focus
+  - action: assert
+    type: js
+    fn: sharedFocusRingVt.getState
+    value:
+      control: link-button
+      focused: true
+      focusVisible: true
+      outlineStyle: none
+      outlineWidth: 0px
+      hasInsetRing: true
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:record-focus
+  - action: assert
+    type: js
+    fn: sharedFocusRingVt.getState
+    value:
+      control: text-input
+      focused: true
+      focusVisible: true
+      outlineStyle: none
+      outlineWidth: 0px
+      hasInsetRing: true
+  - action: screenshot
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:record-focus
+  - action: assert
+    type: js
+    fn: sharedFocusRingVt.getState
+    value:
+      control: number-input
+      focused: true
+      focusVisible: true
+      outlineStyle: none
+      outlineWidth: 0px
+      hasInsetRing: true
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:record-focus
+  - action: assert
+    type: js
+    fn: sharedFocusRingVt.getState
+    value:
+      control: textarea
+      focused: true
+      focusVisible: true
+      outlineStyle: none
+      outlineWidth: 0px
+      hasInsetRing: true
+  - action: screenshot
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:record-focus
+  - action: assert
+    type: js
+    fn: sharedFocusRingVt.getState
+    value:
+      control: color-input
+      focused: true
+      focusVisible: true
+      outlineStyle: none
+      outlineWidth: 0px
+      hasInsetRing: true
+  - action: screenshot
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:record-focus
+  - action: assert
+    type: js
+    fn: sharedFocusRingVt.getState
+    value:
+      control: checkbox
+      focused: true
+      focusVisible: true
+      outlineStyle: none
+      outlineWidth: 0px
+      hasInsetRing: true
+  - action: screenshot
+  - action: keypress
+    key: Tab
+  - action: customEvent
+    name: vt:record-focus
+  - action: assert
+    type: js
+    fn: sharedFocusRingVt.getState
+    value:
+      control: slider
+      focused: true
+      focusVisible: true
+      outlineStyle: none
+      outlineWidth: 0px
+      hasInsetRing: true
+  - action: screenshot
+viewport:
+  id: shared-focus
+  width: 720
+  height: 660
+---
+<rtgl-view p="xl" wh="f">
+  <rtgl-view id="focus-shell" w="420" g="md" overflow="hidden">
+    <rtgl-text s="lg">Shared inset focus ring</rtgl-text>
+
+    <rtgl-view d="h" g="md">
+      <rtgl-button id="button-control">Button</rtgl-button>
+      <rtgl-button id="link-button-control" href="#focus-test">Link button</rtgl-button>
+    </rtgl-view>
+
+    <rtgl-view g="xs" w="f">
+      <rtgl-text s="sm">Text input</rtgl-text>
+      <rtgl-input id="text-input-control" w="f" value="Keyboard focus"></rtgl-input>
+    </rtgl-view>
+
+    <rtgl-view g="xs" w="f">
+      <rtgl-text s="sm">Number input</rtgl-text>
+      <rtgl-input-number id="number-input-control" w="f" value="42"></rtgl-input-number>
+    </rtgl-view>
+
+    <rtgl-view g="xs" w="f">
+      <rtgl-text s="sm">Textarea</rtgl-text>
+      <rtgl-textarea id="textarea-control" w="f" rows="2" value="Shared focus treatment"></rtgl-textarea>
+    </rtgl-view>
+
+    <rtgl-view d="h" av="c" g="lg">
+      <rtgl-text s="sm">Color</rtgl-text>
+      <rtgl-color-picker id="color-input-control" value="#737373"></rtgl-color-picker>
+      <rtgl-checkbox id="checkbox-control">Checkbox</rtgl-checkbox>
+    </rtgl-view>
+
+    <rtgl-view g="xs" w="f">
+      <rtgl-text s="sm">Slider</rtgl-text>
+      <rtgl-slider id="slider-control" w="f" value="55"></rtgl-slider>
+    </rtgl-view>
+
+    <rtgl-text id="focus-status" s="xs" c="mu-fg">Waiting for keyboard focus</rtgl-text>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const status = document.getElementById('focus-status');
+  const controls = [{
+    name: 'button',
+    element: () => document.getElementById('button-control')
+      .shadowRoot.querySelector('button'),
+  }, {
+    name: 'link-button',
+    element: () => document.getElementById('link-button-control')
+      .shadowRoot.querySelector('a'),
+  }, {
+    name: 'text-input',
+    element: () => document.getElementById('text-input-control')
+      .shadowRoot.querySelector('input'),
+  }, {
+    name: 'number-input',
+    element: () => document.getElementById('number-input-control')
+      .shadowRoot.querySelector('input'),
+  }, {
+    name: 'textarea',
+    element: () => document.getElementById('textarea-control')
+      .shadowRoot.querySelector('textarea'),
+  }, {
+    name: 'color-input',
+    element: () => document.getElementById('color-input-control')
+      .shadowRoot.querySelector('input[type="color"]'),
+  }, {
+    name: 'checkbox',
+    element: () => document.getElementById('checkbox-control')
+      .shadowRoot.querySelector('input[type="checkbox"]'),
+  }, {
+    name: 'slider',
+    element: () => document.getElementById('slider-control')
+      .shadowRoot.querySelector('input[type="range"]'),
+  }];
+
+  let state = null;
+  const recordFocus = () => {
+    const control = controls.find(({ element }) => element().matches(':focus'));
+    const element = control?.element();
+    const style = element ? getComputedStyle(element) : null;
+    state = {
+      control: control?.name ?? null,
+      focused: element?.matches(':focus') ?? false,
+      focusVisible: element?.matches(':focus-visible') ?? false,
+      outlineStyle: style?.outlineStyle ?? null,
+      outlineWidth: style?.outlineWidth ?? null,
+      hasInsetRing: style?.boxShadow !== 'none'
+        && style?.boxShadow.includes('inset'),
+    };
+    status.textContent = state.focused
+      && state.focusVisible
+      && state.outlineStyle === 'none'
+      && state.outlineWidth === '0px'
+      && state.hasInsetRing
+      ? `PASS — ${state.control} uses the shared inset ring`
+      : `FAIL — ${JSON.stringify(state)}`;
+  };
+
+  window.sharedFocusRingVt = {
+    getState: () => state,
+  };
+  window.addEventListener('vt:record-focus', recordFocus);
+</script>

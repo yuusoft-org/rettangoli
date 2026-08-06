@@ -61,6 +61,26 @@ table {
   --scrollbar-thumb-hover: var(--scrollbar-thumb);
 }
 
+:where(
+  a[href],
+  button,
+  input:not([type="hidden"]),
+  textarea,
+  select,
+  summary,
+  [contenteditable="true"],
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
+  outline: var(--focus-ring-outline, none);
+  box-shadow: inset 0 0 0 2px var(--ring);
+}
+
+@media (forced-colors: active) {
+  :root {
+    --focus-ring-outline: 2px solid Highlight;
+  }
+}
+
 @supports (width: -webkit-fill-available) {
   :root {
     --width-stretch: -webkit-fill-available;

@@ -38,6 +38,12 @@ refs:
       mouseleave:
         handler: handleAddOptionMouseLeave
 styles:
+  '#selectButton':
+    outline: none
+  '#selectButton:focus-visible':
+    border-color: var(--ring)
+    outline: var(--focus-ring-outline, none)
+    box-shadow: inset 0 0 0 2px var(--ring)
   .leading-visual:
     flex-shrink: 0
 template:
