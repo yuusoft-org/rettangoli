@@ -5,6 +5,7 @@ specs:
   - "Sidebar renders many items with `sv` on the internal list container."
   - "Header and item list remain visually coherent in the full-height layout."
   - "Public scroll-position methods read, restore, and clamp the internal item list position."
+  - "The reference screenshot captures the list restored to a non-zero position."
 skipInitialScreenshot: true
 steps:
   - action: wait
@@ -58,8 +59,8 @@ steps:
         && read.top === 480
         && clamped.top === maximumTop;
 
-      sidebar.setScrollPosition({ top: 0 });
-      return passed;
+      const screenshotPosition = sidebar.setScrollPosition({ top: 480 });
+      return passed && screenshotPosition.top === 480;
     },
   };
 </script>
