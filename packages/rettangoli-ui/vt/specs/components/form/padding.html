@@ -1,10 +1,10 @@
 ---
 title: Form Padding
-description: Verifies the default form inset, padding-free forms, and reactive padding updates.
+description: Verifies default, uniform, and axis-specific form padding.
 specs:
-  - Forms retain medium content padding by default.
+  - Forms use medium content padding by default.
   - Setting `p="none"` removes all internal form padding.
-  - Updating `p` after mount immediately applies the requested spacing token.
+  - "ph and pv override p independently and react after mount."
 skipInitialScreenshot: true
 steps:
   - action: assert
@@ -15,6 +15,10 @@ steps:
       defaultPadding: 8px
       configurableAttribute: none
       configurablePadding: 0px
+      axisHorizontalAttribute: md
+      axisVerticalAttribute: none
+      axisHorizontalPadding: 8px
+      axisVerticalPadding: 0px
   - action: screenshot
   - action: customEvent
     name: expand-form-padding
@@ -28,6 +32,10 @@ steps:
       defaultPadding: 8px
       configurableAttribute: xl
       configurablePadding: 32px
+      axisHorizontalAttribute: xl
+      axisVerticalAttribute: sm
+      axisHorizontalPadding: 32px
+      axisVerticalPadding: 4px
   - action: screenshot
 viewport:
   id: form-wide
@@ -42,6 +50,10 @@ viewport:
   <rtgl-view g="sm" w="360">
     <rtgl-text id="configurable-label" s="sm" c="mu-fg">No padding (p=none)</rtgl-text>
     <rtgl-view id="configurable-mount" w="f" bw="xs" bc="bo" br="lg"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view g="sm" w="360">
+    <rtgl-text id="axis-label" s="sm" c="mu-fg">Axis padding (ph=md, pv=none)</rtgl-text>
+    <rtgl-view id="axis-mount" w="f" bw="xs" bc="bo" br="lg"></rtgl-view>
   </rtgl-view>
 </rtgl-view>
 
@@ -69,32 +81,49 @@ viewport:
   const defaultForm = createForm('default-form');
   const configurableForm = createForm('configurable-form');
   configurableForm.setAttribute('p', 'none');
+  const axisForm = createForm('axis-form');
+  axisForm.setAttribute('p', 'lg');
+  axisForm.setAttribute('ph', 'md');
+  axisForm.setAttribute('pv', 'none');
 
   document.getElementById('default-mount').appendChild(defaultForm);
   document.getElementById('configurable-mount').appendChild(configurableForm);
+  document.getElementById('axis-mount').appendChild(axisForm);
 
   const inspectContainer = (form) => {
     const container = form.shadowRoot?.querySelector('#formContainer');
+    const fields = form.shadowRoot?.querySelector('.form-fields');
     return {
-      attribute: container?.getAttribute('p') ?? '',
-      padding: container ? getComputedStyle(container).padding : '',
+      horizontalAttribute: fields?.getAttribute('ph') ?? '',
+      verticalAttribute: container?.getAttribute('pv') ?? '',
+      padding: container ? getComputedStyle(container).paddingTop : '',
+      horizontalPadding: fields ? getComputedStyle(fields).paddingLeft : '',
+      verticalPadding: container ? getComputedStyle(container).paddingTop : '',
     };
   };
 
   window.addEventListener('expand-form-padding', () => {
     configurableForm.p = 'xl';
     document.getElementById('configurable-label').textContent = 'Expanded padding (p=xl)';
+    axisForm.ph = 'xl';
+    axisForm.pv = 'sm';
+    document.getElementById('axis-label').textContent = 'Axis padding (ph=xl, pv=sm)';
   });
 
   window.formPaddingVt = {
     inspect() {
       const defaultState = inspectContainer(defaultForm);
       const configurableState = inspectContainer(configurableForm);
+      const axisState = inspectContainer(axisForm);
       return {
-        defaultAttribute: defaultState.attribute,
+        defaultAttribute: defaultState.horizontalAttribute,
         defaultPadding: defaultState.padding,
-        configurableAttribute: configurableState.attribute,
+        configurableAttribute: configurableState.horizontalAttribute,
         configurablePadding: configurableState.padding,
+        axisHorizontalAttribute: axisState.horizontalAttribute,
+        axisVerticalAttribute: axisState.verticalAttribute,
+        axisHorizontalPadding: axisState.horizontalPadding,
+        axisVerticalPadding: axisState.verticalPadding,
       };
     },
   };

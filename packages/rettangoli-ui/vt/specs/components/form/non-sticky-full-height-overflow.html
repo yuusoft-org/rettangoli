@@ -1,0 +1,97 @@
+---
+title: Form - Non-Sticky Full Height Overflow
+description: Verifies a non-sticky full-height form preserves overflow so its bounded scrolling ancestor can reveal every field and action.
+specs:
+  - "A non-sticky `h=f` form does not clip its host or render target."
+  - "The non-sticky field region does not become an internal scroller."
+  - "A bounded `sv` ancestor can scroll to the form's final action."
+skipInitialScreenshot: true
+viewport:
+  id: form-bounded-overflow
+  width: 720
+  height: 520
+steps:
+  - action: waitFor
+    selector: '#non-sticky-form .form-actions'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:verify-non-sticky-full-height-overflow
+  - action: wait
+    ms: 100
+  - action: assert
+    type: text
+    selector: '#non-sticky-result'
+    value: PASS
+  - action: screenshot
+---
+<pre id="non-sticky-result" style="position: absolute; left: -9999px"></pre>
+
+<rtgl-view p="xl" wh="f">
+  <rtgl-view d="v" g="sm" w="420">
+    <rtgl-text s="sm" c="mu-fg">Bounded ancestor owns scrolling</rtgl-text>
+    <rtgl-view id="non-sticky-shell" w="f" h="300" sv bw="xs" bc="bo" br="md">
+      <rtgl-form id="non-sticky-form" w="f" h="f"></rtgl-form>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const form = document.getElementById('non-sticky-form');
+  const shell = document.getElementById('non-sticky-shell');
+  const result = document.getElementById('non-sticky-result');
+
+  form.form = {
+    title: 'Long non-sticky form',
+    description: 'The surrounding surface scrolls this complete form.',
+    fields: Array.from({ length: 10 }, (_, index) => ({
+      name: `field${index + 1}`,
+      type: 'input-text',
+      label: `Field ${index + 1}`,
+    })),
+    actions: {
+      buttons: [{ id: 'save', label: 'Save all fields', variant: 'pr' }],
+    },
+  };
+
+  window.addEventListener('vt:verify-non-sticky-full-height-overflow', () => {
+    const renderTarget = form.shadowRoot.querySelector('[data-rtgl-render-target]');
+    const fields = form.shadowRoot.querySelector('.form-fields');
+    const actions = form.shadowRoot.querySelector('.form-actions');
+    const hostStyle = getComputedStyle(form);
+    const renderTargetStyle = getComputedStyle(renderTarget);
+    const scrollableBefore = shell.scrollHeight > shell.clientHeight + 80;
+
+    shell.scrollTop = shell.scrollHeight;
+
+    requestAnimationFrame(() => {
+      const shellRect = shell.getBoundingClientRect();
+      const actionsRect = actions.getBoundingClientRect();
+      const pass =
+        !form.hasAttribute('sticky') &&
+        form.getAttribute('h') === 'f' &&
+        !fields.hasAttribute('sv') &&
+        hostStyle.overflow === 'visible' &&
+        renderTargetStyle.overflow === 'visible' &&
+        scrollableBefore &&
+        shell.scrollTop > 0 &&
+        actionsRect.top >= shellRect.top - 1 &&
+        actionsRect.bottom <= shellRect.bottom + 1;
+
+      result.textContent = pass
+        ? 'PASS'
+        : `FAIL ${JSON.stringify({
+            hostOverflow: hostStyle.overflow,
+            renderTargetOverflow: renderTargetStyle.overflow,
+            fieldsScroller: fields.hasAttribute('sv'),
+            shellClientHeight: shell.clientHeight,
+            shellScrollHeight: shell.scrollHeight,
+            shellScrollTop: shell.scrollTop,
+            shell: { top: shellRect.top, bottom: shellRect.bottom },
+            actions: { top: actionsRect.top, bottom: actionsRect.bottom },
+          })}`;
+    });
+  });
+</script>

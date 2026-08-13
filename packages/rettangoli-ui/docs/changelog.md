@@ -4,12 +4,17 @@
 
 ### Improvements
 
+- `rtgl-form`: added `bottom-spacer="<pixels>"` to provide extra bottom scroll room inside the form field region without moving sticky actions.
+- `rtgl-form`: added the `sticky` boolean attribute for bounded layouts with a fixed title, internally scrolling fields, and a fixed action row, with an `md` gap below the title and an `lg` gap above actions.
+- `rtgl-dialog`: added responsive `top` and `fixed-top` layouts for naturally sized or bounded top-aligned mobile dialogs.
+- `rtgl-breadcrumb`: removed the built-in `sm` inset so surrounding layouts own breadcrumb spacing consistently.
 - Focus indicators: standardized keyboard focus across native controls, Rettangoli inputs, buttons, links, sliders, checkboxes, and component triggers with one theme-aware inset ring that remains visible inside clipped containers, including padding-free `rtgl-form` layouts; forced-colors mode retains a system outline, and composite tag/menu surfaces paint their ring above foreground content.
-- `rtgl-dialog`: added reactive `p="none"` as its padding-free interface.
+- Scroll surfaces: implicit keyboard focus on `rtgl-view` and `rtgl-grid` scrollers now uses the shared inset focus ring, including a system-color outline in forced-colors mode.
+- `rtgl-dialog`: added reactive `p`, `ph`, and `pv` content padding across `none|xs|sm|md|lg|xl`, with `lg` as the default; `p="none"` retains its full-bleed horizontal-gutter behavior.
 - `rtgl-form`: added form-level `rowStackAt: sm|md|lg|xl|none` so every row can share one responsive stacking default while retaining per-row `stackAt` overrides.
 - `rtgl-form`: row fields now stack into one column at the `md` viewport breakpoint by default, with per-row `stackAt: sm|md|lg|xl|none` overrides; mixed labeled and unlabeled fields drop their alignment track after stacking.
 - `rtgl-form`: fixed row fields so input, select, and segmented-control content stretches across the full column width without input padding overflowing its bounds.
-- `rtgl-form`: added reactive `p="none|xs|sm|md|lg|xl"` content padding, with `md` retained as the default and `none` providing a flush layout.
+- `rtgl-form`: added reactive `p="none|xs|sm|md|lg|xl"` content padding, with `md` as the default and `none` providing a flush layout.
 - `rtgl-form`: sections now show a top separator by default unless they are the first visible form item, with a field-level `separator` boolean to override either result.
 - `rtgl-form`: added layout-only `row` fields for grouping sibling fields into equal-width columns, including rows nested inside sections and conditional row fields.
 - `rtgl-form`: sections can expose an accessible right-aligned icon action that emits `form-section-action` with current values and viewport anchor geometry for parent-owned actions or dropdown menus.

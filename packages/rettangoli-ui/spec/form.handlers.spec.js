@@ -37,6 +37,36 @@ describe("rtgl-form handlers", () => {
     actions: { buttons: [] },
   };
 
+  it.each([
+    [true, false],
+    [false, true],
+  ])(
+    "syncs the sticky wrapper marker from resolved prop state %s -> %s",
+    (oldSticky, newSticky) => {
+      const oldProps = { form, sticky: oldSticky };
+      const newProps = { form, sticky: newSticky };
+      const store = createStore({ props: newProps });
+      const host = { toggleAttribute: vi.fn() };
+      const formContainer = {
+        getRootNode: vi.fn(() => ({ host })),
+      };
+
+      handleOnUpdate(
+        {
+          store,
+          render: vi.fn(),
+          refs: { formContainer },
+        },
+        { oldProps, newProps },
+      );
+
+      expect(host.toggleAttribute).toHaveBeenCalledWith(
+        "data-rtgl-sticky",
+        newSticky,
+      );
+    },
+  );
+
   it("re-seeds form values when the form key changes", () => {
     const oldProps = {
       key: "section-form-1",

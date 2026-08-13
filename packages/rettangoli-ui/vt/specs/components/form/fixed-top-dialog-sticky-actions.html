@@ -1,0 +1,281 @@
+---
+title: Form - Sticky Layout - Fixed Top Dialog
+diffThreshold: 4
+description: Verifies fixed-top dialogs keep natural short-form height and give long forms an internal scroller with pinned headers and actions.
+specs:
+  - "`md-layout=fixed-top` keeps short forms naturally sized at the top of the viewport."
+  - "The dialog remains inset while the form fills its surface, and the field scroller owns horizontal content padding so its scrollbar stays at the form edge."
+  - "Long forms stop at the available viewport height without scrolling the native dialog."
+  - "`<rtgl-form sticky w=f>` fills the bounded surface without requiring `h=f`, keeping the header and action row visible while only the field region scrolls."
+  - "The keyboard-focused field scroller replaces the browser-native outline with the shared inset focus ring."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: "#short-form .form-actions"
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:verify-short-fixed-top-form
+  - action: wait
+    ms: 100
+  - action: assert
+    type: text
+    selector: "#short-result"
+    value: PASS
+  - action: screenshot
+  - action: customEvent
+    name: vt:show-long-fixed-top-form
+  - action: waitFor
+    selector: "#long-form .form-actions"
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:verify-long-fixed-top-form
+  - action: wait
+    ms: 100
+  - action: assert
+    type: text
+    selector: "#long-result"
+    value: PASS
+  - action: screenshot
+---
+
+<pre id="short-result" style="position: absolute; left: -9999px"></pre>
+<pre id="long-result" style="position: absolute; left: -9999px"></pre>
+
+<rtgl-dialog id="short-dialog" open s="md" md-layout="fixed-top" p="none">
+  <rtgl-view id="short-surface" slot="content" d="v" w="f" h="f" overflow="hidden">
+    <rtgl-form id="short-form" sticky w="f" h="f" p="lg"></rtgl-form>
+  </rtgl-view>
+</rtgl-dialog>
+
+<rtgl-dialog id="long-dialog" s="md" md-layout="fixed-top" p="none">
+  <rtgl-view id="long-surface" slot="content" d="v" w="f" h="f" overflow="hidden">
+    <rtgl-form id="long-form" sticky w="f" p="lg"></rtgl-form>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const shortDialog = document.getElementById("short-dialog");
+  const longDialog = document.getElementById("long-dialog");
+  const shortForm = document.getElementById("short-form");
+  const longForm = document.getElementById("long-form");
+
+  shortForm.form = {
+    title: "Add Character",
+    fields: [
+      {
+        name: "name",
+        type: "input-text",
+        label: "Name",
+      },
+      {
+        name: "description",
+        type: "input-textarea",
+        label: "Description",
+      },
+    ],
+    actions: {
+      buttons: [
+        {
+          id: "submit",
+          variant: "pr",
+          label: "Add Character",
+        },
+      ],
+    },
+  };
+
+  longForm.form = {
+    title: "Edit Character",
+    description:
+      "The fields scroll while this title and the update action remain visible.",
+    fields: Array.from({ length: 18 }, (_, index) => ({
+      name: `field${index + 1}`,
+      type: "input-text",
+      label: `Character field ${index + 1}`,
+    })),
+    actions: {
+      buttons: [
+        {
+          id: "submit",
+          variant: "pr",
+          label: "Update Character",
+        },
+      ],
+    },
+  };
+
+  const getParts = (dialog, form) => ({
+    nativeDialog: dialog.shadowRoot.querySelector("dialog"),
+    contentSlot: dialog.shadowRoot.querySelector('slot[name="content"]'),
+    formRenderTarget: form.shadowRoot.querySelector('[data-rtgl-render-target]'),
+    formContainer: form.shadowRoot.querySelector("#formContainer"),
+    formBody: form.shadowRoot.querySelector(".form-fields"),
+    formBodyScrollbar: form.shadowRoot
+      .querySelector(".form-fields")
+      ?.shadowRoot?.querySelector('[data-rtgl-scrollbar-track="vertical"]'),
+    formFooter: form.shadowRoot.querySelector(".form-actions"),
+  });
+
+  window.addEventListener("vt:verify-short-fixed-top-form", () => {
+    const { nativeDialog, contentSlot, formContainer, formBody, formFooter } = getParts(
+      shortDialog,
+      shortForm,
+    );
+    const slotRect = contentSlot.getBoundingClientRect();
+    const surfaceRect = document.getElementById("short-surface").getBoundingClientRect();
+    const formRect = formContainer.getBoundingClientRect();
+    const bodyRect = formBody.getBoundingClientRect();
+    const bodyStyle = getComputedStyle(formBody);
+    const horizontalPadding =
+      parseFloat(bodyStyle.paddingLeft) + parseFloat(bodyStyle.paddingRight);
+    const footerRect = formFooter.getBoundingClientRect();
+    const pass =
+      shortDialog.getAttribute("data-rtgl-active-layout") === "fixed-top" &&
+      slotRect.top > 0 &&
+      slotRect.height < window.innerHeight * 0.75 &&
+      slotRect.width < window.innerWidth &&
+      Math.abs(surfaceRect.width - contentSlot.clientWidth) <= 1 &&
+      Math.abs(formRect.width - surfaceRect.width) <= 1 &&
+      Math.abs(bodyRect.width - formRect.width) <= 1 &&
+      horizontalPadding > 0 &&
+      nativeDialog.scrollTop === 0 &&
+      formBody.scrollTop === 0 &&
+      footerRect.bottom <= slotRect.bottom + 1;
+
+    document.getElementById("short-result").textContent = pass
+      ? "PASS"
+      : `FAIL ${JSON.stringify({
+          viewportWidth: window.innerWidth,
+          slot: { left: slotRect.left, width: slotRect.width },
+          surface: { left: surfaceRect.left, width: surfaceRect.width },
+          formContainer: { left: formRect.left, width: formRect.width },
+          formBody: { left: bodyRect.left, width: bodyRect.width },
+        })}`;
+  });
+
+  window.addEventListener("vt:show-long-fixed-top-form", () => {
+    shortDialog.removeAttribute("open");
+    longDialog.setAttribute("open", "");
+  });
+
+  window.addEventListener("vt:verify-long-fixed-top-form", () => {
+    const {
+      nativeDialog,
+      contentSlot,
+      formRenderTarget,
+      formContainer,
+      formBody,
+      formBodyScrollbar,
+      formFooter,
+    } = getParts(
+      longDialog,
+      longForm,
+    );
+    const slotRect = contentSlot.getBoundingClientRect();
+    const surfaceRect = document.getElementById("long-surface").getBoundingClientRect();
+    const formHostRect = longForm.getBoundingClientRect();
+    const renderTargetRect = formRenderTarget.getBoundingClientRect();
+    const renderTargetStyle = getComputedStyle(formRenderTarget);
+    const formRect = formContainer.getBoundingClientRect();
+    const footerBeforeScroll = formFooter.getBoundingClientRect();
+
+    formBody.focus();
+    const focusedBodyStyle = getComputedStyle(formBody);
+    const focusState = {
+      visible: formBody.matches(":focus-visible"),
+      outlineStyle: focusedBodyStyle.outlineStyle,
+      outlineWidth: focusedBodyStyle.outlineWidth,
+      boxShadow: focusedBodyStyle.boxShadow,
+    };
+    formBody.blur();
+    formBody.scrollTop = 260;
+
+    requestAnimationFrame(() => {
+      const footerAfterScroll = formFooter.getBoundingClientRect();
+      const bodyRect = formBody.getBoundingClientRect();
+      const scrollbarRect = formBodyScrollbar.getBoundingClientRect();
+      const scrollbarStyle = getComputedStyle(formBodyScrollbar);
+      const bodyStyle = getComputedStyle(formBody);
+      const horizontalPadding =
+        parseFloat(bodyStyle.paddingLeft) + parseFloat(bodyStyle.paddingRight);
+      const pass =
+        longDialog.getAttribute("data-rtgl-active-layout") === "fixed-top" &&
+        nativeDialog.scrollTop === 0 &&
+        formBody.scrollHeight > formBody.clientHeight + 80 &&
+        formBody.scrollTop > 0 &&
+        focusState.visible &&
+        focusState.outlineStyle === "none" &&
+        focusState.outlineWidth === "0px" &&
+        focusState.boxShadow !== "none" &&
+        !longForm.hasAttribute("h") &&
+        slotRect.width < window.innerWidth &&
+        Math.abs(surfaceRect.width - contentSlot.clientWidth) <= 1 &&
+        Math.abs(formHostRect.height - surfaceRect.height) <= 1 &&
+        Math.abs(renderTargetRect.height - surfaceRect.height) <= 1 &&
+        Math.abs(formRect.width - surfaceRect.width) <= 1 &&
+        Math.abs(scrollbarRect.right - surfaceRect.right) <= 1 &&
+        Math.abs(bodyRect.width - formRect.width) <= 1 &&
+        horizontalPadding > 0 &&
+        bodyRect.bottom <= footerAfterScroll.top + 1 &&
+        Math.abs(footerAfterScroll.bottom - footerBeforeScroll.bottom) <= 1 &&
+        footerAfterScroll.bottom <= slotRect.bottom + 1 &&
+        slotRect.top > 0 &&
+        slotRect.bottom < window.innerHeight;
+
+      document.getElementById("long-result").textContent = pass
+        ? "PASS"
+        : `FAIL ${JSON.stringify({
+            viewportWidth: window.innerWidth,
+            slot: { left: slotRect.left, width: slotRect.width },
+            surface: {
+              left: surfaceRect.left,
+              width: surfaceRect.width,
+              height: surfaceRect.height,
+            },
+            formHost: { width: formHostRect.width, height: formHostRect.height },
+            renderTarget: {
+              width: renderTargetRect.width,
+              height: renderTargetRect.height,
+              display: renderTargetStyle.display,
+            },
+            formContainer: {
+              left: formRect.left,
+              width: formRect.width,
+              height: formRect.height,
+            },
+            formBody: {
+              left: bodyRect.left,
+              width: bodyRect.width,
+              height: bodyRect.height,
+            },
+            scrollbar: {
+              right: scrollbarRect.right,
+              display: scrollbarStyle.display,
+              visibility: scrollbarStyle.visibility,
+            },
+            scrolling: {
+              clientHeight: formBody.clientHeight,
+              scrollHeight: formBody.scrollHeight,
+              scrollTop: formBody.scrollTop,
+            },
+          })}`;
+    });
+  });
+
+  shortDialog.addEventListener("close", () =>
+    shortDialog.removeAttribute("open"),
+  );
+  longDialog.addEventListener("close", () =>
+    longDialog.removeAttribute("open"),
+  );
+</script>

@@ -71,6 +71,7 @@ A path-navigation component for hierarchical context and route navigation.
 - `id` is identity only and does not control clickability.
 - `max` collapses middle items with an ellipsis.
 - Separators are inserted automatically between visible items.
+- Breadcrumbs have no built-in outer padding; the surrounding layout owns their inset.
 - If `newTab` is true and `rel` is omitted, `rel="noopener noreferrer"` is applied.
 
 ```html codePreview

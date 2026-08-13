@@ -611,8 +611,10 @@ class RettangoliPopoverElement extends HTMLElement {
       return;
     }
 
-    // Remove positioned attribute to hide during repositioning
-    this.removeAttribute('positioned');
+    // Keep an already-positioned popover visible while its coordinates are
+    // refreshed. On mobile, focusing an input resizes the viewport when the
+    // software keyboard opens. Temporarily hiding the popover at that point
+    // blurs the input and immediately dismisses the keyboard.
     this._positionVersion += 1;
 
     if (this._positionFrameId !== null) {

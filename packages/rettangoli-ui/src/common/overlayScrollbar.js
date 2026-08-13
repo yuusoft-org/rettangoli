@@ -62,6 +62,15 @@ export const overlayScrollbarStyles = `
     --rtgl-scrollbar-y-enabled: 0;
   }
 
+  :host(:focus) {
+    outline: none;
+  }
+
+  :host(:focus-visible) {
+    outline: var(--focus-ring-outline, none);
+    box-shadow: inset 0 0 0 2px var(--ring) !important;
+  }
+
   :host([sh]),
   :host([sv]) {
     -ms-overflow-style: none !important;
@@ -216,7 +225,7 @@ export const overlayScrollbarStyles = `
   [data-rtgl-scrollbar-track="vertical"]::before {
     top: 0;
     bottom: 0;
-    inset-inline-end: 2px;
+    inset-inline-end: 1px;
     width: var(--scrollbar-size, 4px);
   }
 
@@ -243,7 +252,7 @@ export const overlayScrollbarStyles = `
 
   [data-rtgl-scrollbar-thumb="vertical"] {
     top: 0;
-    inset-inline-end: 2px;
+    inset-inline-end: 1px;
     width: var(--scrollbar-size, 4px);
   }
 
@@ -276,6 +285,12 @@ export const overlayScrollbarStyles = `
   }
 
   @media (forced-colors: active) {
+    :host(:focus-visible) {
+      outline: 2px solid Highlight;
+      outline-offset: -2px;
+      box-shadow: none !important;
+    }
+
     [data-rtgl-scrollbar-thumb] {
       background: CanvasText;
       forced-color-adjust: none;

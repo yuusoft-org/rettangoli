@@ -49,8 +49,10 @@ Use `open` as the source of truth and close by removing `open`.
 | Open | `open` | boolean | - |
 | Size | `s` | `sm`, `md`, `lg`, `f` | content-based |
 | Width Override | `w` | CSS width value (`600px`, `70vw`, etc.) | - |
-| Layout | `layout`, `sm-layout`, `md-layout`, `lg-layout`, `xl-layout` | `centered`, `fixed` | `centered` |
-| Padding | `p` | `none` | padded |
+| Layout | `layout`, `sm-layout`, `md-layout`, `lg-layout`, `xl-layout` | `centered`, `top`, `fixed-top`, `fixed` | `centered` |
+| Padding | `p` | `none`, `xs`, `sm`, `md`, `lg`, `xl` | `lg` |
+| Horizontal Padding | `ph` | `none`, `xs`, `sm`, `md`, `lg`, `xl` | follows `p` |
+| Vertical Padding | `pv` | `none`, `xs`, `sm`, `md`, `lg`, `xl` | follows `p` |
 | Bare | `bare` | boolean | - |
 | Close Button | `close-button` | boolean | - |
 
@@ -254,9 +256,54 @@ Use `w` when you need explicit width control.
 
 ## Responsive Layout
 
-Use `layout` and breakpoint-prefixed layout attrs to change dialog layout responsively. `centered` is the default adaptive centered dialog. `fixed` locks the dialog shell to the viewport and scrolls the content surface internally.
+Use `layout` and breakpoint-prefixed layout attrs to change dialog layout responsively.
 
-Set `p="none"` when the slotted content should own all spacing. It removes dialog-owned padding and left/right content margins. This is useful for fixed mobile dialogs that render a full-height shell, custom safe-area handling, or pinned internal footers.
+- `centered` is the default adaptive centered dialog. Short content does not scroll; tall content uses 40px top and bottom margins while the native dialog scrolls.
+- `top` aligns the content surface near the top of the viewport using the same standard gutter on all four sides. The surface keeps its content height and the native dialog scrolls when needed.
+- `fixed-top` keeps the inset, top-aligned surface at its natural height until it reaches the available viewport height. At that point, outer scrolling is clipped so a bounded child can own scrolling and keep fixed internal regions visible.
+- `fixed` locks both the dialog shell and content surface to the viewport and scrolls the content surface internally.
+
+Use `md-layout="top"` for a content-height mobile dialog that begins near the top without the centered layout's 40px scrolling offset. Combine it with `p="none"` when the slotted content should remove or own all four outer gutters.
+
+Use `md-layout="fixed-top"` with a bounded vertical content surface when a mobile form needs internally scrolling fields with a persistent header and action row. Configure it with `<rtgl-form sticky>`.
+
+```html codePreview
+<rtgl-button id="open-top-mobile">Open Top Mobile Dialog</rtgl-button>
+<rtgl-dialog id="dialog-top-mobile" s="lg" md-layout="top" close-button>
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-text s="h4">Top-aligned on Mobile</rtgl-text>
+    <rtgl-text c="mu">On md and smaller screens, this content surface starts at the top and keeps its natural height.</rtgl-text>
+    <rtgl-button v="ol" id="close-top-mobile">Close</rtgl-button>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  (() => {
+    const dialogTopMobile = document.getElementById("dialog-top-mobile");
+    document.getElementById("open-top-mobile").addEventListener("click", () => {
+      dialogTopMobile.setAttribute("open", "");
+    });
+    document.getElementById("close-top-mobile").addEventListener("click", () => {
+      dialogTopMobile.removeAttribute("open");
+    });
+    dialogTopMobile.addEventListener("close", () => {
+      dialogTopMobile.removeAttribute("open");
+    });
+  })();
+</script>
+```
+
+## Padding
+
+Dialog content padding defaults to `lg`. Set `p` to apply one spacing token to every side, then use `ph` or `pv` when the horizontal and vertical axes need different values. Axis attributes override `p` for their corresponding sides, and all three attributes react after mount.
+
+```html
+<rtgl-dialog p="lg" ph="xl" pv="sm">
+  <rtgl-view slot="content">Dialog content</rtgl-view>
+</rtgl-dialog>
+```
+
+Set `p="none"` when the slotted content should own all spacing. In addition to zero content padding, this established full-bleed mode removes dialog-owned left/right content margins. This is useful for fixed mobile dialogs that render a full-height shell, custom safe-area handling, or pinned internal footers.
 
 ```html codePreview
 <rtgl-button id="open-fixed-mobile">Open Fixed Mobile Dialog</rtgl-button>

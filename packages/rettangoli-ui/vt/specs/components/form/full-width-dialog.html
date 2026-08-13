@@ -1,0 +1,92 @@
+---
+title: Form - Full Width Within Dialog
+description: Verifies a full-width form fills an inset dialog instead of collapsing to its intrinsic content width.
+specs:
+  - "A form with w=f fills its inset dialog surface on a wide viewport."
+  - "The dialog remains narrower than the viewport."
+  - "The field region retains horizontal content padding without narrowing the form box."
+skipInitialScreenshot: true
+viewport:
+  id: form-wide
+  width: 1280
+  height: 720
+steps:
+  - action: waitFor
+    selector: "#wide-form .form-actions"
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:verify-full-width-dialog-form
+  - action: assert
+    type: text
+    selector: "#wide-result"
+    value: PASS
+  - action: screenshot
+---
+
+<pre id="wide-result" style="position: absolute; left: -9999px"></pre>
+
+<rtgl-dialog id="wide-dialog" open s="md" p="none">
+  <rtgl-view id="wide-surface" slot="content" d="v" w="f" overflow="hidden">
+    <rtgl-form id="wide-form" w="f" p="md"></rtgl-form>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const dialog = document.getElementById("wide-dialog");
+  const form = document.getElementById("wide-form");
+
+  form.form = {
+    title: "Add Character",
+    fields: [
+      { name: "name", type: "input-text", label: "Name" },
+      {
+        name: "description",
+        type: "input-textarea",
+        label: "Description",
+      },
+    ],
+    actions: {
+      buttons: [
+        { id: "submit", variant: "pr", label: "Add Character" },
+      ],
+    },
+  };
+
+  window.addEventListener("vt:verify-full-width-dialog-form", () => {
+    const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
+    const surface = document.getElementById("wide-surface");
+    const formContainer = form.shadowRoot.querySelector("#formContainer");
+    const formBody = form.shadowRoot.querySelector(".form-fields");
+    const slotRect = contentSlot.getBoundingClientRect();
+    const surfaceRect = surface.getBoundingClientRect();
+    const formHostRect = form.getBoundingClientRect();
+    const formRect = formContainer.getBoundingClientRect();
+    const bodyRect = formBody.getBoundingClientRect();
+    const bodyStyle = getComputedStyle(formBody);
+    const horizontalPadding =
+      parseFloat(bodyStyle.paddingLeft) + parseFloat(bodyStyle.paddingRight);
+    const pass =
+      surfaceRect.width < window.innerWidth &&
+      Math.abs(formHostRect.width - surfaceRect.width) <= 1 &&
+      Math.abs(formRect.width - surfaceRect.width) <= 1 &&
+      Math.abs(bodyRect.width - formRect.width) <= 1 &&
+      horizontalPadding > 0;
+
+    document.getElementById("wide-result").textContent = pass
+      ? "PASS"
+      : `FAIL ${JSON.stringify({
+          viewportWidth: window.innerWidth,
+          slotWidth: slotRect.width,
+          surfaceWidth: surfaceRect.width,
+          formHostWidth: formHostRect.width,
+          formWidth: formRect.width,
+          bodyWidth: bodyRect.width,
+          horizontalPadding,
+        })}`;
+  });
+
+  dialog.addEventListener("close", () => dialog.removeAttribute("open"));
+</script>

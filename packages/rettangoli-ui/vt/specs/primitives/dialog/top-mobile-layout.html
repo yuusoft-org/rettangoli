@@ -1,0 +1,86 @@
+---
+title: Dialog - Layout - Top Mobile
+diffThreshold: 4
+description: Verifies `md-layout=top` aligns a content-height mobile dialog near the viewport top using equal outer gutters.
+specs:
+  - "`md-layout=top` applies at mobile viewport sizes without app-side viewport checks."
+  - "The top and bottom margins match the content surface's standard left and right gutters."
+  - "Tall content keeps its natural height and the native dialog owns vertical scrolling."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: waitFor
+    selector: '#dialog-top[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:verify-top-mobile-dialog
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-top'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-dialog id="dialog-top" open s="lg" md-layout="top" close-button>
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-view d="v" g="sm">
+      <rtgl-text s="lg">Top Mobile Dialog</rtgl-text>
+      <rtgl-text c="mu">The content-height surface starts near the viewport top with the same gutter used on its left and right sides.</rtgl-text>
+      <pre id="result-top" style="position: absolute; left: -9999px;"></pre>
+    </rtgl-view>
+    <rtgl-view id="top-mobile-long-content" d="v" g="md"></rtgl-view>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const dialog = document.getElementById("dialog-top");
+  const result = document.getElementById("result-top");
+  const longContent = document.getElementById("top-mobile-long-content");
+
+  longContent.innerHTML = Array.from({ length: 18 }, (_, index) => `
+    <rtgl-view d="v" g="xs">
+      <rtgl-text s="md">Section ${index + 1}</rtgl-text>
+      <rtgl-text c="mu">Scrollable content row ${index + 1} stays in the naturally sized top-aligned surface.</rtgl-text>
+    </rtgl-view>
+  `).join("");
+
+  const verifyTopMobileDialog = () => {
+    const nativeDialog = dialog.shadowRoot.querySelector("dialog");
+    const contentSlot = dialog.shadowRoot.querySelector('slot[name="content"]');
+    const slotStyle = getComputedStyle(contentSlot);
+    const slotRect = contentSlot.getBoundingClientRect();
+    const usesEqualOuterGutters =
+      slotStyle.marginTop === slotStyle.marginLeft &&
+      slotStyle.marginBottom === slotStyle.marginRight &&
+      Math.abs(Math.round(slotRect.top) - parseFloat(slotStyle.marginTop)) <= 2;
+    const keepsNaturalHeight = contentSlot.scrollHeight > window.innerHeight + 40;
+
+    nativeDialog.scrollTop = 180;
+
+    requestAnimationFrame(() => {
+      const nativeScrolls = nativeDialog.scrollTop > 0;
+      const activeLayoutMarker = dialog.getAttribute("data-rtgl-active-layout");
+      const pass =
+        activeLayoutMarker === "top" &&
+        usesEqualOuterGutters &&
+        keepsNaturalHeight &&
+        nativeScrolls;
+
+      nativeDialog.scrollTop = 0;
+      result.textContent = pass ? "PASS" : "FAIL";
+    });
+  };
+
+  setTimeout(verifyTopMobileDialog, 250);
+  window.addEventListener("vt:verify-top-mobile-dialog", verifyTopMobileDialog);
+  dialog.addEventListener("close", () => {
+    dialog.removeAttribute("open");
+  });
+</script>

@@ -59,11 +59,21 @@ A schema-driven form component that composes Rettangoli input primitives.
 | Disabled | `disabled` | boolean | `false` |
 | Template Context | `context` (property) | object | - |
 | Padding | `p` | `none \| xs \| sm \| md \| lg \| xl` | `md` |
+| Horizontal Padding | `ph` | `none \| xs \| sm \| md \| lg \| xl` | value of `p` |
+| Vertical Padding | `pv` | `none \| xs \| sm \| md \| lg \| xl` | value of `p` |
+| Bottom Spacer | `bottom-spacer` / `bottomSpacer` | non-negative pixels | `0` |
 
 Use `p="none"` when the surrounding layout already provides the desired inset:
 
 ```html
 <rtgl-form p="none"></rtgl-form>
+```
+
+Use `ph` and `pv` when the two axes need different insets. Each axis overrides
+`p` independently:
+
+```html
+<rtgl-form ph="md" pv="none"></rtgl-form>
 ```
 
 ## Width
@@ -93,6 +103,34 @@ Use `w` to set a fixed width.
   document.getElementById("fixed-form-container").appendChild(form);
 </script>
 ```
+
+## Sticky Form Layout
+
+Add the `sticky` boolean attribute when the form is inside a bounded-height surface. The form automatically fills that surface without requiring `h="f"`; the title and action row remain visible while the field region owns vertical scrolling.
+
+```html
+<rtgl-form id="edit-form" sticky></rtgl-form>
+
+<script>
+  document.getElementById("edit-form").form = {
+    title: "Edit Character",
+    fields,
+    actions: {
+      buttons: [{ id: "save", label: "Save", variant: "pr" }],
+    },
+  };
+</script>
+```
+
+For an inset mobile dialog that stays naturally sized for short forms and becomes bounded for long forms, place the form in a vertical `overflow="hidden"` surface and use `md-layout="fixed-top"` on `rtgl-dialog`.
+
+Set `bottom-spacer` when the last field needs extra scroll room above a sticky action row. The pixel value is applied inside the field scroller, so it does not move the header or actions:
+
+```html
+<rtgl-form sticky bottom-spacer="96"></rtgl-form>
+```
+
+Without `sticky`, `h="f"` retains normal visible overflow. This lets a bounded ancestor with `sv` own scrolling and keeps lower fields and actions reachable.
 
 ## Field Types
 

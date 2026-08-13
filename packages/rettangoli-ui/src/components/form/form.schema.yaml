@@ -10,10 +10,21 @@ propsSchema:
       type: object
     disabled:
       type: boolean
+    sticky:
+      type: boolean
     p:
       type: string
       enum: [none, xs, sm, md, lg, xl]
       default: md
+    ph:
+      type: string
+      enum: [none, xs, sm, md, lg, xl]
+    pv:
+      type: string
+      enum: [none, xs, sm, md, lg, xl]
+    bottomSpacer:
+      type: number
+      default: 0
 events:
   form-input: {}
   form-change: {}

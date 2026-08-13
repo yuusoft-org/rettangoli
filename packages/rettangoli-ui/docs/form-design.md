@@ -49,6 +49,7 @@ form.p = "none";
 | `defaultValues` | object | Initial form state. Read on mount and on `reset()`. To apply new defaults after mount, update `defaultValues` then call `reset()`. |
 | `disabled` | boolean | Disable the entire form. All fields and buttons become non-interactive. |
 | `p` | `none \| xs \| sm \| md \| lg \| xl` | Padding around the form contents. Defaults to `md`; use `none` for a flush layout. |
+| `bottomSpacer` | non-negative number | Extra pixel space after the last field inside the field scroller. Defaults to `0` and does not move sticky actions. |
 
 `defaultValues` keeps the schema reusable — the same form definition works for both "create" and "edit" flows.
 

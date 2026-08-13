@@ -1,0 +1,96 @@
+---
+title: Form - Sticky Bottom Spacer
+description: Verifies bottom-spacer adds end room inside the field scroller without moving sticky actions.
+specs:
+  - "`bottom-spacer=96` adds 96px after the last field inside the scrolling region."
+  - "The sticky action row remains fixed while the fields scroll to their end."
+  - "The spacer value is normalized as pixels and is not forwarded to the form container."
+skipInitialScreenshot: true
+viewport:
+  id: form-bottom-spacer
+  width: 640
+  height: 560
+steps:
+  - action: waitFor
+    selector: '#spacer-form .form-actions'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:verify-form-bottom-spacer
+  - action: wait
+    ms: 100
+  - action: assert
+    type: text
+    selector: '#spacer-result'
+    value: PASS
+  - action: screenshot
+---
+<pre id="spacer-result" style="position: absolute; left: -9999px"></pre>
+
+<rtgl-view p="xl" wh="f">
+  <rtgl-view d="v" g="sm" w="420">
+    <rtgl-text s="sm" c="mu-fg">96px field-scroller end space</rtgl-text>
+    <rtgl-view id="spacer-surface" d="v" w="f" h="400" overflow="hidden" bw="xs" bc="bo" br="md">
+      <rtgl-form id="spacer-form" sticky w="f" bottom-spacer="96"></rtgl-form>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const form = document.getElementById('spacer-form');
+  const result = document.getElementById('spacer-result');
+
+  form.form = {
+    title: 'Edit profile',
+    fields: Array.from({ length: 8 }, (_, index) => ({
+      name: `field${index + 1}`,
+      type: 'input-text',
+      label: `Profile field ${index + 1}`,
+    })),
+    actions: {
+      buttons: [{ id: 'save', label: 'Save profile', variant: 'pr' }],
+    },
+  };
+
+  window.addEventListener('vt:verify-form-bottom-spacer', () => {
+    const formContainer = form.shadowRoot.querySelector('#formContainer');
+    const fields = form.shadowRoot.querySelector('.form-fields');
+    const lastField = form.shadowRoot.querySelector('#layoutItem7');
+    const actions = form.shadowRoot.querySelector('.form-actions');
+    const footerBeforeScroll = actions.getBoundingClientRect();
+
+    fields.scrollTop = fields.scrollHeight;
+
+    requestAnimationFrame(() => {
+      const fieldsStyle = getComputedStyle(fields);
+      const fieldsRect = fields.getBoundingClientRect();
+      const lastFieldRect = lastField.getBoundingClientRect();
+      const footerAfterScroll = actions.getBoundingClientRect();
+      const renderedGap = fieldsRect.bottom - lastFieldRect.bottom;
+      const maxScrollTop = fields.scrollHeight - fields.clientHeight;
+      const pass =
+        form.getAttribute('bottom-spacer') === '96' &&
+        !formContainer.hasAttribute('bottom-spacer') &&
+        fieldsStyle.paddingBottom === '96px' &&
+        Math.abs(fields.scrollTop - maxScrollTop) <= 1 &&
+        Math.abs(renderedGap - 96) <= 2 &&
+        Math.abs(footerAfterScroll.top - footerBeforeScroll.top) <= 1 &&
+        Math.abs(footerAfterScroll.bottom - footerBeforeScroll.bottom) <= 1;
+
+      result.textContent = pass
+        ? 'PASS'
+        : `FAIL ${JSON.stringify({
+            attribute: form.getAttribute('bottom-spacer'),
+            forwarded: formContainer.getAttribute('bottom-spacer'),
+            paddingBottom: fieldsStyle.paddingBottom,
+            renderedGap,
+            scrollTop: fields.scrollTop,
+            maxScrollTop,
+            footerBefore: { top: footerBeforeScroll.top, bottom: footerBeforeScroll.bottom },
+            footerAfter: { top: footerAfterScroll.top, bottom: footerAfterScroll.bottom },
+          })}`;
+    });
+  });
+</script>

@@ -24,6 +24,66 @@ const createConditionalFormProps = () => ({
 });
 
 describe("rtgl-form bound store integration", () => {
+  it.each([
+    [{}, "md", "md"],
+    [{ p: "sm" }, "sm", "sm"],
+    [{ p: "lg", ph: "none" }, "none", "lg"],
+    [{ p: "lg", pv: "none" }, "lg", "none"],
+    [{ p: "sm", ph: "xl", pv: "xs" }, "xl", "xs"],
+  ])(
+    "resolves form padding props %j to ph=%s and pv=%s",
+    (paddingProps, expectedHorizontal, expectedVertical) => {
+      const store = bindStore(formStore, { form: {}, ...paddingProps }, {});
+
+      const viewData = store.selectViewData();
+
+      expect(viewData.containerHorizontalPadding).toBe(expectedHorizontal);
+      expect(viewData.containerVerticalPadding).toBe(expectedVertical);
+      expect(viewData.containerAttrString).not.toMatch(/(?:^| )(?:p|ph|pv)=/);
+    },
+  );
+
+  it("marks a sticky form for a bounded internal field scroller", () => {
+    const props = {
+      sticky: true,
+      form: {
+        fields: [{ name: "name", type: "input-text" }],
+        actions: {
+          buttons: [{ id: "save", label: "Save" }],
+        },
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const viewData = store.selectViewData();
+
+    expect(viewData.sticky).toBe(true);
+    expect(viewData.containerAttrString).not.toContain("sticky");
+    expect(viewData.actions.buttons).toHaveLength(1);
+  });
+
+  it("resolves a pixel bottom spacer without forwarding it", () => {
+    const store = bindStore(
+      formStore,
+      { form: {}, bottomSpacer: "96", "data-testid": "spaced-content" },
+      {},
+    );
+
+    const viewData = store.selectViewData();
+
+    expect(viewData.bottomSpacer).toBe(96);
+    expect(viewData.containerAttrString).toBe("data-testid=spaced-content");
+  });
+
+  it.each([
+    [-24, 0],
+    ["invalid", 0],
+  ])("normalizes bottom spacer %j to %d pixels", (bottomSpacer, expected) => {
+    const store = bindStore(formStore, { form: {}, bottomSpacer }, {});
+
+    expect(store.selectViewData().bottomSpacer).toBe(expected);
+  });
+
   it("groups row fields into equal columns and standalone fields into full-width rows", () => {
     const props = {
       form: {

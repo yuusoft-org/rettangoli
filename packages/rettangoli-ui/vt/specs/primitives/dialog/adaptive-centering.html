@@ -3,6 +3,7 @@ title: Dialog - Adaptive - Centering Behavior
 description: Verifies adaptive vertical positioning for short vs long dialog content.
 specs:
   - Short-content dialog opens with centered visual placement.
+  - Short-content dialog does not expose vertical overflow or accept a scroll offset.
   - Long-content dialog opens with top-biased placement for overflow safety.
   - Shared close handling keeps open state synchronized for both dialogs.
 skipInitialScreenshot: true
@@ -21,6 +22,12 @@ steps:
     value: Short Content Dialog
   - action: wait
     ms: 220
+  - action: customEvent
+    name: vt:verify-short-dialog-does-not-scroll
+  - action: assert
+    type: text
+    selector: '#short-dialog-scroll-result'
+    value: PASS
   - action: screenshot
   - action: select
     testId: close-dialog-short
@@ -58,6 +65,7 @@ steps:
       <rtgl-text s="lg">Short Content Dialog</rtgl-text>
       <rtgl-text c="mu">This dialog has short content and should be vertically centered.</rtgl-text>
       <rtgl-button id="close-button-short" data-testid="close-dialog-short" variant="secondary">Close Dialog</rtgl-button>
+      <pre id="short-dialog-scroll-result" style="position: absolute; left: -9999px;"></pre>
     </rtgl-view>
   </rtgl-dialog>
   
@@ -106,6 +114,27 @@ steps:
   
   dialogShort.addEventListener('close', () => {
     dialogShort.removeAttribute('open');
+  });
+
+  window.addEventListener('vt:verify-short-dialog-does-not-scroll', () => {
+    const nativeDialog = dialogShort.shadowRoot.querySelector('dialog');
+    const contentSlot = dialogShort.shadowRoot.querySelector('slot[name="content"]');
+    const slotRect = contentSlot.getBoundingClientRect();
+    const nativeStyle = getComputedStyle(nativeDialog);
+    const centered = Math.abs(
+      (slotRect.top + (slotRect.height / 2)) - (window.innerHeight / 2),
+    ) <= 2;
+    const hasNoOverflow = nativeDialog.scrollHeight <= nativeDialog.clientHeight + 1;
+
+    nativeDialog.scrollTop = 20;
+
+    const doesNotScroll = nativeDialog.scrollTop === 0;
+    const pass =
+      nativeStyle.overflowY === 'auto' &&
+      centered &&
+      hasNoOverflow &&
+      doesNotScroll;
+    document.getElementById('short-dialog-scroll-result').textContent = pass ? 'PASS' : 'FAIL';
   });
   
   // Long content dialog

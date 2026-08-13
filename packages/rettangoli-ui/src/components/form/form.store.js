@@ -268,8 +268,8 @@ export const set = (obj, path, value) => {
 const formPaddingValues = new Set(["none", "xs", "sm", "md", "lg", "xl"]);
 const rowStackAtValues = new Set(["none", "sm", "md", "lg", "xl"]);
 
-const normalizeFormPadding = (value) =>
-  formPaddingValues.has(value) ? value : "md";
+const normalizeFormPadding = (value, fallback = "md") =>
+  formPaddingValues.has(value) ? value : fallback;
 
 const normalizeRowStackAt = (value, fallback = "md") =>
   rowStackAtValues.has(value) ? value : fallback;
@@ -277,7 +277,21 @@ const normalizeRowStackAt = (value, fallback = "md") =>
 const getResponsiveColumnAttrs = (stackAt) =>
   stackAt === "none" ? "" : `${stackAt}-cols=1`;
 
-const blacklistedAttrs = ["id", "class", "style", "slot", "form", "defaultValues", "disabled", "context", "p"];
+const blacklistedAttrs = [
+  "id",
+  "class",
+  "style",
+  "slot",
+  "form",
+  "defaultValues",
+  "disabled",
+  "sticky",
+  "context",
+  "p",
+  "ph",
+  "pv",
+  "bottomSpacer",
+];
 
 const stringifyAttrs = (props = {}) => {
   return Object.entries(props)
@@ -767,6 +781,18 @@ export const selectForm = ({ state, props }) => {
 export const selectViewData = ({ state, props }) => {
   const containerAttrString = stringifyAttrs(props);
   const containerPadding = normalizeFormPadding(props?.p);
+  const containerHorizontalPadding = normalizeFormPadding(
+    props?.ph,
+    containerPadding,
+  );
+  const containerVerticalPadding = normalizeFormPadding(
+    props?.pv,
+    containerPadding,
+  );
+  const parsedBottomSpacer = Number(props?.bottomSpacer);
+  const bottomSpacer = Number.isFinite(parsedBottomSpacer)
+    ? Math.max(0, parsedBottomSpacer)
+    : 0;
   const form = selectForm({ state, props });
   const fields = form.fields || [];
   const formDisabled = !!props?.disabled;
@@ -845,6 +871,7 @@ export const selectViewData = ({ state, props }) => {
   // Actions
   const actions = form.actions || { buttons: [] };
   const layout = actions.layout || "split";
+  const sticky = props?.sticky === true;
   const buttons = (actions.buttons || []).map((btn, i) => ({
     ...btn,
     _globalIdx: i,
@@ -872,9 +899,12 @@ export const selectViewData = ({ state, props }) => {
 
   return {
     containerAttrString,
-    containerPadding,
+    containerHorizontalPadding,
+    containerVerticalPadding,
+    bottomSpacer,
     title: form?.title || "",
     description: form?.description || "",
+    sticky,
     fieldLayout,
     flatFields,
     actions: actionsData,
