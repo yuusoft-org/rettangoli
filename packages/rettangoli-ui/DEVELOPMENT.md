@@ -252,10 +252,10 @@ Canonical `inputType` values are kebab-case only:
 - `__proto__`, `constructor`, and `prototype` are reserved and rejected in any path segment
 - legacy flat dotted defaults are normalized to nested values when written
 
-### Form actions
+### Form sticky layout
 
-- set `form.actions.sticky` to `true` when the form is mounted in a bounded-height surface
-- sticky actions keep the action row visible while the form field region owns vertical scrolling
+- set `form.sticky` to `true` when the form is mounted in a bounded-height surface
+- sticky forms keep the header and action row visible while the form field region owns vertical scrolling
 - the containing surface must provide a definite or capped height; use `rtgl-dialog` with `md-layout=fixed-top` for inset mobile dialogs
 
 ### Form padding

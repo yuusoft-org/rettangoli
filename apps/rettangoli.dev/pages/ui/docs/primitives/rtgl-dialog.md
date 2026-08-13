@@ -263,7 +263,7 @@ Use `layout` and breakpoint-prefixed layout attrs to change dialog layout respon
 
 Use `md-layout="top"` for a content-height mobile dialog that begins near the top without the centered layout's 40px scrolling offset. Combine it with `p="none"` when the slotted content should remove or own all four outer gutters.
 
-Use `md-layout="fixed-top"` with a bounded vertical content surface when a mobile form needs internally scrolling fields and a persistent action row. Configure the form with `actions.sticky: true`.
+Use `md-layout="fixed-top"` with a bounded vertical content surface when a mobile form needs internally scrolling fields with a persistent header and action row. Configure the form with root-level `sticky: true`.
 
 ```html codePreview
 <rtgl-button id="open-top-mobile">Open Top Mobile Dialog</rtgl-button>

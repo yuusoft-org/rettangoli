@@ -50,15 +50,15 @@ styles:
     flex-direction: column
     min-height: "0"
     overflow: hidden
-  '#formContainer[data-sticky-actions="true"]':
+  '#formContainer[data-sticky="true"]':
     height: 100%
     max-height: 100%
     min-height: "0"
     overflow: hidden
-  '#formContainer[data-sticky-actions="true"] > .form-fields':
+  '#formContainer[data-sticky="true"] > .form-fields':
     flex: 1 1 auto
     min-height: "0"
-  '#formContainer[data-sticky-actions="true"] > .form-actions':
+  '#formContainer[data-sticky="true"] > .form-actions':
     flex: 0 0 auto
   'rtgl-grid[data-align-field-headers="true"]':
     grid-template-rows: auto auto
@@ -109,14 +109,14 @@ styles:
   .form-field-control:
     grid-row: 2
 template:
-  - rtgl-view#formContainer w=f pv=${containerVerticalPadding} data-sticky-actions=${actions._sticky} ${containerAttrString}:
+  - rtgl-view#formContainer w=f pv=${containerVerticalPadding} data-sticky=${sticky} ${containerAttrString}:
       - $if title || description:
           - rtgl-view class=form-header g=sm w=f ph=${containerHorizontalPadding} mb=md:
               - $if title:
                   - rtgl-text s=lg: ${title}
               - $if description:
                   - rtgl-text c=mu-fg: ${description}
-      - rtgl-view class=form-fields g=lg w=f ph=${containerHorizontalPadding} ?sv=${actions._sticky}:
+      - rtgl-view class=form-fields g=lg w=f ph=${containerHorizontalPadding} ?sv=${sticky}:
           - $for item, i in fieldLayout:
               - $if item._isSection:
                   - rtgl-view#layoutItem${item._layoutIdx} data-form-section=true g=md w=f:

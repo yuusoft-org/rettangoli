@@ -865,7 +865,7 @@ export const selectViewData = ({ state, props }) => {
   // Actions
   const actions = form.actions || { buttons: [] };
   const layout = actions.layout || "split";
-  const sticky = actions.sticky === true;
+  const sticky = form.sticky === true;
   const buttons = (actions.buttons || []).map((btn, i) => ({
     ...btn,
     _globalIdx: i,
@@ -879,7 +879,6 @@ export const selectViewData = ({ state, props }) => {
   if (layout === "split") {
     actionsData = {
       _layout: "split",
-      _sticky: sticky,
       buttons,
       _leftButtons: buttons.filter((b) => b.align === "left"),
       _rightButtons: buttons.filter((b) => b.align !== "left"),
@@ -887,7 +886,6 @@ export const selectViewData = ({ state, props }) => {
   } else {
     actionsData = {
       _layout: layout,
-      _sticky: sticky,
       buttons,
       _allButtons: buttons,
     };
@@ -899,6 +897,7 @@ export const selectViewData = ({ state, props }) => {
     containerVerticalPadding,
     title: form?.title || "",
     description: form?.description || "",
+    sticky,
     fieldLayout,
     flatFields,
     actions: actionsData,

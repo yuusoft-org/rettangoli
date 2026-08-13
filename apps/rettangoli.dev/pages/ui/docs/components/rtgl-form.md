@@ -103,16 +103,16 @@ Use `w` to set a fixed width.
 </script>
 ```
 
-## Sticky Actions
+## Sticky Form Layout
 
-Set `form.actions.sticky` to `true` when the form is inside a bounded-height surface. The title and action row remain visible while the field region owns vertical scrolling.
+Set `form.sticky` to `true` when the form is inside a bounded-height surface. The title and action row remain visible while the field region owns vertical scrolling.
 
 ```js
 form.form = {
+  sticky: true,
   title: "Edit Character",
   fields,
   actions: {
-    sticky: true,
     buttons: [{ id: "save", label: "Save", variant: "pr" }],
   },
 };

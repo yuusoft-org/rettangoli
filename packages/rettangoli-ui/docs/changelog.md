@@ -4,7 +4,7 @@
 
 ### Improvements
 
-- `rtgl-form`: added bounded sticky-action layouts with a fixed title, internally scrolling fields, and a fixed action row; forms now default to `p="lg"`, with an `md` gap below the title and an `lg` gap above actions.
+- `rtgl-form`: added root-level `sticky: true` for bounded layouts with a fixed title, internally scrolling fields, and a fixed action row; forms now default to `p="lg"`, with an `md` gap below the title and an `lg` gap above actions.
 - `rtgl-dialog`: added responsive `top` and `fixed-top` layouts for naturally sized or bounded top-aligned mobile dialogs.
 - Focus indicators: standardized keyboard focus across native controls, Rettangoli inputs, buttons, links, sliders, checkboxes, and component triggers with one theme-aware inset ring that remains visible inside clipped containers, including padding-free `rtgl-form` layouts; forced-colors mode retains a system outline, and composite tag/menu surfaces paint their ring above foreground content.
 - `rtgl-dialog`: added reactive `p="none"` as its padding-free interface.

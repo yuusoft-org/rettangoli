@@ -1,12 +1,12 @@
 ---
-title: Form - Sticky Actions - Fixed Top Dialog
+title: Form - Sticky Layout - Fixed Top Dialog
 diffThreshold: 4
-description: Verifies fixed-top dialogs keep natural short-form height and give long forms an internal scroller with pinned actions.
+description: Verifies fixed-top dialogs keep natural short-form height and give long forms an internal scroller with pinned headers and actions.
 specs:
   - "`md-layout=fixed-top` keeps short forms naturally sized at the top of the viewport."
   - "The dialog remains inset while the form fills its surface, and the field scroller owns horizontal content padding so its scrollbar stays at the form edge."
   - "Long forms stop at the available viewport height without scrolling the native dialog."
-  - "`actions.sticky=true` keeps the action row visible while only the field region scrolls."
+  - "`form.sticky=true` keeps the header and action row visible while only the field region scrolls."
   - "The focused field scroller never exposes a browser-native outline."
 skipInitialScreenshot: true
 viewport:
@@ -70,6 +70,7 @@ steps:
   const longForm = document.getElementById("long-form");
 
   shortForm.form = {
+    sticky: true,
     title: "Add Character",
     fields: [
       {
@@ -84,7 +85,6 @@ steps:
       },
     ],
     actions: {
-      sticky: true,
       buttons: [
         {
           id: "submit",
@@ -96,6 +96,7 @@ steps:
   };
 
   longForm.form = {
+    sticky: true,
     title: "Edit Character",
     description:
       "The fields scroll while this title and the update action remain visible.",
@@ -105,7 +106,6 @@ steps:
       label: `Character field ${index + 1}`,
     })),
     actions: {
-      sticky: true,
       buttons: [
         {
           id: "submit",
