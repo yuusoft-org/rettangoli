@@ -1,4 +1,5 @@
 refs:
+  list: {}
   headerImage:
     eventListeners:
       click:
@@ -79,7 +80,7 @@ template:
                                     - rtgl-text s=lg: ${header.label}
                               $else:
                                 - rtgl-text s=lg: ${header.label}
-      - rtgl-view w=f h=1fg ph=${headerPadding} pb=lg g=xs ah=${ah} ${listAttrString}:
+      - rtgl-view#list w=f h=1fg ph=${headerPadding} pb=lg g=xs ah=${ah} ${listAttrString}:
           - $for item, i in items:
               - $if item.type == "divider":
                   - rtgl-view w=f pv=md:

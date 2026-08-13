@@ -4,6 +4,7 @@
 
 ### Improvements
 
+- `rtgl-sidebar`: added `getScrollPosition()` and `setScrollPosition({ top })` so consumers can retain the internal item-list position across navigation without reaching into component internals.
 - `rtgl-form`: added `bottom-spacer="<pixels>"` to provide extra bottom scroll room inside the form field region without moving sticky actions.
 - `rtgl-form`: added the `sticky` boolean attribute for bounded layouts with a fixed title, internally scrolling fields, and a fixed action row, with an `md` gap below the title and an `lg` gap above actions.
 - `rtgl-dialog`: added responsive `top` and `fixed-top` layouts for naturally sized or bounded top-aligned mobile dialogs.

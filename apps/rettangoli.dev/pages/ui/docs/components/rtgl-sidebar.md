@@ -69,6 +69,13 @@ A navigation sidebar component with header, grouped items, and selectable states
 | `header-click` | `{ path }` | Fires when path-driven header element is clicked |
 | `item-click` | `{ item }` | Fires when an item row is clicked |
 
+## Methods
+
+| Method | Parameters | Returns | Description |
+| --- | --- | --- | --- |
+| `getScrollPosition()` | - | `{ top }` | Reads the internal item list position |
+| `setScrollPosition({ top })` | `top: number` | `{ top }` | Restores and clamps the internal item list position |
+
 ## Behavior
 
 ### Behavior & precedence
@@ -84,3 +91,4 @@ A navigation sidebar component with header, grouped items, and selectable states
 - `type: "spacer"` consumes remaining vertical space so following rows sit at the bottom when the sidebar has extra height.
 - `divider` and `spacer` work in both full and compact sidebar modes.
 - `href` navigates directly; `path` emits events for app-level routing.
+- Scroll persistence is controlled by the consumer. Use `getScrollPosition()` before navigation and `setScrollPosition({ top })` after the next sidebar renders.
