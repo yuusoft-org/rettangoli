@@ -23,6 +23,10 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      - name: Run Unit Tests
+        run: bun run test
+        working-directory: ./packages/rettangoli-sitekit
+
       - name: Build Preview Site
         run: bun run build
         working-directory: ./packages/rettangoli-sitekit

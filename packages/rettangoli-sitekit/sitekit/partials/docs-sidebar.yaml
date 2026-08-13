@@ -1,2 +1,2 @@
 - 'nav aria-label="Documentation navigation" style="display: contents;"':
-    - 'rtgl-sidebar data-docs-sidebar="desktop" data-docs-sidebar-scope="${header.href}" selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(header))}" items="${encodeURIComponent(jsonStringify(items))}"':
+    - 'rtgl-sidebar data-docs-sidebar="desktop" data-docs-sidebar-scope="${header.href}" selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(header))}" items="${encodeURIComponent(jsonStringify(items))}" style="visibility:var(--rtgl-docs-sidebar-desktop-visibility,visible)"':

@@ -6,6 +6,7 @@
           title: ${title}
         - link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.21.0/dist/themes/base.css":
         - link rel="stylesheet" href="${default(themeCssHref, '/public/theme-rtgl-themes.css')}":
+        - script src="/public/docs-sidebar-scroll.js" data-docs-sidebar-restore-scope="${docs.header.href}":
         - script src="https://cdn.jsdelivr.net/npm/construct-style-sheets-polyfill@3.1.0/dist/adoptedStyleSheets.min.js":
         - script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.21.0/dist/rettangoli-iife-ui.min.js":
         - script src="/public/rtgl-icons.js":

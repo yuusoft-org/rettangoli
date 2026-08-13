@@ -1,5 +1,29 @@
 (function () {
   var STORAGE_PREFIX = 'rtgl:docs-sidebar:';
+  var DESKTOP_VISIBILITY_PROPERTY = '--rtgl-docs-sidebar-desktop-visibility';
+  var initScope = document.currentScript
+    && document.currentScript.getAttribute('data-docs-sidebar-restore-scope');
+
+  if (initScope) {
+    try {
+      var initKey = STORAGE_PREFIX + initScope + ':desktop';
+      if (window.sessionStorage.getItem(initKey) !== null) {
+        document.documentElement.style.setProperty(
+          DESKTOP_VISIBILITY_PROPERTY,
+          'hidden'
+        );
+        window.setTimeout(function () {
+          document.documentElement.style.removeProperty(
+            DESKTOP_VISIBILITY_PROPERTY
+          );
+        }, 1000);
+      }
+    } catch (_error) {
+      // sessionStorage can be unavailable in privacy-restricted contexts.
+    }
+    return;
+  }
+
   var sidebars = Array.prototype.slice.call(
     document.querySelectorAll('rtgl-sidebar[data-docs-sidebar]')
   );
@@ -37,6 +61,12 @@
       return;
     }
 
+    if (mobileOverlay
+      && mobileOverlay.hasAttribute('hidden')
+      && mobileOverlay.contains(sidebar)) {
+      return;
+    }
+
     try {
       var position = sidebar.getScrollPosition();
       var top = Number(position && position.top);
@@ -53,15 +83,15 @@
     activeSidebars.add(sidebar);
     var top = readPosition(sidebar);
 
-    if (top === null || typeof sidebar.setScrollPosition !== 'function') {
-      return;
+    if (top !== null && typeof sidebar.setScrollPosition === 'function') {
+      sidebar.setScrollPosition({ top: top });
     }
 
-    window.requestAnimationFrame(function () {
-      window.requestAnimationFrame(function () {
-        sidebar.setScrollPosition({ top: top });
-      });
-    });
+    if (sidebar.getAttribute('data-docs-sidebar') === 'desktop') {
+      document.documentElement.style.removeProperty(
+        DESKTOP_VISIBILITY_PROPERTY
+      );
+    }
   }
 
   customElements.whenDefined('rtgl-sidebar').then(function () {
@@ -75,6 +105,18 @@
     });
 
     if (mobileMenuButton && mobileOverlay) {
+      mobileMenuButton.addEventListener('click', function () {
+        if (mobileOverlay.hasAttribute('hidden')) {
+          return;
+        }
+
+        sidebars
+          .filter(function (sidebar) {
+            return sidebar.getAttribute('data-docs-sidebar') === 'mobile';
+          })
+          .forEach(savePosition);
+      }, true);
+
       mobileMenuButton.addEventListener('click', function () {
         if (mobileOverlay.hasAttribute('hidden')) {
           return;
