@@ -50,7 +50,7 @@ Use `open` as the source of truth and close by removing `open`.
 | Size | `s` | `sm`, `md`, `lg`, `f` | content-based |
 | Width Override | `w` | CSS width value (`600px`, `70vw`, etc.) | - |
 | Layout | `layout`, `sm-layout`, `md-layout`, `lg-layout`, `xl-layout` | `centered`, `top`, `fixed-top`, `fixed` | `centered` |
-| Padding | `p` | `none`, `xs`, `sm`, `md`, `lg`, `xl` | `md` |
+| Padding | `p` | `none`, `xs`, `sm`, `md`, `lg`, `xl` | `lg` |
 | Horizontal Padding | `ph` | `none`, `xs`, `sm`, `md`, `lg`, `xl` | follows `p` |
 | Vertical Padding | `pv` | `none`, `xs`, `sm`, `md`, `lg`, `xl` | follows `p` |
 | Bare | `bare` | boolean | - |
@@ -295,7 +295,7 @@ Use `md-layout="fixed-top"` with a bounded vertical content surface when a mobil
 
 ## Padding
 
-Dialog content padding defaults to `md`. Set `p` to apply one spacing token to every side, then use `ph` or `pv` when the horizontal and vertical axes need different values. Axis attributes override `p` for their corresponding sides, and all three attributes react after mount.
+Dialog content padding defaults to `lg`. Set `p` to apply one spacing token to every side, then use `ph` or `pv` when the horizontal and vertical axes need different values. Axis attributes override `p` for their corresponding sides, and all three attributes react after mount.
 
 ```html
 <rtgl-dialog p="lg" ph="xl" pv="sm">

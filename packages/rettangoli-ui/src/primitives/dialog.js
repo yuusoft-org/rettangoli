@@ -154,8 +154,8 @@ class RettangoliDialogElement extends HTMLElement {
         }
 
         slot[name="content"] {
-          --rtgl-dialog-padding-horizontal: var(--spacing-md);
-          --rtgl-dialog-padding-vertical: var(--spacing-md);
+          --rtgl-dialog-padding-horizontal: var(--spacing-lg);
+          --rtgl-dialog-padding-vertical: var(--spacing-lg);
           background-color: var(--background) !important;
           display: block;
           padding: var(--rtgl-dialog-padding-vertical)

@@ -2,7 +2,7 @@
 title: Dialog - Padding
 description: Verifies dialog padding defaults, spacing tokens, axis precedence, and reactive updates.
 specs:
-  - "Dialog content padding defaults to `md`."
+  - "Dialog content padding defaults to `lg`."
   - "`p` supports `none|xs|sm|md|lg|xl` on every side."
   - "`ph` and `pv` override the corresponding `p` axes and react after mount."
 skipInitialScreenshot: true
@@ -24,10 +24,10 @@ steps:
       p: ''
       ph: ''
       pv: ''
-      top: 8px
-      right: 8px
-      bottom: 8px
-      left: 8px
+      top: 16px
+      right: 16px
+      bottom: 16px
+      left: 16px
   - action: screenshot
   - action: customEvent
     name: vt:use-axis-dialog-padding

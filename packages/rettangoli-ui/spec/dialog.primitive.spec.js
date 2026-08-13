@@ -58,7 +58,7 @@ afterAll(() => {
 });
 
 describe("rtgl-dialog primitive", () => {
-  it("supports token padding with md defaults and axis overrides", () => {
+  it("supports token padding with lg defaults and axis overrides", () => {
     const dialog = document.createElement(TEST_TAG);
     const styles = dialog.shadowRoot.adoptedStyleSheets[0].cssText;
     const paddingValues = {
@@ -71,7 +71,7 @@ describe("rtgl-dialog primitive", () => {
     };
 
     expect(styles).toMatch(
-      /slot\[name="content"\]\s*\{[^}]*--rtgl-dialog-padding-horizontal:\s*var\(--spacing-md\);[^}]*--rtgl-dialog-padding-vertical:\s*var\(--spacing-md\);/s,
+      /slot\[name="content"\]\s*\{[^}]*--rtgl-dialog-padding-horizontal:\s*var\(--spacing-lg\);[^}]*--rtgl-dialog-padding-vertical:\s*var\(--spacing-lg\);/s,
     );
     for (const [value, padding] of Object.entries(paddingValues)) {
       const escapedPadding = padding.replace(
