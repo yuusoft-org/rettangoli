@@ -8,4 +8,4 @@
 - 'nav aria-label="Documentation navigation" style="display: contents;"':
     - 'rtgl-view id="mobile-nav-overlay" pos=fix w=f bgc=bg z=20 d=v hidden style="top:56px;left:0;height:calc(100vh - 56px)"':
         - rtgl-view sv w=f h=f:
-            - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(header))}" items="${encodeURIComponent(jsonStringify(items))}" w=f bwr=none hide-header="true":
+            - 'rtgl-sidebar data-docs-sidebar="mobile" data-docs-sidebar-scope="${header.href}" selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(header))}" items="${encodeURIComponent(jsonStringify(items))}" w=f bwr=none hide-header="true"':

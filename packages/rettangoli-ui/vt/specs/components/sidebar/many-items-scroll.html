@@ -4,6 +4,17 @@ description: "Verifies the sidebar layout with a long item list using an interna
 specs:
   - "Sidebar renders many items with `sv` on the internal list container."
   - "Header and item list remain visually coherent in the full-height layout."
+  - "Public scroll-position methods read, restore, and clamp the internal item list position."
+  - "The reference screenshot captures the list restored to a non-zero position."
+skipInitialScreenshot: true
+steps:
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: sidebarScrollMethods.roundTrip
+    value: true
+  - action: screenshot
 ---
 <rtgl-view g="lg" h="100vh" w="f" wrap>
   <rtgl-sidebar id="sidebar"></rtgl-sidebar>
@@ -36,4 +47,20 @@ specs:
   ];
 
   sidebar.render();
+
+  window.sidebarScrollMethods = {
+    roundTrip() {
+      const restored = sidebar.setScrollPosition({ top: 480 });
+      const read = sidebar.getScrollPosition();
+      const list = sidebar.shadowRoot?.querySelector('#list');
+      const maximumTop = Math.max(0, list.scrollHeight - list.clientHeight);
+      const clamped = sidebar.setScrollPosition({ top: maximumTop + 1000 });
+      const passed = restored.top === 480
+        && read.top === 480
+        && clamped.top === maximumTop;
+
+      const screenshotPosition = sidebar.setScrollPosition({ top: 480 });
+      return passed && screenshotPosition.top === 480;
+    },
+  };
 </script>

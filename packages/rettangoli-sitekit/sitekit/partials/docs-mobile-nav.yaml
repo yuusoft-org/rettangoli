@@ -5,4 +5,4 @@
                 - rtgl-text s=md: ${docsLayout.sidebar.header.label}
         - rtgl-view h=56:
         - 'nav aria-label="Documentation navigation" style="display: contents;"':
-            - rtgl-sidebar selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(docsLayout.sidebar.header))}" items="${encodeURIComponent(jsonStringify(docsLayout.sidebar.items))}" w=f:
+            - 'rtgl-sidebar data-docs-sidebar="mobile" data-docs-sidebar-scope="${docsLayout.sidebar.header.href}" selected-item-id=${sidebarId} header="${encodeURIComponent(jsonStringify(docsLayout.sidebar.header))}" items="${encodeURIComponent(jsonStringify(docsLayout.sidebar.items))}" w=f':

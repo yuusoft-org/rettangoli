@@ -66,7 +66,7 @@ This is the intentional component surface and what each component is meant to pr
 | `rtgl-select`            | single-choice selection        | options with optional icons/images, selected value, no-clear mode, add-option action                   |
 | `rtgl-segmented-control` | inline single-choice selection | text or icon-only options, per-option hover tooltips, selected value, no-clear mode, add-option action |
 | `rtgl-tag-select`        | multi-tag selection            | select-shaped options, selected value array, add popover, right-click delete                           |
-| `rtgl-sidebar`           | app/sidebar navigation         | header plus grouped items, selected item state, item/header events                                     |
+| `rtgl-sidebar`           | app/sidebar navigation         | header plus grouped items, selected item state, item/header events, public item-list scroll methods     |
 | `rtgl-slider-input`      | synchronized numeric control   | linked slider + number input, min/max/step, value events                                               |
 | `rtgl-table`             | tabular data display           | column/row model, sortable headers, row click event                                                    |
 | `rtgl-tabs`              | segmented single selection     | tab items, selected tab state, item click event                                                        |

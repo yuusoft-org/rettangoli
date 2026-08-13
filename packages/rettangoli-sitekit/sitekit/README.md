@@ -104,7 +104,10 @@ Copy these files into the consuming site's `static/public/`:
 
 - `sitekit/themes/theme-rtgl-themes.css` -> `static/public/theme-rtgl-themes.css`
 - `sitekit/public/mobile-nav.js` -> `static/public/mobile-nav.js`
+- `sitekit/public/docs-sidebar-scroll.js` -> `static/public/docs-sidebar-scroll.js`
 - `sitekit/public/rtgl-icons.js` -> `static/public/rtgl-icons.js`
+
+The docs template uses `docs-sidebar-scroll.js` to retain separate desktop and mobile sidebar positions in `sessionStorage`. Storage is scoped to the documentation header URL and the current browser tab. This behavior requires `@rettangoli/ui >= 1.21.0`.
 
 ## Planning
 

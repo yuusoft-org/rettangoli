@@ -74,4 +74,13 @@ events:
         type: object
 methods:
   type: object
-  properties: {}
+  properties:
+    getScrollPosition:
+      description: Returns the current vertical position of the internal item list.
+      params: []
+      returns: object
+    setScrollPosition:
+      description: Restores the vertical position of the internal item list and clamps it to the available scroll range.
+      params:
+        - top
+      returns: object
