@@ -359,6 +359,9 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 
 ### `rtgl-dialog`
 
+- dialog content padding defaults to `md`
+- `p` sets both content-padding axes; `ph` and `pv` override the horizontal and vertical axes independently
+- `p`, `ph`, and `pv` accept `none`, `xs`, `sm`, `md`, `lg`, and `xl`
 - `layout=top` and responsive variants such as `md-layout=top` keep natural content height and let the native dialog own overflow scrolling
 - `layout=fixed` locks the content surface to the full viewport
 - `layout=fixed-top` keeps the surface top-aligned with a standard top inset and a 36% viewport-height bottom inset; it clips outer overflow so a bounded child such as `rtgl-form` can scroll internally

@@ -1,0 +1,81 @@
+---
+title: Dialog - Padding
+description: Verifies dialog padding defaults, spacing tokens, axis precedence, and reactive updates.
+specs:
+  - "Dialog content padding defaults to `md`."
+  - "`p` supports `none|xs|sm|md|lg|xl` on every side."
+  - "`ph` and `pv` override the corresponding `p` axes and react after mount."
+skipInitialScreenshot: true
+viewport:
+  id: dialog-padding
+  width: 900
+  height: 560
+steps:
+  - action: waitFor
+    selector: '#dialog-padding[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    fn: dialogPaddingVt.inspect
+    value:
+      p: ''
+      ph: ''
+      pv: ''
+      top: 8px
+      right: 8px
+      bottom: 8px
+      left: 8px
+  - action: screenshot
+  - action: customEvent
+    name: vt:use-axis-dialog-padding
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: dialogPaddingVt.inspect
+    value:
+      p: lg
+      ph: xl
+      pv: sm
+      top: 4px
+      right: 32px
+      bottom: 4px
+      left: 32px
+  - action: screenshot
+---
+<rtgl-dialog id="dialog-padding" open s="sm">
+  <rtgl-view slot="content" d="v" g="md">
+    <rtgl-text s="lg">Dialog padding</rtgl-text>
+    <rtgl-text c="mu">The dialog owns the space between this content and its surface edge.</rtgl-text>
+    <rtgl-button>Continue</rtgl-button>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const dialog = document.getElementById('dialog-padding');
+
+  window.addEventListener('vt:use-axis-dialog-padding', () => {
+    dialog.setAttribute('p', 'lg');
+    dialog.setAttribute('ph', 'xl');
+    dialog.setAttribute('pv', 'sm');
+  });
+
+  window.dialogPaddingVt = {
+    inspect() {
+      const contentSlot = dialog.shadowRoot?.querySelector('slot[name="content"]');
+      const style = contentSlot ? getComputedStyle(contentSlot) : null;
+      return {
+        p: dialog.getAttribute('p') ?? '',
+        ph: dialog.getAttribute('ph') ?? '',
+        pv: dialog.getAttribute('pv') ?? '',
+        top: style?.paddingTop ?? '',
+        right: style?.paddingRight ?? '',
+        bottom: style?.paddingBottom ?? '',
+        left: style?.paddingLeft ?? '',
+      };
+    },
+  };
+</script>

@@ -58,20 +58,60 @@ afterAll(() => {
 });
 
 describe("rtgl-dialog primitive", () => {
-  it("uses p=none as the sole padding-free attribute", () => {
+  it("supports token padding with md defaults and axis overrides", () => {
     const dialog = document.createElement(TEST_TAG);
     const styles = dialog.shadowRoot.adoptedStyleSheets[0].cssText;
+    const paddingValues = {
+      none: "0px",
+      xs: "var(--spacing-xs)",
+      sm: "var(--spacing-sm)",
+      md: "var(--spacing-md)",
+      lg: "var(--spacing-lg)",
+      xl: "var(--spacing-xl)",
+    };
 
-    expect(styles).toContain(':host([p="none"]) slot[name="content"]');
-    expect(styles).not.toContain("no-padding");
-    expect(dialog.constructor.observedAttributes).toContain("p");
-    expect(dialog.constructor.observedAttributes).not.toContain("no-padding");
     expect(styles).toMatch(
-      /:host\(\[p="none"\]\) slot\[name="content"\][^{]*\{[^}]*padding: 0;/s,
+      /slot\[name="content"\]\s*\{[^}]*--rtgl-dialog-padding-horizontal:\s*var\(--spacing-md\);[^}]*--rtgl-dialog-padding-vertical:\s*var\(--spacing-md\);/s,
+    );
+    for (const [value, padding] of Object.entries(paddingValues)) {
+      const escapedPadding = padding.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&",
+      );
+      expect(styles).toMatch(
+        new RegExp(
+          `:host\\(\\[p="${value}"\\]\\) slot\\[name="content"\\]\\s*\\{[^}]*--rtgl-dialog-padding-horizontal:\\s*${escapedPadding};[^}]*--rtgl-dialog-padding-vertical:\\s*${escapedPadding};`,
+          "s",
+        ),
+      );
+      expect(styles).toMatch(
+        new RegExp(
+          `:host\\(\\[ph="${value}"\\]\\) slot\\[name="content"\\]\\s*\\{[^}]*--rtgl-dialog-padding-horizontal:\\s*${escapedPadding};`,
+          "s",
+        ),
+      );
+      expect(styles).toMatch(
+        new RegExp(
+          `:host\\(\\[pv="${value}"\\]\\) slot\\[name="content"\\]\\s*\\{[^}]*--rtgl-dialog-padding-vertical:\\s*${escapedPadding};`,
+          "s",
+        ),
+      );
+    }
+
+    expect(styles).not.toContain("no-padding");
+    expect(dialog.constructor.observedAttributes).toEqual(
+      expect.arrayContaining(["p", "ph", "pv"]),
+    );
+    expect(dialog.constructor.observedAttributes).not.toContain("no-padding");
+    expect(styles.indexOf(':host([ph="none"])')).toBeGreaterThan(
+      styles.indexOf(':host([p="xl"])'),
+    );
+    expect(styles.indexOf(':host([pv="none"])')).toBeGreaterThan(
+      styles.indexOf(':host([ph="xl"])'),
     );
   });
 
-  it("recalculates adaptive layout when p changes", () => {
+  it("recalculates adaptive layout when padding changes", () => {
     const dialog = document.createElement(TEST_TAG);
     const scheduleAdaptiveCentering = vi.spyOn(
       dialog,
@@ -79,9 +119,10 @@ describe("rtgl-dialog primitive", () => {
     );
 
     dialog.setAttribute("p", "none");
-    dialog.removeAttribute("p");
+    dialog.setAttribute("ph", "xl");
+    dialog.setAttribute("pv", "sm");
 
-    expect(scheduleAdaptiveCentering).toHaveBeenCalledTimes(2);
+    expect(scheduleAdaptiveCentering).toHaveBeenCalledTimes(3);
     expect(scheduleAdaptiveCentering).toHaveBeenLastCalledWith({
       resetRetries: true,
     });
@@ -105,6 +146,18 @@ describe("rtgl-dialog primitive", () => {
     expect(slot.style.marginTop).toBe("275px");
     expect(slot.style.marginBottom).toBe("275px");
     expect(dialog.dialog.style.height).toBe("auto");
+  });
+
+  it("keeps full-size dialog padding inside the viewport width", () => {
+    const dialog = document.createElement(TEST_TAG);
+    const styles = dialog.shadowRoot.adoptedStyleSheets[0].cssText;
+
+    expect(styles).toMatch(
+      /:host\(\[s="f"\]\) dialog\s*\{[^}]*width:\s*100vw;[^}]*max-width:\s*100vw;/s,
+    );
+    expect(styles).toMatch(
+      /:host\(\[s="f"\]\) slot\[name="content"\]\s*\{[^}]*box-sizing:\s*border-box;[^}]*width:\s*100vw;[^}]*max-width:\s*100vw;/s,
+    );
   });
 
   it("resolves md-layout=top and matches its vertical and horizontal gutters", () => {
@@ -187,7 +240,7 @@ describe("rtgl-dialog primitive", () => {
       /data-rtgl-active-layout="fixed-top"[^}]*p="none"[^}]*\{[^}]*--rtgl-dialog-fixed-top-(start|end):\s*0px/s,
     );
     expect(styles).toMatch(
-      /:host\(\[p="none"\]\) slot\[name="content"\][^{]*\{[^}]*padding:\s*0;/s,
+      /:host\(\[p="none"\]\) slot\[name="content"\][^{]*\{[^}]*--rtgl-dialog-padding-horizontal:\s*0px;[^}]*--rtgl-dialog-padding-vertical:\s*0px;/s,
     );
   });
 });

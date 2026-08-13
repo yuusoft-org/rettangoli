@@ -13,6 +13,14 @@ const CLOSE_BUTTON_OFFSET_PX = 8;
 const ACTIVE_LAYOUT_ATTR = "data-rtgl-active-layout";
 const FIXED_LAYOUT_SELECTOR = `:host([${ACTIVE_LAYOUT_ATTR}="fixed"])`;
 const FIXED_TOP_LAYOUT_SELECTOR = `:host([${ACTIVE_LAYOUT_ATTR}="fixed-top"])`;
+const DIALOG_PADDING_VALUES = {
+  none: "0px",
+  xs: "var(--spacing-xs)",
+  sm: "var(--spacing-sm)",
+  md: "var(--spacing-md)",
+  lg: "var(--spacing-lg)",
+  xl: "var(--spacing-xl)",
+};
 const NATIVE_TEMPORAL_INPUT_TYPES = new Set([
   "date",
   "datetime-local",
@@ -23,6 +31,26 @@ const NATIVE_TEMPORAL_INPUT_TYPES = new Set([
 
 const mediaQueryCondition = (mediaQuery) =>
   mediaQuery.replace(/^@media\s+/, "");
+const buildDialogPaddingStyles = (attribute, properties) =>
+  Object.entries(DIALOG_PADDING_VALUES)
+    .map(
+      ([value, padding]) => css`
+        :host([${attribute}="${value}"]) slot[name="content"] {
+          ${properties
+            .map((property) => `${property}: ${padding};`)
+            .join("\n")}
+        }
+      `,
+    )
+    .join("");
+const dialogPaddingStyles = [
+  buildDialogPaddingStyles("p", [
+    "--rtgl-dialog-padding-horizontal",
+    "--rtgl-dialog-padding-vertical",
+  ]),
+  buildDialogPaddingStyles("ph", ["--rtgl-dialog-padding-horizontal"]),
+  buildDialogPaddingStyles("pv", ["--rtgl-dialog-padding-vertical"]),
+].join("");
 const fixedLayoutStyle = (selector) => css`
   ${selector} dialog {
     width: 100vw !important;
@@ -47,8 +75,14 @@ const fixedLayoutStyle = (selector) => css`
     overflow-y: auto !important;
     overscroll-behavior: contain;
     border-radius: 0;
-    padding-top: max(var(--spacing-lg), env(safe-area-inset-top));
-    padding-bottom: max(var(--spacing-lg), env(safe-area-inset-bottom));
+    padding-top: max(
+      var(--rtgl-dialog-padding-vertical),
+      env(safe-area-inset-top)
+    );
+    padding-bottom: max(
+      var(--rtgl-dialog-padding-vertical),
+      env(safe-area-inset-bottom)
+    );
   }
 `;
 
@@ -120,9 +154,12 @@ class RettangoliDialogElement extends HTMLElement {
         }
 
         slot[name="content"] {
+          --rtgl-dialog-padding-horizontal: var(--spacing-md);
+          --rtgl-dialog-padding-vertical: var(--spacing-md);
           background-color: var(--background) !important;
           display: block;
-          padding: var(--spacing-lg);
+          padding: var(--rtgl-dialog-padding-vertical)
+            var(--rtgl-dialog-padding-horizontal);
           border: 1px solid var(--border);
           border-radius: var(--border-radius-md);
           margin-left: var(--spacing-lg);
@@ -206,8 +243,15 @@ class RettangoliDialogElement extends HTMLElement {
           width: 80vw;
         }
 
-        :host([s="f"]) slot[name="content"] {
+        :host([s="f"]) dialog {
           width: 100vw;
+          max-width: 100vw;
+        }
+
+        :host([s="f"]) slot[name="content"] {
+          box-sizing: border-box;
+          width: 100vw;
+          max-width: 100vw;
           margin-left: 0;
           margin-right: 0;
         }
@@ -250,12 +294,12 @@ class RettangoliDialogElement extends HTMLElement {
 
         ${fixedLayoutStyle(FIXED_LAYOUT_SELECTOR)}
         ${fixedTopLayoutStyle(FIXED_TOP_LAYOUT_SELECTOR)}
+        ${dialogPaddingStyles}
 
         :host([p="none"]) slot[name="content"] {
           margin-left: 0;
           margin-right: 0;
           max-width: 100vw;
-          padding: 0;
         }
 
         :host([bare]) dialog::backdrop {
@@ -378,6 +422,8 @@ class RettangoliDialogElement extends HTMLElement {
       "w",
       "s",
       "p",
+      "ph",
+      "pv",
       "close-button",
       ...permutateBreakpoints(["layout"]),
     ];
@@ -411,7 +457,13 @@ class RettangoliDialogElement extends HTMLElement {
       } else if (newValue === null && this._dialogElement.open) {
         this._hideModal();
       }
-    } else if (name === "s" || name === "p" || name.endsWith("layout")) {
+    } else if (
+      name === "s" ||
+      name === "p" ||
+      name === "ph" ||
+      name === "pv" ||
+      name.endsWith("layout")
+    ) {
       // Size, padding, and layout are handled via CSS :host() selectors.
       this._updateActiveLayoutAttribute();
       this._scheduleAdaptiveCentering({ resetRetries: true });

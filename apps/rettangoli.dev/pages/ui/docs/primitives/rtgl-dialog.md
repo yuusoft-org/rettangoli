@@ -50,7 +50,9 @@ Use `open` as the source of truth and close by removing `open`.
 | Size | `s` | `sm`, `md`, `lg`, `f` | content-based |
 | Width Override | `w` | CSS width value (`600px`, `70vw`, etc.) | - |
 | Layout | `layout`, `sm-layout`, `md-layout`, `lg-layout`, `xl-layout` | `centered`, `top`, `fixed-top`, `fixed` | `centered` |
-| Padding | `p` | `none` | padded |
+| Padding | `p` | `none`, `xs`, `sm`, `md`, `lg`, `xl` | `md` |
+| Horizontal Padding | `ph` | `none`, `xs`, `sm`, `md`, `lg`, `xl` | follows `p` |
+| Vertical Padding | `pv` | `none`, `xs`, `sm`, `md`, `lg`, `xl` | follows `p` |
 | Bare | `bare` | boolean | - |
 | Close Button | `close-button` | boolean | - |
 
@@ -291,7 +293,17 @@ Use `md-layout="fixed-top"` with a bounded vertical content surface when a mobil
 </script>
 ```
 
-Set `p="none"` when the slotted content should own all spacing. It removes dialog-owned padding and left/right content margins. This is useful for fixed mobile dialogs that render a full-height shell, custom safe-area handling, or pinned internal footers.
+## Padding
+
+Dialog content padding defaults to `md`. Set `p` to apply one spacing token to every side, then use `ph` or `pv` when the horizontal and vertical axes need different values. Axis attributes override `p` for their corresponding sides, and all three attributes react after mount.
+
+```html
+<rtgl-dialog p="lg" ph="xl" pv="sm">
+  <rtgl-view slot="content">Dialog content</rtgl-view>
+</rtgl-dialog>
+```
+
+Set `p="none"` when the slotted content should own all spacing. In addition to zero content padding, this established full-bleed mode removes dialog-owned left/right content margins. This is useful for fixed mobile dialogs that render a full-height shell, custom safe-area handling, or pinned internal footers.
 
 ```html codePreview
 <rtgl-button id="open-fixed-mobile">Open Fixed Mobile Dialog</rtgl-button>

@@ -9,7 +9,7 @@
 - `rtgl-breadcrumb`: removed the built-in `sm` inset so surrounding layouts own breadcrumb spacing consistently.
 - Focus indicators: standardized keyboard focus across native controls, Rettangoli inputs, buttons, links, sliders, checkboxes, and component triggers with one theme-aware inset ring that remains visible inside clipped containers, including padding-free `rtgl-form` layouts; forced-colors mode retains a system outline, and composite tag/menu surfaces paint their ring above foreground content.
 - Scroll surfaces: implicit keyboard focus on `rtgl-view` and `rtgl-grid` scrollers now uses the shared inset focus ring, including a system-color outline in forced-colors mode.
-- `rtgl-dialog`: added reactive `p="none"` as its padding-free interface.
+- `rtgl-dialog`: added reactive `p`, `ph`, and `pv` content padding across `none|xs|sm|md|lg|xl`, with `md` as the default; `p="none"` retains its full-bleed horizontal-gutter behavior.
 - `rtgl-form`: added form-level `rowStackAt: sm|md|lg|xl|none` so every row can share one responsive stacking default while retaining per-row `stackAt` overrides.
 - `rtgl-form`: row fields now stack into one column at the `md` viewport breakpoint by default, with per-row `stackAt: sm|md|lg|xl|none` overrides; mixed labeled and unlabeled fields drop their alignment track after stacking.
 - `rtgl-form`: fixed row fields so input, select, and segmented-control content stretches across the full column width without input padding overflowing its bounds.
