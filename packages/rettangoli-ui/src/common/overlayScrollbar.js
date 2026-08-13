@@ -62,6 +62,10 @@ export const overlayScrollbarStyles = `
     --rtgl-scrollbar-y-enabled: 0;
   }
 
+  :host(:focus) {
+    outline: none;
+  }
+
   :host([sh]),
   :host([sv]) {
     -ms-overflow-style: none !important;
@@ -216,7 +220,7 @@ export const overlayScrollbarStyles = `
   [data-rtgl-scrollbar-track="vertical"]::before {
     top: 0;
     bottom: 0;
-    inset-inline-end: 2px;
+    inset-inline-end: 1px;
     width: var(--scrollbar-size, 4px);
   }
 
@@ -243,7 +247,7 @@ export const overlayScrollbarStyles = `
 
   [data-rtgl-scrollbar-thumb="vertical"] {
     top: 0;
-    inset-inline-end: 2px;
+    inset-inline-end: 1px;
     width: var(--scrollbar-size, 4px);
   }
 

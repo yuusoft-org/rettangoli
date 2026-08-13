@@ -14,6 +14,12 @@ propsSchema:
       type: string
       enum: [none, xs, sm, md, lg, xl]
       default: md
+    ph:
+      type: string
+      enum: [none, xs, sm, md, lg, xl]
+    pv:
+      type: string
+      enum: [none, xs, sm, md, lg, xl]
 events:
   form-input: {}
   form-change: {}

@@ -136,6 +136,27 @@ describe("rtgl-popover primitive", () => {
     expect(popover.hasAttribute("positioned")).toBe(true);
   });
 
+  it("stays visible while an open popover is repositioned", async () => {
+    const popover = createTestPopover();
+    const input = document.createElement("input");
+
+    popover.appendChild(input);
+    document.body.appendChild(popover);
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+
+    input.focus();
+    window.dispatchEvent(new Event("resize"));
+
+    expect(popover.hasAttribute("positioned")).toBe(true);
+    expect(document.activeElement).toBe(input);
+
+    await vi.runAllTimersAsync();
+
+    expect(popover.hasAttribute("positioned")).toBe(true);
+    expect(document.activeElement).toBe(input);
+  });
+
   it("cancels a pending show and can reopen after disconnecting", async () => {
     const popover = createTestPopover();
     const positionedEvents = [];

@@ -7,7 +7,7 @@ skipInitialScreenshot: true
 specs:
   - The `rtgl-view` host remains the native scroll container.
   - The browser-painted scrollbar is hidden and reserves no gutter.
-  - The thin custom thumb overlays the scrollport, sits 2px inside its outer edge, and has no arrow controls.
+  - The thin custom thumb overlays the scrollport, sits 1px inside its outer edge, and has no arrow controls.
   - The overlay is hidden while idle and visible only while the host is hovered or dragged.
   - Native wheel scrolling emits a host scroll event and updates the thumb.
   - Hovering and scrolling do not change layout geometry.
@@ -29,7 +29,7 @@ steps:
       overlayHidden: true
       zeroGutter: true
       overlaysScrollport: true
-      twoPixelVisualInset: true
+      onePixelVisualInset: true
       overlayScrollbarVisual: true
       thinThumb: true
       noArrowControls: true
@@ -58,7 +58,7 @@ steps:
       overlayHidden: false
       zeroGutter: true
       overlaysScrollport: true
-      twoPixelVisualInset: true
+      onePixelVisualInset: true
       overlayScrollbarVisual: true
       thinThumb: true
       noArrowControls: true
@@ -139,7 +139,7 @@ steps:
       overlayHidden: false
       zeroGutter: true
       overlaysScrollport: true
-      twoPixelVisualInset: true
+      onePixelVisualInset: true
       overlayScrollbarVisual: true
       thinThumb: true
       noArrowControls: true
@@ -358,7 +358,7 @@ steps:
               closeEnough(trackRect.top, viewportTop) &&
               closeEnough(trackRect.right, viewportRight) &&
               closeEnough(trackRect.bottom, viewportBottom),
-            twoPixelVisualInset: closeEnough(viewportRight - thumbRect.right, 2),
+            onePixelVisualInset: closeEnough(viewportRight - thumbRect.right, 1),
             overlayScrollbarVisual:
               closeEnough(thumbRect.width, 4) &&
               thumbStyle.borderRadius === '10px' &&

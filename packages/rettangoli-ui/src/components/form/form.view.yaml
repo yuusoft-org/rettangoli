@@ -30,6 +30,36 @@ refs:
       contextmenu:
         handler: handleImageClick
 styles:
+  ':host([w="f"])':
+    display: block !important
+    min-width: "0"
+    width: 100%
+  ':host([w="f"]) [data-rtgl-render-target]':
+    display: block !important
+    min-width: "0"
+    width: 100%
+  ':host([h="f"])':
+    display: flex !important
+    flex-direction: column
+    height: 100%
+    min-height: "0"
+    overflow: hidden
+  ':host([h="f"]) [data-rtgl-render-target]':
+    display: flex !important
+    flex: 1 1 auto
+    flex-direction: column
+    min-height: "0"
+    overflow: hidden
+  '#formContainer[data-sticky-actions="true"]':
+    height: 100%
+    max-height: 100%
+    min-height: "0"
+    overflow: hidden
+  '#formContainer[data-sticky-actions="true"] > .form-fields':
+    flex: 1 1 auto
+    min-height: "0"
+  '#formContainer[data-sticky-actions="true"] > .form-actions':
+    flex: 0 0 auto
   'rtgl-grid[data-align-field-headers="true"]':
     grid-template-rows: auto auto
     row-gap: var(--spacing-md)
@@ -79,13 +109,14 @@ styles:
   .form-field-control:
     grid-row: 2
 template:
-  - rtgl-view#formContainer w=f p=${containerPadding} g=lg ${containerAttrString}:
-      - rtgl-view g=sm w=f:
-          - $if title:
-              - rtgl-text s=lg: ${title}
-          - $if description:
-              - rtgl-text c=mu-fg: ${description}
-      - rtgl-view g=lg w=f:
+  - rtgl-view#formContainer w=f pv=${containerVerticalPadding} g=lg data-sticky-actions=${actions._sticky} ${containerAttrString}:
+      - $if title || description:
+          - rtgl-view g=sm w=f ph=${containerHorizontalPadding}:
+              - $if title:
+                  - rtgl-text s=lg: ${title}
+              - $if description:
+                  - rtgl-text c=mu-fg: ${description}
+      - rtgl-view class=form-fields g=lg w=f ph=${containerHorizontalPadding} ?sv=${actions._sticky}:
           - $for item, i in fieldLayout:
               - $if item._isSection:
                   - rtgl-view#layoutItem${item._layoutIdx} data-form-section=true g=md w=f:
@@ -158,21 +189,22 @@ template:
                                   - $if field._error:
                                       - rtgl-text s=sm c=de: ${field._error}
       - $if actions.buttons.length > 0:
-          - $if actions._layout == "split":
-              - rtgl-view d=h w=f g=sm:
-                  - rtgl-view d=h g=sm:
-                      - $for button, i in actions._leftButtons:
-                          - rtgl-button#action${button._globalIdx} data-action-id=${button.id} v=${button.variant} ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
-                  - rtgl-view d=h g=sm ah=e w=1fg:
-                      - $for button, i in actions._rightButtons:
-                          - rtgl-button#action${button._globalIdx} data-action-id=${button.id} v=${button.variant} ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
-          - $if actions._layout == "vertical":
-              - rtgl-view g=sm w=f:
-                  - $for button, i in actions._allButtons:
-                      - rtgl-button#action${button._globalIdx} data-action-id=${button.id} v=${button.variant} w=f ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
-          - $if actions._layout == "stretch":
-              - rtgl-view d=h g=sm w=f:
-                  - $for button, i in actions._allButtons:
-                      - rtgl-view w=1fg:
+          - rtgl-view class=form-actions w=f ph=${containerHorizontalPadding}:
+              - $if actions._layout == "split":
+                  - rtgl-view d=h w=f g=sm:
+                      - rtgl-view d=h g=sm:
+                          - $for button, i in actions._leftButtons:
+                              - rtgl-button#action${button._globalIdx} data-action-id=${button.id} v=${button.variant} ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
+                      - rtgl-view d=h g=sm ah=e w=1fg:
+                          - $for button, i in actions._rightButtons:
+                              - rtgl-button#action${button._globalIdx} data-action-id=${button.id} v=${button.variant} ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
+              - $if actions._layout == "vertical":
+                  - rtgl-view g=sm w=f:
+                      - $for button, i in actions._allButtons:
                           - rtgl-button#action${button._globalIdx} data-action-id=${button.id} v=${button.variant} w=f ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
+              - $if actions._layout == "stretch":
+                  - rtgl-view d=h g=sm w=f:
+                      - $for button, i in actions._allButtons:
+                          - rtgl-view w=1fg:
+                              - rtgl-button#action${button._globalIdx} data-action-id=${button.id} v=${button.variant} w=f ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
       - rtgl-tooltip ?open=${tooltipState.open} x=${tooltipState.x} y=${tooltipState.y} place="t" content="${tooltipState.content}": null

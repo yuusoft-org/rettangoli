@@ -2,7 +2,16 @@ import { describe, expect, it, vi } from "vitest";
 import {
   getOverlayScrollbarMetrics,
   OverlayScrollbarController,
+  overlayScrollbarStyles,
 } from "../src/common/overlayScrollbar.js";
+
+describe("overlay scrollbar styles", () => {
+  it("suppresses the browser-native focus outline on shared scroll surfaces", () => {
+    expect(overlayScrollbarStyles).toMatch(
+      /:host\(:focus\)\s*\{[^}]*outline:\s*none;/s,
+    );
+  });
+});
 
 const createDragHarness = ({
   axis,

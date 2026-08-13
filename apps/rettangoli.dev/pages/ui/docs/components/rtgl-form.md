@@ -59,11 +59,20 @@ A schema-driven form component that composes Rettangoli input primitives.
 | Disabled | `disabled` | boolean | `false` |
 | Template Context | `context` (property) | object | - |
 | Padding | `p` | `none \| xs \| sm \| md \| lg \| xl` | `md` |
+| Horizontal Padding | `ph` | `none \| xs \| sm \| md \| lg \| xl` | value of `p` |
+| Vertical Padding | `pv` | `none \| xs \| sm \| md \| lg \| xl` | value of `p` |
 
 Use `p="none"` when the surrounding layout already provides the desired inset:
 
 ```html
 <rtgl-form p="none"></rtgl-form>
+```
+
+Use `ph` and `pv` when the two axes need different insets. Each axis overrides
+`p` independently:
+
+```html
+<rtgl-form ph="md" pv="none"></rtgl-form>
 ```
 
 ## Width
@@ -93,6 +102,23 @@ Use `w` to set a fixed width.
   document.getElementById("fixed-form-container").appendChild(form);
 </script>
 ```
+
+## Sticky Actions
+
+Set `form.actions.sticky` to `true` when the form is inside a bounded-height surface. The title and action row remain visible while the field region owns vertical scrolling.
+
+```js
+form.form = {
+  title: "Edit Character",
+  fields,
+  actions: {
+    sticky: true,
+    buttons: [{ id: "save", label: "Save", variant: "pr" }],
+  },
+};
+```
+
+For an inset mobile dialog that stays naturally sized for short forms and becomes bounded for long forms, place the form in a vertical `overflow="hidden"` surface and use `md-layout="fixed-top"` on `rtgl-dialog`.
 
 ## Field Types
 

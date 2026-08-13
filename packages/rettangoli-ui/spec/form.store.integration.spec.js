@@ -24,6 +24,43 @@ const createConditionalFormProps = () => ({
 });
 
 describe("rtgl-form bound store integration", () => {
+  it.each([
+    [{}, "md", "md"],
+    [{ p: "sm" }, "sm", "sm"],
+    [{ p: "lg", ph: "none" }, "none", "lg"],
+    [{ p: "lg", pv: "none" }, "lg", "none"],
+    [{ p: "sm", ph: "xl", pv: "xs" }, "xl", "xs"],
+  ])(
+    "resolves form padding props %j to ph=%s and pv=%s",
+    (paddingProps, expectedHorizontal, expectedVertical) => {
+      const store = bindStore(formStore, { form: {}, ...paddingProps }, {});
+
+      const viewData = store.selectViewData();
+
+      expect(viewData.containerHorizontalPadding).toBe(expectedHorizontal);
+      expect(viewData.containerVerticalPadding).toBe(expectedVertical);
+      expect(viewData.containerAttrString).not.toMatch(/(?:^| )(?:p|ph|pv)=/);
+    },
+  );
+
+  it("marks sticky actions for a bounded internal form scroller", () => {
+    const props = {
+      form: {
+        fields: [{ name: "name", type: "input-text" }],
+        actions: {
+          sticky: true,
+          buttons: [{ id: "save", label: "Save" }],
+        },
+      },
+    };
+    const store = bindStore(formStore, props, {});
+
+    const viewData = store.selectViewData();
+
+    expect(viewData.actions._sticky).toBe(true);
+    expect(viewData.actions.buttons).toHaveLength(1);
+  });
+
   it("groups row fields into equal columns and standalone fields into full-width rows", () => {
     const props = {
       form: {

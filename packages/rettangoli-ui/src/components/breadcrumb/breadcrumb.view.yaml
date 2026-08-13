@@ -8,7 +8,7 @@ styles:
     text-decoration: none
     color: inherit
 template:
-  - rtgl-view d=h av=c g=md p=sm ${containerAttrString}:
+  - rtgl-view d=h av=c g=md ${containerAttrString}:
       - $for item, i in items:
           - $if item.isSeparator:
               - rtgl-svg wh=16 svg=${sep} c=mu-fg: null

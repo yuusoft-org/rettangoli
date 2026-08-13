@@ -6,6 +6,7 @@ Canonical engineering contract for `packages/rettangoli-ui`.
 ## Scope
 
 `@rettangoli/ui` contains:
+
 - primitives in `src/primitives/` (plain custom elements)
 - FE-driven components in `src/components/` (built by `@rettangoli/fe`)
 - visual test specs in `vt/`
@@ -17,6 +18,7 @@ Canonical engineering contract for `packages/rettangoli-ui`.
 A primitive is a low-level UI building block. It should be composable, predictable, and reusable across many contexts.
 
 Primitive expectations:
+
 - minimal API surface
 - stable shared attrs and events
 - no product-specific data contract
@@ -27,6 +29,7 @@ Primitive expectations:
 A component is an opinionated composition for a complete workflow pattern and is built using `@rettangoli/fe`.
 
 Component expectations:
+
 - solves a real UI workflow end-to-end
 - keeps the same naming/event conventions as primitives
 - owns a richer data contract (`items`, `form`, `options`, and similar)
@@ -37,6 +40,7 @@ Component expectations:
 The interface should optimize for consistency more than local convenience.
 
 Goals:
+
 - one mental model for attrs, props, and events across all elements
 - shared event semantics (`value-input` live, `value-change` commit)
 - predictable responsive behavior (`sm-`, `md-`, `lg-`, `xl-`)
@@ -48,28 +52,29 @@ Goals:
 
 This is the intentional component surface and what each component is meant to provide.
 
-| Component | Primary Role | Core Features |
-| --- | --- | --- |
-| `rtgl-accordion-item` | toggled content section | collapsible state, label/content/slot |
-| `rtgl-breadcrumb` | hierarchical navigation path | item list, max collapse, separator icon, `item-click` |
-| `rtgl-card` | content surface container | optional heading/description, size presets, slot body |
-| `rtgl-dropdown-menu` | contextual menu overlay | positioned menu, item/label/separator rows, close + item events |
-| `rtgl-form` | schema-driven form workflow | field schema, default values, action buttons, form/action/extra events |
-| `rtgl-global-ui` | app-level interaction layer | alert/confirm/dropdown flows with promise-like API |
-| `rtgl-navbar` | top app navigation shell | configurable start area, right slot, start click event |
-| `rtgl-page-outline` | page section tracking | target and scroll containers, active section offset |
-| `rtgl-popover-input` | inline edit with popover | value editing in popover, value input/change events |
-| `rtgl-select` | single-choice selection | options with optional icons/images, selected value, no-clear mode, add-option action |
+| Component                | Primary Role                   | Core Features                                                                                          |
+| ------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `rtgl-accordion-item`    | toggled content section        | collapsible state, label/content/slot                                                                  |
+| `rtgl-breadcrumb`        | hierarchical navigation path   | item list, max collapse, separator icon, `item-click`                                                  |
+| `rtgl-card`              | content surface container      | optional heading/description, size presets, slot body                                                  |
+| `rtgl-dropdown-menu`     | contextual menu overlay        | positioned menu, item/label/separator rows, close + item events                                        |
+| `rtgl-form`              | schema-driven form workflow    | field schema, default values, action buttons, form/action/extra events                                 |
+| `rtgl-global-ui`         | app-level interaction layer    | alert/confirm/dropdown flows with promise-like API                                                     |
+| `rtgl-navbar`            | top app navigation shell       | configurable start area, right slot, start click event                                                 |
+| `rtgl-page-outline`      | page section tracking          | target and scroll containers, active section offset                                                    |
+| `rtgl-popover-input`     | inline edit with popover       | value editing in popover, value input/change events                                                    |
+| `rtgl-select`            | single-choice selection        | options with optional icons/images, selected value, no-clear mode, add-option action                   |
 | `rtgl-segmented-control` | inline single-choice selection | text or icon-only options, per-option hover tooltips, selected value, no-clear mode, add-option action |
-| `rtgl-tag-select` | multi-tag selection | select-shaped options, selected value array, add popover, right-click delete |
-| `rtgl-sidebar` | app/sidebar navigation | header plus grouped items, selected item state, item/header events |
-| `rtgl-slider-input` | synchronized numeric control | linked slider + number input, min/max/step, value events |
-| `rtgl-table` | tabular data display | column/row model, sortable headers, row click event |
-| `rtgl-tabs` | segmented single selection | tab items, selected tab state, item click event |
-| `rtgl-tooltip` | short contextual hint | controlled open/position/placement/content |
-| `rtgl-waveform` | waveform media visualization | canvas rendering, loading state, width/height sizing |
+| `rtgl-tag-select`        | multi-tag selection            | select-shaped options, selected value array, add popover, right-click delete                           |
+| `rtgl-sidebar`           | app/sidebar navigation         | header plus grouped items, selected item state, item/header events                                     |
+| `rtgl-slider-input`      | synchronized numeric control   | linked slider + number input, min/max/step, value events                                               |
+| `rtgl-table`             | tabular data display           | column/row model, sortable headers, row click event                                                    |
+| `rtgl-tabs`              | segmented single selection     | tab items, selected tab state, item click event                                                        |
+| `rtgl-tooltip`           | short contextual hint          | controlled open/position/placement/content                                                             |
+| `rtgl-waveform`          | waveform media visualization   | canvas rendering, loading state, width/height sizing                                                   |
 
 When adding a new component, document:
+
 - the unique workflow it serves
 - why existing components cannot cover it
 - its canonical event and payload contract
@@ -90,6 +95,7 @@ vt/                 # Visual testing (rettangoli-vt)
 ## Source of Truth
 
 For FE component contracts, canonical docs are:
+
 - `packages/rettangoli-fe/docs/overview.md`
 - `packages/rettangoli-fe/docs/view.md`
 - `packages/rettangoli-fe/docs/store.md`
@@ -103,15 +109,18 @@ If this file conflicts with FE docs, FE docs win.
 ## Required FE Component Contract
 
 For every component under `src/components/<name>/`:
+
 - required: `*.view.yaml`
 - required: `*.schema.yaml`
 - optional: `*.handlers.js`, `*.store.js`, `*.methods.js`, `*.constants.yaml`
 
 `*.view.yaml` is view-only:
+
 - allowed: `template`, `refs`, `styles`
 - forbidden: `elementName`, `viewDataSchema`, `propsSchema`, `events`, `methods`, `attrsSchema`
 
 `*.schema.yaml` is API metadata:
+
 - `componentName` required
 - `propsSchema` is runtime source of props contract
 - `events` and `methods` documented here
@@ -243,6 +252,18 @@ Canonical `inputType` values are kebab-case only:
 - `__proto__`, `constructor`, and `prototype` are reserved and rejected in any path segment
 - legacy flat dotted defaults are normalized to nested values when written
 
+### Form actions
+
+- set `form.actions.sticky` to `true` when the form is mounted in a bounded-height surface
+- sticky actions keep the action row visible while the form field region owns vertical scrolling
+- the containing surface must provide a definite or capped height; use `rtgl-dialog` with `md-layout=fixed-top` for inset mobile dialogs
+
+### Form padding
+
+- `p` sets both internal form-padding axes and defaults to `md`
+- `ph` and `pv` override the horizontal and vertical axes independently
+- use `ph=md pv=none` when a surrounding vertical layout owns the form spacing
+
 ## Events: Naming and Payloads
 
 ### Naming rules
@@ -263,16 +284,26 @@ Canonical `inputType` values are kebab-case only:
 ### Recommended payload shapes
 
 ```js
-detail: { value }
-detail: { value, label, index, item }
-detail: { name, fieldValue, formValues }
-detail: { actionId, formValues }
-detail: {}
+detail: {
+  value;
+}
+detail: {
+  (value, label, index, item);
+}
+detail: {
+  (name, fieldValue, formValues);
+}
+detail: {
+  (actionId, formValues);
+}
+detail: {
+}
 ```
 
 ## Custom Elements (public surface)
 
 Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
+
 - `rtgl-carousel`, `rtgl-grid`, `rtgl-view`, `rtgl-text`, `rtgl-button`, `rtgl-image`, `rtgl-svg`
 - `rtgl-input`, `rtgl-input-duration`, `rtgl-input-number`, `rtgl-textarea`
 - `rtgl-slider`, `rtgl-color-picker`
@@ -311,7 +342,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - `sh` / `sv` keep the custom-element host as the actual native overflow scroller; do not move scrolling into an internal viewport or proxy `scrollTop`, `scrollLeft`, methods, dimensions, or events
 - every scrolling surface uses the shared shadow-DOM overlay track/thumb automatically; there is no native-visible or opt-in scrollbar mode
 - hide the complete browser-painted rail with `scrollbar-width: none` and the whole-scrollbar WebKit fallback; never style its individual native subparts
-- use a 4px painted track/thumb inset 2px from the outer scrollport edge, with a 10px radius and 60% / 70% / 80% normal, hover, and active opacity; retain the larger edge-aligned transparent pointer target and never let these visuals affect layout
+- use a 4px painted track/thumb with the vertical bar inset 1px from the inline edge and the horizontal bar inset 2px from the bottom edge; use a 10px radius and 60% / 70% / 80% normal, hover, and active opacity; retain the larger edge-aligned transparent pointer target and never let these visuals affect layout
 - the overlay layer must remain out of flex/grid flow, reserve zero gutter, contain no arrow controls, and leave host scroll/client dimensions unchanged
 - the overlay layer must paint and receive pointer input above positioned/slotted user content at every authored `z-index`; isolate that priority inside the scrolling host so neighboring and browser top-layer UI remain above the scroll surface according to the host's own stacking order
 - scrolling hosts establish a positioning context for the overlay when `pos` is otherwise unset; preserve explicit responsive `pos` values for the host's own positioning mode and document that absolutely positioned children resolve against the host
@@ -325,6 +356,13 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
   - `bgi`, `bgs`, `bgp`, `bgr` for background image styling
 - prefer these attrs over ad-hoc inline style when the property is part of the shared primitive surface
 
+### `rtgl-dialog`
+
+- `layout=top` and responsive variants such as `md-layout=top` keep natural content height and let the native dialog own overflow scrolling
+- `layout=fixed` locks the content surface to the full viewport
+- `layout=fixed-top` keeps the surface top-aligned with a standard top inset and a 36% viewport-height bottom inset; it clips outer overflow so a bounded child such as `rtgl-form` can scroll internally
+- `fixed-top` preserves its asymmetric viewport insets independently of content padding; `p=none` removes content padding and horizontal gutters without removing the top and bottom insets
+
 ### `rtgl-grid`
 
 - use for explicit 2D column layouts
@@ -333,6 +371,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - flex-only attrs such as `d`, `wrap`, `no-wrap`, `ah`, and `av` do not apply
 
 Components built via `@rettangoli/fe`:
+
 - `rtgl-select`, `rtgl-segmented-control`, `rtgl-tag-select`, `rtgl-dropdown-menu`, `rtgl-tooltip`, `rtgl-popover-input`
 - `rtgl-form`, `rtgl-slider-input`, `rtgl-table`
 - `rtgl-tabs`, `rtgl-sidebar`, `rtgl-navbar`, `rtgl-breadcrumb`
@@ -391,6 +430,7 @@ bun run vt:accept
 ```
 
 Temporary VT skips (as of 2026-02-11):
+
 - `vt/specs/components/select/basic.html`
 - `vt/specs/components/select/object-value.html`
 - `vt/specs/components/select/overflow.html`
