@@ -268,7 +268,7 @@ export const set = (obj, path, value) => {
 const formPaddingValues = new Set(["none", "xs", "sm", "md", "lg", "xl"]);
 const rowStackAtValues = new Set(["none", "sm", "md", "lg", "xl"]);
 
-const normalizeFormPadding = (value, fallback = "lg") =>
+const normalizeFormPadding = (value, fallback = "md") =>
   formPaddingValues.has(value) ? value : fallback;
 
 const normalizeRowStackAt = (value, fallback = "md") =>

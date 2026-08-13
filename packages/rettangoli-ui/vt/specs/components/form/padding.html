@@ -2,7 +2,7 @@
 title: Form Padding
 description: Verifies default, uniform, and axis-specific form padding.
 specs:
-  - Forms use large content padding by default.
+  - Forms use medium content padding by default.
   - Setting `p="none"` removes all internal form padding.
   - "ph and pv override p independently and react after mount."
 skipInitialScreenshot: true
@@ -11,8 +11,8 @@ steps:
     type: js
     fn: formPaddingVt.inspect
     value:
-      defaultAttribute: lg
-      defaultPadding: 16px
+      defaultAttribute: md
+      defaultPadding: 8px
       configurableAttribute: none
       configurablePadding: 0px
       axisHorizontalAttribute: md
@@ -28,8 +28,8 @@ steps:
     type: js
     fn: formPaddingVt.inspect
     value:
-      defaultAttribute: lg
-      defaultPadding: 16px
+      defaultAttribute: md
+      defaultPadding: 8px
       configurableAttribute: xl
       configurablePadding: 32px
       axisHorizontalAttribute: xl
@@ -44,7 +44,7 @@ viewport:
 ---
 <rtgl-view d="h" g="xl" p="xl" wh="f" wrap>
   <rtgl-view g="sm" w="360">
-    <rtgl-text s="sm" c="mu-fg">Default padding (p=lg)</rtgl-text>
+    <rtgl-text s="sm" c="mu-fg">Default padding (p=md)</rtgl-text>
     <rtgl-view id="default-mount" w="f" bw="xs" bc="bo" br="lg"></rtgl-view>
   </rtgl-view>
   <rtgl-view g="sm" w="360">
