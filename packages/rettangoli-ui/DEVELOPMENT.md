@@ -256,6 +256,8 @@ Canonical `inputType` values are kebab-case only:
 
 - set the boolean `sticky` attribute on `rtgl-form` when it is mounted in a bounded-height surface
 - sticky forms keep the header and action row visible while the form field region owns vertical scrolling
+- sticky forms establish their own full-height wrapper chain; `h=f` is not required on the form
+- non-sticky forms using `h=f` preserve visible overflow so a bounded scrolling ancestor can reach the complete form
 - the containing surface must provide a definite or capped height; use `rtgl-dialog` with `md-layout=fixed-top` for inset mobile dialogs
 
 ### Form padding

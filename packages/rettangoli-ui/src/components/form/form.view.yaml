@@ -43,11 +43,24 @@ styles:
     flex-direction: column
     height: 100%
     min-height: "0"
-    overflow: hidden
   ':host([h="f"]) [data-rtgl-render-target]':
     display: flex !important
     flex: 1 1 auto
     flex-direction: column
+    min-height: "0"
+  ':host([sticky])':
+    display: flex !important
+    flex-direction: column
+    height: 100%
+    max-height: 100%
+    min-height: "0"
+    overflow: hidden
+  ':host([sticky]) [data-rtgl-render-target]':
+    display: flex !important
+    flex: 1 1 auto
+    flex-direction: column
+    height: 100%
+    max-height: 100%
     min-height: "0"
     overflow: hidden
   '#formContainer[data-sticky="true"]':

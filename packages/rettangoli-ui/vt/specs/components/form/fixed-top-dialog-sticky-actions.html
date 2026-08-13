@@ -6,7 +6,7 @@ specs:
   - "`md-layout=fixed-top` keeps short forms naturally sized at the top of the viewport."
   - "The dialog remains inset while the form fills its surface, and the field scroller owns horizontal content padding so its scrollbar stays at the form edge."
   - "Long forms stop at the available viewport height without scrolling the native dialog."
-  - "`<rtgl-form sticky>` keeps the header and action row visible while only the field region scrolls."
+  - "`<rtgl-form sticky w=f>` fills the bounded surface without requiring `h=f`, keeping the header and action row visible while only the field region scrolls."
   - "The keyboard-focused field scroller replaces the browser-native outline with the shared inset focus ring."
 skipInitialScreenshot: true
 viewport:
@@ -59,7 +59,7 @@ steps:
 
 <rtgl-dialog id="long-dialog" s="md" md-layout="fixed-top" p="none">
   <rtgl-view id="long-surface" slot="content" d="v" w="f" h="f" overflow="hidden">
-    <rtgl-form id="long-form" sticky w="f" h="f" p="lg"></rtgl-form>
+    <rtgl-form id="long-form" sticky w="f" p="lg"></rtgl-form>
   </rtgl-view>
 </rtgl-dialog>
 
@@ -217,8 +217,11 @@ steps:
         focusState.outlineStyle === "none" &&
         focusState.outlineWidth === "0px" &&
         focusState.boxShadow !== "none" &&
+        !longForm.hasAttribute("h") &&
         slotRect.width < window.innerWidth &&
         Math.abs(surfaceRect.width - contentSlot.clientWidth) <= 1 &&
+        Math.abs(formHostRect.height - surfaceRect.height) <= 1 &&
+        Math.abs(renderTargetRect.height - surfaceRect.height) <= 1 &&
         Math.abs(formRect.width - surfaceRect.width) <= 1 &&
         Math.abs(scrollbarRect.right - surfaceRect.right) <= 1 &&
         Math.abs(bodyRect.width - formRect.width) <= 1 &&

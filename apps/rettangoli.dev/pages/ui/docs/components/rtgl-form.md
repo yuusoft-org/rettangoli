@@ -105,7 +105,7 @@ Use `w` to set a fixed width.
 
 ## Sticky Form Layout
 
-Add the `sticky` boolean attribute when the form is inside a bounded-height surface. The title and action row remain visible while the field region owns vertical scrolling.
+Add the `sticky` boolean attribute when the form is inside a bounded-height surface. The form automatically fills that surface without requiring `h="f"`; the title and action row remain visible while the field region owns vertical scrolling.
 
 ```html
 <rtgl-form id="edit-form" sticky></rtgl-form>
@@ -122,6 +122,8 @@ Add the `sticky` boolean attribute when the form is inside a bounded-height surf
 ```
 
 For an inset mobile dialog that stays naturally sized for short forms and becomes bounded for long forms, place the form in a vertical `overflow="hidden"` surface and use `md-layout="fixed-top"` on `rtgl-dialog`.
+
+Without `sticky`, `h="f"` retains normal visible overflow. This lets a bounded ancestor with `sv` own scrolling and keeps lower fields and actions reachable.
 
 ## Field Types
 
