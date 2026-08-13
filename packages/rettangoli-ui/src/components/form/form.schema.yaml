@@ -13,7 +13,7 @@ propsSchema:
     p:
       type: string
       enum: [none, xs, sm, md, lg, xl]
-      default: md
+      default: lg
     ph:
       type: string
       enum: [none, xs, sm, md, lg, xl]

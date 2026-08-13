@@ -58,7 +58,7 @@ A schema-driven form component that composes Rettangoli input primitives.
 | Initial Values | `defaultValues` (property) | object | `{}` |
 | Disabled | `disabled` | boolean | `false` |
 | Template Context | `context` (property) | object | - |
-| Padding | `p` | `none \| xs \| sm \| md \| lg \| xl` | `md` |
+| Padding | `p` | `none \| xs \| sm \| md \| lg \| xl` | `lg` |
 | Horizontal Padding | `ph` | `none \| xs \| sm \| md \| lg \| xl` | value of `p` |
 | Vertical Padding | `pv` | `none \| xs \| sm \| md \| lg \| xl` | value of `p` |
 

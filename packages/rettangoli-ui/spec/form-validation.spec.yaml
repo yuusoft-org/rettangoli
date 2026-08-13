@@ -934,8 +934,8 @@ in:
       data-testid: my-form
 out:
   containerAttrString: data-testid=my-form
-  containerHorizontalPadding: md
-  containerVerticalPadding: md
+  containerHorizontalPadding: lg
+  containerVerticalPadding: lg
 ---
 case: excludes object-valued custom props from container attributes
 in:
@@ -946,8 +946,8 @@ in:
       aria-label: Settings
 out:
   containerAttrString: aria-label=Settings
-  containerHorizontalPadding: md
-  containerVerticalPadding: md
+  containerHorizontalPadding: lg
+  containerVerticalPadding: lg
 ---
 case: uses padding prop without forwarding a duplicate attribute
 in:
@@ -960,15 +960,15 @@ out:
   containerHorizontalPadding: none
   containerVerticalPadding: none
 ---
-case: falls back to medium padding for unsupported values
+case: falls back to large padding for unsupported values
 in:
   - props:
       form: {}
       p: huge
 out:
   containerAttrString: ""
-  containerHorizontalPadding: md
-  containerVerticalPadding: md
+  containerHorizontalPadding: lg
+  containerVerticalPadding: lg
 ---
 case: resolves horizontal and vertical padding overrides independently
 in:

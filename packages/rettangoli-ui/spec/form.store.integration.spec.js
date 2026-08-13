@@ -25,7 +25,7 @@ const createConditionalFormProps = () => ({
 
 describe("rtgl-form bound store integration", () => {
   it.each([
-    [{}, "md", "md"],
+    [{}, "lg", "lg"],
     [{ p: "sm" }, "sm", "sm"],
     [{ p: "lg", ph: "none" }, "none", "lg"],
     [{ p: "lg", pv: "none" }, "lg", "none"],
