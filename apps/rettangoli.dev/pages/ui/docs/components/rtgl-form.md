@@ -61,6 +61,7 @@ A schema-driven form component that composes Rettangoli input primitives.
 | Padding | `p` | `none \| xs \| sm \| md \| lg \| xl` | `md` |
 | Horizontal Padding | `ph` | `none \| xs \| sm \| md \| lg \| xl` | value of `p` |
 | Vertical Padding | `pv` | `none \| xs \| sm \| md \| lg \| xl` | value of `p` |
+| Bottom Spacer | `bottom-spacer` / `bottomSpacer` | non-negative pixels | `0` |
 
 Use `p="none"` when the surrounding layout already provides the desired inset:
 
@@ -122,6 +123,12 @@ Add the `sticky` boolean attribute when the form is inside a bounded-height surf
 ```
 
 For an inset mobile dialog that stays naturally sized for short forms and becomes bounded for long forms, place the form in a vertical `overflow="hidden"` surface and use `md-layout="fixed-top"` on `rtgl-dialog`.
+
+Set `bottom-spacer` when the last field needs extra scroll room above a sticky action row. The pixel value is applied inside the field scroller, so it does not move the header or actions:
+
+```html
+<rtgl-form sticky bottom-spacer="96"></rtgl-form>
+```
 
 Without `sticky`, `h="f"` retains normal visible overflow. This lets a bounded ancestor with `sv` own scrolling and keeps lower fields and actions reachable.
 
