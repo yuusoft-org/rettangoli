@@ -1,0 +1,47 @@
+---
+title: "Scroll Position Methods"
+description: "Verifies that the public sidebar API restores the internal item list to a non-zero position."
+specs:
+  - "setScrollPosition restores the internal item list to 480 pixels."
+  - "getScrollPosition reads the restored position."
+  - "The reference screenshot shows the fixed header with visibly scrolled navigation items."
+skipInitialScreenshot: true
+steps:
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: sidebarScrollMethods.restoresPosition
+    value: true
+  - action: screenshot
+---
+<rtgl-view h="100vh" w="f">
+  <rtgl-sidebar id="sidebar"></rtgl-sidebar>
+</rtgl-view>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+
+  sidebar.header = {
+    label: 'Restored navigation',
+  };
+
+  sidebar.items = [
+    { type: 'groupLabel', label: 'Documentation' },
+    ...Array.from({ length: 50 }, (_, index) => ({
+      id: `page-${index + 1}`,
+      label: `Documentation page ${index + 1}`,
+    })),
+  ];
+
+  sidebar.render();
+
+  window.sidebarScrollMethods = {
+    restoresPosition() {
+      const restored = sidebar.setScrollPosition({ top: 480 });
+      const current = sidebar.getScrollPosition();
+
+      return restored.top === 480 && current.top === 480;
+    },
+  };
+</script>
