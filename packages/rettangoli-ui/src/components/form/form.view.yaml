@@ -109,9 +109,9 @@ styles:
   .form-field-control:
     grid-row: 2
 template:
-  - rtgl-view#formContainer w=f pv=${containerVerticalPadding} g=lg data-sticky-actions=${actions._sticky} ${containerAttrString}:
+  - rtgl-view#formContainer w=f pv=${containerVerticalPadding} data-sticky-actions=${actions._sticky} ${containerAttrString}:
       - $if title || description:
-          - rtgl-view g=sm w=f ph=${containerHorizontalPadding}:
+          - rtgl-view class=form-header g=sm w=f ph=${containerHorizontalPadding} mb=md:
               - $if title:
                   - rtgl-text s=lg: ${title}
               - $if description:
@@ -189,7 +189,7 @@ template:
                                   - $if field._error:
                                       - rtgl-text s=sm c=de: ${field._error}
       - $if actions.buttons.length > 0:
-          - rtgl-view class=form-actions w=f ph=${containerHorizontalPadding}:
+          - rtgl-view class=form-actions w=f ph=${containerHorizontalPadding} mt=lg:
               - $if actions._layout == "split":
                   - rtgl-view d=h w=f g=sm:
                       - rtgl-view d=h g=sm:

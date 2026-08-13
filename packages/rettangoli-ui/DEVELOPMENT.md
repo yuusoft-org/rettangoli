@@ -260,7 +260,7 @@ Canonical `inputType` values are kebab-case only:
 
 ### Form padding
 
-- `p` sets both internal form-padding axes and defaults to `md`
+- `p` sets both internal form-padding axes and defaults to `lg`
 - `ph` and `pv` override the horizontal and vertical axes independently
 - use `ph=md pv=none` when a surrounding vertical layout owns the form spacing
 
