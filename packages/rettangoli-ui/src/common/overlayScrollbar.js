@@ -68,7 +68,7 @@ export const overlayScrollbarStyles = `
 
   :host(:focus-visible) {
     outline: var(--focus-ring-outline, none);
-    box-shadow: inset 0 0 0 2px var(--ring);
+    box-shadow: inset 0 0 0 2px var(--ring) !important;
   }
 
   :host([sh]),
@@ -288,7 +288,7 @@ export const overlayScrollbarStyles = `
     :host(:focus-visible) {
       outline: 2px solid Highlight;
       outline-offset: -2px;
-      box-shadow: none;
+      box-shadow: none !important;
     }
 
     [data-rtgl-scrollbar-thumb] {

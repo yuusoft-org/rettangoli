@@ -11,10 +11,10 @@ describe("overlay scrollbar styles", () => {
       /:host\(:focus\)\s*\{[^}]*outline:\s*none;/s,
     );
     expect(overlayScrollbarStyles).toMatch(
-      /:host\(:focus-visible\)\s*\{[^}]*outline:\s*var\(--focus-ring-outline, none\);[^}]*box-shadow:\s*inset 0 0 0 2px var\(--ring\);/s,
+      /:host\(:focus-visible\)\s*\{[^}]*outline:\s*var\(--focus-ring-outline, none\);[^}]*box-shadow:\s*inset 0 0 0 2px var\(--ring\) !important;/s,
     );
     expect(overlayScrollbarStyles).toMatch(
-      /@media \(forced-colors: active\)\s*\{\s*:host\(:focus-visible\)\s*\{[^}]*outline:\s*2px solid Highlight;[^}]*outline-offset:\s*-2px;[^}]*box-shadow:\s*none;/s,
+      /@media \(forced-colors: active\)\s*\{\s*:host\(:focus-visible\)\s*\{[^}]*outline:\s*2px solid Highlight;[^}]*outline-offset:\s*-2px;[^}]*box-shadow:\s*none !important;/s,
     );
   });
 });

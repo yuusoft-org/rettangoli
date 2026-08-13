@@ -19,6 +19,11 @@ const syncInteractiveFieldAttribute = ({ field, target, value }) => {
   }
 };
 
+const syncStickyHostState = ({ refs, sticky }) => {
+  const host = refs?.formContainer?.getRootNode?.()?.host;
+  host?.toggleAttribute?.("data-rtgl-sticky", sticky === true);
+};
+
 const updateFieldAttributes = ({
   form,
   formValues = {},
@@ -160,6 +165,7 @@ export const handleAfterMount = (deps) => {
   const { props, refs, render } = deps;
   const { store } = deps;
   const state = store.getState();
+  syncStickyHostState({ refs, sticky: props?.sticky });
   const form = selectForm({ state, props });
   updateFieldAttributes({
     form,
@@ -182,6 +188,8 @@ export const handleOnUpdate = (deps, payload) => {
   const { store, render, refs } = deps;
   const formDisabled = !!newProps?.disabled;
   const keyChanged = oldProps?.key !== newProps?.key;
+
+  syncStickyHostState({ refs, sticky: newProps?.sticky });
 
   if (keyChanged) {
     initFormValues(store, newProps);
