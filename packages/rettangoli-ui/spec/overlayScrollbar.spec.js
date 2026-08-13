@@ -6,9 +6,15 @@ import {
 } from "../src/common/overlayScrollbar.js";
 
 describe("overlay scrollbar styles", () => {
-  it("suppresses the browser-native focus outline on shared scroll surfaces", () => {
+  it("replaces the browser outline with a visible keyboard focus ring", () => {
     expect(overlayScrollbarStyles).toMatch(
       /:host\(:focus\)\s*\{[^}]*outline:\s*none;/s,
+    );
+    expect(overlayScrollbarStyles).toMatch(
+      /:host\(:focus-visible\)\s*\{[^}]*outline:\s*var\(--focus-ring-outline, none\);[^}]*box-shadow:\s*inset 0 0 0 2px var\(--ring\);/s,
+    );
+    expect(overlayScrollbarStyles).toMatch(
+      /@media \(forced-colors: active\)\s*\{\s*:host\(:focus-visible\)\s*\{[^}]*outline:\s*2px solid Highlight;[^}]*outline-offset:\s*-2px;[^}]*box-shadow:\s*none;/s,
     );
   });
 });

@@ -7,7 +7,7 @@ specs:
   - "The dialog remains inset while the form fills its surface, and the field scroller owns horizontal content padding so its scrollbar stays at the form edge."
   - "Long forms stop at the available viewport height without scrolling the native dialog."
   - "`<rtgl-form sticky>` keeps the header and action row visible while only the field region scrolls."
-  - "The focused field scroller never exposes a browser-native outline."
+  - "The keyboard-focused field scroller replaces the browser-native outline with the shared inset focus ring."
 skipInitialScreenshot: true
 viewport:
   id: mobile
@@ -190,6 +190,14 @@ steps:
     const footerBeforeScroll = formFooter.getBoundingClientRect();
 
     formBody.focus();
+    const focusedBodyStyle = getComputedStyle(formBody);
+    const focusState = {
+      visible: formBody.matches(":focus-visible"),
+      outlineStyle: focusedBodyStyle.outlineStyle,
+      outlineWidth: focusedBodyStyle.outlineWidth,
+      boxShadow: focusedBodyStyle.boxShadow,
+    };
+    formBody.blur();
     formBody.scrollTop = 260;
 
     requestAnimationFrame(() => {
@@ -205,8 +213,10 @@ steps:
         nativeDialog.scrollTop === 0 &&
         formBody.scrollHeight > formBody.clientHeight + 80 &&
         formBody.scrollTop > 0 &&
-        bodyStyle.outlineStyle === "none" &&
-        bodyStyle.outlineWidth === "0px" &&
+        focusState.visible &&
+        focusState.outlineStyle === "none" &&
+        focusState.outlineWidth === "0px" &&
+        focusState.boxShadow !== "none" &&
         slotRect.width < window.innerWidth &&
         Math.abs(surfaceRect.width - contentSlot.clientWidth) <= 1 &&
         Math.abs(formRect.width - surfaceRect.width) <= 1 &&

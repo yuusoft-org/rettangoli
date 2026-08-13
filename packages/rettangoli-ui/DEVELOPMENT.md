@@ -347,6 +347,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - the overlay layer must paint and receive pointer input above positioned/slotted user content at every authored `z-index`; isolate that priority inside the scrolling host so neighboring and browser top-layer UI remain above the scroll surface according to the host's own stacking order
 - scrolling hosts establish a positioning context for the overlay when `pos` is otherwise unset; preserve explicit responsive `pos` values for the host's own positioning mode and document that absolutely positioned children resolve against the host
 - tracks are thin, hidden at rest, shown on host mouse hover, and kept visible during pointer-captured thumb dragging
+- implicit keyboard focus on a scroll surface uses the shared inset focus ring; forced-colors mode uses an inset system-color outline
 - there is no always-hidden or alternate scrollbar mode; every `sh` / `sv` surface uses the same hover-revealed overlay
 - use the existing scrollbar tokens for all paint and thickness; never add fixture-specific component colors
 - controller lifecycle must clean up scroll/load/resize/slot listeners, observers, animation frames, and pointer capture on disconnect
