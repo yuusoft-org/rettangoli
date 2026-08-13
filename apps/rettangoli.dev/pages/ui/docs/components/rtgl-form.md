@@ -105,17 +105,20 @@ Use `w` to set a fixed width.
 
 ## Sticky Form Layout
 
-Set `form.sticky` to `true` when the form is inside a bounded-height surface. The title and action row remain visible while the field region owns vertical scrolling.
+Add the `sticky` boolean attribute when the form is inside a bounded-height surface. The title and action row remain visible while the field region owns vertical scrolling.
 
-```js
-form.form = {
-  sticky: true,
-  title: "Edit Character",
-  fields,
-  actions: {
-    buttons: [{ id: "save", label: "Save", variant: "pr" }],
-  },
-};
+```html
+<rtgl-form id="edit-form" sticky></rtgl-form>
+
+<script>
+  document.getElementById("edit-form").form = {
+    title: "Edit Character",
+    fields,
+    actions: {
+      buttons: [{ id: "save", label: "Save", variant: "pr" }],
+    },
+  };
+</script>
 ```
 
 For an inset mobile dialog that stays naturally sized for short forms and becomes bounded for long forms, place the form in a vertical `overflow="hidden"` surface and use `md-layout="fixed-top"` on `rtgl-dialog`.

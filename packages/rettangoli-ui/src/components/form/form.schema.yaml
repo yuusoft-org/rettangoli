@@ -10,6 +10,8 @@ propsSchema:
       type: object
     disabled:
       type: boolean
+    sticky:
+      type: boolean
     p:
       type: string
       enum: [none, xs, sm, md, lg, xl]

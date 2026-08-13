@@ -6,7 +6,7 @@ specs:
   - "`md-layout=fixed-top` keeps short forms naturally sized at the top of the viewport."
   - "The dialog remains inset while the form fills its surface, and the field scroller owns horizontal content padding so its scrollbar stays at the form edge."
   - "Long forms stop at the available viewport height without scrolling the native dialog."
-  - "`form.sticky=true` keeps the header and action row visible while only the field region scrolls."
+  - "`<rtgl-form sticky>` keeps the header and action row visible while only the field region scrolls."
   - "The focused field scroller never exposes a browser-native outline."
 skipInitialScreenshot: true
 viewport:
@@ -53,13 +53,13 @@ steps:
 
 <rtgl-dialog id="short-dialog" open s="md" md-layout="fixed-top" p="none">
   <rtgl-view id="short-surface" slot="content" d="v" w="f" h="f" overflow="hidden">
-    <rtgl-form id="short-form" w="f" h="f" p="lg"></rtgl-form>
+    <rtgl-form id="short-form" sticky w="f" h="f" p="lg"></rtgl-form>
   </rtgl-view>
 </rtgl-dialog>
 
 <rtgl-dialog id="long-dialog" s="md" md-layout="fixed-top" p="none">
   <rtgl-view id="long-surface" slot="content" d="v" w="f" h="f" overflow="hidden">
-    <rtgl-form id="long-form" w="f" h="f" p="lg"></rtgl-form>
+    <rtgl-form id="long-form" sticky w="f" h="f" p="lg"></rtgl-form>
   </rtgl-view>
 </rtgl-dialog>
 
@@ -70,7 +70,6 @@ steps:
   const longForm = document.getElementById("long-form");
 
   shortForm.form = {
-    sticky: true,
     title: "Add Character",
     fields: [
       {
@@ -96,7 +95,6 @@ steps:
   };
 
   longForm.form = {
-    sticky: true,
     title: "Edit Character",
     description:
       "The fields scroll while this title and the update action remain visible.",

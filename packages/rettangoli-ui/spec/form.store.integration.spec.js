@@ -45,8 +45,8 @@ describe("rtgl-form bound store integration", () => {
 
   it("marks a sticky form for a bounded internal field scroller", () => {
     const props = {
+      sticky: true,
       form: {
-        sticky: true,
         fields: [{ name: "name", type: "input-text" }],
         actions: {
           buttons: [{ id: "save", label: "Save" }],
@@ -58,6 +58,7 @@ describe("rtgl-form bound store integration", () => {
     const viewData = store.selectViewData();
 
     expect(viewData.sticky).toBe(true);
+    expect(viewData.containerAttrString).not.toContain("sticky");
     expect(viewData.actions.buttons).toHaveLength(1);
   });
 

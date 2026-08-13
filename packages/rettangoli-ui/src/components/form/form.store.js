@@ -285,6 +285,7 @@ const blacklistedAttrs = [
   "form",
   "defaultValues",
   "disabled",
+  "sticky",
   "context",
   "p",
   "ph",
@@ -865,7 +866,7 @@ export const selectViewData = ({ state, props }) => {
   // Actions
   const actions = form.actions || { buttons: [] };
   const layout = actions.layout || "split";
-  const sticky = form.sticky === true;
+  const sticky = props?.sticky === true;
   const buttons = (actions.buttons || []).map((btn, i) => ({
     ...btn,
     _globalIdx: i,
