@@ -22,6 +22,9 @@ propsSchema:
     pv:
       type: string
       enum: [none, xs, sm, md, lg, xl]
+    bottomSpacer:
+      type: number
+      default: 0
 events:
   form-input: {}
   form-change: {}

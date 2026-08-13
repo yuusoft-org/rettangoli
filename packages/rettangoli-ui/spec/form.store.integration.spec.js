@@ -62,6 +62,19 @@ describe("rtgl-form bound store integration", () => {
     expect(viewData.actions.buttons).toHaveLength(1);
   });
 
+  it("resolves a pixel bottom spacer without forwarding it", () => {
+    const store = bindStore(
+      formStore,
+      { form: {}, bottomSpacer: "96", "data-testid": "spaced-content" },
+      {},
+    );
+
+    const viewData = store.selectViewData();
+
+    expect(viewData.bottomSpacer).toBe(96);
+    expect(viewData.containerAttrString).toBe("data-testid=spaced-content");
+  });
+
   it("groups row fields into equal columns and standalone fields into full-width rows", () => {
     const props = {
       form: {

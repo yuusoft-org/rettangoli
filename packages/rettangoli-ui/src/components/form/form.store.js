@@ -290,6 +290,7 @@ const blacklistedAttrs = [
   "p",
   "ph",
   "pv",
+  "bottomSpacer",
 ];
 
 const stringifyAttrs = (props = {}) => {
@@ -788,6 +789,10 @@ export const selectViewData = ({ state, props }) => {
     props?.pv,
     containerPadding,
   );
+  const parsedBottomSpacer = Number(props?.bottomSpacer);
+  const bottomSpacer = Number.isFinite(parsedBottomSpacer)
+    ? Math.max(0, parsedBottomSpacer)
+    : 0;
   const form = selectForm({ state, props });
   const fields = form.fields || [];
   const formDisabled = !!props?.disabled;
@@ -896,6 +901,7 @@ export const selectViewData = ({ state, props }) => {
     containerAttrString,
     containerHorizontalPadding,
     containerVerticalPadding,
+    bottomSpacer,
     title: form?.title || "",
     description: form?.description || "",
     sticky,

@@ -129,7 +129,7 @@ template:
                   - rtgl-text s=lg: ${title}
               - $if description:
                   - rtgl-text c=mu-fg: ${description}
-      - rtgl-view class=form-fields g=lg w=f ph=${containerHorizontalPadding} ?sv=${sticky}:
+      - 'rtgl-view class=form-fields g=lg w=f ph=${containerHorizontalPadding} style="padding-bottom: ${bottomSpacer}px;" ?sv=${sticky}':
           - $for item, i in fieldLayout:
               - $if item._isSection:
                   - rtgl-view#layoutItem${item._layoutIdx} data-form-section=true g=md w=f:
