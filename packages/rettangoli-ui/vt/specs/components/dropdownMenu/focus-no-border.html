@@ -1,0 +1,97 @@
+---
+title: Dropdown Menu Focus Without Border
+description: Verifies keyboard-opened dropdown items use the active background without painting a browser-like focus border.
+specs:
+  - Programmatic focus on the first item after a keyboard open paints no outline or inset ring.
+  - The focused item retains its active background as the visible keyboard position indicator.
+skipInitialScreenshot: true
+steps:
+  - action: keypress
+    key: Tab
+  - action: keypress
+    key: Enter
+  - action: waitFor
+    selector: '#dropdown-menu rtgl-popover[open][positioned]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 100
+  - action: customEvent
+    name: vt:record-first-item-focus
+  - action: assert
+    type: js
+    fn: dropdownFocusVt.getFirstItemState
+    value:
+      focused: true
+      focusVisible: true
+      outlineStyle: none
+      outlineWidth: 0px
+      boxShadow: none
+      surfaceBoxShadow: none
+      hasActiveBackground: true
+viewport:
+  id: dropdown-focus
+  width: 640
+  height: 420
+---
+
+<rtgl-view wh="f" p="xl" bgc="bg" g="lg">
+  <rtgl-button id="open-menu">Open menu</rtgl-button>
+  <rtgl-text id="focus-status" s="sm" c="mu-fg">Waiting for keyboard focus</rtgl-text>
+</rtgl-view>
+
+<rtgl-dropdown-menu
+  id="dropdown-menu"
+  x="40"
+  y="88"
+  place="bs"
+  w="260"
+></rtgl-dropdown-menu>
+
+<script>
+  const openButton = document.getElementById("open-menu");
+  const dropdownMenu = document.getElementById("dropdown-menu");
+  const focusStatus = document.getElementById("focus-status");
+
+  dropdownMenu.items = [
+    { id: "copy", label: "Copy" },
+    { id: "paste", label: "Paste" },
+  ];
+
+  openButton.addEventListener("click", () => {
+    dropdownMenu.setAttribute("open", "");
+  });
+
+  const readFocusState = (item) => {
+    const surface = item.matches("a")
+      ? item.querySelector(":scope > rtgl-view")
+      : item;
+    const style = getComputedStyle(item);
+    const surfaceStyle = getComputedStyle(surface);
+    const background = surfaceStyle.backgroundColor;
+
+    return {
+      focused: item.matches(":focus"),
+      focusVisible: item.matches(":focus-visible"),
+      outlineStyle: style.outlineStyle,
+      outlineWidth: style.outlineWidth,
+      boxShadow: style.boxShadow,
+      surfaceBoxShadow: surfaceStyle.boxShadow,
+      hasActiveBackground: background !== "transparent"
+        && background !== "rgba(0, 0, 0, 0)",
+    };
+  };
+
+  let firstItemState = null;
+
+  window.dropdownFocusVt = {
+    getFirstItemState: () => firstItemState,
+  };
+
+  window.addEventListener("vt:record-first-item-focus", () => {
+    const item = dropdownMenu.shadowRoot.querySelector('[data-index-path="0"]');
+    item.focus();
+    firstItemState = readFocusState(item);
+    focusStatus.textContent = "Recorded first item focus";
+  });
+</script>

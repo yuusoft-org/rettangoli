@@ -68,7 +68,7 @@ export const overlayScrollbarStyles = `
 
   :host(:focus-visible) {
     outline: var(--focus-ring-outline, none);
-    box-shadow: inset 0 0 0 2px var(--ring) !important;
+    box-shadow: var(--focus-ring-box-shadow, inset 0 0 0 2px var(--ring)) !important;
   }
 
   :host([sh]),
