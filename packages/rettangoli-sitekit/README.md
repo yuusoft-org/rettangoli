@@ -109,7 +109,7 @@ Copy them from:
 - `sitekit/public/rtgl-icons.js`
 
 UI runtime assets still come from `@rettangoli/ui` CDN inside the templates.
-The docs template uses `@rettangoli/ui >= 1.21.0` and `docs-sidebar-scroll.js` to retain desktop and mobile sidebar positions for the current browser tab.
+The docs template uses `@rettangoli/ui >= 1.21.0` and `docs-sidebar-scroll.js` to retain desktop and mobile sidebar positions for the current browser tab. Restoration is applied before the browser's next paint so the sidebar does not visibly jump from the top.
 Built-in templates default to `/public/theme-rtgl-themes.css` and `slate-dark`, and can be overridden per page with `themeCssHref` and `themeBodyClass`.
 For site-wide defaults, use `sites.config.yaml data` instead of creating one-line files under `data/`.
 If the same key also exists in `data/*.yaml`, the file data wins.

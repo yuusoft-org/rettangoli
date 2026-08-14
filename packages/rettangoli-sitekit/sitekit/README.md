@@ -107,7 +107,7 @@ Copy these files into the consuming site's `static/public/`:
 - `sitekit/public/docs-sidebar-scroll.js` -> `static/public/docs-sidebar-scroll.js`
 - `sitekit/public/rtgl-icons.js` -> `static/public/rtgl-icons.js`
 
-The docs template uses `docs-sidebar-scroll.js` to retain separate desktop and mobile sidebar positions in `sessionStorage`. Storage is scoped to the documentation header URL and the current browser tab. This behavior requires `@rettangoli/ui >= 1.21.0`.
+The docs template uses `docs-sidebar-scroll.js` to retain separate desktop and mobile sidebar positions in `sessionStorage`. Storage is scoped to the documentation header URL and the current browser tab. Restoration is applied before the browser's next paint so the sidebar does not visibly jump from the top. This behavior requires `@rettangoli/ui >= 1.21.0`.
 
 ## Planning
 
