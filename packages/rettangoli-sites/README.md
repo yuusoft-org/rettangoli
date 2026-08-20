@@ -220,15 +220,15 @@ Each feed supports:
 - `limit` — max items (default `20`)
 - `title`, `description`, `language`, `dateField`, `outputPath`
 
-Feed names are only identifiers; unnamed single feeds default to `rss.xml`, named feeds to `rss-<name>.xml`.
+Feed names may contain only letters, numbers, `_`, and `-`; unnamed single feeds default to `rss.xml`, named feeds to `rss-<name>.xml`.
 Set `rss: false` to disable all feeds.
 
-Feeds are advertised for autodiscovery via `pageData.rss` (an array of `{ url, title }`), so templates can add the link tag:
+Feeds are advertised for autodiscovery via `page.rss` (an array of `{ href, title }`, with absolute `href`s), so templates can add the link tag:
 
 ```yaml
-- $if rss:
-    - $for feed in rss:
-        - link rel="alternate" type="application/rss+xml" title="${feed.title}" href="${feed.url}":
+- $if page.rss:
+    - $for feed in page.rss:
+        - link rel="alternate" type="application/rss+xml" title="${feed.title}" href="${feed.href}":
 ```
 
 The default starter template already includes this in its `<head>`.

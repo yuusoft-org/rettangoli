@@ -1,4 +1,5 @@
 import { escapeXml, hasOwn, isPlainObject, joinSiteUrl, validateRelativeOutputPath, validateSiteUrl } from './utils/xml.js';
+import { normalizeSitemapUrlPath } from './sitemap.js';
 
 const ALLOWED_FEED_KEYS = new Set([
   'collection',
@@ -16,6 +17,7 @@ const ALLOWED_FEED_KEYS = new Set([
 const ALLOWED_TOP_LEVEL_KEYS = new Set(['enabled', 'siteUrl', 'feeds', ...ALLOWED_FEED_KEYS]);
 const SINGLE_FEED_KEYS = ['collection', 'include', 'exclude', 'filter', 'outputPath'];
 const RSS_DATE_RE = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))?$/u;
+const FEED_NAME_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/u;
 const DEFAULT_LIMIT = 20;
 const DEFAULT_OUTPUT_PATH = 'rss.xml';
 
@@ -44,16 +46,11 @@ function normalizeUrlPattern(rawPattern, contextLabel) {
     throw new Error(`${contextLabel}: expected a non-empty string.`);
   }
 
-  if (/[\u0000-\u001F\u007F]/u.test(rawPattern) || /\s/u.test(rawPattern)) {
-    throw new Error(`${contextLabel}: must not contain whitespace or control characters.`);
+  if (rawPattern.endsWith('*')) {
+    return `${normalizeSitemapUrlPath(rawPattern.slice(0, -1), contextLabel)}*`;
   }
 
-  if (rawPattern.includes('?') || rawPattern.includes('#')) {
-    throw new Error(`${contextLabel}: must not include query strings or fragments.`);
-  }
-
-  const withLeadingSlash = rawPattern.startsWith('/') ? rawPattern : `/${rawPattern}`;
-  return withLeadingSlash.replace(/\/+/g, '/');
+  return normalizeSitemapUrlPath(rawPattern, contextLabel);
 }
 
 function normalizeUrlPatterns(value, contextLabel) {
@@ -175,6 +172,12 @@ function normalizeFeedsConfig(feeds, configPath, defaults) {
       throw new Error(`Invalid rss.feeds in "${configPath}": feed names must be non-empty.`);
     }
 
+    if (!FEED_NAME_RE.test(name)) {
+      throw new Error(
+        `Invalid rss.feeds name "${name}" in "${configPath}": feed names may only contain letters, numbers, "_", and "-".`
+      );
+    }
+
     const feed = normalizeFeedConfig(rawFeed, configPath, `rss.feeds.${name}`, defaults, name);
     if (feed.outputPath === undefined) {
       feed.outputPath = `rss-${name}.xml`;
@@ -261,9 +264,7 @@ export function normalizeRssConfig(value, configPath = 'rss config') {
     if (hasSingleFeedKeys) {
       throw new Error(`Invalid rss config in "${configPath}": use either "feeds" or single-feed keys, not both.`);
     }
-    // Accept an already-normalized feeds array so re-normalizing a validated
-    // config (as loadSiteConfig → buildRssFeeds does) is idempotent.
-    normalized.feeds = Array.isArray(value.feeds) ? value.feeds : normalizeFeedsConfig(value.feeds, configPath, defaults);
+    normalized.feeds = normalizeFeedsConfig(value.feeds, configPath, defaults);
   } else {
     normalized.feeds = [buildSingleFeed(value, configPath, defaults)];
   }
@@ -465,7 +466,7 @@ export function buildRssFeeds({ pageEntries, collections, rss, globalData, build
     return {
       outputPath: feed.outputPath,
       title,
-      url: `/${feed.outputPath}`,
+      href: joinSiteUrl(siteUrl, `/${feed.outputPath}`),
       xml: buildFeedXml(feed, siteUrl, globalData, pageEntries, collections, buildTime, title)
     };
   });

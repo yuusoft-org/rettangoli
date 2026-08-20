@@ -8,6 +8,10 @@ export function hasOwn(object, key) {
 
 export function escapeXml(value) {
   return String(value)
+    // Strip characters that are not valid in XML 1.0 (control chars, unpaired
+    // surrogates, and noncharacters) so untrusted values cannot produce
+    // malformed XML.
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\uD800-\uDFFF\uFFFE\uFFFF]/g, '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

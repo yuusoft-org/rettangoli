@@ -727,7 +727,7 @@ export function createSiteBuilder({
     // Build RSS feeds (if configured) so they can be advertised on every page.
     const rssFeeds = buildRssFeeds({ pageEntries, collections, rss, globalData });
     const rssDiscovery = rssFeeds.length > 0
-      ? rssFeeds.map(({ url, title }) => ({ url, title }))
+      ? rssFeeds.map(({ href, title }) => ({ href, title }))
       : undefined;
 
     // Function to process a single page file
@@ -752,7 +752,7 @@ export function createSiteBuilder({
       pageData.page = { url };
       pageData.build = { isScreenshotMode };
       if (rssDiscovery !== undefined) {
-        pageData.rss = rssDiscovery;
+        pageData.page.rss = rssDiscovery;
       }
 
       let processedPageContent;
@@ -868,7 +868,14 @@ export function createSiteBuilder({
     }
 
     function writeRssFeeds() {
+      const sitemapXml = buildSitemapXml({ pageEntries, sitemap, globalData });
+      const sitemapOutputRelativePath = sitemapXml === null ? null : resolveSitemapOutputPath(sitemap);
+
       for (const feed of rssFeeds) {
+        if (sitemapOutputRelativePath !== null && feed.outputPath === sitemapOutputRelativePath) {
+          throw new Error(`RSS feed outputPath "${feed.outputPath}" collides with the sitemap output path.`);
+        }
+
         const rssOutputPath = path.join(outputRootDir, ...feed.outputPath.split('/'));
         const rssOutputDir = path.dirname(rssOutputPath);
 

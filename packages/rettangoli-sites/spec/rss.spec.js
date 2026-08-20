@@ -123,6 +123,15 @@ describe('normalizeRssConfig', () => {
   it('rejects non-scalar filter values', () => {
     expect(() => normalizeRssConfig({ filter: { lang: { nested: true } } })).toThrow('expected a string, number, or boolean');
   });
+
+  it('rejects array-shaped feeds', () => {
+    expect(() => normalizeRssConfig({ feeds: [{}] })).toThrow('expected an object of named feeds');
+  });
+
+  it('rejects invalid feed names', () => {
+    expect(() => normalizeRssConfig({ feeds: { 'query?feed': {} } })).toThrow('may only contain letters, numbers');
+    expect(() => normalizeRssConfig({ feeds: { 'bad name': {} } })).toThrow('may only contain letters, numbers');
+  });
 });
 
 describe('buildRssFeeds', () => {
@@ -185,6 +194,33 @@ describe('buildRssFeeds', () => {
       })
     ).toThrow('RSS generation requires rss.siteUrl or data.site.baseUrl.');
   });
+
+  it('exposes the absolute self URL as href for base-path sites', () => {
+    const [feed] = buildRssFeeds({
+      pageEntries: samplePageEntries,
+      collections: sampleCollections,
+      rss: { collection: 'post' },
+      globalData: { site: { baseUrl: 'https://example.com/docs/' } },
+      buildTime: FIXED_BUILD_TIME
+    });
+
+    expect(feed.href).toBe('https://example.com/docs/rss.xml');
+  });
+
+  it('strips illegal XML characters from untrusted values', () => {
+    const [feed] = buildRssFeeds({
+      pageEntries: [{ url: '/x/', frontmatter: { title: 'bad\0title', description: 'a\uFFFEb' } }],
+      collections: {},
+      rss: {},
+      globalData: { site: { baseUrl: 'https://example.com', title: 'Site' } },
+      buildTime: FIXED_BUILD_TIME
+    });
+
+    expect(feed.xml).not.toContain('\0');
+    expect(feed.xml).not.toContain('\uFFFE');
+    expect(feed.xml).toContain('<title>badtitle</title>');
+    expect(feed.xml).toContain('<description>ab</description>');
+  });
 });
 
 describe('buildSite RSS integration', () => {
@@ -232,17 +268,17 @@ describe('buildSite RSS integration', () => {
     });
   });
 
-  it('advertises feeds in rendered pages via pageData.rss', async () => {
+  it('advertises feeds in rendered pages via page.rss', async () => {
     await withTempDir(async (tempDir) => {
       writeRssSite(tempDir, {
-        dataSite: { baseUrl: 'https://example.com', title: 'Site Title' },
+        dataSite: { baseUrl: 'https://example.com/docs/', title: 'Site Title' },
         rssYaml: 'rss:\n  collection: post\n  outputPath: feed.xml',
         template: [
           '- html:',
           '    - head:',
-          '        - $if rss:',
-          '            - $for feed in rss:',
-          '                - link rel="alternate" type="application/rss+xml" title="${feed.title}" href="${feed.url}":',
+          '        - $if page.rss:',
+          '            - $for feed in page.rss:',
+          '                - link rel="alternate" type="application/rss+xml" title="${feed.title}" href="${feed.href}":',
           '    - body: "${content}"'
         ].join('\n'),
         pages: {
@@ -254,7 +290,7 @@ describe('buildSite RSS integration', () => {
       await buildSite({ rootDir: tempDir, quiet: true });
 
       const html = fs.readFileSync(path.join(tempDir, '_site', 'index.html'), 'utf8');
-      expect(html).toContain('<link rel="alternate" type="application/rss+xml" title="Site Title" href="/feed.xml">');
+      expect(html).toContain('<link rel="alternate" type="application/rss+xml" title="Site Title" href="https://example.com/docs/feed.xml">');
     });
   });
 });

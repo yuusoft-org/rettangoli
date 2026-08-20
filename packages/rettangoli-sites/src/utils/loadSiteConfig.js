@@ -322,7 +322,10 @@ function validateConfig(rawConfig, configPath) {
   }
 
   if (config.rss !== undefined) {
-    normalizedConfig.rss = normalizeRssConfig(config.rss, configPath);
+    // Validate eagerly (so bad rss config fails at load time) but store the
+    // raw value; buildRssFeeds performs the single normalization at build time.
+    normalizeRssConfig(config.rss, configPath);
+    normalizedConfig.rss = config.rss;
   }
 
   return normalizedConfig;
