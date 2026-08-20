@@ -136,6 +136,10 @@ describe('normalizeRssConfig', () => {
     expect(() => normalizeRssConfig({ feeds: { 'query?feed': {} } })).toThrow('may only contain letters, numbers');
     expect(() => normalizeRssConfig({ feeds: { 'bad name': {} } })).toThrow('may only contain letters, numbers');
   });
+
+  it('rejects an empty feeds map', () => {
+    expect(() => normalizeRssConfig({ feeds: {} })).toThrow('at least one named feed');
+  });
 });
 
 describe('buildRssFeeds', () => {
@@ -226,6 +230,31 @@ describe('buildRssFeeds', () => {
     expect(feed.xml).toContain('<title>badtitle😀</title>');
     expect(feed.xml).toContain('<description>ab</description>');
   });
+
+  it('treats a collection name shadowing Object.prototype as empty', () => {
+    const [feed] = buildRssFeeds({
+      pageEntries: samplePageEntries,
+      collections: sampleCollections,
+      rss: { collection: 'toString' },
+      globalData: sampleGlobalData,
+      buildTime: FIXED_BUILD_TIME
+    });
+
+    expect(feed.xml).not.toContain('<item>');
+  });
+
+  it('omits pubDate for calendar-invalid dates', () => {
+    const [feed] = buildRssFeeds({
+      pageEntries: [{ url: '/x/', frontmatter: { title: 'X', date: '2026-02-30' } }],
+      collections: {},
+      rss: {},
+      globalData: sampleGlobalData,
+      buildTime: FIXED_BUILD_TIME
+    });
+
+    expect(feed.xml).toContain('<item>');
+    expect(feed.xml).not.toContain('<pubDate>');
+  });
 });
 
 describe('buildSite RSS integration', () => {
@@ -283,7 +312,12 @@ describe('buildSite RSS integration', () => {
           '    - head:',
           '        - $if page.rss:',
           '            - $for feed in page.rss:',
-          '                - link rel="alternate" type="application/rss+xml" title="${feed.title}" href="${feed.href}":',
+          '                - link:',
+          '                    rel: alternate',
+          '                    type: application/rss+xml',
+          '                    title: "${feed.title}"',
+          '                    href: "${feed.href}"',
+          '                    children: []',
           '    - body: "${content}"'
         ].join('\n'),
         pages: {
@@ -296,6 +330,53 @@ describe('buildSite RSS integration', () => {
 
       const html = fs.readFileSync(path.join(tempDir, '_site', 'index.html'), 'utf8');
       expect(html).toContain('<link rel="alternate" type="application/rss+xml" title="Site Title" href="https://example.com/docs/feed.xml">');
+    });
+  });
+
+  it('escapes feed titles in autodiscovery links', async () => {
+    await withTempDir(async (tempDir) => {
+      writeRssSite(tempDir, {
+        dataSite: { baseUrl: 'https://example.com', title: 'x" onload="alert(1)' },
+        rssYaml: 'rss:\n  collection: post',
+        template: [
+          '- html:',
+          '    - head:',
+          '        - $if page.rss:',
+          '            - $for feed in page.rss:',
+          '                - link:',
+          '                    rel: alternate',
+          '                    type: application/rss+xml',
+          '                    title: "${feed.title}"',
+          '                    href: "${feed.href}"',
+          '                    children: []',
+          '    - body: "${content}"'
+        ].join('\n'),
+        pages: {
+          'index.yaml': '---\ntemplate: base\n---\n- h1: Home',
+          'post.md': '---\ntitle: Hello\ntags: post\n---\n# Hi'
+        }
+      });
+
+      await buildSite({ rootDir: tempDir, quiet: true });
+
+      const html = fs.readFileSync(path.join(tempDir, '_site', 'index.html'), 'utf8');
+      expect(html).not.toContain('onload="alert(1)"');
+      expect(html).toContain('title="x&quot; onload=&quot;alert(1)"');
+    });
+  });
+
+  it('rejects an RSS output path that collides with a generated page', async () => {
+    await withTempDir(async (tempDir) => {
+      writeRssSite(tempDir, {
+        dataSite: { baseUrl: 'https://example.com' },
+        rssYaml: 'rss:\n  collection: post\n  outputPath: index.html',
+        pages: {
+          'index.md': '# Home',
+          'post.md': '---\ntitle: Hello\ntags: post\n---\n# Hi'
+        }
+      });
+
+      await expect(buildSite({ rootDir: tempDir, quiet: true })).rejects.toThrow('Output path conflict');
     });
   });
 });

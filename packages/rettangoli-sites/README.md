@@ -228,10 +228,15 @@ Feeds are advertised for autodiscovery via `page.rss` (an array of `{ href, titl
 ```yaml
 - $if page.rss:
     - $for feed in page.rss:
-        - link rel="alternate" type="application/rss+xml" title="${feed.title}" href="${feed.href}":
+        - link:
+            rel: alternate
+            type: application/rss+xml
+            title: "${feed.title}"
+            href: "${feed.href}"
+            children: []
 ```
 
-The default starter template already includes this in its `<head>`.
+Use object notation (attribute keys, with an empty `children`) so values are HTML-escaped. The default starter template already includes this in its `<head>`.
 
 `imports` lets you map aliases to remote YAML files (HTTP/HTTPS only). Use aliases in pages/templates:
 - page frontmatter: `template: base` or `template: docs`

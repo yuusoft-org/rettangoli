@@ -212,6 +212,10 @@ describe('watch reload mode script', () => {
     expect(getContentType('.txt')).toBe('text/plain; charset=utf-8');
   });
 
+  it('serves XML feeds and sitemaps with an XML content type', () => {
+    expect(getContentType('.xml')).toBe('application/xml; charset=utf-8');
+  });
+
   it('serves watch assets with no-store so a safe reload cannot reuse stale images', () => {
     expect(getWatchResponseHeaders('.webp')).toEqual({
       'Cache-Control': 'no-store',

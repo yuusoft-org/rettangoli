@@ -868,14 +868,7 @@ export function createSiteBuilder({
     }
 
     function writeRssFeeds() {
-      const sitemapXml = buildSitemapXml({ pageEntries, sitemap, globalData });
-      const sitemapOutputRelativePath = sitemapXml === null ? null : resolveSitemapOutputPath(sitemap);
-
       for (const feed of rssFeeds) {
-        if (sitemapOutputRelativePath !== null && feed.outputPath === sitemapOutputRelativePath) {
-          throw new Error(`RSS feed outputPath "${feed.outputPath}" collides with the sitemap output path.`);
-        }
-
         const rssOutputPath = path.join(outputRootDir, ...feed.outputPath.split('/'));
         const rssOutputDir = path.dirname(rssOutputPath);
 
@@ -931,8 +924,51 @@ export function createSiteBuilder({
       });
     }
 
+    function assertNoOutputPathConflicts() {
+      const outputs = [];
+
+      for (const entry of pageEntries) {
+        outputs.push({ path: htmlOutputRelativePathFromUrl(entry.url), label: `page ${entry.pagePath}` });
+      }
+
+      if (keepMarkdownFiles) {
+        for (const entry of pageEntries) {
+          if (!entry.isMarkdown) {
+            continue;
+          }
+          const markdownPath = entry.hasCustomUrl
+            ? markdownOutputRelativePathFromUrl(entry.url)
+            : entry.relativePath;
+          outputs.push({ path: markdownPath, label: `markdown ${entry.pagePath}` });
+        }
+      }
+
+      if (buildSitemapXml({ pageEntries, sitemap, globalData }) !== null) {
+        outputs.push({ path: resolveSitemapOutputPath(sitemap), label: 'sitemap' });
+      }
+
+      for (const feed of rssFeeds) {
+        outputs.push({ path: feed.outputPath, label: 'RSS feed' });
+      }
+
+      for (let i = 0; i < outputs.length; i += 1) {
+        for (let j = i + 1; j < outputs.length; j += 1) {
+          const left = outputs[i].path;
+          const right = outputs[j].path;
+          if (left === right || left.startsWith(`${right}/`) || right.startsWith(`${left}/`)) {
+            throw new Error(
+              `Output path conflict: ${outputs[i].label} ("${left}") collides with ${outputs[j].label} ("${right}").`
+            );
+          }
+        }
+      }
+    }
+
     // Start build process
     if (!quiet) console.log('Starting build process...');
+
+    // Validate generated output paths before touching the filesystem.
+    assertNoOutputPathConflicts();
 
     // Clean output directory before each build
     cleanOutputDir();

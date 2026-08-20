@@ -82,6 +82,6 @@ export function validateRelativeOutputPath(outputPath, contextLabel) {
 export function joinSiteUrl(siteUrl, pageUrl) {
   const parsed = new URL(siteUrl);
   const basePath = parsed.pathname.replace(/\/+$/u, '');
-  parsed.pathname = `${basePath}${pageUrl}`.replace(/\/+/g, '/');
+  parsed.pathname = `${basePath}${pageUrl}`;
   return parsed.toString();
 }

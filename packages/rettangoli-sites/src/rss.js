@@ -66,7 +66,7 @@ function normalizeFilter(value, contextLabel) {
     throw new Error(`${contextLabel}: expected an object of frontmatter key/value matches.`);
   }
 
-  const normalized = {};
+  const normalized = Object.create(null);
   for (const [rawKey, rawValue] of Object.entries(value)) {
     const key = String(rawKey).trim();
     if (key === '') {
@@ -163,6 +163,10 @@ function buildSingleFeed(value, configPath, defaults) {
 function normalizeFeedsConfig(feeds, configPath, defaults) {
   if (!isPlainObject(feeds)) {
     throw new Error(`Invalid rss.feeds in "${configPath}": expected an object of named feeds.`);
+  }
+
+  if (Object.keys(feeds).length === 0) {
+    throw new Error(`Invalid rss.feeds in "${configPath}": expected at least one named feed.`);
   }
 
   const normalized = [];
@@ -326,6 +330,8 @@ function matchesFilter(entry, filter) {
   });
 }
 
+const RSS_DATE_PARTS_RE = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:\d{2}))?$/u;
+
 function normalizeFeedDate(rawDate) {
   if (rawDate === undefined || rawDate === null || rawDate === '') {
     return null;
@@ -336,11 +342,37 @@ function normalizeFeedDate(rawDate) {
     return Number.isNaN(time) ? null : rawDate;
   }
 
-  if (typeof rawDate !== 'string' || !RSS_DATE_RE.test(rawDate.trim())) {
+  if (typeof rawDate !== 'string') {
     return null;
   }
 
-  const parsed = new Date(rawDate.trim());
+  const trimmed = rawDate.trim();
+  if (!RSS_DATE_RE.test(trimmed)) {
+    return null;
+  }
+
+  // Reject calendar-invalid dates (e.g. 2026-02-30) that `new Date()` would
+  // silently roll over, and reject out-of-range time components.
+  const parts = trimmed.match(RSS_DATE_PARTS_RE);
+  const year = Number(parts[1]);
+  const month = Number(parts[2]);
+  const day = Number(parts[3]);
+
+  const dateUtc = new Date(Date.UTC(year, month - 1, day));
+  if (dateUtc.getUTCFullYear() !== year || dateUtc.getUTCMonth() !== month - 1 || dateUtc.getUTCDate() !== day) {
+    return null;
+  }
+
+  if (parts[4] !== undefined) {
+    const hour = Number(parts[4]);
+    const minute = Number(parts[5]);
+    const second = Number(parts[6]);
+    if (hour > 23 || minute > 59 || second > 59) {
+      return null;
+    }
+  }
+
+  const parsed = new Date(trimmed);
   const time = parsed.getTime();
   return Number.isNaN(time) ? null : parsed;
 }
@@ -383,7 +415,8 @@ function buildItemXml(entry, siteUrl, dateField) {
 }
 
 function selectFeedEntries(feed, pageEntries, collections) {
-  const source = feed.collection ? (collections[feed.collection] || []) : pageEntries;
+  const collectionEntries = feed.collection && hasOwn(collections, feed.collection) ? collections[feed.collection] : null;
+  const source = feed.collection ? (Array.isArray(collectionEntries) ? collectionEntries : []) : pageEntries;
 
   const filtered = source.filter((entry) => {
     if (feed.include && !feed.include.some((pattern) => matchesPattern(entry.url, pattern))) {
