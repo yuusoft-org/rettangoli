@@ -358,7 +358,10 @@ function normalizeFeedDate(rawDate) {
   const month = Number(parts[2]);
   const day = Number(parts[3]);
 
-  const dateUtc = new Date(Date.UTC(year, month - 1, day));
+  // setUTCFullYear (unlike Date.UTC) interprets years 0-99 literally, so
+  // round-tripping validates the calendar date without remapping early years.
+  const dateUtc = new Date(0);
+  dateUtc.setUTCFullYear(year, month - 1, day);
   if (dateUtc.getUTCFullYear() !== year || dateUtc.getUTCMonth() !== month - 1 || dateUtc.getUTCDate() !== day) {
     return null;
   }
