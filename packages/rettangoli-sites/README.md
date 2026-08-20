@@ -38,6 +38,7 @@ my-site/
 - `$if`, `$for`, `$partial`, template functions
 - Static file copying from `static/` to `_site/`
 - Default sitemap generation when `data.site.baseUrl` is configured
+- RSS 2.0 feeds from tag-based collections (single or multiple, with filters)
 - Watch mode with local dev server + websocket reload
 
 ## Site Config
@@ -168,6 +169,69 @@ sitemap:
 
 Set `sitemap: false` in page frontmatter to exclude one page.
 `sitemap.exclude` accepts exact page URLs and prefix patterns ending in `*`, such as `/drafts/*`.
+
+## RSS
+
+RSS is opt-in: configure `rss` in `sites.config.yaml` to write one or more RSS 2.0 feeds.
+Each feed draws from a tag-based collection (page frontmatter `tags`) or, when no `collection` is given, from every page.
+
+Single-feed shorthand:
+
+```yaml
+data:
+  site:
+    baseUrl: https://example.com
+    title: My Site
+    description: Writing about things
+rss:
+  collection: blogPost
+  outputPath: en/blog/feed.xml
+  limit: 20
+```
+
+`title` and `description` default to `data.site.title` (falling back to `data.site.name`) and `data.site.description`.
+`siteUrl` defaults to `data.site.baseUrl`; set `rss.siteUrl` when you do not use `data.site.baseUrl`.
+Items are ordered by the frontmatter `date` field (newest first) and published as `<pubDate>`; use `dateField` to read a different field.
+
+Multiple feeds share top-level defaults and override them per feed:
+
+```yaml
+rss:
+  limit: 20
+  dateField: date
+  feeds:
+    en-blog:
+      collection: blogPost
+      filter: { lang: en }
+      language: en
+      outputPath: en/blog/feed.xml
+    pt-blog:
+      collection: blogPost
+      filter: { lang: pt }
+      language: pt-BR
+      outputPath: pt/blog/feed.xml
+```
+
+Each feed supports:
+
+- `collection` — the tag whose pages feed this file (omit for a full-site feed)
+- `filter` — exact frontmatter matches, e.g. `{ lang: en }` (string/number/boolean values)
+- `include` / `exclude` — URL path patterns, exact or `*`-suffixed prefixes, e.g. `- /drafts/*`
+- `limit` — max items (default `20`)
+- `title`, `description`, `language`, `dateField`, `outputPath`
+
+Feed names are only identifiers; unnamed single feeds default to `rss.xml`, named feeds to `rss-<name>.xml`.
+Set `rss: false` to disable all feeds.
+
+Feeds are advertised for autodiscovery via `pageData.rss` (an array of `{ url, title }`), so templates can add the link tag:
+
+```yaml
+- $if rss:
+    - $for feed in rss:
+        - link rel="alternate" type="application/rss+xml" title="${feed.title}" href="${feed.url}":
+```
+
+The default starter template already includes this in its `<head>`.
 
 `imports` lets you map aliases to remote YAML files (HTTP/HTTPS only). Use aliases in pages/templates:
 - page frontmatter: `template: base` or `template: docs`

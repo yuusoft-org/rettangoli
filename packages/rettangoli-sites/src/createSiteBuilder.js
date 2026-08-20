@@ -9,6 +9,7 @@ import MarkdownIt from 'markdown-it';
 import rtglMarkdown from './rtglMarkdown.js';
 import builtinTemplateFunctions from './builtinTemplateFunctions.js';
 import { buildSitemapXml, resolveSitemapOutputPath } from './sitemap.js';
+import { buildRssFeeds } from './rss.js';
 
 const MATTER_OPTIONS = {
   engines: {
@@ -437,6 +438,7 @@ export function createSiteBuilder({
   imports = {},
   data = {},
   sitemap,
+  rss,
   fetchImpl,
   functions = {},
   quiet = false,
@@ -722,6 +724,12 @@ export function createSiteBuilder({
     if (!quiet) console.log('Building collections...');
     const collections = buildCollections(pageEntries);
 
+    // Build RSS feeds (if configured) so they can be advertised on every page.
+    const rssFeeds = buildRssFeeds({ pageEntries, collections, rss, globalData });
+    const rssDiscovery = rssFeeds.length > 0
+      ? rssFeeds.map(({ url, title }) => ({ url, title }))
+      : undefined;
+
     // Function to process a single page file
     async function processPage(pageEntry) {
       const {
@@ -743,6 +751,9 @@ export function createSiteBuilder({
       pageData.collections = collections;
       pageData.page = { url };
       pageData.build = { isScreenshotMode };
+      if (rssDiscovery !== undefined) {
+        pageData.rss = rssDiscovery;
+      }
 
       let processedPageContent;
 
@@ -856,6 +867,20 @@ export function createSiteBuilder({
       if (!quiet) console.log(`  -> Written sitemap to ${sitemapOutputPath}`);
     }
 
+    function writeRssFeeds() {
+      for (const feed of rssFeeds) {
+        const rssOutputPath = path.join(outputRootDir, ...feed.outputPath.split('/'));
+        const rssOutputDir = path.dirname(rssOutputPath);
+
+        if (!fs.existsSync(rssOutputDir)) {
+          fs.mkdirSync(rssOutputDir, { recursive: true });
+        }
+
+        fs.writeFileSync(rssOutputPath, feed.xml);
+        if (!quiet) console.log(`  -> Written RSS feed to ${rssOutputPath}`);
+      }
+    }
+
     // Function to copy static files recursively
     function copyStaticFiles() {
       const staticDir = path.join(rootDir, 'static');
@@ -913,6 +938,9 @@ export function createSiteBuilder({
 
     // Generate sitemap after pages so it can overwrite static files if configured.
     writeSitemap();
+
+    // Generate RSS feeds after pages so they can overwrite static files if configured.
+    writeRssFeeds();
 
     if (!quiet) console.log('Build complete!');
   };

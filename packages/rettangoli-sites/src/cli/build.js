@@ -9,6 +9,7 @@ import { loadSiteConfig } from '../utils/loadSiteConfig.js';
  * @param {string} options.outputPath - Output directory path (relative to rootDir by default)
  * @param {Object} options.md - Optional markdown renderer
  * @param {Object|boolean} options.sitemap - Optional sitemap generation config
+ * @param {Object|boolean} options.rss - Optional RSS feed generation config
  * @param {boolean} options.quiet - Suppress build output logs
  * @param {boolean} options.isScreenshotMode - Optional build flag exposed to templates via build.isScreenshotMode
  */
@@ -19,6 +20,7 @@ export const buildSite = async (options = {}) => {
     md,
     functions,
     sitemap,
+    rss,
     quiet = false,
     isScreenshotMode = false
   } = options;
@@ -35,6 +37,7 @@ export const buildSite = async (options = {}) => {
     imports: config.imports || {},
     data: config.data || {},
     sitemap: sitemap === undefined ? config.sitemap : sitemap,
+    rss: rss === undefined ? config.rss : rss,
     functions: functions || {},
     quiet,
     isScreenshotMode
