@@ -8,10 +8,11 @@ export function hasOwn(object, key) {
 
 export function escapeXml(value) {
   return String(value)
-    // Strip characters that are not valid in XML 1.0 (control chars, unpaired
+    // Strip characters that are not valid in XML 1.0 (control chars, lone
     // surrogates, and noncharacters) so untrusted values cannot produce
-    // malformed XML.
-    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\uD800-\uDFFF\uFFFE\uFFFF]/g, '')
+    // malformed XML. The negated class is Unicode-aware (`u` flag) so valid
+    // supplementary-plane characters (emoji, etc.) are preserved.
+    .replace(/[^\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/gu, '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -60,7 +61,7 @@ export function validateRelativeOutputPath(outputPath, contextLabel) {
     throw new Error(`${contextLabel}: expected a relative output path.`);
   }
 
-  if (outputPath.includes('\\') || outputPath.includes('?') || outputPath.includes('#')) {
+  if (outputPath.includes('\\') || outputPath.includes('?') || outputPath.includes('#') || outputPath.includes('%')) {
     throw new Error(`${contextLabel}: must be a clean relative file path.`);
   }
 

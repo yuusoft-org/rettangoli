@@ -120,6 +120,10 @@ describe('normalizeRssConfig', () => {
     expect(() => normalizeRssConfig({ outputPath: '/feed.xml' })).toThrow('expected a relative output path');
   });
 
+  it('rejects percent-encoded output paths', () => {
+    expect(() => normalizeRssConfig({ outputPath: 'feed%2e%2e.xml' })).toThrow('clean relative file path');
+  });
+
   it('rejects non-scalar filter values', () => {
     expect(() => normalizeRssConfig({ filter: { lang: { nested: true } } })).toThrow('expected a string, number, or boolean');
   });
@@ -207,9 +211,9 @@ describe('buildRssFeeds', () => {
     expect(feed.href).toBe('https://example.com/docs/rss.xml');
   });
 
-  it('strips illegal XML characters from untrusted values', () => {
+  it('strips illegal XML characters but preserves valid astral characters', () => {
     const [feed] = buildRssFeeds({
-      pageEntries: [{ url: '/x/', frontmatter: { title: 'bad\0title', description: 'a\uFFFEb' } }],
+      pageEntries: [{ url: '/x/', frontmatter: { title: 'bad\0title😀', description: 'a\uFFFEb\uD800' } }],
       collections: {},
       rss: {},
       globalData: { site: { baseUrl: 'https://example.com', title: 'Site' } },
@@ -218,7 +222,8 @@ describe('buildRssFeeds', () => {
 
     expect(feed.xml).not.toContain('\0');
     expect(feed.xml).not.toContain('\uFFFE');
-    expect(feed.xml).toContain('<title>badtitle</title>');
+    expect(feed.xml).not.toContain('\uD800');
+    expect(feed.xml).toContain('<title>badtitle😀</title>');
     expect(feed.xml).toContain('<description>ab</description>');
   });
 });
