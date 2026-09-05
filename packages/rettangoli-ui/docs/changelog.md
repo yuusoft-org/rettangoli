@@ -4,6 +4,7 @@
 
 ### Improvements
 
+- `rtgl-global-ui`: removed duplicate content padding and action spacing from alert and confirm dialogs so they use one `lg` inset and one `lg` action gap on mobile and desktop.
 - `rtgl-dropdown-menu`: removed the intermittent browser-like border from the initially focused item while retaining the active-row background for keyboard position.
 - `rtgl-sidebar`: added `getScrollPosition()` and `setScrollPosition({ top })` so consumers can retain the internal item-list position across navigation without reaching into component internals.
 - `rtgl-form`: added `bottom-spacer="<pixels>"` to provide extra bottom scroll room inside the form field region without moving sticky actions.
