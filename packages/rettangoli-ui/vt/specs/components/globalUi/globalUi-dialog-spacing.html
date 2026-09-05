@@ -1,0 +1,103 @@
+---
+title: "Global UI - Dialog Spacing"
+description: Alert and confirm dialogs use one padding layer and one gap before actions.
+skipInitialScreenshot: true
+viewport:
+  - id: narrow
+    width: 320
+    height: 800
+  - id: mobile
+    width: 360
+    height: 800
+  - id: desktop
+    width: 1280
+    height: 800
+specs:
+  - Alerts and confirms have one lg inset and one lg gap above their actions.
+  - Long messages wrap and all actions fit at narrow mobile widths.
+  - Alerts without a title preserve the same spacing.
+steps:
+  - action: customEvent
+    name: vt:open-alert
+  - action: waitFor
+    selector: '#confirmButton'
+    state: visible
+  - action: wait
+    ms: 200
+  - action: customEvent
+    name: vt:verify-spacing
+  - action: screenshot
+  - action: customEvent
+    name: vt:open-confirm
+  - action: waitFor
+    selector: '#cancelButton'
+    state: visible
+  - action: wait
+    ms: 200
+  - action: customEvent
+    name: vt:verify-spacing
+  - action: screenshot
+  - action: customEvent
+    name: vt:open-untitled-alert
+  - action: waitFor
+    selector: '#cancelButton'
+    state: hidden
+  - action: wait
+    ms: 200
+  - action: customEvent
+    name: vt:verify-spacing
+  - action: screenshot
+---
+<rtgl-global-ui></rtgl-global-ui>
+
+<script>
+  const globalUI = document.querySelector('rtgl-global-ui');
+  const message = 'A newer version is ready. Restart the application to install it?';
+
+  window.addEventListener('vt:open-alert', () => {
+    void globalUI.transformedHandlers.handleShowAlert({
+      title: 'Update Available',
+      message,
+    });
+  });
+
+  window.addEventListener('vt:open-confirm', () => {
+    void globalUI.transformedHandlers.handleShowConfirm({
+      title: 'Update Available',
+      message,
+      confirmText: 'Restart and Update',
+      cancelText: 'Later',
+    });
+  });
+
+  window.addEventListener('vt:open-untitled-alert', () => {
+    void globalUI.transformedHandlers.handleShowAlert({ message });
+  });
+
+  window.addEventListener('vt:verify-spacing', () => {
+    const dialog = globalUI.shadowRoot.querySelector('rtgl-dialog[open]');
+    const surface = dialog.shadowRoot.querySelector('slot[name=content]');
+    const content = dialog.querySelector('[slot=content]');
+    const header = content.firstElementChild;
+    const actions = content.querySelector('rtgl-view[d=h]');
+    const surfaceRect = surface.getBoundingClientRect();
+    const headerRect = header.getBoundingClientRect();
+    const surfaceStyle = getComputedStyle(surface);
+    const inset = parseFloat(surfaceStyle.getPropertyValue('--spacing-lg'));
+    const leftInset = headerRect.left - surfaceRect.left - parseFloat(surfaceStyle.borderLeftWidth);
+    const topInset = headerRect.top - surfaceRect.top - parseFloat(surfaceStyle.borderTopWidth);
+    const actionGap = actions.getBoundingClientRect().top - headerRect.bottom;
+    if ([leftInset, topInset, actionGap].some((value) => Math.abs(value - inset) > 0.5)) {
+      throw new Error(`Expected one lg inset and action gap, got ${JSON.stringify({ inset, leftInset, topInset, actionGap })}`);
+    }
+    if (content.scrollWidth > content.clientWidth || surfaceRect.left < 0 || surfaceRect.right > window.innerWidth) {
+      throw new Error('Dialog content overflows the viewport');
+    }
+    for (const button of content.querySelectorAll('rtgl-button')) {
+      const rect = button.getBoundingClientRect();
+      if (rect.left < surfaceRect.left || rect.right > surfaceRect.right || rect.bottom > surfaceRect.bottom) {
+        throw new Error('Dialog action extends outside the surface');
+      }
+    }
+  });
+</script>

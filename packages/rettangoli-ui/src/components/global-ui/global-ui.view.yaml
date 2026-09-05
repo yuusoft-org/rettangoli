@@ -109,14 +109,14 @@ template:
                           - $for button, i in componentDialogConfig.actions._rightButtons:
                               - rtgl-button#componentDialogAction${button._globalIdx} data-action-id=${button.id} data-action-index=${button._globalIdx} v=${button.variant} ?disabled=${button._disabled} pre=${button.pre} suf=${button.suf}: ${button.label}
       - $if !isFormDialogOpen && !isComponentDialogOpen:
-          - rtgl-view slot=content g=lg p=lg:
+          - rtgl-view slot=content g=lg:
               - rtgl-view g=sm w=f:
                   - $if config.title:
                       - rtgl-text s=lg: ${config.title}
                       - rtgl-text c=mu-fg: ${config.message}
                     $else:
                       - rtgl-text: ${config.message}
-              - rtgl-view d=h g=md mt=lg w=f ah=e:
+              - rtgl-view d=h g=md w=f ah=e:
                   - $if config.mode == 'confirm':
                       - rtgl-button#cancelButton v=se: ${config.cancelText}
                   - rtgl-button#confirmButton v=pr: ${config.confirmText}
