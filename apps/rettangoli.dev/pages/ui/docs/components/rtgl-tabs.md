@@ -51,6 +51,8 @@ same theme typography. With the default theme tokens:
 
 The tray fits its contents, and each tab fits its own label. A short label such
 as `A` stays narrower than `Settings`, even inside a full-width parent.
+When the labels exceed the available width, the tray scrolls horizontally using
+the shared overlay scrollbar, keeping every tab reachable without wrapping labels.
 
 ```html codePreview
 <rtgl-view g="lg">

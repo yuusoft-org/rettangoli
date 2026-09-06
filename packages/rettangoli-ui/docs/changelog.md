@@ -4,7 +4,7 @@
 
 ### Improvements
 
-- `rtgl-tabs`: added reactive `s="sm|md|lg"` spacing presets with 34px, 38px, and 44px tray heights and `md` as the default; trays and individual tabs fit their labels while preserving theme typography, colors, corner radii, and controlled selection events.
+- `rtgl-tabs`: added reactive `s="sm|md|lg"` spacing presets with 34px, 38px, and 44px tray heights and `md` as the default; trays and individual tabs fit their labels, with horizontal scrolling in narrow containers, while preserving theme typography, colors, corner radii, and controlled selection events.
 - `rtgl-svg`: retain unchanged SVG markup across size updates and DOM moves while preserving icon replacement, late registration, and key resets.
 - `rtgl-view`, `rtgl-grid`, `rtgl-image`, and `rtgl-textarea`: initialize responsive styles once and recalculate only affected breakpoints, retaining existing responsive inheritance and live updates.
 - `rtgl-image`: avoid rewriting image sources during alt, style, and reconnect updates.

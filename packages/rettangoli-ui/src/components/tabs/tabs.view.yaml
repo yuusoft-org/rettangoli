@@ -30,7 +30,7 @@ styles:
     padding: var(--rtgl-tabs-item-pv) var(--rtgl-tabs-item-ph)
     white-space: nowrap
 template:
-  - rtgl-view class=rtgl-tabs data-size=${size} d=h bgc=mu br=lg ${containerAttrString}:
+  - rtgl-view class=rtgl-tabs data-size=${size} d=h sh bgc=mu br=lg ${containerAttrString}:
       - $for item, i in items:
           - rtgl-view#tab${i} class=rtgl-tab data-id=${item.id} av=c cur=pointer bgc=${item.bgColor} bw=xs bc=${item.borderColor} br=lg data-testid=${item.testId}:
               - rtgl-text s=sm c=${item.textColor}: ${item.label}
