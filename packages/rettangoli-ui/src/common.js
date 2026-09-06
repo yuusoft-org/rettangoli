@@ -253,6 +253,7 @@ export {
 export {
   responsiveStyleSizes,
   createResponsiveStyleBuckets,
+  parseResponsiveStyleAttribute,
   getResponsiveAttribute,
   hasResponsiveAttribute,
 } from "./common/responsive.js";

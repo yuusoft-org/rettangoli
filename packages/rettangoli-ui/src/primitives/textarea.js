@@ -4,9 +4,22 @@ import {
   convertObjectToCssString,
   styleMapKeys,
   permutateBreakpoints,
+  responsiveStyleSizes,
+  createResponsiveStyleBuckets,
+  parseResponsiveStyleAttribute,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
+
+const dynamicStyleAttributes = new Set([
+  "wh",
+  "w",
+  "h",
+  "hide",
+  "show",
+  "op",
+  "z",
+]);
 
 // Internal implementation without uhtml
 class RettangoliTextAreaElement extends HTMLElement {
@@ -58,14 +71,11 @@ class RettangoliTextAreaElement extends HTMLElement {
     this.shadow.adoptedStyleSheets = [RettangoliTextAreaElement.styleSheet];
 
     // Initialize style tracking properties
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+    this._styles = createResponsiveStyleBuckets();
     this._lastStyleString = "";
+    this._stylesDirty = true;
+    this._valueSyncFrame = undefined;
+    this._placeholderSyncFrame = undefined;
 
     // Create initial DOM structure
     this._textareaElement = document.createElement('textarea');
@@ -107,13 +117,7 @@ class RettangoliTextAreaElement extends HTMLElement {
       "rows",
       ...permutateBreakpoints([
         ...styleMapKeys,
-        "wh",
-        "w",
-        "h",
-        "hide",
-        "show",
-        "op",
-        "z",
+        ...dynamicStyleAttributes,
       ])
     ];
   }
@@ -128,7 +132,9 @@ class RettangoliTextAreaElement extends HTMLElement {
 
   connectedCallback() {
     this._updateTextareaAttributes();
-    this.updateStyles();
+    if (this._stylesDirty) {
+      this.updateStyles();
+    }
   }
 
   // Public methods to proxy focus and select to internal textarea
@@ -145,52 +151,69 @@ class RettangoliTextAreaElement extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "key") {
-      requestAnimationFrame(() => {
-        const value = this.getAttribute("value");
-        this._textareaElement.value = value ?? "";
-      });
+    if (oldValue === newValue) {
       return;
     }
 
-    if (name === 'value') {
-      requestAnimationFrame((() => {
-        const value = this.getAttribute("value");
-        this._textareaElement.value = value ?? "";
-      }))
+    if (name === "key" || name === "value") {
+      this._scheduleValueSync();
+      return;
     }
 
-    if (name === 'placeholder') {
-      requestAnimationFrame((() => {
-        const placeholder = this.getAttribute("placeholder");
-        if (placeholder === undefined || placeholder === 'null') {
-          this._textareaElement.removeAttribute('placeholder');
-        } else {
-          this._textareaElement.setAttribute('placeholder', placeholder ?? "");
-        }
-      }))
+    if (name === "placeholder") {
+      this._schedulePlaceholderSync();
+      return;
     }
 
-    // Handle textarea-specific attributes first
     if (["cols", "rows", "disabled"].includes(name)) {
       this._updateTextareaAttributes();
       return;
     }
 
-    this.updateStyles();
+    const { attribute, size } = parseResponsiveStyleAttribute(name);
+    if (dynamicStyleAttributes.has(attribute)) {
+      const updateNow = this.isConnected && !this._stylesDirty;
+      this._stylesDirty = true;
+      if (updateNow) {
+        this.updateStyles(size);
+      }
+    }
   }
 
-  updateStyles() {
-    // Reset styles for fresh calculation
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+  _scheduleValueSync() {
+    if (this._valueSyncFrame !== undefined) {
+      cancelAnimationFrame(this._valueSyncFrame);
+    }
+    this._valueSyncFrame = requestAnimationFrame(() => {
+      this._valueSyncFrame = undefined;
+      const value = this.getAttribute("value") ?? "";
+      if (this._textareaElement.value !== value) {
+        this._textareaElement.value = value;
+      }
+    });
+  }
 
-    ["default", "sm", "md", "lg", "xl"].forEach((size) => {
+  _schedulePlaceholderSync() {
+    if (this._placeholderSyncFrame !== undefined) {
+      cancelAnimationFrame(this._placeholderSyncFrame);
+    }
+    this._placeholderSyncFrame = requestAnimationFrame(() => {
+      this._placeholderSyncFrame = undefined;
+      const placeholder = this.getAttribute("placeholder");
+      if (placeholder === "null") {
+        this._textareaElement.removeAttribute("placeholder");
+      } else if (
+        this._textareaElement.getAttribute("placeholder") !== (placeholder ?? "")
+      ) {
+        this._textareaElement.setAttribute("placeholder", placeholder ?? "");
+      }
+    });
+  }
+
+  updateStyles(changedSize) {
+    const sizes = changedSize === undefined ? responsiveStyleSizes : [changedSize];
+    sizes.forEach((size) => {
+      this._styles[size] = {};
       const addSizePrefix = (tag) => {
         return `${size === "default" ? "" : `${size}-`}${tag}`;
       };
@@ -238,6 +261,8 @@ class RettangoliTextAreaElement extends HTMLElement {
       }
     });
 
+    this._stylesDirty = false;
+
     // Update styles only if changed - targeting textarea element
     const newStyleString = convertObjectToCssString(this._styles, 'textarea');
     if (newStyleString !== this._lastStyleString) {
@@ -247,26 +272,19 @@ class RettangoliTextAreaElement extends HTMLElement {
   }
 
   _updateTextareaAttributes() {
-    const cols = this.getAttribute("cols");
-    const rows = this.getAttribute("rows");
-    const isDisabled = this.hasAttribute('disabled');
-
-    if (cols !== null) {
-      this._textareaElement.setAttribute("cols", cols);
-    } else {
-      this._textareaElement.removeAttribute("cols");
-    }
-
-    if (rows !== null) {
-      this._textareaElement.setAttribute("rows", rows);
-    } else {
-      this._textareaElement.removeAttribute("rows");
-    }
-
-    if (isDisabled) {
-      this._textareaElement.setAttribute("disabled", "");
-    } else {
-      this._textareaElement.removeAttribute("disabled");
+    for (const name of ["cols", "rows", "disabled"]) {
+      let value = this.getAttribute(name);
+      if (name === "disabled" && value !== null) {
+        value = "";
+      }
+      if (this._textareaElement.getAttribute(name) === value) {
+        continue;
+      }
+      if (value === null) {
+        this._textareaElement.removeAttribute(name);
+      } else {
+        this._textareaElement.setAttribute(name, value);
+      }
     }
   }
 }

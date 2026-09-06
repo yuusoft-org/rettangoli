@@ -69,6 +69,9 @@ class RettangoliSvgElement extends HTMLElement {
     RettangoliSvgElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.adoptedStyleSheets = [RettangoliSvgElement.styleSheet];
+    this._lastSvgContent = undefined;
+    this._needsSvgReset = false;
+    this._hasConnected = false;
   }
 
   static get observedAttributes() {
@@ -84,13 +87,24 @@ class RettangoliSvgElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this._hasConnected = true;
     this._updateSizing();
     this._render();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    this._updateSizing();
+    if (name === "key" && oldValue !== newValue) {
+      this._needsSvgReset = true;
+    }
+    if (!this.isConnected || !this._hasConnected) {
+      return;
+    }
+
+    // Re-resolve without replacing unchanged markup, including late registrations.
     this._render();
+    if (oldValue !== newValue && name !== "svg") {
+      this._updateSizing();
+    }
   }
 
   _updateSizing() {
@@ -98,16 +112,11 @@ class RettangoliSvgElement extends HTMLElement {
     const width = dimensionWithUnit(wh === null ? this.getAttribute("w") : wh);
     const height = dimensionWithUnit(wh === null ? this.getAttribute("h") : wh);
 
-    if (width != null) {
-      this.style.width = width;
-    } else {
-      this.style.width = "";
+    if (this.style.width !== (width ?? "")) {
+      this.style.width = width ?? "";
     }
-
-    if (height != null) {
-      this.style.height = height;
-    } else {
-      this.style.height = "";
+    if (this.style.height !== (height ?? "")) {
+      this.style.height = height ?? "";
     }
   }
 
@@ -117,19 +126,22 @@ class RettangoliSvgElement extends HTMLElement {
   }
 
   _render() {
+    let content = "";
     try {
       const iconName = this.getAttribute("svg");
-      const svgStringContent =
+      content =
         RettangoliSvgElement._icons[iconName] ||
-        (window["rtglIcons"] || {})[iconName];
-      if (svgStringContent) {
-        this.shadow.innerHTML = svgStringContent;
-        return;
-      }
+        (window["rtglIcons"] || {})[iconName] ||
+        "";
     } catch (error) {
       console.log("error in rtgl-svg render", error);
     }
-    this.shadow.innerHTML = "";
+
+    if (this._needsSvgReset || content !== this._lastSvgContent) {
+      this.shadow.innerHTML = content;
+      this._lastSvgContent = content;
+      this._needsSvgReset = false;
+    }
   }
 }
 

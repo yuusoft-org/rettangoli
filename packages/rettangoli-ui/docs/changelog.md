@@ -4,6 +4,12 @@
 
 ### Improvements
 
+- `rtgl-svg`: retain unchanged SVG markup across size updates and DOM moves while preserving icon replacement, late registration, and key resets.
+- `rtgl-view`, `rtgl-grid`, `rtgl-image`, and `rtgl-textarea`: initialize responsive styles once and recalculate only affected breakpoints, retaining existing responsive inheritance and live updates.
+- `rtgl-image`: avoid rewriting image sources during alt, style, and reconnect updates.
+- `rtgl-textarea`: coalesce value and placeholder updates without unnecessary layout work while preserving editing state and event timing.
+- `rtgl-button`: reuse the native control, slot, and icons during updates; defer detached initialization until connection and skip viewport reads for non-responsive sizes to reduce list mounting cost and preserve keyboard focus.
+
 - `rtgl-global-ui`: removed duplicate content padding and action spacing from alert and confirm dialogs so they use one `lg` inset and one `lg` action gap on mobile and desktop.
 - `rtgl-dropdown-menu`: removed the intermittent browser-like border from the initially focused item while retaining the active-row background for keyboard position.
 - `rtgl-sidebar`: added `getScrollPosition()` and `setScrollPosition({ top })` so consumers can retain the internal item-list position across navigation without reaching into component internals.

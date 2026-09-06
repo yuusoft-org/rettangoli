@@ -7,6 +7,7 @@ import {
   overlayLinkStyles,
   syncLinkOverlay,
   createResponsiveStyleBuckets,
+  parseResponsiveStyleAttribute,
   responsiveStyleSizes,
   applyDimensionToStyleBucket,
   getResponsiveAttribute,
@@ -34,6 +35,30 @@ const normalizeRawCssValue = (value) => {
   const normalizedValue = `${value}`.trim();
   return normalizedValue.length > 0 ? normalizedValue : null;
 };
+
+const dynamicStyleAttributes = new Set([
+  "op",
+  "wh",
+  "w",
+  "h",
+  "ar",
+  "bgi",
+  "bgs",
+  "bgp",
+  "bgr",
+  "hide",
+  "show",
+  "sh",
+  "sv",
+  "z",
+  "d",
+  "ah",
+  "av",
+  "wrap",
+  "no-wrap",
+  "overflow",
+  "stretch",
+]);
 
 // Internal implementation without uhtml
 class RettangoliViewElement extends HTMLElement {
@@ -107,27 +132,7 @@ class RettangoliViewElement extends HTMLElement {
       "rel",
       ...permutateBreakpoints([
         ...styleMapKeys,
-        "op",
-        "wh",
-        "w",
-        "h",
-        "ar",
-        "bgi",
-        "bgs",
-        "bgp",
-        "bgr",
-        "hide",
-        "show",
-        "sh",
-        "sv",
-        "z",
-        "d",
-        "ah",
-        "av",
-        "wrap",
-        "no-wrap",
-        "overflow",
-        "stretch"
+        ...dynamicStyleAttributes,
       ]),
     ];
   }
@@ -135,6 +140,8 @@ class RettangoliViewElement extends HTMLElement {
   _styles = createResponsiveStyleBuckets();
 
   _lastStyleString = "";
+
+  _stylesDirty = true;
 
   _updateDOM() {
     const href = this.getAttribute("href");
@@ -152,8 +159,9 @@ class RettangoliViewElement extends HTMLElement {
   }
   
   connectedCallback() {
-    // Force update styles when connected to ensure responsive attributes are processed
-    this.updateStyles();
+    if (this._stylesDirty) {
+      this.updateStyles();
+    }
     this._scrollbarController.connect();
   }
 
@@ -161,11 +169,10 @@ class RettangoliViewElement extends HTMLElement {
     this._scrollbarController.disconnect();
   }
 
-  updateStyles() {
-    // Reset styles for fresh calculation
-    this._styles = createResponsiveStyleBuckets();
-
-    responsiveStyleSizes.forEach((size) => {
+  updateStyles(changedSize) {
+    const sizes = changedSize === undefined ? responsiveStyleSizes : [changedSize];
+    sizes.forEach((size) => {
+      this._styles[size] = {};
       const addSizePrefix = (tag) => {
         return `${size === "default" ? "" : `${size}-`}${tag}`;
       };
@@ -381,6 +388,8 @@ class RettangoliViewElement extends HTMLElement {
 
     });
 
+    this._stylesDirty = false;
+
     // Update styles only if changed
     const newStyleString = convertObjectToCssString(this._styles);
     if (newStyleString !== this._lastStyleString) {
@@ -392,15 +401,29 @@ class RettangoliViewElement extends HTMLElement {
   }
   
   attributeChangedCallback(name, oldValue, newValue) {
-    // Handle link-related changes
+    if (oldValue === newValue) {
+      return;
+    }
+
     if (name === "href" || name === "new-tab" || name === "rel") {
       this._updateDOM();
       return;
     }
-    
-    // Update styles for all other attributes
-    if (oldValue !== newValue) {
-      this.updateStyles();
+
+    const { attribute, size } = parseResponsiveStyleAttribute(name);
+    if (!dynamicStyleAttributes.has(attribute)) {
+      // Shared spacing/border styles are handled by the static stylesheet.
+      this._scrollbarController.refresh();
+      return;
+    }
+
+    const updateNow = this.isConnected && !this._stylesDirty;
+    this._stylesDirty = true;
+    if (updateNow) {
+      // Direction and overflow can affect smaller breakpoint fallbacks too.
+      this.updateStyles(
+        ["d", "sh", "sv", "overflow"].includes(attribute) ? undefined : size,
+      );
     }
   }
 }

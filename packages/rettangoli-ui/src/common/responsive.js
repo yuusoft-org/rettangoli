@@ -1,5 +1,14 @@
 export const responsiveStyleSizes = ["default", "sm", "md", "lg", "xl"];
 
+// Split only supported responsive prefixes; base names may contain hyphens.
+export const parseResponsiveStyleAttribute = (name) => {
+  const prefix = name.slice(0, 2);
+  if (name[2] === "-" && responsiveStyleSizes.includes(prefix)) {
+    return { attribute: name.slice(3), size: prefix };
+  }
+  return { attribute: name, size: "default" };
+};
+
 export const createResponsiveStyleBuckets = () => {
   return responsiveStyleSizes.reduce((acc, size) => {
     acc[size] = {};
@@ -13,10 +22,7 @@ const getResponsiveAttributeName = ({ size, attr }) => {
   return size === "default" ? attr : `${size}-${attr}`;
 };
 
-export const getResponsiveFallbackSizes = ({
-  size,
-  includeDefault = true,
-}) => {
+export const getResponsiveFallbackSizes = ({ size, includeDefault = true }) => {
   if (size === "default") {
     return ["default"];
   }

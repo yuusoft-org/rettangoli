@@ -7,6 +7,7 @@ import {
   overlayLinkStyles,
   syncLinkOverlay,
   createResponsiveStyleBuckets,
+  parseResponsiveStyleAttribute,
   responsiveStyleSizes,
   applyDimensionToStyleBucket,
   getResponsiveAttribute,
@@ -23,6 +24,20 @@ import {
   prepareOverlayScrollbarControllerHotUpdate,
 } from "../common/overlayScrollbar.js";
 import { HOT_PRIMITIVE_PREPARE } from "../hotPrimitiveContract.js";
+
+const dynamicStyleAttributes = new Set([
+  "cols",
+  "op",
+  "wh",
+  "w",
+  "h",
+  "hide",
+  "show",
+  "sh",
+  "sv",
+  "z",
+  "overflow",
+]);
 
 const resolveGridTemplateColumns = (cols) => {
   if (cols == null) {
@@ -108,17 +123,7 @@ class RettangoliGridElement extends HTMLElement {
       "rel",
       ...permutateBreakpoints([
         ...styleMapKeys,
-        "cols",
-        "op",
-        "wh",
-        "w",
-        "h",
-        "hide",
-        "show",
-        "sh",
-        "sv",
-        "z",
-        "overflow",
+        ...dynamicStyleAttributes,
       ]),
     ];
   }
@@ -126,6 +131,8 @@ class RettangoliGridElement extends HTMLElement {
   _styles = createResponsiveStyleBuckets();
 
   _lastStyleString = "";
+
+  _stylesDirty = true;
 
   _updateDOM() {
     const href = this.getAttribute("href");
@@ -143,7 +150,9 @@ class RettangoliGridElement extends HTMLElement {
   }
 
   connectedCallback() {
-    this.updateStyles();
+    if (this._stylesDirty) {
+      this.updateStyles();
+    }
     this._scrollbarController.connect();
   }
 
@@ -151,10 +160,10 @@ class RettangoliGridElement extends HTMLElement {
     this._scrollbarController.disconnect();
   }
 
-  updateStyles() {
-    this._styles = createResponsiveStyleBuckets();
-
-    responsiveStyleSizes.forEach((size) => {
+  updateStyles(changedSize) {
+    const sizes = changedSize === undefined ? responsiveStyleSizes : [changedSize];
+    sizes.forEach((size) => {
+      this._styles[size] = {};
       const addSizePrefix = (tag) => {
         return `${size === "default" ? "" : `${size}-`}${tag}`;
       };
@@ -251,6 +260,8 @@ class RettangoliGridElement extends HTMLElement {
 
     });
 
+    this._stylesDirty = false;
+
     const newStyleString = convertObjectToCssString(this._styles);
     if (newStyleString !== this._lastStyleString) {
       this._styleElement.textContent = newStyleString;
@@ -261,13 +272,29 @@ class RettangoliGridElement extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) {
+      return;
+    }
+
     if (name === "href" || name === "new-tab" || name === "rel") {
       this._updateDOM();
       return;
     }
 
-    if (oldValue !== newValue) {
-      this.updateStyles();
+    const { attribute, size } = parseResponsiveStyleAttribute(name);
+    if (!dynamicStyleAttributes.has(attribute)) {
+      // Shared spacing/border styles are handled by the static stylesheet.
+      this._scrollbarController.refresh();
+      return;
+    }
+
+    const updateNow = this.isConnected && !this._stylesDirty;
+    this._stylesDirty = true;
+    if (updateNow) {
+      // Overflow can affect smaller breakpoint fallbacks too.
+      this.updateStyles(
+        ["sh", "sv", "overflow"].includes(attribute) ? undefined : size,
+      );
     }
   }
 }

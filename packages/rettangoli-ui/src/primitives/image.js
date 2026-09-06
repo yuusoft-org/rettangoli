@@ -6,6 +6,7 @@ import {
   permutateBreakpoints,
   syncLinkWrapper,
   createResponsiveStyleBuckets,
+  parseResponsiveStyleAttribute,
   responsiveStyleSizes,
   applyDimensionToStyleBucket,
   normalizeAspectRatio,
@@ -14,6 +15,17 @@ import cursorStyles from "../styles/cursorStyles.js";
 import anchorStyles from "../styles/anchorStyles.js";
 import viewStylesForTarget from "../styles/viewStylesForTarget.js";
 import marginStylesForTarget from "../styles/marginStylesForTarget.js";
+
+const dynamicStyleAttributes = new Set([
+  "wh",
+  "w",
+  "h",
+  "ar",
+  "hide",
+  "show",
+  "op",
+  "z",
+]);
 
 // Internal implementation without uhtml
 class RettangoliImageElement extends HTMLElement {
@@ -88,14 +100,7 @@ class RettangoliImageElement extends HTMLElement {
       "href",
       "new-tab",
       "rel",
-      "wh",
-      "w",
-      "h",
-      "ar",
-      "hide",
-      "show",
-      "op",
-      "z",
+      ...dynamicStyleAttributes,
       "of",
     ]);
   }
@@ -103,6 +108,8 @@ class RettangoliImageElement extends HTMLElement {
   _styles = createResponsiveStyleBuckets();
 
   _lastStyleString = "";
+
+  _stylesDirty = true;
 
   _updateDOM() {
     const href = this.getAttribute("href");
@@ -120,34 +127,42 @@ class RettangoliImageElement extends HTMLElement {
   }
 
   connectedCallback() {
-    this._updateImageAttributes();
-    this.updateStyles();
+    this._updateImageAttribute("src");
+    this._updateImageAttribute("alt");
+    if (this._stylesDirty) {
+      this.updateStyles();
+    }
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    // Handle href and link behavior changes
+    if (oldValue === newValue) {
+      return;
+    }
+
     if (name === "href" || name === "new-tab" || name === "rel") {
       this._updateDOM();
       return;
     }
 
-    // Handle image attributes
     if (name === "src" || name === "alt") {
-      this._updateImageAttributes();
+      this._updateImageAttribute(name);
       return;
     }
 
-    // Update styles for all other attributes
-    if (oldValue !== newValue) {
-      this.updateStyles();
+    const { attribute, size } = parseResponsiveStyleAttribute(name);
+    if (dynamicStyleAttributes.has(attribute)) {
+      const updateNow = this.isConnected && !this._stylesDirty;
+      this._stylesDirty = true;
+      if (updateNow) {
+        this.updateStyles(size);
+      }
     }
   }
 
-  updateStyles() {
-    // Reset styles for fresh calculation
-    this._styles = createResponsiveStyleBuckets();
-
-    responsiveStyleSizes.forEach((size) => {
+  updateStyles(changedSize) {
+    const sizes = changedSize === undefined ? responsiveStyleSizes : [changedSize];
+    sizes.forEach((size) => {
+      this._styles[size] = {};
       const addSizePrefix = (tag) => {
         return `${size === "default" ? "" : `${size}-`}${tag}`;
       };
@@ -200,6 +215,8 @@ class RettangoliImageElement extends HTMLElement {
       }
     });
 
+    this._stylesDirty = false;
+
     // Update styles only if changed
     const newStyleString = convertObjectToCssString(this._styles, 'img, a');
     if (newStyleString !== this._lastStyleString) {
@@ -208,20 +225,15 @@ class RettangoliImageElement extends HTMLElement {
     }
   }
 
-  _updateImageAttributes() {
-    const src = this.getAttribute("src");
-    const alt = this.getAttribute("alt");
-
-    if (src !== null) {
-      this._imgElement.setAttribute("src", src);
-    } else {
-      this._imgElement.removeAttribute("src");
+  _updateImageAttribute(name) {
+    const value = this.getAttribute(name);
+    if (this._imgElement.getAttribute(name) === value) {
+      return;
     }
-
-    if (alt !== null) {
-      this._imgElement.setAttribute("alt", alt);
+    if (value === null) {
+      this._imgElement.removeAttribute(name);
     } else {
-      this._imgElement.removeAttribute("alt");
+      this._imgElement.setAttribute(name, value);
     }
   }
 }
