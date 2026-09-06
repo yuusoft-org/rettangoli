@@ -1,0 +1,73 @@
+---
+title: Tabs - Sizes - Runtime Updates
+description: Verifies reactive size changes preserve controlled selection and content width.
+viewport:
+  id: mobile
+  width: 390
+  height: 320
+specs:
+  - The s property and attribute can update sizing after mount.
+  - Direct property sizing takes precedence over the attribute.
+  - Invalid and omitted sizes fall back to medium.
+  - Resizing preserves selection and does not emit item-click.
+steps:
+  - action: customEvent
+    name: vt:resize-tabs
+  - action: wait
+    ms: 200
+  - action: assert
+    type: exists
+    selector: '#size-result[data-passed="true"]'
+  - action: screenshot
+---
+<rtgl-view w="f" p="lg" g="lg">
+  <rtgl-tabs id="resizable-tabs" s="sm" selected-tab="metrics"></rtgl-tabs>
+  <rtgl-text id="size-result" s="sm">Small, Metrics selected</rtgl-text>
+</rtgl-view>
+
+<script>
+  const tabs = document.getElementById('resizable-tabs');
+  const result = document.getElementById('size-result');
+  let clicks = 0;
+  tabs.items = [
+    { id: 'overview', label: 'A' },
+    { id: 'metrics', label: 'Metrics' },
+    { id: 'settings', label: 'Settings' },
+  ];
+  tabs.addEventListener('item-click', () => { clicks++; });
+  tabs.render();
+
+  const nextFrame = () => new Promise(requestAnimationFrame);
+  const check = async (expectedHeight) => {
+    await nextFrame();
+    const tray = tabs.shadowRoot.querySelector('.rtgl-tabs');
+    const activeTab = tray.querySelector('[data-id="metrics"]');
+    if (Math.abs(tray.getBoundingClientRect().height - expectedHeight) > 0.1) {
+      throw new Error(`Expected ${expectedHeight}px tray height`);
+    }
+    if (activeTab.getAttribute('bgc') !== 'ac' || tabs.getAttribute('selected-tab') !== 'metrics' || clicks !== 0) {
+      throw new Error('Size change altered selection or emitted an event');
+    }
+    if (tray.getBoundingClientRect().width >= tabs.parentElement.getBoundingClientRect().width) {
+      throw new Error('Tabs unexpectedly filled the parent');
+    }
+  };
+
+  window.addEventListener('vt:resize-tabs', async () => {
+    await check(34);
+    tabs.setAttribute('s', 'lg');
+    await check(44);
+    tabs.setAttribute('s', 'invalid');
+    await check(38);
+    tabs.removeAttribute('s');
+    await check(38);
+    tabs.s = 'sm';
+    await check(34);
+    tabs.setAttribute('s', 'lg');
+    await check(34);
+    tabs.s = 'md';
+    await check(38);
+    result.textContent = 'Medium, Metrics still selected';
+    result.dataset.passed = 'true';
+  });
+</script>
