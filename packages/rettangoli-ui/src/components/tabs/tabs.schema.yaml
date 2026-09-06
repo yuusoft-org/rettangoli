@@ -2,6 +2,10 @@ componentName: rtgl-tabs
 propsSchema:
   type: object
   properties:
+    s:
+      type: string
+      enum: [sm, md, lg]
+      default: md
     items:
       type: array
       items:

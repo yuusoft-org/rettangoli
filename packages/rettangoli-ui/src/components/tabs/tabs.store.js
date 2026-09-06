@@ -1,6 +1,6 @@
 export const createInitialState = () => Object.freeze({});
 
-const blacklistedProps = ["id", "class", "style", "slot", "items", "selectedTab"];
+const blacklistedProps = ["id", "class", "style", "slot", "items", "selectedTab", "s"];
 
 const stringifyProps = (props = {}) => {
   return Object.entries(props)
@@ -9,8 +9,9 @@ const stringifyProps = (props = {}) => {
     .join(" ");
 };
 
-export const selectViewData = ({ props }) => {
+export const selectViewData = ({ props = {} }) => {
   const containerAttrString = stringifyProps(props);
+  const size = ["sm", "md", "lg"].includes(props.s) ? props.s : "md";
 
   const items = props.items || [];
   const selectedTab = props.selectedTab;
@@ -25,6 +26,7 @@ export const selectViewData = ({ props }) => {
   }));
 
   return {
+    size,
     containerAttrString,
     items: itemsWithSelection,
     selectedTab,
