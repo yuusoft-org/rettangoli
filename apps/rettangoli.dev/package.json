@@ -1,4 +1,6 @@
 {
+  "name": "rettangoli-docs",
+  "private": true,
   "scripts": {
     "build": "rtgl sites build",
     "watch": "rtgl sites watch",
@@ -9,6 +11,6 @@
     "accept": "rtgl vt accept"
   },
   "devDependencies": {
-    "rtgl": "1.1.3"
+    "rtgl": "workspace:*"
   }
 }

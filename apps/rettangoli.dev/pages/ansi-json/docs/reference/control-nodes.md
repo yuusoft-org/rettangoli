@@ -33,7 +33,7 @@ Control nodes emit ANSI control sequences and are identified by the `ctrl` field
     { ctrl: "cursor", hide: true },
     { ctrl: "clear", mode: "screen" },
     { ctrl: "cursor", to: { row: 1, col: 1 } },
-    { text: "Rettangoli TUI", style: { fg: "white", bg: "blue", bold: true } },
+    { text: "Rettangoli ANSI", style: { fg: "white", bg: "blue", bold: true } },
     { ctrl: "cursor", show: true },
     { ctrl: "altBuffer", enable: false }
   ]
