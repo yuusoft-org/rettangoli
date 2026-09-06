@@ -260,6 +260,9 @@ class RettangoliButtonElement extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue || !this.isConnected) {
+      return;
+    }
     this._updateButton();
   }
 
@@ -275,11 +278,15 @@ class RettangoliButtonElement extends HTMLElement {
   }
 
   _resolveResponsiveSizeToken() {
-    const viewportWidth = window.innerWidth;
+    let viewportWidth;
 
     for (const { prefix, maxWidth } of responsiveSizeBreakpoints) {
       const responsiveAttrName = `${prefix}-s`;
-      if (viewportWidth <= maxWidth && this.hasAttribute(responsiveAttrName)) {
+      if (!this.hasAttribute(responsiveAttrName)) {
+        continue;
+      }
+      viewportWidth ??= window.innerWidth;
+      if (viewportWidth <= maxWidth) {
         return this.getAttribute(responsiveAttrName);
       }
     }
@@ -288,9 +295,6 @@ class RettangoliButtonElement extends HTMLElement {
   }
 
   _updateButton() {
-    // Clear shadow DOM
-    this.shadow.innerHTML = '';
-
     // Update disabled state
     const isDisabled = this.hasAttribute('disabled');
     const href = this.getAttribute("href");
@@ -303,7 +307,10 @@ class RettangoliButtonElement extends HTMLElement {
     if (this._surfaceElement.tagName.toLowerCase() !== requiredTag) {
       const nextSurfaceElement = document.createElement(requiredTag);
       nextSurfaceElement.className = 'surface';
-      nextSurfaceElement.appendChild(this._slotElement);
+      nextSurfaceElement.append(...this._surfaceElement.childNodes);
+      if (this._surfaceElement.parentNode === this.shadow) {
+        this.shadow.replaceChild(nextSurfaceElement, this._surfaceElement);
+      }
       this._surfaceElement = nextSurfaceElement;
     }
 
@@ -347,61 +354,49 @@ class RettangoliButtonElement extends HTMLElement {
       this._surfaceElement.removeAttribute("aria-label");
     }
 
-    this.shadow.appendChild(this._surfaceElement);
+    if (this._surfaceElement.parentNode !== this.shadow) {
+      this.shadow.appendChild(this._surfaceElement);
+    }
     this._containerElement = this._surfaceElement;
   }
 
   _updateIcon() {
-    // Remove existing icons if any
-    if (this._prefixIcon) {
-      this._prefixIcon.remove();
-      this._prefixIcon = null;
-    }
-    if (this._suffixIcon) {
-      this._suffixIcon.remove();
-      this._suffixIcon = null;
+    const iconSizeMap = { sm: 14, md: 18, lg: 22 };
+    const size = String(iconSizeMap[this._resolveResponsiveSizeToken()] ?? 18);
+
+    this._prefixIcon = this._syncIcon(
+      this._prefixIcon,
+      this.getAttribute("pre"),
+      size,
+      this._slotElement,
+    );
+    this._suffixIcon = this._syncIcon(
+      this._suffixIcon,
+      this.getAttribute("suf"),
+      size,
+    );
+  }
+
+  _syncIcon(icon, name, size, before) {
+    if (!name) {
+      icon?.remove();
+      return undefined;
     }
 
-    const iconSizeMap = {
-      sm: 14,
-      md: 18,
-      lg: 22
-    };
-
-    // For square buttons, use button size token, otherwise use icon size token.
-    const resolvedSizeToken = this._resolveResponsiveSizeToken();
-    let size = 18; // default
-    if (this.hasAttribute('sq')) {
-      const buttonSizeMap = {
-        sm: 14,
-        lg: 22
-      };
-      size = buttonSizeMap[resolvedSizeToken] || 18;
-    } else {
-      size = iconSizeMap[resolvedSizeToken] || 18;
+    if (!icon) {
+      icon = document.createElement("rtgl-svg");
+      icon.style.color = "inherit";
     }
-
-    // Create prefix icon (before text)
-    const prefixIcon = this.getAttribute("pre");
-    if (prefixIcon) {
-      this._prefixIcon = document.createElement('rtgl-svg');
-      this._prefixIcon.setAttribute('svg', prefixIcon);
-      this._prefixIcon.setAttribute('wh', size.toString());
-      this._prefixIcon.style.color = "inherit";
-      // Insert before slot (left position)
-      this._surfaceElement.insertBefore(this._prefixIcon, this._slotElement);
+    if (icon.getAttribute("svg") !== name) {
+      icon.setAttribute("svg", name);
     }
-
-    // Create suffix icon (after text)
-    const suffixIcon = this.getAttribute("suf");
-    if (suffixIcon) {
-      this._suffixIcon = document.createElement('rtgl-svg');
-      this._suffixIcon.setAttribute('svg', suffixIcon);
-      this._suffixIcon.setAttribute('wh', size.toString());
-      this._suffixIcon.style.color = "inherit";
-      // Insert after slot (right position)
-      this._surfaceElement.appendChild(this._suffixIcon);
+    if (icon.getAttribute("wh") !== size) {
+      icon.setAttribute("wh", size);
     }
+    if (icon.parentNode !== this._surfaceElement) {
+      this._surfaceElement.insertBefore(icon, before ?? null);
+    }
+    return icon;
   }
 
   _updateWidth() {
