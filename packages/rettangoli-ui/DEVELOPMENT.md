@@ -493,6 +493,15 @@ classes directly and do not include the development shell behavior.
 
 ## Theme / CSS
 
+Primitives and FE components support older WebKit without constructable
+stylesheets, including iOS 16.0–16.3. Use the shared `createStyleSheet`,
+`getStyleSheets`, and `setStyleSheets` helpers from `@rettangoli/fe` instead of
+constructing or adopting `CSSStyleSheet` directly. Newer browsers retain
+native shared sheets; older browsers receive owned shadow-root `<style>`
+elements. Apply styles after constructing shadow content, and restore them
+after replacing all shadow markup (as in `rtgl-svg`). Hot updates must replace
+and roll back styles through the same helpers.
+
 Load CSS in two steps:
 
 1. `src/themes/base.css`

@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import {
   css,
   dimensionWithUnit,
@@ -33,8 +34,7 @@ class RettangoliImageElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliImageElement.styleSheet) {
-      RettangoliImageElement.styleSheet = new CSSStyleSheet();
-      RettangoliImageElement.styleSheet.replaceSync(css`
+      RettangoliImageElement.styleSheet = createStyleSheet(css`
         :host {
           display: contents;
         }
@@ -80,7 +80,6 @@ class RettangoliImageElement extends HTMLElement {
     super();
     RettangoliImageElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliImageElement.styleSheet];
 
     // Create initial DOM structure
     this._styleElement = document.createElement("style");
@@ -89,6 +88,7 @@ class RettangoliImageElement extends HTMLElement {
 
     this.shadow.appendChild(this._styleElement);
     this._updateDOM();
+    setStyleSheets(this.shadow, [RettangoliImageElement.styleSheet]);
   }
 
   static get observedAttributes() {

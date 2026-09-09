@@ -1,3 +1,4 @@
+import { getStyleSheets, setStyleSheets } from "@rettangoli/fe";
 import {
   HOT_PRIMITIVE_PREPARE,
   HOT_PRIMITIVE_PREPARE_STATIC,
@@ -604,17 +605,17 @@ const makeStylesheetOperation = ({ instance, previousClass, nextClass }) => {
     return null;
   }
 
-  const previousSheets = [...(instance.shadowRoot.adoptedStyleSheets || [])];
+  const previousSheets = [...getStyleSheets(instance.shadowRoot)];
   const nextSheets = previousSheets.includes(previousSheet)
     ? previousSheets.map((sheet) => sheet === previousSheet ? nextSheet : sheet)
     : [nextSheet, ...previousSheets.filter((sheet) => sheet !== nextSheet)];
 
   return {
     commit() {
-      instance.shadowRoot.adoptedStyleSheets = nextSheets;
+      setStyleSheets(instance.shadowRoot, nextSheets);
     },
     rollback() {
-      instance.shadowRoot.adoptedStyleSheets = previousSheets;
+      setStyleSheets(instance.shadowRoot, previousSheets);
     },
   };
 };

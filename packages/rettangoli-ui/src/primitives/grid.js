@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import {
   css,
   dimensionWithUnit,
@@ -71,8 +72,7 @@ class RettangoliGridElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliGridElement.styleSheet) {
-      RettangoliGridElement.styleSheet = new CSSStyleSheet();
-      RettangoliGridElement.styleSheet.replaceSync(css`
+      RettangoliGridElement.styleSheet = createStyleSheet(css`
         slot {
           display: contents;
         }
@@ -101,7 +101,6 @@ class RettangoliGridElement extends HTMLElement {
     super();
     RettangoliGridElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliGridElement.styleSheet];
 
     this._styleElement = document.createElement("style");
     this._slotElement = document.createElement("slot");
@@ -114,6 +113,7 @@ class RettangoliGridElement extends HTMLElement {
       slotElement: this._slotElement,
     });
     this._updateDOM();
+    setStyleSheets(this.shadow, [RettangoliGridElement.styleSheet]);
   }
 
   static get observedAttributes() {

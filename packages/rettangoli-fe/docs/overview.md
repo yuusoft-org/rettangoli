@@ -64,6 +64,23 @@ i18n locale files are project-level files, not component files. See
 - `constants.md`: optional constants contract
 - `i18n.md`: internationalization config, locale files, view usage, and locale switching
 
+## Browser stylesheet compatibility
+
+The web runtime uses constructable/adopted stylesheets when `CSSStyleSheet`
+supports `replaceSync`. Older WebKit (including iOS 16.0–16.3) exposes an
+unconstructable `CSSStyleSheet`; the runtime uses owned `<style>` elements
+inside each shadow root instead. This avoids changing browser globals.
+
+`createStyleSheet(cssText)`, `getStyleSheets(shadowRoot)`, and
+`setStyleSheets(shadowRoot, sheets)` are exported for UI primitives that share
+this behavior. Treat returned stylesheet values as opaque, immutable snapshots;
+create and set a new snapshot to change CSS. Set styles after creating shadow
+content so their cascade order matches adopted stylesheets. A renderer that
+replaces all shadow markup must reapply the current styles afterward.
+
+Reinitializing or hot-updating a component replaces only runtime-owned styles,
+preserving its render target, caller-owned styles, and local content/state.
+
 ## Contract Check
 
 Run `rtgl fe check` to enforce:

@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import {
   css,
   dimensionWithUnit,
@@ -14,8 +15,7 @@ class RettangoliSliderElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliSliderElement.styleSheet) {
-      RettangoliSliderElement.styleSheet = new CSSStyleSheet();
-      RettangoliSliderElement.styleSheet.replaceSync(css`
+      RettangoliSliderElement.styleSheet = createStyleSheet(css`
         :host {
           display: contents;
         }
@@ -77,7 +77,6 @@ class RettangoliSliderElement extends HTMLElement {
     super();
     RettangoliSliderElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliSliderElement.styleSheet];
 
     // Initialize style tracking properties
     this._styles = {
@@ -100,6 +99,7 @@ class RettangoliSliderElement extends HTMLElement {
     // Bind event handlers
     this._inputElement.addEventListener('input', this._onInput);
     this._inputElement.addEventListener('change', this._onChange);
+    setStyleSheets(this.shadow, [RettangoliSliderElement.styleSheet]);
   }
 
   static get observedAttributes() {

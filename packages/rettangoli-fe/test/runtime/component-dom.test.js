@@ -51,9 +51,9 @@ const createStyleSheetFactory = () => {
   const createdSheets = [];
   return {
     createdSheets,
-    createStyleSheet: () => {
+    createStyleSheet: (cssText) => {
       const styleSheet = {
-        cssText: "",
+        cssText,
         replaceSync: (nextCssText) => {
           styleSheet.cssText = nextCssText;
         },

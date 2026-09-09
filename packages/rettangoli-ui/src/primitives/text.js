@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import {
   css,
   dimensionWithUnit,
@@ -16,8 +17,7 @@ class RettangoliTextElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliTextElement.styleSheet) {
-      RettangoliTextElement.styleSheet = new CSSStyleSheet();
-      RettangoliTextElement.styleSheet.replaceSync(css`
+      RettangoliTextElement.styleSheet = createStyleSheet(css`
         :host {
           display: block;
           font-size: var(--md-font-size);
@@ -49,13 +49,13 @@ class RettangoliTextElement extends HTMLElement {
     super();
     RettangoliTextElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliTextElement.styleSheet];
     this._isApplyingManagedStyle = false;
 
     // Create initial DOM structure
     this._slotElement = document.createElement('slot');
     this._linkElement = null;
     this._updateDOM();
+    setStyleSheets(this.shadow, [RettangoliTextElement.styleSheet]);
   }
 
   static get observedAttributes() {

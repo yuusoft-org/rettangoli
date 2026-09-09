@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import {
   css,
   dimensionWithUnit,
@@ -27,8 +28,7 @@ class RettangoliTextAreaElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliTextAreaElement.styleSheet) {
-      RettangoliTextAreaElement.styleSheet = new CSSStyleSheet();
-      RettangoliTextAreaElement.styleSheet.replaceSync(css`
+      RettangoliTextAreaElement.styleSheet = createStyleSheet(css`
         :host {
           display: contents;
         }
@@ -68,7 +68,6 @@ class RettangoliTextAreaElement extends HTMLElement {
     super();
     RettangoliTextAreaElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliTextAreaElement.styleSheet];
 
     // Initialize style tracking properties
     this._styles = createResponsiveStyleBuckets();
@@ -87,6 +86,7 @@ class RettangoliTextAreaElement extends HTMLElement {
     // Bind event handlers
     this._textareaElement.addEventListener('input', this._onInput);
     this._textareaElement.addEventListener('change', this._onChange);
+    setStyleSheets(this.shadow, [RettangoliTextAreaElement.styleSheet]);
   }
 
   _onInput = () => {

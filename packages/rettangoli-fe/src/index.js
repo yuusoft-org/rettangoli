@@ -11,3 +11,9 @@ export {
   defineOrUpdateComponent,
   defineOrUpdateComponents,
 }
+
+export {
+  createStyleSheet,
+  getStyleSheets,
+  setStyleSheets,
+} from "./web/styleSheets.js";

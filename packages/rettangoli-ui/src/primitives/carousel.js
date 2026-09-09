@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import { css, dimensionWithUnit } from "../common.js";
 import {
   clampCarouselIndex,
@@ -63,8 +64,7 @@ class RettangoliCarouselElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliCarouselElement.styleSheet) {
-      RettangoliCarouselElement.styleSheet = new CSSStyleSheet();
-      RettangoliCarouselElement.styleSheet.replaceSync(css`
+      RettangoliCarouselElement.styleSheet = createStyleSheet(css`
         :host {
           display: block;
           width: 100%;
@@ -286,7 +286,6 @@ class RettangoliCarouselElement extends HTMLElement {
     this._slideStyleCache = new WeakMap();
 
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliCarouselElement.styleSheet];
 
     this._rootElement = document.createElement("div");
     this._rootElement.id = "root";
@@ -365,6 +364,7 @@ class RettangoliCarouselElement extends HTMLElement {
         });
       })
       : null;
+    setStyleSheets(this.shadow, [RettangoliCarouselElement.styleSheet]);
   }
 
   get index() {

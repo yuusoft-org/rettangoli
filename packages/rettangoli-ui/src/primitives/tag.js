@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import {
   css,
   dimensionWithUnit,
@@ -12,8 +13,7 @@ class RettangoliTagElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliTagElement.styleSheet) {
-      RettangoliTagElement.styleSheet = new CSSStyleSheet();
-      RettangoliTagElement.styleSheet.replaceSync(css`
+      RettangoliTagElement.styleSheet = createStyleSheet(css`
         :host {
           display: inline-flex;
           min-width: 0;
@@ -124,7 +124,6 @@ class RettangoliTagElement extends HTMLElement {
     RettangoliTagElement.initializeStyleSheet();
 
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliTagElement.styleSheet];
 
     this._surfaceElement = document.createElement("span");
     this._surfaceElement.className = "surface";
@@ -143,6 +142,7 @@ class RettangoliTagElement extends HTMLElement {
     this._suffixIcon = null;
     this._removeButton = null;
     this._onRemoveClick = this._onRemoveClick.bind(this);
+    setStyleSheets(this.shadow, [RettangoliTagElement.styleSheet]);
   }
 
   static get observedAttributes() {

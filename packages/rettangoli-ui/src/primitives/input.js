@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import {
   css,
   dimensionWithUnit,
@@ -27,8 +28,7 @@ class RettangoliInputElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliInputElement.styleSheet) {
-      RettangoliInputElement.styleSheet = new CSSStyleSheet();
-      RettangoliInputElement.styleSheet.replaceSync(css`
+      RettangoliInputElement.styleSheet = createStyleSheet(css`
         :host {
           display: contents;
         }
@@ -107,7 +107,6 @@ class RettangoliInputElement extends HTMLElement {
     super();
     RettangoliInputElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliInputElement.styleSheet];
 
     // Initialize style tracking properties
     this._styles = createResponsiveStyleBuckets();
@@ -123,6 +122,7 @@ class RettangoliInputElement extends HTMLElement {
     // Bind event handlers
     this._inputElement.addEventListener('input', this._onInput);
     this._inputElement.addEventListener('change', this._onChange);
+    setStyleSheets(this.shadow, [RettangoliInputElement.styleSheet]);
   }
 
   static get observedAttributes() {

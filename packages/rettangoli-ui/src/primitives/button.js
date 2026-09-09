@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import { css, dimensionWithUnit, applyLinkAttributes } from "../common.js";
 import buttonMarginStyles from "../styles/buttonMarginStyles.js";
 
@@ -14,8 +15,7 @@ class RettangoliButtonElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliButtonElement.styleSheet) {
-      RettangoliButtonElement.styleSheet = new CSSStyleSheet();
-      RettangoliButtonElement.styleSheet.replaceSync(css`
+      RettangoliButtonElement.styleSheet = createStyleSheet(css`
         :host {
           display: inline-flex;
         }
@@ -201,7 +201,6 @@ class RettangoliButtonElement extends HTMLElement {
     super();
     RettangoliButtonElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliButtonElement.styleSheet];
     
     // Create initial DOM structure
     this._containerElement = null;
@@ -214,6 +213,7 @@ class RettangoliButtonElement extends HTMLElement {
     this._surfaceElement.appendChild(this._slotElement);
 
     this._onWindowResize = this._onWindowResize.bind(this);
+    setStyleSheets(this.shadow, [RettangoliButtonElement.styleSheet]);
   }
 
   get ariaLabel() {

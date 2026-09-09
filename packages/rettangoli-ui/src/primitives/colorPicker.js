@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import {
   css,
   dimensionWithUnit,
@@ -19,8 +20,7 @@ class RettangoliColorPickerElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliColorPickerElement.styleSheet) {
-      RettangoliColorPickerElement.styleSheet = new CSSStyleSheet();
-      RettangoliColorPickerElement.styleSheet.replaceSync(css`
+      RettangoliColorPickerElement.styleSheet = createStyleSheet(css`
         :host {
           display: contents;
         }
@@ -55,7 +55,6 @@ class RettangoliColorPickerElement extends HTMLElement {
     super();
     RettangoliColorPickerElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliColorPickerElement.styleSheet];
     
     // Initialize style tracking properties
     this._styles = createResponsiveStyleBuckets();
@@ -72,6 +71,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     // Bind event handlers
     this._inputElement.addEventListener('change', this._onChange);
     this._inputElement.addEventListener('input', this._onInput);
+    setStyleSheets(this.shadow, [RettangoliColorPickerElement.styleSheet]);
   }
 
   static get observedAttributes() {

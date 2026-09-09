@@ -1,0 +1,96 @@
+---
+title: Stylesheet fallback for older WebKit
+description: Primitives and FE components render and update when CSSStyleSheet cannot be constructed.
+skipInitialScreenshot: true
+viewport:
+  id: fallback-mobile
+  width: 390
+  height: 640
+steps:
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: stylesheetFallback.getState
+    value:
+      constructorCalls: 0
+      hasComponentStyles: true
+      hasPrimitiveStyles: true
+      layout: flex
+      hasIcon: true
+  - action: customEvent
+    name: vt:update-fallback-icon
+  - action: wait
+    ms: 50
+  - action: assert
+    type: js
+    fn: stylesheetFallback.getUpdatedState
+    value:
+      iconChanged: true
+      styleCount: 1
+  - action: screenshot
+---
+
+<script>
+  let constructorCalls = 0;
+  window.CSSStyleSheet = class {
+    constructor() {
+      constructorCalls += 1;
+      throw new TypeError("Illegal constructor");
+    }
+  };
+  window.rtglIcons = {
+    ...window.rtglIcons,
+    fallbackCircle:
+      '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="currentColor"/></svg>',
+    fallbackSquare:
+      '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" fill="currentColor"/></svg>',
+  };
+  window.stylesheetFallback = {
+    getState() {
+      return {
+        constructorCalls,
+        hasComponentStyles: !!document
+          .querySelector("rtgl-card")
+          .shadowRoot.querySelector("[data-rtgl-stylesheet]"),
+        hasPrimitiveStyles: !!document
+          .querySelector("#fallbackView")
+          .shadowRoot.querySelector("[data-rtgl-stylesheet]"),
+        layout: getComputedStyle(document.querySelector("#fallbackView"))
+          .display,
+        hasIcon: !!document
+          .querySelector("#fallbackIcon")
+          .shadowRoot.querySelector("circle"),
+      };
+    },
+    getUpdatedState() {
+      const shadow = document.querySelector("#fallbackIcon").shadowRoot;
+      return {
+        iconChanged: !!shadow.querySelector("rect"),
+        styleCount: shadow.querySelectorAll("[data-rtgl-stylesheet]").length,
+      };
+    },
+  };
+  window.addEventListener("vt:update-fallback-icon", () => {
+    document
+      .querySelector("#fallbackIcon")
+      .setAttribute("svg", "fallbackSquare");
+  });
+</script>
+
+<rtgl-view id="fallbackView" p="lg" g="lg">
+  <rtgl-text s="h3">Project One</rtgl-text>
+  <rtgl-card
+    head="Project details"
+    desc="Styled without constructable stylesheets"
+  >
+    <rtgl-view p="md" g="md">
+      <rtgl-view d="h" g="md" av="c">
+        <rtgl-svg id="fallbackIcon" svg="fallbackCircle" wh="24"></rtgl-svg>
+        <rtgl-text>Ready to edit</rtgl-text>
+      </rtgl-view>
+      <rtgl-input placeholder="Project name" value="Project One"></rtgl-input>
+      <rtgl-button>Open project</rtgl-button>
+    </rtgl-view>
+  </rtgl-card>
+</rtgl-view>

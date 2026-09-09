@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import {
   css,
   mediaQueries,
@@ -35,8 +36,7 @@ class RettangoliPopoverElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliPopoverElement.styleSheet) {
-      RettangoliPopoverElement.styleSheet = new CSSStyleSheet();
-      RettangoliPopoverElement.styleSheet.replaceSync(css`
+      RettangoliPopoverElement.styleSheet = createStyleSheet(css`
         :host {
           display: contents;
         }
@@ -117,7 +117,6 @@ class RettangoliPopoverElement extends HTMLElement {
     super();
     RettangoliPopoverElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliPopoverElement.styleSheet];
 
     // Create dialog element
     this._dialogElement = document.createElement('dialog');
@@ -200,6 +199,7 @@ class RettangoliPopoverElement extends HTMLElement {
           }
         })
       : null;
+    setStyleSheets(this.shadow, [RettangoliPopoverElement.styleSheet]);
   }
 
   _emitClose() {

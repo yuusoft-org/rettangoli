@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import {
   css,
   dimensionWithUnit,
@@ -13,8 +14,7 @@ class RettangoliCheckboxElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliCheckboxElement.styleSheet) {
-      RettangoliCheckboxElement.styleSheet = new CSSStyleSheet();
-      RettangoliCheckboxElement.styleSheet.replaceSync(css`
+      RettangoliCheckboxElement.styleSheet = createStyleSheet(css`
         :host {
           display: inline-flex;
         }
@@ -92,7 +92,6 @@ class RettangoliCheckboxElement extends HTMLElement {
     this._isSyncingLabelState = false;
     RettangoliCheckboxElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliCheckboxElement.styleSheet];
 
     this._styles = {
       default: {},
@@ -122,6 +121,7 @@ class RettangoliCheckboxElement extends HTMLElement {
     this.shadow.appendChild(this._wrapperElement);
 
     this._inputElement.addEventListener('change', this._onChange);
+    setStyleSheets(this.shadow, [RettangoliCheckboxElement.styleSheet]);
   }
 
   static get observedAttributes() {

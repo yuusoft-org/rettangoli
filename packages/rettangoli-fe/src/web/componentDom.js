@@ -1,5 +1,9 @@
 import { getNativeHostStyle } from "../core/runtime/props.js";
 import { COMMON_COMPONENT_STYLE_TEXT } from "../core/style/commonComponentStyles.js";
+import {
+  createStyleSheet as createBrowserStyleSheet,
+  setStyleSheets,
+} from "./styleSheets.js";
 
 const RENDER_TARGET_ATTR = "data-rtgl-render-target";
 const RENDER_TARGET_FLAG = "__rtglRenderTarget";
@@ -81,24 +85,20 @@ const findExistingRenderTarget = (shadow) => {
 export const initializeComponentDom = ({
   host,
   cssText,
-  createStyleSheet = () => new CSSStyleSheet(),
+  createStyleSheet = createBrowserStyleSheet,
   createElement = (tagName) => document.createElement(tagName),
 }) => {
   const existingShadow = host.shadowRoot;
   const shadow = existingShadow ?? host.attachShadow({ mode: "open" });
 
-  const commonStyleSheet = createStyleSheet();
-  commonStyleSheet.replaceSync(COMMON_COMPONENT_STYLE_TEXT);
+  const commonStyleSheet = createStyleSheet(COMMON_COMPONENT_STYLE_TEXT);
 
   const adoptedStyleSheets = [commonStyleSheet];
 
   if (cssText) {
-    const styleSheet = createStyleSheet();
-    styleSheet.replaceSync(cssText);
+    const styleSheet = createStyleSheet(cssText);
     adoptedStyleSheets.push(styleSheet);
   }
-
-  shadow.adoptedStyleSheets = adoptedStyleSheets;
 
   let renderTarget = findExistingRenderTarget(shadow);
 
@@ -122,6 +122,7 @@ export const initializeComponentDom = ({
   if (renderTarget.parentNode !== shadow) {
     shadow.appendChild(renderTarget);
   }
+  setStyleSheets(shadow, adoptedStyleSheets);
   const hostStyle = getNativeHostStyle(host);
   if (hostStyle && typeof hostStyle === "object") {
     hostStyle.display = "contents";

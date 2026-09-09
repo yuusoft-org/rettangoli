@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets, getStyleSheets } from "@rettangoli/fe";
 import { css, dimensionWithUnit } from "../common.js";
 import paddingSvgStyles from "../styles/paddingSvgStyles.js";
 import marginStyles from "../styles/marginStyles.js";
@@ -30,8 +31,7 @@ class RettangoliSvgElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliSvgElement.styleSheet) {
-      RettangoliSvgElement.styleSheet = new CSSStyleSheet();
-      RettangoliSvgElement.styleSheet.replaceSync(css`
+      RettangoliSvgElement.styleSheet = createStyleSheet(css`
         :host {
           display: contents;
           color: var(--foreground);
@@ -68,10 +68,10 @@ class RettangoliSvgElement extends HTMLElement {
     super();
     RettangoliSvgElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliSvgElement.styleSheet];
     this._lastSvgContent = undefined;
     this._needsSvgReset = false;
     this._hasConnected = false;
+    setStyleSheets(this.shadow, [RettangoliSvgElement.styleSheet]);
   }
 
   static get observedAttributes() {
@@ -139,6 +139,7 @@ class RettangoliSvgElement extends HTMLElement {
 
     if (this._needsSvgReset || content !== this._lastSvgContent) {
       this.shadow.innerHTML = content;
+      setStyleSheets(this.shadow, getStyleSheets(this.shadow));
       this._lastSvgContent = content;
       this._needsSvgReset = false;
     }

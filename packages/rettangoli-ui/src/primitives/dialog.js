@@ -1,3 +1,4 @@
+import { createStyleSheet, setStyleSheets } from "@rettangoli/fe";
 import {
   css,
   mediaQueries,
@@ -128,8 +129,7 @@ class RettangoliDialogElement extends HTMLElement {
 
   static initializeStyleSheet() {
     if (!RettangoliDialogElement.styleSheet) {
-      RettangoliDialogElement.styleSheet = new CSSStyleSheet();
-      RettangoliDialogElement.styleSheet.replaceSync(css`
+      RettangoliDialogElement.styleSheet = createStyleSheet(css`
         :host {
           display: contents;
         }
@@ -324,7 +324,6 @@ class RettangoliDialogElement extends HTMLElement {
     super();
     RettangoliDialogElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliDialogElement.styleSheet];
 
     // Create dialog element
     this._dialogElement = document.createElement("dialog");
@@ -405,6 +404,7 @@ class RettangoliDialogElement extends HTMLElement {
       this._attemptClose();
     });
     this._dialogElement.addEventListener("keydown", this._onDialogKeyDown);
+    setStyleSheets(this.shadow, [RettangoliDialogElement.styleSheet]);
   }
 
   _attemptClose() {
