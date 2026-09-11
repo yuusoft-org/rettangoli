@@ -51,10 +51,15 @@ const dialogPaddingStyles = [
   buildDialogPaddingStyles("ph", ["--rtgl-dialog-padding-horizontal"]),
   buildDialogPaddingStyles("pv", ["--rtgl-dialog-padding-vertical"]),
 ].join("");
+// Prefer dynamic viewport widths: iPad WebKit can retain a stale legacy vw
+// value after backgrounding, while dvw follows the current window. Keep vw
+// declarations as fallbacks for browsers without dynamic viewport units.
 const fixedLayoutStyle = (selector) => css`
   ${selector} dialog {
     width: 100vw !important;
+    width: 100dvw !important;
     max-width: 100vw !important;
+    max-width: 100dvw !important;
     height: 100vh !important;
     height: 100dvh !important;
     max-height: 100vh !important;
@@ -66,7 +71,9 @@ const fixedLayoutStyle = (selector) => css`
   ${selector} slot[name="content"] {
     box-sizing: border-box;
     width: 100vw !important;
+    width: 100dvw !important;
     max-width: 100vw !important;
+    max-width: 100dvw !important;
     height: 100vh !important;
     height: 100dvh !important;
     max-height: 100vh !important;
@@ -145,6 +152,7 @@ class RettangoliDialogElement extends HTMLElement {
           max-height: 100vh;
           height: 100vh;
           max-width: 100vw;
+          max-width: 100dvw;
           scrollbar-width: none;
           outline: none;
         }
@@ -169,6 +177,14 @@ class RettangoliDialogElement extends HTMLElement {
           /* Default margins will be set dynamically via JavaScript for adaptive centering */
           margin-top: 40px;
           margin-bottom: 40px;
+        }
+
+        /* Unsupported units inside calc() with var() invalidate the winning
+           declaration at computed-value time instead of using its fallback. */
+        @supports (width: 100dvw) {
+          slot[name="content"] {
+            max-width: calc(100dvw - 2 * var(--spacing-lg));
+          }
         }
 
         .close-button {
@@ -233,25 +249,32 @@ class RettangoliDialogElement extends HTMLElement {
         /* Size attribute styles */
         :host([s="sm"]) slot[name="content"] {
           width: 33vw;
+          width: 33dvw;
         }
 
         :host([s="md"]) slot[name="content"] {
           width: 50vw;
+          width: 50dvw;
         }
 
         :host([s="lg"]) slot[name="content"] {
           width: 80vw;
+          width: 80dvw;
         }
 
         :host([s="f"]) dialog {
           width: 100vw;
+          width: 100dvw;
           max-width: 100vw;
+          max-width: 100dvw;
         }
 
         :host([s="f"]) slot[name="content"] {
           box-sizing: border-box;
           width: 100vw;
+          width: 100dvw;
           max-width: 100vw;
+          max-width: 100dvw;
           margin-left: 0;
           margin-right: 0;
         }
@@ -263,6 +286,15 @@ class RettangoliDialogElement extends HTMLElement {
             box-sizing: border-box;
             width: calc(100vw - 2 * var(--spacing-lg));
             max-width: calc(100vw - 2 * var(--spacing-lg));
+          }
+
+          @supports (width: 100dvw) {
+            :host(:not([w])[s="sm"]) slot[name="content"],
+            :host(:not([w])[s="md"]) slot[name="content"],
+            :host(:not([w])[s="lg"]) slot[name="content"] {
+              width: calc(100dvw - 2 * var(--spacing-lg));
+              max-width: calc(100dvw - 2 * var(--spacing-lg));
+            }
           }
         }
 
@@ -300,6 +332,7 @@ class RettangoliDialogElement extends HTMLElement {
           margin-left: 0;
           margin-right: 0;
           max-width: 100vw;
+          max-width: 100dvw;
         }
 
         :host([bare]) dialog::backdrop {
@@ -314,6 +347,7 @@ class RettangoliDialogElement extends HTMLElement {
           margin-left: 0;
           margin-right: 0;
           max-width: 100vw;
+          max-width: 100dvw;
           padding: 0;
         }
       `);

@@ -4,6 +4,7 @@
 
 ### Improvements
 
+- `rtgl-dialog`: prefer dynamic viewport widths so centered and fullscreen dialogs keep their correct width after iPad apps resume; retain legacy viewport-unit fallbacks.
 - `rtgl-tabs`: added reactive `s="sm|md|lg"` spacing presets with 34px, 38px, and 44px tray heights and `md` as the default; trays and individual tabs fit their labels, with horizontal scrolling in narrow containers, while preserving theme typography, colors, corner radii, and controlled selection events.
 - `rtgl-svg`: retain unchanged SVG markup across size updates and DOM moves while preserving icon replacement, late registration, and key resets.
 - `rtgl-view`, `rtgl-grid`, `rtgl-image`, and `rtgl-textarea`: initialize responsive styles once and recalculate only affected breakpoints, retaining existing responsive inheritance and live updates.
