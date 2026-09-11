@@ -1,6 +1,7 @@
 {
   "name": "rettangoli",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/rettangoli.dev"
   ]
 }

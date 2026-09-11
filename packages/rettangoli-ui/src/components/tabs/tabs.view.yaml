@@ -3,8 +3,34 @@ refs:
     eventListeners:
       click:
         handler: handleClickItem
+styles:
+  .rtgl-tabs:
+    --rtgl-tabs-padding: calc(var(--spacing-sm) * 0.75)
+    --rtgl-tabs-gap: var(--spacing-xs)
+    --rtgl-tabs-item-height: calc(var(--spacing-md) * 4)
+    --rtgl-tabs-item-ph: calc(var(--spacing-lg) * 0.8125)
+    --rtgl-tabs-item-pv: calc(var(--spacing-md) * 0.75)
+    width: max-content
+    max-width: 100%
+    padding: var(--rtgl-tabs-padding)
+    gap: var(--rtgl-tabs-gap)
+  '.rtgl-tabs[data-size="sm"]':
+    --rtgl-tabs-item-height: calc(var(--spacing-md) * 3.5)
+    --rtgl-tabs-item-ph: calc(var(--spacing-lg) * 0.625)
+    --rtgl-tabs-item-pv: calc(var(--spacing-sm) * 0.75)
+  '.rtgl-tabs[data-size="lg"]':
+    --rtgl-tabs-padding: var(--spacing-sm)
+    --rtgl-tabs-gap: calc(var(--spacing-xs) * 1.5)
+    --rtgl-tabs-item-height: calc(var(--spacing-md) * 4.5)
+    --rtgl-tabs-item-ph: var(--spacing-lg)
+    --rtgl-tabs-item-pv: var(--spacing-md)
+  .rtgl-tab:
+    flex: 0 0 auto
+    min-height: var(--rtgl-tabs-item-height)
+    padding: var(--rtgl-tabs-item-pv) var(--rtgl-tabs-item-ph)
+    white-space: nowrap
 template:
-  - rtgl-view d=h g=sm bgc=mu p=sm br=lg ${containerAttrString}:
+  - rtgl-view class=rtgl-tabs data-size=${size} d=h sh bgc=mu br=lg ${containerAttrString}:
       - $for item, i in items:
-          - rtgl-view#tab${i} data-id=${item.id} cur=pointer bgc=${item.bgColor} bw=xs bc=${item.borderColor} pv=md ph=lg br=lg data-testid=${item.testId}:
+          - rtgl-view#tab${i} class=rtgl-tab data-id=${item.id} av=c cur=pointer bgc=${item.bgColor} bw=xs bc=${item.borderColor} br=lg data-testid=${item.testId}:
               - rtgl-text s=sm c=${item.textColor}: ${item.label}

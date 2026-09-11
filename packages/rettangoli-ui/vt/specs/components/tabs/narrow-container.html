@@ -1,0 +1,104 @@
+---
+title: Tabs - Overflow - Narrow Container
+description: Keeps multiword labels reachable in a narrow, clipped parent at every size.
+viewport:
+  id: mobile
+  width: 390
+  height: 420
+specs:
+  - The tray stays within a 200px parent that clips overflow.
+  - Overflowing tabs scroll horizontally without changing the size preset's height.
+  - The last tab can be fully revealed and clicked at every size.
+steps:
+  - action: customEvent
+    name: vt:scroll-tabs-to-end
+  - action: waitFor
+    selector: '#overflow-result[data-ready="true"]'
+    state: attached
+    timeoutMs: 1500
+  - action: select
+    testId: team-sm
+    steps:
+      - action: click
+  - action: select
+    testId: team-md
+    steps:
+      - action: click
+  - action: select
+    testId: team-lg
+    steps:
+      - action: click
+  - action: assert
+    type: exists
+    selector: '#overflow-result[data-passed="true"]'
+  - action: move
+    x: 350
+    y: 350
+  - action: screenshot
+---
+<rtgl-view p="lg" g="lg">
+  <rtgl-view g="md">
+    <rtgl-text s="sm">s=sm · 200px container</rtgl-text>
+    <div style="width: 200px; overflow: hidden;">
+      <rtgl-tabs id="narrow-sm" s="sm" selected-tab="account"></rtgl-tabs>
+    </div>
+  </rtgl-view>
+  <rtgl-view g="md">
+    <rtgl-text s="sm">s=md · 200px container</rtgl-text>
+    <div style="width: 200px; overflow: hidden;">
+      <rtgl-tabs id="narrow-md" s="md" selected-tab="account"></rtgl-tabs>
+    </div>
+  </rtgl-view>
+  <rtgl-view g="md">
+    <rtgl-text s="sm">s=lg · 200px container</rtgl-text>
+    <div style="width: 200px; overflow: hidden;">
+      <rtgl-tabs id="narrow-lg" s="lg" selected-tab="account"></rtgl-tabs>
+    </div>
+  </rtgl-view>
+  <rtgl-text id="overflow-result" s="sm">Account settings selected</rtgl-text>
+</rtgl-view>
+
+<script>
+  const result = document.getElementById('overflow-result');
+  const sizes = ['sm', 'md', 'lg'];
+  const selectedSizes = new Set();
+  for (const size of sizes) {
+    const tabs = document.getElementById(`narrow-${size}`);
+    tabs.items = [
+      { id: 'account', label: 'Account settings' },
+      { id: 'billing', label: 'Billing history' },
+      { id: 'team', label: 'Team members', testId: `team-${size}` },
+    ];
+    tabs.addEventListener('item-click', (event) => {
+      tabs.setAttribute('selected-tab', event.detail.id);
+      if (event.detail.id === 'team') selectedSizes.add(size);
+      if (selectedSizes.size === sizes.length) {
+        result.textContent = 'Team members selected at every size';
+        result.dataset.passed = 'true';
+      }
+    });
+    tabs.render();
+  }
+
+  window.addEventListener('vt:scroll-tabs-to-end', async () => {
+    const heights = { sm: 34, md: 38, lg: 44 };
+    for (const size of sizes) {
+      const tabs = document.getElementById(`narrow-${size}`);
+      const tray = tabs.shadowRoot.querySelector('.rtgl-tabs');
+      const rect = tray.getBoundingClientRect();
+      if (rect.width > 200 || Math.abs(rect.height - heights[size]) > 0.1) {
+        throw new Error(`${size}: tray changed dimensions or escaped its parent`);
+      }
+      if (tray.scrollWidth <= tray.clientWidth || getComputedStyle(tray).overflowX !== 'auto') {
+        throw new Error(`${size}: overflowing tabs are not horizontally scrollable`);
+      }
+      tray.scrollLeft = tray.scrollWidth;
+      await new Promise(requestAnimationFrame);
+      const lastTab = tray.querySelector('[data-id="team"]').getBoundingClientRect();
+      if (tray.scrollLeft <= 0 || lastTab.left < rect.left - 1 || lastTab.right > rect.right + 1) {
+        throw new Error(`${size}: the last tab cannot be fully revealed`);
+      }
+    }
+    result.dataset.ready = 'true';
+  });
+</script>

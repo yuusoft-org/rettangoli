@@ -1,0 +1,50 @@
+---
+title: Tabs - Sizes - Content Width
+description: Compares all three sizes with regular labels and a single-character label.
+viewport:
+  id: desktop
+  width: 900
+  height: 650
+specs:
+  - Small, medium, and large trays are 34px, 38px, and 44px high with the default theme.
+  - The tray fits its contents inside a full-width parent.
+  - Each tab fits its label, including a one-character label.
+  - Omitted size uses the medium preset.
+---
+<rtgl-view w="f" p="lg" g="xl">
+  <rtgl-view d="h" g="xl" wrap>
+    <rtgl-view g="md">
+      <rtgl-text s="sm">s=sm</rtgl-text>
+      <rtgl-tabs id="regular-sm" s="sm" selected-tab="overview"></rtgl-tabs>
+      <rtgl-tabs id="tiny-sm" s="sm" selected-tab="overview"></rtgl-tabs>
+    </rtgl-view>
+    <rtgl-view g="md">
+      <rtgl-text s="sm">s=md</rtgl-text>
+      <rtgl-tabs id="regular-md" s="md" selected-tab="overview"></rtgl-tabs>
+      <rtgl-tabs id="tiny-md" s="md" selected-tab="overview"></rtgl-tabs>
+    </rtgl-view>
+    <rtgl-view g="md">
+      <rtgl-text s="sm">s=lg</rtgl-text>
+      <rtgl-tabs id="regular-lg" s="lg" selected-tab="overview"></rtgl-tabs>
+      <rtgl-tabs id="tiny-lg" s="lg" selected-tab="overview"></rtgl-tabs>
+    </rtgl-view>
+  </rtgl-view>
+  <rtgl-view w="f" g="md">
+    <rtgl-text s="sm">Default size in a full-width parent</rtgl-text>
+    <rtgl-tabs id="default-tabs" selected-tab="overview"></rtgl-tabs>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  document.querySelectorAll('rtgl-tabs').forEach((tabs) => {
+    tabs.items = [
+      { id: 'overview', label: tabs.id.startsWith('tiny') ? 'A' : 'Overview' },
+      { id: 'metrics', label: 'Metrics' },
+      { id: 'settings', label: 'Settings' },
+    ];
+    tabs.addEventListener('item-click', (event) => {
+      tabs.setAttribute('selected-tab', event.detail.id);
+    });
+    tabs.render();
+  });
+</script>

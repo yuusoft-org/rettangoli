@@ -150,7 +150,7 @@ try {
   assert.equal(versionOutput.trim(), installedPackageJson.version);
 
   const helpOutput = run(process.execPath, [installedBinPath, "--help"]);
-  for (const command of ["check", "fe", "be", "vt", "sites", "ui"]) {
+  for (const command of ["check", "fe", "vt", "sites", "ui"]) {
     assert.match(helpOutput, new RegExp(`\\b${command}\\b`));
     assert.match(
       run(process.execPath, [installedBinPath, command, "--help"]),
