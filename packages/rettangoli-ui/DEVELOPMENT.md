@@ -366,6 +366,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - `p` sets both content-padding axes; `ph` and `pv` override the horizontal and vertical axes independently
 - `p`, `ph`, and `pv` accept `none`, `xs`, `sm`, `md`, `lg`, and `xl`
 - `layout=top` and responsive variants such as `md-layout=top` keep natural content height and let the native dialog own overflow scrolling
+- Dialog widths prefer `dvw`, with legacy `vw` fallbacks. This keeps dialogs sized to the current window when iPad WebKit retains stale legacy viewport units after backgrounding.
 - `layout=fixed` locks the content surface to the full viewport
 - `layout=fixed-top` keeps the surface top-aligned with a standard top inset and a 36% viewport-height bottom inset; it clips outer overflow so a bounded child such as `rtgl-form` can scroll internally
 - `fixed-top` preserves its asymmetric viewport insets independently of content padding; `p=none` removes content padding and horizontal gutters without removing the top and bottom insets
