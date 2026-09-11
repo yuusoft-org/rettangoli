@@ -1,6 +1,7 @@
 // Run with node spec/dialog.viewport.browser.mjs.
 // Fault injection reproduces iPad WebKit resolving legacy vw at half width after
-// backgrounding. Dynamic viewport units must still size open dialogs correctly.
+// backgrounding, or rejects dvw as an unknown unit in older browsers. Dynamic
+// sizing and the legacy fallback must both preserve the open dialog layout.
 import assert from "node:assert/strict";
 import { build } from "esbuild";
 import { chromium, webkit } from "playwright";
@@ -17,7 +18,7 @@ const bundle = await build({
 for (const [name, engine] of Object.entries({ chromium, webkit })) {
   const browser = await engine.launch({ headless: true });
   try {
-    for (const staleWidth of [false, true]) {
+    for (const viewportMode of ["normal", "stale", "unsupported"]) {
       const page = await browser.newPage({
         viewport: { width: 1133, height: 744 },
         hasTouch: true,
@@ -26,19 +27,22 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await page.setContent(
         '<meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{--spacing-lg:16px;--background:white;--border:black;--border-radius-md:8px}body{margin:0}</style>',
       );
-      if (staleWidth) {
-        await page.evaluate(() => {
+      if (viewportMode !== "normal") {
+        await page.evaluate((mode) => {
           const replaceSync = CSSStyleSheet.prototype.replaceSync;
           CSSStyleSheet.prototype.replaceSync = function (css) {
-            return replaceSync.call(
-              this,
-              css.replace(
-                /([\d.]+)vw\b/g,
-                (_, value) => `${Number(value) / 2}vw`,
-              ),
-            );
+            const simulated =
+              mode === "stale"
+                ? css.replace(
+                    /([\d.]+)vw\b/g,
+                    (_, value) => `${Number(value) / 2}vw`,
+                  )
+                : // Keep declarations present: calc() with var() can survive
+                  // parsing and invalidate a fallback at computed-value time.
+                  css.replaceAll("dvw", "unsupportedviewport");
+            return replaceSync.call(this, simulated);
           };
-        });
+        }, viewportMode);
       }
       await page.addScriptTag({ content: bundle.outputFiles[0].text });
       await page.evaluate(() => {
@@ -71,12 +75,13 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
                 .map((a) => a.finished),
             ),
           );
-          const box = await dialog.evaluate((el) =>
-            el.shadowRoot
-              .querySelector("slot")
-              .getBoundingClientRect()
-              .toJSON(),
-          );
+          const { box, maxWidth } = await dialog.evaluate((el) => {
+            const slot = el.shadowRoot.querySelector("slot");
+            return {
+              box: slot.getBoundingClientRect().toJSON(),
+              maxWidth: getComputedStyle(slot).maxWidth,
+            };
+          });
           const expected =
             layout === "fixed"
               ? size.width
@@ -85,7 +90,13 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
                 : size.width * 0.5 + (layout === "fixed-top" ? 0 : 34);
           assert.ok(
             Math.abs(box.width - expected) < 1,
-            `${name}, stale=${staleWidth}, ${layout}, ${size.width}: ${box.width} != ${expected}`,
+            `${name}, viewport=${viewportMode}, ${layout}, ${size.width}: ${box.width} != ${expected}`,
+          );
+          const expectedMaxWidth =
+            layout === "fixed" ? size.width : size.width - 32;
+          assert.ok(
+            Math.abs(parseFloat(maxWidth) - expectedMaxWidth) < 1,
+            `${name}, viewport=${viewportMode}, ${layout}: max-width ${maxWidth} != ${expectedMaxWidth}px`,
           );
           assert.ok(
             Math.abs(box.x + box.width / 2 - size.width / 2) < 1,
@@ -98,7 +109,7 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await page.close();
     }
     console.log(
-      `${name}: centered/fixed/fixed-top at phone/tablet widths with normal and stale legacy vw passed`,
+      `${name}: centered/fixed/fixed-top at phone/tablet widths with normal, stale, and unsupported dynamic viewport units passed`,
     );
   } finally {
     await browser.close();

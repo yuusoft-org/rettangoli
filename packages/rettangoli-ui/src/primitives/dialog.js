@@ -174,10 +174,17 @@ class RettangoliDialogElement extends HTMLElement {
           margin-right: var(--spacing-lg);
           width: fit-content;
           max-width: calc(100vw - 2 * var(--spacing-lg));
-          max-width: calc(100dvw - 2 * var(--spacing-lg));
           /* Default margins will be set dynamically via JavaScript for adaptive centering */
           margin-top: 40px;
           margin-bottom: 40px;
+        }
+
+        /* Unsupported units inside calc() with var() invalidate the winning
+           declaration at computed-value time instead of using its fallback. */
+        @supports (width: 100dvw) {
+          slot[name="content"] {
+            max-width: calc(100dvw - 2 * var(--spacing-lg));
+          }
         }
 
         .close-button {
@@ -278,9 +285,16 @@ class RettangoliDialogElement extends HTMLElement {
           :host(:not([w])[s="lg"]) slot[name="content"] {
             box-sizing: border-box;
             width: calc(100vw - 2 * var(--spacing-lg));
-            width: calc(100dvw - 2 * var(--spacing-lg));
             max-width: calc(100vw - 2 * var(--spacing-lg));
-            max-width: calc(100dvw - 2 * var(--spacing-lg));
+          }
+
+          @supports (width: 100dvw) {
+            :host(:not([w])[s="sm"]) slot[name="content"],
+            :host(:not([w])[s="md"]) slot[name="content"],
+            :host(:not([w])[s="lg"]) slot[name="content"] {
+              width: calc(100dvw - 2 * var(--spacing-lg));
+              max-width: calc(100dvw - 2 * var(--spacing-lg));
+            }
           }
         }
 
