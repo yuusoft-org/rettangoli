@@ -100,14 +100,81 @@ describe("rtgl-popover primitive", () => {
     popover.append(content, floatingPanel);
     document.body.appendChild(popover);
 
+    popover.setAttribute("open", "");
     const floatingSlot = popover.shadowRoot.querySelector('slot[name="floating"]');
     const floatingLayer = floatingSlot.parentElement;
 
-    expect(popover.content.contains(content)).toBe(true);
-    expect(popover.content.contains(floatingPanel)).toBe(false);
+    const contentSlot = popover.content.querySelector("slot:not([name])");
+    expect(content.parentElement).toBe(popover);
+    expect(contentSlot.assignedElements()).toEqual([content]);
+    expect(contentSlot.assignedElements()).not.toContain(floatingPanel);
     expect(floatingPanel.parentElement).toBe(popover);
     expect(floatingSlot.assignedElements()).toContain(floatingPanel);
     expect(floatingLayer.classList.contains("floating-layer")).toBe(true);
+  });
+
+  it("preserves caller-owned children through insertion, reordering, and removal while open", async () => {
+    const popover = createTestPopover();
+    const placeholder = document.createElement("div");
+    const input = document.createElement("input");
+    input.setAttribute("slot", "content");
+    input.value = "Draft text";
+    popover.append(placeholder, input);
+    document.body.append(popover);
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+    const surface = popover.content;
+    const namedSlot = surface.querySelector('slot[name="content"]');
+    expect(namedSlot.assignedElements()).toEqual([input]);
+    expect(input.getAttribute("slot")).toBe("content");
+
+    const option = document.createElement("button");
+    option.textContent = "Tag One";
+    popover.insertBefore(option, placeholder);
+    popover.removeChild(placeholder);
+    popover.insertBefore(input, option);
+    await vi.runAllTimersAsync();
+
+    expect([...popover.children]).toEqual([input, option]);
+    expect(input.value).toBe("Draft text");
+    expect(popover.content).toBe(surface);
+    expect(surface.getRootNode()).toBe(popover.shadowRoot);
+    expect(surface.querySelector("slot:not([name])").assignedElements()).toEqual([option]);
+    expect(namedSlot.assignedElements()).toEqual([input]);
+
+    popover.removeAttribute("open");
+    expect(surface.querySelectorAll("slot")).toHaveLength(0);
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+    expect(popover.content).toBe(surface);
+    expect(surface.querySelector('slot[name="content"]').assignedElements()).toEqual([input]);
+    expect([...popover.children]).toEqual([input, option]);
+  });
+
+  it("updates content sizing and repositions after slotted content changes", async () => {
+    const popover = createTestPopover();
+    document.body.append(popover);
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+    const positioned = vi.fn();
+    popover.addEventListener("positioned", positioned);
+    const surface = popover.content;
+    popover.setAttribute("content-w", "320");
+    popover.setAttribute("content-sv", "true");
+    popover.setAttribute("content-ph", "md");
+    popover.setAttribute("content-g", "lg");
+    await vi.runAllTimersAsync();
+    expect(surface.getAttribute("w")).toBe("320");
+    expect(surface.getAttribute("sv")).toBe("true");
+    expect(surface.getAttribute("ph")).toBe("md");
+    expect(surface.getAttribute("g")).toBe("lg");
+    positioned.mockClear();
+
+    const option = document.createElement("div");
+    popover.append(option);
+    await vi.runAllTimersAsync();
+    expect(positioned).toHaveBeenCalledOnce();
+    expect(surface.querySelector("slot:not([name])").assignedElements()).toEqual([option]);
   });
 
   it("emits a bubbling and composed event after positioning succeeds", async () => {

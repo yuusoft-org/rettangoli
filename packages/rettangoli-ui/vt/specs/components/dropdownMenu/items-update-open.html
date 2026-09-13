@@ -92,7 +92,7 @@ viewport:
   const getVisibleItems = () => {
     const dropdownMenu = getDropdownMenu();
     const popover = dropdownMenu?.shadowRoot?.querySelector("rtgl-popover");
-    return [...popover?.content?.querySelectorAll('[id^="option"]') ?? []];
+    return [...popover?.querySelectorAll('[id^="option"]') ?? []];
   };
 
   window.dropdownUpdate = {
