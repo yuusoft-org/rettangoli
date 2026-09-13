@@ -12,15 +12,38 @@ import {
 } from "vitest";
 
 import createPopover from "../src/primitives/popover.js";
+import createView from "../src/primitives/view.js";
 
 const TEST_TAG = "rtgl-popover-primitive-test";
 
 class ResizeObserverStub {
-  observe() {}
+  static instances = new Set();
 
-  unobserve() {}
+  constructor(callback) {
+    this.callback = callback;
+    this.targets = new Set();
+    ResizeObserverStub.instances.add(this);
+  }
 
-  disconnect() {}
+  observe(target) {
+    this.targets.add(target);
+  }
+
+  unobserve(target) {
+    this.targets.delete(target);
+  }
+
+  disconnect() {
+    this.targets.clear();
+  }
+
+  static resize(target) {
+    for (const observer of this.instances) {
+      if (observer.targets.has(target)) {
+        observer.callback([{ target }]);
+      }
+    }
+  }
 }
 
 beforeAll(() => {
@@ -72,10 +95,14 @@ beforeAll(() => {
   if (!customElements.get(TEST_TAG)) {
     customElements.define(TEST_TAG, createPopover({}));
   }
+  if (!customElements.get("rtgl-view")) {
+    customElements.define("rtgl-view", createView({}));
+  }
 });
 
 beforeEach(() => {
   vi.useFakeTimers();
+  ResizeObserverStub.instances.clear();
 });
 
 afterEach(() => {
@@ -90,7 +117,119 @@ afterAll(() => {
 
 const createTestPopover = () => document.createElement(TEST_TAG);
 
+const createScrollingPopover = (slotName = "") => {
+  const popover = createTestPopover();
+  popover.setAttribute("content-h", "200");
+  popover.setAttribute("content-sv", "true");
+  popover.setAttribute("content-style", "--rtgl-scrollbar-y-enabled: 1;");
+  const content = document.createElement("div");
+  if (slotName) {
+    content.slot = slotName;
+  }
+  for (let index = 0; index < 8; index += 1) {
+    const row = document.createElement("div");
+    row.textContent = `Row ${index}`;
+    content.append(row);
+  }
+  popover.append(content);
+  document.body.append(popover);
+  popover.setAttribute("open", "");
+
+  // jsdom has no layout; keep the scrollport fixed while content changes.
+  const surface = popover.content;
+  Object.defineProperties(surface, {
+    clientWidth: { value: 200 },
+    clientHeight: { value: 200 },
+    scrollWidth: { value: 200 },
+    scrollHeight: {
+      configurable: true,
+      get: () => Math.max(200, content.querySelectorAll("div:not([hidden])").length * 100),
+    },
+  });
+  return { popover, content, surface, controller: surface._scrollbarController };
+};
+
 describe("rtgl-popover primitive", () => {
+  it.each(["", "content"])("refreshes scrollbars when existing %s slot content changes", async (slotName) => {
+    const { content, surface, controller } = createScrollingPopover(slotName);
+    await vi.runAllTimersAsync();
+    const slotChanged = vi.fn();
+    surface.addEventListener("slotchange", slotChanged);
+    expect(controller.vertical.thumb.style.height).toBe("50px");
+
+    // Filtering existing rows does not change slot assignments or surface size.
+    [...content.children].slice(4).forEach((row) => { row.hidden = true; });
+    await vi.runAllTimersAsync();
+    expect(controller.vertical.thumb.style.height).toBe("100px");
+
+    [...content.children].slice(1).forEach((row) => { row.hidden = true; });
+    await vi.runAllTimersAsync();
+    expect(controller.vertical.track.hasAttribute("data-visible")).toBe(false);
+    expect(controller.layer.hasAttribute("data-enabled")).toBe(false);
+
+    content.replaceChildren(...Array.from({ length: 8 }, () => document.createElement("div")));
+    await vi.runAllTimersAsync();
+    expect(controller.vertical.track.hasAttribute("data-visible")).toBe(true);
+    expect(controller.vertical.thumb.style.height).toBe("50px");
+    expect(slotChanged).not.toHaveBeenCalled();
+  });
+
+  it.each(["", "content"])("refreshes scrollbars on a projected %s slot content resize", async (slotName) => {
+    const { content, surface, controller } = createScrollingPopover(slotName);
+    let contentHeight = 800;
+    Object.defineProperty(surface, "scrollHeight", { get: () => contentHeight });
+    await vi.runAllTimersAsync();
+    expect(controller.vertical.thumb.style.height).toBe("50px");
+
+    // A content resize (e.g. an image loading) need not mutate the DOM.
+    contentHeight = 400;
+    ResizeObserverStub.resize(content);
+    await vi.runAllTimersAsync();
+    expect(controller.vertical.thumb.style.height).toBe("100px");
+  });
+
+  it("updates projected content observers on reassignment, close, and reconnect", async () => {
+    const { popover, content, controller } = createScrollingPopover();
+    await vi.runAllTimersAsync();
+    const refresh = vi.spyOn(controller, "_refreshNow");
+    const resizeObserver = controller._resizeObserver;
+    expect(resizeObserver.targets.has(content)).toBe(true);
+
+    content.slot = "floating";
+    await vi.runAllTimersAsync();
+    expect(resizeObserver.targets.has(content)).toBe(false);
+    refresh.mockClear();
+    content.firstChild.hidden = true;
+    await vi.runAllTimersAsync();
+    expect(refresh).not.toHaveBeenCalled();
+
+    content.slot = "content";
+    await vi.runAllTimersAsync();
+    expect(resizeObserver.targets.has(content)).toBe(true);
+    popover.removeAttribute("open");
+    await vi.runAllTimersAsync();
+    expect(resizeObserver.targets.has(content)).toBe(false);
+    refresh.mockClear();
+    content.firstChild.hidden = false;
+    await vi.runAllTimersAsync();
+    expect(refresh).not.toHaveBeenCalled();
+
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+    expect(resizeObserver.targets.has(content)).toBe(true);
+    popover.remove();
+    await vi.runAllTimersAsync();
+    expect(resizeObserver.targets.size).toBe(0);
+    expect(controller._mutationObserver).toBe(null);
+
+    document.body.append(popover);
+    await vi.runAllTimersAsync();
+    expect(controller._resizeObserver.targets.has(content)).toBe(true);
+    content.replaceChildren();
+    await vi.runAllTimersAsync();
+    expect(controller.vertical.track.hasAttribute("data-visible")).toBe(false);
+  });
+
   it("keeps floating content out of the scrolling content wrapper", () => {
     const popover = createTestPopover();
     const content = document.createElement("div");
