@@ -285,7 +285,7 @@ const parsePayloadObjectKeys = (payloadSource = "") => {
   }
 };
 
-export const runListenerConfigRules = ({ models = [] }) => {
+export const runListenerConfigRules = ({ models = [], includeStyle = false }) => {
   const diagnostics = [];
 
   models.forEach((model) => {
@@ -419,7 +419,7 @@ export const runListenerConfigRules = ({ models = [] }) => {
         }
       });
 
-      if (listenerSymbols.handler.isValid && !isValidHandlerSymbol(listenerSymbols.handler.value)) {
+      if (includeStyle && listenerSymbols.handler.isValid && !isValidHandlerSymbol(listenerSymbols.handler.value)) {
         diagnostics.push({
           code: "RTGL-CHECK-HANDLER-001",
           severity: "error",

@@ -4,7 +4,7 @@ import { collectBindingNames as collectFeBindingNames } from "./fe-contracts.js"
 import { parse as parseJempl } from "jempl";
 import { parseElementKey as parseYahtmlElementKey } from "yahtml";
 
-const CONTROL_PREFIXES = ["$if", "$elif", "$else", "$for"];
+const CONTROL_PREFIXES = ["$if", "$elif", "$else", "$for", "$when", "$partial", "$each"];
 
 export const parseYamlSafe = ({ text, filePath }) => {
   try {
@@ -1519,23 +1519,28 @@ const classifyJemplControlDirective = (rawKey = "") => {
   if (!key.startsWith("$")) {
     return null;
   }
-  if (/^\$if(?:\s|\(|$)/u.test(key)) {
+  if (/^\$if(?:#\w+)?(?:\s|\(|$)/u.test(key)) {
     return "if";
   }
-  if (/^\$elif(?:\s|\(|$)/u.test(key)) {
+  if (/^\$elif(?:#\w+)?(?:\s|\(|$)/u.test(key)) {
     return "elif";
   }
-  if (/^\$else(?:\s|$)/u.test(key)) {
+  if (/^\$else(?:#\w+)?(?:\s|$)/u.test(key)) {
     return "else";
   }
-  if (/^\$for(?:\s|\(|$)/u.test(key)) {
+  if (/^\$for(?::\w+)?(?:\s|\(|$)/u.test(key)) {
     return "for";
+  }
+  // Property directives are validated by Jempl itself. Their values are not
+  // selector keys or nested control blocks.
+  if (key === "$when" || key === "$partial" || key === "$each") {
+    return "property";
   }
   return "unknown";
 };
 
 const validateJemplConditionDirectiveSyntax = (rawKey = "", directive = "$if") => {
-  const suffix = rawKey.slice(directive.length).trim();
+  const suffix = rawKey.slice(directive.length).replace(/^#\w+/, "").trim();
   if (!suffix) {
     return `missing condition after '${directive}'`;
   }
@@ -1549,6 +1554,7 @@ const validateJemplConditionDirectiveSyntax = (rawKey = "", directive = "$if") =
 };
 
 const validateJemplForDirectiveSyntax = (rawKey = "") => {
+  rawKey = rawKey.replace(/^\$for:\w+/, "$for");
   const forMatchWithParentheses = rawKey.match(
     /^\$for\s*\(\s*([A-Za-z_$][A-Za-z0-9_$]*)(?:\s*,\s*([A-Za-z_$][A-Za-z0-9_$]*))?\s+in\s+(.+)\)$/u,
   );
@@ -1605,6 +1611,10 @@ const collectJemplControlDirectiveDiagnostics = ({
       const key = String(rawKey || "").trim();
       const directiveKind = classifyJemplControlDirective(key);
 
+      if (directiveKind === "property") {
+        return;
+      }
+
       if (!directiveKind) {
         hasOpenIfChain = false;
         visitNode(value);
@@ -1628,7 +1638,7 @@ const collectJemplControlDirectiveDiagnostics = ({
         syntaxError = validateJemplConditionDirectiveSyntax(key, "$if");
       } else if (directiveKind === "elif") {
         syntaxError = validateJemplConditionDirectiveSyntax(key, "$elif");
-      } else if (directiveKind === "else" && key !== "$else") {
+      } else if (directiveKind === "else" && !/^\$else(?:#\w+)?$/.test(key)) {
         syntaxError = "expected '$else' with no trailing tokens";
       } else if (directiveKind === "for") {
         syntaxError = validateJemplForDirectiveSyntax(key);

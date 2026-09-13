@@ -18,7 +18,7 @@ This file is the planning source of truth for `packages/rettangoli-vt`.
   Status: in progress
   Goal: fully testable in-repo with Docker image build and verification.
   Scope: test suite that builds local Docker image, runs generate/report/accept in temp folders, validates all output artifacts.
-  Notes: run with `bun run test:docker` (requires Docker daemon).
+  Notes: run with `bun run test:e2e:full` (build and scenarios) or `bun run test:e2e` (existing image); requires Docker daemon. The test image includes complete workspace runtime sources and verifies every CLI command before use.
   Sub-tasks:
     - Deep output validation: validate screenshot WebP headers, non-zero file sizes, report.json schema, metrics.json schema, HTML content markers. (in progress)
     - Multi-spec multi-section fixture test: validate directory structure completeness across multiple section folders. (planned)
@@ -37,6 +37,7 @@ This file is the planning source of truth for `packages/rettangoli-vt`.
   Status: planned  
   Goal: publish updated `@rettangoli/vt` and `rtgl`, then publish matching Docker image.  
   Scope: version bumps, dependency alignment, docker tag update, publish script run.
+  Notes: image tags now derive from package manifests, and both image recipes verify the installed CLI, VT and Playwright versions. Publishing remains an explicit release step.
 
 - `Selector test coverage`  
   Status: planned  
@@ -75,4 +76,3 @@ This file is the planning source of truth for `packages/rettangoli-vt`.
 
 - Re-exposing broad internal capture tuning knobs (keep public surface small).
 - Backward compatibility restoration for removed VT capture API.
-

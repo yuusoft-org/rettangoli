@@ -1,3 +1,7 @@
+import { decodeTemplateAttribute } from "./attributeEncoding.js";
+import { parsePropertyLiteral } from "./propertyLiteral.js";
+import { getAttributeAssignments } from "./attributeAssignments.js";
+
 const PROP_PREFIX = ":";
 
 const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
@@ -75,24 +79,18 @@ export const collectBindingNames = (attrsString = "") => {
     return [];
   }
 
-  const attrAssignmentRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]*))/g;
+  const assignments = getAttributeAssignments(attrsString);
   const booleanAttrRegex = /(\S+?)(?=\s|$)/g;
   const processedAttrs = new Set();
   const bindingNames = [];
-  let match;
-
-  while ((match = attrAssignmentRegex.exec(attrsString)) !== null) {
+  for (const match of assignments) {
     const rawBindingName = match[1];
     processedAttrs.add(rawBindingName);
     bindingNames.push(rawBindingName);
   }
-  attrAssignmentRegex.lastIndex = 0;
 
   let remainingAttrsString = attrsString;
-  const processedMatches = [];
-  while ((match = attrAssignmentRegex.exec(attrsString)) !== null) {
-    processedMatches.push(match[0]);
-  }
+  const processedMatches = assignments.map((match) => match[0]);
 
   processedMatches.forEach((processedMatch) => {
     remainingAttrsString = remainingAttrsString.replace(processedMatch, " ");
@@ -127,6 +125,7 @@ export const parseNodeBindings = ({
   viewData = {},
   tagName,
   isWebComponent,
+  decodeAttributeValues = false,
 }) => {
   const attrs = {};
   const props = {};
@@ -167,13 +166,15 @@ export const parseNodeBindings = ({
     return { attrs, props };
   }
 
-  const attrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]*))/g;
-  let match;
+  const assignments = getAttributeAssignments(attrsString);
   const processedAttrs = new Set();
 
-  while ((match = attrRegex.exec(attrsString)) !== null) {
+  for (const match of assignments) {
     const rawBindingName = match[1];
-    const rawValue = match[2] ?? match[3] ?? match[4] ?? "";
+    const encodedValue = match[2] ?? match[3] ?? match[4] ?? "";
+    const rawValue = decodeAttributeValues && !rawBindingName.startsWith(PROP_PREFIX)
+      ? decodeTemplateAttribute(encodedValue)
+      : encodedValue;
     processedAttrs.add(rawBindingName);
 
     if (rawBindingName.startsWith(".")) {
@@ -186,10 +187,8 @@ export const parseNodeBindings = ({
       let propValue = rawValue;
       if (match[4] !== undefined && match[4] !== "") {
         const valuePathName = match[4];
-        const resolvedPathValue = lodashGet(viewData, valuePathName);
-        if (resolvedPathValue !== undefined) {
-          propValue = resolvedPathValue;
-        }
+        const literal = parsePropertyLiteral(valuePathName);
+        propValue = literal ? literal.value : lodashGet(viewData, valuePathName);
       }
       setComponentProp(propName, propValue, "property-form");
       continue;
@@ -229,12 +228,7 @@ export const parseNodeBindings = ({
   }
 
   let remainingAttrsString = attrsString;
-  const processedMatches = [];
-  let tempMatch;
-  const tempAttrRegex = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]*))/g;
-  while ((tempMatch = tempAttrRegex.exec(attrsString)) !== null) {
-    processedMatches.push(tempMatch[0]);
-  }
+  const processedMatches = assignments.map((match) => match[0]);
 
   processedMatches.forEach((processedMatch) => {
     remainingAttrsString = remainingAttrsString.replace(processedMatch, " ");

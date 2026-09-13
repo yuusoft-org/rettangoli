@@ -1,6 +1,6 @@
 export const createInitialState = () => Object.freeze({});
 
-const blacklistedProps = ["id", "class", "style", "slot", "items", "selectedTab", "s"];
+const blacklistedProps = ["id", "class", "style", "slot", "items", "selectedTab", "s", "ariaLabel"];
 
 const stringifyProps = (props = {}) => {
   return Object.entries(props)
@@ -17,15 +17,17 @@ export const selectViewData = ({ props = {} }) => {
   const selectedTab = props.selectedTab;
 
   // Mark selected tab with styling
-  const itemsWithSelection = items.map(item => ({
+  const itemsWithSelection = items.map((item, index) => ({
     ...item,
     isSelected: item.id === selectedTab,
+    tabIndex: item.id === selectedTab || (!items.some(tab => tab.id === selectedTab) && index === 0) ? 0 : -1,
     bgColor: item.id === selectedTab ? 'ac' : '',
     borderColor: item.id === selectedTab ? '' : 'tr',
     textColor: item.id === selectedTab ? '' : 'mu-fg'
   }));
 
   return {
+    ariaLabel: props.ariaLabel ?? "Tabs",
     size,
     containerAttrString,
     items: itemsWithSelection,

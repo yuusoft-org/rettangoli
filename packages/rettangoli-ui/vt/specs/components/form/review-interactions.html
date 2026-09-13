@@ -1,0 +1,149 @@
+---
+title: Keyboard and accessible form controls
+description: Consumer-shaped regression coverage for action activation, labels, selection navigation, overflow, and number drafts.
+skipInitialScreenshot: true
+viewport:
+  id: compact
+  width: 700
+  height: 720
+steps:
+  - action: select
+    selector: '#projectForm [data-action-id=cancel]'
+    steps:
+      - action: focus
+  - action: keypress
+    key: Enter
+  - action: assert
+    type: js
+    global: review.actions
+    value: [cancel]
+  - action: select
+    selector: '#projectForm rtgl-input input'
+    steps:
+      - action: write
+        value: 'Project "One"'
+  - action: keypress
+    key: Enter
+  - action: assert
+    type: js
+    global: review.actions
+    value: [cancel, save]
+  - action: assert
+    type: js
+    fn: review.fieldMetadata
+    value:
+      label: Project name
+      description: Choose a name
+      required: 'true'
+      invalid: 'false'
+  - action: select
+    selector: '#disabledForm rtgl-input input'
+    steps:
+      - action: focus
+  - action: keypress
+    key: Enter
+  - action: assert
+    type: js
+    global: review.disabledActions
+    value: []
+  - action: select
+    selector: '#choice #selectButton'
+    steps:
+      - action: focus
+  - action: keypress
+    key: Enter
+  - action: wait
+    ms: 200
+  - action: keypress
+    key: ArrowDown
+  - action: keypress
+    key: Enter
+  - action: assert
+    type: js
+    global: review.selected
+    value: two
+  - action: assert
+    type: js
+    fn: review.selectFocusReturned
+    value: true
+  - action: select
+    selector: '#navigation [data-id=account]'
+    steps:
+      - action: focus
+  - action: keypress
+    key: End
+  - action: keypress
+    key: Enter
+  - action: assert
+    type: js
+    global: review.tab
+    value: team
+  - action: assert
+    type: js
+    fn: review.lastTabVisible
+    value: true
+  - action: select
+    selector: '#amount rtgl-input-number input'
+    steps:
+      - action: clear
+  - action: assert
+    type: js
+    fn: review.numberDraft
+    value: ''
+  - action: select
+    selector: '#amount rtgl-input-number input'
+    steps:
+      - action: write
+        value: '-3.2'
+      - action: blur
+  - action: assert
+    type: js
+    fn: review.numberDraft
+    value: '-3.2'
+  - action: screenshot
+---
+<rtgl-view p="lg" g="lg" w="440">
+  <rtgl-form id="projectForm" w="f"></rtgl-form>
+  <rtgl-form id="disabledForm" w="f"></rtgl-form>
+  <rtgl-select id="choice" w="240" aria-label="Destination"></rtgl-select>
+  <rtgl-view w="220"><rtgl-tabs id="navigation" aria-label="Project sections"></rtgl-tabs></rtgl-view>
+  <rtgl-slider-input id="amount" w="320" min="-10" max="10" step="0.1" value="2.5" aria-label="Amount"></rtgl-slider-input>
+</rtgl-view>
+<script>
+  const projectForm = document.getElementById('projectForm');
+  const disabledForm = document.getElementById('disabledForm');
+  const choice = document.getElementById('choice');
+  const navigation = document.getElementById('navigation');
+  const amount = document.getElementById('amount');
+  window.review = {
+    actions: [], disabledActions: [], selected: '', tab: '',
+    fieldMetadata() {
+      const input = projectForm.shadowRoot.querySelector('rtgl-input').shadowRoot.querySelector('input');
+      return { label: input.getAttribute('aria-label'), description: input.getAttribute('aria-description'),
+        required: input.getAttribute('aria-required'), invalid: input.getAttribute('aria-invalid') };
+    },
+    selectFocusReturned() { return choice.shadowRoot.activeElement?.id === 'selectButton'; },
+    lastTabVisible() {
+      const tray = navigation.shadowRoot.querySelector('[role=tablist]');
+      const last = tray.querySelector('[data-id=team]');
+      return tray.scrollLeft > 0 && last.getBoundingClientRect().right <= tray.getBoundingClientRect().right + 1;
+    },
+    numberDraft() { return amount.shadowRoot.querySelector('rtgl-input-number').shadowRoot.querySelector('input').value; },
+  };
+  projectForm.form = {
+    fields: [{ name: 'name', type: 'input-text', label: 'Project name', description: 'Choose a name', required: true }],
+    actions: { buttons: [{ id: 'cancel', label: 'Cancel' }, { id: 'save', label: 'Save', validate: true }] },
+  };
+  projectForm.addEventListener('form-action', event => review.actions.push(event.detail.actionId));
+  disabledForm.form = {
+    fields: [{ name: 'name', type: 'input-text', label: 'Disabled submission' }],
+    actions: { buttons: [{ id: 'cancel', label: 'Cancel' }, { id: 'save', label: 'Save', validate: true, disabled: true }] },
+  };
+  disabledForm.addEventListener('form-action', event => review.disabledActions.push(event.detail.actionId));
+  choice.options = [{ value: 'one', label: 'One' }, { type: 'separator' }, { value: 'two', label: 'Two' }];
+  choice.selectedValue = 'one';
+  choice.addEventListener('value-change', event => { review.selected = event.detail.value; choice.selectedValue = event.detail.value; });
+  navigation.items = [{ id: 'account', label: 'Account settings' }, { id: 'billing', label: 'Billing history' }, { id: 'team', label: 'Team members' }];
+  navigation.selectedTab = 'account';
+  navigation.addEventListener('item-click', event => { review.tab = event.detail.id; navigation.selectedTab = event.detail.id; });
+</script>

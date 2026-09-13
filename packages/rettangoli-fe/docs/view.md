@@ -73,6 +73,16 @@ Bindings are attached to selector tokens:
 - `:name=${expr}`: property-form binding
 - `?name=value`: boolean attribute toggle
 
+Attribute interpolations are complete values: spaces, quotes, equals signs,
+and literal `${...}` text inside a value do not introduce additional bindings.
+Property expressions preserve `undefined` and `null`, including missing paths
+and optional values in loops. Removing a component binding clears the prior
+property value while preserving the component's reactive setter.
+Boolean, numeric, `null`, and `undefined` property literals retain their types
+(for example, `:showSelected=${true}` and `:outputSize=${512}`). Whole-binding
+fragments such as `${containerAttrString}` remain supported for computed layout
+tokens.
+
 Legacy `.name=value` property syntax is not supported.
 Validation is enforced at framework level (`rtgl fe check` / `rtgl fe build`).
 

@@ -18,7 +18,7 @@ Implemented now:
 - FE parity checks (schema required, forbidden view keys, unsupported property binding syntax)
 - schema/constants checks
 - listener config checks
-- strict handler naming checks (`handle*` only)
+- optional naming/signature style checks (`--style`)
 - cross-file symbol checks (handler/action/method existence)
 - YAHTML attr/prop validation for template selector bindings
 - semantic scope graph (YAHTML + Jempl + FE binding context)
@@ -27,7 +27,8 @@ Implemented now:
 - inter-component compatibility checks (required props, events, boolean prop binding type)
 - UI primitive/component registry generation from `rettangoli-ui`
 - reporters: `text`, `json`, `sarif`
-- watch mode with incremental component model cache
+- watch mode with an incremental component model cache that tracks transitive local re-exports
+- static discovery of custom elements registered from application `src` modules
 - robustness harnesses: export differential + template pipeline fuzzing
 - CI integration in `.github/workflows/ci-ui.yaml` via `bun run check:contracts`
 
@@ -54,6 +55,9 @@ rtgl check --dir src/components --format sarif
 # enable expression scope/type checks
 rtgl check --dir src/components --expr
 
+# opt into kebab-case folders, handle-prefixed exports, and deps/payload naming
+rtgl check --style
+
 # watch mode (incremental)
 rtgl check --watch --watch-interval-ms 500
 
@@ -79,6 +83,20 @@ rtgl check --dir src/components --autofix --autofix-min-confidence 0.95
 # check contracts
 rtgl-check --dir src/components --format json
 ```
+
+By default, runtime-supported camelCase component folders, helper exports,
+destructured or renamed lifecycle arguments, and unused payload arguments do
+not produce errors. `--style` (or `check: { style: true }` in
+`rettangoli.config.yaml`) enables these conventions explicitly. Missing handlers,
+asynchronous `handleBeforeMount`, unsupported attributes, and invalid listener
+options remain contract errors.
+
+UI contracts resolve from the checked project's installed UI version before the
+checker's fallback dependency. Registry generation includes schema properties,
+primitive attributes, and attributes explicitly used by component `:host(...)`
+styles. Application primitives are discovered from static `customElements.define`
+calls in `src`, including named imports, literal tag constants, setter properties,
+and observed attributes. Application modules are never executed by this discovery.
 
 CLI contract references:
 

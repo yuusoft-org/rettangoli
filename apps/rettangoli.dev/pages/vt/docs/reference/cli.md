@@ -9,10 +9,10 @@ sidebarId: vt-cli
 
 VT commands are exposed through `rtgl vt`.
 
-Recommended runtime is the official Docker image (for consistent local/CI behavior). You can map it to a shell alias and keep using the same `rtgl` commands:
+Use the official Docker image for browsers and the project's pinned `rtgl` dependency for the CLI. After `npm install --save-dev --save-exact rtgl`, this alias uses the installed project version:
 
 ```bash
-alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 rtgl'
+alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 node /workspace/node_modules/rtgl/cli.js'
 ```
 
 The image default working directory is `/workspace`.

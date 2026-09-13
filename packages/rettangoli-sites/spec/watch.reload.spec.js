@@ -199,6 +199,10 @@ describe('watch reload mode script', () => {
     await expect(watchSite({ reloadMode: 'instant' })).rejects.toThrow('Invalid reload mode');
   });
 
+  it('throws on an empty host before building', async () => {
+    await expect(watchSite({ host: '' })).rejects.toThrow('Invalid host');
+  });
+
   it('throws on non-numeric port values', async () => {
     await expect(watchSite({ port: 'abc' })).rejects.toThrow('Invalid port "abc"');
   });

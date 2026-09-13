@@ -31,6 +31,10 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Verify Packed FE Package
+        run: bun run test:package
+        working-directory: ./packages/rettangoli-fe
+
       # Publish to npm
       - name: Publish to npm
         run: npm publish --provenance

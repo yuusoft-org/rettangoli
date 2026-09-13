@@ -1,4 +1,5 @@
 import { scheduleFrame } from "./scheduler.js";
+import { PARENT_UPDATE_TRANSACTION } from "../core/runtime/updateTransaction.js";
 
 export const RETTANGOLI_COMPONENT_MARKER = Symbol.for(
   "@rettangoli/fe/component",
@@ -6,6 +7,16 @@ export const RETTANGOLI_COMPONENT_MARKER = Symbol.for(
 
 const propsSnapshots = new WeakMap();
 const pendingUpdates = new WeakMap();
+const immutableSnapshots = new WeakMap();
+
+// Frozen JSON records cannot drift. Guard the shared prototypes as well:
+// adding an inherited toJSON can change serialization even for frozen data.
+const hasStandardJsonPrototypes = () => (
+  Object.getPrototypeOf(Object.prototype) === null
+  && Object.getPrototypeOf(Array.prototype) === Object.prototype
+  && !Object.hasOwn(Object.prototype, "toJSON")
+  && !Object.hasOwn(Array.prototype, "toJSON")
+);
 
 const createReferenceSnapshot = (value) => ({
   value,
@@ -31,7 +42,7 @@ const hasUnsupportedToJSONOrPrototypeCycle = (value) => {
   return false;
 };
 
-const isJsonData = (value, ancestors = new Set()) => {
+const isJsonData = (value, ancestors = new Set(), validation = {}) => {
   if (value === null) return true;
 
   const valueType = typeof value;
@@ -53,6 +64,7 @@ const isJsonData = (value, ancestors = new Set()) => {
   }
 
   if (hasUnsupportedToJSONOrPrototypeCycle(value)) return false;
+  if (!Object.isFrozen(value)) validation.mutable = true;
 
   ancestors.add(value);
   try {
@@ -71,7 +83,7 @@ const isJsonData = (value, ancestors = new Set()) => {
           !descriptor ||
           !("value" in descriptor) ||
           !descriptor.enumerable ||
-          !isJsonData(descriptor.value, ancestors)
+          !isJsonData(descriptor.value, ancestors, validation)
         ) {
           return false;
         }
@@ -88,7 +100,7 @@ const isJsonData = (value, ancestors = new Set()) => {
         !descriptor ||
         !("value" in descriptor) ||
         !descriptor.enumerable ||
-        !isJsonData(descriptor.value, ancestors)
+        !isJsonData(descriptor.value, ancestors, validation)
       ) {
         return false;
       }
@@ -100,13 +112,18 @@ const isJsonData = (value, ancestors = new Set()) => {
   }
 };
 
-const createPropSnapshot = (value) => {
+const createPropSnapshot = (value, previousEntry) => {
   if (value === null || typeof value !== "object") {
     return createReferenceSnapshot(value);
   }
 
   try {
-    if (!isJsonData(value)) {
+    const immutableSnapshot = immutableSnapshots.get(value);
+    if (immutableSnapshot && hasStandardJsonPrototypes()) {
+      return immutableSnapshot;
+    }
+    const validation = {};
+    if (!isJsonData(value, new Set(), validation)) {
       return createReferenceSnapshot(value);
     }
 
@@ -116,21 +133,33 @@ const createPropSnapshot = (value) => {
     if (serialized === undefined || typeof structuredClone !== "function") {
       return createReferenceSnapshot(value);
     }
-    return {
+    if (previousEntry?.hasStructuralSnapshot && previousEntry.serialized === serialized) {
+      const snapshot = previousEntry.value === value && previousEntry.immutable === !validation.mutable
+        ? previousEntry
+        : { ...previousEntry, value, immutable: !validation.mutable };
+      if (snapshot.immutable && hasStandardJsonPrototypes()) immutableSnapshots.set(value, snapshot);
+      return snapshot;
+    }
+    const snapshot = {
       value,
       hasStructuralSnapshot: true,
       serialized,
       oldValue: structuredClone(value),
+      immutable: !validation.mutable,
     };
+    if (snapshot.immutable && hasStandardJsonPrototypes()) {
+      immutableSnapshots.set(value, snapshot);
+    }
+    return snapshot;
   } catch {
     return createReferenceSnapshot(value);
   }
 };
 
-const createPropsSnapshot = (props = {}) => {
+const createPropsSnapshot = (props = {}, previousSnapshot) => {
   const entries = new Map();
   Object.keys(props).forEach((key) => {
-    entries.set(key, createPropSnapshot(props[key]));
+    entries.set(key, createPropSnapshot(props[key], previousSnapshot?.get(key)));
   });
   return entries;
 };
@@ -163,7 +192,7 @@ const defineProp = (target, key, value) => {
 };
 
 const hasDriftedFromSnapshot = (entry) => {
-  if (!entry.hasStructuralSnapshot) return false;
+  if (!entry.hasStructuralSnapshot || entry.immutable) return false;
   try {
     if (!isJsonData(entry.value)) return true;
     return JSON.stringify(entry.value) !== entry.serialized;
@@ -184,7 +213,7 @@ const createOldProps = (previousSnapshot) => {
   return oldProps;
 };
 
-const isRettangoliComponent = (element) => {
+export const isRettangoliComponent = (element) => {
   try {
     if (element?.[RETTANGOLI_COMPONENT_MARKER] === true) {
       return true;
@@ -212,15 +241,25 @@ const storePropsSnapshot = (element, props = {}) => {
   return snapshot;
 };
 
+export const cancelPendingComponentUpdate = (element) => {
+  pendingUpdates.delete(element);
+  propsSnapshots.delete(element);
+  element.removeAttribute("isDirty");
+};
+
 const runPendingUpdate = (element, pendingUpdate) => {
   if (pendingUpdates.get(element) !== pendingUpdate) return;
 
   pendingUpdates.delete(element);
+  if (element.isConnected === false) {
+    element.removeAttribute("isDirty");
+    return;
+  }
 
   // Prop values remain live references between the parent render and this
   // frame. Refresh the latest snapshot so the stored baseline matches the
   // value the child is about to render.
-  const nextSnapshot = createPropsSnapshot(pendingUpdate.newProps);
+  const nextSnapshot = createPropsSnapshot(pendingUpdate.newProps, pendingUpdate.nextSnapshot);
   propsSnapshots.set(element, nextSnapshot);
   const changedPropKeys = getChangedPropKeys(
     pendingUpdate.previousSnapshot,
@@ -257,6 +296,21 @@ export const createWebComponentUpdateHook = ({
   scheduleFrameFn = scheduleFrame,
 } = {}) => {
   return {
+    prepatch: (oldVnode, vnode) => {
+      if (isRettangoliComponent(oldVnode.elm)) {
+        oldVnode.elm[PARENT_UPDATE_TRANSACTION] = true;
+      }
+    },
+    postpatch: (oldVnode, vnode) => {
+      if (isRettangoliComponent(vnode.elm)) {
+        vnode.elm[PARENT_UPDATE_TRANSACTION] = false;
+      }
+    },
+    destroy: (vnode) => {
+      if (isRettangoliComponent(vnode.elm)) {
+        cancelPendingComponentUpdate(vnode.elm);
+      }
+    },
     insert: (vnode) => {
       const element = vnode.elm;
       if (!isRettangoliComponent(element)) return;
@@ -282,7 +336,7 @@ export const createWebComponentUpdateHook = ({
 
       const previousSnapshot =
         propsSnapshots.get(element) || createPropsSnapshot(oldProps);
-      const nextSnapshot = createPropsSnapshot(newProps);
+      const nextSnapshot = createPropsSnapshot(newProps, previousSnapshot);
       const changedPropKeys = getChangedPropKeys(
         previousSnapshot,
         nextSnapshot,
@@ -294,6 +348,7 @@ export const createWebComponentUpdateHook = ({
 
       const nextPendingUpdate = {
         previousSnapshot,
+        nextSnapshot,
         newProps,
       };
       pendingUpdates.set(element, nextPendingUpdate);

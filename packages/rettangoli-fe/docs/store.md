@@ -31,6 +31,12 @@ Context by export type:
 - attribute-form fallback is available
 - kebab-case attribute names are normalized to camelCase
 
+In browser components, `createInitialState` runs once before the first
+`handleBeforeMount`, after the parent has applied initial properties and
+attributes. Reconnecting an element retains its state. Explicitly reading a
+selector or calling a store action before connection initializes the store at
+that point using the props currently available.
+
 ## 4. View Access Boundary
 
 Only `selectViewData` is visible to `.view.yaml`.

@@ -70,6 +70,7 @@ export const check = async (options = {}) => {
     warnAsError = false,
     includeYahtml = true,
     includeExpression = false,
+    includeStyle,
     watch = false,
     watchIntervalMs = 800,
     autofixMode = "off",
@@ -96,6 +97,7 @@ export const check = async (options = {}) => {
     workspaceRoot: cwd,
     includeYahtml,
     includeExpression,
+    includeStyle: includeStyle ?? config?.check?.style === true,
     incrementalState,
   });
 

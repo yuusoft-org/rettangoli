@@ -16,10 +16,15 @@ Supported output formats:
 
 Supported diagnostics/autofix controls:
 
+- `--style` (opt into naming/signature conventions; also `check.style: true` in config)
 - `--autofix`
 - `--autofix-dry-run`
 - `--autofix-min-confidence <0-1>`
 - `--autofix-patch`
+
+Default validation checks runtime contracts. CamelCase folders, arbitrary valid
+handler export names, and renamed/destructured/unused lifecycle parameters are
+accepted. Style lint is opt-in; genuine contract failures retain error status.
 
 ## 2. JSON Contract Version
 

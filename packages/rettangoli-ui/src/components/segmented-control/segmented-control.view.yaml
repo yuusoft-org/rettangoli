@@ -24,7 +24,7 @@ styles:
     outline: var(--focus-ring-outline, none)
     box-shadow: inset 0 0 0 2px var(--ring)
 template:
-  - 'rtgl-view d=h ${containerSizeAttrString} bw=xs bc=bo br=md bgc=bg overflow=hidden ${containerAttrString} role="group" aria-label=${ariaLabel}':
+  - 'rtgl-view d=h ${containerSizeAttrString} bw=xs bc=bo br=md bgc=bg overflow=hidden ${containerAttrString} role="group" aria-label=${ariaLabel} aria-description=${ariaDescription} aria-invalid=${ariaInvalid}':
       - $for option, i in options:
           - 'rtgl-view#option${i} d=h av=c ah=c ${optionSizeAttrString} cur=${option.cursor} bgc=${option.bgc} bwl=${option.borderLeftWidth} bc=bo data-testid=${option.testId} role="button" tabindex=${option.tabIndex} aria-label="${option.accessibleLabel}" aria-pressed=${option.isSelected} aria-disabled=${isDisabled}':
               - $if option.hasSvg:

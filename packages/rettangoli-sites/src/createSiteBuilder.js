@@ -9,6 +9,7 @@ import MarkdownIt from 'markdown-it';
 import rtglMarkdown from './rtglMarkdown.js';
 import builtinTemplateFunctions from './builtinTemplateFunctions.js';
 import { buildSitemapXml, resolveSitemapOutputPath } from './sitemap.js';
+import { assertSafeOutputPath } from './utils/pathSafety.js';
 
 const MATTER_OPTIONS = {
   engines: {
@@ -452,19 +453,10 @@ export function createSiteBuilder({
     const mdInstance = md || rtglMarkdown(MarkdownIt, markdown);
     const absoluteRootDir = path.resolve(rootDir);
     const outputRootDir = path.resolve(rootDir, outputPath);
+    assertSafeOutputPath(fs, absoluteRootDir, outputRootDir, outputPath);
 
     function cleanOutputDir() {
-      const rootPathInfo = path.parse(absoluteRootDir);
-      const outputPathInfo = path.parse(outputRootDir);
-
-      if (outputRootDir === absoluteRootDir) {
-        throw new Error(`Refusing to clean output path "${outputPath}" because it resolves to rootDir.`);
-      }
-
-      if (outputRootDir === outputPathInfo.root || outputRootDir === rootPathInfo.root) {
-        throw new Error(`Refusing to clean output path "${outputPath}" because it resolves to filesystem root.`);
-      }
-
+      assertSafeOutputPath(fs, absoluteRootDir, outputRootDir, outputPath);
       if (fs.existsSync(outputRootDir)) {
         fs.rmSync(outputRootDir, { recursive: true, force: true });
       }

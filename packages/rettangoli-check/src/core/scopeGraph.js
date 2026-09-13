@@ -1036,6 +1036,17 @@ const visitJemplNode = ({
   }
 
   if (node.type === JEMPL_NODE.OBJECT && Array.isArray(node.properties)) {
+    if (node.whenCondition) {
+      visitJemplNode({
+        model,
+        node: { type: JEMPL_NODE.CONDITIONAL, conditions: [node.whenCondition], bodies: [] },
+        scopeStack,
+        references,
+        elementEntries,
+        rangeLocator,
+        parseExpressionAst,
+      });
+    }
     node.properties.forEach((property) => {
       if (!property || typeof property !== "object") {
         return;

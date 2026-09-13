@@ -8,10 +8,26 @@ import { attributesModule } from 'snabbdom/build/modules/attributes.js'
 import { styleModule } from './web/vendor/snabbdomStyleModule.js'
 import { eventListenersModule } from 'snabbdom/build/modules/eventlisteners.js'
 
+const componentPropsModule = {
+  create: propsModule.create,
+  update(oldVnode, vnode) {
+    if (typeof vnode.sel === 'string' && vnode.sel.split(/[.#]/)[0].includes('-')) {
+      const nextProps = vnode.data?.props || {};
+      for (const key of Object.keys(oldVnode.data?.props || {})) {
+        if (!Object.hasOwn(nextProps, key)) {
+          // Reset through the setter so attribute fallback and reactivity survive.
+          vnode.elm[key] = undefined;
+        }
+      }
+    }
+    propsModule.update(oldVnode, vnode);
+  },
+};
+
 const createWebPatch = () => {
   return init([
     classModule,
-    propsModule,
+    componentPropsModule,
     attributesModule,
     styleModule,
     eventListenersModule,

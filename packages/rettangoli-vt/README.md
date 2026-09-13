@@ -149,26 +149,40 @@ Default template behavior:
 
 ## Docker
 
-A pre-built Docker image with `rtgl` and Playwright browsers is available:
+Use the Playwright image for browsers and the project's installed CLI for its
+pinned VT version:
 
 ```bash
 docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0
 ```
 
-Run commands against a local project:
+Install `rtgl` in the project, then run its CLI inside the browser image:
 
 ```bash
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 rtgl vt screenshot
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 rtgl vt report
-docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 rtgl vt accept
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 node /workspace/node_modules/rtgl/cli.js vt screenshot
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 node /workspace/node_modules/rtgl/cli.js vt report
+docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 node /workspace/node_modules/rtgl/cli.js vt accept
 ```
 
 Note:
 
+- Run `npm install --save-dev --save-exact rtgl` once and commit the lockfile.
+- The image supplies browsers; `/workspace/node_modules/rtgl/cli.js` supplies the project CLI and VT. Match the image's Playwright version to the installed VT dependency.
+- In this monorepo, mount the repository root and use `node /workspace/packages/rettangoli-cli/cli.js` instead.
 - Image default working directory is `/workspace`.
 - Use `-w /workspace/<subdir>` only when running commands from a subfolder within the mounted project.
 
 Supports `linux/amd64` and `linux/arm64`.
+
+`docker/build-and-push.sh` derives its tag and build arguments from the CLI and
+VT manifests. Image builds verify the installed CLI, VT and Playwright versions
+and fail on dependency drift. Publishing a matching image remains a release
+step; an existing image tag does not imply that it contains the project's VT.
+Consumer projects receive source fixes through a published package release and
+a normal dependency upgrade; changing a Docker wrapper alone does not install
+unreleased library changes.
+The local `Dockerfile.test` includes all workspace packages and loads every CLI
+command before the image can be used by the E2E runner.
 
 ## Development
 

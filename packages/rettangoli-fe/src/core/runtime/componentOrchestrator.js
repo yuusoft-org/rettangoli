@@ -9,6 +9,7 @@ import {
 } from "./componentRuntime.js";
 import { buildOnPropUpdateChanges, buildOnUpdateChanges } from "./lifecycle.js";
 import { normalizeAttributeValue, toCamelCase } from "./props.js";
+import { PARENT_UPDATE_TRANSACTION } from "./updateTransaction.js";
 
 const syncRuntimeDeps = (target, source) => {
   Reflect.ownKeys(target).forEach((key) => {
@@ -134,7 +135,7 @@ export const runAttributeChangedComponentLifecycle = ({
   newValue,
   scheduleFrameFn,
 }) => {
-  if (oldValue === newValue || !instance.render) {
+  if (oldValue === newValue || !instance.render || instance[PARENT_UPDATE_TRANSACTION]) {
     return;
   }
 
@@ -160,8 +161,11 @@ export const runAttributeChangedComponentLifecycle = ({
     return;
   }
 
+  const mountGeneration = instance._mountGeneration;
   scheduleFrameFn(() => {
-    instance.render();
+    if (instance.isConnected !== false && instance._mountGeneration === mountGeneration) {
+      instance.render();
+    }
   });
 };
 
@@ -172,7 +176,7 @@ export const runPropChangedComponentLifecycle = ({
   newValue,
   scheduleFrameFn,
 }) => {
-  if (oldValue === newValue || !instance.render) {
+  if (oldValue === newValue || !instance.render || instance[PARENT_UPDATE_TRANSACTION]) {
     return;
   }
 
@@ -193,8 +197,11 @@ export const runPropChangedComponentLifecycle = ({
     return;
   }
 
+  const mountGeneration = instance._mountGeneration;
   scheduleFrameFn(() => {
-    instance.render();
+    if (instance.isConnected !== false && instance._mountGeneration === mountGeneration) {
+      instance.render();
+    }
   });
 };
 

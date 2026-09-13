@@ -147,6 +147,13 @@ try {
         server.renderView({ template: [{ "p.x": "\${msg}" }], viewData: { msg: "ok" } }),
         '<div style="display: contents"><p class="x">ok</p></div>',
       );
+      assert.equal(
+        server.renderView({
+          template: [{ 'input placeholder=\${label}': '' }],
+          viewData: { label: 'A "quoted" name' },
+        }),
+        '<div style="display: contents"><input placeholder="A &quot;quoted&quot; name"></div>',
+      );
 
       const componentConfig = {
         schema: {

@@ -1,8 +1,10 @@
+import { selectFieldAria } from "../../accessibility/field.js";
 import { deepEqual } from '../../common.js';
 
 // Attributes that should not be passed through to the container
 // These are either handled internally or have special meaning
 const blacklistedProps = [
+  "ariaLabel", "ariaDescription", "ariaRequired", "ariaInvalid",
   "id",
   "class",
   "style",
@@ -295,6 +297,8 @@ export const createInitialState = () => Object.freeze({
   hoveredOptionId: null,
   hoveredAddOption: false,
   searchQuery: "",
+  keyboardQuery: "",
+  lastKeyTime: 0,
 });
 
 export const selectViewData = ({ state, props }) => {
@@ -352,6 +356,7 @@ export const selectViewData = ({ state, props }) => {
   const showEmptySearch = !!props.searchable && hasSearchQuery && !hasVisibleSelectableOptions;
 
   return {
+    ...selectFieldAria(props),
     containerAttrString,
     isDisabled,
     isOpen: state.isOpen,
@@ -399,6 +404,8 @@ export const openOptionsPopover = ({ state }, payload = {}) => {
   const { position, selectedIndex } = payload;
   state.position = position;
   state.isOpen = true;
+  state.keyboardQuery = "";
+  state.lastKeyTime = 0;
   state.searchQuery = "";
   // Set hoveredOptionId to the selected option's index if available
   if (selectedIndex !== undefined && selectedIndex !== null) {
@@ -442,4 +449,9 @@ export const setSearchQuery = ({ state }, payload = {}) => {
     ? ""
     : String(payload.query);
   state.hoveredOptionId = null;
+};
+
+export const setKeyboardQuery = ({ state }, { query, time }) => {
+  state.keyboardQuery = query;
+  state.lastKeyTime = time;
 };

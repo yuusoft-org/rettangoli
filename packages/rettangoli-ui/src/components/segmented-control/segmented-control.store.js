@@ -1,6 +1,8 @@
+import { selectFieldAria } from "../../accessibility/field.js";
 import { deepEqual } from "../../common.js";
 
 const blacklistedProps = [
+  "ariaLabel", "ariaDescription", "ariaRequired", "ariaInvalid",
   "id",
   "class",
   "style",
@@ -112,6 +114,7 @@ export const selectViewData = ({ state, props }) => {
   });
 
   return {
+    ...selectFieldAria(props),
     containerAttrString,
     size,
     isSquare,
@@ -123,7 +126,7 @@ export const selectViewData = ({ state, props }) => {
     options: optionsWithSelection,
     selectedValue: currentValue,
     hasSelectedValue: hasCurrentValue,
-    ariaLabel: props.placeholder || "Segmented control",
+    ariaLabel: props.ariaLabel || props.placeholder || "Segmented control",
     hasTooltips: options.some(
       (option) =>
         typeof option.tooltip === "string" && option.tooltip.length > 0,

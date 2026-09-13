@@ -10,7 +10,7 @@ import {
 
 const syncInteractiveFieldAttribute = ({ field, target, value }) => {
   if (!field || !target) return;
-  if (!["slider-with-input", "popover-input"].includes(field.type)) return;
+  if (!["popover-input"].includes(field.type)) return;
 
   if (value === undefined || value === null) {
     target.removeAttribute("value");
@@ -336,17 +336,16 @@ export const handleValueChange = (deps, payload) => {
   );
 };
 
-export const handleActionClick = (deps, payload) => {
+const dispatchFormAction = (deps, actionId) => {
   const { store, dispatchEvent, render, props } = deps;
-  const event = payload._event;
-  const actionId = event.currentTarget.dataset.actionId;
-  if (!actionId) return;
+  if (!actionId || props?.disabled) return;
 
   const state = store.getState();
   const form = selectForm({ state, props });
   const actions = form.actions || {};
   const buttons = actions.buttons || [];
   const button = buttons.find((b) => b.id === actionId);
+  if (!button || button.disabled) return;
 
   const values = selectFormValues({ state, props });
 
@@ -381,6 +380,12 @@ export const handleActionClick = (deps, payload) => {
       }),
     );
   }
+};
+
+export const handleActionClick = (deps, payload) => {
+  const target = payload._event.currentTarget;
+  if (target.hasAttribute?.("disabled")) return;
+  dispatchFormAction(deps, target.dataset.actionId);
 };
 
 export const handleSectionActionClick = (deps, payload) => {
@@ -443,66 +448,28 @@ export const handleImageClick = (deps, payload) => {
 };
 
 export const handleKeyDown = (deps, payload) => {
-  const { store, dispatchEvent, render, props } = deps;
+  const { store, props } = deps;
   const event = payload._event;
+  if (event.key !== "Enter" || event.shiftKey || event.altKey || event.ctrlKey
+    || event.metaKey || event.isComposing || event.keyCode === 229
+    || event.defaultPrevented || props?.disabled) return;
 
-  if (event.target.dataset?.sectionActionId) {
-    return;
-  }
+  // Let focused controls handle their own activation, including controls inside
+  // nested shadow roots. Enter in an IME or multiline editor is never submit.
+  const path = event.composedPath?.() ?? [event.target];
+  if (path.some((target) => target?.dataset?.actionId
+    || target?.dataset?.sectionActionId || target?.isContentEditable
+    || ["BUTTON", "A", "SELECT", "TEXTAREA", "RTGL-BUTTON", "RTGL-TEXTAREA",
+      "RTGL-SELECT", "RTGL-TAG-SELECT", "RTGL-SEGMENTED-CONTROL", "RTGL-POPOVER-INPUT"].includes(target?.tagName)
+    || ["button", "combobox", "listbox", "tab"].includes(target?.getAttribute?.("role")))) return;
 
-  if (event.key === "Enter" && !event.shiftKey) {
-    const target = event.target;
-    if (target.tagName === "TEXTAREA" || target.tagName === "RTGL-TEXTAREA") {
-      return;
-    }
-
-    event.preventDefault();
-
-    const state = store.getState();
-    const form = selectForm({ state, props });
-    const actions = form.actions || {};
-    const buttons = actions.buttons || [];
-
-    // Find the first button with validate: true, or the first button
-    const validateButton = buttons.find((b) => b.validate);
-    const targetButton = validateButton || buttons[0];
-
-    if (!targetButton) return;
-
-    const values = selectFormValues({ state, props });
-
-    if (targetButton.validate) {
-      const dataFields = collectAllDataFields(form.fields || []);
-      const { valid, errors } = validateForm(dataFields, state.formValues);
-      store.setErrors({ errors });
-      if (!valid) {
-        store.setReactiveMode();
-      }
-      render();
-
-      dispatchEvent(
-        new CustomEvent("form-action", {
-          bubbles: true,
-          detail: {
-            actionId: targetButton.id,
-            values,
-            valid,
-            errors,
-          },
-        }),
-      );
-    } else {
-      dispatchEvent(
-        new CustomEvent("form-action", {
-          bubbles: true,
-          detail: {
-            actionId: targetButton.id,
-            values,
-          },
-        }),
-      );
-    }
-  }
+  const form = selectForm({ state: store.getState(), props });
+  const buttons = form.actions?.buttons ?? [];
+  const button = buttons.find((candidate) => candidate.validate) ?? buttons[0];
+  // A disabled default action must not turn Enter into Cancel or another action.
+  if (!button || button.disabled) return;
+  event.preventDefault();
+  dispatchFormAction(deps, button.id);
 };
 
 export const handleTooltipMouseEnter = (deps, payload) => {

@@ -1,3 +1,4 @@
+import { fieldTextAriaAttributes as fieldAriaAttributes, forwardFieldAria } from "../accessibility/field.js";
 import {
   css,
   dimensionWithUnit,
@@ -104,6 +105,7 @@ class RettangoliSliderElement extends HTMLElement {
 
   static get observedAttributes() {
     return [
+      ...fieldAriaAttributes,
       "key",
       "value",
       "min",
@@ -150,6 +152,7 @@ class RettangoliSliderElement extends HTMLElement {
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
+    if (forwardFieldAria(this._inputElement, name, newValue)) return;
     // Handle key attribute change - reset value
     if (name === "key" && oldValue !== newValue) {
       requestAnimationFrame(() => {

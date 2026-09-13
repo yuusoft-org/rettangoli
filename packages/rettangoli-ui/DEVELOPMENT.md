@@ -523,3 +523,35 @@ Reference files for VT examples:
 - event names and payloads follow this contract
 - docs updated when API behavior changes
 - contracts/build/VT checks run as applicable
+
+## Form accessibility and keyboard behavior
+
+Input primitives (`rtgl-input` and date/time/duration variants,
+`rtgl-input-number`, `rtgl-textarea`, `rtgl-slider`, `rtgl-color-picker`, and
+`rtgl-checkbox`) forward `aria-label`, `aria-description`, `aria-required`, and
+`aria-invalid` to their native control (`aria-required` applies to text/number,
+date/time/duration, textarea, and checkbox inputs). These attributes update and clear at
+runtime. Form fields supply their label, description, required state, and
+validation error automatically; text is forwarded across shadow roots rather
+than using ID references that cannot resolve across those boundaries. Composite
+form controls accept the corresponding camelCase props too; required state is
+exposed on the select listbox and numeric/text editors, while button groups
+expose their name, description, and validation state.
+
+Enter submits the form's default validating action (or first action when none
+validates). A disabled action or form cannot submit. Focused buttons retain their
+own activation, and multiline editing, IME composition, modified Enter, and
+already handled key events do not submit.
+
+`rtgl-select` supports Enter/Space/Arrow keys to open, arrows and Home/End to
+navigate options, typing to find labels, Enter/Space to choose, and Escape to
+close and return focus. Search fields support arrows to enter the filtered list.
+`rtgl-tabs` exposes a tab list with one tab stop, arrows and Home/End to move
+focus, and Enter/Space to emit `item-click`; the parent still controls
+`selected-tab`. Both controls accept `aria-label` for a contextual accessible
+name. Keyboard focus remains visible and scrolls the active option into view.
+
+`rtgl-slider-input` preserves empty and partial numeric drafts while typing.
+The slider keeps the last valid value. Committing an empty draft restores that
+value; committing a number applies the configured bounds. A maximum of zero is
+valid.

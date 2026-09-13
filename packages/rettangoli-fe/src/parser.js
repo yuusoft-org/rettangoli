@@ -2,7 +2,7 @@ import { parseAndRender as jemplParseAndRender, render as jemplRender } from "je
 
 import { flattenArrays } from "./utils/flattenArrays.js";
 import { parseNodeBindings } from './core/view/bindings.js';
-import { ensureNormalizedTemplatePropertyBindings } from "./core/view/templatePropertyBindings.js";
+import { ensureNormalizedTemplatePropertyBindings, encodeTemplateAttribute } from "./core/view/templatePropertyBindings.js";
 import { applyVNodeNamespaces } from "./core/view/namespaces.js";
 import {
   createRefMatchers,
@@ -24,7 +24,9 @@ export const parseView = ({
   wireEventListeners = true,
 }) => {
   ensureNormalizedTemplatePropertyBindings(template);
-  const result = jemplRender(template, viewData, {});
+  const result = jemplRender(template, viewData, {
+    functions: { __rtglEncodeAttribute: encodeTemplateAttribute },
+  });
 
   // Flatten the array carefully to maintain structure
   const flattenedResult = flattenArrays(result);
@@ -37,6 +39,7 @@ export const parseView = ({
     viewData,
     createComponentUpdateHook,
     wireEventListeners,
+    decodeAttributeValues: true,
   });
 
   const vdom = h("div", { style: { display: "contents" } }, childNodes);
@@ -61,6 +64,7 @@ export const createVirtualDom = ({
   viewData = {},
   createComponentUpdateHook,
   wireEventListeners = true,
+  decodeAttributeValues = false,
 }) => {
   if (!Array.isArray(items)) {
     throw new Error("[Parser] Input to createVirtualDom must be an array, got " + typeof items);
@@ -138,6 +142,7 @@ export const createVirtualDom = ({
             viewData,
             tagName,
             isWebComponent,
+            decodeAttributeValues,
           }));
         } catch (error) {
           throw new Error(
@@ -170,16 +175,20 @@ export const createVirtualDom = ({
           ? attrs.class.split(/\s+/).filter(Boolean)
           : [];
         const classNamesForRefs = [...new Set([...selectorClassNames, ...attributeClassNames])];
+        if (typeof attrs.class === "string" && selectorClassNames.length > 0) {
+          attrs.class = classNamesForRefs.join(" ");
+          if (Object.hasOwn(props, "class")) props.class = attrs.class;
+        }
 
         // Extract classes and ID from selector (if not a web component)
         const classObj = Object.create(null); // Using Object.create(null) to avoid prototype issues
         let elementId = null;
 
-        if (!isWebComponent) {
-          selectorClassNames.forEach((className) => {
-            classObj[className] = true;
-          });
+        selectorClassNames.forEach((className) => {
+          classObj[className] = true;
+        });
 
+        if (!isWebComponent) {
           const idMatch = selector.match(/#([^.#\s]+)/);
           if (idMatch) {
             elementId = idMatch[1];

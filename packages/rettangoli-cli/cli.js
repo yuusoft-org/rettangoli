@@ -81,6 +81,7 @@ program
   .option("--warn-as-error", "Treat warnings as errors")
   .option("--no-yahtml", "Disable YAHTML attr/prop validation")
   .option("--expr", "Enable expression scope/type checks")
+  .option("--style", "Enable optional naming and signature conventions")
   .option("--watch", "Watch for file changes and re-run checks")
   .option("--watch-interval-ms <ms>", "Watch poll interval in milliseconds", parseIntegerOption, 800)
   .addHelpText(
@@ -101,6 +102,7 @@ Examples:
       warnAsError: !!options.warnAsError,
       includeYahtml: options.yahtml !== false,
       includeExpression: !!options.expr,
+      includeStyle: options.style,
       watch: !!options.watch,
       watchIntervalMs: Number.isFinite(options.watchIntervalMs) ? options.watchIntervalMs : 800,
     });
@@ -458,6 +460,7 @@ sitesCommand
   .command("watch")
   .description("Watch and rebuild site on changes")
   .option("-p, --port <port>", "The port to use", parsePortOption, 3001)
+  .option("--host <host>", "Network interface to bind (use 0.0.0.0 for LAN access)", "127.0.0.1")
   .option("-r, --root-dir <path>", "Path to root directory", ".")
   .option("--rootDir <path>", "Deprecated alias for --root-dir")
   .option("-o, --output-path <path>", "Path to destination directory", "./_site")
@@ -467,6 +470,7 @@ sitesCommand
   .action(async (options) => {
     await watchSite({
       port: options.port,
+      host: options.host,
       rootDir: options.rootDir,
       outputPath: options.outputPath,
       reloadMode: options.reloadMode,

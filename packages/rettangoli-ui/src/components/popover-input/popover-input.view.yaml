@@ -3,6 +3,8 @@ refs:
     eventListeners:
       click:
         handler: handleTextClick
+      keydown:
+        handler: handleTextKeyDown
   popover:
     eventListeners:
       close:
@@ -17,11 +19,15 @@ refs:
     eventListeners:
       click:
         handler: handleSubmitClick
+styles:
+  "#textDisplay:focus-visible":
+    outline: 2px solid var(--ring)
+    outline-offset: -2px
 template:
-  - rtgl-view#textDisplay w=f cur=pointer:
+  - rtgl-view#textDisplay role=button tabindex=${tabIndex} aria-expanded=${isOpen} aria-disabled=${disabled} aria-label=${ariaLabel} aria-description=${ariaDescription} aria-invalid=${ariaInvalid} w=f cur=pointer:
       - rtgl-text c=${valueColor}: ${value}
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} content-g=md content-w=240 content-pv=sm:
       - rtgl-text: ${label}
-      - rtgl-input#input w=f placeholder=${placeholder} ?disabled=${disabled}: null
+      - rtgl-input#input aria-label=${ariaLabel} aria-description=${ariaDescription} aria-required=${ariaRequired} aria-invalid=${ariaInvalid} w=f placeholder=${placeholder} ?disabled=${disabled}: null
       - rtgl-view w=f ah=e:
           - rtgl-button#submit ?disabled=${disabled}: Submit

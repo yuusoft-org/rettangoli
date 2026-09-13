@@ -1,7 +1,9 @@
 # Test Dockerfile - builds from local source for E2E testing
 # Build context should be the monorepo root
 
-FROM mcr.microsoft.com/playwright:v1.57.0-noble
+ARG PLAYWRIGHT_VERSION=1.57.0
+FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble
+ARG PLAYWRIGHT_VERSION
 
 # Install dependencies for Bun
 RUN apt-get update && apt-get install -y unzip curl && rm -rf /var/lib/apt/lists/*
@@ -12,37 +14,28 @@ RUN curl -fsSL https://bun.sh/install | BUN_INSTALL=/usr/local bash
 # Set working directory
 WORKDIR /build
 
-# Copy the CLI package which depends on VT
-COPY packages/rettangoli-cli/package.json packages/rettangoli-cli/
-COPY packages/rettangoli-cli/cli.js packages/rettangoli-cli/
-
-# Copy the VT package (dependency of CLI)
-COPY packages/rettangoli-vt/package.json packages/rettangoli-vt/
-COPY packages/rettangoli-vt/src packages/rettangoli-vt/src
-
-# Copy other required workspace packages
-COPY packages/rettangoli-fe/package.json packages/rettangoli-fe/
-COPY packages/rettangoli-fe/src packages/rettangoli-fe/src
-
-COPY packages/rettangoli-ui/package.json packages/rettangoli-ui/
-COPY packages/rettangoli-ui/src packages/rettangoli-ui/src
-
-COPY packages/rettangoli-sites/package.json packages/rettangoli-sites/
-COPY packages/rettangoli-sites/src packages/rettangoli-sites/src
+# Include every workspace package, including CLI src and packaged site assets.
+# The Dockerfile-specific ignore file excludes installed/generated artifacts.
+COPY packages/ packages/
+COPY apps/rettangoli.dev/package.json apps/rettangoli.dev/
 
 # Copy the workspace lockfile and root package.json for workspace resolution
 COPY bun.lock* ./
 COPY package.json ./
 
 # Install workspace dependencies from local source
-RUN bun install
+RUN bun install --frozen-lockfile --production
 
 # Create a global symlink for the rtgl CLI
 RUN ln -s /build/packages/rettangoli-cli/cli.js /usr/local/bin/rtgl && \
-    chmod +x /build/packages/rettangoli-cli/cli.js
+    chmod +x /build/packages/rettangoli-cli/cli.js && \
+    chmod -R a+rX /build
 
 # Verify installation
-RUN rtgl --version
+RUN node packages/rettangoli-vt/docker/verify-install.mjs \
+      /build/packages/rettangoli-cli/cli.js "" "" "$PLAYWRIGHT_VERSION" && \
+    rtgl --version && \
+    rtgl check --help && rtgl fe --help && rtgl sites --help && rtgl vt --help && rtgl ui --help
 
 # Set working directory to /workspace for mounted projects
 WORKDIR /workspace

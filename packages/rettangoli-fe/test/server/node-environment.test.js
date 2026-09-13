@@ -145,10 +145,10 @@ describe("end to end: a component renders to HTML in bare Node", () => {
     );
   });
 
-  it("matches client precedence when selector and authored classes coexist", async () => {
+  it("merges selector and authored classes like the client", async () => {
     const { renderView } = await import("../../src/server/index.js");
     expect(renderView({ template: [{ "div.foo class=bar": "x" }] }))
-      .toBe('<div style="display: contents"><div class="bar">x</div></div>');
+      .toBe('<div style="display: contents"><div class="foo bar">x</div></div>');
   });
 
   it("refuses view data that would inject markup through an interpolated tag", async () => {

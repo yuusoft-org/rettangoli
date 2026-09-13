@@ -231,23 +231,23 @@ Dashboard suite:
 
 ```bash
 (cd packages/rettangoli-fe/e2e/dashboard && node ../../../rettangoli-cli/cli.js fe build)
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" rtgl vt screenshot
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" rtgl vt report
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt screenshot
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt report
 ```
 
 Interactions suite:
 
 ```bash
 (cd packages/rettangoli-fe/e2e/interactions && node ../../../rettangoli-cli/cli.js fe build)
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" rtgl vt screenshot
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" rtgl vt report
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt screenshot
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt report
 ```
 
 Accept intentional visual changes:
 
 ```bash
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" rtgl vt accept
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" rtgl vt accept
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt accept
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt accept
 ```
 
 VT specs live under each suite's `vt/specs/` directory.

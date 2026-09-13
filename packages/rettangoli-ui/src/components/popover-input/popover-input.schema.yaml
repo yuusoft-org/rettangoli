@@ -2,6 +2,14 @@ componentName: rtgl-popover-input
 propsSchema:
   type: object
   properties:
+    ariaLabel:
+      type: string
+    ariaDescription:
+      type: string
+    ariaRequired:
+      type: boolean
+    ariaInvalid:
+      type: boolean
     value:
       type: string
     placeholder:

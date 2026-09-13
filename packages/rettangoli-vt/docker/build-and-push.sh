@@ -1,8 +1,9 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IMAGE_NAME="playwright-v1.57.0-rtgl-v1.1.0"
+read -r RTGL_VERSION VT_VERSION PLAYWRIGHT_VERSION < <(node "$SCRIPT_DIR/release-versions.mjs")
+IMAGE_NAME="playwright-v${PLAYWRIGHT_VERSION}-rtgl-v${RTGL_VERSION}"
 REGISTRY="${REGISTRY:-docker.io}"
 REPO="${REPO:-han4wluc/rtgl}"
 BUILDER_NAME="multiplatform-builder"
@@ -20,6 +21,9 @@ fi
 # Build and push multi-platform image
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
+  --build-arg "RTGL_VERSION=$RTGL_VERSION" \
+  --build-arg "VT_VERSION=$VT_VERSION" \
+  --build-arg "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" \
   -t "$FULL_TAG" \
   --push \
   "$SCRIPT_DIR"

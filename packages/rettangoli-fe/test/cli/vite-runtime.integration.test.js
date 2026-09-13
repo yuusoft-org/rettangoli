@@ -6,6 +6,7 @@ import {
   mkdtempSync,
   mkdirSync,
   readFileSync,
+  readdirSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -237,6 +238,39 @@ describe("vite runtime integration", () => {
     expect(
       existsSync(path.join(rootDir, "vt", "static", "public", "main.js")),
     ).toBe(true);
+  });
+
+  it("keeps emitted asset and lazy chunk URLs relative to a nested entry", async () => {
+    const rootDir = createFixtureProject({
+      setupSource: [
+        'import payloadUrl from "./payload.txt?url";',
+        'export const deps = { components: { payloadUrl, load: () => import("./lazy.js") } };',
+      ].join("\n"),
+    });
+    createdDirs.push(rootDir);
+    writeFileSync(path.join(rootDir, "payload.txt"), "asset content\n".repeat(1000));
+    writeFileSync(path.join(rootDir, "lazy.js"), 'export const result = "loaded";');
+
+    await build({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      outfile: "_site/public/main.js",
+      development: true,
+    });
+
+    const outputDir = path.join(rootDir, "_site/public");
+    const bundle = readFileSync(path.join(outputDir, "main.js"), "utf8");
+    const asset = readdirSync(path.join(outputDir, "assets")).find((name) => name.startsWith("payload-"));
+    const chunk = readdirSync(path.join(outputDir, "chunks")).find((name) => name.startsWith("lazy-"));
+    expect(asset).toBeTruthy();
+    expect(chunk).toBeTruthy();
+    expect(bundle).toContain(`new URL("assets/${asset}", import.meta.url)`);
+    expect(bundle).toContain(`import("./chunks/${chunk}")`);
+    expect(bundle).not.toContain('"/assets/');
+    expect(bundle).not.toContain('"/chunks/');
+    const entryUrl = new URL("https://example.test/editor/public/main.js");
+    expect(new URL(`assets/${asset}`, entryUrl).pathname).toBe(`/editor/public/assets/${asset}`);
   });
 
   it("builds i18n JSON assets next to the configured bundle", async () => {

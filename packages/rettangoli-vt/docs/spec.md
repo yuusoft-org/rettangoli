@@ -234,3 +234,11 @@ Compare methods:
 - Report HTML: `.rettangoli/vt/_site/report.html`
 - Report JSON: `.rettangoli/vt/report.json`
 - Capture metrics: `.rettangoli/vt/metrics.json`
+
+## Docker Runtime Contract
+
+Project scripts should execute their installed `rtgl/cli.js` inside a matching
+Playwright image. The browser image's global CLI version is independent of a
+project's dependencies. Release image builds derive versions from package
+manifests and verify the resolved CLI, VT and Playwright versions. Local test
+images include all workspace package sources and verify every CLI command loads.

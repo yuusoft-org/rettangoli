@@ -99,6 +99,53 @@ describe("createWebComponentUpdateHook", () => {
     expect(element.render).not.toHaveBeenCalled();
   });
 
+  it("reuses structural snapshots for unchanged JSON data and deep-equal replacements", () => {
+    const clone = vi.spyOn(globalThis, "structuredClone");
+    try {
+      const hook = createWebComponentUpdateHook({ scheduleFrameFn: (callback) => callback() });
+      const element = createManagedElement();
+      const options = [{ value: "one" }];
+      const initial = { data: { props: { options } }, elm: element };
+      hook.insert(initial);
+      expect(clone).toHaveBeenCalledTimes(1);
+      clone.mockClear();
+      for (let index = 0; index < 10; index += 1) {
+        hook.update(initial, { data: { props: { options } }, elm: element });
+      }
+      const replacement = { data: { props: { options: [{ value: "one" }] } }, elm: element };
+      hook.update(initial, replacement);
+      expect(clone).not.toHaveBeenCalled();
+      replacement.data.props.options.push({ value: "two" });
+      hook.update(replacement, replacement);
+      expect(clone).toHaveBeenCalledTimes(1);
+      expect(element.handlers.handleOnUpdate.mock.calls[0][1].oldProps.options).toEqual([{ value: "one" }]);
+    } finally {
+      clone.mockRestore();
+    }
+  });
+
+  it("skips serialization for deeply frozen data but still detects mutable descendants", () => {
+    const hook = createWebComponentUpdateHook({ scheduleFrameFn: (callback) => callback() });
+    const element = createManagedElement();
+    const options = Object.freeze([Object.freeze({ value: "one" })]);
+    const initial = { data: { props: { options } }, elm: element };
+    hook.insert(initial);
+    const stringify = vi.spyOn(JSON, "stringify");
+    try {
+      for (let index = 0; index < 10; index += 1) hook.update(initial, initial);
+      expect(stringify).not.toHaveBeenCalled();
+    } finally {
+      stringify.mockRestore();
+    }
+    const mutableOptions = Object.freeze([{ value: "one" }]);
+    const next = { data: { props: { options: mutableOptions } }, elm: element };
+    hook.update(initial, next);
+    mutableOptions[0].value = "two";
+    hook.update(next, next);
+    expect(element.handlers.handleOnUpdate).toHaveBeenCalledTimes(1);
+    expect(element.handlers.handleOnUpdate.mock.calls[0][1].oldProps.options).toEqual([{ value: "one" }]);
+  });
+
   it("detects in-place mutations to JSON-data props", () => {
     const scheduleFrame = vi.fn((callback) => callback());
     const updateHook = createWebComponentUpdateHook({

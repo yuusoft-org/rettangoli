@@ -107,6 +107,9 @@ an update; mutating it in place does not.
 Multiple parent updates before the next scheduled frame are coalesced into one
 child update. Its payload contains the props from before the first update and
 the latest props available when that frame runs.
+The parent's property and attribute writes form one transaction; handlers do
+not observe intermediate combinations of props. Queued updates are discarded
+when the child disconnects, including when it reconnects before the frame runs.
 
 ## 5. Event Handlers from `.view.yaml`
 

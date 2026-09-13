@@ -1,3 +1,4 @@
+import { selectFieldAria } from "../../accessibility/field.js";
 export const createInitialState = () => Object.freeze({
   isOpen: false,
   position: {
@@ -16,6 +17,9 @@ export const selectViewData = ({ props, state }) => {
   const disabled = Boolean(props.disabled);
 
   return {
+    ...selectFieldAria(props),
+    ariaLabel: props.ariaLabel ?? label,
+    tabIndex: disabled ? -1 : 0,
     isOpen: state.isOpen,
     position: state.position,
     value: value,

@@ -19,7 +19,7 @@ This spec defines FE schema/contract semantics enforced by current checker rules
 
 1. `componentName` must be trimmed and custom-element valid (`kebab-case`, at least one `-`).
 2. Duplicate `componentName` values across schemas are invalid.
-3. Component folder identity must be canonical (`lowercase-kebab` `category/component`) and FE contract file basenames must normalize to the component segment.
+3. FE contract file basenames must normalize to the component segment. Canonical (`lowercase-kebab` `category/component`) folder naming is optional style lint (`--style`); runtime-supported camelCase folders pass default validation.
 4. `attrsSchema` is unsupported in schema.
 5. `methods` must be object-typed with `properties` object.
 6. FE frontend builds a canonical internal schema shape:
@@ -44,12 +44,9 @@ If `.constants.yaml` exists, root must be a YAML object (`RTGL-CHECK-CONSTANTS-0
 
 ## RTGL-SPEC-FE-006: Handler and lifecycle contracts
 
-1. Handler symbols must be valid identifiers prefixed with `handle` (enforced during FE frontend model construction).
-2. Lifecycle handlers enforce:
-- `handleBeforeMount` must be synchronous.
-- all lifecycle handlers use `deps` as first parameter.
-- `handleOnUpdate` requires second `payload` parameter.
-- `handleOnUpdate` requires second parameter name `payload` when using identifier parameter form.
+1. Referenced handler symbols must resolve to exports. Valid identifiers are supported regardless of prefix.
+2. `handleBeforeMount` must be synchronous.
+3. `--style` additionally enforces `handle`-prefixed handler exports and references, `deps` as lifecycle first parameter, and a second `payload` parameter for `handleOnUpdate`. These naming and signature conventions do not constrain runtime behavior; destructuring, renamed arguments, and unused omitted arguments pass default validation.
 
 ## RTGL-SPEC-FE-007: Expression-to-schema compatibility
 
@@ -66,7 +63,7 @@ For custom-element usage against registry contracts:
 1. required props must be provided
 2. bound events must be supported
 3. boolean binding kind must match target prop type
-4. custom-element event bindings must use `handle*` handler symbols
+4. custom-element event bindings must use valid handler symbols (`handle*` naming is optional style lint)
 5. bound custom-element handlers must exist in host `.handlers.js` exports
 6. when target event schema declares required payload keys, handler signatures must accept compatible payload parameters
 

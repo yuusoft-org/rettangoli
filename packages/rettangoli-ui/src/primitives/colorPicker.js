@@ -1,3 +1,4 @@
+import { fieldTextAriaAttributes as fieldAriaAttributes, forwardFieldAria } from "../accessibility/field.js";
 import {
   css,
   dimensionWithUnit,
@@ -76,6 +77,7 @@ class RettangoliColorPickerElement extends HTMLElement {
 
   static get observedAttributes() {
     return [
+      ...fieldAriaAttributes,
       "key", 
       "value", 
       "disabled",
@@ -119,6 +121,7 @@ class RettangoliColorPickerElement extends HTMLElement {
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
+    if (forwardFieldAria(this._inputElement, name, newValue)) return;
     if (oldValue === newValue) {
       return;
     }
