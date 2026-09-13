@@ -1,6 +1,12 @@
 const SCROLL_EPSILON = 1;
 const MIN_THUMB_SIZE = 24;
 const SCROLL_ATTRIBUTE_PATTERN = /^(?:(?:sm|md|lg|xl)-)?(?:sh|sv)$/;
+const CONTENT_MUTATION_OPTIONS = {
+  attributes: true,
+  characterData: true,
+  childList: true,
+  subtree: true,
+};
 // Browsers clamp larger authored z-index values to this signed 32-bit maximum.
 // The shadow layer follows the slot in paint order, so an equal maximum keeps
 // the scrollbar above even maximum-priority slotted content.
@@ -468,18 +474,13 @@ export class OverlayScrollbarController {
     if (typeof ResizeObserver === "function") {
       this._resizeObserver = new ResizeObserver(() => this.refresh());
       this._resizeObserver.observe(this.host);
-      this._refreshObservedChildren();
     }
 
     if (typeof MutationObserver === "function") {
       this._mutationObserver = new MutationObserver(this._handleContentMutation);
-      this._mutationObserver.observe(this.host, {
-        attributes: true,
-        characterData: true,
-        childList: true,
-        subtree: true,
-      });
+      this._mutationObserver.observe(this.host, CONTENT_MUTATION_OPTIONS);
     }
+    this._refreshObservedChildren();
 
     document.fonts?.ready.then(() => {
       if (this._connected && this._active) {
@@ -551,25 +552,40 @@ export class OverlayScrollbarController {
   }
 
   _refreshObservedChildren() {
-    if (!this._resizeObserver) {
-      return;
-    }
-
-    const nextChildren = new Set(this.host.children);
+    // A scrolling view may contain forwarding slots (for example in a
+    // popover). Observe their rendered content, which can live outside the
+    // host's DOM subtree, rather than the slots' non-rendered boxes.
+    const nextChildren = new Set(this.slotElement.assignedNodes({ flatten: true }));
+    const childrenChanged = nextChildren.size !== this._observedChildren.size ||
+      [...nextChildren].some((child) => !this._observedChildren.has(child));
 
     this._observedChildren.forEach((child) => {
-      if (!nextChildren.has(child)) {
-        this._resizeObserver.unobserve(child);
+      if (child.nodeType === Node.ELEMENT_NODE && !nextChildren.has(child)) {
+        this._resizeObserver?.unobserve(child);
       }
     });
 
     nextChildren.forEach((child) => {
-      if (!this._observedChildren.has(child)) {
-        this._resizeObserver.observe(child);
+      if (child.nodeType === Node.ELEMENT_NODE && !this._observedChildren.has(child)) {
+        this._resizeObserver?.observe(child);
       }
     });
 
     this._observedChildren = nextChildren;
+
+    if (!childrenChanged || !this._mutationObserver) {
+      return;
+    }
+
+    // Rebuild mutation targets on reassignment so detached projected nodes
+    // stop retaining observers. Text nodes need invalidation as well.
+    this._mutationObserver.disconnect();
+    this._mutationObserver.observe(this.host, CONTENT_MUTATION_OPTIONS);
+    nextChildren.forEach((child) => {
+      if (!this.host.contains(child)) {
+        this._mutationObserver.observe(child, CONTENT_MUTATION_OPTIONS);
+      }
+    });
   }
 
   _refreshNow() {

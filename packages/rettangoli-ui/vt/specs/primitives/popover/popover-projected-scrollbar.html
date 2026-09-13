@@ -1,0 +1,159 @@
+---
+title: Popover - Projected Content Scrollbar Updates
+description: Fixed-height popovers refresh scrollbar visibility and thumb size when projected content mutates or resizes, without pointer re-entry or a window resize.
+skipInitialScreenshot: true
+specs:
+  - Nested overflow mutations update the scrollbar even when the projected root does not resize.
+  - Stylesheet-driven projected root resizes update scrollbar visibility and thumb geometry.
+  - Default and named content slots retain native scrolling and content ownership.
+steps:
+  - action: waitFor
+    selector: "#popover[positioned]"
+    state: attached
+  - action: move
+    x: 80
+    y: 100
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: projectedScrollbar.fits
+    value: true
+  - action: customEvent
+    name: grow-nested-content
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: projectedScrollbar.overflows
+    value: true
+  - action: screenshot
+  - action: customEvent
+    name: shrink-nested-content
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: projectedScrollbar.fits
+    value: true
+  - action: customEvent
+    name: resize-projected-content
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: projectedScrollbar.overflows
+    value: true
+  - action: customEvent
+    name: resize-projected-content-again
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: projectedScrollbar.overflows
+    value: true
+  - action: screenshot
+  - action: customEvent
+    name: reset-projected-content
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: projectedScrollbar.fits
+    value: true
+viewport:
+  id: compact
+  width: 600
+  height: 400
+---
+
+<style id="content-sizing">
+  #projected-content {
+    height: 40px;
+    flex: none;
+  }
+  /* Test mutation invalidation without an intermediate animated height from
+     the reduced-motion stylesheet's universal transition duration. */
+  #projected-content,
+  #nested-content {
+    transition-property: none;
+  }
+</style>
+<rtgl-popover
+  id="popover"
+  open
+  no-overlay
+  x="40"
+  y="60"
+  content-w="280"
+  content-h="160"
+  content-sv="true"
+  content-ph="none"
+  content-pv="none"
+>
+  <div id="projected-content">
+    <div id="nested-content" style="height: 40px; background: var(--accent)">
+      Projected content
+    </div>
+  </div>
+</rtgl-popover>
+<script>
+  const popover = document.getElementById("popover");
+  const content = document.getElementById("projected-content");
+  const nested = document.getElementById("nested-content");
+  const rule = document.getElementById("content-sizing").sheet.cssRules[0];
+  let expectedHeight = 40;
+  let pointerEntries = 0;
+  popover.content.addEventListener("pointerenter", () => (pointerEntries += 1));
+
+  window.addEventListener(
+    "grow-nested-content",
+    () => (nested.style.height = "320px"),
+  );
+  window.addEventListener("shrink-nested-content", () => {
+    nested.style.height = "40px";
+    content.slot = "content";
+  });
+  window.addEventListener("resize-projected-content", () => {
+    expectedHeight = 320;
+    rule.style.height = "320px";
+  });
+  window.addEventListener("resize-projected-content-again", () => {
+    expectedHeight = 480;
+    rule.style.height = "480px";
+  });
+  window.addEventListener("reset-projected-content", () => {
+    expectedHeight = 40;
+    rule.style.height = "40px";
+  });
+
+  const inspect = (overflow) => {
+    const surface = popover.content;
+    const track = surface.shadowRoot.querySelector(
+      '[data-rtgl-scrollbar-track="vertical"]',
+    );
+    const thumb = surface.shadowRoot.querySelector(
+      '[data-rtgl-scrollbar-thumb="vertical"]',
+    );
+    const expectedThumb = Math.max(
+      24,
+      surface.clientHeight ** 2 / surface.scrollHeight,
+    );
+    const checks = {
+      pointerStable: pointerEntries === 1,
+      ownedContent: content.parentElement === popover,
+      heightMatches: content.getBoundingClientRect().height === expectedHeight,
+      overflowMatches: (surface.scrollHeight > surface.clientHeight + 1) === overflow,
+      visibilityMatches: track.hasAttribute("data-visible") === overflow,
+      thumbMatches: !overflow || Math.abs(parseFloat(thumb.style.height) - expectedThumb) < 1,
+    };
+    if (!Object.values(checks).every(Boolean)) {
+      throw new Error(JSON.stringify({ checks, pointerEntries, expectedHeight, actualHeight: content.getBoundingClientRect().height, scrollHeight: surface.scrollHeight, clientHeight: surface.clientHeight, expectedThumb, actualThumb: thumb.style.height }));
+    }
+    return true;
+  };
+  window.projectedScrollbar = {
+    fits: () => inspect(false),
+    overflows: () => inspect(true),
+  };
+</script>
