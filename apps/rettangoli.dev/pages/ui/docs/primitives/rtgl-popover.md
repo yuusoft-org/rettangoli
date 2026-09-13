@@ -144,7 +144,16 @@ Use `no-overlay` for non-modal floating surfaces.
 
 ## Content Slot
 
-Render popover body via `slot="content"`.
+Render popover body via `slot="content"`, or use default (unslotted) children.
+Caller-owned children stay directly under `rtgl-popover` when it opens, updates,
+and closes. This lets reactive renderers add, remove, and reorder content safely.
+The styled scrolling surface lives in the popover's shadow DOM; `slot="floating"`
+continues to render in a separate layer above it.
+
+Use `popover.content` to access the scrolling surface (for example,
+`popover.content.scrollTop`). Query caller content with
+`popover.querySelector(...)`, since slotted children are not descendants of the
+internal surface.
 
 ```html codePreview
 <rtgl-popover open x="120" y="140">

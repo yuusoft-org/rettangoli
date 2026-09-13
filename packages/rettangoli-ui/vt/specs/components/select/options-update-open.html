@@ -83,7 +83,7 @@ viewport:
 
   const getVisibleOptions = () => {
     const popover = select.shadowRoot?.querySelector("rtgl-popover");
-    return [...popover?.content?.querySelectorAll('[id^="option"]') ?? []];
+    return [...popover?.querySelectorAll('[id^="option"]') ?? []];
   };
 
   window.dynamicSelect = {

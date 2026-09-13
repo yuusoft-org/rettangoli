@@ -86,6 +86,7 @@ class RettangoliPopoverElement extends HTMLElement {
           visibility: visible;
         }
 
+        slot:not([name]),
         slot[name="content"] {
           display: contents;
         }
@@ -177,7 +178,13 @@ class RettangoliPopoverElement extends HTMLElement {
 
     // Store reference for content slot
     this._slotElement = null;
+    this._defaultSlotElement = null;
     this._contentWrapper = null;
+    this._onContentSlotChange = () => {
+      if (this._isOpen) {
+        this._schedulePositionUpdate();
+      }
+    };
 
     // Track if we're open
     this._isOpen = false;
@@ -256,10 +263,7 @@ class RettangoliPopoverElement extends HTMLElement {
     }
     this._isModalOpen = false;
 
-    if (this._slotElement?.parentNode === this._contentLayer) {
-      this._contentLayer.removeChild(this._slotElement);
-    }
-    this._slotElement = null;
+    this._removeContentSlots();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -391,41 +395,39 @@ class RettangoliPopoverElement extends HTMLElement {
     this._openDialogElement();
   }
 
-  _isIgnorableTextNode(node) {
-    return node?.nodeType === Node.TEXT_NODE && node.textContent?.trim() === "";
-  }
-
-  _isFloatingNode(node) {
-    return node?.nodeType === Node.ELEMENT_NODE && node.getAttribute("slot") === "floating";
-  }
-
   _ensureContentWrapper() {
-    if (this._contentWrapper?.parentNode === this) {
-      return this._contentWrapper;
-    }
-
-    const existingWrapper = Array.from(this.children).find((child) => child.hasAttribute(CONTENT_WRAPPER_ATTR));
-
-    if (existingWrapper) {
-      this._contentWrapper = existingWrapper;
-    } else {
+    if (!this._contentWrapper) {
       this._contentWrapper = document.createElement("rtgl-view");
       this._contentWrapper.setAttribute(CONTENT_WRAPPER_ATTR, "");
       this._contentWrapper.setAttribute("part", "content");
-      this._contentWrapper.setAttribute("bgc", "su");
       this._contentWrapper.setAttribute("bw", "xs");
       this._contentWrapper.setAttribute("bc", "bo");
       this._contentWrapper.setAttribute("br", "md");
-      this._contentWrapper.setAttribute("ph", "sm");
-      this._contentWrapper.setAttribute("pv", "sm");
-      this._contentWrapper.setAttribute("style", DEFAULT_CONTENT_STYLE);
-    }
-
-    if (this._contentWrapper.parentNode !== this) {
-      this.appendChild(this._contentWrapper);
+      this._contentLayer.appendChild(this._contentWrapper);
     }
 
     return this._contentWrapper;
+  }
+
+  _createContentSlot(name) {
+    const slot = document.createElement("slot");
+    if (name) {
+      slot.setAttribute("name", name);
+    }
+    slot.addEventListener("slotchange", this._onContentSlotChange);
+    this._contentWrapper.appendChild(slot);
+    return slot;
+  }
+
+  _removeContentSlots() {
+    for (const slot of [this._defaultSlotElement, this._slotElement]) {
+      if (slot) {
+        slot.removeEventListener("slotchange", this._onContentSlotChange);
+        slot.remove();
+      }
+    }
+    this._defaultSlotElement = null;
+    this._slotElement = null;
   }
 
   _syncContentWrapperAttributes() {
@@ -457,30 +459,9 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   _syncContentWrapper({ reposition = true } = {}) {
-    const wrapper = this._ensureContentWrapper();
-    const nodesToWrap = Array.from(this.childNodes).filter((node) => {
-      return node !== wrapper && !this._isIgnorableTextNode(node) && !this._isFloatingNode(node);
-    });
-
-    for (const node of nodesToWrap) {
-      if (node.nodeType === Node.ELEMENT_NODE && node.getAttribute("slot") === "content") {
-        node.removeAttribute("slot");
-      }
-
-      wrapper.appendChild(node);
-    }
-
+    // Caller-owned nodes must retain their light-DOM parent so renderers can
+    // insert, reorder, and remove them while the popover is open.
     this._syncContentWrapperAttributes();
-
-    const hasContent = Array.from(wrapper.childNodes).some((node) => !this._isIgnorableTextNode(node));
-
-    // Keep the content wrapper slotted while open so callers can intentionally
-    // show an empty popover shell, such as an empty select menu.
-    if (hasContent || this.hasAttribute("open")) {
-      wrapper.setAttribute("slot", "content");
-    } else {
-      wrapper.removeAttribute("slot");
-    }
 
     if (reposition && this._isOpen) {
       this._schedulePositionUpdate();
@@ -492,11 +473,9 @@ class RettangoliPopoverElement extends HTMLElement {
       this._syncContentWrapper({ reposition: false });
       this._updateActiveStateAttributes();
 
-      // Create and append slot for content only if it doesn't exist
       if (!this._slotElement) {
-        this._slotElement = document.createElement('slot');
-        this._slotElement.setAttribute('name', 'content');
-        this._contentLayer.appendChild(this._slotElement);
+        this._defaultSlotElement = this._createContentSlot();
+        this._slotElement = this._createContentSlot("content");
       }
 
       this._isOpen = true;
@@ -543,13 +522,7 @@ class RettangoliPopoverElement extends HTMLElement {
       }
       this._isModalOpen = false;
 
-      // Remove slot to unmount content
-      if (this._slotElement) {
-        if (this._slotElement.parentNode === this._contentLayer) {
-          this._contentLayer.removeChild(this._slotElement);
-        }
-        this._slotElement = null;
-      }
+      this._removeContentSlots();
     }
   }
 

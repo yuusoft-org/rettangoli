@@ -147,7 +147,7 @@ viewport:
         ?.querySelector('[data-testid="select-button"] rtgl-image');
       const popover = customSelect.shadowRoot?.querySelector("rtgl-popover");
       const rows = ["ada-option", "grace-option", "linus-option"]
-        .map((testId) => popover?.content?.querySelector(`[data-testid="${testId}"]`));
+        .map((testId) => popover?.querySelector(`[data-testid="${testId}"]`));
       const slots = rows.map((row) => row?.querySelector(".leading-visual"));
       const labelLefts = rows.map((row) => Math.round(
         row?.querySelector(".leading-visual + rtgl-text")?.getBoundingClientRect().left ?? 0,
@@ -172,7 +172,7 @@ viewport:
         ?.querySelector('[data-testid="select-button"] rtgl-image');
       const popover = customSelect.shadowRoot?.querySelector("rtgl-popover");
       const rows = ["ada-option", "grace-option", "linus-option"]
-        .map((testId) => popover?.content?.querySelector(`[data-testid="${testId}"]`));
+        .map((testId) => popover?.querySelector(`[data-testid="${testId}"]`));
       const slots = rows.map((row) => row?.querySelector(".leading-visual"));
       const labelLefts = rows.map((row) => Math.round(
         row?.querySelector(".leading-visual + rtgl-text")?.getBoundingClientRect().left ?? 0,

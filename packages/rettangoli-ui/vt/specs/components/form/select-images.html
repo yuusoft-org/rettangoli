@@ -115,7 +115,7 @@ viewport:
       const select = getSelect();
       const triggerImage = getTriggerImage();
       const optionImages = [...select?.shadowRoot
-        ?.querySelector("rtgl-popover")?.content?.querySelectorAll("rtgl-image") ?? []];
+        ?.querySelector("rtgl-popover")?.querySelectorAll("rtgl-image") ?? []];
       return {
         value: form.getValues().person,
         triggerSrc: triggerImage?.getAttribute("src") ?? "",

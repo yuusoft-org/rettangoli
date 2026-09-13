@@ -1,0 +1,149 @@
+---
+title: Create Tags In An Empty Open Picker
+description: Adding the first tags in a form must update the open picker without rendering errors, missing options, or duplicate chips.
+specs:
+  - An empty tag picker stays mounted while the form receives newly created tags.
+  - Every selected tag and option is rendered exactly once across repeated updates.
+  - Clearing the options restores the empty state without a rendering error.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    selector: '#tag-form [data-testid="tag-select-trigger"]'
+    steps:
+      - action: click
+  - action: waitFor
+    selector: "#tag-form rtgl-popover[positioned]"
+    state: attached
+    timeoutMs: 1200
+  - action: screenshot
+  - action: select
+    testId: tag-select-add-option
+    steps:
+      - action: click
+  - action: wait
+    ms: 120
+  - action: assert
+    type: js
+    fn: tagCreation.inspect
+    value:
+      options: [Tag 1]
+      chips: [Tag 1]
+      selected: [tag-1]
+      samePopover: true
+      empty: false
+      errors: 0
+  - action: select
+    testId: tag-select-add-option
+    steps:
+      - action: click
+  - action: wait
+    ms: 120
+  - action: select
+    testId: tag-select-add-option
+    steps:
+      - action: click
+  - action: wait
+    ms: 120
+  - action: customEvent
+    name: rerender-tags
+  - action: wait
+    ms: 120
+  - action: assert
+    type: js
+    fn: tagCreation.inspect
+    value:
+      options: [Tag 1, Tag 2, Tag 3]
+      chips: [Tag 1, Tag 2, Tag 3]
+      selected: [tag-1, tag-2, tag-3]
+      samePopover: true
+      empty: false
+      errors: 0
+  - action: screenshot
+  - action: customEvent
+    name: clear-tags
+  - action: wait
+    ms: 120
+  - action: assert
+    type: js
+    fn: tagCreation.inspect
+    value:
+      options: []
+      chips: []
+      selected: []
+      samePopover: true
+      empty: true
+      errors: 0
+viewport:
+  id: form-compact
+  width: 700
+  height: 620
+---
+
+<rtgl-view p="xl" w="320">
+  <rtgl-form id="tag-form" w="f"></rtgl-form>
+</rtgl-view>
+
+<script>
+  const form = document.getElementById("tag-form");
+  let options = [];
+  let initialPopover;
+  let renderErrors = 0;
+  const originalError = console.error;
+  console.error = (...args) => {
+    renderErrors += 1;
+    originalError(...args);
+  };
+  const getSelect = () => form.shadowRoot.querySelector("rtgl-tag-select");
+  const updateForm = () => {
+    form.form = {
+      title: "Resource tags",
+      fields: [
+        {
+          name: "tags",
+          type: "tag-select",
+          label: "Tags",
+          placeholder: "Add tags",
+          options,
+          addOption: { label: "Create tag" },
+        },
+      ],
+    };
+    form.setValues({ values: { tags: options.map((option) => option.value) } });
+  };
+  form.addEventListener("add-option-click", () => {
+    initialPopover ??= getSelect().shadowRoot.querySelector("rtgl-popover");
+    const count = options.length + 1;
+    options = [...options, { value: `tag-${count}`, label: `Tag ${count}` }];
+    updateForm();
+  });
+  window.addEventListener("rerender-tags", () => {
+    for (let index = 0; index < 5; index += 1) getSelect().render();
+  });
+  window.addEventListener("clear-tags", () => {
+    options = [];
+    updateForm();
+  });
+  window.tagCreation = {
+    inspect() {
+      const select = getSelect();
+      const popover = select.shadowRoot.querySelector("rtgl-popover");
+      return {
+        options: [...popover.querySelectorAll('[id^="option"]')].map((node) =>
+          node.textContent.trim(),
+        ),
+        chips: [
+          ...select.shadowRoot.querySelectorAll(
+            "#trigger [data-selection-index]",
+          ),
+        ]
+          .filter((node) => node.getAttribute("data-selection-index") !== "")
+          .map((node) => node.textContent.trim()),
+        selected: form.getValues().tags,
+        samePopover: popover === initialPopover && popover.hasAttribute("open"),
+        empty: popover.textContent.includes("No tags available"),
+        errors: renderErrors,
+      };
+    },
+  };
+  updateForm();
+</script>
