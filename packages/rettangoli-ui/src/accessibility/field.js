@@ -6,6 +6,11 @@ export const fieldAriaAttributes = [
 
 export const fieldTextAriaAttributes = fieldAriaAttributes.filter((name) => name !== "aria-required");
 
+const fieldAriaProps = ["ariaLabel", "ariaDescription", "ariaRequired", "ariaInvalid"];
+
+export const hasFieldAriaChanged = (oldProps = {}, newProps = {}) =>
+  fieldAriaProps.some((name) => oldProps[name] !== newProps[name]);
+
 export const forwardFieldAria = (control, name, value) => {
   if (!fieldAriaAttributes.includes(name)) return false;
   if (value === null) control.removeAttribute(name);

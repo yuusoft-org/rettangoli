@@ -1,3 +1,10 @@
+export const handleOnUpdate = ({ store, render }, { oldProps, newProps }) => {
+  if (oldProps.selectedTab !== newProps.selectedTab) {
+    store.setFocusedTab({ id: null });
+  }
+  render();
+};
+
 export const handleClickItem = (deps, payload) => {
   const { dispatchEvent } = deps;
   const event = payload._event;
@@ -27,7 +34,8 @@ export const handleKeyDown = (deps, payload) => {
   if (event.key === "End") next = tabs.length - 1;
   if (next === undefined || !tabs[next]) return;
   event.preventDefault();
-  tabs.forEach((tab, i) => { tab.tabIndex = i === next ? 0 : -1; });
+  deps.store.setFocusedTab({ id: tabs[next].dataset.id });
+  deps.render();
   tabs[next].focus();
   tabs[next].scrollIntoView?.({ block: "nearest", inline: "nearest" });
 };

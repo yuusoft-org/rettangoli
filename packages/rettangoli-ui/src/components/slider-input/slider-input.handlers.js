@@ -1,3 +1,5 @@
+import { hasFieldAriaChanged } from "../../accessibility/field.js";
+
 const normalizeValue = (value, props, fallback = 0) => {
   const parsed = value === null || value === undefined || value === "" ? fallback : Number(value);
   const number = Number.isFinite(parsed) ? parsed : fallback;
@@ -10,12 +12,13 @@ export const handleBeforeMount = ({ store, props }) => {
 
 export const handleOnUpdate = ({ store, render, props }, { oldProps, newProps }) => {
   const keyChanged = oldProps?.key !== newProps?.key;
-  if (keyChanged || oldProps?.value !== newProps?.value) {
+  const valueChanged = keyChanged || oldProps?.value !== newProps?.value;
+  if (valueChanged) {
     const value = normalizeValue(newProps?.value, props);
     // A controlled parent may echo a live edit. Keep the native draft/caret.
     if (keyChanged || value !== store.selectValue()) store.setValue({ value });
-    render();
   }
+  if (valueChanged || hasFieldAriaChanged(oldProps, newProps)) render();
 };
 
 export const handleValueInput = ({ store, render, dispatchEvent }, { _event: event }) => {

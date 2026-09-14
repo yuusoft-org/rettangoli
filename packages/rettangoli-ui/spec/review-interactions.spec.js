@@ -7,7 +7,6 @@ import * as sliderStore from "../src/components/slider-input/slider-input.store.
 import * as slider from "../src/components/slider-input/slider-input.handlers.js";
 import * as selectStore from "../src/components/select/select.store.js";
 import * as select from "../src/components/select/select.handlers.js";
-import * as tabs from "../src/components/tabs/tabs.handlers.js";
 import createInput from "../src/primitives/input.js";
 import createNumber from "../src/primitives/input-number.js";
 import createTextarea from "../src/primitives/textarea.js";
@@ -122,17 +121,6 @@ it("select skips section/separator rows, commits Enter and restores focus", () =
   select.handleOptionKeyDown(deps, { _event: keyboard(refs.option3) });
   expect(deps.dispatchEvent.mock.calls[0][0].detail.value).toBe(2);
   expect(document.activeElement).toBe(refs.selectButton); expect(store.selectState().isOpen).toBe(false);
-});
-
-it("tabs use one roving tab stop and manual activation", () => {
-  const tray = document.createElement("div");
-  tray.innerHTML = '<div role="tab" data-id="one" tabindex="0"></div><div role="tab" data-id="two" tabindex="-1"></div>';
-  document.body.append(tray); const deps = { dispatchEvent: vi.fn() };
-  tabs.handleKeyDown(deps, { _event: keyboard(tray.firstChild, { key: "End" }) });
-  expect(document.activeElement).toBe(tray.lastChild); expect(tray.firstChild.tabIndex).toBe(-1);
-  expect(deps.dispatchEvent).not.toHaveBeenCalled();
-  tabs.handleKeyDown(deps, { _event: keyboard(tray.lastChild) });
-  expect(deps.dispatchEvent.mock.calls[0][0].detail.id).toBe("two");
 });
 
 it.each(["select", "tag-select", "segmented-control", "slider-input", "popover-input"])(

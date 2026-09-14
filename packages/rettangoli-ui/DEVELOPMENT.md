@@ -550,6 +550,8 @@ close and return focus. Search fields support arrows to enter the filtered list.
 focus, and Enter/Space to emit `item-click`; the parent still controls
 `selected-tab`. Both controls accept `aria-label` for a contextual accessible
 name. Keyboard focus remains visible and scrolls the active option into view.
+The tabs' keyboard position survives unrelated renders; changing `selected-tab`
+makes the selected tab the sole tab stop again.
 
 `rtgl-slider-input` preserves empty and partial numeric drafts while typing.
 The slider keeps the last valid value. Committing an empty draft restores that

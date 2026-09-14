@@ -1,4 +1,5 @@
 import { deepEqual } from "../../common.js";
+import { hasFieldAriaChanged } from "../../accessibility/field.js";
 
 const emitValueChange = ({ dispatchEvent, value, label, index, item }) => {
   dispatchEvent(
@@ -37,7 +38,7 @@ export const handleBeforeMount = (deps) => {
 export const handleOnUpdate = (deps, payload) => {
   const { oldProps, newProps } = payload;
   const { store, render } = deps;
-  let shouldRender = false;
+  let shouldRender = hasFieldAriaChanged(oldProps, newProps);
 
   if (oldProps.selectedValue !== newProps.selectedValue) {
     store.updateSelectedValue({ value: newProps.selectedValue });

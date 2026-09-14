@@ -1,4 +1,5 @@
 import { deepEqual } from '../../common.js';
+import { hasFieldAriaChanged } from '../../accessibility/field.js';
 import { selectViewData } from './select.store.js';
 
 const getOptionType = (option = {}) => {
@@ -74,7 +75,7 @@ export const handleBeforeMount = (deps) => {
 export const handleOnUpdate = (deps, payload) => {
   const { oldProps, newProps } = payload;
   const { store, render, refs } = deps;
-  let shouldRender = false;
+  let shouldRender = hasFieldAriaChanged(oldProps, newProps);
   let shouldRefreshPopover = false;
 
   if (!!newProps?.disabled && !oldProps?.disabled) {
