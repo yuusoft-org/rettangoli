@@ -2,8 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 import { normalizeSitemapConfig } from '../sitemap.js';
+import { normalizeRssConfig } from '../rss.js';
 
-const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build', 'imports', 'data', 'sitemap']);
+const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build', 'imports', 'data', 'sitemap', 'rss']);
 const MARKDOWN_BOOLEAN_KEYS = new Set(['html', 'linkify', 'typographer', 'breaks', 'xhtmlOut']);
 const MARKDOWN_STRING_KEYS = new Set(['langPrefix', 'quotes', 'preset']);
 const MARKDOWN_NUMBER_KEYS = new Set(['maxNesting']);
@@ -220,7 +221,7 @@ function validateConfig(rawConfig, configPath) {
   for (const key of Object.keys(config)) {
     if (!ALLOWED_TOP_LEVEL_KEYS.has(key)) {
       throw new Error(
-        `Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias), build, imports, data, sitemap.`
+        `Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias), build, imports, data, sitemap, rss.`
       );
     }
   }
@@ -318,6 +319,13 @@ function validateConfig(rawConfig, configPath) {
 
   if (config.sitemap !== undefined) {
     normalizedConfig.sitemap = normalizeSitemapConfig(config.sitemap, configPath);
+  }
+
+  if (config.rss !== undefined) {
+    // Validate eagerly (so bad rss config fails at load time) but store the
+    // raw value; buildRssFeeds performs the single normalization at build time.
+    normalizeRssConfig(config.rss, configPath);
+    normalizedConfig.rss = config.rss;
   }
 
   return normalizedConfig;

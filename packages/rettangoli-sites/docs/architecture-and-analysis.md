@@ -41,9 +41,14 @@ Implemented in `src/createSiteBuilder.js`:
 4. Load templates recursively
 5. Parse page frontmatter and split system keys from public frontmatter
 6. Build collections from public frontmatter tags
-7. Copy static files
-8. Render all pages
-9. Write outputs with route mapping:
+7. Build RSS feed plans from collections (or all pages) when `rss` is configured, so discovery data is available to templates
+8. Preflight generated output paths for exact/ancestor collisions
+9. Clean the output directory
+10. Copy static files
+11. Render all pages
+12. Write `sitemap.xml` (when a base URL is configured)
+13. Write RSS feed files
+14. Write page outputs with route mapping:
    - `index.*` -> `.../index.html`
    - others -> `.../<slug>/index.html`
    - page frontmatter `url` overrides the file-derived route
@@ -57,6 +62,7 @@ Per-page render context:
 - plus:
   - `collections`
   - `page.url`
+  - `page.rss` (array of `{ href, title }` when RSS feeds exist; absent otherwise)
   - `build.isScreenshotMode` (retained for compatibility)
   - built-in template functions (URI helpers, JSON stringify, date formatters)
 
@@ -94,7 +100,7 @@ Behavior:
 `loadSiteConfig` supports:
 
 - `sites.config.yaml` or `sites.config.yml` in site root
-- top-level keys: `markdownit` (recommended; `markdown` is legacy alias), `build`, `imports`, `data`, `sitemap`
+- top-level keys: `markdownit` (recommended; `markdown` is legacy alias), `build`, `imports`, `data`, `sitemap`, `rss`
 - imports keys:
   - `templates`: alias -> URL map
   - `partials`: alias -> URL map
@@ -113,6 +119,12 @@ Behavior:
   - `defaults` (object): default `changefreq`, `priority`, and `lastmod`
   - `exclude` (array): exact URLs or prefix patterns ending in `*`
   - `pages` (object): per-URL overrides or `false` to exclude
+- rss keys (opt-in; see README for the full grammar):
+  - single-feed shorthand (`collection`, `outputPath`, `limit`, `filter`, `include`, `exclude`) or a named `feeds` map
+  - shared defaults: `limit` (default `20`), `dateField` (default `date`), `title`, `description`, `language`
+  - `siteUrl` (absolute base URL; falls back to `data.site.baseUrl`)
+  - `enabled` (boolean): set `false` to disable RSS output
+  - feeds are advertised for autodiscovery via `page.rss` (`{ href, title }`)
 
 ## Watch Mode
 

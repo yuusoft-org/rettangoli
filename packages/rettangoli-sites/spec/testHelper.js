@@ -51,6 +51,7 @@ export async function runTest(fixturePath) {
   let keepMarkdownFiles = false;
   let configData = {};
   let sitemap;
+  let rss;
   const configPath = memfs.existsSync('/sites.config.yaml')
     ? '/sites.config.yaml'
     : (memfs.existsSync('/sites.config.yml') ? '/sites.config.yml' : null);
@@ -59,6 +60,7 @@ export async function runTest(fixturePath) {
     keepMarkdownFiles = parsedConfig?.build?.keepMarkdownFiles === true;
     configData = parsedConfig?.data || {};
     sitemap = parsedConfig?.sitemap;
+    rss = parsedConfig?.rss;
   }
   
   // Check if this is a fixture that needs custom functions
@@ -115,6 +117,7 @@ export async function runTest(fixturePath) {
     keepMarkdownFiles,
     data: configData,
     sitemap,
+    rss,
     functions: functions
   });
   await build();

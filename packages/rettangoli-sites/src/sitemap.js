@@ -1,16 +1,10 @@
+import { escapeXml, hasOwn, isPlainObject, joinSiteUrl, validateRelativeOutputPath, validateSiteUrl } from './utils/xml.js';
+
 const ALLOWED_CHANGEFREQS = new Set(['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']);
 const ALLOWED_TOP_LEVEL_KEYS = new Set(['enabled', 'siteUrl', 'outputPath', 'defaults', 'exclude', 'pages']);
 const ALLOWED_DEFAULT_KEYS = new Set(['changefreq', 'priority', 'lastmod']);
 const ALLOWED_ENTRY_KEYS = new Set(['changefreq', 'priority', 'lastmod', 'exclude']);
 const SITEMAP_DATE_RE = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))?$/u;
-
-function isPlainObject(value) {
-  return value && typeof value === 'object' && !Array.isArray(value);
-}
-
-function hasOwn(object, key) {
-  return Object.prototype.hasOwnProperty.call(object, key);
-}
 
 function rejectInvalidUrlString(rawUrl, contextLabel) {
   if (typeof rawUrl !== 'string') {
@@ -93,65 +87,6 @@ function normalizeSitemapUrlPattern(rawPattern, contextLabel) {
   }
 
   return normalizeSitemapUrlPath(rawPattern, contextLabel);
-}
-
-function validateSiteUrl(siteUrl, contextLabel) {
-  if (typeof siteUrl !== 'string' || siteUrl.trim() === '') {
-    throw new Error(`${contextLabel}: expected a non-empty URL string.`);
-  }
-
-  let parsed;
-  try {
-    parsed = new URL(siteUrl);
-  } catch {
-    throw new Error(`${contextLabel}: "${siteUrl}" is not a valid URL.`);
-  }
-
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    throw new Error(`${contextLabel}: protocol "${parsed.protocol}" is not supported. Allowed protocols: http:, https:.`);
-  }
-
-  if (parsed.search || parsed.hash) {
-    throw new Error(`${contextLabel}: must not include query strings or fragments.`);
-  }
-
-  parsed.pathname = parsed.pathname.replace(/\/+$/u, '');
-  return parsed.toString().replace(/\/$/u, '');
-}
-
-function validateOutputPath(outputPath, contextLabel) {
-  if (typeof outputPath !== 'string' || outputPath.trim() === '') {
-    throw new Error(`${contextLabel}: expected a non-empty string.`);
-  }
-
-  if (/[\u0000-\u001F\u007F]/u.test(outputPath)) {
-    throw new Error(`${contextLabel}: must not contain control characters.`);
-  }
-
-  if (/\s/u.test(outputPath)) {
-    throw new Error(`${contextLabel}: must not contain whitespace.`);
-  }
-
-  if (outputPath.startsWith('/') || /^[A-Za-z][A-Za-z0-9+.-]*:/u.test(outputPath)) {
-    throw new Error(`${contextLabel}: expected a relative output path.`);
-  }
-
-  if (outputPath.includes('\\') || outputPath.includes('?') || outputPath.includes('#')) {
-    throw new Error(`${contextLabel}: must be a clean relative file path.`);
-  }
-
-  const segments = outputPath.split('/').filter(Boolean);
-  if (segments.length === 0) {
-    throw new Error(`${contextLabel}: expected a relative file path.`);
-  }
-
-  for (const segment of segments) {
-    if (segment === '.' || segment === '..') {
-      throw new Error(`${contextLabel}: must not contain "." or ".." segments.`);
-    }
-  }
-
-  return segments.join('/');
 }
 
 function normalizeLastmod(lastmod, contextLabel) {
@@ -289,7 +224,7 @@ export function normalizeSitemapConfig(value, configPath = 'sitemap config') {
   }
 
   if (value.outputPath !== undefined) {
-    normalized.outputPath = validateOutputPath(value.outputPath, `Invalid sitemap.outputPath in "${configPath}"`);
+    normalized.outputPath = validateRelativeOutputPath(value.outputPath, `Invalid sitemap.outputPath in "${configPath}"`);
   }
 
   if (value.defaults !== undefined) {
@@ -352,24 +287,8 @@ function normalizePageSitemapOptions(rawSitemap, pagePath) {
   return normalizeEntryOptions(rawSitemap, `Invalid sitemap frontmatter in ${pagePath}`, { allowExclude: true });
 }
 
-function escapeXml(value) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
 function formatPriority(priority) {
   return String(Number(priority.toFixed(3))).replace(/\.0+$/u, '');
-}
-
-function joinSiteUrl(siteUrl, pageUrl) {
-  const parsed = new URL(siteUrl);
-  const basePath = parsed.pathname.replace(/\/+$/u, '');
-  parsed.pathname = `${basePath}${pageUrl}`.replace(/\/+/g, '/');
-  return parsed.toString();
 }
 
 function buildUrlEntryXml(entry) {
