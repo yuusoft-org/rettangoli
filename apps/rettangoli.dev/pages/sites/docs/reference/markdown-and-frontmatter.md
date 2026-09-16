@@ -38,10 +38,10 @@ Common keys:
 - `sitemap`: optional sitemap overrides, or `false` to exclude the page
 - `title`: page title (also available to templates)
 - `tags`: used for collections
-- `_bind`: system mapping of local variable names to global `data/*.yaml` keys
+- `_bind`: system mapping of local variable names to global data keys
 - Any additional custom keys used by your templates
 
-Frontmatter is merged with global `data/*.yaml` values for render context.
+Frontmatter is merged with global data from local YAML files, inline config, and `imports.data` for render context.
 
 When `url` is omitted, the page URL is derived from the file path. For example, `pages/docs/intro.md` becomes `/docs/intro/`.
 When `url` is present, it is normalized with a leading and trailing slash and exposed as both `${url}` and `${page.url}`.
@@ -76,7 +76,7 @@ _bind:
 ---
 ```
 
-This binds `data/feDocs.yaml` to `docs` for that page, so templates/partials can use `${docs...}`.
+This binds the global `feDocs` value to `docs` for that page, so templates/partials can use `${docs...}`. That value can come from `data/feDocs.yaml`, inline config, or `imports.data.feDocs`.
 
 Rules:
 

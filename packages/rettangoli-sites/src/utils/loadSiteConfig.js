@@ -28,7 +28,7 @@ const ALLOWED_HEADING_ANCHORS_KEYS = new Set([...HEADING_ANCHORS_BOOLEAN_KEYS, .
 const ALLOWED_HEADING_ANCHOR_SLUG_MODES = new Set(['ascii', 'unicode']);
 const BUILD_BOOLEAN_KEYS = new Set(['keepMarkdownFiles']);
 const ALLOWED_BUILD_KEYS = new Set([...BUILD_BOOLEAN_KEYS]);
-const ALLOWED_IMPORT_GROUP_KEYS = new Set(['templates', 'partials']);
+const ALLOWED_IMPORT_GROUP_KEYS = new Set(['templates', 'partials', 'data']);
 const ALLOWED_IMPORT_PROTOCOLS = new Set(['http:', 'https:']);
 let didWarnLegacyMarkdownKey = false;
 
@@ -201,6 +201,10 @@ function validateImportsConfig(value, configPath) {
 
   if (value.partials !== undefined) {
     normalized.partials = validateImportGroup(value.partials, configPath, 'partials');
+  }
+
+  if (value.data !== undefined) {
+    normalized.data = validateImportGroup(value.data, configPath, 'data');
   }
 
   return normalized;

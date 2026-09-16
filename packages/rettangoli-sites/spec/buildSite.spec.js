@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { buildSite } from '../src/cli/build.js';
 
 async function withTempDir(fn) {
@@ -29,6 +29,37 @@ function writeFixtureSite(rootDir, { baseUrl = 'https://example.com', sitemapCon
 }
 
 describe('buildSite', () => {
+  it('loads configured remote data for each build and uses it in pages and the sitemap', async () => {
+    await withTempDir(async (tempDir) => {
+      writeFixtureSite(tempDir, { baseUrl: null, sitemapConfig: false });
+      fs.writeFileSync(path.join(tempDir, 'sites.config.yaml'), [
+        'imports:',
+        '  data:',
+        '    catalog: https://example.com/catalog.yaml',
+        '    site: https://example.com/site.yaml'
+      ].join('\n'));
+      fs.writeFileSync(path.join(tempDir, 'pages', 'index.md'), '---\ntemplate: base\n---\nHome');
+      fs.mkdirSync(path.join(tempDir, 'templates'));
+      fs.writeFileSync(path.join(tempDir, 'templates', 'base.yaml'), '- h1: ${catalog.title}\n- "${content}"');
+      let title = 'First';
+      const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (url) => ({
+        ok: true,
+        text: async () => url.endsWith('site.yaml') ? 'baseUrl: https://library.example' : `title: ${title}`
+      }));
+      try {
+        await buildSite({ rootDir: tempDir, quiet: true });
+        expect(fs.readFileSync(path.join(tempDir, '_site', 'index.html'), 'utf8')).toContain('First');
+        title = 'Second';
+        await buildSite({ rootDir: tempDir, quiet: true });
+        expect(fs.readFileSync(path.join(tempDir, '_site', 'index.html'), 'utf8')).toContain('Second');
+        expect(fs.readFileSync(path.join(tempDir, '_site', 'sitemap.xml'), 'utf8')).toContain('<loc>https://library.example/</loc>');
+        expect(fetchMock).toHaveBeenCalledTimes(4);
+      } finally {
+        fetchMock.mockRestore();
+      }
+    });
+  });
+
   it('generates a default sitemap when data.site.baseUrl is configured', async () => {
     await withTempDir(async (tempDir) => {
       writeFixtureSite(tempDir, { sitemapConfig: false });

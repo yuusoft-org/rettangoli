@@ -36,8 +36,8 @@ Screenshot capture is handled by `@rettangoli/vt`, not by `@rettangoli/sites`.
 Implemented in `src/createSiteBuilder.js`:
 
 1. Initialize markdown renderer (`md` override or default `rtglMarkdown`)
-2. Load partials
-3. Load global data
+2. Resolve cached remote template/partial imports and load local partials
+3. Fetch remote data afresh, replace matching aliases with local data, and merge over inline defaults
 4. Load templates recursively
 5. Parse page frontmatter and split system keys from public frontmatter
 6. Build collections from public frontmatter tags
@@ -70,7 +70,7 @@ Current reserved routing field:
 
 - `url`
 
-`_bind` maps local page variable names to keys from `data/*.yaml`.
+`_bind` maps local page variable names to global data keys from local files, inline config, or remote data imports.
 
 Example:
 
@@ -98,6 +98,7 @@ Behavior:
 - imports keys:
   - `templates`: alias -> URL map
   - `partials`: alias -> URL map
+  - `data`: alias -> URL map, fetched on every build with no cache or stale fallback
 - markdown keys: `preset`, `html`, `xhtmlOut`, `linkify`, `typographer`, `breaks`, `langPrefix`, `quotes`, `maxNesting`, `shiki`, `headingAnchors`
   - `headingAnchors` accepts:
     - boolean (`true`/`false`)
@@ -113,6 +114,12 @@ Behavior:
   - `defaults` (object): default `changefreq`, `priority`, and `lastmod`
   - `exclude` (array): exact URLs or prefix patterns ending in `*`
   - `pages` (object): per-URL overrides or `false` to exclude
+
+## Remote Data
+
+Data imports use HTTP/HTTPS and the same YAML parser as local data. Each remote data request uses `cache: 'no-store'` and a 30-second abort signal covering the response body. Errors identify the alias and URL and stop the build before output replacement. Template and partial imports continue to use their existing disk cache.
+
+Local data replaces an imported alias entirely, then the existing deep merge applies inline defaults and page frontmatter. Every declared data URL is fetched even when a local override exists. Remote changes do not themselves trigger a watch rebuild.
 
 ## Watch Mode
 

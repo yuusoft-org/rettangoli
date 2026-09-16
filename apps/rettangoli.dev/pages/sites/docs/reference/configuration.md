@@ -16,7 +16,7 @@ Configure Sites with `sites.config.yaml` or `sites.config.yml` in project root.
 | `markdownit` | object | Recommended key for markdown config |
 | `markdown` | object | Legacy alias for `markdownit` |
 | `build` | object | Build-specific options |
-| `imports` | object | Remote template and partial alias maps |
+| `imports` | object | Remote template, partial, and data alias maps |
 | `data` | object | Inline global data for small site-wide values |
 | `sitemap` | object or boolean | Generate `sitemap.xml` from built page URLs |
 
@@ -50,6 +50,8 @@ build:
 imports:
   templates:
     docs: https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@<version>/sitekit/templates/docs.yaml
+  data:
+    directory: https://example.com/directory.yaml
 data:
   site:
     baseUrl: https://example.com
@@ -112,6 +114,32 @@ Example:
 Use top-level `data` for small global values that do not deserve their own `data/*.yaml` file.
 Inline config data and `data/*.yaml` are merged, with `data/*.yaml` winning on conflicts.
 Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
+
+## `imports.data`
+
+Fetch remote YAML during every build with an alias-to-URL map (requires `@rettangoli/sites >= 1.4.0` or `rtgl >= 2.1.3`):
+
+```yaml
+imports:
+  data:
+    directory: https://example.com/directory.yaml
+```
+
+Only HTTP/HTTPS URLs are supported. The parsed YAML becomes the global `directory` value, usable as `${directory.novels}` in pages, templates, and partials, or through `_bind`. Objects, arrays, and scalars work like local YAML data. Imported data is also available to sitemap generation.
+
+Data URLs are fetched on every build with a `no-store` request, including rebuilds in watch mode. There is no disk cache and no stale-data fallback. HTTP errors, network failures, timeouts, and invalid YAML fail the build and identify the alias and URL. A request has 30 seconds to fetch and read the response body.
+
+Watch mode does not poll remote sources: a remote edit takes effect the next time a build runs. Fetching happens in the build process; visitors receive static output without a browser request for the remote YAML. Source YAML is not automatically copied into the output.
+
+Precedence follows these rules:
+
+1. A local `data/<alias>.yaml` or `.yml` replaces the entire imported value for the same alias. The remote request still runs and must succeed.
+2. The resulting data is merged over inline `data` defaults.
+3. Page frontmatter overrides global data as usual. Arrays are replaced, not concatenated.
+
+Remove the local file when moving an existing alias to a remote source. Template and partial imports retain their existing disk-cache behavior.
+
+Importing data does not generate pages per record or supply input to custom scripts that run before the Sites build.
 
 ## `sitemap`
 
