@@ -34,6 +34,7 @@ my-site/
 - Markdown pages rendered through `markdown-it` + Shiki (default `rtglMarkdown`)
 - Frontmatter (`template`, `url`, `tags`, arbitrary page metadata)
 - Global data from `data/*.yaml` and optional inline `sites.config.yaml data`
+- Remote YAML data from `imports.data`, fetched afresh during every build
 - Collections built from page tags
 - `$if`, `$for`, `$partial`, template functions
 - Static file copying from `static/` to `_site/`
@@ -76,6 +77,8 @@ imports:
     docs: https://example.com/templates/docs.yaml
   partials:
     docs/nav: https://example.com/partials/docs-nav.yaml
+  data:
+    directory: https://example.com/directory.yaml
 data:
   site:
     baseUrl: https://example.com
@@ -169,7 +172,7 @@ sitemap:
 Set `sitemap: false` in page frontmatter to exclude one page.
 `sitemap.exclude` accepts exact page URLs and prefix patterns ending in `*`, such as `/drafts/*`.
 
-`imports` lets you map aliases to remote YAML files (HTTP/HTTPS only). Use aliases in pages/templates:
+`imports.templates` and `imports.partials` let you map aliases to remote YAML files (HTTP/HTTPS only). Use aliases in pages/templates:
 - page frontmatter: `template: base` or `template: docs`
 - template/page content: `$partial: docs/nav`
 
@@ -177,11 +180,39 @@ Use top-level `data` in `sites.config.yaml` for small global values that do not 
 `sites.config.yaml data` and `data/*.yaml` are merged, with `data/*.yaml` winning on conflicts.
 Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
-Imported files are cached on disk under `.rettangoli/sites/imports/{templates|partials}/` (hashed filenames).
+Imported templates and partials are cached on disk under `.rettangoli/sites/imports/{templates|partials}/` (hashed filenames).
 Alias/url/hash mapping is tracked in `.rettangoli/sites/imports/index.yaml`.
 Build is cache-first: if a cached file exists, it is used without a network request.
 
 When an alias exists both remotely and locally, local files under `templates/` and `partials/` override the imported one.
+
+### Remote data
+
+Use `imports.data` to load YAML from HTTP/HTTPS URLs into global data at build time (Sites >= 1.4.0, rtgl >= 2.1.3):
+
+```yaml
+imports:
+  data:
+    directory: https://example.com/directory.yaml
+```
+
+The parsed document is available under its alias, just like `data/directory.yaml`. For example, a document with a `novels` array can be rendered with:
+
+```yaml
+- ul:
+    - $for novel in directory.novels:
+        - li: ${novel.title}
+```
+
+- Each configured alias is fetched on every build, including watch rebuilds, using a `no-store` request. There is no disk cache or fallback to previously fetched data.
+- HTTP, network, timeout, and YAML parsing errors fail the build with the alias and URL. Each request has a 30-second timeout, including reading its body.
+- Watch mode fetches again when a rebuild runs; it does not poll remote URLs or rebuild just because remote content changes.
+- Remote data is available to pages, templates, partials, `_bind`, and sitemap generation. Documents may contain objects, arrays, or scalar values, matching local YAML data.
+- A local `data/<alias>.yaml` or `.yml` replaces the entire imported value for that alias. The remote URL is still fetched and must succeed. Remove the local file when switching that alias to the remote source.
+- Resolved data is merged over inline `data` defaults; page frontmatter takes precedence over global data. Arrays are replaced, not concatenated.
+- Fetching happens only in the build process. Visitors receive generated static output; the framework adds no browser fetch for the YAML and does not copy the source YAML into `_site/`.
+
+Data imports make values available for rendering; they do not automatically generate one page per record. Custom preparation scripts that run before Sites must separately obtain their input data.
 
 If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it will be copied to `_site/llms.txt`.
 
@@ -199,14 +230,14 @@ _bind:
 ---
 ```
 
-This resolves `docs` from `data/feDocs.yaml` for that page.
+This resolves `docs` from the global `feDocs` key (local data, inline config, or a remote data import) for that page.
 `_bind` is a system property and is not exposed to templates directly.
 
 Rules:
 
 - `_bind` must be an object
 - each `_bind` value must be a non-empty string
-- each `_bind` value must point to an existing `data/*.yaml` key
+- each `_bind` value must point to an existing global data key
 - `_bind` is removed from public frontmatter before rendering/collections
 
 Binding order:
