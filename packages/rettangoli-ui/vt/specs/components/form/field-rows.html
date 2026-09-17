@@ -7,6 +7,7 @@ specs:
   - Rows work inside sections and preserve nested field values.
   - When a conditional row field is hidden, the remaining visible field expands to the full row width.
   - Required validation errors render inside individual row columns.
+  - Input, select, and segmented controls remain 32px tall with a larger line-height token.
 steps:
   - action: assert
     type: js
@@ -30,6 +31,7 @@ steps:
     type: js
     fn: fieldRows.getControlHeights
     value: [32, 32, 32]
+  - action: screenshot
   - action: customEvent
     name: vt:reset-line-height
   - action: assert
