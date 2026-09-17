@@ -240,7 +240,7 @@ describe('loadSiteConfig', () => {
     });
   });
 
-  it('loads imports.templates and imports.partials alias maps', async () => {
+  it('loads template, partial, and data import alias maps', async () => {
     await withTempDir(async (tempDir) => {
       fs.writeFileSync(
         path.join(tempDir, 'sites.config.yaml'),
@@ -249,7 +249,9 @@ describe('loadSiteConfig', () => {
           '  templates:',
           '    docs/layout: https://example.com/templates/docs-layout.yaml',
           '  partials:',
-          '    docs/nav: https://example.com/partials/docs-nav.yaml'
+          '    docs/nav: https://example.com/partials/docs-nav.yaml',
+          '  data:',
+          '    directory: https://example.com/directory.yaml'
         ].join('\n')
       );
 
@@ -261,6 +263,9 @@ describe('loadSiteConfig', () => {
           },
           partials: {
             'docs/nav': 'https://example.com/partials/docs-nav.yaml'
+          },
+          data: {
+            directory: 'https://example.com/directory.yaml'
           }
         }
       });
@@ -376,12 +381,12 @@ describe('loadSiteConfig', () => {
         path.join(tempDir, 'sites.config.yaml'),
         [
           'imports:',
-          '  data:',
-          '    shared/site: https://example.com/data/site.yaml'
+          '  pages:',
+          '    home: https://example.com/pages/home.yaml'
         ].join('\n')
       );
 
-      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Unsupported imports group "data"');
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow('Unsupported imports group "pages"');
     });
   });
 
@@ -397,6 +402,20 @@ describe('loadSiteConfig', () => {
       );
 
       await expect(loadSiteConfig(tempDir)).rejects.toThrow('protocol "ftp:" is not supported');
+    });
+  });
+
+  it.each([
+    ['non-object map', '  data: []', 'Invalid imports.data'],
+    ['empty alias', '  data:\n    "": https://example.com/catalog.yaml', 'alias keys must be non-empty'],
+    ['non-string URL', '  data:\n    catalog: 42', 'expected a non-empty URL string'],
+    ['empty URL', '  data:\n    catalog: ""', 'expected a non-empty URL string'],
+    ['relative URL', '  data:\n    catalog: ./catalog.yaml', 'is not a valid URL'],
+    ['file URL', '  data:\n    catalog: file:///catalog.yaml', 'protocol "file:" is not supported']
+  ])('rejects invalid data imports: %s', async (_label, config, error) => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(path.join(tempDir, 'sites.config.yaml'), `imports:\n${config}\n`);
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow(error);
     });
   });
 });

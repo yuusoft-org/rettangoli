@@ -347,13 +347,13 @@ function markdownOutputRelativePathFromUrl(url) {
   return [...segments, fileName].join('/');
 }
 
-async function fetchRemoteYaml(url, fetchImpl, aliasLabel) {
+async function fetchRemoteYaml(url, fetchImpl, aliasLabel, requestOptions) {
   const effectiveFetch = fetchImpl || globalThis.fetch;
   if (typeof effectiveFetch !== 'function') {
     throw new Error(`${aliasLabel}: Remote imports require global fetch support (Node.js 18+).`);
   }
 
-  const response = await effectiveFetch(url);
+  const response = await effectiveFetch(url, requestOptions);
   if (!response.ok) {
     throw new Error(`${aliasLabel}: HTTP ${response.status} ${response.statusText}`.trim());
   }
@@ -420,6 +420,29 @@ async function loadImportedAliases({
         hash,
         path: relativeCachePath
       });
+    } catch (error) {
+      throw new Error(`Failed to load ${aliasLabel}: ${error.message}`);
+    }
+  }
+
+  return resolved;
+}
+
+async function loadImportedData(importMap, fetchImpl) {
+  const resolved = Object.create(null);
+  if (!isObject(importMap)) {
+    return resolved;
+  }
+
+  for (const [alias, url] of Object.entries(importMap)) {
+    const aliasLabel = `imported data "${alias}" from "${url}"`;
+    try {
+      // Catalog data must be fresh on every build, including watch rebuilds.
+      const { parsed } = await fetchRemoteYaml(url, fetchImpl, aliasLabel, {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(30_000)
+      });
+      resolved[alias] = parsed;
     } catch (error) {
       throw new Error(`Failed to load ${aliasLabel}: ${error.message}`);
     }
@@ -528,9 +551,11 @@ export function createSiteBuilder({
       throw new Error('Invalid site data: expected an object.');
     }
 
-    // Read all data files and create a JSON object
+    const importedData = await loadImportedData(imports.data, fetchImpl);
+
+    // Local files replace imported data with the same alias.
     const dataDir = path.join(rootDir, 'data');
-    const fileData = {};
+    const fileData = { ...importedData };
 
     if (fs.existsSync(dataDir)) {
       const files = fs.readdirSync(dataDir);
