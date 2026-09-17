@@ -6,6 +6,7 @@ import { createComponent } from "@rettangoli/fe";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import createNumber from "../src/primitives/input-number.js";
 import createSlider from "../src/primitives/slider.js";
+import * as tagSelectMethods from "../src/components/tag-select/tag-select.methods.js";
 
 beforeAll(async () => {
   Object.defineProperty(CSSStyleSheet.prototype, "replaceSync", {
@@ -13,7 +14,7 @@ beforeAll(async () => {
   });
   customElements.define("rtgl-input-number", createNumber({}));
   customElements.define("rtgl-slider", createSlider({}));
-  for (const name of ["select", "segmented-control", "slider-input", "tabs"]) {
+  for (const name of ["select", "tag-select", "segmented-control", "slider-input", "tabs"]) {
     const readYaml = (part) => yaml.load(readFileSync(
       `src/components/${name}/${name}.${part}.yaml`, "utf8",
     ));
@@ -23,6 +24,7 @@ beforeAll(async () => {
       view, schema: readYaml("schema"),
       handlers: await import(`../src/components/${name}/${name}.handlers.js`),
       store: await import(`../src/components/${name}/${name}.store.js`),
+      methods: name === "tag-select" ? tagSelectMethods : {},
     }, {}));
   }
 });
@@ -42,6 +44,7 @@ afterEach(() => {
 
 const controlCases = [
   ["select", (host) => [host.shadowRoot.querySelector("#selectButton")]],
+  ["tag-select", (host) => [host.shadowRoot.querySelector("#trigger")]],
   ["segmented-control", (host) => [host.shadowRoot.querySelector('[role="group"]')]],
   ["slider-input", (host) => ["#slider", "#input"].map((selector) =>
     host.shadowRoot.querySelector(selector).shadowRoot.querySelector("input"))],
