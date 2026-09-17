@@ -2,8 +2,8 @@ ARG PLAYWRIGHT_VERSION=1.57.0
 FROM mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble
 
 ARG PLAYWRIGHT_VERSION
-ARG RTGL_VERSION=2.1.2
-ARG VT_VERSION=1.1.0
+ARG RTGL_VERSION=2.1.4
+ARG VT_VERSION=1.1.1
 
 # Install dependencies for Bun
 RUN apt-get update && apt-get install -y unzip curl && rm -rf /var/lib/apt/lists/*

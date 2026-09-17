@@ -16,7 +16,7 @@ Visual testing catches UI regressions that unit tests usually miss. It is especi
 Use the official image for Playwright browsers and install an exact project CLI version so local and CI runs use the same VT engine:
 
 ```bash
-npm install --save-dev --save-exact rtgl
+npm install --save-dev --save-exact rtgl@2.1.4
 docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0
 ```
 

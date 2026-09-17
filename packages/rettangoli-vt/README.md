@@ -166,7 +166,7 @@ docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.
 
 Note:
 
-- Run `npm install --save-dev --save-exact rtgl` once and commit the lockfile.
+- Run `npm install --save-dev --save-exact rtgl@2.1.4` once and commit the lockfile.
 - The image supplies browsers; `/workspace/node_modules/rtgl/cli.js` supplies the project CLI and VT. Match the image's Playwright version to the installed VT dependency.
 - In this monorepo, mount the repository root and use `node /workspace/packages/rettangoli-cli/cli.js` instead.
 - Image default working directory is `/workspace`.
@@ -175,7 +175,11 @@ Note:
 Supports `linux/amd64` and `linux/arm64`.
 
 `docker/build-and-push.sh` derives its tag and build arguments from the CLI and
-VT manifests. Image builds verify the installed CLI, VT and Playwright versions
+VT manifests (`rtgl@2.1.4`, `@rettangoli/vt@1.1.1`, Playwright 1.57.0).
+After publishing these packages, the script publishes
+`han4wluc/rtgl:playwright-v1.57.0-rtgl-v2.1.4`. The examples above use an
+existing browser image with the project CLI and do not require that new image.
+Image builds verify the installed CLI, VT and Playwright versions
 and fail on dependency drift. Publishing a matching image remains a release
 step; an existing image tag does not imply that it contains the project's VT.
 Consumer projects receive source fixes through a published package release and

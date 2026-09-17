@@ -21,12 +21,12 @@
     },
     "packages/rettangoli-check": {
       "name": "@rettangoli/check",
-      "version": "0.1.6",
+      "version": "0.1.7",
       "bin": {
         "rtgl-check": "./src/cli/bin.js",
       },
       "dependencies": {
-        "@rettangoli/ui": "1.22.2",
+        "@rettangoli/ui": "1.22.3",
         "jempl": "1.0.1",
         "js-yaml": "^4.1.0",
         "oxc-parser": "^0.112.0",
@@ -35,23 +35,23 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "2.1.3",
+      "version": "2.1.4",
       "bin": {
         "rtgl": "cli.js",
       },
       "dependencies": {
-        "@rettangoli/check": "0.1.6",
-        "@rettangoli/fe": "1.4.1",
-        "@rettangoli/sites": "1.4.0",
-        "@rettangoli/ui": "1.22.2",
-        "@rettangoli/vt": "1.1.0",
+        "@rettangoli/check": "0.1.7",
+        "@rettangoli/fe": "1.4.2",
+        "@rettangoli/sites": "1.4.1",
+        "@rettangoli/ui": "1.22.3",
+        "@rettangoli/vt": "1.1.1",
         "commander": "^14.0.0",
         "js-yaml": "^4.1.0",
       },
     },
     "packages/rettangoli-fe": {
       "name": "@rettangoli/fe",
-      "version": "1.4.1",
+      "version": "1.4.2",
       "dependencies": {
         "immer": "^10.1.1",
         "jempl": "1.0.1",
@@ -67,14 +67,14 @@
     },
     "packages/rettangoli-sitekit": {
       "name": "@rettangoli/sitekit",
-      "version": "1.0.8",
+      "version": "1.0.9",
       "devDependencies": {
         "serve": "^14.2.6",
       },
     },
     "packages/rettangoli-sites": {
       "name": "@rettangoli/sites",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "dependencies": {
         "gray-matter": "^4.0.3",
         "jempl": "^0.3.1-rc1",
@@ -93,9 +93,9 @@
     },
     "packages/rettangoli-ui": {
       "name": "@rettangoli/ui",
-      "version": "1.22.2",
+      "version": "1.22.3",
       "dependencies": {
-        "@rettangoli/fe": "1.4.1",
+        "@rettangoli/fe": "1.4.2",
         "jempl": "1.0.1",
       },
       "devDependencies": {
@@ -110,7 +110,7 @@
     },
     "packages/rettangoli-vt": {
       "name": "@rettangoli/vt",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "dependencies": {
         "commander": "^13.1.0",
         "js-yaml": "^4.1.0",

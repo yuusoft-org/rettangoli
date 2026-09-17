@@ -221,6 +221,10 @@ Use this workflow:
 1. Build FE with the local repo CLI (`cli.js`) so it uses your current FE source.
 2. Run VT in Docker for stable Playwright runtime.
 
+The current release uses `rtgl@2.1.4` with `@rettangoli/vt@1.1.1`.
+The commands below run the mounted workspace CLI; the existing Docker image
+supplies the matching Playwright 1.57.0 browsers.
+
 Docker image:
 
 ```bash
