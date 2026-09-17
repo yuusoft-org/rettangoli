@@ -21,6 +21,17 @@ steps:
       firstNameInputBoxSizing: border-box
       roleSelectFillsColumn: true
       persistControlFillsColumn: true
+      inputHeight: 32
+      selectHeight: 32
+      segmentedHeight: 32
+  - action: customEvent
+    name: vt:relax-line-height
+  - action: assert
+    type: js
+    fn: fieldRows.getControlHeights
+    value: [32, 32, 32]
+  - action: customEvent
+    name: vt:reset-line-height
   - action: assert
     type: js
     fn: fieldRows.getInitialValues
@@ -246,7 +257,18 @@ viewport:
     form.setValues({ includeLastName: false });
   });
 
+  window.addEventListener("vt:relax-line-height", () => {
+    form.style.setProperty("--sm-line-height", "1.5");
+  });
+  window.addEventListener("vt:reset-line-height", () => {
+    form.style.removeProperty("--sm-line-height");
+  });
+
   window.fieldRows = {
+    getControlHeights() {
+      return ["profile.firstName", "role", "persistSpeaker"].map(name =>
+        getRenderedControl(name).getBoundingClientRect().height);
+    },
     getInitialLayout() {
       const firstNameWidth = getFieldWidth("profile.firstName");
       const lastNameWidth = getFieldWidth("profile.lastName");
@@ -265,6 +287,9 @@ viewport:
         ).boxSizing,
         roleSelectFillsColumn: controlFillsColumn("role"),
         persistControlFillsColumn: controlFillsColumn("persistSpeaker"),
+        inputHeight: getRenderedControl("profile.firstName").getBoundingClientRect().height,
+        selectHeight: getRenderedControl("role").getBoundingClientRect().height,
+        segmentedHeight: getRenderedControl("persistSpeaker").getBoundingClientRect().height,
       };
     },
     getInitialValues() {

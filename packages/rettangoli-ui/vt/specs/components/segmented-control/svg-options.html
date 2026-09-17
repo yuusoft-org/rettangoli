@@ -5,6 +5,11 @@ specs:
   - SVG options render without visible text labels.
   - The selected SVG uses active foreground and background colors.
   - Each icon-only segment exposes an accessible label.
+steps:
+  - action: assert
+    type: js
+    fn: svgControlHeight
+    value: 32
 ---
 
 <rtgl-view g="lg" p="lg" w="240">
@@ -20,4 +25,6 @@ specs:
     { value: "play", svg: "play", ariaLabel: "Playback mode" },
   ];
   control.render();
+  window.svgControlHeight = () =>
+    control.shadowRoot.querySelector('[role="group"]').getBoundingClientRect().height;
 </script>
