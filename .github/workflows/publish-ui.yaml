@@ -35,6 +35,10 @@ jobs:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Verify Packed UI Package
+        run: bun run test:package
+        working-directory: ./packages/rettangoli-ui
+
       # Publish to npm
       - name: Publish to npm
         run: npm publish --provenance

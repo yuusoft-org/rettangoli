@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-10T17:11:05.010Z",
+  "generatedAt": "2026-09-07T15:57:08.797Z",
   "summary": {
     "totalTasks": 1,
     "completed": 1,
@@ -7,16 +7,16 @@
     "failed": 0,
     "retries": 0,
     "attempts": 1,
-    "durationMs": 354,
-    "workerCount": 5,
+    "durationMs": 286,
+    "workerCount": 1,
     "isolationMode": "fast",
     "maxRetries": 1,
     "adaptivePolicy": {
-      "mode": "auto",
-      "cpuCount": 8,
-      "cpuBound": 7,
-      "totalMemoryGb": 7.81,
-      "memoryBound": 5
+      "mode": "manual",
+      "cpuCount": 16,
+      "cpuBound": 15,
+      "totalMemoryGb": 27.15,
+      "memoryBound": 18
     },
     "schedulingPolicy": {
       "type": "duration-aware-fair-retry",
@@ -24,28 +24,28 @@
     },
     "timings": {
       "totalMs": {
-        "avgMs": 185.1,
-        "p50Ms": 185.1,
-        "p95Ms": 185.1,
-        "maxMs": 185.1
+        "avgMs": 157.97,
+        "p50Ms": 157.97,
+        "p95Ms": 157.97,
+        "maxMs": 157.97
       },
       "sessionMs": {
-        "avgMs": 0.06,
-        "p50Ms": 0.06,
-        "p95Ms": 0.06,
-        "maxMs": 0.06
+        "avgMs": 49.5,
+        "p50Ms": 49.5,
+        "p95Ms": 49.5,
+        "maxMs": 49.5
       },
       "resetMs": {
-        "avgMs": 7.56,
-        "p50Ms": 7.56,
-        "p95Ms": 7.56,
-        "maxMs": 7.56
+        "avgMs": 1.47,
+        "p50Ms": 1.47,
+        "p95Ms": 1.47,
+        "maxMs": 1.47
       },
       "navigationMs": {
-        "avgMs": 106.98,
-        "p50Ms": 106.98,
-        "p95Ms": 106.98,
-        "maxMs": 106.98
+        "avgMs": 7.87,
+        "p50Ms": 7.87,
+        "p95Ms": 7.87,
+        "maxMs": 7.87
       },
       "readyMs": {
         "avgMs": 0,
@@ -60,28 +60,28 @@
         "maxMs": 0
       },
       "initialScreenshotMs": {
-        "avgMs": 69.85,
-        "p50Ms": 69.85,
-        "p95Ms": 69.85,
-        "maxMs": 69.85
+        "avgMs": 95.66,
+        "p50Ms": 95.66,
+        "p95Ms": 95.66,
+        "maxMs": 95.66
       },
       "stepsMs": {
-        "avgMs": 0.07,
-        "p50Ms": 0.07,
-        "p95Ms": 0.07,
-        "maxMs": 0.07
+        "avgMs": 0.15,
+        "p50Ms": 0.15,
+        "p95Ms": 0.15,
+        "maxMs": 0.15
       },
       "attemptMs": {
-        "avgMs": 185.23,
-        "p50Ms": 185.23,
-        "p95Ms": 185.23,
-        "maxMs": 185.23
+        "avgMs": 162.35,
+        "p50Ms": 162.35,
+        "p95Ms": 162.35,
+        "maxMs": 162.35
       },
       "queueWaitMs": {
-        "avgMs": 153.23,
-        "p50Ms": 153.23,
-        "p95Ms": 153.23,
-        "maxMs": 153.23
+        "avgMs": 106.17,
+        "p50Ms": 106.17,
+        "p95Ms": 106.17,
+        "maxMs": 106.17
       }
     },
     "workerUtilization": [
@@ -91,44 +91,8 @@
         "successful": 1,
         "retries": 0,
         "failures": 0,
-        "busyMs": 185.23,
-        "utilizationPct": 52.32
-      },
-      {
-        "workerId": 2,
-        "attempts": 0,
-        "successful": 0,
-        "retries": 0,
-        "failures": 0,
-        "busyMs": 0,
-        "utilizationPct": 0
-      },
-      {
-        "workerId": 3,
-        "attempts": 0,
-        "successful": 0,
-        "retries": 0,
-        "failures": 0,
-        "busyMs": 0,
-        "utilizationPct": 0
-      },
-      {
-        "workerId": 4,
-        "attempts": 0,
-        "successful": 0,
-        "retries": 0,
-        "failures": 0,
-        "busyMs": 0,
-        "utilizationPct": 0
-      },
-      {
-        "workerId": 5,
-        "attempts": 0,
-        "successful": 0,
-        "retries": 0,
-        "failures": 0,
-        "busyMs": 0,
-        "utilizationPct": 0
+        "busyMs": 162.35,
+        "utilizationPct": 56.77
       }
     ]
   },
@@ -140,18 +104,18 @@
       "strategy": "load",
       "screenshotCount": 1,
       "timings": {
-        "totalMs": 185.10234200000014,
-        "sessionMs": 0.05658300000004601,
-        "resetMs": 7.557636000000002,
-        "navigationMs": 106.97723299999984,
+        "totalMs": 157.97028,
+        "sessionMs": 49.499005000000125,
+        "resetMs": 1.4652679999999236,
+        "navigationMs": 7.870580000000018,
         "readyMs": 0,
-        "settleMs": 0.0008329999998295534,
-        "initialScreenshotMs": 69.85480599999983,
-        "stepsMs": 0.07245899999998073
+        "settleMs": 0.0006509999998343119,
+        "initialScreenshotMs": 95.6641259999999,
+        "stepsMs": 0.14672299999983807
       },
       "queueType": "fresh",
-      "queueWaitMs": 153.22808899999995,
-      "attemptMs": 185.2266340000001
+      "queueWaitMs": 106.17276500000003,
+      "attemptMs": 162.35007200000018
     }
   ],
   "failures": [],
@@ -164,8 +128,8 @@
       "workerId": 1,
       "outcome": "success",
       "queueType": "fresh",
-      "queueWaitMs": 153.22808899999995,
-      "attemptMs": 185.2266340000001
+      "queueWaitMs": 106.17276500000003,
+      "attemptMs": 162.35007200000018
     }
   ]
 }

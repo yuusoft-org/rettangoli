@@ -192,11 +192,12 @@ function compareDirectories(actualDir, expectedDir, dynamicFields) {
 // Command execution
 // ---------------------------------------------------------------------------
 
-function runCommand(command, cwd) {
+function runCommand(command, cwd, expectFail = false) {
   try {
     execSync(command, { cwd, encoding: "utf-8", stdio: "pipe" });
     return 0;
   } catch (err) {
+    if (!expectFail && err.stderr) console.error(String(err.stderr).trim());
     return err.status || 1;
   }
 }
@@ -206,6 +207,7 @@ function runCommand(command, cwd) {
 // ---------------------------------------------------------------------------
 
 function main() {
+  const updateSnapshots = process.argv.includes('--update');
   const e2eDir = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
   const entries = readdirSync(e2eDir);
   const scenarioDirs = entries
@@ -248,7 +250,7 @@ function main() {
 
       // Replace $CWD with absolute work dir path
       const resolvedCommand = step.command.replaceAll("$CWD", resolve(workDir));
-      const exitCode = runCommand(resolvedCommand, resolve(workDir));
+      const exitCode = runCommand(resolvedCommand, resolve(workDir), step.expectFail);
 
       if (step.expectFail && exitCode === 0) {
         scenarioErrors.push(`${stepLabel}: expected command to fail but it exited with code 0`);
@@ -264,6 +266,12 @@ function main() {
 
       // Compare directories
       const expectedDir = join(scenarioDir, step.expected);
+      if (updateSnapshots) {
+        rmSync(expectedDir, { recursive: true, force: true });
+        cpSync(workDir, expectedDir, { recursive: true });
+        console.log(`    UPDATED: ${step.expected}`);
+        continue;
+      }
       const result = compareDirectories(resolve(workDir), expectedDir, dynamicFields);
 
       if (result.errors.length > 0) {

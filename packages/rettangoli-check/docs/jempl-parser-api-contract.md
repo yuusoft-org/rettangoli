@@ -33,7 +33,9 @@ When `strictControlDirectives: true`:
 
 1. Unknown `$*` directives are rejected.
 2. `$if` and `$elif` require a non-empty condition.
-3. `$else` must be exactly `$else`.
-4. `$for` must match `'$for(item[, index] in iterable)'` or `'$for item[, index] in iterable'`.
+3. `$else` must be exactly `$else`, with the matching `#id` suffix when used by an identified conditional.
+4. `$for` must use the runtime loop syntax, including its supported `:nested` modifier.
+5. `$when`, `$each`, and `$partial` property directives are validated by the same Jempl parser version used by FE. They are not unknown selector/control keys.
+6. `$if#id` / `$elif#id` / `$else#id` conditional chains retain Jempl's runtime validation.
 
 Diagnostics produced by this contract are surfaced in checker rules as `RTGL-CHECK-JEMPL-003`.

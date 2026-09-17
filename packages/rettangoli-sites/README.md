@@ -302,6 +302,14 @@ use a no-cache full reload so the browser never continues with stale resources
 or code. `--reload-mode full` forces a full page refresh for every change.
 `--root-dir`/`--output-path` are the preferred option names (`--rootDir`/`--outputPath` remain as legacy aliases).
 
+Builds clean the output directory first. Output may be a source subdirectory or
+a sibling (for example `--root-dir ./src --output-path ../_site`), but cannot be
+the source directory, one of its ancestors, or a symlink resolving to either.
+The watch server serves files contained in that output directory, including
+internal symlinks, and rejects paths or symlinks that escape it.
+Watch binds to `127.0.0.1` by default. To allow access from another device, use
+`bunx rtgl sites watch --host 0.0.0.0` explicitly.
+
 ## Built-in Template Functions
 
 Available in YAML templates/pages without extra setup:
@@ -339,9 +347,9 @@ Docker runtime (recommended for stable Playwright/browser versions):
 ```bash
 IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0"
 docker pull "$IMAGE"
-docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" rtgl vt screenshot
-docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" rtgl vt report
-docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" rtgl vt accept
+docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" node /workspace/node_modules/rtgl/cli.js vt screenshot
+docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" node /workspace/node_modules/rtgl/cli.js vt report
+docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" node /workspace/node_modules/rtgl/cli.js vt accept
 ```
 
 Example:

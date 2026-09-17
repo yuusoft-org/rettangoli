@@ -40,3 +40,4 @@ This spec defines Jempl parse and scope behavior used by semantic analysis:
 2. Unknown `$*` directives (for example `$iff ...`) emit `RTGL-CHECK-JEMPL-003`.
 3. `$for` must match `'$for(item[, index] in iterable)'` or `'$for item[, index] in iterable'`; invalid signatures emit `RTGL-CHECK-JEMPL-003`.
 4. Control-directive diagnostics resolve deterministic line locations from the template source key order.
+5. Runtime property directives (`$when`, `$each`, `$partial`), identified conditional chains (`#id`), and loop modifiers are accepted when validated by Jempl. `$when` conditions participate in expression scope/type analysis.

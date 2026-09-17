@@ -5,6 +5,9 @@ import { isObjectPayload } from "./payload.js";
 const RETTANGOLI_STORE_HOT_UPDATE = Symbol.for(
   "@rettangoli/fe/store-hot-update",
 );
+const RETTANGOLI_STORE_INITIALIZE = Symbol.for("@rettangoli/fe/store-initialize");
+
+export const initializeBoundStore = (store) => store?.[RETTANGOLI_STORE_INITIALIZE]?.();
 
 const splitStoreDefinition = (store = {}) => {
   const { createInitialState, ...selectorsAndActions } = store;
@@ -14,13 +17,22 @@ const splitStoreDefinition = (store = {}) => {
   };
 };
 
-export const bindStore = (store, props, constants, runtimeContext = {}) => {
+export const bindStore = (store, props, constants, runtimeContext = {}, { deferInitialization = false } = {}) => {
   const initialDefinition = splitStoreDefinition(store);
   let selectorsAndActions = initialDefinition.selectorsAndActions;
   let currentProps = props;
   let currentConstants = constants;
   let currentRuntimeContext = runtimeContext;
   let currentState = {};
+  let createInitialState = initialDefinition.createInitialState;
+  let initialized = false;
+  const initialize = () => {
+    if (!initialized) {
+      currentState = createInitialState?.({ props: currentProps, constants: currentConstants }) ?? {};
+      initialized = true;
+    }
+    return currentState;
+  };
 
   const createStoreContext = (state) => ({
     state,
@@ -30,19 +42,19 @@ export const bindStore = (store, props, constants, runtimeContext = {}) => {
     locale: currentRuntimeContext.locale,
   });
 
-  if (initialDefinition.createInitialState) {
-    currentState = initialDefinition.createInitialState({ props, constants });
-  }
+  if (!deferInitialization) initialize();
 
   const boundStore = {
-    getState: () => currentState,
+    getState: initialize,
   };
+  Object.defineProperty(boundStore, RETTANGOLI_STORE_INITIALIZE, { value: initialize });
   const stableFunctions = new Map();
 
   const getStableFunction = (key) => {
     if (!stableFunctions.has(key)) {
       if (key.startsWith("select")) {
         stableFunctions.set(key, (...args) => {
+          initialize();
           const fn = selectorsAndActions[key];
           if (typeof fn !== "function") {
             throw new Error(`[Store] Selector '${key}' is not defined.`);
@@ -51,6 +63,7 @@ export const bindStore = (store, props, constants, runtimeContext = {}) => {
         });
       } else {
         stableFunctions.set(key, (payload = {}) => {
+          initialize();
           const fn = selectorsAndActions[key];
           if (typeof fn !== "function") {
             throw new Error(`[Store] Action '${key}' is not defined.`);
@@ -99,6 +112,7 @@ export const bindStore = (store, props, constants, runtimeContext = {}) => {
       runtimeContext: nextRuntimeContext = {},
     }) => {
       const nextDefinition = splitStoreDefinition(nextStore);
+      createInitialState = nextDefinition.createInitialState;
       currentProps = nextProps;
       currentConstants = nextConstants;
       currentRuntimeContext = nextRuntimeContext;

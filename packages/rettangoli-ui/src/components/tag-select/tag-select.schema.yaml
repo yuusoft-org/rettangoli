@@ -2,6 +2,12 @@ componentName: rtgl-tag-select
 propsSchema:
   type: object
   properties:
+    ariaLabel:
+      type: string
+    ariaDescription:
+      type: string
+    ariaInvalid:
+      type: boolean
     placeholder:
       type: string
     options:

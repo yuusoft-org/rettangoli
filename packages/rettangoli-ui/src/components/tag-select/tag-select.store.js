@@ -1,6 +1,8 @@
+import { selectFieldAria } from "../../accessibility/field.js";
 import { deepEqual } from "../../common.js";
 
 const blacklistedProps = [
+  "ariaLabel", "ariaDescription", "ariaRequired", "ariaInvalid",
   "id",
   "class",
   "style",
@@ -222,6 +224,7 @@ export const selectViewData = ({ state, props }) => {
     }];
 
   return {
+    ...selectFieldAria(props),
     containerAttrString,
     isDisabled,
     isOpen: state.isOpen,

@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/fe",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Frontend framework for building reactive web components",
   "type": "module",
   "main": "./src/index.js",
@@ -32,6 +32,7 @@
     "./server": "./src/server/index.js"
   },
   "devDependencies": {
+    "jsdom": "^26.1.0",
     "puty": "^0.1.1",
     "vitest": "^4.0.15"
   },

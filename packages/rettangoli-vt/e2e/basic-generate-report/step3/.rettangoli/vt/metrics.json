@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-02-10T17:11:01.997Z",
+  "generatedAt": "2026-09-07T15:57:05.620Z",
   "summary": {
     "totalTasks": 1,
     "completed": 1,
@@ -7,16 +7,16 @@
     "failed": 0,
     "retries": 0,
     "attempts": 1,
-    "durationMs": 448,
-    "workerCount": 5,
+    "durationMs": 263,
+    "workerCount": 1,
     "isolationMode": "fast",
     "maxRetries": 1,
     "adaptivePolicy": {
-      "mode": "auto",
-      "cpuCount": 8,
-      "cpuBound": 7,
-      "totalMemoryGb": 7.81,
-      "memoryBound": 5
+      "mode": "manual",
+      "cpuCount": 16,
+      "cpuBound": 15,
+      "totalMemoryGb": 27.15,
+      "memoryBound": 18
     },
     "schedulingPolicy": {
       "type": "duration-aware-fair-retry",
@@ -24,28 +24,28 @@
     },
     "timings": {
       "totalMs": {
-        "avgMs": 274.47,
-        "p50Ms": 274.47,
-        "p95Ms": 274.47,
-        "maxMs": 274.47
+        "avgMs": 132.62,
+        "p50Ms": 132.62,
+        "p95Ms": 132.62,
+        "maxMs": 132.62
       },
       "sessionMs": {
-        "avgMs": 0.05,
-        "p50Ms": 0.05,
-        "p95Ms": 0.05,
-        "maxMs": 0.05
+        "avgMs": 19.73,
+        "p50Ms": 19.73,
+        "p95Ms": 19.73,
+        "maxMs": 19.73
       },
       "resetMs": {
-        "avgMs": 7.11,
-        "p50Ms": 7.11,
-        "p95Ms": 7.11,
-        "maxMs": 7.11
+        "avgMs": 1.23,
+        "p50Ms": 1.23,
+        "p95Ms": 1.23,
+        "maxMs": 1.23
       },
       "navigationMs": {
-        "avgMs": 175.26,
-        "p50Ms": 175.26,
-        "p95Ms": 175.26,
-        "maxMs": 175.26
+        "avgMs": 9.17,
+        "p50Ms": 9.17,
+        "p95Ms": 9.17,
+        "maxMs": 9.17
       },
       "readyMs": {
         "avgMs": 0,
@@ -60,28 +60,28 @@
         "maxMs": 0
       },
       "initialScreenshotMs": {
-        "avgMs": 91.34,
-        "p50Ms": 91.34,
-        "p95Ms": 91.34,
-        "maxMs": 91.34
+        "avgMs": 99.91,
+        "p50Ms": 99.91,
+        "p95Ms": 99.91,
+        "maxMs": 99.91
       },
       "stepsMs": {
-        "avgMs": 0.06,
-        "p50Ms": 0.06,
-        "p95Ms": 0.06,
-        "maxMs": 0.06
+        "avgMs": 0.09,
+        "p50Ms": 0.09,
+        "p95Ms": 0.09,
+        "maxMs": 0.09
       },
       "attemptMs": {
-        "avgMs": 274.58,
-        "p50Ms": 274.58,
-        "p95Ms": 274.58,
-        "maxMs": 274.58
+        "avgMs": 136.51,
+        "p50Ms": 136.51,
+        "p95Ms": 136.51,
+        "maxMs": 136.51
       },
       "queueWaitMs": {
-        "avgMs": 156.97,
-        "p50Ms": 156.97,
-        "p95Ms": 156.97,
-        "maxMs": 156.97
+        "avgMs": 102.45,
+        "p50Ms": 102.45,
+        "p95Ms": 102.45,
+        "maxMs": 102.45
       }
     },
     "workerUtilization": [
@@ -91,44 +91,8 @@
         "successful": 1,
         "retries": 0,
         "failures": 0,
-        "busyMs": 274.58,
-        "utilizationPct": 61.29
-      },
-      {
-        "workerId": 2,
-        "attempts": 0,
-        "successful": 0,
-        "retries": 0,
-        "failures": 0,
-        "busyMs": 0,
-        "utilizationPct": 0
-      },
-      {
-        "workerId": 3,
-        "attempts": 0,
-        "successful": 0,
-        "retries": 0,
-        "failures": 0,
-        "busyMs": 0,
-        "utilizationPct": 0
-      },
-      {
-        "workerId": 4,
-        "attempts": 0,
-        "successful": 0,
-        "retries": 0,
-        "failures": 0,
-        "busyMs": 0,
-        "utilizationPct": 0
-      },
-      {
-        "workerId": 5,
-        "attempts": 0,
-        "successful": 0,
-        "retries": 0,
-        "failures": 0,
-        "busyMs": 0,
-        "utilizationPct": 0
+        "busyMs": 136.51,
+        "utilizationPct": 51.91
       }
     ]
   },
@@ -140,18 +104,18 @@
       "strategy": "load",
       "screenshotCount": 1,
       "timings": {
-        "totalMs": 274.467801,
-        "sessionMs": 0.05270799999993869,
-        "resetMs": 7.108468000000016,
-        "navigationMs": 175.26403599999992,
+        "totalMs": 132.62471200000005,
+        "sessionMs": 19.725838000000067,
+        "resetMs": 1.2283160000000635,
+        "navigationMs": 9.167744999999968,
         "readyMs": 0,
-        "settleMs": 0.0011660000000119908,
-        "initialScreenshotMs": 91.34054400000002,
-        "stepsMs": 0.06225100000006023
+        "settleMs": 0.000831999999945765,
+        "initialScreenshotMs": 99.91117699999995,
+        "stepsMs": 0.08814399999994293
       },
       "queueType": "fresh",
-      "queueWaitMs": 156.96692799999994,
-      "attemptMs": 274.579259
+      "queueWaitMs": 102.44976200000002,
+      "attemptMs": 136.51254799999992
     }
   ],
   "failures": [],
@@ -164,8 +128,8 @@
       "workerId": 1,
       "outcome": "success",
       "queueType": "fresh",
-      "queueWaitMs": 156.96692799999994,
-      "attemptMs": 274.579259
+      "queueWaitMs": 102.44976200000002,
+      "attemptMs": 136.51254799999992
     }
   ]
 }

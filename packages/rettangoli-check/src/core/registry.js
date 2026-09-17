@@ -6,6 +6,21 @@ import { load as loadYaml } from "js-yaml";
 import { parseSync } from "oxc-parser";
 import { walkFiles } from "../utils/fs.js";
 import { toCamelCase, toKebabCase } from "../utils/case.js";
+import { collectProjectPrimitiveContracts } from "./projectPrimitives.js";
+
+const addHostStyleAttrs = (contract, styles) => {
+  if (!styles || typeof styles !== "object") return;
+  Object.entries(styles).forEach(([selector, value]) => {
+    // Only attributes on :host affect the component's public contract. An
+    // internal descendant's attributes are not component inputs.
+    for (const host of selector.matchAll(/:host\(([^)]*)\)/g)) {
+      for (const attribute of host[1].matchAll(/\[([\w-]+)(?:[\s~|^$*]*=|\s*\])/g)) {
+        contract.attrs.add(attribute[1]);
+      }
+    }
+    addHostStyleAttrs(contract, value);
+  });
+};
 
 const ensureRuntimeStubs = () => {
   if (typeof globalThis.HTMLElement === "undefined") {
@@ -244,11 +259,22 @@ const extractUiComponentContracts = ({ uiDir }) => {
     }
   });
 
-  return buildSchemaRegistry({
+  const registry = buildSchemaRegistry({
     schemas,
     source: "ui-components",
     isValidComponentName: hasNonEmptyComponentName,
   });
+  files.forEach((schemaFilePath) => {
+    try {
+      const schema = loadYaml(readFileSync(schemaFilePath, "utf8"));
+      const contract = registry.get(schema?.componentName);
+      const viewPath = schemaFilePath.replace(/\.schema\.yaml$/, ".view.yaml");
+      if (contract && existsSync(viewPath)) addHostStyleAttrs(contract, loadYaml(readFileSync(viewPath, "utf8"))?.styles);
+    } catch {
+      // Malformed source is reported by component analysis when in scope.
+    }
+  });
+  return registry;
 };
 
 const parseProgramWithOxc = ({ sourceCode = "", filePath = "unknown.js" } = {}) => {
@@ -761,8 +787,8 @@ export const resolveUiSourceDir = ({ workspaceRoot = process.cwd() } = {}) => {
   const candidates = [
     path.resolve(workspaceRoot),
     path.resolve(workspaceRoot, "packages", "rettangoli-ui"),
-    resolveBundledUiDir(),
     resolveInstalledUiDir(workspaceRoot),
+    resolveBundledUiDir(),
     resolveInstalledUiDir(path.dirname(fileURLToPath(import.meta.url))),
   ];
 
@@ -821,14 +847,22 @@ export const buildProjectSchemaRegistry = ({ models = [] }) => {
     const contract = getOrCreateContract(registryMap, componentName);
     contract.source.add("project-schema");
     addNormalizedModelSchemaToContract({ contract, normalizedSchema });
+    addHostStyleAttrs(contract, model.view?.yaml?.styles);
   });
 
   return registryMap;
 };
 
-export const buildMergedRegistry = async ({ models = [], workspaceRoot = process.cwd() } = {}) => {
+export const buildMergedRegistry = async ({ models = [], workspaceRoot = process.cwd(), cwd = workspaceRoot } = {}) => {
   const uiRegistry = await buildUiRegistry({ workspaceRoot });
   const projectRegistry = buildProjectSchemaRegistry({ models });
+  collectProjectPrimitiveContracts({ cwd }).forEach((primitive) => {
+    const contract = getOrCreateContract(projectRegistry, primitive.tagName);
+    contract.source.add("project-primitives");
+    primitive.attrs.forEach((attr) => contract.attrs.add(attr));
+    primitive.props.forEach((prop) => contract.props.add(prop));
+    primitive.events.forEach((event) => contract.events.add(event));
+  });
 
   return mergeRegistryMaps([uiRegistry, projectRegistry]);
 };

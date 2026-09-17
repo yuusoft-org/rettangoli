@@ -2,6 +2,14 @@ componentName: rtgl-slider-input
 propsSchema:
   type: object
   properties:
+    ariaLabel:
+      type: string
+    ariaDescription:
+      type: string
+    ariaRequired:
+      type: boolean
+    ariaInvalid:
+      type: boolean
     key:
       type: string
     value:

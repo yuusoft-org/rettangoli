@@ -37,6 +37,9 @@ const buildRettangoliFrontend = async (options = {}) => {
     clearScreen: false,
     logLevel: "warn",
     root: cwd,
+    // The bundle may be served below a site root (for example /public/main.js).
+    // Asset and chunk URLs must follow the emitted entry, including its base path.
+    base: "./",
     plugins: [
       createRettangoliFeVitePlugin({
         cwd,

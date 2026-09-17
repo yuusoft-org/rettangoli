@@ -1,3 +1,5 @@
+import { hasFieldAriaChanged } from "../../accessibility/field.js";
+
 const getOptionType = (option = {}) => {
   if (option.type === "section") {
     return "section";
@@ -163,7 +165,7 @@ export const handleAfterMount = (deps) => {
 export const handleOnUpdate = (deps, payload) => {
   const { oldProps, newProps } = payload;
   const { store, render, refs } = deps;
-  let shouldRender = false;
+  let shouldRender = hasFieldAriaChanged(oldProps, newProps);
 
   if (!!newProps?.disabled && !oldProps?.disabled) {
     const wasOpen = store.getState().isOpen;

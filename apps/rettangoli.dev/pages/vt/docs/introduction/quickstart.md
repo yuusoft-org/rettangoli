@@ -13,24 +13,25 @@ Visual testing catches UI regressions that unit tests usually miss. It is especi
 
 ## 1. Recommended runtime: Docker
 
-Use the official image so every machine (local and CI) runs the same Playwright + `rtgl` environment:
+Use the official image for Playwright browsers and install an exact project CLI version so local and CI runs use the same VT engine:
 
 ```bash
+npm install --save-dev --save-exact rtgl@2.1.4
 docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0
 ```
 
 Set a shell alias so docs and scripts can use plain `rtgl` commands:
 
 ```bash
-alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 rtgl'
+alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 node /workspace/node_modules/rtgl/cli.js'
 ```
 
 The image default working directory is `/workspace`, so `-w /workspace` is not required.
 
-If you do not use Docker, install `rtgl` locally and run through package scripts (recommended for version pinning):
+Commit the lockfile. The alias uses the installed project CLI, so an older bundled CLI in the browser image cannot silently change VT versions. Match the image's Playwright version to your installed VT dependency. Without Docker, use the same local dependency through package scripts:
 
 ```bash
-npm install --save-dev rtgl
+npx rtgl --version
 ```
 
 ## 2. Create VT folders

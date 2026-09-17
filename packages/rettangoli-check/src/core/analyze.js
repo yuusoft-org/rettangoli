@@ -1,10 +1,20 @@
 import { statSync } from "node:fs";
-import { buildComponentModel, buildProjectModel } from "./model.js";
+import { buildComponentModel, buildProjectModel, validateProjectModel } from "./model.js";
 import { discoverComponentEntries, groupEntriesByComponent } from "./discovery.js";
 import { buildMergedRegistry } from "./registry.js";
 import { runRules } from "../rules/index.js";
 import { runSemanticEngine } from "../semantic/engine.js";
 import { getDiagnosticCatalogEntry } from "../diagnostics/catalog.js";
+
+// These conventions do not constrain runtime execution. They remain available
+// as an explicit style lint without obscuring actionable contract failures.
+const STYLE_DIAGNOSTIC_CODES = new Set([
+  "RTGL-CHECK-COMPONENT-001",
+  "RTGL-CHECK-HANDLER-002",
+  "RTGL-CHECK-LIFECYCLE-002",
+  "RTGL-CHECK-LIFECYCLE-003",
+  "RTGL-CHECK-LIFECYCLE-004",
+]);
 
 const summarizeDiagnostics = (diagnostics = []) => {
   const bySeverity = { error: 0, warn: 0 };
@@ -148,6 +158,7 @@ export const analyzeProject = async ({
   includeYahtml = true,
   includeExpression = false,
   includeSemantic = false,
+  includeStyle = false,
   incrementalState,
 } = {}) => {
   const discovery = discoverComponentEntries({ cwd, dirs });
@@ -157,15 +168,15 @@ export const analyzeProject = async ({
       return buildProjectModel(componentGroups);
     }
 
-    const buildFingerprint = (files = {}) => {
-      return Object.entries(files)
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([fileType, filePath]) => {
+    const buildFingerprint = (files = []) => {
+      return [...new Set(files)]
+        .sort()
+        .map((filePath) => {
           try {
             const stat = statSync(filePath);
-            return `${fileType}:${filePath}:${stat.mtimeMs}:${stat.size}`;
+            return `${filePath}:${stat.mtimeMs}:${stat.ctimeMs}:${stat.size}`;
           } catch {
-            return `${fileType}:${filePath}:missing`;
+            return `${filePath}:missing`;
           }
         })
         .join("|");
@@ -173,8 +184,9 @@ export const analyzeProject = async ({
 
     const nextCache = new Map();
     const nextModels = componentGroups.map((componentGroup) => {
-      const fingerprint = buildFingerprint(componentGroup.files);
       const cached = incrementalState.componentCache.get(componentGroup.componentKey);
+      const dependencies = [...Object.values(componentGroup.files), ...(cached?.model.dependencies || [])];
+      const fingerprint = buildFingerprint(dependencies);
       if (cached && cached.fingerprint === fingerprint) {
         nextCache.set(componentGroup.componentKey, cached);
         return cached.model;
@@ -182,23 +194,25 @@ export const analyzeProject = async ({
 
       const model = buildComponentModel(componentGroup);
       nextCache.set(componentGroup.componentKey, {
-        fingerprint,
+        fingerprint: buildFingerprint(model.dependencies),
         model,
       });
       return model;
     });
 
     incrementalState.componentCache = nextCache;
-    return nextModels;
+    return validateProjectModel(nextModels);
   })();
 
-  const modelDiagnostics = normalizeDiagnostics(models.flatMap((model) => model.diagnostics || []));
-  const registry = await buildMergedRegistry({ models, workspaceRoot });
+  const modelDiagnostics = normalizeDiagnostics(models.flatMap((model) => model.diagnostics || [])
+    .filter((diagnostic) => includeStyle || !STYLE_DIAGNOSTIC_CODES.has(diagnostic.code)));
+  const registry = await buildMergedRegistry({ models, workspaceRoot, cwd });
   const ruleDiagnostics = normalizeDiagnostics(runRules({
     models,
     registry,
     includeYahtml,
     includeExpression,
+    includeStyle,
   }));
   const semanticResult = includeSemantic
     ? runSemanticEngine({ models, registry })

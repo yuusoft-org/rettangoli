@@ -221,6 +221,10 @@ Use this workflow:
 1. Build FE with the local repo CLI (`cli.js`) so it uses your current FE source.
 2. Run VT in Docker for stable Playwright runtime.
 
+The current release uses `rtgl@2.1.4` with `@rettangoli/vt@1.1.1`.
+The commands below run the mounted workspace CLI; the existing Docker image
+supplies the matching Playwright 1.57.0 browsers.
+
 Docker image:
 
 ```bash
@@ -231,23 +235,23 @@ Dashboard suite:
 
 ```bash
 (cd packages/rettangoli-fe/e2e/dashboard && node ../../../rettangoli-cli/cli.js fe build)
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" rtgl vt screenshot
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" rtgl vt report
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt screenshot
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt report
 ```
 
 Interactions suite:
 
 ```bash
 (cd packages/rettangoli-fe/e2e/interactions && node ../../../rettangoli-cli/cli.js fe build)
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" rtgl vt screenshot
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" rtgl vt report
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt screenshot
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt report
 ```
 
 Accept intentional visual changes:
 
 ```bash
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" rtgl vt accept
-docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" rtgl vt accept
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/dashboard "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt accept
+docker run --rm -v "$(pwd):/workspace" -w /workspace/packages/rettangoli-fe/e2e/interactions "$IMAGE" node /workspace/packages/rettangoli-cli/cli.js vt accept
 ```
 
 VT specs live under each suite's `vt/specs/` directory.

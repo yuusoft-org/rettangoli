@@ -304,6 +304,7 @@ const runAnalyzeScenario = async ({ scenarioDirName, scenarioRoot, spec, expecte
     dirs: Array.isArray(options.dirs) ? options.dirs : ["./src/components"],
     includeYahtml: options.includeYahtml !== false,
     includeExpression: options.includeExpression === true,
+    includeStyle: options.includeStyle === true,
     workspaceRoot,
   });
 
@@ -328,6 +329,7 @@ const runAnalyzeScenario = async ({ scenarioDirName, scenarioRoot, spec, expecte
       dirs: Array.isArray(options.dirs) ? options.dirs : ["./src/components"],
       includeYahtml: options.includeYahtml !== false,
       includeExpression: options.includeExpression === true,
+      includeStyle: options.includeStyle === true,
       workspaceRoot,
     });
     const secondNormalized = summarizeResult(secondResult, normalizeDiagnostics({
@@ -363,6 +365,7 @@ const runAnalyzeScenario = async ({ scenarioDirName, scenarioRoot, spec, expecte
         dirs: Array.isArray(options.dirs) ? options.dirs : ["./src/components"],
         includeYahtml: options.includeYahtml !== false,
         includeExpression: options.includeExpression === true,
+        includeStyle: options.includeStyle === true,
         workspaceRoot,
       });
       const mutatedNormalized = summarizeResult(mutatedResult, normalizeDiagnostics({

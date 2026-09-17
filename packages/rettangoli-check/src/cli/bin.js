@@ -12,6 +12,7 @@ const CHECK_USAGE = [
   "  --warn-as-error     Treat warnings as errors",
   "  --no-yahtml         Disable YAHTML attribute checks",
   "  --expr              Enable template expression root checks",
+  "  --style             Enable optional naming and signature conventions",
   "  --autofix           Apply safe autofixes in place",
   "  --autofix-dry-run   Preview safe autofixes without writing files",
   "  --autofix-min-confidence <0-1> Minimum confidence threshold (default: 0.9)",
@@ -48,6 +49,7 @@ const parseCheckArgs = (args = []) => {
   let warnAsError = false;
   let includeYahtml = true;
   let includeExpression = false;
+  let includeStyle;
   let watch = false;
   let watchIntervalMs = 800;
   let autofixMode = "off";
@@ -93,6 +95,11 @@ const parseCheckArgs = (args = []) => {
 
     if (arg === "--expr") {
       includeExpression = true;
+      continue;
+    }
+
+    if (arg === "--style") {
+      includeStyle = true;
       continue;
     }
 
@@ -180,6 +187,7 @@ const parseCheckArgs = (args = []) => {
       warnAsError,
       includeYahtml,
       includeExpression,
+      includeStyle,
       watch,
       watchIntervalMs,
       autofixMode,

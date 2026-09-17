@@ -9,6 +9,8 @@ refs:
     eventListeners:
       click:
         handler: handleClearClick
+      keydown:
+        handler: handleClearKeyDown
   searchInput:
     eventListeners:
       value-input:
@@ -25,6 +27,8 @@ refs:
     eventListeners:
       click:
         handler: handleOptionClick
+      keydown:
+        handler: handleOptionKeyDown
       mouseenter:
         handler: handleOptionMouseEnter
       mouseleave:
@@ -33,6 +37,8 @@ refs:
     eventListeners:
       click:
         handler: handleAddOptionClick
+      keydown:
+        handler: handleAddOptionKeyDown
       mouseenter:
         handler: handleAddOptionMouseEnter
       mouseleave:
@@ -44,10 +50,13 @@ styles:
     border-color: var(--ring)
     outline: var(--focus-ring-outline, none)
     box-shadow: inset 0 0 0 2px var(--ring)
+  '[role=option]:focus-visible, #optionAdd:focus-visible, #clearButton:focus-visible':
+    outline: 2px solid var(--ring)
+    outline-offset: -2px
   .leading-visual:
     flex-shrink: 0
 template:
-  - 'rtgl-view#selectButton style="display: inline-flex;" d=h av=c h=32 ph=md bw=xs bc=bo h-bc=${selectButtonHoverBorderColor} br=md bgc=su cur=${selectButtonCursor} ${containerAttrString} data-testid="select-button" role="button" tabindex=${selectButtonTabIndex} aria-disabled=${isDisabled}':
+  - 'rtgl-view#selectButton aria-label=${ariaLabel} aria-description=${ariaDescription} aria-invalid=${ariaInvalid} style="display: inline-flex;" d=h av=c h=32 ph=md bw=xs bc=bo h-bc=${selectButtonHoverBorderColor} br=md bgc=su cur=${selectButtonCursor} ${containerAttrString} data-testid="select-button" role="button" tabindex=${selectButtonTabIndex} aria-disabled=${isDisabled} aria-expanded=${isOpen} aria-haspopup=listbox aria-controls=listbox':
       - rtgl-view d=h av=c ah=s w=f g=md:
           - rtgl-view d=h av=c g=md w=1fg:
               - $if hasSelectedImage:
@@ -61,38 +70,39 @@ template:
           - $if hasSelectedSuffixText:
               - rtgl-text s=xs c=${selectedSuffixTextColor} ta=e: ${selectedSuffixText}
           - $if showClear:
-              - rtgl-svg#clearButton svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button": null
+              - rtgl-svg#clearButton svg=x wh=16 c=mu-fg cur=pointer data-testid="select-clear-button" role=button tabindex=0 aria-label="Clear selection": null
           - rtgl-svg svg=chevronDown wh=16 c=mu-fg: null
   - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=rs content-wh=300 content-g=xs content-sv=true content-pv=sm:
       - $if showSearch:
           - rtgl-view w=f mt=md mh=md mb=xs:
               - 'rtgl-input#searchInput w=f s=sm value=${searchQuery} placeholder="${searchPlaceholder}"': null
-      - $for option, i in renderOptions:
-          - $if option.isSection:
-              - rtgl-view w=f p=md ?hide=${option.isSearchHidden}:
-                  - rtgl-text s=xs c=mu-fg: ${option.label}
-            $elif option.isItem:
-              - rtgl-view#option${option.index} w=f ph=lg pv=md cur=pointer bgc=${option.bgc} data-testid=${option.testId} ?hide=${option.isSearchHidden}:
-                  - rtgl-view d=h av=c w=f g=md:
-                      - rtgl-view d=h av=c g=md w=1fg:
-                          - $if option.hasLeadingVisualSlot:
-                              - rtgl-view class=leading-visual d=h av=c ah=c wh=${option.leadingVisualSize} aria-hidden="true":
-                                  - $if option.hasImage:
-                                      - $if imageHasBorder:
-                                          - rtgl-image src=${option.imageSrc} alt="" wh=${imageSize} br=${imageBorderRadius} bw=xs bc=${imageBorderColor} of=${imageFit}: null
-                                        $else:
-                                          - rtgl-image src=${option.imageSrc} alt="" wh=${imageSize} br=${imageBorderRadius} of=${imageFit}: null
-                                    $elif option.hasIcon:
-                                      - rtgl-svg wh=16 svg=${option.icon} c=${option.iconColor}: null
-                          - rtgl-text s=sm c=${option.c} w=1fg ellipsis: ${option.label}
-                      - $if option.hasSuffixText:
-                          - rtgl-text s=xs c=${option.suffixTextColor} ta=e: ${option.suffixText}
-            $elif option.isSeparator:
-              - rtgl-view w=f h=1 bgc=mu mv=sm ?hide=${option.isSearchHidden}: null
+      - rtgl-view#listbox role=listbox aria-required=${ariaRequired} aria-label=${selectedLabel} w=f g=xs:
+          - $for option, i in renderOptions:
+              - $if option.isSection:
+                  - rtgl-view w=f p=md ?hide=${option.isSearchHidden}:
+                      - rtgl-text s=xs c=mu-fg: ${option.label}
+                $elif option.isItem:
+                  - rtgl-view#option${option.index} role=option tabindex=-1 aria-selected=${option.isSelected} w=f ph=lg pv=md cur=pointer bgc=${option.bgc} data-testid=${option.testId} ?hide=${option.isSearchHidden}:
+                      - rtgl-view d=h av=c w=f g=md:
+                          - rtgl-view d=h av=c g=md w=1fg:
+                              - $if option.hasLeadingVisualSlot:
+                                  - rtgl-view class=leading-visual d=h av=c ah=c wh=${option.leadingVisualSize} aria-hidden="true":
+                                      - $if option.hasImage:
+                                          - $if imageHasBorder:
+                                              - rtgl-image src=${option.imageSrc} alt="" wh=${imageSize} br=${imageBorderRadius} bw=xs bc=${imageBorderColor} of=${imageFit}: null
+                                            $else:
+                                              - rtgl-image src=${option.imageSrc} alt="" wh=${imageSize} br=${imageBorderRadius} of=${imageFit}: null
+                                        $elif option.hasIcon:
+                                          - rtgl-svg wh=16 svg=${option.icon} c=${option.iconColor}: null
+                              - rtgl-text s=sm c=${option.c} w=1fg ellipsis: ${option.label}
+                          - $if option.hasSuffixText:
+                              - rtgl-text s=xs c=${option.suffixTextColor} ta=e: ${option.suffixText}
+                $elif option.isSeparator:
+                  - rtgl-view w=f h=1 bgc=mu mv=sm ?hide=${option.isSearchHidden}: null
       - $if showSearch:
           - rtgl-view w=f ph=lg pv=md ?hide=${hideEmptySearch}:
               - rtgl-text s=sm c=mu-fg: ${emptySearchLabel}
       - $if showAddOption:
           - rtgl-view w=f bw=xs bc=mu bwt=sm: null
-          - rtgl-view#optionAdd w=f ph=lg pv=md cur=pointer bgc=${addOptionBgc} data-testid="select-add-option":
+          - rtgl-view#optionAdd role=button tabindex=0 w=f ph=lg pv=md cur=pointer bgc=${addOptionBgc} data-testid="select-add-option":
               - rtgl-text s=sm c=ac: ${addOptionLabel}

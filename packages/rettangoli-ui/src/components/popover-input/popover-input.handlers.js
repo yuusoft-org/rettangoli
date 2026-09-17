@@ -46,6 +46,13 @@ export const handleOnUpdate = (deps, payload) => {
   render();
 }
 
+export const handleTextKeyDown = (deps, payload) => {
+  const event = payload._event;
+  if (event.isComposing || !["Enter", " "].includes(event.key)) return;
+  event.preventDefault();
+  handleTextClick(deps, payload);
+};
+
 export const handleTextClick = (deps, payload) => {
   const { store, render, refs, props } = deps;
   if (props.disabled) {
@@ -101,6 +108,7 @@ export const handleSubmitClick = (deps) => {
 export const handleInputKeydown = (deps, payload) => {
   const { store, refs } = deps;
   const event = payload._event;
+  if (event.isComposing || event.keyCode === 229) return;
 
   if (event.key === "Enter") {
     event.preventDefault();

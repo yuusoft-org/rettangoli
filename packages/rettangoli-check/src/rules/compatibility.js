@@ -102,7 +102,7 @@ const inferAttributeExpressionType = ({ model, attribute }) => {
   return inferLiteralLatticeType(attribute.valueText).kind;
 };
 
-export const runCompatibilityRules = ({ models = [], registry = new Map() }) => {
+export const runCompatibilityRules = ({ models = [], registry = new Map(), includeStyle = false }) => {
   const diagnostics = [];
 
   models.forEach((model) => {
@@ -187,7 +187,7 @@ export const runCompatibilityRules = ({ models = [], registry = new Map() }) => 
             return;
           }
 
-          if (!isValidHandlerName(rawHandlerSymbol)) {
+          if (!isValidSymbolName(rawHandlerSymbol) || (includeStyle && !isValidHandlerName(rawHandlerSymbol))) {
             diagnostics.push({
               code: "RTGL-CHECK-HANDLER-003",
               severity: "error",

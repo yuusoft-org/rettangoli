@@ -294,11 +294,14 @@ const buildLocalExportTargetCandidates = ({ importerFilePath, specifier }) => {
   return candidates;
 };
 
-const resolveLocalExportTarget = ({ importerFilePath, specifier }) => {
+const resolveLocalExportTarget = ({ importerFilePath, specifier, dependencies }) => {
   const candidates = buildLocalExportTargetCandidates({ importerFilePath, specifier });
 
   for (let index = 0; index < candidates.length; index += 1) {
     const candidatePath = candidates[index];
+    // Missing candidates matter too: creating an earlier resolution candidate
+    // or restoring a missing module must invalidate a cached component.
+    dependencies?.add(candidatePath);
     const readResult = readTextFileSafe(candidatePath);
     if (readResult.ok) {
       return {
@@ -390,7 +393,9 @@ const collectNamedExportsWithStar = ({
   stack = new Set(),
   diagnostics = [],
   diagnosticKeys = new Set(),
+  dependencies = new Set(),
 }) => {
+  dependencies.add(filePath);
   if (cache.has(filePath)) {
     return cache.get(filePath);
   }
@@ -430,7 +435,7 @@ const collectNamedExportsWithStar = ({
       predicate: (candidate) => candidate?.kind === "export-star"
         && candidate?.moduleRequest === specifier,
     });
-    const resolvedTarget = resolveLocalExportTarget({ importerFilePath: filePath, specifier });
+    const resolvedTarget = resolveLocalExportTarget({ importerFilePath: filePath, specifier, dependencies });
     if (!resolvedTarget) {
       const attemptedCandidates = buildLocalExportTargetCandidates({
         importerFilePath: filePath,
@@ -473,6 +478,7 @@ const collectNamedExportsWithStar = ({
       stack,
       diagnostics,
       diagnosticKeys,
+      dependencies,
     });
     nestedExports.forEach((name) => {
       if (name !== "default") {
@@ -498,6 +504,7 @@ const collectNamedExportsWithStar = ({
     const resolvedTarget = resolveLocalExportTarget({
       importerFilePath: filePath,
       specifier: moduleRequest,
+      dependencies,
     });
     if (resolvedTarget) {
       return;
@@ -555,6 +562,7 @@ const collectNamedExportsWithStar = ({
     const resolvedTarget = resolveLocalExportTarget({
       importerFilePath: filePath,
       specifier: moduleRequest,
+      dependencies,
     });
     if (!resolvedTarget) {
       const attemptedCandidates = buildLocalExportTargetCandidates({
@@ -598,6 +606,7 @@ const collectNamedExportsWithStar = ({
       stack,
       diagnostics,
       diagnosticKeys,
+      dependencies,
     });
     if (nestedExports.has(importedName)) {
       exports.add(exportedName);
@@ -654,6 +663,7 @@ export const buildComponentModel = (componentGroup) => {
       }),
     },
     diagnostics,
+    dependencies: new Set(Object.values(files)),
     view: {
       filePath: files.view || null,
       text: "",
@@ -794,6 +804,7 @@ export const buildComponentModel = (componentGroup) => {
         sourceCode: storeReadResult.value,
         diagnostics,
         diagnosticKeys: exportResolutionDiagnosticKeys,
+        dependencies: model.dependencies,
       });
     }
   }
@@ -810,6 +821,7 @@ export const buildComponentModel = (componentGroup) => {
         sourceCode: handlersReadResult.value,
         diagnostics,
         diagnosticKeys: exportResolutionDiagnosticKeys,
+        dependencies: model.dependencies,
       });
       model.handlers.exports.forEach((handlerName) => {
         if (isValidHandlerExportName(handlerName)) {
@@ -844,6 +856,7 @@ export const buildComponentModel = (componentGroup) => {
         sourceCode: methodsReadResult.value,
         diagnostics,
         diagnosticKeys: exportResolutionDiagnosticKeys,
+        dependencies: model.dependencies,
       });
     }
   }
@@ -853,11 +866,11 @@ export const buildComponentModel = (componentGroup) => {
   return model;
 };
 
-export const buildProjectModel = (componentGroups = []) => {
-  const models = componentGroups.map((componentGroup) => buildComponentModel(componentGroup));
+export const validateProjectModel = (models = []) => {
   const ownersByNormalizedIdentity = new Map();
 
   models.forEach((model) => {
+    model.diagnostics = model.diagnostics.filter((diagnostic) => diagnostic.code !== COMPONENT_IDENTITY_COLLISION_CODE);
     const normalizedKey = model?.componentIdentity?.normalizedKey;
     if (!normalizedKey) {
       return;
@@ -896,3 +909,7 @@ export const buildProjectModel = (componentGroups = []) => {
 
   return models;
 };
+
+export const buildProjectModel = (componentGroups = []) => validateProjectModel(
+  componentGroups.map((componentGroup) => buildComponentModel(componentGroup)),
+);

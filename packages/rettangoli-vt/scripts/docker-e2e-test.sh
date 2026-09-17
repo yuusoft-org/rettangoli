@@ -48,11 +48,13 @@ echo ""
 
 # Build Docker image first
 IMAGE_NAME="rtgl-local-test:latest"
+read -r RTGL_VERSION VT_VERSION PLAYWRIGHT_VERSION < <(node "$VT_PACKAGE_DIR/docker/release-versions.mjs")
 echo -e "${YELLOW}Step 1: Building Docker image: $IMAGE_NAME${NC}"
 echo ""
 
 docker build \
   -t "$IMAGE_NAME" \
+  --build-arg "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" \
   -f "$MONOREPO_ROOT/packages/rettangoli-vt/docker/Dockerfile.test" \
   "$MONOREPO_ROOT"
 

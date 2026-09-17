@@ -6,6 +6,7 @@ import {
 } from "../core/runtime/methods.js";
 import {
   bindStore,
+  initializeBoundStore,
   hotUpdateBoundStore,
   prepareHotUpdateBoundStore,
 } from "../core/runtime/store.js";
@@ -27,6 +28,7 @@ import {
 import { initializeComponentDom } from "./componentDom.js";
 import {
   createWebComponentUpdateHook,
+  cancelPendingComponentUpdate,
   RETTANGOLI_COMPONENT_MARKER,
 } from "./componentUpdateHook.js";
 import { scheduleFrame } from "./scheduler.js";
@@ -145,6 +147,7 @@ export const createWebComponentClass = ({
     cssText;
     _hotRecord;
     _hotRevision = 0;
+    _mountGeneration = 0;
 
     static get observedAttributes() {
       return ["key"];
@@ -175,6 +178,7 @@ export const createWebComponentClass = ({
         record.instances.add(this);
       }
 
+      initializeBoundStore(this.store);
       const dom = initializeComponentDom({
         host: this,
         cssText: this.cssText,
@@ -194,6 +198,8 @@ export const createWebComponentClass = ({
     }
 
     disconnectedCallback() {
+      this._mountGeneration += 1;
+      cancelPendingComponentUpdate(this);
       this._hotRecord?.instances.delete(this);
       if (this._i18nUnsubscribe) {
         this._i18nUnsubscribe();
@@ -354,6 +360,7 @@ export const createWebComponentClass = ({
         this.props,
         this.constants,
         createStoreRuntimeContext(this),
+        { deferInitialization: true },
       );
       this.template = currentDefinition.template;
       this.handlers = currentDefinition.handlers;

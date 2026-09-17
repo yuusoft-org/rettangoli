@@ -832,6 +832,11 @@ export const selectViewData = ({ state, props }) => {
         : null;
     }
 
+    field._accessibleLabel = field.label ?? field.checkboxText ?? "";
+    field._accessibleDescription = [field.description, field._error].filter(Boolean).join(". ");
+    field._required = !!field.required;
+    field._invalid = !!field._error;
+
     // Type-specific computed props
     if (field.type === "input-text") {
       field._inputType = field.inputType || "text";

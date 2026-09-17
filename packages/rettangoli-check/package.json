@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/check",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Static contract checker for Rettangoli projects",
   "type": "module",
   "repository": {
@@ -17,7 +17,8 @@
     "rtgl-check": "./src/cli/bin.js"
   },
   "scripts": {
-    "ci": "npm run test:no-fe-contracts-import && npm run test:ui-registry-resolution-contract && npm run test:scenarios",
+    "ci": "npm run test:no-fe-contracts-import && npm run test:ui-registry-resolution-contract && npm run test:runtime-compatibility && npm run test:scenarios",
+    "test:runtime-compatibility": "node ./scripts/test-runtime-compatibility.js",
     "test:package": "node ./scripts/package-smoke-test.js",
     "test:scenarios": "node ./test/run-scenarios.js",
     "test:no-fe-contracts-import": "node ./scripts/test-no-fe-contracts-import.js",
@@ -47,8 +48,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@rettangoli/ui": "1.22.2",
-    "jempl": "0.3.2-rc2",
+    "@rettangoli/ui": "1.22.3",
+    "jempl": "1.0.1",
     "js-yaml": "^4.1.0",
     "oxc-parser": "^0.112.0",
     "yahtml": "0.0.5"

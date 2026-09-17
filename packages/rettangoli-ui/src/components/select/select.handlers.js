@@ -1,4 +1,6 @@
 import { deepEqual } from '../../common.js';
+import { hasFieldAriaChanged } from '../../accessibility/field.js';
+import { selectViewData } from './select.store.js';
 
 const getOptionType = (option = {}) => {
   if (option.type === 'section') {
@@ -29,7 +31,7 @@ const focusSearchInput = (refs = {}) => {
   }
 };
 
-const focusSearchInputWhenReady = (refs = {}, remainingAttempts = 10) => {
+const focusWhenReady = (refs = {}, focus, remainingAttempts = 10) => {
   const popover = refs.popover;
 
   if (!popover?.hasAttribute?.("open")) {
@@ -37,11 +39,11 @@ const focusSearchInputWhenReady = (refs = {}, remainingAttempts = 10) => {
   }
 
   if (popover.hasAttribute("positioned") || remainingAttempts === 0) {
-    focusSearchInput(refs);
+    focus();
     return;
   }
 
-  setTimeout(() => focusSearchInputWhenReady(refs, remainingAttempts - 1), 16);
+  setTimeout(() => focusWhenReady(refs, focus, remainingAttempts - 1), 16);
 };
 
 const refreshOpenPopover = (refs = {}) => {
@@ -73,7 +75,7 @@ export const handleBeforeMount = (deps) => {
 export const handleOnUpdate = (deps, payload) => {
   const { oldProps, newProps } = payload;
   const { store, render, refs } = deps;
-  let shouldRender = false;
+  let shouldRender = hasFieldAriaChanged(oldProps, newProps);
   let shouldRefreshPopover = false;
 
   if (!!newProps?.disabled && !oldProps?.disabled) {
@@ -147,19 +149,102 @@ export const handleButtonClick = (deps, payload) => {
   render();
 
   if (props.searchable) {
-    focusSearchInputWhenReady(refs);
+    focusWhenReady(refs, () => focusSearchInput(refs));
   }
 }
+
+const selectableOptions = ({ store, props }) => selectViewData({
+  state: store.selectState(), props,
+}).options.filter((option) => option.isItem);
+
+const focusOption = (deps, index) => {
+  const { store, refs, render } = deps;
+  store.setHoveredOption({ optionId: index });
+  render();
+  const option = refs[`option${index}`];
+  option?.focus();
+  option?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+};
+
+const closeAndFocusTrigger = ({ store, render, refs }) => {
+  store.closeOptionsPopover({});
+  render();
+  refs?.selectButton?.focus();
+};
 
 export const handleButtonKeyDown = (deps, payload) => {
   const event = payload._event;
-  if (event.key !== "Enter" && event.key !== " ") {
-    return;
-  }
-
+  if (event.isComposing || deps.props.disabled
+    || !["Enter", " ", "ArrowDown", "ArrowUp"].includes(event.key)) return;
   event.preventDefault();
   handleButtonClick(deps, payload);
-}
+  if (deps.props.searchable && ["Enter", " "].includes(event.key)) return;
+  const options = selectableOptions(deps);
+  const option = options.find((item) => item.isSelected)
+    ?? (event.key === "ArrowUp" ? options.at(-1) : options[0]);
+  if (option) focusWhenReady(deps.refs, () => focusOption(deps, option.index));
+};
+
+export const handleOptionKeyDown = (deps, payload) => {
+  const event = payload._event;
+  if (event.isComposing || deps.props?.disabled) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    event.stopPropagation();
+    closeAndFocusTrigger(deps);
+    return;
+  }
+  if (["Enter", " "].includes(event.key)) {
+    event.preventDefault();
+    handleOptionClick(deps, payload);
+    return;
+  }
+  const options = selectableOptions(deps);
+  if (!options.length) return;
+  const current = options.findIndex((option) => `option${option.index}` === event.currentTarget.id);
+  let next;
+  if (event.key === "ArrowDown") next = (current + 1) % options.length;
+  if (event.key === "ArrowUp") next = (current - 1 + options.length) % options.length;
+  if (event.key === "Home") next = 0;
+  if (event.key === "End") next = options.length - 1;
+  if (event.key.length === 1 && !event.altKey && !event.ctrlKey && !event.metaKey) {
+    const state = deps.store.selectState();
+    const now = Date.now();
+    const query = (now - state.lastKeyTime < 700 ? state.keyboardQuery : "") + event.key.toLowerCase();
+    deps.store.setKeyboardQuery({ query, time: now });
+    // Repeated characters cycle through matching options.
+    const prefix = [...query].every((char) => char === query[0]) ? query[0] : query;
+    for (let offset = 1; offset <= options.length; offset++) {
+      const index = (Math.max(current, 0) + offset) % options.length;
+      if (String(options[index].label).toLowerCase().startsWith(prefix)) { next = index; break; }
+    }
+  }
+  if (next === undefined) return;
+  event.preventDefault();
+  event.stopPropagation();
+  focusOption(deps, options[next].index);
+};
+
+export const handleAddOptionKeyDown = (deps, payload) => {
+  const event = payload._event;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    event.stopPropagation();
+    closeAndFocusTrigger(deps);
+  } else if (!event.isComposing && ["Enter", " "].includes(event.key)) {
+    event.preventDefault();
+    handleAddOptionClick(deps, payload);
+  }
+};
+
+export const handleClearKeyDown = (deps, payload) => {
+  const event = payload._event;
+  if (!event.isComposing && ["Enter", " "].includes(event.key)) {
+    event.preventDefault();
+    handleClearClick(deps, payload);
+    deps.refs?.selectButton?.focus();
+  }
+};
 
 export const handleClickOptionsPopoverOverlay = (deps) => {
   const { store, render } = deps;
@@ -179,18 +264,18 @@ export const handleSearchInput = (deps, payload) => {
 };
 
 export const handleSearchKeyDown = (deps, payload) => {
-  const { store, render } = deps;
   const event = payload._event;
-
   event.stopPropagation();
-
-  if (event.key !== "Escape") {
-    return;
+  if (event.isComposing) return;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeAndFocusTrigger(deps);
+  } else if (["ArrowDown", "ArrowUp"].includes(event.key)) {
+    const options = selectableOptions(deps);
+    const option = event.key === "ArrowUp" ? options.at(-1) : options[0];
+    event.preventDefault();
+    if (option) focusOption(deps, option.index);
   }
-
-  event.preventDefault();
-  store.closeOptionsPopover({});
-  render();
 };
 
 export const handleOptionClick = (deps, payload) => {
@@ -202,7 +287,7 @@ export const handleOptionClick = (deps, payload) => {
   const index = Number(id);
 
   const option = props.options[id];
-  if (getOptionType(option) !== 'item') {
+  if (!option || getOptionType(option) !== 'item') {
     return;
   }
 
@@ -225,6 +310,7 @@ export const handleOptionClick = (deps, payload) => {
   }));
 
   render();
+  deps.refs?.selectButton?.focus();
 }
 
 export const handleOptionMouseEnter = (deps, payload) => {
@@ -282,6 +368,7 @@ export const handleAddOptionClick = (deps, payload) => {
   }));
 
   render();
+  deps.refs?.selectButton?.focus();
 }
 
 export const handleAddOptionMouseEnter = (deps, payload) => {

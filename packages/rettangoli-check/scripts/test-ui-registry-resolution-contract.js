@@ -38,7 +38,17 @@ try {
       registry.has("rtgl-checkbox"),
       "primitives registered through the shared production module should be registered",
     );
+    assert.ok(registry.get("rtgl-form").attrs.has("w"), "component host style attributes should be registered");
+    assert.ok(registry.get("rtgl-form").attrs.has("h"), "component host style height should be registered");
   }
+
+  const installedUiDir = path.join(sandboxRoot, "node_modules", "@rettangoli", "ui");
+  mkdirSync(path.join(installedUiDir, "src", "components"), { recursive: true });
+  writeFileSync(path.join(installedUiDir, "package.json"), JSON.stringify({ name: "@rettangoli/ui", main: "src/index.js" }));
+  writeFileSync(path.join(installedUiDir, "src", "index.js"), "export {};\n");
+  writeFileSync(path.join(installedUiDir, "src", "entry-iife-ui.js"), "export {};\n");
+  assert.equal(resolveUiSourceDir({ workspaceRoot: sandboxRoot }), installedUiDir,
+    "the consumer's installed UI version must take precedence over the checker's workspace fallback");
 } finally {
   rmSync(sandboxRoot, { recursive: true, force: true });
 }

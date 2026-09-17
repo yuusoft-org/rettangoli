@@ -1,70 +1,51 @@
-export const handleBeforeMount = (deps) => {
-  const { store, props } = deps;
-  store.setValue({ value: props.value ?? 0 });
-}
+import { hasFieldAriaChanged } from "../../accessibility/field.js";
 
-export const handleOnUpdate = (deps, payload) => {
-  const { oldProps, newProps } = payload;
-  const { store, render } = deps;
-  const keyChanged = oldProps?.key !== newProps?.key;
-  const valueChanged = oldProps?.value !== newProps?.value;
-
-  if (keyChanged || valueChanged) {
-    const value = newProps?.value ?? 0;
-    store.setValue({ value });
-    render();
-  }
-}
-
-export const handleValueChange = (deps, payload) => {
-  const { store, render, dispatchEvent } = deps;
-  const event = payload._event;
-  const newValue = Number(event.detail.value);
-  const path = typeof event.composedPath === "function" ? event.composedPath() : [];
-  const host = path.find((node) => node?.tagName === "RTGL-SLIDER-INPUT")
-    || event.currentTarget?.getRootNode?.()?.host;
-
-  store.setValue({ value: newValue });
-  if (host && typeof host.setAttribute === "function") {
-    host.setAttribute("value", String(newValue));
-  }
-
-  // Re-render to sync slider and input
-  render();
-
-  // Dispatch event for external listeners
-  dispatchEvent(
-    new CustomEvent("value-change", {
-      detail: {
-        value: newValue,
-      },
-      bubbles: true,
-    }),
-  );
+const normalizeValue = (value, props, fallback = 0) => {
+  const parsed = value === null || value === undefined || value === "" ? fallback : Number(value);
+  const number = Number.isFinite(parsed) ? parsed : fallback;
+  return Math.min(Number(props.max ?? 100), Math.max(Number(props.min ?? 0), number));
 };
 
-export const handleValueInput = (deps, payload) => {
-  const { store, render, dispatchEvent } = deps;
-  const event = payload._event;
-  const newValue = Number(event.detail.value);
-  const path = typeof event.composedPath === "function" ? event.composedPath() : [];
-  const host = path.find((node) => node?.tagName === "RTGL-SLIDER-INPUT")
-    || event.currentTarget?.getRootNode?.()?.host;
+export const handleBeforeMount = ({ store, props }) => {
+  store.setValue({ value: normalizeValue(props.value, props) });
+};
 
-  store.setValue({ value: newValue });
-  if (host && typeof host.setAttribute === "function") {
-    host.setAttribute("value", String(newValue));
+export const handleOnUpdate = ({ store, render, props }, { oldProps, newProps }) => {
+  const keyChanged = oldProps?.key !== newProps?.key;
+  const valueChanged = keyChanged || oldProps?.value !== newProps?.value;
+  if (valueChanged) {
+    const value = normalizeValue(newProps?.value, props);
+    // A controlled parent may echo a live edit. Keep the native draft/caret.
+    if (keyChanged || value !== store.selectValue()) store.setValue({ value });
   }
+  if (valueChanged || hasFieldAriaChanged(oldProps, newProps)) render();
+};
 
-  // Re-render to sync slider and input
+export const handleValueInput = ({ store, render, dispatchEvent }, { _event: event }) => {
+  const value = event.detail.value;
+  if (event.currentTarget.id === "input") {
+    // Never write back into the number editor during input. Its raw draft can
+    // be empty, a minus sign, or a trailing decimal while the slider stays valid.
+    if (value !== null && value !== undefined && Number.isFinite(Number(value))) {
+      store.setDraftValue({ value: Number(value) });
+    }
+  } else {
+    store.setValue({ value: Number(value) });
+  }
   render();
+  dispatchEvent(new CustomEvent("value-input", {
+    detail: { value }, bubbles: true,
+  }));
+};
 
-  dispatchEvent(
-    new CustomEvent("value-input", {
-      detail: {
-        value: newValue,
-      },
-      bubbles: true,
-    }),
-  );
+export const handleValueChange = ({ store, render, dispatchEvent, props, refs }, { _event: event }) => {
+  const value = normalizeValue(event.detail.value, props, store.selectValue());
+  store.setValue({ value });
+  render();
+  // Empty drafts may leave the VDOM attribute unchanged; commit explicitly
+  // through the primitive's public value contract in that case too.
+  if (refs?.input) refs.input.value = value;
+  dispatchEvent(new CustomEvent("value-change", {
+    detail: { value }, bubbles: true,
+  }));
 };

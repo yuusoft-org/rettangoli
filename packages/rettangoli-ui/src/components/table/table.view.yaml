@@ -32,7 +32,6 @@ styles:
     padding: 12px
     color: var(--foreground)
   .table-container:
-    width: 100%
     height: 100%
     overflow: auto
   .empty-state:

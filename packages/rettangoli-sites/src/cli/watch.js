@@ -6,6 +6,7 @@ import { WebSocketServer } from 'ws';
 import { buildSite } from './build.js';
 import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 import { createWatchClientScript } from './watchClient.js';
+import { isPathInside, resolveCanonicalPath } from '../utils/pathSafety.js';
 
 const RELOAD_MODES = new Set(['body', 'full']);
 const LIVE_ASSET_PATTERN = /\.css$/i;
@@ -134,15 +135,17 @@ function createLogger(quiet = false) {
   };
 }
 
-class DevServer {
+export class DevServer {
   constructor(
     port = 3001,
     siteDir = '_site',
     logger = createLogger(false),
     reloadMode = 'body',
     sessionId = randomUUID(),
+    host = '127.0.0.1',
   ) {
     this.port = port;
+    this.host = host;
     this.clients = new Set();
     this.siteDir = siteDir;
     this.logger = logger;
@@ -182,14 +185,28 @@ class DevServer {
     });
 
     // Start listening
-    this.httpServer.listen(this.port, '0.0.0.0', () => {
-      this.logger.log(`Dev server: http://localhost:${this.port}/`);
+    this.httpServer.listen(this.port, this.host, () => {
+      const displayHost = this.host.includes(':') ? `[${this.host}]` : this.host;
+      this.logger.log(`Dev server: http://${displayHost}:${this.port}/`);
     });
   }
 
   handleRequest(req, res) {
-    const urlParts = req.url.split('?');
-    let urlPath = urlParts[0];
+    let urlPath;
+    try {
+      urlPath = decodeURIComponent(req.url.split('?')[0]);
+      if (!urlPath.startsWith('/') || /[\0\\]/.test(urlPath)) throw new Error('Invalid path');
+    } catch {
+      res.writeHead(400);
+      res.end('400 Bad Request');
+      return;
+    }
+
+    if (!this.isAllowedPath(path.join(this.siteDir, urlPath))) {
+      res.writeHead(403);
+      res.end('403 Forbidden');
+      return;
+    }
 
     // Default to index.html for root
     if (urlPath === '/') {
@@ -206,12 +223,12 @@ class DevServer {
     if (!path.extname(urlPath)) {
       // First try as .html file
       const htmlPath = path.join(this.siteDir, urlPath + '.html');
-      if (existsSync(htmlPath)) {
+      if (this.isAllowedPath(htmlPath) && existsSync(htmlPath)) {
         urlPath = urlPath + '.html';
       } else {
         // Try as directory with index.html
         const indexPath = path.join(this.siteDir, urlPath, 'index.html');
-        if (existsSync(indexPath)) {
+        if (this.isAllowedPath(indexPath) && existsSync(indexPath)) {
           urlPath = path.join(urlPath, 'index.html');
         }
       }
@@ -244,7 +261,25 @@ class DevServer {
     this.serveFile(filePath, res);
   }
 
+  isAllowedPath(filePath) {
+    const root = path.resolve(this.siteDir);
+    if (!isPathInside(root, path.resolve(filePath))) return false;
+    try {
+      return isPathInside(
+        resolveCanonicalPath(fs, root),
+        resolveCanonicalPath(fs, filePath),
+      );
+    } catch {
+      return false;
+    }
+  }
+
   serveFile(filePath, res) {
+    if (!this.isAllowedPath(filePath)) {
+      res.writeHead(403);
+      res.end('403 Forbidden');
+      return;
+    }
     const ext = path.extname(filePath);
 
     try {
@@ -421,12 +456,16 @@ export const createRebuildScheduler = ({
 const watchSite = async (options = {}) => {
   const {
     port = 3001,
+    host = '127.0.0.1',
     rootDir = process.cwd(),
     outputPath = '_site',
     quiet = false,
     reloadMode = 'body'
   } = options;
   const normalizedPort = normalizePort(port);
+  if (typeof host !== 'string' || host.trim() === '') {
+    throw new Error('Invalid host: expected a non-empty hostname or IP address.');
+  }
   const normalizedReloadMode = String(reloadMode).toLowerCase();
   if (!RELOAD_MODES.has(normalizedReloadMode)) {
     throw new Error(`Invalid reload mode "${reloadMode}". Allowed values: body, full.`);
@@ -442,7 +481,7 @@ const watchSite = async (options = {}) => {
   logger.log('Initial build complete');
 
   // Start custom dev server
-  const server = new DevServer(normalizedPort, path.resolve(rootDir, outputPath), logger, normalizedReloadMode);
+  const server = new DevServer(normalizedPort, path.resolve(rootDir, outputPath), logger, normalizedReloadMode, undefined, host.trim());
   server.start();
   const scheduleChange = createRebuildScheduler({
     rootDir,

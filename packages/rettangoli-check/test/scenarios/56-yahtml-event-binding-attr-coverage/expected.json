@@ -4,7 +4,8 @@
     "dirs": [
       "./src/components"
     ],
-    "includeYahtml": true
+    "includeYahtml": true,
+    "includeStyle": true
   },
   "expected": {
     "ok": false,

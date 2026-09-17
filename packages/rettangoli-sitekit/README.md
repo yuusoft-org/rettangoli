@@ -74,7 +74,10 @@ bun run vt:ci
 bunx rtgl vt accept
 ```
 
-`bun run vt:ci` runs the stable VT screenshot smoke subset used by CI/CD.
+`bun run vt:ci` captures the stable smoke subset and compares the same items
+against the references. Capture errors and visual mismatches fail the command.
+`bun run vt:ci:docker` runs both steps with the checkout's CLI inside the
+Playwright container, so the image's bundled CLI cannot change the VT version.
 
 ## Local Structure
 

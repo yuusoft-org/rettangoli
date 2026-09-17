@@ -1,3 +1,4 @@
+import { fieldAriaAttributes, forwardFieldAria } from "../accessibility/field.js";
 import {
   css,
   dimensionWithUnit,
@@ -126,6 +127,7 @@ class RettangoliCheckboxElement extends HTMLElement {
 
   static get observedAttributes() {
     return [
+      ...fieldAriaAttributes,
       "key",
       "checked",
       "disabled",
@@ -169,6 +171,7 @@ class RettangoliCheckboxElement extends HTMLElement {
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
+    if (forwardFieldAria(this._inputElement, name, newValue)) return;
     if (name === "key" && oldValue !== newValue) {
       requestAnimationFrame(() => {
         const checked = this.hasAttribute("checked");

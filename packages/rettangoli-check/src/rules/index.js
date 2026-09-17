@@ -15,6 +15,7 @@ export const runRules = ({
   registry = new Map(),
   includeYahtml = true,
   includeExpression = false,
+  includeStyle = false,
 }) => {
   const diagnostics = [];
 
@@ -22,14 +23,14 @@ export const runRules = ({
   diagnostics.push(...runSchemaRules({ models }));
   diagnostics.push(...runConstantsRules({ models }));
   diagnostics.push(...runJemplRules({ models }));
-  diagnostics.push(...runListenerConfigRules({ models }));
+  diagnostics.push(...runListenerConfigRules({ models, includeStyle }));
   diagnostics.push(...runCrossFileSymbolRules({ models }));
   diagnostics.push(...runMethodRules({ models }));
   diagnostics.push(...runLifecycleRules({ models }));
   if (includeExpression) {
     diagnostics.push(...runExpressionRules({ models }));
   }
-  diagnostics.push(...runCompatibilityRules({ models, registry }));
+  diagnostics.push(...runCompatibilityRules({ models, registry, includeStyle }));
 
   if (includeYahtml) {
     diagnostics.push(...runYahtmlAttrRules({ models, registry }));

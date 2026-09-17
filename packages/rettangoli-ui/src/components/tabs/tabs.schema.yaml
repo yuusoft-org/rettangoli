@@ -2,6 +2,9 @@ componentName: rtgl-tabs
 propsSchema:
   type: object
   properties:
+    ariaLabel:
+      type: string
+      description: Accessible name for the tab list.
     s:
       type: string
       enum: [sm, md, lg]

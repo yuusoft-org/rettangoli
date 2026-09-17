@@ -1,12 +1,46 @@
 import { parse as parseTemplate } from "jempl";
 import { NodeType } from "jempl/src/parse/constants.js";
+import { encodeTemplateAttribute } from "./attributeEncoding.js";
+import { getAttributeAssignments } from "./attributeAssignments.js";
+import { parsePropertyLiteral } from "./propertyLiteral.js";
+export { encodeTemplateAttribute } from "./attributeEncoding.js";
 
-const ATTR_ASSIGNMENT_REGEX = /(\S+?)=(?:\"([^\"]*)\"|\'([^\']*)\'|([^\s]*))/g;
 const LOOP_DIRECTIVE_REGEX = /^\$for\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*,\s*([A-Za-z_][A-Za-z0-9_]*))?\s+in\s+.+$/;
 const INTERPOLATION_ONLY_REGEX = /^\$\{([^{}]+)\}$/;
 const SIMPLE_PATH_REGEX = /^[A-Za-z_][A-Za-z0-9_]*(?:(?:\.[A-Za-z_][A-Za-z0-9_]*)|\[(?:\d+|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\])*$/;
 
 const normalizedTemplateCache = new WeakSet();
+
+// Render attribute values separately from the selector grammar. A label may
+// contain whitespace, quotes, equals signs, or literal interpolation syntax.
+// Encoding the whole value prevents it from creating additional bindings.
+const createSafeParsedKey = (key) => {
+  const parts = [];
+  const appendParsed = (text) => {
+    const parsed = parseTemplate(text);
+    parts.push(parsed.type === NodeType.LITERAL ? parsed.value : parsed);
+  };
+  let cursor = 0;
+  for (const match of getAttributeAssignments(key)) {
+    if (match[1].startsWith(":")) continue;
+    const prefix = key.slice(cursor, match.index) + `${match[1]}=`;
+    appendParsed(prefix);
+    const value = parseTemplate(match[2] ?? match[3] ?? match[4] ?? "");
+    // Static layout tokens are encoded once at normalization, not every render.
+    parts.push(value.type === NodeType.LITERAL ? encodeTemplateAttribute(value.value) : {
+      type: NodeType.FUNCTION,
+      name: "__rtglEncodeAttribute",
+      args: [value],
+    });
+    cursor = match.index + match[0].length;
+  }
+  if (cursor === 0) return deriveParsedKey(key);
+  appendParsed(key.slice(cursor));
+  if (parts.every((part) => typeof part === "string")) {
+    return { type: NodeType.LITERAL, value: parts.join("") };
+  }
+  return { type: NodeType.INTERPOLATION, parts };
+};
 
 const extendScopeVars = (scopeVars, itemVar, indexVar) => {
   const nextScopeVars = new Set(scopeVars);
@@ -37,9 +71,7 @@ const getPropertyBindingViolationForKey = (key) => {
     return null;
   }
 
-  ATTR_ASSIGNMENT_REGEX.lastIndex = 0;
-  let match;
-  while ((match = ATTR_ASSIGNMENT_REGEX.exec(key)) !== null) {
+  for (const match of getAttributeAssignments(key)) {
     const rawBindingName = match[1];
     if (rawBindingName.startsWith(".")) {
       return {
@@ -164,16 +196,21 @@ const getBaseIdentifier = (expression) => {
 
 const normalizePropertyBindingsInKey = (key, scopeVars) => {
   let changed = false;
-
-  const normalizedKey = key.replace(
-    ATTR_ASSIGNMENT_REGEX,
-    (fullMatch, rawBindingName, doubleQuotedValue, singleQuotedValue, bareValue) => {
+  let cursor = 0;
+  let normalizedKey = "";
+  for (const match of getAttributeAssignments(key)) {
+    const [fullMatch, rawBindingName, doubleQuotedValue, singleQuotedValue, bareValue] = match;
+    const replacement = (() => {
       if (!rawBindingName.startsWith(":")) {
         return fullMatch;
       }
 
       const rawValue = doubleQuotedValue ?? singleQuotedValue ?? bareValue ?? "";
       const expression = getInterpolationExpression(rawValue);
+      if (expression && parsePropertyLiteral(expression)) {
+        changed = true;
+        return `${rawBindingName}=${expression}`;
+      }
       if (!expression || !SIMPLE_PATH_REGEX.test(expression)) {
         return fullMatch;
       }
@@ -193,8 +230,11 @@ const normalizePropertyBindingsInKey = (key, scopeVars) => {
 
       changed = true;
       return `${rawBindingName}=${internalValue}`;
-    },
-  );
+    })();
+    normalizedKey += key.slice(cursor, match.index) + replacement;
+    cursor = match.index + fullMatch.length;
+  }
+  normalizedKey += key.slice(cursor);
 
   return changed ? normalizedKey : key;
 };
@@ -225,13 +265,10 @@ const normalizeAstTemplate = (node, scopeVars = new Set()) => {
       const normalizedKey = normalizePropertyBindingsInKey(property.key, scopeVars);
       if (normalizedKey !== property.key) {
         property.key = normalizedKey;
-        const parsedKey = deriveParsedKey(normalizedKey);
-        if (parsedKey) {
-          property.parsedKey = parsedKey;
-        } else {
-          delete property.parsedKey;
-        }
       }
+      const parsedKey = createSafeParsedKey(normalizedKey);
+      if (parsedKey) property.parsedKey = parsedKey;
+      else delete property.parsedKey;
 
       normalizeAstTemplate(property.value, scopeVars);
     });
