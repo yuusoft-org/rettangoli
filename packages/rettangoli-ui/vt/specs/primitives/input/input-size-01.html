@@ -4,7 +4,7 @@ description: Verifies supported input size variants and their visual differences
 specs:
   - Default size uses baseline control height and typography.
   - Small size uses compact height and typography scale.
-  - Widthless inputs retain their intrinsic content-box dimensions.
+  - Heights include borders and padding for widthless inputs too.
   - Layout alignment stays consistent across both variants.
 steps:
   - action: assert
@@ -12,11 +12,11 @@ steps:
     fn: inputSizeVt.inspect
     value:
       regular:
-        height: 36
-        boxSizing: content-box
+        height: 32
+        boxSizing: border-box
       small:
-        height: 28
-        boxSizing: content-box
+        height: 24
+        boxSizing: border-box
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
   <rtgl-view g="sm" w="f">

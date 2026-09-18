@@ -1,0 +1,83 @@
+---
+title: Input - Consistent Control Dimensions
+description: Input borders and padding stay inside the declared dimensions in standalone layouts and forms.
+viewport:
+  - id: desktop
+    width: 800
+    height: 640
+  - id: compact
+    width: 480
+    height: 640
+diffThreshold: 0.05
+steps:
+  - action: assert
+    type: js
+    fn: inputAlignment.measure
+    value:
+      defaultHeights: [32, 32, 32]
+      smallHeights: [24, 24]
+      formHeights: [32, 32, 32]
+      explicitDimensions: [240, 40]
+      percentageWidth: 150
+      fillWidth: 300
+      rowsAligned: true
+---
+<rtgl-view p="lg" g="lg">
+  <rtgl-text s="sm">Default controls — 32px</rtgl-text>
+  <rtgl-view d="h" g="md" av="s">
+    <rtgl-input id="regular" w="120" value="Input"></rtgl-input>
+    <rtgl-select id="select" w="120"></rtgl-select>
+    <rtgl-segmented-control id="segments" w="160"></rtgl-segmented-control>
+  </rtgl-view>
+  <rtgl-text s="sm">Small controls — 24px</rtgl-text>
+  <rtgl-view d="h" g="md" av="s">
+    <rtgl-input id="small" s="sm" w="120" value="Small input"></rtgl-input>
+    <rtgl-segmented-control id="smallSegments" s="sm" w="160"></rtgl-segmented-control>
+  </rtgl-view>
+  <rtgl-text s="sm">Explicit dimensions include borders and padding</rtgl-text>
+  <rtgl-input id="explicit" w="240" h="40" value="240 × 40"></rtgl-input>
+  <rtgl-view w="300" g="md">
+    <rtgl-input id="percentage" w="50%" value="50% = 150px"></rtgl-input>
+    <rtgl-input id="fill" w="f" value="Fill = 300px"></rtgl-input>
+  </rtgl-view>
+  <rtgl-form id="form" w="f" p="none"></rtgl-form>
+</rtgl-view>
+<script>
+  const options = [{ label: 'One', value: 'one' }, { label: 'Two', value: 'two' }];
+  for (const id of ['select', 'segments', 'smallSegments']) {
+    const control = document.getElementById(id);
+    control.options = options;
+    control.selectedValue = 'one';
+    control.render();
+  }
+  const form = document.getElementById('form');
+  form.form = {
+    fields: [
+      { name: 'standalone', type: 'input-text', label: 'Standalone form field' },
+      { type: 'row', stackAt: 'none', fields: [
+        { name: 'rowInput', type: 'input-text', label: 'Row input' },
+        { name: 'rowSelect', type: 'select', label: 'Row select', options },
+      ] },
+    ],
+    actions: { buttons: [] },
+  };
+  const rendered = host => host.shadowRoot.querySelector('input, #selectButton, [role="group"]');
+  const rect = id => rendered(document.getElementById(id)).getBoundingClientRect();
+  const heights = ids => ids.map(id => rect(id).height);
+  window.inputAlignment = {
+    measure() {
+      return {
+        defaultHeights: heights(['regular', 'select', 'segments']),
+        smallHeights: heights(['small', 'smallSegments']),
+        formHeights: ['standalone', 'rowInput', 'rowSelect'].map(name =>
+          rendered(form.shadowRoot.querySelector(`[data-field-name="${name}"]`)).getBoundingClientRect().height),
+        explicitDimensions: [rect('explicit').width, rect('explicit').height],
+        percentageWidth: rect('percentage').width,
+        fillWidth: rect('fill').width,
+        rowsAligned: rect('regular').top === rect('select').top
+          && rect('regular').top === rect('segments').top
+          && rect('small').top === rect('smallSegments').top,
+      };
+    },
+  };
+</script>
