@@ -371,6 +371,13 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - `layout=fixed-top` keeps the surface top-aligned with a standard top inset and a 36% viewport-height bottom inset; it clips outer overflow so a bounded child such as `rtgl-form` can scroll internally
 - `fixed-top` preserves its asymmetric viewport insets independently of content padding; `p=none` removes content padding and horizontal gutters without removing the top and bottom insets
 
+### `rtgl-input`
+
+- native text, password, date, time, and datetime inputs always use `box-sizing: border-box`
+- default height is 32px; `s=sm` is 24px, including borders and padding
+- explicit and responsive `w`, `h`, and `wh` dimensions describe the complete native control
+- standalone and form inputs share these sizing rules; `data-form-row` does not change the box model
+
 ### `rtgl-grid`
 
 - use for explicit 2D column layouts

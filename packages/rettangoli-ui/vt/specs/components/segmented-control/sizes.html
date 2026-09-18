@@ -10,6 +10,13 @@ specs:
   - Square mode renders 24px, 32px, or 40px icon-only segments based on the selected size.
   - A square add action uses a plus icon and remains within its square segment.
   - Segment borders and selected styling remain continuous at every size.
+steps:
+  - action: assert
+    type: js
+    fn: segmentedSizes.measure
+    value:
+      heights: [32, 24, 40, 24, 32, 24, 40, 32]
+      segmentsFillHeight: true
 ---
 
 <rtgl-view g="lg" p="lg" w="320">
@@ -73,4 +80,21 @@ specs:
   const squareAddControl = document.getElementById("svg-square-add");
   squareAddControl.addOption = { label: "New view" };
   squareAddControl.render();
+
+  window.segmentedSizes = {
+    measure() {
+      const groups = [...document.querySelectorAll('rtgl-segmented-control')]
+        .map(control => control.shadowRoot.querySelector('[role="group"]'));
+      return {
+        heights: groups.map(group => group.getBoundingClientRect().height),
+        segmentsFillHeight: groups.every(group => {
+          const style = getComputedStyle(group);
+          const innerHeight = group.getBoundingClientRect().height
+            - parseFloat(style.borderTopWidth) - parseFloat(style.borderBottomWidth);
+          return [...group.querySelectorAll('[role="button"]')].every(option =>
+            Math.abs(option.getBoundingClientRect().height - innerHeight) < 1);
+        }),
+      };
+    },
+  };
 </script>

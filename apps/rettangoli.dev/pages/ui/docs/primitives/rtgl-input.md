@@ -39,6 +39,13 @@ Use this as the default text field pattern:
 | Editable | default |
 | Fully unavailable | `disabled` |
 
+### Control Dimensions
+
+Default inputs are 32px high; `s="sm"` inputs are 24px high. These heights include
+padding and borders, matching segmented controls and default selects both inside
+and outside form rows. Explicit `w`, `h`, and `wh` values also include padding and
+borders: `w="240" h="40"` renders a 240×40px control.
+
 ### Responsive Syntax (At a Glance)
 
 Breakpoint prefixes are supported for layout/style attrs like `w`, `h`, `m`, `hide`, `show`, and `op`.

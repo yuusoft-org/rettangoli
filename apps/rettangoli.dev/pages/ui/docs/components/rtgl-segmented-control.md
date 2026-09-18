@@ -56,7 +56,7 @@ Set `options` as a property and listen to `value-change`.
 
 ## Sizes
 
-Use `s="sm"` for a compact 24px-high control or `s="lg"` for a 40px-high control. The default `s="md"` control is 32px high. Text, icons, and horizontal padding scale with the selected size.
+Use `s="sm"` for a compact 24px-high control or `s="lg"` for a 40px-high control. The default `s="md"` control is 32px high, matching default inputs and selects in form rows. This height includes the border and stays the same for text and icon options, including when theme line-height tokens change. Text, icons, and horizontal padding scale with the selected size.
 
 ```html codePreview
 <rtgl-view d="h" av="c" g="lg" wrap>

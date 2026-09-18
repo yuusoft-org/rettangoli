@@ -28,8 +28,8 @@ const sizePresets = {
   },
   md: {
     controlHeight: 32,
-    containerSizeAttrString: "",
-    optionSizeAttrString: "w=1fg ph=lg pv=md",
+    containerSizeAttrString: "h=32",
+    optionSizeAttrString: "h=f w=1fg ph=lg",
     textSize: "sm",
     iconSize: 16,
   },

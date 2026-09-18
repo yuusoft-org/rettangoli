@@ -37,12 +37,12 @@ afterAll(() => {
 });
 
 describe("rtgl-input primitive", () => {
-  it("reserves border-box sizing for form-row inputs", () => {
+  it("uses border-box sizing independently of form-row layout or width", () => {
     const input = document.createElement(TEST_TAG);
     document.body.appendChild(input);
     const responsiveStyles = input.shadowRoot.querySelector("style");
 
-    expect(input.shadowRoot.adoptedStyleSheets[0].cssText).toContain(
+    expect(input.shadowRoot.adoptedStyleSheets[0].cssText).not.toContain(
       ':host([data-form-row="true"]) input',
     );
     expect(input.shadowRoot.adoptedStyleSheets[0].cssText).toContain(

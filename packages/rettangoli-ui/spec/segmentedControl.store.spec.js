@@ -22,7 +22,7 @@ describe("rtgl-segmented-control store", () => {
   });
 
   it("uses the medium preset by default and for unsupported sizes", () => {
-    for (const s of [undefined, "xl", "constructor", "__proto__"]) {
+    for (const s of [undefined, "md", "xl", "constructor", "__proto__"]) {
       const viewData = selectViewData({
         state: createInitialState(),
         props: { s, options: [] },
@@ -30,8 +30,8 @@ describe("rtgl-segmented-control store", () => {
 
       expect(viewData).toMatchObject({
         size: "md",
-        containerSizeAttrString: "",
-        optionSizeAttrString: "w=1fg ph=lg pv=md",
+        containerSizeAttrString: "h=32",
+        optionSizeAttrString: "h=f w=1fg ph=lg",
         textSize: "sm",
         iconSize: 16,
       });

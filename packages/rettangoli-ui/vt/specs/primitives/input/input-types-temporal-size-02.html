@@ -5,6 +5,11 @@ specs:
   - Date, time, and datetime-local values render with temporal icons.
   - Small size variant keeps temporal controls aligned and legible.
   - Min, max, and step constrained values keep normal input geometry.
+steps:
+  - action: assert
+    type: js
+    fn: temporalInputHeights
+    value: [32, 32, 32, 24, 24]
 viewport:
   id: temporal-wide
   width: 1600
@@ -36,3 +41,7 @@ viewport:
     <rtgl-input s="sm" type="time" value="13:45" disabled></rtgl-input>
   </rtgl-view>
 </rtgl-view>
+<script>
+  window.temporalInputHeights = () => [...document.querySelectorAll('rtgl-input')]
+    .map(host => host.shadowRoot.querySelector('input').getBoundingClientRect().height);
+</script>

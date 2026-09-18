@@ -1,10 +1,20 @@
 ---
 title: Segmented Control - SVG Options
 description: Verifies icon-only segments render registered SVG keys with accessible names and selected styling.
+viewport:
+  id: compact
+  width: 320
+  height: 100
+diffThreshold: 0.05
 specs:
   - SVG options render without visible text labels.
   - The selected SVG uses active foreground and background colors.
   - Each icon-only segment exposes an accessible label.
+steps:
+  - action: assert
+    type: js
+    fn: svgControlHeight
+    value: 32
 ---
 
 <rtgl-view g="lg" p="lg" w="240">
@@ -20,4 +30,6 @@ specs:
     { value: "play", svg: "play", ariaLabel: "Playback mode" },
   ];
   control.render();
+  window.svgControlHeight = () =>
+    control.shadowRoot.querySelector('[role="group"]').getBoundingClientRect().height;
 </script>
