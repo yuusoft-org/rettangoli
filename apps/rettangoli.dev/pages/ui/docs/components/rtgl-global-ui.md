@@ -43,6 +43,21 @@ Call through `globalUiElement.transformedHandlers`:
 | `handleShowToast(options)` | `{ message, size?, position? }` | fire-and-forget toast that auto-dismisses after 3 seconds |
 | `handleCloseAll()` | none | closes any open global dialog/dropdown, clears visible toasts, and resolves the pending flow |
 
+## Multiline Alert and Confirm Messages
+
+Alert and confirm `message` values are plain text. Newlines (`\n`), blank lines,
+and spaces are preserved; long text wraps to fit the dialog, including long file
+names. HTML and Markdown are not interpreted.
+
+```js
+await globalUiElement.transformedHandlers.handleShowAlert({
+  title: "Warning",
+  message: "Could not load these assets:\n• Images: Image One\n• Fonts: Font One\n\nReplace their files with valid copies.",
+});
+```
+
+The same formatting works with or without a title and in `handleShowConfirm`.
+
 ## Form Dialog
 
 `handleShowFormDialog(options)` renders an embedded `rtgl-form` inside the shared global dialog shell.

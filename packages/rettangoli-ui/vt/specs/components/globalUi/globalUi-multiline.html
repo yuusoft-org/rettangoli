@@ -1,0 +1,35 @@
+---
+title: "Global UI - Multiline Messages"
+description: Alert and confirm messages preserve paragraphs and wrap long asset names.
+specs:
+  - Titled alerts preserve line breaks and blank lines.
+  - Untitled confirms preserve the same formatting and show both actions.
+steps:
+  - action: customEvent
+    name: vt:multiline-alert
+  - action: waitFor
+    selector: '#confirmButton'
+    state: attached
+  - action: wait
+    ms: 200
+  - action: screenshot
+  - action: customEvent
+    name: vt:multiline-confirm
+  - action: waitFor
+    selector: '#cancelButton'
+    state: attached
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+<rtgl-global-ui></rtgl-global-ui>
+<script>
+  const message = 'Could not load these assets:\n• Images: Image One\n• Fonts: FontOne-VariableFont_opsz,wdth,wght\n\nReplace their files with valid copies.';
+  const ui = document.querySelector('rtgl-global-ui');
+  window.addEventListener('vt:multiline-alert', () => {
+    void ui.transformedHandlers.handleShowAlert({ title: 'Warning', message });
+  });
+  window.addEventListener('vt:multiline-confirm', () => {
+    void ui.transformedHandlers.handleShowConfirm({ message });
+  });
+</script>
