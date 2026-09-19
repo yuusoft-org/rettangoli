@@ -29,6 +29,9 @@ refs:
       item-click:
         handler: handleDropdownItemClick
 styles:
+  .dialog-message:
+    white-space: pre-wrap
+    overflow-wrap: anywhere
   .toast-layer:
     pointer-events: none
   .toast-card:
@@ -113,9 +116,9 @@ template:
               - rtgl-view g=sm w=f:
                   - $if config.title:
                       - rtgl-text s=lg: ${config.title}
-                      - rtgl-text c=mu-fg: ${config.message}
+                      - rtgl-text class=dialog-message w=f c=mu-fg: ${config.message}
                     $else:
-                      - rtgl-text: ${config.message}
+                      - rtgl-text class=dialog-message w=f: ${config.message}
               - rtgl-view d=h g=md w=f ah=e:
                   - $if config.mode == 'confirm':
                       - rtgl-button#cancelButton v=se: ${config.cancelText}
