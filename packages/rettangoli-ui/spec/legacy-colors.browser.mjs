@@ -19,6 +19,7 @@ const check = (condition, message) => {
 };
 const background = (el) => getComputedStyle(el).backgroundColor;
 const nativePixels = new Map();
+const nativeTagAppearances = new Map();
 const paintedBackground = async (surface) => {
   const png = PNG.sync.read(await surface.screenshot());
   const offset = (Math.floor(png.height / 2) * png.width + 6) * 4;
@@ -135,28 +136,64 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
           (await remove.evaluate(background)) !== transparent,
           `${context}: tag removal hover has no highlight`,
         );
-        const placeholder = page.locator("#tags #trigger rtgl-tag .surface");
-        check(
-          (await placeholder.evaluate(background)) !== transparent,
-          `${context}: tag placeholder disappeared`,
-        );
-        await page.locator("#tags").evaluate((el) => (el.open = true));
+        const checkTagAppearance = async (surface, state, selected) => {
+          const appearance = await surface.evaluate((el) => {
+            const style = getComputedStyle(el);
+            return {
+              background: style.backgroundColor,
+              borderColor: style.borderTopColor,
+              borderStyle: style.borderTopStyle,
+              borderWidth: style.borderTopWidth,
+              color: style.color,
+            };
+          });
+          check(
+            selected
+              ? appearance.background !== transparent
+              : appearance.background === transparent,
+            `${context}: ${state} must be ${selected ? "filled" : "transparent"}`,
+          );
+          check(
+            appearance.borderColor !== transparent &&
+              appearance.borderStyle === "solid" &&
+              parseFloat(appearance.borderWidth) > 0,
+            `${context}: ${state} lost its outline`,
+          );
+          const actual = {
+            ...appearance,
+            pixel: await paintedBackground(surface),
+          };
+          const key = `${name}/${theme}/${state}`;
+          if (legacy) {
+            check(
+              JSON.stringify(actual) ===
+                JSON.stringify(nativeTagAppearances.get(key)),
+              `${context}: ${state} fallback differs from native appearance`,
+            );
+          } else {
+            nativeTagAppearances.set(key, actual);
+          }
+        };
+        const trigger = page.locator("#tags #trigger");
+        const triggerTag = trigger.locator("rtgl-tag .surface");
+        await checkTagAppearance(triggerTag, "tag placeholder", false);
+        await trigger.click();
         const option = page.locator("#tags #option0 rtgl-tag .surface");
         await option.waitFor({ state: "visible" });
-        check(
-          (await option.evaluate(background)) !== transparent,
-          `${context}: unselected tag disappeared`,
-        );
-        await page.locator("#tags").evaluate((el) => {
-          el.open = false;
-          el.selectedValues = ["one"];
-        });
-        await page.locator("#tags #trigger").getByText("Label One").waitFor();
-        check(
-          (await placeholder.evaluate(background)) !== transparent,
-          `${context}: selected tag disappeared`,
-        );
+        await checkTagAppearance(option, "unselected tag", false);
+        await option.click();
+        await page.locator('#tags #option0[aria-pressed="true"]').waitFor();
+        await checkTagAppearance(option, "selected option", true);
+        await option.click();
+        await page.locator('#tags #option0[aria-pressed="false"]').waitFor();
+        await checkTagAppearance(option, "deselected option", false);
+        await option.click();
+        await page.locator('#tags #option0[aria-pressed="true"]').waitFor();
+        await page.locator("#tags #submitButton").click();
+        await trigger.getByText("Label One").waitFor();
+        await checkTagAppearance(triggerTag, "selected trigger tag", true);
         await page.locator("#tags").evaluate((el) => (el.selectedValues = []));
+        await trigger.getByText("Add tag").waitFor();
       }
       await page.close();
     }
