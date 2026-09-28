@@ -157,6 +157,29 @@ class RettangoliButtonElement extends HTMLElement {
           }
         }
 
+        /* Match the white colour mix without changing text, icons or focus rings. */
+        @supports not (color: color-mix(in srgb, black, white)) {
+          :host(:not([v])) button.surface:hover,
+          :host([v=""]) button.surface:hover,
+          :host([v="pr"]) .surface:hover,
+          :host([v="se"]) .surface:hover,
+          :host([v="de"]) .surface:hover {
+            background-image: linear-gradient(
+              rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15)
+            );
+          }
+
+          :host(:not([v])) button.surface:active,
+          :host([v=""]) button.surface:active,
+          :host([v="pr"]) .surface:active,
+          :host([v="se"]) .surface:active,
+          :host([v="de"]) .surface:active {
+            background-image: linear-gradient(
+              rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)
+            );
+          }
+        }
+
         :host([v="ol"]) .surface:hover {
           background-color: var(--accent);
         }

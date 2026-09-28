@@ -3,6 +3,7 @@
 // reproducing browsers without color-mix without modifying the built bundle.
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { PNG } from "pngjs";
 
 const { chromium, webkit } = await import(
   process.env.PLAYWRIGHT_MODULE ?? "playwright"
@@ -17,6 +18,12 @@ const check = (condition, message) => {
   if (!condition) failures.push(message);
 };
 const background = (el) => getComputedStyle(el).backgroundColor;
+const nativePixels = new Map();
+const paintedBackground = async (surface) => {
+  const png = PNG.sync.read(await surface.screenshot());
+  const offset = (Math.floor(png.height / 2) * png.width + 6) * 4;
+  return Array.from(png.data.subarray(offset, offset + 4));
+};
 
 for (const [name, engine] of Object.entries({ chromium, webkit })) {
   const browser = await engine.launch();
@@ -66,10 +73,13 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
           const surface = page.locator(`#${variant} .surface`);
           await page.mouse.move(0, 0);
           const normal = await surface.evaluate(background);
+          const normalPixel = await paintedBackground(surface);
           await surface.hover();
           const hover = await surface.evaluate(background);
+          const hoverPixel = await paintedBackground(surface);
           await page.mouse.down();
           const active = await surface.evaluate(background);
+          const activePixel = await paintedBackground(surface);
           await page.mouse.up();
           if (["default", "pr", "se", "de"].includes(variant)) {
             check(
@@ -80,16 +90,42 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
               active !== transparent,
               `${context}: ${variant} active disappeared`,
             );
+            const pixels = [normalPixel, hoverPixel, activePixel];
+            check(
+              normalPixel.some((channel, i) => channel !== hoverPixel[i]) &&
+                normalPixel.some((channel, i) => channel !== activePixel[i]),
+              `${context}: ${variant} must visibly change on hover and press`,
+            );
+            const key = `${name}/${theme}/${variant}`;
             if (legacy) {
+              const expected = nativePixels.get(key);
               check(
-                hover === normal && active === normal,
-                `${context}: ${variant} lost base colour`,
+                pixels.every((pixel, state) =>
+                  pixel.every(
+                    (channel, i) => Math.abs(channel - expected[state][i]) <= 1,
+                  ),
+                ),
+                `${context}: ${variant} fallback differs from native painted colours`,
               );
             } else {
+              nativePixels.set(key, pixels);
               check(
                 hover !== normal && active !== hover,
                 `${context}: ${variant} lost mixed hover/active colours`,
               );
+            }
+          } else {
+            // Outline, ghost and link variants must not acquire the fill overlay.
+            const key = `${name}/${theme}/${variant}`;
+            const pixels = [normalPixel, hoverPixel, activePixel];
+            if (legacy) {
+              check(
+                JSON.stringify(pixels) ===
+                  JSON.stringify(nativePixels.get(key)),
+                `${context}: ${variant} appearance changed`,
+              );
+            } else {
+              nativePixels.set(key, pixels);
             }
           }
         }
@@ -111,7 +147,16 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
           (await option.evaluate(background)) !== transparent,
           `${context}: unselected tag disappeared`,
         );
-        await page.locator("#tags").evaluate((el) => (el.open = false));
+        await page.locator("#tags").evaluate((el) => {
+          el.open = false;
+          el.selectedValues = ["one"];
+        });
+        await page.locator("#tags #trigger").getByText("Label One").waitFor();
+        check(
+          (await placeholder.evaluate(background)) !== transparent,
+          `${context}: selected tag disappeared`,
+        );
+        await page.locator("#tags").evaluate((el) => (el.selectedValues = []));
       }
       await page.close();
     }
