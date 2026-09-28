@@ -31,10 +31,12 @@ describe("rtgl-tag-select store", () => {
     expect(viewData.triggerTags[0].tagStyle).toContain("--muted-foreground: var(--foreground)");
     expect(viewData.options[0].isSection).toBe(true);
     expect(viewData.options[1].isSelected).toBe(true);
+    expect(viewData.options[1].tagStyle).not.toContain("--muted:");
     expect(viewData.options[1].tagStyle).toContain("--muted-foreground: var(--foreground)");
     expect(viewData.options[2].isSelected).toBe(true);
     expect(viewData.options[3].isSeparator).toBe(true);
     expect(viewData.options[4].isSelected).toBe(false);
+    expect(viewData.options[4].tagStyle).toContain("--muted: transparent");
     expect(viewData.hasDraftChanges).toBe(true);
     expect(viewData.submitDisabled).toBe(false);
     expect(viewData.placeholder).toBe("Add tag");
@@ -55,7 +57,7 @@ describe("rtgl-tag-select store", () => {
     expect(initialView.placeholder).toBe("Assign tags");
     expect(initialView.showAddOption).toBe(true);
     expect(initialView.addOptionLabel).toBe("Add tag");
-    expect(initialView.triggerTags[0].tagStyle).toContain("--muted:");
+    expect(initialView.triggerTags[0].tagStyle).toContain("--muted: transparent");
 
     const defaultAddChipView = selectViewData({
       state: createInitialState(),

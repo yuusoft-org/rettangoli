@@ -75,13 +75,9 @@ class RettangoliButtonElement extends HTMLElement {
           text-decoration: none;
         }
 
-        .surface:hover {
+        .surface:hover,
+        .surface:active {
           cursor: pointer;
-          background-color: color-mix(
-            in srgb,
-            var(--primary) 85%,
-            white 15%
-          );
         }
 
         .surface:focus-visible {
@@ -93,61 +89,20 @@ class RettangoliButtonElement extends HTMLElement {
           cursor: not-allowed;
         }
 
-        .surface:active {
-          cursor: pointer;
-          background-color: color-mix(
-            in srgb,
-            var(--primary) 80%,
-            white 20%
+        /* A translucent white overlay paints the same colour as
+           color-mix(in srgb, <fill> 85%, white 15%) over opaque fills, and
+           works in browsers without color-mix(). Outline, ghost and link
+           variants clear it in buttonMarginStyles. */
+        .surface:hover {
+          background-image: linear-gradient(
+            rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15)
           );
         }
 
-        :host([v="pr"]) .surface:hover {
-          background-color: color-mix(
-              in srgb,
-              var(--primary) 85%,
-              white 15%
-            );
-        }
-
-        :host([v="pr"]) .surface:active {
-          background-color: color-mix(
-              in srgb,
-              var(--primary) 80%,
-              white 20%
-            );
-        }
-
-        :host([v="se"]) .surface:hover {
-          background-color: color-mix(
-              in srgb,
-              var(--secondary) 85%,
-              white 15%
-            );
-        }
-
-        :host([v="se"]) .surface:active {
-          background-color: color-mix(
-              in srgb,
-              var(--secondary) 80%,
-              white 20%
-            );
-        }
-
-        :host([v="de"]) .surface:hover {
-          background-color: color-mix(
-              in srgb,
-              var(--destructive) 85%,
-              white 15%
-            );
-        }
-
-        :host([v="de"]) .surface:active {
-          background-color: color-mix(
-              in srgb,
-              var(--destructive) 80%,
-              white 20%
-            );
+        .surface:active {
+          background-image: linear-gradient(
+            rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)
+          );
         }
 
         :host([v="ol"]) .surface:hover {

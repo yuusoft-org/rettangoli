@@ -112,7 +112,7 @@ const buildTagStyle = ({ isSelected = true, isAddChip = false } = {}) => {
   ];
 
   if (isAddChip || !isSelected) {
-    baseStyle.push("--muted: color-mix(in srgb, var(--muted) 82%, var(--background) 18%)");
+    baseStyle.push("--muted: transparent");
   }
 
   return `${baseStyle.join("; ")};`;
