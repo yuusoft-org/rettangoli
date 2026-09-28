@@ -105,15 +105,11 @@ const findMatchingOption = (options = [], value) => {
   return options.find((option) => isSelectableOption(option) && deepEqual(option.value, value));
 };
 
-const buildTagStyle = ({ isSelected = true, isAddChip = false } = {}) => {
+const buildTagStyle = () => {
   const baseStyle = [
     "--tag-border-radius: var(--border-radius-md)",
     "--muted-foreground: var(--foreground)",
   ];
-
-  if (isAddChip || !isSelected) {
-    baseStyle.push("--muted: color-mix(in srgb, var(--muted) 82%, var(--background) 18%)");
-  }
 
   return `${baseStyle.join("; ")};`;
 };
@@ -157,7 +153,7 @@ const normalizeOption = ({
     icon,
     hasIcon: icon.length > 0,
     cursor: "pointer",
-    tagStyle: buildTagStyle({ isSelected }),
+    tagStyle: buildTagStyle(),
     suffixText,
     hasSuffixText: suffixText.length > 0,
   };
@@ -212,7 +208,7 @@ export const selectViewData = ({ state, props }) => {
   const triggerTags = selectedTags.length > 0
     ? selectedTags.map((tag) => ({
       ...tag,
-      tagStyle: buildTagStyle({ isSelected: true }),
+      tagStyle: buildTagStyle(),
     }))
     : [{
       value: undefined,
@@ -220,7 +216,7 @@ export const selectViewData = ({ state, props }) => {
       label: props.placeholder || "Add tag",
       icon: "",
       testId: "",
-      tagStyle: buildTagStyle({ isAddChip: true }),
+      tagStyle: buildTagStyle(),
     }];
 
   return {

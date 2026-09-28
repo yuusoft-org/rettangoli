@@ -55,7 +55,7 @@ describe("rtgl-tag-select store", () => {
     expect(initialView.placeholder).toBe("Assign tags");
     expect(initialView.showAddOption).toBe(true);
     expect(initialView.addOptionLabel).toBe("Add tag");
-    expect(initialView.triggerTags[0].tagStyle).toContain("--muted:");
+    expect(initialView.triggerTags[0].tagStyle).not.toContain("--muted:");
 
     const defaultAddChipView = selectViewData({
       state: createInitialState(),
