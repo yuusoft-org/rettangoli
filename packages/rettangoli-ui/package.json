@@ -64,7 +64,7 @@
   },
   "homepage": "https://github.com/yuusoft-org/rettangoli#readme",
   "dependencies": {
-    "@rettangoli/fe": "1.4.2",
+    "@rettangoli/fe": "1.4.3",
     "jempl": "1.0.1"
   }
 }

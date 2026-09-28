@@ -160,6 +160,9 @@ project bootstrap code such as primitive custom-element registration.
 
 `setup.js` should export `deps` only.
 `createWebPatch`/`h` wiring is internalized by the framework.
+The generated entry imports the setup module before any component module, so
+bootstrap code that setup imports first, such as error reporting, runs before
+component modules are evaluated.
 
 ```js
 const deps = {

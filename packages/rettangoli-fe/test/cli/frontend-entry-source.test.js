@@ -165,6 +165,28 @@ describe("frontend entry source generator", () => {
     expect(source).not.toContain("customElements.define(elementName, webComponent);");
   });
 
+  it.each(["build", "serve"])(
+    "imports the setup module before component modules in %s mode",
+    (command) => {
+      const rootDir = createFixtureProject();
+      createdDirs.push(rootDir);
+
+      const source = generateFrontendEntrySource({
+        cwd: rootDir,
+        dirs: ["components"],
+        setup: "setup.js",
+        command,
+        errorPrefix: "[Build]",
+      });
+
+      const importLines = source.match(/^import .+;$/gm);
+      expect(importLines[0]).toMatch(/^import \{ deps \} from ".+\/setup\.js";$/);
+      expect(
+        importLines.findIndex((line) => line.includes("counter.store.js")),
+      ).toBeGreaterThan(0);
+    },
+  );
+
   it("changes only the edited component fingerprint", () => {
     const rootDir = createFixtureProject();
     createdDirs.push(rootDir);

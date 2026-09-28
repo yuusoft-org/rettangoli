@@ -240,6 +240,41 @@ describe("vite runtime integration", () => {
     ).toBe(true);
   });
 
+  it("evaluates the setup module before component modules", async () => {
+    const rootDir = createFixtureProject({
+      setupSource: [
+        'globalThis.rtglOrder = ["setup-evaluated"];',
+        "export const deps = { components: {} };",
+        "",
+      ].join("\n"),
+    });
+    createdDirs.push(rootDir);
+    writeFileSync(
+      path.join(rootDir, "components", "counter", "counter.store.js"),
+      [
+        'globalThis.rtglOrder.push("store-evaluated");',
+        "export const createInitialState = () => ({ count: 0 });",
+        "",
+      ].join("\n"),
+    );
+
+    await build({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      outfile: "vt/static/public/main.js",
+    });
+
+    const bundleSource = readFileSync(
+      path.join(rootDir, "vt", "static", "public", "main.js"),
+      "utf8",
+    );
+    const setupIndex = bundleSource.indexOf("setup-evaluated");
+    const storeIndex = bundleSource.indexOf("store-evaluated");
+    expect(setupIndex).toBeGreaterThanOrEqual(0);
+    expect(storeIndex).toBeGreaterThan(setupIndex);
+  });
+
   it("keeps emitted asset and lazy chunk URLs relative to a nested entry", async () => {
     const rootDir = createFixtureProject({
       setupSource: [
