@@ -75,13 +75,9 @@ class RettangoliButtonElement extends HTMLElement {
           text-decoration: none;
         }
 
-        .surface:hover {
+        .surface:hover,
+        .surface:active {
           cursor: pointer;
-          background-color: color-mix(
-            in srgb,
-            var(--primary) 85%,
-            white 15%
-          );
         }
 
         .surface:focus-visible {
@@ -93,61 +89,72 @@ class RettangoliButtonElement extends HTMLElement {
           cursor: not-allowed;
         }
 
-        .surface:active {
-          cursor: pointer;
-          background-color: color-mix(
-            in srgb,
-            var(--primary) 80%,
-            white 20%
-          );
-        }
-
-        :host([v="pr"]) .surface:hover {
-          background-color: color-mix(
+        /* A color-mix() containing var() becomes invalid at computed-value
+           time in older browsers, replacing the base colour with transparent. */
+        @supports (color: color-mix(in srgb, black, white)) {
+          .surface:hover {
+            background-color: color-mix(
               in srgb,
               var(--primary) 85%,
               white 15%
             );
-        }
+          }
 
-        :host([v="pr"]) .surface:active {
-          background-color: color-mix(
+          .surface:active {
+            background-color: color-mix(
               in srgb,
               var(--primary) 80%,
               white 20%
             );
-        }
+          }
 
-        :host([v="se"]) .surface:hover {
-          background-color: color-mix(
+          :host([v="pr"]) .surface:hover {
+            background-color: color-mix(
+              in srgb,
+              var(--primary) 85%,
+              white 15%
+            );
+          }
+
+          :host([v="pr"]) .surface:active {
+            background-color: color-mix(
+              in srgb,
+              var(--primary) 80%,
+              white 20%
+            );
+          }
+
+          :host([v="se"]) .surface:hover {
+            background-color: color-mix(
               in srgb,
               var(--secondary) 85%,
               white 15%
             );
-        }
+          }
 
-        :host([v="se"]) .surface:active {
-          background-color: color-mix(
+          :host([v="se"]) .surface:active {
+            background-color: color-mix(
               in srgb,
               var(--secondary) 80%,
               white 20%
             );
-        }
+          }
 
-        :host([v="de"]) .surface:hover {
-          background-color: color-mix(
+          :host([v="de"]) .surface:hover {
+            background-color: color-mix(
               in srgb,
               var(--destructive) 85%,
               white 15%
             );
-        }
+          }
 
-        :host([v="de"]) .surface:active {
-          background-color: color-mix(
+          :host([v="de"]) .surface:active {
+            background-color: color-mix(
               in srgb,
               var(--destructive) 80%,
               white 20%
             );
+          }
         }
 
         :host([v="ol"]) .surface:hover {

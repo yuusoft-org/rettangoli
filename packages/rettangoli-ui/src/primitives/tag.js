@@ -100,6 +100,7 @@ class RettangoliTagElement extends HTMLElement {
         .removeButton:hover {
           cursor: pointer;
           opacity: 1;
+          background-color: var(--border);
           background-color: color-mix(in srgb, currentColor 12%, transparent);
         }
 
