@@ -361,10 +361,12 @@ if (import.meta.hot) {
 }`.trim()
     : "";
 
+  // Import setup first so application bootstrap code, such as error reporting,
+  // runs before component modules are evaluated.
   return `
+import { deps } from ${JSON.stringify(setupImportPath)};
 ${declarationLines.join("\n")}
 import { ${feImports} } from ${JSON.stringify(feRuntimeImportPath)};
-import { deps } from ${JSON.stringify(setupImportPath)};
 
 ${categoryLines}
 

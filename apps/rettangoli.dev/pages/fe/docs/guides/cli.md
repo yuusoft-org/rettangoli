@@ -224,3 +224,5 @@ export { deps }
 ```
 
 Each category's dependencies are merged into the `deps` argument that handlers receive. The framework handles virtual DOM and patching internally — `setup.js` is only for your application-level dependencies.
+
+The generated entry imports the setup module before any component module. Bootstrap code that `setup.js` imports first, such as error reporting, therefore runs before component modules are evaluated and can observe their load-time errors.
