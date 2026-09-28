@@ -1,13 +1,12 @@
 // Run after bun run build:dev: node spec/legacy-colors.browser.mjs.
-// Unknown colour functions retain var() declarations until computed-value time,
-// reproducing browsers without color-mix without modifying the built bundle.
+// Renaming color-mix( to unsupported-color( in constructed stylesheets
+// reproduces browsers without color-mix: plain declarations drop at parse
+// time while var() ones only invalidate at computed-value time.
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { PNG } from "pngjs";
+import { chromium, webkit } from "playwright";
 
-const { chromium, webkit } = await import(
-  process.env.PLAYWRIGHT_MODULE ?? "playwright"
-);
 const script = await readFile("vt/static/public/main.js", "utf8");
 const css =
   (await readFile("vt/static/public/base.css", "utf8")) +
@@ -17,20 +16,75 @@ const failures = [];
 const check = (condition, message) => {
   if (!condition) failures.push(message);
 };
-const background = (el) => getComputedStyle(el).backgroundColor;
+const backgroundImage = (el) => getComputedStyle(el).backgroundImage;
 const nativePixels = new Map();
 const nativeTagAppearances = new Map();
+const buttons = [
+  { id: "default", filled: true },
+  { id: "pr", v: "pr", filled: true },
+  { id: "se", v: "se", filled: true },
+  { id: "de", v: "de", filled: true },
+  { id: "link", href: "#", filled: true },
+  { id: "ol", v: "ol" },
+  { id: "gh", v: "gh" },
+  { id: "lk", v: "lk" },
+  { id: "hover-gh", hv: "gh" },
+  { id: "sm-gh", v: "pr", smv: "gh" },
+];
+const pixelAt = (png, x, y) => {
+  const offset = (y * png.width + x) * 4;
+  return Array.from(png.data.subarray(offset, offset + 3));
+};
 const paintedBackground = async (surface) => {
   const png = PNG.sync.read(await surface.screenshot());
-  const offset = (Math.floor(png.height / 2) * png.width + 6) * 4;
-  return Array.from(png.data.subarray(offset, offset + 4));
+  return pixelAt(png, 6, Math.floor(png.height / 2));
+};
+const removeXContrast = async (button) => {
+  const png = PNG.sync.read(await button.screenshot());
+  const cx = Math.floor(png.width / 2);
+  const cy = Math.floor(png.height / 2);
+  const background = pixelAt(png, cx, Math.round(cy - png.height * 0.35));
+  let contrast = 0;
+  for (let x = cx - 1; x <= cx + 1; x++) {
+    for (let y = cy - 1; y <= cy + 1; y++) {
+      contrast = Math.max(
+        contrast,
+        ...pixelAt(png, x, y).map(
+          (channel, index) => Math.abs(channel - background[index]),
+        ),
+      );
+    }
+  }
+  return contrast;
+};
+const comparePixels = (key, context, pixels, tolerance) => {
+  const expected = nativePixels.get(key);
+  if (!expected) {
+    nativePixels.set(key, pixels);
+    return;
+  }
+  check(
+    pixels.every((pixel, state) =>
+      pixel.every(
+        (channel, index) => Math.abs(channel - expected[state][index]) <= tolerance,
+      ),
+    ),
+    `${context}: fallback differs from native painted colours`,
+  );
 };
 
 for (const [name, engine] of Object.entries({ chromium, webkit })) {
-  const browser = await engine.launch();
+  const browser = await engine.launch({ headless: true });
   try {
     for (const legacy of [false, true]) {
-      const page = await browser.newPage();
+      const page = await browser.newPage({
+        viewport: { width: 600, height: 1000 },
+      });
+      page.on("pageerror", (error) =>
+        failures.push(
+          `${name}, ${legacy ? "legacy" : "native"} pageerror: ${error.message}`,
+        ),
+      );
       await page.setContent("<body></body>");
       await page.addStyleTag({ content: css });
       if (legacy) {
@@ -45,96 +99,126 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
         });
       }
       await page.addScriptTag({ content: script });
-      await page.evaluate(() => {
-        for (const variant of ["default", "pr", "se", "de", "ol", "gh", "lk"]) {
+      await page.evaluate((buttons) => {
+        for (const { id, v, href, hv, smv } of buttons) {
           const button = document.createElement("rtgl-button");
-          button.id = variant;
-          if (variant !== "default") button.setAttribute("v", variant);
-          button.textContent = variant;
+          button.id = id;
+          if (v) button.setAttribute("v", v);
+          if (href) button.setAttribute("href", href);
+          if (hv) button.setAttribute("h-v", hv);
+          if (smv) button.setAttribute("sm-v", smv);
+          button.textContent = id;
           button.style.margin = "12px";
           document.body.append(button);
         }
-        const tag = document.createElement("rtgl-tag");
-        tag.id = "removable";
-        tag.setAttribute("removable", "");
-        tag.textContent = "Label";
-        document.body.append(tag);
+        for (const variant of ["default", "pr", "de"]) {
+          const tag = document.createElement("rtgl-tag");
+          tag.id = `removable-${variant}`;
+          tag.setAttribute("removable", "");
+          if (variant !== "default") tag.setAttribute("v", variant);
+          tag.textContent = "Label";
+          document.body.append(tag);
+        }
+        const carousel = document.createElement("rtgl-carousel");
+        carousel.id = "carousel";
+        carousel.setAttribute("pager", "");
+        for (let slide = 1; slide <= 3; slide++) {
+          const element = document.createElement("div");
+          element.textContent = `Slide ${slide}`;
+          carousel.append(element);
+        }
+        document.body.append(carousel);
         const tags = document.createElement("rtgl-tag-select");
         tags.id = "tags";
         tags.options = [{ value: "one", label: "Label One" }];
         document.body.append(tags);
-      });
+      }, buttons);
+      await page.locator("#carousel #pager button").nth(2).waitFor();
       for (const theme of ["light", "dark"]) {
         await page.evaluate(
           (theme) => (document.body.className = theme),
           theme,
         );
         const context = `${name}, ${theme}, ${legacy ? "legacy" : "native"}`;
-        for (const variant of ["default", "pr", "se", "de", "ol", "gh", "lk"]) {
-          const surface = page.locator(`#${variant} .surface`);
+        for (const { id, filled } of buttons) {
+          const surface = page.locator(`#${id} .surface`);
           await page.mouse.move(0, 0);
-          const normal = await surface.evaluate(background);
-          const normalPixel = await paintedBackground(surface);
+          const pixels = [await paintedBackground(surface)];
+          const overlayFree = [];
           await surface.hover();
-          const hover = await surface.evaluate(background);
-          const hoverPixel = await paintedBackground(surface);
+          pixels.push(await paintedBackground(surface));
+          overlayFree.push(await surface.evaluate(backgroundImage));
           await page.mouse.down();
-          const active = await surface.evaluate(background);
-          const activePixel = await paintedBackground(surface);
+          pixels.push(await paintedBackground(surface));
+          overlayFree.push(await surface.evaluate(backgroundImage));
           await page.mouse.up();
-          if (["default", "pr", "se", "de"].includes(variant)) {
+          const key = `${name}/${theme}/${id}`;
+          if (filled) {
+            const alphas = [0, 0.15, 0.2];
             check(
-              hover !== transparent,
-              `${context}: ${variant} hover disappeared`,
-            );
-            check(
-              active !== transparent,
-              `${context}: ${variant} active disappeared`,
-            );
-            const pixels = [normalPixel, hoverPixel, activePixel];
-            check(
-              normalPixel.some((channel, i) => channel !== hoverPixel[i]) &&
-                normalPixel.some((channel, i) => channel !== activePixel[i]),
-              `${context}: ${variant} must visibly change on hover and press`,
-            );
-            const key = `${name}/${theme}/${variant}`;
-            if (legacy) {
-              const expected = nativePixels.get(key);
-              check(
-                pixels.every((pixel, state) =>
-                  pixel.every(
-                    (channel, i) => Math.abs(channel - expected[state][i]) <= 1,
-                  ),
+              pixels.every((pixel, state) =>
+                pixel.every(
+                  (channel, index) =>
+                    Math.abs(
+                      channel -
+                        Math.round(
+                          (1 - alphas[state]) * pixels[0][index] +
+                            alphas[state] * 255,
+                        ),
+                    ) <= 2,
                 ),
-                `${context}: ${variant} fallback differs from native painted colours`,
-              );
-            } else {
-              nativePixels.set(key, pixels);
-              check(
-                hover !== normal && active !== hover,
-                `${context}: ${variant} lost mixed hover/active colours`,
-              );
-            }
+              ),
+              `${context}: ${id} hover/active must tint the fill 15%/20% white`,
+            );
+            comparePixels(key, context, pixels, 1);
           } else {
-            // Outline, ghost and link variants must not acquire the fill overlay.
-            const key = `${name}/${theme}/${variant}`;
-            const pixels = [normalPixel, hoverPixel, activePixel];
-            if (legacy) {
-              check(
-                JSON.stringify(pixels) ===
-                  JSON.stringify(nativePixels.get(key)),
-                `${context}: ${variant} appearance changed`,
-              );
-            } else {
-              nativePixels.set(key, pixels);
-            }
+            // Outline, ghost and link variants must not acquire the fill
+            // overlay, including through h-v and sm-v attributes.
+            check(
+              overlayFree.every((image) => image === "none"),
+              `${context}: ${id} acquired the hover overlay`,
+            );
+            comparePixels(key, context, pixels, 0);
           }
         }
-        const remove = page.locator("#removable .removeButton");
-        await remove.hover();
+        for (const variant of ["default", "pr", "de"]) {
+          const remove = page.locator(`#removable-${variant} .removeButton`);
+          await remove.hover();
+          check(
+            (await removeXContrast(remove)) >= 40,
+            `${context}: removable ${variant} tag X disappears on hover`,
+          );
+        }
+        const pager = await page.locator("#carousel").evaluate((element) => {
+          const dots = [...element.shadowRoot.querySelectorAll("#pager button")];
+          const read = (dot) => {
+            const style = getComputedStyle(dot);
+            return {
+              backgroundColor: style.backgroundColor,
+              borderStyle: style.borderTopStyle,
+              borderWidth: style.borderTopWidth,
+            };
+          };
+          const active = dots.find((dot) => dot.classList.contains("is-active"));
+          const inactive = dots.find(
+            (dot) => !dot.classList.contains("is-active"),
+          );
+          return {
+            count: dots.length,
+            active: read(active),
+            inactive: read(inactive),
+          };
+        });
+        check(pager.count === 3, `${context}: carousel pager dots missing`);
         check(
-          (await remove.evaluate(background)) !== transparent,
-          `${context}: tag removal hover has no highlight`,
+          pager.inactive.borderStyle === "solid" &&
+            parseFloat(pager.inactive.borderWidth) > 0 &&
+            pager.inactive.backgroundColor !== transparent,
+          `${context}: inactive pager dot lost its border and background`,
+        );
+        check(
+          pager.active.backgroundColor !== pager.inactive.backgroundColor,
+          `${context}: active pager dot matches an inactive dot`,
         );
         const checkTagAppearance = async (surface, state, selected) => {
           const appearance = await surface.evaluate((el) => {
@@ -203,5 +287,5 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
 }
 assert.deepEqual(failures, []);
 console.log(
-  "Chromium/WebKit: button hover/active and tag colours pass in light/dark themes, with and without color-mix.",
+  "Chromium/WebKit: button overlays, removable tag X, carousel dots and tag-select colours pass in light/dark themes, with and without color-mix.",
 );

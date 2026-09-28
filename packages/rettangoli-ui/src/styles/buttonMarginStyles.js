@@ -58,15 +58,18 @@ const styles = {
     `,
     ol: `
       background-color: var(--background);
+      background-image: none;
       color: var(--foreground);
       border-width: 1px;
     `,
     gh: `
       background-color: transparent;
+      background-image: none;
       color: var(--foreground);
     `,
     lk: `
       background-color: transparent;
+      background-image: none;
       color: var(--foreground);
     `,
   },

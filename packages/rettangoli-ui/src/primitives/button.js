@@ -89,95 +89,20 @@ class RettangoliButtonElement extends HTMLElement {
           cursor: not-allowed;
         }
 
-        /* A color-mix() containing var() becomes invalid at computed-value
-           time in older browsers, replacing the base colour with transparent. */
-        @supports (color: color-mix(in srgb, black, white)) {
-          .surface:hover {
-            background-color: color-mix(
-              in srgb,
-              var(--primary) 85%,
-              white 15%
-            );
-          }
-
-          .surface:active {
-            background-color: color-mix(
-              in srgb,
-              var(--primary) 80%,
-              white 20%
-            );
-          }
-
-          :host([v="pr"]) .surface:hover {
-            background-color: color-mix(
-              in srgb,
-              var(--primary) 85%,
-              white 15%
-            );
-          }
-
-          :host([v="pr"]) .surface:active {
-            background-color: color-mix(
-              in srgb,
-              var(--primary) 80%,
-              white 20%
-            );
-          }
-
-          :host([v="se"]) .surface:hover {
-            background-color: color-mix(
-              in srgb,
-              var(--secondary) 85%,
-              white 15%
-            );
-          }
-
-          :host([v="se"]) .surface:active {
-            background-color: color-mix(
-              in srgb,
-              var(--secondary) 80%,
-              white 20%
-            );
-          }
-
-          :host([v="de"]) .surface:hover {
-            background-color: color-mix(
-              in srgb,
-              var(--destructive) 85%,
-              white 15%
-            );
-          }
-
-          :host([v="de"]) .surface:active {
-            background-color: color-mix(
-              in srgb,
-              var(--destructive) 80%,
-              white 20%
-            );
-          }
+        /* A translucent white overlay paints the same colour as
+           color-mix(in srgb, <fill> 85%, white 15%) over opaque fills, and
+           works in browsers without color-mix(). Outline, ghost and link
+           variants clear it in buttonMarginStyles. */
+        .surface:hover {
+          background-image: linear-gradient(
+            rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15)
+          );
         }
 
-        /* Match the white colour mix without changing text, icons or focus rings. */
-        @supports not (color: color-mix(in srgb, black, white)) {
-          :host(:not([v])) button.surface:hover,
-          :host([v=""]) button.surface:hover,
-          :host([v="pr"]) .surface:hover,
-          :host([v="se"]) .surface:hover,
-          :host([v="de"]) .surface:hover {
-            background-image: linear-gradient(
-              rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.15)
-            );
-          }
-
-          :host(:not([v])) button.surface:active,
-          :host([v=""]) button.surface:active,
-          :host([v="pr"]) .surface:active,
-          :host([v="se"]) .surface:active,
-          :host([v="de"]) .surface:active {
-            background-image: linear-gradient(
-              rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)
-            );
-          }
+        .surface:active {
+          background-image: linear-gradient(
+            rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2)
+          );
         }
 
         :host([v="ol"]) .surface:hover {

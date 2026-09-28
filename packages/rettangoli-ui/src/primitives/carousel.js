@@ -215,6 +215,16 @@ class RettangoliCarouselElement extends HTMLElement {
             opacity 160ms ease;
         }
 
+        /* A color-mix() containing var() becomes invalid at computed-value
+           time in browsers without color-mix(), removing the inactive dots'
+           border and background. */
+        @supports not (color: color-mix(in srgb, black, white)) {
+          #pager button {
+            border: 1px solid var(--border);
+            background: var(--border);
+          }
+        }
+
         #prev-button:hover:not(:disabled),
         #next-button:hover:not(:disabled),
         #pager button:hover:not(:disabled) {
