@@ -94,6 +94,7 @@ src/
 `@rettangoli/fe` uses Vite directly through the Node API, behind the existing FE CLI commands.
 
 - `rtgl fe build` uses Vite 8's Rolldown-powered `vite.build()` with a virtual entry module generated from configured component files.
+- `rtgl fe build --sourcemap` emits linked source maps; `--sourcemap hidden` emits maps without a `sourceMappingURL` comment, for keeping them private. Maps are off by default.
 - `rtgl fe watch` uses `vite.createServer()`, warms the virtual entry during startup, and serves the configured `outfile` path via middleware.
 - Watch projects can configure `fe.publicDir` to serve static assets from the project root without Vite transformations.
 - `fe.watchEntry` can provide a project bootstrap module at the configured `outfile` URL. The module can register framework primitives and import `virtual:rettangoli-fe-entry` for Rettangoli component HMR.

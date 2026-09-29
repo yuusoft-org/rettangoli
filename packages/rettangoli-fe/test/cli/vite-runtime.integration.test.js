@@ -216,6 +216,66 @@ describe("vite runtime integration", () => {
     expect(existsSync(path.join(rootDir, ".temp"))).toBe(false);
   });
 
+  it("emits hidden source maps only when requested", async () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+    const outfile = "vt/static/public/main.js";
+    const bundlePath = path.join(rootDir, outfile);
+    const buildOptions = {
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      outfile,
+    };
+
+    await build(buildOptions);
+    expect(existsSync(`${bundlePath}.map`)).toBe(false);
+
+    await build({ ...buildOptions, sourcemap: "hidden" });
+    const map = JSON.parse(readFileSync(`${bundlePath}.map`, "utf8"));
+
+    expect(map.file).toBe("main.js");
+    expect(
+      map.sources.some((source) => source.endsWith("counter/counter.store.js")),
+    ).toBe(true);
+    expect(readFileSync(bundlePath, "utf8")).not.toContain("sourceMappingURL");
+  });
+
+  it("links source maps when sourcemap is true", async () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+    const outfile = "vt/static/public/main.js";
+
+    await build({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      outfile,
+      sourcemap: true,
+    });
+
+    const bundlePath = path.join(rootDir, outfile);
+    expect(existsSync(`${bundlePath}.map`)).toBe(true);
+    expect(readFileSync(bundlePath, "utf8")).toContain(
+      "//# sourceMappingURL=main.js.map",
+    );
+  });
+
+  it("rejects unknown source map modes", async () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    await expect(
+      build({
+        cwd: rootDir,
+        dirs: ["components"],
+        setup: "setup.js",
+        outfile: "vt/static/public/main.js",
+        sourcemap: "inline",
+      }),
+    ).rejects.toThrow('Invalid sourcemap mode "inline"');
+  });
+
   it("supports top-level await in setup modules", async () => {
     const rootDir = createFixtureProject({
       setupSource: [

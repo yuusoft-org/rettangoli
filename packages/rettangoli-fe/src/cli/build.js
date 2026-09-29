@@ -9,6 +9,10 @@ import {
 } from "./vitePlugin.js";
 import { emitI18nAssets, loadI18nBuildContext } from "./i18nBuild.js";
 
+// `hidden` writes .map files without a sourceMappingURL comment, so shipped
+// bundles never reference maps that are kept private for symbolication.
+const SOURCEMAP_MODES = new Set([false, true, "hidden"]);
+
 const buildRettangoliFrontend = async (options = {}) => {
   const {
     cwd = process.cwd(),
@@ -16,8 +20,15 @@ const buildRettangoliFrontend = async (options = {}) => {
     outfile = "./vt/static/main.js",
     setup = "setup.js",
     development = false,
+    sourcemap = false,
     i18n = null,
   } = options;
+
+  if (!SOURCEMAP_MODES.has(sourcemap)) {
+    throw new Error(
+      `[Build] Invalid sourcemap mode "${sourcemap}". Use true or "hidden" (CLI: --sourcemap or --sourcemap hidden).`,
+    );
+  }
 
   const resolvedOutfile = path.resolve(cwd, outfile);
   const outDir = path.dirname(resolvedOutfile);
@@ -53,7 +64,7 @@ const buildRettangoliFrontend = async (options = {}) => {
       outDir: relativeOutDir,
       emptyOutDir: false,
       minify: development ? false : "oxc",
-      sourcemap: false,
+      sourcemap,
       target: "esnext",
       reportCompressedSize: false,
       rolldownOptions: {
