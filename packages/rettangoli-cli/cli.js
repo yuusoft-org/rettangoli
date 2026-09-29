@@ -115,13 +115,18 @@ feCommand
   .description("Build UI components")
   .option("-o, --outfile <path>", "The output file")
   .option("-s, --setup-path <path>", "Custom setup file path")
-  .option("-d, --development", "Development mode (no minification, no source maps)")
+  .option("-d, --development", "Development mode (no minification)")
+  .option(
+    "--sourcemap [mode]",
+    "Emit source maps; 'hidden' omits the sourceMappingURL comment",
+  )
   .addHelpText(
     "after",
     `
 
 Examples:
   $ rettangoli fe build
+  $ rettangoli fe build --sourcemap hidden
   $ rettangoli fe build --outfile ./dist/bundle.js
   $ rettangoli fe build -o ./public/js/main.js
   $ rettangoli fe build --development
