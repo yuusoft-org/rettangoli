@@ -26,7 +26,7 @@ const buildRettangoliFrontend = async (options = {}) => {
 
   if (!SOURCEMAP_MODES.has(sourcemap)) {
     throw new Error(
-      `[Build] Invalid sourcemap mode "${sourcemap}". Use true or "hidden".`,
+      `[Build] Invalid sourcemap mode "${sourcemap}". Use true or "hidden" (CLI: --sourcemap or --sourcemap hidden).`,
     );
   }
 

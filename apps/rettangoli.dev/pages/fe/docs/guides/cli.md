@@ -41,7 +41,8 @@ The build uses Vite 8 (`vite.build`) with Rolldown and Oxc for production bundli
 Source maps are off by default. `--sourcemap` writes a `.map` next to each
 emitted file and links it with a `sourceMappingURL` comment. `--sourcemap hidden`
 writes the same maps without the comment, so a shipped bundle never points at
-them; keep those maps privately to symbolicate production errors.
+them; keep those maps privately to symbolicate production errors. Maps embed
+the original source code, so publish them only if that source may be public.
 
 ```bash
 rtgl fe build --sourcemap hidden
