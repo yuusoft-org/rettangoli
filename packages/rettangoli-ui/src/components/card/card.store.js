@@ -37,6 +37,7 @@ const blacklistedProps = [
   'sv',
   'sh',
   'overflow',
+  'sbv',
 ];
 
 const sizePresets = {

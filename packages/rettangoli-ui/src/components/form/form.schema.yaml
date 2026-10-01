@@ -25,6 +25,9 @@ propsSchema:
     bottomSpacer:
       type: number
       default: 0
+    sbv:
+      type: string
+      enum: [touch, always]
 events:
   form-input: {}
   form-change: {}

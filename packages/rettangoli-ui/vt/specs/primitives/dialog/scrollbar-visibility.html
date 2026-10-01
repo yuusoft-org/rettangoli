@@ -1,0 +1,112 @@
+---
+title: Dialog - Scrollbar Visibility
+description: Verifies `sbv` on scrollers inside a fixed-top mobile dialog on a hover-capable device.
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+specs:
+  - "A `sbv=\"always\"` scroller inside an open dialog shows an interactive overlay at rest without hover."
+  - "A `sbv=\"touch\"` scroller inside the dialog keeps hover reveal on hover-capable devices; `spec/overlayScrollbar.visibility.browser.mjs` covers devices without hover."
+steps:
+  - action: waitFor
+    selector: "#dialog[open]"
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 350
+  - action: move
+    x: 195
+    y: 40
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: getDialogScrollbarState
+    value:
+      alwaysHovered: false
+      alwaysOverflowing: true
+      alwaysTrackVisible: true
+      touchHovered: false
+      touchOverflowing: true
+      touchTrackVisible: false
+  - action: screenshot
+  - action: select
+    selector: "#touch-scroller"
+    steps:
+      - action: hover
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getDialogScrollbarState
+    value:
+      alwaysHovered: false
+      alwaysOverflowing: true
+      alwaysTrackVisible: true
+      touchHovered: true
+      touchOverflowing: true
+      touchTrackVisible: true
+  - action: screenshot
+---
+<rtgl-dialog id="dialog" open s="md" md-layout="fixed-top" p="none">
+  <rtgl-view slot="content" d="v" w="f" h="f" overflow="hidden">
+    <rtgl-view p="lg" pb="sm">
+      <rtgl-text s="h4">Scrollers in a dialog</rtgl-text>
+    </rtgl-view>
+    <rtgl-view ph="lg" pb="xs"><rtgl-text c="mu-fg">sbv="always"</rtgl-text></rtgl-view>
+    <rtgl-view id="always-scroller" sv sbv="always" w="f" h="150" ph="lg" g="sm">
+      <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Always row 01</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Always row 02</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Always row 03</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Always row 04</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Always row 05</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Always row 06</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Always row 07</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Always row 08</rtgl-text></rtgl-view>
+    </rtgl-view>
+    <rtgl-view ph="lg" pt="md" pb="xs"><rtgl-text c="mu-fg">sbv="touch"</rtgl-text></rtgl-view>
+    <rtgl-view id="touch-scroller" sv sbv="touch" w="f" h="150" ph="lg" g="sm">
+      <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Touch row 01</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Touch row 02</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Touch row 03</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Touch row 04</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Touch row 05</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Touch row 06</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Touch row 07</rtgl-text></rtgl-view>
+      <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Touch row 08</rtgl-text></rtgl-view>
+    </rtgl-view>
+    <rtgl-view p="lg" ah="e" w="f">
+      <rtgl-button v="pr">Save</rtgl-button>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-dialog>
+
+<script>
+  const dialog = document.getElementById("dialog");
+  const alwaysScroller = document.getElementById("always-scroller");
+  const touchScroller = document.getElementById("touch-scroller");
+
+  const isTrackVisible = (scroller) => {
+    const track = scroller.shadowRoot.querySelector(
+      '[data-rtgl-scrollbar-track="vertical"]',
+    );
+    const style = getComputedStyle(track);
+    return track.hasAttribute("data-visible") &&
+      style.opacity === "1" &&
+      style.pointerEvents === "auto" &&
+      track.getBoundingClientRect().height > 0;
+  };
+
+  window.getDialogScrollbarState = () => ({
+    alwaysHovered: alwaysScroller.matches(":hover"),
+    alwaysOverflowing: alwaysScroller.scrollHeight > alwaysScroller.clientHeight,
+    alwaysTrackVisible: isTrackVisible(alwaysScroller),
+    touchHovered: touchScroller.matches(":hover"),
+    touchOverflowing: touchScroller.scrollHeight > touchScroller.clientHeight,
+    touchTrackVisible: isTrackVisible(touchScroller),
+  });
+
+  dialog.addEventListener("close", () => dialog.removeAttribute("open"));
+</script>

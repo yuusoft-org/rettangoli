@@ -78,6 +78,7 @@ Common tokens used in this page:
 | [Stretch](#stretch) | `stretch` | boolean | - |
 | [Wrap](#wrap) | `wrap`, `no-wrap` | boolean | - |
 | [Overflow](#overflow) | `sv`, `sh`, `overflow` | boolean, `hidden` | - |
+| [Scrollbar Visibility](#scrollbar-visibility) | `sbv` | `touch`, `always` | - |
 | [Padding](#padding) | `p`, `pt`, `pr`, `pb`, `pl`, `pv`, `ph` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 | [Margin](#margin) | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
 | [Gap](#gap) | `g`, `gh`, `gv` | `xs`, `sm`, `md`, `lg`, `xl` | - |
@@ -401,7 +402,7 @@ Use `sv` for vertical scroll, `sh` for horizontal scroll, or `overflow="hidden"`
 - Every `sh` / `sv` surface automatically uses Rettangoli's thin overlay scrollbar; there is no separate opt-in scrollbar mode.
 - The browser-painted rail is hidden completely. The arrowless Rettangoli track and thumb sit over the scrollport and reserve no layout gutter.
 - A scrolling surface establishes a positioning context for the overlay when `pos` is otherwise unset, so absolutely positioned children resolve against the scrolling host. Explicit responsive `pos` values still control the host's own positioning mode.
-- The overlay is hidden at rest, appears while a mouse pointer hovers the view, and remains visible while its thumb is being dragged.
+- The overlay is hidden at rest, appears while a mouse pointer hovers the view or while the view is scrolled by touch or pen (hiding again after one idle second), and remains visible while its thumb is being dragged. Use [`sbv`](#scrollbar-visibility) to keep it visible at rest.
 - Wheel, touch, keyboard, programmatic scrolling, `scrollTop` / `scrollLeft`, and host `scroll` events remain browser-native.
 - Colors and visible thickness come from the shared scrollbar CSS variables; views do not hard-code scrollbar colors.
 - `overflow="hidden"` clips content and takes precedence over scroll flags.
@@ -445,6 +446,35 @@ Use `sv` for vertical scroll, `sh` for horizontal scroll, or `overflow="hidden"`
     <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
     <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
     <rtgl-view bgc="ac" w="100" h="50"></rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+```
+
+### Scrollbar Visibility
+
+`sbv` keeps a scroll view's overlay visible and draggable at rest while its content overflows. It applies only to that view and has no effect without `sh` / `sv`.
+
+| Value | Mouse or trackpad | Touch |
+| --- | --- | --- |
+| unset | shown on hover | shown while scrolling |
+| `touch` | shown on hover | always visible |
+| `always` | always visible | always visible |
+
+`touch` follows `@media (hover: none)`: it applies when the primary input cannot hover, such as phones and tablets. Touchscreen laptops keep hover reveal.
+
+```html codePreview
+<rtgl-view d="h" g="lg" w="f">
+  <rtgl-view bgc="mu" w="200" h="100" sv sbv="touch" g="sm">
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view bgc="mu" w="200" h="100" sv sbv="always" g="sm">
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
+    <rtgl-view bgc="ac" w="f" h="50"></rtgl-view>
   </rtgl-view>
 </rtgl-view>
 ```

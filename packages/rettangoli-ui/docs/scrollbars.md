@@ -16,6 +16,8 @@
 - Keep the overlay above positioned/slotted content at every authored `z-index`, so content cannot cover the thumb or intercept its pointer input. Isolate that stacking priority inside the scrolling host so it cannot outrank neighboring UI; browser top-layer UI such as modal dialogs remains above the scroll surface.
 - Use a 4px painted track/thumb inset 2px from the outer scrollport edge with a 10px radius and 60% / 70% / 80% normal, hover, and active opacity. Keep it inside a larger edge-aligned transparent pointer target. These visual dimensions must not become content padding or a layout gutter.
 - Keep overlays hidden at rest, reveal them on host mouse hover, and keep them visible during pointer-captured dragging.
+- Touch and pen input cannot hover, so a scroll that follows touch or pen input on the scroller reveals its overlay until the scroller has been idle for one second. Scrolls without preceding touch or pen input on that scroller, such as mouse-wheel, keyboard, or programmatic scrolling, keep the hover rule.
+- `sbv` (scrollbar visibility) is the only visibility opt-in and applies only to its own host. `sbv="always"` keeps overflowing axes visible and draggable at rest on every device. `sbv="touch"` does the same only when the primary input cannot hover (`@media (hover: none)`: phones and tablets, including a tablet with a trackpad attached) and keeps hover reveal on hover-capable devices such as touchscreen laptops. Unset or unknown values keep the default rules. It is CSS-only, so changing it at runtime applies immediately.
 - Use `--scrollbar-size`, `--scrollbar-track`, `--scrollbar-thumb`, and `--scrollbar-thumb-hover`; do not hard-code component or test colors.
 
 ## Implementation
@@ -43,7 +45,7 @@ This architecture follows the production pattern used by [Radix Scroll Area](htt
 
 ## Verification
 
-Automated VT coverage must include vertical, horizontal, bidirectional, responsive axis composition, transformed geometry, smooth-scroll thumb dragging, maximum-`z-index` slotted content, and grid cases. Assert idle/hover visibility, zero gutter after subtracting borders, thin visible thumbs, no arrow elements, out-of-flow grid/flex geometry, scroll-event delivery, native wheel/programmatic scrolling, thumb synchronization, topmost paint/hit testing, pointer-drag cleanup and event isolation, inherited RTL updates, transform-only scale changes, and immediate dragging with `scroll-behavior: smooth`. Also verify that a view without `sh` / `sv` creates no overlay and does not have its browser scrollbar suppressed.
+Automated VT coverage must include vertical, horizontal, bidirectional, responsive axis composition, transformed geometry, smooth-scroll thumb dragging, maximum-`z-index` slotted content, and grid cases. Assert idle/hover visibility, touch-scroll reveal and idle hide, `sbv="always"` and `sbv="touch"` visibility at rest (VT cannot emulate devices without hover, so `spec/overlayScrollbar.visibility.browser.mjs` covers both input modes in Chromium and WebKit), zero gutter after subtracting borders, thin visible thumbs, no arrow elements, out-of-flow grid/flex geometry, scroll-event delivery, native wheel/programmatic scrolling, thumb synchronization, topmost paint/hit testing, pointer-drag cleanup and event isolation, inherited RTL updates, transform-only scale changes, and immediate dragging with `scroll-behavior: smooth`. Also verify that a view without `sh` / `sv` creates no overlay and does not have its browser scrollbar suppressed.
 
 Run:
 

@@ -257,6 +257,7 @@ Canonical `inputType` values are kebab-case only:
 - set the boolean `sticky` attribute on `rtgl-form` when it is mounted in a bounded-height surface
 - sticky forms keep the header and action row visible while the form field region owns vertical scrolling
 - `bottom-spacer` accepts a non-negative pixel value and adds that space to the end of the field scroller without moving sticky actions
+- `sbv="touch|always"` forwards scrollbar visibility to the sticky field scroller only; the outer form container never receives it, and non-sticky forms ignore it because the caller owns the scroller (put `sbv` on that `sv` view)
 - sticky forms establish their own full-height wrapper chain; `h=f` is not required on the form
 - non-sticky forms using `h=f` preserve visible overflow so a bounded scrolling ancestor can reach the complete form
 - the containing surface must provide a definite or capped height; use `rtgl-dialog` with `md-layout=fixed-top` for inset mobile dialogs
@@ -349,9 +350,10 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - the overlay layer must remain out of flex/grid flow, reserve zero gutter, contain no arrow controls, and leave host scroll/client dimensions unchanged
 - the overlay layer must paint and receive pointer input above positioned/slotted user content at every authored `z-index`; isolate that priority inside the scrolling host so neighboring and browser top-layer UI remain above the scroll surface according to the host's own stacking order
 - scrolling hosts establish a positioning context for the overlay when `pos` is otherwise unset; preserve explicit responsive `pos` values for the host's own positioning mode and document that absolutely positioned children resolve against the host
-- tracks are thin, hidden at rest, shown on host mouse hover, and kept visible during pointer-captured thumb dragging
+- tracks are thin, hidden at rest, shown on host mouse hover, shown while touch- or pen-driven scrolling continues (hidden again after one idle second), and kept visible during pointer-captured thumb dragging
+- `sbv` (scrollbar visibility) opts a single `sh` / `sv` host into a visible overlay at rest: `sbv="always"` keeps overflowing axes visible and draggable on every device; `sbv="touch"` does so only when the primary input cannot hover (`@media (hover: none)`) and keeps hover reveal otherwise; unset or unknown values keep the default reveal rules; it affects only that host, not nested scrollers, does nothing without `sh` / `sv`, has no responsive variants, and is CSS-only so runtime changes apply immediately
 - implicit keyboard focus on a scroll surface uses the shared inset focus ring; forced-colors mode uses an inset system-color outline
-- there is no always-hidden or alternate scrollbar mode; every `sh` / `sv` surface uses the same hover-revealed overlay
+- there is no always-hidden or browser-painted scrollbar mode; every `sh` / `sv` surface uses the same overlay, and `sbv` only changes when that overlay is shown
 - use the existing scrollbar tokens for all paint and thickness; never add fixture-specific component colors
 - controller lifecycle must clean up scroll/load/resize/slot listeners, observers, animation frames, and pointer capture on disconnect
 - create the overlay DOM and observers lazily only for hosts that declare `sh` / `sv` (including responsive variants); do not suppress browser paint for unrelated CSS-driven overflow
@@ -382,7 +384,7 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 
 - use for explicit 2D column layouts
 - `cols` and `sm-cols` / `md-cols` / `lg-cols` / `xl-cols` accept positive integers and render equal-width tracks
-- shared spacing, sizing, border, background, visibility, overflow, and link attrs follow the same conventions as `rtgl-view`; `sh`, `sv`, and their responsive variants use the same overlay-scrollbar contract
+- shared spacing, sizing, border, background, visibility, overflow, and link attrs follow the same conventions as `rtgl-view`; `sh`, `sv`, and their responsive variants, plus `sbv`, use the same overlay-scrollbar contract
 - flex-only attrs such as `d`, `wrap`, `no-wrap`, `ah`, and `av` do not apply
 
 Components built via `@rettangoli/fe`:

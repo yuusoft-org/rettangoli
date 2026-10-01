@@ -76,6 +76,28 @@ describe("rtgl-form bound store integration", () => {
   });
 
   it.each([
+    [{ sticky: true, sbv: "touch" }, "sbv=touch"],
+    [{ sticky: true, sbv: "always" }, "sbv=always"],
+    [{ sticky: true, sbv: "sometimes" }, ""],
+    [{ sticky: true }, ""],
+    [{ sbv: "always" }, ""],
+  ])(
+    "forwards scrollbar visibility props %j only to the sticky field scroller",
+    (props, expected) => {
+      const store = bindStore(
+        formStore,
+        { form: {}, "data-testid": "form", ...props },
+        {},
+      );
+
+      const viewData = store.selectViewData();
+
+      expect(viewData.fieldsAttrString).toBe(expected);
+      expect(viewData.containerAttrString).toBe("data-testid=form");
+    },
+  );
+
+  it.each([
     [-24, 0],
     ["invalid", 0],
   ])("normalizes bottom spacer %j to %d pixels", (bottomSpacer, expected) => {

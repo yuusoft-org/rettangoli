@@ -4,6 +4,11 @@
 
 ### Improvements
 
+- Overlay scrollbars: touch- and pen-driven scrolling now reveals the overlay on `rtgl-view` and `rtgl-grid` scrollers until they have been idle for one second, so touch devices without hover show scroll position.
+- `rtgl-view` and `rtgl-grid`: added the opt-in `sbv` scrollbar visibility attribute. `sbv="always"` keeps a scroller's overflowing overlay visible and draggable at rest on every device; `sbv="touch"` does so only on devices whose primary input cannot hover and keeps hover reveal elsewhere.
+- `rtgl-form`: added `sbv` for sticky forms, forwarded only to the internal field scroller.
+- `rtgl-popover`: added `content-sbv`, forwarded to the scrolling content surface alongside `content-sv`.
+- `rtgl-card`: ignores `sbv` like the other scroll attrs, because the card shell never scrolls.
 - `rtgl-dialog`: prefer dynamic viewport widths so centered and fullscreen dialogs keep their correct width after iPad apps resume; retain legacy viewport-unit fallbacks.
 - `rtgl-tabs`: added reactive `s="sm|md|lg"` spacing presets with 34px, 38px, and 44px tray heights and `md` as the default; trays and individual tabs fit their labels, with horizontal scrolling in narrow containers, while preserving theme typography, colors, corner radii, and controlled selection events.
 - `rtgl-svg`: retain unchanged SVG markup across size updates and DOM moves while preserving icon replacement, late registration, and key resets.
