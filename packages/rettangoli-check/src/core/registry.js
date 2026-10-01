@@ -637,6 +637,149 @@ const extractPrimitiveAttrsFromSource = (sourceCode = "", filePath = "primitive.
   return attrs;
 };
 
+const HOST_SELECTOR_REGEX = /:host\(([^)]*)\)/g;
+const SELECTOR_ATTR_REGEX = /\[([a-zA-Z][a-zA-Z0-9-]*)\b(?:[~|^$*]?=[^\]]*)?\]/g;
+
+const collectHostSelectorAttrs = (sourceText = "", attrs = new Set()) => {
+  for (const hostMatch of sourceText.matchAll(HOST_SELECTOR_REGEX)) {
+    for (const attrMatch of hostMatch[1].matchAll(SELECTOR_ATTR_REGEX)) {
+      attrs.add(attrMatch[1]);
+    }
+  }
+  return attrs;
+};
+
+const walkAstNodes = (node, visit) => {
+  if (Array.isArray(node)) {
+    node.forEach((child) => walkAstNodes(child, visit));
+    return;
+  }
+  if (!node || typeof node !== "object") {
+    return;
+  }
+  visit(node);
+  Object.values(node).forEach((child) => walkAstNodes(child, visit));
+};
+
+const readModuleDeclarations = (filePath) => {
+  let program;
+  try {
+    program = parseProgramWithOxc({ sourceCode: readFileSync(filePath, "utf8"), filePath });
+  } catch {
+    return null;
+  }
+  if (!program) {
+    return null;
+  }
+
+  const locals = new Map();
+  const exportsByName = new Map();
+  const addDeclarations = (declaration) => {
+    if (declaration?.type !== "VariableDeclaration") {
+      return;
+    }
+    declaration.declarations.forEach((declarator) => {
+      const name = getIdentifierName(declarator.id);
+      if (name) {
+        locals.set(name, declarator.init);
+      }
+    });
+  };
+
+  program.body.forEach((statement) => {
+    if (statement?.type === "VariableDeclaration") {
+      addDeclarations(statement);
+      return;
+    }
+    if (statement?.type !== "ExportNamedDeclaration") {
+      return;
+    }
+    addDeclarations(statement.declaration);
+    (statement.declaration?.declarations || []).forEach((declarator) => {
+      const name = getIdentifierName(declarator.id);
+      if (name) {
+        exportsByName.set(name, name);
+      }
+    });
+    if (!statement.source) {
+      (statement.specifiers || []).forEach((specifier) => {
+        const exportedName = getIdentifierName(specifier.exported) || getStringLiteralValue(specifier.exported);
+        const localName = getIdentifierName(specifier.local);
+        if (exportedName && localName) {
+          exportsByName.set(exportedName, localName);
+        }
+      });
+    }
+  });
+
+  return { program, locals, exportsByName };
+};
+
+// Collects `:host([attr])` selectors from a module-level value, following
+// same-module constants it interpolates (for example composed style strings).
+const collectHostAttrsFromValue = ({ moduleInfo, localName, attrs, visited = new Set() }) => {
+  if (visited.has(localName) || !moduleInfo.locals.has(localName)) {
+    return;
+  }
+  visited.add(localName);
+  walkAstNodes(moduleInfo.locals.get(localName), (node) => {
+    if (node.type === "TemplateLiteral") {
+      node.quasis.forEach((quasi) => {
+        collectHostSelectorAttrs(quasi?.value?.cooked ?? quasi?.value?.raw ?? "", attrs);
+      });
+    } else if (node.type === "Literal" || node.type === "StringLiteral") {
+      collectHostSelectorAttrs(getStringLiteralValue(node) || "", attrs);
+    } else if (node.type === "Identifier") {
+      collectHostAttrsFromValue({ moduleInfo, localName: node.name, attrs, visited });
+    }
+  });
+};
+
+// Primitives inherit host attributes from shared style exports they import,
+// such as the overlay scrollbar's `:host([sbv="touch"])` rules. Only the
+// imported bindings are inspected, so helpers imported from a shared module do
+// not pull in unrelated selectors, and other primitive modules are skipped.
+const collectImportedHostAttrs = ({ primitivePath, srcDir }) => {
+  const attrs = new Set();
+  const primitivesDir = path.join(srcDir, "primitives") + path.sep;
+  let program;
+  try {
+    program = parseProgramWithOxc({ sourceCode: readFileSync(primitivePath, "utf8"), filePath: primitivePath });
+  } catch {
+    return attrs;
+  }
+  if (!program) {
+    return attrs;
+  }
+
+  program.body.forEach((statement) => {
+    const specifier = statement?.type === "ImportDeclaration" ? getStringLiteralValue(statement.source) : null;
+    if (!specifier?.startsWith(".")) {
+      return;
+    }
+    const modulePath = path.resolve(path.dirname(primitivePath), specifier);
+    if (!modulePath.startsWith(srcDir + path.sep) || modulePath.startsWith(primitivesDir) || !existsSync(modulePath)) {
+      return;
+    }
+    const moduleInfo = readModuleDeclarations(modulePath);
+    if (!moduleInfo) {
+      return;
+    }
+    (statement.specifiers || []).forEach((importSpecifier) => {
+      if (importSpecifier?.type !== "ImportSpecifier") {
+        return;
+      }
+      const importedName = getIdentifierName(importSpecifier.imported) || getStringLiteralValue(importSpecifier.imported);
+      const localName = moduleInfo.exportsByName.get(importedName);
+      if (localName) {
+        collectHostAttrsFromValue({ moduleInfo, localName, attrs });
+      }
+    });
+  });
+
+  return attrs;
+};
+
 const expandWithResponsiveAndHover = (baseKeys = []) => {
   const breakpoints = ["sm", "md", "lg", "xl"];
   const result = new Set();
@@ -722,6 +865,12 @@ const getPrimitiveContractsFromEntry = async ({ entryPath, globalStyleAttrs = ne
         contract.attrs.add(attr);
       });
       extractPrimitiveAttrsFromSource(primitiveSource, absolutePrimitivePath).forEach((attr) => {
+        contract.attrs.add(attr);
+      });
+      collectImportedHostAttrs({
+        primitivePath: absolutePrimitivePath,
+        srcDir: path.dirname(entryPath),
+      }).forEach((attr) => {
         contract.attrs.add(attr);
       });
       globalStyleAttrs.forEach((attr) => {

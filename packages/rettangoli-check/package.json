@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/check",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Static contract checker for Rettangoli projects",
   "type": "module",
   "repository": {
@@ -17,7 +17,7 @@
     "rtgl-check": "./src/cli/bin.js"
   },
   "scripts": {
-    "ci": "npm run test:no-fe-contracts-import && npm run test:ui-registry-resolution-contract && npm run test:runtime-compatibility && npm run test:scenarios",
+    "ci": "npm run test:no-fe-contracts-import && npm run test:ui-registry-resolution-contract && npm run test:ui-primitive-imported-host-attrs-contract && npm run test:runtime-compatibility && npm run test:scenarios",
     "test:runtime-compatibility": "node ./scripts/test-runtime-compatibility.js",
     "test:package": "node ./scripts/package-smoke-test.js",
     "test:scenarios": "node ./test/run-scenarios.js",
@@ -28,6 +28,7 @@
     "test:jempl-parser-contract": "node ./scripts/test-jempl-parser-contract.js",
     "test:scope-graph-range-contract": "node ./scripts/test-scope-graph-range-contract.js",
     "test:ui-registry-resolution-contract": "node ./scripts/test-ui-registry-resolution-contract.js",
+    "test:ui-primitive-imported-host-attrs-contract": "node ./scripts/test-ui-primitive-imported-host-attrs-contract.js",
     "test:fe-frontend-component-identity-contract": "node ./scripts/test-fe-frontend-component-identity-contract.js",
     "test:fe-frontend-handler-contract": "node ./scripts/test-fe-frontend-handler-contract.js",
     "test:fe-frontend-lifecycle-contract": "node ./scripts/test-fe-frontend-lifecycle-contract.js",

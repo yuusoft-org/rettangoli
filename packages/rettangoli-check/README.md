@@ -94,7 +94,10 @@ options remain contract errors.
 UI contracts resolve from the checked project's installed UI version before the
 checker's fallback dependency. Registry generation includes schema properties,
 primitive attributes, and attributes explicitly used by component `:host(...)`
-styles. Application primitives are discovered from static `customElements.define`
+styles. UI primitives also receive `:host([attr])` attributes from the shared
+style exports they import (for example `rtgl-view`'s `sbv` from the overlay
+scrollbar styles); only the imported bindings are inspected, so other selectors in
+the same shared module, or in other primitive modules, are not registered. Application primitives are discovered from static `customElements.define`
 calls in `src`, including named imports, literal tag constants, setter properties,
 and observed attributes. Application modules are never executed by this discovery.
 

@@ -21,7 +21,7 @@
     },
     "packages/rettangoli-check": {
       "name": "@rettangoli/check",
-      "version": "0.1.7",
+      "version": "0.1.8",
       "bin": {
         "rtgl-check": "./src/cli/bin.js",
       },
@@ -35,12 +35,12 @@
     },
     "packages/rettangoli-cli": {
       "name": "rtgl",
-      "version": "2.2.0",
+      "version": "2.2.1",
       "bin": {
         "rtgl": "cli.js",
       },
       "dependencies": {
-        "@rettangoli/check": "0.1.7",
+        "@rettangoli/check": "0.1.8",
         "@rettangoli/fe": "1.5.0",
         "@rettangoli/sites": "1.4.1",
         "@rettangoli/ui": "1.23.0",
