@@ -182,7 +182,7 @@ Border width variables for consistent stroke weights.
 
 ## Scrollbars
 
-Every `rtgl-view` and `rtgl-grid` with `sh` or `sv` uses the same overlay scrollbar tokens. The overlay is hidden at rest, appears on mouse hover, and never reserves layout space.
+Every `rtgl-view` and `rtgl-grid` with `sh` or `sv` uses the same overlay scrollbar tokens. The overlay is hidden at rest, appears on mouse hover or while touch scrolling, and never reserves layout space. Set `sbv="touch"` or `sbv="always"` on a scroll surface to keep it visible at rest.
 
 ```css
 --scrollbar-size: 4px; /* Visible track and thumb thickness */

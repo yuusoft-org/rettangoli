@@ -1,0 +1,341 @@
+---
+title: View - Scrollbar - Visibility
+description: Verifies the `sbv` scrollbar visibility attribute and touch-scroll reveal on a hover-capable device.
+waitStrategy: selector
+waitSelector: "#default-scroller[data-scroll-ready]"
+skipInitialScreenshot: true
+specs:
+  - Without `sbv`, the overlay stays hidden at rest and during mouse-driven scrolling.
+  - Touch-driven scrolling reveals the default overlay, and it hides again after one idle second.
+  - "`sbv=\"always\"` keeps an overflowing overlay visible and interactive at rest on views and grids."
+  - "`sbv=\"always\"` shows nothing when the content fits."
+  - "`sbv=\"touch\"` keeps hover reveal on hover-capable devices; `spec/overlayScrollbar.visibility.browser.mjs` covers devices without hover, which VT cannot emulate."
+  - Changing `sbv` at runtime applies immediately.
+steps:
+  - action: move
+    x: 1
+    y: 1
+  - action: wait
+    ms: 50
+  - action: assert
+    type: js
+    fn: getScrollbarVisibilityState
+    value:
+      hovered: false
+      defaultTrackVisible: false
+      defaultScrolled: false
+      thumbAdvanced: false
+      alwaysTrackVisible: true
+      fittingOverlayEnabled: false
+      touchTrackVisible: false
+      gridTrackVisible: true
+      runtimeTrackVisible: false
+  - action: screenshot
+  - action: customEvent
+    name: vt:scroll-with-pointer
+    detail:
+      pointerType: touch
+      scrollTop: 120
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getScrollbarVisibilityState
+    value:
+      hovered: false
+      defaultTrackVisible: true
+      defaultScrolled: true
+      thumbAdvanced: true
+      alwaysTrackVisible: true
+      fittingOverlayEnabled: false
+      touchTrackVisible: false
+      gridTrackVisible: true
+      runtimeTrackVisible: false
+  - action: screenshot
+  - action: wait
+    ms: 1100
+  - action: assert
+    type: js
+    fn: getScrollbarVisibilityState
+    value:
+      hovered: false
+      defaultTrackVisible: false
+      defaultScrolled: true
+      thumbAdvanced: true
+      alwaysTrackVisible: true
+      fittingOverlayEnabled: false
+      touchTrackVisible: false
+      gridTrackVisible: true
+      runtimeTrackVisible: false
+  - action: customEvent
+    name: vt:scroll-with-pointer
+    detail:
+      pointerType: mouse
+      scrollTop: 240
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getScrollbarVisibilityState
+    value:
+      hovered: false
+      defaultTrackVisible: false
+      defaultScrolled: true
+      thumbAdvanced: true
+      alwaysTrackVisible: true
+      fittingOverlayEnabled: false
+      touchTrackVisible: false
+      gridTrackVisible: true
+      runtimeTrackVisible: false
+  - action: select
+    selector: "#touch-scroller"
+    steps:
+      - action: hover
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getScrollbarVisibilityState
+    value:
+      hovered: true
+      defaultTrackVisible: false
+      defaultScrolled: true
+      thumbAdvanced: true
+      alwaysTrackVisible: true
+      fittingOverlayEnabled: false
+      touchTrackVisible: true
+      gridTrackVisible: true
+      runtimeTrackVisible: false
+  - action: screenshot
+  - action: move
+    x: 1
+    y: 1
+  - action: customEvent
+    name: vt:set-runtime-sbv
+    detail:
+      value: always
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getScrollbarVisibilityState
+    value:
+      hovered: false
+      defaultTrackVisible: false
+      defaultScrolled: true
+      thumbAdvanced: true
+      alwaysTrackVisible: true
+      fittingOverlayEnabled: false
+      touchTrackVisible: false
+      gridTrackVisible: true
+      runtimeTrackVisible: true
+  - action: screenshot
+  - action: customEvent
+    name: vt:set-runtime-sbv
+    detail:
+      value: none
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getScrollbarVisibilityState
+    value:
+      hovered: false
+      defaultTrackVisible: false
+      defaultScrolled: true
+      thumbAdvanced: true
+      alwaysTrackVisible: true
+      fittingOverlayEnabled: false
+      touchTrackVisible: false
+      gridTrackVisible: true
+      runtimeTrackVisible: false
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-text s="h4">Scrollbar visibility</rtgl-text>
+  <rtgl-text c="mu-fg">Touch scrolling reveals the default overlay. sbv="always" keeps it visible at rest; sbv="touch" does so only without hover.</rtgl-text>
+
+  <rtgl-view d="h" g="lg" wrap>
+    <rtgl-view d="v" g="sm">
+      <rtgl-text c="mu-fg">Default (touch reveal)</rtgl-text>
+      <rtgl-view
+        id="default-scroller"
+        w="260"
+        h="220"
+        sv
+        bgc="bg"
+        bc="bo"
+        bw="xs"
+        br="md"
+        p="md" g="sm">
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 01</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 02</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 03</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 04</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 05</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 06</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 07</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 08</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 09</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 10</rtgl-text></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+    <rtgl-view d="v" g="sm">
+      <rtgl-text c="mu-fg">sbv="always" (overflowing)</rtgl-text>
+      <rtgl-view
+        id="always-scroller"
+        w="260"
+        h="220"
+        sv
+        bgc="bg"
+        bc="bo"
+        bw="xs"
+        br="md"
+        p="md" g="sm" sbv="always">
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 01</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 02</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 03</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 04</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 05</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 06</rtgl-text></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+    <rtgl-view d="v" g="sm">
+      <rtgl-text c="mu-fg">sbv="always" (fits)</rtgl-text>
+      <rtgl-view
+        id="fitting-scroller"
+        w="260"
+        h="220"
+        sv
+        bgc="bg"
+        bc="bo"
+        bw="xs"
+        br="md"
+        p="md" g="sm" sbv="always">
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 01</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 02</rtgl-text></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+    <rtgl-view d="v" g="sm">
+      <rtgl-text c="mu-fg">sbv="touch" (overflowing)</rtgl-text>
+      <rtgl-view
+        id="touch-scroller"
+        w="260"
+        h="220"
+        sv
+        bgc="bg"
+        bc="bo"
+        bw="xs"
+        br="md"
+        p="md" g="sm" sbv="touch">
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 01</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 02</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 03</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 04</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 05</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 06</rtgl-text></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+    <rtgl-view d="v" g="sm">
+      <rtgl-text c="mu-fg">Grid sbv="always"</rtgl-text>
+      <rtgl-grid
+        id="grid-scroller"
+        w="260"
+        h="220"
+        sv
+        bgc="bg"
+        bc="bo"
+        bw="xs"
+        br="md"
+        p="md" cols="1" sbv="always">
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 01</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 02</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 03</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 04</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 05</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 06</rtgl-text></rtgl-view>
+      </rtgl-grid>
+    </rtgl-view>
+    <rtgl-view d="v" g="sm">
+      <rtgl-text c="mu-fg">Runtime sbv</rtgl-text>
+      <rtgl-view
+        id="runtime-scroller"
+        w="260"
+        h="220"
+        sv
+        bgc="bg"
+        bc="bo"
+        bw="xs"
+        br="md"
+        p="md" g="sm">
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 01</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 02</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 03</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="ac" br="sm" p="md"><rtgl-text>Row 04</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="se" br="sm" p="md"><rtgl-text>Row 05</rtgl-text></rtgl-view>
+        <rtgl-view w="f" h="48" bgc="mu" br="sm" p="md"><rtgl-text>Row 06</rtgl-text></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const scrollers = Object.fromEntries(
+    ["default", "always", "fitting", "touch", "grid", "runtime"].map((name) => [
+      name,
+      document.getElementById(`${name}-scroller`),
+    ]),
+  );
+
+  const getTrack = (scroller) =>
+    scroller.shadowRoot.querySelector('[data-rtgl-scrollbar-track="vertical"]');
+  const getThumb = (scroller) =>
+    scroller.shadowRoot.querySelector('[data-rtgl-scrollbar-thumb="vertical"]');
+  const isTrackVisible = (scroller) => {
+    const track = getTrack(scroller);
+    const style = getComputedStyle(track);
+    return scroller.scrollHeight > scroller.clientHeight &&
+      track.hasAttribute("data-visible") &&
+      style.opacity === "1" &&
+      style.pointerEvents === "auto" &&
+      track.getBoundingClientRect().height > 0;
+  };
+
+  window.addEventListener("vt:scroll-with-pointer", (event) => {
+    const { pointerType, scrollTop } = event.detail;
+    scrollers.default.firstElementChild.dispatchEvent(new PointerEvent("pointerdown", {
+      bubbles: true,
+      composed: true,
+      pointerType,
+    }));
+    scrollers.default.scrollTop = Number(scrollTop);
+  });
+
+  window.addEventListener("vt:set-runtime-sbv", (event) => {
+    if (event.detail.value === "none") {
+      scrollers.runtime.removeAttribute("sbv");
+    } else {
+      scrollers.runtime.setAttribute("sbv", event.detail.value);
+    }
+  });
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const initialThumbTop = getThumb(scrollers.default).getBoundingClientRect().top;
+
+    window.getScrollbarVisibilityState = () => ({
+      hovered: Object.values(scrollers).some((scroller) => scroller.matches(":hover")),
+      defaultTrackVisible: isTrackVisible(scrollers.default),
+      defaultScrolled: scrollers.default.scrollTop > 0,
+      thumbAdvanced:
+        getThumb(scrollers.default).getBoundingClientRect().top > initialThumbTop,
+      alwaysTrackVisible: isTrackVisible(scrollers.always),
+      fittingOverlayEnabled: scrollers.fitting.shadowRoot
+        .querySelector("[data-rtgl-scrollbar-layer]")
+        .hasAttribute("data-enabled"),
+      touchTrackVisible: isTrackVisible(scrollers.touch),
+      gridTrackVisible: isTrackVisible(scrollers.grid),
+      runtimeTrackVisible: isTrackVisible(scrollers.runtime),
+    });
+
+    scrollers.default.setAttribute("data-scroll-ready", "");
+  }));
+</script>

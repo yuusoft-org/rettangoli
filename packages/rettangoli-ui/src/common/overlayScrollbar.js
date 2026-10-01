@@ -11,6 +11,10 @@ const CONTENT_MUTATION_OPTIONS = {
 // The shadow layer follows the slot in paint order, so an equal maximum keeps
 // the scrollbar above even maximum-priority slotted content.
 const OVERLAY_SCROLLBAR_Z_INDEX = 2147483647;
+// Touch and pen scrolling cannot hover, so those scrolls reveal the overlay
+// until the native scroller has been idle for this long.
+const TOUCH_SCROLL_REVEAL_MS = 1000;
+const TOUCH_POINTER_TYPES = new Set(["pen", "touch"]);
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
@@ -285,9 +289,19 @@ export const overlayScrollbarStyles = `
     }
   }
 
-  :host([data-rtgl-scrollbar-dragging]) [data-rtgl-scrollbar-track][data-visible] {
+  :host([data-rtgl-scrollbar-dragging]) [data-rtgl-scrollbar-track][data-visible],
+  :host([sbv="always"]) [data-rtgl-scrollbar-track][data-visible],
+  [data-rtgl-scrollbar-layer][data-touch-scrolling] [data-rtgl-scrollbar-track][data-visible] {
     opacity: 1;
     pointer-events: auto;
+  }
+
+  /* sbv="touch" keeps hover reveal unless the primary input cannot hover. */
+  @media (hover: none) {
+    :host([sbv="touch"]) [data-rtgl-scrollbar-track][data-visible] {
+      opacity: 1;
+      pointer-events: auto;
+    }
   }
 
   @media (forced-colors: active) {
@@ -339,10 +353,21 @@ export class OverlayScrollbarController {
       vertical: null,
     };
     this._observedChildren = new Set();
+    this._lastPointerType = null;
+    this._touchScrollTimer = null;
 
-    this._handleScroll = () => this._schedulePositionUpdate();
+    this._handleScroll = () => {
+      if (TOUCH_POINTER_TYPES.has(this._lastPointerType)) {
+        this._revealForTouchScroll();
+      }
+      this._schedulePositionUpdate();
+    };
+    this._handlePointerDown = (event) => {
+      this._lastPointerType = event.pointerType;
+    };
     this._handlePointerEnter = () => this.refresh();
-    this._handlePointerMove = () => {
+    this._handlePointerMove = (event) => {
+      this._lastPointerType = event.pointerType;
       if (
         this._measurements &&
         getComputedStyle(this.host).direction !== this._measurements.direction
@@ -464,6 +489,7 @@ export class OverlayScrollbarController {
     this._active = true;
     this._ensureElements();
     this.host.addEventListener("scroll", this._handleScroll, { passive: true });
+    this.host.addEventListener("pointerdown", this._handlePointerDown, { passive: true });
     this.host.addEventListener("pointerenter", this._handlePointerEnter, { passive: true });
     this.host.addEventListener("pointermove", this._handlePointerMove, { passive: true });
     this.host.addEventListener("load", this._handleContentLoad, true);
@@ -496,6 +522,7 @@ export class OverlayScrollbarController {
 
     this._active = false;
     this.host.removeEventListener("scroll", this._handleScroll);
+    this.host.removeEventListener("pointerdown", this._handlePointerDown);
     this.host.removeEventListener("pointerenter", this._handlePointerEnter);
     this.host.removeEventListener("pointermove", this._handlePointerMove);
     this.host.removeEventListener("load", this._handleContentLoad, true);
@@ -508,6 +535,8 @@ export class OverlayScrollbarController {
     this._mutationObserver = null;
     this._observedChildren.clear();
     this._finishDrag();
+    this._endTouchScrollReveal();
+    this._lastPointerType = null;
     this.layer?.removeAttribute("data-enabled");
     this.vertical?.track.removeAttribute("data-visible");
     this.horizontal?.track.removeAttribute("data-visible");
@@ -528,6 +557,29 @@ export class OverlayScrollbarController {
     }
 
     this._scheduleFrame();
+  }
+
+  _revealForTouchScroll() {
+    if (!this.layer) {
+      return;
+    }
+
+    this.layer.setAttribute("data-touch-scrolling", "");
+    if (this._touchScrollTimer !== null) {
+      clearTimeout(this._touchScrollTimer);
+    }
+    this._touchScrollTimer = setTimeout(
+      () => this._endTouchScrollReveal(),
+      TOUCH_SCROLL_REVEAL_MS,
+    );
+  }
+
+  _endTouchScrollReveal() {
+    if (this._touchScrollTimer !== null) {
+      clearTimeout(this._touchScrollTimer);
+      this._touchScrollTimer = null;
+    }
+    this.layer?.removeAttribute("data-touch-scrolling");
   }
 
   _scheduleFrame() {
