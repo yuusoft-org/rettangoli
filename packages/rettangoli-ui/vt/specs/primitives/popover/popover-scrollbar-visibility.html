@@ -1,0 +1,140 @@
+---
+title: Popover - Scrollbar Visibility
+description: Verifies `content-sbv` forwards scrollbar visibility to the popover's scrolling content surface on a hover-capable device.
+skipInitialScreenshot: true
+specs:
+  - "`content-sbv=\"always\"` keeps the content surface overlay visible and interactive at rest."
+  - "`content-sbv=\"touch\"` keeps hover reveal on hover-capable devices; `spec/overlayScrollbar.visibility.browser.mjs` covers devices without hover."
+  - Removing `content-sbv` clears the forwarded attribute.
+steps:
+  - action: waitFor
+    selector: "#popover[positioned]"
+    state: attached
+  - action: move
+    x: 900
+    y: 600
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getPopoverScrollbarState
+    value:
+      forwarded: always
+      overflowing: true
+      hovered: false
+      trackVisible: true
+  - action: screenshot
+  - action: customEvent
+    name: vt:set-content-sbv
+    detail:
+      value: touch
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: getPopoverScrollbarState
+    value:
+      forwarded: touch
+      overflowing: true
+      hovered: false
+      trackVisible: false
+  - action: move
+    x: 180
+    y: 140
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getPopoverScrollbarState
+    value:
+      forwarded: touch
+      overflowing: true
+      hovered: true
+      trackVisible: true
+  - action: screenshot
+  - action: move
+    x: 900
+    y: 600
+  - action: customEvent
+    name: vt:set-content-sbv
+    detail:
+      value: none
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    fn: getPopoverScrollbarState
+    value:
+      forwarded: null
+      overflowing: true
+      hovered: false
+      trackVisible: false
+---
+<style>
+  #popover-content {
+    width: 100%;
+  }
+
+  .row {
+    box-sizing: border-box;
+    flex-shrink: 0;
+    height: 40px;
+    padding: 0 12px;
+    line-height: 40px;
+    color: var(--foreground);
+    border-bottom: 1px solid var(--border);
+  }
+</style>
+<rtgl-popover
+  id="popover"
+  open
+  no-overlay
+  x="40"
+  y="60"
+  content-w="280"
+  content-h="160"
+  content-sv="true"
+  content-sbv="always"
+  content-ph="none"
+  content-pv="none"
+>
+  <div id="popover-content">
+    <div class="row">Popover row 01</div>
+    <div class="row">Popover row 02</div>
+    <div class="row">Popover row 03</div>
+    <div class="row">Popover row 04</div>
+    <div class="row">Popover row 05</div>
+    <div class="row">Popover row 06</div>
+    <div class="row">Popover row 07</div>
+    <div class="row">Popover row 08</div>
+    <div class="row">Popover row 09</div>
+    <div class="row">Popover row 10</div>
+  </div>
+</rtgl-popover>
+<script>
+  const popover = document.getElementById("popover");
+
+  window.addEventListener("vt:set-content-sbv", (event) => {
+    if (event.detail.value === "none") {
+      popover.removeAttribute("content-sbv");
+    } else {
+      popover.setAttribute("content-sbv", event.detail.value);
+    }
+  });
+
+  window.getPopoverScrollbarState = () => {
+    const surface = popover.content;
+    const track = surface.shadowRoot.querySelector(
+      '[data-rtgl-scrollbar-track="vertical"]',
+    );
+    const style = getComputedStyle(track);
+    return {
+      forwarded: surface.getAttribute("sbv"),
+      overflowing: surface.scrollHeight > surface.clientHeight,
+      hovered: surface.matches(":hover"),
+      trackVisible: track.hasAttribute("data-visible") &&
+        style.opacity === "1" &&
+        style.pointerEvents === "auto",
+    };
+  };
+</script>

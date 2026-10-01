@@ -4,6 +4,7 @@
 // - unset: hidden at rest, revealed by hover or while touch scrolling
 // - sbv="touch": visible at rest only when the primary input cannot hover
 // - sbv="always": visible at rest on every device
+// rtgl-popover forwards content-sbv to its scrolling content surface.
 import assert from "node:assert/strict";
 import { build } from "esbuild";
 import { chromium, webkit } from "playwright";
@@ -14,9 +15,11 @@ const bundle = await build({
       import createView from './src/primitives/view.js';
       import createGrid from './src/primitives/grid.js';
       import createDialog from './src/primitives/dialog.js';
+      import createPopover from './src/primitives/popover.js';
       customElements.define('rtgl-view', createView({}));
       customElements.define('rtgl-grid', createGrid({}));
       customElements.define('rtgl-dialog', createDialog({}));
+      customElements.define('rtgl-popover', createPopover({}));
     `,
     resolveDir: process.cwd(),
   },
@@ -42,6 +45,9 @@ const content = `
     ${scroller("rtgl-grid", "grid-always", 'sbv="always"')}
     ${scroller("rtgl-grid", "grid-touch", 'sbv="touch"')}
   </div>
+  <rtgl-popover id="popover" x="200" y="420" place="bs" content-w="200" content-h="120" content-sv content-sbv="touch">
+    <div style="height:600px;flex-shrink:0">Popover content</div>
+  </rtgl-popover>
   <rtgl-dialog id="dialog" s="md">
     <div slot="content">
       <div id="dialog-header" style="height:48px">Header</div>
@@ -127,6 +133,30 @@ const openDialog = async (page) => {
   await settle(page, 250);
 };
 
+const readPopoverState = async (page, contentSbv) => {
+  await page.evaluate(async (contentSbv) => {
+    const popover = document.getElementById("popover");
+    popover.setAttribute("content-sbv", contentSbv);
+    popover.setAttribute("open", "");
+  }, contentSbv);
+  await settle(page, 250);
+  return page.evaluate(() => {
+    const surface = document.getElementById("popover").content;
+    const track = surface.shadowRoot.querySelector(
+      '[data-rtgl-scrollbar-track="vertical"]',
+    );
+    const style = getComputedStyle(track);
+    return {
+      sbv: surface.getAttribute("sbv"),
+      state: !track.hasAttribute("data-visible")
+        ? "none"
+        : style.opacity === "1" && style.pointerEvents === "auto"
+          ? "visible"
+          : "hidden",
+    };
+  });
+};
+
 const openPage = async (browser, options) => {
   const page = await browser.newPage(options);
   await page.setContent(content);
@@ -183,6 +213,13 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
     assert.equal(await setSbv(touchPage, "touch"), "visible");
     assert.equal(await setSbv(touchPage, null), "hidden");
 
+    assert.deepEqual(
+      await readPopoverState(touchPage, "touch"),
+      { sbv: "touch", state: "visible" },
+      `${name}: popover content-sbv="touch" on touch`,
+    );
+    await touchPage.evaluate(() => document.getElementById("popover").removeAttribute("open"));
+
     await openDialog(touchPage);
     assert.equal(
       (await readStates(touchPage, ["dialog-touch"]))["dialog-touch"],
@@ -238,6 +275,19 @@ for (const [name, engine] of Object.entries({ chromium, webkit })) {
       await mousePage.evaluate(() => document.getElementById("always").scrollTop > 0),
       `${name}: dragging the sbv="always" thumb scrolls`,
     );
+
+    await mousePage.mouse.move(1, 1);
+    assert.deepEqual(
+      await readPopoverState(mousePage, "touch"),
+      { sbv: "touch", state: "hidden" },
+      `${name}: popover content-sbv="touch" with a mouse at rest`,
+    );
+    assert.deepEqual(
+      await readPopoverState(mousePage, "always"),
+      { sbv: "always", state: "visible" },
+      `${name}: popover content-sbv="always" with a mouse at rest`,
+    );
+    await mousePage.evaluate(() => document.getElementById("popover").removeAttribute("open"));
 
     await openDialog(mousePage);
     await mousePage.mouse.move(1, 1);

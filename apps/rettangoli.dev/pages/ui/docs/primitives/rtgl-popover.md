@@ -50,6 +50,8 @@ Use `open` as the source of truth, and set `x`/`y` from the trigger event.
 | Position Y | `y` | number (viewport px) | `0` |
 | Place | `place` | `t`, `ts`, `te`, `r`, `rs`, `re`, `b`, `bs`, `be`, `l`, `ls`, `le` | `bs` |
 | No Overlay | `no-overlay` | boolean | - |
+| Content Scroll | `content-sv` | boolean | - |
+| Content Scrollbar Visibility | `content-sbv` | `touch`, `always` | - |
 
 ## Events
 

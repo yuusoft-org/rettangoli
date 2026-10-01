@@ -291,7 +291,10 @@ const blacklistedAttrs = [
   "ph",
   "pv",
   "bottomSpacer",
+  "sbv",
 ];
+
+const SCROLLBAR_VISIBILITY_VALUES = new Set(["touch", "always"]);
 
 const stringifyAttrs = (props = {}) => {
   return Object.entries(props)
@@ -877,6 +880,11 @@ export const selectViewData = ({ state, props }) => {
   const actions = form.actions || { buttons: [] };
   const layout = actions.layout || "split";
   const sticky = props?.sticky === true;
+  // Only sticky forms own the field scroller, so sbv is forwarded only there.
+  const fieldsAttrString =
+    sticky && SCROLLBAR_VISIBILITY_VALUES.has(props?.sbv)
+      ? `sbv=${props.sbv}`
+      : "";
   const buttons = (actions.buttons || []).map((btn, i) => ({
     ...btn,
     _globalIdx: i,
@@ -907,6 +915,7 @@ export const selectViewData = ({ state, props }) => {
     containerHorizontalPadding,
     containerVerticalPadding,
     bottomSpacer,
+    fieldsAttrString,
     title: form?.title || "",
     description: form?.description || "",
     sticky,

@@ -316,6 +316,24 @@ describe("rtgl-popover primitive", () => {
     expect(surface.querySelector("slot:not([name])").assignedElements()).toEqual([option]);
   });
 
+  it("forwards and clears content scrollbar visibility on the content surface", () => {
+    const popover = createTestPopover();
+    document.body.append(popover);
+    const surface = popover.content;
+
+    popover.setAttribute("content-sv", "true");
+    popover.setAttribute("content-sbv", "touch");
+    expect(surface.getAttribute("sv")).toBe("true");
+    expect(surface.getAttribute("sbv")).toBe("touch");
+
+    popover.setAttribute("content-sbv", "always");
+    expect(surface.getAttribute("sbv")).toBe("always");
+
+    popover.removeAttribute("content-sbv");
+    expect(surface.hasAttribute("sbv")).toBe(false);
+    expect(popover.constructor.observedAttributes).toContain("content-sbv");
+  });
+
   it("emits a bubbling and composed event after positioning succeeds", async () => {
     const popover = createTestPopover();
     const positionedEvents = [];

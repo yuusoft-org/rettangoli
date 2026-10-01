@@ -48,6 +48,7 @@ Use `head`, `desc`, and `size` to keep card rhythm consistent.
 - If both are omitted, the card renders body content only.
 - `size` controls internal card padding, header gap, and header-to-body rhythm.
 - The card shell is fixed in v1; host attrs that would override the shell surface are ignored.
+- The card never scrolls itself: `sv`, `sh`, `overflow`, and `sbv` are ignored. Place a scrolling `rtgl-view` inside the body slot instead.
 - Outer layout attrs like `w`, `h`, and margin attrs can still position the card in a layout.
 
 ## Sizes

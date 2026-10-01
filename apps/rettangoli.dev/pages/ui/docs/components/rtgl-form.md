@@ -62,6 +62,7 @@ A schema-driven form component that composes Rettangoli input primitives.
 | Horizontal Padding | `ph` | `none \| xs \| sm \| md \| lg \| xl` | value of `p` |
 | Vertical Padding | `pv` | `none \| xs \| sm \| md \| lg \| xl` | value of `p` |
 | Bottom Spacer | `bottom-spacer` / `bottomSpacer` | non-negative pixels | `0` |
+| Scrollbar Visibility | `sbv` | `touch`, `always` | - |
 
 Use `p="none"` when the surrounding layout already provides the desired inset:
 
@@ -128,6 +129,12 @@ Set `bottom-spacer` when the last field needs extra scroll room above a sticky a
 
 ```html
 <rtgl-form sticky bottom-spacer="96"></rtgl-form>
+```
+
+Set `sbv` to keep the field scroller's scrollbar visible at rest: `touch` on devices whose primary input cannot hover (phones and tablets), or `always` on every device. It applies only to sticky forms; without `sticky`, put `sbv` on the scroll view that contains the form. See [`rtgl-view` scrollbar visibility](/ui/docs/primitives/rtgl-view#scrollbar-visibility).
+
+```html
+<rtgl-form sticky sbv="touch"></rtgl-form>
 ```
 
 Without `sticky`, `h="f"` retains normal visible overflow. This lets a bounded ancestor with `sv` own scrolling and keeps lower fields and actions reachable.

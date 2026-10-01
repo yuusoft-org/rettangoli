@@ -1,0 +1,132 @@
+---
+title: Form - Sticky Layout - Scrollbar Visibility
+description: Verifies `sbv` on a sticky `rtgl-form` reaches only its internal field scroller on a hover-capable device.
+skipInitialScreenshot: true
+specs:
+  - "`sbv=\"always\"` on a sticky form keeps the field scroller overlay visible and interactive at rest."
+  - "`sbv=\"touch\"` on a sticky form keeps hover reveal on hover-capable devices; `spec/overlayScrollbar.visibility.browser.mjs` covers devices without hover."
+  - The outer form container never receives `sbv`, and a non-sticky form does not forward it because the caller owns that scroller.
+steps:
+  - action: waitFor
+    selector: "#touch-form .form-actions"
+    state: visible
+    timeoutMs: 1200
+  - action: move
+    x: 1260
+    y: 700
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: getStickyFormScrollbarState
+    value:
+      alwaysForwarded: always
+      alwaysContainerSbv: null
+      alwaysOverflowing: true
+      alwaysVisible: true
+      touchForwarded: touch
+      touchHovered: false
+      touchOverflowing: true
+      touchVisible: false
+      plainForwarded: null
+      plainContainerSbv: null
+  - action: screenshot
+  - action: select
+    selector: "#touch-form .form-fields"
+    steps:
+      - action: hover
+  - action: wait
+    ms: 150
+  - action: assert
+    type: js
+    fn: getStickyFormScrollbarState
+    value:
+      alwaysForwarded: always
+      alwaysContainerSbv: null
+      alwaysOverflowing: true
+      alwaysVisible: true
+      touchForwarded: touch
+      touchHovered: true
+      touchOverflowing: true
+      touchVisible: true
+      plainForwarded: null
+      plainContainerSbv: null
+  - action: screenshot
+---
+<rtgl-view d="h" g="lg" p="lg" wh="f">
+  <rtgl-view d="v" g="sm">
+    <rtgl-text c="mu-fg">sticky sbv="always"</rtgl-text>
+    <rtgl-view w="360" h="320" bw="xs" bc="bo" br="md" overflow="hidden">
+      <rtgl-form id="always-form" sticky sbv="always" w="f"></rtgl-form>
+    </rtgl-view>
+  </rtgl-view>
+  <rtgl-view d="v" g="sm">
+    <rtgl-text c="mu-fg">sticky sbv="touch"</rtgl-text>
+    <rtgl-view w="360" h="320" bw="xs" bc="bo" br="md" overflow="hidden">
+      <rtgl-form id="touch-form" sticky sbv="touch" w="f"></rtgl-form>
+    </rtgl-view>
+  </rtgl-view>
+  <rtgl-view d="v" g="sm">
+    <rtgl-text c="mu-fg">non-sticky sbv="always"</rtgl-text>
+    <rtgl-view w="360" h="320" bw="xs" bc="bo" br="md" overflow="hidden">
+      <rtgl-form id="plain-form" sbv="always" w="f"></rtgl-form>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const createForm = (title) => ({
+    title,
+    fields: Array.from({ length: 8 }, (_, index) => ({
+      name: `field${index + 1}`,
+      type: "input-text",
+      label: `Field ${index + 1}`,
+    })),
+    actions: {
+      buttons: [{ id: "submit", variant: "pr", label: "Save" }],
+    },
+  });
+  const forms = {
+    always: document.getElementById("always-form"),
+    touch: document.getElementById("touch-form"),
+    plain: document.getElementById("plain-form"),
+  };
+  forms.always.form = createForm("Always");
+  forms.touch.form = createForm("Touch");
+  forms.plain.form = createForm("Not sticky");
+
+  const getParts = (form) => ({
+    container: form.shadowRoot.querySelector("#formContainer"),
+    fields: form.shadowRoot.querySelector(".form-fields"),
+  });
+  const isTrackVisible = (scroller) => {
+    const track = scroller.shadowRoot.querySelector(
+      '[data-rtgl-scrollbar-track="vertical"]',
+    );
+    if (!track) {
+      return false;
+    }
+    const style = getComputedStyle(track);
+    return track.hasAttribute("data-visible") &&
+      style.opacity === "1" &&
+      style.pointerEvents === "auto";
+  };
+
+  window.getStickyFormScrollbarState = () => {
+    const always = getParts(forms.always);
+    const touch = getParts(forms.touch);
+    const plain = getParts(forms.plain);
+    return {
+      alwaysForwarded: always.fields.getAttribute("sbv"),
+      alwaysContainerSbv: always.container.getAttribute("sbv"),
+      alwaysOverflowing: always.fields.scrollHeight > always.fields.clientHeight,
+      alwaysVisible: isTrackVisible(always.fields),
+      touchForwarded: touch.fields.getAttribute("sbv"),
+      touchHovered: touch.fields.matches(":hover"),
+      touchOverflowing: touch.fields.scrollHeight > touch.fields.clientHeight,
+      touchVisible: isTrackVisible(touch.fields),
+      plainForwarded: plain.fields.getAttribute("sbv"),
+      plainContainerSbv: plain.container.getAttribute("sbv"),
+    };
+  };
+</script>
