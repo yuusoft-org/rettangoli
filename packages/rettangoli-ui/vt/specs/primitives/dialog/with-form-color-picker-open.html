@@ -1,0 +1,132 @@
+---
+title: Dialog - Form - Color Picker Open
+description: Verifies the color picker panel opens above a modal dialog from a form field inside it.
+specs:
+  - The picker panel opens from a form field inside an open dialog.
+  - The panel paints above the dialog surface and may extend past its edge.
+  - Opening the picker leaves the dialog open.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: open-dialog-form
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog[open]'
+    state: attached
+    timeoutMs: 1500
+  - action: waitFor
+    selector: '#form'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:stabilize-form-dialog
+  - action: wait
+    ms: 100
+  - action: customEvent
+    name: vt:open-dialog-color-picker
+  - action: waitFor
+    selector: 'rtgl-popover[open][positioned]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    fn: dialogColorPicker.getState
+    value:
+      dialogOpen: true
+      pickerOpen: true
+      hasPanel: true
+  - action: screenshot
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-button id="button" data-testid="open-dialog-form">Open Form Dialog</rtgl-button>
+  <rtgl-dialog id="dialog">
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const dialog = document.getElementById('dialog');
+  const form = document.createElement('rtgl-form');
+
+  form.setAttribute('id', 'form');
+  form.setAttribute('slot', 'content');
+
+  form.defaultValues = {
+    name: '',
+    favoriteColor: '#3498db',
+  };
+
+  form.form = {
+    title: 'User Registration',
+    description: 'Please fill out your information',
+    fields: [{
+      name: 'name',
+      type: 'input-text',
+      label: 'Full Name',
+      description: 'Enter your full name',
+      placeholder: 'John Doe',
+    }, {
+      name: 'favoriteColor',
+      type: 'color-picker',
+      label: 'Favorite Color',
+      description: 'Pick your favorite color',
+    }],
+    actions: {
+      buttons: [{
+        id: 'cancel',
+        label: 'Cancel',
+      }, {
+        id: 'submit',
+        variant: 'pr',
+        label: 'Register',
+      }],
+    },
+  };
+
+  const firstPicker = () => form.shadowRoot.querySelector('rtgl-color-picker');
+
+  window.dialogColorPicker = {
+    getState() {
+      const picker = firstPicker();
+      const popover = picker.shadowRoot.querySelector('rtgl-popover');
+      return {
+        dialogOpen: dialog.hasAttribute('open'),
+        pickerOpen: !!popover && popover.hasAttribute('open'),
+        hasPanel: !!picker.shadowRoot.querySelector('.sv')
+          && !!picker.shadowRoot.querySelector('.hue')
+          && !!picker.shadowRoot.querySelector('.hexfield input'),
+      };
+    },
+  };
+
+  button.addEventListener('click', () => {
+    if (!form.parentNode) {
+      dialog.appendChild(form);
+      form.render();
+    }
+
+    dialog.setAttribute('open', '');
+  });
+
+  dialog.addEventListener('close', () => {
+    dialog.removeAttribute('open');
+  });
+
+  window.addEventListener('vt:stabilize-form-dialog', () => {
+    window.dispatchEvent(new Event('resize'));
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        dialog.dialog.scrollTop = 0;
+      });
+    });
+  });
+
+  window.addEventListener('vt:open-dialog-color-picker', () => {
+    firstPicker().shadowRoot.querySelector('button.trigger').click();
+  });
+</script>
