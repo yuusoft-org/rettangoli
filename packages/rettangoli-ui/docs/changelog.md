@@ -4,6 +4,7 @@
 
 ### Improvements
 
+- `rtgl-color-picker`: no longer wraps a native `<input type="color">`; the trigger swatch opens the primitive's own picker with a saturation/brightness square, hue strip, and hex field in an `rtgl-popover` panel, shown centered with a dimmed overlay on phone viewports. The value stays a `#rrggbb` hex string, the hex field accepts shorthand and commits on Enter or blur, arrow keys step the square and hue strip with Shift shortcuts, focus moves to the square on open and back to the trigger on close, and `value-input` / `value-change` fire per drag tick, arrow step, and hex update or commit.
 - Overlay scrollbars: touch- and pen-driven scrolling now reveals the overlay on `rtgl-view` and `rtgl-grid` scrollers until they have been idle for one second, so touch devices without hover show scroll position.
 - `rtgl-view` and `rtgl-grid`: added the opt-in `sbv` scrollbar visibility attribute. `sbv="always"` keeps a scroller's overflowing overlay visible and draggable at rest on every device; `sbv="touch"` does so only on devices whose primary input cannot hover and keeps hover reveal elsewhere.
 - `rtgl-form`: added `sbv` for sticky forms, forwarded only to the internal field scroller.

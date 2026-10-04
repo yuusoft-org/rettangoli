@@ -323,6 +323,8 @@ No additional properties.
   label: Accent Color
 ```
 
+The field renders the `rtgl-color-picker` trigger swatch. Clicking it opens the primitive's own picker panel (saturation/brightness square, hue strip, and hex field) instead of the browser's native color input, so hex entry works on Android. `form-input` fires while dragging or typing and `form-change` fires on release or hex commit.
+
 #### `slider`
 
 Value: `number`
@@ -945,7 +947,7 @@ Validation checks `required` fields and `rules`. The consumer can also call `val
 | `input-textarea` | every keystroke | blur |
 | `slider` | every drag tick | mouse release |
 | `slider-with-input` | every drag tick / keystroke | mouse release / blur |
-| `color-picker` | while picking | picker closed |
+| `color-picker` | while dragging or typing | on release or hex commit |
 | `popover-input` | does not fire | submit button click |
 | `select` | does not fire | option selected |
 | `checkbox` | does not fire | toggled |

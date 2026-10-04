@@ -70,7 +70,7 @@ describe("form keyboard activation", () => {
 describe("field accessibility across shadow roots", () => {
   it.each(["input", "number", "textarea", "slider", "checkbox", "color"])("forwards native %s metadata", (type) => {
     const host = document.createElement(`test-field-${type}`); document.body.append(host);
-    const native = host.shadowRoot.querySelector("input,textarea");
+    const native = host.shadowRoot.querySelector(type === "color" ? "button" : "input,textarea");
     for (const [name, value] of Object.entries({ "aria-label": 'Project "One"',
       "aria-description": "Choose a name. Required", "aria-required": "true", "aria-invalid": "true" })) {
       host.setAttribute(name, value);
