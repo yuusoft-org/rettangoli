@@ -1,0 +1,46 @@
+---
+title: "Global UI - Links Alert"
+description: Alert titles and messages render inline links from text segments and degrade unsafe hrefs to plain text.
+specs:
+  - Alert title and message segments render as inline, underlined links.
+  - An unsafe href renders as plain text instead of a link.
+  - The first link is keyboard focusable and shows the focus ring.
+skipInitialScreenshot: true
+steps:
+  - action: customEvent
+    name: vt:links-alert
+  - action: waitFor
+    selector: '#confirmButton'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:focus-first-link
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+<rtgl-global-ui></rtgl-global-ui>
+<script>
+  const ui = document.querySelector('rtgl-global-ui');
+
+  window.addEventListener('vt:links-alert', () => {
+    void ui.transformedHandlers.handleShowAlert({
+      title: ['Updated ', { text: 'terms of service', href: '#terms' }],
+      message: [
+        'Please read the ',
+        { text: 'terms of service', href: '#terms' },
+        ' and ',
+        { text: 'privacy policy', href: 'https://example.com/privacy', newTab: true },
+        ' before continuing. ',
+        { text: 'This unsafe link', href: 'javascript:alert(1)' },
+        ' stays plain text.',
+      ],
+    });
+  });
+
+  window.addEventListener('vt:focus-first-link', () => {
+    ui.shadowRoot.querySelector('.dialog-message a').focus();
+  });
+</script>

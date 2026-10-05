@@ -20,6 +20,7 @@ import {
   setToastPhase,
   setAlertConfig,
   setComponentDialogConfig,
+  setConfirmConfig,
   setDropdownConfig,
   selectViewData,
 } from "../src/components/global-ui/global-ui.store.js";
@@ -461,6 +462,157 @@ describe("rtgl-global-ui component dialog handlers", () => {
 
     handleConfirm(deps);
     await expect(alertPromise).resolves.toBeNull();
+  });
+});
+
+describe("rtgl-global-ui alert and confirm text segments", () => {
+  const messageSegments = [
+    "Please read the ",
+    { text: "terms of service", href: "/terms", newTab: true },
+    " before continuing.",
+  ];
+
+  const createStore = () => {
+    const state = structuredClone(createInitialState());
+    return {
+      getState: () => state,
+      setAlertConfig: (payload) => setAlertConfig({ state }, payload),
+      setConfirmConfig: (payload) => setConfirmConfig({ state }, payload),
+    };
+  };
+
+  it("stores normalized message and title segments while keeping the raw values", () => {
+    const store = createStore();
+    const titleSegments = ["Read the ", { text: "docs", href: "https://example.com/docs" }];
+
+    store.setAlertConfig({ title: titleSegments, message: messageSegments });
+
+    expect(store.getState().config.message).toBe(messageSegments);
+    expect(store.getState().config.title).toBe(titleSegments);
+    expect(store.getState().config._messageSegments).toEqual([
+      { text: "Please read the " },
+      { text: "terms of service", href: "/terms", target: "_blank", rel: "noopener noreferrer" },
+      { text: " before continuing." },
+    ]);
+    expect(store.getState().config._titleSegments).toEqual([
+      { text: "Read the " },
+      { text: "docs", href: "https://example.com/docs" },
+    ]);
+  });
+
+  it("keeps the plain-string path free of derived segments", () => {
+    const store = createStore();
+
+    store.setAlertConfig({ title: "Warning", message: "Plain message" });
+
+    expect(store.getState().config).toMatchObject({
+      title: "Warning",
+      message: "Plain message",
+      mode: "alert",
+    });
+    expect(store.getState().config._titleSegments).toBeNull();
+    expect(store.getState().config._messageSegments).toBeNull();
+  });
+
+  it("renders unsafe href segments as plain text", () => {
+    const store = createStore();
+
+    store.setConfirmConfig({
+      message: ["Click ", { text: "here", href: " javascript:alert(1)" }, " now"],
+    });
+
+    expect(store.getState().config._messageSegments).toEqual([
+      { text: "Click " },
+      { text: "here" },
+      { text: " now" },
+    ]);
+  });
+
+  it.each([
+    ["an empty array", []],
+    ["an empty-string array", ["", ""]],
+    ["an all-junk array", [42, null, {}, { text: "" }]],
+  ])("rejects %s like an empty string for alert and confirm", (_label, message) => {
+    const store = createStore();
+
+    expect(() => store.setAlertConfig({ message })).toThrow(
+      "message is required for showAlert",
+    );
+    expect(() => store.setConfirmConfig({ message })).toThrow(
+      "message is required for showConfirm",
+    );
+    expect(store.getState().isOpen).toBe(false);
+  });
+
+  it.each([
+    ["empty string", ""],
+    ["undefined", undefined],
+    ["zero", 0],
+    ["false", false],
+    ["null", null],
+  ])("still rejects falsy %s messages", (_label, message) => {
+    const store = createStore();
+
+    expect(() => store.setAlertConfig({ message })).toThrow("message is required for showAlert");
+    expect(() => store.setConfirmConfig({ message })).toThrow("message is required for showConfirm");
+  });
+
+  it("keeps non-string junk coercion unchanged for truthy messages", () => {
+    const store = createStore();
+
+    store.setAlertConfig({ message: 42 });
+
+    expect(store.getState().config.message).toBe(42);
+    expect(store.getState().config._messageSegments).toBeNull();
+  });
+});
+
+describe("rtgl-global-ui component dialog description segments", () => {
+  const createStateWithComponentDialog = (options) => {
+    const state = structuredClone(createInitialState());
+    setComponentDialogConfig({ state }, options);
+    return state;
+  };
+
+  it("stores normalized description segments in config and view data", () => {
+    const state = createStateWithComponentDialog({
+      component: "vt-component-dialog-body",
+      description: ["Choose images and read the ", { text: "guidelines", href: "/guidelines" }, "."],
+    });
+
+    expect(state.componentDialogConfig.description).toEqual([
+      "Choose images and read the ",
+      { text: "guidelines", href: "/guidelines" },
+      ".",
+    ]);
+    expect(state.componentDialogConfig._descriptionSegments).toEqual([
+      { text: "Choose images and read the " },
+      { text: "guidelines", href: "/guidelines" },
+      { text: "." },
+    ]);
+
+    const viewData = selectViewData({ state });
+    expect(viewData.componentDialogConfig._descriptionSegments).toEqual(
+      state.componentDialogConfig._descriptionSegments,
+    );
+  });
+
+  it("keeps string descriptions and junk coercion unchanged", () => {
+    const state = createStateWithComponentDialog({
+      component: "vt-component-dialog-body",
+      description: "Plain description",
+    });
+
+    expect(state.componentDialogConfig.description).toBe("Plain description");
+    expect(state.componentDialogConfig._descriptionSegments).toBeNull();
+
+    const junkState = createStateWithComponentDialog({
+      component: "vt-component-dialog-body",
+      description: 42,
+    });
+
+    expect(junkState.componentDialogConfig.description).toBe("");
+    expect(junkState.componentDialogConfig._descriptionSegments).toBeNull();
   });
 });
 

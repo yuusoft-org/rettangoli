@@ -61,7 +61,7 @@ Every field has:
 |---|---|---|
 | `type` | yes | Input type |
 | `label` | no | Field label |
-| `description` | no | Help text below the label |
+| `description` | no | Help text below the label. A string, or an array of [link segments](#links-in-text-properties) |
 | `tooltip` | no | Info icon with hover text |
 
 Data types additionally have:
@@ -409,7 +409,7 @@ Value: `boolean`
 
 | property | description |
 |---|---|
-| `content` | Optional inline text rendered to the right of the checkbox (useful for terms/consent text). |
+| `content` | Optional inline text rendered to the right of the checkbox (useful for terms/consent text). A string, or an array of [link segments](#links-in-text-properties). |
 | `checkboxLabel` | Legacy alias for `content` (still supported). |
 
 ```yaml
@@ -768,6 +768,28 @@ fields:
 ```
 
 These expressions are evaluated against merged context (`context`, current field values, and `formValues`) and update reactively during input/change events.
+
+## Links in Text Properties
+
+The form `description`, section `description`, field `description`, and checkbox `content` accept either a string or an array of text segments. A segment is a string (plain text) or `{ text, href?, newTab?, rel? }`.
+
+```yaml
+description:
+  - "By continuing you accept the "
+  - text: "terms of service"
+    href: "/terms"
+  - "."
+```
+
+Rules:
+
+- Strings are never parsed. Only segment objects create links, so text from users or servers cannot inject links or markup.
+- `href` is allowed for `http:`, `https:`, `mailto:` and relative URLs. Any other scheme (for example `javascript:`) renders the text as a plain, non-link segment.
+- `newTab: true` adds `target="_blank"` and `rel="noopener noreferrer"`; an explicit `rel` is kept and `noopener` is guaranteed.
+- Entries that are not strings or objects with string `text`, and empty text, are dropped.
+- Links are inline, underlined, keyboard reachable, and show the focus ring. Clicking a link in a checkbox label does not toggle the checkbox.
+- `aria-label` and `aria-description` use the flattened plain text.
+- These stay plain strings: field `label`, field error text, form `title`, section `label`, button labels, and placeholders.
 
 ## Advanced Context Case Scenarios
 

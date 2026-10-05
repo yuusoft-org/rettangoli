@@ -29,6 +29,20 @@ refs:
       item-click:
         handler: handleDropdownItemClick
 styles:
+  # Segment links: rettangoli-fe resets every <a> in a component shadow root to
+  # `display: contents` with no color/decoration, which hides inline links and
+  # drops them out of the tab order. Restore normal inline-link behaviour (same
+  # tokens as the base theme's `a` rules) for anchors rendered from text segments.
+  'a.text-link, a.text-link:link, a.text-link:visited, a.text-link:active':
+    display: inline
+    color: var(--anchor-color, inherit)
+    text-decoration: var(--anchor-text-decoration, underline)
+  'a.text-link:hover':
+    color: var(--anchor-color-hover, var(--anchor-color, inherit))
+    text-decoration: var(--anchor-text-decoration-hover, underline)
+  'a.text-link:focus-visible':
+    outline: var(--focus-ring-outline, none)
+    box-shadow: inset 0 0 0 2px var(--ring)
   .dialog-message:
     white-space: pre-wrap
     overflow-wrap: anywhere
@@ -96,11 +110,18 @@ template:
           - rtgl-form#formDialog slot=content :form=${formDialogConfig.form} :defaultValues=${formDialogConfig.defaultValues} :context=${formDialogConfig.context} ?disabled=${formDialogConfig.disabled} key=form-dialog-${formDialogConfig.key}: null
       - $if isComponentDialogOpen:
           - rtgl-view slot=content g=lg p=lg:
-              - $if componentDialogConfig.title || componentDialogConfig.description:
+              - $if componentDialogConfig.title || componentDialogConfig.description || componentDialogConfig._descriptionSegments:
                   - rtgl-view g=sm w=f:
                       - $if componentDialogConfig.title:
                           - rtgl-text s=lg: ${componentDialogConfig.title}
-                      - $if componentDialogConfig.description:
+                      - $if componentDialogConfig._descriptionSegments:
+                          - rtgl-text c=mu-fg:
+                              - $for seg, i in componentDialogConfig._descriptionSegments:
+                                  - $if seg.href:
+                                      - a class=text-link href=${seg.href} target=${seg.target} rel=${seg.rel}: ${seg.text}
+                                    $else:
+                                      - ${seg.text}
+                        $elif componentDialogConfig.description:
                           - rtgl-text c=mu-fg: ${componentDialogConfig.description}
               - rtgl-view#componentDialogBodyHost w=f key=component-dialog-body-${componentDialogConfig.key}: null
               - $if componentDialogConfig.actions.buttons.length > 0:
@@ -115,10 +136,34 @@ template:
           - rtgl-view slot=content g=lg:
               - rtgl-view g=sm w=f:
                   - $if config.title:
-                      - rtgl-text s=lg: ${config.title}
-                      - rtgl-text class=dialog-message w=f c=mu-fg: ${config.message}
+                      - $if config._titleSegments:
+                          - rtgl-text s=lg:
+                              - $for seg, i in config._titleSegments:
+                                  - $if seg.href:
+                                      - a class=text-link href=${seg.href} target=${seg.target} rel=${seg.rel}: ${seg.text}
+                                    $else:
+                                      - ${seg.text}
+                        $else:
+                          - rtgl-text s=lg: ${config.title}
+                      - $if config._messageSegments:
+                          - rtgl-text class=dialog-message w=f c=mu-fg:
+                              - $for seg, i in config._messageSegments:
+                                  - $if seg.href:
+                                      - a class=text-link href=${seg.href} target=${seg.target} rel=${seg.rel}: ${seg.text}
+                                    $else:
+                                      - ${seg.text}
+                        $else:
+                          - rtgl-text class=dialog-message w=f c=mu-fg: ${config.message}
                     $else:
-                      - rtgl-text class=dialog-message w=f: ${config.message}
+                      - $if config._messageSegments:
+                          - rtgl-text class=dialog-message w=f:
+                              - $for seg, i in config._messageSegments:
+                                  - $if seg.href:
+                                      - a class=text-link href=${seg.href} target=${seg.target} rel=${seg.rel}: ${seg.text}
+                                    $else:
+                                      - ${seg.text}
+                        $else:
+                          - rtgl-text class=dialog-message w=f: ${config.message}
               - rtgl-view d=h g=md w=f ah=e:
                   - $if config.mode == 'confirm':
                       - rtgl-button#cancelButton v=se: ${config.cancelText}
