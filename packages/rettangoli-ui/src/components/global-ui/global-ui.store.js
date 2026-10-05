@@ -1,3 +1,9 @@
+import {
+  flattenTextSegments,
+  normalizeTextSegments,
+  renderableTextSegments,
+} from "../../common/textSegments.js";
+
 const VALID_DIALOG_SIZES = new Set(["sm", "md", "lg", "f"]);
 const VALID_TOAST_SIZES = new Set(["sm", "md", "lg"]);
 const VALID_TOAST_PHASES = new Set(["active", "exiting"]);
@@ -143,12 +149,22 @@ const normalizeComponentDialogActions = (value) => {
 const createDefaultComponentDialogConfig = () => ({
   title: "",
   description: "",
+  _descriptionSegments: null,
   size: "md",
   component: "",
   props: {},
   actions: normalizeComponentDialogActions(),
   key: 0,
 });
+
+const isEmptyDialogMessage = (message) => {
+  if (!message) {
+    return true;
+  }
+
+  const segments = normalizeTextSegments(message);
+  return segments !== null && flattenTextSegments(segments).length === 0;
+};
 
 export const createInitialState = () => Object.freeze({
   isOpen: false,
@@ -183,14 +199,16 @@ export const createInitialState = () => Object.freeze({
 });
 
 export const setAlertConfig = ({ state }, options = {}) => {
-  if (!options.message) {
+  if (isEmptyDialogMessage(options.message)) {
     throw new Error("message is required for showAlert");
   }
 
   state.config = {
     status: options.status ?? undefined,
     title: options.title ?? "",
+    _titleSegments: renderableTextSegments(options.title),
     message: options.message,
+    _messageSegments: renderableTextSegments(options.message),
     confirmText: options.confirmText ?? "OK",
     cancelText: "",
     mode: "alert",
@@ -200,14 +218,16 @@ export const setAlertConfig = ({ state }, options = {}) => {
 };
 
 export const setConfirmConfig = ({ state }, options = {}) => {
-  if (!options.message) {
+  if (isEmptyDialogMessage(options.message)) {
     throw new Error("message is required for showConfirm");
   }
 
   state.config = {
     status: options.status ?? undefined,
     title: options.title ?? "",
+    _titleSegments: renderableTextSegments(options.title),
     message: options.message,
+    _messageSegments: renderableTextSegments(options.message),
     confirmText: options.confirmText ?? "Yes",
     cancelText: options.cancelText ?? "Cancel",
     mode: "confirm",
@@ -263,7 +283,10 @@ export const setComponentDialogConfig = ({ state }, options = {}) => {
 
   state.componentDialogConfig = {
     title: typeof options.title === "string" ? options.title : "",
-    description: typeof options.description === "string" ? options.description : "",
+    description: typeof options.description === "string" || Array.isArray(options.description)
+      ? options.description
+      : "",
+    _descriptionSegments: renderableTextSegments(options.description),
     size: normalizeDialogSize(options.size, "md"),
     component: options.component,
     props: normalizeObject(options.props),
@@ -371,6 +394,7 @@ export const selectViewData = ({ state }) => {
     componentDialogConfig: {
       title: componentDialogConfig.title ?? "",
       description: componentDialogConfig.description ?? "",
+      _descriptionSegments: componentDialogConfig._descriptionSegments ?? null,
       size: normalizeDialogSize(componentDialogConfig.size, "md"),
       component: componentDialogConfig.component ?? "",
       props: componentDialogConfig.props ?? {},

@@ -1,0 +1,33 @@
+---
+title: "Global UI - Links Confirm"
+description: Confirm messages keep line breaks around inline links and show both actions.
+specs:
+  - Confirm message segments preserve the line break and render the link inline.
+  - Both confirm actions stay visible beneath the message.
+skipInitialScreenshot: true
+steps:
+  - action: customEvent
+    name: vt:links-confirm
+  - action: waitFor
+    selector: '#cancelButton'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 250
+  - action: screenshot
+---
+<rtgl-global-ui></rtgl-global-ui>
+<script>
+  const ui = document.querySelector('rtgl-global-ui');
+
+  window.addEventListener('vt:links-confirm', () => {
+    void ui.transformedHandlers.handleShowConfirm({
+      message: [
+        'Delete this asset?\nThis cannot be undone. See the ',
+        { text: 'deletion policy', href: 'https://example.com/policy', newTab: true },
+        ' first.',
+      ],
+      confirmText: 'Delete',
+    });
+  });
+</script>

@@ -45,9 +45,10 @@ Call through `globalUiElement.transformedHandlers`:
 
 ## Multiline Alert and Confirm Messages
 
-Alert and confirm `message` values are plain text. Newlines (`\n`), blank lines,
+Alert and confirm `message` strings are plain text. Newlines (`\n`), blank lines,
 and spaces are preserved; long text wraps to fit the dialog, including long file
-names. HTML and Markdown are not interpreted.
+names. HTML and Markdown are not interpreted, so a string never becomes a link.
+To add links, pass [text segments](#links-in-alert-and-confirm-text) instead of a string.
 
 ```js
 await globalUiElement.transformedHandlers.handleShowAlert({
@@ -57,6 +58,36 @@ await globalUiElement.transformedHandlers.handleShowAlert({
 ```
 
 The same formatting works with or without a title and in `handleShowConfirm`.
+
+## Links in Alert and Confirm Text
+
+Alert and confirm `title` and `message` accept either a string or an array of
+text segments. A segment is a string (plain text) or an object
+`{ text, href?, newTab?, rel? }`. Text segments render as normal inline links, are
+reachable with the keyboard, and keep newlines inside their text.
+
+```js
+await globalUiElement.transformedHandlers.handleShowConfirm({
+  message: [
+    "Delete this asset?\nThis cannot be undone. See the ",
+    { text: "deletion policy", href: "https://example.com/policy", newTab: true },
+    " first.",
+  ],
+  confirmText: "Delete",
+});
+```
+
+| Segment field | Type | Notes |
+| --- | --- | --- |
+| `text` | string | Required. Entries without string `text`, and empty text, are dropped. |
+| `href` | string | Allowed: `http:`, `https:`, `mailto:` and relative URLs. Any other scheme (for example `javascript:` or `data:`) is shown as plain text, not as a link. |
+| `newTab` | boolean | Adds `target="_blank"` and `rel="noopener noreferrer"`. |
+| `rel` | string | Explicit `rel`. With `newTab`, `noopener` is always kept. |
+
+- Strings are never parsed, so text from users or servers cannot create links or markup.
+- An array with no text counts as empty, so alert and confirm still throw `message is required`.
+- The component dialog `description` (`handleShowComponentDialog`) accepts the same segments.
+- Toast messages, component dialog titles, and button labels stay plain strings.
 
 ## Form Dialog
 

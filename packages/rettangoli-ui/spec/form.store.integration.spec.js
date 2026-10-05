@@ -834,3 +834,188 @@ describe("rtgl-form bound store integration", () => {
     ).toBe(false);
   });
 });
+
+describe("rtgl-form text segments", () => {
+  const descriptionSegments = [
+    "Please read the ",
+    { text: "terms of service", href: "/terms", newTab: true },
+    " before continuing.",
+  ];
+
+  const createSegmentFormProps = () => ({
+    form: {
+      description: descriptionSegments,
+      fields: [
+        {
+          type: "section",
+          label: "Account",
+          description: ["Read the ", { text: "guidelines", href: "/guidelines" }, " first."],
+          fields: [
+            {
+              name: "email",
+              type: "input-text",
+              label: "Email",
+              description: ["We only use this for ", { text: "updates", href: "mailto:updates@example.com" }, "."],
+            },
+            {
+              name: "agree",
+              type: "checkbox",
+              content: ["I agree to the ", { text: "terms", href: "/terms" }, " and other policies."],
+            },
+            {
+              name: "promo",
+              type: "checkbox",
+              content: [{ text: "Newsletter", href: "javascript:alert(1)" }],
+            },
+          ],
+        },
+      ],
+      actions: { buttons: [{ id: "save", label: "Save" }] },
+    },
+  });
+
+  const selectSegmentField = (viewData, name) =>
+    viewData.flatFields.find((field) => field.name === name);
+
+  it("derives renderable segments for form, section, and field descriptions", () => {
+    const store = bindStore(formStore, createSegmentFormProps(), {});
+    const viewData = store.selectViewData();
+
+    expect(viewData.description).toEqual(descriptionSegments);
+    expect(viewData.descriptionSegments).toEqual([
+      { text: "Please read the " },
+      { text: "terms of service", href: "/terms", target: "_blank", rel: "noopener noreferrer" },
+      { text: " before continuing." },
+    ]);
+
+    const section = viewData.flatFields.find((field) => field._isSection);
+    expect(section._descriptionSegments).toEqual([
+      { text: "Read the " },
+      { text: "guidelines", href: "/guidelines" },
+      { text: " first." },
+    ]);
+
+    expect(selectSegmentField(viewData, "email")._descriptionSegments).toEqual([
+      { text: "We only use this for " },
+      { text: "updates", href: "mailto:updates@example.com" },
+      { text: "." },
+    ]);
+  });
+
+  it("keeps plain-string descriptions free of derived segments", () => {
+    const props = {
+      form: {
+        description: "Plain description",
+        fields: [
+          {
+            name: "email",
+            type: "input-text",
+            label: "Email",
+            description: "Plain field description",
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    const viewData = store.selectViewData();
+
+    expect(viewData.description).toBe("Plain description");
+    expect(viewData.descriptionSegments).toBeNull();
+    expect(viewData.flatFields[0]._descriptionSegments).toBeNull();
+  });
+
+  it("renders checkbox segments and keeps the plain label path unchanged", () => {
+    const store = bindStore(formStore, createSegmentFormProps(), {});
+    const viewData = store.selectViewData();
+
+    expect(selectSegmentField(viewData, "agree")._checkboxTextSegments).toEqual([
+      { text: "I agree to the " },
+      { text: "terms", href: "/terms" },
+      { text: " and other policies." },
+    ]);
+    expect(selectSegmentField(viewData, "agree")._checkboxText).toBe("");
+
+    const unsafeField = selectSegmentField(viewData, "promo");
+    expect(unsafeField._checkboxTextSegments).toEqual([{ text: "Newsletter" }]);
+  });
+
+  it("keeps the string checkbox label path on content and checkboxLabel", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "a", type: "checkbox", content: "Content label" },
+          { name: "c", type: "checkbox", checkboxLabel: "Legacy label" },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    const viewData = store.selectViewData();
+
+    expect(selectSegmentField(viewData, "a")._checkboxText).toBe("Content label");
+    expect(selectSegmentField(viewData, "c")._checkboxText).toBe("Legacy label");
+    for (const name of ["a", "c"]) {
+      expect(selectSegmentField(viewData, name)._checkboxTextSegments).toBeNull();
+    }
+  });
+
+  it("keeps checkboxText accessible-only: it never becomes visible checkbox text", () => {
+    const props = {
+      form: {
+        fields: [{ name: "b", type: "checkbox", checkboxText: ["Accessible ", { text: "only", href: "/x" }] }],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    const viewData = store.selectViewData();
+    const field = selectSegmentField(viewData, "b");
+
+    expect(field._checkboxText).toBe("");
+    expect(field._checkboxTextSegments).toBeNull();
+    expect(field._accessibleLabel).toBe("Accessible only");
+  });
+
+  it("flattens segments for accessible labels and descriptions", () => {
+    const store = bindStore(formStore, createSegmentFormProps(), {});
+    const viewData = store.selectViewData();
+    const emailField = selectSegmentField(viewData, "email");
+    const agreeField = selectSegmentField(viewData, "agree");
+    const promoField = selectSegmentField(viewData, "promo");
+
+    expect(emailField._accessibleDescription).toBe(
+      "We only use this for updates.",
+    );
+    expect(agreeField._accessibleLabel).toBe("");
+    expect(promoField._accessibleLabel).toBe("");
+  });
+
+  it("flattens segments for accessible descriptions with errors", () => {
+    const props = createSegmentFormProps();
+    const store = bindStore(formStore, props, {});
+    store.setErrors({ errors: { email: "Required" } });
+
+    const emailField = selectSegmentField(store.selectViewData(), "email");
+    expect(emailField._accessibleDescription).toBe(
+      "We only use this for updates.. Required",
+    );
+  });
+
+  it("keeps plain label and description accessible text unchanged", () => {
+    const props = {
+      form: {
+        fields: [
+          {
+            name: "name",
+            type: "input-text",
+            label: "Project name",
+            description: "Choose a name",
+          },
+        ],
+      },
+    };
+    const state = { ...formStore.createInitialState(), errors: { name: "Required" } };
+    expect(formStore.selectViewData({ state, props }).flatFields[0]).toMatchObject({
+      _accessibleLabel: "Project name",
+      _accessibleDescription: "Choose a name. Required",
+    });
+  });
+});
+
