@@ -1,0 +1,24 @@
+---
+title: Color Picker - Open - Panel Below Trigger
+description: Verifies the picker panel opens in a popover anchored below the trigger swatch.
+specs:
+  - Trigger click opens the saturation square, hue strip, and hex row inside a popover.
+  - Saturation square shows the current color with the thumb at its saturation and brightness position.
+  - Popover anchors below the trigger with default surface styling.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: open-picker
+    steps:
+      - action: click
+  - action: waitFor
+    selector: 'rtgl-popover[open][positioned]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 150
+  - action: screenshot
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-color-picker id="picker" data-testid="open-picker" value="#3498db"></rtgl-color-picker>
+</rtgl-view>

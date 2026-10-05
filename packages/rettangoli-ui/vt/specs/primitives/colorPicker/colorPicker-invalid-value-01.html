@@ -22,8 +22,8 @@ specs:
     const valid = document.getElementById("cp-valid");
     const invalid = document.getElementById("cp-invalid");
 
-    const validValue = valid.shadowRoot.querySelector('input[type="color"]').value;
-    const invalidValue = invalid.shadowRoot.querySelector('input[type="color"]').value;
+    const validValue = valid.value;
+    const invalidValue = invalid.value;
 
     const checks = [
       `${validValue === "#12ab34" ? "PASS" : "FAIL"} valid value preserved`,

@@ -1,0 +1,81 @@
+---
+title: Color Picker - Open - Centered Overlay Mobile
+diffThreshold: 4
+description: Verifies the picker panel opens as a centered modal-style card with a dimmed overlay on phone viewports.
+specs:
+  - "`sm-place=center` switches the picker popover to centered placement at phone widths."
+  - "`sm-overlay` applies a dim dialog-style backdrop behind the picker panel."
+  - "The centered panel keeps the saturation square, hue strip, and hex row inside the viewport."
+skipInitialScreenshot: true
+viewport:
+  id: mobile
+  width: 390
+  height: 844
+steps:
+  - action: select
+    testId: open-picker
+    steps:
+      - action: click
+  - action: waitFor
+    selector: 'rtgl-popover[open][positioned]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:verify-centered-color-picker
+  - action: wait
+    ms: 150
+  - action: assert
+    type: text
+    selector: '#result-centered-color-picker'
+    value: PASS
+  - action: screenshot
+---
+<rtgl-view h="100vh" w="100vw" p="lg" g="md" bgc="su">
+  <rtgl-text s="lg">Page Content</rtgl-text>
+  <rtgl-text c="mu">This content should sit behind the picker overlay.</rtgl-text>
+  <rtgl-color-picker id="picker" data-testid="open-picker" value="#3498db"></rtgl-color-picker>
+</rtgl-view>
+<pre id="result-centered-color-picker" style="position: absolute; left: -9999px;"></pre>
+
+<script>
+  const picker = document.getElementById("picker");
+  const result = document.getElementById("result-centered-color-picker");
+
+  const verifyCenteredColorPicker = () => {
+    const popover = picker.shadowRoot.querySelector("rtgl-popover");
+    const container = popover.shadowRoot.querySelector(".popover-container");
+    const dialog = popover.shadowRoot.querySelector("dialog");
+    const rect = container.getBoundingClientRect();
+    const viewportWidth = Math.round(window.innerWidth);
+    const viewportHeight = Math.round(window.innerHeight);
+    const expectedLeft = Math.round((viewportWidth - rect.width) / 2);
+    const expectedTop = Math.round((viewportHeight - rect.height) / 2);
+    const backdropColor = getComputedStyle(dialog, "::backdrop").backgroundColor;
+    const isCentered =
+      Math.abs(Math.round(rect.left) - expectedLeft) <= 2 &&
+      Math.abs(Math.round(rect.top) - expectedTop) <= 2;
+    const hasOverlay =
+      popover.getAttribute("data-rtgl-active-overlay") === "true" &&
+      backdropColor !== "rgba(0, 0, 0, 0)" &&
+      backdropColor !== "transparent";
+    const activePlace = popover.getAttribute("data-rtgl-active-place");
+    const hasPanel =
+      !!picker.shadowRoot.querySelector(".sv") &&
+      !!picker.shadowRoot.querySelector(".hue") &&
+      !!picker.shadowRoot.querySelector(".hexfield input");
+    const pass = activePlace === "center" && isCentered && hasOverlay && hasPanel && dialog.open;
+
+    result.textContent = [
+      pass ? "PASS" : "FAIL",
+      `activePlace=${activePlace}`,
+      `rect=${Math.round(rect.left)},${Math.round(rect.top)},${Math.round(rect.width)}x${Math.round(rect.height)}`,
+      `expected=${expectedLeft},${expectedTop}`,
+      `overlay=${popover.getAttribute("data-rtgl-active-overlay")}`,
+      `backdrop=${backdropColor}`,
+    ].join(" ");
+  };
+
+  window.addEventListener("vt:verify-centered-color-picker", verifyCenteredColorPicker);
+</script>

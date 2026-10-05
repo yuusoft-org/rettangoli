@@ -1,0 +1,94 @@
+---
+title: "With Color Picker - Open"
+description: Verifies the color picker panel opens from a form field and stays above the following fields.
+specs:
+  - Clicking the field swatch opens the picker panel in a popover below the swatch.
+  - The panel paints above the next form field instead of pushing the layout down.
+  - The swatch keeps the form field value while the panel is open.
+skipInitialScreenshot: true
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+steps:
+  - action: waitFor
+    selector: '#form'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:open-form-color-picker
+  - action: waitFor
+    selector: 'rtgl-popover[open][positioned]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    fn: colorPickerOpen.getState
+    value:
+      open: true
+      hasPanel: true
+      value: '#3498db'
+  - action: screenshot
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
+
+  form.defaultValues = {
+    favoriteColor: '#3498db',
+    backgroundColor: '#2ecc71',
+  };
+
+  form.form = {
+    title: 'Color Preferences',
+    description: 'Select your favorite colors',
+    fields: [{
+      name: 'favoriteColor',
+      type: 'color-picker',
+      label: 'Favorite Color',
+      description: 'Pick your favorite color',
+    }, {
+      name: 'backgroundColor',
+      type: 'color-picker',
+      label: 'Background Color',
+      description: 'Choose a background color',
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Save Colors',
+      }],
+    },
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  const firstPicker = () => form.shadowRoot.querySelector('rtgl-color-picker');
+
+  window.addEventListener('vt:open-form-color-picker', () => {
+    firstPicker().shadowRoot.querySelector('button.trigger').click();
+  });
+
+  window.colorPickerOpen = {
+    getState() {
+      const picker = firstPicker();
+      const popover = picker.shadowRoot.querySelector('rtgl-popover');
+      return {
+        open: !!popover && popover.hasAttribute('open'),
+        hasPanel: !!picker.shadowRoot.querySelector('.sv')
+          && !!picker.shadowRoot.querySelector('.hue')
+          && !!picker.shadowRoot.querySelector('.hexfield input'),
+        value: picker.value,
+      };
+    },
+  };
+</script>
