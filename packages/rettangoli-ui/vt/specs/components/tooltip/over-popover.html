@@ -1,0 +1,55 @@
+---
+title: Tooltip - Over Popover
+description: Verifies tooltips paint above an open modal popover wherever they sit in the DOM.
+specs:
+  - A page-level tooltip opened over the popover paints above the panel and its text.
+  - A tooltip inside the popover content paints past the panel edge.
+skipInitialScreenshot: true
+viewport:
+  id: desktop
+  width: 900
+  height: 700
+steps:
+  - action: waitFor
+    selector: '#popover[positioned]'
+    state: attached
+    timeoutMs: 1200
+  - action: customEvent
+    name: vt:open-tooltips
+  - action: waitFor
+    selector: '#outside-tooltip[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+<rtgl-view h="100vh" w="100vw" p="lg" g="md">
+  <rtgl-text>Page content behind the popover</rtgl-text>
+</rtgl-view>
+
+<rtgl-popover id="popover" open x="320" y="200" place="bs" content-g="md">
+  <rtgl-button id="inside-anchor">Inside anchor</rtgl-button>
+  <rtgl-text>The tooltip above lives inside the popover.</rtgl-text>
+  <rtgl-text>A page-level tooltip covers this line of panel text.</rtgl-text>
+  <rtgl-button id="outside-anchor" v="se">Page-level anchor</rtgl-button>
+  <rtgl-tooltip id="inside-tooltip" content="Tooltip inside the popover"></rtgl-tooltip>
+</rtgl-popover>
+
+<rtgl-tooltip id="outside-tooltip" s="md" content="Page-level tooltip drawn above the popover panel"></rtgl-tooltip>
+
+<script>
+  const openAt = (tooltipId, anchorId, place) => {
+    const rect = document.getElementById(anchorId).getBoundingClientRect();
+    const tooltip = document.getElementById(tooltipId);
+    tooltip.setAttribute('place', place);
+    tooltip.setAttribute('x', String(rect.left + rect.width / 2));
+    tooltip.setAttribute('y', String(rect.top));
+    tooltip.setAttribute('open', '');
+  };
+
+  window.addEventListener('vt:open-tooltips', () => {
+    openAt('inside-tooltip', 'inside-anchor', 't');
+    openAt('outside-tooltip', 'outside-anchor', 't');
+  });
+</script>
