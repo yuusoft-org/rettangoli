@@ -87,6 +87,7 @@ class RettangoliButtonElement extends HTMLElement {
 
         :host([disabled]) .surface {
           cursor: not-allowed;
+          opacity: 0.5;
         }
 
         /* A translucent white overlay paints the same colour as
@@ -105,19 +106,25 @@ class RettangoliButtonElement extends HTMLElement {
           );
         }
 
-        :host([v="ol"]) .surface:hover {
+        /* Disabled buttons give no hover or press feedback. */
+        :host([disabled]) .surface:hover,
+        :host([disabled]) .surface:active {
+          background-image: none;
+        }
+
+        :host([v="ol"]:not([disabled])) .surface:hover {
           background-color: var(--accent);
         }
 
-        :host([v="ol"]) .surface:active {
+        :host([v="ol"]:not([disabled])) .surface:active {
           background-color: var(--accent);
         }
 
-        :host([v="gh"]) .surface:hover {
+        :host([v="gh"]:not([disabled])) .surface:hover {
           background-color: var(--accent);
         }
 
-        :host([v="lk"]) .surface:hover {
+        :host([v="lk"]:not([disabled])) .surface:hover {
           text-decoration: underline;
         }
 
