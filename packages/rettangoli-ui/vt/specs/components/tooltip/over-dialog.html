@@ -1,0 +1,61 @@
+---
+title: Tooltip - Over Dialog
+description: Verifies tooltips paint above an open modal dialog wherever they sit in the DOM.
+specs:
+  - A page-level tooltip opened over the dialog paints above the dialog box and is not dimmed by its backdrop.
+  - A tooltip inside the dialog content paints past the dialog edge.
+skipInitialScreenshot: true
+viewport:
+  id: desktop
+  width: 900
+  height: 700
+steps:
+  - action: waitFor
+    selector: '#dialog[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: vt:open-tooltips
+  - action: waitFor
+    selector: '#outside-tooltip[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+<rtgl-view h="100vh" w="100vw" p="lg" g="md">
+  <rtgl-text>Page content behind the dialog</rtgl-text>
+</rtgl-view>
+
+<rtgl-dialog id="dialog" open s="sm">
+  <rtgl-view slot="content" g="md">
+    <rtgl-button id="inside-anchor">Inside anchor</rtgl-button>
+    <rtgl-text>The tooltip above lives inside the dialog content.</rtgl-text>
+    <rtgl-text>The tooltip below lives outside the dialog, at page level.</rtgl-text>
+    <rtgl-button id="outside-anchor" v="se">Page-level tooltip anchor</rtgl-button>
+    <rtgl-tooltip id="inside-tooltip" content="Tooltip inside the dialog"></rtgl-tooltip>
+  </rtgl-view>
+</rtgl-dialog>
+
+<rtgl-tooltip id="outside-tooltip" s="md" content="Page-level tooltip drawn above the dialog box and its backdrop"></rtgl-tooltip>
+
+<script>
+  const openAt = (tooltipId, anchorId, place) => {
+    const rect = document.getElementById(anchorId).getBoundingClientRect();
+    const tooltip = document.getElementById(tooltipId);
+    tooltip.setAttribute('place', place);
+    tooltip.setAttribute('x', String(rect.left + rect.width / 2));
+    // Below the anchor's middle, so the page-level tooltip overlaps the
+    // container's bottom edge.
+    tooltip.setAttribute('y', String(place === 't' ? rect.top : rect.top + rect.height / 2));
+    tooltip.setAttribute('open', '');
+  };
+
+  window.addEventListener('vt:open-tooltips', () => {
+    openAt('inside-tooltip', 'inside-anchor', 't');
+    openAt('outside-tooltip', 'outside-anchor', 'b');
+  });
+</script>

@@ -51,3 +51,9 @@ A lightweight floating hint component for short contextual help.
 - Uses explicit `x`/`y` positioning.
 - `place` controls orientation relative to anchor point.
 - `s` controls tooltip padding, text scale, and max width presets.
+- Opens in the browser top layer, so it paints above open dialogs and popovers
+  wherever it sits in the DOM, and is not clipped by transformed or
+  `overflow: hidden` ancestors. The page beneath stays interactive.
+- Browsers without the Popover API (before Safari 17, Chrome 114, Firefox 125)
+  open it as a non-modal dialog instead; there, place the tooltip inside an
+  open dialog or popover so it renders above it.
