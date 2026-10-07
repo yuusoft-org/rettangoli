@@ -1,15 +1,76 @@
 ---
 title: Button - Disabled - Interactive State
-description: Verifies disabled button styling and contrast against enabled buttons.
+description: Verifies disabled button styling and contrast against enabled buttons across every variant.
 specs:
-  - Disabled buttons remain visibly non-interactive.
-  - Enabled buttons preserve normal baseline appearance nearby.
-  - State contrast is clear in a shared layout context.
+  - Disabled buttons render dimmed at half opacity in every variant, including their icons.
+  - Enabled buttons preserve normal baseline appearance beside each disabled button.
+  - Hovering a disabled button adds no overlay, accent background or underline.
+steps:
+  - action: select
+    selector: "#disabled-se"
+    steps:
+      - action: hover
+  - action: screenshot
+  - action: select
+    selector: "#disabled-ol"
+    steps:
+      - action: hover
+  - action: screenshot
+  - action: select
+    selector: "#disabled-lk"
+    steps:
+      - action: hover
+  - action: screenshot
 ---
 
 <rtgl-view g="md" p="lg" wh="f">
-    <rtgl-text>Disabled</rtgl-text>
-    <rtgl-button disabled>Button</rtgl-button>
-    <rtgl-text>Not Disabled</rtgl-text>
-    <rtgl-button>Button</rtgl-button>
+    <rtgl-view d="h" g="md" av="c">
+        <rtgl-text w="96">default</rtgl-text>
+        <rtgl-button>Enabled</rtgl-button>
+        <rtgl-button disabled>Disabled</rtgl-button>
+        <rtgl-button pre="text" disabled>Disabled</rtgl-button>
+        <rtgl-button pre="text" sq disabled></rtgl-button>
+    </rtgl-view>
+    <rtgl-view d="h" g="md" av="c">
+        <rtgl-text w="96">pr</rtgl-text>
+        <rtgl-button v="pr">Enabled</rtgl-button>
+        <rtgl-button v="pr" disabled>Disabled</rtgl-button>
+        <rtgl-button v="pr" pre="text" disabled>Disabled</rtgl-button>
+        <rtgl-button v="pr" pre="text" sq disabled></rtgl-button>
+    </rtgl-view>
+    <rtgl-view d="h" g="md" av="c">
+        <rtgl-text w="96">se</rtgl-text>
+        <rtgl-button v="se">Enabled</rtgl-button>
+        <rtgl-button id="disabled-se" v="se" disabled>Disabled</rtgl-button>
+        <rtgl-button v="se" pre="text" disabled>Disabled</rtgl-button>
+        <rtgl-button v="se" pre="text" sq disabled></rtgl-button>
+    </rtgl-view>
+    <rtgl-view d="h" g="md" av="c">
+        <rtgl-text w="96">de</rtgl-text>
+        <rtgl-button v="de">Enabled</rtgl-button>
+        <rtgl-button v="de" disabled>Disabled</rtgl-button>
+        <rtgl-button v="de" pre="text" disabled>Disabled</rtgl-button>
+        <rtgl-button v="de" pre="text" sq disabled></rtgl-button>
+    </rtgl-view>
+    <rtgl-view d="h" g="md" av="c">
+        <rtgl-text w="96">ol</rtgl-text>
+        <rtgl-button v="ol">Enabled</rtgl-button>
+        <rtgl-button id="disabled-ol" v="ol" disabled>Disabled</rtgl-button>
+        <rtgl-button v="ol" pre="text" disabled>Disabled</rtgl-button>
+        <rtgl-button v="ol" pre="text" sq disabled></rtgl-button>
+    </rtgl-view>
+    <rtgl-view d="h" g="md" av="c">
+        <rtgl-text w="96">gh</rtgl-text>
+        <rtgl-button v="gh">Enabled</rtgl-button>
+        <rtgl-button v="gh" disabled>Disabled</rtgl-button>
+        <rtgl-button v="gh" pre="text" disabled>Disabled</rtgl-button>
+        <rtgl-button v="gh" pre="text" sq disabled></rtgl-button>
+    </rtgl-view>
+    <rtgl-view d="h" g="md" av="c">
+        <rtgl-text w="96">lk</rtgl-text>
+        <rtgl-button v="lk">Enabled</rtgl-button>
+        <rtgl-button id="disabled-lk" v="lk" disabled>Disabled</rtgl-button>
+        <rtgl-button v="lk" pre="text" disabled>Disabled</rtgl-button>
+        <rtgl-button v="lk" pre="text" sq disabled></rtgl-button>
+    </rtgl-view>
 </rtgl-view>
