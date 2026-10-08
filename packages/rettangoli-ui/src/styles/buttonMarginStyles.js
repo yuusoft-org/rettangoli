@@ -10,7 +10,7 @@ const styles = {
   mv: spacing,
   s: {
     sm: `
-    height: 28px;
+    height: 24px;
     padding-left: 12px;
     padding-right: 12px;
     border-radius: 4px;

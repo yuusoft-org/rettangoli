@@ -16,6 +16,7 @@
 - `rtgl-view`, `rtgl-grid`, `rtgl-image`, and `rtgl-textarea`: initialize responsive styles once and recalculate only affected breakpoints, retaining existing responsive inheritance and live updates.
 - `rtgl-image`: avoid rewriting image sources during alt, style, and reconnect updates.
 - `rtgl-textarea`: coalesce value and placeholder updates without unnecessary layout work while preserving editing state and event timing.
+- `rtgl-button`: `s="sm"` buttons are now 24px tall, matching square small buttons, `rtgl-input s=sm`, and `rtgl-segmented-control s=sm`. Square (`sq`) buttons take their width from the active size, so they stay square under responsive `sm-s` / `md-s` / `lg-s` / `xl-s` sizes and when rendered as links with `href`.
 - `rtgl-button`: reuse the native control, slot, and icons during updates; defer detached initialization until connection and skip viewport reads for non-responsive sizes to reduce list mounting cost and preserve keyboard focus.
 
 - `rtgl-global-ui`: removed duplicate content padding and action spacing from alert and confirm dialogs so they use one `lg` inset and one `lg` action gap on mobile and desktop.
