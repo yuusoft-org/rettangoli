@@ -1,0 +1,26 @@
+---
+title: Button - Square - Matches Text Button Height
+description: Verifies square buttons share the height of text buttons at every size, including square link buttons.
+specs:
+  - Small, medium, and large square buttons match the height of text buttons of the same size.
+  - Square link buttons keep equal width and height.
+---
+
+<rtgl-view g="md" p="lg" wh="f">
+    <rtgl-view d="h" g="md" av="c">
+        <rtgl-button s="sm">Button</rtgl-button>
+        <rtgl-button sq s="sm" pre="text"></rtgl-button>
+    </rtgl-view>
+    <rtgl-view d="h" g="md" av="c">
+        <rtgl-button>Button</rtgl-button>
+        <rtgl-button sq pre="text"></rtgl-button>
+    </rtgl-view>
+    <rtgl-view d="h" g="md" av="c">
+        <rtgl-button s="lg">Button</rtgl-button>
+        <rtgl-button sq s="lg" pre="text"></rtgl-button>
+    </rtgl-view>
+    <rtgl-view d="h" g="md" av="c">
+        <rtgl-button href="/">Link</rtgl-button>
+        <rtgl-button sq href="/" pre="text"></rtgl-button>
+    </rtgl-view>
+</rtgl-view>

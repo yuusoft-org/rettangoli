@@ -128,33 +128,21 @@ class RettangoliButtonElement extends HTMLElement {
           text-decoration: underline;
         }
 
-        /* Square button styles */
-        :host([sq]) .surface {
-          width: 32px;
-          height: 32px;
-          padding: 0;
-          gap: 0;
-        }
-
-        :host([sq][s="sm"]) .surface {
-          width: 24px;
-          height: 24px;
-          padding: 0;
-          gap: 0;
-        }
-
-        :host([sq][s="lg"]) .surface {
-          width: 40px;
-          height: 40px;
-          padding: 0;
-          gap: 0;
-        }
-
         .surface rtgl-svg {
           color: inherit;
         }
 
         ${buttonMarginStyles}
+
+        /* Square buttons keep the height of their size, including responsive
+           s variants, and match it in width. Declared after the size rules
+           so the zero padding wins. */
+        :host([sq]) .surface {
+          aspect-ratio: 1;
+          padding-left: 0;
+          padding-right: 0;
+          gap: 0;
+        }
       `);
     }
   }
