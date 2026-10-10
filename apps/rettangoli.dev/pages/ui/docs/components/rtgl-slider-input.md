@@ -44,6 +44,7 @@ A synchronized numeric control that combines slider and number input.
 | Step | `step` | number | `1` |
 | Size | `s` | `sm`, `md` | `md` |
 | Width | `w` | number, `%`, `f`, CSS length/value | - |
+| Disabled | `disabled` | boolean | `false` |
 
 ## Events
 

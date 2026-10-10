@@ -377,10 +377,16 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 
 ### `rtgl-input`
 
-- native text, password, date, time, datetime, and number inputs always use `box-sizing: border-box`
-- default height is 32px; `s=sm` is 24px, including borders and padding; `rtgl-input-number` and the number input of `rtgl-slider-input` use the same sizes
+- native text, password, date, time, and datetime inputs always use `box-sizing: border-box`
+- default height is 32px; `s=sm` is 24px, including borders and padding
 - explicit and responsive `w`, `h`, and `wh` dimensions describe the complete native control
 - standalone and form inputs share these sizing rules; `data-form-row` does not change the box model
+
+### `rtgl-input-number`
+
+- uses `box-sizing: border-box` and the same sizes as `rtgl-input`: 32px by default and 24px with `s=sm`, including borders and padding
+- explicit and responsive `w`, `h`, and `wh` dimensions describe the complete native control
+- `rtgl-slider-input` passes its `s` to its number input, so it takes the same sizes
 
 ### `rtgl-grid`
 

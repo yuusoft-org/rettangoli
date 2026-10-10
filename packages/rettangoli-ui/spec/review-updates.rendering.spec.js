@@ -105,6 +105,41 @@ it("preserves a numeric draft while accessibility metadata changes", async () =>
   expect(host.shadowRoot.querySelector("#slider").value).toBe("2.5");
 });
 
+it.each([
+  ["attributes", (host) => {
+    host.setAttribute("s", "sm");
+    host.setAttribute("w", "200");
+    host.setAttribute("disabled", "");
+  }, (host) => host.removeAttribute("disabled")],
+  ["properties", (host) => {
+    host.s = "sm";
+    host.w = "200";
+    host.disabled = true;
+  }, (host) => {
+    host.disabled = false;
+  }],
+])("preserves a numeric draft while size, width, and disabled change by %s", async (_, change, enable) => {
+  const host = document.createElement("rtgl-slider-input");
+  host.value = "2.5";
+  document.body.append(host);
+  await vi.runAllTimersAsync();
+  const input = host.shadowRoot.querySelector("#input").shadowRoot.querySelector("input");
+  input.value = "7";
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+
+  change(host);
+  await vi.runAllTimersAsync();
+  expect(input.value).toBe("7");
+  expect(host.shadowRoot.querySelector("#slider").value).toBe("7");
+  expect(host.shadowRoot.querySelector("#input").getAttribute("s")).toBe("sm");
+  expect(input.disabled).toBe(true);
+
+  enable(host);
+  await vi.runAllTimersAsync();
+  expect(input.value).toBe("7");
+  expect(input.disabled).toBe(false);
+});
+
 describe("slider input ranges", () => {
   const mountSliderInput = async (attributes) => {
     const host = document.createElement("rtgl-slider-input");
