@@ -352,6 +352,8 @@ Value: `number`
 |---|---|
 | `min` | Minimum value |
 | `max` | Maximum value |
+| `sliderMin` | Where the slider starts (defaults to `min`) |
+| `sliderMax` | Where the slider ends (defaults to `max`) |
 | `step` | Increment step |
 
 ```yaml
@@ -360,6 +362,21 @@ Value: `number`
   label: Opacity
   min: 0
   max: 100
+  step: 1
+```
+
+Set `sliderMin` and `sliderMax` when the slider should cover a smaller range
+than the value can take. Typed values still reach `min` and `max`, and the
+slider thumb rests at the nearer end for a value past its range.
+
+```yaml
+- name: fontSize
+  type: slider-with-input
+  label: Font Size
+  min: 1
+  max: 1000
+  sliderMin: 8
+  sliderMax: 128
   step: 1
 ```
 

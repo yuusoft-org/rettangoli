@@ -1,0 +1,15 @@
+---
+title: "Slider Range"
+---
+<rtgl-view g="lg" p="lg">
+  <rtgl-slider-input id="within-range" value="64" min="1" max="1000" slider-min="8" slider-max="128"></rtgl-slider-input>
+  <rtgl-slider-input id="past-range" value="200" min="1" max="1000" slider-min="8" slider-max="128"></rtgl-slider-input>
+</rtgl-view>
+
+<script>
+  for (const sliderInput of document.querySelectorAll('rtgl-slider-input')) {
+    sliderInput.addEventListener('value-change', (e) => {
+      console.log('value-change', sliderInput.id, e.detail);
+    });
+  }
+</script>

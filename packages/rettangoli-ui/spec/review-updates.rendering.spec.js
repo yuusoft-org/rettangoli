@@ -105,6 +105,75 @@ it("preserves a numeric draft while accessibility metadata changes", async () =>
   expect(host.shadowRoot.querySelector("#slider").value).toBe("2.5");
 });
 
+describe("slider input ranges", () => {
+  const mountSliderInput = async (attributes) => {
+    const host = document.createElement("rtgl-slider-input");
+    for (const [name, value] of Object.entries(attributes)) host.setAttribute(name, value);
+    document.body.append(host);
+    await vi.runAllTimersAsync();
+    const native = (selector) => host.shadowRoot.querySelector(selector).shadowRoot.querySelector("input");
+    return { host, slider: native("#slider"), input: native("#input") };
+  };
+
+  const commitTyped = (input, value) => {
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  };
+
+  it("runs the slider over min to max by default", async () => {
+    const { slider, input } = await mountSliderInput({ min: "-1", max: "1", step: "0.1" });
+    expect([slider.min, slider.max]).toEqual(["-1", "1"]);
+    expect([input.min, input.max]).toEqual(["-1", "1"]);
+  });
+
+  it("runs the slider over slider-min to slider-max while typed values reach min and max", async () => {
+    const { host, slider, input } = await mountSliderInput({
+      value: "200", min: "0", max: "1000", "slider-min": "8", "slider-max": "128",
+    });
+    const changes = [];
+    host.addEventListener("value-change", (event) => changes.push(event.detail.value));
+
+    expect([slider.min, slider.max]).toEqual(["8", "128"]);
+    expect([input.min, input.max]).toEqual(["0", "1000"]);
+    // A value past the slider's range keeps its number.
+    expect(input.value).toBe("200");
+
+    commitTyped(input, "640");
+    await vi.runAllTimersAsync();
+    commitTyped(input, "5000");
+    await vi.runAllTimersAsync();
+    // The number input still keeps a typed value within min and max.
+    expect(changes).toEqual([640, 1000]);
+    expect(input.value).toBe("1000");
+  });
+
+  it.each([
+    ["attributes", (host, values) => {
+      for (const [name, value] of Object.entries(values)) host.setAttribute(name, value);
+    }],
+    ["properties", (host, values) => {
+      for (const [name, value] of Object.entries(values)) {
+        host[name.replace(/-(\w)/g, (_, letter) => letter.toUpperCase())] = value;
+      }
+    }],
+  ])("applies range %s changed after mounting", async (_, setRange) => {
+    const { host, slider, input } = await mountSliderInput({ value: "50" });
+    setRange(host, { min: "10", max: "80", "slider-min": "20", "slider-max": "60", step: "5" });
+    await vi.runAllTimersAsync();
+
+    expect([slider.min, slider.max, slider.step]).toEqual(["20", "60", "5"]);
+    expect([input.min, input.max, input.step]).toEqual(["10", "80", "5"]);
+  });
+
+  it("runs the slider over min to max when slider-min or slider-max is empty", async () => {
+    const { slider } = await mountSliderInput({
+      value: "50", min: "10", max: "90", "slider-min": "", "slider-max": "",
+    });
+    expect([slider.min, slider.max]).toEqual(["10", "90"]);
+  });
+});
+
 describe("controlled tabs after keyboard navigation", () => {
   it("keeps one rendered tab stop across navigation, selection updates, and item removal", async () => {
     const host = document.createElement("rtgl-tabs");
