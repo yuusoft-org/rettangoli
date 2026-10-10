@@ -15,7 +15,8 @@ const toSliderBound = (value, fallback) => {
 
 // min and max bound the value and the number input. The slider runs over
 // sliderMin to sliderMax when set, so a typed value can go past its ends; the
-// thumb then rests at the nearer end.
+// thumb then rests at the nearer end. The number input takes the input sizes,
+// sm and the default md.
 export const selectViewData = ({ state, props }) => {
   const min = props.min ?? 0;
   const max = props.max ?? 100;
@@ -25,6 +26,7 @@ export const selectViewData = ({ state, props }) => {
     value: state.value,
     inputValue: state.inputValue,
     w: props.w ?? '',
+    s: props.s === "sm" ? "sm" : "md",
     min,
     max,
     sliderMin: toSliderBound(props.sliderMin, min),

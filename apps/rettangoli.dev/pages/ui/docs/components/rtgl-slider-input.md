@@ -42,6 +42,7 @@ A synchronized numeric control that combines slider and number input.
 | Slider Min | `slider-min` | number | `min` |
 | Slider Max | `slider-max` | number | `max` |
 | Step | `step` | number | `1` |
+| Size | `s` | `sm`, `md` | `md` |
 | Width | `w` | number, `%`, `f`, CSS length/value | - |
 
 ## Events
@@ -57,7 +58,20 @@ A synchronized numeric control that combines slider and number input.
 
 - Slider and numeric input stay in sync.
 - Changing either side updates shared value state.
-- `min`, `max`, `step`, `slider-min` and `slider-max` apply when changed after mount.
+- `min`, `max`, `step`, `slider-min`, `slider-max`, `s`, `w` and `disabled` apply when changed after mount.
+
+### Size
+
+`s` sizes the numeric input like `rtgl-input` and `rtgl-input-number`: `s="sm"`
+is 24px high with extra-small text, and the default `s="md"` is 32px high. The
+slider keeps its size, so the control is as high as an input of the same size.
+
+```html codePreview
+<rtgl-view g="md" w="320">
+  <rtgl-slider-input value="40" s="sm"></rtgl-slider-input>
+  <rtgl-slider-input value="40"></rtgl-slider-input>
+</rtgl-view>
+```
 
 ### Slider range
 

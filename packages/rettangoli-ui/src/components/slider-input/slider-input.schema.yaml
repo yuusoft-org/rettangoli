@@ -18,6 +18,11 @@ propsSchema:
     w:
       type: string
       default: ''
+    s:
+      type: string
+      enum: [sm, md]
+      default: md
+      description: Size of the number input, matching rtgl-input and rtgl-input-number. sm is 24px high and md 32px.
     min:
       type: string
       default: '0'

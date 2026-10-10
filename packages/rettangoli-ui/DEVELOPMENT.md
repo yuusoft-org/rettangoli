@@ -67,7 +67,7 @@ This is the intentional component surface and what each component is meant to pr
 | `rtgl-segmented-control` | inline single-choice selection | text or icon-only options, per-option hover tooltips, selected value, no-clear mode, add-option action |
 | `rtgl-tag-select`        | multi-tag selection            | select-shaped options, selected value array, add popover, right-click delete                           |
 | `rtgl-sidebar`           | app/sidebar navigation         | header plus grouped items, selected item state, item/header events, public item-list scroll methods     |
-| `rtgl-slider-input`      | synchronized numeric control   | linked slider + number input, min/max/step, optional slider range, value events                        |
+| `rtgl-slider-input`      | synchronized numeric control   | linked slider + number input, min/max/step, optional slider range, input sizes, value events           |
 | `rtgl-table`             | tabular data display           | column/row model, sortable headers, row click event                                                    |
 | `rtgl-tabs`              | segmented single selection     | tab items, selected tab state, item click event                                                        |
 | `rtgl-tooltip`           | short contextual hint          | controlled open/position/placement/content                                                             |
@@ -377,8 +377,8 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 
 ### `rtgl-input`
 
-- native text, password, date, time, and datetime inputs always use `box-sizing: border-box`
-- default height is 32px; `s=sm` is 24px, including borders and padding
+- native text, password, date, time, datetime, and number inputs always use `box-sizing: border-box`
+- default height is 32px; `s=sm` is 24px, including borders and padding; `rtgl-input-number` and the number input of `rtgl-slider-input` use the same sizes
 - explicit and responsive `w`, `h`, and `wh` dimensions describe the complete native control
 - standalone and form inputs share these sizing rules; `data-form-row` does not change the box model
 

@@ -355,6 +355,7 @@ Value: `number`
 | `sliderMin` | Where the slider starts (defaults to `min`) |
 | `sliderMax` | Where the slider ends (defaults to `max`) |
 | `step` | Increment step |
+| `s` | Size of the number input, `sm` (24px) or the default `md` (32px), as `rtgl-input` |
 
 ```yaml
 - name: opacity
