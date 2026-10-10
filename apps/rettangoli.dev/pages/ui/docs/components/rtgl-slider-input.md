@@ -57,6 +57,7 @@ A synchronized numeric control that combines slider and number input.
 
 - Slider and numeric input stay in sync.
 - Changing either side updates shared value state.
+- `min`, `max`, `step`, `slider-min` and `slider-max` apply when changed after mount.
 
 ### Slider range
 

@@ -4,6 +4,15 @@ export const createInitialState = () => Object.freeze({
   inputValue: 0
 });
 
+// Only a number sets an end of the slider's range. An empty attribute arrives
+// as true, and a binding to an unset value renders an empty attribute.
+const toSliderBound = (value, fallback) => {
+  const isNumber = ["number", "string"].includes(typeof value)
+    && String(value).trim() !== ""
+    && Number.isFinite(Number(value));
+  return isNumber ? value : fallback;
+};
+
 // min and max bound the value and the number input. The slider runs over
 // sliderMin to sliderMax when set, so a typed value can go past its ends; the
 // thumb then rests at the nearer end.
@@ -18,8 +27,8 @@ export const selectViewData = ({ state, props }) => {
     w: props.w ?? '',
     min,
     max,
-    sliderMin: props.sliderMin ?? min,
-    sliderMax: props.sliderMax ?? max,
+    sliderMin: toSliderBound(props.sliderMin, min),
+    sliderMax: toSliderBound(props.sliderMax, max),
     step: props.step ?? 1,
     disabled: Boolean(props.disabled),
   };

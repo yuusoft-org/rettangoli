@@ -10,6 +10,9 @@ export const handleBeforeMount = ({ store, props }) => {
   store.setValue({ value: normalizeValue(props.value, props) });
 };
 
+// Props that set where the slider and the number input run.
+const RANGE_PROPS = ["min", "max", "sliderMin", "sliderMax", "step"];
+
 export const handleOnUpdate = ({ store, render, props }, { oldProps, newProps }) => {
   const keyChanged = oldProps?.key !== newProps?.key;
   const valueChanged = keyChanged || oldProps?.value !== newProps?.value;
@@ -18,7 +21,8 @@ export const handleOnUpdate = ({ store, render, props }, { oldProps, newProps })
     // A controlled parent may echo a live edit. Keep the native draft/caret.
     if (keyChanged || value !== store.selectValue()) store.setValue({ value });
   }
-  if (valueChanged || hasFieldAriaChanged(oldProps, newProps)) render();
+  const rangeChanged = RANGE_PROPS.some((name) => oldProps?.[name] !== newProps?.[name]);
+  if (valueChanged || rangeChanged || hasFieldAriaChanged(oldProps, newProps)) render();
 };
 
 export const handleValueInput = ({ store, render, dispatchEvent }, { _event: event }) => {

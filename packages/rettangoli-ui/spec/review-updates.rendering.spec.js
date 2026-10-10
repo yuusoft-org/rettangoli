@@ -147,6 +147,31 @@ describe("slider input ranges", () => {
     expect(changes).toEqual([640, 1000]);
     expect(input.value).toBe("1000");
   });
+
+  it.each([
+    ["attributes", (host, values) => {
+      for (const [name, value] of Object.entries(values)) host.setAttribute(name, value);
+    }],
+    ["properties", (host, values) => {
+      for (const [name, value] of Object.entries(values)) {
+        host[name.replace(/-(\w)/g, (_, letter) => letter.toUpperCase())] = value;
+      }
+    }],
+  ])("applies range %s changed after mounting", async (_, setRange) => {
+    const { host, slider, input } = await mountSliderInput({ value: "50" });
+    setRange(host, { min: "10", max: "80", "slider-min": "20", "slider-max": "60", step: "5" });
+    await vi.runAllTimersAsync();
+
+    expect([slider.min, slider.max, slider.step]).toEqual(["20", "60", "5"]);
+    expect([input.min, input.max, input.step]).toEqual(["10", "80", "5"]);
+  });
+
+  it("runs the slider over min to max when slider-min or slider-max is empty", async () => {
+    const { slider } = await mountSliderInput({
+      value: "50", min: "10", max: "90", "slider-min": "", "slider-max": "",
+    });
+    expect([slider.min, slider.max]).toEqual(["10", "90"]);
+  });
 });
 
 describe("controlled tabs after keyboard navigation", () => {
