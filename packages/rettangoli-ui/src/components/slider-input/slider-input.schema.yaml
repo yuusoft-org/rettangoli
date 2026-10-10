@@ -24,6 +24,12 @@ propsSchema:
     max:
       type: string
       default: '100'
+    sliderMin:
+      type: string
+      description: Where the slider starts, when it should run over a smaller range than min to max. Defaults to min.
+    sliderMax:
+      type: string
+      description: Where the slider ends, when it should run over a smaller range than min to max. Defaults to max.
     step:
       type: string
       default: '1'

@@ -39,6 +39,8 @@ A synchronized numeric control that combines slider and number input.
 | Value | `value` | number | `0` |
 | Min | `min` | number | `0` |
 | Max | `max` | number | `100` |
+| Slider Min | `slider-min` | number | `min` |
+| Slider Max | `slider-max` | number | `max` |
 | Step | `step` | number | `1` |
 | Width | `w` | number, `%`, `f`, CSS length/value | - |
 
@@ -55,3 +57,22 @@ A synchronized numeric control that combines slider and number input.
 
 - Slider and numeric input stay in sync.
 - Changing either side updates shared value state.
+
+### Slider range
+
+`min` and `max` bound the value and the numeric input. By default the slider
+runs over the same range. Set `slider-min` and `slider-max` to run the slider
+over a smaller, more useful range while typed values can still reach `min` and
+`max`. A value past the slider's range keeps its number, and the slider thumb
+rests at the nearer end.
+
+```html codePreview
+<rtgl-slider-input
+  value="200"
+  min="1"
+  max="1000"
+  slider-min="8"
+  slider-max="128"
+  w="320"
+></rtgl-slider-input>
+```
