@@ -5,6 +5,7 @@ import {
   handleKeyDown,
   handleOnUpdate,
   handleSectionActionClick,
+  handleTooltipMouseEnter,
   handleValueChange,
   handleValueInput,
 } from "../src/components/form/form.handlers.js";
@@ -688,5 +689,55 @@ describe("rtgl-form handlers", () => {
 
     expect(preventDefault).not.toHaveBeenCalled();
     expect(dispatchEvent).not.toHaveBeenCalled();
+  });
+
+  it("shows the tooltip of a named slot field, which stays out of the values", () => {
+    const props = {
+      form: {
+        fields: [
+          {
+            type: "section",
+            label: "Movement",
+            fields: [
+              {
+                type: "slot",
+                slot: "speed-control",
+                name: "speed",
+                label: "Speed",
+                tooltip: { content: "Launch speed for new particles." },
+              },
+              {
+                name: "label",
+                type: "input-text",
+                tooltip: "A name to show.",
+              },
+            ],
+          },
+        ],
+      },
+    };
+    const store = createStore({ props });
+    const hover = (fieldName) =>
+      handleTooltipMouseEnter(
+        { store, render: vi.fn(), props },
+        {
+          _event: {
+            currentTarget: {
+              dataset: { fieldName },
+              getBoundingClientRect: () => ({ left: 10, top: 40, width: 16 }),
+            },
+          },
+        },
+      );
+
+    hover("speed");
+    expect(store.getState().tooltipState).toMatchObject({
+      open: true,
+      content: "Launch speed for new particles.",
+    });
+
+    hover("label");
+    expect(store.getState().tooltipState.content).toBe("A name to show.");
+    expect(store.selectFormValues()).not.toHaveProperty("speed");
   });
 });

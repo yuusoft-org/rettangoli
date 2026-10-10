@@ -553,11 +553,23 @@ viewport width.
 | property | description |
 |---|---|
 | `slot` | HTML slot name |
+| `name` | Optional. Lets the slot field show its `tooltip`; a slot field never adds a form value |
 
 ```yaml
 - type: slot
   label: Custom Widget
   slot: customWidget
+```
+
+A slot field with a `name` shows its `tooltip` like other fields:
+
+```yaml
+- type: slot
+  name: speed
+  label: Speed
+  tooltip:
+    content: Launch speed for new particles.
+  slot: speedControl
 ```
 
 Consumer provides:
