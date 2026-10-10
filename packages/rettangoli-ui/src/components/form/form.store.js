@@ -615,6 +615,20 @@ export const collectAllDataFields = (fields) => {
   return result;
 };
 
+// Every field with a name, including display fields such as slots, which
+// take a name only to be found, for example for their tooltip.
+export const collectAllNamedFields = (fields) => {
+  const result = [];
+  for (const field of fields) {
+    if (isFieldContainer(field) && Array.isArray(field.fields)) {
+      result.push(...collectAllNamedFields(field.fields));
+    } else if (field.name) {
+      result.push(field);
+    }
+  }
+  return result;
+};
+
 export const getDefaultValue = (field) => {
   switch (field.type) {
     case "input-text":

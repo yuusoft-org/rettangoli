@@ -4,6 +4,7 @@ import {
   selectForm,
   selectFormValues,
   collectAllDataFields,
+  collectAllNamedFields,
   getDefaultValue,
   validateForm,
 } from "./form.store.js";
@@ -478,7 +479,8 @@ export const handleTooltipMouseEnter = (deps, payload) => {
   const fieldName = event.currentTarget.dataset.fieldName;
 
   const form = selectForm({ state: store.getState(), props });
-  const allFields = collectAllDataFields(form.fields || []);
+  // Slot fields show a tooltip too when they have a name.
+  const allFields = collectAllNamedFields(form.fields || []);
   const field = allFields.find((f) => f.name === fieldName);
 
   if (field && field.tooltip) {

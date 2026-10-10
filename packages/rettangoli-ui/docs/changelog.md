@@ -4,6 +4,7 @@
 
 ### Improvements
 
+- `rtgl-form`: a `slot` field with a `name` shows its `tooltip`. Before, its info icon showed but hovering it showed nothing, since tooltips were looked up only among fields with values. A slot field's `name` adds no form value.
 - `rtgl-slider-input`: added `s="sm|md"`, sizing the number input like `rtgl-input` and `rtgl-input-number` (24px or the default 32px). `rtgl-form` `slider-with-input` fields accept `s`. `s`, `w`, and `disabled` now also apply when changed on the element after it mounts.
 - `rtgl-input-number`: uses `box-sizing: border-box` like `rtgl-input`, so it is 32px high, or 24px with `s="sm"`, instead of 4px more. Explicit `w`, `h`, and `wh` dimensions now include its padding and border: `h=40` draws 40px instead of 44px.
 - `rtgl-slider-input`: added `slider-min` / `slider-max` to run the slider over a smaller range than the value can take, defaulting to `min` / `max`. `min` and `max` still bound the value and the number input, so typed values can go past the slider's ends; the thumb then rests at the nearer end. `rtgl-form` `slider-with-input` fields accept the same range as `sliderMin` / `sliderMax`. An empty `slider-min` / `slider-max` falls back to `min` / `max`, and `min`, `max`, `step`, `slider-min` and `slider-max` now apply when changed on the element after it mounts.
