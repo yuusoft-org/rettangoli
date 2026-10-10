@@ -105,6 +105,41 @@ it("preserves a numeric draft while accessibility metadata changes", async () =>
   expect(host.shadowRoot.querySelector("#slider").value).toBe("2.5");
 });
 
+it.each([
+  ["attributes", (host) => {
+    host.setAttribute("s", "sm");
+    host.setAttribute("w", "200");
+    host.setAttribute("disabled", "");
+  }, (host) => host.removeAttribute("disabled")],
+  ["properties", (host) => {
+    host.s = "sm";
+    host.w = "200";
+    host.disabled = true;
+  }, (host) => {
+    host.disabled = false;
+  }],
+])("preserves a numeric draft while size, width, and disabled change by %s", async (_, change, enable) => {
+  const host = document.createElement("rtgl-slider-input");
+  host.value = "2.5";
+  document.body.append(host);
+  await vi.runAllTimersAsync();
+  const input = host.shadowRoot.querySelector("#input").shadowRoot.querySelector("input");
+  input.value = "7";
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+
+  change(host);
+  await vi.runAllTimersAsync();
+  expect(input.value).toBe("7");
+  expect(host.shadowRoot.querySelector("#slider").value).toBe("7");
+  expect(host.shadowRoot.querySelector("#input").getAttribute("s")).toBe("sm");
+  expect(input.disabled).toBe(true);
+
+  enable(host);
+  await vi.runAllTimersAsync();
+  expect(input.value).toBe("7");
+  expect(input.disabled).toBe(false);
+});
+
 describe("slider input ranges", () => {
   const mountSliderInput = async (attributes) => {
     const host = document.createElement("rtgl-slider-input");
@@ -164,6 +199,31 @@ describe("slider input ranges", () => {
 
     expect([slider.min, slider.max, slider.step]).toEqual(["20", "60", "5"]);
     expect([input.min, input.max, input.step]).toEqual(["10", "80", "5"]);
+  });
+
+  it("sizes the number input as rtgl-input-number, sm or the default md", async () => {
+    const control = await mountSliderInput({ value: "50" });
+    const numberHost = () => control.host.shadowRoot.querySelector("#input");
+    expect(numberHost().getAttribute("s")).toBe("md");
+
+    control.host.setAttribute("s", "sm");
+    await vi.runAllTimersAsync();
+    expect(numberHost().getAttribute("s")).toBe("sm");
+
+    // An unknown size keeps the default.
+    control.host.setAttribute("s", "lg");
+    await vi.runAllTimersAsync();
+    expect(numberHost().getAttribute("s")).toBe("md");
+  });
+
+  it("applies width and disabled changed after mounting", async () => {
+    const { host, slider, input } = await mountSliderInput({ value: "50" });
+    host.setAttribute("disabled", "");
+    host.setAttribute("w", "200");
+    await vi.runAllTimersAsync();
+
+    expect([slider.disabled, input.disabled]).toEqual([true, true]);
+    expect(host.shadowRoot.querySelector("rtgl-view").getAttribute("w")).toBe("200");
   });
 
   it("runs the slider over min to max when slider-min or slider-max is empty", async () => {

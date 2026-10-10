@@ -1,0 +1,41 @@
+---
+title: "Slider Input Sizes"
+viewport:
+  id: form-compact
+  width: 700
+  height: 400
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    opacity: 40,
+    volume: 75,
+  };
+
+  form.form = {
+    title: 'Slider Input Sizes',
+    fields: [{
+      name: 'opacity',
+      type: 'slider-with-input',
+      label: 'Small',
+      s: 'sm',
+      min: 0,
+      max: 100,
+      step: 1,
+    }, {
+      name: 'volume',
+      type: 'slider-with-input',
+      label: 'Default',
+      min: 0,
+      max: 100,
+      step: 1,
+    }],
+  };
+
+  document.getElementById('container').appendChild(form);
+</script>

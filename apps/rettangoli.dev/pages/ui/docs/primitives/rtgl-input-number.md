@@ -152,6 +152,9 @@ Use `disabled` when the field is unavailable.
 
 ## Size
 
+Sizes match `rtgl-input`: `s="sm"` is 24px high and the default `s="md"` is
+32px high, including borders and padding.
+
 ```html codePreview
 <rtgl-view g="md" w="320">
   <rtgl-input-number s="sm" placeholder="Small"></rtgl-input-number>
