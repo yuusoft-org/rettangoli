@@ -87,6 +87,7 @@ class RettangoliButtonElement extends HTMLElement {
 
         :host([disabled]) .surface {
           cursor: not-allowed;
+          opacity: 0.5;
         }
 
         /* A translucent white overlay paints the same colour as
@@ -105,42 +106,26 @@ class RettangoliButtonElement extends HTMLElement {
           );
         }
 
-        :host([v="ol"]) .surface:hover {
+        /* Disabled buttons give no hover or press feedback. */
+        :host([disabled]) .surface:hover,
+        :host([disabled]) .surface:active {
+          background-image: none;
+        }
+
+        :host([v="ol"]:not([disabled])) .surface:hover {
           background-color: var(--accent);
         }
 
-        :host([v="ol"]) .surface:active {
+        :host([v="ol"]:not([disabled])) .surface:active {
           background-color: var(--accent);
         }
 
-        :host([v="gh"]) .surface:hover {
+        :host([v="gh"]:not([disabled])) .surface:hover {
           background-color: var(--accent);
         }
 
-        :host([v="lk"]) .surface:hover {
+        :host([v="lk"]:not([disabled])) .surface:hover {
           text-decoration: underline;
-        }
-
-        /* Square button styles */
-        :host([sq]) .surface {
-          width: 32px;
-          height: 32px;
-          padding: 0;
-          gap: 0;
-        }
-
-        :host([sq][s="sm"]) .surface {
-          width: 24px;
-          height: 24px;
-          padding: 0;
-          gap: 0;
-        }
-
-        :host([sq][s="lg"]) .surface {
-          width: 40px;
-          height: 40px;
-          padding: 0;
-          gap: 0;
         }
 
         .surface rtgl-svg {
@@ -148,6 +133,16 @@ class RettangoliButtonElement extends HTMLElement {
         }
 
         ${buttonMarginStyles}
+
+        /* Square buttons keep the height of their size, including responsive
+           s variants, and match it in width. Declared after the size rules
+           so the zero padding wins. */
+        :host([sq]) .surface {
+          aspect-ratio: 1;
+          padding-left: 0;
+          padding-right: 0;
+          gap: 0;
+        }
       `);
     }
   }

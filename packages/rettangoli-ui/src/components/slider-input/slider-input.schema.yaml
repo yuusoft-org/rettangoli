@@ -18,12 +18,23 @@ propsSchema:
     w:
       type: string
       default: ''
+    s:
+      type: string
+      enum: [sm, md]
+      default: md
+      description: Size of the number input, matching rtgl-input and rtgl-input-number. sm is 24px high and md 32px.
     min:
       type: string
       default: '0'
     max:
       type: string
       default: '100'
+    sliderMin:
+      type: string
+      description: Where the slider starts, when it should run over a smaller range than min to max. Defaults to min.
+    sliderMax:
+      type: string
+      description: Where the slider ends, when it should run over a smaller range than min to max. Defaults to max.
     step:
       type: string
       default: '1'

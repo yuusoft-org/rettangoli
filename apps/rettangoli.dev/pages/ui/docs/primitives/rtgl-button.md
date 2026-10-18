@@ -87,7 +87,7 @@ Control the visual style and emphasis of buttons to match their importance and c
 
 ## Size
 
-Control the button scale with `sm`, `md`, and `lg`.
+Control the button scale with `sm`, `md`, and `lg`. Buttons are 24px, 32px, and 40px tall, matching inputs and segmented controls of the same size.
 
 ```html codePreview
 <rtgl-view d="h" g="md">
@@ -122,7 +122,7 @@ Use `sq` for icon-only square buttons.
 
 ### Behavior & precedence
 
-- `sq` produces square dimensions based on `s`.
+- `sq` produces square dimensions based on `s`, including responsive `s` attributes, so a square button matches the height of a text button of the same size.
 - When `sq` is set, `w` is ignored.
 - Pair `sq` with `pre` for a visible icon.
 - Give icon-only buttons an `aria-label`.

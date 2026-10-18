@@ -33,6 +33,7 @@ class RettangoliInputNumberElement extends HTMLElement {
           display: contents;
         }
         input {
+          box-sizing: border-box;
           background-color: var(--background);
           font-size: var(--sm-font-size);
           font-weight: var(--sm-font-weight);

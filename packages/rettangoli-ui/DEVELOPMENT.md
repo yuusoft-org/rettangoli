@@ -67,7 +67,7 @@ This is the intentional component surface and what each component is meant to pr
 | `rtgl-segmented-control` | inline single-choice selection | text or icon-only options, per-option hover tooltips, selected value, no-clear mode, add-option action |
 | `rtgl-tag-select`        | multi-tag selection            | select-shaped options, selected value array, add popover, right-click delete                           |
 | `rtgl-sidebar`           | app/sidebar navigation         | header plus grouped items, selected item state, item/header events, public item-list scroll methods     |
-| `rtgl-slider-input`      | synchronized numeric control   | linked slider + number input, min/max/step, value events                                               |
+| `rtgl-slider-input`      | synchronized numeric control   | linked slider + number input, min/max/step, optional slider range, input sizes, value events           |
 | `rtgl-table`             | tabular data display           | column/row model, sortable headers, row click event                                                    |
 | `rtgl-tabs`              | segmented single selection     | tab items, selected tab state, item click event                                                        |
 | `rtgl-tooltip`           | short contextual hint          | controlled open/position/placement/content                                                             |
@@ -220,6 +220,8 @@ These are valid exceptions to the short-attr rule:
 - `title`
 - `content`
 - `overflow`
+- `slider-min`
+- `slider-max`
 
 ## Form Input Types (rtgl-form)
 
@@ -379,6 +381,12 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - default height is 32px; `s=sm` is 24px, including borders and padding
 - explicit and responsive `w`, `h`, and `wh` dimensions describe the complete native control
 - standalone and form inputs share these sizing rules; `data-form-row` does not change the box model
+
+### `rtgl-input-number`
+
+- uses `box-sizing: border-box` and the same sizes as `rtgl-input`: 32px by default and 24px with `s=sm`, including borders and padding
+- explicit and responsive `w`, `h`, and `wh` dimensions describe the complete native control
+- `rtgl-slider-input` passes its `s` to its number input, so it takes the same sizes
 
 ### `rtgl-grid`
 
@@ -565,4 +573,7 @@ makes the selected tab the sole tab stop again.
 `rtgl-slider-input` preserves empty and partial numeric drafts while typing.
 The slider keeps the last valid value. Committing an empty draft restores that
 value; committing a number applies the configured bounds. A maximum of zero is
-valid.
+valid. `min` and `max` bound the value and the number input; `slider-min` and
+`slider-max` set a smaller range for the slider alone, and default to `min`
+and `max`. A value past the slider's range keeps its number, with the thumb at
+the nearer end.

@@ -1,0 +1,111 @@
+---
+title: "Slot Tooltip"
+description: Verifies a named slot field shows its tooltip when its info icon is hovered.
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+specs:
+  - Hovering the info icon of a slot field with a name opens its tooltip.
+  - Hovering the info icon of a data field still opens that field's tooltip.
+  - The slot field adds no form value.
+steps:
+  - action: wait
+    ms: 200
+  - action: select
+    selector: "#form rtgl-svg[data-field-name='speed'] svg"
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: "#form rtgl-tooltip[open][content='Launch speed.']"
+    state: attached
+    timeoutMs: 1200
+  - action: waitFor
+    selector: '#form rtgl-tooltip #popover[positioned]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: js
+    fn: slotTooltipTest.inspect
+    value:
+      tooltipOpen: true
+      tooltipContent: Launch speed.
+      formValues:
+        label: Spark
+  - action: screenshot
+  - action: select
+    selector: "#form rtgl-svg[data-field-name='label'] svg"
+    steps:
+      - action: hover
+  - action: waitFor
+    selector: "#form rtgl-tooltip[open][content='A name to show.']"
+    state: attached
+    timeoutMs: 1200
+  - action: waitFor
+    selector: '#form rtgl-tooltip #popover[positioned]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: js
+    fn: slotTooltipTest.inspect
+    value:
+      tooltipOpen: true
+      tooltipContent: A name to show.
+      formValues:
+        label: Spark
+  - action: screenshot
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    label: 'Spark',
+  }
+
+  form.form = {
+    title: 'Particle',
+    fields: [{
+      type: 'section',
+      label: 'Movement',
+      fields: [{
+        type: 'slot',
+        slot: 'speed-control',
+        name: 'speed',
+        label: 'Speed',
+        tooltip: {
+          content: 'Launch speed.',
+        },
+      }, {
+        name: 'label',
+        type: 'input-text',
+        label: 'Label',
+        tooltip: 'A name to show.',
+      }],
+    }],
+    actions: {
+      buttons: [],
+    }
+  }
+
+  form.innerHTML = `
+    <rtgl-button slot="speed-control" v="se">120</rtgl-button>
+  `;
+
+  window.slotTooltipTest = {
+    inspect: () => {
+      const tooltip = form.shadowRoot.querySelector('rtgl-tooltip');
+      return {
+        tooltipOpen: tooltip.hasAttribute('open'),
+        tooltipContent: tooltip.getAttribute('content'),
+        formValues: form.getValues(),
+      };
+    },
+  };
+
+  document.getElementById('container').appendChild(form);
+</script>

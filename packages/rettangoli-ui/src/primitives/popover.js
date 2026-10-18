@@ -10,8 +10,14 @@ const CONTENT_WRAPPER_ATTR = "data-rtgl-popover-content";
 const DEFAULT_CONTENT_STYLE = "min-width: 200px; max-width: 400px; box-sizing: border-box;";
 const ACTIVE_OVERLAY_ATTR = "data-rtgl-active-overlay";
 const ACTIVE_PLACE_ATTR = "data-rtgl-active-place";
+// Internal-only: rtgl-tooltip sets this so its non-modal surface opens in the
+// browser top layer, above any open modal dialog or popover.
+const TOP_LAYER_ATTR = "data-rtgl-top-layer";
 const RESPONSIVE_POPOVER_SIZES = ["sm", "md", "lg", "xl"];
 const mediaQueryCondition = (mediaQuery) => mediaQuery.replace(/^@media\s+/, "");
+const supportsPopoverApi = () =>
+  typeof HTMLElement !== "undefined"
+  && typeof HTMLElement.prototype.showPopover === "function";
 
 const parseResponsiveBooleanValue = (value, fallback = false) => {
   if (value === null || value === undefined) {
@@ -193,7 +199,7 @@ class RettangoliPopoverElement extends HTMLElement {
     this._revealFrameId = null;
     this._positionVersion = 0;
     this._isObservingResize = false;
-    this._isModalOpen = false;
+    this._dialogMode = null;
     this._observedContentWrapper = null;
     this._onWindowResize = () => {
       this._updateActiveStateAttributes();
@@ -226,6 +232,7 @@ class RettangoliPopoverElement extends HTMLElement {
         "overlay",
         "no-overlay",
       ]),
+      TOP_LAYER_ATTR,
       "content-w",
       "content-h",
       "content-wh",
@@ -259,10 +266,7 @@ class RettangoliPopoverElement extends HTMLElement {
     this._isOpen = false;
 
     // Clean up dialog if it's open
-    if (this._dialogElement.open) {
-      this._dialogElement.close();
-    }
-    this._isModalOpen = false;
+    this._closeDialogElement();
 
     this._removeContentSlots();
   }
@@ -284,7 +288,7 @@ class RettangoliPopoverElement extends HTMLElement {
       if (this._isOpen) {
         this._schedulePositionUpdate();
       }
-    } else if (name.endsWith('overlay')) {
+    } else if (name.endsWith('overlay') || name === TOP_LAYER_ATTR) {
       this._updateActiveStateAttributes();
       if (this._isOpen) {
         this._syncDialogMode();
@@ -367,32 +371,66 @@ class RettangoliPopoverElement extends HTMLElement {
     }
   }
 
+  _getDialogMode() {
+    if (this._shouldUseModalDialog()) {
+      return "modal";
+    }
+
+    return this.hasAttribute(TOP_LAYER_ATTR) && supportsPopoverApi()
+      ? "top-layer"
+      : "non-modal";
+  }
+
+  // A dialog shown as a popover keeps `open === false`.
+  _isDialogShown() {
+    return this._dialogElement.open || this._dialogMode === "top-layer";
+  }
+
   _openDialogElement() {
-    if (this._dialogElement.open) {
+    if (this._isDialogShown()) {
       return;
     }
 
-    if (this._shouldUseModalDialog()) {
+    const mode = this._getDialogMode();
+    if (mode === "modal") {
       this._dialogElement.showModal();
-      this._isModalOpen = true;
+    } else if (mode === "top-layer") {
+      // A manual popover joins the top layer above open modals without
+      // making the rest of the page inert or closing other popovers.
+      this._dialogElement.setAttribute("popover", "manual");
+      this._dialogElement.showPopover();
     } else {
       this._dialogElement.show();
-      this._isModalOpen = false;
     }
+    this._dialogMode = mode;
+  }
+
+  _closeDialogElement() {
+    if (this._dialogElement.hasAttribute("popover")) {
+      // Removal from the document already hides it, and early Popover API
+      // releases throw when hiding a hidden popover.
+      if (this._dialogElement.matches(":popover-open")) {
+        this._dialogElement.hidePopover();
+      }
+      this._dialogElement.removeAttribute("popover");
+    }
+
+    if (this._dialogElement.open) {
+      this._dialogElement.close();
+    }
+    this._dialogMode = null;
   }
 
   _syncDialogMode() {
-    if (!this._isOpen || !this._dialogElement.open) {
+    if (!this._isOpen || !this._isDialogShown()) {
       return;
     }
 
-    const shouldUseModal = this._shouldUseModalDialog();
-    if (shouldUseModal === this._isModalOpen) {
+    if (this._getDialogMode() === this._dialogMode) {
       return;
     }
 
-    this._dialogElement.close();
-    this._isModalOpen = false;
+    this._closeDialogElement();
     this._openDialogElement();
   }
 
@@ -485,7 +523,7 @@ class RettangoliPopoverElement extends HTMLElement {
       window.addEventListener("resize", this._onWindowResize);
 
       // Show the dialog using setTimeout to ensure it's in the DOM
-      if (!this._dialogElement.open) {
+      if (!this._isDialogShown()) {
         this._cancelDeferredShow();
         this._showTimerId = setTimeout(() => {
           this._showTimerId = null;
@@ -494,7 +532,7 @@ class RettangoliPopoverElement extends HTMLElement {
             this._isOpen
             && this.isConnected
             && this._dialogElement
-            && !this._dialogElement.open
+            && !this._isDialogShown()
           ) {
             this._openDialogElement();
           }
@@ -519,10 +557,7 @@ class RettangoliPopoverElement extends HTMLElement {
       window.removeEventListener("resize", this._onWindowResize);
 
       // Close the dialog
-      if (this._dialogElement.open) {
-        this._dialogElement.close();
-      }
-      this._isModalOpen = false;
+      this._closeDialogElement();
 
       this._removeContentSlots();
     }
@@ -603,7 +638,7 @@ class RettangoliPopoverElement extends HTMLElement {
         return;
       }
 
-      if (!this._dialogElement.open) {
+      if (!this._isDialogShown()) {
         this._schedulePositionUpdate();
         return;
       }

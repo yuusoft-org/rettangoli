@@ -420,3 +420,178 @@ describe("rtgl-popover primitive", () => {
       .toBe("More actions");
   });
 });
+
+describe("rtgl-popover top-layer mode", () => {
+  const popoverCalls = [];
+  const originalMatches = Element.prototype.matches;
+
+  // jsdom has no Popover API; model one that, like browsers, hides a popover
+  // when it leaves the document.
+  const installPopoverApi = () => {
+    Object.defineProperties(HTMLElement.prototype, {
+      showPopover: {
+        configurable: true,
+        value() {
+          popoverCalls.push(["show", this.getAttribute("popover")]);
+          this._testPopoverOpen = true;
+        },
+      },
+      hidePopover: {
+        configurable: true,
+        value() {
+          popoverCalls.push(["hide"]);
+          this._testPopoverOpen = false;
+        },
+      },
+    });
+    Element.prototype.matches = function matches(selector) {
+      if (selector === ":popover-open") {
+        return Boolean(this._testPopoverOpen) && this.isConnected;
+      }
+      return originalMatches.call(this, selector);
+    };
+  };
+
+  const removePopoverApi = () => {
+    delete HTMLElement.prototype.showPopover;
+    delete HTMLElement.prototype.hidePopover;
+    Element.prototype.matches = originalMatches;
+  };
+
+  const createTopLayerPopover = () => {
+    const popover = createTestPopover();
+    popover.setAttribute("no-overlay", "");
+    popover.setAttribute("data-rtgl-top-layer", "");
+    popover.appendChild(document.createElement("div"));
+    document.body.appendChild(popover);
+    return popover;
+  };
+
+  const dialogOf = (popover) => popover.shadowRoot.querySelector("dialog");
+
+  beforeEach(() => {
+    popoverCalls.length = 0;
+    installPopoverApi();
+    vi.spyOn(HTMLDialogElement.prototype, "show");
+    vi.spyOn(HTMLDialogElement.prototype, "showModal");
+  });
+
+  afterEach(() => {
+    // Disconnect open popovers while the Popover API still exists.
+    document.body.replaceChildren();
+    removePopoverApi();
+    vi.restoreAllMocks();
+  });
+
+  it("opens as a manual popover and finishes positioning", async () => {
+    const popover = createTopLayerPopover();
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+
+    const dialog = dialogOf(popover);
+    expect(popoverCalls).toEqual([["show", "manual"]]);
+    expect(dialog.open).toBe(false);
+    expect(HTMLDialogElement.prototype.show).not.toHaveBeenCalled();
+    expect(HTMLDialogElement.prototype.showModal).not.toHaveBeenCalled();
+    expect(popover.hasAttribute("positioned")).toBe(true);
+    // A dialog shown as a popover keeps open === false; positioning must not
+    // keep rescheduling itself while waiting for it.
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("hides the popover on close and shows it again on reopen", async () => {
+    const popover = createTopLayerPopover();
+    const dialog = dialogOf(popover);
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+
+    popover.removeAttribute("open");
+    expect(popoverCalls).toEqual([["show", "manual"], ["hide"]]);
+    expect(dialog.hasAttribute("popover")).toBe(false);
+    expect(popover.hasAttribute("positioned")).toBe(false);
+
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+    expect(popoverCalls).toEqual([["show", "manual"], ["hide"], ["show", "manual"]]);
+    expect(popover.hasAttribute("positioned")).toBe(true);
+  });
+
+  it("does not hide again after removal already hid it, and reopens on reconnect", async () => {
+    const popover = createTopLayerPopover();
+    const dialog = dialogOf(popover);
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+
+    popover.remove();
+    expect(popoverCalls).toEqual([["show", "manual"]]);
+    expect(dialog.hasAttribute("popover")).toBe(false);
+
+    document.body.appendChild(popover);
+    await vi.runAllTimersAsync();
+    expect(popoverCalls).toEqual([["show", "manual"], ["show", "manual"]]);
+    expect(popover.hasAttribute("positioned")).toBe(true);
+  });
+
+  it("keeps overlay popovers modal", async () => {
+    const popover = createTopLayerPopover();
+    popover.removeAttribute("no-overlay");
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+
+    expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalledTimes(1);
+    expect(popoverCalls).toEqual([]);
+    expect(dialogOf(popover).hasAttribute("popover")).toBe(false);
+  });
+
+  it("leaves no-overlay popovers without the flag as non-modal dialogs", async () => {
+    const popover = createTopLayerPopover();
+    popover.removeAttribute("data-rtgl-top-layer");
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+
+    expect(HTMLDialogElement.prototype.show).toHaveBeenCalledTimes(1);
+    expect(popoverCalls).toEqual([]);
+    expect(dialogOf(popover).open).toBe(true);
+  });
+
+  it("falls back to a non-modal dialog without the Popover API", async () => {
+    removePopoverApi();
+    const popover = createTopLayerPopover();
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+
+    const dialog = dialogOf(popover);
+    expect(HTMLDialogElement.prototype.show).toHaveBeenCalledTimes(1);
+    expect(dialog.open).toBe(true);
+    expect(dialog.hasAttribute("popover")).toBe(false);
+    expect(popover.hasAttribute("positioned")).toBe(true);
+
+    popover.removeAttribute("open");
+    expect(dialog.open).toBe(false);
+  });
+
+  it("switches dialog mode when the flag or overlay changes while open", async () => {
+    const popover = createTopLayerPopover();
+    const dialog = dialogOf(popover);
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+
+    popover.removeAttribute("data-rtgl-top-layer");
+    expect(popoverCalls).toEqual([["show", "manual"], ["hide"]]);
+    expect(dialog.hasAttribute("popover")).toBe(false);
+    expect(dialog.open).toBe(true);
+
+    popover.setAttribute("data-rtgl-top-layer", "");
+    expect(dialog.open).toBe(false);
+    expect(popoverCalls.at(-1)).toEqual(["show", "manual"]);
+
+    popover.removeAttribute("no-overlay");
+    expect(popoverCalls.at(-1)).toEqual(["hide"]);
+    expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalledTimes(1);
+    expect(dialog.hasAttribute("popover")).toBe(false);
+    expect(dialog.open).toBe(true);
+
+    await vi.runAllTimersAsync();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+});
