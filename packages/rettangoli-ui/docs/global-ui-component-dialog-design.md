@@ -112,7 +112,7 @@ globalUI.showComponentDialog(options);
 - `title`
   - optional dialog shell title
 - `description`
-  - optional dialog shell description
+  - optional dialog shell description; a string, or an array of link text segments (`{ text, href?, newTab?, rel? }`, see the `rtgl-global-ui` docs)
 - `size`
   - optional dialog size token: `sm | md | lg | f`
 - `actions`

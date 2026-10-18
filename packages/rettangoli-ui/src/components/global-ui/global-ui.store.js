@@ -1,3 +1,9 @@
+import {
+  flattenTextSegments,
+  normalizeTextSegments,
+  renderableTextSegments,
+} from "../../common/textSegments.js";
+
 const VALID_DIALOG_SIZES = new Set(["sm", "md", "lg", "f"]);
 const VALID_TOAST_SIZES = new Set(["sm", "md", "lg"]);
 const VALID_TOAST_PHASES = new Set(["active", "exiting"]);
@@ -143,12 +149,28 @@ const normalizeComponentDialogActions = (value) => {
 const createDefaultComponentDialogConfig = () => ({
   title: "",
   description: "",
+  _descriptionSegments: null,
   size: "md",
   component: "",
   props: {},
   actions: normalizeComponentDialogActions(),
   key: 0,
 });
+
+// The plain-text value a template may interpolate. An array renders only
+// through its segments; one without renderable text becomes "", so it never
+// reaches a `${...}` interpolation, which would turn array entries into nodes.
+const toPlainTemplateValue = (value, segments) =>
+  Array.isArray(value) ? (segments ? value : "") : value;
+
+const isEmptyDialogMessage = (message) => {
+  if (!message) {
+    return true;
+  }
+
+  const segments = normalizeTextSegments(message);
+  return segments !== null && flattenTextSegments(segments).length === 0;
+};
 
 export const createInitialState = () => Object.freeze({
   isOpen: false,
@@ -183,14 +205,16 @@ export const createInitialState = () => Object.freeze({
 });
 
 export const setAlertConfig = ({ state }, options = {}) => {
-  if (!options.message) {
+  if (isEmptyDialogMessage(options.message)) {
     throw new Error("message is required for showAlert");
   }
 
   state.config = {
     status: options.status ?? undefined,
-    title: options.title ?? "",
+    title: toPlainTemplateValue(options.title, renderableTextSegments(options.title)) ?? "",
+    _titleSegments: renderableTextSegments(options.title),
     message: options.message,
+    _messageSegments: renderableTextSegments(options.message),
     confirmText: options.confirmText ?? "OK",
     cancelText: "",
     mode: "alert",
@@ -200,14 +224,16 @@ export const setAlertConfig = ({ state }, options = {}) => {
 };
 
 export const setConfirmConfig = ({ state }, options = {}) => {
-  if (!options.message) {
+  if (isEmptyDialogMessage(options.message)) {
     throw new Error("message is required for showConfirm");
   }
 
   state.config = {
     status: options.status ?? undefined,
-    title: options.title ?? "",
+    title: toPlainTemplateValue(options.title, renderableTextSegments(options.title)) ?? "",
+    _titleSegments: renderableTextSegments(options.title),
     message: options.message,
+    _messageSegments: renderableTextSegments(options.message),
     confirmText: options.confirmText ?? "Yes",
     cancelText: options.cancelText ?? "Cancel",
     mode: "confirm",
@@ -260,10 +286,16 @@ export const setComponentDialogConfig = ({ state }, options = {}) => {
   }
 
   const prevKey = state.componentDialogConfig?.key ?? 0;
+  // An array without renderable text falls back to "" like any other
+  // non-string value, so it never reaches the plain-string template branch.
+  const descriptionSegments = renderableTextSegments(options.description);
 
   state.componentDialogConfig = {
     title: typeof options.title === "string" ? options.title : "",
-    description: typeof options.description === "string" ? options.description : "",
+    description: typeof options.description === "string" || descriptionSegments
+      ? options.description
+      : "",
+    _descriptionSegments: descriptionSegments,
     size: normalizeDialogSize(options.size, "md"),
     component: options.component,
     props: normalizeObject(options.props),
@@ -371,6 +403,7 @@ export const selectViewData = ({ state }) => {
     componentDialogConfig: {
       title: componentDialogConfig.title ?? "",
       description: componentDialogConfig.description ?? "",
+      _descriptionSegments: componentDialogConfig._descriptionSegments ?? null,
       size: normalizeDialogSize(componentDialogConfig.size, "md"),
       component: componentDialogConfig.component ?? "",
       props: componentDialogConfig.props ?? {},

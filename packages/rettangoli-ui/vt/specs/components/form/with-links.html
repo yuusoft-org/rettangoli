@@ -1,0 +1,80 @@
+---
+title: "With Links"
+description: Verifies form, section and field descriptions and checkbox content render inline links from text segments.
+specs:
+  - The form description renders an inline link.
+  - A section description and a field description render inline links.
+  - A checkbox renders a link inside its label without changing the control layout.
+skipInitialScreenshot: true
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+steps:
+  - action: waitFor
+    selector: '#form'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 350
+  - action: screenshot
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '420');
+
+  form.defaultValues = {
+    email: '',
+    agree: false,
+  };
+
+  form.form = {
+    title: 'Create account',
+    description: [
+      'By continuing you accept the ',
+      { text: 'terms of service', href: '#terms' },
+      '.',
+    ],
+    fields: [{
+      type: 'section',
+      label: 'Contact',
+      description: [
+        'See how we handle ',
+        { text: 'your data', href: '#data' },
+        '.',
+      ],
+      fields: [{
+        name: 'email',
+        type: 'input-text',
+        label: 'Email',
+        description: [
+          'We only use this for ',
+          { text: 'account updates', href: 'mailto:updates@example.com' },
+          '.',
+        ],
+        placeholder: 'you@example.com',
+      }, {
+        name: 'agree',
+        type: 'checkbox',
+        content: [
+          'I agree to the ',
+          { text: 'privacy policy', href: 'https://example.com/privacy', newTab: true },
+          '.',
+        ],
+      }],
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Create account',
+      }],
+    },
+  };
+
+  document.getElementById('container').appendChild(form);
+</script>

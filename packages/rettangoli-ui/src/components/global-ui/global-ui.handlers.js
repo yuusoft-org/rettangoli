@@ -258,8 +258,8 @@ export const handleDropdownItemClick = (deps, payload) => {
  * @param {Object} deps.store - The globalUI store instance
  * @param {Function} deps.render - Function to trigger re-rendering
  * @param {Object} payload - Alert configuration options
- * @param {string} payload.message - The alert message (required)
- * @param {string} [payload.title] - Optional alert title
+ * @param {string|Array<string|{text: string, href?: string, newTab?: boolean, rel?: string}>} payload.message - The alert message (required): a string or text segments
+ * @param {string|Array<string|{text: string, href?: string, newTab?: boolean, rel?: string}>} [payload.title] - Optional alert title: a string or text segments
  * @param {('info'|'warning'|'error')} [payload.status] - Optional status type
  * @param {string} [payload.confirmText] - Text for the confirm button (default: "OK")
  * @returns {Promise<void>}

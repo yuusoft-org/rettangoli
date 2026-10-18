@@ -157,6 +157,30 @@ Without `sticky`, `h="f"` retains normal visible overflow. This lets a bounded a
 - `read-only-text`
 - `slot`
 
+## Links in Descriptions
+
+Form, section, and field `description` values, and the `content` text of a `checkbox`, accept either a string or an array of text segments. A segment is a string (plain text) or an object `{ text, href?, newTab?, rel? }`.
+
+```js
+form.form = {
+  title: "Create account",
+  description: ["By continuing you accept the ", { text: "terms of service", href: "/terms" }, "."],
+  fields: [
+    {
+      name: "agree",
+      type: "checkbox",
+      content: ["I agree to the ", { text: "privacy policy", href: "https://example.com/privacy", newTab: true }, "."],
+    },
+  ],
+};
+```
+
+- `href` allows `http:`, `https:`, `mailto:` and relative URLs; any other scheme renders as plain text.
+- `newTab` adds `target="_blank"` and `rel="noopener noreferrer"`.
+- Clicking a link inside a checkbox label follows the link and does not toggle the checkbox.
+- Accessible names and descriptions use the flattened plain text.
+- Strings are never parsed as links. Field `label`, error text, form `title`, and section labels stay plain strings.
+
 ## Sections
 
 Use `type: "section"` to group related fields under a labeled block. Section rows are display-only; the nested `fields` still participate in normal form values, validation, and events.

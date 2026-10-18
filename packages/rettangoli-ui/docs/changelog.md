@@ -4,6 +4,8 @@
 
 ### Improvements
 
+- `rtgl-global-ui`: alert and confirm `title` / `message` and the component dialog `description` accept an array of text segments (`string | { text, href?, newTab?, rel? }`) in addition to a string, so dialogs can contain inline links. Strings are never parsed as links, only `http:`, `https:`, `mailto:` and relative hrefs become links (anything else renders as plain text), `newTab` adds `target="_blank"` with `rel="noopener noreferrer"`, and an array with no text still fails the `message is required` check. Toast messages and component dialog titles stay plain strings.
+- `rtgl-form`: the form, section, and field `description` and the checkbox `content` accept the same text segments. Segment links are inline, underlined, and keyboard reachable, clicking a link inside a checkbox label does not toggle the checkbox, and `aria-label` / `aria-description` use the flattened plain text.
 - `rtgl-form`: apps can replace the default validation messages for every form, for example with translations, by setting `window.rtglFormMessages` (keys such as `required` and `minLength`, with `{value}` for the rule's `value` or the field's `min` / `max`). A field's own message still takes precedence, and unset keys and empty strings keep the English default.
 - `rtgl-form`: a `slot` field with a `name` shows its `tooltip`. Before, its info icon showed but hovering it showed nothing, since tooltips were looked up only among fields with values. A slot field's `name` adds no form value.
 - `rtgl-slider-input`: added `s="sm|md"`, sizing the number input like `rtgl-input` and `rtgl-input-number` (24px or the default 32px). `rtgl-form` `slider-with-input` fields accept `s`. `s`, `w`, and `disabled` now also apply when changed on the element after it mounts.
