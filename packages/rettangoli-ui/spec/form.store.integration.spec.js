@@ -958,6 +958,48 @@ describe("rtgl-form text segments", () => {
     }
   });
 
+  it("never hands an array without renderable text to a plain-text branch", () => {
+    const junkArrays = [[], [{ text: "" }], [{ href: "/x" }], [{ "img src=x onerror=alert(1)": "" }]];
+    for (const junk of junkArrays) {
+      const props = {
+        form: {
+          description: junk,
+          fields: [
+            {
+              type: "section",
+              label: "Account",
+              description: junk,
+              fields: [{ name: "email", type: "input-text", label: "Email", description: junk }],
+            },
+          ],
+        },
+      };
+      const store = bindStore(formStore, props, {});
+      const viewData = store.selectViewData();
+
+      expect(viewData.description).toBe("");
+      expect(viewData.descriptionSegments).toBeNull();
+      const section = viewData.flatFields.find((field) => field._isSection);
+      expect(section._descriptionText).toBe("");
+      expect(section._descriptionSegments).toBeNull();
+      expect(selectSegmentField(viewData, "email")._descriptionText).toBe("");
+      expect(selectSegmentField(viewData, "email")._descriptionSegments).toBeNull();
+    }
+  });
+
+  it("falls back to checkboxLabel when content has no renderable text", () => {
+    const props = {
+      form: {
+        fields: [{ name: "a", type: "checkbox", content: [], checkboxLabel: "Agree" }],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    const field = selectSegmentField(store.selectViewData(), "a");
+
+    expect(field._checkboxText).toBe("Agree");
+    expect(field._checkboxTextSegments).toBeNull();
+  });
+
   it("keeps checkboxText accessible-only: it never becomes visible checkbox text", () => {
     const props = {
       form: {

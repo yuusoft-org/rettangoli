@@ -243,3 +243,29 @@ describe("renderableTextSegments", () => {
     ]);
   });
 });
+
+describe("hardening", () => {
+  it("treats a whitespace-only href as plain text", () => {
+    expect(isSafeHref("   ")).toBe(false);
+    expect(normalizeTextSegments([{ text: "Here", href: "  " }])).toEqual([{ text: "Here" }]);
+  });
+
+  it("splits rel on ASCII whitespace only when checking for noopener", () => {
+    expect(normalizeTextSegments([{ text: "Docs", href: "/docs", newTab: true, rel: "noopener\u00a0x" }])).toEqual([
+      { text: "Docs", href: "/docs", target: "_blank", rel: "noopener\u00a0x noopener" },
+    ]);
+  });
+
+  it("reads href once, so a getter cannot pass the check and then change", () => {
+    let reads = 0;
+    const entry = {
+      text: "Link",
+      get href() {
+        reads += 1;
+        return reads === 1 ? "/safe" : "javascript:alert(1)";
+      },
+    };
+
+    expect(normalizeTextSegments([entry])).toEqual([{ text: "Link", href: "/safe" }]);
+  });
+});

@@ -157,6 +157,12 @@ const createDefaultComponentDialogConfig = () => ({
   key: 0,
 });
 
+// The plain-text value a template may interpolate. An array renders only
+// through its segments; one without renderable text becomes "", so it never
+// reaches a `${...}` interpolation, which would turn array entries into nodes.
+const toPlainTemplateValue = (value, segments) =>
+  Array.isArray(value) ? (segments ? value : "") : value;
+
 const isEmptyDialogMessage = (message) => {
   if (!message) {
     return true;
@@ -205,7 +211,7 @@ export const setAlertConfig = ({ state }, options = {}) => {
 
   state.config = {
     status: options.status ?? undefined,
-    title: options.title ?? "",
+    title: toPlainTemplateValue(options.title, renderableTextSegments(options.title)) ?? "",
     _titleSegments: renderableTextSegments(options.title),
     message: options.message,
     _messageSegments: renderableTextSegments(options.message),
@@ -224,7 +230,7 @@ export const setConfirmConfig = ({ state }, options = {}) => {
 
   state.config = {
     status: options.status ?? undefined,
-    title: options.title ?? "",
+    title: toPlainTemplateValue(options.title, renderableTextSegments(options.title)) ?? "",
     _titleSegments: renderableTextSegments(options.title),
     message: options.message,
     _messageSegments: renderableTextSegments(options.message),

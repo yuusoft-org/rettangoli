@@ -63,8 +63,9 @@ The same formatting works with or without a title and in `handleShowConfirm`.
 
 Alert and confirm `title` and `message` accept either a string or an array of
 text segments. A segment is a string (plain text) or an object
-`{ text, href?, newTab?, rel? }`. Text segments render as normal inline links, are
-reachable with the keyboard, and keep newlines inside their text.
+`{ text, href?, newTab?, rel? }`. Text segments render as normal inline links and
+are reachable with the keyboard. Newlines inside `message` segments are kept, as
+in message strings; titles collapse newlines like title strings.
 
 ```js
 await globalUiElement.transformedHandlers.handleShowConfirm({

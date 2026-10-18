@@ -13,7 +13,7 @@ const HREF_RESOLUTION_BASE = "https://example.invalid/";
 // not http/https/mailto (or a relative reference, which resolves to the https
 // base) is rejected.
 export const isSafeHref = (value) => {
-  if (typeof value !== "string" || value.length === 0) {
+  if (typeof value !== "string" || value.trim().length === 0) {
     return false;
   }
 
@@ -24,8 +24,10 @@ export const isSafeHref = (value) => {
   }
 };
 
+// HTML splits rel on ASCII whitespace only, so a token joined by, say, a
+// non-breaking space is not "noopener" to the browser either.
 const hasNoopenerToken = (rel) =>
-  rel.split(/\s+/).some((token) => token.toLowerCase() === "noopener");
+  rel.split(/[\t\n\f\r ]+/).some((token) => token.toLowerCase() === "noopener");
 
 const resolveSegmentRel = (rel, newTab) => {
   if (typeof rel === "string" && rel.trim().length > 0) {
@@ -47,25 +49,27 @@ const normalizeSegment = (entry) => {
     return null;
   }
 
-  const { text } = entry;
+  // Read each property once, so a getter cannot pass the href check and then
+  // return a different value.
+  const { text, href, newTab: newTabOption, rel } = entry;
   if (typeof text !== "string" || text.length === 0) {
     return null;
   }
 
-  if (!isSafeHref(entry.href)) {
+  if (!isSafeHref(href)) {
     return { text };
   }
 
-  const newTab = entry.newTab === true;
-  const segment = { text, href: entry.href };
+  const newTab = newTabOption === true;
+  const segment = { text, href };
 
   if (newTab) {
     segment.target = "_blank";
   }
 
-  const rel = resolveSegmentRel(entry.rel, newTab);
-  if (rel.length > 0) {
-    segment.rel = rel;
+  const resolvedRel = resolveSegmentRel(rel, newTab);
+  if (resolvedRel.length > 0) {
+    segment.rel = resolvedRel;
   }
 
   return segment;

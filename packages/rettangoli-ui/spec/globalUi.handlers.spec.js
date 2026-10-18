@@ -831,3 +831,26 @@ describe("createGlobalUI toast API", () => {
     });
   });
 });
+
+describe("rtgl-global-ui titles without renderable text", () => {
+  it("never hands an array without renderable text to the plain title branch", () => {
+    for (const setConfig of [setAlertConfig, setConfirmConfig]) {
+      for (const title of [[], [{ text: "" }], [{ href: "/x" }], [{ "img src=x onerror=alert(1)": "" }]]) {
+        const state = structuredClone(createInitialState());
+        setConfig({ state }, { title, message: "Plain message" });
+
+        expect(state.config.title).toBe("");
+        expect(state.config._titleSegments).toBeNull();
+      }
+    }
+  });
+
+  it("keeps a title array that has renderable segments", () => {
+    const title = ["Read the ", { text: "terms", href: "/terms" }];
+    const state = structuredClone(createInitialState());
+    setAlertConfig({ state }, { title, message: "Plain message" });
+
+    expect(state.config.title).toEqual(title);
+    expect(state.config._titleSegments).toEqual([{ text: "Read the " }, { text: "terms", href: "/terms" }]);
+  });
+});

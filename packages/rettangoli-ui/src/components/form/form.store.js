@@ -9,6 +9,20 @@ import { flattenTextSegments, renderableTextSegments } from "../../common/textSe
 // its previous pass-through behaviour.
 const toPlainText = (value) => (Array.isArray(value) ? flattenTextSegments(value) : value);
 
+// Descriptions given as arrays render only through their segments. The plain
+// fallback is "" for them, so the `${...}` branch never receives an array,
+// which would turn its entries into nodes.
+const toPlainDescription = (value) => (Array.isArray(value) ? "" : value);
+
+// The form-level description keeps an array that has renderable segments (the
+// view renders those) and drops one without, like the component dialog.
+const toFormDescription = (value) => {
+  if (!Array.isArray(value)) {
+    return value || "";
+  }
+  return renderableTextSegments(value) ? value : "";
+};
+
 const encode = (input) => {
   function escapeHtml(text) {
     const map = {
@@ -835,6 +849,7 @@ export const selectViewData = ({ state, props }) => {
   flatFields.forEach((field) => {
     if (field._isSection) {
       field._descriptionSegments = renderableTextSegments(field.description);
+      field._descriptionText = toPlainDescription(field.description);
       if (field.action) {
         field._action = {
           ...field.action,
@@ -858,6 +873,7 @@ export const selectViewData = ({ state, props }) => {
     field._accessibleLabel = toPlainText(field.label) ?? toPlainText(field.checkboxText) ?? "";
     field._accessibleDescription = [toPlainText(field.description), field._error].filter(Boolean).join(". ");
     field._descriptionSegments = renderableTextSegments(field.description);
+    field._descriptionText = toPlainDescription(field.description);
     field._required = !!field.required;
     field._invalid = !!field._error;
 
@@ -892,7 +908,7 @@ export const selectViewData = ({ state, props }) => {
     if (field.type === "checkbox") {
       const inlineTextSource = ["content", "checkboxLabel"]
         .map((key) => field[key])
-        .find((value) => typeof value === "string" || Array.isArray(value));
+        .find((value) => typeof value === "string" || renderableTextSegments(value));
       field._checkboxText = typeof inlineTextSource === "string" ? inlineTextSource : "";
       field._checkboxTextSegments = renderableTextSegments(inlineTextSource);
     }
@@ -939,7 +955,7 @@ export const selectViewData = ({ state, props }) => {
     bottomSpacer,
     fieldsAttrString,
     title: form?.title || "",
-    description: form?.description || "",
+    description: toFormDescription(form?.description),
     descriptionSegments: renderableTextSegments(form?.description),
     sticky,
     fieldLayout,
