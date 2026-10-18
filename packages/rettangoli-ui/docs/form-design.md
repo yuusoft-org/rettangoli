@@ -659,10 +659,13 @@ window.rtglFormMessages = {
 ```
 
 Messages are plain strings. A message that takes a value marks it with
-`{value}`. Each key is optional, and a key that is not set keeps its English
-default. A field's own `required.message` or rule `message` still takes
+`{value}`. Each key is optional, and a key that is not set, or is set to an
+empty string, keeps its English default, so an untranslated key never turns
+its check off. A field's own `required.message` or rule `message` still takes
 precedence. Forms read the object each time they validate, so replacing it
 (for example when the app language changes) applies from the next validation.
+Errors already shown keep their text until their field is validated again;
+call `validate()` to refresh them.
 
 | key | default | `{value}` |
 |---|---|---|

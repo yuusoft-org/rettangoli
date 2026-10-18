@@ -331,6 +331,24 @@ form.defaultValues = { email: "updated@email.com", age: 25 };
 form.reset();
 ```
 
+## Validation Messages
+
+Fields with `required` or `rules` show a built-in English message when they fail, unless the field sets its own (`required: { message }` or a rule's `message`). To replace the defaults for every form, for example with translations, set `window.rtglFormMessages` before forms validate:
+
+```html
+<script>
+  window.rtglFormMessages = {
+    required: "Este campo é obrigatório",
+    minLength: "Escreva pelo menos {value} caracteres",
+  };
+</script>
+```
+
+- Messages are plain strings. `{value}` is replaced with the rule's `value`, or the field's `min` / `max` for date, time, and duration limits.
+- Keys: `required`, `minLength`, `maxLength`, `pattern`, `invalidDate`, `invalidTime`, `invalidDateTime`, `minTemporal`, `maxTemporal`, `invalidDuration`, `minDuration`, `maxDuration`.
+- A key that is not set, or is an empty string, keeps the English default. A field's own message still takes precedence.
+- Forms read the object each time they validate. After replacing it, errors already shown keep their text until validated again; call `validate()` to refresh them.
+
 ## Custom Logic
 
 - Form schema is data-only (JSON/YAML serializable). Avoid embedding JavaScript functions in schema definitions.

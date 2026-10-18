@@ -267,7 +267,7 @@ Canonical `inputType` values are kebab-case only:
 ### Form validation messages
 
 - fields without their own `required.message` or rule `message` use built-in English defaults
-- apps replace defaults for every form by setting `window.rtglFormMessages` (plain strings, `{value}` for the rule or field value), read on each validation; unset keys keep the English default
+- apps replace defaults for every form by setting `window.rtglFormMessages` (plain strings, `{value}` for the rule's `value` or the field's `min` / `max`), read on each validation; unset keys and empty strings keep the English default
 - see `docs/form-design.md` "Default messages" for the keys
 
 ### Form padding

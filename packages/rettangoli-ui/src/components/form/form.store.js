@@ -335,11 +335,12 @@ const DEFAULT_MESSAGES = {
 // the keys above, the way `window.rtglIcons` registers icons. A message that
 // takes a value marks it with `{value}`, such as
 // "Must be at least {value} characters". A field's own `required.message` or
-// rule `message` still takes precedence.
+// rule `message` still takes precedence. An empty message keeps the default,
+// so an untranslated key never turns its check off.
 const getDefaultMessage = (key, value) => {
   const override = globalThis.rtglFormMessages?.[key];
-  if (typeof override === "string") {
-    return override.replaceAll("{value}", () => String(value));
+  if (typeof override === "string" && override.trim() !== "") {
+    return override.replaceAll("{value}", () => String(value ?? ""));
   }
 
   const message = DEFAULT_MESSAGES[key];
