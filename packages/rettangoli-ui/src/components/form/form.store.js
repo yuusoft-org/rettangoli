@@ -326,8 +326,25 @@ const DEFAULT_MESSAGES = {
   invalidDuration: "Invalid duration",
   minTemporal: (val) => `Must be on or after ${val}`,
   maxTemporal: (val) => `Must be on or before ${val}`,
-  minDuration: (val) => `Must be at least ${formatDurationMilliseconds(val)}`,
-  maxDuration: (val) => `Must be at most ${formatDurationMilliseconds(val)}`,
+  minDuration: (val) => `Must be at least ${val}`,
+  maxDuration: (val) => `Must be at most ${val}`,
+};
+
+// Apps can replace these defaults for every form, for example with
+// translations, by setting `window.rtglFormMessages` to an object with any of
+// the keys above, the way `window.rtglIcons` registers icons. A message that
+// takes a value marks it with `{value}`, such as
+// "Must be at least {value} characters". A field's own `required.message` or
+// rule `message` still takes precedence. An empty message keeps the default,
+// so an untranslated key never turns its check off.
+const getDefaultMessage = (key, value) => {
+  const override = globalThis.rtglFormMessages?.[key];
+  if (typeof override === "string" && override.trim() !== "") {
+    return override.replaceAll("{value}", () => String(value ?? ""));
+  }
+
+  const message = DEFAULT_MESSAGES[key];
+  return typeof message === "function" ? message(value) : message;
 };
 
 const DATE_FIELD_TYPE = "input-date";
@@ -407,19 +424,19 @@ const getTemporalNormalization = (fieldType) => {
   if (fieldType === DATE_FIELD_TYPE) {
     return {
       normalize: normalizeDateComparable,
-      invalidMessage: DEFAULT_MESSAGES.invalidDate,
+      invalidMessage: getDefaultMessage("invalidDate"),
     };
   }
   if (fieldType === TIME_FIELD_TYPE) {
     return {
       normalize: normalizeTimeComparable,
-      invalidMessage: DEFAULT_MESSAGES.invalidTime,
+      invalidMessage: getDefaultMessage("invalidTime"),
     };
   }
   if (fieldType === DATETIME_FIELD_TYPE) {
     return {
       normalize: normalizeDateTimeComparable,
-      invalidMessage: DEFAULT_MESSAGES.invalidDateTime,
+      invalidMessage: getDefaultMessage("invalidDateTime"),
     };
   }
   return null;
@@ -441,14 +458,14 @@ const validateTemporalField = (field, value) => {
   if (field.min !== undefined && field.min !== null && String(field.min) !== "") {
     const minComparable = temporal.normalize(String(field.min));
     if (minComparable && comparableValue < minComparable) {
-      return DEFAULT_MESSAGES.minTemporal(String(field.min));
+      return getDefaultMessage("minTemporal", String(field.min));
     }
   }
 
   if (field.max !== undefined && field.max !== null && String(field.max) !== "") {
     const maxComparable = temporal.normalize(String(field.max));
     if (maxComparable && comparableValue > maxComparable) {
-      return DEFAULT_MESSAGES.maxTemporal(String(field.max));
+      return getDefaultMessage("maxTemporal", String(field.max));
     }
   }
 
@@ -466,17 +483,17 @@ const validateDurationField = (field, value) => {
     typeof value !== "number" ||
     normalizeDurationMilliseconds(value) === null
   ) {
-    return DEFAULT_MESSAGES.invalidDuration;
+    return getDefaultMessage("invalidDuration");
   }
 
   const min = normalizeDurationMilliseconds(field.min);
   if (min !== null && value < min) {
-    return DEFAULT_MESSAGES.minDuration(min);
+    return getDefaultMessage("minDuration", formatDurationMilliseconds(min));
   }
 
   const max = normalizeDurationMilliseconds(field.max);
   if (max !== null && value > max) {
-    return DEFAULT_MESSAGES.maxDuration(max);
+    return getDefaultMessage("maxDuration", formatDurationMilliseconds(max));
   }
 
   return null;
@@ -499,7 +516,7 @@ export const validateField = (field, value) => {
       if (typeof field.required === "object" && field.required.message) {
         return field.required.message;
       }
-      return DEFAULT_MESSAGES.required;
+      return getDefaultMessage("required");
     }
   }
 
@@ -533,13 +550,13 @@ const validateRule = (rule, value) => {
   switch (rule.rule) {
     case "minLength": {
       if (strValue.length < rule.value) {
-        return rule.message || DEFAULT_MESSAGES.minLength(rule.value);
+        return rule.message || getDefaultMessage("minLength", rule.value);
       }
       return null;
     }
     case "maxLength": {
       if (strValue.length > rule.value) {
-        return rule.message || DEFAULT_MESSAGES.maxLength(rule.value);
+        return rule.message || getDefaultMessage("maxLength", rule.value);
       }
       return null;
     }
@@ -550,11 +567,11 @@ const validateRule = (rule, value) => {
         try {
           regex = new RegExp(rule.value);
         } catch {
-          return rule.message || DEFAULT_MESSAGES.pattern;
+          return rule.message || getDefaultMessage("pattern");
         }
       }
       if (!regex.test(strValue)) {
-        return rule.message || DEFAULT_MESSAGES.pattern;
+        return rule.message || getDefaultMessage("pattern");
       }
       return null;
     }

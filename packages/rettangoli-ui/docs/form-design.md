@@ -644,6 +644,44 @@ Temporal field types (`input-date`, `input-time`, `input-datetime`) are validate
 milliseconds. Empty values are allowed unless `required` is set, and numeric
 `min` / `max` constraints produce messages formatted as readable durations.
 
+### Default messages
+
+When a field has no message of its own, validation uses a built-in English
+default. Apps can replace these defaults for every form, for example with
+translations, by setting `window.rtglFormMessages` before validation runs,
+the same way `window.rtglIcons` registers icons:
+
+```js
+window.rtglFormMessages = {
+  required: "Este campo é obrigatório",
+  minLength: "Mínimo de {value} caracteres",
+};
+```
+
+Messages are plain strings. A message that takes a value marks it with
+`{value}`. Each key is optional, and a key that is not set, or is set to an
+empty string, keeps its English default, so an untranslated key never turns
+its check off. A field's own `required.message` or rule `message` still takes
+precedence. Forms read the object each time they validate, so replacing it
+(for example when the app language changes) applies from the next validation.
+Errors already shown keep their text until their field is validated again;
+call `validate()` to refresh them.
+
+| key | default | `{value}` |
+|---|---|---|
+| `required` | This field is required | |
+| `minLength` | Must be at least {value} characters | the rule's `value` |
+| `maxLength` | Must be at most {value} characters | the rule's `value` |
+| `pattern` | Invalid format | |
+| `invalidDate` | Invalid date format | |
+| `invalidTime` | Invalid time format | |
+| `invalidDateTime` | Invalid date and time format | |
+| `minTemporal` | Must be on or after {value} | the field's `min` |
+| `maxTemporal` | Must be on or before {value} | the field's `max` |
+| `invalidDuration` | Invalid duration | |
+| `minDuration` | Must be at least {value} | the field's `min`, formatted as a duration |
+| `maxDuration` | Must be at most {value} | the field's `max`, formatted as a duration |
+
 ## Actions
 
 Actions define the buttons at the bottom of the form.
@@ -953,7 +991,7 @@ Validation checks `required` fields and `rules`. The consumer can also call `val
 
 ### `errors` shape
 
-`errors` is an object keyed by field name. Each value is the error message string from the first failing rule. Only invalid fields are included. `required` fields that are empty use the custom message if provided (`required: { message: "..." }`), otherwise a default (e.g. "This field is required").
+`errors` is an object keyed by field name. Each value is the error message string from the first failing rule. Only invalid fields are included. `required` fields that are empty use the custom message if provided (`required: { message: "..." }`), otherwise a default (e.g. "This field is required"). See [Default messages](#default-messages) to replace the defaults for every form.
 
 ```js
 {
@@ -1040,6 +1078,7 @@ Contract tests in `spec/` directory with YAML cases and JS helper functions. Eac
 
 - `required: true` on empty field → error with default message
 - `required: { message: "custom" }` on empty field → error with custom message
+- `window.rtglFormMessages` sets the default messages, fills `{value}`, and leaves a field's own message and unset keys unchanged
 - `required` on non-empty field → no error
 - `minLength` rule → error when below, pass when at/above
 - `maxLength` rule → error when above, pass when at/below

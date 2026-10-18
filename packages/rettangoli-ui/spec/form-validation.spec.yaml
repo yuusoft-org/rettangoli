@@ -982,3 +982,187 @@ out:
   containerAttrString: data-testid=axis-form
   containerHorizontalPadding: md
   containerVerticalPadding: none
+---
+suite: validateField - app default messages
+exportName: runValidateFieldWithMessagesCase
+---
+case: required true uses the app default message
+in:
+  - messages:
+      required: "Este campo é obrigatório"
+    field:
+      name: email
+      type: input-text
+      required: true
+    value: ""
+out:
+  error: "Este campo é obrigatório"
+---
+case: a field's own required message wins over the app default
+in:
+  - messages:
+      required: "Este campo é obrigatório"
+    field:
+      name: email
+      type: input-text
+      required:
+        message: "Email cannot be empty"
+    value: ""
+out:
+  error: "Email cannot be empty"
+---
+case: minLength fills the value into the app default message
+in:
+  - messages:
+      minLength: "Mínimo de {value} caracteres"
+    field:
+      name: username
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+    value: "ab"
+out:
+  error: "Mínimo de 3 caracteres"
+---
+case: input-duration min fills the formatted duration into the app default message
+in:
+  - messages:
+      minDuration: "Mínimo: {value}"
+    field:
+      name: durationMs
+      type: input-duration
+      min: 60000
+    value: 30000
+out:
+  error: "Mínimo: 1:00"
+---
+case: a key the app does not set keeps the English default
+in:
+  - messages:
+      required: "Este campo é obrigatório"
+    field:
+      name: username
+      type: input-text
+      rules:
+        - rule: pattern
+          value: email
+    value: "not-an-email"
+out:
+  error: "Invalid format"
+---
+case: an empty app message keeps the English default
+in:
+  - messages:
+      required: ""
+    field:
+      name: email
+      type: input-text
+      required: true
+    value: ""
+out:
+  error: "This field is required"
+---
+case: a whitespace-only app message keeps the English default
+in:
+  - messages:
+      minLength: "  "
+    field:
+      name: username
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+    value: "ab"
+out:
+  error: "Must be at least 3 characters"
+---
+case: a non-string app message is ignored
+in:
+  - messages:
+      required: 5
+    field:
+      name: email
+      type: input-text
+      required: true
+    value: ""
+out:
+  error: "This field is required"
+---
+case: a rule's own message wins over the app default
+in:
+  - messages:
+      minLength: "Mínimo de {value} caracteres"
+    field:
+      name: username
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+          message: "Too short"
+    value: "ab"
+out:
+  error: "Too short"
+---
+case: maxLength fills the value into the app default message
+in:
+  - messages:
+      maxLength: "Máximo de {value} caracteres"
+    field:
+      name: username
+      type: input-text
+      rules:
+        - rule: maxLength
+          value: 3
+    value: "abcd"
+out:
+  error: "Máximo de 3 caracteres"
+---
+case: invalid date uses the app default message
+in:
+  - messages:
+      invalidDate: "Data inválida"
+    field:
+      name: start
+      type: input-date
+    value: "not-a-date"
+out:
+  error: "Data inválida"
+---
+case: date min fills the field's min into the app default message
+in:
+  - messages:
+      minTemporal: "A data deve ser {value} ou depois"
+    field:
+      name: start
+      type: input-date
+      min: "2026-01-01"
+    value: "2025-12-31"
+out:
+  error: "A data deve ser 2026-01-01 ou depois"
+---
+case: replacement patterns in an app message stay literal
+in:
+  - messages:
+      minLength: "$& $1 $$ {value}"
+    field:
+      name: username
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+    value: "ab"
+out:
+  error: "$& $1 $$ 3"
+---
+case: "{value} in a message without a value becomes empty"
+in:
+  - messages:
+      required: "Obrigatório{value}"
+    field:
+      name: email
+      type: input-text
+      required: true
+    value: ""
+out:
+  error: "Obrigatório"

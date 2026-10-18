@@ -14,6 +14,23 @@ export const runValidateFieldCase = ({ field, value }) => {
   return { error };
 };
 
+// Runs one validation with app-wide default messages set on
+// `globalThis.rtglFormMessages`, then restores whatever was set before.
+export const runValidateFieldWithMessagesCase = ({ messages, field, value }) => {
+  const hadMessages = Object.hasOwn(globalThis, "rtglFormMessages");
+  const previousMessages = globalThis.rtglFormMessages;
+  globalThis.rtglFormMessages = messages;
+  try {
+    return { error: validateField(field, value) };
+  } finally {
+    if (hadMessages) {
+      globalThis.rtglFormMessages = previousMessages;
+    } else {
+      delete globalThis.rtglFormMessages;
+    }
+  }
+};
+
 export const runValidateFormCase = ({ fields, formValues }) => {
   const result = validateForm(fields, formValues);
   return result;
