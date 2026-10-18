@@ -614,6 +614,19 @@ describe("rtgl-global-ui component dialog description segments", () => {
     expect(junkState.componentDialogConfig.description).toBe("");
     expect(junkState.componentDialogConfig._descriptionSegments).toBeNull();
   });
+
+  it("coerces arrays without renderable text to an empty description", () => {
+    for (const description of [[], [""], [{ href: "/guidelines" }], [42, null]]) {
+      const state = createStateWithComponentDialog({
+        component: "vt-component-dialog-body",
+        description,
+      });
+
+      expect(state.componentDialogConfig.description).toBe("");
+      expect(state.componentDialogConfig._descriptionSegments).toBeNull();
+      expect(selectViewData({ state }).componentDialogConfig.description).toBe("");
+    }
+  });
 });
 
 describe("rtgl-global-ui toast handlers", () => {

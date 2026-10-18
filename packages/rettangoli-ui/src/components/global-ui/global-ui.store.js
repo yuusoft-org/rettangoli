@@ -280,13 +280,16 @@ export const setComponentDialogConfig = ({ state }, options = {}) => {
   }
 
   const prevKey = state.componentDialogConfig?.key ?? 0;
+  // An array without renderable text falls back to "" like any other
+  // non-string value, so it never reaches the plain-string template branch.
+  const descriptionSegments = renderableTextSegments(options.description);
 
   state.componentDialogConfig = {
     title: typeof options.title === "string" ? options.title : "",
-    description: typeof options.description === "string" || Array.isArray(options.description)
+    description: typeof options.description === "string" || descriptionSegments
       ? options.description
       : "",
-    _descriptionSegments: renderableTextSegments(options.description),
+    _descriptionSegments: descriptionSegments,
     size: normalizeDialogSize(options.size, "md"),
     component: options.component,
     props: normalizeObject(options.props),
