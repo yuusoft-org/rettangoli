@@ -1,0 +1,97 @@
+---
+title: "Default Messages"
+description: window.rtglFormMessages replaces the default validation messages for every form, while a field's own message still wins.
+skipInitialScreenshot: true
+specs:
+  - An empty required field shows the app's required message.
+  - A too-short value shows the app's minLength message with the rule's value filled in.
+  - A field with its own required message keeps it.
+steps:
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: defaultMessagesTest.errors
+    value:
+      name: Este campo é obrigatório
+      username: Escreva pelo menos 4 caracteres
+      email: Email cannot be empty
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  window.rtglFormMessages = {
+    required: 'Este campo é obrigatório',
+    minLength: 'Escreva pelo menos {value} caracteres',
+  };
+
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '360');
+
+  form.defaultValues = {
+    name: '',
+    username: 'ab',
+    email: '',
+  };
+
+  form.form = {
+    title: 'Default Messages',
+    description: 'Messages come from window.rtglFormMessages',
+    fields: [{
+      name: 'name',
+      type: 'input-text',
+      label: 'Name',
+      required: true,
+    }, {
+      name: 'username',
+      type: 'input-text',
+      label: 'Username',
+      rules: [{
+        rule: 'minLength',
+        value: 4,
+      }],
+    }, {
+      name: 'email',
+      type: 'input-text',
+      label: 'Email',
+      required: {
+        message: 'Email cannot be empty',
+      },
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Validate',
+        validate: true,
+      }],
+    }
+  };
+
+  window.defaultMessagesTest = {
+    errors: () => form.validate().errors,
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  const setSubmitButtonTestId = () => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    if (btn) {
+      btn.setAttribute('data-testid', 'submit-btn');
+      return;
+    }
+    setTimeout(setSubmitButtonTestId, 0);
+  };
+  setSubmitButtonTestId();
+</script>
