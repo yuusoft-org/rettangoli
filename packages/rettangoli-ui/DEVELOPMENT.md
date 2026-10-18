@@ -264,6 +264,12 @@ Canonical `inputType` values are kebab-case only:
 - non-sticky forms using `h=f` preserve visible overflow so a bounded scrolling ancestor can reach the complete form
 - the containing surface must provide a definite or capped height; use `rtgl-dialog` with `md-layout=fixed-top` for inset mobile dialogs
 
+### Form validation messages
+
+- fields without their own `required.message` or rule `message` use built-in English defaults
+- apps replace defaults for every form by setting `window.rtglFormMessages` (plain strings, `{value}` for the rule or field value), read on each validation; unset keys keep the English default
+- see `docs/form-design.md` "Default messages" for the keys
+
 ### Form padding
 
 - `p` sets both internal form-padding axes and defaults to `md`

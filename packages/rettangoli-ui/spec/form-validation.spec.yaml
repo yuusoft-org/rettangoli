@@ -982,3 +982,72 @@ out:
   containerAttrString: data-testid=axis-form
   containerHorizontalPadding: md
   containerVerticalPadding: none
+---
+suite: validateField - app default messages
+exportName: runValidateFieldWithMessagesCase
+---
+case: required true uses the app default message
+in:
+  - messages:
+      required: "Este campo é obrigatório"
+    field:
+      name: email
+      type: input-text
+      required: true
+    value: ""
+out:
+  error: "Este campo é obrigatório"
+---
+case: a field's own required message wins over the app default
+in:
+  - messages:
+      required: "Este campo é obrigatório"
+    field:
+      name: email
+      type: input-text
+      required:
+        message: "Email cannot be empty"
+    value: ""
+out:
+  error: "Email cannot be empty"
+---
+case: minLength fills the value into the app default message
+in:
+  - messages:
+      minLength: "Mínimo de {value} caracteres"
+    field:
+      name: username
+      type: input-text
+      rules:
+        - rule: minLength
+          value: 3
+    value: "ab"
+out:
+  error: "Mínimo de 3 caracteres"
+---
+case: input-duration min fills the formatted duration into the app default message
+in:
+  - messages:
+      minDuration: "Mínimo: {value}"
+    field:
+      name: durationMs
+      type: input-duration
+      min: 60000
+    value: 30000
+out:
+  error: "Mínimo: 1:00"
+---
+case: a key the app does not set keeps the English default
+in:
+  - messages:
+      required: "Este campo é obrigatório"
+    field:
+      name: username
+      type: input-text
+      rules:
+        - rule: pattern
+          value: email
+    value: "not-an-email"
+out:
+  error: "Invalid format"
+
