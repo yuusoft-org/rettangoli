@@ -30,4 +30,4 @@ template:
       - rtgl-text: ${label}
       - rtgl-input#input aria-label=${ariaLabel} aria-description=${ariaDescription} aria-required=${ariaRequired} aria-invalid=${ariaInvalid} w=f placeholder=${placeholder} ?disabled=${disabled}: null
       - rtgl-view w=f ah=e:
-          - rtgl-button#submit ?disabled=${disabled}: Submit
+          - rtgl-button#submit ?disabled=${disabled}: ${submitLabel}

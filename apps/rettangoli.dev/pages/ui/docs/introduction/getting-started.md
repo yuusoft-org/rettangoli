@@ -52,3 +52,22 @@ For example
 import { RettangoliButton } from '@rettangoli/ui'
 customElements.define("rtgl-button", RettangoliButton({}));
 ```
+
+## Default Text
+
+Components show built-in English text when you pass none, such as a select's `Select an option` placeholder or a dialog's `Close dialog` label. To replace it everywhere, for example with translations, set `window.rtglUiMessages`:
+
+```html
+<script>
+  window.rtglUiMessages = {
+    selectPlaceholder: "Sélectionnez une option",
+    dialogCancel: "Annuler",
+  };
+</script>
+```
+
+- Keys: `selectPlaceholder`, `selectSearchPlaceholder`, `selectNoMatches`, `selectClear`, `addOption`, `tagSelectPlaceholder`, `tagSelectAdded`, `tagSelectSave`, `tagSelectEmpty`, `tagRemove`, `segmentedControl`, `tabs`, `menu`, `dialogOk`, `dialogConfirm`, `dialogCancel`, `dialogClose`, `formImagePlaceholder`, `formSectionAction`, `popoverInputSubmit`, `tableEmpty`, `carouselPrevious`, `carouselNext`.
+- Text you pass to a component, such as a `placeholder` or `aria-label`, still takes precedence.
+- A key that is not set, or is an empty string, keeps the English default.
+- Components read the object when they render. Set it before they mount; after replacing it, components already shown update on their next render.
+- For form validation messages, use `window.rtglFormMessages` (see `rtgl-form`).

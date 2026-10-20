@@ -1,3 +1,4 @@
+import { getUiMessage } from "../../common/uiMessages.js";
 import { selectFieldAria } from "../../accessibility/field.js";
 import { deepEqual } from "../../common.js";
 
@@ -143,7 +144,9 @@ const normalizeOption = ({
   const isSelected = isSelectedValue(selectedValues, option.value);
   const icon = getOptionIcon(option);
   const baseSuffixText = getOptionSuffixText(option);
-  const suffixText = isSelected ? (baseSuffixText || "Added") : baseSuffixText;
+  const suffixText = isSelected
+    ? baseSuffixText || getUiMessage("tagSelectAdded")
+    : baseSuffixText;
 
   return {
     ...option,
@@ -217,7 +220,7 @@ export const selectViewData = ({ state, props }) => {
     : [{
       value: undefined,
       selectionIndex: "",
-      label: props.placeholder || "Add tag",
+      label: props.placeholder || getUiMessage("tagSelectPlaceholder"),
       icon: "",
       testId: "",
       tagStyle: buildTagStyle({ isAddChip: true }),
@@ -231,15 +234,17 @@ export const selectViewData = ({ state, props }) => {
     position: state.position,
     options: normalizedOptions,
     hasSelectableOptions,
-    placeholder: props.placeholder || "Add tag",
+    placeholder: props.placeholder || getUiMessage("tagSelectPlaceholder"),
+    emptyLabel: getUiMessage("tagSelectEmpty"),
     triggerTags,
     triggerCursor: isDisabled ? "not-allowed" : "pointer",
     triggerTabIndex: isDisabled ? -1 : 0,
     showAddOption: !isDisabled && !props.noAdd,
-    addOptionLabel: props.addOption?.label || "Add tag",
+    addOptionLabel:
+      props.addOption?.label || getUiMessage("tagSelectPlaceholder"),
     hasDraftChanges,
     submitDisabled: isDisabled,
-    submitLabel: "Save",
+    submitLabel: getUiMessage("tagSelectSave"),
   };
 };
 

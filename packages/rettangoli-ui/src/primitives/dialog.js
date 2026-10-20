@@ -1,3 +1,4 @@
+import { getUiMessage } from "../common/uiMessages.js";
 import {
   css,
   mediaQueries,
@@ -528,7 +529,7 @@ class RettangoliDialogElement extends HTMLElement {
     if (!this._closeButtonElement) {
       return;
     }
-    this._closeButtonElement.setAttribute("aria-label", "Close dialog");
+    this._closeButtonElement.setAttribute("aria-label", getUiMessage("dialogClose"));
     this._closeButtonElement.hidden = !this.hasAttribute("close-button");
   }
 

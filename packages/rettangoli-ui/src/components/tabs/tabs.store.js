@@ -1,3 +1,4 @@
+import { getUiMessage } from "../../common/uiMessages.js";
 export const createInitialState = () => Object.freeze({ focusedTab: null });
 
 export const setFocusedTab = ({ state }, { id }) => {
@@ -34,7 +35,7 @@ export const selectViewData = ({ state = {}, props = {} }) => {
   }));
 
   return {
-    ariaLabel: props.ariaLabel ?? "Tabs",
+    ariaLabel: props.ariaLabel ?? getUiMessage("tabs"),
     size,
     containerAttrString,
     items: itemsWithSelection,

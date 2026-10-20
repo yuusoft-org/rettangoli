@@ -1,3 +1,4 @@
+import { getUiMessage } from "../../common/uiMessages.js";
 export const createInitialState = () => Object.freeze({
   openIndexPath: [],
   activeIndexByDepth: [],
@@ -216,7 +217,7 @@ const createPanels = ({ items, state, props }) => {
       panelId: `menuPanelD${depth}`,
       parentIndexPath,
       parentIndexPathString: parentIndexPath.join("."),
-      menuLabel: isRoot ? props.ariaLabel || "Menu" : null,
+      menuLabel: isRoot ? props.ariaLabel || getUiMessage("menu") : null,
       panelAttrString,
       items: normalizeItems({
         items: currentItems,
@@ -310,6 +311,6 @@ export const selectViewData = ({ props, state = createInitialState() }) => {
     h: props.h || "300",
     place: props.place || "bs",
     popoverAttrString: stringifyPopoverAttrs(props),
-    menuLabel: props.ariaLabel || "Menu",
+    menuLabel: props.ariaLabel || getUiMessage("menu"),
   };
 };

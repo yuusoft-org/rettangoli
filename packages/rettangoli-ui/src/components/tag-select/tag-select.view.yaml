@@ -42,7 +42,7 @@ template:
   - $if isOpen:
       - rtgl-popover#popover ?open=${isOpen} x=${position.x} y=${position.y} place=bs content-w=${position.w} content-g=sm content-sv=true content-ph=md content-pv=md:
           - $if !hasSelectableOptions:
-              - rtgl-text s=sm c=mu-fg: No tags available
+              - rtgl-text s=sm c=mu-fg: ${emptyLabel}
           - rtgl-view d=h wrap g=sm w=f:
               - $for option, i in options:
                   - $if option.isSection:

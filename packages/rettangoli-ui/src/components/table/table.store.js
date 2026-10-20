@@ -1,3 +1,4 @@
+import { getUiMessage } from "../../common/uiMessages.js";
 export const createInitialState = () => Object.freeze({
   sortColumn: null,
   sortDirection: null,
@@ -47,6 +48,7 @@ export const selectViewData = ({ state, props }) => {
     containerAttrString,
     columns: data.columns || [],
     rows: transformedRows || [],
+    emptyLabel: getUiMessage("tableEmpty"),
   };
 }
 

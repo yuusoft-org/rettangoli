@@ -3,6 +3,7 @@ import {
   formatDurationMilliseconds,
   normalizeDurationMilliseconds,
 } from "../../common/duration.js";
+import { getUiMessage } from "../../common/uiMessages.js";
 import { flattenTextSegments, renderableTextSegments } from "../../common/textSegments.js";
 
 // Segment arrays flatten to plain text for aria strings; any other value keeps
@@ -871,7 +872,7 @@ export const selectViewData = ({ state, props }) => {
         field._action = {
           ...field.action,
           icon: field.action.icon ?? "plus",
-          label: field.action.label ?? "Section action",
+          label: field.action.label ?? getUiMessage("formSectionAction"),
           _disabled: formDisabled || !!field.action.disabled,
         };
       }
@@ -915,7 +916,8 @@ export const selectViewData = ({ state, props }) => {
     if (field.type === "image") {
       const src = get(state.formValues, field.name);
       field._imageSrc = src && String(src).trim() ? src : null;
-      field.placeholderText = field.placeholderText || "No Image";
+      field.placeholderText =
+        field.placeholderText || getUiMessage("formImagePlaceholder");
     }
 
     if (field.type === "read-only-text") {

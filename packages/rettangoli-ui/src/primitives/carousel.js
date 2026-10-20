@@ -1,3 +1,4 @@
+import { getUiMessage } from "../common/uiMessages.js";
 import { css, dimensionWithUnit } from "../common.js";
 import {
   clampCarouselIndex,
@@ -324,7 +325,7 @@ class RettangoliCarouselElement extends HTMLElement {
     this._prevButton.hidden = true;
     this._prevButton.append(createChevronIcon("left"));
     this._prevButton.setAttribute("part", "nav-button prev-button");
-    this._prevButton.setAttribute("aria-label", "Previous slide");
+    this._prevButton.setAttribute("aria-label", getUiMessage("carouselPrevious"));
 
     this._pagerElement = document.createElement("div");
     this._pagerElement.id = "pager";
@@ -337,7 +338,7 @@ class RettangoliCarouselElement extends HTMLElement {
     this._nextButton.hidden = true;
     this._nextButton.append(createChevronIcon("right"));
     this._nextButton.setAttribute("part", "nav-button next-button");
-    this._nextButton.setAttribute("aria-label", "Next slide");
+    this._nextButton.setAttribute("aria-label", getUiMessage("carouselNext"));
 
     this._viewportShellElement.append(
       this._viewportElement,
