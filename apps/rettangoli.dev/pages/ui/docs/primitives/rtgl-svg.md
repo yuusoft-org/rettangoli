@@ -21,7 +21,7 @@ Register icons with `rtgl.setIcons` (or `setIcons` imported from `@rettangoli/ui
 </script>
 ```
 
-`setIcons` adds or replaces icons by name, and `rtgl-svg` elements already on the page redraw. Setting `window.rtglIcons` still works but is deprecated.
+Call it in a script after the Rettangoli script, which defines `window.rtgl`. `setIcons` adds or replaces icons by name, and `rtgl-svg` elements already on the page redraw. Setting `window.rtglIcons` still works but is deprecated; it is the one way to register icons before the Rettangoli script loads, and `rtgl ui build-svg` still writes it.
 
 ```html codePreview
 <rtgl-view d="h" g="md">

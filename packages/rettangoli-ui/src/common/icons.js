@@ -21,6 +21,4 @@ export const subscribeIcons = listeners.subscribe;
 // The icon's markup, from setIcons or the deprecated window.rtglIcons, which
 // stays supported until a major version removes it.
 export const getIcon = (name) =>
-  Object.hasOwn(registeredIcons, name)
-    ? registeredIcons[name]
-    : globalThis.rtglIcons?.[name];
+  registeredIcons[name] || globalThis.rtglIcons?.[name];

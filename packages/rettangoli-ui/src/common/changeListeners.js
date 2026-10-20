@@ -1,9 +1,11 @@
 // The state behind a shared setting, such as the icons or the UI messages.
 // The script-tag bundles include the FE components pre-bundled with their own
 // copy of these modules, so the state lives under a global symbol that every
-// copy reads, instead of in the module itself.
+// copy reads, instead of in the module itself. The key carries the state's
+// format version: change it when the state's shape changes, so copies with
+// different shapes never share one object.
 export const getSharedState = (name, createState) => {
-  const key = Symbol.for(`@rettangoli/ui/${name}`);
+  const key = Symbol.for(`@rettangoli/ui/v1/${name}`);
   globalThis[key] ??= createState();
   return globalThis[key];
 };

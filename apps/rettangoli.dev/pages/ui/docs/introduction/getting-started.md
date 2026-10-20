@@ -55,16 +55,17 @@ customElements.define("rtgl-button", RettangoliButton({}));
 
 ## Icons and Default Text
 
-Set up icons and replace the library's built-in English text with three functions. With the script-tag bundles, they are on `window.rtgl`; with npm, import them from `@rettangoli/ui`:
+Set up icons and replace the library's built-in English text with three functions. With the script-tag bundles, they are on `window.rtgl`, which exists once the Rettangoli script has run, so call them in a script after it. With npm, import them from `@rettangoli/ui`:
 
 ```html
+<script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@1.29.0/dist/rettangoli-iife-ui.min.js"></script>
 <script>
   rtgl.setIcons({
     text: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 12H20" stroke="currentColor" stroke-width="2"/></svg>`,
   });
   rtgl.setUiMessages({
     selectPlaceholder: "Sélectionnez une option",
-    dialogCancel: "Annuler",
+    carouselGoTo: "Aller à la diapositive {value}",
   });
   rtgl.setFormMessages({
     required: "Ce champ est obligatoire",
@@ -73,11 +74,50 @@ Set up icons and replace the library's built-in English text with three function
 ```
 
 ```js
-import { setFormMessages, setIcons, setUiMessages } from "@rettangoli/ui";
+import {
+  DEFAULT_UI_MESSAGES,
+  setFormMessages,
+  setIcons,
+  setUiMessages,
+} from "@rettangoli/ui";
 ```
 
 - `setIcons(icons)` adds or replaces icons by name for `rtgl-svg`. Icons registered earlier stay registered, and `rtgl-svg` elements already on the page redraw.
-- `setUiMessages(messages)` replaces the text components show when you pass none, such as a select's `Select an option` placeholder or a dialog's `Close dialog` label. Keys: `selectPlaceholder`, `selectSearchPlaceholder`, `selectNoMatches`, `selectClear`, `addOption`, `tagSelectPlaceholder`, `tagSelectAdded`, `tagSelectSave`, `tagSelectEmpty`, `tagRemove`, `segmentedControl`, `tabs`, `menu`, `dialogOk`, `dialogConfirm`, `dialogCancel`, `dialogClose`, `formImagePlaceholder`, `formSectionAction`, `popoverInputSubmit`, `tableEmpty`, `carouselPrevious`, `carouselNext`. Components already on the page redraw; global UI dialogs that are already open keep their text.
+- `setUiMessages(messages)` replaces the text components and primitives show when you pass none. Components already on the page redraw; global UI dialogs that are already open keep their text. A message marks inserted values with `{name}`, as in the table below.
 - `setFormMessages(messages)` replaces the default form validation messages (see `rtgl-form`). Forms use them from their next validation.
 - `setUiMessages` and `setFormMessages` replace the previous messages, so call them again with the new language when it changes, or with `{}` to go back to English. A key that is not set, or is an empty string, keeps the English default, and text you pass to a component, such as a `placeholder` or `aria-label`, still takes precedence.
-- `window.rtglIcons` and `window.rtglFormMessages` still work but are deprecated. Values set with the functions take precedence over them.
+- `DEFAULT_UI_MESSAGES` holds every key with its English default, for building translation files.
+- `window.rtglIcons` and `window.rtglFormMessages` still work but are deprecated. Values set with the functions take precedence over them. Unlike the functions, they can be set before the Rettangoli script loads, which is why `rtgl ui build-svg` still writes `window.rtglIcons`.
+
+| Key | English default | Where it appears |
+| --- | --- | --- |
+| `addOption` | Add | The "+ Add" option of select and segmented control |
+| `carouselGoTo` | Go to slide {value} | Carousel page dot label, with `{value}` for the slide number |
+| `carouselNext` | Next slide | Carousel next button label |
+| `carouselPrevious` | Previous slide | Carousel previous button label |
+| `colorPickerChoose` | Choose color | Color picker panel label |
+| `colorPickerHex` | Hex color | Color picker hex field label |
+| `colorPickerHue` | Hue | Color picker hue strip label |
+| `colorPickerSaturationBrightness` | Saturation and brightness | Color picker saturation and brightness area label |
+| `colorPickerSaturationBrightnessValue` | Saturation {saturation}%, brightness {brightness}% | Its value text, with `{saturation}` and `{brightness}` |
+| `dialogCancel` | Cancel | Global UI cancel button |
+| `dialogClose` | Close dialog | Dialog close button label |
+| `dialogConfirm` | Yes | Global UI confirm dialog button |
+| `dialogOk` | OK | Global UI alert and component dialog confirm button |
+| `formImagePlaceholder` | No Image | Form image field placeholder |
+| `formSectionAction` | Section action | Form section action button label |
+| `menu` | Menu | Dropdown menu label |
+| `popoverInputSubmit` | Submit | Popover input submit button |
+| `segmentedControl` | Segmented control | Segmented control label |
+| `selectClear` | Clear selection | Select clear button label |
+| `selectNoMatches` | No matching options | Select search with no results |
+| `selectPlaceholder` | Select an option | Select placeholder |
+| `selectSearchPlaceholder` | Search options | Select search field placeholder |
+| `tableEmpty` | No data available | Table with no rows |
+| `tabs` | Tabs | Tabs label |
+| `tagRemove` | Remove tag | Tag remove button label |
+| `tagSelectAddOption` | Add tag | Tag select add option in the popover |
+| `tagSelectAdded` | Added | Tag select suffix on added options |
+| `tagSelectEmpty` | No tags available | Tag select popover with no options |
+| `tagSelectPlaceholder` | Add tag | Tag select trigger placeholder |
+| `tagSelectSave` | Save | Tag select save button |

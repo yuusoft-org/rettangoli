@@ -8,8 +8,15 @@ import {
 // none, such as a select's placeholder or a dialog's close button label.
 export const DEFAULT_UI_MESSAGES = Object.freeze({
   addOption: "Add",
+  carouselGoTo: "Go to slide {value}",
   carouselNext: "Next slide",
   carouselPrevious: "Previous slide",
+  colorPickerChoose: "Choose color",
+  colorPickerHex: "Hex color",
+  colorPickerHue: "Hue",
+  colorPickerSaturationBrightness: "Saturation and brightness",
+  colorPickerSaturationBrightnessValue:
+    "Saturation {saturation}%, brightness {brightness}%",
   dialogCancel: "Cancel",
   dialogClose: "Close dialog",
   dialogConfirm: "Yes",
@@ -26,6 +33,7 @@ export const DEFAULT_UI_MESSAGES = Object.freeze({
   tableEmpty: "No data available",
   tabs: "Tabs",
   tagRemove: "Remove tag",
+  tagSelectAddOption: "Add tag",
   tagSelectAdded: "Added",
   tagSelectEmpty: "No tags available",
   tagSelectPlaceholder: "Add tag",
@@ -48,8 +56,13 @@ export const setUiMessages = (messages = {}) => {
 
 export const subscribeUiMessages = listeners.subscribe;
 
-// Text an app passes to a component takes precedence over this.
-export const getUiMessage = (key) =>
-  isUsableMessage(state.messages[key])
+// Text an app passes to a component takes precedence over this. A message
+// marks inserted values with `{name}`, such as "Go to slide {value}".
+export const getUiMessage = (key, values = {}) => {
+  const message = isUsableMessage(state.messages[key])
     ? state.messages[key]
     : DEFAULT_UI_MESSAGES[key];
+  return message.replace(/\{(\w+)\}/g, (placeholder, name) =>
+    Object.hasOwn(values, name) ? String(values[name]) : placeholder,
+  );
+};

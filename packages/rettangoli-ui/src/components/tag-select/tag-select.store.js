@@ -241,7 +241,7 @@ export const selectViewData = ({ state, props }) => {
     triggerTabIndex: isDisabled ? -1 : 0,
     showAddOption: !isDisabled && !props.noAdd,
     addOptionLabel:
-      props.addOption?.label || getUiMessage("tagSelectPlaceholder"),
+      props.addOption?.label || getUiMessage("tagSelectAddOption"),
     hasDraftChanges,
     submitDisabled: isDisabled,
     submitLabel: getUiMessage("tagSelectSave"),

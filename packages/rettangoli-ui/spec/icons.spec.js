@@ -71,6 +71,15 @@ describe("setIcons", () => {
     expect(drawnShape(svg)).toBe("");
   });
 
+  it("is shared by every copy of the modules, as in the script-tag bundles", async () => {
+    vi.resetModules();
+    const secondCopy = await import("../src/common/icons.js");
+    expect(secondCopy.setIcons).not.toBe(setIcons);
+
+    secondCopy.setIcons({ "test-shared": CIRCLE });
+    expect(getIcon("test-shared")).toBe(CIRCLE);
+  });
+
   it("keeps the static addIcon working", () => {
     const RettangoliSvg = customElements.get(TEST_TAG);
     RettangoliSvg.addIcon("test-added", SQUARE);

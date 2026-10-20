@@ -3,7 +3,6 @@ import paddingSvgStyles from "../styles/paddingSvgStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import textColorStyles from "../styles/textColorStyles.js";
-import { HOT_PRIMITIVE_PREPARE_STATIC } from "../hotPrimitiveContract.js";
 import {
   getIcon,
   getRegisteredIcons,
@@ -14,26 +13,6 @@ import {
 // Internal implementation without uhtml
 class RettangoliSvgElement extends HTMLElement {
   static styleSheet = null;
-  // The icons registered with setIcons, the same object across hot reloads.
-  static _icons = getRegisteredIcons();
-
-  static [HOT_PRIMITIVE_PREPARE_STATIC]({ previousClass }) {
-    const previousIcons = previousClass._icons;
-    const nextIcons = RettangoliSvgElement._icons;
-    let committed = false;
-
-    return {
-      commit() {
-        RettangoliSvgElement._icons = previousIcons;
-        committed = true;
-      },
-      rollback() {
-        if (committed) {
-          RettangoliSvgElement._icons = nextIcons;
-        }
-      },
-    };
-  }
 
   static initializeStyleSheet() {
     if (!RettangoliSvgElement.styleSheet) {
@@ -86,7 +65,7 @@ class RettangoliSvgElement extends HTMLElement {
   }
 
   static get icons() {
-    return RettangoliSvgElement._icons;
+    return getRegisteredIcons();
   }
 
   static addIcon(iconName, icon) {

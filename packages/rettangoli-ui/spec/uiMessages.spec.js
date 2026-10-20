@@ -84,8 +84,10 @@ describe("setUiMessages", () => {
   });
 
   it("is shared by every copy of the module, as in the script-tag bundles", async () => {
-    const secondCopy = await import("../src/common/uiMessages.js?second-copy");
-    // A separate module instance, not the one imported above.
+    // Fresh instances of uiMessages.js and every module it imports, as the
+    // bundles' pre-bundled FE components carry their own copies.
+    vi.resetModules();
+    const secondCopy = await import("../src/common/uiMessages.js");
     expect(secondCopy.setUiMessages).not.toBe(setUiMessages);
     const listener = vi.fn();
     const unsubscribe = secondCopy.subscribeUiMessages(listener);

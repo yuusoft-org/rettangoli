@@ -154,6 +154,7 @@ class RettangoliTagElement extends HTMLElement {
     this._unsubscribeUiMessages ??= subscribeUiMessages(() =>
       this._removeButton?.setAttribute("aria-label", getUiMessage("tagRemove")),
     );
+    this._removeButton?.setAttribute("aria-label", getUiMessage("tagRemove"));
     this._updateWidth();
     this._updateStructure();
   }
@@ -233,10 +234,10 @@ class RettangoliTagElement extends HTMLElement {
       this._removeButton.type = "button";
       this._removeButton.className = "removeButton";
       this._removeButton.setAttribute("part", "remove-button");
-      this._removeButton.setAttribute("aria-label", getUiMessage("tagRemove"));
       this._removeButton.addEventListener("click", this._onRemoveClick);
       this._surfaceElement.appendChild(this._removeButton);
     }
+    this._removeButton.setAttribute("aria-label", getUiMessage("tagRemove"));
 
   }
 
