@@ -1,3 +1,4 @@
+import { subscribeUiMessages } from "../../common/uiMessages.js";
 import { deepEqual } from '../../common.js';
 import { hasFieldAriaChanged } from '../../accessibility/field.js';
 import { selectViewData } from './select.store.js';
@@ -70,7 +71,10 @@ export const handleBeforeMount = (deps) => {
       render();
     }
   }
-}
+
+  // App messages can change after mount, such as when the language changes.
+  return subscribeUiMessages(() => render());
+};
 
 export const handleOnUpdate = (deps, payload) => {
   const { oldProps, newProps } = payload;

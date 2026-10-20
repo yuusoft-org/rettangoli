@@ -19,6 +19,9 @@ import RettangoliColorPicker from './primitives/colorPicker.js';
 import RettangoliSlider from './primitives/slider.js';
 import RettangoliCheckbox from './primitives/checkbox.js';
 import createGlobalUI from './deps/createGlobalUI.js';
+import { setFormMessages } from './common/formMessages.js';
+import { setIcons } from './common/icons.js';
+import { setUiMessages } from './common/uiMessages.js';
 
 export {
     RettangoliButton,
@@ -42,4 +45,7 @@ export {
     RettangoliSlider,
     RettangoliCheckbox,
     createGlobalUI,
+    setFormMessages,
+    setIcons,
+    setUiMessages,
 }

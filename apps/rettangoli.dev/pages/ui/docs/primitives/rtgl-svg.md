@@ -11,15 +11,17 @@ A primitive for rendering registered SVG icons with token-based color, sizing, a
 
 ## Quickstart
 
-Register icons once, then render by key:
+Register icons with `rtgl.setIcons` (or `setIcons` imported from `@rettangoli/ui`), then render by key:
 
 ```html
 <script>
-  window.rtglIcons = {
+  rtgl.setIcons({
     text: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 12H20M4 8H20M4 16H12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-  };
+  });
 </script>
 ```
+
+`setIcons` adds or replaces icons by name, and `rtgl-svg` elements already on the page redraw. Setting `window.rtglIcons` still works but is deprecated.
 
 ```html codePreview
 <rtgl-view d="h" g="md">

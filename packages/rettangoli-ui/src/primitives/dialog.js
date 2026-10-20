@@ -1,4 +1,4 @@
-import { getUiMessage } from "../common/uiMessages.js";
+import { getUiMessage, subscribeUiMessages } from "../common/uiMessages.js";
 import {
   css,
   mediaQueries,
@@ -465,6 +465,9 @@ class RettangoliDialogElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this._unsubscribeUiMessages ??= subscribeUiMessages(() =>
+      this._updateCloseButton(),
+    );
     this._updateDialog();
     this._isConnected = true;
     // Check initial open attribute
@@ -474,6 +477,8 @@ class RettangoliDialogElement extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._unsubscribeUiMessages?.();
+    this._unsubscribeUiMessages = undefined;
     this._isConnected = false;
     this._clearManagedLongTokenWrapping();
     this._stopAdaptiveObservers();

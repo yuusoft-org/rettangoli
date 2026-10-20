@@ -1,9 +1,12 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   DEFAULT_UI_MESSAGES,
   getUiMessage,
+  setUiMessages,
+  subscribeUiMessages,
 } from "../src/common/uiMessages.js";
+import { handleBeforeMount as handleTabsBeforeMount } from "../src/components/tabs/tabs.handlers.js";
 import { selectViewData as selectSelectViewData } from "../src/components/select/select.store.js";
 import { selectViewData as selectTabsViewData } from "../src/components/tabs/tabs.store.js";
 import { selectViewData as selectTagSelectViewData } from "../src/components/tag-select/tag-select.store.js";
@@ -13,14 +16,8 @@ import {
   setComponentDialogConfig,
 } from "../src/components/global-ui/global-ui.store.js";
 
-const originalMessages = globalThis.rtglUiMessages;
-
 afterEach(() => {
-  if (originalMessages === undefined) {
-    delete globalThis.rtglUiMessages;
-  } else {
-    globalThis.rtglUiMessages = originalMessages;
-  }
+  setUiMessages({});
 });
 
 const createSelectState = () => ({
@@ -31,47 +28,83 @@ const createSelectState = () => ({
   searchQuery: "",
 });
 
-describe("getUiMessage", () => {
-  it("returns the English default without app messages", () => {
-    delete globalThis.rtglUiMessages;
-
+describe("setUiMessages", () => {
+  it("leaves the English defaults until the app sets messages", () => {
     for (const [key, message] of Object.entries(DEFAULT_UI_MESSAGES)) {
       expect(getUiMessage(key)).toBe(message);
     }
   });
 
-  it("returns the app's message for a key", () => {
-    globalThis.rtglUiMessages = { selectPlaceholder: "Sélectionnez une option" };
+  it("replaces the defaults for the keys it sets", () => {
+    setUiMessages({ selectPlaceholder: "Sélectionnez une option" });
 
     expect(getUiMessage("selectPlaceholder")).toBe("Sélectionnez une option");
     expect(getUiMessage("tabs")).toBe("Tabs");
   });
 
+  it("replaces the previous messages instead of merging them", () => {
+    setUiMessages({ selectPlaceholder: "Sélectionnez une option" });
+    setUiMessages({ tabs: "Onglets" });
+
+    expect(getUiMessage("selectPlaceholder")).toBe("Select an option");
+    expect(getUiMessage("tabs")).toBe("Onglets");
+  });
+
   it("keeps the default for empty and non-string messages", () => {
-    globalThis.rtglUiMessages = {
+    setUiMessages({
       selectPlaceholder: "",
       tabs: "   ",
       menu: 42,
       dialogOk: null,
-    };
+    });
 
     expect(getUiMessage("selectPlaceholder")).toBe("Select an option");
     expect(getUiMessage("tabs")).toBe("Tabs");
     expect(getUiMessage("menu")).toBe("Menu");
     expect(getUiMessage("dialogOk")).toBe("OK");
   });
+
+  it("is not affected by later changes to the object the app passed", () => {
+    const messages = { tabs: "Onglets" };
+    setUiMessages(messages);
+    messages.tabs = "Pestañas";
+
+    expect(getUiMessage("tabs")).toBe("Onglets");
+  });
+
+  it("tells subscribers, and stops after they unsubscribe", () => {
+    const listener = vi.fn();
+    const unsubscribe = subscribeUiMessages(listener);
+
+    setUiMessages({ tabs: "Onglets" });
+    unsubscribe();
+    setUiMessages({});
+
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it("redraws a mounted component until it unmounts", () => {
+    const render = vi.fn();
+    const cleanup = handleTabsBeforeMount({ render });
+
+    setUiMessages({ tabs: "Onglets" });
+    cleanup();
+    setUiMessages({});
+
+    expect(render).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("components with app messages", () => {
   it("uses app messages where the component has no text of its own", () => {
-    globalThis.rtglUiMessages = {
+    setUiMessages({
       selectPlaceholder: "Sélectionnez une option",
       selectClear: "Effacer la sélection",
       selectSearchPlaceholder: "Rechercher une option",
       tabs: "Onglets",
       tagSelectPlaceholder: "Ajouter une étiquette",
       tagSelectSave: "Enregistrer",
-    };
+    });
 
     const select = selectSelectViewData({
       state: createSelectState(),
@@ -94,10 +127,10 @@ describe("components with app messages", () => {
   });
 
   it("keeps a component's own text over app messages", () => {
-    globalThis.rtglUiMessages = {
+    setUiMessages({
       selectPlaceholder: "Sélectionnez une option",
       tabs: "Onglets",
-    };
+    });
 
     expect(
       selectSelectViewData({
@@ -112,11 +145,11 @@ describe("components with app messages", () => {
   });
 
   it("uses app messages for dialog buttons", () => {
-    globalThis.rtglUiMessages = {
+    setUiMessages({
       dialogConfirm: "Oui",
       dialogCancel: "Annuler",
       dialogOk: "OK",
-    };
+    });
 
     const state = structuredClone(createGlobalUiInitialState());
     setConfirmConfig({ state }, { message: "Continuer ?" });

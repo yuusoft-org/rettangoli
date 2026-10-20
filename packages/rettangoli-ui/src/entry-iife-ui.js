@@ -1,3 +1,4 @@
+import "./registerGlobalApi.js";
 import "./registerPrimitives.js";
 
 // built from rettangoli cli fe

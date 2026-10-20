@@ -648,22 +648,26 @@ milliseconds. Empty values are allowed unless `required` is set, and numeric
 
 When a field has no message of its own, validation uses a built-in English
 default. Apps can replace these defaults for every form, for example with
-translations, by setting `window.rtglFormMessages` before validation runs,
-the same way `window.rtglIcons` registers icons:
+translations, by calling `setFormMessages` (on `window.rtgl` in the
+script-tag bundles):
 
 ```js
-window.rtglFormMessages = {
+import { setFormMessages } from "@rettangoli/ui";
+
+setFormMessages({
   required: "Este campo é obrigatório",
   minLength: "Mínimo de {value} caracteres",
-};
+});
 ```
 
 Messages are plain strings. A message that takes a value marks it with
 `{value}`. Each key is optional, and a key that is not set, or is set to an
 empty string, keeps its English default, so an untranslated key never turns
 its check off. A field's own `required.message` or rule `message` still takes
-precedence. Forms read the object each time they validate, so replacing it
-(for example when the app language changes) applies from the next validation.
+precedence. Each call replaces the previous messages, and forms read them
+each time they validate, so calling it again (for example when the app
+language changes) applies from the next validation. `window.rtglFormMessages`
+is still read after them but is deprecated.
 Errors already shown keep their text until their field is validated again;
 call `validate()` to refresh them.
 
@@ -1100,7 +1104,7 @@ Contract tests in `spec/` directory with YAML cases and JS helper functions. Eac
 
 - `required: true` on empty field → error with default message
 - `required: { message: "custom" }` on empty field → error with custom message
-- `window.rtglFormMessages` sets the default messages, fills `{value}`, and leaves a field's own message and unset keys unchanged
+- `setFormMessages` sets the default messages, fills `{value}`, and leaves a field's own message and unset keys unchanged
 - `required` on non-empty field → no error
 - `minLength` rule → error when below, pass when at/above
 - `maxLength` rule → error when above, pass when at/below

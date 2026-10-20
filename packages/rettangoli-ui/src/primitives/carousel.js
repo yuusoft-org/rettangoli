@@ -1,4 +1,4 @@
-import { getUiMessage } from "../common/uiMessages.js";
+import { getUiMessage, subscribeUiMessages } from "../common/uiMessages.js";
 import { css, dimensionWithUnit } from "../common.js";
 import {
   clampCarouselIndex,
@@ -401,6 +401,10 @@ class RettangoliCarouselElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this._unsubscribeUiMessages ??= subscribeUiMessages(() => {
+      this._prevButton.setAttribute("aria-label", getUiMessage("carouselPrevious"));
+      this._nextButton.setAttribute("aria-label", getUiMessage("carouselNext"));
+    });
     this._slotElement.addEventListener("slotchange", this._handleSlotChange);
     this._prevButton.addEventListener("click", this._handleClickPrev);
     this._nextButton.addEventListener("click", this._handleClickNext);
@@ -420,6 +424,8 @@ class RettangoliCarouselElement extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._unsubscribeUiMessages?.();
+    this._unsubscribeUiMessages = undefined;
     this._slotElement.removeEventListener("slotchange", this._handleSlotChange);
     this._prevButton.removeEventListener("click", this._handleClickPrev);
     this._nextButton.removeEventListener("click", this._handleClickNext);

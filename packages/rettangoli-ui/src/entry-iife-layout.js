@@ -1,3 +1,4 @@
+import './registerGlobalApi.js';
 import RettangoliButton from './primitives/button.js'
 import RettangoliCarousel from './primitives/carousel.js';
 import RettangoliGrid from './primitives/grid.js';

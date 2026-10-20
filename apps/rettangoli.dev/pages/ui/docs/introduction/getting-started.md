@@ -53,21 +53,31 @@ import { RettangoliButton } from '@rettangoli/ui'
 customElements.define("rtgl-button", RettangoliButton({}));
 ```
 
-## Default Text
+## Icons and Default Text
 
-Components show built-in English text when you pass none, such as a select's `Select an option` placeholder or a dialog's `Close dialog` label. To replace it everywhere, for example with translations, set `window.rtglUiMessages`:
+Set up icons and replace the library's built-in English text with three functions. With the script-tag bundles, they are on `window.rtgl`; with npm, import them from `@rettangoli/ui`:
 
 ```html
 <script>
-  window.rtglUiMessages = {
+  rtgl.setIcons({
+    text: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 12H20" stroke="currentColor" stroke-width="2"/></svg>`,
+  });
+  rtgl.setUiMessages({
     selectPlaceholder: "Sélectionnez une option",
     dialogCancel: "Annuler",
-  };
+  });
+  rtgl.setFormMessages({
+    required: "Ce champ est obligatoire",
+  });
 </script>
 ```
 
-- Keys: `selectPlaceholder`, `selectSearchPlaceholder`, `selectNoMatches`, `selectClear`, `addOption`, `tagSelectPlaceholder`, `tagSelectAdded`, `tagSelectSave`, `tagSelectEmpty`, `tagRemove`, `segmentedControl`, `tabs`, `menu`, `dialogOk`, `dialogConfirm`, `dialogCancel`, `dialogClose`, `formImagePlaceholder`, `formSectionAction`, `popoverInputSubmit`, `tableEmpty`, `carouselPrevious`, `carouselNext`.
-- Text you pass to a component, such as a `placeholder` or `aria-label`, still takes precedence.
-- A key that is not set, or is an empty string, keeps the English default.
-- Components read the object when they render. Set it before they mount; after replacing it, components already shown update on their next render.
-- For form validation messages, use `window.rtglFormMessages` (see `rtgl-form`).
+```js
+import { setFormMessages, setIcons, setUiMessages } from "@rettangoli/ui";
+```
+
+- `setIcons(icons)` adds or replaces icons by name for `rtgl-svg`. Icons registered earlier stay registered, and `rtgl-svg` elements already on the page redraw.
+- `setUiMessages(messages)` replaces the text components show when you pass none, such as a select's `Select an option` placeholder or a dialog's `Close dialog` label. Keys: `selectPlaceholder`, `selectSearchPlaceholder`, `selectNoMatches`, `selectClear`, `addOption`, `tagSelectPlaceholder`, `tagSelectAdded`, `tagSelectSave`, `tagSelectEmpty`, `tagRemove`, `segmentedControl`, `tabs`, `menu`, `dialogOk`, `dialogConfirm`, `dialogCancel`, `dialogClose`, `formImagePlaceholder`, `formSectionAction`, `popoverInputSubmit`, `tableEmpty`, `carouselPrevious`, `carouselNext`. Components already on the page redraw; global UI dialogs that are already open keep their text.
+- `setFormMessages(messages)` replaces the default form validation messages (see `rtgl-form`). Forms use them from their next validation.
+- `setUiMessages` and `setFormMessages` replace the previous messages, so call them again with the new language when it changes, or with `{}` to go back to English. A key that is not set, or is an empty string, keeps the English default, and text you pass to a component, such as a `placeholder` or `aria-label`, still takes precedence.
+- `window.rtglIcons` and `window.rtglFormMessages` still work but are deprecated. Values set with the functions take precedence over them.

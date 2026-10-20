@@ -1,4 +1,4 @@
-import { getUiMessage } from "../common/uiMessages.js";
+import { getUiMessage, subscribeUiMessages } from "../common/uiMessages.js";
 import {
   css,
   dimensionWithUnit,
@@ -151,8 +151,16 @@ class RettangoliTagElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this._unsubscribeUiMessages ??= subscribeUiMessages(() =>
+      this._removeButton?.setAttribute("aria-label", getUiMessage("tagRemove")),
+    );
     this._updateWidth();
     this._updateStructure();
+  }
+
+  disconnectedCallback() {
+    this._unsubscribeUiMessages?.();
+    this._unsubscribeUiMessages = undefined;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {

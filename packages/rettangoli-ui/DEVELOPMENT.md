@@ -267,14 +267,16 @@ Canonical `inputType` values are kebab-case only:
 ### Form validation messages
 
 - fields without their own `required.message` or rule `message` use built-in English defaults
-- apps replace defaults for every form by setting `window.rtglFormMessages` (plain strings, `{value}` for the rule's `value` or the field's `min` / `max`), read on each validation; unset keys and empty strings keep the English default
+- apps replace defaults for every form with `setFormMessages` (plain strings, `{value}` for the rule's `value` or the field's `min` / `max`), read on each validation; unset keys and empty strings keep the English default
+- `window.rtglFormMessages` is deprecated but still read after messages set with `setFormMessages`; keep it working until a major version removes it
 - see `docs/form-design.md` "Default messages" for the keys
 
-### Default UI text
+### Icons and default UI text
 
-- components and primitives fall back to built-in English text, such as `Select an option` or the `Close dialog` label, when the app passes none
-- apps replace that text for every component by setting `window.rtglUiMessages`; components read it through `getUiMessage` in `src/common/uiMessages.js` when they render, and unset keys and empty strings keep the English default
-- new built-in text belongs in `DEFAULT_UI_MESSAGES` there, read through `getUiMessage`, not as a literal in a store, view, or primitive
+- apps set up the library with `setIcons`, `setUiMessages`, and `setFormMessages`, exported from the package and exposed as `window.rtgl` in the script-tag bundles (`src/registerGlobalApi.js`); do not add new `window.rtgl*` globals for configuration
+- components and primitives fall back to built-in English text, such as `Select an option` or the `Close dialog` label, when the app passes none; new built-in text belongs in `DEFAULT_UI_MESSAGES` in `src/common/uiMessages.js`, read through `getUiMessage`, not as a literal in a store, view, or primitive
+- elements that show icons or UI messages redraw when they change: FE components subscribe in `handleBeforeMount` and return the unsubscribe, primitives subscribe on connect and unsubscribe on disconnect
+- `window.rtglIcons` is deprecated but still read after icons set with `setIcons`
 
 ### Form padding
 

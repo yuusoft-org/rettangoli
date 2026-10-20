@@ -4,11 +4,18 @@ import marginStyles from "../styles/marginStyles.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import textColorStyles from "../styles/textColorStyles.js";
 import { HOT_PRIMITIVE_PREPARE_STATIC } from "../hotPrimitiveContract.js";
+import {
+  getIcon,
+  getRegisteredIcons,
+  setIcons,
+  subscribeIcons,
+} from "../common/icons.js";
 
 // Internal implementation without uhtml
 class RettangoliSvgElement extends HTMLElement {
   static styleSheet = null;
-  static _icons = {};
+  // The icons registered with setIcons, the same object across hot reloads.
+  static _icons = getRegisteredIcons();
 
   static [HOT_PRIMITIVE_PREPARE_STATIC]({ previousClass }) {
     const previousIcons = previousClass._icons;
@@ -83,13 +90,19 @@ class RettangoliSvgElement extends HTMLElement {
   }
 
   static addIcon(iconName, icon) {
-    RettangoliSvgElement._icons[iconName] = icon;
+    setIcons({ [iconName]: icon });
   }
 
   connectedCallback() {
+    this._unsubscribeIcons ??= subscribeIcons(() => this._render());
     this._hasConnected = true;
     this._updateSizing();
     this._render();
+  }
+
+  disconnectedCallback() {
+    this._unsubscribeIcons?.();
+    this._unsubscribeIcons = undefined;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -129,10 +142,7 @@ class RettangoliSvgElement extends HTMLElement {
     let content = "";
     try {
       const iconName = this.getAttribute("svg");
-      content =
-        RettangoliSvgElement._icons[iconName] ||
-        (window["rtglIcons"] || {})[iconName] ||
-        "";
+      content = getIcon(iconName) || "";
     } catch (error) {
       console.log("error in rtgl-svg render", error);
     }

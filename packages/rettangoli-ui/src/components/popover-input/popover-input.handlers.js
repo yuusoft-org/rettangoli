@@ -1,3 +1,4 @@
+import { subscribeUiMessages } from "../../common/uiMessages.js";
 const normalizePopoverValue = (value) => {
   if (value === undefined || value === null || value === true) {
     return "";
@@ -21,14 +22,17 @@ const commitValue = (deps, value) => {
 };
 
 export const handleBeforeMount = (deps) => {
-  const { store, props } = deps;
+  const { store, props, render } = deps;
 
   if (props.value !== undefined) {
     const value = normalizePopoverValue(props.value);
     store.setValue({ value });
     store.setTempValue({ value });
   }
-}
+
+  // App messages can change after mount, such as when the language changes.
+  return subscribeUiMessages(() => render());
+};
 
 export const handleOnUpdate = (deps, payload) => {
   const { oldProps, newProps } = payload;
