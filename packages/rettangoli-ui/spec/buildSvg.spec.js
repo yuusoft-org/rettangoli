@@ -49,6 +49,14 @@ describe("rtgl ui build-svg", () => {
     expect(window.rtglIcons).toBeUndefined();
   });
 
+  it("creates window.rtglIcons when it runs first on a page", () => {
+    const source = buildIconsFile({ circle: CIRCLE });
+
+    const window = runInPage(source, {});
+
+    expect(window.rtglIcons).toEqual({ circle: CIRCLE });
+  });
+
   it("falls back to window.rtglIcons when it runs before Rettangoli UI", () => {
     const source = buildIconsFile({ circle: CIRCLE });
 
