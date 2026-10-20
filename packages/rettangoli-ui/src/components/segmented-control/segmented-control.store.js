@@ -1,3 +1,4 @@
+import { getUiMessage } from "../../common/uiMessages.js";
 import { selectFieldAria } from "../../accessibility/field.js";
 import { deepEqual } from "../../common.js";
 
@@ -126,7 +127,8 @@ export const selectViewData = ({ state, props }) => {
     options: optionsWithSelection,
     selectedValue: currentValue,
     hasSelectedValue: hasCurrentValue,
-    ariaLabel: props.ariaLabel || props.placeholder || "Segmented control",
+    ariaLabel:
+      props.ariaLabel || props.placeholder || getUiMessage("segmentedControl"),
     hasTooltips: options.some(
       (option) =>
         typeof option.tooltip === "string" && option.tooltip.length > 0,
@@ -139,10 +141,8 @@ export const selectViewData = ({ state, props }) => {
       content: "",
     },
     showAddOption,
-    addOptionLabel: props.addOption?.label
-      ? `+ ${props.addOption.label}`
-      : "+ Add",
-    addOptionAriaLabel: props.addOption?.label || "Add",
+    addOptionLabel: `+ ${props.addOption?.label || getUiMessage("addOption")}`,
+    addOptionAriaLabel: props.addOption?.label || getUiMessage("addOption"),
     addOptionBgc: state.hoveredAddOption ? "mu" : "",
     addOptionBorderLeftWidth: options.length === 0 ? "none" : "xs",
   };

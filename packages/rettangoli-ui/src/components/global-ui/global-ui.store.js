@@ -3,6 +3,7 @@ import {
   normalizeTextSegments,
   renderableTextSegments,
 } from "../../common/textSegments.js";
+import { getUiMessage } from "../../common/uiMessages.js";
 
 const VALID_DIALOG_SIZES = new Set(["sm", "md", "lg", "f"]);
 const VALID_TOAST_SIZES = new Set(["sm", "md", "lg"]);
@@ -27,22 +28,22 @@ const DROPDOWN_POPOVER_ATTR_PROPS = [
   ["dir", "dir"],
 ];
 
-const DEFAULT_COMPONENT_DIALOG_BUTTONS = Object.freeze([
+const getDefaultComponentDialogButtons = () => [
   {
     id: "cancel",
-    label: "Cancel",
+    label: getUiMessage("dialogCancel"),
     variant: "se",
     align: "left",
     role: "cancel",
   },
   {
     id: "confirm",
-    label: "OK",
+    label: getUiMessage("dialogOk"),
     variant: "pr",
     role: "confirm",
     validate: true,
   },
-]);
+];
 
 const normalizeObject = (value) => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -107,7 +108,7 @@ const normalizeToastPosition = (value, fallback = "top") => {
 const normalizeComponentDialogActions = (value) => {
   const sourceButtons = Array.isArray(value?.buttons) && value.buttons.length > 0
     ? value.buttons
-    : DEFAULT_COMPONENT_DIALOG_BUTTONS;
+    : getDefaultComponentDialogButtons();
 
   const buttons = sourceButtons.map((button, index) => {
     if (!button || typeof button !== "object" || Array.isArray(button)) {
@@ -181,8 +182,8 @@ export const createInitialState = () => Object.freeze({
     status: undefined, // undefined | info | warning | error
     title: "",
     message: "",
-    confirmText: "OK",
-    cancelText: "Cancel",
+    confirmText: getUiMessage("dialogOk"),
+    cancelText: getUiMessage("dialogCancel"),
     mode: "alert", // alert | confirm
   },
   dropdownConfig: {
@@ -215,7 +216,7 @@ export const setAlertConfig = ({ state }, options = {}) => {
     _titleSegments: renderableTextSegments(options.title),
     message: options.message,
     _messageSegments: renderableTextSegments(options.message),
-    confirmText: options.confirmText ?? "OK",
+    confirmText: options.confirmText ?? getUiMessage("dialogOk"),
     cancelText: "",
     mode: "alert",
   };
@@ -234,8 +235,8 @@ export const setConfirmConfig = ({ state }, options = {}) => {
     _titleSegments: renderableTextSegments(options.title),
     message: options.message,
     _messageSegments: renderableTextSegments(options.message),
-    confirmText: options.confirmText ?? "Yes",
-    cancelText: options.cancelText ?? "Cancel",
+    confirmText: options.confirmText ?? getUiMessage("dialogConfirm"),
+    cancelText: options.cancelText ?? getUiMessage("dialogCancel"),
     mode: "confirm",
   };
   state.uiType = "dialog";
@@ -252,7 +253,8 @@ export const setDropdownConfig = ({ state }, options = {}) => {
     x: options.x ?? 0,
     y: options.y ?? 0,
     place: options.place ?? "bs",
-    ariaLabel: options.ariaLabel ?? options["aria-label"] ?? "Menu",
+    ariaLabel:
+      options.ariaLabel ?? options["aria-label"] ?? getUiMessage("menu"),
     ...collectDropdownPopoverOptions(options),
   };
   state.uiType = "dropdown";
@@ -389,7 +391,7 @@ export const selectViewData = ({ state }) => {
       x: state.dropdownConfig?.x ?? 0,
       y: state.dropdownConfig?.y ?? 0,
       place: state.dropdownConfig?.place ?? "bs",
-      ariaLabel: state.dropdownConfig?.ariaLabel ?? "Menu",
+      ariaLabel: state.dropdownConfig?.ariaLabel ?? getUiMessage("menu"),
       popoverAttrString: stringifyDropdownPopoverAttrs(state.dropdownConfig),
     },
     formDialogConfig: {

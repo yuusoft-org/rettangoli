@@ -1,3 +1,4 @@
+import { setFormMessages } from "../src/common/formMessages.js";
 import {
   validateField,
   validateForm,
@@ -14,20 +15,14 @@ export const runValidateFieldCase = ({ field, value }) => {
   return { error };
 };
 
-// Runs one validation with app-wide default messages set on
-// `globalThis.rtglFormMessages`, then restores whatever was set before.
+// Runs one validation with app-wide default messages set through
+// setFormMessages, then goes back to the English defaults.
 export const runValidateFieldWithMessagesCase = ({ messages, field, value }) => {
-  const hadMessages = Object.hasOwn(globalThis, "rtglFormMessages");
-  const previousMessages = globalThis.rtglFormMessages;
-  globalThis.rtglFormMessages = messages;
+  setFormMessages(messages);
   try {
     return { error: validateField(field, value) };
   } finally {
-    if (hadMessages) {
-      globalThis.rtglFormMessages = previousMessages;
-    } else {
-      delete globalThis.rtglFormMessages;
-    }
+    setFormMessages({});
   }
 };
 

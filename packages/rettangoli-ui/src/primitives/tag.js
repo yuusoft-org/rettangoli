@@ -1,3 +1,4 @@
+import { getUiMessage, subscribeUiMessages } from "../common/uiMessages.js";
 import {
   css,
   dimensionWithUnit,
@@ -150,8 +151,17 @@ class RettangoliTagElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this._unsubscribeUiMessages ??= subscribeUiMessages(() =>
+      this._removeButton?.setAttribute("aria-label", getUiMessage("tagRemove")),
+    );
+    this._removeButton?.setAttribute("aria-label", getUiMessage("tagRemove"));
     this._updateWidth();
     this._updateStructure();
+  }
+
+  disconnectedCallback() {
+    this._unsubscribeUiMessages?.();
+    this._unsubscribeUiMessages = undefined;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -224,10 +234,10 @@ class RettangoliTagElement extends HTMLElement {
       this._removeButton.type = "button";
       this._removeButton.className = "removeButton";
       this._removeButton.setAttribute("part", "remove-button");
-      this._removeButton.setAttribute("aria-label", "Remove tag");
       this._removeButton.addEventListener("click", this._onRemoveClick);
       this._surfaceElement.appendChild(this._removeButton);
     }
+    this._removeButton.setAttribute("aria-label", getUiMessage("tagRemove"));
 
   }
 

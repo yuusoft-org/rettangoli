@@ -1,5 +1,8 @@
+import { subscribeUiMessages } from "../../common/uiMessages.js";
 export const handleBeforeMount = (deps) => {
-  // No special initialization needed for basic table
+  const { render } = deps;
+  // App messages can change after mount, such as when the language changes.
+  return subscribeUiMessages(() => render());
 };
 
 export const handleRowClick = (deps, payload) => {

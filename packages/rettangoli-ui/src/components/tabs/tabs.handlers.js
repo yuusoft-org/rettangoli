@@ -1,3 +1,10 @@
+import { subscribeUiMessages } from "../../common/uiMessages.js";
+
+export const handleBeforeMount = (deps) => {
+  const { render } = deps;
+  // App messages can change after mount, such as when the language changes.
+  return subscribeUiMessages(() => render());
+};
 export const handleOnUpdate = ({ store, render }, { oldProps, newProps }) => {
   if (oldProps.selectedTab !== newProps.selectedTab) {
     store.setFocusedTab({ id: null });

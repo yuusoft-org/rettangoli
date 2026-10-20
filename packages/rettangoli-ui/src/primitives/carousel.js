@@ -1,3 +1,4 @@
+import { getUiMessage, subscribeUiMessages } from "../common/uiMessages.js";
 import { css, dimensionWithUnit } from "../common.js";
 import {
   clampCarouselIndex,
@@ -324,7 +325,6 @@ class RettangoliCarouselElement extends HTMLElement {
     this._prevButton.hidden = true;
     this._prevButton.append(createChevronIcon("left"));
     this._prevButton.setAttribute("part", "nav-button prev-button");
-    this._prevButton.setAttribute("aria-label", "Previous slide");
 
     this._pagerElement = document.createElement("div");
     this._pagerElement.id = "pager";
@@ -337,7 +337,6 @@ class RettangoliCarouselElement extends HTMLElement {
     this._nextButton.hidden = true;
     this._nextButton.append(createChevronIcon("right"));
     this._nextButton.setAttribute("part", "nav-button next-button");
-    this._nextButton.setAttribute("aria-label", "Next slide");
 
     this._viewportShellElement.append(
       this._viewportElement,
@@ -400,6 +399,10 @@ class RettangoliCarouselElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this._unsubscribeUiMessages ??= subscribeUiMessages(() =>
+      this._updateMessageLabels(),
+    );
+    this._updateMessageLabels();
     this._slotElement.addEventListener("slotchange", this._handleSlotChange);
     this._prevButton.addEventListener("click", this._handleClickPrev);
     this._nextButton.addEventListener("click", this._handleClickNext);
@@ -419,6 +422,8 @@ class RettangoliCarouselElement extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._unsubscribeUiMessages?.();
+    this._unsubscribeUiMessages = undefined;
     this._slotElement.removeEventListener("slotchange", this._handleSlotChange);
     this._prevButton.removeEventListener("click", this._handleClickPrev);
     this._nextButton.removeEventListener("click", this._handleClickNext);
@@ -843,6 +848,17 @@ class RettangoliCarouselElement extends HTMLElement {
     }
   }
 
+  // Labels from the app's UI messages, set on connect and whenever they change.
+  _updateMessageLabels() {
+    this._prevButton.setAttribute("aria-label", getUiMessage("carouselPrevious"));
+    this._nextButton.setAttribute("aria-label", getUiMessage("carouselNext"));
+    this._pagerButtons.forEach((button, index) => {
+      const label = getUiMessage("carouselGoTo", { value: index + 1 });
+      button.setAttribute("aria-label", label);
+      button.setAttribute("title", label);
+    });
+  }
+
   _buildPager() {
     this._pagerElement.replaceChildren();
     this._pagerButtons = [];
@@ -851,8 +867,9 @@ class RettangoliCarouselElement extends HTMLElement {
       const button = document.createElement("button");
       button.type = "button";
       button.setAttribute("part", "pager-button");
-      button.setAttribute("aria-label", `Go to slide ${index + 1}`);
-      button.setAttribute("title", `Go to slide ${index + 1}`);
+      const label = getUiMessage("carouselGoTo", { value: index + 1 });
+      button.setAttribute("aria-label", label);
+      button.setAttribute("title", label);
       button.addEventListener("click", () => {
         this.goTo(index);
       });

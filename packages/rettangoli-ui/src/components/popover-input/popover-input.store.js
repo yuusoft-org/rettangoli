@@ -1,3 +1,4 @@
+import { getUiMessage } from "../../common/uiMessages.js";
 import { selectFieldAria } from "../../accessibility/field.js";
 export const createInitialState = () => Object.freeze({
   isOpen: false,
@@ -28,6 +29,7 @@ export const selectViewData = ({ props, state }) => {
     placeholder,
     label,
     disabled,
+    submitLabel: getUiMessage("popoverInputSubmit"),
   };
 }
 

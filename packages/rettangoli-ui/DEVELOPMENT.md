@@ -267,8 +267,17 @@ Canonical `inputType` values are kebab-case only:
 ### Form validation messages
 
 - fields without their own `required.message` or rule `message` use built-in English defaults
-- apps replace defaults for every form by setting `window.rtglFormMessages` (plain strings, `{value}` for the rule's `value` or the field's `min` / `max`), read on each validation; unset keys and empty strings keep the English default
+- apps replace defaults for every form with `setFormMessages` (plain strings, `{value}` for the rule's `value` or the field's `min` / `max`), read on each validation; unset keys and empty strings keep the English default
+- `window.rtglFormMessages` is deprecated but still read after messages set with `setFormMessages`; keep it working until a major version removes it
 - see `docs/form-design.md` "Default messages" for the keys
+
+### Icons and default UI text
+
+- apps set up the library with `setIcons`, `setUiMessages`, and `setFormMessages`, exported from the package and exposed as `window.rtgl` in the script-tag bundles (`src/registerGlobalApi.js`); do not add new `window.rtgl*` globals for configuration
+- components and primitives fall back to built-in English text, such as `Select an option` or the `Close dialog` label, when the app passes none; new built-in text belongs in `DEFAULT_UI_MESSAGES` in `src/common/uiMessages.js`, read through `getUiMessage(key, values)` with `{name}` placeholders for inserted values, not as a literal in a store, view, or primitive, and the key table in the getting started docs
+- elements that show icons or UI messages redraw when they change: FE components subscribe in `handleBeforeMount` and return the unsubscribe, primitives subscribe on connect, reapply their labels on every connect, and unsubscribe on disconnect
+- shared state lives under versioned `Symbol.for("@rettangoli/ui/v1/…")` keys (`getSharedState` in `src/common/changeListeners.js`) because the script-tag bundles carry duplicate module copies; bump the version when a state's shape changes
+- `window.rtglIcons` is deprecated but still read after icons set with `setIcons`
 
 ### Form padding
 

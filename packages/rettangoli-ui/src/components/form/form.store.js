@@ -3,6 +3,8 @@ import {
   formatDurationMilliseconds,
   normalizeDurationMilliseconds,
 } from "../../common/duration.js";
+import { getFormMessage } from "../../common/formMessages.js";
+import { getUiMessage } from "../../common/uiMessages.js";
 import { flattenTextSegments, renderableTextSegments } from "../../common/textSegments.js";
 
 // Segment arrays flatten to plain text for aria strings; any other value keeps
@@ -350,15 +352,14 @@ const DEFAULT_MESSAGES = {
 };
 
 // Apps can replace these defaults for every form, for example with
-// translations, by setting `window.rtglFormMessages` to an object with any of
-// the keys above, the way `window.rtglIcons` registers icons. A message that
-// takes a value marks it with `{value}`, such as
+// translations, by calling setFormMessages with any of the keys above. A
+// message that takes a value marks it with `{value}`, such as
 // "Must be at least {value} characters". A field's own `required.message` or
 // rule `message` still takes precedence. An empty message keeps the default,
 // so an untranslated key never turns its check off.
 const getDefaultMessage = (key, value) => {
-  const override = globalThis.rtglFormMessages?.[key];
-  if (typeof override === "string" && override.trim() !== "") {
+  const override = getFormMessage(key);
+  if (override !== undefined) {
     return override.replaceAll("{value}", () => String(value ?? ""));
   }
 
@@ -871,7 +872,7 @@ export const selectViewData = ({ state, props }) => {
         field._action = {
           ...field.action,
           icon: field.action.icon ?? "plus",
-          label: field.action.label ?? "Section action",
+          label: field.action.label ?? getUiMessage("formSectionAction"),
           _disabled: formDisabled || !!field.action.disabled,
         };
       }
@@ -915,7 +916,8 @@ export const selectViewData = ({ state, props }) => {
     if (field.type === "image") {
       const src = get(state.formValues, field.name);
       field._imageSrc = src && String(src).trim() ? src : null;
-      field.placeholderText = field.placeholderText || "No Image";
+      field.placeholderText =
+        field.placeholderText || getUiMessage("formImagePlaceholder");
     }
 
     if (field.type === "read-only-text") {

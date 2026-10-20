@@ -1,3 +1,4 @@
+import { getUiMessage, subscribeUiMessages } from "../common/uiMessages.js";
 import { fieldTextAriaAttributes as fieldAriaAttributes, forwardFieldAria } from "../accessibility/field.js";
 import { hsvToHex, parseHex, rgbToHex, rgbToHsv } from "../common/color.js";
 import {
@@ -425,8 +426,34 @@ class RettangoliColorPickerElement extends HTMLElement {
   }
 
   connectedCallback() {
+    this._unsubscribeUiMessages ??= subscribeUiMessages(() =>
+      this._updateMessageLabels(),
+    );
     this._updateControlAttributes();
     this.updateStyles();
+    this._updateMessageLabels();
+  }
+
+  disconnectedCallback() {
+    this._unsubscribeUiMessages?.();
+    this._unsubscribeUiMessages = undefined;
+  }
+
+  // Labels from the app's UI messages, set when the panel is built, on
+  // connect, and whenever the messages change.
+  _updateMessageLabels() {
+    if (!this._svElement) return;
+    this._updatePanelLabels();
+    this._render();
+  }
+
+  _updatePanelLabels() {
+    this._svElement.setAttribute(
+      'aria-label',
+      getUiMessage('colorPickerSaturationBrightness'),
+    );
+    this._hueElement.setAttribute('aria-label', getUiMessage('colorPickerHue'));
+    this._hexInputElement.setAttribute('aria-label', getUiMessage('colorPickerHex'));
   }
 
   _openPanel() {
@@ -438,7 +465,8 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._popoverElement.setAttribute('y', String(Math.round(rect.bottom + 4)));
     this._popoverElement.setAttribute(
       'aria-label',
-      this._triggerElement.getAttribute('aria-label') || 'Choose color',
+      this._triggerElement.getAttribute('aria-label') ||
+        getUiMessage('colorPickerChoose'),
     );
     this._popoverElement.setAttribute('open', '');
     this._isOpen = true;
@@ -482,7 +510,6 @@ class RettangoliColorPickerElement extends HTMLElement {
     sv.className = 'sv';
     sv.setAttribute('role', 'slider');
     sv.setAttribute('tabindex', '0');
-    sv.setAttribute('aria-label', 'Saturation and brightness');
     sv.setAttribute('aria-valuemin', '0');
     sv.setAttribute('aria-valuemax', '100');
     const svThumb = document.createElement('span');
@@ -493,7 +520,6 @@ class RettangoliColorPickerElement extends HTMLElement {
     hue.className = 'hue';
     hue.setAttribute('role', 'slider');
     hue.setAttribute('tabindex', '0');
-    hue.setAttribute('aria-label', 'Hue');
     hue.setAttribute('aria-valuemin', '0');
     hue.setAttribute('aria-valuemax', '360');
     const hueThumb = document.createElement('span');
@@ -519,7 +545,6 @@ class RettangoliColorPickerElement extends HTMLElement {
     hexInput.setAttribute('autocorrect', 'off');
     hexInput.setAttribute('spellcheck', 'false');
     hexInput.setAttribute('maxlength', '7');
-    hexInput.setAttribute('aria-label', 'Hex color');
     hexField.append(hash, hexInput);
     hexRow.append(chip, hexField);
 
@@ -535,6 +560,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._hexFieldElement = hexField;
     this._hexInputElement = hexInput;
 
+    this._updatePanelLabels();
     this._bindPanelEvents();
     this._render();
   }
@@ -650,7 +676,10 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._svElement.setAttribute('aria-valuenow', String(Math.round(s * 100)));
     this._svElement.setAttribute(
       'aria-valuetext',
-      `Saturation ${Math.round(s * 100)}%, brightness ${Math.round(v * 100)}%`,
+      getUiMessage('colorPickerSaturationBrightnessValue', {
+        saturation: Math.round(s * 100),
+        brightness: Math.round(v * 100),
+      }),
     );
 
     this._hueThumbElement.style.left = `${(h / 360) * 100}%`;

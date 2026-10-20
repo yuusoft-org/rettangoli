@@ -53,4 +53,4 @@ template:
                               - td: ${cell.value}
         $else:
           - rtgl-view.empty-state w=f p=xl:
-              - rtgl-text c=mu-fg: No data available
+              - rtgl-text c=mu-fg: ${emptyLabel}

@@ -1,3 +1,4 @@
+import { subscribeUiMessages } from "../../common/uiMessages.js";
 import {
   get,
   set,
@@ -158,8 +159,10 @@ const initFormValues = (store, props) => {
 };
 
 export const handleBeforeMount = (deps) => {
-  const { store, props } = deps;
+  const { store, props, render } = deps;
   initFormValues(store, props);
+  // App messages can change after mount, such as when the language changes.
+  return subscribeUiMessages(() => render());
 };
 
 export const handleAfterMount = (deps) => {

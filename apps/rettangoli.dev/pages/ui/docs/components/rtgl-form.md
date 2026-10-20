@@ -357,21 +357,22 @@ form.reset();
 
 ## Validation Messages
 
-Fields with `required` or `rules` show a built-in English message when they fail, unless the field sets its own (`required: { message }` or a rule's `message`). To replace the defaults for every form, for example with translations, set `window.rtglFormMessages` before forms validate:
+Fields with `required` or `rules` show a built-in English message when they fail, unless the field sets its own (`required: { message }` or a rule's `message`). To replace the defaults for every form, for example with translations, call `rtgl.setFormMessages` (or `setFormMessages` imported from `@rettangoli/ui`):
 
 ```html
 <script>
-  window.rtglFormMessages = {
+  rtgl.setFormMessages({
     required: "Este campo é obrigatório",
     minLength: "Escreva pelo menos {value} caracteres",
-  };
+  });
 </script>
 ```
 
 - Messages are plain strings. `{value}` is replaced with the rule's `value`, or the field's `min` / `max` for date, time, and duration limits.
 - Keys: `required`, `minLength`, `maxLength`, `pattern`, `invalidDate`, `invalidTime`, `invalidDateTime`, `minTemporal`, `maxTemporal`, `invalidDuration`, `minDuration`, `maxDuration`.
 - A key that is not set, or is an empty string, keeps the English default. A field's own message still takes precedence.
-- Forms read the object each time they validate. After replacing it, errors already shown keep their text until validated again; call `validate()` to refresh them.
+- Each call replaces the previous messages; call it again when the language changes, or with `{}` to go back to English. Forms use the messages from their next validation, so errors already shown keep their text until validated again; call `validate()` to refresh them.
+- Setting `window.rtglFormMessages` still works but is deprecated. Messages set with `setFormMessages` take precedence over it.
 
 ## Custom Logic
 

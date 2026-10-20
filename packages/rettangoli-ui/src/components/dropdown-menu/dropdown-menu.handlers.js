@@ -1,3 +1,4 @@
+import { subscribeUiMessages } from "../../common/uiMessages.js";
 import {
   calculateSubmenuPosition,
   createSubmenuGracePolygon,
@@ -487,7 +488,10 @@ const dispatchItemClick = (deps, event, indexPath, item) => {
 };
 
 export const handleBeforeMount = (deps) => {
+  // App messages can change after mount, such as when the language changes.
+  const unsubscribeUiMessages = subscribeUiMessages(() => deps.render());
   return () => {
+    unsubscribeUiMessages();
     disposeRuntime(deps);
   };
 };

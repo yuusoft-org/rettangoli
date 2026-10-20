@@ -1,3 +1,4 @@
+import { subscribeUiMessages } from "../../common/uiMessages.js";
 import { hasFieldAriaChanged } from "../../accessibility/field.js";
 
 const getOptionType = (option = {}) => {
@@ -140,6 +141,9 @@ export const handleBeforeMount = (deps) => {
   if (shouldRender) {
     render();
   }
+
+  // App messages can change after mount, such as when the language changes.
+  return subscribeUiMessages(() => render());
 };
 
 export const handleAfterMount = (deps) => {

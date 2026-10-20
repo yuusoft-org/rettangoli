@@ -1,3 +1,4 @@
+import { getUiMessage } from "../../common/uiMessages.js";
 import { selectFieldAria } from "../../accessibility/field.js";
 import { deepEqual } from '../../common.js';
 
@@ -311,7 +312,7 @@ export const selectViewData = ({ state, props }) => {
   const currentValue = hasControlledValue ? props.selectedValue : state.selectedValue;
 
   // Calculate display label from value
-  let displayLabel = props.placeholder || "Select an option";
+  let displayLabel = props.placeholder || getUiMessage("selectPlaceholder");
   let isPlaceholderLabel = true;
 
   const options = props.options || [];
@@ -380,14 +381,17 @@ export const selectViewData = ({ state, props }) => {
     hasValue: currentValue !== null && currentValue !== undefined,
     showClear: !isDisabled && !props.noClear && (currentValue !== null && currentValue !== undefined),
     showAddOption: !isDisabled && !!props.addOption,
-    addOptionLabel: props.addOption?.label ? `+ ${props.addOption.label}` : "+ Add",
+    addOptionLabel: `+ ${props.addOption?.label || getUiMessage("addOption")}`,
     addOptionBgc: state.hoveredAddOption ? "ac" : "",
     showSearch: !isDisabled && !!props.searchable,
     searchQuery,
-    searchPlaceholder: props.searchPlaceholder || "Search options",
+    searchPlaceholder:
+      props.searchPlaceholder || getUiMessage("selectSearchPlaceholder"),
     showEmptySearch,
     hideEmptySearch: !showEmptySearch,
-    emptySearchLabel: props.emptySearchLabel || "No matching options",
+    emptySearchLabel:
+      props.emptySearchLabel || getUiMessage("selectNoMatches"),
+    clearSelectionLabel: getUiMessage("selectClear"),
     ...imageConfig,
   };
 };

@@ -23,6 +23,16 @@ describe("primitive watch entry", () => {
     expect(watchEntry).not.toContain('import "./registerPrimitives.js";');
   });
 
+  it("exposes window.rtgl in every script entry", () => {
+    for (const entry of [
+      "src/entry-iife-ui.js",
+      "src/entry-iife-layout.js",
+      "src/entry-watch.js",
+    ]) {
+      expect(readSource(entry)).toMatch(/import ["']\.\/registerGlobalApi\.js["'];/);
+    }
+  });
+
   it("accepts primitive modules that terminate transitive helper updates", () => {
     const registration = readSource("src/registerHotPrimitives.js");
     const view = readSource("src/primitives/view.js");
