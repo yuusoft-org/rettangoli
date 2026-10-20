@@ -83,6 +83,20 @@ describe("setUiMessages", () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
+  it("is shared by every copy of the module, as in the script-tag bundles", async () => {
+    const secondCopy = await import("../src/common/uiMessages.js?second-copy");
+    // A separate module instance, not the one imported above.
+    expect(secondCopy.setUiMessages).not.toBe(setUiMessages);
+    const listener = vi.fn();
+    const unsubscribe = secondCopy.subscribeUiMessages(listener);
+
+    setUiMessages({ tabs: "Onglets" });
+    unsubscribe();
+
+    expect(secondCopy.getUiMessage("tabs")).toBe("Onglets");
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
   it("redraws a mounted component until it unmounts", () => {
     const render = vi.fn();
     const cleanup = handleTabsBeforeMount({ render });

@@ -31,6 +31,17 @@ describe("setFormMessages", () => {
     expect(validateField(requiredField, "")).toBe("This field is required");
   });
 
+  it("is shared by every copy of the module, as in the script-tag bundles", async () => {
+    const secondCopy = await import("../src/common/formMessages.js?second-copy");
+    // A separate module instance, not the one imported above.
+    expect(secondCopy.setFormMessages).not.toBe(setFormMessages);
+    setFormMessages({ required: "Ce champ est obligatoire" });
+
+    expect(secondCopy.getFormMessage("required")).toBe(
+      "Ce champ est obligatoire",
+    );
+  });
+
   it("keeps a field's own message", () => {
     setFormMessages({ required: "Ce champ est obligatoire" });
 

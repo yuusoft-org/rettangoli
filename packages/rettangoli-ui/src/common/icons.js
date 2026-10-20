@@ -1,7 +1,11 @@
-import { createChangeListeners } from "./changeListeners.js";
+import { createChangeListeners, getSharedState } from "./changeListeners.js";
 
-const registeredIcons = {};
-const listeners = createChangeListeners();
+const state = getSharedState("icons", () => ({
+  icons: {},
+  listeners: new Set(),
+}));
+const registeredIcons = state.icons;
+const listeners = createChangeListeners(state.listeners);
 
 // Adds or replaces icons by name, as SVG markup, and redraws mounted rtgl-svg
 // elements. Icons registered earlier stay registered.
