@@ -87,7 +87,8 @@ import {
 - `setFormMessages(messages)` replaces the default form validation messages (see `rtgl-form`). Forms use them from their next validation.
 - `setUiMessages` and `setFormMessages` replace the previous messages, so call them again with the new language when it changes, or with `{}` to go back to English. A key that is not set, or is an empty string, keeps the English default, and text you pass to a component, such as a `placeholder` or `aria-label`, still takes precedence.
 - `DEFAULT_UI_MESSAGES` holds every key with its English default, for building translation files.
-- `window.rtglIcons` and `window.rtglFormMessages` still work but are deprecated. Values set with the functions take precedence over them. Unlike the functions, they can be set before the Rettangoli script loads, which is why `rtgl ui build-svg` still writes `window.rtglIcons`.
+- `rtgl ui build-svg` generates an icons script that calls `rtgl.setIcons` when it loads after the Rettangoli script. Loaded before it, the script falls back to `window.rtglIcons`, so load it after the Rettangoli script to use the function.
+- `window.rtglIcons` and `window.rtglFormMessages` still work but are deprecated. Values set with the functions take precedence over them.
 
 | Key | English default | Where it appears |
 | --- | --- | --- |
