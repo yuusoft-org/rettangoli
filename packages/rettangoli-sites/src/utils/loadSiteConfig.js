@@ -3,7 +3,7 @@ import path from 'node:path';
 import yaml from 'js-yaml';
 import { normalizeSitemapConfig } from '../sitemap.js';
 
-const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build', 'imports', 'data', 'sitemap']);
+const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build', 'imports', 'data', 'sitemap', 'components']);
 const MARKDOWN_BOOLEAN_KEYS = new Set(['html', 'linkify', 'typographer', 'breaks', 'xhtmlOut']);
 const MARKDOWN_STRING_KEYS = new Set(['langPrefix', 'quotes', 'preset']);
 const MARKDOWN_NUMBER_KEYS = new Set(['maxNesting']);
@@ -30,6 +30,7 @@ const BUILD_BOOLEAN_KEYS = new Set(['keepMarkdownFiles']);
 const ALLOWED_BUILD_KEYS = new Set([...BUILD_BOOLEAN_KEYS]);
 const ALLOWED_IMPORT_GROUP_KEYS = new Set(['templates', 'partials', 'data']);
 const ALLOWED_IMPORT_PROTOCOLS = new Set(['http:', 'https:']);
+const ALLOWED_COMPONENTS_KEYS = new Set(['dirs']);
 let didWarnLegacyMarkdownKey = false;
 
 function isPlainObject(value) {
@@ -141,6 +142,33 @@ function validateDataConfig(value, configPath) {
   return normalized;
 }
 
+function validateComponentsConfig(value, configPath) {
+  if (!isPlainObject(value)) {
+    throw new Error(`Invalid components config in "${configPath}": expected an object.`);
+  }
+
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_COMPONENTS_KEYS.has(key)) {
+      throw new Error(
+        `Unsupported components option "${key}" in "${configPath}". Supported options: ${Array.from(ALLOWED_COMPONENTS_KEYS).join(', ')}.`
+      );
+    }
+  }
+
+  if (!Array.isArray(value.dirs) || value.dirs.length === 0) {
+    throw new Error(`Invalid components option "dirs" in "${configPath}": expected a non-empty array of directory paths.`);
+  }
+
+  const dirs = value.dirs.map((dir, index) => {
+    if (typeof dir !== 'string' || dir.trim() === '') {
+      throw new Error(`Invalid components option "dirs" in "${configPath}" at index ${index}: expected a non-empty string.`);
+    }
+    return dir.trim();
+  });
+
+  return { dirs };
+}
+
 function validateImportUrl(url, configPath, groupKey, alias) {
   if (typeof url !== 'string' || url.trim() === '') {
     throw new Error(`Invalid imports.${groupKey} value for alias "${alias}" in "${configPath}": expected a non-empty URL string.`);
@@ -224,7 +252,7 @@ function validateConfig(rawConfig, configPath) {
   for (const key of Object.keys(config)) {
     if (!ALLOWED_TOP_LEVEL_KEYS.has(key)) {
       throw new Error(
-        `Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias), build, imports, data, sitemap.`
+        `Unsupported key "${key}" in "${configPath}". Supported keys: markdownit (recommended), markdown (legacy alias), build, imports, data, sitemap, components.`
       );
     }
   }
@@ -322,6 +350,10 @@ function validateConfig(rawConfig, configPath) {
 
   if (config.sitemap !== undefined) {
     normalizedConfig.sitemap = normalizeSitemapConfig(config.sitemap, configPath);
+  }
+
+  if (config.components !== undefined) {
+    normalizedConfig.components = validateComponentsConfig(config.components, configPath);
   }
 
   return normalizedConfig;

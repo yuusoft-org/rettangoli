@@ -27,6 +27,7 @@ rtgl fe watch     # Start dev server
 - **[Store Management](./docs/store.md)** - State patterns
 - **[Event Handlers](./docs/handlers.md)** - Event handling
 - **[Internationalization](./docs/i18n.md)** - Locale files, view usage, and locale switching
+- **[Server Rendering](./docs/ssr.md)** - Prerender components to HTML and hydrate them in the browser
 
 ## Architecture
 

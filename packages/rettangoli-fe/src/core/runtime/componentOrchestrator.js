@@ -208,6 +208,10 @@ export const runPropChangedComponentLifecycle = ({
 export const runRenderComponentLifecycle = ({
   instance,
   createComponentUpdateHookFn,
+  // The web binding adopts server-rendered markup on the first patch and
+  // clears a render target a failed first patch left half built.
+  prepareFirstPatchFn = ({ instance: target }) => target.renderTarget,
+  resetRenderTargetFn = () => {},
   parseViewFn = parseView,
   collectRefElementsFn = collectRefElements,
   onError = (error) => {
@@ -224,6 +228,7 @@ export const runRenderComponentLifecycle = ({
     return null;
   }
 
+  let isFirstPatch = false;
   try {
     const vDom = parseViewFn({
       h: instance._snabbdomH,
@@ -235,7 +240,11 @@ export const runRenderComponentLifecycle = ({
     });
 
     if (!instance._oldVNode) {
-      instance._oldVNode = instance.patch(instance.renderTarget, vDom);
+      isFirstPatch = true;
+      instance._oldVNode = instance.patch(
+        prepareFirstPatchFn({ instance, vDom }),
+        vDom,
+      );
     } else {
       instance._oldVNode = instance.patch(instance._oldVNode, vDom);
     }
@@ -251,6 +260,11 @@ export const runRenderComponentLifecycle = ({
     return instance._oldVNode;
   } catch (error) {
     onError(error);
+    // A first patch that threw may have left part of a tree behind. Patching
+    // the render target again would add the next tree beside it.
+    if (isFirstPatch && !instance._oldVNode) {
+      resetRenderTargetFn({ instance });
+    }
     // Preserve _oldVNode so subsequent renders can still patch against
     // the last successful vdom tree. The component is not permanently broken.
     return instance._oldVNode || null;

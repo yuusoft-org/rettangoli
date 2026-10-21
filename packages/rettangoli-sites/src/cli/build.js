@@ -11,6 +11,7 @@ import { loadSiteConfig } from '../utils/loadSiteConfig.js';
  * @param {Object|boolean} options.sitemap - Optional sitemap generation config
  * @param {boolean} options.quiet - Suppress build output logs
  * @param {boolean} options.isScreenshotMode - Optional build flag exposed to templates via build.isScreenshotMode
+ * @param {Function} options.loadComponentRenderer - Optional loader for the `@rettangoli/fe/server` module used by `components` (defaults to resolving it from rootDir)
  */
 export const buildSite = async (options = {}) => {
   const {
@@ -20,7 +21,8 @@ export const buildSite = async (options = {}) => {
     functions,
     sitemap,
     quiet = false,
-    isScreenshotMode = false
+    isScreenshotMode = false,
+    loadComponentRenderer
   } = options;
 
   const config = await loadSiteConfig(rootDir);
@@ -36,6 +38,8 @@ export const buildSite = async (options = {}) => {
     data: config.data || {},
     sitemap: sitemap === undefined ? config.sitemap : sitemap,
     functions: functions || {},
+    components: config.components,
+    loadComponentRenderer,
     quiet,
     isScreenshotMode
   });

@@ -15,6 +15,10 @@ import {
   buildI18nAssets,
   loadI18nBuildContext,
 } from "./i18nBuild.js";
+import {
+  collectTemplateTags,
+  orderParentsFirst,
+} from "./registrationOrder.js";
 
 const MODULE_FILE_TYPES = new Set(["handlers", "store", "methods"]);
 const YAML_FILE_TYPES = new Set(["view", "constants", "schema"]);
@@ -203,6 +207,8 @@ export const generateFrontendEntrySource = ({
   const componentFingerprintInputs = {};
   const componentContractEntries = [];
   const declarationLines = [];
+  const componentElementNames = new Map();
+  const componentViewTags = new Map();
   let declarationIndex = 0;
 
   for (const filePath of allFiles) {
@@ -251,7 +257,15 @@ export const generateFrontendEntrySource = ({
         componentContractEntry.yamlObject = structuredClone(yamlObject);
       }
 
+      if (fileType === "schema") {
+        componentElementNames.set(`${category}/${component}`, yamlObject.componentName);
+      }
+
       if (fileType === "view") {
+        componentViewTags.set(
+          `${category}/${component}`,
+          collectTemplateTags(yamlObject.template),
+        );
         try {
           yamlObject.template = parseTemplate(yamlObject.template);
         } catch (error) {
@@ -287,6 +301,25 @@ export const generateFrontendEntrySource = ({
   const categoryLines = createComponentImportLines({
     componentMatrix,
     categories: Object.keys(componentMatrix).sort(),
+  });
+  const registrationOrder = Object.keys(componentMatrix).sort().flatMap(
+    (category) => Object.keys(componentMatrix[category]).sort().map(
+      (component) => [category, component],
+    ),
+  );
+  const parentsFirstIds = orderParentsFirst(
+    registrationOrder.map(([category, component]) => {
+      const id = `${category}/${component}`;
+      return {
+        id,
+        elementName: componentElementNames.get(id),
+        tags: componentViewTags.get(id) || [],
+      };
+    }),
+  );
+  const hydrationRegistrationOrder = parentsFirstIds.map((id) => {
+    const separator = id.indexOf("/");
+    return [id.slice(0, separator), id.slice(separator + 1)];
   });
   const componentFactoryImport = command === "serve"
     ? "defineOrUpdateComponents"
@@ -376,22 +409,31 @@ ${i18nRuntimeSource}
 
 ${hmrStateDeclaration}
 
+const __rtglRegistrationOrder = ${JSON.stringify(registrationOrder)};
+// Server-rendered hosts upgrade as soon as they are defined, so a page that
+// holds server markup defines parents before the components they render.
+const __rtglHydrationRegistrationOrder = ${JSON.stringify(hydrationRegistrationOrder)};
+const __rtglHasServerMarkup =
+  typeof document !== "undefined" &&
+  document.querySelector("[data-rtgl-hydrate]") !== null;
+
 ${hmrTransactionStart}
-Object.keys(imports).forEach((category) => {
-  Object.keys(imports[category]).forEach((component) => {
-    const componentConfig = imports[category][component];
-    const categoryDeps = {
-      ...((deps && deps[category]) || {}),
-      ...__rtglFrameworkDeps,
-    };
-    const elementName = componentConfig.schema?.componentName;
-    if (!elementName) {
-      throw new Error(
-        \`[Build] Missing schema.componentName for \${category}/\${component}. Define it in .schema.yaml.\`,
-      );
-    }
-    ${componentRegistrationSource}
-  });
+(__rtglHasServerMarkup
+  ? __rtglHydrationRegistrationOrder
+  : __rtglRegistrationOrder
+).forEach(([category, component]) => {
+  const componentConfig = imports[category][component];
+  const categoryDeps = {
+    ...((deps && deps[category]) || {}),
+    ...__rtglFrameworkDeps,
+  };
+  const elementName = componentConfig.schema?.componentName;
+  if (!elementName) {
+    throw new Error(
+      \`[Build] Missing schema.componentName for \${category}/\${component}. Define it in .schema.yaml.\`,
+    );
+  }
+  ${componentRegistrationSource}
 });
 ${hmrTransactionEnd}
 

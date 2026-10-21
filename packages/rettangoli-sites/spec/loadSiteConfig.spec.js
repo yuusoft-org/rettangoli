@@ -405,6 +405,43 @@ describe('loadSiteConfig', () => {
     });
   });
 
+  it('loads components.dirs from sites.config.yaml', async () => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(
+        path.join(tempDir, 'sites.config.yaml'),
+        [
+          'components:',
+          '  dirs:',
+          '    - src/components',
+          '    - " src/pages "'
+        ].join('\n')
+      );
+
+      const config = await loadSiteConfig(tempDir);
+      expect(config).toEqual({
+        components: {
+          dirs: ['src/components', 'src/pages']
+        }
+      });
+    });
+  });
+
+  it.each([
+    ['non-object config', 'components: src/components', 'Invalid components config'],
+    ['array config', 'components:\n  - src/components', 'Invalid components config'],
+    ['unsupported option', 'components:\n  dirs: [src/components]\n  entry: main.js', 'Unsupported components option "entry"'],
+    ['missing dirs', 'components:\n  {}', 'Invalid components option "dirs"'],
+    ['non-array dirs', 'components:\n  dirs: src/components', 'expected a non-empty array of directory paths'],
+    ['empty dirs', 'components:\n  dirs: []', 'expected a non-empty array of directory paths'],
+    ['non-string dir', 'components:\n  dirs: [src/components, 42]', 'at index 1: expected a non-empty string'],
+    ['empty dir', 'components:\n  dirs: [""]', 'at index 0: expected a non-empty string']
+  ])('rejects invalid components config: %s', async (_label, config, error) => {
+    await withTempDir(async (tempDir) => {
+      fs.writeFileSync(path.join(tempDir, 'sites.config.yaml'), `${config}\n`);
+      await expect(loadSiteConfig(tempDir)).rejects.toThrow(error);
+    });
+  });
+
   it.each([
     ['non-object map', '  data: []', 'Invalid imports.data'],
     ['empty alias', '  data:\n    "": https://example.com/catalog.yaml', 'alias keys must be non-empty'],

@@ -68,6 +68,16 @@ This roadmap is the planning source for `packages/rettangoli-fe`.
   - a `ci-ui.yaml` matrix that builds both examples, captures and reports via
     the pinned VT browser image, and uploads failure artifacts
 
+7. `[P1][DONE]` Server rendering and hydration (`ssr.md`)
+- Server: recursive renderer, `loadComponents` for build tools, and serialized
+  root props (`renderComponent({ serializeProps: true })`).
+- Browser: the first render of a `data-rtgl-hydrate` host adopts the server's
+  nodes, replaces subtrees whose structure differs, and clears a render target
+  left half built by a failed first patch.
+- Parents-first registration when a document holds server markup.
+- `globalThis.__rtglSsr` counts hydrated and mismatched hosts; browser check
+  in `test/web/hydration.browser.mjs`.
+
 ## Backlog
 
 1. `[P2]` Performance and scalability checks
@@ -81,3 +91,12 @@ This roadmap is the planning source for `packages/rettangoli-fe`.
 3. `[P2]` Developer ergonomics
 - Improve scaffold defaults for schema-first components.
 - Add short troubleshooting docs for common contract failures.
+
+4. `[P2]` First-render hazard checks
+- Flag browser globals, the clock and `Math.random` in `createInitialState`
+  and `selectViewData` (`ssr-plan.md` §5.5), so hydration mismatches fail a
+  check instead of being silently corrected.
+
+5. `[P2]` Hydrate through `rtgl-popover`
+- It moves its children into a wrapper on upgrade, so a subtree holding one is
+  re-rendered instead of adopted (`ssr-plan.md` §9.1).

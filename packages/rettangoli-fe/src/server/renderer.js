@@ -10,6 +10,7 @@ import { yamlToCss } from "../core/style/yamlToCss.js";
 import { parseView } from "../parser.js";
 
 const HYDRATE_ATTRIBUTE = "data-rtgl-hydrate";
+const SERVER_PROPS_ATTRIBUTE = "data-rtgl-props";
 const RENDER_TARGET_ATTRIBUTE = "data-rtgl-render-target";
 const DEFAULT_MAX_DEPTH = 100;
 const ATTRIBUTE_NAME = /^[a-zA-Z_:][-a-zA-Z0-9_:.]*$/;
@@ -218,6 +219,68 @@ const serializeLightDom = (vnode, options) => {
   return "";
 };
 
+const describeValue = (value) => {
+  if (value === undefined) return "undefined";
+  if (typeof value === "function") return "a function";
+  if (typeof value !== "object") return typeof value;
+  return Object.getPrototypeOf(value)?.constructor?.name || "an object";
+};
+
+// Root props cross to the browser as JSON, so they must survive it unchanged:
+// plain objects and arrays of strings, finite numbers, booleans and null.
+// Anything JSON would drop or convert (functions, Dates, Maps, undefined in an
+// array, NaN) would give the client different inputs from the server's.
+const assertJsonData = (value, path) => {
+  if (value === null || typeof value === "string" || typeof value === "boolean") {
+    return;
+  }
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) {
+      throw new Error(`[renderComponent] root prop ${path} is ${value}, which JSON can't carry.`);
+    }
+    return;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => {
+      if (item === undefined) {
+        throw new Error(`[renderComponent] root prop ${path}[${index}] is undefined, which JSON turns into null.`);
+      }
+      assertJsonData(item, `${path}[${index}]`);
+    });
+    return;
+  }
+  const prototype = value && typeof value === "object" ? Object.getPrototypeOf(value) : undefined;
+  if (prototype !== Object.prototype && prototype !== null) {
+    throw new Error(
+      `[renderComponent] root prop ${path} is ${describeValue(value)}; serialized props must be JSON data.`,
+    );
+  }
+  for (const [key, item] of Object.entries(value)) {
+    if (item !== undefined) {
+      assertJsonData(item, `${path}.${key}`);
+    }
+  }
+};
+
+// `<`, `>` and `&` are escaped as JSON unicode escapes, so the text can never
+// close the script element or open a comment, and still parses to the same
+// value. U+2028 and U+2029 are escaped for older JavaScript parsers.
+const serializeRootProps = (rootProps) => {
+  const props = {};
+  for (const [key, value] of Object.entries(rootProps)) {
+    if (value === undefined) continue;
+    assertJsonData(value, `"${key}"`);
+    props[key] = value;
+  }
+  const json = JSON.stringify(props)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+  return `<script type="application/json" ${SERVER_PROPS_ATTRIBUTE}="">${json}</script>`;
+};
+
 /**
  * Renders a registered component tree to nested declarative shadow roots.
  *
@@ -225,6 +288,11 @@ const serializeLightDom = (vnode, options) => {
  * `{ componentConfig, deps }` registrations. Arrays, plain objects, and Maps
  * are supported so build tools can hand their existing registry shape through
  * without installing global state.
+ *
+ * A root rendered on its own has no parent on the client to give it its
+ * props. With `serializeProps`, its schema props are written as JSON beside
+ * its shadow root, and the browser runtime assigns them before the first
+ * render, so the client renders from the same inputs and adopts the markup.
  */
 export const renderComponent = ({
   component,
@@ -236,6 +304,7 @@ export const renderComponent = ({
   locale,
   i18nRuntime,
   maxDepth = DEFAULT_MAX_DEPTH,
+  serializeProps = false,
 } = {}) => {
   if (typeof component !== "string" || component.trim() === "") {
     throw new Error("[renderComponent] `component` must be a component tag name.");
@@ -402,9 +471,10 @@ export const renderComponent = ({
     componentProps: rootProps,
     path: rootPath,
   });
+  const propsScript = serializeProps ? serializeRootProps(rootProps) : "";
   const html = serializeVNode(
     h(rootName, { attrs: rootAttributes }, []),
-    { renderChildren: () => shadowRoot },
+    { renderChildren: () => shadowRoot + propsScript },
   );
 
   return { head: "", html };

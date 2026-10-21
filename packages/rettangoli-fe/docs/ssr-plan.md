@@ -1,7 +1,7 @@
 # SSR for @rettangoli/fe — implementation plan
 
-Status: Parts A and B1 implemented; B2–B4 remain a proposal backed by a
-working prototype.
+Status: Parts A, B1 and B2 implemented. The contract is in `ssr.md`; this
+document keeps the design record. B3–B4 (adoption) belong to each app.
 Scope: framework-level (`@rettangoli/fe`).
 
 The prototype and its test suite live outside this repo, in the app used to
@@ -21,8 +21,35 @@ than as part of the design.
 **Part A is implemented and merged into `packages/rettangoli-fe`. Stage B1 is
 also implemented:** the Node-safe entry now resolves a caller-supplied
 component registry, runs each component store, recursively renders registered
-child tags, and emits nested declarative shadow roots. Hydration and consumer
-adoption (B2–B4) remain separate decisions.
+child tags, and emits nested declarative shadow roots.
+
+**Stage B2 is implemented** (`src/web/hydration.js`, `ssr.md`):
+
+- the hydrating first patch, with the §2.4 corrections: old vnodes carry the
+  element's real `attrs` and `class`, a structural divergence replaces only
+  that subtree (a custom element whose children differ is replaced whole,
+  which also covers `rtgl-popover`), and a failed first patch clears the
+  render target;
+- parents-first registration (§5.4), chosen at runtime only when the document
+  holds `data-rtgl-hydrate` markup, so apps that don't prerender keep today's
+  order. Cycles fall back to the default order; `defer-hydration` was not
+  needed;
+- `globalThis.__rtglSsr = { hydrated, mismatched, reasons }` (§5.5);
+- a real-browser check, `test/web/hydration.browser.mjs`, built on the §6
+  rules: server nodes are recorded synchronously before the bundle runs and
+  compared by identity.
+
+Two departures from this plan:
+
+- **Root props are serialized** (`renderComponent({ serializeProps: true })`).
+  §3 holds for every child, whose props the parent's render recomputes. A root
+  has no parent on the client, and a prerendered page's root takes data the
+  server fetched, so its props cross as JSON. Only JSON data is accepted.
+- **`loadComponents({ cwd, dirs })`** reads an app's components from disk for
+  build tools (such as `rtgl sites`), importing views, schemas, constants,
+  stores and methods but never handlers.
+
+The `rettangoli-check` hazard rules (§5.5) are not done yet; see the roadmap.
 
 What shipped:
 

@@ -27,6 +27,11 @@ import {
 } from "../core/runtime/componentRuntime.js";
 import { initializeComponentDom } from "./componentDom.js";
 import {
+  adoptServerProps,
+  prepareFirstPatch,
+  resetRenderTarget,
+} from "./hydration.js";
+import {
   createWebComponentUpdateHook,
   cancelPendingComponentUpdate,
   RETTANGOLI_COMPONENT_MARKER,
@@ -178,6 +183,9 @@ export const createWebComponentClass = ({
         record.instances.add(this);
       }
 
+      // A server-rendered root brings the props the server rendered it with;
+      // they must be in place before the store reads them.
+      adoptServerProps({ host: this, propsSchemaKeys: this._propsSchemaKeys });
       initializeBoundStore(this.store);
       const dom = initializeComponentDom({
         host: this,
@@ -225,6 +233,8 @@ export const createWebComponentClass = ({
       runRenderComponentLifecycle({
         instance: this,
         createComponentUpdateHookFn: createWebComponentUpdateHook,
+        prepareFirstPatchFn: prepareFirstPatch,
+        resetRenderTargetFn: resetRenderTarget,
       });
     };
 
