@@ -36,6 +36,7 @@
 import { readPropFallbackFromAttributes } from "../core/runtime/props.js";
 import { adoptComponentProps } from "./componentUpdateHook.js";
 import { scheduleFrame } from "./scheduler.js";
+import { markHydratingPatch } from "../createWebPatch.js";
 
 export const HYDRATE_ATTRIBUTE = "data-rtgl-hydrate";
 export const SERVER_PROPS_ATTRIBUTE = "data-rtgl-props";
@@ -398,7 +399,9 @@ const getHydrationState = () => {
  */
 export const recordHydration = ({ elementName, report }) => {
   const state = getHydrationState();
-  if (report.replaced === 0 && report.corrected === 0) {
+  // Every difference leaves a reason, including client nodes added to an
+  // empty render target, where nothing was replaced.
+  if (report.replaced === 0 && report.corrected === 0 && report.reasons.length === 0) {
     state.hydrated += 1;
     return;
   }
@@ -426,16 +429,19 @@ export const prepareFirstPatch = ({ instance, vDom }) => {
   for (const node of Array.from(instance.shadow?.children || [])) {
     if (String(node.localName).toLowerCase() === "style") node.remove();
   }
-  if (!renderTarget || typeof renderTarget.hasChildNodes !== "function" || !renderTarget.hasChildNodes()) {
+  if (!renderTarget || typeof renderTarget.hasChildNodes !== "function") {
     return renderTarget;
   }
 
+  // An empty render target is zipped too: the build rendered nothing, so the
+  // host hydrates if the client renders nothing as well, and is counted as a
+  // mismatch if it renders anything.
   const { vnode, report } = createHydrationVNode({ vDom, renderTarget });
   recordHydration({
     elementName: instance.elementName || String(instance.localName || ""),
     report,
   });
-  return vnode;
+  return markHydratingPatch(vnode);
 };
 
 const retriedFirstRender = new WeakSet();

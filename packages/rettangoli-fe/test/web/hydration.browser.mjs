@@ -119,7 +119,7 @@ const createFixture = () => {
     "components/row/row.view.yaml": [
       "template:",
       "  - span.label: ${label}",
-      "  - x-badge :title=${meta} :hidden=${hidden}: null",
+      "  - 'x-badge style=\"color: gray\" :title=${meta} :hidden=${hidden}': null",
     ].join("\n"),
     "components/row/row.store.js":
       "export const selectViewData = ({ props }) => ({ label: props.label, meta: { text: `about ${props.label}` }, hidden: false });\n",
@@ -232,6 +232,7 @@ const main = async () => {
             row.shadowRoot.querySelector(".label").textContent),
           badgeTexts: badges.map((badge) => badge.shadowRoot.querySelector("em").textContent),
           badgeTitleIsObject: badges.every((badge) => typeof badge.props.title === "object"),
+          badgeStyles: badges.map((badge) => typeof badge.style === "object" && badge.style.color),
           badgeHostAttributes: badges.flatMap((badge) => badge.getAttributeNames())
             .filter((name) => name === "title" || name === "hidden"),
           tabindex: shell.shadowRoot.querySelector("#focusable").getAttribute("tabindex"),
@@ -260,6 +261,9 @@ const main = async () => {
       check("props named like native properties arrive as values, not attributes",
         result.badgeTitleIsObject && result.badgeHostAttributes.length === 0,
         result.badgeHostAttributes.join(", "));
+      check("a child's attribute-form style keeps the native style",
+        result.badgeStyles.every((color) => color === "gray"),
+        JSON.stringify(result.badgeStyles));
       check("camelCase and boolean attributes stay on plain elements",
         result.tabindex === "0" && result.maxlength === "5" && result.disabled === true,
         `${result.tabindex} ${result.maxlength} ${result.disabled}`);

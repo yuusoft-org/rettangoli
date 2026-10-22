@@ -119,7 +119,7 @@ describe("renderComponent serializeProps", () => {
     expect(JSON.parse(propsScriptOf(html)).snapshot).toEqual({ a: { id: 1 }, b: { id: 1 } });
   });
 
-  it("serializes what the server rendered with: props over attributes", () => {
+  it("serializes the props it was given, and leaves attribute values on the host", () => {
     const { html } = renderComponent({
       component: "x-root",
       components: [root],
@@ -127,10 +127,8 @@ describe("renderComponent serializeProps", () => {
       attributes: { route: "/from-attribute", snapshot: "from-attribute" },
       serializeProps: true,
     });
-    expect(JSON.parse(propsScriptOf(html))).toEqual({
-      route: "/from-props",
-      snapshot: "from-attribute",
-    });
+    expect(JSON.parse(propsScriptOf(html))).toEqual({ route: "/from-props" });
+    expect(html).toMatch(/^<x-root [^>]*snapshot="from-attribute"/);
   });
 
   it("gives an ssr: false root its props too", () => {

@@ -151,6 +151,18 @@ const createServerProps = ({ definition, props, attrs }) => {
   );
 };
 
+// The root props written for the client: only those passed as props. A
+// value read from an attribute stays an attribute on the host, where the
+// client reads it the same way and later attribute changes still apply.
+const createSerializedRootProps = ({ definition, props }) => {
+  const sourceProps = props && typeof props === "object" ? props : {};
+  return Object.fromEntries(
+    definition.propsSchemaKeys
+      .filter((propName) => hasOwn(sourceProps, propName))
+      .map((propName) => [propName, sourceProps[propName]]),
+  );
+};
+
 const escapeDocumentText = (value) =>
   String(value)
     .replace(/&/g, "&amp;")
@@ -470,10 +482,9 @@ export const renderComponent = ({
   // An opted-out root is a bare host, which still gets its props.
   if (!rootRegistration.definition.ssr) {
     const propsScript = serializeProps
-      ? serializeRootProps(createServerProps({
+      ? serializeRootProps(createSerializedRootProps({
         definition: rootRegistration.definition,
         props,
-        attrs: rootAttributes,
       }))
       : "";
     if (propsScript) rootAttributes[SERVER_PROPS_ATTRIBUTE] = "";
@@ -502,7 +513,12 @@ export const renderComponent = ({
     componentProps: rootProps,
     path: rootPath,
   });
-  const propsScript = serializeProps ? serializeRootProps(rootProps) : "";
+  const propsScript = serializeProps
+    ? serializeRootProps(createSerializedRootProps({
+      definition: rootRegistration.definition,
+      props,
+    }))
+    : "";
   if (propsScript) rootAttributes[SERVER_PROPS_ATTRIBUTE] = "";
   const html = serializeVNode(
     h(rootName, { attrs: rootAttributes }, []),

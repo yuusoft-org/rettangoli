@@ -3,9 +3,9 @@
  *
  * Nothing reachable from this entry touches a DOM global, so it can be imported
  * in a plain Node process — for HTML golden tests, static analysis over real
- * rendered output, or a server renderer.
+ * rendered output, or prerendering pages at build time.
  *
- * It holds the server half of server rendering: one-view serialization, the
+ * It holds the build half of prerendering: one-view serialization, the
  * recursive component renderer, and a loader that reads an app's components
  * from disk. The browser half, adopting that markup on the first render, is
  * in the web runtime (`src/web/hydration.js`).

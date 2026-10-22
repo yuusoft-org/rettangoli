@@ -21,7 +21,12 @@ import {
   runPropChangedComponentLifecycle,
   runRenderComponentLifecycle,
 } from "../core/runtime/componentOrchestrator.js";
-import { createPropsProxy, installReactiveProps, toKebabCase } from "../core/runtime/props.js";
+import {
+  createPropsProxy,
+  installReactiveProps,
+  releaseNativeProps,
+  toKebabCase,
+} from "../core/runtime/props.js";
 import {
   buildObservedAttributes,
 } from "../core/runtime/componentRuntime.js";
@@ -358,6 +363,7 @@ export const createWebComponentClass = ({
           });
         },
       });
+      releaseNativeProps({ source: this, allowedKeys: propsSchemaKeys });
       this.props = propsSchema
         ? createPropsProxy(this, propsSchemaKeys)
         : {};

@@ -302,7 +302,7 @@ describe("hydrating prerendered components", () => {
     expect(globalThis.__rtglHydration.mismatched).toBe(1);
   });
 
-  it("renders normally when a marked host has nothing to adopt", () => {
+  it("counts a marked host with an empty render target as a mismatch when the client draws more", () => {
     const name = `x-hyd-empty-${componentNumber++}`;
     const config = {
       schema: { componentName: name, propsSchema: { type: "object", properties: {} } },
@@ -317,7 +317,85 @@ describe("hydrating prerendered components", () => {
     const host = document.querySelector(name);
     expect(renderTargetOf(host).textContent).toBe("Fresh");
     expect(host.hasAttribute("data-rtgl-hydrate")).toBe(false);
-    expect(globalThis.__rtglHydration).toBeUndefined();
+    expect(globalThis.__rtglHydration.hydrated).toBe(0);
+    expect(globalThis.__rtglHydration.mismatched).toBe(1);
+    expect(globalThis.__rtglHydration.reasons[0]).toMatch(/expected 1 child node\(s\), found 0/);
+  });
+
+  it("counts a host that rendered nothing on both sides as hydrated", () => {
+    const name = uniqueName("empty-both");
+    const config = component({
+      name,
+      template: [{ "$if loaded": [{ p: "Loaded" }] }],
+      store: { selectViewData: () => ({ loaded: false }) },
+    });
+    serverRender(renderComponent({ component: name, components: [config] }).html);
+    expect(renderTargetOf(document.querySelector(name)).childNodes).toHaveLength(0);
+
+    customElements.define(name, createComponent(config, {}));
+
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+  });
+
+  it("counts a host whose client draws content over an empty prerender as a mismatch", () => {
+    const name = uniqueName("empty-differs");
+    let loaded = false;
+    const config = component({
+      name,
+      template: [{ "$if loaded": [{ p: "Loaded" }] }],
+      store: { selectViewData: () => ({ loaded }) },
+    });
+    serverRender(renderComponent({ component: name, components: [config] }).html);
+    // The browser sees a value the build didn't, such as a stored setting.
+    loaded = true;
+
+    customElements.define(name, createComponent(config, {}));
+
+    expect(renderTargetOf(document.querySelector(name)).textContent).toBe("Loaded");
+    expect(globalThis.__rtglHydration.mismatched).toBe(1);
+  });
+
+  it("assigns props to undefined custom elements as before on a page with no prerendered markup", () => {
+    const name = `x-hyd-plain-undefined-${componentNumber++}`;
+    const textName = `x-later-text-${componentNumber}`;
+    const panelName = `x-later-panel-${componentNumber}`;
+    const config = {
+      schema: { componentName: name, propsSchema: { type: "object", properties: {} } },
+      view: {
+        refs: {},
+        styles: {},
+        template: parse([
+          { [`${textName} style="color: red"`]: "Hello" },
+          { [`${panelName} :hidden=\${hide} :title=\${tip}`]: "Panel" },
+        ]),
+      },
+      store: { selectViewData: () => ({ hide: true, tip: "Tooltip" }) },
+      handlers: {},
+    };
+    customElements.define(name, createComponent(config, {}));
+    const host = document.body.appendChild(document.createElement(name));
+    const text = renderTargetOf(host).querySelector(textName);
+    const panel = renderTargetOf(host).querySelector(panelName);
+
+    expect(typeof text.style).toBe("object");
+    expect(text.style.color).toBe("red");
+    expect(panel.hasAttribute("hidden")).toBe(true);
+    expect(panel.getAttribute("title")).toBe("Tooltip");
+
+    // Defined later, it can use its native style.
+    let error = null;
+    customElements.define(textName, class extends HTMLElement {
+      connectedCallback() {
+        try {
+          this.style.overflow = "hidden";
+        } catch (caught) {
+          error = caught;
+        }
+      }
+    });
+    renderTargetOf(host).append(text);
+    expect(error).toBeNull();
+    expect(text.style.overflow).toBe("hidden");
   });
 
   it("leaves unmarked components exactly as before", () => {
@@ -386,6 +464,35 @@ describe("hydration edge cases", () => {
     expect(childHost.hasAttribute("hidden")).toBe(false);
     expect(renderTargetOf(childHost).textContent).toBe("From an object false");
     expect(globalThis.__rtglHydration).toEqual({ hydrated: 2, mismatched: 0, reasons: [] });
+  });
+
+  it("gives a child attribute-form props and props it doesn't declare through the native setters", () => {
+    const parentName = uniqueName("release-parent");
+    const childName = uniqueName("release-child");
+    const parent = component({
+      name: parentName,
+      template: [{ [`${childName} style="color: red" :hidden=\${hidden} :label=\${label}`]: null }],
+      store: { selectViewData: () => ({ hidden: true, label: "Kept" }) },
+    });
+    const child = component({
+      name: childName,
+      props: ["label"],
+      template: [{ p: "${label}" }],
+      store: { selectViewData: ({ props }) => ({ label: props.label }) },
+    });
+    serverRender(renderComponent({ component: parentName, components: [parent, child] }).html);
+
+    [parent, child].forEach((config) =>
+      customElements.define(config.schema.componentName, createComponent(config, {})));
+
+    const childHost = renderTargetOf(document.querySelector(parentName)).querySelector(childName);
+    expect(typeof childHost.style).toBe("object");
+    expect(childHost.style.color).toBe("red");
+    expect(Object.hasOwn(childHost, "style")).toBe(false);
+    expect(childHost.hidden).toBe(true);
+    expect(childHost.hasAttribute("hidden")).toBe(true);
+    expect(Object.hasOwn(childHost, "hidden")).toBe(false);
+    expect(renderTargetOf(childHost).textContent).toBe("Kept");
   });
 
   it("keeps camelCase attributes on plain elements", () => {
@@ -497,6 +604,30 @@ describe("hydration edge cases", () => {
 
     expect(renderTargetOf(document.querySelector(name)).textContent).toBe("From props");
     expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+  });
+
+  it("keeps reading a root prop the build took from an attribute from that attribute", () => {
+    const name = uniqueName("attribute-root");
+    const config = component({
+      name,
+      props: ["mode"],
+      template: [{ p: "${mode}" }],
+      store: { selectViewData: ({ props }) => ({ mode: props.mode }) },
+    });
+    serverRender(renderComponent({
+      component: name,
+      components: [config],
+      attributes: { mode: "dark" },
+      serializeProps: true,
+    }).html);
+
+    customElements.define(name, createComponent(config, {}));
+
+    const host = document.querySelector(name);
+    expect(renderTargetOf(host).textContent).toBe("dark");
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+    host.setAttribute("mode", "light");
+    expect(host.props.mode).toBe("light");
   });
 
   it("still notices a prop changed in place after its child was adopted", () => {

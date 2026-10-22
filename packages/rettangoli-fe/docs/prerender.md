@@ -47,8 +47,9 @@ const { html } = renderComponent({
   in a `<script type="application/json" data-rtgl-props>` beside its shadow
   root, and marks the host `data-rtgl-props`. A root has no parent on the
   client to pass it props, so this is how it gets the inputs the build used.
-  The build's precedence holds on the client: props over attributes.
-  Serialized props `MUST` be JSON data (plain objects and arrays of strings,
+  Only values passed in `props` are written. A value the root reads from one
+  of its `attributes` stays an attribute on the host, where the client reads
+  it the same way and later attribute changes still apply. Serialized props `MUST` be JSON data (plain objects and arrays of strings,
   finite numbers other than -0, booleans and null, with no holes or cycles);
   anything else throws, because JSON would hand the client a different value.
 - Child props are never serialized: the parent's render on the client
@@ -97,8 +98,10 @@ render needs belongs in the store or in props, not in a handler.
 - A subtree whose structure differs (a different tag or child count) is
   replaced by a fresh client render. A custom element whose children differ
   is replaced whole, because elements such as `rtgl-popover` restructure their
-  own light DOM and only a fresh element sets that structure up again.
-  Attributes a custom element sets on itself are left alone.
+  own light DOM and only a fresh element sets that structure up again. The
+  same goes for every custom element around it, up to the nearest plain
+  element, so in a tree of `rtgl-view`s one difference usually re-renders the
+  whole component. Attributes a custom element sets on itself are left alone.
 - Nodes are paired by position. A keyed list in a different order than the
   one prerendered is corrected item by item, not moved.
 - Text the HTML parser joined (adjacent text items, or a `$for` over text) is
@@ -108,11 +111,16 @@ render needs belongs in the store or in props, not in a handler.
   subtree. Write views the way the parser reads them.
 - A child that isn't defined yet when its parent hydrates receives props
   named like native properties (`title`, `hidden`, `lang`) as values, not
-  through the native setters, and keeps them until it upgrades.
+  through the native setters. When it upgrades it reads the ones it
+  declares, and the rest go through the native setters then. A prop written
+  in attribute form (`title=Hi`) is an attribute already and uses the native
+  setter. Outside a hydrating patch, props are assigned as they always were.
 - The prerendered `<style>` copy is removed once the adopted stylesheets hold
   the same rules.
-- A marked host with nothing to adopt renders normally. The marker is
-  removed after the first render either way.
+- A marked host whose render target is empty is compared too: it counts as
+  hydrated when the client renders nothing either, and as a mismatch when
+  the client renders something. The marker is removed after the first
+  render either way.
 - If a first patch throws, the render target is cleared and the component
   renders once more from scratch on the next frame, so it never stays half
   built or empty.
@@ -124,10 +132,11 @@ are defined.
 
 The page `SHOULD` load the `@rettangoli/ui` bundle as a blocking script in
 `<head>`, so prerendered `rtgl-*` elements upgrade as they are parsed and
-paint styled. Deferred, they paint unstyled and then reflow. Until the app
-bundle defines it, the root host is an unknown element, which is inline:
-give it its layout in the page's CSS (for example
-`app-root { display: block; }`).
+paint styled. Deferred, they paint unstyled and then reflow. Every
+prerendered shadow root carries the shared `:host { display: contents; }`
+rule, which the runtime also sets after upgrade, so hosts lay out the same
+before and after the bundle runs. Don't give a host a `display` of its own
+in the page's CSS: it would win before the upgrade and lose after it.
 
 ### Registration order
 
@@ -139,8 +148,10 @@ properties set before it upgrades. So when the document contains a
 first (derived from the tags each view renders), and a child upgrades after
 its parent's hydrating patch has assigned its props. Without prerendered
 markup the order stays the default (categories, then components,
-alphabetically). Components in a cycle keep their default order after the
-rest; they still render correctly, at the cost of a mismatch.
+alphabetically). Components whose views name each other's tags (a cycle,
+such as a view that shows another only under a condition) keep their
+default order after the rest; they still render correctly, at the cost of
+a mismatch.
 
 ### Telemetry
 
@@ -162,6 +173,11 @@ A component that cannot be prerendered (canvas, WebGL, editors) sets
 root and no hydration marker, and mounts on the client as usual. The light
 DOM its parent gives it is still written, so the parent adopts it. An
 opted-out root rendered with `serializeProps` still gets its props.
+
+A component can't be prerendered inside itself, such as a tree that renders
+its own tag for its child nodes: `renderComponent` throws
+`component cycle detected`. Mark it `ssr: false`; its parent's markup is
+still prerendered, and the tree renders in the browser.
 
 ## Design Notes
 
