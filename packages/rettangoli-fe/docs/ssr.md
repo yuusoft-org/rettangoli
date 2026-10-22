@@ -23,10 +23,12 @@ const { html } = renderComponent({
 });
 ```
 
-- `loadComponents({ cwd, dirs })` reads components the way `rtgl fe build`
-  finds them. It loads views, schemas, constants, stores and methods. It
-  `MUST NOT` import handlers: they never run on the server, so they may use
-  browser APIs. A component marked `ssr: false` has no module imported at all.
+- `loadComponents({ cwd, dirs, reload })` reads components the way
+  `rtgl fe build` finds them. It loads views, schemas, constants, stores and
+  methods. It `MUST NOT` import handlers: they never run on the server, so
+  they may use browser APIs. A component marked `ssr: false` has no module
+  imported at all. A new `reload` token imports edited stores and methods
+  again in a long-running process; modules they import stay cached.
 - `renderComponent` runs each component's `createInitialState` and
   `selectViewData`, renders its view, recurses into registered child
   components, and writes every component into its own declarative shadow
@@ -36,9 +38,11 @@ const { html } = renderComponent({
   state the server sees.
 - With `serializeProps: true`, the root's schema props are written as JSON
   in a `<script type="application/json" data-rtgl-props>` beside its shadow
-  root. A root has no parent on the client to pass it props, so this is how
-  it gets the inputs the server used. Serialized props `MUST` be JSON data
-  (plain objects and arrays of strings, finite numbers, booleans and null);
+  root, and marks the host `data-rtgl-props`. A root has no parent on the
+  client to pass it props, so this is how it gets the inputs the server used.
+  The server's precedence holds on the client: props over attributes.
+  Serialized props `MUST` be JSON data (plain objects and arrays of strings,
+  finite numbers other than -0, booleans and null, with no holes or cycles);
   anything else throws, because JSON would hand the client a different value.
   Child props are never serialized: the parent's render recomputes them.
 
@@ -75,11 +79,26 @@ mismatch unless it equals what the server rendered.
   is replaced whole, because elements such as `rtgl-popover` restructure their
   own light DOM and only a fresh element sets that structure up again.
   Attributes a custom element sets on itself are left alone.
+- Text the HTML parser joined (adjacent text items, or a `$for` over text) is
+  split back into one node per item, and empty text is restored, so it
+  adopts. Markup the parser rewrites can't adopt: an element it moves (a
+  `tr` written straight into a `table` gets a `tbody`) re-renders that
+  subtree. Write views the way the parser reads them.
+- A child that isn't defined yet when its parent hydrates receives props
+  named like native properties (`title`, `hidden`, `lang`) as values, not
+  through the native setters, and keeps them until it upgrades.
+- The server's `<style>` copy is removed once the adopted stylesheets hold the
+  same rules.
 - A marked host with nothing to adopt renders normally. The marker is
   removed after the first render either way.
-- If a first patch throws, the render target is cleared, so the next render
-  starts clean instead of patching beside a half-built tree.
+- If a first patch throws, the render target is cleared and the component
+  renders once more from scratch on the next frame, so it never stays half
+  built or empty.
 - Unmarked components behave exactly as before.
+
+The page `MUST` load the bundle as a module script without `async`: the
+markup and the root's props script have to be parsed before the components
+are defined.
 
 ### Registration order
 
@@ -107,5 +126,7 @@ prerendered pages, because a mismatch is otherwise invisible.
 ## Opting Out
 
 A component that cannot render on the server (canvas, WebGL, editors) sets
-`ssr: false` in its schema (see `schema.md`). It is emitted as a bare host and
-mounts on the client as usual.
+`ssr: false` in its schema (see `schema.md`). It is emitted with no shadow
+root and no hydration marker, and mounts on the client as usual. The light
+DOM its parent gives it is still written, so the parent adopts it. An
+opted-out root rendered with `serializeProps` still gets its props.

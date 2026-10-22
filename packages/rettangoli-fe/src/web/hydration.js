@@ -33,6 +33,10 @@
  * render leaves them alone.
  */
 
+import { readPropFallbackFromAttributes } from "../core/runtime/props.js";
+import { adoptComponentProps } from "./componentUpdateHook.js";
+import { scheduleFrame } from "./scheduler.js";
+
 export const HYDRATE_ATTRIBUTE = "data-rtgl-hydrate";
 export const SERVER_PROPS_ATTRIBUTE = "data-rtgl-props";
 
@@ -56,7 +60,8 @@ const describeNode = (node) => {
 };
 
 // The parser never emits whitespace between tags and the serializer writes
-// none, so element, text and comment nodes map one to one onto vnode children.
+// none, so element, text and comment nodes map one to one onto vnode children,
+// once text the HTML parser joined is split again (splitJoinedText).
 const childNodesOf = (elm) =>
   Array.from(elm.childNodes || []).filter((node) =>
     node.nodeType === ELEMENT_NODE
@@ -90,6 +95,8 @@ const attributeAsDom = (value) => {
 const mirrorAttrs = ({ vnode, elm, isCustom, isRoot, report, path }) => {
   const attrs = vnode.data?.attrs || {};
   const oldAttrs = {};
+  // HTML lowercases attribute names (`tabIndex` is read back as `tabindex`).
+  const renderedNames = new Set(Object.keys(attrs).map((name) => name.toLowerCase()));
 
   for (const name of Object.keys(attrs)) {
     const domValue = elm.getAttribute(name);
@@ -107,7 +114,7 @@ const mirrorAttrs = ({ vnode, elm, isCustom, isRoot, report, path }) => {
   // on themselves.
   if (!isCustom && !isRoot) {
     for (const { name, value } of Array.from(elm.attributes || [])) {
-      if (Object.prototype.hasOwnProperty.call(attrs, name)) continue;
+      if (renderedNames.has(name.toLowerCase())) continue;
       if (name === "class" && vnode.data?.class) continue;
       if (name === "style" && vnode.data?.style) continue;
       oldAttrs[name] = value;
@@ -157,6 +164,42 @@ const mirrorData = ({ vnode, elm, isCustom, isRoot, report, path }) => {
 
 let zipElement;
 
+const isTextVNode = (vnode) =>
+  vnode !== null && vnode !== undefined && vnode.sel === undefined;
+
+// The HTML parser joins text the serializer wrote side by side, so a run of
+// text vnodes (`p: ["Hello ", "${name}"]`) arrives as one text node, and
+// empty text as no node at all. Split the server's text back into one node
+// per vnode where it reads the same; anything else is left for the zip to
+// report.
+const splitJoinedText = (children, elm) => {
+  for (let index = 0; index < children.length; index += 1) {
+    if (!isTextVNode(children[index])) continue;
+    let end = index;
+    while (end < children.length && isTextVNode(children[end])) end += 1;
+    const pieces = children
+      .slice(index, end)
+      .map((child) => String(child.text ?? ""));
+    const node = childNodesOf(elm)[index];
+    const joined = pieces.join("");
+    if (pieces.length > 1 || joined === "") {
+      if (joined === "") {
+        for (let count = 0; count < pieces.length; count += 1) {
+          elm.insertBefore(elm.ownerDocument.createTextNode(""), node ?? null);
+        }
+      } else if (node?.nodeType === TEXT_NODE && node.data === joined) {
+        let rest = node;
+        for (const piece of pieces.slice(0, -1)) {
+          rest = rest.splitText(piece.length);
+        }
+      } else {
+        return;
+      }
+    }
+    index = end - 1;
+  }
+};
+
 const zipNode = ({ vnode, node, report, path }) => {
   if (vnode === null || vnode === undefined) {
     return null;
@@ -203,6 +246,7 @@ const zipNode = ({ vnode, node, report, path }) => {
 // a different count, or (under a custom element) any child that differs.
 const zipChildren = ({ vnode, elm, isCustom, report, path }) => {
   const children = vnode.children || [];
+  splitJoinedText(children, elm);
   const nodes = childNodesOf(elm);
 
   if (children.length !== nodes.length) {
@@ -264,6 +308,7 @@ zipElement = ({ vnode, elm, report, path }) => {
       report.corrected += 1;
       addReason(report, `${path}: text differs`);
     }
+    if (isCustom) adoptComponentProps(elm, vnode.data?.props);
     return {
       sel: vnode.sel,
       data: mirrorData({ vnode, elm, isCustom, isRoot: false, report, path }),
@@ -278,6 +323,7 @@ zipElement = ({ vnode, elm, report, path }) => {
   if (!children) {
     return null;
   }
+  if (isCustom) adoptComponentProps(elm, vnode.data?.props);
 
   return {
     sel: vnode.sel,
@@ -374,6 +420,11 @@ export const prepareFirstPatch = ({ instance, vDom }) => {
     return renderTarget;
   }
   instance.removeAttribute(HYDRATE_ATTRIBUTE);
+  // The server's copy of the styles; the adopted stylesheets carry them now,
+  // and a hot update replaces those.
+  for (const node of Array.from(instance.shadow?.children || [])) {
+    if (String(node.localName).toLowerCase() === "style") node.remove();
+  }
   if (!renderTarget || typeof renderTarget.hasChildNodes !== "function" || !renderTarget.hasChildNodes()) {
     return renderTarget;
   }
@@ -386,25 +437,39 @@ export const prepareFirstPatch = ({ instance, vDom }) => {
   return vnode;
 };
 
+const retriedFirstRender = new WeakSet();
+
 /**
  * Clears what a failed first patch left behind, so the next render starts
- * from an empty render target instead of patching beside a partial tree.
+ * from an empty render target instead of patching beside a partial tree,
+ * and draws the component once more from scratch, so a failed adoption of
+ * server markup doesn't leave it empty.
  */
 export const resetRenderTarget = ({ instance }) => {
   instance.renderTarget?.replaceChildren?.();
+  if (retriedFirstRender.has(instance)) return;
+  retriedFirstRender.add(instance);
+  scheduleFrame(() => {
+    if (instance.isConnected !== false && !instance._oldVNode) {
+      instance.render();
+    }
+  });
 };
 
 /**
  * A server-rendered root carries its props as JSON
  * (`renderComponent({ serializeProps: true })`), because no parent renders it
- * on the client. They are assigned before the store is created, so the first
- * client render sees the inputs the server used. Props set on the element
- * before it upgraded win.
+ * on the client; the host is marked `data-rtgl-props`. They are assigned
+ * before the store is created, so the first client render sees the inputs the
+ * server used, including for a root marked `ssr: false`. Props set on the
+ * element before it upgraded win; an attribute is only a fallback, as on the
+ * server.
  */
 export const adoptServerProps = ({ host, propsSchemaKeys = [] }) => {
-  if (typeof host.hasAttribute !== "function" || !host.hasAttribute(HYDRATE_ATTRIBUTE)) {
+  if (typeof host.hasAttribute !== "function" || !host.hasAttribute(SERVER_PROPS_ATTRIBUTE)) {
     return;
   }
+  host.removeAttribute(SERVER_PROPS_ATTRIBUTE);
   const script = Array.from(host.children || []).find((child) =>
     String(child.localName).toLowerCase() === "script"
     && child.hasAttribute(SERVER_PROPS_ATTRIBUTE));
@@ -425,7 +490,9 @@ export const adoptServerProps = ({ host, propsSchemaKeys = [] }) => {
   }
 
   for (const key of propsSchemaKeys) {
-    if (Object.prototype.hasOwnProperty.call(props, key) && host[key] === undefined) {
+    if (!Object.prototype.hasOwnProperty.call(props, key)) continue;
+    const current = host[key];
+    if (current === undefined || current === readPropFallbackFromAttributes(host, key)) {
       host[key] = props[key];
     }
   }

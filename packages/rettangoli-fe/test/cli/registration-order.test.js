@@ -66,7 +66,7 @@ describe("orderParentsFirst", () => {
     expect(orderParentsFirst(entries)).toEqual(["a", "b", "c"]);
   });
 
-  it("places components in a cycle after the rest, in default order", () => {
+  it("breaks a cycle at its first member in default order", () => {
     const order = orderParentsFirst([
       { id: "a", elementName: "x-a", tags: ["x-b"] },
       { id: "b", elementName: "x-b", tags: ["x-a"] },
@@ -74,6 +74,15 @@ describe("orderParentsFirst", () => {
       { id: "d", elementName: "x-d", tags: ["x-d"] },
     ]);
     expect(order).toEqual(["c", "d", "a", "b"]);
+  });
+
+  it("keeps a component a cycle renders after the cycle", () => {
+    const order = orderParentsFirst([
+      { id: "c", elementName: "x-c", tags: [] },
+      { id: "a", elementName: "x-a", tags: ["x-b"] },
+      { id: "b", elementName: "x-b", tags: ["x-a", "x-c"] },
+    ]);
+    expect(order).toEqual(["a", "b", "c"]);
   });
 });
 
@@ -113,5 +122,22 @@ describe("generated registration", () => {
       ["components", "badge"],
     ]);
     expect(source).toContain('document.querySelector("[data-rtgl-hydrate]")');
+  });
+
+  it("uses the same orders in watch mode, for the update batch", () => {
+    const rootDir = createProject();
+    const source = generateFrontendEntrySource({
+      cwd: rootDir,
+      dirs: ["components", "pages"],
+      setup: "setup.js",
+      command: "serve",
+    });
+    expect(readOrder(source, "__rtglHydrationRegistrationOrder")).toEqual([
+      ["pages", "home"],
+      ["components", "badge"],
+    ]);
+    expect(source).toMatch(
+      /\(__rtglHasServerMarkup\s*\?\s*__rtglHydrationRegistrationOrder\s*:\s*__rtglRegistrationOrder\s*\)\.forEach[\s\S]*__rtglComponentUpdateBatch\.push/,
+    );
   });
 });

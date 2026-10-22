@@ -8,10 +8,48 @@ import { attributesModule } from 'snabbdom/build/modules/attributes.js'
 import { styleModule } from './web/vendor/snabbdomStyleModule.js'
 import { eventListenersModule } from 'snabbdom/build/modules/eventlisteners.js'
 
+const isCustomElementVnode = (vnode) =>
+  typeof vnode.sel === 'string' && vnode.sel.split(/[.#]/)[0].includes('-')
+
+// A custom element that isn't defined yet is a plain HTMLElement, so
+// assigning a prop named like a native property (`title`, `hidden`, `lang`)
+// would run the native setter: the value is coerced and reflected as an
+// attribute. Keep it as an own property instead, which the component reads
+// when it upgrades (installReactiveProps). Hydration meets this on every
+// child, since a page with server markup defines parents first.
+const isUndefinedCustomElement = (elm) =>
+  typeof globalThis.customElements?.get === 'function' &&
+  typeof elm?.localName === 'string' &&
+  !globalThis.customElements.get(elm.localName)
+
+const keepPropsOnUndefinedElement = (oldVnode, vnode) => {
+  const elm = vnode.elm
+  const oldProps = oldVnode.data?.props || {}
+  const props = vnode.data?.props || {}
+  for (const key of Object.keys(props)) {
+    if (oldProps[key] !== props[key] || !Object.hasOwn(elm, key)) {
+      Object.defineProperty(elm, key, {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: props[key],
+      })
+    }
+  }
+}
+
+const updateComponentProps = (oldVnode, vnode) => {
+  if (isCustomElementVnode(vnode) && isUndefinedCustomElement(vnode.elm)) {
+    keepPropsOnUndefinedElement(oldVnode, vnode)
+    return
+  }
+  propsModule.update(oldVnode, vnode)
+}
+
 const componentPropsModule = {
-  create: propsModule.create,
+  create: updateComponentProps,
   update(oldVnode, vnode) {
-    if (typeof vnode.sel === 'string' && vnode.sel.split(/[.#]/)[0].includes('-')) {
+    if (isCustomElementVnode(vnode)) {
       const nextProps = vnode.data?.props || {};
       for (const key of Object.keys(oldVnode.data?.props || {})) {
         if (!Object.hasOwn(nextProps, key)) {
@@ -20,7 +58,7 @@ const componentPropsModule = {
         }
       }
     }
-    propsModule.update(oldVnode, vnode);
+    updateComponentProps(oldVnode, vnode);
   },
 };
 

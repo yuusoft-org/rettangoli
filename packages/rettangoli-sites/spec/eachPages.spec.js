@@ -29,7 +29,7 @@ const storyPage = (frontmatter = [], body = ['- h1: ${story.title}']) => [
   '_each:',
   '  data: prerender.stories',
   '  as: story',
-  '  url: /vn/${story.id}/',
+  '  url: /stories/${story.id}/',
   'title: ${story.title}',
   'description: ${story.summary}',
   ...frontmatter,
@@ -52,7 +52,7 @@ function builder(fs, options = {}) {
 describe('_each pages', () => {
   it('writes one YAML page per item with per-item frontmatter, page context, and template context', async () => {
     const fs = fixture({
-      '/pages/vn/story.yaml': storyPage([], [
+      '/pages/stories/story.yaml': storyPage([], [
         '- h1: ${story.title}',
         '- p: ${page.url} ${url}'
       ])
@@ -60,33 +60,33 @@ describe('_each pages', () => {
 
     await builder(fs)();
 
-    const first = fs.readFileSync('/_site/vn/first/index.html', 'utf8');
+    const first = fs.readFileSync('/_site/stories/first/index.html', 'utf8');
     expect(first).toContain('<title>First Story</title>');
     expect(first).toContain('content="The first one"');
     expect(first).toContain('<h1>First Story</h1>');
-    expect(first).toContain('<p>/vn/first/ /vn/first/</p>');
-    const second = fs.readFileSync('/_site/vn/second/index.html', 'utf8');
+    expect(first).toContain('<p>/stories/first/ /stories/first/</p>');
+    const second = fs.readFileSync('/_site/stories/second/index.html', 'utf8');
     expect(second).toContain('<title>Second Story</title>');
     expect(second).toContain('<h1>Second Story</h1>');
-    expect(fs.existsSync('/_site/vn/story/index.html')).toBe(false);
+    expect(fs.existsSync('/_site/stories/story/index.html')).toBe(false);
   });
 
   it('writes one markdown page per item and copies the source to each generated URL with keepMarkdownFiles', async () => {
     const source = storyPage([], ['# Story body']);
     const fs = fixture({
       '/templates/base.yaml': '- html:\n    - body:\n        - h1: ${story.title}\n        - "${content}"',
-      '/pages/vn/story.md': source
+      '/pages/stories/story.md': source
     });
 
     await builder(fs, { keepMarkdownFiles: true })();
 
-    const first = fs.readFileSync('/_site/vn/first/index.html', 'utf8');
+    const first = fs.readFileSync('/_site/stories/first/index.html', 'utf8');
     expect(first).toContain('<h1>First Story</h1>');
     expect(first).toContain('Story body');
-    expect(fs.readFileSync('/_site/vn/second/index.html', 'utf8')).toContain('<h1>Second Story</h1>');
-    expect(fs.readFileSync('/_site/vn/first.md', 'utf8')).toBe(source);
-    expect(fs.existsSync('/_site/vn/second.md')).toBe(true);
-    expect(fs.existsSync('/_site/vn/story.md')).toBe(false);
+    expect(fs.readFileSync('/_site/stories/second/index.html', 'utf8')).toContain('<h1>Second Story</h1>');
+    expect(fs.readFileSync('/_site/stories/first.md', 'utf8')).toBe(source);
+    expect(fs.existsSync('/_site/stories/second.md')).toBe(true);
+    expect(fs.existsSync('/_site/stories/story.md')).toBe(false);
   });
 
   it('renders frontmatter values that are not strings and keeps whole-expression values raw', async () => {
@@ -97,7 +97,7 @@ describe('_each pages', () => {
 
     await builder(fs)();
 
-    expect(fs.readFileSync('/_site/vn/second/index.html', 'utf8'))
+    expect(fs.readFileSync('/_site/stories/second/index.html', 'utf8'))
       .toContain('<p>[&quot;mystery&quot;,&quot;romance&quot;] {&quot;slug&quot;:&quot;second&quot;} 3</p>');
   });
 
@@ -113,7 +113,7 @@ describe('_each pages', () => {
         '_each:',
         '  data: prerender.stories',
         '  as: story',
-        '  url: /vn/${default(story.slug, story.id)}/',
+        '  url: /stories/${default(story.slug, story.id)}/',
         'title: ${story.title} - ${siteInfo.name}',
         '---',
         '- p: Body'
@@ -122,7 +122,7 @@ describe('_each pages', () => {
 
     await builder(fs)();
 
-    expect(fs.readFileSync('/_site/vn/first/index.html', 'utf8')).toContain('<p>First Story - Example Site</p>');
+    expect(fs.readFileSync('/_site/stories/first/index.html', 'utf8')).toContain('<p>First Story - Example Site</p>');
   });
 
   it('produces no pages for an empty array', async () => {
@@ -154,12 +154,12 @@ describe('_each pages', () => {
     await builder(fs, { data: { site: { baseUrl: 'https://example.com' } } })();
 
     const html = fs.readFileSync('/_site/index.html', 'utf8');
-    expect(html).toContain('<a href="/vn/first/">First Story</a>');
-    expect(html).toContain('<a href="/vn/second/">Second Story</a>');
+    expect(html).toContain('<a href="/stories/first/">First Story</a>');
+    expect(html).toContain('<a href="/stories/second/">Second Story</a>');
     const sitemapXml = fs.readFileSync('/_site/sitemap.xml', 'utf8');
     expect(sitemapXml).toContain('<loc>https://example.com/</loc>');
-    expect(sitemapXml).toContain('<loc>https://example.com/vn/first/</loc>\n    <priority>0.8</priority>');
-    expect(sitemapXml).toContain('<loc>https://example.com/vn/second/</loc>');
+    expect(sitemapXml).toContain('<loc>https://example.com/stories/first/</loc>\n    <priority>0.8</priority>');
+    expect(sitemapXml).toContain('<loc>https://example.com/stories/second/</loc>');
   });
 
   it('keeps _each out of public frontmatter', async () => {
@@ -170,48 +170,48 @@ describe('_each pages', () => {
 
     await builder(fs)();
 
-    const html = fs.readFileSync('/_site/vn/first/index.html', 'utf8');
+    const html = fs.readFileSync('/_site/stories/first/index.html', 'utf8');
     expect(html).not.toContain('_each');
-    expect(html).toContain('&quot;url&quot;:&quot;/vn/first/&quot;');
+    expect(html).toContain('&quot;url&quot;:&quot;/stories/first/&quot;');
   });
 
   it('normalizes generated URLs like custom url frontmatter', async () => {
     const fs = fixture({
-      '/pages/story.yaml': storyPage().replace('url: /vn/${story.id}/', 'url: vn//${story.id}')
+      '/pages/story.yaml': storyPage().replace('url: /stories/${story.id}/', 'url: stories//${story.id}')
     });
 
     await builder(fs)();
 
-    expect(fs.existsSync('/_site/vn/first/index.html')).toBe(true);
+    expect(fs.existsSync('/_site/stories/first/index.html')).toBe(true);
   });
 
   it('rejects duplicate URLs between generated pages and normal pages', async () => {
     const fs = fixture({
-      '/pages/vn/first.yaml': '- p: Existing',
+      '/pages/stories/first.yaml': '- p: Existing',
       '/pages/story.yaml': storyPage()
     });
 
-    await expect(builder(fs)()).rejects.toThrow('Duplicate page URL "/vn/first/" in /pages/vn/first.yaml; already used by /pages/story.yaml (_each item 0).');
+    await expect(builder(fs)()).rejects.toThrow('Duplicate page URL "/stories/first/" in /pages/story.yaml (_each item 0); already used by /pages/stories/first.yaml.');
   });
 
   it('rejects duplicate URLs between generated pages', async () => {
     const fs = fixture({
-      '/pages/story.yaml': storyPage().replace('url: /vn/${story.id}/', 'url: /vn/same/')
+      '/pages/story.yaml': storyPage().replace('url: /stories/${story.id}/', 'url: /stories/same/')
     });
 
-    await expect(builder(fs)()).rejects.toThrow('Duplicate page URL "/vn/same/" in /pages/story.yaml (_each item 1); already used by /pages/story.yaml (_each item 0).');
+    await expect(builder(fs)()).rejects.toThrow('Duplicate page URL "/stories/same/" in /pages/story.yaml (_each item 1); already used by /pages/story.yaml (_each item 0).');
   });
 
   it('rejects an invalid generated URL with the item in the message', async () => {
     const fs = fixture({
-      '/pages/story.yaml': storyPage().replace('url: /vn/${story.id}/', 'url: https://example.com/${story.id}')
+      '/pages/story.yaml': storyPage().replace('url: /stories/${story.id}/', 'url: https://example.com/${story.id}')
     });
 
     await expect(builder(fs)()).rejects.toThrow('Invalid url in /pages/story.yaml (_each item 0): expected a site-relative URL path.');
   });
 
   it('rejects _each together with url frontmatter', async () => {
-    const fs = fixture({ '/pages/story.yaml': storyPage(['url: /vn/']) });
+    const fs = fixture({ '/pages/story.yaml': storyPage(['url: /stories/']) });
 
     await expect(builder(fs)()).rejects.toThrow('Invalid _each in /pages/story.yaml: remove the "url" frontmatter key; "_each.url" sets the URL of each generated page.');
   });
@@ -234,14 +234,14 @@ describe('_each pages', () => {
   it.each([
     ['not an object', '_each: prerender.stories', 'expected an object with "data", "as", and "url".'],
     ['an array', '_each: [prerender.stories]', 'expected an object with "data", "as", and "url".'],
-    ['an unknown key', '_each:\n  data: prerender.stories\n  as: story\n  url: /vn/${story.id}/\n  key: id', 'unsupported key "key". Supported keys: data, as, url.'],
-    ['missing data', '_each:\n  as: story\n  url: /vn/${story.id}/', '"data" must be a non-empty string.'],
-    ['empty as', '_each:\n  data: prerender.stories\n  as: ""\n  url: /vn/', '"as" must be a non-empty string.'],
+    ['an unknown key', '_each:\n  data: prerender.stories\n  as: story\n  url: /stories/${story.id}/\n  key: id', 'unsupported key "key". Supported keys: data, as, url.'],
+    ['missing data', '_each:\n  as: story\n  url: /stories/${story.id}/', '"data" must be a non-empty string.'],
+    ['empty as', '_each:\n  data: prerender.stories\n  as: ""\n  url: /stories/', '"as" must be a non-empty string.'],
     ['non-string url', '_each:\n  data: prerender.stories\n  as: story\n  url: 42', '"url" must be a non-empty string.'],
-    ['an invalid as name', '_each:\n  data: prerender.stories\n  as: the-story\n  url: /vn/', '"as" must be a variable name'],
-    ['a dotted as name', '_each:\n  data: prerender.stories\n  as: story.item\n  url: /vn/', '"as" must be a variable name'],
-    ['a reserved as name', '_each:\n  data: prerender.stories\n  as: page\n  url: /vn/', '"as" must not be a reserved name (collections, page, build, content).'],
-    ['an as name used by _bind', '_bind:\n  story: prerender\n_each:\n  data: prerender.stories\n  as: story\n  url: /vn/', '"as" name "story" is already used by _bind.']
+    ['an invalid as name', '_each:\n  data: prerender.stories\n  as: the-story\n  url: /stories/', '"as" must be a variable name'],
+    ['a dotted as name', '_each:\n  data: prerender.stories\n  as: story.item\n  url: /stories/', '"as" must be a variable name'],
+    ['a reserved as name', '_each:\n  data: prerender.stories\n  as: page\n  url: /stories/', '"as" must not be a reserved name (collections, page, build, content).'],
+    ['an as name used by _bind', '_bind:\n  story: prerender\n_each:\n  data: prerender.stories\n  as: story\n  url: /stories/', '"as" name "story" is already used by _bind.']
   ])('rejects _each that is %s', async (_label, eachLines, message) => {
     const fs = fixture({ '/pages/story.yaml': `---\n${eachLines}\n---\n- p: Story` });
 

@@ -473,7 +473,7 @@ const watchSite = async (options = {}) => {
   const logger = createLogger(quiet);
 
   // Load config file
-  await loadSiteConfig(rootDir, true, true);
+  const config = await loadSiteConfig(rootDir, true, true);
 
   // Do initial build with config
   logger.log('Starting initial build...');
@@ -492,6 +492,11 @@ const watchSite = async (options = {}) => {
 
   // Watch all relevant directories
   const dirsToWatch = ['data', 'templates', 'partials', 'pages', 'static'];
+
+  // Server-rendered components are part of the pages too.
+  for (const dir of config.components?.dirs || []) {
+    if (!dirsToWatch.includes(dir)) dirsToWatch.push(dir);
+  }
 
   dirsToWatch.forEach(dir => {
     const dirPath = path.join(rootDir, dir);

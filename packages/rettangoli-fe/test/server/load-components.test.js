@@ -1,5 +1,5 @@
 import path from "node:path";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import { afterEach, describe, expect, it } from "vitest";
@@ -110,5 +110,53 @@ describe("loadComponents", () => {
     await expect(loadComponents({ dirs: [] })).rejects.toThrow(/non-empty array/);
     await expect(loadComponents({ cwd: tmpdir(), dirs: ["no-such-dir-rtgl"] }))
       .rejects.toThrow(/does not exist/);
+  });
+
+  it("finds components in nested directories, as the build does", async () => {
+    const rootDir = createProject({
+      "src/components/forms/field/field.schema.yaml": "componentName: x-field\n",
+      "src/components/forms/field/field.view.yaml": "template:\n  - label: field\n",
+      "src/components/badge/badge.schema.yaml": "componentName: x-badge\n",
+      "src/components/badge/badge.view.yaml": "template:\n  - span: badge\n",
+    });
+    const components = await loadComponents({ cwd: rootDir, dirs: ["src/components"] });
+    expect(components.map((c) => c.schema.componentName).sort()).toEqual(["x-badge", "x-field"]);
+  });
+
+  it.each([
+    ["no componentName", { "c/a/a.schema.yaml": "description: none\n", "c/a/a.view.yaml": "template: []\n" }, /c\/a has no schema\.componentName/],
+    ["no view", { "c/a/a.schema.yaml": "componentName: x-a\n" }, /c\/a has no \.view\.yaml/],
+    ["YAML that doesn't parse", { "c/a/a.schema.yaml": "componentName: [x-a\n", "c/a/a.view.yaml": "template: []\n" }, /failed to parse .*a\.schema\.yaml/],
+  ])("says which component has %s", async (_label, files, message) => {
+    const rootDir = createProject(files);
+    await expect(loadComponents({ cwd: rootDir, dirs: ["c"] })).rejects.toThrow(message);
+  });
+
+  it("imports edited stores again for a new reload token", async () => {
+    const rootDir = createProject({
+      "c/card/card.schema.yaml": "componentName: x-card\n",
+      "c/card/card.view.yaml": "template:\n  - p: ${text}\n",
+      "c/card/card.store.js": "export const selectViewData = () => ({ text: 'first' });\n",
+    });
+    const render = (components) =>
+      renderComponent({ component: "x-card", components }).html;
+    const first = await loadComponents({ cwd: rootDir, dirs: ["c"], reload: "1" });
+    writeFileSync(
+      path.join(rootDir, "c/card/card.store.js"),
+      "export const selectViewData = () => ({ text: 'second' });\n",
+    );
+    const cached = await loadComponents({ cwd: rootDir, dirs: ["c"], reload: "1" });
+    const reloaded = await loadComponents({ cwd: rootDir, dirs: ["c"], reload: "2" });
+    expect(render(first)).toContain("<p>first</p>");
+    expect(render(cached)).toContain("<p>first</p>");
+    expect(render(reloaded)).toContain("<p>second</p>");
+  });
+
+  it("keeps the server entry free of Node built-ins at module scope", () => {
+    const serverDir = path.join(import.meta.dirname, "../../src/server");
+    for (const file of readdirSync(serverDir)) {
+      const source = readFileSync(path.join(serverDir, file), "utf8");
+      expect(source, file).not.toMatch(/^import [^;]* from "node:/m);
+    }
   });
 });

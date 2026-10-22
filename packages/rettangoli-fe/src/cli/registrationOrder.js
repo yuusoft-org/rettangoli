@@ -40,7 +40,7 @@ export const collectTemplateTags = (template, tags = new Set()) => {
  * @param {Array<{ id: string, elementName: string, tags: Iterable<string> }>} entries
  *   in default order
  * @returns {string[]} ids, every parent before the components it renders;
- *   components in a cycle keep their default order after the rest
+ *   a cycle is broken at its first member in default order
  */
 export const orderParentsFirst = (entries) => {
   const indexByElement = new Map();
@@ -64,27 +64,43 @@ export const orderParentsFirst = (entries) => {
 
   const ordered = [];
   const placed = new Set();
-  let progressed = true;
-  while (progressed) {
-    progressed = false;
-    // Always take the first ready entry in default order, so the result is
-    // deterministic and close to the default order.
-    for (let index = 0; index < entries.length; index += 1) {
-      if (placed.has(index) || parentCounts[index] !== 0) continue;
-      placed.add(index);
-      ordered.push(entries[index].id);
-      for (const childIndex of children[index]) {
-        parentCounts[childIndex] -= 1;
-      }
-      progressed = true;
-      break;
+  const place = (index) => {
+    placed.add(index);
+    ordered.push(entries[index].id);
+    for (const childIndex of children[index]) {
+      parentCounts[childIndex] -= 1;
     }
+  };
+  // Whether an entry renders itself again through entries not placed yet.
+  const inCycle = (start) => {
+    const seen = new Set();
+    const stack = [...children[start]];
+    while (stack.length > 0) {
+      const index = stack.pop();
+      if (index === start) return true;
+      if (placed.has(index) || seen.has(index)) continue;
+      seen.add(index);
+      stack.push(...children[index]);
+    }
+    return false;
+  };
+  while (placed.size < entries.length) {
+    // The first ready entry in default order, so the result is deterministic
+    // and close to the default order. When only components waiting on a
+    // cycle are left, the cycle's first member goes next, and what it
+    // renders still follows it.
+    let next = entries.findIndex(
+      (_entry, index) => !placed.has(index) && parentCounts[index] <= 0,
+    );
+    if (next === -1) {
+      next = entries.findIndex(
+        (_entry, index) => !placed.has(index) && inCycle(index),
+      );
+    }
+    if (next === -1) {
+      next = entries.findIndex((_entry, index) => !placed.has(index));
+    }
+    place(next);
   }
-
-  entries.forEach((entry, index) => {
-    if (!placed.has(index)) {
-      ordered.push(entry.id);
-    }
-  });
   return ordered;
 };

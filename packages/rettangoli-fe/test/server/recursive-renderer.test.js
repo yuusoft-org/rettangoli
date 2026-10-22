@@ -247,7 +247,7 @@ describe("recursive server renderer", () => {
     expect(html.match(/<p>HTML leaf<\/p>/g)).toHaveLength(1);
   });
 
-  it("renders ssr:false components as bare, unmarked hosts without running their store", () => {
+  it("renders ssr:false components as unmarked hosts with the parent's light DOM, without running their store", () => {
     const clientOnly = defineComponent({
       name: "x-client-only",
       ssr: false,
@@ -263,7 +263,7 @@ describe("recursive server renderer", () => {
       template: [
         {
           "x-client-only data-rtgl-hydrate=forged": [
-            { span: "also omitted" },
+            { span: "the parent's content" },
           ],
         },
       ],
@@ -273,9 +273,10 @@ describe("recursive server renderer", () => {
       component: "x-root",
       components: [root, clientOnly],
     });
-    expect(html).toContain("<x-client-only></x-client-only>");
+    // No shadow root of its own, but the light DOM the parent gives it is
+    // written, so the parent can adopt it.
+    expect(html).toContain("<x-client-only><span>the parent's content</span></x-client-only>");
     expect(html).not.toContain("never rendered");
-    expect(html).not.toContain("also omitted");
     expect(html.match(/data-rtgl-hydrate=""/g)).toHaveLength(1);
   });
 

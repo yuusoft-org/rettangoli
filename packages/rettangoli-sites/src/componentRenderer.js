@@ -35,6 +35,8 @@ export async function loadComponentRendererFromProject({ rootDir }) {
  * @param {Function} options.loadComponentRenderer - Resolves the `@rettangoli/fe/server` module
  * @returns {Promise<{ renderer: Object, registry: unknown }>}
  */
+let buildCount = 0;
+
 export async function loadComponentRegistry({ components, rootDir, loadComponentRenderer }) {
   const renderer = await loadComponentRenderer({ rootDir });
 
@@ -46,7 +48,12 @@ export async function loadComponentRegistry({ components, rootDir, loadComponent
 
   let registry;
   try {
-    registry = await renderer.loadComponents({ cwd: rootDir, dirs: [...components.dirs] });
+    // A new token per build, so a watch rebuild imports edited stores again.
+    registry = await renderer.loadComponents({
+      cwd: rootDir,
+      dirs: [...components.dirs],
+      reload: String(++buildCount),
+    });
   } catch (error) {
     throw new Error(`Failed to load components from ${components.dirs.join(', ')}: ${error.message}`, { cause: error });
   }

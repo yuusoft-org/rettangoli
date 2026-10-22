@@ -95,8 +95,9 @@ methods:
 
 - optional boolean, default `true`
 - set to `false` for components that cannot produce deterministic server markup
-- the server renderer emits an opted-out component as a bare host without a
-  declarative shadow root or `data-rtgl-hydrate` marker
+- the server renderer emits an opted-out component without a declarative
+  shadow root or `data-rtgl-hydrate` marker; the light DOM its parent gives it
+  is still written, so the parent can adopt it (`ssr.md`)
 - use this for genuinely client-only surfaces such as canvas, WebGL, or editor
   mounts; it is not an imperative `isSsr` runtime branch
 

@@ -228,25 +228,34 @@ const describeValue = (value) => {
 
 // Root props cross to the browser as JSON, so they must survive it unchanged:
 // plain objects and arrays of strings, finite numbers, booleans and null.
-// Anything JSON would drop or convert (functions, Dates, Maps, undefined in an
-// array, NaN) would give the client different inputs from the server's.
-const assertJsonData = (value, path) => {
+// Anything JSON would drop or convert (functions, Dates, Maps, holes or
+// undefined in an array, NaN, -0) would give the client different inputs from
+// the server's, and a cycle can't be written at all.
+const assertJsonData = (value, path, ancestors = new Set()) => {
   if (value === null || typeof value === "string" || typeof value === "boolean") {
     return;
   }
   if (typeof value === "number") {
-    if (!Number.isFinite(value)) {
-      throw new Error(`[renderComponent] root prop ${path} is ${value}, which JSON can't carry.`);
+    if (!Number.isFinite(value) || Object.is(value, -0)) {
+      throw new Error(`[renderComponent] root prop ${path} is ${Object.is(value, -0) ? "-0" : value}, which JSON can't carry.`);
     }
     return;
   }
+  if (value && typeof value === "object" && ancestors.has(value)) {
+    throw new Error(`[renderComponent] root prop ${path} refers back to itself; serialized props can't contain cycles.`);
+  }
   if (Array.isArray(value)) {
-    value.forEach((item, index) => {
-      if (item === undefined) {
+    ancestors.add(value);
+    for (let index = 0; index < value.length; index += 1) {
+      if (!(index in value)) {
+        throw new Error(`[renderComponent] root prop ${path}[${index}] is a hole, which JSON turns into null.`);
+      }
+      if (value[index] === undefined) {
         throw new Error(`[renderComponent] root prop ${path}[${index}] is undefined, which JSON turns into null.`);
       }
-      assertJsonData(item, `${path}[${index}]`);
-    });
+      assertJsonData(value[index], `${path}[${index}]`, ancestors);
+    }
+    ancestors.delete(value);
     return;
   }
   const prototype = value && typeof value === "object" ? Object.getPrototypeOf(value) : undefined;
@@ -255,11 +264,13 @@ const assertJsonData = (value, path) => {
       `[renderComponent] root prop ${path} is ${describeValue(value)}; serialized props must be JSON data.`,
     );
   }
+  ancestors.add(value);
   for (const [key, item] of Object.entries(value)) {
     if (item !== undefined) {
-      assertJsonData(item, `${path}.${key}`);
+      assertJsonData(item, `${path}.${key}`, ancestors);
     }
   }
+  ancestors.delete(value);
 };
 
 // `<`, `>` and `&` are escaped as JSON unicode escapes, so the text can never
@@ -407,11 +418,16 @@ export const renderComponent = ({
       const { definition } = registration;
       setHydrateAttribute(vnode, definition.ssr);
 
+      // An opted-out component gets no shadow root, but its light DOM is
+      // the parent's content and is written, so the parent can adopt it.
       if (!definition.ssr) {
         substitutions.set(vnode, {
-          preserveLightDom: false,
+          preserveLightDom: true,
           shadowRoot: "",
         });
+        for (const child of vnode.children || []) {
+          prepareTree(child, path);
+        }
         return;
       }
 
@@ -448,10 +464,25 @@ export const renderComponent = ({
 
   const rootAttributes = { ...attributes };
   clearHydrateAttribute(rootAttributes);
+  for (const name of Object.keys(rootAttributes)) {
+    if (name.toLowerCase() === SERVER_PROPS_ATTRIBUTE) delete rootAttributes[name];
+  }
+  // An opted-out root is a bare host, which still gets its props.
   if (!rootRegistration.definition.ssr) {
+    const propsScript = serializeProps
+      ? serializeRootProps(createServerProps({
+        definition: rootRegistration.definition,
+        props,
+        attrs: rootAttributes,
+      }))
+      : "";
+    if (propsScript) rootAttributes[SERVER_PROPS_ATTRIBUTE] = "";
     return {
       head: "",
-      html: serializeVNode(h(rootName, { attrs: rootAttributes }, [])),
+      html: serializeVNode(
+        h(rootName, { attrs: rootAttributes }, []),
+        { renderChildren: () => propsScript || null },
+      ),
     };
   }
 
@@ -472,6 +503,7 @@ export const renderComponent = ({
     path: rootPath,
   });
   const propsScript = serializeProps ? serializeRootProps(rootProps) : "";
+  if (propsScript) rootAttributes[SERVER_PROPS_ATTRIBUTE] = "";
   const html = serializeVNode(
     h(rootName, { attrs: rootAttributes }, []),
     { renderChildren: () => shadowRoot + propsScript },

@@ -163,12 +163,14 @@ describe("hydrating server-rendered components", () => {
     const fixture = createFixture();
     serverRender(fixture.html({ title: "Hi", items: [1] }));
     const host = document.querySelector(fixture.parentName);
-    host.title = "Bye";
+    host.items = [2];
 
     fixture.define();
 
-    expect(renderTargetOf(host).querySelector("h1").textContent).toBe("Bye");
-    expect(host.shadowRoot.querySelectorAll("h1")).toHaveLength(1);
+    const childHost = renderTargetOf(host).querySelector(fixture.childName);
+    expect([...renderTargetOf(childHost).querySelectorAll("li")].map((li) => li.textContent))
+      .toEqual(["Hi 2"]);
+    expect(childHost.shadowRoot.querySelectorAll("li")).toHaveLength(1);
     expect(globalThis.__rtglSsr.mismatched).toBeGreaterThan(0);
     expect(globalThis.__rtglSsr.reasons.join("\n")).toContain("text differs");
   });
@@ -330,5 +332,327 @@ describe("hydrating server-rendered components", () => {
     const host = document.body.appendChild(document.createElement(name));
     expect(renderTargetOf(host).textContent).toBe("Client");
     expect(globalThis.__rtglSsr).toBeUndefined();
+  });
+});
+
+// Components for the cases below: `name` is unique per test, `template` raw.
+const component = ({ name, props = [], template, store = {}, handlers = {}, ssr }) => ({
+  schema: {
+    componentName: name,
+    propsSchema: {
+      type: "object",
+      properties: Object.fromEntries(props.map((prop) => [prop, {}])),
+    },
+    ...(ssr === undefined ? {} : { ssr }),
+  },
+  view: { refs: {}, styles: {}, template: parse(template) },
+  store,
+  handlers,
+});
+
+const uniqueName = (prefix) => `x-${prefix}-${componentNumber++}`;
+
+describe("hydration edge cases", () => {
+  it("passes props named like native properties to children as values", () => {
+    const parentName = uniqueName("native-parent");
+    const childName = uniqueName("native-child");
+    const meta = { text: "From an object" };
+    const parent = component({
+      name: parentName,
+      template: [{ [`${childName} :title=\${meta} :hidden=\${hidden}`]: null }],
+      store: { selectViewData: () => ({ meta, hidden: false }) },
+    });
+    const child = component({
+      name: childName,
+      props: ["title", "hidden"],
+      template: [{ p: "${text} ${hiddenText}" }],
+      store: {
+        selectViewData: ({ props }) => ({
+          text: props.title?.text ?? String(props.title),
+          hiddenText: String(props.hidden),
+        }),
+      },
+    });
+    serverRender(renderComponent({ component: parentName, components: [parent, child] }).html);
+
+    [parent, child].forEach((config) =>
+      customElements.define(config.schema.componentName, createComponent(config, {})));
+
+    const host = document.querySelector(parentName);
+    const childHost = renderTargetOf(host).querySelector(childName);
+    expect(childHost.props.title).toBe(meta);
+    expect(childHost.props.hidden).toBe(false);
+    expect(childHost.hasAttribute("title")).toBe(false);
+    expect(childHost.hasAttribute("hidden")).toBe(false);
+    expect(renderTargetOf(childHost).textContent).toBe("From an object false");
+    expect(globalThis.__rtglSsr).toEqual({ hydrated: 2, mismatched: 0, reasons: [] });
+  });
+
+  it("keeps camelCase attributes on plain elements", () => {
+    const name = uniqueName("camel");
+    const config = component({
+      name,
+      template: [{ "div#box tabIndex=0": [{ "input#field maxLength=5": null }] }],
+    });
+    serverRender(renderComponent({ component: name, components: [config] }).html);
+
+    customElements.define(name, createComponent(config, {}));
+
+    const target = renderTargetOf(document.querySelector(name));
+    expect(target.querySelector("div").getAttribute("tabindex")).toBe("0");
+    expect(target.querySelector("input").getAttribute("maxlength")).toBe("5");
+    expect(globalThis.__rtglSsr).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+  });
+
+  it("adopts text the HTML parser joined", () => {
+    const name = uniqueName("text-run");
+    const config = component({
+      name,
+      template: [
+        { "p#greeting": ["Hello ", "${who}", "!"] },
+        { "p#items": [{ "$for item in items": ["${item}"] }] },
+        { "p#empty": ["", "${nothing}"] },
+      ],
+      store: {
+        selectViewData: () => ({ who: "Ada", items: ["a", "b", "c"], nothing: "" }),
+      },
+    });
+    serverRender(renderComponent({ component: name, components: [config] }).html);
+    const greeting = renderTargetOf(document.querySelector(name)).querySelector("#greeting");
+
+    customElements.define(name, createComponent(config, {}));
+
+    const target = renderTargetOf(document.querySelector(name));
+    expect(target.querySelector("#greeting")).toBe(greeting);
+    expect(greeting.textContent).toBe("Hello Ada!");
+    expect(target.querySelector("#items").textContent).toBe("abc");
+    expect(globalThis.__rtglSsr).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+  });
+
+  it("adopts the light DOM a parent gives an ssr: false child", () => {
+    const parentName = uniqueName("opt-parent");
+    const childName = uniqueName("opt-child");
+    const parent = component({
+      name: parentName,
+      template: [{ [childName]: [{ "span#slotted": "Slotted" }] }],
+    });
+    const child = component({
+      name: childName,
+      ssr: false,
+      template: [{ "div#own": "Client only" }],
+    });
+    serverRender(renderComponent({ component: parentName, components: [parent, child] }).html);
+    const slotted = renderTargetOf(document.querySelector(parentName)).querySelector("#slotted");
+
+    [parent, child].forEach((config) =>
+      customElements.define(config.schema.componentName, createComponent(config, {})));
+
+    const childHost = renderTargetOf(document.querySelector(parentName)).querySelector(childName);
+    expect(childHost.querySelector("#slotted")).toBe(slotted);
+    expect(renderTargetOf(childHost).textContent).toBe("Client only");
+    expect(globalThis.__rtglSsr).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+  });
+
+  it("gives an ssr: false root its serialized props", () => {
+    const name = uniqueName("opt-root");
+    const config = component({
+      name,
+      ssr: false,
+      props: ["route"],
+      template: [{ p: "${route}" }],
+      store: { selectViewData: ({ props }) => ({ route: props.route }) },
+    });
+    document.body.innerHTML = renderComponent({
+      component: name,
+      components: [config],
+      props: { route: "/from-server" },
+      serializeProps: true,
+    }).html;
+
+    customElements.define(name, createComponent(config, {}));
+
+    const host = document.querySelector(name);
+    expect(renderTargetOf(host).textContent).toBe("/from-server");
+    expect(host.hasAttribute("data-rtgl-props")).toBe(false);
+    expect(host.querySelector("script")).toBeNull();
+  });
+
+  it("renders a root from its serialized props over an attribute, as the server did", () => {
+    const name = uniqueName("precedence");
+    const config = component({
+      name,
+      props: ["label"],
+      template: [{ p: "${label}" }],
+      store: { selectViewData: ({ props }) => ({ label: props.label }) },
+    });
+    serverRender(renderComponent({
+      component: name,
+      components: [config],
+      props: { label: "From props" },
+      attributes: { label: "From attribute" },
+      serializeProps: true,
+    }).html);
+
+    customElements.define(name, createComponent(config, {}));
+
+    expect(renderTargetOf(document.querySelector(name)).textContent).toBe("From props");
+    expect(globalThis.__rtglSsr).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+  });
+
+  it("still notices a prop changed in place after its child was adopted", () => {
+    const parentName = uniqueName("snapshot-parent");
+    const childName = uniqueName("snapshot-child");
+    const shared = { items: ["a"] };
+    const parent = component({
+      name: parentName,
+      template: [{ [`${childName} :list=\${shared}`]: null }],
+      store: { selectViewData: () => ({ shared }) },
+    });
+    const child = component({
+      name: childName,
+      props: ["list"],
+      template: [{ p: "${count}" }],
+      store: { selectViewData: ({ props }) => ({ count: String(props.list?.items.length ?? 0) }) },
+    });
+    serverRender(renderComponent({ component: parentName, components: [parent, child] }).html);
+    [parent, child].forEach((config) =>
+      customElements.define(config.schema.componentName, createComponent(config, {})));
+    const host = document.querySelector(parentName);
+    const childHost = renderTargetOf(host).querySelector(childName);
+
+    shared.items.push("b");
+    host.render();
+    flushFrames();
+
+    expect(renderTargetOf(childHost).textContent).toBe("2");
+  });
+
+  it("gives a child that rendered before its parent its props without reporting a change", () => {
+    const parentName = uniqueName("early-parent");
+    const childName = uniqueName("early-child");
+    const handleOnUpdate = vi.fn();
+    const parent = component({
+      name: parentName,
+      template: [{ [`${childName} :label=\${label}`]: null }],
+      store: { selectViewData: () => ({ label: "Ready" }) },
+    });
+    const child = component({
+      name: childName,
+      props: ["label"],
+      template: [{ p: "${label}" }],
+      store: { selectViewData: ({ props }) => ({ label: props.label ?? "" }) },
+      handlers: { handleOnUpdate },
+    });
+    serverRender(renderComponent({ component: parentName, components: [parent, child] }).html);
+
+    [child, parent].forEach((config) =>
+      customElements.define(config.schema.componentName, createComponent(config, {})));
+    flushFrames();
+
+    const childHost = renderTargetOf(document.querySelector(parentName)).querySelector(childName);
+    expect(renderTargetOf(childHost).textContent).toBe("Ready");
+    expect(handleOnUpdate).not.toHaveBeenCalled();
+  });
+
+  it("removes classes only the server wrote on plain elements", () => {
+    const name = uniqueName("classes");
+    const config = component({ name, template: [{ "div#box.card": "x" }] });
+    serverRender(renderComponent({ component: name, components: [config] }).html);
+    const box = renderTargetOf(document.querySelector(name)).querySelector("div");
+    box.classList.add("stale");
+
+    customElements.define(name, createComponent(config, {}));
+
+    expect(renderTargetOf(document.querySelector(name)).querySelector("div")).toBe(box);
+    expect(box.className).toBe("card");
+    expect(globalThis.__rtglSsr.mismatched).toBe(1);
+  });
+
+  it("recovers when the hydrating patch throws, with one tree", () => {
+    const name = uniqueName("throws");
+    const brokenName = uniqueName("setter");
+    let throws = true;
+    customElements.define(brokenName, class extends HTMLElement {
+      set value(next) {
+        if (throws) {
+          throws = false;
+          throw new Error("first assignment fails");
+        }
+        this.received = next;
+      }
+    });
+    const config = component({
+      name,
+      template: [{ "p#before": "Before" }, { [`${brokenName} :value=\${value}`]: null }],
+      store: { selectViewData: () => ({ value: 1 }) },
+    });
+    serverRender(renderComponent({ component: name, components: [config] }).html);
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    customElements.define(name, createComponent(config, {}));
+    const host = document.querySelector(name);
+    expect(renderTargetOf(host).childNodes).toHaveLength(0);
+    flushFrames();
+
+    expect(host.shadowRoot.querySelectorAll("p")).toHaveLength(1);
+    expect(renderTargetOf(host).querySelector(brokenName).received).toBe(1);
+    expect(errors).toHaveBeenCalled();
+    errors.mockRestore();
+  });
+
+  it("drops the server's copy of the styles once the adopted sheets hold them", () => {
+    const name = uniqueName("styles");
+    const config = component({ name, template: [{ p: "Styled" }] });
+    serverRender(renderComponent({ component: name, components: [config] }).html);
+    const host = document.querySelector(name);
+    const hasStyle = () =>
+      [...host.shadowRoot.children].some((node) => node.localName === "style");
+    expect(hasStyle()).toBe(true);
+
+    customElements.define(name, createComponent(config, {}));
+
+    expect(hasStyle()).toBe(false);
+  });
+
+  it("keeps at most a hundred mismatch reasons", () => {
+    const name = uniqueName("reasons");
+    const items = Array.from({ length: 150 }, (_, index) => `item ${index}`);
+    const config = component({
+      name,
+      template: [{ ul: [{ "$for item, i in items": [{ "li#row${i}": "${item}" }] }] }],
+      store: { selectViewData: () => ({ items }) },
+    });
+    serverRender(renderComponent({ component: name, components: [config] }).html);
+    renderTargetOf(document.querySelector(name))
+      .querySelectorAll("li")
+      .forEach((li) => {
+        li.textContent = "changed";
+      });
+
+    customElements.define(name, createComponent(config, {}));
+
+    expect(globalThis.__rtglSsr.mismatched).toBe(1);
+    expect(globalThis.__rtglSsr.reasons).toHaveLength(100);
+  });
+
+  it("renders without props when the serialized props can't be read", () => {
+    const name = uniqueName("bad-props");
+    const config = component({
+      name,
+      props: ["label"],
+      template: [{ p: "${label}" }],
+      store: { selectViewData: ({ props }) => ({ label: props.label ?? "none" }) },
+    });
+    document.body.innerHTML = `<${name} data-rtgl-props=""><script type="application/json" data-rtgl-props="">{bad</script></${name}>`;
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    customElements.define(name, createComponent(config, {}));
+
+    expect(renderTargetOf(document.querySelector(name)).textContent).toBe("none");
+    expect(errors).toHaveBeenCalledWith(
+      expect.stringContaining("has unreadable server props"),
+      expect.any(Error),
+    );
+    errors.mockRestore();
   });
 });

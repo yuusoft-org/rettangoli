@@ -276,14 +276,14 @@ template: base
 _each:
   data: prerender.stories   # dot path into global data; must resolve to an array
   as: story                 # variable name each item is bound to
-  url: /vn/${story.id}/     # URL of each generated page
+  url: /stories/${story.id}/     # URL of each generated page
 title: ${story.title}
 description: ${story.summary}
 ---
 - h1: ${story.title}
 ```
 
-With two stories `first` and `second`, this writes `_site/vn/first/index.html` and `_site/vn/second/index.html`.
+With two stories `first` and `second`, this writes `_site/stories/first/index.html` and `_site/stories/second/index.html`.
 
 - `_each` must be an object with exactly the non-empty strings `data`, `as`, and `url`.
 - `data` resolves like a `_bind` value (exact key first, then dot path) and must point to an array. A missing path or a value that is not an array fails the build. An empty array produces no pages.
@@ -291,8 +291,8 @@ With two stories `first` and `second`, this writes `_site/vn/first/index.html` a
 - `url` is rendered for each item, then normalized and validated like frontmatter `url`. The page file's own path is not used as a URL, and `_each` cannot be combined with frontmatter `url`.
 - For each item, every public frontmatter value is rendered with the same template functions pages use, against global data, `_bind` aliases, and the item. Whole-expression values keep their type, so `tags: ${story.genres}` gives an array.
 - The item is available as `as` (here `story`) in the page content and its template, next to the rendered frontmatter, `page.url`, and `url`.
-- Generated pages are ordinary pages: they appear in tag collections and the sitemap, and duplicate URLs between generated pages, or between generated and other pages, fail the build. Errors about one generated page name the page file and the item index, for example `/pages/vn/story.yaml (_each item 1)`.
-- Markdown pages work too. Markdown content is not templated, so it is the same for every item; use frontmatter and the template for item values. With `build.keepMarkdownFiles`, the source `.md` is copied to each generated URL path, such as `_site/vn/first.md`.
+- Generated pages are ordinary pages: they appear in tag collections and the sitemap, and duplicate URLs between generated pages, or between generated and other pages, fail the build. Errors about one generated page name the page file and the item index, for example `/pages/stories/story.yaml (_each item 1)`.
+- Markdown pages work too. Markdown content is not templated, so it is the same for every item; use frontmatter and the template for item values. With `build.keepMarkdownFiles`, the source `.md` is copied to each generated URL path, such as `_site/stories/first.md`.
 
 ## Reusable Asset Package
 
@@ -396,7 +396,8 @@ components:
 
 - `dirs` is a required, non-empty list of directories, relative to the site root.
 - The site project must have `@rettangoli/fe` 1.6.0 or later installed, whose `@rettangoli/fe/server` entry exports `loadComponents`. Sites resolves `@rettangoli/fe/server` from the site root, so components are rendered by the same `@rettangoli/fe` version the site's browser bundle uses. If it cannot be resolved, the build fails and says so.
-- Components are loaded once per build, including each watch rebuild. Watch mode does not watch the component directories themselves; a change in `data/`, `templates/`, `partials/`, `pages/`, `static/`, or `sites.config.yaml` triggers the rebuild.
+- Components are loaded once per build. In watch mode the component directories are watched too, and an edited store or methods file is imported again on the next rebuild; modules those files import stay cached until watch restarts. A page holding server-rendered components reloads in full on each update, since a morph can't recreate declarative shadow roots.
+- `renderComponent` passes props only: a component that reads setup constants or i18n messages renders without them, and its first client render won't match.
 
 Then call `renderComponent(tag, props)` from pages, templates, or partials. It returns the component HTML as raw HTML, like `md()`. Sites passes `props` through unchanged and asks `@rettangoli/fe` to serialize them into the markup (`serializeProps: true`), so the browser component can pick them up:
 
@@ -405,20 +406,30 @@ Then call `renderComponent(tag, props)` from pages, templates, or partials. It r
     - head:
         - title: ${title}
     - body:
-        - ${renderComponent("rvn-app", app)}
+        - ${renderComponent("x-app", app)}
 ```
 
 Supported call forms:
 
-- the call as a whole list item: `- ${renderComponent("rvn-app", app)}` (quoted or not)
-- the call as an element's value: `- main: ${renderComponent("rvn-app", app)}`
+- the call as a whole list item: `- ${renderComponent("x-app", app)}` (quoted or not)
+- the call as an element's value: `- main: ${renderComponent("x-app", app)}`
 - a string literal tag in double or single quotes, or a variable holding the tag
 - props as a variable or dot path (`app`, `app.props`, `story`); omitted or missing props render with `{}`
 
 The raw HTML is emitted unescaped anywhere an element can hold content, including `head` and `script`.
-A call inside a longer string, such as `"before ${renderComponent('rvn-app', app)}"`, does not insert HTML; it renders `[object Object]`.
+A call inside a longer string, such as `"before ${renderComponent('x-app', app)}"`, does not insert HTML; it renders `[object Object]`.
 
 Errors thrown while rendering a component fail the build with the tag and the page path. Calling `renderComponent` without `components` in `sites.config.yaml` fails the build and asks you to configure `components.dirs`.
+
+### Untrusted values in attributes
+
+An attribute written in an element's key (`meta content="${description}"`) is substituted before the key is parsed, so a value containing `"` ends the attribute early and can add attributes of its own. For data you don't control, such as a catalog read from an API, put the attribute in the element's value instead, where it is escaped:
+
+```yaml
+- meta name="description":
+    content: ${description}
+    children: []
+```
 
 ## Screenshots
 

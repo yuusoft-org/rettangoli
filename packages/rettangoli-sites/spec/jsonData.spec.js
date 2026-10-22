@@ -21,13 +21,13 @@ describe('JSON data files', () => {
       '/data/catalog.json': JSON.stringify({ title: 'Library', stories: [{ id: 'first', title: 'First Story' }] }),
       '/data/site.yaml': 'name: Example Site',
       '/pages/index.yaml': '---\n_bind:\n  firstStory: catalog.stories.0\n---\n- p: ${catalog.title} / ${site.name} / ${firstStory.title}',
-      '/pages/story.yaml': '---\n_each:\n  data: catalog.stories\n  as: story\n  url: /vn/${story.id}/\n---\n- h1: ${story.title}'
+      '/pages/story.yaml': '---\n_each:\n  data: catalog.stories\n  as: story\n  url: /stories/${story.id}/\n---\n- h1: ${story.title}'
     });
 
     await builder(fs)();
 
     expect(fs.readFileSync('/_site/index.html', 'utf8')).toContain('<p>Library / Example Site / First Story</p>');
-    expect(fs.readFileSync('/_site/vn/first/index.html', 'utf8')).toContain('<h1>First Story</h1>');
+    expect(fs.readFileSync('/_site/stories/first/index.html', 'utf8')).toContain('<h1>First Story</h1>');
   });
 
   it('supports a JSON array, string, and number just like YAML data', async () => {

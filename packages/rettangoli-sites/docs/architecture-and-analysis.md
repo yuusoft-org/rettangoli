@@ -111,7 +111,7 @@ Behavior:
 _each:
   data: prerender.stories
   as: story
-  url: /vn/${story.id}/
+  url: /stories/${story.id}/
 title: ${story.title}
 ---
 ```

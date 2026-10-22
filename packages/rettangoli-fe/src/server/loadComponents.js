@@ -25,9 +25,12 @@ const unavailableOnServer = (name) => () => {
  * @param {object} options
  * @param {string} [options.cwd]   directory `dirs` are relative to
  * @param {string[]} options.dirs  component directories, as in `fe.dirs`
+ * @param {string} [options.reload] a token that changes on every rebuild, so
+ *   a long-running process (`rtgl sites watch`) imports edited stores and
+ *   methods again. Modules those import stay cached by Node.
  * @returns {Promise<object[]>}    component configs, one per component
  */
-export const loadComponents = async ({ cwd = process.cwd(), dirs } = {}) => {
+export const loadComponents = async ({ cwd = process.cwd(), dirs, reload = "" } = {}) => {
   if (!Array.isArray(dirs) || dirs.length === 0) {
     throw new Error("[loadComponents] `dirs` must be a non-empty array of directories.");
   }
@@ -110,7 +113,10 @@ export const loadComponents = async ({ cwd = process.cwd(), dirs } = {}) => {
       const filePath = componentFiles[fileType];
       if (!filePath) continue;
       try {
-        config[fileType] = await import(pathToFileURL(filePath).href);
+        const url = pathToFileURL(filePath).href;
+        config[fileType] = await import(
+          reload ? `${url}?rtgl-reload=${encodeURIComponent(reload)}` : url
+        );
       } catch (error) {
         throw new Error(
           `[loadComponents] ${filePath} can't be imported in Node (${error.message}). ` +

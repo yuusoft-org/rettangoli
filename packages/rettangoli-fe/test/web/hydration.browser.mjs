@@ -76,6 +76,13 @@ const createFixture = () => {
       "      - h1: ${title}",
       "      - x-list :items=${items}: null",
       "      - button#more: More",
+      // Plain elements with camelCase and boolean attributes, and SVG.
+      "      - 'div#focusable tabIndex=0': Focusable",
+      "      - 'input#name maxLength=5 disabled': null",
+      "      - 'svg#icon viewBox=\"0 0 10 10\" width=10 height=10':",
+      "          - 'circle cx=5 cy=5 r=4': null",
+      "          - 'foreignObject width=10 height=10':",
+      "              - div: inside",
     ].join("\n"),
     "pages/shell/shell.store.js": [
       "export const createInitialState = ({ props }) => ({ items: props.items || [] });",
@@ -92,14 +99,48 @@ const createFixture = () => {
       "  properties:",
       "    items: {}",
     ].join("\n"),
+    // Three more levels: a keyed list of rows, each with a badge.
     "components/list/list.view.yaml": [
       "template:",
       "  - ul:",
       "      - $for item, i in items:",
-      "          - li#item${i}: ${item}",
+      "          - li#item${i}:",
+      "              - x-row :label=${item}: null",
     ].join("\n"),
     "components/list/list.store.js":
       "export const selectViewData = ({ props }) => ({ items: props.items || [] });\n",
+    "components/row/row.schema.yaml": [
+      "componentName: x-row",
+      "propsSchema:",
+      "  type: object",
+      "  properties:",
+      "    label: {}",
+    ].join("\n"),
+    "components/row/row.view.yaml": [
+      "template:",
+      "  - span.label: ${label}",
+      "  - x-badge :title=${meta} :hidden=${hidden}: null",
+    ].join("\n"),
+    "components/row/row.store.js":
+      "export const selectViewData = ({ props }) => ({ label: props.label, meta: { text: `about ${props.label}` }, hidden: false });\n",
+    // Props named like native properties, and text the parser joins.
+    "components/badge/badge.schema.yaml": [
+      "componentName: x-badge",
+      "propsSchema:",
+      "  type: object",
+      "  properties:",
+      "    title: {}",
+      "    hidden: {}",
+    ].join("\n"),
+    "components/badge/badge.view.yaml": [
+      "template:",
+      "  - em:",
+      "      - ${text}",
+      "      - ' / '",
+      "      - ${state}",
+    ].join("\n"),
+    "components/badge/badge.store.js":
+      "export const selectViewData = ({ props }) => ({ text: props.title?.text ?? `not an object: ${props.title}`, state: String(props.hidden) });\n",
   });
   return rootDir;
 };
@@ -169,33 +210,65 @@ const main = async () => {
       await live.waitForFunction(() => globalThis.__rtglSsr?.hydrated >= 1);
 
       const result = await live.evaluate(() => {
+        // Every element in every component's shadow root, depth first.
+        const all = (root) => [...root.querySelectorAll("*")].flatMap((node) =>
+          node.shadowRoot ? [node, ...all(node.shadowRoot)] : [node]);
         const shell = document.querySelector("x-shell");
         const list = shell.shadowRoot.querySelector("x-list");
         const serverNodes = new Set(window.__serverNodes);
-        const live = [shell, ...shell.shadowRoot.querySelectorAll("*"), ...list.shadowRoot.querySelectorAll("*")];
+        const live = [shell, ...all(shell.shadowRoot)];
+        const hosts = live.filter((node) => node.shadowRoot);
+        const badges = live.filter((node) => node.localName === "x-badge");
+        const icon = shell.shadowRoot.querySelector("svg");
         return {
           ssr: globalThis.__rtglSsr,
+          hosts: hosts.length,
           adopted: live.filter((node) => serverNodes.has(node)).length,
           liveCount: live.length,
-          renderTargets: shell.shadowRoot.querySelectorAll("[data-rtgl-render-target]").length
-            + list.shadowRoot.querySelectorAll("[data-rtgl-render-target]").length,
-          items: [...list.shadowRoot.querySelectorAll("li")].map((li) => li.textContent),
+          stacked: hosts.filter((host) =>
+            [...host.shadowRoot.children]
+              .filter((node) => node.hasAttribute("data-rtgl-render-target")).length !== 1).length,
+          rows: [...list.shadowRoot.querySelectorAll("x-row")].map((row) =>
+            row.shadowRoot.querySelector(".label").textContent),
+          badgeTexts: badges.map((badge) => badge.shadowRoot.querySelector("em").textContent),
+          badgeTitleIsObject: badges.every((badge) => typeof badge.props.title === "object"),
+          badgeHostAttributes: badges.flatMap((badge) => badge.getAttributeNames())
+            .filter((name) => name === "title" || name === "hidden"),
+          tabindex: shell.shadowRoot.querySelector("#focusable").getAttribute("tabindex"),
+          maxlength: shell.shadowRoot.querySelector("#name").getAttribute("maxlength"),
+          disabled: shell.shadowRoot.querySelector("#name").disabled,
+          viewBox: icon.getAttribute("viewBox"),
+          foreignText: icon.querySelector("foreignObject div")?.textContent,
           propsScript: Boolean(shell.querySelector("script[data-rtgl-props]")),
           listProps: list.props.items,
         };
       });
+      // x-shell, x-list, and an x-row and x-badge for each of the two items.
       check("every component hydrated with no mismatch",
-        result.ssr.hydrated === 2 && result.ssr.mismatched === 0,
+        result.ssr.hydrated === 6 && result.ssr.mismatched === 0 && result.hosts === 6,
         JSON.stringify(result.ssr));
       check("every live node is the node the server sent",
         result.adopted === result.liveCount, `${result.adopted}/${result.liveCount}`);
-      check("one render target per component", result.renderTargets === 2,
-        `${result.renderTargets}`);
+      check("one render target per component", result.stacked === 0, `${result.stacked} stacked`);
       check("the child got its props from the parent's patch",
         JSON.stringify(result.listProps) === JSON.stringify(["item 1", "item 2"]));
+      check("four levels deep render their props",
+        JSON.stringify(result.rows) === JSON.stringify(["item 1", "item 2"])
+          && JSON.stringify(result.badgeTexts)
+            === JSON.stringify(["about item 1 / false", "about item 2 / false"]),
+        JSON.stringify([result.rows, result.badgeTexts]));
+      check("props named like native properties arrive as values, not attributes",
+        result.badgeTitleIsObject && result.badgeHostAttributes.length === 0,
+        result.badgeHostAttributes.join(", "));
+      check("camelCase and boolean attributes stay on plain elements",
+        result.tabindex === "0" && result.maxlength === "5" && result.disabled === true,
+        `${result.tabindex} ${result.maxlength} ${result.disabled}`);
+      check("SVG keeps its attributes and foreign content",
+        result.viewBox === "0 0 10 10" && result.foreignText === "inside",
+        `${result.viewBox} ${result.foreignText}`);
       check("the serialized props script is gone", !result.propsScript);
 
-      await live.locator("button").click();
+      await live.locator("button#more").click();
       await live.waitForFunction(() =>
         document.querySelector("x-shell").shadowRoot.querySelector("x-list")
           .shadowRoot.querySelectorAll("li").length === 3);
