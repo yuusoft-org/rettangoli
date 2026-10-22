@@ -26,7 +26,7 @@
         "rtgl-check": "./src/cli/bin.js",
       },
       "dependencies": {
-        "@rettangoli/ui": "1.30.0",
+        "@rettangoli/ui": "1.30.1",
         "jempl": "1.0.1",
         "js-yaml": "^4.1.0",
         "oxc-parser": "^0.112.0",
@@ -1001,10 +1001,6 @@
     "@jridgewell/gen-mapping/@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.0", "", {}, "sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ=="],
 
     "@jridgewell/trace-mapping/@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.0", "", {}, "sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ=="],
-
-    "@rettangoli/check/@rettangoli/ui": ["@rettangoli/ui@1.30.0", "", { "dependencies": { "@rettangoli/fe": "1.5.0", "jempl": "1.0.1" } }, "sha512-NmM+GCXi+n92cT90Q+xPWtF3TcHFd7XZ6t41qKnm8txWgl3RaBGHQ/QputcBC+J214b/nFgLbv/WnJLTVJcnuA=="],
-
-    "@rettangoli/check/@rettangoli/ui/@rettangoli/fe": ["@rettangoli/fe@1.5.0", "", { "dependencies": { "immer": "^10.1.1", "jempl": "1.0.1", "js-yaml": "^4.1.0", "snabbdom": "^3.6.2", "vite": "^8.1.4" } }, "sha512-N3ZsjpqLHcrBs8Qt6O/S8tospEU5VYmWkZbIng3VV27H0l+aaSKIPXCVxrEALlQGLxsVK0v7AwK0gCTrgkhqow=="],
 
     "@rettangoli/fe/puty": ["puty@0.1.2", "", { "dependencies": { "js-yaml": "~4.1.0" }, "peerDependencies": { "vitest": ">=1.0.0" } }, "sha512-VNEwqORf0u/LiVdjyHPsIOKWC5z4uNuHhMgYu9WGea6u3YCP4OimQHQfWkw0DB/tE3KuWgPO0dhkM8uH4Yweig=="],
 
