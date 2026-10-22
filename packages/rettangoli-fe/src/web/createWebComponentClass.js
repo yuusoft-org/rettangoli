@@ -21,11 +21,21 @@ import {
   runPropChangedComponentLifecycle,
   runRenderComponentLifecycle,
 } from "../core/runtime/componentOrchestrator.js";
-import { createPropsProxy, installReactiveProps, toKebabCase } from "../core/runtime/props.js";
+import {
+  createPropsProxy,
+  installReactiveProps,
+  releaseNativeProps,
+  toKebabCase,
+} from "../core/runtime/props.js";
 import {
   buildObservedAttributes,
 } from "../core/runtime/componentRuntime.js";
 import { initializeComponentDom } from "./componentDom.js";
+import {
+  adoptServerProps,
+  prepareFirstPatch,
+  resetRenderTarget,
+} from "./hydration.js";
 import {
   createWebComponentUpdateHook,
   cancelPendingComponentUpdate,
@@ -178,6 +188,9 @@ export const createWebComponentClass = ({
         record.instances.add(this);
       }
 
+      // A prerendered root brings the props it was rendered with;
+      // they must be in place before the store reads them.
+      adoptServerProps({ host: this, propsSchemaKeys: this._propsSchemaKeys });
       initializeBoundStore(this.store);
       const dom = initializeComponentDom({
         host: this,
@@ -225,6 +238,8 @@ export const createWebComponentClass = ({
       runRenderComponentLifecycle({
         instance: this,
         createComponentUpdateHookFn: createWebComponentUpdateHook,
+        prepareFirstPatchFn: prepareFirstPatch,
+        resetRenderTargetFn: resetRenderTarget,
       });
     };
 
@@ -348,6 +363,7 @@ export const createWebComponentClass = ({
           });
         },
       });
+      releaseNativeProps({ source: this, allowedKeys: propsSchemaKeys });
       this.props = propsSchema
         ? createPropsProxy(this, propsSchemaKeys)
         : {};

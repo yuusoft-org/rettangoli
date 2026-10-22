@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/fe",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "Frontend framework for building reactive web components",
   "type": "module",
   "main": "./src/index.js",
@@ -49,6 +49,6 @@
     "test:package": "node test/package-smoke-test.js",
     "test:puty": "vitest run puty.spec.js --reporter=verbose",
     "test:vitest": "vitest run test/**/*.test.js --reporter=verbose",
-    "test:browser": "node test/web/style-module.browser.mjs"
+    "test:browser": "node test/web/style-module.browser.mjs && node test/web/hydration.browser.mjs"
   }
 }

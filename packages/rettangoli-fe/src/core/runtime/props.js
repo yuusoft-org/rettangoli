@@ -88,6 +88,28 @@ const ensureReactivePropValues = (source) => {
   return source[REACTIVE_PROP_VALUES];
 };
 
+/**
+ * Hands props a component doesn't declare back to the element's native
+ * setters. A hydrating patch keeps a prop named like a native property
+ * (`hidden`, `title`) as an own property on a child that isn't defined yet;
+ * a component that declares it reads it (installReactiveProps), and one that
+ * doesn't gets what the native setter would have done.
+ */
+export const releaseNativeProps = ({ source, allowedKeys = [] }) => {
+  for (const key of Object.keys(source)) {
+    if (allowedKeys.includes(key)) {
+      continue;
+    }
+    const descriptor = findPrototypePropertyDescriptor(source, key);
+    if (typeof descriptor?.set !== "function") {
+      continue;
+    }
+    const value = source[key];
+    delete source[key];
+    source[key] = value;
+  }
+};
+
 export const installReactiveProps = ({
   source,
   allowedKeys = [],

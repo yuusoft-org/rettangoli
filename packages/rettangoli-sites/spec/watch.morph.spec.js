@@ -1427,4 +1427,24 @@ describe('watch body morph behavior', () => {
     expect(dom.window.document.querySelector('#copy').textContent).toBe('Standards document');
     dom.window.close();
   });
+
+  it('requests a full reload for prerendered components, which a morph cannot recreate', async () => {
+    const { dom, send } = createWatchDom({
+      initialBody: '<p id="copy">First</p><x-card data-rtgl-hydrate=""></x-card>',
+      nextHtml: '<p id="copy">Second</p><x-card data-rtgl-hydrate="" data-rtgl-props=""><template shadowrootmode="open"><div data-rtgl-render-target="">Second</div></template><script type="application/json" data-rtgl-props="">{"label":"Second"}</script></x-card>',
+    });
+    const reloadReasons = [];
+    dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+      reloadReasons.push(event.detail.reason);
+      event.preventDefault();
+    });
+
+    send();
+    await waitForUpdate();
+
+    expect(reloadReasons).toEqual(['prerendered-components']);
+    expect(dom.window.document.querySelector('#copy').textContent).toBe('First');
+    expect(dom.window.document.querySelector('x-card template')).toBeNull();
+    dom.window.close();
+  });
 });

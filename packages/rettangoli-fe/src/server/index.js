@@ -3,10 +3,12 @@
  *
  * Nothing reachable from this entry touches a DOM global, so it can be imported
  * in a plain Node process — for HTML golden tests, static analysis over real
- * rendered output, or a server renderer.
+ * rendered output, or prerendering pages at build time.
  *
- * This includes Parts A and B1 of the SSR plan: one-view serialization plus a
- * recursive component renderer. Hydration remains deliberately out of scope.
+ * It holds the build half of prerendering: one-view serialization, the
+ * recursive component renderer, and a loader that reads an app's components
+ * from disk. The browser half, adopting that markup on the first render, is
+ * in the web runtime (`src/web/hydration.js`).
  */
 
 import { parse as parseTemplate } from "jempl";
@@ -19,6 +21,7 @@ export { serializeVNode } from "../core/server/serializeVNode.js";
 export { resolveComponentDefinition } from "../core/component/resolveComponentDefinition.js";
 export { bindStore } from "../core/runtime/store.js";
 export { renderComponent, renderDocument } from "./renderer.js";
+export { loadComponents } from "./loadComponents.js";
 
 /**
  * Renders a component's template to an HTML string.

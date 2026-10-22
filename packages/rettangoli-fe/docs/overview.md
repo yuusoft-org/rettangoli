@@ -63,6 +63,7 @@ i18n locale files are project-level files, not component files. See
 - `methods.md`: optional public imperative method contract
 - `constants.md`: optional constants contract
 - `i18n.md`: internationalization config, locale files, view usage, and locale switching
+- `prerender.md`: prerendering at build time, the first-render contract, hydration and registration order
 
 ## Contract Check
 

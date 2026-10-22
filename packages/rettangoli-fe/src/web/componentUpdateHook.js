@@ -7,6 +7,10 @@ export const RETTANGOLI_COMPONENT_MARKER = Symbol.for(
 
 const propsSnapshots = new WeakMap();
 const pendingUpdates = new WeakMap();
+// Components that had already rendered when a hydrating patch gave them
+// their first props (they upgraded before their parent): the update renders
+// with those props, as a new element would, but reports no change.
+const adoptedFirstProps = new WeakSet();
 const immutableSnapshots = new WeakMap();
 
 // Frozen JSON records cannot drift. Guard the shared prototypes as well:
@@ -241,6 +245,21 @@ const storePropsSnapshot = (element, props = {}) => {
   return snapshot;
 };
 
+/**
+ * A hydrating patch adopts a prerendered element instead of creating it,
+ * so snabbdom's `insert` hook never records the props it was given. Record
+ * them here: a not yet upgraded element gets the baseline its later updates
+ * compare against, and one that already rendered gets its first props as a
+ * render, not as a change.
+ */
+export const adoptComponentProps = (element, props = {}) => {
+  if (!isRettangoliComponent(element)) {
+    storePropsSnapshot(element, props);
+    return;
+  }
+  if (Object.keys(props).length > 0) adoptedFirstProps.add(element);
+};
+
 export const cancelPendingComponentUpdate = (element) => {
   pendingUpdates.delete(element);
   propsSnapshots.delete(element);
@@ -272,11 +291,12 @@ const runPendingUpdate = (element, pendingUpdate) => {
   }
 
   const previousProps = createOldProps(pendingUpdate.previousSnapshot);
+  const isFirstProps = adoptedFirstProps.delete(element);
 
   element.render();
   element.removeAttribute("isDirty");
 
-  if (element.handlers && element.handlers.handleOnUpdate) {
+  if (!isFirstProps && element.handlers && element.handlers.handleOnUpdate) {
     const deps = {
       ...element.deps,
       store: element.store,

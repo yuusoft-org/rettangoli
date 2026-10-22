@@ -5,6 +5,8 @@ function runWatchClient({
   transport = 'websocket',
 }) {
   const WATCH_CLIENT_SELECTOR = 'script[data-rtgl-watch-client]';
+  // Markup from @rettangoli/fe/server: declarative shadow roots and root props.
+  const SERVER_RENDERED_SELECTOR = 'template[shadowrootmode], [data-rtgl-hydrate], [data-rtgl-props]';
   const WATCH_ERROR_ID = 'rettangoli-watch-error';
   const KEY_ATTRIBUTES = ['data-rtgl-key', 'data-key', 'id'];
   const ASSET_CACHE_KEY = '__rtgl_watch_asset';
@@ -506,6 +508,12 @@ function runWatchClient({
       }
       if (initialScriptSignature !== scriptSignature(nextDocument)) {
         requestFullReload('script-change');
+        return false;
+      }
+      // Prerendered components arrive as declarative shadow roots, which
+      // DOMParser leaves as inert templates, so they can't be morphed in.
+      if (nextDocument.querySelector(SERVER_RENDERED_SELECTOR)) {
+        requestFullReload('prerendered-components');
         return false;
       }
 

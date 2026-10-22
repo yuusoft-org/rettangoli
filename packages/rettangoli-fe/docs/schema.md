@@ -94,9 +94,11 @@ methods:
 ### `ssr`
 
 - optional boolean, default `true`
-- set to `false` for components that cannot produce deterministic server markup
-- the server renderer emits an opted-out component as a bare host without a
-  declarative shadow root or `data-rtgl-hydrate` marker
+- set to `false` for components that cannot be prerendered into deterministic
+  markup at build time
+- the build-time renderer emits an opted-out component without a declarative
+  shadow root or `data-rtgl-hydrate` marker; the light DOM its parent gives it
+  is still written, so the parent can adopt it (`prerender.md`)
 - use this for genuinely client-only surfaces such as canvas, WebGL, or editor
   mounts; it is not an imperative `isSsr` runtime branch
 

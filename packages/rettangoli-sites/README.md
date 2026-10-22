@@ -22,7 +22,7 @@ my-site/
   pages/           # YAML or Markdown pages (with optional frontmatter)
   templates/       # YAML templates
   partials/        # YAML partials
-  data/            # Global YAML data
+  data/            # Global YAML or JSON data
   static/          # Static assets copied to _site/
   sites.config.yaml # Optional site settings
   _site/           # Generated output
@@ -33,8 +33,11 @@ my-site/
 - YAML pages rendered through `jempl` + `yahtml`
 - Markdown pages rendered through `markdown-it` + Shiki (default `rtglMarkdown`)
 - Frontmatter (`template`, `url`, `tags`, arbitrary page metadata)
-- Global data from `data/*.yaml` and optional inline `sites.config.yaml data`
+- Global data from `data/*.yaml`, `data/*.json`, and optional inline `sites.config.yaml data`
 - Remote YAML data from `imports.data`, fetched afresh during every build
+- One page per item of a data array with `_each`
+- Page-local data aliases with `_bind`, including dot paths into nested data
+- Prerendered `@rettangoli/fe` components with `components` and `renderComponent`
 - Collections built from page tags
 - `$if`, `$for`, `$partial`, template functions
 - Static file copying from `static/` to `_site/`
@@ -94,6 +97,9 @@ sitemap:
   pages:
     /:
       priority: 1
+components:
+  dirs:
+    - src/components
 ```
 
 In the default starter template, CDN runtime scripts are controlled via `data/site.yaml`:
@@ -177,7 +183,7 @@ Set `sitemap: false` in page frontmatter to exclude one page.
 - template/page content: `$partial: docs/nav`
 
 Use top-level `data` in `sites.config.yaml` for small global values that do not deserve their own `data/*.yaml` file.
-`sites.config.yaml data` and `data/*.yaml` are merged, with `data/*.yaml` winning on conflicts.
+`sites.config.yaml data` and `data/*` files are merged, with `data/*` files winning on conflicts.
 Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
 Imported templates and partials are cached on disk under `.rettangoli/sites/imports/{templates|partials}/` (hashed filenames).
@@ -185,6 +191,15 @@ Alias/url/hash mapping is tracked in `.rettangoli/sites/imports/index.yaml`.
 Build is cache-first: if a cached file exists, it is used without a network request.
 
 When an alias exists both remotely and locally, local files under `templates/` and `partials/` override the imported one.
+
+### JSON data
+
+`data/*.json` files load as global data under their file name, exactly like `data/*.yaml` (Sites >= 1.5.0, rtgl >= 2.3.0). `data/catalog.json` is available as `catalog`.
+This suits data written by a script that runs before Sites, such as a catalog fetched from an API.
+
+- A JSON file and a YAML file with the same name (for example `data/catalog.json` and `data/catalog.yaml` or `.yml`) fail the build. Keep only one of them.
+- Invalid JSON fails the build with the file path.
+- A local JSON file replaces a remote `imports.data` alias of the same name, like a local YAML file.
 
 ### Remote data
 
@@ -208,15 +223,19 @@ The parsed document is available under its alias, just like `data/directory.yaml
 - HTTP, network, timeout, and YAML parsing errors fail the build with the alias and URL. Each request has a 30-second timeout, including reading its body.
 - Watch mode fetches again when a rebuild runs; it does not poll remote URLs or rebuild just because remote content changes.
 - Remote data is available to pages, templates, partials, `_bind`, and sitemap generation. Documents may contain objects, arrays, or scalar values, matching local YAML data.
-- A local `data/<alias>.yaml` or `.yml` replaces the entire imported value for that alias. The remote URL is still fetched and must succeed. Remove the local file when switching that alias to the remote source.
+- A local `data/<alias>.yaml`, `.yml`, or `.json` replaces the entire imported value for that alias. The remote URL is still fetched and must succeed. Remove the local file when switching that alias to the remote source.
 - Resolved data is merged over inline `data` defaults; page frontmatter takes precedence over global data. Arrays are replaced, not concatenated.
 - Fetching happens only in the build process. Visitors receive generated static output; the framework adds no browser fetch for the YAML and does not copy the source YAML into `_site/`.
 
-Data imports make values available for rendering; they do not automatically generate one page per record. Custom preparation scripts that run before Sites must separately obtain their input data.
+Data imports make values available for rendering. To generate one page per record, use [`_each`](#one-page-per-item-_each) with any global data array, remote or local. Custom preparation scripts that run before Sites must separately obtain their input data; they can write it to `data/<name>.json`.
 
 If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it will be copied to `_site/llms.txt`.
 
 ## System Frontmatter
+
+The system keys `_bind` and `_each` configure how a page is built. They are removed from public frontmatter before rendering and collections, so templates and `collections` never see them.
+
+### Page-local data (`_bind`)
 
 Use `_bind` to map global data keys into page-local variables.
 
@@ -227,23 +246,53 @@ Example:
 template: base
 _bind:
   docs: feDocs
+  explore: prerender.explore
 ---
 ```
 
 This resolves `docs` from the global `feDocs` key (local data, inline config, or a remote data import) for that page.
+Values may be dot paths into nested data (Sites >= 1.5.0, rtgl >= 2.3.0): `explore` resolves to the `explore` field of the global `prerender` data.
 `_bind` is a system property and is not exposed to templates directly.
 
 Rules:
 
 - `_bind` must be an object
 - each `_bind` value must be a non-empty string
-- each `_bind` value must point to an existing global data key
+- each `_bind` value must point to existing global data: an exact top-level key wins (including a key that itself contains a dot); otherwise the value is read as a dot path such as `prerender.explore` or `catalog.stories.0`
 - `_bind` is removed from public frontmatter before rendering/collections
 
 Binding order:
 
 1. build page context from `deepMerge(globalData, frontmatterWithoutSystemKeys)`
 2. apply `_bind` aliases on top (alias wins for that key)
+
+### One page per item (`_each`)
+
+Use `_each` to build one page per item of a global data array (Sites >= 1.5.0, rtgl >= 2.3.0). One page file then produces as many pages as the array has items.
+
+```yaml
+---
+template: base
+_each:
+  data: prerender.stories   # dot path into global data; must resolve to an array
+  as: story                 # variable name each item is bound to
+  url: /stories/${story.id}/     # URL of each generated page
+title: ${story.title}
+description: ${story.summary}
+---
+- h1: ${story.title}
+```
+
+With two stories `first` and `second`, this writes `_site/stories/first/index.html` and `_site/stories/second/index.html`.
+
+- `_each` must be an object with exactly the non-empty strings `data`, `as`, and `url`.
+- `data` resolves like a `_bind` value (exact key first, then dot path) and must point to an array. A missing path or a value that is not an array fails the build. An empty array produces no pages.
+- `as` must be a variable name made of letters, digits, and underscores. It cannot be `collections`, `page`, `build`, or `content`, or a name already used by `_bind`.
+- `url` is rendered for each item, then normalized and validated like frontmatter `url`. The page file's own path is not used as a URL, and `_each` cannot be combined with frontmatter `url`.
+- For each item, every public frontmatter value is rendered with the same template functions pages use, against global data, `_bind` aliases, and the item. Whole-expression values keep their type, so `tags: ${story.genres}` gives an array.
+- The item is available as `as` (here `story`) in the page content and its template, next to the rendered frontmatter, `page.url`, and `url`.
+- Generated pages are ordinary pages: they appear in tag collections and the sitemap, and duplicate URLs between generated pages, or between generated and other pages, fail the build. Errors about one generated page name the page file and the item index, for example `/pages/stories/story.yaml (_each item 1)`.
+- Markdown pages work too. Markdown content is not templated, so it is the same for every item; use frontmatter and the template for item values. With `build.keepMarkdownFiles`, the source `.md` is copied to each generated URL path, such as `_site/stories/first.md`.
 
 ## Reusable Asset Package
 
@@ -325,12 +374,62 @@ Available in YAML templates/pages without extra setup:
 - `chunk(list, size = 1, pad = false, fillValue = null)`
 - `md(content)`
 - `toQueryString(object)`
+- `renderComponent(tag, props = {})` (requires `components`; see [Prerendered components](#prerendered-components))
 
 `formatDate` tokens: `YYYY`, `MMM`, `MM`, `DD`, `D`, `HH`, `mm`, `ss`.
 `decodeURI`/`decodeURIComponent` return the original input when decoding fails.
 `sort` supports `order` as `asc` or `desc` (default: `asc`), accepts dot-path keys (for example `data.date`), and returns a new array.
 `chunk` splits arrays into rows of `size`; with `pad = true`, the last row is padded with `fillValue`.
 `md` returns raw rendered HTML from Markdown for template insertion.
+
+## Prerendered components
+
+Sites can render `@rettangoli/fe` components into the pages it builds, so each page is a static file that has its component markup before any JavaScript runs, and the browser bundle adopts that markup (see `@rettangoli/fe`'s `docs/prerender.md`) (Sites >= 1.5.0, rtgl >= 2.3.0, with `@rettangoli/fe` >= 1.6.0 in the project).
+Configure the directories that hold the components in `sites.config.yaml`:
+
+```yaml
+components:
+  dirs:
+    - src/components
+    - src/pages
+```
+
+- `dirs` is a required, non-empty list of directories, relative to the site root.
+- The site project must have `@rettangoli/fe` 1.6.0 or later installed, whose `@rettangoli/fe/server` entry exports `loadComponents`. Sites resolves `@rettangoli/fe/server` from the site root, so components are rendered by the same `@rettangoli/fe` version the site's browser bundle uses. If it cannot be resolved, the build fails and says so.
+- Components are loaded once per build. In watch mode the component directories are watched too, and an edited store or methods file is imported again on the next rebuild; modules those files import stay cached until watch restarts. Each rebuild imports the stores and methods afresh, and Node keeps every copy, so restart a long watch session now and then. A change to `components.dirs` itself takes effect when watch restarts. A page holding prerendered components reloads in full on each update, since a morph can't recreate declarative shadow roots.
+- `renderComponent` passes props only: a component that reads setup constants or i18n messages renders without them, and its first client render won't match.
+
+Then call `renderComponent(tag, props)` from pages, templates, or partials. It returns the component HTML as raw HTML, like `md()`. Sites passes `props` through unchanged and asks `@rettangoli/fe` to serialize them into the markup (`serializeProps: true`), so the browser component can pick them up:
+
+```yaml
+- html:
+    - head:
+        - title: ${title}
+    - body:
+        - ${renderComponent("x-app", app)}
+```
+
+Supported call forms:
+
+- the call as a whole list item: `- ${renderComponent("x-app", app)}` (quoted or not)
+- the call as an element's value: `- main: ${renderComponent("x-app", app)}`
+- a string literal tag in double or single quotes, or a variable holding the tag
+- props as a variable or dot path (`app`, `app.props`, `story`); omitted or missing props render with `{}`
+
+The raw HTML is emitted unescaped anywhere an element can hold content, including `head` and `script`.
+A call inside a longer string, such as `"before ${renderComponent('x-app', app)}"`, does not insert HTML; it renders `[object Object]`.
+
+Errors thrown while rendering a component fail the build with the tag and the page path. Calling `renderComponent` without `components` in `sites.config.yaml` fails the build and asks you to configure `components.dirs`.
+
+### Untrusted values in attributes
+
+An attribute written in an element's key (`meta content="${description}"`) is substituted before the key is parsed, so a value containing `"` ends the attribute early and can add attributes of its own. For data you don't control, such as a catalog read from an API, put the attribute in the element's value instead, where it is escaped:
+
+```yaml
+- meta name="description":
+    content: ${description}
+    children: []
+```
 
 ## Screenshots
 

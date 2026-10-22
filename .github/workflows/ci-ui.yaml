@@ -120,6 +120,16 @@ jobs:
         run: bun run test
         working-directory: ./packages/rettangoli-fe
 
+      # Real-browser checks jsdom can't make: declarative shadow DOM parsing
+      # and hydration (test/web/hydration.browser.mjs), and the vendored
+      # snabbdom style module.
+      - name: Install Chromium For FE Browser Checks
+        run: bunx playwright install --with-deps chromium
+
+      - name: Run FE Browser Checks
+        run: bun run test:browser
+        working-directory: ./packages/rettangoli-fe
+
       - name: Run UI Tests
         run: bun run test
         working-directory: ./packages/rettangoli-ui
