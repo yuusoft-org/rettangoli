@@ -37,7 +37,7 @@ my-site/
 - Remote YAML data from `imports.data`, fetched afresh during every build
 - One page per item of a data array with `_each`
 - Page-local data aliases with `_bind`, including dot paths into nested data
-- Server-rendered `@rettangoli/fe` components with `components` and `renderComponent`
+- Prerendered `@rettangoli/fe` components with `components` and `renderComponent`
 - Collections built from page tags
 - `$if`, `$for`, `$partial`, template functions
 - Static file copying from `static/` to `_site/`
@@ -374,7 +374,7 @@ Available in YAML templates/pages without extra setup:
 - `chunk(list, size = 1, pad = false, fillValue = null)`
 - `md(content)`
 - `toQueryString(object)`
-- `renderComponent(tag, props = {})` (requires `components`; see [Server-rendered components](#server-rendered-components))
+- `renderComponent(tag, props = {})` (requires `components`; see [Prerendered components](#prerendered-components))
 
 `formatDate` tokens: `YYYY`, `MMM`, `MM`, `DD`, `D`, `HH`, `mm`, `ss`.
 `decodeURI`/`decodeURIComponent` return the original input when decoding fails.
@@ -382,9 +382,9 @@ Available in YAML templates/pages without extra setup:
 `chunk` splits arrays into rows of `size`; with `pad = true`, the last row is padded with `fillValue`.
 `md` returns raw rendered HTML from Markdown for template insertion.
 
-## Server-rendered components
+## Prerendered components
 
-Sites can embed server-rendered `@rettangoli/fe` components in generated pages, so a page has its component markup before any JavaScript runs (Sites >= 1.5.0, rtgl >= 2.3.0, with `@rettangoli/fe` >= 1.6.0 in the project).
+Sites can render `@rettangoli/fe` components into the pages it builds, so each page is a static file that has its component markup before any JavaScript runs, and the browser bundle adopts that markup (see `@rettangoli/fe`'s `docs/prerender.md`) (Sites >= 1.5.0, rtgl >= 2.3.0, with `@rettangoli/fe` >= 1.6.0 in the project).
 Configure the directories that hold the components in `sites.config.yaml`:
 
 ```yaml
@@ -396,7 +396,7 @@ components:
 
 - `dirs` is a required, non-empty list of directories, relative to the site root.
 - The site project must have `@rettangoli/fe` 1.6.0 or later installed, whose `@rettangoli/fe/server` entry exports `loadComponents`. Sites resolves `@rettangoli/fe/server` from the site root, so components are rendered by the same `@rettangoli/fe` version the site's browser bundle uses. If it cannot be resolved, the build fails and says so.
-- Components are loaded once per build. In watch mode the component directories are watched too, and an edited store or methods file is imported again on the next rebuild; modules those files import stay cached until watch restarts. A page holding server-rendered components reloads in full on each update, since a morph can't recreate declarative shadow roots.
+- Components are loaded once per build. In watch mode the component directories are watched too, and an edited store or methods file is imported again on the next rebuild; modules those files import stay cached until watch restarts. A page holding prerendered components reloads in full on each update, since a morph can't recreate declarative shadow roots.
 - `renderComponent` passes props only: a component that reads setup constants or i18n messages renders without them, and its first client render won't match.
 
 Then call `renderComponent(tag, props)` from pages, templates, or partials. It returns the component HTML as raw HTML, like `md()`. Sites passes `props` through unchanged and asks `@rettangoli/fe` to serialize them into the markup (`serializeProps: true`), so the browser component can pick them up:

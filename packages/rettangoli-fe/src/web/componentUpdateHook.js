@@ -246,7 +246,7 @@ const storePropsSnapshot = (element, props = {}) => {
 };
 
 /**
- * A hydrating patch adopts a server-rendered element instead of creating it,
+ * A hydrating patch adopts a prerendered element instead of creating it,
  * so snabbdom's `insert` hook never records the props it was given. Record
  * them here: a not yet upgraded element gets the baseline its later updates
  * compare against, and one that already rendered gets its first props as a

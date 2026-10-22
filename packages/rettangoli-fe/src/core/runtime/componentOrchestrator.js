@@ -208,7 +208,7 @@ export const runPropChangedComponentLifecycle = ({
 export const runRenderComponentLifecycle = ({
   instance,
   createComponentUpdateHookFn,
-  // The web binding adopts server-rendered markup on the first patch and
+  // The web binding adopts prerendered markup on the first patch and
   // clears a render target a failed first patch left half built.
   prepareFirstPatchFn = ({ instance: target }) => target.renderTarget,
   resetRenderTargetFn = () => {},

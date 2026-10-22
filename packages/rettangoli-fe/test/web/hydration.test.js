@@ -105,7 +105,7 @@ const createFixture = ({ childItems = ({ props }) => props.items } = {}) => {
 
 beforeEach(() => {
   frames = [];
-  delete globalThis.__rtglSsr;
+  delete globalThis.__rtglHydration;
   vi.stubGlobal("requestAnimationFrame", (callback) => frames.push(callback));
   vi.stubGlobal("CSSStyleSheet", class { replaceSync() {} });
 });
@@ -113,10 +113,10 @@ beforeEach(() => {
 afterEach(() => {
   document.body.replaceChildren();
   vi.unstubAllGlobals();
-  delete globalThis.__rtglSsr;
+  delete globalThis.__rtglHydration;
 });
 
-describe("hydrating server-rendered components", () => {
+describe("hydrating prerendered components", () => {
   it("keeps the server's nodes, binds listeners and passes props down", () => {
     const fixture = createFixture();
     serverRender(fixture.html({ title: "Hi", items: [1, 2] }));
@@ -142,7 +142,7 @@ describe("hydrating server-rendered components", () => {
     expect(host.hasAttribute("data-rtgl-hydrate")).toBe(false);
     expect(childHost.hasAttribute("data-rtgl-hydrate")).toBe(false);
     expect(host.querySelector("script[data-rtgl-props]")).toBeNull();
-    expect(globalThis.__rtglSsr).toEqual({ hydrated: 2, mismatched: 0, reasons: [] });
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 2, mismatched: 0, reasons: [] });
   });
 
   it("assigns the serialized root props before the store is created", () => {
@@ -171,8 +171,8 @@ describe("hydrating server-rendered components", () => {
     expect([...renderTargetOf(childHost).querySelectorAll("li")].map((li) => li.textContent))
       .toEqual(["Hi 2"]);
     expect(childHost.shadowRoot.querySelectorAll("li")).toHaveLength(1);
-    expect(globalThis.__rtglSsr.mismatched).toBeGreaterThan(0);
-    expect(globalThis.__rtglSsr.reasons.join("\n")).toContain("text differs");
+    expect(globalThis.__rtglHydration.mismatched).toBeGreaterThan(0);
+    expect(globalThis.__rtglHydration.reasons.join("\n")).toContain("text differs");
   });
 
   it("replaces a subtree whose structure differs, without duplicating it", () => {
@@ -196,9 +196,9 @@ describe("hydrating server-rendered components", () => {
     expect(renderTargetOf(childHost).querySelector("ul")).not.toBe(ul);
     // The parent's own tree was still adopted.
     expect(renderTargetOf(host).querySelector("h1")).toBe(heading);
-    expect(globalThis.__rtglSsr.hydrated).toBe(1);
-    expect(globalThis.__rtglSsr.mismatched).toBe(1);
-    expect(globalThis.__rtglSsr.reasons[0]).toMatch(/expected 3 child node\(s\), found 2/);
+    expect(globalThis.__rtglHydration.hydrated).toBe(1);
+    expect(globalThis.__rtglHydration.mismatched).toBe(1);
+    expect(globalThis.__rtglHydration.reasons[0]).toMatch(/expected 3 child node\(s\), found 2/);
   });
 
   it("replaces a custom element that restructured its own children", () => {
@@ -260,7 +260,7 @@ describe("hydrating server-rendered components", () => {
     expect(renderTargetOf(host).querySelector("div")).toBe(box);
     expect(box.getAttribute("data-tone")).toBe("light");
     expect(box.hasAttribute("data-stale")).toBe(false);
-    expect(globalThis.__rtglSsr.mismatched).toBe(1);
+    expect(globalThis.__rtglHydration.mismatched).toBe(1);
   });
 
   it("leaves attributes a custom element set on itself", () => {
@@ -281,7 +281,7 @@ describe("hydrating server-rendered components", () => {
 
     const flag = renderTargetOf(document.querySelector(name)).querySelector(flagName);
     expect(flag.hasAttribute("has-label")).toBe(true);
-    expect(globalThis.__rtglSsr).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
   });
 
   it("still hydrates the parent when a child is defined first, and the child catches up", () => {
@@ -299,7 +299,7 @@ describe("hydrating server-rendered components", () => {
     expect([...renderTargetOf(childHost).querySelectorAll("li")].map((li) => li.textContent))
       .toEqual(["Hi 1", "Hi 2"]);
     expect(childHost.shadowRoot.querySelectorAll("ul")).toHaveLength(1);
-    expect(globalThis.__rtglSsr.mismatched).toBe(1);
+    expect(globalThis.__rtglHydration.mismatched).toBe(1);
   });
 
   it("renders normally when a marked host has nothing to adopt", () => {
@@ -317,7 +317,7 @@ describe("hydrating server-rendered components", () => {
     const host = document.querySelector(name);
     expect(renderTargetOf(host).textContent).toBe("Fresh");
     expect(host.hasAttribute("data-rtgl-hydrate")).toBe(false);
-    expect(globalThis.__rtglSsr).toBeUndefined();
+    expect(globalThis.__rtglHydration).toBeUndefined();
   });
 
   it("leaves unmarked components exactly as before", () => {
@@ -331,7 +331,7 @@ describe("hydrating server-rendered components", () => {
     customElements.define(name, createComponent(config, {}));
     const host = document.body.appendChild(document.createElement(name));
     expect(renderTargetOf(host).textContent).toBe("Client");
-    expect(globalThis.__rtglSsr).toBeUndefined();
+    expect(globalThis.__rtglHydration).toBeUndefined();
   });
 });
 
@@ -385,7 +385,7 @@ describe("hydration edge cases", () => {
     expect(childHost.hasAttribute("title")).toBe(false);
     expect(childHost.hasAttribute("hidden")).toBe(false);
     expect(renderTargetOf(childHost).textContent).toBe("From an object false");
-    expect(globalThis.__rtglSsr).toEqual({ hydrated: 2, mismatched: 0, reasons: [] });
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 2, mismatched: 0, reasons: [] });
   });
 
   it("keeps camelCase attributes on plain elements", () => {
@@ -401,7 +401,7 @@ describe("hydration edge cases", () => {
     const target = renderTargetOf(document.querySelector(name));
     expect(target.querySelector("div").getAttribute("tabindex")).toBe("0");
     expect(target.querySelector("input").getAttribute("maxlength")).toBe("5");
-    expect(globalThis.__rtglSsr).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
   });
 
   it("adopts text the HTML parser joined", () => {
@@ -426,7 +426,7 @@ describe("hydration edge cases", () => {
     expect(target.querySelector("#greeting")).toBe(greeting);
     expect(greeting.textContent).toBe("Hello Ada!");
     expect(target.querySelector("#items").textContent).toBe("abc");
-    expect(globalThis.__rtglSsr).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
   });
 
   it("adopts the light DOM a parent gives an ssr: false child", () => {
@@ -450,7 +450,7 @@ describe("hydration edge cases", () => {
     const childHost = renderTargetOf(document.querySelector(parentName)).querySelector(childName);
     expect(childHost.querySelector("#slotted")).toBe(slotted);
     expect(renderTargetOf(childHost).textContent).toBe("Client only");
-    expect(globalThis.__rtglSsr).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
   });
 
   it("gives an ssr: false root its serialized props", () => {
@@ -496,7 +496,7 @@ describe("hydration edge cases", () => {
     customElements.define(name, createComponent(config, {}));
 
     expect(renderTargetOf(document.querySelector(name)).textContent).toBe("From props");
-    expect(globalThis.__rtglSsr).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
   });
 
   it("still notices a prop changed in place after its child was adopted", () => {
@@ -565,7 +565,7 @@ describe("hydration edge cases", () => {
 
     expect(renderTargetOf(document.querySelector(name)).querySelector("div")).toBe(box);
     expect(box.className).toBe("card");
-    expect(globalThis.__rtglSsr.mismatched).toBe(1);
+    expect(globalThis.__rtglHydration.mismatched).toBe(1);
   });
 
   it("recovers when the hydrating patch throws, with one tree", () => {
@@ -631,8 +631,8 @@ describe("hydration edge cases", () => {
 
     customElements.define(name, createComponent(config, {}));
 
-    expect(globalThis.__rtglSsr.mismatched).toBe(1);
-    expect(globalThis.__rtglSsr.reasons).toHaveLength(100);
+    expect(globalThis.__rtglHydration.mismatched).toBe(1);
+    expect(globalThis.__rtglHydration.reasons).toHaveLength(100);
   });
 
   it("renders without props when the serialized props can't be read", () => {
@@ -650,7 +650,7 @@ describe("hydration edge cases", () => {
 
     expect(renderTargetOf(document.querySelector(name)).textContent).toBe("none");
     expect(errors).toHaveBeenCalledWith(
-      expect.stringContaining("has unreadable server props"),
+      expect.stringContaining("has unreadable prerendered props"),
       expect.any(Error),
     );
     errors.mockRestore();

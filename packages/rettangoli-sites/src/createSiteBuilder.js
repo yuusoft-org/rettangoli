@@ -712,7 +712,7 @@ export function createSiteBuilder({
 
     readTemplatesRecursively(templatesDir);
 
-    // Load server-rendered components once per build, before any page renders.
+    // Load prerendered components once per build, before any page renders.
     const componentRegistry = components == null
       ? null
       : await loadComponentRegistry({ components, rootDir: absoluteRootDir, loadComponentRenderer });

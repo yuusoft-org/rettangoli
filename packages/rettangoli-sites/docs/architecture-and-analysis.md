@@ -6,7 +6,7 @@
 
 - Inputs: YAML/Markdown pages, YAML templates/partials, YAML/JSON data, static assets
 - Output: HTML and copied files under `_site/`
-- Rendering stack: `jempl` + `yahtml` + `markdown-it` (+ async Shiki highlighting), plus optional server-rendered `@rettangoli/fe` components resolved from the site project
+- Rendering stack: `jempl` + `yahtml` + `markdown-it` (+ async Shiki highlighting), plus optional prerendered `@rettangoli/fe` components resolved from the site project
 - Runtime tooling: build + watch dev server
 
 Screenshot capture is handled by `@rettangoli/vt`, not by `@rettangoli/sites`.

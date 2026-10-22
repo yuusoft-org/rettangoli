@@ -1,27 +1,27 @@
 /**
- * Adopting server-rendered markup on a component's first render.
+ * Adopting prerendered markup on a component's first render.
  *
- * `@rettangoli/fe/server` writes each component into its own declarative
- * shadow root and marks the host with `data-rtgl-hydrate`. The browser parses
- * that markup before any application JavaScript runs, so when the component
- * upgrades its render target already holds the server's tree.
+ * At build time, `@rettangoli/fe/server` writes each component into its own
+ * declarative shadow root and marks the host with `data-rtgl-hydrate`. The
+ * browser parses that markup before any application JavaScript runs, so when
+ * the component upgrades its render target already holds the prerendered tree.
  *
  * Snabbdom's `patch(element, vnode)` cannot use that tree: it synthesises an
  * old vnode with no children, so the client tree would be appended beside the
- * server's. Instead the first patch diffs against a vnode tree built here,
+ * prerendered one. Instead the first patch diffs against a vnode tree built here,
  * which mirrors the live DOM node for node:
  *
  *  - `sel` and `key` are copied from the client's own vnode, so `sameVnode`
- *    pairs each server node with the vnode that describes it;
+ *    pairs each prerendered node with the vnode that describes it;
  *  - `elm` points at the real node, so the patch keeps it;
  *  - `attrs` and `class` are read from the element, so values the client
- *    renders differently are corrected, and attributes only the server wrote
+ *    renders differently are corrected, and attributes only the build wrote
  *    on a plain element are removed;
  *  - `props`, `on` and `hook` stay empty, so properties are assigned, every
  *    listener is bound and child components receive their inputs, exactly as
  *    if the nodes were new.
  *
- * Where the server's structure differs from the client's, that subtree is
+ * Where the prerendered structure differs from the client's, that subtree is
  * given an old vnode that matches nothing, and the patch replaces it with a
  * fresh client render. A mismatch costs the benefit for that subtree, never
  * correctness. A custom element whose children differ is replaced whole:
@@ -109,7 +109,7 @@ const mirrorAttrs = ({ vnode, elm, isCustom, isRoot, report, path }) => {
     }
   }
 
-  // Attributes only the server wrote are removed from plain elements. The
+  // Attributes only the build wrote are removed from plain elements. The
   // render target keeps its marker, and custom elements keep what they set
   // on themselves.
   if (!isCustom && !isRoot) {
@@ -169,7 +169,7 @@ const isTextVNode = (vnode) =>
 
 // The HTML parser joins text the serializer wrote side by side, so a run of
 // text vnodes (`p: ["Hello ", "${name}"]`) arrives as one text node, and
-// empty text as no node at all. Split the server's text back into one node
+// empty text as no node at all. Split the prerendered text back into one node
 // per vnode where it reads the same; anything else is left for the zip to
 // report.
 const splitJoinedText = (children, elm) => {
@@ -336,7 +336,7 @@ zipElement = ({ vnode, elm, report, path }) => {
 };
 
 /**
- * Builds the old vnode for a first patch over server markup.
+ * Builds the old vnode for a first patch over prerendered markup.
  *
  * @param {object} options
  * @param {object} options.vDom          the client's first vnode tree (root `div`)
@@ -355,7 +355,7 @@ export const createHydrationVNode = ({ vDom, renderTarget }) => {
   });
 
   // The render target itself always stays. When its children can't be paired
-  // at all, every server node is replaced.
+  // at all, every prerendered node is replaced.
   if (!children) {
     const nodes = childNodesOf(renderTarget);
     report.replaced += nodes.length;
@@ -383,15 +383,16 @@ export const createHydrationVNode = ({ vDom, renderTarget }) => {
 };
 
 const getHydrationState = () => {
-  if (!globalThis.__rtglSsr) {
-    globalThis.__rtglSsr = { hydrated: 0, mismatched: 0, reasons: [] };
+  if (!globalThis.__rtglHydration) {
+    globalThis.__rtglHydration = { hydrated: 0, mismatched: 0, reasons: [] };
   }
-  return globalThis.__rtglSsr;
+  return globalThis.__rtglHydration;
 };
 
 /**
- * Counts each hydrated host on `globalThis.__rtglSsr`, so an app's tests can
- * assert that server and client rendered the same tree (`mismatched === 0`).
+ * Counts each hydrated host on `globalThis.__rtglHydration`, so an app's
+ * tests can assert that the build and the client rendered the same tree
+ * (`mismatched === 0`).
  * A mismatch is silent otherwise: the patch corrects it and the page looks
  * right.
  */
@@ -409,8 +410,8 @@ export const recordHydration = ({ elementName, report }) => {
 };
 
 /**
- * The old vnode for a component's first patch: the server's tree when the
- * host was server-rendered, otherwise the empty render target. The host's
+ * The old vnode for a component's first patch: the prerendered tree when the
+ * host was prerendered, otherwise the empty render target. The host's
  * marker is removed either way, so a later first render (after an error)
  * never tries to adopt again.
  */
@@ -420,7 +421,7 @@ export const prepareFirstPatch = ({ instance, vDom }) => {
     return renderTarget;
   }
   instance.removeAttribute(HYDRATE_ATTRIBUTE);
-  // The server's copy of the styles; the adopted stylesheets carry them now,
+  // The prerendered copy of the styles; the adopted stylesheets carry them now,
   // and a hot update replaces those.
   for (const node of Array.from(instance.shadow?.children || [])) {
     if (String(node.localName).toLowerCase() === "style") node.remove();
@@ -443,7 +444,7 @@ const retriedFirstRender = new WeakSet();
  * Clears what a failed first patch left behind, so the next render starts
  * from an empty render target instead of patching beside a partial tree,
  * and draws the component once more from scratch, so a failed adoption of
- * server markup doesn't leave it empty.
+ * prerendered markup doesn't leave it empty.
  */
 export const resetRenderTarget = ({ instance }) => {
   instance.renderTarget?.replaceChildren?.();
@@ -457,13 +458,13 @@ export const resetRenderTarget = ({ instance }) => {
 };
 
 /**
- * A server-rendered root carries its props as JSON
+ * A prerendered root carries its props as JSON
  * (`renderComponent({ serializeProps: true })`), because no parent renders it
  * on the client; the host is marked `data-rtgl-props`. They are assigned
  * before the store is created, so the first client render sees the inputs the
- * server used, including for a root marked `ssr: false`. Props set on the
- * element before it upgraded win; an attribute is only a fallback, as on the
- * server.
+ * build used, including for a root marked `ssr: false`. Props set on the
+ * element before it upgraded win; an attribute is only a fallback, as at build
+ * time.
  */
 export const adoptServerProps = ({ host, propsSchemaKeys = [] }) => {
   if (typeof host.hasAttribute !== "function" || !host.hasAttribute(SERVER_PROPS_ATTRIBUTE)) {
@@ -482,7 +483,7 @@ export const adoptServerProps = ({ host, propsSchemaKeys = [] }) => {
   try {
     props = JSON.parse(script.textContent || "{}");
   } catch (error) {
-    console.error(`[Hydration] <${host.localName}> has unreadable server props:`, error);
+    console.error(`[Hydration] <${host.localName}> has unreadable prerendered props:`, error);
     return;
   }
   if (!props || typeof props !== "object" || Array.isArray(props)) {

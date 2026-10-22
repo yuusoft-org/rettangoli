@@ -510,10 +510,10 @@ function runWatchClient({
         requestFullReload('script-change');
         return false;
       }
-      // Server-rendered components arrive as declarative shadow roots, which
+      // Prerendered components arrive as declarative shadow roots, which
       // DOMParser leaves as inert templates, so they can't be morphed in.
       if (nextDocument.querySelector(SERVER_RENDERED_SELECTOR)) {
-        requestFullReload('server-rendered-components');
+        requestFullReload('prerendered-components');
         return false;
       }
 

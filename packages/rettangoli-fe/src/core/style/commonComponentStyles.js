@@ -6,7 +6,7 @@
  * binding installs them as a constructable stylesheet.
  *
  * `:host` is `display: contents`, as the web binding also sets on the host
- * element itself, so server-rendered markup lays out the same before any
+ * element itself, so prerendered markup lays out the same before any
  * script has run (an undefined element is otherwise `display: inline`).
  */
 export const COMMON_COMPONENT_STYLE_TEXT = `

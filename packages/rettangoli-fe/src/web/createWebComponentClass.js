@@ -183,7 +183,7 @@ export const createWebComponentClass = ({
         record.instances.add(this);
       }
 
-      // A server-rendered root brings the props the server rendered it with;
+      // A prerendered root brings the props it was rendered with;
       // they must be in place before the store reads them.
       adoptServerProps({ host: this, propsSchemaKeys: this._propsSchemaKeys });
       initializeBoundStore(this.store);

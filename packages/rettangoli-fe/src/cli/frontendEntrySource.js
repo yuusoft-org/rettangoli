@@ -410,8 +410,8 @@ ${i18nRuntimeSource}
 ${hmrStateDeclaration}
 
 const __rtglRegistrationOrder = ${JSON.stringify(registrationOrder)};
-// Server-rendered hosts upgrade as soon as they are defined, so a page that
-// holds server markup defines parents before the components they render.
+// Prerendered hosts upgrade as soon as they are defined, so a page that
+// holds prerendered markup defines parents before the components they render.
 const __rtglHydrationRegistrationOrder = ${JSON.stringify(hydrationRegistrationOrder)};
 const __rtglHasServerMarkup =
   typeof document !== "undefined" &&

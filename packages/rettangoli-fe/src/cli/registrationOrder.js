@@ -1,15 +1,15 @@
 /**
- * The order components are defined in when a page holds server-rendered
+ * The order components are defined in when a page holds prerendered
  * markup: parents before the components they render.
  *
- * Server-rendered hosts are already in the document when the bundle runs, so
+ * Prerendered hosts are already in the document when the bundle runs, so
  * each one upgrades the moment its element is defined. A child defined before
  * its parent renders once with no props (the parent hasn't assigned them
  * yet), which can't match the server's markup. Defined after its parent, it
  * finds the props the parent's hydrating patch assigned to the not yet
  * upgraded element, and its first render matches.
  *
- * Without server markup the order stays the default one (categories, then
+ * Without prerendered markup the order stays the default one (categories, then
  * components, alphabetically), so apps that don't prerender see no change.
  */
 

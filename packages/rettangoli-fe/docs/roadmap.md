@@ -68,15 +68,15 @@ This roadmap is the planning source for `packages/rettangoli-fe`.
   - a `ci-ui.yaml` matrix that builds both examples, captures and reports via
     the pinned VT browser image, and uploads failure artifacts
 
-7. `[P1][DONE]` Server rendering and hydration (`ssr.md`)
-- Server: recursive renderer, `loadComponents` for build tools, and serialized
-  root props (`renderComponent({ serializeProps: true })`).
-- Browser: the first render of a `data-rtgl-hydrate` host adopts the server's
-  nodes, replaces subtrees whose structure differs, and clears a render target
-  left half built by a failed first patch.
-- Parents-first registration when a document holds server markup.
-- `globalThis.__rtglSsr` counts hydrated and mismatched hosts; browser check
-  in `test/web/hydration.browser.mjs`.
+7. `[P1][DONE]` Prerendering and hydration (`prerender.md`)
+- Build time: recursive renderer, `loadComponents` for build tools, and
+  serialized root props (`renderComponent({ serializeProps: true })`).
+- Browser: the first render of a `data-rtgl-hydrate` host adopts the
+  prerendered nodes, replaces subtrees whose structure differs, and clears a
+  render target left half built by a failed first patch.
+- Parents-first registration when a document holds prerendered markup.
+- `globalThis.__rtglHydration` counts hydrated and mismatched hosts; browser
+  check in `test/web/hydration.browser.mjs`.
 
 ## Backlog
 
@@ -94,9 +94,9 @@ This roadmap is the planning source for `packages/rettangoli-fe`.
 
 4. `[P2]` First-render hazard checks
 - Flag browser globals, the clock and `Math.random` in `createInitialState`
-  and `selectViewData` (`ssr-plan.md` §5.5), so hydration mismatches fail a
-  check instead of being silently corrected.
+  and `selectViewData` (`prerender.md`, the first render contract), so
+  hydration mismatches fail a check instead of being silently corrected.
 
 5. `[P2]` Hydrate through `rtgl-popover`
 - It moves its children into a wrapper on upgrade, so a subtree holding one is
-  re-rendered instead of adopted (`ssr-plan.md` §9.1).
+  re-rendered instead of adopted (`prerender.md`, design notes).

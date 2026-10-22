@@ -16,7 +16,7 @@ const isCustomElementVnode = (vnode) =>
 // would run the native setter: the value is coerced and reflected as an
 // attribute. Keep it as an own property instead, which the component reads
 // when it upgrades (installReactiveProps). Hydration meets this on every
-// child, since a page with server markup defines parents first.
+// child, since a page with prerendered markup defines parents first.
 const isUndefinedCustomElement = (elm) =>
   typeof globalThis.customElements?.get === 'function' &&
   typeof elm?.localName === 'string' &&

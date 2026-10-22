@@ -39,7 +39,7 @@ const markRenderTarget = (node) => {
  * `instance.renderTarget` pointing at a detached node.
  *
  * Reachable today on the hot-update path, and guaranteed the moment a shadow
- * root carries server-rendered styles.
+ * root carries prerendered styles.
  */
 const NON_ADOPTABLE_TAGS = new Set(["STYLE", "LINK", "SLOT", "TEMPLATE", "SCRIPT"]);
 

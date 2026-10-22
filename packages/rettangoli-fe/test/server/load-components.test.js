@@ -90,7 +90,7 @@ describe("loadComponents", () => {
     const [canvas] = await loadComponents({ cwd: rootDir, dirs: ["src/components"] });
 
     expect(canvas.store).toBeUndefined();
-    expect(() => canvas.methods.draw()).toThrow(/not available on the server/);
+    expect(() => canvas.methods.draw()).toThrow(/not available while prerendering/);
     expect(renderComponent({ component: "x-canvas", components: [canvas] }).html)
       .toBe("<x-canvas></x-canvas>");
   });

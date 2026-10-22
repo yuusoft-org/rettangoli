@@ -18,7 +18,7 @@ const MODULE_FILE_TYPES = new Set(["store", "methods"]);
 const YAML_FILE_TYPES = new Set(["view", "schema", "constants"]);
 
 const unavailableOnServer = (name) => () => {
-  throw new Error(`[loadComponents] method "${name}" is not available on the server.`);
+  throw new Error(`[loadComponents] method "${name}" is not available while prerendering.`);
 };
 
 /**

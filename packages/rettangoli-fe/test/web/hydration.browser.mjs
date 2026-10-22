@@ -197,7 +197,7 @@ const main = async () => {
       const noScript = await browser.newContext({ javaScriptEnabled: false });
       const staticPage = await noScript.newPage();
       await staticPage.goto(`http://127.0.0.1:${port}/`);
-      check("server markup paints with no JavaScript",
+      check("prerendered markup paints with no JavaScript",
         (await staticPage.locator("h1").textContent()) === "Hello"
           && (await staticPage.locator("li").count()) === 2);
       await noScript.close();
@@ -207,7 +207,7 @@ const main = async () => {
       const errors = [];
       live.on("pageerror", (error) => errors.push(String(error)));
       await live.goto(`http://127.0.0.1:${port}/`);
-      await live.waitForFunction(() => globalThis.__rtglSsr?.hydrated >= 1);
+      await live.waitForFunction(() => globalThis.__rtglHydration?.hydrated >= 1);
 
       const result = await live.evaluate(() => {
         // Every element in every component's shadow root, depth first.
@@ -221,7 +221,7 @@ const main = async () => {
         const badges = live.filter((node) => node.localName === "x-badge");
         const icon = shell.shadowRoot.querySelector("svg");
         return {
-          ssr: globalThis.__rtglSsr,
+          ssr: globalThis.__rtglHydration,
           hosts: hosts.length,
           adopted: live.filter((node) => serverNodes.has(node)).length,
           liveCount: live.length,
@@ -247,7 +247,7 @@ const main = async () => {
       check("every component hydrated with no mismatch",
         result.ssr.hydrated === 6 && result.ssr.mismatched === 0 && result.hosts === 6,
         JSON.stringify(result.ssr));
-      check("every live node is the node the server sent",
+      check("every live node is the prerendered node",
         result.adopted === result.liveCount, `${result.adopted}/${result.liveCount}`);
       check("one render target per component", result.stacked === 0, `${result.stacked} stacked`);
       check("the child got its props from the parent's patch",

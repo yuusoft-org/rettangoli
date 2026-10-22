@@ -493,7 +493,7 @@ const watchSite = async (options = {}) => {
   // Watch all relevant directories
   const dirsToWatch = ['data', 'templates', 'partials', 'pages', 'static'];
 
-  // Server-rendered components are part of the pages too.
+  // Prerendered components are part of the pages too.
   for (const dir of config.components?.dirs || []) {
     if (!dirsToWatch.includes(dir)) dirsToWatch.push(dir);
   }
