@@ -69,7 +69,7 @@ Data types additionally have:
 | property | required | description |
 |---|---|---|
 | `name` | yes | Output key path (supports dot notation like `user.email`) |
-| `required` | no | `true` or `{ message: "custom message" }`. |
+| `required` | no | `true` or `{ message: "custom message" }`. `0` and a chosen `false` option of a `select` or `segmented-control` count as values; an unchecked `checkbox` fails. |
 | `disabled` | no | Boolean. |
 
 Display and layout types (`section`, `row`, `read-only-text`, `slot`) have no `name` and produce no values. They are never included in event payloads.
