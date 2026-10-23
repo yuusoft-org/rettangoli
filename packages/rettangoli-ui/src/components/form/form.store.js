@@ -527,7 +527,9 @@ export const validateField = (field, value) => {
       value === null ||
       value === "" ||
       (Array.isArray(value) && value.length === 0) ||
-      (typeof value === "boolean" && value === false);
+      // A required checkbox must be checked. Elsewhere false is a chosen
+      // option, such as a select or segmented control choice.
+      (field.type === "checkbox" && value === false);
     // For numbers, 0 is a valid value
     const isEmptyNumber = field.type === "input-number" && value === null;
     const shouldFail = field.type === "input-number" ? isEmptyNumber : isEmpty;

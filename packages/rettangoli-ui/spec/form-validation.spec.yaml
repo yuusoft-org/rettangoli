@@ -65,6 +65,46 @@ in:
 out:
   error: null
 ---
+case: required segmented-control with false option passes
+in:
+  - field:
+      name: relative
+      type: segmented-control
+      required: true
+      options:
+        - label: Absolute
+          value: false
+        - label: Relative
+          value: true
+    value: false
+out:
+  error: null
+---
+case: required segmented-control with no selection returns error
+in:
+  - field:
+      name: relative
+      type: segmented-control
+      required: true
+    value: null
+out:
+  error: "This field is required"
+---
+case: required select with false option passes
+in:
+  - field:
+      name: enabled
+      type: select
+      required: true
+      options:
+        - label: "Off"
+          value: false
+        - label: "On"
+          value: true
+    value: false
+out:
+  error: null
+---
 case: required input-number with 0 passes
 in:
   - field:
