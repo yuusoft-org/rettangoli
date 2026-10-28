@@ -5,6 +5,7 @@ import { isSupportedComponentFile } from "./contracts.js";
 import { generateFrontendEntrySource } from "./frontendEntrySource.js";
 import {
   buildI18nAssets,
+  getI18nAssetRelativeFileName,
   getI18nPublicAssetPath,
   isI18nSourceFilePath,
   loadI18nBuildContext,
@@ -220,13 +221,29 @@ export const createRettangoliFeVitePlugin = ({
       devServer = server;
       server.watcher.add(getEntryWatchPaths({ includeDirectories: true }));
 
+      // The locales and output directory come from the config, so these URLs
+      // stay fixed while the server runs. Checking them first keeps every
+      // other request from re-reading the catalogs.
+      const i18nAssetPaths = new Set(
+        i18nContext.enabled
+          ? i18nContext.locales.map((locale) =>
+            getI18nPublicAssetPath({
+              publicEntryPath: normalizedPublicEntryPath,
+              relativeFileName: getI18nAssetRelativeFileName({
+                outputDir: i18nContext.outputDir,
+                locale,
+              }),
+            }),
+          )
+          : [],
+      );
+
       const serveI18nAsset = (req, res, next) => {
-        if (!i18nContext.enabled || !normalizedPublicEntryPath) {
+        const reqPath = (req.url || "").split("?")[0];
+        if (!i18nAssetPaths.has(reqPath)) {
           next();
           return;
         }
-
-        const reqPath = (req.url || "").split("?")[0];
 
         try {
           const currentI18nContext = loadI18nBuildContext({
@@ -302,9 +319,9 @@ export const createRettangoliFeVitePlugin = ({
             res.end(transformed.code);
           } catch (error) {
             server.ssrFixStacktrace(error);
-            res.statusCode = 500;
-            res.setHeader("Content-Type", "text/plain; charset=utf-8");
-            res.end(error.stack || String(error));
+            // Vite's error middleware logs the error and shows it in the
+            // browser's error overlay.
+            next(error);
           }
         });
       }

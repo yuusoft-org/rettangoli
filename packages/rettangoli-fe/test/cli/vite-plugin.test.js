@@ -37,6 +37,48 @@ const addI18nFiles = (rootDir) => {
   return i18nDir;
 };
 
+const createI18nAssetMiddleware = ({
+  rootDir,
+  i18n = {
+    dir: "src/i18n",
+    defaultLocale: "en",
+    fallbackLocale: "en",
+    locales: ["en", "vi"],
+  },
+  publicEntryPath = "/public/main.js",
+}) => {
+  const plugin = createRettangoliFeVitePlugin({
+    cwd: rootDir,
+    dirs: ["components"],
+    setup: "setup.js",
+    i18n,
+    publicEntryPath,
+    errorPrefix: "[Watch]",
+  });
+  const middlewares = [];
+  plugin.configureServer({
+    watcher: {
+      add: vi.fn(),
+      on: vi.fn(),
+    },
+    middlewares: {
+      use: (middleware) => middlewares.push(middleware),
+    },
+  });
+  return middlewares[0];
+};
+
+const requestI18nAsset = (middleware, url) => {
+  const res = {
+    statusCode: null,
+    setHeader: vi.fn(),
+    end: vi.fn(),
+  };
+  const next = vi.fn();
+  middleware({ url }, res, next);
+  return { res, next };
+};
+
 describe("vite plugin", () => {
   const createdDirs = [];
 
@@ -430,5 +472,108 @@ describe("vite plugin", () => {
 
     expect(server.ws.send).toHaveBeenCalledTimes(2);
     expect(server.ws.send).toHaveBeenLastCalledWith({ type: "full-reload" });
+  });
+
+  it("serves locale catalogs from the current i18n sources in watch mode", () => {
+    const rootDir = createFixtureProject();
+    const i18nDir = addI18nFiles(rootDir);
+    createdDirs.push(rootDir);
+    const middleware = createI18nAssetMiddleware({ rootDir });
+
+    const first = requestI18nAsset(middleware, "/public/i18n/vi.json?t=1");
+    expect(first.next).not.toHaveBeenCalled();
+    expect(first.res.statusCode).toBe(200);
+    expect(first.res.setHeader).toHaveBeenCalledWith(
+      "Content-Type",
+      "application/json; charset=utf-8",
+    );
+    expect(JSON.parse(first.res.end.mock.calls[0][0])).toEqual({
+      common: { title: "Xin chao" },
+    });
+
+    writeFileSync(path.join(i18nDir, "vi.yaml"), "common:\n  title: \"Chao ban\"\n");
+    const second = requestI18nAsset(middleware, "/public/i18n/vi.json");
+    expect(JSON.parse(second.res.end.mock.calls[0][0])).toEqual({
+      common: { title: "Chao ban" },
+    });
+  });
+
+  it("passes other requests through without reading the i18n sources", () => {
+    const rootDir = createFixtureProject();
+    const i18nDir = addI18nFiles(rootDir);
+    createdDirs.push(rootDir);
+    const middleware = createI18nAssetMiddleware({ rootDir });
+
+    // An invalid catalog makes every catalog read fail, so only requests that
+    // read the catalogs can return 500.
+    writeFileSync(path.join(i18nDir, "vi.yaml"), "common: {}\n");
+
+    for (const url of ["/", "/index.html", "/public/main.js", "/@vite/client"]) {
+      const { res, next } = requestI18nAsset(middleware, url);
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(res.end).not.toHaveBeenCalled();
+    }
+
+    const { res, next } = requestI18nAsset(middleware, "/public/i18n/vi.json");
+    expect(next).not.toHaveBeenCalled();
+    expect(res.statusCode).toBe(500);
+    expect(res.end.mock.calls[0][0]).toContain(
+      "vi.yaml is missing key \"common.title\"",
+    );
+
+    writeFileSync(path.join(i18nDir, "vi.yaml"), "common:\n  title: \"Xin chao\"\n");
+    const recovered = requestI18nAsset(middleware, "/public/i18n/vi.json");
+    expect(recovered.res.statusCode).toBe(200);
+    expect(JSON.parse(recovered.res.end.mock.calls[0][0])).toEqual({
+      common: { title: "Xin chao" },
+    });
+  });
+
+  it("serves locale catalogs only at the configured output directory", () => {
+    const rootDir = createFixtureProject();
+    addI18nFiles(rootDir);
+    createdDirs.push(rootDir);
+    const middleware = createI18nAssetMiddleware({
+      rootDir,
+      i18n: {
+        dir: "src/i18n",
+        outputDir: "locales",
+        defaultLocale: "en",
+        fallbackLocale: "en",
+        locales: ["en", "vi"],
+      },
+      publicEntryPath: "/main.js",
+    });
+
+    const { res, next } = requestI18nAsset(middleware, "/locales/en.json");
+    expect(next).not.toHaveBeenCalled();
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.end.mock.calls[0][0])).toEqual({
+      common: { title: "Hello" },
+    });
+
+    for (const url of [
+      "/i18n/en.json",
+      "/public/locales/en.json",
+      "/locales/fr.json",
+      "/locales/en.json/extra",
+    ]) {
+      const passedThrough = requestI18nAsset(middleware, url);
+      expect(passedThrough.next).toHaveBeenCalledTimes(1);
+      expect(passedThrough.res.end).not.toHaveBeenCalled();
+    }
+  });
+
+  it("passes every request through when i18n is not configured", () => {
+    const rootDir = createFixtureProject();
+    addI18nFiles(rootDir);
+    createdDirs.push(rootDir);
+    const middleware = createI18nAssetMiddleware({ rootDir, i18n: null });
+
+    for (const url of ["/public/i18n/en.json", "/public/main.js"]) {
+      const { res, next } = requestI18nAsset(middleware, url);
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(res.end).not.toHaveBeenCalled();
+    }
   });
 });

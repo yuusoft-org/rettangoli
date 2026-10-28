@@ -615,4 +615,57 @@ describe("vite runtime integration", () => {
     expect(response.headers.get("content-type")).toContain("application/json");
     expect(JSON.parse(response.body).common.title).toBe("Xin chao");
   });
+
+  it("keeps serving pages in watch mode while an i18n catalog is invalid", async () => {
+    const rootDir = createFixtureProject({ includeI18n: true });
+    createdDirs.push(rootDir);
+    writeFileSync(
+      path.join(rootDir, "vt", "index.html"),
+      '<script type="module" src="/public/main.js"></script>\n',
+    );
+
+    const server = await createWatchServer({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      outfile: "vt/static/public/main.js",
+      i18n: {
+        dir: "src/i18n",
+        defaultLocale: "en",
+        fallbackLocale: "en",
+        locales: ["en", "vi"],
+      },
+    });
+    servers.push(server);
+
+    writeFileSync(path.join(rootDir, "src", "i18n", "vi.yaml"), "common: {}\n");
+    const validationMessage = 'vi.yaml is missing key "common.title"';
+
+    const pageResponse = await requestFromMiddleware(server, "/index.html");
+    expect(pageResponse.statusCode).toBe(200);
+    expect(pageResponse.body).toContain(
+      '<script type="module" src="/public/main.js"></script>',
+    );
+
+    const clientResponse = await requestFromMiddleware(server, "/@vite/client");
+    expect(clientResponse.statusCode).toBe(200);
+    expect(clientResponse.body).toContain("ErrorOverlay");
+
+    const localeResponse = await requestFromMiddleware(
+      server,
+      "/public/i18n/vi.json",
+    );
+    expect(localeResponse.statusCode).toBe(500);
+    expect(localeResponse.body).toContain(validationMessage);
+
+    const send = vi.spyOn(server.environments.client.hot, "send");
+    const entryResponse = await requestFromMiddleware(server, "/public/main.js");
+    expect(entryResponse.statusCode).toBe(500);
+    expect(send).toHaveBeenCalledWith({
+      type: "error",
+      err: expect.objectContaining({
+        message: expect.stringContaining(validationMessage),
+      }),
+    });
+  });
 });

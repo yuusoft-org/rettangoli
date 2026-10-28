@@ -297,16 +297,20 @@ export const loadI18nBuildContext = ({
   return context;
 };
 
+export const getI18nAssetRelativeFileName = ({ outputDir, locale }) => {
+  return path.posix.join(outputDir, `${locale}.json`);
+};
+
 export const buildI18nAssets = ({ i18nContext }) => {
   if (!i18nContext?.enabled) {
     return [];
   }
 
   return i18nContext.locales.map((locale) => {
-    const relativeFileName = path.posix.join(
-      i18nContext.outputDir,
-      `${locale}.json`,
-    );
+    const relativeFileName = getI18nAssetRelativeFileName({
+      outputDir: i18nContext.outputDir,
+      locale,
+    });
     return {
       locale,
       relativeFileName,
