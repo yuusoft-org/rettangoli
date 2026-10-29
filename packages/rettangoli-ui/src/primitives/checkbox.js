@@ -66,19 +66,11 @@ class RettangoliCheckboxElement extends HTMLElement {
           position: relative;
           display: inline-flex;
           flex-shrink: 0;
-          isolation: isolate;
         }
         :host([has-label]) .checkbox-control {
-          /* Center the box on the first line of the label. */
-          margin-top: calc((1lh - var(--checkbox-size)) / 2);
-        }
-        .checkbox-control::before {
-          /* Extends the touch target to 24px without changing layout. It sits
-             under the input so clicks on the box still reach the input. */
-          content: "";
-          position: absolute;
-          inset: -4px;
-          z-index: -1;
+          /* Center the box on the first line of the label. h and wh set
+             --checkbox-box-height when they change the box height. */
+          margin-top: calc((1lh - var(--checkbox-box-height, var(--checkbox-size))) / 2);
         }
         .checkbox-label {
           display: none;
@@ -160,6 +152,16 @@ class RettangoliCheckboxElement extends HTMLElement {
           .checkbox-mark {
             stroke: HighlightText;
           }
+          input[type="checkbox"]:disabled {
+            border-color: GrayText;
+          }
+          input[type="checkbox"]:disabled:checked,
+          input[type="checkbox"]:disabled:indeterminate {
+            background: GrayText;
+          }
+          input[type="checkbox"]:disabled + .checkbox-mark {
+            stroke: Canvas;
+          }
         }
         ${marginStyles}
         ${cursorStyles}
@@ -175,6 +177,13 @@ class RettangoliCheckboxElement extends HTMLElement {
     this.shadow.adoptedStyleSheets = [RettangoliCheckboxElement.styleSheet];
 
     this._styles = {
+      default: {},
+      sm: {},
+      md: {},
+      lg: {},
+      xl: {},
+    };
+    this._controlStyles = {
       default: {},
       sm: {},
       md: {},
@@ -304,6 +313,13 @@ class RettangoliCheckboxElement extends HTMLElement {
       lg: {},
       xl: {},
     };
+    this._controlStyles = {
+      default: {},
+      sm: {},
+      md: {},
+      lg: {},
+      xl: {},
+    };
 
     ["default", "sm", "md", "lg", "xl"].forEach((size) => {
       const addSizePrefix = (tag) => {
@@ -320,12 +336,14 @@ class RettangoliCheckboxElement extends HTMLElement {
       const opacity = this.getAttribute(addSizePrefix("op"));
       const zIndex = this.getAttribute(addSizePrefix("z"));
 
+      // Opacity, stacking and visibility apply to the box and its mark
+      // together; width and height size the native input.
       if (zIndex !== null) {
-        this._styles[size]["z-index"] = zIndex;
+        this._controlStyles[size]["z-index"] = zIndex;
       }
 
       if (opacity !== null) {
-        this._styles[size].opacity = opacity;
+        this._controlStyles[size].opacity = opacity;
       }
 
       if (width === "f") {
@@ -342,18 +360,23 @@ class RettangoliCheckboxElement extends HTMLElement {
         this._styles[size].height = height;
         this._styles[size]["min-height"] = height;
         this._styles[size]["max-height"] = height;
+        if (!height.endsWith("%")) {
+          this._controlStyles[size]["--checkbox-box-height"] = height;
+        }
       }
 
       if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none";
+        this._controlStyles[size].display = "none";
       }
 
       if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "block";
+        this._controlStyles[size].display = "inline-flex";
       }
     });
 
-    const newStyleString = convertObjectToCssString(this._styles, 'input[type="checkbox"]');
+    const newStyleString =
+      convertObjectToCssString(this._controlStyles, ".checkbox-control") +
+      convertObjectToCssString(this._styles, 'input[type="checkbox"]');
     if (newStyleString !== this._lastStyleString) {
       this._styleElement.textContent = newStyleString;
       this._lastStyleString = newStyleString;
@@ -363,6 +386,9 @@ class RettangoliCheckboxElement extends HTMLElement {
   connectedCallback() {
     const checked = this.hasAttribute("checked");
     this._inputElement.checked = checked;
+    if (this.hasAttribute("indeterminate")) {
+      this._inputElement.indeterminate = true;
+    }
 
     if (this.hasAttribute("disabled")) {
       this._inputElement.setAttribute("disabled", "");
