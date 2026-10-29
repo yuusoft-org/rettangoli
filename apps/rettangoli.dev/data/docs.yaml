@@ -38,6 +38,9 @@ items:
       - id: rtgl-button
         title: "Button"
         href: "/ui/docs/primitives/rtgl-button"
+      - id: rtgl-checkbox
+        title: "Checkbox"
+        href: "/ui/docs/primitives/rtgl-checkbox"
       - id: rtgl-color-picker
         title: "Color Picker"
         href: "/ui/docs/primitives/rtgl-color-picker"
