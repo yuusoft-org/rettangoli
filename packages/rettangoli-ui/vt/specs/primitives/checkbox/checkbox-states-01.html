@@ -1,0 +1,28 @@
+---
+title: Checkbox - States
+description: Verifies the checkbox off, on, indeterminate, and disabled states, with and without labels.
+specs:
+  - An unchecked box shows a muted-foreground border on the background color.
+  - Checked and indeterminate boxes fill with the primary color and draw a centered tick or dash.
+  - Disabled boxes and their labels are dimmed.
+  - Labels from the attribute or the slot sit 8px from the box, centered on the first line, including when they wrap.
+---
+<rtgl-view g="lg" p="lg" wh="f">
+  <rtgl-view d="h" g="lg" av="c">
+    <rtgl-checkbox aria-label="Off"></rtgl-checkbox>
+    <rtgl-checkbox checked aria-label="On"></rtgl-checkbox>
+    <rtgl-checkbox indeterminate aria-label="Mixed"></rtgl-checkbox>
+    <rtgl-checkbox disabled aria-label="Disabled"></rtgl-checkbox>
+    <rtgl-checkbox disabled checked aria-label="Disabled and checked"></rtgl-checkbox>
+    <rtgl-checkbox disabled indeterminate aria-label="Disabled and mixed"></rtgl-checkbox>
+  </rtgl-view>
+  <rtgl-view g="md">
+    <rtgl-checkbox label="Label from the attribute"></rtgl-checkbox>
+    <rtgl-checkbox checked>Label from the slot</rtgl-checkbox>
+    <rtgl-checkbox indeterminate>Some layers selected</rtgl-checkbox>
+    <rtgl-checkbox disabled checked>Disabled with a label</rtgl-checkbox>
+  </rtgl-view>
+  <rtgl-view w="220">
+    <rtgl-checkbox>I agree to the terms and conditions and the privacy policy of this service</rtgl-checkbox>
+  </rtgl-view>
+</rtgl-view>
