@@ -1,0 +1,31 @@
+---
+title: Checkbox - Sizes and Dimensions
+description: Verifies the s size presets and that the tick and dash scale with wh.
+specs:
+  - s="sm", the default, and s="lg" draw 14px, 16px, and 20px boxes.
+  - Labels stay centered on the box at every size.
+  - wh sets the box size, and the tick and dash scale with it.
+  - A label stays centered on the first line of a box sized with wh.
+  - op fades the box and its mark together.
+---
+<rtgl-view g="lg" p="lg" wh="f">
+  <rtgl-view d="h" g="lg" av="c">
+    <rtgl-checkbox s="sm" checked>Small</rtgl-checkbox>
+    <rtgl-checkbox checked>Default</rtgl-checkbox>
+    <rtgl-checkbox s="lg" checked>Large</rtgl-checkbox>
+  </rtgl-view>
+  <rtgl-view d="h" g="lg" av="c">
+    <rtgl-checkbox s="sm">Small</rtgl-checkbox>
+    <rtgl-checkbox>Default</rtgl-checkbox>
+    <rtgl-checkbox s="lg">Large</rtgl-checkbox>
+  </rtgl-view>
+  <rtgl-view d="h" g="lg" av="c">
+    <rtgl-checkbox wh="28" checked aria-label="28px checked"></rtgl-checkbox>
+    <rtgl-checkbox wh="28" indeterminate aria-label="28px mixed"></rtgl-checkbox>
+    <rtgl-checkbox wh="40" checked aria-label="40px checked"></rtgl-checkbox>
+  </rtgl-view>
+  <rtgl-view d="h" g="lg" av="c">
+    <rtgl-checkbox wh="28" checked>Label on a 28px box</rtgl-checkbox>
+    <rtgl-checkbox op="0.4" checked>Faded with op</rtgl-checkbox>
+  </rtgl-view>
+</rtgl-view>

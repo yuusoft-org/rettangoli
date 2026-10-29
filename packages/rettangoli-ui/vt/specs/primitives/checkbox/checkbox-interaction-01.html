@@ -1,0 +1,62 @@
+---
+title: Checkbox - Interaction
+description: Verifies that clicking the label toggles the checkbox, clears indeterminate, and reports the new value.
+specs:
+  - Clicking an indeterminate checkbox's label checks it, clears the dash, and emits value-change with true.
+  - Clicking it again unchecks it and emits value-change with false.
+  - Hovering an unchecked checkbox darkens its border to the foreground color.
+steps:
+  - action: select
+    testId: select-all
+    steps:
+      - action: click
+  - action: assert
+    type: js
+    fn: checkboxVt.getState
+    value:
+      checked: true
+      indeterminate: false
+      values:
+        - true
+  - action: screenshot
+  - action: select
+    testId: select-all
+    steps:
+      - action: click
+  - action: assert
+    type: js
+    fn: checkboxVt.getState
+    value:
+      checked: false
+      indeterminate: false
+      values:
+        - true
+        - false
+  - action: select
+    testId: hover-target
+    steps:
+      - action: hover
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+<rtgl-view g="md" p="lg" wh="f">
+  <rtgl-checkbox id="select-all" data-testid="select-all" indeterminate>All layers</rtgl-checkbox>
+  <rtgl-checkbox data-testid="hover-target">Effects</rtgl-checkbox>
+</rtgl-view>
+
+<script>
+  const selectAll = document.getElementById('select-all');
+  const values = [];
+  selectAll.addEventListener('value-change', (event) => {
+    values.push(event.detail.value);
+  });
+
+  window.checkboxVt = {
+    getState: () => ({
+      checked: selectAll.checked,
+      indeterminate: selectAll.indeterminate,
+      values: [...values],
+    }),
+  };
+</script>
