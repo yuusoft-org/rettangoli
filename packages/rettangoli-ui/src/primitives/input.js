@@ -8,6 +8,7 @@ import {
   responsiveStyleSizes,
   applyDimensionToStyleBucket,
 } from "../common.js";
+import { parseMaxLength } from "../common/textLength.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 
@@ -23,6 +24,7 @@ class RettangoliInputElement extends HTMLElement {
     "min",
     "max",
     "step",
+    "maxlength",
     "s",
   ];
 
@@ -135,6 +137,7 @@ class RettangoliInputElement extends HTMLElement {
       "min",
       "max",
       "step",
+      "maxlength",
       "s",
       ...permutateBreakpoints([
         ...inputStyleMapKeys,
@@ -289,12 +292,14 @@ class RettangoliInputElement extends HTMLElement {
     const min = this.getAttribute("min");
     const max = this.getAttribute("max");
     const step = this.getAttribute("step");
+    const maxLength = parseMaxLength(this.getAttribute("maxlength"));
     const isDisabled = this.hasAttribute('disabled');
 
     this._setOrRemoveInputAttribute("type", type);
     this._setOrRemoveInputAttribute("min", min);
     this._setOrRemoveInputAttribute("max", max);
     this._setOrRemoveInputAttribute("step", step);
+    this._setOrRemoveInputAttribute("maxlength", maxLength);
 
     if (isDisabled) {
       this._inputElement.setAttribute("disabled", "");

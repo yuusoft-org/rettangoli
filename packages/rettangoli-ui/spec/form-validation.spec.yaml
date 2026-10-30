@@ -344,6 +344,114 @@ in:
 out:
   error: "Too long!"
 ---
+suite: validateField - field maxLength
+exportName: runValidateFieldCase
+---
+case: field maxLength above the limit returns the default message
+in:
+  - field:
+      name: name
+      type: input-text
+      maxLength: 5
+    value: "abcdef"
+out:
+  error: "Must be at most 5 characters"
+---
+case: field maxLength at the limit passes
+in:
+  - field:
+      name: name
+      type: input-text
+      maxLength: 5
+    value: "abcde"
+out:
+  error: null
+---
+case: field maxLength applies to textareas
+in:
+  - field:
+      name: bio
+      type: input-textarea
+      maxLength: 4
+    value: "ab\ncdef"
+out:
+  error: "Must be at most 4 characters"
+---
+case: field maxLength counts a line break as one character
+in:
+  - field:
+      name: bio
+      type: input-textarea
+      maxLength: 5
+    value: "ab\ncd"
+out:
+  error: null
+---
+case: field maxLength accepts a numeric string
+in:
+  - field:
+      name: name
+      type: input-text
+      maxLength: "3"
+    value: "abcd"
+out:
+  error: "Must be at most 3 characters"
+---
+case: field maxLength ignores invalid limits
+in:
+  - field:
+      name: name
+      type: input-text
+      maxLength: -1
+    value: "abcd"
+out:
+  error: null
+---
+case: field maxLength ignores limits above the native maximum
+in:
+  - field:
+      name: name
+      type: input-text
+      maxLength: 2147483648
+    value: "abcd"
+out:
+  error: null
+---
+case: field maxLength is ignored on non-text fields
+in:
+  - field:
+      name: code
+      type: select
+      maxLength: 1
+    value: "abc"
+out:
+  error: null
+---
+case: a maxLength rule's custom message wins over the field maxLength
+in:
+  - field:
+      name: name
+      type: input-text
+      maxLength: 3
+      rules:
+        - rule: maxLength
+          value: 3
+          message: "Keep it short"
+    value: "abcd"
+out:
+  error: "Keep it short"
+---
+case: required runs before field maxLength
+in:
+  - field:
+      name: name
+      type: input-text
+      required: true
+      maxLength: 3
+    value: ""
+out:
+  error: "This field is required"
+---
 suite: validateField - pattern
 exportName: runValidateFieldCase
 ---

@@ -327,6 +327,34 @@ its own `stackAt` value to override the form default:
 }
 ```
 
+## Character Limits
+
+Set `maxLength` on an `input-text` or `input-textarea` field to stop typing at that many characters. Add `showCount: true` to show a counter, such as `42 / 100`, under the field.
+
+```html codePreview
+<rtgl-view id="limits-container" w="360"></rtgl-view>
+
+<script>
+  const limitsForm = document.createElement("rtgl-form");
+  limitsForm.defaultValues = { title: "Quarterly planning notes" };
+  limitsForm.form = {
+    fields: [
+      { name: "title", label: "Title", type: "input-text", maxLength: 40, showCount: true },
+      { name: "summary", label: "Summary", type: "input-textarea", rows: 3, maxLength: 100, showCount: true },
+      { name: "handle", label: "Handle", type: "input-text", maxLength: 15 },
+    ],
+  };
+  document.getElementById("limits-container").appendChild(limitsForm);
+</script>
+```
+
+- Typing stops at the limit, and pasted text is cut off.
+- Values from `defaultValues` or `setValues` aren't cut off. A longer value fails validation with the `maxLength` message.
+- With `showCount`, a value over the limit shows only a red counter, such as `31 / 30`, instead of the message. Screen readers still get the message.
+- The counter sits right under the field. Errors go on its left, or below it when they don't fit.
+- `showCount` without `maxLength` shows the count alone.
+- A `maxLength` rule in `rules` still only validates; it doesn't stop typing. Rules run first, so a rule's custom message is shown instead of the default.
+
 ## Events
 
 | Event | Detail | Description |
@@ -357,7 +385,7 @@ form.reset();
 
 ## Validation Messages
 
-Fields with `required` or `rules` show a built-in English message when they fail, unless the field sets its own (`required: { message }` or a rule's `message`). To replace the defaults for every form, for example with translations, call `rtgl.setFormMessages` (or `setFormMessages` imported from `@rettangoli/ui`):
+Fields with `required`, `rules`, or `maxLength` show a built-in English message when they fail, unless the field sets its own (`required: { message }` or a rule's `message`). To replace the defaults for every form, for example with translations, call `rtgl.setFormMessages` (or `setFormMessages` imported from `@rettangoli/ui`):
 
 ```html
 <script>
@@ -368,7 +396,7 @@ Fields with `required` or `rules` show a built-in English message when they fail
 </script>
 ```
 
-- Messages are plain strings. `{value}` is replaced with the rule's `value`, or the field's `min` / `max` for date, time, and duration limits.
+- Messages are plain strings. `{value}` is replaced with the rule's `value`, the field's `maxLength`, or the field's `min` / `max` for date, time, and duration limits.
 - Keys: `required`, `minLength`, `maxLength`, `pattern`, `invalidDate`, `invalidTime`, `invalidDateTime`, `minTemporal`, `maxTemporal`, `invalidDuration`, `minDuration`, `maxDuration`.
 - A key that is not set, or is an empty string, keeps the English default. A field's own message still takes precedence.
 - Each call replaces the previous messages; call it again when the language changes, or with `{}` to go back to English. Forms use the messages from their next validation, so errors already shown keep their text until validated again; call `validate()` to refresh them.

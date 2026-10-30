@@ -86,6 +86,8 @@ Value: `string` (`""` when empty)
 |---|---|
 | `placeholder` | Placeholder text |
 | `inputType` | `text` (default) or `password`. |
+| `maxLength` | Character limit. Typing and pasting stop at the limit, and a longer value from defaults or `setValues` fails validation with the `maxLength` message. |
+| `showCount` | `true` shows a counter under the field: `count / maxLength`, or the count alone without `maxLength`. Over the limit it turns destructive and replaces the `maxLength` message, which stays in `aria-description`. Errors go on its left, or below it when they don't fit. |
 | `rules` | Validation rules (`minLength`, `maxLength`, `pattern`) |
 
 ```yaml
@@ -102,6 +104,12 @@ Value: `string` (`""` when empty)
   label: Password
   inputType: password
   required: true
+
+- name: title
+  type: input-text
+  label: Title
+  maxLength: 40
+  showCount: true
 ```
 
 #### `input-date`
@@ -241,6 +249,8 @@ Value: `string` (`""` when empty)
 |---|---|
 | `placeholder` | Placeholder text |
 | `rows` | Number of visible rows |
+| `maxLength` | Character limit, as for `input-text`. A line break counts as one character. |
+| `showCount` | `true` shows a character counter under the field, as for `input-text`. |
 | `rules` | Validation rules (`minLength`, `maxLength`, `pattern`) |
 
 ```yaml
@@ -249,6 +259,8 @@ Value: `string` (`""` when empty)
   label: Bio
   placeholder: Tell us about yourself
   rows: 4
+  maxLength: 280
+  showCount: true
 ```
 
 #### `select`
@@ -613,6 +625,8 @@ fields:
 | `maxLength` | number | `input-text`, `input-textarea` | Maximum character count |
 | `pattern` | preset name or regex string | `input-text`, `input-textarea` | Validate against a pattern |
 
+The `maxLength` rule only validates. To also stop typing at the limit, set the field's `maxLength` property instead. Rules run before the field's own limit, so a rule's custom message is shown when both fail.
+
 Each rule object:
 
 - `rule` (required): one of the rule types above
@@ -675,7 +689,7 @@ call `validate()` to refresh them.
 |---|---|---|
 | `required` | This field is required | |
 | `minLength` | Must be at least {value} characters | the rule's `value` |
-| `maxLength` | Must be at most {value} characters | the rule's `value` |
+| `maxLength` | Must be at most {value} characters | the rule's `value`, or the field's `maxLength` |
 | `pattern` | Invalid format | |
 | `invalidDate` | Invalid date format | |
 | `invalidTime` | Invalid time format | |
@@ -1108,6 +1122,7 @@ Contract tests in `spec/` directory with YAML cases and JS helper functions. Eac
 - `required` on non-empty field → no error
 - `minLength` rule → error when below, pass when at/above
 - `maxLength` rule → error when above, pass when at/below
+- field `maxLength` → error when above, pass when at/below; ignored on non-text fields and for invalid limits; a `maxLength` rule's message wins
 - `pattern` with preset `email` → valid/invalid emails
 - `pattern` with preset `url` → valid/invalid URLs
 - `pattern` with raw regex → matches/mismatches
@@ -1189,6 +1204,8 @@ VT specs in `vt/specs/components/form/` as HTML files with optional step-based i
 - `disabled-form.html` — form-level `disabled` prop
 - `disabled-fields.html` — individual field `disabled`
 - `required-fields.html` — required fields with indicators
+- `max-length.html` — `maxLength` stops typing, `showCount` counters (with and without a limit, and over the limit), and errors next to the counter after validation
+- `max-length-row.html` — narrow fields: the counter stays under the input, an error that doesn't fit goes below it, and an over-limit field shows only its red counter
 
 #### Interaction — step-based tests
 

@@ -4,6 +4,7 @@ import {
   normalizeDurationMilliseconds,
 } from "../../common/duration.js";
 import { getFormMessage } from "../../common/formMessages.js";
+import { parseMaxLength } from "../../common/textLength.js";
 import { getUiMessage } from "../../common/uiMessages.js";
 import { flattenTextSegments, renderableTextSegments } from "../../common/textSegments.js";
 
@@ -519,6 +520,14 @@ const validateDurationField = (field, value) => {
   return null;
 };
 
+const TEXT_FIELD_TYPES = ["input-text", "input-textarea"];
+
+const getTextFieldMaxLength = (field) =>
+  TEXT_FIELD_TYPES.includes(field.type) ? parseMaxLength(field.maxLength) : null;
+
+const getTextLength = (value) =>
+  value === undefined || value === null ? 0 : String(value).length;
+
 export const validateField = (field, value) => {
   // Check required
   if (field.required) {
@@ -556,6 +565,14 @@ export const validateField = (field, value) => {
       const error = validateRule(rule, value);
       if (error) return error;
     }
+  }
+
+  // The native maxlength stops typing at the limit, but values set from
+  // defaults or setValues can still be longer. Rules run first so a maxLength
+  // rule's custom message wins.
+  const maxLength = getTextFieldMaxLength(field);
+  if (maxLength !== null && getTextLength(value) > maxLength) {
+    return getDefaultMessage("maxLength", maxLength);
   }
 
   return null;
@@ -898,6 +915,24 @@ export const selectViewData = ({ state, props }) => {
     // Type-specific computed props
     if (field.type === "input-text") {
       field._inputType = field.inputType || "text";
+    }
+
+    if (TEXT_FIELD_TYPES.includes(field.type)) {
+      const maxLength = getTextFieldMaxLength(field);
+      const value = get(state.formValues, field.name);
+      const length = getTextLength(value);
+      const isOverLimit = maxLength !== null && length > maxLength;
+      field._maxLength = maxLength ?? undefined;
+      field._showCount = field.showCount === true;
+      field._countText = maxLength === null ? `${length}` : `${length} / ${maxLength}`;
+      field._countColor = isOverLimit ? "de" : "mu-fg";
+      // A red "31 / 30" already says the value is too long, so when the limit
+      // is the only failing check its message is only kept in aria-description.
+      // Re-running the other checks, rather than matching the message text,
+      // still works after setFormMessages changes or when two messages match.
+      const failsOnlyTheLimit =
+        isOverLimit && validateField({ ...field, maxLength: undefined }, value) === null;
+      field._errorText = field._showCount && failsOnlyTheLimit ? null : field._error;
     }
 
     if (field.type === "input-duration") {

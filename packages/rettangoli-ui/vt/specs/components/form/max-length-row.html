@@ -1,0 +1,157 @@
+---
+title: "Max Length - Narrow Fields"
+description: The counter stays right under the input, and errors go on its left or below it.
+specs:
+  - An over-limit field with a counter shows only its red counter, with no error text, and stays invalid.
+  - In a narrow column, an error that doesn't fit beside the counter goes below it, so the counter stays right under the input.
+  - An error that fits goes on the left of the counter, on the same line.
+  - No error text overlaps its counter.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: maxLengthRowVt.getFeedback
+    value:
+      - field: street
+        error: null
+        count: 31 / 30
+        invalid: "true"
+        countOnTop: true
+        errorBelow: null
+        overlaps: false
+      - field: city
+        error: This field is required
+        count: 0 / 20
+        invalid: "true"
+        countOnTop: true
+        errorBelow: true
+        overlaps: false
+      - field: zip
+        error: null
+        count: 8 / 8
+        invalid: "false"
+        countOnTop: true
+        errorBelow: null
+        overlaps: false
+      - field: reason
+        error: Must be at least 20 characters
+        count: 9 / 200
+        invalid: "true"
+        countOnTop: true
+        errorBelow: false
+        overlaps: false
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" w="400">
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', 'f');
+
+  form.defaultValues = {
+    street: 'Avenida da Liberdade 245, 4 Esq',
+    zip: '1250-143',
+    reason: 'Too short',
+  };
+
+  form.form = {
+    title: 'Max Length - Narrow Fields',
+    fields: [{
+      type: 'row',
+      stackAt: 'none',
+      fields: [{
+        name: 'street',
+        type: 'input-text',
+        label: 'Street',
+        maxLength: 30,
+        showCount: true,
+      }, {
+        name: 'city',
+        type: 'input-text',
+        label: 'City',
+        required: true,
+        maxLength: 20,
+        showCount: true,
+      }, {
+        name: 'zip',
+        type: 'input-text',
+        label: 'Zip',
+        maxLength: 8,
+        showCount: true,
+      }],
+    }, {
+      name: 'reason',
+      type: 'input-textarea',
+      label: 'Reason',
+      rows: 2,
+      maxLength: 200,
+      showCount: true,
+      rules: [{
+        rule: 'minLength',
+        value: 20,
+      }],
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Validate',
+        validate: true,
+      }],
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  // Compares the painted error text, not its box, with each counter.
+  const textRects = (element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    return [...range.getClientRects()];
+  };
+  const intersects = (a, b) =>
+    a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+  window.maxLengthRowVt = {
+    getFeedback: () => [...form.shadowRoot.querySelectorAll('.form-field-feedback')]
+      .map((feedback) => {
+        const input = feedback.closest('.form-field-control')?.querySelector('[data-field-name]');
+        const error = feedback.querySelector('[role="alert"]');
+        const count = feedback.querySelector('[data-form-count]');
+        const countRect = count.getBoundingClientRect();
+        return {
+          field: input?.dataset.fieldName,
+          error: error ? error.textContent.trim() : null,
+          count: count.textContent.trim(),
+          invalid: input?.getAttribute('aria-invalid') ?? null,
+          // The counter is on the first line, so no error sits above it.
+          countOnTop: !error || countRect.top <= error.getBoundingClientRect().top,
+          // Whether the error wrapped below the counter or sits beside it.
+          errorBelow: error ? error.getBoundingClientRect().top >= countRect.bottom : null,
+          overlaps: !!error && textRects(error).some((rect) => intersects(rect, countRect)),
+        };
+      }),
+  };
+
+  const setSubmitButtonTestId = () => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    if (btn) {
+      btn.setAttribute('data-testid', 'submit-btn');
+      return;
+    }
+    setTimeout(setSubmitButtonTestId, 0);
+  };
+  setSubmitButtonTestId();
+</script>

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { bindStore } from "../../rettangoli-fe/src/core/runtime/store.js";
 import * as formStore from "../src/components/form/form.store.js";
+import { setFormMessages } from "../src/common/formMessages.js";
 
 const createConditionalFormProps = () => ({
   form: {
@@ -728,6 +729,130 @@ describe("rtgl-form bound store integration", () => {
 
     expect(fields[0]._placeholder).toBe("m:ss");
     expect(fields[1]._placeholder).toBe("hh:mm:ss");
+  });
+
+  it("passes text field limits to the control and counts characters", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "title", type: "input-text", maxLength: 10, showCount: true },
+          { name: "bio", type: "input-textarea", maxLength: "4", showCount: true },
+          { name: "note", type: "input-text", showCount: true },
+          { name: "plain", type: "input-text" },
+          { name: "bad", type: "input-text", maxLength: 2.5 },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({
+      defaultValues: { title: "Hello", bio: "ab\ncde", note: "xyz" },
+    });
+
+    const [title, bio, note, plain, bad] = store.selectViewData().flatFields;
+
+    expect(title).toMatchObject({
+      _maxLength: 10,
+      _showCount: true,
+      _countText: "5 / 10",
+      _countColor: "mu-fg",
+    });
+    expect(bio).toMatchObject({
+      _maxLength: 4,
+      _countText: "6 / 4",
+      _countColor: "de",
+    });
+    expect(note).toMatchObject({
+      _maxLength: undefined,
+      _showCount: true,
+      _countText: "3",
+    });
+    expect(plain).toMatchObject({ _maxLength: undefined, _showCount: false });
+    expect(bad._maxLength).toBeUndefined();
+  });
+
+  it("leaves an over-limit message to the red counter but keeps it for assistive tech", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "counted", type: "input-text", maxLength: 3, showCount: true },
+          { name: "uncounted", type: "input-text", maxLength: 3 },
+          {
+            name: "ruled",
+            type: "input-text",
+            maxLength: 3,
+            showCount: true,
+            rules: [{ rule: "maxLength", value: 3, message: "Keep it short" }],
+          },
+          { name: "required", type: "input-text", maxLength: 3, showCount: true, required: true },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({
+      defaultValues: { counted: "abcd", uncounted: "abcd", ruled: "abcd" },
+    });
+    const { errors } = formStore.validateForm(
+      store.selectForm().fields,
+      store.getState().formValues,
+    );
+    store.setErrors({ errors });
+
+    const [counted, uncounted, ruled, required] = store.selectViewData().flatFields;
+
+    expect(counted).toMatchObject({
+      _error: "Must be at most 3 characters",
+      _errorText: null,
+      _invalid: true,
+      _accessibleDescription: "Must be at most 3 characters",
+      _countColor: "de",
+    });
+    expect(uncounted).toMatchObject({
+      _error: "Must be at most 3 characters",
+      _showCount: false,
+      _invalid: true,
+    });
+    expect(ruled._errorText).toBe("Keep it short");
+    expect(required._errorText).toBe("This field is required");
+  });
+
+  it("decides which over-limit messages to hide from the checks, not the message text", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "limited", type: "input-text", maxLength: 3, showCount: true },
+          {
+            name: "patterned",
+            type: "input-text",
+            maxLength: 3,
+            showCount: true,
+            rules: [{ rule: "pattern", value: "^[a-z]+$" }],
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({ defaultValues: { limited: "abcd", patterned: "ABCD" } });
+
+    try {
+      // Two keys sharing one message must not hide the pattern error.
+      setFormMessages({ pattern: "Invalid value", maxLength: "Invalid value" });
+      const { errors } = formStore.validateForm(
+        store.selectForm().fields,
+        store.getState().formValues,
+      );
+      store.setErrors({ errors });
+      let [limited, patterned] = store.selectViewData().flatFields;
+      expect(limited._errorText).toBeNull();
+      expect(patterned._errorText).toBe("Invalid value");
+
+      // Switching messages after validation keeps the old text hidden.
+      setFormMessages({ maxLength: "Máximo {value} caracteres" });
+      [limited] = store.selectViewData().flatFields;
+      expect(limited._error).toBe("Invalid value");
+      expect(limited._errorText).toBeNull();
+    } finally {
+      setFormMessages({});
+    }
   });
 
   it("rejects unsafe paths through bound form write actions", () => {

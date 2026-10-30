@@ -135,6 +135,25 @@ styles:
     grid-row: 1
   .form-field-control:
     grid-row: 2
+  # The counter always sits right under the input, at the end of the first
+  # line. The error goes on its left while both fit and wraps below it when
+  # they don't, so the error never comes between the input and the counter.
+  .form-field-feedback:
+    display: flex
+    flex-direction: row-reverse
+    flex-wrap: wrap
+    align-items: flex-start
+    column-gap: var(--spacing-md)
+    row-gap: var(--spacing-xs)
+    width: 100%
+    min-width: "0"
+    overflow-wrap: anywhere
+  .form-field-feedback-error:
+    flex: 0 1 auto
+    margin-inline-end: auto
+  .form-field-count:
+    flex: none
+    order: -1
 template:
   - rtgl-view#formContainer w=f pv=${containerVerticalPadding} data-sticky=${sticky} ${containerAttrString}:
       - $if title || description:
@@ -196,7 +215,7 @@ template:
                                           - rtgl-text s=sm c=mu-fg: ${field._descriptionText}
                               - rtgl-view class=form-field-control g=md w=f:
                                   - $if field.type == "input-text":
-                                      - rtgl-input#field${field._idx} aria-label=${field._accessibleLabel} aria-description=${field._accessibleDescription} aria-required=${field._required} aria-invalid=${field._invalid} data-field-name=${field.name} data-form-row=${item._isRow} w=f type=${field._inputType} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                                      - rtgl-input#field${field._idx} aria-label=${field._accessibleLabel} aria-description=${field._accessibleDescription} aria-required=${field._required} aria-invalid=${field._invalid} data-field-name=${field.name} data-form-row=${item._isRow} w=f type=${field._inputType} maxlength=${field._maxLength} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                                   - $if field.type == "input-date":
                                       - rtgl-input-date#field${field._idx} aria-label=${field._accessibleLabel} aria-description=${field._accessibleDescription} aria-required=${field._required} aria-invalid=${field._invalid} data-field-name=${field.name} w=f min=${field.min} max=${field.max} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                                   - $if field.type == "input-time":
@@ -208,7 +227,7 @@ template:
                                   - $if field.type == "input-number":
                                       - rtgl-input-number#field${field._idx} aria-label=${field._accessibleLabel} aria-description=${field._accessibleDescription} aria-required=${field._required} aria-invalid=${field._invalid} data-field-name=${field.name} w=f min=${field.min} max=${field.max} step=${field.step} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                                   - $if field.type == "input-textarea":
-                                      - rtgl-textarea#field${field._idx} aria-label=${field._accessibleLabel} aria-description=${field._accessibleDescription} aria-required=${field._required} aria-invalid=${field._invalid} data-field-name=${field.name} w=f rows=${field.rows} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
+                                      - rtgl-textarea#field${field._idx} aria-label=${field._accessibleLabel} aria-description=${field._accessibleDescription} aria-required=${field._required} aria-invalid=${field._invalid} data-field-name=${field.name} w=f rows=${field.rows} maxlength=${field._maxLength} placeholder=${field.placeholder} ?disabled=${field._disabled}: null
                                   - $if field.type == "select":
                                       - rtgl-select#field${field._idx} aria-label=${field._accessibleLabel} aria-description=${field._accessibleDescription} aria-required=${field._required} aria-invalid=${field._invalid} data-field-name=${field.name} w=f :options=${field.options} :image=${field.image} ?no-clear=${field.noClear} :selectedValue=${field._selectedValue} :placeholder=${field.placeholder} ?disabled=${field._disabled} ?searchable=${field.searchable} :searchPlaceholder=${field.searchPlaceholder} :emptySearchLabel=${field.emptySearchLabel}: null
                                   - $if field.type == "tag-select":
@@ -242,7 +261,12 @@ template:
                                       - rtgl-text s=sm: ${field.content}
                                   - $if field.type == "slot":
                                       - 'slot#fieldSlot${field._idx} name=${field.slot} style="display: contents;"': null
-                                  - $if field._error:
+                                  - $if field._showCount:
+                                      - div class=form-field-feedback:
+                                          - $if field._errorText:
+                                              - rtgl-text class=form-field-feedback-error s=sm c=de role=alert: ${field._errorText}
+                                          - rtgl-text class=form-field-count data-form-count=true s=sm c=${field._countColor}: ${field._countText}
+                                    $elif field._error:
                                       - rtgl-text s=sm c=de role=alert: ${field._error}
       - $if actions.buttons.length > 0:
           - rtgl-view class=form-actions w=f ph=${containerHorizontalPadding} mt=lg:

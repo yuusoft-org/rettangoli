@@ -74,4 +74,32 @@ describe("rtgl-input primitive", () => {
     expect(inputValues).toEqual(["duration"]);
     expect(changeValues).toEqual(["duration"]);
   });
+
+  it("forwards a valid maxlength to the native input and removes invalid ones", () => {
+    const input = document.createElement(TEST_TAG);
+    input.setAttribute("maxlength", "12");
+    document.body.appendChild(input);
+    const nativeInput = input.shadowRoot.querySelector("input");
+
+    expect(nativeInput.getAttribute("maxlength")).toBe("12");
+
+    input.setAttribute("maxlength", "3");
+    expect(nativeInput.getAttribute("maxlength")).toBe("3");
+
+    input.setAttribute("maxlength", "2147483647");
+    expect(nativeInput.getAttribute("maxlength")).toBe("2147483647");
+
+    input.setAttribute("maxlength", "0");
+    expect(nativeInput.getAttribute("maxlength")).toBe("0");
+
+    for (const invalid of ["", "abc", "-1", "2.5", "null", "2147483648", "1000000000000000000000"]) {
+      input.setAttribute("maxlength", "3");
+      input.setAttribute("maxlength", invalid);
+      expect(nativeInput.hasAttribute("maxlength")).toBe(false);
+    }
+
+    input.setAttribute("maxlength", "3");
+    input.removeAttribute("maxlength");
+    expect(nativeInput.hasAttribute("maxlength")).toBe(false);
+  });
 });

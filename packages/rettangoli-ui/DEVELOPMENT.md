@@ -223,6 +223,7 @@ These are valid exceptions to the short-attr rule:
 - `slider-min`
 - `slider-max`
 - `indeterminate`
+- `maxlength`
 
 ## Form Input Types (rtgl-form)
 

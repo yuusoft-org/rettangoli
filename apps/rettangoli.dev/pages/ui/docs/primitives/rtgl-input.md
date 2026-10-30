@@ -64,6 +64,7 @@ For full behavior details, see [Responsiveness](/ui/docs/introduction/responsive
 | Type | `type` | `password` | text behavior |
 | Value | `value` | string | - |
 | Placeholder | `placeholder` | string | - |
+| Max length | `maxlength` | integer, 0 to 2147483647 | - |
 | Disabled | `disabled` | boolean | - |
 | Size | `s` | `sm`, `md` | `md` |
 | Dimensions | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, `f`, CSS length/value | - |
@@ -111,6 +112,23 @@ Control initial field content with `value` and guidance text with `placeholder`.
 <rtgl-view g="md" w="320">
   <rtgl-input value="Hello"></rtgl-input>
   <rtgl-input placeholder="Type your message..."></rtgl-input>
+</rtgl-view>
+```
+
+## Max Length
+
+Use `maxlength` to stop typing at a character limit.
+
+### Behavior & precedence
+
+- Typing stops at the limit, and pasted text is cut off.
+- Characters are counted like `String#length`, so some emoji count as 2.
+- A longer `value` set from code isn't cut off. The user can delete characters but can't add any until the value is under the limit.
+- A value that isn't a whole number from 0 to 2147483647, such as `2.5` or `10px`, means no limit.
+
+```html codePreview
+<rtgl-view g="md" w="320">
+  <rtgl-input maxlength="10" placeholder="Up to 10 characters"></rtgl-input>
 </rtgl-view>
 ```
 
