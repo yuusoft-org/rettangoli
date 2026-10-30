@@ -9,8 +9,11 @@ import {
   createResponsiveStyleBuckets,
   parseResponsiveStyleAttribute,
 } from "../common.js";
+import { parseMaxLength } from "../common/textLength.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
+
+const textareaAttributes = ["cols", "rows", "disabled", "maxlength"];
 
 const dynamicStyleAttributes = new Set([
   "wh",
@@ -117,6 +120,7 @@ class RettangoliTextAreaElement extends HTMLElement {
       "value",
       "cols",
       "rows",
+      "maxlength",
       ...permutateBreakpoints([
         ...styleMapKeys,
         ...dynamicStyleAttributes,
@@ -168,7 +172,7 @@ class RettangoliTextAreaElement extends HTMLElement {
       return;
     }
 
-    if (["cols", "rows", "disabled"].includes(name)) {
+    if (textareaAttributes.includes(name)) {
       this._updateTextareaAttributes();
       return;
     }
@@ -275,10 +279,14 @@ class RettangoliTextAreaElement extends HTMLElement {
   }
 
   _updateTextareaAttributes() {
-    for (const name of ["cols", "rows", "disabled"]) {
+    for (const name of textareaAttributes) {
       let value = this.getAttribute(name);
       if (name === "disabled" && value !== null) {
         value = "";
+      }
+      if (name === "maxlength") {
+        const maxLength = parseMaxLength(value);
+        value = maxLength === null ? null : String(maxLength);
       }
       if (this._textareaElement.getAttribute(name) === value) {
         continue;
