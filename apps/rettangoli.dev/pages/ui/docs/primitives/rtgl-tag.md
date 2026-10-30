@@ -40,13 +40,13 @@ For full breakpoint behavior, see [Responsiveness](/ui/docs/introduction/respons
 
 ## Variant
 
-Use variants to tune emphasis and tone.
+Use variants to tune emphasis and tone. Tags have a soft look: `se`, `ac`, and `de` use a light tint of their color with text in that color, `pr` is the one solid tag, and `mu` stays neutral.
 
 - `mu`: muted/default metadata
-- `pr`: strong primary highlight
-- `se`: secondary filled tag
-- `ac`: accent highlight
-- `de`: destructive/error state
+- `pr`: solid primary, the strongest
+- `se`: neutral tint
+- `ac`: tint of the theme's `--ring` color
+- `de`: destructive/error tint
 
 ```html codePreview
 <rtgl-view d="h" g="sm" wrap>
@@ -144,4 +144,4 @@ Use `w` when tags need truncation or flexible layout participation.
 - `removable` only adds the trailing remove affordance. It does not remove the element automatically.
 - For truncation, provide `w` or another width-constrained parent.
 - Generic surface styling attrs like `bgc`, `c`, `bc`, `bw`, and `shadow` are intentionally not supported; use the built-in tag variants instead.
-- Border radius is fixed to `--tag-border-radius` (built-in themes default it to `9999px`); `rtgl-tag` does not support consumer radius overrides.
+- Border radius is fixed to `--tag-border-radius`. Built-in themes set it to `6px`, and a theme without it also gets `6px`. `rtgl-tag` does not support consumer radius overrides.

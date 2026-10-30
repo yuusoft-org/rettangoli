@@ -8,7 +8,7 @@ const styles = {
       padding-right: 8px;
       gap: 6px;
       font-size: var(--xs-font-size);
-      font-weight: var(--xs-font-weight);
+      font-weight: 500;
       line-height: var(--xs-line-height);
       letter-spacing: var(--xs-letter-spacing);
       --rtgl-tag-icon-size: 10px;
@@ -20,7 +20,7 @@ const styles = {
       padding-right: 10px;
       gap: 6px;
       font-size: var(--xs-font-size);
-      font-weight: var(--xs-font-weight);
+      font-weight: 500;
       line-height: var(--xs-line-height);
       letter-spacing: var(--xs-letter-spacing);
       --rtgl-tag-icon-size: 12px;
@@ -32,18 +32,20 @@ const styles = {
       padding-right: 12px;
       gap: 8px;
       font-size: var(--sm-font-size);
-      font-weight: var(--sm-font-weight);
+      font-weight: 500;
       line-height: var(--sm-line-height);
       letter-spacing: var(--sm-letter-spacing);
       --rtgl-tag-icon-size: 14px;
       --rtgl-tag-remove-size: 18px;
     `,
   },
+  // Soft tags: a tint of the variant's color with text in that color. Primary
+  // is the one solid tag, and muted stays neutral.
   v: {
     mu: `
       background-color: var(--muted);
       color: var(--muted-foreground);
-      border-color: var(--border);
+      border-color: transparent;
     `,
     pr: `
       background-color: var(--primary);
@@ -51,18 +53,21 @@ const styles = {
       border-color: transparent;
     `,
     se: `
-      background-color: var(--secondary);
-      color: var(--secondary-foreground);
+      --rtgl-tag-tone: var(--foreground);
+      background-color: color-mix(in oklch, var(--rtgl-tag-tone) 15%, transparent);
+      color: color-mix(in oklch, var(--rtgl-tag-tone) 85%, var(--foreground));
       border-color: transparent;
     `,
     ac: `
-      background-color: var(--accent);
-      color: var(--accent-foreground);
+      --rtgl-tag-tone: color-mix(in oklch, var(--ring) 65%, var(--foreground));
+      background-color: color-mix(in oklch, var(--rtgl-tag-tone) 15%, transparent);
+      color: color-mix(in oklch, var(--rtgl-tag-tone) 85%, var(--foreground));
       border-color: transparent;
     `,
     de: `
-      background-color: var(--destructive);
-      color: var(--destructive-foreground);
+      --rtgl-tag-tone: var(--destructive);
+      background-color: color-mix(in oklch, var(--rtgl-tag-tone) 15%, transparent);
+      color: color-mix(in oklch, var(--rtgl-tag-tone) 85%, var(--foreground));
       border-color: transparent;
     `,
   },
