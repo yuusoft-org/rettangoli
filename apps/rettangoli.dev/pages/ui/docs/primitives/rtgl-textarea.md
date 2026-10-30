@@ -56,6 +56,7 @@ For full behavior details, see [Responsiveness](/ui/docs/introduction/responsive
 | Placeholder | `placeholder` | string | - |
 | Rows | `rows` | number | browser default |
 | Cols | `cols` | number | browser default |
+| Max length | `maxlength` | non-negative integer | - |
 | Disabled | `disabled` | boolean | - |
 | Dimensions | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, `f`, CSS length/value | - |
 | Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
@@ -96,6 +97,23 @@ Use `rows` and `cols` to suggest the initial editing area.
 <rtgl-view d="v" g="md" w="f">
   <rtgl-textarea rows="4" cols="40" placeholder="Compact"></rtgl-textarea>
   <rtgl-textarea rows="8" cols="60" placeholder="Expanded"></rtgl-textarea>
+</rtgl-view>
+```
+
+## Max Length
+
+Use `maxlength` to stop typing at a character limit.
+
+### Behavior & precedence
+
+- Typing stops at the limit, and pasted text is cut off.
+- Characters are counted like `String#length`: a line break counts as 1, and some emoji count as 2.
+- A longer `value` set from code is kept until the user edits it.
+- A value that isn't a whole number of 0 or more is ignored.
+
+```html codePreview
+<rtgl-view d="v" g="md" w="360">
+  <rtgl-textarea maxlength="280" rows="4" placeholder="Up to 280 characters"></rtgl-textarea>
 </rtgl-view>
 ```
 

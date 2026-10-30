@@ -327,6 +327,32 @@ its own `stackAt` value to override the form default:
 }
 ```
 
+## Character Limits
+
+Set `maxLength` on an `input-text` or `input-textarea` field to stop typing at that many characters. Add `showCount: true` to show a counter, such as `42 / 100`, under the field.
+
+```html codePreview
+<rtgl-view id="limits-container" w="360"></rtgl-view>
+
+<script>
+  const limitsForm = document.createElement("rtgl-form");
+  limitsForm.defaultValues = { title: "Quarterly planning notes" };
+  limitsForm.form = {
+    fields: [
+      { name: "title", label: "Title", type: "input-text", maxLength: 40, showCount: true },
+      { name: "summary", label: "Summary", type: "input-textarea", rows: 3, maxLength: 100, showCount: true },
+      { name: "handle", label: "Handle", type: "input-text", maxLength: 15 },
+    ],
+  };
+  document.getElementById("limits-container").appendChild(limitsForm);
+</script>
+```
+
+- Typing stops at the limit, and pasted text is cut off.
+- Values from `defaultValues` or `setValues` aren't cut off. A longer value turns the counter red and fails validation with the `maxLength` message.
+- `showCount` without `maxLength` shows the count alone.
+- A `maxLength` rule in `rules` still only validates; it doesn't stop typing. Rules run first, so a rule's custom message is shown instead of the default.
+
 ## Events
 
 | Event | Detail | Description |
@@ -357,7 +383,7 @@ form.reset();
 
 ## Validation Messages
 
-Fields with `required` or `rules` show a built-in English message when they fail, unless the field sets its own (`required: { message }` or a rule's `message`). To replace the defaults for every form, for example with translations, call `rtgl.setFormMessages` (or `setFormMessages` imported from `@rettangoli/ui`):
+Fields with `required`, `rules`, or `maxLength` show a built-in English message when they fail, unless the field sets its own (`required: { message }` or a rule's `message`). To replace the defaults for every form, for example with translations, call `rtgl.setFormMessages` (or `setFormMessages` imported from `@rettangoli/ui`):
 
 ```html
 <script>
