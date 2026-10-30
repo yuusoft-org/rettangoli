@@ -87,7 +87,7 @@ Value: `string` (`""` when empty)
 | `placeholder` | Placeholder text |
 | `inputType` | `text` (default) or `password`. |
 | `maxLength` | Character limit. Typing and pasting stop at the limit, and a longer value from defaults or `setValues` fails validation with the `maxLength` message. |
-| `showCount` | `true` shows a counter under the field: `count / maxLength`, or the count alone without `maxLength`. It turns destructive when the value is over the limit. |
+| `showCount` | `true` shows a counter under the field: `count / maxLength`, or the count alone without `maxLength`. Over the limit it turns destructive and replaces the `maxLength` message, which stays in `aria-description`. Errors go on its left, or below it when they don't fit. |
 | `rules` | Validation rules (`minLength`, `maxLength`, `pattern`) |
 
 ```yaml
@@ -1205,6 +1205,7 @@ VT specs in `vt/specs/components/form/` as HTML files with optional step-based i
 - `disabled-fields.html` — individual field `disabled`
 - `required-fields.html` — required fields with indicators
 - `max-length.html` — `maxLength` stops typing, `showCount` counters (with and without a limit, and over the limit), and errors next to the counter after validation
+- `max-length-row.html` — narrow fields: the counter stays under the input, an error that doesn't fit goes below it, and an over-limit field shows only its red counter
 
 #### Interaction — step-based tests
 

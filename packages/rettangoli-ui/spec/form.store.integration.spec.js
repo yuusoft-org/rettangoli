@@ -769,6 +769,51 @@ describe("rtgl-form bound store integration", () => {
     expect(bad._maxLength).toBeUndefined();
   });
 
+  it("leaves an over-limit message to the red counter but keeps it for assistive tech", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "counted", type: "input-text", maxLength: 3, showCount: true },
+          { name: "uncounted", type: "input-text", maxLength: 3 },
+          {
+            name: "ruled",
+            type: "input-text",
+            maxLength: 3,
+            showCount: true,
+            rules: [{ rule: "maxLength", value: 3, message: "Keep it short" }],
+          },
+          { name: "required", type: "input-text", maxLength: 3, showCount: true, required: true },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({
+      defaultValues: { counted: "abcd", uncounted: "abcd", ruled: "abcd" },
+    });
+    const { errors } = formStore.validateForm(
+      store.selectForm().fields,
+      store.getState().formValues,
+    );
+    store.setErrors({ errors });
+
+    const [counted, uncounted, ruled, required] = store.selectViewData().flatFields;
+
+    expect(counted).toMatchObject({
+      _error: "Must be at most 3 characters",
+      _errorText: null,
+      _invalid: true,
+      _accessibleDescription: "Must be at most 3 characters",
+      _countColor: "de",
+    });
+    expect(uncounted).toMatchObject({
+      _error: "Must be at most 3 characters",
+      _showCount: false,
+      _invalid: true,
+    });
+    expect(ruled._errorText).toBe("Keep it short");
+    expect(required._errorText).toBe("This field is required");
+  });
+
   it("rejects unsafe paths through bound form write actions", () => {
     const pollutionKey = "__rtglBoundFormPollutionProbe";
     const props = {

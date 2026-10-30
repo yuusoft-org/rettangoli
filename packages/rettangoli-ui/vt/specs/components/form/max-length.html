@@ -5,7 +5,7 @@ specs:
   - showCount shows "count / limit" under the field, aligned right; without maxLength it shows the count alone.
   - A default value over the limit shows its count in the destructive color before validation.
   - Writing past the limit keeps only the first maxLength characters, in inputs and textareas, and the counter follows the value.
-  - Validating shows errors on the left of the counter, and an over-limit value gets the maxLength message.
+  - Validating shows errors on the left of the counter. The over-limit Tagline shows only its red counter, with no error text, and stays invalid.
 steps:
   - action: select
     testId: handle-input
@@ -40,6 +40,15 @@ steps:
       - action: click
   - action: wait
     ms: 200
+  - action: assert
+    type: js
+    fn: maxLengthVt.getErrors
+    value:
+      shown:
+        - This field is required
+      invalid:
+        - displayName
+        - tagline
   - action: screenshot
 viewport:
   id: form-compact
@@ -120,6 +129,12 @@ viewport:
       values: form.getValues(),
       counts: [...form.shadowRoot.querySelectorAll('[data-form-count]')]
         .map((count) => count.textContent.trim()),
+    }),
+    getErrors: () => ({
+      shown: [...form.shadowRoot.querySelectorAll('[role="alert"]')]
+        .map((error) => error.textContent.trim()),
+      invalid: [...form.shadowRoot.querySelectorAll('[data-field-name][aria-invalid="true"]')]
+        .map((field) => field.dataset.fieldName),
     }),
   };
 

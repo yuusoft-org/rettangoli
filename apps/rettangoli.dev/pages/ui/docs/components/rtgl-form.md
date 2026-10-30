@@ -349,7 +349,9 @@ Set `maxLength` on an `input-text` or `input-textarea` field to stop typing at t
 ```
 
 - Typing stops at the limit, and pasted text is cut off.
-- Values from `defaultValues` or `setValues` aren't cut off. A longer value turns the counter red and fails validation with the `maxLength` message.
+- Values from `defaultValues` or `setValues` aren't cut off. A longer value fails validation with the `maxLength` message.
+- With `showCount`, a value over the limit shows only a red counter, such as `31 / 30`, instead of the message. Screen readers still get the message.
+- The counter sits right under the field. Errors go on its left, or below it when they don't fit.
 - `showCount` without `maxLength` shows the count alone.
 - A `maxLength` rule in `rules` still only validates; it doesn't stop typing. Rules run first, so a rule's custom message is shown instead of the default.
 

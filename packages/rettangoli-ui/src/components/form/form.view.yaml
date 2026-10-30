@@ -135,10 +135,12 @@ styles:
     grid-row: 1
   .form-field-control:
     grid-row: 2
-  # The counter stays right of the error while both fit, then wraps below it,
-  # so narrow fields and long messages never overlap.
+  # The counter always sits right under the input, at the end of the first
+  # line. The error goes on its left while both fit and wraps below it when
+  # they don't, so the error never comes between the input and the counter.
   .form-field-feedback:
     display: flex
+    flex-direction: row-reverse
     flex-wrap: wrap
     align-items: flex-start
     column-gap: var(--spacing-md)
@@ -147,10 +149,11 @@ styles:
     min-width: "0"
     overflow-wrap: anywhere
   .form-field-feedback-error:
-    flex: 1 1 auto
+    flex: 0 1 auto
+    margin-inline-end: auto
   .form-field-count:
     flex: none
-    margin-left: auto
+    order: -1
 template:
   - rtgl-view#formContainer w=f pv=${containerVerticalPadding} data-sticky=${sticky} ${containerAttrString}:
       - $if title || description:
@@ -260,8 +263,8 @@ template:
                                       - 'slot#fieldSlot${field._idx} name=${field.slot} style="display: contents;"': null
                                   - $if field._showCount:
                                       - div class=form-field-feedback:
-                                          - $if field._error:
-                                              - rtgl-text class=form-field-feedback-error s=sm c=de role=alert: ${field._error}
+                                          - $if field._errorText:
+                                              - rtgl-text class=form-field-feedback-error s=sm c=de role=alert: ${field._errorText}
                                           - rtgl-text class=form-field-count data-form-count=true s=sm c=${field._countColor}: ${field._countText}
                                     $elif field._error:
                                       - rtgl-text s=sm c=de role=alert: ${field._error}

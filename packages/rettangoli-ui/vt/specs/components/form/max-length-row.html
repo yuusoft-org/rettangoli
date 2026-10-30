@@ -1,10 +1,10 @@
 ---
 title: "Max Length - Narrow Fields"
-description: Counters move below the error when both don't fit side by side.
+description: The counter stays right under the input, and errors go on its left or below it.
 specs:
-  - In a row of three fields, the over-limit error wraps inside its column and the counter moves below it, aligned right.
-  - A long error message on a full-width field also pushes the counter below it.
-  - A counter that fits next to no error stays aligned right.
+  - An over-limit field with a counter shows only its red counter, with no error text, and stays invalid.
+  - In a narrow column, an error that doesn't fit beside the counter goes below it, so the counter stays right under the input.
+  - An error that fits goes on the left of the counter, on the same line.
   - No error text overlaps its counter.
 skipInitialScreenshot: true
 steps:
@@ -16,8 +16,32 @@ steps:
     ms: 200
   - action: assert
     type: js
-    fn: maxLengthRowVt.getOverlaps
-    value: []
+    fn: maxLengthRowVt.getFeedback
+    value:
+      - field: street
+        error: null
+        count: 31 / 30
+        invalid: "true"
+        countOnTop: true
+        overlaps: false
+      - field: city
+        error: This field is required
+        count: 0 / 20
+        invalid: "true"
+        countOnTop: true
+        overlaps: false
+      - field: zip
+        error: null
+        count: 8 / 8
+        invalid: "false"
+        countOnTop: true
+        overlaps: false
+      - field: reason
+        error: Must be at least 20 characters
+        count: 9 / 200
+        invalid: "true"
+        countOnTop: true
+        overlaps: false
   - action: screenshot
 viewport:
   id: form-compact
@@ -34,7 +58,6 @@ viewport:
 
   form.defaultValues = {
     street: 'Avenida da Liberdade 245, 4 Esq',
-    city: 'Lisbon',
     zip: '1250-143',
     reason: 'Too short',
   };
@@ -54,6 +77,7 @@ viewport:
         name: 'city',
         type: 'input-text',
         label: 'City',
+        required: true,
         maxLength: 20,
         showCount: true,
       }, {
@@ -73,7 +97,6 @@ viewport:
       rules: [{
         rule: 'minLength',
         value: 20,
-        message: 'Write at least 20 characters so reviewers have enough context to approve the request',
       }],
     }],
     actions: {
@@ -98,16 +121,22 @@ viewport:
     a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 
   window.maxLengthRowVt = {
-    getOverlaps: () => [...form.shadowRoot.querySelectorAll('.form-field-feedback')]
-      .filter((feedback) => {
+    getFeedback: () => [...form.shadowRoot.querySelectorAll('.form-field-feedback')]
+      .map((feedback) => {
+        const input = feedback.closest('.form-field-control')?.querySelector('[data-field-name]');
         const error = feedback.querySelector('[role="alert"]');
         const count = feedback.querySelector('[data-form-count]');
-        if (!error || !count) return false;
         const countRect = count.getBoundingClientRect();
-        return textRects(error).some((rect) => intersects(rect, countRect));
-      })
-      .map((feedback) => feedback.closest('.form-field-control')
-        ?.querySelector('[data-field-name]')?.dataset.fieldName),
+        return {
+          field: input?.dataset.fieldName,
+          error: error ? error.textContent.trim() : null,
+          count: count.textContent.trim(),
+          invalid: input?.getAttribute('aria-invalid') ?? null,
+          // The counter is on the first line, so no error sits above it.
+          countOnTop: !error || countRect.top <= error.getBoundingClientRect().top,
+          overlaps: !!error && textRects(error).some((rect) => intersects(rect, countRect)),
+        };
+      }),
   };
 
   const setSubmitButtonTestId = () => {
