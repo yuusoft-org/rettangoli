@@ -37,12 +37,12 @@ class RettangoliTagElement extends HTMLElement {
           padding-right: 10px;
           gap: 6px;
           box-sizing: border-box;
-          border: 1px solid var(--border);
-          border-radius: var(--tag-border-radius);
+          border: 1px solid transparent;
+          border-radius: var(--tag-border-radius, 6px);
           background-color: var(--muted);
           color: var(--muted-foreground);
           font-size: var(--xs-font-size);
-          font-weight: var(--xs-font-weight);
+          font-weight: 500;
           line-height: var(--xs-line-height);
           letter-spacing: var(--xs-letter-spacing);
           vertical-align: middle;
@@ -112,7 +112,7 @@ class RettangoliTagElement extends HTMLElement {
 
         ${tagSurfaceStyles}
         :host .surface {
-          border-radius: var(--tag-border-radius) !important;
+          border-radius: var(--tag-border-radius, 6px) !important;
         }
         ${marginStyles}
         ${cursorStyles}
