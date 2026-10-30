@@ -730,6 +730,45 @@ describe("rtgl-form bound store integration", () => {
     expect(fields[1]._placeholder).toBe("hh:mm:ss");
   });
 
+  it("passes text field limits to the control and counts characters", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "title", type: "input-text", maxLength: 10, showCount: true },
+          { name: "bio", type: "input-textarea", maxLength: "4", showCount: true },
+          { name: "note", type: "input-text", showCount: true },
+          { name: "plain", type: "input-text" },
+          { name: "bad", type: "input-text", maxLength: 2.5 },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({
+      defaultValues: { title: "Hello", bio: "ab\ncde", note: "xyz" },
+    });
+
+    const [title, bio, note, plain, bad] = store.selectViewData().flatFields;
+
+    expect(title).toMatchObject({
+      _maxLength: 10,
+      _showCount: true,
+      _countText: "5 / 10",
+      _countColor: "mu-fg",
+    });
+    expect(bio).toMatchObject({
+      _maxLength: 4,
+      _countText: "6 / 4",
+      _countColor: "de",
+    });
+    expect(note).toMatchObject({
+      _maxLength: undefined,
+      _showCount: true,
+      _countText: "3",
+    });
+    expect(plain).toMatchObject({ _maxLength: undefined, _showCount: false });
+    expect(bad._maxLength).toBeUndefined();
+  });
+
   it("rejects unsafe paths through bound form write actions", () => {
     const pollutionKey = "__rtglBoundFormPollutionProbe";
     const props = {

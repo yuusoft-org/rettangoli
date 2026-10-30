@@ -1,0 +1,36 @@
+---
+title: Textarea - Max Length
+description: Verifies that maxlength stops textarea input at the limit.
+specs:
+  - Writing a longer value into a textarea with maxlength="40" keeps the first 40 characters.
+  - value-input reports the shortened value.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: limited
+    steps:
+      - action: write
+        value: Collect feedback from the design review. Then share it with the team.
+  - action: assert
+    type: js
+    fn: maxlengthVt.getState
+    value:
+      value: Collect feedback from the design review.
+      lastInput: Collect feedback from the design review.
+  - action: screenshot
+---
+<rtgl-view p="lg" g="md" w="400">
+  <rtgl-text s="sm" c="mu-fg">maxlength="40"</rtgl-text>
+  <rtgl-textarea id="limited" data-testid="limited" w="f" rows="3" maxlength="40" placeholder="Up to 40 characters"></rtgl-textarea>
+</rtgl-view>
+
+<script>
+  const limited = document.getElementById("limited");
+  let lastInput = null;
+  limited.addEventListener("value-input", (event) => {
+    lastInput = event.detail.value;
+  });
+  window.maxlengthVt = {
+    getState: () => ({ value: limited.value, lastInput }),
+  };
+</script>

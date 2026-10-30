@@ -1,0 +1,39 @@
+---
+title: Input - Max Length
+description: Verifies that maxlength stops text input at the limit.
+specs:
+  - Writing 29 characters into an input with maxlength="10" keeps the first 10.
+  - value-input reports the shortened value.
+  - An input without maxlength keeps its whole value.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: limited
+    steps:
+      - action: write
+        value: Hello world, this is too long
+  - action: assert
+    type: js
+    fn: maxlengthVt.getState
+    value:
+      value: Hello worl
+      lastInput: Hello worl
+  - action: screenshot
+---
+<rtgl-view p="lg" g="md" w="400">
+  <rtgl-text s="sm" c="mu-fg">maxlength="10"</rtgl-text>
+  <rtgl-input id="limited" data-testid="limited" w="f" maxlength="10" placeholder="Up to 10 characters"></rtgl-input>
+  <rtgl-text s="sm" c="mu-fg">No maxlength</rtgl-text>
+  <rtgl-input w="f" value="This input has no character limit at all"></rtgl-input>
+</rtgl-view>
+
+<script>
+  const limited = document.getElementById("limited");
+  let lastInput = null;
+  limited.addEventListener("value-input", (event) => {
+    lastInput = event.detail.value;
+  });
+  window.maxlengthVt = {
+    getState: () => ({ value: limited.value, lastInput }),
+  };
+</script>

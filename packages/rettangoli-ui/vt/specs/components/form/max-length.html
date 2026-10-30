@@ -1,0 +1,121 @@
+---
+title: "Max Length"
+description: Text fields with maxLength stop input at the limit, and showCount adds a character counter.
+specs:
+  - showCount shows "count / limit" under the field, aligned right; without maxLength it shows the count alone.
+  - A default value over the limit shows its count in the destructive color before validation.
+  - Writing past the limit keeps only the first maxLength characters.
+  - Validating shows errors on the left of the counter, and an over-limit value gets the maxLength message.
+steps:
+  - action: select
+    testId: handle-input
+    steps:
+      - action: write
+        value: jane-doe-from-the-design-team
+  - action: assert
+    type: js
+    fn: maxLengthVt.getValues
+    value:
+      title: Quarterly planning notes
+      summary: Collect feedback before the design review.
+      displayName: ""
+      handle: jane-doe-from-t
+      tagline: A short tagline that runs long
+      notes: Notes on the launch plan
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    title: 'Quarterly planning notes',
+    summary: 'Collect feedback before the design review.',
+    tagline: 'A short tagline that runs long',
+    notes: 'Notes on the launch plan',
+  };
+
+  form.form = {
+    title: 'Max Length',
+    description: 'Fields stop accepting text at their limit',
+    fields: [{
+      name: 'title',
+      type: 'input-text',
+      label: 'Title',
+      maxLength: 40,
+      showCount: true,
+    }, {
+      name: 'summary',
+      type: 'input-textarea',
+      label: 'Summary',
+      rows: 3,
+      maxLength: 100,
+      showCount: true,
+    }, {
+      name: 'displayName',
+      type: 'input-text',
+      label: 'Display name',
+      required: true,
+      maxLength: 30,
+      showCount: true,
+    }, {
+      name: 'handle',
+      type: 'input-text',
+      label: 'Handle',
+      description: 'Up to 15 characters, no counter',
+      maxLength: 15,
+    }, {
+      name: 'tagline',
+      type: 'input-text',
+      label: 'Tagline',
+      maxLength: 20,
+      showCount: true,
+    }, {
+      name: 'notes',
+      type: 'input-textarea',
+      label: 'Notes',
+      rows: 2,
+      showCount: true,
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Validate',
+        validate: true,
+      }],
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  window.maxLengthVt = {
+    getValues: () => form.getValues(),
+  };
+
+  const setTestIds = () => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    const handle = form.shadowRoot?.querySelector('[data-field-name="handle"]');
+    if (btn && handle) {
+      btn.setAttribute('data-testid', 'submit-btn');
+      handle.setAttribute('data-testid', 'handle-input');
+      return;
+    }
+    setTimeout(setTestIds, 0);
+  };
+  setTestIds();
+</script>
