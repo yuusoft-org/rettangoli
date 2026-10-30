@@ -689,7 +689,7 @@ call `validate()` to refresh them.
 |---|---|---|
 | `required` | This field is required | |
 | `minLength` | Must be at least {value} characters | the rule's `value` |
-| `maxLength` | Must be at most {value} characters | the rule's `value` |
+| `maxLength` | Must be at most {value} characters | the rule's `value`, or the field's `maxLength` |
 | `pattern` | Invalid format | |
 | `invalidDate` | Invalid date format | |
 | `invalidTime` | Invalid time format | |

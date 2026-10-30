@@ -1,0 +1,122 @@
+---
+title: "Max Length - Narrow Fields"
+description: Counters move below the error when both don't fit side by side.
+specs:
+  - In a row of three fields, the over-limit error wraps inside its column and the counter moves below it, aligned right.
+  - A long error message on a full-width field also pushes the counter below it.
+  - A counter that fits next to no error stays aligned right.
+  - No error text overlaps its counter.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: maxLengthRowVt.getOverlaps
+    value: []
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" w="400">
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', 'f');
+
+  form.defaultValues = {
+    street: 'Avenida da Liberdade 245, 4 Esq',
+    city: 'Lisbon',
+    zip: '1250-143',
+    reason: 'Too short',
+  };
+
+  form.form = {
+    title: 'Max Length - Narrow Fields',
+    fields: [{
+      type: 'row',
+      stackAt: 'none',
+      fields: [{
+        name: 'street',
+        type: 'input-text',
+        label: 'Street',
+        maxLength: 30,
+        showCount: true,
+      }, {
+        name: 'city',
+        type: 'input-text',
+        label: 'City',
+        maxLength: 20,
+        showCount: true,
+      }, {
+        name: 'zip',
+        type: 'input-text',
+        label: 'Zip',
+        maxLength: 8,
+        showCount: true,
+      }],
+    }, {
+      name: 'reason',
+      type: 'input-textarea',
+      label: 'Reason',
+      rows: 2,
+      maxLength: 200,
+      showCount: true,
+      rules: [{
+        rule: 'minLength',
+        value: 20,
+        message: 'Write at least 20 characters so reviewers have enough context to approve the request',
+      }],
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Validate',
+        validate: true,
+      }],
+    }
+  };
+
+  document.getElementById('container').appendChild(form);
+
+  // Compares the painted error text, not its box, with each counter.
+  const textRects = (element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    return [...range.getClientRects()];
+  };
+  const intersects = (a, b) =>
+    a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+  window.maxLengthRowVt = {
+    getOverlaps: () => [...form.shadowRoot.querySelectorAll('.form-field-feedback')]
+      .filter((feedback) => {
+        const error = feedback.querySelector('[role="alert"]');
+        const count = feedback.querySelector('[data-form-count]');
+        if (!error || !count) return false;
+        const countRect = count.getBoundingClientRect();
+        return textRects(error).some((rect) => intersects(rect, countRect));
+      })
+      .map((feedback) => feedback.closest('.form-field-control')
+        ?.querySelector('[data-field-name]')?.dataset.fieldName),
+  };
+
+  const setSubmitButtonTestId = () => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    if (btn) {
+      btn.setAttribute('data-testid', 'submit-btn');
+      return;
+    }
+    setTimeout(setSubmitButtonTestId, 0);
+  };
+  setSubmitButtonTestId();
+</script>

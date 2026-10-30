@@ -135,6 +135,22 @@ styles:
     grid-row: 1
   .form-field-control:
     grid-row: 2
+  # The counter stays right of the error while both fit, then wraps below it,
+  # so narrow fields and long messages never overlap.
+  .form-field-feedback:
+    display: flex
+    flex-wrap: wrap
+    align-items: flex-start
+    column-gap: var(--spacing-md)
+    row-gap: var(--spacing-xs)
+    width: 100%
+    min-width: "0"
+    overflow-wrap: anywhere
+  .form-field-feedback-error:
+    flex: 1 1 auto
+  .form-field-count:
+    flex: none
+    margin-left: auto
 template:
   - rtgl-view#formContainer w=f pv=${containerVerticalPadding} data-sticky=${sticky} ${containerAttrString}:
       - $if title || description:
@@ -243,11 +259,10 @@ template:
                                   - $if field.type == "slot":
                                       - 'slot#fieldSlot${field._idx} name=${field.slot} style="display: contents;"': null
                                   - $if field._showCount:
-                                      - rtgl-view d=h g=md w=f:
-                                          - rtgl-view w=1fg:
-                                              - $if field._error:
-                                                  - rtgl-text s=sm c=de role=alert: ${field._error}
-                                          - rtgl-text data-form-count=true s=sm c=${field._countColor}: ${field._countText}
+                                      - div class=form-field-feedback:
+                                          - $if field._error:
+                                              - rtgl-text class=form-field-feedback-error s=sm c=de role=alert: ${field._error}
+                                          - rtgl-text class=form-field-count data-form-count=true s=sm c=${field._countColor}: ${field._countText}
                                     $elif field._error:
                                       - rtgl-text s=sm c=de role=alert: ${field._error}
       - $if actions.buttons.length > 0:

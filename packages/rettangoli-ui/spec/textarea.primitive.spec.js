@@ -48,7 +48,7 @@ describe("rtgl-textarea primitive", () => {
     textarea.setAttribute("maxlength", " 40 ");
     expect(nativeTextarea.getAttribute("maxlength")).toBe("40");
 
-    for (const invalid of ["", "abc", "-1", "2.5", "null"]) {
+    for (const invalid of ["", "abc", "-1", "2.5", "null", "2147483648", "1000000000000000000000"]) {
       textarea.setAttribute("maxlength", "40");
       textarea.setAttribute("maxlength", invalid);
       expect(nativeTextarea.hasAttribute("maxlength")).toBe(false);

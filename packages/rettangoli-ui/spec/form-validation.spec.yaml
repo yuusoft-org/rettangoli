@@ -367,15 +367,25 @@ in:
 out:
   error: null
 ---
-case: field maxLength applies to textareas and counts a newline as one character
+case: field maxLength applies to textareas
 in:
   - field:
       name: bio
       type: input-textarea
       maxLength: 4
-    value: "ab\ncd"
+    value: "ab\ncdef"
 out:
   error: "Must be at most 4 characters"
+---
+case: field maxLength counts a line break as one character
+in:
+  - field:
+      name: bio
+      type: input-textarea
+      maxLength: 5
+    value: "ab\ncd"
+out:
+  error: null
 ---
 case: field maxLength accepts a numeric string
 in:
@@ -393,6 +403,16 @@ in:
       name: name
       type: input-text
       maxLength: -1
+    value: "abcd"
+out:
+  error: null
+---
+case: field maxLength ignores limits above the native maximum
+in:
+  - field:
+      name: name
+      type: input-text
+      maxLength: 2147483648
     value: "abcd"
 out:
   error: null

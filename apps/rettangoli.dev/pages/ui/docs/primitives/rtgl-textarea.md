@@ -56,7 +56,7 @@ For full behavior details, see [Responsiveness](/ui/docs/introduction/responsive
 | Placeholder | `placeholder` | string | - |
 | Rows | `rows` | number | browser default |
 | Cols | `cols` | number | browser default |
-| Max length | `maxlength` | non-negative integer | - |
+| Max length | `maxlength` | integer, 0 to 2147483647 | - |
 | Disabled | `disabled` | boolean | - |
 | Dimensions | `w`, `h`, `wh` | number, `%`, `xs`-`xl`, `f`, CSS length/value | - |
 | Margin | `m`, `mt`, `mr`, `mb`, `ml`, `mv`, `mh` | `xs`, `sm`, `md`, `lg`, `xl` | - |
@@ -108,8 +108,8 @@ Use `maxlength` to stop typing at a character limit.
 
 - Typing stops at the limit, and pasted text is cut off.
 - Characters are counted like `String#length`: a line break counts as 1, and some emoji count as 2.
-- A longer `value` set from code is kept until the user edits it.
-- A value that isn't a whole number of 0 or more is ignored.
+- A longer `value` set from code isn't cut off. The user can delete characters but can't add any until the value is under the limit.
+- A value that isn't a whole number from 0 to 2147483647 is ignored, as for a native input.
 
 ```html codePreview
 <rtgl-view d="v" g="md" w="360">
