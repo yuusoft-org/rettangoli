@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { bindStore } from "../../rettangoli-fe/src/core/runtime/store.js";
 import * as formStore from "../src/components/form/form.store.js";
+import { setFormMessages } from "../src/common/formMessages.js";
 
 const createConditionalFormProps = () => ({
   form: {
@@ -812,6 +813,46 @@ describe("rtgl-form bound store integration", () => {
     });
     expect(ruled._errorText).toBe("Keep it short");
     expect(required._errorText).toBe("This field is required");
+  });
+
+  it("decides which over-limit messages to hide from the checks, not the message text", () => {
+    const props = {
+      form: {
+        fields: [
+          { name: "limited", type: "input-text", maxLength: 3, showCount: true },
+          {
+            name: "patterned",
+            type: "input-text",
+            maxLength: 3,
+            showCount: true,
+            rules: [{ rule: "pattern", value: "^[a-z]+$" }],
+          },
+        ],
+      },
+    };
+    const store = bindStore(formStore, props, {});
+    store.resetFormValues({ defaultValues: { limited: "abcd", patterned: "ABCD" } });
+
+    try {
+      // Two keys sharing one message must not hide the pattern error.
+      setFormMessages({ pattern: "Invalid value", maxLength: "Invalid value" });
+      const { errors } = formStore.validateForm(
+        store.selectForm().fields,
+        store.getState().formValues,
+      );
+      store.setErrors({ errors });
+      let [limited, patterned] = store.selectViewData().flatFields;
+      expect(limited._errorText).toBeNull();
+      expect(patterned._errorText).toBe("Invalid value");
+
+      // Switching messages after validation keeps the old text hidden.
+      setFormMessages({ maxLength: "Máximo {value} caracteres" });
+      [limited] = store.selectViewData().flatFields;
+      expect(limited._error).toBe("Invalid value");
+      expect(limited._errorText).toBeNull();
+    } finally {
+      setFormMessages({});
+    }
   });
 
   it("rejects unsafe paths through bound form write actions", () => {

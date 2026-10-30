@@ -109,7 +109,7 @@ Use `maxlength` to stop typing at a character limit.
 - Typing stops at the limit, and pasted text is cut off.
 - Characters are counted like `String#length`: a line break counts as 1, and some emoji count as 2.
 - A longer `value` set from code isn't cut off. The user can delete characters but can't add any until the value is under the limit.
-- A value that isn't a whole number from 0 to 2147483647 is ignored, as for a native input.
+- A value that isn't a whole number from 0 to 2147483647, such as `2.5` or `10px`, means no limit.
 
 ```html codePreview
 <rtgl-view d="v" g="md" w="360">

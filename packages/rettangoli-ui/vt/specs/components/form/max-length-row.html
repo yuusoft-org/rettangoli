@@ -23,24 +23,28 @@ steps:
         count: 31 / 30
         invalid: "true"
         countOnTop: true
+        errorBelow: null
         overlaps: false
       - field: city
         error: This field is required
         count: 0 / 20
         invalid: "true"
         countOnTop: true
+        errorBelow: true
         overlaps: false
       - field: zip
         error: null
         count: 8 / 8
         invalid: "false"
         countOnTop: true
+        errorBelow: null
         overlaps: false
       - field: reason
         error: Must be at least 20 characters
         count: 9 / 200
         invalid: "true"
         countOnTop: true
+        errorBelow: false
         overlaps: false
   - action: screenshot
 viewport:
@@ -134,6 +138,8 @@ viewport:
           invalid: input?.getAttribute('aria-invalid') ?? null,
           // The counter is on the first line, so no error sits above it.
           countOnTop: !error || countRect.top <= error.getBoundingClientRect().top,
+          // Whether the error wrapped below the counter or sits beside it.
+          errorBelow: error ? error.getBoundingClientRect().top >= countRect.bottom : null,
           overlaps: !!error && textRects(error).some((rect) => intersects(rect, countRect)),
         };
       }),

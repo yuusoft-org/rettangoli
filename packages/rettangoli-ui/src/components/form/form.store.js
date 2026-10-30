@@ -919,17 +919,20 @@ export const selectViewData = ({ state, props }) => {
 
     if (TEXT_FIELD_TYPES.includes(field.type)) {
       const maxLength = getTextFieldMaxLength(field);
-      const length = getTextLength(get(state.formValues, field.name));
+      const value = get(state.formValues, field.name);
+      const length = getTextLength(value);
       const isOverLimit = maxLength !== null && length > maxLength;
       field._maxLength = maxLength ?? undefined;
       field._showCount = field.showCount === true;
       field._countText = maxLength === null ? `${length}` : `${length} / ${maxLength}`;
       field._countColor = isOverLimit ? "de" : "mu-fg";
-      // A red "31 / 30" already says the value is too long, so the limit's own
-      // message is only kept in aria-description. Other errors still show.
-      const isLimitError =
-        isOverLimit && field._error === getDefaultMessage("maxLength", maxLength);
-      field._errorText = field._showCount && isLimitError ? null : field._error;
+      // A red "31 / 30" already says the value is too long, so when the limit
+      // is the only failing check its message is only kept in aria-description.
+      // Re-running the other checks, rather than matching the message text,
+      // still works after setFormMessages changes or when two messages match.
+      const failsOnlyTheLimit =
+        isOverLimit && validateField({ ...field, maxLength: undefined }, value) === null;
+      field._errorText = field._showCount && failsOnlyTheLimit ? null : field._error;
     }
 
     if (field.type === "input-duration") {

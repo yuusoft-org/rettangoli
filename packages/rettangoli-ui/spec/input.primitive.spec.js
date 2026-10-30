@@ -89,6 +89,9 @@ describe("rtgl-input primitive", () => {
     input.setAttribute("maxlength", "2147483647");
     expect(nativeInput.getAttribute("maxlength")).toBe("2147483647");
 
+    input.setAttribute("maxlength", "0");
+    expect(nativeInput.getAttribute("maxlength")).toBe("0");
+
     for (const invalid of ["", "abc", "-1", "2.5", "null", "2147483648", "1000000000000000000000"]) {
       input.setAttribute("maxlength", "3");
       input.setAttribute("maxlength", invalid);
