@@ -5,6 +5,8 @@
 // checks that every name the rtgl sources take from them is a function.
 //
 // The names are read from the sources (cli.js and src/**), not listed here.
+// Commands load packages with `load("<specifier>")`, which cli.js maps to
+// import(), so both call forms are read the same way.
 //
 // By default it checks this workspace. To check packed tarballs, install rtgl
 // and the @rettangoli/* packages into a temp project and run with
@@ -37,7 +39,7 @@ const EXPECTED_SPECIFIERS = [
 ];
 
 const SPECIFIER = String.raw`["'](@rettangoli\/[^"']+)["']`;
-const IMPORT_CALL = String.raw`import\(\s*${SPECIFIER}\s*,?\s*\)`;
+const IMPORT_CALL = String.raw`\b(?:import|load)\(\s*${SPECIFIER}\s*,?\s*\)`;
 
 function readSources() {
   const files = [join(cliDirectory, "cli.js")];
@@ -162,6 +164,8 @@ test("name extraction understands each way of loading a package", () => {
     import { e, f as g } from "@rettangoli/w";
     const ns = await import("@rettangoli/v/cli");
     ns.h(); ns.i;
+    const { j } = await load("@rettangoli/u/cli");
+    const [{ k }] = await Promise.all([load("@rettangoli/t/cli")]);
     `,
   ]);
 
@@ -173,6 +177,8 @@ test("name extraction understands each way of loading a package", () => {
       "@rettangoli/z/other": ["d"],
       "@rettangoli/w": ["e", "f"],
       "@rettangoli/v/cli": ["h", "i"],
+      "@rettangoli/u/cli": ["j"],
+      "@rettangoli/t/cli": ["k"],
     },
   );
 });
