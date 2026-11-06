@@ -130,36 +130,45 @@ class RettangoliPopoverElement extends HTMLElement {
     this._dialogElement = document.createElement('dialog');
     this.shadowRoot.appendChild(this._dialogElement);
 
+    // Track whether the press started inside the content, so a drag that
+    // ends on the backdrop (e.g. a text selection) does not close.
+    this._pressStartedInContent = false;
+    this._dialogElement.addEventListener('mousedown', (e) => {
+      this._pressStartedInContent = !this._isBackdropEvent(e);
+    });
+
     // Handle dialog backdrop clicks to close popover
     this._dialogElement.addEventListener('click', (e) => {
       e.stopPropagation();
-      // Close on backdrop clicks (when clicking outside the popover content)
-      const path = e.composedPath();
-      const clickedOnBackdrop = path[0] === this._dialogElement ||
-        (path[0].nodeName === 'DIALOG' && path[0] === this._dialogElement);
-
-      if (clickedOnBackdrop) {
+      if (this._isBackdropEvent(e) && !this._pressStartedInContent) {
         this._emitClose();
       }
+      this._pressStartedInContent = false;
     });
 
     // Handle right-click on backdrop to close popover
     this._dialogElement.addEventListener('contextmenu', (e) => {
-      // Close on backdrop right-clicks
-      const path = e.composedPath();
-      const clickedOnBackdrop = path[0] === this._dialogElement ||
-        (path[0].nodeName === 'DIALOG' && path[0] === this._dialogElement);
-
-      if (clickedOnBackdrop) {
+      if (this._isBackdropEvent(e) && !this._pressStartedInContent) {
         e.preventDefault();
         this._emitClose();
       }
+      this._pressStartedInContent = false;
     });
 
     // Handle ESC key - prevent native close and emit custom event
     this._dialogElement.addEventListener('cancel', (e) => {
       e.preventDefault();
       this._emitClose();
+    });
+
+    // Chromium closes the dialog anyway when `cancel` is not cancelable (a
+    // second Escape, Android back). Visibility follows `open`, so show it
+    // again while the host is still open.
+    this._dialogElement.addEventListener('close', () => {
+      if (this._isOpen && this.isConnected && !this._isDialogShown()) {
+        this._openDialogElement();
+        this._schedulePositionUpdate();
+      }
     });
 
     // Create popover container
@@ -213,6 +222,10 @@ class RettangoliPopoverElement extends HTMLElement {
           }
         })
       : null;
+  }
+
+  _isBackdropEvent(e) {
+    return e.composedPath()[0] === this._dialogElement;
   }
 
   _emitClose() {
@@ -638,8 +651,9 @@ class RettangoliPopoverElement extends HTMLElement {
         return;
       }
 
+      // The deferred show and the native close handler schedule again once
+      // the dialog is shown.
       if (!this._isDialogShown()) {
-        this._schedulePositionUpdate();
         return;
       }
 

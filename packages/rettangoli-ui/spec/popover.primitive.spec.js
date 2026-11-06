@@ -421,6 +421,168 @@ describe("rtgl-popover primitive", () => {
   });
 });
 
+describe("rtgl-popover native dialog lifecycle", () => {
+  const openPopover = async () => {
+    const popover = createTestPopover();
+    const content = document.createElement("div");
+    content.slot = "content";
+    content.textContent = "Content";
+    popover.append(content);
+    popover.setAttribute("x", "10");
+    popover.setAttribute("y", "10");
+    document.body.append(popover);
+    popover.setAttribute("open", "");
+    await vi.runAllTimersAsync();
+    return { popover, content, dialog: popover.shadowRoot.querySelector("dialog") };
+  };
+
+  // What Chromium does when `cancel` arrives without user activation (a second
+  // Escape, Android back): the listeners run, but the dialog closes anyway and
+  // a native `close` event follows.
+  const forceNativeClose = (dialog) => {
+    dialog.dispatchEvent(new Event("cancel", { cancelable: false }));
+    dialog.open = false;
+    dialog.dispatchEvent(new Event("close"));
+  };
+
+  const countCloseEvents = (popover) => {
+    const events = [];
+    popover.addEventListener("close", (event) => events.push(event));
+    return events;
+  };
+
+  const press = (target, type, init = {}) => {
+    const event = new MouseEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      ...init,
+    });
+    target.dispatchEvent(event);
+    return event;
+  };
+
+  it("stops scheduling frames while the open popover's dialog is not shown", async () => {
+    const { popover, dialog } = await openPopover();
+    const requestFrame = globalThis.requestAnimationFrame;
+    let frames = 0;
+    globalThis.requestAnimationFrame = (callback) => {
+      frames += 1;
+      return requestFrame(callback);
+    };
+
+    try {
+      // Natively closed, before its `close` event is delivered.
+      dialog.open = false;
+      popover.refreshContent();
+      vi.advanceTimersByTime(1000);
+    } finally {
+      globalThis.requestAnimationFrame = requestFrame;
+    }
+
+    expect(frames).toBe(1);
+    expect(popover._positionFrameId).toBe(null);
+  });
+
+  it("shows its dialog again after a native close while open stays set", async () => {
+    const { popover, dialog } = await openPopover();
+    const closeEvents = countCloseEvents(popover);
+
+    forceNativeClose(dialog);
+
+    expect(closeEvents).toHaveLength(1);
+    expect(dialog.open).toBe(true);
+    await vi.runAllTimersAsync();
+    expect(popover.hasAttribute("positioned")).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("stays closed when the consumer removes open on close, now or next frame", async () => {
+    for (const closeLater of [false, true]) {
+      const { popover, dialog } = await openPopover();
+      popover.addEventListener("close", () => {
+        if (closeLater) {
+          requestAnimationFrame(() => popover.removeAttribute("open"));
+        } else {
+          popover.removeAttribute("open");
+        }
+      });
+
+      forceNativeClose(dialog);
+      await vi.runAllTimersAsync();
+
+      expect(popover._isOpen).toBe(false);
+      expect(dialog.open).toBe(false);
+      popover.remove();
+    }
+  });
+
+  it("ignores the close event that an internal dialog mode switch queues", async () => {
+    const { popover, dialog } = await openPopover();
+    const showModal = vi.spyOn(dialog, "showModal");
+
+    popover._closeDialogElement();
+    popover._openDialogElement();
+    dialog.dispatchEvent(new Event("close"));
+    await vi.runAllTimersAsync();
+
+    expect(showModal).toHaveBeenCalledTimes(1);
+    expect(dialog.open).toBe(true);
+    expect(popover._isOpen).toBe(true);
+  });
+
+  it("does not close when a press starts in the content and ends on the backdrop", async () => {
+    const { popover, content, dialog } = await openPopover();
+    const closeEvents = countCloseEvents(popover);
+
+    press(content, "mousedown");
+    press(dialog, "click");
+    expect(closeEvents).toHaveLength(0);
+
+    press(dialog, "mousedown");
+    press(dialog, "click");
+    expect(closeEvents).toHaveLength(1);
+  });
+
+  it("does not close on a backdrop contextmenu whose press started in the content", async () => {
+    const { popover, content, dialog } = await openPopover();
+    const closeEvents = countCloseEvents(popover);
+
+    press(content, "mousedown", { button: 2 });
+    const contextmenu = press(dialog, "contextmenu", { button: 2 });
+
+    expect(closeEvents).toHaveLength(0);
+    expect(contextmenu.defaultPrevented).toBe(false);
+  });
+
+  it("still closes on a backdrop right-click after a content press that never clicked", async () => {
+    const { popover, content, dialog } = await openPopover();
+    const closeEvents = countCloseEvents(popover);
+
+    press(content, "mousedown");
+    press(dialog, "mousedown", { button: 2 });
+    const contextmenu = press(dialog, "contextmenu", { button: 2 });
+
+    expect(closeEvents).toHaveLength(1);
+    expect(contextmenu.defaultPrevented).toBe(true);
+  });
+
+  it("resets the press origin after every click and contextmenu", async () => {
+    const { popover, content, dialog } = await openPopover();
+    const closeEvents = countCloseEvents(popover);
+
+    press(content, "mousedown");
+    press(dialog, "click");
+    press(dialog, "click");
+    expect(closeEvents).toHaveLength(1);
+
+    press(content, "mousedown");
+    press(dialog, "contextmenu");
+    press(dialog, "contextmenu");
+    expect(closeEvents).toHaveLength(2);
+  });
+});
+
 describe("rtgl-popover top-layer mode", () => {
   const popoverCalls = [];
   const originalMatches = Element.prototype.matches;
