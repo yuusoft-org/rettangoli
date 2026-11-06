@@ -2,7 +2,6 @@
 
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { parse as parseJempl } from "jempl";
-import { parseElementKey } from "yahtml";
 import {
   collectSelectorBindingsFromView,
   collectTemplateAstFromView,
@@ -75,6 +74,12 @@ const createTemplateNode = (rng, depth = 0) => {
   };
 };
 
+// FE's tag name for a template key (parser.js): the selector up to the first space, cut at the first '.' or '#'.
+const feTagName = (key) => {
+  const firstSpaceIndex = key.indexOf(" ");
+  return (firstSpaceIndex === -1 ? key : key.substring(0, firstSpaceIndex)).split(/[.#]/)[0];
+};
+
 const normalizeBindings = (bindings = []) => {
   return bindings.map((binding) => ({
     key: binding.rawKey,
@@ -90,6 +95,7 @@ const normalizeTemplateAst = (templateAst = {}) => {
     nodes: (templateAst.nodes || []).map((node) => ({
       key: node.rawKey,
       line: node?.range?.line,
+      tag: node.tagName,
       attrs: (node.attributes || []).map((attribute) => ({
         bindingName: attribute.bindingName,
         sourceType: attribute.sourceType,
@@ -111,9 +117,11 @@ const main = () => {
 
     try {
       parseJempl(viewYaml.template);
-      const bindingsA = normalizeBindings(collectSelectorBindingsFromView({ viewText, viewYaml }));
+      // The checker computes the bindings once and builds the AST from them (core/model.js).
+      const selectorBindings = collectSelectorBindingsFromView({ viewText, viewYaml });
+      const bindingsA = normalizeBindings(selectorBindings);
       const bindingsB = normalizeBindings(collectSelectorBindingsFromView({ viewText, viewYaml }));
-      const astA = normalizeTemplateAst(collectTemplateAstFromView({ viewText, viewYaml }));
+      const astA = normalizeTemplateAst(collectTemplateAstFromView({ viewText, selectorBindings }));
       const astB = normalizeTemplateAst(collectTemplateAstFromView({ viewText, viewYaml }));
 
       const bindingsStable = JSON.stringify(bindingsA) === JSON.stringify(bindingsB);
@@ -127,9 +135,19 @@ const main = () => {
         continue;
       }
 
-      bindingsA.forEach((binding) => {
-        parseElementKey(binding.key);
+      // One AST node per binding, for the same key, line and FE tag name.
+      const mismatch = bindingsA.findIndex((binding, index) => {
+        const node = astA.nodes[index];
+        return !node || node.key !== binding.key || node.line !== binding.line
+          || node.tag !== binding.tag || binding.tag !== feTagName(binding.key);
       });
+      if (mismatch !== -1 || astA.nodes.length !== bindingsA.length) {
+        failures.push({
+          index: i,
+          reason: `template AST does not match selector binding ${mismatch}`,
+          viewText,
+        });
+      }
     } catch (error) {
       failures.push({
         index: i,

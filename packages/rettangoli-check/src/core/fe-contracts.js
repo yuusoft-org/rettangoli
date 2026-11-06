@@ -82,7 +82,9 @@ const ATTRIBUTE_NAME_REGEX = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
 
 export const isValidAttributeName = (value) => ATTRIBUTE_NAME_REGEX.test(value);
 
-export const collectBindingNames = (attrsString = "") => {
+// check: `keepTogglePrefix: true` returns a bare toggle as written ('?checked'; FE returns 'checked'), so the name
+// keeps its boolean-attribute meaning and matches the template AST's binding name.
+export const collectBindingNames = (attrsString = "", { keepTogglePrefix = false } = {}) => {
   if (!attrsString) {
     return [];
   }
@@ -121,7 +123,7 @@ export const collectBindingNames = (attrsString = "") => {
       && !rawToken.startsWith(PROP_PREFIX)
       && !rawToken.includes("=")
     ) {
-      bindingNames.push(attrName);
+      bindingNames.push(keepTogglePrefix ? rawToken : attrName);
     }
   }
 

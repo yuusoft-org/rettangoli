@@ -1,0 +1,3 @@
+template:
+  - rtgl-view ?bogus-a :bogus-b=${x}: names are reported in source order
+styles: {}

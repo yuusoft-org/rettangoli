@@ -37,7 +37,7 @@ const findPropertyBindingViolation = (model) => {
   return {
     line: textScanBinding.line,
     key: textScanBinding.rawKey,
-    bindingName: textScanBinding.bindingNames.find((bindingName) => bindingName.startsWith(".")),
+    bindingName: textScanBinding.bindingName,
   };
 };
 

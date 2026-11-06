@@ -26,6 +26,7 @@ import {
   validateEventConfig as checkValidateEventConfig,
 } from "../src/core/fe-contracts.js";
 import { analyzeProject } from "../src/core/analyze.js";
+import { parseSelectorKey as checkParseSelectorKey } from "../src/core/parsers.js";
 import {
   collectBindingNames as feCollectBindingNames,
   createRefMatchers as feCreateRefMatchers,
@@ -112,6 +113,20 @@ const splitSelectorKey = (key) => {
   return { selector: key.slice(0, firstSpaceIndex), attrsString: key.slice(firstSpaceIndex + 1).trim() };
 };
 
+// FE splits the key after Jempl renders it, and an interpolation renders to one value (an id, a class), so a
+// space inside '${...}' / '#{...}' of the raw key is not where FE splits.
+const splitRenderedSelectorKey = (key) => {
+  const interpolations = [...key.matchAll(/[$#]\{[^{}]*\}/g)].map((match) => [match.index, match.index + match[0].length]);
+  let spaceIndex = key.indexOf(" ");
+  while (spaceIndex !== -1 && interpolations.some(([start, end]) => spaceIndex > start && spaceIndex < end)) {
+    spaceIndex = key.indexOf(" ", spaceIndex + 1);
+  }
+  if (spaceIndex === -1) {
+    return { selector: key, attrsString: "" };
+  }
+  return { selector: key.slice(0, spaceIndex), attrsString: key.slice(spaceIndex + 1).trim() };
+};
+
 const collectTemplateKeys = (node, keys = []) => {
   if (Array.isArray(node)) {
     node.forEach((item) => collectTemplateKeys(item, keys));
@@ -132,6 +147,31 @@ const listFiles = (dirPath, suffix) => {
     }
     return entry.name.endsWith(suffix) ? [entryPath] : [];
   }).sort();
+};
+
+// Every non-control template key (trimmed, as check collects them) of the ui views and the check scenarios,
+// mapped to the view it comes from.
+const collectCorpusSelectorKeys = () => {
+  const keys = new Map();
+  const corpus = [
+    ...listFiles(path.resolve(packageDir, "../rettangoli-ui/src/components"), ".view.yaml"),
+    ...listFiles(path.resolve(packageDir, "test/scenarios"), ".view.yaml"),
+  ];
+  corpus.forEach((viewPath) => {
+    let template;
+    try {
+      template = yaml.load(readFileSync(viewPath, "utf8"))?.template;
+    } catch {
+      return; // scenarios with deliberately broken YAML have no keys to compare
+    }
+    collectTemplateKeys(template).forEach((rawKey) => {
+      const key = rawKey.trim();
+      if (key && !key.startsWith("$") && !keys.has(key)) { // control directives are not selector keys
+        keys.set(key, path.relative(packageDir, viewPath));
+      }
+    });
+  });
+  return keys;
 };
 
 // Writes one component per case into a throwaway project and runs one analyzeProject over all of them.
@@ -286,32 +326,50 @@ const compareBindingNames = () => {
   ];
 
   const attrsStrings = new Map(syntheticAttrs.map((attrs) => [attrs, "synthetic"]));
-  const corpus = [
-    ...listFiles(path.resolve(packageDir, "../rettangoli-ui/src/components"), ".view.yaml"),
-    ...listFiles(path.resolve(packageDir, "test/scenarios"), ".view.yaml"),
-  ];
-  corpus.forEach((viewPath) => {
-    let template;
-    try {
-      template = yaml.load(readFileSync(viewPath, "utf8"))?.template;
-    } catch {
-      return; // scenarios with deliberately broken YAML have no keys to compare
+  collectCorpusSelectorKeys().forEach((source, key) => {
+    const { attrsString } = splitSelectorKey(key);
+    if (attrsString && !attrsStrings.has(attrsString)) {
+      attrsStrings.set(attrsString, source);
     }
-    collectTemplateKeys(template).forEach((key) => {
-      if (key.startsWith("$")) {
-        return; // control directives are not selector keys
-      }
-      const { attrsString } = splitSelectorKey(key);
-      if (attrsString && !attrsStrings.has(attrsString)) {
-        attrsStrings.set(attrsString, path.relative(packageDir, viewPath));
-      }
-    });
+  });
+
+  const inputs = [...attrsStrings].map(([attrs, source]) => ({ label: `${labelOf(attrs)} (${source})`, input: attrs }));
+  // check's selector bindings keep the '?' of a bare toggle (keepTogglePrefix); nothing else may differ.
+  const withoutToggles = (names) => [...new Set(names.map((name) => name.replace(/^\?/, "")))];
+  const keepTogglePrefix = compareOutcomes(
+    inputs.map((entry) => ({ ...entry, label: `keepTogglePrefix ${entry.label}` })),
+    (attrs) => withoutToggles(checkCollectBindingNames(attrs, { keepTogglePrefix: true })),
+    (attrs) => withoutToggles(feCollectBindingNames(attrs)),
+  );
+  const exact = compareOutcomes(inputs, checkCollectBindingNames, feCollectBindingNames);
+  return { inputCount: exact.inputCount, mismatches: [...exact.mismatches, ...keepTogglePrefix.mismatches] };
+};
+
+// c2: selector, attributes and tag name of a template key (check parseSelectorKey vs FE's split)
+const compareSelectorKeys = () => {
+  const syntheticKeys = [
+    "rtgl-view", "div.card#main", "div#main.card w=f", "rtgl-button#item${i} v=pr", "rtgl-view#row${item.id}.x",
+    "my_el x=1", "a.b.c", "rtgl-text  s=sm   c=fg", "rtgl-input :value=${user[\"full name\"]} placeholder=\"x y\"",
+    "input ?checked", "#onlyId", ".onlyClass", "rtgl-view w=f ${containerAttrString}", "x-y.z#w a b c",
+    "rtgl-view#${ id } x=1", "div.#{ cls } ${ a } b",
+  ];
+  const keys = new Map(syntheticKeys.map((key) => [key, "synthetic"]));
+  collectCorpusSelectorKeys().forEach((source, key) => {
+    if (!keys.has(key)) {
+      keys.set(key, source);
+    }
   });
 
   return compareOutcomes(
-    [...attrsStrings].map(([attrs, source]) => ({ label: `${labelOf(attrs)} (${source})`, input: attrs })),
-    checkCollectBindingNames,
-    feCollectBindingNames,
+    [...keys].map(([key, source]) => ({ label: `${labelOf(key)} (${source})`, input: key })),
+    (key) => {
+      const { selector, attrsText, tagName } = checkParseSelectorKey(key);
+      return { selector, attrsText, tagName };
+    },
+    (key) => {
+      const { selector, attrsString } = splitRenderedSelectorKey(key);
+      return { selector, attrsText: attrsString, tagName: selector.split(/[.#]/)[0] };
+    },
   );
 };
 
@@ -678,6 +736,7 @@ const SECTIONS = [
   { name: "refs", minInputs: 80, run: compareRefs },
   { name: "eventConfig", minInputs: 2000, run: compareEventConfig },
   { name: "bindingNames", minInputs: 200, run: compareBindingNames },
+  { name: "selectorKeys", minInputs: 300, run: compareSelectorKeys },
   { name: "propertyBindingSyntax", minInputs: 40, run: comparePropertyBindingSyntax },
   { name: "nodeBindings", minInputs: 120, run: compareNodeBindings },
   { name: "schemaContract", minInputs: 40, run: compareSchemaContract },

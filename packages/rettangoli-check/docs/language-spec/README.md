@@ -1,6 +1,6 @@
-# Rettangoli Language Specs (Phase 1 Authoritative Set)
+# Rettangoli Language Specs
 
-This folder is the canonical semantic source for Phase 1 (`WS01`, `CP1`) and is validated against the scenario corpus.
+This folder is the semantic source for the checker's rules and is validated against the scenario corpus.
 
 Authoritative docs:
 
@@ -11,11 +11,11 @@ Authoritative docs:
 - `packages/rettangoli-check/docs/language-spec/language-level-compatibility-matrix.md`
 - `packages/rettangoli-check/docs/language-spec/conformance-contract.md`
 
-Phase 2 parser contract docs:
+YAHTML parser contract:
 
 - `packages/rettangoli-check/docs/yahtml-parser-api-contract.md`
 
-Phase 3 parser contract docs:
+Jempl parser contract:
 
 - `packages/rettangoli-check/docs/jempl-parser-api-contract.md`
 

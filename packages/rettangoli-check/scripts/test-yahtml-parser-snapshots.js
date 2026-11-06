@@ -7,7 +7,6 @@ import { load as loadYaml } from "js-yaml";
 import {
   collectTemplateAstFromView,
   parseYahtmlSelectorKey,
-  tokenizeYahtmlSelectorKey,
 } from "../src/core/parsers.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -92,21 +91,6 @@ const createLineOffsets = (source = "") => {
   return offsets;
 };
 
-const normalizeSelectorParse = ({ rawKey, line, lineText, lineOffsets }) => {
-  const parsed = parseYahtmlSelectorKey({
-    rawKey,
-    line,
-    lineText,
-    lineOffsets,
-  });
-
-  return {
-    ast: parsed.ast,
-    cst: parsed.cst,
-    diagnostics: parsed.diagnostics,
-  };
-};
-
 const buildSnapshotPayload = ({ description, viewText }) => {
   const viewYaml = loadYaml(viewText);
   const templateAst = collectTemplateAstFromView({ viewText, viewYaml });
@@ -119,8 +103,7 @@ const buildSnapshotPayload = ({ description, viewText }) => {
 
     return {
       rawKey: node.rawKey,
-      tokenStream: tokenizeYahtmlSelectorKey(node.rawKey),
-      parsedSelector: normalizeSelectorParse({
+      parsedSelector: parseYahtmlSelectorKey({
         rawKey: node.rawKey,
         line,
         lineText,

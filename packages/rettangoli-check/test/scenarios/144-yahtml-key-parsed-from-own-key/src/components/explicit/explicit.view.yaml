@@ -1,0 +1,5 @@
+template:
+  - ? "rtgl-view w=f
+      bogus-al=1"
+    : x
+styles: {}

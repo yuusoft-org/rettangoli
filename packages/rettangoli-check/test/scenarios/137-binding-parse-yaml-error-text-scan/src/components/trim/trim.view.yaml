@@ -1,0 +1,5 @@
+template:
+  - "  rtgl-view bogus=1": the key is trimmed before it is split
+refs:
+  broken: [unclosed
+styles: {}

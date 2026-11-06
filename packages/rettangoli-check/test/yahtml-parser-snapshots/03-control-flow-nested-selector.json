@@ -44,77 +44,11 @@
           }
         ]
       }
-    ],
-    "cst": {
-      "kind": "YahtmlTemplateCst",
-      "nodes": [
-        {
-          "kind": "YahtmlElementCst",
-          "rawKey": "rtgl-card title=hello",
-          "selectorToken": {
-            "kind": "YahtmlSelectorToken",
-            "raw": "rtgl-card",
-            "startOffset": 0,
-            "endOffset": 9,
-            "length": 9,
-            "column": 1,
-            "endColumn": 9
-          },
-          "attributeTokens": [
-            {
-              "kind": "YahtmlAttributeToken",
-              "raw": "title=hello",
-              "bindingName": "title",
-              "sourceType": "attr",
-              "name": "title",
-              "valueText": "hello",
-              "expressions": [],
-              "expressionNodes": [],
-              "startOffset": 10,
-              "endOffset": 21,
-              "length": 11,
-              "column": 11,
-              "endColumn": 21
-            }
-          ]
-        }
-      ]
-    },
-    "parseDiagnostics": []
+    ]
   },
   "selectorApis": [
     {
       "rawKey": "rtgl-card title=hello",
-      "tokenStream": {
-        "kind": "YahtmlSelectorTokenStream",
-        "raw": "rtgl-card title=hello",
-        "selectorToken": {
-          "kind": "YahtmlSelectorToken",
-          "raw": "rtgl-card",
-          "startOffset": 0,
-          "endOffset": 9,
-          "length": 9,
-          "column": 1,
-          "endColumn": 9
-        },
-        "attributeTokens": [
-          {
-            "kind": "YahtmlAttributeToken",
-            "raw": "title=hello",
-            "bindingName": "title",
-            "sourceType": "attr",
-            "name": "title",
-            "valueText": "hello",
-            "expressions": [],
-            "expressionNodes": [],
-            "startOffset": 10,
-            "endOffset": 21,
-            "length": 11,
-            "column": 11,
-            "endColumn": 21
-          }
-        ]
-      },
       "parsedSelector": {
         "ast": {
           "type": "Element",
@@ -155,38 +89,7 @@
               }
             }
           ]
-        },
-        "cst": {
-          "kind": "YahtmlElementCst",
-          "rawKey": "rtgl-card title=hello",
-          "selectorToken": {
-            "kind": "YahtmlSelectorToken",
-            "raw": "rtgl-card",
-            "startOffset": 0,
-            "endOffset": 9,
-            "length": 9,
-            "column": 1,
-            "endColumn": 9
-          },
-          "attributeTokens": [
-            {
-              "kind": "YahtmlAttributeToken",
-              "raw": "title=hello",
-              "bindingName": "title",
-              "sourceType": "attr",
-              "name": "title",
-              "valueText": "hello",
-              "expressions": [],
-              "expressionNodes": [],
-              "startOffset": 10,
-              "endOffset": 21,
-              "length": 11,
-              "column": 11,
-              "endColumn": 21
-            }
-          ]
-        },
-        "diagnostics": []
+        }
       }
     }
   ]

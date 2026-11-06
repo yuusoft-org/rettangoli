@@ -1,0 +1,4 @@
+template:
+  - {rtgl-text bogus-k=1: hi}
+  - {rtgl-button#btn: Go}
+styles: {}

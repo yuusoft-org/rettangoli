@@ -1,0 +1,3 @@
+template:
+  - "rtgl-view w=f opts={ foo: bar }": FE reads 'foo:' and 'bar' as attribute names
+styles: {}

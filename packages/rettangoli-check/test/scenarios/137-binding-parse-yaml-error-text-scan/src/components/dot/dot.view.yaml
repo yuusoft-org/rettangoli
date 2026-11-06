@@ -1,0 +1,7 @@
+template:
+  - rtgl-input .value: a lone bare '.prop' keeps CONTRACT-003 (text scan)
+  - rtgl-input ?disabled .value: FE ignores a bare token after a toggle
+  - rtgl-view :bogus: FE ignores a bare ':' token
+refs:
+  broken: [unclosed
+styles: {}

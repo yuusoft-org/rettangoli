@@ -4,7 +4,6 @@ import { load as loadYaml } from "js-yaml";
 import {
   collectTemplateAstFromView,
   parseYahtmlSelectorKey,
-  tokenizeYahtmlSelectorKey,
 } from "../src/core/parsers.js";
 
 const SELECTOR_CASES = [
@@ -25,7 +24,7 @@ const SELECTOR_CASES = [
 const VIEW_CASES = [
   {
     id: "malformed-invalid-selector-key",
-    expectedMinimumDiagnostics: 0,
+    expectedNodes: [{ rawKey: ":invalid", tagName: ":invalid", bindingNames: [] }],
     viewText: [
       "template:",
       "  - \":invalid\": null",
@@ -34,7 +33,7 @@ const VIEW_CASES = [
   },
   {
     id: "malformed-attribute-token",
-    expectedMinimumDiagnostics: 1,
+    expectedNodes: [{ rawKey: "rtgl-button =${oops}", tagName: "rtgl-button", bindingNames: [""] }],
     viewText: [
       "template:",
       "  - \"rtgl-button =${oops}\": Tap",
@@ -43,7 +42,7 @@ const VIEW_CASES = [
   },
   {
     id: "control-flow-with-selector-child",
-    expectedMinimumDiagnostics: 0,
+    expectedNodes: [{ rawKey: "rtgl-button :label=${title}", tagName: "rtgl-button", bindingNames: [":label"] }],
     viewText: [
       "template:",
       "  - \"$if isVisible\":",
@@ -81,17 +80,20 @@ const stripUndefined = (value) => {
 
 const normalized = (value) => JSON.stringify(stripUndefined(value));
 
+const isElementAst = (node) => (
+  node?.type === "Element"
+  && typeof node.tagName === "string"
+  && typeof node.rawKey === "string"
+  && Number.isInteger(node.range?.line)
+  && Array.isArray(node.attributes)
+  && node.attributes.every((attribute) => attribute?.type === "Attribute" && Number.isInteger(attribute.range?.column))
+);
+
 const main = () => {
   const failures = [];
 
   SELECTOR_CASES.forEach((rawKey, index) => {
     try {
-      const tokenA = tokenizeYahtmlSelectorKey(rawKey);
-      const tokenB = tokenizeYahtmlSelectorKey(rawKey);
-      if (normalized(tokenA) !== normalized(tokenB)) {
-        failures.push(`selector case ${index}: tokenizer output is non-deterministic`);
-      }
-
       const lineOffsets = createLineOffsets(rawKey);
       const parseA = parseYahtmlSelectorKey({
         rawKey,
@@ -108,6 +110,9 @@ const main = () => {
       if (normalized(parseA) !== normalized(parseB)) {
         failures.push(`selector case ${index}: parser output is non-deterministic`);
       }
+      if (!isElementAst(parseA.ast)) {
+        failures.push(`selector case ${index}: parser output is not an Element AST`);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       failures.push(`selector case ${index}: threw '${message}'`);
@@ -123,11 +128,14 @@ const main = () => {
         failures.push(`${viewCase.id}: template AST output is non-deterministic`);
       }
 
-      const diagnostics = Array.isArray(astA?.parseDiagnostics) ? astA.parseDiagnostics : [];
-      if (diagnostics.length < viewCase.expectedMinimumDiagnostics) {
-        failures.push(
-          `${viewCase.id}: expected >= ${viewCase.expectedMinimumDiagnostics} parse diagnostic(s), got ${diagnostics.length}`,
-        );
+      const nodes = (astA?.nodes || []).map((node) => ({
+        rawKey: node.rawKey,
+        tagName: node.tagName,
+        bindingNames: (node.attributes || []).map((attribute) => attribute.bindingName),
+      }));
+      if (astA?.type !== "Template" || !astA.nodes.every(isElementAst)
+        || normalized(nodes) !== normalized(viewCase.expectedNodes)) {
+        failures.push(`${viewCase.id}: expected template AST nodes ${normalized(viewCase.expectedNodes)}, got ${normalized(nodes)}`);
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

@@ -138,7 +138,9 @@ export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
       const astBindingNames = astAttributes
         .map((attribute) => attribute?.bindingName)
         .filter(Boolean);
-      const allBindingNames = [...new Set([...(bindingNames || []), ...astBindingNames])];
+      // Source order: names with an attribute node in token order, then the others (object-notation keys, names
+      // FE reads inside a value that the AST keeps as one token).
+      const allBindingNames = [...new Set([...astBindingNames, ...(bindingNames || [])])];
 
       allBindingNames.forEach((bindingName) => {
         if (!bindingName || isDynamicToken(bindingName)) {

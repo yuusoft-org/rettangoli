@@ -1,310 +1,127 @@
-# Rettangoli Check (Brainstorm)
+# @rettangoli/check
 
-> Working name: `rettangoli-check` (possible package: `@rettangoli/check`)
+Static contract checker for Rettangoli FE projects. It reads each component's files (`.view.yaml`,
+`.schema.yaml`, `.handlers.js`, `.store.js`, `.methods.js`, `.constants.yaml`) and reports, before build or
+runtime, the template and contract problems that `@rettangoli/fe` would otherwise hit while rendering or
+registering the component.
 
-This package is intended to be a dedicated static analyzer for Rettangoli projects.
-It should validate that component contracts are respected across files before runtime/build errors happen.
+The checker only reads files. It never executes application modules.
 
-Execution plan: see `packages/rettangoli-check/ROADMAP.md`.
-Loop retrospective: see `packages/rettangoli-check/LOOP_LEARNINGS.md`.
+## Usage
 
-## Current Implementation Status
-
-Implemented now:
-
-- package + CLI entrypoint (`@rettangoli/check`, `rtgl check`)
-- discovery and component grouping
-- model building for YAML/JS contracts
-- FE parity checks (schema required, forbidden view keys, unsupported property binding syntax)
-- schema/constants checks
-- listener config checks
-- optional naming/signature style checks (`--style`)
-- cross-file symbol checks (handler/action/method existence)
-- YAHTML attr/prop validation for template selector bindings
-- semantic scope graph (YAHTML + Jempl + FE binding context)
-- schema-aware expression checks (unresolved roots, invalid schema paths, boolean type mismatch)
-- lifecycle signature checks (`handleBeforeMount`, `handleOnUpdate`)
-- inter-component compatibility checks (required props, events, boolean prop binding type)
-- UI primitive/component registry generation from `rettangoli-ui`
-- reporters: `text`, `json`, `sarif`
-- watch mode with an incremental component model cache that tracks transitive local re-exports
-- static discovery of custom elements registered from application `src` modules
-- robustness harnesses: export differential + template pipeline fuzzing
-- CI integration in `.github/workflows/ci-ui.yaml` via `bun run check:contracts`
-
-Template parser architecture:
-- `docs/template-analysis.md` (YAML -> Jempl -> YAHTML pipeline)
-
-Checklist progress is tracked with `[x]/[ ]` in `packages/rettangoli-check/ROADMAP.md`.
-
-## CLI Usage
+`rtgl check` (from `@rettangoli/cli`):
 
 ```bash
-# default (uses rettangoli.config.yaml fe.dirs when available)
+# directories from rettangoli.config.yaml (fe.dirs), else ./src/components
 rtgl check
 
-# explicit directory
-rtgl check --dir src/components
+# explicit directories (repeatable)
+rtgl check --dir src/components --dir src/pages
 
-# JSON output
+# machine-readable output
 rtgl check --dir src/components --format json
-
-# SARIF output
 rtgl check --dir src/components --format sarif
-
-# enable expression scope/type checks
-rtgl check --dir src/components --expr
-
-# opt into kebab-case folders, handle-prefixed exports, and deps/payload naming
-rtgl check --style
-
-# watch mode (incremental)
-rtgl check --watch --watch-interval-ms 500
 
 # treat warnings as errors
 rtgl check --warn-as-error
 
-# run without YAHTML attr checks (contract-only mode)
-rtgl check --dir src/components --no-yahtml
+# skip the attribute checks against the UI registry (YAHTML-*)
+rtgl check --no-yahtml
 
-# preview safe autofixes
-rtgl check --dir src/components --autofix-dry-run --format json
+# opt into naming and signature conventions (also `check: { style: true }` in rettangoli.config.yaml)
+rtgl check --style
 
-# preview safe autofixes with patch output
-rtgl check --dir src/components --autofix-dry-run --autofix-patch --format json
+# template expression scope/type checks
+rtgl check --expr
 
-# apply safe autofixes
-rtgl check --dir src/components --autofix --autofix-min-confidence 0.95
+# re-run on file changes (polling)
+rtgl check --watch --watch-interval-ms 500
 ```
 
-`rtgl-check` command surface:
+The package also ships the `rtgl-check` bin. It accepts the same options plus the autofix options, which
+`rtgl check` does not expose:
 
 ```bash
-# check contracts
-rtgl-check --dir src/components --format json
+# preview safe fixes (with patch text)
+rtgl-check --dir src/components --format json --autofix-dry-run --autofix-patch
+
+# apply safe fixes
+rtgl-check --dir src/components --autofix --autofix-min-confidence 0.95
 ```
 
-By default, runtime-supported camelCase component folders, helper exports,
-destructured or renamed lifecycle arguments, and unused payload arguments do
-not produce errors. `--style` (or `check: { style: true }` in
-`rettangoli.config.yaml`) enables these conventions explicitly. Missing handlers,
-asynchronous `handleBeforeMount`, unsupported attributes, and invalid listener
-options remain contract errors.
+Exit code `1` means at least one error (or a warning with `--warn-as-error`). JSON and SARIF go to stdout. The
+text report goes to stderr when the check fails and to stdout otherwise.
 
-UI contracts resolve from the checked project's installed UI version before the
-checker's fallback dependency. Registry generation includes schema properties,
-primitive attributes, and attributes explicitly used by component `:host(...)`
-styles. UI primitives also receive `:host([attr])` attributes from the shared
-style exports they import (for example `rtgl-view`'s `sbv` from the overlay
-scrollbar styles); only the imported bindings are inspected, so other selectors in
-the same shared module, or in other primitive modules, are not registered. Application primitives are discovered from static `customElements.define`
-calls in `src`, including named imports, literal tag constants, setter properties,
-and observed attributes. Application modules are never executed by this discovery.
+Programmatic use:
 
-CLI contract references:
+```js
+import { analyzeProject } from "@rettangoli/check";
+import { check } from "@rettangoli/check/cli";
 
-- `packages/rettangoli-check/docs/cli-contract.md`
-- `packages/rettangoli-check/docs/semantic-compatibility-guarantees.md`
-- `packages/rettangoli-check/docs/diagnostics-reporting-contract.md`
-- `packages/rettangoli-check/docs/diagnostics-reference.md`
-- `packages/rettangoli-check/docs/diagnostics-sarif-contract.md`
-- `packages/rettangoli-check/docs/security-parser-attack-surface.md`
+const result = await analyzeProject({ cwd: process.cwd(), dirs: ["src/components"] });
+// { ok, cwd, dirs, componentCount, diagnostics, summary, registryTagCount, ... }
+```
 
-## JS Export Parser Backend
+## UI registry
 
-`rettangoli-check` uses Oxc as its only JS export extractor.
+Custom elements and their attributes are validated against the `@rettangoli/ui` that the checked project
+installs. The UI source is resolved in this order: the workspace root itself, `packages/rettangoli-ui` in the
+workspace, the project's installed `@rettangoli/ui`, the monorepo copy next to this package, and finally the
+checker's own `@rettangoli/ui` dependency.
 
-## Known Strict Findings (Current UI Baseline)
+The registry holds the UI components' schema properties, the primitives' attributes, attributes used by
+`:host([attr])` selectors in component styles and in the shared style modules a primitive imports, and the
+custom elements an application defines with static `customElements.define` calls in `src`.
 
-Current baseline is clean in strict mode:
+## What it checks
 
-- `packages/rettangoli-ui` contract checks pass with YAHTML enabled
-- CI runs strict contract checks (no `--no-yahtml` bypass)
+Each diagnostic has a stable code. `docs/diagnostics-reference.md` describes the codes added or changed by
+recent fixes and the reporter contracts.
 
-## Why this package
+- Components: folder and file naming, and colliding component identities (`RTGL-CHECK-COMPONENT-*`).
+- FE contract parity: missing `.schema.yaml`, forbidden keys in `.view.yaml`, and property bindings FE
+  rejects, such as `.prop=` or `:prop=literal` (`RTGL-CONTRACT-001..003`).
+- Schemas and constants (`RTGL-CHECK-SCHEMA-*`, `RTGL-CHECK-CONSTANTS-001`), including a duplicate
+  `componentName` (`RTGL-CHECK-SCHEMA-008`) and a non-boolean `ssr` (`RTGL-CHECK-SCHEMA-009`).
+- Template bindings FE throws on while rendering: invalid names or tokens and `@event` attributes
+  (`RTGL-CHECK-BINDING-001`), `?aria-*` / `?data-*` / `?role` toggles (`RTGL-CHECK-BINDING-002`), and
+  duplicate props (`RTGL-CHECK-BINDING-003`). These run on every element and also with `--no-yahtml`.
+- Template attributes against the UI registry: unknown custom elements, legacy `.prop` bindings and
+  unsupported attributes or props (`RTGL-CHECK-YAHTML-001..003`). Template keys are split and their binding
+  names read the way FE reads them.
+- Jempl control flow (`RTGL-CHECK-JEMPL-*`).
+- Refs and listeners: ref keys and element ids, listener options, handler/action exclusivity, and payloads
+  that must be mappings (`RTGL-CHECK-REF-*`, `RTGL-CHECK-LISTENER-001..010`).
+- Cross-file symbols: listener handlers in `.handlers.js`, actions in `.store.js`, and `schema.methods` in
+  `.methods.js`, including re-exports (`RTGL-CHECK-SYMBOL-*`), handler naming (`RTGL-CHECK-HANDLER-*`),
+  lifecycle signatures (`RTGL-CHECK-LIFECYCLE-*`) and method payloads (`RTGL-CHECK-METHOD-*`).
+- Component compatibility: missing required props and boolean or prop bindings of the wrong type
+  (`RTGL-CHECK-COMPAT-001`, `003`, `004`).
+- Input problems: unreadable files (`RTGL-CHECK-READ-001`), YAML that does not parse
+  (`RTGL-CHECK-PARSE-001`), JavaScript that does not parse (`RTGL-CHECK-PARSE-002`; missing-export checks
+  are then skipped for that file), and a UI primitive that fails to load (`RTGL-CHECK-REGISTRY-001`, a
+  warning).
+- With `--expr`: template expression roots, schema paths and boolean types (`RTGL-CHECK-EXPR-*`).
 
-`@rettangoli/fe` already has a contract checker (`rtgl fe check`), but today it focuses on a small set of structural rules:
+By default, runtime-supported camelCase component folders, helper exports, destructured or renamed lifecycle
+arguments and unused payload arguments are accepted. `--style` reports them as convention violations.
 
-- required `.schema.yaml` per component
-- forbidden metadata keys inside `.view.yaml`
-- unsupported property binding syntax detection
+## Docs
 
-That baseline is good, but many contract violations are still caught late (during build, runtime, or manually).
+- `docs/diagnostics-reference.md`: diagnostic families, code details, reporter contracts.
+- `docs/diagnostics-reporting-contract.md`, `docs/diagnostics-sarif-contract.md`,
+  `docs/diagnostics-json-schema-v1.json`: report formats.
+- `docs/cli-contract.md`: the `rtgl-check` command surface.
+- `docs/template-analysis.md`: how template keys are collected and parsed.
+- `docs/language-spec/`: rule specs referenced by the scenario tests.
+- `docs/security-parser-attack-surface.md`: parser crash containment and fuzzing.
+- `ROADMAP.md`: current state and pending decisions.
 
-## What we learned from current codebase
-
-### FE contract sources
-
-Canonical docs are in `packages/rettangoli-fe/docs/`:
-
-- `overview.md`
-- `view.md`
-- `schema.md`
-- `store.md`
-- `handlers.md`
-- `methods.md`
-- `constants.md`
-
-### Existing FE check implementation
-
-Main check path today:
-
-- `packages/rettangoli-fe/src/cli/check.js`
-- `packages/rettangoli-fe/src/cli/contracts.js`
-- `packages/rettangoli-fe/src/core/contracts/componentFiles.js`
-
-### Runtime/build validations that are currently not fully static
-
-Important checks currently happen at build/runtime, not as deep static analysis:
-
-- schema contract and methods mapping:
-  `packages/rettangoli-fe/src/core/schema/validateSchemaContract.js`
-- listener config validation (handler/action exclusivity, modifiers, debounce/throttle):
-  `packages/rettangoli-fe/src/core/view/refs.js`
-- action dispatch to store action name validation:
-  `packages/rettangoli-fe/src/core/runtime/lifecycle.js`
-- build-time parse/compose of component files:
-  `packages/rettangoli-fe/src/cli/build.js`
-
-### UI package shape
-
-`packages/rettangoli-ui/src/components/*` consistently uses the FE multi-file model (`.view.yaml`, `.schema.yaml`, optional `.handlers.js`/`.store.js`/`.methods.js`).
-That makes it a strong first target for static checks.
-
-## Proposed goals for `rettangoli-check`
-
-1. Catch contract violations earlier than runtime.
-2. Give precise file-level diagnostics (and line-level when possible).
-3. Separate rule engine from FE runtime, so checkers can run in CI/editor/pre-commit.
-4. Support both human and machine output (`text`, `json`, later `sarif`).
-
-## Rule ideas
-
-### V1 (high value, low ambiguity)
-
-1. File-set rules
-- `.schema.yaml` required per component
-- no unsupported FE file suffixes in component folders (optional strict mode)
-
-2. Schema rules
-- `componentName` required, non-empty, valid custom element format
-- reject `attrsSchema`
-- `methods` must be object schema with `properties`
-
-3. Cross-file symbol rules
-- `schema.methods.properties.*` must exist in `.methods.js` exports
-- exported methods in `.methods.js` should be documented in `schema.methods` (warn-level first)
-- `refs.*.eventListeners.*.handler` must exist in `.handlers.js`
-- `refs.*.eventListeners.*.action` must exist in `.store.js`
-
-4. Listener config static validation
-- exactly one of `handler` or `action`
-- `debounce` and `throttle` are mutually exclusive
-- modifier types (`boolean`, non-negative number)
-
-5. Component identity rules
-- detect duplicate `componentName` across project
-- optional: enforce expected mapping between folder/file base name and schema component name
-
-6. Constants rules
-- `.constants.yaml` root must be an object
-
-### V2 (medium complexity)
-
-1. Refs and ID contracts
-- if ID refs are used, matched element IDs should satisfy camelCase constraints used by runtime
-
-2. Store/handlers shape checks
-- `handleBeforeMount` should not be async (or return Promise)
-- basic export-order/lint checks for `.store.js` (if still desired as strict rule)
-
-3. API consistency checks for UI libraries
-- event naming conventions (`kebab-case`, suffix consistency)
-- payload contract hints from schema vs emitted event docs (warn-level)
-
-### V3 (advanced / optional)
-
-1. Template expression linting and unresolved symbol checks.
-2. Inter-component prop compatibility checks (requires component registry graph).
-3. Autofix mode for mechanical issues.
-
-## Architecture proposal
-
-## 1. Core flow
-
-1. Discover component files from configured dirs.
-2. Parse YAML files (`js-yaml`) and JS files (AST-based, likely `@babel/parser`).
-3. Build a component model:
-- metadata (`category`, `component`, paths)
-- schema model
-- view refs/listeners model
-- JS export indexes for store/handlers/methods
-4. Run rule engine over model.
-5. Format diagnostics.
-
-## 2. Module boundaries
-
-- `src/discovery/` file walking and grouping
-- `src/parsers/` yaml/js/template helpers
-- `src/model/` normalized IR for rules
-- `src/rules/` one file per rule with code + tests
-- `src/reporters/` text/json/sarif formatters
-- `src/cli/` command wiring
-
-## 3. Integration points
-
-Short-term:
-
-- keep `rtgl fe check` as-is
-- add optional command path that can call new checker
-
-Long-term:
-
-- make `rtgl fe check` delegate to `@rettangoli/check` for FE rules
-- allow package-specific presets (`fe`, `ui`, custom)
-
-## Suggested CLI surface (draft)
+## Development
 
 ```bash
-# full project scan from rettangoli.config.yaml
-rtgl check
-
-# explicit directories
-rtgl check --dirs src/components --dirs src/pages
-
-# output modes
-rtgl check --format text
-rtgl check --format json
-rtgl check --format sarif
-
-# rule controls
-rtgl check --preset fe
-rtgl check --preset ui
-rtgl check --warn-as-error
+bun run test          # every contract test, scenario and fuzzer (same as `bun run ci`)
+bun run test:package  # pack the package and smoke-test the tarball
 ```
 
-## Minimal milestone plan
-
-1. Bootstrap package with CLI + discovery + current FE parity rules.
-2. Add cross-file symbol rules (handler/action/method existence).
-3. Add duplicate component name and method-doc coverage diagnostics.
-4. Wire into CI in `rettangoli-ui` and one example app.
-
-## Open design questions
-
-1. Naming: `rettangoli-check` vs `rettangoli-contracts` vs `rettangoli-lint`.
-2. Should `rtgl fe check` remain FE-specific wrapper, or fully replaced by generic `rtgl check`?
-3. Error code strategy:
-- keep existing `RTGL-CONTRACT-xxx`
-- or introduce package-specific namespaces (example: `RTGL-CHECK-FE-xxx`)
-4. Strictness defaults:
-- what is error vs warning in CI by default?
-
-## Immediate next step (implementation)
-
-Create `@rettangoli/check` with:
-
-- package scaffolding
-- parser/model foundation
-- parity checks from existing `@rettangoli/fe` check
-- at least one new high-value cross-file rule (`action` -> `.store.js` export exists)
+`test/README.md` lists the scenario suite and the scripts.

@@ -8,6 +8,7 @@ import {
   collectTopLevelYamlKeyLines,
   collectRefListeners,
   extractModuleExports,
+  findLegacyDotPropBinding,
   parseYamlSafe,
 } from "./parsers.js";
 import { normalizeSchemaYaml } from "./schema.js";
@@ -717,25 +718,26 @@ export const buildComponentModel = (componentGroup) => {
       model.view.yamlKeyPathLines = collectYamlKeyPathLines(viewReadResult.value);
       // Line-based text scan for a '.prop' binding. It is the only CONTRACT-003 source when the YAML does not
       // parse, and it is still ORed with FE's check of the parsed template (decision D10).
-      model.view.legacyDotPropBinding = model.view.selectorBindings.find(
-        (binding) => binding.bindingNames.some((bindingName) => bindingName.startsWith(".")),
-      ) || null;
+      model.view.legacyDotPropBinding = findLegacyDotPropBinding(model.view.selectorBindings);
 
       const viewYamlResult = parseYamlSafe({ text: viewReadResult.value, filePath: files.view });
       if (!viewYamlResult.ok) {
         diagnostics.push(viewYamlResult.error);
       } else {
         model.view.yaml = viewYamlResult.value;
-        model.view.selectorBindings = attachFilePathToBindings(
-          collectSelectorBindingsFromView({
-            viewText: viewReadResult.value,
-            viewYaml: viewYamlResult.value,
-          }),
-          files.view,
-        );
+        // Without a 'template' key the text-scan bindings above stay.
+        if (viewYamlResult.value?.template !== undefined) {
+          model.view.selectorBindings = attachFilePathToBindings(
+            collectSelectorBindingsFromView({
+              viewText: viewReadResult.value,
+              viewYaml: viewYamlResult.value,
+            }),
+            files.view,
+          );
+        }
         model.view.templateAst = collectTemplateAstFromView({
           viewText: viewReadResult.value,
-          viewYaml: viewYamlResult.value,
+          selectorBindings: model.view.selectorBindings,
         });
         model.view.refListeners = collectRefListeners(viewYamlResult.value, model.view.yamlKeyPathLines);
       }

@@ -1,63 +1,45 @@
 # YAHTML Parser API Contract
 
-This document defines the current Phase 2 contract for the YAHTML frontend parser APIs implemented in:
-
-- `packages/rettangoli-check/src/core/parsers.js`
+The template key APIs in `packages/rettangoli-check/src/core/parsers.js`.
 
 ## API Surface
 
-1. `tokenizeYahtmlSelectorKey(rawKey: string)`
-- Deterministically tokenizes one YAHTML selector key into a typed token stream.
-- Output shape:
-  - `kind: "YahtmlSelectorTokenStream"`
-  - `raw: string`
-  - `selectorToken: YahtmlSelectorToken | null`
-  - `attributeTokens: YahtmlAttributeToken[]`
-- Each token includes:
-  - `kind`
-  - `raw`
-  - `startOffset`
-  - `endOffset`
-  - `length`
-  - `column`
-  - `endColumn`
+1. `parseSelectorKey(key: string)`
+- Splits one template key into selector and attribute text. FE splits the rendered key (after Jempl) at its
+  first space, without trimming. Check differs in three ways: it trims the key first, it splits at any
+  whitespace (tab, NBSP) rather than only at a space, and it splits the raw key, skipping `${...}` / `#{...}`.
+- Output: `{ selector, attrsText, tagName, bindingNames }`.
+  - `tagName` is `selector.split(/[.#]/)[0]` (FE's tag rule).
+  - `bindingNames` are FE's binding names for `attrsText` (`parseBindingNames`), with one deviation: a bare
+    toggle keeps its `?` (`?checked`).
 
-2. `parseYahtmlSelectorKey({ rawKey, line, lineText, lineOffsets, filePath })`
-- Parses one selector key into typed AST/CST plus structured parse diagnostics.
-- Output shape:
-  - `ast: YahtmlElementAst`
-  - `cst: YahtmlElementCst`
-  - `diagnostics: Diagnostic[]`
-- `ast.range` includes exact:
-  - `line`, `column`, `endLine`, `endColumn`, `offset`, `endOffset`, `length`
-- `ast.attributes[*].range` includes the same range fields.
-- `ast.rawLexeme` and `ast.attributes[*].rawLexeme` preserve raw lexemes for codeframes/autofix.
+2. `parseYahtmlSelectorKey({ rawKey, line, lineText, lineOffsets, parsedKey })`
+- Builds the element AST of one key. Without `parsedKey` it uses `parseSelectorKey(String(rawKey || ""))`.
+- Output: `{ ast: YahtmlElementAst }`.
+- `ast.tagName` and `ast.selector` come from `parsedKey`; `ast.attributes` has one node per top-level
+  attribute token of `parsedKey.attrsText`.
+- `ast.range` and `ast.attributes[*].range` include `line`, `column`, `endLine`, `endColumn`, `offset`,
+  `endOffset`, `length`.
+- `ast.rawLexeme` and `ast.attributes[*].rawLexeme` keep the raw source text.
 
-3. `collectTemplateAstFromView({ viewText, viewYaml })`
-- Produces typed template-level AST/CST from `.view.yaml` template selectors.
-- Output shape:
-  - `type: "Template"`
-  - `kind: "YahtmlTemplateAst"`
-  - `nodes: YahtmlElementAst[]`
-  - `cst: { kind: "YahtmlTemplateCst", nodes: YahtmlElementCst[] }`
-  - `parseDiagnostics: Diagnostic[]`
+3. `collectTemplateAstFromView({ viewText, viewYaml, selectorBindings })`
+- Builds the template AST from the view's selector bindings (default:
+  `collectSelectorBindingsFromView({ viewText, viewYaml })`), one element node per binding, in the same order.
+- Output: `{ type: "Template", kind: "YahtmlTemplateAst", nodes: YahtmlElementAst[] }`.
 
 ## Determinism Contract
 
-For identical `rawKey` / `viewText` inputs, all APIs above must be byte-stable across repeated runs:
-
-- token boundaries and offsets are identical
-- AST/CST node ordering is identical
-- diagnostics ordering and ranges are identical
+For identical inputs, the APIs above return identical output (node order, attribute order and ranges).
 
 Validation scripts:
 
 - `bun run --cwd packages/rettangoli-check test:yahtml-parser-snapshots`
 - `bun run --cwd packages/rettangoli-check test:yahtml-parser-crash`
 - `bun run --cwd packages/rettangoli-check test:fuzz-yahtml-parser`
+- `bun run --cwd packages/rettangoli-check test:fe-parity` (the key split and binding names against FE)
 
 ## Failure Handling Contract
 
-- Parsing must fail closed into structured diagnostics where possible.
-- Parser APIs must not throw on malformed selector keys in normal operation paths.
-- Malformed token and selector cases are covered by crash-containment and fuzz scripts.
+- The APIs do not throw on malformed keys. Inputs FE throws on are reported by the binding rules
+  (`RTGL-CHECK-BINDING-*`).
+- Malformed keys are covered by the crash-containment and fuzz scripts.

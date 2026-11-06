@@ -17,6 +17,9 @@ Supported output formats:
 Supported diagnostics/autofix controls:
 
 - `--style` (opt into naming/signature conventions; also `check.style: true` in config)
+
+Autofix options (`rtgl-check` only; `rtgl check` from `@rettangoli/cli` does not expose them):
+
 - `--autofix`
 - `--autofix-dry-run`
 - `--autofix-min-confidence <0-1>`

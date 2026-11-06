@@ -1,9 +1,6 @@
 #!/usr/bin/env node
 
-import {
-  parseYahtmlSelectorKey,
-  tokenizeYahtmlSelectorKey,
-} from "../src/core/parsers.js";
+import { parseYahtmlSelectorKey } from "../src/core/parsers.js";
 
 const CASES = 400;
 
@@ -81,24 +78,17 @@ const main = () => {
     const rawKey = createSelectorKey(rng);
 
     try {
-      const tokenA = tokenizeYahtmlSelectorKey(rawKey);
-      const tokenB = tokenizeYahtmlSelectorKey(rawKey);
-      if (normalized(tokenA) !== normalized(tokenB)) {
-        failures.push({ index, rawKey, reason: "tokenizer non-deterministic output" });
-        continue;
-      }
-
-      const parseA = parseYahtmlSelectorKey({
+      const astA = parseYahtmlSelectorKey({
         rawKey,
         line: 1,
         lineText: rawKey,
-      });
-      const parseB = parseYahtmlSelectorKey({
+      }).ast;
+      const astB = parseYahtmlSelectorKey({
         rawKey,
         line: 1,
         lineText: rawKey,
-      });
-      if (normalized(parseA) !== normalized(parseB)) {
+      }).ast;
+      if (normalized(astA) !== normalized(astB)) {
         failures.push({ index, rawKey, reason: "parser non-deterministic output" });
         continue;
       }

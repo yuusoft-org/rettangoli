@@ -91,6 +91,12 @@ A `.handlers.js`, `.store.js` or `.methods.js` file, or a module it re-exports f
 
 A warning: a UI primitive defined by the resolved `@rettangoli/ui` (for example in `registerPrimitives.js`) could not be loaded, because its module failed to import, its default export is not a factory function, the factory threw, or its source file could not be read or scanned for attributes. The tag stays a known element with the attributes check could still find, so its usages are still checked, but attributes that only the loaded class declares (`observedAttributes`) are unknown. Check therefore does not report `RTGL-CHECK-YAHTML-003` (unsupported attr/prop) on that tag; other checks, such as `RTGL-CHECK-YAHTML-002`, still run. Each failing tag is reported once, at the primitive's module path. `--warn-as-error` makes it fail the run.
 
+## Template Attribute Diagnostics
+
+### RTGL-CHECK-YAHTML-003
+
+An attribute or prop the custom element does not declare. Each key's tag and binding names are read from the key itself, the way FE reads them (`parseSelectorKey`), so flow mappings (`- {rtgl-text bogus=1: hi}`), escaped and multi-line keys are checked against their own tag. Names are reported in source order.
+
 ## Autofix-Capable Diagnostics
 
 ### RTGL-CONTRACT-003
@@ -122,5 +128,7 @@ Contract tests:
 - `test/scenarios/132-binding-event-attribute-rejected` .. `137-binding-parse-yaml-error-text-scan`
 - `test/scenarios/138-schema-ssr-not-boolean` .. `141-jempl-control-paren-directive-rejected`
 - `test/scenarios/142-compat-for-local-shadows-prop`, `143-compat-prop-mismatch-outside-for`
+- `test/scenarios/144-yahtml-key-parsed-from-own-key` (tag and names read from each key, not from a neighbouring line)
+- `test/scenarios/145-cli-yahtml-attr-source-order` (YAHTML-003 of one key in source order)
 - `scripts/test-ui-registry-load-contract.js` (RTGL-CHECK-REGISTRY-001)
 - `scripts/test-discovery-symlinks-contract.js` (component discovery through symlinks)

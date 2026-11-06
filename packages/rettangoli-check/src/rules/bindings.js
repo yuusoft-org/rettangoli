@@ -1,4 +1,4 @@
-import { getNodeBindingViolation, skipInterpolation, startsInterpolation } from "../core/fe-contracts.js";
+import { getNodeBindingViolation } from "../core/fe-contracts.js";
 
 const CODE_BY_VIOLATION_KIND = {
   "invalid-name": "RTGL-CHECK-BINDING-001",
@@ -7,21 +7,6 @@ const CODE_BY_VIOLATION_KIND = {
 };
 
 const EVENT_BINDING_HINT = " Event bindings are not supported; declare listeners under refs.<id>.eventListeners.";
-
-// Splits a template key into selector and attributes at the first whitespace outside '${...}' / '#{...}'.
-const splitSelectorKey = (key = "") => {
-  let index = 0;
-  while (index < key.length) {
-    if (startsInterpolation(key, index)) {
-      index = skipInterpolation(key, index);
-    } else if (/\s/.test(key[index])) {
-      return { selector: key.slice(0, index), attrsString: key.slice(index + 1).trim() };
-    } else {
-      index += 1;
-    }
-  }
-  return { selector: key, attrsString: "" };
-};
 
 // Template bindings that FE parseNodeBindings throws on while rendering. Always on: FE throws regardless of
 // --no-yahtml, and on native elements too.
@@ -35,10 +20,10 @@ export const runBindingRules = ({ models = [] }) => {
     });
 
     model.view.selectorBindings.forEach((binding) => {
-      const { selector, attrsString } = splitSelectorKey(binding.rawKey);
-      const tagName = selector.split(/[.#]/)[0];
+      // selector, attrsText and tagName come from parsers.js parseSelectorKey (FE's tag rule; the key is trimmed).
+      const { tagName, attrsText } = binding;
       const violation = getNodeBindingViolation({
-        attrsString,
+        attrsString: attrsText,
         tagName,
         isWebComponent: tagName.includes("-"),
       });
