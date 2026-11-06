@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 import { normalizeSitemapConfig } from '../sitemap.js';
+import { isPlainObject } from './object.js';
 
 const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build', 'imports', 'data', 'sitemap', 'components']);
 const MARKDOWN_BOOLEAN_KEYS = new Set(['html', 'linkify', 'typographer', 'breaks', 'xhtmlOut']);
@@ -32,10 +33,6 @@ const ALLOWED_IMPORT_GROUP_KEYS = new Set(['templates', 'partials', 'data']);
 const ALLOWED_IMPORT_PROTOCOLS = new Set(['http:', 'https:']);
 const ALLOWED_COMPONENTS_KEYS = new Set(['dirs']);
 let didWarnLegacyMarkdownKey = false;
-
-function isPlainObject(value) {
-  return value && typeof value === 'object' && !Array.isArray(value);
-}
 
 function validateHeadingAnchors(value, configPath) {
   if (typeof value === 'boolean') {
