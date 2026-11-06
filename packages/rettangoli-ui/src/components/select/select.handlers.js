@@ -1,20 +1,8 @@
 import { subscribeUiMessages } from "../../common/uiMessages.js";
 import { deepEqual } from '../../common.js';
 import { hasFieldAriaChanged } from '../../accessibility/field.js';
-import { resolveSelectedValue } from '../../common/choice.js';
+import { isSelectableOption, resolveSelectedValue } from '../../common/choice.js';
 import { selectViewData } from './select.store.js';
-
-const getOptionType = (option = {}) => {
-  if (option.type === 'section') {
-    return 'section';
-  }
-
-  if (option.type === 'separator') {
-    return 'separator';
-  }
-
-  return 'item';
-};
 
 const focusSearchInput = (refs = {}) => {
   const input = refs.searchInput;
@@ -64,7 +52,7 @@ export const handleBeforeMount = (deps) => {
   const { store, props, render } = deps;
 
   if (props.selectedValue !== null && props.selectedValue !== undefined && props.options) {
-    const selectedOption = props.options.find((opt) => getOptionType(opt) === 'item' && deepEqual(opt.value, props.selectedValue));
+    const selectedOption = props.options.find((opt) => isSelectableOption(opt) && deepEqual(opt.value, props.selectedValue));
     if (selectedOption) {
       store.updateSelectedValue({
         value: selectedOption?.value,
@@ -140,7 +128,7 @@ export const handleButtonClick = (deps, payload) => {
   const currentValue = resolveSelectedValue({ state: store.selectState(), props });
   let selectedIndex = null;
   if (currentValue !== null && currentValue !== undefined && props.options) {
-    selectedIndex = props.options.findIndex((opt) => getOptionType(opt) === 'item' && deepEqual(opt.value, currentValue));
+    selectedIndex = props.options.findIndex((opt) => isSelectableOption(opt) && deepEqual(opt.value, currentValue));
     if (selectedIndex === -1) selectedIndex = null;
   }
 
@@ -292,7 +280,7 @@ export const handleOptionClick = (deps, payload) => {
   const index = Number(id);
 
   const option = props.options[id];
-  if (!option || getOptionType(option) !== 'item') {
+  if (!option || !isSelectableOption(option)) {
     return;
   }
 

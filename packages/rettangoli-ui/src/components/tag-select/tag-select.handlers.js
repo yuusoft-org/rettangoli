@@ -1,46 +1,11 @@
 import { subscribeUiMessages } from "../../common/uiMessages.js";
 import { hasFieldAriaChanged } from "../../accessibility/field.js";
-
-const getOptionType = (option = {}) => {
-  if (option.type === "section") {
-    return "section";
-  }
-
-  if (option.type === "separator") {
-    return "separator";
-  }
-
-  return "item";
-};
-
-const normalizeSelectedValues = (selectedValues) => {
-  if (!Array.isArray(selectedValues)) {
-    return [];
-  }
-
-  return [...selectedValues];
-};
-
-const resolvePopoverPosition = (trigger) => {
-  if (!trigger || typeof trigger.getBoundingClientRect !== "function") {
-    return undefined;
-  }
-
-  const rect = trigger.getBoundingClientRect();
-  return {
-    x: Math.round(rect.left),
-    y: Math.round(rect.bottom + 12),
-    w: Math.max(Math.round(rect.width), 240),
-  };
-};
-
-const resolveCurrentValues = ({ store, props }) => {
-  if (store.selectHasSelectedValues()) {
-    return store.selectSelectedValues();
-  }
-
-  return normalizeSelectedValues(props.selectedValues);
-};
+import {
+  isSelectableOption,
+  normalizeSelectedValues,
+  resolveCurrentValues,
+  resolvePopoverPosition,
+} from "../../common/choice.js";
 
 const resolveDraftValues = ({ store, props }) => {
   if (Array.isArray(props?.draftSelectedValues)) {
@@ -290,7 +255,7 @@ export const handleOptionClick = (deps, payload) => {
   const index = Number(id);
   const option = props.options[index];
 
-  if (!option || getOptionType(option) !== "item") {
+  if (!option || !isSelectableOption(option)) {
     return;
   }
 

@@ -4,29 +4,18 @@ import {
   renderableTextSegments,
 } from "../../common/textSegments.js";
 import { getUiMessage } from "../../common/uiMessages.js";
+import {
+  DROPDOWN_POPOVER_ATTR_PROPS,
+  stringifyPopoverAttrs,
+} from "../../common/choice.js";
 
 const VALID_DIALOG_SIZES = new Set(["sm", "md", "lg", "f"]);
 const VALID_TOAST_SIZES = new Set(["sm", "md", "lg"]);
 const VALID_TOAST_PHASES = new Set(["active", "exiting"]);
 const VALID_TOAST_POSITIONS = new Set(["top", "bottom"]);
 const VALID_COMPONENT_DIALOG_ROLES = new Set(["confirm", "cancel"]);
-const DROPDOWN_POPOVER_ATTR_PROPS = [
-  ["overlay", "overlay"],
-  ["noOverlay", "no-overlay"],
-  ["smPlace", "sm-place"],
-  ["mdPlace", "md-place"],
-  ["lgPlace", "lg-place"],
-  ["xlPlace", "xl-place"],
-  ["smOverlay", "sm-overlay"],
-  ["mdOverlay", "md-overlay"],
-  ["lgOverlay", "lg-overlay"],
-  ["xlOverlay", "xl-overlay"],
-  ["smNoOverlay", "sm-no-overlay"],
-  ["mdNoOverlay", "md-no-overlay"],
-  ["lgNoOverlay", "lg-no-overlay"],
-  ["xlNoOverlay", "xl-no-overlay"],
-  ["dir", "dir"],
-];
+// The global dropdown also forwards `dir` to its rtgl-dropdown-menu.
+const GLOBAL_DROPDOWN_ATTR_PROPS = [...DROPDOWN_POPOVER_ATTR_PROPS, ["dir", "dir"]];
 
 const getDefaultComponentDialogButtons = () => [
   {
@@ -52,8 +41,6 @@ const normalizeObject = (value) => {
   return value;
 };
 
-const escapeAttrValue = (value) => `${value}`.replace(/"/g, '&quot;');
-
 const readResponsiveOptionValue = (source = {}, propName, attrName) => {
   if (source[propName] !== undefined) {
     return source[propName];
@@ -63,7 +50,7 @@ const readResponsiveOptionValue = (source = {}, propName, attrName) => {
 };
 
 const collectDropdownPopoverOptions = (source = {}) => {
-  return DROPDOWN_POPOVER_ATTR_PROPS.reduce((acc, [propName, attrName]) => {
+  return GLOBAL_DROPDOWN_ATTR_PROPS.reduce((acc, [propName, attrName]) => {
     const value = readResponsiveOptionValue(source, propName, attrName);
 
     if (value !== undefined && value !== null) {
@@ -72,21 +59,6 @@ const collectDropdownPopoverOptions = (source = {}) => {
 
     return acc;
   }, {});
-};
-
-const stringifyDropdownPopoverAttrs = (source = {}) => {
-  return DROPDOWN_POPOVER_ATTR_PROPS
-    .filter(([propName]) => source[propName] !== undefined && source[propName] !== null)
-    .map(([propName, attrName]) => {
-      const value = source[propName];
-
-      if (value === true) {
-        return attrName;
-      }
-
-      return `${attrName}="${escapeAttrValue(value)}"`;
-    })
-    .join(" ");
 };
 
 const normalizeDialogSize = (value, fallback = "md") => {
@@ -392,7 +364,7 @@ export const selectViewData = ({ state }) => {
       y: state.dropdownConfig?.y ?? 0,
       place: state.dropdownConfig?.place ?? "bs",
       ariaLabel: state.dropdownConfig?.ariaLabel ?? getUiMessage("menu"),
-      popoverAttrString: stringifyDropdownPopoverAttrs(state.dropdownConfig),
+      popoverAttrString: stringifyPopoverAttrs(state.dropdownConfig, GLOBAL_DROPDOWN_ATTR_PROPS),
     },
     formDialogConfig: {
       form: state.formDialogConfig?.form ?? { fields: [], actions: { buttons: [] } },

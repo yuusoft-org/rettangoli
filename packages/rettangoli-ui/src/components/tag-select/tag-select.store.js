@@ -1,6 +1,12 @@
 import { getUiMessage } from "../../common/uiMessages.js";
 import { selectFieldAria } from "../../accessibility/field.js";
 import { deepEqual } from "../../common.js";
+import {
+  getOptionIcon,
+  getOptionType,
+  isSelectableOption,
+  normalizeSelectedValues,
+} from "../../common/choice.js";
 
 const blacklistedProps = [
   "ariaLabel", "ariaDescription", "ariaRequired", "ariaInvalid",
@@ -24,32 +30,6 @@ const stringifyProps = (props = {}) => {
     .filter(([key]) => !blacklistedProps.includes(key))
     .map(([key, value]) => `${key}=${value}`)
     .join(" ");
-};
-
-const getOptionType = (option = {}) => {
-  if (option.type === "section") {
-    return "section";
-  }
-
-  if (option.type === "separator") {
-    return "separator";
-  }
-
-  return "item";
-};
-
-const isSelectableOption = (option = {}) => getOptionType(option) === "item";
-
-const getOptionIcon = (option = {}) => {
-  return typeof option.icon === "string" && option.icon.length > 0 ? option.icon : "";
-};
-
-const normalizeSelectedValues = (selectedValues) => {
-  if (!Array.isArray(selectedValues)) {
-    return [];
-  }
-
-  return [...selectedValues];
 };
 
 const isSelectedValue = (selectedValues = [], candidate) => {
