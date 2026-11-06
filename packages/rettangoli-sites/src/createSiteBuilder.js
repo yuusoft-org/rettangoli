@@ -868,8 +868,8 @@ export function createSiteBuilder({
     if (!quiet) console.log('Building collections...');
     const collections = buildCollections(pageEntries);
 
-    // Function to process a single page file
-    async function processPage(pageEntry) {
+    // Render one page in memory, without progress logs or file writes.
+    async function renderPage(pageEntry) {
       const {
         pagePath,
         pageLabel,
@@ -883,7 +883,6 @@ export function createSiteBuilder({
         unclosedFrontmatter
       } = pageEntry;
 
-      if (!quiet) console.log(`Processing ${pageLabel}...`);
       const templateFunctions = createTemplateFunctions(pageLabel);
       const templateName = publicFrontmatter.template;
 
@@ -983,6 +982,19 @@ export function createSiteBuilder({
 
       const outputRelativePath = htmlOutputRelativePathFromUrl(url);
       const outputPath = path.join(outputRootDir, ...outputRelativePath.split('/'));
+      let markdownCopy = null;
+      if (isMarkdown && keepMarkdownFiles) {
+        const markdownOutputRelativePath = hasCustomUrl
+          ? markdownOutputRelativePathFromUrl(url)
+          : relativePath;
+        markdownCopy = { from: pagePath, to: path.join(outputRootDir, ...markdownOutputRelativePath.split('/')) };
+      }
+
+      return { pageLabel, outputPath, html: htmlString, markdownCopy };
+    }
+
+    function writeRenderedPage({ pageLabel, outputPath, html, markdownCopy }) {
+      if (!quiet) console.log(`Processing ${pageLabel}...`);
       const outputDir = path.dirname(outputPath);
 
       if (!fs.existsSync(outputDir)) {
@@ -990,31 +1002,20 @@ export function createSiteBuilder({
       }
 
       // Write HTML to output file
-      fs.writeFileSync(outputPath, htmlString);
+      fs.writeFileSync(outputPath, html);
       if (!quiet) console.log(`  -> Written to ${outputPath}`);
 
-      if (isMarkdown && keepMarkdownFiles) {
-        const markdownOutputRelativePath = hasCustomUrl
-          ? markdownOutputRelativePathFromUrl(url)
-          : relativePath;
-        const markdownOutputPath = path.join(outputRootDir, ...markdownOutputRelativePath.split('/'));
-        const markdownOutputDir = path.dirname(markdownOutputPath);
+      if (markdownCopy) {
+        const markdownOutputDir = path.dirname(markdownCopy.to);
         if (!fs.existsSync(markdownOutputDir)) {
           fs.mkdirSync(markdownOutputDir, { recursive: true });
         }
-        fs.copyFileSync(pagePath, markdownOutputPath);
-        if (!quiet) console.log(`  -> Copied markdown to ${markdownOutputPath}`);
+        fs.copyFileSync(markdownCopy.from, markdownCopy.to);
+        if (!quiet) console.log(`  -> Copied markdown to ${markdownCopy.to}`);
       }
     }
 
-    async function processAllPages() {
-      for (const pageEntry of pageEntries) {
-        await processPage(pageEntry);
-      }
-    }
-
-    function writeSitemap() {
-      const sitemapXml = buildSitemapXml({ pageEntries, sitemap, globalData });
+    function writeSitemapFile(sitemapXml) {
       if (sitemapXml === null) {
         return;
       }
@@ -1074,6 +1075,14 @@ export function createSiteBuilder({
       });
     }
 
+    // Render every page and the sitemap before the output folder is touched,
+    // so a failed build leaves the previous output as it was.
+    const renderedPages = [];
+    for (const pageEntry of pageEntries) {
+      renderedPages.push(await renderPage(pageEntry));
+    }
+    const sitemapXml = buildSitemapXml({ pageEntries, sitemap, globalData });
+
     // Start build process
     if (!quiet) console.log('Starting build process...');
 
@@ -1083,11 +1092,11 @@ export function createSiteBuilder({
     // Copy static files first (they can be overwritten by pages)
     copyStaticFiles();
 
-    // Process all pages (can overwrite static files)
-    await processAllPages();
+    // Write all pages (can overwrite static files)
+    renderedPages.forEach(writeRenderedPage);
 
-    // Generate sitemap after pages so it can overwrite static files if configured.
-    writeSitemap();
+    // Write the sitemap after pages so it can overwrite static files if configured.
+    writeSitemapFile(sitemapXml);
 
     if (!quiet) console.log('Build complete!');
   };

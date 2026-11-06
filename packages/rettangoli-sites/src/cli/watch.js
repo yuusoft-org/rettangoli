@@ -19,14 +19,6 @@ function normalizePort(port) {
   return normalizedPort;
 }
 
-export function createClientScript(
-  reloadMode = 'body',
-  initialRevision = 0,
-  initialSessionId = null,
-) {
-  return createWatchClientScript(reloadMode, initialRevision, initialSessionId);
-}
-
 export function classifyWatchChanges(changes = []) {
   const normalizedChanges = Array.from(changes);
   if (normalizedChanges.length === 0) return { updateKind: 'html', paths: [] };
@@ -92,6 +84,8 @@ export function getContentType(ext) {
     '.json': 'application/json; charset=utf-8',
     '.map': 'application/json; charset=utf-8',
     '.webmanifest': 'application/manifest+json',
+    '.xml': 'application/xml; charset=utf-8',
+    '.pdf': 'application/pdf',
     '.txt': 'text/plain; charset=utf-8',
     '.md': 'text/plain; charset=utf-8',
     '.avif': 'image/avif',
@@ -107,8 +101,23 @@ export function getContentType(ext) {
     '.ttf': 'font/ttf',
     '.woff': 'font/woff',
     '.woff2': 'font/woff2',
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
+    '.mp3': 'audio/mpeg',
+    '.ogg': 'audio/ogg',
+    '.wav': 'audio/wav',
+    '.m4a': 'audio/mp4',
   };
   return types[ext] || 'application/octet-stream';
+}
+
+// Insert before the first </body>, else the first </html>, else at the end.
+// A function replacer keeps "$" patterns in the script literal.
+function injectBeforeBodyEnd(html, script) {
+  for (const tag of ['</body>', '</html>']) {
+    if (html.includes(tag)) return html.replace(tag, () => script + tag);
+  }
+  return html + script;
 }
 
 export function getWatchResponseHeaders(ext) {
@@ -287,20 +296,10 @@ export class DevServer {
 
       // Inject client script into HTML files
       if (ext === '.html') {
-        content = content.toString();
-        const clientScript = createClientScript(
-          this.reloadMode,
-          this.revision,
-          this.sessionId,
+        content = injectBeforeBodyEnd(
+          content.toString(),
+          createWatchClientScript(this.reloadMode, this.revision, this.sessionId),
         );
-        // Inject before </body> or </html> or at the end
-        if (content.includes('</body>')) {
-          content = content.replace('</body>', clientScript + '</body>');
-        } else if (content.includes('</html>')) {
-          content = content.replace('</html>', clientScript + '</html>');
-        } else {
-          content = content + clientScript;
-        }
       }
 
       const headers = getWatchResponseHeaders(ext);

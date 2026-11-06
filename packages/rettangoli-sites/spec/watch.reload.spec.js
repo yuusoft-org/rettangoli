@@ -5,16 +5,16 @@ import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import watchSite, {
   classifyWatchChanges,
-  createClientScript,
   createRebuildScheduler,
   finalizeWatchChanges,
   getContentType,
   getWatchResponseHeaders,
 } from '../src/cli/watch.js';
+import { createWatchClientScript } from '../src/cli/watchClient.js';
 
 describe('watch reload mode script', () => {
   it('uses keyed DOM morphing instead of body replacement in body mode', () => {
-    const script = createClientScript('body', 7, 'test-session');
+    const script = createWatchClientScript('body', 7, 'test-session');
     expect(script).toContain("location.protocol === 'https:' ? 'wss://' : 'ws://'");
     expect(script).toContain("url.searchParams.set(HTML_CACHE_KEY");
     expect(script).toContain("const KEY_ATTRIBUTES = ['data-rtgl-key', 'data-key', 'id']");
@@ -25,7 +25,7 @@ describe('watch reload mode script', () => {
   });
 
   it('uses full page reload logic in full mode', () => {
-    const script = createClientScript('full');
+    const script = createWatchClientScript('full');
     expect(script).toContain("requestFullReload(data.updateKind === 'full'");
     expect(script).not.toContain('document.body.innerHTML');
   });
