@@ -15,6 +15,7 @@ import {
   hasSelectors,
 } from "../selector-filter.js";
 import {
+  installInterruptCleanup,
   startManagedService,
   stopManagedService,
   waitForServiceReady,
@@ -181,7 +182,14 @@ async function main(options = {}) {
           );
         }
         managedService = startManagedService({ command: serviceStart });
-        await waitForServiceReady({ url: configUrl, handle: managedService });
+        // These handlers cover readiness only. Later, Playwright's SIGINT handler exits the process and
+        // the exit listener from startManagedService stops the service; otherwise the finally below stops it.
+        const disposeInterruptCleanup = installInterruptCleanup(managedService);
+        try {
+          await waitForServiceReady({ url: configUrl, handle: managedService });
+        } finally {
+          disposeInterruptCleanup();
+        }
       } else if (!configUrl) {
         server = await startWebServer(siteOutputPath, vtPath, port);
       }

@@ -144,6 +144,7 @@ export async function runCaptureScheduler(options) {
 
         const queueWaitMs = Math.max(0, nowMs() - item.enqueuedAtMs);
         const attemptStartMs = nowMs();
+        let succeeded = false;
 
         try {
           const result = await runner.runTask(item.task, item.attempt);
@@ -154,17 +155,7 @@ export async function runCaptureScheduler(options) {
             queueWaitMs,
             attemptMs,
           });
-          processedSinceRecycle += 1;
-
-          if (
-            isolationMode === "fast"
-            && recycleEvery > 0
-            && processedSinceRecycle >= recycleEvery
-          ) {
-            await runner.recycleSharedContext();
-            collector.recordRecycle(runner.workerId, `recycleEvery=${recycleEvery}`);
-            processedSinceRecycle = 0;
-          }
+          succeeded = true;
         } catch (error) {
           const attemptMs = nowMs() - attemptStartMs;
           if (item.attempt <= maxRetries) {
@@ -184,6 +175,27 @@ export async function runCaptureScheduler(options) {
             queueWaitMs,
             attemptMs,
           });
+        }
+
+        // Outside the task's try: a failed recycle must not turn a captured task into a retry.
+        if (!succeeded) {
+          continue;
+        }
+        processedSinceRecycle += 1;
+        if (
+          isolationMode === "fast"
+          && recycleEvery > 0
+          && processedSinceRecycle >= recycleEvery
+        ) {
+          processedSinceRecycle = 0;
+          try {
+            await runner.recycleSharedContext();
+            collector.recordRecycle(runner.workerId, `recycleEvery=${recycleEvery}`);
+          } catch (error) {
+            console.warn(
+              `Worker ${runner.workerId}: shared context recycle failed: ${error?.message ?? error}. A fresh context will be created for the next task.`,
+            );
+          }
         }
       }
     });

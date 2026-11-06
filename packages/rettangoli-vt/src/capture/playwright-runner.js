@@ -11,6 +11,9 @@ import { DEFAULT_VIEWPORT } from "../viewport.js";
 
 const PAGE_TASK_DRAIN_KEY = "__rtglVtDrainPageTasks";
 const MAX_PAGE_TASK_DRAIN_TIMEOUT_MS = 5000;
+// Locator evaluations first wait for the element, bounded by Playwright's own timeout
+// (readyTimeout). Give them this much longer so that timeout keeps its message.
+const LOCATOR_EVALUATE_GRACE_MS = 5000;
 
 function nowMs() {
   return performance.now();
@@ -39,33 +42,70 @@ function createPageError(error) {
   return new Error(`Uncaught page error: ${message}`, { cause: error });
 }
 
-class PageTaskDrainTimeoutError extends Error {
+// The page did not answer an evaluation in time: its main thread is blocked or the promise it
+// returned never settled.
+export class PageUnresponsiveError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "PageUnresponsiveError";
+  }
+}
+
+class PageTaskDrainTimeoutError extends PageUnresponsiveError {
   constructor(timeoutMs) {
     super(`Page task drain timed out after ${timeoutMs}ms.`);
     this.name = "PageTaskDrainTimeoutError";
   }
 }
 
-async function drainPageTasks(page, timeoutMs) {
+function isPageUnresponsive(error) {
+  let current = error;
+  for (let depth = 0; current && depth < 5; depth += 1) {
+    if (current instanceof PageUnresponsiveError) {
+      return true;
+    }
+    current = current.cause;
+  }
+  return false;
+}
+
+// Playwright's evaluate has no timeout. Race it against a native timer captured before any
+// application script runs. `arg` is omitted when undefined, as in a direct call.
+export async function evaluateWithin(target, fn, arg, timeoutMs, createError) {
+  const evaluation = Promise.resolve(
+    arg === undefined ? target.evaluate(fn) : target.evaluate(fn, arg),
+  );
   let timeoutId;
   try {
-    await Promise.race([
-      page.evaluate((drainKey) => {
-        const drain = globalThis[drainKey];
-        if (typeof drain !== "function") {
-          throw new Error("Native page task drain is unavailable.");
-        }
-        return drain();
-      }, PAGE_TASK_DRAIN_KEY),
+    return await Promise.race([
+      evaluation,
       new Promise((_, reject) => {
         timeoutId = setNodeTimeout(() => {
-          reject(new PageTaskDrainTimeoutError(timeoutMs));
+          reject(createError());
         }, timeoutMs);
       }),
     ]);
   } finally {
     clearNodeTimeout(timeoutId);
+    // The losing evaluation rejects later, when its page closes.
+    evaluation.catch(() => {});
   }
+}
+
+function unresponsiveError(what, timeoutMs, end = ".") {
+  return new PageUnresponsiveError(
+    `${what} did not finish within ${timeoutMs}ms (page main thread blocked or promise never settled)${end}`,
+  );
+}
+
+async function drainPageTasks(page, timeoutMs) {
+  await evaluateWithin(page, (drainKey) => {
+    const drain = globalThis[drainKey];
+    if (typeof drain !== "function") {
+      throw new Error("Native page task drain is unavailable.");
+    }
+    return drain();
+  }, PAGE_TASK_DRAIN_KEY, timeoutMs, () => new PageTaskDrainTimeoutError(timeoutMs));
 }
 
 export class PlaywrightRunner {
@@ -111,11 +151,17 @@ export class PlaywrightRunner {
     }
   }
 
+  // Forgets the shared context before closing it, so a failed close still leaves acquireSession
+  // to create a fresh one.
   async dispose() {
-    if (this.sharedContext) {
-      await this.sharedContext.close();
-      this.sharedContext = null;
-    }
+    const context = this.sharedContext;
+    this.sharedContext = null;
+    await context?.close();
+  }
+
+  // After a page stopped responding, the next task gets a fresh shared context.
+  async discardSharedContext() {
+    await this.dispose().catch(() => {});
   }
 
   async recycleSharedContext() {
@@ -188,13 +234,14 @@ export class PlaywrightRunner {
     });
   }
 
+  // Returns false when the page did not answer in time, so its origin state may be left over.
   async clearOriginRuntimeState(page) {
     if (!page || page.isClosed()) {
-      return;
+      return true;
     }
 
     try {
-      await page.evaluate(async () => {
+      await evaluateWithin(page, async () => {
         try {
           localStorage.clear();
         } catch {}
@@ -213,8 +260,11 @@ export class PlaywrightRunner {
             await Promise.allSettled(registrations.map((registration) => registration.unregister()));
           }
         } catch {}
-      });
-    } catch {}
+      }, undefined, this.pageTaskDrainTimeout, () => unresponsiveError("Runtime state reset", this.pageTaskDrainTimeout));
+    } catch (error) {
+      return !isPageUnresponsive(error);
+    }
+    return true;
   }
 
   async acquireSession() {
@@ -251,11 +301,12 @@ export class PlaywrightRunner {
       resetSession,
       registeredReadyEvents: new Set(),
       cleanup: async ({ skipRuntimeState = false } = {}) => {
-        if (!skipRuntimeState) {
-          await this.clearOriginRuntimeState(page);
-        }
+        const stateCleared = skipRuntimeState || await this.clearOriginRuntimeState(page);
         if (!page.isClosed()) {
           await page.close();
+        }
+        if (!stateCleared) {
+          await this.discardSharedContext();
         }
       },
     };
@@ -357,12 +408,23 @@ export class PlaywrightRunner {
     const screenshotPath = join(this.screenshotsDir, `${finalPath}.webp`);
     ensureDirectoryExists(dirname(screenshotPath));
 
-    const hasCustomScreenshot = await page.evaluate(
+    const timeoutMs = this.screenshotTimeout;
+    const hasCustomScreenshot = await evaluateWithin(
+      page,
       () => typeof window.takeVtScreenshotBase64 === "function",
+      undefined,
+      timeoutMs,
+      () => unresponsiveError("Screenshot hook probe", timeoutMs),
     );
 
     if (hasCustomScreenshot) {
-      let base64Data = await page.evaluate(() => window.takeVtScreenshotBase64());
+      let base64Data = await evaluateWithin(
+        page,
+        () => window.takeVtScreenshotBase64(),
+        undefined,
+        timeoutMs,
+        () => unresponsiveError("window.takeVtScreenshotBase64()", timeoutMs),
+      );
       if (base64Data.includes(",")) {
         base64Data = base64Data.split(",")[1];
       }
@@ -450,6 +512,13 @@ export class PlaywrightRunner {
       const stepsExecutor = createSteps(page, {
         baseName: task.baseName,
         takeAndSaveScreenshot: wrappedScreenshot,
+        evaluate: (target, fn, arg, label) => {
+          const timeoutMs = target === page
+            ? this.readyTimeout
+            : this.readyTimeout + LOCATOR_EVALUATE_GRACE_MS;
+          // No final period: "assert js failed: ..." adds one.
+          return evaluateWithin(target, fn, arg, timeoutMs, () => unresponsiveError(label, timeoutMs, ""));
+        },
       });
       for (const step of task.steps) {
         await stepsExecutor.executeStep(step);
@@ -480,7 +549,7 @@ export class PlaywrightRunner {
         },
       };
     } catch (error) {
-      skipRuntimeState = error instanceof PageTaskDrainTimeoutError;
+      skipRuntimeState = isPageUnresponsive(error);
       const taskError = pageError ?? error;
       throw new Error(
         `Worker ${this.workerId} failed "${task.path}": ${taskError.message}`,
@@ -489,6 +558,9 @@ export class PlaywrightRunner {
     } finally {
       page.off("pageerror", handlePageError);
       await session.cleanup({ skipRuntimeState });
+      if (skipRuntimeState) {
+        await this.discardSharedContext();
+      }
     }
   }
 }

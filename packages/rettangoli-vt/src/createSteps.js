@@ -441,6 +441,15 @@ function normalizeStepValue(step) {
   return normalizeLegacyBlockStep(step);
 }
 
+// The capture runner passes `context.evaluate` to bound page evaluations. Without it
+// (deep imports, tests) the target is called directly, with the same arguments as before.
+function evaluateIn(context, target, label, fn, ...args) {
+  if (typeof context?.evaluate === "function") {
+    return context.evaluate(target, fn, args[0], label);
+  }
+  return target.evaluate(fn, ...args);
+}
+
 async function click(page, args, context, selectedElement) {
   if (selectedElement) {
     await selectedElement.click();
@@ -455,7 +464,7 @@ async function click(page, args, context, selectedElement) {
   }
 }
 
-async function customEvent(page, args) {
+async function customEvent(page, args, context) {
   if (args.length === 0) {
     throw new Error("`customEvent` requires an event name.");
   }
@@ -470,7 +479,7 @@ async function customEvent(page, args) {
     }
     payload[key] = value;
   });
-  await page.evaluate(({ eventName, payload }) => {
+  await evaluateIn(context, page, `customEvent "${eventName}"`, ({ eventName, payload }) => {
     window.dispatchEvent(new CustomEvent(eventName, { detail: payload }));
   }, { eventName, payload });
 }
@@ -597,7 +606,7 @@ async function focus(page, args, context, selectedElement) {
 
 async function blur(page, args, context, selectedElement) {
   const target = requireSelectedElement("blur", selectedElement);
-  await target.evaluate((element) => element.blur());
+  await evaluateIn(context, target, "blur", (element) => element.blur());
 }
 
 async function clear(page, args, context, selectedElement) {
@@ -698,7 +707,7 @@ function requireMatchMode(assertionConfig, defaultMode = "includes") {
   return mode;
 }
 
-async function assertStructured(page, assertionConfig, selectedElement) {
+async function assertStructured(page, assertionConfig, selectedElement, context) {
   const type = requireAssertType(assertionConfig);
 
   if (type === "url") {
@@ -807,7 +816,7 @@ async function assertStructured(page, assertionConfig, selectedElement) {
 
     let actual;
     try {
-      actual = await page.evaluate(async ({ globalPath, fnPath, fnArgs }) => {
+      actual = await evaluateIn(context, page, "assert js", async ({ globalPath, fnPath, fnArgs }) => {
         const resolvePath = (root, dottedPath) => {
           return dottedPath.split(".").reduce((acc, key) => {
             if (acc === null || acc === undefined) {
@@ -832,7 +841,7 @@ async function assertStructured(page, assertionConfig, selectedElement) {
         fnArgs: args,
       });
     } catch (error) {
-      throw new Error(`assert js failed: ${error?.message ?? String(error)}.`);
+      throw new Error(`assert js failed: ${error?.message ?? String(error)}.`, { cause: error });
     }
 
     if (!deepEqual(actual, assertionConfig.value)) {
@@ -927,7 +936,7 @@ export function createSteps(page, context) {
 
   async function executeNormalizedStep(normalizedStep, selectedElement) {
     if (normalizedStep.kind === "assert") {
-      await assertStructured(page, normalizedStep.assertionConfig, selectedElement);
+      await assertStructured(page, normalizedStep.assertionConfig, selectedElement, context);
       return;
     }
 

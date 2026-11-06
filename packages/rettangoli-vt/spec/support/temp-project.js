@@ -10,6 +10,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
+import net from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join, relative, sep } from "node:path";
 import sharp from "sharp";
@@ -45,6 +46,15 @@ export async function inProjectDir(root, callback) {
   } finally {
     process.chdir(previous);
   }
+}
+
+// A local port that nothing listens on (free at the time of the call).
+export async function availablePort() {
+  const server = net.createServer();
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const { port } = server.address();
+  await new Promise((resolve) => server.close(resolve));
+  return port;
 }
 
 export function writeProjectFile(root, relativePath, content) {
