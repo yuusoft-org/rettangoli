@@ -33,5 +33,5 @@ bun install
 
 To release a new version to npm:
 
-1. Create a GitHub release tag for the package you want to publish (`cli-v*` for `rtgl`, `ansi-json-v*` for `rettangoli-ansi-json`, `sitekit-v*` for `@rettangoli/sitekit`)
+1. Create a GitHub release tag for the package you want to publish: `cli-v*` for `rtgl`, `ansi-json-v*` for `@rettangoli/ansi-json`, `check-v*` for `@rettangoli/check`, `fe-v*` for `@rettangoli/fe`, `sitekit-v*` for `@rettangoli/sitekit`, `sites-v*` for `@rettangoli/sites`, `ui-v*` for `@rettangoli/ui`, `vt-v*` for `@rettangoli/vt`
 2. The release will automatically trigger the npm publish workflow. The actual version will be based on the version number in `package.json`

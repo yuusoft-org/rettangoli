@@ -9,13 +9,13 @@ sidebarId: vt-cli
 
 VT commands are exposed through `rtgl vt`.
 
-Use the official Docker image for browsers and the project's pinned `rtgl` dependency for the CLI. After `npm install --save-dev --save-exact rtgl@2.1.4`, this alias uses the installed project version:
+Use the official Docker image for browsers and the project's pinned `rtgl` dependency for the CLI. After `npm install --save-dev --save-exact rtgl`, this alias uses the installed project version:
 
 ```bash
-alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 node /workspace/node_modules/rtgl/cli.js'
+alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl@sha256:85769959d834eaf984210f4b2f1f7de07677e81578c98d86680ba116c03a7d45 node /workspace/node_modules/rtgl/cli.js'
 ```
 
-The image default working directory is `/workspace`.
+The image default working directory is `/workspace`. On macOS, see [Quickstart](/vt/docs/introduction/quickstart) for installing the Linux builds of native packages such as `sharp`.
 Use `-w /workspace/<subdir>` only when you need to run commands from a nested project path.
 
 ## Commands

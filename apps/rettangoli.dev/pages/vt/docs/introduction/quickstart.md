@@ -16,17 +16,34 @@ Visual testing catches UI regressions that unit tests usually miss. It is especi
 Use the official image for Playwright browsers and install an exact project CLI version so local and CI runs use the same VT engine:
 
 ```bash
-npm install --save-dev --save-exact rtgl@2.1.4
-docker pull han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0
+npm install --save-dev --save-exact rtgl
+docker pull han4wluc/rtgl@sha256:85769959d834eaf984210f4b2f1f7de07677e81578c98d86680ba116c03a7d45
 ```
+
+The image is referenced by digest (it bundles the Playwright 1.57 browsers), so it cannot change under you.
 
 Set a shell alias so docs and scripts can use plain `rtgl` commands:
 
 ```bash
-alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0 node /workspace/node_modules/rtgl/cli.js'
+alias rtgl='docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl@sha256:85769959d834eaf984210f4b2f1f7de07677e81578c98d86680ba116c03a7d45 node /workspace/node_modules/rtgl/cli.js'
 ```
 
 The image default working directory is `/workspace`, so `-w /workspace` is not required.
+
+On macOS, `node_modules` holds macOS builds of native packages such as `sharp`, and they cannot load inside the Linux container. Add the Linux builds and keep the macOS ones and your lockfile as they are, so `npx rtgl vt report` keeps working on the host.
+
+With bun, install both platforms side by side:
+
+```bash
+bun install --os=darwin --os=linux
+```
+
+With npm, give the container its own `node_modules` in a Docker volume (one volume name per project), install it from the lockfile, and add the same volume to the alias. Run the `npm ci` line again after dependency changes:
+
+```bash
+docker run --rm -v "$(pwd):/workspace" -v my-app-linux-modules:/workspace/node_modules han4wluc/rtgl@sha256:85769959d834eaf984210f4b2f1f7de07677e81578c98d86680ba116c03a7d45 npm ci
+alias rtgl='docker run --rm -v "$(pwd):/workspace" -v my-app-linux-modules:/workspace/node_modules han4wluc/rtgl@sha256:85769959d834eaf984210f4b2f1f7de07677e81578c98d86680ba116c03a7d45 node /workspace/node_modules/rtgl/cli.js'
+```
 
 Commit the lockfile. The alias uses the installed project CLI, so an older bundled CLI in the browser image cannot silently change VT versions. Match the image's Playwright version to your installed VT dependency. Without Docker, use the same local dependency through package scripts:
 

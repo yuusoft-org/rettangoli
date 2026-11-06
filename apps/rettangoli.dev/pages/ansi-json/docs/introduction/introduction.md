@@ -5,7 +5,7 @@ tags: documentation
 sidebarId: ansi-json-introduction
 ---
 
-`rettangoli-ansi-json` renders declarative JSON documents into ANSI escape sequences.
+`@rettangoli/ansi-json` renders declarative JSON documents into ANSI escape sequences.
 
 It is the base rendering layer we can build on for richer terminal and future TUI workflows in Rettangoli.
 

@@ -5,15 +5,15 @@ tags: documentation
 sidebarId: ansi-json-schema
 ---
 
-`rettangoli-ansi-json` ships a schema at:
+`@rettangoli/ansi-json` ships a schema at:
 
-`node_modules/rettangoli-ansi-json/schemas/ansi-json-v1.schema.json`
+`node_modules/@rettangoli/ansi-json/schemas/ansi-json-v1.schema.json`
 
 ## Usage
 
 ```json
 {
-  "$schema": "./node_modules/rettangoli-ansi-json/schemas/ansi-json-v1.schema.json",
+  "$schema": "./node_modules/@rettangoli/ansi-json/schemas/ansi-json-v1.schema.json",
   "content": [
     { "text": "Hello", "style": { "fg": "cyan", "bold": true } }
   ]

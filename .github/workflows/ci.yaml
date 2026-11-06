@@ -50,6 +50,8 @@ jobs:
           - { name: vt-e2e, dir: packages/rettangoli-vt, run: VT_E2E=1 bun run test, browser: true, allow_failure: true }
           # Builds the docs site with the workspace CLI. Fetches from the network, so retry once.
           - { name: docs-site, dir: apps/rettangoli.dev, run: bun run build || bun run build }
+          # The example app builds and passes both checks with the workspace CLI.
+          - { name: example1, dir: examples/example1, run: node ../../packages/rettangoli-cli/cli.js fe build && node ../../packages/rettangoli-cli/cli.js fe check && node ../../packages/rettangoli-cli/cli.js check --dir fe/pages }
     steps:
       - uses: actions/checkout@v4
 

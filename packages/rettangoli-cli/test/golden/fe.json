@@ -424,6 +424,36 @@
       }
     ]
   },
+  "fe-build-no-project-fe": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: warning: this project does not install @rettangoli/fe; fe build bundles the runtime from the project and cannot resolve it. Run npm i -D @rettangoli/fe@0.0.1-fake-nested"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
   "fe-build-nullish-values": {
     "exitCode": 0,
     "signal": null,
@@ -518,6 +548,36 @@
               ],
               "i18n": null,
               "setup": 42
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-skew": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: warning: this project resolves @rettangoli/fe@0.0.0-fake but rtgl <VERSION> runs @rettangoli/fe@0.0.1-fake-nested; fe build bundles the project's runtime while fe watch serves rtgl's. Align @rettangoli/fe and rtgl (upgrade rtgl, or pin @rettangoli/fe@0.0.1-fake-nested)."
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
             }
           ],
           "fn": "build"
@@ -796,6 +856,34 @@
     ]
   },
   "fe-check-setup-number": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "format": "text",
+              "i18n": null
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "fe-check-skew": {
     "exitCode": 0,
     "signal": null,
     "stderrHasStack": false,
@@ -1332,6 +1420,35 @@
       }
     ]
   },
+  "fe-watch-no-project-fe": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
   "fe-watch-outfile-number": {
     "exitCode": 1,
     "signal": null,
@@ -1413,6 +1530,37 @@
     "stderrHasStack": false,
     "stderrSummary": [
       "rtgl: fake watch rejection"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-skew": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: warning: this project resolves @rettangoli/fe@0.0.0-fake but rtgl <VERSION> runs @rettangoli/fe@0.0.1-fake-nested; fe build bundles the project's runtime while fe watch serves rtgl's. Align @rettangoli/fe and rtgl (upgrade rtgl, or pin @rettangoli/fe@0.0.1-fake-nested)."
     ],
     "stdout": [],
     "trace": [

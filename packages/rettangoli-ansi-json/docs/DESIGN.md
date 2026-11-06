@@ -1,4 +1,4 @@
-# rettangoli-ansi-json - TUI Library for Node.js (ESM)
+# @rettangoli/ansi-json - TUI Library for Node.js (ESM)
 
 ## Task 1: AnsiJson Schema Design
 

@@ -2,8 +2,9 @@ import { requireConfig } from "../config.js";
 import { CliUserError } from "../errors.js";
 import { resolveFeOptions } from "../fe-config.js";
 import { parsePortOption } from "../options.js";
+import { warnFeSkew } from "../package-resolution.js";
 
-export function registerFeCommands(program, { load }) {
+export function registerFeCommands(program, { load, version }) {
   const feCommand = program.command("fe").description("Frontend framework");
 
   feCommand
@@ -34,6 +35,7 @@ Examples:
     .action(async (options) => {
       const { build } = await load("@rettangoli/fe/cli");
       resolveFeOptions(requireConfig(), process.cwd(), options, { command: "build" });
+      warnFeSkew({ cwd: process.cwd(), command: "build", rtglVersion: version });
       await build(options);
     });
 
@@ -113,6 +115,7 @@ Examples:
       const { watch, resolveServeContext } = await load("@rettangoli/fe/cli");
       const config = requireConfig();
       resolveFeOptions(config, process.cwd(), options, { command: "watch" });
+      warnFeSkew({ cwd: process.cwd(), command: "watch", rtglVersion: version });
       if (config.fe.watchVt === true) {
         const [
           { createRettangoliVtWatchPlugin },

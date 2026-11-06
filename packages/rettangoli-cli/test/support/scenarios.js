@@ -1,8 +1,10 @@
 // Every scenario runs cli.js against the recording fakes and is compared with
 // test/golden/<group>.json. Scenario shape:
-//   { id, group, argv, files?, cwd?, env?, omitPackages? }
+//   { id, group, argv, files?, cwd?, env?, omitPackages?, nestedPackages? }
 // `files` maps project-relative paths to contents. `env` sets FAKE_THROW,
 // FAKE_REJECT, FAKE_DELAY (see fixtures/fake-packages/trace.js) or RTGL_DEBUG.
+// `nestedPackages` installs fixtures/fake-packages/nested/<name> (another
+// version) under rtgl's own node_modules, so rtgl and the project disagree.
 export const groups = ["root", "check", "fe", "vt", "sites", "ui"];
 
 export const scenarios = [];
@@ -231,6 +233,24 @@ add("fe", "fe-examples-output-dir", ["fe", "examples"], {
   files: feProject("  examples:\n    outputDir: ./out/examples\n"),
 });
 add("fe", "fe-examples-reject", ["fe", "examples"], { files: feProject(), ...rejecting("examples") });
+
+// ---------------------------------------------------------------- fe version skew
+// rtgl loads its nested fe, the project resolves another one.
+// fe build and fe watch warn once on stderr; nothing else changes.
+add("fe", "fe-build-skew", ["fe", "build"], { files: feProject(), nestedPackages: ["fe"] });
+add("fe", "fe-watch-skew", ["fe", "watch"], { files: feProject(), nestedPackages: ["fe"] });
+add("fe", "fe-check-skew", ["fe", "check"], { files: feProject(), nestedPackages: ["fe"] });
+// Only rtgl has fe: fe build cannot bundle the runtime, fe watch serves rtgl's.
+add("fe", "fe-build-no-project-fe", ["fe", "build"], {
+  files: feProject(),
+  omitPackages: ["fe"],
+  nestedPackages: ["fe"],
+});
+add("fe", "fe-watch-no-project-fe", ["fe", "watch"], {
+  files: feProject(),
+  omitPackages: ["fe"],
+  nestedPackages: ["fe"],
+});
 
 // ---------------------------------------------------------------- vt
 add("vt", "vt-help", ["vt", "--help"]);

@@ -8,13 +8,13 @@ sidebarId: ansi-json-getting-started
 ## Install
 
 ```bash
-npm install rettangoli-ansi-json
+npm install @rettangoli/ansi-json
 ```
 
 ## Render your first document
 
 ```js
-import { render } from 'rettangoli-ansi-json';
+import { render } from '@rettangoli/ansi-json';
 
 const doc = {
   content: [

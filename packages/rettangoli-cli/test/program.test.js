@@ -13,6 +13,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, afterEach, before, test } from "node:test";
+import { findBundledPackage } from "../src/package-resolution.js";
 import { createProgram } from "../src/program.js";
 
 const { version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url)));
@@ -26,6 +27,14 @@ before(() => {
   // realpath: process.cwd() reports /private/var for /var on macOS.
   projectDirectory = realpathSync(mkdtempSync(join(tmpdir(), "rtgl-program-")));
   mkdirSync(join(projectDirectory, "src", "components"), { recursive: true });
+  // The project installs the @rettangoli/fe version rtgl runs, so fe build and
+  // fe watch print no version-skew warning.
+  const feDirectory = join(projectDirectory, "node_modules", "@rettangoli", "fe");
+  mkdirSync(feDirectory, { recursive: true });
+  writeFileSync(
+    join(feDirectory, "package.json"),
+    JSON.stringify({ name: "@rettangoli/fe", version: findBundledPackage("@rettangoli/fe").version }),
+  );
   process.chdir(projectDirectory);
 });
 

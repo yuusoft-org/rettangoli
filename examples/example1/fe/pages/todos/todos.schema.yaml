@@ -8,4 +8,6 @@ propsSchema:
 
 events: []
 
-methods: []
+methods:
+  type: object
+  properties: {}

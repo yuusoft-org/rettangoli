@@ -56,7 +56,7 @@ function link(target, path) {
 // Builds <root>/app, which looks like a consumer project with rtgl installed.
 // rtgl's own code is copied, not symlinked: Node resolves symlinked modules
 // from their real path, which would reach the repository's real packages.
-function createInstall({ cliDirectory, omitPackages = [] }) {
+function createInstall({ cliDirectory, omitPackages = [], nestedPackages = [] }) {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "rtgl-golden-")));
   try {
     const appDirectory = join(root, "app");
@@ -85,6 +85,13 @@ function createInstall({ cliDirectory, omitPackages = [] }) {
           join(modulesDirectory, "@rettangoli", name),
         );
       }
+    }
+    // A copy with another version that only rtgl resolves (version skew).
+    for (const name of nestedPackages) {
+      link(
+        join(fakePackagesDirectory, "nested", "@rettangoli", name),
+        join(rtglDirectory, "node_modules", "@rettangoli", name),
+      );
     }
 
     return {
@@ -199,11 +206,12 @@ function spawnCli({ cliPath, argv, cwd, env }) {
   });
 }
 
-// scenario: { id, group, argv, files?, cwd?, env?, omitPackages? }
+// scenario: { id, group, argv, files?, cwd?, env?, omitPackages?, nestedPackages? }
 export async function runScenario(scenario, { cliDirectory = resolveCliDirectory() } = {}) {
   const install = createInstall({
     cliDirectory,
     omitPackages: scenario.omitPackages,
+    nestedPackages: scenario.nestedPackages,
   });
   try {
     const normalize = createNormalizer(install);
