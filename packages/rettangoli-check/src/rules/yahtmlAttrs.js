@@ -1,4 +1,6 @@
 import { toCamelCase, toKebabCase } from "../utils/case.js";
+import { isValidAttributeName } from "../core/fe-contracts.js";
+import { escapeRegExp, isConvertibleLegacyBinding } from "./shared.js";
 
 const GENERIC_ALLOWED_ATTRS = new Set([
   "accesskey",
@@ -37,12 +39,6 @@ const GENERIC_ALLOWED_ATTRS = new Set([
 ]);
 
 const normalizeBindingName = (bindingName = "") => {
-  if (bindingName.startsWith("@")) {
-    return {
-      sourceType: "event",
-      name: bindingName.slice(1),
-    };
-  }
   if (bindingName.startsWith(":")) {
     return {
       sourceType: "prop",
@@ -169,6 +165,14 @@ export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
         if (!bindingName || isDynamicToken(bindingName)) {
           return;
         }
+        // Names FE parseNodeBindings rejects ('@event', '=x', '1invalid', a lone ':') are
+        // RTGL-CHECK-BINDING-001. FE accepts any other ':' name and ignores '.' names.
+        const feRejects = bindingName.startsWith(":")
+          ? bindingName === ":"
+          : !bindingName.startsWith(".") && !isValidAttributeName(bindingName.replace(/^\?/, ""));
+        if (feRejects) {
+          return;
+        }
 
         const normalized = normalizeBindingName(bindingName);
         const matchingAttrNode = astAttributes.find((attribute) => attribute.bindingName === bindingName);
@@ -189,21 +193,18 @@ export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
             endLine: line,
             endColumn: diagnosticEndColumn,
             message: `${model.componentKey}: legacy '.${normalized.name}' binding is not supported. Use ':${normalized.name}'.`,
-            fix: {
+            fix: isConvertibleLegacyBinding({ key: bindingLine.rawKey, bindingName }) ? {
               kind: "line-regex-replace",
               filePath,
               line,
-              pattern: `\\.${normalized.name.replaceAll(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}\\s*=`,
-              replacement: `:${normalized.name}=`,
+              pattern: `(^|\\s)\\.${escapeRegExp(normalized.name)}=(?=\\$\\{)`,
+              replacement: `$1:${normalized.name}=`,
               flags: "g",
-              description: `Convert '.${normalized.name}=' to ':${normalized.name}='.`,
+              description: `Convert '.${normalized.name}=\${...}' to ':${normalized.name}=\${...}'.`,
               safe: true,
               confidence: 0.98,
-            },
+            } : undefined,
           });
-          return;
-        }
-        if (normalized.sourceType === "event") {
           return;
         }
 

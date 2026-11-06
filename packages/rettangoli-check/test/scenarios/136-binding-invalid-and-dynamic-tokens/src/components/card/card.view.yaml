@@ -1,0 +1,10 @@
+template:
+  - rtgl-view:
+      - div =x: Empty name
+      - div title=${title} 1invalid: Invalid token
+      - rtgl-view w=f ${containerAttrString}: Spread
+      - div class=row ${ headerAttrString }: Spread with spaces
+      - div data-${key}=1: Dynamic name
+      - rtgl-view :1x=${a}: FE accepts any non-empty ':' prop name
+      - rtgl-view .1x: FE ignores bare '.' tokens
+styles: {}

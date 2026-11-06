@@ -40,6 +40,8 @@ const summarizeDiagnostics = (diagnostics = []) => {
 const categorizeDiagnosticCode = (code = "") => {
   if (code.includes("YAHTML")) return "template";
   if (code.includes("JEMPL")) return "template";
+  if (code.includes("BINDING")) return "template";
+  if (code.includes("REGISTRY")) return "registry";
   if (code.includes("SYMBOL")) return "symbols";
   if (code.includes("SCHEMA")) return "schema";
   if (code.includes("LIFECYCLE")) return "lifecycle";

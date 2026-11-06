@@ -8,7 +8,6 @@ import {
   collectTopLevelYamlKeyLines,
   collectRefListeners,
   extractModuleExports,
-  hasLegacyDotPropBinding,
   parseYamlSafe,
 } from "./parsers.js";
 import { normalizeSchemaYaml } from "./schema.js";
@@ -676,8 +675,7 @@ export const buildComponentModel = (componentGroup) => {
         type: "Template",
         nodes: [],
       },
-      hasLegacyDotPropBinding: false,
-      legacyDotPropBindingLine: undefined,
+      legacyDotPropBinding: null,
     },
     schema: {
       filePath: files.schema || null,
@@ -724,13 +722,11 @@ export const buildComponentModel = (componentGroup) => {
       );
       model.view.topLevelKeyLines = collectTopLevelYamlKeyLines(viewReadResult.value);
       model.view.yamlKeyPathLines = collectYamlKeyPathLines(viewReadResult.value);
-      const firstLegacyDotPropBinding = model.view.selectorBindings.find(
+      // Line-based text scan for a '.prop' binding. It is the only CONTRACT-003 source when the YAML does not
+      // parse, and it is still ORed with FE's check of the parsed template (decision D10).
+      model.view.legacyDotPropBinding = model.view.selectorBindings.find(
         (binding) => binding.bindingNames.some((bindingName) => bindingName.startsWith(".")),
-      );
-      if (firstLegacyDotPropBinding) {
-        model.view.hasLegacyDotPropBinding = true;
-        model.view.legacyDotPropBindingLine = firstLegacyDotPropBinding.line;
-      }
+      ) || null;
 
       const viewYamlResult = parseYamlSafe({ text: viewReadResult.value, filePath: files.view });
       if (!viewYamlResult.ok) {
@@ -748,16 +744,7 @@ export const buildComponentModel = (componentGroup) => {
           viewText: viewReadResult.value,
           viewYaml: viewYamlResult.value,
         });
-        const firstLegacyDotPropBindingAfterAst = model.view.selectorBindings.find(
-          (binding) => binding.bindingNames.some((bindingName) => bindingName.startsWith(".")),
-        );
-        if (firstLegacyDotPropBindingAfterAst) {
-          model.view.hasLegacyDotPropBinding = true;
-          model.view.legacyDotPropBindingLine = firstLegacyDotPropBindingAfterAst.line;
-        }
         model.view.refListeners = collectRefListeners(viewYamlResult.value, model.view.yamlKeyPathLines);
-        model.view.hasLegacyDotPropBinding = model.view.hasLegacyDotPropBinding
-          || hasLegacyDotPropBinding(viewYamlResult.value?.template);
       }
     }
   }

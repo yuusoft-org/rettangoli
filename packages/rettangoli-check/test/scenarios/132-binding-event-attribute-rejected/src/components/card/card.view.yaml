@@ -1,0 +1,12 @@
+template:
+  - rtgl-view:
+      - button @click=handleSave: Save
+      - rtgl-button @select=${handleSelect}: Select
+      - div @click: Bare token
+      - rtgl-button#ok: Listener declared under refs
+refs:
+  ok:
+    eventListeners:
+      click:
+        handler: handleSave
+styles: {}

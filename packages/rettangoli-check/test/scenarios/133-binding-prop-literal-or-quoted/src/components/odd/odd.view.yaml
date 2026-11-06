@@ -1,0 +1,3 @@
+template:
+  - div .1x=${a}: Legacy binding with a name the CONTRACT-003 fix pattern cannot match
+styles: {}

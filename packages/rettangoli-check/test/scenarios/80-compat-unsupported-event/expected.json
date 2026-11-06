@@ -1,5 +1,5 @@
 {
-  "name": "compat unsupported event",
+  "name": "'@tap=...' fails in FE, so it is BINDING-001 (COMPAT-002/005 are retired)",
   "options": {
     "dirs": [
       "./src/components"
@@ -8,13 +8,21 @@
   },
   "expected": {
     "ok": false,
-    "errorCount": 2,
+    "errorCount": 1,
     "warnCount": 0,
     "errorCodes": {
-      "RTGL-CHECK-COMPAT-002": 1,
-      "RTGL-CHECK-COMPAT-005": 1
+      "RTGL-CHECK-BINDING-001": 1
     },
-    "warnCodes": {}
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-BINDING-001",
+        "severity": "error",
+        "message": "components/host: Invalid binding attribute name '@tap' on 'rtgl-child'. Event bindings are not supported; declare listeners under refs.<id>.eventListeners.",
+        "filePath": "src/components/host/host.view.yaml",
+        "line": 2
+      }
+    ]
   },
   "specRefs": [
     "RTGL-SPEC-CONF-CORE-001",

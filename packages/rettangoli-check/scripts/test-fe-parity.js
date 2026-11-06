@@ -20,11 +20,12 @@ import { NodeType } from "jempl/src/parse/constants.js";
 import {
   collectBindingNames as checkCollectBindingNames,
   createRefMatchers as checkCreateRefMatchers,
+  findUnsupportedTemplatePropertyBindingSyntax as checkFindUnsupportedPropertyBinding,
+  getNodeBindingViolation as checkGetNodeBindingViolation,
   validateElementIdForRefs as checkValidateElementIdForRefs,
   validateEventConfig as checkValidateEventConfig,
 } from "../src/core/fe-contracts.js";
 import { analyzeProject } from "../src/core/analyze.js";
-import { hasLegacyDotPropBinding as checkHasLegacyDotPropBinding } from "../src/core/parsers.js";
 import {
   collectBindingNames as feCollectBindingNames,
   createRefMatchers as feCreateRefMatchers,
@@ -44,26 +45,6 @@ const workspaceRoot = path.resolve(currentDir, "../../..");
 // Fixing a disagreement lowers the count (down to 0, then delete the entry); adding a new
 // disagreement raises it. Sections without an entry must have no disagreements.
 const KNOWN_DRIFT = {
-  bindingNames: {
-    count: 36,
-    findings: ["forked tokenizer"],
-    note: "check forks the pre-getAttributeAssignments tokenizer: it invents names from values with spaces and from "
-      + "${spread} tokens (10 synthetic strings, 24 ui view keys and 2 scenario keys, so editing those views can "
-      + "move this count) and mishandles '?name', bare '@click' and '=x'.",
-  },
-  propertyBindingSyntax: {
-    count: 15,
-    findings: ["legacy .prop regex"],
-    note: "check only knows the legacy '.prop=' regex. It misses ':prop' with a quoted, literal or non-${...} value "
-      + "(11 inputs, including the bare ':prop=item' under $for), flags '.x=' inside quoted values and '.value = x' "
-      + "(3 inputs), and misses '.5x='.",
-  },
-  nodeBindings: {
-    count: 54,
-    findings: ["no parseNodeBindings rule"],
-    note: "check has no rule for what FE parseNodeBindings throws on: '@event' bindings, '?aria-*/?data-*/?role', "
-      + "empty or invalid binding names, invalid attribute tokens and duplicate props.",
-  },
   schemaContract: {
     count: 7,
     findings: ["ssr not validated"],
@@ -345,7 +326,7 @@ const compareBindingNames = () => {
   );
 };
 
-// d: CONTRACT-003 detection (legacy `.prop=` in check; any unsupported property binding in FE)
+// d: CONTRACT-003 detection (FE findUnsupportedTemplatePropertyBindingSyntax and check's copy)
 const comparePropertyBindingSyntax = () => {
   const templateOf = (key) => [{ "rtgl-view": [{ [key]: null }] }];
   const keys = [
@@ -400,12 +381,12 @@ const comparePropertyBindingSyntax = () => {
 
   return compareOutcomes(
     templates,
-    (template) => checkHasLegacyDotPropBinding(template),
-    (template) => Boolean(feFindUnsupportedPropertyBinding(template)),
+    checkFindUnsupportedPropertyBinding,
+    feFindUnsupportedPropertyBinding,
   );
 };
 
-// e: FE parseNodeBindings throws. check has no equivalent rule yet, so every key FE rejects counts.
+// e: FE parseNodeBindings throws vs check's getNodeBindingViolation (BINDING-001/002/003), same message.
 const compareNodeBindings = () => {
   const attrStrings = [
     "", "class=a", "id=x", "title=\"a b\"", "href=${url}", "data-id=5", "aria-label=\"x\"", "role=button", "disabled",
@@ -419,6 +400,7 @@ const compareNodeBindings = () => {
     ":foo-bar=${a} :fooBar=${b}", "foo-bar=1 :fooBar=${b}", "placeholder=a :placeholder=${b}", "id=x :id=${y}",
     ":title=literal", ":items=${items}", ":n=${5}", ":obj=items", ":obj=${items}",
     "foo=1 foo=2", "foo ?foo", "?foo ?foo", "foo-bar fooBar",
+    "__proto__=1 __proto__=2", ":__proto__=${a} :__proto__=${b}", "constructor=1 constructor=2",
     "title=\"${a} x\"", "label=${a b}", "class=#{local}",
     "w=100% h=${height}px", "x=\"\" y='' z=",
   ];
@@ -431,7 +413,13 @@ const compareNodeBindings = () => {
 
   return compareOutcomes(
     inputs,
-    () => ({}), // check validates none of these yet
+    ({ tag, attrsString }) => {
+      const violation = checkGetNodeBindingViolation({ attrsString, tagName: tag, isWebComponent: tag.includes("-") });
+      if (violation) {
+        throw new Error(`[Parser] ${violation.message}`);
+      }
+      return {};
+    },
     ({ tag, attrsString }) => {
       feParseNodeBindings({
         attrsString,

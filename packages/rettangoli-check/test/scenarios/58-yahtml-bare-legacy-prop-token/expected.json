@@ -1,5 +1,5 @@
 {
-  "name": "yahtml bare legacy prop token",
+  "name": "yahtml bare legacy prop token; a bare '.prop' next to another attribute FE reads is ignored by FE (no CONTRACT-003)",
   "options": {
     "dirs": [
       "./src/components"
@@ -8,11 +8,11 @@
   },
   "expected": {
     "ok": false,
-    "errorCount": 2,
+    "errorCount": 3,
     "warnCount": 0,
     "errorCodes": {
       "RTGL-CONTRACT-003": 1,
-      "RTGL-CHECK-YAHTML-002": 1
+      "RTGL-CHECK-YAHTML-002": 2
     },
     "warnCodes": {},
     "diagnostics": [
@@ -28,6 +28,13 @@
         "severity": "error",
         "message": "components/card: legacy '.value' binding is not supported. Use ':value'.",
         "filePath": "src/components/card/card.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-002",
+        "severity": "error",
+        "message": "components/custom: legacy '.value' binding is not supported. Use ':value'.",
+        "filePath": "src/components/custom/custom.view.yaml",
         "line": 2
       }
     ]

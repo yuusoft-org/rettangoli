@@ -1,6 +1,5 @@
 import { toCamelCase, toKebabCase } from "../utils/case.js";
 import { resolveExpressionPathType } from "../core/scopeGraph.js";
-import { parseNamedExportedFunctions } from "../core/exportedFunctions.js";
 import {
   areTypesCompatible,
   inferLiteralLatticeType,
@@ -40,33 +39,6 @@ const hasPropDefaultValue = ({ contract, propName }) => {
   );
 };
 
-const getContractEventSchema = ({ contract, eventName }) => {
-  if (!(contract?.eventTypes instanceof Map) || !eventName) {
-    return null;
-  }
-  return contract.eventTypes.get(eventName) || null;
-};
-
-const toSchemaRequiredKeys = (schemaNode) => {
-  if (!schemaNode || typeof schemaNode !== "object" || Array.isArray(schemaNode)) {
-    return [];
-  }
-  if (!Array.isArray(schemaNode.required)) {
-    return [];
-  }
-  return [...new Set(
-    schemaNode.required
-      .filter((key) => typeof key === "string" && key.trim() === key && key.length > 0),
-  )].sort((left, right) => left.localeCompare(right));
-};
-
-const isValidSymbolName = (value = "") => /^[A-Za-z_$][A-Za-z0-9_$]*$/u.test(value);
-
-const isValidHandlerName = (value = "") => (
-  isValidSymbolName(value)
-  && value.startsWith("handle")
-);
-
 const latticeTypeToText = (value) => {
   if (typeof value === "string") {
     return value;
@@ -102,14 +74,10 @@ const inferAttributeExpressionType = ({ model, attribute }) => {
   return inferLiteralLatticeType(attribute.valueText).kind;
 };
 
-export const runCompatibilityRules = ({ models = [], registry = new Map(), includeStyle = false }) => {
+export const runCompatibilityRules = ({ models = [], registry = new Map() }) => {
   const diagnostics = [];
 
   models.forEach((model) => {
-    const exportedHandlerFunctions = parseNamedExportedFunctions({
-      sourceText: model?.handlers?.sourceText || "",
-      filePath: model?.handlers?.filePath || model?.files?.handlers || "unknown.handlers.js",
-    });
     const templateNodes = Array.isArray(model?.view?.templateAst?.nodes)
       ? model.view.templateAst.nodes
       : [];
@@ -159,115 +127,7 @@ export const runCompatibilityRules = ({ models = [], registry = new Map(), inclu
         });
       }
 
-      if (contract.events instanceof Set && contract.events.size > 0) {
-        astAttributes.forEach((attribute) => {
-          if (attribute?.sourceType !== "event" || !attribute?.name) {
-            return;
-          }
-          if (contract.events.has(attribute.name)) {
-            return;
-          }
-          diagnostics.push({
-            code: "RTGL-CHECK-COMPAT-002",
-            severity: "error",
-            filePath: bindingLine.filePath || model?.view?.filePath || "unknown",
-            line: attribute?.range?.line || bindingLine.line,
-            column: attribute?.range?.column,
-            endLine: attribute?.range?.endLine,
-            endColumn: attribute?.range?.endColumn,
-            message: `${model.componentKey}: unsupported event '${attribute.name}' on '${tagName}'.`,
-          });
-        });
-      }
-
       astAttributes.forEach((attribute) => {
-        if (attribute?.sourceType === "event" && attribute?.name) {
-          const rawHandlerSymbol = String(attribute.valueText || "").trim();
-          if (!rawHandlerSymbol) {
-            return;
-          }
-
-          if (!isValidSymbolName(rawHandlerSymbol) || (includeStyle && !isValidHandlerName(rawHandlerSymbol))) {
-            diagnostics.push({
-              code: "RTGL-CHECK-HANDLER-003",
-              severity: "error",
-              filePath: bindingLine.filePath || model?.view?.filePath || "unknown",
-              line: attribute?.range?.line || bindingLine.line,
-              column: attribute?.range?.column,
-              endLine: attribute?.range?.endLine,
-              endColumn: attribute?.range?.endColumn,
-              message: `${model.componentKey}: invalid handler '${rawHandlerSymbol}' for event '${attribute.name}' on '${tagName}'. Handler names must start with 'handle'.`,
-            });
-            return;
-          }
-
-          if (!model?.handlers?.exports?.has(rawHandlerSymbol)) {
-            diagnostics.push({
-              code: "RTGL-CHECK-COMPAT-005",
-              severity: "error",
-              filePath: bindingLine.filePath || model?.view?.filePath || "unknown",
-              line: attribute?.range?.line || bindingLine.line,
-              column: attribute?.range?.column,
-              endLine: attribute?.range?.endLine,
-              endColumn: attribute?.range?.endColumn,
-              message: `${model.componentKey}: handler '${rawHandlerSymbol}' for event '${attribute.name}' on '${tagName}' is missing in .handlers.js exports.`,
-            });
-            return;
-          }
-
-          const eventSchema = getContractEventSchema({
-            contract,
-            eventName: attribute.name,
-          });
-          const requiredPayloadKeys = toSchemaRequiredKeys(eventSchema);
-          if (requiredPayloadKeys.length === 0) {
-            return;
-          }
-
-          const handlerMeta = exportedHandlerFunctions.get(rawHandlerSymbol);
-          if (!handlerMeta) {
-            return;
-          }
-          if (handlerMeta.paramCount < 2) {
-            diagnostics.push({
-              code: "RTGL-CHECK-COMPAT-006",
-              severity: "error",
-              filePath: bindingLine.filePath || model?.view?.filePath || "unknown",
-              line: attribute?.range?.line || bindingLine.line,
-              column: attribute?.range?.column,
-              endLine: attribute?.range?.endLine,
-              endColumn: attribute?.range?.endColumn,
-              message: `${model.componentKey}: handler '${rawHandlerSymbol}' for event '${attribute.name}' on '${tagName}' must accept a payload parameter for required payload keys [${requiredPayloadKeys.join(", ")}].`,
-            });
-            return;
-          }
-
-          if (handlerMeta.secondParam?.kind !== "object") {
-            return;
-          }
-          if (handlerMeta.secondParam?.hasRest) {
-            return;
-          }
-
-          const payloadKeys = new Set(handlerMeta.secondParam.objectKeys || []);
-          const missingPayloadKeys = requiredPayloadKeys.filter((key) => !payloadKeys.has(key));
-          if (missingPayloadKeys.length === 0) {
-            return;
-          }
-
-          diagnostics.push({
-            code: "RTGL-CHECK-COMPAT-006",
-            severity: "error",
-            filePath: bindingLine.filePath || model?.view?.filePath || "unknown",
-            line: attribute?.range?.line || bindingLine.line,
-            column: attribute?.range?.column,
-            endLine: attribute?.range?.endLine,
-            endColumn: attribute?.range?.endColumn,
-            message: `${model.componentKey}: handler '${rawHandlerSymbol}' for event '${attribute.name}' on '${tagName}' does not cover required payload key(s) [${missingPayloadKeys.join(", ")}].`,
-          });
-          return;
-        }
-
         if (attribute?.sourceType === "prop" && attribute?.name) {
           const schema = getContractPropSchema({
             contract,

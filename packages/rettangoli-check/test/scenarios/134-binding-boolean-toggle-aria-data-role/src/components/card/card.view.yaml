@@ -1,0 +1,7 @@
+template:
+  - rtgl-view:
+      - rtgl-button ?aria-pressed=${pressed}: Pressed
+      - div ?data-open: Open
+      - button ?role=${role}: Role
+      - rtgl-button ?disabled=${disabled} aria-pressed=${pressed} data-open=${open} role=switch: Valid
+styles: {}

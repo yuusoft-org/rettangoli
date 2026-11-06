@@ -1,0 +1,46 @@
+{
+  "name": "'@event' bindings and bare '@event' tokens fail in FE on native and custom elements (BINDING-001, also with yahtml off)",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": false
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 3,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-BINDING-001": 3
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-BINDING-001",
+        "severity": "error",
+        "message": "components/card: Invalid binding attribute name '@click' on 'button'. Event bindings are not supported; declare listeners under refs.<id>.eventListeners.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-BINDING-001",
+        "severity": "error",
+        "message": "components/card: Invalid binding attribute name '@select' on 'rtgl-button'. Event bindings are not supported; declare listeners under refs.<id>.eventListeners.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 4
+      },
+      {
+        "code": "RTGL-CHECK-BINDING-001",
+        "severity": "error",
+        "message": "components/card: Invalid attribute token '@click' on 'div'. Event bindings are not supported; declare listeners under refs.<id>.eventListeners.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 5
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-YAHTML-001"
+  ]
+}

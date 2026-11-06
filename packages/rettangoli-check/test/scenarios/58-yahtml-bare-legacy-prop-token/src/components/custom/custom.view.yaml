@@ -1,0 +1,3 @@
+template:
+  - rtgl-input placeholder=x .value: FE ignores a bare token after an assignment
+styles: {}

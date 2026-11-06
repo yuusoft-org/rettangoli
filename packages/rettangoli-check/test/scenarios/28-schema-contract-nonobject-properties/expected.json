@@ -18,7 +18,7 @@
       {
         "code": "RTGL-CHECK-YAHTML-003",
         "severity": "error",
-        "message": "components/host: unsupported attr/prop '0' on 'rtgl-test-child-nonobject-props'.",
+        "message": "components/host: unsupported attr/prop 'accent-color' on 'rtgl-test-child-nonobject-props'.",
         "filePath": "src/components/host/host.view.yaml",
         "line": 2
       }

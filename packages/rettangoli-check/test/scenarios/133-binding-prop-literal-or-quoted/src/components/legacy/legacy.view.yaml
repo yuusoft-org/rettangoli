@@ -1,0 +1,3 @@
+template:
+  - div .title=literal: Legacy literal is not rewritten by autofix
+styles: {}

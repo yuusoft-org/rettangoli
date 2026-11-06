@@ -3,6 +3,7 @@ const CODE_NAMESPACE_REGEX = /^RTGL-(CHECK|CONTRACT|CLI|IR)-[A-Z0-9-]+-\d{3}$/;
 const DEFAULT_FAMILY_CONFIG = [
   { prefix: "RTGL-CHECK-YAHTML-", family: "template", severity: "error", title: "YAHTML template diagnostic" },
   { prefix: "RTGL-CHECK-JEMPL-", family: "template", severity: "error", title: "Jempl template diagnostic" },
+  { prefix: "RTGL-CHECK-BINDING-", family: "template", severity: "error", title: "Template binding diagnostic" },
   { prefix: "RTGL-CHECK-EXPR-", family: "expression", severity: "error", title: "Expression diagnostic" },
   { prefix: "RTGL-CHECK-SCHEMA-", family: "schema", severity: "error", title: "Schema diagnostic" },
   { prefix: "RTGL-CHECK-SYMBOL-", family: "symbols", severity: "error", title: "Symbol resolution diagnostic" },

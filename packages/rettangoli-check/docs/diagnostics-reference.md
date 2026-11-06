@@ -22,6 +22,7 @@ Default family and severity are inferred from code prefixes:
 
 - `RTGL-CHECK-YAHTML-*`: `template`, `error`
 - `RTGL-CHECK-JEMPL-*`: `template`, `error`
+- `RTGL-CHECK-BINDING-*`: `template`, `error`
 - `RTGL-CHECK-EXPR-*`: `expression`, `error`
 - `RTGL-CHECK-SCHEMA-*`: `schema`, `error`
 - `RTGL-CHECK-SYMBOL-*`: `symbols`, `error`
@@ -43,6 +44,26 @@ Default family and severity are inferred from code prefixes:
 - `RTGL-IR-INV-*`: `ir-invariants`, `error`
 - `RTGL-CLI-*`: `cli`, `error`
 
+## Template Binding Diagnostics
+
+FE reads each template key's attribute part (after the first space) with `parseNodeBindings` when it renders the element, and throws on the inputs below. Check reports the first such problem of each key, on native and custom elements, also with `--no-yahtml`. Names and tokens that contain `${...}` or `#{...}` (for example a `${containerAttrString}` spread or `data-${key}=1`) are rendered at runtime and are not judged.
+
+### RTGL-CHECK-BINDING-001
+
+An invalid binding name or attribute token: an empty name (`=x`), an empty prop name (`:=x`), a plain or `?` name, or a bare token, that does not match `^[A-Za-z_][A-Za-z0-9_.:-]*$` (`1invalid`, `0=bad`; a `:` prop name only needs to be non-empty, so `:1x=${a}` is accepted), or an event binding (`@click=handleClick`, bare `@click`). Template keys cannot bind events; declare listeners under `refs.<id>.eventListeners` instead.
+
+### RTGL-CHECK-BINDING-002
+
+A boolean toggle for a value-carrying attribute: `?aria-*`, `?data-*` or `?role`. Bind the value instead, for example `aria-pressed=${pressed}`.
+
+### RTGL-CHECK-BINDING-003
+
+A duplicate prop after camelCasing, for example `placeholder=a :placeholder=${b}` on a custom element, `:foo-bar=${a} :fooBar=${b}` on any element, or `?hidden hidden` on a custom element. Use only one of `name=value` or `:name=${expr}`.
+
+### RTGL-CHECK-COMPAT-002, RTGL-CHECK-COMPAT-005, RTGL-CHECK-COMPAT-006, RTGL-CHECK-HANDLER-003 (retired)
+
+Formerly checked `@event=handler` attributes against the element's events and the component's handlers. FE does not support `@event` attributes, so such a template now gets `RTGL-CHECK-BINDING-001`, and these codes are no longer emitted.
+
 ## Listener Payload Diagnostics
 
 ### RTGL-CHECK-LISTENER-010
@@ -57,11 +78,11 @@ Formerly compared the keys of a string payload such as `"{ id: x }"` with the ha
 
 ### RTGL-CONTRACT-003
 
-Legacy property binding source syntax is unsupported. Use `:prop=${...}` in `.view.yaml`. For legacy `.prop=${expr}` bindings, the safe mechanical conversion is `.prop=${expr}` -> `:prop=${expr}`.
+Property binding syntax that FE rejects: any legacy `.prop=` binding, and `:prop=` bindings whose value is quoted or not exactly `${...}` (`:title=literal`, `:title="${x}"`). Use `:prop=${...}` in `.view.yaml`. A fix is attached only to an unquoted `.prop=${expr}` binding with a name matching `[A-Za-z_][\w-]*` (not `.1x` or `.a.b`); its safe conversion is `.prop=${expr}` -> `:prop=${expr}`; other values need a manual edit.
 
 ### RTGL-CHECK-YAHTML-002
 
-Legacy YAHTML `.prop` bindings are unsupported. Convert `.prop=${expr}` to `:prop=${expr}` and wrap bare property values in `${...}` when needed.
+Legacy YAHTML `.prop` bindings are unsupported. Convert `.prop=${expr}` to `:prop=${expr}` and wrap bare property values in `${...}` when needed. The fix is attached only to an unquoted `.prop=${expr}` binding.
 
 ## Docs Link Contract
 
@@ -81,3 +102,4 @@ Contract tests:
 - `test/scenarios/123-cli-autofix-dry-run-json`
 - `test/scenarios/124-cli-autofix-dry-run-patch-json`
 - `test/scenarios/125-cli-autofix-apply-json-success`
+- `test/scenarios/132-binding-event-attribute-rejected` .. `136-binding-invalid-and-dynamic-tokens`

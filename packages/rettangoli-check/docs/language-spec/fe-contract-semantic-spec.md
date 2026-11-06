@@ -61,11 +61,10 @@ If `.constants.yaml` exists, root must be a YAML object (`RTGL-CHECK-CONSTANTS-0
 For custom-element usage against registry contracts:
 
 1. required props must be provided
-2. bound events must be supported
-3. boolean binding kind must match target prop type
-4. custom-element event bindings must use valid handler symbols (`handle*` naming is optional style lint)
-5. bound custom-element handlers must exist in host `.handlers.js` exports
-6. when target event schema declares required payload keys, handler signatures must accept compatible payload parameters
+2. boolean binding kind must match target prop type
+3. prop binding values must be compatible with the target prop type
+
+Template keys cannot bind events: FE rejects `@event=handler` and a bare `@event`, so they are reported as `RTGL-CHECK-BINDING-001` on every element. Listeners are declared under `refs.<id>.eventListeners` and validated by the listener rules.
 
 ## RTGL-SPEC-FE-011: Listener payload shape
 

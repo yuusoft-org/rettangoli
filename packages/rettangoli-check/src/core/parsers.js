@@ -938,23 +938,6 @@ export const collectExportStarSpecifiers = (sourceCode = "", options = {}) => {
   return extractModuleExports({ sourceCode, ...options }).exportStarSpecifiers;
 };
 
-export const hasLegacyDotPropBinding = (node) => {
-  const LEGACY_PROP_BINDING_REGEX = /(^|\s)\.[A-Za-z_][A-Za-z0-9_-]*\s*=/;
-  if (Array.isArray(node)) {
-    return node.some((item) => hasLegacyDotPropBinding(item));
-  }
-  if (!node || typeof node !== "object") {
-    return false;
-  }
-
-  return Object.entries(node).some(([key, value]) => {
-    if (LEGACY_PROP_BINDING_REGEX.test(key)) {
-      return true;
-    }
-    return hasLegacyDotPropBinding(value);
-  });
-};
-
 const stripOuterQuotes = (value) => {
   if (!value || value.length < 2) {
     return value;

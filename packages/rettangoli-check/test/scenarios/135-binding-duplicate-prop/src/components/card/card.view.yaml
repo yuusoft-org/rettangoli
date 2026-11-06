@@ -1,0 +1,8 @@
+template:
+  - rtgl-view:
+      - rtgl-input placeholder=a :placeholder=${b}: null
+      - input :foo-bar=${a} :fooBar=${b}: null
+      - div foo-bar=1 :fooBar=${b}: Attribute and prop on a native element
+      - rtgl-view id=x :id=${y}: The id attribute is not a prop
+      - rtgl-view ?hidden hidden: null
+styles: {}

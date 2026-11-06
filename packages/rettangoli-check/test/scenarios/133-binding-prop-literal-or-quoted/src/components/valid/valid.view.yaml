@@ -1,0 +1,5 @@
+template:
+  - div :title=${title} data-path=a.b=c title="x .y=z": Valid
+  - $for item in items:
+      - span :item=${item}: Valid in loop
+styles: {}
