@@ -70,6 +70,10 @@ const scanAssignments = (source) => {
 // interpolation, as in `${c ? "a=1" : ""} a=1`. Only then is the text cut by
 // search.
 const cutAssignments = (source, assignments) => {
+  // With no assignments the leftover is the whole source. `${source}` also
+  // reads a non-string source by its string form, as the code did before this
+  // tokenizer was shared (5 gives the word "5", true gives "true").
+  if (assignments.length === 0) return `${source}`;
   let leftover = "";
   let cursor = 0;
   for (const { start, end } of assignments) {

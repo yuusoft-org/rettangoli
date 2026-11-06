@@ -82,6 +82,13 @@ describe("binding names (collectBindingNames)", () => {
   it("treats a missing string as empty", () => {
     expect(collectBindingNames()).toEqual([]);
   });
+
+  // Out of contract, but kept as before the tokenizer was shared: a non-string
+  // is read by its string form instead of throwing a TypeError.
+  it("reads a non-string value by its string form", () => {
+    expect(collectBindingNames(5)).toEqual([]);
+    expect(collectBindingNames(true)).toEqual(["true"]);
+  });
 });
 
 describe("node bindings (parseNodeBindings)", () => {
@@ -129,6 +136,10 @@ describe("node bindings (parseNodeBindings)", () => {
       attrs: { x: "" },
       props: { n: 3, t: true, u: undefined, s: "B", v: 5, e: "", x: true },
     }));
+  });
+
+  it("reads a non-string attrsString by its string form", () => {
+    expect(toJson(parseOn("div", 5))).toBe(toJson({ error: "[Parser] Invalid attribute token '5' on 'div'." }));
   });
 
   it("decodes encoded attribute values, not property values", () => {
