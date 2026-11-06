@@ -48,7 +48,10 @@ This guide is for future coding agents working in `packages/rettangoli-vt`.
   - `src/selector-filter.js` (`--folder`, `--group`, `--item`)
   - `src/capture-manifest.js` (`_site/candidate/.vt-capture.json`)
 - Step engine (deep-imported by consumers; relative imports only):
-  - `src/createSteps.js`
+  - `src/createSteps.js` (normalization, legacy blocks, `compileStep`, `createSteps`)
+  - `src/steps/actions.js` (the `ACTIONS` table), `src/steps/assert.js`, `src/steps/shared.js`
+  - Keep the functions passed to `evaluate` byte-identical, indentation included: Playwright error
+    messages quote line:column inside them (`spec/step-page-functions.spec.js` pins them).
 - Capture engine:
   - `src/capture/capture-config.js` (the one frozen capture configuration)
   - `src/capture/capture-scheduler.js` (keep its `chromium.launch({ headless })` line byte-identical)
