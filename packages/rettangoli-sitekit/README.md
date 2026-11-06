@@ -36,10 +36,9 @@ rettangoli-sitekit/
 
 ## Local Preview
 
-From this folder:
+Run every command below from this package folder (`packages/rettangoli-sitekit` in the repository):
 
 ```bash
-cd /home/ubuntu/rettangoli/packages/rettangoli-sitekit
 bun run watch
 ```
 
@@ -52,7 +51,6 @@ Open:
 Static preview flow:
 
 ```bash
-cd /home/ubuntu/rettangoli/packages/rettangoli-sitekit
 bun run build
 bun run serve
 ```
@@ -65,7 +63,6 @@ Then open:
 ## VT Commands
 
 ```bash
-cd /home/ubuntu/rettangoli/packages/rettangoli-sitekit
 node ../rettangoli-cli/cli.js vt screenshot --group themes
 node ../rettangoli-cli/cli.js vt screenshot --group docs-template
 node ../rettangoli-cli/cli.js vt screenshot --group templates

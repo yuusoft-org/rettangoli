@@ -21,7 +21,7 @@ export function createTemplateFunctions({ componentRegistry, functions }, pageLa
 // yahtml flattens nested lists among an element's children (a $for, a list $partial, a multi-item $if)
 // but renders nothing for a nested list at the root, so flatten the root list the same way.
 // A result that is not a list is passed through, so convertToHtml still rejects it.
-export function toRootList(result) {
+function toRootList(result) {
   return Array.isArray(result) ? result.flat(Infinity) : result;
 }
 

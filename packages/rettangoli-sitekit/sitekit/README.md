@@ -88,6 +88,11 @@ Current partials:
 - `landing-cta`
 - `footer`
 
+### Text in attributes
+
+Free text that ends up in an attribute is escaped, so quotes, `&` and `<` in your data are safe: the `seo` meta `content` values, the `landing-faq` question and answer, and every image `alt` (with the `src` next to it). A missing or `null` value renders an empty attribute (`alt=""`).
+Pass these values as strings, as the schemas require. A literal `true` renders as a bare attribute (`alt` instead of `alt="true"`).
+
 ## Example Pages
 
 These routes are available in the local `@rettangoli/sitekit` preview and show real-world composition patterns you can copy:

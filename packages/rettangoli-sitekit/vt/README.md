@@ -16,7 +16,7 @@ The VT service starts the preview site from `src/` using the command configured 
 This package uses `pixelmatch` comparison so visual regressions are checked by pixels rather than file hashes.
 
 `bun run vt:ci` and `bun run vt:ci:docker` capture and compare the specs listed in
-`scripts/vt-ci.js`: the docs template, the overview, five templates and the ten themes.
+`scripts/vt-ci.js`: the two docs-template specs, the overview, four templates and the ten themes.
 CI and publishing fail if either capture or comparison fails.
 `test/vt-ci.test.js` fails when a spec under `vt/specs/` is neither in that list nor in its
 list of uncovered specs, and when a listed spec has no reference image.

@@ -14,4 +14,7 @@
     - $if items:
         - rtgl-view w=f g=md:
             - $for item in items:
-                - rtgl-accordion-item w=f label="${item.question}" content="${item.answer}":
+                - rtgl-accordion-item w=f:
+                    label: ${default(item.question, '')}
+                    content: ${default(item.answer, '')}
+                    children: []

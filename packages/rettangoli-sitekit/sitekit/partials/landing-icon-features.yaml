@@ -14,7 +14,10 @@
                         - rtgl-view wh=52 ah=c av=c bw=xs bc=bo bgc=bg br=md:
                             - $if item.image:
                                 - $if item.image.src:
-                                    - rtgl-image w=28 h=28 of=con src="${item.image.src}" alt="${item.image.alt}":
+                                    - rtgl-image w=28 h=28 of=con:
+                                        src: ${default(item.image.src, '')}
+                                        alt: ${default(item.image.alt, '')}
+                                        children: []
                                   $else:
                                     - rtgl-text s=xs c=mu-fg: Img
                               $else:
