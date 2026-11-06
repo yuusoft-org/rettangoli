@@ -1,6 +1,5 @@
 import {
   css,
-  dimensionWithUnit,
   convertObjectToCssString,
   styleMapKeys,
   permutateBreakpoints,
@@ -8,10 +7,13 @@ import {
   syncLinkOverlay,
   createResponsiveStyleBuckets,
   parseResponsiveStyleAttribute,
-  responsiveStyleSizes,
-  applyDimensionToStyleBucket,
+  rebuildResponsiveStyles,
+  applyZIndexAndOpacity,
+  applySizing,
+  applyVisibility,
+  applyScrollStyles,
+  commitStyleText,
   getResponsiveAttribute,
-  hasResponsiveAttribute,
   normalizeAspectRatio,
 } from "../common.js";
 import flexDirectionStyles from "../styles/flexDirectionStyles.js";
@@ -35,6 +37,13 @@ const normalizeRawCssValue = (value) => {
   const normalizedValue = `${value}`.trim();
   return normalizedValue.length > 0 ? normalizedValue : null;
 };
+
+const backgroundAttributes = [
+  ["bgi", "background-image"],
+  ["bgs", "background-size"],
+  ["bgp", "background-position"],
+  ["bgr", "background-repeat"],
+];
 
 const dynamicStyleAttributes = new Set([
   "op",
@@ -170,233 +179,117 @@ class RettangoliViewElement extends HTMLElement {
   }
 
   updateStyles(changedSize) {
-    const sizes = changedSize === undefined ? responsiveStyleSizes : [changedSize];
-    sizes.forEach((size) => {
-      this._styles[size] = {};
-      const addSizePrefix = (tag) => {
-        return `${size === "default" ? "" : `${size}-`}${tag}`;
-      };
+    rebuildResponsiveStyles({
+      styles: this._styles,
+      changedSize,
+      buildStyles: ({ styleBucket, size, attrName }) => {
+        applyZIndexAndOpacity({ styleBucket, element: this, attrName });
 
-
-      const wh = this.getAttribute(addSizePrefix("wh"));
-      const width = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
-      );
-      const height = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
-      );
-      const opacity = this.getAttribute(addSizePrefix("op"));
-      const zIndex = this.getAttribute(addSizePrefix("z"));
-      const aspectRatio = normalizeAspectRatio(
-        this.getAttribute(addSizePrefix("ar")),
-      );
-      const backgroundImage = normalizeRawCssValue(
-        this.getAttribute(addSizePrefix("bgi")),
-      );
-      const backgroundSize = normalizeRawCssValue(
-        this.getAttribute(addSizePrefix("bgs")),
-      );
-      const backgroundPosition = normalizeRawCssValue(
-        this.getAttribute(addSizePrefix("bgp")),
-      );
-      const backgroundRepeat = normalizeRawCssValue(
-        this.getAttribute(addSizePrefix("bgr")),
-      );
-
-      if (zIndex !== null) {
-        this._styles[size]["z-index"] = zIndex;
-      }
-
-      if (opacity !== null) {
-        this._styles[size].opacity = opacity;
-      }
-
-      if (aspectRatio !== undefined) {
-        this._styles[size]["aspect-ratio"] = aspectRatio;
-      }
-
-      if (backgroundImage !== null) {
-        this._styles[size]["background-image"] = backgroundImage;
-      }
-
-      if (backgroundSize !== null) {
-        this._styles[size]["background-size"] = backgroundSize;
-      }
-
-      if (backgroundPosition !== null) {
-        this._styles[size]["background-position"] = backgroundPosition;
-      }
-
-      if (backgroundRepeat !== null) {
-        this._styles[size]["background-repeat"] = backgroundRepeat;
-      }
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "width",
-        dimension: width,
-        fillValue: "var(--width-stretch)",
-        allowFlexGrow: true,
-      });
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "height",
-        dimension: height,
-        fillValue: "100%",
-        allowFlexGrow: true,
-      });
-
-      if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none";
-      }
-
-      if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "flex";
-      }
-
-      // Handle flex direction and alignment
-      const direction = this.getAttribute(addSizePrefix("d"));
-      const alignHorizontal = this.getAttribute(addSizePrefix("ah"));
-      const alignVertical = this.getAttribute(addSizePrefix("av"));
-      const effectiveDirection = getResponsiveAttribute({
-        element: this,
-        size,
-        attr: "d",
-      });
-
-
-      if (direction === "h") {
-        this._styles[size]["flex-direction"] = "row";
-      } else if (direction === "v") {
-        this._styles[size]["flex-direction"] = "column";
-      } else if (size === "default" && !direction) {
-        // Check if any responsive direction attributes exist
-        const hasResponsiveDirection = ["sm", "md", "lg", "xl"].some(
-          breakpoint => this.hasAttribute(`${breakpoint}-d`)
+        const aspectRatio = normalizeAspectRatio(
+          this.getAttribute(attrName("ar")),
         );
-        if (hasResponsiveDirection) {
-          // Explicitly set column for default to ensure responsive overrides work
-          this._styles[size]["flex-direction"] = "column";
-        }
-      }
-
-      // Handle alignment based on direction
-      const isHorizontal = effectiveDirection === "h";
-      const isVerticalOrDefault = effectiveDirection === "v" || !effectiveDirection;
-
-      // For horizontal direction: ah controls justify-content, av controls align-items
-      if (isHorizontal) {
-        if (alignHorizontal === "c") {
-          this._styles[size]["justify-content"] = "center";
-        } else if (alignHorizontal === "e") {
-          this._styles[size]["justify-content"] = "flex-end";
-        } else if (alignHorizontal === "s") {
-          this._styles[size]["justify-content"] = "flex-start";
+        if (aspectRatio !== undefined) {
+          styleBucket["aspect-ratio"] = aspectRatio;
         }
 
-        if (alignVertical === "c") {
-          this._styles[size]["align-items"] = "center";
-          this._styles[size]["align-content"] = "center";
-        } else if (alignVertical === "e") {
-          this._styles[size]["align-items"] = "flex-end";
-          this._styles[size]["align-content"] = "flex-end";
-        } else if (alignVertical === "s") {
-          this._styles[size]["align-items"] = "flex-start";
-        }
-      }
-
-      // For vertical/default direction: ah controls align-items, av controls justify-content
-      if (isVerticalOrDefault && (alignHorizontal !== null || alignVertical !== null)) {
-        if (alignHorizontal === "c") {
-          this._styles[size]["align-items"] = "center";
-        } else if (alignHorizontal === "e") {
-          this._styles[size]["align-items"] = "flex-end";
-        } else if (alignHorizontal === "s") {
-          this._styles[size]["align-items"] = "flex-start";
+        for (const [attr, property] of backgroundAttributes) {
+          const value = normalizeRawCssValue(this.getAttribute(attrName(attr)));
+          if (value !== null) {
+            styleBucket[property] = value;
+          }
         }
 
-        if (alignVertical === "c") {
-          this._styles[size]["justify-content"] = "center";
-        } else if (alignVertical === "e") {
-          this._styles[size]["justify-content"] = "flex-end";
-        } else if (alignVertical === "s") {
-          this._styles[size]["justify-content"] = "flex-start";
+        applySizing({ styleBucket, element: this, attrName, allowFlexGrow: true });
+        applyVisibility({ styleBucket, element: this, attrName, display: "flex" });
+
+        // Handle flex direction and alignment
+        const direction = this.getAttribute(attrName("d"));
+        const alignHorizontal = this.getAttribute(attrName("ah"));
+        const alignVertical = this.getAttribute(attrName("av"));
+        const effectiveDirection = getResponsiveAttribute({
+          element: this,
+          size,
+          attr: "d",
+        });
+
+        if (direction === "h") {
+          styleBucket["flex-direction"] = "row";
+        } else if (direction === "v") {
+          styleBucket["flex-direction"] = "column";
+        } else if (size === "default" && !direction) {
+          // Check if any responsive direction attributes exist
+          const hasResponsiveDirection = ["sm", "md", "lg", "xl"].some(
+            breakpoint => this.hasAttribute(`${breakpoint}-d`)
+          );
+          if (hasResponsiveDirection) {
+            // Explicitly set column for default to ensure responsive overrides work
+            styleBucket["flex-direction"] = "column";
+          }
         }
-      }
 
-      // Handle flex-wrap
-      const isWrap = this.hasAttribute(addSizePrefix("wrap"));
-      const isNoWrap = this.hasAttribute(addSizePrefix("no-wrap"));
-      if (isWrap) {
-        this._styles[size]["flex-wrap"] = "wrap";
-      }
-      if (isNoWrap) {
-        this._styles[size]["flex-wrap"] = "nowrap";
-      }
+        // Handle alignment based on direction
+        const isHorizontal = effectiveDirection === "h";
+        const isVerticalOrDefault = effectiveDirection === "v" || !effectiveDirection;
 
-      // Handle stretch
-      if (this.hasAttribute(addSizePrefix("stretch"))) {
-        this._styles[size]["align-self"] = "stretch";
-      }
+        // For horizontal direction: ah controls justify-content, av controls align-items
+        if (isHorizontal) {
+          if (alignHorizontal === "c") {
+            styleBucket["justify-content"] = "center";
+          } else if (alignHorizontal === "e") {
+            styleBucket["justify-content"] = "flex-end";
+          } else if (alignHorizontal === "s") {
+            styleBucket["justify-content"] = "flex-start";
+          }
 
-      // Handle scroll properties
-      const scrollHorizontal = hasResponsiveAttribute({
-        element: this,
-        size,
-        attr: "sh",
-      });
-      const scrollVertical = hasResponsiveAttribute({
-        element: this,
-        size,
-        attr: "sv",
-      });
-      const overflow = getResponsiveAttribute({
-        element: this,
-        size,
-        attr: "overflow",
-      });
+          if (alignVertical === "c") {
+            styleBucket["align-items"] = "center";
+            styleBucket["align-content"] = "center";
+          } else if (alignVertical === "e") {
+            styleBucket["align-items"] = "flex-end";
+            styleBucket["align-content"] = "flex-end";
+          } else if (alignVertical === "s") {
+            styleBucket["align-items"] = "flex-start";
+          }
+        }
 
-      if (scrollHorizontal && scrollVertical) {
-        this._styles[size]["overflow"] = "auto";
-        this._styles[size]["scrollbar-gutter"] = "auto";
-        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "1";
-        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "1";
-        this._styles[size]["flex-wrap"] = "nowrap";
-      } else if (scrollHorizontal) {
-        this._styles[size]["overflow-x"] = "auto";
-        this._styles[size]["overflow-y"] = "hidden";
-        this._styles[size]["scrollbar-gutter"] = "auto";
-        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "1";
-        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "0";
-        this._styles[size]["flex-wrap"] = "nowrap";
-      } else if (scrollVertical) {
-        this._styles[size]["overflow-x"] = "hidden";
-        this._styles[size]["overflow-y"] = "auto";
-        this._styles[size]["scrollbar-gutter"] = "auto";
-        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "0";
-        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "1";
-        this._styles[size]["flex-wrap"] = "nowrap";
-      }
+        // For vertical/default direction: ah controls align-items, av controls justify-content
+        if (isVerticalOrDefault && (alignHorizontal !== null || alignVertical !== null)) {
+          if (alignHorizontal === "c") {
+            styleBucket["align-items"] = "center";
+          } else if (alignHorizontal === "e") {
+            styleBucket["align-items"] = "flex-end";
+          } else if (alignHorizontal === "s") {
+            styleBucket["align-items"] = "flex-start";
+          }
 
-      if (overflow === "hidden") {
-        this._styles[size]["overflow"] = "hidden";
-        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "0";
-        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "0";
-        this._styles[size]["flex-wrap"] = "nowrap";
-      }
+          if (alignVertical === "c") {
+            styleBucket["justify-content"] = "center";
+          } else if (alignVertical === "e") {
+            styleBucket["justify-content"] = "flex-end";
+          } else if (alignVertical === "s") {
+            styleBucket["justify-content"] = "flex-start";
+          }
+        }
 
+        // Handle flex-wrap
+        if (this.hasAttribute(attrName("wrap"))) {
+          styleBucket["flex-wrap"] = "wrap";
+        }
+        if (this.hasAttribute(attrName("no-wrap"))) {
+          styleBucket["flex-wrap"] = "nowrap";
+        }
+
+        // Handle stretch
+        if (this.hasAttribute(attrName("stretch"))) {
+          styleBucket["align-self"] = "stretch";
+        }
+
+        applyScrollStyles({ styleBucket, element: this, size, noWrap: true });
+      },
     });
 
     this._stylesDirty = false;
-
-    // Update styles only if changed
-    const newStyleString = convertObjectToCssString(this._styles);
-    if (newStyleString !== this._lastStyleString) {
-      this._styleElement.textContent = newStyleString;
-      this._lastStyleString = newStyleString;
-    }
-
+    commitStyleText(this, convertObjectToCssString(this._styles));
     this._scrollbarController.refresh();
   }
   

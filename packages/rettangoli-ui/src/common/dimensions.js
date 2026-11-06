@@ -1,6 +1,55 @@
 const FLEX_GROW_DIMENSION_REGEX = /^([1-9]|1[0-2])fg$/;
 const FLEX_BASIS_DIMENSION_REGEX = /^([1-9]\d*)\/([1-9]\d*)fb$/;
 
+export const spacing = {
+  xs: "--spacing-xs",
+  sm: "--spacing-sm",
+  md: "--spacing-md",
+  lg: "--spacing-lg",
+  xl: "--spacing-xl",
+};
+
+function endsWithDigit(inputValue) {
+  if (inputValue === null) {
+    return false;
+  }
+  if (inputValue.includes("/")) {
+    return false;
+  }
+  // Convert the input value to a string if it's not already one.
+  const inputStr = String(inputValue);
+  // Check if the last character of the string is a digit.
+  return /[0-9]$/.test(inputStr);
+}
+
+const endsWithPercentage = (inputStr) => {
+  return /%$/.test(inputStr);
+};
+
+export const dimensionWithUnit = (dimension) => {
+  if (dimension === undefined || dimension === null) {
+    return;
+  }
+
+  if (FLEX_GROW_DIMENSION_REGEX.test(dimension)) {
+    return dimension;
+  }
+
+  if (endsWithPercentage(dimension)) {
+    return dimension;
+  }
+
+  if (endsWithDigit(dimension)) {
+    return `${dimension}px`;
+  }
+
+  if (Object.keys(spacing).includes(dimension)) {
+    return `var(${spacing[dimension]})`;
+  }
+
+  return dimension;
+};
+
 export const isFlexGrowDimension = (dimension) => {
   return typeof dimension === "string" && FLEX_GROW_DIMENSION_REGEX.test(dimension);
 };
@@ -97,6 +146,35 @@ export const applyDimensionToStyleBucket = ({
     styleBucket[`min-${axis}`] = dimension;
     styleBucket[`max-${axis}`] = dimension;
   }
+};
+
+// Writes the wh/w/h attributes of one breakpoint; wh sets both axes and wins
+// over w and h. attrName maps a base name to that breakpoint's attribute.
+export const applySizing = ({
+  styleBucket,
+  element,
+  attrName,
+  allowFlexGrow = false,
+}) => {
+  const wh = element.getAttribute(attrName("wh"));
+  applyDimensionToStyleBucket({
+    styleBucket,
+    axis: "width",
+    dimension: dimensionWithUnit(
+      wh === null ? element.getAttribute(attrName("w")) : wh,
+    ),
+    fillValue: "var(--width-stretch)",
+    allowFlexGrow,
+  });
+  applyDimensionToStyleBucket({
+    styleBucket,
+    axis: "height",
+    dimension: dimensionWithUnit(
+      wh === null ? element.getAttribute(attrName("h")) : wh,
+    ),
+    fillValue: "100%",
+    allowFlexGrow,
+  });
 };
 
 export const applyInlineWidthDimension = ({

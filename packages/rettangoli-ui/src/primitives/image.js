@@ -1,14 +1,16 @@
 import {
   css,
-  dimensionWithUnit,
   convertObjectToCssString,
   styleMapKeys,
   permutateBreakpoints,
   syncLinkWrapper,
   createResponsiveStyleBuckets,
   parseResponsiveStyleAttribute,
-  responsiveStyleSizes,
-  applyDimensionToStyleBucket,
+  rebuildResponsiveStyles,
+  applyZIndexAndOpacity,
+  applySizing,
+  applyVisibility,
+  commitStyleText,
   normalizeAspectRatio,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
@@ -160,69 +162,26 @@ class RettangoliImageElement extends HTMLElement {
   }
 
   updateStyles(changedSize) {
-    const sizes = changedSize === undefined ? responsiveStyleSizes : [changedSize];
-    sizes.forEach((size) => {
-      this._styles[size] = {};
-      const addSizePrefix = (tag) => {
-        return `${size === "default" ? "" : `${size}-`}${tag}`;
-      };
+    rebuildResponsiveStyles({
+      styles: this._styles,
+      changedSize,
+      buildStyles: ({ styleBucket, attrName }) => {
+        applyZIndexAndOpacity({ styleBucket, element: this, attrName });
 
-      const wh = this.getAttribute(addSizePrefix("wh"));
-      const width = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
-      );
-      const height = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
-      );
-      const opacity = this.getAttribute(addSizePrefix("op"));
-      const zIndex = this.getAttribute(addSizePrefix("z"));
-      const aspectRatio = normalizeAspectRatio(
-        this.getAttribute(addSizePrefix("ar")),
-      );
+        const aspectRatio = normalizeAspectRatio(
+          this.getAttribute(attrName("ar")),
+        );
+        if (aspectRatio !== undefined) {
+          styleBucket["aspect-ratio"] = aspectRatio;
+        }
 
-      if (zIndex !== null) {
-        this._styles[size]["z-index"] = zIndex;
-      }
-
-      if (opacity !== null) {
-        this._styles[size].opacity = opacity;
-      }
-
-      if (aspectRatio !== undefined) {
-        this._styles[size]["aspect-ratio"] = aspectRatio;
-      }
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "width",
-        dimension: width,
-        fillValue: "var(--width-stretch)",
-      });
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "height",
-        dimension: height,
-        fillValue: "100%",
-      });
-
-      if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none";
-      }
-
-      if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "block";
-      }
+        applySizing({ styleBucket, element: this, attrName });
+        applyVisibility({ styleBucket, element: this, attrName, display: "block" });
+      },
     });
 
     this._stylesDirty = false;
-
-    // Update styles only if changed
-    const newStyleString = convertObjectToCssString(this._styles, 'img, a');
-    if (newStyleString !== this._lastStyleString) {
-      this._styleElement.textContent = newStyleString;
-      this._lastStyleString = newStyleString;
-    }
+    commitStyleText(this, convertObjectToCssString(this._styles, 'img, a'));
   }
 
   _updateImageAttribute(name) {

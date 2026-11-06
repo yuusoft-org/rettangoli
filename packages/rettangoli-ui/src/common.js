@@ -129,60 +129,6 @@ const generateCSS = (styles, descendants = {}, targetSelector = null) => {
   return css;
 };
 
-function endsWithDigit(inputValue) {
-  if (inputValue === null) {
-    return false;
-  }
-  if (inputValue.includes("/")) {
-    return false;
-  }
-  // Convert the input value to a string if it's not already one.
-  const inputStr = String(inputValue);
-  // Check if the last character of the string is a digit.
-  return /[0-9]$/.test(inputStr);
-}
-
-const endsWithPercentage = (inputStr) => {
-  return /%$/.test(inputStr);
-};
-
-const endsWithFlexGrowUnit = (inputStr) => {
-  // Matches integers 1-12 followed by "fg"
-  return /^([1-9]|1[0-2])fg$/.test(inputStr);
-};
-
-const dimensionWithUnit = (dimension) => {
-  if (dimension === undefined || dimension === null) {
-    return;
-  }
-
-  if (endsWithFlexGrowUnit(dimension)) {
-    return dimension;
-  }
-
-  if (endsWithPercentage(dimension)) {
-    return dimension;
-  }
-
-  if (endsWithDigit(dimension)) {
-    return `${dimension}px`;
-  }
-
-  if (Object.keys(spacing).includes(dimension)) {
-    return `var(${spacing[dimension]})`;
-  }
-
-  return dimension;
-};
-
-const spacing = {
-  xs: "--spacing-xs",
-  sm: "--spacing-sm",
-  md: "--spacing-md",
-  lg: "--spacing-lg",
-  xl: "--spacing-xl",
-};
-
 function convertObjectToCssString(styleObject, selector = ':host') {
   let result = "";
   // Process in correct order for max-width media queries: default first, then largest to smallest
@@ -237,8 +183,6 @@ export const deepEqual = (a, b) => {
 export {
   css,
   generateCSS,
-  dimensionWithUnit,
-  spacing,
   convertObjectToCssString,
   mediaQueries,
 };
@@ -256,11 +200,19 @@ export {
   parseResponsiveStyleAttribute,
   getResponsiveAttribute,
   hasResponsiveAttribute,
+  rebuildResponsiveStyles,
+  applyZIndexAndOpacity,
+  applyVisibility,
+  applyScrollStyles,
+  commitStyleText,
 } from "./common/responsive.js";
 
 export {
+  dimensionWithUnit,
+  spacing,
   isFlexGrowDimension,
   applyDimensionToStyleBucket,
+  applySizing,
   applyInlineWidthDimension,
 } from "./common/dimensions.js";
 

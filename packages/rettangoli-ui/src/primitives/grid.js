@@ -1,6 +1,5 @@
 import {
   css,
-  dimensionWithUnit,
   convertObjectToCssString,
   styleMapKeys,
   permutateBreakpoints,
@@ -8,10 +7,12 @@ import {
   syncLinkOverlay,
   createResponsiveStyleBuckets,
   parseResponsiveStyleAttribute,
-  responsiveStyleSizes,
-  applyDimensionToStyleBucket,
-  getResponsiveAttribute,
-  hasResponsiveAttribute,
+  rebuildResponsiveStyles,
+  applyZIndexAndOpacity,
+  applySizing,
+  applyVisibility,
+  applyScrollStyles,
+  commitStyleText,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import scrollStyle from "../styles/scrollStyles.js";
@@ -161,113 +162,26 @@ class RettangoliGridElement extends HTMLElement {
   }
 
   updateStyles(changedSize) {
-    const sizes = changedSize === undefined ? responsiveStyleSizes : [changedSize];
-    sizes.forEach((size) => {
-      this._styles[size] = {};
-      const addSizePrefix = (tag) => {
-        return `${size === "default" ? "" : `${size}-`}${tag}`;
-      };
+    rebuildResponsiveStyles({
+      styles: this._styles,
+      changedSize,
+      buildStyles: ({ styleBucket, size, attrName }) => {
+        const cols = resolveGridTemplateColumns(
+          this.getAttribute(attrName("cols")),
+        );
+        if (cols !== null) {
+          styleBucket["grid-template-columns"] = cols;
+        }
 
-      const wh = this.getAttribute(addSizePrefix("wh"));
-      const width = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
-      );
-      const height = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
-      );
-      const cols = resolveGridTemplateColumns(
-        this.getAttribute(addSizePrefix("cols")),
-      );
-      const opacity = this.getAttribute(addSizePrefix("op"));
-      const zIndex = this.getAttribute(addSizePrefix("z"));
-
-      if (cols !== null) {
-        this._styles[size]["grid-template-columns"] = cols;
-      }
-
-      if (zIndex !== null) {
-        this._styles[size]["z-index"] = zIndex;
-      }
-
-      if (opacity !== null) {
-        this._styles[size].opacity = opacity;
-      }
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "width",
-        dimension: width,
-        fillValue: "var(--width-stretch)",
-        allowFlexGrow: true,
-      });
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "height",
-        dimension: height,
-        fillValue: "100%",
-        allowFlexGrow: true,
-      });
-
-      if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none";
-      }
-
-      if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "grid";
-      }
-
-      const scrollHorizontal = hasResponsiveAttribute({
-        element: this,
-        size,
-        attr: "sh",
-      });
-      const scrollVertical = hasResponsiveAttribute({
-        element: this,
-        size,
-        attr: "sv",
-      });
-      const overflow = getResponsiveAttribute({
-        element: this,
-        size,
-        attr: "overflow",
-      });
-
-      if (scrollHorizontal && scrollVertical) {
-        this._styles[size].overflow = "auto";
-        this._styles[size]["scrollbar-gutter"] = "auto";
-        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "1";
-        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "1";
-      } else if (scrollHorizontal) {
-        this._styles[size]["overflow-x"] = "auto";
-        this._styles[size]["overflow-y"] = "hidden";
-        this._styles[size]["scrollbar-gutter"] = "auto";
-        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "1";
-        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "0";
-      } else if (scrollVertical) {
-        this._styles[size]["overflow-x"] = "hidden";
-        this._styles[size]["overflow-y"] = "auto";
-        this._styles[size]["scrollbar-gutter"] = "auto";
-        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "0";
-        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "1";
-      }
-
-      if (overflow === "hidden") {
-        this._styles[size].overflow = "hidden";
-        this._styles[size]["--rtgl-scrollbar-x-enabled"] = "0";
-        this._styles[size]["--rtgl-scrollbar-y-enabled"] = "0";
-      }
-
+        applyZIndexAndOpacity({ styleBucket, element: this, attrName });
+        applySizing({ styleBucket, element: this, attrName, allowFlexGrow: true });
+        applyVisibility({ styleBucket, element: this, attrName, display: "grid" });
+        applyScrollStyles({ styleBucket, element: this, size });
+      },
     });
 
     this._stylesDirty = false;
-
-    const newStyleString = convertObjectToCssString(this._styles);
-    if (newStyleString !== this._lastStyleString) {
-      this._styleElement.textContent = newStyleString;
-      this._lastStyleString = newStyleString;
-    }
-
+    commitStyleText(this, convertObjectToCssString(this._styles));
     this._scrollbarController.refresh();
   }
 
