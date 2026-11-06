@@ -66,16 +66,16 @@ Then open:
 
 ```bash
 cd /home/ubuntu/rettangoli/packages/rettangoli-sitekit
-bunx rtgl vt screenshot --group themes
-bunx rtgl vt screenshot --group docs-template
-bunx rtgl vt screenshot --group templates
-bunx rtgl vt report --group templates
+node ../rettangoli-cli/cli.js vt screenshot --group themes
+node ../rettangoli-cli/cli.js vt screenshot --group docs-template
+node ../rettangoli-cli/cli.js vt screenshot --group templates
+node ../rettangoli-cli/cli.js vt report --group templates
 bun run vt:ci
-bunx rtgl vt accept
+node ../rettangoli-cli/cli.js vt accept
 ```
 
-`bun run vt:ci` captures the stable smoke subset and compares the same items
-against the references. Capture errors and visual mismatches fail the command.
+`bun run vt:ci` captures the specs listed in `scripts/vt-ci.js` and compares the same items
+against the references (see `vt/README.md` for the specs that are not covered). Capture errors and visual mismatches fail the command.
 `bun run vt:ci:docker` runs both steps with the checkout's CLI inside the
 Playwright container, so the image's bundled CLI cannot change the VT version.
 

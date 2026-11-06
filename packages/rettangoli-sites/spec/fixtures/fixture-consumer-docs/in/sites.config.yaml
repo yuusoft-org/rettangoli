@@ -1,0 +1,20 @@
+data:
+  site:
+    name: Lantern Docs
+    baseUrl: https://docs.lantern.example
+
+markdownit:
+  html: true
+  linkify: true
+  typographer: false
+  shiki:
+    enabled: false
+  headingAnchors:
+    enabled: true
+    slugMode: ascii
+    wrap: true
+    fallback: section
+
+sitemap:
+  defaults:
+    changefreq: weekly

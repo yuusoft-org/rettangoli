@@ -11,11 +11,23 @@ export const items = [
   'templates/blog-article.html',
   'templates/landing-highlights.html',
   'templates/landing-pricing.html',
+  'themes/catppuccin-frappe.html',
+  'themes/catppuccin-latte.html',
+  'themes/catppuccin-macchiato.html',
+  'themes/catppuccin-mocha.html',
+  'themes/mono-dark.html',
+  'themes/mono-light.html',
+  'themes/nord-dark.html',
+  'themes/nord-light.html',
+  'themes/slate-dark.html',
+  'themes/slate-light.html',
 ];
+// Pinned by digest: the tag can be repointed, which would change the browser and the CLI under the references.
+export const defaultImage = 'han4wluc/rtgl@sha256:85769959d834eaf984210f4b2f1f7de07677e81578c98d86680ba116c03a7d45';
 
 export function runVisualChecks({
   docker = false,
-  image = process.env.RTGL_VT_IMAGE ?? 'han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0',
+  image = process.env.RTGL_VT_IMAGE ?? defaultImage,
   execute = spawnSync,
 } = {}) {
   const selectors = items.flatMap((item) => ['--item', item]);

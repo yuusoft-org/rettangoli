@@ -1,0 +1,5 @@
+- 'a class="post-card" href="${url}"':
+    - h2: ${title}
+    - p class="meta":
+        - $partial: date
+          date: ${date}

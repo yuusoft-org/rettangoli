@@ -1,0 +1,16 @@
+members:
+  - slug: ada
+    name: Ada Rivera
+    bio: |
+      Writes the **engine** and the docs.
+  - slug: ben
+    name: Ben Okafor
+    bio: |
+      Draws every background by hand.
+changelog:
+  - version: "1.1.0"
+    content: |
+      - Added the *team* pages
+      - Fixed the sitemap
+  - version: "1.0.0"
+    content: First release.

@@ -1,0 +1,13 @@
+- __html: "<!doctype html>"
+- html lang="${default(lang, 'en')}":
+    - head:
+        - meta charset="utf-8":
+        - title: ${title} - ${site.name}
+        - link rel="stylesheet" href="/public/theme.css":
+    - body class="${default(themeBodyClass, 'dark')}":
+        - header:
+            - a href="/": ${site.name}
+            - $if build.isScreenshotMode:
+                - span class="screenshot-note": Screenshot mode
+        - main:
+            - "${content}"

@@ -1,0 +1,14 @@
+- __html: "<!doctype html>"
+- html lang="en":
+    - head:
+        - $partial: seo
+          page: ${page}
+          seo: ${seo}
+    - body.dark:
+        - $partial: docs-sidebar
+          header: ${docs.header}
+          items: ${docs.items}
+          sidebarId: ${sidebarId}
+        - main id="content-container":
+            - h1: ${title}
+            - "${content}"

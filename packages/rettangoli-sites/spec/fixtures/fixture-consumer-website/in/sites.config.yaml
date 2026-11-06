@@ -1,0 +1,22 @@
+data:
+  site:
+    name: Paper Lantern
+    baseUrl: https://paperlantern.example/
+  themeBodyClass: dark
+
+markdownit:
+  html: true
+  linkify: true
+  typographer: false
+  shiki:
+    enabled: false
+  headingAnchors:
+    slugMode: ascii
+    wrap: true
+
+build:
+  keepMarkdownFiles: true
+
+sitemap:
+  exclude:
+    - /hiring/

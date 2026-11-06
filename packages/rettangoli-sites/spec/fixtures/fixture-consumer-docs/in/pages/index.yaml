@@ -1,0 +1,10 @@
+---
+template: docs
+title: Lantern
+sidebarId: introduction
+seo:
+  title: Lantern
+  description: Static sites from Markdown and YAML.
+  ogType: website
+---
+- p: Start with the introduction.

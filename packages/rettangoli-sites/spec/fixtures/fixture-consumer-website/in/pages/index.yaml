@@ -1,0 +1,11 @@
+---
+template: base
+title: Home
+---
+- h1: ${site.name}
+- section class="recent-posts":
+    - $for item in sort(collections.blogPost, "data.date", "desc"):
+        - $partial: post-card
+          url: ${item.url}
+          title: ${item.data.title}
+          date: ${item.data.date}
