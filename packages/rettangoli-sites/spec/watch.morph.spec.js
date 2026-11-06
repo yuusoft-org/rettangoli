@@ -288,6 +288,62 @@ describe('watch body morph behavior', () => {
     dom.window.close();
   });
 
+  it('clears the generation error when a stylesheet-only update arrives', async () => {
+    const { dom, send, sendMessage } = createWatchDom({
+      initialBody: '<p id="copy">Last valid page</p>',
+      initialHead: '<link rel="stylesheet" href="/theme.css">',
+      nextHtml: '<html><head></head><body></body></html>',
+    });
+    const { document } = dom.window;
+    const consoleError = vi.spyOn(dom.window.console, 'error').mockImplementation(() => {});
+
+    sendMessage({
+      type: 'watch-error',
+      message: 'Static files could not be copied',
+    });
+    await waitForUpdate();
+    expect(document.querySelector('#rettangoli-watch-error')?.textContent)
+      .toContain('Static files could not be copied');
+
+    send('assets', ['/theme.css'], 1);
+    await waitForUpdate();
+
+    expect(document.querySelector('#rettangoli-watch-error')).toBeNull();
+    expect(document.querySelector('link[data-rtgl-watch-asset-pending]')).not.toBeNull();
+    expect(document.querySelector('#copy').textContent).toBe('Last valid page');
+    expect(dom.window.fetch).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+    dom.window.close();
+  });
+
+  it('keeps the generation error when a stylesheet update falls back to a full reload', async () => {
+    const { dom, send, sendMessage } = createWatchDom({
+      initialBody: '<p id="copy">Last valid page</p>',
+      initialHead: '<style>@import url("/theme.css");</style>',
+      nextHtml: '<html><head></head><body></body></html>',
+    });
+    const consoleError = vi.spyOn(dom.window.console, 'error').mockImplementation(() => {});
+    const reloadReasons = [];
+    dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+      reloadReasons.push(event.detail.reason);
+      event.preventDefault();
+    });
+
+    sendMessage({
+      type: 'watch-error',
+      message: 'Static files could not be copied',
+    });
+    await waitForUpdate();
+    send('assets', ['/theme.css'], 1);
+    await waitForUpdate();
+
+    expect(reloadReasons).toEqual(['stylesheet-unreachable']);
+    expect(dom.window.document.querySelector('#rettangoli-watch-error')?.textContent)
+      .toContain('Static files could not be copied');
+    consoleError.mockRestore();
+    dom.window.close();
+  });
+
   it('builds a Vite HMR bridge around the same state-preserving client', () => {
     const source = createViteWatchClientModuleSource({
       eventName: 'rettangoli:test-update',

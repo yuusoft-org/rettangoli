@@ -1133,7 +1133,9 @@ function runWatchClient({
       return;
     }
     if (data.updateKind === 'assets') {
-      refreshAssets(data.paths);
+      // An update means the generation succeeded, so drop the error overlay
+      // as an HTML update does, unless a full reload was requested instead.
+      if (refreshAssets(data.paths)) clearWatchError();
       advanceRevision(data.revision);
       return;
     }
