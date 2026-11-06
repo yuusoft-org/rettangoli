@@ -132,8 +132,9 @@ function createNormalizer({ root, appDirectory, version }) {
 const SIGNIFICANT_STDERR_LINES = [
   /^(rtgl: |error: |Usage: |fake |\(set RTGL_DEBUG)/,
   /^\w*(Error|Exception)(?: \[[A-Z0-9_]+\])?: /,
-  /^\s+code: '/,
+  /^\s+code: /,
   /^\s*\[cause\]: /,
+  /^\s+caused by: /,
 ];
 
 function toLines(text) {

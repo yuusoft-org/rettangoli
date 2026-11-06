@@ -34,9 +34,9 @@
   "fe-build-config-comment-only": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: rettangoli.config.yaml not found"
+      "rtgl: rettangoli.config.yaml is empty"
     ],
     "stdout": [],
     "trace": [
@@ -49,9 +49,24 @@
   "fe-build-config-empty": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: rettangoli.config.yaml not found"
+      "rtgl: rettangoli.config.yaml is empty"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-config-false": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: rettangoli.config.yaml is empty"
     ],
     "stdout": [],
     "trace": [
@@ -64,9 +79,9 @@
   "fe-build-config-in-parent-directory": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: rettangoli.config.yaml not found"
+      "rtgl: rettangoli.config.yaml not found"
     ],
     "stdout": [],
     "trace": [
@@ -107,10 +122,9 @@
   "fe-build-config-invalid-yaml": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: Error reading config file \"<APP>/rettangoli.config.yaml\": unexpected end of the stream within a flow collection (2:1)",
-      "  [cause]: YAMLException: unexpected end of the stream within a flow collection (2:1)"
+      "rtgl: Error reading config file \"<APP>/rettangoli.config.yaml\": unexpected end of the stream within a flow collection (2:1)"
     ],
     "stdout": [],
     "trace": [
@@ -123,9 +137,9 @@
   "fe-build-config-null": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: rettangoli.config.yaml not found"
+      "rtgl: rettangoli.config.yaml is empty"
     ],
     "stdout": [],
     "trace": [
@@ -169,9 +183,9 @@
   "fe-build-dir-missing": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: Directories do not exist: src/missing"
+      "rtgl: Directories do not exist: src/missing"
     ],
     "stdout": [],
     "trace": [
@@ -184,9 +198,9 @@
   "fe-build-dirs-empty": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: fe.dirs not found or empty in config"
+      "rtgl: fe.dirs not found or empty in config"
     ],
     "stdout": [],
     "trace": [
@@ -199,10 +213,9 @@
   "fe-build-dirs-number": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "TypeError [ERR_INVALID_ARG_TYPE]: The \"paths[1]\" argument must be of type string. Received type number (42)",
-      "  code: 'ERR_INVALID_ARG_TYPE'"
+      "rtgl: fe.dirs entries must be strings (got number at index 0)"
     ],
     "stdout": [],
     "trace": [
@@ -215,9 +228,9 @@
   "fe-build-dirs-string": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "TypeError: config.fe.dirs.filter is not a function"
+      "rtgl: fe.dirs must be a list of directories, for example dirs: [src/components]"
     ],
     "stdout": [],
     "trace": [
@@ -277,14 +290,14 @@
       "",
       "",
       "Examples:",
-      "  $ rettangoli fe build",
-      "  $ rettangoli fe build --sourcemap hidden",
-      "  $ rettangoli fe build --outfile ./dist/bundle.js",
-      "  $ rettangoli fe build -o ./public/js/main.js",
-      "  $ rettangoli fe build --development",
-      "  $ rettangoli fe build -d -o ./dist/dev.js",
-      "  $ rettangoli fe build -s src/setup.tauri.js",
-      "  $ rettangoli fe build --setup-path src/setup.web.js",
+      "  $ rtgl fe build",
+      "  $ rtgl fe build --sourcemap hidden",
+      "  $ rtgl fe build --outfile ./dist/bundle.js",
+      "  $ rtgl fe build -o ./public/js/main.js",
+      "  $ rtgl fe build --development",
+      "  $ rtgl fe build -d -o ./dist/dev.js",
+      "  $ rtgl fe build -s src/setup.tauri.js",
+      "  $ rtgl fe build --setup-path src/setup.web.js",
       "",
       ""
     ],
@@ -384,9 +397,9 @@
   "fe-build-no-config": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: rettangoli.config.yaml not found"
+      "rtgl: rettangoli.config.yaml not found"
     ],
     "stdout": [],
     "trace": [
@@ -399,9 +412,9 @@
   "fe-build-no-fe-section": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: fe.dirs not found or empty in config"
+      "rtgl: fe.dirs not found or empty in config"
     ],
     "stdout": [],
     "trace": [
@@ -440,31 +453,17 @@
     ]
   },
   "fe-build-outfile-number": {
-    "exitCode": 0,
+    "exitCode": 1,
     "signal": null,
     "stderrHasStack": false,
-    "stderrSummary": [],
+    "stderrSummary": [
+      "rtgl: fe.outfile must be a file path string (got number)"
+    ],
     "stdout": [],
     "trace": [
       {
         "event": "import",
         "payload": "@rettangoli/fe/cli"
-      },
-      {
-        "event": "call",
-        "payload": {
-          "args": [
-            {
-              "dirs": [
-                "src/components"
-              ],
-              "i18n": null,
-              "outfile": 42,
-              "setup": "setup.js"
-            }
-          ],
-          "fn": "build"
-        }
       }
     ]
   },
@@ -473,7 +472,7 @@
     "signal": null,
     "stderrHasStack": false,
     "stderrSummary": [
-      "fake build rejection"
+      "rtgl: fake build rejection"
     ],
     "stdout": [],
     "trace": [
@@ -558,10 +557,11 @@
   "fe-build-throw": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: fake build failure",
-      "  [cause]: Error: fake cause"
+      "rtgl: fake build failure",
+      "  caused by: fake cause",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
     ],
     "stdout": [],
     "trace": [
@@ -591,8 +591,42 @@
     "signal": null,
     "stderrHasStack": true,
     "stderrSummary": [
+      "rtgl: fake build failure",
+      "  caused by: fake cause",
       "Error: fake build failure",
       "  [cause]: Error: fake cause"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-throw-debug-zero": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fake build failure",
+      "  caused by: fake cause",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
     ],
     "stdout": [],
     "trace": [
@@ -620,9 +654,9 @@
   "fe-check-dirs-string": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "TypeError: config.fe.dirs.filter is not a function"
+      "rtgl: fe.dirs must be a list of directories, for example dirs: [src/components]"
     ],
     "stdout": [],
     "trace": [
@@ -676,8 +710,8 @@
       "",
       "",
       "Examples:",
-      "  $ rettangoli fe check",
-      "  $ rettangoli fe check --format json",
+      "  $ rtgl fe check",
+      "  $ rtgl fe check --format json",
       "",
       ""
     ],
@@ -691,9 +725,9 @@
   "fe-check-no-config": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: rettangoli.config.yaml not found"
+      "rtgl: rettangoli.config.yaml not found"
     ],
     "stdout": [],
     "trace": [
@@ -816,6 +850,21 @@
       }
     ]
   },
+  "fe-examples-fe-scalar": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fe.dirs not found or empty in config"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
   "fe-examples-help": {
     "exitCode": 0,
     "signal": null,
@@ -840,9 +889,9 @@
   "fe-examples-no-config": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "TypeError: Cannot read properties of null (reading 'fe')"
+      "rtgl: rettangoli.config.yaml not found"
     ],
     "stdout": [],
     "trace": [
@@ -855,9 +904,9 @@
   "fe-examples-no-fe-section": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "TypeError: Cannot read properties of undefined (reading 'dirs')"
+      "rtgl: fe.dirs not found or empty in config"
     ],
     "stdout": [],
     "trace": [
@@ -926,10 +975,11 @@
   "fe-package-missing": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@rettangoli/fe' imported from <APP>/node_modules/rtgl/cli.js",
-      "  code: 'ERR_MODULE_NOT_FOUND'"
+      "rtgl: Cannot find package '@rettangoli/fe' imported from <APP>/node_modules/rtgl/cli.js",
+      "  code: ERR_MODULE_NOT_FOUND",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
     ],
     "stdout": [],
     "trace": []
@@ -1004,10 +1054,10 @@
       "",
       "",
       "Examples:",
-      "  $ rettangoli fe scaffold",
-      "  $ rettangoli fe scaffold --category components --name MyButton",
-      "  $ rettangoli fe scaffold -c layouts -n HeaderLayout",
-      "  $ rettangoli fe scaffold -c pages -n HomePage",
+      "  $ rtgl fe scaffold",
+      "  $ rtgl fe scaffold --category components --component-name my-button",
+      "  $ rtgl fe scaffold -c layouts -n header-layout",
+      "  $ rtgl fe scaffold -c pages -n home-page",
       "",
       ""
     ],
@@ -1265,16 +1315,31 @@
       "",
       "",
       "Examples:",
-      "  $ rettangoli fe watch",
-      "  $ rettangoli fe watch --port 8080",
-      "  $ rettangoli fe watch -p 4000",
-      "  $ rettangoli fe watch -s src/setup.tauri.js",
-      "  $ rettangoli fe watch --setup-path src/setup.web.js",
-      "  $ rettangoli fe watch --public-dir static",
-      "  $ rettangoli fe watch --watch-entry src/watch.js",
+      "  $ rtgl fe watch",
+      "  $ rtgl fe watch --port 8080",
+      "  $ rtgl fe watch -p 4000",
+      "  $ rtgl fe watch -s src/setup.tauri.js",
+      "  $ rtgl fe watch --setup-path src/setup.web.js",
+      "  $ rtgl fe watch --public-dir static",
+      "  $ rtgl fe watch --watch-entry src/watch.js",
       "",
       ""
     ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-watch-outfile-number": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fe.outfile must be a file path string (got number)"
+    ],
+    "stdout": [],
     "trace": [
       {
         "event": "import",
@@ -1347,7 +1412,7 @@
     "signal": null,
     "stderrHasStack": false,
     "stderrSummary": [
-      "fake watch rejection"
+      "rtgl: fake watch rejection"
     ],
     "stdout": [],
     "trace": [

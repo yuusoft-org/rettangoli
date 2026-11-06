@@ -185,7 +185,7 @@
     "signal": null,
     "stderrHasStack": false,
     "stderrSummary": [
-      "fake buildSite rejection"
+      "rtgl: fake buildSite rejection"
     ],
     "stdout": [],
     "trace": [
@@ -237,10 +237,11 @@
   "sites-build-throw": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: fake buildSite failure",
-      "  [cause]: Error: fake cause"
+      "rtgl: fake buildSite failure",
+      "  caused by: fake cause",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
     ],
     "stdout": [],
     "trace": [
@@ -625,7 +626,7 @@
     "signal": null,
     "stderrHasStack": false,
     "stderrSummary": [
-      "fake watchSite rejection"
+      "rtgl: fake watchSite rejection"
     ],
     "stdout": [],
     "trace": [

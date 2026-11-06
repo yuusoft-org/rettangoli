@@ -23,9 +23,9 @@
   "vt-accept-no-config": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: rettangoli.config.yaml not found"
+      "rtgl: rettangoli.config.yaml not found"
     ],
     "stdout": [],
     "trace": [
@@ -88,7 +88,7 @@
     "signal": null,
     "stderrHasStack": false,
     "stderrSummary": [
-      "fake accept rejection"
+      "rtgl: fake accept rejection"
     ],
     "stdout": [],
     "trace": [
@@ -170,9 +170,9 @@
   "vt-generate-config-empty": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: rettangoli.config.yaml not found"
+      "rtgl: rettangoli.config.yaml is empty"
     ],
     "stdout": [
       "rtgl v<VERSION>",
@@ -251,9 +251,9 @@
   "vt-generate-no-config": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: rettangoli.config.yaml not found"
+      "rtgl: rettangoli.config.yaml not found"
     ],
     "stdout": [
       "rtgl v<VERSION>",
@@ -302,7 +302,7 @@
     "signal": null,
     "stderrHasStack": false,
     "stderrSummary": [
-      "fake generate rejection"
+      "rtgl: fake generate rejection"
     ],
     "stdout": [
       "rtgl v<VERSION>",
@@ -358,6 +358,21 @@
       }
     ]
   },
+  "vt-report-color-threshold-comma": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: option '--color-threshold <number>' argument '0,9' is invalid. Expected a number (use \".\" for decimals) but received \"0,9\""
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
   "vt-report-compare-md5": {
     "exitCode": 0,
     "signal": null,
@@ -389,6 +404,21 @@
           ],
           "fn": "report"
         }
+      }
+    ]
+  },
+  "vt-report-config-invalid-yaml": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: Error reading config file \"<APP>/rettangoli.config.yaml\": unexpected end of the stream within a flow collection (2:1)"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
       }
     ]
   },
@@ -429,36 +459,32 @@
     ]
   },
   "vt-report-diff-threshold-comma": {
-    "exitCode": 0,
+    "exitCode": 1,
     "signal": null,
     "stderrHasStack": false,
-    "stderrSummary": [],
+    "stderrSummary": [
+      "error: option '--diff-threshold <number>' argument '0,5' is invalid. Expected a number (use \".\" for decimals) but received \"0,5\""
+    ],
     "stdout": [],
     "trace": [
       {
         "event": "import",
         "payload": "@rettangoli/vt/cli"
-      },
+      }
+    ]
+  },
+  "vt-report-diff-threshold-empty": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: option '--diff-threshold <number>' argument '' is invalid. Expected a number (use \".\" for decimals) but received \"\""
+    ],
+    "stdout": [],
+    "trace": [
       {
-        "event": "call",
-        "payload": {
-          "args": [
-            {
-              "colorThreshold": {
-                "$undefined": true
-              },
-              "compareMethod": {
-                "$undefined": true
-              },
-              "diffThreshold": 0,
-              "folder": [],
-              "group": [],
-              "item": [],
-              "vtPath": "vt"
-            }
-          ],
-          "fn": "report"
-        }
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
       }
     ]
   },
@@ -497,72 +523,32 @@
     ]
   },
   "vt-report-diff-threshold-hex": {
-    "exitCode": 0,
+    "exitCode": 1,
     "signal": null,
     "stderrHasStack": false,
-    "stderrSummary": [],
+    "stderrSummary": [
+      "error: option '--diff-threshold <number>' argument '0x10' is invalid. Expected a number (use \".\" for decimals) but received \"0x10\""
+    ],
     "stdout": [],
     "trace": [
       {
         "event": "import",
         "payload": "@rettangoli/vt/cli"
-      },
-      {
-        "event": "call",
-        "payload": {
-          "args": [
-            {
-              "colorThreshold": {
-                "$undefined": true
-              },
-              "compareMethod": {
-                "$undefined": true
-              },
-              "diffThreshold": 0,
-              "folder": [],
-              "group": [],
-              "item": [],
-              "vtPath": "vt"
-            }
-          ],
-          "fn": "report"
-        }
       }
     ]
   },
   "vt-report-diff-threshold-infinity": {
-    "exitCode": 0,
+    "exitCode": 1,
     "signal": null,
     "stderrHasStack": false,
-    "stderrSummary": [],
+    "stderrSummary": [
+      "error: option '--diff-threshold <number>' argument 'Infinity' is invalid. Expected a number (use \".\" for decimals) but received \"Infinity\""
+    ],
     "stdout": [],
     "trace": [
       {
         "event": "import",
         "payload": "@rettangoli/vt/cli"
-      },
-      {
-        "event": "call",
-        "payload": {
-          "args": [
-            {
-              "colorThreshold": {
-                "$undefined": true
-              },
-              "compareMethod": {
-                "$undefined": true
-              },
-              "diffThreshold": {
-                "$number": "Infinity"
-              },
-              "folder": [],
-              "group": [],
-              "item": [],
-              "vtPath": "vt"
-            }
-          ],
-          "fn": "report"
-        }
       }
     ]
   },
@@ -669,72 +655,32 @@
     ]
   },
   "vt-report-diff-threshold-text": {
-    "exitCode": 0,
+    "exitCode": 1,
     "signal": null,
     "stderrHasStack": false,
-    "stderrSummary": [],
+    "stderrSummary": [
+      "error: option '--diff-threshold <number>' argument 'abc' is invalid. Expected a number (use \".\" for decimals) but received \"abc\""
+    ],
     "stdout": [],
     "trace": [
       {
         "event": "import",
         "payload": "@rettangoli/vt/cli"
-      },
-      {
-        "event": "call",
-        "payload": {
-          "args": [
-            {
-              "colorThreshold": {
-                "$undefined": true
-              },
-              "compareMethod": {
-                "$undefined": true
-              },
-              "diffThreshold": {
-                "$number": "NaN"
-              },
-              "folder": [],
-              "group": [],
-              "item": [],
-              "vtPath": "vt"
-            }
-          ],
-          "fn": "report"
-        }
       }
     ]
   },
   "vt-report-diff-threshold-trailing-text": {
-    "exitCode": 0,
+    "exitCode": 1,
     "signal": null,
     "stderrHasStack": false,
-    "stderrSummary": [],
+    "stderrSummary": [
+      "error: option '--diff-threshold <number>' argument '.1x' is invalid. Expected a number (use \".\" for decimals) but received \".1x\""
+    ],
     "stdout": [],
     "trace": [
       {
         "event": "import",
         "payload": "@rettangoli/vt/cli"
-      },
-      {
-        "event": "call",
-        "payload": {
-          "args": [
-            {
-              "colorThreshold": {
-                "$undefined": true
-              },
-              "compareMethod": {
-                "$undefined": true
-              },
-              "diffThreshold": 0.1,
-              "folder": [],
-              "group": [],
-              "item": [],
-              "vtPath": "vt"
-            }
-          ],
-          "fn": "report"
-        }
       }
     ]
   },
@@ -814,9 +760,9 @@
   "vt-report-no-config": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: rettangoli.config.yaml not found"
+      "rtgl: rettangoli.config.yaml not found"
     ],
     "stdout": [],
     "trace": [
@@ -867,7 +813,7 @@
     "signal": null,
     "stderrHasStack": false,
     "stderrSummary": [
-      "fake report rejection"
+      "rtgl: fake report rejection"
     ],
     "stdout": [],
     "trace": [
@@ -935,10 +881,11 @@
   "vt-report-throw": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: fake report failure",
-      "  [cause]: Error: fake cause"
+      "rtgl: fake report failure",
+      "  caused by: fake cause",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
     ],
     "stdout": [],
     "trace": [
@@ -1125,9 +1072,9 @@
   "vt-screenshot-no-config": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: rettangoli.config.yaml not found"
+      "rtgl: rettangoli.config.yaml not found"
     ],
     "stdout": [
       "rtgl v<VERSION>",
@@ -1205,7 +1152,7 @@
     "signal": null,
     "stderrHasStack": false,
     "stderrSummary": [
-      "fake screenshot rejection"
+      "rtgl: fake screenshot rejection"
     ],
     "stdout": [
       "rtgl v<VERSION>",

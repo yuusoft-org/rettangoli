@@ -211,10 +211,11 @@
   "check-package-missing": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@rettangoli/check' imported from <APP>/node_modules/rtgl/cli.js",
-      "  code: 'ERR_MODULE_NOT_FOUND'"
+      "rtgl: Cannot find package '@rettangoli/check' imported from <APP>/node_modules/rtgl/cli.js",
+      "  code: ERR_MODULE_NOT_FOUND",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
     ],
     "stdout": [],
     "trace": []
@@ -224,7 +225,7 @@
     "signal": null,
     "stderrHasStack": false,
     "stderrSummary": [
-      "fake check rejection"
+      "rtgl: fake check rejection"
     ],
     "stdout": [],
     "trace": [
@@ -258,10 +259,11 @@
   "check-throw": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: fake check failure",
-      "  [cause]: Error: fake cause"
+      "rtgl: fake check failure",
+      "  caused by: fake cause",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
     ],
     "stdout": [],
     "trace": [

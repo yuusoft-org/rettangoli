@@ -39,9 +39,14 @@ export function record(event, payload) {
 //                       which is how the goldens tell the two apart.
 //   FAKE_DELAY=<name>   returns a promise that settles later and announces it
 //                       on stdout, so output order shows whether it was awaited
+//   FAKE_KEEP_ALIVE=<name>  starts an interval first, like a server or watcher
+//                       that keeps the process alive
 export function fake(name, implementation = () => undefined) {
   const fn = (...args) => {
     record("call", { fn: name, args });
+    if (process.env.FAKE_KEEP_ALIVE === name) {
+      setInterval(() => {}, 1000);
+    }
     if (process.env.FAKE_THROW === name) {
       throw new Error(`fake ${name} failure`, {
         cause: new Error("fake cause"),

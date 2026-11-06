@@ -37,3 +37,17 @@ export function parseIsolationOption(value) {
     `Isolation must be "fast" or "strict", received "${value}"`,
   );
 }
+
+const DECIMAL_NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?%?$/i;
+
+// A decimal number, optionally with a trailing "%" (dropped). Accepts exactly
+// the inputs that parseFloat reads completely and returns the same value.
+export function parseNumberOption(value) {
+  const text = String(value).trim();
+  if (!DECIMAL_NUMBER.test(text)) {
+    throw new InvalidArgumentError(
+      `Expected a number (use "." for decimals) but received "${value}"`,
+    );
+  }
+  return Number(text.replace(/%$/, ""));
+}

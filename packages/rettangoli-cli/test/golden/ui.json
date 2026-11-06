@@ -106,9 +106,9 @@
       "",
       "",
       "Examples:",
-      "  $ rettangoli ui build-svg",
-      "  $ rettangoli ui build-svg --dir ./icons --outfile ./dist/icons.js",
-      "  $ rettangoli ui build-svg -d ./assets/svg -o ./public/js/icons.js",
+      "  $ rtgl ui build-svg",
+      "  $ rtgl ui build-svg --dir ./icons --outfile ./dist/icons.js",
+      "  $ rtgl ui build-svg -d ./assets/svg -o ./public/js/icons.js",
       "",
       ""
     ],
@@ -122,10 +122,10 @@
   "ui-build-svg-invalid-yaml": {
     "exitCode": 1,
     "signal": null,
-    "stderrHasStack": true,
+    "stderrHasStack": false,
     "stderrSummary": [
-      "Error: Error reading config file \"<APP>/rettangoli.config.yaml\": unexpected end of the stream within a flow collection (2:1)",
-      "  [cause]: YAMLException: unexpected end of the stream within a flow collection (2:1)"
+      "rtgl: Error reading config file \"<APP>/rettangoli.config.yaml\": unexpected end of the stream within a flow collection (2:1)",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
     ],
     "stdout": [],
     "trace": [

@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
-import { readFileSync, existsSync } from "fs";
-import { resolve } from "path";
-import { readConfig } from "./src/config.js";
+import { readFileSync } from "fs";
+import { readConfig, requireConfig } from "./src/config.js";
+import { CliUserError, runWithErrorBoundary } from "./src/errors.js";
+import { resolveFeOptions } from "./src/fe-config.js";
 import {
   collectValues,
   parseIntegerOption,
   parseIsolationOption,
+  parseNumberOption,
   parsePortOption,
 } from "./src/options.js";
 
@@ -33,27 +35,6 @@ let watchSite;
 let initSite;
 let buildSvg;
 
-if (requestedCommand === "fe") {
-  ({
-    build,
-    check,
-    scaffold,
-    watch,
-    resolveServeContext: resolveFeServeContext,
-    examples,
-  } = await import(
-    "@rettangoli/fe/cli",
-  ));
-} else if (requestedCommand === "check") {
-  ({ check: checkContracts } = await import("@rettangoli/check/cli"));
-} else if (requestedCommand === "vt") {
-  ({ generate, screenshot, report, accept } = await import("@rettangoli/vt/cli"));
-} else if (requestedCommand === "sites") {
-  ({ buildSite, watchSite, initSite } = await import("@rettangoli/sites/cli"));
-} else if (requestedCommand === "ui") {
-  ({ buildSvg } = await import("@rettangoli/ui/cli"));
-}
-
 const program = new Command();
 
 program
@@ -67,9 +48,9 @@ program.addHelpText(
   `
 
 Examples:
-  $ rettangoli fe build
-  $ rettangoli fe scaffold -c components -n Button
-  $ rettangoli fe watch -p 3001
+  $ rtgl fe build
+  $ rtgl fe scaffold -c components -n button
+  $ rtgl fe watch -p 3001
 `,
 );
 
@@ -125,46 +106,18 @@ feCommand
     `
 
 Examples:
-  $ rettangoli fe build
-  $ rettangoli fe build --sourcemap hidden
-  $ rettangoli fe build --outfile ./dist/bundle.js
-  $ rettangoli fe build -o ./public/js/main.js
-  $ rettangoli fe build --development
-  $ rettangoli fe build -d -o ./dist/dev.js
-  $ rettangoli fe build -s src/setup.tauri.js
-  $ rettangoli fe build --setup-path src/setup.web.js
+  $ rtgl fe build
+  $ rtgl fe build --sourcemap hidden
+  $ rtgl fe build --outfile ./dist/bundle.js
+  $ rtgl fe build -o ./public/js/main.js
+  $ rtgl fe build --development
+  $ rtgl fe build -d -o ./dist/dev.js
+  $ rtgl fe build -s src/setup.tauri.js
+  $ rtgl fe build --setup-path src/setup.web.js
 `,
   )
   .action(async (options) => {
-    const config = readConfig();
-
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
-
-    if (!config.fe?.dirs?.length) {
-      throw new Error("fe.dirs not found or empty in config");
-    }
-
-    // Validate that directories exist
-    const missingDirs = config.fe.dirs.filter(
-      (dir) => !existsSync(resolve(process.cwd(), dir)),
-    );
-    if (missingDirs.length > 0) {
-      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
-    }
-
-    // Pass dirs, setup, and outfile from config
-    options.dirs = config.fe.dirs;
-    options.i18n = config.fe.i18n || null;
-    // Use setup-path if provided, otherwise use config setup
-    options.setup = options.setupPath || config.fe.setup || "setup.js";
-
-    // Use config outfile if not specified via CLI option
-    if (!options.outfile && config.fe.outfile) {
-      options.outfile = config.fe.outfile;
-    }
-
+    resolveFeOptions(requireConfig(), process.cwd(), options, { command: "build" });
     await build(options);
   });
 
@@ -177,30 +130,12 @@ feCommand
     `
 
 Examples:
-  $ rettangoli fe check
-  $ rettangoli fe check --format json
+  $ rtgl fe check
+  $ rtgl fe check --format json
 `,
   )
   .action((options) => {
-    const config = readConfig();
-
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
-
-    if (!config.fe?.dirs?.length) {
-      throw new Error("fe.dirs not found or empty in config");
-    }
-
-    const missingDirs = config.fe.dirs.filter(
-      (dir) => !existsSync(resolve(process.cwd(), dir)),
-    );
-    if (missingDirs.length > 0) {
-      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
-    }
-
-    options.dirs = config.fe.dirs;
-    options.i18n = config.fe.i18n || null;
+    resolveFeOptions(requireConfig(), process.cwd(), options, { command: "check" });
     check(options);
   });
 
@@ -219,10 +154,10 @@ feCommand
     `
 
 Examples:
-  $ rettangoli fe scaffold
-  $ rettangoli fe scaffold --category components --name MyButton
-  $ rettangoli fe scaffold -c layouts -n HeaderLayout
-  $ rettangoli fe scaffold -c pages -n HomePage
+  $ rtgl fe scaffold
+  $ rtgl fe scaffold --category components --component-name my-button
+  $ rtgl fe scaffold -c layouts -n header-layout
+  $ rtgl fe scaffold -c pages -n home-page
 `,
   )
   .action((options) => {
@@ -247,50 +182,18 @@ feCommand
     `
 
 Examples:
-  $ rettangoli fe watch
-  $ rettangoli fe watch --port 8080
-  $ rettangoli fe watch -p 4000
-  $ rettangoli fe watch -s src/setup.tauri.js
-  $ rettangoli fe watch --setup-path src/setup.web.js
-  $ rettangoli fe watch --public-dir static
-  $ rettangoli fe watch --watch-entry src/watch.js
+  $ rtgl fe watch
+  $ rtgl fe watch --port 8080
+  $ rtgl fe watch -p 4000
+  $ rtgl fe watch -s src/setup.tauri.js
+  $ rtgl fe watch --setup-path src/setup.web.js
+  $ rtgl fe watch --public-dir static
+  $ rtgl fe watch --watch-entry src/watch.js
 `,
   )
   .action(async (options) => {
-    const config = readConfig();
-
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
-
-    if (!config.fe?.dirs?.length) {
-      throw new Error("fe.dirs not found or empty in config");
-    }
-
-    // Validate that directories exist
-    const missingDirs = config.fe.dirs.filter(
-      (dir) => !existsSync(resolve(process.cwd(), dir)),
-    );
-    if (missingDirs.length > 0) {
-      throw new Error(`Directories do not exist: ${missingDirs.join(", ")}`);
-    }
-
-    // Pass dirs, setup, and outfile from config
-    options.dirs = config.fe.dirs;
-    options.i18n = config.fe.i18n || null;
-    // Use setup-path if provided, otherwise use config setup
-    options.setup = options.setupPath || config.fe.setup || "setup.js";
-
-    // Use config outfile if not specified via CLI option
-    if (!options.outfile && config.fe.outfile) {
-      options.outfile = config.fe.outfile;
-    }
-    if (options.publicDir === undefined && config.fe.publicDir !== undefined) {
-      options.publicDir = config.fe.publicDir;
-    }
-    if (options.watchEntry === undefined && config.fe.watchEntry !== undefined) {
-      options.watchEntry = config.fe.watchEntry;
-    }
+    const config = requireConfig();
+    resolveFeOptions(config, process.cwd(), options, { command: "watch" });
     if (config.fe.watchVt === true) {
       const [
         { createRettangoliVtWatchPlugin },
@@ -323,7 +226,10 @@ feCommand
   .command("examples")
   .description("Generate examples")
   .action((options) => {
-    const config = readConfig();
+    const config = requireConfig();
+    if (config.fe === null || typeof config.fe !== "object") {
+      throw new CliUserError("fe.dirs not found or empty in config");
+    }
     options.dirs = config.fe.dirs;
     options.outputDir = config.fe?.examples?.outputDir || "./vt/specs/examples";
     examples(options);
@@ -345,11 +251,7 @@ vtCommand
   .option("--headed", "Run Playwright in headed mode")
   .action(async (options) => {
     console.log(`rtgl v${packageJson.version}`);
-    const config = readConfig();
-
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
+    const config = requireConfig();
 
     // Use vt.path from config, default to 'vt'
     options.vtPath = config.vt?.path || "vt";
@@ -374,11 +276,7 @@ vtCommand
   .option("--headed", "Run Playwright in headed mode")
   .action(async (options) => {
     console.log(`rtgl v${packageJson.version}`);
-    const config = readConfig();
-
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
+    const config = requireConfig();
 
     options.vtPath = config.vt?.path || "vt";
     if (options.headed) {
@@ -391,17 +289,13 @@ vtCommand
   .command("report")
   .description("Create reports")
   .option("--compare-method <method>", "Comparison method: pixelmatch or md5")
-  .option("--color-threshold <number>", "Color threshold for pixelmatch (0-1)", parseFloat)
-  .option("--diff-threshold <number>", "Max diff pixels percentage to pass (0-100)", parseFloat)
+  .option("--color-threshold <number>", "Color threshold for pixelmatch (0-1)", parseNumberOption)
+  .option("--diff-threshold <number>", "Max diff pixels percentage to pass (0-100)", parseNumberOption)
   .option("--folder <path>", "Compare only screenshots under folder prefix (repeatable)", collectValues, [])
   .option("--group <section-key>", "Compare only one section key from vt.sections (repeatable)", collectValues, [])
   .option("--item <spec-path>", "Compare only one spec path relative to vt/specs (repeatable)", collectValues, [])
   .action(async (options) => {
-    const config = readConfig();
-
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
+    const config = requireConfig();
 
     const vtPath = config.vt?.path || "vt";
     await report({
@@ -419,11 +313,7 @@ vtCommand
   .command("accept")
   .description("Accept changes")
   .action(async () => {
-    const config = readConfig();
-
-    if (!config) {
-      throw new Error("rettangoli.config.yaml not found");
-    }
+    const config = requireConfig();
 
     const vtPath = config.vt?.path || "vt";
     await accept({ vtPath });
@@ -495,9 +385,9 @@ uiCommand
     `
 
 Examples:
-  $ rettangoli ui build-svg
-  $ rettangoli ui build-svg --dir ./icons --outfile ./dist/icons.js
-  $ rettangoli ui build-svg -d ./assets/svg -o ./public/js/icons.js
+  $ rtgl ui build-svg
+  $ rtgl ui build-svg --dir ./icons --outfile ./dist/icons.js
+  $ rtgl ui build-svg -d ./assets/svg -o ./public/js/icons.js
 `,
   )
   .action((options) => {
@@ -520,4 +410,29 @@ Examples:
     buildSvg(options);
   });
 
-await program.parseAsync();
+async function main() {
+  if (requestedCommand === "fe") {
+    ({
+      build,
+      check,
+      scaffold,
+      watch,
+      resolveServeContext: resolveFeServeContext,
+      examples,
+    } = await import(
+      "@rettangoli/fe/cli",
+    ));
+  } else if (requestedCommand === "check") {
+    ({ check: checkContracts } = await import("@rettangoli/check/cli"));
+  } else if (requestedCommand === "vt") {
+    ({ generate, screenshot, report, accept } = await import("@rettangoli/vt/cli"));
+  } else if (requestedCommand === "sites") {
+    ({ buildSite, watchSite, initSite } = await import("@rettangoli/sites/cli"));
+  } else if (requestedCommand === "ui") {
+    ({ buildSvg } = await import("@rettangoli/ui/cli"));
+  }
+
+  await program.parseAsync();
+}
+
+await runWithErrorBoundary(main);

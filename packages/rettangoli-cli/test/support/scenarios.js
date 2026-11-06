@@ -77,6 +77,7 @@ add("fe", "fe-build-config-comment-only", ["fe", "build"], {
   files: configFile("# nothing here\n"),
 });
 add("fe", "fe-build-config-null", ["fe", "build"], { files: configFile("~\n") });
+add("fe", "fe-build-config-false", ["fe", "build"], { files: configFile("false\n") });
 add("fe", "fe-build-config-invalid-yaml", ["fe", "build"], {
   files: configFile("fe: [\n"),
 });
@@ -142,6 +143,10 @@ add("fe", "fe-build-throw-debug", ["fe", "build"], {
   files: feProject(),
   env: { FAKE_THROW: "build", RTGL_DEBUG: "1" },
 });
+add("fe", "fe-build-throw-debug-zero", ["fe", "build"], {
+  files: feProject(),
+  env: { FAKE_THROW: "build", RTGL_DEBUG: "0" },
+});
 add("fe", "fe-build-reject", ["fe", "build"], { files: feProject(), ...rejecting("build") });
 add("fe", "fe-package-missing", ["fe", "build"], {
   files: feProject(),
@@ -201,6 +206,9 @@ add("fe", "fe-watch-public-flag-beats-config", ["fe", "watch", "--public-dir", "
 add("fe", "fe-watch-watch-entry-number", ["fe", "watch"], {
   files: feProject("  watchEntry: 42\n"),
 });
+add("fe", "fe-watch-outfile-number", ["fe", "watch"], {
+  files: feProject("  outfile: 42\n"),
+});
 add("fe", "fe-watch-vt", ["fe", "watch"], {
   files: feProject("  watchVt: true\n  outfile: out.js\n  publicDir: pub\n"),
 });
@@ -217,6 +225,7 @@ add("fe", "fe-watch-reject", ["fe", "watch"], { files: feProject(), ...rejecting
 add("fe", "fe-examples-help", ["fe", "examples", "--help"]);
 add("fe", "fe-examples-no-config", ["fe", "examples"]);
 add("fe", "fe-examples-no-fe-section", ["fe", "examples"], { files: otherConfig });
+add("fe", "fe-examples-fe-scalar", ["fe", "examples"], { files: configFile("fe: 42\n") });
 add("fe", "fe-examples-default-output", ["fe", "examples"], { files: feProject() });
 add("fe", "fe-examples-output-dir", ["fe", "examples"], {
   files: feProject("  examples:\n    outputDir: ./out/examples\n"),
@@ -328,7 +337,13 @@ add(
 add("vt", "vt-report-path-custom", ["vt", "report"], {
   files: configFile("vt:\n  path: custom\n"),
 });
-// --diff-threshold goes through parseFloat: these pin what it accepts today.
+add("vt", "vt-report-config-invalid-yaml", ["vt", "report"], {
+  files: configFile("vt: [\n"),
+});
+add("vt", "vt-report-color-threshold-comma", ["vt", "report", "--color-threshold", "0,9"], {
+  files: otherConfig,
+});
+// --diff-threshold goes through parseNumberOption: what it accepts and rejects.
 for (const [name, value] of [
   ["leading-dot", ".5"],
   ["percent-suffix", "5%"],
@@ -339,6 +354,7 @@ for (const [name, value] of [
   ["trailing-text", ".1x"],
   ["hex", "0x10"],
   ["infinity", "Infinity"],
+  ["empty", ""],
 ]) {
   add("vt", `vt-report-diff-threshold-${name}`, ["vt", "report", "--diff-threshold", value], {
     files: otherConfig,
