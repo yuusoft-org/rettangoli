@@ -31,11 +31,14 @@ const { html } = renderComponent({
 
 - `loadComponents({ cwd, dirs, reload })` reads components the way
   `rtgl fe build` finds them. It loads views, schemas, constants, stores and
-  methods. It `MUST NOT` import handlers: they never run at build time, so
-  they may use browser APIs. A component marked `ssr: false` has no module
-  imported at all. A new `reload` token imports edited stores and methods
-  again in a long-running build, such as a watch; modules they import stay
-  cached.
+  methods. YAML is read the way the browser entry embeds it, so a date in a
+  constants file arrives as an ISO string, and `NaN` or `Infinity` as `null`,
+  on both sides. Two folders with the same component id print one
+  `[loadComponents]` warning and merge, as in `rtgl fe build`. It `MUST NOT`
+  import handlers: they never run at build time, so they may use browser
+  APIs. A component marked `ssr: false` has no module imported at all. A new
+  `reload` token imports edited stores and methods again in a long-running
+  build, such as a watch; modules they import stay cached.
 - `renderComponent` runs each component's `createInitialState` and
   `selectViewData`, renders its view, recurses into registered child
   components, and writes every component into its own declarative shadow
@@ -43,6 +46,10 @@ const { html } = renderComponent({
   `data-rtgl-hydrate`.
 - Handlers are never invoked at build time, so `handleBeforeMount` cannot
   seed state the build sees.
+- The serializer writes HTML that the browser's parser reads back as the same
+  text. A carriage return in text or in an attribute is written as `&#13;`,
+  and `pre`, `textarea` and `listing` content that starts with a newline gets
+  one extra leading newline, because the parser drops the first one.
 - With `serializeProps: true`, the root's schema props are written as JSON
   in a `<script type="application/json" data-rtgl-props>` beside its shadow
   root, and marks the host `data-rtgl-props`. A root has no parent on the

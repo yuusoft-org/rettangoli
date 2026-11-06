@@ -60,7 +60,11 @@ methods:
 ### `componentName`
 
 - required
-- SHOULD follow custom-element naming convention (kebab-case)
+- MUST be a valid custom element name: lowercase, starts with a letter,
+  contains a `-`, uses no spaces or symbols other than `-`, `.` and `_`, and is
+  not a reserved name such as `font-face` (`rtgl fe check`: `RTGL-CONTRACT-005`)
+- MUST be unique across the project's components (`RTGL-CONTRACT-006`)
+- the scaffold uses `custom-` plus the kebab-case component name
 
 ### `description`
 
@@ -88,8 +92,11 @@ methods:
 
 - optional JSON-Schema-like object describing public methods exposed by the component element
 - SHOULD use `type: object` and `properties`
-- each `methods.properties.<methodName>` SHOULD match a named export in `.methods.js`
-- if `methods` is declared, `.methods.js` SHOULD exist
+- each `methods.properties.<methodName>` MUST match a named export in `.methods.js`
+- if `methods.properties` names any method, `.methods.js` MUST exist;
+  `rtgl fe check` reports `RTGL-CONTRACT-004` when it does not. The check does
+  not read the exports of `.methods.js`: a declared method with no export fails
+  registration in the browser
 
 ### `ssr`
 

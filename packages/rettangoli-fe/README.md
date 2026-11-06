@@ -60,9 +60,15 @@ bun install
 
 2. **Create project structure**:
 ```bash
-# Scaffold a new component
+# Scaffold a new component into ./example/components/MyButton/ (--dir changes the folder)
 node ../rettangoli-cli/cli.js fe scaffold --category components --component-name MyButton
 ```
+
+The scaffold names the element `custom-` plus the kebab-case component name
+(`MyButton` gives `custom-my-button`), so the generated `.schema.yaml` passes
+`rtgl fe check`. Edit `componentName` in it to use another tag. A name that
+cannot give a valid custom element name stops the scaffold before anything is
+written.
 
 3. **Start development**:
 ```bash
@@ -77,16 +83,24 @@ node ../rettangoli-cli/cli.js fe watch
 
 ```
 src/
-├── cli/
-│   ├── build.js       # Build component bundles
-│   ├── watch.js       # Development server with auto reload
-│   ├── scaffold.js    # Component scaffolding
-│   ├── examples.js    # Generate examples for testing
-│   └── blank/         # Component templates
-├── createComponent.js # Component factory
-├── createWebPatch.js  # Internal virtual DOM patching
-├── parser.js          # YAML to JSON converter
-└── index.js           # Main exports
+├── cli/                    # `@rettangoli/fe/cli`
+│   ├── build.js            # Build component bundles
+│   ├── watch.js            # Development server with auto reload
+│   ├── check.js            # Contract checks
+│   ├── scaffold.js         # Component scaffolding
+│   ├── examples.js         # Generate examples for testing
+│   ├── vitePlugin.js       # Vite plugin and the virtual entry module
+│   ├── frontendEntrySource.js  # Generated browser entry
+│   └── blank/              # Component templates
+├── core/                   # Environment-neutral view, store, runtime and contract logic
+├── web/                    # Custom Element runtime, hydration and styles
+├── server/                 # `@rettangoli/fe/server`: prerendering
+├── contracts/              # `@rettangoli/fe/contracts`
+├── commonBuild.js          # File discovery shared by the CLI and the server
+├── createComponent.js      # Component factory
+├── createWebPatch.js       # Internal virtual DOM patching
+├── parser.js               # Template to virtual DOM
+└── index.js                # Main exports
 ```
 
 ## Vite Integration
@@ -97,6 +111,7 @@ src/
 - `rtgl fe build --sourcemap` emits linked source maps; `--sourcemap hidden` emits maps without a `sourceMappingURL` comment, for keeping them private. Maps are off by default.
 - `rtgl fe watch` uses `vite.createServer()`, warms the virtual entry during startup, and serves the configured `outfile` path via middleware.
 - Watch projects can configure `fe.publicDir` to serve static assets from the project root without Vite transformations.
+- The watch server's root and entry URL come from `outfile`. If the path has a `static` segment, the root is the directory before the first one and the entry URL is the path after it (`./vt/static/main.js` gives root `./vt` and `/main.js`). Otherwise the root is the parent of the outfile's directory and the URL is the outfile relative to it (`_site/public/main.js` gives root `_site` and `/public/main.js`). A bare `outfile: main.js` puts the root above the project, so keep the outfile in a directory. `rtgl fe watch` prints `[Watch] Root:` and `[Watch] Entry:`.
 - `fe.watchEntry` can provide a project bootstrap module at the configured `outfile` URL. The module can register framework primitives and import `virtual:rettangoli-fe-entry` for Rettangoli component HMR.
 - FE runtime source is generated in memory (virtual module), so no temporary generated JS files are required.
 - Contract validation, YAML parsing, and template parsing still run before code generation.
@@ -198,8 +213,13 @@ export const setEmail = ({ state }, { value }) => {
 ```
 
 Runtime-injected action payload fields:
-- `_event`
+- `_event`: the original DOM event, the same object `handler` listeners get
 - `_action` (internal dispatch metadata)
+
+The payload is evaluated once, against the view data and `_event`. Text in a
+value that looks like a template (`${...}`) stays literal. The action receives
+copies of plain objects and arrays, so it may change them; the event, dates,
+files and class instances arrive as the same instances.
 
 ## Testing
 
@@ -225,8 +245,8 @@ Use this workflow:
 1. Build FE with the local repo CLI (`cli.js`) so it uses your current FE source.
 2. Run VT in Docker for stable Playwright runtime.
 
-The current release uses `rtgl@2.1.4` with `@rettangoli/vt@1.1.1`.
-The commands below run the mounted workspace CLI; the existing Docker image
+The commands below run the mounted workspace CLI (`packages/rettangoli-cli`),
+so they use the `rtgl` and `@rettangoli/vt` of your checkout; the Docker image
 supplies the matching Playwright 1.57.0 browsers.
 
 Docker image:
@@ -262,4 +282,7 @@ VT specs live under each suite's `vt/specs/` directory.
 
 ## Examples
 
-For a complete working example, see the todos app in `examples/example1/`.
+- [`e2e/dashboard`](./e2e/dashboard) and [`e2e/interactions`](./e2e/interactions)
+  are complete FE projects. The end-to-end suites above build and test them.
+- [`examples/example1`](../../examples/example1) in the repository is a small
+  todos app.

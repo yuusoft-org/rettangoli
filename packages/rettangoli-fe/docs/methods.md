@@ -35,7 +35,12 @@ Invocation contract:
 ## 4. Schema Alignment
 
 Public methods SHOULD be declared in `.schema.yaml` under `methods`.
-Method names under `methods.properties` in `.schema.yaml` SHOULD match exported names in `.methods.js`.
+Every method name under `methods.properties` in `.schema.yaml` MUST be a named
+export of `.methods.js`, so a schema that declares methods needs that file. The
+browser fails component registration for a declared method that has no export.
+`rtgl fe check` reports `RTGL-CONTRACT-004` only when the schema declares
+methods and the component has no `.methods.js` file. It does not read the
+exports of that file, so a missing export is found in the browser.
 
 ```yaml
 methods:
@@ -54,12 +59,17 @@ methods:
 ## 5. Runtime Access
 
 Methods can access:
-- DOM through `this`
+- the component's DOM through `this.shadowRoot`: the view renders into the
+  shadow root, so `this.querySelector` does not find view elements (the light
+  DOM holds only the children the parent gave the element)
 - constants through `this.constants`
+- the component's handlers through `this.transformedHandlers`, with `deps`
+  already bound (see `handlers.md`, "Calling Handlers From Outside")
 
 ## 6. Validation Errors
 
-Suggested stable error codes:
+Suggested stable error codes (the runtime does not attach them yet; it throws
+`[Methods] ...` errors with the same meaning):
 - `RTGL-METHODS-001`: method name is `default`
 - `RTGL-METHODS-002`: method payload is not an object
 - `RTGL-METHODS-003`: method name conflicts with existing element property
@@ -87,7 +97,7 @@ Invalid because payload must be an object when provided.
 ```js
 export function focusInput(payload = {}) {
   const { selector = '#emailInput' } = payload;
-  this.querySelector(selector)?.focus();
+  this.shadowRoot.querySelector(selector)?.focus();
 }
 
 export function reset(payload = {}) {
