@@ -26,8 +26,6 @@ const stringifyProps = (props = {}) => {
     .join(" ");
 };
 
-const hasOwnProp = (object, key) => Object.prototype.hasOwnProperty.call(object || {}, key);
-
 const getOptionType = (option = {}) => {
   if (option.type === "section") {
     return "section";
@@ -46,32 +44,12 @@ const getOptionIcon = (option = {}) => {
   return typeof option.icon === "string" && option.icon.length > 0 ? option.icon : "";
 };
 
-const getOptionSuffixText = (option = {}) => {
-  if (typeof option.shortcut === "string" && option.shortcut.length > 0) {
-    return option.shortcut;
-  }
-
-  if (typeof option.suffixText === "string" && option.suffixText.length > 0) {
-    return option.suffixText;
-  }
-
-  return "";
-};
-
 const normalizeSelectedValues = (selectedValues) => {
   if (!Array.isArray(selectedValues)) {
     return [];
   }
 
   return [...selectedValues];
-};
-
-const sameValueArray = (left = [], right = []) => {
-  if (left.length !== right.length) {
-    return false;
-  }
-
-  return left.every((value, index) => deepEqual(value, right[index]));
 };
 
 const isSelectedValue = (selectedValues = [], candidate) => {
@@ -123,7 +101,6 @@ const normalizeOption = ({
   option = {},
   index,
   selectedValues = [],
-  hasIconColumn = false,
 }) => {
   const type = getOptionType(option);
   const isSection = type === "section";
@@ -142,11 +119,6 @@ const normalizeOption = ({
   }
 
   const isSelected = isSelectedValue(selectedValues, option.value);
-  const icon = getOptionIcon(option);
-  const baseSuffixText = getOptionSuffixText(option);
-  const suffixText = isSelected
-    ? baseSuffixText || getUiMessage("tagSelectAdded")
-    : baseSuffixText;
 
   return {
     ...option,
@@ -156,13 +128,9 @@ const normalizeOption = ({
     isSeparator,
     isItem,
     isSelected,
-    hasIconSlot: hasIconColumn,
-    icon,
-    hasIcon: icon.length > 0,
+    icon: getOptionIcon(option),
     cursor: "pointer",
     tagStyle: buildTagStyle({ isSelected }),
-    suffixText,
-    hasSuffixText: suffixText.length > 0,
   };
 };
 
@@ -186,32 +154,26 @@ export const selectViewData = ({ state, props }) => {
   const draftValues = getDraftValues({ state, props });
   const shouldResolveOptions = state.isOpen || currentValues.length > 0;
   const options = shouldResolveOptions && Array.isArray(props.options) ? props.options : [];
-  const hasIconColumn = options.some((option) => isSelectableOption(option) && hasOwnProp(option, "icon"));
   const normalizedOptions = options.map((option, index) =>
     normalizeOption({
       option,
       index,
       selectedValues: draftValues,
-      hasIconColumn,
     }),
   );
 
   const selectedTags = currentValues.map((value, selectionIndex) => {
     const matchedOption = findMatchingOption(options, value);
-    const icon = matchedOption ? getOptionIcon(matchedOption) : "";
-
     return {
       value,
       selectionIndex,
       label: matchedOption?.label || stringifyFallbackLabel(value),
-      icon,
-      hasIcon: icon.length > 0,
+      icon: matchedOption ? getOptionIcon(matchedOption) : "",
       testId: `tag-select-tag-${selectionIndex}`,
     };
   });
 
   const hasSelectableOptions = normalizedOptions.some((option) => option.isItem);
-  const hasDraftChanges = !sameValueArray(currentValues, draftValues);
   const triggerTags = selectedTags.length > 0
     ? selectedTags.map((tag) => ({
       ...tag,
@@ -234,7 +196,6 @@ export const selectViewData = ({ state, props }) => {
     position: state.position,
     options: normalizedOptions,
     hasSelectableOptions,
-    placeholder: props.placeholder || getUiMessage("tagSelectPlaceholder"),
     emptyLabel: getUiMessage("tagSelectEmpty"),
     triggerTags,
     triggerCursor: isDisabled ? "not-allowed" : "pointer",
@@ -242,7 +203,6 @@ export const selectViewData = ({ state, props }) => {
     showAddOption: !isDisabled && !props.noAdd,
     addOptionLabel:
       props.addOption?.label || getUiMessage("tagSelectAddOption"),
-    hasDraftChanges,
     submitDisabled: isDisabled,
     submitLabel: getUiMessage("tagSelectSave"),
   };

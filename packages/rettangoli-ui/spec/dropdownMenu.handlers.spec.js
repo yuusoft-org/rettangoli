@@ -269,12 +269,16 @@ describe("rtgl-dropdown-menu handlers", () => {
     const child = document.createElement("button");
     child.focus = vi.fn();
     const preventDefault = vi.fn();
+    // The menu reads its direction from the popover's computed style; `dir` is
+    // not a schema prop, so fe's props proxy never passes it through.
+    const popover = document.createElement("div");
+    popover.style.direction = "rtl";
+    document.body.append(popover);
 
     handleMenuItemKeyDown(
       {
         dispatchEvent: vi.fn(),
         props: {
-          dir: "rtl",
           items: [
             {
               label: "Export",
@@ -284,6 +288,7 @@ describe("rtgl-dropdown-menu handlers", () => {
         },
         refs: {
           optionD1I0: child,
+          popover,
         },
         render,
         store,
@@ -301,6 +306,7 @@ describe("rtgl-dropdown-menu handlers", () => {
     expect(preventDefault).toHaveBeenCalledTimes(1);
     expect(store.openSubmenu).toHaveBeenCalled();
     expect(child.focus).toHaveBeenCalledTimes(1);
+    popover.remove();
   });
 
   it("focuses the first menu item once after the popover is positioned", async () => {

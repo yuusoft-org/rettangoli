@@ -1,11 +1,5 @@
 export const createInitialState = () => Object.freeze({});
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'start'];
-
-const stringifyAttrs = (props = {}) => {
-  return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
-}
-
 const parseMaybeEncodedJson = (value) => {
   if (value === undefined || value === null) {
     return undefined;
@@ -29,8 +23,6 @@ const parseMaybeEncodedJson = (value) => {
 
 export const selectViewData = ({ props }) => {
   const attrsStart = parseMaybeEncodedJson(props.start) || props.start;
-
-  const containerAttrString = stringifyAttrs(props);
   const start = attrsStart || {
     label: '',
     // href: undefined,
@@ -45,7 +37,6 @@ export const selectViewData = ({ props }) => {
   // start.hasImage = start.image && start.image.src;
   // start.hasHref = !!start.href;
   return {
-    containerAttrString,
     start
   };
 }

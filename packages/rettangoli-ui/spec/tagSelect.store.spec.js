@@ -37,9 +37,7 @@ describe("rtgl-tag-select store", () => {
     expect(viewData.options[3].isSeparator).toBe(true);
     expect(viewData.options[4].isSelected).toBe(false);
     expect(viewData.options[4].tagStyle).toContain("--muted: transparent");
-    expect(viewData.hasDraftChanges).toBe(true);
     expect(viewData.submitDisabled).toBe(false);
-    expect(viewData.placeholder).toBe("Add tag");
   });
 
   it("shows placeholder labels and fallback labels when selected values do not match options", () => {
@@ -54,7 +52,6 @@ describe("rtgl-tag-select store", () => {
 
     expect(initialView.triggerTags).toHaveLength(1);
     expect(initialView.triggerTags[0].label).toBe("Assign tags");
-    expect(initialView.placeholder).toBe("Assign tags");
     expect(initialView.showAddOption).toBe(true);
     expect(initialView.addOptionLabel).toBe("Add tag");
     expect(initialView.triggerTags[0].tagStyle).toContain("--muted: transparent");
@@ -66,7 +63,7 @@ describe("rtgl-tag-select store", () => {
       },
     });
 
-    expect(defaultAddChipView.placeholder).toBe("Add tag");
+    expect(defaultAddChipView.triggerTags[0].label).toBe("Add tag");
 
     const viewWithFallback = selectViewData({
       state: {
@@ -83,7 +80,6 @@ describe("rtgl-tag-select store", () => {
     expect(viewWithFallback.triggerTags).toHaveLength(1);
     expect(viewWithFallback.triggerTags[0].label).toBe("custom");
     expect(viewWithFallback.triggerTags[0].tagStyle).toContain("--muted-foreground: var(--foreground)");
-    expect(viewWithFallback.placeholder).toBe("Add tag");
     expect(viewWithFallback.addOptionLabel).toBe("Create tag");
   });
 
@@ -101,7 +97,6 @@ describe("rtgl-tag-select store", () => {
       },
     });
 
-    expect(viewData.hasDraftChanges).toBe(false);
     expect(viewData.submitDisabled).toBe(false);
   });
 

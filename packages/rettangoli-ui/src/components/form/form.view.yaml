@@ -155,7 +155,7 @@ styles:
     flex: none
     order: -1
 template:
-  - rtgl-view#formContainer w=f pv=${containerVerticalPadding} data-sticky=${sticky} ${containerAttrString}:
+  - rtgl-view#formContainer w=f pv=${containerVerticalPadding} data-sticky=${sticky}:
       - $if title || description:
           - rtgl-view class=form-header g=sm w=f ph=${containerHorizontalPadding} mb=md:
               - $if title:

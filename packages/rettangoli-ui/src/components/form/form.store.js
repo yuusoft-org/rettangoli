@@ -27,23 +27,6 @@ const toFormDescription = (value) => {
   return renderableTextSegments(value) ? value : "";
 };
 
-const encode = (input) => {
-  function escapeHtml(text) {
-    const map = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    };
-    return text.replace(/[&<>"']/g, char => map[char]);
-  }
-  if (input === undefined || input === null || input === "") {
-    return ""
-  }
-  return `"${escapeHtml(String(input))}"`;
-};
-
 const isObjectLike = (value) => value !== null && typeof value === "object";
 const isPlainObject = (value) => isObjectLike(value) && !Array.isArray(value);
 const isPathLike = (path) => typeof path === "string" && path.includes(".");
@@ -300,36 +283,7 @@ const normalizeRowStackAt = (value, fallback = "md") =>
 const getResponsiveColumnAttrs = (stackAt) =>
   stackAt === "none" ? "" : `${stackAt}-cols=1`;
 
-const blacklistedAttrs = [
-  "id",
-  "class",
-  "style",
-  "slot",
-  "form",
-  "defaultValues",
-  "disabled",
-  "sticky",
-  "context",
-  "p",
-  "ph",
-  "pv",
-  "bottomSpacer",
-  "sbv",
-];
-
 const SCROLLBAR_VISIBILITY_VALUES = new Set(["touch", "always"]);
-
-const stringifyAttrs = (props = {}) => {
-  return Object.entries(props)
-    .filter(([key, value]) => {
-      if (blacklistedAttrs.includes(key)) return false;
-      if (value === undefined || value === null) return false;
-      if (typeof value === "object" || typeof value === "function") return false;
-      return true;
-    })
-    .map(([key, value]) => `${key}=${String(value)}`)
-    .join(" ");
-};
 
 // --- Validation ---
 
@@ -904,7 +858,6 @@ export const selectForm = ({ state, props }) => {
 };
 
 export const selectViewData = ({ state, props }) => {
-  const containerAttrString = stringifyAttrs(props);
   const containerPadding = normalizeFormPadding(props?.p);
   const containerHorizontalPadding = normalizeFormPadding(
     props?.ph,
@@ -1057,7 +1010,6 @@ export const selectViewData = ({ state, props }) => {
   }
 
   return {
-    containerAttrString,
     containerHorizontalPadding,
     containerVerticalPadding,
     bottomSpacer,
