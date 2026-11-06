@@ -30,6 +30,7 @@
   "scripts": {
     "test": "vitest run --reporter=verbose",
     "test:puty": "vitest run puty.spec.js --reporter=verbose",
+    "test:browser": "bun run build:dev && node scripts/run-browser-specs.mjs",
     "test:package": "node scripts/package-smoke-test.js",
     "check:contracts": "rtgl check --dir src/components",
     "check:contracts:yahtml": "rtgl check --dir src/components",
