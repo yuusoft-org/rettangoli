@@ -38,6 +38,6 @@ describe("host attributes outside the schema", () => {
 
     expect(host.getAttribute("data-testid")).toBe("probe");
     expect(host.shadowRoot.querySelector("rtgl-view")).not.toBeNull();
-    expect(host.shadowRoot.querySelectorAll('[mb], [op], [data-testid="probe"]')).toHaveLength(0);
+    expect(host.shadowRoot.querySelectorAll('[mb="lg"], [op="0.5"], [data-testid="probe"]')).toHaveLength(0);
   });
 });

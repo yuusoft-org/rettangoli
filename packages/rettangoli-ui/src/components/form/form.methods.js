@@ -62,11 +62,8 @@ const buildFieldRefMap = (root) => {
   return map;
 };
 
-const resolveRenderRoot = (instance) => {
-  if (instance?.renderTarget) return instance.renderTarget;
-  if (instance?.shadowRoot) return instance.shadowRoot;
-  return instance?.shadow;
-};
+const resolveRenderRoot = (instance) =>
+  instance?.renderTarget || instance?.shadowRoot;
 
 const syncVisibleFieldRefs = ({ root, form, values = {} }) => {
   const refsByName = buildFieldRefMap(root);

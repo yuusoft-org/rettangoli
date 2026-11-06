@@ -61,9 +61,9 @@ export const resolveCurrentValues = ({ store, props }) => {
   return normalizeSelectedValues(props?.selectedValues);
 };
 
-// Where the tag-select popover opens, below its trigger. `fallback` (undefined
-// in handlers, null in methods, as before) is returned when there is no
-// measurable trigger.
+// Where the tag-select popover opens, below its trigger. Without a measurable
+// trigger it returns `fallback`: handlers pass none, so undefined; methods
+// pass null.
 export const resolvePopoverPosition = (trigger, fallback) => {
   if (!trigger || typeof trigger.getBoundingClientRect !== "function") {
     return fallback;
@@ -94,7 +94,8 @@ export const hasResolvedValue = ({ state, props }) =>
     ? state.hasSelectedValue === true
     : props?.selectedValue !== undefined;
 
-// Responsive popover props of rtgl-dropdown-menu, as [propName, attrName].
+// The overlay and breakpoint placement props that rtgl-dropdown-menu passes
+// to its rtgl-popover, as [propName, attrName].
 export const DROPDOWN_POPOVER_ATTR_PROPS = [
   ["overlay", "overlay"],
   ["noOverlay", "no-overlay"],

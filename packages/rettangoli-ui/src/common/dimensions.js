@@ -91,8 +91,6 @@ export const applyDimensionToStyleBucket = ({
   dimension,
   fillValue,
   allowFlexGrow = false,
-  flexMinDimension = "0",
-  lockBounds = true,
   unsetBoundsOnFill = true,
 }) => {
   const resetWidthFlexBasisState = () => {
@@ -125,7 +123,7 @@ export const applyDimensionToStyleBucket = ({
   if (allowFlexGrow && isFlexGrowDimension(dimension)) {
     styleBucket["flex-grow"] = dimension.slice(0, -2);
     styleBucket["flex-basis"] = "0%";
-    styleBucket[`min-${axis}`] = flexMinDimension;
+    styleBucket[`min-${axis}`] = "0";
     styleBucket[`max-${axis}`] = "unset";
     return;
   }
@@ -138,17 +136,15 @@ export const applyDimensionToStyleBucket = ({
       ...flexBasis,
       gapVar: "var(--rtgl-flex-gap, 0px)",
     });
-    styleBucket[`min-${axis}`] = flexMinDimension;
+    styleBucket[`min-${axis}`] = "0";
     styleBucket[`max-${axis}`] = "unset";
     return;
   }
 
   resetWidthFlexBasisState();
   styleBucket[axis] = dimension;
-  if (lockBounds) {
-    styleBucket[`min-${axis}`] = dimension;
-    styleBucket[`max-${axis}`] = dimension;
-  }
+  styleBucket[`min-${axis}`] = dimension;
+  styleBucket[`max-${axis}`] = dimension;
 };
 
 // Writes the wh/w/h attributes of one breakpoint; wh sets both axes and wins

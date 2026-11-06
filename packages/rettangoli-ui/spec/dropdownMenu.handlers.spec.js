@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 import {
   handleBeforeMount,
@@ -274,6 +274,7 @@ describe("rtgl-dropdown-menu handlers", () => {
     const popover = document.createElement("div");
     popover.style.direction = "rtl";
     document.body.append(popover);
+    onTestFinished(() => popover.remove());
 
     handleMenuItemKeyDown(
       {
@@ -306,7 +307,6 @@ describe("rtgl-dropdown-menu handlers", () => {
     expect(preventDefault).toHaveBeenCalledTimes(1);
     expect(store.openSubmenu).toHaveBeenCalled();
     expect(child.focus).toHaveBeenCalledTimes(1);
-    popover.remove();
   });
 
   it("focuses the first menu item once after the popover is positioned", async () => {

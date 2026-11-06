@@ -1,6 +1,5 @@
 const resolveList = (instance) => {
-  const root = instance.shadowRoot || instance.shadow;
-  return root?.querySelector?.('#list') || null;
+  return instance.shadowRoot?.querySelector?.('#list') || null;
 };
 
 const resolveCurrentTop = (list) => {

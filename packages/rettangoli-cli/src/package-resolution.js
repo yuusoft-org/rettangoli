@@ -46,11 +46,7 @@ export function describeFeSkew({ command, project, bundled, rtglVersion }) {
     );
   }
   // The same version compiles to the same code, wherever it is installed.
-  if (
-    typeof project.version !== "string" ||
-    project.dir === bundled.dir ||
-    project.version === bundled.version
-  ) {
+  if (typeof project.version !== "string" || project.version === bundled.version) {
     return null;
   }
   return (
@@ -65,7 +61,7 @@ let feSkewChecked = false;
 
 // Called by `fe build` and `fe watch` before they start fe. Prints at most one
 // warning per process, and never fails the command.
-export function warnFeSkew({ cwd, command, rtglVersion, stderr = process.stderr }) {
+export function warnFeSkew({ cwd, command, rtglVersion }) {
   if (feSkewChecked) {
     return;
   }
@@ -82,6 +78,6 @@ export function warnFeSkew({ cwd, command, rtglVersion, stderr = process.stderr 
     return;
   }
   if (message) {
-    stderr.write(`${message}\n`);
+    process.stderr.write(`${message}\n`);
   }
 }
