@@ -4,8 +4,7 @@ import { load as loadYaml, loadAll } from "js-yaml";
 import { render, parse } from "jempl";
 
 import { flattenArrays } from "../utils/flattenArrays.js";
-import { extractCategoryAndComponent } from "../commonBuild.js";
-import { getAllFiles } from "../commonBuild.js";
+import { discoverComponentFiles } from "../commonBuild.js";
 import path, { dirname } from "node:path";
 
 const yamlToHtml = (renderedView) => {
@@ -113,35 +112,30 @@ const yamlToHtml = (renderedView) => {
 const examples = (options = {}) => {
   const { dirs, outputDir } = options;
 
-  const allFiles = getAllFiles(dirs);
-
   const output = [];
 
-  const examplesFiles = allFiles
-    .filter((filePath) => {
-      return filePath.endsWith(".examples.yaml");
-    })
-    .map((filePath) => {
-      const viewFilePath = filePath.replace(".examples.yaml", ".view.yaml");
-      const { category, component, fileType } =
-        extractCategoryAndComponent(filePath);
-      const [config, ...examples] = loadAll(readFileSync(filePath, "utf8"));
-      const { template } = loadYaml(readFileSync(viewFilePath, "utf8"));
+  discoverComponentFiles({
+    dirs,
+    filter: (filePath) => filePath.endsWith(".examples.yaml"),
+  }).forEach(({ filePath, category, component }) => {
+    const viewFilePath = filePath.replace(".examples.yaml", ".view.yaml");
+    const [config, ...examples] = loadAll(readFileSync(filePath, "utf8"));
+    const { template } = loadYaml(readFileSync(viewFilePath, "utf8"));
 
-      for (const [index, example] of examples.entries()) {
-        const { name, viewData } = example;
-        const ast = parse(template);
-        const renderedView = flattenArrays(render(ast, viewData, {}));
-        const html = yamlToHtml(renderedView);
-        output.push({
-          category,
-          component,
-          index,
-          html,
-          name,
-        });
-      }
-    });
+    for (const [index, example] of examples.entries()) {
+      const { name, viewData } = example;
+      const ast = parse(template);
+      const renderedView = flattenArrays(render(ast, viewData, {}));
+      const html = yamlToHtml(renderedView);
+      output.push({
+        category,
+        component,
+        index,
+        html,
+        name,
+      });
+    }
+  });
 
   for (const { category, component, index, html, name } of output) {
     const fileName = path.join(outputDir, category, component, `${name}.html`);

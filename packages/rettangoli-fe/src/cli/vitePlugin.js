@@ -1,7 +1,9 @@
 import path from "node:path";
 
-import { getAllFiles } from "../commonBuild.js";
-import { isSupportedComponentFile } from "./contracts.js";
+import {
+  discoverComponentFiles,
+  isSupportedComponentFile,
+} from "../commonBuild.js";
 import { generateFrontendEntrySource } from "./frontendEntrySource.js";
 import {
   buildI18nAssets,
@@ -60,6 +62,9 @@ export const createRettangoliFeVitePlugin = ({
   dirs = ["./example"],
   setup = "setup.js",
   i18n = null,
+  // Already loaded from `i18n` (rtgl fe build). Without it the catalogs are
+  // loaded here, and read again for every entry so watch mode sees edits.
+  i18nContext: loadedI18nContext = null,
   errorPrefix = "[Build]",
   publicEntryPath = null,
   servedEntryId = RETTANGOLI_FE_VIRTUAL_ENTRY_ID,
@@ -74,14 +79,14 @@ export const createRettangoliFeVitePlugin = ({
   const resolvesPublicEntryToVirtualModule =
     servedEntryId === RETTANGOLI_FE_VIRTUAL_ENTRY_ID &&
     transformEntryId === normalizedPublicEntryPath;
-  const i18nContext = loadI18nBuildContext({ cwd, i18n, errorPrefix });
+  const i18nContext = loadedI18nContext
+    ?? loadI18nBuildContext({ cwd, i18n, errorPrefix });
 
   let currentCommand = "build";
   let devServer = null;
 
   const getComponentFilePaths = () => {
-    return getAllFiles(resolvedDirs)
-      .filter((filePath) => isSupportedComponentFile(filePath));
+    return discoverComponentFiles({ dirs: resolvedDirs }).map(({ filePath }) => filePath);
   };
 
   const getEntryWatchPaths = ({ includeDirectories = false } = {}) => {
@@ -206,6 +211,7 @@ export const createRettangoliFeVitePlugin = ({
         dirs,
         setup,
         i18n,
+        i18nContext: loadedI18nContext,
         command: currentCommand,
         errorPrefix,
       });

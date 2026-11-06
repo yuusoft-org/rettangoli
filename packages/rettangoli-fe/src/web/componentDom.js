@@ -1,7 +1,7 @@
+import { RENDER_TARGET_ATTRIBUTE } from "../core/protocol.js";
 import { getNativeHostStyle } from "../core/runtime/props.js";
 import { COMMON_COMPONENT_STYLE_TEXT } from "../core/style/commonComponentStyles.js";
 
-const RENDER_TARGET_ATTR = "data-rtgl-render-target";
 const RENDER_TARGET_FLAG = "__rtglRenderTarget";
 
 const hasRenderTargetAttr = (node) => {
@@ -10,7 +10,7 @@ const hasRenderTargetAttr = (node) => {
   }
 
   if (typeof node.getAttribute === "function") {
-    return node.getAttribute(RENDER_TARGET_ATTR) !== null;
+    return node.getAttribute(RENDER_TARGET_ATTRIBUTE) !== null;
   }
 
   return node[RENDER_TARGET_FLAG] === true;
@@ -22,7 +22,7 @@ const markRenderTarget = (node) => {
   }
 
   if (typeof node.setAttribute === "function") {
-    node.setAttribute(RENDER_TARGET_ATTR, "");
+    node.setAttribute(RENDER_TARGET_ATTRIBUTE, "");
   } else {
     node[RENDER_TARGET_FLAG] = true;
   }
@@ -55,7 +55,7 @@ const findExistingRenderTarget = (shadow) => {
   }
 
   if (typeof shadow.querySelector === "function") {
-    const marked = shadow.querySelector(`[${RENDER_TARGET_ATTR}]`);
+    const marked = shadow.querySelector(`[${RENDER_TARGET_ATTRIBUTE}]`);
     if (marked) return marked;
     const first = shadow.firstElementChild;
     return isAdoptableRenderTarget(first) ? first : undefined;

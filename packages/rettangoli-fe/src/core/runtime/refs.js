@@ -1,7 +1,5 @@
 import { createRefMatchers, resolveBestRefMatcher, toIdRefMatchableId } from "../view/refs.js";
 
-export const createRuntimeRefMatchers = (refs) => createRefMatchers(refs);
-
 const getVNodeClassNames = (vNode) => {
   const classNames = [];
 
@@ -25,21 +23,9 @@ const getVNodeClassNames = (vNode) => {
   return [...new Set(classNames)];
 };
 
-export const matchesConfiguredRef = ({ id, classNames = [], refMatchers }) => {
-  if (refMatchers.length === 0) {
-    return false;
-  }
-
-  return Boolean(resolveBestRefMatcher({
-    elementIdForRefs: id,
-    classNames,
-    refMatchers,
-  }));
-};
-
 export const collectRefElements = ({ rootVNode, refs }) => {
   const ids = {};
-  const refMatchers = createRuntimeRefMatchers(refs);
+  const refMatchers = createRefMatchers(refs);
 
   const findRefElements = (vNode) => {
     if (!vNode || typeof vNode !== "object") {

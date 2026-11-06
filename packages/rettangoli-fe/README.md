@@ -86,7 +86,6 @@ src/
 ├── createComponent.js # Component factory
 ├── createWebPatch.js  # Internal virtual DOM patching
 ├── parser.js          # YAML to JSON converter
-├── common.js          # Shared utilities
 └── index.js           # Main exports
 ```
 

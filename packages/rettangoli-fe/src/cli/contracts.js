@@ -1,6 +1,4 @@
-import { readFileSync } from "node:fs";
-import { load as loadYaml } from "js-yaml";
-import { extractCategoryAndComponent, getAllFiles } from "../commonBuild.js";
+import { discoverComponentFiles, readComponentYaml } from "../commonBuild.js";
 import {
   buildComponentContractIndex,
   formatContractErrors as formatContractErrorLines,
@@ -9,48 +7,32 @@ import {
 } from "../core/contracts/componentFiles.js";
 import { analyzeI18nBuildContext } from "./i18nBuild.js";
 
-export const SUPPORTED_COMPONENT_FILE_SUFFIXES = Object.freeze([
-  ".store.js",
-  ".handlers.js",
-  ".methods.js",
-  ".constants.yaml",
-  ".schema.yaml",
-  ".view.yaml",
-]);
-
-export const isSupportedComponentFile = (filePath) => {
-  return SUPPORTED_COMPONENT_FILE_SUFFIXES.some((suffix) => filePath.endsWith(suffix));
-};
-
-export const collectComponentContractEntriesFromFiles = (allFiles = []) => {
-  return allFiles
-    .filter((filePath) => isSupportedComponentFile(filePath))
-    .map((filePath) => {
-      const { category, component, fileType } = extractCategoryAndComponent(filePath);
-      const entry = {
-        category,
-        component,
-        fileType,
-        filePath,
-      };
-
-      if (["view", "schema"].includes(fileType)) {
-        try {
-          entry.yamlObject = loadYaml(readFileSync(filePath, "utf8")) ?? {};
-        } catch (err) {
-          throw new Error(
-            `[Check] Failed to read or parse ${filePath}: ${err.message}`,
-          );
-        }
-      }
-
-      return entry;
-    });
-};
+export {
+  SUPPORTED_COMPONENT_FILE_SUFFIXES,
+  isSupportedComponentFile,
+} from "../commonBuild.js";
 
 export const collectComponentContractEntriesFromDirs = (dirs = []) => {
-  const allFiles = getAllFiles(dirs);
-  return collectComponentContractEntriesFromFiles(allFiles);
+  return discoverComponentFiles({ dirs }).map(({ category, component, fileType, filePath }) => {
+    const entry = {
+      category,
+      component,
+      fileType,
+      filePath,
+    };
+
+    if (["view", "schema"].includes(fileType)) {
+      try {
+        entry.yamlObject = readComponentYaml(filePath);
+      } catch (err) {
+        throw new Error(
+          `[Check] Failed to read or parse ${filePath}: ${err.message}`,
+        );
+      }
+    }
+
+    return entry;
+  });
 };
 
 export const validateComponentEntries = ({

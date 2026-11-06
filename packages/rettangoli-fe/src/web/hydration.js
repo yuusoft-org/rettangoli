@@ -38,12 +38,16 @@
  */
 
 import { readPropFallbackFromAttributes } from "../core/runtime/props.js";
+import {
+  HYDRATE_ATTRIBUTE,
+  HYDRATION_REPORT_KEY,
+  SERVER_PROPS_ATTRIBUTE,
+} from "../core/protocol.js";
 import { adoptComponentProps } from "./componentUpdateHook.js";
 import { scheduleFrame } from "./scheduler.js";
 import { markHydratingPatch } from "../createWebPatch.js";
 
-export const HYDRATE_ATTRIBUTE = "data-rtgl-hydrate";
-export const SERVER_PROPS_ATTRIBUTE = "data-rtgl-props";
+export { HYDRATE_ATTRIBUTE, SERVER_PROPS_ATTRIBUTE };
 
 // A selector no parser vnode can have, so `sameVnode` never pairs it.
 const REPLACED_SELECTOR = "rtgl-hydration-replaced";
@@ -53,6 +57,7 @@ const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
 const COMMENT_NODE = 8;
 
+// Not shared with the renderer's tagFromSelector, which lowercases.
 const tagFromSelector = (selector) => String(selector).split(/[.#]/)[0];
 
 const isCustomElementTag = (tag) => tag.includes("-");
@@ -402,10 +407,10 @@ export const createHydrationVNode = ({ vDom, renderTarget }) => {
 };
 
 const getHydrationState = () => {
-  if (!globalThis.__rtglHydration) {
-    globalThis.__rtglHydration = { hydrated: 0, mismatched: 0, reasons: [] };
+  if (!globalThis[HYDRATION_REPORT_KEY]) {
+    globalThis[HYDRATION_REPORT_KEY] = { hydrated: 0, mismatched: 0, reasons: [] };
   }
-  return globalThis.__rtglHydration;
+  return globalThis[HYDRATION_REPORT_KEY];
 };
 
 /**

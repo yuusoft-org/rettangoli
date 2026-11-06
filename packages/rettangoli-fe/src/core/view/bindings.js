@@ -1,6 +1,10 @@
 import { decodeTemplateAttribute } from "./attributeEncoding.js";
 import { parsePropertyLiteral } from "./propertyLiteral.js";
 import { getAttributeAssignments } from "./attributeAssignments.js";
+import { toCamelCase } from "../runtime/props.js";
+
+// Part of the ./contracts surface.
+export { toCamelCase };
 
 const PROP_PREFIX = ":";
 
@@ -68,10 +72,6 @@ const lodashGet = (obj, path) => {
     if (typeof key === "string" && UNSAFE_KEYS.has(key)) return undefined;
     return acc[key];
   }, obj);
-};
-
-export const toCamelCase = (value) => {
-  return value.replace(/-([a-z0-9])/g, (_, chr) => chr.toUpperCase());
 };
 
 export const collectBindingNames = (attrsString = "") => {

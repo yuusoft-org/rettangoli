@@ -9,18 +9,8 @@ import {
 } from "./componentRuntime.js";
 import { buildOnPropUpdateChanges, buildOnUpdateChanges } from "./lifecycle.js";
 import { normalizeAttributeValue } from "./props.js";
-import { PARENT_UPDATE_TRANSACTION } from "./updateTransaction.js";
-
-const syncRuntimeDeps = (target, source) => {
-  Reflect.ownKeys(target).forEach((key) => {
-    const descriptor = Object.getOwnPropertyDescriptor(target, key);
-    if (descriptor?.configurable) {
-      delete target[key];
-    }
-  });
-  Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-  return target;
-};
+import { PARENT_UPDATE_TRANSACTION } from "../protocol.js";
+import { syncObject } from "./syncObject.js";
 
 export const createRuntimeDepsForInstance = ({ instance }) => {
   const nextRuntimeDeps = createComponentRuntimeDeps({
@@ -35,7 +25,7 @@ export const createRuntimeDepsForInstance = ({ instance }) => {
     instance._runtimeDeps = nextRuntimeDeps;
     return instance._runtimeDeps;
   }
-  return syncRuntimeDeps(instance._runtimeDeps, nextRuntimeDeps);
+  return syncObject(instance._runtimeDeps, nextRuntimeDeps);
 };
 
 export const runConnectedComponentLifecycle = ({

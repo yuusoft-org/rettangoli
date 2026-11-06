@@ -2,6 +2,12 @@ import { parse as parseTemplate } from "jempl";
 import { h } from "snabbdom/build/h.js";
 
 import { resolveComponentDefinition } from "../core/component/resolveComponentDefinition.js";
+import {
+  HYDRATE_ATTRIBUTE,
+  RENDER_TARGET_ATTRIBUTE,
+  SERVER_PROPS_ATTRIBUTE,
+} from "../core/protocol.js";
+import { toKebabCase } from "../core/runtime/props.js";
 import { bindStore } from "../core/runtime/store.js";
 import { resolveConstants } from "../core/runtime/constants.js";
 import { serializeVNode } from "../core/server/serializeVNode.js";
@@ -9,18 +15,13 @@ import { COMMON_COMPONENT_STYLE_TEXT } from "../core/style/commonComponentStyles
 import { yamlToCss } from "../core/style/yamlToCss.js";
 import { parseView } from "../parser.js";
 
-const HYDRATE_ATTRIBUTE = "data-rtgl-hydrate";
-const SERVER_PROPS_ATTRIBUTE = "data-rtgl-props";
-const RENDER_TARGET_ATTRIBUTE = "data-rtgl-render-target";
 const DEFAULT_MAX_DEPTH = 100;
 const ATTRIBUTE_NAME = /^[a-zA-Z_:][-a-zA-Z0-9_:.]*$/;
 
 const hasOwn = (value, key) =>
   Object.prototype.hasOwnProperty.call(value, key);
 
-const toKebabCase = (value) =>
-  value.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-
+// Lowercases, unlike hydration's tagFromSelector; not merged.
 const tagFromSelector = (selector) =>
   String(selector).split(/[.#]/)[0].toLowerCase();
 
@@ -103,6 +104,7 @@ const setHydrateAttribute = (vnode, enabled) => {
   }
 };
 
+// Differs from the runtime's readPropFallbackFromAttributes; not merged.
 const readAttributeProp = (attrs, propName) => {
   const read = (name) => {
     if (!hasOwn(attrs, name)) {
@@ -243,6 +245,7 @@ const describeValue = (value) => {
 // Anything JSON would drop or convert (functions, Dates, Maps, holes or
 // undefined in an array, NaN, -0) would give the client different inputs from
 // the server's, and a cycle can't be written at all.
+// Differs from componentUpdateHook's isJsonData; not merged.
 const assertJsonData = (value, path, ancestors = new Set()) => {
   if (value === null || typeof value === "string" || typeof value === "boolean") {
     return;

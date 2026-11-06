@@ -35,17 +35,15 @@ export const loadComponents = async ({ cwd = process.cwd(), dirs, reload = "" } 
     throw new Error("[loadComponents] `dirs` must be a non-empty array of directories.");
   }
 
-  const [{ readFileSync, existsSync }, path, { pathToFileURL }, { load: loadYaml }, { parse: parseTemplate }] =
+  const [{ existsSync }, path, { pathToFileURL }, { parse: parseTemplate }] =
     await Promise.all([
       import("node:fs"),
       import("node:path"),
       import("node:url"),
-      import("js-yaml"),
       import("jempl"),
     ]);
-  const { extractCategoryAndComponent, getAllFiles, warnDuplicateComponentIds } =
+  const { discoverComponentFiles, readComponentYaml, warnDuplicateComponentIds } =
     await import("../commonBuild.js");
-  const { isSupportedComponentFile } = await import("../cli/contracts.js");
 
   const resolvedDirs = dirs.map((dir) => path.resolve(cwd, dir));
   for (const dir of resolvedDirs) {
@@ -54,15 +52,14 @@ export const loadComponents = async ({ cwd = process.cwd(), dirs, reload = "" } 
     }
   }
 
-  const files = getAllFiles(resolvedDirs)
-    .filter((filePath) => isSupportedComponentFile(filePath))
-    .sort((a, b) => a.localeCompare(b));
-  warnDuplicateComponentIds({ filePaths: files, errorPrefix: "[loadComponents]" });
+  const files = discoverComponentFiles({ dirs: resolvedDirs, sort: true });
+  warnDuplicateComponentIds({
+    filePaths: files.map(({ filePath }) => filePath),
+    errorPrefix: "[loadComponents]",
+  });
 
   const filesByComponent = new Map();
-  for (const filePath of files) {
-    const { category, component, fileType } = extractCategoryAndComponent(filePath);
-    const id = `${category}/${component}`;
+  for (const { filePath, fileType, id } of files) {
     if (!filesByComponent.has(id)) {
       filesByComponent.set(id, {});
     }
@@ -72,7 +69,7 @@ export const loadComponents = async ({ cwd = process.cwd(), dirs, reload = "" } 
   const readYamlFile = (filePath, fileType) => {
     let value;
     try {
-      value = loadYaml(readFileSync(filePath, "utf8")) ?? {};
+      value = readComponentYaml(filePath);
     } catch (error) {
       throw new Error(`[loadComponents] failed to parse ${filePath}: ${error.message}`);
     }

@@ -153,8 +153,3 @@ export const commitHotUpdateBoundMethods = (preparedUpdate) => {
     installMethod({ element, methodName, state });
   });
 };
-
-export const hotUpdateBoundMethods = (element, methods) => {
-  const preparedUpdate = prepareHotUpdateBoundMethods(element, methods);
-  commitHotUpdateBoundMethods(preparedUpdate);
-};

@@ -1,5 +1,10 @@
 import { parseAndRender } from "jempl";
 import {
+  RETTANGOLI_COMPONENT_MARKER,
+  RETTANGOLI_HOT_APPLY,
+  RETTANGOLI_HOT_PREPARE,
+} from "../core/protocol.js";
+import {
   bindMethods,
   commitHotUpdateBoundMethods,
   prepareHotUpdateBoundMethods,
@@ -36,30 +41,14 @@ import {
   prepareFirstPatch,
   resetRenderTarget,
 } from "./hydration.js";
+import { syncObject } from "../core/runtime/syncObject.js";
 import {
   createWebComponentUpdateHook,
   cancelPendingComponentUpdate,
-  RETTANGOLI_COMPONENT_MARKER,
 } from "./componentUpdateHook.js";
 import { scheduleFrame } from "./scheduler.js";
 
-export const RETTANGOLI_HOT_APPLY = Symbol.for(
-  "@rettangoli/fe/hot-apply",
-);
-export const RETTANGOLI_HOT_PREPARE = Symbol.for(
-  "@rettangoli/fe/hot-prepare",
-);
-
-const syncObject = (target, source) => {
-  Reflect.ownKeys(target).forEach((key) => {
-    const descriptor = Object.getOwnPropertyDescriptor(target, key);
-    if (descriptor?.configurable) {
-      delete target[key];
-    }
-  });
-  Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-  return target;
-};
+export { RETTANGOLI_HOT_APPLY, RETTANGOLI_HOT_PREPARE };
 
 const syncInstanceDeps = ({ instance, sourceDeps, handlers }) => {
   const nextDeps = {
@@ -158,10 +147,6 @@ export const createWebComponentClass = ({
     _hotRecord;
     _hotRevision = 0;
     _mountGeneration = 0;
-
-    static get observedAttributes() {
-      return ["key"];
-    }
 
     get viewData() {
       let data = {};

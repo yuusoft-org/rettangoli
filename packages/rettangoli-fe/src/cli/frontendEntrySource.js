@@ -4,17 +4,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { parse as parseTemplate } from "jempl";
-import { load as loadYaml } from "js-yaml";
 
+import { HYDRATE_ATTRIBUTE } from "../core/protocol.js";
 import {
-  extractCategoryAndComponent,
-  getAllFiles,
+  discoverComponentFiles,
+  readComponentYaml,
   warnDuplicateComponentIds,
 } from "../commonBuild.js";
-import {
-  isSupportedComponentFile,
-  validateComponentEntries,
-} from "./contracts.js";
+import { validateComponentEntries } from "./contracts.js";
 import {
   buildI18nAssets,
   loadI18nBuildContext,
@@ -40,13 +37,6 @@ const toImportPath = ({ absolutePath, command }) => {
       : `/@fs/${normalizedAbsolutePath}`;
   }
   return normalizedAbsolutePath;
-};
-
-const readYamlObject = (
-  filePath,
-  content = readFileSync(filePath, "utf8"),
-) => {
-  return loadYaml(content, { filename: filePath }) ?? {};
 };
 
 const createComponentFingerprintMatrix = (fingerprintInputs) => {
@@ -198,15 +188,19 @@ export const generateFrontendEntrySource = ({
   setup = "setup.js",
   command = "build",
   i18n = null,
+  // Already loaded from `i18n` (rtgl fe build); otherwise it is loaded here.
+  i18nContext: loadedI18nContext = null,
   errorPrefix = "[Build]",
 } = {}) => {
   const resolvedDirs = dirs.map((dir) => path.resolve(cwd, dir));
   const resolvedSetup = path.resolve(cwd, setup);
-  const i18nContext = loadI18nBuildContext({ cwd, i18n, errorPrefix });
-  const allFiles = getAllFiles(resolvedDirs)
-    .filter((filePath) => isSupportedComponentFile(filePath))
-    .sort((a, b) => a.localeCompare(b));
-  warnDuplicateComponentIds({ filePaths: allFiles, errorPrefix });
+  const i18nContext = loadedI18nContext
+    ?? loadI18nBuildContext({ cwd, i18n, errorPrefix });
+  const componentFiles = discoverComponentFiles({ dirs: resolvedDirs, sort: true });
+  warnDuplicateComponentIds({
+    filePaths: componentFiles.map(({ filePath }) => filePath),
+    errorPrefix,
+  });
 
   const componentMatrix = {};
   const componentFingerprintInputs = {};
@@ -216,10 +210,7 @@ export const generateFrontendEntrySource = ({
   const componentViewTags = new Map();
   let declarationIndex = 0;
 
-  for (const filePath of allFiles) {
-    const { category, component, fileType } =
-      extractCategoryAndComponent(filePath);
-
+  for (const { filePath, category, component, fileType, id } of componentFiles) {
     if (!componentMatrix[category]) {
       componentMatrix[category] = {};
     }
@@ -256,21 +247,21 @@ export const generateFrontendEntrySource = ({
       );
       componentMatrix[category][component][fileType] = declarationName;
     } else if (YAML_FILE_TYPES.has(fileType)) {
-      const yamlObject = readYamlObject(filePath, fileContent);
+      const yamlObject = readComponentYaml(filePath, {
+        content: fileContent,
+        nameFile: true,
+      });
 
       if (fileType === "view" || fileType === "schema") {
         componentContractEntry.yamlObject = structuredClone(yamlObject);
       }
 
       if (fileType === "schema") {
-        componentElementNames.set(`${category}/${component}`, yamlObject.componentName);
+        componentElementNames.set(id, yamlObject.componentName);
       }
 
       if (fileType === "view") {
-        componentViewTags.set(
-          `${category}/${component}`,
-          collectTemplateTags(yamlObject.template),
-        );
+        componentViewTags.set(id, collectTemplateTags(yamlObject.template));
         try {
           yamlObject.template = parseTemplate(yamlObject.template);
         } catch (error) {
@@ -420,7 +411,7 @@ const __rtglRegistrationOrder = ${JSON.stringify(registrationOrder)};
 const __rtglHydrationRegistrationOrder = ${JSON.stringify(hydrationRegistrationOrder)};
 const __rtglHasServerMarkup =
   typeof document !== "undefined" &&
-  document.querySelector("[data-rtgl-hydrate]") !== null;
+  document.querySelector(${JSON.stringify(`[${HYDRATE_ATTRIBUTE}]`)}) !== null;
 
 ${hmrTransactionStart}
 (__rtglHasServerMarkup

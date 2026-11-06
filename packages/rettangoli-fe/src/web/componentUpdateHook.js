@@ -1,9 +1,10 @@
 import { scheduleFrame } from "./scheduler.js";
-import { PARENT_UPDATE_TRANSACTION } from "../core/runtime/updateTransaction.js";
+import {
+  PARENT_UPDATE_TRANSACTION,
+  RETTANGOLI_COMPONENT_MARKER,
+} from "../core/protocol.js";
 
-export const RETTANGOLI_COMPONENT_MARKER = Symbol.for(
-  "@rettangoli/fe/component",
-);
+export { RETTANGOLI_COMPONENT_MARKER };
 
 const propsSnapshots = new WeakMap();
 const pendingUpdates = new WeakMap();
