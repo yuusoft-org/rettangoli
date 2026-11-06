@@ -97,6 +97,11 @@ function slugify(text, { slugMode = 'unicode', fallback = 'section' } = {}) {
   return normalized || fallback;
 }
 
+function containsLink(inline) {
+  return !!inline?.children?.some((child) => child.type === 'link_open'
+    || (child.type === 'html_inline' && /^<a[\s>]/i.test(child.content)));
+}
+
 export function createRtglMarkdown(_markdownit, options = {}) {
   const {
     preset = 'default',
@@ -138,7 +143,7 @@ export function createRtglMarkdown(_markdownit, options = {}) {
               const highlightedCode = await codeToHtml(code, {
                 lang: lang || 'text',
                 theme: highlightTheme
-              });
+              }).catch(() => codeToHtml(code, { lang: 'text', theme: highlightTheme })); // unknown language
               if (isCodePreview) {
                 return renderCodePreviewLayout(code, highlightedCode, codePreviewOptions.showSource);
               }
@@ -169,27 +174,36 @@ export function createRtglMarkdown(_markdownit, options = {}) {
     env = env || {};
     const token = tokens[idx]
     const nextToken = tokens[idx + 1]
+    const inline = nextToken && nextToken.type === 'inline' ? nextToken : null
     let slug = headingAnchorOptions.fallback
 
-    if (nextToken && nextToken.type === 'inline') {
-      const headingText = nextToken.content
-      const baseSlug = slugify(headingText, headingAnchorOptions)
+    if (inline) {
+      // Ids stay unique per page: a suffix is skipped when another heading already uses it ("Foo 2").
+      const baseSlug = slugify(inline.content, headingAnchorOptions)
       const headingCounts = env.__rtglHeadingSlugCounts || (env.__rtglHeadingSlugCounts = new Map())
-      const nextCount = (headingCounts.get(baseSlug) || 0) + 1
-      headingCounts.set(baseSlug, nextCount)
-      slug = nextCount === 1 ? baseSlug : `${baseSlug}-${nextCount}`
+      const usedSlugs = env.__rtglHeadingSlugsUsed || (env.__rtglHeadingSlugsUsed = new Set())
+      let count = headingCounts.get(baseSlug) || 0
+      do {
+        count += 1
+        slug = count === 1 ? baseSlug : `${baseSlug}-${count}`
+      } while (usedSlugs.has(slug))
+      headingCounts.set(baseSlug, count)
+      usedSlugs.add(slug)
     }
 
     token.attrSet('id', slug)
     const headingHtml = defaultHeadingRender(tokens, idx, options, env, renderer)
-    if (!headingAnchorOptions.wrap) {
+    // A link inside the heading cannot be nested in the wrapper link.
+    if (!headingAnchorOptions.wrap || containsLink(inline)) {
       return headingHtml
     }
+    token.meta = { ...token.meta, rtglWrapped: true }
     return `<a href="#${slug}" style="display: contents; text-decoration: none; color: inherit;">` + headingHtml
   }
 
   md.renderer.rules.heading_close = function (tokens, idx, options, env, renderer) {
-    return defaultHeadingCloseRender(tokens, idx, options, env, renderer) + '</a>'
+    const headingHtml = defaultHeadingCloseRender(tokens, idx, options, env, renderer)
+    return tokens[idx - 2]?.meta?.rtglWrapped ? headingHtml + '</a>' : headingHtml
   }
 
   return md

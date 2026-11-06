@@ -9,3 +9,8 @@ title: Home
           url: ${item.url}
           title: ${item.data.title}
           date: ${item.data.date}
+- $partial: blog-cards
+  title: Latest post
+  postLimit: 1
+- $partial: blog-cards
+  title: From the blog

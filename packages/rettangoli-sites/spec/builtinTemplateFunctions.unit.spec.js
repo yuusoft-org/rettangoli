@@ -84,6 +84,30 @@ describe('builtinTemplateFunctions unit', () => {
       .toEqual(['1.0.0-rc11', '1.0.0-rc12', '1.0.0-rc13']);
   });
 
+  it('sorts numbers numerically', () => {
+    const wrap = (values) => values.map((n) => ({ n }));
+    const pick = (list) => list.map((item) => item.n);
+
+    expect(pick(builtinTemplateFunctions.sort(wrap([2001, 3, 13]), 'n'))).toEqual([3, 13, 2001]);
+    expect(pick(builtinTemplateFunctions.sort(wrap([13, 2001, 3]), 'n', 'desc'))).toEqual([2001, 13, 3]);
+    expect(pick(builtinTemplateFunctions.sort(wrap([49, 50, 3, 100]), 'n'))).toEqual([3, 49, 50, 100]);
+    expect(builtinTemplateFunctions.sort([20, 3, 50])).toEqual([3, 20, 50]);
+  });
+
+  it('keeps null and missing values last in both orders', () => {
+    const list = [{ n: null }, { n: 2 }, {}, { n: 10 }];
+
+    expect(builtinTemplateFunctions.sort(list, 'n').map((item) => item.n)).toEqual([2, 10, null, undefined]);
+    expect(builtinTemplateFunctions.sort(list, 'n', 'desc').map((item) => item.n)).toEqual([10, 2, null, undefined]);
+  });
+
+  it('keeps sorting ISO date strings and plain titles as before', () => {
+    const dates = ['2026-02-10', '2025-12-18', '2026-10-31T08:00:00Z', '2026-10-31'];
+    expect(builtinTemplateFunctions.sort(dates, undefined, 'desc'))
+      .toEqual(['2026-10-31T08:00:00Z', '2026-10-31', '2026-02-10', '2025-12-18']);
+    expect(builtinTemplateFunctions.sort(['banana', 'Cherry', 'apple'])).toEqual(['apple', 'banana', 'Cherry']);
+  });
+
   it('chunks arrays into fixed-size rows and can pad the last row', () => {
     const items = [1, 2, 3, 4, 5];
 

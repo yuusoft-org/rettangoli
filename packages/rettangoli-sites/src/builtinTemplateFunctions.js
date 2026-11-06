@@ -123,6 +123,11 @@ function sortImpl(value, key, order = 'asc') {
     if (leftRaw == null) return 1;
     if (rightRaw == null) return -1;
 
+    if (typeof leftRaw === 'number' && typeof rightRaw === 'number') {
+      if (leftRaw === rightRaw) return 0;
+      return leftRaw > rightRaw ? factor : -factor;
+    }
+
     const leftDate = Date.parse(String(leftRaw));
     const rightDate = Date.parse(String(rightRaw));
     const canCompareAsDate = !Number.isNaN(leftDate) && !Number.isNaN(rightDate);
@@ -130,11 +135,6 @@ function sortImpl(value, key, order = 'asc') {
     if (canCompareAsDate) {
       if (leftDate === rightDate) return 0;
       return leftDate > rightDate ? factor : -factor;
-    }
-
-    if (typeof leftRaw === 'number' && typeof rightRaw === 'number') {
-      if (leftRaw === rightRaw) return 0;
-      return leftRaw > rightRaw ? factor : -factor;
     }
 
     const leftText = String(leftRaw);
