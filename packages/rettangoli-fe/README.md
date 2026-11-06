@@ -247,12 +247,13 @@ Use this workflow:
 
 The commands below run the mounted workspace CLI (`packages/rettangoli-cli`),
 so they use the `rtgl` and `@rettangoli/vt` of your checkout; the Docker image
-supplies the matching Playwright 1.57.0 browsers.
+supplies the matching Playwright 1.57.0 browsers. The image is referenced by
+digest, so it cannot change under you.
 
 Docker image:
 
 ```bash
-IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0"
+IMAGE="han4wluc/rtgl@sha256:85769959d834eaf984210f4b2f1f7de07677e81578c98d86680ba116c03a7d45"
 ```
 
 Dashboard suite:

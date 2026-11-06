@@ -38,9 +38,11 @@ Public methods SHOULD be declared in `.schema.yaml` under `methods`.
 Every method name under `methods.properties` in `.schema.yaml` MUST be a named
 export of `.methods.js`, so a schema that declares methods needs that file. The
 browser fails component registration for a declared method that has no export.
-`rtgl fe check` reports `RTGL-CONTRACT-004` only when the schema declares
-methods and the component has no `.methods.js` file. It does not read the
-exports of that file, so a missing export is found in the browser.
+For a missing method export, `rtgl fe check` reports `RTGL-CONTRACT-004` only
+when the schema declares methods and the component has no `.methods.js` file.
+It does not read the exports of that file, so a missing export is found in the
+browser. `RTGL-CONTRACT-004` also covers other schema problems (see
+`overview.md`, "Contract Check").
 
 ```yaml
 methods:

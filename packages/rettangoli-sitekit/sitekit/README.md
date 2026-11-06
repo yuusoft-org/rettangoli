@@ -92,6 +92,7 @@ Current partials:
 
 Free text that ends up in an attribute is escaped, so quotes, `&` and `<` in your data are safe: the `seo` meta `content` values, the `landing-faq` question and answer, and every image `alt` (with the `src` next to it). A missing or `null` value renders an empty attribute (`alt=""`).
 Pass these values as strings, as the schemas require. A literal `true` renders as a bare attribute (`alt` instead of `alt="true"`).
+The partials use the built-in `default()` helper for these values. Like the templates, they need `@rettangoli/sites >= 1.0.2`. An older engine fails with `Unknown function 'default'`.
 
 ## Example Pages
 

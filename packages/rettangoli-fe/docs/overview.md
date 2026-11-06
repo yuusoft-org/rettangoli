@@ -104,8 +104,9 @@ Run `rtgl fe check` to enforce:
 - forbidden API keys are not present in `.view.yaml` (`elementName`, `viewDataSchema`, `propsSchema`, `events`, `methods`, `attrsSchema`) (`RTGL-CONTRACT-002`)
 - no legacy property binding syntax in `.view.yaml` (`RTGL-CONTRACT-003`)
 - a `.schema.yaml` that the browser accepts when it registers the component:
-  `componentName` is set, `attrsSchema` is absent, `ssr` is a boolean, and the
-  schema does not declare methods for a component that has no `.methods.js`
+  `componentName` is set, `attrsSchema` is absent, `ssr` is a boolean,
+  `methods` is an object schema with a `properties` map, and the schema does
+  not declare methods for a component that has no `.methods.js`
   (`RTGL-CONTRACT-004`). The check does not read the exports of `.methods.js`,
   so a declared method with no export is found only in the browser, where it
   fails registration.

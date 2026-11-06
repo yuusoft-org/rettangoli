@@ -6,7 +6,7 @@
 bodies that are too complex for `showFormDialog(...)`. It is implemented in
 `rtgl-global-ui` and exposed by `createGlobalUI(...)`.
 
-The motivating case is the layout editor slider creator dialog:
+The motivating case is a slider creator dialog:
 
 - custom image-picking UI
 - multiple image preview slots
@@ -70,7 +70,7 @@ globalUI.showComponentDialog(options);
 
 ```js
 {
-  component: "rvn-layout-editor-slider-create-dialog",
+  component: "app-slider-create-dialog",
   props: {
     direction: "horizontal",
     defaultValues: {
@@ -394,7 +394,7 @@ Caller:
 
 ```js
 const result = await globalUI.showComponentDialog({
-  component: "rvn-layout-editor-slider-create-dialog",
+  component: "app-slider-create-dialog",
   title: "Create Slider",
   description: "Choose images and configure the slider.",
   size: "md",

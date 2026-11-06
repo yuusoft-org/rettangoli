@@ -31,6 +31,19 @@ refs: {}       # optional
 styles: {}     # optional
 ```
 
+### Styles
+
+`styles` maps a CSS selector to a map of declarations. For an `@` rule such as
+`@media (...)`, the map holds nested selectors with their declarations. The CSS
+applies inside the component's shadow root.
+
+On native browsers, the runtime builds one constructed stylesheet for each
+distinct CSS text and shares it with every instance. A constructed stylesheet
+resolves a relative `url()` against the page URL when it is created, so a
+shared stylesheet keeps the URL of the page of the first connect. Use absolute
+or root-relative URLs in `url()`. Apps must not write to a stylesheet they read
+from a component root: every instance shares it.
+
 ## 3. Template Grammar
 
 A template node is a YAML mapping entry:
@@ -279,9 +292,6 @@ Implementations MUST reject invalid view contracts.
 Suggested stable error strings:
 
 - `Invalid ref key`
-- `Invalid element id` (reported by the static checker `@rettangoli/check` as
-  `RTGL-CHECK-REF-002`; the runtime does not throw it: it renders the element
-  and leaves it out of ID-ref matching)
 - `Duplicate prop binding`
 - `Each listener can have handler or action but not both`
 - `Each listener must define either handler or action`
@@ -317,9 +327,10 @@ refs:
         handler: handleSubmit
 ```
 
-Invalid because refs-matched element IDs must be camelCase. The view still
-renders, but `submitButton` cannot match `submit-button`, so the click listener
-is never attached, and `@rettangoli/check` reports the ID.
+Not rejected, but the listener never runs: only camelCase element IDs match
+ID refs. The view still renders, but `submitButton` cannot match
+`submit-button`, so the click listener is never attached. Neither the runtime
+nor `@rettangoli/check` reports it.
 
 ## 10. Minimal Valid Example
 
