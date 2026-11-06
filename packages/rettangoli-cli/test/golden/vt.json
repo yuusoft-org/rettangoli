@@ -1,0 +1,1235 @@
+{
+  "vt-accept-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl vt accept [options]",
+      "",
+      "Accept changes",
+      "",
+      "Options:",
+      "  -h, --help  display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-accept-no-config": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "Error: rettangoli.config.yaml not found"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-accept-ok": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "accept"
+        }
+      }
+    ]
+  },
+  "vt-accept-path-custom": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "vtPath": "custom"
+            }
+          ],
+          "fn": "accept"
+        }
+      }
+    ]
+  },
+  "vt-accept-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "fake accept rejection"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "accept"
+        }
+      }
+    ]
+  },
+  "vt-generate-all-flags": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "captureScreenshots": false,
+              "concurrency": 2,
+              "folder": [
+                "a",
+                "b"
+              ],
+              "group": [
+                "g"
+              ],
+              "headed": true,
+              "headless": false,
+              "item": [
+                "i"
+              ],
+              "timeout": 1000,
+              "vtPath": "vt",
+              "waitEvent": "vt:ready"
+            }
+          ],
+          "fn": "generate"
+        }
+      }
+    ]
+  },
+  "vt-generate-concurrency-text": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: option '--concurrency <number>' argument 'x' is invalid. Expected an integer but received \"x\""
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-generate-config-empty": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "Error: rettangoli.config.yaml not found"
+    ],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-generate-defaults": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "captureScreenshots": false,
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "generate"
+        }
+      }
+    ]
+  },
+  "vt-generate-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl vt generate [options]",
+      "",
+      "Generate candidate HTML pages only (no screenshots)",
+      "",
+      "Options:",
+      "  --concurrency <number>  Number of parallel capture workers",
+      "  --timeout <ms>          Global capture timeout in ms",
+      "  --wait-event <name>     Custom event name to mark page ready (uses event wait",
+      "                          strategy)",
+      "  --folder <path>         Run only specs under folder prefix (repeatable)",
+      "                          (default: [])",
+      "  --group <section-key>   Run only one section key from vt.sections (repeatable)",
+      "                          (default: [])",
+      "  --item <spec-path>      Run only one spec path relative to vt/specs",
+      "                          (repeatable) (default: [])",
+      "  --headed                Run Playwright in headed mode",
+      "  -h, --help              display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-generate-no-config": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "Error: rettangoli.config.yaml not found"
+    ],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-generate-path-custom": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "captureScreenshots": false,
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "custom"
+            }
+          ],
+          "fn": "generate"
+        }
+      }
+    ]
+  },
+  "vt-generate-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "fake generate rejection"
+    ],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "captureScreenshots": false,
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "generate"
+        }
+      }
+    ]
+  },
+  "vt-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl vt [options] [command]",
+      "",
+      "Rettangoli Visual Testing",
+      "",
+      "Options:",
+      "  -h, --help            display help for command",
+      "",
+      "Commands:",
+      "  generate [options]    Generate candidate HTML pages only (no screenshots)",
+      "  screenshot [options]  Generate candidate HTML pages and capture screenshots",
+      "  report [options]      Create reports",
+      "  accept                Accept changes",
+      "  help [command]        display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-report-compare-md5": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": "md5",
+              "diffThreshold": {
+                "$undefined": true
+              },
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-defaults": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": {
+                "$undefined": true
+              },
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-diff-threshold-comma": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": 0,
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-diff-threshold-exponent": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": 0.001,
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-diff-threshold-hex": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": 0,
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-diff-threshold-infinity": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": {
+                "$number": "Infinity"
+              },
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-diff-threshold-leading-dot": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": 0.5,
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-diff-threshold-padded": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": 0.8,
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-diff-threshold-percent-suffix": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": 5,
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-diff-threshold-text": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": {
+                "$number": "NaN"
+              },
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-diff-threshold-trailing-text": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": 0.1,
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-filters": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": {
+                "$undefined": true
+              },
+              "folder": [
+                "a",
+                "b"
+              ],
+              "group": [
+                "g"
+              ],
+              "item": [
+                "i"
+              ],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl vt report [options]",
+      "",
+      "Create reports",
+      "",
+      "Options:",
+      "  --compare-method <method>   Comparison method: pixelmatch or md5",
+      "  --color-threshold <number>  Color threshold for pixelmatch (0-1)",
+      "  --diff-threshold <number>   Max diff pixels percentage to pass (0-100)",
+      "  --folder <path>             Compare only screenshots under folder prefix",
+      "                              (repeatable) (default: [])",
+      "  --group <section-key>       Compare only one section key from vt.sections",
+      "                              (repeatable) (default: [])",
+      "  --item <spec-path>          Compare only one spec path relative to vt/specs",
+      "                              (repeatable) (default: [])",
+      "  -h, --help                  display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-report-no-config": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "Error: rettangoli.config.yaml not found"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-report-path-custom": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": {
+                "$undefined": true
+              },
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "custom"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "fake report rejection"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": {
+                "$undefined": true
+              },
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-thresholds": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": 0.1,
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": 0.8,
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-report-throw": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "Error: fake report failure",
+      "  [cause]: Error: fake cause"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "colorThreshold": {
+                "$undefined": true
+              },
+              "compareMethod": {
+                "$undefined": true
+              },
+              "diffThreshold": {
+                "$undefined": true
+              },
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "report"
+        }
+      }
+    ]
+  },
+  "vt-screenshot-all-flags": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "concurrency": 1,
+              "folder": [
+                "a"
+              ],
+              "group": [
+                "g"
+              ],
+              "headed": true,
+              "headless": false,
+              "isolation": "strict",
+              "item": [
+                "i"
+              ],
+              "timeout": 180000,
+              "vtPath": "vt",
+              "waitEvent": "vt:ready"
+            }
+          ],
+          "fn": "screenshot"
+        }
+      }
+    ]
+  },
+  "vt-screenshot-defaults": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "screenshot"
+        }
+      }
+    ]
+  },
+  "vt-screenshot-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl vt screenshot [options]",
+      "",
+      "Generate candidate HTML pages and capture screenshots",
+      "",
+      "Options:",
+      "  --concurrency <number>  Number of parallel capture workers",
+      "  --timeout <ms>          Global capture timeout in ms",
+      "  --wait-event <name>     Custom event name to mark page ready (uses event wait",
+      "                          strategy)",
+      "  --isolation <mode>      Isolation mode: fast or strict",
+      "  --folder <path>         Run only specs under folder prefix (repeatable)",
+      "                          (default: [])",
+      "  --group <section-key>   Run only one section key from vt.sections (repeatable)",
+      "                          (default: [])",
+      "  --item <spec-path>      Run only one spec path relative to vt/specs",
+      "                          (repeatable) (default: [])",
+      "  --headed                Run Playwright in headed mode",
+      "  -h, --help              display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-screenshot-isolation-bogus": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: option '--isolation <mode>' argument 'bogus' is invalid. Isolation must be \"fast\" or \"strict\", received \"bogus\""
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-screenshot-isolation-fast": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "folder": [],
+              "group": [],
+              "isolation": "fast",
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "screenshot"
+        }
+      }
+    ]
+  },
+  "vt-screenshot-no-config": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "Error: rettangoli.config.yaml not found"
+    ],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      }
+    ]
+  },
+  "vt-screenshot-path-custom": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "custom"
+            }
+          ],
+          "fn": "screenshot"
+        }
+      }
+    ]
+  },
+  "vt-screenshot-path-empty": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "screenshot"
+        }
+      }
+    ]
+  },
+  "vt-screenshot-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "fake screenshot rejection"
+    ],
+    "stdout": [
+      "rtgl v<VERSION>",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "folder": [],
+              "group": [],
+              "item": [],
+              "vtPath": "vt"
+            }
+          ],
+          "fn": "screenshot"
+        }
+      }
+    ]
+  }
+}

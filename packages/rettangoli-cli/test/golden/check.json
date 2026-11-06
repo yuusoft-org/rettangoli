@@ -1,0 +1,393 @@
+{
+  "check-all-flags": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "a",
+                "b"
+              ],
+              "format": "json",
+              "includeExpression": true,
+              "includeStyle": true,
+              "includeYahtml": false,
+              "warnAsError": true,
+              "watch": true,
+              "watchIntervalMs": 250
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "check-defaults": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [],
+              "format": "text",
+              "includeExpression": false,
+              "includeStyle": {
+                "$undefined": true
+              },
+              "includeYahtml": true,
+              "warnAsError": false,
+              "watch": false,
+              "watchIntervalMs": 800
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "check-format-sarif": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [],
+              "format": "sarif",
+              "includeExpression": false,
+              "includeStyle": {
+                "$undefined": true
+              },
+              "includeYahtml": true,
+              "warnAsError": false,
+              "watch": false,
+              "watchIntervalMs": 800
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "check-format-unvalidated": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [],
+              "format": "yaml",
+              "includeExpression": false,
+              "includeStyle": {
+                "$undefined": true
+              },
+              "includeYahtml": true,
+              "warnAsError": false,
+              "watch": false,
+              "watchIntervalMs": 800
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "check-from-subdirectory": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>/sub",
+              "dirs": [],
+              "format": "text",
+              "includeExpression": false,
+              "includeStyle": {
+                "$undefined": true
+              },
+              "includeYahtml": true,
+              "warnAsError": false,
+              "watch": false,
+              "watchIntervalMs": 800
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "check-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl check [options]",
+      "",
+      "Run Rettangoli static contract checks",
+      "",
+      "Options:",
+      "  --dir <path>              Component directory to scan (repeatable) (default:",
+      "                            [])",
+      "  --format <format>         Output format: text, json, or sarif (default:",
+      "                            \"text\")",
+      "  --warn-as-error           Treat warnings as errors",
+      "  --no-yahtml               Disable YAHTML attr/prop validation",
+      "  --expr                    Enable expression scope/type checks",
+      "  --style                   Enable optional naming and signature conventions",
+      "  --watch                   Watch for file changes and re-run checks",
+      "  --watch-interval-ms <ms>  Watch poll interval in milliseconds (default: 800)",
+      "  -h, --help                display help for command",
+      "",
+      "",
+      "Examples:",
+      "  $ rtgl check",
+      "  $ rtgl check --dir src/components --format json",
+      "  $ rtgl check --warn-as-error",
+      "",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      }
+    ]
+  },
+  "check-package-missing": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@rettangoli/check' imported from <APP>/node_modules/rtgl/cli.js",
+      "  code: 'ERR_MODULE_NOT_FOUND'"
+    ],
+    "stdout": [],
+    "trace": []
+  },
+  "check-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "fake check rejection"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [],
+              "format": "text",
+              "includeExpression": false,
+              "includeStyle": {
+                "$undefined": true
+              },
+              "includeYahtml": true,
+              "warnAsError": false,
+              "watch": false,
+              "watchIntervalMs": 800
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "check-throw": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "Error: fake check failure",
+      "  [cause]: Error: fake cause"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [],
+              "format": "text",
+              "includeExpression": false,
+              "includeStyle": {
+                "$undefined": true
+              },
+              "includeYahtml": true,
+              "warnAsError": false,
+              "watch": false,
+              "watchIntervalMs": 800
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "check-watch-interval-fraction": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: option '--watch-interval-ms <ms>' argument '1.5' is invalid. Expected an integer but received \"1.5\""
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      }
+    ]
+  },
+  "check-watch-interval-negative": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [],
+              "format": "text",
+              "includeExpression": false,
+              "includeStyle": {
+                "$undefined": true
+              },
+              "includeYahtml": true,
+              "warnAsError": false,
+              "watch": false,
+              "watchIntervalMs": -5
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "check-watch-interval-text": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: option '--watch-interval-ms <ms>' argument 'abc' is invalid. Expected an integer but received \"abc\""
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      }
+    ]
+  },
+  "check-watch-interval-zero": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [],
+              "format": "text",
+              "includeExpression": false,
+              "includeStyle": {
+                "$undefined": true
+              },
+              "includeYahtml": true,
+              "warnAsError": false,
+              "watch": false,
+              "watchIntervalMs": 0
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  }
+}

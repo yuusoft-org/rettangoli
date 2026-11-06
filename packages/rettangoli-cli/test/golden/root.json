@@ -1,0 +1,186 @@
+{
+  "root-fe-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl fe [options] [command]",
+      "",
+      "Frontend framework",
+      "",
+      "Options:",
+      "  -h, --help          display help for command",
+      "",
+      "Commands:",
+      "  build [options]     Build UI components",
+      "  check [options]     Validate frontend component file contracts",
+      "  scaffold [options]  Scaffold UI components",
+      "  watch [options]     Watch for changes",
+      "  examples            Generate examples",
+      "  help [command]      display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "root-fe-unknown-subcommand": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: unknown command 'bogus'"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "root-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl [options] [command]",
+      "",
+      "CLI tool for Rettangoli development",
+      "",
+      "Options:",
+      "  -V, --version    output the version number",
+      "  -h, --help       display help for command",
+      "",
+      "Commands:",
+      "  check [options]  Run Rettangoli static contract checks",
+      "  fe               Frontend framework",
+      "  vt               Rettangoli Visual Testing",
+      "  sites            Rettangoli Sites",
+      "  ui               UI component tools",
+      "  help [command]   display help for command",
+      "",
+      "",
+      "Examples:",
+      "  $ rettangoli fe build",
+      "  $ rettangoli fe scaffold -c components -n Button",
+      "  $ rettangoli fe watch -p 3001",
+      "",
+      ""
+    ],
+    "trace": []
+  },
+  "root-help-command": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl [options] [command]",
+      "",
+      "CLI tool for Rettangoli development",
+      "",
+      "Options:",
+      "  -V, --version    output the version number",
+      "  -h, --help       display help for command",
+      "",
+      "Commands:",
+      "  check [options]  Run Rettangoli static contract checks",
+      "  fe               Frontend framework",
+      "  vt               Rettangoli Visual Testing",
+      "  sites            Rettangoli Sites",
+      "  ui               UI component tools",
+      "  help [command]   display help for command",
+      "",
+      "",
+      "Examples:",
+      "  $ rettangoli fe build",
+      "  $ rettangoli fe scaffold -c components -n Button",
+      "  $ rettangoli fe watch -p 3001",
+      "",
+      ""
+    ],
+    "trace": []
+  },
+  "root-help-command-fe": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl fe [options] [command]",
+      "",
+      "Frontend framework",
+      "",
+      "Options:",
+      "  -h, --help          display help for command",
+      "",
+      "Commands:",
+      "  build [options]     Build UI components",
+      "  check [options]     Validate frontend component file contracts",
+      "  scaffold [options]  Scaffold UI components",
+      "  watch [options]     Watch for changes",
+      "  examples            Generate examples",
+      "  help [command]      display help for command",
+      ""
+    ],
+    "trace": []
+  },
+  "root-no-args": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "Usage: rtgl [options] [command]"
+    ],
+    "stdout": [],
+    "trace": []
+  },
+  "root-unknown-command": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: unknown command 'bogus'"
+    ],
+    "stdout": [],
+    "trace": []
+  },
+  "root-unknown-option": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: unknown option '--bogus'"
+    ],
+    "stdout": [],
+    "trace": []
+  },
+  "root-version": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "<VERSION>",
+      ""
+    ],
+    "trace": []
+  },
+  "root-version-short": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "<VERSION>",
+      ""
+    ],
+    "trace": []
+  }
+}

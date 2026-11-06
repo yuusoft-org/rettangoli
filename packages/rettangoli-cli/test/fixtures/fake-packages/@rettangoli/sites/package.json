@@ -1,0 +1,9 @@
+{
+  "name": "@rettangoli/sites",
+  "version": "0.0.0-fake",
+  "type": "module",
+  "exports": {
+    "./cli": "./cli.js",
+    "./watch-client": "./watch-client.js"
+  }
+}
