@@ -6,10 +6,6 @@ const toYamlPathKey = (parts = []) => {
   return parts.join(YAML_PATH_SEPARATOR);
 };
 
-export const isObjectRecord = (value) => {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-};
-
 export const normalizeBindingName = (bindingName = "") => {
   if (bindingName.startsWith(":")) return { sourceType: "prop", name: bindingName.slice(1) };
   if (bindingName.startsWith("?")) return { sourceType: "boolean-attr", name: bindingName.slice(1) };

@@ -919,7 +919,7 @@ const collectJemplControlDirectiveDiagnostics = ({
         diagnostics.push(createJemplControlDiagnostic({
           key,
           line,
-          message: /^\$(?:if|elif|for)\(/u.test(key)
+          message: /^\$(?:if|elif)(?:#\w+)?\(|^\$for(?::\w+)?\(/u.test(key)
             ? "unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'"
             : "unknown control keyword",
         }));

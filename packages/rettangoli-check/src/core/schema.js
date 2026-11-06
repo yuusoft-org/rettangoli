@@ -1,5 +1,5 @@
 import { toCamelCase, toKebabCase } from "../utils/case.js";
-import { isObjectRecord } from "../rules/shared.js";
+import { isObjectRecord } from "../utils/object.js";
 
 const isCanonicalKey = (value) => {
   return typeof value === "string" && value.length > 0 && value.trim() === value;

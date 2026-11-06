@@ -1,4 +1,4 @@
-import { isObjectRecord } from "./shared.js";
+import { isObjectRecord } from "../utils/object.js";
 
 export const runConstantsRules = ({ models = [] }) => {
   const diagnostics = [];

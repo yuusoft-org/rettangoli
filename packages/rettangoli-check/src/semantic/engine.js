@@ -1,4 +1,5 @@
 import { buildComponentScopeGraph } from "../core/scopeGraph.js";
+import { isObjectRecord } from "../utils/object.js";
 
 const SORT_STRING = (left, right) => String(left).localeCompare(String(right));
 
@@ -7,8 +8,6 @@ const sortByComponentAndName = (left, right) => (
   || String(left.name).localeCompare(String(right.name))
   || String(left.kind || "").localeCompare(String(right.kind || ""))
 );
-
-const isObjectRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
 const toSortedSetArray = (value) => {
   if (!(value instanceof Set)) {

@@ -1,0 +1,3 @@
+template:
+  - "$for:nested(item in items)":
+      - rtgl-text: ${item.name}

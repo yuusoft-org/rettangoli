@@ -1,0 +1,46 @@
+{
+  "name": "paren control directives with an id or name suffix are literal keys for Jempl and get the whitespace hint",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 3,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-JEMPL-003": 3
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-JEMPL-003",
+        "severity": "error",
+        "message": "components/elifid: Invalid Jempl control directive '$elif#other(b)': unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'.",
+        "filePath": "src/components/elifid/elifid.view.yaml",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-JEMPL-003",
+        "severity": "error",
+        "message": "components/forname: Invalid Jempl control directive '$for:nested(item in items)': unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'.",
+        "filePath": "src/components/forname/forname.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-JEMPL-003",
+        "severity": "error",
+        "message": "components/ifid: Invalid Jempl control directive '$if#main(isVisible)': unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'.",
+        "filePath": "src/components/ifid/ifid.view.yaml",
+        "line": 3
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-JEMPL-005"
+  ]
+}

@@ -1,4 +1,5 @@
-import { getModelFilePath, getYamlPathLine, isObjectRecord } from "./shared.js";
+import { isObjectRecord } from "../utils/object.js";
+import { getModelFilePath, getYamlPathLine } from "./shared.js";
 
 const CUSTOM_ELEMENT_NAME_REGEX = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/;
 

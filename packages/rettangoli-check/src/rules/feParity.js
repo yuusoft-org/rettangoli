@@ -1,5 +1,6 @@
 import { findUnsupportedTemplatePropertyBindingSyntax } from "../core/fe-contracts.js";
-import { getModelFilePath, isConvertibleLegacyBinding, isObjectRecord } from "./shared.js";
+import { isObjectRecord } from "../utils/object.js";
+import { getModelFilePath, isConvertibleLegacyBinding } from "./shared.js";
 
 const FORBIDDEN_VIEW_KEYS = [
   "elementName",

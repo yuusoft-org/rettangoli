@@ -5,9 +5,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { load as loadYaml } from "js-yaml";
 import { walkFiles } from "../utils/fs.js";
 import { toCamelCase, toKebabCase } from "../utils/case.js";
+import { isObjectRecord } from "../utils/object.js";
 import { parseJs } from "./jsParse.js";
 import { collectProjectPrimitiveContracts } from "./projectPrimitives.js";
-import { isObjectRecord } from "../rules/shared.js";
 
 const addHostStyleAttrs = (contract, styles) => {
   if (!styles || typeof styles !== "object") return;

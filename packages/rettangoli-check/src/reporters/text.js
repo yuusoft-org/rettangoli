@@ -1,5 +1,5 @@
 import path from "node:path";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 
 const formatLocation = ({ cwd, filePath, line, column }) => {
   const relPath = filePath === "unknown" ? "unknown" : path.relative(cwd, filePath);
@@ -20,12 +20,13 @@ const readFileLines = (filePath, cache = new Map()) => {
     return cache.get(filePath);
   }
 
-  if (!existsSync(filePath)) {
-    cache.set(filePath, null);
-    return null;
+  // A missing path, a directory or an unreadable file gives no code frame.
+  let lines = null;
+  try {
+    lines = readFileSync(filePath, "utf8").split("\n");
+  } catch {
+    // keep null
   }
-
-  const lines = readFileSync(filePath, "utf8").split("\n");
   cache.set(filePath, lines);
   return lines;
 };

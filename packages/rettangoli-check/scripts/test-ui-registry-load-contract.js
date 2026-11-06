@@ -5,12 +5,14 @@
 // browser globals stubbed for the import do not leak.
 
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyzeProject } from "../src/core/analyze.js";
 import { buildUiRegistry, getRegistryLoadFailures } from "../src/core/registry.js";
+import { formatTextReport } from "../src/reporters/text.js";
+import { isDirectoryPath } from "../src/utils/fs.js";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const uiPackageDir = path.resolve(currentDir, "../../rettangoli-ui");
@@ -158,6 +160,72 @@ try {
     ],
   );
   assert.equal(result.summary.bySeverity.warn, 2, "REGISTRY-001 is a warning");
+
+  // A directory import fails to load in Node, and the failure's file path is that directory. The
+  // text report must still render it, without a code frame.
+  const dirUiDir = path.join(sandboxRoot, "dir-ui");
+  write("dir-ui/package.json", JSON.stringify({ name: "@rettangoli/ui", type: "module", main: "src/index.js" }));
+  mkdirSync(path.join(dirUiDir, "src", "components"), { recursive: true });
+  write("dir-ui/src/index.js", "export {};\n");
+  const dirEntry = [
+    'import DirPrim from "./primitives/dirprim";',
+    'customElements.define("rtgl-dirprim", DirPrim({}));',
+    "",
+  ].join("\n");
+  write("dir-ui/src/entry-iife-ui.js", dirEntry);
+  write("dir-ui/src/registerPrimitives.js", dirEntry);
+  write("dir-ui/src/primitives/dirprim/index.js", "export default () => class extends HTMLElement {};\n");
+  write("dir-app/package.json", JSON.stringify({ name: "dir-app", type: "module" }));
+  write("dir-app/src/components/page/page.schema.yaml", "componentName: rtgl-dir-app-page\n");
+  write("dir-app/src/components/page/page.view.yaml", "template:\n  - rtgl-dirprim: x\n");
+  const dirResult = await analyzeProject({
+    cwd: path.join(sandboxRoot, "dir-app"),
+    dirs: ["./src/components"],
+    workspaceRoot: dirUiDir,
+  });
+  const dirDiagnostics = dirResult.diagnostics.filter((diagnostic) => diagnostic.code === "RTGL-CHECK-REGISTRY-001");
+  assert.equal(dirDiagnostics.length, 1);
+  assert.ok(isDirectoryPath(dirDiagnostics[0].filePath), "the failed primitive's file path is a directory");
+  const dirReport = formatTextReport({ result: dirResult });
+  assert.match(dirReport, /RTGL-CHECK-REGISTRY-001 \[warn\] UI primitive 'rtgl-dirprim' failed to load/);
+  assert.doesNotMatch(dirReport, /codeframe/);
+
+  // A primitive file that exists but cannot be read is reported the same way. A root user can read
+  // any file, and Windows ignores the mode, so the case is skipped there.
+  if (process.platform !== "win32" && process.getuid?.() !== 0) {
+    const lockedUiDir = path.join(sandboxRoot, "locked-ui");
+    write("locked-ui/package.json", JSON.stringify({ name: "@rettangoli/ui", type: "module", main: "src/index.js" }));
+    mkdirSync(path.join(lockedUiDir, "src", "components"), { recursive: true });
+    write("locked-ui/src/index.js", "export {};\n");
+    const lockedEntry = [
+      'import Locked from "./primitives/locked.js";',
+      'customElements.define("rtgl-locked", Locked({}));',
+      "",
+    ].join("\n");
+    write("locked-ui/src/entry-iife-ui.js", lockedEntry);
+    write("locked-ui/src/registerPrimitives.js", lockedEntry);
+    write("locked-ui/src/primitives/locked.js", "export default () => class extends HTMLElement {};\n");
+    const lockedFile = path.join(lockedUiDir, "src", "primitives", "locked.js");
+    chmodSync(lockedFile, 0o000);
+    try {
+      write("locked-app/package.json", JSON.stringify({ name: "locked-app", type: "module" }));
+      write("locked-app/src/components/page/page.schema.yaml", "componentName: rtgl-locked-app-page\n");
+      write("locked-app/src/components/page/page.view.yaml", "template:\n  - rtgl-locked: x\n");
+      const lockedResult = await analyzeProject({
+        cwd: path.join(sandboxRoot, "locked-app"),
+        dirs: ["./src/components"],
+        workspaceRoot: lockedUiDir,
+      });
+      const lockedDiagnostics = lockedResult.diagnostics.filter((diagnostic) => diagnostic.code === "RTGL-CHECK-REGISTRY-001");
+      assert.equal(lockedDiagnostics.length, 1);
+      assert.equal(lockedDiagnostics[0].filePath, lockedFile);
+      const lockedReport = formatTextReport({ result: lockedResult });
+      assert.match(lockedReport, /RTGL-CHECK-REGISTRY-001 \[warn\] UI primitive 'rtgl-locked' failed to load/);
+      assert.doesNotMatch(lockedReport, /codeframe/);
+    } finally {
+      chmodSync(lockedFile, 0o644);
+    }
+  }
 } finally {
   rmSync(sandboxRoot, { recursive: true, force: true });
 }

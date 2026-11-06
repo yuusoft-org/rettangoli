@@ -5,7 +5,8 @@ import {
   resolveListenerLine,
 } from "./listenerSymbols.js";
 import { collectInvalidRefKeys } from "./refs.js";
-import { getModelFilePath, getYamlPathLine, isObjectRecord } from "./shared.js";
+import { isObjectRecord } from "../utils/object.js";
+import { getModelFilePath, getYamlPathLine } from "./shared.js";
 import {
   EVENT_OPTION_TYPES,
   GLOBAL_REF_KEYS,
