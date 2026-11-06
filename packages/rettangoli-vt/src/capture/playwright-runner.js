@@ -108,6 +108,17 @@ async function drainPageTasks(page, timeoutMs) {
   }, PAGE_TASK_DRAIN_KEY, timeoutMs, () => new PageTaskDrainTimeoutError(timeoutMs));
 }
 
+// A VT-built URL (task.vtOwnedUrl) names the page VT generated for the spec: an error answer
+// would otherwise be captured as if it were the spec.
+async function gotoTask(page, task, options) {
+  const response = await page.goto(task.url, options);
+  if (task.vtOwnedUrl && response && response.status() >= 400) {
+    throw new Error(
+      `Navigation to ${task.url} returned HTTP ${response.status()} (spec "${task.path}").`,
+    );
+  }
+}
+
 export class PlaywrightRunner {
   constructor(options) {
     const {
@@ -333,7 +344,7 @@ export class PlaywrightRunner {
 
     const navigationStart = nowMs();
     if (strategy === "networkidle") {
-      await page.goto(task.url, {
+      await gotoTask(page, task, {
         waitUntil: "networkidle",
         timeout: this.navigationTimeout,
       });
@@ -351,7 +362,7 @@ export class PlaywrightRunner {
         );
       }
       await this.ensureEventInitScript(page, waitEvent, registeredReadyEvents);
-      await page.goto(task.url, {
+      await gotoTask(page, task, {
         waitUntil: "load",
       });
       const readyStart = nowMs();
@@ -372,7 +383,7 @@ export class PlaywrightRunner {
           `waitStrategy "selector" requires waitSelector for ${task.path}.`,
         );
       }
-      await page.goto(task.url, {
+      await gotoTask(page, task, {
         waitUntil: "load",
       });
       const readyStart = nowMs();
@@ -387,7 +398,7 @@ export class PlaywrightRunner {
     }
 
     if (strategy === "load") {
-      await page.goto(task.url, {
+      await gotoTask(page, task, {
         waitUntil: "load",
       });
       return {

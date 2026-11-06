@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createSteps } from "../src/createSteps.js";
+import { compileStep, createSteps } from "../src/createSteps.js";
 import { PERSONALITIES, replayStep } from "./support/recording-page.js";
 import { STEP_GOLDEN_DIR, loadStepCases } from "./support/record-goldens.mjs";
 
@@ -62,6 +62,28 @@ describe("step engine golden", () => {
         expect(["custom-event-detail", "validation-drift", "goto-relative"], entry.id).toContain(entry.bug);
       }
     }
+  });
+
+  it("compileStep rejects a case only with the error every personality records", () => {
+    const mismatches = [];
+    let rejected = 0;
+    for (const entry of cases) {
+      let message = null;
+      try {
+        compileStep(structuredClone(entry.step));
+      } catch (error) {
+        message = error.message;
+      }
+      if (message === null) continue;
+      rejected += 1;
+      for (const personality of entry.personalities ?? ["default"]) {
+        if (golden[entry.id][personality].error !== message) {
+          mismatches.push({ id: entry.id, personality, compile: message, runtime: golden[entry.id][personality].error });
+        }
+      }
+    }
+    expect(mismatches).toEqual([]);
+    expect(rejected).toBeGreaterThan(0);
   });
 
   for (const entry of cases) {

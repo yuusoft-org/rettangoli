@@ -26,6 +26,7 @@ import {
   readYaml,
 } from "../common.js";
 import { deriveSectionPageKey } from "../section-page-key.js";
+import { isPathInside } from "../path-safety.js";
 import { hasIgnoredSpecSegment, listSpecFiles } from "../spec-files.js";
 import { validateVtConfig } from "../validation.js";
 
@@ -401,14 +402,6 @@ for (
 }
 `.trim();
 
-const isWithinDirectory = ({ filePath, directoryPath }) => {
-  const relativePath = path.relative(directoryPath, filePath);
-  return (
-    relativePath === "" ||
-    (!relativePath.startsWith("..") && !path.isAbsolute(relativePath))
-  );
-};
-
 const convertToHtmlExtension = (filePath) =>
   filePath.endsWith(".html")
     ? filePath
@@ -780,10 +773,7 @@ export const generateVtWatchSpecs = async ({
   const context = await loadWatchContext({ cwd, outputDir });
   const specs = [...new Set(filePaths.map((filePath) => path.resolve(filePath)))]
     .map((resolvedFilePath) => {
-      if (!isWithinDirectory({
-        filePath: resolvedFilePath,
-        directoryPath: context.specsPath,
-      })) {
+      if (!isPathInside(context.specsPath, resolvedFilePath)) {
         throw new Error(
           `VT spec path is outside "${context.specsPath}": ${resolvedFilePath}`,
         );
@@ -937,7 +927,7 @@ const resolveServedPath = async ({ outputDir, requestUrl }) => {
     ? "index.html"
     : pathname.replace(/^\/+/, "");
   let filePath = path.resolve(outputDir, relativePath);
-  if (!isWithinDirectory({ filePath, directoryPath: outputDir })) return null;
+  if (!isPathInside(outputDir, filePath)) return null;
 
   let fileStats;
   try {
@@ -945,7 +935,7 @@ const resolveServedPath = async ({ outputDir, requestUrl }) => {
   } catch {
     if (!path.extname(filePath)) {
       const htmlPath = `${filePath}.html`;
-      if (isWithinDirectory({ filePath: htmlPath, directoryPath: outputDir })) {
+      if (isPathInside(outputDir, htmlPath)) {
         try {
           fileStats = await stat(htmlPath);
           filePath = htmlPath;
@@ -959,7 +949,7 @@ const resolveServedPath = async ({ outputDir, requestUrl }) => {
 
   if (fileStats.isDirectory()) {
     filePath = path.join(filePath, "index.html");
-    if (!isWithinDirectory({ filePath, directoryPath: outputDir })) return null;
+    if (!isPathInside(outputDir, filePath)) return null;
     try {
       fileStats = await stat(filePath);
     } catch {
@@ -973,10 +963,7 @@ const resolveServedPath = async ({ outputDir, requestUrl }) => {
       realpath(outputDir),
       realpath(filePath),
     ]);
-    return isWithinDirectory({
-      filePath: canonicalFilePath,
-      directoryPath: canonicalOutputDir,
-    })
+    return isPathInside(canonicalOutputDir, canonicalFilePath)
       ? canonicalFilePath
       : null;
   } catch {
@@ -1129,10 +1116,7 @@ export const createRettangoliVtWatchPlugin = ({
         scope: "config",
       };
     }
-    if (isWithinDirectory({
-      filePath: resolvedFilePath,
-      directoryPath: context.templatesPath,
-    })) {
+    if (isPathInside(context.templatesPath, resolvedFilePath)) {
       return {
         filePath: resolvedFilePath,
         relativePath: path.relative(context.vtPath, resolvedFilePath),
@@ -1140,10 +1124,7 @@ export const createRettangoliVtWatchPlugin = ({
       };
     }
     if (
-      isWithinDirectory({
-        filePath: resolvedFilePath,
-        directoryPath: context.specsPath,
-      }) &&
+      isPathInside(context.specsPath, resolvedFilePath) &&
       isWatchableSpec(path.relative(context.specsPath, resolvedFilePath))
     ) {
       return {
@@ -1288,10 +1269,7 @@ export const createRettangoliVtWatchPlugin = ({
         );
         return boundaryModule ? [boundaryModule] : context.modules;
       }
-      const generatedChange = isWithinDirectory({
-        filePath: path.resolve(context.file),
-        directoryPath: resolvedOutputDir,
-      });
+      const generatedChange = isPathInside(resolvedOutputDir, path.resolve(context.file));
       if (generatedChange) return [];
       return undefined;
     },
@@ -1299,10 +1277,7 @@ export const createRettangoliVtWatchPlugin = ({
       const sourceChange = currentContext
         ? classifySourcePath(options.file, currentContext)
         : null;
-      const generatedChange = isWithinDirectory({
-        filePath: path.resolve(options.file),
-        directoryPath: resolvedOutputDir,
-      });
+      const generatedChange = isPathInside(resolvedOutputDir, path.resolve(options.file));
       if (!sourceChange && !generatedChange) return undefined;
 
       const boundaryModule = this.environment.moduleGraph.getModuleById(

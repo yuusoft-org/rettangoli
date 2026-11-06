@@ -96,6 +96,7 @@ out:
     index: 0
     path: windows\test.yaml
     url: http://localhost:8080/candidate/windows/test.html
+    vtOwnedUrl: true
     baseName: windows\test
     frontMatter: {}
     steps: []
@@ -123,6 +124,7 @@ out:
     index: 0
     path: pages/home.yaml
     url: http://localhost:3001/candidate/pages/home.html
+    vtOwnedUrl: true
     baseName: pages/home--desktop
     frontMatter: {}
     steps: []
@@ -136,6 +138,7 @@ out:
     index: 1
     path: pages/home.yaml
     url: http://localhost:3001/candidate/pages/home.html
+    vtOwnedUrl: true
     baseName: pages/home--mobile
     frontMatter: {}
     steps: []
@@ -164,6 +167,7 @@ out:
     index: 0
     path: pages/home.yaml
     url: http://localhost:3001/candidate/pages/home.html
+    vtOwnedUrl: true
     baseName: pages/home--tablet
     frontMatter:
       viewport:

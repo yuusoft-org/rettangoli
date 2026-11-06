@@ -380,17 +380,20 @@ function normalizeStructuredActionStep(stepObject) {
   if (action === "customEvent") {
     assertStructuredKeys(stepObject, new Set(["action", "name", "detail"]), action);
     const eventName = requireStructuredString(stepObject, "name", action);
-    const args = [eventName];
-    if (stepObject.detail !== undefined) {
-      if (!isPlainObject(stepObject.detail)) {
-        throw new Error('Structured action "customEvent" requires object `detail` when provided.');
-      }
-      Object.entries(stepObject.detail).forEach(([key, value]) => {
-        const formattedValue = typeof value === "string" ? value : JSON.stringify(value);
-        args.push(`${key}=${formattedValue}`);
-      });
+    if (stepObject.detail === undefined) {
+      return { kind: "command", command: action, args: [eventName] };
     }
-    return { kind: "command", command: action, args };
+    if (!isPlainObject(stepObject.detail)) {
+      throw new Error('Structured action "customEvent" requires object `detail` when provided.');
+    }
+    // Every value arrives as a string; non-strings are JSON-encoded.
+    const detail = Object.fromEntries(
+      Object.entries(stepObject.detail).map(([key, value]) => [
+        key,
+        typeof value === "string" ? value : `${JSON.stringify(value)}`,
+      ]),
+    );
+    return { kind: "command", command: action, args: [eventName, { detail }] };
   }
 
   if (
@@ -450,45 +453,135 @@ function evaluateIn(context, target, label, fn, ...args) {
   return target.evaluate(fn, ...args);
 }
 
+// Shared by the handlers and compileStep: each throws the handler's own error before any page call.
+
+function requireTargetOrCoordinates(command, args, selectedElement) {
+  if (!selectedElement && args.length < 2) {
+    throw new Error(`\`${command}\` requires a \`select\` block target or \`x y\` coordinates.`);
+  }
+}
+
+function parseCustomEventArgs(args) {
+  if (args.length === 0) {
+    throw new Error("`customEvent` requires an event name.");
+  }
+  const [eventName, ...params] = args;
+  const invalidArgument = (text) => new Error(
+    `Invalid customEvent argument "${text}". Expected key=value.`,
+  );
+  const payload = {};
+  if (isPlainObject(params[0])) {
+    // Structured step: { detail } with string values.
+    Object.entries(params[0].detail).forEach(([key, value]) => {
+      if (!key) {
+        throw invalidArgument(`=${value}`);
+      }
+      payload[key] = value;
+    });
+  } else {
+    // Legacy block tokens: "key=value", split at the first "=".
+    params.forEach((param) => {
+      const separatorIndex = param.indexOf("=");
+      if (separatorIndex <= 0) {
+        throw invalidArgument(param);
+      }
+      payload[param.slice(0, separatorIndex)] = param.slice(separatorIndex + 1);
+    });
+  }
+  return { eventName, payload };
+}
+
+function parseViewportSize(args) {
+  if (args.length < 2) {
+    throw new Error("`setViewport` requires `width height`.");
+  }
+  return {
+    width: toPositiveInteger(args[0], "width"),
+    height: toPositiveInteger(args[1], "height"),
+  };
+}
+
+function parseWaitForArgs(args) {
+  const { named, positional } = parseNamedArgs(args);
+  return {
+    state: named.state ?? positional[1] ?? "visible",
+    timeout: parseTimeoutValue(named.timeoutMs ?? named.timeout ?? positional[2]),
+    selector: named.selector ?? positional[0],
+  };
+}
+
+function requireWaitForTarget(selector, selectedElement) {
+  if (!selectedElement && !selector) {
+    throw new Error(
+      "`waitFor` requires a selector (or a selected element in a `select` block).",
+    );
+  }
+}
+
+function resolveSelectTarget(args) {
+  const { named, positional } = parseNamedArgs(args);
+  const testId = typeof named.testId === "string" && named.testId.length > 0
+    ? named.testId
+    : positional[0];
+  const selector = typeof named.selector === "string" && named.selector.length > 0
+    ? named.selector
+    : undefined;
+
+  if ((testId ? 1 : 0) + (selector ? 1 : 0) !== 1) {
+    throw new Error("`select` requires exactly one target: `testId` or `selector`.");
+  }
+  return { testId, selector };
+}
+
 async function click(page, args, context, selectedElement) {
+  requireTargetOrCoordinates("click", args, selectedElement);
   if (selectedElement) {
     await selectedElement.click();
-  } else if (args.length >= 2) {
+  } else {
     await page.mouse.click(
       toNumber(args[0], "x"),
       toNumber(args[1], "y"),
       { button: "left" },
     );
-  } else {
-    throw new Error("`click` requires a `select` block target or `x y` coordinates.");
   }
 }
 
 async function customEvent(page, args, context) {
-  if (args.length === 0) {
-    throw new Error("`customEvent` requires an event name.");
-  }
-  const [eventName, ...params] = args;
-  const payload = {};
-  params.forEach((param) => {
-    const [key, value] = param.split("=");
-    if (!key || value === undefined) {
-      throw new Error(
-        `Invalid customEvent argument "${param}". Expected key=value.`,
-      );
-    }
-    payload[key] = value;
-  });
+  const { eventName, payload } = parseCustomEventArgs(args);
   await evaluateIn(context, page, `customEvent "${eventName}"`, ({ eventName, payload }) => {
     window.dispatchEvent(new CustomEvent(eventName, { detail: payload }));
   }, { eventName, payload });
+}
+
+// A URL that parses, or starts with "localhost" or "127.0.0.1", is passed through unchanged. A
+// relative URL resolves against the current page when that is an http(s) or file page; otherwise
+// it is passed raw and page.goto reports it.
+function resolveGotoUrl(page, rawUrl) {
+  if (rawUrl.startsWith("localhost") || rawUrl.startsWith("127.0.0.1")) {
+    return rawUrl;
+  }
+  try {
+    new URL(rawUrl);
+    return rawUrl;
+  } catch {
+    // Relative URL.
+  }
+  try {
+    const currentUrl = new URL(page.url());
+    if (["http:", "https:", "file:"].includes(currentUrl.protocol)) {
+      return new URL(rawUrl, currentUrl).href;
+    }
+  } catch {
+    // No usable current URL.
+  }
+  return rawUrl;
 }
 
 async function goto(page, args) {
   if (!args[0]) {
     throw new Error("`goto` requires a URL argument.");
   }
-  await page.goto(args[0], { waitUntil: "networkidle" });
+  await page.goto(resolveGotoUrl(page, args[0]), { waitUntil: "networkidle" });
   // Normalize font rendering for consistent screenshots
   await page.addStyleTag({
     content: `
@@ -539,16 +632,15 @@ async function scroll(page, args) {
 }
 
 async function rclick(page, args, context, selectedElement) {
+  requireTargetOrCoordinates("rclick", args, selectedElement);
   if (selectedElement) {
     await selectedElement.click({ button: "right" });
-  } else if (args.length >= 2) {
+  } else {
     await page.mouse.click(
       toNumber(args[0], "x"),
       toNumber(args[1], "y"),
       { button: "right" },
     );
-  } else {
-    throw new Error("`rclick` requires a `select` block target or `x y` coordinates.");
   }
 }
 
@@ -560,13 +652,7 @@ async function wait(page, args) {
 }
 
 async function setViewport(page, args) {
-  if (args.length < 2) {
-    throw new Error("`setViewport` requires `width height`.");
-  }
-  await page.setViewportSize({
-    width: toPositiveInteger(args[0], "width"),
-    height: toPositiveInteger(args[1], "height"),
-  });
+  await page.setViewportSize(parseViewportSize(args));
 }
 
 async function write(page, args, context, selectedElement) {
@@ -576,27 +662,21 @@ async function write(page, args, context, selectedElement) {
 }
 
 async function hover(page, args, context, selectedElement) {
+  requireTargetOrCoordinates("hover", args, selectedElement);
   if (selectedElement) {
     await selectedElement.hover();
     return;
   }
-  if (args.length >= 2) {
-    await page.mouse.move(toNumber(args[0], "x"), toNumber(args[1], "y"));
-    return;
-  }
-  throw new Error("`hover` requires a `select` block target or `x y` coordinates.");
+  await page.mouse.move(toNumber(args[0], "x"), toNumber(args[1], "y"));
 }
 
 async function dblclick(page, args, context, selectedElement) {
+  requireTargetOrCoordinates("dblclick", args, selectedElement);
   if (selectedElement) {
     await selectedElement.dblclick();
     return;
   }
-  if (args.length >= 2) {
-    await page.mouse.dblclick(toNumber(args[0], "x"), toNumber(args[1], "y"));
-    return;
-  }
-  throw new Error("`dblclick` requires a `select` block target or `x y` coordinates.");
+  await page.mouse.dblclick(toNumber(args[0], "x"), toNumber(args[1], "y"));
 }
 
 async function focus(page, args, context, selectedElement) {
@@ -666,9 +746,8 @@ async function upload(page, args, context, selectedElement) {
 }
 
 async function waitFor(page, args, context, selectedElement) {
-  const { named, positional } = parseNamedArgs(args);
-  const state = named.state ?? positional[1] ?? "visible";
-  const timeout = parseTimeoutValue(named.timeoutMs ?? named.timeout ?? positional[2]);
+  const { state, timeout, selector } = parseWaitForArgs(args);
+  requireWaitForTarget(selector, selectedElement);
   const waitOptions = { state };
   if (timeout !== undefined) {
     waitOptions.timeout = timeout;
@@ -677,13 +756,6 @@ async function waitFor(page, args, context, selectedElement) {
   if (selectedElement) {
     await selectedElement.waitFor(waitOptions);
     return;
-  }
-
-  const selector = named.selector ?? positional[0];
-  if (!selector) {
-    throw new Error(
-      "`waitFor` requires a selector (or a selected element in a `select` block).",
-    );
   }
   await page.waitForSelector(selector, waitOptions);
 }
@@ -707,13 +779,81 @@ function requireMatchMode(assertionConfig, defaultMode = "includes") {
   return mode;
 }
 
+function requireUrlAssertValue(assertionConfig) {
+  if (typeof assertionConfig.value !== "string" || assertionConfig.value.length === 0) {
+    throw new Error("`assert.type=url` requires non-empty string `value`.");
+  }
+}
+
+function requireTextAssertValue(assertionConfig) {
+  if (typeof assertionConfig.value !== "string") {
+    throw new Error("`assert.type=text` requires string `value`.");
+  }
+}
+
+// exists, visible, hidden and text use the select block's element when they name no selector.
+function usesSelectedElement(assertionConfig, selectedElement) {
+  return Boolean(selectedElement) && assertionConfig.selector === undefined;
+}
+
+function requireAssertSelector(type, assertionConfig) {
+  if (typeof assertionConfig.selector !== "string" || assertionConfig.selector.length === 0) {
+    throw new Error(`\`assert.type=${type}\` requires \`selector\` when not in a select block.`);
+  }
+}
+
+function requireJsAssertion(assertionConfig) {
+  const hasGlobal = typeof assertionConfig.global === "string" && assertionConfig.global.length > 0;
+  const hasFn = typeof assertionConfig.fn === "string" && assertionConfig.fn.length > 0;
+  if (hasGlobal === hasFn) {
+    throw new Error("`assert.type=js` requires exactly one of `global` or `fn`.");
+  }
+  if (!Object.prototype.hasOwnProperty.call(assertionConfig, "value")) {
+    throw new Error("`assert.type=js` requires `value`.");
+  }
+  const args = assertionConfig.args ?? [];
+  if (!Array.isArray(args)) {
+    throw new Error("`assert.type=js` expects `args` to be an array when provided.");
+  }
+  return { hasGlobal, hasFn, args };
+}
+
+function unsupportedAssertType(type) {
+  return new Error(
+    `Unsupported assert type "${type}". Supported: url, exists, visible, hidden, text, js.`,
+  );
+}
+
+// The assert grammar, in the runtime's check order, without the page.
+function checkAssertion(assertionConfig, selectedElement) {
+  const type = requireAssertType(assertionConfig);
+  const onSelectedElement = usesSelectedElement(assertionConfig, selectedElement);
+  if (type === "url") {
+    requireUrlAssertValue(assertionConfig);
+    requireMatchMode(assertionConfig);
+  } else if (type === "exists" || type === "visible" || type === "hidden") {
+    parseTimeoutValue(assertionConfig.timeoutMs);
+    if (!onSelectedElement) {
+      requireAssertSelector(type, assertionConfig);
+    }
+  } else if (type === "text") {
+    requireTextAssertValue(assertionConfig);
+    requireMatchMode(assertionConfig);
+    if (!onSelectedElement) {
+      requireAssertSelector(type, assertionConfig);
+    }
+  } else if (type === "js") {
+    requireJsAssertion(assertionConfig);
+  } else {
+    throw unsupportedAssertType(type);
+  }
+}
+
 async function assertStructured(page, assertionConfig, selectedElement, context) {
   const type = requireAssertType(assertionConfig);
 
   if (type === "url") {
-    if (typeof assertionConfig.value !== "string" || assertionConfig.value.length === 0) {
-      throw new Error("`assert.type=url` requires non-empty string `value`.");
-    }
+    requireUrlAssertValue(assertionConfig);
     const currentUrl = page.url();
     const expected = assertionConfig.value;
     const matchMode = requireMatchMode(assertionConfig);
@@ -730,7 +870,7 @@ async function assertStructured(page, assertionConfig, selectedElement, context)
 
   if (type === "exists") {
     const timeout = parseTimeoutValue(assertionConfig.timeoutMs);
-    if (selectedElement && assertionConfig.selector === undefined) {
+    if (usesSelectedElement(assertionConfig, selectedElement)) {
       const count = await selectedElement.count();
       if (count < 1) {
         throw new Error("assert exists failed: selected element was not found.");
@@ -738,9 +878,7 @@ async function assertStructured(page, assertionConfig, selectedElement, context)
       return;
     }
 
-    if (typeof assertionConfig.selector !== "string" || assertionConfig.selector.length === 0) {
-      throw new Error("`assert.type=exists` requires `selector` when not in a select block.");
-    }
+    requireAssertSelector(type, assertionConfig);
     const locator = page.locator(assertionConfig.selector);
     if (timeout !== undefined) {
       await locator.first().waitFor({ state: "attached", timeout });
@@ -759,33 +897,26 @@ async function assertStructured(page, assertionConfig, selectedElement, context)
       waitOptions.timeout = timeout;
     }
 
-    if (selectedElement && assertionConfig.selector === undefined) {
+    if (usesSelectedElement(assertionConfig, selectedElement)) {
       await selectedElement.waitFor(waitOptions);
       return;
     }
 
-    if (typeof assertionConfig.selector !== "string" || assertionConfig.selector.length === 0) {
-      throw new Error(`\`assert.type=${type}\` requires \`selector\` when not in a select block.`);
-    }
-
+    requireAssertSelector(type, assertionConfig);
     await page.waitForSelector(assertionConfig.selector, waitOptions);
     return;
   }
 
   if (type === "text") {
+    requireTextAssertValue(assertionConfig);
     const expected = assertionConfig.value;
-    if (typeof expected !== "string") {
-      throw new Error("`assert.type=text` requires string `value`.");
-    }
     const matchMode = requireMatchMode(assertionConfig);
 
     let actualText = "";
-    if (selectedElement && assertionConfig.selector === undefined) {
+    if (usesSelectedElement(assertionConfig, selectedElement)) {
       actualText = (await selectedElement.textContent()) ?? "";
     } else {
-      if (typeof assertionConfig.selector !== "string" || assertionConfig.selector.length === 0) {
-        throw new Error("`assert.type=text` requires `selector` when not in a select block.");
-      }
+      requireAssertSelector(type, assertionConfig);
       actualText = (await page.locator(assertionConfig.selector).first().textContent()) ?? "";
     }
 
@@ -801,18 +932,7 @@ async function assertStructured(page, assertionConfig, selectedElement, context)
   }
 
   if (type === "js") {
-    const hasGlobal = typeof assertionConfig.global === "string" && assertionConfig.global.length > 0;
-    const hasFn = typeof assertionConfig.fn === "string" && assertionConfig.fn.length > 0;
-    if (hasGlobal === hasFn) {
-      throw new Error("`assert.type=js` requires exactly one of `global` or `fn`.");
-    }
-    if (!Object.prototype.hasOwnProperty.call(assertionConfig, "value")) {
-      throw new Error("`assert.type=js` requires `value`.");
-    }
-    const args = assertionConfig.args ?? [];
-    if (!Array.isArray(args)) {
-      throw new Error("`assert.type=js` expects `args` to be an array when provided.");
-    }
+    const { hasGlobal, hasFn, args } = requireJsAssertion(assertionConfig);
 
     let actual;
     try {
@@ -852,24 +972,11 @@ async function assertStructured(page, assertionConfig, selectedElement, context)
     return;
   }
 
-  throw new Error(
-    `Unsupported assert type "${type}". Supported: url, exists, visible, hidden, text, js.`,
-  );
+  throw unsupportedAssertType(type);
 }
 
 async function select(page, args) {
-  const { named, positional } = parseNamedArgs(args);
-  const testId = typeof named.testId === "string" && named.testId.length > 0
-    ? named.testId
-    : positional[0];
-  const selector = typeof named.selector === "string" && named.selector.length > 0
-    ? named.selector
-    : undefined;
-
-  if ((testId ? 1 : 0) + (selector ? 1 : 0) !== 1) {
-    throw new Error("`select` requires exactly one target: `testId` or `selector`.");
-  }
-
+  const { testId, selector } = resolveSelectTarget(args);
   const hostElementLocator = selector
     ? page.locator(selector)
     : page.getByTestId(testId);
@@ -887,40 +994,91 @@ async function select(page, args) {
   return hostElementLocator;
 }
 
+// Every step command except `screenshot`, which needs the createSteps context.
+const STEP_HANDLERS = {
+  blur,
+  check,
+  clear,
+  click,
+  customEvent,
+  dblclick,
+  focus,
+  goto,
+  hover,
+  keypress,
+  mouseDown,
+  mouseUp,
+  move,
+  rclick,
+  rightMouseDown,
+  rightMouseUp,
+  scroll,
+  setViewport,
+  select,
+  selectOption,
+  uncheck,
+  upload,
+  wait,
+  waitFor,
+  write,
+};
+
+// What each command checks before touching the page, given whether a select block target exists.
+const COMMAND_CHECKS = {
+  blur: (args, target) => requireSelectedElement("blur", target),
+  check: (args, target) => requireSelectedElement("check", target),
+  clear: (args, target) => requireSelectedElement("clear", target),
+  click: (args, target) => requireTargetOrCoordinates("click", args, target),
+  customEvent: (args) => parseCustomEventArgs(args),
+  dblclick: (args, target) => requireTargetOrCoordinates("dblclick", args, target),
+  focus: (args, target) => requireSelectedElement("focus", target),
+  hover: (args, target) => requireTargetOrCoordinates("hover", args, target),
+  rclick: (args, target) => requireTargetOrCoordinates("rclick", args, target),
+  selectOption: (args, target) => requireSelectedElement("selectOption", target),
+  setViewport: (args) => parseViewportSize(args),
+  uncheck: (args, target) => requireSelectedElement("uncheck", target),
+  upload: (args, target) => requireSelectedElement("upload", target),
+  waitFor: (args, target) => requireWaitForTarget(parseWaitForArgs(args).selector, target),
+  write: (args, target) => requireSelectedElement("write", target),
+};
+
+function checkNormalizedStep(normalizedStep, inSelect) {
+  if (normalizedStep.kind === "assert") {
+    checkAssertion(normalizedStep.assertionConfig, inSelect);
+    return;
+  }
+  const { command, args } = normalizedStep;
+  if (normalizedStep.kind === "block") {
+    if (!STEP_HANDLERS[command] && command !== "screenshot") {
+      throw new Error(`Unsupported block command: "${command}".`);
+    }
+    // Only select gives its nested steps a target. Other legacy blocks are not checked: their own
+    // arguments are not compiled, so a nested error could hide the one the runtime throws first.
+    if (command === "select") {
+      resolveSelectTarget(args);
+      normalizedStep.nestedSteps.forEach((nestedStep) => checkNormalizedStep(nestedStep, true));
+    }
+    return;
+  }
+  if (Object.prototype.hasOwnProperty.call(COMMAND_CHECKS, command)) {
+    COMMAND_CHECKS[command](args, inSelect);
+  }
+}
+
+// Normalizes a raw step and throws the error the runtime would always throw for it, without a
+// page: structured steps, select blocks (and their nested steps) and unknown blocks. Arguments of
+// other legacy blocks (`{ wait: [] }`) are not checked.
+export function compileStep(step, { inSelect = false } = {}) {
+  checkNormalizedStep(normalizeStepValue(step), inSelect);
+}
+
 export function createSteps(page, context) {
   async function screenshot() {
     const screenshotPath = await context.takeAndSaveScreenshot(page, context.baseName);
     console.log(`Screenshot saved: ${screenshotPath}`);
   }
 
-  const actionHandlers = {
-    blur,
-    check,
-    clear,
-    click,
-    customEvent,
-    dblclick,
-    focus,
-    goto,
-    hover,
-    keypress,
-    mouseDown,
-    mouseUp,
-    move,
-    rclick,
-    rightMouseDown,
-    rightMouseUp,
-    scroll,
-    setViewport,
-    screenshot,
-    select,
-    selectOption,
-    uncheck,
-    upload,
-    wait,
-    waitFor,
-    write,
-  };
+  const actionHandlers = { ...STEP_HANDLERS, screenshot };
 
   async function executeCommand(command, args, selectedElement) {
     if (!command) {

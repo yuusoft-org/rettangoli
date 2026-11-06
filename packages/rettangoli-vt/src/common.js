@@ -16,6 +16,7 @@ import { createCaptureTasks } from "./capture/spec-loader.js";
 import { runCaptureScheduler } from "./capture/capture-scheduler.js";
 import { deriveAnchorId, deriveSectionPageKey } from "./section-page-key.js";
 import { assertUniqueHtmlOutputs, listSpecFiles, toHtmlOutputPath } from "./spec-files.js";
+import { isPathInside } from "./path-safety.js";
 
 const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
 
@@ -161,36 +162,43 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
   }
 }
 
+// Returns the first file under `roots` that the decoded URL path names, or null. A path that
+// resolves outside a root is never served from it.
+function findServedFile(roots, decodedPathname) {
+  for (const root of roots) {
+    const filePath = join(root, decodedPathname);
+    if (isPathInside(root, filePath) && existsSync(filePath) && statSync(filePath).isFile()) {
+      return filePath;
+    }
+  }
+  return null;
+}
+
 /**
  * Start a web server to serve static files
  */
 async function startWebServer(artifactsDir, staticDir, port) {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, `http://localhost:${port}`);
-    let path = url.pathname;
     // Default to index.html for root path
-    if (path === "/") {
-      path = "/index.html";
+    let pathname = url.pathname === "/" ? "/index.html" : url.pathname;
+    try {
+      pathname = decodeURIComponent(pathname);
+    } catch {
+      // Not a valid escape (a literal "%" in a file name): look the path up as sent.
     }
 
-    // Remove leading slash for file path
-    const filePath = path.startsWith("/") ? path.slice(1) : path;
-
-    // Try to serve from artifacts directory first
-    const artifactsPath = join(artifactsDir, filePath);
-    if (existsSync(artifactsPath) && statSync(artifactsPath).isFile()) {
-      const fileContent = readFileSync(artifactsPath);
-      const contentType = getContentType(artifactsPath);
-      res.writeHead(200, { "Content-Type": contentType });
-      res.end(fileContent);
+    if (pathname.includes("\0")) {
+      res.writeHead(400, { "Content-Type": "text/plain" });
+      res.end("Bad Request");
       return;
     }
 
-    // Then try to serve from static directory
-    const staticPath = join(staticDir, filePath);
-    if (existsSync(staticPath) && statSync(staticPath).isFile()) {
-      const fileContent = readFileSync(staticPath);
-      const contentType = getContentType(staticPath);
+    // Artifacts directory first, then the static directory
+    const filePath = findServedFile([artifactsDir, staticDir], pathname);
+    if (filePath) {
+      const fileContent = readFileSync(filePath);
+      const contentType = getContentType(filePath);
       res.writeHead(200, { "Content-Type": contentType });
       res.end(fileContent);
       return;

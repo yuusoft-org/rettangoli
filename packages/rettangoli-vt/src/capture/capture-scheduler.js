@@ -1,10 +1,22 @@
 import { chromium } from "playwright";
+import { compileStep } from "../createSteps.js";
 import { PlaywrightRunner } from "./playwright-runner.js";
 import { ResultCollector } from "./result-collector.js";
 import { resolveWorkerPlan } from "./worker-plan.js";
 
 function nowMs() {
   return performance.now();
+}
+
+// A step the runtime always rejects would fail the task on every attempt, after navigating and
+// capturing. Returns that error, or null.
+function findStepError(task) {
+  try {
+    (Array.isArray(task.steps) ? task.steps : []).forEach((step) => compileStep(step));
+    return null;
+  } catch (error) {
+    return error;
+  }
 }
 
 function createTaskQueues(tasks) {
@@ -145,6 +157,23 @@ export async function runCaptureScheduler(options) {
         const queueWaitMs = Math.max(0, nowMs() - item.enqueuedAtMs);
         const attemptStartMs = nowMs();
         let succeeded = false;
+
+        const stepError = findStepError(item.task);
+        if (stepError) {
+          // Same message as the runner's, without navigating and without a retry.
+          collector.recordFailure(
+            item.task,
+            item.attempt,
+            `Worker ${runner.workerId} failed "${item.task.path}": ${stepError.message}`,
+            {
+              workerId: runner.workerId,
+              queueType: item.queueType,
+              queueWaitMs,
+              attemptMs: nowMs() - attemptStartMs,
+            },
+          );
+          continue;
+        }
 
         try {
           const result = await runner.runTask(item.task, item.attempt);

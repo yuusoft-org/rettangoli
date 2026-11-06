@@ -133,7 +133,7 @@ Properties:
 
 - `action`: `customEvent`
 - `name` (required): event name
-- `detail` (optional): object payload sent as `CustomEvent.detail`
+- `detail` (optional): object payload sent as `CustomEvent.detail`. Every value arrives as a string: strings as written (including any `=`), other values JSON-encoded (`0` becomes `"0"`, `{ k: 1 }` becomes `'{"k":1}'`)
 
 ### `dblclick`
 
@@ -161,6 +161,8 @@ Properties:
 
 Behavior:
 
+- a relative URL (`/next.html`, `other.html`, `../x.html`) resolves against the current page when that page is an http(s) or file URL
+- a URL without a scheme (`example.com/x`) is treated as relative, except hosts starting with `localhost` or `127.0.0.1`, which are passed through unchanged
 - uses Playwright `page.goto(..., { waitUntil: "networkidle" })`
 
 ### `hover`

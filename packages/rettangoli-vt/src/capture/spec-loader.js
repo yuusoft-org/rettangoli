@@ -13,6 +13,12 @@ function normalizePathForUrl(filePath) {
   return filePath.replace(/\\/g, "/");
 }
 
+// The browser percent-encodes spaces and non-ASCII characters itself, and the built-in server
+// decodes them. "%", "#" and "?" would be read as an escape, a fragment or a query instead.
+function encodeSpecPathForUrl(urlPath) {
+  return urlPath.replace(/[%#?]/g, encodeURIComponent);
+}
+
 function toAbsoluteUrl(rawUrl, serverUrl) {
   if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
     return rawUrl;
@@ -70,8 +76,10 @@ export function createCaptureTasks(generatedFiles, options) {
   generatedFiles.forEach((file, fileIndex) => {
     const frontMatter = file.frontMatter || {};
     const normalizedPath = normalizePathForUrl(file.path);
-    const constructedUrl = toHtmlPath(`${serverUrl}/candidate/${normalizedPath}`);
+    const constructedUrl = toHtmlPath(`${serverUrl}/candidate/${encodeSpecPathForUrl(normalizedPath)}`);
     const resolvedConfigUrl = configUrl ? toAbsoluteUrl(configUrl, serverUrl) : null;
+    // Only the page VT generated must exist: a 4xx/5xx answer fails the task (see navigateToReadyState).
+    const vtOwnedUrl = (frontMatter.url ?? resolvedConfigUrl) == null;
     const urlResolutionBase = resolvedConfigUrl || serverUrl;
     const rawUrl = frontMatter.url ?? resolvedConfigUrl ?? constructedUrl;
     const url = toAbsoluteUrl(rawUrl, urlResolutionBase);
@@ -112,6 +120,9 @@ export function createCaptureTasks(generatedFiles, options) {
         },
       };
 
+      if (vtOwnedUrl) {
+        task.vtOwnedUrl = true;
+      }
       if (resolvedWaitEvent !== undefined && resolvedWaitEvent !== null) {
         task.waitEvent = resolvedWaitEvent;
       }
