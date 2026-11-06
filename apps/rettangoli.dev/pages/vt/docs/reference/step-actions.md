@@ -60,6 +60,10 @@ Inside select blocks VT uses:
 - first interactive child (`input`, `textarea`, `button`, `select`, `a`) when present
 - otherwise the host element
 
+The check runs once, when the block starts. VT does not wait for the host to appear, so use `waitFor` first.
+
+`rtgl vt generate` and `rtgl vt screenshot` validate every spec's steps. During capture, a step that can never run (for example `focus` outside a select block) fails its spec at once, before VT navigates, and is not retried.
+
 ## Action properties
 
 | Action | Required properties | Optional properties | Notes |
@@ -108,17 +112,24 @@ steps:
 - `type`: `url | exists | visible | hidden | text | js` (required)
 - `match`: `includes | equals` (optional; used for `url` and `text`, default `includes`)
 - `selector`: required outside `select` for `exists | visible | hidden | text`
-- `timeoutMs`: optional non-negative integer for `exists | visible | hidden`
+- `timeoutMs`: optional non-negative integer
+  - `visible | hidden`: how long to wait for that state. Omitted means the capture timeout (`--timeout` / `vt.timeout`, default 30000 ms); `0` means no limit
+  - `exists` with a `selector`: when set, VT first waits up to `timeoutMs` for the element to be attached; without it, the element is counted once. Inside a select block, `exists` counts the selected element once and ignores `timeoutMs`
+  - `url`: when greater than 0, VT re-reads the page URL every 100 ms until it matches or the time is up, for URLs that change after async work (an SPA's `pushState`); without it the URL is read once
+  - ignored by `text` and `js`
 - `value`:
-  - required string for `url` and `text`
+  - required non-empty string for `url`
+  - required string for `text`
   - required YAML/JSON value for `js` (deep-equal, including objects/arrays)
 - `global` (js): window global path
 - `fn` (js): window function path
 - `args` (js): optional function args array
 
-`js` rule:
+`js` rules:
 
 - exactly one of `global` or `fn` is required
+- `fn` may return a promise; VT awaits it. The evaluation fails when it does not finish within the capture timeout (`--timeout` / `vt.timeout`, default 30000 ms)
+- `value` is compared with deep equality: object key order does not matter, extra or missing keys and array lengths do
 
 `js` example:
 
@@ -183,6 +194,8 @@ steps:
       mode: smoke
 ```
 
+VT dispatches `new CustomEvent(name, { detail })` on `window`. Every `detail` value arrives as a string: strings as written, other values JSON-encoded (`0` becomes `"0"`, `{ k: 1 }` becomes `'{"k":1}'`). Pages that read numbers or objects from `detail` must parse the strings themselves.
+
 ## dblclick
 
 ```yaml
@@ -209,6 +222,8 @@ steps:
   - action: goto
     url: /docs
 ```
+
+A relative URL (`/next.html`, `other.html`, `../x.html`) resolves against the current page when that page is an http(s) or file URL. A URL without a scheme (`example.com/x`) is treated as relative, except hosts starting with `localhost` or `127.0.0.1`, which are passed through unchanged.
 
 ## hover
 

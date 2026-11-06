@@ -15,14 +15,13 @@ concurrency:
 
 # Every package's own test suite, one job per row so a failure names the suite.
 # The Docker visual tests stay in ci-ui.yaml and ci-sitekit.yaml.
+# The vt scripts `test:e2e` and `test:e2e:full` build and use a local Docker image and are run by hand.
 # Adding a package with a `test` script means adding a row here.
 jobs:
   test:
     name: Test (${{ matrix.name }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # A row with allow_failure reports its failure without failing the run.
-    continue-on-error: ${{ matrix.allow_failure == true }}
     strategy:
       fail-fast: false
       matrix:
@@ -32,9 +31,7 @@ jobs:
           - { name: ui, dir: packages/rettangoli-ui, run: bun run test }
           - { name: vt, dir: packages/rettangoli-vt, run: bun run test }
           - { name: cli, dir: packages/rettangoli-cli, run: bun run test }
-          # Fails on non-en-US locales (a test helper formats dates with the machine locale);
-          # passes on CI. Drop allow_failure once that helper is fixed.
-          - { name: sites, dir: packages/rettangoli-sites, run: bun run test, allow_failure: true }
+          - { name: sites, dir: packages/rettangoli-sites, run: bun run test }
           - { name: sitekit, dir: packages/rettangoli-sitekit, run: bun run test }
           - { name: ansi-json, dir: packages/rettangoli-ansi-json, run: bun run test }
           - { name: check, dir: packages/rettangoli-check, run: bun run ci }
@@ -44,10 +41,10 @@ jobs:
           - { name: check-package, dir: packages/rettangoli-check, run: bun run test:package }
           - { name: cli-package, dir: packages/rettangoli-cli, run: bun run test:package }
           - { name: ui-package, dir: packages/rettangoli-ui, run: bun run test:package }
-          # Real browser (Chromium)
-          - { name: fe-browser, dir: packages/rettangoli-fe, run: bun run test:browser, browser: true }
-          # allow_failure: Linux /bin/sh is dash, vt's stopManagedService returns before the service exits, so e2e-smoke "managed service lifecycle" fails.
-          - { name: vt-e2e, dir: packages/rettangoli-vt, run: VT_E2E=1 bun run test, browser: true, allow_failure: true }
+          # Real browsers. A row installs the `browsers` its specs launch before it runs.
+          - { name: fe-browser, dir: packages/rettangoli-fe, run: bun run test:browser, browsers: chromium webkit }
+          - { name: ui-browser, dir: packages/rettangoli-ui, run: bun run test:browser, browsers: chromium webkit }
+          - { name: vt-e2e, dir: packages/rettangoli-vt, run: VT_E2E=1 bun run test, browsers: chromium }
           # Builds the docs site with the workspace CLI. Fetches from the network, so retry once.
           - { name: docs-site, dir: apps/rettangoli.dev, run: bun run build || bun run build }
           # The example app builds and passes both checks with the workspace CLI.
@@ -75,9 +72,9 @@ jobs:
             exit 1
           fi
 
-      - name: Install Chromium
-        if: matrix.browser
-        run: bunx playwright install --with-deps chromium
+      - name: Install Browsers
+        if: matrix.browsers
+        run: bunx playwright install --with-deps ${{ matrix.browsers }}
 
       - name: Run ${{ matrix.name }}
         run: ${{ matrix.run }}

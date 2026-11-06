@@ -17,6 +17,9 @@
 
 node_modules/
 
+# One lockfile at the root; a package-level bun.lock is stray (packages are workspaces)
+/packages/*/bun.lock
+
 .claude/
 CLAUDE.md
 .temp
