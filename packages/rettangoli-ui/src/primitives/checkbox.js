@@ -1,10 +1,15 @@
 import { fieldAriaAttributes, forwardFieldAria } from "../accessibility/field.js";
 import {
   css,
-  dimensionWithUnit,
   convertObjectToCssString,
   styleMapKeys,
   permutateBreakpoints,
+  createResponsiveStyleBuckets,
+  rebuildResponsiveStyles,
+  applyZIndexAndOpacity,
+  applySizing,
+  applyVisibility,
+  commitStyleText,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
@@ -176,20 +181,8 @@ class RettangoliCheckboxElement extends HTMLElement {
     this.shadow = this.attachShadow({ mode: "open" });
     this.shadowRoot.adoptedStyleSheets = [RettangoliCheckboxElement.styleSheet];
 
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
-    this._controlStyles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+    this._styles = createResponsiveStyleBuckets();
+    this._controlStyles = createResponsiveStyleBuckets();
     this._lastStyleString = "";
 
     this._inputElement = document.createElement('input');
@@ -306,81 +299,34 @@ class RettangoliCheckboxElement extends HTMLElement {
       return;
     }
 
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
-    this._controlStyles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
-
-    ["default", "sm", "md", "lg", "xl"].forEach((size) => {
-      const addSizePrefix = (tag) => {
-        return `${size === "default" ? "" : `${size}-`}${tag}`;
-      };
-
-      const wh = this.getAttribute(addSizePrefix("wh"));
-      const width = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
-      );
-      const height = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
-      );
-      const opacity = this.getAttribute(addSizePrefix("op"));
-      const zIndex = this.getAttribute(addSizePrefix("z"));
-
-      // Opacity, stacking and visibility apply to the box and its mark
-      // together; width and height size the native input.
-      if (zIndex !== null) {
-        this._controlStyles[size]["z-index"] = zIndex;
-      }
-
-      if (opacity !== null) {
-        this._controlStyles[size].opacity = opacity;
-      }
-
-      if (width === "f") {
-        this._styles[size].width = "var(--width-stretch)";
-      } else if (width !== undefined) {
-        this._styles[size].width = width;
-        this._styles[size]["min-width"] = width;
-        this._styles[size]["max-width"] = width;
-      }
-
-      if (height === "f") {
-        this._styles[size].height = "100%";
-      } else if (height !== undefined) {
-        this._styles[size].height = height;
-        this._styles[size]["min-height"] = height;
-        this._styles[size]["max-height"] = height;
-        if (!height.endsWith("%")) {
-          this._controlStyles[size]["--checkbox-box-height"] = height;
-        }
-      }
-
-      if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._controlStyles[size].display = "none";
-      }
-
-      if (this.hasAttribute(addSizePrefix("show"))) {
-        this._controlStyles[size].display = "inline-flex";
-      }
+    // Width and height size the native input.
+    rebuildResponsiveStyles({
+      styles: this._styles,
+      buildStyles: ({ styleBucket, attrName }) => {
+        applySizing({ styleBucket, element: this, attrName, unsetBoundsOnFill: false });
+      },
     });
 
-    const newStyleString =
+    // Opacity, stacking and visibility apply to the box and its mark
+    // together. A fixed height also sizes the box; "f" fills to 100%, so
+    // percentages and "f" leave the box at its default size.
+    rebuildResponsiveStyles({
+      styles: this._controlStyles,
+      buildStyles: ({ styleBucket, size, attrName }) => {
+        applyZIndexAndOpacity({ styleBucket, element: this, attrName });
+        const { height } = this._styles[size];
+        if (height !== undefined && !height.endsWith("%")) {
+          styleBucket["--checkbox-box-height"] = height;
+        }
+        applyVisibility({ styleBucket, element: this, attrName, display: "inline-flex" });
+      },
+    });
+
+    commitStyleText(
+      this,
       convertObjectToCssString(this._controlStyles, ".checkbox-control") +
-      convertObjectToCssString(this._styles, 'input[type="checkbox"]');
-    if (newStyleString !== this._lastStyleString) {
-      this._styleElement.textContent = newStyleString;
-      this._lastStyleString = newStyleString;
-    }
+        convertObjectToCssString(this._styles, 'input[type="checkbox"]'),
+    );
   }
 
   connectedCallback() {

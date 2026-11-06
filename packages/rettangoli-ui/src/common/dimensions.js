@@ -93,6 +93,7 @@ export const applyDimensionToStyleBucket = ({
   allowFlexGrow = false,
   flexMinDimension = "0",
   lockBounds = true,
+  unsetBoundsOnFill = true,
 }) => {
   const resetWidthFlexBasisState = () => {
     if (!allowFlexGrow || axis !== "width") {
@@ -115,7 +116,9 @@ export const applyDimensionToStyleBucket = ({
   if (dimension === "f") {
     resetWidthFlexBasisState();
     styleBucket[axis] = fillValue;
-    clearAxisBounds();
+    if (unsetBoundsOnFill) {
+      clearAxisBounds();
+    }
     return;
   }
 
@@ -150,11 +153,14 @@ export const applyDimensionToStyleBucket = ({
 
 // Writes the wh/w/h attributes of one breakpoint; wh sets both axes and wins
 // over w and h. attrName maps a base name to that breakpoint's attribute.
+// With unsetBoundsOnFill: false, "f" writes only the width or height, with no
+// min/max (textarea, slider and checkbox).
 export const applySizing = ({
   styleBucket,
   element,
   attrName,
   allowFlexGrow = false,
+  unsetBoundsOnFill = true,
 }) => {
   const wh = element.getAttribute(attrName("wh"));
   applyDimensionToStyleBucket({
@@ -165,6 +171,7 @@ export const applySizing = ({
     ),
     fillValue: "var(--width-stretch)",
     allowFlexGrow,
+    unsetBoundsOnFill,
   });
   applyDimensionToStyleBucket({
     styleBucket,
@@ -174,6 +181,7 @@ export const applySizing = ({
     ),
     fillValue: "100%",
     allowFlexGrow,
+    unsetBoundsOnFill,
   });
 };
 

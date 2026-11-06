@@ -1,9 +1,10 @@
 import {
-  dimensionWithUnit,
   convertObjectToCssString,
-  createResponsiveStyleBuckets,
-  responsiveStyleSizes,
-  applyDimensionToStyleBucket,
+  rebuildResponsiveStyles,
+  applyZIndexAndOpacity,
+  applySizing,
+  applyVisibility,
+  commitStyleText,
 } from "../common.js";
 
 // Shared by rtgl-input and rtgl-input-number. Subclasses create
@@ -11,61 +12,16 @@ import {
 // `this._styles` and `this._lastStyleString`.
 export class RettangoliInputBaseElement extends HTMLElement {
   updateStyles() {
-    // Reset styles for fresh calculation
-    this._styles = createResponsiveStyleBuckets();
-
-    responsiveStyleSizes.forEach((size) => {
-      const addSizePrefix = (tag) => {
-        return `${size === "default" ? "" : `${size}-`}${tag}`;
-      };
-
-      const wh = this.getAttribute(addSizePrefix("wh"));
-      const width = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
-      );
-      const height = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
-      );
-      const opacity = this.getAttribute(addSizePrefix("op"));
-      const zIndex = this.getAttribute(addSizePrefix("z"));
-
-      if (zIndex !== null) {
-        this._styles[size]["z-index"] = zIndex;
-      }
-
-      if (opacity !== null) {
-        this._styles[size].opacity = opacity;
-      }
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "width",
-        dimension: width,
-        fillValue: "var(--width-stretch)",
-      });
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "height",
-        dimension: height,
-        fillValue: "100%",
-      });
-
-      if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none";
-      }
-
-      if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "block";
-      }
+    rebuildResponsiveStyles({
+      styles: this._styles,
+      buildStyles: ({ styleBucket, attrName }) => {
+        applyZIndexAndOpacity({ styleBucket, element: this, attrName });
+        applySizing({ styleBucket, element: this, attrName });
+        applyVisibility({ styleBucket, element: this, attrName, display: "block" });
+      },
     });
 
-    // Update styles only if changed - targeting input element
-    const newStyleString = convertObjectToCssString(this._styles, 'input');
-    if (newStyleString !== this._lastStyleString) {
-      this._styleElement.textContent = newStyleString;
-      this._lastStyleString = newStyleString;
-    }
+    commitStyleText(this, convertObjectToCssString(this._styles, 'input'));
   }
 
   _setOrRemoveInputAttribute(name, value) {

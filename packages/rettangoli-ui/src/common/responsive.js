@@ -18,7 +18,7 @@ export const createResponsiveStyleBuckets = () => {
 
 const responsiveBreakpointsSmallToLarge = ["sm", "md", "lg", "xl"];
 
-const getResponsiveAttributeName =({ size, attr }) => {
+const getResponsiveAttributeName = ({ size, attr }) => {
   return size === "default" ? attr : `${size}-${attr}`;
 };
 

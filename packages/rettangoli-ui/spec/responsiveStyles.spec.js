@@ -1,12 +1,18 @@
 // @vitest-environment jsdom
 // The shared per-breakpoint style builder in src/common/responsive.js and
-// src/common/dimensions.js, and the buckets that rtgl-view, rtgl-grid and
-// rtgl-image build with it. Bucket entries are compared in order, because the
-// order is the order of the declarations in the generated <style>.
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+// src/common/dimensions.js, and the buckets that the primitives build with it.
+// Bucket entries are compared in order, because the order is the order of the
+// declarations in the generated <style>.
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import createView from "../src/primitives/view.js";
 import createGrid from "../src/primitives/grid.js";
 import createImage from "../src/primitives/image.js";
+import createInput from "../src/primitives/input.js";
+import createInputNumber from "../src/primitives/input-number.js";
+import createTextArea from "../src/primitives/textarea.js";
+import createSlider from "../src/primitives/slider.js";
+import createCheckbox from "../src/primitives/checkbox.js";
+import createColorPicker from "../src/primitives/colorPicker.js";
 import {
   applyScrollStyles,
   applyVisibility,
@@ -21,6 +27,12 @@ const classes = {
   view: createView({}),
   grid: createGrid({}),
   image: createImage({}),
+  input: createInput({}),
+  "input-number": createInputNumber({}),
+  textarea: createTextArea({}),
+  slider: createSlider({}),
+  checkbox: createCheckbox({}),
+  "color-picker": createColorPicker({}),
 };
 const tag = (name) => `rtgl-${name}-responsive-styles-test`;
 
@@ -36,9 +48,9 @@ const mount = (name, attrs) => {
   document.body.append(element);
   return element;
 };
-const orderedBuckets = (element) =>
+const orderedBuckets = (element, styles = element._styles) =>
   Object.fromEntries(
-    Object.entries(element._styles).map(([size, bucket]) => [
+    Object.entries(styles).map(([size, bucket]) => [
       size,
       Object.entries(bucket),
     ]),
@@ -72,6 +84,10 @@ beforeAll(() => {
 
 afterEach(() => {
   document.body.replaceChildren();
+});
+
+afterAll(() => {
+  vi.unstubAllGlobals();
 });
 
 describe("rebuildResponsiveStyles", () => {
@@ -149,6 +165,23 @@ describe("shared bucket helpers", () => {
       ["height", "100%"],
       ["min-height", "unset"],
       ["max-height", "unset"],
+    ]);
+  });
+
+  it("leaves min/max alone for f when unsetBoundsOnFill is false", () => {
+    const element = host({ w: "f", h: "f", "sm-wh": "20" });
+    const build = (args) => applySizing({ ...args, unsetBoundsOnFill: false });
+    expect(buildAt("default", element, build)).toEqual([
+      ["width", "var(--width-stretch)"],
+      ["height", "100%"],
+    ]);
+    expect(buildAt("sm", element, build)).toEqual([
+      ["width", "20px"],
+      ["min-width", "20px"],
+      ["max-width", "20px"],
+      ["height", "20px"],
+      ["min-height", "20px"],
+      ["max-height", "20px"],
     ]);
   });
 
@@ -357,11 +390,106 @@ describe("primitive style buckets", () => {
     });
   });
 
-  it.each(["view", "grid", "image"])(
+  const spacingMd = "var(--spacing-md)";
+  const fixedSize = (axis, value) => [
+    [axis, value], [`min-${axis}`, value], [`max-${axis}`, value],
+  ];
+  const fieldAttributes = {
+    z: "2", op: "0.5", w: "f", h: "40", hide: "", "md-show": "",
+    "sm-wh": "md", "lg-w": "2fg",
+  };
+
+  it.each([
+    ["input", "input"],
+    ["input-number", "input"],
+    ["color-picker", "button.trigger"],
+  ])("builds %s buckets with bounds unset on fill", (name, selector) => {
+    const element = mount(name, fieldAttributes);
+    expect(orderedBuckets(element)).toEqual({
+      default: [
+        ["z-index", "2"], ["opacity", "0.5"], ["width", "var(--width-stretch)"],
+        ["min-width", "unset"], ["max-width", "unset"],
+        ...fixedSize("height", "40px"), ["display", "none"],
+      ],
+      sm: [...fixedSize("width", spacingMd), ...fixedSize("height", spacingMd)],
+      md: [["display", "block"]],
+      lg: fixedSize("width", "2fg"),
+      xl: [],
+    });
+    expect(element._styleElement.textContent.startsWith(`${selector} {\n`)).toBe(true);
+  });
+
+  it.each([
+    ["textarea", "textarea"],
+    ["slider", 'input[type="range"]'],
+  ])("builds %s buckets without unsetting bounds on fill", (name, selector) => {
+    const element = mount(name, { ...fieldAttributes, "xl-h": "f" });
+    expect(orderedBuckets(element)).toEqual({
+      default: [
+        ["z-index", "2"], ["opacity", "0.5"], ["width", "var(--width-stretch)"],
+        ...fixedSize("height", "40px"), ["display", "none"],
+      ],
+      sm: [...fixedSize("width", spacingMd), ...fixedSize("height", spacingMd)],
+      md: [["display", "block"]],
+      lg: fixedSize("width", "2fg"),
+      xl: [["height", "100%"]],
+    });
+    expect(element._styleElement.textContent.startsWith(`${selector} {\n`)).toBe(true);
+  });
+
+  it("builds textarea styles on connect and then one size at a time", () => {
+    const textarea = withAttributes(document.createElement(tag("textarea")), {
+      w: "10", "md-w": "20",
+    });
+    expect(textarea._styleElement.textContent).toBe("");
+    document.body.append(textarea);
+    const defaultBucket = textarea._styles.default;
+    textarea.setAttribute("md-w", "30");
+    textarea.setAttribute("sm-op", "0.2");
+    expect(textarea._styles.default).toBe(defaultBucket);
+    expect(orderedBuckets(textarea)).toEqual({
+      default: fixedSize("width", "10px"),
+      sm: [["opacity", "0.2"]],
+      md: fixedSize("width", "30px"),
+      lg: [],
+      xl: [],
+    });
+  });
+
+  it("splits checkbox styles between the box and the native input", () => {
+    const checkbox = mount("checkbox", {
+      z: "2", op: "0.5", w: "f", h: "20", hide: "", "sm-h": "f",
+      "md-h": "50%", "lg-wh": "md", "xl-show": "",
+    });
+    expect(orderedBuckets(checkbox)).toEqual({
+      default: [["width", "var(--width-stretch)"], ...fixedSize("height", "20px")],
+      sm: [["height", "100%"]],
+      md: fixedSize("height", "50%"),
+      lg: [...fixedSize("width", spacingMd), ...fixedSize("height", spacingMd)],
+      xl: [],
+    });
+    expect(orderedBuckets(checkbox, checkbox._controlStyles)).toEqual({
+      default: [
+        ["z-index", "2"], ["opacity", "0.5"], ["--checkbox-box-height", "20px"],
+        ["display", "none"],
+      ],
+      sm: [],
+      md: [],
+      lg: [["--checkbox-box-height", spacingMd]],
+      xl: [["display", "inline-flex"]],
+    });
+    const text = checkbox._styleElement.textContent;
+    expect(text.startsWith(".checkbox-control {\n")).toBe(true);
+    expect(text.indexOf(".checkbox-control")).toBeLessThan(
+      text.indexOf('input[type="checkbox"]'),
+    );
+  });
+
+  it.each(Object.keys(classes))(
     "does not rewrite the %s <style> when the CSS is unchanged",
     (name) => {
       const element = mount(name, { "md-w": "120" });
-      const style = element.shadowRoot.querySelector("style");
+      const style = element._styleElement;
       const text = style.textContent;
       expect(text).toContain("width: 120px !important;");
       const firstChild = style.firstChild;

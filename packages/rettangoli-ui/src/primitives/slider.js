@@ -1,10 +1,15 @@
 import { fieldTextAriaAttributes as fieldAriaAttributes, forwardFieldAria } from "../accessibility/field.js";
 import {
   css,
-  dimensionWithUnit,
   convertObjectToCssString,
   styleMapKeys,
   permutateBreakpoints,
+  createResponsiveStyleBuckets,
+  rebuildResponsiveStyles,
+  applyZIndexAndOpacity,
+  applySizing,
+  applyVisibility,
+  commitStyleText,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
@@ -81,13 +86,7 @@ class RettangoliSliderElement extends HTMLElement {
     this.shadowRoot.adoptedStyleSheets = [RettangoliSliderElement.styleSheet];
 
     // Initialize style tracking properties
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
+    this._styles = createResponsiveStyleBuckets();
     this._lastStyleString = "";
 
     // Create initial DOM structure
@@ -173,69 +172,16 @@ class RettangoliSliderElement extends HTMLElement {
   }
 
   updateStyles() {
-    // Reset styles for fresh calculation
-    this._styles = {
-      default: {},
-      sm: {},
-      md: {},
-      lg: {},
-      xl: {},
-    };
-
-    ["default", "sm", "md", "lg", "xl"].forEach((size) => {
-      const addSizePrefix = (tag) => {
-        return `${size === "default" ? "" : `${size}-`}${tag}`;
-      };
-
-      const wh = this.getAttribute(addSizePrefix("wh"));
-      const width = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
-      );
-      const height = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
-      );
-      const opacity = this.getAttribute(addSizePrefix("op"));
-      const zIndex = this.getAttribute(addSizePrefix("z"));
-
-      if (zIndex !== null) {
-        this._styles[size]["z-index"] = zIndex;
-      }
-
-      if (opacity !== null) {
-        this._styles[size].opacity = opacity;
-      }
-
-      if (width === "f") {
-        this._styles[size].width = "var(--width-stretch)";
-      } else if (width !== undefined) {
-        this._styles[size].width = width;
-        this._styles[size]["min-width"] = width;
-        this._styles[size]["max-width"] = width;
-      }
-
-      if (height === "f") {
-        this._styles[size].height = "100%";
-      } else if (height !== undefined) {
-        this._styles[size].height = height;
-        this._styles[size]["min-height"] = height;
-        this._styles[size]["max-height"] = height;
-      }
-
-      if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none";
-      }
-
-      if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "block";
-      }
+    rebuildResponsiveStyles({
+      styles: this._styles,
+      buildStyles: ({ styleBucket, attrName }) => {
+        applyZIndexAndOpacity({ styleBucket, element: this, attrName });
+        applySizing({ styleBucket, element: this, attrName, unsetBoundsOnFill: false });
+        applyVisibility({ styleBucket, element: this, attrName, display: "block" });
+      },
     });
 
-    // Update styles only if changed - targeting input element
-    const newStyleString = convertObjectToCssString(this._styles, 'input[type="range"]');
-    if (newStyleString !== this._lastStyleString) {
-      this._styleElement.textContent = newStyleString;
-      this._lastStyleString = newStyleString;
-    }
+    commitStyleText(this, convertObjectToCssString(this._styles, 'input[type="range"]'));
   }
 
   _updateInputAttributes() {

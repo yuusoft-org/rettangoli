@@ -66,6 +66,42 @@ export const getOverlayScrollbarMetrics = ({
   };
 };
 
+// The sh/sv rules of overlayScrollbarStyles, repeated for each breakpoint,
+// largest first. check reads only literal `:host([...])` selectors; view and
+// grid list the breakpoint sh/sv attributes themselves.
+const breakpointScrollbarStyles = [
+  ["xl", 1280],
+  ["lg", 1024],
+  ["md", 768],
+  ["sm", 640],
+]
+  .map(
+    ([size, maxWidth]) => `
+  @media only screen and (max-width: ${maxWidth}px) {
+    :host([${size}-sh]),
+    :host([${size}-sv]) {
+      -ms-overflow-style: none !important;
+      scrollbar-gutter: auto !important;
+      scrollbar-width: none !important;
+    }
+
+    :host([${size}-sh])::-webkit-scrollbar,
+    :host([${size}-sv])::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
+    :host([${size}-sh]),
+    :host([${size}-sv]) {
+      isolation: isolate !important;
+      position: relative;
+    }
+  }
+`,
+  )
+  .join("");
+
 export const overlayScrollbarStyles = `
   :host {
     --rtgl-scrollbar-x-enabled: 0;
@@ -100,95 +136,7 @@ export const overlayScrollbarStyles = `
     isolation: isolate !important;
     position: relative;
   }
-
-  @media only screen and (max-width: 1280px) {
-    :host([xl-sh]),
-    :host([xl-sv]) {
-      -ms-overflow-style: none !important;
-      scrollbar-gutter: auto !important;
-      scrollbar-width: none !important;
-    }
-
-    :host([xl-sh])::-webkit-scrollbar,
-    :host([xl-sv])::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-
-    :host([xl-sh]),
-    :host([xl-sv]) {
-      isolation: isolate !important;
-      position: relative;
-    }
-  }
-
-  @media only screen and (max-width: 1024px) {
-    :host([lg-sh]),
-    :host([lg-sv]) {
-      -ms-overflow-style: none !important;
-      scrollbar-gutter: auto !important;
-      scrollbar-width: none !important;
-    }
-
-    :host([lg-sh])::-webkit-scrollbar,
-    :host([lg-sv])::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-
-    :host([lg-sh]),
-    :host([lg-sv]) {
-      isolation: isolate !important;
-      position: relative;
-    }
-  }
-
-  @media only screen and (max-width: 768px) {
-    :host([md-sh]),
-    :host([md-sv]) {
-      -ms-overflow-style: none !important;
-      scrollbar-gutter: auto !important;
-      scrollbar-width: none !important;
-    }
-
-    :host([md-sh])::-webkit-scrollbar,
-    :host([md-sv])::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-
-    :host([md-sh]),
-    :host([md-sv]) {
-      isolation: isolate !important;
-      position: relative;
-    }
-  }
-
-  @media only screen and (max-width: 640px) {
-    :host([sm-sh]),
-    :host([sm-sv]) {
-      -ms-overflow-style: none !important;
-      scrollbar-gutter: auto !important;
-      scrollbar-width: none !important;
-    }
-
-    :host([sm-sh])::-webkit-scrollbar,
-    :host([sm-sv])::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-
-    :host([sm-sh]),
-    :host([sm-sv]) {
-      isolation: isolate !important;
-      position: relative;
-    }
-  }
-
+${breakpointScrollbarStyles}
   [data-rtgl-scrollbar-layer] {
     display: none;
     position: absolute;
