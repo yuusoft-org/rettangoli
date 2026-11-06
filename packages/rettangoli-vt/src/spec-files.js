@@ -64,11 +64,24 @@ export function listSpecKeys(specsDir) {
   );
 }
 
+// Drops the last extension of the file name ("a/b.yaml" -> "a/b"; "a.b/c" is unchanged).
+export function removeExtension(filePath) {
+  return filePath.replace(/\.[^/.]+$/, "");
+}
+
 export function toHtmlOutputPath(relativeSpecPath) {
   if (relativeSpecPath.endsWith(".html")) {
     return relativeSpecPath;
   }
-  return `${relativeSpecPath.replace(/\.[^/.]+$/, "")}.html`;
+  return `${removeExtension(relativeSpecPath)}.html`;
+}
+
+// URL path of a spec's generated page. The browser percent-encodes spaces and non-ASCII characters
+// itself, and the built-in server decodes them. "%", "#" and "?" would be read as an escape, a
+// fragment or a query instead, so they are escaped here.
+export function toCandidateUrlPath(relativeSpecPath) {
+  const urlPath = toHtmlOutputPath(relativeSpecPath.replace(/\\/g, "/"));
+  return `/candidate/${urlPath.replace(/[%#?]/g, encodeURIComponent)}`;
 }
 
 // Two specs that generate the same page would overwrite each other.

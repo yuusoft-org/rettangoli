@@ -1,20 +1,9 @@
 import { normalizeViewportField } from "./viewport.js";
 import { deriveSectionPageKey } from "./section-page-key.js";
+import { assert, valueType } from "./assert.js";
 
 function isPlainObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
-}
-
-function valueType(value) {
-  if (Array.isArray(value)) return "array";
-  if (value === null) return "null";
-  return typeof value;
-}
-
-function assert(condition, message) {
-  if (!condition) {
-    throw new Error(message);
-  }
 }
 
 function validateOptionalString(value, path, options = {}) {

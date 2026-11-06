@@ -1,23 +1,5 @@
 import { appendViewportToBaseName, resolveViewports } from "../viewport.js";
-
-const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
-
-const toHtmlPath = (filePath) => {
-  if (filePath.endsWith(".html")) {
-    return filePath;
-  }
-  return `${removeExtension(filePath)}.html`;
-};
-
-function normalizePathForUrl(filePath) {
-  return filePath.replace(/\\/g, "/");
-}
-
-// The browser percent-encodes spaces and non-ASCII characters itself, and the built-in server
-// decodes them. "%", "#" and "?" would be read as an escape, a fragment or a query instead.
-function encodeSpecPathForUrl(urlPath) {
-  return urlPath.replace(/[%#?]/g, encodeURIComponent);
-}
+import { removeExtension, toCandidateUrlPath } from "../spec-files.js";
 
 function toAbsoluteUrl(rawUrl, serverUrl) {
   if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
@@ -75,8 +57,7 @@ export function createCaptureTasks(generatedFiles, options) {
 
   generatedFiles.forEach((file, fileIndex) => {
     const frontMatter = file.frontMatter || {};
-    const normalizedPath = normalizePathForUrl(file.path);
-    const constructedUrl = toHtmlPath(`${serverUrl}/candidate/${encodeSpecPathForUrl(normalizedPath)}`);
+    const constructedUrl = `${serverUrl}${toCandidateUrlPath(file.path)}`;
     const resolvedConfigUrl = configUrl ? toAbsoluteUrl(configUrl, serverUrl) : null;
     // Only the page VT generated must exist: a 4xx/5xx answer fails the task (see navigateToReadyState).
     const vtOwnedUrl = (frontMatter.url ?? resolvedConfigUrl) == null;

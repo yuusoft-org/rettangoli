@@ -1,21 +1,11 @@
+import { assert, valueType } from "./assert.js";
+
 export const VIEWPORT_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 export const DEFAULT_VIEWPORT = Object.freeze({
   width: 1280,
   height: 720,
 });
-
-function valueType(value) {
-  if (Array.isArray(value)) return "array";
-  if (value === null) return "null";
-  return typeof value;
-}
-
-function assert(condition, message) {
-  if (!condition) {
-    throw new Error(message);
-  }
-}
 
 function validateViewportEntry(entry, path) {
   assert(

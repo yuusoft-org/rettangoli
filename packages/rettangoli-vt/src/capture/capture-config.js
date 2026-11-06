@@ -5,7 +5,7 @@ import { validateFiniteNumber } from "../validation.js";
  * Builds the one frozen capture configuration that takeScreenshots consumes, from
  * resolveGenerateOptions' result, the files to capture, the built-in server's port and
  * the candidate directory. The defaults below never apply to `rtgl vt screenshot`,
- * because resolveGenerateOptions sets every one of these fields.
+ * because resolveGenerateOptions sets every field that has one.
  */
 export function createCaptureConfig({
   resolvedOptions,
@@ -16,10 +16,10 @@ export function createCaptureConfig({
   const {
     workerCount,
     screenshotWaitTime = 10,
-    configUrl = undefined,
-    waitEvent = undefined,
-    waitSelector = undefined,
-    waitStrategy = undefined,
+    configUrl,
+    waitEvent,
+    waitSelector,
+    waitStrategy,
     navigationTimeout = 30000,
     readyTimeout = 30000,
     screenshotTimeout = 30000,
@@ -28,7 +28,7 @@ export function createCaptureConfig({
     isolationMode = "fast",
     metricsPath = join(".rettangoli", "vt", "metrics.json"),
     headless = true,
-    viewport = undefined,
+    viewport,
   } = resolvedOptions;
   const screenshotsDir = candidatePath;
 

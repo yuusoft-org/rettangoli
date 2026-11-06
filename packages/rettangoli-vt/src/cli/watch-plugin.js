@@ -5,7 +5,6 @@ import {
 } from "node:fs";
 import {
   copyFile,
-  cp,
   mkdir,
   mkdtemp,
   readdir,
@@ -23,12 +22,12 @@ import { parse } from "parse5";
 import {
   generateHtml,
   generateOverview,
-  readYaml,
 } from "../common.js";
+import { readVtConfig } from "../config/load-vt-config.js";
+import { copySiteStatic, renderSite, resolveTemplatePaths } from "../site/build-site.js";
 import { deriveSectionPageKey } from "../section-page-key.js";
 import { isPathInside } from "../path-safety.js";
-import { hasIgnoredSpecSegment, listSpecFiles } from "../spec-files.js";
-import { validateVtConfig } from "../validation.js";
+import { hasIgnoredSpecSegment, listSpecFiles, toHtmlOutputPath } from "../spec-files.js";
 
 const libraryTemplatesPath = fileURLToPath(new URL("./templates", import.meta.url));
 const libraryStaticPath = fileURLToPath(new URL("./static", import.meta.url));
@@ -402,11 +401,6 @@ for (
 }
 `.trim();
 
-const convertToHtmlExtension = (filePath) =>
-  filePath.endsWith(".html")
-    ? filePath
-    : filePath.replace(/\.[^/.]+$/, "") + ".html";
-
 const inspectHtmlStructure = (html) => {
   const document = parse(html, { sourceCodeLocationInfo: true });
   let body = null;
@@ -539,24 +533,10 @@ const loadWatchContext = async ({
   outputDir = path.join(".rettangoli", "vt", "_site"),
 }) => {
   const configPath = path.resolve(cwd, "rettangoli.config.yaml");
-  const mainConfig = await readYaml(configPath);
-  if (!mainConfig?.vt) {
-    throw new Error(
-      `Invalid "${configPath}": missing required "vt" section.`,
-    );
-  }
-
-  const configData = validateVtConfig(mainConfig.vt, configPath);
+  const configData = await readVtConfig(configPath);
   const vtPath = path.resolve(cwd, configData.path || "vt");
-  const templatesPath = path.join(vtPath, "templates");
-  const defaultTemplatePath = existsSync(
-    path.join(templatesPath, "default.html"),
-  )
-    ? path.join(templatesPath, "default.html")
-    : path.join(libraryTemplatesPath, "default.html");
-  const indexTemplatePath = existsSync(path.join(templatesPath, "index.html"))
-    ? path.join(templatesPath, "index.html")
-    : path.join(libraryTemplatesPath, "index.html");
+  const { templatesPath, defaultTemplatePath, indexTemplatePath } =
+    resolveTemplatePaths(vtPath, libraryTemplatesPath);
 
   return {
     candidatePath: path.resolve(cwd, outputDir, "candidate"),
@@ -706,35 +686,24 @@ const createFullStage = async (context) => {
   );
 
   try {
-    await cp(libraryStaticPath, stagePath, { recursive: true });
-    if (existsSync(context.userStaticPath)) {
-      await cp(context.userStaticPath, stagePath, { recursive: true });
-    }
+    await copySiteStatic(stagePath, {
+      libraryStaticPath,
+      userStaticPath: context.userStaticPath,
+    });
     await copyNonHtmlArtifacts(
       path.join(context.outputDir, "candidate"),
       path.join(stagePath, "candidate"),
     );
-
-    const generatedFiles = await generateHtml(
-      context.specsPath,
-      context.defaultTemplatePath,
-      path.join(stagePath, "candidate"),
-      {
-        defaultTemplate: context.defaultTemplatePath,
-        logger: quietGenerationLogger,
-        vtPath: context.vtPath,
-      },
-    );
-    generateOverview(
-      generatedFiles,
-      context.indexTemplatePath,
-      path.join(stagePath, "index.html"),
-      context.configData,
-      {
-        logger: quietGenerationLogger,
-        throwOnRenderError: true,
-      },
-    );
+    await renderSite({
+      specsPath: context.specsPath,
+      candidateDir: path.join(stagePath, "candidate"),
+      siteDir: stagePath,
+      templatePaths: context,
+      vtPath: context.vtPath,
+      configData: context.configData,
+      logger: quietGenerationLogger,
+      throwOnRenderError: true,
+    });
     return stagePath;
   } catch (error) {
     await rm(stagePath, { force: true, recursive: true });
@@ -802,7 +771,7 @@ export const generateVtWatchSpecs = async ({
       return {
         outputPath: path.join(
           context.candidatePath,
-          convertToHtmlExtension(relativePath),
+          toHtmlOutputPath(relativePath),
         ),
         relativePath,
         resolvedFilePath,
@@ -900,7 +869,7 @@ export const generateVtWatchSpecs = async ({
         outputPath: spec.outputPath,
         stagedOutputPath: path.join(
           stagedCandidatePath,
-          convertToHtmlExtension(spec.relativePath),
+          toHtmlOutputPath(spec.relativePath),
         ),
       })),
       ...affectedSections.map((section) => {

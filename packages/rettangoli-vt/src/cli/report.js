@@ -6,8 +6,9 @@ import { fileURLToPath } from "node:url";
 import { load as loadYaml } from "js-yaml";
 import pixelmatch from "pixelmatch";
 import sharp from "sharp";
-import { extractFrontMatter, readYaml } from "../common.js";
-import { validateFiniteNumber, validateVtConfig } from "../validation.js";
+import { extractFrontMatter } from "../common.js";
+import { readVtConfig } from "../config/load-vt-config.js";
+import { validateFiniteNumber } from "../validation.js";
 import { resolveReportOptions } from "./report-options.js";
 import {
   buildAllRelativePaths,
@@ -134,19 +135,7 @@ async function compareImages(artifactPath, goldPath, method = "pixelmatch", diff
 
 async function main(options = {}) {
   const mainConfigPath = "rettangoli.config.yaml";
-  let mainConfig;
-  try {
-    mainConfig = await readYaml(mainConfigPath);
-  } catch (error) {
-    throw new Error(`Unable to read "${mainConfigPath}": ${error.message}`, { cause: error });
-  }
-
-  const vtConfig = mainConfig?.vt;
-  if (!vtConfig) {
-    throw new Error(`Invalid "${mainConfigPath}": missing required "vt" section.`);
-  }
-
-  const configData = validateVtConfig(vtConfig, mainConfigPath);
+  const configData = await readVtConfig(mainConfigPath, { wrapReadError: true });
   const {
     vtPath,
     compareMethod,

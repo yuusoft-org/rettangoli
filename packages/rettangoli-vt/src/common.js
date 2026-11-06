@@ -8,20 +8,22 @@ import {
 import { join, dirname, resolve, extname } from "path";
 import http from "http";
 import { load as loadYaml } from "js-yaml";
-import { Liquid } from "liquidjs";
 import { codeToHtml } from "shiki";
 import path from "path";
 import { validateFrontMatter } from "./validation.js";
 import { createCaptureTasks } from "./capture/spec-loader.js";
 import { runCaptureScheduler } from "./capture/capture-scheduler.js";
 import { deriveAnchorId, deriveSectionPageKey } from "./section-page-key.js";
-import { assertUniqueHtmlOutputs, listSpecFiles, toHtmlOutputPath } from "./spec-files.js";
+import {
+  assertUniqueHtmlOutputs,
+  listSpecFiles,
+  removeExtension,
+  toHtmlOutputPath,
+} from "./spec-files.js";
 import { isPathInside } from "./path-safety.js";
+import { createLiquidEngine } from "./render/liquid.js";
 
-const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
-
-// Initialize LiquidJS with output escaping disabled
-const engine = new Liquid();
+const engine = createLiquidEngine();
 
 /**
  * Read and parse a YAML file
@@ -35,17 +37,6 @@ async function readYaml(filePath) {
     throw error;
   }
 }
-
-// Add custom filter to derive slug-safe ids for URLs and anchors.
-engine.registerFilter("slug", (value, fallbackValue) => {
-  return deriveAnchorId(value, fallbackValue);
-});
-
-// Add custom filter to remove file extension
-engine.registerFilter("remove_ext", (value) => {
-  if (typeof value !== "string") return "";
-  return removeExtension(value);
-});
 
 /**
  * Get all spec files from a directory recursively (byte-sorted, stray files ignored)
