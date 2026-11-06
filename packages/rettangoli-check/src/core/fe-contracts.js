@@ -13,7 +13,7 @@ const PROP_PREFIX = ":";
 const REF_ID_KEY_REGEX = /^[a-z][a-zA-Z0-9]*\*?$/;
 const REF_CLASS_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]*\*?$/;
 const REF_ID_REGEX = /^[a-z][a-zA-Z0-9]*$/;
-const GLOBAL_REF_KEYS = new Set(["window", "document"]);
+export const GLOBAL_REF_KEYS = new Set(["window", "document"]);
 
 const isSpace = (character) => /\s/.test(character);
 

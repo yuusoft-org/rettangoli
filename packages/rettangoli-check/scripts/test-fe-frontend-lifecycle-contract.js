@@ -3,9 +3,9 @@
 import assert from "node:assert/strict";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { analyzeProject } from "../src/core/analyze.js";
 import { discoverComponentEntries, groupEntriesByComponent } from "../src/core/discovery.js";
 import { buildComponentModel } from "../src/core/model.js";
-import { runLifecycleRules } from "../src/rules/lifecycle.js";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -20,37 +20,32 @@ const CASES = [
   },
 ];
 
-CASES.forEach(({ scenarioDir, expectedCodes }) => {
+const toLifecycleCodes = (diagnostics = []) => diagnostics
+  .filter((diag) => diag.code.startsWith("RTGL-CHECK-LIFECYCLE-"))
+  .map((diag) => diag.code)
+  .sort();
+
+for (const { scenarioDir, expectedCodes } of CASES) {
   const scenarioRoot = path.resolve(currentDir, "../test/scenarios", scenarioDir);
-  const discovery = discoverComponentEntries({
-    cwd: scenarioRoot,
-    dirs: ["./src/components"],
-  });
-  const groups = groupEntriesByComponent(discovery.entries);
+  const dirs = ["./src/components"];
 
+  // Lifecycle diagnostics come from the component model (model.js validateLifecycleHandlers).
+  const groups = groupEntriesByComponent(discoverComponentEntries({ cwd: scenarioRoot, dirs }).entries);
   assert.equal(groups.length, 1, `expected exactly one component group in fixture ${scenarioDir}`);
-
-  const model = buildComponentModel(groups[0]);
-  const frontendLifecycleCodes = model.diagnostics
-    .filter((diag) => diag.code.startsWith("RTGL-CHECK-LIFECYCLE-"))
-    .map((diag) => diag.code)
-    .sort();
-
   assert.deepEqual(
-    frontendLifecycleCodes,
+    toLifecycleCodes(buildComponentModel(groups[0]).diagnostics),
     [...expectedCodes].sort(),
-    `unexpected frontend lifecycle diagnostics for ${scenarioDir}`,
+    `unexpected model lifecycle diagnostics for ${scenarioDir}`,
   );
 
-  const ruleLifecycleCodes = runLifecycleRules({ models: [model] })
-    .filter((diag) => diag.code.startsWith("RTGL-CHECK-LIFECYCLE-"))
-    .map((diag) => diag.code);
-
-  assert.equal(
-    ruleLifecycleCodes.length,
-    0,
-    `legacy lifecycle rule pass should not emit lifecycle diagnostics for ${scenarioDir}`,
+  // analyzeProject reports each of them once: no rule pass adds lifecycle diagnostics. LIFECYCLE-002 is a
+  // style diagnostic, so the run includes style checks.
+  const result = await analyzeProject({ cwd: scenarioRoot, dirs, includeStyle: true });
+  assert.deepEqual(
+    toLifecycleCodes(result.diagnostics),
+    [...expectedCodes].sort(),
+    `unexpected analyzeProject lifecycle diagnostics for ${scenarioDir}`,
   );
-});
+}
 
-console.log("FE frontend lifecycle contract pass (frontend-only lifecycle diagnostics).");
+console.log("FE frontend lifecycle contract pass (lifecycle diagnostics come from the component model only).");

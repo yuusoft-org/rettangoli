@@ -10,6 +10,14 @@ export const isObjectRecord = (value) => {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 };
 
+export const normalizeBindingName = (bindingName = "") => {
+  if (bindingName.startsWith(":")) return { sourceType: "prop", name: bindingName.slice(1) };
+  if (bindingName.startsWith("?")) return { sourceType: "boolean-attr", name: bindingName.slice(1) };
+  if (bindingName.startsWith(".")) return { sourceType: "legacy-prop", name: bindingName.slice(1) };
+  if (bindingName.startsWith("@")) return { sourceType: "event", name: bindingName.slice(1) };
+  return { sourceType: "attr", name: bindingName };
+};
+
 export const getYamlPathLine = (keyPathLines, parts = []) => {
   if (!(keyPathLines instanceof Map)) {
     return undefined;

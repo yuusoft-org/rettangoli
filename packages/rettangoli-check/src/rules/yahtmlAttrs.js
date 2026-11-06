@@ -1,7 +1,7 @@
 import { toCamelCase, toKebabCase } from "../utils/case.js";
 import { isValidAttributeName } from "../core/fe-contracts.js";
 import { getRegistryLoadFailures } from "../core/registry.js";
-import { escapeRegExp, isConvertibleLegacyBinding } from "./shared.js";
+import { escapeRegExp, isConvertibleLegacyBinding, normalizeBindingName } from "./shared.js";
 
 const GENERIC_ALLOWED_ATTRS = new Set([
   "accesskey",
@@ -38,31 +38,6 @@ const GENERIC_ALLOWED_ATTRS = new Set([
   "new-tab",
   "rel",
 ]);
-
-const normalizeBindingName = (bindingName = "") => {
-  if (bindingName.startsWith(":")) {
-    return {
-      sourceType: "prop",
-      name: bindingName.slice(1),
-    };
-  }
-  if (bindingName.startsWith("?")) {
-    return {
-      sourceType: "boolean-attr",
-      name: bindingName.slice(1),
-    };
-  }
-  if (bindingName.startsWith(".")) {
-    return {
-      sourceType: "legacy-prop",
-      name: bindingName.slice(1),
-    };
-  }
-  return {
-    sourceType: "attr",
-    name: bindingName,
-  };
-};
 
 const isDynamicToken = (value = "") => {
   return (

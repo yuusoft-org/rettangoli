@@ -3,10 +3,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { load as loadYaml } from "js-yaml";
-import { parseSync } from "oxc-parser";
 import { walkFiles } from "../utils/fs.js";
 import { toCamelCase, toKebabCase } from "../utils/case.js";
+import { parseJs } from "./jsParse.js";
 import { collectProjectPrimitiveContracts } from "./projectPrimitives.js";
+import { isObjectRecord } from "../rules/shared.js";
 
 const addHostStyleAttrs = (contract, styles) => {
   if (!styles || typeof styles !== "object") return;
@@ -112,10 +113,6 @@ const getOrCreateContract = (registryMap, tagName) => {
     registryMap.set(tagName, createContract({ tagName }));
   }
   return registryMap.get(tagName);
-};
-
-const isObjectRecord = (value) => {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
 };
 
 const hasNonEmptyComponentName = (componentName) => {
@@ -333,7 +330,7 @@ const extractUiComponentContracts = ({ uiDir }) => {
 
 const parseProgramWithOxc = ({ sourceCode = "", filePath = "unknown.js" } = {}) => {
   try {
-    const parsed = parseSync(filePath, sourceCode, { sourceType: "unambiguous" });
+    const parsed = parseJs({ filePath, sourceText: sourceCode, sourceType: "unambiguous" });
     if (!parsed?.program?.body || !Array.isArray(parsed.program.body)) {
       return null;
     }

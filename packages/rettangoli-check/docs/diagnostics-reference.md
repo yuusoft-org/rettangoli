@@ -41,8 +41,6 @@ Default family and severity are inferred from code prefixes:
 - `RTGL-CHECK-READ-*`: `io`, `error`
 - `RTGL-CHECK-PARSE-*`: `parse`, `error`
 - `RTGL-CHECK-REGISTRY-*`: `registry`, `warn`
-- `RTGL-IR-VAL-*`: `ir-validation`, `error`
-- `RTGL-IR-INV-*`: `ir-invariants`, `error`
 - `RTGL-CLI-*`: `cli`, `error`
 
 ## Template Binding Diagnostics

@@ -17,7 +17,7 @@
     "rtgl-check": "./src/cli/bin.js"
   },
   "scripts": {
-    "ci": "npm run test:no-fe-contracts-import && npm run test:ui-registry-resolution-contract && npm run test:ui-registry-load-contract && npm run test:discovery-symlinks-contract && npm run test:ui-primitive-imported-host-attrs-contract && npm run test:runtime-compatibility && npm run test:scenarios && npm run test:fe-parity && npm run test:listener-issues-contract && npm run test:diff-js-exports && npm run test:fuzz-template-pipeline && npm run test:fuzz-jempl-parser && npm run test:jempl-parser-contract && npm run test:scope-graph-range-contract && npm run test:fe-frontend-component-identity-contract && npm run test:fe-frontend-handler-contract && npm run test:fe-frontend-lifecycle-contract && npm run test:fe-frontend-oxc-contract && npm run test:fe-frontend-schema-normalization-contract && npm run test:semantic-engine-contract && npm run test:type-system-contract && npm run test:yahtml-parser-snapshots && npm run test:yahtml-parser-crash && npm run test:fuzz-yahtml-parser && npm run test:fuzz-fe-contract-combinations",
+    "ci": "npm run test:no-fe-contracts-import && npm run test:ui-registry-resolution-contract && npm run test:ui-registry-load-contract && npm run test:discovery-symlinks-contract && npm run test:ui-primitive-imported-host-attrs-contract && npm run test:runtime-compatibility && npm run test:scenarios && npm run test:fe-parity && npm run test:listener-issues-contract && npm run test:fuzz-template-pipeline && npm run test:fuzz-jempl-parser && npm run test:jempl-parser-contract && npm run test:scope-graph-range-contract && npm run test:fe-frontend-component-identity-contract && npm run test:fe-frontend-handler-contract && npm run test:fe-frontend-lifecycle-contract && npm run test:fe-frontend-oxc-contract && npm run test:fe-frontend-schema-normalization-contract && npm run test:semantic-engine-contract && npm run test:type-system-contract && npm run test:yahtml-parser-snapshots && npm run test:yahtml-parser-crash && npm run test:fuzz-yahtml-parser && npm run test:fuzz-fe-contract-combinations",
     "test": "npm run ci",
     "test:runtime-compatibility": "node ./scripts/test-runtime-compatibility.js",
     "test:package": "node ./scripts/package-smoke-test.js",
@@ -25,7 +25,6 @@
     "test:fe-parity": "node ./scripts/test-fe-parity.js",
     "test:listener-issues-contract": "node ./scripts/test-listener-issues-contract.js",
     "test:no-fe-contracts-import": "node ./scripts/test-no-fe-contracts-import.js",
-    "test:diff-js-exports": "node ./scripts/differential-js-exports.js",
     "test:fuzz-template-pipeline": "node ./scripts/fuzz-template-pipeline.js",
     "test:fuzz-jempl-parser": "node ./scripts/fuzz-jempl-parser.js",
     "test:jempl-parser-contract": "node ./scripts/test-jempl-parser-contract.js",

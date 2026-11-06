@@ -6,14 +6,7 @@ import {
   inferSchemaNodePrimitiveType,
   schemaNodeToLatticeType,
 } from "../types/lattice.js";
-
-const normalizeBindingName = (bindingName = "") => {
-  if (bindingName.startsWith(":")) return { sourceType: "prop", name: bindingName.slice(1) };
-  if (bindingName.startsWith("?")) return { sourceType: "boolean-attr", name: bindingName.slice(1) };
-  if (bindingName.startsWith(".")) return { sourceType: "legacy-prop", name: bindingName.slice(1) };
-  if (bindingName.startsWith("@")) return { sourceType: "event", name: bindingName.slice(1) };
-  return { sourceType: "attr", name: bindingName };
-};
+import { normalizeBindingName } from "./shared.js";
 
 const getContractPropSchema = ({ contract, propName }) => {
   if (!(contract?.propTypes instanceof Map) || !propName) {

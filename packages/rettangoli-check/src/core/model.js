@@ -386,6 +386,60 @@ const toRelatedLocation = ({ message, filePath, range = {} }) => {
   };
 };
 
+const pushReexportDiagnostic = ({
+  diagnostics,
+  diagnosticKeys,
+  code,
+  message,
+  filePath,
+  reference,
+  related,
+}) => {
+  pushUniqueDiagnostic({
+    diagnostics,
+    diagnosticKeys,
+    diagnostic: {
+      code,
+      severity: "error",
+      message,
+      filePath,
+      ...toDiagnosticRange(reference),
+      related,
+    },
+  });
+};
+
+// SYMBOL-006 for a relative re-export whose target file does not exist. `target` describes the
+// re-export in the message, e.g. "re-export target './x'".
+const pushReexportTargetMissing = ({
+  diagnostics,
+  diagnosticKeys,
+  filePath,
+  specifier,
+  target,
+  reference,
+}) => {
+  const attemptedCandidates = buildLocalExportTargetCandidates({
+    importerFilePath: filePath,
+    specifier,
+  });
+  const attemptedSuffix = attemptedCandidates.length > 0
+    ? ` Tried: ${attemptedCandidates.map((candidate) => path.basename(candidate)).join(", ")}.`
+    : "";
+  const declarationRelated = reference?.range
+    ? toRelatedLocation({ message: "Re-export declaration span.", filePath, range: reference.range })
+    : null;
+  pushReexportDiagnostic({
+    diagnostics,
+    diagnosticKeys,
+    code: REEXPORT_TARGET_MISSING_CODE,
+    message: `${path.basename(filePath)}: unable to resolve ${target}.${attemptedSuffix}`,
+    filePath,
+    reference,
+    related: declarationRelated ? [declarationRelated] : [],
+  });
+};
+
 // Returns { exports, exportsKnown }. exportsKnown is false when this module, or a module it
 // re-exports from (export * or a named re-export), does not parse: its export set is then
 // incomplete and must not be used to report missing symbols.
@@ -453,36 +507,13 @@ const collectNamedExportsWithStar = ({
     });
     const resolvedTarget = resolveLocalExportTarget({ importerFilePath: filePath, specifier, dependencies });
     if (!resolvedTarget) {
-      const attemptedCandidates = buildLocalExportTargetCandidates({
-        importerFilePath: filePath,
-        specifier,
-      });
-      const attemptedSuffix = attemptedCandidates.length > 0
-        ? ` Tried: ${attemptedCandidates.map((candidate) => path.basename(candidate)).join(", ")}.`
-        : "";
-      const related = [];
-      if (reference?.range) {
-        const declarationRelated = toRelatedLocation({
-          message: "Re-export declaration span.",
-          filePath,
-          range: reference.range,
-        });
-        if (declarationRelated) {
-          related.push(declarationRelated);
-        }
-      }
-      const diagnosticRange = toDiagnosticRange(reference);
-      pushUniqueDiagnostic({
+      pushReexportTargetMissing({
         diagnostics,
         diagnosticKeys,
-        diagnostic: {
-          code: REEXPORT_TARGET_MISSING_CODE,
-          severity: "error",
-          message: `${path.basename(filePath)}: unable to resolve re-export target '${specifier}'.${attemptedSuffix}`,
-          filePath,
-          ...diagnosticRange,
-          related,
-        },
+        filePath,
+        specifier,
+        target: `re-export target '${specifier}'`,
+        reference,
       });
       return;
     }
@@ -528,36 +559,13 @@ const collectNamedExportsWithStar = ({
     }
 
     exports.delete(exportedName);
-    const attemptedCandidates = buildLocalExportTargetCandidates({
-      importerFilePath: filePath,
-      specifier: moduleRequest,
-    });
-    const attemptedSuffix = attemptedCandidates.length > 0
-      ? ` Tried: ${attemptedCandidates.map((candidate) => path.basename(candidate)).join(", ")}.`
-      : "";
-    const related = [];
-    if (reference?.range) {
-      const declarationRelated = toRelatedLocation({
-        message: "Re-export declaration span.",
-        filePath,
-        range: reference.range,
-      });
-      if (declarationRelated) {
-        related.push(declarationRelated);
-      }
-    }
-    const diagnosticRange = toDiagnosticRange(reference);
-    pushUniqueDiagnostic({
+    pushReexportTargetMissing({
       diagnostics,
       diagnosticKeys,
-      diagnostic: {
-        code: REEXPORT_TARGET_MISSING_CODE,
-        severity: "error",
-        message: `${path.basename(filePath)}: unable to resolve namespace re-export target '${moduleRequest}' for '${exportedName}'.${attemptedSuffix}`,
-        filePath,
-        ...diagnosticRange,
-        related,
-      },
+      filePath,
+      specifier: moduleRequest,
+      target: `namespace re-export target '${moduleRequest}' for '${exportedName}'`,
+      reference,
     });
   });
 
@@ -582,36 +590,13 @@ const collectNamedExportsWithStar = ({
       dependencies,
     });
     if (!resolvedTarget) {
-      const attemptedCandidates = buildLocalExportTargetCandidates({
-        importerFilePath: filePath,
-        specifier: moduleRequest,
-      });
-      const attemptedSuffix = attemptedCandidates.length > 0
-        ? ` Tried: ${attemptedCandidates.map((candidate) => path.basename(candidate)).join(", ")}.`
-        : "";
-      const related = [];
-      if (reference?.range) {
-        const declarationRelated = toRelatedLocation({
-          message: "Re-export declaration span.",
-          filePath,
-          range: reference.range,
-        });
-        if (declarationRelated) {
-          related.push(declarationRelated);
-        }
-      }
-      const diagnosticRange = toDiagnosticRange(reference);
-      pushUniqueDiagnostic({
+      pushReexportTargetMissing({
         diagnostics,
         diagnosticKeys,
-        diagnostic: {
-          code: REEXPORT_TARGET_MISSING_CODE,
-          severity: "error",
-          message: `${path.basename(filePath)}: unable to resolve re-export target '${moduleRequest}'.${attemptedSuffix}`,
-          filePath,
-          ...diagnosticRange,
-          related,
-        },
+        filePath,
+        specifier: moduleRequest,
+        target: `re-export target '${moduleRequest}'`,
+        reference,
       });
       return;
     }
@@ -634,35 +619,21 @@ const collectNamedExportsWithStar = ({
       return;
     }
 
-    const related = [];
-    const targetRelated = toRelatedLocation({
-      message: "Resolved re-export target module.",
-      filePath: resolvedTarget.filePath,
-      range: { line: 1, column: 1, endLine: 1, endColumn: 1 },
-    });
-    if (targetRelated) {
-      related.push(targetRelated);
-    }
-    const declarationRelated = toRelatedLocation({
-      message: "Re-export declaration span.",
-      filePath,
-      range: reference?.range,
-    });
-    if (declarationRelated) {
-      related.push(declarationRelated);
-    }
-    const diagnosticRange = toDiagnosticRange(reference);
-    pushUniqueDiagnostic({
+    pushReexportDiagnostic({
       diagnostics,
       diagnosticKeys,
-      diagnostic: {
-        code: REEXPORT_SYMBOL_MISSING_CODE,
-        severity: "error",
-        message: `${path.basename(filePath)}: re-export '${importedName}' from '${moduleRequest}' does not exist in target module.`,
-        filePath,
-        ...diagnosticRange,
-        related,
-      },
+      code: REEXPORT_SYMBOL_MISSING_CODE,
+      message: `${path.basename(filePath)}: re-export '${importedName}' from '${moduleRequest}' does not exist in target module.`,
+      filePath,
+      reference,
+      related: [
+        toRelatedLocation({
+          message: "Resolved re-export target module.",
+          filePath: resolvedTarget.filePath,
+          range: { line: 1, column: 1, endLine: 1, endColumn: 1 },
+        }),
+        toRelatedLocation({ message: "Re-export declaration span.", filePath, range: reference?.range }),
+      ].filter(Boolean),
     });
   });
 
@@ -727,10 +698,6 @@ export const buildComponentModel = (componentGroup) => {
       exports: new Set(),
       exportsKnown: true,
       sourceText: "",
-    },
-    semanticGraph: {
-      globalSymbols: new Set(),
-      references: [],
     },
   };
 
@@ -880,7 +847,14 @@ export const buildComponentModel = (componentGroup) => {
     }
   }
 
-  model.semanticGraph = buildComponentScopeGraph(model);
+  // Only some rules read the scope graph (COMPAT-004 for loop locals, --expr, the semantic engine),
+  // so it is built on first use. Nothing it reads changes after this point.
+  let semanticGraph;
+  Object.defineProperty(model, "semanticGraph", {
+    get: () => (semanticGraph ??= buildComponentScopeGraph(model)),
+    enumerable: true,
+    configurable: true,
+  });
 
   return model;
 };

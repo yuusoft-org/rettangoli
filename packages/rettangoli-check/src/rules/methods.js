@@ -1,7 +1,5 @@
 import { parseNamedExportedFunctions } from "../core/exportedFunctions.js";
-import { getModelFilePath } from "./shared.js";
-
-const isObjectRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+import { getModelFilePath, isObjectRecord } from "./shared.js";
 
 const getSchemaMethodMap = (model) => {
   const normalized = model?.schema?.normalized?.methods?.byName;

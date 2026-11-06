@@ -27,9 +27,6 @@ Default analyzer scenarios also enforce:
 - formatting/noise mutation stability (same diagnostics after whitespace-noise mutation on `src/**`)
 - spec traceability validity (`specRefs` must map to known language-spec IDs)
 
-JS export differential parity (`oxc` vs `regex-legacy`) is validated separately by
-`bun run --cwd packages/rettangoli-check test:diff-js-exports`.
-
 ## Scenarios (127)
 
 1. `01-valid-minimal`

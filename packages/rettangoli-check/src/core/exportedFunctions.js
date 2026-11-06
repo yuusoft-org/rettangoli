@@ -1,14 +1,5 @@
-import { parseSync } from "oxc-parser";
-
-const createLineOffsets = (source = "") => {
-  const offsets = [0];
-  for (let index = 0; index < source.length; index += 1) {
-    if (source[index] === "\n") {
-      offsets.push(index + 1);
-    }
-  }
-  return offsets;
-};
+import { parseJs } from "./jsParse.js";
+import { createLineOffsets } from "../utils/text.js";
 
 const offsetToLine = ({ lineOffsets = [], offset = 0 }) => {
   let low = 0;
@@ -163,15 +154,12 @@ const toFunctionMeta = ({ name, node, lineOffsets = [] }) => {
   };
 };
 
-export const parseNamedExportedFunctions = ({
-  sourceText = "",
-  filePath = "unknown.js",
-} = {}) => {
+const collectNamedExportedFunctions = ({ sourceText, filePath }) => {
   const functions = new Map();
   let parsed = null;
 
   try {
-    parsed = parseSync(filePath, sourceText, { sourceType: "unambiguous" });
+    parsed = parseJs({ filePath, sourceText, sourceType: "unambiguous" });
   } catch {
     return functions;
   }
@@ -231,5 +219,21 @@ export const parseNamedExportedFunctions = ({
     });
   });
 
+  return functions;
+};
+
+// One result per file, reused while its text is unchanged. Callers only read the returned Map.
+const functionsByFilePath = new Map();
+
+export const parseNamedExportedFunctions = ({
+  sourceText = "",
+  filePath = "unknown.js",
+} = {}) => {
+  const cached = functionsByFilePath.get(filePath);
+  if (cached && cached.sourceText === sourceText) {
+    return cached.functions;
+  }
+  const functions = collectNamedExportedFunctions({ sourceText, filePath });
+  functionsByFilePath.set(filePath, { sourceText, functions });
   return functions;
 };

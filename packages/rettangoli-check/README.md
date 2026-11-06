@@ -112,13 +112,7 @@ CLI contract references:
 
 ## JS Export Parser Backend
 
-`rettangoli-check` now uses Oxc as the single runtime JS export extractor.
-
-Legacy regex extraction is retained only in test parity harnesses:
-
-```bash
-bun run --cwd packages/rettangoli-check test:diff-js-exports
-```
+`rettangoli-check` uses Oxc as its only JS export extractor.
 
 ## Known Strict Findings (Current UI Baseline)
 

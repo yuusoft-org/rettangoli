@@ -22,8 +22,6 @@ const DEFAULT_FAMILY_CONFIG = [
   { prefix: "RTGL-CHECK-READ-", family: "io", severity: "error", title: "Read/input diagnostic" },
   { prefix: "RTGL-CHECK-PARSE-", family: "parse", severity: "error", title: "Parse diagnostic" },
   { prefix: "RTGL-CHECK-REGISTRY-", family: "registry", severity: "warn", title: "UI registry diagnostic" },
-  { prefix: "RTGL-IR-VAL-", family: "ir-validation", severity: "error", title: "IR validation diagnostic" },
-  { prefix: "RTGL-IR-INV-", family: "ir-invariants", severity: "error", title: "IR invariant diagnostic" },
   { prefix: "RTGL-CLI-", family: "cli", severity: "error", title: "CLI runtime diagnostic" },
 ];
 

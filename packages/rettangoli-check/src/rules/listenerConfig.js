@@ -8,10 +8,10 @@ import { collectInvalidRefKeys } from "./refs.js";
 import { getModelFilePath, getYamlPathLine, isObjectRecord } from "./shared.js";
 import {
   EVENT_OPTION_TYPES,
+  GLOBAL_REF_KEYS,
   collectEventConfigIssues,
   validateElementIdForRefs,
 } from "../core/fe-contracts.js";
-const GLOBAL_REF_KEYS = new Set(["window", "document"]);
 
 const KNOWN_LISTENER_OPTIONS = new Set([
   "handler",
