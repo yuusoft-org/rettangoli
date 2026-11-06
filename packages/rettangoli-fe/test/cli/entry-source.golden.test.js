@@ -147,6 +147,120 @@ describe("generated entry source from a temporary project", () => {
     expect(source).toContain('const __rtglHydrationRegistrationOrder = [["pages","home"],["components","badge"]];');
   });
 
+  // With no components the declaration list is empty: its line stays as an empty line.
+  it("generates the build entry for an app with no components", () => {
+    const rootDir = createProject({ "setup.js": "export const deps = {};\n", "components/.keep": "" });
+    const source = generateFrontendEntrySource({ cwd: rootDir, dirs: ["components"], command: "build" });
+    expect(normalize(source, rootDir)).toBe([
+      'import { deps } from "<ROOT>/setup.js";',
+      "",
+      'import { createComponent } from "@rettangoli/fe";',
+      "",
+      "const imports = {};",
+      "",
+      "",
+      "",
+      "const __rtglFrameworkDeps = {};",
+      "",
+      "",
+      "",
+      "const __rtglRegistrationOrder = [];",
+      "// Prerendered hosts upgrade as soon as they are defined, so a page that",
+      "// holds prerendered markup defines parents before the components they render.",
+      "const __rtglHydrationRegistrationOrder = [];",
+      "const __rtglHasServerMarkup =",
+      '  typeof document !== "undefined" &&',
+      '  document.querySelector("[data-rtgl-hydrate]") !== null;',
+      "",
+      "",
+      "(__rtglHasServerMarkup",
+      "  ? __rtglHydrationRegistrationOrder",
+      "  : __rtglRegistrationOrder",
+      ").forEach(([category, component]) => {",
+      "  const componentConfig = imports[category][component];",
+      "  const categoryDeps = {",
+      "    ...((deps && deps[category]) || {}),",
+      "    ...__rtglFrameworkDeps,",
+      "  };",
+      "  const elementName = componentConfig.schema?.componentName;",
+      "  if (!elementName) {",
+      "    throw new Error(",
+      "      `[Build] Missing schema.componentName for ${category}/${component}. Define it in .schema.yaml.`,",
+      "    );",
+      "  }",
+      "  const webComponent = createComponent({ ...componentConfig }, categoryDeps);",
+      "    customElements.define(elementName, webComponent);",
+      "});",
+    ].join("\n"));
+  });
+
+  it("generates the serve entry for an app with no components", () => {
+    const rootDir = createProject({ "setup.js": "export const deps = {};\n", "components/.keep": "" });
+    const source = normalize(
+      generateFrontendEntrySource({ cwd: rootDir, dirs: ["components"], command: "serve" }),
+      rootDir,
+    );
+    const head = [
+      'import { deps } from "/@fs<ROOT>/setup.js";',
+      "",
+      'import { defineOrUpdateComponents } from "/@fs<REPO>/packages/rettangoli-fe/src/index.js";',
+      "",
+      "const imports = {};",
+      "",
+      "const __rtglComponentFingerprints = {};",
+      "",
+      "const __rtglFrameworkDeps = {};",
+      "const __rtglCommitI18nUpdate = () => {};",
+      "",
+      "const __rtglIsHmrUpdate = Boolean(",
+      "  import.meta.hot?.data.__rtglInitialized,",
+      ");",
+      "let __rtglHmrIncompatibleReason = null;",
+      "const __rtglComponentUpdateBatch = [];",
+      "",
+      "const __rtglRegistrationOrder = [];",
+    ].join("\n");
+    expect(source.startsWith(`${head}\n`)).toBe(true);
+    // Everything after the registration order is the same text as in any other serve entry.
+    const golden = readFileSync(path.join(GOLDEN_DIR, "entry-dashboard-serve.txt"), "utf8");
+    const tail = (text) => text.slice(text.indexOf("// Prerendered hosts upgrade"));
+    expect(tail(source)).toBe(tail(golden).trimEnd().replace(
+      /^const __rtglHydrationRegistrationOrder = .*;$/m,
+      "const __rtglHydrationRegistrationOrder = [];",
+    ));
+  });
+
+  // Text from apps (paths, names, YAML, catalogs) goes into the entry as JSON, untouched by any
+  // string substitution: `$&`, `$'` and placeholder-like words come out as written.
+  it.each(["build", "serve"])("copies app text with replacement patterns verbatim (%s)", (command) => {
+    const trickyText = "$& $' $` $$ $1 __SETUP__ __REGISTRATION_ORDER__ {{imports}} ${x}";
+    const rootDir = createProject({
+      "set$&up.js": "export const deps = {};\n",
+      "src/pages/a$&b/a$&b.schema.yaml": "componentName: x-home\n",
+      "src/pages/a$&b/a$&b.view.yaml": "template:\n  - p: ${i18n.common.title}\n",
+      "src/pages/a$&b/a$&b.constants.yaml": `text: ${JSON.stringify(trickyText)}\n`,
+      "src/pages/a$&b/a$&b.handlers.js": "export const handleBeforeMount = () => {};\n",
+      "src/i18n/en.yaml": `common:\n  title: ${JSON.stringify(trickyText)}\n`,
+    });
+    const source = normalize(generateFrontendEntrySource({
+      cwd: rootDir,
+      dirs: ["src/pages"],
+      setup: "set$&up.js",
+      command,
+      i18n: { dir: "src/i18n", defaultLocale: "en", fallbackLocale: "en", locales: ["en"] },
+    }), rootDir);
+    const prefix = command === "serve" ? "/@fs" : "";
+    expect(source.startsWith(`import { deps } from "${prefix}<ROOT>/set$&up.js";\n`)).toBe(true);
+    expect(source).toContain(`\nconst __rtgl_0_constants = {"text":${JSON.stringify(trickyText)}};\n`);
+    expect(source).toContain(`\nimport * as __rtgl_1_handlers from "${prefix}<ROOT>/src/pages/a$&b/a$&b.handlers.js";\n`);
+    expect(source).toContain('\nconst __rtglRegistrationOrder = [["pages","a$&b"]];\n');
+    expect(source).toContain('\nconst __rtglHydrationRegistrationOrder = [["pages","a$&b"]];\n');
+    expect(source).toContain(`\n  initialCatalogs: {"en":{"common":{"title":${JSON.stringify(trickyText)}}}},\n`);
+    if (command === "serve") {
+      expect(source).toContain(`\nconst __rtglI18nCatalogs = {"en":{"common":{"title":${JSON.stringify(trickyText)}}}};\n`);
+    }
+  });
+
   describe("files that do not parse", () => {
     const broken = (files) => {
       const rootDir = createProject({
