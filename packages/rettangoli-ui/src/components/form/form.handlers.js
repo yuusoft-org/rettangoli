@@ -407,7 +407,8 @@ export const handleKeyDown = (deps, payload) => {
   if (path.some((target) => target?.dataset?.actionId
     || target?.dataset?.sectionActionId || target?.isContentEditable
     || ["BUTTON", "A", "SELECT", "TEXTAREA", "RTGL-BUTTON", "RTGL-TEXTAREA",
-      "RTGL-SELECT", "RTGL-TAG-SELECT", "RTGL-SEGMENTED-CONTROL", "RTGL-POPOVER-INPUT"].includes(target?.tagName)
+      "RTGL-SELECT", "RTGL-TAG-SELECT", "RTGL-SEGMENTED-CONTROL", "RTGL-POPOVER-INPUT",
+      "RTGL-COLOR-PICKER"].includes(target?.tagName)
     || ["button", "combobox", "listbox", "tab"].includes(target?.getAttribute?.("role")))) return;
 
   const form = selectForm({ state: store.getState(), props });

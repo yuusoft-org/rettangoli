@@ -470,6 +470,42 @@ describe("rtgl-color-picker primitive", () => {
     expect(events.change).toHaveLength(0);
   });
 
+  it("cancels the default action of Enter in the hex field and still commits", async () => {
+    const host = createPicker({ value: "#3498db" });
+    const events = trackEvents(host);
+    await openPanel(host);
+
+    const input = typeHex(host, "e74c3c");
+    expect(events.change).toHaveLength(0);
+    const enter = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    input.dispatchEvent(enter);
+    expect(enter.defaultPrevented).toBe(true);
+    expect(events.change).toEqual(["#e74c3c"]);
+    expect(host.value).toBe("#e74c3c");
+    expect(input.value).toBe("e74c3c");
+
+    // An unchanged or invalid draft is cancelled too, so an enclosing form never submits.
+    const unchanged = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    input.dispatchEvent(unchanged);
+    expect(unchanged.defaultPrevented).toBe(true);
+    typeHex(host, "12z");
+    const invalid = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    input.dispatchEvent(invalid);
+    expect(invalid.defaultPrevented).toBe(true);
+    expect(events.change).toEqual(["#e74c3c"]);
+    expect(host.value).toBe("#e74c3c");
+
+    // Escape still reverts the draft and leaves its default action alone.
+    typeHex(host, "00ff00");
+    expect(host.value).toBe("#00ff00");
+    typeHex(host, "00ff0");
+    const escape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+    input.dispatchEvent(escape);
+    expect(escape.defaultPrevented).toBe(false);
+    expect(input.value).toBe("00ff00");
+    expect(events.change).toEqual(["#e74c3c"]);
+  });
+
   it("commits a valid hex draft when the panel closes", async () => {
     const host = createPicker({ value: "#3498db" });
     const events = trackEvents(host);

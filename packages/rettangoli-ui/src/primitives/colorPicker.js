@@ -582,6 +582,7 @@ class RettangoliColorPickerElement extends HTMLElement {
 
     this._hexInputElement.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
+        event.preventDefault();
         this._commitHexValue();
         this._hexInputElement.blur();
       }
