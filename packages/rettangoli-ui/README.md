@@ -7,12 +7,12 @@ A UI component library built on Web Components with attribute-first styling.
 ### CDN (iife)
 Primitives only (lightweight):
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@latest/dist/rettangoli-layout.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@latest/dist/rettangoli-iife-layout.min.js"></script>
 ```
 
 Primitives + components:
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@latest/dist/rettangoli-ui.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rettangoli/ui@latest/dist/rettangoli-iife-ui.min.js"></script>
 ```
 
 ### NPM (ESM)

@@ -23,19 +23,28 @@ function getAllSvgFiles(dir) {
   return svgFiles;
 }
 
+// Strips the metadata in front of the SVG markup. A file whose first non-blank
+// line is '---' has a frontmatter block that ends at the next '---' line.
+// Otherwise everything up to the first '---' line is metadata (the legacy
+// `name: x\n---\n<svg>` format), and a file with no '---' line is kept as is.
 function removeFrontmatter(content) {
-  // Look for a line containing only '---'
   const lines = content.split('\n');
-  
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].trim() === '---') {
-      // Found the separator, return everything after it
-      return lines.slice(i + 1).join('\n').trim();
+  const isSeparator = (line) => line.trim() === '---';
+  let separator = lines.findIndex(isSeparator);
+
+  if (separator === -1) {
+    return content;
+  }
+
+  const firstContentLine = lines.findIndex((line) => line.trim() !== '');
+  if (separator === firstContentLine) {
+    const closing = lines.findIndex((line, i) => i > separator && isSeparator(line));
+    if (closing !== -1) {
+      separator = closing;
     }
   }
-  
-  // No frontmatter separator found, return original content
-  return content;
+
+  return lines.slice(separator + 1).join('\n').trim();
 }
 
 // A script that registers `icons` with rtgl.setIcons when it runs after the
@@ -82,9 +91,16 @@ const buildSvgIcons = (options) => {
   console.log(`Found ${svgFiles.length} SVG files`);
   
   const icons = {};
+  const iconPaths = new Map();
   
   for (const filePath of svgFiles) {
     const fileName = basename(filePath, '.svg');
+    if (iconPaths.has(fileName)) {
+      console.warn(
+        `Duplicate icon name "${fileName}": ${filePath} replaces ${iconPaths.get(fileName)}`,
+      );
+    }
+    iconPaths.set(fileName, filePath);
     let content = readFileSync(filePath, 'utf8');
     
     content = removeFrontmatter(content);

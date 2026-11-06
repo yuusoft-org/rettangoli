@@ -24,10 +24,6 @@ export const parseFlexBasisDimension = (dimension) => {
   return { numerator, denominator };
 };
 
-export const isFlexBasisDimension = (dimension) => {
-  return parseFlexBasisDimension(dimension) !== null;
-};
-
 function toFlexBasisCss({ numerator, denominator, gapVar }) {
   if (numerator === denominator) {
     return "100%";

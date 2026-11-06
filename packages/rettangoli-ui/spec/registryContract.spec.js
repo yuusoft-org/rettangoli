@@ -110,6 +110,13 @@ describe("entry files", () => {
     );
   });
 
+  it("keep the full literal define list in entry-iife-layout", () => {
+    // @rettangoli/check 0.1.4 and older read primitives only from entry-iife-ui and entry-iife-layout.
+    expect(parseEntry("entry-iife-layout.js").map(({ tagName }) => tagName).sort()).toEqual(
+      PRIMITIVE_TAGS,
+    );
+  });
+
   it("import every defined primitive from ./primitives/", () => {
     for (const entry of ENTRIES) {
       for (const { tagName, importPath } of parseEntry(entry)) {

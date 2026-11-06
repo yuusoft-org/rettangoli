@@ -154,7 +154,6 @@ class RettangoliButtonElement extends HTMLElement {
     this.shadowRoot.adoptedStyleSheets = [RettangoliButtonElement.styleSheet];
     
     // Create initial DOM structure
-    this._containerElement = null;
     this._surfaceElement = document.createElement('button');
     this._slotElement = document.createElement('slot');
     this._prefixIcon = null;
@@ -307,7 +306,6 @@ class RettangoliButtonElement extends HTMLElement {
     if (this._surfaceElement.parentNode !== this.shadowRoot) {
       this.shadowRoot.appendChild(this._surfaceElement);
     }
-    this._containerElement = this._surfaceElement;
   }
 
   _updateIcon() {
@@ -377,7 +375,6 @@ class RettangoliButtonElement extends HTMLElement {
   }
   
   // Public method to get the actual button's bounding rect
-  // This is needed because the host element has display: contents
   getBoundingClientRect() {
     if (this._surfaceElement) {
       return this._surfaceElement.getBoundingClientRect();
