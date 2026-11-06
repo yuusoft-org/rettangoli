@@ -1,6 +1,7 @@
 import { cp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import {
   generateHtml,
   startWebServer,
@@ -20,9 +21,10 @@ import {
   stopManagedService,
   waitForServiceReady,
 } from "./service-runtime.js";
+import { writeCaptureManifest } from "../capture-manifest.js";
 
-const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
-const libraryStaticPath = new URL("./static", import.meta.url).pathname;
+const libraryTemplatesPath = fileURLToPath(new URL("./templates", import.meta.url));
+const libraryStaticPath = fileURLToPath(new URL("./static", import.meta.url));
 
 export function buildCaptureOptions({
   filesToScreenshot,
@@ -154,6 +156,12 @@ async function main(options = {}) {
     join(siteOutputPath, "index.html"),
     configData,
   );
+
+  writeCaptureManifest(candidatePath, {
+    screenshots: !skipScreenshots,
+    selectors: resolvedOptions.selectors,
+    sections: configData.sections,
+  });
 
   // Take screenshots (only for non-skipped files)
   if (!skipScreenshots) {

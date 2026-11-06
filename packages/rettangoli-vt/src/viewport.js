@@ -1,4 +1,4 @@
-const VIEWPORT_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
+export const VIEWPORT_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 export const DEFAULT_VIEWPORT = Object.freeze({
   width: 1280,

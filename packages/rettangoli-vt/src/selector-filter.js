@@ -1,5 +1,5 @@
 import path from "path";
-import { stripViewportSuffix } from "./viewport.js";
+import { stripViewportSuffix, VIEWPORT_ID_PATTERN } from "./viewport.js";
 import { deriveSectionPageKey } from "./section-page-key.js";
 
 function toList(value) {
@@ -51,7 +51,7 @@ function matchesFolderPrefix(filePath, folderPrefix) {
   return filePath === folderPrefix || filePath.startsWith(`${folderPrefix}/`);
 }
 
-function resolveGroupFolders(configSections = [], groupSelectors = []) {
+export function resolveGroupFolders(configSections = [], groupSelectors = []) {
   if (groupSelectors.length === 0) {
     return [];
   }
@@ -114,13 +114,37 @@ export function filterGeneratedFilesBySelectors(generatedFiles, selectors, confi
   });
 }
 
-function toScreenshotItemKey(relativeScreenshotPath) {
+// Maps a screenshot path ("pages/btn--mobile-01.webp") back to its spec key ("pages/btn").
+// `specKeys` (a Set of spec paths without extension) lets spec names that contain "--" keep their
+// own key: the name itself wins, then the right-most "--<viewportId>" split that names a spec.
+// Without a matching spec key, any trailing "--<viewportId>" is stripped.
+export function toScreenshotItemKey(relativeScreenshotPath, specKeys) {
   const normalized = normalizePathValue(relativeScreenshotPath).replace(/\.webp$/i, "");
   const withoutOrdinal = normalized.replace(/-\d{1,3}$/i, "");
+  if (specKeys) {
+    if (specKeys.has(withoutOrdinal)) {
+      return withoutOrdinal;
+    }
+    for (
+      let index = withoutOrdinal.lastIndexOf("--");
+      index > 0;
+      index = withoutOrdinal.lastIndexOf("--", index - 1)
+    ) {
+      const prefix = withoutOrdinal.slice(0, index);
+      if (specKeys.has(prefix) && VIEWPORT_ID_PATTERN.test(withoutOrdinal.slice(index + 2))) {
+        return prefix;
+      }
+    }
+  }
   return stripViewportSuffix(withoutOrdinal);
 }
 
-export function filterRelativeScreenshotPathsBySelectors(relativePaths, selectors, configSections = []) {
+export function filterRelativeScreenshotPathsBySelectors(
+  relativePaths,
+  selectors,
+  configSections = [],
+  specKeys = undefined,
+) {
   if (!hasSelectors(selectors)) {
     return relativePaths;
   }
@@ -131,7 +155,7 @@ export function filterRelativeScreenshotPathsBySelectors(relativePaths, selector
   ];
 
   return relativePaths.filter((relativePath) => {
-    const itemKey = toScreenshotItemKey(relativePath);
+    const itemKey = toScreenshotItemKey(relativePath, specKeys);
     if (selectors.items.includes(itemKey)) {
       return true;
     }

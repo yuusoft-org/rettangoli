@@ -3,11 +3,12 @@
 import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 function parseArgs(argv) {
   const args = {
     runs: 5,
-    fixtureDir: resolve(new URL("../benchmarks/fixture-basic", import.meta.url).pathname),
+    fixtureDir: fileURLToPath(new URL("../benchmarks/fixture-basic", import.meta.url)),
     metricsPath: ".rettangoli/vt/metrics.json",
     reportPath: ".rettangoli/vt/benchmark.json",
   };
@@ -50,7 +51,7 @@ function summarize(values) {
 }
 
 function getCliPath() {
-  return resolve(new URL("../../rettangoli-cli/cli.js", import.meta.url).pathname);
+  return fileURLToPath(new URL("../../rettangoli-cli/cli.js", import.meta.url));
 }
 
 function runBenchmark(args) {

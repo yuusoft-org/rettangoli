@@ -4,10 +4,10 @@ import { join, relative } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { generateHtml, getAllFiles } from "../src/common.js";
 
-// Spec files are discovered with fs.readdirSync. Under node, libuv returns entries
-// sorted by byte value, so overview pages, generation logs and report.json follow that
-// order. Output ordering is part of the contract, whatever walker implements it.
-// (Bun does not sort readdir results; the supported runtime for VT is node.)
+// Spec files are discovered in byte order (libuv's readdir order under node; VT sorts siblings
+// itself, so Bun, whose readdir is unsorted, gives the same order). Overview pages, generation
+// logs and report.json follow that order. Output ordering is part of the contract, whatever
+// walker implements it.
 
 const NAMES = ["b.html", "A.html", "_z.html", "a-b.html", "é.html", "10.html", "9.html"];
 const NESTED = "a/inner.html";
@@ -24,9 +24,7 @@ const BYTE_ORDER = [
   "é.html",
 ];
 
-const runsOnNode = !process.versions.bun;
-
-describe.skipIf(!runsOnNode)("spec discovery order", { timeout: 30_000 }, () => {
+describe("spec discovery order", { timeout: 30_000 }, () => {
   let rootDir = null;
 
   afterEach(() => {

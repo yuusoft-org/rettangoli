@@ -2,6 +2,7 @@
   "log": ["Generated: .rettangoli/vt/_site/candidate/components/basic.html","Generated: .rettangoli/vt/_site/candidate/components/legacy.html","Generated: .rettangoli/vt/_site/candidate/components/spaced name.html","Generated: .rettangoli/vt/_site/candidate/components/steps.html","Generated: .rettangoli/vt/_site/candidate/components/with-frontmatter.html","Generated: .rettangoli/vt/_site/candidate/forms/buttons/primary.html","Generated: .rettangoli/vt/_site/candidate/forms/inputs/text.html","Generated: .rettangoli/vt/_site/candidate/pages/home.html","Generated: .rettangoli/vt/_site/candidate/pages/nested/deep.html","Successfully generated 9 files","Generated overview: .rettangoli/vt/_site/components.html","Generated overview: .rettangoli/vt/_site/inputs.html","Generated overview: .rettangoli/vt/_site/buttons.html","Generated overview: .rettangoli/vt/_site/pages.html"],
   "files": {
     "buttons.html": "5bc3291cc888c9dc8a3c38e804890794f5bc6da87886747deca28b6ebd9b1128",
+    "candidate/.vt-capture.json": "fe6861774e3d3187a0b4070c586a1b7057bdeae031d13a929b92e26a4ca0d40f",
     "candidate/components/basic.html": "bd7f5e17210de84bfeac8cd752d47cb1604f6b486d836efd0c47f27f085e1e9a",
     "candidate/components/legacy.html": "21e6a00f2d859aa5e44eecfca76a9d8b546aa84e5bd1e7a1048aaf78a479b49d",
     "candidate/components/spaced name.html": "bb104ef1034431fccb1b65a2a3d6b60bbd23677a04e157f6c970e561b927ec63",

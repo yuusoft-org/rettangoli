@@ -16,6 +16,7 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
+import { fileURLToPath } from "node:url";
 
 import { parse } from "parse5";
 
@@ -25,10 +26,11 @@ import {
   readYaml,
 } from "../common.js";
 import { deriveSectionPageKey } from "../section-page-key.js";
+import { hasIgnoredSpecSegment, listSpecFiles } from "../spec-files.js";
 import { validateVtConfig } from "../validation.js";
 
-const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
-const libraryStaticPath = new URL("./static", import.meta.url).pathname;
+const libraryTemplatesPath = fileURLToPath(new URL("./templates", import.meta.url));
+const libraryStaticPath = fileURLToPath(new URL("./static", import.meta.url));
 
 export const RETTANGOLI_VT_WATCH_EVENT = "rettangoli:vt-watch";
 export const RETTANGOLI_VT_WATCH_CLIENT_ID =
@@ -625,21 +627,8 @@ const getAffectedSections = ({ configData, specs }) => {
   });
 };
 
-const collectFiles = async (directoryPath) => {
-  if (!existsSync(directoryPath)) return [];
-
-  const files = [];
-  const entries = await readdir(directoryPath, { withFileTypes: true });
-  for (const entry of entries) {
-    const entryPath = path.join(directoryPath, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...await collectFiles(entryPath));
-    } else {
-      files.push(entryPath);
-    }
-  }
-  return files;
-};
+const isWatchableSpec = (relativePath) =>
+  WATCHABLE_SPEC_PATTERN.test(relativePath) && !hasIgnoredSpecSegment(relativePath);
 
 const commitStagedOutputs = async (outputs) => {
   const uniqueOutputs = [
@@ -809,7 +798,7 @@ export const generateVtWatchSpecs = async ({
         resolvedFilePath,
       };
     })
-    .filter(({ relativePath }) => WATCHABLE_SPEC_PATTERN.test(relativePath));
+    .filter(({ relativePath }) => isWatchableSpec(relativePath));
 
   if (specs.length === 0) {
     return { ...context, outputPaths: [], overviewPaths: [] };
@@ -845,7 +834,7 @@ export const generateVtWatchSpecs = async ({
       specs.map((spec) => [spec.resolvedFilePath, spec.resolvedFilePath]),
     );
     if (affectedSections.length > 0) {
-      for (const sourceFilePath of await collectFiles(context.specsPath)) {
+      for (const sourceFilePath of listSpecFiles(context.specsPath)) {
         const relativePath = path.relative(
           context.specsPath,
           sourceFilePath,
@@ -1151,11 +1140,11 @@ export const createRettangoliVtWatchPlugin = ({
       };
     }
     if (
-      WATCHABLE_SPEC_PATTERN.test(resolvedFilePath) &&
       isWithinDirectory({
         filePath: resolvedFilePath,
         directoryPath: context.specsPath,
-      })
+      }) &&
+      isWatchableSpec(path.relative(context.specsPath, resolvedFilePath))
     ) {
       return {
         filePath: resolvedFilePath,

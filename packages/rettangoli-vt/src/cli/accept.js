@@ -1,6 +1,26 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { cp, mkdir, rm } from 'node:fs/promises';
-import { join, dirname } from 'node:path';
+import { join, dirname, relative } from 'node:path';
+import { readCaptureManifest } from '../capture-manifest.js';
+import { filterRelativeScreenshotPathsBySelectors } from '../selector-filter.js';
+import { listSpecKeys } from '../spec-files.js';
+
+// A reference that only exists in the reference tree is deleted only when the last generate
+// captured it: not after an HTML-only run, and not when it is outside a scoped run's selectors.
+// Without a manifest (older candidates) every such reference is deleted, as before.
+function createDeletionGuard(candidateDir, vtPath) {
+  const manifest = readCaptureManifest(candidateDir);
+  if (!manifest || (manifest.screenshots && manifest.scope === null)) {
+    return () => true;
+  }
+  if (!manifest.screenshots) {
+    return () => false;
+  }
+  const selectors = { folders: manifest.scope.folders, items: manifest.scope.items, groups: [] };
+  const specKeys = listSpecKeys(join(vtPath, "specs"));
+  return (relativePath) =>
+    filterRelativeScreenshotPathsBySelectors([relativePath], selectors, [], specKeys).length === 1;
+}
 
 /**
  * Accepts candidate screenshots as the new reference by copying only files
@@ -18,8 +38,9 @@ async function acceptReference(options = {}) {
 
   // Check if report.json exists
   if (!existsSync(jsonReportPath)) {
-    console.error('Error: report.json not found. Run "rtgl vt report" first.');
-    process.exit(1);
+    const message = 'report.json not found. Run "rtgl vt report" first.';
+    console.error(`Error: ${message}`);
+    throw new Error(message);
   }
 
   // Read report.json
@@ -32,11 +53,20 @@ async function acceptReference(options = {}) {
 
   console.log(`Accepting ${report.items.length} changed files as new reference...`);
 
+  let isDeletable = null;
+  let keptCount = 0;
+  let missingCandidateCount = 0;
   try {
     for (const item of report.items) {
-      // Skip items that only exist in reference (they should be deleted)
+      // Items that only exist in reference are deleted, unless the last capture did not cover them (see createDeletionGuard)
       if (item.onlyInReference) {
-        const refPath = join(referenceDir, item.referencePath.replace('reference/', ''));
+        const relativePath = relative('reference', item.referencePath);
+        const refPath = join(referenceDir, relativePath);
+        isDeletable ??= createDeletionGuard(candidateDir, vtPath);
+        if (!isDeletable(relativePath)) {
+          keptCount += 1;
+          continue;
+        }
         if (existsSync(refPath)) {
           await rm(refPath);
           console.log(`Removed: ${refPath}`);
@@ -46,20 +76,32 @@ async function acceptReference(options = {}) {
 
       // Copy candidate to reference
       const candidatePath = join(siteOutputPath, item.candidatePath);
-      const refPath = join(referenceDir, item.candidatePath.replace('candidate/', ''));
+      const refPath = join(referenceDir, relative('candidate', item.candidatePath));
 
       if (existsSync(candidatePath)) {
         await mkdir(dirname(refPath), { recursive: true });
         await cp(candidatePath, refPath);
         console.log(`Copied: ${candidatePath} -> ${refPath}`);
+      } else {
+        missingCandidateCount += 1;
       }
     }
-
-    console.log('Done! Changes accepted.');
   } catch (error) {
     console.error('Error:', error.message);
-    process.exit(1);
+    throw error;
   }
+
+  if (keptCount > 0) {
+    console.warn(
+      `Kept ${keptCount} reference image(s) outside the last capture scope; run a full "rtgl vt screenshot" to prune them.`,
+    );
+  }
+  if (missingCandidateCount > 0) {
+    console.warn(
+      `Skipped ${missingCandidateCount} item(s) whose candidate no longer exists; re-run "rtgl vt report".`,
+    );
+  }
+  console.log('Done! Changes accepted.');
 }
 
 export default acceptReference;

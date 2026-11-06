@@ -1,5 +1,4 @@
 import {
-  readdirSync,
   statSync,
   readFileSync,
   writeFileSync,
@@ -16,17 +15,9 @@ import { validateFiniteNumber, validateFrontMatter } from "./validation.js";
 import { createCaptureTasks } from "./capture/spec-loader.js";
 import { runCaptureScheduler } from "./capture/capture-scheduler.js";
 import { deriveAnchorId, deriveSectionPageKey } from "./section-page-key.js";
+import { assertUniqueHtmlOutputs, listSpecFiles, toHtmlOutputPath } from "./spec-files.js";
 
 const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
-
-const convertToHtmlExtension = (filePath) => {
-  if (filePath.endsWith(".html")) {
-    return filePath;
-  }
-  // Remove existing extension and add .html
-  const baseName = removeExtension(filePath);
-  return baseName + ".html";
-};
 
 // Initialize LiquidJS with output escaping disabled
 const engine = new Liquid();
@@ -56,25 +47,10 @@ engine.registerFilter("remove_ext", (value) => {
 });
 
 /**
- * Get all files from a directory recursively
+ * Get all spec files from a directory recursively (byte-sorted, stray files ignored)
  */
 function getAllFiles(dirPath, arrayOfFiles = []) {
-  if (!existsSync(dirPath)) {
-    console.log(`Directory ${dirPath} does not exist, skipping...`);
-    return arrayOfFiles;
-  }
-
-  const files = readdirSync(dirPath);
-
-  files.forEach((file) => {
-    const filePath = join(dirPath, file);
-    if (statSync(filePath).isDirectory()) {
-      arrayOfFiles = getAllFiles(filePath, arrayOfFiles);
-    } else {
-      arrayOfFiles.push(filePath);
-    }
-  });
-
+  arrayOfFiles.push(...listSpecFiles(dirPath, { logger: console }));
   return arrayOfFiles;
 }
 
@@ -119,9 +95,11 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
     ensureDirectoryExists(outputDir);
 
     const allFiles = getAllFiles(specsDir);
+    assertUniqueHtmlOutputs(allFiles.map((filePath) => path.relative(specsDir, filePath)));
 
     const processedFiles = [];
     for (const filePath of allFiles) {
+      const relativePath = path.relative(specsDir, filePath);
       const fileContent = readFileSync(filePath, "utf8");
       const { content, frontMatter } = extractFrontMatter(fileContent);
       const lang = filePath.includes(".yaml") ? "yaml" : "html";
@@ -132,10 +110,9 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
 
       let frontMatterObj = null;
       if (frontMatter) {
-        frontMatterObj = loadYaml(frontMatter);
+        frontMatterObj = loadYaml(frontMatter, { filename: relativePath });
       }
 
-      const relativePath = path.relative(specsDir, filePath);
       validateFrontMatter(frontMatterObj, relativePath);
 
       let templateToUse = defaultTemplateContent;
@@ -148,13 +125,21 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
       templateToUse = readFileSync(resolvedTemplatePath, "utf8");
 
       // Render template
-      const renderedContent = engine.parseAndRenderSync(templateToUse, {
-        content: content,
-        frontMatter: frontMatterObj || {},
-      });
+      let renderedContent;
+      try {
+        renderedContent = engine.parseAndRenderSync(templateToUse, {
+          content: content,
+          frontMatter: frontMatterObj || {},
+        });
+      } catch (error) {
+        throw new Error(
+          `Failed to render template "${resolvedTemplatePath}" for "${relativePath}": ${error.message}`,
+          { cause: error },
+        );
+      }
 
       // Save file
-      const outputPath = join(outputDir, convertToHtmlExtension(relativePath));
+      const outputPath = join(outputDir, toHtmlOutputPath(relativePath));
       ensureDirectoryExists(dirname(outputPath));
       writeFileSync(outputPath, renderedContent, "utf8");
       logger.log(`Generated: ${outputPath}`);

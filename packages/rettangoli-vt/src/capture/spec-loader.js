@@ -64,6 +64,7 @@ export function createCaptureTasks(generatedFiles, options) {
   } = options;
 
   const tasks = [];
+  const specPathByBaseName = new Map();
   let taskIndex = 0;
 
   generatedFiles.forEach((file, fileIndex) => {
@@ -86,12 +87,20 @@ export function createCaptureTasks(generatedFiles, options) {
     const resolvedViewports = resolveViewports(frontMatter.viewport, viewport);
     resolvedViewports.forEach((resolvedViewport) => {
       const viewportId = resolvedViewport.id;
+      const baseName = appendViewportToBaseName(removeExtension(file.path), viewportId);
+      const otherSpecPath = specPathByBaseName.get(baseName);
+      if (otherSpecPath !== undefined && otherSpecPath !== file.path) {
+        throw new Error(
+          `Screenshot name collision: "${otherSpecPath}" and "${file.path}" both produce "${baseName}-NN.webp".`,
+        );
+      }
+      specPathByBaseName.set(baseName, file.path);
       const task = {
         id: `${fileIndex}:${file.path}:${viewportId ?? "default"}`,
         index: taskIndex,
         path: file.path,
         url,
-        baseName: appendViewportToBaseName(removeExtension(file.path), viewportId),
+        baseName,
         frontMatter,
         steps: frontMatter.steps || [],
         waitStrategy: resolvedWaitStrategy,
