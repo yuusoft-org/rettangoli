@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,7 +12,8 @@ import {
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const uiPackageDir = path.resolve(currentDir, "../../rettangoli-ui");
-const sandboxRoot = mkdtempSync(path.join(tmpdir(), "rtgl-ui-registry-"));
+// realpath: on macOS tmpdir() is a symlink (/var -> /private/var) and the resolver compares real paths.
+const sandboxRoot = realpathSync(mkdtempSync(path.join(tmpdir(), "rtgl-ui-registry-")));
 
 try {
   const decoyUiDir = path.join(sandboxRoot, "packages", "rettangoli-ui");

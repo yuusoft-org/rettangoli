@@ -1,0 +1,17 @@
+refs:
+  noDispatch:
+    eventListeners:
+      click:
+        preventDefault: true
+  emptyListener:
+    eventListeners:
+      input: {}
+  validListener:
+    eventListeners:
+      click:
+        handler: handleTap
+template:
+  - rtgl-view#noDispatch: no dispatch target
+  - rtgl-view#emptyListener: empty listener
+  - rtgl-view#validListener: valid listener
+styles: {}

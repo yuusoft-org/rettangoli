@@ -1,0 +1,15 @@
+template:
+  - rtgl-view:
+      - rtgl-button banana=1: first duplicate key
+  - rtgl-view:
+      - rtgl-button banana=1: second duplicate key
+  - "rtgl-button banana=1 title=\"x\"": escaped quotes in key
+  - ?
+      rtgl-button banana=1
+    : explicit key on the next line
+  - rtgl-text: |
+      foo: bar
+  - rtgl-button banana=1: key after block scalar
+  - { rtgl-button banana=1: flow mapping element }
+  - rtgl-button banana=1: last key
+styles: {}

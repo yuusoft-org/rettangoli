@@ -1,0 +1,74 @@
+{
+  "name": "selector diagnostics map to lines for edge-case yaml keys (a single-line flow mapping element has no line today)",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 7,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-YAHTML-003": 7
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/card: unsupported attr/prop 'banana' on 'rtgl-button'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/card: unsupported attr/prop 'banana' on 'rtgl-button'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/card: unsupported attr/prop 'banana' on 'rtgl-button'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 6
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/card: unsupported attr/prop 'banana' on 'rtgl-button'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 8
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/card: unsupported attr/prop 'banana' on 'rtgl-button'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 12
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/card: unsupported attr/prop 'banana' on 'rtgl-button'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 14
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/card: unsupported attr/prop 'banana' on 'rtgl-button'.",
+        "filePath": "src/components/card/card.view.yaml"
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-YAHTML-004",
+    "RTGL-SPEC-YAHTML-005"
+  ]
+}

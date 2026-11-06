@@ -1,0 +1,8 @@
+template:
+  - rtgl-button banana=1: Save
+  - rtgl-input .value=${x}: null
+  - rtgl-view:
+      - rtgl-text: ok
+refs:
+  broken: [unclosed
+styles: {}

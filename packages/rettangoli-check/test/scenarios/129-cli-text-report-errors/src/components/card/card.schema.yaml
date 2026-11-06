@@ -1,0 +1,6 @@
+componentName: rtgl-test-card-text-report
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string
