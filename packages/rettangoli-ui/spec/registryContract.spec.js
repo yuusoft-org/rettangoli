@@ -145,12 +145,19 @@ describe("primitive modules", () => {
     vi.unstubAllGlobals();
   });
 
+  // Shared base classes that primitives extend; they define no tag.
+  const helperFiles = ["input-base.js", "input-forced-type.js"];
   const files = readdirSync(path.join(srcDir, "primitives")).filter((file) =>
-    file.endsWith(".js"),
+    file.endsWith(".js") && !helperFiles.includes(file),
   );
 
   it("covers one file per primitive tag", () => {
     expect(files).toHaveLength(PRIMITIVE_TAGS.length);
+  });
+
+  it.each(helperFiles)("%s imports with stubs only and has no default export", async (file) => {
+    const module = await import(pathToFileURL(path.join(srcDir, "primitives", file)).href);
+    expect(module.default).toBeUndefined();
   });
 
   it.each(files)("%s imports with stubs only and exposes static observedAttributes", async (file) => {
