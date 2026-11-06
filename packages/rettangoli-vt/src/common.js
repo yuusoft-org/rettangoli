@@ -78,72 +78,85 @@ function ensureDirectoryExists(dirPath) {
   }
 }
 /**
- * Main function to generate HTML files from specs
+ * Render one spec file with its template. Returns its processedFiles entry; writes nothing.
+ */
+async function renderSpecFile({ specsDir, filePath, templateConfig }) {
+  const relativePath = path.relative(specsDir, filePath);
+  const fileContent = readFileSync(filePath, "utf8");
+  const { content, frontMatter } = extractFrontMatter(fileContent);
+  const lang = filePath.includes(".yaml") ? "yaml" : "html";
+  const contentShiki = await codeToHtml(content, {
+    lang,
+    theme: "slack-dark",
+  });
+
+  let frontMatterObj = null;
+  if (frontMatter) {
+    frontMatterObj = loadYaml(frontMatter, { filename: relativePath });
+  }
+
+  validateFrontMatter(frontMatterObj, relativePath);
+
+  const resolvedTemplatePath = frontMatterObj?.template ?
+    join(templateConfig.vtPath, "templates", frontMatterObj.template) :
+    templateConfig.defaultTemplate;
+  if (!existsSync(resolvedTemplatePath)) {
+    throw new Error(`Template not found for "${relativePath}": ${resolvedTemplatePath}`);
+  }
+  const templateToUse = readFileSync(resolvedTemplatePath, "utf8");
+
+  // Render template
+  let renderedContent;
+  try {
+    renderedContent = engine.parseAndRenderSync(templateToUse, {
+      content: content,
+      frontMatter: frontMatterObj || {},
+    });
+  } catch (error) {
+    throw new Error(
+      `Failed to render template "${resolvedTemplatePath}" for "${relativePath}": ${error.message}`,
+      { cause: error },
+    );
+  }
+
+  return {
+    path: relativePath,
+    content,
+    contentShiki,
+    frontMatter: frontMatterObj,
+    fullContent: fileContent,
+    renderedContent,
+  };
+}
+
+/**
+ * Main function to generate HTML files from specs. `templateConfig.filePaths` replaces the discovery
+ * of every spec under specsDir; with a null outputDir the pages are only rendered (watch mode).
  */
 async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
   try {
     const logger = templateConfig.logger || console;
-    const defaultTemplateContent = readFileSync(templatePath, "utf8");
-    ensureDirectoryExists(outputDir);
+    // Fails early when the default template is missing.
+    readFileSync(templatePath, "utf8");
+    if (outputDir !== null) {
+      ensureDirectoryExists(outputDir);
+    }
 
-    const allFiles = getAllFiles(specsDir);
+    const allFiles = templateConfig.filePaths ?? getAllFiles(specsDir);
     assertUniqueHtmlOutputs(allFiles.map((filePath) => path.relative(specsDir, filePath)));
 
     const processedFiles = [];
     for (const filePath of allFiles) {
-      const relativePath = path.relative(specsDir, filePath);
-      const fileContent = readFileSync(filePath, "utf8");
-      const { content, frontMatter } = extractFrontMatter(fileContent);
-      const lang = filePath.includes(".yaml") ? "yaml" : "html";
-      const contentShiki = await codeToHtml(content, {
-        lang,
-        theme: "slack-dark",
-      });
+      const processedFile = await renderSpecFile({ specsDir, filePath, templateConfig });
 
-      let frontMatterObj = null;
-      if (frontMatter) {
-        frontMatterObj = loadYaml(frontMatter, { filename: relativePath });
+      if (outputDir !== null) {
+        const outputPath = join(outputDir, toHtmlOutputPath(processedFile.path));
+        ensureDirectoryExists(dirname(outputPath));
+        writeFileSync(outputPath, processedFile.renderedContent, "utf8");
+        logger.log(`Generated: ${outputPath}`);
       }
 
-      validateFrontMatter(frontMatterObj, relativePath);
-
-      let templateToUse = defaultTemplateContent;
-      const resolvedTemplatePath = frontMatterObj?.template ?
-        join(templateConfig.vtPath, "templates", frontMatterObj.template) :
-        templateConfig.defaultTemplate;
-      if (!existsSync(resolvedTemplatePath)) {
-        throw new Error(`Template not found for "${relativePath}": ${resolvedTemplatePath}`);
-      }
-      templateToUse = readFileSync(resolvedTemplatePath, "utf8");
-
-      // Render template
-      let renderedContent;
-      try {
-        renderedContent = engine.parseAndRenderSync(templateToUse, {
-          content: content,
-          frontMatter: frontMatterObj || {},
-        });
-      } catch (error) {
-        throw new Error(
-          `Failed to render template "${resolvedTemplatePath}" for "${relativePath}": ${error.message}`,
-          { cause: error },
-        );
-      }
-
-      // Save file
-      const outputPath = join(outputDir, toHtmlOutputPath(relativePath));
-      ensureDirectoryExists(dirname(outputPath));
-      writeFileSync(outputPath, renderedContent, "utf8");
-      logger.log(`Generated: ${outputPath}`);
-
-      processedFiles.push({
-        path: relativePath,
-        content,
-        contentShiki,
-        frontMatter: frontMatterObj,
-        fullContent: fileContent,
-        renderedContent,
-      });
+      processedFiles.push(processedFile);
     }
 
     logger.log(`Successfully generated ${processedFiles.length} files`);
@@ -309,7 +322,8 @@ async function takeScreenshots(config) {
 }
 
 /**
- * Generate overview HTML from template and data
+ * Generate overview HTML from template and data. Returns the pages as [{ fileName, content }] in
+ * section order; with a null outputPath they are only rendered (watch mode).
  */
 function generateOverview(
   data,
@@ -323,7 +337,9 @@ function generateOverview(
     const templateContent = readFileSync(templatePath, "utf8");
 
     // Ensure output directory exists
-    ensureDirectoryExists(dirname(outputPath));
+    if (outputPath !== null) {
+      ensureDirectoryExists(dirname(outputPath));
+    }
 
     // Process sections to extract all items (flat or grouped)
     const allSections = [];
@@ -362,6 +378,7 @@ function generateOverview(
     });
 
     // Generate pages for each section
+    const pages = [];
     allSections.forEach((section) => {
       // Render template with data
       let renderedContent = "";
@@ -394,14 +411,17 @@ function generateOverview(
         renderedContent = `<html><body><h1>Error rendering overview template</h1><p>${error.message}</p></body></html>`;
       }
 
-      const finalOutputPath = outputPath.replace(
-        "index.html",
-        `${toSectionPageKey(section)}.html`
-      );
+      const fileName = `${toSectionPageKey(section)}.html`;
+      pages.push({ fileName, content: renderedContent });
+      if (outputPath === null) {
+        return;
+      }
+      const finalOutputPath = outputPath.replace("index.html", fileName);
       // Save file
       writeFileSync(finalOutputPath, renderedContent, "utf8");
       logger.log(`Generated overview: ${finalOutputPath}`);
     });
+    return pages;
   } catch (error) {
     logger.error("Error generating overview HTML:", error);
     throw error;
@@ -409,6 +429,7 @@ function generateOverview(
 }
 
 export {
+  renderSpecFile,
   generateHtml,
   getAllFiles,
   extractFrontMatter,

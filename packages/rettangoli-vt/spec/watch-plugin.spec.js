@@ -1,7 +1,9 @@
 import { EventEmitter } from "node:events";
 import {
+  chmod,
   mkdtemp,
   mkdir,
+  readdir,
   readFile,
   rm,
   writeFile,
@@ -1052,4 +1054,108 @@ describe("VT watch Vite plugin", () => {
     expect(getContentType("/assets/app.mjs")).toBe("application/javascript");
     expect(getContentType("/assets/app.cjs")).toBe("application/javascript");
   });
+});
+
+// Characterization (also green on the earlier implementation): a spec batch is rendered
+// in memory, so pin what the partial update must keep matching.
+describe("VT watch partial updates", () => {
+  const writeProjectFile = async (cwd, relativePath, content) => {
+    const filePath = path.join(cwd, relativePath);
+    await mkdir(path.dirname(filePath), { recursive: true });
+    await writeFile(filePath, content);
+    return filePath;
+  };
+  const sitePath = (cwd, ...segments) =>
+    path.join(cwd, ".rettangoli", "vt", "_site", ...segments);
+
+  it("renders an affected overview like a full generation, with specs in discovery order", async () => {
+    const { cwd } = await createProject();
+    await writeProjectFile(
+      cwd,
+      "vt/templates/index.html",
+      "{% for file in files %}[{{ file.path }}:{{ file.content }}]{% endfor %}",
+    );
+    // Byte order per folder level: the folder "x" sorts before "x-b.html" and "x.html".
+    const viewFolder = "vt/specs/primitives/view";
+    for (const name of ["x.html", "x-b.html", "x/b.html", "x/a.yaml"]) {
+      await writeProjectFile(cwd, `${viewFolder}/${name}`, `${name} before`);
+    }
+    await generateVtWatchSite({ cwd });
+    expect(await readFile(sitePath(cwd, "view.html"), "utf8")).toBe(
+      "[primitives/view/view-scrollbar-vertical-01.html:<rtgl-view id=\"subject\">Before</rtgl-view>]" +
+        "[primitives/view/x/a.yaml:x/a.yaml before][primitives/view/x/b.html:x/b.html before]" +
+        "[primitives/view/x-b.html:x-b.html before][primitives/view/x.html:x.html before]",
+    );
+
+    const changedSpec = await writeProjectFile(cwd, `${viewFolder}/x-b.html`, "x-b.html after");
+    const result = await generateVtWatchSpec({ cwd, filePath: changedSpec });
+    const partialOverview = await readFile(sitePath(cwd, "view.html"), "utf8");
+    expect(partialOverview).toContain("[primitives/view/x-b.html:x-b.html after]");
+    expect(await readFile(result.outputPath, "utf8")).toContain("x-b.html after");
+
+    await generateVtWatchSite({ cwd });
+    expect(await readFile(sitePath(cwd, "view.html"), "utf8")).toBe(partialOverview);
+  });
+
+  it("renders every configured overview page and skips overviews for unsectioned specs", async () => {
+    const { cwd, specPath } = await createProject();
+    await writeProjectFile(
+      cwd,
+      "rettangoli.config.yaml",
+      "vt:\n  path: vt\n  sections:\n    - title: First\n      files: primitives/first\n    - title: View\n      files: primitives/view\n",
+    );
+    const unsectionedSpec = await writeProjectFile(cwd, "vt/specs/other/one.html", "one before");
+    await generateVtWatchSite({ cwd });
+    const previousOverview = await readFile(sitePath(cwd, "view.html"), "utf8");
+    await writeProjectFile(cwd, "vt/templates/index.html", "{% if %}invalid{% endif %}");
+
+    // Only "View" is affected, but the first configured section is rendered (and fails) first.
+    await writeFile(specPath, "<rtgl-view>After</rtgl-view>");
+    await expect(generateVtWatchSpec({ cwd, filePath: specPath }))
+      .rejects.toThrow('Error rendering overview template for "First"');
+    expect(await readFile(sitePath(cwd, "view.html"), "utf8")).toBe(previousOverview);
+
+    await writeFile(unsectionedSpec, "one after");
+    const result = await generateVtWatchSpec({ cwd, filePath: unsectionedSpec });
+    expect(result.overviewPaths).toEqual([]);
+    expect(await readFile(sitePath(cwd, "candidate", "other", "one.html"), "utf8"))
+      .toContain("one after");
+  });
+
+  it.skipIf(process.platform === "win32" || process.getuid?.() === 0)(
+    "keeps every previous output and no temp files when a commit fails",
+    async () => {
+      const { cwd, specPath } = await createProject();
+      const otherSpec = await writeProjectFile(cwd, "vt/specs/other/one.html", "one before");
+      await generateVtWatchSite({ cwd });
+      const viewCandidateDir = sitePath(cwd, "candidate", "primitives", "view");
+      const otherCandidateDir = sitePath(cwd, "candidate", "other");
+      const previousFiles = new Map();
+      for (const filePath of [
+        path.join(viewCandidateDir, "view-scrollbar-vertical-01.html"),
+        path.join(otherCandidateDir, "one.html"),
+        sitePath(cwd, "view.html"),
+      ]) {
+        previousFiles.set(filePath, await readFile(filePath, "utf8"));
+      }
+
+      await writeFile(specPath, "<rtgl-view>After</rtgl-view>");
+      await writeFile(otherSpec, "one after");
+      await chmod(otherCandidateDir, 0o555);
+      try {
+        await expect(generateVtWatchSpecs({ cwd, filePaths: [specPath, otherSpec] }))
+          .rejects.toThrow(/EACCES|EPERM/);
+      } finally {
+        await chmod(otherCandidateDir, 0o755);
+      }
+
+      for (const [filePath, content] of previousFiles) {
+        expect(await readFile(filePath, "utf8"), filePath).toBe(content);
+      }
+      for (const directory of [viewCandidateDir, otherCandidateDir, sitePath(cwd)]) {
+        expect((await readdir(directory)).filter((name) => name.includes(".watch-")))
+          .toEqual([]);
+      }
+    },
+  );
 });
