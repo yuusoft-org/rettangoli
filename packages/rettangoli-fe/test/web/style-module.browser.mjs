@@ -6,12 +6,20 @@
  * `window.requestAnimationFrame` and applies styles identically to upstream.
  * A regression here would be invisible in Node and obvious in production.
  *
+ * It also checks component style sheets with native constructable sheets:
+ * instances share one sheet per CSS text, the styles apply, and removed
+ * instances are garbage collected (componentStyles.mjs;
+ * style-polyfill.browser.mjs runs the same with the polyfill).
+ *
  *   node packages/rettangoli-fe/test/web/style-module.browser.mjs
  */
 
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { createServer } from "node:http";
+import {
+  checkComponentStyleResult,
+  checkRemovedInstancesCollected,
+  runComponentStyleScenario,
+  serveComponentStylesPage,
+} from "./componentStyles.mjs";
 
 /**
  * Playwright is deliberately NOT a dependency of this package — it would add
@@ -32,40 +40,16 @@ try {
   process.exit(2);
 }
 
-const ROOT = path.resolve(import.meta.dirname, "../../../..");
-
 const checks = [];
 const check = (name, pass, detail = "") => {
   checks.push({ name, pass });
   console.log(`  ${pass ? "PASS" : "FAIL"}  ${name}${detail ? `  (${detail})` : ""}`);
 };
 
-// Serve the monorepo so the browser can load real ES modules from node_modules.
-const serve = (port) =>
-  new Promise((resolve) => {
-    const server = createServer(async (req, res) => {
-      try {
-        const urlPath = decodeURIComponent(req.url.split("?")[0]);
-        if (urlPath === "/") {
-          res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-          res.end('<!doctype html><html><body><div id="host"></div></body></html>');
-          return;
-        }
-        const file = path.join(ROOT, urlPath);
-        if (!file.startsWith(ROOT)) return res.writeHead(403).end();
-        const body = await readFile(file);
-        res.writeHead(200, { "content-type": "text/javascript; charset=utf-8" });
-        res.end(body);
-      } catch {
-        res.writeHead(404).end("not found");
-      }
-    });
-    server.listen(port, () => resolve(server));
-  });
-
 const main = async () => {
   const port = 3577;
-  const server = await serve(port);
+  // Serves the monorepo so the browser can load real ES modules from node_modules.
+  const server = await serveComponentStylesPage({ port });
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
@@ -130,6 +114,19 @@ const main = async () => {
     result.opacityAfterFrames === "0.5", `opacity=${result.opacityAfterFrames}`);
   check("browser really has requestAnimationFrame", result.rafIsReal);
   check("no page errors", errors.length === 0, errors[0] ?? "");
+
+  console.log("\n[browser] component style sheets (native)\n");
+  const stylesPage = await browser.newPage();
+  const stylesErrors = [];
+  stylesPage.on("pageerror", (e) => stylesErrors.push(String(e)));
+  await stylesPage.goto(`http://127.0.0.1:${port}/`, { waitUntil: "domcontentloaded" });
+  checkComponentStyleResult(
+    await runComponentStyleScenario(stylesPage, port),
+    check,
+    { polyfill: false },
+  );
+  await checkRemovedInstancesCollected(stylesPage, port, check);
+  check("no page errors", stylesErrors.length === 0, stylesErrors[0] ?? "");
 
   await browser.close();
   server.close();

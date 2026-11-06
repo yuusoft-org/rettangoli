@@ -16,6 +16,7 @@ import {
   prepareHotUpdateBoundStore,
 } from "../core/runtime/store.js";
 import { resolveConstants } from "../core/runtime/constants.js";
+import { syncComponentDeps } from "../core/runtime/lifecycle.js";
 import { yamlToCss } from "../core/style/yamlToCss.js";
 import { validateEventConfig } from "../core/view/refs.js";
 import {
@@ -35,13 +36,15 @@ import {
 import {
   buildObservedAttributes,
 } from "../core/runtime/componentRuntime.js";
-import { initializeComponentDom } from "./componentDom.js";
+import {
+  initializeComponentDom,
+  releaseComponentStyleSheet,
+} from "./componentDom.js";
 import {
   adoptServerProps,
   prepareFirstPatch,
   resetRenderTarget,
 } from "./hydration.js";
-import { syncObject } from "../core/runtime/syncObject.js";
 import {
   createWebComponentUpdateHook,
   cancelPendingComponentUpdate,
@@ -49,31 +52,6 @@ import {
 import { scheduleFrame } from "./scheduler.js";
 
 export { RETTANGOLI_HOT_APPLY, RETTANGOLI_HOT_PREPARE };
-
-const syncInstanceDeps = ({ instance, sourceDeps, handlers }) => {
-  const nextDeps = {
-    ...sourceDeps,
-    locale: instance.i18nRuntime?.locale || sourceDeps?.locale,
-    store: instance.store,
-    render: instance.render,
-    handlers,
-    props: instance.props,
-    constants: instance.constants,
-  };
-
-  if (instance.i18nRuntime) {
-    Object.defineProperty(nextDeps, "i18n", {
-      enumerable: true,
-      configurable: true,
-      get: () => instance.i18nRuntime.getMessages(),
-    });
-  }
-
-  if (!instance.deps) {
-    instance.deps = {};
-  }
-  syncObject(instance.deps, nextDeps);
-};
 
 const createStoreRuntimeContext = (instance) => ({
   getI18n: () => instance.i18nRuntime?.getMessages?.() || {},
@@ -119,7 +97,27 @@ export const createWebComponentClass = ({
     store,
   };
 
-  class BaseComponent extends HTMLElement {
+  // The CSS text depends only on the styles object, so build it once per
+  // styles object (the first definition and each hot update), not per instance.
+  const cssTextByStyles = new WeakMap();
+  const toCssText = (styles) => {
+    if (!styles || typeof styles !== "object") {
+      return yamlToCss(elementName, styles);
+    }
+    if (!cssTextByStyles.has(styles)) {
+      cssTextByStyles.set(styles, yamlToCss(elementName, styles));
+    }
+    return cssTextByStyles.get(styles);
+  };
+
+  class MyComponent extends HTMLElement {
+    static get observedAttributes() {
+      return buildObservedAttributes({
+        propsSchemaKeys,
+        toKebabCase,
+      });
+    }
+
     [RETTANGOLI_COMPONENT_MARKER] = true;
     elementName;
     styles;
@@ -147,6 +145,57 @@ export const createWebComponentClass = ({
     _hotRecord;
     _hotRevision = 0;
     _mountGeneration = 0;
+
+    constructor() {
+      super();
+      const currentDefinition = hotRecord?.definition || initialDefinition;
+      const currentDeps = hotRecord?.deps || deps;
+      this._hotRecord = hotRecord;
+      this._hotRevision = hotRecord?.revision || 0;
+      this.constants = resolveConstants({
+        setupConstants: currentDeps?.constants,
+        fileConstants: currentDefinition.constants,
+      });
+      this.propsSchema = currentDefinition.propsSchema;
+      installReactiveProps({
+        source: this,
+        allowedKeys: propsSchemaKeys,
+        onPropChange: ({ propName, oldValue, newValue }) => {
+          runPropChangedComponentLifecycle({
+            instance: this,
+            propName,
+            oldValue,
+            newValue,
+            scheduleFrameFn: scheduleFrame,
+          });
+        },
+      });
+      releaseNativeProps({ source: this, allowedKeys: propsSchemaKeys });
+      this.props = propsSchema
+        ? createPropsProxy(this, propsSchemaKeys)
+        : {};
+      this._propsSchemaKeys = propsSchemaKeys;
+      this.elementName = elementName;
+      this.styles = currentDefinition.styles;
+      this.i18nRuntime = currentDeps?.__rtglI18nRuntime;
+      this.store = bindStore(
+        currentDefinition.store,
+        this.props,
+        this.constants,
+        createStoreRuntimeContext(this),
+        { deferInitialization: true },
+      );
+      this.template = currentDefinition.template;
+      this.handlers = currentDefinition.handlers;
+      this.methods = currentDefinition.methods;
+      this.refs = currentDefinition.refs;
+      this.patch = patch;
+      syncComponentDeps(this, currentDeps);
+      bindMethods(this, this.methods);
+      // Keep the Snabbdom helper off public prop names (e.g. schema prop "h").
+      this._snabbdomH = h;
+      this.cssText = toCssText(currentDefinition.styles);
+    }
 
     get viewData() {
       let data = {};
@@ -253,15 +302,14 @@ export const createWebComponentClass = ({
       this.handlers = definition.handlers;
       this.methods = definition.methods;
       this.refs = definition.refs;
+      if (this.cssText !== update.cssText) {
+        releaseComponentStyleSheet(this.cssText);
+      }
       this.cssText = update.cssText;
 
       hotUpdateBoundStore(update.storeUpdate);
       commitHotUpdateBoundMethods(update.methodsUpdate);
-      syncInstanceDeps({
-        instance: this,
-        sourceDeps: nextDeps,
-        handlers: this.handlers,
-      });
+      syncComponentDeps(this, nextDeps);
       this._hotRevision = revision;
 
       if (!refresh || !this.renderTarget) {
@@ -306,77 +354,13 @@ export const createWebComponentClass = ({
 
       return {
         constants: nextConstants,
-        cssText: yamlToCss(this.elementName, definition.styles),
+        cssText: toCssText(definition.styles),
         definition,
         i18nRuntime,
         methodsUpdate,
         revision,
         storeUpdate,
       };
-    }
-  }
-
-  class MyComponent extends BaseComponent {
-    static get observedAttributes() {
-      return buildObservedAttributes({
-        propsSchemaKeys,
-        toKebabCase,
-      });
-    }
-
-    constructor() {
-      super();
-      const currentDefinition = hotRecord?.definition || initialDefinition;
-      const currentDeps = hotRecord?.deps || deps;
-      this._hotRecord = hotRecord;
-      this._hotRevision = hotRecord?.revision || 0;
-      this.constants = resolveConstants({
-        setupConstants: currentDeps?.constants,
-        fileConstants: currentDefinition.constants,
-      });
-      this.propsSchema = currentDefinition.propsSchema;
-      installReactiveProps({
-        source: this,
-        allowedKeys: propsSchemaKeys,
-        onPropChange: ({ propName, oldValue, newValue }) => {
-          runPropChangedComponentLifecycle({
-            instance: this,
-            propName,
-            oldValue,
-            newValue,
-            scheduleFrameFn: scheduleFrame,
-          });
-        },
-      });
-      releaseNativeProps({ source: this, allowedKeys: propsSchemaKeys });
-      this.props = propsSchema
-        ? createPropsProxy(this, propsSchemaKeys)
-        : {};
-      this._propsSchemaKeys = propsSchemaKeys;
-      this.elementName = elementName;
-      this.styles = currentDefinition.styles;
-      this.i18nRuntime = currentDeps?.__rtglI18nRuntime;
-      this.store = bindStore(
-        currentDefinition.store,
-        this.props,
-        this.constants,
-        createStoreRuntimeContext(this),
-        { deferInitialization: true },
-      );
-      this.template = currentDefinition.template;
-      this.handlers = currentDefinition.handlers;
-      this.methods = currentDefinition.methods;
-      this.refs = currentDefinition.refs;
-      this.patch = patch;
-      syncInstanceDeps({
-        instance: this,
-        sourceDeps: currentDeps,
-        handlers: this.handlers,
-      });
-      bindMethods(this, this.methods);
-      // Keep the Snabbdom helper off public prop names (e.g. schema prop "h").
-      this._snabbdomH = h;
-      this.cssText = yamlToCss(elementName, currentDefinition.styles);
     }
   }
 

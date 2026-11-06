@@ -1,32 +1,20 @@
 import { parseView } from "../../parser.js";
-import { createTransformedHandlers, runAfterMount, runBeforeMount } from "./lifecycle.js";
+import {
+  buildOnPropUpdateChanges,
+  buildOnUpdateChanges,
+  createTransformedHandlers,
+  runAfterMount,
+  runBeforeMount,
+  syncRuntimeDeps,
+} from "./lifecycle.js";
 import { attachGlobalRefListeners } from "./globalListeners.js";
 import { collectRefElements } from "./refs.js";
 import {
-  createComponentRuntimeDeps,
   cleanupEventRateLimitState,
   syncRefIds,
 } from "./componentRuntime.js";
-import { buildOnPropUpdateChanges, buildOnUpdateChanges } from "./lifecycle.js";
 import { normalizeAttributeValue } from "./props.js";
 import { PARENT_UPDATE_TRANSACTION } from "../protocol.js";
-import { syncObject } from "./syncObject.js";
-
-export const createRuntimeDepsForInstance = ({ instance }) => {
-  const nextRuntimeDeps = createComponentRuntimeDeps({
-    baseDeps: instance.deps,
-    refs: instance.refIds,
-    dispatchEvent: instance.dispatchEvent.bind(instance),
-    store: instance.store,
-    render: instance.render.bind(instance),
-  });
-
-  if (!instance._runtimeDeps) {
-    instance._runtimeDeps = nextRuntimeDeps;
-    return instance._runtimeDeps;
-  }
-  return syncObject(instance._runtimeDeps, nextRuntimeDeps);
-};
 
 export const runConnectedComponentLifecycle = ({
   instance,
@@ -37,7 +25,7 @@ export const runConnectedComponentLifecycle = ({
   attachGlobalRefListenersFn = attachGlobalRefListeners,
   runAfterMountFn = runAfterMount,
 }) => {
-  const runtimeDeps = createRuntimeDepsForInstance({ instance });
+  const runtimeDeps = syncRuntimeDeps(instance);
 
   instance.transformedHandlers = createTransformedHandlersFn({
     handlers: instance.handlers,
@@ -99,7 +87,7 @@ export const runHotUpdatedComponentLifecycle = ({
     clearTimerFn,
   });
 
-  const runtimeDeps = createRuntimeDepsForInstance({ instance });
+  const runtimeDeps = syncRuntimeDeps(instance);
   instance.transformedHandlers = createTransformedHandlersFn({
     handlers: instance.handlers,
     deps: runtimeDeps,
@@ -135,7 +123,7 @@ export const runAttributeChangedComponentLifecycle = ({
   }
 
   if (instance.handlers?.handleOnUpdate) {
-    const runtimeDeps = createRuntimeDepsForInstance({ instance });
+    const runtimeDeps = syncRuntimeDeps(instance);
     const changes = buildOnUpdateChanges({
       attributeName,
       oldValue,
@@ -172,7 +160,7 @@ export const runPropChangedComponentLifecycle = ({
   }
 
   if (instance.handlers?.handleOnUpdate) {
-    const runtimeDeps = createRuntimeDepsForInstance({ instance });
+    const runtimeDeps = syncRuntimeDeps(instance);
     const changes = buildOnPropUpdateChanges({
       propName,
       oldValue,

@@ -1,5 +1,3 @@
-import { createRuntimeDeps } from "./lifecycle.js";
-
 export const buildObservedAttributes = ({ propsSchemaKeys = [], toKebabCase }) => {
   const observedAttrs = new Set(["key"]);
   propsSchemaKeys.forEach((propKey) => {
@@ -9,22 +7,6 @@ export const buildObservedAttributes = ({ propsSchemaKeys = [], toKebabCase }) =
     observedAttrs.add(propKey.toLowerCase());
   });
   return [...observedAttrs];
-};
-
-export const createComponentRuntimeDeps = ({
-  baseDeps,
-  refs,
-  dispatchEvent,
-  store,
-  render,
-}) => {
-  return createRuntimeDeps({
-    baseDeps,
-    refs,
-    dispatchEvent,
-    store,
-    render,
-  });
 };
 
 export const syncRefIds = ({ refIds, nextRefIds = {} }) => {

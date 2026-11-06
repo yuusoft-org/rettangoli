@@ -1,4 +1,5 @@
 import { scheduleFrame } from "./scheduler.js";
+import { buildParentUpdateDeps } from "../core/runtime/lifecycle.js";
 import {
   PARENT_UPDATE_TRANSACTION,
   RETTANGOLI_COMPONENT_MARKER,
@@ -298,15 +299,7 @@ const runPendingUpdate = (element, pendingUpdate) => {
   element.removeAttribute("isDirty");
 
   if (!isFirstProps && element.handlers && element.handlers.handleOnUpdate) {
-    const deps = {
-      ...element.deps,
-      store: element.store,
-      render: element.render.bind(element),
-      handlers: element.handlers,
-      dispatchEvent: element.dispatchEvent.bind(element),
-      refs: element.refIds || {},
-    };
-    element.handlers.handleOnUpdate(deps, {
+    element.handlers.handleOnUpdate(buildParentUpdateDeps(element), {
       oldProps: previousProps,
       newProps: pendingUpdate.newProps,
     });

@@ -78,26 +78,76 @@ const findExistingRenderTarget = (shadow) => {
     : undefined;
 };
 
+// One sheet per CSS text, shared by every shadow root that adopts it: the
+// common sheet and one per component style, so connecting parses no CSS.
+// Sheets are created on first use, so importing this module in Node is safe.
+//
+// Only native sheets are shared. A native sheet does not keep the roots that
+// adopted it alive, but a polyfilled one does: construct-style-sheets-polyfill
+// (which apps load for WebKit before 16.4) records every adopting root in the
+// sheet, so a cached sheet would keep every component instance that ever
+// connected alive. Without a native CSSStyleSheet (the polyfill, test stubs)
+// each call creates fresh sheets, as before the cache. The check runs on every
+// call, because the polyfill may replace CSSStyleSheet after a first connect.
+// A constructed sheet resolves relative url() against the page URL when it was
+// created, so a shared sheet keeps the URL of the first connect. Apps must not
+// write to a sheet they read from a component root: on native browsers every
+// instance shares it.
+const sharedStyleSheets = new Map();
+
+const createStyleSheetWithText = (createStyleSheet, cssText) => {
+  const styleSheet = createStyleSheet();
+  styleSheet.replaceSync(cssText);
+  return styleSheet;
+};
+
+const createDefaultStyleSheet = () => new CSSStyleSheet();
+
+const getStyleSheet = (cssText, createStyleSheet) => {
+  // An injected factory gets fresh sheets, as before there was a cache.
+  if (createStyleSheet) {
+    return createStyleSheetWithText(createStyleSheet, cssText);
+  }
+  const isNativeStyleSheet = Function.prototype.toString
+    .call(CSSStyleSheet)
+    .includes("[native code]");
+  if (!isNativeStyleSheet) {
+    return createStyleSheetWithText(createDefaultStyleSheet, cssText);
+  }
+  let styleSheet = sharedStyleSheets.get(cssText);
+  if (!styleSheet) {
+    styleSheet = createStyleSheetWithText(createDefaultStyleSheet, cssText);
+    sharedStyleSheets.set(cssText, styleSheet);
+  }
+  return styleSheet;
+};
+
+// A hot update replaces a component's CSS text. Forget the old sheet so the
+// cache does not keep one sheet per edit; roots that still adopt it keep it.
+// The cache is keyed by text, not by component: another component with the
+// same CSS just gets a new sheet on its next connect.
+export const releaseComponentStyleSheet = (cssText) => {
+  sharedStyleSheets.delete(cssText);
+};
+
 export const initializeComponentDom = ({
   host,
   cssText,
-  createStyleSheet = () => new CSSStyleSheet(),
+  createStyleSheet,
   createElement = (tagName) => document.createElement(tagName),
 }) => {
   const existingShadow = host.shadowRoot;
   const shadow = existingShadow ?? host.attachShadow({ mode: "open" });
 
-  const commonStyleSheet = createStyleSheet();
-  commonStyleSheet.replaceSync(COMMON_COMPONENT_STYLE_TEXT);
-
-  const adoptedStyleSheets = [commonStyleSheet];
+  const adoptedStyleSheets = [
+    getStyleSheet(COMMON_COMPONENT_STYLE_TEXT, createStyleSheet),
+  ];
 
   if (cssText) {
-    const styleSheet = createStyleSheet();
-    styleSheet.replaceSync(cssText);
-    adoptedStyleSheets.push(styleSheet);
+    adoptedStyleSheets.push(getStyleSheet(cssText, createStyleSheet));
   }
 
+  // Always a new array: apps may append their own sheet to a root's list.
   shadow.adoptedStyleSheets = adoptedStyleSheets;
 
   let renderTarget = findExistingRenderTarget(shadow);

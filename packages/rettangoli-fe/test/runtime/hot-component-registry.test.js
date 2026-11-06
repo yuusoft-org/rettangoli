@@ -377,6 +377,38 @@ describe("hot component registry", () => {
     expect(store.getState().count).toBe(121);
   });
 
+  it("gives each connect fresh style sheets under a non-native CSSStyleSheet, through a hot update", () => {
+    // The stub CSSStyleSheet is not native (like a polyfill), so nothing is
+    // cached: a cached polyfilled sheet would keep every root that adopted it.
+    const register = (styleColor, fingerprint) =>
+      defineOrUpdateComponent({
+        componentConfig: createConfig({ componentName: "x-hot-styles", styleColor }),
+        componentId: "components/x-hot-styles",
+        deps: {},
+        fingerprint,
+      });
+    const ComponentClass = register("red", "v1").componentClass;
+    const first = connect(new ComponentClass());
+    const second = connect(new ComponentClass());
+    const [commonSheet, redSheet] = first.shadow.adoptedStyleSheets;
+
+    expect(redSheet.text).toContain("color: red");
+    expect(second.shadow.adoptedStyleSheets[1].text).toBe(redSheet.text);
+    expect(second.shadow.adoptedStyleSheets[0]).not.toBe(commonSheet);
+    expect(second.shadow.adoptedStyleSheets[1]).not.toBe(redSheet);
+
+    expect(register("blue", "v2").updatedInstances).toBe(2);
+    const [, blueSheet] = first.shadow.adoptedStyleSheets;
+    expect(blueSheet.text).toContain("color: blue");
+    expect(redSheet.text).toContain("color: red");
+    expect(first.shadow.adoptedStyleSheets[0]).not.toBe(commonSheet);
+    expect(second.shadow.adoptedStyleSheets[1].text).toBe(blueSheet.text);
+    expect(second.shadow.adoptedStyleSheets[1]).not.toBe(blueSheet);
+    const later = connect(new ComponentClass()).shadow.adoptedStyleSheets[1];
+    expect(later.text).toBe(blueSheet.text);
+    expect(later).not.toBe(blueSheet);
+  });
+
   it("does not rerender an unchanged fingerprint unless a JS module changed", () => {
     const config = createConfig({ componentName: "x-hot-unchanged" });
     const initial = defineOrUpdateComponent({
