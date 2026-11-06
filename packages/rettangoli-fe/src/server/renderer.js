@@ -431,44 +431,32 @@ export const renderComponent = ({
       setHydrateAttribute(vnode, definition.ssr);
 
       // An opted-out component gets no shadow root, but its light DOM is
-      // the parent's content and is written, so the parent can adopt it.
-      if (!definition.ssr) {
-        substitutions.set(vnode, {
-          preserveLightDom: true,
-          shadowRoot: "",
+      // still written, so the parent can adopt it.
+      let shadowRoot = "";
+      if (definition.ssr) {
+        const childPath = enterComponent({
+          elementName: definition.elementName.toLowerCase(),
+          path,
+          maxDepth,
         });
-        for (const child of vnode.children || []) {
-          prepareTree(child, path);
-        }
-        return;
+        shadowRoot = renderShadowRoot({
+          registration,
+          componentProps: createServerProps({
+            definition,
+            props: vnode.data?.props,
+            attrs: vnode.data?.attrs,
+          }),
+          path: childPath,
+        });
       }
-
-      const childPath = enterComponent({
-        elementName: definition.elementName.toLowerCase(),
-        path,
-        maxDepth,
-      });
-      const childProps = createServerProps({
-        definition,
-        props: vnode.data?.props,
-        attrs: vnode.data?.attrs,
-      });
-      const shadowRoot = renderShadowRoot({
-        registration,
-        componentProps: childProps,
-        path: childPath,
-      });
       substitutions.set(vnode, {
         preserveLightDom: true,
         shadowRoot,
       });
-
-      for (const child of vnode.children || []) {
-        prepareTree(child, childPath);
-      }
-      return;
     }
 
+    // Light DOM, slotted or not, belongs to the view that wrote it, so it
+    // stays on that view's path: `x-panel` inside `x-panel` is not a cycle.
     for (const child of vnode.children || []) {
       prepareTree(child, path);
     }

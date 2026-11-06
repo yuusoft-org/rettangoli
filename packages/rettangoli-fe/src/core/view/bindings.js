@@ -129,6 +129,9 @@ export const parseNodeBindings = ({
 }) => {
   const attrs = {};
   const props = {};
+  // `?name=${expr}` toggles that evaluated false. The attribute is left out,
+  // but hydration needs the name to remove a copy the server rendered.
+  const toggledOff = [];
   const assertSupportedBooleanToggleAttr = (attrName) => {
     if (
       attrName === "role"
@@ -213,6 +216,8 @@ export const parseNodeBindings = ({
 
       if (evalValue) {
         attrs[attrName] = "";
+      } else {
+        toggledOff.push(attrName);
       }
       if (isWebComponent && attrName !== "id") {
         setComponentProp(attrName, !!evalValue, "boolean attribute-form");
@@ -274,5 +279,5 @@ export const parseNodeBindings = ({
     }
   }
 
-  return { attrs, props };
+  return toggledOff.length > 0 ? { attrs, props, toggledOff } : { attrs, props };
 };

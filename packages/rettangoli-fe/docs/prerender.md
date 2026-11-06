@@ -101,7 +101,10 @@ render needs belongs in the store or in props, not in a handler.
   own light DOM and only a fresh element sets that structure up again. The
   same goes for every custom element around it, up to the nearest plain
   element, so in a tree of `rtgl-view`s one difference usually re-renders the
-  whole component. Attributes a custom element sets on itself are left alone.
+  whole component. Attributes a custom element sets on itself are left alone,
+  except a name the client renders off with a toggle (`?disabled=${busy}`
+  with `busy` false): the template owns it, so a copy on the element is
+  removed and counted as a mismatch.
 - Nodes are paired by position. A keyed list in a different order than the
   one prerendered is corrected item by item, not moved.
 - Text the HTML parser joined (adjacent text items, or a `$for` over text) is
@@ -174,10 +177,14 @@ root and no hydration marker, and mounts on the client as usual. The light
 DOM its parent gives it is still written, so the parent adopts it. An
 opted-out root rendered with `serializeProps` still gets its props.
 
-A component can't be prerendered inside itself, such as a tree that renders
-its own tag for its child nodes: `renderComponent` throws
+A component whose own view renders its own tag, directly or through the
+views of the components it renders (a tree that renders itself for its child
+nodes), can't be prerendered: `renderComponent` throws
 `component cycle detected`. Mark it `ssr: false`; its parent's markup is
-still prerendered, and the tree renders in the browser.
+still prerendered, and the tree renders in the browser. Light DOM belongs to
+the view that writes it, so a component nested in its own type through a
+slot (`x-panel` inside `x-panel`, both written by the page) is not a cycle,
+and `maxDepth` counts only views inside views.
 
 ## Design Notes
 

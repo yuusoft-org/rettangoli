@@ -137,19 +137,39 @@ describe("components nested through slots", () => {
     template: [{ "x-panel": [{ h2: "Outer" }, { "x-panel": [{ p: "Inner" }] }] }],
   });
 
-  it("known gap: a component slotted into its own type is reported as a cycle", () => {
-    expect(() => renderComponent({ component: "x-page", components: [page, panel] })).toThrow(
-      new Error("[renderComponent] component cycle detected: x-page -> x-panel -> x-panel."),
+  // Light DOM belongs to the view that writes it, so nesting through slots
+  // is neither a cycle nor extra depth.
+  const shadow = (content) =>
+    '<template shadowrootmode="open"><style/>'
+    + `<div data-rtgl-render-target="" style="display: contents">${content}</div></template>`;
+  const panelShadow = shadow('<section class="frame"><slot></slot></section>');
+  const boxShadow = shadow('<div class="box"><slot></slot></div>');
+
+  it("renders a component slotted into its own type", () => {
+    expect(render({ component: "x-page", components: [page, panel] }).html).toBe(
+      '<x-page data-rtgl-hydrate="">'
+      + shadow(
+        `<x-panel data-rtgl-hydrate="">${panelShadow}<h2>Outer</h2>`
+        + `<x-panel data-rtgl-hydrate="">${panelShadow}<p>Inner</p></x-panel></x-panel>`,
+      )
+      + "</x-page>",
     );
   });
 
-  it("known gap: the same false cycle is reported across a different component", () => {
+  it("renders the same type slotted across a different component", () => {
     const deep = defineComponent({
       name: "x-page",
       template: [{ "x-panel": [{ "x-box": [{ "x-panel": [{ p: "Deep" }] }] }] }],
     });
-    expect(() => renderComponent({ component: "x-page", components: [deep, panel, box] })).toThrow(
-      new Error("[renderComponent] component cycle detected: x-page -> x-panel -> x-box -> x-panel."),
+    expect(render({ component: "x-page", components: [deep, panel, box] }).html).toBe(
+      '<x-page data-rtgl-hydrate="">'
+      + shadow(
+        `<x-panel data-rtgl-hydrate="">${panelShadow}`
+        + `<x-box data-rtgl-hydrate="">${boxShadow}`
+        + `<x-panel data-rtgl-hydrate="">${panelShadow}<p>Deep</p></x-panel>`
+        + "</x-box></x-panel>",
+      )
+      + "</x-page>",
     );
   });
 
@@ -165,17 +185,17 @@ describe("components nested through slots", () => {
     );
   });
 
-  it("known gap: depth counts nesting through the light DOM", () => {
+  it("counts depth by views, not by nesting through the light DOM", () => {
     const row = defineComponent({ name: "x-row", template: [{ "div.row": [{ slot: "" }] }] });
     const deep = defineComponent({
       name: "x-page",
       template: [{ "x-panel": [{ "x-box": [{ "x-row": [{ p: "Leaf" }] }] }] }],
     });
     const components = [deep, panel, box, row];
-    expect(() => renderComponent({ component: "x-page", components, maxDepth: 3 })).toThrow(
-      new Error("[renderComponent] maximum component depth 3 exceeded at x-page -> x-panel -> x-box -> x-row."),
+    expect(() => renderComponent({ component: "x-page", components, maxDepth: 1 })).toThrow(
+      new Error("[renderComponent] maximum component depth 1 exceeded at x-page -> x-panel."),
     );
-    expect(() => renderComponent({ component: "x-page", components, maxDepth: 4 })).not.toThrow();
+    expect(() => renderComponent({ component: "x-page", components, maxDepth: 2 })).not.toThrow();
   });
 });
 

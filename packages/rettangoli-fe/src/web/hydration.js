@@ -30,7 +30,11 @@
  *
  * Attributes that a custom element added to itself (`rtgl-checkbox`'s
  * `has-label`, a popover's placement) are left alone, as a normal client
- * render leaves them alone.
+ * render leaves them alone. The exception is a name the client's template
+ * toggles off (`?disabled=${busy}` with `busy` false): the template owns that
+ * name, and the markup cannot tell a copy the build wrote from one the
+ * element set, so it is removed and reported. After the first patch these
+ * names are left alone again, so an element may still set them later.
  */
 
 import { readPropFallbackFromAttributes } from "../core/runtime/props.js";
@@ -105,6 +109,20 @@ const mirrorAttrs = ({ vnode, elm, isCustom, isRoot, report, path }) => {
       oldAttrs[name] = domValue;
     }
     if (domValue !== attributeAsDom(attrs[name])) {
+      report.corrected += 1;
+      addReason(report, `${path}: attribute "${name}" was ${JSON.stringify(domValue)}`);
+    }
+  }
+
+  // A toggle the client renders off (`?disabled=${busy}`) names an attribute
+  // the template owns, so a copy still on a custom element is removed too
+  // (see the header).
+  if (isCustom) {
+    for (const name of vnode.data?.toggledOff || []) {
+      if (renderedNames.has(name.toLowerCase())) continue;
+      const domValue = elm.getAttribute(name);
+      if (domValue === null) continue;
+      oldAttrs[name] = domValue;
       report.corrected += 1;
       addReason(report, `${path}: attribute "${name}" was ${JSON.stringify(domValue)}`);
     }

@@ -135,8 +135,9 @@ export const createVirtualDom = ({
         // 1. Parse selector bindings into attrs/props.
         let attrs;
         let props;
+        let toggledOff;
         try {
-          ({ attrs, props } = parseNodeBindings({
+          ({ attrs, props, toggledOff } = parseNodeBindings({
             attrsString,
             viewData,
             tagName,
@@ -266,6 +267,11 @@ export const createVirtualDom = ({
         }
         if (Object.keys(props).length > 0) {
           snabbdomData.props = props;
+        }
+        // Read only by hydration (web/hydration.js); snabbdom and the
+        // serializers ignore it.
+        if (isWebComponent && toggledOff) {
+          snabbdomData.toggledOff = toggledOff;
         }
 
         // Hook behavior is injected so parser core stays environment-agnostic.

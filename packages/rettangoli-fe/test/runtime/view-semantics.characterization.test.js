@@ -542,25 +542,44 @@ describe("hydrating attributes that a custom element sets on itself", () => {
     expect(telemetry).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
   });
 
-  it("leaves a self-set attribute whose name the template toggles off on both sides", () => {
+  // The markup cannot tell a toggle the server rendered on from the same name
+  // the element set on itself before its parent hydrated. The template owns a
+  // name it toggles, so either copy is removed when the client renders it off
+  // (it used to stay, which left server-only toggles on for good).
+  it("removes a self-set attribute whose name the template toggles off, and reports it", () => {
     const { child, telemetry } = hydrate({
       template: (child) => [{ [`${child} ?open=\${isOpen}`]: null }],
       serverData: { isOpen: false },
       clientData: { isOpen: false },
       selfSet: { open: "" },
     });
-    expect(child.hasAttribute("open")).toBe(true);
-    expect(telemetry).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+    expect(child.hasAttribute("open")).toBe(false);
+    expect(telemetry.mismatched).toBe(1);
+    expect(telemetry.reasons).toHaveLength(1);
+    expect(telemetry.reasons[0]).toMatch(/x-self-set-\d+\[0\]: attribute "open" was ""$/);
   });
 
-  it("known quirk: a toggle the server rendered on stays on a custom element when the client renders it off", () => {
+  it("removes a toggle the server rendered on from a custom element when the client renders it off", () => {
     const { child, telemetry } = hydrate({
       template: (child) => [{ [`${child} ?disabled=\${busy}`]: null }],
       serverData: { busy: true },
       clientData: { busy: false },
       selfSet: {},
     });
-    expect(child.hasAttribute("disabled")).toBe(true);
+    expect(child.hasAttribute("disabled")).toBe(false);
+    expect(telemetry.mismatched).toBe(1);
+    expect(telemetry.reasons).toHaveLength(1);
+    expect(telemetry.reasons[0]).toMatch(/x-self-set-\d+\[0\]: attribute "disabled" was ""$/);
+  });
+
+  it("leaves a self-set attribute whose name the template toggles on", () => {
+    const { child, telemetry } = hydrate({
+      template: (child) => [{ [`${child} ?open=\${isOpen}`]: null }],
+      serverData: { isOpen: true },
+      clientData: { isOpen: true },
+      selfSet: { open: "" },
+    });
+    expect(child.hasAttribute("open")).toBe(true);
     expect(telemetry).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
   });
 

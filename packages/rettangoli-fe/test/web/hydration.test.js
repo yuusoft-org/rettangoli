@@ -787,3 +787,291 @@ describe("hydration edge cases", () => {
     errors.mockRestore();
   });
 });
+
+describe("hydrating toggles the client renders off", () => {
+  // The server renders with `serverData`, the client with `clientData`.
+  const prerender = ({ template, serverData, clientData, handlers, store = {} }) => {
+    const name = uniqueName("toggles");
+    let side = "server";
+    const config = component({
+      name,
+      template,
+      store: {
+        selectViewData: () => (side === "server" ? serverData : clientData),
+        ...store,
+      },
+      handlers,
+    });
+    const { html } = renderComponent({ component: name, components: [config] });
+    serverRender(html);
+    side = "client";
+    return { name, config, html };
+  };
+
+  const hydrate = ({ name, config }) => {
+    customElements.define(name, createComponent(config, {}));
+    return renderTargetOf(document.querySelector(name));
+  };
+
+  it("removes a toggle the server rendered on from a custom element and reports it", () => {
+    const fancyName = uniqueName("fancy");
+    const fixture = prerender({
+      template: [
+        { [`${fancyName}#fancy ?disabled=\${busy}`]: "Fancy" },
+        { "button#plain ?disabled=${busy}": "Plain" },
+      ],
+      serverData: { busy: true },
+      clientData: { busy: false },
+    });
+    expect(fixture.html).toContain(`<${fancyName} disabled="" id="fancy">`);
+    const target = renderTargetOf(document.querySelector(fixture.name));
+    const fancy = target.querySelector(fancyName);
+    const plain = target.querySelector("button");
+
+    hydrate(fixture);
+
+    expect(target.querySelector(fancyName)).toBe(fancy);
+    expect(target.querySelector("button")).toBe(plain);
+    expect(fancy.hasAttribute("disabled")).toBe(false);
+    expect(plain.hasAttribute("disabled")).toBe(false);
+    expect(globalThis.__rtglHydration.mismatched).toBe(1);
+    expect(globalThis.__rtglHydration.reasons).toEqual([
+      `<${fixture.name}> div > ${fancyName}[0]: attribute "disabled" was ""`,
+      `<${fixture.name}> div > button[1]: attribute "disabled" is not rendered by the client`,
+    ]);
+
+    document.querySelector(fixture.name).render();
+    flushFrames();
+    expect(fancy.hasAttribute("disabled")).toBe(false);
+  });
+
+  it("re-enables an element that mirrors the attribute when the client turns it off before mount", () => {
+    // Like rtgl-button and rtgl-checkbox: defined before the page's components,
+    // mirroring host attributes onto an inner control.
+    const mirrorName = uniqueName("mirror");
+    customElements.define(mirrorName, class extends HTMLElement {
+      static get observedAttributes() { return ["checked", "disabled"]; }
+
+      constructor() {
+        super();
+        this.attachShadow({ mode: "open" });
+        this.control = document.createElement("input");
+        this.control.type = "checkbox";
+        this.shadowRoot.append(this.control);
+      }
+
+      attributeChangedCallback(attribute, _old, value) {
+        this.control[attribute] = value !== null;
+      }
+    });
+    const fixture = prerender({
+      template: [{ [`${mirrorName}#agree ?checked=\${loading} ?disabled=\${loading}`]: null }],
+      serverData: undefined,
+      clientData: undefined,
+      store: {
+        createInitialState: () => ({ loading: true }),
+        setLoading: ({ state }, { value }) => {
+          state.loading = value;
+        },
+        selectViewData: ({ state }) => ({ loading: state.loading }),
+      },
+      handlers: {
+        // The client already has the data, so it is not loading.
+        handleBeforeMount: (deps) => {
+          deps.store.setLoading({ value: false });
+        },
+      },
+    });
+    const mirror = renderTargetOf(document.querySelector(fixture.name)).querySelector(mirrorName);
+    expect(mirror.control.disabled).toBe(true);
+
+    hydrate(fixture);
+
+    expect(mirror.hasAttribute("checked")).toBe(false);
+    expect(mirror.hasAttribute("disabled")).toBe(false);
+    expect(mirror.control.checked).toBe(false);
+    expect(mirror.control.disabled).toBe(false);
+    expect(globalThis.__rtglHydration.mismatched).toBe(1);
+    expect(globalThis.__rtglHydration.reasons).toEqual([
+      `<${fixture.name}> div > ${mirrorName}[0]: attribute "checked" was ""`,
+      `<${fixture.name}> div > ${mirrorName}[0]: attribute "disabled" was ""`,
+    ]);
+  });
+
+  it("removes the attribute from a child component's host, whose prop is already off", () => {
+    const childName = uniqueName("toggle-child");
+    const child = component({
+      name: childName,
+      props: ["disabled"],
+      template: [{ p: "${label}" }],
+      store: { selectViewData: ({ props }) => ({ label: props.disabled ? "off" : "on" }) },
+    });
+    const fixture = prerender({
+      template: [{ [`${childName}#kid ?disabled=\${busy}`]: null }],
+      serverData: { busy: true },
+      clientData: { busy: false },
+    });
+
+    hydrate(fixture);
+    customElements.define(childName, createComponent(child, {}));
+    flushFrames();
+
+    const kid = renderTargetOf(document.querySelector(fixture.name)).querySelector(childName);
+    expect(kid.hasAttribute("disabled")).toBe(false);
+    expect(kid.props.disabled).toBe(false);
+    expect(renderTargetOf(kid).textContent).toBe("on");
+  });
+
+  it("reports nothing when the toggle is off on both sides", () => {
+    const flagName = uniqueName("self-flag");
+    customElements.define(flagName, class extends HTMLElement {
+      connectedCallback() { this.setAttribute("has-label", ""); }
+    });
+    const fixture = prerender({
+      template: [{ [`${flagName}#f ?disabled=\${busy} ?has-x=\${busy}`]: "x" }],
+      serverData: { busy: false },
+      clientData: { busy: false },
+    });
+
+    const flag = hydrate(fixture).querySelector(flagName);
+
+    expect(flag.hasAttribute("has-label")).toBe(true);
+    expect(flag.hasAttribute("disabled")).toBe(false);
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+  });
+
+  it("reports nothing for a toggled-off name the element still renders", () => {
+    const fancyName = uniqueName("id-toggle");
+    // `?id` off leaves the selector id in place.
+    const fixture = prerender({
+      template: [{ [`${fancyName}#f ?id=\${off}`]: "x" }],
+      serverData: { off: false },
+      clientData: { off: false },
+    });
+
+    const fancy = hydrate(fixture).querySelector(fancyName);
+
+    expect(fancy.id).toBe("f");
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+  });
+
+  it("leaves a toggled-off name that an element reflects on itself after hydration", () => {
+    // Upgrades after its parent hydrated, and reflects its own state from then on.
+    const reflectName = uniqueName("reflect");
+    const fixture = prerender({
+      template: [
+        { [`${reflectName}#late ?open=\${isOpen}`]: null },
+        { [`${reflectName}#opened ?open=\${isOpen}`]: null },
+        { "p#count": "${count}" },
+      ],
+      serverData: { isOpen: false, count: 0 },
+      clientData: undefined,
+      store: {
+        createInitialState: () => ({ count: 0 }),
+        bump: ({ state }) => {
+          state.count += 1;
+        },
+        selectViewData: ({ state }) => ({ isOpen: false, count: state.count }),
+      },
+    });
+
+    const target = hydrate(fixture);
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+    customElements.define(reflectName, class extends HTMLElement {
+      connectedCallback() {
+        if (this.id === "late") this.toggleAttribute("open", true);
+      }
+
+      show() { this.toggleAttribute("open", true); }
+    });
+    const late = target.querySelector("#late");
+    const opened = target.querySelector("#opened");
+    opened.show();
+
+    const host = document.querySelector(fixture.name);
+    host.store.bump();
+    host.render();
+    flushFrames();
+
+    expect(target.querySelector("#count").textContent).toBe("1");
+    expect(late.hasAttribute("open")).toBe(true);
+    expect(opened.hasAttribute("open")).toBe(true);
+  });
+
+  it("removes a toggle that turns off on the client without prerendered markup", () => {
+    const fancyName = uniqueName("client-fancy");
+    const name = uniqueName("client-toggles");
+    customElements.define(name, createComponent(component({
+      name,
+      template: [{ [`${fancyName}#fancy ?disabled=\${busy}`]: "Fancy" }],
+      store: {
+        createInitialState: () => ({ busy: true }),
+        setBusy: ({ state }, { value }) => {
+          state.busy = value;
+        },
+        selectViewData: ({ state }) => ({ busy: state.busy }),
+      },
+    }), {}));
+    const host = document.body.appendChild(document.createElement(name));
+    const fancy = renderTargetOf(host).querySelector(fancyName);
+    expect(fancy.hasAttribute("disabled")).toBe(true);
+
+    host.store.setBusy({ value: false });
+    host.render();
+
+    expect(fancy.hasAttribute("disabled")).toBe(false);
+  });
+
+  it("known gap: a static attribute from the other $if branch stays on a custom element", () => {
+    const fancyName = uniqueName("branch-fancy");
+    const fixture = prerender({
+      template: [{
+        "$if busy": [{ [`${fancyName}#f disabled`]: "x" }],
+        "$else": [{ [`${fancyName}#f`]: "x" }],
+      }],
+      serverData: { busy: true },
+      clientData: { busy: false },
+    });
+
+    const fancy = hydrate(fixture).querySelector(fancyName);
+
+    expect(fancy.hasAttribute("disabled")).toBe(true);
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+  });
+});
+
+describe("hydrating text the HTML parser normalizes", () => {
+  it("adopts pre and textarea text that starts with a newline, and CR in text and attributes", () => {
+    const name = uniqueName("newlines");
+    const config = component({
+      name,
+      props: ["code", "note", "area"],
+      template: [
+        { "pre#code": "${code}" },
+        { "p#note title=${note}": "${note}" },
+        { "textarea#area": "${area}" },
+      ],
+      store: {
+        selectViewData: ({ props }) => ({ code: props.code, note: props.note, area: props.area }),
+      },
+    });
+    const props = { code: "\nconst a = 1;", note: "line1\r\nline2", area: "\nvalue" };
+    serverRender(renderComponent({
+      component: name,
+      components: [config],
+      props,
+      serializeProps: true,
+    }).html);
+    const target = renderTargetOf(document.querySelector(name));
+    const pre = target.querySelector("pre");
+
+    customElements.define(name, createComponent(config, {}));
+
+    expect(target.querySelector("pre")).toBe(pre);
+    expect(pre.textContent).toBe("\nconst a = 1;");
+    expect(target.querySelector("p").textContent).toBe("line1\r\nline2");
+    expect(target.querySelector("p").getAttribute("title")).toBe("line1\r\nline2");
+    expect(target.querySelector("textarea").value).toBe("\nvalue");
+    expect(globalThis.__rtglHydration).toEqual({ hydrated: 1, mismatched: 0, reasons: [] });
+  });
+});
