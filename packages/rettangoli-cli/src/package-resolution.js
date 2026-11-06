@@ -1,20 +1,19 @@
-import { existsSync, readFileSync, realpathSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
 // Finds the copy of package `name` that a module at `fromFile` would load: the
 // first <dir>/<name>/package.json on its module search path. Returns
-// { dir, version } (dir is the real path) or null.
+// { version } or null.
 // require.resolve(`${name}/package.json`) cannot be used: @rettangoli/fe's
 // exports map does not expose its package.json.
 function findPackage(fromFile, name) {
   const searchPaths = createRequire(fromFile).resolve.paths(name) ?? [];
   for (const searchPath of searchPaths) {
-    const dir = join(searchPath, name);
-    const packageJsonPath = join(dir, "package.json");
+    const packageJsonPath = join(searchPath, name, "package.json");
     if (existsSync(packageJsonPath)) {
       const { version } = JSON.parse(readFileSync(packageJsonPath, "utf8"));
-      return { dir: realpathSync(dir), version };
+      return { version };
     }
   }
   return null;

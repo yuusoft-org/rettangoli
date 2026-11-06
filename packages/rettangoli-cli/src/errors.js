@@ -60,10 +60,11 @@ export function formatCliError(error, { debug = false } = {}) {
 
   if (!(error instanceof CliUserError)) {
     // Extra details such as code, id, plugin or frame, unless the message
-    // already shows them.
+    // already shows them. errno (-2 for ENOENT) adds nothing to code.
     for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(error))) {
       if (
         key === "name" ||
+        key === "errno" ||
         !descriptor.enumerable ||
         !("value" in descriptor) ||
         !isPrimitive(descriptor.value)

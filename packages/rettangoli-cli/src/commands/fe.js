@@ -1,5 +1,4 @@
 import { requireConfig } from "../config.js";
-import { CliUserError } from "../errors.js";
 import { resolveFeOptions } from "../fe-config.js";
 import { parsePortOption } from "../options.js";
 import { warnFeSkew } from "../package-resolution.js";
@@ -150,10 +149,12 @@ Examples:
     .action(async (options) => {
       const { examples } = await load("@rettangoli/fe/cli");
       const config = requireConfig();
-      if (config.fe === null || typeof config.fe !== "object") {
-        throw new CliUserError("fe.dirs not found or empty in config");
-      }
-      options.dirs = config.fe.dirs;
+      // An empty fe.dirs list generates nothing, as it always has. Anything else is
+      // validated like fe check ("check" validates only fe.dirs, which is all examples reads).
+      const dirs = config.fe?.dirs;
+      options.dirs = Array.isArray(dirs) && dirs.length === 0
+        ? dirs
+        : resolveFeOptions(config, process.cwd(), {}, { command: "check" }).dirs;
       options.outputDir = config.fe?.examples?.outputDir || "./vt/specs/examples";
       examples(options);
     });

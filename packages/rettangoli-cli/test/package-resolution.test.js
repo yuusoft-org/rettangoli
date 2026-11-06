@@ -6,6 +6,7 @@ import { spawnSync } from "node:child_process";
 import {
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   realpathSync,
   rmSync,
   symlinkSync,
@@ -60,9 +61,8 @@ test("one hoisted copy: both sides find it and nothing is printed", () => {
   const app = createApp([{ path: "node_modules/@rettangoli/fe", version: "1.6.1" }]);
   mkdirSync(rtglOf(app), { recursive: true });
 
-  const project = findProjectPackage(app, FE);
-  assert.deepEqual(project, { dir: join(app, "node_modules", FE), version: "1.6.1" });
-  assert.deepEqual(findProjectPackage(rtglOf(app), FE), project);
+  assert.deepEqual(findProjectPackage(app, FE), { version: "1.6.1" });
+  assert.deepEqual(findProjectPackage(rtglOf(app), FE), { version: "1.6.1" });
   assert.equal(skewWarning(app, "build"), null);
   assert.equal(skewWarning(app, "watch"), null);
 });
@@ -90,7 +90,6 @@ test("same version in two places: nothing is printed", () => {
     { path: "node_modules/rtgl/node_modules/@rettangoli/fe", version: "1.6.1" },
   ]);
 
-  assert.notEqual(findProjectPackage(app, FE).dir, findProjectPackage(rtglOf(app), FE).dir);
   assert.equal(skewWarning(app, "build"), null);
 });
 
@@ -120,15 +119,12 @@ test("a package whose exports map hides package.json is still found", () => {
   assert.equal(findProjectPackage(app, FE).version, "1.6.0");
 });
 
-test("a symlinked workspace package resolves to its real directory", () => {
+test("a symlinked workspace package is found", () => {
   const app = createApp([{ path: "packages/fe", version: "1.6.1" }]);
   mkdirSync(join(app, "node_modules", "@rettangoli"), { recursive: true });
   symlinkSync(join(app, "packages", "fe"), join(app, "node_modules", FE), "dir");
 
-  assert.deepEqual(findProjectPackage(app, FE), {
-    dir: join(app, "packages", "fe"),
-    version: "1.6.1",
-  });
+  assert.deepEqual(findProjectPackage(app, FE), { version: "1.6.1" });
 });
 
 test("the nearest copy wins, from a subdirectory of the project", () => {
@@ -142,19 +138,18 @@ test("the nearest copy wins, from a subdirectory of the project", () => {
 });
 
 test("unknown versions and a missing rtgl copy never warn", () => {
-  const a = { dir: "/a", version: "1.6.0" };
-  const b = { dir: "/b", version: "1.6.1" };
+  const a = { version: "1.6.0" };
+  const b = { version: "1.6.1" };
   assert.equal(describeFeSkew({ command: "build", project: a, bundled: null }), null);
   assert.equal(describeFeSkew({ command: "build", project: null, bundled: null }), null);
-  assert.equal(describeFeSkew({ command: "build", project: { dir: "/a" }, bundled: b }), null);
-  assert.equal(describeFeSkew({ command: "build", project: a, bundled: { dir: "/b" } }), null);
+  assert.equal(describeFeSkew({ command: "build", project: {}, bundled: b }), null);
+  assert.equal(describeFeSkew({ command: "build", project: a, bundled: {} }), null);
 });
 
-test("rtgl's own copy is the one this checkout resolves", () => {
-  const bundled = findBundledPackage(FE);
-  const cliDirectory = dirname(dirname(fileURLToPath(import.meta.url)));
-  assert.deepEqual(bundled, findProjectPackage(cliDirectory, FE));
-  assert.equal(typeof bundled.version, "string");
+test("rtgl's own copy is the workspace package of this checkout", () => {
+  const feDirectory = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "rettangoli-fe");
+  const { version } = JSON.parse(readFileSync(join(feDirectory, "package.json"), "utf8"));
+  assert.equal(findBundledPackage(FE).version, version);
 });
 
 // warnFeSkew keeps per-process state, so each case runs in a fresh process

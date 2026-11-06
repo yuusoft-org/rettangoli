@@ -8,8 +8,8 @@ function describeType(value) {
 }
 
 // Copies the fe section of the config into the options of `fe build`,
-// `fe check` or `fe watch` (command: "build" | "check" | "watch"). Command-line
-// options win over config values. Only values that would crash later are
+// `fe check` or `fe watch` (command: "build" | "check" | "watch"; `fe examples`
+// uses "check"). Command-line options win over config values. Only values that would crash later are
 // rejected here.
 export function resolveFeOptions(config, cwd, options, { command }) {
   const dirs = config.fe?.dirs;

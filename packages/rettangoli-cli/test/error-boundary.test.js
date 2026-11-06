@@ -107,6 +107,20 @@ test("formatCliError: extra primitive properties the message lacks are listed", 
   );
 });
 
+test("formatCliError: errno is not listed, code only when the message lacks it", () => {
+  const missing = Object.assign(new Error("ENOENT: no such file or directory, open 'a.txt'"), {
+    errno: -2,
+    code: "ENOENT",
+    syscall: "open",
+    path: "a.txt",
+  });
+  assert.equal(formatCliError(missing), `rtgl: ${missing.message}\n${HINT}`);
+  assert.equal(
+    formatCliError(Object.assign(new Error("failed"), { errno: -2, code: "ENOENT" })),
+    `rtgl: failed\n  code: ENOENT\n${HINT}`,
+  );
+});
+
 test("formatCliError: programming errors print their stack by default", () => {
   for (const ErrorType of [TypeError, ReferenceError, SyntaxError, RangeError]) {
     const text = formatCliError(new ErrorType("bad value"));

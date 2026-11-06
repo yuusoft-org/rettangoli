@@ -249,6 +249,36 @@ test("cli: fe examples without a config or fe section reports it", async () => {
   }
 });
 
+test("cli: fe examples validates fe.dirs like the other fe commands", async () => {
+  const cases = [
+    ["fe: {}\n", "fe.dirs not found or empty in config"],
+    ["fe: []\n", "fe.dirs not found or empty in config"],
+    [
+      "fe:\n  dirs: src\n",
+      "fe.dirs must be a list of directories, for example dirs: [src/components]",
+    ],
+    ["fe:\n  dirs: [42]\n", "fe.dirs entries must be strings (got number at index 0)"],
+    ["fe:\n  dirs: [nope]\n", "Directories do not exist: nope"],
+  ];
+  for (const [yaml, message] of cases) {
+    await assertCliError(["fe", "examples"], configFile(yaml), message);
+    await assertCliError(["fe", "check"], configFile(yaml), message);
+  }
+});
+
+test("cli: fe examples with an empty fe.dirs list still generates nothing", async () => {
+  const result = await runScenario({
+    id: "examples-empty-dirs",
+    group: "fe",
+    argv: ["fe", "examples"],
+    files: configFile("fe:\n  dirs: []\n"),
+  });
+  assert.equal(result.exitCode, 0, stderrOf(result));
+  const call = result.trace.find((event) => event.event === "call");
+  assert.equal(call.payload.fn, "examples");
+  assert.deepEqual(call.payload.args[0].dirs, []);
+});
+
 test("cli: invalid fe values are reported before any package call", async () => {
   await assertCliError(
     ["fe", "check"],
