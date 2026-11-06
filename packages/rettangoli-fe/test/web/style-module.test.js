@@ -144,7 +144,11 @@ describe("vendored style module", () => {
         { data: { style: {} } },
         { data: { style: { delayed: { opacity: "1" } } }, elm },
       );
-      await new Promise((r) => setTimeout(r, 5));
+      // Poll instead of a fixed sleep: the two chained timer hops can take
+      // longer than a few ms on a loaded machine.
+      for (let i = 0; i < 400 && elm.style.opacity === undefined; i += 1) {
+        await new Promise((r) => setTimeout(r, 5));
+      }
       console.log(JSON.stringify({
         used: calls.length > 0,
         boundToWindow: calls.length > 0 && calls.every(Boolean),

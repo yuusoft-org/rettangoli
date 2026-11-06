@@ -1,5 +1,5 @@
 import path from "node:path";
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 import { afterEach, describe, expect, it } from "vitest";
@@ -158,5 +158,100 @@ describe("loadComponents", () => {
       const source = readFileSync(path.join(serverDir, file), "utf8");
       expect(source, file).not.toMatch(/^import [^;]* from "node:/m);
     }
+  });
+});
+
+describe("loadComponents output for a real app", () => {
+  const PKG = path.resolve(import.meta.dirname, "../..");
+  const GOLDEN_PATH = path.join(import.meta.dirname, "../cli/__goldens__/load-components-dashboard.json");
+
+  // One line per section of each component, so a diff names what changed.
+  // Functions become "fn"; store and methods modules become their export names.
+  const snapshot = (components) => {
+    const replacer = (_key, value) => (typeof value === "function" ? "fn" : value);
+    const blocks = components.map((component) => {
+      const lines = Object.entries(component).map(
+        ([key, value]) => `  ${JSON.stringify(key)}: ${JSON.stringify(value, replacer)}`,
+      );
+      return `{\n${lines.join(",\n")}\n}`;
+    });
+    return `[\n${blocks.join(",\n")}\n]\n`;
+  };
+
+  it("matches the committed snapshot for e2e/dashboard", async () => {
+    const components = await loadComponents({
+      cwd: path.join(PKG, "e2e/dashboard"),
+      dirs: ["fe/components"],
+    });
+    const actual = snapshot(components);
+    if (process.env.UPDATE_GOLDENS === "1") {
+      mkdirSync(path.dirname(GOLDEN_PATH), { recursive: true });
+      writeFileSync(GOLDEN_PATH, actual);
+      return;
+    }
+    expect(existsSync(GOLDEN_PATH), "missing golden; run with UPDATE_GOLDENS=1").toBe(true);
+    expect(actual).toBe(readFileSync(GOLDEN_PATH, "utf8"));
+    expect(JSON.parse(actual).map((component) => component.schema.componentName)).toEqual([
+      "e2e-dashboard",
+      "e2e-kanban",
+      "e2e-pixel-grid",
+      "e2e-stepper",
+    ]);
+  });
+
+  it("returns the sections it loads for a component, in a stable key order", async () => {
+    const components = await loadComponents({
+      cwd: path.join(PKG, "e2e/dashboard"),
+      dirs: ["fe/components"],
+    });
+    expect(components.map((component) => Object.keys(component))).toEqual([
+      ["view", "schema", "constants", "store"],
+      ["view", "schema", "store"],
+      ["view", "schema", "store"],
+      ["view", "schema", "store"],
+    ]);
+  });
+});
+
+describe("loadComponents messages for files that do not parse", () => {
+  const load = async (files) => {
+    const rootDir = createProject({
+      "c/a/a.schema.yaml": "componentName: x-a\n",
+      "c/a/a.view.yaml": "template:\n  - p: x\n",
+      ...files,
+    });
+    try {
+      await loadComponents({ cwd: rootDir, dirs: ["c"] });
+    } catch (error) {
+      return error.message.replaceAll(rootDir, "<ROOT>");
+    }
+    throw new Error("expected loadComponents to throw");
+  };
+
+  it("names the view file and carries js-yaml's message", async () => {
+    expect(await load({ "c/a/a.view.yaml": "template: [unclosed\n" })).toBe(
+      "[loadComponents] failed to parse <ROOT>/c/a/a.view.yaml: "
+      + "unexpected end of the stream within a flow collection (2:1)\n\n"
+      + " 1 | template: [unclosed\n"
+      + " 2 | \n"
+      + "-----^",
+    );
+  });
+
+  it("names the schema file and carries js-yaml's message", async () => {
+    expect(await load({ "c/a/a.schema.yaml": "componentName: [x-a\n" })).toBe(
+      "[loadComponents] failed to parse <ROOT>/c/a/a.schema.yaml: "
+      + "unexpected end of the stream within a flow collection (2:1)\n\n"
+      + " 1 | componentName: [x-a\n"
+      + " 2 | \n"
+      + "-----^",
+    );
+  });
+
+  it("names the view file when the template is invalid", async () => {
+    expect(await load({ "c/a/a.view.yaml": "template:\n  - $for x: []\n" })).toBe(
+      "[loadComponents] error parsing template in <ROOT>/c/a/a.view.yaml: "
+      + "Parse Error: Invalid loop syntax - missing 'in' keyword (got: '$for x')",
+    );
   });
 });

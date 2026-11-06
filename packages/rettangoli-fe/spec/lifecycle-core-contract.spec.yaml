@@ -14,12 +14,14 @@ out:
   hasStore: true
   hasRender: true
 ---
-case: store action dispatcher injects event context and triggers render
+case: store action gets the listener's rendered payload unchanged and triggers render
 in:
-  - scenario: store_action_dispatcher_injects_event_context
+  - scenario: store_action_dispatcher_receives_rendered_payload
 out:
-  value: a@b.com
-  eventType: input
+  value: a@b.com ${typed}
+  label: Costs ${price}
+  eventIsSame: true
+  action: setEmail
   renderCount: 1
 ---
 case: store action dispatcher rejects missing action

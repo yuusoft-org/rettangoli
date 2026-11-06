@@ -1,0 +1,4 @@
+propsSchema:
+  type: object
+template:
+  - div: foo-bar

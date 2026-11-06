@@ -27,16 +27,44 @@ export const createRuntimeDeps = ({
   return runtimeDeps;
 };
 
+// Copies arrays and plain objects (prototype Object.prototype or null) so a
+// store action may mutate its payload. Arrays drop undefined entries and
+// holes, and null-prototype objects become plain, as the payload template
+// render did before. Every other value (events, Dates, Files, class
+// instances, functions) passes by reference.
+const clonePlainData = (value) => {
+  if (Array.isArray(value)) {
+    const copy = [];
+    for (const item of value) {
+      if (item !== undefined) {
+        copy.push(clonePlainData(item));
+      }
+    }
+    return copy;
+  }
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) {
+    return value;
+  }
+  const copy = {};
+  for (const key of Object.keys(value)) {
+    copy[key] = clonePlainData(value[key]);
+  }
+  return copy;
+};
+
+// The payload was already rendered once by the event listener, against the
+// view data and the event. It is not rendered again: text in it stays literal.
 export const createStoreActionDispatcher = ({
   store,
   render,
-  parseAndRenderFn,
 }) => {
   return (payload) => {
-    const { _event, _action } = payload;
-    const context = parseAndRenderFn(payload, {
-      _event,
-    });
+    const { _action } = payload;
+    const context = clonePlainData(payload);
 
     if (!store[_action]) {
       throw new Error(`[Store] Action 'store.${_action}' is not defined.`);
@@ -50,13 +78,11 @@ export const createStoreActionDispatcher = ({
 export const createTransformedHandlers = ({
   handlers,
   deps,
-  parseAndRenderFn,
 }) => {
   const transformedHandlers = {
     handleCallStoreAction: createStoreActionDispatcher({
       store: deps.store,
       render: deps.render,
-      parseAndRenderFn,
     }),
   };
 

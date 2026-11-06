@@ -49,6 +49,6 @@
     "test:package": "node test/package-smoke-test.js",
     "test:puty": "vitest run puty.spec.js --reporter=verbose",
     "test:vitest": "vitest run test/**/*.test.js --reporter=verbose",
-    "test:browser": "node test/web/style-module.browser.mjs && node test/web/hydration.browser.mjs"
+    "test:browser": "node test/web/style-module.browser.mjs && node test/web/hydration.browser.mjs && node test/web/blur-on-removal.browser.mjs"
   }
 }

@@ -52,7 +52,6 @@ export const runConnectedComponentLifecycle = ({
   instance.transformedHandlers = createTransformedHandlersFn({
     handlers: instance.handlers,
     deps: runtimeDeps,
-    parseAndRenderFn,
   });
 
   instance._unmountCallback = runBeforeMountFn({
@@ -114,7 +113,6 @@ export const runHotUpdatedComponentLifecycle = ({
   instance.transformedHandlers = createTransformedHandlersFn({
     handlers: instance.handlers,
     deps: runtimeDeps,
-    parseAndRenderFn,
   });
 
   instance._globalListenersCleanup = attachGlobalRefListenersFn({
@@ -205,7 +203,12 @@ export const runPropChangedComponentLifecycle = ({
   });
 };
 
-export const runRenderComponentLifecycle = ({
+// Instances that are patching right now, each with whether render() was
+// called again during the patch.
+const renderStates = new WeakMap();
+const MAX_RENDER_PASSES = 10;
+
+const patchComponent = ({
   instance,
   createComponentUpdateHookFn,
   // The web binding adopts prerendered markup on the first patch and
@@ -218,16 +221,6 @@ export const runRenderComponentLifecycle = ({
     console.error("Error during render:", error);
   },
 }) => {
-  if (!instance.patch) {
-    console.error("Patch function is not defined!");
-    return null;
-  }
-
-  if (!instance.template) {
-    console.error("Template is not defined!");
-    return null;
-  }
-
   let isFirstPatch = false;
   try {
     const vDom = parseViewFn({
@@ -268,5 +261,49 @@ export const runRenderComponentLifecycle = ({
     // Preserve _oldVNode so subsequent renders can still patch against
     // the last successful vdom tree. The component is not permanently broken.
     return instance._oldVNode || null;
+  }
+};
+
+export const runRenderComponentLifecycle = (options) => {
+  const { instance } = options;
+  if (!instance.patch) {
+    console.error("Patch function is not defined!");
+    return null;
+  }
+
+  if (!instance.template) {
+    console.error("Template is not defined!");
+    return null;
+  }
+
+  // render() called while this instance is patching (a child it mounts
+  // dispatches, or a focused element it moves or removes fires blur or
+  // focusout) must not patch from the tree the running patch is replacing.
+  // It runs as one more pass afterwards.
+  const running = renderStates.get(instance);
+  if (running) {
+    running.requested = true;
+    return instance._oldVNode || null;
+  }
+
+  const state = { requested: false };
+  renderStates.set(instance, state);
+  try {
+    let passes = 0;
+    let result;
+    do {
+      if (passes === MAX_RENDER_PASSES) {
+        console.error(
+          `[Render] ${instance.elementName} requested render during its own patch ${MAX_RENDER_PASSES} times; stopping`,
+        );
+        break;
+      }
+      passes += 1;
+      state.requested = false;
+      result = patchComponent(options);
+    } while (state.requested);
+    return result;
+  } finally {
+    renderStates.delete(instance);
   }
 };
