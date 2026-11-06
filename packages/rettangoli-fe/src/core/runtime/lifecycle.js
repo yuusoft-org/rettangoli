@@ -1,3 +1,5 @@
+import { resolvePropKeyForAttribute } from "./props.js";
+
 export const createRuntimeDeps = ({
   baseDeps,
   refs,
@@ -123,10 +125,9 @@ export const buildOnUpdateChanges = ({
   newValue,
   deps,
   propsSchemaKeys,
-  toCamelCase,
   normalizeAttributeValue,
 }) => {
-  const changedProp = toCamelCase(attributeName);
+  const changedProp = resolvePropKeyForAttribute(attributeName, propsSchemaKeys);
   const newProps = {};
 
   propsSchemaKeys.forEach((propKey) => {

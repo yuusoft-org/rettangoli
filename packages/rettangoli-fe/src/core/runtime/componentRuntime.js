@@ -5,6 +5,8 @@ export const buildObservedAttributes = ({ propsSchemaKeys = [], toKebabCase }) =
   propsSchemaKeys.forEach((propKey) => {
     observedAttrs.add(propKey);
     observedAttrs.add(toKebabCase(propKey));
+    // What an HTML document reports for setAttribute(propKey).
+    observedAttrs.add(propKey.toLowerCase());
   });
   return [...observedAttrs];
 };

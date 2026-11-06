@@ -8,7 +8,7 @@ import {
   syncRefIds,
 } from "./componentRuntime.js";
 import { buildOnPropUpdateChanges, buildOnUpdateChanges } from "./lifecycle.js";
-import { normalizeAttributeValue, toCamelCase } from "./props.js";
+import { normalizeAttributeValue } from "./props.js";
 import { PARENT_UPDATE_TRANSACTION } from "./updateTransaction.js";
 
 const syncRuntimeDeps = (target, source) => {
@@ -152,7 +152,6 @@ export const runAttributeChangedComponentLifecycle = ({
       newValue,
       deps: runtimeDeps,
       propsSchemaKeys: instance._propsSchemaKeys,
-      toCamelCase,
       normalizeAttributeValue,
     });
     instance.handlers.handleOnUpdate(runtimeDeps, changes);

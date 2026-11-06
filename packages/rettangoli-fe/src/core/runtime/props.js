@@ -6,6 +6,16 @@ export const toCamelCase = (value) => {
   return value.replace(/-([a-z0-9])/g, (_, chr) => chr.toUpperCase());
 };
 
+// The schema prop an observed attribute names. HTML lowercases attribute
+// names, so `maxLength` arrives as `maxlength`; `max-length` names it too.
+export const resolvePropKeyForAttribute = (name, propsSchemaKeys = []) => {
+  if (propsSchemaKeys.includes(name)) return name;
+  const camelName = toCamelCase(name);
+  if (propsSchemaKeys.includes(camelName)) return camelName;
+  const lowerName = name.toLowerCase();
+  return propsSchemaKeys.find((propKey) => propKey.toLowerCase() === lowerName) ?? camelName;
+};
+
 export const normalizeAttributeValue = (value) => {
   if (value === null || value === undefined) {
     return undefined;

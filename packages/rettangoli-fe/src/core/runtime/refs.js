@@ -1,4 +1,4 @@
-import { createRefMatchers, resolveBestRefMatcher } from "../view/refs.js";
+import { createRefMatchers, resolveBestRefMatcher, toIdRefMatchableId } from "../view/refs.js";
 
 export const createRuntimeRefMatchers = (refs) => createRefMatchers(refs);
 
@@ -48,8 +48,9 @@ export const collectRefElements = ({ rootVNode, refs }) => {
 
     const id = vNode?.data?.attrs?.id;
     const classNames = getVNodeClassNames(vNode);
+    // Same rule as the parser: only camelCase ids match id refs.
     const bestMatchRef = resolveBestRefMatcher({
-      elementIdForRefs: id,
+      elementIdForRefs: toIdRefMatchableId(id),
       classNames,
       refMatchers,
     });

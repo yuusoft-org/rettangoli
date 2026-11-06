@@ -135,9 +135,11 @@ describe("id precedence", () => {
     });
   });
 
-  it("known quirk: for a plain element with both, the selector id is the DOM id and the id= value is the key and the wired ref", () => {
+  // Until the id-precedence fix, the DOM got the selector id here (domId "a",
+  // refIds ["a"]) while the key and the wired ref used b.
+  it("for a plain element with both, id= wins everywhere", () => {
     expect(observe("div#a id=b")).toEqual({
-      domId: "a", key: "b", refIds: ["a"], wiredRefs: ["b"], elementIsRefId: true,
+      domId: "b", key: "b", refIds: ["b"], wiredRefs: ["b"], elementIsRefId: true,
     });
   });
 

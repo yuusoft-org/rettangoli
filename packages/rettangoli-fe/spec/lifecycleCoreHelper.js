@@ -9,7 +9,7 @@ import {
   runAfterMount,
   runBeforeMount,
 } from "../src/core/runtime/lifecycle.js";
-import { normalizeAttributeValue, toCamelCase } from "../src/core/runtime/props.js";
+import { normalizeAttributeValue } from "../src/core/runtime/props.js";
 
 export const runLifecycleCoreCase = ({ scenario }) => {
   if (scenario === "create_runtime_deps_merges_fields") {
@@ -146,7 +146,6 @@ export const runLifecycleCoreCase = ({ scenario }) => {
         },
       },
       propsSchemaKeys: ["maxItems", "title"],
-      toCamelCase,
       normalizeAttributeValue,
     });
 
@@ -169,7 +168,6 @@ export const runLifecycleCoreCase = ({ scenario }) => {
         },
       },
       propsSchemaKeys: ["maxItems", "title"],
-      toCamelCase,
       normalizeAttributeValue,
     });
 

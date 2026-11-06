@@ -88,11 +88,26 @@ const componentPropsModule = {
   },
 };
 
+// The parser puts selector classes (`div.card`) in data.class and, when the
+// element also has class=, merges them into that attribute. When an update
+// drops the attribute, the attributes module removes it and with it the
+// selector classes, which the class module sees as unchanged. Put them back.
+const selectorClassModule = {
+  update(oldVnode, vnode) {
+    const classes = vnode.data?.class
+    if (!classes || oldVnode.data?.attrs?.class === undefined || vnode.data?.attrs?.class !== undefined) return
+    for (const name of Object.keys(classes)) {
+      if (classes[name]) vnode.elm.classList.add(name)
+    }
+  },
+}
+
 const createWebPatch = () => {
   const patch = init([
     classModule,
     componentPropsModule,
     attributesModule,
+    selectorClassModule,
     styleModule,
     eventListenersModule,
   ]);
