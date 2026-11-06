@@ -1,19 +1,19 @@
-# rettangoli-ansi-json
+# @rettangoli/ansi-json
 
 A low-level JSON-to-ANSI renderer for Node.js. Define terminal output as JSON, get ANSI escape sequences. This package is the foundation for future Rettangoli TUI support.
 
 ## Installation
 
 ```bash
-npm install rettangoli-ansi-json
+npm install @rettangoli/ansi-json
 # or
-bun add rettangoli-ansi-json
+bun add @rettangoli/ansi-json
 ```
 
 ## Quick Start
 
 ```javascript
-import { render } from 'rettangoli-ansi-json';
+import { render } from '@rettangoli/ansi-json';
 
 const doc = {
   content: [
@@ -27,7 +27,7 @@ console.log(render(doc));
 // Outputs: Hello <green bold>World</green bold>!
 ```
 
-## Why rettangoli-ansi-json?
+## Why @rettangoli/ansi-json?
 
 - **Declarative** - Define UI as data, not escape code strings
 - **Full ANSI support** - Colors, styles, cursor, screen control
@@ -42,7 +42,7 @@ console.log(render(doc));
 Converts an AnsiJson document to an ANSI escape sequence string.
 
 ```javascript
-import { render } from 'rettangoli-ansi-json';
+import { render } from '@rettangoli/ansi-json';
 
 const output = render({
   styles: { ... },  // optional named styles
@@ -240,7 +240,7 @@ ANSI control sequences.
 ### Styled Text
 
 ```javascript
-import { render } from 'rettangoli-ansi-json';
+import { render } from '@rettangoli/ansi-json';
 
 console.log(render({
   content: [
@@ -348,7 +348,7 @@ A JSON Schema is available at `schemas/ansi-json-v1.schema.json` for validation 
 
 ```json
 {
-  "$schema": "./node_modules/rettangoli-ansi-json/schemas/ansi-json-v1.schema.json",
+  "$schema": "./node_modules/@rettangoli/ansi-json/schemas/ansi-json-v1.schema.json",
   "content": [...]
 }
 ```
