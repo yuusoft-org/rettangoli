@@ -2,17 +2,20 @@
 
 `@rettangoli/sites` is the static-site engine used by Rettangoli. It renders pages from YAML and Markdown into `_site/`, with support for templates, partials, global data, collections, and watch mode.
 
-It can run directly with `bunx rtgl`, so a site-level `package.json` is optional.
+Run it through `rtgl`. Install `rtgl` as a dev dependency of the project that holds the site, so every machine and CI job uses the version in your lockfile. `bunx rtgl` and `npx rtgl` outside a project that installs `rtgl` download the latest version from npm, which may differ from the one your site expects.
 
 ## Quick Start
 
 ```bash
+# install rtgl in the folder that will hold the site
+npm install --save-dev --save-exact rtgl
+
 # scaffold
-bunx rtgl sites init my-site
+npx rtgl sites init my-site
 
 # run
 cd my-site
-bunx rtgl sites build
+npx rtgl sites build
 ```
 
 ## Package Contract
@@ -347,13 +350,13 @@ This keeps one template reusable across many page variants and avoids duplicated
 ## Commands
 
 ```bash
-bunx rtgl sites build
-bunx rtgl sites watch
-bunx rtgl sites build --quiet
-bunx rtgl sites watch --quiet
-bunx rtgl sites watch --reload-mode full
-bunx rtgl sites build --root-dir . --output-path dist
-bunx rtgl sites watch --root-dir . --output-path dist --reload-mode full
+npx rtgl sites build
+npx rtgl sites watch
+npx rtgl sites build --quiet
+npx rtgl sites watch --quiet
+npx rtgl sites watch --reload-mode full
+npx rtgl sites build --root-dir . --output-path dist
+npx rtgl sites watch --root-dir . --output-path dist --reload-mode full
 ```
 
 `sites watch` watches `data/`, `templates/`, `partials/`, `pages/`, `static/`, each
@@ -398,7 +401,7 @@ the source directory, one of its ancestors, or a symlink resolving to either.
 The watch server serves files contained in that output directory, including
 internal symlinks, and rejects paths or symlinks that escape it.
 Watch binds to `127.0.0.1` by default. To allow access from another device, use
-`bunx rtgl sites watch --host 0.0.0.0` explicitly.
+`npx rtgl sites watch --host 0.0.0.0` explicitly.
 
 ## Built-in Template Functions
 
