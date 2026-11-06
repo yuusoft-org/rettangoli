@@ -12,8 +12,7 @@ const PROP_PREFIX = ":";
 
 const REF_ID_KEY_REGEX = /^[a-z][a-zA-Z0-9]*\*?$/;
 const REF_CLASS_KEY_REGEX = /^[a-zA-Z][a-zA-Z0-9_-]*\*?$/;
-const REF_ID_REGEX = /^[a-z][a-zA-Z0-9]*$/;
-export const GLOBAL_REF_KEYS = new Set(["window", "document"]);
+const GLOBAL_REF_KEYS = new Set(["window", "document"]);
 
 const isSpace = (character) => /\s/.test(character);
 
@@ -430,14 +429,6 @@ export const createRefMatchers = (refs) => {
       prefix,
     };
   });
-};
-
-export const validateElementIdForRefs = (elementIdForRefs) => {
-  if (!REF_ID_REGEX.test(elementIdForRefs)) {
-    throw new Error(
-      `[Parser] Invalid element id '${elementIdForRefs}' for refs. Use camelCase ids only. Kebab-case ids are not supported.`,
-    );
-  }
 };
 
 // Listener options FE validates, in FE's validation order, with their value type.

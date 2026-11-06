@@ -7,12 +7,7 @@ import {
 import { collectInvalidRefKeys } from "./refs.js";
 import { isObjectRecord } from "../utils/object.js";
 import { getModelFilePath, getYamlPathLine } from "./shared.js";
-import {
-  EVENT_OPTION_TYPES,
-  GLOBAL_REF_KEYS,
-  collectEventConfigIssues,
-  validateElementIdForRefs,
-} from "../core/fe-contracts.js";
+import { EVENT_OPTION_TYPES, collectEventConfigIssues } from "../core/fe-contracts.js";
 
 const KNOWN_LISTENER_OPTIONS = new Set([
   "handler",
@@ -20,31 +15,6 @@ const KNOWN_LISTENER_OPTIONS = new Set([
   "payload",
   ...EVENT_OPTION_TYPES.map(([option]) => option),
 ]);
-
-const getSelectorId = (selector = "") => {
-  if (typeof selector !== "string") {
-    return null;
-  }
-  const match = selector.match(/#([^.#\s]+)/);
-  return match ? match[1] : null;
-};
-
-const isIdRefKeyCandidate = (refKey = "") => {
-  if (typeof refKey !== "string" || !refKey) {
-    return false;
-  }
-  if (GLOBAL_REF_KEYS.has(refKey)) {
-    return false;
-  }
-  return !refKey.startsWith(".");
-};
-
-const isDynamicTemplateToken = (value = "") => {
-  if (typeof value !== "string") {
-    return false;
-  }
-  return value.includes("${") || value.includes("#{") || value.includes("{{");
-};
 
 const normalizeEventConfigForFeValidation = ({ eventConfig, listenerSymbols }) => {
   if (!isObjectRecord(eventConfig)) {
@@ -148,34 +118,6 @@ export const runListenerConfigRules = ({ models = [], includeStyle = false }) =>
           line: getYamlPathLine(model?.view?.yamlKeyPathLines, ["refs", refKey, "eventListeners"]),
           message: `${model.componentKey}: invalid eventListeners config on ref '${refKey}'. Expected an object keyed by event type.`,
         });
-      });
-    }
-
-    const hasIdRefMatchers = isObjectRecord(refs)
-      ? Object.keys(refs).some((refKey) => isIdRefKeyCandidate(refKey))
-      : false;
-
-    if (hasIdRefMatchers) {
-      model.view.selectorBindings.forEach((bindingLine) => {
-        const selectorId = getSelectorId(bindingLine.selector);
-        if (!selectorId) {
-          return;
-        }
-        if (isDynamicTemplateToken(selectorId)) {
-          return;
-        }
-
-        try {
-          validateElementIdForRefs(selectorId);
-        } catch {
-          diagnostics.push({
-            code: "RTGL-CHECK-REF-002",
-            severity: "error",
-            filePath: viewFilePath,
-            line: bindingLine.line,
-            message: `${model.componentKey}: invalid element id '${selectorId}' for refs matching. Use camelCase ids.`,
-          });
-        }
       });
     }
 

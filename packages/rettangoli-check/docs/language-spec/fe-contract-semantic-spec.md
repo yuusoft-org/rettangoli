@@ -81,7 +81,7 @@ Template keys cannot bind events: FE rejects `@event=handler` and a bare `@event
 ## RTGL-SPEC-FE-009: Ref key and element-id constraints
 
 1. Invalid `refs` keys emit `RTGL-CHECK-REF-001`.
-2. Invalid selector element IDs for ref matching emit `RTGL-CHECK-REF-002`.
+2. Element IDs are not reported. FE renders any id. An id that an id ref cannot name (kebab-case, a leading digit or capital, an underscore) is just not matched by id refs, and `id=` wins over `#id`. `RTGL-CHECK-REF-002` is retired.
 
 ## RTGL-SPEC-FE-010: JS/TS export extraction backend parity
 

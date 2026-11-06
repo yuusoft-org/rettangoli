@@ -22,7 +22,6 @@ import {
   createRefMatchers as checkCreateRefMatchers,
   findUnsupportedTemplatePropertyBindingSyntax as checkFindUnsupportedPropertyBinding,
   getNodeBindingViolation as checkGetNodeBindingViolation,
-  validateElementIdForRefs as checkValidateElementIdForRefs,
   validateEventConfig as checkValidateEventConfig,
 } from "../src/core/fe-contracts.js";
 import { analyzeProject } from "../src/core/analyze.js";
@@ -31,7 +30,6 @@ import {
   collectBindingNames as feCollectBindingNames,
   createRefMatchers as feCreateRefMatchers,
   parseNodeBindings as feParseNodeBindings,
-  validateElementIdForRefs as feValidateElementIdForRefs,
   validateEventConfig as feValidateEventConfig,
   validateSchemaContract as feValidateSchemaContract,
 } from "../../rettangoli-fe/src/contracts/index.js";
@@ -45,15 +43,7 @@ const workspaceRoot = path.resolve(currentDir, "../../..");
 // Known disagreements between check and FE, per section. `count` is exact.
 // Fixing a disagreement lowers the count (down to 0, then delete the entry); adding a new
 // disagreement raises it. Sections without an entry must have no disagreements.
-const KNOWN_DRIFT = {
-  idRefs: {
-    count: 4,
-    findings: ["id attribute precedence"],
-    note: "REF-002 only reads the '#id' of the selector. FE also reads the 'id=' attribute and lets it win: check "
-      + "misses kebab 'id=' values (2) and a kebab attribute next to a camelCase '#id' (1), and reports a kebab '#id' "
-      + "that an 'id=' attribute overrides (1). A later check change re-checks this against FE's id handling.",
-  },
-};
+const KNOWN_DRIFT = {};
 
 // ---------------------------------------------------------------------------
 // helpers
@@ -215,7 +205,7 @@ const dumpYaml = (value) => yaml.dump(value, { lineWidth: -1 });
 // sections: each returns { inputCount, mismatches: [{ input, check, fe }] }
 // ---------------------------------------------------------------------------
 
-// a: ref keys and element ids
+// a: ref keys
 const compareRefs = () => {
   const refKeys = [
     "submitButton", "#submitButton", "submitButton*", "#submitButton*", "a", "a1", "aB9", "x*", "#x",
@@ -225,11 +215,6 @@ const compareRefs = () => {
     "windows", "documents", "Window", " a", "a ", "a b", "a.b", "a#b", "#a#b", "..a", "##a", "$ref", "@ref", "ref!",
     "ünï", "a\n", "a ",
   ];
-  const elementIds = [
-    "submit", "submitButton", "a", "a1", "aB", "x9", "my-id", "main-content", "Submit", "SUBMIT", "1a", "", " ", "a b",
-    "a_b", "a.b", "a#b", "-a", "a-", "a--b", "é", "item1", "item-1", "$x", "a\n",
-  ];
-
   const refInputs = refKeys.map((key) => ({ label: `ref ${labelOf(key)}`, input: { [key]: { eventListeners: {} } } }));
   const validKeys = refKeys.filter((key) => outcomeOf(() => feCreateRefMatchers({ [key]: {} })).error === undefined);
   refInputs.push({
@@ -240,16 +225,7 @@ const compareRefs = () => {
   refInputs.push({ label: "refs null", input: null });
   refInputs.push({ label: "refs {}", input: {} });
 
-  const matchers = compareOutcomes(refInputs, checkCreateRefMatchers, feCreateRefMatchers);
-  const ids = compareOutcomes(
-    elementIds.map((id) => ({ label: `element id ${labelOf(id)}`, input: id })),
-    checkValidateElementIdForRefs,
-    feValidateElementIdForRefs,
-  );
-  return {
-    inputCount: matchers.inputCount + ids.inputCount,
-    mismatches: [...matchers.mismatches, ...ids.mismatches],
-  };
+  return compareOutcomes(refInputs, checkCreateRefMatchers, feCreateRefMatchers);
 };
 
 // b: listener option validation over a seeded matrix
@@ -660,7 +636,9 @@ const compareJemplDirectives = async () => {
   return { inputCount: cases.length, mismatches };
 };
 
-// h: element ids vs refs. FE parseView throws where check should report REF-002.
+// h: element ids vs refs. check never reports REF-002 (retired), so FE parseView must render every view here. FE
+// does: an id that an id ref cannot name (kebab-case, a leading digit, ...) only skips id-ref matching, and id=
+// wins over "#id".
 const compareIdRefs = async () => {
   const noop = {};
   const views = [
@@ -733,7 +711,7 @@ const compareIdRefs = async () => {
 // ---------------------------------------------------------------------------
 
 const SECTIONS = [
-  { name: "refs", minInputs: 80, run: compareRefs },
+  { name: "refs", minInputs: 60, run: compareRefs },
   { name: "eventConfig", minInputs: 2000, run: compareEventConfig },
   { name: "bindingNames", minInputs: 200, run: compareBindingNames },
   { name: "selectorKeys", minInputs: 300, run: compareSelectorKeys },

@@ -90,7 +90,7 @@ recent fixes and the reporter contracts.
   unsupported attributes or props (`RTGL-CHECK-YAHTML-001..003`). Template keys are split and their binding
   names read the way FE reads them.
 - Jempl control flow (`RTGL-CHECK-JEMPL-*`).
-- Refs and listeners: ref keys and element ids, listener options, handler/action exclusivity, and payloads
+- Refs and listeners: ref keys, listener options, handler/action exclusivity, and payloads
   that must be mappings (`RTGL-CHECK-REF-*`, `RTGL-CHECK-LISTENER-001..010`).
 - Cross-file symbols: listener handlers in `.handlers.js`, actions in `.store.js`, and `schema.methods` in
   `.methods.js`, including re-exports (`RTGL-CHECK-SYMBOL-*`), handler naming (`RTGL-CHECK-HANDLER-*`),

@@ -63,6 +63,12 @@ A duplicate prop after camelCasing, for example `placeholder=a :placeholder=${b}
 
 Formerly checked `@event=handler` attributes against the element's events and the component's handlers. FE does not support `@event` attributes, so such a template now gets `RTGL-CHECK-BINDING-001`, and these codes are no longer emitted.
 
+## Ref Diagnostics
+
+### RTGL-CHECK-REF-002 (retired)
+
+Formerly reported a selector `#id` that id refs cannot name, such as `rtgl-button#submit-button`, in a view with id refs. FE renders such an element and just does not match it by id refs. An `id=` attribute also wins over `#id`. `RTGL-CHECK-REF-002` is no longer emitted.
+
 ## Listener Payload Diagnostics
 
 ### RTGL-CHECK-LISTENER-010
