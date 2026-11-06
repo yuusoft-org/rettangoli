@@ -1,0 +1,21 @@
+{
+  "log": ["Generated: .rettangoli/vt/_site/candidate/components/basic.html","Generated: .rettangoli/vt/_site/candidate/components/legacy.html","Generated: .rettangoli/vt/_site/candidate/components/spaced name.html","Generated: .rettangoli/vt/_site/candidate/components/steps.html","Generated: .rettangoli/vt/_site/candidate/components/with-frontmatter.html","Generated: .rettangoli/vt/_site/candidate/forms/buttons/primary.html","Generated: .rettangoli/vt/_site/candidate/forms/inputs/text.html","Generated: .rettangoli/vt/_site/candidate/pages/home.html","Generated: .rettangoli/vt/_site/candidate/pages/nested/deep.html","Successfully generated 9 files","Generated overview: .rettangoli/vt/_site/components.html","Generated overview: .rettangoli/vt/_site/inputs.html","Generated overview: .rettangoli/vt/_site/buttons.html","Generated overview: .rettangoli/vt/_site/pages.html"],
+  "files": {
+    "buttons.html": "0a8a94fca6cf74b25e0fffa01165e219da34fc1e59ae25c5df237e2c6836d8e7",
+    "candidate/components/basic.html": "4ded07df56acfe831a294a6de5a64db5ff57d1f26c3ee9ce3281c66c4e5165c2",
+    "candidate/components/legacy.html": "cbdbe552c71b4a6d9b0f738b2bc7ea2d75b29f6fd7f57fcbb4fe118a32538d74",
+    "candidate/components/spaced name.html": "fd1704bc0a3b47537680b2d74fd7ff249aa754eb15e959fae019fe00ed55c712",
+    "candidate/components/steps.html": "2930ab7aa724ed67d63f706820e1061506a5d75b4fecded69514e1115f56d4c9",
+    "candidate/components/with-frontmatter.html": "24b7849688065097fbfa5eb5f3a219ce79b4db6606a4c86a3239e1c2507f56a1",
+    "candidate/forms/buttons/primary.html": "cc1349614701626da97297ba37e154c57d8b58f1629899d2cd13db72111ebed1",
+    "candidate/forms/inputs/text.html": "b2d2ed56007428b4bfd870d803709fa78e4bb1f25d82fe62f2162668fb8aaa62",
+    "candidate/pages/home.html": "e67d705eb2f27d5efe3454afaefc2b494f0a23a00d0c34ba78a282e3d205424c",
+    "candidate/pages/nested/deep.html": "104007f2eeaa727d1e0e318db9c4c9998879f8860f0e9b10f386c2b904182ffd",
+    "components.html": "4cb04d8f7af635c2f65b914e4667b39b099934e2f40f1ef045e1a9a2938256db",
+    "images/logo.svg": "88f72b3cf5d9ced11cbb832eed55b87aa47fec64453273769bc351ec5bf3f288",
+    "inputs.html": "16e6ea26d88fb2b5e8b958c730076c1e56a1b391a625bb5634071d355dcddefb",
+    "pages.html": "4618857a636933a7ed09c44a47b0a64828ca6c09da43504d8c6d31e0a6d2d4a6",
+    "public/theme.css": "06cc30ef8d11c777c6e93d866797aaf70ac331f5e91e8bf4f37250ea1f3517fa",
+    "theme-extra.css": "6ff795dba45fb57ab231b8816e4a3a7057c3a8758bc0f857cb31603781ceb84e"
+  }
+}

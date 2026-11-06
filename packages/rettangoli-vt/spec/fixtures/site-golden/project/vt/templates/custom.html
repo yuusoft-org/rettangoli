@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ frontMatter.title }}</title>
+    <link rel="stylesheet" href="/public/theme.css" />
+  </head>
+  <body data-spec="{{ frontMatter.title | slug }}">
+    <p class="note">{{ frontMatter.custom.note }}</p>
+    <pre>{{ frontMatter | json }}</pre>
+    {{ content }}
+  </body>
+</html>
