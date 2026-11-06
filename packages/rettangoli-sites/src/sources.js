@@ -51,6 +51,7 @@ function isYamlFile(fileName) {
 // path without the extension ("nav/main"). A later file with the same key replaces an earlier one.
 export function readYamlTree(fs, dir, labelPrefix, tree = {}) {
   function readDir(currentDir, basePath) {
+    // Checked per folder: skip a folder that vanished or cannot be searched since its parent was listed.
     if (!fs.existsSync(currentDir)) return;
 
     for (const item of fs.readdirSync(currentDir, { withFileTypes: true })) {

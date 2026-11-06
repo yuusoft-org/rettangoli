@@ -114,3 +114,10 @@ export function markdownOutputRelativePathFromUrl(url) {
   const fileName = `${segments.pop()}.md`;
   return [...segments, fileName].join('/');
 }
+
+// Where a markdown page's source copy goes when keepMarkdownFiles is on.
+export function markdownOutputRelativePathForPage(pageEntry) {
+  return pageEntry.hasCustomUrl
+    ? markdownOutputRelativePathFromUrl(pageEntry.url)
+    : pageEntry.relativePath;
+}

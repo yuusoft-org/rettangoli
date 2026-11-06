@@ -40,6 +40,20 @@ describe('page sources', () => {
     expect(await build(files, '/_site/about/index.html')).toBe('<h1>About</h1>');
   });
 
+  it('skips a pages subfolder that is gone by the time it is scanned', async () => {
+    const fs = createFsFromVolume(Volume.fromJSON({ '/pages/index.yaml': '- p: home\n', '/pages/gone/x.yaml': '- p: x\n' }));
+    const list = fs.readdirSync.bind(fs);
+    fs.readdirSync = (dir, options) => {
+      const items = list(dir, options);
+      if (dir === '/pages') fs.rmSync('/pages/gone', { recursive: true });
+      return items;
+    };
+
+    await createSiteBuilder({ fs, rootDir: '/', quiet: true })();
+    expect(fs.readFileSync('/_site/index.html', 'utf8')).toBe('<p>home</p>');
+    expect(fs.existsSync('/_site/gone')).toBe(false);
+  });
+
   it('renders a leading "---" list page that starts with a byte order mark', async () => {
     expect(await build({ '/pages/index.yaml': '\uFEFF---\n- h1: Hello\n' })).toBe('<h1>Hello</h1>');
   });
