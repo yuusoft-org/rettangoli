@@ -198,8 +198,8 @@
     "logs": []
   },
   "error-invalid-frontmatter": {
-    "error": "Error generating HTML: \"pages/bad.html: frontMatter.waitEvent\" is required when waitStrategy is \"event\".",
-    "webServer": null,
+    "error": "\"pages/bad.html: frontMatter.waitEvent\" is required when waitStrategy is \"event\" and no vt.waitEvent is set.",
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
     "scheduler": null,
     "logs": []
   }

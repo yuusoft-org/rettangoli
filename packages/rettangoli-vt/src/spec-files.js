@@ -50,6 +50,14 @@ export function listSpecFiles(specsDir, { logger = null } = {}) {
   return listFilesSorted(specsDir, { ignore: isIgnoredSpecEntry });
 }
 
+export function warnIfSpecsDirMissing(specsDir, configPath) {
+  if (!fs.existsSync(specsDir)) {
+    console.warn(
+      `[vt] Warning: specs directory "${specsDir}" does not exist. Check "vt.path" in ${configPath}.`,
+    );
+  }
+}
+
 // A spec's key is its path relative to the specs directory, with "/" and without extension.
 export function toSpecKey(relativeSpecPath) {
   const normalized = String(relativeSpecPath)

@@ -57,6 +57,9 @@ function validateOptionalEnum(value, path, allowedValues) {
   );
 }
 
+// Playwright's page.screenshot `animations` option.
+const ANIMATIONS_VALUES = ["allow", "disabled"];
+
 function validateCaptureConfig(captureConfig, sourcePath) {
   if (captureConfig === undefined || captureConfig === null) {
     return;
@@ -549,7 +552,20 @@ export function validateVtConfig(vtConfig, sourcePath = "rettangoli.config.yaml"
   normalizeViewportField(vtConfig.viewport, "vt.viewport");
   validateOptionalNumber(vtConfig.colorThreshold, "vt.colorThreshold", { min: 0, max: 1 });
   validateOptionalNumber(vtConfig.diffThreshold, "vt.diffThreshold", { min: 0, max: 100 });
+  validateOptionalEnum(vtConfig.animations, "vt.animations", ANIMATIONS_VALUES);
   validateServiceConfig(vtConfig.service, sourcePath);
+  if (vtConfig.launchArgs !== undefined && vtConfig.launchArgs !== null) {
+    assert(
+      Array.isArray(vtConfig.launchArgs),
+      `"vt.launchArgs" must be an array of strings, got ${valueType(vtConfig.launchArgs)}.`,
+    );
+    vtConfig.launchArgs.forEach((arg, index) => {
+      assert(
+        typeof arg === "string" && arg.trim().length > 0,
+        `"vt.launchArgs[${index}]" must be a non-empty string, got ${valueType(arg)}.`,
+      );
+    });
+  }
   if (vtConfig.service) {
     assert(
       typeof vtConfig.url === "string" && vtConfig.url.trim().length > 0,
@@ -565,6 +581,43 @@ export function validateVtConfig(vtConfig, sourcePath = "rettangoli.config.yaml"
   assertUniqueSectionPageKeys(vtConfig, sourcePath);
 
   return vtConfig;
+}
+
+const KNOWN_VT_CONFIG_KEYS = new Set([
+  "path", "url", "name", "description", "compareMethod", "skipScreenshots", "port", "concurrency",
+  "timeout", "waitEvent", "isolationMode", "viewport", "colorThreshold", "diffThreshold", "service",
+  "capture", "sections", "launchArgs", "animations",
+]);
+const VT_CONFIG_KEY_TYPOS = { isolation: "isolationMode" };
+// Frontmatter keys are open (templates read their own), so only known typos are reported.
+const FRONTMATTER_KEY_TYPOS = { skipScreenshots: "skipScreenshot" };
+
+// "[vt] Warning:" lines for a validated vt config: unknown keys, which VT ignores, and a vt.url
+// that is not an absolute http(s) URL.
+export function collectConfigWarnings(vtConfig, sourcePath = "rettangoli.config.yaml") {
+  const warnings = [];
+  for (const key of Object.keys(vtConfig)) {
+    if (KNOWN_VT_CONFIG_KEYS.has(key)) continue;
+    const suggestion = VT_CONFIG_KEY_TYPOS[key];
+    warnings.push(
+      `[vt] Warning: ${sourcePath}: unknown key "vt.${key}" is ignored.${suggestion ? ` Did you mean "vt.${suggestion}"?` : ""}`,
+    );
+  }
+  if (typeof vtConfig.url === "string" && !/^https?:\/\//i.test(vtConfig.url)) {
+    warnings.push(
+      `[vt] Warning: ${sourcePath}: "vt.url" should be an absolute http(s) URL, got "${vtConfig.url}".`,
+    );
+  }
+  return warnings;
+}
+
+export function collectFrontMatterWarnings(frontMatter, specPath) {
+  if (!isPlainObject(frontMatter)) return [];
+  return Object.keys(FRONTMATTER_KEY_TYPOS)
+    .filter((key) => Object.prototype.hasOwnProperty.call(frontMatter, key))
+    .map((key) =>
+      `[vt] Warning: ${specPath}: frontmatter key "${key}" is ignored. Did you mean "${FRONTMATTER_KEY_TYPOS[key]}"?`,
+    );
 }
 
 export function validateFrontMatter(frontMatter, specPath) {
@@ -590,17 +643,14 @@ export function validateFrontMatter(frontMatter, specPath) {
     ["networkidle", "load", "event", "selector"],
   );
   validateOptionalBoolean(frontMatter.skipScreenshot, `${specPath}: frontMatter.skipScreenshot`);
+  validateOptionalEnum(frontMatter.animations, `${specPath}: frontMatter.animations`, ANIMATIONS_VALUES);
   validateOptionalBoolean(
     frontMatter.skipInitialScreenshot,
     `${specPath}: frontMatter.skipInitialScreenshot`,
   );
 
-  if (frontMatter.waitStrategy === "event") {
-    assert(
-      typeof frontMatter.waitEvent === "string" && frontMatter.waitEvent.trim().length > 0,
-      `"${specPath}: frontMatter.waitEvent" is required when waitStrategy is "event".`,
-    );
-  }
+  // waitStrategy "event" without a frontmatter waitEvent uses vt.waitEvent; createCaptureTasks
+  // fails when neither is set.
   if (frontMatter.waitStrategy === "selector") {
     assert(
       typeof frontMatter.waitSelector === "string" && frontMatter.waitSelector.trim().length > 0,

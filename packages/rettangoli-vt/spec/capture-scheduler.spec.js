@@ -1,4 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 function createSuccessResult(workerId, attempt) {
   return {
@@ -33,6 +36,7 @@ function createDefaultEvents() {
     browserClosedCount: 0,
     launchCount: 0,
     launchOptions: null,
+    runnerOptions: [],
   };
 }
 
@@ -59,6 +63,7 @@ vi.mock("../src/capture/playwright-runner.js", () => ({
   PlaywrightRunner: class MockPlaywrightRunner {
     constructor(options) {
       this.workerId = options.workerId;
+      mockState.events.runnerOptions.push(options);
     }
 
     async initialize() {
@@ -135,6 +140,9 @@ vi.mock("../src/capture/result-collector.js", () => ({
 }));
 
 import { runCaptureScheduler } from "../src/capture/capture-scheduler.js";
+import { createCaptureConfig } from "../src/capture/capture-config.js";
+import { resolveGenerateOptions } from "../src/cli/generate-options.js";
+import { validateVtConfig } from "../src/validation.js";
 
 function buildOptions(overrides = {}) {
   return {
@@ -283,5 +291,130 @@ describe("runCaptureScheduler", () => {
       "c:1",
       "a:2",
     ]);
+  });
+});
+
+// Extra Chromium flags come from vt.launchArgs and RTGL_CHROMIUM_ARGS, so
+// route-engine no longer has to patch the launch line. The patch must keep working.
+describe("runCaptureScheduler Chromium launch args", () => {
+  const schedulerPath = fileURLToPath(new URL("../src/capture/capture-scheduler.js", import.meta.url));
+  const launchLine = "const browser = await chromium.launch({ headless });";
+  const routeEnginePatch =
+    'const browser = await chromium.launch({ headless, args: ["--enable-unsafe-swiftshader", "--use-gl=angle", "--use-angle=swiftshader"] });';
+  const tasks = [{ path: "a" }];
+
+  beforeEach(() => {
+    mockState.events = createDefaultEvents();
+    mockState.runTaskBehavior = (task, attempt, workerId) => createSuccessResult(workerId, attempt);
+    vi.stubEnv("RTGL_CHROMIUM_ARGS", undefined);
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("launches with { headless } only when no args are configured", async () => {
+    vi.stubEnv("RTGL_CHROMIUM_ARGS", "  ");
+    await runCaptureScheduler(buildOptions({ tasks }));
+    expect(mockState.events.launchOptions).toEqual({ headless: true });
+  });
+
+  it("adds vt.launchArgs", async () => {
+    await runCaptureScheduler(buildOptions({ tasks, launchArgs: ["--use-gl=angle", "--use-angle=swiftshader"] }));
+    expect(mockState.events.launchOptions).toEqual({
+      headless: true,
+      args: ["--use-gl=angle", "--use-angle=swiftshader"],
+    });
+  });
+
+  it("adds RTGL_CHROMIUM_ARGS, split on whitespace", async () => {
+    vi.stubEnv("RTGL_CHROMIUM_ARGS", " --enable-unsafe-swiftshader\n --use-gl=angle ");
+    await runCaptureScheduler(buildOptions({ tasks, headless: false }));
+    expect(mockState.events.launchOptions).toEqual({
+      headless: false,
+      args: ["--enable-unsafe-swiftshader", "--use-gl=angle"],
+    });
+  });
+
+  it("puts config args first and env args last", async () => {
+    vi.stubEnv("RTGL_CHROMIUM_ARGS", "--from-env");
+    await runCaptureScheduler(buildOptions({ tasks, launchArgs: ["--from-config"] }));
+    expect(mockState.events.launchOptions).toEqual({
+      headless: true,
+      args: ["--from-config", "--from-env"],
+    });
+  });
+
+  it("keeps the args of a sed-patched launch line and appends config and env args", async () => {
+    const source = readFileSync(schedulerPath, "utf8");
+    expect(source.split(launchLine).length - 1).toBe(1);
+    // Same directory, so the patched copy resolves (and mocks) the same relative imports.
+    const patchedPath = join(dirname(schedulerPath), `.capture-scheduler.sed-patched-${process.pid}.js`);
+    writeFileSync(patchedPath, source.replace(launchLine, routeEnginePatch));
+    try {
+      const patched = await import(pathToFileURL(patchedPath).href);
+      await patched.runCaptureScheduler(buildOptions({ tasks }));
+      expect(mockState.events.launchOptions).toEqual({
+        headless: true,
+        args: ["--enable-unsafe-swiftshader", "--use-gl=angle", "--use-angle=swiftshader"],
+      });
+
+      vi.stubEnv("RTGL_CHROMIUM_ARGS", "--from-env");
+      await patched.runCaptureScheduler(buildOptions({ tasks, launchArgs: ["--from-config"] }));
+      expect(mockState.events.launchOptions).toEqual({
+        headless: true,
+        args: [
+          "--enable-unsafe-swiftshader",
+          "--use-gl=angle",
+          "--use-angle=swiftshader",
+          "--from-config",
+          "--from-env",
+        ],
+      });
+    } finally {
+      rmSync(patchedPath, { force: true });
+    }
+  });
+});
+
+describe("runCaptureScheduler animations", () => {
+  beforeEach(() => {
+    mockState.events = createDefaultEvents();
+    mockState.runTaskBehavior = (task, attempt, workerId) => createSuccessResult(workerId, attempt);
+  });
+
+  it("passes vt.animations to every runner", async () => {
+    await runCaptureScheduler(buildOptions({ tasks: [{ path: "a" }], workerCount: 2, animations: "disabled" }));
+    expect(mockState.events.runnerOptions.map((options) => options.animations)).toEqual(["disabled", "disabled"]);
+  });
+});
+
+describe("vt.launchArgs config", () => {
+  const vtConfig = (launchArgs) => ({ sections: [{ title: "Pages", files: "pages" }], launchArgs });
+
+  it("validates vt.launchArgs as an array of non-empty strings", () => {
+    expect(() => validateVtConfig(vtConfig(["--use-gl=angle"]))).not.toThrow();
+    expect(() => validateVtConfig(vtConfig("--use-gl=angle"))).toThrow(
+      '"vt.launchArgs" must be an array of strings, got string.',
+    );
+    expect(() => validateVtConfig(vtConfig(["--a", ""]))).toThrow(
+      '"vt.launchArgs[1]" must be a non-empty string, got string.',
+    );
+    expect(() => validateVtConfig(vtConfig([3]))).toThrow(
+      '"vt.launchArgs[0]" must be a non-empty string, got number.',
+    );
+  });
+
+  it("reaches the capture config only when set", () => {
+    const captureConfig = (configData) =>
+      createCaptureConfig({
+        resolvedOptions: resolveGenerateOptions({}, configData),
+        generatedFiles: [],
+        port: 3001,
+        candidatePath: ".rettangoli/vt/_site/candidate",
+      });
+    expect(captureConfig({ launchArgs: ["--use-gl=angle"] }).launchArgs).toEqual(["--use-gl=angle"]);
+    expect(Object.hasOwn(resolveGenerateOptions({}, {}), "launchArgs")).toBe(false);
+    expect(captureConfig({}).launchArgs).toBe(undefined);
   });
 });

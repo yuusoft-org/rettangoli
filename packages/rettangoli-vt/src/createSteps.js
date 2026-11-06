@@ -849,18 +849,28 @@ function checkAssertion(assertionConfig, selectedElement) {
   }
 }
 
+const URL_ASSERT_POLL_MS = 100;
+
 async function assertStructured(page, assertionConfig, selectedElement, context) {
   const type = requireAssertType(assertionConfig);
 
   if (type === "url") {
     requireUrlAssertValue(assertionConfig);
-    const currentUrl = page.url();
+    let currentUrl = page.url();
     const expected = assertionConfig.value;
     const matchMode = requireMatchMode(assertionConfig);
-    const ok = matchMode === "equals"
-      ? currentUrl === expected
-      : currentUrl.includes(expected);
-    if (!ok) {
+    const matches = (url) => (matchMode === "equals" ? url === expected : url.includes(expected));
+    // Only an explicit positive timeoutMs polls (an SPA can set the URL after async work);
+    // without it the URL is read once, as before. A value that is not a number (rejected by
+    // validation) also reads it once.
+    const timeoutMs = assertionConfig.timeoutMs;
+    const pollMs = typeof timeoutMs === "number" && Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 0;
+    const deadline = Date.now() + pollMs;
+    while (!matches(currentUrl) && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, Math.min(URL_ASSERT_POLL_MS, deadline - Date.now())));
+      currentUrl = page.url();
+    }
+    if (!matches(currentUrl)) {
       throw new Error(
         `assert url failed: expected "${currentUrl}" to ${matchMode} "${expected}".`,
       );

@@ -72,6 +72,11 @@ export function createCaptureTasks(generatedFiles, options) {
       waitSelector,
       waitStrategy,
     });
+    if (resolvedWaitStrategy === "event" && !resolvedWaitEvent) {
+      throw new Error(
+        `"${file.path}: frontMatter.waitEvent" is required when waitStrategy is "event" and no vt.waitEvent is set.`,
+      );
+    }
 
     const resolvedViewports = resolveViewports(frontMatter.viewport, viewport);
     resolvedViewports.forEach((resolvedViewport) => {

@@ -47,6 +47,8 @@ Selector rules:
 
 - selectors are unioned (OR); any matched item is included
 - if no selector is provided, all items are included
+- `generate` always builds every page; selectors only scope `screenshot` and `report`
+- a `--folder` or `--item` that matches nothing prints a `[vt] Warning:` line (the run still succeeds)
 
 Examples:
 
@@ -71,6 +73,8 @@ rtgl vt report --item components/forms/login
 ```
 
 Other capture tuning remains internal and intentionally not user-configurable.
+The opt-ins are `animations` (config or frontmatter) and Chromium launch arguments
+(`vt.launchArgs` or the `RTGL_CHROMIUM_ARGS` environment variable).
 
 ## Config
 
@@ -87,6 +91,7 @@ vt:
   timeout: 30000
   waitEvent: vt:ready
   isolationMode: strict
+  animations: disabled
   viewport:
     id: desktop
     width: 1280
@@ -107,6 +112,10 @@ Notes:
 - Derived section page keys must be unique case-insensitively.
 - `vt.viewport` supports object or array; each viewport requires `id`, `width`, `height`.
 - `vt.capture` is internal and must be omitted.
+- `vt.url` should be an absolute `http(s)://` URL.
+- `vt.animations: disabled` passes Playwright's `animations: "disabled"` to every screenshot, so CSS animations and transitions are not captured mid-flight. Frontmatter `animations` overrides it per spec.
+- `vt.launchArgs` (array of strings) and `RTGL_CHROMIUM_ARGS` (whitespace-separated) add Chromium launch arguments, for example `--use-gl=angle`.
+- Unknown `vt` keys are ignored with a `[vt] Warning:` line. The full list of warnings is in `docs/spec.md`.
 - Viewport contract details: `docs/viewport-contract.md`.
 
 ## Spec Frontmatter
@@ -123,13 +132,17 @@ Supported frontmatter keys per spec file:
 - `viewport` (object or array of viewport objects)
 - `skipScreenshot`
 - `skipInitialScreenshot`
+- `animations` (`allow` | `disabled`)
+- `diffThreshold` (0-100, overrides the report threshold for this spec)
 - `specs`
 - `steps`
+
+Other keys are passed to templates as `frontMatter.<key>`.
 
 Step action reference:
 
 - `docs/step-actions.md`
-- canonical format is structured action objects (`- action: ...`); legacy one-line string steps are not supported.
+- canonical format is structured action objects (`- action: ...`); one-line string steps are not supported.
 - `action: select` accepts exactly one of `testId` or `selector` for interaction targeting.
 - `assert` supports `js` deep-equal checks for object/array values.
 
@@ -166,7 +179,7 @@ docker run --rm -v "$(pwd):/workspace" han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.
 
 Note:
 
-- Run `npm install --save-dev --save-exact rtgl@2.1.4` once and commit the lockfile.
+- Run `npm install --save-dev --save-exact rtgl@2.3.1` (or the current release) once and commit the lockfile.
 - The image supplies browsers; `/workspace/node_modules/rtgl/cli.js` supplies the project CLI and VT. Match the image's Playwright version to the installed VT dependency.
 - In this monorepo, mount the repository root and use `node /workspace/packages/rettangoli-cli/cli.js` instead.
 - Image default working directory is `/workspace`.
@@ -175,9 +188,9 @@ Note:
 Supports `linux/amd64` and `linux/arm64`.
 
 `docker/build-and-push.sh` derives its tag and build arguments from the CLI and
-VT manifests (`rtgl@2.1.4`, `@rettangoli/vt@1.1.1`, Playwright 1.57.0).
+VT manifests (`rtgl@2.3.1`, `@rettangoli/vt@1.1.1`, Playwright 1.57.0).
 After publishing these packages, the script publishes
-`han4wluc/rtgl:playwright-v1.57.0-rtgl-v2.1.4`. The examples above use an
+`han4wluc/rtgl:playwright-v1.57.0-rtgl-v2.3.1`. The examples above use an
 existing browser image with the project CLI and do not require that new image.
 Image builds verify the installed CLI, VT and Playwright versions
 and fail on dependency drift. Publishing a matching image remains a release
@@ -198,19 +211,15 @@ bun run test
 
 Default unit run behavior:
 
-- `bun run test` skips the real-browser smoke tests in `spec/e2e-smoke.spec.js` unless `VT_E2E=1`.
-- Skipped smoke tests are:
-  - `runs generate, accept, and report with real screenshots`
-  - `supports waitEvent readiness with real browser screenshots`
-  - `loads the default main bundle once as an ES module`
-  - `completes the final drain when the page replaces timer globals`
-  - `fails capture on an uncaught page error`
-  - `supports managed service lifecycle with vt.service.start and vt.url`
+- `bun run test` skips the real-browser tests in `spec/e2e-*.spec.js` unless `VT_E2E=1`.
+- `spec/docs-examples.spec.js` checks every yaml example in this README and in `docs/`.
+  Put `<!-- docs-examples: skip -->` on the line before a block that is not a VT example
+  or that is invalid on purpose.
 
-Run real-browser smoke:
+Run the real-browser tests (needs Playwright's Chromium):
 
 ```bash
-VT_E2E=1 bun run test -- spec/e2e-smoke.spec.js
+VT_E2E=1 bun run test
 ```
 
 Run Docker E2E tests (requires Docker daemon running):

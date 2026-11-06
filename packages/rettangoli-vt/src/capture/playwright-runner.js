@@ -133,6 +133,7 @@ export class PlaywrightRunner {
       navigationTimeout,
       readyTimeout,
       screenshotTimeout,
+      animations,
       envVarPrefix = "RTGL_VT_",
     } = options;
 
@@ -147,6 +148,7 @@ export class PlaywrightRunner {
     this.navigationTimeout = navigationTimeout;
     this.readyTimeout = readyTimeout;
     this.screenshotTimeout = screenshotTimeout;
+    this.animations = animations;
     this.pageTaskDrainTimeout = Math.min(
       readyTimeout,
       MAX_PAGE_TASK_DRAIN_TIMEOUT_MS,
@@ -413,7 +415,9 @@ export class PlaywrightRunner {
     );
   }
 
-  async takeAndSaveScreenshot(page, basePath, suffix) {
+  // `animations` ("allow" or "disabled") is passed to page.screenshot when set; the
+  // takeVtScreenshotBase64 hook ignores it.
+  async takeAndSaveScreenshot(page, basePath, suffix, { animations } = {}) {
     const finalPath = `${basePath}-${suffix}`;
     const tempPngPath = join(this.screenshotsDir, `${finalPath}.png`);
     const screenshotPath = join(this.screenshotsDir, `${finalPath}.webp`);
@@ -448,6 +452,7 @@ export class PlaywrightRunner {
       path: tempPngPath,
       fullPage: true,
       timeout: this.screenshotTimeout,
+      ...(animations ? { animations } : {}),
     });
     await sharp(tempPngPath).webp({ quality: 85 }).toFile(screenshotPath);
 
@@ -486,12 +491,15 @@ export class PlaywrightRunner {
     let screenshotIndex = 0;
     let skipRuntimeState = false;
 
+    // Frontmatter wins over vt.animations; nothing is passed when neither sets it.
+    const animations = task.frontMatter?.animations ?? this.animations;
+    const screenshotOptions = animations ? [{ animations }] : [];
     const wrappedScreenshot = async (activePage, basePath = task.baseName) => {
       throwIfPageError();
       screenshotIndex += 1;
       const suffix = formatScreenshotOrdinal(screenshotIndex);
       screenshotCount += 1;
-      const screenshotPath = await this.takeAndSaveScreenshot(activePage, basePath, suffix);
+      const screenshotPath = await this.takeAndSaveScreenshot(activePage, basePath, suffix, ...screenshotOptions);
       throwIfPageError();
       return screenshotPath;
     };

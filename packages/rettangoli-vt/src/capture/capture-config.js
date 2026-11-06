@@ -29,6 +29,8 @@ export function createCaptureConfig({
     metricsPath = join(".rettangoli", "vt", "metrics.json"),
     headless = true,
     viewport,
+    launchArgs,
+    animations,
   } = resolvedOptions;
   const screenshotsDir = candidatePath;
 
@@ -89,5 +91,7 @@ export function createCaptureConfig({
     metricsPath,
     headless,
     viewport,
+    launchArgs,
+    animations,
   });
 }

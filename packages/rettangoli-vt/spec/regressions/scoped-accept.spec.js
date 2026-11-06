@@ -151,14 +151,21 @@ describe.sequential("accept keeps references outside the last capture scope", ()
     );
   });
 
+  // A missing specs directory prints a "[vt] Warning:" line from generate and from report.
+  const missingSpecsWarning =
+    '[vt] Warning: specs directory "vt/specs" does not exist. Check "vt.path" in rettangoli.config.yaml.';
   it.each([
-    ["every spec is deleted", (root) => rmSync(join(root, "vt/specs"), { recursive: true, force: true })],
+    [
+      "every spec is deleted",
+      (root) => rmSync(join(root, "vt/specs"), { recursive: true, force: true }),
+      [[missingSpecsWarning], [missingSpecsWarning]],
+    ],
     ["every spec has skipScreenshot", (root) => {
       for (const spec of ["forms/a.html", "forms/b.html", "pages/home.html"]) {
         writeProjectFile(root, `vt/specs/${spec}`, "---\nskipScreenshot: true\n---\n<h1>Skipped</h1>\n");
       }
-    }],
-  ])("4b: a full capture that selects no files (%s) still prunes every reference", async (_, prepare) => {
+    }, []],
+  ])("4b: a full capture that selects no files (%s) still prunes every reference", async (_, prepare, expectedWarnings) => {
     prepare(project.root);
     await screenshot();
     expect(manifest()).toEqual({ version: 1, screenshots: true, scope: null });
@@ -166,7 +173,7 @@ describe.sequential("accept keeps references outside the last capture scope", ()
     await runAccept();
 
     expect(references()).toEqual([]);
-    expect(warnings).not.toHaveBeenCalled();
+    expect(warnings.mock.calls).toEqual(expectedWarnings);
   });
 
   it("5: without a manifest, accept deletes every reference-only image as before", async () => {

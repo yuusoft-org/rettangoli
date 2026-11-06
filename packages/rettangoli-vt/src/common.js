@@ -275,6 +275,8 @@ async function takeScreenshots(config) {
     metricsPath,
     headless,
     viewport,
+    launchArgs,
+    animations,
   } = config;
 
   ensureDirectoryExists(screenshotsDir);
@@ -304,6 +306,8 @@ async function takeScreenshots(config) {
     recycleEvery,
     metricsPath,
     headless,
+    launchArgs,
+    animations,
   });
 
   if (failures.length > 0) {

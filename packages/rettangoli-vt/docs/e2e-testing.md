@@ -7,8 +7,9 @@ Zero dependencies. Single standalone JS file. Uses only Node.js built-ins (`fs`,
 Note:
 
 - This document covers the folder-based runner at `e2e/run.js`.
-- Separate Vitest smoke tests exist at `spec/e2e-smoke.spec.js`.
-- Those smoke tests are skipped by default and only run when `VT_E2E=1`.
+- Separate Vitest real-browser tests exist in `spec/e2e-*.spec.js` (smoke, unresponsive pages, consumer paths, encoded paths, custom events).
+- Those tests are skipped by default and only run when `VT_E2E=1`: `VT_E2E=1 bun run test`.
+- The scenarios compare `metrics.json` too. Its `summary.adaptivePolicy` fields (`cpuCount`, `cpuBound`, `totalMemoryGb`, `memoryBound`) depend on the machine, so a run on a machine other than the one that recorded the expected trees can fail on them.
 
 ## How it works
 
@@ -38,6 +39,7 @@ Every step folder contains the **complete** expected directory tree — both the
 
 ## scenario.yaml
 
+<!-- docs-examples: skip -->
 ```yaml
 dynamicFields:
   - timestamp
@@ -81,10 +83,10 @@ An extra file in the actual tree that is not in the expected tree **fails** the 
 
 ```bash
 # Full pipeline: build Docker image + run all E2E scenarios
-bun run test:docker:full
+bun run test:e2e:full
 
 # Run the E2E runner directly (image must already exist)
-node e2e/run.js
+bun run test:e2e
 ```
 
 ## Adding a new scenario
@@ -316,6 +318,7 @@ catch (err):
 ### First scenario: `basic-generate-report`
 
 `e2e/basic-generate-report/scenario.yaml`:
+<!-- docs-examples: skip -->
 ```yaml
 dynamicFields:
   - timestamp
@@ -416,9 +419,9 @@ FAILURES:
 ### package.json scripts
 
 ```json
-"test:docker": "node e2e/run.js",
-"test:docker:full": "bash scripts/docker-e2e-test.sh"
+"test:e2e": "node e2e/run.js",
+"test:e2e:full": "bash scripts/docker-e2e-test.sh"
 ```
 
-`test:docker:full` builds the Docker image then calls `node e2e/run.js`.
-`test:docker` runs the E2E runner directly (image must already exist).
+`test:e2e:full` builds the Docker image then calls `node e2e/run.js`.
+`test:e2e` runs the E2E runner directly (image must already exist).

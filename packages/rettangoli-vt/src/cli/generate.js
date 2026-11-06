@@ -6,10 +6,13 @@ import { readVtConfig } from "../config/load-vt-config.js";
 import { resolveGenerateOptions } from "./generate-options.js";
 import {
   filterGeneratedFilesBySelectors,
+  findUnmatchedSelectors,
   hasSelectors,
 } from "../selector-filter.js";
+import { collectConfigWarnings, collectFrontMatterWarnings } from "../validation.js";
 import {
   installInterruptCleanup,
+  probeExistingService,
   startManagedService,
   stopManagedService,
   waitForServiceReady,
@@ -17,6 +20,7 @@ import {
 import { writeCaptureManifest } from "../capture-manifest.js";
 import { createCaptureConfig } from "../capture/capture-config.js";
 import { copySiteStatic, renderSite, resolveTemplatePaths } from "../site/build-site.js";
+import { warnIfSpecsDirMissing } from "../spec-files.js";
 
 const libraryTemplatesPath = fileURLToPath(new URL("./templates", import.meta.url));
 const libraryStaticPath = fileURLToPath(new URL("./static", import.meta.url));
@@ -29,6 +33,7 @@ async function main(options = {}) {
   const siteOutputPath = join(".rettangoli", "vt", "_site");
 
   const configData = await readVtConfig(mainConfigPath, { wrapReadError: true });
+  collectConfigWarnings(configData, mainConfigPath).forEach((warning) => console.warn(warning));
   const resolvedOptions = resolveGenerateOptions(options, configData);
   const {
     vtPath,
@@ -40,6 +45,7 @@ async function main(options = {}) {
 
   const specsPath = join(vtPath, "specs");
   const candidatePath = join(siteOutputPath, "candidate");
+  warnIfSpecsDirMissing(specsPath, mainConfigPath);
 
   // Clear candidate directory
   await rm(candidatePath, { recursive: true, force: true });
@@ -61,6 +67,9 @@ async function main(options = {}) {
     vtPath,
     configData,
     beforeOverview: (generatedFiles) => {
+      generatedFiles
+        .flatMap((file) => collectFrontMatterWarnings(file.frontMatter, file.path))
+        .forEach((warning) => console.warn(warning));
       scopedFiles = filterGeneratedFilesBySelectors(
         generatedFiles,
         resolvedOptions.selectors,
@@ -69,6 +78,10 @@ async function main(options = {}) {
       if (hasSelectors(resolvedOptions.selectors)) {
         const excludedCount = generatedFiles.length - scopedFiles.length;
         console.log(`Selector scope: ${scopedFiles.length} file(s) selected, ${excludedCount} excluded.`);
+        findUnmatchedSelectors(
+          resolvedOptions.selectors,
+          (single) => filterGeneratedFilesBySelectors(generatedFiles, single).length > 0,
+        ).forEach((selector) => console.warn(`[vt] Warning: ${selector} matched no specs.`));
       }
     },
   });
@@ -102,9 +115,10 @@ async function main(options = {}) {
       if (serviceStart) {
         if (!configUrl) {
           throw new Error(
-            "vt.service.start requires vt.url (or --url) so VT can wait for readiness and capture against that URL.",
+            "vt.service.start requires vt.url so VT can wait for readiness and capture against that URL.",
           );
         }
+        await probeExistingService(configUrl);
         managedService = startManagedService({ command: serviceStart });
         // These handlers cover readiness only. Later, Playwright's SIGINT handler exits the process and
         // the exit listener from startManagedService stops the service; otherwise the finally below stops it.

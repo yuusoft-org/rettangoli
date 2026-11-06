@@ -86,6 +86,23 @@ function signalService(handle, signal) {
   } catch {}
 }
 
+// Before vt.service.start runs: a server that already answers at `url` (a dev server left
+// running) would pass the readiness check and be captured instead of the managed service. Warns
+// and returns true when something answers within `timeoutMs`.
+export async function probeExistingService(url, timeoutMs = 1000) {
+  let response;
+  try {
+    response = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+  } catch {
+    return false;
+  }
+  response.body?.cancel().catch(() => {});
+  console.warn(
+    `[vt] Warning: ${url} already answers (status ${response.status}) before vt.service.start runs. VT may capture that server instead of the managed service.`,
+  );
+  return true;
+}
+
 export function startManagedService({ command }) {
   const useProcessGroup = process.platform !== "win32";
   const child = spawn(command, {

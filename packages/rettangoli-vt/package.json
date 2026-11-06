@@ -2,6 +2,7 @@
   "name": "@rettangoli/vt",
   "version": "1.1.1",
   "description": "Rettangoli Visual Testing",
+  "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",
@@ -20,7 +21,6 @@
     "bench:capture": "node ./scripts/benchmark-capture.js"
   },
   "dependencies": {
-    "commander": "^13.1.0",
     "js-yaml": "^4.1.0",
     "liquidjs": "^10.21.0",
     "parse5": "^7.3.0",

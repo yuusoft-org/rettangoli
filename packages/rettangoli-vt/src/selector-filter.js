@@ -114,6 +114,20 @@ export function filterGeneratedFilesBySelectors(generatedFiles, selectors, confi
   });
 }
 
+// The --folder and --item selectors that select nothing on their own, as `--folder "x"` labels.
+// `selectsAny(selectors)` applies one single-selector set to the caller's paths.
+export function findUnmatchedSelectors(selectors, selectsAny) {
+  const single = (overrides) => ({ folders: [], groups: [], items: [], ...overrides });
+  return [
+    ...selectors.folders
+      .filter((folder) => !selectsAny(single({ folders: [folder] })))
+      .map((folder) => `--folder "${folder}"`),
+    ...selectors.items
+      .filter((item) => !selectsAny(single({ items: [item] })))
+      .map((item) => `--item "${item}"`),
+  ];
+}
+
 // Maps a screenshot path ("pages/btn--mobile-01.webp") back to its spec key ("pages/btn").
 // `specKeys` (a Set of spec paths without extension) lets spec names that contain "--" keep their
 // own key: the name itself wins, then the right-most "--<viewportId>" split that names a spec.

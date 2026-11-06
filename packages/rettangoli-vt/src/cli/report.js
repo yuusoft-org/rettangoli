@@ -8,7 +8,7 @@ import pixelmatch from "pixelmatch";
 import sharp from "sharp";
 import { extractFrontMatter } from "../common.js";
 import { readVtConfig } from "../config/load-vt-config.js";
-import { validateFiniteNumber } from "../validation.js";
+import { collectConfigWarnings, validateFiniteNumber } from "../validation.js";
 import { resolveReportOptions } from "./report-options.js";
 import {
   buildAllRelativePaths,
@@ -18,10 +18,17 @@ import {
 import { renderHtmlReport } from "../report/report-render.js";
 import {
   filterRelativeScreenshotPathsBySelectors,
+  findUnmatchedSelectors,
   hasSelectors,
   toScreenshotItemKey,
 } from "../selector-filter.js";
-import { listFilesSorted, listSpecFiles, listSpecKeys, toSpecKey } from "../spec-files.js";
+import {
+  listFilesSorted,
+  listSpecFiles,
+  listSpecKeys,
+  toSpecKey,
+  warnIfSpecsDirMissing,
+} from "../spec-files.js";
 
 const libraryTemplatesPath = fileURLToPath(new URL("./templates", import.meta.url));
 
@@ -136,6 +143,7 @@ async function compareImages(artifactPath, goldPath, method = "pixelmatch", diff
 async function main(options = {}) {
   const mainConfigPath = "rettangoli.config.yaml";
   const configData = await readVtConfig(mainConfigPath, { wrapReadError: true });
+  collectConfigWarnings(configData, mainConfigPath).forEach((warning) => console.warn(warning));
   const {
     vtPath,
     compareMethod,
@@ -153,6 +161,7 @@ async function main(options = {}) {
   const outputPath = path.join(siteOutputPath, "report.html");
   const jsonReportPath = path.join(".rettangoli", "vt", "report.json");
   const specsDir = path.join(vtPath, "specs");
+  warnIfSpecsDirMissing(specsDir, mainConfigPath);
 
   // Spec files are read only when needed: for pixelmatch's frontmatter overrides, and for selectors.
   let diffThresholdOverridesBySpec = new Map();
@@ -216,6 +225,13 @@ async function main(options = {}) {
       );
       const excludedCount = allPaths.length - scopedPaths.length;
       console.log(`Selector scope: ${scopedPaths.length} image(s) selected, ${excludedCount} excluded.`);
+      findUnmatchedSelectors(
+        selectors,
+        (single) => filterRelativeScreenshotPathsBySelectors(allPaths, single, [], specKeys).length > 0,
+      ).forEach((selector) => console.warn(`[vt] Warning: ${selector} matched no images.`));
+      if (scopedPaths.length === 0) {
+        console.warn("[vt] Warning: the selected scope contains no images, so nothing was compared.");
+      }
     }
 
     for (const relativePath of scopedPaths) {

@@ -1,4 +1,4 @@
-import { chromium } from "playwright";
+import { chromium as playwrightChromium } from "playwright";
 import { compileStep } from "../createSteps.js";
 import { PlaywrightRunner } from "./playwright-runner.js";
 import { ResultCollector } from "./result-collector.js";
@@ -17,6 +17,24 @@ function findStepError(task) {
   } catch (error) {
     return error;
   }
+}
+
+// Extra Chromium flags: vt.launchArgs, then RTGL_CHROMIUM_ARGS (whitespace-separated). They are
+// appended to the args of the launch call itself, because route-engine's CI patches that line with
+// sed to add its own; the line must stay byte-identical. RTGL_VT_* names would be injected into
+// every page, hence the different prefix.
+function withLaunchArgs(browserType, configArgs = []) {
+  const extraArgs = [
+    ...configArgs,
+    ...(process.env.RTGL_CHROMIUM_ARGS ?? "").split(/\s+/).filter(Boolean),
+  ];
+  if (extraArgs.length === 0) {
+    return browserType;
+  }
+  return {
+    launch: (launchOptions = {}) =>
+      browserType.launch({ ...launchOptions, args: [...(launchOptions.args ?? []), ...extraArgs] }),
+  };
 }
 
 function createTaskQueues(tasks) {
@@ -92,6 +110,8 @@ export async function runCaptureScheduler(options) {
     recycleEvery,
     metricsPath,
     headless,
+    launchArgs,
+    animations,
   } = options;
 
   const { workerCount, adaptivePolicy } = resolveWorkerPlan(requestedWorkers);
@@ -123,6 +143,7 @@ export async function runCaptureScheduler(options) {
   const queue = createTaskQueues(tasks);
   const getNextTask = queue.getNextTask;
 
+  const chromium = withLaunchArgs(playwrightChromium, launchArgs);
   const browser = await chromium.launch({ headless });
   const runners = [];
 
@@ -140,6 +161,7 @@ export async function runCaptureScheduler(options) {
         navigationTimeout,
         readyTimeout,
         screenshotTimeout,
+        animations,
       });
       await runner.initialize();
       runners.push(runner);
