@@ -2,8 +2,9 @@
 
 ## Purpose
 
-Define a new global dialog API for custom stateful dialog bodies that are too
-complex for `showFormDialog(...)`.
+`showComponentDialog(...)` is the global dialog API for custom stateful dialog
+bodies that are too complex for `showFormDialog(...)`. It is implemented in
+`rtgl-global-ui` and exposed by `createGlobalUI(...)`.
 
 The motivating case is the layout editor slider creator dialog:
 
@@ -13,19 +14,16 @@ The motivating case is the layout editor slider creator dialog:
 - dialog body state that belongs to a dedicated component
 
 `showFormDialog(...)` is still the right API for schema-first forms such as the
-fragment picker. This document covers the missing second API for custom dialog
+fragment picker. This document covers the second API, for custom dialog
 components.
 
 ## Problem
 
-Today the global UI supports:
+Besides `showComponentDialog(...)`, the global UI has `showAlert(...)`,
+`showConfirm(...)`, `showFormDialog(...)`, `showDropdownMenu(...)` and
+`showToast(...)`.
 
-- `showAlert(...)`
-- `showConfirm(...)`
-- `showFormDialog(...)`
-- `showDropdownMenu(...)`
-
-`showFormDialog(...)` already exposes `mount(formEl)`, but that is an
+`showFormDialog(...)` exposes `mount(formEl)`, but that is an
 imperative escape hatch. It is acceptable for small slot customization. It is
 not the right long-term foundation for a dialog whose main content is a custom
 interactive workflow.
@@ -56,11 +54,11 @@ That is the wrong abstraction.
 - Introduce a generic plugin/registry framework in v1
 - Move dialog action buttons into app-specific dialog body components
 
-## Proposed Public API
+## Public API
 
 ### Global UI
 
-Add:
+The manager returned by `createGlobalUI(...)` has:
 
 ```js
 globalUI.showComponentDialog(options);
@@ -107,17 +105,23 @@ globalUI.showComponentDialog(options);
 
 - `component`
   - required custom element tag name to render inside the dialog body
+  - it must contain a hyphen; otherwise the promise rejects with
+    `component tag name is required for showComponentDialog`
 - `props`
   - optional initial props passed to the body component
+  - a value that is not an object, or is an array, is ignored
 - `title`
-  - optional dialog shell title
+  - optional dialog shell title, a plain string
 - `description`
   - optional dialog shell description; a string, or an array of link text segments (`{ text, href?, newTab?, rel? }`, see the `rtgl-global-ui` docs)
 - `size`
-  - optional dialog size token: `sm | md | lg | f`
+  - optional dialog size token: `sm | md | lg | f`; the default, and the
+    fallback for any other value, is `md`
 - `actions`
   - optional footer action config
   - shape matches the existing form-dialog `actions.buttons` mental model
+  - without buttons, the default is the pair below; the labels come from the
+    dialog `Cancel` and `OK` UI messages (see `setUiMessages`)
   - default:
     ```js
     {
@@ -145,15 +149,19 @@ globalUI.showComponentDialog(options);
 Each button may define:
 
 - `id`
-  - app-owned result id returned to the caller
+  - required non-empty string, the app-owned result id returned to the caller
 - `label`
-  - button text
+  - required non-empty string, the button text
 - `variant`
-  - shell button variant
+  - shell button variant; the default is `pr` for `confirm` and `se` for
+    `cancel`
 - `align`
-  - shell alignment metadata
+  - shell alignment: `left` or `right`; the default is `left` for `cancel` and
+    `right` otherwise
+- `disabled`, `pre`, `suf`
+  - as for form action buttons
 - `role`
-  - required semantic role:
+  - required semantic role; any other value rejects the promise:
     - `"confirm"`
     - `"cancel"`
 - `validate`
@@ -174,9 +182,9 @@ Behavior is driven by `role`.
 
 ## Props Contract
 
-Yes, the shell can just pass the props.
+The shell passes the props through.
 
-The contract should be:
+The contract is:
 
 - `options.props` is a plain object
 - each entry is assigned onto the body component element as a same-named
@@ -184,10 +192,11 @@ The contract should be:
 - this maps to the normal Rettangoli FE component `props` surface
 - the body component should declare those public props in `.schema.yaml`
   `propsSchema`
-- V1 only guarantees initial prop delivery when the dialog opens
-- V1 does not need live prop patching after open
+- props are delivered once, when the dialog opens
+- props are not patched after open
 
-Example implementation shape:
+The body element is created on the next timer tick after the dialog renders.
+The shell implements this as:
 
 ```js
 const bodyEl = document.createElement(options.component);
@@ -227,9 +236,14 @@ null;
   - dialog stays open
   - promise does not resolve
 - if `validate()` or `getValues()` throws or rejects:
-  - treat it as an implementation error
-  - do not silently swallow it
-  - let the dialog promise reject with that error
+  - it is an implementation error and is not swallowed
+  - the dialog closes and the dialog promise rejects with that error
+- if the body lacks `validate()` or `getValues()`, or `validate()` does not
+  return an object with a boolean `valid`:
+  - the dialog closes and the promise rejects with an error
+- `closeAll()`, and opening another global UI surface, close the dialog and
+  resolve with `null`
+- a result that arrives after the dialog was closed or replaced is dropped
 
 This matches the current `showFormDialog(...)` behavior more closely than
 returning `false` like `showConfirm(...)`, while still letting component-dialog
@@ -249,9 +263,10 @@ getValues(): object | Promise<object>
 
 These are required for every component-dialog body component.
 
-- the shell may assume both methods exist
+- the shell may assume both methods exist; it checks for them on every confirm
+  click, also for buttons without `validate: true`
 - missing methods are an implementation error, not a runtime fallback case
-- `validate()` must return `{ valid, errors? }`
+- `validate()` must return `{ valid, errors? }` with a boolean `valid`
 - `getValues()` must return the payload resolved back to the caller
 - a thrown or rejected method call is an implementation error and should reject
   the dialog promise
@@ -264,11 +279,10 @@ The body component should declare its public API explicitly:
 - public methods in `.schema.yaml > methods.properties`
 - method implementations in `.methods.js`
 
-### Optional Methods
+### Other Methods
 
-```js
-setValues(values): void
-```
+The shell calls no other method. A body may expose more, such as
+`setValues(values): void`, for its own callers.
 
 ### Why Methods
 
@@ -286,7 +300,7 @@ methods make the contract explicit and stable.
 On confirm:
 
 1. read the component ref
-2. call `validate()` if needed
+2. call `validate()` if the button has `validate: true`
 3. if validation returns `{ valid: false }`, stop
 4. call `getValues()`
 5. close dialog
@@ -431,17 +445,11 @@ export function getValues() {
 
 ## Global UI Internal Model
 
-Add a new UI type:
-
-```js
-"componentDialog";
-```
-
-Add a new config shape in global UI store:
+The global UI store has the UI type `"componentDialog"` and a
+`componentDialogConfig`:
 
 ```js
 {
-  type: "componentDialog",
   key,
   title,
   description,
@@ -452,17 +460,18 @@ Add a new config shape in global UI store:
 }
 ```
 
-This should be separate from `formDialogConfig`. Do not overload the form
-dialog config with component-dialog fields.
+`key` goes up by one on every call. The config is separate from
+`formDialogConfig`; component-dialog fields are not mixed into the form dialog
+config.
 
-## Global UI View Requirements
+## Global UI View
 
-The global UI view needs a new branch for component dialogs:
+The global UI view has a branch for component dialogs:
 
-- render the dialog shell
-- render the configured body component inside `slot=content`
-- keep footer buttons in the shell
-- attach a ref to the body component so handlers can call public methods
+- it renders the dialog shell
+- it renders the configured body component inside `slot=content`
+- it keeps footer buttons in the shell
+- it attaches a ref to the body component so handlers can call public methods
 
 The exact low-level render mechanism is implementation detail. The important
 contract is:
@@ -492,9 +501,11 @@ global UI surface through:
 - `globalUI.showFormDialog(...)`
 - `globalUI.showDropdownMenu(...)`
 
+Opening one closes the component dialog and resolves its promise with `null`.
+
 If the component needs local nested dialogs or pickers, those remain an
-internal detail of the body component. In V1 those should be local
-component-owned overlays, not additional global UI surfaces.
+internal detail of the body component. In V1 those are local component-owned
+overlays, not additional global UI surfaces.
 
 ## Why Not Use `showFormDialog(...)`
 
@@ -515,7 +526,7 @@ Slider create falls into the second category.
 
 ## V1 Scope
 
-V1 should support:
+V1 supports:
 
 - one custom body component
 - footer actions through `actions.buttons`
@@ -525,21 +536,14 @@ V1 should support:
 - value retrieval on confirm
 - promise resolution with `{ actionId, values? }` or `null`
 
-V1 should not try to support:
+V1 does not support:
 
 - arbitrary button semantics beyond `confirm` and `cancel`
-- dynamic live button enable/disable
+- enabling or disabling buttons while the dialog is open
 - stacked component dialogs
 - cross-dialog shared body state
 
 Those can be added later if a real product need appears.
-
-## Recommended Next Steps
-
-1. add `showComponentDialog(...)` to Rettangoli global UI
-2. implement `rvn-layout-editor-slider-create-dialog` in creator client
-3. migrate slider creation flow from page-owned dialog markup to the new API
-4. keep fragment creation on `showFormDialog(...)`
 
 ## Decision Summary
 

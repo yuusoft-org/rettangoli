@@ -1,10 +1,10 @@
 ---
 title: Segmented Control - Clearable Behavior
-description: Verifies clicking the active segment clears by default and stays selected when `no-clear` is enabled.
+description: Clicks the active segment of two controls whose `selectedValue` is set to `center` and never updated. A defined `selectedValue` wins, so both controls still show `center` selected after the click, with or without `no-clear`.
 specs:
-  - The clearable control deselects when the active segment is clicked.
-  - The `no-clear` control keeps the active segment selected after the same interaction.
-  - Post-click visuals distinguish the two behaviors in one frame.
+  - Both controls set a defined `selectedValue` and the page does not update it after the click.
+  - Both controls still show `center` selected after the click.
+  - A control with no defined `selectedValue` clears a picked segment when it is clicked again; this page sets one.
 skipInitialScreenshot: true
 steps:
   - action: customEvent

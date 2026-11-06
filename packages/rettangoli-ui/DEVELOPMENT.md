@@ -59,18 +59,18 @@ This is the intentional component surface and what each component is meant to pr
 | `rtgl-card`              | content surface container      | optional heading/description, size presets, slot body                                                  |
 | `rtgl-dropdown-menu`     | contextual menu overlay        | positioned menu, item/label/separator rows, close + item events                                        |
 | `rtgl-form`              | schema-driven form workflow    | field schema, default values, action buttons, form/action/extra events                                 |
-| `rtgl-global-ui`         | app-level interaction layer    | alert/confirm/dropdown flows with promise-like API                                                     |
+| `rtgl-global-ui`         | app-level interaction layer    | alert/confirm/dropdown/form-dialog/component-dialog flows with promise-like API, toasts                |
 | `rtgl-navbar`            | top app navigation shell       | configurable start area, right slot, start click event                                                 |
 | `rtgl-page-outline`      | page section tracking          | target and scroll containers, active section offset                                                    |
-| `rtgl-popover-input`     | inline edit with popover       | value editing in popover, value input/change events                                                    |
+| `rtgl-popover-input`     | inline edit with popover       | staged value editing in a popover, `value-change` on Submit                                            |
 | `rtgl-select`            | single-choice selection        | options with optional icons/images, selected value, no-clear mode, add-option action                   |
 | `rtgl-segmented-control` | inline single-choice selection | text or icon-only options, per-option hover tooltips, selected value, no-clear mode, add-option action |
-| `rtgl-tag-select`        | multi-tag selection            | select-shaped options, selected value array, add popover, right-click delete                           |
+| `rtgl-tag-select`        | multi-tag selection            | select-shaped options, selected value array, draft selection committed with Submit, add-option action  |
 | `rtgl-sidebar`           | app/sidebar navigation         | header plus grouped items, selected item state, item/header events, public item-list scroll methods     |
 | `rtgl-slider-input`      | synchronized numeric control   | linked slider + number input, min/max/step, optional slider range, input sizes, value events           |
 | `rtgl-table`             | tabular data display           | column/row model, sortable headers, row click event                                                    |
 | `rtgl-tabs`              | segmented single selection     | tab items, selected tab state, item click event                                                        |
-| `rtgl-tooltip`           | short contextual hint          | controlled open/position/placement/content                                                             |
+| `rtgl-tooltip`           | short contextual hint          | controlled open/position/place/content                                                                 |
 | `rtgl-waveform`          | waveform media visualization   | canvas rendering, loading state, width/height sizing                                                   |
 
 When adding a new component, document:
@@ -146,7 +146,7 @@ These rules are also mandatory and apply to every primitive/component API change
 - behavior attrs that users may toggle at runtime must be reactive after mount (include them in observed attrs and update behavior on change)
 - if a style/control attr supports responsive prefixes, dependent JS behavior must resolve breakpoints the same way
 - event default policy is explicit: events should bubble by default unless the docs state a specific exception
-- `key` must have one consistent semantic across primitives (documented reset contract), or be removed from primitive public API
+- `key` must have one consistent semantic across primitives (documented reset contract), or be removed from primitive public API; what it does on each element today is listed under "The `key` attribute"
 
 ## Runtime Semantics To Preserve
 
@@ -178,6 +178,19 @@ These rules are also mandatory and apply to every primitive/component API change
 - action payload should be object; missing payload defaults to `{}`
 - supported modifiers include `preventDefault`, `stopPropagation`, `stopImmediatePropagation`, `targetOnly`, `once`, `debounce`, `throttle`
 
+### The `key` attribute
+
+A change of `key` resets an element's state from its attributes. What resets depends on the element:
+
+- `rtgl-input`, `rtgl-input-date`, `rtgl-input-time`, `rtgl-input-datetime`, `rtgl-input-duration`, `rtgl-input-number` and `rtgl-color-picker` show the `value` attribute again at once.
+- `rtgl-textarea` shows the `value` attribute again on the next animation frame.
+- `rtgl-slider` goes back to the `value` attribute, or to `min` (0 when unset) when there is none, on the next animation frame.
+- `rtgl-checkbox` goes back to its `checked` and `indeterminate` attributes on the next animation frame.
+- `rtgl-svg` resolves its icon again.
+- `rtgl-button`, `rtgl-image`, `rtgl-text` and `rtgl-tag` observe `key`, but it resets no state. `rtgl-text` runs its normal style update on a change.
+- `rtgl-view`, `rtgl-grid`, `rtgl-carousel`, `rtgl-dialog` and `rtgl-popover` do not observe it.
+- FE components receive `key` as a prop and run their update handler when it changes. Only `rtgl-form` and `rtgl-slider-input` act on it: `rtgl-form` re-seeds its values from `defaultValues` and clears errors, `rtgl-slider-input` takes its value from the `value` prop again.
+
 ## Attributes vs Props Examples
 
 ```html
@@ -190,11 +203,11 @@ select.noClear = true;
 ```
 
 ```html
-<rtgl-popover-input auto-focus placeholder="Name"></rtgl-popover-input>
+<rtgl-popover-input aria-label="Name" placeholder="Name"></rtgl-popover-input>
 ```
 
 ```js
-popoverInput.autoFocus = true;
+popoverInput.ariaLabel = "Name";
 popoverInput.placeholder = "Name";
 ```
 
@@ -225,9 +238,9 @@ These are valid exceptions to the short-attr rule:
 - `indeterminate`
 - `maxlength`
 
-## Form Input Types (rtgl-form)
+## Form Field Types (rtgl-form)
 
-Canonical `inputType` values are kebab-case only:
+A field's `type` values are kebab-case only (`inputType` is only the `text` / `password` option of `input-text`):
 
 - `input-text`
 - `input-date`
@@ -237,15 +250,20 @@ Canonical `inputType` values are kebab-case only:
 - `input-number`
 - `input-textarea`
 - `select`
+- `segmented-control`
 - `tag-select`
 - `color-picker`
 - `slider`
-- `slider-input`
+- `slider-with-input`
 - `image`
-- `waveform`
 - `popover-input`
+- `checkbox`
+- `section`
+- `row`
 - `read-only-text`
 - `slot`
+
+`section`, `row`, `read-only-text` and `slot` are display types and hold no value. `docs/form-design.md` describes each type.
 
 ### Form field paths
 
@@ -281,6 +299,14 @@ Canonical `inputType` values are kebab-case only:
 - shared state lives under versioned `Symbol.for("@rettangoli/ui/v1/…")` keys (`getSharedState` in `src/common/changeListeners.js`) because the script-tag bundles carry duplicate module copies; bump the version when a state's shape changes
 - `window.rtglIcons` is deprecated but still read after icons set with `setIcons`; `rtgl ui build-svg` (`src/cli/buildSvg.js`) generates a script that calls `rtgl.setIcons` and falls back to that global only when loaded before the library; the ESM build never defines `window.rtgl`, so npm users register icons by calling `setIcons` themselves
 
+### Form values and templates
+
+- every string in the `form` prop is a jempl template, rendered with `context`, the current field values and `formValues`; user text with `${` or `#{` goes through `escapeFormText` (a named export of the package) or through `context`
+- clearing a `select` or `segmented-control` removes the key from the form values instead of setting `null`; a never-touched one is `null`
+- a changed `key` re-seeds the values from `defaultValues` and clears errors; changing `defaultValues` alone does not
+- `setValues({ values })` is the documented shape; a key replaces the whole value under it, so use dotted keys to set one nested field
+- there is no public `setErrors` method, and `rtgl-form` does not implement `autofocus`
+
 ### Form padding
 
 - `p` sets both internal form-padding axes and defaults to `md`
@@ -301,35 +327,65 @@ Canonical `inputType` values are kebab-case only:
 - always use `CustomEvent` with a `detail` object
 - value changes include `detail.value`
 - list/selection events include `detail.item` and `detail.index` when available
-- form events include `detail.name` and `detail.formValues`
+- form events include `detail.values`, and field events also `detail.name` and `detail.value`
 - events bubble by default; use `composed: true` only when crossing shadow boundaries is required
 
 ### Recommended payload shapes
 
 ```js
-detail: {
-  value;
-}
-detail: {
-  (value, label, index, item);
-}
-detail: {
-  (name, fieldValue, formValues);
-}
-detail: {
-  (actionId, formValues);
-}
-detail: {
-}
+detail: { value }
+detail: { value, label, index, item }
+detail: { name, value, values }
+detail: { actionId, values }
+detail: {}
 ```
+
+### Events by element
+
+The rules above are the target. This table records what each element emits today. A "no" under Bubbles or a "yes" under Composed marks where an element differs from the default policy. Bubbling events are not composed unless the table says so, so they do not cross a shadow root.
+
+| Element | Event | `detail` | Bubbles | Composed |
+| --- | --- | --- | --- | --- |
+| `rtgl-input`, `rtgl-input-date`, `rtgl-input-time`, `rtgl-input-datetime`, `rtgl-textarea` | `value-input`, `value-change` | `{ value }` (string) | yes | no |
+| `rtgl-input-number` | `value-input`, `value-change` | `{ value }` (number, or `null` when empty); only `value-change` clamps to `min` / `max` | yes | no |
+| `rtgl-input-duration` | `value-input`, `value-change` | `{ value }` (milliseconds, or `null` when empty) | yes | no |
+| `rtgl-slider` | `value-input`, `value-change` | `{ value }` (number) | yes | no |
+| `rtgl-color-picker` | `value-input`, `value-change` | `{ value }` (`#rrggbb`) | yes | no |
+| `rtgl-checkbox` | `value-change` | `{ value }` (boolean) | yes | no |
+| `rtgl-carousel` | `index-change` | `{ index }` | yes | no |
+| `rtgl-dialog`, `rtgl-popover` | `close` | `{}` | yes | no |
+| `rtgl-popover` | `positioned` | `{ left, top, place }` | yes | yes |
+| `rtgl-tag` | `remove-click` | `{ value }` | yes | yes |
+| `rtgl-select`, `rtgl-segmented-control` | `value-change` | `{ value, label, index, item }`; when the user clears the selection `value`, `label` and `item` are `undefined` and `index` is `null` | yes | no |
+| `rtgl-select`, `rtgl-segmented-control` | `add-option-click` | none | yes | no |
+| `rtgl-tag-select` | `value-change` | `{ value, operation, changedValue, label, index, item }`; `value` is the array, sent when the user presses Submit | yes | no |
+| `rtgl-tag-select` | `draft-value-change` | `{ value }` (array) | yes | no |
+| `rtgl-tag-select` | `open-change` | `{ open }` | yes | no |
+| `rtgl-tag-select` | `add-option-click` | none | yes | yes |
+| `rtgl-popover-input` | `value-change` | `{ value }`, sent when the user presses Submit | yes | no |
+| `rtgl-slider-input` | `value-input`, `value-change` | `{ value }` (number; `value-input` is `null` while the number box is empty) | yes | no |
+| `rtgl-form` | `form-input`, `form-change`, `form-field-event`, `form-section-action`, `form-action` | see `docs/form-design.md` | yes | no |
+| `rtgl-tabs` | `item-click` | `{ id }` | no | no |
+| `rtgl-sidebar` | `header-click` | `{ path }` | yes | yes |
+| `rtgl-sidebar` | `item-click` | `{ item }` | yes | yes |
+| `rtgl-navbar` | `start-click` | `{ path }` | no | no |
+| `rtgl-breadcrumb` | `item-click` | `{ id, path, href, item, index, trigger }` | no | no |
+| `rtgl-dropdown-menu` | `item-click` | `{ index, indexPath, item, id, path, href, trigger }` | no | no |
+| `rtgl-dropdown-menu` | `close` | none | no | no |
+| `rtgl-table` | `row-click` | `{ rowIndex, rowData }` | no | no |
+| `rtgl-table` | `header-click` | `{ column, direction, sortInfo }` | no | no |
+
+`rtgl-view`, `rtgl-grid`, `rtgl-text`, `rtgl-button`, `rtgl-image`, `rtgl-svg`, `rtgl-accordion-item`, `rtgl-card`, `rtgl-page-outline`, `rtgl-tooltip` and `rtgl-waveform` emit no custom events. `rtgl-global-ui` reports through the promises of `createGlobalUI`.
+
+`close` from `rtgl-dialog` and `rtgl-popover` means the user asked to close, by Escape or a click on the backdrop; the overlay stays open until the parent removes `open`. It bubbles, so a `close` listener on a dialog also receives the `close` of a popover inside its content. Check `event.target === event.currentTarget` there.
 
 ## Custom Elements (public surface)
 
 Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 
-- `rtgl-carousel`, `rtgl-grid`, `rtgl-view`, `rtgl-text`, `rtgl-button`, `rtgl-image`, `rtgl-svg`
-- `rtgl-input`, `rtgl-input-duration`, `rtgl-input-number`, `rtgl-textarea`
-- `rtgl-slider`, `rtgl-color-picker`
+- `rtgl-carousel`, `rtgl-grid`, `rtgl-view`, `rtgl-text`, `rtgl-tag`, `rtgl-button`, `rtgl-image`, `rtgl-svg`
+- `rtgl-input`, `rtgl-input-date`, `rtgl-input-time`, `rtgl-input-datetime`, `rtgl-input-duration`, `rtgl-input-number`, `rtgl-textarea`
+- `rtgl-slider`, `rtgl-color-picker`, `rtgl-checkbox`
 - `rtgl-dialog`, `rtgl-popover`
 
 ### `rtgl-carousel`
@@ -392,6 +448,14 @@ Primitives exported via `src/index.js` and registered in `src/entry-iife-*.js`:
 - `layout=fixed-top` keeps the surface top-aligned with a standard top inset and a 36% viewport-height bottom inset; it clips outer overflow so a bounded child such as `rtgl-form` can scroll internally
 - `fixed-top` preserves its asymmetric viewport insets independently of content padding; `p=none` removes content padding and horizontal gutters without removing the top and bottom insets
 
+### `rtgl-text` and `rtgl-tag`
+
+- both write sizing declarations into the host's inline `style`: `width`, `min-width`, `flex-grow`, `flex-shrink` and `flex-basis`, set from `w` or cleared when `w` is absent; `rtgl-text` also writes `overflow`, `text-overflow`, `white-space`, `overflow-wrap` and `word-break` for `ellipsis` and `break-long-tokens`
+- a consumer inline `style` that sets one of those properties (for example `min-width`, `flex: 0 0 auto` or `white-space: pre-line`) is cleared when the element connects and when `w` changes; `rtgl-text` also clears them when `key`, `ellipsis` or `break-long-tokens` changes
+- `rtgl-dialog` adds and removes `break-long-tokens` on the `rtgl-text` elements in its content, so they are reset again each time the dialog syncs its content
+- put such declarations in a stylesheet rule or on a wrapper element; while `w` is set, its inline width and flex values win over an outer stylesheet
+- when the `style` attribute is replaced later, `rtgl-text` writes the declarations that `w`, `ellipsis` and `break-long-tokens` ask for again and keeps the rest; `rtgl-tag` does not observe `style`, so its `w` width is lost until `w` changes again
+
 ### `rtgl-input`
 
 - native text, password, date, time, and datetime inputs always use `box-sizing: border-box`
@@ -417,7 +481,7 @@ Components built via `@rettangoli/fe`:
 - `rtgl-select`, `rtgl-segmented-control`, `rtgl-tag-select`, `rtgl-dropdown-menu`, `rtgl-tooltip`, `rtgl-popover-input`
 - `rtgl-form`, `rtgl-slider-input`, `rtgl-table`
 - `rtgl-tabs`, `rtgl-sidebar`, `rtgl-navbar`, `rtgl-breadcrumb`
-- `rtgl-accordion-item`, `rtgl-page-outline`, `rtgl-waveform`, `rtgl-global-ui`
+- `rtgl-accordion-item`, `rtgl-card`, `rtgl-page-outline`, `rtgl-waveform`, `rtgl-global-ui`
 
 If a component is not intended to be public, document that and avoid public examples.
 

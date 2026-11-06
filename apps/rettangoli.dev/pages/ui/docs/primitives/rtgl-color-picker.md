@@ -74,6 +74,8 @@ The square and strip support pointer dragging with pointer capture; on touch dev
 - Updates the color live at exactly six hex digits; shorthand expands on commit.
 - Marks the field with the theme destructive color while the draft has non-hex characters or more than six characters.
 - Enter or blur commits a valid draft; Escape reverts to the current color; invalid drafts revert without events.
+- The field keeps what you type, including uppercase letters and the caret position, until a commit shows it as lowercase `rrggbb`.
+- A parent that sets `value` back on every `value-input`, or calls `rtgl-form` `setValues` on each input, still reformats the field, because a `value` set from outside always updates it.
 
 ### Focus
 

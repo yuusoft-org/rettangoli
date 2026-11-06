@@ -494,7 +494,7 @@ Use VT against your generated site:
 Docker runtime (recommended for stable Playwright/browser versions):
 
 ```bash
-IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0"
+IMAGE="han4wluc/rtgl@sha256:85769959d834eaf984210f4b2f1f7de07677e81578c98d86680ba116c03a7d45"
 docker pull "$IMAGE"
 docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" node /workspace/node_modules/rtgl/cli.js vt screenshot
 docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" node /workspace/node_modules/rtgl/cli.js vt report

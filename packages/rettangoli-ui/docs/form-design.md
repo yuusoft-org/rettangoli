@@ -45,13 +45,17 @@ form.p = "none";
 
 | prop | type | description |
 |---|---|---|
-| `form` | object | The form schema (this spec). |
-| `defaultValues` | object | Initial form state. Read on mount and on `reset()`. To apply new defaults after mount, update `defaultValues` then call `reset()`. |
+| `form` | object | The form schema (this spec). Every string in it is a [template](#templates-in-the-form-definition). |
+| `defaultValues` | object | Initial form state. Read on mount, on `reset()` and when `key` changes. To apply new defaults after mount, update `defaultValues` then call `reset()` or change `key`. |
+| `context` | object | Extra data for the templates in `form`. Values from `context` are inserted as written. |
+| `key` | string | When it changes, the values are re-seeded from `defaultValues` (and each field's empty value), errors are cleared and reactive validation ends, like `reset()`. Changing `defaultValues` alone does not change the values. |
 | `disabled` | boolean | Disable the entire form. All fields and buttons become non-interactive. |
 | `p` | `none \| xs \| sm \| md \| lg \| xl` | Padding around the form contents. Defaults to `md`; use `none` for a flush layout. |
 | `bottomSpacer` | non-negative number | Extra pixel space after the last field inside the field scroller. Defaults to `0` and does not move sticky actions. |
 
 `defaultValues` keeps the schema reusable — the same form definition works for both "create" and "edit" flows.
+
+The form never focuses a field on its own. An `autofocus` attribute on `rtgl-form` has no effect.
 
 ## Common Field Properties
 
@@ -265,12 +269,12 @@ Value: `string` (`""` when empty)
 
 #### `select`
 
-Value: `string` (the selected option's `value`) or `null` when cleared. Option values are always strings.
+Value: the selected option's `value`, or `null` while nothing has been selected. Clearing the selection removes the key from the values instead of setting `null` (see [Clearing a select or segmented control](#clearing-a-select-or-segmented-control)).
 
 | property | description |
 |---|---|
 | `placeholder` | Placeholder text when no option is selected |
-| `options` | Array of `{ label, value, imageSrc? }`. `value` must be a string. `imageSrc` renders a decorative image before the option and selected text. |
+| `options` | Array of `{ label, value, imageSrc? }`. `value` can be a string, number or boolean. `imageSrc` renders a decorative image before the option and selected text. |
 | `image` | Shared image styling object: `{ size?, borderRadius?, borderColor?, fit? }`. Defaults: `size: 20`, `borderRadius: "sm"`, no border, and `fit: "cover"`. `size` must be positive and is capped at 28px to fit the fixed-height trigger. `borderRadius` supports `xs`, `sm`, `md`, `lg`, `xl`, and `full`; `fit` supports `cover` and `contain`. |
 | `clearable` | Boolean. Allow clearing the selection. Default: `true`. |
 
@@ -295,6 +299,33 @@ Value: `string` (the selected option's `value`) or `null` when cleared. Option v
 ```
 
 The `image` object applies uniformly to every option image and to the selected trigger image. If an option has both `imageSrc` and `icon`, the image is rendered. When any option has an image, the menu reserves the same image-width leading column for every item so labels remain aligned.
+
+#### `segmented-control`
+
+Value: the pressed option's `value`, or `null` while nothing has been pressed. Pressing the pressed segment again clears it and removes the key from the values, like clearing a `select`.
+
+| property | description |
+|---|---|
+| `placeholder` | Accessible name of the group when the field has no `label`. Nothing is drawn. |
+| `options` | Array of `{ label, value, svg?, ariaLabel?, tooltip? }`. `value` can be a string, number or boolean. |
+| `clearable` | Boolean. Allow clearing the selection. Default: `true`. |
+
+```yaml
+- name: align
+  type: segmented-control
+  label: Align
+  options:
+    - label: Left
+      value: left
+    - label: Center
+      value: center
+```
+
+##### Clearing a select or segmented control
+
+When the user clears a `select` or `segmented-control`, `form-change` fires with `value: undefined`, and the key is missing from `values` in that event, in later events and in `getValues()`. The value is not set to `null`. A required field then fails validation. Code that reads these values should treat a missing key and `null` alike. Set `clearable: false` to stop the user from clearing.
+
+`setValues({ values: { role: null } })` stores `null` and keeps the key.
 
 #### `tag-select`
 
@@ -321,7 +352,7 @@ Uses the same `options` row contract as `select`.
       value: feature
 ```
 
-Clicking the field opens a popover of available tags to add. Right-clicking an existing selected tag opens a delete action. `required: true` treats an empty array as missing.
+Clicking the field opens a popover of the options. Clicking an option selects or deselects it, and the Submit button commits the choice, so a tag is removed by deselecting it there. There is no right-click delete. `required: true` treats an empty array as missing.
 
 #### `color-picker`
 
@@ -748,7 +779,7 @@ actions:
 
 All buttons emit `form-action`. Buttons without `validate` emit `{ actionId, values }`. Buttons with `validate: true` emit `{ actionId, values, valid, errors }` and display errors inline.
 
-After the first validation failure, the form switches to reactive mode — it re-validates on every `form-change` and clears errors as the user fixes them.
+After the first validation failure, the form switches to reactive mode — it re-validates the changed field on every `form-input` and `form-change` and clears its error as the user fixes it. `reset()` and a changed `key` end reactive mode.
 
 ## Conditional Fields (via jempl)
 
@@ -817,9 +848,15 @@ When a conditional removes a field from the rendered form, that field's value **
 
 This handles the case where a user types into a field, then a conditional hides it — the stale value is excluded from all subsequent events and submission.
 
-## Jempl in Text Properties
+## Templates in the Form Definition
 
-`title`, `description`, and display field text can use jempl expressions with current form values.
+Every string in `form` is a jempl template: the title, descriptions, labels, placeholders, option labels and values, field names, and display text. The form renders the definition again whenever a value changes, with this data:
+
+- `context`, the prop
+- each current field value, by its top-level name (`plan`, `user`)
+- `formValues`, all current values
+
+A field value wins over a `context` key of the same name. A name that has no value renders as empty text.
 
 ### Example: dynamic title + description
 
@@ -853,7 +890,41 @@ fields:
     $when: formValues.accepted
 ```
 
-These expressions are evaluated against merged context (`context`, current field values, and `formValues`) and update reactively during input/change events.
+### Showing user text
+
+Text from users or servers, such as names that become option labels, can contain `${` or `#{`, which the form reads as a template:
+
+- `${price}` becomes the value of `price`, or nothing when there is none.
+- A string that jempl cannot render, such as `Scene #{1}`, `${a + b}` or `${foo()}`, is shown as written instead of breaking the form. The form does this for every failing string, option values and field names included, and puts an invisible word joiner (U+2060) after the `$` or `#`. An option value like that reaches `value-change`, the form events and the form values with the joiner in it.
+
+To show user text exactly as written, use one of these:
+
+- Pass the text through `escapeFormText` before it goes into `form`. It puts the word joiner between each `$` or `#` and the `{` that follows it, so the text is shown as written. Use it for text that people read, such as labels, descriptions and placeholders.
+- Put the text in `context` and refer to it by name. Values from `context` are inserted as written and are not read as templates, so this also keeps option values and field names exact, which `escapeFormText` does not (it leaves the joiner in the string).
+
+```js
+import { escapeFormText } from "@rettangoli/ui";
+
+form.form = {
+  fields: [
+    {
+      name: "scene",
+      type: "select",
+      label: "Scene",
+      options: scenes.map((scene) => ({
+        label: escapeFormText(scene.name),
+        value: scene.id,
+      })),
+    },
+  ],
+};
+
+// or keep the options out of the template
+form.context = { sceneOptions: scenes.map((scene) => ({ label: scene.name, value: scene.id })) };
+form.form = { fields: [{ name: "scene", type: "select", label: "Scene", options: "${sceneOptions}" }] };
+```
+
+`escapeFormText` is a named export of the package. It is not on `window.rtgl` in the script-tag bundles.
 
 ## Links in Text Properties
 
@@ -869,7 +940,7 @@ description:
 
 Rules:
 
-- Strings are never parsed. Only segment objects create links, so text from users or servers cannot inject links or markup.
+- Strings are never parsed for links or markup. Only segment objects create links, so text from users or servers cannot inject links or markup.
 - `href` is allowed for `http:`, `https:`, `mailto:` and relative URLs. Any other scheme (for example `javascript:`) renders the text as a plain, non-link segment.
 - `newTab: true` adds `target="_blank"` and `rel="noopener noreferrer"`; an explicit `rel` is kept and `noopener` is guaranteed.
 - Entries that are not strings or objects with string `text`, and empty text, are dropped.
@@ -1001,19 +1072,21 @@ actions:
 
 ## Events
 
-1. `form-input`: `{ name, value, values }`
-2. `form-change`: `{ name, value, values }`
-3. `form-field-event`: `{ name, event, values }`
-4. `form-section-action`: `{ sectionId, actionId, values, position, anchorRect }`
-5. `form-action`: `{ actionId, values }`
+| event | `detail` | bubbles | composed |
+|---|---|---|---|
+| `form-input` | `{ name, value, values }` | yes | no |
+| `form-change` | `{ name, value, values }` | yes | no |
+| `form-field-event` | `{ name, event, values }` | yes | no |
+| `form-section-action` | `{ sectionId, actionId, values, position, anchorRect }` | yes | no |
+| `form-action` | `{ actionId, values }`, plus `valid` and `errors` for a button with `validate: true` | yes | no |
 
-All events bubble.
+`values` holds only the fields shown right now. The events are not composed, so they stop at the shadow root that contains the form.
 
 ### Validation
 
 Buttons with `validate: true` run validation automatically on click. The `form-action` event includes `{ actionId, values, valid, errors }` and errors display inline. Buttons without `validate` skip validation and emit `{ actionId, values }`.
 
-After the first validation failure, the form switches to reactive mode — it re-validates on every `form-change` and clears errors as the user fixes them.
+After the first validation failure, the form switches to reactive mode — it re-validates the changed field on every `form-input` and `form-change` and clears its error as the user fixes it. `reset()` and a changed `key` end reactive mode.
 
 ```js
 form.addEventListener('form-action', (e) => {
@@ -1057,11 +1130,13 @@ Validation checks `required` fields and `rules`. The consumer can also call `val
 | `slider-with-input` | every drag tick / keystroke | mouse release / blur |
 | `color-picker` | while dragging or typing | on release or hex commit |
 | `popover-input` | does not fire | submit button click |
-| `select` | does not fire | option selected |
+| `select` | does not fire | option selected or cleared |
+| `segmented-control` | does not fire | segment pressed or cleared |
+| `tag-select` | does not fire | Submit button click |
 | `checkbox` | does not fire | toggled |
 | `image` | does not fire | does not fire (uses `form-field-event`) |
 
-Discrete inputs (`select`, `checkbox`) only emit `form-change`. `image` does not emit `form-input` or `form-change` — it uses `form-field-event` for click interactions.
+Discrete inputs (`select`, `segmented-control`, `tag-select`, `checkbox`) only emit `form-change`. `image` does not emit `form-input` or `form-change` — it uses `form-field-event` for click interactions.
 
 ### `form-field-event`
 
@@ -1092,9 +1167,13 @@ Other field types do not emit this event. New interaction types can be added per
 | method | returns | description |
 |---|---|---|
 | `getValues()` | `{ [name]: value }` | Returns the current form values. |
-| `setValues(values)` | — | Shallow merge `values` into current form state. Only the keys passed get updated. |
+| `setValues({ values })` | — | Sets each key of `values` and leaves the other keys alone. See below. |
 | `validate()` | `{ valid, errors }` | Runs validation on all fields. Returns result and displays errors inline. |
-| `reset()` | — | Reset all fields to `defaultValues`. Clears validation errors. |
+| `reset()` | — | Reset all fields to `defaultValues` (and each field's empty value). Clears validation errors and ends reactive mode. |
+
+`setValues` takes `{ values }`. A key replaces the whole value stored under it, so `setValues({ values: { user: { email } } })` also removes `user.name`. To change one nested field, use a dotted key: `setValues({ values: { "user.email": email } })`. Values for names that no shown field has are dropped. The bare form `setValues({ email })` also works, but an object with a `values` key holding an object is always read as the wrapper, so a form with a field named `values` needs the `{ values }` form.
+
+Errors come from `validate()` and from buttons with `validate: true`. No public method shows errors from your own code, such as server-side errors; `setErrors` is an internal store action, not part of the public API.
 
 Update defaults after mount:
 
@@ -1105,6 +1184,8 @@ form.defaultValues = {
 };
 form.reset();
 ```
+
+Changing the `key` attribute together with `defaultValues` does the same without calling `reset()`.
 
 ## Test Plan
 
@@ -1133,14 +1214,15 @@ Contract tests in `spec/` directory with YAML cases and JS helper functions. Eac
 #### Value collection
 
 - `getValues()` returns current form state
-- `setValues()` shallow merges into current state
+- `setValues({ values })` sets the keys passed; a nested object replaces the value under its key
 - `setValues()` does not overwrite keys not passed
 - `reset()` returns values to `defaultValues`
 - `reset()` clears validation errors
 - Empty `input-text` → `""`
 - Empty `input-number` → `null`
 - Empty `input-duration` → `null`
-- Empty `select` → `null`
+- Untouched `select` or `segmented-control` → `null`
+- Cleared `select` or `segmented-control` → key absent
 - `checkbox` → `boolean`
 - `color-picker` → hex string
 - `slider` / `slider-with-input` → `number`
@@ -1153,7 +1235,7 @@ Contract tests in `spec/` directory with YAML cases and JS helper functions. Eac
 - `form-action` with `validate: true` carries `{ actionId, values, valid, errors }`
 - `form-field-event` carries `{ name, event, values }`
 - `form-section-action` carries section/action ids, visible values, and viewport anchor geometry
-- Discrete inputs (`select`, `checkbox`) do not fire `form-input`
+- Discrete inputs (`select`, `segmented-control`, `tag-select`, `checkbox`) do not fire `form-input`
 - `image` does not fire `form-input` or `form-change`
 
 #### Conditional fields (hidden values)
