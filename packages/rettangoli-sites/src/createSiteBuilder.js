@@ -170,6 +170,19 @@ function parseYamlWithContext(content, contextLabel) {
   }
 }
 
+// gray-matter reads the whole file as frontmatter when an opening "---" has no closing "---" line.
+// This is the test gray-matter's parseMatter makes, on a source without a byte order mark.
+function isUnclosedFrontmatter(raw) {
+  return raw.startsWith('---') && raw.charAt(3) !== '-' && raw.slice(3).indexOf('\n---') === -1;
+}
+
+// yahtml flattens nested lists among an element's children (a $for, a list $partial, a multi-item $if)
+// but renders nothing for a nested list at the root, so flatten the root list the same way.
+// A result that is not a list is passed through, so convertToHtml still rejects it.
+function toRootList(result) {
+  return Array.isArray(result) ? result.flat(Infinity) : result;
+}
+
 function buildImportCacheHash(url) {
   return createHash('sha256').update(url).digest('hex');
 }
@@ -187,87 +200,30 @@ function toRelativePath(rootDir, absolutePath) {
   return relativePath.replace(/\\/g, '/');
 }
 
-function normalizeImportIndex(rawIndex, indexPath) {
-  if (rawIndex == null) {
-    return { version: 1, entries: [] };
-  }
-
-  if (!isObject(rawIndex)) {
-    throw new Error(`Invalid import index "${indexPath}": expected a YAML object.`);
-  }
-
-  if (rawIndex.version !== undefined && rawIndex.version !== 1) {
-    throw new Error(`Unsupported import index version "${rawIndex.version}" in "${indexPath}".`);
-  }
-
-  const rawEntries = rawIndex.entries ?? [];
-  if (!Array.isArray(rawEntries)) {
-    throw new Error(`Invalid import index "${indexPath}": expected "entries" to be an array.`);
-  }
-
-  const entries = rawEntries.map((entry, index) => {
-    if (!isObject(entry)) {
-      throw new Error(`Invalid import index "${indexPath}" at entries[${index}]: expected an object.`);
-    }
-
-    const normalizedEntry = {
-      alias: entry.alias,
-      type: entry.type,
-      url: entry.url,
-      hash: entry.hash,
-      path: entry.path
-    };
-
-    for (const [key, value] of Object.entries(normalizedEntry)) {
-      if (typeof value !== 'string' || value.trim() === '') {
-        throw new Error(`Invalid import index "${indexPath}" at entries[${index}].${key}: expected a non-empty string.`);
-      }
-    }
-
-    return normalizedEntry;
-  });
-
-  return { version: 1, entries };
-}
-
-function readImportIndex(fs, rootDir) {
+// The index lists the configured template and partial imports. Nothing reads it back, so it is
+// rebuilt on every build, written only when its text changes, and a failed write only warns.
+function writeImportIndex(fs, rootDir, entries) {
   const indexPath = buildImportIndexPath(rootDir);
-  if (!fs.existsSync(indexPath)) {
-    return { version: 1, entries: [] };
-  }
-
-  const indexContent = fs.readFileSync(indexPath, 'utf8');
-  const parsed = parseYamlWithContext(indexContent, `import index "${indexPath}"`);
-  return normalizeImportIndex(parsed, indexPath);
-}
-
-function upsertImportIndexEntry(importIndex, entry) {
-  const existingIndex = importIndex.entries.findIndex((item) => item.type === entry.type && item.alias === entry.alias);
-  if (existingIndex === -1) {
-    importIndex.entries.push(entry);
-    return;
-  }
-  importIndex.entries[existingIndex] = entry;
-}
-
-function writeImportIndex(fs, rootDir, importIndex) {
-  const indexPath = buildImportIndexPath(rootDir);
-  const indexDir = path.dirname(indexPath);
-  if (!fs.existsSync(indexDir)) {
-    fs.mkdirSync(indexDir, { recursive: true });
-  }
-
-  const sortedEntries = [...importIndex.entries].sort((a, b) => {
+  const sortedEntries = [...entries].sort((a, b) => {
     const left = `${a.type}:${a.alias}`;
     const right = `${b.type}:${b.alias}`;
     return left.localeCompare(right);
   });
+  const content = yaml.dump({ version: 1, entries: sortedEntries }, { noRefs: true, lineWidth: -1 });
 
-  const output = {
-    version: 1,
-    entries: sortedEntries
-  };
-  fs.writeFileSync(indexPath, yaml.dump(output, { noRefs: true, lineWidth: -1 }));
+  try {
+    if (fs.existsSync(indexPath) && fs.readFileSync(indexPath, 'utf8') === content) {
+      return;
+    }
+
+    const indexDir = path.dirname(indexPath);
+    if (!fs.existsSync(indexDir)) {
+      fs.mkdirSync(indexDir, { recursive: true });
+    }
+    fs.writeFileSync(indexPath, content);
+  } catch (error) {
+    console.warn(`Could not write import index ${indexPath}: ${error.message}`);
+  }
 }
 
 function readImportedYamlFromCache(fs, cachePath, aliasLabel) {
@@ -429,29 +385,34 @@ function markdownOutputRelativePathFromUrl(url) {
   return [...segments, fileName].join('/');
 }
 
-async function fetchRemoteYaml(url, fetchImpl, aliasLabel, requestOptions) {
+// Errors carry no alias label: the callers add "Failed to load <alias label>: " once.
+async function fetchRemoteYaml(url, fetchImpl, requestOptions) {
   const effectiveFetch = fetchImpl || globalThis.fetch;
   if (typeof effectiveFetch !== 'function') {
-    throw new Error(`${aliasLabel}: Remote imports require global fetch support (Node.js 18+).`);
+    throw new Error('Remote imports require global fetch support (Node.js 18+).');
   }
 
   const response = await effectiveFetch(url, requestOptions);
   if (!response.ok) {
-    throw new Error(`${aliasLabel}: HTTP ${response.status} ${response.statusText}`.trim());
+    throw new Error(`HTTP ${response.status} ${response.statusText}`.trim());
   }
 
   const content = await response.text();
-  const parsed = parseYamlWithContext(content, aliasLabel);
+  let parsed;
+  try {
+    parsed = yaml.load(content, { schema: yaml.JSON_SCHEMA });
+  } catch (error) {
+    throw new Error(`Invalid YAML: ${error.message}`, { cause: error });
+  }
   return { parsed, content };
 }
 
 function writeImportedYamlCache(fs, cachePath, content) {
-  const cacheDir = path.dirname(cachePath);
-  if (!fs.existsSync(cacheDir)) {
-    fs.mkdirSync(cacheDir, { recursive: true });
-  }
-
   try {
+    const cacheDir = path.dirname(cachePath);
+    if (!fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir, { recursive: true });
+    }
     fs.writeFileSync(cachePath, content);
   } catch (error) {
     // Non-fatal: build can still proceed with fetched content.
@@ -464,50 +425,36 @@ async function loadImportedAliases({
   importMap,
   importGroup,
   typeLabel,
-  fetchImpl,
-  importIndex
+  fetchImpl
 }) {
   const resolved = {};
+  const entries = [];
   if (!isObject(importMap)) {
-    return resolved;
+    return { resolved, entries };
   }
 
   for (const [alias, url] of Object.entries(importMap)) {
     const aliasLabel = `imported ${typeLabel} "${alias}" from "${url}"`;
     const hash = buildImportCacheHash(url);
     const cachePath = buildImportCachePath(rootDir, importGroup, hash);
-    const relativeCachePath = toRelativePath(rootDir, cachePath);
+    entries.push({ alias, type: typeLabel, url, hash, path: toRelativePath(rootDir, cachePath) });
 
     const cachedValue = readImportedYamlFromCache(fs, cachePath, aliasLabel);
     if (cachedValue !== null) {
       resolved[alias] = cachedValue;
-      upsertImportIndexEntry(importIndex, {
-        alias,
-        type: typeLabel,
-        url,
-        hash,
-        path: relativeCachePath
-      });
       continue;
     }
 
     try {
-      const fetched = await fetchRemoteYaml(url, fetchImpl, aliasLabel);
+      const fetched = await fetchRemoteYaml(url, fetchImpl);
       writeImportedYamlCache(fs, cachePath, fetched.content);
       resolved[alias] = fetched.parsed;
-      upsertImportIndexEntry(importIndex, {
-        alias,
-        type: typeLabel,
-        url,
-        hash,
-        path: relativeCachePath
-      });
     } catch (error) {
-      throw new Error(`Failed to load ${aliasLabel}: ${error.message}`);
+      throw new Error(`Failed to load ${aliasLabel}: ${error.message}`, { cause: error });
     }
   }
 
-  return resolved;
+  return { resolved, entries };
 }
 
 async function loadImportedData(importMap, fetchImpl) {
@@ -520,13 +467,13 @@ async function loadImportedData(importMap, fetchImpl) {
     const aliasLabel = `imported data "${alias}" from "${url}"`;
     try {
       // Catalog data must be fresh on every build, including watch rebuilds.
-      const { parsed } = await fetchRemoteYaml(url, fetchImpl, aliasLabel, {
+      const { parsed } = await fetchRemoteYaml(url, fetchImpl, {
         cache: 'no-store',
         signal: AbortSignal.timeout(30_000)
       });
       resolved[alias] = parsed;
     } catch (error) {
-      throw new Error(`Failed to load ${aliasLabel}: ${error.message}`);
+      throw new Error(`Failed to load ${aliasLabel}: ${error.message}`, { cause: error });
     }
   }
 
@@ -569,29 +516,26 @@ export function createSiteBuilder({
       fs.mkdirSync(outputRootDir, { recursive: true });
     }
 
-    const importIndex = readImportIndex(fs, rootDir);
-
-    const importedTemplates = await loadImportedAliases({
+    const { resolved: importedTemplates, entries: templateEntries } = await loadImportedAliases({
       fs,
       rootDir,
       importMap: imports.templates,
       importGroup: 'templates',
       typeLabel: 'template',
-      fetchImpl,
-      importIndex
+      fetchImpl
     });
-    const importedPartials = await loadImportedAliases({
+    const { resolved: importedPartials, entries: partialEntries } = await loadImportedAliases({
       fs,
       rootDir,
       importMap: imports.partials,
       importGroup: 'partials',
       typeLabel: 'partial',
-      fetchImpl,
-      importIndex
+      fetchImpl
     });
 
-    if (importIndex.entries.length > 0) {
-      writeImportIndex(fs, rootDir, importIndex);
+    const importEntries = [...templateEntries, ...partialEntries];
+    if (importEntries.length > 0) {
+      writeImportIndex(fs, rootDir, importEntries);
     }
 
     // Read all partials and create a JSON object
@@ -622,7 +566,7 @@ export function createSiteBuilder({
         const fileContent = fs.readFileSync(itemPath, 'utf8');
         const nameWithoutExt = path.basename(item.name, path.extname(item.name));
         const partialKey = basePath ? `${basePath}/${nameWithoutExt}` : nameWithoutExt;
-        partials[partialKey] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
+        partials[partialKey] = parseYamlWithContext(fileContent, `partial file "${itemPath}"`);
       });
     }
 
@@ -665,7 +609,7 @@ export function createSiteBuilder({
         if (file.endsWith('.yaml') || file.endsWith('.yml')) {
           const fileContent = fs.readFileSync(filePath, 'utf8');
           // Load YAML content and store under filename key
-          fileData[nameWithoutExt] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
+          fileData[nameWithoutExt] = parseYamlWithContext(fileContent, `data file "${filePath}"`);
         } else if (file.endsWith('.json')) {
           const fileContent = fs.readFileSync(filePath, 'utf8');
           try {
@@ -705,7 +649,7 @@ export function createSiteBuilder({
           const fileContent = fs.readFileSync(itemPath, 'utf8');
           const nameWithoutExt = path.basename(item.name, path.extname(item.name));
           const templateKey = basePath ? `${basePath}/${nameWithoutExt}` : nameWithoutExt;
-          templates[templateKey] = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
+          templates[templateKey] = parseYamlWithContext(fileContent, `template file "${itemPath}"`);
         }
       });
     }
@@ -726,18 +670,28 @@ export function createSiteBuilder({
     }
 
     // Parse frontmatter only when it is truly at the file start.
-    function extractFrontmatterAndContent(pagePath) {
-      const pageFileContent = fs.readFileSync(pagePath, 'utf8');
+    function readPageSource(pagePath, isMarkdown) {
+      const raw = fs.readFileSync(pagePath, 'utf8').replace(/^\uFEFF/, '');
       let parsed;
       try {
-        parsed = matter(pageFileContent, MATTER_OPTIONS);
+        parsed = matter(raw, MATTER_OPTIONS);
       } catch (error) {
         throw new Error(`Invalid frontmatter in ${pagePath}: ${error.message}`);
       }
 
+      const unclosedFrontmatter = isUnclosedFrontmatter(raw);
+      if (unclosedFrontmatter) {
+        // A YAML page that starts with a "---" document marker followed by a list or scalar is all body.
+        if (!isMarkdown && parsed.data !== null && !isObject(parsed.data)) {
+          return { frontmatter: {}, content: raw.trim(), unclosedFrontmatter: false };
+        }
+        console.warn(`Frontmatter in ${pagePath} starts with "---" but is never closed, so the whole file is read as frontmatter. Add a closing "---" line.`);
+      }
+
       return {
         frontmatter: isObject(parsed.data) ? parsed.data : {},
-        content: (parsed.content || '').trim()
+        content: (parsed.content || '').trim(),
+        unclosedFrontmatter
       };
     }
 
@@ -800,14 +754,16 @@ export function createSiteBuilder({
           if (itemKind === 'directory') {
             scanPages(relativePath);
           } else if (itemKind === 'file' && hasPageExtension(item.name)) {
-            const { frontmatter, content } = extractFrontmatterAndContent(itemPath);
+            const isMarkdown = item.name.endsWith('.md');
+            const { frontmatter, content, unclosedFrontmatter } = readPageSource(itemPath, isMarkdown);
             const { frontmatter: publicFrontmatter, bindings, each } = splitSystemFrontmatter(frontmatter, globalData, itemPath);
             const baseEntry = {
               pagePath: itemPath,
               pageLabel: itemPath,
               relativePath: normalizeRelativeUrlPath(relativePath),
-              isMarkdown: item.name.endsWith('.md'),
+              isMarkdown,
               content,
+              unclosedFrontmatter,
               bindings
             };
 
@@ -923,11 +879,27 @@ export function createSiteBuilder({
         isMarkdown,
         url,
         hasCustomUrl,
-        relativePath
+        relativePath,
+        unclosedFrontmatter
       } = pageEntry;
 
       if (!quiet) console.log(`Processing ${pageLabel}...`);
       const templateFunctions = createTemplateFunctions(pageLabel);
+      const templateName = publicFrontmatter.template;
+
+      // Name the page and its template in render errors, unless the error already names the page.
+      function render(fn) {
+        try {
+          return fn();
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          if (message.includes(pageLabel)) {
+            throw error;
+          }
+          const templateLabel = templateName ? ` with template "${templateName}"` : '';
+          throw new Error(`Failed to render ${pageLabel}${templateLabel}: ${message}`, { cause: error });
+        }
+      }
 
       // Deep merge global data with frontmatter and collections for the page context
       const pageData = deepMerge(globalData, publicFrontmatter);
@@ -957,17 +929,26 @@ export function createSiteBuilder({
         } catch (error) {
           throw new Error(`Invalid YAML page content in ${pageLabel}: ${error.message}`);
         }
+        // An empty body renders nothing inside a template. Without a template the page would be empty.
+        if (pageContent === undefined) {
+          if (!templateName) {
+            throw new Error(unclosedFrontmatter
+              ? `Invalid page ${pageLabel}: frontmatter starting with "---" is never closed, so the page has no body. Add a closing "---" line.`
+              : `Invalid page ${pageLabel}: the page has no body and no template. Add YAML content or a "template" frontmatter key.`);
+          }
+          pageContent = [];
+        }
         // Process the page content to resolve any $partial references with page data
-        processedPageContent = parseAndRender(pageContent, pageData, { partials, functions: templateFunctions });
+        processedPageContent = render(() => parseAndRender(pageContent, pageData, { partials, functions: templateFunctions }));
       }
 
       // Find the template specified in frontmatter
       let templateToUse = null;
-      if (publicFrontmatter.template) {
+      if (templateName) {
         // Look up template by exact path
-        templateToUse = templates[publicFrontmatter.template];
+        templateToUse = templates[templateName];
         if (!templateToUse) {
-          throw new Error(`Template "${publicFrontmatter.template}" not found in ${pageLabel}. Available templates: ${Object.keys(templates).join(', ')}`);
+          throw new Error(`Template "${templateName}" not found in ${pageLabel}. Available templates: ${Object.keys(templates).join(', ')}`);
         }
       }
 
@@ -979,8 +960,9 @@ export function createSiteBuilder({
           // For markdown with template, use a placeholder and replace after
           const placeholder = `___MARKDOWN_CONTENT_PLACEHOLDER_${Math.random().toString(36).slice(2)}___`;
           const templateData = { ...pageData, content: placeholder, collections };
-          const templateResult = parseAndRender(templateToUse, templateData, { partials, functions: templateFunctions });
-          htmlString = convertToHtml(templateResult);
+          htmlString = render(() => convertToHtml(toRootList(
+            parseAndRender(templateToUse, templateData, { partials, functions: templateFunctions })
+          )));
           // Replace all placeholders with actual markdown HTML content.
           htmlString = htmlString.split(placeholder).join(processedPageContent.__html);
         } else {
@@ -990,12 +972,13 @@ export function createSiteBuilder({
       } else {
         // YAML content
         const templateData = { ...pageData, content: processedPageContent, collections };
-        const result = templateToUse
-          ? parseAndRender(templateToUse, templateData, { partials, functions: templateFunctions })
-          : processedPageContent;
-        // Ensure result is an array for convertToHtml
-        const resultArray = Array.isArray(result) ? result : [result];
-        htmlString = convertToHtml(resultArray);
+        htmlString = render(() => {
+          const result = templateToUse
+            ? parseAndRender(templateToUse, templateData, { partials, functions: templateFunctions })
+            : processedPageContent;
+          // A result that is not a list becomes a one-item root list.
+          return convertToHtml(toRootList([result]));
+        });
       }
 
       const outputRelativePath = htmlOutputRelativePathFromUrl(url);

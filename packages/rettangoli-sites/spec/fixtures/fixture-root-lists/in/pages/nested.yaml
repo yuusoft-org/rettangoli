@@ -1,0 +1,3 @@
+- $for i in nav.items:
+    - $for j in nav.items:
+        - p: ${i}${j}

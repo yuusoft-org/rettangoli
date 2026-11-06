@@ -1,0 +1,3 @@
+- $for i in nav.items:
+    - h2: ${i}
+    - p: ${i}

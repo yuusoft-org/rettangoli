@@ -1,0 +1,6 @@
+---
+template: bare
+---
+- h1: Title
+- $for i in nav.items:
+    - p: ${i}
