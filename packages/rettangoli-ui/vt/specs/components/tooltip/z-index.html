@@ -1,9 +1,12 @@
 ---
 title: Tooltip - Z Index
 description: Verifies tooltips render above overlapping high-z page content.
+skipInitialScreenshot: true
 steps:
-  - action: wait
-    ms: 120
+  - action: waitFor
+    selector: 'rtgl-tooltip rtgl-popover[open][positioned]'
+    state: visible
+  - action: screenshot
 viewport:
   id: desktop
   width: 900
