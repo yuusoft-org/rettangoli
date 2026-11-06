@@ -17,6 +17,7 @@ import { availablePort, createTempProject, writeProjectFile } from "../support/t
 // - Ctrl+C or process.exit() while waiting for readiness left the service running (it runs in
 //   its own process group, so the terminal's SIGINT does not reach it).
 // - On Linux, where /bin/sh is dash, stop resolved when the shell exited, before the service.
+// - A service that could not be spawned (spawn error event) was reported without its cause.
 
 const fixtureDir = fileURLToPath(new URL("../fixtures/service/", import.meta.url));
 const slowServer = `${fixtureDir}slow-server.mjs`;
@@ -87,6 +88,23 @@ describe("managed service readiness and stop", () => {
       2000,
     );
     expect(error?.message).toBe("Managed service exited before becoming ready (signal SIGKILL).");
+  }, 5000);
+
+  it("reports a service that cannot be spawned with the spawn error", async () => {
+    const project = createTempProject({ prefix: "rettangoli-vt-managed-service-" });
+    try {
+      // The service starts in process.cwd(); a missing directory makes the spawn fail (ENOENT).
+      vi.spyOn(process, "cwd").mockReturnValueOnce(`${project.root}/missing`);
+      const handle = start("sleep 30");
+      const error = await rejectsWithin(
+        waitForServiceReady({ url: `http://127.0.0.1:${await availablePort()}`, handle }),
+        2000,
+      );
+      expect(error?.cause).toMatchObject({ code: "ENOENT", syscall: expect.stringMatching(/^spawn /) });
+      expect(error?.message).toBe(`Managed service failed to start: ${error.cause.message}`);
+    } finally {
+      project.cleanup();
+    }
   }, 5000);
 
   it("does not let a hung readiness request run past the deadline", async () => {
@@ -167,9 +185,12 @@ describe("managed service readiness and stop", () => {
       expect(counts()).toEqual(before.map((count) => count + 1));
       await waitFor(() => existsSync(pidFile), 5000, "the service pid file");
 
-      // Another listener exists, so the cleanup must not re-raise (which would kill this worker).
+      // Another listener exists, so the cleanup must not re-raise (which would kill this worker,
+      // or here, where the listener catches it, call the listener a second time).
       process.emit("SIGINT", "SIGINT");
       expect(counts()).toEqual(before);
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(otherListener).toHaveBeenCalledTimes(1);
       await handle.exitPromise;
       await waitFor(() => !isAlive(Number(readFileSync(pidFile, "utf8"))), 3000, "the service to exit");
       dispose();

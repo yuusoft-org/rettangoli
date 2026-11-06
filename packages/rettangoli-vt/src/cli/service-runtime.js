@@ -160,17 +160,18 @@ export async function waitForServiceReady({
   intervalMs = READY_INTERVAL_MS,
 }) {
   const deadline = Date.now() + timeoutMs;
+  // exitPromise rejects when the service could not be spawned (ENOENT, EACCES...).
   const exited = handle.exitPromise.then(
     (result) => ({ exited: result }),
-    () => ({ exited: null }),
+    (error) => ({ exited: null, error }),
   );
-  const exitedError = (result) => new Error(
-    `Managed service exited before becoming ready (${formatExitMessage(result)}).`,
-  );
+  const exitedError = ({ exited: result, error }) => (error
+    ? new Error(`Managed service failed to start: ${error.message}`, { cause: error })
+    : new Error(`Managed service exited before becoming ready (${formatExitMessage(result)}).`));
 
   while (Date.now() < deadline) {
     if (hasExited(handle.child)) {
-      throw exitedError((await exited).exited);
+      throw exitedError(await exited);
     }
 
     // Each request ends at the deadline at the latest, or as soon as the service exits.
@@ -184,7 +185,7 @@ export async function waitForServiceReady({
       exited,
     ]).finally(() => abort.abort());
     if ("exited" in attempt) {
-      throw exitedError(attempt.exited);
+      throw exitedError(attempt);
     }
     if (attempt.response) {
       attempt.response.body?.cancel().catch(() => {});
