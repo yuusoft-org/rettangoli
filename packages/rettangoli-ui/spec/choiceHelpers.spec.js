@@ -106,11 +106,11 @@ describe("resolvePopoverPosition", () => {
     ).toEqual({ x: 0, y: 12, w: 301 });
   });
 
-  it("returns the fallback, undefined by default, without a measurable trigger", () => {
+  it("returns undefined without a measurable trigger", () => {
     expect(resolvePopoverPosition(undefined)).toBeUndefined();
+    expect(resolvePopoverPosition(null)).toBeUndefined();
     expect(resolvePopoverPosition({})).toBeUndefined();
-    expect(resolvePopoverPosition(null, null)).toBeNull();
-    expect(resolvePopoverPosition({ getBoundingClientRect: 1 }, null)).toBeNull();
+    expect(resolvePopoverPosition({ getBoundingClientRect: 1 })).toBeUndefined();
   });
 });
 

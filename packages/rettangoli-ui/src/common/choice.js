@@ -61,12 +61,11 @@ export const resolveCurrentValues = ({ store, props }) => {
   return normalizeSelectedValues(props?.selectedValues);
 };
 
-// Where the tag-select popover opens, below its trigger. Without a measurable
-// trigger it returns `fallback`: handlers pass none, so undefined; methods
-// pass null.
-export const resolvePopoverPosition = (trigger, fallback) => {
+// Where the tag-select popover opens, below its trigger, or undefined without
+// a measurable trigger.
+export const resolvePopoverPosition = (trigger) => {
   if (!trigger || typeof trigger.getBoundingClientRect !== "function") {
-    return fallback;
+    return undefined;
   }
 
   const rect = trigger.getBoundingClientRect();

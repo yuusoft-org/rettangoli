@@ -288,15 +288,13 @@ describe("rtgl-input and rtgl-input-number shared attribute handling", () => {
     [{ w: "f" }, "input{width:var(--width-stretch)!important;min-width:unset!important;max-width:unset!important;}"],
     [{ w: "200", h: "40" }, "input{width:200px!important;min-width:200px!important;max-width:200px!important;height:40px!important;min-height:40px!important;max-height:40px!important;}"],
     [{ wh: "f" }, "input{width:var(--width-stretch)!important;min-width:unset!important;max-width:unset!important;height:100%!important;min-height:unset!important;max-height:unset!important;}"],
-    [{ hide: "", "sm-show": "", op: "0.5", z: "3" }, null],
-    [{ "md-w": "120", "lg-wh": "f", "xl-hide": "" }, null],
+    [{ hide: "", "sm-show": "", op: "0.5", z: "3" }, "input{z-index:3!important;opacity:0.5!important;display:none!important;}@mediaonlyscreenand(max-width:640px){input{display:block!important;}}"],
+    [{ "md-w": "120", "lg-wh": "f", "xl-hide": "" }, "@mediaonlyscreenand(max-width:1280px){input{display:none!important;}}@mediaonlyscreenand(max-width:1024px){input{width:var(--width-stretch)!important;min-width:unset!important;max-width:unset!important;height:100%!important;min-height:unset!important;max-height:unset!important;}}@mediaonlyscreenand(max-width:768px){input{width:120px!important;min-width:120px!important;max-width:120px!important;}}"],
   ])("rtgl-input and rtgl-input-number build the same responsive styles for %j", (attributes, expected) => {
     const input = mount("rtgl-input", attributes);
     const number = mount("rtgl-input-number", attributes);
     expect(styleText(number)).toBe(styleText(input));
-    if (expected !== null) {
-      expect(styleText(input).replace(/\s+/g, "")).toBe(expected);
-    }
+    expect(styleText(input).replace(/\s+/g, "")).toBe(expected);
   });
 
   it.each(["rtgl-input", "rtgl-input-number"])("%s rewrites styles only when the text changes", (tag) => {

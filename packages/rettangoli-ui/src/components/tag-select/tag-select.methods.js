@@ -12,7 +12,7 @@ const renderInstance = (instance) => {
 };
 
 const openPopoverWithDraft = (instance, values = []) => {
-  const position = resolvePopoverPosition(instance.refs?.trigger, null);
+  const position = resolvePopoverPosition(instance.refs?.trigger);
 
   if (!position || !instance.store?.openOptionsPopover) {
     return false;
@@ -48,7 +48,7 @@ export const refreshPopover = function (payload = {}) {
     : (this.store?.selectDraftSelectedValues?.() || []);
 
   if (state?.isOpen) {
-    const position = resolvePopoverPosition(this.refs?.trigger, null);
+    const position = resolvePopoverPosition(this.refs?.trigger);
 
     if (position) {
       this.store.openOptionsPopover({

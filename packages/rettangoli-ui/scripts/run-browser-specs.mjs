@@ -9,10 +9,6 @@ import { readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Specs that cannot run headless in CI. Keep this empty unless a spec is
-// proven to fail on a clean checkout, and give the reason next to the entry.
-const ENV_SKIPS = [];
-
 const packageDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "..",
@@ -36,7 +32,6 @@ if (specs.length === 0) {
 }
 
 const results = specs.map((file) => {
-  if (ENV_SKIPS.includes(file)) return { file, status: "skip", seconds: 0 };
   console.log(`\n--- spec/${file}`);
   const startedAt = Date.now();
   const run = spawnSync(process.execPath, [`spec/${file}`], {
