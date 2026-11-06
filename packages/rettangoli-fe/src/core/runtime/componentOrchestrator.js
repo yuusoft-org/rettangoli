@@ -115,6 +115,13 @@ export const runAttributeChangedComponentLifecycle = ({
     return;
   }
 
+  // The `isDirty` marker the runtime puts on a child it is updating
+  // (web/componentUpdateHook.js) is not a prop change, even when the child
+  // observes the name because it declares an `isDirty` prop.
+  if (attributeName.toLowerCase() === "isdirty") {
+    return;
+  }
+
   // Browsers can invoke attributeChangedCallback before connectedCallback.
   // In that phase the component has no render target and transformed
   // handlers are not wired yet, so update handlers must not trigger render.

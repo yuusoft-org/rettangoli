@@ -97,19 +97,6 @@ export const createWebComponentClass = ({
     store,
   };
 
-  // The CSS text depends only on the styles object, so build it once per
-  // styles object (the first definition and each hot update), not per instance.
-  const cssTextByStyles = new WeakMap();
-  const toCssText = (styles) => {
-    if (!styles || typeof styles !== "object") {
-      return yamlToCss(elementName, styles);
-    }
-    if (!cssTextByStyles.has(styles)) {
-      cssTextByStyles.set(styles, yamlToCss(elementName, styles));
-    }
-    return cssTextByStyles.get(styles);
-  };
-
   class MyComponent extends HTMLElement {
     static get observedAttributes() {
       return buildObservedAttributes({
@@ -194,7 +181,7 @@ export const createWebComponentClass = ({
       bindMethods(this, this.methods);
       // Keep the Snabbdom helper off public prop names (e.g. schema prop "h").
       this._snabbdomH = h;
-      this.cssText = toCssText(currentDefinition.styles);
+      this.cssText = yamlToCss(elementName, currentDefinition.styles);
     }
 
     get viewData() {
@@ -354,7 +341,7 @@ export const createWebComponentClass = ({
 
       return {
         constants: nextConstants,
-        cssText: toCssText(definition.styles),
+        cssText: yamlToCss(elementName, definition.styles),
         definition,
         i18nRuntime,
         methodsUpdate,

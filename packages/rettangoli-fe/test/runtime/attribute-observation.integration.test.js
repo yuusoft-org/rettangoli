@@ -148,3 +148,60 @@ describe("a parent patch that changes a camelCase attribute on a child", () => {
     expect(frames).toHaveLength(0);
   });
 });
+
+// The runtime marks a child it is updating with setAttribute("isDirty") and
+// removes the marker after the child renders. HTML stores it as `isdirty`,
+// which a child with an `isDirty` prop observes.
+describe("a child that declares an isDirty prop", () => {
+  const mount = ({ handlers = {} } = {}) => {
+    const childName = `x-observe-dirty-${componentNumber++}`;
+    customElements.define(childName, createComponent({
+      schema: {
+        componentName: childName,
+        propsSchema: { type: "object", properties: { label: {}, isDirty: {} } },
+      },
+      view: { template: parse([{ span: "${label}" }]), refs: {}, styles: {} },
+      store: { selectViewData: ({ props }) => ({ label: props.label }) },
+      handlers,
+    }, {}));
+    const parentName = `x-observe-dirty-parent-${componentNumber++}`;
+    customElements.define(parentName, createComponent({
+      schema: { componentName: parentName, propsSchema: { type: "object", properties: {} } },
+      view: { template: parse([{ [`${childName} :label=\${label}`]: "" }]), refs: {}, styles: {} },
+      store: {
+        createInitialState: () => ({ label: "a" }),
+        selectViewData: ({ state }) => ({ ...state }),
+        change: ({ state }, payload) => Object.assign(state, payload),
+      },
+      handlers: {},
+    }, {}));
+    const parent = document.body.appendChild(document.createElement(parentName));
+    flushFrames();
+    return { parent, child: parent.renderTarget.firstElementChild };
+  };
+
+  it("does not report the runtime's update marker to handleOnUpdate", () => {
+    const calls = [];
+    const { parent, child } = mount({
+      handlers: { handleOnUpdate: (deps, changes) => calls.push(changes) },
+    });
+    parent.store.change({ label: "b" });
+    parent.render();
+    expect(child.getAttribute("isdirty")).toBe("true");
+    flushFrames();
+    expect(child.hasAttribute("isdirty")).toBe(false);
+    expect(calls).toEqual([{ oldProps: { label: "a" }, newProps: { label: "b" } }]);
+    expect(frames).toHaveLength(0);
+  });
+
+  it("renders once without handleOnUpdate when the marker is removed", () => {
+    const { parent, child } = mount();
+    const render = vi.spyOn(child, "render");
+    parent.store.change({ label: "b" });
+    parent.render();
+    flushFrames();
+    expect(render).toHaveBeenCalledTimes(1);
+    expect(text(child)).toBe("b");
+    expect(frames).toHaveLength(0);
+  });
+});
