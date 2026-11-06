@@ -1,14 +1,14 @@
 import { subscribeUiMessages } from "../../common/uiMessages.js";
+import { PLACEHOLDER_TYPES, VALUE_ATTRIBUTE_TYPES } from "./fieldTypes.js";
 import {
   get,
-  set,
   selectForm,
   selectFormValues,
   collectAllDataFields,
   collectAllNamedFields,
-  getDefaultValue,
   validateForm,
 } from "./form.store.js";
+import { computeInitialValues } from "./initialValues.js";
 
 const syncInteractiveFieldAttribute = ({ field, target, value }) => {
   if (!field || !target) return;
@@ -79,7 +79,7 @@ const updateFieldAttributes = ({
 
       const disabled = formDisabled || !!field.disabled;
 
-      if (["input-text", "input-date", "input-time", "input-datetime", "input-duration", "input-number", "input-textarea", "color-picker", "slider", "slider-with-input", "popover-input"].includes(field.type)) {
+      if (VALUE_ATTRIBUTE_TYPES.has(field.type)) {
         const value = get(formValues, field.name);
         if (field.type === "input-duration" && forceValueRefresh) {
           // Duration edits live inside the primitive, so force an observed
@@ -126,7 +126,7 @@ const updateFieldAttributes = ({
         }
       }
 
-      if (["input-text", "input-date", "input-time", "input-datetime", "input-duration", "input-number", "input-textarea", "popover-input"].includes(field.type) && field.placeholder) {
+      if (PLACEHOLDER_TYPES.has(field.type) && field.placeholder) {
         const current = ref.getAttribute("placeholder");
         if (current !== field.placeholder) {
           if (field.placeholder === undefined || field.placeholder === null) {
@@ -149,25 +149,7 @@ const updateFieldAttributes = ({
 };
 
 const initFormValues = (store, props) => {
-  const defaultValues = props?.defaultValues || {};
-  const seededValues = {};
-  Object.keys(defaultValues).forEach((path) => {
-    set(seededValues, path, defaultValues[path]);
-  });
-  const form = selectForm({ state: { formValues: seededValues }, props });
-  const dataFields = collectAllDataFields(form.fields || []);
-  const initial = {};
-
-  for (const field of dataFields) {
-    const defaultVal = get(defaultValues, field.name);
-    if (defaultVal !== undefined) {
-      set(initial, field.name, defaultVal);
-    } else {
-      set(initial, field.name, getDefaultValue(field));
-    }
-  }
-
-  store.resetFormValues({ defaultValues: initial });
+  store.resetFormValues({ defaultValues: computeInitialValues(props) });
 };
 
 export const handleBeforeMount = (deps) => {
@@ -182,6 +164,7 @@ export const handleAfterMount = (deps) => {
   const { store } = deps;
   const state = store.getState();
   syncStickyHostState({ refs, sticky: props?.sticky });
+  // Rendering does not change the form values, so the rendered form is reused.
   const form = selectForm({ state, props });
   updateFieldAttributes({
     form,
@@ -190,10 +173,9 @@ export const handleAfterMount = (deps) => {
     formDisabled: !!props?.disabled,
   });
   render();
-  const nextState = store.getState();
   updateFieldAttributes({
-    form: selectForm({ state: nextState, props }),
-    formValues: nextState.formValues,
+    form,
+    formValues: store.getState().formValues,
     refs,
     formDisabled: !!props?.disabled,
   });
@@ -212,6 +194,7 @@ export const handleOnUpdate = (deps, payload) => {
   }
 
   store.pruneHiddenValues();
+  // Rendering does not change the form values, so the rendered form is reused.
   const state = store.getState();
   const form = selectForm({ state, props: newProps });
   updateFieldAttributes({
@@ -222,17 +205,18 @@ export const handleOnUpdate = (deps, payload) => {
     forceValueRefresh: keyChanged,
   });
   render();
-  const nextState = store.getState();
   updateFieldAttributes({
-    form: selectForm({ state: nextState, props: newProps }),
-    formValues: nextState.formValues,
+    form,
+    formValues: store.getState().formValues,
     refs,
     formDisabled,
     forceValueRefresh: keyChanged,
   });
 };
 
-export const handleValueInput = (deps, payload) => {
+// value-input and value-change from a field: store the value, validate it in
+// reactive mode, re-render and emit form-input or form-change.
+const applyFieldValue = (deps, payload, eventName) => {
   const { store, dispatchEvent, render, props, refs } = deps;
   const event = payload._event;
   const name = event.currentTarget.dataset.fieldName;
@@ -245,6 +229,7 @@ export const handleValueInput = (deps, payload) => {
   const { value } = fieldValue;
   store.setFormFieldValue({ name, value });
 
+  // Only errors change below, so this rendered form stays current.
   const state = store.getState();
   const form = selectForm({ state, props });
   const dataFields = collectAllDataFields(form.fields || []);
@@ -271,90 +256,32 @@ export const handleValueInput = (deps, payload) => {
     }
   }
 
-  // Keep conditional fields and jempl-rendered content in sync while typing.
+  // Re-render so conditional fields, jempl-rendered content and controlled
+  // child components stay in sync.
   render();
-  const nextState = store.getState();
   updateFieldAttributes({
-    form: selectForm({ state: nextState, props }),
-    formValues: nextState.formValues,
+    form,
+    formValues: store.getState().formValues,
     refs,
     formDisabled: !!props?.disabled,
     skipFieldRef: event.currentTarget,
   });
 
   dispatchEvent(
-    new CustomEvent("form-input", {
+    new CustomEvent(eventName, {
       bubbles: true,
       detail: {
         name,
         value,
-        values: selectFormValues({ state: store.getState(), props }),
+        values: selectFormValues({ state: store.getState(), props }, form),
       },
     }),
   );
 };
 
-export const handleValueChange = (deps, payload) => {
-  const { store, dispatchEvent, render, props, refs } = deps;
-  const event = payload._event;
-  const name = event.currentTarget.dataset.fieldName;
-  if (!name || !event.detail || !Object.prototype.hasOwnProperty.call(event.detail, "value")) {
-    return;
-  }
+export const handleValueInput = (deps, payload) => applyFieldValue(deps, payload, "form-input");
 
-  const fieldValue = readFieldValue(event);
-  if (!fieldValue) return;
-  const { value } = fieldValue;
-  store.setFormFieldValue({ name, value });
-
-  const state = store.getState();
-  const form = selectForm({ state, props });
-  const dataFields = collectAllDataFields(form.fields || []);
-  const field = dataFields.find((f) => f.name === name);
-
-  syncInteractiveFieldAttribute({
-    field,
-    target: event.currentTarget,
-    value,
-  });
-
-  // Reactive validation
-  if (state.reactiveMode) {
-    if (field) {
-      const { errors } = validateForm([field], state.formValues);
-      const error = Object.prototype.hasOwnProperty.call(errors, name)
-        ? errors[name]
-        : null;
-      if (error) {
-        store.setErrors({ errors: { ...state.errors, [name]: error } });
-      } else {
-        store.clearFieldError({ name });
-      }
-    }
-  }
-
-  // Re-render on committed changes so controlled child components stay synchronized.
-  render();
-  const nextState = store.getState();
-  updateFieldAttributes({
-    form: selectForm({ state: nextState, props }),
-    formValues: nextState.formValues,
-    refs,
-    formDisabled: !!props?.disabled,
-    skipFieldRef: event.currentTarget,
-  });
-
-  dispatchEvent(
-    new CustomEvent("form-change", {
-      bubbles: true,
-      detail: {
-        name,
-        value,
-        values: selectFormValues({ state: store.getState(), props }),
-      },
-    }),
-  );
-};
+export const handleValueChange = (deps, payload) => applyFieldValue(deps, payload, "form-change");
 
 const dispatchFormAction = (deps, actionId) => {
   const { store, dispatchEvent, render, props } = deps;
@@ -367,7 +294,7 @@ const dispatchFormAction = (deps, actionId) => {
   const button = buttons.find((b) => b.id === actionId);
   if (!button || button.disabled) return;
 
-  const values = selectFormValues({ state, props });
+  const values = selectFormValues({ state, props }, form);
 
   if (button && button.validate) {
     const dataFields = collectAllDataFields(form.fields || []);

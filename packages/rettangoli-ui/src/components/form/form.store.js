@@ -8,6 +8,12 @@ import { escapeFormText } from "../../common/formText.js";
 import { parseMaxLength } from "../../common/textLength.js";
 import { getUiMessage } from "../../common/uiMessages.js";
 import { flattenTextSegments, renderableTextSegments } from "../../common/textSegments.js";
+import {
+  CHOICE_TYPES,
+  DISPLAY_TYPES,
+  TEXT_LENGTH_TYPES,
+  getFieldDefaultValue,
+} from "./fieldTypes.js";
 
 // Segment arrays flatten to plain text for aria strings; any other value keeps
 // its previous pass-through behaviour.
@@ -475,10 +481,8 @@ const validateDurationField = (field, value) => {
   return null;
 };
 
-const TEXT_FIELD_TYPES = ["input-text", "input-textarea"];
-
 const getTextFieldMaxLength = (field) =>
-  TEXT_FIELD_TYPES.includes(field.type) ? parseMaxLength(field.maxLength) : null;
+  TEXT_LENGTH_TYPES.has(field.type) ? parseMaxLength(field.maxLength) : null;
 
 const getTextLength = (value) =>
   value === undefined || value === null ? 0 : String(value).length;
@@ -603,14 +607,13 @@ export const validateForm = (fields, formValues) => {
 // --- Field helpers ---
 
 const FIELD_CONTAINER_TYPES = ["section", "row"];
-const DISPLAY_TYPES = [...FIELD_CONTAINER_TYPES, "read-only-text", "slot"];
 
 const isFieldContainer = (field) => {
   return FIELD_CONTAINER_TYPES.includes(field.type);
 };
 
 export const isDataField = (field) => {
-  return !DISPLAY_TYPES.includes(field.type);
+  return !DISPLAY_TYPES.has(field.type);
 };
 
 export const collectAllDataFields = (fields) => {
@@ -639,36 +642,7 @@ export const collectAllNamedFields = (fields) => {
   return result;
 };
 
-export const getDefaultValue = (field) => {
-  switch (field.type) {
-    case "input-text":
-    case "input-date":
-    case "input-time":
-    case "input-datetime":
-    case "input-textarea":
-    case "popover-input":
-      return "";
-    case "input-number":
-    case "input-duration":
-      return null;
-    case "select":
-    case "segmented-control":
-      return null;
-    case "tag-select":
-      return [];
-    case "checkbox":
-      return false;
-    case "color-picker":
-      return "#000000";
-    case "slider":
-    case "slider-with-input":
-      return field.min !== undefined ? field.min : 0;
-    case "image":
-      return null;
-    default:
-      return null;
-  }
-};
+export const getDefaultValue = (field) => getFieldDefaultValue(field);
 
 export const flattenFields = (fields, startIdx = 0) => {
   const result = [];
@@ -924,7 +898,7 @@ export const selectViewData = ({ state, props }) => {
       field._inputType = field.inputType || "text";
     }
 
-    if (TEXT_FIELD_TYPES.includes(field.type)) {
+    if (TEXT_LENGTH_TYPES.has(field.type)) {
       const maxLength = getTextFieldMaxLength(field);
       const value = get(state.formValues, field.name);
       const length = getTextLength(value);
@@ -946,7 +920,7 @@ export const selectViewData = ({ state, props }) => {
       field._placeholder = field.placeholder ?? "m:ss";
     }
 
-    if (field.type === "select" || field.type === "tag-select" || field.type === "segmented-control") {
+    if (CHOICE_TYPES.has(field.type)) {
       const val = get(state.formValues, field.name);
       field._selectedValue = val !== undefined ? val : null;
       field._selectedValues = Array.isArray(val) ? val : [];
@@ -1026,8 +1000,8 @@ export const selectViewData = ({ state, props }) => {
   };
 };
 
-export const selectFormValues = ({ state, props }) => {
-  const form = selectForm({ state, props });
+// Handlers that already rendered the form for this state pass it as `form`.
+export const selectFormValues = ({ state, props }, form = selectForm({ state, props })) => {
   const dataFields = collectAllDataFields(form.fields || []);
   return pickByPaths(
     state.formValues,
