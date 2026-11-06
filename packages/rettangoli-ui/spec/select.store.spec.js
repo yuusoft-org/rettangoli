@@ -1,5 +1,12 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { createInitialState, selectViewData } from '../src/components/select/select.store.js';
+import {
+  clearSelectedValue,
+  createInitialState,
+  selectViewData,
+  updateSelectedValue,
+} from '../src/components/select/select.store.js';
+import { withPropsProxy } from './support/propsProxy.js';
 
 describe('rtgl-select store', () => {
   it('normalizes icon and trailing text metadata for options and the selected trigger', () => {
@@ -313,5 +320,110 @@ describe('rtgl-select store', () => {
     expect(viewData.showEmptySearch).toBe(true);
     expect(viewData.hideEmptySearch).toBe(false);
     expect(viewData.emptySearchLabel).toBe('Nothing found');
+  });
+});
+
+// The cases above pass plain objects as props. A mounted component passes the
+// props proxy of fe, where every schema prop counts as present and any other
+// key is invisible, so these cases build props through it.
+describe('rtgl-select store with the production props proxy', () => {
+  const schema = 'src/components/select/select.schema.yaml';
+  const options = [
+    { value: 'one', label: 'One' },
+    { value: 'two', label: 'Two' },
+  ];
+
+  it('exposes every schema prop as present and hides keys outside the schema', () => {
+    const props = withPropsProxy({ options, notInSchema: 1 }, schema);
+
+    expect(Object.hasOwn(props, 'selectedValue')).toBe(true);
+    expect(props.selectedValue).toBeUndefined();
+    expect(Object.hasOwn(props, 'notInSchema')).toBe(false);
+    expect(props.notInSchema).toBeUndefined();
+  });
+
+  it('normalizes icon and trailing text metadata for options and the selected trigger', () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: withPropsProxy({
+        selectedValue: 'copy',
+        options: [
+          { value: 'copy', label: 'Copy', icon: 'text', shortcut: 'Cmd+C' },
+          { value: 'paste', label: 'Paste', suffixText: 'Beta' },
+        ],
+      }, schema),
+    });
+
+    expect(viewData.hasSelectedIcon).toBe(true);
+    expect(viewData.selectedIcon).toBe('text');
+    expect(viewData.selectedSuffixText).toBe('Cmd+C');
+    expect(viewData.options[1].suffixText).toBe('Beta');
+  });
+
+  it('selects the option whose value is undefined when nothing is set', () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: withPropsProxy({
+        options: [
+          { value: undefined, label: 'None' },
+          { value: 1, label: 'Option 1' },
+        ],
+      }, schema),
+    });
+
+    expect(viewData.selectedLabel).toBe('None');
+    expect(viewData.options.map((option) => option.isSelected)).toEqual([true, false]);
+  });
+
+  it('shows the user\'s pick while selectedValue is not set', () => {
+    const state = { ...createInitialState(), selectedValue: 'two', hasLocalValue: true };
+
+    const viewData = selectViewData({ state, props: withPropsProxy({ options }, schema) });
+
+    expect(viewData.selectedLabel).toBe('Two');
+    expect(viewData.options.map((option) => option.isSelected)).toEqual([false, true]);
+  });
+
+  it('shows a defined selectedValue, null included, over the user\'s pick', () => {
+    const state = { ...createInitialState(), selectedValue: 'two', hasLocalValue: true };
+
+    for (const [selectedValue, label] of [['one', 'One'], [null, 'Select an option']]) {
+      const viewData = selectViewData({
+        state,
+        props: withPropsProxy({ options, selectedValue }, schema),
+      });
+      expect(viewData.selectedLabel).toBe(label);
+    }
+  });
+
+  it('ignores a stored value that came from props once selectedValue is unset', () => {
+    const state = { ...createInitialState(), selectedValue: 'two', hasLocalValue: false };
+
+    const viewData = selectViewData({ state, props: withPropsProxy({ options }, schema) });
+
+    expect(viewData.selectedLabel).toBe('Select an option');
+  });
+
+  it('marks picks and clears as local, and values synced from props as not local', () => {
+    const state = structuredClone(createInitialState());
+    expect(state.hasLocalValue).toBe(false);
+
+    updateSelectedValue({ state }, { value: 'two' });
+    expect(state).toMatchObject({ selectedValue: 'two', hasLocalValue: true });
+
+    updateSelectedValue({ state }, { value: 'one', fromProps: true });
+    expect(state).toMatchObject({ selectedValue: 'one', hasLocalValue: false });
+
+    clearSelectedValue({ state });
+    expect(state).toMatchObject({ selectedValue: undefined, hasLocalValue: true });
+  });
+
+  it('[current] passes unset schema props through to the container attributes', () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: withPropsProxy({ options }, schema),
+    });
+
+    expect(viewData.containerAttrString).toBe('w=undefined');
   });
 });

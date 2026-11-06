@@ -1,6 +1,7 @@
 import { subscribeUiMessages } from "../../common/uiMessages.js";
 import { deepEqual } from '../../common.js';
 import { hasFieldAriaChanged } from '../../accessibility/field.js';
+import { resolveSelectedValue } from '../../common/choice.js';
 import { selectViewData } from './select.store.js';
 
 const getOptionType = (option = {}) => {
@@ -66,7 +67,8 @@ export const handleBeforeMount = (deps) => {
     const selectedOption = props.options.find((opt) => getOptionType(opt) === 'item' && deepEqual(opt.value, props.selectedValue));
     if (selectedOption) {
       store.updateSelectedValue({
-        value: selectedOption?.value
+        value: selectedOption?.value,
+        fromProps: true,
       });
       render();
     }
@@ -88,7 +90,7 @@ export const handleOnUpdate = (deps, payload) => {
   }
 
   if (oldProps.selectedValue !== newProps.selectedValue) {
-    store.updateSelectedValue({ value: newProps.selectedValue });
+    store.updateSelectedValue({ value: newProps.selectedValue, fromProps: true });
     shouldRender = true;
   }
 
@@ -135,8 +137,7 @@ export const handleButtonClick = (deps, payload) => {
   const rect = button.getBoundingClientRect();
 
   // Find the index of the currently selected option
-  const storeSelectedValue = store.selectSelectedValue();
-  const currentValue = storeSelectedValue !== null ? storeSelectedValue : props.selectedValue;
+  const currentValue = resolveSelectedValue({ state: store.selectState(), props });
   let selectedIndex = null;
   if (currentValue !== null && currentValue !== undefined && props.options) {
     selectedIndex = props.options.findIndex((opt) => getOptionType(opt) === 'item' && deepEqual(opt.value, currentValue));

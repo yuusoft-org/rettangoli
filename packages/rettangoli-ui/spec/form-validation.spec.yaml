@@ -75,6 +75,75 @@ in:
 out:
   error: null
 ---
+case: required input-number with no value returns default message
+in:
+  - field:
+      name: age
+      type: input-number
+      required: true
+out:
+  error: "This field is required"
+---
+case: required input-number with empty string returns default message
+in:
+  - field:
+      name: age
+      type: input-number
+      required: true
+    value: ""
+out:
+  error: "This field is required"
+---
+case: required input-number with NaN returns default message
+in:
+  - field:
+      name: age
+      type: input-number
+      required: true
+    value: .nan
+out:
+  error: "This field is required"
+---
+case: required select with false passes
+in:
+  - field:
+      name: enabled
+      type: select
+      required: true
+    value: false
+out:
+  error: null
+---
+case: required segmented-control with false passes
+in:
+  - field:
+      name: enabled
+      type: segmented-control
+      required: true
+    value: false
+out:
+  error: null
+---
+case: required select with empty string returns default message
+in:
+  - field:
+      name: role
+      type: select
+      required: true
+    value: ""
+out:
+  error: "This field is required"
+---
+case: required input-duration with NaN stays an invalid duration
+in:
+  - field:
+      name: durationMs
+      type: input-duration
+      required: true
+    value: .nan
+out:
+  error: "Invalid duration"
+---
 suite: validateField - temporal
 exportName: runValidateFieldCase
 ---

@@ -21,6 +21,17 @@ const syncInteractiveFieldAttribute = ({ field, target, value }) => {
   }
 };
 
+// A slider-with-input field (rendered as rtgl-slider-input) re-emits its
+// number box's drafts, such as null for an emptied box. The form keeps the
+// last number until the box holds one again; numbers past min/max stay
+// unclamped until commit. Returns null for a draft the form ignores.
+const readFieldValue = (event) => {
+  const { value } = event.detail;
+  if (event.currentTarget.localName !== "rtgl-slider-input") return { value };
+  const number = value === null || value === "" ? Number.NaN : Number(value);
+  return Number.isFinite(number) ? { value: number } : null;
+};
+
 const syncStickyHostState = ({ refs, sticky }) => {
   const host = refs?.formContainer?.getRootNode?.()?.host;
   host?.toggleAttribute?.("data-rtgl-sticky", sticky === true);
@@ -81,7 +92,8 @@ const updateFieldAttributes = ({
           ref.setAttribute("value", String(value));
         }
 
-        if (field.type === "slider-with-input" && ref.store?.setValue) {
+        // A null value has no number to show, so the slider keeps its own.
+        if (field.type === "slider-with-input" && value !== null && ref.store?.setValue) {
           const normalized = Number(value ?? 0);
           ref.store.setValue({ value: Number.isFinite(normalized) ? normalized : 0 });
           if (typeof ref.render === "function") {
@@ -228,7 +240,9 @@ export const handleValueInput = (deps, payload) => {
     return;
   }
 
-  const value = event.detail.value;
+  const fieldValue = readFieldValue(event);
+  if (!fieldValue) return;
+  const { value } = fieldValue;
   store.setFormFieldValue({ name, value });
 
   const state = store.getState();
@@ -288,7 +302,9 @@ export const handleValueChange = (deps, payload) => {
     return;
   }
 
-  const value = event.detail.value;
+  const fieldValue = readFieldValue(event);
+  if (!fieldValue) return;
+  const { value } = fieldValue;
   store.setFormFieldValue({ name, value });
 
   const state = store.getState();

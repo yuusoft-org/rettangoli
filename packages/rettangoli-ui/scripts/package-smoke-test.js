@@ -232,6 +232,7 @@ try {
       assert.equal(typeof ui.RettangoliButton, "function");
       assert.equal(typeof ui.RettangoliView, "function");
       assert.equal(typeof ui.createGlobalUI, "function");
+      assert.equal(ui.escapeFormText("\${a} #{b}"), "$\u2060{a} #\u2060{b}");
       assert.equal(typeof cli.buildSvg, "function");
       assert.deepEqual(Object.keys(bundledUi).sort(), Object.keys(ui).sort());
       assert.match(

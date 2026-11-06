@@ -64,8 +64,11 @@ export const handleTextClick = (deps, payload) => {
   }
   const event = payload._event;
 
-  const value = normalizePopoverValue(props.value);
-  store.setValue({ value });
+  // Without a value prop the popover keeps its own committed value.
+  if (props.value !== undefined) {
+    store.setValue({ value: normalizePopoverValue(props.value) });
+  }
+  const value = store.selectValue();
   store.setTempValue({ value });
 
   store.openPopover({
