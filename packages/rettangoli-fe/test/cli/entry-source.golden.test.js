@@ -163,19 +163,18 @@ describe("generated entry source from a temporary project", () => {
       throw new Error("expected generateFrontendEntrySource to throw");
     };
 
-    // Known gap: the message is js-yaml's own, with no file path in it.
-    it("reports a broken view with js-yaml's message only", () => {
+    it("reports a broken view with js-yaml's message, naming the file", () => {
       expect(broken({ "components/broken/broken.view.yaml": "template: [unclosed\n" })).toBe(
-        "unexpected end of the stream within a flow collection (2:1)\n\n"
+        "unexpected end of the stream within a flow collection in \"<ROOT>/components/broken/broken.view.yaml\" (2:1)\n\n"
         + " 1 | template: [unclosed\n"
         + " 2 | \n"
         + "-----^",
       );
     });
 
-    it("reports a broken schema with js-yaml's message only", () => {
+    it("reports a broken schema with js-yaml's message, naming the file", () => {
       expect(broken({ "components/broken/broken.schema.yaml": "componentName: [x-broken\n" })).toBe(
-        "unexpected end of the stream within a flow collection (2:1)\n\n"
+        "unexpected end of the stream within a flow collection in \"<ROOT>/components/broken/broken.schema.yaml\" (2:1)\n\n"
         + " 1 | componentName: [x-broken\n"
         + " 2 | \n"
         + "-----^",

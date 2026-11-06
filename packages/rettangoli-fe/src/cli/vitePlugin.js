@@ -10,17 +10,10 @@ import {
   isI18nSourceFilePath,
   loadI18nBuildContext,
 } from "./i18nBuild.js";
+import { isPathInside } from "./paths.js";
 
 export const RETTANGOLI_FE_VIRTUAL_ENTRY_ID = "virtual:rettangoli-fe-entry";
 const RESOLVED_VIRTUAL_ENTRY_ID = `\0${RETTANGOLI_FE_VIRTUAL_ENTRY_ID}`;
-
-const isWithinDirectory = ({ filePath, directoryPath }) => {
-  const relativePath = path.relative(directoryPath, filePath);
-  return (
-    relativePath === "" ||
-    (!relativePath.startsWith("..") && !path.isAbsolute(relativePath))
-  );
-};
 
 const normalizePublicEntryPath = (value) => {
   if (!value) {
@@ -119,7 +112,7 @@ export const createRettangoliFeVitePlugin = ({
     }
 
     return resolvedDirs.some((directoryPath) =>
-      isWithinDirectory({ filePath, directoryPath }),
+      isPathInside(directoryPath, filePath),
     );
   };
 

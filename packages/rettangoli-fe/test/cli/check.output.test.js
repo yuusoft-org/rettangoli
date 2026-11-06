@@ -17,7 +17,7 @@ const writeComponentFiles = ({
   if (includeSchema) {
     writeFileSync(
       path.join(componentDir, `${componentName}.schema.yaml`),
-      `componentName: rtgl-${componentName}\n`,
+      `componentName: rtgl-${componentName.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}\n`,
     );
   }
 };
@@ -219,12 +219,14 @@ describe("check cli output contract", () => {
         ["RTGL-CONTRACT-002", "components/foo-bar"],
         ["RTGL-CONTRACT-001", "components/fooBar"],
         ["RTGL-CONTRACT-003", "pages/FooBar"],
+        ["RTGL-CONTRACT-006", "pages/FooBar"],
       ]);
       const reversed = JSON.parse(run({ ...options, dirs: ["pages", "components"], format: "json" }, MULTI_ERROR_DIR).stdout);
       expect(reversed.errors.map((error) => error.message.split(":")[0])).toEqual([
         "pages/FooBar",
         "components/foo-bar",
         "components/fooBar",
+        "components/foo-bar",
       ]);
     });
   });
@@ -297,5 +299,131 @@ describe("check cli output contract", () => {
         + "-----^",
       );
     });
+  });
+});
+
+// Each of these passed `fe check` before, then stopped component registration
+// when the page loaded.
+describe("check reports schema problems the browser rejects", () => {
+  const originalExitCode = process.exitCode;
+  const createdDirs = [];
+
+  afterEach(() => {
+    createdDirs.splice(0).forEach((dirPath) => rmSync(dirPath, { recursive: true, force: true }));
+    process.exitCode = originalExitCode;
+    vi.restoreAllMocks();
+  });
+
+  const VIEW = "template:\n  - div: hello\n";
+
+  // components: { "<dir>/<name>": schemaYaml | { schema, methods } }
+  const createProject = (components) => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), "rtgl-fe-check-schema-"));
+    createdDirs.push(rootDir);
+    for (const [id, files] of Object.entries(components)) {
+      const { schema, methods } = typeof files === "string" ? { schema: files } : files;
+      const name = path.basename(id);
+      const componentDir = path.join(rootDir, id);
+      mkdirSync(componentDir, { recursive: true });
+      writeFileSync(path.join(componentDir, `${name}.schema.yaml`), schema);
+      writeFileSync(path.join(componentDir, `${name}.view.yaml`), VIEW);
+      if (methods) {
+        writeFileSync(path.join(componentDir, `${name}.methods.js`), methods);
+      }
+    }
+    return rootDir;
+  };
+
+  const errorsOf = (rootDir, dirs = ["components"]) => {
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    process.exitCode = undefined;
+    check({ cwd: rootDir, dirs, format: "json" });
+    const exitCode = process.exitCode;
+    const payload = JSON.parse(logSpy.mock.calls[0][0]);
+    logSpy.mockRestore();
+    expect(exitCode).toBe(payload.ok ? undefined : 1);
+    return (payload.errors || []).map((error) => ({
+      ...error,
+      filePath: error.filePath.replace(rootDir, "<ROOT>"),
+    }));
+  };
+
+  it.each([
+    ["uppercase", "x-Foo"],
+    ["no hyphen", "foo"],
+    ["reserved", "font-face"],
+    ["leading digit", "1-foo"],
+  ])("reports an element name that is not valid (%s) as RTGL-CONTRACT-005", (_label, componentName) => {
+    const rootDir = createProject({
+      "components/first": "componentName: x-first\n",
+      "components/bad": `componentName: ${componentName}\n`,
+    });
+    expect(errorsOf(rootDir)).toEqual([{
+      code: "RTGL-CONTRACT-005",
+      message: `components/bad: componentName '${componentName}' is not a valid custom element name: it must be lowercase, start with a letter, contain a '-', use no spaces or symbols other than '-', '.' and '_', and not be a reserved name such as font-face.`,
+      filePath: "<ROOT>/components/bad/bad.schema.yaml",
+    }]);
+  });
+
+  it("accepts the names the HTML spec allows", () => {
+    const rootDir = createProject({
+      "components/a": "componentName: x-foo_bar\n",
+      "components/b": "componentName: my-el.v2\n",
+      "components/c": "componentName: x-é\n",
+      "components/d": "componentName: xml-editor\n",
+    });
+    expect(errorsOf(rootDir)).toEqual([]);
+  });
+
+  it.each([
+    ["a method declared without a .methods.js file", "componentName: x-bad\nmethods:\n  type: object\n  properties:\n    focusInput: {}\n",
+      "method 'focusInput' is declared in schema but missing in .methods.js exports."],
+    ["no componentName", "description: no name here\n", "componentName is required."],
+    ["attrsSchema", "componentName: x-bad\nattrsSchema: {}\n", "attrsSchema is not supported."],
+    ["ssr that is not a boolean", "componentName: x-bad\nssr: 'no'\n", "ssr must be a boolean."],
+  ])("reports a schema with %s as RTGL-CONTRACT-004", (_label, schema, reason) => {
+    const rootDir = createProject({ "components/bad": schema });
+    expect(errorsOf(rootDir)).toEqual([{
+      code: "RTGL-CONTRACT-004",
+      message: `components/bad: invalid .schema.yaml: ${reason}`,
+      filePath: "<ROOT>/components/bad/bad.schema.yaml",
+    }]);
+  });
+
+  it("accepts declared methods when a .methods.js file exists", () => {
+    const rootDir = createProject({
+      "components/good": {
+        schema: "componentName: x-good\nmethods:\n  type: object\n  properties:\n    focusInput: {}\n",
+        methods: "export const focusInput = () => {};\n",
+      },
+    });
+    expect(errorsOf(rootDir)).toEqual([]);
+  });
+
+  it("reports a componentName used twice, across dirs and in one dir, as RTGL-CONTRACT-006", () => {
+    const rootDir = createProject({
+      "components/alpha": "componentName: x-same\n",
+      "components/beta": "componentName: x-same\n",
+      "pages/app": "componentName: x-same\n",
+      "pages/zpage": "componentName: x-zpage\n",
+    });
+    expect(errorsOf(rootDir, ["components", "pages"])).toEqual([
+      {
+        code: "RTGL-CONTRACT-006",
+        message: "components/beta: componentName 'x-same' is already used by components/alpha.",
+        filePath: "<ROOT>/components/beta/beta.schema.yaml",
+      },
+      {
+        code: "RTGL-CONTRACT-006",
+        message: "pages/app: componentName 'x-same' is already used by components/alpha.",
+        filePath: "<ROOT>/pages/app/app.schema.yaml",
+      },
+    ]);
+  });
+
+  it("lists the new codes after the existing ones", () => {
+    const rootDir = createProject({ "components/bad": "componentName: Bad\n" });
+    writeFileSync(path.join(rootDir, "components/bad/bad.view.yaml"), "elementName: x-bad\ntemplate: []\n");
+    expect(errorsOf(rootDir).map((error) => error.code)).toEqual(["RTGL-CONTRACT-002", "RTGL-CONTRACT-005"]);
   });
 });

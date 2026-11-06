@@ -1,11 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { isValidCustomElementName } from '../core/contracts/customElementName.js';
+import { toKebabCase } from '../core/runtime/props.js';
 import { validateComponentDirs } from './contracts.js';
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
-
 // only have blank template now. may add more later
-const templateDir = path.join(__dirname, 'blank');
+const templateDir = fileURLToPath(new URL('./blank', import.meta.url));
 
 const scaffoldPage = (options) => {
   const { dir, category, componentName } = options;
@@ -16,26 +17,24 @@ const scaffoldPage = (options) => {
     return;
   }
 
+  const elementName = `custom-${toKebabCase(componentName)}`;
+  if (!isValidCustomElementName(elementName)) {
+    throw new Error(
+      `[Scaffold] "${componentName}" gives the element name "${elementName}", which is not a valid custom element name.`,
+    );
+  }
+
+  // Render every file first, so a failure leaves no half-made folder behind.
+  const files = fs.readdirSync(templateDir).map((file) => ({
+    targetPath: path.join(targetDir, file.replace('blank', componentName)),
+    content: fs.readFileSync(path.join(templateDir, file), 'utf8')
+      // One pass, so the element name is not rewritten again when it contains "blank".
+      .replace(/custom-blank|blank/g, (match) => (match === 'custom-blank' ? elementName : componentName)),
+  }));
+
   fs.mkdirSync(targetDir, { recursive: true });
-
-  const files = fs.readdirSync(templateDir);
-  files.forEach(file => {
-    const sourcePath = path.join(templateDir, file);
-    const targetPath = path.join(targetDir, file.replace('blank', componentName));
-
-    // If it's a directory, copy recursively
-    if (fs.statSync(sourcePath).isDirectory()) {
-      fs.cpSync(sourcePath, targetPath, { recursive: true });
-    } else {
-      // Read file content
-      let content = fs.readFileSync(sourcePath, 'utf8');
-      
-      // Replace all occurrences of 'blank' with componentName in the content
-      content = content.replace(/blank/g, componentName);
-      
-      // Write to new file
-      fs.writeFileSync(targetPath, content);
-    }
+  files.forEach(({ targetPath, content }) => {
+    fs.writeFileSync(targetPath, content);
   });
 
   validateComponentDirs({

@@ -6,7 +6,11 @@ import { fileURLToPath } from "node:url";
 import { parse as parseTemplate } from "jempl";
 import { load as loadYaml } from "js-yaml";
 
-import { extractCategoryAndComponent, getAllFiles } from "../commonBuild.js";
+import {
+  extractCategoryAndComponent,
+  getAllFiles,
+  warnDuplicateComponentIds,
+} from "../commonBuild.js";
 import {
   isSupportedComponentFile,
   validateComponentEntries,
@@ -42,7 +46,7 @@ const readYamlObject = (
   filePath,
   content = readFileSync(filePath, "utf8"),
 ) => {
-  return loadYaml(content) ?? {};
+  return loadYaml(content, { filename: filePath }) ?? {};
 };
 
 const createComponentFingerprintMatrix = (fingerprintInputs) => {
@@ -202,6 +206,7 @@ export const generateFrontendEntrySource = ({
   const allFiles = getAllFiles(resolvedDirs)
     .filter((filePath) => isSupportedComponentFile(filePath))
     .sort((a, b) => a.localeCompare(b));
+  warnDuplicateComponentIds({ filePaths: allFiles, errorPrefix });
 
   const componentMatrix = {};
   const componentFingerprintInputs = {};

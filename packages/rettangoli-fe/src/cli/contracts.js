@@ -5,6 +5,7 @@ import {
   buildComponentContractIndex,
   formatContractErrors as formatContractErrorLines,
   validateComponentContractIndex,
+  validateComponentSchemaContracts,
 } from "../core/contracts/componentFiles.js";
 import { analyzeI18nBuildContext } from "./i18nBuild.js";
 
@@ -58,6 +59,13 @@ export const validateComponentEntries = ({
   i18nContext = { enabled: false },
 }) => {
   const index = buildComponentContractIndex(entries);
+  // Warnings only, so a build that works today keeps building.
+  const schemaErrors = validateComponentSchemaContracts(index);
+  if (schemaErrors.length > 0) {
+    console.warn(
+      `${errorPrefix} Component schema problems that fail in the browser:\n${formatContractErrorLines(schemaErrors).join("\n")}`,
+    );
+  }
   const errors = validateComponentContractIndex(index, { i18nContext });
   if (errors.length > 0) {
     throw new Error(
@@ -147,6 +155,7 @@ export const analyzeComponentEntries = ({
   const errors = [
     ...i18nErrors,
     ...validateComponentContractIndex(index, { i18nContext }),
+    ...validateComponentSchemaContracts(index),
   ];
   const summary = summarizeContractErrors(errors);
   return {

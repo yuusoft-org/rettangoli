@@ -2,7 +2,7 @@
   "ok": false,
   "prefix": "[Check]",
   "summary": {
-    "total": 3,
+    "total": 4,
     "byCode": [
       {
         "code": "RTGL-CONTRACT-001",
@@ -15,19 +15,23 @@
       {
         "code": "RTGL-CONTRACT-003",
         "count": 1
+      },
+      {
+        "code": "RTGL-CONTRACT-006",
+        "count": 1
       }
     ],
     "byComponent": [
+      {
+        "component": "pages/FooBar",
+        "count": 2
+      },
       {
         "component": "components/foo-bar",
         "count": 1
       },
       {
         "component": "components/fooBar",
-        "count": 1
-      },
-      {
-        "component": "pages/FooBar",
         "count": 1
       }
     ]
@@ -47,6 +51,11 @@
       "code": "RTGL-CONTRACT-003",
       "message": "pages/FooBar: legacy property binding syntax is not supported. Use ':prop=${value}' in .view.yaml.",
       "filePath": "<ROOT>/pages/FooBar/FooBar.view.yaml"
+    },
+    {
+      "code": "RTGL-CONTRACT-006",
+      "message": "pages/FooBar: componentName 'x-foo-bar' is already used by components/foo-bar.",
+      "filePath": "<ROOT>/pages/FooBar/FooBar.schema.yaml"
     }
   ]
 }

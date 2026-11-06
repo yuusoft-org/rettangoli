@@ -8,6 +8,8 @@ import path from "node:path";
 
 import { load as loadYaml } from "js-yaml";
 
+import { isPathInside } from "./paths.js";
+
 const DEFAULT_OUTPUT_DIR = "i18n";
 const LOCALE_PATTERN = /^[A-Za-z0-9_-]+$/;
 
@@ -265,8 +267,12 @@ export const analyzeI18nBuildContext = ({
           !Object.prototype.hasOwnProperty.call(catalogs[locale] || {}, namespace) ||
           !Object.prototype.hasOwnProperty.call(catalogs[locale]?.[namespace] || {}, key)
         ) {
+          // The check splits "namespace.key" at every ".", so it cannot look
+          // up a namespace or key name that contains a "."; say so.
           errors.push(createI18nError({
-            message: `${locale}.yaml is missing key "${fullKey}" from default locale "${config.defaultLocale}".`,
+            message: fullKey.split(".").length > 2
+              ? `${locale}.yaml cannot be checked for key "${fullKey}" from default locale "${config.defaultLocale}": i18n namespace and key names must not contain ".".`
+              : `${locale}.yaml is missing key "${fullKey}" from default locale "${config.defaultLocale}".`,
             filePath: localeFiles[locale],
           }));
         }
@@ -346,11 +352,10 @@ export const isI18nSourceFilePath = ({ filePath, i18nContext }) => {
     return false;
   }
 
-  const relativePath = path.relative(i18nContext.resolvedDir, resolvedFilePath);
+  // The i18n directory itself is not a source file.
   return (
-    relativePath !== "" &&
-    !relativePath.startsWith("..") &&
-    !path.isAbsolute(relativePath)
+    resolvedFilePath !== path.resolve(i18nContext.resolvedDir) &&
+    isPathInside(i18nContext.resolvedDir, resolvedFilePath)
   );
 };
 

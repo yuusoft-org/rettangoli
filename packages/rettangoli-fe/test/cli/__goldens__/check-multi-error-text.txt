@@ -1,13 +1,15 @@
-[Check] Component contract validation failed: 3 issue(s)
+[Check] Component contract validation failed: 4 issue(s)
 By rule:
 - RTGL-CONTRACT-001: 1
 - RTGL-CONTRACT-002: 1
 - RTGL-CONTRACT-003: 1
+- RTGL-CONTRACT-006: 1
 By component:
+- pages/FooBar: 2
 - components/foo-bar: 1
 - components/fooBar: 1
-- pages/FooBar: 1
 Details:
 RTGL-CONTRACT-002 components/foo-bar: 'propsSchema' is not allowed in .view.yaml. Move API metadata to .schema.yaml. [<ROOT>/components/foo-bar/foo-bar.view.yaml]
 RTGL-CONTRACT-001 components/fooBar: missing required .schema.yaml file. [<ROOT>/components/fooBar/fooBar.view.yaml]
 RTGL-CONTRACT-003 pages/FooBar: legacy property binding syntax is not supported. Use ':prop=${value}' in .view.yaml. [<ROOT>/pages/FooBar/FooBar.view.yaml]
+RTGL-CONTRACT-006 pages/FooBar: componentName 'x-foo-bar' is already used by components/foo-bar. [<ROOT>/pages/FooBar/FooBar.schema.yaml]

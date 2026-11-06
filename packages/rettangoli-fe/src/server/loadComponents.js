@@ -43,7 +43,8 @@ export const loadComponents = async ({ cwd = process.cwd(), dirs, reload = "" } 
       import("js-yaml"),
       import("jempl"),
     ]);
-  const { extractCategoryAndComponent, getAllFiles } = await import("../commonBuild.js");
+  const { extractCategoryAndComponent, getAllFiles, warnDuplicateComponentIds } =
+    await import("../commonBuild.js");
   const { isSupportedComponentFile } = await import("../cli/contracts.js");
 
   const resolvedDirs = dirs.map((dir) => path.resolve(cwd, dir));
@@ -56,6 +57,7 @@ export const loadComponents = async ({ cwd = process.cwd(), dirs, reload = "" } 
   const files = getAllFiles(resolvedDirs)
     .filter((filePath) => isSupportedComponentFile(filePath))
     .sort((a, b) => a.localeCompare(b));
+  warnDuplicateComponentIds({ filePaths: files, errorPrefix: "[loadComponents]" });
 
   const filesByComponent = new Map();
   for (const filePath of files) {
@@ -81,7 +83,9 @@ export const loadComponents = async ({ cwd = process.cwd(), dirs, reload = "" } 
         throw new Error(`[loadComponents] error parsing template in ${filePath}: ${error.message}`);
       }
     }
-    return value;
+    // The browser entry embeds this as JSON, so the server must see the same
+    // values: dates become ISO strings, NaN and Infinity become null.
+    return JSON.parse(JSON.stringify(value));
   };
 
   const configs = [];

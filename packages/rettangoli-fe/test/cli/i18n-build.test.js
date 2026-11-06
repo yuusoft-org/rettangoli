@@ -14,6 +14,7 @@ import {
   analyzeI18nBuildContext,
   emitI18nAssets,
   getI18nPublicAssetPath,
+  isI18nSourceFilePath,
   loadI18nBuildContext,
 } from "../../src/cli/i18nBuild.js";
 
@@ -126,6 +127,39 @@ describe("i18n build support", () => {
     expect(errors.map((error) => error.message).join("\n")).toContain(
       'vi.yaml is missing key "projectsPage.title"',
     );
+  });
+
+  it("says a key with a dot in it cannot be checked, and still fails as before", () => {
+    const dotted = (save) => ["common:", `  "save.button": "${save}"`, "  plain: x", ""].join("\n");
+    const rootDir = createProject({ enSource: dotted("Save"), viSource: dotted("Luu") });
+    createdDirs.push(rootDir);
+
+    const { context, errors } = analyzeI18nBuildContext({
+      cwd: rootDir,
+      i18n: createI18nConfig(),
+    });
+
+    expect(context.enabled).toBe(false);
+    expect(errors.map((error) => error.message)).toEqual([
+      'vi.yaml cannot be checked for key "common.save.button" from default locale "en": i18n namespace and key names must not contain ".".',
+    ]);
+  });
+
+  it("counts files under a directory whose name starts with '..' as i18n sources", () => {
+    const i18nContext = { enabled: true, resolvedDir: path.resolve("/app/src/i18n") };
+    const isSource = (filePath) => isI18nSourceFilePath({ filePath: path.resolve(filePath), i18nContext });
+    expect(isSource("/app/src/i18n/..drafts/en.yaml")).toBe(true);
+    expect(isSource("/app/src/i18n/en.yaml")).toBe(true);
+    expect(isSource("/app/src/i18n/..yaml")).toBe(true);
+    expect(isSource("/app/src/i18n")).toBe(false);
+    expect(isSource("/app/src/i18n.yaml")).toBe(false);
+    expect(isSource("/app/src/other.yaml")).toBe(false);
+    expect(isSource("/app/src/i18n/en.json")).toBe(false);
+    // The directory itself is never a source, even with a .yaml name.
+    expect(isI18nSourceFilePath({
+      filePath: path.resolve("/app/i18n.yaml"),
+      i18nContext: { enabled: true, resolvedDir: path.resolve("/app/i18n.yaml") },
+    })).toBe(false);
   });
 
   it("derives public asset paths relative to the served entry", () => {

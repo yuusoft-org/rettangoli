@@ -2,7 +2,7 @@ import path from "node:path";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { loadComponents, renderComponent } from "../../src/server/index.js";
 
@@ -253,5 +253,59 @@ describe("loadComponents messages for files that do not parse", () => {
       "[loadComponents] error parsing template in <ROOT>/c/a/a.view.yaml: "
       + "Parse Error: Invalid loop syntax - missing 'in' keyword (got: '$for x')",
     );
+  });
+});
+
+describe("loadComponents reads YAML the way the browser entry embeds it", () => {
+  const files = {
+    "setup.js": "export const deps = {};\n",
+    "c/card/card.schema.yaml": "componentName: x-card\n",
+    "c/card/card.view.yaml": "template:\n  - p#date: 2024-01-02\n  - p#nan: .nan\n  - p#inf: -.inf\n  - p: ${released}\n",
+    "c/card/card.constants.yaml": "released: 2024-01-02\nratio: .nan\nlimit: .inf\nlabel: plain\n",
+  };
+
+  it("turns dates into ISO strings and NaN or Infinity into null", async () => {
+    const rootDir = createProject(files);
+    const [card] = await loadComponents({ cwd: rootDir, dirs: ["c"] });
+    expect(card.constants).toEqual({
+      released: "2024-01-02T00:00:00.000Z",
+      ratio: null,
+      limit: null,
+      label: "plain",
+    });
+    const literal = (index) => card.view.template.items[index].properties[0].value;
+    expect(literal(1)).toStrictEqual({ type: 0, value: null });
+    expect(literal(2)).toStrictEqual({ type: 0, value: null });
+  });
+
+  it("matches the view, schema and constants in the generated build entry", async () => {
+    const { generateFrontendEntrySource } = await import("../../src/cli/frontendEntrySource.js");
+    const rootDir = createProject(files);
+    const [card] = await loadComponents({ cwd: rootDir, dirs: ["c"] });
+    const source = generateFrontendEntrySource({ cwd: rootDir, dirs: ["c"], setup: "setup.js", command: "build" });
+    const embedded = (fileType) => JSON.parse(source.match(new RegExp(`^const __rtgl_\\d+_${fileType} = (.*);$`, "m"))[1]);
+    expect(card.view).toStrictEqual(embedded("view"));
+    expect(card.constants).toStrictEqual(embedded("constants"));
+    expect(card.schema).toStrictEqual(embedded("schema"));
+  });
+
+  it("warns once when two folders define one component id", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const rootDir = createProject({
+        "src/components/button/button.schema.yaml": "componentName: app-button\n",
+        "src/components/button/button.view.yaml": "template:\n  - button: app\n",
+        "vendor/components/button/button.schema.yaml": "componentName: vendor-button\n",
+        "vendor/components/button/button.view.yaml": "template:\n  - button: vendor\n",
+      });
+      const components = await loadComponents({ cwd: rootDir, dirs: ["src", "vendor"] });
+      expect(components.map((component) => component.schema.componentName)).toEqual(["vendor-button"]);
+      expect(warn.mock.calls).toEqual([[
+        `[loadComponents] component id "components/button" is defined in ${path.join(rootDir, "src/components/button/button")}`
+        + ` and ${path.join(rootDir, "vendor/components/button/button")}; their files are merged and later files win.`,
+      ]]);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
