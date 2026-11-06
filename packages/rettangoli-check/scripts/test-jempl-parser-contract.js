@@ -6,10 +6,10 @@ const CASES = [
   {
     id: "valid-loop",
     input: {
-      source: [{ "$for(item, idx in items)": { "rtgl-text": "${item.name}" } }],
+      source: [{ "$for item, idx in items": { "rtgl-text": "${item.name}" } }],
       viewText: [
         "template:",
-        "  - \"$for(item, idx in items)\":",
+        "  - \"$for item, idx in items\":",
         "      rtgl-text: \"${item.name}\"",
       ].join("\n"),
       strictControlDirectives: true,
@@ -57,7 +57,7 @@ const CASES = [
     },
   },
   {
-    id: "invalid-for-signature",
+    id: "paren-for-directive",
     input: {
       source: [{ "$for(item in )": { "rtgl-text": "bad" } }],
       viewText: [
@@ -69,19 +69,50 @@ const CASES = [
       fallbackLine: 1,
     },
     assert: (result, failures) => {
+      // Jempl needs whitespace after '$for': '$for(...)' is a literal key, not a loop.
       if (result.parseError) {
-        failures.push("invalid-for-signature: expected parse success");
+        failures.push("paren-for-directive: expected parse success");
       }
       const diagnostics = Array.isArray(result.controlDiagnostics) ? result.controlDiagnostics : [];
       if (diagnostics.length !== 1) {
-        failures.push(`invalid-for-signature: expected 1 control diagnostic, got ${diagnostics.length}`);
+        failures.push(`paren-for-directive: expected 1 control diagnostic, got ${diagnostics.length}`);
         return;
       }
-      if (!diagnostics[0].message.includes("expected '$for(item[, index] in iterable)' or '$for item[, index] in iterable'")) {
-        failures.push("invalid-for-signature: expected strict $for signature diagnostic");
+      if (!diagnostics[0].message.includes("unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'")) {
+        failures.push("paren-for-directive: expected unknown keyword diagnostic with the whitespace hint");
       }
       if (diagnostics[0].line !== 2) {
-        failures.push(`invalid-for-signature: expected line 2, got ${diagnostics[0].line}`);
+        failures.push(`paren-for-directive: expected line 2, got ${diagnostics[0].line}`);
+      }
+    },
+  },
+  {
+    id: "bare-for-directive",
+    input: {
+      source: [{ "$for:nested": [{ "rtgl-text": "x" }] }],
+      viewText: [
+        "template:",
+        "  - \"$for:nested\":",
+        "      - rtgl-text: x",
+      ].join("\n"),
+      strictControlDirectives: true,
+      fallbackLine: 1,
+    },
+    assert: (result, failures) => {
+      // A bare '$for' (here with a loop id) is a literal key for Jempl: no loop signature.
+      if (result.parseError) {
+        failures.push("bare-for-directive: expected parse success");
+      }
+      const diagnostics = Array.isArray(result.controlDiagnostics) ? result.controlDiagnostics : [];
+      if (diagnostics.length !== 1) {
+        failures.push(`bare-for-directive: expected 1 control diagnostic, got ${diagnostics.length}`);
+        return;
+      }
+      if (!diagnostics[0].message.includes("expected '$for item[, index] in iterable'")) {
+        failures.push("bare-for-directive: expected for-signature diagnostic");
+      }
+      if (diagnostics[0].line !== 2) {
+        failures.push(`bare-for-directive: expected line 2, got ${diagnostics[0].line}`);
       }
     },
   },

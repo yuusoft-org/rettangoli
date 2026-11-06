@@ -118,7 +118,7 @@ const makeTemplateNode = (rng, depth = 0) => {
     const indexVar = makeIdentifier(rng, "idx");
     const iterable = pick(rng, ["items", "state.items", "user.items"]);
     return {
-      [`$for(${itemVar}, ${indexVar} in ${iterable})`]: [
+      [`$for ${itemVar}, ${indexVar} in ${iterable}`]: [
         makeTemplateNode(rng, depth + 1),
       ],
     };

@@ -705,6 +705,9 @@ const extractModuleExportsOxc = ({
     }
   }
 
+  // The first error of the file's own language is the one worth reporting; the TypeScript
+  // retry only exists to accept TS syntax in .js files.
+  let firstError = null;
   let parseResult = null;
   for (let i = 0; i < parseCandidates.length; i += 1) {
     try {
@@ -713,45 +716,29 @@ const extractModuleExportsOxc = ({
         sourceType: "unambiguous",
       });
       if (Array.isArray(candidateResult?.errors) && candidateResult.errors.length > 0) {
+        firstError ??= candidateResult.errors[0];
         continue;
       }
       parseResult = candidateResult;
       break;
-    } catch {
-      // Try next parse candidate.
+    } catch (error) {
+      firstError ??= error;
     }
   }
 
-  if (!parseResult) {
+  if (!parseResult || !Array.isArray(parseResult.module?.staticExports)) {
+    const errorOffset = firstError?.labels?.[0]?.start;
+    const errorPosition = Number.isInteger(errorOffset)
+      ? offsetToLineColumn({ lineOffsets: createLineOffsets(sourceCode), offset: errorOffset })
+      : { line: 1, column: 1 };
+    const errorMessage = typeof firstError?.message === "string" ? firstError.message.replace(/\s+/gu, " ").trim() : "";
     return {
       ok: false,
-      namedExports: new Set(),
-      exportStarSpecifiers: [],
-      namespaceReExports: [],
-      namedReExports: [],
-      reExportReferences: [],
-    };
-  }
-
-  if (!parseResult?.module || !Array.isArray(parseResult.module.staticExports)) {
-    return {
-      ok: false,
-      namedExports: new Set(),
-      exportStarSpecifiers: [],
-      namespaceReExports: [],
-      namedReExports: [],
-      reExportReferences: [],
-    };
-  }
-
-  if (Array.isArray(parseResult.errors) && parseResult.errors.length > 0) {
-    return {
-      ok: false,
-      namedExports: new Set(),
-      exportStarSpecifiers: [],
-      namespaceReExports: [],
-      namedReExports: [],
-      reExportReferences: [],
+      parseError: {
+        message: errorMessage,
+        line: errorPosition.line,
+        column: errorPosition.column,
+      },
     };
   }
 
@@ -914,6 +901,7 @@ export const extractModuleExports = ({
     reExportReferences: [],
     backendUsed: "oxc",
     parseFailed: true,
+    parseError: oxcResult.parseError,
   };
 };
 
@@ -1502,16 +1490,17 @@ const classifyJemplControlDirective = (rawKey = "") => {
   if (!key.startsWith("$")) {
     return null;
   }
-  if (/^\$if(?:#\w+)?(?:\s|\(|$)/u.test(key)) {
+  // Jempl needs whitespace after the keyword: '$if(x)' is a literal key, not a condition.
+  if (/^\$if(?:#\w+)?(?:\s|$)/u.test(key)) {
     return "if";
   }
-  if (/^\$elif(?:#\w+)?(?:\s|\(|$)/u.test(key)) {
+  if (/^\$elif(?:#\w+)?(?:\s|$)/u.test(key)) {
     return "elif";
   }
   if (/^\$else(?:#\w+)?(?:\s|$)/u.test(key)) {
     return "else";
   }
-  if (/^\$for(?::\w+)?(?:\s|\(|$)/u.test(key)) {
+  if (/^\$for(?::\w+)?(?:\s|$)/u.test(key)) {
     return "for";
   }
   // Property directives are validated by Jempl itself. Their values are not
@@ -1524,34 +1513,24 @@ const classifyJemplControlDirective = (rawKey = "") => {
 
 const validateJemplConditionDirectiveSyntax = (rawKey = "", directive = "$if") => {
   const suffix = rawKey.slice(directive.length).replace(/^#\w+/, "").trim();
-  if (!suffix) {
+  if (!suffix || /^\(\s*\)$/u.test(suffix)) {
     return `missing condition after '${directive}'`;
-  }
-  if (suffix.startsWith("(") && suffix.endsWith(")")) {
-    const expression = suffix.slice(1, -1).trim();
-    if (!expression) {
-      return `missing condition after '${directive}'`;
-    }
   }
   return null;
 };
 
 const validateJemplForDirectiveSyntax = (rawKey = "") => {
   rawKey = rawKey.replace(/^\$for:\w+/, "$for");
-  const forMatchWithParentheses = rawKey.match(
-    /^\$for\s*\(\s*([A-Za-z_$][A-Za-z0-9_$]*)(?:\s*,\s*([A-Za-z_$][A-Za-z0-9_$]*))?\s+in\s+(.+)\)$/u,
-  );
-  const forMatchWithoutParentheses = rawKey.match(
+  const forMatch = rawKey.match(
     /^\$for\s+([A-Za-z_$][A-Za-z0-9_$]*)(?:\s*,\s*([A-Za-z_$][A-Za-z0-9_$]*))?\s+in\s+(.+)$/u,
   );
-  const forMatch = forMatchWithParentheses || forMatchWithoutParentheses;
   if (!forMatch) {
-    return "expected '$for(item[, index] in iterable)' or '$for item[, index] in iterable'";
+    return "expected '$for item[, index] in iterable'";
   }
 
   const iterableExpression = String(forMatch[3] || "").trim();
   if (!iterableExpression) {
-    return "missing iterable expression in '$for(...)'";
+    return "missing iterable expression in '$for'";
   }
 
   return null;
@@ -1609,7 +1588,9 @@ const collectJemplControlDirectiveDiagnostics = ({
         diagnostics.push(createJemplControlDiagnostic({
           key,
           line,
-          message: "unknown control keyword",
+          message: /^\$(?:if|elif|for)\(/u.test(key)
+            ? "unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'"
+            : "unknown control keyword",
         }));
         hasOpenIfChain = false;
         visitNode(value);

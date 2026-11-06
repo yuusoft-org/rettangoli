@@ -1,5 +1,6 @@
 import { toCamelCase, toKebabCase } from "../utils/case.js";
 import { isValidAttributeName } from "../core/fe-contracts.js";
+import { getRegistryLoadFailures } from "../core/registry.js";
 import { escapeRegExp, isConvertibleLegacyBinding } from "./shared.js";
 
 const GENERIC_ALLOWED_ATTRS = new Set([
@@ -125,6 +126,9 @@ const isAllowedByContract = ({ attrName, contract }) => {
 
 export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
   const diagnostics = [];
+  // A primitive that failed to load has only its static contract (REGISTRY-001); its
+  // runtime-only attributes are unknown, so do not report them as unsupported.
+  const failedTags = new Set(getRegistryLoadFailures(registry).map(({ tagName }) => tagName));
 
   models.forEach((model) => {
     const templateNodes = Array.isArray(model?.view?.templateAst?.nodes)
@@ -217,7 +221,7 @@ export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
           return;
         }
 
-        if (isAllowedByContract({ attrName, contract })) {
+        if (isAllowedByContract({ attrName, contract }) || failedTags.has(tagName)) {
           return;
         }
 

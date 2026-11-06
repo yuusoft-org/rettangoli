@@ -1,0 +1,7 @@
+template:
+  - rtgl-view#root:
+      - $for item, i in rows:
+          - rtgl-test-compat-for-shadow-child :row=${item} :position=${i}: item
+          - $for:inner item in rows:
+              - rtgl-test-compat-for-shadow-child :row=${item} :position=${i}: nested
+styles: {}

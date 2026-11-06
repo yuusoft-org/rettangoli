@@ -1,0 +1,47 @@
+{
+  "name": "a genuine prop type mismatch still reports COMPAT-004, also inside a $for that does not shadow it",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 3,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-COMPAT-004": 3
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-COMPAT-004",
+        "severity": "error",
+        "message": "components/parent: prop binding ':row' is incompatible with 'rtgl-test-compat-outside-for-child' expected type 'object' but resolved 'string'.",
+        "filePath": "src/components/parent/parent.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-COMPAT-004",
+        "severity": "error",
+        "message": "components/parent: prop binding ':row' is incompatible with 'rtgl-test-compat-outside-for-child' expected type 'object' but resolved 'string'.",
+        "filePath": "src/components/parent/parent.view.yaml",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-COMPAT-004",
+        "severity": "error",
+        "message": "components/parent: prop binding ':row' is incompatible with 'rtgl-test-compat-outside-for-child' expected type 'object' but resolved 'string'.",
+        "filePath": "src/components/parent/parent.view.yaml",
+        "line": 6
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-008",
+    "RTGL-SPEC-JEMPL-003"
+  ]
+}

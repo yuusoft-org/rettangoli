@@ -45,17 +45,6 @@ const workspaceRoot = path.resolve(currentDir, "../../..");
 // Fixing a disagreement lowers the count (down to 0, then delete the entry); adding a new
 // disagreement raises it. Sections without an entry must have no disagreements.
 const KNOWN_DRIFT = {
-  schemaContract: {
-    count: 7,
-    findings: ["ssr not validated"],
-    note: "check does not validate 'ssr'; FE throws unless it is a boolean.",
-  },
-  jemplDirectives: {
-    count: 4,
-    findings: ["jempl directive whitespace"],
-    note: "check accepts '$if(x)', '$elif(x)' and '$for(item in items)'; jempl 1.0.1 needs whitespace and treats "
-      + "them as literal keys.",
-  },
   idRefs: {
     count: 4,
     findings: ["id attribute precedence"],
@@ -599,7 +588,8 @@ const compareJemplDirectives = async () => {
   const mismatches = [];
   cases.forEach(({ label, name, template }) => {
     // JEMPL-003 is the directive grammar rule; JEMPL-001 is jempl failing to parse the key at all.
-    const checkRejects = hasCode(diagnosticsByCase.get(name), "RTGL-CHECK-JEMPL-00") && !hasCode(diagnosticsByCase.get(name), "RTGL-CHECK-JEMPL-002");
+    const diagnostics = diagnosticsByCase.get(name);
+    const checkRejects = hasCode(diagnostics, "RTGL-CHECK-JEMPL-001") || hasCode(diagnostics, "RTGL-CHECK-JEMPL-003");
     const feRejects = jemplRejects(template);
     if (checkRejects !== feRejects) {
       mismatches.push({

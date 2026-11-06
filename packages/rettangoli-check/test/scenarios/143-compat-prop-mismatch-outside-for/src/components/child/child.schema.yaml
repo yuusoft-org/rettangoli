@@ -1,0 +1,8 @@
+componentName: rtgl-test-compat-outside-for-child
+propsSchema:
+  type: object
+  properties:
+    row:
+      type: object
+  required:
+    - row

@@ -1,7 +1,7 @@
 import { statSync } from "node:fs";
 import { buildComponentModel, buildProjectModel, validateProjectModel } from "./model.js";
 import { discoverComponentEntries, groupEntriesByComponent } from "./discovery.js";
-import { buildMergedRegistry } from "./registry.js";
+import { buildMergedRegistry, getRegistryLoadFailures } from "./registry.js";
 import { runRules } from "../rules/index.js";
 import { runSemanticEngine } from "../semantic/engine.js";
 import { getDiagnosticCatalogEntry } from "../diagnostics/catalog.js";
@@ -206,9 +206,32 @@ export const analyzeProject = async ({
     return validateProjectModel(nextModels);
   })();
 
+  // A JS file shared by several components (a re-export target) is parsed for each of them;
+  // report its parse error once.
+  const parseErrorKeys = new Set();
+  const isFirstParseError = (diagnostic) => {
+    if (diagnostic.code !== "RTGL-CHECK-PARSE-002") {
+      return true;
+    }
+    const key = `${diagnostic.filePath}:${diagnostic.line}:${diagnostic.column}`;
+    if (parseErrorKeys.has(key)) {
+      return false;
+    }
+    parseErrorKeys.add(key);
+    return true;
+  };
   const modelDiagnostics = normalizeDiagnostics(models.flatMap((model) => model.diagnostics || [])
-    .filter((diagnostic) => includeStyle || !STYLE_DIAGNOSTIC_CODES.has(diagnostic.code)));
+    .filter((diagnostic) => includeStyle || !STYLE_DIAGNOSTIC_CODES.has(diagnostic.code))
+    .filter(isFirstParseError));
   const registry = await buildMergedRegistry({ models, workspaceRoot, cwd });
+  const registryDiagnostics = normalizeDiagnostics(getRegistryLoadFailures(registry).map(
+    ({ tagName, modulePath, message }) => ({
+      code: "RTGL-CHECK-REGISTRY-001",
+      severity: "warn",
+      filePath: modulePath,
+      message: `UI primitive '${tagName}' failed to load: ${message}. Its runtime attributes are unknown, so YAHTML checks for it may be incomplete.`,
+    }),
+  ));
   const ruleDiagnostics = normalizeDiagnostics(runRules({
     models,
     registry,
@@ -222,7 +245,7 @@ export const analyzeProject = async ({
   const semanticDiagnostics = includeSemantic
     ? normalizeDiagnostics(semanticResult?.diagnostics || [])
     : [];
-  const diagnostics = [...modelDiagnostics, ...ruleDiagnostics, ...semanticDiagnostics];
+  const diagnostics = [...modelDiagnostics, ...registryDiagnostics, ...ruleDiagnostics, ...semanticDiagnostics];
   const summary = summarizeDiagnostics(diagnostics);
 
   return {

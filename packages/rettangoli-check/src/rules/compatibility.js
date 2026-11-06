@@ -53,6 +53,23 @@ const latticeTypeToText = (value) => {
   return String(value.kind || "unknown");
 };
 
+// FE renders a $for body with the loop variables in scope before props, so a loop variable that
+// shares a prop's name is not that prop. The scope graph records the locals in scope for each
+// template attribute expression.
+const isLoopLocalRoot = ({ model, attribute, expression, root }) => {
+  const range = attribute?.range;
+  const references = Array.isArray(model?.semanticGraph?.references) ? model.semanticGraph.references : [];
+  return references.some((reference) => (
+    reference?.source === "template-attr"
+    && reference.expression === expression
+    && reference.line === range?.line
+    && (!Number.isInteger(range?.column)
+      || (reference.column >= range.column && reference.column <= range.endColumn))
+    && reference.localSymbols instanceof Set
+    && reference.localSymbols.has(root)
+  ));
+};
+
 const inferAttributeExpressionType = ({ model, attribute }) => {
   if (!attribute || typeof attribute !== "object") {
     return "unknown";
@@ -66,6 +83,9 @@ const inferAttributeExpressionType = ({ model, attribute }) => {
       localSchemaTypes: new Map(),
     });
     if (pathType?.resolved) {
+      if (isLoopLocalRoot({ model, attribute, expression: firstExpression, root: pathType.root })) {
+        return "unknown";
+      }
       return inferSchemaNodePrimitiveType(pathType.resolved);
     }
     return "unknown";

@@ -1,0 +1,10 @@
+componentName: rtgl-test-compat-for-shadow-child
+propsSchema:
+  type: object
+  properties:
+    row:
+      type: object
+    position:
+      type: number
+  required:
+    - row

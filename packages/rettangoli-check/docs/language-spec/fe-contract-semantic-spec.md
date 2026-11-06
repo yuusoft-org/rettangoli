@@ -22,6 +22,7 @@ This spec defines FE schema/contract semantics enforced by current checker rules
 3. FE contract file basenames must normalize to the component segment. Canonical (`lowercase-kebab` `category/component`) folder naming is optional style lint (`--style`); runtime-supported camelCase folders pass default validation.
 4. `attrsSchema` is unsupported in schema.
 5. `methods` must be object-typed with `properties` object.
+5a. `ssr`, when present, must be a boolean (`RTGL-CHECK-SCHEMA-009`), as FE requires at registration.
 6. FE frontend builds a canonical internal schema shape:
 - `componentName` is stored as a trimmed canonical key.
 - `propsSchema.properties`, `propsSchema.required`, `events`, and `methods.properties` are normalized to deterministic canonical-key sets for symbol/scope/registry passes.
@@ -94,3 +95,4 @@ Template keys cannot bind events: FE rejects `@event=handler` and a bare `@event
 8. Local namespace re-export targets must resolve; unresolved targets emit `RTGL-CHECK-SYMBOL-006` and do not satisfy FE symbol presence checks.
 9. Local default-name re-exports (`export { default } from`, `export { x as default } from`) participate in target-resolution diagnostics and symbol sets deterministically.
 10. TypeScript export assignments (`export = value`) are treated as default exports for symbol extraction and re-export alias resolution.
+11. A module that does not parse emits `RTGL-CHECK-PARSE-002` at its first syntax error (once per file and position across the project). Its export set, and the export set of every module that re-exports from it (`export *` or a named re-export), is unknown: symbol presence checks (`RTGL-CHECK-SYMBOL-001/002/003/007`, `RTGL-CHECK-SEM-004`) are skipped for it.

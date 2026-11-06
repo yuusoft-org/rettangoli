@@ -1,0 +1,4 @@
+template:
+  - rtgl-view:
+      - "$if(isVisible)":
+          - rtgl-text: Visible

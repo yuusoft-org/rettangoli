@@ -1,0 +1,6 @@
+template:
+  - rtgl-view:
+      - "$if(a)":
+          - rtgl-text: A
+        $elif b:
+          - rtgl-text: B

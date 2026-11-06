@@ -1,0 +1,8 @@
+template:
+  - rtgl-view:
+      - $if ():
+          - rtgl-text: Never
+      - $if a:
+          - rtgl-text: A
+        $elif ( ):
+          - rtgl-text: Never

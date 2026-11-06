@@ -1,5 +1,5 @@
 {
-  "name": "jempl control for signature invalid",
+  "name": "jempl control paren for directive is a literal key",
   "options": {
     "dirs": [
       "./src/components"
@@ -18,7 +18,7 @@
       {
         "code": "RTGL-CHECK-JEMPL-003",
         "severity": "error",
-        "message": "components/card: Invalid Jempl control directive '$for(item in )': expected '$for(item[, index] in iterable)' or '$for item[, index] in iterable'.",
+        "message": "components/card: Invalid Jempl control directive '$for(item in )': unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'.",
         "filePath": "src/components/card/card.view.yaml",
         "line": 2
       }

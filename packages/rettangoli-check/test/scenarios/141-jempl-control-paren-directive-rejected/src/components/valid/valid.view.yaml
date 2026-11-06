@@ -1,0 +1,12 @@
+template:
+  - rtgl-view:
+      - $if a:
+          - rtgl-text: A
+        $elif b:
+          - rtgl-text: B
+        $else:
+          - rtgl-text: C
+      - $for item, i in items:
+          - rtgl-text: ${item.name}
+      - $for:nested row in rows:
+          - rtgl-text: ${row.id}

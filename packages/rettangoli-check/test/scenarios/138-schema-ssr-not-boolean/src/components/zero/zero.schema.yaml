@@ -1,0 +1,4 @@
+componentName: rtgl-ssr-zero
+propsSchema:
+  type: object
+ssr: 0

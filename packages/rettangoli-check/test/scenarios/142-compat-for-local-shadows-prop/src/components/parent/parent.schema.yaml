@@ -1,0 +1,10 @@
+componentName: rtgl-test-compat-for-shadow-parent
+propsSchema:
+  type: object
+  properties:
+    item:
+      type: string
+    i:
+      type: string
+    rows:
+      type: array

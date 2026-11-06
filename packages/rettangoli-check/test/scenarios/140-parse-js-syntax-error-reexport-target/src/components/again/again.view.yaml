@@ -1,0 +1,7 @@
+refs:
+  btn:
+    eventListeners:
+      click:
+        handler: handleSave
+template:
+  - rtgl-button#btn: Save

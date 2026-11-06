@@ -1,0 +1,8 @@
+componentName: rtgl-test-compat-outside-for-parent
+propsSchema:
+  type: object
+  properties:
+    item:
+      type: string
+    rows:
+      type: array

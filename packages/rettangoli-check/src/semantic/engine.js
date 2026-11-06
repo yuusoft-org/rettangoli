@@ -492,7 +492,7 @@ export const resolveFeSymbols = ({ models = [] } = {}) => {
             name: handlerName,
             resolved: hasHandler,
           });
-          if (!hasHandler) {
+          if (!hasHandler && model?.handlers?.exportsKnown !== false) {
             diagnostics.push({
               code: "RTGL-CHECK-SEM-004",
               severity: "error",
@@ -518,7 +518,7 @@ export const resolveFeSymbols = ({ models = [] } = {}) => {
             name: actionName,
             resolved: hasAction,
           });
-          if (!hasAction) {
+          if (!hasAction && model?.store?.exportsKnown !== false) {
             diagnostics.push({
               code: "RTGL-CHECK-SEM-004",
               severity: "error",
@@ -546,7 +546,7 @@ export const resolveFeSymbols = ({ models = [] } = {}) => {
           name: methodName,
           resolved: hasMethod,
         });
-        if (!hasMethod) {
+        if (!hasMethod && model?.methods?.exportsKnown !== false) {
           diagnostics.push({
             code: "RTGL-CHECK-SEM-004",
             severity: "error",

@@ -23,6 +23,7 @@ const attachFilePathToBindings = (bindings = [], filePath) => {
 
 const REEXPORT_TARGET_MISSING_CODE = "RTGL-CHECK-SYMBOL-006";
 const REEXPORT_SYMBOL_MISSING_CODE = "RTGL-CHECK-SYMBOL-007";
+const JS_PARSE_ERROR_CODE = "RTGL-CHECK-PARSE-002";
 const HANDLER_EXPORT_PREFIX_CODE = "RTGL-CHECK-HANDLER-002";
 const LIFECYCLE_ASYNC_BEFORE_MOUNT_CODE = "RTGL-CHECK-LIFECYCLE-001";
 const LIFECYCLE_DEPS_FIRST_PARAM_CODE = "RTGL-CHECK-LIFECYCLE-002";
@@ -385,6 +386,9 @@ const toRelatedLocation = ({ message, filePath, range = {} }) => {
   };
 };
 
+// Returns { exports, exportsKnown }. exportsKnown is false when this module, or a module it
+// re-exports from (export * or a named re-export), does not parse: its export set is then
+// incomplete and must not be used to report missing symbols.
 const collectNamedExportsWithStar = ({
   filePath,
   sourceCode,
@@ -400,7 +404,7 @@ const collectNamedExportsWithStar = ({
   }
 
   if (stack.has(filePath)) {
-    return new Set();
+    return { exports: new Set(), exportsKnown: true };
   }
 
   stack.add(filePath);
@@ -408,13 +412,26 @@ const collectNamedExportsWithStar = ({
     sourceCode,
     filePath,
   });
-  const oxcReferenceSource = extractModuleExports({
-    sourceCode,
-    filePath,
-  });
-  const reExportReferences = Array.isArray(oxcReferenceSource?.reExportReferences)
-    ? [...oxcReferenceSource.reExportReferences]
-    : [];
+  let exportsKnown = true;
+  if (exportsSource.parseFailed) {
+    exportsKnown = false;
+    const { message, line, column } = exportsSource.parseError || {};
+    pushUniqueDiagnostic({
+      diagnostics,
+      diagnosticKeys,
+      diagnostic: {
+        code: JS_PARSE_ERROR_CODE,
+        severity: "error",
+        message: message
+          ? `Failed to parse JavaScript: ${message.endsWith(".") ? message : `${message}.`}`
+          : "Failed to parse JavaScript.",
+        filePath,
+        line: Number.isInteger(line) ? line : 1,
+        column: Number.isInteger(column) ? column : 1,
+      },
+    });
+  }
+  const reExportReferences = [...exportsSource.reExportReferences];
 
   const exports = new Set(exportsSource.namedExports);
   const exportStarSpecifiers = exportsSource.exportStarSpecifiers;
@@ -470,7 +487,7 @@ const collectNamedExportsWithStar = ({
       return;
     }
 
-    const nestedExports = collectNamedExportsWithStar({
+    const nested = collectNamedExportsWithStar({
       filePath: resolvedTarget.filePath,
       sourceCode: resolvedTarget.text,
       cache,
@@ -479,7 +496,8 @@ const collectNamedExportsWithStar = ({
       diagnosticKeys,
       dependencies,
     });
-    nestedExports.forEach((name) => {
+    exportsKnown &&= nested.exportsKnown;
+    nested.exports.forEach((name) => {
       if (name !== "default") {
         exports.add(name);
       }
@@ -598,7 +616,7 @@ const collectNamedExportsWithStar = ({
       return;
     }
 
-    const nestedExports = collectNamedExportsWithStar({
+    const nested = collectNamedExportsWithStar({
       filePath: resolvedTarget.filePath,
       sourceCode: resolvedTarget.text,
       cache,
@@ -607,8 +625,12 @@ const collectNamedExportsWithStar = ({
       diagnosticKeys,
       dependencies,
     });
-    if (nestedExports.has(importedName)) {
+    exportsKnown &&= nested.exportsKnown;
+    if (nested.exports.has(importedName)) {
       exports.add(exportedName);
+      return;
+    }
+    if (!nested.exportsKnown) {
       return;
     }
 
@@ -645,8 +667,9 @@ const collectNamedExportsWithStar = ({
   });
 
   stack.delete(filePath);
-  cache.set(filePath, exports);
-  return exports;
+  const result = { exports, exportsKnown };
+  cache.set(filePath, result);
+  return result;
 };
 
 export const buildComponentModel = (componentGroup) => {
@@ -690,16 +713,19 @@ export const buildComponentModel = (componentGroup) => {
     store: {
       filePath: files.store || null,
       exports: new Set(),
+      exportsKnown: true,
       sourceText: "",
     },
     handlers: {
       filePath: files.handlers || null,
       exports: new Set(),
+      exportsKnown: true,
       sourceText: "",
     },
     methods: {
       filePath: files.methods || null,
       exports: new Set(),
+      exportsKnown: true,
       sourceText: "",
     },
     semanticGraph: {
@@ -786,13 +812,15 @@ export const buildComponentModel = (componentGroup) => {
     } else {
       const exportResolutionDiagnosticKeys = new Set();
       model.store.sourceText = storeReadResult.value;
-      model.store.exports = collectNamedExportsWithStar({
+      const collected = collectNamedExportsWithStar({
         filePath: files.store,
         sourceCode: storeReadResult.value,
         diagnostics,
         diagnosticKeys: exportResolutionDiagnosticKeys,
         dependencies: model.dependencies,
       });
+      model.store.exports = collected.exports;
+      model.store.exportsKnown = collected.exportsKnown;
     }
   }
 
@@ -803,13 +831,15 @@ export const buildComponentModel = (componentGroup) => {
     } else {
       const exportResolutionDiagnosticKeys = new Set();
       model.handlers.sourceText = handlersReadResult.value;
-      model.handlers.exports = collectNamedExportsWithStar({
+      const collected = collectNamedExportsWithStar({
         filePath: files.handlers,
         sourceCode: handlersReadResult.value,
         diagnostics,
         diagnosticKeys: exportResolutionDiagnosticKeys,
         dependencies: model.dependencies,
       });
+      model.handlers.exports = collected.exports;
+      model.handlers.exportsKnown = collected.exportsKnown;
       model.handlers.exports.forEach((handlerName) => {
         if (isValidHandlerExportName(handlerName)) {
           return;
@@ -838,13 +868,15 @@ export const buildComponentModel = (componentGroup) => {
     } else {
       const exportResolutionDiagnosticKeys = new Set();
       model.methods.sourceText = methodsReadResult.value;
-      model.methods.exports = collectNamedExportsWithStar({
+      const collected = collectNamedExportsWithStar({
         filePath: files.methods,
         sourceCode: methodsReadResult.value,
         diagnostics,
         diagnosticKeys: exportResolutionDiagnosticKeys,
         dependencies: model.dependencies,
       });
+      model.methods.exports = collected.exports;
+      model.methods.exportsKnown = collected.exportsKnown;
     }
   }
 

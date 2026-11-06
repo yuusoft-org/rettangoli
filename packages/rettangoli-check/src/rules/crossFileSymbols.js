@@ -19,6 +19,8 @@ const getSchemaMethodNames = (model) => {
   return Object.keys(methodProps);
 };
 
+// A module that does not parse (RTGL-CHECK-PARSE-002) has an unknown export set
+// (exportsKnown === false), so no symbol is reported missing from it.
 export const runCrossFileSymbolRules = ({ models = [], includeStyle = false }) => {
   const diagnostics = [];
 
@@ -38,7 +40,7 @@ export const runCrossFileSymbolRules = ({ models = [], includeStyle = false }) =
 
       // In style mode HANDLER-001 already reports handlers without the 'handle' prefix.
       if (handlerSymbol.isValid && (!includeStyle || isValidHandlerSymbol(handlerSymbol.value))) {
-        if (!model.handlers.exports.has(handlerSymbol.value)) {
+        if (model.handlers.exportsKnown !== false && !model.handlers.exports.has(handlerSymbol.value)) {
           diagnostics.push({
             code: "RTGL-CHECK-SYMBOL-001",
             severity: "error",
@@ -54,7 +56,7 @@ export const runCrossFileSymbolRules = ({ models = [], includeStyle = false }) =
       }
 
       if (actionSymbol.isValid) {
-        if (!model.store.exports.has(actionSymbol.value)) {
+        if (model.store.exportsKnown !== false && !model.store.exports.has(actionSymbol.value)) {
           diagnostics.push({
             code: "RTGL-CHECK-SYMBOL-002",
             severity: "error",
@@ -72,7 +74,7 @@ export const runCrossFileSymbolRules = ({ models = [], includeStyle = false }) =
 
     const declaredMethods = getSchemaMethodNames(model);
     declaredMethods.forEach((methodName) => {
-      if (!model.methods.exports.has(methodName)) {
+      if (model.methods.exportsKnown !== false && !model.methods.exports.has(methodName)) {
         diagnostics.push({
           code: "RTGL-CHECK-SYMBOL-003",
           severity: "error",

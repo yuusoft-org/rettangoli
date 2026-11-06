@@ -40,6 +40,7 @@ Default family and severity are inferred from code prefixes:
 - `RTGL-CHECK-COMPONENT-*`: `component-identity`, `error`
 - `RTGL-CHECK-READ-*`: `io`, `error`
 - `RTGL-CHECK-PARSE-*`: `parse`, `error`
+- `RTGL-CHECK-REGISTRY-*`: `registry`, `warn`
 - `RTGL-IR-VAL-*`: `ir-validation`, `error`
 - `RTGL-IR-INV-*`: `ir-invariants`, `error`
 - `RTGL-CLI-*`: `cli`, `error`
@@ -74,6 +75,24 @@ A ref listener `payload` must be a YAML mapping. FE passes the payload to the ha
 
 Formerly compared the keys of a string payload such as `"{ id: x }"` with the handler or action parameters. FE never uses string payloads, so the rule checked a payload that does nothing. Such payloads now get `RTGL-CHECK-LISTENER-010`, and `RTGL-CHECK-CONTRACT-004` is no longer emitted.
 
+## Schema Diagnostics
+
+### RTGL-CHECK-SCHEMA-009
+
+`ssr` in `.schema.yaml` must be a boolean (`ssr: true` or `ssr: false`). FE throws "ssr must be a boolean." when it registers a component whose `ssr` is anything else, such as `"no"`, `"false"`, `0` or an empty value.
+
+## JavaScript Parse Diagnostics
+
+### RTGL-CHECK-PARSE-002
+
+A `.handlers.js`, `.store.js` or `.methods.js` file, or a module it re-exports from, does not parse as JavaScript (or TypeScript). The diagnostic points at the first syntax error. The exports of such a file, and of every file that re-exports from it, are unknown, so check does not report missing handler, action or method exports (`RTGL-CHECK-SYMBOL-001/002/003/007`, `RTGL-CHECK-SEM-004`) for them. A file shared by several components is reported once.
+
+## UI Registry Diagnostics
+
+### RTGL-CHECK-REGISTRY-001
+
+A warning: a UI primitive defined by the resolved `@rettangoli/ui` (for example in `registerPrimitives.js`) could not be loaded, because its module failed to import, its default export is not a factory function, the factory threw, or its source file could not be read or scanned for attributes. The tag stays a known element with the attributes check could still find, so its usages are still checked, but attributes that only the loaded class declares (`observedAttributes`) are unknown. Check therefore does not report `RTGL-CHECK-YAHTML-003` (unsupported attr/prop) on that tag; other checks, such as `RTGL-CHECK-YAHTML-002`, still run. Each failing tag is reported once, at the primitive's module path. `--warn-as-error` makes it fail the run.
+
 ## Autofix-Capable Diagnostics
 
 ### RTGL-CONTRACT-003
@@ -102,4 +121,8 @@ Contract tests:
 - `test/scenarios/123-cli-autofix-dry-run-json`
 - `test/scenarios/124-cli-autofix-dry-run-patch-json`
 - `test/scenarios/125-cli-autofix-apply-json-success`
-- `test/scenarios/132-binding-event-attribute-rejected` .. `136-binding-invalid-and-dynamic-tokens`
+- `test/scenarios/132-binding-event-attribute-rejected` .. `137-binding-parse-yaml-error-text-scan`
+- `test/scenarios/138-schema-ssr-not-boolean` .. `141-jempl-control-paren-directive-rejected`
+- `test/scenarios/142-compat-for-local-shadows-prop`, `143-compat-prop-mismatch-outside-for`
+- `scripts/test-ui-registry-load-contract.js` (RTGL-CHECK-REGISTRY-001)
+- `scripts/test-discovery-symlinks-contract.js` (component discovery through symlinks)

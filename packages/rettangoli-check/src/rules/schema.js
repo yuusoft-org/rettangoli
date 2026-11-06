@@ -65,6 +65,17 @@ export const runSchemaRules = ({ models = [] }) => {
       });
     }
 
+    // FE validateSchemaContract throws "ssr must be a boolean." at registration.
+    if (Object.hasOwn(schema, "ssr") && typeof schema.ssr !== "boolean") {
+      diagnostics.push({
+        code: "RTGL-CHECK-SCHEMA-009",
+        severity: "error",
+        filePath: schemaPath,
+        line: getYamlPathLine(schemaKeyPathLines, ["ssr"]),
+        message: `${model.componentKey}: ssr must be a boolean.`,
+      });
+    }
+
     if (Object.prototype.hasOwnProperty.call(schema, "methods")) {
       const methodsSchema = schema.methods;
       if (!isObjectRecord(methodsSchema)) {

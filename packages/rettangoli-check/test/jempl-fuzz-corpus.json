@@ -13,7 +13,7 @@
       {
         "$if isVisible": [
           {
-            "$for(item, idx in items)": [
+            "$for item, idx in items": [
               {
                 "rtgl-text :value=${item.name}": null
               }
@@ -86,7 +86,7 @@
       }
     ],
     "strictDiagnosticIncludes": [
-      "expected '$for(item[, index] in iterable)' or '$for item[, index] in iterable'"
+      "unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'"
     ]
   },
   {

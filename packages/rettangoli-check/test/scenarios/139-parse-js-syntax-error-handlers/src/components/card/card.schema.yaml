@@ -1,0 +1,6 @@
+componentName: rtgl-parse-js-card
+methods:
+  type: object
+  properties:
+    focusInput:
+      type: object
