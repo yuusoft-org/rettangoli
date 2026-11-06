@@ -297,7 +297,7 @@ class RettangoliCarouselElement extends HTMLElement {
     this._slideStyleCache = new WeakMap();
 
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliCarouselElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliCarouselElement.styleSheet];
 
     this._rootElement = document.createElement("div");
     this._rootElement.id = "root";
@@ -345,7 +345,7 @@ class RettangoliCarouselElement extends HTMLElement {
     );
     this._controlsElement.append(this._pagerElement);
     this._rootElement.append(this._viewportShellElement, this._controlsElement);
-    this.shadow.append(this._rootElement);
+    this.shadowRoot.append(this._rootElement);
 
     this._handleSlotChange = this._handleSlotChange.bind(this);
     this._handleClickPrev = this._handleClickPrev.bind(this);

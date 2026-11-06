@@ -72,7 +72,7 @@ class RettangoliTextAreaElement extends HTMLElement {
     super();
     RettangoliTextAreaElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliTextAreaElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliTextAreaElement.styleSheet];
 
     // Initialize style tracking properties
     this._styles = createResponsiveStyleBuckets();
@@ -85,8 +85,8 @@ class RettangoliTextAreaElement extends HTMLElement {
     this._textareaElement = document.createElement('textarea');
     this._styleElement = document.createElement('style');
 
-    this.shadow.appendChild(this._styleElement);
-    this.shadow.appendChild(this._textareaElement);
+    this.shadowRoot.appendChild(this._styleElement);
+    this.shadowRoot.appendChild(this._textareaElement);
 
     // Bind event handlers
     this._textareaElement.addEventListener('input', this._onInput);

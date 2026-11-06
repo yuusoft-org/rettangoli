@@ -54,7 +54,7 @@ class RettangoliSvgElement extends HTMLElement {
     super();
     RettangoliSvgElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliSvgElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliSvgElement.styleSheet];
     this._lastSvgContent = undefined;
     this._needsSvgReset = false;
     this._hasConnected = false;
@@ -113,7 +113,7 @@ class RettangoliSvgElement extends HTMLElement {
   }
 
   getBoundingClientRect() {
-    const svgElement = this.shadow.querySelector("svg");
+    const svgElement = this.shadowRoot.querySelector("svg");
     return svgElement ? svgElement.getBoundingClientRect() : super.getBoundingClientRect();
   }
 
@@ -127,7 +127,7 @@ class RettangoliSvgElement extends HTMLElement {
     }
 
     if (this._needsSvgReset || content !== this._lastSvgContent) {
-      this.shadow.innerHTML = content;
+      this.shadowRoot.innerHTML = content;
       this._lastSvgContent = content;
       this._needsSvgReset = false;
     }

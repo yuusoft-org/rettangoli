@@ -108,7 +108,7 @@ class RettangoliInputElement extends HTMLElement {
     super();
     RettangoliInputElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliInputElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliInputElement.styleSheet];
 
     // Initialize style tracking properties
     this._styles = createResponsiveStyleBuckets();
@@ -118,8 +118,8 @@ class RettangoliInputElement extends HTMLElement {
     this._inputElement = document.createElement('input');
     this._styleElement = document.createElement('style');
 
-    this.shadow.appendChild(this._styleElement);
-    this.shadow.appendChild(this._inputElement);
+    this.shadowRoot.appendChild(this._styleElement);
+    this.shadowRoot.appendChild(this._inputElement);
 
     // Bind event handlers
     this._inputElement.addEventListener('input', this._onInput);

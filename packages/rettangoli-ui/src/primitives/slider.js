@@ -78,7 +78,7 @@ class RettangoliSliderElement extends HTMLElement {
     super();
     RettangoliSliderElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliSliderElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliSliderElement.styleSheet];
 
     // Initialize style tracking properties
     this._styles = {
@@ -95,8 +95,8 @@ class RettangoliSliderElement extends HTMLElement {
     this._inputElement.type = 'range';
     this._styleElement = document.createElement('style');
 
-    this.shadow.appendChild(this._styleElement);
-    this.shadow.appendChild(this._inputElement);
+    this.shadowRoot.appendChild(this._styleElement);
+    this.shadowRoot.appendChild(this._inputElement);
 
     // Bind event handlers
     this._inputElement.addEventListener('input', this._onInput);
@@ -245,12 +245,8 @@ class RettangoliSliderElement extends HTMLElement {
     const step = this.getAttribute("step");
     const isDisabled = this.hasAttribute('disabled');
 
-    if (value !== null) {
-      this._inputElement.value = value;
-    } else {
-      this._inputElement.value = min ?? 0;
-    }
-
+    // The browser clamps and rounds the value against the current bounds, so
+    // the bounds go first.
     if (min !== null) {
       this._inputElement.min = min;
     } else {
@@ -267,6 +263,12 @@ class RettangoliSliderElement extends HTMLElement {
       this._inputElement.step = step;
     } else {
       this._inputElement.step = "1";
+    }
+
+    if (value !== null) {
+      this._inputElement.value = value;
+    } else {
+      this._inputElement.value = min ?? 0;
     }
 
     if (isDisabled) {

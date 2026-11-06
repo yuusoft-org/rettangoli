@@ -924,7 +924,7 @@ export const prepareOverlayScrollbarControllerHotUpdate = ({
 
   const nextController = new Controller({
     host: instance,
-    shadowRoot: instance.shadow,
+    shadowRoot: instance.shadowRoot,
     slotElement: instance._slotElement,
   });
   const wasConnected = instance.isConnected;

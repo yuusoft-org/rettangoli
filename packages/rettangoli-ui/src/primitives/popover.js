@@ -124,11 +124,11 @@ class RettangoliPopoverElement extends HTMLElement {
     super();
     RettangoliPopoverElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliPopoverElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliPopoverElement.styleSheet];
 
     // Create dialog element
     this._dialogElement = document.createElement('dialog');
-    this.shadow.appendChild(this._dialogElement);
+    this.shadowRoot.appendChild(this._dialogElement);
 
     // Handle dialog backdrop clicks to close popover
     this._dialogElement.addEventListener('click', (e) => {

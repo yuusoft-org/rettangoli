@@ -109,17 +109,17 @@ class RettangoliViewElement extends HTMLElement {
     super();
     RettangoliViewElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliViewElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliViewElement.styleSheet];
 
     // Create initial DOM structure
     this._styleElement = document.createElement("style");
     this._slotElement = document.createElement("slot");
     this._linkElement = null;
 
-    this.shadow.appendChild(this._styleElement);
+    this.shadowRoot.appendChild(this._styleElement);
     this._scrollbarController = new OverlayScrollbarController({
       host: this,
-      shadowRoot: this.shadow,
+      shadowRoot: this.shadowRoot,
       slotElement: this._slotElement,
     });
     this._updateDOM();
@@ -149,7 +149,7 @@ class RettangoliViewElement extends HTMLElement {
     const rel = this.getAttribute("rel");
 
     this._linkElement = syncLinkOverlay({
-      shadowRoot: this.shadow,
+      shadowRoot: this.shadowRoot,
       slotElement: this._slotElement,
       linkElement: this._linkElement,
       href,

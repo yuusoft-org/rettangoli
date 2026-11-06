@@ -151,7 +151,7 @@ class RettangoliButtonElement extends HTMLElement {
     super();
     RettangoliButtonElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliButtonElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliButtonElement.styleSheet];
     
     // Create initial DOM structure
     this._containerElement = null;
@@ -258,8 +258,8 @@ class RettangoliButtonElement extends HTMLElement {
       const nextSurfaceElement = document.createElement(requiredTag);
       nextSurfaceElement.className = 'surface';
       nextSurfaceElement.append(...this._surfaceElement.childNodes);
-      if (this._surfaceElement.parentNode === this.shadow) {
-        this.shadow.replaceChild(nextSurfaceElement, this._surfaceElement);
+      if (this._surfaceElement.parentNode === this.shadowRoot) {
+        this.shadowRoot.replaceChild(nextSurfaceElement, this._surfaceElement);
       }
       this._surfaceElement = nextSurfaceElement;
     }
@@ -304,8 +304,8 @@ class RettangoliButtonElement extends HTMLElement {
       this._surfaceElement.removeAttribute("aria-label");
     }
 
-    if (this._surfaceElement.parentNode !== this.shadow) {
-      this.shadow.appendChild(this._surfaceElement);
+    if (this._surfaceElement.parentNode !== this.shadowRoot) {
+      this.shadowRoot.appendChild(this._surfaceElement);
     }
     this._containerElement = this._surfaceElement;
   }

@@ -98,6 +98,28 @@ try {
   check(events.change[events.change.length - 1] === "#e74c3c", "Enter must commit value-change");
   check(await page.evaluate(() => document.getElementById("picker").value) === "#e74c3c", "hex commit must apply the color");
 
+  // Typed hex keeps its case and caret until it commits.
+  const hexField = () => page.evaluate(() => {
+    const host = document.getElementById("picker");
+    const input = host.shadowRoot.querySelector(".hexfield input");
+    return { text: input.value, caret: input.selectionStart, value: host.value };
+  });
+  await page.locator("#picker .hexfield input").fill("");
+  await page.keyboard.type("ABCDEF");
+  let typed = await hexField();
+  check(typed.text === "ABCDEF" && typed.caret === 6, `typed hex must stay ABCDEF with the caret at 6, got ${JSON.stringify(typed)}`);
+  check(typed.value === "#abcdef", `six typed digits must live-update the value, got ${typed.value}`);
+  await page.evaluate(() =>
+    document.getElementById("picker").shadowRoot.querySelector(".hexfield input").setSelectionRange(2, 3));
+  await page.keyboard.type("1");
+  typed = await hexField();
+  check(typed.text === "AB1DEF" && typed.caret === 3, `a mid-string edit must keep the caret, got ${JSON.stringify(typed)}`);
+  await page.keyboard.press("Enter");
+  typed = await hexField();
+  events = await page.evaluate(() => window.events);
+  check(typed.text === "ab1def", `Enter must normalize the hex field, got ${typed.text}`);
+  check(events.change[events.change.length - 1] === "#ab1def", "Enter must commit the typed hex");
+
   await page.evaluate(() => document.getElementById("picker").shadowRoot.querySelector(".sv").focus());
   await page.keyboard.press("Escape");
   const afterEscape = await page.evaluate(() => {

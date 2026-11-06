@@ -202,7 +202,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     super();
     RettangoliColorPickerElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliColorPickerElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliColorPickerElement.styleSheet];
 
     // Initialize style tracking properties
     this._styles = createResponsiveStyleBuckets();
@@ -226,8 +226,8 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._triggerSwatchElement.className = 'swatch';
     this._triggerElement.appendChild(this._triggerSwatchElement);
 
-    this.shadow.appendChild(this._styleElement);
-    this.shadow.appendChild(this._triggerElement);
+    this.shadowRoot.appendChild(this._styleElement);
+    this.shadowRoot.appendChild(this._triggerElement);
 
     this._popoverElement = null;
     this._svElement = null;
@@ -549,7 +549,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     hexRow.append(chip, hexField);
 
     popover.append(sv, hue, hexRow);
-    this.shadow.appendChild(popover);
+    this.shadowRoot.appendChild(popover);
 
     this._popoverElement = popover;
     this._svElement = sv;
@@ -615,7 +615,8 @@ class RettangoliColorPickerElement extends HTMLElement {
         const rgb = parseHex(raw);
         const hex = rgbToHex(rgb);
         if (hex !== this._hexValue()) {
-          this._setRgbLive(rgb);
+          // Keep the typed text (case and caret) until it commits
+          this._setRgbLive(rgb, { syncHexField: false });
         }
       }
     });
@@ -635,9 +636,9 @@ class RettangoliColorPickerElement extends HTMLElement {
     });
   }
 
-  _setRgbLive(rgb) {
+  _setRgbLive(rgb, { syncHexField = true } = {}) {
     this._hsv = rgbToHsv(rgb, this._hsv);
-    this._render();
+    this._render({ syncHexField });
     this._emitValue('value-input');
   }
 
@@ -663,7 +664,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._hexFieldElement.classList.remove('invalid');
   }
 
-  _render() {
+  _render({ syncHexField = true } = {}) {
     const { h, s, v } = this._hsv;
     const hex = this._hexValue();
     this._triggerSwatchElement.style.background = hex;
@@ -687,7 +688,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._hueElement.setAttribute('aria-valuenow', String(Math.round(h)));
 
     this._chipElement.style.background = hex;
-    if (document.activeElement !== this._hexInputElement) {
+    if (syncHexField) {
       this._showHexValue();
     }
   }

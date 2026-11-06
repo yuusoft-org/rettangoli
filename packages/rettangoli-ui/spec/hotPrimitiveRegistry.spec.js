@@ -812,7 +812,7 @@ describe("overlay scrollbar primitive migration", () => {
       isConnected: true,
       scrollLeft: 31,
       scrollTop: 47,
-      shadow: shadowRoot,
+      shadowRoot,
     };
     const previousController = new OverlayScrollbarController({
       host: instance,

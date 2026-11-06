@@ -174,7 +174,7 @@ class RettangoliCheckboxElement extends HTMLElement {
     this._isSyncingLabelState = false;
     RettangoliCheckboxElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliCheckboxElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliCheckboxElement.styleSheet];
 
     this._styles = {
       default: {},
@@ -209,10 +209,10 @@ class RettangoliCheckboxElement extends HTMLElement {
     this._labelElement.appendChild(this._labelSlotElement);
     this._styleElement = document.createElement('style');
 
-    this.shadow.appendChild(this._styleElement);
+    this.shadowRoot.appendChild(this._styleElement);
     this._wrapperElement.appendChild(this._controlElement);
     this._wrapperElement.appendChild(this._labelElement);
-    this.shadow.appendChild(this._wrapperElement);
+    this.shadowRoot.appendChild(this._wrapperElement);
 
     this._inputElement.addEventListener('change', this._onChange);
   }

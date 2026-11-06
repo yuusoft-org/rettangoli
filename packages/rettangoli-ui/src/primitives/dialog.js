@@ -359,12 +359,12 @@ class RettangoliDialogElement extends HTMLElement {
     super();
     RettangoliDialogElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliDialogElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliDialogElement.styleSheet];
 
     // Create dialog element
     this._dialogElement = document.createElement("dialog");
     this._dialogElement.tabIndex = -1;
-    this.shadow.appendChild(this._dialogElement);
+    this.shadowRoot.appendChild(this._dialogElement);
 
     // Store reference for content slot
     this._slotElement = null;
@@ -940,7 +940,7 @@ class RettangoliDialogElement extends HTMLElement {
 
       this._updateActiveLayoutAttribute();
       this._dialogElement.showModal();
-      if (this.shadow.activeElement === this._closeButtonElement) {
+      if (this.shadowRoot.activeElement === this._closeButtonElement) {
         this._dialogElement.focus({ preventScroll: true });
       }
 

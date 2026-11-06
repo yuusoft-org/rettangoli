@@ -80,14 +80,14 @@ class RettangoliImageElement extends HTMLElement {
     super();
     RettangoliImageElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliImageElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliImageElement.styleSheet];
 
     // Create initial DOM structure
     this._styleElement = document.createElement("style");
     this._imgElement = document.createElement("img");
     this._linkElement = null;
 
-    this.shadow.appendChild(this._styleElement);
+    this.shadowRoot.appendChild(this._styleElement);
     this._updateDOM();
   }
 
@@ -117,7 +117,7 @@ class RettangoliImageElement extends HTMLElement {
     const rel = this.getAttribute("rel");
 
     this._linkElement = syncLinkWrapper({
-      shadowRoot: this.shadow,
+      shadowRoot: this.shadowRoot,
       childElement: this._imgElement,
       linkElement: this._linkElement,
       href,
@@ -207,11 +207,11 @@ class RettangoliImageElement extends HTMLElement {
       });
 
       if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none !important";
+        this._styles[size].display = "none";
       }
 
       if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "block !important";
+        this._styles[size].display = "block";
       }
     });
 
