@@ -67,10 +67,10 @@ For custom-element usage against registry contracts:
 5. bound custom-element handlers must exist in host `.handlers.js` exports
 6. when target event schema declares required payload keys, handler signatures must accept compatible payload parameters
 
-## RTGL-SPEC-FE-011: Listener payload-to-symbol contract
+## RTGL-SPEC-FE-011: Listener payload shape
 
-1. Ref listener payload object literals are validated against handler/action second-parameter object destructuring keys.
-2. Missing payload keys emit deterministic contract diagnostics.
+1. A ref listener `payload` must be a YAML mapping; FE ignores any other payload value.
+2. A truthy non-mapping payload (string, number, `true`, list) emits `RTGL-CHECK-LISTENER-010`. A falsy payload (`null`, `false`, `0`, `""`) means no payload and is not reported.
 
 ## RTGL-SPEC-FE-012: Method exposure and invocation compatibility
 

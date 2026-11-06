@@ -1,0 +1,13 @@
+refs:
+  saveButton:
+    eventListeners:
+      click:
+        handler: onSave
+  openButton:
+    eventListeners:
+      click:
+        handler: onOpen
+template:
+  - rtgl-button#saveButton: Save
+  - rtgl-button#openButton: Open
+styles: {}

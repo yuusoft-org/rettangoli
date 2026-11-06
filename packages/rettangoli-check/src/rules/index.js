@@ -24,7 +24,7 @@ export const runRules = ({
   diagnostics.push(...runConstantsRules({ models }));
   diagnostics.push(...runJemplRules({ models }));
   diagnostics.push(...runListenerConfigRules({ models, includeStyle }));
-  diagnostics.push(...runCrossFileSymbolRules({ models }));
+  diagnostics.push(...runCrossFileSymbolRules({ models, includeStyle }));
   diagnostics.push(...runMethodRules({ models }));
   diagnostics.push(...runLifecycleRules({ models }));
   if (includeExpression) {

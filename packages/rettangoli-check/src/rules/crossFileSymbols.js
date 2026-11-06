@@ -19,7 +19,7 @@ const getSchemaMethodNames = (model) => {
   return Object.keys(methodProps);
 };
 
-export const runCrossFileSymbolRules = ({ models = [] }) => {
+export const runCrossFileSymbolRules = ({ models = [], includeStyle = false }) => {
   const diagnostics = [];
 
   models.forEach((model) => {
@@ -36,7 +36,8 @@ export const runCrossFileSymbolRules = ({ models = [] }) => {
       const handlerSymbol = listenerSymbols.handler;
       const actionSymbol = listenerSymbols.action;
 
-      if (handlerSymbol.isValid && isValidHandlerSymbol(handlerSymbol.value)) {
+      // In style mode HANDLER-001 already reports handlers without the 'handle' prefix.
+      if (handlerSymbol.isValid && (!includeStyle || isValidHandlerSymbol(handlerSymbol.value))) {
         if (!model.handlers.exports.has(handlerSymbol.value)) {
           diagnostics.push({
             code: "RTGL-CHECK-SYMBOL-001",

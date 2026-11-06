@@ -112,101 +112,73 @@ export const validateElementIdForRefs = (elementIdForRefs) => {
   }
 };
 
-const assertBooleanEventOption = ({ optionName, optionValue, eventType, refKey }) => {
-  if (optionValue === undefined) {
-    return;
+// Listener options FE validates, in FE's validation order, with their value type.
+export const EVENT_OPTION_TYPES = [
+  ["preventDefault", "boolean"],
+  ["stopPropagation", "boolean"],
+  ["stopImmediatePropagation", "boolean"],
+  ["targetOnly", "boolean"],
+  ["once", "boolean"],
+  ["debounce", "number"],
+  ["throttle", "number"],
+];
+
+const hasOwn = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
+
+const isValidEventOptionValue = (type, value) => {
+  if (type === "boolean") {
+    return typeof value === "boolean";
   }
-  if (typeof optionValue !== "boolean") {
-    throw new Error(
-      `[Parser] Invalid '${optionName}' for event '${eventType}' on ref '${refKey}'. Expected boolean.`,
-    );
-  }
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
 };
 
-const assertNumberEventOption = ({ optionName, optionValue, eventType, refKey }) => {
-  if (optionValue === undefined) {
-    return;
-  }
-  if (
-    typeof optionValue !== "number"
-    || Number.isNaN(optionValue)
-    || !Number.isFinite(optionValue)
-    || optionValue < 0
-  ) {
-    throw new Error(
-      `[Parser] Invalid '${optionName}' for event '${eventType}' on ref '${refKey}'. Expected non-negative number.`,
-    );
-  }
-};
-
-export const validateEventConfig = ({ eventType, eventConfig, refKey }) => {
+// Every problem FE's validateEventConfig would throw for, in the order it checks them.
+// Each issue is { kind, option?, message }; `message` is FE's error message.
+export const collectEventConfigIssues = ({ eventType, eventConfig, refKey }) => {
   if (typeof eventConfig !== "object" || eventConfig === null) {
-    throw new Error(
-      `[Parser] Invalid event config for event '${eventType}' on ref '${refKey}'.`,
-    );
+    return [{
+      kind: "invalid-config",
+      message: `[Parser] Invalid event config for event '${eventType}' on ref '${refKey}'.`,
+    }];
   }
 
-  const hasDebounce = Object.prototype.hasOwnProperty.call(eventConfig, "debounce");
-  const hasThrottle = Object.prototype.hasOwnProperty.call(eventConfig, "throttle");
-
-  assertBooleanEventOption({
-    optionName: "preventDefault",
-    optionValue: eventConfig.preventDefault,
-    eventType,
-    refKey,
-  });
-  assertBooleanEventOption({
-    optionName: "stopPropagation",
-    optionValue: eventConfig.stopPropagation,
-    eventType,
-    refKey,
-  });
-  assertBooleanEventOption({
-    optionName: "stopImmediatePropagation",
-    optionValue: eventConfig.stopImmediatePropagation,
-    eventType,
-    refKey,
-  });
-  assertBooleanEventOption({
-    optionName: "targetOnly",
-    optionValue: eventConfig.targetOnly,
-    eventType,
-    refKey,
-  });
-  assertBooleanEventOption({
-    optionName: "once",
-    optionValue: eventConfig.once,
-    eventType,
-    refKey,
-  });
-  assertNumberEventOption({
-    optionName: "debounce",
-    optionValue: eventConfig.debounce,
-    eventType,
-    refKey,
-  });
-  assertNumberEventOption({
-    optionName: "throttle",
-    optionValue: eventConfig.throttle,
-    eventType,
-    refKey,
+  const issues = [];
+  EVENT_OPTION_TYPES.forEach(([option, type]) => {
+    const value = eventConfig[option];
+    if (value === undefined || isValidEventOptionValue(type, value)) {
+      return;
+    }
+    issues.push({
+      kind: `invalid-${type}`,
+      option,
+      message: `[Parser] Invalid '${option}' for event '${eventType}' on ref '${refKey}'. Expected ${type === "boolean" ? "boolean" : "non-negative number"}.`,
+    });
   });
 
-  if (hasDebounce && hasThrottle) {
-    throw new Error(
-      `[Parser] Event '${eventType}' on ref '${refKey}' cannot define both 'debounce' and 'throttle'.`,
-    );
+  if (hasOwn(eventConfig, "debounce") && hasOwn(eventConfig, "throttle")) {
+    issues.push({
+      kind: "debounce-and-throttle",
+      message: `[Parser] Event '${eventType}' on ref '${refKey}' cannot define both 'debounce' and 'throttle'.`,
+    });
   }
 
   if (eventConfig.handler && eventConfig.action) {
-    throw new Error("Each listener can have handler or action but not both");
+    issues.push({ kind: "handler-and-action", message: "Each listener can have handler or action but not both" });
+  } else if (!eventConfig.handler && !eventConfig.action) {
+    issues.push({ kind: "missing-dispatch", message: "Each listener must define either handler or action" });
   }
-  if (!eventConfig.handler && !eventConfig.action) {
-    throw new Error("Each listener must define either handler or action");
+
+  return issues;
+};
+
+export const validateEventConfig = ({ eventType, eventConfig, refKey }) => {
+  const [issue] = collectEventConfigIssues({ eventType, eventConfig, refKey });
+  if (issue) {
+    throw new Error(issue.message);
   }
 
   return {
-    hasDebounce,
-    hasThrottle,
+    hasDebounce: hasOwn(eventConfig, "debounce"),
+    hasThrottle: hasOwn(eventConfig, "throttle"),
   };
 };

@@ -43,6 +43,16 @@ Default family and severity are inferred from code prefixes:
 - `RTGL-IR-INV-*`: `ir-invariants`, `error`
 - `RTGL-CLI-*`: `cli`, `error`
 
+## Listener Payload Diagnostics
+
+### RTGL-CHECK-LISTENER-010
+
+A ref listener `payload` must be a YAML mapping. FE passes the payload to the handler or action only when it is a mapping, so a string, number, `true` or list payload is silently ignored at runtime. A falsy payload (`null`, `false`, `0`, `""`) is treated as no payload and is not reported.
+
+### RTGL-CHECK-CONTRACT-004 (retired)
+
+Formerly compared the keys of a string payload such as `"{ id: x }"` with the handler or action parameters. FE never uses string payloads, so the rule checked a payload that does nothing. Such payloads now get `RTGL-CHECK-LISTENER-010`, and `RTGL-CHECK-CONTRACT-004` is no longer emitted.
+
 ## Autofix-Capable Diagnostics
 
 ### RTGL-CONTRACT-003

@@ -43,7 +43,7 @@ Negative coverage scenarios:
 - `101-compat-prop-binding-type-mismatch` -> `RTGL-CHECK-COMPAT-004`
 - `104-compat-event-handler-prefix-invalid` -> `RTGL-CHECK-HANDLER-003`
 - `106-compat-event-payload-contract-missing-param` -> `RTGL-CHECK-COMPAT-006`
-- `107-listener-payload-contract-missing-key` -> `RTGL-CHECK-CONTRACT-004`
+- `107-listener-payload-contract-missing-key` -> `RTGL-CHECK-LISTENER-010`
 - `110-method-signature-nonobject-pattern-invalid` -> `RTGL-CHECK-METHOD-001`
 - `112-method-payload-contract-missing-key` -> `RTGL-CHECK-METHOD-003`
 
