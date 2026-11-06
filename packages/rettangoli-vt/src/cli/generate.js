@@ -22,55 +22,10 @@ import {
   waitForServiceReady,
 } from "./service-runtime.js";
 import { writeCaptureManifest } from "../capture-manifest.js";
+import { createCaptureConfig } from "../capture/capture-config.js";
 
 const libraryTemplatesPath = fileURLToPath(new URL("./templates", import.meta.url));
 const libraryStaticPath = fileURLToPath(new URL("./static", import.meta.url));
-
-export function buildCaptureOptions({
-  filesToScreenshot,
-  port,
-  candidatePath,
-  resolvedOptions,
-}) {
-  const {
-    workerCount,
-    screenshotWaitTime,
-    configUrl,
-    waitEvent,
-    waitSelector,
-    waitStrategy,
-    navigationTimeout,
-    readyTimeout,
-    screenshotTimeout,
-    maxRetries,
-    recycleEvery,
-    isolationMode,
-    metricsPath,
-    headless,
-    viewport,
-  } = resolvedOptions;
-
-  return {
-    generatedFiles: filesToScreenshot,
-    serverUrl: `http://localhost:${port}`,
-    screenshotsDir: candidatePath,
-    workerCount,
-    screenshotWaitTime,
-    configUrl,
-    waitEvent,
-    waitSelector,
-    waitStrategy,
-    navigationTimeout,
-    readyTimeout,
-    screenshotTimeout,
-    maxRetries,
-    recycleEvery,
-    isolationMode,
-    metricsPath,
-    headless,
-    viewport,
-  };
-}
 
 /**
  * Main function that orchestrates the entire process
@@ -203,11 +158,11 @@ async function main(options = {}) {
       }
 
       await takeScreenshots(
-        buildCaptureOptions({
-          filesToScreenshot,
+        createCaptureConfig({
+          resolvedOptions,
+          generatedFiles: filesToScreenshot,
           port,
           candidatePath,
-          resolvedOptions,
         }),
       );
     } finally {

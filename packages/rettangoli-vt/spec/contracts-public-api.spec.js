@@ -57,8 +57,7 @@ describe("package exports", () => {
     const { createRettangoliVtWatchPlugin } = await import("../src/cli/index.js");
     expect(() => createRettangoliVtWatchPlugin()).toThrow(TypeError);
     const plugin = createRettangoliVtWatchPlugin({ createWatchClientModuleSource: () => "" });
-    // handleHotUpdate is dead under Vite 8 (hotUpdate wins); a later change deletes it.
-    expect(Object.keys(plugin).filter((key) => key !== "handleHotUpdate").sort()).toEqual([
+    expect(Object.keys(plugin).sort()).toEqual([
       "configureServer",
       "enforce",
       "hotUpdate",

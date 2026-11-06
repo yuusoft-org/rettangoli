@@ -11,7 +11,7 @@ import { load as loadYaml } from "js-yaml";
 import { Liquid } from "liquidjs";
 import { codeToHtml } from "shiki";
 import path from "path";
-import { validateFiniteNumber, validateFrontMatter } from "./validation.js";
+import { validateFrontMatter } from "./validation.js";
 import { createCaptureTasks } from "./capture/spec-loader.js";
 import { runCaptureScheduler } from "./capture/capture-scheduler.js";
 import { deriveAnchorId, deriveSectionPageKey } from "./section-page-key.js";
@@ -248,70 +248,30 @@ function toSectionPageKey(sectionLike) {
 }
 
 /**
- * Take screenshots of all generated HTML files
+ * Take screenshots of all generated HTML files. `config` comes from createCaptureConfig
+ * (src/capture/capture-config.js), which applies the defaults and validates it.
  */
-async function takeScreenshots(options) {
+async function takeScreenshots(config) {
   const {
     generatedFiles,
     serverUrl,
     screenshotsDir,
     workerCount,
-    screenshotWaitTime = 10,
-    configUrl = undefined,
-    waitEvent = undefined,
-    waitSelector = undefined,
-    waitStrategy = undefined,
-    navigationTimeout = 30000,
-    readyTimeout = 30000,
-    screenshotTimeout = 30000,
-    maxRetries = 2,
-    recycleEvery = 0,
-    isolationMode = "fast",
-    metricsPath = join(".rettangoli", "vt", "metrics.json"),
-    headless = true,
-    viewport = undefined,
-  } = options;
-
-  if (!Array.isArray(generatedFiles)) {
-    throw new Error("takeScreenshots: generatedFiles must be an array.");
-  }
-  if (typeof serverUrl !== "string" || serverUrl.trim().length === 0) {
-    throw new Error("takeScreenshots: serverUrl must be a non-empty string.");
-  }
-  if (typeof screenshotsDir !== "string" || screenshotsDir.trim().length === 0) {
-    throw new Error("takeScreenshots: screenshotsDir must be a non-empty string.");
-  }
-
-  validateFiniteNumber(workerCount, "workerCount", { integer: true, min: 1 });
-  validateFiniteNumber(screenshotWaitTime, "screenshotWaitTime", { integer: true, min: 0 });
-  validateFiniteNumber(navigationTimeout, "navigationTimeout", { integer: true, min: 1 });
-  validateFiniteNumber(readyTimeout, "readyTimeout", { integer: true, min: 1 });
-  validateFiniteNumber(screenshotTimeout, "screenshotTimeout", { integer: true, min: 1 });
-  validateFiniteNumber(maxRetries, "maxRetries", { integer: true, min: 0 });
-  validateFiniteNumber(recycleEvery, "recycleEvery", { integer: true, min: 0 });
-
-  if (!["strict", "fast"].includes(isolationMode)) {
-    throw new Error(
-      `Invalid isolationMode "${isolationMode}". Expected "strict" or "fast".`,
-    );
-  }
-  if (waitStrategy !== undefined && waitStrategy !== null) {
-    if (!["networkidle", "load", "event", "selector"].includes(waitStrategy)) {
-      throw new Error(
-        `Invalid waitStrategy "${waitStrategy}". Expected "networkidle", "load", "event", or "selector".`,
-      );
-    }
-  }
-  if (waitEvent !== undefined && waitEvent !== null) {
-    if (typeof waitEvent !== "string" || waitEvent.trim().length === 0) {
-      throw new Error("waitEvent must be a non-empty string when provided.");
-    }
-  }
-  if (waitSelector !== undefined && waitSelector !== null) {
-    if (typeof waitSelector !== "string" || waitSelector.trim().length === 0) {
-      throw new Error("waitSelector must be a non-empty string when provided.");
-    }
-  }
+    screenshotWaitTime,
+    configUrl,
+    waitEvent,
+    waitSelector,
+    waitStrategy,
+    navigationTimeout,
+    readyTimeout,
+    screenshotTimeout,
+    maxRetries,
+    recycleEvery,
+    isolationMode,
+    metricsPath,
+    headless,
+    viewport,
+  } = config;
 
   ensureDirectoryExists(screenshotsDir);
 

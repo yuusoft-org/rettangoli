@@ -623,6 +623,26 @@ const getAffectedSections = ({ configData, specs }) => {
 const isWatchableSpec = (relativePath) =>
   WATCHABLE_SPEC_PATTERN.test(relativePath) && !hasIgnoredSpecSegment(relativePath);
 
+// What the watch client must refresh after a batch (same kinds as sites' classifyWatchChanges).
+// Static CSS can be swapped in place ("assets"); any other static file or a removal needs a
+// "full" reload; spec, template and config changes morph the page ("html").
+const classifyUpdate = (changes) => {
+  const staticChanges = changes.filter((change) => change.scope === "static");
+  if (staticChanges.some((change) =>
+    change.event === "unlink" || !/\.css$/i.test(change.publicPath)
+  )) {
+    return { updateKind: "full", paths: [] };
+  }
+  // enqueueChange keys changes by path, so a batch holds each static file at most once.
+  const assetPaths = staticChanges.map((change) => change.publicPath).sort();
+  const sourcePaths = changes
+    .filter((change) => change.scope !== "static")
+    .map((change) => toPosixPath(change.relativePath));
+  return sourcePaths.length === 0
+    ? { updateKind: "assets", paths: assetPaths }
+    : { updateKind: "html", paths: [...sourcePaths, ...assetPaths] };
+};
+
 const commitStagedOutputs = async (outputs) => {
   const uniqueOutputs = [
     ...new Map(outputs.map((output) => [output.outputPath, output])).values(),
@@ -1019,12 +1039,12 @@ export const createRettangoliVtWatchPlugin = ({
     });
   };
 
-  const sendUpdate = ({ paths = [] } = {}) => {
+  const sendUpdate = ({ updateKind, paths }) => {
     revision += 1;
     currentError = null;
     send({
       type: "reload-current",
-      updateKind: "html",
+      updateKind,
       paths,
       revision,
     });
@@ -1066,6 +1086,7 @@ export const createRettangoliVtWatchPlugin = ({
               currentContext.configPath,
               currentContext.specsPath,
               currentContext.templatesPath,
+              currentContext.userStaticPath,
             ]);
           } else {
             await generateVtWatchSpecs({
@@ -1074,9 +1095,7 @@ export const createRettangoliVtWatchPlugin = ({
               outputDir,
             });
           }
-          sendUpdate({
-            paths: changes.map((change) => toPosixPath(change.relativePath)),
-          });
+          sendUpdate(classifyUpdate(changes));
           logger.log(
             `[VT Watch] Updated ${changes.length} source file(s).`,
           );
@@ -1133,6 +1152,25 @@ export const createRettangoliVtWatchPlugin = ({
         scope: "spec",
       };
     }
+    if (isPathInside(context.userStaticPath, resolvedFilePath)) {
+      const staticPath = path.relative(context.userStaticPath, resolvedFilePath);
+      const publicPath = `/${toPosixPath(staticPath)}`;
+      // The FE entry is served by Vite (see the middleware); it and its source map are FE build
+      // output, not VT assets, and editor files (swap files, backups) are not assets either.
+      if (
+        publicPath === normalizedPublicEntryPath ||
+        publicPath === `${normalizedPublicEntryPath}.map` ||
+        hasIgnoredSpecSegment(staticPath)
+      ) {
+        return null;
+      }
+      return {
+        filePath: resolvedFilePath,
+        publicPath,
+        relativePath: path.relative(context.vtPath, resolvedFilePath),
+        scope: "static",
+      };
+    }
     return null;
   };
 
@@ -1172,6 +1210,7 @@ export const createRettangoliVtWatchPlugin = ({
         currentContext.configPath,
         currentContext.specsPath,
         currentContext.templatesPath,
+        currentContext.userStaticPath,
       ]);
 
       const onSourceEvent = (event, filePath) => {
@@ -1258,20 +1297,6 @@ export const createRettangoliVtWatchPlugin = ({
           }
         }
       });
-    },
-    handleHotUpdate(context) {
-      const sourceChange = currentContext
-        ? classifySourcePath(context.file, currentContext)
-        : null;
-      if (sourceChange) {
-        const boundaryModule = devServer?.moduleGraph.getModuleById(
-          RESOLVED_WATCH_BOUNDARY_ID,
-        );
-        return boundaryModule ? [boundaryModule] : context.modules;
-      }
-      const generatedChange = isPathInside(resolvedOutputDir, path.resolve(context.file));
-      if (generatedChange) return [];
-      return undefined;
     },
     hotUpdate(options) {
       const sourceChange = currentContext

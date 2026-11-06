@@ -930,10 +930,10 @@ describe("VT watch Vite plugin", () => {
     expect(response.body).toContain("data-rtgl-watch-client");
     expect(response.body).toContain("/__rettangoli_vt_watch_client__.js");
 
-    expect(plugin.handleHotUpdate({
-      file: specPath,
-      modules: [],
-    })).toEqual([boundaryModule]);
+    expect(plugin.hotUpdate.call(
+      { environment: { moduleGraph: server.moduleGraph } },
+      { file: specPath, modules: [] },
+    )).toEqual([boundaryModule]);
     expect(server.ws.send).not.toHaveBeenCalled();
 
     await writeFile(specPath, "<rtgl-view id=\"subject\">Live</rtgl-view>");

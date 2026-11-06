@@ -2,6 +2,7 @@ import { join } from "node:path";
 import sharp from "sharp";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import generate from "../src/cli/generate.js";
+import { createCaptureConfig } from "../src/capture/capture-config.js";
 import { startWebServer, takeScreenshots } from "../src/common.js";
 import {
   availablePort,
@@ -60,18 +61,20 @@ describeE2E("encoded spec paths in a real browser", () => {
     const port = await availablePort();
     const server = await startWebServer(siteDir, join(project.root, "static"), port);
     try {
-      await expect(takeScreenshots({
+      await expect(takeScreenshots(createCaptureConfig({
+        resolvedOptions: {
+          metricsPath: join(project.root, "metrics.json"),
+          workerCount: 1,
+          maxRetries: 0,
+          waitStrategy: "load",
+        },
         generatedFiles: [
           { path: "forms/plain.html", frontMatter: {} },
           { path: "forms/gone.html", frontMatter: {} },
         ],
-        serverUrl: `http://localhost:${port}`,
-        screenshotsDir: join(siteDir, "candidate"),
-        metricsPath: join(project.root, "metrics.json"),
-        workerCount: 1,
-        maxRetries: 0,
-        waitStrategy: "load",
-      })).rejects.toThrow(
+        port,
+        candidatePath: join(siteDir, "candidate"),
+      }))).rejects.toThrow(
         "Failed to process 1 screenshot file(s):\n"
           + `- forms/gone.html: Worker 1 failed "forms/gone.html": Navigation to http://localhost:${port}/candidate/forms/gone.html returned HTTP 404 (spec "forms/gone.html").`,
       );
