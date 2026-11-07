@@ -1,5 +1,5 @@
 // FE rules re-implemented here so that check does not import FE at runtime. The binding helpers below come from
-// @rettangoli/fe 1.6.1 in this monorepo, copied verbatim unless noted:
+// @rettangoli/fe 2.0.0 in this monorepo, copied verbatim unless noted:
 // - packages/rettangoli-fe/src/core/view/bindingTokens.js: getAttributeAssignments and its helpers (FE's
 //   scanAssignments, behind tokenizeBindings; here each assignment is a regex-match-shaped array)
 // - packages/rettangoli-fe/src/core/view/bindings.js: isValidAttributeName, collectBindingNames (toCamelCase is
