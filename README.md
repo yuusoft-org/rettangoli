@@ -22,7 +22,6 @@ bun install
 ### Packages
 - **[rettangoli-cli](./packages/rettangoli-cli/)** - The official command-line interface for the Rettangoli framework
 - **[rettangoli-check](./packages/rettangoli-check/)** - Compiler-grade static analysis and contract checker for Rettangoli language stack
-- **[rettangoli-ansi-json](./packages/rettangoli-ansi-json/)** - JSON-to-ANSI rendering library for styled terminal output
 - **[rettangoli-fe](./packages/rettangoli-fe/)** - Frontend framework with YAML views, state management, and event handlers
 - **[rettangoli-sitekit](./packages/rettangoli-sitekit/)** - Curated reusable site themes, templates, partials, schemas, and VT coverage
 - **[rettangoli-sites](./packages/rettangoli-sites/)** - Static site generator using Markdown and YAML (formerly Sitic)
@@ -33,5 +32,5 @@ bun install
 
 To release a new version to npm:
 
-1. Create a GitHub release tag for the package you want to publish: `cli-v*` for `rtgl`, `ansi-json-v*` for `@rettangoli/ansi-json`, `check-v*` for `@rettangoli/check`, `fe-v*` for `@rettangoli/fe`, `sitekit-v*` for `@rettangoli/sitekit`, `sites-v*` for `@rettangoli/sites`, `ui-v*` for `@rettangoli/ui`, `vt-v*` for `@rettangoli/vt`
+1. Create a GitHub release tag for the package you want to publish: `cli-v*` for `rtgl`, `check-v*` for `@rettangoli/check`, `fe-v*` for `@rettangoli/fe`, `sitekit-v*` for `@rettangoli/sitekit`, `sites-v*` for `@rettangoli/sites`, `ui-v*` for `@rettangoli/ui`, `vt-v*` for `@rettangoli/vt`
 2. The release will automatically trigger the npm publish workflow. The actual version will be based on the version number in `package.json`

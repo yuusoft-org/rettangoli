@@ -33,7 +33,6 @@ jobs:
           - { name: cli, dir: packages/rettangoli-cli, run: bun run test }
           - { name: sites, dir: packages/rettangoli-sites, run: bun run test }
           - { name: sitekit, dir: packages/rettangoli-sitekit, run: bun run test }
-          - { name: ansi-json, dir: packages/rettangoli-ansi-json, run: bun run test }
           - { name: check, dir: packages/rettangoli-check, run: bun run ci }
           - { name: ui-contracts, dir: packages/rettangoli-ui, run: bun run check:contracts }
           # Packed-package smoke tests
