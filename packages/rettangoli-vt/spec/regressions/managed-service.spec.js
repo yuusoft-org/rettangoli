@@ -166,7 +166,10 @@ describe("managed service readiness and stop", () => {
 
   it("stops the service when the process exits, until stopManagedService runs", async () => {
     const before = process.listenerCount("exit");
-    const handle = start("sleep 30");
+    // `exec`: this stops the service right after starting it, and dash blocks signals while it
+    // forks a command, so a SIGTERM in that window would reach only the shell and the stop would
+    // wait for its 10 s timeout.
+    const handle = start("exec sleep 30");
     expect(process.listenerCount("exit")).toBe(before + 1);
     await stopManagedService(handle);
     expect(process.listenerCount("exit")).toBe(before);
