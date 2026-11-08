@@ -1,0 +1,12 @@
+refs:
+  first:
+    eventListeners:
+      click:
+        handler: handleA
+  second:
+    eventListeners:
+      click:
+        handler: handleB
+template:
+  - rtgl-button#first: A
+  - rtgl-button#second: B

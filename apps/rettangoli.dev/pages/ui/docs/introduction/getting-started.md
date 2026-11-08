@@ -118,7 +118,7 @@ import {
 | `tabs` | Tabs | Tabs label |
 | `tagRemove` | Remove tag | Tag remove button label |
 | `tagSelectAddOption` | Add tag | Tag select add option in the popover |
-| `tagSelectAdded` | Added | Tag select suffix on added options |
+| `tagSelectAdded` | Added | Currently unused: no component shows it |
 | `tagSelectEmpty` | No tags available | Tag select popover with no options |
 | `tagSelectPlaceholder` | Add tag | Tag select trigger placeholder |
 | `tagSelectSave` | Save | Tag select save button |

@@ -118,7 +118,7 @@
     },
     {
       "id": "RTGL-SPEC-FE-011",
-      "title": "Listener payload-to-symbol contract",
+      "title": "Listener payload shape",
       "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
     },
     {

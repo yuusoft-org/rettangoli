@@ -1,4 +1,5 @@
 import { buildComponentScopeGraph } from "../core/scopeGraph.js";
+import { isObjectRecord } from "../utils/object.js";
 
 const SORT_STRING = (left, right) => String(left).localeCompare(String(right));
 
@@ -7,8 +8,6 @@ const sortByComponentAndName = (left, right) => (
   || String(left.name).localeCompare(String(right.name))
   || String(left.kind || "").localeCompare(String(right.kind || ""))
 );
-
-const isObjectRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
 const toSortedSetArray = (value) => {
   if (!(value instanceof Set)) {
@@ -492,7 +491,7 @@ export const resolveFeSymbols = ({ models = [] } = {}) => {
             name: handlerName,
             resolved: hasHandler,
           });
-          if (!hasHandler) {
+          if (!hasHandler && model?.handlers?.exportsKnown !== false) {
             diagnostics.push({
               code: "RTGL-CHECK-SEM-004",
               severity: "error",
@@ -518,7 +517,7 @@ export const resolveFeSymbols = ({ models = [] } = {}) => {
             name: actionName,
             resolved: hasAction,
           });
-          if (!hasAction) {
+          if (!hasAction && model?.store?.exportsKnown !== false) {
             diagnostics.push({
               code: "RTGL-CHECK-SEM-004",
               severity: "error",
@@ -546,7 +545,7 @@ export const resolveFeSymbols = ({ models = [] } = {}) => {
           name: methodName,
           resolved: hasMethod,
         });
-        if (!hasMethod) {
+        if (!hasMethod && model?.methods?.exportsKnown !== false) {
           diagnostics.push({
             code: "RTGL-CHECK-SEM-004",
             severity: "error",

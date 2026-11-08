@@ -56,6 +56,12 @@ export const createRefMatchers = (refs) => {
   });
 };
 
+// Internal (not in ./contracts): the id if id refs can match it (camelCase),
+// otherwise null.
+export const toIdRefMatchableId = (id) => (
+  typeof id === "string" && REF_ID_REGEX.test(id) ? id : null
+);
+
 export const validateElementIdForRefs = (elementIdForRefs) => {
   if (!REF_ID_REGEX.test(elementIdForRefs)) {
     throw new Error(

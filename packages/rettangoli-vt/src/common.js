@@ -1,5 +1,4 @@
 import {
-  readdirSync,
   statSync,
   readFileSync,
   writeFileSync,
@@ -9,27 +8,22 @@ import {
 import { join, dirname, resolve, extname } from "path";
 import http from "http";
 import { load as loadYaml } from "js-yaml";
-import { Liquid } from "liquidjs";
 import { codeToHtml } from "shiki";
 import path from "path";
-import { validateFiniteNumber, validateFrontMatter } from "./validation.js";
+import { validateFrontMatter } from "./validation.js";
 import { createCaptureTasks } from "./capture/spec-loader.js";
 import { runCaptureScheduler } from "./capture/capture-scheduler.js";
 import { deriveAnchorId, deriveSectionPageKey } from "./section-page-key.js";
+import {
+  assertUniqueHtmlOutputs,
+  listSpecFiles,
+  removeExtension,
+  toHtmlOutputPath,
+} from "./spec-files.js";
+import { isPathInside } from "./path-safety.js";
+import { createLiquidEngine } from "./render/liquid.js";
 
-const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
-
-const convertToHtmlExtension = (filePath) => {
-  if (filePath.endsWith(".html")) {
-    return filePath;
-  }
-  // Remove existing extension and add .html
-  const baseName = removeExtension(filePath);
-  return baseName + ".html";
-};
-
-// Initialize LiquidJS with output escaping disabled
-const engine = new Liquid();
+const engine = createLiquidEngine();
 
 /**
  * Read and parse a YAML file
@@ -44,37 +38,11 @@ async function readYaml(filePath) {
   }
 }
 
-// Add custom filter to derive slug-safe ids for URLs and anchors.
-engine.registerFilter("slug", (value, fallbackValue) => {
-  return deriveAnchorId(value, fallbackValue);
-});
-
-// Add custom filter to remove file extension
-engine.registerFilter("remove_ext", (value) => {
-  if (typeof value !== "string") return "";
-  return removeExtension(value);
-});
-
 /**
- * Get all files from a directory recursively
+ * Get all spec files from a directory recursively (byte-sorted, stray files ignored)
  */
 function getAllFiles(dirPath, arrayOfFiles = []) {
-  if (!existsSync(dirPath)) {
-    console.log(`Directory ${dirPath} does not exist, skipping...`);
-    return arrayOfFiles;
-  }
-
-  const files = readdirSync(dirPath);
-
-  files.forEach((file) => {
-    const filePath = join(dirPath, file);
-    if (statSync(filePath).isDirectory()) {
-      arrayOfFiles = getAllFiles(filePath, arrayOfFiles);
-    } else {
-      arrayOfFiles.push(filePath);
-    }
-  });
-
+  arrayOfFiles.push(...listSpecFiles(dirPath, { logger: console }));
   return arrayOfFiles;
 }
 
@@ -110,63 +78,85 @@ function ensureDirectoryExists(dirPath) {
   }
 }
 /**
- * Main function to generate HTML files from specs
+ * Render one spec file with its template. Returns its processedFiles entry; writes nothing.
+ */
+async function renderSpecFile({ specsDir, filePath, templateConfig }) {
+  const relativePath = path.relative(specsDir, filePath);
+  const fileContent = readFileSync(filePath, "utf8");
+  const { content, frontMatter } = extractFrontMatter(fileContent);
+  const lang = filePath.includes(".yaml") ? "yaml" : "html";
+  const contentShiki = await codeToHtml(content, {
+    lang,
+    theme: "slack-dark",
+  });
+
+  let frontMatterObj = null;
+  if (frontMatter) {
+    frontMatterObj = loadYaml(frontMatter, { filename: relativePath });
+  }
+
+  validateFrontMatter(frontMatterObj, relativePath);
+
+  const resolvedTemplatePath = frontMatterObj?.template ?
+    join(templateConfig.vtPath, "templates", frontMatterObj.template) :
+    templateConfig.defaultTemplate;
+  if (!existsSync(resolvedTemplatePath)) {
+    throw new Error(`Template not found for "${relativePath}": ${resolvedTemplatePath}`);
+  }
+  const templateToUse = readFileSync(resolvedTemplatePath, "utf8");
+
+  // Render template
+  let renderedContent;
+  try {
+    renderedContent = engine.parseAndRenderSync(templateToUse, {
+      content: content,
+      frontMatter: frontMatterObj || {},
+    });
+  } catch (error) {
+    throw new Error(
+      `Failed to render template "${resolvedTemplatePath}" for "${relativePath}": ${error.message}`,
+      { cause: error },
+    );
+  }
+
+  return {
+    path: relativePath,
+    content,
+    contentShiki,
+    frontMatter: frontMatterObj,
+    fullContent: fileContent,
+    renderedContent,
+  };
+}
+
+/**
+ * Main function to generate HTML files from specs. `templateConfig.filePaths` replaces the discovery
+ * of every spec under specsDir; with a null outputDir the pages are only rendered (watch mode).
  */
 async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
   try {
     const logger = templateConfig.logger || console;
-    const defaultTemplateContent = readFileSync(templatePath, "utf8");
-    ensureDirectoryExists(outputDir);
+    // Fails early when the default template is missing.
+    readFileSync(templatePath, "utf8");
+    if (outputDir !== null) {
+      ensureDirectoryExists(outputDir);
+    }
 
-    const allFiles = getAllFiles(specsDir);
+    const allFiles = templateConfig.filePaths ?? getAllFiles(specsDir);
+    assertUniqueHtmlOutputs(allFiles.map((filePath) => path.relative(specsDir, filePath)));
 
     const processedFiles = [];
     for (const filePath of allFiles) {
-      const fileContent = readFileSync(filePath, "utf8");
-      const { content, frontMatter } = extractFrontMatter(fileContent);
-      const lang = filePath.includes(".yaml") ? "yaml" : "html";
-      const contentShiki = await codeToHtml(content, {
-        lang,
-        theme: "slack-dark",
-      });
+      const processedFile = await renderSpecFile({ specsDir, filePath, templateConfig });
 
-      let frontMatterObj = null;
-      if (frontMatter) {
-        frontMatterObj = loadYaml(frontMatter);
+      if (outputDir !== null) {
+        const outputPath = join(outputDir, toHtmlOutputPath(processedFile.path));
+        ensureDirectoryExists(dirname(outputPath));
+        writeFileSync(outputPath, processedFile.renderedContent, "utf8");
+        logger.log(`Generated: ${outputPath}`);
       }
 
-      const relativePath = path.relative(specsDir, filePath);
-      validateFrontMatter(frontMatterObj, relativePath);
-
-      let templateToUse = defaultTemplateContent;
-      const resolvedTemplatePath = frontMatterObj?.template ?
-        join(templateConfig.vtPath, "templates", frontMatterObj.template) :
-        templateConfig.defaultTemplate;
-      if (!existsSync(resolvedTemplatePath)) {
-        throw new Error(`Template not found for "${relativePath}": ${resolvedTemplatePath}`);
-      }
-      templateToUse = readFileSync(resolvedTemplatePath, "utf8");
-
-      // Render template
-      const renderedContent = engine.parseAndRenderSync(templateToUse, {
-        content: content,
-        frontMatter: frontMatterObj || {},
-      });
-
-      // Save file
-      const outputPath = join(outputDir, convertToHtmlExtension(relativePath));
-      ensureDirectoryExists(dirname(outputPath));
-      writeFileSync(outputPath, renderedContent, "utf8");
-      logger.log(`Generated: ${outputPath}`);
-
-      processedFiles.push({
-        path: relativePath,
-        content,
-        contentShiki,
-        frontMatter: frontMatterObj,
-        fullContent: fileContent,
-        renderedContent,
-      });
+      processedFiles.push(processedFile);
     }
 
     logger.log(`Successfully generated ${processedFiles.length} files`);
@@ -176,36 +166,43 @@ async function generateHtml(specsDir, templatePath, outputDir, templateConfig) {
   }
 }
 
+// Returns the first file under `roots` that the decoded URL path names, or null. A path that
+// resolves outside a root is never served from it.
+function findServedFile(roots, decodedPathname) {
+  for (const root of roots) {
+    const filePath = join(root, decodedPathname);
+    if (isPathInside(root, filePath) && existsSync(filePath) && statSync(filePath).isFile()) {
+      return filePath;
+    }
+  }
+  return null;
+}
+
 /**
  * Start a web server to serve static files
  */
 async function startWebServer(artifactsDir, staticDir, port) {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, `http://localhost:${port}`);
-    let path = url.pathname;
     // Default to index.html for root path
-    if (path === "/") {
-      path = "/index.html";
+    let pathname = url.pathname === "/" ? "/index.html" : url.pathname;
+    try {
+      pathname = decodeURIComponent(pathname);
+    } catch {
+      // Not a valid escape (a literal "%" in a file name): look the path up as sent.
     }
 
-    // Remove leading slash for file path
-    const filePath = path.startsWith("/") ? path.slice(1) : path;
-
-    // Try to serve from artifacts directory first
-    const artifactsPath = join(artifactsDir, filePath);
-    if (existsSync(artifactsPath) && statSync(artifactsPath).isFile()) {
-      const fileContent = readFileSync(artifactsPath);
-      const contentType = getContentType(artifactsPath);
-      res.writeHead(200, { "Content-Type": contentType });
-      res.end(fileContent);
+    if (pathname.includes("\0")) {
+      res.writeHead(400, { "Content-Type": "text/plain" });
+      res.end("Bad Request");
       return;
     }
 
-    // Then try to serve from static directory
-    const staticPath = join(staticDir, filePath);
-    if (existsSync(staticPath) && statSync(staticPath).isFile()) {
-      const fileContent = readFileSync(staticPath);
-      const contentType = getContentType(staticPath);
+    // Artifacts directory first, then the static directory
+    const filePath = findServedFile([artifactsDir, staticDir], pathname);
+    if (filePath) {
+      const fileContent = readFileSync(filePath);
+      const contentType = getContentType(filePath);
       res.writeHead(200, { "Content-Type": contentType });
       res.end(fileContent);
       return;
@@ -255,70 +252,32 @@ function toSectionPageKey(sectionLike) {
 }
 
 /**
- * Take screenshots of all generated HTML files
+ * Take screenshots of all generated HTML files. `config` comes from createCaptureConfig
+ * (src/capture/capture-config.js), which applies the defaults and validates it.
  */
-async function takeScreenshots(options) {
+async function takeScreenshots(config) {
   const {
     generatedFiles,
     serverUrl,
     screenshotsDir,
     workerCount,
-    screenshotWaitTime = 10,
-    configUrl = undefined,
-    waitEvent = undefined,
-    waitSelector = undefined,
-    waitStrategy = undefined,
-    navigationTimeout = 30000,
-    readyTimeout = 30000,
-    screenshotTimeout = 30000,
-    maxRetries = 2,
-    recycleEvery = 0,
-    isolationMode = "fast",
-    metricsPath = join(".rettangoli", "vt", "metrics.json"),
-    headless = true,
-    viewport = undefined,
-  } = options;
-
-  if (!Array.isArray(generatedFiles)) {
-    throw new Error("takeScreenshots: generatedFiles must be an array.");
-  }
-  if (typeof serverUrl !== "string" || serverUrl.trim().length === 0) {
-    throw new Error("takeScreenshots: serverUrl must be a non-empty string.");
-  }
-  if (typeof screenshotsDir !== "string" || screenshotsDir.trim().length === 0) {
-    throw new Error("takeScreenshots: screenshotsDir must be a non-empty string.");
-  }
-
-  validateFiniteNumber(workerCount, "workerCount", { integer: true, min: 1 });
-  validateFiniteNumber(screenshotWaitTime, "screenshotWaitTime", { integer: true, min: 0 });
-  validateFiniteNumber(navigationTimeout, "navigationTimeout", { integer: true, min: 1 });
-  validateFiniteNumber(readyTimeout, "readyTimeout", { integer: true, min: 1 });
-  validateFiniteNumber(screenshotTimeout, "screenshotTimeout", { integer: true, min: 1 });
-  validateFiniteNumber(maxRetries, "maxRetries", { integer: true, min: 0 });
-  validateFiniteNumber(recycleEvery, "recycleEvery", { integer: true, min: 0 });
-
-  if (!["strict", "fast"].includes(isolationMode)) {
-    throw new Error(
-      `Invalid isolationMode "${isolationMode}". Expected "strict" or "fast".`,
-    );
-  }
-  if (waitStrategy !== undefined && waitStrategy !== null) {
-    if (!["networkidle", "load", "event", "selector"].includes(waitStrategy)) {
-      throw new Error(
-        `Invalid waitStrategy "${waitStrategy}". Expected "networkidle", "load", "event", or "selector".`,
-      );
-    }
-  }
-  if (waitEvent !== undefined && waitEvent !== null) {
-    if (typeof waitEvent !== "string" || waitEvent.trim().length === 0) {
-      throw new Error("waitEvent must be a non-empty string when provided.");
-    }
-  }
-  if (waitSelector !== undefined && waitSelector !== null) {
-    if (typeof waitSelector !== "string" || waitSelector.trim().length === 0) {
-      throw new Error("waitSelector must be a non-empty string when provided.");
-    }
-  }
+    screenshotWaitTime,
+    configUrl,
+    waitEvent,
+    waitSelector,
+    waitStrategy,
+    navigationTimeout,
+    readyTimeout,
+    screenshotTimeout,
+    maxRetries,
+    recycleEvery,
+    isolationMode,
+    metricsPath,
+    headless,
+    viewport,
+    launchArgs,
+    animations,
+  } = config;
 
   ensureDirectoryExists(screenshotsDir);
 
@@ -347,6 +306,8 @@ async function takeScreenshots(options) {
     recycleEvery,
     metricsPath,
     headless,
+    launchArgs,
+    animations,
   });
 
   if (failures.length > 0) {
@@ -365,7 +326,8 @@ async function takeScreenshots(options) {
 }
 
 /**
- * Generate overview HTML from template and data
+ * Generate overview HTML from template and data. Returns the pages as [{ fileName, content }] in
+ * section order; with a null outputPath they are only rendered (watch mode).
  */
 function generateOverview(
   data,
@@ -379,7 +341,9 @@ function generateOverview(
     const templateContent = readFileSync(templatePath, "utf8");
 
     // Ensure output directory exists
-    ensureDirectoryExists(dirname(outputPath));
+    if (outputPath !== null) {
+      ensureDirectoryExists(dirname(outputPath));
+    }
 
     // Process sections to extract all items (flat or grouped)
     const allSections = [];
@@ -418,6 +382,7 @@ function generateOverview(
     });
 
     // Generate pages for each section
+    const pages = [];
     allSections.forEach((section) => {
       // Render template with data
       let renderedContent = "";
@@ -450,14 +415,17 @@ function generateOverview(
         renderedContent = `<html><body><h1>Error rendering overview template</h1><p>${error.message}</p></body></html>`;
       }
 
-      const finalOutputPath = outputPath.replace(
-        "index.html",
-        `${toSectionPageKey(section)}.html`
-      );
+      const fileName = `${toSectionPageKey(section)}.html`;
+      pages.push({ fileName, content: renderedContent });
+      if (outputPath === null) {
+        return;
+      }
+      const finalOutputPath = outputPath.replace("index.html", fileName);
       // Save file
       writeFileSync(finalOutputPath, renderedContent, "utf8");
       logger.log(`Generated overview: ${finalOutputPath}`);
     });
+    return pages;
   } catch (error) {
     logger.error("Error generating overview HTML:", error);
     throw error;
@@ -465,6 +433,7 @@ function generateOverview(
 }
 
 export {
+  renderSpecFile,
   generateHtml,
   getAllFiles,
   extractFrontMatter,

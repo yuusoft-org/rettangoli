@@ -1,22 +1,21 @@
-import {
-  collectRefElements,
-  createRuntimeRefMatchers,
-  matchesConfiguredRef,
-} from "../src/core/runtime/refs.js";
+import { collectRefElements } from "../src/core/runtime/refs.js";
+import { createRefMatchers, resolveBestRefMatcher } from "../src/core/view/refs.js";
 
 export const runRefsRuntimeCoreCase = ({ scenario }) => {
   if (scenario === "matches_exact_and_wildcard") {
-    const refMatchers = createRuntimeRefMatchers({
+    const refMatchers = createRefMatchers({
       submitButton: {},
       "todo*": {},
       ".label": {},
     });
+    const matches = ({ id, classNames }) =>
+      Boolean(resolveBestRefMatcher({ elementIdForRefs: id, classNames, refMatchers }));
 
     return {
-      submitButton: matchesConfiguredRef({ id: "submitButton", refMatchers }),
-      todo1: matchesConfiguredRef({ id: "todo1", refMatchers }),
-      label: matchesConfiguredRef({ classNames: ["label"], refMatchers }),
-      other: matchesConfiguredRef({ id: "other", classNames: ["x"], refMatchers }),
+      submitButton: matches({ id: "submitButton" }),
+      todo1: matches({ id: "todo1" }),
+      label: matches({ classNames: ["label"] }),
+      other: matches({ id: "other", classNames: ["x"] }),
     };
   }
 

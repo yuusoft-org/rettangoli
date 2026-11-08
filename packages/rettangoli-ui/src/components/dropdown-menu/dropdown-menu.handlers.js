@@ -201,13 +201,6 @@ const getFocusableIndices = (items) => {
 };
 
 const getDirection = (deps) => {
-  if (deps?.props?.dir === "rtl") {
-    return "rtl";
-  }
-  if (deps?.props?.dir === "ltr") {
-    return "ltr";
-  }
-
   const element = deps?.refs?.popover;
   if (element && typeof getComputedStyle === "function") {
     return getComputedStyle(element).direction === "rtl" ? "rtl" : "ltr";

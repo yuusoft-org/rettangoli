@@ -75,6 +75,75 @@ in:
 out:
   error: null
 ---
+case: required input-number with no value returns default message
+in:
+  - field:
+      name: age
+      type: input-number
+      required: true
+out:
+  error: "This field is required"
+---
+case: required input-number with empty string returns default message
+in:
+  - field:
+      name: age
+      type: input-number
+      required: true
+    value: ""
+out:
+  error: "This field is required"
+---
+case: required input-number with NaN returns default message
+in:
+  - field:
+      name: age
+      type: input-number
+      required: true
+    value: .nan
+out:
+  error: "This field is required"
+---
+case: required select with false passes
+in:
+  - field:
+      name: enabled
+      type: select
+      required: true
+    value: false
+out:
+  error: null
+---
+case: required segmented-control with false passes
+in:
+  - field:
+      name: enabled
+      type: segmented-control
+      required: true
+    value: false
+out:
+  error: null
+---
+case: required select with empty string returns default message
+in:
+  - field:
+      name: role
+      type: select
+      required: true
+    value: ""
+out:
+  error: "This field is required"
+---
+case: required input-duration with NaN stays an invalid duration
+in:
+  - field:
+      name: durationMs
+      type: input-duration
+      required: true
+    value: .nan
+out:
+  error: "Invalid duration"
+---
 suite: validateField - temporal
 exportName: runValidateFieldCase
 ---
@@ -1029,42 +1098,15 @@ out:
   values:
     "items[0]": "legacy"
 ---
-suite: selectViewData container attrs
+suite: selectViewData container padding
 exportName: runSelectViewDataCase
 ---
-case: excludes context object from container attributes
-in:
-  - props:
-      form: {}
-      context:
-        user:
-          name: Jane
-      data-testid: my-form
-out:
-  containerAttrString: data-testid=my-form
-  containerHorizontalPadding: md
-  containerVerticalPadding: md
----
-case: excludes object-valued custom props from container attributes
-in:
-  - props:
-      form: {}
-      meta:
-        foo: bar
-      aria-label: Settings
-out:
-  containerAttrString: aria-label=Settings
-  containerHorizontalPadding: md
-  containerVerticalPadding: md
----
-case: uses padding prop without forwarding a duplicate attribute
+case: uses the padding prop for both axes
 in:
   - props:
       form: {}
       p: none
-      data-testid: flush-form
 out:
-  containerAttrString: data-testid=flush-form
   containerHorizontalPadding: none
   containerVerticalPadding: none
 ---
@@ -1074,7 +1116,6 @@ in:
       form: {}
       p: huge
 out:
-  containerAttrString: ""
   containerHorizontalPadding: md
   containerVerticalPadding: md
 ---
@@ -1085,9 +1126,7 @@ in:
       p: lg
       ph: md
       pv: none
-      data-testid: axis-form
 out:
-  containerAttrString: data-testid=axis-form
   containerHorizontalPadding: md
   containerVerticalPadding: none
 ---

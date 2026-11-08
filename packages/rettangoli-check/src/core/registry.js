@@ -3,9 +3,10 @@ import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { load as loadYaml } from "js-yaml";
-import { parseSync } from "oxc-parser";
 import { walkFiles } from "../utils/fs.js";
 import { toCamelCase, toKebabCase } from "../utils/case.js";
+import { isObjectRecord } from "../utils/object.js";
+import { parseJs } from "./jsParse.js";
 import { collectProjectPrimitiveContracts } from "./projectPrimitives.js";
 
 const addHostStyleAttrs = (contract, styles) => {
@@ -22,23 +23,76 @@ const addHostStyleAttrs = (contract, styles) => {
   });
 };
 
+const RUNTIME_STUBS = {
+  HTMLElement: class {},
+  CSSStyleSheet: class {
+    replaceSync() {}
+  },
+  CustomEvent: class {
+    constructor(type, init = {}) {
+      this.type = type;
+      this.detail = init.detail;
+    }
+  },
+};
+let runtimeStubUsers = 0;
+let installedRuntimeStubs = [];
+
+// Primitive modules extend HTMLElement and friends when they are imported. Install the missing
+// browser globals for the imports and return restore(), which removes the stubs again once the
+// last concurrent user is done, so they never leak into the rest of the process.
 const ensureRuntimeStubs = () => {
-  if (typeof globalThis.HTMLElement === "undefined") {
-    globalThis.HTMLElement = class {};
+  if (runtimeStubUsers === 0) {
+    installedRuntimeStubs = Object.keys(RUNTIME_STUBS).filter((name) => typeof globalThis[name] === "undefined");
+    installedRuntimeStubs.forEach((name) => {
+      globalThis[name] = RUNTIME_STUBS[name];
+    });
   }
-  if (typeof globalThis.CSSStyleSheet === "undefined") {
-    globalThis.CSSStyleSheet = class {
-      replaceSync() {}
-    };
-  }
-  if (typeof globalThis.CustomEvent === "undefined") {
-    globalThis.CustomEvent = class {
-      constructor(type, init = {}) {
-        this.type = type;
-        this.detail = init.detail;
+  runtimeStubUsers += 1;
+
+  let restored = false;
+  return () => {
+    if (restored) {
+      return;
+    }
+    restored = true;
+    runtimeStubUsers -= 1;
+    if (runtimeStubUsers > 0) {
+      return;
+    }
+    installedRuntimeStubs.forEach((name) => {
+      if (globalThis[name] === RUNTIME_STUBS[name]) {
+        delete globalThis[name];
       }
-    };
+    });
+    installedRuntimeStubs = [];
+  };
+};
+
+// Primitives that could not be loaded, per registry Map (the registries stay plain Maps).
+const registryLoadFailures = new WeakMap();
+
+export const getRegistryLoadFailures = (registry) => registryLoadFailures.get(registry) || [];
+
+// Keeps at most one failure per tag (the same primitive is defined by several entries).
+const setRegistryLoadFailures = (registry, failures = []) => {
+  const seenTags = new Set();
+  const unique = failures.filter(({ tagName }) => {
+    if (seenTags.has(tagName)) {
+      return false;
+    }
+    seenTags.add(tagName);
+    return true;
+  });
+  if (unique.length > 0) {
+    registryLoadFailures.set(registry, unique);
   }
+  return registry;
+};
+
+const toFailureMessage = (error) => {
+  const message = String(error?.message || error || "unknown error").replace(/\s+/gu, " ").trim();
+  return message.replace(/\.$/u, "");
 };
 
 const createContract = ({ tagName }) => {
@@ -59,10 +113,6 @@ const getOrCreateContract = (registryMap, tagName) => {
     registryMap.set(tagName, createContract({ tagName }));
   }
   return registryMap.get(tagName);
-};
-
-const isObjectRecord = (value) => {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
 };
 
 const hasNonEmptyComponentName = (componentName) => {
@@ -236,10 +286,11 @@ const mergeContracts = (target, source) => {
 };
 
 const mergeRegistryMaps = (registries = []) => {
-  return registries.reduce((merged, registry) => {
-    mergeContracts(merged, registry);
-    return merged;
+  const merged = registries.reduce((result, registry) => {
+    mergeContracts(result, registry);
+    return result;
   }, new Map());
+  return setRegistryLoadFailures(merged, registries.flatMap(getRegistryLoadFailures));
 };
 
 const extractUiComponentContracts = ({ uiDir }) => {
@@ -279,7 +330,7 @@ const extractUiComponentContracts = ({ uiDir }) => {
 
 const parseProgramWithOxc = ({ sourceCode = "", filePath = "unknown.js" } = {}) => {
   try {
-    const parsed = parseSync(filePath, sourceCode, { sourceType: "unambiguous" });
+    const parsed = parseJs({ filePath, sourceText: sourceCode, sourceType: "unambiguous" });
     if (!parsed?.program?.body || !Array.isArray(parsed.program.body)) {
       return null;
     }
@@ -836,52 +887,70 @@ const getPrimitiveContractsFromEntry = async ({ entryPath, globalStyleAttrs = ne
   const entryCode = readFileSync(entryPath, "utf8");
   const imports = parseEntryImports(entryCode, entryPath);
   const definitions = parseCustomElementDefines(entryCode, entryPath);
+  const failures = [];
 
-  ensureRuntimeStubs();
-
-  for (const definition of definitions) {
-    const importPath = imports.get(definition.symbol);
-    if (!importPath || !importPath.includes("/primitives/")) {
-      continue;
-    }
-
-    const absolutePrimitivePath = path.resolve(path.dirname(entryPath), importPath);
-    const primitiveUrl = pathToFileURL(absolutePrimitivePath).href;
-
-    try {
-      const primitiveSource = readFileSync(absolutePrimitivePath, "utf8");
-      const primitiveModule = await import(primitiveUrl);
-      if (typeof primitiveModule.default !== "function") {
+  const restoreRuntimeStubs = ensureRuntimeStubs();
+  try {
+    for (const definition of definitions) {
+      const importPath = imports.get(definition.symbol);
+      if (!importPath || !importPath.includes("/primitives/")) {
         continue;
       }
-      const primitiveClass = primitiveModule.default({});
-      const observed = Array.isArray(primitiveClass?.observedAttributes)
-        ? primitiveClass.observedAttributes
-        : [];
 
+      const absolutePrimitivePath = path.resolve(path.dirname(entryPath), importPath);
+      // The tag is defined by the UI, so it keeps a contract even when its module fails to
+      // load; the failure is reported (RTGL-CHECK-REGISTRY-001) instead of every usage
+      // becoming an unknown element.
       const contract = getOrCreateContract(result, definition.tagName);
       contract.source.add("ui-primitives");
+      const recordFailure = (error) => {
+        failures.push({
+          tagName: definition.tagName,
+          modulePath: absolutePrimitivePath,
+          message: toFailureMessage(error),
+        });
+      };
+
+      let observed = [];
+      try {
+        const primitiveModule = await import(pathToFileURL(absolutePrimitivePath).href);
+        if (typeof primitiveModule.default !== "function") {
+          throw new Error("default export is not a function");
+        }
+        const primitiveClass = primitiveModule.default({});
+        observed = Array.isArray(primitiveClass?.observedAttributes)
+          ? primitiveClass.observedAttributes
+          : [];
+      } catch (error) {
+        recordFailure(error);
+      }
+
       observed.forEach((attr) => {
         contract.attrs.add(attr);
       });
-      extractPrimitiveAttrsFromSource(primitiveSource, absolutePrimitivePath).forEach((attr) => {
-        contract.attrs.add(attr);
-      });
-      collectImportedHostAttrs({
-        primitivePath: absolutePrimitivePath,
-        srcDir: path.dirname(entryPath),
-      }).forEach((attr) => {
-        contract.attrs.add(attr);
-      });
+      try {
+        const primitiveSource = readFileSync(absolutePrimitivePath, "utf8");
+        extractPrimitiveAttrsFromSource(primitiveSource, absolutePrimitivePath).forEach((attr) => {
+          contract.attrs.add(attr);
+        });
+        collectImportedHostAttrs({
+          primitivePath: absolutePrimitivePath,
+          srcDir: path.dirname(entryPath),
+        }).forEach((attr) => {
+          contract.attrs.add(attr);
+        });
+      } catch (error) {
+        recordFailure(error);
+      }
       globalStyleAttrs.forEach((attr) => {
         contract.attrs.add(attr);
       });
-    } catch {
-      // Ignore primitive loading failures in registry generation.
     }
+  } finally {
+    restoreRuntimeStubs();
   }
 
-  return result;
+  return setRegistryLoadFailures(result, failures);
 };
 
 const resolveBundledUiDir = () => {
@@ -946,6 +1015,7 @@ export const resolveUiSourceDir = ({ workspaceRoot = process.cwd() } = {}) => {
 
 const collectPrimitiveContractsFromEntries = async ({ uiDir, globalStyleAttrs }) => {
   const result = new Map();
+  const failures = [];
   const entryNames = [
     "entry-iife-ui.js",
     "entry-iife-layout.js",
@@ -958,9 +1028,10 @@ const collectPrimitiveContractsFromEntries = async ({ uiDir, globalStyleAttrs })
       globalStyleAttrs,
     });
     mergeContracts(result, primitiveContracts);
+    failures.push(...getRegistryLoadFailures(primitiveContracts));
   }
 
-  return result;
+  return setRegistryLoadFailures(result, failures);
 };
 
 export const buildUiRegistry = async ({ workspaceRoot = process.cwd() } = {}) => {

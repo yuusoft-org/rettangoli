@@ -1,0 +1,39 @@
+{
+  "name": "listener without handler or action reports LISTENER-003",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 2,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-LISTENER-003": 2
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-LISTENER-003",
+        "severity": "error",
+        "message": "components/card: event 'click' on ref 'noDispatch' must define either handler or action.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 4
+      },
+      {
+        "code": "RTGL-CHECK-LISTENER-003",
+        "severity": "error",
+        "message": "components/card: event 'input' on ref 'emptyListener' must define either handler or action.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 8
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-005"
+  ]
+}

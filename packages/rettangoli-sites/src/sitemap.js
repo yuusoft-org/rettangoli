@@ -1,86 +1,11 @@
+import { normalizeSitePath } from './routes.js';
+import { isPlainObject } from './utils/object.js';
+
 const ALLOWED_CHANGEFREQS = new Set(['always', 'hourly', 'daily', 'weekly', 'monthly', 'yearly', 'never']);
 const ALLOWED_TOP_LEVEL_KEYS = new Set(['enabled', 'siteUrl', 'outputPath', 'defaults', 'exclude', 'pages']);
 const ALLOWED_DEFAULT_KEYS = new Set(['changefreq', 'priority', 'lastmod']);
 const ALLOWED_ENTRY_KEYS = new Set(['changefreq', 'priority', 'lastmod', 'exclude']);
 const SITEMAP_DATE_RE = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))?$/u;
-
-function isPlainObject(value) {
-  return value && typeof value === 'object' && !Array.isArray(value);
-}
-
-function hasOwn(object, key) {
-  return Object.prototype.hasOwnProperty.call(object, key);
-}
-
-function rejectInvalidUrlString(rawUrl, contextLabel) {
-  if (typeof rawUrl !== 'string') {
-    throw new Error(`${contextLabel}: expected a string.`);
-  }
-
-  if (rawUrl === '') {
-    throw new Error(`${contextLabel}: expected a non-empty string.`);
-  }
-
-  if (/[\u0000-\u001F\u007F]/u.test(rawUrl)) {
-    throw new Error(`${contextLabel}: must not contain control characters.`);
-  }
-
-  if (/\s/u.test(rawUrl)) {
-    throw new Error(`${contextLabel}: must not contain whitespace.`);
-  }
-
-  if (/^[A-Za-z][A-Za-z0-9+.-]*:/u.test(rawUrl) || rawUrl.startsWith('//')) {
-    throw new Error(`${contextLabel}: expected a site-relative URL path.`);
-  }
-
-  if (rawUrl.includes('\\')) {
-    throw new Error(`${contextLabel}: must use forward slashes.`);
-  }
-
-  if (rawUrl.includes('?') || rawUrl.includes('#')) {
-    throw new Error(`${contextLabel}: must not include query strings or fragments.`);
-  }
-}
-
-export function normalizeSitemapUrlPath(rawUrl, contextLabel) {
-  rejectInvalidUrlString(rawUrl, contextLabel);
-
-  const withLeadingSlash = rawUrl.startsWith('/') ? rawUrl : `/${rawUrl}`;
-  const collapsedUrl = withLeadingSlash.replace(/\/+/g, '/');
-  const pathWithoutSlashes = collapsedUrl.replace(/^\/+|\/+$/g, '');
-
-  if (pathWithoutSlashes === '') {
-    return '/';
-  }
-
-  const segments = pathWithoutSlashes.split('/');
-  for (const segment of segments) {
-    let decodedSegment;
-    try {
-      decodedSegment = decodeURIComponent(segment);
-    } catch {
-      throw new Error(`${contextLabel}: contains invalid URL encoding.`);
-    }
-
-    if (decodedSegment === '.' || decodedSegment === '..') {
-      throw new Error(`${contextLabel}: must not contain "." or ".." segments.`);
-    }
-
-    if (decodedSegment.includes('/') || decodedSegment.includes('\\')) {
-      throw new Error(`${contextLabel}: must not include encoded slashes or backslashes.`);
-    }
-
-    if (/[\u0000-\u001F\u007F]/u.test(decodedSegment)) {
-      throw new Error(`${contextLabel}: must not contain control characters.`);
-    }
-
-    if (/\s/u.test(decodedSegment)) {
-      throw new Error(`${contextLabel}: must not contain whitespace.`);
-    }
-  }
-
-  return `/${segments.join('/')}/`;
-}
 
 function normalizeSitemapUrlPattern(rawPattern, contextLabel) {
   if (typeof rawPattern !== 'string') {
@@ -89,10 +14,10 @@ function normalizeSitemapUrlPattern(rawPattern, contextLabel) {
 
   if (rawPattern.endsWith('*')) {
     const rawPrefix = rawPattern.slice(0, -1);
-    return `${normalizeSitemapUrlPath(rawPrefix, contextLabel)}*`;
+    return `${normalizeSitePath(rawPrefix, contextLabel)}*`;
   }
 
-  return normalizeSitemapUrlPath(rawPattern, contextLabel);
+  return normalizeSitePath(rawPattern, contextLabel);
 }
 
 function validateSiteUrl(siteUrl, contextLabel) {
@@ -242,7 +167,7 @@ function normalizePagesConfig(value, configPath) {
 
   const pages = {};
   for (const [rawUrl, rawOptions] of Object.entries(value)) {
-    const url = normalizeSitemapUrlPath(rawUrl, `Invalid sitemap.pages URL "${rawUrl}" in "${configPath}"`);
+    const url = normalizeSitePath(rawUrl, `Invalid sitemap.pages URL "${rawUrl}" in "${configPath}"`);
     if (rawOptions === false) {
       pages[url] = { exclude: true };
       continue;
@@ -434,15 +359,15 @@ export function buildSitemapXml({ pageEntries, sitemap, globalData }) {
       loc: joinSiteUrl(siteUrl, url)
     };
 
-    if (hasOwn(options, 'lastmod')) {
+    if (Object.hasOwn(options, 'lastmod')) {
       entry.lastmod = options.lastmod;
     }
 
-    if (hasOwn(options, 'changefreq')) {
+    if (Object.hasOwn(options, 'changefreq')) {
       entry.changefreq = options.changefreq;
     }
 
-    if (hasOwn(options, 'priority')) {
+    if (Object.hasOwn(options, 'priority')) {
       entry.priority = options.priority;
     }
 

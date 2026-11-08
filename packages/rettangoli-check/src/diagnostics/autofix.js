@@ -87,9 +87,16 @@ export const applyDiagnosticFixes = ({
   let appliedCount = 0;
   let skippedCount = 0;
 
+  // Null when the file cannot be read: a diagnostic may point at a directory or an unreadable
+  // file (a UI primitive that failed to load), and nothing there can be fixed.
   const getFileState = (filePath) => {
     if (!files.has(filePath)) {
-      const content = readFileSync(filePath, "utf8");
+      let content;
+      try {
+        content = readFileSync(filePath, "utf8");
+      } catch {
+        return null;
+      }
       files.set(filePath, {
         original: content,
         content,
@@ -111,6 +118,10 @@ export const applyDiagnosticFixes = ({
     }
 
     const state = getFileState(fix.filePath);
+    if (!state) {
+      skippedCount += 1;
+      return;
+    }
     const before = state.content;
     let after = before;
 

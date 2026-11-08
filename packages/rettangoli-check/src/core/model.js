@@ -8,7 +8,7 @@ import {
   collectTopLevelYamlKeyLines,
   collectRefListeners,
   extractModuleExports,
-  hasLegacyDotPropBinding,
+  findLegacyDotPropBinding,
   parseYamlSafe,
 } from "./parsers.js";
 import { normalizeSchemaYaml } from "./schema.js";
@@ -24,6 +24,7 @@ const attachFilePathToBindings = (bindings = [], filePath) => {
 
 const REEXPORT_TARGET_MISSING_CODE = "RTGL-CHECK-SYMBOL-006";
 const REEXPORT_SYMBOL_MISSING_CODE = "RTGL-CHECK-SYMBOL-007";
+const JS_PARSE_ERROR_CODE = "RTGL-CHECK-PARSE-002";
 const HANDLER_EXPORT_PREFIX_CODE = "RTGL-CHECK-HANDLER-002";
 const LIFECYCLE_ASYNC_BEFORE_MOUNT_CODE = "RTGL-CHECK-LIFECYCLE-001";
 const LIFECYCLE_DEPS_FIRST_PARAM_CODE = "RTGL-CHECK-LIFECYCLE-002";
@@ -386,6 +387,63 @@ const toRelatedLocation = ({ message, filePath, range = {} }) => {
   };
 };
 
+const pushReexportDiagnostic = ({
+  diagnostics,
+  diagnosticKeys,
+  code,
+  message,
+  filePath,
+  reference,
+  related,
+}) => {
+  pushUniqueDiagnostic({
+    diagnostics,
+    diagnosticKeys,
+    diagnostic: {
+      code,
+      severity: "error",
+      message,
+      filePath,
+      ...toDiagnosticRange(reference),
+      related,
+    },
+  });
+};
+
+// SYMBOL-006 for a relative re-export whose target file does not exist. `target` describes the
+// re-export in the message, e.g. "re-export target './x'".
+const pushReexportTargetMissing = ({
+  diagnostics,
+  diagnosticKeys,
+  filePath,
+  specifier,
+  target,
+  reference,
+}) => {
+  const attemptedCandidates = buildLocalExportTargetCandidates({
+    importerFilePath: filePath,
+    specifier,
+  });
+  const attemptedSuffix = attemptedCandidates.length > 0
+    ? ` Tried: ${attemptedCandidates.map((candidate) => path.basename(candidate)).join(", ")}.`
+    : "";
+  const declarationRelated = reference?.range
+    ? toRelatedLocation({ message: "Re-export declaration span.", filePath, range: reference.range })
+    : null;
+  pushReexportDiagnostic({
+    diagnostics,
+    diagnosticKeys,
+    code: REEXPORT_TARGET_MISSING_CODE,
+    message: `${path.basename(filePath)}: unable to resolve ${target}.${attemptedSuffix}`,
+    filePath,
+    reference,
+    related: declarationRelated ? [declarationRelated] : [],
+  });
+};
+
+// Returns { exports, exportsKnown }. exportsKnown is false when this module, or a module it
+// re-exports from (export * or a named re-export), does not parse: its export set is then
+// incomplete and must not be used to report missing symbols.
 const collectNamedExportsWithStar = ({
   filePath,
   sourceCode,
@@ -401,7 +459,7 @@ const collectNamedExportsWithStar = ({
   }
 
   if (stack.has(filePath)) {
-    return new Set();
+    return { exports: new Set(), exportsKnown: true };
   }
 
   stack.add(filePath);
@@ -409,13 +467,26 @@ const collectNamedExportsWithStar = ({
     sourceCode,
     filePath,
   });
-  const oxcReferenceSource = extractModuleExports({
-    sourceCode,
-    filePath,
-  });
-  const reExportReferences = Array.isArray(oxcReferenceSource?.reExportReferences)
-    ? [...oxcReferenceSource.reExportReferences]
-    : [];
+  let exportsKnown = true;
+  if (exportsSource.parseFailed) {
+    exportsKnown = false;
+    const { message, line, column } = exportsSource.parseError || {};
+    pushUniqueDiagnostic({
+      diagnostics,
+      diagnosticKeys,
+      diagnostic: {
+        code: JS_PARSE_ERROR_CODE,
+        severity: "error",
+        message: message
+          ? `Failed to parse JavaScript: ${message.endsWith(".") ? message : `${message}.`}`
+          : "Failed to parse JavaScript.",
+        filePath,
+        line: Number.isInteger(line) ? line : 1,
+        column: Number.isInteger(column) ? column : 1,
+      },
+    });
+  }
+  const reExportReferences = [...exportsSource.reExportReferences];
 
   const exports = new Set(exportsSource.namedExports);
   const exportStarSpecifiers = exportsSource.exportStarSpecifiers;
@@ -437,41 +508,18 @@ const collectNamedExportsWithStar = ({
     });
     const resolvedTarget = resolveLocalExportTarget({ importerFilePath: filePath, specifier, dependencies });
     if (!resolvedTarget) {
-      const attemptedCandidates = buildLocalExportTargetCandidates({
-        importerFilePath: filePath,
-        specifier,
-      });
-      const attemptedSuffix = attemptedCandidates.length > 0
-        ? ` Tried: ${attemptedCandidates.map((candidate) => path.basename(candidate)).join(", ")}.`
-        : "";
-      const related = [];
-      if (reference?.range) {
-        const declarationRelated = toRelatedLocation({
-          message: "Re-export declaration span.",
-          filePath,
-          range: reference.range,
-        });
-        if (declarationRelated) {
-          related.push(declarationRelated);
-        }
-      }
-      const diagnosticRange = toDiagnosticRange(reference);
-      pushUniqueDiagnostic({
+      pushReexportTargetMissing({
         diagnostics,
         diagnosticKeys,
-        diagnostic: {
-          code: REEXPORT_TARGET_MISSING_CODE,
-          severity: "error",
-          message: `${path.basename(filePath)}: unable to resolve re-export target '${specifier}'.${attemptedSuffix}`,
-          filePath,
-          ...diagnosticRange,
-          related,
-        },
+        filePath,
+        specifier,
+        target: `re-export target '${specifier}'`,
+        reference,
       });
       return;
     }
 
-    const nestedExports = collectNamedExportsWithStar({
+    const nested = collectNamedExportsWithStar({
       filePath: resolvedTarget.filePath,
       sourceCode: resolvedTarget.text,
       cache,
@@ -480,7 +528,8 @@ const collectNamedExportsWithStar = ({
       diagnosticKeys,
       dependencies,
     });
-    nestedExports.forEach((name) => {
+    exportsKnown &&= nested.exportsKnown;
+    nested.exports.forEach((name) => {
       if (name !== "default") {
         exports.add(name);
       }
@@ -511,36 +560,13 @@ const collectNamedExportsWithStar = ({
     }
 
     exports.delete(exportedName);
-    const attemptedCandidates = buildLocalExportTargetCandidates({
-      importerFilePath: filePath,
-      specifier: moduleRequest,
-    });
-    const attemptedSuffix = attemptedCandidates.length > 0
-      ? ` Tried: ${attemptedCandidates.map((candidate) => path.basename(candidate)).join(", ")}.`
-      : "";
-    const related = [];
-    if (reference?.range) {
-      const declarationRelated = toRelatedLocation({
-        message: "Re-export declaration span.",
-        filePath,
-        range: reference.range,
-      });
-      if (declarationRelated) {
-        related.push(declarationRelated);
-      }
-    }
-    const diagnosticRange = toDiagnosticRange(reference);
-    pushUniqueDiagnostic({
+    pushReexportTargetMissing({
       diagnostics,
       diagnosticKeys,
-      diagnostic: {
-        code: REEXPORT_TARGET_MISSING_CODE,
-        severity: "error",
-        message: `${path.basename(filePath)}: unable to resolve namespace re-export target '${moduleRequest}' for '${exportedName}'.${attemptedSuffix}`,
-        filePath,
-        ...diagnosticRange,
-        related,
-      },
+      filePath,
+      specifier: moduleRequest,
+      target: `namespace re-export target '${moduleRequest}' for '${exportedName}'`,
+      reference,
     });
   });
 
@@ -565,41 +591,18 @@ const collectNamedExportsWithStar = ({
       dependencies,
     });
     if (!resolvedTarget) {
-      const attemptedCandidates = buildLocalExportTargetCandidates({
-        importerFilePath: filePath,
-        specifier: moduleRequest,
-      });
-      const attemptedSuffix = attemptedCandidates.length > 0
-        ? ` Tried: ${attemptedCandidates.map((candidate) => path.basename(candidate)).join(", ")}.`
-        : "";
-      const related = [];
-      if (reference?.range) {
-        const declarationRelated = toRelatedLocation({
-          message: "Re-export declaration span.",
-          filePath,
-          range: reference.range,
-        });
-        if (declarationRelated) {
-          related.push(declarationRelated);
-        }
-      }
-      const diagnosticRange = toDiagnosticRange(reference);
-      pushUniqueDiagnostic({
+      pushReexportTargetMissing({
         diagnostics,
         diagnosticKeys,
-        diagnostic: {
-          code: REEXPORT_TARGET_MISSING_CODE,
-          severity: "error",
-          message: `${path.basename(filePath)}: unable to resolve re-export target '${moduleRequest}'.${attemptedSuffix}`,
-          filePath,
-          ...diagnosticRange,
-          related,
-        },
+        filePath,
+        specifier: moduleRequest,
+        target: `re-export target '${moduleRequest}'`,
+        reference,
       });
       return;
     }
 
-    const nestedExports = collectNamedExportsWithStar({
+    const nested = collectNamedExportsWithStar({
       filePath: resolvedTarget.filePath,
       sourceCode: resolvedTarget.text,
       cache,
@@ -608,46 +611,37 @@ const collectNamedExportsWithStar = ({
       diagnosticKeys,
       dependencies,
     });
-    if (nestedExports.has(importedName)) {
+    exportsKnown &&= nested.exportsKnown;
+    if (nested.exports.has(importedName)) {
       exports.add(exportedName);
       return;
     }
+    if (!nested.exportsKnown) {
+      return;
+    }
 
-    const related = [];
-    const targetRelated = toRelatedLocation({
-      message: "Resolved re-export target module.",
-      filePath: resolvedTarget.filePath,
-      range: { line: 1, column: 1, endLine: 1, endColumn: 1 },
-    });
-    if (targetRelated) {
-      related.push(targetRelated);
-    }
-    const declarationRelated = toRelatedLocation({
-      message: "Re-export declaration span.",
-      filePath,
-      range: reference?.range,
-    });
-    if (declarationRelated) {
-      related.push(declarationRelated);
-    }
-    const diagnosticRange = toDiagnosticRange(reference);
-    pushUniqueDiagnostic({
+    pushReexportDiagnostic({
       diagnostics,
       diagnosticKeys,
-      diagnostic: {
-        code: REEXPORT_SYMBOL_MISSING_CODE,
-        severity: "error",
-        message: `${path.basename(filePath)}: re-export '${importedName}' from '${moduleRequest}' does not exist in target module.`,
-        filePath,
-        ...diagnosticRange,
-        related,
-      },
+      code: REEXPORT_SYMBOL_MISSING_CODE,
+      message: `${path.basename(filePath)}: re-export '${importedName}' from '${moduleRequest}' does not exist in target module.`,
+      filePath,
+      reference,
+      related: [
+        toRelatedLocation({
+          message: "Resolved re-export target module.",
+          filePath: resolvedTarget.filePath,
+          range: { line: 1, column: 1, endLine: 1, endColumn: 1 },
+        }),
+        toRelatedLocation({ message: "Re-export declaration span.", filePath, range: reference?.range }),
+      ].filter(Boolean),
     });
   });
 
   stack.delete(filePath);
-  cache.set(filePath, exports);
-  return exports;
+  const result = { exports, exportsKnown };
+  cache.set(filePath, result);
+  return result;
 };
 
 export const buildComponentModel = (componentGroup) => {
@@ -676,8 +670,7 @@ export const buildComponentModel = (componentGroup) => {
         type: "Template",
         nodes: [],
       },
-      hasLegacyDotPropBinding: false,
-      legacyDotPropBindingLine: undefined,
+      legacyDotPropBinding: null,
     },
     schema: {
       filePath: files.schema || null,
@@ -692,21 +685,20 @@ export const buildComponentModel = (componentGroup) => {
     store: {
       filePath: files.store || null,
       exports: new Set(),
+      exportsKnown: true,
       sourceText: "",
     },
     handlers: {
       filePath: files.handlers || null,
       exports: new Set(),
+      exportsKnown: true,
       sourceText: "",
     },
     methods: {
       filePath: files.methods || null,
       exports: new Set(),
+      exportsKnown: true,
       sourceText: "",
-    },
-    semanticGraph: {
-      globalSymbols: new Set(),
-      references: [],
     },
   };
 
@@ -724,40 +716,30 @@ export const buildComponentModel = (componentGroup) => {
       );
       model.view.topLevelKeyLines = collectTopLevelYamlKeyLines(viewReadResult.value);
       model.view.yamlKeyPathLines = collectYamlKeyPathLines(viewReadResult.value);
-      const firstLegacyDotPropBinding = model.view.selectorBindings.find(
-        (binding) => binding.bindingNames.some((bindingName) => bindingName.startsWith(".")),
-      );
-      if (firstLegacyDotPropBinding) {
-        model.view.hasLegacyDotPropBinding = true;
-        model.view.legacyDotPropBindingLine = firstLegacyDotPropBinding.line;
-      }
+      // Line-based text scan for a '.prop' binding. It is the only CONTRACT-003 source when the YAML does not
+      // parse, and it is still ORed with FE's check of the parsed template (decision D10).
+      model.view.legacyDotPropBinding = findLegacyDotPropBinding(model.view.selectorBindings);
 
       const viewYamlResult = parseYamlSafe({ text: viewReadResult.value, filePath: files.view });
       if (!viewYamlResult.ok) {
         diagnostics.push(viewYamlResult.error);
       } else {
         model.view.yaml = viewYamlResult.value;
-        model.view.selectorBindings = attachFilePathToBindings(
-          collectSelectorBindingsFromView({
-            viewText: viewReadResult.value,
-            viewYaml: viewYamlResult.value,
-          }),
-          files.view,
-        );
+        // Without a 'template' key the text-scan bindings above stay.
+        if (viewYamlResult.value?.template !== undefined) {
+          model.view.selectorBindings = attachFilePathToBindings(
+            collectSelectorBindingsFromView({
+              viewText: viewReadResult.value,
+              viewYaml: viewYamlResult.value,
+            }),
+            files.view,
+          );
+        }
         model.view.templateAst = collectTemplateAstFromView({
           viewText: viewReadResult.value,
-          viewYaml: viewYamlResult.value,
+          selectorBindings: model.view.selectorBindings,
         });
-        const firstLegacyDotPropBindingAfterAst = model.view.selectorBindings.find(
-          (binding) => binding.bindingNames.some((bindingName) => bindingName.startsWith(".")),
-        );
-        if (firstLegacyDotPropBindingAfterAst) {
-          model.view.hasLegacyDotPropBinding = true;
-          model.view.legacyDotPropBindingLine = firstLegacyDotPropBindingAfterAst.line;
-        }
         model.view.refListeners = collectRefListeners(viewYamlResult.value, model.view.yamlKeyPathLines);
-        model.view.hasLegacyDotPropBinding = model.view.hasLegacyDotPropBinding
-          || hasLegacyDotPropBinding(viewYamlResult.value?.template);
       }
     }
   }
@@ -799,13 +781,15 @@ export const buildComponentModel = (componentGroup) => {
     } else {
       const exportResolutionDiagnosticKeys = new Set();
       model.store.sourceText = storeReadResult.value;
-      model.store.exports = collectNamedExportsWithStar({
+      const collected = collectNamedExportsWithStar({
         filePath: files.store,
         sourceCode: storeReadResult.value,
         diagnostics,
         diagnosticKeys: exportResolutionDiagnosticKeys,
         dependencies: model.dependencies,
       });
+      model.store.exports = collected.exports;
+      model.store.exportsKnown = collected.exportsKnown;
     }
   }
 
@@ -816,13 +800,15 @@ export const buildComponentModel = (componentGroup) => {
     } else {
       const exportResolutionDiagnosticKeys = new Set();
       model.handlers.sourceText = handlersReadResult.value;
-      model.handlers.exports = collectNamedExportsWithStar({
+      const collected = collectNamedExportsWithStar({
         filePath: files.handlers,
         sourceCode: handlersReadResult.value,
         diagnostics,
         diagnosticKeys: exportResolutionDiagnosticKeys,
         dependencies: model.dependencies,
       });
+      model.handlers.exports = collected.exports;
+      model.handlers.exportsKnown = collected.exportsKnown;
       model.handlers.exports.forEach((handlerName) => {
         if (isValidHandlerExportName(handlerName)) {
           return;
@@ -851,17 +837,26 @@ export const buildComponentModel = (componentGroup) => {
     } else {
       const exportResolutionDiagnosticKeys = new Set();
       model.methods.sourceText = methodsReadResult.value;
-      model.methods.exports = collectNamedExportsWithStar({
+      const collected = collectNamedExportsWithStar({
         filePath: files.methods,
         sourceCode: methodsReadResult.value,
         diagnostics,
         diagnosticKeys: exportResolutionDiagnosticKeys,
         dependencies: model.dependencies,
       });
+      model.methods.exports = collected.exports;
+      model.methods.exportsKnown = collected.exportsKnown;
     }
   }
 
-  model.semanticGraph = buildComponentScopeGraph(model);
+  // Only some rules read the scope graph (COMPAT-004 for loop locals, --expr, the semantic engine),
+  // so it is built on first use. Nothing it reads changes after this point.
+  let semanticGraph;
+  Object.defineProperty(model, "semanticGraph", {
+    get: () => (semanticGraph ??= buildComponentScopeGraph(model)),
+    enumerable: true,
+    configurable: true,
+  });
 
   return model;
 };

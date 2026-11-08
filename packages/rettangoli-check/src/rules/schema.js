@@ -1,4 +1,5 @@
-import { getModelFilePath, getYamlPathLine, isObjectRecord } from "./shared.js";
+import { isObjectRecord } from "../utils/object.js";
+import { getModelFilePath, getYamlPathLine } from "./shared.js";
 
 const CUSTOM_ELEMENT_NAME_REGEX = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)+$/;
 
@@ -62,6 +63,17 @@ export const runSchemaRules = ({ models = [] }) => {
         filePath: schemaPath,
         line: getYamlPathLine(schemaKeyPathLines, ["attrsSchema"]),
         message: `${model.componentKey}: attrsSchema is not supported.`,
+      });
+    }
+
+    // FE validateSchemaContract throws "ssr must be a boolean." at registration.
+    if (Object.hasOwn(schema, "ssr") && typeof schema.ssr !== "boolean") {
+      diagnostics.push({
+        code: "RTGL-CHECK-SCHEMA-009",
+        severity: "error",
+        filePath: schemaPath,
+        line: getYamlPathLine(schemaKeyPathLines, ["ssr"]),
+        message: `${model.componentKey}: ssr must be a boolean.`,
       });
     }
 

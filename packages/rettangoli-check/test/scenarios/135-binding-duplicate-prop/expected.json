@@ -1,0 +1,46 @@
+{
+  "name": "duplicate camelCased props fail in FE on custom and native elements (BINDING-003); attrs on native elements and 'id' are not props",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 3,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-BINDING-003": 3
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-BINDING-003",
+        "severity": "error",
+        "message": "components/card: Duplicate prop binding 'placeholder' on 'rtgl-input'. Use only one of 'name=value' or ':name=${expr}'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-BINDING-003",
+        "severity": "error",
+        "message": "components/card: Duplicate prop binding 'fooBar' on 'input'. Use only one of 'name=value' or ':name=${expr}'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 4
+      },
+      {
+        "code": "RTGL-CHECK-BINDING-003",
+        "severity": "error",
+        "message": "components/card: Duplicate prop binding 'hidden' on 'rtgl-view'. Use only one of 'name=value' or ':name=${expr}'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 7
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-YAHTML-001"
+  ]
+}

@@ -40,7 +40,6 @@ describe("rtgl-form bound store integration", () => {
 
       expect(viewData.containerHorizontalPadding).toBe(expectedHorizontal);
       expect(viewData.containerVerticalPadding).toBe(expectedVertical);
-      expect(viewData.containerAttrString).not.toMatch(/(?:^| )(?:p|ph|pv)=/);
     },
   );
 
@@ -59,21 +58,15 @@ describe("rtgl-form bound store integration", () => {
     const viewData = store.selectViewData();
 
     expect(viewData.sticky).toBe(true);
-    expect(viewData.containerAttrString).not.toContain("sticky");
     expect(viewData.actions.buttons).toHaveLength(1);
   });
 
-  it("resolves a pixel bottom spacer without forwarding it", () => {
-    const store = bindStore(
-      formStore,
-      { form: {}, bottomSpacer: "96", "data-testid": "spaced-content" },
-      {},
-    );
+  it("resolves a pixel bottom spacer", () => {
+    const store = bindStore(formStore, { form: {}, bottomSpacer: "96" }, {});
 
     const viewData = store.selectViewData();
 
     expect(viewData.bottomSpacer).toBe(96);
-    expect(viewData.containerAttrString).toBe("data-testid=spaced-content");
   });
 
   it.each([
@@ -85,16 +78,11 @@ describe("rtgl-form bound store integration", () => {
   ])(
     "forwards scrollbar visibility props %j only to the sticky field scroller",
     (props, expected) => {
-      const store = bindStore(
-        formStore,
-        { form: {}, "data-testid": "form", ...props },
-        {},
-      );
+      const store = bindStore(formStore, { form: {}, ...props }, {});
 
       const viewData = store.selectViewData();
 
       expect(viewData.fieldsAttrString).toBe(expected);
-      expect(viewData.containerAttrString).toBe("data-testid=form");
     },
   );
 

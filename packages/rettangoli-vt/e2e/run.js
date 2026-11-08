@@ -3,6 +3,7 @@
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { basename, extname, join, relative, resolve } from "node:path";
 import { execSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 // ---------------------------------------------------------------------------
 // Minimal YAML parser (only handles scenario.yaml format)
@@ -208,7 +209,7 @@ function runCommand(command, cwd, expectFail = false) {
 
 function main() {
   const updateSnapshots = process.argv.includes('--update');
-  const e2eDir = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
+  const e2eDir = fileURLToPath(new URL(".", import.meta.url)).replace(/[\\/]$/, "");
   const entries = readdirSync(e2eDir);
   const scenarioDirs = entries
     .map((name) => join(e2eDir, name))

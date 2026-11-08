@@ -1,20 +1,13 @@
 import { fieldAriaAttributes, forwardFieldAria } from "../accessibility/field.js";
-import {
-  css,
-  dimensionWithUnit,
-  convertObjectToCssString,
-  permutateBreakpoints,
-  createResponsiveStyleBuckets,
-  responsiveStyleSizes,
-  applyDimensionToStyleBucket,
-} from "../common.js";
+import { css, permutateBreakpoints, createResponsiveStyleBuckets } from "../common.js";
+import { RettangoliInputBaseElement } from "./input-base.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
 
 const inputNumberStyleMapKeys = ["mt", "mr", "mb", "ml", "m", "mh", "mv", "cur"];
 
 // Internal implementation without uhtml
-class RettangoliInputNumberElement extends HTMLElement {
+class RettangoliInputNumberElement extends RettangoliInputBaseElement {
   static styleSheet = null;
 
   static inputSpecificAttributes = [
@@ -76,22 +69,24 @@ class RettangoliInputNumberElement extends HTMLElement {
     super();
     RettangoliInputNumberElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliInputNumberElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliInputNumberElement.styleSheet];
 
     // Initialize style tracking properties
     this._styles = createResponsiveStyleBuckets();
     this._lastStyleString = "";
+    this._lastSetValue = "";
 
     // Create initial DOM structure
     this._inputElement = document.createElement('input');
     this._styleElement = document.createElement('style');
 
-    this.shadow.appendChild(this._styleElement);
-    this.shadow.appendChild(this._inputElement);
+    this.shadowRoot.appendChild(this._styleElement);
+    this.shadowRoot.appendChild(this._inputElement);
 
     // Bind event handlers
     this._inputElement.addEventListener('input', this._onInput);
     this._inputElement.addEventListener('change', this._onChange);
+    this._inputElement.addEventListener('blur', this._onBlur);
   }
 
   static get observedAttributes() {
@@ -123,7 +118,7 @@ class RettangoliInputNumberElement extends HTMLElement {
   }
 
   set value(newValue) {
-    this._inputElement.value = newValue;
+    this._setInputValue(newValue);
   }
 
   focus() {
@@ -161,7 +156,7 @@ class RettangoliInputNumberElement extends HTMLElement {
       // typing. Rewriting the value on every input event resets the caret and
       // makes decimal entry and deletion unreliable.
       if (commit) {
-        this._inputElement.value = nextValue.toString();
+        this._setInputValue(nextValue.toString());
       }
 
       this.dispatchEvent(new CustomEvent(eventName, {
@@ -178,7 +173,17 @@ class RettangoliInputNumberElement extends HTMLElement {
   };
 
   _onChange = () => {
+    // A commit ends the edit, even one that writes nothing back (an empty
+    // field, or an incomplete number such as `1e`).
+    this._lastSetValue = this._inputElement.value;
     this._emitValueEvent('value-change', { commit: true });
+  };
+
+  // Leaving the field ends the edit too: browsers fire no change event when
+  // the text is back to what it was on focus, even if `value` was written in
+  // between.
+  _onBlur = () => {
+    this._lastSetValue = this._inputElement.value;
   };
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -205,79 +210,15 @@ class RettangoliInputNumberElement extends HTMLElement {
     // Handle input-specific attributes first
     if (RettangoliInputNumberElement.inputSpecificAttributes.includes(name)) {
       this._updateInputAttributes();
-      if (name === "min" || name === "max") {
+      // Fit the value attribute to the new bounds, but keep what the user is
+      // typing: a parent may leave `value` stale until the edit is committed.
+      if ((name === "min" || name === "max") && !this._isEditing()) {
         this._syncValueAttribute();
       }
       return;
     }
 
     this.updateStyles();
-  }
-
-  updateStyles() {
-    // Reset styles for fresh calculation
-    this._styles = createResponsiveStyleBuckets();
-
-    responsiveStyleSizes.forEach((size) => {
-      const addSizePrefix = (tag) => {
-        return `${size === "default" ? "" : `${size}-`}${tag}`;
-      };
-
-      const wh = this.getAttribute(addSizePrefix("wh"));
-      const width = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
-      );
-      const height = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
-      );
-      const opacity = this.getAttribute(addSizePrefix("op"));
-      const zIndex = this.getAttribute(addSizePrefix("z"));
-
-      if (zIndex !== null) {
-        this._styles[size]["z-index"] = zIndex;
-      }
-
-      if (opacity !== null) {
-        this._styles[size].opacity = opacity;
-      }
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "width",
-        dimension: width,
-        fillValue: "var(--width-stretch)",
-      });
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "height",
-        dimension: height,
-        fillValue: "100%",
-      });
-
-      if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none";
-      }
-
-      if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "block";
-      }
-    });
-
-    // Update styles only if changed - targeting input element
-    const newStyleString = convertObjectToCssString(this._styles, 'input');
-    if (newStyleString !== this._lastStyleString) {
-      this._styleElement.textContent = newStyleString;
-      this._lastStyleString = newStyleString;
-    }
-  }
-
-  _setOrRemoveInputAttribute(name, value) {
-    if (value === null || value === undefined || value === "null") {
-      this._inputElement.removeAttribute(name);
-      return;
-    }
-    this._inputElement.setAttribute(name, value);
   }
 
   _clampValueToBounds(value) {
@@ -302,25 +243,32 @@ class RettangoliInputNumberElement extends HTMLElement {
     return nextValue;
   }
 
+  // Every programmatic write goes through here, so the native value differs
+  // from the last write, commit or blur only while the user is editing it.
+  _setInputValue(value) {
+    this._inputElement.value = value;
+    this._lastSetValue = this._inputElement.value;
+  }
+
+  _isEditing() {
+    return this._inputElement.value !== this._lastSetValue;
+  }
+
   _syncValueAttribute() {
     const value = this.getAttribute("value");
     if (value === null || value === undefined || value === "") {
-      this._inputElement.value = "";
+      this._setInputValue("");
       return;
     }
 
     const numericValue = parseFloat(value);
     if (isNaN(numericValue)) {
-      this._inputElement.value = "";
+      this._setInputValue("");
       return;
     }
 
     const clampedValue = this._clampValueToBounds(numericValue);
-    this._inputElement.value = clampedValue.toString();
-  }
-
-  _syncPlaceholderAttribute() {
-    this._setOrRemoveInputAttribute("placeholder", this.getAttribute("placeholder"));
+    this._setInputValue(clampedValue.toString());
   }
 
   _updateInputAttributes() {

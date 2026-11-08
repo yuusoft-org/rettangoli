@@ -1,4 +1,4 @@
 template:
-  - rtgl-test-child-nonobject-props 0=bad:
+  - rtgl-test-child-nonobject-props accent-color=bad:
       - rtgl-text: Host
 styles: {}

@@ -1,13 +1,16 @@
 import { fieldAriaAttributes, forwardFieldAria } from "../accessibility/field.js";
 import {
   css,
-  dimensionWithUnit,
   convertObjectToCssString,
   styleMapKeys,
   permutateBreakpoints,
-  responsiveStyleSizes,
   createResponsiveStyleBuckets,
   parseResponsiveStyleAttribute,
+  rebuildResponsiveStyles,
+  applyZIndexAndOpacity,
+  applySizing,
+  applyVisibility,
+  commitStyleText,
 } from "../common.js";
 import { parseMaxLength } from "../common/textLength.js";
 import cursorStyles from "../styles/cursorStyles.js";
@@ -72,7 +75,7 @@ class RettangoliTextAreaElement extends HTMLElement {
     super();
     RettangoliTextAreaElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliTextAreaElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliTextAreaElement.styleSheet];
 
     // Initialize style tracking properties
     this._styles = createResponsiveStyleBuckets();
@@ -85,8 +88,8 @@ class RettangoliTextAreaElement extends HTMLElement {
     this._textareaElement = document.createElement('textarea');
     this._styleElement = document.createElement('style');
 
-    this.shadow.appendChild(this._styleElement);
-    this.shadow.appendChild(this._textareaElement);
+    this.shadowRoot.appendChild(this._styleElement);
+    this.shadowRoot.appendChild(this._textareaElement);
 
     // Bind event handlers
     this._textareaElement.addEventListener('input', this._onInput);
@@ -218,64 +221,18 @@ class RettangoliTextAreaElement extends HTMLElement {
   }
 
   updateStyles(changedSize) {
-    const sizes = changedSize === undefined ? responsiveStyleSizes : [changedSize];
-    sizes.forEach((size) => {
-      this._styles[size] = {};
-      const addSizePrefix = (tag) => {
-        return `${size === "default" ? "" : `${size}-`}${tag}`;
-      };
-
-      const wh = this.getAttribute(addSizePrefix("wh"));
-      const width = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
-      );
-      const height = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
-      );
-      const opacity = this.getAttribute(addSizePrefix("op"));
-      const zIndex = this.getAttribute(addSizePrefix("z"));
-
-      if (zIndex !== null) {
-        this._styles[size]["z-index"] = zIndex;
-      }
-
-      if (opacity !== null) {
-        this._styles[size].opacity = opacity;
-      }
-
-      if (width === "f") {
-        this._styles[size].width = "var(--width-stretch)";
-      } else if (width !== undefined) {
-        this._styles[size].width = width;
-        this._styles[size]["min-width"] = width;
-        this._styles[size]["max-width"] = width;
-      }
-
-      if (height === "f") {
-        this._styles[size].height = "100%";
-      } else if (height !== undefined) {
-        this._styles[size].height = height;
-        this._styles[size]["min-height"] = height;
-        this._styles[size]["max-height"] = height;
-      }
-
-      if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none";
-      }
-
-      if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "block";
-      }
+    rebuildResponsiveStyles({
+      styles: this._styles,
+      changedSize,
+      buildStyles: ({ styleBucket, attrName }) => {
+        applyZIndexAndOpacity({ styleBucket, element: this, attrName });
+        applySizing({ styleBucket, element: this, attrName, unsetBoundsOnFill: false });
+        applyVisibility({ styleBucket, element: this, attrName, display: "block" });
+      },
     });
 
     this._stylesDirty = false;
-
-    // Update styles only if changed - targeting textarea element
-    const newStyleString = convertObjectToCssString(this._styles, 'textarea');
-    if (newStyleString !== this._lastStyleString) {
-      this._styleElement.textContent = newStyleString;
-      this._lastStyleString = newStyleString;
-    }
+    commitStyleText(this, convertObjectToCssString(this._styles, 'textarea'));
   }
 
   _updateTextareaAttributes() {

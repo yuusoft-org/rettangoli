@@ -138,7 +138,7 @@ describe("components with app messages", () => {
       state: { isOpen: false, position: {}, draftValues: [] },
       props: { options: [] },
     });
-    expect(tagSelect.placeholder).toBe("Ajouter une étiquette");
+    expect(tagSelect.triggerTags[0].label).toBe("Ajouter une étiquette");
     expect(tagSelect.submitLabel).toBe("Enregistrer");
   });
 

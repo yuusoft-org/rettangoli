@@ -455,3 +455,136 @@ describe("frontend entry source generator", () => {
     ).toThrow("[Watch] Component contract validation failed:");
   });
 });
+
+describe("frontend entry source discovery and YAML errors", () => {
+  const createdDirs = [];
+
+  afterEach(() => {
+    createdDirs.splice(0).forEach((dirPath) => rmSync(dirPath, { recursive: true, force: true }));
+    vi.restoreAllMocks();
+  });
+
+  const createProject = (files) => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), "rtgl-fe-entry-discovery-"));
+    createdDirs.push(rootDir);
+    writeFileSync(path.join(rootDir, "setup.js"), "export const deps = {};\n");
+    for (const [relativePath, content] of Object.entries(files)) {
+      const filePath = path.join(rootDir, relativePath);
+      mkdirSync(path.dirname(filePath), { recursive: true });
+      writeFileSync(filePath, content);
+    }
+    return rootDir;
+  };
+
+  const generate = (rootDir, dirs) => generateFrontendEntrySource({
+    cwd: rootDir,
+    dirs,
+    setup: "setup.js",
+    command: "build",
+  });
+
+  it("names the file in a YAML error and keeps it a YAMLException", () => {
+    const rootDir = createProject({
+      "components/card/card.schema.yaml": "componentName: x-card\n",
+      "components/card/card.view.yaml": "template:\n  - div: [unclosed\n",
+    });
+    let error;
+    try {
+      generate(rootDir, ["components"]);
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error?.name).toBe("YAMLException");
+    expect(error.message.split("\n")[0]).toBe(
+      `unexpected end of the stream within a flow collection in "${path.join(rootDir, "components/card/card.view.yaml")}" (3:1)`,
+    );
+  });
+
+  it("warns once when two folders define one component id, and still merges them", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const rootDir = createProject({
+      "src/components/button/button.schema.yaml": "componentName: app-button\n",
+      "src/components/button/button.view.yaml": "template:\n  - button: app\n",
+      "src/components/button/button.store.js": "export const createInitialState = () => ({});\n",
+      "vendor/components/button/button.schema.yaml": "componentName: vendor-button\n",
+      "vendor/components/button/button.view.yaml": "template:\n  - button: vendor\n",
+    });
+    const source = generate(rootDir, ["src", "vendor"]);
+    expect(warn.mock.calls).toEqual([[
+      `[Build] component id "components/button" is defined in ${path.join(rootDir, "src/components/button/button")}`
+      + ` and ${path.join(rootDir, "vendor/components/button/button")}; their files are merged and later files win.`,
+    ]]);
+    expect(source).toContain('const __rtglRegistrationOrder = [["components","button"]];');
+    expect(source).toContain('imports["components"]["button"]["schema"] = __rtgl_3_schema;');
+    expect(source).toContain('imports["components"]["button"]["store"] = __rtgl_1_store;');
+  });
+
+  it("does not warn for one folder listed twice by overlapping dirs", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const rootDir = createProject({
+      "src/components/counter/counter.schema.yaml": "componentName: x-counter\n",
+      "src/components/counter/counter.view.yaml": "template:\n  - div: c\n",
+    });
+    const source = generate(rootDir, ["src", "src/components"]);
+    expect(warn).not.toHaveBeenCalled();
+    expect(source.match(/"componentName":"x-counter"/g)).toHaveLength(2);
+  });
+});
+
+describe("frontend entry source with schema problems the browser rejects", () => {
+  const createdDirs = [];
+
+  afterEach(() => {
+    createdDirs.splice(0).forEach((dirPath) => rmSync(dirPath, { recursive: true, force: true }));
+    vi.restoreAllMocks();
+  });
+
+  it("still builds, and warns once with every problem", () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), "rtgl-fe-entry-schema-"));
+    createdDirs.push(rootDir);
+    writeFileSync(path.join(rootDir, "setup.js"), "export const deps = {};\n");
+    const schemas = {
+      "components/alpha": "componentName: x-same\n",
+      "components/bad": "componentName: Bad-Name\n",
+      "components/focus": "componentName: x-focus\nmethods:\n  type: object\n  properties:\n    focusInput: {}\n",
+      "pages/app": "componentName: x-same\n",
+    };
+    for (const [id, schema] of Object.entries(schemas)) {
+      const name = path.basename(id);
+      mkdirSync(path.join(rootDir, id), { recursive: true });
+      writeFileSync(path.join(rootDir, id, `${name}.schema.yaml`), schema);
+      writeFileSync(path.join(rootDir, id, `${name}.view.yaml`), "template:\n  - div: hello\n");
+    }
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const source = generateFrontendEntrySource({
+      cwd: rootDir,
+      dirs: ["components", "pages"],
+      setup: "setup.js",
+      command: "build",
+      errorPrefix: "[Watch]",
+    });
+
+    expect(source).toContain(
+      'const __rtglRegistrationOrder = [["components","alpha"],["components","bad"],["components","focus"],["pages","app"]];',
+    );
+    expect(warn.mock.calls.map((call) => call.join(" ").replaceAll(rootDir, "<ROOT>"))).toEqual([[
+      "[Watch] Component schema problems that fail in the browser:",
+      "RTGL-CONTRACT-005 components/bad: componentName 'Bad-Name' is not a valid custom element name: it must be lowercase, start with a letter, contain a '-', use no spaces or symbols other than '-', '.' and '_', and not be a reserved name such as font-face. [<ROOT>/components/bad/bad.schema.yaml]",
+      "RTGL-CONTRACT-004 components/focus: invalid .schema.yaml: method 'focusInput' is declared in schema but missing in .methods.js exports. [<ROOT>/components/focus/focus.schema.yaml]",
+      "RTGL-CONTRACT-006 pages/app: componentName 'x-same' is already used by components/alpha. [<ROOT>/pages/app/app.schema.yaml]",
+    ].join("\n")]);
+  });
+
+  it("does not warn for valid schemas", () => {
+    const rootDir = mkdtempSync(path.join(tmpdir(), "rtgl-fe-entry-schema-"));
+    createdDirs.push(rootDir);
+    writeFileSync(path.join(rootDir, "setup.js"), "export const deps = {};\n");
+    mkdirSync(path.join(rootDir, "components/card"), { recursive: true });
+    writeFileSync(path.join(rootDir, "components/card/card.schema.yaml"), "componentName: x-card\n");
+    writeFileSync(path.join(rootDir, "components/card/card.view.yaml"), "template:\n  - div: hello\n");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    generateFrontendEntrySource({ cwd: rootDir, dirs: ["components"], setup: "setup.js", command: "build" });
+    expect(warn).not.toHaveBeenCalled();
+  });
+});

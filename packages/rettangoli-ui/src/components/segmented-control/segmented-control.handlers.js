@@ -1,6 +1,7 @@
 import { subscribeUiMessages } from "../../common/uiMessages.js";
 import { deepEqual } from "../../common.js";
 import { hasFieldAriaChanged } from "../../accessibility/field.js";
+import { hasResolvedValue, resolveSelectedValue } from "../../common/choice.js";
 
 const emitValueChange = ({ dispatchEvent, value, label, index, item }) => {
   dispatchEvent(
@@ -30,6 +31,7 @@ export const handleBeforeMount = (deps) => {
     if (selectedOption) {
       store.updateSelectedValue({
         value: selectedOption.value,
+        fromProps: true,
       });
       render();
     }
@@ -45,7 +47,7 @@ export const handleOnUpdate = (deps, payload) => {
   let shouldRender = hasFieldAriaChanged(oldProps, newProps);
 
   if (oldProps.selectedValue !== newProps.selectedValue) {
-    store.updateSelectedValue({ value: newProps.selectedValue });
+    store.updateSelectedValue({ value: newProps.selectedValue, fromProps: true });
     shouldRender = true;
   }
 
@@ -68,14 +70,9 @@ export const handleOptionClick = (deps, payload) => {
   const id = event.currentTarget.id.slice("option".length);
   const index = Number(id);
   const option = props.options[index];
-  const hasControlledValue = Object.prototype.hasOwnProperty.call(
-    props || {},
-    "selectedValue",
-  );
-  const currentValue = store.selectSelectedValue();
-  const hasCurrentValue = hasControlledValue
-    ? true
-    : store.selectHasSelectedValue();
+  const state = store.selectState();
+  const currentValue = resolveSelectedValue({ state, props });
+  const hasCurrentValue = hasResolvedValue({ state, props });
   const isSelected = option
     ? hasCurrentValue && deepEqual(option.value, currentValue)
     : false;

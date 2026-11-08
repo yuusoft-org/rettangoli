@@ -1,4 +1,4 @@
 template:
-  - rtgl-test-duplicate-merge accent-color=blue :showIcon=true:
+  - rtgl-test-duplicate-merge accent-color=blue :showIcon=${true}:
       - rtgl-text: Host
 styles: {}

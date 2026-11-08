@@ -1,0 +1,10 @@
+header:
+  label: Lantern
+  href: /docs/
+items:
+  - id: introduction
+    label: Introduction
+    href: /docs/introduction/
+  - id: quick-start
+    label: Quick start (5 min)
+    href: /docs/quick-start/

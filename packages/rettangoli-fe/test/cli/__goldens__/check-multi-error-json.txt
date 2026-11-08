@@ -1,0 +1,61 @@
+{
+  "ok": false,
+  "prefix": "[Check]",
+  "summary": {
+    "total": 4,
+    "byCode": [
+      {
+        "code": "RTGL-CONTRACT-001",
+        "count": 1
+      },
+      {
+        "code": "RTGL-CONTRACT-002",
+        "count": 1
+      },
+      {
+        "code": "RTGL-CONTRACT-003",
+        "count": 1
+      },
+      {
+        "code": "RTGL-CONTRACT-006",
+        "count": 1
+      }
+    ],
+    "byComponent": [
+      {
+        "component": "pages/FooBar",
+        "count": 2
+      },
+      {
+        "component": "components/foo-bar",
+        "count": 1
+      },
+      {
+        "component": "components/fooBar",
+        "count": 1
+      }
+    ]
+  },
+  "errors": [
+    {
+      "code": "RTGL-CONTRACT-002",
+      "message": "components/foo-bar: 'propsSchema' is not allowed in .view.yaml. Move API metadata to .schema.yaml.",
+      "filePath": "<ROOT>/components/foo-bar/foo-bar.view.yaml"
+    },
+    {
+      "code": "RTGL-CONTRACT-001",
+      "message": "components/fooBar: missing required .schema.yaml file.",
+      "filePath": "<ROOT>/components/fooBar/fooBar.view.yaml"
+    },
+    {
+      "code": "RTGL-CONTRACT-003",
+      "message": "pages/FooBar: legacy property binding syntax is not supported. Use ':prop=${value}' in .view.yaml.",
+      "filePath": "<ROOT>/pages/FooBar/FooBar.view.yaml"
+    },
+    {
+      "code": "RTGL-CONTRACT-006",
+      "message": "pages/FooBar: componentName 'x-foo-bar' is already used by components/foo-bar.",
+      "filePath": "<ROOT>/pages/FooBar/FooBar.schema.yaml"
+    }
+  ]
+}

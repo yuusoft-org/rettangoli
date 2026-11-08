@@ -1,6 +1,14 @@
 import { getUiMessage } from "../../common/uiMessages.js";
 import { selectFieldAria } from "../../accessibility/field.js";
 import { deepEqual } from '../../common.js';
+import {
+  getOptionIcon,
+  getOptionImageSrc,
+  getOptionSuffixText,
+  getOptionType,
+  isSelectableOption,
+  resolveSelectedValue,
+} from '../../common/choice.js';
 
 // Attributes that should not be passed through to the container
 // These are either handled internally or have special meaning
@@ -32,29 +40,6 @@ const stringifyProps = (props = {}) => {
 };
 
 const hasOwnProp = (object, key) => Object.prototype.hasOwnProperty.call(object || {}, key);
-const getOptionType = (option = {}) => {
-  if (option.type === 'section') {
-    return 'section';
-  }
-
-  if (option.type === 'separator') {
-    return 'separator';
-  }
-
-  return 'item';
-};
-const isSelectableOption = (option = {}) => getOptionType(option) === 'item';
-
-const getOptionIcon = (option = {}) => {
-  return typeof option.icon === 'string' && option.icon.length > 0 ? option.icon : '';
-};
-
-const getOptionImageSrc = (option = {}) => {
-  return typeof option.imageSrc === 'string' && option.imageSrc.trim().length > 0
-    ? option.imageSrc
-    : '';
-};
-
 const imageBorderRadiusTokens = new Map([
   ['xs', 'xs'],
   ['sm', 'sm'],
@@ -96,18 +81,6 @@ const normalizeImageConfig = (image = {}) => {
     imageHasBorder: borderColor.length > 0,
     imageFit: fit,
   };
-};
-
-const getOptionSuffixText = (option = {}) => {
-  if (typeof option.shortcut === 'string' && option.shortcut.length > 0) {
-    return option.shortcut;
-  }
-
-  if (typeof option.suffixText === 'string' && option.suffixText.length > 0) {
-    return option.suffixText;
-  }
-
-  return '';
 };
 
 const normalizeSearchQuery = (query) => {
@@ -295,6 +268,7 @@ export const createInitialState = () => Object.freeze({
     y: 0,
   },
   selectedValue: null,
+  hasLocalValue: false,
   hoveredOptionId: null,
   hoveredAddOption: false,
   searchQuery: "",
@@ -307,9 +281,7 @@ export const selectViewData = ({ state, props }) => {
   const containerAttrString = stringifyProps(props);
   const isDisabled = !!props.disabled;
 
-  // Treat selectedValue as a controlled prop when provided by parent.
-  const hasControlledValue = Object.prototype.hasOwnProperty.call(props || {}, "selectedValue");
-  const currentValue = hasControlledValue ? props.selectedValue : state.selectedValue;
+  const currentValue = resolveSelectedValue({ state, props });
 
   // Calculate display label from value
   let displayLabel = props.placeholder || getUiMessage("selectPlaceholder");
@@ -424,6 +396,7 @@ export const closeOptionsPopover = ({ state }) => {
 
 export const updateSelectedValue = ({ state }, payload = {}) => {
   state.selectedValue = payload.value;
+  state.hasLocalValue = !payload.fromProps;
   state.isOpen = false;
   state.searchQuery = "";
 };
@@ -442,6 +415,7 @@ export const clearHoveredOption = ({ state }) => {
 
 export const clearSelectedValue = ({ state }) => {
   state.selectedValue = undefined;
+  state.hasLocalValue = true;
 };
 
 export const setHoveredAddOption = ({ state }, payload = {}) => {

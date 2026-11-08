@@ -1,3 +1,5 @@
+import { parseAndRender } from "jempl";
+import { createEventDispatchCallback } from "../src/core/runtime/events.js";
 import {
   buildOnUpdateChanges,
   createRuntimeDeps,
@@ -7,7 +9,7 @@ import {
   runAfterMount,
   runBeforeMount,
 } from "../src/core/runtime/lifecycle.js";
-import { normalizeAttributeValue, toCamelCase } from "../src/core/runtime/props.js";
+import { normalizeAttributeValue } from "../src/core/runtime/props.js";
 
 export const runLifecycleCoreCase = ({ scenario }) => {
   if (scenario === "create_runtime_deps_merges_fields") {
@@ -28,34 +30,41 @@ export const runLifecycleCoreCase = ({ scenario }) => {
     };
   }
 
-  if (scenario === "store_action_dispatcher_injects_event_context") {
+  if (scenario === "store_action_dispatcher_receives_rendered_payload") {
     let received = null;
     let renderCount = 0;
 
-    const dispatch = createStoreActionDispatcher({
-      store: {
-        setEmail: (ctx) => {
-          received = ctx;
+    const handlers = createTransformedHandlers({
+      handlers: {},
+      deps: {
+        store: {
+          setEmail: (payload) => {
+            received = payload;
+          },
+        },
+        render: () => {
+          renderCount += 1;
         },
       },
-      render: () => {
-        renderCount += 1;
+    });
+    const event = new CustomEvent("value-input", { detail: { value: "a@b.com ${typed}" } });
+    const listener = createEventDispatchCallback({
+      eventConfig: {
+        action: "setEmail",
+        payload: { value: "${_event.detail.value}", label: "${label}" },
       },
-      parseAndRenderFn: (payload, scope) => ({
-        value: payload.value,
-        _event: scope._event,
-      }),
+      handlers,
+      parseAndRenderFn: parseAndRender,
+      getPayloadContext: () => ({ label: "Costs ${price}" }),
     });
 
-    dispatch({
-      _action: "setEmail",
-      value: "a@b.com",
-      _event: { type: "input" },
-    });
+    listener(event);
 
     return {
       value: received.value,
-      eventType: received._event.type,
+      label: received.label,
+      eventIsSame: received._event === event,
+      action: received._action,
       renderCount,
     };
   }
@@ -64,7 +73,6 @@ export const runLifecycleCoreCase = ({ scenario }) => {
     const dispatch = createStoreActionDispatcher({
       store: {},
       render: () => {},
-      parseAndRenderFn: (payload) => payload,
     });
 
     dispatch({
@@ -84,7 +92,6 @@ export const runLifecycleCoreCase = ({ scenario }) => {
         store: {},
         render: () => {},
       },
-      parseAndRenderFn: (payload) => payload,
     });
 
     return {
@@ -139,7 +146,6 @@ export const runLifecycleCoreCase = ({ scenario }) => {
         },
       },
       propsSchemaKeys: ["maxItems", "title"],
-      toCamelCase,
       normalizeAttributeValue,
     });
 
@@ -162,7 +168,6 @@ export const runLifecycleCoreCase = ({ scenario }) => {
         },
       },
       propsSchemaKeys: ["maxItems", "title"],
-      toCamelCase,
       normalizeAttributeValue,
     });
 

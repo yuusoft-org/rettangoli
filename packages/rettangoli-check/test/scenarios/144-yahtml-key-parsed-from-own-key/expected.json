@@ -1,0 +1,83 @@
+{
+  "name": "selector bindings come from the template key itself, with FE's tag rule and FE's binding names, also when the text scan cannot match the key's line (flow mapping, quoted multi-line key; a bare '?toggle' is reported once; whitespace inside '${...}' does not split the key)",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 8,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-BINDING-001": 1,
+      "RTGL-CHECK-YAHTML-003": 7
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/flow: unsupported attr/prop 'bogus-k' on 'rtgl-text'.",
+        "filePath": "src/components/flow/flow.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/explicit: unsupported attr/prop 'bogus-al' on 'rtgl-view'.",
+        "filePath": "src/components/explicit/explicit.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-BINDING-001",
+        "severity": "error",
+        "message": "components/fenames: Invalid attribute token '}' on 'rtgl-view'.",
+        "filePath": "src/components/fenames/fenames.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/fenames: unsupported attr/prop 'opts' on 'rtgl-view'.",
+        "filePath": "src/components/fenames/fenames.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/fenames: unsupported attr/prop 'foo:' on 'rtgl-view'.",
+        "filePath": "src/components/fenames/fenames.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/fenames: unsupported attr/prop 'bar' on 'rtgl-view'.",
+        "filePath": "src/components/fenames/fenames.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/interp: unsupported attr/prop 'bogus' on 'rtgl-view'.",
+        "filePath": "src/components/interp/interp.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/toggle: unsupported attr/prop 'bogus-toggle' on 'rtgl-view'.",
+        "filePath": "src/components/toggle/toggle.view.yaml",
+        "line": 2
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-YAHTML-001",
+    "RTGL-SPEC-YAHTML-002"
+  ]
+}

@@ -1,12 +1,7 @@
 import fs from "fs";
-import { Liquid } from "liquidjs";
-import { deriveAnchorId } from "../section-page-key.js";
+import { createLiquidEngine } from "../render/liquid.js";
 
-const engine = new Liquid();
-
-engine.registerFilter("slug", (value, fallbackValue) => {
-  return deriveAnchorId(value, fallbackValue);
-});
+const engine = createLiquidEngine();
 
 export async function renderHtmlReport({ results, templatePath, outputPath }) {
   try {

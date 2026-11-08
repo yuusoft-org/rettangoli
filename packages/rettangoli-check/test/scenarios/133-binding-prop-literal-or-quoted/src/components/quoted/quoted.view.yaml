@@ -1,0 +1,4 @@
+template:
+  - div:
+      - span :title="${title}": Quoted value
+styles: {}

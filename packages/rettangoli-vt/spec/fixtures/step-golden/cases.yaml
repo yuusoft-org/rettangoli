@@ -1,0 +1,810 @@
+# Step engine golden cases (see ../../step-engine-golden.spec.js).
+#
+# Each case replays one raw step through createSteps() against the recording page
+# (spec/support/recording-page.js) under its listed personalities (default: [default]).
+# The call log and error message are frozen in golden.json.
+#
+#   id:            unique, dotted: <action-or-area>.<variant>
+#   step:          the raw step exactly as it would appear in a spec's frontmatter
+#   personalities: optional, subset of the personalities in recording-page.js
+#   bug:           optional bug tag for cases whose current behavior is a known bug;
+#                  only the change fixing that bug may change those goldens
+#
+# After an intentional change: UPDATE_GOLDEN=1 node spec/support/record-goldens.mjs
+- id: blur.top-level
+  step: {"action": "blur"}
+- id: blur.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "blur"}]}
+- id: blur.extra-key
+  step: {"action": "blur", "extra": 1}
+- id: check.top-level
+  step: {"action": "check"}
+- id: check.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "check"}]}
+- id: check.extra-key
+  step: {"action": "check", "extra": 1}
+- id: clear.top-level
+  step: {"action": "clear"}
+- id: clear.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "clear"}]}
+- id: clear.extra-key
+  step: {"action": "clear", "extra": 1}
+- id: focus.top-level
+  step: {"action": "focus"}
+- id: focus.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "focus"}]}
+- id: focus.extra-key
+  step: {"action": "focus", "extra": 1}
+- id: mouseDown.top-level
+  step: {"action": "mouseDown"}
+- id: mouseDown.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "mouseDown"}]}
+- id: mouseDown.extra-key
+  step: {"action": "mouseDown", "extra": 1}
+- id: mouseUp.top-level
+  step: {"action": "mouseUp"}
+- id: mouseUp.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "mouseUp"}]}
+- id: mouseUp.extra-key
+  step: {"action": "mouseUp", "extra": 1}
+- id: rightMouseDown.top-level
+  step: {"action": "rightMouseDown"}
+- id: rightMouseDown.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "rightMouseDown"}]}
+- id: rightMouseDown.extra-key
+  step: {"action": "rightMouseDown", "extra": 1}
+- id: rightMouseUp.top-level
+  step: {"action": "rightMouseUp"}
+- id: rightMouseUp.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "rightMouseUp"}]}
+- id: rightMouseUp.extra-key
+  step: {"action": "rightMouseUp", "extra": 1}
+- id: screenshot.top-level
+  step: {"action": "screenshot"}
+- id: screenshot.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "screenshot"}]}
+- id: screenshot.extra-key
+  step: {"action": "screenshot", "extra": 1}
+- id: uncheck.top-level
+  step: {"action": "uncheck"}
+- id: uncheck.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "uncheck"}]}
+- id: uncheck.extra-key
+  step: {"action": "uncheck", "extra": 1}
+- id: blur.in-select-no-inner
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "blur"}]}
+  personalities: [default, noInner]
+- id: focus.in-select-no-inner
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "focus"}]}
+  personalities: [default, noInner]
+- id: click.bare
+  step: {"action": "click"}
+- id: click.coords
+  step: {"action": "click", "x": 10, "y": 20}
+- id: click.coords-float-negative
+  step: {"action": "click", "x": 1.5, "y": -2}
+- id: click.only-x
+  step: {"action": "click", "x": 10}
+- id: click.coords-zero
+  step: {"action": "click", "x": 0, "y": 0}
+- id: click.only-y
+  step: {"action": "click", "y": 20}
+- id: click.null-coords
+  step: {"action": "click", "x": null, "y": null}
+- id: click.string-x
+  step: {"action": "click", "x": "10", "y": 20}
+- id: click.nan-x
+  step: {"action": "click", "x": .nan, "y": 20}
+- id: click.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "click"}]}
+  personalities: [default, noInner]
+- id: click.in-select-with-coords
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "click", "x": 5, "y": 6}]}
+- id: click.extra-key
+  step: {"action": "click", "x": 1, "y": 2, "extra": true}
+- id: dblclick.bare
+  step: {"action": "dblclick"}
+- id: dblclick.coords
+  step: {"action": "dblclick", "x": 10, "y": 20}
+- id: dblclick.coords-float-negative
+  step: {"action": "dblclick", "x": 1.5, "y": -2}
+- id: dblclick.only-x
+  step: {"action": "dblclick", "x": 10}
+- id: dblclick.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "dblclick"}]}
+  personalities: [default, noInner]
+- id: dblclick.in-select-with-coords
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "dblclick", "x": 5, "y": 6}]}
+- id: dblclick.extra-key
+  step: {"action": "dblclick", "x": 1, "y": 2, "extra": true}
+- id: hover.bare
+  step: {"action": "hover"}
+- id: hover.coords
+  step: {"action": "hover", "x": 10, "y": 20}
+- id: hover.coords-float-negative
+  step: {"action": "hover", "x": 1.5, "y": -2}
+- id: hover.only-x
+  step: {"action": "hover", "x": 10}
+- id: hover.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "hover"}]}
+  personalities: [default, noInner]
+- id: hover.in-select-with-coords
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "hover", "x": 5, "y": 6}]}
+- id: hover.extra-key
+  step: {"action": "hover", "x": 1, "y": 2, "extra": true}
+- id: rclick.bare
+  step: {"action": "rclick"}
+- id: rclick.coords
+  step: {"action": "rclick", "x": 10, "y": 20}
+- id: rclick.coords-float-negative
+  step: {"action": "rclick", "x": 1.5, "y": -2}
+- id: rclick.only-x
+  step: {"action": "rclick", "x": 10}
+- id: rclick.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "rclick"}]}
+  personalities: [default, noInner]
+- id: rclick.in-select-with-coords
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "rclick", "x": 5, "y": 6}]}
+- id: rclick.extra-key
+  step: {"action": "rclick", "x": 1, "y": 2, "extra": true}
+- id: move.bare
+  step: {"action": "move"}
+- id: move.valid
+  step: {"action": "move", "x": 10, "y": 20}
+- id: move.missing-x
+  step: {"action": "move", "y": 20}
+- id: move.missing-y
+  step: {"action": "move", "x": 10}
+- id: move.null-x
+  step: {"action": "move", "x": null, "y": 20}
+- id: move.string-y
+  step: {"action": "move", "x": 10, "y": "20"}
+- id: move.nan
+  step: {"action": "move", "x": .nan, "y": 20}
+- id: move.infinity
+  step: {"action": "move", "x": 10, "y": .inf}
+- id: move.extra-key
+  step: {"action": "move", "x": 10, "y": 20, "extra": 1}
+- id: scroll.bare
+  step: {"action": "scroll"}
+- id: scroll.valid
+  step: {"action": "scroll", "deltaX": 10, "deltaY": 20}
+- id: scroll.missing-deltaX
+  step: {"action": "scroll", "deltaY": 20}
+- id: scroll.missing-deltaY
+  step: {"action": "scroll", "deltaX": 10}
+- id: scroll.null-deltaX
+  step: {"action": "scroll", "deltaX": null, "deltaY": 20}
+- id: scroll.string-deltaY
+  step: {"action": "scroll", "deltaX": 10, "deltaY": "20"}
+- id: scroll.nan
+  step: {"action": "scroll", "deltaX": .nan, "deltaY": 20}
+- id: scroll.infinity
+  step: {"action": "scroll", "deltaX": 10, "deltaY": .inf}
+- id: scroll.extra-key
+  step: {"action": "scroll", "deltaX": 10, "deltaY": 20, "extra": 1}
+- id: setViewport.bare
+  step: {"action": "setViewport"}
+- id: setViewport.valid
+  step: {"action": "setViewport", "width": 390, "height": 844}
+- id: setViewport.missing-width
+  step: {"action": "setViewport", "height": 844}
+- id: setViewport.missing-height
+  step: {"action": "setViewport", "width": 390}
+- id: setViewport.null-width
+  step: {"action": "setViewport", "width": null, "height": 844}
+- id: setViewport.string-height
+  step: {"action": "setViewport", "width": 390, "height": "844"}
+- id: setViewport.nan
+  step: {"action": "setViewport", "width": .nan, "height": 844}
+- id: setViewport.infinity
+  step: {"action": "setViewport", "width": 390, "height": .inf}
+- id: setViewport.extra-key
+  step: {"action": "setViewport", "width": 390, "height": 844, "extra": 1}
+- id: move.float-negative
+  step: {"action": "move", "x": -1.5, "y": 0.25}
+- id: scroll.negative
+  step: {"action": "scroll", "deltaX": -100, "deltaY": -250.5}
+- id: scroll.zero
+  step: {"action": "scroll", "deltaX": 0, "deltaY": 0}
+- id: setViewport.zero-width
+  step: {"action": "setViewport", "width": 0, "height": 844}
+- id: setViewport.negative-height
+  step: {"action": "setViewport", "width": 390, "height": -1}
+- id: setViewport.float-width
+  step: {"action": "setViewport", "width": 390.5, "height": 844}
+- id: wait.valid
+  step: {"action": "wait", "ms": 250}
+- id: wait.zero
+  step: {"action": "wait", "ms": 0}
+- id: wait.negative
+  step: {"action": "wait", "ms": -5}
+- id: wait.float
+  step: {"action": "wait", "ms": 1.5}
+- id: wait.missing-ms
+  step: {"action": "wait"}
+- id: wait.null-ms
+  step: {"action": "wait", "ms": null}
+- id: wait.string-ms
+  step: {"action": "wait", "ms": "250"}
+- id: wait.nan-ms
+  step: {"action": "wait", "ms": .nan}
+- id: wait.extra-key
+  step: {"action": "wait", "ms": 10, "extra": 1}
+- id: goto.absolute-http
+  step: {"action": "goto", "url": "http://localhost:3001/other.html"}
+- id: goto.absolute-https
+  step: {"action": "goto", "url": "https://example.com/a?b=1#c"}
+- id: goto.about-blank
+  step: {"action": "goto", "url": "about:blank"}
+- id: goto.file-url
+  step: {"action": "goto", "url": "file:///tmp/page.html"}
+- id: goto.relative-root
+  step: {"action": "goto", "url": "/pages/other.html"}
+  bug: goto-relative
+- id: goto.relative-sibling
+  step: {"action": "goto", "url": "other.html"}
+  bug: goto-relative
+- id: goto.relative-parent
+  step: {"action": "goto", "url": "../other.html?x=1"}
+  bug: goto-relative
+- id: goto.scheme-less-localhost
+  step: {"action": "goto", "url": "localhost:3000/app"}
+  bug: goto-relative
+- id: goto.scheme-less-loopback
+  step: {"action": "goto", "url": "127.0.0.1:8080/app"}
+  bug: goto-relative
+- id: goto.protocol-relative
+  step: {"action": "goto", "url": "//example.com/x"}
+  bug: goto-relative
+- id: goto.missing-url
+  step: {"action": "goto"}
+- id: goto.null-url
+  step: {"action": "goto", "url": null}
+- id: goto.empty-url
+  step: {"action": "goto", "url": ""}
+- id: goto.number-url
+  step: {"action": "goto", "url": 5}
+- id: goto.array-url
+  step: {"action": "goto", "url": ["http://localhost/"]}
+- id: goto.extra-key
+  step: {"action": "goto", "url": "http://localhost/", "extra": 1}
+- id: keypress.enter
+  step: {"action": "keypress", "key": "Enter"}
+- id: keypress.combo
+  step: {"action": "keypress", "key": "Control+a"}
+- id: keypress.spaced
+  step: {"action": "keypress", "key": "Shift Tab"}
+- id: keypress.missing-key
+  step: {"action": "keypress"}
+- id: keypress.null-key
+  step: {"action": "keypress", "key": null}
+- id: keypress.empty-key
+  step: {"action": "keypress", "key": ""}
+- id: keypress.number-key
+  step: {"action": "keypress", "key": 1}
+- id: keypress.extra-key
+  step: {"action": "keypress", "key": "a", "extra": 1}
+- id: write.top-level
+  step: {"action": "write", "value": "hello"}
+- id: write.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "write", "value": "hello"}]}
+  personalities: [default, noInner]
+- id: write.spaced
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "write", "value": "  two  spaces  "}]}
+- id: write.equals-sign
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "write", "value": "a=b=c"}]}
+- id: write.empty
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "write", "value": ""}]}
+- id: write.missing-value
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "write"}]}
+- id: write.null-value
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "write", "value": null}]}
+- id: write.number-value
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "write", "value": 5}]}
+- id: write.extra-key
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "write", "value": "x", "extra": 1}]}
+- id: upload.top-level
+  step: {"action": "upload", "files": ["a.png"]}
+- id: upload.single
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "upload", "files": ["fixtures/a.png"]}]}
+- id: upload.multiple
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "upload", "files": ["a.png", "b.png"]}]}
+- id: upload.spaced-path
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "upload", "files": ["my files/a b.png"]}]}
+- id: upload.empty-array
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "upload", "files": []}]}
+- id: upload.string-files
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "upload", "files": "a.png"}]}
+- id: upload.number-entry
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "upload", "files": ["a.png", 3]}]}
+- id: upload.empty-entry
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "upload", "files": ["a.png", ""]}]}
+- id: upload.null-entry
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "upload", "files": [null]}]}
+- id: upload.missing-files
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "upload"}]}
+- id: upload.null-files
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "upload", "files": null}]}
+- id: upload.extra-key
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "upload", "files": ["a.png"], "extra": 1}]}
+- id: waitFor.selector
+  step: {"action": "waitFor", "selector": "#a"}
+- id: waitFor.selector-state
+  step: {"action": "waitFor", "selector": "#a", "state": "hidden"}
+- id: waitFor.full
+  step: {"action": "waitFor", "selector": "#a b", "state": "attached", "timeoutMs": 5000}
+- id: waitFor.state-attached
+  step: {"action": "waitFor", "selector": ".x", "state": "attached"}
+- id: waitFor.state-detached
+  step: {"action": "waitFor", "selector": ".x", "state": "detached"}
+- id: waitFor.state-visible
+  step: {"action": "waitFor", "selector": ".x", "state": "visible"}
+- id: waitFor.state-hidden
+  step: {"action": "waitFor", "selector": ".x", "state": "hidden"}
+- id: waitFor.state-only
+  step: {"action": "waitFor", "state": "visible"}
+- id: waitFor.timeout-only
+  step: {"action": "waitFor", "timeoutMs": 100}
+- id: waitFor.bare
+  step: {"action": "waitFor"}
+- id: waitFor.invalid-state
+  step: {"action": "waitFor", "selector": "#a", "state": "gone"}
+- id: waitFor.null-state
+  step: {"action": "waitFor", "selector": "#a", "state": null}
+- id: waitFor.null-selector
+  step: {"action": "waitFor", "selector": null}
+- id: waitFor.empty-selector
+  step: {"action": "waitFor", "selector": ""}
+- id: waitFor.string-timeout
+  step: {"action": "waitFor", "selector": "#a", "timeoutMs": "100"}
+- id: waitFor.null-timeout
+  step: {"action": "waitFor", "selector": "#a", "timeoutMs": null}
+- id: waitFor.negative-timeout
+  step: {"action": "waitFor", "selector": "#a", "timeoutMs": -5}
+- id: waitFor.zero-timeout
+  step: {"action": "waitFor", "selector": "#a", "timeoutMs": 0}
+- id: waitFor.equals-in-selector
+  step: {"action": "waitFor", "selector": "[data-x=a]"}
+- id: waitFor.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "waitFor", "state": "visible"}]}
+- id: waitFor.in-select-with-selector
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "waitFor", "selector": "#a"}]}
+- id: waitFor.timeout-personality
+  step: {"action": "waitFor", "selector": "#a"}
+  personalities: [default, waitTimeout]
+- id: waitFor.extra-key
+  step: {"action": "waitFor", "selector": "#a", "extra": 1}
+- id: selectOption.top-level
+  step: {"action": "selectOption", "value": "a"}
+- id: selectOption.value
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "value": "a"}]}
+  personalities: [default, noInner]
+- id: selectOption.label
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "label": "Option A"}]}
+- id: selectOption.index
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "index": 2}]}
+- id: selectOption.index-zero
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "index": 0}]}
+- id: selectOption.index-float
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "index": 1.5}]}
+- id: selectOption.none
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption"}]}
+- id: selectOption.value-and-label
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "value": "a", "label": "A"}]}
+- id: selectOption.all-three
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "value": "a", "label": "A", "index": 1}]}
+- id: selectOption.null-value
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "value": null}]}
+- id: selectOption.empty-value
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "value": ""}]}
+- id: selectOption.number-value
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "value": 1}]}
+- id: selectOption.null-index
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "index": null}]}
+- id: selectOption.string-index
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "index": "1"}]}
+- id: selectOption.nan-index
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "index": .nan}]}
+- id: selectOption.empty-label
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "label": ""}]}
+- id: selectOption.value-with-equals
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "value": "a=b"}]}
+- id: selectOption.label-with-spaces
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "label": "two words"}]}
+- id: selectOption.extra-key
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "selectOption", "value": "a", "extra": 1}]}
+- id: customEvent.name-only
+  step: {"action": "customEvent", "name": "my-event"}
+- id: customEvent.empty-detail
+  step: {"action": "customEvent", "name": "my-event", "detail": {}}
+- id: customEvent.string-detail
+  step: {"action": "customEvent", "name": "my-event", "detail": {"id": "42", "label": "two words"}}
+- id: customEvent.non-string-detail
+  step: {"action": "customEvent", "name": "my-event", "detail": {"n": 5, "f": 1.5, "t": true, "z": null, "o": {"a": 1}, "l": [1, "x"]}}
+- id: customEvent.empty-string-value
+  step: {"action": "customEvent", "name": "my-event", "detail": {"k": ""}}
+- id: customEvent.value-with-equals
+  step: {"action": "customEvent", "name": "my-event", "detail": {"redirect": "a=b"}}
+  bug: custom-event-detail
+- id: customEvent.value-with-two-equals
+  step: {"action": "customEvent", "name": "my-event", "detail": {"url": "x?a=1&b=2"}}
+  bug: custom-event-detail
+- id: customEvent.value-leading-equals
+  step: {"action": "customEvent", "name": "my-event", "detail": {"k": "=x"}}
+  bug: custom-event-detail
+- id: customEvent.object-value-with-equals
+  step: {"action": "customEvent", "name": "my-event", "detail": {"o": {"a": "x=y"}}}
+  bug: custom-event-detail
+- id: customEvent.key-with-equals
+  step: {"action": "customEvent", "name": "my-event", "detail": {"a=b": "c"}}
+  bug: custom-event-detail
+- id: customEvent.empty-key
+  step: {"action": "customEvent", "name": "my-event", "detail": {"": "x"}}
+- id: customEvent.null-detail
+  step: {"action": "customEvent", "name": "my-event", "detail": null}
+- id: customEvent.array-detail
+  step: {"action": "customEvent", "name": "my-event", "detail": ["a"]}
+- id: customEvent.string-detail-value
+  step: {"action": "customEvent", "name": "my-event", "detail": "a=b"}
+- id: customEvent.missing-name
+  step: {"action": "customEvent"}
+- id: customEvent.null-name
+  step: {"action": "customEvent", "name": null}
+- id: customEvent.empty-name
+  step: {"action": "customEvent", "name": ""}
+- id: customEvent.number-name
+  step: {"action": "customEvent", "name": 5}
+- id: customEvent.extra-key
+  step: {"action": "customEvent", "name": "my-event", "extra": 1}
+- id: select.test-id
+  step: {"action": "select", "testId": "login", "steps": [{"action": "click"}]}
+  personalities: [default, noInner]
+- id: select.selector
+  step: {"action": "select", "selector": "#login .btn", "steps": [{"action": "click"}]}
+  personalities: [default, noInner]
+- id: select.selector-with-equals
+  step: {"action": "select", "selector": "[data-x=a]", "steps": [{"action": "click"}]}
+- id: select.test-id-with-equals
+  step: {"action": "select", "testId": "a=b", "steps": [{"action": "click"}]}
+- id: select.both
+  step: {"action": "select", "testId": "a", "selector": "#b", "steps": []}
+- id: select.neither
+  step: {"action": "select", "steps": []}
+- id: select.null-test-id
+  step: {"action": "select", "testId": null, "steps": [{"action": "click"}]}
+- id: select.empty-test-id
+  step: {"action": "select", "testId": "", "steps": []}
+- id: select.null-selector
+  step: {"action": "select", "selector": null, "steps": []}
+- id: select.test-id-and-null-selector
+  step: {"action": "select", "testId": "a", "selector": null, "steps": [{"action": "click"}]}
+- id: select.number-test-id
+  step: {"action": "select", "testId": 5, "steps": []}
+- id: select.missing-steps
+  step: {"action": "select", "testId": "a"}
+- id: select.string-steps
+  step: {"action": "select", "testId": "a", "steps": "click"}
+- id: select.empty-steps
+  step: {"action": "select", "testId": "tid", "steps": []}
+- id: select.two-steps
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "focus"}, {"action": "write", "value": "hi"}]}
+- id: select.nested-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "select", "selector": ".inner", "steps": [{"action": "click"}]}]}
+- id: select.invalid-nested-step
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "click"}, {"action": "frobnicate"}]}
+- id: select.non-object-nested-step
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "click"}, "click"]}
+- id: select.extra-key
+  step: {"action": "select", "testId": "a", "steps": [], "extra": 1}
+- id: assert-url.includes
+  step: {"action": "assert", "type": "url", "value": "/pages/home"}
+- id: assert-url.equals
+  step: {"action": "assert", "type": "url", "value": "http://localhost:3001/candidate/pages/home.html", "match": "equals"}
+- id: assert-url.includes-mismatch
+  step: {"action": "assert", "type": "url", "value": "/pages/home"}
+  personalities: [default, urlMismatch]
+- id: assert-url.equals-mismatch
+  step: {"action": "assert", "type": "url", "value": "http://localhost/x", "match": "equals"}
+- id: assert-url.bad-match
+  step: {"action": "assert", "type": "url", "value": "x", "match": "regex"}
+- id: assert-url.missing-value
+  step: {"action": "assert", "type": "url"}
+- id: assert-url.empty-value
+  step: {"action": "assert", "type": "url", "value": ""}
+- id: assert-url.number-value
+  step: {"action": "assert", "type": "url", "value": 5}
+- id: assert-url.null-match
+  step: {"action": "assert", "type": "url", "value": "x", "match": null}
+- id: assert-exists.selector
+  step: {"action": "assert", "type": "exists", "selector": "#a"}
+  personalities: [default, noInner]
+- id: assert-exists.selector-timeout
+  step: {"action": "assert", "type": "exists", "selector": "#a", "timeoutMs": 500}
+  personalities: [default, waitTimeout]
+- id: assert-exists.timeout-zero
+  step: {"action": "assert", "type": "exists", "selector": "#a", "timeoutMs": 0}
+- id: assert-exists.timeout-null
+  step: {"action": "assert", "type": "exists", "selector": "#a", "timeoutMs": null}
+  bug: validation-drift
+- id: assert-exists.timeout-negative
+  step: {"action": "assert", "type": "exists", "selector": "#a", "timeoutMs": -1}
+- id: assert-exists.timeout-string
+  step: {"action": "assert", "type": "exists", "selector": "#a", "timeoutMs": "5"}
+- id: assert-exists.timeout-nan
+  step: {"action": "assert", "type": "exists", "selector": "#a", "timeoutMs": .nan}
+- id: assert-exists.missing-selector
+  step: {"action": "assert", "type": "exists"}
+- id: assert-exists.empty-selector
+  step: {"action": "assert", "type": "exists", "selector": ""}
+- id: assert-exists.number-selector
+  step: {"action": "assert", "type": "exists", "selector": 5}
+- id: assert-exists.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "assert", "type": "exists"}]}
+  personalities: [default, noInner]
+- id: assert-exists.in-select-with-selector
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "assert", "type": "exists", "selector": "#b"}]}
+- id: assert-exists.in-select-null-selector
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "assert", "type": "exists", "selector": null}]}
+- id: assert-visible.selector
+  step: {"action": "assert", "type": "visible", "selector": "#a"}
+  personalities: [default, waitTimeout]
+- id: assert-visible.selector-timeout
+  step: {"action": "assert", "type": "visible", "selector": "#a", "timeoutMs": 500}
+- id: assert-visible.timeout-null
+  step: {"action": "assert", "type": "visible", "selector": "#a", "timeoutMs": null}
+  bug: validation-drift
+- id: assert-visible.timeout-negative
+  step: {"action": "assert", "type": "visible", "selector": "#a", "timeoutMs": -1}
+- id: assert-visible.missing-selector
+  step: {"action": "assert", "type": "visible"}
+- id: assert-visible.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "assert", "type": "visible"}]}
+  personalities: [default, waitTimeout]
+- id: assert-visible.in-select-timeout
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "assert", "type": "visible", "timeoutMs": 250}]}
+- id: assert-visible.in-select-with-selector
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "assert", "type": "visible", "selector": "#b"}]}
+- id: assert-hidden.selector
+  step: {"action": "assert", "type": "hidden", "selector": "#a"}
+  personalities: [default, waitTimeout]
+- id: assert-hidden.selector-timeout
+  step: {"action": "assert", "type": "hidden", "selector": "#a", "timeoutMs": 500}
+- id: assert-hidden.timeout-null
+  step: {"action": "assert", "type": "hidden", "selector": "#a", "timeoutMs": null}
+  bug: validation-drift
+- id: assert-hidden.timeout-negative
+  step: {"action": "assert", "type": "hidden", "selector": "#a", "timeoutMs": -1}
+- id: assert-hidden.missing-selector
+  step: {"action": "assert", "type": "hidden"}
+- id: assert-hidden.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "assert", "type": "hidden"}]}
+  personalities: [default, waitTimeout]
+- id: assert-hidden.in-select-timeout
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "assert", "type": "hidden", "timeoutMs": 250}]}
+- id: assert-hidden.in-select-with-selector
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "assert", "type": "hidden", "selector": "#b"}]}
+- id: assert-text.selector-includes
+  step: {"action": "assert", "type": "text", "selector": "#a", "value": "Hello"}
+- id: assert-text.selector-equals
+  step: {"action": "assert", "type": "text", "selector": "#a", "value": "Hello world", "match": "equals"}
+- id: assert-text.selector-mismatch
+  step: {"action": "assert", "type": "text", "selector": "#a", "value": "Goodbye"}
+- id: assert-text.equals-mismatch
+  step: {"action": "assert", "type": "text", "selector": "#a", "value": "Hello", "match": "equals"}
+- id: assert-text.includes-not-prefix
+  step: {"action": "assert", "type": "text", "selector": "#a", "value": "lo wo"}
+- id: assert-text.empty-value
+  step: {"action": "assert", "type": "text", "selector": "#a", "value": ""}
+- id: assert-text.in-select
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "assert", "type": "text", "value": "Hello"}]}
+- id: assert-text.in-select-with-selector
+  step: {"action": "select", "testId": "tid", "steps": [{"action": "assert", "type": "text", "selector": "#b", "value": "Hello"}]}
+- id: assert-text.missing-value
+  step: {"action": "assert", "type": "text", "selector": "#a"}
+- id: assert-text.number-value
+  step: {"action": "assert", "type": "text", "selector": "#a", "value": 5}
+- id: assert-text.missing-selector
+  step: {"action": "assert", "type": "text", "value": "Hello"}
+- id: assert-text.bad-match
+  step: {"action": "assert", "type": "text", "selector": "#a", "value": "Hello", "match": "starts"}
+- id: assert-js.global-undefined
+  step: {"action": "assert", "type": "js", "global": "app.ready", "value": true}
+- id: assert-js.global-match
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": {"a": [1, "x"], "n": null}}
+  personalities: [evalValue]
+- id: assert-js.global-mismatch
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": {"a": [1, "y"], "n": null}}
+  personalities: [evalValue]
+- id: assert-js.value-null-vs-undefined
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": null}
+- id: assert-js.value-null-vs-value
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": null}
+  personalities: [evalValue]
+- id: assert-js.value-false
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": false}
+  personalities: [default, evalValue]
+- id: assert-js.fn
+  step: {"action": "assert", "type": "js", "fn": "app.read", "value": 1}
+  personalities: [evalValue]
+- id: assert-js.fn-args
+  step: {"action": "assert", "type": "js", "fn": "app.read", "args": ["a", 2, {"k": null}], "value": {"a": [1, "x"], "n": null}}
+  personalities: [evalValue]
+- id: assert-js.null-args
+  step: {"action": "assert", "type": "js", "fn": "app.read", "args": null, "value": 1}
+- id: assert-js.string-args
+  step: {"action": "assert", "type": "js", "fn": "app.read", "args": "a", "value": 1}
+- id: assert-js.both
+  step: {"action": "assert", "type": "js", "global": "a", "fn": "b", "value": 1}
+- id: assert-js.neither
+  step: {"action": "assert", "type": "js", "value": 1}
+- id: assert-js.empty-global
+  step: {"action": "assert", "type": "js", "global": "", "value": 1}
+- id: assert-js.number-global
+  step: {"action": "assert", "type": "js", "global": 5, "value": 1}
+- id: assert-js.missing-value
+  step: {"action": "assert", "type": "js", "global": "a"}
+- id: assert-js.evaluate-throws
+  step: {"action": "assert", "type": "js", "global": "a", "value": 1}
+  personalities: [evalThrows]
+# deepEqual semantics against the evalValue result {"a": [1, "x"], "n": null}
+- id: assert-js.object-key-order
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": {"n": null, "a": [1, "x"]}}
+  personalities: [evalValue]
+- id: assert-js.object-extra-key
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": {"a": [1, "x"], "n": null, "extra": 1}}
+  personalities: [evalValue]
+- id: assert-js.object-missing-key
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": {"a": [1, "x"]}}
+  personalities: [evalValue]
+- id: assert-js.array-longer
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": {"a": [1, "x", 3], "n": null}}
+  personalities: [evalValue]
+- id: assert-js.array-vs-object
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": {"a": {"0": 1, "1": "x"}, "n": null}}
+  personalities: [evalValue]
+- id: assert-js.null-vs-zero
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": {"a": [1, "x"], "n": 0}}
+  personalities: [evalValue]
+- id: assert-js.string-vs-number
+  step: {"action": "assert", "type": "js", "global": "app.state", "value": {"a": ["1", "x"], "n": null}}
+  personalities: [evalValue]
+- id: assert.missing-type
+  step: {"action": "assert", "selector": "#a"}
+- id: assert.empty-type
+  step: {"action": "assert", "type": "  "}
+- id: assert.number-type
+  step: {"action": "assert", "type": 5}
+- id: assert.unknown-type
+  step: {"action": "assert", "type": "count", "value": 1}
+- id: assert.unknown-key
+  step: {"action": "assert", "type": "url", "value": "x", "extra": 1}
+- id: assert.bare
+  step: {"action": "assert"}
+- id: assert.timeoutMs-known-key-on-url
+  step: {"action": "assert", "type": "url", "value": "/pages", "timeoutMs": 100, "global": "g", "fn": "f", "args": []}
+- id: legacy.select-positional
+  step: {"select foo": [{"action": "click"}]}
+  personalities: [default, noInner]
+- id: legacy.select-test-id
+  step: {"select testId=a": [{"action": "click"}]}
+- id: legacy.select-selector
+  step: {"select selector=#b": [{"action": "click"}]}
+- id: legacy.select-both
+  step: {"select testId=a selector=#b": [{"action": "click"}]}
+- id: legacy.select-no-args
+  step: {"select": [{"action": "click"}]}
+- id: legacy.select-equals-in-testid
+  step: {"select testId=a=b": [{"action": "click"}]}
+- id: legacy.select-extra-whitespace
+  step: {"  select   foo  ": [{"action": "click"}]}
+- id: legacy.select-nested
+  step: {"select foo": [{"select bar": [{"action": "click"}]}]}
+- id: legacy.select-not-array
+  step: {"select foo": "click"}
+- id: legacy.select-null
+  step: {"select foo": null}
+- id: legacy.select-structured-nested
+  step: {"select foo": [{"action": "write", "value": "hi"}, {"action": "assert", "type": "exists"}]}
+- id: legacy.typo
+  step: {"selct foo": [{"action": "click"}]}
+- id: legacy.empty-key
+  step: {"": []}
+- id: legacy.whitespace-key
+  step: {"   ": []}
+- id: legacy.prototype-key
+  step: {"constructor": []}
+- id: legacy.two-keys
+  step: {"select a": [], "select b": []}
+- id: legacy.wait-block
+  step: {"wait 10": [{"action": "screenshot"}]}
+- id: legacy.wait-no-args
+  step: {"wait": []}
+- id: legacy.click-block
+  step: {"click 10 20": [{"action": "write", "value": "x"}]}
+- id: legacy.click-no-args
+  step: {"click": []}
+- id: legacy.scroll-block
+  step: {"scroll 0 100": []}
+- id: legacy.setViewport-block
+  step: {"setViewport 390 844": []}
+- id: legacy.setViewport-invalid
+  step: {"setViewport 0 844": []}
+- id: legacy.goto-block
+  step: {"goto http://localhost:3001/x.html": []}
+- id: legacy.goto-no-args
+  step: {"goto": []}
+- id: legacy.keypress-block
+  step: {"keypress Enter": []}
+- id: legacy.screenshot-block
+  step: {"screenshot": []}
+- id: legacy.write-block
+  step: {"write hello world": []}
+- id: legacy.selectOption-block
+  step: {"selectOption value=a": []}
+- id: legacy.upload-block
+  step: {"upload a.png b.png": []}
+- id: legacy.waitFor-named
+  step: {"waitFor selector=#a state=hidden timeoutMs=500": []}
+- id: legacy.waitFor-positional
+  step: {"waitFor #a visible 100": []}
+- id: legacy.waitFor-timeout-alias
+  step: {"waitFor selector=#a timeout=7": []}
+- id: legacy.waitFor-bad-timeout
+  step: {"waitFor selector=#a timeoutMs=-1": []}
+- id: legacy.customEvent-simple
+  step: {"customEvent my-event a=1 b=two": []}
+- id: legacy.customEvent-no-args
+  step: {"customEvent": []}
+- id: legacy.customEvent-bad-param
+  step: {"customEvent my-event oops": []}
+- id: legacy.customEvent-equals
+  step: {"customEvent my-event a=b=c": []}
+  bug: custom-event-detail
+- id: legacy.assert-url
+  step: {"assert": {"type": "url", "value": "/pages"}}
+- id: legacy.assert-null
+  step: {"assert": null}
+- id: legacy.assert-string
+  step: {"assert": "url"}
+- id: legacy.assert-missing-type
+  step: {"assert": {"value": "x"}}
+- id: legacy.assert-exists-in-select
+  step: {"select foo": [{"assert": {"type": "exists"}}]}
+- id: legacy.assert-timeout-null
+  step: {"assert": {"type": "exists", "selector": "#a", "timeoutMs": null}}
+  bug: validation-drift
+- id: invalid.null
+  step: null
+- id: invalid.string
+  step: "click"
+- id: invalid.number
+  step: 5
+- id: invalid.true
+  step: true
+- id: invalid.empty-array
+  step: []
+- id: invalid.array-of-steps
+  step: [{"action": "click"}]
+- id: invalid.empty-object
+  step: {}
+- id: invalid.action-null
+  step: {"action": null}
+- id: invalid.action-empty
+  step: {"action": ""}
+- id: invalid.action-blank
+  step: {"action": "   "}
+- id: invalid.action-number
+  step: {"action": 5}
+- id: invalid.action-unknown
+  step: {"action": "frobnicate"}
+- id: invalid.action-wrong-case
+  step: {"action": "Click"}
+- id: invalid.action-padded
+  step: {"action": " click ", "x": 1, "y": 2}
+- id: invalid.action-object-prototype
+  step: {"action": "toString"}
+- id: invalid.action-with-legacy-key
+  step: {"action": "click", "select foo": []}
+- id: invalid.legacy-and-structured
+  step: {"select foo": [{"action": "click"}], "action": "click"}

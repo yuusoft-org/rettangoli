@@ -342,6 +342,16 @@ describe("image attribute updates", () => {
     expect(img.hasAttribute("alt")).toBe(false);
     observer.disconnect();
   });
+
+  it("writes hide and show as a single !important display", () => {
+    const image = mount(make("image", { src: "/one.png", hide: "", "sm-show": "" }));
+    const css = image.shadowRoot.querySelector("style").textContent;
+    expect(image._styles.default.display).toBe("none");
+    expect(image._styles.sm.display).toBe("block");
+    expect(css).toContain("display: none !important;");
+    expect(css).toContain("display: block !important;");
+    expect(css).not.toContain("!important !important");
+  });
 });
 
 describe("textarea editing state", () => {

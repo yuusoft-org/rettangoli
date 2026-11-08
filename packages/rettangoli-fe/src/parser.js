@@ -7,7 +7,7 @@ import { applyVNodeNamespaces } from "./core/view/namespaces.js";
 import {
   createRefMatchers,
   resolveBestRefMatcher,
-  validateElementIdForRefs,
+  toIdRefMatchableId,
 } from './core/view/refs.js';
 import {
   createConfiguredEventListener,
@@ -71,7 +71,6 @@ export const createVirtualDom = ({
   }
 
   const refMatchers = createRefMatchers(refs);
-  const hasIdRefMatchers = refMatchers.some((refMatcher) => refMatcher.targetType === "id");
 
   function processItems(currentItems, parentPath = "") {
     return currentItems
@@ -136,8 +135,9 @@ export const createVirtualDom = ({
         // 1. Parse selector bindings into attrs/props.
         let attrs;
         let props;
+        let toggledOff;
         try {
-          ({ attrs, props } = parseNodeBindings({
+          ({ attrs, props, toggledOff } = parseNodeBindings({
             attrsString,
             viewData,
             tagName,
@@ -153,20 +153,19 @@ export const createVirtualDom = ({
         // 2. Handle ID from selector string (e.g., tag#id)
         // If an 'id' was already parsed from attrsString (e.g. id=value), it takes precedence.
         // Otherwise, use the id from the selector string.
-        const idMatchInSelector = selector.match(/#([^.#\s]+)/);
-        if (
-          idMatchInSelector &&
-          !Object.prototype.hasOwnProperty.call(attrs, "id")
-        ) {
-          attrs.id = idMatchInSelector[1];
+        const selectorId = selector.match(/#([^.#\s]+)/)?.[1];
+        if (selectorId && !Object.prototype.hasOwnProperty.call(attrs, "id")) {
+          attrs.id = selectorId;
         }
 
-        // 3. Determine elementIdForRefs (this ID will be used for matching refs keys)
-        // Only explicit IDs participate in id-based ref matching.
-        let elementIdForRefs = null;
-        if (attrs.id) {
-          // Check the definitive id from attrs object.
-          elementIdForRefs = attrs.id;
+        // 3. The id that keys the node and wires id-ref listeners. An empty
+        // id= gives none.
+        const elementIdForRefs = attrs.id || null;
+        // A plain element whose id= is empty still gets the selector id in the
+        // DOM, so collectRefElements can still put it in el.refIds, but it is
+        // not the key and wires no listeners.
+        if (selectorId && !isWebComponent && !attrs.id) {
+          attrs.id = selectorId;
         }
 
         const selectorClassMatches = selector.match(/\.([^.#]+)/g) || [];
@@ -180,20 +179,12 @@ export const createVirtualDom = ({
           if (Object.hasOwn(props, "class")) props.class = attrs.class;
         }
 
-        // Extract classes and ID from selector (if not a web component)
+        // Extract classes from selector
         const classObj = Object.create(null); // Using Object.create(null) to avoid prototype issues
-        let elementId = null;
 
         selectorClassNames.forEach((className) => {
           classObj[className] = true;
         });
-
-        if (!isWebComponent) {
-          const idMatch = selector.match(/#([^.#\s]+)/);
-          if (idMatch) {
-            elementId = idMatch[1];
-          }
-        }
 
         // Determine children or text content
         let childrenOrText;
@@ -205,20 +196,14 @@ export const createVirtualDom = ({
           childrenOrText = [];
         }
 
-        // Add id to attributes if it exists and it's not a web component
-        if (elementId && !isWebComponent) {
-          attrs.id = elementId;
-        }
-
         // Apply event listeners
         const eventHandlers = Object.create(null);
 
         if (refMatchers.length > 0) {
-          if (hasIdRefMatchers && elementIdForRefs) {
-            validateElementIdForRefs(elementIdForRefs);
-          }
+          // Only ids that a ref key can name (camelCase) match id refs. Other
+          // ids still key the node, and class refs still match it.
           const bestMatchRef = resolveBestRefMatcher({
-            elementIdForRefs,
+            elementIdForRefs: toIdRefMatchableId(elementIdForRefs),
             classNames: classNamesForRefs,
             refMatchers,
           });
@@ -282,6 +267,11 @@ export const createVirtualDom = ({
         }
         if (Object.keys(props).length > 0) {
           snabbdomData.props = props;
+        }
+        // Read only by hydration (web/hydration.js); snabbdom and the
+        // serializers ignore it.
+        if (isWebComponent && toggledOff) {
+          snabbdomData.toggledOff = toggledOff;
         }
 
         // Hook behavior is injected so parser core stays environment-agnostic.

@@ -1,7 +1,7 @@
 import { parse as parseTemplate } from "jempl";
 import { NodeType } from "jempl/src/parse/constants.js";
 import { encodeTemplateAttribute } from "./attributeEncoding.js";
-import { getAttributeAssignments } from "./attributeAssignments.js";
+import { tokenizeBindings } from "./bindingTokens.js";
 import { parsePropertyLiteral } from "./propertyLiteral.js";
 export { encodeTemplateAttribute } from "./attributeEncoding.js";
 
@@ -21,18 +21,18 @@ const createSafeParsedKey = (key) => {
     parts.push(parsed.type === NodeType.LITERAL ? parsed.value : parsed);
   };
   let cursor = 0;
-  for (const match of getAttributeAssignments(key)) {
-    if (match[1].startsWith(":")) continue;
-    const prefix = key.slice(cursor, match.index) + `${match[1]}=`;
+  for (const { name, value: rawValue, start, end } of tokenizeBindings(key).assignments) {
+    if (name.startsWith(":")) continue;
+    const prefix = key.slice(cursor, start) + `${name}=`;
     appendParsed(prefix);
-    const value = parseTemplate(match[2] ?? match[3] ?? match[4] ?? "");
+    const value = parseTemplate(rawValue);
     // Static layout tokens are encoded once at normalization, not every render.
     parts.push(value.type === NodeType.LITERAL ? encodeTemplateAttribute(value.value) : {
       type: NodeType.FUNCTION,
       name: "__rtglEncodeAttribute",
       args: [value],
     });
-    cursor = match.index + match[0].length;
+    cursor = end;
   }
   if (cursor === 0) return deriveParsedKey(key);
   appendParsed(key.slice(cursor));
@@ -71,12 +71,11 @@ const getPropertyBindingViolationForKey = (key) => {
     return null;
   }
 
-  for (const match of getAttributeAssignments(key)) {
-    const rawBindingName = match[1];
+  for (const { name: rawBindingName, value: rawValue, quote } of tokenizeBindings(key).assignments) {
     if (rawBindingName.startsWith(".")) {
       return {
         bindingName: rawBindingName,
-        rawValue: match[2] ?? match[3] ?? match[4] ?? "",
+        rawValue,
         key,
       };
     }
@@ -85,9 +84,7 @@ const getPropertyBindingViolationForKey = (key) => {
       continue;
     }
 
-    const isQuoted = match[2] !== undefined || match[3] !== undefined;
-    const rawValue = match[2] ?? match[3] ?? match[4] ?? "";
-    if (isQuoted || !INTERPOLATION_ONLY_REGEX.test(rawValue)) {
+    if (quote || !INTERPOLATION_ONLY_REGEX.test(rawValue)) {
       return {
         bindingName: rawBindingName,
         rawValue,
@@ -198,14 +195,13 @@ const normalizePropertyBindingsInKey = (key, scopeVars) => {
   let changed = false;
   let cursor = 0;
   let normalizedKey = "";
-  for (const match of getAttributeAssignments(key)) {
-    const [fullMatch, rawBindingName, doubleQuotedValue, singleQuotedValue, bareValue] = match;
+  for (const { name: rawBindingName, value: rawValue, start, end } of tokenizeBindings(key).assignments) {
+    const fullMatch = key.slice(start, end);
     const replacement = (() => {
       if (!rawBindingName.startsWith(":")) {
         return fullMatch;
       }
 
-      const rawValue = doubleQuotedValue ?? singleQuotedValue ?? bareValue ?? "";
       const expression = getInterpolationExpression(rawValue);
       if (expression && parsePropertyLiteral(expression)) {
         changed = true;
@@ -231,8 +227,8 @@ const normalizePropertyBindingsInKey = (key, scopeVars) => {
       changed = true;
       return `${rawBindingName}=${internalValue}`;
     })();
-    normalizedKey += key.slice(cursor, match.index) + replacement;
-    cursor = match.index + fullMatch.length;
+    normalizedKey += key.slice(cursor, start) + replacement;
+    cursor = end;
   }
   normalizedKey += key.slice(cursor);
 

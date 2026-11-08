@@ -166,7 +166,7 @@ Machine-readable JSON report for CI integration.
 
 ## `rtgl fe examples`
 
-Generates example spec files from `.schema.yaml` examples for use with `@rettangoli/vt` visual testing.
+Generates a `@rettangoli/vt` spec file for each example in a component's `.examples.yaml`. The first YAML document is a header; every later document needs a `name` and `viewData` and is written to `<outputDir>/<category>/<component>/<name>.html`.
 
 ```bash
 rtgl fe examples

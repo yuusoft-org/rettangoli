@@ -1,6 +1,4 @@
-import { createRefMatchers, resolveBestRefMatcher } from "../view/refs.js";
-
-export const createRuntimeRefMatchers = (refs) => createRefMatchers(refs);
+import { createRefMatchers, resolveBestRefMatcher, toIdRefMatchableId } from "../view/refs.js";
 
 const getVNodeClassNames = (vNode) => {
   const classNames = [];
@@ -25,21 +23,9 @@ const getVNodeClassNames = (vNode) => {
   return [...new Set(classNames)];
 };
 
-export const matchesConfiguredRef = ({ id, classNames = [], refMatchers }) => {
-  if (refMatchers.length === 0) {
-    return false;
-  }
-
-  return Boolean(resolveBestRefMatcher({
-    elementIdForRefs: id,
-    classNames,
-    refMatchers,
-  }));
-};
-
 export const collectRefElements = ({ rootVNode, refs }) => {
   const ids = {};
-  const refMatchers = createRuntimeRefMatchers(refs);
+  const refMatchers = createRefMatchers(refs);
 
   const findRefElements = (vNode) => {
     if (!vNode || typeof vNode !== "object") {
@@ -48,8 +34,9 @@ export const collectRefElements = ({ rootVNode, refs }) => {
 
     const id = vNode?.data?.attrs?.id;
     const classNames = getVNodeClassNames(vNode);
+    // Same rule as the parser: only camelCase ids match id refs.
     const bestMatchRef = resolveBestRefMatcher({
-      elementIdForRefs: id,
+      elementIdForRefs: toIdRefMatchableId(id),
       classNames,
       refMatchers,
     });

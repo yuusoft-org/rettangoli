@@ -52,6 +52,12 @@ const RAW_TEXT_ELEMENTS = new Set([
 ]);
 
 /**
+ * The HTML parser drops one newline right after these start tags, so text
+ * content that starts with a newline gets one more. HTML namespace only.
+ */
+const LEADING_NEWLINE_ELEMENTS = new Set(["listing", "pre", "textarea"]);
+
+/**
  * Foreign content changes what "raw text" means, and getting this wrong is an
  * XSS.
  *
@@ -86,18 +92,24 @@ const ATTRIBUTE_NAME = /^[a-zA-Z_:][-a-zA-Z0-9_:.]*$/;
  */
 const TAG_NAME = /^[a-zA-Z][a-zA-Z0-9:-]*$/;
 
+/**
+ * The HTML parser turns CR and CRLF into LF, so a CR is written as a
+ * character reference, which it keeps.
+ */
 const escapeText = (value) =>
   String(value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/\r/g, "&#13;");
 
 const escapeAttribute = (value) =>
   String(value)
     .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/\r/g, "&#13;");
 
 const toKebab = (key) =>
   key.startsWith("--") ? key : key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
@@ -486,6 +498,16 @@ const serializeNode = (vnode, options, namespace) => {
   } else if (vnode.text !== undefined && vnode.text !== null) {
     // h(tag, data, "string") puts the text on the element vnode itself.
     inner = escapeText(vnode.text);
+  }
+
+  // Markup from renderChildren is HTML already and stays as written.
+  if (
+    (substituted === null || substituted === undefined)
+    && namespace === HTML_NAMESPACE
+    && LEADING_NEWLINE_ELEMENTS.has(lowerTag)
+    && inner.startsWith("\n")
+  ) {
+    inner = `\n${inner}`;
   }
 
   return `<${tag}${attributes}>${inner}</${tag}>`;

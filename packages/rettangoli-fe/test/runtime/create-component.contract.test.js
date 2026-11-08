@@ -646,6 +646,24 @@ describe("createComponent runtime contracts", () => {
     expect(globalDocumentTarget.listenerCount("visibilitychange")).toBe(0);
   });
 
+  it("builds each instance's CSS from the styles object as it is when the instance is created", () => {
+    const styles = { ":host": { color: "red" } };
+    const StyledComponent = createComponent({
+      handlers: {},
+      schema: { componentName: "x-styled-component", propsSchema: { type: "object", properties: {} } },
+      view: { template, refs: {}, styles },
+      store: {},
+    }, {});
+
+    const first = new StyledComponent();
+    styles[":host"].color = "blue";
+    const second = new StyledComponent();
+
+    expect(first.cssText).toContain("color: red");
+    expect(second.cssText).toContain("color: blue");
+    expect(second.cssText).not.toContain("color: red");
+  });
+
   it("injects i18n into view data and store context", async () => {
     const i18nRuntime = createI18nRuntime({
       defaultLocale: "en",

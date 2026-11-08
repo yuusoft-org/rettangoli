@@ -57,6 +57,7 @@ const buildRettangoliFrontend = async (options = {}) => {
         dirs,
         setup,
         i18n,
+        i18nContext,
         errorPrefix: "[Build]",
       }),
     ],

@@ -1,45 +1,3 @@
-const blacklistedProps = [
-  'id',
-  'class',
-  'style',
-  'slot',
-  'head',
-  'desc',
-  'size',
-  'd',
-  'ah',
-  'av',
-  'wrap',
-  'noWrap',
-  'g',
-  'gh',
-  'gv',
-  'p',
-  'pt',
-  'pr',
-  'pb',
-  'pl',
-  'pv',
-  'ph',
-  'bw',
-  'bwt',
-  'bwr',
-  'bwb',
-  'bwl',
-  'bc',
-  'br',
-  'shadow',
-  'bgc',
-  'href',
-  'newTab',
-  'rel',
-  'cur',
-  'sv',
-  'sh',
-  'overflow',
-  'sbv',
-];
-
 const sizePresets = {
   sm: {
     cardAttrString: 'p=md sm-p=sm g=md sm-g=sm',
@@ -61,13 +19,6 @@ const sizePresets = {
   },
 };
 
-const stringifyProps = (props = {}) => {
-  return Object.entries(props)
-    .filter(([key]) => !blacklistedProps.includes(key))
-    .map(([key, value]) => `${key}=${value}`)
-    .join(' ');
-};
-
 export const createInitialState = () => Object.freeze({});
 
 export const selectViewData = ({ props = {} }) => {
@@ -75,7 +26,6 @@ export const selectViewData = ({ props = {} }) => {
   const preset = sizePresets[size];
 
   return {
-    containerAttrString: stringifyProps(props),
     cardAttrString: preset.cardAttrString,
     headerAttrString: preset.headerAttrString,
     headingSize: preset.headingSize,

@@ -1,0 +1,15 @@
+- __html: "<!doctype html>"
+- html lang="en":
+    - head:
+        - title: ${title} - ${site.name}
+    - body class="${default(themeBodyClass, 'dark')}":
+        - article:
+            - h1: ${title}
+            - $if date:
+                - p class="meta":
+                    - $partial: date
+                      date: ${date}
+                    - $if authorDisplay:
+                        - span aria-hidden="true": " / "
+                        - span: ${authorDisplay}
+            - "${content}"

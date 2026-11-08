@@ -365,6 +365,46 @@ describe("rtgl-color-picker primitive", () => {
     expect(events.change).toHaveLength(0);
   });
 
+  it("keeps typed hex text and its caret until it commits", async () => {
+    const host = createPicker({ value: "#3498db" });
+    const events = trackEvents(host);
+    await openPanel(host);
+    const input = typeHex(host, "");
+    input.focus();
+
+    const fieldAfterEachKey = [];
+    for (const character of "ABCDEF") {
+      typeHex(host, input.value + character);
+      fieldAfterEachKey.push(input.value);
+    }
+    expect(fieldAfterEachKey).toEqual(["A", "AB", "ABC", "ABCD", "ABCDE", "ABCDEF"]);
+    expect(events.input).toEqual(["#abcdef"]);
+    expect(host.value).toBe("#abcdef");
+
+    // Replace the "C" mid-string: the caret stays after the new digit.
+    input.setRangeText("1", 2, 3, "end");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(input.value).toBe("AB1DEF");
+    expect(input.selectionStart).toBe(3);
+    expect(events.input).toEqual(["#abcdef", "#ab1def"]);
+
+    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+    expect(input.value).toBe("ab1def");
+    expect(events.change).toEqual(["#ab1def"]);
+  });
+
+  it("reformats the hex field when a parent echoes each value-input back", async () => {
+    // Known limit: an echo goes through the value setter, which syncs the field.
+    const host = createPicker({ value: "#3498db" });
+    host.addEventListener("value-input", (event) => {
+      host.value = event.detail.value;
+    });
+    await openPanel(host);
+    const input = typeHex(host, "ABCDEF");
+    expect(input.value).toBe("abcdef");
+    expect(host.value).toBe("#abcdef");
+  });
+
   it("marks invalid hex drafts without emitting events", async () => {
     const host = createPicker({ value: "#3498db" });
     const events = trackEvents(host);
@@ -428,6 +468,42 @@ describe("rtgl-color-picker primitive", () => {
     expect(dirty.value).toBe("3498db");
     expect(events.input).toHaveLength(0);
     expect(events.change).toHaveLength(0);
+  });
+
+  it("cancels the default action of Enter in the hex field and still commits", async () => {
+    const host = createPicker({ value: "#3498db" });
+    const events = trackEvents(host);
+    await openPanel(host);
+
+    const input = typeHex(host, "e74c3c");
+    expect(events.change).toHaveLength(0);
+    const enter = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    input.dispatchEvent(enter);
+    expect(enter.defaultPrevented).toBe(true);
+    expect(events.change).toEqual(["#e74c3c"]);
+    expect(host.value).toBe("#e74c3c");
+    expect(input.value).toBe("e74c3c");
+
+    // An unchanged or invalid draft is cancelled too, so an enclosing form never submits.
+    const unchanged = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    input.dispatchEvent(unchanged);
+    expect(unchanged.defaultPrevented).toBe(true);
+    typeHex(host, "12z");
+    const invalid = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+    input.dispatchEvent(invalid);
+    expect(invalid.defaultPrevented).toBe(true);
+    expect(events.change).toEqual(["#e74c3c"]);
+    expect(host.value).toBe("#e74c3c");
+
+    // Escape still reverts the draft and leaves its default action alone.
+    typeHex(host, "00ff00");
+    expect(host.value).toBe("#00ff00");
+    typeHex(host, "00ff0");
+    const escape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+    input.dispatchEvent(escape);
+    expect(escape.defaultPrevented).toBe(false);
+    expect(input.value).toBe("00ff00");
+    expect(events.change).toEqual(["#e74c3c"]);
   });
 
   it("commits a valid hex draft when the panel closes", async () => {

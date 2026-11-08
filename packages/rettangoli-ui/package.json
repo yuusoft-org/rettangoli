@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/ui",
-  "version": "1.32.0",
+  "version": "2.0.0",
   "description": "A UI component library for building web interfaces.",
   "main": "./src/index.js",
   "type": "module",
@@ -30,9 +30,9 @@
   "scripts": {
     "test": "vitest run --reporter=verbose",
     "test:puty": "vitest run puty.spec.js --reporter=verbose",
+    "test:browser": "bun run build:dev && node scripts/run-browser-specs.mjs",
     "test:package": "node scripts/package-smoke-test.js",
     "check:contracts": "rtgl check --dir src/components",
-    "check:contracts:yahtml": "rtgl check --dir src/components",
     "copy:css": "node copy-css.js",
     "watch": "rtgl fe watch",
     "build:dev": "rtgl fe build -d -o ./.generated/fe-entry.js && bun run esbuild-dev.js && npm run copy:css",
@@ -64,7 +64,7 @@
   },
   "homepage": "https://github.com/yuusoft-org/rettangoli#readme",
   "dependencies": {
-    "@rettangoli/fe": "1.6.1",
+    "@rettangoli/fe": "2.0.0",
     "jempl": "1.0.1"
   }
 }

@@ -1,0 +1,2 @@
+template:
+  - x-widget :items=items: null

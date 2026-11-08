@@ -128,6 +128,34 @@ function runWatchClient({
     parent.insertBefore(node, referenceNode);
   };
 
+  // Checkbox and radio values come from the value attribute (or "on"), so only
+  // value-mode inputs can hold a value the user typed.
+  const hasValueMode = (input) => !['checkbox', 'radio', 'file'].includes(input.type);
+
+  // Whether the selection differs from the one a form reset would give.
+  const isSelectionDirty = (select) => {
+    const options = Array.from(select.options);
+    const defaults = options.filter((option) => option.defaultSelected);
+    let expected = new Set(defaults);
+    if (!select.multiple) {
+      if (defaults.length > 1) expected = new Set([defaults[defaults.length - 1]]);
+      if (defaults.length === 0 && select.size <= 1) {
+        const first = options.find((option) => !option.disabled);
+        expected = new Set(first ? [first] : []);
+      }
+    }
+    return options.some((option) => option.selected !== expected.has(option));
+  };
+
+  // The last `open` state the source gave each details and dialog element.
+  const sourceOpen = new WeakMap();
+  for (const element of document.querySelectorAll('details, dialog')) {
+    sourceOpen.set(element, element.hasAttribute('open'));
+  }
+  // Elements with no recorded source state keep their live state, as before.
+  const isOpenDirty = (element) =>
+    !sourceOpen.has(element) || sourceOpen.get(element) !== element.open;
+
   const captureUserState = (root) => {
     const controls = [];
     const selector = 'input, textarea, select, details, dialog, [popover]';
@@ -141,10 +169,14 @@ function runWatchClient({
       if (element.localName === 'input') {
         state.type = element.type;
         if (element.type !== 'file') state.value = element.value;
+        state.valueDirty = hasValueMode(element) && element.value !== element.defaultValue;
         state.checked = element.checked;
+        state.checkedDirty = element.checked !== element.defaultChecked;
       } else if (element.localName === 'textarea') {
         state.value = element.value;
+        state.valueDirty = element.value !== element.defaultValue;
       } else if (element.localName === 'select') {
+        state.selectionDirty = isSelectionDirty(element);
         const occurrences = new Map();
         state.selectedOptions = [];
         Array.from(element.options).forEach((option, index) => {
@@ -160,8 +192,10 @@ function runWatchClient({
         });
       } else if (element.localName === 'details') {
         state.open = element.open;
+        state.openDirty = isOpenDirty(element);
       } else if (element.localName === 'dialog') {
         state.open = element.open;
+        state.openDirty = isOpenDirty(element);
         try {
           state.modal = element.matches(':modal');
         } catch {
@@ -234,20 +268,20 @@ function runWatchClient({
       if (!element.isConnected) continue;
       if (control.localName === 'input') {
         try {
-          if (control.type !== 'file' && element.type !== 'file') {
+          if (control.valueDirty && element.type !== 'file') {
             element.value = control.value;
           }
-          element.checked = control.checked;
+          if (control.checkedDirty) element.checked = control.checked;
         } catch {
           // Incompatible input type changes cannot retain the old live value.
         }
       } else if (control.localName === 'textarea') {
         try {
-          element.value = control.value;
+          if (control.valueDirty) element.value = control.value;
         } catch {
           // Continue restoring the rest of the page state.
         }
-      } else if (control.localName === 'select') {
+      } else if (control.localName === 'select' && control.selectionDirty) {
         const options = Array.from(element.options);
         const optionsByValue = new Map();
         for (const option of options) {
@@ -278,7 +312,7 @@ function runWatchClient({
         }
         if (control.selectedOptions.length === 0) element.selectedIndex = -1;
       } else if (control.localName === 'details') {
-        element.open = control.open;
+        if (control.openDirty) element.open = control.open;
       } else if (control.localName === 'dialog') {
         if (control.modal && typeof element.showModal === 'function') {
           try {
@@ -287,7 +321,7 @@ function runWatchClient({
           } catch {
             element.open = control.open;
           }
-        } else {
+        } else if (control.openDirty || control.modal) {
           element.open = control.open;
         }
       }
@@ -368,6 +402,9 @@ function runWatchClient({
         return;
       }
       syncAttributes(currentNode, nextNode);
+      if (currentNode.localName === 'details' || currentNode.localName === 'dialog') {
+        sourceOpen.set(currentNode, nextNode.hasAttribute('open'));
+      }
       if (
         currentNode.localName === 'template' &&
         currentNode.content &&
@@ -1096,7 +1133,9 @@ function runWatchClient({
       return;
     }
     if (data.updateKind === 'assets') {
-      refreshAssets(data.paths);
+      // An update means the generation succeeded, so drop the error overlay
+      // as an HTML update does, unless a full reload was requested instead.
+      if (refreshAssets(data.paths)) clearWatchError();
       advanceRevision(data.revision);
       return;
     }

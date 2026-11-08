@@ -1,5 +1,5 @@
 {
-  "name": "ref invalid element id for refs",
+  "name": "a kebab-case selector id renders in FE, so it is not reported (REF-002 is retired)",
   "options": {
     "dirs": [
       "./src/components"
@@ -7,22 +7,12 @@
     "includeYahtml": true
   },
   "expected": {
-    "ok": false,
-    "errorCount": 1,
+    "ok": true,
+    "errorCount": 0,
     "warnCount": 0,
-    "errorCodes": {
-      "RTGL-CHECK-REF-002": 1
-    },
+    "errorCodes": {},
     "warnCodes": {},
-    "diagnostics": [
-      {
-        "code": "RTGL-CHECK-REF-002",
-        "severity": "error",
-        "message": "components/card: invalid element id 'submit-button' for refs matching. Use camelCase ids.",
-        "filePath": "src/components/card/card.view.yaml",
-        "line": 7
-      }
-    ]
+    "diagnostics": []
   },
   "specRefs": [
     "RTGL-SPEC-CONF-CORE-001",

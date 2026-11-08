@@ -1,0 +1,80 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Every package's own test suite, one job per row so a failure names the suite.
+# The Docker visual tests stay in ci-ui.yaml and ci-sitekit.yaml.
+# The vt scripts `test:e2e` and `test:e2e:full` build and use a local Docker image and are run by hand.
+# Adding a package with a `test` script means adding a row here.
+jobs:
+  test:
+    name: Test (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Unit tests
+          - { name: fe, dir: packages/rettangoli-fe, run: bun run test }
+          - { name: ui, dir: packages/rettangoli-ui, run: bun run test }
+          - { name: vt, dir: packages/rettangoli-vt, run: bun run test }
+          - { name: cli, dir: packages/rettangoli-cli, run: bun run test }
+          - { name: sites, dir: packages/rettangoli-sites, run: bun run test }
+          - { name: sitekit, dir: packages/rettangoli-sitekit, run: bun run test }
+          - { name: check, dir: packages/rettangoli-check, run: bun run ci }
+          - { name: ui-contracts, dir: packages/rettangoli-ui, run: bun run check:contracts }
+          # Packed-package smoke tests
+          - { name: fe-package, dir: packages/rettangoli-fe, run: bun run test:package }
+          - { name: check-package, dir: packages/rettangoli-check, run: bun run test:package }
+          - { name: cli-package, dir: packages/rettangoli-cli, run: bun run test:package }
+          - { name: ui-package, dir: packages/rettangoli-ui, run: bun run test:package }
+          # Real browsers. A row installs the `browsers` its specs launch before it runs.
+          - { name: fe-browser, dir: packages/rettangoli-fe, run: bun run test:browser, browsers: chromium webkit }
+          - { name: ui-browser, dir: packages/rettangoli-ui, run: bun run test:browser, browsers: chromium webkit }
+          - { name: vt-e2e, dir: packages/rettangoli-vt, run: VT_E2E=1 bun run test, browsers: chromium }
+          # Builds the docs site with the workspace CLI. Fetches from the network, so retry once.
+          - { name: docs-site, dir: apps/rettangoli.dev, run: bun run build || bun run build }
+          # The example app builds and passes both checks with the workspace CLI.
+          - { name: example1, dir: examples/example1, run: node ../../packages/rettangoli-cli/cli.js fe build && node ../../packages/rettangoli-cli/cli.js fe check && node ../../packages/rettangoli-cli/cli.js check --dir fe/pages }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      # A lockfile regenerated with bun's isolated linker breaks bare `rtgl`,
+      # and `bunx rtgl` then downloads the latest release from npm instead.
+      - name: Check rtgl Resolves To This Checkout
+        run: |
+          if [ "$(realpath node_modules/.bin/rtgl)" != "$(realpath packages/rettangoli-cli/cli.js)" ]; then
+            echo "::error::node_modules/.bin/rtgl does not resolve to packages/rettangoli-cli/cli.js (was bun.lock regenerated with the isolated linker?)"
+            exit 1
+          fi
+
+      - name: Install Browsers
+        if: matrix.browsers
+        run: bunx playwright install --with-deps ${{ matrix.browsers }}
+
+      - name: Run ${{ matrix.name }}
+        run: ${{ matrix.run }}
+        working-directory: ./${{ matrix.dir }}

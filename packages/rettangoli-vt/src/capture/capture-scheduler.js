@@ -1,10 +1,40 @@
-import { chromium } from "playwright";
+import { chromium as playwrightChromium } from "playwright";
+import { compileStep } from "../createSteps.js";
 import { PlaywrightRunner } from "./playwright-runner.js";
 import { ResultCollector } from "./result-collector.js";
 import { resolveWorkerPlan } from "./worker-plan.js";
 
 function nowMs() {
   return performance.now();
+}
+
+// A step the runtime always rejects would fail the task on every attempt, after navigating and
+// capturing. Returns that error, or null.
+function findStepError(task) {
+  try {
+    (Array.isArray(task.steps) ? task.steps : []).forEach((step) => compileStep(step));
+    return null;
+  } catch (error) {
+    return error;
+  }
+}
+
+// Extra Chromium flags: vt.launchArgs, then RTGL_CHROMIUM_ARGS (whitespace-separated). They are
+// appended to the args of the launch call itself, because route-engine's CI patches that line with
+// sed to add its own; the line must stay byte-identical. RTGL_VT_* names would be injected into
+// every page, hence the different prefix.
+function withLaunchArgs(browserType, configArgs = []) {
+  const extraArgs = [
+    ...configArgs,
+    ...(process.env.RTGL_CHROMIUM_ARGS ?? "").split(/\s+/).filter(Boolean),
+  ];
+  if (extraArgs.length === 0) {
+    return browserType;
+  }
+  return {
+    launch: (launchOptions = {}) =>
+      browserType.launch({ ...launchOptions, args: [...(launchOptions.args ?? []), ...extraArgs] }),
+  };
 }
 
 function createTaskQueues(tasks) {
@@ -80,6 +110,8 @@ export async function runCaptureScheduler(options) {
     recycleEvery,
     metricsPath,
     headless,
+    launchArgs,
+    animations,
   } = options;
 
   const { workerCount, adaptivePolicy } = resolveWorkerPlan(requestedWorkers);
@@ -111,6 +143,7 @@ export async function runCaptureScheduler(options) {
   const queue = createTaskQueues(tasks);
   const getNextTask = queue.getNextTask;
 
+  const chromium = withLaunchArgs(playwrightChromium, launchArgs);
   const browser = await chromium.launch({ headless });
   const runners = [];
 
@@ -128,6 +161,7 @@ export async function runCaptureScheduler(options) {
         navigationTimeout,
         readyTimeout,
         screenshotTimeout,
+        animations,
       });
       await runner.initialize();
       runners.push(runner);
@@ -144,6 +178,24 @@ export async function runCaptureScheduler(options) {
 
         const queueWaitMs = Math.max(0, nowMs() - item.enqueuedAtMs);
         const attemptStartMs = nowMs();
+        let succeeded = false;
+
+        const stepError = findStepError(item.task);
+        if (stepError) {
+          // Same message as the runner's, without navigating and without a retry.
+          collector.recordFailure(
+            item.task,
+            item.attempt,
+            `Worker ${runner.workerId} failed "${item.task.path}": ${stepError.message}`,
+            {
+              workerId: runner.workerId,
+              queueType: item.queueType,
+              queueWaitMs,
+              attemptMs: nowMs() - attemptStartMs,
+            },
+          );
+          continue;
+        }
 
         try {
           const result = await runner.runTask(item.task, item.attempt);
@@ -154,17 +206,7 @@ export async function runCaptureScheduler(options) {
             queueWaitMs,
             attemptMs,
           });
-          processedSinceRecycle += 1;
-
-          if (
-            isolationMode === "fast"
-            && recycleEvery > 0
-            && processedSinceRecycle >= recycleEvery
-          ) {
-            await runner.recycleSharedContext();
-            collector.recordRecycle(runner.workerId, `recycleEvery=${recycleEvery}`);
-            processedSinceRecycle = 0;
-          }
+          succeeded = true;
         } catch (error) {
           const attemptMs = nowMs() - attemptStartMs;
           if (item.attempt <= maxRetries) {
@@ -184,6 +226,27 @@ export async function runCaptureScheduler(options) {
             queueWaitMs,
             attemptMs,
           });
+        }
+
+        // Outside the task's try: a failed recycle must not turn a captured task into a retry.
+        if (!succeeded) {
+          continue;
+        }
+        processedSinceRecycle += 1;
+        if (
+          isolationMode === "fast"
+          && recycleEvery > 0
+          && processedSinceRecycle >= recycleEvery
+        ) {
+          processedSinceRecycle = 0;
+          try {
+            await runner.recycleSharedContext();
+            collector.recordRecycle(runner.workerId, `recycleEvery=${recycleEvery}`);
+          } catch (error) {
+            console.warn(
+              `Worker ${runner.workerId}: shared context recycle failed: ${error?.message ?? error}. A fresh context will be created for the next task.`,
+            );
+          }
         }
       }
     });

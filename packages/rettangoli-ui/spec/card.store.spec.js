@@ -28,32 +28,14 @@ describe('rtgl-card store', () => {
     expect(viewData.desc).toBe('');
   });
 
-  it('blocks internal shell attrs while preserving outer layout attrs', () => {
-    const viewData = selectViewData({
-      props: {
-        head: 'Card',
-        size: 'lg',
-        w: '320',
-        mb: 'lg',
-        p: 'sm',
-        g: 'xs',
-        bgc: 'ac',
-        br: 'sm',
-        sv: true,
-        sbv: 'always',
-      },
-    });
+  // Host attributes such as w or mb stay on <rtgl-card>; the store never sees
+  // them (spec/hostAttrs.mount.spec.js).
+  it('uses the lg preset spacing and heading sizes', () => {
+    const viewData = selectViewData({ props: { head: 'Card', size: 'lg' } });
 
-    expect(viewData.containerAttrString).toContain('w=320');
-    expect(viewData.containerAttrString).toContain('mb=lg');
-    expect(viewData.containerAttrString).not.toContain('head=');
-    expect(viewData.containerAttrString).not.toContain('desc=');
-    expect(viewData.containerAttrString).not.toContain('size=');
-    expect(viewData.containerAttrString).not.toContain('p=sm');
-    expect(viewData.containerAttrString).not.toContain('g=xs');
-    expect(viewData.containerAttrString).not.toContain('bgc=ac');
-    expect(viewData.containerAttrString).not.toContain('br=sm');
-    expect(viewData.containerAttrString).not.toContain('sv=');
-    expect(viewData.containerAttrString).not.toContain('sbv=');
+    expect(viewData.cardAttrString).toBe('p=xl lg-p=lg md-p=md sm-p=md g=lg md-g=md sm-g=md');
+    expect(viewData.headerAttrString).toBe('g=sm');
+    expect(viewData.headingSize).toBe('h3');
+    expect(viewData.subheadingSize).toBe('md');
   });
 });

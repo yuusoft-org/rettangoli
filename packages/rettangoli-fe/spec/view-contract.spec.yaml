@@ -37,6 +37,23 @@ out:
   props:
     disabled: true
 ---
+case: lists boolean toggles that evaluate false in toggledOff
+in:
+  - attrsString: ?disabled=isLoading ?open=false ?checked=isChecked
+    viewData:
+      isLoading: false
+      isChecked: true
+out:
+  attrs:
+    checked: ""
+  props:
+    disabled: false
+    open: false
+    checked: true
+  toggledOff:
+    - disabled
+    - open
+---
 case: keeps empty unquoted attribute values for web components
 in:
   - attrsString: cur=

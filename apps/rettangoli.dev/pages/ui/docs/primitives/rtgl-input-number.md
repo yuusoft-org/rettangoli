@@ -120,8 +120,9 @@ Use `min`, `max`, and `step` to shape accepted numeric values.
 
 ### Behavior & precedence
 
-- Input values are clamped to `min`/`max` bounds.
-- Clamping applies during typing and committed change events.
+- `value-input` is not clamped. While the user types, it carries the number as typed, even outside `min`/`max`.
+- A number is clamped to `min`/`max` when it is committed (blur or Enter) and when the `value` attribute is set. `value-change` carries the clamped number.
+- A `min` or `max` change does not replace a number the user is typing. A commit, a blur (including a window switch) or a `value` write ends the edit, and after that a bound change shows `value` within the new bounds again.
 - If both `min` and `max` are set and out of order, effective behavior follows native numeric comparison.
 
 ```html codePreview

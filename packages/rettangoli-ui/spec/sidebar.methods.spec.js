@@ -48,7 +48,7 @@ describe("rtgl-sidebar scroll position methods", () => {
     };
 
     expect(setScrollPosition.call({
-      shadow: {
+      shadowRoot: {
         querySelector: () => list,
       },
     }, { top: "invalid" }))

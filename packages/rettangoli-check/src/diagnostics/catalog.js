@@ -3,6 +3,7 @@ const CODE_NAMESPACE_REGEX = /^RTGL-(CHECK|CONTRACT|CLI|IR)-[A-Z0-9-]+-\d{3}$/;
 const DEFAULT_FAMILY_CONFIG = [
   { prefix: "RTGL-CHECK-YAHTML-", family: "template", severity: "error", title: "YAHTML template diagnostic" },
   { prefix: "RTGL-CHECK-JEMPL-", family: "template", severity: "error", title: "Jempl template diagnostic" },
+  { prefix: "RTGL-CHECK-BINDING-", family: "template", severity: "error", title: "Template binding diagnostic" },
   { prefix: "RTGL-CHECK-EXPR-", family: "expression", severity: "error", title: "Expression diagnostic" },
   { prefix: "RTGL-CHECK-SCHEMA-", family: "schema", severity: "error", title: "Schema diagnostic" },
   { prefix: "RTGL-CHECK-SYMBOL-", family: "symbols", severity: "error", title: "Symbol resolution diagnostic" },
@@ -20,8 +21,7 @@ const DEFAULT_FAMILY_CONFIG = [
   { prefix: "RTGL-CHECK-COMPONENT-", family: "component-identity", severity: "error", title: "Component identity diagnostic" },
   { prefix: "RTGL-CHECK-READ-", family: "io", severity: "error", title: "Read/input diagnostic" },
   { prefix: "RTGL-CHECK-PARSE-", family: "parse", severity: "error", title: "Parse diagnostic" },
-  { prefix: "RTGL-IR-VAL-", family: "ir-validation", severity: "error", title: "IR validation diagnostic" },
-  { prefix: "RTGL-IR-INV-", family: "ir-invariants", severity: "error", title: "IR invariant diagnostic" },
+  { prefix: "RTGL-CHECK-REGISTRY-", family: "registry", severity: "warn", title: "UI registry diagnostic" },
   { prefix: "RTGL-CLI-", family: "cli", severity: "error", title: "CLI runtime diagnostic" },
 ];
 

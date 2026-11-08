@@ -29,7 +29,7 @@ describe('watch request containment', () => {
   function request(url) {
     const response = {};
     server.handleRequest({ url }, {
-      writeHead(status) { response.status = status; },
+      writeHead(status, headers) { response.status = status; response.headers = headers; },
       end(content) { response.body = String(content); },
     });
     return response;
@@ -68,6 +68,30 @@ describe('watch request containment', () => {
     fs.unlinkSync(directoryIndex);
     fs.symlinkSync(path.join(directory, 'private.txt'), directoryIndex);
     expect(request('/guide/').status).toBe(403);
+  });
+
+  it.each([
+    ['sitemap.xml', 'application/xml; charset=utf-8'],
+    ['guide.pdf', 'application/pdf'],
+    ['clip.mp4', 'video/mp4'],
+    ['clip.webm', 'video/webm'],
+    ['sound.mp3', 'audio/mpeg'],
+    ['sound.ogg', 'audio/ogg'],
+    ['sound.wav', 'audio/wav'],
+    ['sound.m4a', 'audio/mp4'],
+  ])('serves %s as %s', (file, contentType) => {
+    fs.writeFileSync(path.join(server.siteDir, file), 'fixture');
+    const response = request(`/${file}`);
+    expect(response.status).toBe(200);
+    expect(response.headers).toEqual({ 'Cache-Control': 'no-store', 'Content-Type': contentType });
+    expect(response.body).toBe('fixture');
+  });
+
+  it('keeps the existing content types', () => {
+    fs.writeFileSync(path.join(server.siteDir, 'data.bin'), 'fixture');
+    expect(request('/about.html').headers['Content-Type']).toBe('text/html; charset=utf-8');
+    expect(request('/hello%20world.txt').headers['Content-Type']).toBe('text/plain; charset=utf-8');
+    expect(request('/data.bin').headers['Content-Type']).toBe('application/octet-stream');
   });
 
   it('returns 404 for missing public files', () => {

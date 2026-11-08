@@ -92,7 +92,6 @@ export const runSelectViewDataCase = ({ props = {}, state = {} }) => {
   });
 
   return {
-    containerAttrString: result.containerAttrString,
     containerHorizontalPadding: result.containerHorizontalPadding,
     containerVerticalPadding: result.containerVerticalPadding,
   };

@@ -1,0 +1,6 @@
+template:
+  - rtgl-view:
+      - $if#other a:
+          - rtgl-text: A
+        "$elif#other(b)":
+          - rtgl-text: B

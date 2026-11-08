@@ -25,6 +25,9 @@ vt:
   timeout: 30000
   waitEvent: app:ready
   isolationMode: strict
+  animations: disabled
+  launchArgs:
+    - --use-gl=angle
   viewport:
     - id: desktop
       width: 1280
@@ -49,24 +52,31 @@ vt:
 | Key | Type | Description |
 | --- | --- | --- |
 | `path` | string | VT root directory. Default: `./vt` |
-| `url` | string | External app URL to capture instead of local preview server |
+| `url` | string | External app URL to capture instead of local preview server. Use an absolute `http://` or `https://` URL; VT prints a warning otherwise |
 | `service` | object | Optional managed service command (`start`) used during `screenshot` |
-| `compareMethod` | `pixelmatch` or `md5` | Default report compare method |
-| `colorThreshold` | number (`0`-`1`) | Pixelmatch color sensitivity |
-| `diffThreshold` | number (`0`-`100`) | Max diff percentage for a pass |
-| `port` | integer (`1`-`65535`) | Local preview server port |
-| `concurrency` | integer (`>=1`) | Default capture workers |
-| `timeout` | integer (`>=1`) | Global timeout in milliseconds |
+| `compareMethod` | `pixelmatch` or `md5` | Default report compare method. Default: `pixelmatch` |
+| `colorThreshold` | number (`0`-`1`) | Pixelmatch color sensitivity. Default: `0.1` |
+| `diffThreshold` | number (`0`-`100`) | Max diff percentage for a pass. Default: `0.3` |
+| `port` | integer (`1`-`65535`) | Local preview server port. Default: `3001` |
+| `concurrency` | integer (`>=1`) | Default capture workers. Default: chosen from the machine's CPUs and memory |
+| `timeout` | integer (`>=1`) | Global timeout in milliseconds. Default: `30000` |
 | `waitEvent` | string | Default custom event for readiness |
 | `isolationMode` | `fast` or `strict` | Screenshot isolation mode. Default: `fast` |
+| `animations` | `allow` or `disabled` | `disabled` passes Playwright's `animations: "disabled"` to every screenshot, so CSS animations and transitions are not captured mid-flight. A spec's frontmatter `animations` overrides it. Default: not set (`allow`) |
+| `launchArgs` | array of strings | Extra Chromium launch arguments. The `RTGL_CHROMIUM_ARGS` environment variable (whitespace-separated) adds more after these |
 | `viewport` | object or array | Default viewport(s) for capture |
 | `sections` | array (required) | Sidebar structure and grouping for VT pages |
+
+Command-line options win over the matching keys. Unknown `vt` keys (other than the removed keys below) are ignored with a `[vt] Warning:` line (a misspelled key such as `vt.isolation` names the right one).
 
 ## `service` rules
 
 - `vt.service` currently supports one key: `start` (string command).
 - When `vt.service` is set, `vt.url` is required.
 - VT starts the service before capture and stops it after `screenshot`.
+- Before starting it, VT sends one request to `vt.url` (1 second limit). If something already answers, VT warns that it may capture that server instead, and continues.
+- The service is ready when `vt.url` gives any HTTP answer, within 120 seconds. A service that exits first fails the run at once.
+- Ctrl+C during that wait stops the service, and the run exits with status 130.
 - Recommended setup is a package script that calls local `rtgl`, for example:
   `watch: rtgl sites watch -p <port> -o <outputDir> --quiet`, then `vt.service.start: npm run watch`.
 
@@ -76,7 +86,7 @@ vt:
 - Flat section: must include `title` and `files`.
 - Group section: must include `type: groupLabel` and non-empty `items`.
 - Each group item requires `title` and `files`.
-- Section keys (`title` and `items[].title`) must use only letters, numbers, `-`, `_`.
+- A section's key is its `title` (or `items[].title`) in kebab-case. For example `Components Basic` becomes `components-basic`. `--group` takes this key.
 - Section keys must be unique case-insensitively.
 
 ## `isolationMode` rules
@@ -87,4 +97,4 @@ vt:
 
 ## Internal fields to avoid
 
-`vt.capture` and legacy capture tuning fields are internal and should not be set in user config.
+`vt.capture` must be omitted. The old capture tuning keys (`screenshotWaitTime`, `waitSelector`, `waitStrategy`, `workerCount`, `navigationTimeout`, `readyTimeout`, `screenshotTimeout`, `maxRetries`, `recycleEvery`, `metricsPath`, `headless`) fail validation.

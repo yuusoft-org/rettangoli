@@ -1,6 +1,10 @@
 import { decodeTemplateAttribute } from "./attributeEncoding.js";
 import { parsePropertyLiteral } from "./propertyLiteral.js";
-import { getAttributeAssignments } from "./attributeAssignments.js";
+import { tokenizeBindings } from "./bindingTokens.js";
+import { toCamelCase } from "../runtime/props.js";
+
+// Part of the ./contracts surface.
+export { toCamelCase };
 
 const PROP_PREFIX = ":";
 
@@ -70,49 +74,19 @@ const lodashGet = (obj, path) => {
   }, obj);
 };
 
-export const toCamelCase = (value) => {
-  return value.replace(/-([a-z0-9])/g, (_, chr) => chr.toUpperCase());
-};
-
 export const collectBindingNames = (attrsString = "") => {
   if (!attrsString) {
     return [];
   }
 
-  const assignments = getAttributeAssignments(attrsString);
-  const booleanAttrRegex = /(\S+?)(?=\s|$)/g;
-  const processedAttrs = new Set();
-  const bindingNames = [];
-  for (const match of assignments) {
-    const rawBindingName = match[1];
-    processedAttrs.add(rawBindingName);
-    bindingNames.push(rawBindingName);
-  }
-
-  let remainingAttrsString = attrsString;
-  const processedMatches = assignments.map((match) => match[0]);
-
-  processedMatches.forEach((processedMatch) => {
-    remainingAttrsString = remainingAttrsString.replace(processedMatch, " ");
-  });
-
-  let boolMatch;
-  while ((boolMatch = booleanAttrRegex.exec(remainingAttrsString)) !== null) {
-    const rawToken = boolMatch[1];
-    if (rawToken.startsWith(".")) {
-      continue;
-    }
-    const attrName = rawToken.startsWith("?")
-      ? rawToken.substring(1)
-      : rawToken;
-    if (!attrName || !isValidAttributeName(attrName)) {
-      continue;
-    }
-    if (
-      !processedAttrs.has(rawToken)
-      && !rawToken.startsWith(PROP_PREFIX)
-      && !rawToken.includes("=")
-    ) {
+  const { assignments, words } = tokenizeBindings(attrsString);
+  const bindingNames = assignments.map(({ name }) => name);
+  const assignedNames = new Set(bindingNames);
+  for (const word of words) {
+    // Only `name` and `?name` words count. A valid name cannot start with
+    // "." or ":" or hold "=", so bare `.x` words are dropped (D24).
+    const attrName = word.startsWith("?") ? word.substring(1) : word;
+    if (isValidAttributeName(attrName) && !assignedNames.has(word)) {
       bindingNames.push(attrName);
     }
   }
@@ -129,6 +103,9 @@ export const parseNodeBindings = ({
 }) => {
   const attrs = {};
   const props = {};
+  // `?name=${expr}` toggles that evaluated false. The attribute is left out,
+  // but hydration needs the name to remove a copy the server rendered.
+  const toggledOff = [];
   const assertSupportedBooleanToggleAttr = (attrName) => {
     if (
       attrName === "role"
@@ -166,16 +143,14 @@ export const parseNodeBindings = ({
     return { attrs, props };
   }
 
-  const assignments = getAttributeAssignments(attrsString);
-  const processedAttrs = new Set();
+  const { assignments, words } = tokenizeBindings(attrsString);
+  const assignedNames = new Set();
 
-  for (const match of assignments) {
-    const rawBindingName = match[1];
-    const encodedValue = match[2] ?? match[3] ?? match[4] ?? "";
+  for (const { name: rawBindingName, value: encodedValue, quote } of assignments) {
     const rawValue = decodeAttributeValues && !rawBindingName.startsWith(PROP_PREFIX)
       ? decodeTemplateAttribute(encodedValue)
       : encodedValue;
-    processedAttrs.add(rawBindingName);
+    assignedNames.add(rawBindingName);
 
     if (rawBindingName.startsWith(".")) {
       attrs[rawBindingName] = rawValue;
@@ -185,10 +160,10 @@ export const parseNodeBindings = ({
     if (rawBindingName.startsWith(PROP_PREFIX)) {
       const propName = rawBindingName.substring(1);
       let propValue = rawValue;
-      if (match[4] !== undefined && match[4] !== "") {
-        const valuePathName = match[4];
-        const literal = parsePropertyLiteral(valuePathName);
-        propValue = literal ? literal.value : lodashGet(viewData, valuePathName);
+      // A bare value is a literal or a view data path; a quoted one is text.
+      if (!quote && encodedValue !== "") {
+        const literal = parsePropertyLiteral(encodedValue);
+        propValue = literal ? literal.value : lodashGet(viewData, encodedValue);
       }
       setComponentProp(propName, propValue, "property-form");
       continue;
@@ -213,6 +188,8 @@ export const parseNodeBindings = ({
 
       if (evalValue) {
         attrs[attrName] = "";
+      } else {
+        toggledOff.push(attrName);
       }
       if (isWebComponent && attrName !== "id") {
         setComponentProp(attrName, !!evalValue, "boolean attribute-form");
@@ -227,21 +204,13 @@ export const parseNodeBindings = ({
     }
   }
 
-  let remainingAttrsString = attrsString;
-  const processedMatches = assignments.map((match) => match[0]);
-
-  processedMatches.forEach((processedMatch) => {
-    remainingAttrsString = remainingAttrsString.replace(processedMatch, " ");
-  });
-
-  const booleanAttrRegex = /(\S+?)(?=\s|$)/g;
-  let boolMatch;
-  while ((boolMatch = booleanAttrRegex.exec(remainingAttrsString)) !== null) {
-    const rawToken = boolMatch[1];
+  for (const rawToken of words) {
+    // Bare `.x` is dropped (D24). A word that repeats an assignment name, a
+    // bare `:x`, or a word with "=" (inside an interpolation) is skipped.
     if (rawToken.startsWith(".")) {
       continue;
     }
-    if (processedAttrs.has(rawToken) || rawToken.startsWith(PROP_PREFIX) || rawToken.includes("=")) {
+    if (assignedNames.has(rawToken) || rawToken.startsWith(PROP_PREFIX) || rawToken.includes("=")) {
       continue;
     }
 
@@ -262,17 +231,11 @@ export const parseNodeBindings = ({
       );
     }
 
-    if (
-      !processedAttrs.has(rawToken)
-      && !rawToken.startsWith(PROP_PREFIX)
-      && !rawToken.includes("=")
-    ) {
-      attrs[rawToken] = "";
-      if (isWebComponent && rawToken !== "id") {
-        setComponentProp(rawToken, true, "boolean attribute-form");
-      }
+    attrs[rawToken] = "";
+    if (isWebComponent && rawToken !== "id") {
+      setComponentProp(rawToken, true, "boolean attribute-form");
     }
   }
 
-  return { attrs, props };
+  return toggledOff.length > 0 ? { attrs, props, toggledOff } : { attrs, props };
 };

@@ -1,3 +1,4 @@
+import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 import { h } from "snabbdom/build/h.js";
 
@@ -429,5 +430,57 @@ describe("serializeVNode: element shapes", () => {
       renderChildren: (vnode) => (vnode.sel === "x-host" ? "<i>substituted</i>" : null),
     });
     expect(html).toBe("<x-host><i>substituted</i></x-host>");
+  });
+});
+
+describe("serializeVNode: what the HTML parser reads back", () => {
+  // Parses the markup the way a browser does (parse5) and returns its element.
+  const reparse = (html) =>
+    new JSDOM(`<!doctype html><body>${html}`).window.document.body.firstElementChild;
+
+  it("writes CR as a character reference, so CR and CRLF survive in text and attributes", () => {
+    const html = serializeVNode(h("p", { attrs: { title: "a\r\nb\rc" } }, ["a\r\nb\rc"]));
+    expect(html).toBe('<p title="a&#13;\nb&#13;c">a&#13;\nb&#13;c</p>');
+    const element = reparse(html);
+    expect(element.textContent).toBe("a\r\nb\rc");
+    expect(element.getAttribute("title")).toBe("a\r\nb\rc");
+  });
+
+  it.each(["pre", "textarea", "listing"])(
+    "keeps a leading newline in <%s>, which the parser drops once",
+    (tag) => {
+      for (const text of ["\nindented", "\n\ntwo", "\r\nwindows"]) {
+        expect(reparse(serializeVNode(h(tag, {}, [text]))).textContent).toBe(text);
+        expect(reparse(serializeVNode(h(tag, {}, text))).textContent).toBe(text);
+      }
+      expect(serializeVNode(h(tag, {}, ["\nx"]))).toBe(`<${tag}>\n\nx</${tag}>`);
+    },
+  );
+
+  it("keeps the leading newline when it comes from a later text child", () => {
+    const html = serializeVNode(h("pre", {}, ["", "\ncode"]));
+    expect(html).toBe("<pre>\n\ncode</pre>");
+    expect(reparse(html).textContent).toBe("\ncode");
+  });
+
+  it("adds nothing when the content does not start with a newline", () => {
+    expect(serializeVNode(h("pre", {}, ["x\n"]))).toBe("<pre>x\n</pre>");
+    expect(serializeVNode(h("pre", {}, [h("code", {}, ["\nx"])])))
+      .toBe("<pre><code>\nx</code></pre>");
+    expect(serializeVNode(h("div", {}, ["\nx"]))).toBe("<div>\nx</div>");
+    expect(serializeVNode(h("pre"))).toBe("<pre></pre>");
+  });
+
+  it("adds nothing in foreign content, where the parser keeps the newline", () => {
+    const html = serializeVNode(h("svg", {}, [h("textarea", {}, ["\nx"])]));
+    expect(html).toBe("<svg><textarea>\nx</textarea></svg>");
+    expect(reparse(html).firstElementChild.textContent).toBe("\nx");
+  });
+
+  it("leaves markup from renderChildren as written", () => {
+    const html = serializeVNode(h("pre", {}, ["ignored"]), {
+      renderChildren: () => "\n<b>x</b>",
+    });
+    expect(html).toBe("<pre>\n<b>x</b></pre>");
   });
 });

@@ -1,0 +1,84 @@
+{
+  "name": "broken view yaml still reports binding rules on text-scan selector keys (a quoted key is trimmed before it is split); bare '.prop' and ':prop' tokens get no YAHTML-002/003 there (FE ignores them)",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 8,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-BINDING-001": 2,
+      "RTGL-CHECK-BINDING-002": 1,
+      "RTGL-CHECK-PARSE-001": 3,
+      "RTGL-CONTRACT-003": 1,
+      "RTGL-CHECK-YAHTML-003": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-BINDING-001",
+        "severity": "error",
+        "message": "components/card: Invalid attribute token '1invalid' on 'rtgl-view'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-BINDING-001",
+        "severity": "error",
+        "message": "components/card: Invalid binding attribute name '' on 'rtgl-view'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-BINDING-002",
+        "severity": "error",
+        "message": "components/card: Invalid boolean attribute '?aria-x'. Use normal binding for value-carrying attributes such as aria-*, data-*, and role.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 4
+      },
+      {
+        "code": "RTGL-CHECK-PARSE-001",
+        "severity": "error",
+        "message": "Failed to parse YAML: missed comma between flow collection entries.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 9
+      },
+      {
+        "code": "RTGL-CHECK-PARSE-001",
+        "severity": "error",
+        "message": "Failed to parse YAML: missed comma between flow collection entries.",
+        "filePath": "src/components/dot/dot.view.yaml",
+        "line": 7
+      },
+      {
+        "code": "RTGL-CONTRACT-003",
+        "severity": "error",
+        "message": "components/dot: legacy property binding syntax is not supported. Use ':prop=${value}' in .view.yaml.",
+        "filePath": "src/components/dot/dot.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-PARSE-001",
+        "severity": "error",
+        "message": "Failed to parse YAML: missed comma between flow collection entries.",
+        "filePath": "src/components/trim/trim.view.yaml",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/trim: unsupported attr/prop 'bogus' on 'rtgl-view'.",
+        "filePath": "src/components/trim/trim.view.yaml",
+        "line": 2
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-YAHTML-004"
+  ]
+}

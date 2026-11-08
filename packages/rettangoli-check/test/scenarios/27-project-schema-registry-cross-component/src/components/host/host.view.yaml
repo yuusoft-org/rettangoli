@@ -1,4 +1,4 @@
 template:
-  - rtgl-test-child-card accent-color=blue :showIcon=true:
+  - rtgl-test-child-card accent-color=blue :showIcon=${true}:
       - rtgl-text: Host
 styles: {}

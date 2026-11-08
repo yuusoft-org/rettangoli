@@ -6,6 +6,7 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -418,27 +419,47 @@ const runAnalyzeScenario = async ({ scenarioDirName, scenarioRoot, spec, expecte
   };
 };
 
+const SCENARIO_ROOT_PLACEHOLDER = "<scenario>";
+
+// Expected streams use "<scenario>" for any scenario path and "registry tags: <n>" because the
+// registry size follows whichever @rettangoli/ui the checker resolves.
+const maskStream = (value, paths) => {
+  return paths
+    .reduce((text, item) => text.split(item).join(SCENARIO_ROOT_PLACEHOLDER), value)
+    .replace(/registry tags: \d+/g, "registry tags: <n>");
+};
+
 const runCliScenario = ({ scenarioDirName, scenarioRoot, spec, expected }) => {
   const options = spec.options || {};
   const args = Array.isArray(options.args) ? options.args.map((item) => String(item)) : [];
-  const scenarioCwd = path.resolve(scenarioRoot, options.cwd || ".");
   const envOverrides = isObject(options.env)
     ? Object.fromEntries(
       Object.entries(options.env).map(([key, value]) => [String(key), String(value)]),
     )
     : {};
 
-  const execution = spawnSync(process.execPath, [cliBinPath, ...args], {
-    cwd: scenarioCwd,
-    encoding: "utf8",
-    env: {
-      ...process.env,
-      ...envOverrides,
-    },
-  });
+  // Run on a realpath'd temp copy so autofix modes never rewrite the committed fixtures
+  // and tmpdir symlinks (macOS /var -> /private/var) cannot change the printed paths.
+  const sandboxRoot = realpathSync(mkdtempSync(path.join(tmpdir(), "rtgl-scenario-cli-")));
+  const sandboxScenarioRoot = path.join(sandboxRoot, scenarioDirName);
+  let execution;
+  try {
+    cpSync(scenarioRoot, sandboxScenarioRoot, { recursive: true });
+    execution = spawnSync(process.execPath, [cliBinPath, ...args], {
+      cwd: path.resolve(sandboxScenarioRoot, options.cwd || "."),
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        ...envOverrides,
+      },
+    });
+  } finally {
+    rmSync(sandboxRoot, { recursive: true, force: true });
+  }
 
-  const stdout = normalizeStream(execution.stdout || "");
-  const stderr = normalizeStream(execution.stderr || "");
+  const maskedPaths = [sandboxScenarioRoot, scenarioRoot];
+  const stdout = normalizeStream(maskStream(execution.stdout || "", maskedPaths));
+  const stderr = normalizeStream(maskStream(execution.stderr || "", maskedPaths));
 
   let parsedStdoutJson = null;
   if (stdout.length > 0) {

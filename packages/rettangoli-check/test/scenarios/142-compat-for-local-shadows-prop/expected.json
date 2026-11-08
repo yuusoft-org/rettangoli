@@ -1,0 +1,23 @@
+{
+  "name": "$for loop variables that shadow props are not typed from the prop schema",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": true,
+    "errorCount": 0,
+    "warnCount": 0,
+    "errorCodes": {},
+    "warnCodes": {},
+    "diagnostics": []
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-008",
+    "RTGL-SPEC-JEMPL-003"
+  ]
+}

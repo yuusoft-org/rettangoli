@@ -1,0 +1,3 @@
+template:
+  - rtgl-view ?bogus-toggle: a bare toggle is reported once, under its own name
+styles: {}

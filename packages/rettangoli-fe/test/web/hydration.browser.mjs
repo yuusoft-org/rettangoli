@@ -83,11 +83,15 @@ const createFixture = () => {
       "          - 'circle cx=5 cy=5 r=4': null",
       "          - 'foreignObject width=10 height=10':",
       "              - div: inside",
+      // Text the HTML parser would rewrite: a leading newline, CR.
+      "      - pre#code: ${code}",
+      "      - textarea#note: ${note}",
+      "      - 'p#crlf title=${note}': ${note}",
     ].join("\n"),
     "pages/shell/shell.store.js": [
       "export const createInitialState = ({ props }) => ({ items: props.items || [] });",
       "export const addItem = ({ state }) => { state.items = [...state.items, `item ${state.items.length + 1}`]; };",
-      "export const selectViewData = ({ state, props }) => ({ title: props.title, items: state.items });",
+      "export const selectViewData = ({ state, props }) => ({ title: props.title, items: state.items, code: '\\n  indented', note: 'line 1\\r\\nline 2' });",
     ].join("\n"),
     "pages/shell/shell.handlers.js": [
       "export const handleMore = (deps) => { deps.store.addItem(); deps.render(); };",
@@ -155,6 +159,10 @@ const recordServerNodes = `
     }
   };
   walk(document);
+  const shell = document.querySelector("x-shell").shadowRoot;
+  window.__serverText = ["#code", "#note", "#crlf"]
+    .map((selector) => shell.querySelector(selector).textContent)
+    .concat(shell.querySelector("#crlf").title);
 </script>`;
 
 const serve = (port, routes) =>
@@ -240,6 +248,7 @@ const main = async () => {
           disabled: shell.shadowRoot.querySelector("#name").disabled,
           viewBox: icon.getAttribute("viewBox"),
           foreignText: icon.querySelector("foreignObject div")?.textContent,
+          serverText: window.__serverText,
           propsScript: Boolean(shell.querySelector("script[data-rtgl-props]")),
           listProps: list.props.items,
         };
@@ -270,6 +279,10 @@ const main = async () => {
       check("SVG keeps its attributes and foreign content",
         result.viewBox === "0 0 10 10" && result.foreignText === "inside",
         `${result.viewBox} ${result.foreignText}`);
+      check("the prerendered pre and textarea keep a leading newline, and CR in text and attributes",
+        JSON.stringify(result.serverText) === JSON.stringify(
+          ["\n  indented", "line 1\r\nline 2", "line 1\r\nline 2", "line 1\r\nline 2"]),
+        JSON.stringify(result.serverText));
       check("the serialized props script is gone", !result.propsScript);
 
       await live.locator("button#more").click();

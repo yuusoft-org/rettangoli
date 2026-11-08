@@ -73,7 +73,6 @@ The FE frontend layer must continue emitting these contracts (non-exhaustive):
 ## Validation Commands
 
 - `bun run --cwd packages/rettangoli-check test:scenarios`
-- `bun run --cwd packages/rettangoli-check test:diff-js-exports`
 - `bun run --cwd packages/rettangoli-check test:fe-frontend-component-identity-contract`
 - `bun run --cwd packages/rettangoli-check test:fe-frontend-handler-contract`
 - `bun run --cwd packages/rettangoli-check test:fe-frontend-lifecycle-contract`

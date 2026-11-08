@@ -1,0 +1,62 @@
+{
+  "name": "':prop' with a literal or quoted value gets CONTRACT-003 (so does '.1x=${a}'), and autofix leaves '.prop=literal' alone",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "--format",
+      "json",
+      "--autofix-dry-run"
+    ]
+  },
+  "expected": {
+    "exitCode": 1,
+    "stderr": "",
+    "stdoutJson": {
+      "ok": false,
+      "summary": {
+        "bySeverity": {
+          "error": 4,
+          "warn": 0
+        }
+      },
+      "autofix": {
+        "mode": "dry-run",
+        "candidateCount": 4,
+        "appliedCount": 0,
+        "skippedCount": 4,
+        "patches": []
+      },
+      "diagnostics": [
+        {
+          "code": "RTGL-CONTRACT-003",
+          "message": "components/legacy: legacy property binding syntax is not supported. Use ':prop=${value}' in .view.yaml.",
+          "filePath": "<scenario>/src/components/legacy/legacy.view.yaml",
+          "line": 2
+        },
+        {
+          "code": "RTGL-CONTRACT-003",
+          "message": "components/literal: legacy property binding syntax is not supported. Use ':prop=${value}' in .view.yaml.",
+          "filePath": "<scenario>/src/components/literal/literal.view.yaml",
+          "line": 2
+        },
+        {
+          "code": "RTGL-CONTRACT-003",
+          "message": "components/odd: legacy property binding syntax is not supported. Use ':prop=${value}' in .view.yaml.",
+          "filePath": "<scenario>/src/components/odd/odd.view.yaml",
+          "line": 2
+        },
+        {
+          "code": "RTGL-CONTRACT-003",
+          "message": "components/quoted: legacy property binding syntax is not supported. Use ':prop=${value}' in .view.yaml.",
+          "filePath": "<scenario>/src/components/quoted/quoted.view.yaml",
+          "line": 3
+        }
+      ]
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-YAHTML-004"
+  ]
+}

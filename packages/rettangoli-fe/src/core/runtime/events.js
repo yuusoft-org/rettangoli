@@ -87,6 +87,11 @@ export const createManagedEventListener = ({
     const state = eventRateLimitState.get(stateKey) || {};
     const currentTarget = event.currentTarget || fallbackCurrentTarget;
 
+    if (eventConfig.targetOnly && event.target !== event.currentTarget) {
+      eventRateLimitState.set(stateKey, state);
+      return;
+    }
+
     if (eventConfig.once) {
       if (currentTarget) {
         if (!state.onceTargets) {
@@ -103,11 +108,6 @@ export const createManagedEventListener = ({
       } else {
         state.onceTriggered = true;
       }
-    }
-
-    if (eventConfig.targetOnly && event.target !== event.currentTarget) {
-      eventRateLimitState.set(stateKey, state);
-      return;
     }
 
     if (eventConfig.preventDefault) {

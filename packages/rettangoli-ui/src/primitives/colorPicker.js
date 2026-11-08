@@ -3,12 +3,14 @@ import { fieldTextAriaAttributes as fieldAriaAttributes, forwardFieldAria } from
 import { hsvToHex, parseHex, rgbToHex, rgbToHsv } from "../common/color.js";
 import {
   css,
-  dimensionWithUnit,
   convertObjectToCssString,
   permutateBreakpoints,
   createResponsiveStyleBuckets,
-  responsiveStyleSizes,
-  applyDimensionToStyleBucket,
+  rebuildResponsiveStyles,
+  applyZIndexAndOpacity,
+  applySizing,
+  applyVisibility,
+  commitStyleText,
 } from "../common.js";
 import cursorStyles from "../styles/cursorStyles.js";
 import marginStyles from "../styles/marginStyles.js";
@@ -202,7 +204,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     super();
     RettangoliColorPickerElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliColorPickerElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliColorPickerElement.styleSheet];
 
     // Initialize style tracking properties
     this._styles = createResponsiveStyleBuckets();
@@ -226,8 +228,8 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._triggerSwatchElement.className = 'swatch';
     this._triggerElement.appendChild(this._triggerSwatchElement);
 
-    this.shadow.appendChild(this._styleElement);
-    this.shadow.appendChild(this._triggerElement);
+    this.shadowRoot.appendChild(this._styleElement);
+    this.shadowRoot.appendChild(this._triggerElement);
 
     this._popoverElement = null;
     this._svElement = null;
@@ -345,61 +347,16 @@ class RettangoliColorPickerElement extends HTMLElement {
   }
 
   updateStyles() {
-    // Reset styles for fresh calculation
-    this._styles = createResponsiveStyleBuckets();
-
-    responsiveStyleSizes.forEach((size) => {
-      const addSizePrefix = (tag) => {
-        return `${size === "default" ? "" : `${size}-`}${tag}`;
-      };
-
-      const wh = this.getAttribute(addSizePrefix("wh"));
-      const width = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("w")) : wh,
-      );
-      const height = dimensionWithUnit(
-        wh === null ? this.getAttribute(addSizePrefix("h")) : wh,
-      );
-      const opacity = this.getAttribute(addSizePrefix("op"));
-      const zIndex = this.getAttribute(addSizePrefix("z"));
-
-      if (zIndex !== null) {
-        this._styles[size]["z-index"] = zIndex;
-      }
-
-      if (opacity !== null) {
-        this._styles[size].opacity = opacity;
-      }
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "width",
-        dimension: width,
-        fillValue: "var(--width-stretch)",
-      });
-
-      applyDimensionToStyleBucket({
-        styleBucket: this._styles[size],
-        axis: "height",
-        dimension: height,
-        fillValue: "100%",
-      });
-
-      if (this.hasAttribute(addSizePrefix("hide"))) {
-        this._styles[size].display = "none";
-      }
-
-      if (this.hasAttribute(addSizePrefix("show"))) {
-        this._styles[size].display = "block";
-      }
+    rebuildResponsiveStyles({
+      styles: this._styles,
+      buildStyles: ({ styleBucket, attrName }) => {
+        applyZIndexAndOpacity({ styleBucket, element: this, attrName });
+        applySizing({ styleBucket, element: this, attrName });
+        applyVisibility({ styleBucket, element: this, attrName, display: "block" });
+      },
     });
 
-    // Update styles only if changed - targeting trigger element
-    const newStyleString = convertObjectToCssString(this._styles, TRIGGER_SELECTOR);
-    if (newStyleString !== this._lastStyleString) {
-      this._styleElement.textContent = newStyleString;
-      this._lastStyleString = newStyleString;
-    }
+    commitStyleText(this, convertObjectToCssString(this._styles, TRIGGER_SELECTOR));
   }
 
   _syncValueAttribute() {
@@ -549,7 +506,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     hexRow.append(chip, hexField);
 
     popover.append(sv, hue, hexRow);
-    this.shadow.appendChild(popover);
+    this.shadowRoot.appendChild(popover);
 
     this._popoverElement = popover;
     this._svElement = sv;
@@ -615,7 +572,8 @@ class RettangoliColorPickerElement extends HTMLElement {
         const rgb = parseHex(raw);
         const hex = rgbToHex(rgb);
         if (hex !== this._hexValue()) {
-          this._setRgbLive(rgb);
+          // Keep the typed text (case and caret) until it commits
+          this._setRgbLive(rgb, { syncHexField: false });
         }
       }
     });
@@ -624,6 +582,7 @@ class RettangoliColorPickerElement extends HTMLElement {
 
     this._hexInputElement.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
+        event.preventDefault();
         this._commitHexValue();
         this._hexInputElement.blur();
       }
@@ -635,9 +594,9 @@ class RettangoliColorPickerElement extends HTMLElement {
     });
   }
 
-  _setRgbLive(rgb) {
+  _setRgbLive(rgb, { syncHexField = true } = {}) {
     this._hsv = rgbToHsv(rgb, this._hsv);
-    this._render();
+    this._render({ syncHexField });
     this._emitValue('value-input');
   }
 
@@ -663,7 +622,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._hexFieldElement.classList.remove('invalid');
   }
 
-  _render() {
+  _render({ syncHexField = true } = {}) {
     const { h, s, v } = this._hsv;
     const hex = this._hexValue();
     this._triggerSwatchElement.style.background = hex;
@@ -687,7 +646,7 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._hueElement.setAttribute('aria-valuenow', String(Math.round(h)));
 
     this._chipElement.style.background = hex;
-    if (document.activeElement !== this._hexInputElement) {
+    if (syncHexField) {
       this._showHexValue();
     }
   }

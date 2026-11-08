@@ -1,4 +1,4 @@
 template:
-  - rtgl-text c=fg accent-color=blue :accentColor=blue:
-      - rtgl-text: Host
+  - rtgl-text c=fg accent-color=blue:
+      - rtgl-text :accentColor=${accent}: Host
 styles: {}

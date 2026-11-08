@@ -1,6 +1,7 @@
 import { getUiMessage } from "../../common/uiMessages.js";
 import { selectFieldAria } from "../../accessibility/field.js";
 import { deepEqual } from "../../common.js";
+import { hasResolvedValue, resolveSelectedValue } from "../../common/choice.js";
 
 const blacklistedProps = [
   "ariaLabel", "ariaDescription", "ariaRequired", "ariaInvalid",
@@ -58,6 +59,7 @@ export const createInitialState = () =>
   Object.freeze({
     selectedValue: null,
     hasSelectedValue: false,
+    hasLocalValue: false,
     hoveredOptionId: null,
     hoveredAddOption: false,
     tooltipState: {
@@ -77,14 +79,8 @@ export const selectViewData = ({ state, props }) => {
     : "md";
   const sizePreset = sizePresets[size];
   const isDisabled = !!props.disabled;
-  const hasControlledValue = Object.prototype.hasOwnProperty.call(
-    props || {},
-    "selectedValue",
-  );
-  const currentValue = hasControlledValue
-    ? props.selectedValue
-    : state.selectedValue;
-  const hasCurrentValue = hasControlledValue ? true : !!state.hasSelectedValue;
+  const currentValue = resolveSelectedValue({ state, props });
+  const hasCurrentValue = hasResolvedValue({ state, props });
   const options = props.options || [];
   const showAddOption = !isDisabled && !!props.addOption;
   const squareOptionCount = options.length + (showAddOption ? 1 : 0);
@@ -163,11 +159,13 @@ export const selectHasSelectedValue = ({ state }) => {
 export const updateSelectedValue = ({ state }, payload = {}) => {
   state.selectedValue = payload.value;
   state.hasSelectedValue = true;
+  state.hasLocalValue = !payload.fromProps;
 };
 
 export const clearSelectedValue = ({ state }) => {
   state.selectedValue = undefined;
   state.hasSelectedValue = false;
+  state.hasLocalValue = true;
 };
 
 export const setHoveredOption = ({ state }, payload = {}) => {

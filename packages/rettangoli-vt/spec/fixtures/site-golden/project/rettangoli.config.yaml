@@ -1,0 +1,23 @@
+vt:
+  path: ./vt
+  name: Site Golden
+  description: Synthetic project that freezes the generated VT site.
+  viewport:
+    - id: desktop
+      width: 1280
+      height: 720
+    - id: mobile
+      width: 390
+      height: 844
+  sections:
+    - title: Components
+      files: components
+    - title: Forms
+      type: groupLabel
+      items:
+        - title: Inputs
+          files: forms/inputs
+        - title: Buttons
+          files: forms/buttons
+    - title: Pages
+      files: pages

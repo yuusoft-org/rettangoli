@@ -1,8 +1,12 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import {
+  clearSelectedValue,
   createInitialState,
   selectViewData,
+  updateSelectedValue,
 } from "../src/components/segmented-control/segmented-control.store.js";
+import { withPropsProxy } from "./support/propsProxy.js";
 
 describe("rtgl-segmented-control store", () => {
   it("uses the compact size preset when s is sm", () => {
@@ -224,5 +228,160 @@ describe("rtgl-segmented-control store", () => {
       open: false,
       content: "",
     });
+  });
+});
+
+// The cases above pass plain objects as props. A mounted component passes the
+// props proxy of fe, where every schema prop counts as present and any other
+// key is invisible, so these cases build props through it.
+describe("rtgl-segmented-control store with the production props proxy", () => {
+  const schema = "src/components/segmented-control/segmented-control.schema.yaml";
+  const options = [
+    { value: "one", label: "One" },
+    { value: "two", label: "Two" },
+  ];
+
+  it("exposes every schema prop as present and hides keys outside the schema", () => {
+    const props = withPropsProxy({ options, notInSchema: 1 }, schema);
+
+    expect(Object.hasOwn(props, "selectedValue")).toBe(true);
+    expect(props.selectedValue).toBeUndefined();
+    expect(Object.hasOwn(props, "notInSchema")).toBe(false);
+  });
+
+  it("uses the compact size preset when s is sm", () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: withPropsProxy({ s: "sm", w: "f", options: [] }, schema),
+    });
+
+    expect(viewData).toMatchObject({
+      size: "sm",
+      containerSizeAttrString: "h=24",
+      optionSizeAttrString: "h=f w=1fg ph=md",
+      textSize: "xs",
+      iconSize: 14,
+      containerAttrString: "w=f",
+    });
+  });
+
+  it("makes each segment square at the selected control size", () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: withPropsProxy({
+        sq: true,
+        addOption: { label: "New view" },
+        options: [{ value: "list" }, { value: "grid" }],
+      }, schema),
+    });
+
+    expect(viewData).toMatchObject({
+      isSquare: true,
+      showAddOption: true,
+      containerSizeAttrString: "h=32 w=96",
+      optionSizeAttrString: "h=f w=1fg",
+      containerAttrString: "",
+      addOptionLabel: "+ New view",
+    });
+  });
+
+  it("normalizes svg-only options and their accessible labels", () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: withPropsProxy({
+        selectedValue: "grid",
+        options: [
+          { value: "list", svg: "text", ariaLabel: "List view" },
+          { value: "grid", svg: "grid", ariaLabel: "Grid view" },
+        ],
+      }, schema),
+    });
+
+    expect(viewData.options.map((option) => ({
+      hasSvg: option.hasSvg,
+      accessibleLabel: option.accessibleLabel,
+      isSelected: option.isSelected,
+      textColor: option.textColor,
+    }))).toEqual([
+      { hasSvg: true, accessibleLabel: "List view", isSelected: false, textColor: "fg" },
+      { hasSvg: true, accessibleLabel: "Grid view", isSelected: true, textColor: "ac-fg" },
+    ]);
+  });
+
+  it("presses the user's pick while selectedValue is not set", () => {
+    const state = {
+      ...createInitialState(),
+      selectedValue: "two",
+      hasSelectedValue: true,
+      hasLocalValue: true,
+    };
+
+    const viewData = selectViewData({ state, props: withPropsProxy({ options }, schema) });
+
+    expect(viewData.options.map((option) => option.isSelected)).toEqual([false, true]);
+    expect(viewData.selectedValue).toBe("two");
+    expect(viewData.hasSelectedValue).toBe(true);
+  });
+
+  it("presses nothing after the user clears while selectedValue is not set", () => {
+    const state = {
+      ...createInitialState(),
+      selectedValue: undefined,
+      hasSelectedValue: false,
+      hasLocalValue: true,
+    };
+
+    const viewData = selectViewData({
+      state,
+      props: withPropsProxy({ options: [{ value: undefined, label: "None" }, ...options] }, schema),
+    });
+
+    expect(viewData.options.map((option) => option.isSelected)).toEqual([false, false, false]);
+    expect(viewData.hasSelectedValue).toBe(false);
+  });
+
+  it("presses a defined selectedValue, null included, over the user's pick", () => {
+    const state = {
+      ...createInitialState(),
+      selectedValue: "two",
+      hasSelectedValue: true,
+      hasLocalValue: true,
+    };
+
+    for (const [selectedValue, isSelected] of [["one", [true, false]], [null, [false, false]]]) {
+      const viewData = selectViewData({
+        state,
+        props: withPropsProxy({ options, selectedValue }, schema),
+      });
+      expect(viewData.options.map((option) => option.isSelected)).toEqual(isSelected);
+    }
+  });
+
+  it("marks picks and clears as local, and values synced from props as not local", () => {
+    const state = structuredClone(createInitialState());
+    expect(state.hasLocalValue).toBe(false);
+
+    updateSelectedValue({ state }, { value: "two" });
+    expect(state).toMatchObject({ selectedValue: "two", hasSelectedValue: true, hasLocalValue: true });
+
+    updateSelectedValue({ state }, { value: "one", fromProps: true });
+    expect(state).toMatchObject({ selectedValue: "one", hasSelectedValue: true, hasLocalValue: false });
+
+    clearSelectedValue({ state });
+    expect(state).toMatchObject({ selectedValue: undefined, hasSelectedValue: false, hasLocalValue: true });
+  });
+
+  it("presses no option, not even an undefined-valued one, when nothing is set", () => {
+    const viewData = selectViewData({
+      state: createInitialState(),
+      props: withPropsProxy({
+        options: [
+          { value: undefined, label: "None" },
+          { value: "draft", label: "Draft" },
+        ],
+      }, schema),
+    });
+
+    expect(viewData.options.map((option) => option.isSelected)).toEqual([false, false]);
   });
 });

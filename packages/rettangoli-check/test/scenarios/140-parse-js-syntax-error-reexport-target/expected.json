@@ -1,0 +1,40 @@
+{
+  "name": "unparsable re-export targets report PARSE-002 once and make the export set unknown",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 2,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-PARSE-002": 2
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-PARSE-002",
+        "severity": "error",
+        "message": "Failed to parse JavaScript: Unexpected token.",
+        "filePath": "src/shared/save.js",
+        "line": 1
+      },
+      {
+        "code": "RTGL-CHECK-PARSE-002",
+        "severity": "error",
+        "message": "Failed to parse JavaScript: Unexpected token.",
+        "filePath": "src/components/star/broken.js",
+        "line": 1
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-010",
+    "RTGL-SPEC-SYMBOL-003"
+  ]
+}

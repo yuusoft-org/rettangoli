@@ -8,12 +8,6 @@ export const createInitialState = () => Object.freeze({
   },
 });
 
-const blacklistedAttrs = ['id', 'class', 'style', 'slot', 'header', 'items', 'selectedItemId', 'mode', 'hideHeader', 'tooltip', 'showCompactTooltip', 'w', 'bwr'];
-
-const stringifyAttrs = (props = {}) => {
-  return Object.entries(props).filter(([key]) => !blacklistedAttrs.includes(key)).map(([key, value]) => `${key}=${value}`).join(' ');
-}
-
 const parseMaybeEncodedJson = (value) => {
   if (value === undefined || value === null) {
     return undefined;
@@ -134,7 +128,6 @@ export const selectViewData = ({ state, props }) => {
   const resolvedItems = parseMaybeEncodedJson(props.items) || props.items;
   const selectedItemId = props.selectedItemId;
 
-  const containerAttrString = stringifyAttrs(props);
   const mode = props.mode || 'full';
   const header = resolvedHeader || {
     label: '',
@@ -182,7 +175,6 @@ export const selectViewData = ({ state, props }) => {
   const listAttrString = 'd=v sv';
 
   return {
-    containerAttrString,
     mode,
     header,
     items,

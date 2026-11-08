@@ -82,10 +82,13 @@ Example:
 
 ## Per-step viewport changes
 
-You can also change viewport inside `steps` using:
+You can also change viewport inside `steps` using the `setViewport` action:
 
-```text
-setViewport <width> <height>
+```yaml
+steps:
+  - action: setViewport
+    width: 390
+    height: 844
 ```
 
 This change is scoped to the current running spec session only. The next spec starts from its resolved config/frontmatter viewport.

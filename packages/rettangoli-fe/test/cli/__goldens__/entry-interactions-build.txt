@@ -1,0 +1,92 @@
+import { deps } from "<ROOT>/packages/rettangoli-fe/e2e/interactions/fe/setup.js";
+const __rtgl_0_constants = {"headerLabel":"Composed Dashboard"};
+import * as __rtgl_1_handlers from "<ROOT>/packages/rettangoli-fe/e2e/interactions/fe/components/composedPage.handlers.js";
+const __rtgl_2_schema = {"componentName":"e2e-composed-page","description":"Blank component scaffold","propsSchema":{"type":"object","properties":{}},"events":[],"methods":{"type":"object","properties":{}}};
+import * as __rtgl_3_store from "<ROOT>/packages/rettangoli-fe/e2e/interactions/fe/components/composedPage.store.js";
+const __rtgl_4_view = {"refs":{"counterEl":{"eventListeners":{"count-changed":{"handler":"handleCountChanged"}}},"document":{"eventListeners":{"keydown":{"handler":"handleDocumentKeydown"}}}},"template":{"type":9,"items":[{"type":8,"properties":[{"key":"div#root style=\"display:flex;flex-direction:column;gap:16px;padding:16px;font-family:monospace\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"div style=\"font-size:12px;font-weight:bold\"","value":{"type":1,"path":"headerLabel"}}],"fast":true},{"type":8,"properties":[{"key":"div style=\"display:flex;gap:16px;align-items:flex-start\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"e2e-counter#counterEl","value":{"type":0,"value":null}}],"fast":true},{"type":8,"properties":[{"key":"e2e-item-list#itemListEl","value":{"type":0,"value":null}}],"fast":true}],"fast":true}}],"fast":true},{"type":8,"properties":[{"key":"div style=\"display:flex;gap:8px;align-items:center\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"div style=\"font-size:11px\"","value":{"type":2,"parts":["Increments: ",{"type":1,"path":"totalClicks"}]}}],"fast":true},{"type":8,"properties":[{"key":"div data-testid=click-indicator style=\"width:${clickBarWidth}px;height:12px;background:orange;border-radius:2px;min-width:2px\"","value":{"type":0,"value":null},"parsedKey":{"type":2,"parts":["div data-testid=click-indicator style=\"width:",{"type":1,"path":"clickBarWidth"},"px;height:12px;background:orange;border-radius:2px;min-width:2px\""]}}],"fast":true}],"fast":true}}],"fast":true},{"type":8,"properties":[{"key":"div style=\"display:flex;gap:8px;align-items:center\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"div style=\"font-size:11px\"","value":{"type":2,"parts":["Esc: ",{"type":1,"path":"escLabel"}]}}],"fast":true},{"type":8,"properties":[{"key":"div data-testid=esc-indicator style=\"width:24px;height:24px;background:${escColor};border-radius:50%\"","value":{"type":0,"value":null},"parsedKey":{"type":2,"parts":["div data-testid=esc-indicator style=\"width:24px;height:24px;background:",{"type":1,"path":"escColor"},";border-radius:50%\""]}}],"fast":true}],"fast":true}}],"fast":true}],"fast":true}}],"fast":true}],"fast":true}};
+import * as __rtgl_5_handlers from "<ROOT>/packages/rettangoli-fe/e2e/interactions/fe/components/counter.handlers.js";
+const __rtgl_6_schema = {"componentName":"e2e-counter","description":"Blank component scaffold","propsSchema":{"type":"object","properties":{}},"events":[],"methods":{"type":"object","properties":{}}};
+import * as __rtgl_7_store from "<ROOT>/packages/rettangoli-fe/e2e/interactions/fe/components/counter.store.js";
+const __rtgl_8_view = {"refs":{"incrementBtn":{"eventListeners":{"click":{"handler":"handleIncrement"}}},"decrementBtn":{"eventListeners":{"click":{"handler":"handleDecrement"}}},"toggleBtn":{"eventListeners":{"click":{"handler":"handleToggle"}}}},"template":{"type":9,"items":[{"type":8,"properties":[{"key":"div#root style=\"display:flex;flex-direction:column;gap:8px;padding:16px;width:220px;font-family:monospace\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"div style=\"display:flex;align-items:flex-end;height:200px;background:#eee;padding:4px\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"div#bar data-testid=counter-bar style=\"width:40px;background:dodgerblue;height:${barHeight}px;min-height:2px\"","value":{"type":0,"value":null},"parsedKey":{"type":2,"parts":["div#bar data-testid=counter-bar style=\"width:40px;background:dodgerblue;height:",{"type":1,"path":"barHeight"},"px;min-height:2px\""]}}],"fast":true}],"fast":true}}],"fast":true},{"type":8,"properties":[{"key":"div style=\"font-size:11px\"","value":{"type":2,"parts":["Count: ",{"type":1,"path":"count"}]}}],"fast":true},{"type":8,"properties":[{"key":"div style=\"display:flex;gap:4px\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"button#decrementBtn data-testid=decrement style=\"width:40px;height:32px\"","value":{"type":0,"value":"-"}}],"fast":true},{"type":8,"properties":[{"key":"button#incrementBtn data-testid=increment style=\"width:40px;height:32px\"","value":{"type":0,"value":"+"}}],"fast":true}],"fast":true}}],"fast":true},{"type":8,"properties":[{"key":"button#toggleBtn data-testid=toggle style=\"height:32px\"","value":{"type":0,"value":"Toggle"}}],"fast":true},{"type":8,"properties":[{"key":"$if showPanel","value":{"type":6,"conditions":[{"type":1,"path":"showPanel"}],"bodies":[{"type":9,"items":[{"type":8,"properties":[{"key":"div#panel data-testid=panel style=\"width:80px;height:80px;background:mediumseagreen;border-radius:4px\"","value":{"type":0,"value":null}}],"fast":true}],"fast":true}],"id":null}}],"fast":false}],"fast":false}}],"fast":false}],"fast":false}};
+import * as __rtgl_9_handlers from "<ROOT>/packages/rettangoli-fe/e2e/interactions/fe/components/i18nPanel.handlers.js";
+const __rtgl_10_schema = {"componentName":"e2e-i18n-panel","description":"I18n runtime switching fixture"};
+import * as __rtgl_11_store from "<ROOT>/packages/rettangoli-fe/e2e/interactions/fe/components/i18nPanel.store.js";
+const __rtgl_12_view = {"refs":{"englishButton":{"eventListeners":{"click":{"handler":"handleSetEnglish"}}},"vietnameseButton":{"eventListeners":{"click":{"handler":"handleSetVietnamese"}}}},"template":{"type":9,"items":[{"type":8,"properties":[{"key":"div#root style=\"width:320px;padding:16px;background:white;border:1px solid #ddd;font-family:Arial,sans-serif;display:flex;flex-direction:column;gap:12px\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"h1 data-testid=title style=\"font-size:20px;line-height:24px;margin:0;color:#222\"","value":{"type":1,"path":"i18n.i18nPanel.title"}}],"fast":true},{"type":8,"properties":[{"key":"p data-testid=body style=\"font-size:14px;line-height:20px;margin:0;color:#444\"","value":{"type":1,"path":"i18n.i18nPanel.body"}}],"fast":true},{"type":8,"properties":[{"key":"div data-testid=current-locale style=\"font-size:12px;color:#666\"","value":{"type":2,"parts":[{"type":1,"path":"i18n.i18nPanel.currentLocale"},": ",{"type":1,"path":"currentLocale"}]}}],"fast":true},{"type":8,"properties":[{"key":"div style=\"display:flex;gap:8px\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"button#englishButton data-testid=set-en style=\"height:32px;padding:0 12px;border:1px solid #999;background:#f5f5f5;cursor:pointer\"","value":{"type":1,"path":"i18n.i18nPanel.switchToEnglish"}}],"fast":true},{"type":8,"properties":[{"key":"button#vietnameseButton data-testid=set-vi style=\"height:32px;padding:0 12px;border:1px solid #999;background:#f5f5f5;cursor:pointer\"","value":{"type":1,"path":"i18n.i18nPanel.switchToVietnamese"}}],"fast":true}],"fast":true}}],"fast":true}],"fast":true}}],"fast":true}],"fast":true}};
+import * as __rtgl_13_handlers from "<ROOT>/packages/rettangoli-fe/e2e/interactions/fe/components/itemList.handlers.js";
+const __rtgl_14_schema = {"componentName":"e2e-item-list","description":"Blank component scaffold","propsSchema":{"type":"object","properties":{}},"events":[],"methods":{"type":"object","properties":{}}};
+import * as __rtgl_15_store from "<ROOT>/packages/rettangoli-fe/e2e/interactions/fe/components/itemList.store.js";
+const __rtgl_16_view = {"refs":{"addBtn":{"eventListeners":{"click":{"handler":"handleAddItem"}}},"itemInput":{"eventListeners":{"keydown":{"handler":"handleInputKeydown"}}},"item*":{"eventListeners":{"click":{"handler":"handleRemoveItem"}}},"filterAll":{"eventListeners":{"click":{"handler":"handleFilterAll"}}},"filterRed":{"eventListeners":{"click":{"handler":"handleFilterRed"}}},"filterBlue":{"eventListeners":{"click":{"handler":"handleFilterBlue"}}}},"template":{"type":9,"items":[{"type":8,"properties":[{"key":"div#root style=\"display:flex;flex-direction:column;gap:8px;padding:16px;width:240px;font-family:monospace\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"div style=\"display:flex;gap:4px\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"input#itemInput data-testid=input style=\"flex:1;height:28px\" placeholder=\"Add item\"","value":{"type":0,"value":null}}],"fast":true},{"type":8,"properties":[{"key":"button#addBtn data-testid=add style=\"height:28px\"","value":{"type":0,"value":"Add"}}],"fast":true}],"fast":true}}],"fast":true},{"type":8,"properties":[{"key":"$if isEmpty","value":{"type":6,"conditions":[{"type":1,"path":"isEmpty"},null],"bodies":[{"type":9,"items":[{"type":8,"properties":[{"key":"div data-testid=empty style=\"height:60px;background:#ddd;display:flex;align-items:center;justify-content:center;font-size:11px\"","value":{"type":0,"value":"No items"}}],"fast":true}],"fast":true},{"type":9,"items":[{"type":8,"properties":[{"key":"div#list data-testid=list style=\"display:flex;flex-direction:column;gap:2px\"","value":{"type":9,"items":[{"type":7,"itemVar":"item","indexVar":"i","iterable":{"type":1,"path":"items"},"body":{"type":9,"items":[{"type":8,"properties":[{"key":"div#item${i} data-testid=item-${i} data-item-id=${item.id} style=\"height:32px;background:${item.color};border-radius:2px;cursor:pointer;padding:0 8px;display:flex;align-items:center;font-size:11px;color:white\"","value":{"type":1,"path":"item.name"},"parsedKey":{"type":2,"parts":["div#item",{"type":1,"path":"i"}," data-testid=item-",{"type":1,"path":"i"}," data-item-id=",{"type":1,"path":"item.id"}," style=\"height:32px;background:",{"type":1,"path":"item.color"},";border-radius:2px;cursor:pointer;padding:0 8px;display:flex;align-items:center;font-size:11px;color:white\""]}}],"fast":true}],"fast":true},"flatten":true}],"fast":false}}],"fast":false}],"fast":false}],"id":null}}],"fast":false},{"type":8,"properties":[{"key":"div style=\"display:flex;gap:4px;margin-top:4px\"","value":{"type":9,"items":[{"type":8,"properties":[{"key":"button#filterAll data-testid=filter-all style=\"${filterAllStyle};height:24px;border:none;padding:0 8px;cursor:pointer;border-radius:2px\"","value":{"type":0,"value":"All"},"parsedKey":{"type":2,"parts":["button#filterAll data-testid=filter-all style=\"",{"type":1,"path":"filterAllStyle"},";height:24px;border:none;padding:0 8px;cursor:pointer;border-radius:2px\""]}}],"fast":true},{"type":8,"properties":[{"key":"button#filterRed data-testid=filter-red style=\"${filterRedStyle};height:24px;border:none;padding:0 8px;cursor:pointer;border-radius:2px\"","value":{"type":0,"value":"Red"},"parsedKey":{"type":2,"parts":["button#filterRed data-testid=filter-red style=\"",{"type":1,"path":"filterRedStyle"},";height:24px;border:none;padding:0 8px;cursor:pointer;border-radius:2px\""]}}],"fast":true},{"type":8,"properties":[{"key":"button#filterBlue data-testid=filter-blue style=\"${filterBlueStyle};height:24px;border:none;padding:0 8px;cursor:pointer;border-radius:2px\"","value":{"type":0,"value":"Blue"},"parsedKey":{"type":2,"parts":["button#filterBlue data-testid=filter-blue style=\"",{"type":1,"path":"filterBlueStyle"},";height:24px;border:none;padding:0 8px;cursor:pointer;border-radius:2px\""]}}],"fast":true}],"fast":true}}],"fast":true},{"type":8,"properties":[{"key":"div data-testid=count-bar style=\"height:8px;background:steelblue;width:${barWidth}px;min-width:2px;border-radius:2px\"","value":{"type":0,"value":null},"parsedKey":{"type":2,"parts":["div data-testid=count-bar style=\"height:8px;background:steelblue;width:",{"type":1,"path":"barWidth"},"px;min-width:2px;border-radius:2px\""]}}],"fast":true}],"fast":false}}],"fast":false}],"fast":false}};
+import { createComponent, createI18nRuntime } from "@rettangoli/fe";
+
+const imports = {};
+imports["fe"] = {};
+imports["fe"]["composedPage"] = {};
+imports["fe"]["composedPage"]["constants"] = __rtgl_0_constants;
+imports["fe"]["composedPage"]["handlers"] = __rtgl_1_handlers;
+imports["fe"]["composedPage"]["schema"] = __rtgl_2_schema;
+imports["fe"]["composedPage"]["store"] = __rtgl_3_store;
+imports["fe"]["composedPage"]["view"] = __rtgl_4_view;
+imports["fe"]["counter"] = {};
+imports["fe"]["counter"]["handlers"] = __rtgl_5_handlers;
+imports["fe"]["counter"]["schema"] = __rtgl_6_schema;
+imports["fe"]["counter"]["store"] = __rtgl_7_store;
+imports["fe"]["counter"]["view"] = __rtgl_8_view;
+imports["fe"]["i18nPanel"] = {};
+imports["fe"]["i18nPanel"]["handlers"] = __rtgl_9_handlers;
+imports["fe"]["i18nPanel"]["schema"] = __rtgl_10_schema;
+imports["fe"]["i18nPanel"]["store"] = __rtgl_11_store;
+imports["fe"]["i18nPanel"]["view"] = __rtgl_12_view;
+imports["fe"]["itemList"] = {};
+imports["fe"]["itemList"]["handlers"] = __rtgl_13_handlers;
+imports["fe"]["itemList"]["schema"] = __rtgl_14_schema;
+imports["fe"]["itemList"]["store"] = __rtgl_15_store;
+imports["fe"]["itemList"]["view"] = __rtgl_16_view;
+
+
+
+const __rtglI18nRuntime = createI18nRuntime({
+  defaultLocale: "en",
+  fallbackLocale: "en",
+  locales: ["en","vi"],
+  urls: {
+  "en": new URL(/* @vite-ignore */ "./i18n/en.json", import.meta.url).href,
+  "vi": new URL(/* @vite-ignore */ "./i18n/vi.json", import.meta.url).href,
+  },
+  initialCatalogs: {"en":{"i18nPanel":{"title":"Internationalization","body":"The current language is English.","currentLocale":"Locale","switchToEnglish":"English","switchToVietnamese":"Vietnamese"}}},
+});
+await __rtglI18nRuntime.ready();
+
+const __rtglFrameworkDeps = {
+  __rtglI18nRuntime,
+  locale: __rtglI18nRuntime.locale,
+};
+
+
+
+const __rtglRegistrationOrder = [["fe","composedPage"],["fe","counter"],["fe","i18nPanel"],["fe","itemList"]];
+// Prerendered hosts upgrade as soon as they are defined, so a page that
+// holds prerendered markup defines parents before the components they render.
+const __rtglHydrationRegistrationOrder = [["fe","composedPage"],["fe","counter"],["fe","i18nPanel"],["fe","itemList"]];
+const __rtglHasServerMarkup =
+  typeof document !== "undefined" &&
+  document.querySelector("[data-rtgl-hydrate]") !== null;
+
+
+(__rtglHasServerMarkup
+  ? __rtglHydrationRegistrationOrder
+  : __rtglRegistrationOrder
+).forEach(([category, component]) => {
+  const componentConfig = imports[category][component];
+  const categoryDeps = {
+    ...((deps && deps[category]) || {}),
+    ...__rtglFrameworkDeps,
+  };
+  const elementName = componentConfig.schema?.componentName;
+  if (!elementName) {
+    throw new Error(
+      `[Build] Missing schema.componentName for ${category}/${component}. Define it in .schema.yaml.`,
+    );
+  }
+  const webComponent = createComponent({ ...componentConfig }, categoryDeps);
+    customElements.define(elementName, webComponent);
+});

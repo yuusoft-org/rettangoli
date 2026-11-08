@@ -2,11 +2,13 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { cp } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import { load as loadYaml } from "js-yaml";
 import pixelmatch from "pixelmatch";
 import sharp from "sharp";
-import { extractFrontMatter, readYaml } from "../common.js";
-import { validateFiniteNumber, validateVtConfig } from "../validation.js";
+import { extractFrontMatter } from "../common.js";
+import { readVtConfig } from "../config/load-vt-config.js";
+import { collectConfigWarnings, validateFiniteNumber } from "../validation.js";
 import { resolveReportOptions } from "./report-options.js";
 import {
   buildAllRelativePaths,
@@ -16,61 +18,33 @@ import {
 import { renderHtmlReport } from "../report/report-render.js";
 import {
   filterRelativeScreenshotPathsBySelectors,
+  findUnmatchedSelectors,
   hasSelectors,
+  toScreenshotItemKey,
 } from "../selector-filter.js";
-import { stripViewportSuffix } from "../viewport.js";
+import {
+  listFilesSorted,
+  listSpecFiles,
+  listSpecKeys,
+  toSpecKey,
+  warnIfSpecsDirMissing,
+} from "../spec-files.js";
 
-const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
-
-function getAllFiles(dir, fileList = []) {
-  const files = fs.readdirSync(dir);
-
-  files.forEach((file) => {
-    const filePath = path.join(dir, file);
-    if (fs.statSync(filePath).isDirectory()) {
-      fileList = getAllFiles(filePath, fileList);
-    } else {
-      fileList.push(filePath);
-    }
-  });
-
-  return fileList;
-}
-
-function normalizePathForLookup(filePath) {
-  return String(filePath)
-    .replace(/\\/g, "/")
-    .replace(/^\.?\//, "");
-}
-
-function toSpecItemKey(relativeSpecPath) {
-  const normalized = normalizePathForLookup(relativeSpecPath);
-  const ext = path.extname(normalized);
-  return normalized.slice(0, normalized.length - ext.length);
-}
-
-function toScreenshotItemKey(relativeScreenshotPath) {
-  const normalized = normalizePathForLookup(relativeScreenshotPath).replace(/\.webp$/i, "");
-  const withoutOrdinal = normalized.replace(/-\d{1,3}$/i, "");
-  return stripViewportSuffix(withoutOrdinal);
-}
+const libraryTemplatesPath = fileURLToPath(new URL("./templates", import.meta.url));
 
 function loadFrontMatterDiffThresholdOverrides(specsDir) {
   const overrides = new Map();
-  if (!fs.existsSync(specsDir)) {
-    return overrides;
-  }
-
-  const specFiles = getAllFiles(specsDir);
-  for (const specFilePath of specFiles) {
+  const specKeys = new Set();
+  for (const specFilePath of listSpecFiles(specsDir)) {
+    const relativePath = path.relative(specsDir, specFilePath);
+    specKeys.add(toSpecKey(relativePath));
     const fileContent = fs.readFileSync(specFilePath, "utf8");
     const { frontMatter } = extractFrontMatter(fileContent);
     if (!frontMatter) {
       continue;
     }
 
-    const relativePath = path.relative(specsDir, specFilePath);
-    const frontMatterData = loadYaml(frontMatter);
+    const frontMatterData = loadYaml(frontMatter, { filename: relativePath });
     if (
       frontMatterData === null
       || frontMatterData === undefined
@@ -89,10 +63,10 @@ function loadFrontMatterDiffThresholdOverrides(specsDir) {
       `${relativePath}: frontMatter.diffThreshold`,
       { min: 0, max: 100 },
     );
-    overrides.set(toSpecItemKey(relativePath), frontMatterData.diffThreshold);
+    overrides.set(toSpecKey(relativePath), frontMatterData.diffThreshold);
   }
 
-  return overrides;
+  return { overrides, specKeys };
 }
 
 async function calculateImageHash(imagePath) {
@@ -143,7 +117,7 @@ async function compareImagesPixelmatch(artifactPath, goldPath, diffPath, options
 
     const diffPercent = (diffPixels / totalPixels) * 100;
     const similarity = (100 - diffPercent).toFixed(2);
-    const equal = diffPercent < diffThreshold;
+    const equal = diffPixels === 0 || diffPercent < diffThreshold;
 
     if (!equal && diffPath) {
       fs.mkdirSync(path.dirname(diffPath), { recursive: true });
@@ -168,19 +142,8 @@ async function compareImages(artifactPath, goldPath, method = "pixelmatch", diff
 
 async function main(options = {}) {
   const mainConfigPath = "rettangoli.config.yaml";
-  let mainConfig;
-  try {
-    mainConfig = await readYaml(mainConfigPath);
-  } catch (error) {
-    throw new Error(`Unable to read "${mainConfigPath}": ${error.message}`, { cause: error });
-  }
-
-  const vtConfig = mainConfig?.vt;
-  if (!vtConfig) {
-    throw new Error(`Invalid "${mainConfigPath}": missing required "vt" section.`);
-  }
-
-  const configData = validateVtConfig(vtConfig, mainConfigPath);
+  const configData = await readVtConfig(mainConfigPath, { wrapReadError: true });
+  collectConfigWarnings(configData, mainConfigPath).forEach((warning) => console.warn(warning));
   const {
     vtPath,
     compareMethod,
@@ -198,10 +161,13 @@ async function main(options = {}) {
   const outputPath = path.join(siteOutputPath, "report.html");
   const jsonReportPath = path.join(".rettangoli", "vt", "report.json");
   const specsDir = path.join(vtPath, "specs");
+  warnIfSpecsDirMissing(specsDir, mainConfigPath);
 
+  // Spec files are read only when needed: for pixelmatch's frontmatter overrides, and for selectors.
   let diffThresholdOverridesBySpec = new Map();
+  let specKeys = null;
   if (compareMethod === "pixelmatch") {
-    diffThresholdOverridesBySpec = loadFrontMatterDiffThresholdOverrides(specsDir);
+    ({ overrides: diffThresholdOverridesBySpec, specKeys } = loadFrontMatterDiffThresholdOverrides(specsDir));
   }
 
   console.log(`Comparison method: ${compareMethod}`);
@@ -231,8 +197,8 @@ async function main(options = {}) {
       throw new Error(`Candidate screenshots directory not found: "${candidateDir}". Run "rtgl vt screenshot" first.`);
     }
 
-    const candidateFiles = getAllFiles(candidateDir).filter((file) => file.endsWith(".webp"));
-    const referenceFiles = getAllFiles(originalReferenceDir).filter((file) => file.endsWith(".webp"));
+    const candidateFiles = listFilesSorted(candidateDir).filter((file) => file.endsWith(".webp"));
+    const referenceFiles = listFilesSorted(originalReferenceDir).filter((file) => file.endsWith(".webp"));
 
     console.log("Candidate Screenshots:", candidateFiles.length);
     console.log("Reference Screenshots:", referenceFiles.length);
@@ -248,14 +214,24 @@ async function main(options = {}) {
     );
 
     const allPaths = buildAllRelativePaths(candidateRelativePaths, referenceRelativePaths);
-    const scopedPaths = filterRelativeScreenshotPathsBySelectors(
-      allPaths,
-      selectors,
-      configData.sections,
-    );
+    let scopedPaths = allPaths;
     if (hasSelectors(selectors)) {
+      specKeys ??= listSpecKeys(specsDir);
+      scopedPaths = filterRelativeScreenshotPathsBySelectors(
+        allPaths,
+        selectors,
+        configData.sections,
+        specKeys,
+      );
       const excludedCount = allPaths.length - scopedPaths.length;
       console.log(`Selector scope: ${scopedPaths.length} image(s) selected, ${excludedCount} excluded.`);
+      findUnmatchedSelectors(
+        selectors,
+        (single) => filterRelativeScreenshotPathsBySelectors(allPaths, single, [], specKeys).length > 0,
+      ).forEach((selector) => console.warn(`[vt] Warning: ${selector} matched no images.`));
+      if (scopedPaths.length === 0) {
+        console.warn("[vt] Warning: the selected scope contains no images, so nothing was compared.");
+      }
     }
 
     for (const relativePath of scopedPaths) {
@@ -273,8 +249,7 @@ async function main(options = {}) {
       let error = false;
       let similarity = null;
       let diffPixels = null;
-      const itemKey = toScreenshotItemKey(relativePath);
-      const itemDiffThreshold = diffThresholdOverridesBySpec.get(itemKey);
+      const itemDiffThreshold = diffThresholdOverridesBySpec.get(toScreenshotItemKey(relativePath, specKeys));
       const effectiveDiffThreshold = itemDiffThreshold ?? diffThreshold;
 
       if (candidateExists && referenceExists) {

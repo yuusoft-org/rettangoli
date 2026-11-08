@@ -1,6 +1,7 @@
 import { normalizeJemplErrorMessage, parseJemplForCompiler } from "../core/parsers.js";
 import { resolveListenerLine } from "./listenerSymbols.js";
-import { getModelFilePath, isObjectRecord } from "./shared.js";
+import { isObjectRecord } from "../utils/object.js";
+import { getModelFilePath } from "./shared.js";
 
 export const runJemplRules = ({ models = [] }) => {
   const diagnostics = [];

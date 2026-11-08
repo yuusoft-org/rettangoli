@@ -1,10 +1,23 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  handleBeforeMount,
+  handleButtonClick,
   handleOnUpdate,
+  handleOptionClick,
   handleSearchInput,
   handleSearchKeyDown,
 } from "../src/components/select/select.handlers.js";
+import * as selectStore from "../src/components/select/select.store.js";
+
+// The store actions and selectors bound to one plain state, as fe binds them.
+const createStore = () => {
+  const state = structuredClone(selectStore.createInitialState());
+  const bound = Object.fromEntries(
+    Object.entries(selectStore).map(([name, fn]) => [name, (payload) => fn({ state }, payload)]),
+  );
+  return { state, ...bound };
+};
 
 describe("rtgl-select handlers", () => {
   it("re-renders when options are replaced", () => {
@@ -182,5 +195,57 @@ describe("rtgl-select handlers", () => {
     expect(preventDefault).toHaveBeenCalledTimes(1);
     expect(closeOptionsPopover).toHaveBeenCalledTimes(1);
     expect(render).toHaveBeenCalledTimes(1);
+  });
+
+  describe("selected value", () => {
+    const options = [
+      { value: "one", label: "One" },
+      { value: "two", label: "Two" },
+    ];
+    const optionEvent = (index) => ({
+      _event: { currentTarget: { id: `option${index}` }, stopPropagation: vi.fn() },
+    });
+    const openList = (store, props) => {
+      handleButtonClick(
+        {
+          store,
+          props,
+          render: vi.fn(),
+          refs: { selectButton: { getBoundingClientRect: () => ({ bottom: 0, left: 0 }) } },
+        },
+        { _event: { stopPropagation: vi.fn() } },
+      );
+      return store.state.hoveredOptionId;
+    };
+
+    it("records values from props as not local and picks as local", () => {
+      const store = createStore();
+      const props = { options, selectedValue: "one" };
+
+      handleBeforeMount({ store, props, render: vi.fn() });
+      expect(store.state).toMatchObject({ selectedValue: "one", hasLocalValue: false });
+
+      handleOptionClick({ store, props, render: vi.fn(), dispatchEvent: vi.fn() }, optionEvent(1));
+      expect(store.state).toMatchObject({ selectedValue: "two", hasLocalValue: true });
+
+      handleOnUpdate(
+        { store, render: vi.fn() },
+        { oldProps: props, newProps: { ...props, selectedValue: undefined } },
+      );
+      expect(store.state).toMatchObject({ selectedValue: undefined, hasLocalValue: false });
+    });
+
+    it("highlights the value the trigger shows when the list opens", () => {
+      const store = createStore();
+      handleOptionClick(
+        { store, props: { options }, render: vi.fn(), dispatchEvent: vi.fn() },
+        optionEvent(1),
+      );
+
+      // Uncontrolled, the pick is shown and highlighted.
+      expect(openList(store, { options })).toBe(1);
+      // A defined selectedValue that was not updated is shown and highlighted.
+      expect(openList(store, { options, selectedValue: "one" })).toBe(0);
+    });
   });
 });

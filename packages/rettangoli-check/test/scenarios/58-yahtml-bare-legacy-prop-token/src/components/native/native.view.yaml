@@ -1,0 +1,5 @@
+template:
+  - input placeholder=x .value: FE ignores a bare token after an assignment
+  - input .value placeholder=x: FE ignores a bare token before an assignment
+  - input ?checked .value: FE ignores a bare token after a toggle
+styles: {}

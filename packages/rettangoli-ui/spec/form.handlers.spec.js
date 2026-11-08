@@ -691,6 +691,53 @@ describe("rtgl-form handlers", () => {
     expect(dispatchEvent).not.toHaveBeenCalled();
   });
 
+  it("lets a color picker keep Enter without submitting the form", () => {
+    const props = {
+      form: {
+        fields: [{ name: "accent", type: "color-picker" }],
+        actions: {
+          buttons: [{ id: "save", label: "Save", validate: true }],
+        },
+      },
+    };
+    const store = createStore({ props });
+    const dispatchEvent = vi.fn();
+    const press = (composedPath) => {
+      const preventDefault = vi.fn();
+      handleKeyDown(
+        { store, dispatchEvent, render: vi.fn(), props },
+        {
+          _event: {
+            key: "Enter",
+            shiftKey: false,
+            target: composedPath[0],
+            composedPath: () => composedPath,
+            preventDefault,
+          },
+        },
+      );
+      return preventDefault;
+    };
+
+    // The event target sits inside the picker's shadow root, so the form sees the
+    // picker host only in the composed path.
+    const inPicker = [
+      { tagName: "DIV" },
+      { tagName: "RTGL-POPOVER" },
+      { tagName: "RTGL-COLOR-PICKER" },
+      { tagName: "RTGL-VIEW" },
+    ];
+    const preventedInPicker = press(inPicker);
+    expect(preventedInPicker).not.toHaveBeenCalled();
+    expect(dispatchEvent).not.toHaveBeenCalled();
+
+    // Control: the same path without the picker host still submits.
+    const preventedElsewhere = press(inPicker.filter((target) => target.tagName !== "RTGL-COLOR-PICKER"));
+    expect(preventedElsewhere).toHaveBeenCalledTimes(1);
+    expect(dispatchEvent).toHaveBeenCalledTimes(1);
+    expect(dispatchEvent.mock.calls[0][0].detail.actionId).toBe("save");
+  });
+
   it("shows the tooltip of a named slot field, which stays out of the values", () => {
     const props = {
       form: {

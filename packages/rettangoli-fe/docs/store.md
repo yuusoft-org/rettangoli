@@ -33,9 +33,11 @@ Context by export type:
 
 In browser components, `createInitialState` runs once before the first
 `handleBeforeMount`, after the parent has applied initial properties and
-attributes. Reconnecting an element retains its state. Explicitly reading a
-selector or calling a store action before connection initializes the store at
-that point using the props currently available.
+attributes. Reconnecting an element retains its state, and moving an element in
+the DOM reconnects it, so a moved component keeps its state while its mount
+hooks run again (`handlers.md`). Explicitly reading a selector or calling a
+store action before connection initializes the store at that point using the
+props currently available.
 
 ## 4. View Access Boundary
 
@@ -93,6 +95,12 @@ Action contract:
 - payload MUST be an object when provided
 - calling with no payload MUST work (`payload` defaults to `{}`)
 - event-driven action dispatch injects `_event` and `_action` into payload
+- `_event` is the original DOM event
+- the payload of an action listener is evaluated once, so text in it that looks
+  like a template (`${...}`) stays literal
+- plain objects and arrays in a listener's payload are copies that the action
+  may change; the event, `Date`, `File` and class-instance values are the same
+  instances
 - `_action` is reserved for runtime dispatch internals
 - action listeners from `.view.yaml` auto-trigger render after action execution
 
@@ -109,7 +117,8 @@ export const toggleLoading = ({ state }, _payload = {}) => {
 ## 6. Validation Errors
 
 Implementations MUST reject invalid action payload calls.
-Suggested stable error codes:
+Suggested stable error codes (the runtime does not attach them yet; it throws
+`[Store] Action '<name>' expects payload to be an object.`):
 - `RTGL-STORE-001`: action payload is not an object
 
 ## 7. Invalid Example

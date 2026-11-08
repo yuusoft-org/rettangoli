@@ -1,38 +1,14 @@
 import { deepEqual } from "../../common.js";
-
-const resolvePopoverPosition = (trigger) => {
-  if (!trigger || typeof trigger.getBoundingClientRect !== "function") {
-    return null;
-  }
-
-  const rect = trigger.getBoundingClientRect();
-  return {
-    x: Math.round(rect.left),
-    y: Math.round(rect.bottom + 12),
-    w: Math.max(Math.round(rect.width), 240),
-  };
-};
-
-const normalizeSelectedValues = (selectedValues) => {
-  if (!Array.isArray(selectedValues)) {
-    return [];
-  }
-
-  return [...selectedValues];
-};
+import {
+  normalizeSelectedValues,
+  resolveCurrentValues,
+  resolvePopoverPosition,
+} from "../../common/choice.js";
 
 const renderInstance = (instance) => {
   if (typeof instance.render === "function") {
     instance.render();
   }
-};
-
-const resolveCurrentValues = (instance) => {
-  if (instance.store?.selectHasSelectedValues?.()) {
-    return instance.store?.selectSelectedValues?.() || [];
-  }
-
-  return normalizeSelectedValues(instance.props?.selectedValues);
 };
 
 const openPopoverWithDraft = (instance, values = []) => {

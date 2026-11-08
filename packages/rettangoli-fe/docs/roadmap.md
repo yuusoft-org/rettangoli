@@ -100,3 +100,93 @@ This roadmap is the planning source for `packages/rettangoli-fe`.
 5. `[P2]` Hydrate through `rtgl-popover`
 - It moves its children into a wrapper on upgrade, so a subtree holding one is
   re-rendered instead of adopted (`prerender.md`, design notes).
+
+## Deferred Decisions
+
+Maintainer decisions that change behavior users could notice, so they are not
+done yet.
+
+### Runtime
+
+1. `[P1]` Stable keys for elements that follow `$if` or `$for` siblings
+- Key non-id elements by static template position so a sibling that
+  grows or shrinks stops recreating or shuffling the elements after it.
+- Today a changed sibling count recreates those elements, and they lose focus,
+  scroll and state.
+
+2. `[P1]` One update pipeline
+- Parent-to-child updates in one frame through a shared frame queue,
+  instead of one frame per nesting level.
+- One `handleOnUpdate` contract. The direct path passes
+  `changedProp`, the parent path does not (`handlers.md`).
+- Keep a queued update when a keyed move reconnects the child before
+  the frame. `handlers.md` documents the current discard; change it together
+  with the test in `test/runtime/parent-component.integration.test.js`.
+- Stop setting the `isDirty` attribute on every child update.
+
+3. `[P1]` Toggle and expression semantics
+- `?attr=${expr}` for values that are not booleans.
+- Report unsupported `${}` expressions such as `${!x}` and `${a == b}`,
+  which silently render nothing.
+- Omit attributes whose interpolation is undefined or null.
+- Reject prop names that collide with element internals.
+- Report bare `.x` binding tokens, which are dropped silently.
+
+4. `[P2]` Store freeze and HMR scope
+- Freeze the initial store state, as the first action already does.
+- Measure how often HMR applies in place, then simplify it.
+
+5. `[P2]` View IR rewrite
+- Compile templates once into binding descriptors so a render stops
+  round-tripping through strings. Performance only; start after items 1
+  and 3 above settle key and toggle semantics.
+
+6. `[P2]` Public testing entry
+- `@rettangoli/fe/testing` exporting `parseView`, `parseTemplate`,
+  `renderView` and `createComponent`, so tests stop deep-importing fe and the
+  nested jempl. Every existing deep path keeps working.
+
+7. `[P2]` Hydration and class edge cases
+- A static attribute that only one `$if` branch writes on a custom element
+  stays after hydration when the branches swap, because only `?` toggles are
+  tracked.
+- A `?class` toggle that is off on both sides removes classes the element
+  added to itself while hydrating; skip `class` as the plain-element path does.
+- A prop setter that writes its own attribute (`snap`, `index`) ends with no
+  attribute after a server-on, client-off hydration.
+- A class that the selector drops in an update is removed even when the new
+  `class=` value still lists it (`div#box.card class=""` then
+  `div#box class="card"`).
+
+### Build And Dev Server
+
+1. `[P1]` Stricter build checks
+- A duplicate component id becomes an error (a warning today).
+- A schema problem from `RTGL-CONTRACT-004` to `-006` fails
+  `rtgl fe build` (a warning today).
+
+2. `[P1]` Dev server
+- `rtgl fe watch` imports the project's `@rettangoli/fe`, as the build
+  does.
+- `host` and `allowedHosts` options; the server binds `0.0.0.0` with
+  every host allowed today.
+- Watch error handling: recover from a broken entry instead of
+  returning 500 pages or exiting on a startup failure.
+- An explicit watch root instead of the `static` path rule
+  (`README.md`, Vite Integration).
+
+3. `[P2]` Smaller build items
+- Prerender errors name the failing component and its path.
+- Deprecate `rtgl fe examples`, which emits invalid HTML.
+- Warn about flat component layouts, which get no setup deps.
+- Deprecate `renderDocument` and `renderComponent().head`.
+- Make `vite` an optional peer dependency.
+- Sort component files independently of the build machine's locale.
+- Report unknown view keys, unknown listener options and refs that
+  match no element (in `@rettangoli/check`).
+- Dotted i18n keys. The cross-locale check splits `namespace.key` at
+  every `.`, so a catalog whose namespace or key name contains one fails the
+  build; the error text now says so.
+- Export `isValidCustomElementName` and
+  `validateComponentSchemaContracts` through `@rettangoli/fe/contracts`, together
+  with the same decision in `@rettangoli/check`.

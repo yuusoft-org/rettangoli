@@ -17,6 +17,14 @@
  * @property {GlobalUIDropdownItem} item - Selected leaf item
  */
 
+const requireElement = (element, method) => {
+  if (!element) {
+    throw new Error(
+      `globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUI before calling ${method}.`,
+    );
+  }
+};
+
 /**
  * Creates a GlobalUI manager instance for controlling global UI components.
  * Provides methods for showing alerts, confirm dialogs, form dialogs,
@@ -88,10 +96,7 @@ const createGlobalUI = (globalUIElement) => {
      * @throws {Error} If globalUIElement is not initialized
      */
     showAlert: async (options) => {
-      if(!globalUIElement)
-      {
-        throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
-      }
+      requireElement(globalUIElement, "showAlert");
       return globalUIElement.transformedHandlers.handleShowAlert(options);
     },
 
@@ -109,10 +114,7 @@ const createGlobalUI = (globalUIElement) => {
      * @throws {Error} If globalUIElement is not initialized
      */
     showConfirm: async (options) => {
-      if(!globalUIElement)
-      {
-        throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
-      }
+      requireElement(globalUIElement, "showConfirm");
       return globalUIElement.transformedHandlers.handleShowConfirm(options);
     },
 
@@ -131,10 +133,7 @@ const createGlobalUI = (globalUIElement) => {
      * @throws {Error} If globalUIElement is not initialized
      */
     showFormDialog: async (options) => {
-      if(!globalUIElement)
-      {
-        throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
-      }
+      requireElement(globalUIElement, "showFormDialog");
       return globalUIElement.transformedHandlers.handleShowFormDialog(options);
     },
 
@@ -152,10 +151,7 @@ const createGlobalUI = (globalUIElement) => {
      * @throws {Error} If globalUIElement is not initialized
      */
     showComponentDialog: async (options) => {
-      if(!globalUIElement)
-      {
-        throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
-      }
+      requireElement(globalUIElement, "showComponentDialog");
       return globalUIElement.transformedHandlers.handleShowComponentDialog(options);
     },
 
@@ -178,10 +174,7 @@ const createGlobalUI = (globalUIElement) => {
      * @throws {Error} If globalUIElement is not initialized
      */
     showDropdownMenu: async (options) => {
-      if(!globalUIElement)
-      {
-        throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
-      }
+      requireElement(globalUIElement, "showDropdownMenu");
       return globalUIElement.transformedHandlers.handleShowDropdownMenu(options);
     },
 
@@ -196,10 +189,7 @@ const createGlobalUI = (globalUIElement) => {
      * @throws {Error} If globalUIElement is not initialized
      */
     showToast: (options) => {
-      if(!globalUIElement)
-      {
-        throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
-      }
+      requireElement(globalUIElement, "showToast");
       globalUIElement.transformedHandlers.handleShowToast(options);
     },
 
@@ -213,10 +203,7 @@ const createGlobalUI = (globalUIElement) => {
      * @throws {Error} If globalUIElement is not initialized
      */
     closeAll: async () => {
-      if(!globalUIElement)
-      {
-        throw new Error("globalUIElement is not set. Make sure to initialize the global UI component and pass it to createGlobalUIManager.");
-      }
+      requireElement(globalUIElement, "closeAll");
       return globalUIElement.transformedHandlers.handleCloseAll();
     }
   };

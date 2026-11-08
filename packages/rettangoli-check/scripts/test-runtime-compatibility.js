@@ -127,6 +127,29 @@ template:
   assert.ok(codes(await analyze({ incrementalState })).includes("RTGL-CHECK-SYMBOL-006"));
   write("src/internal/new-selection.js", "export const handleSelect = () => {};\n");
   assert.deepEqual((await analyze({ incrementalState })).diagnostics, [], "creating a previously missing resolution candidate invalidates the model");
+
+  // Parse results are cached per file: editing a handlers file in place must not leave stale exports or
+  // function signatures behind.
+  write("src/components/resourceGrid/resourceGrid.view.yaml", `
+refs:
+  choice:
+    eventListeners:
+      click:
+        handler: handleSave
+template:
+  - rtgl-button#choice: Choose
+`);
+  write("src/components/resourceGrid/resourceGrid.handlers.js", "export const handleBeforeMount = (deps) => {};\n");
+  const beforeEdit = await analyze({ incrementalState });
+  assert.deepEqual(codes(beforeEdit), ["RTGL-CHECK-SYMBOL-001"]);
+  assert.match(beforeEdit.diagnostics[0].message, /handleSave/);
+  write("src/components/resourceGrid/resourceGrid.handlers.js", `
+export const handleBeforeMount = async (deps) => {};
+export const handleSave = () => {};
+`);
+  const afterEdit = await analyze({ incrementalState });
+  assert.deepEqual(codes(afterEdit), ["RTGL-CHECK-LIFECYCLE-001"], "the new export is seen and the new signature is checked");
+  assert.deepEqual(afterEdit.diagnostics, (await analyze()).diagnostics, "an edited handlers file gives the same diagnostics as a fresh analysis");
 } finally {
   rmSync(root, { recursive: true, force: true });
 }

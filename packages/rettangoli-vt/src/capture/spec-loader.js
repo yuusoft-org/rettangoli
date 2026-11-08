@@ -1,17 +1,5 @@
 import { appendViewportToBaseName, resolveViewports } from "../viewport.js";
-
-const removeExtension = (filePath) => filePath.replace(/\.[^/.]+$/, "");
-
-const toHtmlPath = (filePath) => {
-  if (filePath.endsWith(".html")) {
-    return filePath;
-  }
-  return `${removeExtension(filePath)}.html`;
-};
-
-function normalizePathForUrl(filePath) {
-  return filePath.replace(/\\/g, "/");
-}
+import { removeExtension, toCandidateUrlPath } from "../spec-files.js";
 
 function toAbsoluteUrl(rawUrl, serverUrl) {
   if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
@@ -64,13 +52,15 @@ export function createCaptureTasks(generatedFiles, options) {
   } = options;
 
   const tasks = [];
+  const specPathByBaseName = new Map();
   let taskIndex = 0;
 
   generatedFiles.forEach((file, fileIndex) => {
     const frontMatter = file.frontMatter || {};
-    const normalizedPath = normalizePathForUrl(file.path);
-    const constructedUrl = toHtmlPath(`${serverUrl}/candidate/${normalizedPath}`);
+    const constructedUrl = `${serverUrl}${toCandidateUrlPath(file.path)}`;
     const resolvedConfigUrl = configUrl ? toAbsoluteUrl(configUrl, serverUrl) : null;
+    // Only the page VT generated must exist: a 4xx/5xx answer fails the task (see navigateToReadyState).
+    const vtOwnedUrl = (frontMatter.url ?? resolvedConfigUrl) == null;
     const urlResolutionBase = resolvedConfigUrl || serverUrl;
     const rawUrl = frontMatter.url ?? resolvedConfigUrl ?? constructedUrl;
     const url = toAbsoluteUrl(rawUrl, urlResolutionBase);
@@ -82,16 +72,29 @@ export function createCaptureTasks(generatedFiles, options) {
       waitSelector,
       waitStrategy,
     });
+    if (resolvedWaitStrategy === "event" && !resolvedWaitEvent) {
+      throw new Error(
+        `"${file.path}: frontMatter.waitEvent" is required when waitStrategy is "event" and no vt.waitEvent is set.`,
+      );
+    }
 
     const resolvedViewports = resolveViewports(frontMatter.viewport, viewport);
     resolvedViewports.forEach((resolvedViewport) => {
       const viewportId = resolvedViewport.id;
+      const baseName = appendViewportToBaseName(removeExtension(file.path), viewportId);
+      const otherSpecPath = specPathByBaseName.get(baseName);
+      if (otherSpecPath !== undefined && otherSpecPath !== file.path) {
+        throw new Error(
+          `Screenshot name collision: "${otherSpecPath}" and "${file.path}" both produce "${baseName}-NN.webp".`,
+        );
+      }
+      specPathByBaseName.set(baseName, file.path);
       const task = {
         id: `${fileIndex}:${file.path}:${viewportId ?? "default"}`,
         index: taskIndex,
         path: file.path,
         url,
-        baseName: appendViewportToBaseName(removeExtension(file.path), viewportId),
+        baseName,
         frontMatter,
         steps: frontMatter.steps || [],
         waitStrategy: resolvedWaitStrategy,
@@ -103,6 +106,9 @@ export function createCaptureTasks(generatedFiles, options) {
         },
       };
 
+      if (vtOwnedUrl) {
+        task.vtOwnedUrl = true;
+      }
       if (resolvedWaitEvent !== undefined && resolvedWaitEvent !== null) {
         task.waitEvent = resolvedWaitEvent;
       }

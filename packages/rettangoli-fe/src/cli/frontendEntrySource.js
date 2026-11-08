@@ -4,13 +4,28 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { parse as parseTemplate } from "jempl";
-import { load as loadYaml } from "js-yaml";
 
-import { extractCategoryAndComponent, getAllFiles } from "../commonBuild.js";
+import { HYDRATE_ATTRIBUTE } from "../core/protocol.js";
 import {
-  isSupportedComponentFile,
-  validateComponentEntries,
-} from "./contracts.js";
+  discoverComponentFiles,
+  readComponentYaml,
+  warnDuplicateComponentIds,
+} from "../commonBuild.js";
+import { validateComponentEntries } from "./contracts.js";
+import {
+  BUILD_REGISTER_COMPONENT_SOURCE,
+  HMR_BOUNDARY_SOURCE,
+  HMR_STATE_SOURCE,
+  HMR_TRANSACTION_END_SOURCE,
+  HMR_TRANSACTION_START_SOURCE,
+  I18N_CATALOG_UPDATE_SOURCE,
+  I18N_FRAMEWORK_DEPS_SOURCE,
+  NO_I18N_COMMIT_UPDATE_SOURCE,
+  NO_I18N_FRAMEWORK_DEPS_SOURCE,
+  REGISTRATION_SOURCE,
+  SERVE_REGISTER_COMPONENT_SOURCE,
+  fillPlaceholders,
+} from "./entryRuntimeSource.js";
 import {
   buildI18nAssets,
   loadI18nBuildContext,
@@ -38,33 +53,7 @@ const toImportPath = ({ absolutePath, command }) => {
   return normalizedAbsolutePath;
 };
 
-const readYamlObject = (
-  filePath,
-  content = readFileSync(filePath, "utf8"),
-) => {
-  return loadYaml(content) ?? {};
-};
-
-const createComponentFingerprintMatrix = (fingerprintInputs) => {
-  return Object.fromEntries(
-    Object.keys(fingerprintInputs).sort().map((category) => [
-      category,
-      Object.fromEntries(
-        Object.keys(fingerprintInputs[category]).sort().map((component) => {
-          const inputs = fingerprintInputs[category][component]
-            .slice()
-            .sort(([fileTypeA], [fileTypeB]) =>
-              fileTypeA.localeCompare(fileTypeB),
-            );
-          const fingerprint = createHash("sha256")
-            .update(JSON.stringify(inputs))
-            .digest("hex");
-          return [component, fingerprint];
-        }),
-      ),
-    ]),
-  );
-};
+const sha256 = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
 const validateConstantsRoot = ({ filePath, yamlObject, errorPrefix }) => {
   if (
@@ -78,171 +67,27 @@ const validateConstantsRoot = ({ filePath, yamlObject, errorPrefix }) => {
   }
 };
 
-const createComponentImportLines = ({ componentMatrix, categories }) => {
-  const lines = ["const imports = {};"];
-
-  for (const category of categories) {
-    lines.push(`imports[${JSON.stringify(category)}] = {};`);
-    const components = Object.keys(componentMatrix[category]).sort();
-    for (const component of components) {
-      lines.push(
-        `imports[${JSON.stringify(category)}][${JSON.stringify(component)}] = {};`,
-      );
-      const componentConfig = componentMatrix[category][component];
-      const fileTypes = Object.keys(componentConfig).sort();
-      for (const fileType of fileTypes) {
-        lines.push(
-          `imports[${JSON.stringify(category)}][${JSON.stringify(component)}][${JSON.stringify(fileType)}] = ${componentConfig[fileType]};`,
-        );
-      }
-    }
-  }
-
-  return lines.join("\n");
-};
-
-const createI18nRuntimeSource = ({ i18nContext, command }) => {
-  if (!i18nContext.enabled) {
-    return command === "serve"
-      ? `const __rtglFrameworkDeps = {};
-const __rtglCommitI18nUpdate = () => {};`
-      : "const __rtglFrameworkDeps = {};";
-  }
-
-  const assets = buildI18nAssets({ i18nContext });
-  const urlEntries = assets
-    .map((asset) => {
-      return `  ${JSON.stringify(asset.locale)}: new URL(/* @vite-ignore */ ${JSON.stringify(`./${asset.relativeFileName}`)}, import.meta.url).href,`;
-    })
-    .join("\n");
-
-  const initialCatalogs = {};
-  initialCatalogs[i18nContext.defaultLocale] =
-    i18nContext.catalogs[i18nContext.defaultLocale];
-  initialCatalogs[i18nContext.fallbackLocale] =
-    i18nContext.catalogs[i18nContext.fallbackLocale];
-
-  const createRuntimeExpression = `createI18nRuntime({
-  defaultLocale: ${JSON.stringify(i18nContext.defaultLocale)},
-  fallbackLocale: ${JSON.stringify(i18nContext.fallbackLocale)},
-  locales: ${JSON.stringify(i18nContext.locales)},
-  urls: {
-${urlEntries}
-  },
-  initialCatalogs: ${JSON.stringify(initialCatalogs)},
-})`;
-  const runtimeInitialization = command === "serve"
-    ? `const __rtglI18nRuntime =
-  import.meta.hot?.data.__rtglI18nRuntime || ${createRuntimeExpression};`
-    : `const __rtglI18nRuntime = ${createRuntimeExpression};`;
-  const developmentCatalogs = i18nContext.catalogs || {};
-  const catalogFingerprint = command === "serve"
-    ? createHash("sha256")
-      .update(JSON.stringify(developmentCatalogs))
-      .digest("hex")
-    : null;
-  const catalogUpdateSource = command === "serve"
-    ? `
-const __rtglI18nCatalogs = ${JSON.stringify(developmentCatalogs)};
-const __rtglI18nCatalogFingerprint = ${JSON.stringify(catalogFingerprint)};
-const __rtglShouldReplaceI18nCatalogs =
-  import.meta.hot?.data.__rtglI18nCatalogFingerprint !==
-  __rtglI18nCatalogFingerprint;
-const __rtglCommitI18nUpdate = () => {
-  if (__rtglShouldReplaceI18nCatalogs) {
-    __rtglI18nRuntime.replaceCatalogs(__rtglI18nCatalogs);
-  }
-  if (import.meta.hot) {
-    import.meta.hot.data.__rtglI18nRuntime = __rtglI18nRuntime;
-    if (__rtglShouldReplaceI18nCatalogs) {
-      import.meta.hot.data.__rtglI18nCatalogFingerprint =
-        __rtglI18nCatalogFingerprint;
-    }
-  }
-};`
-    : "";
-
-  return `
-${runtimeInitialization}
-await __rtglI18nRuntime.ready();
-${catalogUpdateSource}
-const __rtglFrameworkDeps = {
-  __rtglI18nRuntime,
-  locale: __rtglI18nRuntime.locale,
-};`.trim();
-};
-
-const createComponentRegistrationSource = ({ command }) => {
-  if (command !== "serve") {
-    return `
-    const webComponent = createComponent({ ...componentConfig }, categoryDeps);
-    customElements.define(elementName, webComponent);`.trim();
-  }
-
-  return `
-    __rtglComponentUpdateBatch.push({
-      componentId: \`\${category}/\${component}\`,
-      componentConfig: { ...componentConfig },
-      deps: categoryDeps,
-      fingerprint: __rtglComponentFingerprints[category][component],
-    });`.trim();
-};
-
-export const generateFrontendEntrySource = ({
-  cwd = process.cwd(),
-  dirs = ["./example"],
-  setup = "setup.js",
-  command = "build",
-  i18n = null,
-  errorPrefix = "[Build]",
-} = {}) => {
-  const resolvedDirs = dirs.map((dir) => path.resolve(cwd, dir));
-  const resolvedSetup = path.resolve(cwd, setup);
-  const i18nContext = loadI18nBuildContext({ cwd, i18n, errorPrefix });
-  const allFiles = getAllFiles(resolvedDirs)
-    .filter((filePath) => isSupportedComponentFile(filePath))
-    .sort((a, b) => a.localeCompare(b));
-
+// Reads every component file once. Modules become imports, YAML files become
+// inline JSON declarations named `__rtgl_<N>_<fileType>` in file order.
+const collectComponentSources = ({ componentFiles, command, errorPrefix }) => {
   const componentMatrix = {};
-  const componentFingerprintInputs = {};
-  const componentContractEntries = [];
+  const fingerprintInputs = {};
+  const contractEntries = [];
   const declarationLines = [];
-  const componentElementNames = new Map();
-  const componentViewTags = new Map();
-  let declarationIndex = 0;
+  const elementNames = new Map();
+  const viewTags = new Map();
 
-  for (const filePath of allFiles) {
-    const { category, component, fileType } =
-      extractCategoryAndComponent(filePath);
-
-    if (!componentMatrix[category]) {
-      componentMatrix[category] = {};
-    }
-    if (!componentMatrix[category][component]) {
-      componentMatrix[category][component] = {};
-    }
-    if (!componentFingerprintInputs[category]) {
-      componentFingerprintInputs[category] = {};
-    }
-    if (!componentFingerprintInputs[category][component]) {
-      componentFingerprintInputs[category][component] = [];
-    }
+  componentFiles.forEach(({ filePath, category, component, fileType, id }, declarationIndex) => {
+    componentMatrix[category] ??= {};
+    componentMatrix[category][component] ??= {};
+    fingerprintInputs[category] ??= {};
+    fingerprintInputs[category][component] ??= [];
 
     const fileContent = readFileSync(filePath, "utf8");
-    componentFingerprintInputs[category][component].push([
-      fileType,
-      fileContent,
-    ]);
+    fingerprintInputs[category][component].push([fileType, fileContent]);
 
     const declarationName = `__rtgl_${declarationIndex}_${fileType}`;
-    declarationIndex += 1;
-
-    const componentContractEntry = {
-      category,
-      component,
-      fileType,
-      filePath,
-    };
+    const contractEntry = { category, component, fileType, filePath };
 
     if (MODULE_FILE_TYPES.has(fileType)) {
       const importPath = toImportPath({ absolutePath: filePath, command });
@@ -251,21 +96,21 @@ export const generateFrontendEntrySource = ({
       );
       componentMatrix[category][component][fileType] = declarationName;
     } else if (YAML_FILE_TYPES.has(fileType)) {
-      const yamlObject = readYamlObject(filePath, fileContent);
+      const yamlObject = readComponentYaml(filePath, {
+        content: fileContent,
+        nameFile: true,
+      });
 
       if (fileType === "view" || fileType === "schema") {
-        componentContractEntry.yamlObject = structuredClone(yamlObject);
+        contractEntry.yamlObject = structuredClone(yamlObject);
       }
 
       if (fileType === "schema") {
-        componentElementNames.set(`${category}/${component}`, yamlObject.componentName);
+        elementNames.set(id, yamlObject.componentName);
       }
 
       if (fileType === "view") {
-        componentViewTags.set(
-          `${category}/${component}`,
-          collectTemplateTags(yamlObject.template),
-        );
+        viewTags.set(id, collectTemplateTags(yamlObject.template));
         try {
           yamlObject.template = parseTemplate(yamlObject.template);
         } catch (error) {
@@ -285,158 +130,208 @@ export const generateFrontendEntrySource = ({
       componentMatrix[category][component][fileType] = declarationName;
     }
 
-    componentContractEntries.push(componentContractEntry);
+    contractEntries.push(contractEntry);
+  });
+
+  return {
+    componentMatrix,
+    fingerprintInputs,
+    contractEntries,
+    declarationLines,
+    elementNames,
+    viewTags,
+  };
+};
+
+// The section builders below each return the lines of one entry section.
+// Sections are separated by one blank line; an empty section still leaves its
+// blank line, and the generated text keeps those runs of blank lines.
+
+// Setup is imported first so application bootstrap code, such as error
+// reporting, runs before component modules are evaluated.
+const createHeaderLines = ({ setupImportPath, declarationLines, feImports, feRuntimeImportPath }) => [
+  `import { deps } from ${JSON.stringify(setupImportPath)};`,
+  // One entry, so an app without components keeps an empty line here.
+  declarationLines.join("\n"),
+  `import { ${feImports} } from ${JSON.stringify(feRuntimeImportPath)};`,
+];
+
+const createComponentTableLines = ({ componentMatrix }) => {
+  const lines = ["const imports = {};"];
+  for (const category of Object.keys(componentMatrix).sort()) {
+    const categoryKey = `imports[${JSON.stringify(category)}]`;
+    lines.push(`${categoryKey} = {};`);
+    for (const component of Object.keys(componentMatrix[category]).sort()) {
+      const componentKey = `${categoryKey}[${JSON.stringify(component)}]`;
+      lines.push(`${componentKey} = {};`);
+      const componentConfig = componentMatrix[category][component];
+      for (const fileType of Object.keys(componentConfig).sort()) {
+        lines.push(`${componentKey}[${JSON.stringify(fileType)}] = ${componentConfig[fileType]};`);
+      }
+    }
+  }
+  return lines;
+};
+
+// Serve only: one hash per component over its file types and contents, so a
+// hot update can skip the components whose files did not change.
+const createComponentFingerprintLines = ({ fingerprintInputs }) => {
+  const fingerprints = Object.fromEntries(
+    Object.keys(fingerprintInputs).sort().map((category) => [
+      category,
+      Object.fromEntries(
+        Object.keys(fingerprintInputs[category]).sort().map((component) => {
+          const inputs = fingerprintInputs[category][component]
+            .slice()
+            .sort(([fileTypeA], [fileTypeB]) => fileTypeA.localeCompare(fileTypeB));
+          return [component, sha256(inputs)];
+        }),
+      ),
+    ]),
+  );
+  return [`const __rtglComponentFingerprints = ${JSON.stringify(fingerprints)};`];
+};
+
+const createI18nRuntimeLines = ({ i18nContext, command }) => {
+  if (!i18nContext.enabled) {
+    return command === "serve"
+      ? [NO_I18N_FRAMEWORK_DEPS_SOURCE, NO_I18N_COMMIT_UPDATE_SOURCE]
+      : [NO_I18N_FRAMEWORK_DEPS_SOURCE];
   }
 
+  const { defaultLocale, fallbackLocale, locales } = i18nContext;
+  const initialCatalogs = {};
+  initialCatalogs[defaultLocale] = i18nContext.catalogs[defaultLocale];
+  initialCatalogs[fallbackLocale] = i18nContext.catalogs[fallbackLocale];
+  const createRuntimeLines = [
+    "createI18nRuntime({",
+    `  defaultLocale: ${JSON.stringify(defaultLocale)},`,
+    `  fallbackLocale: ${JSON.stringify(fallbackLocale)},`,
+    `  locales: ${JSON.stringify(locales)},`,
+    "  urls: {",
+    // Enabled i18n has at least one locale, so this list is never empty.
+    ...buildI18nAssets({ i18nContext }).map((asset) => (
+      `  ${JSON.stringify(asset.locale)}: new URL(/* @vite-ignore */ ${JSON.stringify(`./${asset.relativeFileName}`)}, import.meta.url).href,`
+    )),
+    "  },",
+    `  initialCatalogs: ${JSON.stringify(initialCatalogs)},`,
+    "});",
+  ];
+
+  if (command !== "serve") {
+    return [
+      `const __rtglI18nRuntime = ${createRuntimeLines[0]}`,
+      ...createRuntimeLines.slice(1),
+      "await __rtglI18nRuntime.ready();",
+      "",
+      I18N_FRAMEWORK_DEPS_SOURCE,
+    ];
+  }
+
+  // A hot update keeps the running i18n runtime and replaces its catalogs
+  // only when they changed.
+  const catalogs = i18nContext.catalogs || {};
+  return [
+    "const __rtglI18nRuntime =",
+    `  import.meta.hot?.data.__rtglI18nRuntime || ${createRuntimeLines[0]}`,
+    ...createRuntimeLines.slice(1),
+    "await __rtglI18nRuntime.ready();",
+    "",
+    `const __rtglI18nCatalogs = ${JSON.stringify(catalogs)};`,
+    `const __rtglI18nCatalogFingerprint = ${JSON.stringify(sha256(catalogs))};`,
+    I18N_CATALOG_UPDATE_SOURCE,
+    I18N_FRAMEWORK_DEPS_SOURCE,
+  ];
+};
+
+// Without server markup components register in sorted id order. With it,
+// parents register before the components their views render.
+const createRegistrationLines = ({ command, registrationOrder, hydrationRegistrationOrder }) => {
+  const serve = command === "serve";
+  return [fillPlaceholders(REGISTRATION_SOURCE, {
+    REGISTRATION_ORDER: JSON.stringify(registrationOrder),
+    HYDRATION_REGISTRATION_ORDER: JSON.stringify(hydrationRegistrationOrder),
+    HYDRATE_SELECTOR: JSON.stringify(`[${HYDRATE_ATTRIBUTE}]`),
+    TRANSACTION_START: serve ? HMR_TRANSACTION_START_SOURCE : "",
+    REGISTER_COMPONENT: serve ? SERVE_REGISTER_COMPONENT_SOURCE : BUILD_REGISTER_COMPONENT_SOURCE,
+    TRANSACTION_END: serve ? HMR_TRANSACTION_END_SOURCE : "",
+  })];
+};
+
+export const generateFrontendEntrySource = ({
+  cwd = process.cwd(),
+  dirs = ["./example"],
+  setup = "setup.js",
+  command = "build",
+  i18n = null,
+  // Already loaded from `i18n` (rtgl fe build); otherwise it is loaded here.
+  i18nContext: loadedI18nContext = null,
+  errorPrefix = "[Build]",
+} = {}) => {
+  const serve = command === "serve";
+  const resolvedDirs = dirs.map((dir) => path.resolve(cwd, dir));
+  const i18nContext = loadedI18nContext
+    ?? loadI18nBuildContext({ cwd, i18n, errorPrefix });
+  const componentFiles = discoverComponentFiles({ dirs: resolvedDirs, sort: true });
+  warnDuplicateComponentIds({
+    filePaths: componentFiles.map(({ filePath }) => filePath),
+    errorPrefix,
+  });
+
+  const {
+    componentMatrix,
+    fingerprintInputs,
+    contractEntries,
+    declarationLines,
+    elementNames,
+    viewTags,
+  } = collectComponentSources({ componentFiles, command, errorPrefix });
+
   validateComponentEntries({
-    entries: componentContractEntries,
+    entries: contractEntries,
     errorPrefix,
     i18nContext,
   });
 
-  const setupImportPath = toImportPath({
-    absolutePath: resolvedSetup,
-    command,
-  });
-  const categoryLines = createComponentImportLines({
-    componentMatrix,
-    categories: Object.keys(componentMatrix).sort(),
-  });
   const registrationOrder = Object.keys(componentMatrix).sort().flatMap(
     (category) => Object.keys(componentMatrix[category]).sort().map(
       (component) => [category, component],
     ),
   );
-  const parentsFirstIds = orderParentsFirst(
+  const hydrationRegistrationOrder = orderParentsFirst(
     registrationOrder.map(([category, component]) => {
       const id = `${category}/${component}`;
       return {
         id,
-        elementName: componentElementNames.get(id),
-        tags: componentViewTags.get(id) || [],
+        elementName: elementNames.get(id),
+        tags: viewTags.get(id) || [],
       };
     }),
-  );
-  const hydrationRegistrationOrder = parentsFirstIds.map((id) => {
+  ).map((id) => {
     const separator = id.indexOf("/");
     return [id.slice(0, separator), id.slice(separator + 1)];
   });
-  const componentFactoryImport = command === "serve"
-    ? "defineOrUpdateComponents"
-    : "createComponent";
-  const feRuntimeImportPath = command === "serve"
-    ? toImportPath({
-      absolutePath: rettangoliFeRuntimePath,
-      command,
-    })
-    : "@rettangoli/fe";
-  const feImports = i18nContext.enabled
-    ? `${componentFactoryImport}, createI18nRuntime`
-    : componentFactoryImport;
-  const i18nRuntimeSource = createI18nRuntimeSource({
-    i18nContext,
-    command,
-  });
-  const componentRegistrationSource = createComponentRegistrationSource({
-    command,
-  });
-  const componentFingerprints = createComponentFingerprintMatrix(
-    componentFingerprintInputs,
-  );
-  const componentFingerprintSource = command === "serve"
-    ? `const __rtglComponentFingerprints = ${JSON.stringify(componentFingerprints)};`
-    : "";
-  const hmrStateDeclaration = command === "serve"
-    ? `
-const __rtglIsHmrUpdate = Boolean(
-  import.meta.hot?.data.__rtglInitialized,
-);
-let __rtglHmrIncompatibleReason = null;
-const __rtglComponentUpdateBatch = [];`.trim()
-    : "";
-  const hmrTransactionStart = command === "serve" ? "try {" : "";
-  const hmrTransactionEnd = command === "serve"
-    ? `
-  const __rtglBatchResult = defineOrUpdateComponents({
-    components: __rtglComponentUpdateBatch,
-  });
-  if (__rtglBatchResult?.status === "incompatible") {
-    throw new Error(
-      __rtglBatchResult.message || __rtglBatchResult.reason ||
-        "A component cannot be updated without a reload.",
-    );
-  }
-  __rtglCommitI18nUpdate();
-  if (import.meta.hot) {
-    import.meta.hot.data.__rtglInitialized = true;
-  }
-} catch (error) {
-  if (!__rtglIsHmrUpdate) {
-    throw error;
-  }
-  __rtglHmrIncompatibleReason =
-    error instanceof Error ? error.message : String(error);
-}`.trim()
-    : "";
-  const hmrBoundarySource = command === "serve"
-    ? `
-export const __rtglHmrState = {
-  incompatibleReason: __rtglHmrIncompatibleReason,
-};
 
-if (import.meta.hot) {
-  import.meta.hot.accept((nextModule) => {
-    const reason = nextModule?.__rtglHmrState?.incompatibleReason;
-    if (reason) {
-      import.meta.hot.invalidate(\`[Rettangoli HMR] \${reason}\`);
-    }
-  });
-}`.trim()
-    : "";
+  const componentFactoryImport = serve ? "defineOrUpdateComponents" : "createComponent";
+  const sections = [
+    createHeaderLines({
+      setupImportPath: toImportPath({ absolutePath: path.resolve(cwd, setup), command }),
+      declarationLines,
+      feImports: i18nContext.enabled
+        ? `${componentFactoryImport}, createI18nRuntime`
+        : componentFactoryImport,
+      feRuntimeImportPath: serve
+        ? toImportPath({ absolutePath: rettangoliFeRuntimePath, command })
+        : "@rettangoli/fe",
+    }),
+    createComponentTableLines({ componentMatrix }),
+    serve ? createComponentFingerprintLines({ fingerprintInputs }) : [],
+    createI18nRuntimeLines({ i18nContext, command }),
+    serve ? [HMR_STATE_SOURCE] : [],
+    createRegistrationLines({ command, registrationOrder, hydrationRegistrationOrder }),
+    serve ? [HMR_BOUNDARY_SOURCE] : [],
+  ];
 
-  // Import setup first so application bootstrap code, such as error reporting,
-  // runs before component modules are evaluated.
-  return `
-import { deps } from ${JSON.stringify(setupImportPath)};
-${declarationLines.join("\n")}
-import { ${feImports} } from ${JSON.stringify(feRuntimeImportPath)};
-
-${categoryLines}
-
-${componentFingerprintSource}
-
-${i18nRuntimeSource}
-
-${hmrStateDeclaration}
-
-const __rtglRegistrationOrder = ${JSON.stringify(registrationOrder)};
-// Prerendered hosts upgrade as soon as they are defined, so a page that
-// holds prerendered markup defines parents before the components they render.
-const __rtglHydrationRegistrationOrder = ${JSON.stringify(hydrationRegistrationOrder)};
-const __rtglHasServerMarkup =
-  typeof document !== "undefined" &&
-  document.querySelector("[data-rtgl-hydrate]") !== null;
-
-${hmrTransactionStart}
-(__rtglHasServerMarkup
-  ? __rtglHydrationRegistrationOrder
-  : __rtglRegistrationOrder
-).forEach(([category, component]) => {
-  const componentConfig = imports[category][component];
-  const categoryDeps = {
-    ...((deps && deps[category]) || {}),
-    ...__rtglFrameworkDeps,
-  };
-  const elementName = componentConfig.schema?.componentName;
-  if (!elementName) {
-    throw new Error(
-      \`[Build] Missing schema.componentName for \${category}/\${component}. Define it in .schema.yaml.\`,
-    );
-  }
-  ${componentRegistrationSource}
-});
-${hmrTransactionEnd}
-
-${hmrBoundarySource}
-`.trim();
+  // trim() drops the blank lines that empty build-only sections leave at the end.
+  return sections.map((lines) => lines.join("\n")).join("\n\n").trim();
 };

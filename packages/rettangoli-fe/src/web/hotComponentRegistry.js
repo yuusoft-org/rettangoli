@@ -3,12 +3,9 @@ import createComponent, {
 } from "../createComponent.js";
 import {
   RETTANGOLI_HOT_APPLY,
+  RETTANGOLI_HOT_COMPONENT_REGISTRY,
   RETTANGOLI_HOT_PREPARE,
-} from "./createWebComponentClass.js";
-
-const RETTANGOLI_HOT_COMPONENT_REGISTRY = Symbol.for(
-  "@rettangoli/fe/hot-component-registry",
-);
+} from "../core/protocol.js";
 
 const getRegistry = () => {
   if (!globalThis[RETTANGOLI_HOT_COMPONENT_REGISTRY]) {

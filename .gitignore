@@ -1,10 +1,8 @@
 .DS_Store
 /packages/rettangoli-ui/dist
-/packages/rettangoli-ui/node_modules
 /packages/rettangoli-ui/viz/static/public/main.js.map
 /packages/rettangoli-ui/viz/static/public/main.js
 /packages/rettangoli-fe/dist
-/packages/rettangoli-fe/node_modules
 /packages/rettangoli-fe/.temp
 /packages/rettangoli-fe/viz/static/main.js
 /packages/rettangoli-fe/viz/static/main.js.map
@@ -17,7 +15,10 @@
 /packages/rettangoli-fe/e2e/*/static
 /packages/rettangoli-fe/e2e/*/vt/static
 
-/node_modules
+node_modules/
+
+# One lockfile at the root; a package-level bun.lock is stray (packages are workspaces)
+/packages/*/bun.lock
 
 .claude/
 CLAUDE.md

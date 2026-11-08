@@ -16,7 +16,6 @@ export const handleOnUpdate = async (deps, payload) => {
   const { waveformData } = props;
 
   if (!waveformData) {
-    console.log('waveform handleOnUpdate: no waveformData provided');
     return;
   }
 

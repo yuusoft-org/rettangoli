@@ -1,0 +1,8 @@
+{
+  "name": "@rettangoli/fe",
+  "version": "0.0.1-fake-nested",
+  "type": "module",
+  "exports": {
+    "./cli": "./cli.js"
+  }
+}

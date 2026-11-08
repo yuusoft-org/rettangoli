@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/sitekit",
-  "version": "1.0.9",
+  "version": "2.0.0",
   "description": "Curated Rettangoli site themes, templates, partials, and VT coverage.",
   "author": {
     "name": "Luciano Hanyon Wu",
@@ -34,17 +34,17 @@
   ],
   "scripts": {
     "test": "node --test test/*.test.js",
-    "build": "bunx rtgl sites build --root-dir ./src --output-path ../_site",
-    "watch": "bunx rtgl sites watch --root-dir ./src --output-path ../_site --reload-mode full --port 4173",
+    "build": "node ../rettangoli-cli/cli.js sites build --root-dir ./src --output-path ../_site",
+    "watch": "node ../rettangoli-cli/cli.js sites watch --root-dir ./src --output-path ../_site --reload-mode full --port 4173",
     "serve": "serve ./_site -l 4173",
     "preview": "bun run serve",
     "build:lab": "bun run build",
     "watch:lab": "bun run watch",
-    "vt:screenshot": "bunx rtgl vt screenshot",
+    "vt:screenshot": "node ../rettangoli-cli/cli.js vt screenshot",
     "vt:ci:docker": "node scripts/vt-ci.js --docker",
-    "vt:report": "bunx rtgl vt report",
+    "vt:report": "node ../rettangoli-cli/cli.js vt report",
     "vt:ci": "node scripts/vt-ci.js",
-    "vt:accept": "bunx rtgl vt accept"
+    "vt:accept": "node ../rettangoli-cli/cli.js vt accept"
   },
   "devDependencies": {
     "serve": "^14.2.6"

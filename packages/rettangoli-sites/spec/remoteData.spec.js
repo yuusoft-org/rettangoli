@@ -132,6 +132,30 @@ describe('remote data imports', () => {
     await expect(builder(fs, fail)()).rejects.toThrow(message);
   });
 
+  it.each([
+    ['template', 'templates', 'base'],
+    ['partial', 'partials', 'header'],
+    ['data', 'data', 'catalog']
+  ].flatMap(([type, group, alias]) => [
+    [type, 'HTTP 404 Not Found', group, alias, async () => ({ ok: false, status: 404, statusText: 'Not Found' })],
+    [type, 'Invalid YAML: ', group, alias, async () => response('title: [invalid')],
+    [type, 'Connection failed', group, alias, async () => { throw new Error('Connection failed'); }]
+  ]))('names an imported %s alias once when the request fails with "%s"', async (type, reason, group, alias, fetchImpl) => {
+    const url = `https://example.com/${alias}.yaml`;
+    const aliasLabel = `imported ${type} "${alias}" from "${url}"`;
+    let error;
+    try {
+      await builder(fixture({ '/pages/index.yaml': '- p: hi' }), fetchImpl, { imports: { [group]: { [alias]: url } } })();
+    } catch (caught) {
+      error = caught;
+    }
+
+    expect(error.message.startsWith(`Failed to load ${aliasLabel}: ${reason}`)).toBe(true);
+    expect(error.message.split(aliasLabel)).toHaveLength(2);
+    expect(error.cause).toBeInstanceOf(Error);
+    expect(error.message).toBe(`Failed to load ${aliasLabel}: ${error.cause.message}`);
+  });
+
   it('fails when the remote source is unavailable even if a local alias exists', async () => {
     const fs = fixture({ '/data/catalog.yaml': 'title: Local' });
     await expect(builder(fs, async () => { throw new Error('Offline'); })()).rejects.toThrow('Offline');

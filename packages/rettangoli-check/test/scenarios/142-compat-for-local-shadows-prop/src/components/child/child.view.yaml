@@ -1,0 +1,3 @@
+template:
+  - rtgl-view#root: child
+styles: {}

@@ -1,0 +1,9 @@
+template:
+  - rtgl-view 1invalid: x
+  - rtgl-view =x: y
+  - rtgl-view ?aria-x: z
+  - rtgl-view:
+      - rtgl-text: ok
+refs:
+  broken: [unclosed
+styles: {}

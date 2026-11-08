@@ -1,8 +1,8 @@
 import { load as loadYaml } from "js-yaml";
-import { parseSync } from "oxc-parser";
-import { collectBindingNames as collectFeBindingNames } from "./fe-contracts.js";
+import { collectBindingNames, skipInterpolation, startsInterpolation } from "./fe-contracts.js";
 import { parse as parseJempl } from "jempl";
-import { parseElementKey as parseYahtmlElementKey } from "yahtml";
+import { createLineOffsets, offsetToLineColumn } from "../utils/text.js";
+import { parseJs } from "./jsParse.js";
 
 const CONTROL_PREFIXES = ["$if", "$elif", "$else", "$for", "$when", "$partial", "$each"];
 
@@ -33,627 +33,7 @@ export const parseYamlSafe = ({ text, filePath }) => {
   }
 };
 
-const maskChar = (char) => {
-  if (char === "\n" || char === "\r") {
-    return char;
-  }
-  return " ";
-};
-
-const maskCommentsAndStrings = (sourceCode = "") => {
-  let masked = "";
-  let index = 0;
-
-  while (index < sourceCode.length) {
-    const char = sourceCode[index];
-    const nextChar = sourceCode[index + 1];
-
-    if (char === "/" && nextChar === "/") {
-      masked += "  ";
-      index += 2;
-      while (index < sourceCode.length && sourceCode[index] !== "\n") {
-        masked += " ";
-        index += 1;
-      }
-      continue;
-    }
-
-    if (char === "/" && nextChar === "*") {
-      masked += "  ";
-      index += 2;
-      while (index < sourceCode.length) {
-        const blockChar = sourceCode[index];
-        const blockNextChar = sourceCode[index + 1];
-        if (blockChar === "*" && blockNextChar === "/") {
-          masked += "  ";
-          index += 2;
-          break;
-        }
-        masked += maskChar(blockChar);
-        index += 1;
-      }
-      continue;
-    }
-
-    if (char === "\"" || char === "'" || char === "`") {
-      const quote = char;
-      masked += " ";
-      index += 1;
-
-      while (index < sourceCode.length) {
-        const stringChar = sourceCode[index];
-        masked += maskChar(stringChar);
-        index += 1;
-
-        if (stringChar === "\\") {
-          if (index < sourceCode.length) {
-            masked += maskChar(sourceCode[index]);
-            index += 1;
-          }
-          continue;
-        }
-
-        if (stringChar === quote) {
-          break;
-        }
-      }
-      continue;
-    }
-
-    masked += char;
-    index += 1;
-  }
-
-  return masked;
-};
-
 const IDENTIFIER_REGEX = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
-const splitTopLevelCommaSeparated = (value = "") => {
-  const parts = [];
-  let current = "";
-  let parenDepth = 0;
-  let bracketDepth = 0;
-  let braceDepth = 0;
-
-  for (let index = 0; index < value.length; index += 1) {
-    const char = value[index];
-
-    if (char === "(") {
-      parenDepth += 1;
-      current += char;
-      continue;
-    }
-    if (char === ")" && parenDepth > 0) {
-      parenDepth -= 1;
-      current += char;
-      continue;
-    }
-    if (char === "[") {
-      bracketDepth += 1;
-      current += char;
-      continue;
-    }
-    if (char === "]" && bracketDepth > 0) {
-      bracketDepth -= 1;
-      current += char;
-      continue;
-    }
-    if (char === "{") {
-      braceDepth += 1;
-      current += char;
-      continue;
-    }
-    if (char === "}" && braceDepth > 0) {
-      braceDepth -= 1;
-      current += char;
-      continue;
-    }
-
-    if (char === "," && parenDepth === 0 && bracketDepth === 0 && braceDepth === 0) {
-      parts.push(current.trim());
-      current = "";
-      continue;
-    }
-
-    current += char;
-  }
-
-  const finalPart = current.trim();
-  if (finalPart.length > 0) {
-    parts.push(finalPart);
-  }
-
-  return parts;
-};
-
-const findTopLevelCharacterIndex = (value = "", character = "=") => {
-  let parenDepth = 0;
-  let bracketDepth = 0;
-  let braceDepth = 0;
-  let quote = null;
-  let escaped = false;
-
-  for (let index = 0; index < value.length; index += 1) {
-    const char = value[index];
-
-    if (quote) {
-      if (escaped) {
-        escaped = false;
-        continue;
-      }
-
-      if (char === "\\") {
-        escaped = true;
-        continue;
-      }
-
-      if (char === quote) {
-        quote = null;
-      }
-      continue;
-    }
-
-    if (char === "\"" || char === "'" || char === "`") {
-      quote = char;
-      continue;
-    }
-
-    if (char === "(") {
-      parenDepth += 1;
-      continue;
-    }
-    if (char === ")" && parenDepth > 0) {
-      parenDepth -= 1;
-      continue;
-    }
-    if (char === "[") {
-      bracketDepth += 1;
-      continue;
-    }
-    if (char === "]" && bracketDepth > 0) {
-      bracketDepth -= 1;
-      continue;
-    }
-    if (char === "{") {
-      braceDepth += 1;
-      continue;
-    }
-    if (char === "}" && braceDepth > 0) {
-      braceDepth -= 1;
-      continue;
-    }
-
-    if (char === character && parenDepth === 0 && bracketDepth === 0 && braceDepth === 0) {
-      return index;
-    }
-  }
-
-  return -1;
-};
-
-const stripTopLevelDefaultAssignment = (value = "") => {
-  const assignmentIndex = findTopLevelCharacterIndex(value, "=");
-  if (assignmentIndex === -1) {
-    return value.trim();
-  }
-  return value.slice(0, assignmentIndex).trim();
-};
-
-const stripTopLevelTypeAnnotation = (value = "") => {
-  const typeAnnotationIndex = findTopLevelCharacterIndex(value, ":");
-  if (typeAnnotationIndex === -1) {
-    return value.trim();
-  }
-  return value.slice(0, typeAnnotationIndex).trim();
-};
-
-const stripTypeScriptDefiniteAssignment = (value = "") => {
-  const trimmed = value.trim();
-  if (!trimmed.endsWith("!")) {
-    return trimmed;
-  }
-  return trimmed.slice(0, -1).trim();
-};
-
-const collectBindingNamesFromPattern = (pattern = "") => {
-  const trimmed = pattern.trim();
-  if (!trimmed) {
-    return [];
-  }
-
-  if (trimmed.startsWith("...")) {
-    return collectBindingNamesFromPattern(trimmed.slice(3));
-  }
-
-  const withoutTypeAnnotation = stripTopLevelTypeAnnotation(trimmed);
-  if (withoutTypeAnnotation !== trimmed) {
-    return collectBindingNamesFromPattern(withoutTypeAnnotation);
-  }
-
-  const withoutDefiniteAssignment = stripTypeScriptDefiniteAssignment(trimmed);
-  if (withoutDefiniteAssignment !== trimmed) {
-    return collectBindingNamesFromPattern(withoutDefiniteAssignment);
-  }
-
-  if (IDENTIFIER_REGEX.test(trimmed)) {
-    return [trimmed];
-  }
-
-  const withoutDefault = stripTopLevelDefaultAssignment(trimmed);
-  if (withoutDefault !== trimmed) {
-    return collectBindingNamesFromPattern(withoutDefault);
-  }
-
-  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
-    const objectBody = trimmed.slice(1, -1);
-    const parts = splitTopLevelCommaSeparated(objectBody);
-    const names = [];
-
-    parts.forEach((part) => {
-      const token = part.trim();
-      if (!token) {
-        return;
-      }
-
-      if (token.startsWith("...")) {
-        names.push(...collectBindingNamesFromPattern(token.slice(3)));
-        return;
-      }
-
-      const colonIndex = findTopLevelCharacterIndex(token, ":");
-      if (colonIndex !== -1) {
-        const valuePattern = token.slice(colonIndex + 1).trim();
-        names.push(...collectBindingNamesFromPattern(valuePattern));
-        return;
-      }
-
-      names.push(...collectBindingNamesFromPattern(stripTopLevelDefaultAssignment(token)));
-    });
-
-    return names;
-  }
-
-  if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
-    const arrayBody = trimmed.slice(1, -1);
-    const parts = splitTopLevelCommaSeparated(arrayBody);
-    const names = [];
-
-    parts.forEach((part) => {
-      const token = part.trim();
-      if (!token) {
-        return;
-      }
-
-      if (token.startsWith("...")) {
-        names.push(...collectBindingNamesFromPattern(token.slice(3)));
-        return;
-      }
-
-      names.push(...collectBindingNamesFromPattern(stripTopLevelDefaultAssignment(token)));
-    });
-
-    return names;
-  }
-
-  return [];
-};
-
-const collectExportedVariableDeclarationNames = (sourceForScan = "") => {
-  const names = [];
-  const exportVariableStartRegex = /export\s+(?:const|let|var)\s+/g;
-  let match = exportVariableStartRegex.exec(sourceForScan);
-
-  while (match) {
-    let index = exportVariableStartRegex.lastIndex;
-    let declaration = "";
-    let parenDepth = 0;
-    let bracketDepth = 0;
-    let braceDepth = 0;
-    let lastNonWhitespace = "";
-
-    while (index < sourceForScan.length) {
-      const char = sourceForScan[index];
-      const isTopLevel = parenDepth === 0 && bracketDepth === 0 && braceDepth === 0;
-      const isLineBreak = char === "\n" || char === "\r";
-
-      if (char === "(") {
-        parenDepth += 1;
-      } else if (char === ")" && parenDepth > 0) {
-        parenDepth -= 1;
-      } else if (char === "[") {
-        bracketDepth += 1;
-      } else if (char === "]" && bracketDepth > 0) {
-        bracketDepth -= 1;
-      } else if (char === "{") {
-        braceDepth += 1;
-      } else if (char === "}" && braceDepth > 0) {
-        braceDepth -= 1;
-      }
-
-      if (isTopLevel && (char === ";" || (isLineBreak && lastNonWhitespace !== ","))) {
-        break;
-      }
-
-      declaration += char;
-      if (!/\s/.test(char)) {
-        lastNonWhitespace = char;
-      }
-      index += 1;
-    }
-
-    const declarators = splitTopLevelCommaSeparated(declaration);
-    declarators.forEach((declarator) => {
-      const assignmentIndex = findTopLevelCharacterIndex(declarator, "=");
-      const bindingPattern = assignmentIndex === -1
-        ? declarator.trim()
-        : declarator.slice(0, assignmentIndex).trim();
-      collectBindingNamesFromPattern(bindingPattern).forEach((name) => {
-        names.push(name);
-      });
-    });
-
-    match = exportVariableStartRegex.exec(sourceForScan);
-  }
-
-  return names;
-};
-
-const extractNamedExportsRegex = (sourceCode = "") => {
-  const exports = new Set();
-  const sourceForScan = maskCommentsAndStrings(sourceCode);
-
-  const functionRegex = /export\s+(?:async\s+)?function\s*\*?\s*([A-Za-z_$][A-Za-z0-9_$]*)/g;
-  const classRegex = /export\s+class\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
-  const abstractClassRegex = /export\s+abstract\s+class\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
-  const enumRegex = /export\s+(?:const\s+)?enum\s+([A-Za-z_$][A-Za-z0-9_$]*)/g;
-  const exportImportAliasRegex = /export\s+import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=/g;
-  const tsExportAssignmentRegex = /export\s*=\s*/g;
-  const listRegex = /export\s*\{([^}]+)\}(?!\s*from\b)/g;
-  const defaultRegex = /export\s+default\b/g;
-
-  let match = functionRegex.exec(sourceForScan);
-  while (match) {
-    exports.add(match[1]);
-    match = functionRegex.exec(sourceForScan);
-  }
-
-  match = classRegex.exec(sourceForScan);
-  while (match) {
-    exports.add(match[1]);
-    match = classRegex.exec(sourceForScan);
-  }
-
-  match = abstractClassRegex.exec(sourceForScan);
-  while (match) {
-    exports.add(match[1]);
-    match = abstractClassRegex.exec(sourceForScan);
-  }
-
-  match = enumRegex.exec(sourceForScan);
-  while (match) {
-    exports.add(match[1]);
-    match = enumRegex.exec(sourceForScan);
-  }
-
-  match = exportImportAliasRegex.exec(sourceForScan);
-  while (match) {
-    exports.add(match[1]);
-    match = exportImportAliasRegex.exec(sourceForScan);
-  }
-
-  match = listRegex.exec(sourceForScan);
-  while (match) {
-    const entries = match[1].split(",").map((part) => part.trim()).filter(Boolean);
-    entries.forEach((entry) => {
-      const [left, right] = entry.split(/\s+as\s+/).map((token) => token.trim());
-      if (right && IDENTIFIER_REGEX.test(right)) {
-        exports.add(right);
-      } else if (left && IDENTIFIER_REGEX.test(left)) {
-        exports.add(left);
-      }
-    });
-    match = listRegex.exec(sourceForScan);
-  }
-
-  collectExportedVariableDeclarationNames(sourceForScan).forEach((name) => {
-    exports.add(name);
-  });
-
-  if (defaultRegex.test(sourceForScan)) {
-    exports.add("default");
-  }
-  if (tsExportAssignmentRegex.test(sourceForScan)) {
-    exports.add("default");
-  }
-  collectNamespaceReExportsRegex(sourceCode).forEach(({ exportedName }) => {
-    if (IDENTIFIER_REGEX.test(exportedName)) {
-      exports.add(exportedName);
-    }
-  });
-
-  return exports;
-};
-
-const collectExportStarSpecifiersRegex = (sourceCode = "") => {
-  const specifiers = new Set();
-  const sourceForScan = maskCommentsAndStrings(sourceCode);
-  const exportStarRegex = /export\s*\*\s*from\b/g;
-  let match = exportStarRegex.exec(sourceForScan);
-
-  while (match) {
-    let index = exportStarRegex.lastIndex;
-    while (index < sourceCode.length && /\s/.test(sourceCode[index])) {
-      index += 1;
-    }
-
-    const quote = sourceCode[index];
-    if (quote === "\"" || quote === "'") {
-      index += 1;
-      let specifier = "";
-      while (index < sourceCode.length) {
-        const char = sourceCode[index];
-        if (char === quote) {
-          break;
-        }
-        if (char === "\n" || char === "\r") {
-          specifier = "";
-          break;
-        }
-        specifier += char;
-        index += 1;
-      }
-
-      if (specifier) {
-        specifiers.add(specifier);
-      }
-    }
-
-    match = exportStarRegex.exec(sourceForScan);
-  }
-
-  return [...specifiers];
-};
-
-const collectNamespaceReExportsRegex = (sourceCode = "") => {
-  const namespaceReExports = [];
-  const sourceForScan = maskCommentsAndStrings(sourceCode);
-  const namespaceReExportRegex = /export\s*\*\s*as\s*([A-Za-z_$][A-Za-z0-9_$]*)\s*from\b/g;
-  let match = namespaceReExportRegex.exec(sourceForScan);
-
-  while (match) {
-    const exportedName = match[1];
-    let index = namespaceReExportRegex.lastIndex;
-    while (index < sourceCode.length && /\s/.test(sourceCode[index])) {
-      index += 1;
-    }
-
-    let moduleRequest = "";
-    const quote = sourceCode[index];
-    if (quote === "\"" || quote === "'") {
-      index += 1;
-      while (index < sourceCode.length) {
-        const char = sourceCode[index];
-        if (char === quote) {
-          break;
-        }
-        if (char === "\n" || char === "\r") {
-          moduleRequest = "";
-          break;
-        }
-        moduleRequest += char;
-        index += 1;
-      }
-    }
-
-    if (moduleRequest) {
-      namespaceReExports.push({
-        moduleRequest,
-        exportedName,
-      });
-    }
-
-    match = namespaceReExportRegex.exec(sourceForScan);
-  }
-
-  return namespaceReExports;
-};
-
-const collectNamedReExportsRegex = (sourceCode = "") => {
-  const reExports = [];
-  const sourceForScan = maskCommentsAndStrings(sourceCode);
-  const namedReExportRegex = /export\s*\{([^}]*)\}\s*from\b/g;
-  let match = namedReExportRegex.exec(sourceForScan);
-
-  while (match) {
-    const rawSpecifiers = splitTopLevelCommaSeparated(match[1]);
-    let index = namedReExportRegex.lastIndex;
-    while (index < sourceCode.length && /\s/.test(sourceCode[index])) {
-      index += 1;
-    }
-
-    let moduleRequest = "";
-    const quote = sourceCode[index];
-    if (quote === "\"" || quote === "'") {
-      index += 1;
-      while (index < sourceCode.length) {
-        const char = sourceCode[index];
-        if (char === quote) {
-          break;
-        }
-        if (char === "\n" || char === "\r") {
-          moduleRequest = "";
-          break;
-        }
-        moduleRequest += char;
-        index += 1;
-      }
-    }
-
-    if (moduleRequest) {
-      rawSpecifiers.forEach((rawSpecifier) => {
-        const normalized = rawSpecifier.trim().replace(/\s+/g, " ");
-        if (!normalized || normalized.startsWith("type ")) {
-          return;
-        }
-
-        const namedSpecifierMatch = normalized.match(
-          /^([A-Za-z_$][A-Za-z0-9_$]*)(?:\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*))?$/,
-        );
-        if (!namedSpecifierMatch) {
-          return;
-        }
-
-        const importedName = namedSpecifierMatch[1];
-        const exportedName = namedSpecifierMatch[2] || importedName;
-        reExports.push({
-          moduleRequest,
-          importedName,
-          exportedName,
-        });
-      });
-    }
-
-    match = namedReExportRegex.exec(sourceForScan);
-  }
-
-  return reExports;
-};
-
-const offsetToLineColumn = ({ lineOffsets = [], offset = 0 }) => {
-  if (!Array.isArray(lineOffsets) || lineOffsets.length === 0) {
-    return {};
-  }
-
-  const safeOffset = Math.max(0, Number.isInteger(offset) ? offset : 0);
-  let low = 0;
-  let high = lineOffsets.length - 1;
-
-  while (low <= high) {
-    const mid = Math.floor((low + high) / 2);
-    const start = lineOffsets[mid];
-    const next = lineOffsets[mid + 1] ?? Number.POSITIVE_INFINITY;
-
-    if (safeOffset >= start && safeOffset < next) {
-      return {
-        line: mid + 1,
-        column: safeOffset - start + 1,
-      };
-    }
-
-    if (safeOffset < start) {
-      high = mid - 1;
-    } else {
-      low = mid + 1;
-    }
-  }
-
-  const lastLineIndex = lineOffsets.length - 1;
-  const lastStart = lineOffsets[lastLineIndex] ?? 0;
-  return {
-    line: lastLineIndex + 1,
-    column: Math.max(1, safeOffset - lastStart + 1),
-  };
-};
 
 const offsetRangeToLocation = ({
   lineOffsets = [],
@@ -705,53 +85,42 @@ const extractModuleExportsOxc = ({
     }
   }
 
+  // The first error of the file's own language is the one worth reporting; the TypeScript
+  // retry only exists to accept TS syntax in .js files.
+  let firstError = null;
   let parseResult = null;
   for (let i = 0; i < parseCandidates.length; i += 1) {
     try {
-      const candidateResult = parseSync(parseCandidates[i].filename, sourceCode, {
+      const candidateResult = parseJs({
+        filePath: parseCandidates[i].filename,
+        sourceText: sourceCode,
         lang: parseCandidates[i].lang,
         sourceType: "unambiguous",
       });
       if (Array.isArray(candidateResult?.errors) && candidateResult.errors.length > 0) {
+        firstError ??= candidateResult.errors[0];
         continue;
       }
       parseResult = candidateResult;
       break;
-    } catch {
-      // Try next parse candidate.
+    } catch (error) {
+      firstError ??= error;
     }
   }
 
-  if (!parseResult) {
+  if (!parseResult || !Array.isArray(parseResult.module?.staticExports)) {
+    const errorOffset = firstError?.labels?.[0]?.start;
+    const errorPosition = Number.isInteger(errorOffset)
+      ? offsetToLineColumn({ lineOffsets: createLineOffsets(sourceCode), offset: errorOffset })
+      : { line: 1, column: 1 };
+    const errorMessage = typeof firstError?.message === "string" ? firstError.message.replace(/\s+/gu, " ").trim() : "";
     return {
       ok: false,
-      namedExports: new Set(),
-      exportStarSpecifiers: [],
-      namespaceReExports: [],
-      namedReExports: [],
-      reExportReferences: [],
-    };
-  }
-
-  if (!parseResult?.module || !Array.isArray(parseResult.module.staticExports)) {
-    return {
-      ok: false,
-      namedExports: new Set(),
-      exportStarSpecifiers: [],
-      namespaceReExports: [],
-      namedReExports: [],
-      reExportReferences: [],
-    };
-  }
-
-  if (Array.isArray(parseResult.errors) && parseResult.errors.length > 0) {
-    return {
-      ok: false,
-      namedExports: new Set(),
-      exportStarSpecifiers: [],
-      namespaceReExports: [],
-      namedReExports: [],
-      reExportReferences: [],
+      parseError: {
+        message: errorMessage,
+        line: errorPosition.line,
+        column: errorPosition.column,
+      },
     };
   }
 
@@ -914,45 +283,8 @@ export const extractModuleExports = ({
     reExportReferences: [],
     backendUsed: "oxc",
     parseFailed: true,
+    parseError: oxcResult.parseError,
   };
-};
-
-export const extractModuleExportsRegexLegacy = ({
-  sourceCode = "",
-} = {}) => {
-  return {
-    namedExports: extractNamedExportsRegex(sourceCode),
-    exportStarSpecifiers: collectExportStarSpecifiersRegex(sourceCode),
-    namespaceReExports: collectNamespaceReExportsRegex(sourceCode),
-    namedReExports: collectNamedReExportsRegex(sourceCode),
-    reExportReferences: [],
-    backendUsed: "regex-legacy",
-  };
-};
-
-export const extractNamedExports = (sourceCode = "", options = {}) => {
-  return extractModuleExports({ sourceCode, ...options }).namedExports;
-};
-
-export const collectExportStarSpecifiers = (sourceCode = "", options = {}) => {
-  return extractModuleExports({ sourceCode, ...options }).exportStarSpecifiers;
-};
-
-export const hasLegacyDotPropBinding = (node) => {
-  const LEGACY_PROP_BINDING_REGEX = /(^|\s)\.[A-Za-z_][A-Za-z0-9_-]*\s*=/;
-  if (Array.isArray(node)) {
-    return node.some((item) => hasLegacyDotPropBinding(item));
-  }
-  if (!node || typeof node !== "object") {
-    return false;
-  }
-
-  return Object.entries(node).some(([key, value]) => {
-    if (LEGACY_PROP_BINDING_REGEX.test(key)) {
-      return true;
-    }
-    return hasLegacyDotPropBinding(value);
-  });
 };
 
 const stripOuterQuotes = (value) => {
@@ -1131,54 +463,30 @@ const splitYamlMappingLineKey = (line) => {
   return null;
 };
 
-const splitSelector = (selectorText) => {
-  const trimmed = selectorText.trim();
-  if (!trimmed) {
-    return {
-      selector: "",
-      attrsText: "",
-    };
-  }
-
-  const firstWhitespace = trimmed.search(/\s/u);
-  if (firstWhitespace === -1) {
-    return {
-      selector: trimmed,
-      attrsText: "",
-    };
-  }
-
-  return {
-    selector: trimmed.slice(0, firstWhitespace),
-    attrsText: trimmed.slice(firstWhitespace + 1).trim(),
-  };
-};
-
-const resolveTagNameFromSelectorKey = ({ key, selector }) => {
-  const fallbackTagName = selector.split(/[.#]/)[0] || "";
-
-  try {
-    const parsedKey = parseYahtmlElementKey(key);
-    if (parsedKey && typeof parsedKey.tag === "string" && parsedKey.tag.trim().length > 0) {
-      return parsedKey.tag.trim();
+// One template key: the trimmed raw key split into selector and attributes at the first whitespace outside
+// '${...}' / '#{...}' (FE splits the rendered key at its first space, untrimmed), the tag name by FE's rule, and
+// FE's binding names.
+export const parseSelectorKey = (key = "") => {
+  const trimmed = String(key).trim();
+  let selector = trimmed;
+  let attrsText = "";
+  for (let index = 0; index < trimmed.length;) {
+    if (startsInterpolation(trimmed, index)) {
+      index = skipInterpolation(trimmed, index);
+    } else if (/\s/u.test(trimmed[index])) {
+      selector = trimmed.slice(0, index);
+      attrsText = trimmed.slice(index + 1).trim();
+      break;
+    } else {
+      index += 1;
     }
-  } catch {
-    // Fallback to local selector parsing when YAHTML parser throws.
   }
-
-  return fallbackTagName;
-};
-
-const parseSelectorKeyWithFe = (key = "") => {
-  const { selector, attrsText } = splitSelector(key);
-  const tagName = resolveTagNameFromSelectorKey({ key, selector });
-  const bindingNames = parseBindingNames(attrsText);
 
   return {
     selector,
     attrsText,
-    tagName,
-    bindingNames,
+    tagName: selector.split(/[.#]/)[0],
+    bindingNames: parseBindingNames(attrsText),
   };
 };
 
@@ -1212,7 +520,6 @@ const collectTemplateSelectorLineCandidates = (viewText = "") => {
           candidates.push({
             key: explicitKey,
             line: lineIndex + 1,
-            feParsed: parseSelectorKeyWithFe(explicitKey),
           });
         }
       }
@@ -1243,7 +550,6 @@ const collectTemplateSelectorLineCandidates = (viewText = "") => {
     candidates.push({
       key,
       line: lineIndex + 1,
-      feParsed: parseSelectorKeyWithFe(key),
     });
   });
 
@@ -1459,7 +765,6 @@ const consumeCandidateLineForKey = ({
     return {
       line: undefined,
       nextIndex: lastMatchedIndex,
-      candidate: undefined,
     };
   }
 
@@ -1468,7 +773,6 @@ const consumeCandidateLineForKey = ({
       return {
         line: candidates[index].line,
         nextIndex: index,
-        candidate: candidates[index],
       };
     }
   }
@@ -1478,14 +782,12 @@ const consumeCandidateLineForKey = ({
     return {
       line: candidates[fallbackIndex].line,
       nextIndex: fallbackIndex,
-      candidate: candidates[fallbackIndex],
     };
   }
 
   return {
     line: undefined,
     nextIndex: lastMatchedIndex,
-    candidate: undefined,
   };
 };
 
@@ -1519,16 +821,17 @@ const classifyJemplControlDirective = (rawKey = "") => {
   if (!key.startsWith("$")) {
     return null;
   }
-  if (/^\$if(?:#\w+)?(?:\s|\(|$)/u.test(key)) {
+  // Jempl needs whitespace after the keyword: '$if(x)' is a literal key, not a condition.
+  if (/^\$if(?:#\w+)?(?:\s|$)/u.test(key)) {
     return "if";
   }
-  if (/^\$elif(?:#\w+)?(?:\s|\(|$)/u.test(key)) {
+  if (/^\$elif(?:#\w+)?(?:\s|$)/u.test(key)) {
     return "elif";
   }
   if (/^\$else(?:#\w+)?(?:\s|$)/u.test(key)) {
     return "else";
   }
-  if (/^\$for(?::\w+)?(?:\s|\(|$)/u.test(key)) {
+  if (/^\$for(?::\w+)?(?:\s|$)/u.test(key)) {
     return "for";
   }
   // Property directives are validated by Jempl itself. Their values are not
@@ -1541,34 +844,24 @@ const classifyJemplControlDirective = (rawKey = "") => {
 
 const validateJemplConditionDirectiveSyntax = (rawKey = "", directive = "$if") => {
   const suffix = rawKey.slice(directive.length).replace(/^#\w+/, "").trim();
-  if (!suffix) {
+  if (!suffix || /^\(\s*\)$/u.test(suffix)) {
     return `missing condition after '${directive}'`;
-  }
-  if (suffix.startsWith("(") && suffix.endsWith(")")) {
-    const expression = suffix.slice(1, -1).trim();
-    if (!expression) {
-      return `missing condition after '${directive}'`;
-    }
   }
   return null;
 };
 
 const validateJemplForDirectiveSyntax = (rawKey = "") => {
   rawKey = rawKey.replace(/^\$for:\w+/, "$for");
-  const forMatchWithParentheses = rawKey.match(
-    /^\$for\s*\(\s*([A-Za-z_$][A-Za-z0-9_$]*)(?:\s*,\s*([A-Za-z_$][A-Za-z0-9_$]*))?\s+in\s+(.+)\)$/u,
-  );
-  const forMatchWithoutParentheses = rawKey.match(
+  const forMatch = rawKey.match(
     /^\$for\s+([A-Za-z_$][A-Za-z0-9_$]*)(?:\s*,\s*([A-Za-z_$][A-Za-z0-9_$]*))?\s+in\s+(.+)$/u,
   );
-  const forMatch = forMatchWithParentheses || forMatchWithoutParentheses;
   if (!forMatch) {
-    return "expected '$for(item[, index] in iterable)' or '$for item[, index] in iterable'";
+    return "expected '$for item[, index] in iterable'";
   }
 
   const iterableExpression = String(forMatch[3] || "").trim();
   if (!iterableExpression) {
-    return "missing iterable expression in '$for(...)'";
+    return "missing iterable expression in '$for'";
   }
 
   return null;
@@ -1626,7 +919,9 @@ const collectJemplControlDirectiveDiagnostics = ({
         diagnostics.push(createJemplControlDiagnostic({
           key,
           line,
-          message: "unknown control keyword",
+          message: /^\$(?:if|elif)(?:#\w+)?\(|^\$for(?::\w+)?\(/u.test(key)
+            ? "unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'"
+            : "unknown control keyword",
         }));
         hasOpenIfChain = false;
         visitNode(value);
@@ -1746,191 +1041,28 @@ const collectSelectorBindingsFromViewAst = ({
         lastMatchedIndex,
       });
       lastMatchedIndex = lineMatch.nextIndex;
-      const feParsed = lineMatch.candidate?.feParsed || parseSelectorKeyWithFe(key);
-      const bindingNames = [
-        ...new Set([
-          ...(Array.isArray(feParsed.bindingNames) ? feParsed.bindingNames : []),
-          ...(Array.isArray(entry.bindingNames) ? entry.bindingNames : []),
-        ]),
-      ];
+      // Tag, selector and names come from the key itself; the text-scan candidate only gives the line. When
+      // no candidate matches the key exactly (flow mappings, escaped or multi-line keys) that is the next
+      // candidate's line.
+      const parsedKey = parseSelectorKey(key);
 
       return {
         line: lineMatch.line,
         rawKey: key,
-        selector: feParsed.selector,
-        tagName: feParsed.tagName,
-        attrsText: feParsed.attrsText,
-        bindingNames,
+        selector: parsedKey.selector,
+        tagName: parsedKey.tagName,
+        attrsText: parsedKey.attrsText,
+        // Object-notation keys of the element's value ('rtgl-button: {aria-label: x}') are bindings too.
+        bindingNames: [...new Set([...parsedKey.bindingNames, ...entry.bindingNames])],
         filePath: null,
       };
     })
     .filter(Boolean);
 };
 
-const splitTopLevelWhitespace = (source = "") => {
-  const tokens = [];
-  let current = "";
-  let quote = null;
-  let parenDepth = 0;
-  let bracketDepth = 0;
-  let braceDepth = 0;
-
-  for (let index = 0; index < source.length; index += 1) {
-    const char = source[index];
-    const isTopLevel = parenDepth === 0 && bracketDepth === 0 && braceDepth === 0;
-
-    if (quote) {
-      current += char;
-
-      if (quote === "\"" && char === "\\") {
-        if (index + 1 < source.length) {
-          current += source[index + 1];
-          index += 1;
-        }
-        continue;
-      }
-
-      if (quote === "'" && char === "'" && source[index + 1] === "'") {
-        current += source[index + 1];
-        index += 1;
-        continue;
-      }
-
-      if (char === quote) {
-        quote = null;
-      }
-      continue;
-    }
-
-    if (char === "\"" || char === "'") {
-      quote = char;
-      current += char;
-      continue;
-    }
-
-    if (char === "(") {
-      parenDepth += 1;
-      current += char;
-      continue;
-    }
-    if (char === ")" && parenDepth > 0) {
-      parenDepth -= 1;
-      current += char;
-      continue;
-    }
-    if (char === "[") {
-      bracketDepth += 1;
-      current += char;
-      continue;
-    }
-    if (char === "]" && bracketDepth > 0) {
-      bracketDepth -= 1;
-      current += char;
-      continue;
-    }
-    if (char === "{") {
-      braceDepth += 1;
-      current += char;
-      continue;
-    }
-    if (char === "}" && braceDepth > 0) {
-      braceDepth -= 1;
-      current += char;
-      continue;
-    }
-
-    if (isTopLevel && /\s/u.test(char)) {
-      const token = current.trim();
-      if (token) {
-        tokens.push(token);
-      }
-      current = "";
-      continue;
-    }
-
-    current += char;
-  }
-
-  const finalToken = current.trim();
-  if (finalToken) {
-    tokens.push(finalToken);
-  }
-
-  return tokens;
-};
-
-export const parseBindingNames = (attrsText = "") => {
-  if (!attrsText) {
-    return [];
-  }
-
-  const localTokens = splitTopLevelWhitespace(attrsText);
-  const localBindingNames = [];
-  const localSeen = new Set();
-  localTokens.forEach((token) => {
-    const assignmentIndex = token.indexOf("=");
-    const name = (assignmentIndex === -1 ? token : token.slice(0, assignmentIndex)).trim();
-    if (!name || localSeen.has(name)) {
-      return;
-    }
-    localSeen.add(name);
-    localBindingNames.push(name);
-  });
-
-  const looksMalformedBindingName = (name = "") => {
-    if (!name) {
-      return true;
-    }
-    if (name.includes("{") || name.includes("}")) {
-      return true;
-    }
-    if (name.endsWith(":") && !name.startsWith(":")) {
-      return true;
-    }
-    return false;
-  };
-
-  const hasPrefixedBindingNameLoss = ({ localNames = [], sharedNames = [] } = {}) => {
-    if (!localNames.length || !sharedNames.length) {
-      return false;
-    }
-
-    return localNames.some((name) => {
-      if (!name || !["@", ":", "?", "."].some((prefix) => name.startsWith(prefix))) {
-        return false;
-      }
-
-      const withoutPrefix = name.slice(1);
-      if (!withoutPrefix) {
-        return false;
-      }
-
-      return !sharedNames.includes(name) && sharedNames.includes(withoutPrefix);
-    });
-  };
-
-  try {
-    const sharedNames = collectFeBindingNames(attrsText);
-    if (Array.isArray(sharedNames)) {
-      if (sharedNames.length === 0 && localBindingNames.length > 0) {
-        return localBindingNames;
-      }
-      const sharedHasMalformed = sharedNames.some((name) => looksMalformedBindingName(name));
-      const localHasMalformed = localBindingNames.some((name) => looksMalformedBindingName(name));
-      if (sharedHasMalformed && !localHasMalformed && localBindingNames.length > 0) {
-        return localBindingNames;
-      }
-      if (hasPrefixedBindingNameLoss({ localNames: localBindingNames, sharedNames })) {
-        return localBindingNames;
-      }
-      return sharedNames;
-    }
-  } catch {
-    // Fallback to local tokenizer when shared parser fails.
-  }
-
-  return localBindingNames;
-};
+// FE's binding names, with one deviation: a bare toggle keeps its '?' ('?checked'), so that it stays a
+// boolean-attribute binding and equals the template AST's binding name.
+export const parseBindingNames = (attrsText = "") => collectBindingNames(attrsText, { keepTogglePrefix: true });
 
 export const collectSelectorBindingsFromViewText = (viewText = "") => {
   const lines = viewText.split("\n");
@@ -1983,15 +1115,14 @@ export const collectSelectorBindingsFromViewText = (viewText = "") => {
       return;
     }
 
-    const feParsed = parseSelectorKeyWithFe(key);
-
+    const parsedKey = parseSelectorKey(key);
     results.push({
       line: lineIndex + 1,
       rawKey: key,
-      selector: feParsed.selector,
-      tagName: feParsed.tagName,
-      attrsText: feParsed.attrsText,
-      bindingNames: feParsed.bindingNames,
+      selector: parsedKey.selector,
+      tagName: parsedKey.tagName,
+      attrsText: parsedKey.attrsText,
+      bindingNames: parsedKey.bindingNames,
       filePath: null,
     });
   });
@@ -2014,14 +1145,23 @@ export const collectSelectorBindingsFromView = ({
   });
 };
 
-const createLineOffsets = (source = "") => {
-  const offsets = [0];
-  for (let index = 0; index < source.length; index += 1) {
-    if (source[index] === "\n") {
-      offsets.push(index + 1);
+// RTGL-CONTRACT-003 input from the text scan (until decision D10 removes it): the first key with a '.prop'
+// assignment, or with a bare '.prop' token when FE reads no attribute name in that key. FE ignores bare '.'
+// tokens, so a bare '.prop' next to an attribute FE reads is not reported. Returns the binding and its
+// '.prop' name, or null.
+export const findLegacyDotPropBinding = (bindings = []) => {
+  for (const binding of bindings) {
+    const bindingName = binding.bindingNames.find((name) => name.startsWith("."))
+      || (binding.bindingNames.some(Boolean)
+        ? undefined
+        : tokenizeTopLevelWhitespaceWithOffsets(binding.attrsText)
+          .map((token) => splitBindingNameAndValue(token.raw).bindingName)
+          .find((name) => name.startsWith(".")));
+    if (bindingName) {
+      return { ...binding, bindingName };
     }
   }
-  return offsets;
+  return null;
 };
 
 const getOffsetFromLineColumn = ({ lineOffsets = [], line = 1, column = 1 }) => {
@@ -2121,12 +1261,6 @@ const extractExpressionTokensWithRanges = (valueSource = "") => {
   });
 
   return matches;
-};
-
-const extractExpressionTokens = (valueText = "") => {
-  return [...new Set(
-    extractExpressionTokensWithRanges(valueText).map((entry) => entry.expression),
-  )];
 };
 
 const tokenizeTopLevelWhitespaceWithOffsets = (source = "") => {
@@ -2232,94 +1366,6 @@ const tokenizeTopLevelWhitespaceWithOffsets = (source = "") => {
   }
 
   return tokens;
-};
-
-const toRelativeTokenRange = ({ startOffset = 0, endOffset = 0 }) => {
-  const safeStartOffset = Math.max(0, Number(startOffset) || 0);
-  const safeEndOffset = Math.max(safeStartOffset, Number(endOffset) || safeStartOffset);
-  const length = safeEndOffset - safeStartOffset;
-
-  return {
-    startOffset: safeStartOffset,
-    endOffset: safeEndOffset,
-    length,
-    column: safeStartOffset + 1,
-    endColumn: safeStartOffset + Math.max(length, 1),
-  };
-};
-
-export const tokenizeYahtmlSelectorKey = (rawKey = "") => {
-  const source = String(rawKey || "");
-  let cursor = 0;
-
-  while (cursor < source.length && /\s/u.test(source[cursor])) {
-    cursor += 1;
-  }
-
-  const selectorStart = cursor;
-  while (cursor < source.length && !/\s/u.test(source[cursor])) {
-    cursor += 1;
-  }
-  const selectorEnd = cursor;
-  const selectorRaw = source.slice(selectorStart, selectorEnd);
-
-  while (cursor < source.length && /\s/u.test(source[cursor])) {
-    cursor += 1;
-  }
-  const attrsStart = cursor;
-  const attrsText = source.slice(attrsStart);
-  const attrsTextTokens = tokenizeTopLevelWhitespaceWithOffsets(attrsText);
-
-  const selectorToken = selectorRaw
-    ? {
-      kind: "YahtmlSelectorToken",
-      raw: selectorRaw,
-      ...toRelativeTokenRange({
-        startOffset: selectorStart,
-        endOffset: selectorEnd,
-      }),
-    }
-    : null;
-
-  const attributeTokens = attrsTextTokens.map((token) => {
-    const {
-      bindingName,
-      valueText,
-      valueSource,
-      valueStartOffset,
-    } = splitBindingNameAndValue(token.raw);
-    const expressionNodes = extractExpressionTokensWithRanges(valueSource).map((expressionNode) => ({
-      kind: "YahtmlExpressionToken",
-      expression: expressionNode.expression,
-      raw: expressionNode.raw,
-      ...toRelativeTokenRange({
-        startOffset: attrsStart + token.start + valueStartOffset + expressionNode.startOffset,
-        endOffset: attrsStart + token.start + valueStartOffset + expressionNode.endOffset,
-      }),
-    }));
-
-    return {
-      kind: "YahtmlAttributeToken",
-      raw: token.raw,
-      bindingName,
-      sourceType: detectBindingSourceType(bindingName),
-      name: stripBindingPrefix(bindingName),
-      valueText,
-      expressions: [...new Set(expressionNodes.map((node) => node.expression))],
-      expressionNodes,
-      ...toRelativeTokenRange({
-        startOffset: attrsStart + token.start,
-        endOffset: attrsStart + token.end,
-      }),
-    };
-  });
-
-  return {
-    kind: "YahtmlSelectorTokenStream",
-    raw: source,
-    selectorToken,
-    attributeTokens,
-  };
 };
 
 const resolveRawKeyRange = ({
@@ -2457,48 +1503,17 @@ const buildAttributeNodes = ({
   });
 };
 
-const parseYahtmlSelectorErrorMessage = (error) => {
-  const fallback = "selector key parse failed";
-  if (!error) {
-    return fallback;
-  }
-  if (typeof error?.message === "string" && error.message.trim().length > 0) {
-    return error.message.trim();
-  }
-  return fallback;
-};
-
-const createYahtmlParseDiagnostic = ({
-  code = "RTGL-CHECK-YAHTML-PARSE-001",
-  filePath,
-  line,
-  column,
-  endLine,
-  endColumn,
-  message,
-}) => {
-  return {
-    code,
-    severity: "error",
-    filePath,
-    line,
-    column,
-    endLine,
-    endColumn,
-    message,
-  };
-};
-
+// Element AST of one template key: the key's range and one Attribute node (with range and expressions) per
+// top-level attribute token. `parsedKey` is the key's selector binding when the caller already has it.
 export const parseYahtmlSelectorKey = ({
   rawKey = "",
   line = 1,
   lineText = "",
   lineOffsets = [],
-  filePath,
+  parsedKey,
 } = {}) => {
   const keyText = String(rawKey || "");
-  const parsedFe = parseSelectorKeyWithFe(keyText);
-  const tokenStream = tokenizeYahtmlSelectorKey(keyText);
+  const key = parsedKey ?? parseSelectorKey(keyText);
   const resolvedLine = Number.isInteger(line) ? line : 1;
   const resolvedLineText = lineText || keyText;
   const resolvedLineOffsets = Array.isArray(lineOffsets) && lineOffsets.length > 0
@@ -2510,124 +1525,48 @@ export const parseYahtmlSelectorKey = ({
     line: resolvedLine,
     lineOffsets: resolvedLineOffsets,
   });
-  const attributes = buildAttributeNodes({
-    attrsText: parsedFe.attrsText,
-    rawKey: keyText,
-    elementRange: range,
-    lineOffsets: resolvedLineOffsets,
-  });
-  const diagnostics = [];
-
-  if (!parsedFe.selector) {
-    diagnostics.push(createYahtmlParseDiagnostic({
-      filePath,
-      line: range.line,
-      column: range.column,
-      endLine: range.endLine,
-      endColumn: range.endColumn,
-      message: "Invalid YAHTML selector key: missing selector token.",
-    }));
-  } else {
-    try {
-      parseYahtmlElementKey(keyText);
-    } catch (error) {
-      diagnostics.push(createYahtmlParseDiagnostic({
-        filePath,
-        line: range.line,
-        column: range.column,
-        endLine: range.endLine,
-        endColumn: range.endColumn,
-        message: `Invalid YAHTML selector key '${keyText}': ${parseYahtmlSelectorErrorMessage(error)}.`,
-      }));
-    }
-  }
-
-  tokenStream.attributeTokens.forEach((token) => {
-    if (token.bindingName && token.bindingName.length > 0) {
-      return;
-    }
-    const tokenColumn = range.column + token.startOffset;
-    const tokenEndColumn = tokenColumn + Math.max(token.length, 1) - 1;
-    diagnostics.push(createYahtmlParseDiagnostic({
-      filePath,
-      line: range.line,
-      column: tokenColumn,
-      endLine: range.endLine,
-      endColumn: tokenEndColumn,
-      message: `Invalid YAHTML attribute token '${token.raw}'.`,
-    }));
-  });
-
-  const cst = {
-    kind: "YahtmlElementCst",
-    rawKey: keyText,
-    selectorToken: tokenStream.selectorToken,
-    attributeTokens: tokenStream.attributeTokens,
-  };
 
   return {
     ast: {
       type: "Element",
       kind: "YahtmlElementAst",
-      tagName: parsedFe.tagName,
-      selector: parsedFe.selector,
+      tagName: key.tagName,
+      selector: key.selector,
       rawKey: keyText,
       rawLexeme: keyText,
       range,
-      attributes,
+      attributes: buildAttributeNodes({
+        attrsText: key.attrsText,
+        rawKey: keyText,
+        elementRange: range,
+        lineOffsets: resolvedLineOffsets,
+      }),
     },
-    cst,
-    diagnostics,
   };
 };
 
+// Template AST built from the view's selector bindings (one Element node per binding, same order).
 export const collectTemplateAstFromView = ({
   viewText = "",
   viewYaml,
+  selectorBindings = collectSelectorBindingsFromView({ viewText, viewYaml }),
 } = {}) => {
-  const selectorBindings = collectSelectorBindingsFromView({ viewText, viewYaml });
   const lines = viewText.split("\n");
   const lineOffsets = createLineOffsets(viewText);
-  const parseDiagnostics = [];
-  const cstNodes = [];
-
-  const nodes = selectorBindings.map((binding) => {
-    const line = Number.isInteger(binding?.line) ? binding.line : 1;
-    const lineText = lines[line - 1] || "";
-    const rawKey = String(binding?.rawKey || "");
-    const parsedSelector = parseYahtmlSelectorKey({
-      rawKey,
-      line,
-      lineText,
-      lineOffsets,
-    });
-    if (Array.isArray(parsedSelector.diagnostics) && parsedSelector.diagnostics.length > 0) {
-      parsedSelector.diagnostics.forEach((diagnostic) => {
-        parseDiagnostics.push(diagnostic);
-      });
-    }
-    if (parsedSelector.cst) {
-      cstNodes.push(parsedSelector.cst);
-    }
-
-    return {
-      ...parsedSelector.ast,
-      tagName: binding?.tagName || parsedSelector.ast.tagName || "",
-      selector: binding?.selector || parsedSelector.ast.selector || "",
-      rawKey,
-      rawLexeme: rawKey,
-    };
-  });
 
   return {
     type: "Template",
     kind: "YahtmlTemplateAst",
-    nodes,
-    cst: {
-      kind: "YahtmlTemplateCst",
-      nodes: cstNodes,
-    },
-    parseDiagnostics,
+    nodes: selectorBindings.map((binding) => {
+      const line = Number.isInteger(binding.line) ? binding.line : 1;
+      return parseYahtmlSelectorKey({
+        rawKey: binding.rawKey,
+        line,
+        lineText: lines[line - 1] || "",
+        lineOffsets,
+        parsedKey: binding,
+      }).ast;
+    }),
   };
 };
 

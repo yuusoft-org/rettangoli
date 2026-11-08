@@ -1,0 +1,3 @@
+template:
+  - rtgl-input ?disabled .value: FE ignores a bare token after a toggle
+styles: {}

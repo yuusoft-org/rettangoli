@@ -1,0 +1,9 @@
+---
+template: base
+title: Changelog
+---
+- h1: Changelog
+- $for entry in team.changelog:
+    - section class="release":
+        - h2: ${entry.version}
+        - "${md(entry.content)}"

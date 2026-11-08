@@ -89,10 +89,15 @@ export class MarkdownItAsync extends MarkdownIt {
       if (!item) {
         throw new Error(`Unknown highlight placeholder id: ${id}`);
       }
-      const [promise] = item;
-      const highlighted = (await promise) || '';
+      const [promise, str, lang] = item;
+      const highlighted = await promise;
       this.placeholderMap.delete(id);
-      return highlighted;
+      if (highlighted) {
+        return highlighted;
+      }
+      // An empty highlight result means "render the escaped code", like markdown-it's own fence rule.
+      const attrs = lang ? [['class', this.options.langPrefix + lang]] : null;
+      return `<pre><code${this.renderer.renderAttrs({ attrs })}>${this.utils.escapeHtml(str)}</code></pre>`;
     });
   }
 }

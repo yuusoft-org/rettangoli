@@ -24,7 +24,10 @@
       "autofix": {
         "mode": "apply",
         "dryRun": false,
-        "patchOutput": false
+        "patchOutput": false,
+        "candidateCount": 2,
+        "appliedCount": 1,
+        "skippedCount": 1
       },
       "diagnostics": []
     }

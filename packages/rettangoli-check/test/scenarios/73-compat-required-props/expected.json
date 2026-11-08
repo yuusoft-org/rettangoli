@@ -1,5 +1,5 @@
 {
-  "name": "compat required props",
+  "name": "compat required props; bare '.prop' and ':prop' tokens provide no prop (FE ignores them)",
   "options": {
     "dirs": [
       "./src/components"
@@ -8,16 +8,56 @@
   },
   "expected": {
     "ok": false,
-    "errorCount": 1,
+    "errorCount": 5,
     "warnCount": 0,
     "errorCodes": {
-      "RTGL-CHECK-COMPAT-001": 1
+      "RTGL-CHECK-COMPAT-001": 3,
+      "RTGL-CHECK-YAHTML-002": 1,
+      "RTGL-CONTRACT-003": 1
     },
-    "warnCodes": {}
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-COMPAT-001",
+        "severity": "error",
+        "message": "components/host: missing required prop(s) [title] for 'rtgl-test-required-child'.",
+        "filePath": "src/components/host/host.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-COMPAT-001",
+        "severity": "error",
+        "message": "components/bare: missing required prop(s) [title] for 'rtgl-test-required-child'.",
+        "filePath": "src/components/bare/bare.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-COMPAT-001",
+        "severity": "error",
+        "message": "components/bare: missing required prop(s) [title] for 'rtgl-test-required-child'.",
+        "filePath": "src/components/bare/bare.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-002",
+        "severity": "error",
+        "message": "components/bare: legacy '.title' binding is not supported. Use ':title'.",
+        "filePath": "src/components/bare/bare.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CONTRACT-003",
+        "severity": "error",
+        "message": "components/bare: legacy property binding syntax is not supported. Use ':prop=${value}' in .view.yaml.",
+        "filePath": "src/components/bare/bare.view.yaml",
+        "line": 2
+      }
+    ]
   },
   "specRefs": [
     "RTGL-SPEC-CONF-CORE-001",
     "RTGL-SPEC-CONF-CORE-002",
-    "RTGL-SPEC-FE-008"
+    "RTGL-SPEC-FE-008",
+    "RTGL-SPEC-YAHTML-004"
   ]
 }

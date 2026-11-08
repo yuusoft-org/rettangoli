@@ -1,9 +1,11 @@
 import { scheduleFrame } from "./scheduler.js";
-import { PARENT_UPDATE_TRANSACTION } from "../core/runtime/updateTransaction.js";
+import { buildParentUpdateDeps } from "../core/runtime/lifecycle.js";
+import {
+  PARENT_UPDATE_TRANSACTION,
+  RETTANGOLI_COMPONENT_MARKER,
+} from "../core/protocol.js";
 
-export const RETTANGOLI_COMPONENT_MARKER = Symbol.for(
-  "@rettangoli/fe/component",
-);
+export { RETTANGOLI_COMPONENT_MARKER };
 
 const propsSnapshots = new WeakMap();
 const pendingUpdates = new WeakMap();
@@ -297,15 +299,7 @@ const runPendingUpdate = (element, pendingUpdate) => {
   element.removeAttribute("isDirty");
 
   if (!isFirstProps && element.handlers && element.handlers.handleOnUpdate) {
-    const deps = {
-      ...element.deps,
-      store: element.store,
-      render: element.render.bind(element),
-      handlers: element.handlers,
-      dispatchEvent: element.dispatchEvent.bind(element),
-      refs: element.refIds || {},
-    };
-    element.handlers.handleOnUpdate(deps, {
+    element.handlers.handleOnUpdate(buildParentUpdateDeps(element), {
       oldProps: previousProps,
       newProps: pendingUpdate.newProps,
     });

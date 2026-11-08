@@ -4,7 +4,7 @@ group: rettangoli-fe-component-runtime-contract
 suite: component-runtime-contract
 exportName: runComponentRuntimeContract
 ---
-case: observed attributes include key and camel plus kebab props
+case: observed attributes include key and camel, kebab and lowercased props
 in:
   - propsSchemaKeys:
       - maxItems
@@ -14,8 +14,10 @@ out:
     - key
     - max-items
     - maxItems
+    - maxitems
     - submit-label
     - submitLabel
+    - submitlabel
 ---
 case: runtime deps merge base deps with runtime fields
 in:

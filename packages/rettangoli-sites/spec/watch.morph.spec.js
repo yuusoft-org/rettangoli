@@ -1,8 +1,7 @@
 import { JSDOM } from 'jsdom';
 import { describe, expect, it, vi } from 'vitest';
 
-import { createClientScript } from '../src/cli/watch.js';
-import { createViteWatchClientModuleSource } from '../src/cli/watchClient.js';
+import { createViteWatchClientModuleSource, createWatchClientScript } from '../src/cli/watchClient.js';
 
 const waitForUpdate = () => new Promise((resolve) => setTimeout(resolve, 20));
 const withDefaultDoctype = (html) => /^\s*<!doctype\s/i.test(html)
@@ -42,7 +41,7 @@ function createWatchDom({
   let windowScrollY = 0;
 
   const dom = new JSDOM(
-    `<!doctype html><html lang="en"><head>${initialHead}</head><body class="before">${initialBody}${createClientScript('body', initialRevision, initialSessionId)}</body></html>`,
+    `<!doctype html><html lang="en"><head>${initialHead}</head><body class="before">${initialBody}${createWatchClientScript('body', initialRevision, initialSessionId)}</body></html>`,
     {
       runScripts: 'dangerously',
       url: 'http://localhost:3001/example/',
@@ -286,6 +285,62 @@ describe('watch body morph behavior', () => {
     expect(input.value).toBe('unsaved state');
     expect(document.querySelector('#content p')?.textContent).toBe('Updated');
 
+    dom.window.close();
+  });
+
+  it('clears the generation error when a stylesheet-only update arrives', async () => {
+    const { dom, send, sendMessage } = createWatchDom({
+      initialBody: '<p id="copy">Last valid page</p>',
+      initialHead: '<link rel="stylesheet" href="/theme.css">',
+      nextHtml: '<html><head></head><body></body></html>',
+    });
+    const { document } = dom.window;
+    const consoleError = vi.spyOn(dom.window.console, 'error').mockImplementation(() => {});
+
+    sendMessage({
+      type: 'watch-error',
+      message: 'Static files could not be copied',
+    });
+    await waitForUpdate();
+    expect(document.querySelector('#rettangoli-watch-error')?.textContent)
+      .toContain('Static files could not be copied');
+
+    send('assets', ['/theme.css'], 1);
+    await waitForUpdate();
+
+    expect(document.querySelector('#rettangoli-watch-error')).toBeNull();
+    expect(document.querySelector('link[data-rtgl-watch-asset-pending]')).not.toBeNull();
+    expect(document.querySelector('#copy').textContent).toBe('Last valid page');
+    expect(dom.window.fetch).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+    dom.window.close();
+  });
+
+  it('keeps the generation error when a stylesheet update falls back to a full reload', async () => {
+    const { dom, send, sendMessage } = createWatchDom({
+      initialBody: '<p id="copy">Last valid page</p>',
+      initialHead: '<style>@import url("/theme.css");</style>',
+      nextHtml: '<html><head></head><body></body></html>',
+    });
+    const consoleError = vi.spyOn(dom.window.console, 'error').mockImplementation(() => {});
+    const reloadReasons = [];
+    dom.window.addEventListener('rettangoli:watch-full-reload', (event) => {
+      reloadReasons.push(event.detail.reason);
+      event.preventDefault();
+    });
+
+    sendMessage({
+      type: 'watch-error',
+      message: 'Static files could not be copied',
+    });
+    await waitForUpdate();
+    send('assets', ['/theme.css'], 1);
+    await waitForUpdate();
+
+    expect(reloadReasons).toEqual(['stylesheet-unreachable']);
+    expect(dom.window.document.querySelector('#rettangoli-watch-error')?.textContent)
+      .toContain('Static files could not be copied');
+    consoleError.mockRestore();
     dom.window.close();
   });
 

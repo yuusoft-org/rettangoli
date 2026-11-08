@@ -1,0 +1,1805 @@
+{
+  "fe-build-all-flags": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "development": true,
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "outfile": "out.js",
+              "setup": "s.js",
+              "setupPath": "s.js",
+              "sourcemap": true
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-config-comment-only": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: rettangoli.config.yaml is empty"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-config-empty": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: rettangoli.config.yaml is empty"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-config-false": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: rettangoli.config.yaml is empty"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-config-in-parent-directory": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: rettangoli.config.yaml not found"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-config-in-working-directory": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-config-invalid-yaml": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: Error reading config file \"<APP>/rettangoli.config.yaml\": unexpected end of the stream within a flow collection (2:1)"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-config-null": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: rettangoli.config.yaml is empty"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-config-values": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": {
+                "defaultLocale": "en"
+              },
+              "outfile": "config-out.js",
+              "setup": "config-setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-dir-missing": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: Directories do not exist: src/missing"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-dirs-empty": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fe.dirs not found or empty in config"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-dirs-number": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fe.dirs entries must be strings (got number at index 0)"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-dirs-string": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fe.dirs must be a list of directories, for example dirs: [src/components]"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-flags-beat-config": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "outfile": "cli-out.js",
+              "setup": "cli-setup.js",
+              "setupPath": "cli-setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl fe build [options]",
+      "",
+      "Build UI components",
+      "",
+      "Options:",
+      "  -o, --outfile <path>     The output file",
+      "  -s, --setup-path <path>  Custom setup file path",
+      "  -d, --development        Development mode (no minification)",
+      "  --sourcemap [mode]       Emit source maps; 'hidden' omits the sourceMappingURL",
+      "                           comment",
+      "  -h, --help               display help for command",
+      "",
+      "",
+      "Examples:",
+      "  $ rtgl fe build",
+      "  $ rtgl fe build --sourcemap hidden",
+      "  $ rtgl fe build --outfile ./dist/bundle.js",
+      "  $ rtgl fe build -o ./public/js/main.js",
+      "  $ rtgl fe build --development",
+      "  $ rtgl fe build -d -o ./dist/dev.js",
+      "  $ rtgl fe build -s src/setup.tauri.js",
+      "  $ rtgl fe build --setup-path src/setup.web.js",
+      "",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-i18n-false": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-long-flags": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "outfile": "o.js",
+              "setup": "s.js",
+              "setupPath": "s.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-minimal": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-no-config": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: rettangoli.config.yaml not found"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-no-fe-section": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fe.dirs not found or empty in config"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-no-project-fe": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: warning: this project does not install @rettangoli/fe; fe build bundles the runtime from the project and cannot resolve it. Run npm i -D @rettangoli/fe@0.0.1-fake-nested"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-nullish-values": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-outfile-number": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fe.outfile must be a file path string (got number)"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-build-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fake build rejection"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-setup-number": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": 42
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-skew": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: warning: this project resolves @rettangoli/fe@0.0.0-fake but rtgl <VERSION> runs @rettangoli/fe@0.0.1-fake-nested; fe build bundles the project's runtime while fe watch serves rtgl's. Align @rettangoli/fe and rtgl (upgrade rtgl, or pin @rettangoli/fe@0.0.1-fake-nested)."
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-sourcemap-hidden": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js",
+              "sourcemap": "hidden"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-throw": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fake build failure",
+      "  caused by: fake cause",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-throw-debug": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "rtgl: fake build failure",
+      "  caused by: fake cause",
+      "Error: fake build failure",
+      "  [cause]: Error: fake cause"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-throw-debug-zero": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fake build failure",
+      "  caused by: fake cause",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-check-dirs-string": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fe.dirs must be a list of directories, for example dirs: [src/components]"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-check-format-json": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "format": "json",
+              "i18n": null
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "fe-check-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl fe check [options]",
+      "",
+      "Validate frontend component file contracts",
+      "",
+      "Options:",
+      "  --format <format>  Output format: text or json (default: \"text\")",
+      "  -h, --help         display help for command",
+      "",
+      "",
+      "Examples:",
+      "  $ rtgl fe check",
+      "  $ rtgl fe check --format json",
+      "",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-check-no-config": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: rettangoli.config.yaml not found"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-check-ok": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "format": "text",
+              "i18n": null
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "fe-check-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "  code: 'ERR_UNHANDLED_REJECTION'"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "format": "text",
+              "i18n": null
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "fe-check-setup-number": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "format": "text",
+              "i18n": null
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "fe-check-skew": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "format": "text",
+              "i18n": null
+            }
+          ],
+          "fn": "check"
+        }
+      }
+    ]
+  },
+  "fe-examples-default-output": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "outputDir": "./vt/specs/examples"
+            }
+          ],
+          "fn": "examples"
+        }
+      }
+    ]
+  },
+  "fe-examples-fe-scalar": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fe.dirs not found or empty in config"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-examples-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl fe examples [options]",
+      "",
+      "Generate examples",
+      "",
+      "Options:",
+      "  -h, --help  display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-examples-no-config": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: rettangoli.config.yaml not found"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-examples-no-fe-section": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fe.dirs not found or empty in config"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-examples-output-dir": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "outputDir": "./out/examples"
+            }
+          ],
+          "fn": "examples"
+        }
+      }
+    ]
+  },
+  "fe-examples-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "  code: 'ERR_UNHANDLED_REJECTION'"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "outputDir": "./vt/specs/examples"
+            }
+          ],
+          "fn": "examples"
+        }
+      }
+    ]
+  },
+  "fe-package-missing": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: Cannot find package '@rettangoli/fe' imported from <APP>/node_modules/rtgl/cli.js",
+      "  code: ERR_MODULE_NOT_FOUND",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
+    ],
+    "stdout": [],
+    "trace": []
+  },
+  "fe-scaffold-defaults": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "category": "pages",
+              "componentName": "component-name",
+              "dir": "./example"
+            }
+          ],
+          "fn": "scaffold"
+        }
+      }
+    ]
+  },
+  "fe-scaffold-flags": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "category": "components",
+              "componentName": "my-button",
+              "dir": "x"
+            }
+          ],
+          "fn": "scaffold"
+        }
+      }
+    ]
+  },
+  "fe-scaffold-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl fe scaffold [options]",
+      "",
+      "Scaffold UI components",
+      "",
+      "Options:",
+      "  -d, --dir <dir>                        The directory to scaffold (default: \"./example\")",
+      "  -c, --category <category>              The category of the component (default: \"pages\")",
+      "  -n, --component-name <component-name>  The name of the component (default: \"component-name\")",
+      "  -h, --help                             display help for command",
+      "",
+      "",
+      "Examples:",
+      "  $ rtgl fe scaffold",
+      "  $ rtgl fe scaffold --category components --component-name my-button",
+      "  $ rtgl fe scaffold -c layouts -n header-layout",
+      "  $ rtgl fe scaffold -c pages -n home-page",
+      "",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-scaffold-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "  code: 'ERR_UNHANDLED_REJECTION'"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "category": "pages",
+              "componentName": "component-name",
+              "dir": "./example"
+            }
+          ],
+          "fn": "scaffold"
+        }
+      }
+    ]
+  },
+  "fe-scaffold-unknown-name-flag": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: unknown option '--name'"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-watch-all-flags": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 4000,
+              "publicDir": "pub",
+              "setup": "s.js",
+              "setupPath": "s.js",
+              "watchEntry": "w.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-config-public-and-entry": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "outfile": "config-out.js",
+              "port": 3001,
+              "publicDir": "pub",
+              "setup": "setup.js",
+              "watchEntry": "w.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-config-public-false": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "publicDir": false,
+              "setup": "setup.js",
+              "watchEntry": null
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-config-public-null": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "publicDir": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-config-public-true": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "publicDir": true,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-defaults": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl fe watch [options]",
+      "",
+      "Watch for changes",
+      "",
+      "Options:",
+      "  -p, --port <port>        The port to use (default: 3001)",
+      "  -s, --setup-path <path>  Custom setup file path",
+      "  --public-dir <path>      Directory to serve as untransformed static assets",
+      "  --watch-entry <path>     Project module served at the configured outfile URL",
+      "                           in watch mode",
+      "  -h, --help               display help for command",
+      "",
+      "",
+      "Examples:",
+      "  $ rtgl fe watch",
+      "  $ rtgl fe watch --port 8080",
+      "  $ rtgl fe watch -p 4000",
+      "  $ rtgl fe watch -s src/setup.tauri.js",
+      "  $ rtgl fe watch --setup-path src/setup.web.js",
+      "  $ rtgl fe watch --public-dir static",
+      "  $ rtgl fe watch --watch-entry src/watch.js",
+      "",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-watch-no-project-fe": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-outfile-number": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fe.outfile must be a file path string (got number)"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-watch-port-text": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: option '-p, --port <port>' argument 'notaport' is invalid. Expected an integer but received \"notaport\""
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-watch-port-zero": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: option '-p, --port <port>' argument '0' is invalid. Port must be between 1 and 65535, received \"0\""
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      }
+    ]
+  },
+  "fe-watch-public-flag-beats-config": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "publicDir": "cli-pub",
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fake watch rejection"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-skew": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: warning: this project resolves @rettangoli/fe@0.0.0-fake but rtgl <VERSION> runs @rettangoli/fe@0.0.1-fake-nested; fe build bundles the project's runtime while fe watch serves rtgl's. Align @rettangoli/fe and rtgl (upgrade rtgl, or pin @rettangoli/fe@0.0.1-fake-nested)."
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-vt": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/watch-client"
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "outfile": "out.js"
+            }
+          ],
+          "fn": "resolveServeContext"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "createWatchClientModuleSource": {
+                "$fn": "createViteWatchClientModuleSource"
+              },
+              "cwd": "<APP>",
+              "publicEntryPath": "/fake/public/main.js"
+            }
+          ],
+          "fn": "createRettangoliVtWatchPlugin"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "outfile": "out.js",
+              "port": 3001,
+              "publicDir": false,
+              "setup": "setup.js",
+              "vitePlugins": [
+                {
+                  "args": {
+                    "createWatchClientModuleSource": {
+                      "$fn": "createViteWatchClientModuleSource"
+                    },
+                    "cwd": "<APP>",
+                    "publicEntryPath": "/fake/public/main.js"
+                  },
+                  "name": "fake-vt-plugin"
+                }
+              ]
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-vt-public-flag": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/watch-client"
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/vt/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "outfile": {
+                "$undefined": true
+              }
+            }
+          ],
+          "fn": "resolveServeContext"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "createWatchClientModuleSource": {
+                "$fn": "createViteWatchClientModuleSource"
+              },
+              "cwd": "<APP>",
+              "publicEntryPath": "/fake/public/main.js"
+            }
+          ],
+          "fn": "createRettangoliVtWatchPlugin"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "publicDir": false,
+              "setup": "setup.js",
+              "vitePlugins": [
+                {
+                  "args": {
+                    "createWatchClientModuleSource": {
+                      "$fn": "createViteWatchClientModuleSource"
+                    },
+                    "cwd": "<APP>",
+                    "publicEntryPath": "/fake/public/main.js"
+                  },
+                  "name": "fake-vt-plugin"
+                }
+              ]
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-vt-string": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  },
+  "fe-watch-watch-entry-number": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "setup": "setup.js",
+              "watchEntry": 42
+            }
+          ],
+          "fn": "watch"
+        }
+      }
+    ]
+  }
+}

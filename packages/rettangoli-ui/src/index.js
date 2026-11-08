@@ -19,6 +19,7 @@ import RettangoliColorPicker from './primitives/colorPicker.js';
 import RettangoliSlider from './primitives/slider.js';
 import RettangoliCheckbox from './primitives/checkbox.js';
 import createGlobalUI from './deps/createGlobalUI.js';
+import { escapeFormText } from './common/formText.js';
 import { setFormMessages } from './common/formMessages.js';
 import { setIcons } from './common/icons.js';
 import { DEFAULT_UI_MESSAGES, setUiMessages } from './common/uiMessages.js';
@@ -46,6 +47,7 @@ export {
     RettangoliCheckbox,
     createGlobalUI,
     DEFAULT_UI_MESSAGES,
+    escapeFormText,
     setFormMessages,
     setIcons,
     setUiMessages,

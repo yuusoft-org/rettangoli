@@ -75,6 +75,22 @@ describe("parser event modifiers", () => {
     expect(handler).not.toHaveBeenCalled();
   });
 
+  it("an event rejected by targetOnly does not consume once", () => {
+    const handler = vi.fn();
+    const click = buildClickListener({
+      eventConfig: { handler: "handleSubmit", once: true, targetOnly: true },
+      handlers: { handleSubmit: handler },
+    });
+    const button = { id: "submitButton" };
+
+    click(createEvent({ target: { id: "child" }, currentTarget: button }));
+    expect(handler).not.toHaveBeenCalled();
+
+    click(createEvent({ target: button, currentTarget: button }));
+    click(createEvent({ target: button, currentTarget: button }));
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
   it("applies preventDefault and stopImmediatePropagation before callback", () => {
     const handler = vi.fn();
     const click = buildClickListener({

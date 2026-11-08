@@ -1,12 +1,19 @@
-import { parseAndRender } from "jempl";
+import { parse, parseAndRender } from "jempl";
 import {
   formatDurationMilliseconds,
   normalizeDurationMilliseconds,
 } from "../../common/duration.js";
 import { getFormMessage } from "../../common/formMessages.js";
+import { escapeFormText } from "../../common/formText.js";
 import { parseMaxLength } from "../../common/textLength.js";
 import { getUiMessage } from "../../common/uiMessages.js";
 import { flattenTextSegments, renderableTextSegments } from "../../common/textSegments.js";
+import {
+  CHOICE_TYPES,
+  DISPLAY_TYPES,
+  TEXT_LENGTH_TYPES,
+  getFieldDefaultValue,
+} from "./fieldTypes.js";
 
 // Segment arrays flatten to plain text for aria strings; any other value keeps
 // its previous pass-through behaviour.
@@ -24,23 +31,6 @@ const toFormDescription = (value) => {
     return value || "";
   }
   return renderableTextSegments(value) ? value : "";
-};
-
-const encode = (input) => {
-  function escapeHtml(text) {
-    const map = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    };
-    return text.replace(/[&<>"']/g, char => map[char]);
-  }
-  if (input === undefined || input === null || input === "") {
-    return ""
-  }
-  return `"${escapeHtml(String(input))}"`;
 };
 
 const isObjectLike = (value) => value !== null && typeof value === "object";
@@ -299,36 +289,7 @@ const normalizeRowStackAt = (value, fallback = "md") =>
 const getResponsiveColumnAttrs = (stackAt) =>
   stackAt === "none" ? "" : `${stackAt}-cols=1`;
 
-const blacklistedAttrs = [
-  "id",
-  "class",
-  "style",
-  "slot",
-  "form",
-  "defaultValues",
-  "disabled",
-  "sticky",
-  "context",
-  "p",
-  "ph",
-  "pv",
-  "bottomSpacer",
-  "sbv",
-];
-
 const SCROLLBAR_VISIBILITY_VALUES = new Set(["touch", "always"]);
-
-const stringifyAttrs = (props = {}) => {
-  return Object.entries(props)
-    .filter(([key, value]) => {
-      if (blacklistedAttrs.includes(key)) return false;
-      if (value === undefined || value === null) return false;
-      if (typeof value === "object" || typeof value === "function") return false;
-      return true;
-    })
-    .map(([key, value]) => `${key}=${String(value)}`)
-    .join(" ");
-};
 
 // --- Validation ---
 
@@ -520,28 +481,26 @@ const validateDurationField = (field, value) => {
   return null;
 };
 
-const TEXT_FIELD_TYPES = ["input-text", "input-textarea"];
-
 const getTextFieldMaxLength = (field) =>
-  TEXT_FIELD_TYPES.includes(field.type) ? parseMaxLength(field.maxLength) : null;
+  TEXT_LENGTH_TYPES.has(field.type) ? parseMaxLength(field.maxLength) : null;
 
 const getTextLength = (value) =>
   value === undefined || value === null ? 0 : String(value).length;
 
+// false is a real choice for a select or segmented-control option, and NaN
+// is "no number" only for input-number (a duration reports it as invalid).
+const isEmptyForRequired = (field, value) =>
+  value === undefined ||
+  value === null ||
+  value === "" ||
+  (Array.isArray(value) && value.length === 0) ||
+  (value === false && field.type !== "select" && field.type !== "segmented-control") ||
+  (field.type === "input-number" && Number.isNaN(value));
+
 export const validateField = (field, value) => {
   // Check required
   if (field.required) {
-    const isEmpty =
-      value === undefined ||
-      value === null ||
-      value === "" ||
-      (Array.isArray(value) && value.length === 0) ||
-      (typeof value === "boolean" && value === false);
-    // For numbers, 0 is a valid value
-    const isEmptyNumber = field.type === "input-number" && value === null;
-    const shouldFail = field.type === "input-number" ? isEmptyNumber : isEmpty;
-
-    if (shouldFail) {
+    if (isEmptyForRequired(field, value)) {
       if (typeof field.required === "object" && field.required.message) {
         return field.required.message;
       }
@@ -598,8 +557,9 @@ const validateRule = (rule, value) => {
       return null;
     }
     case "pattern": {
-      const preset = PATTERN_PRESETS[rule.value];
-      let regex = preset;
+      let regex = hasOwn(PATTERN_PRESETS, rule.value)
+        ? PATTERN_PRESETS[rule.value]
+        : undefined;
       if (!regex) {
         try {
           regex = new RegExp(rule.value);
@@ -647,14 +607,13 @@ export const validateForm = (fields, formValues) => {
 // --- Field helpers ---
 
 const FIELD_CONTAINER_TYPES = ["section", "row"];
-const DISPLAY_TYPES = [...FIELD_CONTAINER_TYPES, "read-only-text", "slot"];
 
 const isFieldContainer = (field) => {
   return FIELD_CONTAINER_TYPES.includes(field.type);
 };
 
 export const isDataField = (field) => {
-  return !DISPLAY_TYPES.includes(field.type);
+  return !DISPLAY_TYPES.has(field.type);
 };
 
 export const collectAllDataFields = (fields) => {
@@ -683,36 +642,7 @@ export const collectAllNamedFields = (fields) => {
   return result;
 };
 
-export const getDefaultValue = (field) => {
-  switch (field.type) {
-    case "input-text":
-    case "input-date":
-    case "input-time":
-    case "input-datetime":
-    case "input-textarea":
-    case "popover-input":
-      return "";
-    case "input-number":
-    case "input-duration":
-      return null;
-    case "select":
-    case "segmented-control":
-      return null;
-    case "tag-select":
-      return [];
-    case "checkbox":
-      return false;
-    case "color-picker":
-      return "#000000";
-    case "slider":
-    case "slider-with-input":
-      return field.min !== undefined ? field.min : 0;
-    case "image":
-      return null;
-    default:
-      return null;
-  }
-};
+export const getDefaultValue = (field) => getFieldDefaultValue(field);
 
 export const flattenFields = (fields, startIdx = 0) => {
   const result = [];
@@ -829,6 +759,58 @@ export const createInitialState = () =>
     },
   });
 
+const isJemplError = (error) =>
+  error?.name === "JemplParseError" || error?.name === "JemplRenderError";
+
+const isLoopDirective = (key) => /^\$for(?::\w+)?\s/.test(key) || key === "$each";
+
+// Copies the form with every string that makes jempl throw escaped: strings
+// it cannot parse and, outside $for/$each bodies (where loop variables are
+// unknown), strings that fail to render on their own, such as "#{x}".
+const escapeFailingTemplates = (value, context, inLoop = false) => {
+  if (typeof value === "string") {
+    if (!value.includes("{")) return value;
+    try {
+      if (inLoop) {
+        parse(value);
+      } else {
+        parseAndRender(value, context);
+      }
+      return value;
+    } catch (error) {
+      if (!isJemplError(error)) throw error;
+      return escapeFormText(value);
+    }
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => escapeFailingTemplates(item, context, inLoop));
+  }
+  if (!isPlainObject(value)) return value;
+  const bodyInLoop = inLoop || hasOwn(value, "$each");
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [
+      key,
+      escapeFailingTemplates(item, context, bodyInLoop || isLoopDirective(key)),
+    ]),
+  );
+};
+
+// Strings in the form are templates. User text with `${` or `#{` that jempl
+// rejects shows as written instead of breaking the whole form; forms that
+// render take the single render below unchanged.
+const renderFormTemplate = (form, context) => {
+  try {
+    return parseAndRender(form, context);
+  } catch (error) {
+    if (!isJemplError(error)) throw error;
+    try {
+      return parseAndRender(escapeFailingTemplates(form, context), context);
+    } catch {
+      throw error;
+    }
+  }
+};
+
 export const selectForm = ({ state, props }) => {
   const { form = {} } = props || {};
   const normalizedForm = normalizeWhenDirectives(form);
@@ -844,13 +826,12 @@ export const selectForm = ({ state, props }) => {
 
   const renderedForm =
     Object.keys(mergedContext).length > 0
-      ? parseAndRender(normalizedForm, mergedContext)
+      ? renderFormTemplate(normalizedForm, mergedContext)
       : normalizedForm;
   return assignRenderedFieldIndexes(renderedForm);
 };
 
 export const selectViewData = ({ state, props }) => {
-  const containerAttrString = stringifyAttrs(props);
   const containerPadding = normalizeFormPadding(props?.p);
   const containerHorizontalPadding = normalizeFormPadding(
     props?.ph,
@@ -917,7 +898,7 @@ export const selectViewData = ({ state, props }) => {
       field._inputType = field.inputType || "text";
     }
 
-    if (TEXT_FIELD_TYPES.includes(field.type)) {
+    if (TEXT_LENGTH_TYPES.has(field.type)) {
       const maxLength = getTextFieldMaxLength(field);
       const value = get(state.formValues, field.name);
       const length = getTextLength(value);
@@ -939,7 +920,7 @@ export const selectViewData = ({ state, props }) => {
       field._placeholder = field.placeholder ?? "m:ss";
     }
 
-    if (field.type === "select" || field.type === "tag-select" || field.type === "segmented-control") {
+    if (CHOICE_TYPES.has(field.type)) {
       const val = get(state.formValues, field.name);
       field._selectedValue = val !== undefined ? val : null;
       field._selectedValues = Array.isArray(val) ? val : [];
@@ -1003,7 +984,6 @@ export const selectViewData = ({ state, props }) => {
   }
 
   return {
-    containerAttrString,
     containerHorizontalPadding,
     containerVerticalPadding,
     bottomSpacer,
@@ -1020,8 +1000,8 @@ export const selectViewData = ({ state, props }) => {
   };
 };
 
-export const selectFormValues = ({ state, props }) => {
-  const form = selectForm({ state, props });
+// Handlers that already rendered the form for this state pass it as `form`.
+export const selectFormValues = ({ state, props }, form = selectForm({ state, props })) => {
   const dataFields = collectAllDataFields(form.fields || []);
   return pickByPaths(
     state.formValues,

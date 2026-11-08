@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { parseSync } from "oxc-parser";
 import { walkFiles } from "../utils/fs.js";
+import { parseJs } from "./jsParse.js";
 
 const walk = (node, visit) => {
   if (!node || typeof node !== "object") return;
@@ -33,7 +33,7 @@ export const collectProjectPrimitiveContracts = ({ cwd }) => {
     if (modules.has(filePath)) return modules.get(filePath);
     let program;
     try {
-      const parsed = parseSync(filePath, readFileSync(filePath, "utf8"), { sourceType: "unambiguous" });
+      const parsed = parseJs({ filePath, sourceText: readFileSync(filePath, "utf8"), sourceType: "unambiguous" });
       if (parsed.errors?.length) return undefined;
       program = parsed.program;
     } catch {

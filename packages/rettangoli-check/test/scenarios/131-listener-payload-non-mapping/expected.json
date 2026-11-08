@@ -1,0 +1,46 @@
+{
+  "name": "non-mapping listener payloads report LISTENER-010; null and false are ignored like FE does",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 3,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-LISTENER-010": 3
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-LISTENER-010",
+        "severity": "error",
+        "message": "components/card: listener payload for event 'click' on ref 'arrayPayload' must be a mapping. FE ignores any other payload value.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 6
+      },
+      {
+        "code": "RTGL-CHECK-LISTENER-010",
+        "severity": "error",
+        "message": "components/card: listener payload for event 'click' on ref 'numberPayload' must be a mapping. FE ignores any other payload value.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 12
+      },
+      {
+        "code": "RTGL-CHECK-LISTENER-010",
+        "severity": "error",
+        "message": "components/card: listener payload for event 'click' on ref 'stringPayload' must be a mapping. FE ignores any other payload value.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 17
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-011"
+  ]
+}

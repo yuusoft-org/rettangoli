@@ -1,6 +1,6 @@
 {
   "name": "@rettangoli/check",
-  "version": "0.1.8",
+  "version": "1.0.0",
   "description": "Static contract checker for Rettangoli projects",
   "type": "module",
   "repository": {
@@ -17,17 +17,21 @@
     "rtgl-check": "./src/cli/bin.js"
   },
   "scripts": {
-    "ci": "npm run test:no-fe-contracts-import && npm run test:ui-registry-resolution-contract && npm run test:ui-primitive-imported-host-attrs-contract && npm run test:runtime-compatibility && npm run test:scenarios",
+    "ci": "npm run test:no-fe-contracts-import && npm run test:ui-registry-resolution-contract && npm run test:ui-registry-load-contract && npm run test:discovery-symlinks-contract && npm run test:ui-primitive-imported-host-attrs-contract && npm run test:runtime-compatibility && npm run test:scenarios && npm run test:fe-parity && npm run test:listener-issues-contract && npm run test:fuzz-template-pipeline && npm run test:fuzz-jempl-parser && npm run test:jempl-parser-contract && npm run test:scope-graph-range-contract && npm run test:fe-frontend-component-identity-contract && npm run test:fe-frontend-handler-contract && npm run test:fe-frontend-lifecycle-contract && npm run test:fe-frontend-oxc-contract && npm run test:fe-frontend-schema-normalization-contract && npm run test:semantic-engine-contract && npm run test:type-system-contract && npm run test:yahtml-parser-snapshots && npm run test:yahtml-parser-crash && npm run test:fuzz-yahtml-parser && npm run test:fuzz-fe-contract-combinations",
+    "test": "npm run ci",
     "test:runtime-compatibility": "node ./scripts/test-runtime-compatibility.js",
     "test:package": "node ./scripts/package-smoke-test.js",
     "test:scenarios": "node ./test/run-scenarios.js",
+    "test:fe-parity": "node ./scripts/test-fe-parity.js",
+    "test:listener-issues-contract": "node ./scripts/test-listener-issues-contract.js",
     "test:no-fe-contracts-import": "node ./scripts/test-no-fe-contracts-import.js",
-    "test:diff-js-exports": "node ./scripts/differential-js-exports.js",
     "test:fuzz-template-pipeline": "node ./scripts/fuzz-template-pipeline.js",
     "test:fuzz-jempl-parser": "node ./scripts/fuzz-jempl-parser.js",
     "test:jempl-parser-contract": "node ./scripts/test-jempl-parser-contract.js",
     "test:scope-graph-range-contract": "node ./scripts/test-scope-graph-range-contract.js",
     "test:ui-registry-resolution-contract": "node ./scripts/test-ui-registry-resolution-contract.js",
+    "test:ui-registry-load-contract": "node ./scripts/test-ui-registry-load-contract.js",
+    "test:discovery-symlinks-contract": "node ./scripts/test-discovery-symlinks-contract.js",
     "test:ui-primitive-imported-host-attrs-contract": "node ./scripts/test-ui-primitive-imported-host-attrs-contract.js",
     "test:fe-frontend-component-identity-contract": "node ./scripts/test-fe-frontend-component-identity-contract.js",
     "test:fe-frontend-handler-contract": "node ./scripts/test-fe-frontend-handler-contract.js",
@@ -49,7 +53,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@rettangoli/ui": "1.32.0",
+    "@rettangoli/ui": "2.0.0",
     "jempl": "1.0.1",
     "js-yaml": "^4.1.0",
     "oxc-parser": "^0.112.0",

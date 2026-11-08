@@ -1,0 +1,5 @@
+template:
+  - rtgl-test-required-child .title: FE ignores a bare '.' token, so title is still missing
+  - rtgl-test-required-child :title: FE ignores a bare ':' token, so title is still missing
+  - rtgl-test-required-child :title=${title}: Provided
+styles: {}

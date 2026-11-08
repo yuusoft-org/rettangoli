@@ -1,11 +1,21 @@
 - meta charset="utf-8":
 - meta name="viewport" content="width=device-width,initial-scale=1":
 - title: "${title}"
-- meta name="description" content="${seo.description}":
+- meta name="description":
+    content: ${default(seo.description, '')}
+    children: []
 - link rel="canonical" href="${site.baseUrl}${page.url}":
 - link rel="icon" type="image/x-icon" href="/public/favicon.png":
 
-- meta property="og:title" content="${seo.title}":
-- meta property="og:description" content="${seo.description}":
-- meta property="og:site_name" content="${seo.ogSiteName}":
-- meta property="og:type" content="${seo.ogType}":
+- meta property="og:title":
+    content: ${default(seo.title, '')}
+    children: []
+- meta property="og:description":
+    content: ${default(seo.description, '')}
+    children: []
+- meta property="og:site_name":
+    content: ${default(seo.ogSiteName, '')}
+    children: []
+- meta property="og:type":
+    content: ${default(seo.ogType, '')}
+    children: []

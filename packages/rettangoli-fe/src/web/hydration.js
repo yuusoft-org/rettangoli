@@ -30,16 +30,24 @@
  *
  * Attributes that a custom element added to itself (`rtgl-checkbox`'s
  * `has-label`, a popover's placement) are left alone, as a normal client
- * render leaves them alone.
+ * render leaves them alone. The exception is a name the client's template
+ * toggles off (`?disabled=${busy}` with `busy` false): the template owns that
+ * name, and the markup cannot tell a copy the build wrote from one the
+ * element set, so it is removed and reported. After the first patch these
+ * names are left alone again, so an element may still set them later.
  */
 
 import { readPropFallbackFromAttributes } from "../core/runtime/props.js";
+import {
+  HYDRATE_ATTRIBUTE,
+  HYDRATION_REPORT_KEY,
+  SERVER_PROPS_ATTRIBUTE,
+} from "../core/protocol.js";
 import { adoptComponentProps } from "./componentUpdateHook.js";
 import { scheduleFrame } from "./scheduler.js";
 import { markHydratingPatch } from "../createWebPatch.js";
 
-export const HYDRATE_ATTRIBUTE = "data-rtgl-hydrate";
-export const SERVER_PROPS_ATTRIBUTE = "data-rtgl-props";
+export { HYDRATE_ATTRIBUTE, SERVER_PROPS_ATTRIBUTE };
 
 // A selector no parser vnode can have, so `sameVnode` never pairs it.
 const REPLACED_SELECTOR = "rtgl-hydration-replaced";
@@ -49,6 +57,7 @@ const ELEMENT_NODE = 1;
 const TEXT_NODE = 3;
 const COMMENT_NODE = 8;
 
+// Not shared with the renderer's tagFromSelector, which lowercases.
 const tagFromSelector = (selector) => String(selector).split(/[.#]/)[0];
 
 const isCustomElementTag = (tag) => tag.includes("-");
@@ -105,6 +114,20 @@ const mirrorAttrs = ({ vnode, elm, isCustom, isRoot, report, path }) => {
       oldAttrs[name] = domValue;
     }
     if (domValue !== attributeAsDom(attrs[name])) {
+      report.corrected += 1;
+      addReason(report, `${path}: attribute "${name}" was ${JSON.stringify(domValue)}`);
+    }
+  }
+
+  // A toggle the client renders off (`?disabled=${busy}`) names an attribute
+  // the template owns, so a copy still on a custom element is removed too
+  // (see the header).
+  if (isCustom) {
+    for (const name of vnode.data?.toggledOff || []) {
+      if (renderedNames.has(name.toLowerCase())) continue;
+      const domValue = elm.getAttribute(name);
+      if (domValue === null) continue;
+      oldAttrs[name] = domValue;
       report.corrected += 1;
       addReason(report, `${path}: attribute "${name}" was ${JSON.stringify(domValue)}`);
     }
@@ -384,10 +407,10 @@ export const createHydrationVNode = ({ vDom, renderTarget }) => {
 };
 
 const getHydrationState = () => {
-  if (!globalThis.__rtglHydration) {
-    globalThis.__rtglHydration = { hydrated: 0, mismatched: 0, reasons: [] };
+  if (!globalThis[HYDRATION_REPORT_KEY]) {
+    globalThis[HYDRATION_REPORT_KEY] = { hydrated: 0, mismatched: 0, reasons: [] };
   }
-  return globalThis.__rtglHydration;
+  return globalThis[HYDRATION_REPORT_KEY];
 };
 
 /**

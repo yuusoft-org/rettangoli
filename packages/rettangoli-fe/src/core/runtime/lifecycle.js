@@ -1,3 +1,46 @@
+import { resolvePropKeyForAttribute } from "./props.js";
+import { syncObject } from "./syncObject.js";
+
+// The deps objects components receive. Every channel builds its deps here:
+// - el.deps (syncComponentDeps): the setup deps plus the element's own
+//   store, render, handlers, props and constants.
+// - el._runtimeDeps (syncRuntimeDeps): el.deps plus refs, dispatchEvent and a
+//   bound render. Lifecycle hooks, ref event handlers, store actions and
+//   prop/attribute handleOnUpdate get it.
+// - buildParentUpdateDeps: a fresh copy for handleOnUpdate after a parent
+//   patch.
+// el.deps and el._runtimeDeps are synced in place, so code that holds them
+// sees later updates.
+
+const defineI18nGetter = (deps, getI18nRuntime) => {
+  Object.defineProperty(deps, "i18n", {
+    enumerable: true,
+    configurable: true,
+    get: () => getI18nRuntime().getMessages(),
+  });
+};
+
+export const syncComponentDeps = (instance, sourceDeps) => {
+  const nextDeps = {
+    ...sourceDeps,
+    locale: instance.i18nRuntime?.locale || sourceDeps?.locale,
+    store: instance.store,
+    render: instance.render,
+    handlers: instance.handlers,
+    props: instance.props,
+    constants: instance.constants,
+  };
+
+  if (instance.i18nRuntime) {
+    defineI18nGetter(nextDeps, () => instance.i18nRuntime);
+  }
+
+  if (!instance.deps) {
+    instance.deps = {};
+  }
+  return syncObject(instance.deps, nextDeps);
+};
+
 export const createRuntimeDeps = ({
   baseDeps,
   refs,
@@ -14,29 +57,78 @@ export const createRuntimeDeps = ({
   };
 
   if (baseDeps?.__rtglI18nRuntime) {
-    Object.defineProperty(runtimeDeps, "i18n", {
-      enumerable: true,
-      configurable: true,
-      get() {
-        return baseDeps.__rtglI18nRuntime.getMessages();
-      },
-    });
+    defineI18nGetter(runtimeDeps, () => baseDeps.__rtglI18nRuntime);
     runtimeDeps.locale = baseDeps.__rtglI18nRuntime.locale;
   }
 
   return runtimeDeps;
 };
 
+export const syncRuntimeDeps = (instance) => {
+  const nextRuntimeDeps = createRuntimeDeps({
+    baseDeps: instance.deps,
+    refs: instance.refIds,
+    dispatchEvent: instance.dispatchEvent.bind(instance),
+    store: instance.store,
+    render: instance.render.bind(instance),
+  });
+
+  if (!instance._runtimeDeps) {
+    instance._runtimeDeps = nextRuntimeDeps;
+    return instance._runtimeDeps;
+  }
+  return syncObject(instance._runtimeDeps, nextRuntimeDeps);
+};
+
+// The child may belong to another bundle's runtime, so this reads only the
+// fields every runtime installs. i18n is copied as a value, not a getter.
+export const buildParentUpdateDeps = (element) => ({
+  ...element.deps,
+  store: element.store,
+  render: element.render.bind(element),
+  handlers: element.handlers,
+  dispatchEvent: element.dispatchEvent.bind(element),
+  refs: element.refIds || {},
+});
+
+// Copies arrays and plain objects (prototype Object.prototype or null) so a
+// store action may mutate its payload. Arrays drop undefined entries and
+// holes, and null-prototype objects become plain, as the payload template
+// render did before. Every other value (events, Dates, Files, class
+// instances, functions) passes by reference.
+const clonePlainData = (value) => {
+  if (Array.isArray(value)) {
+    const copy = [];
+    for (const item of value) {
+      if (item !== undefined) {
+        copy.push(clonePlainData(item));
+      }
+    }
+    return copy;
+  }
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) {
+    return value;
+  }
+  const copy = {};
+  for (const key of Object.keys(value)) {
+    copy[key] = clonePlainData(value[key]);
+  }
+  return copy;
+};
+
+// The payload was already rendered once by the event listener, against the
+// view data and the event. It is not rendered again: text in it stays literal.
 export const createStoreActionDispatcher = ({
   store,
   render,
-  parseAndRenderFn,
 }) => {
   return (payload) => {
-    const { _event, _action } = payload;
-    const context = parseAndRenderFn(payload, {
-      _event,
-    });
+    const { _action } = payload;
+    const context = clonePlainData(payload);
 
     if (!store[_action]) {
       throw new Error(`[Store] Action 'store.${_action}' is not defined.`);
@@ -50,13 +142,11 @@ export const createStoreActionDispatcher = ({
 export const createTransformedHandlers = ({
   handlers,
   deps,
-  parseAndRenderFn,
 }) => {
   const transformedHandlers = {
     handleCallStoreAction: createStoreActionDispatcher({
       store: deps.store,
       render: deps.render,
-      parseAndRenderFn,
     }),
   };
 
@@ -97,10 +187,9 @@ export const buildOnUpdateChanges = ({
   newValue,
   deps,
   propsSchemaKeys,
-  toCamelCase,
   normalizeAttributeValue,
 }) => {
-  const changedProp = toCamelCase(attributeName);
+  const changedProp = resolvePropKeyForAttribute(attributeName, propsSchemaKeys);
   const newProps = {};
 
   propsSchemaKeys.forEach((propKey) => {

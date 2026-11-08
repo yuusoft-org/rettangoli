@@ -1,0 +1,9 @@
+refs:
+  cta:
+    eventListeners:
+      click:
+        preventDefault: true
+template:
+  - rtgl-view p=md g=sm:
+      - rtgl-button#cta banana=1: Save
+styles: {}

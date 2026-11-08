@@ -1,34 +1,25 @@
 import { randomUUID } from "node:crypto";
+import { createReadStream, existsSync } from "node:fs";
 import {
-  createReadStream,
-  existsSync,
-} from "node:fs";
-import {
-  copyFile,
-  cp,
-  mkdir,
-  mkdtemp,
-  readdir,
-  realpath,
-  rename,
-  rm,
-  stat,
+  copyFile, mkdir, mkdtemp, readdir, realpath, rename, rm, stat, writeFile,
 } from "node:fs/promises";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
+import { fileURLToPath } from "node:url";
 
 import { parse } from "parse5";
 
-import {
-  generateHtml,
-  generateOverview,
-  readYaml,
-} from "../common.js";
+import { generateHtml, generateOverview } from "../common.js";
+import { readVtConfig } from "../config/load-vt-config.js";
+import { copySiteStatic, renderSite, resolveTemplatePaths } from "../site/build-site.js";
 import { deriveSectionPageKey } from "../section-page-key.js";
-import { validateVtConfig } from "../validation.js";
+import { isPathInside } from "../path-safety.js";
+import {
+  compareNames, hasIgnoredSpecSegment, listSpecFiles, toHtmlOutputPath,
+} from "../spec-files.js";
 
-const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
-const libraryStaticPath = new URL("./static", import.meta.url).pathname;
+const libraryTemplatesPath = fileURLToPath(new URL("./templates", import.meta.url));
+const libraryStaticPath = fileURLToPath(new URL("./static", import.meta.url));
 
 export const RETTANGOLI_VT_WATCH_EVENT = "rettangoli:vt-watch";
 export const RETTANGOLI_VT_WATCH_CLIENT_ID =
@@ -49,21 +40,10 @@ const WATCH_INERT_SCRIPT_TYPE = "application/x-rettangoli-watch-pending";
 const WATCHABLE_SPEC_PATTERN = /\.(?:html?|ya?ml)$/i;
 const HTML_NAMESPACE = "http://www.w3.org/1999/xhtml";
 const JAVASCRIPT_MIME_TYPE_ESSENCES = new Set([
-  "application/ecmascript",
-  "application/javascript",
-  "application/x-ecmascript",
-  "application/x-javascript",
-  "text/ecmascript",
-  "text/javascript",
-  "text/javascript1.0",
-  "text/javascript1.1",
-  "text/javascript1.2",
-  "text/javascript1.3",
-  "text/javascript1.4",
-  "text/javascript1.5",
-  "text/jscript",
-  "text/livescript",
-  "text/x-ecmascript",
+  "application/ecmascript", "application/javascript", "application/x-ecmascript",
+  "application/x-javascript", "text/ecmascript", "text/javascript", "text/javascript1.0",
+  "text/javascript1.1", "text/javascript1.2", "text/javascript1.3", "text/javascript1.4",
+  "text/javascript1.5", "text/jscript", "text/livescript", "text/x-ecmascript",
   "text/x-javascript",
 ]);
 const quietGenerationLogger = {
@@ -107,67 +87,23 @@ const isReplayableScript = (node) => {
   );
 };
 
-const collectActiveHtmlScripts = (document) => {
-  const scripts = [];
-  const nodes = [document];
+const isHtmlElement = (node, tagName) =>
+  node.namespaceURI === HTML_NAMESPACE && node.tagName === tagName;
 
+// Visits the parsed document until `visit` returns true. parse5 keeps <template> contents in
+// `content`, not `childNodes`, so inert template markup is never visited.
+const walkElements = (root, visit) => {
+  const nodes = [root];
   while (nodes.length > 0) {
     const node = nodes.pop();
-    if (
-      node.namespaceURI === HTML_NAMESPACE &&
-      node.tagName === "script" &&
-      node.sourceCodeLocation?.startTag
-    ) {
-      scripts.push(node);
-    }
-    if (
-      node.namespaceURI === HTML_NAMESPACE &&
-      node.tagName === "template"
-    ) {
-      continue;
-    }
+    if (visit(node) === true) return;
     if (node.childNodes) nodes.push(...node.childNodes);
   }
-
-  return scripts.sort(
-    (left, right) =>
-      left.sourceCodeLocation.startTag.startOffset -
-      right.sourceCodeLocation.startTag.startOffset,
-  );
 };
 
-const findActiveHtmlBaseHref = (document) => {
-  const bases = [];
-  const nodes = [document];
-
-  while (nodes.length > 0) {
-    const node = nodes.pop();
-    if (
-      node.namespaceURI === HTML_NAMESPACE &&
-      node.tagName === "base" &&
-      node.sourceCodeLocation?.startTag
-    ) {
-      const attributes = getNodeAttributes(node);
-      if (attributes.has("href")) bases.push(node);
-    }
-    if (
-      node.namespaceURI === HTML_NAMESPACE &&
-      node.tagName === "template"
-    ) {
-      continue;
-    }
-    if (node.childNodes) nodes.push(...node.childNodes);
-  }
-
-  bases.sort(
-    (left, right) =>
-      left.sourceCodeLocation.startTag.startOffset -
-      right.sourceCodeLocation.startTag.startOffset,
-  );
-  return bases.length > 0
-    ? getNodeAttributes(bases[0]).get("href")
-    : null;
-};
+const byStartOffset = (left, right) =>
+  left.sourceCodeLocation.startTag.startOffset -
+  right.sourceCodeLocation.startTag.startOffset;
 
 const escapeHtmlAttribute = (value) =>
   String(value).replaceAll("&", "&amp;").replaceAll('"', "&quot;");
@@ -210,17 +146,29 @@ const rewriteWatchScripts = ({
   html,
   publicEntryPath,
 }) => {
-  const document = parse(html, { sourceCodeLocationInfo: true });
-  const scripts = collectActiveHtmlScripts(document);
+  const scripts = [];
+  const bases = [];
+  walkElements(parse(html, { sourceCodeLocationInfo: true }), (node) => {
+    if (!node.sourceCodeLocation?.startTag) return false;
+    if (isHtmlElement(node, "script")) scripts.push(node);
+    if (isHtmlElement(node, "base") && getNodeAttributes(node).has("href")) {
+      bases.push(node);
+    }
+    return false;
+  });
+  scripts.sort(byStartOffset);
+  bases.sort(byStartOffset);
   const resolvedDocumentUrl = new URL(
     documentUrl,
     "http://rettangoli.local/",
   );
-  const baseHref = findActiveHtmlBaseHref(document);
   let scriptBaseUrl = resolvedDocumentUrl;
-  if (baseHref !== null) {
+  if (bases.length > 0) {
     try {
-      scriptBaseUrl = new URL(baseHref, resolvedDocumentUrl);
+      scriptBaseUrl = new URL(
+        getNodeAttributes(bases[0]).get("href"),
+        resolvedDocumentUrl,
+      );
     } catch {
       // Match browser behavior by ignoring an invalid document base URL.
     }
@@ -399,65 +347,42 @@ for (
 }
 `.trim();
 
-const isWithinDirectory = ({ filePath, directoryPath }) => {
-  const relativePath = path.relative(directoryPath, filePath);
+const isWatchClientScript = (node) => {
+  const attributes = getNodeAttributes(node);
   return (
-    relativePath === "" ||
-    (!relativePath.startsWith("..") && !path.isAbsolute(relativePath))
+    isHtmlElement(node, "script") &&
+    attributes.has("data-rtgl-watch-client") &&
+    attributes.get("type")?.trim().toLowerCase() === "module" &&
+    attributes.get("src") === WATCH_CLIENT_PATH
   );
 };
 
-const convertToHtmlExtension = (filePath) =>
-  filePath.endsWith(".html")
-    ? filePath
-    : filePath.replace(/\.[^/.]+$/, "") + ".html";
-
-const inspectHtmlStructure = (html) => {
-  const document = parse(html, { sourceCodeLocationInfo: true });
-  let body = null;
-  let doctype = null;
-  let head = null;
-  let htmlElement = null;
-  const nodes = [document];
-
-  while (nodes.length > 0) {
-    const node = nodes.pop();
-    const attributes = new Map(
-      node.attrs?.map(({ name, value }) => [name, value]) || [],
-    );
-    if (
+const injectWatchClient = (html) => {
+  const found = {};
+  let hasWatchClient = false;
+  walkElements(parse(html, { sourceCodeLocationInfo: true }), (node) => {
+    if (isWatchClientScript(node)) {
+      hasWatchClient = true;
+      return true;
+    }
+    if (node.nodeName === "#documentType") {
+      found.doctype = node;
+    } else if (
       node.namespaceURI === HTML_NAMESPACE &&
-      node.tagName === "script" &&
-      attributes.has("data-rtgl-watch-client") &&
-      attributes.get("type")?.trim().toLowerCase() === "module" &&
-      attributes.get("src") === WATCH_CLIENT_PATH
+      ["body", "head", "html"].includes(node.tagName)
     ) {
-      return { hasWatchClient: true };
+      found[node.tagName] = node;
     }
-    if (node.namespaceURI === HTML_NAMESPACE) {
-      if (node.tagName === "body") {
-        body = node;
-      } else if (node.tagName === "head") {
-        head = node;
-      } else if (node.tagName === "html") {
-        htmlElement = node;
-      }
-    } else if (node.nodeName === "#documentType") {
-      doctype = node;
-    }
-    if (node.childNodes) nodes.push(...node.childNodes);
-  }
+    return false;
+  });
+  if (hasWatchClient) return html;
 
+  const { body = null, doctype = null, head = null } = found;
+  const htmlElement = found.html ?? null;
   const bodyCloseIndex =
     body?.sourceCodeLocation?.endTag?.startOffset ?? null;
   const htmlCloseIndex =
     htmlElement?.sourceCodeLocation?.endTag?.startOffset ?? null;
-  const bodyStartIndex =
-    body?.sourceCodeLocation?.startTag?.endOffset ?? null;
-  const headStartIndex =
-    head?.sourceCodeLocation?.startTag?.endOffset ?? null;
-  const htmlStartIndex =
-    htmlElement?.sourceCodeLocation?.startTag?.endOffset ?? null;
   const parsedDoctypeEndIndex =
     doctype?.sourceCodeLocation?.endOffset ?? null;
   const doctypeEndIndex =
@@ -465,26 +390,17 @@ const inspectHtmlStructure = (html) => {
     html[parsedDoctypeEndIndex - 1] === ">"
       ? parsedDoctypeEndIndex
       : null;
-
-  return {
-    hasWatchClient: false,
-    insertionIndex:
-      bodyCloseIndex ??
-      (body === null ? null : htmlCloseIndex) ??
-      bodyStartIndex ??
-      headStartIndex ??
-      htmlStartIndex ??
-      doctypeEndIndex ??
-      0,
-  };
-};
-
-const injectWatchClient = (html) => {
-  const structure = inspectHtmlStructure(html);
-  if (structure.hasWatchClient) return html;
-  return html.slice(0, structure.insertionIndex) +
+  const insertionIndex =
+    bodyCloseIndex ??
+    (body === null ? null : htmlCloseIndex) ??
+    body?.sourceCodeLocation?.startTag?.endOffset ??
+    head?.sourceCodeLocation?.startTag?.endOffset ??
+    htmlElement?.sourceCodeLocation?.startTag?.endOffset ??
+    doctypeEndIndex ??
+    0;
+  return html.slice(0, insertionIndex) +
     WATCH_CLIENT_TAG +
-    html.slice(structure.insertionIndex);
+    html.slice(insertionIndex);
 };
 
 const getWatchDocumentUrl = (request) => {
@@ -502,13 +418,6 @@ const getWatchDocumentUrl = (request) => {
     ).href;
   }
 };
-
-const prepareWatchHtml = ({ documentUrl, html, publicEntryPath }) =>
-  injectWatchClient(rewriteWatchScripts({
-    documentUrl,
-    html,
-    publicEntryPath,
-  }));
 
 const getContentType = (filePath) => {
   const extension = path.extname(filePath).toLowerCase();
@@ -544,24 +453,10 @@ const loadWatchContext = async ({
   outputDir = path.join(".rettangoli", "vt", "_site"),
 }) => {
   const configPath = path.resolve(cwd, "rettangoli.config.yaml");
-  const mainConfig = await readYaml(configPath);
-  if (!mainConfig?.vt) {
-    throw new Error(
-      `Invalid "${configPath}": missing required "vt" section.`,
-    );
-  }
-
-  const configData = validateVtConfig(mainConfig.vt, configPath);
+  const configData = await readVtConfig(configPath);
   const vtPath = path.resolve(cwd, configData.path || "vt");
-  const templatesPath = path.join(vtPath, "templates");
-  const defaultTemplatePath = existsSync(
-    path.join(templatesPath, "default.html"),
-  )
-    ? path.join(templatesPath, "default.html")
-    : path.join(libraryTemplatesPath, "default.html");
-  const indexTemplatePath = existsSync(path.join(templatesPath, "index.html"))
-    ? path.join(templatesPath, "index.html")
-    : path.join(libraryTemplatesPath, "index.html");
+  const { templatesPath, defaultTemplatePath, indexTemplatePath } =
+    resolveTemplatePaths(vtPath, libraryTemplatesPath);
 
   return {
     candidatePath: path.resolve(cwd, outputDir, "candidate"),
@@ -625,35 +520,55 @@ const getAffectedSections = ({ configData, specs }) => {
   });
 };
 
-const collectFiles = async (directoryPath) => {
-  if (!existsSync(directoryPath)) return [];
-
-  const files = [];
-  const entries = await readdir(directoryPath, { withFileTypes: true });
-  for (const entry of entries) {
-    const entryPath = path.join(directoryPath, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...await collectFiles(entryPath));
-    } else {
-      files.push(entryPath);
-    }
+// listSpecFiles' order (depth-first, siblings in byte order) for paths relative to the specs folder.
+const compareSpecPaths = (left, right) => {
+  const leftSegments = left.split(path.sep);
+  const rightSegments = right.split(path.sep);
+  for (let index = 0; index < Math.min(leftSegments.length, rightSegments.length); index += 1) {
+    const order = compareNames(leftSegments[index], rightSegments[index]);
+    if (order !== 0) return order;
   }
-  return files;
+  return leftSegments.length - rightSegments.length;
 };
 
+const isWatchableSpec = (relativePath) =>
+  WATCHABLE_SPEC_PATTERN.test(relativePath) && !hasIgnoredSpecSegment(relativePath);
+
+// What the watch client must refresh after a batch (same kinds as sites' classifyWatchChanges).
+// Static CSS can be swapped in place ("assets"); any other static file or a removal needs a
+// "full" reload; spec, template and config changes morph the page ("html").
+const classifyUpdate = (changes) => {
+  const staticChanges = changes.filter((change) => change.scope === "static");
+  if (staticChanges.some((change) =>
+    change.event === "unlink" || !/\.css$/i.test(change.publicPath)
+  )) {
+    return { updateKind: "full", paths: [] };
+  }
+  // enqueueChange keys changes by path, so a batch holds each static file at most once.
+  const assetPaths = staticChanges.map((change) => change.publicPath).sort();
+  const sourcePaths = changes
+    .filter((change) => change.scope !== "static")
+    .map((change) => toPosixPath(change.relativePath));
+  return sourcePaths.length === 0
+    ? { updateKind: "assets", paths: assetPaths }
+    : { updateKind: "html", paths: [...sourcePaths, ...assetPaths] };
+};
+
+// Writes every output to a sibling temp file, then moves the previous files aside and the new ones
+// in. On failure the committed outputs are removed and the previous files restored.
 const commitStagedOutputs = async (outputs) => {
   const uniqueOutputs = [
-    ...new Map(outputs.map((output) => [output.outputPath, output])).values(),
+    ...new Map(outputs.map((output) => [output.targetPath, output])).values(),
   ];
   const commits = [];
 
   try {
-    for (const { outputPath, stagedOutputPath } of uniqueOutputs) {
+    for (const { targetPath: outputPath, content } of uniqueOutputs) {
       const token = randomUUID();
       const temporaryOutputPath = `${outputPath}.watch-${token}.tmp`;
       const backupOutputPath = `${outputPath}.watch-${token}.backup`;
       await mkdir(path.dirname(outputPath), { recursive: true });
-      await copyFile(stagedOutputPath, temporaryOutputPath);
+      await writeFile(temporaryOutputPath, content, "utf8");
       commits.push({
         backedUp: false,
         backupOutputPath,
@@ -704,35 +619,27 @@ const createFullStage = async (context) => {
   );
 
   try {
-    await cp(libraryStaticPath, stagePath, { recursive: true });
-    if (existsSync(context.userStaticPath)) {
-      await cp(context.userStaticPath, stagePath, { recursive: true });
-    }
+    await copySiteStatic(stagePath, {
+      libraryStaticPath,
+      userStaticPath: context.userStaticPath,
+    });
     await copyNonHtmlArtifacts(
       path.join(context.outputDir, "candidate"),
       path.join(stagePath, "candidate"),
     );
-
-    const generatedFiles = await generateHtml(
-      context.specsPath,
-      context.defaultTemplatePath,
-      path.join(stagePath, "candidate"),
-      {
-        defaultTemplate: context.defaultTemplatePath,
-        logger: quietGenerationLogger,
-        vtPath: context.vtPath,
+    await renderSite({
+      specsPath: context.specsPath,
+      candidateDir: path.join(stagePath, "candidate"),
+      siteDir: stagePath,
+      templatePaths: {
+        defaultTemplatePath: context.defaultTemplatePath,
+        indexTemplatePath: context.indexTemplatePath,
       },
-    );
-    generateOverview(
-      generatedFiles,
-      context.indexTemplatePath,
-      path.join(stagePath, "index.html"),
-      context.configData,
-      {
-        logger: quietGenerationLogger,
-        throwOnRenderError: true,
-      },
-    );
+      vtPath: context.vtPath,
+      configData: context.configData,
+      logger: quietGenerationLogger,
+      throwOnRenderError: true,
+    });
     return stagePath;
   } catch (error) {
     await rm(stagePath, { force: true, recursive: true });
@@ -791,10 +698,7 @@ export const generateVtWatchSpecs = async ({
   const context = await loadWatchContext({ cwd, outputDir });
   const specs = [...new Set(filePaths.map((filePath) => path.resolve(filePath)))]
     .map((resolvedFilePath) => {
-      if (!isWithinDirectory({
-        filePath: resolvedFilePath,
-        directoryPath: context.specsPath,
-      })) {
+      if (!isPathInside(context.specsPath, resolvedFilePath)) {
         throw new Error(
           `VT spec path is outside "${context.specsPath}": ${resolvedFilePath}`,
         );
@@ -803,13 +707,13 @@ export const generateVtWatchSpecs = async ({
       return {
         outputPath: path.join(
           context.candidatePath,
-          convertToHtmlExtension(relativePath),
+          toHtmlOutputPath(relativePath),
         ),
         relativePath,
         resolvedFilePath,
       };
     })
-    .filter(({ relativePath }) => WATCHABLE_SPEC_PATTERN.test(relativePath));
+    .filter(({ relativePath }) => isWatchableSpec(relativePath));
 
   if (specs.length === 0) {
     return { ...context, outputPaths: [], overviewPaths: [] };
@@ -818,11 +722,11 @@ export const generateVtWatchSpecs = async ({
     configData: context.configData,
     specs,
   });
-  const overviewPaths = affectedSections.map((section) =>
-    path.join(
-      context.outputDir,
-      `${deriveSectionPageKey(section)}.html`,
-    )
+  const overviewFileNames = affectedSections.map((section) =>
+    `${deriveSectionPageKey(section)}.html`
+  );
+  const overviewPaths = overviewFileNames.map((fileName) =>
+    path.join(context.outputDir, fileName)
   );
   if (specs.some(({ resolvedFilePath }) => !existsSync(resolvedFilePath))) {
     return {
@@ -832,95 +736,62 @@ export const generateVtWatchSpecs = async ({
     };
   }
 
-  await mkdir(path.dirname(context.outputDir), { recursive: true });
-  const stagePath = await mkdtemp(
-    path.join(
-      path.dirname(context.outputDir),
-      `.${path.basename(context.outputDir)}-watch-spec-`,
-    ),
-  );
-
-  try {
-    const sourceFiles = new Map(
-      specs.map((spec) => [spec.resolvedFilePath, spec.resolvedFilePath]),
-    );
-    if (affectedSections.length > 0) {
-      for (const sourceFilePath of await collectFiles(context.specsPath)) {
-        const relativePath = path.relative(
-          context.specsPath,
-          sourceFilePath,
-        );
-        if (affectedSections.some((section) =>
-          isSpecInSection(relativePath, section)
-        )) {
-          sourceFiles.set(sourceFilePath, sourceFilePath);
-        }
+  // Render the changed specs, plus every spec of the affected sections for their overview pages, in
+  // memory and in discovery order; commit only the changed pages and the affected overview pages.
+  const relativePaths = new Set(specs.map(({ relativePath }) => relativePath));
+  if (affectedSections.length > 0) {
+    for (const sourceFilePath of listSpecFiles(context.specsPath)) {
+      const relativePath = path.relative(context.specsPath, sourceFilePath);
+      if (affectedSections.some((section) => isSpecInSection(relativePath, section))) {
+        relativePaths.add(relativePath);
       }
     }
-
-    for (const sourceFilePath of sourceFiles.values()) {
-      const relativePath = path.relative(
-        context.specsPath,
-        sourceFilePath,
-      );
-      const stagedSpecPath = path.join(
-        stagePath,
-        "specs",
-        relativePath,
-      );
-      await mkdir(path.dirname(stagedSpecPath), { recursive: true });
-      await copyFile(sourceFilePath, stagedSpecPath);
-    }
-
-    const stagedCandidatePath = path.join(stagePath, "candidate");
-    const generatedFiles = await generateHtml(
-      path.join(stagePath, "specs"),
-      context.defaultTemplatePath,
-      stagedCandidatePath,
-      {
-        defaultTemplate: context.defaultTemplatePath,
-        logger: quietGenerationLogger,
-        vtPath: context.vtPath,
-      },
-    );
-    if (affectedSections.length > 0) {
-      generateOverview(
-        generatedFiles,
-        context.indexTemplatePath,
-        path.join(stagePath, "index.html"),
-        context.configData,
-        {
-          logger: quietGenerationLogger,
-          throwOnRenderError: true,
-        },
-      );
-    }
-
-    await commitStagedOutputs([
-      ...specs.map((spec) => ({
-        outputPath: spec.outputPath,
-        stagedOutputPath: path.join(
-          stagedCandidatePath,
-          convertToHtmlExtension(spec.relativePath),
-        ),
-      })),
-      ...affectedSections.map((section) => {
-        const fileName = `${deriveSectionPageKey(section)}.html`;
-        return {
-          outputPath: path.join(context.outputDir, fileName),
-          stagedOutputPath: path.join(stagePath, fileName),
-        };
-      }),
-    ]);
-
-    return {
-      ...context,
-      outputPaths: specs.map(({ outputPath }) => outputPath),
-      overviewPaths,
-    };
-  } finally {
-    await rm(stagePath, { force: true, recursive: true });
   }
+  const generatedFiles = await generateHtml(
+    context.specsPath,
+    context.defaultTemplatePath,
+    null,
+    {
+      defaultTemplate: context.defaultTemplatePath,
+      filePaths: [...relativePaths]
+        .sort(compareSpecPaths)
+        .map((relativePath) => path.join(context.specsPath, relativePath)),
+      logger: quietGenerationLogger,
+      vtPath: context.vtPath,
+    },
+  );
+  const renderedSpecs = new Map(
+    generatedFiles.map((file) => [file.path, file.renderedContent]),
+  );
+  const overviewPages = new Map();
+  if (affectedSections.length > 0) {
+    const pages = generateOverview(
+      generatedFiles,
+      context.indexTemplatePath,
+      null,
+      context.configData,
+      { logger: quietGenerationLogger, throwOnRenderError: true },
+    );
+    // A later page with the same name wins, as when the pages were written to disk.
+    for (const { fileName, content } of pages) overviewPages.set(fileName, content);
+  }
+
+  await commitStagedOutputs([
+    ...specs.map((spec) => ({
+      targetPath: spec.outputPath,
+      content: renderedSpecs.get(spec.relativePath),
+    })),
+    ...overviewFileNames.map((fileName, index) => ({
+      targetPath: overviewPaths[index],
+      content: overviewPages.get(fileName),
+    })),
+  ]);
+
+  return {
+    ...context,
+    outputPaths: specs.map(({ outputPath }) => outputPath),
+    overviewPaths,
+  };
 };
 
 export const generateVtWatchSpec = async ({
@@ -948,7 +819,7 @@ const resolveServedPath = async ({ outputDir, requestUrl }) => {
     ? "index.html"
     : pathname.replace(/^\/+/, "");
   let filePath = path.resolve(outputDir, relativePath);
-  if (!isWithinDirectory({ filePath, directoryPath: outputDir })) return null;
+  if (!isPathInside(outputDir, filePath)) return null;
 
   let fileStats;
   try {
@@ -956,7 +827,7 @@ const resolveServedPath = async ({ outputDir, requestUrl }) => {
   } catch {
     if (!path.extname(filePath)) {
       const htmlPath = `${filePath}.html`;
-      if (isWithinDirectory({ filePath: htmlPath, directoryPath: outputDir })) {
+      if (isPathInside(outputDir, htmlPath)) {
         try {
           fileStats = await stat(htmlPath);
           filePath = htmlPath;
@@ -970,7 +841,7 @@ const resolveServedPath = async ({ outputDir, requestUrl }) => {
 
   if (fileStats.isDirectory()) {
     filePath = path.join(filePath, "index.html");
-    if (!isWithinDirectory({ filePath, directoryPath: outputDir })) return null;
+    if (!isPathInside(outputDir, filePath)) return null;
     try {
       fileStats = await stat(filePath);
     } catch {
@@ -984,10 +855,7 @@ const resolveServedPath = async ({ outputDir, requestUrl }) => {
       realpath(outputDir),
       realpath(filePath),
     ]);
-    return isWithinDirectory({
-      filePath: canonicalFilePath,
-      directoryPath: canonicalOutputDir,
-    })
+    return isPathInside(canonicalOutputDir, canonicalFilePath)
       ? canonicalFilePath
       : null;
   } catch {
@@ -1022,6 +890,15 @@ export const createRettangoliVtWatchPlugin = ({
   let flushRequested = false;
   const pendingChanges = new Map();
 
+  const watchSources = (context) => {
+    devServer?.watcher.add([
+      context.configPath,
+      context.specsPath,
+      context.templatesPath,
+      context.userStaticPath,
+    ]);
+  };
+
   const send = (data) => {
     devServer?.ws.send({
       type: "custom",
@@ -1043,12 +920,12 @@ export const createRettangoliVtWatchPlugin = ({
     });
   };
 
-  const sendUpdate = ({ paths = [] } = {}) => {
+  const sendUpdate = ({ updateKind, paths }) => {
     revision += 1;
     currentError = null;
     send({
       type: "reload-current",
-      updateKind: "html",
+      updateKind,
       paths,
       revision,
     });
@@ -1086,11 +963,7 @@ export const createRettangoliVtWatchPlugin = ({
         try {
           if (requiresFullGeneration) {
             currentContext = await generateVtWatchSite({ cwd, outputDir });
-            devServer?.watcher.add([
-              currentContext.configPath,
-              currentContext.specsPath,
-              currentContext.templatesPath,
-            ]);
+            watchSources(currentContext);
           } else {
             await generateVtWatchSpecs({
               cwd,
@@ -1098,9 +971,7 @@ export const createRettangoliVtWatchPlugin = ({
               outputDir,
             });
           }
-          sendUpdate({
-            paths: changes.map((change) => toPosixPath(change.relativePath)),
-          });
+          sendUpdate(classifyUpdate(changes));
           logger.log(
             `[VT Watch] Updated ${changes.length} source file(s).`,
           );
@@ -1140,10 +1011,7 @@ export const createRettangoliVtWatchPlugin = ({
         scope: "config",
       };
     }
-    if (isWithinDirectory({
-      filePath: resolvedFilePath,
-      directoryPath: context.templatesPath,
-    })) {
+    if (isPathInside(context.templatesPath, resolvedFilePath)) {
       return {
         filePath: resolvedFilePath,
         relativePath: path.relative(context.vtPath, resolvedFilePath),
@@ -1151,16 +1019,32 @@ export const createRettangoliVtWatchPlugin = ({
       };
     }
     if (
-      WATCHABLE_SPEC_PATTERN.test(resolvedFilePath) &&
-      isWithinDirectory({
-        filePath: resolvedFilePath,
-        directoryPath: context.specsPath,
-      })
+      isPathInside(context.specsPath, resolvedFilePath) &&
+      isWatchableSpec(path.relative(context.specsPath, resolvedFilePath))
     ) {
       return {
         filePath: resolvedFilePath,
         relativePath: path.relative(context.vtPath, resolvedFilePath),
         scope: "spec",
+      };
+    }
+    if (isPathInside(context.userStaticPath, resolvedFilePath)) {
+      const staticPath = path.relative(context.userStaticPath, resolvedFilePath);
+      const publicPath = `/${toPosixPath(staticPath)}`;
+      // The FE entry is served by Vite (see the middleware); it and its source map are FE build
+      // output, not VT assets, and editor files (swap files, backups) are not assets either.
+      if (
+        publicPath === normalizedPublicEntryPath ||
+        publicPath === `${normalizedPublicEntryPath}.map` ||
+        hasIgnoredSpecSegment(staticPath)
+      ) {
+        return null;
+      }
+      return {
+        filePath: resolvedFilePath,
+        publicPath,
+        relativePath: path.relative(context.vtPath, resolvedFilePath),
+        scope: "static",
       };
     }
     return null;
@@ -1198,27 +1082,16 @@ export const createRettangoliVtWatchPlugin = ({
       devServer = server;
       currentContext = await generateVtWatchSite({ cwd, outputDir });
       logger.log("[VT Watch] Generated the current VT site.");
-      server.watcher.add([
-        currentContext.configPath,
-        currentContext.specsPath,
-        currentContext.templatesPath,
-      ]);
+      watchSources(currentContext);
 
-      const onSourceEvent = (event, filePath) => {
-        const change = currentContext
-          ? classifySourcePath(filePath, currentContext)
-          : null;
-        if (change) scheduleChange({ ...change, event });
-      };
-      server.watcher.on("add", (filePath) => onSourceEvent("add", filePath));
-      server.watcher.on(
-        "change",
-        (filePath) => onSourceEvent("change", filePath),
-      );
-      server.watcher.on(
-        "unlink",
-        (filePath) => onSourceEvent("unlink", filePath),
-      );
+      for (const event of ["add", "change", "unlink"]) {
+        server.watcher.on(event, (filePath) => {
+          const change = currentContext
+            ? classifySourcePath(filePath, currentContext)
+            : null;
+          if (change) scheduleChange({ ...change, event });
+        });
+      }
       server.ws.on(`${eventName}:state-request`, (_data, client) => {
         client.send(eventName, currentError
           ? {
@@ -1272,11 +1145,11 @@ export const createRettangoliVtWatchPlugin = ({
             for await (const chunk of createReadStream(filePath)) {
               chunks.push(chunk);
             }
-            response.end(prepareWatchHtml({
+            response.end(injectWatchClient(rewriteWatchScripts({
               documentUrl: getWatchDocumentUrl(request),
               html: Buffer.concat(chunks).toString("utf8"),
               publicEntryPath: normalizedPublicEntryPath,
-            }));
+            })));
             return;
           }
           await pipeline(createReadStream(filePath), response);
@@ -1289,31 +1162,11 @@ export const createRettangoliVtWatchPlugin = ({
         }
       });
     },
-    handleHotUpdate(context) {
-      const sourceChange = currentContext
-        ? classifySourcePath(context.file, currentContext)
-        : null;
-      if (sourceChange) {
-        const boundaryModule = devServer?.moduleGraph.getModuleById(
-          RESOLVED_WATCH_BOUNDARY_ID,
-        );
-        return boundaryModule ? [boundaryModule] : context.modules;
-      }
-      const generatedChange = isWithinDirectory({
-        filePath: path.resolve(context.file),
-        directoryPath: resolvedOutputDir,
-      });
-      if (generatedChange) return [];
-      return undefined;
-    },
     hotUpdate(options) {
       const sourceChange = currentContext
         ? classifySourcePath(options.file, currentContext)
         : null;
-      const generatedChange = isWithinDirectory({
-        filePath: path.resolve(options.file),
-        directoryPath: resolvedOutputDir,
-      });
+      const generatedChange = isPathInside(resolvedOutputDir, path.resolve(options.file));
       if (!sourceChange && !generatedChange) return undefined;
 
       const boundaryModule = this.environment.moduleGraph.getModuleById(

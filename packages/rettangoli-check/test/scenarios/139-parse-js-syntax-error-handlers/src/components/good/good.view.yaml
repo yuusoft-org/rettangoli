@@ -1,0 +1,7 @@
+refs:
+  saveButton:
+    eventListeners:
+      click:
+        handler: handleMissing
+template:
+  - rtgl-button#saveButton: Save

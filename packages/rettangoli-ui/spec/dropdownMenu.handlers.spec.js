@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, onTestFinished, vi } from "vitest";
 
 import {
   handleBeforeMount,
@@ -269,12 +269,17 @@ describe("rtgl-dropdown-menu handlers", () => {
     const child = document.createElement("button");
     child.focus = vi.fn();
     const preventDefault = vi.fn();
+    // The menu reads its direction from the popover's computed style; `dir` is
+    // not a schema prop, so fe's props proxy never passes it through.
+    const popover = document.createElement("div");
+    popover.style.direction = "rtl";
+    document.body.append(popover);
+    onTestFinished(() => popover.remove());
 
     handleMenuItemKeyDown(
       {
         dispatchEvent: vi.fn(),
         props: {
-          dir: "rtl",
           items: [
             {
               label: "Export",
@@ -284,6 +289,7 @@ describe("rtgl-dropdown-menu handlers", () => {
         },
         refs: {
           optionD1I0: child,
+          popover,
         },
         render,
         store,

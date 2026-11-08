@@ -110,7 +110,7 @@ const createCaseFixture = ({ rng, root, caseIndex }) => {
             "rtgl-text": templateBinding,
           },
           {
-            "rtgl-button @click=handleTap": "Commit",
+            "rtgl-button#root": "Commit",
           },
         ],
       },

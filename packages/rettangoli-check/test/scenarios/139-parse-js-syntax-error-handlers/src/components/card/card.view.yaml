@@ -1,0 +1,12 @@
+refs:
+  ctaButton:
+    eventListeners:
+      click:
+        handler: handleSave
+  resetButton:
+    eventListeners:
+      click:
+        action: resetForm
+template:
+  - rtgl-button#ctaButton: Save
+  - rtgl-button#resetButton: Reset

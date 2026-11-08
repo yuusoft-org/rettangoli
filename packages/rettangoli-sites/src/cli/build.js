@@ -3,6 +3,38 @@ import { createSiteBuilder } from '../createSiteBuilder.js';
 import { loadSiteConfig } from '../utils/loadSiteConfig.js';
 
 /**
+ * Map a validated site config plus the CLI-level options to createSiteBuilder options
+ */
+export function createBuildOptions(config, {
+  fs,
+  rootDir,
+  outputPath,
+  md,
+  functions,
+  sitemap,
+  quiet,
+  isScreenshotMode,
+  loadComponentRenderer
+}) {
+  return {
+    fs,
+    rootDir,
+    outputPath,
+    md,
+    markdown: config.markdown || {},
+    keepMarkdownFiles: config.build?.keepMarkdownFiles === true,
+    imports: config.imports || {},
+    data: config.data || {},
+    sitemap: sitemap === undefined ? config.sitemap : sitemap,
+    functions: functions || {},
+    components: config.components,
+    loadComponentRenderer,
+    quiet,
+    isScreenshotMode
+  };
+}
+
+/**
  * Build the static site
  * @param {Object} options - Options for building the site
  * @param {string} options.rootDir - Root directory of the site (defaults to cwd)
@@ -27,22 +59,17 @@ export const buildSite = async (options = {}) => {
 
   const config = await loadSiteConfig(rootDir);
 
-  const build = createSiteBuilder({
+  const build = createSiteBuilder(createBuildOptions(config, {
     fs,
     rootDir,
     outputPath,
     md,
-    markdown: config.markdown || {},
-    keepMarkdownFiles: config.build?.keepMarkdownFiles === true,
-    imports: config.imports || {},
-    data: config.data || {},
-    sitemap: sitemap === undefined ? config.sitemap : sitemap,
-    functions: functions || {},
-    components: config.components,
-    loadComponentRenderer,
+    functions,
+    sitemap,
     quiet,
-    isScreenshotMode
-  });
+    isScreenshotMode,
+    loadComponentRenderer
+  }));
 
   await build();
 };

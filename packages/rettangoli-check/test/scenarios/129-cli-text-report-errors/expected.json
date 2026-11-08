@@ -1,0 +1,19 @@
+{
+  "name": "cli text report lists errors and warnings with codeframes on stderr",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "--dir",
+      "./src/components"
+    ]
+  },
+  "expected": {
+    "exitCode": 1,
+    "stdout": "",
+    "stderr": "[Check] Scanned 1 component(s); registry tags: <n>.\n[Check] Errors: 2, Warnings: 1.\n[Check] By code:\n- RTGL-CHECK-LISTENER-003: 1\n- RTGL-CHECK-SYMBOL-005: 1\n- RTGL-CHECK-YAHTML-003: 1\n[Check] Diagnostics:\nRTGL-CHECK-LISTENER-003 [error] components/card: event 'click' on ref 'cta' must define either handler or action. [src/components/card/card.view.yaml:4]\n  codeframe:\n       3 |     eventListeners:\n  >    4 |       click:\n       5 |         preventDefault: true\nRTGL-CHECK-SYMBOL-005 [warn] components/card: method 'orphanMethod' is exported in .methods.js but not documented in schema.methods.properties. [src/components/card/card.methods.js]\nRTGL-CHECK-YAHTML-003 [error] components/card: unsupported attr/prop 'banana' on 'rtgl-button'. [src/components/card/card.view.yaml:8:25]\n  codeframe:\n       7 |   - rtgl-view p=md g=sm:\n  >    8 |       - rtgl-button#cta banana=1: Save\n       |                         ^\n       9 | styles: {}"
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
+}

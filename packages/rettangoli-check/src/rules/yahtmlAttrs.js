@@ -1,4 +1,7 @@
 import { toCamelCase, toKebabCase } from "../utils/case.js";
+import { isValidAttributeName } from "../core/fe-contracts.js";
+import { getRegistryLoadFailures } from "../core/registry.js";
+import { escapeRegExp, isConvertibleLegacyBinding, normalizeBindingName } from "./shared.js";
 
 const GENERIC_ALLOWED_ATTRS = new Set([
   "accesskey",
@@ -35,37 +38,6 @@ const GENERIC_ALLOWED_ATTRS = new Set([
   "new-tab",
   "rel",
 ]);
-
-const normalizeBindingName = (bindingName = "") => {
-  if (bindingName.startsWith("@")) {
-    return {
-      sourceType: "event",
-      name: bindingName.slice(1),
-    };
-  }
-  if (bindingName.startsWith(":")) {
-    return {
-      sourceType: "prop",
-      name: bindingName.slice(1),
-    };
-  }
-  if (bindingName.startsWith("?")) {
-    return {
-      sourceType: "boolean-attr",
-      name: bindingName.slice(1),
-    };
-  }
-  if (bindingName.startsWith(".")) {
-    return {
-      sourceType: "legacy-prop",
-      name: bindingName.slice(1),
-    };
-  }
-  return {
-    sourceType: "attr",
-    name: bindingName,
-  };
-};
 
 const isDynamicToken = (value = "") => {
   return (
@@ -129,6 +101,9 @@ const isAllowedByContract = ({ attrName, contract }) => {
 
 export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
   const diagnostics = [];
+  // A primitive that failed to load has only its static contract (REGISTRY-001); its
+  // runtime-only attributes are unknown, so do not report them as unsupported.
+  const failedTags = new Set(getRegistryLoadFailures(registry).map(({ tagName }) => tagName));
 
   models.forEach((model) => {
     const templateNodes = Array.isArray(model?.view?.templateAst?.nodes)
@@ -163,10 +138,20 @@ export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
       const astBindingNames = astAttributes
         .map((attribute) => attribute?.bindingName)
         .filter(Boolean);
-      const allBindingNames = [...new Set([...(bindingNames || []), ...astBindingNames])];
+      // Source order: names with an attribute node in token order, then the others (object-notation keys, names
+      // FE reads inside a value that the AST keeps as one token).
+      const allBindingNames = [...new Set([...astBindingNames, ...(bindingNames || [])])];
 
       allBindingNames.forEach((bindingName) => {
         if (!bindingName || isDynamicToken(bindingName)) {
+          return;
+        }
+        // Names FE parseNodeBindings rejects ('@event', '=x', '1invalid', a lone ':') are
+        // RTGL-CHECK-BINDING-001. FE accepts any other ':' name and ignores '.' names.
+        const feRejects = bindingName.startsWith(":")
+          ? bindingName === ":"
+          : !bindingName.startsWith(".") && !isValidAttributeName(bindingName.replace(/^\?/, ""));
+        if (feRejects) {
           return;
         }
 
@@ -189,21 +174,18 @@ export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
             endLine: line,
             endColumn: diagnosticEndColumn,
             message: `${model.componentKey}: legacy '.${normalized.name}' binding is not supported. Use ':${normalized.name}'.`,
-            fix: {
+            fix: isConvertibleLegacyBinding({ key: bindingLine.rawKey, bindingName }) ? {
               kind: "line-regex-replace",
               filePath,
               line,
-              pattern: `\\.${normalized.name.replaceAll(/[.*+?^${}()|[\\]\\\\]/g, "\\$&")}\\s*=`,
-              replacement: `:${normalized.name}=`,
+              pattern: `(^|\\s)\\.${escapeRegExp(normalized.name)}=(?=\\$\\{)`,
+              replacement: `$1:${normalized.name}=`,
               flags: "g",
-              description: `Convert '.${normalized.name}=' to ':${normalized.name}='.`,
+              description: `Convert '.${normalized.name}=\${...}' to ':${normalized.name}=\${...}'.`,
               safe: true,
               confidence: 0.98,
-            },
+            } : undefined,
           });
-          return;
-        }
-        if (normalized.sourceType === "event") {
           return;
         }
 
@@ -216,7 +198,7 @@ export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
           return;
         }
 
-        if (isAllowedByContract({ attrName, contract })) {
+        if (isAllowedByContract({ attrName, contract }) || failedTags.has(tagName)) {
           return;
         }
 

@@ -350,6 +350,81 @@ describe("recursive server renderer", () => {
     );
   });
 
+  it("renders a component nested in its own type through a slot, each with its own props", () => {
+    const page = defineComponent({
+      name: "x-page",
+      template: [
+        {
+          "x-panel :heading=${outer}": [
+            { h2: "Outer" },
+            { "x-panel :heading=${inner}": [{ p: "Inner" }] },
+          ],
+        },
+      ],
+      store: {
+        selectViewData: () => ({ outer: { text: "O" }, inner: { text: "I" } }),
+      },
+    });
+    const panel = defineComponent({
+      name: "x-panel",
+      props: { heading: {} },
+      template: [{ "section.frame": [{ h3: "${label}" }, { slot: "" }] }],
+      store: {
+        selectViewData: ({ props }) => ({ label: props.heading.text }),
+      },
+    });
+
+    const { html } = renderComponent({
+      component: "x-page",
+      components: [page, panel],
+    });
+
+    expect(html.match(/shadowrootmode="open"/g)).toHaveLength(3);
+    expect([...html.matchAll(/<h3>(.*?)<\/h3>/g)].map((match) => match[1]))
+      .toEqual(["O", "I"]);
+    expect(html).toContain("<h2>Outer</h2><x-panel");
+    expect(html).toContain("<p>Inner</p></x-panel></x-panel>");
+  });
+
+  it("reports a real cycle through another component's light DOM on the view's own path", () => {
+    const a = defineComponent({
+      name: "x-a",
+      template: [{ "x-box": [{ "x-a": "" }] }],
+    });
+    const box = defineComponent({
+      name: "x-box",
+      template: [{ "div.box": [{ slot: "" }] }],
+    });
+
+    expect(() =>
+      renderComponent({
+        component: "x-a",
+        components: [a, box],
+      }),
+    ).toThrow(
+      new Error("[renderComponent] component cycle detected: x-a -> x-a."),
+    );
+  });
+
+  it("counts maxDepth by views inside views, not by light DOM nesting", () => {
+    const page = defineComponent({
+      name: "x-page",
+      template: [{ "x-a": [{ "x-b": [{ "x-c": [{ p: "leaf" }] }] }] }],
+    });
+    const slotted = (name) =>
+      defineComponent({ name, template: [{ div: [{ slot: "" }] }] });
+    const components = [page, slotted("x-a"), slotted("x-b"), slotted("x-c")];
+
+    expect(() =>
+      renderComponent({ component: "x-page", components, maxDepth: 2 }),
+    ).not.toThrow();
+    expect(() =>
+      renderComponent({ component: "x-page", components, maxDepth: 1 }),
+    ).toThrow(
+      new Error("[renderComponent] maximum component depth 1 exceeded at x-page -> x-a."),
+    );
+  });
+
   it("validates registry and depth inputs with stable errors", () => {
     expect(() =>
       renderComponent({ component: "x-a" }),

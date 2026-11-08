@@ -43,6 +43,22 @@ beforeAll(() => {
     }),
   });
 
+  // jsdom has no showModal/close behaviour; reflect `open` only.
+  Object.defineProperties(HTMLDialogElement.prototype, {
+    showModal: {
+      configurable: true,
+      value() {
+        this.setAttribute("open", "");
+      },
+    },
+    close: {
+      configurable: true,
+      value() {
+        this.removeAttribute("open");
+      },
+    },
+  });
+
   if (!customElements.get(TEST_TAG)) {
     customElements.define(TEST_TAG, createDialog({}));
   }
@@ -242,5 +258,108 @@ describe("rtgl-dialog primitive", () => {
     expect(styles).toMatch(
       /:host\(\[p="none"\]\) slot\[name="content"\][^{]*\{[^}]*--rtgl-dialog-padding-horizontal:\s*0px;[^}]*--rtgl-dialog-padding-vertical:\s*0px;/s,
     );
+  });
+});
+
+describe("rtgl-dialog native dialog lifecycle", () => {
+  const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  const openDialog = (parent = document.body) => {
+    const dialog = document.createElement(TEST_TAG);
+    dialog.innerHTML = '<div slot="content">first</div>';
+    parent.append(dialog);
+    dialog.setAttribute("open", "");
+    return dialog;
+  };
+
+  // What Chromium does when `cancel` arrives without user activation (a second
+  // Escape, Android back): the listeners run, but the dialog closes anyway and
+  // a native `close` event follows.
+  const forceNativeClose = (inner) => {
+    inner.dispatchEvent(new Event("cancel", { cancelable: false }));
+    inner.removeAttribute("open");
+    inner.dispatchEvent(new Event("close"));
+  };
+
+  it("keeps reacting to slot changes after it is moved while open", async () => {
+    for (const move of [false, true]) {
+      const from = document.createElement("div");
+      const to = document.createElement("div");
+      document.body.append(from, to);
+      const dialog = openDialog(from);
+      await flush();
+      if (move) {
+        to.append(dialog);
+      }
+      await flush();
+
+      const scheduleAdaptiveCentering = vi.spyOn(
+        dialog,
+        "_scheduleAdaptiveCentering",
+      );
+      const extra = document.createElement("div");
+      extra.slot = "content";
+      extra.innerHTML =
+        '<rtgl-text id="long">averyveryveryverylongtoken</rtgl-text>';
+      dialog.append(extra);
+      await flush();
+
+      expect(dialog.dialog.open).toBe(true);
+      expect(scheduleAdaptiveCentering).toHaveBeenCalledWith({
+        resetRetries: true,
+      });
+      expect(
+        extra.querySelector("#long").hasAttribute("break-long-tokens"),
+      ).toBe(true);
+      document.body.replaceChildren();
+    }
+  });
+
+  it("shows its dialog again after a native close while open stays set", () => {
+    const dialog = openDialog();
+    const closeEvents = [];
+    dialog.addEventListener("close", (event) => closeEvents.push(event));
+
+    forceNativeClose(dialog.dialog);
+
+    expect(closeEvents).toHaveLength(1);
+    expect(dialog.dialog.open).toBe(true);
+    expect(dialog.dialog.querySelector('slot[name="content"]')).not.toBe(null);
+  });
+
+  it("stays closed when the consumer removes open on close", () => {
+    const dialog = openDialog();
+    dialog.addEventListener("close", () => dialog.removeAttribute("open"));
+
+    forceNativeClose(dialog.dialog);
+
+    expect(dialog.dialog.open).toBe(false);
+    expect(dialog.dialog.querySelector("slot")).toBe(null);
+  });
+
+  it("unmounts its content when open is removed after a native close", () => {
+    const dialog = openDialog();
+
+    forceNativeClose(dialog.dialog);
+    dialog.removeAttribute("open");
+
+    expect(dialog.dialog.open).toBe(false);
+    expect(dialog.dialog.querySelector("slot")).toBe(null);
+    expect(dialog._slotElement).toBe(null);
+  });
+
+  it("does not reopen after it is disconnected or open is removed", () => {
+    const dialog = openDialog();
+    const inner = dialog.dialog;
+    const showModal = vi.spyOn(inner, "showModal");
+
+    dialog.removeAttribute("open");
+    inner.dispatchEvent(new Event("close"));
+    dialog.setAttribute("open", "");
+    dialog.remove();
+    inner.dispatchEvent(new Event("close"));
+
+    expect(showModal).toHaveBeenCalledTimes(1);
+    expect(inner.open).toBe(false);
   });
 });

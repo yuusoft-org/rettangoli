@@ -1,0 +1,39 @@
+{
+  "name": "non-boolean ssr reports SCHEMA-009 (FE requires a boolean)",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 2,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-SCHEMA-009": 2
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-SCHEMA-009",
+        "severity": "error",
+        "message": "components/quoted: ssr must be a boolean.",
+        "filePath": "src/components/quoted/quoted.schema.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-SCHEMA-009",
+        "severity": "error",
+        "message": "components/zero: ssr must be a boolean.",
+        "filePath": "src/components/zero/zero.schema.yaml",
+        "line": 4
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-002"
+  ]
+}

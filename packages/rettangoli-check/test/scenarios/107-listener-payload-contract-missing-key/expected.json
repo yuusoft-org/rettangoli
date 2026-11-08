@@ -1,5 +1,5 @@
 {
-  "name": "listener payload contract missing key",
+  "name": "string listener payload reports LISTENER-010",
   "options": {
     "dirs": [
       "./src/components"
@@ -11,9 +11,18 @@
     "errorCount": 1,
     "warnCount": 0,
     "errorCodes": {
-      "RTGL-CHECK-CONTRACT-004": 1
+      "RTGL-CHECK-LISTENER-010": 1
     },
-    "warnCodes": {}
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-LISTENER-010",
+        "severity": "error",
+        "message": "components/card: listener payload for event 'tap' on ref 'root' must be a mapping. FE ignores any other payload value.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 6
+      }
+    ]
   },
   "specRefs": [
     "RTGL-SPEC-CONF-CORE-001",

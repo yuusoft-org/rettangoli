@@ -1,0 +1,16 @@
+---
+title: Steps
+description: A yaml spec with structured steps.
+waitStrategy: event
+waitEvent: app:ready
+steps:
+  - action: select
+    testId: field
+    steps:
+      - action: write
+        value: hello
+  - action: screenshot
+---
+fields:
+  - name: field
+    type: text

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://paperlantern.example/</loc>
+  </url>
+  <url>
+    <loc>https://paperlantern.example/blog/hello-world/</loc>
+  </url>
+  <url>
+    <loc>https://paperlantern.example/blog/second-update/</loc>
+  </url>
+  <url>
+    <loc>https://paperlantern.example/changelog/</loc>
+  </url>
+  <url>
+    <loc>https://paperlantern.example/team/ada/</loc>
+  </url>
+  <url>
+    <loc>https://paperlantern.example/team/ben/</loc>
+  </url>
+</urlset>

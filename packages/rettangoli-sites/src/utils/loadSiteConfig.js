@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
 import { normalizeSitemapConfig } from '../sitemap.js';
+import { isPlainObject } from './object.js';
 
 const ALLOWED_TOP_LEVEL_KEYS = new Set(['markdown', 'markdownit', 'build', 'imports', 'data', 'sitemap', 'components']);
 const MARKDOWN_BOOLEAN_KEYS = new Set(['html', 'linkify', 'typographer', 'breaks', 'xhtmlOut']);
@@ -32,10 +33,6 @@ const ALLOWED_IMPORT_GROUP_KEYS = new Set(['templates', 'partials', 'data']);
 const ALLOWED_IMPORT_PROTOCOLS = new Set(['http:', 'https:']);
 const ALLOWED_COMPONENTS_KEYS = new Set(['dirs']);
 let didWarnLegacyMarkdownKey = false;
-
-function isPlainObject(value) {
-  return value && typeof value === 'object' && !Array.isArray(value);
-}
 
 function validateHeadingAnchors(value, configPath) {
   if (typeof value === 'boolean') {
@@ -380,6 +377,16 @@ function readFirstExistingConfigPath(rootDir) {
 }
 
 /**
+ * Parse and validate the text of a sites.config.yaml/.yml file
+ * @param {string} configContent - The raw YAML text
+ * @param {string} configPath - The config path, used in error messages
+ * @returns {Object} The validated config object
+ */
+export function parseSiteConfig(configContent, configPath) {
+  return validateConfig(yaml.load(configContent, { schema: yaml.JSON_SCHEMA }), configPath);
+}
+
+/**
  * Load the sites.config.yaml/.yml file from a given directory
  * @param {string} rootDir - The root directory to look for sites.config.yaml/.yml
  * @param {boolean} throwOnError - Whether to throw on errors other than file not found
@@ -395,8 +402,7 @@ export async function loadSiteConfig(rootDir, throwOnError = true, _bustCache = 
     }
 
     const configContent = fs.readFileSync(configPath, 'utf8');
-    const parsed = yaml.load(configContent, { schema: yaml.JSON_SCHEMA });
-    return validateConfig(parsed, configPath);
+    return parseSiteConfig(configContent, configPath);
   } catch (e) {
     if (throwOnError) {
       throw e;

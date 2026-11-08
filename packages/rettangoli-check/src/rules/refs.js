@@ -1,5 +1,5 @@
 import { createRefMatchers } from "../core/fe-contracts.js";
-import { isObjectRecord } from "./shared.js";
+import { isObjectRecord } from "../utils/object.js";
 
 export const collectInvalidRefKeys = (refs) => {
   const invalidRefKeys = new Set();

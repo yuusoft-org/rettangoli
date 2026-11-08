@@ -1,11 +1,10 @@
 import { produce } from "immer";
 
 import { isObjectPayload } from "./payload.js";
-
-const RETTANGOLI_STORE_HOT_UPDATE = Symbol.for(
-  "@rettangoli/fe/store-hot-update",
-);
-const RETTANGOLI_STORE_INITIALIZE = Symbol.for("@rettangoli/fe/store-initialize");
+import {
+  RETTANGOLI_STORE_HOT_UPDATE,
+  RETTANGOLI_STORE_INITIALIZE,
+} from "../protocol.js";
 
 export const initializeBoundStore = (store) => store?.[RETTANGOLI_STORE_INITIALIZE]?.();
 

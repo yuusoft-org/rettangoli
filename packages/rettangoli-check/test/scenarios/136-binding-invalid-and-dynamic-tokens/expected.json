@@ -1,0 +1,64 @@
+{
+  "name": "'=x' and '1invalid' fail in FE (BINDING-001); '${spread}' tokens and dynamic names are not judged; FE-valid ':1x' and bare '.1x' keep their YAHTML diagnostics",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 5,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CONTRACT-003": 1,
+      "RTGL-CHECK-BINDING-001": 2,
+      "RTGL-CHECK-YAHTML-003": 1,
+      "RTGL-CHECK-YAHTML-002": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CONTRACT-003",
+        "severity": "error",
+        "message": "components/card: legacy property binding syntax is not supported. Use ':prop=${value}' in .view.yaml.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 9
+      },
+      {
+        "code": "RTGL-CHECK-BINDING-001",
+        "severity": "error",
+        "message": "components/card: Invalid binding attribute name '' on 'div'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-BINDING-001",
+        "severity": "error",
+        "message": "components/card: Invalid attribute token '1invalid' on 'div'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 4
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/card: unsupported attr/prop '1x' on 'rtgl-view'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 8
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-002",
+        "severity": "error",
+        "message": "components/card: legacy '.1x' binding is not supported. Use ':1x'.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 9
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-YAHTML-001",
+    "RTGL-SPEC-YAHTML-004"
+  ]
+}

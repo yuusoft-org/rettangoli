@@ -1,0 +1,10 @@
+---
+template: base
+_each:
+  data: team.members
+  as: member
+  url: /team/${member.slug}/
+title: ${member.name}
+---
+- h1: ${member.name}
+- "${md(member.bio)}"

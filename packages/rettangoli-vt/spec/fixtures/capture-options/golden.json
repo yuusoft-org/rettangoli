@@ -1,0 +1,206 @@
+{
+  "defaults": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "config-values": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",4010],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:4010/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"event","estimatedCost":120,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cfg:ready"},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:4010/candidate/pages/home.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"event","estimatedCost":120,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cfg:ready"},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://localhost:4010/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"event","estimatedCost":170,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cfg:ready"}],"screenshotsDir":".rettangoli/vt/_site/candidate","workerCount":2,"isolationMode":"strict","screenshotWaitTime":0,"waitEvent":"cfg:ready","waitStrategy":"event","navigationTimeout":41000,"readyTimeout":41000,"screenshotTimeout":41000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "cli-overrides-config": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",4020],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:4020/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"event","estimatedCost":120,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cli:ready"},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:4020/candidate/pages/home.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"event","estimatedCost":120,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cli:ready"},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://localhost:4020/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"event","estimatedCost":170,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cli:ready"}],"screenshotsDir":".rettangoli/vt/_site/candidate","workerCount":5,"isolationMode":"strict","screenshotWaitTime":0,"waitEvent":"cli:ready","waitStrategy":"event","navigationTimeout":12000,"readyTimeout":12000,"screenshotTimeout":12000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":false},
+    "logs": []
+  },
+  "cli-isolation-strict": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"strict","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "config-url": {
+    "error": null,
+    "webServer": null,
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/app/index.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720}},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:3001/app/index.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720}},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://localhost:3001/app/index.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":null,"width":1280,"height":720}}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "config-absolute-url": {
+    "error": null,
+    "webServer": null,
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://127.0.0.1:5000/app?x=1","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720}},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://127.0.0.1:5000/app?x=1","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720}},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://127.0.0.1:5000/app?x=1","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":null,"width":1280,"height":720}}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "cli-url-overrides-config": {
+    "error": null,
+    "webServer": null,
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:6000/shell","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720}},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:6000/shell","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720}},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://localhost:6000/shell","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":null,"width":1280,"height":720}}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "frontmatter-url-resolves-against-config-url": {
+    "error": null,
+    "webServer": null,
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"https://example.com/abs","baseName":"forms/inputs/text","frontMatter":{"url":"https://example.com/abs"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720}},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://127.0.0.1:5000/app/other/page.html","baseName":"pages/home","frontMatter":{"url":"other/page.html"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720}},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://127.0.0.1:5000/root.html","baseName":"pages/steps","frontMatter":{"url":"/root.html"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720}}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "frontmatter-url-without-config-url": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:pages/home.html:default","index":0,"path":"pages/home.html","url":"http://localhost:3001/spa/route","baseName":"pages/home","frontMatter":{"url":"/spa/route"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720}}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "wait-precedence-frontmatter-over-config": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"waitStrategy":"selector","waitSelector":"#ready"},"steps":[],"waitStrategy":"selector","estimatedCost":115,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cfg:ready","waitSelector":"#ready"},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{"waitStrategy":"load"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cfg:ready"},{"id":"2:pages/plain.html:default","index":2,"path":"pages/plain.html","url":"http://localhost:3001/candidate/pages/plain.html","baseName":"pages/plain","frontMatter":{},"steps":[],"waitStrategy":"event","estimatedCost":120,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cfg:ready"},{"id":"3:pages/steps.yaml:default","index":3,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"waitEvent":"fm:ready"},"steps":[],"waitStrategy":"event","estimatedCost":120,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"fm:ready"}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitEvent":"cfg:ready","waitStrategy":"event","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "wait-selector-frontmatter-only": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:pages/home.html:default","index":0,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{"waitSelector":"#app[data-ready]"},"steps":[],"waitStrategy":"selector","estimatedCost":115,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitSelector":"#app[data-ready]"},{"id":"1:pages/plain.html:default","index":1,"path":"pages/plain.html","url":"http://localhost:3001/candidate/pages/plain.html","baseName":"pages/plain","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "wait-cli-event-beats-config": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"event","estimatedCost":120,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cli:ready"},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"event","estimatedCost":120,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cli:ready"},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"event","estimatedCost":170,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true,"waitEvent":"cli:ready"}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitEvent":"cli:ready","waitStrategy":"event","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "viewports-from-config": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:desktop","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text--desktop","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":"desktop","width":1280,"height":720},"vtOwnedUrl":true},{"id":"0:forms/inputs/text.html:mobile","index":1,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text--mobile","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":"mobile","width":390,"height":844},"vtOwnedUrl":true},{"id":"1:pages/home.html:desktop","index":2,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home--desktop","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":"desktop","width":1280,"height":720},"vtOwnedUrl":true},{"id":"1:pages/home.html:mobile","index":3,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home--mobile","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":"mobile","width":390,"height":844},"vtOwnedUrl":true},{"id":"2:pages/steps.yaml:desktop","index":4,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps--desktop","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":"desktop","width":1280,"height":720},"vtOwnedUrl":true},{"id":"2:pages/steps.yaml:mobile","index":5,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps--mobile","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":"mobile","width":390,"height":844},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "viewports-frontmatter-override": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:wide","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text--wide","frontMatter":{"viewport":{"id":"wide","width":1920,"height":1080}},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":"wide","width":1920,"height":1080},"vtOwnedUrl":true},{"id":"1:pages/home.html:tablet","index":1,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home--tablet","frontMatter":{"viewport":[{"id":"tablet","width":768,"height":1024},{"id":"phone","width":360,"height":640}]},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":"tablet","width":768,"height":1024},"vtOwnedUrl":true},{"id":"1:pages/home.html:phone","index":2,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home--phone","frontMatter":{"viewport":[{"id":"tablet","width":768,"height":1024},{"id":"phone","width":360,"height":640}]},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":"phone","width":360,"height":640},"vtOwnedUrl":true},{"id":"2:pages/plain.html:desktop","index":3,"path":"pages/plain.html","url":"http://localhost:3001/candidate/pages/plain.html","baseName":"pages/plain--desktop","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":"desktop","width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "skip-screenshot-frontmatter": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": ["Skipping screenshots for 1 files"]
+  },
+  "all-specs-skip-screenshot": {
+    "error": null,
+    "webServer": null,
+    "scheduler": null,
+    "logs": ["Skipping screenshots for 1 files","No files selected for screenshot capture. Skipping Playwright run."]
+  },
+  "frontmatter-passthrough": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:pages/home.html:default","index":0,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{"title":"Home","description":"A page","diffThreshold":2.5,"skipInitialScreenshot":true,"useBrowserScreenshot":true,"custom":{"nested":[1,"two"]}},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "config-skip-screenshots": {
+    "error": null,
+    "webServer": null,
+    "scheduler": null,
+    "logs": []
+  },
+  "cli-skip-screenshots": {
+    "error": null,
+    "webServer": null,
+    "scheduler": null,
+    "logs": []
+  },
+  "capture-screenshots-false-beats-everything": {
+    "error": null,
+    "webServer": null,
+    "scheduler": null,
+    "logs": []
+  },
+  "capture-screenshots-true-beats-config-skip": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "selector-folder": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:pages/home.html:default","index":0,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"1:pages/steps.yaml:default","index":1,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": ["Selector scope: 2 file(s) selected, 1 excluded."]
+  },
+  "selector-folder-nested": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": ["Selector scope: 1 file(s) selected, 2 excluded."]
+  },
+  "selector-group": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": ["Selector scope: 1 file(s) selected, 2 excluded."]
+  },
+  "selector-item": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:pages/home.html:default","index":0,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": ["Selector scope: 1 file(s) selected, 2 excluded."]
+  },
+  "selector-folder-and-item": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"1:pages/steps.yaml:default","index":1,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": ["Selector scope: 2 file(s) selected, 1 excluded."]
+  },
+  "selector-matches-nothing": {
+    "error": null,
+    "webServer": null,
+    "scheduler": null,
+    "logs": ["Selector scope: 0 file(s) selected, 3 excluded.","No files selected for screenshot capture. Skipping Playwright run."]
+  },
+  "custom-vt-path": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./visual",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "cli-vt-path": {
+    "error": null,
+    "webServer": [".rettangoli/vt/_site","./visual",3001],
+    "scheduler": {"tasks":[{"id":"0:forms/inputs/text.html:default","index":0,"path":"forms/inputs/text.html","url":"http://localhost:3001/candidate/forms/inputs/text.html","baseName":"forms/inputs/text","frontMatter":{"title":"Text"},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"1:pages/home.html:default","index":1,"path":"pages/home.html","url":"http://localhost:3001/candidate/pages/home.html","baseName":"pages/home","frontMatter":{},"steps":[],"waitStrategy":"load","estimatedCost":110,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true},{"id":"2:pages/steps.yaml:default","index":2,"path":"pages/steps.yaml","url":"http://localhost:3001/candidate/pages/steps.html","baseName":"pages/steps","frontMatter":{"title":"Steps","steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}]},"steps":[{"action":"click","x":1,"y":2},{"action":"wait","ms":5}],"waitStrategy":"load","estimatedCost":160,"viewport":{"id":null,"width":1280,"height":720},"vtOwnedUrl":true}],"screenshotsDir":".rettangoli/vt/_site/candidate","isolationMode":"fast","screenshotWaitTime":0,"waitStrategy":"load","navigationTimeout":30000,"readyTimeout":30000,"screenshotTimeout":30000,"maxRetries":1,"recycleEvery":25,"metricsPath":".rettangoli/vt/metrics.json","headless":true},
+    "logs": []
+  },
+  "error-invalid-concurrency": {
+    "error": "\"concurrency\" must be >= 1, got 0.",
+    "webServer": null,
+    "scheduler": null,
+    "logs": []
+  },
+  "error-invalid-timeout": {
+    "error": "\"timeout\" must be >= 1, got -5.",
+    "webServer": null,
+    "scheduler": null,
+    "logs": []
+  },
+  "error-service-needs-url": {
+    "error": "Invalid VT config in rettangoli.config.yaml: \"vt.url\" is required when \"vt.service\" is configured.",
+    "webServer": null,
+    "scheduler": null,
+    "logs": []
+  },
+  "error-unknown-group-selector": {
+    "error": "Unknown group selector(s): missing.",
+    "webServer": null,
+    "scheduler": null,
+    "logs": []
+  },
+  "error-invalid-frontmatter": {
+    "error": "\"pages/bad.html: frontMatter.waitEvent\" is required when waitStrategy is \"event\" and no vt.waitEvent is set.",
+    "webServer": [".rettangoli/vt/_site","./vt",3001],
+    "scheduler": null,
+    "logs": []
+  }
+}

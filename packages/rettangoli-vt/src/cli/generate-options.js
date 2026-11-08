@@ -48,6 +48,8 @@ export function resolveGenerateOptions(options = {}, configData = {}) {
     configUrl: cliUrl ?? configData.url,
     ...(configData.viewport !== undefined ? { viewport: configData.viewport } : {}),
     ...(configData.service?.start ? { serviceStart: configData.service.start } : {}),
+    ...(configData.launchArgs ? { launchArgs: configData.launchArgs } : {}),
+    ...(configData.animations ? { animations: configData.animations } : {}),
     selectors,
 
     // Internal capture defaults (not user-configurable).

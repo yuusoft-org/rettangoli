@@ -76,21 +76,23 @@ Use this exact flow.
    - `bun run build` (output: `apps/rettangoli.dev/_site`)
 
 2. New standalone site
-   - `bunx rtgl sites init my-site --template default`
+   - `npm install --save-dev --save-exact rtgl` (in the folder that will hold the site; `npx rtgl` outside a project that installs `rtgl` downloads the latest npm version)
+   - `npx rtgl sites init my-site --template default`
    - `cd my-site`
-   - `bunx rtgl sites watch`
-   - `bunx rtgl sites build`
+   - `npx rtgl sites watch`
+   - `npx rtgl sites build`
 
 ## Sites Agent Bootstrap (If You Only Receive This File + A Prompt)
 When asked to start a new `rtgl-sites` project, do this exact sequence:
 
 1. Scaffold
-   - `bunx rtgl sites init <project-name> --template default`
+   - `npm install --save-dev --save-exact rtgl` if the project does not install it yet
+   - `npx rtgl sites init <project-name> --template default`
    - `cd <project-name>`
 2. Configure imports in `sites.config.yaml` using the alias map below (all pre-provided templates/partials).
 3. Create/update `data/site.yaml`, `data/seo.yaml`, and page files to match the selected template schema.
 4. Validate page/template data against `data-contract.schema.yaml` (`$defs/template.*` and `$defs/partial.*`).
-5. Run `bunx rtgl sites watch` for development and `bunx rtgl sites build` for production output.
+5. Run `npx rtgl sites watch` for development and `npx rtgl sites build` for production output.
 
 Default output path: `_site/`.
 
@@ -105,8 +107,6 @@ Default output path: `_site/`.
   - `landing-features`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/landing-features.yaml`
   - `blog-article-list`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article-list.yaml`
   - `blog-article`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/templates/blog-article.yaml`
-- `apps/rettangoli.dev` local templates:
-  - `ansi-json-documentation`: `apps/rettangoli.dev/templates/ansi-json-documentation.yaml`
 
 ## Sites Pre-Provided Partials (Use These)
 - `seo`: `https://cdn.jsdelivr.net/npm/@rettangoli/sitekit@1.0.3/sitekit/partials/seo.yaml`
@@ -158,7 +158,6 @@ imports:
 - `apps/rettangoli.dev/pages/index.yaml` -> `template: base`
 - `apps/rettangoli.dev/pages/sites/docs/**` -> `template: docs`
 - `apps/rettangoli.dev/pages/ui/docs/**`, `apps/rettangoli.dev/pages/fe/docs/**`, `apps/rettangoli.dev/pages/vt/docs/**` -> `template: docs`
-- `apps/rettangoli.dev/pages/ansi-json/docs/**` -> `template: ansi-json-documentation`
 
 ## Notes
 - UI docs describe current attribute names and behavior; treat those as source of truth for component usage.

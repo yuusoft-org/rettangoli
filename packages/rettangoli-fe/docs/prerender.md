@@ -31,11 +31,14 @@ const { html } = renderComponent({
 
 - `loadComponents({ cwd, dirs, reload })` reads components the way
   `rtgl fe build` finds them. It loads views, schemas, constants, stores and
-  methods. It `MUST NOT` import handlers: they never run at build time, so
-  they may use browser APIs. A component marked `ssr: false` has no module
-  imported at all. A new `reload` token imports edited stores and methods
-  again in a long-running build, such as a watch; modules they import stay
-  cached.
+  methods. YAML is read the way the browser entry embeds it, so a date in a
+  constants file arrives as an ISO string, and `NaN` or `Infinity` as `null`,
+  on both sides. Two folders with the same component id print one
+  `[loadComponents]` warning and merge, as in `rtgl fe build`. It `MUST NOT`
+  import handlers: they never run at build time, so they may use browser
+  APIs. A component marked `ssr: false` has no module imported at all. A new
+  `reload` token imports edited stores and methods again in a long-running
+  build, such as a watch; modules they import stay cached.
 - `renderComponent` runs each component's `createInitialState` and
   `selectViewData`, renders its view, recurses into registered child
   components, and writes every component into its own declarative shadow
@@ -43,6 +46,10 @@ const { html } = renderComponent({
   `data-rtgl-hydrate`.
 - Handlers are never invoked at build time, so `handleBeforeMount` cannot
   seed state the build sees.
+- The serializer writes HTML that the browser's parser reads back as the same
+  text. A carriage return in text or in an attribute is written as `&#13;`,
+  and `pre`, `textarea` and `listing` content that starts with a newline gets
+  one extra leading newline, because the parser drops the first one.
 - With `serializeProps: true`, the root's schema props are written as JSON
   in a `<script type="application/json" data-rtgl-props>` beside its shadow
   root, and marks the host `data-rtgl-props`. A root has no parent on the
@@ -101,7 +108,10 @@ render needs belongs in the store or in props, not in a handler.
   own light DOM and only a fresh element sets that structure up again. The
   same goes for every custom element around it, up to the nearest plain
   element, so in a tree of `rtgl-view`s one difference usually re-renders the
-  whole component. Attributes a custom element sets on itself are left alone.
+  whole component. Attributes a custom element sets on itself are left alone,
+  except a name the client renders off with a toggle (`?disabled=${busy}`
+  with `busy` false): the template owns it, so a copy on the element is
+  removed and counted as a mismatch.
 - Nodes are paired by position. A keyed list in a different order than the
   one prerendered is corrected item by item, not moved.
 - Text the HTML parser joined (adjacent text items, or a `$for` over text) is
@@ -174,10 +184,14 @@ root and no hydration marker, and mounts on the client as usual. The light
 DOM its parent gives it is still written, so the parent adopts it. An
 opted-out root rendered with `serializeProps` still gets its props.
 
-A component can't be prerendered inside itself, such as a tree that renders
-its own tag for its child nodes: `renderComponent` throws
+A component whose own view renders its own tag, directly or through the
+views of the components it renders (a tree that renders itself for its child
+nodes), can't be prerendered: `renderComponent` throws
 `component cycle detected`. Mark it `ssr: false`; its parent's markup is
-still prerendered, and the tree renders in the browser.
+still prerendered, and the tree renders in the browser. Light DOM belongs to
+the view that writes it, so a component nested in its own type through a
+slot (`x-panel` inside `x-panel`, both written by the page) is not a cycle,
+and `maxDepth` counts only views inside views.
 
 ## Design Notes
 

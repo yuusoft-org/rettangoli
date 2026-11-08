@@ -1,0 +1,71 @@
+import { deps } from "<ROOT>/setup.js";
+const __rtgl_0_schema = {"componentName":"x-badge"};
+const __rtgl_1_view = {"template":{"type":9,"items":[{"type":8,"properties":[{"key":"span","value":{"type":1,"path":"i18n.common.badge"}}],"fast":true}],"fast":true}};
+const __rtgl_2_constants = {"limit":3};
+import * as __rtgl_3_handlers from "<ROOT>/src/pages/home/home.handlers.js";
+const __rtgl_4_schema = {"componentName":"x-home","propsSchema":{"type":"object","properties":{"name":{}}}};
+import * as __rtgl_5_store from "<ROOT>/src/pages/home/home.store.js";
+const __rtgl_6_view = {"template":{"type":9,"items":[{"type":8,"properties":[{"key":"div#root","value":{"type":9,"items":[{"type":8,"properties":[{"key":"h1","value":{"type":1,"path":"i18n.common.title"}}],"fast":true},{"type":8,"properties":[{"key":"x-badge","value":{"type":0,"value":null}}],"fast":true}],"fast":true}}],"fast":true}],"fast":true}};
+import { createComponent, createI18nRuntime } from "@rettangoli/fe";
+
+const imports = {};
+imports["components"] = {};
+imports["components"]["badge"] = {};
+imports["components"]["badge"]["schema"] = __rtgl_0_schema;
+imports["components"]["badge"]["view"] = __rtgl_1_view;
+imports["pages"] = {};
+imports["pages"]["home"] = {};
+imports["pages"]["home"]["constants"] = __rtgl_2_constants;
+imports["pages"]["home"]["handlers"] = __rtgl_3_handlers;
+imports["pages"]["home"]["schema"] = __rtgl_4_schema;
+imports["pages"]["home"]["store"] = __rtgl_5_store;
+imports["pages"]["home"]["view"] = __rtgl_6_view;
+
+
+
+const __rtglI18nRuntime = createI18nRuntime({
+  defaultLocale: "en",
+  fallbackLocale: "en",
+  locales: ["en","vi"],
+  urls: {
+  "en": new URL(/* @vite-ignore */ "./i18n/en.json", import.meta.url).href,
+  "vi": new URL(/* @vite-ignore */ "./i18n/vi.json", import.meta.url).href,
+  },
+  initialCatalogs: {"en":{"common":{"title":"Hello","badge":"New"}}},
+});
+await __rtglI18nRuntime.ready();
+
+const __rtglFrameworkDeps = {
+  __rtglI18nRuntime,
+  locale: __rtglI18nRuntime.locale,
+};
+
+
+
+const __rtglRegistrationOrder = [["components","badge"],["pages","home"]];
+// Prerendered hosts upgrade as soon as they are defined, so a page that
+// holds prerendered markup defines parents before the components they render.
+const __rtglHydrationRegistrationOrder = [["pages","home"],["components","badge"]];
+const __rtglHasServerMarkup =
+  typeof document !== "undefined" &&
+  document.querySelector("[data-rtgl-hydrate]") !== null;
+
+
+(__rtglHasServerMarkup
+  ? __rtglHydrationRegistrationOrder
+  : __rtglRegistrationOrder
+).forEach(([category, component]) => {
+  const componentConfig = imports[category][component];
+  const categoryDeps = {
+    ...((deps && deps[category]) || {}),
+    ...__rtglFrameworkDeps,
+  };
+  const elementName = componentConfig.schema?.componentName;
+  if (!elementName) {
+    throw new Error(
+      `[Build] Missing schema.componentName for ${category}/${component}. Define it in .schema.yaml.`,
+    );
+  }
+  const webComponent = createComponent({ ...componentConfig }, categoryDeps);
+    customElements.define(elementName, webComponent);
+});

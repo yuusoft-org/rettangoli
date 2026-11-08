@@ -2,17 +2,20 @@
 
 `@rettangoli/sites` is the static-site engine used by Rettangoli. It renders pages from YAML and Markdown into `_site/`, with support for templates, partials, global data, collections, and watch mode.
 
-It can run directly with `bunx rtgl`, so a site-level `package.json` is optional.
+Run it through `rtgl`. Install `rtgl` as a dev dependency of the project that holds the site, so every machine and CI job uses the version in your lockfile. `bunx rtgl` and `npx rtgl` outside a project that installs `rtgl` download the latest version from npm, which may differ from the one your site expects.
 
 ## Quick Start
 
 ```bash
+# install rtgl in the folder that will hold the site
+npm install --save-dev --save-exact rtgl
+
 # scaffold
-bunx rtgl sites init my-site
+npx rtgl sites init my-site
 
 # run
 cd my-site
-bunx rtgl sites build
+npx rtgl sites build
 ```
 
 ## Package Contract
@@ -186,9 +189,9 @@ Use top-level `data` in `sites.config.yaml` for small global values that do not 
 `sites.config.yaml data` and `data/*` files are merged, with `data/*` files winning on conflicts.
 Inline config data requires `rtgl >= 1.1.4` or `@rettangoli/sites >= 1.0.3`.
 
-Imported templates and partials are cached on disk under `.rettangoli/sites/imports/{templates|partials}/` (hashed filenames).
-Alias/url/hash mapping is tracked in `.rettangoli/sites/imports/index.yaml`.
-Build is cache-first: if a cached file exists, it is used without a network request.
+Imported templates and partials are cached on disk under `.rettangoli/sites/imports/{templates|partials}/`, one file per URL, named by the SHA-256 hash of the URL.
+Build is cache-first: if a cached file exists, it is used without a network request. Delete the cached file to fetch the URL again; a changed URL is fetched because its hash changes.
+`.rettangoli/sites/imports/index.yaml` lists the configured template and partial imports (alias, type, URL, hash and cache path) for reference. Each build that has such imports rebuilds it, and writes it only when its text changes. Sites never reads it back, and a failed write only logs a warning.
 
 When an alias exists both remotely and locally, local files under `templates/` and `partials/` override the imported one.
 
@@ -230,6 +233,30 @@ The parsed document is available under its alias, just like `data/directory.yaml
 Data imports make values available for rendering. To generate one page per record, use [`_each`](#one-page-per-item-_each) with any global data array, remote or local. Custom preparation scripts that run before Sites must separately obtain their input data; they can write it to `data/<name>.json`.
 
 If you want to publish a manual `llms.txt`, place it in `static/llms.txt`; it will be copied to `_site/llms.txt`.
+
+## Frontmatter
+
+### Frontmatter values
+
+Frontmatter values are plain data. On a normal page, `${...}` in a frontmatter value is not evaluated: `title: ${site.name} - About` renders the text `${site.name} - About`. Put expressions in the page body or the template instead, for example `- title: ${site.name} - ${title}`.
+Pages generated with [`_each`](#one-page-per-item-_each) are the exception: their frontmatter is rendered for each item.
+
+### Reserved names
+
+Each page is rendered with global data, then its frontmatter, then its `_bind` aliases (and the `_each` item) on top. Sites then sets these keys, replacing any global data, frontmatter key or alias with the same name:
+
+- `collections`: pages grouped by tag
+- `page`: `{ url }`, the page's URL
+- `build`: `{ isScreenshotMode }`
+
+Templates also receive `content`, the rendered page body, which replaces a `content` key the same way. Pick other names for your own data. `_each` rejects these four names for `as`.
+
+### Unclosed frontmatter
+
+A page that starts with `---` but has no closing `---` line is read differently depending on what follows:
+
+- In a YAML page, a list or scalar after the `---` is the page body, as in a plain YAML document that starts with a `---` marker.
+- Otherwise (a mapping, or any Markdown page) the whole file is read as frontmatter and the build prints a warning. The page then has no body, and a YAML page without a `template` fails the build. If you meant frontmatter, add the closing `---` line. If you meant a YAML body that is a mapping, remove the leading `---`.
 
 ## System Frontmatter
 
@@ -323,20 +350,34 @@ This keeps one template reusable across many page variants and avoids duplicated
 ## Commands
 
 ```bash
-bunx rtgl sites build
-bunx rtgl sites watch
-bunx rtgl sites build --quiet
-bunx rtgl sites watch --quiet
-bunx rtgl sites watch --reload-mode full
-bunx rtgl sites build --root-dir . --output-path dist
-bunx rtgl sites watch --root-dir . --output-path dist --reload-mode full
+npx rtgl sites build
+npx rtgl sites watch
+npx rtgl sites build --quiet
+npx rtgl sites watch --quiet
+npx rtgl sites watch --reload-mode full
+npx rtgl sites build --root-dir . --output-path dist
+npx rtgl sites watch --root-dir . --output-path dist --reload-mode full
 ```
+
+`sites watch` watches `data/`, `templates/`, `partials/`, `pages/`, `static/`, each
+`components.dirs` folder, and `sites.config.yaml`/`.yml`, and rebuilds when they change.
+Every rebuild reads the config again. A folder created after watch starts, or a change to
+`components.dirs`, needs a restart. When a rebuild fails, the terminal shows the error and the
+browser keeps the last good build.
 
 `--reload-mode body` (default) morphs generated HTML into the current document. It
 reuses elements keyed by `data-rtgl-key`, `data-key`, or `id` (and compatible
 unkeyed elements by position), so unchanged custom elements keep their runtime
-state. Focus, text selection, uncontrolled form values, and window/nested scroll
-positions are restored after the morph. Add `data-rtgl-preserve` to an element
+state. Focus, text selection, and window/nested scroll positions are restored
+after the morph. Form controls the user changed (typed text, checked boxes and
+radios, select choices, details and dialogs opened or closed after load) keep
+that state; controls nobody touched follow the edited source. A details element
+or non-modal dialog that was already open when the watch client started (for
+example because an earlier script opened it) counts as source state, so the next
+reload applies the source's `open` attribute; a dialog opened with `showModal()`
+is reopened after every reload. The `value` of hidden, button, submit, reset and
+image inputs, checkboxes and radios always follows the source, even when a
+script changed it. Add `data-rtgl-preserve` to an element
 whose attributes and children are entirely managed by client-side code. The
 marker also protects client-created `<head>` elements (such as runtime styles,
 metadata, or stylesheet links) from head synchronization and asset refreshes;
@@ -351,13 +392,16 @@ use a no-cache full reload so the browser never continues with stale resources
 or code. `--reload-mode full` forces a full page refresh for every change.
 `--root-dir`/`--output-path` are the preferred option names (`--rootDir`/`--outputPath` remain as legacy aliases).
 
-Builds clean the output directory first. Output may be a source subdirectory or
+Each build renders every page and the sitemap first. Only then does it clean the
+output directory, copy `static/`, and write the pages and the sitemap, so a build
+that fails while loading or rendering leaves the previous output untouched.
+Output may be a source subdirectory or
 a sibling (for example `--root-dir ./src --output-path ../_site`), but cannot be
 the source directory, one of its ancestors, or a symlink resolving to either.
 The watch server serves files contained in that output directory, including
 internal symlinks, and rejects paths or symlinks that escape it.
 Watch binds to `127.0.0.1` by default. To allow access from another device, use
-`bunx rtgl sites watch --host 0.0.0.0` explicitly.
+`npx rtgl sites watch --host 0.0.0.0` explicitly.
 
 ## Built-in Template Functions
 
@@ -373,14 +417,18 @@ Available in YAML templates/pages without extra setup:
 - `sort(list, key, order = "asc")`
 - `chunk(list, size = 1, pad = false, fillValue = null)`
 - `md(content)`
+- `default(value, fallback = "")`
 - `toQueryString(object)`
 - `renderComponent(tag, props = {})` (requires `components`; see [Prerendered components](#prerendered-components))
 
 `formatDate` tokens: `YYYY`, `MMM`, `MM`, `DD`, `D`, `HH`, `mm`, `ss`.
+Tokens are replaced anywhere in the format string, and there is no escape syntax, so keep literal letters out of it: `Day: DD` gives `15ay: 15`, and `MMMM` gives `MarM`. Separate tokens with punctuation or spaces.
+A missing date (`undefined`, `null` or `""`) formats the current time, so a page without a date shows the build date. An invalid date gives `""`. Dates are read in UTC unless `useUtc` is `false`.
+`default` returns `fallback` when `value` is `undefined`, `null` or `""`, and `value` otherwise.
 `decodeURI`/`decodeURIComponent` return the original input when decoding fails.
 `sort` supports `order` as `asc` or `desc` (default: `asc`), accepts dot-path keys (for example `data.date`), and returns a new array.
 `chunk` splits arrays into rows of `size`; with `pad = true`, the last row is padded with `fillValue`.
-`md` returns raw rendered HTML from Markdown for template insertion.
+`md` returns raw rendered HTML from Markdown for template insertion. It uses a plain `markdown-it` with its defaults, not the `markdownit` settings in `sites.config.yaml`: HTML tags in the content are escaped, URLs are not linkified, and there is no Shiki highlighting or heading anchors.
 
 ## Prerendered components
 
@@ -427,9 +475,14 @@ An attribute written in an element's key (`meta content="${description}"`) is su
 
 ```yaml
 - meta name="description":
-    content: ${description}
+    content: ${default(description, '')}
     children: []
 ```
+
+`default(..., '')` renders an empty attribute for a missing or `null` value, as the key form does; a bare `${description}` can render `undefined` or `null` there instead. Two more rules for this form:
+
+- When the value holds a function call (such as `default`), `${...}` in that element's key is not rendered, so move every attribute that uses data into the value. Static attributes can stay in the key.
+- A value of `true` renders a bare attribute (`content` instead of `content="true"`).
 
 ## Screenshots
 
@@ -444,7 +497,7 @@ Use VT against your generated site:
 Docker runtime (recommended for stable Playwright/browser versions):
 
 ```bash
-IMAGE="han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.1.0"
+IMAGE="han4wluc/rtgl@sha256:85769959d834eaf984210f4b2f1f7de07677e81578c98d86680ba116c03a7d45"
 docker pull "$IMAGE"
 docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" node /workspace/node_modules/rtgl/cli.js vt screenshot
 docker run --rm -v "$PWD:/workspace" -w /workspace "$IMAGE" node /workspace/node_modules/rtgl/cli.js vt report
@@ -478,10 +531,10 @@ For a maintained example asset pack and VT lab, see `packages/rettangoli-sitekit
 
 ## Full Architecture And Analysis
 
-See `docs/architecture-and-analysis.md` for:
+See [docs/architecture-and-analysis.md](./docs/architecture-and-analysis.md) for:
 
-- End-to-end rendering flow
-- Data/context model used during render
-- URL/output mapping rules
-- Config contract details
-- Full robustness analysis and prioritized improvements
+- Public exports and the source modules
+- The build stages, in order
+- The render context
+- Import cache and index details
+- Watch mode internals and known gaps

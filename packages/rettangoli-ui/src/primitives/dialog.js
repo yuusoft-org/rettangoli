@@ -359,12 +359,12 @@ class RettangoliDialogElement extends HTMLElement {
     super();
     RettangoliDialogElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliDialogElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliDialogElement.styleSheet];
 
     // Create dialog element
     this._dialogElement = document.createElement("dialog");
     this._dialogElement.tabIndex = -1;
-    this.shadow.appendChild(this._dialogElement);
+    this.shadowRoot.appendChild(this._dialogElement);
 
     // Store reference for content slot
     this._slotElement = null;
@@ -440,6 +440,19 @@ class RettangoliDialogElement extends HTMLElement {
       this._attemptClose();
     });
     this._dialogElement.addEventListener("keydown", this._onDialogKeyDown);
+
+    // Chromium closes the dialog anyway when `cancel` is not cancelable (a
+    // second Escape, Android back). Visibility follows `open`, so show it
+    // again while the host is still open.
+    this._dialogElement.addEventListener("close", () => {
+      if (
+        this._isConnected &&
+        this.hasAttribute("open") &&
+        !this._dialogElement.open
+      ) {
+        this._showModal();
+      }
+    });
   }
 
   _attemptClose() {
@@ -929,9 +942,11 @@ class RettangoliDialogElement extends HTMLElement {
       if (!this._slotElement) {
         this._slotElement = document.createElement("slot");
         this._slotElement.setAttribute("name", "content");
-        this._slotElement.addEventListener("slotchange", this._onSlotChange);
         this._dialogElement.appendChild(this._slotElement);
       }
+      // On every show: disconnectedCallback removes this listener but keeps
+      // the slot, and adding the same listener again is a no-op.
+      this._slotElement.addEventListener("slotchange", this._onSlotChange);
       if (!this._closeButtonElement) {
         this._closeButtonElement = this._createCloseButtonElement();
         this._dialogElement.appendChild(this._closeButtonElement);
@@ -940,7 +955,7 @@ class RettangoliDialogElement extends HTMLElement {
 
       this._updateActiveLayoutAttribute();
       this._dialogElement.showModal();
-      if (this.shadow.activeElement === this._closeButtonElement) {
+      if (this.shadowRoot.activeElement === this._closeButtonElement) {
         this._dialogElement.focus({ preventScroll: true });
       }
 

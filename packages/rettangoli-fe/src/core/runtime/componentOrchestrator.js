@@ -1,42 +1,20 @@
 import { parseView } from "../../parser.js";
-import { createTransformedHandlers, runAfterMount, runBeforeMount } from "./lifecycle.js";
+import {
+  buildOnPropUpdateChanges,
+  buildOnUpdateChanges,
+  createTransformedHandlers,
+  runAfterMount,
+  runBeforeMount,
+  syncRuntimeDeps,
+} from "./lifecycle.js";
 import { attachGlobalRefListeners } from "./globalListeners.js";
 import { collectRefElements } from "./refs.js";
 import {
-  createComponentRuntimeDeps,
   cleanupEventRateLimitState,
   syncRefIds,
 } from "./componentRuntime.js";
-import { buildOnPropUpdateChanges, buildOnUpdateChanges } from "./lifecycle.js";
-import { normalizeAttributeValue, toCamelCase } from "./props.js";
-import { PARENT_UPDATE_TRANSACTION } from "./updateTransaction.js";
-
-const syncRuntimeDeps = (target, source) => {
-  Reflect.ownKeys(target).forEach((key) => {
-    const descriptor = Object.getOwnPropertyDescriptor(target, key);
-    if (descriptor?.configurable) {
-      delete target[key];
-    }
-  });
-  Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-  return target;
-};
-
-export const createRuntimeDepsForInstance = ({ instance }) => {
-  const nextRuntimeDeps = createComponentRuntimeDeps({
-    baseDeps: instance.deps,
-    refs: instance.refIds,
-    dispatchEvent: instance.dispatchEvent.bind(instance),
-    store: instance.store,
-    render: instance.render.bind(instance),
-  });
-
-  if (!instance._runtimeDeps) {
-    instance._runtimeDeps = nextRuntimeDeps;
-    return instance._runtimeDeps;
-  }
-  return syncRuntimeDeps(instance._runtimeDeps, nextRuntimeDeps);
-};
+import { normalizeAttributeValue } from "./props.js";
+import { PARENT_UPDATE_TRANSACTION } from "../protocol.js";
 
 export const runConnectedComponentLifecycle = ({
   instance,
@@ -47,12 +25,11 @@ export const runConnectedComponentLifecycle = ({
   attachGlobalRefListenersFn = attachGlobalRefListeners,
   runAfterMountFn = runAfterMount,
 }) => {
-  const runtimeDeps = createRuntimeDepsForInstance({ instance });
+  const runtimeDeps = syncRuntimeDeps(instance);
 
   instance.transformedHandlers = createTransformedHandlersFn({
     handlers: instance.handlers,
     deps: runtimeDeps,
-    parseAndRenderFn,
   });
 
   instance._unmountCallback = runBeforeMountFn({
@@ -110,11 +87,10 @@ export const runHotUpdatedComponentLifecycle = ({
     clearTimerFn,
   });
 
-  const runtimeDeps = createRuntimeDepsForInstance({ instance });
+  const runtimeDeps = syncRuntimeDeps(instance);
   instance.transformedHandlers = createTransformedHandlersFn({
     handlers: instance.handlers,
     deps: runtimeDeps,
-    parseAndRenderFn,
   });
 
   instance._globalListenersCleanup = attachGlobalRefListenersFn({
@@ -139,6 +115,13 @@ export const runAttributeChangedComponentLifecycle = ({
     return;
   }
 
+  // The `isDirty` marker the runtime puts on a child it is updating
+  // (web/componentUpdateHook.js) is not a prop change, even when the child
+  // observes the name because it declares an `isDirty` prop.
+  if (attributeName.toLowerCase() === "isdirty") {
+    return;
+  }
+
   // Browsers can invoke attributeChangedCallback before connectedCallback.
   // In that phase the component has no render target and transformed
   // handlers are not wired yet, so update handlers must not trigger render.
@@ -147,14 +130,13 @@ export const runAttributeChangedComponentLifecycle = ({
   }
 
   if (instance.handlers?.handleOnUpdate) {
-    const runtimeDeps = createRuntimeDepsForInstance({ instance });
+    const runtimeDeps = syncRuntimeDeps(instance);
     const changes = buildOnUpdateChanges({
       attributeName,
       oldValue,
       newValue,
       deps: runtimeDeps,
       propsSchemaKeys: instance._propsSchemaKeys,
-      toCamelCase,
       normalizeAttributeValue,
     });
     instance.handlers.handleOnUpdate(runtimeDeps, changes);
@@ -185,7 +167,7 @@ export const runPropChangedComponentLifecycle = ({
   }
 
   if (instance.handlers?.handleOnUpdate) {
-    const runtimeDeps = createRuntimeDepsForInstance({ instance });
+    const runtimeDeps = syncRuntimeDeps(instance);
     const changes = buildOnPropUpdateChanges({
       propName,
       oldValue,
@@ -205,7 +187,12 @@ export const runPropChangedComponentLifecycle = ({
   });
 };
 
-export const runRenderComponentLifecycle = ({
+// Instances that are patching right now, each with whether render() was
+// called again during the patch.
+const renderStates = new WeakMap();
+const MAX_RENDER_PASSES = 10;
+
+const patchComponent = ({
   instance,
   createComponentUpdateHookFn,
   // The web binding adopts prerendered markup on the first patch and
@@ -218,16 +205,6 @@ export const runRenderComponentLifecycle = ({
     console.error("Error during render:", error);
   },
 }) => {
-  if (!instance.patch) {
-    console.error("Patch function is not defined!");
-    return null;
-  }
-
-  if (!instance.template) {
-    console.error("Template is not defined!");
-    return null;
-  }
-
   let isFirstPatch = false;
   try {
     const vDom = parseViewFn({
@@ -268,5 +245,49 @@ export const runRenderComponentLifecycle = ({
     // Preserve _oldVNode so subsequent renders can still patch against
     // the last successful vdom tree. The component is not permanently broken.
     return instance._oldVNode || null;
+  }
+};
+
+export const runRenderComponentLifecycle = (options) => {
+  const { instance } = options;
+  if (!instance.patch) {
+    console.error("Patch function is not defined!");
+    return null;
+  }
+
+  if (!instance.template) {
+    console.error("Template is not defined!");
+    return null;
+  }
+
+  // render() called while this instance is patching (a child it mounts
+  // dispatches, or a focused element it moves or removes fires blur or
+  // focusout) must not patch from the tree the running patch is replacing.
+  // It runs as one more pass afterwards.
+  const running = renderStates.get(instance);
+  if (running) {
+    running.requested = true;
+    return instance._oldVNode || null;
+  }
+
+  const state = { requested: false };
+  renderStates.set(instance, state);
+  try {
+    let passes = 0;
+    let result;
+    do {
+      if (passes === MAX_RENDER_PASSES) {
+        console.error(
+          `[Render] ${instance.elementName} requested render during its own patch ${MAX_RENDER_PASSES} times; stopping`,
+        );
+        break;
+      }
+      passes += 1;
+      state.requested = false;
+      result = patchComponent(options);
+    } while (state.requested);
+    return result;
+  } finally {
+    renderStates.delete(instance);
   }
 };

@@ -1,73 +1,29 @@
-import { cp, rm } from "node:fs/promises";
+import { rm } from "node:fs/promises";
 import { join } from "node:path";
-import { existsSync } from "node:fs";
-import {
-  generateHtml,
-  startWebServer,
-  takeScreenshots,
-  generateOverview,
-  readYaml,
-} from "../common.js";
-import { validateVtConfig } from "../validation.js";
+import { fileURLToPath } from "node:url";
+import { startWebServer, takeScreenshots } from "../common.js";
+import { readVtConfig } from "../config/load-vt-config.js";
 import { resolveGenerateOptions } from "./generate-options.js";
 import {
   filterGeneratedFilesBySelectors,
+  findUnmatchedSelectors,
   hasSelectors,
 } from "../selector-filter.js";
+import { collectConfigWarnings, collectFrontMatterWarnings } from "../validation.js";
 import {
+  installInterruptCleanup,
+  probeExistingService,
   startManagedService,
   stopManagedService,
   waitForServiceReady,
 } from "./service-runtime.js";
+import { writeCaptureManifest } from "../capture-manifest.js";
+import { createCaptureConfig } from "../capture/capture-config.js";
+import { copySiteStatic, renderSite, resolveTemplatePaths } from "../site/build-site.js";
+import { warnIfSpecsDirMissing } from "../spec-files.js";
 
-const libraryTemplatesPath = new URL("./templates", import.meta.url).pathname;
-const libraryStaticPath = new URL("./static", import.meta.url).pathname;
-
-export function buildCaptureOptions({
-  filesToScreenshot,
-  port,
-  candidatePath,
-  resolvedOptions,
-}) {
-  const {
-    workerCount,
-    screenshotWaitTime,
-    configUrl,
-    waitEvent,
-    waitSelector,
-    waitStrategy,
-    navigationTimeout,
-    readyTimeout,
-    screenshotTimeout,
-    maxRetries,
-    recycleEvery,
-    isolationMode,
-    metricsPath,
-    headless,
-    viewport,
-  } = resolvedOptions;
-
-  return {
-    generatedFiles: filesToScreenshot,
-    serverUrl: `http://localhost:${port}`,
-    screenshotsDir: candidatePath,
-    workerCount,
-    screenshotWaitTime,
-    configUrl,
-    waitEvent,
-    waitSelector,
-    waitStrategy,
-    navigationTimeout,
-    readyTimeout,
-    screenshotTimeout,
-    maxRetries,
-    recycleEvery,
-    isolationMode,
-    metricsPath,
-    headless,
-    viewport,
-  };
-}
+const libraryTemplatesPath = fileURLToPath(new URL("./templates", import.meta.url));
+const libraryStaticPath = fileURLToPath(new URL("./static", import.meta.url));
 
 /**
  * Main function that orchestrates the entire process
@@ -76,19 +32,8 @@ async function main(options = {}) {
   const mainConfigPath = "rettangoli.config.yaml";
   const siteOutputPath = join(".rettangoli", "vt", "_site");
 
-  let mainConfig;
-  try {
-    mainConfig = await readYaml(mainConfigPath);
-  } catch (error) {
-    throw new Error(`Unable to read "${mainConfigPath}": ${error.message}`, { cause: error });
-  }
-
-  const vtConfig = mainConfig?.vt;
-  if (!vtConfig) {
-    throw new Error(`Invalid "${mainConfigPath}": missing required "vt" section.`);
-  }
-
-  const configData = validateVtConfig(vtConfig, mainConfigPath);
+  const configData = await readVtConfig(mainConfigPath, { wrapReadError: true });
+  collectConfigWarnings(configData, mainConfigPath).forEach((warning) => console.warn(warning));
   const resolvedOptions = resolveGenerateOptions(options, configData);
   const {
     vtPath,
@@ -100,59 +45,52 @@ async function main(options = {}) {
 
   const specsPath = join(vtPath, "specs");
   const candidatePath = join(siteOutputPath, "candidate");
+  warnIfSpecsDirMissing(specsPath, mainConfigPath);
 
   // Clear candidate directory
   await rm(candidatePath, { recursive: true, force: true });
   await new Promise((resolve) => setTimeout(resolve, 100));
 
-  // Copy static files from library to site directory
-  await cp(libraryStaticPath, siteOutputPath, { recursive: true });
+  await copySiteStatic(siteOutputPath, {
+    libraryStaticPath,
+    userStaticPath: join(vtPath, "static"),
+  });
 
-  // Copy user's static files if they exist
-  const userStaticPath = join(vtPath, "static");
-  if (existsSync(userStaticPath)) {
-    await cp(userStaticPath, siteOutputPath, { recursive: true });
-  }
-
-  // Resolve template paths
-  const localTemplatesPath = join(vtPath, "templates");
-  const defaultTemplatePath = existsSync(join(localTemplatesPath, "default.html"))
-    ? join(localTemplatesPath, "default.html")
-    : join(libraryTemplatesPath, "default.html");
-  const indexTemplatePath = existsSync(join(localTemplatesPath, "index.html"))
-    ? join(localTemplatesPath, "index.html")
-    : join(libraryTemplatesPath, "index.html");
-
-  const templateConfig = {
-    defaultTemplate: defaultTemplatePath,
-    vtPath: vtPath,
-  };
-
-  // Generate HTML files
-  const generatedFiles = await generateHtml(
+  // The overview pages list every spec, selected or not; an overview template error becomes an
+  // error page.
+  let scopedFiles;
+  await renderSite({
     specsPath,
-    defaultTemplatePath,
-    candidatePath,
-    templateConfig,
-  );
-
-  const scopedFiles = filterGeneratedFilesBySelectors(
-    generatedFiles,
-    resolvedOptions.selectors,
-    configData.sections,
-  );
-  if (hasSelectors(resolvedOptions.selectors)) {
-    const excludedCount = generatedFiles.length - scopedFiles.length;
-    console.log(`Selector scope: ${scopedFiles.length} file(s) selected, ${excludedCount} excluded.`);
-  }
-
-  // Generate overview page (includes all files, skipped or not)
-  generateOverview(
-    generatedFiles,
-    indexTemplatePath,
-    join(siteOutputPath, "index.html"),
+    candidateDir: candidatePath,
+    siteDir: siteOutputPath,
+    templatePaths: resolveTemplatePaths(vtPath, libraryTemplatesPath),
+    vtPath,
     configData,
-  );
+    beforeOverview: (generatedFiles) => {
+      generatedFiles
+        .flatMap((file) => collectFrontMatterWarnings(file.frontMatter, file.path))
+        .forEach((warning) => console.warn(warning));
+      scopedFiles = filterGeneratedFilesBySelectors(
+        generatedFiles,
+        resolvedOptions.selectors,
+        configData.sections,
+      );
+      if (hasSelectors(resolvedOptions.selectors)) {
+        const excludedCount = generatedFiles.length - scopedFiles.length;
+        console.log(`Selector scope: ${scopedFiles.length} file(s) selected, ${excludedCount} excluded.`);
+        findUnmatchedSelectors(
+          resolvedOptions.selectors,
+          (single) => filterGeneratedFilesBySelectors(generatedFiles, single).length > 0,
+        ).forEach((selector) => console.warn(`[vt] Warning: ${selector} matched no specs.`));
+      }
+    },
+  });
+
+  writeCaptureManifest(candidatePath, {
+    screenshots: !skipScreenshots,
+    selectors: resolvedOptions.selectors,
+    sections: configData.sections,
+  });
 
   // Take screenshots (only for non-skipped files)
   if (!skipScreenshots) {
@@ -177,21 +115,29 @@ async function main(options = {}) {
       if (serviceStart) {
         if (!configUrl) {
           throw new Error(
-            "vt.service.start requires vt.url (or --url) so VT can wait for readiness and capture against that URL.",
+            "vt.service.start requires vt.url so VT can wait for readiness and capture against that URL.",
           );
         }
+        await probeExistingService(configUrl);
         managedService = startManagedService({ command: serviceStart });
-        await waitForServiceReady({ url: configUrl, handle: managedService });
+        // These handlers cover readiness only. Later, Playwright's SIGINT handler exits the process and
+        // the exit listener from startManagedService stops the service; otherwise the finally below stops it.
+        const disposeInterruptCleanup = installInterruptCleanup(managedService);
+        try {
+          await waitForServiceReady({ url: configUrl, handle: managedService });
+        } finally {
+          disposeInterruptCleanup();
+        }
       } else if (!configUrl) {
         server = await startWebServer(siteOutputPath, vtPath, port);
       }
 
       await takeScreenshots(
-        buildCaptureOptions({
-          filesToScreenshot,
+        createCaptureConfig({
+          resolvedOptions,
+          generatedFiles: filesToScreenshot,
           port,
           candidatePath,
-          resolvedOptions,
         }),
       );
     } finally {

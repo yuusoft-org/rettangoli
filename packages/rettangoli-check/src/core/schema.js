@@ -1,8 +1,5 @@
 import { toCamelCase, toKebabCase } from "../utils/case.js";
-
-const isObjectRecord = (value) => {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-};
+import { isObjectRecord } from "../utils/object.js";
 
 const isCanonicalKey = (value) => {
   return typeof value === "string" && value.length > 0 && value.trim() === value;

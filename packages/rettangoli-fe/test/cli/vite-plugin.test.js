@@ -219,6 +219,34 @@ describe("vite plugin", () => {
     expect(server.ws.send).not.toHaveBeenCalled();
   });
 
+  it("tracks component files under a directory whose name starts with '..'", () => {
+    const rootDir = createFixtureProject();
+    createdDirs.push(rootDir);
+
+    const plugin = createRettangoliFeVitePlugin({
+      cwd: rootDir,
+      dirs: ["components"],
+      setup: "setup.js",
+      errorPrefix: "[Watch]",
+    });
+    const virtualEntryModule = { id: `\0${RETTANGOLI_FE_VIRTUAL_ENTRY_ID}` };
+    const server = {
+      watcher: { add: vi.fn(), on: vi.fn() },
+      moduleGraph: {
+        getModuleById: vi.fn(() => virtualEntryModule),
+        invalidateModule: vi.fn(),
+      },
+      ws: { send: vi.fn() },
+    };
+    plugin.configureServer(server);
+    const hotUpdate = (file) => plugin.handleHotUpdate({ file, modules: [], timestamp: 1 });
+
+    expect(hotUpdate(path.join(rootDir, "components", "..shared", "card", "card.store.js")))
+      .toEqual([virtualEntryModule]);
+    expect(hotUpdate(path.join(rootDir, "..components", "card", "card.store.js"))).toBeUndefined();
+    expect(hotUpdate(path.join(rootDir, "components", "..", "other", "card.store.js"))).toBeUndefined();
+  });
+
   it("routes schema changes through the runtime HMR compatibility gate", () => {
     const rootDir = createFixtureProject();
     createdDirs.push(rootDir);

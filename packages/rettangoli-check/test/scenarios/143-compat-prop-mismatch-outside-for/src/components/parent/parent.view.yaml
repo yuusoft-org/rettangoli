@@ -1,0 +1,7 @@
+template:
+  - rtgl-view#root:
+      - rtgl-test-compat-outside-for-child :row=${item}: before
+      - $for row in rows:
+          - rtgl-test-compat-outside-for-child :row=${item}: prop inside loop
+      - rtgl-test-compat-outside-for-child :row=${item}: after
+styles: {}

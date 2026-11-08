@@ -1,0 +1,205 @@
+{
+  "ui-build-svg-config": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/ui/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dir": "icons",
+              "outfile": "icons.js"
+            }
+          ],
+          "fn": "buildSvg"
+        }
+      }
+    ]
+  },
+  "ui-build-svg-config-dir-only": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "Error: Both dir and outfile are required. Provide them via CLI options or in rettangoli.config.yaml under ui.svg"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/ui/cli"
+      }
+    ]
+  },
+  "ui-build-svg-flags": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/ui/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dir": "svg",
+              "outfile": "out.js"
+            }
+          ],
+          "fn": "buildSvg"
+        }
+      }
+    ]
+  },
+  "ui-build-svg-flags-beat-config": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/ui/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dir": "cli-svg",
+              "outfile": "icons.js"
+            }
+          ],
+          "fn": "buildSvg"
+        }
+      }
+    ]
+  },
+  "ui-build-svg-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl ui build-svg [options]",
+      "",
+      "Build SVG icons from directory",
+      "",
+      "Options:",
+      "  -d, --dir <dir>       Directory containing SVG files",
+      "  -o, --outfile <path>  Output file path",
+      "  -h, --help            display help for command",
+      "",
+      "",
+      "Examples:",
+      "  $ rtgl ui build-svg",
+      "  $ rtgl ui build-svg --dir ./icons --outfile ./dist/icons.js",
+      "  $ rtgl ui build-svg -d ./assets/svg -o ./public/js/icons.js",
+      "",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/ui/cli"
+      }
+    ]
+  },
+  "ui-build-svg-invalid-yaml": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: Error reading config file \"<APP>/rettangoli.config.yaml\": unexpected end of the stream within a flow collection (2:1)",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/ui/cli"
+      }
+    ]
+  },
+  "ui-build-svg-neither": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "Error: Both dir and outfile are required. Provide them via CLI options or in rettangoli.config.yaml under ui.svg"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/ui/cli"
+      }
+    ]
+  },
+  "ui-build-svg-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "  code: 'ERR_UNHANDLED_REJECTION'"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/ui/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dir": "svg",
+              "outfile": "out.js"
+            }
+          ],
+          "fn": "buildSvg"
+        }
+      }
+    ]
+  },
+  "ui-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl ui [options] [command]",
+      "",
+      "UI component tools",
+      "",
+      "Options:",
+      "  -h, --help           display help for command",
+      "",
+      "Commands:",
+      "  build-svg [options]  Build SVG icons from directory",
+      "  help [command]       display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/ui/cli"
+      }
+    ]
+  }
+}

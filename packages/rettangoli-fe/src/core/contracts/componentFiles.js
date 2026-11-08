@@ -1,5 +1,7 @@
 import { findUnsupportedTemplatePropertyBindingSyntax } from "../view/templatePropertyBindings.js";
 import { validateViewI18nReferences } from "../i18n/viewReferences.js";
+import { validateSchemaContract } from "../schema/validateSchemaContract.js";
+import { isValidCustomElementName } from "./customElementName.js";
 
 export const FORBIDDEN_VIEW_KEYS = Object.freeze([
   "elementName",
@@ -36,6 +38,8 @@ export const buildComponentContractIndex = (entries = []) => {
         files: [],
         viewFilePath: null,
         viewYaml: null,
+        schemaFilePath: null,
+        schemaYaml: null,
       };
     }
 
@@ -46,6 +50,11 @@ export const buildComponentContractIndex = (entries = []) => {
     if (fileType === "view") {
       componentEntry.viewFilePath = filePath;
       componentEntry.viewYaml = yamlObject;
+    }
+
+    if (fileType === "schema") {
+      componentEntry.schemaFilePath = filePath;
+      componentEntry.schemaYaml = yamlObject ?? null;
     }
   });
 
@@ -99,6 +108,65 @@ export const validateComponentContractIndex = (index = {}, options = {}) => {
         filePath: viewFilePath || representativeFile,
         i18nContext,
       }));
+    });
+  });
+
+  return errors;
+};
+
+// Schema problems the browser only finds while registering components, where
+// one bad component stops every later one: the runtime schema contract (a
+// declared method needs a .methods.js file), the element name, and a
+// componentName used twice.
+export const validateComponentSchemaContracts = (index = {}) => {
+  const errors = [];
+  const ownerByName = new Map();
+
+  Object.entries(index).forEach(([category, components]) => {
+    Object.entries(components).forEach(([component, componentEntry]) => {
+      const { schemaYaml: schema, schemaFilePath: filePath } = componentEntry;
+      if (schema === null) {
+        return;
+      }
+      const componentLabel = `${category}/${component}`;
+
+      try {
+        validateSchemaContract({
+          schema,
+          methodExports: componentEntry.fileTypes.has("methods")
+            ? Object.keys(schema?.methods?.properties || {})
+            : [],
+        });
+      } catch (error) {
+        errors.push({
+          code: "RTGL-CONTRACT-004",
+          message: `${componentLabel}: invalid .schema.yaml: ${error.message}`,
+          filePath,
+        });
+      }
+
+      const name = schema?.componentName;
+      if (typeof name !== "string" || name.trim() === "") {
+        return;
+      }
+
+      if (!isValidCustomElementName(name)) {
+        errors.push({
+          code: "RTGL-CONTRACT-005",
+          message: `${componentLabel}: componentName '${name}' is not a valid custom element name: it must be lowercase, start with a letter, contain a '-', use no spaces or symbols other than '-', '.' and '_', and not be a reserved name such as font-face.`,
+          filePath,
+        });
+      }
+
+      if (ownerByName.has(name)) {
+        errors.push({
+          code: "RTGL-CONTRACT-006",
+          message: `${componentLabel}: componentName '${name}' is already used by ${ownerByName.get(name)}.`,
+          filePath,
+        });
+      } else {
+        ownerByName.set(name, componentLabel);
+      }
     });
   });
 

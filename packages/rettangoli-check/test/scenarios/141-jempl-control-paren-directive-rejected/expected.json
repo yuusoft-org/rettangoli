@@ -1,0 +1,68 @@
+{
+  "name": "paren control directives are literal keys for Jempl and get JEMPL-003; '$if ()' still reports a missing condition",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 6,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-JEMPL-003": 5,
+      "RTGL-CHECK-JEMPL-001": 1
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-JEMPL-003",
+        "severity": "error",
+        "message": "components/elifparen: Invalid Jempl control directive '$elif(b)': unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'.",
+        "filePath": "src/components/elifparen/elifparen.view.yaml",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-JEMPL-003",
+        "severity": "error",
+        "message": "components/emptyparen: Invalid Jempl control directive '$if ()': missing condition after '$if'.",
+        "filePath": "src/components/emptyparen/emptyparen.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-JEMPL-003",
+        "severity": "error",
+        "message": "components/emptyparen: Invalid Jempl control directive '$elif ( )': missing condition after '$elif'.",
+        "filePath": "src/components/emptyparen/emptyparen.view.yaml",
+        "line": 7
+      },
+      {
+        "code": "RTGL-CHECK-JEMPL-003",
+        "severity": "error",
+        "message": "components/forparen: Invalid Jempl control directive '$for(item in items)': unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'.",
+        "filePath": "src/components/forparen/forparen.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-JEMPL-001",
+        "severity": "error",
+        "message": "components/iffollow: invalid Jempl in view template. Parse Error: '$elif' without matching '$if'.",
+        "filePath": "src/components/iffollow/iffollow.view.yaml",
+        "line": 1
+      },
+      {
+        "code": "RTGL-CHECK-JEMPL-003",
+        "severity": "error",
+        "message": "components/ifparen: Invalid Jempl control directive '$if(isVisible)': unknown control keyword. Jempl requires whitespace after the directive, e.g. '$if x'.",
+        "filePath": "src/components/ifparen/ifparen.view.yaml",
+        "line": 3
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-JEMPL-005"
+  ]
+}

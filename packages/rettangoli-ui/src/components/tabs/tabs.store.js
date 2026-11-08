@@ -5,17 +5,7 @@ export const setFocusedTab = ({ state }, { id }) => {
   state.focusedTab = id;
 };
 
-const blacklistedProps = ["id", "class", "style", "slot", "items", "selectedTab", "s", "ariaLabel"];
-
-const stringifyProps = (props = {}) => {
-  return Object.entries(props)
-    .filter(([key]) => !blacklistedProps.includes(key))
-    .map(([key, value]) => `${key}=${value}`)
-    .join(" ");
-};
-
 export const selectViewData = ({ state = {}, props = {} }) => {
-  const containerAttrString = stringifyProps(props);
   const size = ["sm", "md", "lg"].includes(props.s) ? props.s : "md";
 
   const items = props.items || [];
@@ -37,7 +27,6 @@ export const selectViewData = ({ state = {}, props = {} }) => {
   return {
     ariaLabel: props.ariaLabel ?? getUiMessage("tabs"),
     size,
-    containerAttrString,
     items: itemsWithSelection,
     selectedTab,
   };

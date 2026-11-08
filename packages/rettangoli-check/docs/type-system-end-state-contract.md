@@ -39,11 +39,11 @@ Negative coverage scenarios:
 - `73-compat-required-props` -> `RTGL-CHECK-COMPAT-001`
 - `78-expression-boolean-type-mismatch` -> `RTGL-CHECK-EXPR-003`
 - `79-lifecycle-on-update-missing-payload` -> `RTGL-CHECK-LIFECYCLE-003`
-- `80-compat-unsupported-event` -> `RTGL-CHECK-COMPAT-002`, `RTGL-CHECK-COMPAT-005`
+- `80-compat-unsupported-event` -> `RTGL-CHECK-BINDING-001` (`@event` attributes are rejected; COMPAT-002/005 are retired)
 - `101-compat-prop-binding-type-mismatch` -> `RTGL-CHECK-COMPAT-004`
-- `104-compat-event-handler-prefix-invalid` -> `RTGL-CHECK-HANDLER-003`
-- `106-compat-event-payload-contract-missing-param` -> `RTGL-CHECK-COMPAT-006`
-- `107-listener-payload-contract-missing-key` -> `RTGL-CHECK-CONTRACT-004`
+- `104-compat-event-handler-prefix-invalid` -> `RTGL-CHECK-BINDING-001` (HANDLER-003 is retired)
+- `106-compat-event-payload-contract-missing-param` -> `RTGL-CHECK-BINDING-001` (COMPAT-006 is retired)
+- `107-listener-payload-contract-missing-key` -> `RTGL-CHECK-LISTENER-010`
 - `110-method-signature-nonobject-pattern-invalid` -> `RTGL-CHECK-METHOD-001`
 - `112-method-payload-contract-missing-key` -> `RTGL-CHECK-METHOD-003`
 

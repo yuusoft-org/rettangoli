@@ -1,0 +1,47 @@
+refs:
+  arrayPayload:
+    eventListeners:
+      click:
+        handler: handleTap
+        payload:
+          - 1
+  numberPayload:
+    eventListeners:
+      click:
+        handler: handleTap
+        payload: 5
+  stringPayload:
+    eventListeners:
+      click:
+        handler: handleTap
+        payload: "${item}"
+  nullPayload:
+    eventListeners:
+      click:
+        handler: handleTap
+        payload: null
+  falsePayload:
+    eventListeners:
+      click:
+        handler: handleTap
+        payload: false
+  emptyMappingPayload:
+    eventListeners:
+      click:
+        handler: handleTap
+        payload: {}
+  mappingPayload:
+    eventListeners:
+      click:
+        handler: handleTap
+        payload:
+          id: ${item}
+template:
+  - rtgl-view#arrayPayload: array
+  - rtgl-view#numberPayload: number
+  - rtgl-view#stringPayload: string
+  - rtgl-view#nullPayload: null payload
+  - rtgl-view#falsePayload: false payload
+  - rtgl-view#emptyMappingPayload: empty mapping
+  - rtgl-view#mappingPayload: mapping
+styles: {}

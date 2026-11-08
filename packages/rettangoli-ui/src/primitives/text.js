@@ -49,7 +49,7 @@ class RettangoliTextElement extends HTMLElement {
     super();
     RettangoliTextElement.initializeStyleSheet();
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliTextElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliTextElement.styleSheet];
     this._isApplyingManagedStyle = false;
 
     // Create initial DOM structure
@@ -141,7 +141,7 @@ class RettangoliTextElement extends HTMLElement {
     const rel = this.getAttribute("rel");
 
     this._linkElement = syncLinkOverlay({
-      shadowRoot: this.shadow,
+      shadowRoot: this.shadowRoot,
       slotElement: this._slotElement,
       linkElement: this._linkElement,
       href,

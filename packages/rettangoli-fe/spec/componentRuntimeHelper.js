@@ -1,9 +1,9 @@
 import {
   buildObservedAttributes,
   cleanupEventRateLimitState,
-  createComponentRuntimeDeps,
   syncRefIds,
 } from "../src/core/runtime/componentRuntime.js";
+import { createRuntimeDeps } from "../src/core/runtime/lifecycle.js";
 
 export const runComponentRuntimeContract = ({
   propsSchemaKeys,
@@ -21,7 +21,7 @@ export const runComponentRuntimeContract = ({
   }
 
   if (baseDeps !== undefined) {
-    const deps = createComponentRuntimeDeps({
+    const deps = createRuntimeDeps({
       baseDeps,
       refs: refs || {},
       dispatchEvent: () => undefined,

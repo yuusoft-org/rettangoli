@@ -1,0 +1,713 @@
+{
+  "sites-build-defaults": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Build completed successfully!",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "outputPath": "./_site",
+              "quiet": false,
+              "rootDir": "./"
+            }
+          ],
+          "fn": "buildSite"
+        }
+      }
+    ]
+  },
+  "sites-build-delayed": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "[fake buildSite settled]",
+      "Build completed successfully!",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "outputPath": "./_site",
+              "quiet": false,
+              "rootDir": "./"
+            }
+          ],
+          "fn": "buildSite"
+        }
+      },
+      {
+        "event": "settle",
+        "payload": {
+          "fn": "buildSite"
+        }
+      }
+    ]
+  },
+  "sites-build-delayed-quiet": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "[fake buildSite settled]",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "outputPath": "./_site",
+              "quiet": true,
+              "rootDir": "./"
+            }
+          ],
+          "fn": "buildSite"
+        }
+      },
+      {
+        "event": "settle",
+        "payload": {
+          "fn": "buildSite"
+        }
+      }
+    ]
+  },
+  "sites-build-deprecated-aliases": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Build completed successfully!",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "outputPath": "y",
+              "quiet": false,
+              "rootDir": "x"
+            }
+          ],
+          "fn": "buildSite"
+        }
+      }
+    ]
+  },
+  "sites-build-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl sites build [options]",
+      "",
+      "Build the site",
+      "",
+      "Options:",
+      "  -r, --root-dir <path>     Path to root directory (default: \"./\")",
+      "  --rootDir <path>          Deprecated alias for --root-dir",
+      "  -o, --output-path <path>  Path to destination directory (default: \"./_site\")",
+      "  --outputPath <path>       Deprecated alias for --output-path",
+      "  -q, --quiet               Suppress non-error logs",
+      "  -h, --help                display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      }
+    ]
+  },
+  "sites-build-quiet": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "outputPath": "./_site",
+              "quiet": true,
+              "rootDir": "./"
+            }
+          ],
+          "fn": "buildSite"
+        }
+      }
+    ]
+  },
+  "sites-build-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fake buildSite rejection"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "outputPath": "./_site",
+              "quiet": false,
+              "rootDir": "./"
+            }
+          ],
+          "fn": "buildSite"
+        }
+      }
+    ]
+  },
+  "sites-build-short-flags": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "outputPath": "out",
+              "quiet": true,
+              "rootDir": "com"
+            }
+          ],
+          "fn": "buildSite"
+        }
+      }
+    ]
+  },
+  "sites-build-throw": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fake buildSite failure",
+      "  caused by: fake cause",
+      "(set RTGL_DEBUG=1 to print the stack trace)"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "outputPath": "./_site",
+              "quiet": false,
+              "rootDir": "./"
+            }
+          ],
+          "fn": "buildSite"
+        }
+      }
+    ]
+  },
+  "sites-build-website-flags": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Build completed successfully!",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "outputPath": "../_site",
+              "quiet": false,
+              "rootDir": "com"
+            }
+          ],
+          "fn": "buildSite"
+        }
+      }
+    ]
+  },
+  "sites-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl sites [options] [command]",
+      "",
+      "Rettangoli Sites",
+      "",
+      "Options:",
+      "  -h, --help                     display help for command",
+      "",
+      "Commands:",
+      "  init [options] <project-name>  Initialize a new site from template",
+      "  build [options]                Build the site",
+      "  watch [options]                Watch and rebuild site on changes",
+      "  help [command]                 display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      }
+    ]
+  },
+  "sites-init": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "projectName": "my-site",
+              "template": "default"
+            }
+          ],
+          "fn": "initSite"
+        }
+      }
+    ]
+  },
+  "sites-init-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl sites init [options] <project-name>",
+      "",
+      "Initialize a new site from template",
+      "",
+      "Options:",
+      "  -t, --template <name>  Template to use (default: \"default\")",
+      "  -h, --help             display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      }
+    ]
+  },
+  "sites-init-missing-name": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: missing required argument 'project-name'"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      }
+    ]
+  },
+  "sites-init-other-template": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "projectName": "my-site",
+              "template": "blog"
+            }
+          ],
+          "fn": "initSite"
+        }
+      }
+    ]
+  },
+  "sites-init-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": true,
+    "stderrSummary": [
+      "  code: 'ERR_UNHANDLED_REJECTION'"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "projectName": "my-site",
+              "template": "default"
+            }
+          ],
+          "fn": "initSite"
+        }
+      }
+    ]
+  },
+  "sites-init-template": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "projectName": "my-site",
+              "template": "default"
+            }
+          ],
+          "fn": "initSite"
+        }
+      }
+    ]
+  },
+  "sites-watch-defaults": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "host": "127.0.0.1",
+              "outputPath": "./_site",
+              "port": 3001,
+              "quiet": false,
+              "reloadMode": "body",
+              "rootDir": "."
+            }
+          ],
+          "fn": "watchSite"
+        }
+      }
+    ]
+  },
+  "sites-watch-deprecated-aliases": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "host": "127.0.0.1",
+              "outputPath": "y",
+              "port": 3001,
+              "quiet": false,
+              "reloadMode": "body",
+              "rootDir": "x"
+            }
+          ],
+          "fn": "watchSite"
+        }
+      }
+    ]
+  },
+  "sites-watch-help": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "Usage: rtgl sites watch [options]",
+      "",
+      "Watch and rebuild site on changes",
+      "",
+      "Options:",
+      "  -p, --port <port>         The port to use (default: 3001)",
+      "  --host <host>             Network interface to bind (use 0.0.0.0 for LAN",
+      "                            access) (default: \"127.0.0.1\")",
+      "  -r, --root-dir <path>     Path to root directory (default: \".\")",
+      "  --rootDir <path>          Deprecated alias for --root-dir",
+      "  -o, --output-path <path>  Path to destination directory (default: \"./_site\")",
+      "  --outputPath <path>       Deprecated alias for --output-path",
+      "  --reload-mode <mode>      Reload mode: body (state-preserving DOM morph) or",
+      "                            full (full-page reload) (default: \"body\")",
+      "  -q, --quiet               Suppress non-error logs",
+      "  -h, --help                display help for command",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      }
+    ]
+  },
+  "sites-watch-host": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "host": "0.0.0.0",
+              "outputPath": "./_site",
+              "port": 3001,
+              "quiet": false,
+              "reloadMode": "body",
+              "rootDir": "."
+            }
+          ],
+          "fn": "watchSite"
+        }
+      }
+    ]
+  },
+  "sites-watch-port-too-high": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "error: option '-p, --port <port>' argument '70000' is invalid. Port must be between 1 and 65535, received \"70000\""
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      }
+    ]
+  },
+  "sites-watch-quiet": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "host": "127.0.0.1",
+              "outputPath": "./_site",
+              "port": 3001,
+              "quiet": true,
+              "reloadMode": "body",
+              "rootDir": "."
+            }
+          ],
+          "fn": "watchSite"
+        }
+      }
+    ]
+  },
+  "sites-watch-reject": {
+    "exitCode": 1,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [
+      "rtgl: fake watchSite rejection"
+    ],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "host": "127.0.0.1",
+              "outputPath": "./_site",
+              "port": 3001,
+              "quiet": false,
+              "reloadMode": "body",
+              "rootDir": "."
+            }
+          ],
+          "fn": "watchSite"
+        }
+      }
+    ]
+  },
+  "sites-watch-reload-mode-unvalidated": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "host": "127.0.0.1",
+              "outputPath": "./_site",
+              "port": 3001,
+              "quiet": false,
+              "reloadMode": "bogus",
+              "rootDir": "."
+            }
+          ],
+          "fn": "watchSite"
+        }
+      }
+    ]
+  },
+  "sites-watch-website-flags": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/sites/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "host": "127.0.0.1",
+              "outputPath": ".rettangoli/preview",
+              "port": 3002,
+              "quiet": false,
+              "reloadMode": "full",
+              "rootDir": "cn"
+            }
+          ],
+          "fn": "watchSite"
+        }
+      }
+    ]
+  }
+}

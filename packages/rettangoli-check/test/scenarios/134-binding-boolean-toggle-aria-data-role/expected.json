@@ -1,0 +1,46 @@
+{
+  "name": "'?aria-*', '?data-*' and '?role' toggles fail in FE (BINDING-002); value bindings for them are fine",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 3,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-BINDING-002": 3
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-BINDING-002",
+        "severity": "error",
+        "message": "components/card: Invalid boolean attribute '?aria-pressed'. Use normal binding for value-carrying attributes such as aria-*, data-*, and role.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-BINDING-002",
+        "severity": "error",
+        "message": "components/card: Invalid boolean attribute '?data-open'. Use normal binding for value-carrying attributes such as aria-*, data-*, and role.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 4
+      },
+      {
+        "code": "RTGL-CHECK-BINDING-002",
+        "severity": "error",
+        "message": "components/card: Invalid boolean attribute '?role'. Use normal binding for value-carrying attributes such as aria-*, data-*, and role.",
+        "filePath": "src/components/card/card.view.yaml",
+        "line": 5
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-YAHTML-001"
+  ]
+}

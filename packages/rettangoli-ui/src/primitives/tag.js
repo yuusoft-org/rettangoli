@@ -125,7 +125,7 @@ class RettangoliTagElement extends HTMLElement {
     RettangoliTagElement.initializeStyleSheet();
 
     this.shadow = this.attachShadow({ mode: "open" });
-    this.shadow.adoptedStyleSheets = [RettangoliTagElement.styleSheet];
+    this.shadowRoot.adoptedStyleSheets = [RettangoliTagElement.styleSheet];
 
     this._surfaceElement = document.createElement("span");
     this._surfaceElement.className = "surface";
@@ -138,7 +138,7 @@ class RettangoliTagElement extends HTMLElement {
     this._slotElement = document.createElement("slot");
     this._labelElement.appendChild(this._slotElement);
     this._surfaceElement.appendChild(this._labelElement);
-    this.shadow.appendChild(this._surfaceElement);
+    this.shadowRoot.appendChild(this._surfaceElement);
 
     this._prefixIcon = null;
     this._suffixIcon = null;

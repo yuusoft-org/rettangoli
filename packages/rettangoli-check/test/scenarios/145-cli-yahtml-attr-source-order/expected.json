@@ -1,0 +1,19 @@
+{
+  "name": "cli text report lists the unsupported attributes of one key in source order",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "--dir",
+      "./src/components"
+    ]
+  },
+  "expected": {
+    "exitCode": 1,
+    "stdout": "",
+    "stderr": "[Check] Scanned 1 component(s); registry tags: <n>.\n[Check] Errors: 2, Warnings: 0.\n[Check] By code:\n- RTGL-CHECK-YAHTML-003: 2\n[Check] Diagnostics:\nRTGL-CHECK-YAHTML-003 [error] components/card: unsupported attr/prop 'bogus-a' on 'rtgl-view'. [src/components/card/card.view.yaml:2:15]\n  codeframe:\n       1 | template:\n  >    2 |   - rtgl-view ?bogus-a :bogus-b=${x}: names are reported in source order\n       |               ^\n       3 | styles: {}\nRTGL-CHECK-YAHTML-003 [error] components/card: unsupported attr/prop 'bogus-b' on 'rtgl-view'. [src/components/card/card.view.yaml:2:24]\n  codeframe:\n       1 | template:\n  >    2 |   - rtgl-view ?bogus-a :bogus-b=${x}: names are reported in source order\n       |                        ^\n       3 | styles: {}"
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-YAHTML-002"
+  ]
+}
