@@ -41,6 +41,9 @@ items:
       - id: fe-i18n
         title: "Internationalization"
         href: "/fe/docs/guides/i18n"
+      - id: fe-testing
+        title: "Testing"
+        href: "/fe/docs/guides/testing"
       - id: fe-cli
         title: "CLI"
         href: "/fe/docs/guides/cli"

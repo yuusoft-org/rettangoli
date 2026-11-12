@@ -75,6 +75,8 @@ describe("package exports map", () => {
       "@rettangoli/fe/server",
       ["renderView", "renderComponent", "renderDocument", "serializeVNode", "bindStore"],
     ],
+    // Its names are pinned in test/contract/package-surface.test.js.
+    ["@rettangoli/fe/testing", ["renderView"]],
     ["@rettangoli/fe/contracts", []],
   ])("resolves %s", async (specifier, expectedExports) => {
     const mod = await import(specifier);
