@@ -1,1 +1,1 @@
-export { default as check } from "./check.js";
+export { check, createChecker } from "./check.js";

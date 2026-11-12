@@ -124,6 +124,15 @@ Output modes:
 - `rtgl fe check` (default `text`): grouped summary by rule and component, plus detailed lines
 - `rtgl fe check --format json`: machine-readable JSON report for CI tools
 
+`rtgl check` (`@rettangoli/check`) is the wider static checker: template
+attributes against the component schemas, listener options, handler and action
+references, and more. `rtgl fe build` and `rtgl fe watch` print its text report
+for the same `fe.dirs` as `[Check]` lines after the build output, listing at
+most 10 diagnostics with the total counts. Those lines are informational: the
+exit code and the output files do not change, and a project without diagnostics
+prints nothing extra. `fe watch` prints the report again only when the
+diagnostics change. Run `rtgl check` to see everything and to fail CI.
+
 ## Conflict Resolution
 
 If two documents appear to conflict:

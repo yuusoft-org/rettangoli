@@ -28,6 +28,408 @@
           ],
           "fn": "build"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
+      }
+    ]
+  },
+  "fe-build-check-after-delayed-build": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "[fake build settled]",
+      "[Check] fake report: 1 error(s), 0 warning(s)",
+      "[Check] 1 error(s), 0 warning(s). These do not fail the build. Run `rtgl check` for the full report and to fail CI on them.",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      },
+      {
+        "event": "settle",
+        "payload": {
+          "fn": "build"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
+      }
+    ]
+  },
+  "fe-build-check-create-throws": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "[Check] Could not run the contract check: fake createChecker failure",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      }
+    ]
+  },
+  "fe-build-check-errors": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "[Check] fake report: 3 error(s), 1 warning(s)",
+      "[Check] 3 error(s), 1 warning(s). These do not fail the build. Run `rtgl check` for the full report and to fail CI on them.",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
+      }
+    ]
+  },
+  "fe-build-check-package-missing": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "[Check] Could not run the contract check: Cannot find package '@rettangoli/check' imported from <APP>/node_modules/rtgl/cli.js",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      }
+    ]
+  },
+  "fe-build-check-run-rejects": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "[Check] Could not run the contract check: fake runCheck rejection",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
+      }
+    ]
+  },
+  "fe-build-check-run-throws": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "[Check] Could not run the contract check: fake runCheck failure",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
+      }
+    ]
+  },
+  "fe-build-check-warnings-only": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "[Check] fake report: 0 error(s), 2 warning(s)",
+      "[Check] 0 error(s), 2 warning(s). These do not fail the build. Run `rtgl check` for the full report and to fail CI on them.",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "build"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -116,6 +518,32 @@
           ],
           "fn": "build"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>/sub",
+              "dirs": [
+                "components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -176,6 +604,32 @@
             }
           ],
           "fn": "build"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
         }
       }
     ]
@@ -267,6 +721,32 @@
           ],
           "fn": "build"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -288,6 +768,9 @@
       "                           comment",
       "  -h, --help               display help for command",
       "",
+      "",
+      "After a successful build, the diagnostics of rtgl check are printed for the",
+      "same directories. They never fail the build; use rtgl check to gate CI.",
       "",
       "Examples:",
       "  $ rtgl fe build",
@@ -333,6 +816,32 @@
           ],
           "fn": "build"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -363,6 +872,32 @@
           ],
           "fn": "build"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -390,6 +925,32 @@
             }
           ],
           "fn": "build"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
         }
       }
     ]
@@ -451,6 +1012,32 @@
           ],
           "fn": "build"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -478,6 +1065,32 @@
             }
           ],
           "fn": "build"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
         }
       }
     ]
@@ -552,6 +1165,32 @@
           ],
           "fn": "build"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -582,6 +1221,32 @@
           ],
           "fn": "build"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -610,6 +1275,32 @@
             }
           ],
           "fn": "build"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
         }
       }
     ]
@@ -1228,6 +1919,149 @@
           ],
           "fn": "watch"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
+      }
+    ]
+  },
+  "fe-watch-check-errors": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "[Check] fake report: 2 error(s), 0 warning(s)",
+      "[Check] 2 error(s), 0 warning(s). These do not fail the build. Run `rtgl check` for the full report and to fail CI on them.",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
+      }
+    ]
+  },
+  "fe-watch-check-run-throws": {
+    "exitCode": 0,
+    "signal": null,
+    "stderrHasStack": false,
+    "stderrSummary": [],
+    "stdout": [
+      "[Check] Could not run the contract check: fake runCheck failure",
+      ""
+    ],
+    "trace": [
+      {
+        "event": "import",
+        "payload": "@rettangoli/fe/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "dirs": [
+                "src/components"
+              ],
+              "i18n": null,
+              "port": 3001,
+              "setup": "setup.js"
+            }
+          ],
+          "fn": "watch"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -1260,6 +2094,32 @@
           ],
           "fn": "watch"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -1291,6 +2151,32 @@
           ],
           "fn": "watch"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -1320,6 +2206,32 @@
             }
           ],
           "fn": "watch"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
         }
       }
     ]
@@ -1351,6 +2263,32 @@
           ],
           "fn": "watch"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -1380,6 +2318,32 @@
           ],
           "fn": "watch"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -1401,6 +2365,9 @@
       "                           in watch mode",
       "  -h, --help               display help for command",
       "",
+      "",
+      "The diagnostics of rtgl check are printed at startup and again when a change",
+      "in the component directories changes them. They never stop the watcher.",
       "",
       "Examples:",
       "  $ rtgl fe watch",
@@ -1445,6 +2412,32 @@
             }
           ],
           "fn": "watch"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
         }
       }
     ]
@@ -1521,6 +2514,32 @@
           ],
           "fn": "watch"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -1582,6 +2601,32 @@
             }
           ],
           "fn": "watch"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
         }
       }
     ]
@@ -1660,6 +2705,32 @@
             }
           ],
           "fn": "watch"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
         }
       }
     ]
@@ -1740,6 +2811,32 @@
           ],
           "fn": "watch"
         }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
+        }
       }
     ]
   },
@@ -1768,6 +2865,32 @@
             }
           ],
           "fn": "watch"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
         }
       }
     ]
@@ -1798,6 +2921,32 @@
             }
           ],
           "fn": "watch"
+        }
+      },
+      {
+        "event": "import",
+        "payload": "@rettangoli/check/cli"
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [
+            {
+              "cwd": "<APP>",
+              "dirs": [
+                "src/components"
+              ],
+              "maxDiagnostics": 10
+            }
+          ],
+          "fn": "createChecker"
+        }
+      },
+      {
+        "event": "call",
+        "payload": {
+          "args": [],
+          "fn": "runCheck"
         }
       }
     ]

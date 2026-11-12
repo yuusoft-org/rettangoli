@@ -13,8 +13,8 @@ sidebarId: fe-cli
 
 | Command | Description |
 | --- | --- |
-| `rtgl fe build` | Build component bundles |
-| `rtgl fe watch` | Start dev server with file watching |
+| `rtgl fe build` | Build component bundles, then print the `rtgl check` diagnostics |
+| `rtgl fe watch` | Start dev server with file watching; prints the `rtgl check` diagnostics when they change |
 | `rtgl fe scaffold --category <folder> --component-name <name>` | Generate a new component from a template |
 | `rtgl fe check` | Validate components against contracts |
 | `rtgl fe examples` | Generate example specs for visual testing |
@@ -48,6 +48,37 @@ the original source code, so publish them only if that source may be public.
 rtgl fe build --sourcemap hidden
 ```
 
+### Check diagnostics after the build
+
+After a successful build, `rtgl fe build` runs the static contract checker
+(`rtgl check`) on the same `fe.dirs` and prints what it finds: undeclared
+attributes on component tags, unknown listener options, missing handlers, and
+so on.
+
+```text
+[Build] Complete in 412ms.
+[Check] Scanned 42 component(s); registry tags: 96.
+[Check] Errors: 3, Warnings: 0.
+[Check] By code:
+- RTGL-CHECK-SYMBOL-001: 1
+- RTGL-CHECK-YAHTML-003: 2
+[Check] Diagnostics:
+RTGL-CHECK-YAHTML-003 [error] components/card: unsupported attr/prop 'banana' on 'rtgl-button'. [src/components/card/card.view.yaml:8:27]
+  ...
+[Check] 3 error(s), 0 warning(s). These do not fail the build. Run `rtgl check` for the full report and to fail CI on them.
+```
+
+- The diagnostics are informational. The exit code and the output files are
+  the same as without them. A build that fails prints no check report.
+- The text is the `rtgl check` report for the project. At most 10 diagnostics
+  are listed; the counts cover all of them and one line says how many are not
+  shown. Run `rtgl check` for the full list.
+- A project without diagnostics prints nothing extra.
+- If the checker itself cannot run, the build still succeeds and prints one
+  line: `[Check] Could not run the contract check: <reason>`.
+- There is no option to turn this off. To fail CI on the diagnostics, run
+  `rtgl check` as its own step.
+
 ## `rtgl fe watch`
 
 Starts a development server that watches for file changes and applies updates
@@ -78,6 +109,16 @@ fe:
 The equivalent CLI option is `rtgl fe watch --public-dir ./static`. Relative
 paths are resolved from the project root. This is useful when binary assets use
 extensionless filenames that Vite would otherwise treat as JavaScript modules.
+
+### Check diagnostics while watching
+
+`rtgl fe watch` prints the same check report as `rtgl fe build` once the server
+is ready. After a change in the component directories (`fe.dirs`) it checks
+again and prints the report only when the diagnostics changed: a diagnostic was
+added, removed or fixed. Saving a file without changing its diagnostics, or
+only moving them to other lines, prints nothing. When the last diagnostic is
+fixed, the clean report (`[Check] No issues found.`) is printed once. The check
+never stops or restarts the dev server.
 
 ## Vite Integration Details
 

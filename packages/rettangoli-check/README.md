@@ -52,15 +52,32 @@ rtgl-check --dir src/components --autofix --autofix-min-confidence 0.95
 Exit code `1` means at least one error (or a warning with `--warn-as-error`). JSON and SARIF go to stdout. The
 text report goes to stderr when the check fails and to stdout otherwise.
 
+`rtgl fe build` and `rtgl fe watch` print the same text report after the build output, for the project's
+`fe.dirs`. There it is informational: it never changes the exit code, lists at most 10 diagnostics (the counts
+cover all of them) and prints nothing for a project without diagnostics. `rtgl check` remains the command
+that prints everything and fails on errors, so it is the one to run in CI.
+
 Programmatic use:
 
 ```js
 import { analyzeProject } from "@rettangoli/check";
-import { check } from "@rettangoli/check/cli";
+import { check, createChecker } from "@rettangoli/check/cli";
 
 const result = await analyzeProject({ cwd: process.cwd(), dirs: ["src/components"] });
 // { ok, cwd, dirs, componentCount, diagnostics, summary, registryTagCount, ... }
+
+// What `check` reports, without printing it or setting process.exitCode. This is what rtgl fe build uses.
+const runCheck = createChecker({ cwd: process.cwd(), dirs: ["src/components"], maxDiagnostics: 10 });
+const { result: checked, report } = await runCheck();
 ```
+
+`createChecker` takes exactly these options: the ones of `check` that select what is analyzed (`cwd`, `dirs`,
+`includeYahtml`, `includeExpression`, `includeStyle`) and `maxDiagnostics`. The other options of `check`
+(`format`, `warnAsError`, `watch`, `watchIntervalMs`, the autofix options) are ignored. It reads
+`rettangoli.config.yaml` the same way. `report` is the text report, with severities as analyzed (no
+`--warn-as-error`); with `maxDiagnostics` it lists only the first N diagnostics and ends with
+`[Check] <count> more diagnostic(s) not shown.`. Call the returned function again to re-check: it re-reads
+only the components that changed. A missing directory or an unreadable config throws from `createChecker`.
 
 ## UI registry
 
