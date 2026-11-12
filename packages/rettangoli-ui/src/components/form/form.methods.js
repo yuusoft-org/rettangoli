@@ -8,9 +8,10 @@ import {
   selectForm,
   selectFormValues,
   collectAllDataFields,
+  isPlainRecord,
   validateForm,
 } from "./form.store.js";
-import { computeInitialValues } from "./initialValues.js";
+import { computeInitialValues, copyDefaultValues } from "./initialValues.js";
 
 const syncFieldValueAttribute = ({ ref, fieldType, value, forceRefresh = false }) => {
   if (!VALUE_ATTRIBUTE_TYPES.has(fieldType)) return;
@@ -184,17 +185,14 @@ export const validate = function () {
 // defaultValues prop would.
 export const reset = function (payload = {}) {
   const { defaultValues } = payload;
-  if (
-    defaultValues !== undefined &&
-    (defaultValues === null || typeof defaultValues !== "object" || Array.isArray(defaultValues))
-  ) {
+  if (defaultValues !== undefined && !isPlainRecord(defaultValues)) {
     throw new Error("[rtgl-form] reset expects defaultValues to be an object.");
   }
 
-  // A copy, so the store never holds, and freezes, the caller's nested values.
+  // The one copy the form keeps: the store holds and freezes it as it is.
   const defaultValuesOverride = defaultValues === undefined
     ? this.store.getState().defaultValuesOverride
-    : structuredClone(defaultValues);
+    : copyDefaultValues(defaultValues);
   const initial = computeInitialValues(this.props, defaultValuesOverride);
   this.store.resetFormValues({ defaultValues: initial, defaultValuesOverride });
   this.setValues(initial);

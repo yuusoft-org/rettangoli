@@ -685,6 +685,11 @@ describe("rtgl-form reset({ defaultValues }): invalid arguments", () => {
     ["true", true],
     ["false", false],
     ["a function", () => ({ t: "x" })],
+    ["a Date", new Date(0)],
+    ["a Map", new Map([["t", "x"]])],
+    ["a Set", new Set(["t"])],
+    ["a class instance", new (class Defaults { t = "x"; n = 3; })()],
+    ["an object created from another object", Object.create({ t: "inherited" })],
   ])("throws for defaultValues %s and leaves the form as it was", async (_, defaultValues) => {
     const { host, field } = await mountForm(form, { t: "seed", n: 1 });
     host.reset({ defaultValues: { t: "given", n: 2 } });
@@ -720,6 +725,20 @@ describe("rtgl-form reset({ defaultValues }): invalid arguments", () => {
     expect(host.getValues()).toEqual({ t: "typed", n: 1 });
   });
 
+  it("accepts an object without a prototype", async () => {
+    const { host } = await mountForm(form, { t: "seed", n: 1 });
+    const defaultValues = Object.assign(Object.create(null), { t: "bare", n: 4 });
+
+    host.reset({ defaultValues });
+    await flush();
+    expect(host.getValues()).toEqual({ t: "bare", n: 4 });
+
+    host.setValues({ values: { t: "typed" } });
+    host.reset();
+    await flush();
+    expect(host.getValues()).toEqual({ t: "bare", n: 4 });
+  });
+
   it("has no positional or alias form", async () => {
     const { host } = await mountForm(form, { t: "seed", n: 1 });
 
@@ -730,5 +749,225 @@ describe("rtgl-form reset({ defaultValues }): invalid arguments", () => {
     host.reset({ values: { t: "ignored" }, defaults: { t: "ignored" }, initialValues: { t: "ignored" } });
     await flush();
     expect(host.getValues()).toEqual({ t: "seed", n: 1 });
+  });
+});
+
+const deepFreeze = (value) => {
+  if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    Object.values(value).forEach(deepFreeze);
+  }
+  return value;
+};
+
+// Defaults that hold an object under one key and a dotted key under it.
+// Computing the initial values used to write the dotted key into that object:
+// reset() after reset({ defaultValues }) threw on the kept (frozen) defaults,
+// and a frozen defaultValues prop of this shape failed to mount.
+describe("rtgl-form defaults with an object key and a dotted key under it", () => {
+  const form = {
+    fields: [
+      { name: "profile.first", type: "input-text" },
+      { name: "profile.last", type: "input-text" },
+      { name: "tags", type: "tag-select", options },
+    ],
+  };
+  const SHAPES = [
+    ["the object key first", () => ({ profile: { first: "A" }, "profile.last": "B", tags: ["a"] })],
+    ["the dotted key first", () => ({ "profile.last": "B", profile: { first: "A" }, tags: ["a"] })],
+  ];
+  const expected = { profile: { first: "A", last: "B" }, tags: ["a"] };
+  const shown = (field) => [
+    readDisplayed(field("profile.first")),
+    readDisplayed(field("profile.last")),
+    readDisplayed(field("tags")),
+  ];
+
+  describe.each(SHAPES)("with %s", (_, build) => {
+    it("reset({ defaultValues }) then reset() twice returns to them each time", async () => {
+      const { host, field } = await mountForm(form, {});
+
+      host.reset({ defaultValues: build() });
+      await flush();
+      expect(host.getValues()).toEqual(expected);
+
+      for (let round = 0; round < 2; round++) {
+        typeInto(field("profile.last"), `typed ${round}`);
+        host.setValues({ values: { tags: [] } });
+        expect(() => host.reset()).not.toThrow();
+        await flush();
+        expect(host.getValues()).toEqual(expected);
+        expect(shown(field)).toEqual(["A", "B", ["A"]]);
+      }
+    });
+
+    it("keeps the given defaults exactly as passed, through later resets", async () => {
+      const { host } = await mountForm(form, {});
+      const defaultValues = build();
+
+      host.reset({ defaultValues });
+      await flush();
+      const kept = host.store.getState().defaultValuesOverride;
+      expect(kept).toEqual(build());
+      expect(Object.keys(kept)).toEqual(Object.keys(build()));
+      expect(kept).not.toBe(defaultValues);
+      expect(kept.profile).not.toBe(defaultValues.profile);
+
+      host.reset();
+      host.reset({});
+      await flush();
+      expect(host.store.getState().defaultValuesOverride).toBe(kept);
+      expect(kept).toEqual(build());
+      // The caller's object is untouched as well.
+      expect(defaultValues).toEqual(build());
+      expect(Object.keys(defaultValues)).toEqual(Object.keys(build()));
+      expect(Object.isFrozen(defaultValues.profile)).toBe(false);
+    });
+
+    it("accepts a deep-frozen object in reset({ defaultValues })", async () => {
+      const { host } = await mountForm(form, {});
+
+      host.reset({ defaultValues: deepFreeze(build()) });
+      host.reset();
+      await flush();
+
+      expect(host.getValues()).toEqual(expected);
+    });
+
+    it("mounts with a deep-frozen defaultValues prop, like an unfrozen one", async () => {
+      const plain = await mountForm(form, build());
+      const frozen = await mountForm(form, deepFreeze(build()));
+
+      expect(plain.host.getValues()).toEqual(expected);
+      expect(frozen.host.getValues()).toEqual(expected);
+      expect(shown(frozen.field)).toEqual(shown(plain.field));
+      expect(shown(frozen.field)).toEqual(["A", "B", ["A"]]);
+    });
+
+    it("reset() works with a deep-frozen defaultValues prop, repeatedly", async () => {
+      const prop = deepFreeze(build());
+      const { host, field } = await mountForm(form, prop);
+
+      for (let round = 0; round < 2; round++) {
+        typeInto(field("profile.first"), `typed ${round}`);
+        expect(() => host.reset()).not.toThrow();
+        await flush();
+        expect(host.getValues()).toEqual(expected);
+        expect(shown(field)).toEqual(["A", "B", ["A"]]);
+      }
+      expect(prop).toEqual(build());
+    });
+
+    it("a key change works with a deep-frozen defaultValues prop", async () => {
+      const { host, field } = await mountForm(form, deepFreeze({ profile: { first: "old" } }), { key: "k1" });
+      expect(host.getValues()).toEqual({ profile: { first: "old", last: "" }, tags: [] });
+
+      host.defaultValues = deepFreeze(build());
+      host.setAttribute("key", "k2");
+      await flush();
+      expect(host.getValues()).toEqual(expected);
+      expect(shown(field)).toEqual(["A", "B", ["A"]]);
+
+      host.setAttribute("key", "k3");
+      await flush();
+      expect(host.getValues()).toEqual(expected);
+    });
+
+    it("does not change an unfrozen defaultValues prop at mount or on a key change", async () => {
+      const prop = build();
+      const { host } = await mountForm(form, prop, { key: "k1" });
+      host.setAttribute("key", "k2");
+      await flush();
+
+      expect(prop).toEqual(build());
+      expect(Object.keys(prop)).toEqual(Object.keys(build()));
+      expect(Object.keys(prop.profile)).toEqual(["first"]);
+    });
+  });
+
+  it("gives the same form for frozen and unfrozen defaults of every field type", async () => {
+    const defaults = () => ({
+      text: "hi",
+      num: 5,
+      tags: ["a"],
+      chk: true,
+      mode: "b",
+      onlyB: 3,
+      onlyBTags: ["b"],
+      profile: { first: "Ann" },
+      "profile.last": "Lee",
+      color: "#ff0000",
+    });
+    const plain = await mountForm(fullForm, defaults(), { context });
+    const expectedSnapshot = snapshot(plain.host);
+    plain.host.remove();
+
+    const frozenMount = await mountForm(fullForm, deepFreeze(defaults()), { context });
+    expect(snapshot(frozenMount.host)).toEqual(expectedSnapshot);
+    frozenMount.host.reset();
+    await flush();
+    expect(snapshot(frozenMount.host)).toEqual(expectedSnapshot);
+    frozenMount.host.remove();
+
+    const viaReset = await mountForm(fullForm, {}, { context });
+    viaReset.host.reset({ defaultValues: deepFreeze(defaults()) });
+    await flush();
+    expect(snapshot(viaReset.host)).toEqual(expectedSnapshot);
+    viaReset.host.reset();
+    await flush();
+    expect(snapshot(viaReset.host)).toEqual(expectedSnapshot);
+  });
+});
+
+describe("rtgl-form reset({ defaultValues }): values that cannot be copied", () => {
+  const form = {
+    fields: [
+      { name: "t", type: "input-text" },
+      { name: "tags", type: "tag-select", options },
+    ],
+  };
+  const onPick = () => {};
+
+  it("accepts them under keys no field has, as a fresh mount does", async () => {
+    const defaults = () => ({ t: "x", tags: ["a"], onPick, helpers: { list: [onPick], label: "kept" } });
+    const fresh = await mountForm(form, defaults());
+    const expectedValues = fresh.host.getValues();
+    expect(expectedValues).toEqual({ t: "x", tags: ["a"] });
+
+    const { host } = await mountForm(form, {});
+    const defaultValues = defaults();
+    expect(() => host.reset({ defaultValues })).not.toThrow();
+    await flush();
+    expect(host.getValues()).toEqual(expectedValues);
+
+    host.setValues({ values: { t: "typed" } });
+    host.reset();
+    await flush();
+    expect(host.getValues()).toEqual(expectedValues);
+
+    // The objects around them are still copies: the caller's are not frozen
+    // and changing them does not reach the form.
+    expect(Object.isFrozen(defaultValues.helpers)).toBe(false);
+    expect(Object.isFrozen(defaultValues.tags)).toBe(false);
+    defaultValues.tags.push("b");
+    defaultValues.t = "changed";
+    host.reset();
+    await flush();
+    expect(host.getValues()).toEqual(expectedValues);
+  });
+
+  it("throws for one used as a field's value and leaves the form as it was", async () => {
+    const { host, field } = await mountForm(form, { t: "seed" });
+    host.reset({ defaultValues: { t: "given", tags: ["a"] } });
+    await flush();
+    typeInto(field("t"), "typed");
+
+    expect(() => host.reset({ defaultValues: { t: onPick } })).toThrow(/could not be cloned/);
+    await flush();
+
+    expect(host.getValues()).toEqual({ t: "typed", tags: ["a"] });
+    host.reset();
+    await flush();
+    expect(host.getValues()).toEqual({ t: "given", tags: ["a"] });
   });
 });

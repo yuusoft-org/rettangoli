@@ -1204,9 +1204,10 @@ form.reset({
 `reset({ defaultValues })` (added in 2.1.0):
 
 - leaves the form as a fresh mount with that `defaultValues` prop would: same values, same shown conditional fields, no errors, reactive mode off. The object replaces the previous defaults and is not merged into them. Keys that match no field are ignored.
-- keeps a copy of the object. It does not change or freeze the object, and later changes to it do not reach the form.
+- keeps a copy of the object, made once, with objects and arrays copied at every depth. It does not change or freeze the object, and later changes to it do not reach the form. A value that cannot be copied, such as a function, is kept as it is, so under a key that matches no field it is accepted, as on a fresh mount. As a field's value it throws a `DataCloneError` before anything changes.
 - makes the object the form's current defaults. A later `reset()` returns to it, until the next `reset({ defaultValues })`, a `key` change or a remount. While it is in place the `defaultValues` prop is not used, even if the parent sets a different one. A `key` change or a remount goes back to the prop.
-- throws when `defaultValues` is not an object (`null`, an array, a string, ...), before changing anything. `reset({})` and `reset({ defaultValues: undefined })` are `reset()`.
+- throws when `defaultValues` is not a plain object, before changing anything. A plain object is an object literal or an object without a prototype; `null`, arrays, strings, `Date`, `Map` and class instances are rejected.
+- treats `reset({})` and `reset({ defaultValues: undefined })` as `reset()`: the form goes back to its current defaults, not to empty fields. `reset({ defaultValues: {} })` resets every field to its empty value.
 - has this one form only. There is no positional argument and no other key.
 
 On a form that has not received `reset({ defaultValues })`, the current defaults are the `defaultValues` prop as it is when `reset()` is called, so this still works:
@@ -1253,7 +1254,8 @@ Contract tests in `spec/` directory with YAML cases and JS helper functions. Eac
 - `setValues()` does not overwrite keys not passed
 - `reset()` returns values to `defaultValues`
 - `reset()` clears validation errors
-- `reset({ defaultValues })` matches a fresh mount with those defaults for every field type, becomes what `reset()` returns to, copies the object, emits no event, and throws for a non-object
+- `reset({ defaultValues })` matches a fresh mount with those defaults for every field type, becomes what `reset()` returns to, copies the object once, emits no event, and throws for anything but a plain object
+- defaults that hold an object under one key and a dotted key under it (`{ profile: { first }, "profile.last": ... }`), frozen or not, work at mount, on `reset()`, on a `key` change and in `reset({ defaultValues })`, and are never changed
 - a `key` change or a remount goes back to the `defaultValues` prop after `reset({ defaultValues })`; a changed prop alone does not
 - Empty `input-text` → `""`
 - Empty `input-number` → `null`

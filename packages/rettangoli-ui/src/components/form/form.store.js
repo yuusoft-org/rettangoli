@@ -36,12 +36,19 @@ const toFormDescription = (value) => {
 
 const isObjectLike = (value) => value !== null && typeof value === "object";
 const isPlainObject = (value) => isObjectLike(value) && !Array.isArray(value);
+// An object literal or a null-prototype object: not an array, a Date, a Map
+// or a class instance. isPlainObject above also accepts those.
+export const isPlainRecord = (value) => {
+  if (!isPlainObject(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+};
 const isPathLike = (path) => typeof path === "string" && path.includes(".");
 const hasBracketPathToken = (path) => typeof path === "string" && /[\[\]]/.test(path);
 const unsafePathSegments = new Set(["__proto__", "constructor", "prototype"]);
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
-const parseSafePath = (path) => {
+export const parseSafePath = (path) => {
   if (
     typeof path !== "string" ||
     path.length === 0 ||
@@ -1047,13 +1054,13 @@ export const setFormValues = ({ state }, payload = {}) => {
 // `defaultValues` are the values to start from. `defaultValuesOverride` are
 // the defaults given to reset({ defaultValues }); without it, as on mount and
 // on a key change, the form goes back to the defaultValues prop. The store
-// keeps a copy, so later changes to the caller's object do not reach the form
-// and the store does not freeze that object.
+// keeps the override object itself and freezes it with the rest of the state,
+// so the caller passes a copy it owns (see reset in form.methods.js).
 export const resetFormValues = ({ state }, payload = {}) => {
   const { defaultValues = {}, defaultValuesOverride } = payload;
   state.formValues = defaultValues ? structuredClone(defaultValues) : {};
-  state.defaultValuesOverride = isPlainObject(defaultValuesOverride)
-    ? structuredClone(defaultValuesOverride)
+  state.defaultValuesOverride = isPlainRecord(defaultValuesOverride)
+    ? defaultValuesOverride
     : null;
   state.errors = {};
   state.reactiveMode = false;

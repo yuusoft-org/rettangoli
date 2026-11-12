@@ -387,10 +387,15 @@ form.reset({ defaultValues: { email: "updated@email.com", age: 25 } });
 
 - The form ends up as a newly mounted form with that `defaultValues` property would: fields without a default get their empty value, conditional fields show or hide for the new values, errors are cleared, and no event is emitted.
 - The given object replaces the previous defaults; it is not merged into them. Keys that match no field are ignored.
-- The form keeps its own copy, so changing the object afterwards does not affect it.
+- The form keeps its own copy, so changing the object afterwards does not affect it, and the object is never changed or frozen. A value that cannot be copied, such as a function, is kept as it is under a key that matches no field; as a field's value it throws a `DataCloneError` and leaves the form unchanged.
 - A later `reset()` returns to these defaults. They stay the form's defaults until the next `reset({ defaultValues })`, a `key` change, or a remount. Until then, the `defaultValues` property is not used: setting it changes neither the values nor what `reset()` returns to.
 - A `key` change or a remount goes back to the `defaultValues` property.
-- `defaultValues` must be an object. `null`, an array, or any other value throws and leaves the form unchanged. `reset({})` and `reset({ defaultValues: undefined })` are the same as `reset()`.
+- `defaultValues` must be a plain object: an object literal or an object without a prototype. `null`, an array, a `Date`, a `Map`, a class instance, or any other value throws and leaves the form unchanged.
+- `reset({ defaultValues: undefined })` and `reset({})` are the same as `reset()`: the form goes back to its current defaults, not to empty fields. So `reset({ defaultValues: record?.values })` with a missing `record` keeps the defaults already in place. To reset every field to its empty value, pass an empty object:
+
+```js
+form.reset({ defaultValues: {} });
+```
 
 This replaces changing `key` together with `defaultValues`, and calling `reset()` followed by `setValues()`, to load new values. Unlike `setValues()`, the new values also become what `reset()` returns to.
 
