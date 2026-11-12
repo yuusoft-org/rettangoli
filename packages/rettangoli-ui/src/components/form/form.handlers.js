@@ -148,6 +148,8 @@ const updateFieldAttributes = ({
   walk(fields);
 };
 
+// Mounting and a key change start again from the defaultValues prop, which
+// also drops defaults given to reset({ defaultValues }).
 const initFormValues = (store, props) => {
   store.resetFormValues({ defaultValues: computeInitialValues(props) });
 };

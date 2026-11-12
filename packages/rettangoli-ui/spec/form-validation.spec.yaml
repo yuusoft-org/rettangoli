@@ -134,6 +134,117 @@ in:
 out:
   error: "This field is required"
 ---
+case: required input-text with spaces only returns default message
+in:
+  - field:
+      name: title
+      type: input-text
+      required: true
+    value: "   "
+out:
+  error: "This field is required"
+---
+case: required input-text with tab, line breaks, no-break and ideographic spaces returns default message
+in:
+  - field:
+      name: title
+      type: input-text
+      required: true
+    value: " \t\n\r\u00A0\u3000"
+out:
+  error: "This field is required"
+---
+case: required input-textarea with line breaks only returns default message
+in:
+  - field:
+      name: notes
+      type: input-textarea
+      required: true
+    value: "\n\n"
+out:
+  error: "This field is required"
+---
+case: required popover-input with spaces only returns default message
+in:
+  - field:
+      name: nickname
+      type: popover-input
+      required: true
+    value: "  "
+out:
+  error: "This field is required"
+---
+case: required password input with spaces only returns default message
+in:
+  - field:
+      name: password
+      type: input-text
+      inputType: password
+      required: true
+    value: "  "
+out:
+  error: "This field is required"
+---
+case: required with custom message on whitespace-only text returns custom message
+in:
+  - field:
+      name: title
+      type: input-text
+      required:
+        message: "Name the scene"
+    value: " \u3000 "
+out:
+  error: "Name the scene"
+---
+case: required input-text with text between spaces passes
+in:
+  - field:
+      name: title
+      type: input-text
+      required: true
+    value: "  a  "
+out:
+  error: null
+---
+case: whitespace-only text passes when the field is not required
+in:
+  - field:
+      name: title
+      type: input-text
+    value: "   "
+out:
+  error: null
+---
+case: required select with a whitespace option value passes
+in:
+  - field:
+      name: separator
+      type: select
+      required: true
+    value: " "
+out:
+  error: null
+---
+case: required segmented-control with a whitespace option value passes
+in:
+  - field:
+      name: separator
+      type: segmented-control
+      required: true
+    value: "\t"
+out:
+  error: null
+---
+case: required input-date with whitespace stays an invalid date
+in:
+  - field:
+      name: day
+      type: input-date
+      required: true
+    value: "  "
+out:
+  error: "Invalid date format"
+---
 case: required input-duration with NaN stays an invalid duration
 in:
   - field:

@@ -46,9 +46,9 @@ form.p = "none";
 | prop | type | description |
 |---|---|---|
 | `form` | object | The form schema (this spec). Every string in it is a [template](#templates-in-the-form-definition). |
-| `defaultValues` | object | Initial form state. Read on mount, on `reset()` and when `key` changes. To apply new defaults after mount, update `defaultValues` then call `reset()` or change `key`. |
+| `defaultValues` | object | Initial form state. Read on mount, on `reset()` and when `key` changes. To apply new defaults after mount, call `reset({ defaultValues })`; updating `defaultValues` and then calling `reset()` or changing `key` also works. After `reset({ defaultValues })`, the prop is not used again until `key` changes or the form is mounted again. |
 | `context` | object | Extra data for the templates in `form`. Values from `context` are inserted as written. |
-| `key` | string | When it changes, the values are re-seeded from `defaultValues` (and each field's empty value), errors are cleared and reactive validation ends, like `reset()`. Changing `defaultValues` alone does not change the values. |
+| `key` | string | When it changes, the values are re-seeded from the `defaultValues` prop (and each field's empty value), errors are cleared and reactive validation ends, like `reset()`. It also drops defaults given to `reset({ defaultValues })`. Changing `defaultValues` alone does not change the values. |
 | `disabled` | boolean | Disable the entire form. All fields and buttons become non-interactive. |
 | `p` | `none \| xs \| sm \| md \| lg \| xl` | Padding around the form contents. Defaults to `md`; use `none` for a flush layout. |
 | `bottomSpacer` | non-negative number | Extra pixel space after the last field inside the field scroller. Defaults to `0` and does not move sticky actions. |
@@ -73,7 +73,7 @@ Data types additionally have:
 | property | required | description |
 |---|---|---|
 | `name` | yes | Output key path (supports dot notation like `user.email`) |
-| `required` | no | `true` or `{ message: "custom message" }`. |
+| `required` | no | `true` or `{ message: "custom message" }`. See [Required fields](#required-fields) for what counts as empty. |
 | `disabled` | no | Boolean. |
 
 Display and layout types (`section`, `row`, `read-only-text`, `slot`) have no `name` and produce no values. They are never included in event payloads.
@@ -675,6 +675,20 @@ Built-in presets:
 | `email` | Valid email address |
 | `url` | Valid URL |
 
+### Required fields
+
+A `required` field fails validation when its value is empty:
+
+- `undefined`, `null` and `""`, for every field type
+- an empty array (`tag-select`)
+- `false`, except for `select` and `segmented-control`, where it can be an option's value
+- `NaN` for `input-number`
+- text that is only whitespace, for `input-text` (any `inputType`), `input-textarea` and `popover-input`
+
+Whitespace is what `String.prototype.trim()` removes, which includes tabs, line breaks, no-break spaces (U+00A0) and ideographic spaces (U+3000). Only validation looks at it: the stored and emitted value is never trimmed. Fields that are not required accept whitespace-only text, and `rules` still run on it. Other types keep a whitespace string as a value: it can be a `select` or `segmented-control` option's value, and a date or time field reports it as an invalid format.
+
+Changed in 2.1.0: before, a required text field accepted whitespace-only text.
+
 ### Built-in temporal validation
 
 Temporal field types (`input-date`, `input-time`, `input-datetime`) are validated by the form runtime:
@@ -1169,13 +1183,34 @@ Other field types do not emit this event. New interaction types can be added per
 | `getValues()` | `{ [name]: value }` | Returns the current form values. |
 | `setValues({ values })` | — | Sets each key of `values` and leaves the other keys alone. See below. |
 | `validate()` | `{ valid, errors }` | Runs validation on all fields. Returns result and displays errors inline. |
-| `reset()` | — | Reset all fields to `defaultValues` (and each field's empty value). Clears validation errors and ends reactive mode. |
+| `reset()` | — | Reset all fields to the form's current defaults (and each field's empty value). Clears validation errors and ends reactive mode. Emits no event. |
+| `reset({ defaultValues })` | — | Replace the form's defaults with `defaultValues`, then reset to them. See below. |
 
 `setValues` takes `{ values }`. A key replaces the whole value stored under it, so `setValues({ values: { user: { email } } })` also removes `user.name`. To change one nested field, use a dotted key: `setValues({ values: { "user.email": email } })`. Values for names that no shown field has are dropped. The bare form `setValues({ email })` also works, but an object with a `values` key holding an object is always read as the wrapper, so a form with a field named `values` needs the `{ values }` form.
 
 Errors come from `validate()` and from buttons with `validate: true`. No public method shows errors from your own code, such as server-side errors; `setErrors` is an internal store action, not part of the public API.
 
 Update defaults after mount:
+
+```js
+form.reset({
+  defaultValues: {
+    email: "updated@email.com",
+    age: 25,
+  },
+});
+```
+
+`reset({ defaultValues })` (added in 2.1.0):
+
+- leaves the form as a fresh mount with that `defaultValues` prop would: same values, same shown conditional fields, no errors, reactive mode off. The object replaces the previous defaults and is not merged into them. Keys that match no field are ignored.
+- keeps a copy of the object, made once, with objects and arrays copied at every depth. It does not change or freeze the object, and later changes to it do not reach the form. A value that cannot be copied, such as a function, is kept as it is, so under a key that matches no field it is accepted, as on a fresh mount. As a field's value it throws a `DataCloneError` before anything changes.
+- makes the object the form's current defaults. A later `reset()` returns to it, until the next `reset({ defaultValues })`, a `key` change or a remount. While it is in place the `defaultValues` prop is not used, even if the parent sets a different one. A `key` change or a remount goes back to the prop.
+- throws when `defaultValues` is not a plain object, before changing anything. A plain object is an object literal or an object without a prototype; `null`, arrays, strings, `Date`, `Map` and class instances are rejected.
+- treats `reset({})` and `reset({ defaultValues: undefined })` as `reset()`: the form goes back to its current defaults, not to empty fields. `reset({ defaultValues: {} })` resets every field to its empty value.
+- has this one form only. There is no positional argument and no other key.
+
+On a form that has not received `reset({ defaultValues })`, the current defaults are the `defaultValues` prop as it is when `reset()` is called, so this still works:
 
 ```js
 form.defaultValues = {
@@ -1201,6 +1236,7 @@ Contract tests in `spec/` directory with YAML cases and JS helper functions. Eac
 - `required: { message: "custom" }` on empty field → error with custom message
 - `setFormMessages` sets the default messages, fills `{value}`, and leaves a field's own message and unset keys unchanged
 - `required` on non-empty field → no error
+- `required` on whitespace-only text → error for `input-text`, `input-textarea` and `popover-input`, with the custom message when set; no error for other types or when the field is not required; the value is not trimmed
 - `minLength` rule → error when below, pass when at/above
 - `maxLength` rule → error when above, pass when at/below
 - field `maxLength` → error when above, pass when at/below; ignored on non-text fields and for invalid limits; a `maxLength` rule's message wins
@@ -1218,6 +1254,9 @@ Contract tests in `spec/` directory with YAML cases and JS helper functions. Eac
 - `setValues()` does not overwrite keys not passed
 - `reset()` returns values to `defaultValues`
 - `reset()` clears validation errors
+- `reset({ defaultValues })` matches a fresh mount with those defaults for every field type, becomes what `reset()` returns to, copies the object once, emits no event, and throws for anything but a plain object
+- defaults that hold an object under one key and a dotted key under it (`{ profile: { first }, "profile.last": ... }`), frozen or not, work at mount, on `reset()`, on a `key` change and in `reset({ defaultValues })`, and are never changed
+- a `key` change or a remount goes back to the `defaultValues` prop after `reset({ defaultValues })`; a changed prop alone does not
 - Empty `input-text` → `""`
 - Empty `input-number` → `null`
 - Empty `input-duration` → `null`
@@ -1288,6 +1327,8 @@ VT specs in `vt/specs/components/form/` as HTML files with optional step-based i
 - `required-fields.html` — required fields with indicators
 - `max-length.html` — `maxLength` stops typing, `showCount` counters (with and without a limit, and over the limit), and errors next to the counter after validation
 - `max-length-row.html` — narrow fields: the counter stays under the input, an error that doesn't fit goes below it, and an over-limit field shows only its red counter
+- `required-whitespace.html` — spaces typed into required text fields fail validation with the default or custom message, a select option whose value is a space passes, the values keep their whitespace, and typing text clears the error
+- `reset-default-values.html` — `reset({ defaultValues })` on an edited form with errors shows the new defaults like a freshly mounted form, and a later `reset()` returns to them
 
 #### Interaction — step-based tests
 

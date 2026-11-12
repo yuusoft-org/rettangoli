@@ -374,14 +374,53 @@ All events bubble.
 | `getValues()` | object | Returns current visible form values. |
 | `setValues(values)` | void | Merges values into current state (`setValues({ values })` is also supported). |
 | `validate()` | `{ valid, errors }` | Runs validation and shows inline errors. |
-| `reset()` | void | Resets values to `defaultValues` and clears errors. |
+| `reset()` | void | Resets values to the form's current defaults and clears errors. |
+| `reset({ defaultValues })` | void | Replaces the form's defaults with `defaultValues`, then resets to them. |
 
-To apply new defaults after mount, update `defaultValues` and call `reset()`:
+### Resetting to new defaults
+
+`reset({ defaultValues })` loads a new set of defaults into a mounted form in one step, for example when a dialog opens for another record:
+
+```js
+form.reset({ defaultValues: { email: "updated@email.com", age: 25 } });
+```
+
+- The form ends up as a newly mounted form with that `defaultValues` property would: fields without a default get their empty value, conditional fields show or hide for the new values, errors are cleared, and no event is emitted.
+- The given object replaces the previous defaults; it is not merged into them. Keys that match no field are ignored.
+- The form keeps its own copy, so changing the object afterwards does not affect it, and the object is never changed or frozen. A value that cannot be copied, such as a function, is kept as it is under a key that matches no field; as a field's value it throws a `DataCloneError` and leaves the form unchanged.
+- A later `reset()` returns to these defaults. They stay the form's defaults until the next `reset({ defaultValues })`, a `key` change, or a remount. Until then, the `defaultValues` property is not used: setting it changes neither the values nor what `reset()` returns to.
+- A `key` change or a remount goes back to the `defaultValues` property.
+- `defaultValues` must be a plain object: an object literal or an object without a prototype. `null`, an array, a `Date`, a `Map`, a class instance, or any other value throws and leaves the form unchanged.
+- `reset({ defaultValues: undefined })` and `reset({})` are the same as `reset()`: the form goes back to its current defaults, not to empty fields. So `reset({ defaultValues: record?.values })` with a missing `record` keeps the defaults already in place. To reset every field to its empty value, pass an empty object:
+
+```js
+form.reset({ defaultValues: {} });
+```
+
+This replaces changing `key` together with `defaultValues`, and calling `reset()` followed by `setValues()`, to load new values. Unlike `setValues()`, the new values also become what `reset()` returns to.
+
+On a form that never received `reset({ defaultValues })`, `reset()` reads the `defaultValues` property as it is at the call, so this still works:
 
 ```js
 form.defaultValues = { email: "updated@email.com", age: 25 };
 form.reset();
 ```
+
+`reset({ defaultValues })` was added in 2.1.0.
+
+## Required Fields
+
+`required: true`, or `required: { message }` for a custom message, fails validation when the field is empty:
+
+- `undefined`, `null`, and `""` are empty for every field type.
+- An empty array is empty (`tag-select`).
+- `false` is empty, except for `select` and `segmented-control`, where it can be an option's value.
+- `NaN` is empty for `input-number`.
+- Text that is only whitespace is empty for `input-text` (including `inputType: password`), `input-textarea`, and `popover-input`. Whitespace is what `String.prototype.trim()` removes: spaces, tabs, line breaks, no-break spaces (U+00A0), ideographic spaces (U+3000), and the other Unicode space characters.
+
+Only validation looks at whitespace. The value is never trimmed: `getValues()` and the form events return the text as typed, so trim it yourself if you store it. Fields that are not required accept whitespace-only text, and `rules` still run on it. Other field types are unchanged: a `select` or `segmented-control` option whose value is `" "` counts as chosen.
+
+Changed in 2.1.0: before, a required text field accepted whitespace-only text such as `"   "`. Submit handlers that re-checked `value.trim()` no longer need to. To accept whitespace-only text, remove `required` from the field and check the value in your own handler.
 
 ## Validation Messages
 
@@ -557,5 +596,7 @@ Fields with `required`, `rules`, or `maxLength` show a built-in English message 
 
 - `defaultValues` seeds internal state on mount.
 - Field `name` paths support dot notation (`user.email`) for nested objects; bracket array paths (`items[0]`) are not supported.
-- Updating `defaultValues` alone does not change current values until `reset()` is called.
+- Updating `defaultValues` alone does not change current values until `reset()` is called or `key` changes.
+- `reset({ defaultValues })` replaces the defaults and resets to them. From then on `reset()` returns to those defaults, and the `defaultValues` property is used again only after `key` changes or the form is mounted again.
+- `required` treats whitespace-only text in `input-text`, `input-textarea`, and `popover-input` fields as empty. Values are never trimmed.
 - Enter key submits the first footer action button except within textareas and section action buttons.
