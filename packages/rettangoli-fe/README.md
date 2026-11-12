@@ -28,6 +28,7 @@ rtgl fe watch     # Start dev server
 - **[Event Handlers](./docs/handlers.md)** - Event handling
 - **[Internationalization](./docs/i18n.md)** - Locale files, view usage, and locale switching
 - **[Prerendering](./docs/prerender.md)** - Render components to HTML at build time and hydrate them in the browser
+- **[Testing](./docs/testing.md)** - Test views, stores, handlers and components through `@rettangoli/fe/testing`
 
 ## Architecture
 
@@ -95,6 +96,7 @@ src/
 ├── core/                   # Environment-neutral view, store, runtime and contract logic
 ├── web/                    # Custom Element runtime, hydration and styles
 ├── server/                 # `@rettangoli/fe/server`: prerendering
+├── testing/                # `@rettangoli/fe/testing`: functions for tests
 ├── contracts/              # `@rettangoli/fe/contracts`
 ├── commonBuild.js          # File discovery shared by the CLI and the server
 ├── createComponent.js      # Component factory

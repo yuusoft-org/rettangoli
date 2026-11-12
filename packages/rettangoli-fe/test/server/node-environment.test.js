@@ -33,6 +33,15 @@ describe("node environment", () => {
     expect(typeof mod.resolveComponentDefinition).toBe("function");
   });
 
+  it("imports the testing entry without a DOM", async () => {
+    const mod = await import("../../src/testing/index.js");
+    expect(typeof mod.renderView).toBe("function");
+    expect(typeof mod.parseView).toBe("function");
+    expect(typeof mod.parseTemplate).toBe("function");
+    expect(typeof mod.createComponent).toBe("function");
+    expect(typeof mod.bindStore).toBe("function");
+  });
+
   it("imports the web binding without a DOM (constructing still needs one)", async () => {
     // Importing must not throw; only *calling* the factory requires HTMLElement.
     const mod = await import("../../src/web/createWebComponentClass.js");
@@ -74,6 +83,10 @@ describe("package exports map", () => {
     [
       "@rettangoli/fe/server",
       ["renderView", "renderComponent", "renderDocument", "serializeVNode", "bindStore"],
+    ],
+    [
+      "@rettangoli/fe/testing",
+      ["renderView", "parseView", "parseTemplate", "createComponent", "bindStore"],
     ],
     ["@rettangoli/fe/contracts", []],
   ])("resolves %s", async (specifier, expectedExports) => {
