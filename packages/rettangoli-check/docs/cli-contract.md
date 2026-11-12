@@ -29,6 +29,12 @@ Default validation checks runtime contracts. CamelCase folders, arbitrary valid
 handler export names, and renamed/destructured/unused lifecycle parameters are
 accepted. Style lint is opt-in; genuine contract failures retain error status.
 
+`@rettangoli/check/cli` also exports `createChecker(options)` for tools that show the text report inside
+their own output (`rtgl fe build` and `rtgl fe watch`). It returns a function that resolves to
+`{ result, report }`, prints nothing and leaves `process.exitCode` alone. `report` equals the text output of
+`check` for the same options; `maxDiagnostics` limits the listed diagnostics and adds the line
+`[Check] <count> more diagnostic(s) not shown.`. Covered by `scripts/test-create-checker-contract.js`.
+
 ## 2. JSON Contract Version
 
 Machine-readable CLI payloads include `contractVersion: 1`.

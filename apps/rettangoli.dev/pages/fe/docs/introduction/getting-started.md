@@ -156,6 +156,11 @@ Or start the dev server with automatic reloads on file changes:
 rtgl fe watch
 ```
 
+Both commands also print what the static checker (`rtgl check`) finds in your
+components, such as an attribute a component does not declare or a handler
+that does not exist. These `[Check]` lines never fail the build; run
+`rtgl check` in CI to enforce them.
+
 Then use your component in any HTML page:
 
 ```html

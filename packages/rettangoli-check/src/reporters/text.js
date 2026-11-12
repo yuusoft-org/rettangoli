@@ -54,10 +54,16 @@ const formatCodeFrame = ({ diag, fileLines }) => {
   return frameLines;
 };
 
-export const formatTextReport = ({ result, warnAsError = false }) => {
+// `maxDiagnostics` (optional) lists only the first N diagnostics and adds one
+// line that counts the rest. The summary lines always count all of them.
+export const formatTextReport = ({ result, warnAsError = false, maxDiagnostics }) => {
   const lines = [];
   const { summary } = result;
   const fileCache = new Map();
+  const listedDiagnostics = Number.isInteger(maxDiagnostics) && maxDiagnostics >= 0
+    ? result.diagnostics.slice(0, maxDiagnostics)
+    : result.diagnostics;
+  const hiddenCount = result.diagnostics.length - listedDiagnostics.length;
 
   lines.push(`[Check] Scanned ${result.componentCount} component(s); registry tags: ${result.registryTagCount}.`);
   lines.push(`[Check] Errors: ${summary.bySeverity.error}, Warnings: ${summary.bySeverity.warn}.`);
@@ -71,7 +77,7 @@ export const formatTextReport = ({ result, warnAsError = false }) => {
 
   if (result.diagnostics.length > 0) {
     lines.push("[Check] Diagnostics:");
-    result.diagnostics.forEach((diag) => {
+    listedDiagnostics.forEach((diag) => {
       const severity = warnAsError && diag.severity === "warn" ? "error" : diag.severity;
       lines.push(`${diag.code} [${severity}] ${diag.message} [${formatLocation({
         cwd: result.cwd,
@@ -107,6 +113,9 @@ export const formatTextReport = ({ result, warnAsError = false }) => {
         lines.push(...frame);
       }
     });
+    if (hiddenCount > 0) {
+      lines.push(`[Check] ${hiddenCount} more diagnostic(s) not shown.`);
+    }
   }
 
   if (result.diagnostics.length === 0) {
