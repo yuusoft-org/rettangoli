@@ -240,6 +240,70 @@ test("a failing build fails as before and prints no check report", async () => {
   assert.ok(!viaRtgl.stderr.includes("These do not fail the build"));
 });
 
+// Runs `rtgl fe build` and closes our end of its stdout as soon as `until`
+// matches, like `rtgl fe build | head -2` does.
+function buildAndCloseStdout(cwd, until) {
+  return new Promise((resolvePromise, reject) => {
+    const child = spawn(process.execPath, [cliPath, "fe", "build"], {
+      cwd,
+      env: { PATH: process.env.PATH, NO_COLOR: "1", FORCE_COLOR: "0" },
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: 60000,
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.setEncoding("utf8").on("data", (chunk) => {
+      stdout += chunk;
+      if (until.test(stdout)) child.stdout.destroy();
+    });
+    child.stderr.setEncoding("utf8").on("data", (chunk) => (stderr += chunk));
+    child.on("error", reject);
+    child.on("close", (exitCode, signal) => resolvePromise({ exitCode, signal, stdout, stderr }));
+  });
+}
+
+// The build's own lines always survived a closed pipe; the check report must
+// too. 6 components give a report of about 70 lines.
+test("fe build still exits 0 when its output pipe is closed before the check report", async () => {
+  const files = {};
+  for (let index = 1; index <= 6; index += 1) {
+    Object.assign(files, component(`c${index}`, BROKEN_VIEW));
+  }
+  const project = createProject(files);
+
+  for (const until of [/\[Build\] Building .*\n/, /\[Build\] Complete in \d+ms\.\n/]) {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const build = await buildAndCloseStdout(project, until);
+      assert.equal(build.signal, null, `${until}: ${build.stderr}`);
+      assert.equal(build.exitCode, 0, `${until}: ${build.stderr}`);
+      assert.equal(build.stderr, "", `${until}: nothing on stderr, in particular no EPIPE stack trace`);
+    }
+  }
+});
+
+test("fe build piped into a command that stops reading exits 0", { skip: process.platform === "win32" }, async () => {
+  const project = createProject(BROKEN_PROJECT);
+  const script = `"$0" "$1" fe build | head -2; echo "status=\${PIPESTATUS[0]}"`;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const result = await new Promise((resolvePromise, reject) => {
+      const child = spawn("bash", ["-c", script, process.execPath, cliPath], {
+        cwd: project,
+        env: { PATH: process.env.PATH, NO_COLOR: "1", FORCE_COLOR: "0" },
+        stdio: ["ignore", "pipe", "pipe"],
+        timeout: 60000,
+      });
+      let stdout = "";
+      let stderr = "";
+      child.stdout.setEncoding("utf8").on("data", (chunk) => (stdout += chunk));
+      child.stderr.setEncoding("utf8").on("data", (chunk) => (stderr += chunk));
+      child.on("error", reject);
+      child.on("close", () => resolvePromise({ stdout, stderr }));
+    });
+    assert.match(result.stdout, /^\[Build\] Building .*\n\[Build\] Complete in \d+ms\.\nstatus=0\n$/);
+    assert.equal(result.stderr, "");
+  }
+});
+
 function freePort() {
   return new Promise((resolvePromise, reject) => {
     const server = createServer();
@@ -284,15 +348,24 @@ test("fe watch prints the report at startup and again when the diagnostics chang
     );
     assert.equal(count("[Check] Scanned"), 1);
 
-    // 1. Lines move, diagnostics stay: checked again, not printed again.
-    //    Then one diagnostic is fixed: printed again, once.
-    writeFileSync(viewPath, `# a comment\n${BROKEN_VIEW}`);
-    await sleep(1500);
-    assert.equal(count("[Check] Scanned"), 1, "moved diagnostics are not printed again");
+    // 1. Lines move and two diagnostics swap places; none is added or removed.
+    //    That change must print nothing. A fixed wait could not prove it (a
+    //    slow machine would simply not have checked yet), so a second change
+    //    follows that does alter the diagnostics: when its report has arrived,
+    //    exactly one new report exists in total.
+    const swapped = BROKEN_VIEW.replace(
+      "  - rtgl-button#ctaButton banana=ripe: Click\n  - rtgl-text nope=1: text\n",
+      "  - rtgl-text nope=1: text\n  - rtgl-button#ctaButton banana=ripe: Click\n",
+    );
+    assert.notEqual(swapped, BROKEN_VIEW);
+    writeFileSync(viewPath, `# a comment\n${swapped}`);
+    // Longer than the debounce delay, so this change gets a check of its own.
+    await sleep(1000);
 
-    writeFileSync(viewPath, `# a comment\n${BROKEN_VIEW.replace(" banana=ripe", "")}`);
+    writeFileSync(viewPath, `# a comment\n${swapped.replace(" banana=ripe", "")}`);
     await waitFor("the report after a fix", () => stdout.includes(summaryLine(3, 0)));
-    assert.equal(count("[Check] Scanned"), 2);
+    assert.equal(count("[Check] Scanned"), 2, "the moved diagnostics were not printed again");
+    assert.equal(count(summaryLine(4, 0)), 1);
 
     // 2. Everything fixed: the clean report, without the summary line.
     writeFileSync(viewPath, CLEAN_VIEW);

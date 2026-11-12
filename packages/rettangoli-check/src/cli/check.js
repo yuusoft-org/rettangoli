@@ -97,7 +97,8 @@ const createAnalysisRunner = ({
 // analyzed (cwd, dirs, includeYahtml, includeExpression, includeStyle) and
 // returns a function. Each call analyzes the project again and resolves to
 // { result, report }: `report` is the text `check` would print, listing at
-// most `maxDiagnostics` diagnostics when that is set. Nothing is printed and
+// most `maxDiagnostics` diagnostics when that is set. Other options of `check`
+// (format, warnAsError, watch, autofix) are ignored. Nothing is printed and
 // process.exitCode is left alone.
 export const createChecker = (options = {}) => {
   const { maxDiagnostics } = options;

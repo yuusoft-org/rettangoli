@@ -28,6 +28,8 @@ function outcome(diagnostics) {
   };
 }
 
+const componentFile = join(CWD, "src", "components", "card", "card.view.yaml");
+
 const summaryLine = (error, warn) =>
   `[Check] ${error} error(s), ${warn} warning(s). These do not fail the build. ` +
   "Run `rtgl check` for the full report and to fail CI on them.";
@@ -56,7 +58,7 @@ function setup({ dirs = ["src/components"], runCheck } = {}) {
     },
     cwd: CWD,
     dirs,
-    write: (text) => output.push(text),
+    write: (text) => output.push(`${text}\n`),
     debounceMs: DEBOUNCE_MS,
   });
   return { state, output, reporter };
@@ -111,12 +113,26 @@ test("a report is printed again only when the diagnostics change", async () => {
   assert.equal(output.at(-1), `report(A@9,B@2)\n${summaryLine(1, 1)}\n`);
   assert.equal(output.length, 3);
 
+  // The same diagnostics in another order (two template lines swapped).
+  state.diagnostics = [diagnostic("B", 2, "warn"), diagnostic("A", 9)];
+  await reporter.run();
+  assert.equal(output.length, 3, "reordered diagnostics are not printed again");
+
+  // One more of a diagnostic that is already there is a change.
+  state.diagnostics = [diagnostic("A", 9), diagnostic("A", 12), diagnostic("B", 2, "warn")];
+  await reporter.run();
+  assert.equal(output.at(-1), `report(A@9,A@12,B@2)\n${summaryLine(2, 1)}\n`);
+  state.diagnostics = [diagnostic("A", 9), diagnostic("B", 2, "warn")];
+  await reporter.run();
+  assert.equal(output.at(-1), `report(A@9,B@2)\n${summaryLine(1, 1)}\n`);
+  assert.equal(output.length, 5);
+
   // Fixed: the clean report is printed once, without the summary line.
   state.diagnostics = [];
   await reporter.run();
   await reporter.run();
   assert.equal(output.at(-1), "report()\n");
-  assert.equal(output.length, 4);
+  assert.equal(output.length, 6);
   assert.equal(state.loads, 1);
   assert.equal(state.creates.length, 1, "one checker serves every run");
 });
@@ -159,7 +175,7 @@ test("a package that cannot be loaded or created is retried on the next run", as
     },
     cwd: CWD,
     dirs: ["src/components"],
-    write: (text) => output.push(text),
+    write: (text) => output.push(`${text}\n`),
   });
 
   await reporter.run();
@@ -172,16 +188,63 @@ test("a package that cannot be loaded or created is retried on the next run", as
   ]);
 });
 
-test("an output stream that throws does not reject the run", async () => {
-  const reporter = createFeCheckReporter({
-    load: async () => ({ createChecker: () => async () => outcome([diagnostic("A")]) }),
-    cwd: CWD,
-    dirs: ["src/components"],
-    write: () => {
-      throw new Error("EPIPE");
-    },
-  });
-  await reporter.run();
+// A closed pipe does not make `write` throw (the default is console.log, which
+// ignores it; test/fe-check.integration.test.js covers that with a real
+// pipe). This covers the remaining case: a failure inside a run, here a `write`
+// that throws synchronously, must not reject, must not leave the reporter
+// stuck in "running", and must not surface as an unhandled rejection when the
+// run was started by the watch timer.
+test("a failure inside a run does not reject or block later runs", async () => {
+  const unhandled = [];
+  const onUnhandled = (reason) => unhandled.push(reason);
+  process.on("unhandledRejection", onUnhandled);
+  try {
+    const output = [];
+    let failWrites = true;
+    let diagnostics = [diagnostic("A")];
+    let runs = 0;
+    const reporter = createFeCheckReporter({
+      load: async () => ({
+        createChecker: () => async () => {
+          runs += 1;
+          return outcome(diagnostics);
+        },
+      }),
+      cwd: CWD,
+      dirs: ["src/components"],
+      write: (text) => {
+        if (failWrites) throw new Error("write failed");
+        output.push(text);
+      },
+      debounceMs: DEBOUNCE_MS,
+    });
+    const watcher = new EventEmitter();
+    reporter.watch(watcher);
+
+    await reporter.run();
+    assert.equal(runs, 1);
+
+    // Started by the watch timer, failing again.
+    diagnostics = [diagnostic("A"), diagnostic("B")];
+    watcher.emit("all", "change", componentFile);
+    await sleep(DEBOUNCE_MS * 5);
+    assert.equal(runs, 2, "the reporter was not left running after the first failure");
+
+    // The output works again: runs and prints as usual.
+    failWrites = false;
+    diagnostics = [diagnostic("C")];
+    watcher.emit("all", "change", componentFile);
+    await sleep(DEBOUNCE_MS * 5);
+    assert.equal(runs, 3);
+    await reporter.run();
+    assert.equal(runs, 4);
+    assert.deepEqual(output, [`report(C@1)\n${summaryLine(1, 0)}`]);
+
+    await sleep(10);
+    assert.deepEqual(unhandled, []);
+  } finally {
+    process.off("unhandledRejection", onUnhandled);
+  }
 });
 
 // A checker whose runs stay pending until released, counting how many overlap.
@@ -230,8 +293,6 @@ test("runs never overlap: calls during a run queue exactly one more", async () =
   await next;
   assert.equal(gate.runs, 3);
 });
-
-const componentFile = join(CWD, "src", "components", "card", "card.view.yaml");
 
 test("watch checks again after a burst of changes, once", async () => {
   const { state, output, reporter } = setup();

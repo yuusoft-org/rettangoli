@@ -71,9 +71,11 @@ const runCheck = createChecker({ cwd: process.cwd(), dirs: ["src/components"], m
 const { result: checked, report } = await runCheck();
 ```
 
-`createChecker` takes the options of `check` that select what is analyzed (`cwd`, `dirs`, `includeYahtml`,
-`includeExpression`, `includeStyle`) and reads `rettangoli.config.yaml` the same way. `report` is the text
-report; with `maxDiagnostics` it lists only the first N diagnostics and ends with
+`createChecker` takes exactly these options: the ones of `check` that select what is analyzed (`cwd`, `dirs`,
+`includeYahtml`, `includeExpression`, `includeStyle`) and `maxDiagnostics`. The other options of `check`
+(`format`, `warnAsError`, `watch`, `watchIntervalMs`, the autofix options) are ignored. It reads
+`rettangoli.config.yaml` the same way. `report` is the text report, with severities as analyzed (no
+`--warn-as-error`); with `maxDiagnostics` it lists only the first N diagnostics and ends with
 `[Check] <count> more diagnostic(s) not shown.`. Call the returned function again to re-check: it re-reads
 only the components that changed. A missing directory or an unreadable config throws from `createChecker`.
 

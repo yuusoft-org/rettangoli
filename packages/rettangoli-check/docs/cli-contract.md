@@ -30,9 +30,12 @@ handler export names, and renamed/destructured/unused lifecycle parameters are
 accepted. Style lint is opt-in; genuine contract failures retain error status.
 
 `@rettangoli/check/cli` also exports `createChecker(options)` for tools that show the text report inside
-their own output (`rtgl fe build` and `rtgl fe watch`). It returns a function that resolves to
-`{ result, report }`, prints nothing and leaves `process.exitCode` alone. `report` equals the text output of
-`check` for the same options; `maxDiagnostics` limits the listed diagnostics and adds the line
+their own output (`rtgl fe build` and `rtgl fe watch`). It takes exactly these options: the ones of `check`
+that select what is analyzed (`cwd`, `dirs`, `includeYahtml`, `includeExpression`, `includeStyle`) and
+`maxDiagnostics`. Every other option of `check` (`format`, `warnAsError`, `watch`, `watchIntervalMs`, the
+autofix options) is ignored. It returns a function that resolves to `{ result, report }`, prints nothing and
+leaves `process.exitCode` alone. `report` is the text report `check` prints for the same analysis options
+without `--warn-as-error`; `maxDiagnostics` limits the listed diagnostics and adds the line
 `[Check] <count> more diagnostic(s) not shown.`. Covered by `scripts/test-create-checker-contract.js`.
 
 ## 2. JSON Contract Version

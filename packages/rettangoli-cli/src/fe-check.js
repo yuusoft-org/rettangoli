@@ -29,12 +29,16 @@ function isInside(parent, candidate) {
 //                   during a run queues one more run instead of overlapping.
 //   watch(watcher)  calls run() after files in `dirs` change (debounced).
 //
-// `load` imports a @rettangoli/* entry point, `write` prints text.
+// `load` imports a @rettangoli/* entry point, `write` prints one block of
+// lines (without a trailing newline).
 export function createFeCheckReporter({
   load,
   cwd,
   dirs,
-  write = (text) => process.stdout.write(text),
+  // console.log, like the build's own lines: it ignores a closed pipe
+  // (`rtgl fe build | head -2`). process.stdout.write would report EPIPE as an
+  // unhandled 'error' event and turn a successful build into exit code 1.
+  write = (text) => console.log(text),
   debounceMs = WATCH_DEBOUNCE_MS,
 }) {
   let runCheck = null;
@@ -55,15 +59,20 @@ export function createFeCheckReporter({
         return { key: "", text: report };
       }
       return {
-        // Line numbers are left out, so a diagnostic that only moved within
-        // its file is not printed again.
+        // Line numbers and the order are left out, so diagnostics that only
+        // moved within their file are not printed again. Duplicates are kept:
+        // one more of the same diagnostic is a change.
         key: JSON.stringify(
-          result.diagnostics.map((diagnostic) => [
-            diagnostic.code,
-            diagnostic.severity,
-            diagnostic.message,
-            diagnostic.filePath,
-          ]),
+          result.diagnostics
+            .map((diagnostic) =>
+              JSON.stringify([
+                diagnostic.code,
+                diagnostic.severity,
+                diagnostic.message,
+                diagnostic.filePath,
+              ]),
+            )
+            .sort(),
         ),
         text:
           `${report}\n` +
@@ -82,11 +91,7 @@ export function createFeCheckReporter({
       return;
     }
     printedKey = key;
-    try {
-      write(`${text}\n`);
-    } catch {
-      // A closed output stream must not stop the build or the watcher.
-    }
+    write(text);
   }
 
   function run() {
@@ -95,11 +100,17 @@ export function createFeCheckReporter({
       return running;
     }
     running = (async () => {
-      do {
-        queued = false;
-        await runOnce();
-      } while (queued);
-      running = null;
+      try {
+        do {
+          queued = false;
+          await runOnce();
+        } while (queued);
+      } catch {
+        // Nothing here may fail the build or stop the watcher (a `write` that
+        // throws, for example). The next run starts from a clean state.
+      } finally {
+        running = null;
+      }
     })();
     return running;
   }
@@ -112,7 +123,9 @@ export function createFeCheckReporter({
         return;
       }
       clearTimeout(timer);
-      timer = setTimeout(run, debounceMs);
+      timer = setTimeout(() => {
+        run().catch(() => {});
+      }, debounceMs);
       timer.unref?.();
     });
   }
