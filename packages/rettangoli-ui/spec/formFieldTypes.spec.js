@@ -5,6 +5,7 @@ import {
   DISPLAY_TYPES,
   EMPTY_VALUE_ATTRIBUTE_TYPES,
   FIELD_TYPES,
+  FREE_TEXT_TYPES,
   PLACEHOLDER_TYPES,
   TEXT_LENGTH_TYPES,
   VALUE_ATTRIBUTE_TYPES,
@@ -50,6 +51,12 @@ describe("rtgl-form field-type table", () => {
     expect(sorted(CHOICE_TYPES)).toEqual(sorted(LISTS.choice));
     expect(sorted(TEXT_LENGTH_TYPES)).toEqual(sorted(LISTS.textLength));
     expect(sorted(DISPLAY_TYPES)).toEqual(sorted(LISTS.display));
+  });
+
+  // Types whose value is text the user types: `required` rejects a
+  // whitespace-only value for these and for no other type.
+  it("marks only the typed-text types as free text", () => {
+    expect(sorted(FREE_TEXT_TYPES)).toEqual(["input-text", "input-textarea", "popover-input"]);
   });
 
   it("lists every type the form view renders", () => {

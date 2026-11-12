@@ -8,9 +8,10 @@ import {
 
 // The values a form starts with, and returns to on reset() or a key change:
 // every field shown for `defaultValues` takes its default value, or its type's
-// default when it has none.
-export const computeInitialValues = (props) => {
-  const defaultValues = props?.defaultValues || {};
+// default when it has none. `defaultValues` is the prop unless the caller
+// passes the defaults that replaced it (see reset in form.methods.js).
+export const computeInitialValues = (props, defaultValuesOverride) => {
+  const defaultValues = defaultValuesOverride || props?.defaultValues || {};
   const seededValues = {};
   Object.keys(defaultValues).forEach((path) => {
     set(seededValues, path, defaultValues[path]);

@@ -11,6 +11,7 @@ import { flattenTextSegments, renderableTextSegments } from "../../common/textSe
 import {
   CHOICE_TYPES,
   DISPLAY_TYPES,
+  FREE_TEXT_TYPES,
   TEXT_LENGTH_TYPES,
   getFieldDefaultValue,
 } from "./fieldTypes.js";
@@ -489,10 +490,14 @@ const getTextLength = (value) =>
 
 // false is a real choice for a select or segmented-control option, and NaN
 // is "no number" only for input-number (a duration reports it as invalid).
+// Text the user types (FREE_TEXT_TYPES) is also empty when trim() leaves
+// nothing. Other types keep such a string: it can be a real option value, and
+// a date or time field reports it as an invalid format.
 const isEmptyForRequired = (field, value) =>
   value === undefined ||
   value === null ||
   value === "" ||
+  (typeof value === "string" && FREE_TEXT_TYPES.has(field.type) && value.trim() === "") ||
   (Array.isArray(value) && value.length === 0) ||
   (value === false && field.type !== "select" && field.type !== "segmented-control") ||
   (field.type === "input-number" && Number.isNaN(value));
@@ -749,6 +754,10 @@ const buildFieldLayoutItems = (fields, defaultRowStackAt = "md") => {
 export const createInitialState = () =>
   Object.freeze({
     formValues: {},
+    // The defaults given to reset({ defaultValues }), used instead of the
+    // defaultValues prop until the form mounts again or its key changes.
+    // null means the prop.
+    defaultValuesOverride: null,
     errors: {},
     reactiveMode: false,
     tooltipState: {
@@ -1035,9 +1044,17 @@ export const setFormValues = ({ state }, payload = {}) => {
   });
 };
 
+// `defaultValues` are the values to start from. `defaultValuesOverride` are
+// the defaults given to reset({ defaultValues }); without it, as on mount and
+// on a key change, the form goes back to the defaultValues prop. The store
+// keeps a copy, so later changes to the caller's object do not reach the form
+// and the store does not freeze that object.
 export const resetFormValues = ({ state }, payload = {}) => {
-  const { defaultValues = {} } = payload;
+  const { defaultValues = {}, defaultValuesOverride } = payload;
   state.formValues = defaultValues ? structuredClone(defaultValues) : {};
+  state.defaultValuesOverride = isPlainObject(defaultValuesOverride)
+    ? structuredClone(defaultValuesOverride)
+    : null;
   state.errors = {};
   state.reactiveMode = false;
 };

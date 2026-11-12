@@ -304,6 +304,8 @@ A field's `type` values are kebab-case only (`inputType` is only the `text` / `p
 - every string in the `form` prop is a jempl template, rendered with `context`, the current field values and `formValues`; user text with `${` or `#{` goes through `escapeFormText` (a named export of the package) or through `context`
 - clearing a `select` or `segmented-control` removes the key from the form values instead of setting `null`; a never-touched one is `null`
 - a changed `key` re-seeds the values from `defaultValues` and clears errors; changing `defaultValues` alone does not
+- `reset()` returns to the current defaults: the `defaultValues` prop as it is at the call, or the object last given to `reset({ defaultValues })`, which replaces the prop until `key` changes or the form mounts again; `reset({ defaultValues })` leaves the form as a fresh mount with those defaults would and is the only form of the argument
+- `required` treats whitespace-only text as empty for `input-text`, `input-textarea` and `popover-input` (the `freeText` types in `fieldTypes.js`); values are never trimmed
 - `setValues({ values })` is the documented shape; a key replaces the whole value under it, so use dotted keys to set one nested field
 - there is no public `setErrors` method, and `rtgl-form` does not implement `autofocus`
 
