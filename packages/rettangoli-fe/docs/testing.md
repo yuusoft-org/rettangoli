@@ -49,17 +49,20 @@ renderView({ template, viewData = {}, refs = {}, renderChildren }) // -> string
 - `viewData`: the object `selectViewData` returns.
 - `refs`: the `refs` of the `.view.yaml`. It is optional. No event listener is
   built, so `handler` and `action` names in it need no handlers and no store.
-- `renderChildren(vnode)`: optional. When it returns a string for an element,
-  that string is written as the element's children as given, with no escaping.
-  Return `null` to render the element's own children.
+- `renderChildren(vnode)`: optional. It is called for every element, the
+  wrapping `div` included. When it returns anything other than `null` or
+  `undefined`, that value is written as the element's children as given, with
+  no escaping, so return a string of HTML that is already safe. Return `null`
+  to render the element's own children.
 
 The result is the view wrapped in the component's render target,
 `<div style="display: contents">...</div>`.
 
 Rules:
 - text and attribute values are escaped
-- a `?name=${expr}` binding writes `name=""` when the value is true and
-  nothing when it is false
+- a `?name=${expr}` binding writes `name=""` when the value is the boolean
+  `true` or the string `"true"`, and nothing for every other value, other
+  truthy values such as `1` or `"yes"` included
 - a `:name=${expr}` property binding writes nothing: a property is a value on
   the element, not markup. Assert on it with `parseView` (`data.props`).
 - child components are written as their tag only. `renderComponent` from
@@ -93,8 +96,7 @@ parseView({
 
 - `h` (required): snabbdom's `h`. In plain Node import it from
   `snabbdom/build/h.js`: the `snabbdom` entry reads `window` when it is
-  imported and throws there. The test project `MUST` list `snabbdom` as its
-  own dependency to import from it.
+  imported and throws there.
 - `template` (required): a parsed template. A raw one `MUST` go through
   `parseTemplate` first.
 - `viewData`: the object `selectViewData` returns.
@@ -102,6 +104,12 @@ parseView({
 - `handlers`: the object the listeners call. In a component the runtime
   passes handlers with `deps` already bound, so here a handler receives the
   payload only.
+  - It `MUST` be a plain object that can take new properties, because
+    `parseView` keeps listener state in a hidden property on it. The exports
+    of a module (`import * as handlers`) or a frozen object throw
+    `Cannot redefine property: __eventRateLimitState` or
+    `Cannot define property __eventRateLimitState, object is not extensible`
+    as soon as the view has a listener. Pass a copy: `{ ...handlers }`.
   - A `handler` listener calls `handlers[name](payload)` with `payload._event`
     set to the event. A name that `handlers` does not hold logs the
     `[Parser] Handler '<name>' ... is referenced but not found` warning
@@ -151,8 +159,14 @@ The bound store has:
 Rules:
 - an export is a selector when its name starts with `select`; every other
   export is an action
-- an action payload that is not a plain object (a string, a number, `null`,
-  an array) throws `[Store] Action '<name>' expects payload to be an object.`
+- every export is bound, whatever its value. An export that is not a function
+  (`export const MAX_ITEMS = 5`) becomes a function that throws
+  `[Store] Action 'MAX_ITEMS' is not defined.` when called (`Selector` for a
+  `select*` name). Keep such values in `.constants.yaml`.
+- an action payload `MUST` be an object that is not `null` and not an array.
+  A string, number, boolean, function, `null` or array throws
+  `[Store] Action '<name>' expects payload to be an object.` Any other object
+  is accepted, class instances such as a `Date` or a `Map` included.
 - an action never changes a state object that was already returned. Parts of
   the state it did not change keep their references.
 - the state is frozen after the first action
@@ -181,97 +195,240 @@ extends `HTMLElement`, so calling `createComponent` in plain Node throws
 `ReferenceError: HTMLElement is not defined`. It needs a DOM environment:
 a browser, or jsdom.
 
-jsdom has no constructable stylesheets, which a component adopts when it
-connects. A jsdom test `MUST` define `CSSStyleSheet` with a `replaceSync`
-method before it mounts a component.
+A component adopts constructable stylesheets when it connects. Older jsdom
+versions have none (26 does not, 31 does). A jsdom test `MUST` define
+`CSSStyleSheet` with a `replaceSync` method before it mounts a component when
+`CSSStyleSheet.prototype.replaceSync` is missing, and `MUST NOT` replace it
+when it is there: a jsdom that has constructable stylesheets rejects a
+stand-in with `Failed to set the 'adoptedStyleSheets' property on 'ShadowRoot'`.
 
-## 3. View Test
+## 3. Test Project Setup
+
+`@rettangoli/fe/testing` brings its own jempl, snabbdom and Immer. A test
+project installs the packages its tests import by name:
+
+| Package | Needed for |
+| --- | --- |
+| a test runner (`vitest` in the examples) | every test |
+| `js-yaml` | loading `.view.yaml` and `.schema.yaml` |
+| `snabbdom` | `h` for `parseView` |
+| `jsdom` | component tests |
+
+The examples read files with `import.meta.dirname`, which Node has from
+20.11. Under `// @vitest-environment jsdom` the global `URL` is jsdom's, so
+`readFileSync(new URL("./file", import.meta.url))` throws
+`The URL must be of scheme file` there; a path works in both environments.
+
+Import `load` from `js-yaml` by name. The package has no default export from
+version 5.
+
+## 4. Example Component
+
+The examples in sections 5 to 9 test this component. Its files and the test
+files are in one folder.
+
+`todoList.schema.yaml`
+
+```yaml
+componentName: todo-list
+propsSchema:
+  type: object
+  properties:
+    heading:
+      type: string
+```
+
+`todoList.view.yaml`
+
+```yaml
+template:
+  - h1: "${heading}"
+  - todo-counter :items=${items}: ""
+  - ul:
+      - $for item in items:
+          - li: "${item.label}"
+  - button#addButton ?disabled=${isFull}: Add
+  - button#clearButton: Clear
+refs:
+  addButton:
+    eventListeners:
+      click:
+        action: addItem
+        payload:
+          label: New item
+  clearButton:
+    eventListeners:
+      click:
+        handler: handleClear
+styles: {}
+```
+
+`todoList.store.js`
+
+```js
+export const createInitialState = () => ({
+  items: [],
+});
+
+export const selectViewData = ({ state, props, constants }) => ({
+  heading: props.heading,
+  items: state.items,
+  isFull: state.items.length >= constants.maxItems,
+});
+
+export const addItem = ({ state }, { label }) => {
+  state.items.push({ label });
+};
+
+export const clearItems = ({ state }) => {
+  state.items = [];
+};
+```
+
+`todoList.handlers.js`
+
+```js
+export const handleClear = (deps) => {
+  deps.store.clearItems();
+  deps.render();
+};
+```
+
+## 5. View Test
+
+`todoList.view.test.js`
 
 ```js
 import { readFileSync } from "node:fs";
-import yaml from "js-yaml";
+import path from "node:path";
+import { load } from "js-yaml";
 import { expect, it } from "vitest";
 import { renderView } from "@rettangoli/fe/testing";
 
-const view = yaml.load(
-  readFileSync(new URL("./todoList.view.yaml", import.meta.url), "utf8"),
+const view = load(
+  readFileSync(path.join(import.meta.dirname, "todoList.view.yaml"), "utf8"),
 );
 
 it("renders one row per item", () => {
   const html = renderView({
     template: view.template,
     refs: view.refs,
-    viewData: { title: "Today", items: [{ id: "a", label: "Write tests" }] },
+    viewData: {
+      heading: "Today",
+      items: [{ label: "Write tests" }, { label: "Ship" }],
+      isFull: true,
+    },
   });
 
   expect(html).toContain("<h1>Today</h1>");
-  expect(html).toContain("Write tests");
+  expect(html).toContain("<ul><li>Write tests</li><li>Ship</li></ul>");
+  expect(html).toContain('<button disabled="" id="addButton">Add</button>');
 });
 ```
 
-To assert on structure, properties or listeners, build the tree:
+## 6. View Tree Test
+
+To assert on structure, properties or listeners, build the tree. The view has
+an `action` listener, so `handlers` holds `handleCallStoreAction`.
+
+`todoList.tree.test.js`
 
 ```js
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { load } from "js-yaml";
 import { h } from "snabbdom/build/h.js";
-import { expect, vi } from "vitest";
+import { expect, it, vi } from "vitest";
 import { parseTemplate, parseView } from "@rettangoli/fe/testing";
 
-const handleSelectItem = vi.fn();
-const vnode = parseView({
-  h,
-  template: parseTemplate(view.template),
-  viewData: { title: "Today", items },
-  refs: view.refs,
-  handlers: { handleSelectItem },
+const view = load(
+  readFileSync(path.join(import.meta.dirname, "todoList.view.yaml"), "utf8"),
+);
+
+it("passes the items to the counter and wires the buttons", () => {
+  const items = [{ label: "Write tests" }];
+  const handleClear = vi.fn();
+  const handleCallStoreAction = vi.fn();
+
+  const vnode = parseView({
+    h,
+    template: parseTemplate(view.template),
+    viewData: { heading: "Today", items, isFull: false },
+    refs: view.refs,
+    handlers: { handleClear, handleCallStoreAction },
+  });
+  const [heading, counter, list, addButton, clearButton] = vnode.children;
+
+  expect(heading.text).toBe("Today");
+  expect(counter.data.props.items).toBe(items);
+  expect(list.children).toHaveLength(1);
+
+  const event = { type: "click" };
+  clearButton.data.on.click(event);
+  expect(handleClear).toHaveBeenCalledWith({ _event: event });
+
+  addButton.data.on.click(event);
+  expect(handleCallStoreAction).toHaveBeenCalledWith({
+    label: "New item",
+    _event: event,
+    _action: "addItem",
+  });
 });
-
-const list = vnode.children[1];
-expect(list.data.props.items).toBe(items);
-
-list.data.on.click({ type: "click" });
-expect(handleSelectItem).toHaveBeenCalledTimes(1);
 ```
 
-## 4. Store Test
+## 7. Store Test
+
+`todoList.store.test.js`
 
 ```js
 import { expect, it } from "vitest";
 import { bindStore } from "@rettangoli/fe/testing";
-import * as todoStore from "./todoList.store.js";
+import * as todoListStore from "./todoList.store.js";
 
-it("adds an item", () => {
-  const store = bindStore(todoStore, { listId: "today" }, { maxItems: 10 });
+it("adds items until the list is full", () => {
+  const store = bindStore(todoListStore, { heading: "Today" }, { maxItems: 2 });
 
   const before = store.getState();
   store.addItem({ label: "Write tests" });
 
-  expect(store.selectViewData().items).toHaveLength(1);
   expect(before.items).toHaveLength(0);
-  expect(() => store.addItem("Write tests")).toThrow(
+  expect(store.selectViewData()).toEqual({
+    heading: "Today",
+    items: [{ label: "Write tests" }],
+    isFull: false,
+  });
+
+  store.addItem({ label: "Ship" });
+  expect(store.selectViewData().isFull).toBe(true);
+
+  expect(() => store.addItem("Ship")).toThrow(
     "[Store] Action 'addItem' expects payload to be an object.",
   );
 });
 ```
 
-## 5. Handler Test
+## 8. Handler Test
 
 A handler is a function of `(deps, payload)`. Call it with a real bound store
 and a spy for `render`. Handlers call `render()` themselves (`handlers.md`),
 so the spy shows whether the handler asked for a render.
 
+`todoList.handlers.test.js`
+
 ```js
 import { expect, it, vi } from "vitest";
 import { bindStore } from "@rettangoli/fe/testing";
-import * as todoStore from "./todoList.store.js";
-import { handleAddItem } from "./todoList.handlers.js";
+import * as todoListStore from "./todoList.store.js";
+import { handleClear } from "./todoList.handlers.js";
 
-it("adds the item and renders", () => {
-  const store = bindStore(todoStore, { listId: "today" }, { maxItems: 10 });
+it("clears the items and renders", () => {
+  const store = bindStore(todoListStore, { heading: "Today" }, { maxItems: 2 });
+  store.addItem({ label: "Write tests" });
   const render = vi.fn();
 
-  handleAddItem({ store, render }, { label: "Write tests" });
+  handleClear({ store, render });
 
-  expect(store.getState().items).toHaveLength(1);
+  expect(store.getState().items).toEqual([]);
   expect(render).toHaveBeenCalledTimes(1);
 });
 ```
@@ -279,44 +436,71 @@ it("adds the item and renders", () => {
 `deps` holds only what the test puts in it. Add `props`, `constants`, `refs`,
 `dispatchEvent` or custom dependencies when the handler reads them.
 
-## 6. Component Test
+## 9. Component Test
 
 Needs a DOM environment. With Vitest and jsdom:
 
+`todoList.component.test.js`
+
 ```js
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { load } from "js-yaml";
 import { beforeEach, expect, it, vi } from "vitest";
 import { createComponent, parseTemplate } from "@rettangoli/fe/testing";
+import * as todoListStore from "./todoList.store.js";
+import * as todoListHandlers from "./todoList.handlers.js";
+
+const loadYaml = (fileName) =>
+  load(readFileSync(path.join(import.meta.dirname, fileName), "utf8"));
+const schema = loadYaml("todoList.schema.yaml");
+const view = loadYaml("todoList.view.yaml");
 
 beforeEach(() => {
-  vi.stubGlobal("CSSStyleSheet", class { replaceSync() {} });
+  if (typeof globalThis.CSSStyleSheet?.prototype.replaceSync !== "function") {
+    vi.stubGlobal("CSSStyleSheet", class { replaceSync() {} });
+  }
 });
 
-it("renders after an action listener", () => {
+it("adds an item on click, then clears the list", () => {
   customElements.define(
     "todo-list",
     createComponent(
       {
         schema,
         view: { ...view, template: parseTemplate(view.template) },
-        store: todoStore,
-        handlers: todoHandlers,
+        store: todoListStore,
+        handlers: todoListHandlers,
+        constants: { maxItems: 2 },
       },
       {},
     ),
   );
+  const element = document.createElement("todo-list");
+  element.setAttribute("heading", "Today");
+  document.body.appendChild(element);
+  const find = (selector) => element.renderTarget.querySelector(selector);
 
-  const element = document.body.appendChild(document.createElement("todo-list"));
-  element.renderTarget.querySelector("#addButton").click();
+  expect(find("h1").textContent).toBe("Today");
 
-  expect(element.store.getState().items).toHaveLength(1);
+  find("#addButton").click();
+  expect(element.store.getState().items).toEqual([{ label: "New item" }]);
+  expect(find("ul").children).toHaveLength(1);
+
+  find("#clearButton").click();
+  expect(find("ul").children).toHaveLength(0);
 });
 ```
 
 jsdom does not lay out or paint. Use `@rettangoli/vt` for behavior that
 depends on a real browser.
 
-## 7. Invalid Example
+These examples run as written in
+`test/testing/fixtures/todoList/`, and `test/testing/doc-examples.test.js`
+fails when a file there and this document differ.
+
+## 10. Invalid Example
 
 ```js
 import { parseView } from "@rettangoli/fe/src/parser.js";

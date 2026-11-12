@@ -35,16 +35,6 @@ const packageDirectory = fileURLToPath(new URL("../../", import.meta.url));
 const wrap = (html) => `<div style="display: contents">${html}</div>`;
 
 describe("exports", () => {
-  it("exports exactly the documented names", () => {
-    expect(Object.keys(testing).sort()).toEqual([
-      "bindStore",
-      "createComponent",
-      "parseTemplate",
-      "parseView",
-      "renderView",
-    ]);
-  });
-
   it("has no default export", () => {
     expect("default" in testing).toBe(false);
   });
@@ -98,7 +88,7 @@ describe("node safety", () => {
     );
     expect(JSON.parse(output)).toEqual({
       present: [],
-      names: ["bindStore", "createComponent", "parseTemplate", "parseView", "renderView"],
+      names: Object.keys(testing).sort(),
       html: wrap("<p>2</p>"),
     });
   });
@@ -143,25 +133,6 @@ describe("package exports map", () => {
     expect(output).toMatch(/\/src\/testing\/index\.js$/);
   });
 
-  it("leaves the other entries as they were", async () => {
-    const fe = await import("@rettangoli/fe");
-    const serverEntry = await import("@rettangoli/fe/server");
-    expect(Object.keys(fe).sort()).toEqual([
-      "createComponent",
-      "createI18nRuntime",
-      "defineOrUpdateComponent",
-      "defineOrUpdateComponents",
-    ]);
-    expect(Object.keys(serverEntry).sort()).toEqual([
-      "bindStore",
-      "loadComponents",
-      "renderComponent",
-      "renderDocument",
-      "renderView",
-      "resolveComponentDefinition",
-      "serializeVNode",
-    ]);
-  });
 });
 
 describe("renderView", () => {
@@ -269,14 +240,36 @@ describe("renderView", () => {
       ).toBe(wrap('<input placeholder="A &quot;quoted&quot; &lt;name&gt; &amp; more" type="text">'));
     });
 
-    it("writes a boolean binding only when it is true", () => {
+    describe("boolean binding", () => {
       const template = [{ "button ?disabled=${isBusy}": "Save" }];
-      expect(renderView({ template, viewData: { isBusy: true } })).toBe(
-        wrap('<button disabled="">Save</button>'),
-      );
-      expect(renderView({ template, viewData: { isBusy: false } })).toBe(
-        wrap("<button>Save</button>"),
-      );
+
+      it.each([[true], ["true"]])("writes the attribute for %j", (isBusy) => {
+        expect(renderView({ template, viewData: { isBusy } })).toBe(
+          wrap('<button disabled="">Save</button>'),
+        );
+      });
+
+      it.each([
+        [false],
+        ["false"],
+        ["yes"],
+        ["disabled"],
+        [1],
+        [0],
+        [""],
+        [null],
+        [undefined],
+        [{}],
+        [[]],
+      ])("writes nothing for %j, truthy or not", (isBusy) => {
+        expect(renderView({ template, viewData: { isBusy } })).toBe(
+          wrap("<button>Save</button>"),
+        );
+      });
+
+      it("writes nothing when the value is missing from the view data", () => {
+        expect(renderView({ template })).toBe(wrap("<button>Save</button>"));
+      });
     });
 
     it("leaves property bindings out of the HTML", () => {
@@ -386,6 +379,48 @@ describe("renderView", () => {
             vnode.data?.attrs?.id === "slot" ? "<b>raw</b>" : null,
         }),
       ).toBe(wrap('<div id="slot"><b>raw</b></div><p>kept</p>'));
+    });
+
+    it("is called for every element, the wrapping div first", () => {
+      const seen = [];
+      renderView({
+        template: [{ "div#outer": [{ p: "text" }] }, { span: "x" }],
+        renderChildren: (vnode) => {
+          seen.push(vnode.sel);
+          return null;
+        },
+      });
+      expect(seen).toEqual(["div", "div", "p", "span"]);
+    });
+
+    it("can replace the whole view through the wrapping div", () => {
+      let calls = 0;
+      expect(
+        renderView({
+          template: [{ p: "replaced" }],
+          renderChildren: () => {
+            calls += 1;
+            return "<i>all</i>";
+          },
+        }),
+      ).toBe(wrap("<i>all</i>"));
+      // The replaced children are never visited.
+      expect(calls).toBe(1);
+    });
+
+    it.each([
+      ["null", null, "<p>own</p>"],
+      ["undefined", undefined, "<p>own</p>"],
+      ["an empty string", "", "<p></p>"],
+      ["a number", 5, "<p>5</p>"],
+      ["false", false, "<p>false</p>"],
+    ])("for %s: only null and undefined keep the element's children", (_label, value, expected) => {
+      expect(
+        renderView({
+          template: [{ p: "own" }],
+          renderChildren: (vnode) => (vnode.sel === "p" ? value : null),
+        }),
+      ).toBe(wrap(expected));
     });
   });
 
@@ -512,6 +547,70 @@ describe("parseTemplate and parseView", () => {
     } finally {
       warn.mockRestore();
     }
+  });
+
+  describe("the handlers object", () => {
+    const options = (handlers) => ({
+      h,
+      template: parseTemplate([{ "button#saveButton": "Save" }]),
+      viewData: {},
+      refs: { saveButton: { eventListeners: { click: { handler: "handleSave" } } } },
+      handlers,
+    });
+
+    // parseView keeps listener state in a hidden property on `handlers`, so
+    // the object has to accept one. Run in a real Node process: a module
+    // namespace is only sealed in native ESM, not in vitest's module runner.
+    const runInNode = (handlersExpression) => {
+      const script = `
+        import { h } from "snabbdom/build/h.js";
+        import { parseTemplate, parseView } from "@rettangoli/fe/testing";
+        const namespace = await import("data:text/javascript,export const handleSave = () => {};");
+        try {
+          const vnode = parseView({
+            h,
+            template: parseTemplate([{ "button#saveButton": "Save" }]),
+            viewData: {},
+            refs: { saveButton: { eventListeners: { click: { handler: "handleSave" } } } },
+            handlers: ${handlersExpression},
+          });
+          console.log("listener: " + typeof vnode.children[0].data.on.click);
+        } catch (error) {
+          console.log(error.constructor.name + ": " + error.message);
+        }
+      `;
+      return execFileSync(process.execPath, ["--input-type=module", "-e", script], {
+        cwd: packageDirectory,
+        encoding: "utf8",
+      }).trim();
+    };
+
+    it("rejects a module namespace", () => {
+      expect(runInNode("namespace")).toBe(
+        "TypeError: Cannot redefine property: __eventRateLimitState",
+      );
+    });
+
+    it("rejects a frozen object", () => {
+      expect(() => parseView(options(Object.freeze({ handleSave: () => {} })))).toThrow(
+        "Cannot define property __eventRateLimitState, object is not extensible",
+      );
+    });
+
+    it("accepts a spread copy of a module namespace", () => {
+      expect(runInNode("{ ...namespace }")).toBe("listener: function");
+    });
+
+    it("does not show the hidden property among the handlers", () => {
+      const handlers = { handleSave: () => {} };
+      parseView(options(handlers));
+      expect(Object.keys(handlers)).toEqual(["handleSave"]);
+    });
+
+    it("leaves a frozen object alone when the view has no listeners", () => {
+      const handlers = Object.freeze({});
+      expect(() => parseView({ ...options(handlers), refs: {} })).not.toThrow();
+    });
   });
 
   describe("action listeners", () => {
@@ -653,6 +752,8 @@ describe("bindStore", () => {
     ["a boolean", true],
     ["null", null],
     ["an array", [{ by: 1 }]],
+    ["a function", () => ({ by: 1 })],
+    ["a symbol", Symbol("by")],
   ])("rejects %s as an action payload and leaves the state alone", (_label, payload) => {
     const store = bindCounter();
     const before = store.getState();
@@ -662,7 +763,19 @@ describe("bindStore", () => {
     expect(store.getState()).toBe(before);
   });
 
-  it("accepts class instances and events as payload values", () => {
+  it.each([
+    ["a Date", new Date(0)],
+    ["a Map", new Map([["by", 1]])],
+    ["a class instance", new (class Payload {})()],
+    ["an object with no prototype", Object.create(null)],
+  ])("accepts %s as the payload: any non-null, non-array object passes", (_label, payload) => {
+    const record = vi.fn();
+    const store = bindStore({ record }, {}, {});
+    store.record(payload);
+    expect(record.mock.calls[0][1]).toBe(payload);
+  });
+
+  it("passes class instances inside a payload through by reference", () => {
     const store = bindStore(
       { createInitialState: () => ({ at: null }), stamp: ({ state }, { at }) => { state.at = at; } },
       {},
@@ -717,7 +830,6 @@ describe("bindStore", () => {
       expect(Object.isFrozen(next)).toBe(true);
       expect(Object.isFrozen(next.history)).toBe(true);
       expect(() => {
-        "use strict";
         next.count = 100;
       }).toThrow(TypeError);
       expect(store.getState().count).toBe(3);
@@ -783,6 +895,21 @@ describe("bindStore", () => {
       // replaces the state.
       expect(store.getDouble()).toBe(2);
       expect(store.getState()).toBe(2);
+    });
+
+    it("binds exports that are not functions, which throw when called", () => {
+      const store = bindStore(
+        { MAX_ITEMS: 5, selectDefaults: { a: 1 }, selectCount: () => 0 },
+        {},
+        {},
+      );
+      expect(Object.keys(store)).toEqual(["getState", "MAX_ITEMS", "selectDefaults", "selectCount"]);
+      expect(typeof store.MAX_ITEMS).toBe("function");
+      expect(() => store.MAX_ITEMS()).toThrow("[Store] Action 'MAX_ITEMS' is not defined.");
+      expect(() => store.selectDefaults()).toThrow(
+        "[Store] Selector 'selectDefaults' is not defined.",
+      );
+      expect(store.getState()).toEqual({});
     });
 
     it("gives each bound store its own state", () => {

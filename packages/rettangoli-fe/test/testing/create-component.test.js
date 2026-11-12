@@ -55,9 +55,12 @@ const mount = (name, attributes = {}) => {
 const text = (element, id) => element.renderTarget.querySelector(`#${id}`).textContent;
 
 beforeEach(() => {
-  // jsdom has no constructable stylesheets, which a component adopts when it
-  // connects. docs/testing.md tells consumers to stub it the same way.
-  vi.stubGlobal("CSSStyleSheet", class { replaceSync() {} });
+  // A component adopts constructable stylesheets when it connects. The jsdom
+  // this package tests with has none; newer ones do, and reject a stand-in.
+  // docs/testing.md tells consumers to stub it the same way.
+  if (typeof globalThis.CSSStyleSheet?.prototype.replaceSync !== "function") {
+    vi.stubGlobal("CSSStyleSheet", class { replaceSync() {} });
+  }
 });
 
 afterEach(() => {
@@ -107,6 +110,90 @@ describe("createComponent from the testing entry", () => {
 
     element.render();
     expect(text(element, "count")).toBe("10");
+  });
+
+  it("passes constants to the store and to handlers", () => {
+    const name = `x-testing-constants-${componentNumber++}`;
+    const handleClick = vi.fn();
+    customElements.define(name, createComponent(
+      {
+        schema: { componentName: name },
+        view: {
+          template: parseTemplate([{ "button#unitButton": "${label}" }]),
+          refs: { unitButton: { eventListeners: { click: { handler: "handleClick" } } } },
+          styles: {},
+        },
+        constants: { unit: "kg", limits: { max: 3 } },
+        store: {
+          createInitialState: ({ constants }) => ({ max: constants.limits.max }),
+          selectViewData: ({ state, constants }) => ({ label: `${state.max} ${constants.unit}` }),
+        },
+        handlers: { handleClick },
+      },
+      {},
+    ));
+    const element = mount(name);
+
+    expect(text(element, "unitButton")).toBe("3 kg");
+    element.renderTarget.querySelector("#unitButton").click();
+    expect(handleClick.mock.calls[0][0].constants).toEqual({ unit: "kg", limits: { max: 3 } });
+  });
+
+  describe("methods", () => {
+    const defineWithMethods = ({ schemaMethods = { increment: {}, describe: {} } } = {}) => {
+      const name = `x-testing-methods-${componentNumber++}`;
+      const componentClass = createComponent(
+        {
+          schema: {
+            componentName: name,
+            methods: { type: "object", properties: schemaMethods },
+          },
+          view: { template: parseTemplate([{ "p#count": "${count}" }]), refs: {}, styles: {} },
+          constants: { unit: "kg" },
+          store: {
+            createInitialState: () => ({ count: 0 }),
+            selectViewData: ({ state }) => ({ count: state.count }),
+            increment: ({ state }, { by = 1 }) => {
+              state.count += by;
+            },
+          },
+          methods: {
+            increment(payload = {}) {
+              this.store.increment(payload);
+              this.render();
+              return this.store.getState().count;
+            },
+            describe() {
+              return `${this.localName} in ${this.constants.unit}`;
+            },
+          },
+        },
+        {},
+      );
+      customElements.define(name, componentClass);
+      return name;
+    };
+
+    it("puts each method on the element, bound to it", () => {
+      const name = defineWithMethods();
+      const element = mount(name);
+
+      expect(element.increment({ by: 4 })).toBe(4);
+      expect(text(element, "count")).toBe("4");
+      expect(element.increment()).toBe(5);
+      expect(element.describe()).toBe(`${name} in kg`);
+    });
+
+    it("rejects a payload that is not an object", () => {
+      const element = mount(defineWithMethods());
+      expect(() => element.increment(4)).toThrow();
+      expect(element.store.getState()).toEqual({ count: 0 });
+    });
+
+    it("rejects a schema that declares methods the component does not export", () => {
+      expect(() => defineWithMethods({ schemaMethods: { increment: {}, describe: {}, reset: {} } }))
+        .toThrow(/reset/);
+    });
   });
 
   it("rejects a config with no schema", () => {
