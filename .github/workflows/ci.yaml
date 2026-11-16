@@ -20,7 +20,9 @@ concurrency:
 jobs:
   test:
     name: Test (${{ matrix.name }})
-    runs-on: ubuntu-latest
+    # Playwright cannot install its browsers on Ubuntu 26.04, which ubuntu-latest
+    # now resolves to, so the browser rows need 24.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
       fail-fast: false

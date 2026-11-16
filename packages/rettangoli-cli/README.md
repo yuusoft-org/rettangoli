@@ -29,6 +29,12 @@ npx rtgl --help
   npx rtgl fe build
   ```
 
+  `fe build` and `fe watch` also print the diagnostics of `check` for the same `fe.dirs`, as `[Check]` lines
+  after the build output. They are informational: the exit code and the output files do not change, and a
+  project without diagnostics prints nothing extra. At most 10 diagnostics are listed, with the total counts;
+  `fe watch` prints the report again only when the diagnostics change. Run `npx rtgl check` for the full
+  report and to fail CI on them.
+
 - **`vt`** - Generate, capture, compare and accept visual test screenshots:
 
   ```bash

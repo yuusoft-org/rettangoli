@@ -179,6 +179,43 @@ add("fe", "fe-scaffold-flags", ["fe", "scaffold", "-d", "x", "-c", "components",
 add("fe", "fe-scaffold-unknown-name-flag", ["fe", "scaffold", "--name", "MyButton"]);
 add("fe", "fe-scaffold-reject", ["fe", "scaffold"], rejecting("scaffold"));
 
+// fe build prints the checker's report after a successful build. Nothing the
+// checker reports or throws changes the exit code.
+const checkFinding = (errors, warnings = 0) => ({
+  env: { FAKE_CHECK_ERRORS: String(errors), FAKE_CHECK_WARNINGS: String(warnings) },
+});
+add("fe", "fe-build-check-errors", ["fe", "build"], { files: feProject(), ...checkFinding(3, 1) });
+add("fe", "fe-build-check-warnings-only", ["fe", "build"], {
+  files: feProject(),
+  ...checkFinding(0, 2),
+});
+add("fe", "fe-build-check-create-throws", ["fe", "build"], {
+  files: feProject(),
+  ...throwing("createChecker"),
+});
+add("fe", "fe-build-check-run-throws", ["fe", "build"], {
+  files: feProject(),
+  ...throwing("runCheck"),
+});
+add("fe", "fe-build-check-run-rejects", ["fe", "build"], {
+  files: feProject(),
+  ...rejecting("runCheck"),
+});
+add("fe", "fe-build-check-package-missing", ["fe", "build"], {
+  files: feProject(),
+  omitPackages: ["check"],
+});
+// The check starts only after the build has settled.
+add("fe", "fe-build-check-after-delayed-build", ["fe", "build"], {
+  files: feProject(),
+  env: { FAKE_DELAY: "build", FAKE_CHECK_ERRORS: "1" },
+});
+add("fe", "fe-watch-check-errors", ["fe", "watch"], { files: feProject(), ...checkFinding(2) });
+add("fe", "fe-watch-check-run-throws", ["fe", "watch"], {
+  files: feProject(),
+  ...throwing("runCheck"),
+});
+
 // ---------------------------------------------------------------- fe watch
 add("fe", "fe-watch-help", ["fe", "watch", "--help"]);
 add("fe", "fe-watch-defaults", ["fe", "watch"], { files: feProject() });

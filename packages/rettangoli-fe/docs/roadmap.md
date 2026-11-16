@@ -78,6 +78,12 @@ This roadmap is the planning source for `packages/rettangoli-fe`.
 - `globalThis.__rtglHydration` counts hydrated and mismatched hosts; browser
   check in `test/web/hydration.browser.mjs`.
 
+8. `[P2][DONE]` Public testing entry (`testing.md`)
+- `@rettangoli/fe/testing` exports `renderView`, `parseTemplate`, `parseView`,
+  `bindStore` and `createComponent`, so tests stop importing files from inside
+  fe and the jempl nested under it. Every existing path keeps working.
+- The entry imports in plain Node. `createComponent` needs a DOM when called.
+
 ## Backlog
 
 1. `[P2]` Performance and scalability checks
@@ -141,12 +147,7 @@ done yet.
   round-tripping through strings. Performance only; start after items 1
   and 3 above settle key and toggle semantics.
 
-6. `[P2]` Public testing entry
-- `@rettangoli/fe/testing` exporting `parseView`, `parseTemplate`,
-  `renderView` and `createComponent`, so tests stop deep-importing fe and the
-  nested jempl. Every existing deep path keeps working.
-
-7. `[P2]` Hydration and class edge cases
+6. `[P2]` Hydration and class edge cases
 - A static attribute that only one `$if` branch writes on a custom element
   stays after hydration when the branches swap, because only `?` toggles are
   tracked.
