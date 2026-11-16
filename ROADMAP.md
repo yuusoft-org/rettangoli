@@ -31,6 +31,7 @@ These move rules into the framework that applications enforce today with their o
 | Item | Package | Notes |
 |---|---|---|
 | Handlers reach the outside world only through `deps` | check | An error for a handler that uses a browser global directly (`window`, `document`, timers, `fetch`, storage). The design must first list what a handler may still construct itself, such as `CustomEvent` for `dispatchEvent`. This is a breaking check for existing applications, so it ships in a major release with a migration note. |
+| Drop the `WeakMap` exemption of `RTGL-CHECK-MODULE-001` | check, ui | The rule leaves a module-scope `WeakMap` or `WeakSet` alone because two `@rettangoli/ui` components keep per-instance runtime values in one. Move those values out of module scope, then report the collections too. |
 | A component folder does not import another component folder | check | Components compose through tags, props, events and slots. |
 | Handlers read state through selectors | check | An error for `store.getState()` in a handler. |
 | Close the gaps found by the audit | fe, check | See the rows marked "No" in the table below. |
