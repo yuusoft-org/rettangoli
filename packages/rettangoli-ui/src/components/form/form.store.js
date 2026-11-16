@@ -11,6 +11,7 @@ import { flattenTextSegments, renderableTextSegments } from "../../common/textSe
 import {
   CHOICE_TYPES,
   DISPLAY_TYPES,
+  FREE_TEXT_TYPES,
   TEXT_LENGTH_TYPES,
   getFieldDefaultValue,
 } from "./fieldTypes.js";
@@ -35,12 +36,19 @@ const toFormDescription = (value) => {
 
 const isObjectLike = (value) => value !== null && typeof value === "object";
 const isPlainObject = (value) => isObjectLike(value) && !Array.isArray(value);
+// An object literal or a null-prototype object: not an array, a Date, a Map
+// or a class instance. isPlainObject above also accepts those.
+export const isPlainRecord = (value) => {
+  if (!isPlainObject(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+};
 const isPathLike = (path) => typeof path === "string" && path.includes(".");
 const hasBracketPathToken = (path) => typeof path === "string" && /[\[\]]/.test(path);
 const unsafePathSegments = new Set(["__proto__", "constructor", "prototype"]);
 const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key);
 
-const parseSafePath = (path) => {
+export const parseSafePath = (path) => {
   if (
     typeof path !== "string" ||
     path.length === 0 ||
@@ -489,10 +497,14 @@ const getTextLength = (value) =>
 
 // false is a real choice for a select or segmented-control option, and NaN
 // is "no number" only for input-number (a duration reports it as invalid).
+// Text the user types (FREE_TEXT_TYPES) is also empty when trim() leaves
+// nothing. Other types keep such a string: it can be a real option value, and
+// a date or time field reports it as an invalid format.
 const isEmptyForRequired = (field, value) =>
   value === undefined ||
   value === null ||
   value === "" ||
+  (typeof value === "string" && FREE_TEXT_TYPES.has(field.type) && value.trim() === "") ||
   (Array.isArray(value) && value.length === 0) ||
   (value === false && field.type !== "select" && field.type !== "segmented-control") ||
   (field.type === "input-number" && Number.isNaN(value));
@@ -749,6 +761,10 @@ const buildFieldLayoutItems = (fields, defaultRowStackAt = "md") => {
 export const createInitialState = () =>
   Object.freeze({
     formValues: {},
+    // The defaults given to reset({ defaultValues }), used instead of the
+    // defaultValues prop until the form mounts again or its key changes.
+    // null means the prop.
+    defaultValuesOverride: null,
     errors: {},
     reactiveMode: false,
     tooltipState: {
@@ -1035,9 +1051,17 @@ export const setFormValues = ({ state }, payload = {}) => {
   });
 };
 
+// `defaultValues` are the values to start from. `defaultValuesOverride` are
+// the defaults given to reset({ defaultValues }); without it, as on mount and
+// on a key change, the form goes back to the defaultValues prop. The store
+// keeps the override object itself and freezes it with the rest of the state,
+// so the caller passes a copy it owns (see reset in form.methods.js).
 export const resetFormValues = ({ state }, payload = {}) => {
-  const { defaultValues = {} } = payload;
+  const { defaultValues = {}, defaultValuesOverride } = payload;
   state.formValues = defaultValues ? structuredClone(defaultValues) : {};
+  state.defaultValuesOverride = isPlainRecord(defaultValuesOverride)
+    ? defaultValuesOverride
+    : null;
   state.errors = {};
   state.reactiveMode = false;
 };

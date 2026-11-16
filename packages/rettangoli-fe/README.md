@@ -28,6 +28,7 @@ rtgl fe watch     # Start dev server
 - **[Event Handlers](./docs/handlers.md)** - Event handling
 - **[Internationalization](./docs/i18n.md)** - Locale files, view usage, and locale switching
 - **[Prerendering](./docs/prerender.md)** - Render components to HTML at build time and hydrate them in the browser
+- **[Testing](./docs/testing.md)** - Test views, stores, handlers and components through `@rettangoli/fe/testing`
 
 ## Architecture
 
@@ -95,6 +96,7 @@ src/
 ├── core/                   # Environment-neutral view, store, runtime and contract logic
 ├── web/                    # Custom Element runtime, hydration and styles
 ├── server/                 # `@rettangoli/fe/server`: prerendering
+├── testing/                # `@rettangoli/fe/testing`: functions for tests
 ├── contracts/              # `@rettangoli/fe/contracts`
 ├── commonBuild.js          # File discovery shared by the CLI and the server
 ├── createComponent.js      # Component factory
@@ -110,6 +112,7 @@ src/
 - `rtgl fe build` uses Vite 8's Rolldown-powered `vite.build()` with a virtual entry module generated from configured component files.
 - `rtgl fe build --sourcemap` emits linked source maps; `--sourcemap hidden` emits maps without a `sourceMappingURL` comment, for keeping them private. Maps are off by default.
 - `rtgl fe watch` uses `vite.createServer()`, warms the virtual entry during startup, and serves the configured `outfile` path via middleware.
+- `rtgl fe build` and `rtgl fe watch` also print the diagnostics of `rtgl check` (`@rettangoli/check`) for the same `fe.dirs` as `[Check]` lines. They are informational and never change the exit code or the output files; `rtgl check` is the command that fails on them. The `rtgl` CLI adds this step: the `build` and `watch` functions of `@rettangoli/fe/cli` do not run the checker.
 - Watch projects can configure `fe.publicDir` to serve static assets from the project root without Vite transformations.
 - The watch server's root and entry URL come from `outfile`. If the path has a `static` segment, the root is the directory before the first one and the entry URL is the path after it (`./vt/static/main.js` gives root `./vt` and `/main.js`). Otherwise the root is the parent of the outfile's directory and the URL is the outfile relative to it (`_site/public/main.js` gives root `_site` and `/public/main.js`). A bare `outfile: main.js` puts the root above the project, so keep the outfile in a directory. `rtgl fe watch` prints `[Watch] Root:` and `[Watch] Entry:`.
 - `fe.watchEntry` can provide a project bootstrap module at the configured `outfile` URL. The module can register framework primitives and import `virtual:rettangoli-fe-entry` for Rettangoli component HMR.

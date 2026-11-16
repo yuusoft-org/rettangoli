@@ -19,12 +19,13 @@ const importFromFeDir = (relativePath) =>
   import(pathToFileURL(path.join(FE_DIR, relativePath)).href);
 
 describe("package manifest", () => {
-  it("keeps the four entry points of the exports map", () => {
+  it("keeps the five entry points of the exports map", () => {
     expect(pkg.exports).toEqual({
       ".": "./src/index.js",
       "./cli": "./src/cli/index.js",
       "./contracts": "./src/contracts/index.js",
       "./server": "./src/server/index.js",
+      "./testing": "./src/testing/index.js",
     });
     expect(pkg.main).toBe("./src/index.js");
     expect(pkg.type).toBe("module");
@@ -80,6 +81,7 @@ describe("named exports of each entry point", () => {
         "serializeVNode",
       ],
     ],
+    ["./testing", ["bindStore", "createComponent", "parseTemplate", "parseView", "renderView"]],
   ])("%s exports exactly the current names", async (entry, names) => {
     const mod = await importFromFeDir(pkg.exports[entry]);
     expect(Object.keys(mod).sort()).toEqual(names);
