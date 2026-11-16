@@ -1,3 +1,5 @@
+import { getLocaleDirection } from "../i18n/direction.js";
+
 const getDefaultFetch = () => {
   if (typeof globalThis !== "undefined" && typeof globalThis.fetch === "function") {
     return globalThis.fetch.bind(globalThis);
@@ -20,6 +22,7 @@ export const createI18nRuntime = ({
   urls = {},
   initialCatalogs = {},
   fetchFn = getDefaultFetch(),
+  documentElement = globalThis.document?.documentElement,
 } = {}) => {
   const availableLocales = normalizeAvailableLocales(locales);
   const catalogs = new Map(Object.entries(initialCatalogs || {}));
@@ -77,8 +80,20 @@ export const createI18nRuntime = ({
     return catalog;
   };
 
+  // The page follows the active locale: `<html lang>` names it and
+  // `<html dir>` gives its reading direction, so right-to-left locales
+  // mirror the layout.
+  const syncDocument = () => {
+    if (!currentLocale || typeof documentElement?.setAttribute !== "function") {
+      return;
+    }
+    documentElement.setAttribute("lang", currentLocale);
+    documentElement.setAttribute("dir", getLocaleDirection(currentLocale));
+  };
+
   const activateLocale = (locale) => {
     currentLocale = locale;
+    syncDocument();
     notify();
     return getMessages();
   };
@@ -151,12 +166,14 @@ export const createI18nRuntime = ({
       return getMessages();
     }
     if (catalogs.has(currentLocale)) {
+      syncDocument();
       return getMessages();
     }
     return set(currentLocale);
   };
 
   const current = () => currentLocale;
+  const direction = () => getLocaleDirection(currentLocale);
   const available = () => [...availableLocales];
   const subscribe = (listener) => {
     listeners.add(listener);
@@ -168,6 +185,7 @@ export const createI18nRuntime = ({
   const localeService = {
     available,
     current,
+    direction,
     load,
     ready,
     replaceCatalogs,
@@ -178,6 +196,7 @@ export const createI18nRuntime = ({
   return {
     available,
     current,
+    direction,
     getMessages,
     load,
     locale: localeService,
