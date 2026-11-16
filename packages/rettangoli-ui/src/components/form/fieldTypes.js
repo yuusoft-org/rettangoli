@@ -9,6 +9,8 @@
 //     segmented-control), and the view data gets _selectedValue/_selectedValues,
 //     an empty placeholder by default and noClear from `clearable: false`.
 //   textLength: maxLength and showCount apply.
+//   freeText: the value is text the user types, so `required` also rejects a
+//     value that is only whitespace.
 //   display: shows content but holds no value.
 // A type that is not listed holds a value that starts as null.
 const sliderDefault = (field) => (field.min !== undefined ? field.min : 0);
@@ -16,15 +18,15 @@ const sliderDefault = (field) => (field.min !== undefined ? field.min : 0);
 const TEXT_INPUT = { valueAttribute: true, placeholder: true, emptyValueAttribute: true };
 
 export const FIELD_TYPES = {
-  "input-text": { ...TEXT_INPUT, defaultValue: () => "", textLength: true },
-  "input-textarea": { ...TEXT_INPUT, defaultValue: () => "", textLength: true },
+  "input-text": { ...TEXT_INPUT, defaultValue: () => "", textLength: true, freeText: true },
+  "input-textarea": { ...TEXT_INPUT, defaultValue: () => "", textLength: true, freeText: true },
   "input-date": { ...TEXT_INPUT, defaultValue: () => "" },
   "input-time": { ...TEXT_INPUT, defaultValue: () => "" },
   "input-datetime": { ...TEXT_INPUT, defaultValue: () => "" },
   "input-duration": { ...TEXT_INPUT, defaultValue: () => null },
   "input-number": { ...TEXT_INPUT, defaultValue: () => null },
   // An empty value attribute would read as boolean `true` in the popover-input props.
-  "popover-input": { valueAttribute: true, placeholder: true, defaultValue: () => "" },
+  "popover-input": { valueAttribute: true, placeholder: true, defaultValue: () => "", freeText: true },
   "slider-with-input": { valueAttribute: true, emptyValueAttribute: true, defaultValue: sliderDefault },
   slider: { valueAttribute: true, defaultValue: sliderDefault },
   "color-picker": { valueAttribute: true, defaultValue: () => "#000000" },
@@ -47,6 +49,7 @@ export const PLACEHOLDER_TYPES = typesWith("placeholder");
 export const EMPTY_VALUE_ATTRIBUTE_TYPES = typesWith("emptyValueAttribute");
 export const CHOICE_TYPES = typesWith("choice");
 export const TEXT_LENGTH_TYPES = typesWith("textLength");
+export const FREE_TEXT_TYPES = typesWith("freeText");
 export const DISPLAY_TYPES = typesWith("display");
 
 export const getFieldDefaultValue = (field) => {

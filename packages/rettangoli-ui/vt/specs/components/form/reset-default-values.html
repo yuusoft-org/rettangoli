@@ -1,0 +1,268 @@
+---
+title: "Reset with New Defaults"
+description: reset({ defaultValues }) replaces the form's defaults, and a later reset() returns to them.
+specs:
+  - After editing a field and failing validation, "Load record" calls reset({ defaultValues }) and the form shows the record in every field type, with no errors, as a fresh mount with those defaults would.
+  - Editing again and clicking "Reset" (plain reset()) returns to the loaded record, not to the defaults the form mounted with.
+  - The conditional Reviewer field shows because the loaded record sets Status to Published.
+  - Neither reset emits a form event.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: title-input
+    steps:
+      - action: focus
+      - action: keypress
+        key: Space
+      - action: keypress
+        key: Space
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: resetDefaultsVt.getState
+    value:
+      values:
+        title: "  "
+        notes: Draft notes
+        estimate: null
+        status: draft
+        tags: []
+        urgent: false
+        progress: 10
+        color: "#000000"
+      shown:
+        - This field is required
+        - This field is required
+      eventsSinceReset: [form-input, form-input, form-change, form-action]
+  - action: select
+    testId: load-record
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: resetDefaultsVt.getState
+    value:
+      values:
+        title: Release checklist
+        notes: "Line one\nLine two"
+        estimate: 8
+        status: published
+        reviewer: Ann
+        tags: [design, qa]
+        urgent: true
+        progress: 65
+        color: "#3366ff"
+      shown: []
+      eventsSinceReset: []
+  - action: assert
+    type: js
+    fn: resetDefaultsVt.matchesFreshMount
+    value: true
+  - action: screenshot
+  - action: select
+    testId: title-input
+    steps:
+      - action: write
+        value: Edited after load
+  - action: select
+    testId: plain-reset
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: resetDefaultsVt.getState
+    value:
+      values:
+        title: Release checklist
+        notes: "Line one\nLine two"
+        estimate: 8
+        status: published
+        reviewer: Ann
+        tags: [design, qa]
+        urgent: true
+        progress: 65
+        color: "#3366ff"
+      shown: []
+      eventsSinceReset: []
+  - action: assert
+    type: js
+    fn: resetDefaultsVt.matchesFreshMount
+    value: true
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 900
+  height: 1000
+---
+<rtgl-view id="container" d="h" g="lg" h="100vh" w="100vw" wrap>
+  <rtgl-view g="md">
+    <rtgl-view d="h" g="md">
+      <rtgl-button data-testid="load-record">Load record</rtgl-button>
+      <rtgl-button data-testid="plain-reset" v="ol">Reset</rtgl-button>
+    </rtgl-view>
+    <rtgl-view id="form-slot"></rtgl-view>
+  </rtgl-view>
+  <rtgl-view id="fresh-slot" op="0" h="1" w="400" style="overflow: hidden;"></rtgl-view>
+</rtgl-view>
+
+<script>
+  const schema = {
+    title: 'Edit record',
+    description: 'Load record replaces the defaults; Reset returns to them',
+    fields: [{
+      name: 'title',
+      type: 'input-text',
+      label: 'Title',
+      required: true,
+    }, {
+      name: 'notes',
+      type: 'input-textarea',
+      label: 'Notes',
+      rows: 2,
+    }, {
+      name: 'estimate',
+      type: 'input-number',
+      label: 'Estimate (hours)',
+      required: true,
+    }, {
+      name: 'status',
+      type: 'select',
+      label: 'Status',
+      options: [
+        { label: 'Draft', value: 'draft' },
+        { label: 'Published', value: 'published' },
+      ],
+    }, {
+      $when: 'status == "published"',
+      name: 'reviewer',
+      type: 'input-text',
+      label: 'Reviewer',
+    }, {
+      name: 'tags',
+      type: 'tag-select',
+      label: 'Tags',
+      options: [
+        { label: 'Design', value: 'design' },
+        { label: 'QA', value: 'qa' },
+        { label: 'Docs', value: 'docs' },
+      ],
+    }, {
+      name: 'urgent',
+      type: 'checkbox',
+      content: 'Urgent',
+    }, {
+      name: 'progress',
+      type: 'slider-with-input',
+      label: 'Progress',
+      min: 10,
+      max: 100,
+    }, {
+      name: 'color',
+      type: 'color-picker',
+      label: 'Color',
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Save',
+        validate: true,
+      }],
+    }
+  };
+
+  const record = {
+    title: 'Release checklist',
+    notes: 'Line one\nLine two',
+    estimate: 8,
+    status: 'published',
+    reviewer: 'Ann',
+    tags: ['design', 'qa'],
+    urgent: true,
+    progress: 65,
+    color: '#3366ff',
+    updatedBy: 'not a field',
+  };
+
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+  form.defaultValues = { notes: 'Draft notes', status: 'draft' };
+  form.form = schema;
+
+  // reset() emits no form event; each button empties this list before it resets.
+  const eventsSinceReset = [];
+  for (const type of ['form-input', 'form-change', 'form-action']) {
+    form.addEventListener(type, () => eventsSinceReset.push(type));
+  }
+  document.getElementById('form-slot').appendChild(form);
+
+  // A second form mounted with the record as its defaultValues prop, to
+  // compare what each field shows.
+  const fresh = document.createElement('rtgl-form');
+  fresh.setAttribute('w', '400');
+  fresh.defaultValues = structuredClone(record);
+  fresh.form = schema;
+  document.getElementById('fresh-slot').appendChild(fresh);
+
+  const shownByField = (target) => Object.fromEntries(
+    [...target.shadowRoot.querySelectorAll('[data-field-name]')].map((field) => {
+      const control = field.shadowRoot?.querySelector('input, textarea');
+      const text = field.shadowRoot && !control
+        ? field.shadowRoot.textContent.replace(/\s+/g, ' ').trim()
+        : null;
+      return [field.dataset.fieldName, {
+        tag: field.localName,
+        control: control ? control.value : null,
+        checked: control ? control.checked : null,
+        value: field.getAttribute('value'),
+        text,
+      }];
+    }),
+  );
+
+  document.querySelector('[data-testid="load-record"]').addEventListener('click', () => {
+    eventsSinceReset.length = 0;
+    form.reset({ defaultValues: record });
+    // Changing the object afterwards must not reach the form.
+    record.title = 'Changed after reset';
+    record.tags.push('docs');
+  });
+  document.querySelector('[data-testid="plain-reset"]').addEventListener('click', () => {
+    eventsSinceReset.length = 0;
+    form.reset();
+  });
+
+  window.resetDefaultsVt = {
+    getState: () => ({
+      values: form.getValues(),
+      shown: [...form.shadowRoot.querySelectorAll('[role="alert"]')]
+        .map((error) => error.textContent.trim()),
+      eventsSinceReset: [...eventsSinceReset],
+    }),
+    matchesFreshMount: () =>
+      JSON.stringify(form.getValues()) === JSON.stringify(fresh.getValues())
+      && JSON.stringify(shownByField(form)) === JSON.stringify(shownByField(fresh)),
+  };
+
+  const setTestIds = () => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    const title = form.shadowRoot?.querySelector('[data-field-name="title"]');
+    if (btn && title) {
+      btn.setAttribute('data-testid', 'submit-btn');
+      title.setAttribute('data-testid', 'title-input');
+      return;
+    }
+    setTimeout(setTestIds, 0);
+  };
+  setTestIds();
+</script>

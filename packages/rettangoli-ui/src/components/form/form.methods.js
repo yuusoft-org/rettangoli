@@ -8,9 +8,10 @@ import {
   selectForm,
   selectFormValues,
   collectAllDataFields,
+  isPlainRecord,
   validateForm,
 } from "./form.store.js";
-import { computeInitialValues } from "./initialValues.js";
+import { computeInitialValues, copyDefaultValues } from "./initialValues.js";
 
 const syncFieldValueAttribute = ({ ref, fieldType, value, forceRefresh = false }) => {
   if (!VALUE_ATTRIBUTE_TYPES.has(fieldType)) return;
@@ -177,8 +178,22 @@ export const validate = function () {
   return { valid, errors };
 };
 
-export const reset = function () {
-  const initial = computeInitialValues(this.props);
-  this.store.resetFormValues({ defaultValues: initial });
+// reset() goes back to the form's current defaults: the defaultValues prop as
+// it is now, or the defaults last given to reset({ defaultValues }), which
+// replace the prop until the form mounts again or its key changes.
+// reset({ defaultValues }) leaves the form as a fresh mount with that
+// defaultValues prop would.
+export const reset = function (payload = {}) {
+  const { defaultValues } = payload;
+  if (defaultValues !== undefined && !isPlainRecord(defaultValues)) {
+    throw new Error("[rtgl-form] reset expects defaultValues to be an object.");
+  }
+
+  // The one copy the form keeps: the store holds and freezes it as it is.
+  const defaultValuesOverride = defaultValues === undefined
+    ? this.store.getState().defaultValuesOverride
+    : copyDefaultValues(defaultValues);
+  const initial = computeInitialValues(this.props, defaultValuesOverride);
+  this.store.resetFormValues({ defaultValues: initial, defaultValuesOverride });
   this.setValues(initial);
 };

@@ -125,6 +125,7 @@ try {
       const contracts = await import("@rettangoli/fe/contracts");
       const cli = await import("@rettangoli/fe/cli");
       const server = await import("@rettangoli/fe/server");
+      const testing = await import("@rettangoli/fe/testing");
       const require = createRequire(import.meta.url);
 
       assert.equal(typeof fe.createComponent, "function");
@@ -137,10 +138,22 @@ try {
       assert.equal(typeof server.renderDocument, "function");
       assert.equal(typeof server.serializeVNode, "function");
       assert.equal(typeof server.bindStore, "function");
+      assert.deepEqual(Object.keys(testing).sort(), [
+        "bindStore",
+        "createComponent",
+        "parseTemplate",
+        "parseView",
+        "renderView",
+      ]);
+      // One implementation per name across the entries, in the packed files.
+      assert.equal(testing.renderView, server.renderView);
+      assert.equal(testing.bindStore, server.bindStore);
+      assert.equal(testing.createComponent, fe.createComponent);
       assert.match(require.resolve("@rettangoli/fe"), /src\\/index\\.js$/);
       assert.match(require.resolve("@rettangoli/fe/contracts"), /contracts\\/index\\.js$/);
       assert.match(require.resolve("@rettangoli/fe/cli"), /cli\\/index\\.js$/);
       assert.match(require.resolve("@rettangoli/fe/server"), /server\\/index\\.js$/);
+      assert.match(require.resolve("@rettangoli/fe/testing"), /testing\\/index\\.js$/);
 
       // End to end through the packed files, not the source tree.
       assert.equal(
@@ -153,6 +166,40 @@ try {
           viewData: { label: 'A "quoted" name' },
         }),
         '<div style="display: contents"><input placeholder="A &quot;quoted&quot; name"></div>',
+      );
+
+      // The testing entry, with nothing but what it exports: a parsed template
+      // rendered from the state of a really bound store.
+      const testedStore = testing.bindStore(
+        {
+          createInitialState: ({ props, constants }) => ({ count: props.start, step: constants.step }),
+          selectViewData: ({ state }) => ({ count: state.count }),
+          increment: ({ state }) => { state.count += state.step; },
+        },
+        { start: 1 },
+        { step: 2 },
+      );
+      testedStore.increment();
+      assert.throws(
+        () => testedStore.increment("1"),
+        /\\[Store\\] Action 'increment' expects payload to be an object\\./,
+      );
+      assert.equal(
+        testing.renderView({
+          template: testing.parseTemplate([{ "p#count": "\${count}" }]),
+          viewData: testedStore.selectViewData(),
+        }),
+        '<div style="display: contents"><p id="count">3</p></div>',
+      );
+      assert.equal(
+        typeof testing.parseView({
+          h: (sel, data, children) => ({ sel, data, children }),
+          template: testing.parseTemplate([{ p: "x" }]),
+          viewData: {},
+          refs: {},
+          handlers: {},
+        }).sel,
+        "string",
       );
 
       const componentConfig = {
