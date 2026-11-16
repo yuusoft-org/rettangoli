@@ -25,6 +25,9 @@ steps:
     selector: '#tooltip-open-indicator'
     value: Find content
     match: includes
+  # The tooltip is revealed two frames after it opens.
+  - action: wait
+    ms: 300
   - action: screenshot
 specs:
   - 'Same content as `compact-tooltip.html`, rendered with `dir="rtl"` on the document.'
