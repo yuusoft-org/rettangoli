@@ -94,10 +94,6 @@ export const formatTextReport = ({ result, warnAsError = false }) => {
           })}]`);
         });
       }
-      if (diag.fix && diag.fix.safe !== false) {
-        const confidence = Number.isFinite(diag.fix.confidence) ? ` (${Math.round(diag.fix.confidence * 100)}%)` : "";
-        lines.push(`  fix: ${diag.fix.description || "autofix available"}${confidence}`);
-      }
 
       const frame = formatCodeFrame({
         diag,
@@ -111,35 +107,6 @@ export const formatTextReport = ({ result, warnAsError = false }) => {
 
   if (result.diagnostics.length === 0) {
     lines.push("[Check] No issues found.");
-  }
-
-  if (result.autofix) {
-    lines.push(
-      `[Autofix] mode=${result.autofix.mode || "off"}, candidates=${result.autofix.candidateCount}, applied=${result.autofix.appliedCount}, skipped=${result.autofix.skippedCount}, dryRun=${result.autofix.dryRun ? "yes" : "no"}, patchOutput=${result.autofix.patchOutput ? "yes" : "no"}.`,
-    );
-    if (result.autofix.patchOutput && Array.isArray(result.autofix.patches) && result.autofix.patches.length > 0) {
-      lines.push("[Autofix] Patches:");
-      result.autofix.patches.forEach((patch) => {
-        lines.push(`- ${patch.code}: ${patch.description} [${formatLocation({
-          cwd: result.cwd,
-          filePath: patch.filePath,
-          line: patch.line,
-        })}]`);
-        if (typeof patch.patch === "string" && patch.patch) {
-          patch.patch.split("\n").forEach((patchLine) => {
-            lines.push(`  ${patchLine}`);
-          });
-        }
-      });
-    } else if (result.autofix.dryRun && Array.isArray(result.autofix.patches) && result.autofix.patches.length > 0) {
-      result.autofix.patches.forEach((patch) => {
-        lines.push(`- ${patch.code}: ${patch.description} [${formatLocation({
-          cwd: result.cwd,
-          filePath: patch.filePath,
-          line: patch.line,
-        })}]`);
-      });
-    }
   }
 
   return lines.join("\n");

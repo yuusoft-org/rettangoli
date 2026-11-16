@@ -1,0 +1,35 @@
+{
+  "name": "cli keeps sarif stdout valid when a removed autofix flag is passed",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "--format",
+      "sarif",
+      "--autofix"
+    ]
+  },
+  "expected": {
+    "exitCode": 1,
+    "stderr": "[Check] Deprecated: autofix was removed. --autofix has no effect and will be rejected in a later release.",
+    "stdoutExcludes": [
+      "autofix"
+    ],
+    "stdoutJson": {
+      "version": "2.1.0",
+      "runs": [
+        {
+          "tool": {
+            "driver": {
+              "name": "@rettangoli/check"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-YAHTML-004"
+  ]
+}

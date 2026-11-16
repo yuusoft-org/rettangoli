@@ -1,7 +1,7 @@
 import { toCamelCase, toKebabCase } from "../utils/case.js";
 import { isValidAttributeName } from "../core/fe-contracts.js";
 import { getRegistryLoadFailures } from "../core/registry.js";
-import { escapeRegExp, isConvertibleLegacyBinding, normalizeBindingName } from "./shared.js";
+import { normalizeBindingName } from "./shared.js";
 
 const GENERIC_ALLOWED_ATTRS = new Set([
   "accesskey",
@@ -174,17 +174,6 @@ export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
             endLine: line,
             endColumn: diagnosticEndColumn,
             message: `${model.componentKey}: legacy '.${normalized.name}' binding is not supported. Use ':${normalized.name}'.`,
-            fix: isConvertibleLegacyBinding({ key: bindingLine.rawKey, bindingName }) ? {
-              kind: "line-regex-replace",
-              filePath,
-              line,
-              pattern: `(^|\\s)\\.${escapeRegExp(normalized.name)}=(?=\\$\\{)`,
-              replacement: `$1:${normalized.name}=`,
-              flags: "g",
-              description: `Convert '.${normalized.name}=\${...}' to ':${normalized.name}=\${...}'.`,
-              safe: true,
-              confidence: 0.98,
-            } : undefined,
           });
           return;
         }

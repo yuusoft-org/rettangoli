@@ -30,4 +30,3 @@ Each SARIF result includes:
 - `partialFingerprints.primaryLocationLineHash` (stable hash)
 - optional `relatedLocations[]`
 - optional `codeFlows[]` for trace propagation
-- optional `properties.autofix` metadata when fix hints are present

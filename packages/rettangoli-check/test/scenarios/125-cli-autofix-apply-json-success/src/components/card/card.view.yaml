@@ -1,3 +1,0 @@
-template:
-  - rtgl-input .value=${title}: null
-styles: {}

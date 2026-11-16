@@ -438,8 +438,8 @@ const runCliScenario = ({ scenarioDirName, scenarioRoot, spec, expected }) => {
     )
     : {};
 
-  // Run on a realpath'd temp copy so autofix modes never rewrite the committed fixtures
-  // and tmpdir symlinks (macOS /var -> /private/var) cannot change the printed paths.
+  // Run on a realpath'd temp copy so tmpdir symlinks (macOS /var -> /private/var) cannot change
+  // the printed paths.
   const sandboxRoot = realpathSync(mkdtempSync(path.join(tmpdir(), "rtgl-scenario-cli-")));
   const sandboxScenarioRoot = path.join(sandboxRoot, scenarioDirName);
   let execution;
@@ -483,6 +483,8 @@ const runCliScenario = ({ scenarioDirName, scenarioRoot, spec, expected }) => {
     && (expected.stderr === undefined || actual.stderr === normalizeStream(expected.stderr))
     && (!Array.isArray(expected.stdoutIncludes)
       || expected.stdoutIncludes.every((value) => actual.stdout.includes(String(value))))
+    && (!Array.isArray(expected.stdoutExcludes)
+      || expected.stdoutExcludes.every((value) => !actual.stdout.includes(String(value))))
     && (!Array.isArray(expected.stderrIncludes)
       || expected.stderrIncludes.every((value) => actual.stderr.includes(String(value))))
     && (!Object.prototype.hasOwnProperty.call(expected, "stdoutJson")

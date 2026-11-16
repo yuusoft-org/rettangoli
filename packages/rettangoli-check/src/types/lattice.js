@@ -176,51 +176,6 @@ export const schemaNodeToLatticeType = (schemaNode) => {
   return primitiveType;
 };
 
-export const inferLiteralLatticeType = (value = "") => {
-  const source = String(value || "").trim();
-  if (!source) {
-    return { kind: "unknown" };
-  }
-
-  if (source === "null") {
-    return { kind: "null" };
-  }
-
-  if (source === "true" || source === "false") {
-    return { kind: "boolean" };
-  }
-
-  if (/^[-+]?(?:\d+\.?\d*|\d*\.?\d+)$/u.test(source)) {
-    return { kind: "number" };
-  }
-
-  if ((source.startsWith("\"") && source.endsWith("\"")) || (source.startsWith("'") && source.endsWith("'"))) {
-    return { kind: "string" };
-  }
-
-  if (source.startsWith("{") && source.endsWith("}")) {
-    return { kind: "object" };
-  }
-
-  if (source.startsWith("[") && source.endsWith("]")) {
-    return { kind: "array" };
-  }
-
-  return { kind: "unknown" };
-};
-
-export const inferSchemaNodePrimitiveType = (schemaNode) => {
-  const latticeType = schemaNodeToLatticeType(schemaNode);
-  if (latticeType.kind === "union" && Array.isArray(latticeType.options)) {
-    const nonNull = latticeType.options.filter((option) => option?.kind && option.kind !== "null");
-    if (nonNull.length === 1) {
-      return nonNull[0].kind;
-    }
-    return "unknown";
-  }
-  return latticeType.kind || "unknown";
-};
-
 export const areTypesCompatible = ({ expected = "unknown", actual = "unknown" }) => {
   const flattenKinds = (value) => {
     if (typeof value === "string") {
@@ -257,25 +212,4 @@ export const areTypesCompatible = ({ expected = "unknown", actual = "unknown" })
   }
 
   return true;
-};
-
-export const compareTypeSpecificity = (left = "unknown", right = "unknown") => {
-  const toComparableKind = (value) => {
-    if (typeof value === "string") {
-      return normalizePrimitiveType(value);
-    }
-    if (!value || typeof value !== "object") {
-      return "unknown";
-    }
-    if (value.kind === "union" && Array.isArray(value.options) && value.options.length > 0) {
-      const firstOption = value.options[0];
-      return normalizePrimitiveType(firstOption?.kind || "unknown");
-    }
-    return normalizePrimitiveType(value.kind || "unknown");
-  };
-
-  const leftIndex = PRIMITIVE_TYPE_ORDER.indexOf(toComparableKind(left));
-  const rightIndex = PRIMITIVE_TYPE_ORDER.indexOf(toComparableKind(right));
-
-  return leftIndex - rightIndex;
 };

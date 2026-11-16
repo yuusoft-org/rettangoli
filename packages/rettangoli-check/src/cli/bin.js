@@ -11,16 +11,13 @@ const CHECK_USAGE = [
   "  --format <value>    Report format: text | json | sarif",
   "  --warn-as-error     Treat warnings as errors",
   "  --no-yahtml         Disable YAHTML attribute checks",
-  "  --expr              Enable template expression root checks",
   "  --style             Enable optional naming and signature conventions",
-  "  --autofix           Apply safe autofixes in place",
-  "  --autofix-dry-run   Preview safe autofixes without writing files",
-  "  --autofix-min-confidence <0-1> Minimum confidence threshold (default: 0.9)",
-  "  --autofix-patch     Include patch output for autofix candidates",
   "  --watch             Re-run check when files change (polling)",
   "  --watch-interval-ms Poll interval in milliseconds (default: 800)",
   "  -h, --help          Show this help",
 ].join("\n");
+
+const DEPRECATED_AUTOFIX_FLAGS = new Set(["--autofix", "--autofix-dry-run", "--autofix-patch", "--autofix-min-confidence"]);
 
 class CliArgError extends Error {
   constructor(message, { usage = CHECK_USAGE } = {}) {
@@ -48,14 +45,10 @@ const parseCheckArgs = (args = []) => {
   let format = "text";
   let warnAsError = false;
   let includeYahtml = true;
-  let includeExpression = false;
   let includeStyle;
   let watch = false;
   let watchIntervalMs = 800;
-  let autofixMode = "off";
-  let autofixMinConfidence = 0.9;
-  let autofixPatch = false;
-  let autofixMinConfidenceSet = false;
+  const deprecatedFlags = new Set();
 
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
@@ -94,7 +87,7 @@ const parseCheckArgs = (args = []) => {
     }
 
     if (arg === "--expr") {
-      includeExpression = true;
+      deprecatedFlags.add(arg);
       continue;
     }
 
@@ -103,45 +96,12 @@ const parseCheckArgs = (args = []) => {
       continue;
     }
 
-    if (arg === "--autofix") {
-      if (autofixMode === "dry-run") {
-        throw new CliArgError("Cannot combine --autofix with --autofix-dry-run.", {
-          usage: CHECK_USAGE,
-        });
+    if (DEPRECATED_AUTOFIX_FLAGS.has(arg)) {
+      deprecatedFlags.add(arg);
+      if (arg === "--autofix-min-confidence") {
+        getRequiredValue({ args, index: i, flag: arg, usage: CHECK_USAGE });
+        i += 1;
       }
-      autofixMode = "apply";
-      continue;
-    }
-
-    if (arg === "--autofix-dry-run") {
-      if (autofixMode === "apply") {
-        throw new CliArgError("Cannot combine --autofix with --autofix-dry-run.", {
-          usage: CHECK_USAGE,
-        });
-      }
-      autofixMode = "dry-run";
-      continue;
-    }
-
-    if (arg === "--autofix-patch") {
-      autofixPatch = true;
-      if (autofixMode === "off") {
-        autofixMode = "dry-run";
-      }
-      continue;
-    }
-
-    if (arg === "--autofix-min-confidence") {
-      const value = getRequiredValue({ args, index: i, flag: arg, usage: CHECK_USAGE });
-      const parsed = Number.parseFloat(value);
-      if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
-        throw new CliArgError(`Invalid value for --autofix-min-confidence: "${value}". Expected a number in [0, 1].`, {
-          usage: CHECK_USAGE,
-        });
-      }
-      autofixMinConfidence = parsed;
-      autofixMinConfidenceSet = true;
-      i += 1;
       continue;
     }
 
@@ -170,29 +130,20 @@ const parseCheckArgs = (args = []) => {
     throw new CliArgError(`Unexpected positional argument: ${arg}`, { usage: CHECK_USAGE });
   }
 
-  if (autofixMode === "off" && autofixMinConfidenceSet) {
-    throw new CliArgError("Cannot use --autofix-min-confidence without --autofix or --autofix-dry-run.", {
-      usage: CHECK_USAGE,
-    });
-  }
-
   return {
     help: false,
     usage: CHECK_USAGE,
     command: "check",
+    deprecatedFlags: [...deprecatedFlags],
     options: {
       cwd: process.cwd(),
       dirs,
       format,
       warnAsError,
       includeYahtml,
-      includeExpression,
       includeStyle,
       watch,
       watchIntervalMs,
-      autofixMode,
-      autofixMinConfidence,
-      autofixPatch,
     },
   };
 };
@@ -286,6 +237,16 @@ const formatCliRuntimeErrorSarif = ({ message }) => {
   }, null, 2);
 };
 
+const warnDeprecatedFlags = (flags = []) => {
+  const autofixFlags = flags.filter((flag) => DEPRECATED_AUTOFIX_FLAGS.has(flag));
+  if (autofixFlags.length > 0) {
+    console.error(`[Check] Deprecated: autofix was removed. ${autofixFlags.join(", ")} ${autofixFlags.length > 1 ? "have" : "has"} no effect and will be rejected in a later release.`);
+  }
+  if (flags.includes("--expr")) {
+    console.error("[Check] Deprecated: expression checks were removed. --expr has no effect and will be rejected in a later release.");
+  }
+};
+
 const main = async () => {
   let parsed = null;
 
@@ -297,6 +258,7 @@ const main = async () => {
       return;
     }
 
+    warnDeprecatedFlags(parsed.deprecatedFlags);
     await check(parsed.options);
   } catch (err) {
     if (err instanceof CliArgError) {

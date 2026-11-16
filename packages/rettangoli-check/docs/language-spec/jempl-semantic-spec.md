@@ -1,9 +1,9 @@
 # Jempl Semantic Spec
 
-This spec defines Jempl parse and scope behavior used by semantic analysis:
+This spec defines the Jempl parse behavior the checker relies on:
 
 - `packages/rettangoli-check/src/rules/jempl.js`
-- `packages/rettangoli-check/src/core/scopeGraph.js`
+- `packages/rettangoli-check/src/core/parsers.js`
 
 ## RTGL-SPEC-JEMPL-001: Template parse validity
 
@@ -20,19 +20,15 @@ This spec defines Jempl parse and scope behavior used by semantic analysis:
 
 1. Loop nodes introduce local scope for `itemVar` and `indexVar`.
 2. Conditional branches preserve outer scope and evaluate each condition/body subtree.
-3. Element-level local symbols are associated by raw-key occurrence order and line.
-4. Local symbols are available for expression root resolution before unresolved-root diagnostics.
-5. Nested local symbols shadow outer symbols of the same name for schema/type resolution.
 
 ## RTGL-SPEC-JEMPL-004: Expression root extraction
 
-1. Root identifiers are extracted with string-literal masking and reserved-word exclusion.
-2. Path expressions from Jempl nodes and YAHTML attribute expressions feed one reference stream.
-3. References preserve context (`template-value`, `loop-iterable`, `attr-*`, `listener-payload`) and full range metadata (`line`, `column`, `endLine`, `endColumn`, `offset`, `endOffset`, `length`).
-4. YAHTML attribute expression references use per-expression spans (not whole-attribute fallback) when expression nodes are available.
-5. Conditional expressions preserve typed unary/binary operator AST metadata for deterministic operator-semantic checks, and condition AST roots inherit reference range metadata.
-6. Condition AST precedence is deterministic: `&&` binds tighter than `||`, and unary `!` binds tighter than both.
-7. Equality/inequality nodes (`==`, `!=`) preserve typed AST operator metadata and operand subtrees for downstream compatibility checks.
+Root extraction and the expression reference stream were removed with the expression checks. The compiler
+parse entrypoint still guarantees:
+
+1. Conditional expressions preserve typed unary/binary operator AST metadata.
+2. Condition AST precedence is deterministic: `&&` binds tighter than `||`, and unary `!` binds tighter than both.
+3. Equality/inequality nodes (`==`, `!=`) preserve typed AST operator metadata and operand subtrees.
 
 ## RTGL-SPEC-JEMPL-005: Strict control-directive validation
 
@@ -42,4 +38,4 @@ This spec defines Jempl parse and scope behavior used by semantic analysis:
    Jempl needs whitespace after `$if`, `$elif` and `$for`: a parenthesized form such as `$if(x)`, `$elif(x)` or `$for(item in items)` is a literal key for Jempl, so it emits `RTGL-CHECK-JEMPL-003` (unknown control keyword, with a hint to add the whitespace).
    Empty parentheses after the whitespace (`$if ()`, `$if ( )`, `$elif ( )`) and a bare `$elif` key emit `RTGL-CHECK-JEMPL-003` (missing condition); Jempl evaluates an empty-parentheses condition as false and treats a bare `$elif` as a literal key. A bare `$if` key is a Jempl parse error (`RTGL-CHECK-JEMPL-001`).
 4. Control-directive diagnostics resolve deterministic line locations from the template source key order.
-5. Runtime property directives (`$when`, `$each`, `$partial`), identified conditional chains (`#id`), and loop modifiers are accepted when validated by Jempl. `$when` conditions participate in expression scope/type analysis.
+5. Runtime property directives (`$when`, `$each`, `$partial`), identified conditional chains (`#id`), and loop modifiers are accepted when validated by Jempl.

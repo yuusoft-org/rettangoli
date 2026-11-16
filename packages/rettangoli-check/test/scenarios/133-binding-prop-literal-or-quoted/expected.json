@@ -1,11 +1,10 @@
 {
-  "name": "':prop' with a literal or quoted value gets CONTRACT-003 (so does '.1x=${a}'), and autofix leaves '.prop=literal' alone",
+  "name": "':prop' with a literal or quoted value gets CONTRACT-003 (so does '.1x=${a}')",
   "mode": "cli",
   "options": {
     "args": [
       "--format",
-      "json",
-      "--autofix-dry-run"
+      "json"
     ]
   },
   "expected": {
@@ -18,13 +17,6 @@
           "error": 4,
           "warn": 0
         }
-      },
-      "autofix": {
-        "mode": "dry-run",
-        "candidateCount": 4,
-        "appliedCount": 0,
-        "skippedCount": 4,
-        "patches": []
       },
       "diagnostics": [
         {

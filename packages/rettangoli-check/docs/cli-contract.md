@@ -14,16 +14,31 @@ Supported output formats:
 - `json`
 - `sarif`
 
-Supported diagnostics/autofix controls:
+Supported diagnostics controls:
 
 - `--style` (opt into naming/signature conventions; also `check.style: true` in config)
 
-Autofix options (`rtgl-check` only; `rtgl check` from `@rettangoli/cli` does not expose them):
+Deprecated flags, accepted as no-ops:
 
+- `--expr` (also `rtgl check --expr` from `@rettangoli/cli`)
 - `--autofix`
 - `--autofix-dry-run`
 - `--autofix-min-confidence <0-1>`
 - `--autofix-patch`
+
+Expression checks and autofix were removed. A run with any of these flags behaves like the same run without
+them (same report on stdout, same exit code) and prints one warning line on stderr per removed feature:
+
+```text
+[Check] Deprecated: expression checks were removed. --expr has no effect and will be rejected in a later release.
+[Check] Deprecated: autofix was removed. --autofix has no effect and will be rejected in a later release.
+```
+
+The autofix line names every autofix flag that was passed. `--autofix-min-confidence` still consumes its
+value, which is not validated. The flags are not listed in `--help`.
+
+The programmatic options `includeExpression` and `includeSemantic` (`analyzeProject`, `check`) are accepted
+and ignored without a warning. `runSemanticEngine` is no longer exported.
 
 Default validation checks runtime contracts. CamelCase folders, arbitrary valid
 handler export names, and renamed/destructured/unused lifecycle parameters are
@@ -38,6 +53,9 @@ Stability guarantees for `contractVersion: 1`:
 - Existing top-level fields are backward compatible for at least two minor releases.
 - Field removal requires one full minor release of deprecation notice in docs/changelog.
 - New fields may be added without breaking existing fields.
+
+Removed with autofix: the top-level `autofix` object (present only in runs with an autofix flag), the
+per-diagnostic `fix` object, the SARIF `properties.autofix` object and the `autofix-safe` catalog tag.
 
 ## 3. Compatibility Windows
 
@@ -55,9 +73,9 @@ CLI contract determinism is enforced by scenario tests:
 - `test/scenarios/32-cli-json-error-stdout`
 - `test/scenarios/74-cli-sarif-success`
 - `test/scenarios/75-cli-sarif-runtime-error`
-- `test/scenarios/123-cli-autofix-dry-run-json`
-- `test/scenarios/124-cli-autofix-dry-run-patch-json`
-- `test/scenarios/125-cli-autofix-apply-json-success`
+- `test/scenarios/123-cli-autofix-flags-noop-json`
+- `test/scenarios/124-cli-autofix-flag-noop-sarif`
+- `test/scenarios/125-cli-expr-flag-noop`
 
 Run with:
 

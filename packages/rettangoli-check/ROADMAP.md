@@ -11,6 +11,14 @@
   toggle keeps its `?`). Inputs FE throws on get `RTGL-CHECK-BINDING-*`.
 - JavaScript files are parsed with Oxc, once per file and source text. A file that does not parse gets
   `RTGL-CHECK-PARSE-002` instead of missing-export errors.
+- Component compatibility checks cover required props (`RTGL-CHECK-COMPAT-001`) and boolean bindings
+  (`RTGL-CHECK-COMPAT-003`). The prop type check `RTGL-CHECK-COMPAT-004` was removed: FE does not type-check
+  props, and its inference ignored `selectViewData`.
+- The `--expr` expression checks (`RTGL-CHECK-EXPR-*`) and the semantic engine (`runSemanticEngine`,
+  `RTGL-CHECK-SEM-*`) were removed. `--expr` is still accepted and prints a deprecation warning; the
+  `includeExpression` and `includeSemantic` options are ignored.
+- Autofix was removed: reports no longer carry `fix` or `autofix` data. `rtgl-check` still accepts the
+  `--autofix*` flags, which do nothing and print a deprecation warning, until a later release rejects them.
 - A UI primitive that fails to load keeps its static contract and gets one `RTGL-CHECK-REGISTRY-001` warning.
 - `bun run test` (alias of `bun run ci`) runs every contract test, scenario and fuzzer. CI runs it together
   with `bun run test:package` and the UI package's `check:contracts`.
@@ -19,9 +27,6 @@
 
 | id | question | recommendation |
 |---|---|---|
-| D2 | Retire `--expr` and the semantic engine (`includeSemantic`, `runSemanticEngine`) | Deprecate in the next minor, delete in 0.2.0 |
-| D3 | `RTGL-CHECK-COMPAT-004` (prop type check in default runs) | Delete: FE does not type-check props, and the inference ignores `selectViewData` |
-| D4 | Autofix (`rtgl-check --autofix*`, `fix` objects in reports) | Delete; keep the flags as no-ops with a warning for one minor |
 | D5 | Component grouping | Group like FE (grandparent directory plus file stem), so flat and multi-component folders stop getting `RTGL-CHECK-COMPONENT-002` |
 | D6 | CLI surface | `check()` rejects unknown `format` values; export `runCheckCli(argv)` so `rtgl check` can delegate to it |
 | D7 | Dependencies and registry source | Caret range for `@rettangoli/ui`, drop `yahtml`, print the resolved UI version; later read a contracts manifest built by the UI package |
