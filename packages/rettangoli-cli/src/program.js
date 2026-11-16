@@ -41,7 +41,7 @@ Examples:
     .option("--format <format>", "Output format: text, json, or sarif", "text")
     .option("--warn-as-error", "Treat warnings as errors")
     .option("--no-yahtml", "Disable YAHTML attr/prop validation")
-    .option("--expr", "Enable expression scope/type checks")
+    .option("--expr", "Deprecated: has no effect")
     .option("--style", "Enable optional naming and signature conventions")
     .option("--watch", "Watch for file changes and re-run checks")
     .option("--watch-interval-ms <ms>", "Watch poll interval in milliseconds", parseIntegerOption, 800)
@@ -56,6 +56,9 @@ Examples:
 `,
     )
     .action(async (options) => {
+      if (options.expr) {
+        console.error("[Check] Deprecated: expression checks were removed. --expr has no effect and will be rejected in a later release.");
+      }
       const { check } = await load("@rettangoli/check/cli");
       await check({
         cwd: process.cwd(),
@@ -63,7 +66,6 @@ Examples:
         format: options.format,
         warnAsError: !!options.warnAsError,
         includeYahtml: options.yahtml !== false,
-        includeExpression: !!options.expr,
         includeStyle: options.style,
         watch: !!options.watch,
         watchIntervalMs: Number.isFinite(options.watchIntervalMs) ? options.watchIntervalMs : 800,

@@ -1,0 +1,23 @@
+{
+  "name": "the retired includeExpression option is accepted and ignored",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true,
+    "includeExpression": true
+  },
+  "expected": {
+    "ok": true,
+    "errorCount": 0,
+    "warnCount": 0,
+    "errorCodes": {},
+    "warnCodes": {},
+    "diagnostics": []
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-SYMBOL-002"
+  ]
+}

@@ -4,7 +4,6 @@ const DEFAULT_FAMILY_CONFIG = [
   { prefix: "RTGL-CHECK-YAHTML-", family: "template", severity: "error", title: "YAHTML template diagnostic" },
   { prefix: "RTGL-CHECK-JEMPL-", family: "template", severity: "error", title: "Jempl template diagnostic" },
   { prefix: "RTGL-CHECK-BINDING-", family: "template", severity: "error", title: "Template binding diagnostic" },
-  { prefix: "RTGL-CHECK-EXPR-", family: "expression", severity: "error", title: "Expression diagnostic" },
   { prefix: "RTGL-CHECK-SCHEMA-", family: "schema", severity: "error", title: "Schema diagnostic" },
   { prefix: "RTGL-CHECK-SYMBOL-", family: "symbols", severity: "error", title: "Symbol resolution diagnostic" },
   { prefix: "RTGL-CHECK-LISTENER-", family: "listeners", severity: "error", title: "Listener contract diagnostic" },
@@ -15,8 +14,6 @@ const DEFAULT_FAMILY_CONFIG = [
   { prefix: "RTGL-CHECK-METHOD-", family: "methods", severity: "error", title: "Method contract diagnostic" },
   { prefix: "RTGL-CHECK-CONTRACT-", family: "contracts", severity: "error", title: "Contract diagnostic" },
   { prefix: "RTGL-CONTRACT-", family: "contracts", severity: "error", title: "Legacy contract diagnostic" },
-  { prefix: "RTGL-CHECK-SEM-", family: "semantic", severity: "warn", title: "Semantic engine diagnostic" },
-  { prefix: "RTGL-CHECK-SEM-INV-", family: "semantic-invariants", severity: "error", title: "Semantic invariant diagnostic" },
   { prefix: "RTGL-CHECK-CONSTANTS-", family: "constants", severity: "error", title: "Constants diagnostic" },
   { prefix: "RTGL-CHECK-COMPONENT-", family: "component-identity", severity: "error", title: "Component identity diagnostic" },
   { prefix: "RTGL-CHECK-READ-", family: "io", severity: "error", title: "Read/input diagnostic" },
@@ -31,12 +28,12 @@ const CODE_OVERRIDES = {
   "RTGL-CONTRACT-003": {
     title: "Legacy dot-prop binding",
     description: "Legacy property binding syntax is unsupported; property bindings must use ':prop=${...}' in source templates.",
-    tags: ["autofix-safe", "template"],
+    tags: ["template"],
   },
   "RTGL-CHECK-YAHTML-002": {
     title: "Legacy YAHTML prop binding",
     description: "Legacy '.prop' YAHTML binding is unsupported and should be converted to ':prop'.",
-    tags: ["autofix-safe", "template"],
+    tags: ["template"],
   },
   "RTGL-CLI-001": {
     title: "CLI runtime failure",

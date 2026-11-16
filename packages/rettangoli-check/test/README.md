@@ -18,7 +18,7 @@ Structure per scenario:
     - `exitCode`
     - optional `options.env` map for command-specific environment overrides
     - optional `stdout` / `stderr` exact strings
-    - optional `stdoutIncludes` / `stderrIncludes` arrays
+    - optional `stdoutIncludes` / `stderrIncludes` arrays, and `stdoutExcludes`
     - optional `stdoutJson` subset assertion
 
 Default analyzer scenarios also enforce:
@@ -52,7 +52,7 @@ bun run test:scenarios  # scenarios only; `node test/run-scenarios.js --scenario
 | `test-listener-issues-contract.js` | listener diagnostics for a seeded matrix against `test/fixtures/listener-matrix.expected.json` |
 | `fuzz-template-pipeline.js` | selector bindings and template AST stay deterministic and consistent on generated views |
 | `fuzz-jempl-parser.js`, `test-jempl-parser-contract.js` | Jempl parse and control-directive diagnostics (`test/jempl-fuzz-corpus.json`) |
-| `test-scope-graph-range-contract.js`, `test-semantic-engine-contract.js`, `test-type-system-contract.js` | `--expr` scope graph ranges, semantic engine, type lattice |
+| `test-type-system-contract.js` | schema type normalization and compatibility used by `RTGL-CHECK-COMPAT-003` |
 | `test-fe-frontend-*-contract.js` | component identity, handler naming, lifecycle, Oxc export extraction, schema normalization |
 | `test-yahtml-parser-snapshots.js` | template AST snapshots in `test/yahtml-parser-snapshots/` (`--update` rewrites them) |
 | `test-yahtml-parser-crash-containment.js`, `fuzz-yahtml-parser.js` | the template key parser does not throw and is deterministic |

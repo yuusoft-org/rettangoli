@@ -1,0 +1,51 @@
+{
+  "name": "cli accepts the removed autofix flags as no-ops: one stderr warning, files and json report unchanged",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "--format",
+      "json",
+      "--autofix",
+      "--autofix-dry-run",
+      "--autofix-min-confidence",
+      "0.5",
+      "--autofix-patch"
+    ]
+  },
+  "expected": {
+    "exitCode": 1,
+    "stderr": "[Check] Deprecated: autofix was removed. --autofix, --autofix-dry-run, --autofix-min-confidence, --autofix-patch have no effect and will be rejected in a later release.",
+    "stdoutExcludes": [
+      "autofix",
+      "\"fix\""
+    ],
+    "stdoutJson": {
+      "schemaVersion": 1,
+      "contractVersion": 1,
+      "reportFormat": "json",
+      "ok": false,
+      "summary": {
+        "total": 2,
+        "bySeverity": {
+          "error": 2,
+          "warn": 0
+        },
+        "byCode": [
+          {
+            "code": "RTGL-CHECK-YAHTML-002",
+            "count": 1
+          },
+          {
+            "code": "RTGL-CONTRACT-003",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-YAHTML-004"
+  ]
+}

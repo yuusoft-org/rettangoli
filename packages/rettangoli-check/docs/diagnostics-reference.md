@@ -12,7 +12,7 @@ Codes outside this namespace are surfaced with `namespaceValid: false` for compa
 
 ## Reporter Contracts
 
-- Text reporter: stable human-readable output with location formatting, codeframes, trace lines, related locations, and fix hints.
+- Text reporter: stable human-readable output with location formatting, codeframes, trace lines, and related locations.
 - JSON reporter: versioned by `schemaVersion: 1`, `contractVersion: 1`, and `diagnosticCatalogVersion`.
 - SARIF reporter: SARIF 2.1.0-compatible output with deterministic rule/result ordering and partial fingerprints.
 
@@ -23,7 +23,6 @@ Default family and severity are inferred from code prefixes:
 - `RTGL-CHECK-YAHTML-*`: `template`, `error`
 - `RTGL-CHECK-JEMPL-*`: `template`, `error`
 - `RTGL-CHECK-BINDING-*`: `template`, `error`
-- `RTGL-CHECK-EXPR-*`: `expression`, `error`
 - `RTGL-CHECK-SCHEMA-*`: `schema`, `error`
 - `RTGL-CHECK-SYMBOL-*`: `symbols`, `error`
 - `RTGL-CHECK-LISTENER-*`: `listeners`, `error`
@@ -34,8 +33,6 @@ Default family and severity are inferred from code prefixes:
 - `RTGL-CHECK-METHOD-*`: `methods`, `error`
 - `RTGL-CHECK-CONTRACT-*`: `contracts`, `error`
 - `RTGL-CONTRACT-*`: `contracts`, `error` (legacy compatibility namespace)
-- `RTGL-CHECK-SEM-*`: `semantic`, `warn`
-- `RTGL-CHECK-SEM-INV-*`: `semantic-invariants`, `error`
 - `RTGL-CHECK-CONSTANTS-*`: `constants`, `error`
 - `RTGL-CHECK-COMPONENT-*`: `component-identity`, `error`
 - `RTGL-CHECK-READ-*`: `io`, `error`
@@ -63,6 +60,22 @@ A duplicate prop after camelCasing, for example `placeholder=a :placeholder=${b}
 
 Formerly checked `@event=handler` attributes against the element's events and the component's handlers. FE does not support `@event` attributes, so such a template now gets `RTGL-CHECK-BINDING-001`, and these codes are no longer emitted.
 
+## Compatibility Diagnostics
+
+### RTGL-CHECK-COMPAT-004 (retired)
+
+Formerly compared the schema type of a `:prop=${...}` binding's expression with the target element's prop type. FE does not type-check props, and the inferred type ignored `selectViewData`, so the rule reported bindings that work at runtime. `RTGL-CHECK-COMPAT-004` is no longer emitted. Required props (`RTGL-CHECK-COMPAT-001`) and boolean bindings (`RTGL-CHECK-COMPAT-003`) are still checked.
+
+## Expression And Semantic Diagnostics
+
+### RTGL-CHECK-EXPR-001 .. RTGL-CHECK-EXPR-005 (retired)
+
+Formerly reported, with `--expr` or `includeExpression`, template expression roots that did not resolve, schema paths that did not exist and operand or boolean type mismatches. The expression checks were removed; `--expr` and `includeExpression` are accepted and ignored, and these codes are no longer emitted.
+
+### RTGL-CHECK-SEM-001, RTGL-CHECK-SEM-002, RTGL-CHECK-SEM-004, RTGL-CHECK-SEM-005, RTGL-CHECK-SEM-INV-* (retired)
+
+Formerly emitted by the semantic engine (`runSemanticEngine`, `includeSemantic`) for unresolved or ambiguous symbols, unresolved cross-component tags and symbol-graph invariant failures. The engine was removed, `includeSemantic` is ignored, and these codes are no longer emitted.
+
 ## Ref Diagnostics
 
 ### RTGL-CHECK-REF-002 (retired)
@@ -89,7 +102,7 @@ Formerly compared the keys of a string payload such as `"{ id: x }"` with the ha
 
 ### RTGL-CHECK-PARSE-002
 
-A `.handlers.js`, `.store.js` or `.methods.js` file, or a module it re-exports from, does not parse as JavaScript (or TypeScript). The diagnostic points at the first syntax error. The exports of such a file, and of every file that re-exports from it, are unknown, so check does not report missing handler, action or method exports (`RTGL-CHECK-SYMBOL-001/002/003/007`, `RTGL-CHECK-SEM-004`) for them. A file shared by several components is reported once.
+A `.handlers.js`, `.store.js` or `.methods.js` file, or a module it re-exports from, does not parse as JavaScript (or TypeScript). The diagnostic points at the first syntax error. The exports of such a file, and of every file that re-exports from it, are unknown, so check does not report missing handler, action or method exports (`RTGL-CHECK-SYMBOL-001/002/003/007`) for them. A file shared by several components is reported once.
 
 ## UI Registry Diagnostics
 
@@ -103,15 +116,17 @@ A warning: a UI primitive defined by the resolved `@rettangoli/ui` (for example 
 
 An attribute or prop the custom element does not declare. Each key's tag and binding names are read from the key itself, the way FE reads them (`parseSelectorKey`), so flow mappings (`- {rtgl-text bogus=1: hi}`), escaped and multi-line keys are checked against their own tag. Names are reported in source order.
 
-## Autofix-Capable Diagnostics
+## Legacy Property Binding Diagnostics
 
 ### RTGL-CONTRACT-003
 
-Property binding syntax that FE rejects: any legacy `.prop=` binding, and `:prop=` bindings whose value is quoted or not exactly `${...}` (`:title=literal`, `:title="${x}"`). Use `:prop=${...}` in `.view.yaml`. A fix is attached only to an unquoted `.prop=${expr}` binding with a name matching `[A-Za-z_][\w-]*` (not `.1x` or `.a.b`); its safe conversion is `.prop=${expr}` -> `:prop=${expr}`; other values need a manual edit.
+Property binding syntax that FE rejects: any legacy `.prop=` binding, and `:prop=` bindings whose value is quoted or not exactly `${...}` (`:title=literal`, `:title="${x}"`). Use `:prop=${...}` in `.view.yaml`.
 
 ### RTGL-CHECK-YAHTML-002
 
-Legacy YAHTML `.prop` bindings are unsupported. Convert `.prop=${expr}` to `:prop=${expr}` and wrap bare property values in `${...}` when needed. The fix is attached only to an unquoted `.prop=${expr}` binding.
+Legacy YAHTML `.prop` bindings are unsupported. Convert `.prop=${expr}` to `:prop=${expr}` and wrap bare property values in `${...}` when needed.
+
+Autofix for these two codes was removed: diagnostics no longer carry a `fix` object, the catalog tag `autofix-safe` is gone, and the `rtgl-check --autofix*` flags are accepted as no-ops with a deprecation warning.
 
 ## Docs Link Contract
 
@@ -128,12 +143,10 @@ Example:
 Contract tests:
 
 - `test/scenarios/74-cli-sarif-success`
-- `test/scenarios/123-cli-autofix-dry-run-json`
-- `test/scenarios/124-cli-autofix-dry-run-patch-json`
-- `test/scenarios/125-cli-autofix-apply-json-success`
+- `test/scenarios/71-expression-option-ignored`, `101-compat-prop-binding-type-not-checked` (retired checks stay silent)
+- `test/scenarios/123-cli-autofix-flags-noop-json`, `124-cli-autofix-flag-noop-sarif`, `125-cli-expr-flag-noop` (deprecated flags)
 - `test/scenarios/132-binding-event-attribute-rejected` .. `137-binding-parse-yaml-error-text-scan`
 - `test/scenarios/138-schema-ssr-not-boolean` .. `141-jempl-control-paren-directive-rejected`
-- `test/scenarios/142-compat-for-local-shadows-prop`, `143-compat-prop-mismatch-outside-for`
 - `test/scenarios/144-yahtml-key-parsed-from-own-key` (tag and names read from each key, not from a neighbouring line)
 - `test/scenarios/145-cli-yahtml-attr-source-order` (YAHTML-003 of one key in source order)
 - `scripts/test-ui-registry-load-contract.js` (RTGL-CHECK-REGISTRY-001)

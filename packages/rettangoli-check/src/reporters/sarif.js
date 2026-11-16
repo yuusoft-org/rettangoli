@@ -166,14 +166,6 @@ const toSarifResult = ({ cwd, diagnostic = {} }) => {
     properties: {
       category: catalog.family,
       docsPath: catalog.docsPath,
-      ...(diagnostic.fix ? {
-        autofix: {
-          kind: diagnostic.fix.kind,
-          safe: diagnostic.fix.safe !== false,
-          confidence: diagnostic.fix.confidence,
-          description: diagnostic.fix.description,
-        },
-      } : {}),
     },
   };
 };

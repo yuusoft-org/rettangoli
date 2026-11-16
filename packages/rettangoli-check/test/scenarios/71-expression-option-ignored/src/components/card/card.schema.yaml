@@ -1,0 +1,6 @@
+componentName: rtgl-test-expression-unresolved-template-root
+propsSchema:
+  type: object
+  properties:
+    title:
+      type: string

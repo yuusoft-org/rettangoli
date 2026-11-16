@@ -31,23 +31,15 @@ rtgl check --no-yahtml
 # opt into naming and signature conventions (also `check: { style: true }` in rettangoli.config.yaml)
 rtgl check --style
 
-# template expression scope/type checks
-rtgl check --expr
-
 # re-run on file changes (polling)
 rtgl check --watch --watch-interval-ms 500
 ```
 
-The package also ships the `rtgl-check` bin. It accepts the same options plus the autofix options, which
-`rtgl check` does not expose:
+The package also ships the `rtgl-check` bin, which accepts the same options.
 
-```bash
-# preview safe fixes (with patch text)
-rtgl-check --dir src/components --format json --autofix-dry-run --autofix-patch
-
-# apply safe fixes
-rtgl-check --dir src/components --autofix --autofix-min-confidence 0.95
-```
+`--expr` (both commands) and the `rtgl-check` flags `--autofix`, `--autofix-dry-run`,
+`--autofix-min-confidence` and `--autofix-patch` are deprecated: expression checks and autofix were removed,
+so the flags do nothing except print a warning on stderr, and a later release will reject them.
 
 Exit code `1` means at least one error (or a warning with `--warn-as-error`). JSON and SARIF go to stdout. The
 text report goes to stderr when the check fails and to stdout otherwise.
@@ -72,8 +64,8 @@ const { result: checked, report } = await runCheck();
 ```
 
 `createChecker` takes exactly these options: the ones of `check` that select what is analyzed (`cwd`, `dirs`,
-`includeYahtml`, `includeExpression`, `includeStyle`) and `maxDiagnostics`. The other options of `check`
-(`format`, `warnAsError`, `watch`, `watchIntervalMs`, the autofix options) are ignored. It reads
+`includeYahtml`, `includeStyle`) and `maxDiagnostics`. The other options of `check`
+(`format`, `warnAsError`, `watch`, `watchIntervalMs`) are ignored. It reads
 `rettangoli.config.yaml` the same way. `report` is the text report, with severities as analyzed (no
 `--warn-as-error`); with `maxDiagnostics` it lists only the first N diagnostics and ends with
 `[Check] <count> more diagnostic(s) not shown.`. Call the returned function again to re-check: it re-reads
@@ -112,13 +104,12 @@ recent fixes and the reporter contracts.
 - Cross-file symbols: listener handlers in `.handlers.js`, actions in `.store.js`, and `schema.methods` in
   `.methods.js`, including re-exports (`RTGL-CHECK-SYMBOL-*`), handler naming (`RTGL-CHECK-HANDLER-*`),
   lifecycle signatures (`RTGL-CHECK-LIFECYCLE-*`) and method payloads (`RTGL-CHECK-METHOD-*`).
-- Component compatibility: missing required props and boolean or prop bindings of the wrong type
-  (`RTGL-CHECK-COMPAT-001`, `003`, `004`).
+- Component compatibility: missing required props and boolean bindings of the wrong type
+  (`RTGL-CHECK-COMPAT-001`, `003`).
 - Input problems: unreadable files (`RTGL-CHECK-READ-001`), YAML that does not parse
   (`RTGL-CHECK-PARSE-001`), JavaScript that does not parse (`RTGL-CHECK-PARSE-002`; missing-export checks
   are then skipped for that file), and a UI primitive that fails to load (`RTGL-CHECK-REGISTRY-001`, a
   warning).
-- With `--expr`: template expression roots, schema paths and boolean types (`RTGL-CHECK-EXPR-*`).
 
 By default, runtime-supported camelCase component folders, helper exports, destructured or renamed lifecycle
 arguments and unused payload arguments are accepted. `--style` reports them as convention violations.

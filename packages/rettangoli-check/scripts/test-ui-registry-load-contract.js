@@ -3,7 +3,7 @@
 // UI primitive loading: every primitive of the workspace UI loads, a primitive that fails to
 // load keeps its static contract and is reported once (RTGL-CHECK-REGISTRY-001), and the
 // browser globals stubbed for the import do not leak. A failure's file path may be a directory
-// or an unreadable file; autofix skips it instead of aborting.
+// or an unreadable file; the text report then has no code frame for it.
 
 import assert from "node:assert/strict";
 import { chmodSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
@@ -11,7 +11,6 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { analyzeProject } from "../src/core/analyze.js";
-import { applyDiagnosticFixes } from "../src/diagnostics/autofix.js";
 import { buildUiRegistry, getRegistryLoadFailures } from "../src/core/registry.js";
 import { formatTextReport } from "../src/reporters/text.js";
 import { isDirectoryPath } from "../src/utils/fs.js";
@@ -50,16 +49,6 @@ assert.deepEqual([...first.keys()], [...uiRegistry.keys()]);
 assert.deepEqual([...second.keys()], [...uiRegistry.keys()]);
 assert.deepEqual(getRegistryLoadFailures(first), []);
 assert.deepEqual(getRegistryLoadFailures(second), []);
-
-// `--autofix-dry-run --autofix-min-confidence 0` makes every diagnostic, also one without a fix,
-// an autofix candidate whose file is read.
-const assertAutofixSkipsAll = (diagnostics) => {
-  const autofix = applyDiagnosticFixes({ diagnostics, dryRun: true, minConfidence: 0 });
-  assert.deepEqual(
-    [autofix.candidateCount, autofix.appliedCount, autofix.skippedCount, autofix.patches],
-    [diagnostics.length, 0, diagnostics.length, []],
-  );
-};
 
 // (b) A fake UI: rtgl-bad throws at module scope and is defined by two entries, rtgl-notfn has
 // no factory default export, rtgl-good loads.
@@ -201,7 +190,6 @@ try {
   const dirReport = formatTextReport({ result: dirResult });
   assert.match(dirReport, /RTGL-CHECK-REGISTRY-001 \[warn\] UI primitive 'rtgl-dirprim' failed to load/);
   assert.doesNotMatch(dirReport, /codeframe/);
-  assertAutofixSkipsAll(dirResult.diagnostics);
 
   // A primitive file that exists but cannot be read is reported the same way. A root user can read
   // any file, and Windows ignores the mode, so the case is skipped there.
@@ -235,7 +223,6 @@ try {
       const lockedReport = formatTextReport({ result: lockedResult });
       assert.match(lockedReport, /RTGL-CHECK-REGISTRY-001 \[warn\] UI primitive 'rtgl-locked' failed to load/);
       assert.doesNotMatch(lockedReport, /codeframe/);
-      assertAutofixSkipsAll(lockedResult.diagnostics);
     } finally {
       chmodSync(lockedFile, 0o644);
     }

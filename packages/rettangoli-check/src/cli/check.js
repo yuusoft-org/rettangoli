@@ -2,7 +2,6 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { load as loadYaml } from "js-yaml";
 import { analyzeProject } from "../core/analyze.js";
-import { applyDiagnosticFixes } from "../diagnostics/autofix.js";
 import { formatReport } from "../reporters/index.js";
 import { isDirectoryPath } from "../utils/fs.js";
 
@@ -33,35 +32,6 @@ const resolveDirs = ({ cwd, dirs, config }) => {
   return ["./src/components"];
 };
 
-const toAutofixReport = ({
-  autofixResult,
-  mode = "off",
-  includePatchText = false,
-}) => {
-  if (!autofixResult) {
-    return undefined;
-  }
-
-  return {
-    mode,
-    dryRun: Boolean(autofixResult.dryRun),
-    patchOutput: includePatchText,
-    candidateCount: Number(autofixResult.candidateCount) || 0,
-    appliedCount: Number(autofixResult.appliedCount) || 0,
-    skippedCount: Number(autofixResult.skippedCount) || 0,
-    patches: Array.isArray(autofixResult.patches)
-      ? autofixResult.patches.map((patch) => ({
-        code: patch.code,
-        filePath: patch.filePath,
-        line: patch.line,
-        description: patch.description,
-        confidence: patch.confidence,
-        ...(includePatchText && typeof patch.patch === "string" ? { patch: patch.patch } : {}),
-      }))
-      : [],
-  };
-};
-
 // Reads the config and resolves the directories the way every check run does.
 // Returns a function that analyzes the project; calls share one incremental
 // cache, so a repeated run only re-reads the components that changed.
@@ -69,7 +39,6 @@ const createAnalysisRunner = ({
   cwd = process.cwd(),
   dirs = [],
   includeYahtml = true,
-  includeExpression = false,
   includeStyle,
 } = {}) => {
   const config = readConfig(cwd);
@@ -86,7 +55,6 @@ const createAnalysisRunner = ({
     dirs: resolvedDirs,
     workspaceRoot: cwd,
     includeYahtml,
-    includeExpression,
     includeStyle: includeStyle ?? config?.check?.style === true,
     incrementalState,
   });
@@ -94,11 +62,11 @@ const createAnalysisRunner = ({
 
 // For tools that show check results inside their own output (rtgl fe build
 // and rtgl fe watch). Takes the options of `check` that select what is
-// analyzed (cwd, dirs, includeYahtml, includeExpression, includeStyle) and
+// analyzed (cwd, dirs, includeYahtml, includeStyle) and
 // returns a function. Each call analyzes the project again and resolves to
 // { result, report }: `report` is the text `check` would print, listing at
 // most `maxDiagnostics` diagnostics when that is set. Other options of `check`
-// (format, warnAsError, watch, autofix) are ignored. Nothing is printed and
+// (format, warnAsError, watch) are ignored. Nothing is printed and
 // process.exitCode is left alone.
 export const createChecker = (options = {}) => {
   const { maxDiagnostics } = options;
@@ -119,43 +87,12 @@ export const check = async (options = {}) => {
     warnAsError = false,
     watch = false,
     watchIntervalMs = 800,
-    autofixMode = "off",
-    autofixMinConfidence = 0.9,
-    autofixPatch = false,
   } = options;
 
   const runAnalysis = createAnalysisRunner(options);
 
-  if (watch && autofixMode !== "off") {
-    throw new Error("Autofix is not supported with --watch.");
-  }
-
   const runOnce = async () => {
-    const initialResult = await runAnalysis();
-    let result = initialResult;
-
-    let autofixResult = null;
-    if (autofixMode !== "off") {
-      autofixResult = applyDiagnosticFixes({
-        diagnostics: initialResult.diagnostics,
-        dryRun: autofixMode !== "apply",
-        minConfidence: autofixMinConfidence,
-        includePatchText: autofixPatch,
-      });
-
-      if (autofixMode === "apply" && autofixResult.appliedCount > 0) {
-        result = await runAnalysis();
-      }
-
-      result = {
-        ...result,
-        autofix: toAutofixReport({
-          autofixResult,
-          mode: autofixMode,
-          includePatchText: autofixPatch,
-        }),
-      };
-    }
+    const result = await runAnalysis();
 
     const report = formatReport({
       format: (format === "json" || format === "sarif") ? format : "text",

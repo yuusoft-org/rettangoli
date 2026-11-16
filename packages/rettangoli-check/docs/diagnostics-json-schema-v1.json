@@ -159,81 +159,6 @@
         "additionalProperties": false
       }
     },
-    "autofix": {
-      "type": "object",
-      "required": [
-        "mode",
-        "dryRun",
-        "patchOutput",
-        "candidateCount",
-        "appliedCount",
-        "skippedCount",
-        "patches"
-      ],
-      "properties": {
-        "mode": {
-          "type": "string",
-          "enum": [
-            "off",
-            "dry-run",
-            "apply"
-          ]
-        },
-        "dryRun": {
-          "type": "boolean"
-        },
-        "patchOutput": {
-          "type": "boolean"
-        },
-        "candidateCount": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "appliedCount": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "skippedCount": {
-          "type": "integer",
-          "minimum": 0
-        },
-        "patches": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": [
-              "code",
-              "filePath",
-              "description",
-              "confidence"
-            ],
-            "properties": {
-              "code": {
-                "type": "string"
-              },
-              "filePath": {
-                "type": "string"
-              },
-              "line": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "description": {
-                "type": "string"
-              },
-              "confidence": {
-                "type": "number"
-              },
-              "patch": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          }
-        }
-      },
-      "additionalProperties": false
-    },
     "diagnostics": {
       "type": "array",
       "items": {
@@ -338,57 +263,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "fix": {
-            "type": "object",
-            "required": [
-              "kind",
-              "safe",
-              "filePath"
-            ],
-            "properties": {
-              "kind": {
-                "type": "string"
-              },
-              "description": {
-                "type": "string"
-              },
-              "safe": {
-                "type": "boolean"
-              },
-              "confidence": {
-                "type": "number"
-              },
-              "filePath": {
-                "type": "string"
-              },
-              "line": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "column": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "endLine": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "endColumn": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "pattern": {
-                "type": "string"
-              },
-              "replacement": {
-                "type": "string"
-              },
-              "flags": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
           }
         },
         "additionalProperties": false

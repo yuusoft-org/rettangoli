@@ -52,6 +52,6 @@ Expressions are deduplicated per binding token in deterministic order.
 - `Element` nodes with `tagName`, `selector`, `rawKey`
 - `Attribute` nodes with `bindingName`, `sourceType`, `name`, `valueText`, `expressions`
 - exact ranges: `line`, `column`, `endLine`, `endColumn`, `offset`, `endOffset`, `length`
-- raw lexeme preservation (`rawLexeme`) for codeframe/autofix-oriented tooling
+- raw lexeme preservation (`rawLexeme`) for codeframe tooling
 
 Range derivation is deterministic and line-based against the original `.view.yaml` text.

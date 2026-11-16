@@ -1,3 +1,0 @@
-template:
-  - $for item, i in items:
-      - rtgl-text: ${item.title}

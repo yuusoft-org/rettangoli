@@ -54,9 +54,6 @@ styles:
   assert.ok(codes(style).includes("RTGL-CHECK-LIFECYCLE-002"));
   assert.ok(codes(style).includes("RTGL-CHECK-LIFECYCLE-003"));
 
-  write("src/components/resourceGrid/resourceGrid.view.yaml", "template:\n  - $when: missingVisibility\n    rtgl-text: Visible\n");
-  assert.ok(codes(await analyze({ includeExpression: true })).includes("RTGL-CHECK-EXPR-001"), "$when conditions must retain expression validation");
-
   write("src/primitives/choice.js", `
 throw new Error("Checker must never execute application modules");
 export const CHOICE_TAG = "demo-native-choice";

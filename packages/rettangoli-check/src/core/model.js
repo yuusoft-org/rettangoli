@@ -12,7 +12,6 @@ import {
   parseYamlSafe,
 } from "./parsers.js";
 import { normalizeSchemaYaml } from "./schema.js";
-import { buildComponentScopeGraph } from "./scopeGraph.js";
 import { parseNamedExportedFunctions } from "./exportedFunctions.js";
 
 const attachFilePathToBindings = (bindings = [], filePath) => {
@@ -848,15 +847,6 @@ export const buildComponentModel = (componentGroup) => {
       model.methods.exportsKnown = collected.exportsKnown;
     }
   }
-
-  // Only some rules read the scope graph (COMPAT-004 for loop locals, --expr, the semantic engine),
-  // so it is built on first use. Nothing it reads changes after this point.
-  let semanticGraph;
-  Object.defineProperty(model, "semanticGraph", {
-    get: () => (semanticGraph ??= buildComponentScopeGraph(model)),
-    enumerable: true,
-    configurable: true,
-  });
 
   return model;
 };

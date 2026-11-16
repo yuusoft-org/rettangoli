@@ -3,7 +3,6 @@ import { buildComponentModel, buildProjectModel, validateProjectModel } from "./
 import { discoverComponentEntries, groupEntriesByComponent } from "./discovery.js";
 import { buildMergedRegistry, getRegistryLoadFailures } from "./registry.js";
 import { runRules } from "../rules/index.js";
-import { runSemanticEngine } from "../semantic/engine.js";
 import { getDiagnosticCatalogEntry } from "../diagnostics/catalog.js";
 
 // These conventions do not constrain runtime execution. They remain available
@@ -45,7 +44,6 @@ const categorizeDiagnosticCode = (code = "") => {
   if (code.includes("SYMBOL")) return "symbols";
   if (code.includes("SCHEMA")) return "schema";
   if (code.includes("LIFECYCLE")) return "lifecycle";
-  if (code.includes("EXPR")) return "expression";
   if (code.includes("COMPAT")) return "compatibility";
   if (code.includes("CONTRACT")) return "contracts";
   return "general";
@@ -78,37 +76,6 @@ const normalizeRelatedLocations = (related = []) => {
     ));
 
   return normalized.length > 0 ? normalized : undefined;
-};
-
-const normalizeFix = (fix = {}, diagnostic = {}) => {
-  if (!fix || typeof fix !== "object") {
-    return undefined;
-  }
-
-  const normalized = {
-    kind: typeof fix.kind === "string" ? fix.kind : undefined,
-    description: typeof fix.description === "string" && fix.description.trim()
-      ? fix.description.trim()
-      : undefined,
-    safe: fix.safe !== false,
-    confidence: Number.isFinite(fix.confidence) ? Number(fix.confidence) : undefined,
-    filePath: typeof fix.filePath === "string" && fix.filePath
-      ? fix.filePath
-      : (diagnostic.filePath || "unknown"),
-    line: Number.isInteger(fix.line) ? fix.line : undefined,
-    column: Number.isInteger(fix.column) ? fix.column : undefined,
-    endLine: Number.isInteger(fix.endLine) ? fix.endLine : undefined,
-    endColumn: Number.isInteger(fix.endColumn) ? fix.endColumn : undefined,
-    pattern: typeof fix.pattern === "string" && fix.pattern ? fix.pattern : undefined,
-    replacement: typeof fix.replacement === "string" ? fix.replacement : undefined,
-    flags: typeof fix.flags === "string" && fix.flags ? fix.flags : undefined,
-  };
-
-  if (!normalized.kind) {
-    return undefined;
-  }
-
-  return normalized;
 };
 
 const normalizeTrace = (trace = []) => {
@@ -148,7 +115,6 @@ const normalizeDiagnostics = (diagnostics = []) => {
         tags: catalog.tags,
         related,
         trace,
-        fix: normalizeFix(diag.fix, diag),
       };
     });
 };
@@ -158,8 +124,6 @@ export const analyzeProject = async ({
   dirs = [],
   workspaceRoot = cwd,
   includeYahtml = true,
-  includeExpression = false,
-  includeSemantic = false,
   includeStyle = false,
   incrementalState,
 } = {}) => {
@@ -236,16 +200,9 @@ export const analyzeProject = async ({
     models,
     registry,
     includeYahtml,
-    includeExpression,
     includeStyle,
   }));
-  const semanticResult = includeSemantic
-    ? runSemanticEngine({ models, registry })
-    : null;
-  const semanticDiagnostics = includeSemantic
-    ? normalizeDiagnostics(semanticResult?.diagnostics || [])
-    : [];
-  const diagnostics = [...modelDiagnostics, ...registryDiagnostics, ...ruleDiagnostics, ...semanticDiagnostics];
+  const diagnostics = [...modelDiagnostics, ...registryDiagnostics, ...ruleDiagnostics];
   const summary = summarizeDiagnostics(diagnostics);
 
   return {
@@ -256,11 +213,5 @@ export const analyzeProject = async ({
     diagnostics,
     summary,
     registryTagCount: registry.size,
-    semantic: semanticResult
-      ? {
-        diagnosticsCount: semanticDiagnostics.length,
-        invariants: semanticResult.invariants,
-      }
-      : undefined,
   };
 };

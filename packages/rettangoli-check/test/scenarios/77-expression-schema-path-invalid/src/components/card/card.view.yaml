@@ -1,2 +1,0 @@
-template:
-  - rtgl-text: ${user.profile.name}

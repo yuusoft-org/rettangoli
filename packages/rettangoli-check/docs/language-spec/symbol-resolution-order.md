@@ -3,31 +3,17 @@
 This document defines deterministic resolution order across YAHTML/Jempl/FE:
 
 - `packages/rettangoli-check/src/core/model.js`
-- `packages/rettangoli-check/src/core/scopeGraph.js`
-- `packages/rettangoli-check/src/core/semantic.js`
 - `packages/rettangoli-check/src/rules/crossFileSymbols.js`
-- `packages/rettangoli-check/src/rules/expression.js`
 
-## RTGL-SPEC-SYMBOL-001: Canonical source sets
+## RTGL-SPEC-SYMBOL-001: Canonical source sets (retired)
 
-Global symbol set is built from:
+Formerly defined the global and local symbol sets used to resolve template expression roots. The expression
+checks were removed. The ID is kept for scenario traceability.
 
-1. built-ins (`_event`, `_action`, `props`, `state`, `refs`, browser/JS globals)
-2. schema `propsSchema.properties` names and case aliases
-3. constants root keys
-4. named exports from `.handlers.js`, `.methods.js`, `.store.js`
-5. `selectViewData` return-object keys from store module exports
+## RTGL-SPEC-SYMBOL-002: Resolution precedence (retired)
 
-Local symbol set is built from Jempl control-flow scopes (`for` loop vars).
-
-## RTGL-SPEC-SYMBOL-002: Resolution precedence
-
-Expression root resolution order:
-
-1. local symbols (nearest scope)
-2. global symbol set
-3. numeric literal exemption
-4. otherwise unresolved (`RTGL-CHECK-EXPR-001`)
+Formerly defined the resolution order of template expression roots (`RTGL-CHECK-EXPR-001`). The expression
+checks were removed. The ID is kept for scenario traceability.
 
 ## RTGL-SPEC-SYMBOL-003: Cross-file export-chain semantics
 

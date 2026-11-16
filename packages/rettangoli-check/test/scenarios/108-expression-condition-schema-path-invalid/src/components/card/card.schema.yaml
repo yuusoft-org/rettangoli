@@ -1,9 +1,0 @@
-componentName: rtgl-check-expression-condition-path
-propsSchema:
-  type: object
-  properties:
-    user:
-      type: object
-      properties:
-        name:
-          type: string
