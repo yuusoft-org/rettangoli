@@ -147,7 +147,6 @@ const run = async () => {
         cwd: root,
         dirs: ["./src/components"],
         includeYahtml: true,
-        includeExpression: true,
         workspaceRoot,
       });
 
@@ -155,7 +154,6 @@ const run = async () => {
         cwd: root,
         dirs: ["./src/components"],
         includeYahtml: true,
-        includeExpression: true,
         workspaceRoot,
       });
 

@@ -2,7 +2,6 @@ import { runBindingRules } from "./bindings.js";
 import { runConstantsRules } from "./constants.js";
 import { runCompatibilityRules } from "./compatibility.js";
 import { runCrossFileSymbolRules } from "./crossFileSymbols.js";
-import { runExpressionRules } from "./expression.js";
 import { runFeParityRules } from "./feParity.js";
 import { runJemplRules } from "./jempl.js";
 import { runListenerConfigRules } from "./listenerConfig.js";
@@ -16,7 +15,6 @@ export const runRules = ({
   models = [],
   registry = new Map(),
   includeYahtml = true,
-  includeExpression = false,
   includeStyle = false,
 }) => {
   const diagnostics = [];
@@ -31,9 +29,6 @@ export const runRules = ({
   diagnostics.push(...runMethodRules({ models }));
   diagnostics.push(...runModuleStateRules({ models }));
   diagnostics.push(...runStorePurityRules({ models }));
-  if (includeExpression) {
-    diagnostics.push(...runExpressionRules({ models }));
-  }
   diagnostics.push(...runCompatibilityRules({ models, registry }));
 
   if (includeYahtml) {

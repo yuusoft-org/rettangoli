@@ -36,7 +36,6 @@ export const formatJsonReport = ({ result, warnAsError = false }) => {
     summary: result.summary,
     warnAsError,
     diagnosticCatalog: catalog,
-    autofix: result.autofix || undefined,
     diagnostics,
   }, null, 2);
 };

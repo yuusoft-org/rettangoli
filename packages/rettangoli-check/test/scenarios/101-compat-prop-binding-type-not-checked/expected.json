@@ -1,0 +1,22 @@
+{
+  "name": "a prop binding whose schema type differs from the child's prop type is not reported (COMPAT-004 retired)",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": true,
+    "errorCount": 0,
+    "warnCount": 0,
+    "errorCodes": {},
+    "warnCodes": {},
+    "diagnostics": []
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-010"
+  ]
+}

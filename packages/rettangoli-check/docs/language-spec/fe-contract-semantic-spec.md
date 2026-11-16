@@ -6,7 +6,6 @@ This spec defines FE schema/contract semantics enforced by current checker rules
 - `packages/rettangoli-check/src/rules/schema.js`
 - `packages/rettangoli-check/src/rules/listenerConfig.js`
 - `packages/rettangoli-check/src/core/model.js` (lifecycle handlers)
-- `packages/rettangoli-check/src/rules/expression.js`
 - `packages/rettangoli-check/src/rules/compatibility.js`
 
 ## RTGL-SPEC-FE-001: Required files and forbidden in-view API metadata
@@ -49,13 +48,10 @@ If `.constants.yaml` exists, root must be a YAML object (`RTGL-CHECK-CONSTANTS-0
 2. `handleBeforeMount` must be synchronous.
 3. `--style` additionally enforces `handle`-prefixed handler exports and references, `deps` as lifecycle first parameter, and a second `payload` parameter for `handleOnUpdate`. These naming and signature conventions do not constrain runtime behavior; destructuring, renamed arguments, and unused omitted arguments pass default validation.
 
-## RTGL-SPEC-FE-007: Expression-to-schema compatibility
+## RTGL-SPEC-FE-007: Expression-to-schema compatibility (retired)
 
-1. Expression roots must resolve against global symbols + local scope.
-2. Resolved schema paths must exist for static path forms.
-3. Boolean bindings require boolean-resolved schema types.
-4. Jempl condition operators must use type-compatible operands for logical/comparison/arithmetic/equality semantics (`==` / `!=` require compatible operand types).
-5. Condition-path schema segment errors are reported with path-specific diagnostics.
+Formerly defined the `--expr` checks of expression roots, schema paths and operand types
+(`RTGL-CHECK-EXPR-*`). The expression checks were removed. The ID is kept for scenario traceability.
 
 ## RTGL-SPEC-FE-008: Inter-component compatibility
 
@@ -63,7 +59,6 @@ For custom-element usage against registry contracts:
 
 1. required props must be provided
 2. boolean binding kind must match target prop type
-3. prop binding values must be compatible with the target prop type
 
 Template keys cannot bind events: FE rejects `@event=handler` and a bare `@event`, so they are reported as `RTGL-CHECK-BINDING-001` on every element. Listeners are declared under `refs.<id>.eventListeners` and validated by the listener rules.
 

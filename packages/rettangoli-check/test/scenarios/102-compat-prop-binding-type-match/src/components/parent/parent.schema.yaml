@@ -1,6 +1,0 @@
-componentName: rtgl-test-compat-parent-prop-type-match
-propsSchema:
-  type: object
-  properties:
-    countValue:
-      type: number

@@ -1,3 +1,0 @@
-template:
-  - "$if count == title":
-      rtgl-text: ${title}

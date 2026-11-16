@@ -5,7 +5,7 @@ This document defines the compiler-facing Jempl frontend API implemented in:
 
 ## Purpose
 
-Provide one canonical parse entrypoint for Jempl template/payload parsing so rules and semantic passes do not diverge.
+Provide one canonical parse entrypoint for Jempl template/payload parsing so rules do not diverge.
 
 ## API
 

@@ -1,3 +1,0 @@
-template:
-  - "$if user.profile.isReady":
-      rtgl-text: ${user.name}

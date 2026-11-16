@@ -9,7 +9,6 @@ Phase 7 is considered complete when all of the following hold:
 - Type lattice normalization and compatibility behavior is stable.
 - Contract/type diagnostics are covered by deterministic conformance scenarios for:
   - required props/defaults
-  - expression type checks
   - lifecycle payload signatures
   - event protocol and payload compatibility
   - listener payload contracts
@@ -22,7 +21,7 @@ Authoritative gate commands:
 
 ```bash
 node packages/rettangoli-check/scripts/test-type-system-contract.js
-node packages/rettangoli-check/test/run-scenarios.js --scenario 73-compat-required-props --scenario 78-expression-boolean-type-mismatch --scenario 79-lifecycle-on-update-missing-payload --scenario 80-compat-unsupported-event --scenario 101-compat-prop-binding-type-mismatch --scenario 104-compat-event-handler-prefix-invalid --scenario 106-compat-event-payload-contract-missing-param --scenario 107-listener-payload-contract-missing-key --scenario 110-method-signature-nonobject-pattern-invalid --scenario 112-method-payload-contract-missing-key --scenario 102-compat-prop-binding-type-match --scenario 109-compat-required-prop-with-default --scenario 113-method-payload-contract-valid
+node packages/rettangoli-check/test/run-scenarios.js --scenario 73-compat-required-props --scenario 79-lifecycle-on-update-missing-payload --scenario 80-compat-unsupported-event --scenario 81-compat-boolean-binding-type-mismatch --scenario 104-compat-event-handler-prefix-invalid --scenario 106-compat-event-payload-contract-missing-param --scenario 107-listener-payload-contract-missing-key --scenario 110-method-signature-nonobject-pattern-invalid --scenario 112-method-payload-contract-missing-key --scenario 101-compat-prop-binding-type-not-checked --scenario 109-compat-required-prop-with-default --scenario 113-method-payload-contract-valid
 ```
 
 The gate set enforces:
@@ -37,10 +36,9 @@ The gate set enforces:
 Negative coverage scenarios:
 
 - `73-compat-required-props` -> `RTGL-CHECK-COMPAT-001`
-- `78-expression-boolean-type-mismatch` -> `RTGL-CHECK-EXPR-003`
 - `79-lifecycle-on-update-missing-payload` -> `RTGL-CHECK-LIFECYCLE-003`
 - `80-compat-unsupported-event` -> `RTGL-CHECK-BINDING-001` (`@event` attributes are rejected; COMPAT-002/005 are retired)
-- `101-compat-prop-binding-type-mismatch` -> `RTGL-CHECK-COMPAT-004`
+- `81-compat-boolean-binding-type-mismatch` -> `RTGL-CHECK-COMPAT-003`
 - `104-compat-event-handler-prefix-invalid` -> `RTGL-CHECK-BINDING-001` (HANDLER-003 is retired)
 - `106-compat-event-payload-contract-missing-param` -> `RTGL-CHECK-BINDING-001` (COMPAT-006 is retired)
 - `107-listener-payload-contract-missing-key` -> `RTGL-CHECK-LISTENER-010`
@@ -49,6 +47,6 @@ Negative coverage scenarios:
 
 Positive coverage scenarios:
 
-- `102-compat-prop-binding-type-match`
+- `101-compat-prop-binding-type-not-checked` (prop binding types are not checked; COMPAT-004 is retired)
 - `109-compat-required-prop-with-default`
 - `113-method-payload-contract-valid`

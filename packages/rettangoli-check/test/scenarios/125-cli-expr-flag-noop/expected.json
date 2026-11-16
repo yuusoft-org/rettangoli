@@ -1,0 +1,18 @@
+{
+  "name": "cli accepts the retired --expr flag as a no-op with one stderr warning",
+  "mode": "cli",
+  "options": {
+    "args": [
+      "--expr"
+    ]
+  },
+  "expected": {
+    "exitCode": 0,
+    "stderr": "[Check] Deprecated: expression checks were removed. --expr has no effect and will be rejected in a later release.",
+    "stdout": "[Check] Scanned 1 component(s); registry tags: <n>.\n[Check] Errors: 0, Warnings: 0.\n[Check] No issues found."
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CLI-001",
+    "RTGL-SPEC-CONF-CORE-001"
+  ]
+}

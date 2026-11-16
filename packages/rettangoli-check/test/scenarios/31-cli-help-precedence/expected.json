@@ -13,8 +13,6 @@
     "stdoutIncludes": [
       "Usage: rtgl-check [options]",
       "--format <value>    Report format: text | json | sarif",
-      "--expr              Enable template expression root checks",
-      "--autofix-dry-run   Preview safe autofixes without writing files",
       "--watch             Re-run check when files change (polling)",
       "-h, --help          Show this help"
     ]

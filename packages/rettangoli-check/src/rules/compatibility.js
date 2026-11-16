@@ -1,11 +1,5 @@
 import { toCamelCase, toKebabCase } from "../utils/case.js";
-import { resolveExpressionPathType } from "../core/scopeGraph.js";
-import {
-  areTypesCompatible,
-  inferLiteralLatticeType,
-  inferSchemaNodePrimitiveType,
-  schemaNodeToLatticeType,
-} from "../types/lattice.js";
+import { areTypesCompatible, schemaNodeToLatticeType } from "../types/lattice.js";
 import { normalizeBindingName } from "./shared.js";
 
 const getContractPropSchema = ({ contract, propName }) => {
@@ -44,47 +38,6 @@ const latticeTypeToText = (value) => {
     return [...new Set(labels)].join(" | ");
   }
   return String(value.kind || "unknown");
-};
-
-// FE renders a $for body with the loop variables in scope before props, so a loop variable that
-// shares a prop's name is not that prop. The scope graph records the locals in scope for each
-// template attribute expression.
-const isLoopLocalRoot = ({ model, attribute, expression, root }) => {
-  const range = attribute?.range;
-  const references = Array.isArray(model?.semanticGraph?.references) ? model.semanticGraph.references : [];
-  return references.some((reference) => (
-    reference?.source === "template-attr"
-    && reference.expression === expression
-    && reference.line === range?.line
-    && (!Number.isInteger(range?.column)
-      || (reference.column >= range.column && reference.column <= range.endColumn))
-    && reference.localSymbols instanceof Set
-    && reference.localSymbols.has(root)
-  ));
-};
-
-const inferAttributeExpressionType = ({ model, attribute }) => {
-  if (!attribute || typeof attribute !== "object") {
-    return "unknown";
-  }
-
-  const firstExpression = Array.isArray(attribute.expressions) ? attribute.expressions[0] : null;
-  if (typeof firstExpression === "string" && firstExpression.trim()) {
-    const pathType = resolveExpressionPathType({
-      model,
-      expression: firstExpression,
-      localSchemaTypes: new Map(),
-    });
-    if (pathType?.resolved) {
-      if (isLoopLocalRoot({ model, attribute, expression: firstExpression, root: pathType.root })) {
-        return "unknown";
-      }
-      return inferSchemaNodePrimitiveType(pathType.resolved);
-    }
-    return "unknown";
-  }
-
-  return inferLiteralLatticeType(attribute.valueText).kind;
 };
 
 export const runCompatibilityRules = ({ models = [], registry = new Map() }) => {
@@ -141,27 +94,6 @@ export const runCompatibilityRules = ({ models = [], registry = new Map() }) => 
       }
 
       astAttributes.forEach((attribute) => {
-        if (attribute?.sourceType === "prop" && attribute?.name) {
-          const schema = getContractPropSchema({
-            contract,
-            propName: attribute.name,
-          });
-          const expectedType = schemaNodeToLatticeType(schema);
-          const actualType = inferAttributeExpressionType({ model, attribute });
-          if (!areTypesCompatible({ expected: expectedType, actual: actualType })) {
-            diagnostics.push({
-              code: "RTGL-CHECK-COMPAT-004",
-              severity: "error",
-              filePath: bindingLine.filePath || model?.view?.filePath || "unknown",
-              line: attribute?.range?.line || bindingLine.line,
-              column: attribute?.range?.column,
-              endLine: attribute?.range?.endLine,
-              endColumn: attribute?.range?.endColumn,
-              message: `${model.componentKey}: prop binding ':${attribute.name}' is incompatible with '${tagName}' expected type '${latticeTypeToText(expectedType)}' but resolved '${actualType}'.`,
-            });
-          }
-        }
-
         if (attribute?.sourceType !== "boolean-attr" || !attribute?.name) {
           return;
         }

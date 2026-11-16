@@ -118,7 +118,6 @@ test("check passes its options and the defaults", async () => {
           format: "text",
           warnAsError: false,
           includeYahtml: false,
-          includeExpression: false,
           includeStyle: undefined,
           watch: false,
           watchIntervalMs: 800,
@@ -126,6 +125,17 @@ test("check passes its options and the defaults", async () => {
       ],
     },
   ]);
+});
+
+test("check accepts the deprecated --expr flag, warns once and does not pass it on", async (t) => {
+  const warn = t.mock.method(console, "error", () => {});
+  const { calls } = await run("check", "--expr");
+
+  assert.deepEqual(warn.mock.calls.map((call) => call.arguments), [
+    ["[Check] Deprecated: expression checks were removed. --expr has no effect and will be rejected in a later release."],
+  ]);
+  assert.equal(calls.length, 1);
+  assert.equal("includeExpression" in calls[0].args[0], false);
 });
 
 test("fe build merges the fe config into the options", async () => {

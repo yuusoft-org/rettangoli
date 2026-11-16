@@ -21,7 +21,6 @@
                 "b"
               ],
               "format": "json",
-              "includeExpression": true,
               "includeStyle": true,
               "includeYahtml": false,
               "warnAsError": true,
@@ -53,7 +52,6 @@
               "cwd": "<APP>",
               "dirs": [],
               "format": "text",
-              "includeExpression": false,
               "includeStyle": {
                 "$undefined": true
               },
@@ -87,7 +85,6 @@
               "cwd": "<APP>",
               "dirs": [],
               "format": "sarif",
-              "includeExpression": false,
               "includeStyle": {
                 "$undefined": true
               },
@@ -121,7 +118,6 @@
               "cwd": "<APP>",
               "dirs": [],
               "format": "yaml",
-              "includeExpression": false,
               "includeStyle": {
                 "$undefined": true
               },
@@ -155,7 +151,6 @@
               "cwd": "<APP>/sub",
               "dirs": [],
               "format": "text",
-              "includeExpression": false,
               "includeStyle": {
                 "$undefined": true
               },
@@ -187,7 +182,7 @@
       "                            \"text\")",
       "  --warn-as-error           Treat warnings as errors",
       "  --no-yahtml               Disable YAHTML attr/prop validation",
-      "  --expr                    Enable expression scope/type checks",
+      "  --expr                    Deprecated: has no effect",
       "  --style                   Enable optional naming and signature conventions",
       "  --watch                   Watch for file changes and re-run checks",
       "  --watch-interval-ms <ms>  Watch poll interval in milliseconds (default: 800)",
@@ -241,7 +236,6 @@
               "cwd": "<APP>",
               "dirs": [],
               "format": "text",
-              "includeExpression": false,
               "includeStyle": {
                 "$undefined": true
               },
@@ -279,7 +273,6 @@
               "cwd": "<APP>",
               "dirs": [],
               "format": "text",
-              "includeExpression": false,
               "includeStyle": {
                 "$undefined": true
               },
@@ -328,7 +321,6 @@
               "cwd": "<APP>",
               "dirs": [],
               "format": "text",
-              "includeExpression": false,
               "includeStyle": {
                 "$undefined": true
               },
@@ -377,7 +369,6 @@
               "cwd": "<APP>",
               "dirs": [],
               "format": "text",
-              "includeExpression": false,
               "includeStyle": {
                 "$undefined": true
               },
