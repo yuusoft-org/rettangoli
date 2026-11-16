@@ -1,0 +1,151 @@
+{
+  "name": "store references impure globals and time or random calls",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 18,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-STORE-001": 18
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'crypto', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js calls 'Date.now()', which returns a different value on every call, but a store must have no side effects. Read the time in a handler and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js calls 'Math.random()', which returns a different value on every call, but a store must have no side effects. Generate the random value in a handler and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 4
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'localStorage', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'window', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 6
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js calls 'new Date()', which returns a different value on every call, but a store must have no side effects. Read the time in a handler and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 11
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js calls 'Date()', which returns a different value on every call, but a store must have no side effects. Read the time in a handler and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 12
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'document', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 13
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'navigator', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 14
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'console', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 18
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'fetch', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 22
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'setTimeout', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 23
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'requestAnimationFrame', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 26
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'queueMicrotask', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 27
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'performance', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 28
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'globalThis', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 29
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'self', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 29
+      },
+      {
+        "code": "RTGL-CHECK-STORE-001",
+        "severity": "error",
+        "message": "components/card: .store.js uses the global 'someUnknownGlobal', but a store must have no side effects. Read the value in a handler (or receive it through deps) and pass it to the store action as payload.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 30
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-013"
+  ]
+}

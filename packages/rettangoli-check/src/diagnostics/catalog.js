@@ -12,6 +12,8 @@ const DEFAULT_FAMILY_CONFIG = [
   { prefix: "RTGL-CHECK-LIFECYCLE-", family: "lifecycle", severity: "error", title: "Lifecycle contract diagnostic" },
   { prefix: "RTGL-CHECK-COMPAT-", family: "compatibility", severity: "error", title: "Compatibility diagnostic" },
   { prefix: "RTGL-CHECK-METHOD-", family: "methods", severity: "error", title: "Method contract diagnostic" },
+  { prefix: "RTGL-CHECK-MODULE-", family: "modules", severity: "error", title: "Module state diagnostic" },
+  { prefix: "RTGL-CHECK-STORE-", family: "store", severity: "error", title: "Store purity diagnostic" },
   { prefix: "RTGL-CHECK-CONTRACT-", family: "contracts", severity: "error", title: "Contract diagnostic" },
   { prefix: "RTGL-CONTRACT-", family: "contracts", severity: "error", title: "Legacy contract diagnostic" },
   { prefix: "RTGL-CHECK-CONSTANTS-", family: "constants", severity: "error", title: "Constants diagnostic" },

@@ -10,7 +10,15 @@ This document defines the normative store contract.
 3. `selectViewData`
 4. actions
 
-Side effects (network, timers, DOM) SHOULD be handled in `.handlers.js`.
+Store functions MUST NOT have side effects or read the environment: no network, timers, DOM, storage,
+`console`, current time (`Date.now()`, `new Date()` without arguments) or random values
+(`Math.random()`). A handler reads such a value and passes it to an action as payload. `rtgl check`
+reports a store that uses an impure global as `RTGL-CHECK-STORE-001`.
+
+A store file MUST NOT keep mutable state at module scope (a top-level `let` or `var`, or a top-level
+`const` that a function in the file mutates). A module is evaluated once, so every instance of the
+component would share it; per-instance values belong in the store state. `rtgl check` reports it as
+`RTGL-CHECK-MODULE-001`.
 
 ## 2. Required Export Order
 

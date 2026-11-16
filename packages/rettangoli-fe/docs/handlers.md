@@ -12,6 +12,11 @@ This document defines the normative handlers contract.
 Public element methods belong in `.methods.js`.
 State mutation logic belongs in store actions.
 
+A handlers file MUST NOT keep mutable state at module scope (a top-level `let` or `var`, or a
+top-level `const` that a function in the file mutates). A module is evaluated once, so every instance
+of the component would share it. Keep per-instance values in the store state, and pass long-lived
+collaborators in through `deps`. `rtgl check` reports it as `RTGL-CHECK-MODULE-001`.
+
 ## 2. Handler Function Contract
 
 General handler signature:

@@ -1,0 +1,6 @@
+componentName: rtgl-test-module-state-valid
+methods:
+  type: object
+  properties:
+    reset:
+      type: object

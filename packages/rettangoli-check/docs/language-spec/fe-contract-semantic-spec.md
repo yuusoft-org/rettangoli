@@ -73,6 +73,12 @@ Template keys cannot bind events: FE rejects `@event=handler` and a bare `@event
 2. Methods declaring multiple parameters are warned because runtime invokes methods with a single payload object.
 3. If schema method payload contract defines required keys, exported method payload destructuring must cover those keys.
 
+## RTGL-SPEC-FE-013: Module-scope state and store purity
+
+1. A component module is evaluated once, so its module-scope bindings are shared by every instance. In `.handlers.js`, `.store.js` and `.methods.js`, a top-level `let` or `var`, and a top-level `const` that the same file mutates (a write, `++`/`--` or `delete` on a member chain rooted at it, or a `set`/`add`/`delete`/`clear`/`push`/`pop`/`shift`/`unshift`/`splice`/`sort`/`reverse`/`fill`/`copyWithin` call on it), emit `RTGL-CHECK-MODULE-001` at the binding. Never-mutated constants, functions, classes, imports, shadowing locals or parameters, and constants initialised with `new WeakMap()` or `new WeakSet()` are not reported.
+2. A `.store.js` has no side effects. A reference to an identifier that the file neither declares nor imports and that is not a pure built-in, and a call of `Math.random()`, `Date.now()`, `Date()` or `new Date()` without arguments, emit `RTGL-CHECK-STORE-001`, once per name or call form per file, at the first use.
+3. Files that do not parse are skipped (`RTGL-CHECK-PARSE-002` reports them).
+
 ## RTGL-SPEC-FE-009: Ref key and element-id constraints
 
 1. Invalid `refs` keys emit `RTGL-CHECK-REF-001`.

@@ -17,7 +17,7 @@
   "LISTENER-006 event '<event>' on ref '<ref>' cannot define both debounce and throttle.",
   "LISTENER-007 invalid 'action' for event '<event>' on ref '<ref>'. Expected a valid symbol name.",
   "LISTENER-007 invalid 'handler' for event '<event>' on ref '<ref>'. Expected a valid symbol name.",
-  "LISTENER-008 unknown listener option 'foo' for event '<event>' on ref '<ref>'.",
+  "LISTENER-008 unknown listener option 'foo' for event '<event>' on ref '<ref>'. Supported options: handler, action, payload, preventDefault, stopPropagation, stopImmediatePropagation, targetOnly, once, debounce, throttle. The runtime ignores unknown keys, so remove it.",
   "LISTENER-010 listener payload for event '<event>' on ref '<ref>' must be a mapping. FE ignores any other payload value.",
   "SYMBOL-001 handler 'handleGone' for event '<event>' on ref '<ref>' is missing in .handlers.js exports.",
   "SYMBOL-001 handler 'onGone' for event '<event>' on ref '<ref>' is missing in .handlers.js exports.",

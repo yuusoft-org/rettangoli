@@ -9,6 +9,8 @@ sidebarId: fe-handlers
 
 The `.handlers.js` file is the orchestration layer of a component. It owns lifecycle hooks, imperative event handling, and side effects. State mutation logic belongs in store actions; handlers coordinate when and how those actions are called.
 
+A handlers file keeps no mutable state at module scope (a top-level `let`, or a collection that a handler mutates): the module is evaluated once, so every instance of the component would share it. Keep per-instance values in the store, and pass long-lived collaborators in through `deps`. `rtgl check` reports it as `RTGL-CHECK-MODULE-001`.
+
 ## Handler Signature
 
 All handlers follow the same function signature:

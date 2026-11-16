@@ -6,6 +6,9 @@ This document defines the optional public imperative method contract.
 
 Use `.methods.js` only for methods that callers invoke directly on the component element.
 
+A methods file MUST NOT keep mutable state at module scope, for the same reason as a handlers file
+(`handlers.md`); `rtgl check` reports it as `RTGL-CHECK-MODULE-001`.
+
 ## 2. Export Contract
 
 - Use named exports only.

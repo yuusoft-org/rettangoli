@@ -41,10 +41,10 @@ export const selectViewData = ({ state }) => {
 
 // Add a new todo
 export const addTodo = ({ state }, payload = {}) => {
-  const { title = "" } = payload;
+  const { id, title = "" } = payload;
   if (!title.trim()) return;
   const newTodo = {
-    id: Date.now().toString(),
+    id,
     title: title.trim(),
     completed: false,
   };

@@ -4,7 +4,7 @@ export const handleNewTodoKeyDown = (deps, payload) => {
   if (event.key === 'Enter') {
     const title = event.target.value.trim();
     if (title) {
-      deps.store.addTodo({ title });
+      deps.store.addTodo({ id: Date.now().toString(), title });
       event.target.value = '';
       deps.render();
     }

@@ -39,9 +39,9 @@ const EXPECTED_DIAGNOSTICS = [
   "RTGL-CHECK-COMPONENT-002 src/components/badge-alias/badge.view.yaml:1 components/badge-alias: file 'badge.view.yaml' does not match component identity 'components/badge-alias'. Expected basename 'badge-alias' before '.view.yaml'.",
   "RTGL-CHECK-SCHEMA-008 src/components/badge/badge.schema.yaml:1 Duplicate componentName 'rtgl-symlink-badge' found in multiple schema files.",
   "RTGL-CHECK-SCHEMA-008 src/components/badge-alias/badge.schema.yaml:1 Duplicate componentName 'rtgl-symlink-badge' found in multiple schema files.",
-  "RTGL-CHECK-YAHTML-001 src/components/badge/badge.view.yaml:3 components/badge: unknown custom element 'rtgl-unknown-x' in view template.",
-  "RTGL-CHECK-YAHTML-001 src/components/badge-alias/badge.view.yaml:3 components/badge-alias: unknown custom element 'rtgl-unknown-x' in view template.",
-  "RTGL-CHECK-YAHTML-001 src/components/card/card.view.yaml:3 components/card: unknown custom element 'rtgl-unknown-x' in view template.",
+  "RTGL-CHECK-YAHTML-001 src/components/badge/badge.view.yaml:3 components/badge: unknown custom element 'rtgl-unknown-x' in view template. It is neither a @rettangoli/ui element nor a component in the checked directories.",
+  "RTGL-CHECK-YAHTML-001 src/components/badge-alias/badge.view.yaml:3 components/badge-alias: unknown custom element 'rtgl-unknown-x' in view template. It is neither a @rettangoli/ui element nor a component in the checked directories.",
+  "RTGL-CHECK-YAHTML-001 src/components/card/card.view.yaml:3 components/card: unknown custom element 'rtgl-unknown-x' in view template. It is neither a @rettangoli/ui element nor a component in the checked directories.",
 ].sort();
 
 try {
